@@ -1,0 +1,14 @@
+#!/bin/sh
+
+clear
+
+mount -t proc none /proc
+mount -t sysfs none /sys
+mount -t devtmpfs devtmpfs /dev
+
+/sbin/ip link set dev lo up
+
+echo "Calling /sbin/init..."
+echo
+
+exec /sbin/init
