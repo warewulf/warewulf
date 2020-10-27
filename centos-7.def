@@ -1,0 +1,17 @@
+BootStrap: yum
+OSVersion: 7
+MirrorURL: http://mirror.centos.org/centos-%{OSVERSION}/%{OSVERSION}/os/x86_64/
+Include: yum
+
+
+%post
+
+    sed -i 's/^root:\*:/root::/g' /etc/passwd
+
+    yum install -y basesystem bash chkconfig coreutils e2fsprogs \
+    ethtool filesystem findutils gawk grep initscripts iproute \
+    iputils net-tools nfs-utils pam psmisc rdate rsync sed setup \
+    shadow-utils rsyslog tcp_wrappers tzdata util-linux words \
+    zlib tar less gzip which util-linux openssh-clients  \
+    openssh-server dhclient pciutils vim-minimal shadow-utils \
+    strace cronie crontabs cpio wget centos-release
