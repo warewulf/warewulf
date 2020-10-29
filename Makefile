@@ -6,6 +6,7 @@ files:
 	sudo install -d -m 0755 /var/warewulf/provision/overlays
 	sudo install -d -m 0755 /var/warewulf/provision/bases
 	sudo install -d -m 0755 /etc/warewulf/
+	sudo install -d -m 0755 /var/lib/tftpboot/warewulf/ipxe/
 	sudo install -m 0644 dhcpd.conf /etc/dhcp/dhcpd.conf
 	sudo install -m 0644 nodes.yaml /etc/warewulf/nodes.yaml
 	sudo cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
