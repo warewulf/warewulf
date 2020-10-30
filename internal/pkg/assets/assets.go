@@ -87,7 +87,7 @@ func FindAllNodes() []NodeInfo {
             n.KernelVersion   = group.KernelVersion
             n.NetDevs         = node.NetDevs
 
-            if ( group.DomainSuffix != "" ) {
+            if group.DomainSuffix != "" {
                 n.Fqdn = node.Hostname + "." + group.DomainSuffix
             } else {
                 n.Fqdn = node.Hostname
@@ -134,7 +134,7 @@ func FindAllVnfs() []string {
         }
     }
 
-    for entry, _ := range set {
+    for entry := range set {
         ret = append(ret, entry)
     }
 
@@ -153,15 +153,14 @@ func FindAllKernels() []string {
         }
     }
 
-    for entry, _ := range set {
+    for entry := range set {
         ret = append(ret, entry)
     }
 
     return ret
 }
 
-
-
+//FindAllOverlays
 func FindAllOverlays() []string {
     var ret []string
     set := make(map[string]bool)
@@ -172,7 +171,7 @@ func FindAllOverlays() []string {
         }
     }
 
-    for entry, _ := range set {
+    for entry := range set {
         ret = append(ret, entry)
     }
 

@@ -1,52 +1,52 @@
 nodegroups:
-    group_1:
-        comment: This is the group 1
-        vnfs: /var/chroots/test
-        overlay: generic
-        domain suffix: group1
-        nodes:
-            n0000:
-                hostname: n0000
-                kernel version: 3.10.0-1127.el7.x86_64
-                netdevs:
-                    eth0:
-                        hwaddr: xx:xx:xx:xx:aa
-                        ipaddr: x.x.x.x
-                        netmask: x.x.x.x
-                        gateway: x.x.x.x
-    group_2:
-        comment: This is the group 2
-        vnfs: /var/chroots/test
-        overlay: generic
-        domain suffix: group2
+  group_1:
+    comment: This is the group 1
+    vnfs: /var/chroots/test
+    overlay: generic
+    domain suffix: group1
+    nodes:
+      n0000:
+        hostname: n0000
         kernel version: 3.10.0-1127.el7.x86_64
-        nodes:
-            n0000:
-                hostname: n0000
-                ipmi ipaddr: x.x.x.x
-                netdevs:
-                    eth0:
-                        hwaddr: 00-0c-29-c3-bf-42
-                        ipaddr: x.x.x.x
-                        netmask: x.x.x.x
-                        gateway: x.x.x.x
-                        type: ethernet
-                    ib0:
-                        hwaddr: xx:xx:xx:xx:xx
-                        ipaddr: x.x.x.x
-                        netmask: x.x.x.x
-                        gateway: x.x.x.x
-                        type: infiniband
-            n0001:
-                hostname: n0001
-                ipmi ipaddr: x.x.x.x
-                netdevs:
-                    eth0:
-                        hwaddr: xx:xx:xx:xx:xx
-                        ipaddr: x.x.x.x
-                        netmask: x.x.x.x
-                        gateway: x.x.x.x
-                    ib0:
-                        hwaddr: xx:xx:xx:xx:xx
-                        ipaddr: x.x.x.x
-                        netmask: x.x.x.x
+        netdevs:
+          eth0:
+            hwaddr: xx:xx:xx:xx:aa
+            ipaddr: x.x.x.x
+            netmask: x.x.x.x
+            gateway: x.x.x.x
+  group_2:
+    comment: This is the group 2
+    vnfs: /var/chroots/centos-7
+    overlay: generic
+    domain suffix: group2
+    kernel version: 3.10.0-1127.el7.x86_64
+    nodes:
+      n0000:
+        hostname: n0000
+        ipmi ipaddr: x.x.x.x
+        netdevs:
+          eth0:
+            hwaddr: 00-0c-29-c3-bf-42
+            ipaddr: x.x.x.x
+            netmask: x.x.x.x
+            gateway: x.x.x.x
+            type: ethernet
+          ib0:
+            hwaddr: xx:xx:xx:xx:xx
+            ipaddr: x.x.x.x
+            netmask: x.x.x.x
+            gateway: x.x.x.x
+            type: infiniband
+      n0001:
+        hostname: n0001
+        ipmi ipaddr: x.x.x.x
+        netdevs:
+          eth0:
+            hwaddr: xx:xx:xx:xx:xx
+            ipaddr: x.x.x.x
+            netmask: x.x.x.x
+            gateway: x.x.x.x
+          ib0:
+            hwaddr: xx:xx:xx:xx:xx
+            ipaddr: x.x.x.x
+            netmask: x.x.x.x
