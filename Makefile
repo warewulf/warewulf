@@ -11,6 +11,7 @@ files:
 	sudo install -m 0644 nodes.yaml /etc/warewulf/nodes.yaml
 	sudo cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
 	sudo cp -r overlays /etc/warewulf/
+	sudo chmod +x /etc/warewulf/overlays/generic/init
 
 services: files
 	sudo systemctl enable tftp
