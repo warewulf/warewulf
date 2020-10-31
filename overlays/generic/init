@@ -1,6 +1,29 @@
 #!/bin/sh
+#
+# This is one of those types of files that you shouldn't edit unless you really
+# know what you are doing and even then you should make a backup.
+#
+# Edit at your own risk! DANGER DANGER.
+
 
 clear
+echo "Warewulf v4 is now booting"
+
+# Considering what to do if we are operating on a read only root
+if false; then
+  mkdir -p /mnt/.lowerdir
+  mkdir -p /mnt/.overlaytmp
+  mount -t tmpfs -o size=10M none /mnt/.overlaytmp
+  mkdir -p /mnt/.overlaytmp/upperdir
+  mkdir -p /mnt/.overlaytmp/workdir
+  mkdir -p /mnt/.newroot
+
+  mount -t overlay -o lowerdir=/mnt/.lowerdir,upperdir=/mnt/.overlaytmp/upperdir,workdir=/mnt/.overlaytmp/workdir none /mnt/.newroot
+
+  cd /mnt/.newroot
+  pivot_root . /mnt
+
+fi
 
 mount -t proc none /proc
 mount -t sysfs none /sys
