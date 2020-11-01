@@ -1,14 +1,14 @@
 
 package main
 
-
 import (
     "fmt"
+    "github.com/hpcng/warewulf/internal/pkg/assets"
+    "github.com/hpcng/warewulf/internal/pkg/util"
     "os"
     "os/exec"
     "path"
-
-    "github.com/hpcng/warewulf/internal/pkg/assets"
+    "strings"
 )
 
 
@@ -74,21 +74,36 @@ func main(){
     } else if os.Args[1] == "overlay" {
         fmt.Printf("note: This needs to create an overlay for each node with macro expansions\n")
 
-
         for _, node := range assets.FindAllNodes() {
-            overlayDir := fmt.Sprintf("/etc/warewulf/overlays/%s", node.Overlay)
-            if _, err := os.Stat(overlayDir); err == nil {
-                cmd := fmt.Sprintf("cd %s; find . | cpio --quiet -o -H newc | gzip -c > \"%s/provision/overlays/%s.img\"", overlayDir, LocalStateDir, node.Fqdn)
-                fmt.Printf("BUILDING OVERLAY:  %s\n", node.Fqdn)
-                err := exec.Command("/bin/sh", "-c", cmd).Run()
-                if err != nil {
-                    fmt.Printf("%s", err)
-                }
-            } else {
-                fmt.Printf("SKIPPING OVERLAY:  (bad path) %s\n", overlayDir)
-            }
-        }
-        
+            fmt.Printf("BUILDING OVERLAY:  %s\n", node.Fqdn)
 
+            overlayDir := fmt.Sprintf("/etc/warewulf/overlays/%s", node.Overlay)
+            replace := make(map[string]string)
+            replace["HOSTNAME"] = node.HostName
+            replace["FQDN"] = node.Fqdn
+            replace["VNFS"] = node.Vnfs
+            replace["KERNELVERSION"] = node.KernelVersion
+            replace["GROUPNAME"] = node.GroupName
+            replace["DOMAIN"] = node.DomainName
+            for key, dev := range node.NetDevs {
+                replace[fmt.Sprintf("%s:NAME", key)] = key
+                replace[fmt.Sprintf("%s:HWADDR", key)] = strings.ReplaceAll(dev.Hwaddr, "-", ":")
+                replace[fmt.Sprintf("%s:IPADDR", key)] = dev.Ipaddr
+                replace[fmt.Sprintf("%s:NETMASK", key)] = dev.Netmask
+                replace[fmt.Sprintf("%s:GATEWAY", key)] = dev.Gateway
+            }
+
+            overlayDest := "/tmp/.overlay-" + util.RandomString(16)
+            BuildOverlayDir(overlayDir, overlayDest, replace)
+
+            cmd := fmt.Sprintf("cd %s; find . | cpio --quiet -o -H newc -F \"%s/provision/overlays/%s.img\"", overlayDest, LocalStateDir, node.Fqdn)
+            err := exec.Command("/bin/sh", "-c", cmd).Run()
+            if err != nil {
+                fmt.Printf("%s", err)
+            }
+
+            os.RemoveAll(overlayDest)
+
+        }
     }
 }

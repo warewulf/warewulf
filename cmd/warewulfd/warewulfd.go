@@ -12,6 +12,9 @@ import (
     "github.com/hpcng/warewulf/internal/pkg/assets"
     "net/http"
 )
+// TODO: https://github.com/danderson/netboot/blob/master/pixiecore/dhcp.go
+// TODO: https://github.com/pin/tftp
+
 
 const LocalStateDir = "/var/warewulf"
 

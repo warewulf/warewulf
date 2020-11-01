@@ -20,8 +20,8 @@ services: files
 	sudo systemctl restart dhcpd
 
 build:
-	go build cmd/warewulfd/warewulfd.go
-	go build cmd/wwbuild/wwbuild.go
+	cd cmd/warewulfd; go build -o ../../warewulfd
+	cd cmd/wwbuild; go build -o ../../wwbuild
 
 clean:
 	rm -f warewulfd

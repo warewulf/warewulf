@@ -57,6 +57,7 @@ type NodeInfo struct {
     Vnfs          string
     Overlay       string
     KernelVersion string
+    DomainName    string
     NetDevs       map[string]netDevs
 }
 
@@ -85,6 +86,7 @@ func FindAllNodes() []NodeInfo {
             n.Vnfs            = group.Vnfs
             n.Overlay         = group.Overlay
             n.KernelVersion   = group.KernelVersion
+            n.DomainName      = group.DomainSuffix
             n.NetDevs         = node.NetDevs
 
             if group.DomainSuffix != "" {
@@ -100,6 +102,9 @@ func FindAllNodes() []NodeInfo {
             }
             if node.Overlay != "" {
                 n.Overlay = node.Overlay
+            }
+            if node.DomainSuffix != "" {
+                n.DomainName = node.DomainSuffix
             }
             ret = append(ret, n)
         }
