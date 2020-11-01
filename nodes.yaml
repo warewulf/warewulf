@@ -11,9 +11,9 @@ nodegroups:
         netdevs:
           eth0:
             hwaddr: xx:xx:xx:xx:aa
-            ipaddr: x.x.x.x
-            netmask: x.x.x.x
-            gateway: x.x.x.x
+            ipaddr: 192.168.0.101
+            netmask: 255.255.255.0
+            gateway: 192.168.1.1
   group_2:
     comment: This is the group 2
     vnfs: /var/chroots/centos-7
@@ -27,9 +27,9 @@ nodegroups:
         netdevs:
           eth0:
             hwaddr: 00-0c-29-c3-bf-42
-            ipaddr: x.x.x.x
-            netmask: x.x.x.x
-            gateway: x.x.x.x
+            ipaddr: 192.168.1.100
+            netmask: 255.255.255.0
+            gateway: 192.168.1.1
             type: ethernet
           ib0:
             hwaddr: xx:xx:xx:xx:xx
@@ -43,9 +43,9 @@ nodegroups:
         netdevs:
           eth0:
             hwaddr: xx:xx:xx:xx:xx
-            ipaddr: x.x.x.x
-            netmask: x.x.x.x
-            gateway: x.x.x.x
+            ipaddr: 192.168.1.101
+            netmask: 255.255.255.0
+            gateway: 192.168.1.1
           ib0:
             hwaddr: xx:xx:xx:xx:xx
             ipaddr: x.x.x.x
