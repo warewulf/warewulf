@@ -75,7 +75,6 @@ func main(){
         fmt.Printf("note: This needs to create an overlay for each node with macro expansions\n")
 
         for _, node := range assets.FindAllNodes() {
-            fmt.Printf("BUILDING OVERLAY:  %s\n", node.Fqdn)
 
             overlayDir := fmt.Sprintf("/etc/warewulf/overlays/%s", node.Overlay)
             replace := make(map[string]string)
@@ -93,17 +92,32 @@ func main(){
                 replace[fmt.Sprintf("%s:GATEWAY", key)] = dev.Gateway
             }
 
-            overlayDest := "/tmp/.overlay-" + util.RandomString(16)
-            BuildOverlayDir(overlayDir, overlayDest, replace)
+            destFile := fmt.Sprintf("%s/provision/overlays/%s.img", LocalStateDir, node.Fqdn)
 
-            cmd := fmt.Sprintf("cd %s; find . | cpio --quiet -o -H newc -F \"%s/provision/overlays/%s.img\"", overlayDest, LocalStateDir, node.Fqdn)
-            err := exec.Command("/bin/sh", "-c", cmd).Run()
-            if err != nil {
-                fmt.Printf("%s", err)
+            destMod, _ := os.Stat(destFile)
+            destModTime := destMod.ModTime()
+
+            configMod, _ := os.Stat("/etc/warewulf/nodes.yaml")
+            configModTime := configMod.ModTime()
+
+            sourceModTime := util.DirModTime(overlayDir)
+
+            if sourceModTime.After(destModTime) || configModTime.After(destModTime) {
+                fmt.Printf("BUILDING OVERLAY:  %s\n", node.Fqdn)
+
+                overlayDest := "/tmp/.overlay-" + util.RandomString(16)
+                BuildOverlayDir(overlayDir, overlayDest, replace)
+
+                cmd := fmt.Sprintf("cd %s; find . | cpio --quiet -o -H newc -F \"%s\"", overlayDest, destFile)
+                err := exec.Command("/bin/sh", "-c", cmd).Run()
+                if err != nil {
+                    fmt.Printf("%s", err)
+                }
+
+                os.RemoveAll(overlayDest)
+            } else {
+                fmt.Printf("Skipping overlay (nothing changed): %s\n", node.Fqdn)
             }
-
-            os.RemoveAll(overlayDest)
-
         }
     }
 }

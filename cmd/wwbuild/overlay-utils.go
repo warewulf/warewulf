@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io"
+	"github.com/hpcng/warewulf/internal/pkg/util"
 	"os"
 	"path/filepath"
 	"strings"
@@ -60,19 +60,8 @@ func BuildOverlayDir(sourceDir string, destDir string, replace map[string]string
 				sourceFD.Close()
 				destFD.Close()
 			} else {
-				sourceFD, err := os.Open(sourceDir + "/" + path)
-				if err != nil {
-					return err
-				}
-				defer sourceFD.Close()
+				err := util.CopyFile(sourceDir + "/" + path, destDir + "/" + path)
 
-				destFD, err := os.OpenFile(destDir + "/" + path, os.O_RDWR|os.O_CREATE, info.Mode())
-				if err != nil {
-					return err
-				}
-				defer destFD.Close()
-
-				_, err = io.Copy(destFD, sourceFD)
 				if err != nil {
 					return err
 				}
