@@ -9,6 +9,7 @@ import (
     "os/exec"
     "path"
     "strings"
+    "time"
 )
 
 
@@ -72,11 +73,12 @@ func main(){
             }
         }
     } else if os.Args[1] == "overlay" {
-        fmt.Printf("note: This needs to create an overlay for each node with macro expansions\n")
-
+        //TODO: Move this all to warewulfd and generate on demand when needed
         for _, node := range assets.FindAllNodes() {
 
             overlayDir := fmt.Sprintf("/etc/warewulf/overlays/%s", node.Overlay)
+
+            //TODO: Move this all to the Asset package
             replace := make(map[string]string)
             replace["HOSTNAME"] = node.HostName
             replace["FQDN"] = node.Fqdn
@@ -94,13 +96,20 @@ func main(){
 
             destFile := fmt.Sprintf("%s/provision/overlays/%s.img", LocalStateDir, node.Fqdn)
 
-            destMod, _ := os.Stat(destFile)
-            destModTime := destMod.ModTime()
+            destModTime := time.Time{}
+            destMod, err := os.Stat(destFile)
+            if err == nil {
+                destModTime = destMod.ModTime()
+            }
 
-            configMod, _ := os.Stat("/etc/warewulf/nodes.yaml")
+            configMod, err := os.Stat("/etc/warewulf/nodes.yaml")
+            if err != nil {
+                fmt.Printf("ERROR: could not find node file: /etc/warewulf/nodes.yaml")
+                os.Exit(1)
+            }
             configModTime := configMod.ModTime()
 
-            sourceModTime := util.DirModTime(overlayDir)
+            sourceModTime, _ := util.DirModTime(overlayDir)
 
             if sourceModTime.After(destModTime) || configModTime.After(destModTime) {
                 fmt.Printf("BUILDING OVERLAY:  %s\n", node.Fqdn)
