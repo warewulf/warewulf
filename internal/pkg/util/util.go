@@ -5,10 +5,33 @@ import (
     "io"
     "math/rand"
     "os"
+    "path/filepath"
+    "time"
 
     //   "strings"
 )
 
+
+func DirModTime (path string) time.Time {
+
+    var lastTime time.Time
+    err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+        if err != nil {
+            return err
+        }
+
+        cur := info.ModTime()
+        if cur.After(lastTime) {
+            lastTime = info.ModTime()
+        }
+
+        return nil
+    })
+    if err != nil {
+        return time.Now()
+    }
+    return lastTime
+}
 
 func RandomString(n int) string {
     var letter = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
@@ -19,7 +42,6 @@ func RandomString(n int) string {
     }
     return string(b)
 }
-
 
 func CopyFile(source string, dest string) error {
     sourceFD, err := os.Open(source)
@@ -38,8 +60,8 @@ func CopyFile(source string, dest string) error {
     if err != nil {
         return err
     }
-    sourceFD.Close()
-    destFD.Close()
 
-    return nil
+    sourceFD.Close()
+
+    return destFD.Close()
 }
