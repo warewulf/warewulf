@@ -26,7 +26,7 @@ nodegroups:
         ipmi ipaddr: x.x.x.x
         netdevs:
           eth0:
-            hwaddr: 00-0c-29-c3-bf-42
+            hwaddr: 00:0c:29:c3:bf:42
             ipaddr: 192.168.1.100
             netmask: 255.255.255.0
             gateway: 192.168.1.1
