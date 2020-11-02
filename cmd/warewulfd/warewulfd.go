@@ -26,10 +26,11 @@ func ipxe(w http.ResponseWriter, req *http.Request) {
         return
     }
 
-    node := assets.FindByHwaddr(url[2])
+    hwaddr := strings.ReplaceAll(url[2], "-", ":")
+    node := assets.FindByHwaddr(hwaddr)
 
     if node.HostName != "" {
-        fmt.Printf("IPXE:  %15s: hwaddr=%s\n", node.Fqdn, url[2])
+        fmt.Printf("IPXE:  %15s: hwaddr=%s\n", node.Fqdn, hwaddr)
 
         fmt.Fprintf(w, "#!ipxe\n")
 
@@ -50,7 +51,7 @@ func ipxe(w http.ResponseWriter, req *http.Request) {
 func files(w http.ResponseWriter, req *http.Request) {
     url := strings.Split(req.URL.Path, "/")
 
-    node := assets.FindByHwaddr(url[3])
+    node := assets.FindByHwaddr(strings.ReplaceAll(url[3], "-", ":"))
 
     fmt.Printf("GET:   %15s: %s\n", node.Fqdn, req.URL.Path)
 
