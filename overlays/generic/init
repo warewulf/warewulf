@@ -31,7 +31,10 @@ mount -t devtmpfs devtmpfs /dev
 
 /sbin/ip link set dev lo up
 
+nohup /warewulf/bin/wwclient >/var/log/wwclient.log 2>&1 </dev/null &
+
 echo "Calling /sbin/init..."
 echo
 
+sleep 2
 exec /sbin/init

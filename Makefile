@@ -1,6 +1,8 @@
+.PHONY: all
 
+all: warewulfd wwbuild wwclient
 
-files:
+files: all
 	sudo install -d -m 0755 /var/warewulf/provision
 	sudo install -d -m 0755 /var/warewulf/provision/kernels
 	sudo install -d -m 0755 /var/warewulf/provision/overlays
@@ -12,6 +14,8 @@ files:
 	sudo cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
 	sudo cp -r overlays /etc/warewulf/
 	sudo chmod +x /etc/warewulf/overlays/generic/init
+	sudo mkdir -p /etc/warewulf/overlays/generic/warewulf/bin/
+	sudo cp wwclient /etc/warewulf/overlays/generic/warewulf/bin/
 
 services: files
 	sudo systemctl enable tftp
@@ -19,13 +23,19 @@ services: files
 	sudo systemctl enable dhcpd
 	sudo systemctl restart dhcpd
 
-build:
+warewulfd:
 	cd cmd/warewulfd; go build -o ../../warewulfd
+
+wwbuild:
 	cd cmd/wwbuild; go build -o ../../wwbuild
+
+wwclient:
+	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-extldflags -static' -o ../../wwclient
 
 clean:
 	rm -f warewulfd
 	rm -f wwbuild
+	rm -f wwclient
 
-install: build files services
+install: files services
 

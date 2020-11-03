@@ -5,10 +5,10 @@ import (
     "fmt"
     "io"
     "os"
-    "path"
     "strconv"
     "strings"
 
+    "github.com/hpcng/warewulf/internal/pkg/errors"
     "github.com/hpcng/warewulf/internal/pkg/assets"
     "net/http"
 )
@@ -18,41 +18,33 @@ import (
 
 const LocalStateDir = "/var/warewulf"
 
-func ipxe(w http.ResponseWriter, req *http.Request) {
+func getSanity(req *http.Request) (assets.NodeInfo, error) {
     url := strings.Split(req.URL.Path, "/")
 
-    if url[2] == "" {
-        fmt.Printf("ERROR: Bad iPXE request from %s\n", req.RemoteAddr)
-        return
-    }
-
     hwaddr := strings.ReplaceAll(url[2], "-", ":")
-    node := assets.FindByHwaddr(hwaddr)
-
-    if node.HostName != "" {
-        fmt.Printf("IPXE:  %15s: hwaddr=%s\n", node.Fqdn, hwaddr)
-
-        fmt.Fprintf(w, "#!ipxe\n")
-
-        fmt.Fprintf(w, "echo Now booting Warewulf - v4 Proof of Concept\n")
-        fmt.Fprintf(w, "set base http://192.168.1.1:9873/\n")
-        fmt.Fprintf(w, "kernel ${base}/files/kernel/%s crashkernel=no quiet\n", url[2])
-        fmt.Fprintf(w, "initrd ${base}/files/vnfs/%s\n", url[2])
-        fmt.Fprintf(w, "initrd ${base}/files/kmods/%s\n", url[2])
-        fmt.Fprintf(w, "initrd ${base}/files/overlay/%s\n", url[2])
-        fmt.Fprintf(w, "boot\n")
-    } else {
-        fmt.Printf("ERROR: iPXE request from unknown Node (hwaddr=%s)\n", url[2])
+    node, err := assets.FindByHwaddr(hwaddr)
+    if err != nil {
+        return node, errors.New("Could not find HW address")
     }
-    return
+
+    if node.Fqdn == "" {
+        fmt.Printf("UNKNOWN: %15s: %s\n", node.Fqdn, req.URL.Path)
+        return node, errors.New("Unknown Node: "+ hwaddr)
+    }
+    fmt.Printf("GET:   %15s: %s\n", node.Fqdn, req.URL.Path)
+
+    return node, nil
 }
 
-
+/*
 func files(w http.ResponseWriter, req *http.Request) {
     url := strings.Split(req.URL.Path, "/")
 
     node := assets.FindByHwaddr(strings.ReplaceAll(url[3], "-", ":"))
 
+    if node.Fqdn == "" {
+        fmt.Printf("UNKNOWN: %15s: %s\n", node.Fqdn, req.URL.Path)
+    }
     fmt.Printf("GET:   %15s: %s\n", node.Fqdn, req.URL.Path)
 
     if url[2] == "kernel" {
@@ -79,19 +71,36 @@ func files(w http.ResponseWriter, req *http.Request) {
 
             sendFile(w, overlayFile, node.Fqdn)
         }
+    } else if url[2] == "runtime" {
+        fmt.Printf("FROM: %s\n", req.RemoteAddr)
+
+        remote := strings.Split(req.RemoteAddr, ":")
+        port, _ := strconv.Atoi(remote[1])
+
+        if port >= 1024 {
+            fmt.Printf("DENIED: Connection coming from non-privledged port: %s\n", req.RemoteAddr)
+            return
+        }
+
+        if node.Overlay!= "" {
+            overlayFile := fmt.Sprintf("%s/provision/runtime/%s.img", LocalStateDir, node.Fqdn)
+
+            sendFile(w, overlayFile, node.Fqdn)
+        }
     }
+
     return
 }
+ */
 
-
-func sendFile(w http.ResponseWriter, filename string, sendto string) {
+func sendFile(w http.ResponseWriter, filename string, sendto string) error {
 
     fmt.Printf("SEND:  %15s: %s\n", sendto, filename)
 
     fd, err := os.Open(filename)
     if err != nil {
-        fmt.Println("ERROR:   %s\n", err)
-        return
+        fmt.Printf("ERROR:   %s\n", err)
+        return err
     }
 
     FileHeader := make([]byte, 512)
@@ -106,14 +115,20 @@ func sendFile(w http.ResponseWriter, filename string, sendto string) {
 
     fd.Seek(0, 0)
     io.Copy(w, fd)
-}
 
+    fd.Close()
+    return nil
+}
 
 
 func main() {
 
     http.HandleFunc("/ipxe/", ipxe)
-    http.HandleFunc("/files/", files)
+    http.HandleFunc("/kernel/", kernel)
+    http.HandleFunc("/kmods/", kmods)
+    http.HandleFunc("/vnfs/", vnfs)
+    http.HandleFunc("/overlay/", overlay)
+    http.HandleFunc("/runtime/", runtime)
 
     http.ListenAndServe(":9873", nil)
 }
