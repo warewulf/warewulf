@@ -5,6 +5,7 @@ import (
     "fmt"
     "github.com/hpcng/warewulf/internal/pkg/assets"
     "github.com/hpcng/warewulf/internal/pkg/util"
+    "log"
     "os"
     "os/exec"
     "path"
@@ -44,12 +45,24 @@ func main(){
         if len(os.Args) >= 3 {
             vnfsBuild(os.Args[3])
         } else {
-            for _, vnfs := range assets.FindAllVnfs() {
+            nodeList, err := assets.FindAllVnfs()
+            if err != nil {
+                log.Panicf("Could not locate VNFS images: %s\n", err)
+                os.Exit(1)
+            }
+
+            for _, vnfs := range nodeList {
                 vnfsBuild(vnfs)
             }
         }
     } else if os.Args[1] == "kernel" {
-        for _, kernelVers := range assets.FindAllKernels() {
+        nodeList, err := assets.FindAllKernels()
+        if err != nil {
+            log.Panicf("Could not locate Kernel Versions: %s\n", err)
+            os.Exit(1)
+        }
+
+        for _, kernelVers := range nodeList {
             kernelSource := fmt.Sprintf("/boot/vmlinuz-%s", kernelVers)
             // TODO: Check time stamps of source and dests to see if we need to rebuild or skip
             if _, err := os.Stat(kernelSource); err == nil {
@@ -74,7 +87,13 @@ func main(){
         }
     } else if os.Args[1] == "overlay" {
         //TODO: Move this all to warewulfd and generate on demand when needed
-        for _, node := range assets.FindAllNodes() {
+        nodeList, err := assets.FindAllNodes()
+        if err != nil {
+            log.Panicf("Could not identify nodes: %s\n", err)
+            os.Exit(1)
+        }
+
+        for _, node := range nodeList {
 
             overlayDir := fmt.Sprintf("/etc/warewulf/overlays/%s", node.Overlay)
 

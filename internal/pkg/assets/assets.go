@@ -1,13 +1,11 @@
 
 package assets
 
-
-
 import (
-    "fmt"
+    "gopkg.in/yaml.v2"
     "io/ioutil"
 
-    "gopkg.in/yaml.v2"
+    "github.com/hpcng/warewulf/internal/pkg/errors"
 )
 
 
@@ -62,18 +60,18 @@ type NodeInfo struct {
 }
 
 
-func FindAllNodes() []NodeInfo {
+func FindAllNodes() ([]NodeInfo, error) {
     var c nodeYaml
     var ret []NodeInfo
 
     fd, err := ioutil.ReadFile(ConfigFile)
     if err != nil {
-        fmt.Println(err)
+        return nil, err
     }
 
     err = yaml.Unmarshal(fd, &c)
     if err != nil {
-        fmt.Println(err)
+        return nil, err
     }
 
     for groupname, group := range c.NodeGroups {
@@ -110,30 +108,40 @@ func FindAllNodes() []NodeInfo {
         }
     }
 
-    return ret
+    return ret, nil
 }
 
 
-func FindByHwaddr(hwa string) NodeInfo{
+func FindByHwaddr(hwa string) (NodeInfo, error) {
     var ret NodeInfo
 
-    for _, node := range FindAllNodes() {
+    nodeList, err := FindAllNodes()
+    if err != nil {
+        return ret, err
+    }
+
+    for _, node := range nodeList {
         for _, dev := range node.NetDevs {
             if dev.Hwaddr == hwa {
-                return node
+                return node, nil
             }
         }
     }
 
-    return ret
+    return ret, errors.New("No nodes found with HW Addr: " + hwa)
 }
 
 
-func FindAllVnfs() []string {
+func FindAllVnfs() ([]string, error) {
     var ret []string
     set := make(map[string]bool)
 
-    for _, node := range FindAllNodes() {
+    nodeList, err := FindAllNodes()
+    if err != nil {
+        return ret, err
+    }
+
+    for _, node := range nodeList {
         if node.Vnfs != "" {
             set[node.Vnfs] = true
         }
@@ -143,16 +151,21 @@ func FindAllVnfs() []string {
         ret = append(ret, entry)
     }
 
-    return ret
+    return ret, nil
 }
 
 
 
-func FindAllKernels() []string {
+func FindAllKernels() ([]string, error) {
     var ret []string
     set := make(map[string]bool)
 
-    for _, node := range FindAllNodes() {
+    nodeList, err := FindAllNodes()
+    if err != nil {
+        return ret, err
+    }
+
+    for _, node := range nodeList {
         if node.KernelVersion != "" {
             set[node.KernelVersion] = true
         }
@@ -162,15 +175,20 @@ func FindAllKernels() []string {
         ret = append(ret, entry)
     }
 
-    return ret
+    return ret, nil
 }
 
 //FindAllOverlays
-func FindAllOverlays() []string {
+func FindAllOverlays() ([]string, error) {
     var ret []string
     set := make(map[string]bool)
 
-    for _, node := range FindAllNodes() {
+    nodeList, err := FindAllNodes()
+    if err != nil {
+        return ret, err
+    }
+
+    for _, node := range nodeList {
         if node.Overlay != "" {
             set[node.Overlay] = true
         }
@@ -180,7 +198,7 @@ func FindAllOverlays() []string {
         ret = append(ret, entry)
     }
 
-    return ret
+    return ret, nil
 }
 
 
