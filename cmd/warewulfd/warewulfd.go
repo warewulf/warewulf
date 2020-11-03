@@ -4,12 +4,13 @@ package main
 import (
     "fmt"
     "io"
+    "log"
     "os"
     "strconv"
     "strings"
 
-    "github.com/hpcng/warewulf/internal/pkg/errors"
     "github.com/hpcng/warewulf/internal/pkg/assets"
+    "github.com/hpcng/warewulf/internal/pkg/errors"
     "net/http"
 )
 // TODO: https://github.com/danderson/netboot/blob/master/pixiecore/dhcp.go
@@ -23,6 +24,7 @@ func getSanity(req *http.Request) (assets.NodeInfo, error) {
 
     hwaddr := strings.ReplaceAll(url[2], "-", ":")
     node, err := assets.FindByHwaddr(hwaddr)
+    log.Printf("REQ:   %s: %s\n", hwaddr, req.URL.Path)
     if err != nil {
         return node, errors.New("Could not find HW address")
     }
