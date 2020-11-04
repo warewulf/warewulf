@@ -88,11 +88,7 @@ func FindAllNodes() ([]NodeInfo, error) {
 			n.DomainName = group.DomainSuffix
 			n.NetDevs = node.NetDevs
 
-			if group.DomainSuffix != "" {
-				n.Fqdn = node.Hostname + "." + group.DomainSuffix
-			} else {
-				n.Fqdn = node.Hostname
-			}
+
 			if node.KernelVersion != "" {
 				n.KernelVersion = node.KernelVersion
 			}
@@ -107,6 +103,20 @@ func FindAllNodes() ([]NodeInfo, error) {
 			}
 			if node.DomainSuffix != "" {
 				n.DomainName = node.DomainSuffix
+			}
+
+
+			if n.RuntimeOverlay == "" {
+				n.RuntimeOverlay = "default"
+			}
+			if n.SystemOverlay == "" {
+				n.SystemOverlay = "default"
+			}
+
+			if n.DomainName != "" {
+				n.Fqdn = node.Hostname + "." + n.DomainName
+			} else {
+				n.Fqdn = node.Hostname
 			}
 
 			ret = append(ret, n)
@@ -172,6 +182,7 @@ func SearchByName(search string) ([]NodeInfo, error) {
 	return ret, nil
 }
 
+/*
 func FindAllVnfs() ([]string, error) {
 	var ret []string
 	set := make(map[string]bool)
@@ -259,3 +270,5 @@ func ListRuntimeOverlays() ([]string, error) {
 
 	return ret, nil
 }
+
+ */
