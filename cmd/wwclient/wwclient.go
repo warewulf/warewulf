@@ -99,7 +99,7 @@ func main() {
 
 */
 		log.Printf("Updating runtime system\n")
-		command := exec.Command("/bin/cpio", "-i")
+		command := exec.Command("/bin/cpio", "-iu")
 		command.Stdin = resp.Body
 		err := command.Run()
 		if err != nil {

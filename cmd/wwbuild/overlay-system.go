@@ -22,9 +22,9 @@ func overlaySystem(node assets.NodeInfo, replace map[string]string, wg *sync.Wai
 	if err == nil {
 		destModTime = destMod.ModTime()
 	}
-	configMod, err := os.Stat("/etc/warewulf/nodes.yaml")
+	configMod, err := os.Stat("/etc/warewulf/nodes.conf")
 	if err != nil {
-		fmt.Printf("ERROR: could not find node file: /etc/warewulf/nodes.yaml")
+		fmt.Printf("ERROR: could not find node file: /etc/warewulf/nodes.conf\n")
 		os.Exit(1)
 	}
 	configModTime := configMod.ModTime()

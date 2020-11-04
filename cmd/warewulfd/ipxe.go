@@ -19,7 +19,7 @@ func ipxe(w http.ResponseWriter, req *http.Request) {
 	hwaddr := strings.ReplaceAll(url[2], "-", ":")
 	node, err := assets.FindByHwaddr(hwaddr)
 	if err != nil {
-		log.Printf("Could not find HW Addr: %s\n", hwaddr)
+		log.Printf("Could not find HW Addr: %s: %s\n", hwaddr, err)
 		w.WriteHeader(404)
 		return
 	}
