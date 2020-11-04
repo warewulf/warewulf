@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/hpcng/warewulf/internal/pkg/util"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -29,6 +30,7 @@ func BuildOverlayDir(sourceDir string, destDir string, replace map[string]string
 		} else {
 			if filepath.Ext(path) == ".in" {
 				destFile := strings.TrimSuffix(path, ".in")
+				skip := false
 
 				sourceFD, err := os.Open(sourceDir + "/" + path)
 				if err != nil {
@@ -45,18 +47,49 @@ func BuildOverlayDir(sourceDir string, destDir string, replace map[string]string
 
 				for scanner.Scan() {
 					newLine := scanner.Text()
+
 					for k, v := range replace {
 						replaceString := fmt.Sprintf("@%s@", strings.ToUpper(k))
 						newLine = strings.ReplaceAll(newLine, replaceString, v)
 					}
-					//TODO: Support directives like '#include <filename>' and
+					//TODO: Support directives like '#INCLUDE <filename>' and
 					//      conditionals like '#IFDEF ....`
 
-					_, err := w.WriteString(newLine + "\n")
-					if err != nil {
-						return err
-					}
+					if strings.HasPrefix(newLine, "#WWENDIF") {
+						skip = false
+					} else if skip == true {
 
+					} else if strings.HasPrefix(newLine, "#WWIFDEF") {
+						line := strings.Split(newLine, " ")
+						if len(line) > 0 && line[1] != "false" {
+							skip = true
+						}
+					} else if strings.HasPrefix(newLine, "#WWIF ") {
+						line := strings.Split(newLine, " ")
+						if len(line) == 2 && line[1] != "false" {
+							skip = true
+						} else if len(line) > 3 {
+
+							if line[2] == "==" {
+								if line[1] != line[3] {
+									skip = true
+								}
+							}
+						}
+					} else if strings.HasPrefix(newLine, "#WWINCLUDE ") {
+						line := strings.Split(newLine, " ")
+						includeFD, err := os.Open(line[1])
+						if err != nil {
+								return err
+							}
+						io.Copy(w, includeFD)
+						includeFD.Close()
+					} else {
+						_, err := w.WriteString(newLine + "\n")
+						if err != nil {
+							return err
+						}
+					}
 				}
 				w.Flush()
 				sourceFD.Close()

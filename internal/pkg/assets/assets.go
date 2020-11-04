@@ -8,7 +8,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/errors"
 )
 
-const ConfigFile = "/etc/warewulf/nodes.yaml"
+const ConfigFile = "/etc/warewulf/nodes.conf"
 
 func init() {
 	//TODO: Check to make sure nodes.yaml is found
@@ -22,21 +22,21 @@ type nodeYaml struct {
 type nodeGroup struct {
 	Comment        string
 	Vnfs           string
-	SystemOverlay  string `yaml:"system overlay""`
-	RuntimeOverlay string `yaml:"runtime overlay""`
-	DomainSuffix   string `yaml:"domain suffix"`
-	KernelVersion  string `yaml:"kernel version"`
+	SystemOverlay  string 	`yaml:"system overlay""`
+	RuntimeOverlay string 	`yaml:"runtime overlay""`
+	DomainSuffix   string 	`yaml:"domain suffix"`
+	KernelVersion  string 	`yaml:"kernel version"`
 	Nodes          map[string]nodeEntry
 }
 
 type nodeEntry struct {
 	Hostname       string
 	Vnfs           string
-	SystemOverlay  string `yaml:"system overlay"`
-	RuntimeOverlay string `yaml:"runtime overlay"`
-	DomainSuffix   string `yaml:"domain suffix"`
-	KernelVersion  string `yaml:"kernel version"`
-	IpmiIpaddr     string `yaml:"ipmi ipaddr"`
+	SystemOverlay  string 	`yaml:"system overlay"`
+	RuntimeOverlay string 	`yaml:"runtime overlay"`
+	DomainSuffix   string 	`yaml:"domain suffix"`
+	KernelVersion  string 	`yaml:"kernel version"`
+	IpmiIpaddr     string 	`yaml:"ipmi ipaddr"`
 	NetDevs        map[string]netDevs
 }
 

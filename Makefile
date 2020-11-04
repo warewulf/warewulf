@@ -6,8 +6,9 @@ files: all
 	install -d -m 0755 /var/warewulf/
 	install -d -m 0755 /etc/warewulf/
 	install -d -m 0755 /var/lib/tftpboot/warewulf/ipxe/
-	install -m 0644 dhcpd.conf /etc/dhcp/dhcpd.conf
-	install -m 0644 nodes.yaml /etc/warewulf/nodes.yaml
+	install -m 0640 etc/dhcpd.conf /etc/dhcp/dhcpd.conf
+	install -m 0640 etc/nodes.conf /etc/warewulf/nodes.conf
+	install -m 0640 etc/warewulf.conf /etc/warewulf/warewulf.conf
 	cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
 	cp -r overlays /var/warewulf/
 	chmod +x /var/warewulf/overlays/system/default/init
