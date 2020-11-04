@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func kmods(w http.ResponseWriter, req *http.Request) {
+func systemOverlay(w http.ResponseWriter, req *http.Request) {
 
 	node, err := getSanity(req)
 	if err != nil {
@@ -14,8 +14,9 @@ func kmods(w http.ResponseWriter, req *http.Request) {
 		log.Println(err)
 		return
 	}
-	if node.KernelVersion != "" {
-		fileName := fmt.Sprintf("%s/provision/kernel/kmods-%s.img", LocalStateDir, node.KernelVersion)
+
+	if node.SystemOverlay != "" {
+		fileName := fmt.Sprintf("%s/provision/overlays/system/%s.img", LocalStateDir, node.Fqdn)
 
 		err := sendFile(w, fileName, node.Fqdn)
 		if err != nil {
@@ -23,10 +24,9 @@ func kmods(w http.ResponseWriter, req *http.Request) {
 		} else {
 			log.Printf("SEND:  %15s: %s\n", node.Fqdn, fileName)
 		}
-
 	} else {
 		w.WriteHeader(503)
-		log.Printf("ERROR: No 'kernel version' set for node %s\n", node.Fqdn)
+		log.Printf("ERROR: No 'system overlay' set for node %s\n", node.Fqdn)
 	}
 
 	return

@@ -12,7 +12,7 @@ func ipxe(w http.ResponseWriter, req *http.Request) {
 	url := strings.Split(req.URL.Path, "/")
 
 	if url[2] == "" {
-		fmt.Printf("ERROR: Bad iPXE request from %s\n", req.RemoteAddr)
+		log.Printf("ERROR: Bad iPXE request from %s\n", req.RemoteAddr)
 		return
 	}
 
@@ -25,7 +25,7 @@ func ipxe(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if node.HostName != "" {
-		fmt.Printf("IPXE:  %15s: hwaddr=%s\n", node.Fqdn, hwaddr)
+		log.Printf("IPXE:  %15s: hwaddr=%s\n", node.Fqdn, hwaddr)
 
 		fmt.Fprintf(w, "#!ipxe\n")
 
@@ -34,10 +34,10 @@ func ipxe(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(w, "kernel ${base}/kernel/%s crashkernel=no quiet\n", url[2])
 		fmt.Fprintf(w, "initrd ${base}/vnfs/%s\n", url[2])
 		fmt.Fprintf(w, "initrd ${base}/kmods/%s\n", url[2])
-		fmt.Fprintf(w, "initrd ${base}/overlay/%s\n", url[2])
+		fmt.Fprintf(w, "initrd ${base}/overlay-system/%s\n", url[2])
 		fmt.Fprintf(w, "boot\n")
 	} else {
-		fmt.Printf("ERROR: iPXE request from unknown Node (hwaddr=%s)\n", url[2])
+		log.Printf("ERROR: iPXE request from unknown Node (hwaddr=%s)\n", url[2])
 	}
 	return
 }

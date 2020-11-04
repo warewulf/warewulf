@@ -12,10 +12,10 @@ files: all
 	sudo install -m 0644 dhcpd.conf /etc/dhcp/dhcpd.conf
 	sudo install -m 0644 nodes.yaml /etc/warewulf/nodes.yaml
 	sudo cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
-	sudo cp -r overlays /etc/warewulf/
-	sudo chmod +x /etc/warewulf/overlays/generic/init
-	sudo mkdir -p /etc/warewulf/overlays/generic/warewulf/bin/
-	sudo cp wwclient /etc/warewulf/overlays/generic/warewulf/bin/
+	sudo cp -r overlays /var/warewulf/
+	sudo chmod +x /var/warewulf/overlays/system/default/init
+	sudo mkdir -p /var/warewulf/overlays/system/default/warewulf/bin/
+	sudo cp wwclient /var/warewulf/overlays/system/default/warewulf/bin/
 
 services: files
 	sudo systemctl enable tftp

@@ -9,7 +9,6 @@ import (
 	"strings"
 )
 
-
 func BuildOverlayDir(sourceDir string, destDir string, replace map[string]string) error {
 	err := os.Chdir(sourceDir)
 	if err != nil {
@@ -23,7 +22,7 @@ func BuildOverlayDir(sourceDir string, destDir string, replace map[string]string
 		}
 
 		if info.IsDir() {
-			err := os.MkdirAll(destDir + "/" + path, info.Mode())
+			err := os.MkdirAll(destDir+"/"+path, info.Mode())
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -36,7 +35,7 @@ func BuildOverlayDir(sourceDir string, destDir string, replace map[string]string
 					return err
 				}
 
-				destFD, err :=os.OpenFile(destDir + "/" + destFile, os.O_RDWR|os.O_CREATE, info.Mode())
+				destFD, err := os.OpenFile(destDir+"/"+destFile, os.O_RDWR|os.O_CREATE, info.Mode())
 				if err != nil {
 					return err
 				}
@@ -60,7 +59,7 @@ func BuildOverlayDir(sourceDir string, destDir string, replace map[string]string
 				sourceFD.Close()
 				destFD.Close()
 			} else {
-				err := util.CopyFile(sourceDir + "/" + path, destDir + "/" + path)
+				err := util.CopyFile(sourceDir+"/"+path, destDir+"/"+path)
 
 				if err != nil {
 					return err

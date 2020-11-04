@@ -2,22 +2,25 @@ nodegroups:
   group_1:
     comment: This is the group 1
     vnfs: /var/chroots/test
-    overlay: generic
+    system overlay: default
+    runtime overlay: default
     domain suffix: group1
     nodes:
       n0000:
-        hostname: n0000
+        hostname: localtest
         kernel version: 3.10.0-1127.el7.x86_64
+        system overlay: test
         netdevs:
           eth0:
             hwaddr: xx:xx:xx:xx:aa
-            ipaddr: 192.168.0.101
+            ipaddr: 192.168.1.1
             netmask: 255.255.255.0
             gateway: 192.168.1.1
   group_2:
     comment: This is the group 2
     vnfs: /var/chroots/centos-7
-    overlay: generic
+    system overlay: default
+    runtime overlay: default
     domain suffix: group2
     kernel version: 3.10.0-1127.el7.x86_64
     nodes:
