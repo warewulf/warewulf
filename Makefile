@@ -3,19 +3,16 @@
 all: warewulfd wwbuild wwclient
 
 files: all
-	sudo install -d -m 0755 /var/warewulf/provision
-	sudo install -d -m 0755 /var/warewulf/provision/kernels
-	sudo install -d -m 0755 /var/warewulf/provision/overlays
-	sudo install -d -m 0755 /var/warewulf/provision/bases
-	sudo install -d -m 0755 /etc/warewulf/
-	sudo install -d -m 0755 /var/lib/tftpboot/warewulf/ipxe/
-	sudo install -m 0644 dhcpd.conf /etc/dhcp/dhcpd.conf
-	sudo install -m 0644 nodes.yaml /etc/warewulf/nodes.yaml
-	sudo cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
-	sudo cp -r overlays /var/warewulf/
-	sudo chmod +x /var/warewulf/overlays/system/default/init
-	sudo mkdir -p /var/warewulf/overlays/system/default/warewulf/bin/
-	sudo cp wwclient /var/warewulf/overlays/system/default/warewulf/bin/
+	install -d -m 0755 /var/warewulf/
+	install -d -m 0755 /etc/warewulf/
+	install -d -m 0755 /var/lib/tftpboot/warewulf/ipxe/
+	install -m 0644 dhcpd.conf /etc/dhcp/dhcpd.conf
+	install -m 0644 nodes.yaml /etc/warewulf/nodes.yaml
+	cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
+	cp -r overlays /var/warewulf/
+	chmod +x /var/warewulf/overlays/system/default/init
+	mkdir -p /var/warewulf/overlays/system/default/warewulf/bin/
+	cp wwclient /var/warewulf/overlays/system/default/warewulf/bin/
 
 services: files
 	sudo systemctl enable tftp

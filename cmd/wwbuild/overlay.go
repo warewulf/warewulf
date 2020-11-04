@@ -49,6 +49,9 @@ func BuildOverlayDir(sourceDir string, destDir string, replace map[string]string
 						replaceString := fmt.Sprintf("@%s@", strings.ToUpper(k))
 						newLine = strings.ReplaceAll(newLine, replaceString, v)
 					}
+					//TODO: Support directives like '#include <filename>' and
+					//      conditionals like '#IFDEF ....`
+
 					_, err := w.WriteString(newLine + "\n")
 					if err != nil {
 						return err

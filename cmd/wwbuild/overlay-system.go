@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path"
 	"sync"
+	"time"
 )
 
 func overlaySystem(node assets.NodeInfo, replace map[string]string, wg *sync.WaitGroup) {
@@ -15,7 +16,7 @@ func overlaySystem(node assets.NodeInfo, replace map[string]string, wg *sync.Wai
 
 	OverlayDir := fmt.Sprintf("%s/overlays/system/%s", LocalStateDir, node.SystemOverlay)
 	OverlayFile := fmt.Sprintf("%s/provision/overlays/system/%s.img", LocalStateDir, node.Fqdn)
-/*
+
 	destModTime := time.Time{}
 	destMod, err := os.Stat(OverlayFile)
 	if err == nil {
@@ -28,8 +29,8 @@ func overlaySystem(node assets.NodeInfo, replace map[string]string, wg *sync.Wai
 	}
 	configModTime := configMod.ModTime()
 	sourceModTime, _ := util.DirModTime(OverlayDir)
-*/
-	err := os.MkdirAll(path.Dir(OverlayFile), 0755)
+
+	err = os.MkdirAll(path.Dir(OverlayFile), 0755)
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err)
 		return
@@ -40,7 +41,7 @@ func overlaySystem(node assets.NodeInfo, replace map[string]string, wg *sync.Wai
 		return
 	}
 
-//	if sourceModTime.After(destModTime) || configModTime.After(destModTime) {
+	if sourceModTime.After(destModTime) || configModTime.After(destModTime) {
 		fmt.Printf("SYSTEM:  %s\n", node.Fqdn)
 
 		overlayDest := "/tmp/.overlay-" + util.RandomString(16)
@@ -53,8 +54,5 @@ func overlaySystem(node assets.NodeInfo, replace map[string]string, wg *sync.Wai
 		}
 
 		os.RemoveAll(overlayDest)
-
-//	} else {
-//		fmt.Printf("SYSTEM:  %s (skipped no changes)\n", node.Fqdn)
-//	}
+	}
 }

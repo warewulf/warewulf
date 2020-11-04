@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"os/exec"
+
+	//	"os/exec"
 	"time"
 )
 
@@ -67,7 +68,10 @@ func main() {
 			time.Sleep(1000 * time.Millisecond)
 		}
 
-		defer resp.Body.Close()
+//		defer resp.Body.Close()
+
+
+
 
 		if resp.StatusCode != 200 {
 			log.Printf("Not updating runtime overlay, got status code: %d\n", resp.StatusCode)
@@ -75,25 +79,51 @@ func main() {
 			continue
 		}
 
-		command := exec.Command("cpio", "-i")
-		command.Wait()
-		stdin, err := command.StdinPipe()
+/*
+		// TODO: Turn all of this into a pipe instead of having to use a tmpfile which
+		//       I tried to get working, but when running on a node, it always gave a
+		//       trying to write on closed file descriptor... This maybe ugly, but it
+		//       works.
+		tmpfile := fmt.Sprintf("/tmp/.wwclient-%s", util.RandomString(14))
+		tmpFD, _ := os.Create(tmpfile)
+		defer tmpFD.Close()
+		io.Copy(tmpFD, resp.Body)
+		tmpFD.Close()
+
+		err := exec.Command("cpio", "-i", "-F", tmpfile).Run()
 		if err != nil {
-			log.Println(err)
+			fmt.Printf("%s", err)
 		}
-		defer stdin.Close()
 
-		go func() {
-			bytes, err := io.Copy(stdin, resp.Body)
-			if err != nil {
-				log.Printf("ERROR: io.Copy() failed: %s\n", err)
-			} else {
-				log.Printf("Updated the runtime overlay (recv: %d)\n", bytes)
-			}
+		os.Remove(tmpfile)
 
-		}()
-		command.Run()
+*/
+		log.Printf("Updating runtime system\n")
+		command := exec.Command("/bin/cpio", "-i")
+		command.Stdin = resp.Body
+		err := command.Run()
+		if err != nil {
+			log.Printf("ERROR: Failed running CPIO: %s\n", err)
+		}
+		/*
+				command.Wait()
+				stdin, err := command.StdinPipe()
+				if err != nil {
+					log.Println(err)
+				}
+				defer stdin.Close()
 
+				go func() {
+					bytes, err := io.Copy(stdin, resp.Body)
+					if err != nil {
+						log.Printf("ERROR: io.Copy() failed: %s\n", err)
+					} else {
+						log.Printf("Updated the runtime overlay (recv: %d)\n", bytes)
+					}
+
+				}()
+				command.Run()
+		*/
 //		defer webclient.CloseIdleConnections()
 
 

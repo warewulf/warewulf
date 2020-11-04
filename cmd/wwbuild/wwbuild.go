@@ -118,16 +118,16 @@ func main() {
 					return
 				}
 
-				fmt.Printf("SETUP KERNEL:   %s (%s)\n", kernelSource, kernelDestination)
+				fmt.Printf("SETUP KERNEL:   %s\n", kernelSource)
 				err = exec.Command("cp", kernelSource, kernelDestination).Run()
 				if err != nil {
 					fmt.Printf("%s", err)
 				}
 
-				kernelMods := fmt.Sprintf("./lib/modules/%s", kernelVers)
+				kernelMods := fmt.Sprintf("/lib/modules/%s", kernelVers)
 				if _, err := os.Stat(kernelMods); err == nil {
 					fmt.Printf("BUILDING MODS:  %s\n", kernelMods)
-					cmd := fmt.Sprintf("cd /; find %s | cpio --quiet -o -H newc -F \"%s\"", kernelMods, kmodsDestination)
+					cmd := fmt.Sprintf("cd /; find .%s | cpio --quiet -o -H newc -F \"%s\"", kernelMods, kmodsDestination)
 					err := exec.Command("/bin/sh", "-c", cmd).Run()
 					if err != nil {
 						fmt.Printf("OUTPUT: %s", err)
@@ -174,8 +174,8 @@ func main() {
 			}
 
 			wg.Add(2)
-			overlayRuntime(node, replace, &wg)
-            overlaySystem(node, replace, &wg)
+			go overlayRuntime(node, replace, &wg)
+            go overlaySystem(node, replace, &wg)
 		}
         wg.Wait()
 
