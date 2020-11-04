@@ -37,7 +37,7 @@ func BuildOverlayDir(sourceDir string, destDir string, replace map[string]string
 					return err
 				}
 
-				destFD, err := os.OpenFile(destDir+"/"+destFile, os.O_RDWR|os.O_CREATE, info.Mode())
+				destFD, err := os.OpenFile(destDir + "/" + destFile, os.O_RDWR|os.O_CREATE, info.Mode())
 				if err != nil {
 					return err
 				}
@@ -52,16 +52,19 @@ func BuildOverlayDir(sourceDir string, destDir string, replace map[string]string
 						replaceString := fmt.Sprintf("@%s@", strings.ToUpper(k))
 						newLine = strings.ReplaceAll(newLine, replaceString, v)
 					}
-					//TODO: Support directives like '#INCLUDE <filename>' and
-					//      conditionals like '#IFDEF ....`
 
-					if strings.HasPrefix(newLine, "#WWENDIF") {
+					if strings.HasPrefix(newLine, "#WWEND") {
 						skip = false
 					} else if skip == true {
 
-					} else if strings.HasPrefix(newLine, "#WWIFDEF") {
+					} else if strings.HasPrefix(newLine, "#WWIFDEF ") {
 						line := strings.Split(newLine, " ")
 						if len(line) > 0 && line[1] != "false" {
+							skip = true
+						}
+					} else if strings.HasPrefix(newLine, "#WWIFNDEF ") {
+						line := strings.Split(newLine, " ")
+						if len(line) > 0 && line[1] == "false" {
 							skip = true
 						}
 					} else if strings.HasPrefix(newLine, "#WWIF ") {
@@ -76,13 +79,25 @@ func BuildOverlayDir(sourceDir string, destDir string, replace map[string]string
 								}
 							}
 						}
+					} else if strings.HasPrefix(newLine, "#WWELSE") {
+						if skip == true {
+							skip = false
+						} else {
+							skip = true
+						}
 					} else if strings.HasPrefix(newLine, "#WWINCLUDE ") {
 						line := strings.Split(newLine, " ")
+						//fmt.Printf("Including file (%s): %s\n", destDir + "/" + destFile, line[1])
 						includeFD, err := os.Open(line[1])
 						if err != nil {
-								return err
-							}
-						io.Copy(w, includeFD)
+							fmt.Printf("ERROR(os.Open): %s\n", err)
+							return err
+						}
+						_, err = io.Copy(w, includeFD)
+						if err != nil {
+							fmt.Printf("ERROR(io.Copy): %s\n", err)
+							return err
+						}
 						includeFD.Close()
 					} else {
 						_, err := w.WriteString(newLine + "\n")

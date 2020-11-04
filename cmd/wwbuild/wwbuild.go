@@ -8,6 +8,7 @@ import (
     "path"
     "strings"
     "sync"
+	"time"
 )
 
 const LocalStateDir = "/var/warewulf"
@@ -33,7 +34,6 @@ func vnfsBuild(vnfsPath string, wg *sync.WaitGroup) {
 			fmt.Printf("ERROR: %s\n", err)
 			os.Exit(1)
 		}
-		fmt.Printf("BUILD DONE:     %s\n", vnfsPath)
 
 	} else {
 		fmt.Printf("SKIPPING VNFS:  (bad path) %s\n", vnfsPath)
@@ -43,7 +43,7 @@ func vnfsBuild(vnfsPath string, wg *sync.WaitGroup) {
 func main() {
 
 	if len(os.Args) < 2 {
-		fmt.Printf("USAGE: %s [vnfs/kernel/overlay/all]\n", os.Args[0])
+		fmt.Printf("USAGE: %s [vnfs/kernel/overlay] (node regex)\n", os.Args[0])
 		return
 	}
 
@@ -52,15 +52,10 @@ func main() {
 		set := make(map[string]bool)
 		var wg sync.WaitGroup
 
-		if len(os.Args) < 3 {
-			fmt.Printf("USAGE: %s vnfs [node name pattern/ALL]\n", os.Args[0])
-			return
-		}
-
-		if os.Args[2] == "ALL" {
-			nodeList, _ = assets.FindAllNodes()
-		} else {
+		if len(os.Args) >= 3 {
 			nodeList, _ = assets.SearchByName(os.Args[2])
+		} else {
+			nodeList, _ = assets.FindAllNodes()
 		}
 
 		if len(nodeList) == 0 {
@@ -77,21 +72,18 @@ func main() {
 			wg.Add(1)
 			go vnfsBuild(entry, &wg)
 		}
+		time.Sleep(1000 * time.Millisecond)
+		fmt.Printf("Waiting for build(s) to complete...\n")
 		wg.Wait()
 
 	} else if os.Args[1] == "kernel" {
 		var nodeList []assets.NodeInfo
 		set := make(map[string]bool)
 
-		if len(os.Args) < 3 {
-			fmt.Printf("USAGE: %s vnfs [node name pattern/ALL]\n", os.Args[0])
-			return
-		}
-
-		if os.Args[2] == "ALL" {
-			nodeList, _ = assets.FindAllNodes()
-		} else {
+		if len(os.Args) >= 3 {
 			nodeList, _ = assets.SearchByName(os.Args[2])
+		} else {
+			nodeList, _ = assets.FindAllNodes()
 		}
 
 		if len(nodeList) == 0 {
@@ -140,15 +132,10 @@ func main() {
 		var nodeList []assets.NodeInfo
 		var wg sync.WaitGroup
 
-		if len(os.Args) < 3 {
-			fmt.Printf("USAGE: %s vnfs [node name pattern/ALL]\n", os.Args[0])
-			return
-		}
-
-		if os.Args[2] == "ALL" {
-			nodeList, _ = assets.FindAllNodes()
-		} else {
+		if len(os.Args) >= 3 {
 			nodeList, _ = assets.SearchByName(os.Args[2])
+		} else {
+			nodeList, _ = assets.FindAllNodes()
 		}
 
 		if len(nodeList) == 0 {
@@ -157,7 +144,6 @@ func main() {
 		}
 
 		for _, node := range nodeList {
-
 			replace := make(map[string]string)
 			replace["HOSTNAME"] = node.HostName
 			replace["FQDN"] = node.Fqdn
@@ -174,8 +160,8 @@ func main() {
 			}
 
 			wg.Add(2)
-			go overlayRuntime(node, replace, &wg)
-            go overlaySystem(node, replace, &wg)
+			overlayRuntime(node, replace, &wg)
+            overlaySystem(node, replace, &wg)
 		}
         wg.Wait()
 

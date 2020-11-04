@@ -1,8 +1,12 @@
 package assets
 
 import (
+	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	//	"os"
+
+	//	"os"
 	"regexp"
 
 	"github.com/hpcng/warewulf/internal/pkg/errors"
@@ -11,7 +15,7 @@ import (
 const ConfigFile = "/etc/warewulf/nodes.conf"
 
 func init() {
-	//TODO: Check to make sure nodes.yaml is found
+	//TODO: Check to make sure nodes.conf is found
 
 }
 
@@ -64,12 +68,13 @@ func FindAllNodes() ([]NodeInfo, error) {
 	var c nodeYaml
 	var ret []NodeInfo
 
-	fd, err := ioutil.ReadFile(ConfigFile)
+	data, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
+		fmt.Printf("error reading node configuration file\n")
 		return nil, err
 	}
 
-	err = yaml.Unmarshal(fd, &c)
+	err = yaml.Unmarshal(data, &c)
 	if err != nil {
 		return nil, err
 	}
