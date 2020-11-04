@@ -1,151 +1,183 @@
-
 package main
 
 import (
     "fmt"
     "github.com/hpcng/warewulf/internal/pkg/assets"
-    "github.com/hpcng/warewulf/internal/pkg/util"
-    "log"
     "os"
     "os/exec"
     "path"
     "strings"
-    "time"
+    "sync"
 )
-
 
 const LocalStateDir = "/var/warewulf"
 
-func vnfsBuild(vnfsPath string) {
-    fmt.Printf("BUILDING VNFS:  %s\n", vnfsPath)
-    if _, err := os.Stat(vnfsPath); err == nil {
-        // TODO: Build VNFS to temporary file and move to real location when complete atomically
-        // TODO: Check time stamps of sourcedir and build file to see if we need to rebuild or skip
-        cmd := fmt.Sprintf("cd %s; find . | cpio --quiet -o -H newc | gzip -c > \"%s/provision/bases/%s.img.gz\"", vnfsPath, LocalStateDir, path.Base(vnfsPath))
-        err := exec.Command("/bin/sh", "-c", cmd).Run()
-        if err != nil {
-            fmt.Printf("%s", err)
-        }
-    } else {
-        fmt.Printf("SKIPPING VNFS:  (bad path) %s\n", vnfsPath)
-    }
+func vnfsBuild(vnfsPath string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	if _, err := os.Stat(vnfsPath); err == nil {
+		// TODO: Build VNFS to temporary file and move to real location when complete atomically
+		// TODO: Check time stamps of sourcedir and build file to see if we need to rebuild or skip
+		vnfsDestination := fmt.Sprintf("%s/provision/vnfs/%s.img.gz", LocalStateDir, path.Base(vnfsPath))
+
+		err := os.MkdirAll(path.Dir(vnfsDestination), 0755)
+		if err != nil {
+			fmt.Printf("ERROR: %s\n", err)
+			return
+		}
+
+		fmt.Printf("BUILDING VNFS:  %s\n", vnfsPath)
+
+		cmd := fmt.Sprintf("cd %s; find . | cpio --quiet -o -H newc | gzip -c > \"%s\"", vnfsPath, vnfsDestination)
+		err = exec.Command("/bin/sh", "-c", cmd).Run()
+		if err != nil {
+			fmt.Printf("ERROR: %s\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("BUILD DONE:     %s\n", vnfsPath)
+
+	} else {
+		fmt.Printf("SKIPPING VNFS:  (bad path) %s\n", vnfsPath)
+	}
 }
 
+func main() {
 
+	if len(os.Args) < 2 {
+		fmt.Printf("USAGE: %s [vnfs/kernel/overlay/all]\n", os.Args[0])
+		return
+	}
 
-func main(){
+	if os.Args[1] == "vnfs" {
+		var nodeList []assets.NodeInfo
+		set := make(map[string]bool)
+		var wg sync.WaitGroup
 
-    if len(os.Args) < 2 {
-        fmt.Printf("USAGE: %s [vnfs/kernel/overlays/all]\n", os.Args[0])
-        return
-    }
+		if len(os.Args) < 3 {
+			fmt.Printf("USAGE: %s vnfs [node name pattern/ALL]\n", os.Args[0])
+			return
+		}
 
+		if os.Args[2] == "ALL" {
+			nodeList, _ = assets.FindAllNodes()
+		} else {
+			nodeList, _ = assets.SearchByName(os.Args[2])
+		}
 
-    if os.Args[1] == "vnfs" {
-        if len(os.Args) >= 3 {
-            vnfsBuild(os.Args[3])
-        } else {
-            nodeList, err := assets.FindAllVnfs()
-            if err != nil {
-                log.Panicf("Could not locate VNFS images: %s\n", err)
-                os.Exit(1)
-            }
+		if len(nodeList) == 0 {
+			fmt.Printf("ERROR: No nodes found\n")
+			return
+		}
 
-            for _, vnfs := range nodeList {
-                vnfsBuild(vnfs)
-            }
-        }
-    } else if os.Args[1] == "kernel" {
-        nodeList, err := assets.FindAllKernels()
-        if err != nil {
-            log.Panicf("Could not locate Kernel Versions: %s\n", err)
-            os.Exit(1)
-        }
+		for _, node := range nodeList {
+			if node.Vnfs != "" {
+				set[node.Vnfs] = true
+			}
+		}
+		for entry := range set {
+			wg.Add(1)
+			go vnfsBuild(entry, &wg)
+		}
+		wg.Wait()
 
-        for _, kernelVers := range nodeList {
-            kernelSource := fmt.Sprintf("/boot/vmlinuz-%s", kernelVers)
-            // TODO: Check time stamps of source and dests to see if we need to rebuild or skip
-            if _, err := os.Stat(kernelSource); err == nil {
-                kernelDestination := fmt.Sprintf("%s/provision/kernels/vmlinuz-%s", LocalStateDir, kernelVers)
-                fmt.Printf("SETUP KERNEL:   %s (%s)\n", kernelSource, kernelDestination)
-                err := exec.Command("cp", kernelSource, kernelDestination).Run()
-                if err != nil {
-                    fmt.Printf("%s", err)
-                }
+	} else if os.Args[1] == "kernel" {
+		var nodeList []assets.NodeInfo
+		set := make(map[string]bool)
 
-                kernelMods := fmt.Sprintf("/lib/modules/%s", kernelVers)
-                if _, err := os.Stat(kernelMods); err == nil {
-                    fmt.Printf("BUILDING MODS:  %s\n", kernelMods)
-                    cmd := fmt.Sprintf("find %s | cpio --quiet -o -H newc -F \"%s/provision/kernels/kmods-%s.img\"", kernelMods, LocalStateDir, kernelVers)
-                    err := exec.Command("/bin/sh", "-c", cmd).Run()
-                    if err != nil {
-                        fmt.Printf("OUTPUT: %s", err)
-                    }
+		if len(os.Args) < 3 {
+			fmt.Printf("USAGE: %s vnfs [node name pattern/ALL]\n", os.Args[0])
+			return
+		}
 
-                }
-            }
-        }
-    } else if os.Args[1] == "overlay" {
-        //TODO: Move this all to warewulfd and generate on demand when needed
-        nodeList, err := assets.FindAllNodes()
-        if err != nil {
-            log.Panicf("Could not identify nodes: %s\n", err)
-            os.Exit(1)
-        }
+		if os.Args[2] == "ALL" {
+			nodeList, _ = assets.FindAllNodes()
+		} else {
+			nodeList, _ = assets.SearchByName(os.Args[2])
+		}
 
-        for _, node := range nodeList {
+		if len(nodeList) == 0 {
+			fmt.Printf("ERROR: No nodes found\n")
+			return
+		}
 
-            overlayDir := fmt.Sprintf("/etc/warewulf/overlays/%s", node.Overlay)
+		for _, node := range nodeList {
+			if node.KernelVersion != "" {
+				set[node.KernelVersion] = true
+			}
+		}
 
-            //TODO: Move this all to the Asset package
-            replace := make(map[string]string)
-            replace["HOSTNAME"] = node.HostName
-            replace["FQDN"] = node.Fqdn
-            replace["VNFS"] = node.Vnfs
-            replace["KERNELVERSION"] = node.KernelVersion
-            replace["GROUPNAME"] = node.GroupName
-            replace["DOMAIN"] = node.DomainName
-            for key, dev := range node.NetDevs {
-                replace[fmt.Sprintf("%s:NAME", key)] = key
-                replace[fmt.Sprintf("%s:HWADDR", key)] = strings.ReplaceAll(dev.Hwaddr, "-", ":")
-                replace[fmt.Sprintf("%s:IPADDR", key)] = dev.Ipaddr
-                replace[fmt.Sprintf("%s:NETMASK", key)] = dev.Netmask
-                replace[fmt.Sprintf("%s:GATEWAY", key)] = dev.Gateway
-            }
+		for kernelVers := range set {
+			kernelSource := fmt.Sprintf("/boot/vmlinuz-%s", kernelVers)
+			// TODO: Check time stamps of source and dests to see if we need to rebuild or skip
+			if _, err := os.Stat(kernelSource); err == nil {
+				kernelDestination := fmt.Sprintf("%s/provision/kernel/vmlinuz-%s", LocalStateDir, kernelVers)
+				kmodsDestination := fmt.Sprintf("%s/provision/kernel/kmods-%s.img", LocalStateDir, kernelVers)
 
-            destFile := fmt.Sprintf("%s/provision/overlays/%s.img", LocalStateDir, node.Fqdn)
+				err := os.MkdirAll(path.Dir(kernelDestination), 0755)
+				if err != nil {
+					fmt.Printf("ERROR: %s\n", err)
+					return
+				}
 
-            destModTime := time.Time{}
-            destMod, err := os.Stat(destFile)
-            if err == nil {
-                destModTime = destMod.ModTime()
-            }
+				fmt.Printf("SETUP KERNEL:   %s (%s)\n", kernelSource, kernelDestination)
+				err = exec.Command("cp", kernelSource, kernelDestination).Run()
+				if err != nil {
+					fmt.Printf("%s", err)
+				}
 
-            configMod, err := os.Stat("/etc/warewulf/nodes.yaml")
-            if err != nil {
-                fmt.Printf("ERROR: could not find node file: /etc/warewulf/nodes.yaml")
-                os.Exit(1)
-            }
-            configModTime := configMod.ModTime()
+				kernelMods := fmt.Sprintf("./lib/modules/%s", kernelVers)
+				if _, err := os.Stat(kernelMods); err == nil {
+					fmt.Printf("BUILDING MODS:  %s\n", kernelMods)
+					cmd := fmt.Sprintf("cd /; find %s | cpio --quiet -o -H newc -F \"%s\"", kernelMods, kmodsDestination)
+					err := exec.Command("/bin/sh", "-c", cmd).Run()
+					if err != nil {
+						fmt.Printf("OUTPUT: %s", err)
+					}
 
-            sourceModTime, _ := util.DirModTime(overlayDir)
+				}
+			}
+		}
+	} else if os.Args[1] == "overlay" {
+		var nodeList []assets.NodeInfo
+		var wg sync.WaitGroup
 
-            if sourceModTime.After(destModTime) || configModTime.After(destModTime) {
-                fmt.Printf("BUILDING OVERLAY:  %s\n", node.Fqdn)
+		if len(os.Args) < 3 {
+			fmt.Printf("USAGE: %s vnfs [node name pattern/ALL]\n", os.Args[0])
+			return
+		}
 
-                overlayDest := "/tmp/.overlay-" + util.RandomString(16)
-                BuildOverlayDir(overlayDir, overlayDest, replace)
+		if os.Args[2] == "ALL" {
+			nodeList, _ = assets.FindAllNodes()
+		} else {
+			nodeList, _ = assets.SearchByName(os.Args[2])
+		}
 
-                cmd := fmt.Sprintf("cd %s; find . | cpio --quiet -o -H newc -F \"%s\"", overlayDest, destFile)
-                err := exec.Command("/bin/sh", "-c", cmd).Run()
-                if err != nil {
-                    fmt.Printf("%s", err)
-                }
+		if len(nodeList) == 0 {
+			fmt.Printf("ERROR: No nodes found\n")
+			return
+		}
 
-                os.RemoveAll(overlayDest)
-            } else {
-                fmt.Printf("Skipping overlay (nothing changed): %s\n", node.Fqdn)
-            }
-        }
+		for _, node := range nodeList {
+
+			replace := make(map[string]string)
+			replace["HOSTNAME"] = node.HostName
+			replace["FQDN"] = node.Fqdn
+			replace["VNFS"] = node.Vnfs
+			replace["KERNELVERSION"] = node.KernelVersion
+			replace["GROUPNAME"] = node.GroupName
+			replace["DOMAIN"] = node.DomainName
+			for key, dev := range node.NetDevs {
+				replace[fmt.Sprintf("%s:NAME", key)] = key
+				replace[fmt.Sprintf("%s:HWADDR", key)] = strings.ReplaceAll(dev.Hwaddr, "-", ":")
+				replace[fmt.Sprintf("%s:IPADDR", key)] = dev.Ipaddr
+				replace[fmt.Sprintf("%s:NETMASK", key)] = dev.Netmask
+				replace[fmt.Sprintf("%s:GATEWAY", key)] = dev.Gateway
+			}
+
+			wg.Add(2)
+			overlayRuntime(node, replace, &wg)
+            overlaySystem(node, replace, &wg)
+		}
+        wg.Wait()
+
     }
 }
