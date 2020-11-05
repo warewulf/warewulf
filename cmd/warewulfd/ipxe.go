@@ -1,10 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/hpcng/warewulf/internal/pkg/assets"
+	"github.com/hpcng/warewulf/internal/pkg/config"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
 )
 
@@ -25,17 +29,35 @@ func ipxe(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if node.HostName != "" {
-		log.Printf("IPXE:  %15s: hwaddr=%s\n", node.Fqdn, hwaddr)
+		replace := make(map[string]string)
 
-		fmt.Fprintf(w, "#!ipxe\n")
+		conf, err := config.New()
+		if err != nil {
+			log.Printf("Could not get config: %s\n", err)
+			return
+		}
 
-		fmt.Fprintf(w, "echo Now booting Warewulf - v4 Proof of Concept\n")
-		fmt.Fprintf(w, "set base http://192.168.1.1:9873/\n")
-		fmt.Fprintf(w, "kernel ${base}/kernel/%s crashkernel=no quiet\n", url[2])
-		fmt.Fprintf(w, "initrd ${base}/vnfs/%s\n", url[2])
-		fmt.Fprintf(w, "initrd ${base}/kmods/%s\n", url[2])
-		fmt.Fprintf(w, "initrd ${base}/overlay-system/%s\n", url[2])
-		fmt.Fprintf(w, "boot\n")
+		ipxeTemplate := fmt.Sprintf("/etc/warewulf/ipxe/%s.ipxe", node.Ipxe)
+		sourceFD, err := os.Open(ipxeTemplate)
+		if err != nil {
+			log.Printf("ERROR: Could not open iPXE Template: %s\n", err)
+			w.WriteHeader(404)
+			return
+		}
+
+		scanner := bufio.NewScanner(sourceFD)
+
+		for scanner.Scan() {
+			newLine := scanner.Text()
+
+			newLine = strings.ReplaceAll(newLine, "@HWADDR@", url[2])
+			newLine = strings.ReplaceAll(newLine, "@IPADDR@", conf.Ipaddr)
+			newLine = strings.ReplaceAll(newLine, "@HOSTNAME@", node.HostName)
+			newLine = strings.ReplaceAll(newLine, "@PORT@", strconv.Itoa(conf.Port))
+
+			fmt.Fprintln(w, newLine)
+		}
+
 	} else {
 		log.Printf("ERROR: iPXE request from unknown Node (hwaddr=%s)\n", url[2])
 	}

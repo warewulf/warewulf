@@ -99,6 +99,9 @@ func BuildOverlayDir(sourceDir string, destDir string, replace map[string]string
 							return err
 						}
 						includeFD.Close()
+					} else if strings.HasPrefix(newLine, "#WW") {
+						// Anything else is a comment or to be ignored
+						continue
 					} else {
 						_, err := w.WriteString(newLine + "\n")
 						if err != nil {
