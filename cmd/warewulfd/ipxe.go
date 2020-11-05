@@ -29,7 +29,7 @@ func ipxe(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if node.HostName != "" {
-		replace := make(map[string]string)
+		log.Printf("IPXE:  %15s: %s\n", node.Fqdn, req.URL.Path)
 
 		conf, err := config.New()
 		if err != nil {
@@ -53,10 +53,16 @@ func ipxe(w http.ResponseWriter, req *http.Request) {
 			newLine = strings.ReplaceAll(newLine, "@HWADDR@", url[2])
 			newLine = strings.ReplaceAll(newLine, "@IPADDR@", conf.Ipaddr)
 			newLine = strings.ReplaceAll(newLine, "@HOSTNAME@", node.HostName)
+			newLine = strings.ReplaceAll(newLine, "@FQDN@", node.Fqdn)
 			newLine = strings.ReplaceAll(newLine, "@PORT@", strconv.Itoa(conf.Port))
+			// TODO: Add KernelArgs to nodes.conf
+			//newLine = strings.ReplaceAll(newLine, "@KERNELARGS@", node.KernelArgs)
+
 
 			fmt.Fprintln(w, newLine)
 		}
+		log.Printf("SEND:  %15s: %s\n", node.Fqdn, ipxeTemplate)
+
 
 	} else {
 		log.Printf("ERROR: iPXE request from unknown Node (hwaddr=%s)\n", url[2])
