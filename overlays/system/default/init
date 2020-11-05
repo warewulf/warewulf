@@ -6,7 +6,7 @@
 # Edit at your own risk! DANGER DANGER.
 
 
-clear
+
 echo "Warewulf v4 is now booting"
 
 # Considering what to do if we are operating on a read only root
