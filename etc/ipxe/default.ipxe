@@ -1,0 +1,13 @@
+#!ipxe
+
+echo
+echo Now booting Warewulf - v4 Proof of Concept
+echo
+
+set base http://@IPADDR@:@PORT@/
+
+kernel ${base}/kernel/@HWADDR@ crashkernel=no quiet
+initrd ${base}/vnfs/@HWADDR@
+initrd ${base}/kmods/@HWADDR@
+initrd ${base}/overlay-system/@HWADDR@
+boot

@@ -26,6 +26,7 @@ type nodeYaml struct {
 type nodeGroup struct {
 	Comment        string
 	Vnfs           string
+	Ipxe		   string   `yaml:"ipxe template"`
 	SystemOverlay  string 	`yaml:"system overlay""`
 	RuntimeOverlay string 	`yaml:"runtime overlay""`
 	DomainSuffix   string 	`yaml:"domain suffix"`
@@ -36,6 +37,7 @@ type nodeGroup struct {
 type nodeEntry struct {
 	Hostname       string
 	Vnfs           string
+	Ipxe		   string   `yaml:"ipxe template"`
 	SystemOverlay  string 	`yaml:"system overlay"`
 	RuntimeOverlay string 	`yaml:"runtime overlay"`
 	DomainSuffix   string 	`yaml:"domain suffix"`
@@ -58,6 +60,7 @@ type NodeInfo struct {
 	DomainName     string
 	Fqdn           string
 	Vnfs           string
+	Ipxe		   string
 	SystemOverlay  string
 	RuntimeOverlay string
 	KernelVersion  string
@@ -91,6 +94,7 @@ func FindAllNodes() ([]NodeInfo, error) {
 			n.RuntimeOverlay = group.RuntimeOverlay
 			n.KernelVersion = group.KernelVersion
 			n.DomainName = group.DomainSuffix
+			n.Ipxe = group.Ipxe
 			n.NetDevs = node.NetDevs
 
 
@@ -109,6 +113,9 @@ func FindAllNodes() ([]NodeInfo, error) {
 			if node.DomainSuffix != "" {
 				n.DomainName = node.DomainSuffix
 			}
+			if node.Ipxe != "" {
+				n.Ipxe = node.Ipxe
+			}
 
 
 			if n.RuntimeOverlay == "" {
@@ -116,6 +123,9 @@ func FindAllNodes() ([]NodeInfo, error) {
 			}
 			if n.SystemOverlay == "" {
 				n.SystemOverlay = "default"
+			}
+			if n.Ipxe == "" {
+				n.Ipxe = "default"
 			}
 
 			if n.DomainName != "" {

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/hpcng/warewulf/internal/pkg/assets"
+	"github.com/hpcng/warewulf/internal/pkg/config"
 	"log"
 	"net/http"
 	"strconv"
@@ -10,7 +11,6 @@ import (
 )
 
 func runtimeOverlay(w http.ResponseWriter, req *http.Request) {
-
 	remote := strings.Split(req.RemoteAddr, ":")
 	port, err := strconv.Atoi(remote[1])
 	if err != nil {
@@ -19,10 +19,18 @@ func runtimeOverlay(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if port >= 1024 {
-		log.Panicf("DENIED: Connection coming from non-privledged port: %s\n", req.RemoteAddr)
-		w.WriteHeader(401)
+	config, err := config.New()
+	if err != nil {
+		fmt.Printf("ERROR: Could not load configuration file: %s\n", err)
 		return
+	}
+
+	if config.InsecureRuntime == false {
+		if port >= 1024 {
+			log.Panicf("DENIED: Connection coming from non-privledged port: %s\n", req.RemoteAddr)
+			w.WriteHeader(401)
+			return
+		}
 	}
 
 	node, err := assets.FindByIpaddr(remote[0])
