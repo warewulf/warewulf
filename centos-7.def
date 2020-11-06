@@ -6,7 +6,7 @@ Include: yum
 
 %post
 
-    sed -i 's/^root:\*:/root::/g' /etc/passwd
+    sed -i 's/^root:.:/root::/g' /etc/passwd
 
     yum install -y basesystem bash chkconfig coreutils e2fsprogs \
     ethtool filesystem findutils gawk grep initscripts iproute \
