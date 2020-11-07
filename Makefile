@@ -1,5 +1,7 @@
 .PHONY: all
 
+WW_BUILD_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
+
 all: warewulfd wwbuild wwclient
 
 files: all
@@ -27,7 +29,7 @@ warewulfd:
 	cd cmd/warewulfd; go build -o ../../warewulfd
 
 wwbuild:
-	cd cmd/wwbuild; go build -o ../../wwbuild
+	cd cmd/wwbuild; go build -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwbuild
 
 wwclient:
 	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-extldflags -static' -o ../../wwclient
