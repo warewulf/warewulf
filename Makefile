@@ -1,6 +1,44 @@
 .PHONY: all
 
+# auto installed tooling
+TOOLS_DIR := .tools
+TOOLS_BIN := $(TOOLS_DIR)/bin
+
+# tools
+GO_TOOLS_BIN := $(addprefix $(TOOLS_BIN)/, $(notdir $(GO_TOOLS)))
+GO_TOOLS_VENDOR := $(addprefix vendor/, $(GO_TOOLS))
+GOLANGCI_LINT := $(TOOLS_BIN)/golangci-lint
+GOLANGCI_LINT_VERSION := v1.31.0
+
+# built tags needed for wwbuild binary
 WW_BUILD_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
+
+# set the go tools into the tools bin.
+setup_tools: $(GO_TOOLS_BIN) $(GOLANGCI_LINT)
+
+# install go tools into TOOLS_BIN
+$(GO_TOOLS_BIN):
+	@GOBIN="$(PWD)/$(TOOLS_BIN)" go install -mod=vendor $(GO_TOOLS)
+
+# install golangci-lint into TOOLS_BIN
+$(GOLANGCI_LINT):
+	@curl -qq -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(TOOLS_BIN) $(GOLANGCI_LINT_VERSION)
+
+
+setup: vendor $(TOOLS_DIR) setup_tools
+
+# vendor
+vendor:
+	@go mod tidy -v
+	@go mod vendor
+
+$(TOOLS_DIR):
+	@mkdir -p $@
+
+# Lint
+lint:
+	@echo Running golangci-lint...
+	@$(GOLANGCI_LINT) run --build-tags "$(WW_BUILD_GO_BUILD_TAGS)" ./...
 
 all: warewulfd wwbuild wwclient
 
@@ -26,13 +64,13 @@ services: files
 	sudo systemctl restart dhcpd
 
 warewulfd:
-	cd cmd/warewulfd; go build -o ../../warewulfd
+	cd cmd/warewulfd; go build -mod vendor -o ../../warewulfd
 
 wwbuild:
-	cd cmd/wwbuild; go build -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwbuild
+	cd cmd/wwbuild; go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwbuild
 
 wwclient:
-	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-extldflags -static' -o ../../wwclient
+	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags '-extldflags -static' -o ../../wwclient
 
 clean:
 	rm -f warewulfd
