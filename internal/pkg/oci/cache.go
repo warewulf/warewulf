@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/containers/image/types"
+	"github.com/containers/image/v5/types"
 )
 
 const (
