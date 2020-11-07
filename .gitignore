@@ -1,4 +1,9 @@
+# project data
 .idea
+.tools
+vendor/
+
+# binaries
 warewulfd
 wwbuild
 wwclient
