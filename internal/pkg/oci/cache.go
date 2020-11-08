@@ -53,7 +53,7 @@ func (c *Cache) checkEntry(id string) (string, error) {
 
 func (c *Cache) createEntry(id string) (string, error) {
 	path := filepath.Join(c.rootfsDir(), id)
-	if err := os.MkdirAll(path, 700); err != nil {
+	if err := os.MkdirAll(path, 755); err != nil {
 		return "", err
 	}
 
@@ -71,7 +71,7 @@ func NewCache(opts ...CacheOpt) (*Cache, error) {
 		}
 	}
 
-	if err := os.MkdirAll(s.path, 0700); err != nil {
+	if err := os.MkdirAll(s.path, 0755); err != nil {
 		return nil, err
 	}
 
