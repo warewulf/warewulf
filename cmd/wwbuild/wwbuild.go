@@ -1,44 +1,17 @@
 package main
 
 import (
-    "fmt"
-    "github.com/hpcng/warewulf/internal/pkg/assets"
-    "os"
-    "os/exec"
-    "path"
-    "strings"
-    "sync"
+	"fmt"
+	"github.com/hpcng/warewulf/internal/pkg/assets"
+	"os"
+	"os/exec"
+	"path"
+	"strings"
+	"sync"
 	"time"
 )
 
 const LocalStateDir = "/var/warewulf"
-
-func vnfsBuild(vnfsPath string, wg *sync.WaitGroup) {
-	defer wg.Done()
-	if _, err := os.Stat(vnfsPath); err == nil {
-		// TODO: Build VNFS to temporary file and move to real location when complete atomically
-		// TODO: Check time stamps of sourcedir and build file to see if we need to rebuild or skip
-		vnfsDestination := fmt.Sprintf("%s/provision/vnfs/%s.img.gz", LocalStateDir, path.Base(vnfsPath))
-
-		err := os.MkdirAll(path.Dir(vnfsDestination), 0755)
-		if err != nil {
-			fmt.Printf("ERROR: %s\n", err)
-			return
-		}
-
-		fmt.Printf("BUILDING VNFS:  %s\n", vnfsPath)
-
-		cmd := fmt.Sprintf("cd %s; find . | cpio --quiet -o -H newc | gzip -c > \"%s\"", vnfsPath, vnfsDestination)
-		err = exec.Command("/bin/sh", "-c", cmd).Run()
-		if err != nil {
-			fmt.Printf("ERROR: %s\n", err)
-			os.Exit(1)
-		}
-
-	} else {
-		fmt.Printf("SKIPPING VNFS:  (bad path) %s\n", vnfsPath)
-	}
-}
 
 func main() {
 
@@ -68,10 +41,16 @@ func main() {
 				set[node.Vnfs] = true
 			}
 		}
+
 		for entry := range set {
 			wg.Add(1)
-			go vnfsBuild(entry, &wg)
+			if strings.HasPrefix(entry, "/") {
+				vnfsLocalBuild(entry, &wg)
+			} else {
+				vnfsOciBuild(entry, &wg)
+			}
 		}
+
 		time.Sleep(1000 * time.Millisecond)
 		fmt.Printf("Waiting for build(s) to complete...\n")
 		wg.Wait()
@@ -161,9 +140,9 @@ func main() {
 
 			wg.Add(2)
 			overlayRuntime(node, replace, &wg)
-            overlaySystem(node, replace, &wg)
+			overlaySystem(node, replace, &wg)
 		}
-        wg.Wait()
+		wg.Wait()
 
-    }
+	}
 }
