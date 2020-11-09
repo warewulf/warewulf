@@ -26,7 +26,7 @@ func vnfsOciBuild(OciPath string, wg *sync.WaitGroup) {
 		os.Exit(1)
 	}
 
-	ociDestination := fmt.Sprintf("%s/oci/vnfs/%s", LocalStateDir, path.Base(sourcePath))
+	ociDestination := fmt.Sprintf("%s/oci/vnfs/hash/%s", LocalStateDir, path.Base(sourcePath))
 
 	name, err := os.Readlink(vnfsDestination)
 	if err == nil {
@@ -46,6 +46,11 @@ func vnfsOciBuild(OciPath string, wg *sync.WaitGroup) {
 		fmt.Printf("ERROR: %s\n", err)
 		return
 	}
+	err = os.MkdirAll(LocalStateDir+"/oci/vnfs/name", 0755)
+	if err != nil {
+		fmt.Printf("ERROR: %s\n", err)
+		return
+	}
 
 	err = buildVnfs(sourcePath, ociDestination)
 	if err != nil {
@@ -58,6 +63,13 @@ func vnfsOciBuild(OciPath string, wg *sync.WaitGroup) {
 		fmt.Printf("ERROR: %s\n", err)
 		os.Exit(1)
 	}
+
+	err = os.Symlink(sourcePath, LocalStateDir+"/oci/vnfs/name/"+path.Base(OciPath))
+	if err != nil {
+		fmt.Printf("ERROR: %s\n", err)
+		os.Exit(1)
+	}
+
 	err = os.Rename(vnfsDestination+"-link", vnfsDestination)
 
 	log.Printf("Completed building VNFS: %s\n", path.Base(OciPath))
