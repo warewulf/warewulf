@@ -15,7 +15,7 @@ import (
 // TODO: https://github.com/danderson/netboot/blob/master/pixiecore/dhcp.go
 // TODO: https://github.com/pin/tftp
 
-const LocalStateDir = "/var/warewulf"
+//const LocalStateDir = "/var/warewulf"
 
 func getSanity(req *http.Request) (assets.NodeInfo, error) {
 	url := strings.Split(req.URL.Path, "/")
@@ -62,12 +62,12 @@ func sendFile(w http.ResponseWriter, filename string, sendto string) error {
 
 func main() {
 
-	http.HandleFunc("/ipxe/", ipxe)
-	http.HandleFunc("/kernel/", kernel)
-	http.HandleFunc("/kmods/", kmods)
-	http.HandleFunc("/vnfs/", vnfs)
-	http.HandleFunc("/overlay-system/", systemOverlay)
-	http.HandleFunc("/overlay-runtime", runtimeOverlay)
+	http.HandleFunc("/ipxe/", ipxeSend)
+	http.HandleFunc("/kernel/", kernelSend)
+	http.HandleFunc("/kmods/", kmodsSend)
+	http.HandleFunc("/vnfs/", vnfsSend)
+	http.HandleFunc("/overlay-system/", systemOverlaySend)
+	http.HandleFunc("/overlay-runtime", runtimeOverlaySend)
 
 	http.ListenAndServe(":9873", nil)
 }

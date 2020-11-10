@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/hpcng/warewulf/internal/pkg/config"
 	"log"
 	"net/http"
 )
 
-func kmods(w http.ResponseWriter, req *http.Request) {
+func kmodsSend(w http.ResponseWriter, req *http.Request) {
 
 	node, err := getSanity(req)
 	if err != nil {
@@ -15,7 +16,7 @@ func kmods(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	if node.KernelVersion != "" {
-		fileName := fmt.Sprintf("%s/provision/kernel/kmods-%s.img", LocalStateDir, node.KernelVersion)
+		fileName := fmt.Sprintf("%s/provision/kernel/kmods-%s.img", config.LocalStateDir, node.KernelVersion)
 
 		err := sendFile(w, fileName, node.Fqdn)
 		if err != nil {

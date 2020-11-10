@@ -1,2 +1,2 @@
-#WWINCLUDE @VNFS@/etc/group
+#WWINCLUDE @VNFSDIR@/etc/group
 #WWINCLUDE /etc/group

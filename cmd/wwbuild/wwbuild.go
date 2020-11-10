@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"github.com/hpcng/warewulf/internal/pkg/assets"
+	"github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/vnfs"
 	"os"
 	"os/exec"
 	"path"
@@ -10,8 +12,6 @@ import (
 	"sync"
 	"time"
 )
-
-const LocalStateDir = "/var/warewulf"
 
 func main() {
 
@@ -80,8 +80,8 @@ func main() {
 			kernelSource := fmt.Sprintf("/boot/vmlinuz-%s", kernelVers)
 			// TODO: Check time stamps of source and dests to see if we need to rebuild or skip
 			if _, err := os.Stat(kernelSource); err == nil {
-				kernelDestination := fmt.Sprintf("%s/provision/kernel/vmlinuz-%s", LocalStateDir, kernelVers)
-				kmodsDestination := fmt.Sprintf("%s/provision/kernel/kmods-%s.img", LocalStateDir, kernelVers)
+				kernelDestination := fmt.Sprintf("%s/provision/kernel/vmlinuz-%s", config.LocalStateDir, kernelVers)
+				kmodsDestination := fmt.Sprintf("%s/provision/kernel/kmods-%s.img", config.LocalStateDir, kernelVers)
 
 				err := os.MkdirAll(path.Dir(kernelDestination), 0755)
 				if err != nil {
@@ -123,10 +123,12 @@ func main() {
 		}
 
 		for _, node := range nodeList {
+			v := vnfs.New(node.Vnfs)
 			replace := make(map[string]string)
 			replace["HOSTNAME"] = node.HostName
 			replace["FQDN"] = node.Fqdn
 			replace["VNFS"] = node.Vnfs
+			replace["VNFSDIR"] = v.Root()
 			replace["KERNELVERSION"] = node.KernelVersion
 			replace["GROUPNAME"] = node.GroupName
 			replace["DOMAIN"] = node.DomainName

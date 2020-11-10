@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/hpcng/warewulf/internal/pkg/assets"
+	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"os"
 	"os/exec"
@@ -14,17 +15,17 @@ import (
 func overlaySystem(node assets.NodeInfo, replace map[string]string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	OverlayDir := fmt.Sprintf("%s/overlays/system/%s", LocalStateDir, node.SystemOverlay)
-	OverlayFile := fmt.Sprintf("%s/provision/overlays/system/%s.img", LocalStateDir, node.Fqdn)
+	OverlayDir := fmt.Sprintf("%s/overlays/system/%s", config.LocalStateDir, node.SystemOverlay)
+	OverlayFile := fmt.Sprintf("%s/provision/overlays/system/%s.img", config.LocalStateDir, node.Fqdn)
 
 	destModTime := time.Time{}
 	destMod, err := os.Stat(OverlayFile)
 	if err == nil {
 		destModTime = destMod.ModTime()
 	}
-	configMod, err := os.Stat("/etc/warewulf/nodes.conf")
+	configMod, err := os.Stat(config.SysConfDir + "nodes.conf")
 	if err != nil {
-		fmt.Printf("ERROR: could not find node file: /etc/warewulf/nodes.conf\n")
+		fmt.Printf("ERROR: could not find node file: nodes.conf\n", config.SysConfDir)
 		os.Exit(1)
 	}
 	configModTime := configMod.ModTime()

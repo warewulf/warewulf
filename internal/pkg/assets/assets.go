@@ -64,6 +64,7 @@ type NodeInfo struct {
 	DomainName     string
 	Fqdn           string
 	Vnfs           string
+	VnfsDir        string
 	Ipxe           string
 	SystemOverlay  string
 	RuntimeOverlay string
@@ -139,7 +140,9 @@ func FindAllNodes() ([]NodeInfo, error) {
 			if strings.HasPrefix(n.Vnfs, "docker://") {
 				//TODO: This is a kludge and shouldn't be done here. We need to go back
 				//		and do this from a "vnfs" interface or package
-				n.Vnfs = LocalStateDir + "/oci/vnfs/name/" + path.Base(n.Vnfs)
+				n.VnfsDir = LocalStateDir + "/oci/vnfs/name/" + path.Base(n.Vnfs)
+			} else {
+				n.VnfsDir = n.Vnfs
 			}
 
 			ret = append(ret, n)

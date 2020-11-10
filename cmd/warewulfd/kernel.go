@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/hpcng/warewulf/internal/pkg/config"
 	"log"
 	"net/http"
 )
 
-func kernel(w http.ResponseWriter, req *http.Request) {
+func kernelSend(w http.ResponseWriter, req *http.Request) {
 
 	node, err := getSanity(req)
 	if err != nil {
@@ -16,7 +17,7 @@ func kernel(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if node.KernelVersion != "" {
-		fileName := fmt.Sprintf("%s/provision/kernel/vmlinuz-%s", LocalStateDir, node.KernelVersion)
+		fileName := fmt.Sprintf("%s/provision/kernel/vmlinuz-%s", config.LocalStateDir, node.KernelVersion)
 
 		err := sendFile(w, fileName, node.Fqdn)
 		if err != nil {

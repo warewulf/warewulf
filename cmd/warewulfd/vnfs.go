@@ -1,13 +1,12 @@
 package main
 
 import (
-	"fmt"
+	"github.com/hpcng/warewulf/internal/pkg/vnfs"
 	"log"
 	"net/http"
-	"path"
 )
 
-func vnfs(w http.ResponseWriter, req *http.Request) {
+func vnfsSend(w http.ResponseWriter, req *http.Request) {
 
 	node, err := getSanity(req)
 	if err != nil {
@@ -17,13 +16,13 @@ func vnfs(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if node.Vnfs != "" {
-		fileName := fmt.Sprintf("%s/provision/vnfs/%s.img.gz", LocalStateDir, path.Base(node.Vnfs))
+		v := vnfs.New(node.Vnfs)
 
-		err := sendFile(w, fileName, node.Fqdn)
+		err := sendFile(w, v.Image(), node.Fqdn)
 		if err != nil {
 			log.Printf("ERROR: %s\n", err)
 		} else {
-			log.Printf("SEND:  %15s: %s\n", node.Fqdn, fileName)
+			log.Printf("SEND:  %15s: %s\n", node.Fqdn, v.Image())
 		}
 	} else {
 		w.WriteHeader(503)

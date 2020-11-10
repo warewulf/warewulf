@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-func ipxe(w http.ResponseWriter, req *http.Request) {
+func ipxeSend(w http.ResponseWriter, req *http.Request) {
 	url := strings.Split(req.URL.Path, "/")
 
 	if url[2] == "" {
@@ -58,11 +58,9 @@ func ipxe(w http.ResponseWriter, req *http.Request) {
 			// TODO: Add KernelArgs to nodes.conf
 			//newLine = strings.ReplaceAll(newLine, "@KERNELARGS@", node.KernelArgs)
 
-
 			fmt.Fprintln(w, newLine)
 		}
 		log.Printf("SEND:  %15s: %s\n", node.Fqdn, ipxeTemplate)
-
 
 	} else {
 		log.Printf("ERROR: iPXE request from unknown Node (hwaddr=%s)\n", url[2])
