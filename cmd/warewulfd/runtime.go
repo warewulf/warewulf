@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func runtimeOverlay(w http.ResponseWriter, req *http.Request) {
+func runtimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 	remote := strings.Split(req.RemoteAddr, ":")
 	port, err := strconv.Atoi(remote[1])
 	if err != nil {
@@ -49,7 +49,7 @@ func runtimeOverlay(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if node.RuntimeOverlay != "" {
-		fileName := fmt.Sprintf("%s/provision/overlays/runtime/%s.img", LocalStateDir, node.Fqdn)
+		fileName := fmt.Sprintf("%s/provision/overlays/runtime/%s.img", config.LocalStateDir, node.Fqdn)
 
 		err := sendFile(w, fileName, node.Fqdn)
 		if err != nil {

@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/hpcng/warewulf/internal/pkg/config"
 	"log"
 	"net/http"
 )
 
-func systemOverlay(w http.ResponseWriter, req *http.Request) {
+func systemOverlaySend(w http.ResponseWriter, req *http.Request) {
 
 	node, err := getSanity(req)
 	if err != nil {
@@ -16,7 +17,7 @@ func systemOverlay(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if node.SystemOverlay != "" {
-		fileName := fmt.Sprintf("%s/provision/overlays/system/%s.img", LocalStateDir, node.Fqdn)
+		fileName := fmt.Sprintf("%s/provision/overlays/system/%s.img", config.LocalStateDir, node.Fqdn)
 
 		err := sendFile(w, fileName, node.Fqdn)
 		if err != nil {
