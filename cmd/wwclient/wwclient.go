@@ -61,7 +61,7 @@ func main() {
 		for true {
 			var err error
 
-			getString := fmt.Sprintf("http://%s:%d/system-overlay-runtime", config.Ipaddr, config.Port)
+			getString := fmt.Sprintf("http://%s:%d/overlay-runtime", config.Ipaddr, config.Port)
 			resp, err = webclient.Get(getString)
 			if err == nil {
 				break

@@ -75,7 +75,7 @@ wwclient:
 
 clean:
 	rm -f warewulfd
-	rm -f wwbuild
+	rm -f wwclient
 	rm -f wwctl
 
 install: files services
