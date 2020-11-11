@@ -16,6 +16,15 @@ import (
 	"text/template"
 )
 
+func fileInclude(path string) string {
+	wwlog.Printf(wwlog.DEBUG, "Including file into template: %s\n", path)
+	content, err := ioutil.ReadFile(path)
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Template include: %s\n", err)
+	}
+	return strings.TrimSuffix(string(content), "\n")
+}
+
 func Build(nodeList []assets.NodeInfo, force bool) error {
 	wwlog.Printf(wwlog.INFO, "Building Runtime Overlays:\n")
 	wwlog.SetIndent(4)
@@ -78,7 +87,7 @@ func Build(nodeList []assets.NodeInfo, force bool) error {
 
 					destFile := strings.TrimSuffix(location, ".ww")
 
-					tmpl, err := template.ParseGlob(path.Join(OverlayDir, destFile) + ".ww*")
+					tmpl, err := template.New(path.Base(location)).Funcs(template.FuncMap{"Include": fileInclude}).ParseGlob(path.Join(OverlayDir, destFile + ".ww*"))
 					if err != nil {
 						wwlog.Printf(wwlog.ERROR, "%s\n", err)
 						return err

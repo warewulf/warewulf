@@ -2,9 +2,9 @@ package assets
 
 import (
 	"fmt"
+	"github.com/hpcng/warewulf/internal/pkg/vnfs"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"path"
 	"strings"
 
 	//	"os"
@@ -140,7 +140,8 @@ func FindAllNodes() ([]NodeInfo, error) {
 			if strings.HasPrefix(n.Vnfs, "docker://") {
 				//TODO: This is a kludge and shouldn't be done here. We need to go back
 				//		and do this from a "vnfs" interface or package
-				n.VnfsDir = LocalStateDir + "/oci/vnfs/name/" + path.Base(n.Vnfs)
+				v := vnfs.New(n.Vnfs)
+				n.VnfsDir = v.Root()
 			} else {
 				n.VnfsDir = n.Vnfs
 			}
