@@ -53,7 +53,7 @@ func Build(nodeList []assets.NodeInfo, force bool) error {
 
 		if _, err := os.Stat(kernelDrivers); err == nil {
 			if util.PathIsNewer(kernelDrivers, driversDestination) && force == false {
-				wwlog.Printf(wwlog.INFO, "%-35s: Skipping, kernel Drivers are current\n", "kmods-"+kernelVersion+".img")
+				wwlog.Printf(wwlog.INFO, "%-35s: Skipping, drivers are current\n", "kmods-"+kernelVersion+".img")
 
 			} else {
 				cmd := fmt.Sprintf("cd /; find .%s | cpio --quiet -o -H newc -F \"%s\"", kernelDrivers, driversDestination)

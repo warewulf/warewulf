@@ -130,7 +130,7 @@ func Build(nodeList []assets.NodeInfo, force bool) error {
 				wwlog.Printf(wwlog.ERROR, "Could not generate runtime image overlay: %s\n", err)
 				continue
 			}
-			wwlog.Printf(wwlog.INFO, "%-3s: Done\n", node.Fqdn)
+			wwlog.Printf(wwlog.INFO, "%-35s: Done\n", node.Fqdn)
 
 			wwlog.Printf(wwlog.DEBUG, "Removing temporary directory: %s\n", tmpDir)
 			os.RemoveAll(tmpDir)
