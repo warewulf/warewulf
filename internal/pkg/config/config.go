@@ -7,10 +7,10 @@ import (
 	"io/ioutil"
 )
 
-// THIS IS NOT BEING USED YET AND IS THUS A WORK IN PROGRESS
-
-const SysConfDir = "/etc/warewulf/"
-const LocalStateDir = "/var/warewulf"
+const (
+	SysConfDir = "/etc/warewulf/"
+	LocalStateDir = "/var/warewulf"
+)
 
 type Config struct {
 	Port            int    `yaml:"warewulfd port", envconfig:"WAREWULFD_PORT"`

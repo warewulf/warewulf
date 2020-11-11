@@ -43,7 +43,7 @@ func (self *VnfsObject) NameClean() string {
 	}
 	uri := strings.Split(self.SourcePath, "://")
 
-	return strings.ReplaceAll(uri[1], "/", "_")
+	return strings.ReplaceAll(uri[0]+":"+uri[1], "/", "_")
 }
 
 func (self *VnfsObject) Source() string {
