@@ -1,6 +1,7 @@
 package util
 
 import (
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"io"
 	"math/rand"
 	"os"
@@ -31,6 +32,22 @@ func DirModTime(path string) (time.Time, error) {
 	return lastTime, nil
 }
 
+func PathIsNewer(source string, compare string) bool {
+	time1, err := DirModTime(source)
+	if err != nil {
+		wwlog.Printf(wwlog.DEBUG, "%s\n", err)
+		return false
+	}
+
+	time2, err := DirModTime(compare)
+	if err != nil {
+		wwlog.Printf(wwlog.DEBUG, "%s\n", err)
+		return false
+	}
+
+	return time1.Before(time2)
+}
+
 func RandomString(n int) string {
 	var letter = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
@@ -42,6 +59,7 @@ func RandomString(n int) string {
 }
 
 func CopyFile(source string, dest string) error {
+	wwlog.Printf(wwlog.DEBUG, "Copying '%s' to '%s'\n", source, dest)
 	sourceFD, err := os.Open(source)
 	if err != nil {
 		return err

@@ -66,8 +66,8 @@ func main() {
 	http.HandleFunc("/kernel/", kernelSend)
 	http.HandleFunc("/kmods/", kmodsSend)
 	http.HandleFunc("/vnfs/", vnfsSend)
-	http.HandleFunc("/overlay-system/", systemOverlaySend)
-	http.HandleFunc("/overlay-runtime", runtimeOverlaySend)
+	http.HandleFunc("/system-overlay-system/", systemOverlaySend)
+	http.HandleFunc("/system-overlay-runtime", runtimeOverlaySend)
 
 	http.ListenAndServe(":9873", nil)
 }

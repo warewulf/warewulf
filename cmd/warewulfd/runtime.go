@@ -59,7 +59,7 @@ func runtimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 		}
 	} else {
 		w.WriteHeader(503)
-		log.Printf("ERROR: No 'runtime overlay' set for node %s\n", node.Fqdn)
+		log.Printf("ERROR: No 'runtime system-overlay' set for node %s\n", node.Fqdn)
 	}
 
 	return

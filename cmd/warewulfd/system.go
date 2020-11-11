@@ -27,7 +27,7 @@ func systemOverlaySend(w http.ResponseWriter, req *http.Request) {
 		}
 	} else {
 		w.WriteHeader(503)
-		log.Printf("ERROR: No 'system overlay' set for node %s\n", node.Fqdn)
+		log.Printf("ERROR: No 'system system-overlay' set for node %s\n", node.Fqdn)
 	}
 
 	return
