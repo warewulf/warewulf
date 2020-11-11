@@ -19,7 +19,9 @@ func overlayRuntime(node assets.NodeInfo, replace map[string]string, wg *sync.Wa
 	/*
 		destModTime := time.Time{}
 		destMod, err := os.Stat(OverlayFile)
-		if err == nil {
+		if err == n
+
+	il {
 			destModTime = destMod.ModTime()
 		}
 		configMod, err := os.Stat("/etc/warewulf/nodes.conf")
@@ -43,7 +45,7 @@ func overlayRuntime(node assets.NodeInfo, replace map[string]string, wg *sync.Wa
 	//	if sourceModTime.After(destModTime) || configModTime.After(destModTime) {
 	fmt.Printf("RUNTIME: %s\n", node.Fqdn)
 
-	overlayDest := "/tmp/.overlay-" + util.RandomString(16)
+	overlayDest := "/tmp/.system-overlay-" + util.RandomString(16)
 	BuildOverlayDir(OverlayDir, overlayDest, replace)
 
 	cmd := fmt.Sprintf("cd %s && find . | cpio --quiet -o -H newc -F \"%s\"", overlayDest, OverlayFile)

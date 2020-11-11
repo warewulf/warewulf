@@ -1,5 +1,10 @@
 package main
 
+import "os"
+
+import "os"
+
+
 import (
 	"fmt"
 	"github.com/hpcng/warewulf/internal/pkg/assets"
@@ -16,7 +21,7 @@ import (
 func main() {
 
 	if len(os.Args) < 2 {
-		fmt.Printf("USAGE: %s [vnfs/kernel/overlay] (node regex)\n", os.Args[0])
+		fmt.Printf("USAGE: %s [vnfs/kernel/system-overlay] (node regex)\n", os.Args[0])
 		return
 	}
 
@@ -107,7 +112,7 @@ func main() {
 				}
 			}
 		}
-	} else if os.Args[1] == "overlay" {
+	} else if os.Args[1] == "system-overlay" {
 		var nodeList []assets.NodeInfo
 		var wg sync.WaitGroup
 

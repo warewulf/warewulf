@@ -31,8 +31,8 @@ type nodeGroup struct {
 	Comment        string
 	Vnfs           string
 	Ipxe           string `yaml:"ipxe template"`
-	SystemOverlay  string `yaml:"system overlay""`
-	RuntimeOverlay string `yaml:"runtime overlay""`
+	SystemOverlay  string `yaml:"system system-overlay""`
+	RuntimeOverlay string `yaml:"runtime system-overlay""`
 	DomainSuffix   string `yaml:"domain suffix"`
 	KernelVersion  string `yaml:"kernel version"`
 	Nodes          map[string]nodeEntry
@@ -42,8 +42,8 @@ type nodeEntry struct {
 	Hostname       string
 	Vnfs           string
 	Ipxe           string `yaml:"ipxe template"`
-	SystemOverlay  string `yaml:"system overlay"`
-	RuntimeOverlay string `yaml:"runtime overlay"`
+	SystemOverlay  string `yaml:"system system-overlay"`
+	RuntimeOverlay string `yaml:"runtime system-overlay"`
 	DomainSuffix   string `yaml:"domain suffix"`
 	KernelVersion  string `yaml:"kernel version"`
 	IpmiIpaddr     string `yaml:"ipmi ipaddr"`

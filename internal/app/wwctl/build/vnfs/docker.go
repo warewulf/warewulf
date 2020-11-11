@@ -1,4 +1,4 @@
-package main
+package vnfs
 
 import (
 	"context"
@@ -6,10 +6,9 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/oci"
 	"github.com/hpcng/warewulf/internal/pkg/vnfs"
-	"log"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"os"
 	"path"
-	"sync"
 )
 
 const (
@@ -17,21 +16,17 @@ const (
 	VnfsHashDir = config.LocalStateDir + "/oci/vnfs/hash/"
 )
 
-func vnfsOciBuild(OciPath string, wg *sync.WaitGroup) {
-	v := vnfs.New(OciPath)
-
-	//	vnfsDestination := fmt.Sprintf("%s/provision/vnfs/%s.img.gz", LocalStateDir, path.Base(OciPath))
-	defer wg.Done()
-
-	log.Printf("Building OCI Container: %s\n", OciPath)
+func BuildDocker(v vnfs.VnfsObject) {
+	wwlog.Printf(wwlog.VERBOSE, "Building OCI Container: %s\n", v.Source())
 
 	c, err := oci.NewCache(oci.OptSetCachePath(OciCacheDir))
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err)
 		os.Exit(1)
 	}
-	log.Printf("Downloading OCI container layers\n")
-	sourcePath, err := c.Pull(context.Background(), OciPath, nil)
+
+	wwlog.Printf(wwlog.VERBOSE, "Downloading OCI container layers\n")
+	sourcePath, err := c.Pull(context.Background(), v.Source(), nil)
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err)
 		os.Exit(1)
@@ -42,7 +37,7 @@ func vnfsOciBuild(OciPath string, wg *sync.WaitGroup) {
 	name, err := os.Readlink(v.Image())
 	if err == nil {
 		if name == hashDestination {
-			log.Printf("Container already built, no update available\n")
+			wwlog.Printf(wwlog.INFO, "%-35s: Skipping, VNFS is current\n", v.Name())
 			return
 		}
 	}
@@ -63,7 +58,7 @@ func vnfsOciBuild(OciPath string, wg *sync.WaitGroup) {
 		return
 	}
 
-	log.Printf("Building bootable VNFS image\n")
+	wwlog.Printf(wwlog.VERBOSE, "Building bootable VNFS image\n")
 
 	err = buildVnfs(sourcePath, hashDestination)
 	if err != nil {
@@ -71,23 +66,24 @@ func vnfsOciBuild(OciPath string, wg *sync.WaitGroup) {
 		os.Exit(1)
 	}
 
-	log.Printf("Finalizing Build\n")
+	wwlog.Printf(wwlog.VERBOSE, "Finalizing Build\n")
 
 	_ = os.Remove(v.Image() + "-link")
 	err = os.Symlink(hashDestination, v.Image()+"-link")
 	if err != nil {
-		fmt.Printf("ERROR: %s\n", err)
+		wwlog.Printf(wwlog.ERROR, "%s\n", err)
 		os.Exit(1)
 	}
 	err = os.Rename(v.Image()+"-link", v.Image())
 
 	err = buildLinks(v, sourcePath)
 	if err != nil {
-		fmt.Printf("ERROR: %s\n", err)
+		wwlog.Printf(wwlog.ERROR, "%s\n", err)
 		os.Exit(1)
 	}
 
-	log.Printf("Completed building VNFS: %s\n", path.Base(OciPath))
+	wwlog.Printf(wwlog.INFO, "%-35s: Done\n", v.Name())
 
 	return
 }
+

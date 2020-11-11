@@ -6,7 +6,6 @@ import (
 
 
 func main() {
-
 	root := wwctl.GetRootCommand()
 
 	root.Execute()

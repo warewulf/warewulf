@@ -9,15 +9,13 @@ import (
 var (
 	rootCmd = &cobra.Command{
 		Use:                "wwctl",
-		Short:              "Warewulf CTL",
-		Long:               "Fuzzball CLI is an application for interacting with a Fuzzball Service.",
+		Short:              "Warewulf Control",
+		Long:               "Control interface to the Cluster Warewulf Provisioning System.",
 		PersistentPreRunE:  rootPersistentPreRunE,
 	}
 	verboseArg bool
 	debugArg bool
 )
-
-
 
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verboseArg, "verbose", "v", false, "Run with increased verbosity.")

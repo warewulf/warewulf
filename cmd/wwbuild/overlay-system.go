@@ -45,7 +45,7 @@ func overlaySystem(node assets.NodeInfo, replace map[string]string, wg *sync.Wai
 	if sourceModTime.After(destModTime) || configModTime.After(destModTime) {
 		fmt.Printf("SYSTEM:  %s\n", node.Fqdn)
 
-		overlayDest := "/tmp/.overlay-" + util.RandomString(16)
+		overlayDest := "/tmp/.system-overlay-" + util.RandomString(16)
 		BuildOverlayDir(OverlayDir, overlayDest, replace)
 
 		cmd := fmt.Sprintf("cd %s && find . | cpio --quiet -o -H newc -F \"%s\"", overlayDest, OverlayFile)

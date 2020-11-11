@@ -7,45 +7,67 @@ import (
 )
 
 type VnfsObject struct {
-	Source    string
-	RootPath  string
-	ImagePath string
+	SourcePath  string
+	RootPath  	string
+	ImagePath 	string
 }
 
 func New(s string) VnfsObject {
 	var ret VnfsObject
 
-	ret.Source = s
+	ret.SourcePath = s
 
 	return ret
 }
 
+
 func (self *VnfsObject) Name() string {
-	if self.Source == "" {
+	if self.SourcePath == "" {
 		return ""
 	}
 
-	if strings.HasPrefix(self.Source, "/") {
-		return path.Base(self.Source)
+	if strings.HasPrefix(self.SourcePath, "/") {
+		return path.Base(self.SourcePath)
 	}
 
-	uri := strings.Split(self.Source, "://")
-
-	return strings.ReplaceAll(uri[0]+":"+uri[1], "/", "_")
+	return self.SourcePath
 }
 
-func (self *VnfsObject) Image() string {
-	if self.Source == "" {
+func (self *VnfsObject) NameClean() string {
+	if self.SourcePath == "" {
 		return ""
 	}
 
-	return config.LocalStateDir + "/provision/vnfs/" + self.Name() + ".img.gz"
+	if strings.HasPrefix(self.SourcePath, "/") {
+		return path.Base(self.SourcePath)
+	}
+
+	uri := strings.Split(self.SourcePath, "://")
+
+	return strings.ReplaceAll(uri[1], "/", "_")
+}
+
+func (self *VnfsObject) Source() string {
+	if self.SourcePath == "" {
+		return ""
+	}
+
+	return self.SourcePath
+}
+
+
+func (self *VnfsObject) Image() string {
+	if self.SourcePath == "" {
+		return ""
+	}
+
+	return config.LocalStateDir + "/provision/vnfs/" + self.NameClean() + ".img.gz"
 }
 
 func (self *VnfsObject) Root() string {
-	if self.Source == "" {
+	if self.SourcePath == "" {
 		return ""
 	}
 
-	return config.LocalStateDir + "/chroots/" + self.Name()
+	return config.LocalStateDir + "/chroots/" + self.NameClean()
 }

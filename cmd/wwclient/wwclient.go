@@ -19,7 +19,7 @@ func main() {
 		time.Sleep(5000 * time.Millisecond)
 	} else {
 		fmt.Printf("Called via: %s\n", os.Args[0])
-		fmt.Printf("Runtime overlay is being put in '/warewulf/wwclient-test' rather than '/'\n")
+		fmt.Printf("Runtime system-overlay is being put in '/warewulf/wwclient-test' rather than '/'\n")
 		os.MkdirAll("/warewulf/wwclient-test", 0755)
 		os.Chdir("/warewulf/wwclient-test")
 	}
@@ -61,7 +61,7 @@ func main() {
 		for true {
 			var err error
 
-			getString := fmt.Sprintf("http://%s:%d/overlay-runtime", config.Ipaddr, config.Port)
+			getString := fmt.Sprintf("http://%s:%d/system-overlay-runtime", config.Ipaddr, config.Port)
 			resp, err = webclient.Get(getString)
 			if err == nil {
 				break
@@ -84,7 +84,7 @@ func main() {
 
 
 		if resp.StatusCode != 200 {
-			log.Printf("Not updating runtime overlay, got status code: %d\n", resp.StatusCode)
+			log.Printf("Not updating runtime system-overlay, got status code: %d\n", resp.StatusCode)
 			time.Sleep(60000 * time.Millisecond)
 			continue
 		}
