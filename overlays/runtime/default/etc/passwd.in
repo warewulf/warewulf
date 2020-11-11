@@ -1,3 +1,0 @@
-root::0:0:root:/root:/bin/bash
-#WWINCLUDE @VNFSDIR@/etc/passwd
-#WWINCLUDE /etc/passwd

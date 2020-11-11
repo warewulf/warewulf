@@ -1,0 +1,2 @@
+{{Include (printf "%s%s" .VnfsDir "/etc/group")}}
+{{Include "/etc/passwd"}}

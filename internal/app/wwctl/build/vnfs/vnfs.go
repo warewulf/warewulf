@@ -12,7 +12,7 @@ var buildForce bool
 func Build(nodeList []assets.NodeInfo, force bool) (error) {
 	set := make(map[string]int)
 
-	wwlog.Printf(wwlog.INFO, "Importing VNFS Images:\n")
+	wwlog.Printf(wwlog.INFO, "Building and Importing VNFS Images:\n")
 	wwlog.SetIndent(4)
 
 	buildForce = force

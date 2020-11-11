@@ -41,7 +41,6 @@ func (self *VnfsObject) NameClean() string {
 	if strings.HasPrefix(self.SourcePath, "/") {
 		return path.Base(self.SourcePath)
 	}
-
 	uri := strings.Split(self.SourcePath, "://")
 
 	return strings.ReplaceAll(uri[1], "/", "_")
