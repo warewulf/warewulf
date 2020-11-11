@@ -1,21 +1,17 @@
 package main
 
-import "os"
-
-import "os"
-
-
 import (
 	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/assets"
-	"github.com/hpcng/warewulf/internal/pkg/config"
-	"github.com/hpcng/warewulf/internal/pkg/vnfs"
 	"os"
 	"os/exec"
 	"path"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/hpcng/warewulf/internal/pkg/assets"
+	"github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/vnfs"
 )
 
 func main() {
