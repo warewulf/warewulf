@@ -2,14 +2,14 @@
 
 echo
 echo ================================================================================
-echo Warewulf v4 now booting: @FQDN@
+echo Warewulf v4 now booting: {{.Fqdn}}
 echo
 echo
 
-set base http://@IPADDR@:@PORT@/
+set base http://{{.Ipaddr}}:{{.Port}}/
 
-kernel ${base}/kernel/@HWADDR@ crashkernel=no quiet     || reboot
-initrd ${base}/vnfs/@HWADDR@                            || reboot
-initrd ${base}/kmods/@HWADDR@                           || reboot
-initrd ${base}/overlay-system/@HWADDR@                  || reboot
-boot                                                    || reboot
+kernel ${base}/kernel/{{.Hwaddr}} {{.Kernelargs}}          || reboot
+initrd ${base}/vnfs/{{.Hwaddr}}                            || reboot
+initrd ${base}/kmods/{{.Hwaddr}}                           || reboot
+initrd ${base}/overlay-system/{{.Hwaddr}}                  || reboot
+boot                                                       || reboot
