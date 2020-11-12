@@ -69,23 +69,23 @@ func (self *Config) RuntimeOverlaySource(overlayName string) (string) {
 }
 
 func (self *Config) KernelImage(kernelVersion string) (string) {
-	return fmt.Sprintf("%s/kernel/vmlinuz-%s", self.LocalStateDir, kernelVersion)
+	return fmt.Sprintf("%s/provision/kernel/vmlinuz-%s", self.LocalStateDir, kernelVersion)
 }
 
 func (self *Config) KmodsImage(kernelVersion string) (string) {
-	return fmt.Sprintf("%s/kernel/kmods-%s.img", self.LocalStateDir, kernelVersion)
+	return fmt.Sprintf("%s/provision/kernel/kmods-%s.img", self.LocalStateDir, kernelVersion)
 }
 
 func (self *Config) VnfsImage(vnfsNameClean string) (string) {
-	return fmt.Sprintf("%s/vnfs/%s.img.gz", self.LocalStateDir, vnfsNameClean)
+	return fmt.Sprintf("%s/provision/vnfs/%s.img.gz", self.LocalStateDir, vnfsNameClean)
 }
 
 func (self *Config) SystemOverlayImage(nodeName string) (string) {
-	return fmt.Sprintf("%s/overlay/system/%s.img", self.LocalStateDir, nodeName)
+	return fmt.Sprintf("%s/provision/overlay/system/%s.img", self.LocalStateDir, nodeName)
 }
 
 func (self *Config) RuntimeOverlayImage(nodeName string) (string) {
-	return fmt.Sprintf("%s/overlay/runtime/%s.img", self.LocalStateDir, nodeName)
+	return fmt.Sprintf("%s/provision/overlay/runtime/%s.img", self.LocalStateDir, nodeName)
 }
 
 func (self *Config) VnfsChroot(vnfsNameClean string) (string) {
