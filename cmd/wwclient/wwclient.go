@@ -24,11 +24,7 @@ func main() {
 		os.Chdir("/warewulf/wwclient-test")
 	}
 
-	config, err := config.New()
-	if err != nil {
-		fmt.Printf("ERROR: Could not load configuration file: %s\n", err)
-		return
-	}
+	config := config.New()
 
 	localTCPAddr := net.TCPAddr{}
 	if config.InsecureRuntime == false {
