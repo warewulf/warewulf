@@ -1,16 +1,27 @@
 package warewulfd_responses
 
 import (
-	"bufio"
 	"fmt"
 	"github.com/hpcng/warewulf/internal/pkg/assets"
 	"github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
+	"text/template"
 )
+
+type iPxeTemplate struct {
+	Hostname		string
+	Fqdn           	string
+	Vnfs           	string
+	Hwaddr		    string
+	Ipaddr			string
+	Port			string
+	Kernelargs		string
+}
+
 
 func IpxeSend(w http.ResponseWriter, req *http.Request) {
 	url := strings.Split(req.URL.Path, "/")
@@ -29,34 +40,35 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if node.HostName != "" {
-		log.Printf("IPXE:  %15s: %s\n", node.Fqdn, req.URL.Path)
-
 		conf := config.New()
 
+		log.Printf("IPXE:  %15s: %s\n", node.Fqdn, req.URL.Path)
+
+		// TODO: Fix template path to use config package
 		ipxeTemplate := fmt.Sprintf("/etc/warewulf/ipxe/%s.ipxe", node.Ipxe)
-		sourceFD, err := os.Open(ipxeTemplate)
+
+		tmpl, err := template.ParseFiles(ipxeTemplate)
 		if err != nil {
-			log.Printf("ERROR: Could not open iPXE Template: %s\n", err)
-			w.WriteHeader(404)
+			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			return
 		}
 
-		scanner := bufio.NewScanner(sourceFD)
+		var replace iPxeTemplate
 
-		for scanner.Scan() {
-			newLine := scanner.Text()
+		replace.Fqdn = node.Fqdn
+		replace.Ipaddr = conf.Ipaddr
+		replace.Port = strconv.Itoa(conf.Port)
+		replace.Hostname = node.HostName
+		replace.Hwaddr = url[2]
+		replace.Vnfs = node.Vnfs
+		replace.Kernelargs = node.KernelArgs
 
-			// TODO: Update this to use templates instead of replaces
-			newLine = strings.ReplaceAll(newLine, "@HWADDR@", url[2])
-			newLine = strings.ReplaceAll(newLine, "@IPADDR@", conf.Ipaddr)
-			newLine = strings.ReplaceAll(newLine, "@HOSTNAME@", node.HostName)
-			newLine = strings.ReplaceAll(newLine, "@FQDN@", node.Fqdn)
-			newLine = strings.ReplaceAll(newLine, "@PORT@", strconv.Itoa(conf.Port))
-			// TODO: Add KernelArgs to nodes.conf
-			//newLine = strings.ReplaceAll(newLine, "@KERNELARGS@", node.KernelArgs)
-
-			fmt.Fprintln(w, newLine)
+		err = tmpl.Execute(w, replace)
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "%s\n", err)
+			return
 		}
+
 		log.Printf("SEND:  %15s: %s\n", node.Fqdn, ipxeTemplate)
 
 	} else {

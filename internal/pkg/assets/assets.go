@@ -34,6 +34,7 @@ type nodeGroup struct {
 	RuntimeOverlay string `yaml:"runtime system-overlay""`
 	DomainSuffix   string `yaml:"domain suffix"`
 	KernelVersion  string `yaml:"kernel version"`
+	KernelArgs	   string `yaml:"kernel args"`
 	Nodes          map[string]nodeEntry
 }
 
@@ -45,6 +46,7 @@ type nodeEntry struct {
 	RuntimeOverlay string `yaml:"runtime system-overlay"`
 	DomainSuffix   string `yaml:"domain suffix"`
 	KernelVersion  string `yaml:"kernel version"`
+	KernelArgs	   string `yaml:"kernel args"`
 	IpmiIpaddr     string `yaml:"ipmi ipaddr"`
 	NetDevs        map[string]netDevs
 }
@@ -68,6 +70,7 @@ type NodeInfo struct {
 	SystemOverlay  string
 	RuntimeOverlay string
 	KernelVersion  string
+	KernelArgs	   string
 	NetDevs        map[string]netDevs
 }
 
@@ -99,6 +102,7 @@ func FindAllNodes() ([]NodeInfo, error) {
 			n.SystemOverlay = group.SystemOverlay
 			n.RuntimeOverlay = group.RuntimeOverlay
 			n.KernelVersion = group.KernelVersion
+			n.KernelArgs = group.KernelArgs
 			n.DomainName = group.DomainSuffix
 			n.Ipxe = group.Ipxe
 			n.NetDevs = node.NetDevs
@@ -120,6 +124,9 @@ func FindAllNodes() ([]NodeInfo, error) {
 			}
 			if node.Ipxe != "" {
 				n.Ipxe = node.Ipxe
+			}
+			if node.KernelArgs != "" {
+				n.KernelArgs = node.KernelArgs
 			}
 
 			if n.RuntimeOverlay == "" {
