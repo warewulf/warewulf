@@ -2,12 +2,8 @@ package assets
 
 import (
 	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/vnfs"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"strings"
-
 	//	"os"
 
 	//	"os"
@@ -138,6 +134,7 @@ func FindAllNodes() ([]NodeInfo, error) {
 				n.Fqdn = node.Hostname
 			}
 
+			/*
 			if b, _ := regexp.MatchString(`^[a-z\-]+://`, n.Vnfs); b == true {
 			//if strings.HasPrefix(n.Vnfs, "docker://") {
 				//TODO: This is a kludge and shouldn't be done here. We need to go back
@@ -149,6 +146,7 @@ func FindAllNodes() ([]NodeInfo, error) {
 			} else {
 				wwlog.Printf(wwlog.ERROR, "Configuration 'Vnfs' is invalid for node: %s\n", n.Fqdn)
 			}
+			*/
 
 			ret = append(ret, n)
 		}

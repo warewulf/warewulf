@@ -2,15 +2,13 @@ package config
 
 import (
 	"fmt"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/kelseyhightower/envconfig"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"os"
 )
 
-const (
-	SysConfDir = "/etc/warewulf/"
-	LocalStateDir = "/var/warewulf"
-)
 
 type Config struct {
 	Port            int    `yaml:"warewulfd port", envconfig:"WAREWULFD_PORT"`
@@ -21,34 +19,76 @@ type Config struct {
 	LocalStateDir   string `yaml:"local state dir"`
 }
 
-func New() (Config, error) {
-	var c Config
+var c Config
 
-	fd, err := ioutil.ReadFile(SysConfDir + "warewulf.conf")
+func init() {
+	fd, err := ioutil.ReadFile("/etc/warewulf/warewulf.conf")
 	if err != nil {
-		return c, err
+		wwlog.Printf(wwlog.ERROR, "Could not read config file: %s\n", err)
+		os.Exit(255)
 	}
 
 	err = yaml.Unmarshal(fd, &c)
 	if err != nil {
-		return c, err
+		wwlog.Printf(wwlog.ERROR, "Could not unmarshal config file: %s\n", err)
+		os.Exit(255)
 	}
 
 	err = envconfig.Process("", &c)
 	if err != nil {
-		return c, err
+		wwlog.Printf(wwlog.ERROR, "Could not obtain environment configuration: %s\n", err)
+		os.Exit(255)
 	}
 
 	if c.Ipaddr == "" {
-		fmt.Printf("ERROR: 'warewulf ipaddr' has not been set in %s\n", SysConfDir+"warewulf.conf")
+		fmt.Printf("ERROR: 'warewulf ipaddr' has not been set in /etc/warewulf/warewulf.conf\n")
 	}
 
 	if c.SysConfDir == "" {
-		c.SysConfDir = SysConfDir
+		c.SysConfDir = "/etc/warewulf"
 	}
 	if c.LocalStateDir == "" {
-		c.LocalStateDir = LocalStateDir
+		c.LocalStateDir = "/var/warewulf"
 	}
-
-	return c, nil
 }
+
+func New() (Config) {
+	return c
+}
+
+func (self *Config) NodeConfig() (string) {
+	return fmt.Sprintf("%s/nodes.conf", self.LocalStateDir)
+}
+
+func (self *Config) SystemOverlaySource(overlayName string) (string) {
+	return fmt.Sprintf("%s/overlays/system/%s", self.LocalStateDir, overlayName)
+}
+
+func (self *Config) RuntimeOverlaySource(overlayName string) (string) {
+	return fmt.Sprintf("%s/overlays/runtime/%s", self.LocalStateDir, overlayName)
+}
+
+func (self *Config) KernelImage(kernelVersion string) (string) {
+	return fmt.Sprintf("%s/kernel/vmlinuz-%s", self.LocalStateDir, kernelVersion)
+}
+
+func (self *Config) KmodsImage(kernelVersion string) (string) {
+	return fmt.Sprintf("%s/kernel/kmods-%s.img", self.LocalStateDir, kernelVersion)
+}
+
+func (self *Config) VnfsImage(vnfsNameClean string) (string) {
+	return fmt.Sprintf("%s/vnfs/%s.img.gz", self.LocalStateDir, vnfsNameClean)
+}
+
+func (self *Config) SystemOverlayImage(nodeName string) (string) {
+	return fmt.Sprintf("%s/overlay/system/%s.img", self.LocalStateDir, nodeName)
+}
+
+func (self *Config) RuntimeOverlayImage(nodeName string) (string) {
+	return fmt.Sprintf("%s/overlay/runtime/%s.img", self.LocalStateDir, nodeName)
+}
+
+func (self *Config) VnfsChroot(vnfsNameClean string) (string) {
+	return fmt.Sprintf("%s/chroot/%s.img", self.LocalStateDir, vnfsNameClean)
+}
+

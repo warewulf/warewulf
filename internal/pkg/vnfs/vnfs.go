@@ -1,15 +1,12 @@
 package vnfs
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/config"
 	"path"
 	"strings"
 )
 
 type VnfsObject struct {
 	SourcePath  string
-	RootPath  	string
-	ImagePath 	string
 }
 
 func New(s string) VnfsObject {
@@ -19,7 +16,6 @@ func New(s string) VnfsObject {
 
 	return ret
 }
-
 
 func (self *VnfsObject) Name() string {
 	if self.SourcePath == "" {
@@ -52,21 +48,4 @@ func (self *VnfsObject) Source() string {
 	}
 
 	return self.SourcePath
-}
-
-
-func (self *VnfsObject) Image() string {
-	if self.SourcePath == "" {
-		return ""
-	}
-
-	return config.LocalStateDir + "/provision/vnfs/" + self.NameClean() + ".img.gz"
-}
-
-func (self *VnfsObject) Root() string {
-	if self.SourcePath == "" {
-		return ""
-	}
-
-	return config.LocalStateDir + "/chroots/" + self.NameClean()
 }

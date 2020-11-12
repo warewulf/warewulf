@@ -15,11 +15,11 @@ const (
 )
 
 var (
-	logLevel uint
+	logLevel = INFO
 	Indent string
 )
 
-func SetLevel(level uint) {
+func SetLevel(level int) {
 	logLevel = level
 
 	if level == DEBUG {
@@ -35,7 +35,7 @@ func SetIndent(i int) {
 	Indent = strings.Repeat(" ", i)
 }
 
-func prefixLevel(level uint) {
+func prefixLevel(level int) {
 	if level == DEBUG {
 		log.SetPrefix("[DEBUG]    "+Indent)
 	} else if level == VERBOSE {
@@ -51,7 +51,7 @@ func prefixLevel(level uint) {
 	}
 }
 
-func Println(level uint, message string) {
+func Println(level int, message string) {
 	if level <= logLevel {
 		prefixLevel(level)
 		log.Println(message)
@@ -60,7 +60,7 @@ func Println(level uint, message string) {
 	log.SetPrefix("[LOG]      "+Indent)
 }
 
-func Printf(level uint, message string, a...interface{}) {
+func Printf(level int, message string, a...interface{}) {
 	if level <= logLevel {
 		prefixLevel(level)
 		log.Printf(message, a...)
