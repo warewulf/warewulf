@@ -72,11 +72,12 @@ func BuildDocker(v vnfs.VnfsObject) {
 	_ = os.Remove(config.VnfsImage(v.NameClean()) + "-link")
 	err = os.Symlink(hashDestination, config.VnfsImage(v.NameClean())+"-link")
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "%s\n", err)
+		wwlog.Printf(wwlog.ERROR, "Could not create symlink for Image: %s\n", err)
 		os.Exit(1)
 	}
 	err = os.Rename(config.VnfsImage(v.NameClean())+"-link", config.VnfsImage(v.NameClean()))
 	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Could not rename link: %s\n", err)
 		os.Exit(1)
 	}
 
@@ -84,10 +85,12 @@ func BuildDocker(v vnfs.VnfsObject) {
 	_ = os.Remove(config.VnfsChroot(v.NameClean()) + "-link")
 	err = os.Symlink(sourcePath, config.VnfsChroot(v.NameClean())+"-link")
 	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Could not create symlink for Chroot: %s\n", err)
 		os.Exit(1)
 	}
 	err = os.Rename(config.VnfsChroot(v.NameClean())+"-link", config.VnfsChroot(v.NameClean()))
 	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Could not rename link: %s\n", err)
 		os.Exit(1)
 	}
 

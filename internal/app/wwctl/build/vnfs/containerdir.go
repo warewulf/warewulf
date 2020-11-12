@@ -33,6 +33,13 @@ func BuildContainerdir(v vnfs.VnfsObject) {
 		return
 	}
 
+	wwlog.Printf(wwlog.DEBUG, "Making the directory: %s\n", path.Dir(config.VnfsChroot(v.NameClean())))
+	err = os.MkdirAll(path.Dir(config.VnfsChroot(v.NameClean())), 0755)
+	if err != nil {
+		fmt.Printf("ERROR: %s\n", err)
+		return
+	}
+
 	wwlog.Printf(wwlog.DEBUG, "Building VNFS image: '%s' -> '%s'\n", v.Source(), config.VnfsImage(v.NameClean()))
 	err = buildVnfs(v.Source(), config.VnfsImage(v.NameClean()))
 	if err != nil {
@@ -44,10 +51,12 @@ func BuildContainerdir(v vnfs.VnfsObject) {
 	_ = os.Remove(config.VnfsChroot(v.NameClean()) + "-link")
 	err = os.Symlink(v.Source(), config.VnfsChroot(v.NameClean())+"-link")
 	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Could not create symlink for Chroot: %s\n", err)
 		os.Exit(1)
 	}
 	err = os.Rename(config.VnfsChroot(v.NameClean())+"-link", config.VnfsChroot(v.NameClean()))
 	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Could not rename link: %s\n", err)
 		os.Exit(1)
 	}
 

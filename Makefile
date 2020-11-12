@@ -40,7 +40,7 @@ lint:
 	@echo Running golangci-lint...
 	@$(GOLANGCI_LINT) run --build-tags "$(WW_BUILD_GO_BUILD_TAGS)" ./...
 
-all: warewulfd wwctl wwclient
+all: vendor warewulfd wwctl wwclient
 
 files: all
 	install -d -m 0755 /var/warewulf/
