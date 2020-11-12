@@ -2,6 +2,7 @@ package vnfs
 
 import (
 	"fmt"
+	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/vnfs"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -10,6 +11,7 @@ import (
 )
 
 func BuildContainerdir(v vnfs.VnfsObject) {
+	config := config.New()
 
 	if _, err := os.Stat(v.Source()); err != nil {
 		wwlog.Printf(wwlog.INFO, "%-35s: Skipping (bad path)\n", v.Name())
@@ -17,31 +19,35 @@ func BuildContainerdir(v vnfs.VnfsObject) {
 	}
 
 	wwlog.Printf(wwlog.DEBUG, "Checking if there have been any updates to the VNFS directory\n")
-	if util.PathIsNewer(v.Source(), v.Image()) {
+	if util.PathIsNewer(v.Source(), config.VnfsImage(v.NameClean())) {
 		if buildForce == false {
 			wwlog.Printf(wwlog.INFO, "%-35s: Skipping, VNFS is current\n", v.Name())
 			return
 		}
 	}
 
-	wwlog.Printf(wwlog.DEBUG, "Making the directory: %s\n", path.Dir(v.Image()))
-	err := os.MkdirAll(path.Dir(v.Image()), 0755)
+	wwlog.Printf(wwlog.DEBUG, "Making the directory: %s\n", path.Dir(config.VnfsImage(v.NameClean())))
+	err := os.MkdirAll(path.Dir(config.VnfsImage(v.NameClean())), 0755)
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err)
 		return
 	}
 
-	wwlog.Printf(wwlog.DEBUG, "Building VNFS image: '%s' -> '%s'\n", v.Source(), v.Image())
-	err = buildVnfs(v.Source(), v.Image())
+	wwlog.Printf(wwlog.DEBUG, "Building VNFS image: '%s' -> '%s'\n", v.Source(), config.VnfsImage(v.NameClean()))
+	err = buildVnfs(v.Source(), config.VnfsImage(v.NameClean()))
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err)
 		os.Exit(1)
 	}
 
-	wwlog.Printf(wwlog.DEBUG, "Building links for Warewulf access to chroot\n")
-	err = buildLinks(v, v.Source())
+	// Setup links from OCI rootfs to chroot path
+	_ = os.Remove(config.VnfsChroot(v.NameClean()) + "-link")
+	err = os.Symlink(v.Source(), config.VnfsChroot(v.NameClean())+"-link")
 	if err != nil {
-		fmt.Printf("ERROR: %s\n", err)
+		os.Exit(1)
+	}
+	err = os.Rename(config.VnfsChroot(v.NameClean())+"-link", config.VnfsChroot(v.NameClean()))
+	if err != nil {
 		os.Exit(1)
 	}
 

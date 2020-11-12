@@ -11,13 +11,13 @@ import (
 	"path"
 )
 
-const (
-	OciCacheDir = config.LocalStateDir + "/oci"
-	VnfsHashDir = config.LocalStateDir + "/oci/vnfs/hash/"
-)
 
 func BuildDocker(v vnfs.VnfsObject) {
 	wwlog.Printf(wwlog.VERBOSE, "Building OCI Container: %s\n", v.Source())
+	config := config.New()
+
+	OciCacheDir := config.LocalStateDir + "/oci"
+	VnfsHashDir := config.LocalStateDir + "/oci/vnfs"
 
 	c, err := oci.NewCache(oci.OptSetCachePath(OciCacheDir))
 	if err != nil {
@@ -34,7 +34,7 @@ func BuildDocker(v vnfs.VnfsObject) {
 
 	hashDestination := VnfsHashDir + path.Base(sourcePath)
 
-	name, err := os.Readlink(v.Image())
+	name, err := os.Readlink(config.VnfsImage(v.NameClean()))
 	if err == nil {
 		if name == hashDestination {
 			wwlog.Printf(wwlog.INFO, "%-35s: Skipping, VNFS is current\n", v.Name())
@@ -47,12 +47,12 @@ func BuildDocker(v vnfs.VnfsObject) {
 		fmt.Printf("ERROR: %s\n", err)
 		return
 	}
-	err = os.MkdirAll(path.Dir(v.Image()), 0755)
+	err = os.MkdirAll(path.Dir(config.VnfsImage(v.NameClean())), 0755)
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err)
 		return
 	}
-	err = os.MkdirAll(path.Dir(v.Root()), 0755)
+	err = os.MkdirAll(path.Dir(config.VnfsChroot(v.NameClean())), 0755)
 	if err != nil {
 		fmt.Printf("ERROR: %s\n", err)
 		return
@@ -68,19 +68,29 @@ func BuildDocker(v vnfs.VnfsObject) {
 
 	wwlog.Printf(wwlog.VERBOSE, "Finalizing Build\n")
 
-	_ = os.Remove(v.Image() + "-link")
-	err = os.Symlink(hashDestination, v.Image()+"-link")
+	// Setup links from OCI image to provision path
+	_ = os.Remove(config.VnfsImage(v.NameClean()) + "-link")
+	err = os.Symlink(hashDestination, config.VnfsImage(v.NameClean())+"-link")
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "%s\n", err)
 		os.Exit(1)
 	}
-	err = os.Rename(v.Image()+"-link", v.Image())
+	err = os.Rename(config.VnfsImage(v.NameClean())+"-link", config.VnfsImage(v.NameClean()))
+	if err != nil {
+		os.Exit(1)
+	}
 
-	err = buildLinks(v, sourcePath)
+	// Setup links from OCI rootfs to chroot path
+	_ = os.Remove(config.VnfsChroot(v.NameClean()) + "-link")
+	err = os.Symlink(sourcePath, config.VnfsChroot(v.NameClean())+"-link")
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "%s\n", err)
 		os.Exit(1)
 	}
+	err = os.Rename(config.VnfsChroot(v.NameClean())+"-link", config.VnfsChroot(v.NameClean()))
+	if err != nil {
+		os.Exit(1)
+	}
+
 
 	wwlog.Printf(wwlog.INFO, "%-35s: Done\n", v.Name())
 

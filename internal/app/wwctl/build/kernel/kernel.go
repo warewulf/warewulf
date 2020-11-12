@@ -11,9 +11,8 @@ import (
 	"path"
 )
 
-const kernelProvisionPath = "/provision/kernel/"
-
 func Build(nodeList []assets.NodeInfo, force bool) error {
+	config := config.New()
 	set := make(map[string]int)
 
 	wwlog.Printf(wwlog.INFO, "Importing Kernels:\n")
@@ -29,12 +28,13 @@ func Build(nodeList []assets.NodeInfo, force bool) error {
 	for kernelVersion := range set {
 		kernelImage := "/boot/vmlinuz-"+kernelVersion
 		kernelDrivers := "/lib/modules/"+kernelVersion
-		kernelDestination := path.Join(config.LocalStateDir, kernelProvisionPath, "vmlinuz-"+kernelVersion)
-		driversDestination := path.Join(config.LocalStateDir, kernelProvisionPath, "kmods-"+kernelVersion+".img")
+		kernelDestination := config.KernelImage(kernelVersion)
+		driversDestination := config.KmodsImage(kernelVersion)
 
+		// Create the destination paths just in case it doesn't exist
+		os.MkdirAll(path.Dir(kernelDestination), 0755)
+		os.MkdirAll(path.Dir(driversDestination), 0755)
 
-		// Create the kernel destination path just in case it doesn't exist
-		os.MkdirAll(path.Join(config.LocalStateDir, kernelProvisionPath), 0755)
 
 		if _, err := os.Stat(kernelImage); err == nil {
 			if util.PathIsNewer(kernelImage, kernelDestination) && force == false {

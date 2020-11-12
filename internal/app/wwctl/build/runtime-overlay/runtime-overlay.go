@@ -27,12 +27,14 @@ func fileInclude(path string) string {
 
 func Build(nodeList []assets.NodeInfo, force bool) error {
 	wwlog.Printf(wwlog.INFO, "Building Runtime Overlays:\n")
+	config := config.New()
+
 	wwlog.SetIndent(4)
 
 	for _, node := range nodeList {
 		if node.RuntimeOverlay != "" {
-			OverlayDir := path.Join(config.LocalStateDir, "/overlays/runtime/", node.RuntimeOverlay)
-			OverlayFile := path.Join(config.LocalStateDir, "/provision/overlays/runtime/", node.Fqdn+".img")
+			OverlayDir := config.RuntimeOverlaySource(node.RuntimeOverlay)
+			OverlayFile := config.RuntimeOverlayImage(node.Fqdn)
 
 			wwlog.Printf(wwlog.VERBOSE, "Building Runtime Overlay for: %s\n", node.Fqdn)
 
