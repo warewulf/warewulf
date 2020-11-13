@@ -81,11 +81,11 @@ func (self *Config) VnfsImage(vnfsNameClean string) (string) {
 }
 
 func (self *Config) SystemOverlayImage(nodeName string) (string) {
-	return fmt.Sprintf("%s/provision/overlay/system/%s.img", self.LocalStateDir, nodeName)
+	return fmt.Sprintf("%s/provision/overlays/system/%s.img", self.LocalStateDir, nodeName)
 }
 
 func (self *Config) RuntimeOverlayImage(nodeName string) (string) {
-	return fmt.Sprintf("%s/provision/overlay/runtime/%s.img", self.LocalStateDir, nodeName)
+	return fmt.Sprintf("%s/provision/overlays/runtime/%s.img", self.LocalStateDir, nodeName)
 }
 
 func (self *Config) VnfsChroot(vnfsNameClean string) (string) {
