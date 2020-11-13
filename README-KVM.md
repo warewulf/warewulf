@@ -27,7 +27,7 @@
 
     # To start virt-manager on non-local server
 
-    ssh -X qmaster1
+    ssh -X master1
 
     sudo -E virt-manager
 
