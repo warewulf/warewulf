@@ -2,11 +2,10 @@ package assets
 
 import (
 	"fmt"
+	"github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/vnfs"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"path"
-	"strings"
-
 	//	"os"
 
 	//	"os"
@@ -31,10 +30,11 @@ type nodeGroup struct {
 	Comment        string
 	Vnfs           string
 	Ipxe           string `yaml:"ipxe template"`
-	SystemOverlay  string `yaml:"system overlay""`
-	RuntimeOverlay string `yaml:"runtime overlay""`
+	SystemOverlay  string `yaml:"system system-overlay""`
+	RuntimeOverlay string `yaml:"runtime system-overlay""`
 	DomainSuffix   string `yaml:"domain suffix"`
 	KernelVersion  string `yaml:"kernel version"`
+	KernelArgs	   string `yaml:"kernel args"`
 	Nodes          map[string]nodeEntry
 }
 
@@ -42,10 +42,11 @@ type nodeEntry struct {
 	Hostname       string
 	Vnfs           string
 	Ipxe           string `yaml:"ipxe template"`
-	SystemOverlay  string `yaml:"system overlay"`
-	RuntimeOverlay string `yaml:"runtime overlay"`
+	SystemOverlay  string `yaml:"system system-overlay"`
+	RuntimeOverlay string `yaml:"runtime system-overlay"`
 	DomainSuffix   string `yaml:"domain suffix"`
 	KernelVersion  string `yaml:"kernel version"`
+	KernelArgs	   string `yaml:"kernel args"`
 	IpmiIpaddr     string `yaml:"ipmi ipaddr"`
 	NetDevs        map[string]netDevs
 }
@@ -64,16 +65,20 @@ type NodeInfo struct {
 	DomainName     string
 	Fqdn           string
 	Vnfs           string
+	VnfsDir        string
 	Ipxe           string
 	SystemOverlay  string
 	RuntimeOverlay string
 	KernelVersion  string
+	KernelArgs	   string
 	NetDevs        map[string]netDevs
 }
 
 func FindAllNodes() ([]NodeInfo, error) {
 	var c nodeYaml
 	var ret []NodeInfo
+	config := config.New()
+
 
 	data, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
@@ -97,6 +102,7 @@ func FindAllNodes() ([]NodeInfo, error) {
 			n.SystemOverlay = group.SystemOverlay
 			n.RuntimeOverlay = group.RuntimeOverlay
 			n.KernelVersion = group.KernelVersion
+			n.KernelArgs = group.KernelArgs
 			n.DomainName = group.DomainSuffix
 			n.Ipxe = group.Ipxe
 			n.NetDevs = node.NetDevs
@@ -119,6 +125,9 @@ func FindAllNodes() ([]NodeInfo, error) {
 			if node.Ipxe != "" {
 				n.Ipxe = node.Ipxe
 			}
+			if node.KernelArgs != "" {
+				n.KernelArgs = node.KernelArgs
+			}
 
 			if n.RuntimeOverlay == "" {
 				n.RuntimeOverlay = "default"
@@ -136,11 +145,8 @@ func FindAllNodes() ([]NodeInfo, error) {
 				n.Fqdn = node.Hostname
 			}
 
-			if strings.HasPrefix(n.Vnfs, "docker://") {
-				//TODO: This is a kludge and shouldn't be done here. We need to go back
-				//		and do this from a "vnfs" interface or package
-				n.Vnfs = LocalStateDir + "/oci/vnfs/name/" + path.Base(n.Vnfs)
-			}
+			v := vnfs.New(n.Vnfs)
+			n.VnfsDir = config.VnfsChroot(v.NameClean())
 
 			ret = append(ret, n)
 		}
