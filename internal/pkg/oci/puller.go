@@ -12,6 +12,7 @@ import (
 
 	"github.com/containers/image/v5/copy"
 	"github.com/containers/image/v5/docker"
+	"github.com/containers/image/v5/docker/daemon"
 	"github.com/containers/image/v5/oci/layout"
 	"github.com/containers/image/v5/signature"
 	"github.com/containers/image/v5/types"
@@ -75,16 +76,28 @@ func stripScheme(uri string) (string, error) {
 	return strings.TrimPrefix(uri, "docker:"), nil
 }
 
-// generateID stores and returns a unique identifier derived from the sha256sum of the image manifest
-func (p *puller) generateID(ctx context.Context, uri string) (string, error) {
-	cleanURI, err := stripScheme(uri)
-	if err != nil {
-		return "", err
+// getReference parsed the uri scheme to determine
+func getReference(uri string) (types.ImageReference, error) {
+	s := strings.SplitN(uri, ":", 2)
+	if len(s) != 2 {
+		return nil, fmt.Errorf("invalid uri: %q", uri)
 	}
 
-	ref, err := docker.ParseReference(cleanURI)
+	switch s[0] {
+	case "docker":
+		return docker.ParseReference(s[1])
+	case "docker-daemon":
+		return daemon.ParseReference(strings.TrimPrefix(s[1], "//"))
+	default:
+		return nil, fmt.Errorf("unknown uri sceme: %q", uri)
+	}
+}
+
+// generateID stores and returns a unique identifier derived from the sha256sum of the image manifest
+func (p *puller) generateID(ctx context.Context, uri string) (string, error) {
+	ref, err := getReference(uri)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("unable to parse uri: %v", err)
 	}
 
 	src, err := ref.NewImageSource(ctx, nil)
@@ -102,12 +115,7 @@ func (p *puller) generateID(ctx context.Context, uri string) (string, error) {
 }
 
 func (p *puller) pull(ctx context.Context, uri, dst string) (err error) {
-	cleanURI, err := stripScheme(uri)
-	if err != nil {
-		return err
-	}
-
-	srcRef, err := docker.ParseReference(cleanURI)
+	srcRef, err := getReference(uri)
 	if err != nil {
 		return fmt.Errorf("unable to parse uri: %v", err)
 	}
@@ -126,8 +134,8 @@ func (p *puller) pull(ctx context.Context, uri, dst string) (err error) {
 
 	// copy to cache location
 	_, err = copy.Image(ctx, policyCtx, cacheRef, srcRef, &copy.Options{
-		ReportWriter: os.Stdout,
-		SourceCtx:    p.sysCtx,
+		//ReportWriter: os.Stdout,
+		SourceCtx: p.sysCtx,
 	})
 	if err != nil {
 		return err

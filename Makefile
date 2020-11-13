@@ -40,7 +40,7 @@ lint:
 	@echo Running golangci-lint...
 	@$(GOLANGCI_LINT) run --build-tags "$(WW_BUILD_GO_BUILD_TAGS)" ./...
 
-all: warewulfd wwbuild wwclient
+all: vendor warewulfd wwctl wwclient
 
 files: all
 	install -d -m 0755 /var/warewulf/
@@ -67,16 +67,15 @@ services: files
 warewulfd:
 	cd cmd/warewulfd; go build -mod vendor -o ../../warewulfd
 
-wwbuild:
-	cd cmd/wwbuild; go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwbuild
+wwctl:
+	cd cmd/wwctl; go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwctl
 
 wwclient:
 	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags '-extldflags -static' -o ../../wwclient
 
 clean:
 	rm -f warewulfd
-	rm -f wwbuild
 	rm -f wwclient
+	rm -f wwctl
 
 install: files services
-
