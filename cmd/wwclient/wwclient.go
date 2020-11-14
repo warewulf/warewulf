@@ -41,7 +41,6 @@ func main() {
 				LocalAddr: &localTCPAddr,
 				Timeout:   30 * time.Second,
 				KeepAlive: 30 * time.Second,
-				DualStack: true,
 			}).DialContext,
 			MaxIdleConns:          100,
 			IdleConnTimeout:       90 * time.Second,
@@ -74,17 +73,11 @@ func main() {
 			time.Sleep(1000 * time.Millisecond)
 		}
 
-//		defer resp.Body.Close()
-
-
-
-
 		if resp.StatusCode != 200 {
 			log.Printf("Not updating runtime system-overlay, got status code: %d\n", resp.StatusCode)
 			time.Sleep(60000 * time.Millisecond)
 			continue
 		}
-
 
 		log.Printf("Updating runtime system\n")
 		command := exec.Command("/bin/cpio", "-iu")
