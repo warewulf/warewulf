@@ -1,6 +1,8 @@
 package overlay
 
 import (
+	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/create"
+	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/edit"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/list"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/show"
 
@@ -8,7 +10,7 @@ import (
 )
 
 var (
-	overlayCmd = &cobra.Command{
+	baseCmd = &cobra.Command{
 		Use:                "overlay",
 		Short:              "Warewulf Overlay Management",
 		Long:               "Management interface for Warewulf overlays",
@@ -17,14 +19,17 @@ var (
 )
 
 func init() {
-	overlayCmd.PersistentFlags().BoolVarP(&test, "test", "t", false, "Testing.")
+//	baseCmd.PersistentFlags().BoolVarP(&test, "test", "t", false, "Testing.")
 
-	overlayCmd.AddCommand(list.GetCommand())
-	overlayCmd.AddCommand(show.GetCommand())
+	baseCmd.AddCommand(list.GetCommand())
+	baseCmd.AddCommand(show.GetCommand())
+	baseCmd.AddCommand(create.GetCommand())
+	baseCmd.AddCommand(edit.GetCommand())
+
 
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
 func GetCommand() *cobra.Command {
-	return overlayCmd
+	return baseCmd
 }

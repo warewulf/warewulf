@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	WarewulfdCmd = &cobra.Command{
+	baseCmd = &cobra.Command{
 		Use:                "warewulfd",
 		Short:              "Warewulf Daemon Service",
 		Long:               "This is the primary Warewulf service for provisioning nodes",
@@ -19,13 +19,13 @@ var (
 
 
 func init() {
-	WarewulfdCmd.PersistentFlags().BoolVarP(&verboseArg, "verbose", "v", false, "Run with increased verbosity.")
-	WarewulfdCmd.PersistentFlags().BoolVarP(&debugArg, "debug", "d", false, "Run with debugging messages enabled.")
+	baseCmd.PersistentFlags().BoolVarP(&verboseArg, "verbose", "v", false, "Run with increased verbosity.")
+	baseCmd.PersistentFlags().BoolVarP(&debugArg, "debug", "d", false, "Run with debugging messages enabled.")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
 func GetRootCommand() *cobra.Command {
-	return WarewulfdCmd
+	return baseCmd
 }
 
 func rootPersistentPreRunE(cmd *cobra.Command, args []string) error {

@@ -1,4 +1,4 @@
-package show
+package power
 
 import (
 	"fmt"
@@ -7,15 +7,16 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "show",
-		Short:              "Show Warewulf Overlay objects",
-		Long:               "Warewulf show overlay objects",
+		Use:                "power",
+		Short:              "Node power management",
+		Long:               "Node Power management commands",
 		RunE:				CobraRunE,
 	}
-
+	test bool
 )
 
 func init() {
+	baseCmd.PersistentFlags().BoolVarP(&test, "test", "t", false, "Testing.")
 
 }
 
@@ -24,8 +25,7 @@ func GetCommand() *cobra.Command {
 	return baseCmd
 }
 
-
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	fmt.Printf("Show: Hello World\n")
+	fmt.Printf("Power: Hello World\n")
 	return nil
 }

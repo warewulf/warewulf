@@ -1,18 +1,20 @@
-package list
+package edit
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 )
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "list",
-		Short:              "List Warewulf Overlays",
-		Long:               "Warewulf List overlay",
+		Use:                "edit",
+		Short:              "Edit Warewulf Overlay files",
+		Long:               "Warewulf edit overlay files",
 		RunE:				CobraRunE,
 	}
 	SystemOverlay bool
 	ListFiles bool
+
 )
 
 func init() {
@@ -24,4 +26,10 @@ func init() {
 // GetRootCommand returns the root cobra.Command for the application.
 func GetCommand() *cobra.Command {
 	return baseCmd
+}
+
+
+func CobraRunE(cmd *cobra.Command, args []string) error {
+	fmt.Printf("Edit: Hello World\n")
+	return nil
 }
