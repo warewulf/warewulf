@@ -1,4 +1,4 @@
-package edit
+package delete
 
 import (
 	"github.com/spf13/cobra"
@@ -6,21 +6,21 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "edit [overlay name] [file path]",
-		Short:              "Edit Warewulf Overlay files",
-		Long:               "Warewulf edit overlay files",
+		Use:                "delete [overlay name]",
+		Short:              "Delete Warewulf Overlay files",
+		Long:               "Warewulf Delete overlay files",
 		RunE:				CobraRunE,
-		Args: 				cobra.ExactArgs(2),
+		Args: 				cobra.ExactArgs(1),
 
 	}
 	SystemOverlay bool
-	ListFiles bool
+	Force bool
 
 )
 
 func init() {
 	baseCmd.PersistentFlags().BoolVarP(&SystemOverlay, "system", "s", false, "Show system overlays instead of runtime")
-	baseCmd.PersistentFlags().BoolVarP(&ListFiles, "files", "f", false, "List files contained within a given overlay")
+	baseCmd.PersistentFlags().BoolVar(&Force, "force", false, "Force deletion of a non-empty overlay")
 
 }
 
@@ -28,5 +28,4 @@ func init() {
 func GetCommand() *cobra.Command {
 	return baseCmd
 }
-
 

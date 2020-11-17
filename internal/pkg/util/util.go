@@ -5,6 +5,7 @@ import (
 	"io"
 	"math/rand"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"time"
@@ -132,4 +133,14 @@ func FindFiles(path string) []string {
 	}
 
 	return ret
+}
+
+func ExecInteractive(command string, a...string) error {
+	wwlog.Printf(wwlog.DEBUG, "ExecInteractive(%s, %s)\n", command, a)
+	c := exec.Command(command, a...)
+	c.Stdin = os.Stdin
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
+	err := c.Run()
+	return err
 }

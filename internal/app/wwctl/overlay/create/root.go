@@ -6,10 +6,12 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "create",
+		Use:                "create [overlay name]",
 		Short:              "Initialize a new Overlay",
 		Long:               "Create a new Warewulf provisioning overlay",
 		RunE:				CobraRunE,
+		Args: 				cobra.ExactArgs(1),
+
 	}
 	SystemOverlay bool
 )

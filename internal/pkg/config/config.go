@@ -19,6 +19,7 @@ type Config struct {
 	Debug           bool   `yaml:"debug"`
 	SysConfDir      string `yaml:"system config dir"`
 	LocalStateDir   string `yaml:"local state dir"`
+	Editor			string `yaml:"default editor", envconfig:"EDITOR"`
 }
 
 var c Config
@@ -56,6 +57,7 @@ func init() {
 	util.ValidateOrDie("warewulf.conf", "warewulfd ipaddr", c.Ipaddr, "^[0-9]+.[0-9]+.[0-9]+.[0-9]+$")
 	util.ValidateOrDie("warewulf.conf", "system config dir", c.SysConfDir, "^[a-zA-Z0-9-._:/]+$")
 	util.ValidateOrDie("warewulf.conf", "local state dir", c.LocalStateDir, "^[a-zA-Z0-9-._:/]+$")
+	util.ValidateOrDie("warewulf.conf", "default editor", c.LocalStateDir, "^[a-zA-Z0-9-._:/]+$")
 
 }
 

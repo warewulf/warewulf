@@ -11,6 +11,11 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 
+	if len(args) < 1 {
+		cmd.Help()
+		os.Exit(1)
+	}
+
 	if SystemOverlay == true {
 		err := overlay.SystemOverlayInit(args[0])
 		if err != nil {
