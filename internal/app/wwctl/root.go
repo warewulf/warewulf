@@ -2,7 +2,10 @@ package wwctl
 
 import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/build"
+	"github.com/hpcng/warewulf/internal/app/wwctl/kernel"
+	"github.com/hpcng/warewulf/internal/app/wwctl/node"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay"
+	"github.com/hpcng/warewulf/internal/app/wwctl/vnfs"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 )
@@ -24,6 +27,9 @@ func init() {
 
 	rootCmd.AddCommand(build.GetCommand())
 	rootCmd.AddCommand(overlay.GetCommand())
+	rootCmd.AddCommand(vnfs.GetCommand())
+	rootCmd.AddCommand(node.GetCommand())
+	rootCmd.AddCommand(kernel.GetCommand())
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
