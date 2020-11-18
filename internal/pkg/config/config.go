@@ -53,6 +53,9 @@ func init() {
 	if c.LocalStateDir == "" {
 		c.LocalStateDir = "/var/warewulf"
 	}
+	if c.Editor == "" {
+		c.Editor = "vi"
+	}
 
 	util.ValidateOrDie("warewulf.conf", "warewulfd ipaddr", c.Ipaddr, "^[0-9]+.[0-9]+.[0-9]+.[0-9]+$")
 	util.ValidateOrDie("warewulf.conf", "system config dir", c.SysConfDir, "^[a-zA-Z0-9-._:/]+$")
@@ -82,9 +85,14 @@ func (self *Config) RuntimeOverlayDir() string {
 }
 
 func (self *Config) SystemOverlaySource(overlayName string) string {
+	if overlayName == "" {
+		wwlog.Printf(wwlog.ERROR, "System overlay name is not defined\n")
+		return ""
+	}
+
 	if util.TaintCheck(overlayName, "^[a-zA-Z0-9-._]+$") == false {
 		wwlog.Printf(wwlog.ERROR, "System overlay name contains illegal characters: %s\n", overlayName)
-		os.Exit(1)
+		return ""
 	}
 
 	return path.Join(self.SystemOverlayDir(), overlayName)
@@ -92,63 +100,98 @@ func (self *Config) SystemOverlaySource(overlayName string) string {
 
 
 func (self *Config) RuntimeOverlaySource(overlayName string) string {
+	if overlayName == "" {
+		wwlog.Printf(wwlog.ERROR, "Runtime overlay name is not defined\n")
+		return ""
+	}
+
 	if util.TaintCheck(overlayName, "^[a-zA-Z0-9-._]+$") == false {
 		wwlog.Printf(wwlog.ERROR, "Runtime overlay name contains illegal characters: %s\n", overlayName)
-		os.Exit(1)
+		return ""
 	}
 
 	return path.Join(self.RuntimeOverlayDir(), overlayName)
 }
 
 func (self *Config) KernelImage(kernelVersion string) string {
+	if kernelVersion == "" {
+		wwlog.Printf(wwlog.ERROR, "Kernel Version is not defined\n")
+		return ""
+	}
+
 	if util.TaintCheck(kernelVersion, "^[a-zA-Z0-9-._]+$") == false {
 		wwlog.Printf(wwlog.ERROR, "Runtime overlay name contains illegal characters: %s\n", kernelVersion)
-		os.Exit(1)
+		return ""
 	}
 
 	return fmt.Sprintf("%s/provision/kernel/vmlinuz-%s", self.LocalStateDir, kernelVersion)
 }
 
 func (self *Config) KmodsImage(kernelVersion string) string {
+	if kernelVersion == "" {
+		wwlog.Printf(wwlog.ERROR, "Kernel Version is not defined\n")
+		return ""
+	}
+
 	if util.TaintCheck(kernelVersion, "^[a-zA-Z0-9-._]+$") == false {
 		wwlog.Printf(wwlog.ERROR, "Runtime overlay name contains illegal characters: %s\n", kernelVersion)
-		os.Exit(1)
+		return ""
 	}
 
 	return fmt.Sprintf("%s/provision/kernel/kmods-%s.img", self.LocalStateDir, kernelVersion)
 }
 
 func (self *Config) VnfsImage(vnfsNameClean string) string {
+	if vnfsNameClean == "" {
+		wwlog.Printf(wwlog.ERROR, "VNFS name is not defined\n")
+		return ""
+	}
+
 	if util.TaintCheck(vnfsNameClean, "^[a-zA-Z0-9-._:]+$") == false {
 		wwlog.Printf(wwlog.ERROR, "Runtime overlay name contains illegal characters: %s\n", vnfsNameClean)
-		os.Exit(1)
+		return ""
 	}
 
 	return fmt.Sprintf("%s/provision/vnfs/%s.img.gz", self.LocalStateDir, vnfsNameClean)
 }
 
 func (self *Config) SystemOverlayImage(nodeName string) string {
+	if nodeName == "" {
+		wwlog.Printf(wwlog.ERROR, "Node name is not defined\n")
+		return ""
+	}
+
 	if util.TaintCheck(nodeName, "^[a-zA-Z0-9-._:]+$") == false {
 		wwlog.Printf(wwlog.ERROR, "System overlay name contains illegal characters: %s\n", nodeName)
-		os.Exit(1)
+		return ""
 	}
 
 	return fmt.Sprintf("%s/provision/overlays/system/%s.img", self.LocalStateDir, nodeName)
 }
 
 func (self *Config) RuntimeOverlayImage(nodeName string) string {
+	if nodeName == "" {
+		wwlog.Printf(wwlog.ERROR, "Node name is not defined\n")
+		return ""
+	}
+
 	if util.TaintCheck(nodeName, "^[a-zA-Z0-9-._:]+$") == false {
 		wwlog.Printf(wwlog.ERROR, "System overlay name contains illegal characters: %s\n", nodeName)
-		os.Exit(1)
+		return ""
 	}
 
 	return fmt.Sprintf("%s/provision/overlays/runtime/%s.img", self.LocalStateDir, nodeName)
 }
 
 func (self *Config) VnfsChroot(vnfsNameClean string) string {
+	if vnfsNameClean == "" {
+		wwlog.Printf(wwlog.ERROR, "VNFS name is not defined\n")
+		return ""
+	}
+
 	if util.TaintCheck(vnfsNameClean, "^[a-zA-Z0-9-._:]+$") == false {
 		wwlog.Printf(wwlog.ERROR, "Runtime overlay name contains illegal characters: %s\n", vnfsNameClean)
-		os.Exit(1)
+		return ""
 	}
 
 	return fmt.Sprintf("%s/chroot/%s.img", self.LocalStateDir, vnfsNameClean)

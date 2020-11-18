@@ -10,14 +10,17 @@ var (
 		Short:              "List Warewulf Overlays",
 		Long:               "Warewulf List overlay",
 		RunE:				CobraRunE,
+		Aliases: 			[]string{"ls"},
 	}
 	SystemOverlay bool
-	ListFiles bool
+	ListContents bool
+	ListLong bool
 )
 
 func init() {
 	baseCmd.PersistentFlags().BoolVarP(&SystemOverlay, "system", "s", false, "Show system overlays instead of runtime")
-	baseCmd.PersistentFlags().BoolVarP(&ListFiles, "files", "f", false, "List files contained within a given overlay")
+	baseCmd.PersistentFlags().BoolVarP(&ListContents, "all", "a", false, "List the contents of overlays")
+	baseCmd.PersistentFlags().BoolVarP(&ListLong, "long", "l", false, "List 'long' of all overlay contents")
 
 }
 

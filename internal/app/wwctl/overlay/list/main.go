@@ -8,6 +8,8 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
+	"os"
+	"syscall"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
@@ -18,10 +20,18 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	var nodeList []assets.NodeInfo
 
 	if SystemOverlay == true {
-		fmt.Printf("%-25s %-8s %-8s\n", "SYSTEM OVERLAY NAME", "NODES", "FILES")
+		if ListLong == false {
+			fmt.Printf("%-30s %-12s %-12s\n", "SYSTEM OVERLAY NAME", "NODES", "FILES/DIRS")
+		} else {
+			fmt.Printf("%-10s %5s %-5s %-18s %s\n", "PERM MODE", "UID", "GID", "SYSTEM-OVERLAY", "FILE PATH")
+		}
 		o, err = overlay.FindAllSystemOverlays()
 	} else {
-		fmt.Printf("%-25s %-8s %-8s\n", "RUNTIME OVERLAY NAME", "NODES", "FILES")
+		if ListLong == false {
+			fmt.Printf("%-30s %-12s %-12s\n", "RUNTIME OVERLAY NAME", "NODES", "FILES/DIRS")
+		} else {
+			fmt.Printf("%-10s %5s %-5s %-18s %s\n", "PERM MODE", "UID", "GID", "RUNTIME-OVERLAY", "FILE PATH")
+		}
 		o, err = overlay.FindAllRuntimeOverlays()
 	}
 	if err != nil {
@@ -67,17 +77,32 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			files := util.FindFiles(path)
 
 			wwlog.Printf(wwlog.DEBUG, "Iterating overlay path: %s\n", path)
-			if ListFiles == true {
+			if ListContents == true {
 				var fileCount int
 				for file := range files {
-					fmt.Printf("%-25s %-8d /%s\n", name, set[name], files[file])
-					fileCount ++
+					fmt.Printf("%-30s %-12d /%-12s\n", name, set[name], files[file])
+					fileCount++
 				}
 				if fileCount == 0 {
-					fmt.Printf("%-25s %-8d %-8d\n", name, set[name], 0)
+					fmt.Printf("%-30s %-12d %-12d\n", name, set[name], 0)
+				}
+			} else if ListLong == true {
+				for file := range files {
+					s, err := os.Stat(files[file])
+					if err != nil {
+						continue
+					}
+
+					fileMode := s.Mode()
+					perms := fileMode & os.ModePerm
+
+					sys := s.Sys()
+
+					fmt.Printf("%v %5d %-5d %-18s /%s\n", perms, sys.(*syscall.Stat_t).Uid, sys.(*syscall.Stat_t).Gid, o[overlay], files[file])
+
 				}
 			} else {
-				fmt.Printf("%-25s %-8d %-8d\n", name, set[name], len(files))
+				fmt.Printf("%-30s %-12d %-12d\n", name, set[name], len(files))
 			}
 
 		} else {

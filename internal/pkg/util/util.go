@@ -92,6 +92,13 @@ func IsDir(path string) (bool) {
 	return false
 }
 
+func IsFile(path string) (bool) {
+	if _, err := os.Stat(path); err == nil {
+		return true
+	}
+	return false
+}
+
 
 func TaintCheck(pattern string, expr string) bool {
 	if b, _ := regexp.MatchString(expr, pattern); b == true {
@@ -122,10 +129,18 @@ func FindFiles(path string) []string {
 			return err
 		}
 
-		if IsDir(location) == false {
-			wwlog.Printf(wwlog.DEBUG, "FindFiles() found: %s\n", location)
+		if location == "." {
+			return nil
+		}
+
+		if IsDir(location) == true {
+			wwlog.Printf(wwlog.DEBUG, "FindFiles() found directory: %s\n", location)
+			ret = append(ret, location +"/")
+		} else {
+			wwlog.Printf(wwlog.DEBUG, "FindFiles() found file: %s\n", location)
 			ret = append(ret, location)
 		}
+
 		return nil
 	})
 	if err != nil {

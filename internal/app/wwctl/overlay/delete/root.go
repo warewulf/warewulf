@@ -10,17 +10,18 @@ var (
 		Short:              "Delete Warewulf Overlay files",
 		Long:               "Warewulf Delete overlay files",
 		RunE:				CobraRunE,
-		Args: 				cobra.ExactArgs(1),
-
+		Args: 				cobra.MinimumNArgs(1),
+		Aliases: 			[]string{"rm", "del"},
 	}
 	SystemOverlay bool
 	Force bool
-
+	RmEmptyDirs bool
 )
 
 func init() {
 	baseCmd.PersistentFlags().BoolVarP(&SystemOverlay, "system", "s", false, "Show system overlays instead of runtime")
-	baseCmd.PersistentFlags().BoolVar(&Force, "force", false, "Force deletion of a non-empty overlay")
+	baseCmd.PersistentFlags().BoolVarP(&Force, "force", "f", false, "Force deletion of a non-empty overlay")
+	baseCmd.PersistentFlags().BoolVarP(&RmEmptyDirs, "empty", "e", false, "Remove empty directories")
 
 }
 
