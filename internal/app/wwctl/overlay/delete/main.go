@@ -54,7 +54,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		for i := 1; i < len(args); i++ {
 			removePath := path.Join(overlayPath, args[i])
 
-			if util.IsDir(removePath) == true || util.IsFile(removePath) == true {
+			if util.IsDir(removePath) == false && util.IsFile(removePath) == false {
 				wwlog.Printf(wwlog.ERROR, "Path to remove doesn't exist in overlay: %s\n", removePath)
 				os.Exit(1)
 			}
