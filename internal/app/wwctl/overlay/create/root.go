@@ -14,11 +14,12 @@ var (
 
 	}
 	SystemOverlay bool
+	NoOverlayUpdate bool
 )
 
 func init() {
 	baseCmd.PersistentFlags().BoolVarP(&SystemOverlay, "system", "s", false, "Show System Overlays as well")
-
+	baseCmd.PersistentFlags().BoolVarP(&NoOverlayUpdate, "noupdate", "n", false, "Don't update overlays")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

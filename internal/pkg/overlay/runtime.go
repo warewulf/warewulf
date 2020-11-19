@@ -71,7 +71,12 @@ func RuntimeBuild(nodeList []assets.NodeInfo, force bool) error {
 			}
 
 			if util.IsDir(OverlayDir) == false {
-				wwlog.Printf(wwlog.WARN, "Skipping non-existent overlay source: %s\n", OverlayDir)
+				wwlog.Printf(wwlog.WARN, "%-35s: Skipped (unknown runtime overlay)\n", node.Fqdn)
+				continue
+			}
+
+			if util.IsDir(node.VnfsDir) == false {
+				wwlog.Printf(wwlog.WARN, "%-35s: Skipped (VNFS not imported)\n", node.Fqdn)
 				continue
 			}
 
@@ -117,7 +122,7 @@ func RuntimeBuild(nodeList []assets.NodeInfo, force bool) error {
 
 					destFile := strings.TrimSuffix(location, ".ww")
 
-					tmpl, err := template.New(path.Base(location)).Funcs(template.FuncMap{"Include": templateFileInclude, "IncludeVnfs": templateVnfsFileInclude}).ParseGlob(path.Join(OverlayDir, destFile + ".ww*"))
+					tmpl, err := template.New(path.Base(location)).Funcs(template.FuncMap{"Include": templateFileInclude, "IncludeFromVnfs": templateVnfsFileInclude}).ParseGlob(path.Join(OverlayDir, destFile + ".ww*"))
 					if err != nil {
 						wwlog.Printf(wwlog.ERROR, "%s\n", err)
 						return err

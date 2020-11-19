@@ -15,7 +15,7 @@ func templateFileInclude(path string) string {
 	wwlog.Printf(wwlog.DEBUG, "Including file into template: %s\n", path)
 	content, err := ioutil.ReadFile(path)
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Template include: %s\n", err)
+		wwlog.Printf(wwlog.WARN, "Could not include file into template: %s\n", err)
 	}
 	return strings.TrimSuffix(string(content), "\n")
 }
@@ -28,7 +28,7 @@ func templateVnfsFileInclude(vnfsname string, filepath string) string {
 	vnfsdir := config.VnfsChroot(v.NameClean())
 
 	if util.IsDir(vnfsdir) == false {
-		wwlog.Printf(wwlog.WARN, "Could not include file from non-existent VNFS cache: %s:%s\n", vnfsname, filepath)
+		wwlog.Printf(wwlog.WARN, "Template requesting file from non-imported VNFS: %s (%s)\n", vnfsname, filepath)
 		return ""
 	}
 	wwlog.Printf(wwlog.DEBUG, "IncludeVnfs file from: %s/%s\n", vnfsdir, filepath)

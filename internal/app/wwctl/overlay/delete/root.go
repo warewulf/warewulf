@@ -15,14 +15,15 @@ var (
 	}
 	SystemOverlay bool
 	Force bool
-	RmEmptyDirs bool
+	Parents bool
+	NoOverlayUpdate bool
 )
 
 func init() {
 	baseCmd.PersistentFlags().BoolVarP(&SystemOverlay, "system", "s", false, "Show system overlays instead of runtime")
 	baseCmd.PersistentFlags().BoolVarP(&Force, "force", "f", false, "Force deletion of a non-empty overlay")
-	baseCmd.PersistentFlags().BoolVarP(&RmEmptyDirs, "empty", "e", false, "Remove empty directories")
-
+	baseCmd.PersistentFlags().BoolVarP(&Parents, "parents", "p", false, "Remove empty parent directories")
+	baseCmd.PersistentFlags().BoolVarP(&NoOverlayUpdate, "noupdate", "n", false, "Don't update overlays")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

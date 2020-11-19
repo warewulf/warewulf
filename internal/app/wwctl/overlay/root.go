@@ -2,10 +2,10 @@ package overlay
 
 import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/build"
-	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/copy"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/create"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/delete"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/edit"
+	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/imprt"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/list"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/mkdir"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/show"
@@ -32,7 +32,7 @@ func init() {
 	baseCmd.AddCommand(delete.GetCommand())
 	baseCmd.AddCommand(mkdir.GetCommand())
 	baseCmd.AddCommand(build.GetCommand())
-	baseCmd.AddCommand(copy.GetCommand())
+	baseCmd.AddCommand(imprt.GetCommand())
 
 }
 

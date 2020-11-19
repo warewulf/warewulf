@@ -1,7 +1,6 @@
-package mkdir
+package imprt
 
 import (
-	"fmt"
 	"github.com/hpcng/warewulf/internal/pkg/assets"
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
@@ -14,32 +13,36 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	config := config.New()
-	var overlaySourceDir string
-//	mode := uint32(strconv.ParseUint(PermMode, 8, 32))
+	overlayName := args[0]
+	source := args[1]
+	var dest string
+	var overlaySource string
 
+	if len(args) == 3 {
+		dest = args[2]
+	} else {
+		dest = source
+	}
 
 	if SystemOverlay == true {
-		overlaySourceDir = config.SystemOverlaySource(args[0])
+		wwlog.Printf(wwlog.VERBOSE, "Importing '%s' into system overlay '%s:%s'\n", source, overlayName, dest)
+		overlaySource = config.SystemOverlaySource(overlayName)
 	} else {
-		overlaySourceDir = config.RuntimeOverlaySource(args[0])
+		wwlog.Printf(wwlog.VERBOSE, "Importing '%s' into runtime overlay '%s:%s'\n", source, overlayName, dest)
+		overlaySource = config.RuntimeOverlaySource(overlayName)
 	}
 
-	if util.IsDir(overlaySourceDir) == false {
-		wwlog.Printf(wwlog.ERROR, "Overlay does not exist: %s\n", args[0])
+	if util.IsDir(overlaySource) == false {
+		wwlog.Printf(wwlog.ERROR, "Overlay does not exist: %s\n", overlayName)
 		os.Exit(1)
 	}
 
-	overlayDir := path.Join(overlaySourceDir, args[1])
-
-	wwlog.Printf(wwlog.DEBUG, "Will create directory in overlay: %s:%s\n", args[0], overlayDir)
-
-	err := os.MkdirAll(overlayDir, os.FileMode(PermMode))
+	err := util.CopyFile(source, path.Join(overlaySource, dest))
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not create directory: %s\n", path.Dir(overlayDir))
+		wwlog.Printf(wwlog.ERROR, "Failed copying file into overlay sourcedir:\n")
+		wwlog.Printf(wwlog.ERROR, "%s\n", err)
 		os.Exit(1)
 	}
-
-	fmt.Printf("Created directory within overlay: %s:%s\n", args[0], args[1])
 
 	if NoOverlayUpdate == false {
 		nodes, err := assets.FindAllNodes()
@@ -51,9 +54,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		var updateNodes []assets.NodeInfo
 
 		for _, node := range nodes {
-			if SystemOverlay == true && node.SystemOverlay == args[0] {
+			if SystemOverlay == true && node.SystemOverlay == overlayName {
 				updateNodes = append(updateNodes, node)
-			} else if node.RuntimeOverlay == args[0] {
+			} else if node.RuntimeOverlay == overlayName {
 				updateNodes = append(updateNodes, node)
 			}
 		}
@@ -65,6 +68,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Printf(wwlog.INFO, "Updating Runtime Overlays...\n")
 			return overlay.RuntimeBuild(updateNodes, true)
 		}
+
 	}
 
 	return nil

@@ -51,7 +51,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if util.IsFile(overlayFile) == false && filepath.Ext(overlayFile) == ".ww" {
 		wwlog.Printf(wwlog.WARN, "This is a new file, creating some default content\n")
 
-		w, err := os.OpenFile(overlayFile, os.O_RDWR|os.O_CREATE, 0644)
+		w, err := os.OpenFile(overlayFile, os.O_RDWR|os.O_CREATE, os.FileMode(PermMode))
 		if err != nil {
 			wwlog.Printf(wwlog.WARN, "Could not create file for writing: %s\n", err)
 		}
@@ -76,31 +76,32 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.ERROR, "Editor process existed with non-zero\n")
 		os.Exit(1)
 	}
+	wwlog.Printf(wwlog.INFO, "Updated: %s %s\n", args[0], args[1] )
 
-	// Everything below this point is to update the relevant overlays
-	nodes, err := assets.FindAllNodes()
-	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Cloud not get nodeList: %s\n", err)
-		os.Exit(1)
-	}
-
-	var updateNodes []assets.NodeInfo
-
-	for _, node := range nodes {
-		if SystemOverlay == true && node.SystemOverlay == args[0] {
-			updateNodes = append(updateNodes, node)
-		} else if node.RuntimeOverlay == args[0] {
-			updateNodes = append(updateNodes, node)
+	if NoOverlayUpdate == false {
+		nodes, err := assets.FindAllNodes()
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "Cloud not get nodeList: %s\n", err)
+			os.Exit(1)
 		}
 
-	}
+		var updateNodes []assets.NodeInfo
 
-	if SystemOverlay == true {
-		wwlog.Printf(wwlog.INFO, "Updating System Overlays...\n")
-		return overlay.SystemBuild(updateNodes, true)
-	} else {
-		wwlog.Printf(wwlog.INFO, "Updating Runtime Overlays...\n")
-		return overlay.RuntimeBuild(updateNodes, true)
+		for _, node := range nodes {
+			if SystemOverlay == true && node.SystemOverlay == args[0] {
+				updateNodes = append(updateNodes, node)
+			} else if node.RuntimeOverlay == args[0] {
+				updateNodes = append(updateNodes, node)
+			}
+		}
+
+		if SystemOverlay == true {
+			wwlog.Printf(wwlog.INFO, "Updating System Overlays...\n")
+			return overlay.SystemBuild(updateNodes, true)
+		} else {
+			wwlog.Printf(wwlog.INFO, "Updating Runtime Overlays...\n")
+			return overlay.RuntimeBuild(updateNodes, true)
+		}
 	}
 
 	return nil

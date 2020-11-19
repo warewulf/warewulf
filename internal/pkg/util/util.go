@@ -84,6 +84,8 @@ func CopyFile(source string, dest string) error {
 	return destFD.Close()
 }
 
+//TODO: func CopyRecursive ...
+
 
 func IsDir(path string) (bool) {
 	if stat, err := os.Stat(path); err == nil && stat.IsDir() {
