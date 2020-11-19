@@ -9,8 +9,6 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-
-
 	var updateNodes []assets.NodeInfo
 
 	if len(args) > 0 && BuildAll == false {
