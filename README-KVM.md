@@ -68,13 +68,19 @@
     # Fedora prerequisites
     sudo dnf -y install tftp-server tftp
     sudo dnf -y install dhcp
+    sudo dnf -y install ipmitool
     sudo dnf install singularity
+    sudo dnf install gpgme-devel
+    sudo dnf install libassuan.x86_64 libassuan-devel.x86_64
 
     # Centos prerequisites
     sudo yum -y install tftp-server tftp
     sudo yum -y install dhcp
+    sudo yum -y install ipmitool
     sudo yum install http://repo.ctrliq.com/packages/rhel7/ctrl-release.rpm
     sudo yum install singularityplus
+    sudo yum install gpgme-devel
+    sudo yum install libassuan.x86_64 libassuan-devel.x86_64
 
     # follow README.md instructions
 

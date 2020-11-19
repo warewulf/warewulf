@@ -36,7 +36,7 @@ type nodeGroup struct {
 	RuntimeOverlay string `yaml:"runtime overlay""`
 	DomainSuffix   string `yaml:"domain suffix"`
 	KernelVersion  string `yaml:"kernel version"`
-	KernelArgs	   string `yaml:"kernel args"`
+	KernelArgs     string `yaml:"kernel args"`
 	Nodes          map[string]nodeEntry
 }
 
@@ -48,7 +48,7 @@ type nodeEntry struct {
 	RuntimeOverlay string `yaml:"runtime overlay"`
 	DomainSuffix   string `yaml:"domain suffix"`
 	KernelVersion  string `yaml:"kernel version"`
-	KernelArgs	   string `yaml:"kernel args"`
+	KernelArgs     string `yaml:"kernel args"`
 	IpmiIpaddr     string `yaml:"ipmi ipaddr"`
 	NetDevs        map[string]netDevs
 }
@@ -72,7 +72,8 @@ type NodeInfo struct {
 	SystemOverlay  string
 	RuntimeOverlay string
 	KernelVersion  string
-	KernelArgs	   string
+	KernelArgs     string
+	IpmiIpaddr     string
 	NetDevs        map[string]netDevs
 }
 
@@ -100,6 +101,7 @@ func FindAllNodes() ([]NodeInfo, error) {
 
 			n.GroupName = groupname
 			n.HostName = node.Hostname
+			n.IpmiIpaddr = node.IpmiIpaddr
 
 			n.Vnfs = group.Vnfs
 			n.SystemOverlay = group.SystemOverlay
@@ -217,6 +219,26 @@ func SearchByName(search string) ([]NodeInfo, error) {
 		b, _ := regexp.MatchString(search, node.Fqdn)
 		if b == true {
 			ret = append(ret, node)
+		}
+	}
+
+	return ret, nil
+}
+
+func SearchByNameList(searchList []string) ([]NodeInfo, error) {
+	var ret []NodeInfo
+
+	nodeList, err := FindAllNodes()
+	if err != nil {
+		return ret, err
+	}
+
+	for _, search := range searchList {
+		for _, node := range nodeList {
+			b, _ := regexp.MatchString(search, node.Fqdn)
+			if b == true {
+				ret = append(ret, node)
+			}
 		}
 	}
 
