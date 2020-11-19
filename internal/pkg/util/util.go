@@ -1,6 +1,8 @@
 package util
 
 import (
+	"crypto/sha256"
+	"fmt"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"io"
 	"math/rand"
@@ -160,4 +162,23 @@ func ExecInteractive(command string, a...string) error {
 	c.Stderr = os.Stderr
 	err := c.Run()
 	return err
+}
+
+
+
+func ShaSumFile(file string) (string, error) {
+	var ret string
+
+	f, err := os.Open(file)
+	if err != nil {
+		return ret, nil
+	}
+	defer f.Close()
+
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return ret, err
+	}
+
+	return fmt.Sprintf("%x", h.Sum(nil)), nil
 }

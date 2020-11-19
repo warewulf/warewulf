@@ -2,6 +2,7 @@ package overlay
 
 import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/build"
+	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/chmod"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/create"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/delete"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/edit"
@@ -33,6 +34,7 @@ func init() {
 	baseCmd.AddCommand(mkdir.GetCommand())
 	baseCmd.AddCommand(build.GetCommand())
 	baseCmd.AddCommand(imprt.GetCommand())
+	baseCmd.AddCommand(chmod.GetCommand())
 
 }
 

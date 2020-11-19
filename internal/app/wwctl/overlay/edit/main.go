@@ -18,7 +18,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	editor := config.Editor
 	var overlaySourceDir string
 
-
 	if SystemOverlay == true {
 		overlaySourceDir = config.SystemOverlaySource(args[0])
 	} else {
@@ -70,13 +69,28 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Fprintf(w, "\n")
 	}
 
-	err := util.ExecInteractive(editor, overlayFile)
 
+	shasum1, err := util.ShaSumFile(overlayFile)
+	if err != nil {
+		wwlog.Printf(wwlog.WARN, "Could not open overlay file for checksum: %s\n", err)
+	}
+
+	err = util.ExecInteractive(editor, overlayFile)
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Editor process existed with non-zero\n")
 		os.Exit(1)
 	}
 	wwlog.Printf(wwlog.INFO, "Updated: %s %s\n", args[0], args[1] )
+
+	shasum2, err := util.ShaSumFile(overlayFile)
+	if err != nil {
+		wwlog.Printf(wwlog.WARN, "Could not open overlay file for checksum: %s\n", err)
+	}
+
+	if shasum1 == shasum2 {
+		wwlog.Printf(wwlog.VERBOSE, "Not updating overlays, no file change\n")
+		NoOverlayUpdate = true
+	}
 
 	if NoOverlayUpdate == false {
 		nodes, err := assets.FindAllNodes()
