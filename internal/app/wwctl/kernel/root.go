@@ -1,7 +1,10 @@
 package kernel
 
 import (
-	"fmt"
+	"github.com/hpcng/warewulf/internal/app/wwctl/kernel/build"
+	"github.com/hpcng/warewulf/internal/app/wwctl/kernel/export"
+	"github.com/hpcng/warewulf/internal/app/wwctl/kernel/imprt"
+	"github.com/hpcng/warewulf/internal/app/wwctl/kernel/list"
 	"github.com/spf13/cobra"
 )
 
@@ -10,22 +13,17 @@ var (
 		Use:                "kernel",
 		Short:              "Kernel Image Management",
 		Long:               "Management of Warewulf Kernels to be used for bootstrapping nodes",
-		RunE:				CobraRunE,
 	}
-	test bool
 )
 
 func init() {
-	baseCmd.PersistentFlags().BoolVarP(&test, "test", "t", false, "Testing.")
-
+	baseCmd.AddCommand(build.GetCommand())
+	baseCmd.AddCommand(export.GetCommand())
+	baseCmd.AddCommand(imprt.GetCommand())
+	baseCmd.AddCommand(list.GetCommand())
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
 func GetCommand() *cobra.Command {
 	return baseCmd
-}
-
-func CobraRunE(cmd *cobra.Command, args []string) error {
-	fmt.Printf("Kernel: Hello World\n")
-	return nil
 }
