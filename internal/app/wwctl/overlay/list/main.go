@@ -110,5 +110,29 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	var unconfigured bool
+	for overlay, _ := range set {
+		var overlayPath string
+
+		if SystemOverlay == true {
+			overlayPath = config.SystemOverlaySource(overlay)
+		} else {
+			overlayPath = config.SystemOverlaySource(overlay)
+		}
+
+		if util.IsDir(overlayPath) == false {
+			fmt.Printf("%-30s %-12d 0\n", "("+overlay+")", set[overlay])
+			unconfigured = true
+		}
+	}
+
+	if unconfigured == true {
+		fmt.Printf("\n")
+		wwlog.Printf(wwlog.WARN, "There are unconfigured overlays present, run the following command to\n")
+		wwlog.Printf(wwlog.WARN, "create a new overlay:\n")
+		wwlog.Printf(wwlog.WARN, "\n")
+		wwlog.Printf(wwlog.WARN, "   $ sudo wwctl overlay create ...\n")
+	}
+
 	return nil
 }

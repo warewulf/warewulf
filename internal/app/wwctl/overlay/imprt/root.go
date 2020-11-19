@@ -1,16 +1,15 @@
-package mkdir
+package imprt
 
-import (
-	"github.com/spf13/cobra"
-)
+import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "mkdir [overlay name] [directory path]",
-		Short:              "Create a new directory",
-		Long:               "Create a new directory within a Warewulf overlay",
+		Use:                "import [overlay name] [source file] (dest location)",
+		Short:              "Import Warewulf Overlay files",
+		Long:               "Warewulf Import overlay files",
 		RunE:				CobraRunE,
-		Args: 				cobra.MinimumNArgs(2),
+		Args: 				cobra.RangeArgs(2, 3),
+		Aliases: 			[]string{"cp"},
 	}
 	SystemOverlay bool
 	PermMode int32
@@ -18,7 +17,7 @@ var (
 )
 
 func init() {
-	baseCmd.PersistentFlags().BoolVarP(&SystemOverlay, "system", "s", false, "Show System Overlays as well")
+	baseCmd.PersistentFlags().BoolVarP(&SystemOverlay, "system", "s", false, "Show system overlays instead of runtime")
 	baseCmd.PersistentFlags().Int32VarP(&PermMode, "mode", "m", 0755, "Permission mode for directory")
 	baseCmd.PersistentFlags().BoolVarP(&NoOverlayUpdate, "noupdate", "n", false, "Don't update overlays")
 }

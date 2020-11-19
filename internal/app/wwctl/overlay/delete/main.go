@@ -48,9 +48,16 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				os.Exit(1)
 			}
 		}
+		fmt.Printf("Deleted overlay: %s\n", args[0])
+
 	} else if len(args) > 1 {
 		for i := 1; i < len(args); i++ {
 			removePath := path.Join(overlayPath, args[i])
+
+			if util.IsDir(removePath) == true || util.IsFile(removePath) == true {
+				wwlog.Printf(wwlog.ERROR, "Path to remove doesn't exist in overlay: %s\n", removePath)
+				os.Exit(1)
+			}
 
 			if Force == true {
 				err := os.RemoveAll(removePath)
@@ -68,7 +75,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				}
 			}
 
-			if RmEmptyDirs == true {
+			if Parents == true {
 				// Cleanup any empty directories left behind...
 				i := path.Dir(removePath)
 				for i != overlayPath {
@@ -83,36 +90,35 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				}
 			}
 		}
+		fmt.Printf("Deleted from overlay: %s:%s\n", args[0], args[1])
+
 	}
 
-	fmt.Printf("Deleted from overlay: %s:%s\n", args[0], args[1])
-
-	// Everything below this point is to update the relevant overlays
-	nodes, err := assets.FindAllNodes()
-	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Cloud not get nodeList: %s\n", err)
-		os.Exit(1)
-	}
-
-	var updateNodes []assets.NodeInfo
-
-	for _, node := range nodes {
-		if SystemOverlay == true && node.SystemOverlay == args[0] {
-			updateNodes = append(updateNodes, node)
-		} else if node.RuntimeOverlay == args[0] {
-			updateNodes = append(updateNodes, node)
+	if NoOverlayUpdate == false {
+		nodes, err := assets.FindAllNodes()
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "Cloud not get nodeList: %s\n", err)
+			os.Exit(1)
 		}
 
-	}
+		var updateNodes []assets.NodeInfo
 
-	if SystemOverlay == true {
-		wwlog.Printf(wwlog.INFO, "Updating System Overlays...\n")
-		return overlay.SystemBuild(updateNodes, true)
-	} else {
-		wwlog.Printf(wwlog.INFO, "Updating Runtime Overlays...\n")
-		return overlay.RuntimeBuild(updateNodes, true)
-	}
+		for _, node := range nodes {
+			if SystemOverlay == true && node.SystemOverlay == args[0] {
+				updateNodes = append(updateNodes, node)
+			} else if node.RuntimeOverlay == args[0] {
+				updateNodes = append(updateNodes, node)
+			}
+		}
 
+		if SystemOverlay == true {
+			wwlog.Printf(wwlog.INFO, "Updating System Overlays...\n")
+			return overlay.SystemBuild(updateNodes, true)
+		} else {
+			wwlog.Printf(wwlog.INFO, "Updating Runtime Overlays...\n")
+			return overlay.RuntimeBuild(updateNodes, true)
+		}
+	}
 
 	return nil
 }
