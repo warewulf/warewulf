@@ -134,7 +134,7 @@ func (p *puller) pull(ctx context.Context, uri, dst string) (err error) {
 
 	// copy to cache location
 	_, err = copy.Image(ctx, policyCtx, cacheRef, srcRef, &copy.Options{
-		//ReportWriter: os.Stdout,
+		ReportWriter: os.Stdout,
 		SourceCtx: p.sysCtx,
 	})
 	if err != nil {

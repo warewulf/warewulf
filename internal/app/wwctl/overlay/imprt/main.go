@@ -1,0 +1,75 @@
+package imprt
+
+import (
+	"github.com/hpcng/warewulf/internal/pkg/assets"
+	"github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/overlay"
+	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/spf13/cobra"
+	"os"
+	"path"
+)
+
+func CobraRunE(cmd *cobra.Command, args []string) error {
+	config := config.New()
+	overlayName := args[0]
+	source := args[1]
+	var dest string
+	var overlaySource string
+
+	if len(args) == 3 {
+		dest = args[2]
+	} else {
+		dest = source
+	}
+
+	if SystemOverlay == true {
+		wwlog.Printf(wwlog.VERBOSE, "Importing '%s' into system overlay '%s:%s'\n", source, overlayName, dest)
+		overlaySource = config.SystemOverlaySource(overlayName)
+	} else {
+		wwlog.Printf(wwlog.VERBOSE, "Importing '%s' into runtime overlay '%s:%s'\n", source, overlayName, dest)
+		overlaySource = config.RuntimeOverlaySource(overlayName)
+	}
+
+	if util.IsDir(overlaySource) == false {
+		wwlog.Printf(wwlog.ERROR, "Overlay does not exist: %s\n", overlayName)
+		os.Exit(1)
+	}
+
+	err := util.CopyFile(source, path.Join(overlaySource, dest))
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Failed copying file into overlay sourcedir:\n")
+		wwlog.Printf(wwlog.ERROR, "%s\n", err)
+		os.Exit(1)
+	}
+
+	if NoOverlayUpdate == false {
+		nodes, err := assets.FindAllNodes()
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "Cloud not get nodeList: %s\n", err)
+			os.Exit(1)
+		}
+
+		var updateNodes []assets.NodeInfo
+
+		for _, node := range nodes {
+			if SystemOverlay == true && node.SystemOverlay == overlayName {
+				updateNodes = append(updateNodes, node)
+			} else if node.RuntimeOverlay == overlayName {
+				updateNodes = append(updateNodes, node)
+			}
+		}
+
+		if SystemOverlay == true {
+			wwlog.Printf(wwlog.INFO, "Updating System Overlays...\n")
+			return overlay.SystemBuild(updateNodes, true)
+		} else {
+			wwlog.Printf(wwlog.INFO, "Updating Runtime Overlays...\n")
+			return overlay.RuntimeBuild(updateNodes, true)
+		}
+
+	}
+
+	return nil
+}

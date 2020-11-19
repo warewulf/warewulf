@@ -1,11 +1,15 @@
 package util
 
 import (
+	"crypto/sha256"
+	"fmt"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"io"
 	"math/rand"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"regexp"
 	"time"
 
 	//   "strings"
@@ -80,4 +84,101 @@ func CopyFile(source string, dest string) error {
 	sourceFD.Close()
 
 	return destFD.Close()
+}
+
+//TODO: func CopyRecursive ...
+
+
+func IsDir(path string) (bool) {
+	if stat, err := os.Stat(path); err == nil && stat.IsDir() {
+		return true
+	}
+	return false
+}
+
+func IsFile(path string) (bool) {
+	if _, err := os.Stat(path); err == nil {
+		return true
+	}
+	return false
+}
+
+
+func TaintCheck(pattern string, expr string) bool {
+	if b, _ := regexp.MatchString(expr, pattern); b == true {
+		return true
+	}
+	return false
+}
+
+func ValidateOrDie(hostname string, name string, pattern string, expr string) {
+	if TaintCheck(pattern, expr) == false {
+		wwlog.Printf(wwlog.ERROR, "Entry '%s:%s' contains illegal characters: '%s'\n", hostname, name, pattern)
+		os.Exit(1)
+	}
+}
+
+func FindFiles(path string) []string {
+	var ret []string
+
+	wwlog.Printf(wwlog.DEBUG, "Changing directory to FindFiles path: %s\n", path)
+	err := os.Chdir(path)
+	if err != nil {
+		wwlog.Printf(wwlog.WARN, "Could not chdir() to: %s\n", path)
+		return ret
+	}
+
+	err = filepath.Walk(".", func(location string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if location == "." {
+			return nil
+		}
+
+		if IsDir(location) == true {
+			wwlog.Printf(wwlog.DEBUG, "FindFiles() found directory: %s\n", location)
+			ret = append(ret, location +"/")
+		} else {
+			wwlog.Printf(wwlog.DEBUG, "FindFiles() found file: %s\n", location)
+			ret = append(ret, location)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return ret
+	}
+
+	return ret
+}
+
+func ExecInteractive(command string, a...string) error {
+	wwlog.Printf(wwlog.DEBUG, "ExecInteractive(%s, %s)\n", command, a)
+	c := exec.Command(command, a...)
+	c.Stdin = os.Stdin
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
+	err := c.Run()
+	return err
+}
+
+
+
+func ShaSumFile(file string) (string, error) {
+	var ret string
+
+	f, err := os.Open(file)
+	if err != nil {
+		return ret, nil
+	}
+	defer f.Close()
+
+	h := sha256.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return ret, err
+	}
+
+	return fmt.Sprintf("%x", h.Sum(nil)), nil
 }

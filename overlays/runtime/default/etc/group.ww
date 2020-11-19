@@ -1,2 +1,2 @@
-{{Include (printf "%s%s" .VnfsDir "/etc/group")}}
+{{IncludeFromVnfs .Vnfs "/etc/group"}}
 {{Include "/etc/group"}}

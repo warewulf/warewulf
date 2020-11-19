@@ -3,7 +3,9 @@ package assets
 import (
 	"fmt"
 	"github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/vnfs"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	//	"os"
@@ -30,8 +32,8 @@ type nodeGroup struct {
 	Comment        string
 	Vnfs           string
 	Ipxe           string `yaml:"ipxe template"`
-	SystemOverlay  string `yaml:"system system-overlay""`
-	RuntimeOverlay string `yaml:"runtime system-overlay""`
+	SystemOverlay  string `yaml:"system overlay""`
+	RuntimeOverlay string `yaml:"runtime overlay""`
 	DomainSuffix   string `yaml:"domain suffix"`
 	KernelVersion  string `yaml:"kernel version"`
 	KernelArgs	   string `yaml:"kernel args"`
@@ -42,8 +44,8 @@ type nodeEntry struct {
 	Hostname       string
 	Vnfs           string
 	Ipxe           string `yaml:"ipxe template"`
-	SystemOverlay  string `yaml:"system system-overlay"`
-	RuntimeOverlay string `yaml:"runtime system-overlay"`
+	SystemOverlay  string `yaml:"system overlay"`
+	RuntimeOverlay string `yaml:"runtime overlay"`
 	DomainSuffix   string `yaml:"domain suffix"`
 	KernelVersion  string `yaml:"kernel version"`
 	KernelArgs	   string `yaml:"kernel args"`
@@ -80,6 +82,7 @@ func FindAllNodes() ([]NodeInfo, error) {
 	config := config.New()
 
 
+	wwlog.Printf(wwlog.DEBUG, "Opening configuration file: %s\n", ConfigFile)
 	data, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
 		fmt.Printf("error reading node configuration file\n")
@@ -145,6 +148,14 @@ func FindAllNodes() ([]NodeInfo, error) {
 				n.Fqdn = node.Hostname
 			}
 
+			util.ValidateOrDie(n.Fqdn, "group name", 		n.GroupName, "^[a-zA-Z0-9-._]+$")
+			util.ValidateOrDie(n.Fqdn, "vnfs", 				n.Vnfs, "^[a-zA-Z0-9-._:/]+$")
+			util.ValidateOrDie(n.Fqdn, "system overlay", 	n.SystemOverlay, "^[a-zA-Z0-9-._]+$")
+			util.ValidateOrDie(n.Fqdn, "runtime overlay", 	n.RuntimeOverlay, "^[a-zA-Z0-9-._]+$")
+			util.ValidateOrDie(n.Fqdn, "domain suffix", 	n.DomainName, "^[a-zA-Z0-9-._]+$")
+			util.ValidateOrDie(n.Fqdn, "hostname", 			n.HostName, "^[a-zA-Z0-9-_]+$")
+			util.ValidateOrDie(n.Fqdn, "kernel version", 	n.KernelVersion, "^[a-zA-Z0-9-._]+$")
+
 			v := vnfs.New(n.Vnfs)
 			n.VnfsDir = config.VnfsChroot(v.NameClean())
 
@@ -154,6 +165,7 @@ func FindAllNodes() ([]NodeInfo, error) {
 
 	return ret, nil
 }
+
 
 func FindByHwaddr(hwa string) (NodeInfo, error) {
 	var ret NodeInfo
