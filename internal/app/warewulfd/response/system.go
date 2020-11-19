@@ -1,4 +1,4 @@
-package warewulfd_responses
+package response
 
 import (
 	"github.com/hpcng/warewulf/internal/pkg/config"

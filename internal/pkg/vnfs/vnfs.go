@@ -1,12 +1,13 @@
 package vnfs
 
 import (
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"path"
 	"strings"
 )
 
 type VnfsObject struct {
-	SourcePath  string
+	SourcePath string
 }
 
 func New(s string) VnfsObject {
@@ -48,4 +49,22 @@ func (self *VnfsObject) Source() string {
 	}
 
 	return self.SourcePath
+}
+
+func Build(uri string, force bool) error {
+	v := New(uri)
+
+	wwlog.Printf(wwlog.VERBOSE, "Building VNFS: %s\n", uri)
+	if strings.HasPrefix(uri, "/") {
+		if strings.HasSuffix(uri, "tar.gz") {
+			//wwlog.Printf(wwlog.WARN, "Building VNFS from local tarball: %s\n", uri)
+			wwlog.Printf(wwlog.WARN, "Building VNFS from local tarball is not supported yet: %s\n", uri)
+		} else {
+			BuildContainerdir(v, force)
+		}
+	} else {
+		BuildDocker(v, force)
+	}
+
+	return nil
 }

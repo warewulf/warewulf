@@ -19,7 +19,7 @@ func main() {
 		time.Sleep(5000 * time.Millisecond)
 	} else {
 		fmt.Printf("Called via: %s\n", os.Args[0])
-		fmt.Printf("Runtime system-overlay is being put in '/warewulf/wwclient-test' rather than '/'\n")
+		fmt.Printf("Runtime overlay is being put in '/warewulf/wwclient-test' rather than '/'\n")
 		os.MkdirAll("/warewulf/wwclient-test", 0755)
 		os.Chdir("/warewulf/wwclient-test")
 	}
@@ -41,7 +41,6 @@ func main() {
 				LocalAddr: &localTCPAddr,
 				Timeout:   30 * time.Second,
 				KeepAlive: 30 * time.Second,
-				DualStack: true,
 			}).DialContext,
 			MaxIdleConns:          100,
 			IdleConnTimeout:       90 * time.Second,
@@ -74,19 +73,13 @@ func main() {
 			time.Sleep(1000 * time.Millisecond)
 		}
 
-//		defer resp.Body.Close()
-
-
-
-
 		if resp.StatusCode != 200 {
-			log.Printf("Not updating runtime system-overlay, got status code: %d\n", resp.StatusCode)
+			log.Printf("Not updating runtime overlay, got status code: %d\n", resp.StatusCode)
 			time.Sleep(60000 * time.Millisecond)
 			continue
 		}
 
-
-		log.Printf("Updating runtime system\n")
+		log.Printf("Updating system\n")
 		command := exec.Command("/bin/cpio", "-iu")
 		command.Stdin = resp.Body
 		err := command.Run()

@@ -65,7 +65,6 @@ func Build(nodeList []assets.NodeInfo, force bool) error {
 				wwlog.Printf(wwlog.INFO, "%-35s: Done\n", "kmods-"+kernelVersion+".img")
 			}
 		}
-
 	}
 
 	wwlog.SetIndent(0)
