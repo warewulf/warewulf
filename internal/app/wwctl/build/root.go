@@ -13,6 +13,7 @@ var (
 							"that seems to be needed.",
 		RunE:				CobraRunE,
 	}
+
 	buildVnfs bool
 	buildKernel bool
 	buildRuntimeOverlay bool

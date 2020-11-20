@@ -1,7 +1,6 @@
 package show
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 )
 
@@ -11,21 +10,17 @@ var (
 		Short:              "Show Warewulf Overlay objects",
 		Long:               "Warewulf show overlay objects",
 		RunE:				CobraRunE,
+		Aliases: 			[]string{"cat"},
+		Args: 				cobra.ExactArgs(2),
 	}
-
+	SystemOverlay bool
 )
 
 func init() {
-
+	baseCmd.PersistentFlags().BoolVarP(&SystemOverlay, "system", "s", false, "Show System Overlays as well")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
 func GetCommand() *cobra.Command {
 	return baseCmd
-}
-
-
-func CobraRunE(cmd *cobra.Command, args []string) error {
-	fmt.Printf("Show: Hello World\n")
-	return nil
 }
