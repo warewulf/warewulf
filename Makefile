@@ -44,6 +44,7 @@ all: vendor warewulfd wwctl wwclient
 
 files: all
 	install -d -m 0755 /var/warewulf/
+	install -d -m 0755 /var/warewulf/chroot
 	install -d -m 0755 /etc/warewulf/
 	install -d -m 0755 /etc/warewulf/ipxe
 	install -d -m 0755 /var/lib/tftpboot/warewulf/ipxe/
