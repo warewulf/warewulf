@@ -3,13 +3,12 @@ package overlay
 import (
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/hpcng/warewulf/internal/pkg/vnfs"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"io/ioutil"
 	"path"
 	"strings"
 )
-
 
 func templateFileInclude(path string) string {
 	wwlog.Printf(wwlog.DEBUG, "Including file into template: %s\n", path)
