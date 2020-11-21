@@ -5,13 +5,13 @@ import "github.com/spf13/cobra"
 var (
 	baseCmd = &cobra.Command{
 		Use:                "set",
-		Short:              "Set node configurations",
-		Long:               "Set node configurations ",
+		Short:              "Set group configurations",
+		Long:               "Set group configurations ",
 		RunE:				CobraRunE,
 	}
 	SetVnfs string
 	SetKernel string
-//	SetGroupLevel bool
+	//	SetGroupLevel bool
 )
 
 func init() {
