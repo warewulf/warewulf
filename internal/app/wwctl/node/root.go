@@ -5,6 +5,7 @@ import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/node/poweron"
 	"github.com/hpcng/warewulf/internal/app/wwctl/node/poweroff"
 	"github.com/hpcng/warewulf/internal/app/wwctl/node/powerstatus"
+	"github.com/hpcng/warewulf/internal/app/wwctl/node/set"
 	"github.com/spf13/cobra"
 )
 
@@ -21,6 +22,7 @@ func init() {
 	baseCmd.AddCommand(poweroff.GetCommand())
 	baseCmd.AddCommand(powerstatus.GetCommand())
 	baseCmd.AddCommand(list.GetCommand())
+	baseCmd.AddCommand(set.GetCommand())
 
 }
 

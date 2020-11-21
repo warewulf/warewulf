@@ -30,6 +30,7 @@ func init() {
 	rootCmd.AddCommand(vnfs.GetCommand())
 	rootCmd.AddCommand(node.GetCommand())
 	rootCmd.AddCommand(kernel.GetCommand())
+
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
