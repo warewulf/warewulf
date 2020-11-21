@@ -1,17 +1,17 @@
-package set
+package add
 
 import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "set",
-		Short:              "Set node configurations",
-		Long:               "Set node configurations ",
+		Use:                "add",
+		Short:              "Add a new node group",
+		Long:               "Add a new node group ",
 		RunE:				CobraRunE,
 	}
 	SetVnfs string
 	SetKernel string
-//	SetGroupLevel bool
+	//	SetGroupLevel bool
 )
 
 func init() {
