@@ -2,8 +2,8 @@ package response
 
 import (
 	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/assets"
 	"github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/node"
 	"log"
 	"net/http"
 	"strconv"
@@ -12,6 +12,12 @@ import (
 
 func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 	config := config.New()
+	nodes, err := node.New()
+	if err != nil {
+		log.Printf("Could not read node configuration file: %s\n", err)
+		w.WriteHeader(503)
+		return
+	}
 
 	remote := strings.Split(req.RemoteAddr, ":")
 	port, err := strconv.Atoi(remote[1])
@@ -34,7 +40,7 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	node, err := assets.FindByIpaddr(remote[0])
+	node, err := nodes.FindByIpaddr(remote[0])
 	if err != nil {
 		fmt.Printf("Could not find node by IP address: %s\n", remote[0])
 		w.WriteHeader(404)

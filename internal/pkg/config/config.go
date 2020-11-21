@@ -84,6 +84,14 @@ func (self *Config) RuntimeOverlayDir() string {
 	return path.Join(self.OverlayDir(), "/runtime")
 }
 
+func (self *Config) VnfsImageParentDir() string {
+	return fmt.Sprintf("%s/provision/vnfs/", self.LocalStateDir)
+}
+
+func (self *Config) VnfsChrootParentDir() string {
+	return fmt.Sprintf("%s/chroot/", self.LocalStateDir)
+}
+
 func (self *Config) SystemOverlaySource(overlayName string) string {
 	if overlayName == "" {
 		wwlog.Printf(wwlog.ERROR, "System overlay name is not defined\n")
@@ -141,20 +149,6 @@ func (self *Config) KmodsImage(kernelVersion string) string {
 	return fmt.Sprintf("%s/provision/kernel/kmods-%s.img", self.LocalStateDir, kernelVersion)
 }
 
-func (self *Config) VnfsImage(vnfsNameClean string) string {
-	if vnfsNameClean == "" {
-		wwlog.Printf(wwlog.ERROR, "VNFS name is not defined\n")
-		return ""
-	}
-
-	if util.TaintCheck(vnfsNameClean, "^[a-zA-Z0-9-._:]+$") == false {
-		wwlog.Printf(wwlog.ERROR, "Runtime overlay name contains illegal characters: %s\n", vnfsNameClean)
-		return ""
-	}
-
-	return fmt.Sprintf("%s/provision/vnfs/%s.img.gz", self.LocalStateDir, vnfsNameClean)
-}
-
 func (self *Config) SystemOverlayImage(nodeName string) string {
 	if nodeName == "" {
 		wwlog.Printf(wwlog.ERROR, "Node name is not defined\n")
@@ -183,6 +177,21 @@ func (self *Config) RuntimeOverlayImage(nodeName string) string {
 	return fmt.Sprintf("%s/provision/overlays/runtime/%s.img", self.LocalStateDir, nodeName)
 }
 
+
+func (self *Config) VnfsImage(vnfsNameClean string) string {
+	if vnfsNameClean == "" {
+		wwlog.Printf(wwlog.ERROR, "VNFS name is not defined\n")
+		return ""
+	}
+
+	if util.TaintCheck(vnfsNameClean, "^[a-zA-Z0-9-._:]+$") == false {
+		wwlog.Printf(wwlog.ERROR, "Runtime overlay name contains illegal characters: %s\n", vnfsNameClean)
+		return ""
+	}
+
+	return path.Join(self.VnfsImageParentDir(), vnfsNameClean)
+}
+
 func (self *Config) VnfsChroot(vnfsNameClean string) string {
 	if vnfsNameClean == "" {
 		wwlog.Printf(wwlog.ERROR, "VNFS name is not defined\n")
@@ -194,6 +203,6 @@ func (self *Config) VnfsChroot(vnfsNameClean string) string {
 		return ""
 	}
 
-	return fmt.Sprintf("%s/chroot/%s.img", self.LocalStateDir, vnfsNameClean)
+	return path.Join(self.VnfsChrootParentDir(), vnfsNameClean)
 }
 

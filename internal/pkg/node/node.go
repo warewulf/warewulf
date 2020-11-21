@@ -1,19 +1,15 @@
-package assets
+package node
 
 import (
 	"fmt"
 	"github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/errors"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/vnfs"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	//	"os"
-
-	//	"os"
 	"regexp"
-
-	"github.com/hpcng/warewulf/internal/pkg/errors"
 )
 
 const ConfigFile = "/etc/warewulf/nodes.conf"
@@ -50,6 +46,8 @@ type nodeEntry struct {
 	KernelVersion  string `yaml:"kernel version"`
 	KernelArgs     string `yaml:"kernel args"`
 	IpmiIpaddr     string `yaml:"ipmi ipaddr"`
+	IpmiUserName   string `yaml:"ipmi username"`
+	IpmiPassword   string `yaml:"ipmi password"`
 	NetDevs        map[string]netDevs
 }
 
@@ -74,25 +72,32 @@ type NodeInfo struct {
 	KernelVersion  string
 	KernelArgs     string
 	IpmiIpaddr     string
+	IpmiUserName   string
+	IpmiPassword   string
 	NetDevs        map[string]netDevs
 }
 
-func FindAllNodes() ([]NodeInfo, error) {
-	var c nodeYaml
-	var ret []NodeInfo
-	config := config.New()
+type nodeInfoContainer struct {
+	Nodes			[]NodeInfo
+}
 
+
+func New() (nodeInfoContainer, error) {
+	var c nodeYaml
+	var ret nodeInfoContainer
+
+	config := config.New()
 
 	wwlog.Printf(wwlog.DEBUG, "Opening configuration file: %s\n", ConfigFile)
 	data, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
 		fmt.Printf("error reading node configuration file\n")
-		return nil, err
+		return ret, err
 	}
 
 	err = yaml.Unmarshal(data, &c)
 	if err != nil {
-		return nil, err
+		return ret, err
 	}
 
 	for groupname, group := range c.NodeGroups {
@@ -102,6 +107,8 @@ func FindAllNodes() ([]NodeInfo, error) {
 			n.GroupName = groupname
 			n.HostName = node.Hostname
 			n.IpmiIpaddr = node.IpmiIpaddr
+			n.IpmiUserName = node.IpmiUserName
+			n.IpmiPassword = node.IpmiPassword
 
 			n.Vnfs = group.Vnfs
 			n.SystemOverlay = group.SystemOverlay
@@ -161,7 +168,7 @@ func FindAllNodes() ([]NodeInfo, error) {
 			v := vnfs.New(n.Vnfs)
 			n.VnfsDir = config.VnfsChroot(v.NameClean())
 
-			ret = append(ret, n)
+			ret.Nodes = append(ret.Nodes, n)
 		}
 	}
 
@@ -169,15 +176,17 @@ func FindAllNodes() ([]NodeInfo, error) {
 }
 
 
-func FindByHwaddr(hwa string) (NodeInfo, error) {
+
+
+func (nodes *nodeInfoContainer) FindAllNodes() ([]NodeInfo, error) {
+	return nodes.Nodes, nil
+}
+
+
+func (nodes *nodeInfoContainer) FindByHwaddr(hwa string) (NodeInfo, error) {
 	var ret NodeInfo
 
-	nodeList, err := FindAllNodes()
-	if err != nil {
-		return ret, err
-	}
-
-	for _, node := range nodeList {
+	for _, node := range nodes.Nodes {
 		for _, dev := range node.NetDevs {
 			if dev.Hwaddr == hwa {
 				return node, nil
@@ -188,15 +197,10 @@ func FindByHwaddr(hwa string) (NodeInfo, error) {
 	return ret, errors.New("No nodes found with HW Addr: " + hwa)
 }
 
-func FindByIpaddr(ipaddr string) (NodeInfo, error) {
+func (nodes *nodeInfoContainer) FindByIpaddr(ipaddr string) (NodeInfo, error) {
 	var ret NodeInfo
 
-	nodeList, err := FindAllNodes()
-	if err != nil {
-		return ret, err
-	}
-
-	for _, node := range nodeList {
+	for _, node := range nodes.Nodes {
 		for _, dev := range node.NetDevs {
 			if dev.Ipaddr == ipaddr {
 				return node, nil
@@ -207,15 +211,10 @@ func FindByIpaddr(ipaddr string) (NodeInfo, error) {
 	return ret, errors.New("No nodes found with IP Addr: " + ipaddr)
 }
 
-func SearchByName(search string) ([]NodeInfo, error) {
+func (nodes *nodeInfoContainer) SearchByName(search string) ([]NodeInfo, error) {
 	var ret []NodeInfo
 
-	nodeList, err := FindAllNodes()
-	if err != nil {
-		return ret, err
-	}
-
-	for _, node := range nodeList {
+	for _, node := range nodes.Nodes {
 		b, _ := regexp.MatchString(search, node.Fqdn)
 		if b == true {
 			ret = append(ret, node)
@@ -225,16 +224,11 @@ func SearchByName(search string) ([]NodeInfo, error) {
 	return ret, nil
 }
 
-func SearchByNameList(searchList []string) ([]NodeInfo, error) {
+func (nodes *nodeInfoContainer) SearchByNameList(searchList []string) ([]NodeInfo, error) {
 	var ret []NodeInfo
 
-	nodeList, err := FindAllNodes()
-	if err != nil {
-		return ret, err
-	}
-
 	for _, search := range searchList {
-		for _, node := range nodeList {
+		for _, node := range nodes.Nodes {
 			b, _ := regexp.MatchString(search, node.Fqdn)
 			if b == true {
 				ret = append(ret, node)
@@ -244,94 +238,3 @@ func SearchByNameList(searchList []string) ([]NodeInfo, error) {
 
 	return ret, nil
 }
-
-/*
-func FindAllVnfs() ([]string, error) {
-	var ret []string
-	set := make(map[string]bool)
-
-	nodeList, err := FindAllNodes()
-	if err != nil {
-		return ret, err
-	}
-
-	for _, node := range nodeList {
-		if node.Vnfs != "" {
-			set[node.Vnfs] = true
-		}
-	}
-
-	for entry := range set {
-		ret = append(ret, entry)
-	}
-
-	return ret, nil
-}
-
-func FindAllKernels() ([]string, error) {
-	var ret []string
-	set := make(map[string]bool)
-
-	nodeList, err := FindAllNodes()
-	if err != nil {
-		return ret, err
-	}
-
-	for _, node := range nodeList {
-		if node.KernelVersion != "" {
-			set[node.KernelVersion] = true
-		}
-	}
-
-	for entry := range set {
-		ret = append(ret, entry)
-	}
-
-	return ret, nil
-}
-
-func ListSystemOverlays() ([]string, error) {
-	var ret []string
-	set := make(map[string]bool)
-
-	nodeList, err := FindAllNodes()
-	if err != nil {
-		return ret, err
-	}
-
-	for _, node := range nodeList {
-		if node.SystemOverlay != "" {
-			set[node.SystemOverlay] = true
-		}
-	}
-
-	for entry := range set {
-		ret = append(ret, entry)
-	}
-
-	return ret, nil
-}
-
-func ListRuntimeOverlays() ([]string, error) {
-	var ret []string
-	set := make(map[string]bool)
-
-	nodeList, err := FindAllNodes()
-	if err != nil {
-		return ret, err
-	}
-
-	for _, node := range nodeList {
-		if node.RuntimeOverlay != "" {
-			set[node.RuntimeOverlay] = true
-		}
-	}
-
-	for entry := range set {
-		ret = append(ret, entry)
-	}
-
-	return ret, nil
-}
-
-*/

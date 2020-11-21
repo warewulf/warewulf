@@ -2,9 +2,9 @@ package overlay
 
 import (
 	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/assets"
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/errors"
+	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"io/ioutil"
@@ -53,7 +53,7 @@ func SystemOverlayInit(name string) error {
 }
 
 
-func SystemBuild(nodeList []assets.NodeInfo, force bool) error {
+func SystemBuild(nodeList []node.NodeInfo, force bool) error {
 	config := config.New()
 
 	wwlog.SetIndent(4)

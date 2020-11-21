@@ -2,8 +2,8 @@ package list
 
 import (
 	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/assets"
 	"github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -17,7 +17,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	set := make(map[string]int)
 	var o []string
 	var err error
-	var nodeList []assets.NodeInfo
+	var nodeList []node.NodeInfo
+
+	n, err := node.New()
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
+		os.Exit(1)
+	}
 
 	if SystemOverlay == true {
 		if ListLong == false {
@@ -39,7 +45,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	nodeList, err = assets.FindAllNodes()
+	nodeList, err = n.FindAllNodes()
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not get node configuration: %s\n", err)
 		return err

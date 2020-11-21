@@ -1,7 +1,7 @@
 package build
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/assets"
+	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
@@ -9,10 +9,16 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	var updateNodes []assets.NodeInfo
+	var updateNodes []node.NodeInfo
+
+	n, err := node.New()
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
+		os.Exit(1)
+	}
 
 	if len(args) > 0 && BuildAll == false {
-		nodes, err := assets.FindAllNodes()
+		nodes, err := n.FindAllNodes()
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Cloud not get nodeList: %s\n", err)
 			os.Exit(1)
@@ -27,7 +33,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	} else {
 		var err error
-		updateNodes, err = assets.FindAllNodes()
+		updateNodes, err = n.FindAllNodes()
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Cloud not get nodeList: %s\n", err)
 			os.Exit(1)
