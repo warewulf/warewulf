@@ -97,9 +97,8 @@ func New() (nodeYaml, error) {
 	return ret, nil
 }
 
-func (self nodeYaml) SetNodeVal(nodename string, entry string, value string) nodeYaml {
+func (self nodeYaml) SetNodeVal(nodename string, entry string, value string) (int, error) {
 	var count int
-	var ret = self
 
 	for gname, group := range self.NodeGroups {
 		for nname, _ := range group.Nodes {
@@ -107,16 +106,14 @@ func (self nodeYaml) SetNodeVal(nodename string, entry string, value string) nod
 				if entry == "vnfs" {
 					var foo = self.NodeGroups[gname].Nodes[nname]
 					foo.Vnfs = value
-//					self.NodeGroups[gname].Nodes[nname].Vnfs = value
 //					node.Vnfs = value
-//					ret.NodeGroups[gname].Nodes[nname].Vnfs = value
 					count++
 				}
 			}
 		}
 	}
 
-	return ret
+	return count, nil
 }
 
 func (self *nodeYaml) Persist() error {

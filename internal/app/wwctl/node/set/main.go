@@ -25,7 +25,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	if SetVnfs != "" {
 		fmt.Printf("Setting vnfs to: %s\n", SetVnfs)
-		n = n.SetNodeVal("n0000", "vnfs", SetVnfs)
+		c, err = n.SetNodeVal("n0000", "vnfs", SetVnfs)
 	}
 
 	fmt.Printf("set count: %d\n", c)
