@@ -2,8 +2,8 @@ package edit
 
 import (
 	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/assets"
 	"github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -93,13 +93,19 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if NoOverlayUpdate == false {
-		nodes, err := assets.FindAllNodes()
+		n, err := node.New()
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
+			os.Exit(1)
+		}
+
+		nodes, err := n.FindAllNodes()
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Cloud not get nodeList: %s\n", err)
 			os.Exit(1)
 		}
 
-		var updateNodes []assets.NodeInfo
+		var updateNodes []node.NodeInfo
 
 		for _, node := range nodes {
 			if SystemOverlay == true && node.SystemOverlay == args[0] {
