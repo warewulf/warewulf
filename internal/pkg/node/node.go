@@ -26,7 +26,7 @@ type nodeYaml struct {
 
 type nodeGroup struct {
 	Comment        string
-	Vnfs           string
+	Vnfs           string `yaml:"vnfs"`
 	Ipxe           string `yaml:"ipxe template"`
 	SystemOverlay  string `yaml:"system overlay""`
 	RuntimeOverlay string `yaml:"runtime overlay""`
@@ -38,16 +38,16 @@ type nodeGroup struct {
 
 type nodeEntry struct {
 	Hostname       string
-	Vnfs           string
-	Ipxe           string `yaml:"ipxe template"`
-	SystemOverlay  string `yaml:"system overlay"`
-	RuntimeOverlay string `yaml:"runtime overlay"`
-	DomainSuffix   string `yaml:"domain suffix"`
-	KernelVersion  string `yaml:"kernel version"`
-	KernelArgs     string `yaml:"kernel args"`
-	IpmiIpaddr     string `yaml:"ipmi ipaddr"`
-	IpmiUserName   string `yaml:"ipmi username"`
-	IpmiPassword   string `yaml:"ipmi password"`
+	Vnfs           string `yaml:"vnfs,omitempty"`
+	Ipxe           string `yaml:"ipxe template,omitempty"`
+	SystemOverlay  string `yaml:"system overlay,omitempty"`
+	RuntimeOverlay string `yaml:"runtime overlay,omitempty"`
+	DomainSuffix   string `yaml:"domain suffix,omitempty"`
+	KernelVersion  string `yaml:"kernel version,omitempty"`
+	KernelArgs     string `yaml:"kernel args,omitempty"`
+	IpmiIpaddr     string `yaml:"ipmi ipaddr,omitempty"`
+	IpmiUserName   string `yaml:"ipmi username,omitempty"`
+	IpmiPassword   string `yaml:"ipmi password,omitempty"`
 	NetDevs        map[string]netDevs
 }
 
@@ -77,30 +77,67 @@ type NodeInfo struct {
 	NetDevs        map[string]netDevs
 }
 
-type nodeInfoContainer struct {
-	Nodes			[]NodeInfo
-}
 
 
-func New() (nodeInfoContainer, error) {
-	var c nodeYaml
-	var ret nodeInfoContainer
+func New() (nodeYaml, error) {
+	var ret nodeYaml
 
-	config := config.New()
-
-	wwlog.Printf(wwlog.DEBUG, "Opening configuration file: %s\n", ConfigFile)
+	wwlog.Printf(wwlog.DEBUG, "Opening node configuration file: %s\n", ConfigFile)
 	data, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
 		fmt.Printf("error reading node configuration file\n")
 		return ret, err
 	}
 
-	err = yaml.Unmarshal(data, &c)
+	err = yaml.Unmarshal(data, &ret)
 	if err != nil {
 		return ret, err
 	}
 
-	for groupname, group := range c.NodeGroups {
+	return ret, nil
+}
+
+func (self nodeYaml) SetNodeVal(nodename string, entry string, value string) nodeYaml {
+	var count int
+	var ret = self
+
+	for gname, group := range self.NodeGroups {
+		for nname, _ := range group.Nodes {
+			if nodename == nname {
+				if entry == "vnfs" {
+					var foo = self.NodeGroups[gname].Nodes[nname]
+					foo.Vnfs = value
+//					self.NodeGroups[gname].Nodes[nname].Vnfs = value
+//					node.Vnfs = value
+//					ret.NodeGroups[gname].Nodes[nname].Vnfs = value
+					count++
+				}
+			}
+		}
+	}
+
+	return ret
+}
+
+func (self *nodeYaml) Persist() error {
+
+	out, err := yaml.Marshal(self)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(string(out))
+
+	return nil
+}
+
+
+func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
+	var ret []NodeInfo
+
+	config := config.New()
+
+	for groupname, group := range self.NodeGroups {
 		for _, node := range group.Nodes {
 			var n NodeInfo
 
@@ -168,7 +205,7 @@ func New() (nodeInfoContainer, error) {
 			v := vnfs.New(n.Vnfs)
 			n.VnfsDir = config.VnfsChroot(v.NameClean())
 
-			ret.Nodes = append(ret.Nodes, n)
+			ret = append(ret, n)
 		}
 	}
 
@@ -176,17 +213,12 @@ func New() (nodeInfoContainer, error) {
 }
 
 
-
-
-func (nodes *nodeInfoContainer) FindAllNodes() ([]NodeInfo, error) {
-	return nodes.Nodes, nil
-}
-
-
-func (nodes *nodeInfoContainer) FindByHwaddr(hwa string) (NodeInfo, error) {
+func (nodes *nodeYaml) FindByHwaddr(hwa string) (NodeInfo, error) {
 	var ret NodeInfo
 
-	for _, node := range nodes.Nodes {
+	n, _ := nodes.FindAllNodes()
+
+	for _, node := range n {
 		for _, dev := range node.NetDevs {
 			if dev.Hwaddr == hwa {
 				return node, nil
@@ -197,10 +229,12 @@ func (nodes *nodeInfoContainer) FindByHwaddr(hwa string) (NodeInfo, error) {
 	return ret, errors.New("No nodes found with HW Addr: " + hwa)
 }
 
-func (nodes *nodeInfoContainer) FindByIpaddr(ipaddr string) (NodeInfo, error) {
+func (nodes *nodeYaml) FindByIpaddr(ipaddr string) (NodeInfo, error) {
 	var ret NodeInfo
 
-	for _, node := range nodes.Nodes {
+	n, _ := nodes.FindAllNodes()
+
+	for _, node := range n {
 		for _, dev := range node.NetDevs {
 			if dev.Ipaddr == ipaddr {
 				return node, nil
@@ -211,10 +245,12 @@ func (nodes *nodeInfoContainer) FindByIpaddr(ipaddr string) (NodeInfo, error) {
 	return ret, errors.New("No nodes found with IP Addr: " + ipaddr)
 }
 
-func (nodes *nodeInfoContainer) SearchByName(search string) ([]NodeInfo, error) {
+func (nodes *nodeYaml) SearchByName(search string) ([]NodeInfo, error) {
 	var ret []NodeInfo
 
-	for _, node := range nodes.Nodes {
+	n, _ := nodes.FindAllNodes()
+
+	for _, node := range n {
 		b, _ := regexp.MatchString(search, node.Fqdn)
 		if b == true {
 			ret = append(ret, node)
@@ -224,11 +260,13 @@ func (nodes *nodeInfoContainer) SearchByName(search string) ([]NodeInfo, error) 
 	return ret, nil
 }
 
-func (nodes *nodeInfoContainer) SearchByNameList(searchList []string) ([]NodeInfo, error) {
+func (nodes *nodeYaml) SearchByNameList(searchList []string) ([]NodeInfo, error) {
 	var ret []NodeInfo
 
+	n, _ := nodes.FindAllNodes()
+
 	for _, search := range searchList {
-		for _, node := range nodes.Nodes {
+		for _, node := range n {
 			b, _ := regexp.MatchString(search, node.Fqdn)
 			if b == true {
 				ret = append(ret, node)
