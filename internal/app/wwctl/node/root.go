@@ -2,6 +2,7 @@ package node
 
 import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/node/add"
+	"github.com/hpcng/warewulf/internal/app/wwctl/node/delete"
 	"github.com/hpcng/warewulf/internal/app/wwctl/node/list"
 	"github.com/hpcng/warewulf/internal/app/wwctl/node/poweron"
 	"github.com/hpcng/warewulf/internal/app/wwctl/node/poweroff"
@@ -25,7 +26,7 @@ func init() {
 	baseCmd.AddCommand(list.GetCommand())
 	baseCmd.AddCommand(set.GetCommand())
 	baseCmd.AddCommand(add.GetCommand())
-
+	baseCmd.AddCommand(delete.GetCommand())
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
