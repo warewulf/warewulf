@@ -25,12 +25,14 @@ type nodeYaml struct {
 type nodeGroup struct {
 	Comment        string
 	Vnfs           string `yaml:"vnfs"`
-	Ipxe           string `yaml:"ipxe template"`
-	SystemOverlay  string `yaml:"system overlay""`
+	Ipxe           string `yaml:"ipxe template,omitempty"`
+	SystemOverlay  string `yaml:"system overlay,omitempty""`
 	RuntimeOverlay string `yaml:"runtime overlay""`
 	DomainSuffix   string `yaml:"domain suffix"`
 	KernelVersion  string `yaml:"kernel version"`
 	KernelArgs     string `yaml:"kernel args"`
+	IpmiUserName   string `yaml:"ipmi username,omitempty"`
+	IpmiPassword   string `yaml:"ipmi password,omitempty"`
 	Nodes          map[string]*nodeEntry
 }
 
@@ -59,12 +61,12 @@ type netDevs struct {
 
 type NodeInfo struct {
 	Id             string
+	Uid 		   string
 	GroupName      string
 	HostName       string
 	DomainName     string
 	Fqdn           string
 	Vnfs           string
-	VnfsDir        string
 	Ipxe           string
 	SystemOverlay  string
 	RuntimeOverlay string
@@ -74,6 +76,20 @@ type NodeInfo struct {
 	IpmiUserName   string
 	IpmiPassword   string
 	NetDevs        map[string]netDevs
+}
+
+type GroupInfo struct {
+	Id             string
+	GroupName      string
+	DomainName     string
+	Vnfs           string
+	Ipxe           string
+	SystemOverlay  string
+	RuntimeOverlay string
+	KernelVersion  string
+	KernelArgs     string
+	IpmiUserName   string
+	IpmiPassword   string
 }
 
 func New() (nodeYaml, error) {
@@ -107,6 +123,33 @@ func (self *nodeYaml) AddNode(groupname string, nodename string) error {
 
 	self.NodeGroups[groupname].Nodes[nodename] = &node
 	self.NodeGroups[groupname].Nodes[nodename].Hostname = nodename
+
+	return nil
+}
+
+func (self *nodeYaml) DelNode(groupname string, nodename string) error {
+
+	if _, ok := self.NodeGroups[groupname]; ok {
+		if _, ok := self.NodeGroups[groupname].Nodes[nodename]; ok {
+			delete(self.NodeGroups[groupname].Nodes, nodename)
+			wwlog.Printf(wwlog.VERBOSE, "Deleting node: %s/%s\n", groupname, nodename)
+		} else {
+			return errors.New("Node '"+nodename+"' was not found in group '"+groupname+"'")
+		}
+	} else {
+		return errors.New("Group '"+groupname+"' was not found")
+	}
+
+
+	return nil
+}
+
+func (self *nodeYaml) DelGroup(groupname string) error {
+	if _, ok := self.NodeGroups[groupname]; ok {
+		delete(self.NodeGroups, groupname)
+	} else {
+		return errors.New("Node group undefined: " + groupname)
+	}
 
 	return nil
 }
@@ -199,6 +242,33 @@ func (self *nodeYaml) Persist() error {
 	return nil
 }
 
+
+func (self *nodeYaml) FindAllGroups() ([]GroupInfo, error) {
+	var ret []GroupInfo
+
+	for groupname, group := range self.NodeGroups {
+		var g GroupInfo
+
+		g.Id = groupname
+		g.GroupName = groupname
+		g.RuntimeOverlay = group.RuntimeOverlay
+		g.SystemOverlay = group.SystemOverlay
+		g.Ipxe = group.Ipxe
+		g.KernelVersion = group.KernelVersion
+		g.KernelArgs = group.KernelArgs
+		g.Vnfs = group.Vnfs
+		g.IpmiUserName = group.IpmiUserName
+		g.IpmiPassword = group.IpmiPassword
+		g.DomainName = group.DomainSuffix
+
+		// TODO: Validate or die on all inputs
+
+		ret = append(ret, g)
+	}
+	return ret, nil
+}
+
+
 func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 	var ret []NodeInfo
 
@@ -206,12 +276,11 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		for nodename, node := range group.Nodes {
 			var n NodeInfo
 
-			n.Id = groupname + ":" + nodename
+			n.Id = nodename
+			n.Uid = groupname + ":" + nodename
 			n.GroupName = groupname
 			n.HostName = node.Hostname
 			n.IpmiIpaddr = node.IpmiIpaddr
-			n.IpmiUserName = node.IpmiUserName
-			n.IpmiPassword = node.IpmiPassword
 
 			n.Vnfs = group.Vnfs
 			n.SystemOverlay = group.SystemOverlay
@@ -220,8 +289,17 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.KernelArgs = group.KernelArgs
 			n.DomainName = group.DomainSuffix
 			n.Ipxe = group.Ipxe
+			n.IpmiUserName = group.IpmiUserName
+			n.IpmiPassword = group.IpmiPassword
+
 			n.NetDevs = node.NetDevs
 
+			if node.IpmiUserName != "" {
+				n.IpmiUserName = node.IpmiUserName
+			}
+			if node.IpmiPassword != "" {
+				n.IpmiPassword = node.IpmiPassword
+			}
 			if node.KernelVersion != "" {
 				n.KernelVersion = node.KernelVersion
 			}

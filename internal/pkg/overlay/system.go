@@ -6,6 +6,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/errors"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/vnfs"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"io/ioutil"
 	"os"
@@ -62,6 +63,9 @@ func SystemBuild(nodeList []node.NodeInfo, force bool) error {
 		if node.SystemOverlay != "" {
 			OverlayDir := config.SystemOverlaySource(node.SystemOverlay)
 			OverlayFile := config.SystemOverlayImage(node.Fqdn)
+			vnfs := vnfs.New(node.Vnfs)
+
+			vnfsDir := config.VnfsChroot(vnfs.NameClean())
 
 			wwlog.Printf(wwlog.VERBOSE, "Building System Overlay for: %s\n", node.Fqdn)
 
@@ -75,7 +79,7 @@ func SystemBuild(nodeList []node.NodeInfo, force bool) error {
 				continue
 			}
 
-			if util.IsDir(node.VnfsDir) == false {
+			if util.IsDir(vnfsDir) == false {
 				wwlog.Printf(wwlog.WARN, "%-35s: Skipped (VNFS not imported)\n", node.Fqdn)
 				continue
 			}

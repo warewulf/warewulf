@@ -15,6 +15,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	nodeDB.AddGroup(args[0])
+
+
 	nodeDB.Persist()
 
 	return nil
