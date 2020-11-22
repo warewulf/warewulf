@@ -4,19 +4,19 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "del",
+		Use:                "delete",
 		Short:              "Set node configurations",
 		Long:               "Set node configurations ",
 		RunE:				CobraRunE,
 	}
-	SetVnfs string
-	SetKernel string
-	//	SetGroupLevel bool
+	SetForce string
+	SetGroup string
 )
 
 func init() {
-	baseCmd.PersistentFlags().StringVarP(&SetVnfs, "vnfs", "V", "", "Set node Virtual Node File System (VNFS)")
-	baseCmd.PersistentFlags().StringVarP(&SetKernel, "kernel", "K", "", "Set Kernel version for nodes")
+	baseCmd.PersistentFlags().StringVarP(&SetForce, "force", "f", "", "Force node delete")
+	baseCmd.PersistentFlags().StringVarP(&SetGroup, "group", "g", "", "Set group to delete nodes from")
+
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

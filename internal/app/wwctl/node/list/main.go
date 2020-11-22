@@ -6,6 +6,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 	"os"
+	"reflect"
 )
 
 
@@ -30,7 +31,18 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	if ShowNet == true {
+
+	if ShowAll == true {
+		for _, node := range nodes {
+			v := reflect.ValueOf(node)
+			typeOfS := v.Type()
+			fmt.Printf("################################################################################\n")
+			for i := 0; i< v.NumField(); i++ {
+				fmt.Printf("%-25s %s = %v\n", node.Fqdn, typeOfS.Field(i).Name, v.Field(i).Interface())
+			}
+		}
+
+	} else if ShowNet == true {
 		fmt.Printf("%-22s %-10s %-20s %-16s %-16s %-16s %s\n", "NODE NAME", "DEVICE", "HWADDR", "IPADDR", "NETMASK", "GATEWAY", "TYPE")
 
 		for _, node := range nodes {
@@ -47,7 +59,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 	} else {
-		fmt.Printf("%-22s %-30s %-30s %-16s %-16s\n", "NODE NAME", "KERNEL NAME", "VNFS IMAGE", "SYSTEM OVERLAY", "RUNTIME OVERLAY")
+		fmt.Printf("%-22s %-30s %-30s %-16s %-16s\n", "NODE NAME", "KERNEL VERSION", "VNFS IMAGE", "SYSTEM OVERLAY", "RUNTIME OVERLAY")
 
 		for _, node := range nodes {
 			fmt.Printf("%-22s %-30s %-30s %-16s %-16s\n", node.Fqdn, node.KernelVersion, node.Vnfs, node.SystemOverlay, node.RuntimeOverlay)

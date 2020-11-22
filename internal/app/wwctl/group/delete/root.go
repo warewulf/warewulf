@@ -4,7 +4,7 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "del",
+		Use:                "delete",
 		Short:              "Add a new node group",
 		Long:               "Add a new node group ",
 		RunE:				CobraRunE,
