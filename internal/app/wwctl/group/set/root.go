@@ -17,6 +17,10 @@ var (
 	SetSystemOverlay string
 	SetHostname string
 	SetClearNodes bool
+	SetIpmiIpaddr string
+	SetIpmiUsername string
+	SetIpmiPassword string
+
 )
 
 func init() {
@@ -26,6 +30,10 @@ func init() {
 	baseCmd.PersistentFlags().StringVarP(&SetIpxe, "ipxe", "P", "", "Set the node's iPXE template name")
 	baseCmd.PersistentFlags().StringVarP(&SetRuntimeOverlay, "runtime", "R", "", "Set the node's runtime overlay")
 	baseCmd.PersistentFlags().StringVarP(&SetSystemOverlay, "system", "S", "", "Set the node's system overlay")
+	baseCmd.PersistentFlags().StringVar(&SetIpmiIpaddr, "ipmi", "", "Set the node's IPMI address")
+	baseCmd.PersistentFlags().StringVar(&SetIpmiUsername, "ipmiuser", "", "Set the node's IPMI username")
+	baseCmd.PersistentFlags().StringVar(&SetIpmiPassword, "ipmipass", "", "Set the node's IPMI password")
+
 	baseCmd.PersistentFlags().BoolVarP(&SetClearNodes, "clear", "c", false, "Clear node configurations when setting parent group")
 }
 
