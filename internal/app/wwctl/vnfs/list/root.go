@@ -1,23 +1,22 @@
-package show
+package list
 
-import (
-	"github.com/spf13/cobra"
-)
+import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "show",
-		Short:              "Show Warewulf Overlay objects",
-		Long:               "Warewulf show overlay objects",
+		Use:                "list",
+		Short:              "List VNFS images",
+		Long:               "List VNFS images ",
 		RunE:				CobraRunE,
-		Aliases: 			[]string{"cat"},
-		Args: 				cobra.ExactArgs(2),
 	}
 	SystemOverlay bool
+	BuildAll bool
 )
 
 func init() {
 	baseCmd.PersistentFlags().BoolVarP(&SystemOverlay, "system", "s", false, "Show System Overlays as well")
+	baseCmd.PersistentFlags().BoolVarP(&BuildAll, "all", "a", false, "Build all overlays (runtime and system)")
+
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

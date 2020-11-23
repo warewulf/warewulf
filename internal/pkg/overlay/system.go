@@ -2,10 +2,11 @@ package overlay
 
 import (
 	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/assets"
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/errors"
+	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/vnfs"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"io/ioutil"
 	"os"
@@ -53,7 +54,7 @@ func SystemOverlayInit(name string) error {
 }
 
 
-func SystemBuild(nodeList []assets.NodeInfo, force bool) error {
+func SystemBuild(nodeList []node.NodeInfo, force bool) error {
 	config := config.New()
 
 	wwlog.SetIndent(4)
@@ -62,6 +63,9 @@ func SystemBuild(nodeList []assets.NodeInfo, force bool) error {
 		if node.SystemOverlay != "" {
 			OverlayDir := config.SystemOverlaySource(node.SystemOverlay)
 			OverlayFile := config.SystemOverlayImage(node.Fqdn)
+			vnfs := vnfs.New(node.Vnfs)
+
+			vnfsDir := config.VnfsChroot(vnfs.NameClean())
 
 			wwlog.Printf(wwlog.VERBOSE, "Building System Overlay for: %s\n", node.Fqdn)
 
@@ -71,11 +75,11 @@ func SystemBuild(nodeList []assets.NodeInfo, force bool) error {
 			}
 
 			if util.IsDir(OverlayDir) == false {
-				wwlog.Printf(wwlog.WARN, "%-35s: Skipped (unknown system overlay)\n", node.Fqdn)
+				wwlog.Printf(wwlog.WARN, "%-35s: Skipped (system overlay template not found)\n", node.Fqdn)
 				continue
 			}
 
-			if util.IsDir(node.VnfsDir) == false {
+			if util.IsDir(vnfsDir) == false {
 				wwlog.Printf(wwlog.WARN, "%-35s: Skipped (VNFS not imported)\n", node.Fqdn)
 				continue
 			}

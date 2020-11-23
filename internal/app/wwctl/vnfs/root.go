@@ -2,6 +2,7 @@ package vnfs
 
 import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/vnfs/build"
+	"github.com/hpcng/warewulf/internal/app/wwctl/vnfs/list"
 	"github.com/spf13/cobra"
 )
 
@@ -16,7 +17,7 @@ var (
 
 func init() {
 	baseCmd.AddCommand(build.GetCommand())
-
+	baseCmd.AddCommand(list.GetCommand())
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
