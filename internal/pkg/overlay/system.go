@@ -75,7 +75,7 @@ func SystemBuild(nodeList []node.NodeInfo, force bool) error {
 			}
 
 			if util.IsDir(OverlayDir) == false {
-				wwlog.Printf(wwlog.WARN, "%-35s: Skipped (unknown system overlay)\n", node.Fqdn)
+				wwlog.Printf(wwlog.WARN, "%-35s: Skipped (system overlay template not found)\n", node.Fqdn)
 				continue
 			}
 

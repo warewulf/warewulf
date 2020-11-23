@@ -8,6 +8,7 @@ var (
 		Short:              "Add new node",
 		Long:               "Add new node ",
 		RunE:				CobraRunE,
+		Args: 				cobra.MinimumNArgs(1),
 	}
 	SetGroup string
 )

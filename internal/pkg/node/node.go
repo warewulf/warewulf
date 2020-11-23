@@ -7,7 +7,9 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"os"
 	"regexp"
+	"strings"
 )
 
 const ConfigFile = "/etc/warewulf/nodes.conf"
@@ -48,7 +50,7 @@ type nodeEntry struct {
 	IpmiIpaddr     string `yaml:"ipmi ipaddr,omitempty"`
 	IpmiUserName   string `yaml:"ipmi username,omitempty"`
 	IpmiPassword   string `yaml:"ipmi password,omitempty"`
-	NetDevs        map[string]netDevs
+	NetDevs        map[string]*netDevs
 }
 
 type netDevs struct {
@@ -61,6 +63,7 @@ type netDevs struct {
 
 type NodeInfo struct {
 	Id             string
+	Gid 	       string
 	Uid 		   string
 	GroupName      string
 	HostName       string
@@ -75,7 +78,7 @@ type NodeInfo struct {
 	IpmiIpaddr     string
 	IpmiUserName   string
 	IpmiPassword   string
-	NetDevs        map[string]netDevs
+	NetDevs        map[string]*netDevs
 }
 
 type GroupInfo struct {
@@ -110,39 +113,74 @@ func New() (nodeYaml, error) {
 	return ret, nil
 }
 
-func (self *nodeYaml) AddGroup(groupname string) error {
+func (self *nodeYaml) AddGroup(groupID string) error {
 	var group nodeGroup
 
-	self.NodeGroups[groupname] = &group
-	self.NodeGroups[groupname].DomainSuffix = groupname
-	return nil
-}
-
-func (self *nodeYaml) AddNode(groupname string, nodename string) error {
-	var node nodeEntry
-
-	self.NodeGroups[groupname].Nodes[nodename] = &node
-	self.NodeGroups[groupname].Nodes[nodename].Hostname = nodename
-
-	return nil
-}
-
-func (self *nodeYaml) DelNode(groupname string, nodename string) error {
-
-	if _, ok := self.NodeGroups[groupname]; ok {
-		if _, ok := self.NodeGroups[groupname].Nodes[nodename]; ok {
-			delete(self.NodeGroups[groupname].Nodes, nodename)
-			wwlog.Printf(wwlog.VERBOSE, "Deleting node: %s/%s\n", groupname, nodename)
-		} else {
-			return errors.New("Node '"+nodename+"' was not found in group '"+groupname+"'")
-		}
-	} else {
-		return errors.New("Group '"+groupname+"' was not found")
+	if _, ok := self.NodeGroups[groupID]; ok {
+		return errors.New("Group name already exists: " + groupID)
 	}
 
+	self.NodeGroups[groupID] = &group
+	self.NodeGroups[groupID].DomainSuffix = groupID
 
 	return nil
 }
+
+func (self *nodeYaml) AddNode(groupID string, nodeID string) error {
+	var node nodeEntry
+
+	wwlog.Printf(wwlog.VERBOSE, "Adding new node: %s/%s\n", groupID, nodeID)
+
+	if _, ok := self.NodeGroups[groupID]; ok {
+		if _, ok := self.NodeGroups[groupID].Nodes[nodeID]; ok {
+			return errors.New("Nodename already exists in group: " + nodeID)
+		}
+	} else {
+		return errors.New("Group does not exist: "+groupID)
+	}
+
+	self.NodeGroups[groupID].Nodes[nodeID] = &node
+	self.NodeGroups[groupID].Nodes[nodeID].Hostname = nodeID
+
+	return nil
+}
+
+func (self *nodeYaml) DelNode(groupID string, nodeID string) error {
+
+	if _, ok := self.NodeGroups[groupID]; ok {
+		if _, ok := self.NodeGroups[groupID].Nodes[nodeID]; ok {
+			delete(self.NodeGroups[groupID].Nodes, nodeID)
+			wwlog.Printf(wwlog.VERBOSE, "Deleting node: %s/%s\n", groupID, nodeID)
+		} else {
+			return errors.New("Node '"+nodeID+"' was not found in group '"+groupID+"'")
+		}
+	} else {
+		return errors.New("Group '"+groupID+"' was not found")
+	}
+
+	return nil
+}
+
+func (self *nodeYaml) DelNodeNet(groupID string, nodeID string, netDev string) error {
+
+	if _, ok := self.NodeGroups[groupID]; ok {
+		if _, ok := self.NodeGroups[groupID].Nodes[nodeID]; ok {
+			if _, ok := self.NodeGroups[groupID].Nodes[nodeID].NetDevs[netDev]; ok {
+				wwlog.Printf(wwlog.VERBOSE, "Deleting node network device: %s/%s:%s\n", groupID, nodeID, netDev)
+				delete(self.NodeGroups[groupID].Nodes[nodeID].NetDevs, netDev)
+			} else {
+				return errors.New("Network device '"+netDev+"' was not found in node '"+groupID+"/"+nodeID+"'")
+			}
+		} else {
+			return errors.New("Node '"+nodeID+"' was not found in group '"+groupID+"'")
+		}
+	} else {
+		return errors.New("Group '"+groupID+"' was not found")
+	}
+
+	return nil
+}
+
 
 func (self *nodeYaml) DelGroup(groupname string) error {
 	if _, ok := self.NodeGroups[groupname]; ok {
@@ -154,80 +192,122 @@ func (self *nodeYaml) DelGroup(groupname string) error {
 	return nil
 }
 
-func (self *nodeYaml) SetGroupVal(groupID string, entry string, value string) (int, error) {
-	var count int
-
-	for gid, group := range self.NodeGroups {
-		for nid := range group.Nodes {
-			if groupID == gid {
-				if entry == "vnfs" {
-					self.NodeGroups[gid].Vnfs = value
-					self.NodeGroups[gid].Nodes[nid].Vnfs = ""
-					count++
-				} else if entry == "kernel" {
-					self.NodeGroups[gid].KernelVersion = value
-					self.NodeGroups[gid].Nodes[nid].KernelVersion = ""
-					count++
-				} else if entry == "domainsuffix" {
-					self.NodeGroups[gid].DomainSuffix = value
-					self.NodeGroups[gid].Nodes[nid].DomainSuffix = ""
-					count++
-				} else if entry == "ipxe" {
-					self.NodeGroups[gid].Ipxe = value
-					self.NodeGroups[gid].Nodes[nid].Ipxe = ""
-					count++
-				} else if entry == "systemoverlay" {
-					self.NodeGroups[gid].SystemOverlay = value
-					self.NodeGroups[gid].Nodes[nid].SystemOverlay = ""
-					count++
-				} else if entry == "runtimeoverlay" {
-					self.NodeGroups[gid].RuntimeOverlay = value
-					self.NodeGroups[gid].Nodes[nid].RuntimeOverlay = ""
-					count++
-				} else if entry == "hostname" {
-					self.NodeGroups[gid].Nodes[nid].Hostname = value
-					count++
-				}
-			}
-		}
+func (self *nodeYaml) SetGroupVal(groupID string, entry string, value string) error {
+	if strings.ToUpper(value) == "UNDEF" || strings.ToUpper(value) == "NIL" || strings.ToUpper(value) == "DEL" {
+		value = ""
 	}
 
-	return count, nil
+	if _, ok := self.NodeGroups[groupID]; ok {
+		wwlog.Printf(wwlog.VERBOSE, "Setting group %s to: %s = '%s'\n", groupID, entry, value )
+
+		switch strings.ToUpper(entry) {
+		case "VNFS":
+			util.ValidateOrDie("VNFS", entry, "^[a-zA-Z0-9-._]*$")
+			self.NodeGroups[groupID].Vnfs = value
+		case "KERNEL":
+			util.ValidateOrDie("Kernel Version", entry, "^[a-zA-Z0-9-._]*$")
+			self.NodeGroups[groupID].KernelVersion = value
+		case "DOMAINSUFFIX":
+			util.ValidateOrDie("Domain", entry, "^[a-zA-Z0-9-._]*$")
+			self.NodeGroups[groupID].DomainSuffix = value
+		case "IPXE":
+			util.ValidateOrDie("iPXE Template", entry, "^[a-zA-Z0-9-._]*$")
+			self.NodeGroups[groupID].Ipxe = value
+		case "SYSTEMOVERLAY":
+			util.ValidateOrDie("System Overlay", entry, "^[a-zA-Z0-9-._]*$")
+			self.NodeGroups[groupID].SystemOverlay = value
+		case "RUNTIMEOVERLAY":
+			util.ValidateOrDie("Runtime Overlay", entry, "^[a-zA-Z0-9-._]*$")
+			self.NodeGroups[groupID].RuntimeOverlay = value
+		}
+	} else {
+		return errors.New("Group does not exist: " +groupID)
+	}
+
+	return nil
 }
 
-func (self *nodeYaml) SetNodeVal(nodeID string, entry string, value string) (int, error) {
-	var count int
+func (self *nodeYaml) SetNodeVal(groupID string, nodeID string, entry string, value string) error {
+	if strings.ToUpper(value) == "UNDEF" || strings.ToUpper(value) == "NIL" || strings.ToUpper(value) == "DEL" {
+		value = ""
+	}
+	if _, ok := self.NodeGroups[groupID]; ok {
+		if _, ok := self.NodeGroups[groupID].Nodes[nodeID]; ok {
+			wwlog.Printf(wwlog.VERBOSE, "Setting node %s/%s to: %s = '%s'\n", groupID, nodeID, entry, value )
 
-	for gid, group := range self.NodeGroups {
-		for nid := range group.Nodes {
-			if nodeID == gid+":"+nid {
-				if entry == "vnfs" {
-					self.NodeGroups[gid].Nodes[nid].Vnfs = value
-					count++
-				} else if entry == "kernel" {
-					self.NodeGroups[gid].Nodes[nid].KernelVersion = value
-					count++
-				} else if entry == "domainsuffix" {
-					self.NodeGroups[gid].Nodes[nid].DomainSuffix = value
-					count++
-				} else if entry == "ipxe" {
-					self.NodeGroups[gid].Nodes[nid].Ipxe = value
-					count++
-				} else if entry == "systemoverlay" {
-					self.NodeGroups[gid].Nodes[nid].SystemOverlay = value
-					count++
-				} else if entry == "runtimeoverlay" {
-					self.NodeGroups[gid].Nodes[nid].RuntimeOverlay = value
-					count++
-				} else if entry == "hostname" {
-					self.NodeGroups[gid].Nodes[nid].Hostname = value
-					count++
-				}
+			switch strings.ToUpper(entry) {
+			case "VNFS":
+				util.ValidateOrDie("VNFS", entry, "^[a-zA-Z0-9-._]*$")
+				self.NodeGroups[groupID].Nodes[nodeID].Vnfs = value
+			case "KERNEL":
+				util.ValidateOrDie("Kernel Version", entry, "^[a-zA-Z0-9-._]*$")
+				self.NodeGroups[groupID].Nodes[nodeID].KernelVersion = value
+			case "DOMAINSUFFIX":
+				util.ValidateOrDie("Domain", entry, "^[a-zA-Z0-9-._]*$")
+				self.NodeGroups[groupID].Nodes[nodeID].DomainSuffix = value
+			case "IPXE":
+				util.ValidateOrDie("iPXE Template", entry, "^[a-zA-Z0-9-._]*$")
+				self.NodeGroups[groupID].Nodes[nodeID].Ipxe = value
+			case "SYSTEMOVERLAY":
+				util.ValidateOrDie("System Overlay", entry, "^[a-zA-Z0-9-._]*$")
+				self.NodeGroups[groupID].Nodes[nodeID].SystemOverlay = value
+			case "RUNTIMEOVERLAY":
+				util.ValidateOrDie("Runtime Overlay", entry, "^[a-zA-Z0-9-._]*$")
+				self.NodeGroups[groupID].Nodes[nodeID].RuntimeOverlay = value
+			case "HOSTNAME":
+				util.ValidateOrDie("Hostname", entry, "^[a-zA-Z0-9-._]*$")
+				self.NodeGroups[groupID].Nodes[nodeID].Hostname = value
 			}
+		} else {
+			return errors.New("Node does not exist: " +groupID+ "/" +nodeID)
 		}
+	} else {
+		return errors.New("Group does not exist: " +groupID)
 	}
 
-	return count, nil
+	return nil
+}
+
+func (self *nodeYaml) SetNodeNet(groupID string, nodeID string, netDev string, entry string, value string) error {
+	if strings.ToUpper(value) == "UNDEF" || strings.ToUpper(value) == "NIL" || strings.ToUpper(value) == "DEL" {
+		value = ""
+	}
+
+	if _, ok := self.NodeGroups[groupID]; ok {
+		if _, ok := self.NodeGroups[groupID].Nodes[nodeID]; ok {
+			if _, ok := self.NodeGroups[groupID].Nodes[nodeID].NetDevs[netDev]; ok {
+				wwlog.Printf(wwlog.VERBOSE, "Editing existing node NetDev entry for node: %s/%s\n", groupID, nodeID)
+			} else {
+				var nd netDevs
+				self.NodeGroups[groupID].Nodes[nodeID].NetDevs[netDev] = &nd
+			}
+		} else {
+			return errors.New("Node does not exist: "+groupID+"/"+nodeID)
+		}
+	} else {
+		return errors.New("Group does not exist: "+groupID)
+	}
+
+	switch strings.ToUpper(entry) {
+	case "IPADDR":
+		util.ValidateOrDie("IP address", value, "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$")
+		self.NodeGroups[groupID].Nodes[nodeID].NetDevs[netDev].Ipaddr = value
+	case "NETMASK":
+		util.ValidateOrDie("Netmask", value, "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$")
+		self.NodeGroups[groupID].Nodes[nodeID].NetDevs[netDev].Netmask = value
+	case "GATEWAY":
+		util.ValidateOrDie("Gateway", value, "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$")
+		self.NodeGroups[groupID].Nodes[nodeID].NetDevs[netDev].Gateway = value
+	case "TYPE":
+		util.ValidateOrDie("Network device type", value, "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$")
+		self.NodeGroups[groupID].Nodes[nodeID].NetDevs[netDev].Type = value
+	case "HWADDR":
+		util.ValidateOrDie("HW address", value, "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$")
+		self.NodeGroups[groupID].Nodes[nodeID].NetDevs[netDev].Hwaddr = value
+
+	}
+
+	return nil
 }
 
 func (self *nodeYaml) Persist() error {
@@ -237,7 +317,18 @@ func (self *nodeYaml) Persist() error {
 		return err
 	}
 
-	fmt.Println(string(out))
+	file, err := os.OpenFile(ConfigFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "%s\n", err)
+		os.Exit(1)
+	}
+
+	defer file.Close()
+
+	_, err = file.WriteString(string(out))
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -277,7 +368,8 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			var n NodeInfo
 
 			n.Id = nodename
-			n.Uid = groupname + ":" + nodename
+			n.Gid = groupname
+//			n.Uid = groupname + ":" + nodename
 			n.GroupName = groupname
 			n.HostName = node.Hostname
 			n.IpmiIpaddr = node.IpmiIpaddr
@@ -338,13 +430,13 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.Fqdn = node.Hostname
 			}
 
-			util.ValidateOrDie(n.Fqdn, "group name", n.GroupName, "^[a-zA-Z0-9-._]+$")
-			util.ValidateOrDie(n.Fqdn, "vnfs", n.Vnfs, "^[a-zA-Z0-9-._:/]+$")
-			util.ValidateOrDie(n.Fqdn, "system overlay", n.SystemOverlay, "^[a-zA-Z0-9-._]+$")
-			util.ValidateOrDie(n.Fqdn, "runtime overlay", n.RuntimeOverlay, "^[a-zA-Z0-9-._]+$")
-			util.ValidateOrDie(n.Fqdn, "domain suffix", n.DomainName, "^[a-zA-Z0-9-._]+$")
-			util.ValidateOrDie(n.Fqdn, "hostname", n.HostName, "^[a-zA-Z0-9-_]+$")
-			util.ValidateOrDie(n.Fqdn, "kernel version", n.KernelVersion, "^[a-zA-Z0-9-._]+$")
+			util.ValidateOrDie(n.Fqdn +":group name", n.GroupName, "^[a-zA-Z0-9-._]*$")
+			util.ValidateOrDie(n.Fqdn +":vnfs", n.Vnfs, "^[a-zA-Z0-9-._:/]*$")
+			util.ValidateOrDie(n.Fqdn +":system overlay", n.SystemOverlay, "^[a-zA-Z0-9-._]*$")
+			util.ValidateOrDie(n.Fqdn +":runtime overlay", n.RuntimeOverlay, "^[a-zA-Z0-9-._]*$")
+			util.ValidateOrDie(n.Fqdn +":domain suffix", n.DomainName, "^[a-zA-Z0-9-._]*$")
+			util.ValidateOrDie(n.Fqdn +":hostname", n.HostName, "^[a-zA-Z0-9-_]*$")
+			util.ValidateOrDie(n.Fqdn +":kernel version", n.KernelVersion, "^[a-zA-Z0-9-._]*$")
 
 			ret = append(ret, n)
 		}
