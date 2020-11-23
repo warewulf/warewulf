@@ -12,7 +12,7 @@
 
     wget -P /global/downloads/centos http://mirror.mobap.edu/centos/7.8.2003/isos/x86_64/CentOS-7-x86_64-Everything-2003.iso
 
-    qemu-img create -o preallocation=metadata -f qcow2 /global/images/centos-7.qcow2
+    qemu-img create -o preallocation=metadata -f qcow2 /global/images/centos-7.qcow2 32G
 
     # install wwdev Centos 7 development VM
 
