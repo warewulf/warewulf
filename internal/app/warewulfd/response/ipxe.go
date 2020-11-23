@@ -2,8 +2,8 @@ package response
 
 import (
 	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/assets"
 	"github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"log"
 	"net/http"
@@ -26,13 +26,20 @@ type iPxeTemplate struct {
 func IpxeSend(w http.ResponseWriter, req *http.Request) {
 	url := strings.Split(req.URL.Path, "/")
 
+	nodes, err := node.New()
+	if err != nil {
+		log.Printf("Could not read node configuration file: %s\n", err)
+		w.WriteHeader(503)
+		return
+	}
+
 	if url[2] == "" {
 		log.Printf("ERROR: Bad iPXE request from %s\n", req.RemoteAddr)
 		return
 	}
 
 	hwaddr := strings.ReplaceAll(url[2], "-", ":")
-	node, err := assets.FindByHwaddr(hwaddr)
+	node, err := nodes.FindByHwaddr(hwaddr)
 	if err != nil {
 		log.Printf("Could not find HW Addr: %s: %s\n", hwaddr, err)
 		w.WriteHeader(404)

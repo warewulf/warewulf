@@ -1,7 +1,7 @@
 package poweroff
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/assets"
+	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/power"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
@@ -9,14 +9,17 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-
 	var returnErr error = nil
+	var nodeList []node.NodeInfo
 
-	var nodeList []assets.NodeInfo
+	n, err := node.New()
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
+		os.Exit(1)
+	}
 
 	if len(args) >= 1 {
-		//nodeList, _ = assets.SearchByName(args[0])
-		nodeList, _ = assets.SearchByNameList(args)
+		nodeList, _ = n.SearchByNameList(args)
 	} else {
 		wwlog.Printf(wwlog.ERROR, "No requested nodes\n")
 		os.Exit(255)

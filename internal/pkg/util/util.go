@@ -111,9 +111,9 @@ func TaintCheck(pattern string, expr string) bool {
 	return false
 }
 
-func ValidateOrDie(hostname string, name string, pattern string, expr string) {
+func ValidateOrDie(message string, pattern string, expr string) {
 	if TaintCheck(pattern, expr) == false {
-		wwlog.Printf(wwlog.ERROR, "Entry '%s:%s' contains illegal characters: '%s'\n", hostname, name, pattern)
+		wwlog.Printf(wwlog.ERROR, "%s does not validate: '%s'\n", message, pattern)
 		os.Exit(1)
 	}
 }

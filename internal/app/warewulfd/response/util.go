@@ -1,7 +1,8 @@
 package response
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/assets"
+	"fmt"
+	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/errors"
 	"io"
 	"log"
@@ -11,23 +12,29 @@ import (
 	"strings"
 )
 
-func getSanity(req *http.Request) (assets.NodeInfo, error) {
+func getSanity(req *http.Request) (node.NodeInfo, error) {
 	url := strings.Split(req.URL.Path, "/")
+	var ret node.NodeInfo
+
+	nodes, err := node.New()
+	if err != nil {
+		return ret, errors.New(fmt.Sprintf("%s", err))
+	}
 
 	hwaddr := strings.ReplaceAll(url[2], "-", ":")
-	node, err := assets.FindByHwaddr(hwaddr)
+	ret, err = nodes.FindByHwaddr(hwaddr)
 	if err != nil {
-		return node, errors.New("Could not find node by HW address")
+		return ret, errors.New("Could not find node by HW address")
 	}
 
-	if node.Fqdn == "" {
+	if ret.Fqdn == "" {
 		log.Printf("UNKNOWN: %15s: %s\n", hwaddr, req.URL.Path)
-		return node, errors.New("Unknown node HW address: " + hwaddr)
+		return ret, errors.New("Unknown node HW address: " + hwaddr)
 	} else {
-		log.Printf("REQ:   %15s: %s\n", node.Fqdn, req.URL.Path)
+		log.Printf("REQ:   %15s: %s\n", ret.Fqdn, req.URL.Path)
 	}
 
-	return node, nil
+	return ret, nil
 }
 
 func sendFile(w http.ResponseWriter, filename string, sendto string) error {
