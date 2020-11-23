@@ -59,10 +59,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 	} else {
-		fmt.Printf("%-22s %-30s %-30s %-16s %-16s\n", "NODE NAME", "KERNEL VERSION", "VNFS IMAGE", "SYSTEM OVERLAY", "RUNTIME OVERLAY")
+		fmt.Printf("%-22s %-16s %-30s %-30s %-16s\n", "NODE NAME", "GROUP NAME", "KERNEL VERSION", "VNFS IMAGE", "RUNTIME OVERLAY")
 
 		for _, node := range nodes {
-			fmt.Printf("%-22s %-30s %-30s %-16s %-16s\n", node.Fqdn, node.KernelVersion, node.Vnfs, node.SystemOverlay, node.RuntimeOverlay)
+			fmt.Printf("%-22s %-16s %-30s %-30s %-16s\n", node.Fqdn, node.GroupName, node.KernelVersion, node.Vnfs, node.RuntimeOverlay)
 		}
 	}
 

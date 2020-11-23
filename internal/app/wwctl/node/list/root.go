@@ -12,7 +12,6 @@ var (
 	ShowNet bool
 	ShowIpmi bool
 	ShowAll bool
-
 )
 
 func init() {

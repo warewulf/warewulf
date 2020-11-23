@@ -8,10 +8,10 @@ var (
 		Short:              "Add a new node group",
 		Long:               "Add a new node group ",
 		RunE:				CobraRunE,
+		Args: 				cobra.MinimumNArgs(1),
 	}
 	SetVnfs string
 	SetKernel string
-	//	SetGroupLevel bool
 )
 
 func init() {

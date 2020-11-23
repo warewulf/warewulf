@@ -75,7 +75,7 @@ func RuntimeBuild(nodeList []node.NodeInfo, force bool) error {
 			}
 
 			if util.IsDir(OverlayDir) == false {
-				wwlog.Printf(wwlog.WARN, "%-35s: Skipped (unknown runtime overlay)\n", node.Fqdn)
+				wwlog.Printf(wwlog.WARN, "%-35s: Skipped (runtime overlay template not found)\n", node.Fqdn)
 				continue
 			}
 

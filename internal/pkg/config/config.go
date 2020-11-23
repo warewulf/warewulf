@@ -57,10 +57,10 @@ func init() {
 		c.Editor = "vi"
 	}
 
-	util.ValidateOrDie("warewulf.conf", "warewulfd ipaddr", c.Ipaddr, "^[0-9]+.[0-9]+.[0-9]+.[0-9]+$")
-	util.ValidateOrDie("warewulf.conf", "system config dir", c.SysConfDir, "^[a-zA-Z0-9-._:/]+$")
-	util.ValidateOrDie("warewulf.conf", "local state dir", c.LocalStateDir, "^[a-zA-Z0-9-._:/]+$")
-	util.ValidateOrDie("warewulf.conf", "default editor", c.LocalStateDir, "^[a-zA-Z0-9-._:/]+$")
+	util.ValidateOrDie("warewulfd ipaddr", c.Ipaddr, "^[0-9]+.[0-9]+.[0-9]+.[0-9]+$")
+	util.ValidateOrDie("system config dir", c.SysConfDir, "^[a-zA-Z0-9-._:/]+$")
+	util.ValidateOrDie("local state dir", c.LocalStateDir, "^[a-zA-Z0-9-._:/]+$")
+	util.ValidateOrDie("default editor", c.LocalStateDir, "^[a-zA-Z0-9-._:/]+$")
 
 }
 

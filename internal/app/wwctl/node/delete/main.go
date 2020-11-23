@@ -48,7 +48,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 	} else {
-		wwlog.Printf(wwlog.INFO, "No nodes found\n")
+		fmt.Printf("No nodes found\n")
 	}
 
 	return nil

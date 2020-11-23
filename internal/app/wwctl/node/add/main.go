@@ -14,7 +14,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	nodeDB.AddNode(args[0], args[1])
+	for _, a := range args {
+		err = nodeDB.AddNode(SetGroup, a)
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "%s\n", err)
+			os.Exit(1)
+		}
+	}
 
 	nodeDB.Persist()
 
