@@ -39,7 +39,7 @@ type nodeGroup struct {
 }
 
 type nodeEntry struct {
-	Hostname       string
+	Hostname       string `yaml:"hostname,omitempty"`
 	Vnfs           string `yaml:"vnfs,omitempty"`
 	Ipxe           string `yaml:"ipxe template,omitempty"`
 	SystemOverlay  string `yaml:"system overlay,omitempty"`
@@ -54,11 +54,11 @@ type nodeEntry struct {
 }
 
 type netDevs struct {
-	Type    string
+	Type    string `yaml:"type,omitempty"`
 	Hwaddr  string
 	Ipaddr  string
 	Netmask string
-	Gateway string
+	Gateway string`yaml:"gateway,omitempty"`
 }
 
 type NodeInfo struct {
@@ -219,6 +219,13 @@ func (self *nodeYaml) SetGroupVal(groupID string, entry string, value string) er
 		case "RUNTIMEOVERLAY":
 			util.ValidateOrDie("Runtime Overlay", entry, "^[a-zA-Z0-9-._]*$")
 			self.NodeGroups[groupID].RuntimeOverlay = value
+		case "IPMIUSERNAME":
+			util.ValidateOrDie("IPMI Username", entry, "^[a-zA-Z0-9-._]*$")
+			self.NodeGroups[groupID].IpmiUserName = value
+		case "IPMIPASSWORD":
+			util.ValidateOrDie("IPMI Password", entry, "^[a-zA-Z0-9-._]*$")
+			self.NodeGroups[groupID].IpmiPassword = value
+
 		}
 	} else {
 		return errors.New("Group does not exist: " +groupID)
@@ -257,6 +264,16 @@ func (self *nodeYaml) SetNodeVal(groupID string, nodeID string, entry string, va
 			case "HOSTNAME":
 				util.ValidateOrDie("Hostname", entry, "^[a-zA-Z0-9-._]*$")
 				self.NodeGroups[groupID].Nodes[nodeID].Hostname = value
+			case "IPMIIPADDR":
+				util.ValidateOrDie("IPMI IP Address", entry, "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$")
+				self.NodeGroups[groupID].Nodes[nodeID].IpmiIpaddr = value
+			case "IPMIUSERNAME":
+				util.ValidateOrDie("IPMI Username", entry, "^[a-zA-Z0-9-._]*$")
+				self.NodeGroups[groupID].Nodes[nodeID].IpmiUserName = value
+			case "IPMIPASSWORD":
+				util.ValidateOrDie("IPMI Password", entry, "^[a-zA-Z0-9-._]*$")
+				self.NodeGroups[groupID].Nodes[nodeID].IpmiPassword = value
+
 			}
 		} else {
 			return errors.New("Node does not exist: " +groupID+ "/" +nodeID)
@@ -422,6 +439,9 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			}
 			if n.Ipxe == "" {
 				n.Ipxe = "default"
+			}
+			if n.HostName == "" {
+				n.HostName = nodename
 			}
 
 			if n.DomainName != "" {

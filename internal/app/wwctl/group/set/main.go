@@ -163,6 +163,65 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				}
 			}
 		}
+		if SetIpmiIpaddr != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Group: %s, Setting IPMI IP address to: %s\n", g.Id, SetIpmiIpaddr)
+			err := nodeDB.SetGroupVal(g.Id, "ipmiipaddr", SetIpmiIpaddr)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+			if SetClearNodes == true {
+				nodes, err := nodeDB.FindAllNodes()
+				if err != nil {
+					wwlog.Printf(wwlog.ERROR, "%s\n", err)
+					os.Exit(1)
+				}
+				for _, n := range nodes {
+					_ = nodeDB.SetNodeVal(g.Id, n.Id, "ipmiipaddr", "")
+				}
+			}
+		}
+		if SetIpmiUsername != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Group: %s, Setting IPMI IP username to: %s\n", g.Id, SetIpmiUsername)
+			err := nodeDB.SetGroupVal(g.Id, "ipmiusername", SetIpmiUsername)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+			if SetClearNodes == true {
+				nodes, err := nodeDB.FindAllNodes()
+				if err != nil {
+					wwlog.Printf(wwlog.ERROR, "%s\n", err)
+					os.Exit(1)
+				}
+				for _, n := range nodes {
+					_ = nodeDB.SetNodeVal(g.Id, n.Id, "ipmiusername", "")
+				}
+			}
+		}
+		if SetIpmiPassword != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Group: %s, Setting IPMI IP password to: %s\n", g.Id, SetIpmiPassword)
+			err := nodeDB.SetGroupVal(g.Id, "ipmipassword", SetIpmiPassword)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+			if SetClearNodes == true {
+				nodes, err := nodeDB.FindAllNodes()
+				if err != nil {
+					wwlog.Printf(wwlog.ERROR, "%s\n", err)
+					os.Exit(1)
+				}
+				for _, n := range nodes {
+					_ = nodeDB.SetNodeVal(g.Id, n.Id, "ipmipassword", "")
+				}
+			}
+		}
+
+
+
+
+
 
 	}
 

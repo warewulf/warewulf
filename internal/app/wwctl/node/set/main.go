@@ -94,6 +94,30 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				os.Exit(1)
 			}
 		}
+		if SetIpmiIpaddr != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI IP address to: %s\n", n.Fqdn, SetIpmiIpaddr)
+			err := nodeDB.SetNodeVal(n.Gid, n.Id, "ipmiipaddr", SetIpmiIpaddr)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
+		if SetIpmiUsername != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI IP username to: %s\n", n.Fqdn, SetIpmiUsername)
+			err := nodeDB.SetNodeVal(n.Gid, n.Id, "ipmiusername", SetIpmiUsername)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
+		if SetIpmiPassword != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI IP password to: %s\n", n.Fqdn, SetIpmiPassword)
+			err := nodeDB.SetNodeVal(n.Gid, n.Id, "ipmipassword", SetIpmiPassword)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
 
 
 
