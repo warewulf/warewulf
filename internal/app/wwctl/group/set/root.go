@@ -20,7 +20,7 @@ var (
 	SetIpmiIpaddr string
 	SetIpmiUsername string
 	SetIpmiPassword string
-
+	SetGroupAll bool
 )
 
 func init() {
@@ -35,6 +35,8 @@ func init() {
 	baseCmd.PersistentFlags().StringVar(&SetIpmiPassword, "ipmipass", "", "Set the node's IPMI password")
 
 	baseCmd.PersistentFlags().BoolVarP(&SetClearNodes, "clear", "c", false, "Clear node configurations when setting parent group")
+	baseCmd.PersistentFlags().BoolVarP(&SetGroupAll, "all", "a", false, "Set all nodes")
+
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

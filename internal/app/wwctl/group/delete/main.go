@@ -31,7 +31,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 		} else {
 			for _, n := range nodes {
-				if n.GroupName == g {
+				if n.GroupName.String() == g {
 					numNodes ++
 				}
 			}

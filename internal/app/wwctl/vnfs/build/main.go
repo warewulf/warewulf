@@ -28,7 +28,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		for _, node := range nodes {
-			set[node.Vnfs] ++
+			set[node.Vnfs.String()] ++
 		}
 
 	} else if BuildAll == true {
@@ -40,7 +40,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		for _, node := range nodes {
-			set[node.Vnfs] ++
+			set[node.Vnfs.String()] ++
 		}
 
 	} else if len(args) == 1 {

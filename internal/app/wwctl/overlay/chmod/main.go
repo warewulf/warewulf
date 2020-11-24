@@ -64,9 +64,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		var updateNodes []node.NodeInfo
 
 		for _, node := range nodes {
-			if SystemOverlay == true && node.SystemOverlay == overlayName {
+			if SystemOverlay == true && node.SystemOverlay.String() == overlayName {
 				updateNodes = append(updateNodes, node)
-			} else if node.RuntimeOverlay == overlayName {
+			} else if node.RuntimeOverlay.String() == overlayName {
 				updateNodes = append(updateNodes, node)
 			}
 		}

@@ -16,10 +16,10 @@ func SystemOverlaySend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if node.SystemOverlay != "" {
-		fileName := config.SystemOverlayImage(node.Fqdn)
+	if node.SystemOverlay.Defined() == true {
+		fileName := config.SystemOverlayImage(node.Fqdn.String())
 
-		err := sendFile(w, fileName, node.Fqdn)
+		err := sendFile(w, fileName, node.Fqdn.String())
 		if err != nil {
 			log.Printf("ERROR: %s\n", err)
 		} else {

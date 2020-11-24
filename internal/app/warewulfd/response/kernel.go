@@ -16,10 +16,10 @@ func KernelSend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if node.KernelVersion != "" {
-		fileName := config.KernelImage(node.KernelVersion)
+	if node.KernelVersion.Defined() == true {
+		fileName := config.KernelImage(node.KernelVersion.String())
 
-		err := sendFile(w, fileName, node.Fqdn)
+		err := sendFile(w, fileName, node.Fqdn.String())
 		if err != nil {
 			log.Printf("ERROR: %s\n", err)
 		} else {

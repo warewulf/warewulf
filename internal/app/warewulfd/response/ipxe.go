@@ -46,7 +46,7 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if node.HostName != "" {
+	if node.HostName.Defined() == true {
 		conf := config.New()
 
 		log.Printf("IPXE:  %15s: %s\n", node.Fqdn, req.URL.Path)
@@ -62,13 +62,13 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 
 		var replace iPxeTemplate
 
-		replace.Fqdn = node.Fqdn
+		replace.Fqdn = node.Fqdn.String()
 		replace.Ipaddr = conf.Ipaddr
 		replace.Port = strconv.Itoa(conf.Port)
-		replace.Hostname = node.HostName
+		replace.Hostname = node.HostName.String()
 		replace.Hwaddr = url[2]
-		replace.Vnfs = node.Vnfs
-		replace.Kernelargs = node.KernelArgs
+		replace.Vnfs = node.Vnfs.String()
+		replace.Kernelargs = node.KernelArgs.String()
 
 		err = tmpl.Execute(w, replace)
 		if err != nil {

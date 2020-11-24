@@ -60,10 +60,10 @@ func RuntimeBuild(nodeList []node.NodeInfo, force bool) error {
 	wwlog.SetIndent(4)
 
 	for _, node := range nodeList {
-		if node.RuntimeOverlay != "" {
-			OverlayDir := config.RuntimeOverlaySource(node.RuntimeOverlay)
-			OverlayFile := config.RuntimeOverlayImage(node.Fqdn)
-			vnfs := vnfs.New(node.Vnfs)
+		if node.RuntimeOverlay.String() != "" {
+			OverlayDir := config.RuntimeOverlaySource(node.RuntimeOverlay.String())
+			OverlayFile := config.RuntimeOverlayImage(node.Fqdn.String())
+			vnfs := vnfs.New(node.Vnfs.String())
 
 			vnfsDir := config.VnfsChroot(vnfs.NameClean())
 

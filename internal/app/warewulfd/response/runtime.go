@@ -47,7 +47,7 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if node.Fqdn == "" {
+	if node.Fqdn.Defined() == false {
 		log.Printf("UNKNOWN: %15s: %s\n", remote[0], req.URL.Path)
 		w.WriteHeader(404)
 		return
@@ -55,10 +55,10 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 		log.Printf("REQ:   %15s: %s\n", node.Fqdn, req.URL.Path)
 	}
 
-	if node.RuntimeOverlay != "" {
-		fileName := config.RuntimeOverlayImage(node.Fqdn)
+	if node.RuntimeOverlay.Defined() == true {
+		fileName := config.RuntimeOverlayImage(node.Fqdn.String())
 
-		err := sendFile(w, fileName, node.Fqdn)
+		err := sendFile(w, fileName, node.Fqdn.String())
 		if err != nil {
 			log.Printf("ERROR: %s\n", err)
 		} else {
