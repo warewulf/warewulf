@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 	"reflect"
+	"strings"
 )
 
 
@@ -38,32 +39,49 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			typeOfS := v.Type()
 			fmt.Printf("################################################################################\n")
 			for i := 0; i< v.NumField(); i++ {
-				fmt.Printf("%-25s %s = %v\n", node.Fqdn, typeOfS.Field(i).Name, v.Field(i).Interface())
+				//TODO: Fix for NetDevs and Interface should print Fprint() method
+				fmt.Printf("%-25s %s = %v\n", node.Fqdn.String(), typeOfS.Field(i).Name, v.Field(i).Interface())
 			}
 		}
 
 	} else if ShowNet == true {
-		fmt.Printf("%-22s %-10s %-20s %-16s %-16s %-16s %s\n", "NODE NAME", "DEVICE", "HWADDR", "IPADDR", "NETMASK", "GATEWAY", "TYPE")
+		fmt.Printf("%-22s %-6s %-18s %-15s %-15s\n", "NODE NAME", "DEVICE", "HWADDR", "IPADDR", "GATEWAY")
+		fmt.Println(strings.Repeat("=", 80))
 
 		for _, node := range nodes {
-			for name, dev := range node.NetDevs {
-				fmt.Printf("%-22s %-10s %-20s %-16s %-16s %-16s %s\n", node.Fqdn, name, dev.Hwaddr, dev.Ipaddr, dev.Netmask, dev.Gateway, dev.Type)
+			if len(node.NetDevs) > 0 {
+				for name, dev := range node.NetDevs {
+					fmt.Printf("%-22s %-6s %-18s %-15s %-15s\n", node.Fqdn.String(), name, dev.Hwaddr, dev.Ipaddr, dev.Gateway)
+				}
+			} else {
+				fmt.Printf("%-22s %-6s %-18s %-15s %-15s\n", node.Fqdn.String(), "--", "--", "--", "--")
 			}
 		}
 
 	} else if ShowIpmi == true {
 		fmt.Printf("%-22s %-16s %-20s %-20s\n", "NODE NAME", "IPMI IPADDR", "IPMI USERNAME", "IPMI PASSWORD")
+		fmt.Println(strings.Repeat("=", 80))
 
 		for _, node := range nodes {
-			fmt.Printf("%-22s %-16s %-20s %-20s\n", node.Fqdn, node.IpmiIpaddr, node.IpmiUserName, node.IpmiPassword)
+			fmt.Printf("%-22s %-16s %-20s %-20s\n", node.Fqdn.String(), node.IpmiIpaddr.Fprint(), node.IpmiUserName.Fprint(), node.IpmiPassword.Fprint())
+		}
+
+	} else if ShowLong == true {
+		fmt.Printf("%-22s %-12s %-26s %-30s %-12s\n", "NODE NAME", "GROUP NAME", "KERNEL VERSION", "VNFS IMAGE", "R-OVERLAY")
+		fmt.Println(strings.Repeat("=", 100))
+
+		for _, node := range nodes {
+			fmt.Printf("%-22s %-12s %-26s %-30s %-12s\n", node.Fqdn.String(), node.GroupName.Fprint(), node.KernelVersion.Fprint(), node.Vnfs.Fprint(), node.RuntimeOverlay.Fprint())
 		}
 
 	} else {
-		fmt.Printf("%-22s %-16s %-30s %-30s %-16s\n", "NODE NAME", "GROUP NAME", "KERNEL VERSION", "VNFS IMAGE", "RUNTIME OVERLAY")
+		fmt.Printf("%-22s %-26s %-30s\n", "NODE NAME", "KERNEL VERSION", "VNFS IMAGE")
+		fmt.Println(strings.Repeat("=", 80))
 
 		for _, node := range nodes {
-			fmt.Printf("%-22s %-16s %-30s %-30s %-16s\n", node.Fqdn, node.GroupName, node.KernelVersion, node.Vnfs, node.RuntimeOverlay)
+			fmt.Printf("%-22s %-26s %-30s\n", node.Fqdn.String(), node.KernelVersion.Fprint(), node.Vnfs.Fprint())
 		}
+
 	}
 
 

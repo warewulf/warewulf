@@ -25,7 +25,8 @@ var (
 	SetIpmiIpaddr string
 	SetIpmiUsername string
 	SetIpmiPassword string
-
+	SetNodeAll bool
+	SetYes bool
 )
 
 func init() {
@@ -46,6 +47,9 @@ func init() {
 	baseCmd.PersistentFlags().StringVarP(&SetGateway, "gateway", "G", "", "Set the node's network device gateway")
 	baseCmd.PersistentFlags().StringVarP(&SetHwaddr, "hwaddr", "N", "", "Set the node's network device HW address")
 	baseCmd.PersistentFlags().BoolVar(&SetNetDevDel, "delete", false, "Delete the node's network device")
+	baseCmd.PersistentFlags().BoolVarP(&SetNodeAll, "all", "a", false, "Set all nodes")
+
+	baseCmd.PersistentFlags().BoolVarP(&SetYes, "yes", "y", false, "Set 'yes' to all questions asked")
 
 }
 

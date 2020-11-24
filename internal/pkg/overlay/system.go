@@ -60,10 +60,10 @@ func SystemBuild(nodeList []node.NodeInfo, force bool) error {
 	wwlog.SetIndent(4)
 
 	for _, node := range nodeList {
-		if node.SystemOverlay != "" {
-			OverlayDir := config.SystemOverlaySource(node.SystemOverlay)
-			OverlayFile := config.SystemOverlayImage(node.Fqdn)
-			vnfs := vnfs.New(node.Vnfs)
+		if node.SystemOverlay.String() != "" {
+			OverlayDir := config.SystemOverlaySource(node.SystemOverlay.String())
+			OverlayFile := config.SystemOverlayImage(node.Fqdn.String())
+			vnfs := vnfs.New(node.Vnfs.String())
 
 			vnfsDir := config.VnfsChroot(vnfs.NameClean())
 

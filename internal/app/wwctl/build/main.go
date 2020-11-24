@@ -46,7 +46,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.INFO, "Building VNFS images...\n")
 
 		for _, node := range nodes {
-			set[node.Vnfs] ++
+			set[node.Vnfs.String()] ++
 		}
 		for e := range set {
 			vnfs.Build(e, buildForce)
@@ -60,7 +60,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.INFO, "Building Kernel images...\n")
 
 		for _, node := range nodes {
-			set[node.KernelVersion] ++
+			set[node.KernelVersion.String()] ++
 		}
 		for e := range set {
 			kernel.Build(e)

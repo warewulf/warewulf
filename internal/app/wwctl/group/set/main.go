@@ -24,7 +24,19 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	if len(args) > 0 {
+	if SetGroupAll == true {
+		var tmp []node.GroupInfo
+		tmp, err = nodeDB.FindAllGroups()
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "%s\n", err)
+			os.Exit(1)
+		}
+
+		for _, g := range tmp {
+			groups = append(groups, g)
+		}
+
+	} else if len(args) > 0 {
 		var tmp []node.GroupInfo
 		tmp, err = nodeDB.FindAllGroups()
 		if err != nil {
@@ -34,7 +46,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 		for _, a := range args {
 			for _, g := range tmp {
-				if g.Id == a {
+				if g.Id.String() == a {
 					groups = append(groups, g)
 				}
 			}
@@ -48,7 +60,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	for _, g := range groups {
 		if SetVnfs != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Group: %s, Setting vnfs to: %s\n", g.Id, SetVnfs)
-			err := nodeDB.SetGroupVal(g.Id, "vnfs", SetVnfs)
+			err := nodeDB.SetGroupVal(g.Id.String(), "vnfs", SetVnfs)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
@@ -61,14 +73,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					os.Exit(1)
 				}
 				for _, n := range nodes {
-					_ = nodeDB.SetNodeVal(g.Id, n.Id, "vnfs", "")
+					_ = nodeDB.SetNodeVal(g.Id.String(), n.Id.String(), "vnfs", "")
 				}
 			}
 		}
 
 		if SetKernel != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Group: %s, Setting kernel to: %s\n", g.Id, SetVnfs)
-			err := nodeDB.SetGroupVal(g.Id, "kernel", SetKernel)
+			err := nodeDB.SetGroupVal(g.Id.String(), "kernel", SetKernel)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
@@ -81,14 +93,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					os.Exit(1)
 				}
 				for _, n := range nodes {
-					_ = nodeDB.SetNodeVal(g.Id, n.Id, "kernel", "")
+					_ = nodeDB.SetNodeVal(g.Id.String(), n.Id.String(), "kernel", "")
 				}
 			}
 		}
 
 		if SetDomainName != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Group: %s, Setting domain name to: %s\n", g.Id, SetDomainName)
-			err := nodeDB.SetGroupVal(g.Id, "domain", SetDomainName)
+			err := nodeDB.SetGroupVal(g.Id.String(), "domain", SetDomainName)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
@@ -101,14 +113,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					os.Exit(1)
 				}
 				for _, n := range nodes {
-					_ = nodeDB.SetNodeVal(g.Id, n.Id, "domain", "")
+					_ = nodeDB.SetNodeVal(g.Id.String(), n.Id.String(), "domain", "")
 				}
 			}
 		}
 
 		if SetIpxe != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Group: %s, Setting iPXE template to: %s\n", g.Id, SetIpxe)
-			err := nodeDB.SetGroupVal(g.Id, "ipxe", SetIpxe)
+			err := nodeDB.SetGroupVal(g.Id.String(), "ipxe", SetIpxe)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
@@ -121,14 +133,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					os.Exit(1)
 				}
 				for _, n := range nodes {
-					_ = nodeDB.SetNodeVal(g.Id, n.Id, "ipxe", "")
+					_ = nodeDB.SetNodeVal(g.Id.String(), n.Id.String(), "ipxe", "")
 				}
 			}
 		}
 
 		if SetRuntimeOverlay != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Group: %s, Setting runtime overlay to: %s\n", g.Id, SetRuntimeOverlay)
-			err := nodeDB.SetGroupVal(g.Id, "runtimeoverlay", SetRuntimeOverlay)
+			err := nodeDB.SetGroupVal(g.Id.String(), "runtimeoverlay", SetRuntimeOverlay)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
@@ -140,14 +152,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					os.Exit(1)
 				}
 				for _, n := range nodes {
-					_ = nodeDB.SetNodeVal(g.Id, n.Id, "runtimeoverlay", "")
+					_ = nodeDB.SetNodeVal(g.Id.String(), n.Id.String(), "runtimeoverlay", "")
 				}
 			}
 		}
 
 		if SetSystemOverlay != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Group: %s, Setting system overlay to: %s\n", g.Id, SetSystemOverlay)
-			err := nodeDB.SetGroupVal(g.Id, "systemoverlay", SetSystemOverlay)
+			err := nodeDB.SetGroupVal(g.Id.String(), "systemoverlay", SetSystemOverlay)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
@@ -159,13 +171,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					os.Exit(1)
 				}
 				for _, n := range nodes {
-					_ = nodeDB.SetNodeVal(g.Id, n.Id, "systemoverlay", "")
+					_ = nodeDB.SetNodeVal(g.Id.String(), n.Id.String(), "systemoverlay", "")
 				}
 			}
 		}
 		if SetIpmiIpaddr != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Group: %s, Setting IPMI IP address to: %s\n", g.Id, SetIpmiIpaddr)
-			err := nodeDB.SetGroupVal(g.Id, "ipmiipaddr", SetIpmiIpaddr)
+			err := nodeDB.SetGroupVal(g.Id.String(), "ipmiipaddr", SetIpmiIpaddr)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
@@ -177,13 +189,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					os.Exit(1)
 				}
 				for _, n := range nodes {
-					_ = nodeDB.SetNodeVal(g.Id, n.Id, "ipmiipaddr", "")
+					_ = nodeDB.SetNodeVal(g.Id.String(), n.Id.String(), "ipmiipaddr", "")
 				}
 			}
 		}
 		if SetIpmiUsername != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Group: %s, Setting IPMI IP username to: %s\n", g.Id, SetIpmiUsername)
-			err := nodeDB.SetGroupVal(g.Id, "ipmiusername", SetIpmiUsername)
+			err := nodeDB.SetGroupVal(g.Id.String(), "ipmiusername", SetIpmiUsername)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
@@ -195,13 +207,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					os.Exit(1)
 				}
 				for _, n := range nodes {
-					_ = nodeDB.SetNodeVal(g.Id, n.Id, "ipmiusername", "")
+					_ = nodeDB.SetNodeVal(g.Id.String(), n.Id.String(), "ipmiusername", "")
 				}
 			}
 		}
 		if SetIpmiPassword != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Group: %s, Setting IPMI IP password to: %s\n", g.Id, SetIpmiPassword)
-			err := nodeDB.SetGroupVal(g.Id, "ipmipassword", SetIpmiPassword)
+			err := nodeDB.SetGroupVal(g.Id.String(), "ipmipassword", SetIpmiPassword)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
@@ -213,7 +225,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					os.Exit(1)
 				}
 				for _, n := range nodes {
-					_ = nodeDB.SetNodeVal(g.Id, n.Id, "ipmipassword", "")
+					_ = nodeDB.SetNodeVal(g.Id.String(), n.Id.String(), "ipmipassword", "")
 				}
 			}
 		}

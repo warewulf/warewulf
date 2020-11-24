@@ -15,10 +15,10 @@ func KmodsSend(w http.ResponseWriter, req *http.Request) {
 		log.Println(err)
 		return
 	}
-	if node.KernelVersion != "" {
-		fileName := config.KmodsImage(node.KernelVersion)
+	if node.KernelVersion.Defined() == true {
+		fileName := config.KmodsImage(node.KernelVersion.String())
 
-		err := sendFile(w, fileName, node.Fqdn)
+		err := sendFile(w, fileName, node.Fqdn.String())
 		if err != nil {
 			log.Printf("ERROR: %s\n", err)
 		} else {

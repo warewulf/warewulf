@@ -53,12 +53,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	for _, node := range nodeList {
 		if SystemOverlay == true {
-			if node.SystemOverlay != "" {
-				set[node.SystemOverlay] ++
+			if node.SystemOverlay.String() != "" {
+				set[node.SystemOverlay.String()] ++
 			}
 		} else {
-			if node.RuntimeOverlay != "" {
-				set[node.RuntimeOverlay] ++
+			if node.RuntimeOverlay.String() != "" {
+				set[node.RuntimeOverlay.String()] ++
 			}
 		}
 	}

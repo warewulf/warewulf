@@ -17,10 +17,10 @@ func VnfsSend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if node.Vnfs != "" {
-		v := vnfs.New(node.Vnfs)
+	if node.Vnfs.Defined() == true {
+		v := vnfs.New(node.Vnfs.String())
 
-		err := sendFile(w, config.VnfsImage(v.NameClean()), node.Fqdn)
+		err := sendFile(w, config.VnfsImage(v.NameClean()), node.Fqdn.String())
 		if err != nil {
 			log.Printf("ERROR: %s\n", err)
 		} else {
