@@ -67,11 +67,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 	} else if ShowLong == true {
-		fmt.Printf("%-22s %-12s %-26s %-30s %-12s\n", "NODE NAME", "GROUP NAME", "KERNEL VERSION", "VNFS IMAGE", "R-OVERLAY")
-		fmt.Println(strings.Repeat("=", 100))
+		fmt.Printf("%-22s %-12s %-26s %-35s %s\n", "NODE NAME", "GROUP NAME", "KERNEL VERSION", "VNFS IMAGE", "OVERLAYS (S/R)")
+		fmt.Println(strings.Repeat("=", 120))
 
 		for _, node := range nodes {
-			fmt.Printf("%-22s %-12s %-26s %-30s %-12s\n", node.Fqdn.String(), node.GroupName.Fprint(), node.KernelVersion.Fprint(), node.Vnfs.Fprint(), node.RuntimeOverlay.Fprint())
+			fmt.Printf("%-22s %-12s %-26s %-35s %s\n", node.Fqdn.String(), node.GroupName.Fprint(), node.KernelVersion.Fprint(), node.Vnfs.Fprint(), node.SystemOverlay.Fprint() +"/"+ node.RuntimeOverlay.Fprint())
 		}
 
 	} else {

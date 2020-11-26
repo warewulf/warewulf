@@ -2,8 +2,9 @@ package node
 
 import (
 	"fmt"
+	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/errors"
-	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/vnfs"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -11,7 +12,6 @@ import (
 )
 
 const ConfigFile = "/etc/warewulf/nodes.conf"
-const LocalStateDir = "/var/warewulf"
 
 func init() {
 	//TODO: Check to make sure nodes.conf is found
@@ -19,45 +19,65 @@ func init() {
 }
 
 type nodeYaml struct {
-	NodeGroups 		map[string]*nodeGroup //`yaml:"nodegroups"`
+	Profiles 		map[string]*profileConfig
+	NodeGroups 		map[string]*nodeGroup
 	Hwaddrs 		map[string]NodeInfo
 }
 
+type profileConfig struct {
+	Vnfs           	string `yaml:"vnfs"`
+	Ipxe           	string `yaml:"ipxe template,omitempty"`
+	KernelVersion  	string `yaml:"kernel version"`
+	KernelArgs     	string `yaml:"kernel args"`
+	IpmiUserName   	string `yaml:"ipmi username,omitempty"`
+	IpmiPassword   	string `yaml:"ipmi password,omitempty"`
+	DomainSuffix   	string `yaml:"domain suffix,omitempty"`
+	RuntimeOverlay 	[]OverlayEntry `yaml:"runtime overlay files,omitempty"`
+	SystemOverlay  	[]OverlayEntry `yaml:"system overlay files,omitempty"`
+}
+
+type OverlayEntry struct {
+	Path 			string	`yaml:"path,omitempty"`
+	File		 	bool	`yaml:"file,omitempty"`
+	Dir		 		bool	`yaml:"dir,omitempty"`
+	Link 			bool	`yaml:"link,omitempty"`
+	Template 		bool	`yaml:"template,omitempty"`
+	Mode 			int32 	`yaml:"mode,omitempty"`
+	Owner 			string 	`yaml:"owner,omitempty"`
+	Group 			string 	`yaml:"group,omitempty"`
+	Source 			string 	`yaml:"source,omitempty"`
+	Sources 		[]string `yaml:"sources,omitempty"`
+}
+
 type nodeGroup struct {
-	Comment        string
-	Vnfs           string `yaml:"vnfs"`
-	Ipxe           string `yaml:"ipxe template,omitempty"`
-	SystemOverlay  string `yaml:"system overlay,omitempty""`
-	RuntimeOverlay string `yaml:"runtime overlay""`
-	DomainSuffix   string `yaml:"domain suffix"`
-	KernelVersion  string `yaml:"kernel version"`
-	KernelArgs     string `yaml:"kernel args"`
-	IpmiUserName   string `yaml:"ipmi username,omitempty"`
-	IpmiPassword   string `yaml:"ipmi password,omitempty"`
-	Nodes          map[string]*nodeEntry
+	Comment        	string
+	DomainSuffix   	string `yaml:"domain suffix"`
+	Profiles   		[]string `yaml:"profiles"`
+	Nodes          	map[string]*nodeEntry
 }
 
 type nodeEntry struct {
-	Hostname       string `yaml:"hostname,omitempty"`
-	Vnfs           string `yaml:"vnfs,omitempty"`
-	Ipxe           string `yaml:"ipxe template,omitempty"`
-	SystemOverlay  string `yaml:"system overlay,omitempty"`
-	RuntimeOverlay string `yaml:"runtime overlay,omitempty"`
-	DomainSuffix   string `yaml:"domain suffix,omitempty"`
-	KernelVersion  string `yaml:"kernel version,omitempty"`
-	KernelArgs     string `yaml:"kernel args,omitempty"`
-	IpmiIpaddr     string `yaml:"ipmi ipaddr,omitempty"`
-	IpmiUserName   string `yaml:"ipmi username,omitempty"`
-	IpmiPassword   string `yaml:"ipmi password,omitempty"`
-	NetDevs        map[string]*netDevs
+	Hostname       	string `yaml:"hostname,omitempty"`
+	Vnfs           	string `yaml:"vnfs"`
+	Ipxe           	string `yaml:"ipxe template,omitempty"`
+	KernelVersion  	string `yaml:"kernel version"`
+	KernelArgs     	string `yaml:"kernel args"`
+	IpmiUserName   	string `yaml:"ipmi username,omitempty"`
+	IpmiPassword   	string `yaml:"ipmi password,omitempty"`
+	DomainSuffix   	string `yaml:"domain suffix,omitempty"`
+	IpmiIpaddr     	string `yaml:"ipmi ipaddr,omitempty"`
+	Profiles   		[]string `yaml:"profiles"`
+	RuntimeOverlay 	[]OverlayEntry `yaml:"system overlay files,omitempty"`
+	SystemOverlay  	[]OverlayEntry `yaml:"runtime overlay files,omitempty"`
+	NetDevs        	map[string]*NetDevs
 }
 
-type netDevs struct {
-	Type    string `yaml:"type,omitempty"`
-	Hwaddr  string
-	Ipaddr  string
-	Netmask string
-	Gateway string `yaml:"gateway,omitempty"`
+type NetDevs struct {
+	Type    		string `yaml:"type,omitempty"`
+	Hwaddr  		string
+	Ipaddr  		string
+	Netmask 		string
+	Gateway 		string `yaml:"gateway,omitempty"`
 }
 
 type EntryInfo struct {
@@ -67,38 +87,42 @@ type EntryInfo struct {
 }
 
 type NodeInfo struct {
-	Id             EntryInfo
-	Gid 	       EntryInfo
-	Uid 		   EntryInfo
-	GroupName      EntryInfo
-	HostName       EntryInfo
-	DomainName     EntryInfo
-	Fqdn           EntryInfo
-	Vnfs           EntryInfo
-	Ipxe           EntryInfo
-	SystemOverlay  EntryInfo
-	RuntimeOverlay EntryInfo
-	KernelVersion  EntryInfo
-	KernelArgs     EntryInfo
-	IpmiIpaddr     EntryInfo
-	IpmiUserName   EntryInfo
-	IpmiPassword   EntryInfo
-	NetDevs        map[string]*netDevs
+	Id             	string
+	Gid 	       	string
+	Uid 		   	string
+	GroupName      	string
+	HostName       	string
+	DomainName     	string
+	Fqdn           	string
+	Vnfs           	string
+	VnfsRoot		string
+	Ipxe           	string
+	KernelVersion  	string
+	KernelArgs     	string
+	IpmiIpaddr     	string
+	IpmiUserName   	string
+	IpmiPassword   	string
+	Profiles 		[]string
+	RuntimeOverlay 	[]OverlayEntry
+	SystemOverlay  	[]OverlayEntry
+	NetDevs        	map[string]*NetDevs
 }
 
 type GroupInfo struct {
-	Id             EntryInfo
-	GroupName      EntryInfo
-	DomainName     EntryInfo
-	Vnfs           EntryInfo
-	Ipxe           EntryInfo
-	SystemOverlay  EntryInfo
-	RuntimeOverlay EntryInfo
-	KernelVersion  EntryInfo
-	KernelArgs     EntryInfo
-	IpmiUserName   EntryInfo
-	IpmiPassword   EntryInfo
+	Id             	string
+	GroupName      	string
+	DomainName     	string
+	Vnfs           	string
+	Ipxe           	string
+	SystemOverlay  	string
+	RuntimeOverlay 	string
+	KernelVersion  	string
+	KernelArgs     	string
+	IpmiUserName   	string
+	IpmiPassword   	string
 }
+
+
 
 func (i *EntryInfo) Default (value string) {
 	if value == "" {
@@ -174,17 +198,9 @@ func (self *nodeYaml) FindAllGroups() ([]GroupInfo, error) {
 	for groupname, group := range self.NodeGroups {
 		var g GroupInfo
 
-		g.Id.Set(groupname)
-		g.GroupName.Set(groupname)
-		g.RuntimeOverlay.Set(group.RuntimeOverlay)
-		g.SystemOverlay.Set(group.SystemOverlay)
-		g.Ipxe.Set(group.Ipxe)
-		g.KernelVersion.Set(group.KernelVersion)
-		g.KernelArgs.Set(group.KernelArgs)
-		g.Vnfs.Set(group.Vnfs)
-		g.IpmiUserName.Set(group.IpmiUserName)
-		g.IpmiPassword.Set(group.IpmiPassword)
-		g.DomainName.Set(group.DomainSuffix)
+		g.Id = groupname
+		g.GroupName = groupname
+		g.DomainName = group.DomainSuffix
 
 		// TODO: Validate or die on all inputs
 
@@ -201,55 +217,93 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		for nodename, node := range group.Nodes {
 			var n NodeInfo
 
-			n.Id.Set(nodename)
-			n.Gid.Set(groupname)
-			n.GroupName.Set(groupname)
-			n.HostName.Set(node.Hostname)
-			n.IpmiIpaddr.Set(node.IpmiIpaddr)
+			n.Id = nodename
+			n.Gid = groupname
+			n.GroupName = groupname
+			n.HostName = node.Hostname
+			n.Profiles = node.Profiles
+			n.IpmiIpaddr = node.IpmiIpaddr
 
-			n.Vnfs.Set(group.Vnfs)
-			n.SystemOverlay.Set(group.SystemOverlay)
-			n.RuntimeOverlay.Set(group.RuntimeOverlay)
-			n.KernelVersion.Set(group.KernelVersion)
-			n.KernelArgs.Set(group.KernelArgs)
-			n.DomainName.Set(group.DomainSuffix)
-			n.Ipxe.Set(group.Ipxe)
-			n.IpmiUserName.Set(group.IpmiUserName)
-			n.IpmiPassword.Set(group.IpmiPassword)
+			if len(n.Profiles) == 0 {
+				n.Profiles = append(n.Profiles, "default")
+			}
 
-			n.Vnfs.Override(node.Vnfs)
-			n.SystemOverlay.Override(node.SystemOverlay)
-			n.RuntimeOverlay.Override(node.RuntimeOverlay)
-			n.KernelVersion.Override(node.KernelVersion)
-			n.KernelArgs.Override(node.KernelArgs)
-			n.DomainName.Override(node.DomainSuffix)
-			n.Ipxe.Override(node.Ipxe)
-			n.IpmiUserName.Override(node.IpmiUserName)
-			n.IpmiPassword.Override(node.IpmiPassword)
-
-			n.RuntimeOverlay.Default("default")
-			n.SystemOverlay.Default("default")
-			n.Ipxe.Default("default")
-
-			if n.DomainName.Defined() == true {
-				if group.DomainSuffix != "" {
-					n.Fqdn.Set(node.Hostname + "." + group.DomainSuffix)
-				} else if node.DomainSuffix != "" {
-					n.Fqdn.Set(node.Hostname + "." + node.DomainSuffix)
+			for _, p := range n.Profiles {
+				if _, ok := self.Profiles[p]; ok {
 				} else {
-					n.Fqdn.Set(node.Hostname)
+					continue
+				}
+				if self.Profiles[p].Vnfs != "" {
+					n.Vnfs = self.Profiles[p].Vnfs
+				}
+				if self.Profiles[p].KernelVersion != "" {
+					n.KernelVersion = self.Profiles[p].KernelVersion
+				}
+				if self.Profiles[p].KernelArgs != "" {
+					n.KernelArgs = self.Profiles[p].KernelArgs
+				}
+				if self.Profiles[p].Ipxe != "" {
+					n.Ipxe = self.Profiles[p].Ipxe
+				}
+				if self.Profiles[p].IpmiUserName != "" {
+					n.IpmiUserName = self.Profiles[p].IpmiUserName
+				}
+				if self.Profiles[p].IpmiPassword != "" {
+					n.IpmiPassword = self.Profiles[p].IpmiPassword
+				}
+				if self.Profiles[p].DomainSuffix != "" {
+					n.DomainName = self.Profiles[p].DomainSuffix
+				}
+
+				for _, ro := range self.Profiles[p].RuntimeOverlay {
+					n.RuntimeOverlay = append(n.RuntimeOverlay, ro)
+				}
+				for _, so := range self.Profiles[p].SystemOverlay {
+					n.SystemOverlay = append(n.SystemOverlay, so)
 				}
 			}
 
-			n.NetDevs = node.NetDevs
+			if node.DomainSuffix != "" {
+				n.DomainName = node.DomainSuffix
+			} else if group.DomainSuffix != "" {
+				n.DomainName = group.DomainSuffix
+			}
+			if node.Vnfs != "" {
+				n.Vnfs = node.Vnfs
+			}
+			if node.KernelVersion != "" {
+				n.KernelVersion = node.KernelVersion
+			}
+			if node.KernelArgs != "" {
+				n.KernelArgs = node.KernelArgs
+			}
+			if node.Ipxe != "" {
+				n.Ipxe = node.Ipxe
+			}
+			if node.IpmiUserName != "" {
+				n.IpmiUserName = node.IpmiUserName
+			}
+			if node.IpmiPassword != "" {
+				n.IpmiPassword = node.IpmiPassword
+			}
 
-			util.ValidateOrDie(n.Fqdn.String() +":group name", n.GroupName.String(), "^[a-zA-Z0-9-._]*$")
-			util.ValidateOrDie(n.Fqdn.String() +":vnfs", n.Vnfs.String(), "^[a-zA-Z0-9-._:/]*$")
-			util.ValidateOrDie(n.Fqdn.String() +":system overlay", n.SystemOverlay.String(), "^[a-zA-Z0-9-._]*$")
-			util.ValidateOrDie(n.Fqdn.String() +":runtime overlay", n.RuntimeOverlay.String(), "^[a-zA-Z0-9-._]*$")
-			util.ValidateOrDie(n.Fqdn.String() +":domain suffix", n.DomainName.String(), "^[a-zA-Z0-9-._]*$")
-			util.ValidateOrDie(n.Fqdn.String() +":hostname", n.HostName.String(), "^[a-zA-Z0-9-_]*$")
-			util.ValidateOrDie(n.Fqdn.String() +":kernel version", n.KernelVersion.String(), "^[a-zA-Z0-9-._]*$")
+			if n.Ipxe == "" {
+				n.Ipxe = "default"
+			}
+			if n.KernelArgs == "" {
+				n.KernelArgs = "crashkernel=no quiet"
+			}
+
+			config := config.New()
+			n.VnfsRoot = config.VnfsChroot(vnfs.CleanName(n.Vnfs))
+
+			if n.DomainName != "" {
+				n.Fqdn = node.Hostname + "." + n.DomainName
+			} else {
+				n.Fqdn = node.Hostname
+			}
+
+			n.NetDevs = node.NetDevs
 
 			ret = append(ret, n)
 		}
@@ -296,7 +350,7 @@ func (nodes *nodeYaml) SearchByName(search string) ([]NodeInfo, error) {
 	n, _ := nodes.FindAllNodes()
 
 	for _, node := range n {
-		b, _ := regexp.MatchString(search, node.Fqdn.String())
+		b, _ := regexp.MatchString(search, node.Fqdn)
 		if b == true {
 			ret = append(ret, node)
 		}
@@ -312,7 +366,7 @@ func (nodes *nodeYaml) SearchByNameList(searchList []string) ([]NodeInfo, error)
 
 	for _, search := range searchList {
 		for _, node := range n {
-			b, _ := regexp.MatchString(search, node.Fqdn.String())
+			b, _ := regexp.MatchString(search, node.Fqdn)
 			if b == true {
 				ret = append(ret, node)
 			}

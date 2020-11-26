@@ -98,32 +98,11 @@ func (self *nodeYaml) SetGroupVal(groupID string, entry string, value string) er
 		wwlog.Printf(wwlog.VERBOSE, "Setting group %s to: %s = '%s'\n", groupID, entry, value )
 
 		switch strings.ToUpper(entry) {
-		case "VNFS":
-			util.ValidateOrDie("VNFS", entry, "^[a-zA-Z0-9-._]*$")
-			self.NodeGroups[groupID].Vnfs = value
-		case "KERNEL":
-			util.ValidateOrDie("Kernel Version", entry, "^[a-zA-Z0-9-._]*$")
-			self.NodeGroups[groupID].KernelVersion = value
 		case "DOMAINSUFFIX":
 			util.ValidateOrDie("Domain", entry, "^[a-zA-Z0-9-._]*$")
 			self.NodeGroups[groupID].DomainSuffix = value
-		case "IPXE":
-			util.ValidateOrDie("iPXE Template", entry, "^[a-zA-Z0-9-._]*$")
-			self.NodeGroups[groupID].Ipxe = value
-		case "SYSTEMOVERLAY":
-			util.ValidateOrDie("System Overlay", entry, "^[a-zA-Z0-9-._]*$")
-			self.NodeGroups[groupID].SystemOverlay = value
-		case "RUNTIMEOVERLAY":
-			util.ValidateOrDie("Runtime Overlay", entry, "^[a-zA-Z0-9-._]*$")
-			self.NodeGroups[groupID].RuntimeOverlay = value
-		case "IPMIUSERNAME":
-			util.ValidateOrDie("IPMI Username", entry, "^[a-zA-Z0-9-._]*$")
-			self.NodeGroups[groupID].IpmiUserName = value
-		case "IPMIPASSWORD":
-			util.ValidateOrDie("IPMI Password", entry, "^[a-zA-Z0-9-._]*$")
-			self.NodeGroups[groupID].IpmiPassword = value
-
 		}
+
 	} else {
 		return errors.New("Group does not exist: " +groupID)
 	}
@@ -152,12 +131,6 @@ func (self *nodeYaml) SetNodeVal(groupID string, nodeID string, entry string, va
 			case "IPXE":
 				util.ValidateOrDie("iPXE Template", entry, "^[a-zA-Z0-9-._]*$")
 				self.NodeGroups[groupID].Nodes[nodeID].Ipxe = value
-			case "SYSTEMOVERLAY":
-				util.ValidateOrDie("System Overlay", entry, "^[a-zA-Z0-9-._]*$")
-				self.NodeGroups[groupID].Nodes[nodeID].SystemOverlay = value
-			case "RUNTIMEOVERLAY":
-				util.ValidateOrDie("Runtime Overlay", entry, "^[a-zA-Z0-9-._]*$")
-				self.NodeGroups[groupID].Nodes[nodeID].RuntimeOverlay = value
 			case "HOSTNAME":
 				util.ValidateOrDie("Hostname", entry, "^[a-zA-Z0-9-._]*$")
 				self.NodeGroups[groupID].Nodes[nodeID].Hostname = value
@@ -192,7 +165,7 @@ func (self *nodeYaml) SetNodeNet(groupID string, nodeID string, netDev string, e
 			if _, ok := self.NodeGroups[groupID].Nodes[nodeID].NetDevs[netDev]; ok {
 				wwlog.Printf(wwlog.VERBOSE, "Editing existing node NetDev entry for node: %s/%s\n", groupID, nodeID)
 			} else {
-				var nd netDevs
+				var nd NetDevs
 				self.NodeGroups[groupID].Nodes[nodeID].NetDevs[netDev] = &nd
 			}
 		} else {
