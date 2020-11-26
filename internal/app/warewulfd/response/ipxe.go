@@ -49,10 +49,10 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 	if node.HostName.Defined() == true {
 		conf := config.New()
 
-		log.Printf("IPXE:  %15s: %s\n", node.Fqdn, req.URL.Path)
+		log.Printf("IPXE:  %15s: %s\n", node.Fqdn.String(), req.URL.Path)
 
 		// TODO: Fix template path to use config package
-		ipxeTemplate := fmt.Sprintf("/etc/warewulf/ipxe/%s.ipxe", node.Ipxe)
+		ipxeTemplate := fmt.Sprintf("/etc/warewulf/ipxe/%s.ipxe", node.Ipxe.String())
 
 		tmpl, err := template.ParseFiles(ipxeTemplate)
 		if err != nil {
@@ -76,7 +76,7 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		log.Printf("SEND:  %15s: %s\n", node.Fqdn, ipxeTemplate)
+		log.Printf("SEND:  %15s: %s\n", node.Fqdn.String(), ipxeTemplate)
 
 	} else {
 		log.Printf("ERROR: iPXE request from unknown Node (hwaddr=%s)\n", url[2])

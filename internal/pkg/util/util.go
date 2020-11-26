@@ -37,6 +37,8 @@ func DirModTime(path string) (time.Time, error) {
 }
 
 func PathIsNewer(source string, compare string) bool {
+	wwlog.Printf(wwlog.DEBUG, "Comparing times on paths: '%s' - '%s'\n", source, compare)
+
 	time1, err := DirModTime(source)
 	if err != nil {
 		wwlog.Printf(wwlog.DEBUG, "%s\n", err)

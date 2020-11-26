@@ -92,6 +92,10 @@ func (self *Config) VnfsChrootParentDir() string {
 	return fmt.Sprintf("%s/chroot/", self.LocalStateDir)
 }
 
+func (self *Config) KernelParentDir() string {
+	return fmt.Sprintf("%s/provision/kernel/", self.LocalStateDir)
+}
+
 func (self *Config) SystemOverlaySource(overlayName string) string {
 	if overlayName == "" {
 		wwlog.Printf(wwlog.ERROR, "System overlay name is not defined\n")
@@ -132,7 +136,7 @@ func (self *Config) KernelImage(kernelVersion string) string {
 		return ""
 	}
 
-	return fmt.Sprintf("%s/provision/kernel/vmlinuz-%s", self.LocalStateDir, kernelVersion)
+	return path.Join(self.KernelParentDir(), kernelVersion, "vmlinuz")
 }
 
 func (self *Config) KmodsImage(kernelVersion string) string {
@@ -146,7 +150,7 @@ func (self *Config) KmodsImage(kernelVersion string) string {
 		return ""
 	}
 
-	return fmt.Sprintf("%s/provision/kernel/kmods-%s.img", self.LocalStateDir, kernelVersion)
+	return path.Join(self.KernelParentDir(), kernelVersion, "kmods.img")
 }
 
 func (self *Config) SystemOverlayImage(nodeName string) string {
@@ -177,32 +181,34 @@ func (self *Config) RuntimeOverlayImage(nodeName string) string {
 	return fmt.Sprintf("%s/provision/overlays/runtime/%s.img", self.LocalStateDir, nodeName)
 }
 
+func (self *Config) VnfsImageDir(uri string) string {
+	if uri == "" {
+		wwlog.Printf(wwlog.ERROR, "VNFS URI is not defined\n")
+		return ""
+	}
 
-func (self *Config) VnfsImage(vnfsNameClean string) string {
-	if vnfsNameClean == "" {
+	if util.TaintCheck(uri, "^[a-zA-Z0-9-._:]+$") == false {
+		wwlog.Printf(wwlog.ERROR, "VNFS name contains illegal characters: %s\n", uri)
+		return ""
+	}
+
+	return path.Join(self.VnfsImageParentDir(), uri)
+}
+
+func (self *Config) VnfsImage(uri string) string {
+	return path.Join(self.VnfsImageDir(uri), "image")
+}
+
+func (self *Config) VnfsChroot(uri string) string {
+	if uri == "" {
 		wwlog.Printf(wwlog.ERROR, "VNFS name is not defined\n")
 		return ""
 	}
 
-	if util.TaintCheck(vnfsNameClean, "^[a-zA-Z0-9-._:]+$") == false {
-		wwlog.Printf(wwlog.ERROR, "Runtime overlay name contains illegal characters: %s\n", vnfsNameClean)
+	if util.TaintCheck(uri, "^[a-zA-Z0-9-._:]+$") == false {
+		wwlog.Printf(wwlog.ERROR, "VNFS name contains illegal characters: %s\n", uri)
 		return ""
 	}
 
-	return path.Join(self.VnfsImageParentDir(), vnfsNameClean)
+	return path.Join(self.VnfsChrootParentDir(), uri)
 }
-
-func (self *Config) VnfsChroot(vnfsNameClean string) string {
-	if vnfsNameClean == "" {
-		wwlog.Printf(wwlog.ERROR, "VNFS name is not defined\n")
-		return ""
-	}
-
-	if util.TaintCheck(vnfsNameClean, "^[a-zA-Z0-9-._:]+$") == false {
-		wwlog.Printf(wwlog.ERROR, "Runtime overlay name contains illegal characters: %s\n", vnfsNameClean)
-		return ""
-	}
-
-	return path.Join(self.VnfsChrootParentDir(), vnfsNameClean)
-}
-

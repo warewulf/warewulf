@@ -15,6 +15,7 @@ func KmodsSend(w http.ResponseWriter, req *http.Request) {
 		log.Println(err)
 		return
 	}
+
 	if node.KernelVersion.Defined() == true {
 		fileName := config.KmodsImage(node.KernelVersion.String())
 
@@ -22,12 +23,12 @@ func KmodsSend(w http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			log.Printf("ERROR: %s\n", err)
 		} else {
-			log.Printf("SEND:  %15s: %s\n", node.Fqdn, fileName)
+			log.Printf("SEND:  %15s: %s\n", node.Fqdn.String(), fileName)
 		}
 
 	} else {
 		w.WriteHeader(503)
-		log.Printf("ERROR: No 'kernel version' set for node %s\n", node.Fqdn)
+		log.Printf("ERROR: No 'kernel version' set for node %s\n", node.Fqdn.String())
 	}
 
 	return

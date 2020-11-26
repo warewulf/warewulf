@@ -45,7 +45,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.INFO, "Updating System Overlays...\n")
 		err := overlay.SystemBuild(updateNodes, true)
 		if err != nil {
-			wwlog.Printf(wwlog.WARN, "Some system overlays failed to be generated\n")
+			wwlog.Printf(wwlog.WARN, "Some system overlays failed to be generated: %s\n", err)
 		}
 	}
 

@@ -23,11 +23,11 @@ func SystemOverlaySend(w http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			log.Printf("ERROR: %s\n", err)
 		} else {
-			log.Printf("SEND:  %15s: %s\n", node.Fqdn, fileName)
+			log.Printf("SEND:  %15s: %s\n", node.Fqdn.String(), fileName)
 		}
 	} else {
 		w.WriteHeader(503)
-		log.Printf("ERROR: No 'system system-overlay' set for node %s\n", node.Fqdn)
+		log.Printf("ERROR: No 'system system-overlay' set for node %s\n", node.Fqdn.String())
 	}
 
 	return
