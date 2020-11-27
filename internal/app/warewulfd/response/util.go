@@ -2,8 +2,8 @@ package response
 
 import (
 	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/errors"
+	"github.com/hpcng/warewulf/internal/pkg/node"
 	"io"
 	"log"
 	"net/http"
@@ -31,7 +31,7 @@ func getSanity(req *http.Request) (node.NodeInfo, error) {
 		log.Printf("UNKNOWN: %15s: %s\n", hwaddr, req.URL.Path)
 		return ret, errors.New("Unknown node HW address: " + hwaddr)
 	} else {
-		log.Printf("REQ:   %15s: %s\n", ret.Fqdn.String(), req.URL.Path)
+		log.Printf("REQ:   %15s: %s\n", ret.Fqdn.Get(), req.URL.Path)
 	}
 
 	return ret, nil

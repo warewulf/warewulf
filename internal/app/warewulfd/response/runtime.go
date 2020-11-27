@@ -47,26 +47,26 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if node.Fqdn.Defined() == false {
+	if node.Id.Defined() == false {
 		log.Printf("UNKNOWN: %15s: %s\n", remote[0], req.URL.Path)
 		w.WriteHeader(404)
 		return
 	} else {
-		log.Printf("REQ:   %15s: %s\n", node.Fqdn.String(), req.URL.Path)
+		log.Printf("REQ:   %15s: %s\n", node.Fqdn.Get(), req.URL.Path)
 	}
 
 	if node.RuntimeOverlay.Defined() == true {
-		fileName := config.RuntimeOverlayImage(node.Fqdn.String())
+		fileName := config.RuntimeOverlayImage(node.Fqdn.Get())
 
-		err := sendFile(w, fileName, node.Fqdn.String())
+		err := sendFile(w, fileName, node.Fqdn.Get())
 		if err != nil {
 			log.Printf("ERROR: %s\n", err)
 		} else {
-			log.Printf("SEND:  %15s: %s\n", node.Fqdn.String(), fileName)
+			log.Printf("SEND:  %15s: %s\n", node.Fqdn.Get(), fileName)
 		}
 	} else {
 		w.WriteHeader(503)
-		log.Printf("ERROR: No 'runtime system-overlay' set for node %s\n", node.Fqdn.String())
+		log.Printf("ERROR: No 'runtime system-overlay' set for node %s\n", node.Fqdn.Get())
 	}
 
 	return

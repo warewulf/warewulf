@@ -17,17 +17,17 @@ func SystemOverlaySend(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if node.SystemOverlay.Defined() == true {
-		fileName := config.SystemOverlayImage(node.Fqdn.String())
+		fileName := config.SystemOverlayImage(node.Fqdn.Get())
 
-		err := sendFile(w, fileName, node.Fqdn.String())
+		err := sendFile(w, fileName, node.Fqdn.Get())
 		if err != nil {
 			log.Printf("ERROR: %s\n", err)
 		} else {
-			log.Printf("SEND:  %15s: %s\n", node.Fqdn.String(), fileName)
+			log.Printf("SEND:  %15s: %s\n", node.Fqdn.Get(), fileName)
 		}
 	} else {
 		w.WriteHeader(503)
-		log.Printf("ERROR: No 'system system-overlay' set for node %s\n", node.Fqdn.String())
+		log.Printf("ERROR: No 'system system-overlay' set for node %s\n", node.Fqdn.Get())
 	}
 
 	return
