@@ -1,7 +1,9 @@
 package wwctl
 
 import (
+	"github.com/hpcng/warewulf/internal/app/wwctl/group"
 	"github.com/hpcng/warewulf/internal/app/wwctl/kernel"
+	"github.com/hpcng/warewulf/internal/app/wwctl/node"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay"
 	"github.com/hpcng/warewulf/internal/app/wwctl/vnfs"
 
@@ -27,9 +29,9 @@ func init() {
 	rootCmd.AddCommand(overlay.GetCommand())
 	//rootCmd.AddCommand(build.GetCommand())
 	rootCmd.AddCommand(vnfs.GetCommand())
-	//rootCmd.AddCommand(node.GetCommand())
+	rootCmd.AddCommand(node.GetCommand())
 	rootCmd.AddCommand(kernel.GetCommand())
-	//rootCmd.AddCommand(group.GetCommand())
+	rootCmd.AddCommand(group.GetCommand())
 
 }
 
