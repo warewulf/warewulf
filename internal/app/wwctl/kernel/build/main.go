@@ -27,7 +27,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		for _, node := range nodes {
-			set[node.KernelVersion.String()] ++
+			if node.KernelVersion.Defined() == true {
+				set[node.KernelVersion.Get()] ++
+			}
 		}
 
 	} else if BuildAll == true {
@@ -39,7 +41,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		for _, node := range nodes {
-			set[node.KernelVersion.String()] ++
+			wwlog.Printf(wwlog.DEBUG, "evaluating node/kernel: %s/%s\n", node.Fqdn.Get(), node.KernelVersion.String())
+			if node.KernelVersion.Defined() == true {
+				set[node.KernelVersion.Get()] ++
+			}
 		}
 
 	} else if len(args) == 1 {
@@ -50,6 +55,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	for k := range set {
+		wwlog.Printf(wwlog.INFO, "Building kernel: %s\n", k)
 		err := kernel.Build(k)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
