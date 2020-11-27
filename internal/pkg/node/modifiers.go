@@ -49,8 +49,8 @@ func (self *nodeYaml) DelNode(groupID string, nodeID string) error {
 }
 
 func(self *nodeYaml) NodeUpdate(node NodeInfo) error {
-	groupID := node.Gid
-	nodeID := node.Id
+	groupID := node.Gid.Get()
+	nodeID := node.Id.Get()
 
 	if _, ok := self.NodeGroups[groupID]; !ok {
 		return errors.New("Group '" + groupID + "' was not found")
@@ -59,7 +59,7 @@ func(self *nodeYaml) NodeUpdate(node NodeInfo) error {
 		return errors.New("Node '" + nodeID + "' was not found in group '" + groupID + "'")
 	}
 
-	self.NodeGroups[groupID].Nodes[nodeID].Hostname = node.HostName
+	self.NodeGroups[groupID].Nodes[nodeID].Hostname = node.HostName.GetReal()
 	self.NodeGroups[groupID].Nodes[nodeID].Vnfs = node.Vnfs.GetReal()
 	self.NodeGroups[groupID].Nodes[nodeID].DomainName = node.DomainName.GetReal()
 	self.NodeGroups[groupID].Nodes[nodeID].Ipxe = node.Ipxe.GetReal()

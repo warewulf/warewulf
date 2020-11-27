@@ -40,10 +40,10 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				continue
 			}
 
-			n.Id = nodename
-			n.Gid = groupname
-			n.GroupName = groupname
-			n.HostName = node.Hostname
+			n.Id.Set(nodename)
+			n.Gid.Set(groupname)
+			n.GroupName.Set(groupname)
+			n.HostName.Set(node.Hostname)
 			n.IpmiIpaddr.Set(node.IpmiIpaddr)
 
 			n.Profiles = node.Profiles
@@ -57,38 +57,38 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 					continue
 				}
 
-				n.Vnfs.profile = self.NodeProfiles[p].Vnfs
-				n.KernelVersion.profile = self.NodeProfiles[p].KernelVersion
-				n.KernelArgs.profile = self.NodeProfiles[p].KernelArgs
-				n.Ipxe.profile = self.NodeProfiles[p].Ipxe
-				n.IpmiUserName.profile = self.NodeProfiles[p].IpmiUserName
-				n.IpmiPassword.profile = self.NodeProfiles[p].IpmiPassword
-				n.DomainName.profile = self.NodeProfiles[p].DomainName
-				n.SystemOverlay.profile = self.NodeProfiles[p].SystemOverlay
-				n.RuntimeOverlay.profile = self.NodeProfiles[p].RuntimeOverlay
+				n.Vnfs.SetProfile(self.NodeProfiles[p].Vnfs)
+				n.KernelVersion.SetProfile(self.NodeProfiles[p].KernelVersion)
+				n.KernelArgs.SetProfile(self.NodeProfiles[p].KernelArgs)
+				n.Ipxe.SetProfile(self.NodeProfiles[p].Ipxe)
+				n.IpmiUserName.SetProfile(self.NodeProfiles[p].IpmiUserName)
+				n.IpmiPassword.SetProfile(self.NodeProfiles[p].IpmiPassword)
+				n.DomainName.SetProfile(self.NodeProfiles[p].DomainName)
+				n.SystemOverlay.SetProfile(self.NodeProfiles[p].SystemOverlay)
+				n.RuntimeOverlay.SetProfile(self.NodeProfiles[p].RuntimeOverlay)
 			}
 
-			n.DomainName.value = node.DomainName
-			n.DomainName.group = group.DomainName
-			n.Vnfs.value = node.Vnfs
-			n.KernelVersion.value = node.KernelVersion
-			n.KernelArgs.value = node.KernelArgs
-			n.Ipxe.value = node.Ipxe
-			n.IpmiUserName.value = node.IpmiUserName
-			n.IpmiPassword.value = node.IpmiPassword
+			n.DomainName.Set(node.DomainName)
+			n.DomainName.SetGroup(group.DomainName)
+			n.Vnfs.Set(node.Vnfs)
+			n.KernelVersion.Set(node.KernelVersion)
+			n.KernelArgs.Set(node.KernelArgs)
+			n.Ipxe.Set(node.Ipxe)
+			n.IpmiUserName.Set(node.IpmiUserName)
+			n.IpmiPassword.Set(node.IpmiPassword)
 
-			n.RuntimeOverlay.def = "default"
-			n.SystemOverlay.def = "default"
-			n.Ipxe.def = "default"
-			n.KernelArgs.def = "crashkernel=no quiet"
+			n.RuntimeOverlay.SetDefault("default")
+			n.SystemOverlay.SetDefault("default")
+			n.Ipxe.SetDefault("default")
+			n.KernelArgs.SetDefault("crashkernel=no quiet")
 
 			//			config := config.New()
 			//			n.VnfsRoot = config.VnfsChroot(vnfs.CleanName(n.Vnfs))
 
 			if n.DomainName.Defined() == true {
-				n.Fqdn = n.HostName + "." + n.DomainName.Get()
+				n.Fqdn.Set(node.Hostname +"."+ n.DomainName.Get())
 			} else {
-				n.Fqdn = node.Hostname
+				n.Fqdn.Set(node.Hostname)
 			}
 
 			n.NetDevs = node.NetDevs
@@ -192,7 +192,7 @@ func (nodes *nodeYaml) SearchByName(search string) ([]NodeInfo, error) {
 	n, _ := nodes.FindAllNodes()
 
 	for _, node := range n {
-		b, _ := regexp.MatchString(search, node.Fqdn)
+		b, _ := regexp.MatchString(search, node.Fqdn.Get())
 		if b == true {
 			ret = append(ret, node)
 		}
@@ -208,7 +208,7 @@ func (nodes *nodeYaml) SearchByNameList(searchList []string) ([]NodeInfo, error)
 
 	for _, search := range searchList {
 		for _, node := range n {
-			b, _ := regexp.MatchString(search, node.Fqdn)
+			b, _ := regexp.MatchString(search, node.Fqdn.Get())
 			if b == true {
 				ret = append(ret, node)
 			}
