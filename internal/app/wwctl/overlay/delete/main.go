@@ -119,10 +119,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 		if SystemOverlay == true {
 			wwlog.Printf(wwlog.INFO, "Updating System Overlays...\n")
-			return overlay.SystemBuild(updateNodes, true)
+			return overlay.BuildSystemOverlay(updateNodes)
 		} else {
 			wwlog.Printf(wwlog.INFO, "Updating Runtime Overlays...\n")
-			return overlay.RuntimeBuild(updateNodes, true)
+			return overlay.BuildRuntimeOverlay(updateNodes)
 		}
 	}
 
