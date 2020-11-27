@@ -33,9 +33,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 		}
 	} else {
-		fmt.Printf("%-22s %-16s %-30s %-30s %-16s\n", "GROUP NAME", "DOMAINNAME", "KERNEL VERSION", "VNFS IMAGE", "RUNTIME OVERLAY")
+		fmt.Printf("%-22s %-16s %s\n", "GROUP NAME", "DOMAINNAME", "PROFILES")
 		for _, g := range groups {
-			fmt.Printf("%-22s %-16s %-30s %-30s %-16s\n", g.GroupName.String(), g.DomainName.String(), g.KernelVersion.String(), g.Vnfs.String(), g.RuntimeOverlay.String())
+			fmt.Printf("%-22s %-16s %s\n", g.Id, g.DomainName, g.Profiles)
 		}
 	}
 
