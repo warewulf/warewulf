@@ -21,15 +21,16 @@ func templateFileInclude(path string) string {
 func templateVnfsFileInclude(vnfsname string, filepath string) string {
 	wwlog.Printf(wwlog.DEBUG, "Including VNFS file into template: %s: %s\n", vnfsname, filepath)
 
-	v, err := vnfs.Load(vnfsname)
-	if err != nil {
+	if vnfsname == "" {
+		wwlog.Printf(wwlog.WARN, "VNFS not set for template: %s\n", filepath)
 		return ""
 	}
 
+	v, _ := vnfs.Load(vnfsname)
 	vnfsDir := v.Chroot
 
 	if util.IsDir(vnfsDir) == false {
-		wwlog.Printf(wwlog.WARN, "Template requesting file from non-imported VNFS: %s (%s)\n", vnfsname, filepath)
+		wwlog.Printf(wwlog.WARN, "Template requires VNFS (%s) to be imported: %s\n", vnfsname, filepath)
 		return ""
 	}
 	wwlog.Printf(wwlog.DEBUG, "IncludeVnfs file from: %s/%s\n", vnfsDir, filepath)
