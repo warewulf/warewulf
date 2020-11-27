@@ -1,5 +1,7 @@
 package node
 
+import "strings"
+
 func (self *NodeInfoEntry) String() string {
 	if self.value != "" {
 		return "node=" + self.value
@@ -64,6 +66,8 @@ func (self *NodeInfoEntry) SetProfile(value string) {
 func (self *NodeInfoEntry) Set(value string) {
 	if value == "" {
 		return
+	} else if strings.ToUpper(value) == "UNDEF" {
+		value = ""
 	}
 	self.value = value
 }

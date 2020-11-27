@@ -47,6 +47,7 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.IpmiIpaddr.Set(node.IpmiIpaddr)
 
 			n.Profiles = node.Profiles
+			n.GroupProfiles = group.Profiles
 
 			allProfiles = append(allProfiles, group.Profiles...)
 			allProfiles = append(allProfiles, node.Profiles...)
