@@ -23,12 +23,18 @@ type VnfsObject struct {
 func Load (name string) (VnfsObject, error) {
 	config := config.New()
 	var ret VnfsObject
+
+	if name == "" {
+		wwlog.Printf(wwlog.DEBUG, "Called vnfs.Load() without a name, returning error\n")
+		return ret, errors.New("Called vnfs.Load() without a VNFS name")
+	}
+
 	pathFriendlyName := CleanName(name)
 
 	configFile := path.Join(config.VnfsImageDir(pathFriendlyName), "config.yaml")
 
 	if util.IsFile(configFile) == false {
-		return ret, errors.New("No Configuration for VNFS name: " + configFile)
+		return ret, errors.New("VNFS has not been imported: " + name)
 	}
 
 	data, err := ioutil.ReadFile(configFile)
@@ -63,6 +69,11 @@ func CleanName(source string) string {
 func New(source string) (VnfsObject, error) {
 	var ret VnfsObject
 	config := config.New()
+
+	if source == "" {
+		wwlog.Printf(wwlog.DEBUG, "Called vnfs.Load() without a name, returning error\n")
+		return ret, errors.New("Called vnfs.Load() without a VNFS name")
+	}
 
 	pathFriendlyName := CleanName(source)
 
