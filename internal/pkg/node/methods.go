@@ -36,7 +36,29 @@ func (self *NodeInfoEntry) Defined() bool {
 	if self.Get() == "" {
 		return false
 	}
+
 	return true
+}
+
+func (self *NodeInfoEntry) SetDefault(value string) {
+	if value == "" {
+		return
+	}
+	self.def = value
+}
+
+func (self *NodeInfoEntry) SetGroup(value string) {
+	if value == "" {
+		return
+	}
+	self.group = value
+}
+
+func (self *NodeInfoEntry) SetProfile(value string) {
+	if value == "" {
+		return
+	}
+	self.profile = value
 }
 
 func (self *NodeInfoEntry) Set(value string) {

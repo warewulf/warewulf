@@ -66,13 +66,13 @@ type NodeInfoEntry struct {
 }
 
 type NodeInfo struct {
-	Id             	string
-	Gid 	       	string
-	Uid 		   	string
-	Comment 		string
-	GroupName      	string
-	HostName       	string
-	Fqdn           	string
+	Id             	NodeInfoEntry
+	Gid 	       	NodeInfoEntry
+	Uid 		   	NodeInfoEntry
+	Comment 		NodeInfoEntry
+	GroupName      	NodeInfoEntry
+	HostName       	NodeInfoEntry
+	Fqdn           	NodeInfoEntry
 	DomainName     	NodeInfoEntry
 	Vnfs           	NodeInfoEntry
 	VnfsRoot		NodeInfoEntry
