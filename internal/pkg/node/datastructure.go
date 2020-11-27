@@ -85,6 +85,7 @@ type NodeInfo struct {
 	RuntimeOverlay 	NodeInfoEntry
 	SystemOverlay  	NodeInfoEntry
 	Profiles   		[]string
+	GroupProfiles   []string
 	NetDevs        	map[string]*NetDevs
 }
 
