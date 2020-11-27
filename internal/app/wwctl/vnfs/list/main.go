@@ -20,7 +20,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	nodemap := make(map[string]int)
 
 	for _, n := range nodes {
-		nodemap[n.Vnfs.String()] ++
+		nodemap[n.Vnfs.Get()] ++
 	}
 
 	images, _ := ioutil.ReadDir(config.VnfsImageParentDir())
