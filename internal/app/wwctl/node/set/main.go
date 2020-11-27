@@ -46,7 +46,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.VERBOSE, "Evaluating node: %s\n", n.Fqdn.String())
 		if SetVnfs != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting vnfs to: %s\n", n.Fqdn.String(), SetVnfs)
-			err := nodeDB.SetNodeVal(n.Gid.String(), n.Id.String(), "vnfs", SetVnfs)
+
+			n.Vnfs.Set(SetVnfs)
+			err := nodeDB.NodeUpdate(n)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
@@ -54,7 +56,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 		if SetKernel != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting kernel to: %s\n", n.Fqdn.String(), SetKernel)
-			err := nodeDB.SetNodeVal(n.Gid.String(), n.Id.String(), "kernel", SetKernel)
+
+			n.KernelVersion.Set(SetKernel)
+			err := nodeDB.NodeUpdate(n)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
@@ -62,7 +66,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 		if SetDomainName != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting domain name to: %s\n", n.Fqdn, SetDomainName)
-			err := nodeDB.SetNodeVal(n.Gid.String(), n.Id.String(), "domain", SetDomainName)
+
+			n.DomainName.Set(SetDomainName)
+			err := nodeDB.NodeUpdate(n)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
@@ -70,7 +76,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 		if SetIpxe != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting iPXE template to: %s\n", n.Fqdn, SetIpxe)
-			err := nodeDB.SetNodeVal(n.Gid.String(), n.Id.String(), "ipxe", SetIpxe)
+
+			n.Ipxe.Set(SetIpxe)
+			err := nodeDB.NodeUpdate(n)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
@@ -78,7 +86,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 		if SetRuntimeOverlay != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting runtime overlay to: %s\n", n.Fqdn, SetRuntimeOverlay)
-			err := nodeDB.SetNodeVal(n.Gid.String(), n.Id.String(), "runtimeoverlay", SetRuntimeOverlay)
+
+			n.RuntimeOverlay.Set(SetRuntimeOverlay)
+			err := nodeDB.NodeUpdate(n)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
@@ -86,7 +96,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 		if SetSystemOverlay != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting system overlay to: %s\n", n.Fqdn, SetSystemOverlay)
-			err := nodeDB.SetNodeVal(n.Gid.String(), n.Id.String(), "systemoverlay", SetSystemOverlay)
+
+			n.SystemOverlay.Set(SetSystemOverlay)
+			err := nodeDB.NodeUpdate(n)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
@@ -94,7 +106,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 		if SetHostname != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting hostname to: %s\n", n.Fqdn, SetHostname)
-			err := nodeDB.SetNodeVal(n.Gid.String(), n.Id.String(), "hostname", SetHostname)
+
+			n.HostName.Set(SetHostname)
+			err := nodeDB.NodeUpdate(n)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
@@ -102,7 +116,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 		if SetIpmiIpaddr != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI IP address to: %s\n", n.Fqdn, SetIpmiIpaddr)
-			err := nodeDB.SetNodeVal(n.Gid.String(), n.Id.String(), "ipmiipaddr", SetIpmiIpaddr)
+
+			n.IpmiIpaddr.Set(SetIpmiIpaddr)
+			err := nodeDB.NodeUpdate(n)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
@@ -110,7 +126,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 		if SetIpmiUsername != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI IP username to: %s\n", n.Fqdn, SetIpmiUsername)
-			err := nodeDB.SetNodeVal(n.Gid.String(), n.Id.String(), "ipmiusername", SetIpmiUsername)
+
+			n.IpmiUserName.Set(SetIpmiUsername)
+			err := nodeDB.NodeUpdate(n)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
@@ -118,7 +136,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 		if SetIpmiPassword != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI IP password to: %s\n", n.Fqdn, SetIpmiPassword)
-			err := nodeDB.SetNodeVal(n.Gid.String(), n.Id.String(), "ipmipassword", SetIpmiPassword)
+
+			n.IpmiPassword.Set(SetIpmiPassword)
+			err := nodeDB.NodeUpdate(n)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
@@ -133,20 +153,33 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				os.Exit(1)
 			}
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Deleting network device: %s\n", n.Fqdn, SetNetDev)
-			err := nodeDB.DelNodeNet(n.Gid.String(), n.Id.String(), SetNetDev)
+
+			if _, ok := n.NetDevs[SetNetDev]; !ok {
+				wwlog.Printf(wwlog.ERROR, "Network Device doesn't exist: %s\n", SetNetDev)
+				os.Exit(1)
+			}
+
+			delete(n.NetDevs, SetNetDev)
+			err := nodeDB.NodeUpdate(n)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
 			}
-
 		}
 		if SetIpaddr != "" {
 			if SetNetDev == "" {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
 				os.Exit(1)
 			}
+
+			if _, ok := n.NetDevs[SetNetDev]; !ok {
+				wwlog.Printf(wwlog.ERROR, "Network Device doesn't exist: %s\n", SetNetDev)
+				os.Exit(1)
+			}
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Ipaddr to: %s\n", n.Fqdn, SetNetDev, SetIpaddr)
-			err := nodeDB.SetNodeNet(n.Gid.String(), n.Id.String(), SetNetDev, "ipaddr", SetIpaddr)
+
+			n.NetDevs[SetNetDev].Ipaddr = SetIpaddr
+			err := nodeDB.NodeUpdate(n)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
@@ -157,8 +190,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
 				os.Exit(1)
 			}
+
+			if _, ok := n.NetDevs[SetNetDev]; !ok {
+				wwlog.Printf(wwlog.ERROR, "Network Device doesn't exist: %s\n", SetNetDev)
+				os.Exit(1)
+			}
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting netmask to: %s\n", n.Fqdn, SetNetDev, SetNetmask)
-			err := nodeDB.SetNodeNet(n.Gid.String(), n.Id.String(), SetNetDev, "netmask", SetNetmask)
+
+			n.NetDevs[SetNetDev].Netmask = SetNetmask
+			err := nodeDB.NodeUpdate(n)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
@@ -169,8 +209,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
 				os.Exit(1)
 			}
+
+			if _, ok := n.NetDevs[SetNetDev]; !ok {
+				wwlog.Printf(wwlog.ERROR, "Network Device doesn't exist: %s\n", SetNetDev)
+				os.Exit(1)
+			}
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting gateway to: %s\n", n.Fqdn, SetNetDev, SetGateway)
-			err := nodeDB.SetNodeNet(n.Gid.String(), n.Id.String(), SetNetDev, "gateway", SetGateway)
+
+			n.NetDevs[SetNetDev].Gateway = SetGateway
+			err := nodeDB.NodeUpdate(n)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
@@ -181,8 +228,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
 				os.Exit(1)
 			}
+
+			if _, ok := n.NetDevs[SetNetDev]; !ok {
+				wwlog.Printf(wwlog.ERROR, "Network Device doesn't exist: %s\n", SetNetDev)
+				os.Exit(1)
+			}
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting HW address to: %s\n", n.Fqdn, SetNetDev, SetHwaddr)
-			err := nodeDB.SetNodeNet(n.Gid.String(), n.Id.String(), SetNetDev, "hwaddr", SetHwaddr)
+
+			n.NetDevs[SetNetDev].Hwaddr = SetHwaddr
+			err := nodeDB.NodeUpdate(n)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
