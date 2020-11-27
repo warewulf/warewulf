@@ -92,6 +92,9 @@ func CopyFile(source string, dest string) error {
 
 
 func IsDir(path string) (bool) {
+	if path == "" {
+		return false
+	}
 	if stat, err := os.Stat(path); err == nil && stat.IsDir() {
 		return true
 	}
@@ -99,6 +102,10 @@ func IsDir(path string) (bool) {
 }
 
 func IsFile(path string) (bool) {
+	if path == "" {
+		return false
+	}
+
 	if _, err := os.Stat(path); err == nil {
 		return true
 	}
@@ -183,4 +190,37 @@ func ShaSumFile(file string) (string, error) {
 	}
 
 	return fmt.Sprintf("%x", h.Sum(nil)), nil
+}
+
+
+func SliceRemoveElement(array []string, remove string) []string {
+	var ret []string
+
+	// Linear time, maintains order
+	for _, r := range array {
+		if r != remove {
+			ret = append(ret, r)
+		}
+	}
+
+	return ret
+}
+
+func SliceAddUniqueElement(array []string, add string) []string {
+	var ret []string
+	var found bool
+
+	//Linear time, appends
+	for _, r := range array {
+		ret = append(ret, r)
+		if r == add {
+			found = true
+		}
+	}
+
+	if found == false {
+		ret = append(ret, add)
+	}
+
+	return ret
 }
