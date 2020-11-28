@@ -3,6 +3,7 @@ package set
 import (
 	"fmt"
 	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -44,6 +45,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	for _, n := range nodes {
 		wwlog.Printf(wwlog.VERBOSE, "Evaluating node: %s\n", n.Fqdn.String())
+
 		if SetVnfs != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting vnfs to: %s\n", n.Fqdn.String(), SetVnfs)
 
@@ -138,6 +140,29 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI IP password to: %s\n", n.Fqdn, SetIpmiPassword)
 
 			n.IpmiPassword.Set(SetIpmiPassword)
+			err := nodeDB.NodeUpdate(n)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
+
+		if len(SetAddProfile) > 0 {
+			for _, p := range SetAddProfile {
+				wwlog.Printf(wwlog.VERBOSE, "Node: %s, adding profile to '%s'\n", n.Fqdn, p)
+				n.Profiles = util.SliceAddUniqueElement(n.Profiles, p)
+			}
+			err := nodeDB.NodeUpdate(n)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
+		if len(SetDelProfile) > 0 {
+			for _, p := range SetDelProfile {
+				wwlog.Printf(wwlog.VERBOSE, "Node: %s, deleting profile from '%s'\n", n.Fqdn, p)
+				n.Profiles = util.SliceRemoveElement(n.Profiles, p)
+			}
 			err := nodeDB.NodeUpdate(n)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
