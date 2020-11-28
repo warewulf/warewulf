@@ -5,7 +5,19 @@ import (
 )
 
 func (self *NodeInfoEntry) String() string {
-	return self.Get()
+	if self.value != "" {
+		return self.value
+	}
+	if self.group != "" {
+		return self.group
+	}
+	if self.profile != "" {
+		return self.profile
+	}
+	if self.def != "" {
+		return self.def
+	}
+	return "--"
 }
 
 func (self *NodeInfoEntry) Source() string {
