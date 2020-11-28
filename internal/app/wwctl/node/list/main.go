@@ -6,7 +6,6 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 	"os"
-	"reflect"
 	"strings"
 )
 
@@ -35,13 +34,36 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	if ShowAll == true {
 		for _, node := range nodes {
-			v := reflect.ValueOf(node)
-			typeOfS := v.Type()
 			fmt.Printf("################################################################################\n")
-			for i := 0; i< v.NumField(); i++ {
-				//TODO: Fix for NetDevs and Interface should print Fprint() method
-				fmt.Printf("%-25s %s = %#v\n", node.Fqdn.Get(), typeOfS.Field(i).Name, v.Field(i).Interface())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "Id", node.Id.Source(), node.Id.Get())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "Comment", node.Comment.Source(), node.Comment.Get())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "GroupName", node.GroupName.Source(), node.GroupName.Get())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "DomainName", node.DomainName.Source(), node.DomainName.Get())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "Profiles (Group)", "group", strings.Join(node.GroupProfiles, ","))
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "Profiles (Node)", "node", strings.Join(node.Profiles, ","))
+
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "Vnfs", node.Vnfs.Source(), node.Vnfs.Get())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "KernelVersion", node.KernelVersion.Source(), node.KernelVersion.Get())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "KernelArgs", node.KernelArgs.Source(), node.KernelArgs.Get())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "RuntimeOverlay", node.RuntimeOverlay.Source(), node.RuntimeOverlay.Get())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "SystemOverlay", node.SystemOverlay.Source(), node.SystemOverlay.Get())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "IpmiUserName", node.IpmiUserName.Source(), node.IpmiUserName.Get())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "IpmiIpaddr", node.IpmiIpaddr.Source(), node.IpmiIpaddr.Get())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "Ipxe", node.Ipxe.Source(), node.Ipxe.Get())
+
+			for name, netdev := range node.NetDevs {
+				fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), name +":IPADDR", "node", netdev.Ipaddr)
+				fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), name +":NETMASK", "node", netdev.Netmask)
+				fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), name +":GATEWAY", "node", netdev.Gateway)
+				fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), name +":HWADDR", "node", netdev.Hwaddr)
 			}
+
+			//			v := reflect.ValueOf(node)
+//			typeOfS := v.Type()
+//			for i := 0; i< v.NumField(); i++ {
+//				//TODO: Fix for NetDevs and Interface should print Fprint() method
+//				fmt.Printf("%-25s %s = %#v\n", node.Fqdn.Get(), typeOfS.Field(i).Name, v.Field(i).Interface())
+//			}
 		}
 
 	} else if ShowNet == true {
@@ -71,15 +93,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Println(strings.Repeat("=", 120))
 
 		for _, node := range nodes {
-			fmt.Printf("%-22s %-12s %-26s %-35s %s\n", node.Fqdn.Get(), node.GroupName.Get(), node.KernelVersion.Get(), node.Vnfs.Get(), node.SystemOverlay.Get() +"/"+ node.RuntimeOverlay.Get())
+			fmt.Printf("%-22s %-12s %-26s %-35s %s\n", node.Fqdn.Get(), node.GroupName.String(), node.KernelVersion.String(), node.Vnfs.String(), node.SystemOverlay.String() +"/"+ node.RuntimeOverlay.String())
 		}
 
 	} else {
-		fmt.Printf("%-22s %s\n", "NODE NAME", "PROFILES")
+		fmt.Printf("%-22s %-30s %s\n", "NODE NAME", "VNFS", "PROFILES")
 		fmt.Println(strings.Repeat("=", 80))
 
 		for _, node := range nodes {
-			fmt.Printf("%-22s %s\n", node.Fqdn.Get(), append(node.GroupProfiles, node.Profiles...))
+			fmt.Printf("%-22s %-30s %s\n", node.Fqdn.Get(), node.Vnfs.String(), strings.Join(append(node.GroupProfiles, node.Profiles...), ","))
 		}
 
 	}
