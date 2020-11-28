@@ -200,6 +200,8 @@ func SliceRemoveElement(array []string, remove string) []string {
 	for _, r := range array {
 		if r != remove {
 			ret = append(ret, r)
+		} else {
+			wwlog.Printf(wwlog.DEBUG, "Removing slice from array: %s\n", remove)
 		}
 	}
 
