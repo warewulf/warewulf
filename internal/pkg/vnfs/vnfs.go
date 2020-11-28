@@ -61,7 +61,7 @@ func CleanName(source string) string {
 
 	tmp = strings.ReplaceAll(tmp, "://", "-")
 	tmp = strings.ReplaceAll(tmp, "/", ".")
-	tmp = strings.ReplaceAll(tmp, ":", ".")
+	tmp = strings.ReplaceAll(tmp, ":", "-")
 
 	return tmp
 }
