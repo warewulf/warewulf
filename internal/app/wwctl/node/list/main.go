@@ -35,21 +35,21 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if ShowAll == true {
 		for _, node := range nodes {
 			fmt.Printf("################################################################################\n")
-			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "Id", node.Id.Source(), node.Id.Get())
-			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "Comment", node.Comment.Source(), node.Comment.Get())
-			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "GroupName", node.GroupName.Source(), node.GroupName.Get())
-			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "DomainName", node.DomainName.Source(), node.DomainName.Get())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "Id", node.Id.Source(), node.Id.String())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "Comment", node.Comment.Source(), node.Comment.String())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "GroupName", node.GroupName.Source(), node.GroupName.String())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "DomainName", node.DomainName.Source(), node.DomainName.String())
 			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "Profiles (Group)", "group", strings.Join(node.GroupProfiles, ","))
 			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "Profiles (Node)", "node", strings.Join(node.Profiles, ","))
 
-			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "Vnfs", node.Vnfs.Source(), node.Vnfs.Get())
-			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "KernelVersion", node.KernelVersion.Source(), node.KernelVersion.Get())
-			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "KernelArgs", node.KernelArgs.Source(), node.KernelArgs.Get())
-			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "RuntimeOverlay", node.RuntimeOverlay.Source(), node.RuntimeOverlay.Get())
-			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "SystemOverlay", node.SystemOverlay.Source(), node.SystemOverlay.Get())
-			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "IpmiUserName", node.IpmiUserName.Source(), node.IpmiUserName.Get())
-			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "IpmiIpaddr", node.IpmiIpaddr.Source(), node.IpmiIpaddr.Get())
-			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "Ipxe", node.Ipxe.Source(), node.Ipxe.Get())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "Vnfs", node.Vnfs.Source(), node.Vnfs.String())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "KernelVersion", node.KernelVersion.Source(), node.KernelVersion.String())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "KernelArgs", node.KernelArgs.Source(), node.KernelArgs.String())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "RuntimeOverlay", node.RuntimeOverlay.Source(), node.RuntimeOverlay.String())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "SystemOverlay", node.SystemOverlay.Source(), node.SystemOverlay.String())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "IpmiUserName", node.IpmiUserName.Source(), node.IpmiUserName.String())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "IpmiIpaddr", node.IpmiIpaddr.Source(), node.IpmiIpaddr.String())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "Ipxe", node.Ipxe.Source(), node.Ipxe.String())
 
 			for name, netdev := range node.NetDevs {
 				fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), name +":IPADDR", "node", netdev.Ipaddr)
@@ -85,7 +85,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Println(strings.Repeat("=", 80))
 
 		for _, node := range nodes {
-			fmt.Printf("%-22s %-16s %-20s %-20s\n", node.Fqdn.Get(), node.IpmiIpaddr.Get(), node.IpmiUserName.Get(), node.IpmiPassword.Get())
+			fmt.Printf("%-22s %-16s %-20s %-20s\n", node.Fqdn.Get(), node.IpmiIpaddr.String(), node.IpmiUserName.String(), node.IpmiPassword.String())
 		}
 
 	} else if ShowLong == true {
