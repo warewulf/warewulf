@@ -1,21 +1,27 @@
 package node
 
-import "strings"
+import (
+	"strings"
+)
 
 func (self *NodeInfoEntry) String() string {
+	return self.Get()
+}
+
+func (self *NodeInfoEntry) Source() string {
 	if self.value != "" {
-		return "node=" + self.value
+		return "node"
 	}
 	if self.group != "" {
-		return "group=" + self.group
+		return "group"
 	}
 	if self.profile != "" {
-		return "profile=" + self.profile
+		return "profile"
 	}
 	if self.def != "" {
-		return "default=" + self.def
+		return "default"
 	}
-	return "--"
+	return ""
 }
 
 func (self *NodeInfoEntry) Get() string {

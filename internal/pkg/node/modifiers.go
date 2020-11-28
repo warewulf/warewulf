@@ -95,6 +95,7 @@ func (self *nodeYaml) AddGroup(groupID string) error {
 
 	self.NodeGroups[groupID] = &group
 	self.NodeGroups[groupID].DomainName = groupID
+	self.NodeGroups[groupID].Profiles = []string{"default"}
 
 	return nil
 }
@@ -119,6 +120,15 @@ func(self *nodeYaml) GroupUpdate(group GroupInfo) error {
 	}
 
 	self.NodeGroups[groupID].DomainName = group.DomainName
+	self.NodeGroups[groupID].Vnfs = group.Vnfs
+	self.NodeGroups[groupID].KernelVersion = group.KernelVersion
+	self.NodeGroups[groupID].KernelArgs = group.KernelArgs
+	self.NodeGroups[groupID].Ipxe = group.Ipxe
+	self.NodeGroups[groupID].IpmiUserName = group.IpmiUserName
+	self.NodeGroups[groupID].IpmiPassword = group.IpmiPassword
+	self.NodeGroups[groupID].RuntimeOverlay = group.RuntimeOverlay
+	self.NodeGroups[groupID].SystemOverlay = group.SystemOverlay
+	self.NodeGroups[groupID].Profiles = group.Profiles
 
 	return nil
 }
