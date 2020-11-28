@@ -45,9 +45,33 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.GroupName.Set(groupname)
 			n.HostName.Set(node.Hostname)
 			n.IpmiIpaddr.Set(node.IpmiIpaddr)
+			n.DomainName.Set(node.DomainName)
+			n.Vnfs.Set(node.Vnfs)
+			n.KernelVersion.Set(node.KernelVersion)
+			n.KernelArgs.Set(node.KernelArgs)
+			n.Ipxe.Set(node.Ipxe)
+			n.IpmiUserName.Set(node.IpmiUserName)
+			n.IpmiPassword.Set(node.IpmiPassword)
+			n.SystemOverlay.Set(node.SystemOverlay)
+			n.RuntimeOverlay.Set(node.RuntimeOverlay)
 
-			n.Profiles = node.Profiles
+			n.DomainName.SetGroup(group.DomainName)
+			n.Vnfs.SetGroup(group.Vnfs)
+			n.KernelVersion.SetGroup(group.KernelVersion)
+			n.KernelArgs.SetGroup(group.KernelArgs)
+			n.Ipxe.SetGroup(group.Ipxe)
+			n.IpmiUserName.SetGroup(group.IpmiUserName)
+			n.IpmiPassword.SetGroup(group.IpmiPassword)
+			n.SystemOverlay.SetGroup(group.SystemOverlay)
+			n.RuntimeOverlay.SetGroup(group.RuntimeOverlay)
+
+			n.RuntimeOverlay.SetDefault("default")
+			n.SystemOverlay.SetDefault("default")
+			n.Ipxe.SetDefault("default")
+			n.KernelArgs.SetDefault("crashkernel=no quiet")
+
 			n.GroupProfiles = group.Profiles
+			n.Profiles = node.Profiles
 
 			allProfiles = append(allProfiles, group.Profiles...)
 			allProfiles = append(allProfiles, node.Profiles...)
@@ -58,33 +82,16 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 					continue
 				}
 
+				n.DomainName.SetProfile(self.NodeProfiles[p].DomainName)
 				n.Vnfs.SetProfile(self.NodeProfiles[p].Vnfs)
 				n.KernelVersion.SetProfile(self.NodeProfiles[p].KernelVersion)
 				n.KernelArgs.SetProfile(self.NodeProfiles[p].KernelArgs)
 				n.Ipxe.SetProfile(self.NodeProfiles[p].Ipxe)
 				n.IpmiUserName.SetProfile(self.NodeProfiles[p].IpmiUserName)
 				n.IpmiPassword.SetProfile(self.NodeProfiles[p].IpmiPassword)
-				n.DomainName.SetProfile(self.NodeProfiles[p].DomainName)
 				n.SystemOverlay.SetProfile(self.NodeProfiles[p].SystemOverlay)
 				n.RuntimeOverlay.SetProfile(self.NodeProfiles[p].RuntimeOverlay)
 			}
-
-			n.DomainName.Set(node.DomainName)
-			n.DomainName.SetGroup(group.DomainName)
-			n.Vnfs.Set(node.Vnfs)
-			n.KernelVersion.Set(node.KernelVersion)
-			n.KernelArgs.Set(node.KernelArgs)
-			n.Ipxe.Set(node.Ipxe)
-			n.IpmiUserName.Set(node.IpmiUserName)
-			n.IpmiPassword.Set(node.IpmiPassword)
-
-			n.RuntimeOverlay.SetDefault("default")
-			n.SystemOverlay.SetDefault("default")
-			n.Ipxe.SetDefault("default")
-			n.KernelArgs.SetDefault("crashkernel=no quiet")
-
-			//			config := config.New()
-			//			n.VnfsRoot = config.VnfsChroot(vnfs.CleanName(n.Vnfs))
 
 			if n.DomainName.Defined() == true {
 				n.Fqdn.Set(node.Hostname +"."+ n.DomainName.Get())
@@ -109,8 +116,14 @@ func (self *nodeYaml) FindAllGroups() ([]GroupInfo, error) {
 
 		g.Id = groupname
 		g.DomainName = group.DomainName
-		g.Disabled = group.Disabled
 		g.Comment = group.Comment
+		g.Vnfs = group.Vnfs
+		g.KernelVersion = group.KernelVersion
+		g.KernelArgs = group.KernelArgs
+		g.IpmiPassword = group.IpmiPassword
+		g.IpmiUserName = group.IpmiUserName
+		g.SystemOverlay = group.SystemOverlay
+		g.RuntimeOverlay = group.RuntimeOverlay
 
 		g.Profiles = group.Profiles
 

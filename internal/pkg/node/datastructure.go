@@ -28,6 +28,14 @@ type GroupConf struct {
 	Comment        	string 	`yaml:"comment"`
 	Disabled 		bool 	`yaml:"disabled,omitempty"`
 	DomainName   	string 	`yaml:"domain name"`
+	Vnfs           	string 	`yaml:"vnfs,omitempty"`
+	Ipxe           	string 	`yaml:"ipxe template,omitempty"`
+	KernelVersion  	string 	`yaml:"kernel version,omitempty"`
+	KernelArgs     	string 	`yaml:"kernel args,omitempty"`
+	IpmiUserName   	string 	`yaml:"ipmi username,omitempty"`
+	IpmiPassword   	string 	`yaml:"ipmi password,omitempty"`
+	RuntimeOverlay 	string 	`yaml:"runtime overlay files,omitempty"`
+	SystemOverlay  	string 	`yaml:"system overlay files,omitempty"`
 	Profiles   		[]string `yaml:"profiles,omitempty"`
 	Nodes          	map[string]*NodeConf
 }
@@ -36,13 +44,13 @@ type NodeConf struct {
 	Comment        	string 	`yaml:"comment,omitempty"`
 	Disabled 		bool 	`yaml:"disabled,omitempty"`
 	Hostname       	string 	`yaml:"hostname,omitempty"`
+	DomainName   	string 	`yaml:"domain name,omitempty"`
 	Vnfs           	string 	`yaml:"vnfs,omitempty"`
 	Ipxe           	string 	`yaml:"ipxe template,omitempty"`
 	KernelVersion  	string 	`yaml:"kernel version,omitempty"`
 	KernelArgs     	string 	`yaml:"kernel args,omitempty"`
 	IpmiUserName   	string 	`yaml:"ipmi username,omitempty"`
 	IpmiPassword   	string 	`yaml:"ipmi password,omitempty"`
-	DomainName   	string 	`yaml:"domain name,omitempty"`
 	IpmiIpaddr     	string 	`yaml:"ipmi ipaddr,omitempty"`
 	RuntimeOverlay 	string 	`yaml:"runtime overlay files,omitempty"`
 	SystemOverlay  	string 	`yaml:"system overlay files,omitempty"`
@@ -75,7 +83,6 @@ type NodeInfo struct {
 	Fqdn           	NodeInfoEntry
 	DomainName     	NodeInfoEntry
 	Vnfs           	NodeInfoEntry
-	VnfsRoot		NodeInfoEntry
 	Ipxe           	NodeInfoEntry
 	KernelVersion  	NodeInfoEntry
 	KernelArgs     	NodeInfoEntry
@@ -92,8 +99,15 @@ type NodeInfo struct {
 type GroupInfo struct {
 	Id             	string
 	Comment        	string
-	Disabled 		bool
+	Vnfs           	string
+	Ipxe           	string
+	KernelVersion  	string
+	KernelArgs     	string
+	IpmiUserName   	string
+	IpmiPassword   	string
 	DomainName   	string
+	RuntimeOverlay 	string
+	SystemOverlay  	string
 	Profiles   		[]string
 }
 
