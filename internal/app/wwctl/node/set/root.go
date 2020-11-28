@@ -27,6 +27,8 @@ var (
 	SetIpmiPassword string
 	SetNodeAll bool
 	SetYes bool
+	SetAddProfile []string
+	SetDelProfile []string
 )
 
 func init() {
@@ -40,6 +42,9 @@ func init() {
 	baseCmd.PersistentFlags().StringVar(&SetIpmiIpaddr, "ipmi", "", "Set the node's IPMI address")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiUsername, "ipmiuser", "", "Set the node's IPMI username")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiPassword, "ipmipass", "", "Set the node's IPMI password")
+
+	baseCmd.PersistentFlags().StringSliceVarP(&SetAddProfile, "addprofile", "p", []string{}, "Add Profile(s) to node")
+	baseCmd.PersistentFlags().StringSliceVarP(&SetDelProfile, "delprofile", "r", []string{}, "Remove Profile(s) to node")
 
 	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdev", "n", "", "Define the network device to configure")
 	baseCmd.PersistentFlags().StringVarP(&SetIpaddr, "ipaddr", "I", "", "Set the node's network device IP address")
