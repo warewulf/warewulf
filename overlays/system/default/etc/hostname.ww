@@ -1,1 +1,1 @@
-{{.Fqdn}}
+{{$.Self.Fqdn}}

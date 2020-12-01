@@ -1,8 +1,8 @@
 DEVICE=eth0
 NAME=eth0
-IPADDR={{.Netdev.eth0.Ipaddr}}
-NETMASK={{.Netdev.eth0.Netmask}}
-GATEWAY={{.Netdev.eth0.Gateway}}
-HWADDR={{.Netdev.eth0.Hwaddr}}
+IPADDR={{$.Self.Netdev.eth0.Ipaddr}}
+NETMASK={{$.Self.Netdev.eth0.Netmask}}
+GATEWAY={{$.Self.Netdev.eth0.Gateway}}
+HWADDR={{$.Self.Netdev.eth0.Hwaddr}}
 BOOTPROTO=static
 ONBOOT=yes

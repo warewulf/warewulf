@@ -1,0 +1,14 @@
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+
+{{range $node := $.AllNodes}}
+# Entry for {{$node.Fqdn}}
+{{- range $devname, $netdev := $node.NetDevs}}
+{{- if $netdev.Default}}
+{{$netdev.Ipaddr}} {{$node.Fqdn}}
+{{- else}}
+{{$netdev.Ipaddr}} {{$node.Fqdn}}-{{$devname}}
+{{- end}}
+{{- end}}
+{{end}}

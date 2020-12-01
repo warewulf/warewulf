@@ -22,7 +22,7 @@ func templateVnfsFileInclude(vnfsname string, filepath string) string {
 	wwlog.Printf(wwlog.DEBUG, "Including VNFS file into template: %s: %s\n", vnfsname, filepath)
 
 	if vnfsname == "" {
-		wwlog.Printf(wwlog.WARN, "VNFS not set for template: %s\n", filepath)
+		wwlog.Printf(wwlog.WARN, "VNFS not set for template import request: %s: %s\n", vnfsname, filepath)
 		return ""
 	}
 
