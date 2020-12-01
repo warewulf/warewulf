@@ -37,7 +37,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			fmt.Printf("################################################################################\n")
 			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "Id", node.Id.Source(), node.Id.String())
 			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "Comment", node.Comment.Source(), node.Comment.String())
-			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "GroupName", node.GroupName.Source(), node.GroupName.String())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "GroupName", node.Gid.Source(), node.Gid.String())
 			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "DomainName", node.DomainName.Source(), node.DomainName.String())
 			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "Profiles (Group)", "group", strings.Join(node.GroupProfiles, ","))
 			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "Profiles (Node)", "node", strings.Join(node.Profiles, ","))
@@ -93,7 +93,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Println(strings.Repeat("=", 120))
 
 		for _, node := range nodes {
-			fmt.Printf("%-22s %-12s %-26s %-35s %s\n", node.Fqdn.Get(), node.GroupName.String(), node.KernelVersion.String(), node.Vnfs.String(), node.SystemOverlay.String() +"/"+ node.RuntimeOverlay.String())
+			fmt.Printf("%-22s %-12s %-26s %-35s %s\n", node.Fqdn.Get(), node.Gid.String(), node.KernelVersion.String(), node.Vnfs.String(), node.SystemOverlay.String() +"/"+ node.RuntimeOverlay.String())
 		}
 
 	} else {

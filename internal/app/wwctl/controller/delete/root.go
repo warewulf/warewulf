@@ -1,12 +1,12 @@
-package add
+package delete
 
 import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "add",
-		Short:              "Add a new node group",
-		Long:               "Add a new node group ",
+		Use:                "delete",
+		Short:              "Delete",
+		Long:               "Delete",
 		RunE:				CobraRunE,
 		Args: 				cobra.MinimumNArgs(1),
 	}
@@ -14,7 +14,6 @@ var (
 )
 
 func init() {
-	baseCmd.PersistentFlags().StringVarP(&SetController, "controller", "c", "default", "Controller to add group to")
 
 }
 

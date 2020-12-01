@@ -25,13 +25,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	for _, g := range args {
-		err := nodeDB.DelGroup(SetController, g)
+	for _, c := range args {
+		err := nodeDB.DelController(c)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 		} else {
 			for _, n := range nodes {
-				if n.Gid.Get() == g {
+				if n.Cid.Get() == c {
 					numNodes ++
 				}
 			}
@@ -40,7 +40,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if count > 0 {
-		q := fmt.Sprintf("Are you sure you want to delete %d group(s) (%d nodes)", count, numNodes)
+		q := fmt.Sprintf("Are you sure you want to delete %d controllers(s) (%d nodes)", count, numNodes)
 
 		prompt := promptui.Prompt{
 			Label:     q,
@@ -54,7 +54,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 	} else {
-		wwlog.Printf(wwlog.INFO, "No groups found\n")
+		wwlog.Printf(wwlog.INFO, "No controllers found\n")
 	}
 
 	return nil

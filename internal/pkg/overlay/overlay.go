@@ -18,11 +18,14 @@ import (
 )
 
 type TemplateStruct struct {
-	Fqdn 			string
-	Hostname		string
-	Groupname		string
-	Vnfs 			string
-	Netdev	 		map[string]*node.NetDevs
+	Self struct {
+		Fqdn      string
+		Hostname  string
+		GroupName string
+		Vnfs      string
+		NetDevs   map[string]*node.NetDevs
+	}
+	AllNodes []node.NodeInfo
 }
 
 func BuildSystemOverlay(nodeList []node.NodeInfo) error {
@@ -48,9 +51,6 @@ func SystemOverlayInit(name string) error {
 func RuntimeOverlayInit(name string) error {
 	return overlayInit(name, "runtime")
 }
-
-
-
 
 func findAllOverlays(overlayType string) ([]string, error) {
 	config := config.New()
@@ -83,7 +83,6 @@ func findAllOverlays(overlayType string) ([]string, error) {
 	return ret, nil
 }
 
-
 func overlayInit(name string, overlayType string) error {
 	var path string
 	config := config.New()
@@ -100,7 +99,7 @@ func overlayInit(name string, overlayType string) error {
 	}
 
 	if util.IsDir(path) == true {
-		return errors.New("Overlay already exists: "+name)
+		return errors.New("Overlay already exists: " + name)
 	}
 
 	err := os.MkdirAll(path, 0755)
@@ -108,13 +107,10 @@ func overlayInit(name string, overlayType string) error {
 	return err
 }
 
-
-
-
-
-
 func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 	config := config.New()
+	nodeDB, _ := node.New()
+	allNodes, _ := nodeDB.FindAllNodes()
 
 	for _, node := range nodeList {
 		var t TemplateStruct
@@ -134,11 +130,12 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 
 		wwlog.Printf(wwlog.DEBUG, "Processing overlay for node: %s\n", node.Fqdn.Get())
 
-		t.Fqdn = node.Fqdn.Get()
-		t.Hostname = node.HostName.Get()
-		t.Groupname = node.GroupName.Get()
-		t.Vnfs = node.Vnfs.Get()
-		t.Netdev = node.NetDevs
+		t.Self.Fqdn = node.Fqdn.Get()
+		t.Self.Hostname = node.HostName.Get()
+		t.Self.GroupName = node.Gid.Get()
+		t.Self.Vnfs = node.Vnfs.Get()
+		t.Self.NetDevs = node.NetDevs
+		t.AllNodes = allNodes
 
 		if overlayType == "runtime" && node.RuntimeOverlay.Defined() == false {
 			wwlog.Printf(wwlog.WARN, "Undefined runtime overlay, skipping node: %s\n", node.Fqdn.Get())
@@ -229,7 +226,6 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 
 			return nil
 		})
-
 
 		wwlog.Printf(wwlog.VERBOSE, "Finished generating overlay directory for: %s\n", node.Fqdn.Get())
 

@@ -59,9 +59,9 @@ func CleanName(source string) string {
 		tmp = source
 	}
 
-	tmp = strings.ReplaceAll(tmp, "://", "-")
-	tmp = strings.ReplaceAll(tmp, "/", ".")
-	tmp = strings.ReplaceAll(tmp, ":", "-")
+	tmp = strings.ReplaceAll(tmp, "://", ":")
+	tmp = strings.ReplaceAll(tmp, "/", "-")
+	tmp = strings.ReplaceAll(tmp, ":", ":")
 
 	return tmp
 }
@@ -73,6 +73,10 @@ func New(source string) (VnfsObject, error) {
 	if source == "" {
 		wwlog.Printf(wwlog.DEBUG, "Called vnfs.Load() without a name, returning error\n")
 		return ret, errors.New("Called vnfs.Load() without a VNFS name")
+	}
+
+	if util.IsFile(ret.Config) {
+		return Load(source)
 	}
 
 	pathFriendlyName := CleanName(source)
@@ -91,10 +95,6 @@ func New(source string) (VnfsObject, error) {
 	ret.Chroot = config.VnfsChroot(pathFriendlyName)
 	ret.Image = config.VnfsImage(pathFriendlyName)
 	ret.Config = path.Join(config.VnfsImageDir(pathFriendlyName), "config.yaml")
-
-	if util.IsFile(ret.Config) {
-		return Load(source)
-	}
 
 	return ret, nil
 }

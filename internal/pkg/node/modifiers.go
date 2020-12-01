@@ -14,64 +14,79 @@ import (
  *
 ****/
 
-func (self *nodeYaml) AddNode(groupID string, nodeID string) error {
+func (self *nodeYaml) AddNode(controllerID string, groupID string, nodeID string) error {
 	var node NodeConf
 
 	wwlog.Printf(wwlog.VERBOSE, "Adding new node: %s/%s\n", groupID, nodeID)
 
-	if _, ok := self.NodeGroups[groupID]; !ok {
+	if _, ok := self.Controllers[controllerID]; ! ok {
+		return errors.New("Controller does not exist: " + controllerID)
+	}
+
+	if _, ok := self.Controllers[controllerID].NodeGroups[groupID]; ! ok {
 		return errors.New("Group does not exist: " + groupID)
 	}
 
-	if _, ok := self.NodeGroups[groupID].Nodes[groupID]; ok {
+	if _, ok := self.Controllers[controllerID].NodeGroups[groupID].Nodes[groupID]; ok {
 		return errors.New("Nodename already exists in group: " + nodeID)
 	}
 
-	self.NodeGroups[groupID].Nodes[nodeID] = &node
-	self.NodeGroups[groupID].Nodes[nodeID].Hostname = nodeID
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID] = &node
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].Hostname = nodeID
 
 	return nil
 }
 
-func (self *nodeYaml) DelNode(groupID string, nodeID string) error {
+func (self *nodeYaml) DelNode(controllerID string, groupID string, nodeID string) error {
 
-	if _, ok := self.NodeGroups[groupID]; !ok {
-		return errors.New("Group '" + groupID + "' was not found")
+	if _, ok := self.Controllers[controllerID]; ! ok {
+		return errors.New("Controller does not exist: " + controllerID)
 	}
-	if _, ok := self.NodeGroups[groupID].Nodes[nodeID]; !ok {
-		return errors.New("Node '" + nodeID + "' was not found in group '" + groupID + "'")
+
+	if _, ok := self.Controllers[controllerID].NodeGroups[groupID]; ! ok {
+		return errors.New("Group does not exist: " + groupID)
+	}
+
+	if _, ok := self.Controllers[controllerID].NodeGroups[groupID].Nodes[groupID]; ok {
+		return errors.New("Nodename does not exist in group: " + nodeID)
 	}
 
 	wwlog.Printf(wwlog.VERBOSE, "Deleting node network device: %s/%s\n", groupID, nodeID)
-	delete(self.NodeGroups[groupID].Nodes, nodeID)
+	delete(self.Controllers[controllerID].NodeGroups[groupID].Nodes, nodeID)
 
 	return nil
 }
 
 func(self *nodeYaml) NodeUpdate(node NodeInfo) error {
+	controllerID := node.Cid.Get()
 	groupID := node.Gid.Get()
 	nodeID := node.Id.Get()
 
-	if _, ok := self.NodeGroups[groupID]; !ok {
-		return errors.New("Group '" + groupID + "' was not found")
-	}
-	if _, ok := self.NodeGroups[groupID].Nodes[nodeID]; !ok {
-		return errors.New("Node '" + nodeID + "' was not found in group '" + groupID + "'")
+	if _, ok := self.Controllers[controllerID]; ! ok {
+		return errors.New("Controller does not exist: " + controllerID)
 	}
 
-	self.NodeGroups[groupID].Nodes[nodeID].Hostname = node.HostName.GetReal()
-	self.NodeGroups[groupID].Nodes[nodeID].Vnfs = node.Vnfs.GetReal()
-	self.NodeGroups[groupID].Nodes[nodeID].DomainName = node.DomainName.GetReal()
-	self.NodeGroups[groupID].Nodes[nodeID].Ipxe = node.Ipxe.GetReal()
-	self.NodeGroups[groupID].Nodes[nodeID].KernelVersion = node.KernelVersion.GetReal()
-	self.NodeGroups[groupID].Nodes[nodeID].KernelArgs = node.KernelArgs.GetReal()
-	self.NodeGroups[groupID].Nodes[nodeID].IpmiIpaddr = node.IpmiIpaddr.GetReal()
-	self.NodeGroups[groupID].Nodes[nodeID].IpmiUserName = node.IpmiUserName.GetReal()
-	self.NodeGroups[groupID].Nodes[nodeID].IpmiPassword = node.IpmiPassword.GetReal()
-	self.NodeGroups[groupID].Nodes[nodeID].RuntimeOverlay = node.RuntimeOverlay.GetReal()
-	self.NodeGroups[groupID].Nodes[nodeID].SystemOverlay = node.SystemOverlay.GetReal()
-	self.NodeGroups[groupID].Nodes[nodeID].Profiles = node.Profiles
-	self.NodeGroups[groupID].Nodes[nodeID].NetDevs = node.NetDevs
+	if _, ok := self.Controllers[controllerID].NodeGroups[groupID]; ! ok {
+		return errors.New("Group does not exist: " + groupID)
+	}
+
+	if _, ok := self.Controllers[controllerID].NodeGroups[groupID].Nodes[groupID]; ! ok {
+		return errors.New("Nodename does not exist in group: " + nodeID)
+	}
+
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].Hostname = node.HostName.GetReal()
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].Vnfs = node.Vnfs.GetReal()
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].DomainName = node.DomainName.GetReal()
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].Ipxe = node.Ipxe.GetReal()
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].KernelVersion = node.KernelVersion.GetReal()
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].KernelArgs = node.KernelArgs.GetReal()
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].IpmiIpaddr = node.IpmiIpaddr.GetReal()
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].IpmiUserName = node.IpmiUserName.GetReal()
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].IpmiPassword = node.IpmiPassword.GetReal()
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].RuntimeOverlay = node.RuntimeOverlay.GetReal()
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].SystemOverlay = node.SystemOverlay.GetReal()
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].Profiles = node.Profiles
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].NetDevs = node.NetDevs
 
 	return nil
 }
@@ -84,51 +99,140 @@ func(self *nodeYaml) NodeUpdate(node NodeInfo) error {
  *
 ****/
 
-func (self *nodeYaml) AddGroup(groupID string) error {
+func (self *nodeYaml) AddGroup(controllerID string, groupID string) error {
 	var group GroupConf
 
 	wwlog.Printf(wwlog.VERBOSE, "Adding new group: %s/%s\n", groupID)
 
-	if _, ok := self.NodeGroups[groupID]; ok {
-		return errors.New("Group name already exists: " + groupID)
+	if _, ok := self.Controllers[controllerID]; ! ok {
+		return errors.New("Controller does not exist: " + controllerID)
 	}
 
-	self.NodeGroups[groupID] = &group
-	self.NodeGroups[groupID].DomainName = groupID
-	self.NodeGroups[groupID].Profiles = []string{"default"}
+	if _, ok := self.Controllers[controllerID].NodeGroups[groupID]; ok {
+		return errors.New("Group already exists: " + groupID)
+	}
+
+	self.Controllers[controllerID].NodeGroups[groupID] = &group
+	self.Controllers[controllerID].NodeGroups[groupID].DomainName = groupID
+	self.Controllers[controllerID].NodeGroups[groupID].Profiles = []string{"default"}
 
 	return nil
 }
 
-func (self *nodeYaml) DelGroup(groupID string) error {
-	if _, ok := self.NodeGroups[groupID]; !ok {
+func (self *nodeYaml) DelGroup(controllerID string, groupID string) error {
 
-		return errors.New("Group '" + groupID + "' was not found")
+	if _, ok := self.Controllers[controllerID]; ! ok {
+		return errors.New("Controller does not exist: " + controllerID)
+	}
+
+	if _, ok := self.Controllers[controllerID].NodeGroups[groupID]; ! ok {
+		return errors.New("Group does not exist: " + groupID)
 	}
 
 	wwlog.Printf(wwlog.VERBOSE, "Deleting group: %s\n", groupID)
-	delete(self.NodeGroups, groupID)
+	delete(self.Controllers[controllerID].NodeGroups, groupID)
 
 	return nil
 }
 
 func(self *nodeYaml) GroupUpdate(group GroupInfo) error {
+	controllerID := group.Cid
 	groupID := group.Id
 
-	if _, ok := self.NodeGroups[groupID]; !ok {
-		return errors.New("Group '" + groupID + "' was not found")
+	if _, ok := self.Controllers[controllerID]; ! ok {
+		return errors.New("Controller does not exist: " + controllerID)
 	}
 
-	self.NodeGroups[groupID].DomainName = group.DomainName
-	self.NodeGroups[groupID].Vnfs = group.Vnfs
-	self.NodeGroups[groupID].KernelVersion = group.KernelVersion
-	self.NodeGroups[groupID].KernelArgs = group.KernelArgs
-	self.NodeGroups[groupID].Ipxe = group.Ipxe
-	self.NodeGroups[groupID].IpmiUserName = group.IpmiUserName
-	self.NodeGroups[groupID].IpmiPassword = group.IpmiPassword
-	self.NodeGroups[groupID].RuntimeOverlay = group.RuntimeOverlay
-	self.NodeGroups[groupID].SystemOverlay = group.SystemOverlay
-	self.NodeGroups[groupID].Profiles = group.Profiles
+	if _, ok := self.Controllers[controllerID].NodeGroups[groupID]; ! ok {
+		return errors.New("Group does not exist: " + groupID)
+	}
+
+	self.Controllers[controllerID].NodeGroups[groupID].DomainName = group.DomainName
+	self.Controllers[controllerID].NodeGroups[groupID].Vnfs = group.Vnfs
+	self.Controllers[controllerID].NodeGroups[groupID].KernelVersion = group.KernelVersion
+	self.Controllers[controllerID].NodeGroups[groupID].KernelArgs = group.KernelArgs
+	self.Controllers[controllerID].NodeGroups[groupID].Ipxe = group.Ipxe
+	self.Controllers[controllerID].NodeGroups[groupID].IpmiUserName = group.IpmiUserName
+	self.Controllers[controllerID].NodeGroups[groupID].IpmiPassword = group.IpmiPassword
+	self.Controllers[controllerID].NodeGroups[groupID].RuntimeOverlay = group.RuntimeOverlay
+	self.Controllers[controllerID].NodeGroups[groupID].SystemOverlay = group.SystemOverlay
+	self.Controllers[controllerID].NodeGroups[groupID].Profiles = group.Profiles
+
+	return nil
+}
+
+
+
+/****
+ *
+ * CONTROLLER MODIFIERS
+ *
+****/
+
+func (self *nodeYaml) AddController(controllerID string) error {
+	var controller ControllerConf
+	var group GroupConf
+
+	wwlog.Printf(wwlog.VERBOSE, "Adding new controller: %s/%s\n", controllerID)
+
+	if _, ok := self.Controllers[controllerID]; ok {
+		return errors.New("Controller already exists: " + controllerID)
+	}
+
+	self.Controllers[controllerID] = &controller
+	self.Controllers[controllerID].NodeGroups = make(map[string]*GroupConf)
+	self.Controllers[controllerID].NodeGroups["default"] = &group
+
+	return nil
+}
+
+func (self *nodeYaml) DelController(controllerID string) error {
+
+	if _, ok := self.Controllers[controllerID]; ! ok {
+		return errors.New("Controller does not exist: " + controllerID)
+	}
+
+	wwlog.Printf(wwlog.VERBOSE, "Deleting controller: %s\n", controllerID)
+	delete(self.Controllers, controllerID)
+
+	return nil
+}
+
+func(self *nodeYaml) ControllerUpdate(controller ControllerInfo) error {
+	controllerID := controller.Id
+
+	if _, ok := self.Controllers[controllerID]; ! ok {
+		return errors.New("Controller does not exist: " + controllerID)
+	}
+
+	self.Controllers[controllerID].Ipaddr = controller.Ipaddr
+	self.Controllers[controllerID].Comment = controller.Comment
+
+	self.Controllers[controllerID].Services.Warewulfd.Port = controller.Services.Warewulfd.Port
+	self.Controllers[controllerID].Services.Warewulfd.Secure = controller.Services.Warewulfd.Secure
+	self.Controllers[controllerID].Services.Warewulfd.StartCmd = controller.Services.Warewulfd.StartCmd
+	self.Controllers[controllerID].Services.Warewulfd.RestartCmd = controller.Services.Warewulfd.RestartCmd
+	self.Controllers[controllerID].Services.Warewulfd.EnableCmd = controller.Services.Warewulfd.EnableCmd
+
+	self.Controllers[controllerID].Services.Dhcp.Enabled = controller.Services.Dhcp.Enabled
+	self.Controllers[controllerID].Services.Dhcp.ConfigFile = controller.Services.Dhcp.ConfigFile
+	self.Controllers[controllerID].Services.Dhcp.RangeStart = controller.Services.Dhcp.RangeStart
+	self.Controllers[controllerID].Services.Dhcp.RangeEnd = controller.Services.Dhcp.RangeEnd
+	self.Controllers[controllerID].Services.Dhcp.StartCmd = controller.Services.Dhcp.StartCmd
+	self.Controllers[controllerID].Services.Dhcp.RestartCmd = controller.Services.Dhcp.RestartCmd
+	self.Controllers[controllerID].Services.Dhcp.EnableCmd = controller.Services.Dhcp.EnableCmd
+
+	self.Controllers[controllerID].Services.Nfs.Enabled = controller.Services.Nfs.Enabled
+	self.Controllers[controllerID].Services.Nfs.Exports = controller.Services.Nfs.Exports
+	self.Controllers[controllerID].Services.Nfs.StartCmd = controller.Services.Nfs.StartCmd
+	self.Controllers[controllerID].Services.Nfs.RestartCmd = controller.Services.Nfs.RestartCmd
+	self.Controllers[controllerID].Services.Nfs.EnableCmd = controller.Services.Nfs.EnableCmd
+
+	self.Controllers[controllerID].Services.Tftp.Enabled = controller.Services.Tftp.Enabled
+	self.Controllers[controllerID].Services.Tftp.TftpRoot = controller.Services.Tftp.TftpRoot
+	self.Controllers[controllerID].Services.Tftp.StartCmd = controller.Services.Tftp.StartCmd
+	self.Controllers[controllerID].Services.Tftp.RestartCmd = controller.Services.Tftp.RestartCmd
+	self.Controllers[controllerID].Services.Tftp.EnableCmd = controller.Services.Tftp.EnableCmd
 
 	return nil
 }

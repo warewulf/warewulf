@@ -14,6 +14,9 @@ func (self *NodeInfoEntry) String() string {
 	if self.profile != "" {
 		return self.profile
 	}
+	if self.controller != "" {
+		return self.controller
+	}
 	if self.def != "" {
 		return self.def
 	}
@@ -30,6 +33,9 @@ func (self *NodeInfoEntry) Source() string {
 	if self.profile != "" {
 		return "profile"
 	}
+	if self.controller != "" {
+		return "controller"
+	}
 	if self.def != "" {
 		return "default"
 	}
@@ -45,6 +51,9 @@ func (self *NodeInfoEntry) Get() string {
 	}
 	if self.profile != "" {
 		return self.profile
+	}
+	if self.controller != "" {
+		return self.controller
 	}
 	if self.def != "" {
 		return self.def
@@ -79,6 +88,13 @@ func (self *NodeInfoEntry) SetProfile(value string) {
 		return
 	}
 	self.profile = value
+}
+
+func (self *NodeInfoEntry) SetController(value string) {
+	if value == "" {
+		return
+	}
+	self.controller = value
 }
 
 func (self *NodeInfoEntry) Set(value string) {

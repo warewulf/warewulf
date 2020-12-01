@@ -21,11 +21,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	nodeList, err := nodeDB.SearchByNameList(args)
 
 	for _, n := range nodeList {
-		if SetGroup != "" && SetGroup != n.GroupName.String() {
-			wwlog.Printf(wwlog.DEBUG, "skipping node of different group: %s/%s\n", n.GroupName, n.Id)
+		if SetGroup != "" && SetGroup != n.Gid.String() {
+			wwlog.Printf(wwlog.DEBUG, "skipping node of different group: %s/%s\n", n.Gid, n.Id)
 			continue
 		}
-		err := nodeDB.DelNode(n.GroupName.String(), n.Id.String())
+		err := nodeDB.DelNode(n.Cid.Get(), n.Gid.Get(), n.Id.Get())
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 		} else {

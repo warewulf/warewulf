@@ -1,7 +1,6 @@
 package add
 
 import (
-	"fmt"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
@@ -9,19 +8,19 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
+
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Failed to open node database: %s\n", err)
+		wwlog.Printf(wwlog.ERROR, "Failed opening node database: %s\n", err)
 		os.Exit(1)
 	}
 
-	for _, a := range args {
-		err = nodeDB.AddNode(SetController, SetGroup, a)
+	for _, c := range args {
+		err = nodeDB.AddController(c)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			os.Exit(1)
 		}
-		fmt.Printf("Added node: %s\n", a)
 	}
 
 	nodeDB.Persist()

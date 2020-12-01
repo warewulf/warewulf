@@ -143,7 +143,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(profiles) > 0 {
-		q := fmt.Sprintf("Are you sure you want to modify %d group(s)", len(profiles))
+		q := fmt.Sprintf("Are you sure you want to modify %d profile(s)", len(profiles))
 
 		prompt := promptui.Prompt{
 			Label:     q,
