@@ -30,78 +30,80 @@ func New() (nodeYaml, error) {
 func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 	var ret []NodeInfo
 
-	for groupname, group := range self.NodeGroups {
-		for nodename, node := range group.Nodes {
-			var n NodeInfo
-			var allProfiles []string
+	for controllername, controller := range self.Controllers {
+		for groupname, group := range controller.NodeGroups {
+			for nodename, node := range group.Nodes {
+				var n NodeInfo
+				var allProfiles []string
 
-			if node.Disabled == true || group.Disabled == true {
-				wwlog.Printf(wwlog.VERBOSE, "Skipping disabled node: %s/%s\n", groupname, nodename)
-				continue
-			}
-
-			n.Id.Set(nodename)
-			n.Gid.Set(groupname)
-			n.GroupName.Set(groupname)
-			n.HostName.Set(node.Hostname)
-			n.IpmiIpaddr.Set(node.IpmiIpaddr)
-			n.DomainName.Set(node.DomainName)
-			n.Vnfs.Set(node.Vnfs)
-			n.KernelVersion.Set(node.KernelVersion)
-			n.KernelArgs.Set(node.KernelArgs)
-			n.Ipxe.Set(node.Ipxe)
-			n.IpmiUserName.Set(node.IpmiUserName)
-			n.IpmiPassword.Set(node.IpmiPassword)
-			n.SystemOverlay.Set(node.SystemOverlay)
-			n.RuntimeOverlay.Set(node.RuntimeOverlay)
-
-			n.DomainName.SetGroup(group.DomainName)
-			n.Vnfs.SetGroup(group.Vnfs)
-			n.KernelVersion.SetGroup(group.KernelVersion)
-			n.KernelArgs.SetGroup(group.KernelArgs)
-			n.Ipxe.SetGroup(group.Ipxe)
-			n.IpmiUserName.SetGroup(group.IpmiUserName)
-			n.IpmiPassword.SetGroup(group.IpmiPassword)
-			n.SystemOverlay.SetGroup(group.SystemOverlay)
-			n.RuntimeOverlay.SetGroup(group.RuntimeOverlay)
-
-			n.RuntimeOverlay.SetDefault("default")
-			n.SystemOverlay.SetDefault("default")
-			n.Ipxe.SetDefault("default")
-			n.KernelArgs.SetDefault("crashkernel=no quiet")
-
-			n.GroupProfiles = group.Profiles
-			n.Profiles = node.Profiles
-
-			allProfiles = append(allProfiles, group.Profiles...)
-			allProfiles = append(allProfiles, node.Profiles...)
-
-			for _, p := range allProfiles {
-				if _, ok := self.NodeProfiles[p]; !ok {
-					wwlog.Printf(wwlog.WARN, "Profile not found for node '%s': %s\n", nodename, p)
+				if node.Disabled == true || group.Disabled == true {
+					wwlog.Printf(wwlog.VERBOSE, "Skipping disabled node: %s/%s\n", groupname, nodename)
 					continue
 				}
 
-				n.DomainName.SetProfile(self.NodeProfiles[p].DomainName)
-				n.Vnfs.SetProfile(self.NodeProfiles[p].Vnfs)
-				n.KernelVersion.SetProfile(self.NodeProfiles[p].KernelVersion)
-				n.KernelArgs.SetProfile(self.NodeProfiles[p].KernelArgs)
-				n.Ipxe.SetProfile(self.NodeProfiles[p].Ipxe)
-				n.IpmiUserName.SetProfile(self.NodeProfiles[p].IpmiUserName)
-				n.IpmiPassword.SetProfile(self.NodeProfiles[p].IpmiPassword)
-				n.SystemOverlay.SetProfile(self.NodeProfiles[p].SystemOverlay)
-				n.RuntimeOverlay.SetProfile(self.NodeProfiles[p].RuntimeOverlay)
+				n.Id.Set(nodename)
+				n.Gid.Set(groupname)
+				n.Cid.Set(controllername)
+				n.HostName.Set(node.Hostname)
+				n.IpmiIpaddr.Set(node.IpmiIpaddr)
+				n.DomainName.Set(node.DomainName)
+				n.Vnfs.Set(node.Vnfs)
+				n.KernelVersion.Set(node.KernelVersion)
+				n.KernelArgs.Set(node.KernelArgs)
+				n.Ipxe.Set(node.Ipxe)
+				n.IpmiUserName.Set(node.IpmiUserName)
+				n.IpmiPassword.Set(node.IpmiPassword)
+				n.SystemOverlay.Set(node.SystemOverlay)
+				n.RuntimeOverlay.Set(node.RuntimeOverlay)
+
+				n.DomainName.SetGroup(group.DomainName)
+				n.Vnfs.SetGroup(group.Vnfs)
+				n.KernelVersion.SetGroup(group.KernelVersion)
+				n.KernelArgs.SetGroup(group.KernelArgs)
+				n.Ipxe.SetGroup(group.Ipxe)
+				n.IpmiUserName.SetGroup(group.IpmiUserName)
+				n.IpmiPassword.SetGroup(group.IpmiPassword)
+				n.SystemOverlay.SetGroup(group.SystemOverlay)
+				n.RuntimeOverlay.SetGroup(group.RuntimeOverlay)
+
+				n.RuntimeOverlay.SetDefault("default")
+				n.SystemOverlay.SetDefault("default")
+				n.Ipxe.SetDefault("default")
+				n.KernelArgs.SetDefault("crashkernel=no quiet")
+
+				n.GroupProfiles = group.Profiles
+				n.Profiles = node.Profiles
+
+				allProfiles = append(allProfiles, group.Profiles...)
+				allProfiles = append(allProfiles, node.Profiles...)
+
+				for _, p := range allProfiles {
+					if _, ok := self.NodeProfiles[p]; !ok {
+						wwlog.Printf(wwlog.WARN, "Profile not found for node '%s': %s\n", nodename, p)
+						continue
+					}
+
+					n.DomainName.SetProfile(self.NodeProfiles[p].DomainName)
+					n.Vnfs.SetProfile(self.NodeProfiles[p].Vnfs)
+					n.KernelVersion.SetProfile(self.NodeProfiles[p].KernelVersion)
+					n.KernelArgs.SetProfile(self.NodeProfiles[p].KernelArgs)
+					n.Ipxe.SetProfile(self.NodeProfiles[p].Ipxe)
+					n.IpmiUserName.SetProfile(self.NodeProfiles[p].IpmiUserName)
+					n.IpmiPassword.SetProfile(self.NodeProfiles[p].IpmiPassword)
+					n.SystemOverlay.SetProfile(self.NodeProfiles[p].SystemOverlay)
+					n.RuntimeOverlay.SetProfile(self.NodeProfiles[p].RuntimeOverlay)
+				}
+
+				if n.DomainName.Defined() == true {
+					n.Fqdn.Set(node.Hostname + "." + n.DomainName.Get())
+				} else {
+					n.Fqdn.Set(node.Hostname)
+				}
+
+				n.NetDevs = node.NetDevs
+
+				ret = append(ret, n)
 			}
-
-			if n.DomainName.Defined() == true {
-				n.Fqdn.Set(node.Hostname +"."+ n.DomainName.Get())
-			} else {
-				n.Fqdn.Set(node.Hostname)
-			}
-
-			n.NetDevs = node.NetDevs
-
-			ret = append(ret, n)
 		}
 	}
 
@@ -111,25 +113,76 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 func (self *nodeYaml) FindAllGroups() ([]GroupInfo, error) {
 	var ret []GroupInfo
 
-	for groupname, group := range self.NodeGroups {
-		var g GroupInfo
+	for controllername, controller := range self.Controllers {
+		for groupname, group := range controller.NodeGroups {
+			var g GroupInfo
 
-		g.Id = groupname
-		g.DomainName = group.DomainName
-		g.Comment = group.Comment
-		g.Vnfs = group.Vnfs
-		g.KernelVersion = group.KernelVersion
-		g.KernelArgs = group.KernelArgs
-		g.IpmiPassword = group.IpmiPassword
-		g.IpmiUserName = group.IpmiUserName
-		g.SystemOverlay = group.SystemOverlay
-		g.RuntimeOverlay = group.RuntimeOverlay
+			g.Id = groupname
+			g.Cid = controllername
+			g.DomainName = group.DomainName
+			g.Comment = group.Comment
+			g.Vnfs = group.Vnfs
+			g.KernelVersion = group.KernelVersion
+			g.KernelArgs = group.KernelArgs
+			g.IpmiPassword = group.IpmiPassword
+			g.IpmiUserName = group.IpmiUserName
+			g.SystemOverlay = group.SystemOverlay
+			g.RuntimeOverlay = group.RuntimeOverlay
 
-		g.Profiles = group.Profiles
+			g.Profiles = group.Profiles
+
+			// TODO: Validate or die on all inputs
+
+			ret = append(ret, g)
+		}
+	}
+	return ret, nil
+}
+
+func (self *nodeYaml) FindAllControllers() ([]ControllerInfo, error) {
+	var ret []ControllerInfo
+
+	for controllername, controller := range self.Controllers {
+		var c ControllerInfo
+
+		c.Id = controllername
+		c.Ipaddr = controller.Ipaddr
+		c.Services = struct {
+			Warewulfd struct {
+				Port       string
+				Secure     string
+				StartCmd   string
+				RestartCmd string
+				EnableCmd  string
+			}
+			Dhcp struct {
+				Enabled    bool
+				RangeStart string
+				RangeEnd   string
+				ConfigFile string
+				StartCmd   string
+				RestartCmd string
+				EnableCmd  string
+			}
+			Tftp struct {
+				Enabled    bool
+				TftpRoot   string
+				StartCmd   string
+				RestartCmd string
+				EnableCmd  string
+			}
+			Nfs struct {
+				Enabled    bool
+				Exports    []string
+				StartCmd   string
+				RestartCmd string
+				EnableCmd  string
+			}
+		}(controller.Services)
 
 		// TODO: Validate or die on all inputs
 
-		ret = append(ret, g)
+		ret = append(ret, c)
 	}
 	return ret, nil
 }
@@ -158,8 +211,6 @@ func (self *nodeYaml) FindAllProfiles() ([]ProfileInfo, error) {
 	}
 	return ret, nil
 }
-
-
 
 func (self *nodeYaml) FindByHwaddr(hwa string) (NodeInfo, error) {
 	var ret NodeInfo
@@ -192,13 +243,6 @@ func (self *nodeYaml) FindByIpaddr(ipaddr string) (NodeInfo, error) {
 
 	return ret, errors.New("No nodes found with IP Addr: " + ipaddr)
 }
-
-
-
-
-
-
-
 
 func (nodes *nodeYaml) SearchByName(search string) ([]NodeInfo, error) {
 	var ret []NodeInfo

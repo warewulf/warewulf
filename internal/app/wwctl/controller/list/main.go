@@ -1,5 +1,6 @@
 package list
 
+import "C"
 import (
 	"fmt"
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -7,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 	"reflect"
-	"strings"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
@@ -17,7 +17,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	groups, err := nodeDB.FindAllGroups()
+	controllers, err := nodeDB.FindAllControllers()
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not find all nodes: %s\n", err)
 		os.Exit(1)
@@ -25,18 +25,18 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 
 	if ShowAll == true {
-		for _, group := range groups {
-			v := reflect.ValueOf(group)
+		for _, controller := range controllers {
+			v := reflect.ValueOf(controller)
 			typeOfS := v.Type()
 			fmt.Printf("################################################################################\n")
 			for i := 0; i< v.NumField(); i++ {
-				fmt.Printf("%-25s %s = %v\n", group.Id, typeOfS.Field(i).Name, v.Field(i).Interface())
+				fmt.Printf("%-25s %s = %v\n", controller.Id, typeOfS.Field(i).Name, v.Field(i).Interface())
 			}
 		}
 	} else {
-		fmt.Printf("%-22s %-16s %-16s %s\n", "GROUP NAME", "DOMAINNAME", "CONTROLLER", "PROFILES")
-		for _, g := range groups {
-			fmt.Printf("%-22s %-16s %-16s %s\n", g.Id, g.DomainName, g.Cid, strings.Join(g.Profiles, ","))
+		fmt.Printf("%-22s\n", "CONTROLLER NAME")
+		for _, c := range controllers {
+			fmt.Printf("%-22s\n", c.Id)
 		}
 	}
 

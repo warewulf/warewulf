@@ -69,7 +69,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Fprintf(w, "\n")
 	}
 
-
 	shasum1, err := util.ShaSumFile(overlayFile)
 	if err != nil {
 		wwlog.Printf(wwlog.WARN, "Could not open overlay file for checksum: %s\n", err)
@@ -80,7 +79,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.ERROR, "Editor process existed with non-zero\n")
 		os.Exit(1)
 	}
-	wwlog.Printf(wwlog.INFO, "Updated: %s %s\n", args[0], args[1] )
+	wwlog.Printf(wwlog.INFO, "Updated: %s %s\n", args[0], args[1])
 
 	shasum2, err := util.ShaSumFile(overlayFile)
 	if err != nil {
@@ -126,4 +125,3 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	return nil
 }
-

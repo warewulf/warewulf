@@ -11,10 +11,12 @@ var (
 		Args: 				cobra.MinimumNArgs(1),
 	}
 	SetGroup string
+	SetController string
 )
 
 func init() {
-	baseCmd.PersistentFlags().StringVarP(&SetGroup, "group", "g", "default", "Set group to add nodes to")
+	baseCmd.PersistentFlags().StringVarP(&SetGroup, "group", "g", "default", "Group to add nodes to")
+	baseCmd.PersistentFlags().StringVarP(&SetController, "controller", "c", "default", "Controller to add nodes to")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

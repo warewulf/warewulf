@@ -22,6 +22,8 @@ sudo make install
 
 ```
 sudo ./wwctl profile set -K $(uname -r) -V docker://warewulf/centos-8 default
+sudo ./wwctl node add [node name]
+sudo ./wwctl node set --netdev eth0 -I 192.168.1.10 -M 255.255.255.0 -G 192.168.1.1 -H aa:bb:cc:dd:ee:ff
 ```
     
 

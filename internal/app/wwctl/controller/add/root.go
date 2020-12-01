@@ -5,8 +5,8 @@ import "github.com/spf13/cobra"
 var (
 	baseCmd = &cobra.Command{
 		Use:                "add",
-		Short:              "Add a new node group",
-		Long:               "Add a new node group ",
+		Short:              "Add",
+		Long:               "Add",
 		RunE:				CobraRunE,
 		Args: 				cobra.MinimumNArgs(1),
 	}
@@ -14,7 +14,6 @@ var (
 )
 
 func init() {
-	baseCmd.PersistentFlags().StringVarP(&SetController, "controller", "c", "default", "Controller to add group to")
 
 }
 
