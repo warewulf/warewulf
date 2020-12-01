@@ -1,2 +1,2 @@
-{{IncludeFromVnfs .Vnfs "/etc/group"}}
+{{IncludeFromVnfs $.Self.Vnfs "/etc/group"}}
 {{Include "/etc/group"}}

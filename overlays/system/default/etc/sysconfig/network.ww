@@ -1,2 +1,2 @@
 NETWORKING=yes
-HOSTNAME={{.Fqdn}}
+HOSTNAME={{$.Self.Fqdn}}
