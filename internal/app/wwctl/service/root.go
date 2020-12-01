@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/hpcng/warewulf/internal/app/wwctl/services/dhcp"
+	"github.com/hpcng/warewulf/internal/app/wwctl/service/dhcp"
 	"github.com/spf13/cobra"
 )
 
