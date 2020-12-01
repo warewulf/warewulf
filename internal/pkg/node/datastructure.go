@@ -41,6 +41,7 @@ type ControllerConf struct {
 		} `yaml:"warewulf"`
 		Dhcp struct {
 			Enabled    bool   `yaml:"enabled,omitempty"`
+			Template   string `yaml:"template,omitempty"`
 			RangeStart string `yaml:"range start,omitempty"`
 			RangeEnd   string `yaml:"range end,omitempty"`
 			ConfigFile string `yaml:"config file,omitempty"`
@@ -102,6 +103,7 @@ type NodeConf struct {
 
 type NetDevs struct {
 	Type    string `yaml:"type,omitempty"`
+	Default bool   `yaml:"default"`
 	Hwaddr  string
 	Ipaddr  string
 	Netmask string
@@ -158,6 +160,7 @@ type ControllerInfo struct {
 		}
 		Dhcp struct {
 			Enabled    bool
+			Template   string
 			RangeStart string
 			RangeEnd   string
 			ConfigFile string
