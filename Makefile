@@ -48,10 +48,7 @@ files: all
 	install -d -m 0755 /etc/warewulf/
 	install -d -m 0755 /etc/warewulf/ipxe
 	install -d -m 0755 /var/lib/tftpboot/warewulf/ipxe/
-	install -m 0640 etc/dhcpd.conf /etc/dhcp/dhcpd.conf
-	install -m 0644 etc/nodes.conf /etc/warewulf/nodes.conf
-	install -m 0644 etc/warewulf.conf /etc/warewulf/warewulf.conf
-	install -m 0644 etc/ipxe/default.ipxe /etc/warewulf/ipxe/default.ipxe 
+	cp -r etc* /etc/warewulf/
 	cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
 	restorecon -r /var/lib/tftpboot/warewulf
 	cp -r overlays /var/warewulf/
