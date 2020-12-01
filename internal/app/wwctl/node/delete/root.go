@@ -11,11 +11,13 @@ var (
 	}
 	SetForce string
 	SetGroup string
+	SetController string
 )
 
 func init() {
 	baseCmd.PersistentFlags().StringVarP(&SetForce, "force", "f", "", "Force node delete")
 	baseCmd.PersistentFlags().StringVarP(&SetGroup, "group", "g", "default", "Set group to delete nodes from")
+	baseCmd.PersistentFlags().StringVarP(&SetController, "controller", "c", "default", "Controller to add nodes to")
 
 }
 

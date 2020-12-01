@@ -31,14 +31,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		} else {
 			fmt.Printf("%-10s %5s %-5s %-18s %s\n", "PERM MODE", "UID", "GID", "SYSTEM-OVERLAY", "FILE PATH")
 		}
-		o, err = overlay.FindAllSystemOverlays()
+		o, err = overlay.FindSystemOverlays()
 	} else {
 		if ListLong == false {
 			fmt.Printf("%-30s %-12s %-12s\n", "RUNTIME OVERLAY NAME", "NODES", "FILES/DIRS")
 		} else {
 			fmt.Printf("%-10s %5s %-5s %-18s %s\n", "PERM MODE", "UID", "GID", "RUNTIME-OVERLAY", "FILE PATH")
 		}
-		o, err = overlay.FindAllRuntimeOverlays()
+		o, err = overlay.FindRuntimeOverlays()
 	}
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not get system overlays: %s\n", err)
@@ -53,12 +53,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	for _, node := range nodeList {
 		if SystemOverlay == true {
-			if node.SystemOverlay != "" {
-				set[node.SystemOverlay] ++
+			if node.SystemOverlay.Get() != "" {
+				set[node.SystemOverlay.Get()] ++
 			}
 		} else {
-			if node.RuntimeOverlay != "" {
-				set[node.RuntimeOverlay] ++
+			if node.RuntimeOverlay.Get() != "" {
+				set[node.RuntimeOverlay.Get()] ++
 			}
 		}
 	}

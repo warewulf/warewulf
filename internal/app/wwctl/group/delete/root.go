@@ -9,14 +9,11 @@ var (
 		Long:               "Add a new node group ",
 		RunE:				CobraRunE,
 	}
-	SetVnfs string
-	SetKernel string
-	//	SetGroupLevel bool
+	SetController string
 )
 
 func init() {
-	baseCmd.PersistentFlags().StringVarP(&SetVnfs, "vnfs", "V", "", "Set node Virtual Node File System (VNFS)")
-	baseCmd.PersistentFlags().StringVarP(&SetKernel, "kernel", "K", "", "Set Kernel version for nodes")
+	baseCmd.PersistentFlags().StringVarP(&SetController, "controller", "c", "default", "Controller to add group to")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

@@ -22,6 +22,7 @@ require (
 	github.com/golang/protobuf v1.4.2
 	github.com/gorilla/mux v1.7.4
 	github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a
+	github.com/fatih/color v1.9.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/klauspost/compress v1.11.1
 	github.com/klauspost/pgzip v1.2.5

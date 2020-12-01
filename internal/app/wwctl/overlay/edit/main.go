@@ -69,7 +69,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Fprintf(w, "\n")
 	}
 
-
 	shasum1, err := util.ShaSumFile(overlayFile)
 	if err != nil {
 		wwlog.Printf(wwlog.WARN, "Could not open overlay file for checksum: %s\n", err)
@@ -80,7 +79,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.ERROR, "Editor process existed with non-zero\n")
 		os.Exit(1)
 	}
-	wwlog.Printf(wwlog.INFO, "Updated: %s %s\n", args[0], args[1] )
+	wwlog.Printf(wwlog.INFO, "Updated: %s %s\n", args[0], args[1])
 
 	shasum2, err := util.ShaSumFile(overlayFile)
 	if err != nil {
@@ -108,22 +107,21 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		var updateNodes []node.NodeInfo
 
 		for _, node := range nodes {
-			if SystemOverlay == true && node.SystemOverlay == args[0] {
+			if SystemOverlay == true && node.SystemOverlay.String() == args[0] {
 				updateNodes = append(updateNodes, node)
-			} else if node.RuntimeOverlay == args[0] {
+			} else if node.RuntimeOverlay.String() == args[0] {
 				updateNodes = append(updateNodes, node)
 			}
 		}
 
 		if SystemOverlay == true {
 			wwlog.Printf(wwlog.INFO, "Updating System Overlays...\n")
-			return overlay.SystemBuild(updateNodes, true)
+			return overlay.BuildSystemOverlay(updateNodes)
 		} else {
 			wwlog.Printf(wwlog.INFO, "Updating Runtime Overlays...\n")
-			return overlay.RuntimeBuild(updateNodes, true)
+			return overlay.BuildRuntimeOverlay(updateNodes)
 		}
 	}
 
 	return nil
 }
-
