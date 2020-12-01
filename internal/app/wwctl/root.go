@@ -1,37 +1,44 @@
 package wwctl
 
 import (
-	"github.com/hpcng/warewulf/internal/app/wwctl/build"
+	"github.com/hpcng/warewulf/internal/app/wwctl/controller"
 	"github.com/hpcng/warewulf/internal/app/wwctl/group"
 	"github.com/hpcng/warewulf/internal/app/wwctl/kernel"
 	"github.com/hpcng/warewulf/internal/app/wwctl/node"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay"
+	"github.com/hpcng/warewulf/internal/app/wwctl/profile"
+	"github.com/hpcng/warewulf/internal/app/wwctl/services"
 	"github.com/hpcng/warewulf/internal/app/wwctl/vnfs"
+
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 )
 
 var (
 	rootCmd = &cobra.Command{
-		Use:                "wwctl",
-		Short:              "Warewulf Control",
-		Long:               "Control interface to the Cluster Warewulf Provisioning System.",
-		PersistentPreRunE:  rootPersistentPreRunE,
+		Use:               "wwctl",
+		Short:             "Warewulf Control",
+		Long:              "Control interface to the Cluster Warewulf Provisioning System.",
+		PersistentPreRunE: rootPersistentPreRunE,
 	}
 	verboseArg bool
-	debugArg bool
+	debugArg   bool
 )
 
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verboseArg, "verbose", "v", false, "Run with increased verbosity.")
 	rootCmd.PersistentFlags().BoolVarP(&debugArg, "debug", "d", false, "Run with debugging messages enabled.")
 
-	rootCmd.AddCommand(build.GetCommand())
+	//rootCmd.AddCommand(build.GetCommand())
+
 	rootCmd.AddCommand(overlay.GetCommand())
+	rootCmd.AddCommand(controller.GetCommand())
 	rootCmd.AddCommand(vnfs.GetCommand())
 	rootCmd.AddCommand(node.GetCommand())
 	rootCmd.AddCommand(kernel.GetCommand())
 	rootCmd.AddCommand(group.GetCommand())
+	rootCmd.AddCommand(profile.GetCommand())
+	rootCmd.AddCommand(services.GetCommand())
 
 }
 

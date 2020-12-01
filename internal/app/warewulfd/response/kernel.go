@@ -16,19 +16,19 @@ func KernelSend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if node.KernelVersion != "" {
-		fileName := config.KernelImage(node.KernelVersion)
+	if node.KernelVersion.Defined() == true {
+		fileName := config.KernelImage(node.KernelVersion.Get())
 
-		err := sendFile(w, fileName, node.Fqdn)
+		err := sendFile(w, fileName, node.Fqdn.Get())
 		if err != nil {
 			log.Printf("ERROR: %s\n", err)
 		} else {
-			log.Printf("SEND:  %15s: %s\n", node.Fqdn, fileName)
+			log.Printf("SEND:  %15s: %s\n", node.Fqdn.Get(), fileName)
 		}
 
 	} else {
 		w.WriteHeader(503)
-		log.Printf("ERROR: No 'kernel version' set for node %s\n", node.Fqdn)
+		log.Printf("ERROR: No 'kernel version' set for node %s\n", node.Fqdn.Get())
 	}
 
 	return

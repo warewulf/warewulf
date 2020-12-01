@@ -1,14 +1,12 @@
 package response
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/vnfs"
 	"log"
 	"net/http"
 )
 
 func VnfsSend(w http.ResponseWriter, req *http.Request) {
-	config := config.New()
 
 	node, err := getSanity(req)
 	if err != nil {
@@ -17,18 +15,24 @@ func VnfsSend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if node.Vnfs != "" {
-		v := vnfs.New(node.Vnfs)
+	if node.Vnfs.Defined() == true {
 
-		err := sendFile(w, config.VnfsImage(v.NameClean()), node.Fqdn)
+		v, err := vnfs.Load(node.Vnfs.Get())
 		if err != nil {
-			log.Printf("ERROR: %s\n", err)
+			w.WriteHeader(503)
+			log.Printf("ERROR: Could not load VNFS: %s\n", node.Fqdn.Get())
+			return
+		}
+
+		err = sendFile(w, v.Image, node.Fqdn.Get())
+		if err != nil {
+			log.Printf("ERROR1: %s\n", err)
 		} else {
-			log.Printf("SEND:  %15s: %s\n", node.Fqdn, config.VnfsImage(v.NameClean()))
+			log.Printf("SEND:  %15s: %s\n", node.Fqdn.Get(), v.Image)
 		}
 	} else {
 		w.WriteHeader(503)
-		log.Printf("ERROR: No VNFS set for node %s\n", node.Fqdn)
+		log.Printf("ERROR: No VNFS set for node %s\n", node.Fqdn.Get())
 	}
 
 	return

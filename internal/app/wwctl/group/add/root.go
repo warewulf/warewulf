@@ -10,13 +10,12 @@ var (
 		RunE:				CobraRunE,
 		Args: 				cobra.MinimumNArgs(1),
 	}
-	SetVnfs string
-	SetKernel string
+	SetController string
 )
 
 func init() {
-	baseCmd.PersistentFlags().StringVarP(&SetVnfs, "vnfs", "V", "", "Set node Virtual Node File System (VNFS)")
-	baseCmd.PersistentFlags().StringVarP(&SetKernel, "kernel", "K", "", "Set Kernel version for nodes")
+	baseCmd.PersistentFlags().StringVarP(&SetController, "controller", "c", "default", "Controller to add group to")
+
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

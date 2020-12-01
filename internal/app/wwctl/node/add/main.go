@@ -1,6 +1,7 @@
 package add
 
 import (
+	"fmt"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
@@ -15,11 +16,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, a := range args {
-		err = nodeDB.AddNode(SetGroup, a)
+		err = nodeDB.AddNode(SetController, SetGroup, a)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			os.Exit(1)
 		}
+		fmt.Printf("Added node: %s\n", a)
 	}
 
 	nodeDB.Persist()

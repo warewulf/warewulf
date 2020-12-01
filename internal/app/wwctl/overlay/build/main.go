@@ -25,9 +25,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		for _, node := range nodes {
-			if SystemOverlay == true && node.SystemOverlay == args[0] {
+			if SystemOverlay == true && node.SystemOverlay.String() == args[0] {
 				updateNodes = append(updateNodes, node)
-			} else if node.RuntimeOverlay == args[0] {
+			} else if node.RuntimeOverlay.String() == args[0] {
 				updateNodes = append(updateNodes, node)
 			}
 		}
@@ -43,16 +43,16 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	wwlog.Printf(wwlog.DEBUG, "Checking on system overlay update\n")
 	if SystemOverlay == true || BuildAll == true {
 		wwlog.Printf(wwlog.INFO, "Updating System Overlays...\n")
-		err := overlay.SystemBuild(updateNodes, true)
+		err := overlay.BuildSystemOverlay(updateNodes)
 		if err != nil {
-			wwlog.Printf(wwlog.WARN, "Some system overlays failed to be generated\n")
+			wwlog.Printf(wwlog.WARN, "Some system overlays failed to be generated: %s\n", err)
 		}
 	}
 
 	wwlog.Printf(wwlog.DEBUG, "Checking on system overlay update\n")
 	if SystemOverlay == false || BuildAll == true {
 		wwlog.Printf(wwlog.INFO, "Updating Runtime Overlays...\n")
-		err := overlay.RuntimeBuild(updateNodes, true)
+		err := overlay.BuildRuntimeOverlay(updateNodes)
 		if err != nil {
 			wwlog.Printf(wwlog.WARN, "Some runtime overlays failed to be generated\n")
 		}

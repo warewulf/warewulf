@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 	"reflect"
+	"strings"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
@@ -33,9 +34,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 		}
 	} else {
-		fmt.Printf("%-22s %-16s %-30s %-30s %-16s\n", "GROUP NAME", "DOMAINNAME", "KERNEL VERSION", "VNFS IMAGE", "RUNTIME OVERLAY")
+		fmt.Printf("%-22s %-16s %-16s %s\n", "GROUP NAME", "DOMAINNAME", "CONTROLLER", "PROFILES")
 		for _, g := range groups {
-			fmt.Printf("%-22s %-16s %-30s %-30s %-16s\n", g.GroupName, g.DomainName, g.KernelVersion, g.Vnfs, g.RuntimeOverlay)
+			fmt.Printf("%-22s %-16s %-16s %s\n", g.Id, g.DomainName, g.Cid, strings.Join(g.Profiles, ","))
 		}
 	}
 

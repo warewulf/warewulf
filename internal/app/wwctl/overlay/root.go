@@ -10,7 +10,6 @@ import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/list"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/mkdir"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/show"
-
 	"github.com/spf13/cobra"
 )
 
@@ -35,7 +34,6 @@ func init() {
 	baseCmd.AddCommand(build.GetCommand())
 	baseCmd.AddCommand(imprt.GetCommand())
 	baseCmd.AddCommand(chmod.GetCommand())
-
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

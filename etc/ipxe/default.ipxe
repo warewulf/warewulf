@@ -6,7 +6,7 @@ echo Warewulf v4 now booting: {{.Fqdn}}
 echo
 echo
 
-set base http://{{.Ipaddr}}:{{.Port}}/
+set base http://{{.Ipaddr}}:{{.Port}}
 
 kernel ${base}/kernel/{{.Hwaddr}} {{.Kernelargs}}          || reboot
 initrd ${base}/vnfs/{{.Hwaddr}}                            || reboot

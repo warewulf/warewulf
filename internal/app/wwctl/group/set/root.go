@@ -15,12 +15,12 @@ var (
 	SetIpxe string
 	SetRuntimeOverlay string
 	SetSystemOverlay string
-	SetHostname string
 	SetClearNodes bool
-	SetIpmiIpaddr string
 	SetIpmiUsername string
 	SetIpmiPassword string
-
+	SetGroupAll bool
+	SetAddProfile []string
+	SetDelProfile []string
 )
 
 func init() {
@@ -30,11 +30,15 @@ func init() {
 	baseCmd.PersistentFlags().StringVarP(&SetIpxe, "ipxe", "P", "", "Set the node's iPXE template name")
 	baseCmd.PersistentFlags().StringVarP(&SetRuntimeOverlay, "runtime", "R", "", "Set the node's runtime overlay")
 	baseCmd.PersistentFlags().StringVarP(&SetSystemOverlay, "system", "S", "", "Set the node's system overlay")
-	baseCmd.PersistentFlags().StringVar(&SetIpmiIpaddr, "ipmi", "", "Set the node's IPMI address")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiUsername, "ipmiuser", "", "Set the node's IPMI username")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiPassword, "ipmipass", "", "Set the node's IPMI password")
 
+	baseCmd.PersistentFlags().StringSliceVarP(&SetAddProfile, "addprofile", "p", []string{}, "Add Profile(s) to group")
+	baseCmd.PersistentFlags().StringSliceVarP(&SetDelProfile, "delprofile", "r", []string{}, "Remove Profile(s) to group")
+
 	baseCmd.PersistentFlags().BoolVarP(&SetClearNodes, "clear", "c", false, "Clear node configurations when setting parent group")
+	baseCmd.PersistentFlags().BoolVarP(&SetGroupAll, "all", "a", false, "Set all nodes")
+
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

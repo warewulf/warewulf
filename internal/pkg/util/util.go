@@ -37,6 +37,8 @@ func DirModTime(path string) (time.Time, error) {
 }
 
 func PathIsNewer(source string, compare string) bool {
+	wwlog.Printf(wwlog.DEBUG, "Comparing times on paths: '%s' - '%s'\n", source, compare)
+
 	time1, err := DirModTime(source)
 	if err != nil {
 		wwlog.Printf(wwlog.DEBUG, "%s\n", err)
@@ -90,6 +92,9 @@ func CopyFile(source string, dest string) error {
 
 
 func IsDir(path string) (bool) {
+	if path == "" {
+		return false
+	}
 	if stat, err := os.Stat(path); err == nil && stat.IsDir() {
 		return true
 	}
@@ -97,6 +102,10 @@ func IsDir(path string) (bool) {
 }
 
 func IsFile(path string) (bool) {
+	if path == "" {
+		return false
+	}
+
 	if _, err := os.Stat(path); err == nil {
 		return true
 	}
@@ -181,4 +190,39 @@ func ShaSumFile(file string) (string, error) {
 	}
 
 	return fmt.Sprintf("%x", h.Sum(nil)), nil
+}
+
+
+func SliceRemoveElement(array []string, remove string) []string {
+	var ret []string
+
+	// Linear time, maintains order
+	for _, r := range array {
+		if r != remove {
+			ret = append(ret, r)
+		} else {
+			wwlog.Printf(wwlog.DEBUG, "Removing slice from array: %s\n", remove)
+		}
+	}
+
+	return ret
+}
+
+func SliceAddUniqueElement(array []string, add string) []string {
+	var ret []string
+	var found bool
+
+	//Linear time, appends
+	for _, r := range array {
+		ret = append(ret, r)
+		if r == add {
+			found = true
+		}
+	}
+
+	if found == false {
+		ret = append(ret, add)
+	}
+
+	return ret
 }

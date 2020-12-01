@@ -26,12 +26,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, g := range args {
-		err := nodeDB.DelGroup(g)
+		err := nodeDB.DelGroup(SetController, g)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 		} else {
 			for _, n := range nodes {
-				if n.GroupName == g {
+				if n.Gid.Get() == g {
 					numNodes ++
 				}
 			}
