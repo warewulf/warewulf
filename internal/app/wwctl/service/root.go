@@ -1,4 +1,4 @@
-package services
+package service
 
 import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/services/dhcp"
@@ -7,7 +7,7 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "services",
+		Use:   "service",
 		Short: "Initialize Warewulf services",
 		Long:  "Warewulf Initialization",
 	}
