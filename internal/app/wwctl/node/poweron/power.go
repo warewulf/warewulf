@@ -34,6 +34,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	for _, node := range nodeList {
 
+		var powerCmd power.PowerOnInterface
+
 		if node.IpmiIpaddr == "" {
 			wwlog.Printf(wwlog.ERROR, "%s: No IPMI IP address\n", node.HostName)
 			continue
@@ -46,7 +48,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			AuthType: "MD5",
 		}
 
-		out, err := ipmiCmd.PowerOn()
+		powerCmd = ipmiCmd
+
+		out, err := powerCmd.PowerOn()
 
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s: %s\n", node.HostName, out)

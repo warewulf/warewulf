@@ -1,0 +1,50 @@
+#!/bin/bash
+
+export PATH=/usr/bin:/bin:/usr/sbin:/sbin
+
+if [ ! -e /dev/ipmi0 ]; then
+    ipmi_dev=$(grep ipmidev /proc/devices | awk '{ print $1; }')
+    mknod -m 0666 /dev/ipmi0 c $ipmi_dev 0
+    ls -la /dev/ipmi0
+fi
+
+IP="{{.IpmiIpaddr}}"
+NETMASK="{{.NetDevs.eth0.Netmask}}"
+GATEWAY="{{.NetDevs.eth0.Gateway}}"
+USER="{{.IpmiUserName}}"
+PASS="{{.IpmiPassword}}"
+
+echo IP is $IP
+echo NETMASK is $NETMASK
+echo GATEWAY is $GATEWAY
+echo USER is $USER
+echo PASS is $PASS
+
+exit 0
+
+# Network
+ipmitool lan set 1 ipsrc static
+ipmitool lan set 1 ipaddr $IP
+ipmitool lan set 1 netmask $NETMASK
+
+# Authentication
+ipmitool lan set 1 auth user md5,password
+ipmitool lan set 1 auth operator md5,password
+ipmitool lan set 1 auth admin md5,password
+ipmitool user enable 1
+ipmitool user priv 1 4 1
+
+# Authentication (allow None)
+#ipmitool lan set 1 auth user none,md5,password
+#ipmitool lan set 1 auth operator none,md5,password
+#ipmitool lan set 1 auth admin none,md5,password
+#ipmitool user enable 1
+#ipmitool user priv 1 4 1
+
+# Serial Over LAN
+ipmitool sol set force-encryption true 1
+ipmitool sol set force-authentication true 1
+ipmitool sol set privilege-level user 1
+ipmitool sol set non-volatile-bit-rate 19.2 1
+ipmitool sol set volatile-bit-rate 19.2 1
+
