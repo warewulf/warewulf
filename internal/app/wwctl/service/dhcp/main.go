@@ -2,6 +2,7 @@ package dhcp
 
 import (
 	"fmt"
+	"github.com/brotherpowers/ipsubnet"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
@@ -16,6 +17,7 @@ type dhcpTemplate struct {
 	Ipaddr     string
 	RangeStart string
 	RangeEnd   string
+	Network    string
 	Netmask    string
 	Nodes      []node.NodeInfo
 }
@@ -49,9 +51,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		for _, address := range addrs {
 			if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 				if ipnet.IP.String() == controller.Ipaddr {
-					mask := ipnet.IP.DefaultMask()
+					m, _ := ipnet.Mask.Size()
+					sub := ipsubnet.SubnetCalculator(ipnet.IP.String(), m)
+
 					d.Ipaddr = ipnet.IP.String()
-					d.Netmask = fmt.Sprintf("%d.%d.%d.%d", mask[0], mask[1], mask[2], mask[3])
+					d.Network = sub.GetNetworkPortion()
+					d.Netmask = sub.GetSubnetMask()
 					d.RangeStart = controller.Services.Dhcp.RangeStart
 					d.RangeEnd = controller.Services.Dhcp.RangeEnd
 					configured = true
