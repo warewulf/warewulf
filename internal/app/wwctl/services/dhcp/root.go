@@ -11,10 +11,12 @@ var (
 		Long:  "DHCP Config",
 		RunE:  CobraRunE,
 	}
-	test bool
+	ShowConfig bool
 )
 
 func init() {
+	baseCmd.PersistentFlags().BoolVarP(&ShowConfig, "show", "s", false, "Show configuration rather than writing to files")
+
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
