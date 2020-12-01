@@ -7,6 +7,8 @@ import (
 	"github.com/spf13/cobra"
 	"net"
 	"os"
+	"path"
+	"strings"
 	"text/template"
 )
 
@@ -33,6 +35,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, controller := range controllers {
+		var templateFile string
+		var configWriter *os.File
 		var d dhcpTemplate
 		var configured bool
 
@@ -51,7 +55,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					d.RangeStart = controller.Services.Dhcp.RangeStart
 					d.RangeEnd = controller.Services.Dhcp.RangeEnd
 					configured = true
-					fmt.Printf("%#v\n", d)
 					break
 				}
 			}
@@ -82,20 +85,34 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			d.Nodes = append(d.Nodes, node)
 		}
 
-		tmpl, err := template.New("default-dhcpd.conf").ParseFiles("/etc/warewulf/dhcp/default-dhcpd.conf")
+		if controller.Services.Dhcp.Template == "" {
+			templateFile = "/etc/warewulf/dhcp/default-dhcpd.conf"
+		} else {
+			if strings.HasPrefix(controller.Services.Dhcp.Template, "/") {
+				templateFile = controller.Services.Dhcp.Template
+			} else {
+				templateFile = fmt.Sprintf("/etc/warewulf/dhcp/%s-dhcpd.conf", controller.Services.Dhcp.Template)
+			}
+		}
+
+		tmpl, err := template.New(path.Base(templateFile)).ParseFiles(templateFile)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			os.Exit(1)
 		}
 
-		//		w, err := os.OpenFile(controller.Services.Dhcp.ConfigFile, os.O_RDWR|os.O_CREATE, 0640)
-		//		if err != nil {
-		//			wwlog.Printf(wwlog.ERROR, "%s\n", err)
-		//			os.Exit(1)
-		//		}
-		//		defer w.Close()
+		if ShowConfig == true {
+			configWriter = os.Stdout
+		} else {
+			configWriter, err = os.OpenFile(controller.Services.Dhcp.ConfigFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0640)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+			defer configWriter.Close()
+		}
 
-		err = tmpl.Execute(os.Stdout, d)
+		err = tmpl.Execute(configWriter, d)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			os.Exit(1)
