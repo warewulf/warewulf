@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/brotherpowers/ipsubnet"
 	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 	"net"
@@ -122,6 +123,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			os.Exit(1)
 		}
+
+		util.ExecInteractive("/bin/sh", "-c", controller.Services.Dhcp.EnableCmd)
+		util.ExecInteractive("/bin/sh", "-c", controller.Services.Dhcp.RestartCmd)
 
 		// Just in case we get here, we've now finished the loop
 		break
