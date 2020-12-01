@@ -147,6 +147,7 @@ func (self *nodeYaml) FindAllControllers() ([]ControllerInfo, error) {
 
 		c.Id = controllername
 		c.Ipaddr = controller.Ipaddr
+		//TODO: Is there a better way to do this, cause EWWW!
 		c.Services = struct {
 			Warewulfd struct {
 				Port       string
@@ -157,6 +158,7 @@ func (self *nodeYaml) FindAllControllers() ([]ControllerInfo, error) {
 			}
 			Dhcp struct {
 				Enabled    bool
+				Template   string
 				RangeStart string
 				RangeEnd   string
 				ConfigFile string
