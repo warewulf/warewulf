@@ -3,10 +3,18 @@ package node
 import (
 	"github.com/hpcng/warewulf/internal/pkg/errors"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"strings"
 
 	"gopkg.in/yaml.v2"
 	"os"
 )
+
+func get2Set(input string) string {
+	if strings.ToUpper(input) == "UNDEF" {
+		return ""
+	}
+	return input
+}
 
 /****
  *
@@ -74,18 +82,18 @@ func (self *nodeYaml) NodeUpdate(node NodeInfo) error {
 		return errors.New("Nodename does not exist in group: " + nodeID)
 	}
 
-	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].Hostname = node.HostName.GetReal()
-	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].Vnfs = node.Vnfs.GetReal()
-	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].DomainName = node.DomainName.GetReal()
-	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].Ipxe = node.Ipxe.GetReal()
-	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].KernelVersion = node.KernelVersion.GetReal()
-	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].KernelArgs = node.KernelArgs.GetReal()
-	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].IpmiIpaddr = node.IpmiIpaddr.GetReal()
-	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].IpmiNetmask = node.IpmiNetmask.GetReal()
-	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].IpmiUserName = node.IpmiUserName.GetReal()
-	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].IpmiPassword = node.IpmiPassword.GetReal()
-	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].RuntimeOverlay = node.RuntimeOverlay.GetReal()
-	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].SystemOverlay = node.SystemOverlay.GetReal()
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].Hostname = get2Set(node.HostName.GetNode())
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].Vnfs = get2Set(node.Vnfs.GetNode())
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].DomainName = get2Set(node.DomainName.GetNode())
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].Ipxe = get2Set(node.Ipxe.GetNode())
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].KernelVersion = get2Set(node.KernelVersion.GetNode())
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].KernelArgs = get2Set(node.KernelArgs.GetNode())
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].IpmiIpaddr = get2Set(node.IpmiIpaddr.GetNode())
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].IpmiNetmask = get2Set(node.IpmiNetmask.GetNode())
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].IpmiUserName = get2Set(node.IpmiUserName.GetNode())
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].IpmiPassword = get2Set(node.IpmiPassword.GetNode())
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].RuntimeOverlay = get2Set(node.RuntimeOverlay.GetNode())
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].SystemOverlay = get2Set(node.SystemOverlay.GetNode())
 	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].Profiles = node.Profiles
 	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].NetDevs = node.NetDevs
 
@@ -135,8 +143,8 @@ func (self *nodeYaml) DelGroup(controllerID string, groupID string) error {
 }
 
 func (self *nodeYaml) GroupUpdate(group GroupInfo) error {
-	controllerID := group.Cid
-	groupID := group.Id
+	controllerID := group.Cid.Get()
+	groupID := group.Id.Get()
 
 	if _, ok := self.Controllers[controllerID]; !ok {
 		return errors.New("Controller does not exist: " + controllerID)
@@ -146,16 +154,16 @@ func (self *nodeYaml) GroupUpdate(group GroupInfo) error {
 		return errors.New("Group does not exist: " + groupID)
 	}
 
-	self.Controllers[controllerID].NodeGroups[groupID].DomainName = group.DomainName
-	self.Controllers[controllerID].NodeGroups[groupID].Vnfs = group.Vnfs
-	self.Controllers[controllerID].NodeGroups[groupID].KernelVersion = group.KernelVersion
-	self.Controllers[controllerID].NodeGroups[groupID].KernelArgs = group.KernelArgs
-	self.Controllers[controllerID].NodeGroups[groupID].Ipxe = group.Ipxe
-	self.Controllers[controllerID].NodeGroups[groupID].IpmiNetmask = group.IpmiNetmask
-	self.Controllers[controllerID].NodeGroups[groupID].IpmiUserName = group.IpmiUserName
-	self.Controllers[controllerID].NodeGroups[groupID].IpmiPassword = group.IpmiPassword
-	self.Controllers[controllerID].NodeGroups[groupID].RuntimeOverlay = group.RuntimeOverlay
-	self.Controllers[controllerID].NodeGroups[groupID].SystemOverlay = group.SystemOverlay
+	self.Controllers[controllerID].NodeGroups[groupID].DomainName = group.DomainName.Get()
+	self.Controllers[controllerID].NodeGroups[groupID].Vnfs = group.Vnfs.Get()
+	self.Controllers[controllerID].NodeGroups[groupID].KernelVersion = group.KernelVersion.Get()
+	self.Controllers[controllerID].NodeGroups[groupID].KernelArgs = group.KernelArgs.Get()
+	self.Controllers[controllerID].NodeGroups[groupID].Ipxe = group.Ipxe.Get()
+	self.Controllers[controllerID].NodeGroups[groupID].IpmiNetmask = group.IpmiNetmask.Get()
+	self.Controllers[controllerID].NodeGroups[groupID].IpmiUserName = group.IpmiUserName.Get()
+	self.Controllers[controllerID].NodeGroups[groupID].IpmiPassword = group.IpmiPassword.Get()
+	self.Controllers[controllerID].NodeGroups[groupID].RuntimeOverlay = group.RuntimeOverlay.Get()
+	self.Controllers[controllerID].NodeGroups[groupID].SystemOverlay = group.SystemOverlay.Get()
 	self.Controllers[controllerID].NodeGroups[groupID].Profiles = group.Profiles
 
 	return nil
@@ -207,31 +215,31 @@ func (self *nodeYaml) ControllerUpdate(controller ControllerInfo) error {
 	self.Controllers[controllerID].Comment = controller.Comment
 	self.Controllers[controllerID].Fqdn = controller.Fqdn
 
-	self.Controllers[controllerID].Services.Warewulfd.Port = controller.Services.Warewulfd.Port
+	self.Controllers[controllerID].Services.Warewulfd.Port = get2Set(controller.Services.Warewulfd.Port)
 	self.Controllers[controllerID].Services.Warewulfd.Secure = controller.Services.Warewulfd.Secure
-	self.Controllers[controllerID].Services.Warewulfd.StartCmd = controller.Services.Warewulfd.StartCmd
-	self.Controllers[controllerID].Services.Warewulfd.RestartCmd = controller.Services.Warewulfd.RestartCmd
-	self.Controllers[controllerID].Services.Warewulfd.EnableCmd = controller.Services.Warewulfd.EnableCmd
+	self.Controllers[controllerID].Services.Warewulfd.StartCmd = get2Set(controller.Services.Warewulfd.StartCmd)
+	self.Controllers[controllerID].Services.Warewulfd.RestartCmd = get2Set(controller.Services.Warewulfd.RestartCmd)
+	self.Controllers[controllerID].Services.Warewulfd.EnableCmd = get2Set(controller.Services.Warewulfd.EnableCmd)
 
 	self.Controllers[controllerID].Services.Dhcp.Enabled = controller.Services.Dhcp.Enabled
-	self.Controllers[controllerID].Services.Dhcp.ConfigFile = controller.Services.Dhcp.ConfigFile
-	self.Controllers[controllerID].Services.Dhcp.RangeStart = controller.Services.Dhcp.RangeStart
-	self.Controllers[controllerID].Services.Dhcp.RangeEnd = controller.Services.Dhcp.RangeEnd
-	self.Controllers[controllerID].Services.Dhcp.StartCmd = controller.Services.Dhcp.StartCmd
-	self.Controllers[controllerID].Services.Dhcp.RestartCmd = controller.Services.Dhcp.RestartCmd
-	self.Controllers[controllerID].Services.Dhcp.EnableCmd = controller.Services.Dhcp.EnableCmd
+	self.Controllers[controllerID].Services.Dhcp.ConfigFile = get2Set(controller.Services.Dhcp.ConfigFile)
+	self.Controllers[controllerID].Services.Dhcp.RangeStart = get2Set(controller.Services.Dhcp.RangeStart)
+	self.Controllers[controllerID].Services.Dhcp.RangeEnd = get2Set(controller.Services.Dhcp.RangeEnd)
+	self.Controllers[controllerID].Services.Dhcp.StartCmd = get2Set(controller.Services.Dhcp.StartCmd)
+	self.Controllers[controllerID].Services.Dhcp.RestartCmd = get2Set(controller.Services.Dhcp.RestartCmd)
+	self.Controllers[controllerID].Services.Dhcp.EnableCmd = get2Set(controller.Services.Dhcp.EnableCmd)
 
 	self.Controllers[controllerID].Services.Nfs.Enabled = controller.Services.Nfs.Enabled
 	self.Controllers[controllerID].Services.Nfs.Exports = controller.Services.Nfs.Exports
-	self.Controllers[controllerID].Services.Nfs.StartCmd = controller.Services.Nfs.StartCmd
-	self.Controllers[controllerID].Services.Nfs.RestartCmd = controller.Services.Nfs.RestartCmd
-	self.Controllers[controllerID].Services.Nfs.EnableCmd = controller.Services.Nfs.EnableCmd
+	self.Controllers[controllerID].Services.Nfs.StartCmd = get2Set(controller.Services.Nfs.StartCmd)
+	self.Controllers[controllerID].Services.Nfs.RestartCmd = get2Set(controller.Services.Nfs.RestartCmd)
+	self.Controllers[controllerID].Services.Nfs.EnableCmd = get2Set(controller.Services.Nfs.EnableCmd)
 
 	self.Controllers[controllerID].Services.Tftp.Enabled = controller.Services.Tftp.Enabled
-	self.Controllers[controllerID].Services.Tftp.TftpRoot = controller.Services.Tftp.TftpRoot
-	self.Controllers[controllerID].Services.Tftp.StartCmd = controller.Services.Tftp.StartCmd
-	self.Controllers[controllerID].Services.Tftp.RestartCmd = controller.Services.Tftp.RestartCmd
-	self.Controllers[controllerID].Services.Tftp.EnableCmd = controller.Services.Tftp.EnableCmd
+	self.Controllers[controllerID].Services.Tftp.TftpRoot = get2Set(controller.Services.Tftp.TftpRoot)
+	self.Controllers[controllerID].Services.Tftp.StartCmd = get2Set(controller.Services.Tftp.StartCmd)
+	self.Controllers[controllerID].Services.Tftp.RestartCmd = get2Set(controller.Services.Tftp.RestartCmd)
+	self.Controllers[controllerID].Services.Tftp.EnableCmd = get2Set(controller.Services.Tftp.EnableCmd)
 
 	return nil
 }
@@ -274,15 +282,15 @@ func (self *nodeYaml) ProfileUpdate(profile ProfileInfo) error {
 		return errors.New("Group '" + profileID + "' was not found")
 	}
 
-	self.NodeProfiles[profileID].DomainName = profile.DomainName
-	self.NodeProfiles[profileID].Vnfs = profile.Vnfs
-	self.NodeProfiles[profileID].Ipxe = profile.Ipxe
-	self.NodeProfiles[profileID].KernelVersion = profile.KernelVersion
-	self.NodeProfiles[profileID].IpmiNetmask = profile.IpmiNetmask
-	self.NodeProfiles[profileID].IpmiUserName = profile.IpmiUserName
-	self.NodeProfiles[profileID].IpmiPassword = profile.IpmiPassword
-	self.NodeProfiles[profileID].RuntimeOverlay = profile.RuntimeOverlay
-	self.NodeProfiles[profileID].SystemOverlay = profile.SystemOverlay
+	self.NodeProfiles[profileID].DomainName = get2Set(profile.DomainName)
+	self.NodeProfiles[profileID].Vnfs = get2Set(profile.Vnfs)
+	self.NodeProfiles[profileID].Ipxe = get2Set(profile.Ipxe)
+	self.NodeProfiles[profileID].KernelVersion = get2Set(profile.KernelVersion)
+	self.NodeProfiles[profileID].IpmiNetmask = get2Set(profile.IpmiNetmask)
+	self.NodeProfiles[profileID].IpmiUserName = get2Set(profile.IpmiUserName)
+	self.NodeProfiles[profileID].IpmiPassword = get2Set(profile.IpmiPassword)
+	self.NodeProfiles[profileID].RuntimeOverlay = get2Set(profile.RuntimeOverlay)
+	self.NodeProfiles[profileID].SystemOverlay = get2Set(profile.SystemOverlay)
 
 	return nil
 }

@@ -41,21 +41,21 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 					continue
 				}
 
-				n.Id.Set(nodename)
-				n.Gid.Set(groupname)
-				n.Cid.Set(controllername)
-				n.HostName.Set(node.Hostname)
-				n.IpmiIpaddr.Set(node.IpmiIpaddr)
-				n.IpmiNetmask.Set(node.IpmiNetmask)
-				n.DomainName.Set(node.DomainName)
-				n.Vnfs.Set(node.Vnfs)
-				n.KernelVersion.Set(node.KernelVersion)
-				n.KernelArgs.Set(node.KernelArgs)
-				n.Ipxe.Set(node.Ipxe)
-				n.IpmiUserName.Set(node.IpmiUserName)
-				n.IpmiPassword.Set(node.IpmiPassword)
-				n.SystemOverlay.Set(node.SystemOverlay)
-				n.RuntimeOverlay.Set(node.RuntimeOverlay)
+				n.Id.SetNode(nodename)
+				n.Gid.SetNode(groupname)
+				n.Cid.SetNode(controllername)
+				n.HostName.SetNode(node.Hostname)
+				n.IpmiIpaddr.SetNode(node.IpmiIpaddr)
+				n.IpmiNetmask.SetNode(node.IpmiNetmask)
+				n.DomainName.SetNode(node.DomainName)
+				n.Vnfs.SetNode(node.Vnfs)
+				n.KernelVersion.SetNode(node.KernelVersion)
+				n.KernelArgs.SetNode(node.KernelArgs)
+				n.Ipxe.SetNode(node.Ipxe)
+				n.IpmiUserName.SetNode(node.IpmiUserName)
+				n.IpmiPassword.SetNode(node.IpmiPassword)
+				n.SystemOverlay.SetNode(node.SystemOverlay)
+				n.RuntimeOverlay.SetNode(node.RuntimeOverlay)
 
 				n.DomainName.SetGroup(group.DomainName)
 				n.Vnfs.SetGroup(group.Vnfs)
@@ -98,9 +98,9 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				}
 
 				if n.DomainName.Defined() == true {
-					n.Fqdn.Set(node.Hostname + "." + n.DomainName.Get())
+					n.Fqdn.SetNode(node.Hostname + "." + n.DomainName.Get())
 				} else {
-					n.Fqdn.Set(node.Hostname)
+					n.Fqdn.SetNode(node.Hostname)
 				}
 
 				n.NetDevs = node.NetDevs
@@ -120,20 +120,38 @@ func (self *nodeYaml) FindAllGroups() ([]GroupInfo, error) {
 		for groupname, group := range controller.NodeGroups {
 			var g GroupInfo
 
-			g.Id = groupname
-			g.Cid = controllername
-			g.DomainName = group.DomainName
-			g.Comment = group.Comment
-			g.Vnfs = group.Vnfs
-			g.KernelVersion = group.KernelVersion
-			g.KernelArgs = group.KernelArgs
-			g.IpmiNetmask = group.IpmiNetmask
-			g.IpmiPassword = group.IpmiPassword
-			g.IpmiUserName = group.IpmiUserName
-			g.SystemOverlay = group.SystemOverlay
-			g.RuntimeOverlay = group.RuntimeOverlay
+			g.Id.SetGroup(groupname)
+			g.Cid.SetGroup(controllername)
+			g.DomainName.SetGroup(group.DomainName)
+			g.Comment.SetGroup(group.Comment)
+			g.Vnfs.SetGroup(group.Vnfs)
+			g.KernelVersion.SetGroup(group.KernelVersion)
+			g.KernelArgs.SetGroup(group.KernelArgs)
+			g.IpmiNetmask.SetGroup(group.IpmiNetmask)
+			g.IpmiPassword.SetGroup(group.IpmiPassword)
+			g.IpmiUserName.SetGroup(group.IpmiUserName)
+			g.SystemOverlay.SetGroup(group.SystemOverlay)
+			g.RuntimeOverlay.SetGroup(group.RuntimeOverlay)
 
 			g.Profiles = group.Profiles
+
+			for _, p := range group.Profiles {
+				if _, ok := self.NodeProfiles[p]; !ok {
+					wwlog.Printf(wwlog.WARN, "Profile not found for group '%s': %s\n", groupname, p)
+					continue
+				}
+
+				g.DomainName.SetProfile(self.NodeProfiles[p].DomainName)
+				g.Vnfs.SetProfile(self.NodeProfiles[p].Vnfs)
+				g.KernelVersion.SetProfile(self.NodeProfiles[p].KernelVersion)
+				g.KernelArgs.SetProfile(self.NodeProfiles[p].KernelArgs)
+				g.Ipxe.SetProfile(self.NodeProfiles[p].Ipxe)
+				g.IpmiNetmask.SetProfile(self.NodeProfiles[p].IpmiNetmask)
+				g.IpmiUserName.SetProfile(self.NodeProfiles[p].IpmiUserName)
+				g.IpmiPassword.SetProfile(self.NodeProfiles[p].IpmiPassword)
+				g.SystemOverlay.SetProfile(self.NodeProfiles[p].SystemOverlay)
+				g.RuntimeOverlay.SetProfile(self.NodeProfiles[p].RuntimeOverlay)
+			}
 
 			// TODO: Validate or die on all inputs
 

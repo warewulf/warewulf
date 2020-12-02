@@ -4,64 +4,64 @@ import (
 	"strings"
 )
 
-func (self *NodeInfoEntry) String() string {
-	if self.value != "" {
-		return self.value
+func (self *Entry) Print() string {
+	if self.Node != "" {
+		return self.Node
 	}
-	if self.group != "" {
-		return self.group
+	if self.Group != "" {
+		return self.Group
 	}
-	if self.profile != "" {
-		return self.profile
+	if self.Profile != "" {
+		return self.Profile
 	}
-	if self.controller != "" {
-		return self.controller
+	if self.Controller != "" {
+		return self.Controller
 	}
-	if self.def != "" {
-		return self.def
+	if self.Default != "" {
+		return self.Default
 	}
 	return "--"
 }
 
-func (self *NodeInfoEntry) Source() string {
-	if self.value != "" {
+func (self *Entry) Source() string {
+	if self.Node != "" {
 		return "node"
 	}
-	if self.group != "" {
+	if self.Group != "" {
 		return "group"
 	}
-	if self.profile != "" {
+	if self.Profile != "" {
 		return "profile"
 	}
-	if self.controller != "" {
+	if self.Controller != "" {
 		return "controller"
 	}
-	if self.def != "" {
+	if self.Default != "" {
 		return "default"
 	}
 	return ""
 }
 
-func (self *NodeInfoEntry) Get() string {
-	if self.value != "" {
-		return self.value
+func (self *Entry) Get() string {
+	if self.Node != "" {
+		return self.Node
 	}
-	if self.group != "" {
-		return self.group
+	if self.Group != "" {
+		return self.Group
 	}
-	if self.profile != "" {
-		return self.profile
+	if self.Profile != "" {
+		return self.Profile
 	}
-	if self.controller != "" {
-		return self.controller
+	if self.Controller != "" {
+		return self.Controller
 	}
-	if self.def != "" {
-		return self.def
+	if self.Default != "" {
+		return self.Default
 	}
 	return ""
 }
 
-func (self *NodeInfoEntry) Defined() bool {
+func (self *Entry) Defined() bool {
 	if self.Get() == "" {
 		return false
 	}
@@ -69,47 +69,67 @@ func (self *NodeInfoEntry) Defined() bool {
 	return true
 }
 
-func (self *NodeInfoEntry) SetDefault(value string) {
-	if value == "" {
-		return
-	}
-	self.def = value
-}
-
-func (self *NodeInfoEntry) SetGroup(value string) {
-	if value == "" {
-		return
-	}
-	self.group = value
-}
-
-func (self *NodeInfoEntry) SetProfile(value string) {
-	if value == "" {
-		return
-	}
-	self.profile = value
-}
-
-func (self *NodeInfoEntry) SetController(value string) {
-	if value == "" {
-		return
-	}
-	self.controller = value
-}
-
-func (self *NodeInfoEntry) Set(value string) {
+func (self *Entry) SetDefault(value string) {
 	if value == "" {
 		return
 	} else if strings.ToUpper(value) == "UNDEF" {
 		value = ""
 	}
-	self.value = value
+	self.Default = value
 }
 
-func (self *NodeInfoEntry) Unset() {
-	self.value = ""
+func (self *Entry) SetGroup(value string) {
+	if value == "" {
+		return
+	} else if strings.ToUpper(value) == "UNDEF" {
+		value = ""
+	}
+	self.Group = value
 }
 
-func (self *NodeInfoEntry) GetReal() string {
-	return self.value
+func (self *Entry) SetProfile(value string) {
+	if value == "" {
+		return
+	} else if strings.ToUpper(value) == "UNDEF" {
+		value = ""
+	}
+	self.Profile = value
+}
+
+func (self *Entry) SetController(value string) {
+	if value == "" {
+		return
+	} else if strings.ToUpper(value) == "UNDEF" {
+		value = ""
+	}
+	self.Controller = value
+}
+
+func (self *Entry) SetNode(value string) {
+	if value == "" {
+		return
+	} else if strings.ToUpper(value) == "UNDEF" {
+		value = ""
+	}
+	self.Node = value
+}
+
+func (self *Entry) GetNode() string {
+	return self.Node
+}
+
+func (self *Entry) GetGroup() string {
+	return self.Group
+}
+
+func (self *Entry) GetController() string {
+	return self.Controller
+}
+
+func (self *Entry) GetProfile() string {
+	return self.Profile
+}
+
+func (self *Entry) GetDefault() string {
+	return self.Default
 }
