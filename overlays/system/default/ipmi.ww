@@ -8,11 +8,11 @@ if [ ! -e /dev/ipmi0 ]; then
     ls -la /dev/ipmi0
 fi
 
-IP="{{.IpmiIpaddr}}"
-NETMASK="{{.NetDevs.eth0.Netmask}}"
-GATEWAY="{{.NetDevs.eth0.Gateway}}"
-USER="{{.IpmiUserName}}"
-PASS="{{.IpmiPassword}}"
+IP="{{.Self.IpmiIpaddr}}"
+NETMASK="{{.Self.IpmiNetmask}}"
+GATEWAY="{{.Self.NetDevs.eth0.Gateway}}"
+USER="{{.Self.IpmiUserName}}"
+PASS="{{.Self.IpmiPassword}}"
 
 echo IP is $IP
 echo NETMASK is $NETMASK

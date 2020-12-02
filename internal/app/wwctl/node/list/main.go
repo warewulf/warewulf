@@ -9,8 +9,6 @@ import (
 	"strings"
 )
 
-
-
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var err error
 	var nodes []node.NodeInfo
@@ -31,7 +29,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-
 	if ShowAll == true {
 		for _, node := range nodes {
 			fmt.Printf("################################################################################\n")
@@ -47,23 +44,24 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "KernelArgs", node.KernelArgs.Source(), node.KernelArgs.String())
 			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "RuntimeOverlay", node.RuntimeOverlay.Source(), node.RuntimeOverlay.String())
 			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "SystemOverlay", node.SystemOverlay.Source(), node.SystemOverlay.String())
-			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "IpmiUserName", node.IpmiUserName.Source(), node.IpmiUserName.String())
-			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "IpmiIpaddr", node.IpmiIpaddr.Source(), node.IpmiIpaddr.String())
 			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "Ipxe", node.Ipxe.Source(), node.Ipxe.String())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "IpmiIpaddr", node.IpmiIpaddr.Source(), node.IpmiIpaddr.String())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "IpmiNetmask", node.IpmiNetmask.Source(), node.IpmiNetmask.String())
+			fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), "IpmiUserName", node.IpmiUserName.Source(), node.IpmiUserName.String())
 
 			for name, netdev := range node.NetDevs {
-				fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), name +":IPADDR", "node", netdev.Ipaddr)
-				fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), name +":NETMASK", "node", netdev.Netmask)
-				fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), name +":GATEWAY", "node", netdev.Gateway)
-				fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), name +":HWADDR", "node", netdev.Hwaddr)
+				fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), name+":IPADDR", "node", netdev.Ipaddr)
+				fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), name+":NETMASK", "node", netdev.Netmask)
+				fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), name+":GATEWAY", "node", netdev.Gateway)
+				fmt.Printf("%-20s %-18s %8s: %s\n", node.Fqdn.Get(), name+":HWADDR", "node", netdev.Hwaddr)
 			}
 
 			//			v := reflect.ValueOf(node)
-//			typeOfS := v.Type()
-//			for i := 0; i< v.NumField(); i++ {
-//				//TODO: Fix for NetDevs and Interface should print Fprint() method
-//				fmt.Printf("%-25s %s = %#v\n", node.Fqdn.Get(), typeOfS.Field(i).Name, v.Field(i).Interface())
-//			}
+			//			typeOfS := v.Type()
+			//			for i := 0; i< v.NumField(); i++ {
+			//				//TODO: Fix for NetDevs and Interface should print Fprint() method
+			//				fmt.Printf("%-25s %s = %#v\n", node.Fqdn.Get(), typeOfS.Field(i).Name, v.Field(i).Interface())
+			//			}
 		}
 
 	} else if ShowNet == true {
@@ -93,7 +91,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Println(strings.Repeat("=", 120))
 
 		for _, node := range nodes {
-			fmt.Printf("%-22s %-12s %-26s %-35s %s\n", node.Fqdn.Get(), node.Gid.String(), node.KernelVersion.String(), node.Vnfs.String(), node.SystemOverlay.String() +"/"+ node.RuntimeOverlay.String())
+			fmt.Printf("%-22s %-12s %-26s %-35s %s\n", node.Fqdn.Get(), node.Gid.String(), node.KernelVersion.String(), node.Vnfs.String(), node.SystemOverlay.String()+"/"+node.RuntimeOverlay.String())
 		}
 
 	} else {
@@ -105,7 +103,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 	}
-
 
 	return nil
 }

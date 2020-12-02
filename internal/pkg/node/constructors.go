@@ -46,6 +46,7 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.Cid.Set(controllername)
 				n.HostName.Set(node.Hostname)
 				n.IpmiIpaddr.Set(node.IpmiIpaddr)
+				n.IpmiNetmask.Set(node.IpmiNetmask)
 				n.DomainName.Set(node.DomainName)
 				n.Vnfs.Set(node.Vnfs)
 				n.KernelVersion.Set(node.KernelVersion)
@@ -61,6 +62,7 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.KernelVersion.SetGroup(group.KernelVersion)
 				n.KernelArgs.SetGroup(group.KernelArgs)
 				n.Ipxe.SetGroup(group.Ipxe)
+				n.IpmiNetmask.SetGroup(group.IpmiNetmask)
 				n.IpmiUserName.SetGroup(group.IpmiUserName)
 				n.IpmiPassword.SetGroup(group.IpmiPassword)
 				n.SystemOverlay.SetGroup(group.SystemOverlay)
@@ -88,6 +90,7 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 					n.KernelVersion.SetProfile(self.NodeProfiles[p].KernelVersion)
 					n.KernelArgs.SetProfile(self.NodeProfiles[p].KernelArgs)
 					n.Ipxe.SetProfile(self.NodeProfiles[p].Ipxe)
+					n.IpmiNetmask.SetProfile(self.NodeProfiles[p].IpmiNetmask)
 					n.IpmiUserName.SetProfile(self.NodeProfiles[p].IpmiUserName)
 					n.IpmiPassword.SetProfile(self.NodeProfiles[p].IpmiPassword)
 					n.SystemOverlay.SetProfile(self.NodeProfiles[p].SystemOverlay)
@@ -124,6 +127,7 @@ func (self *nodeYaml) FindAllGroups() ([]GroupInfo, error) {
 			g.Vnfs = group.Vnfs
 			g.KernelVersion = group.KernelVersion
 			g.KernelArgs = group.KernelArgs
+			g.IpmiNetmask = group.IpmiNetmask
 			g.IpmiPassword = group.IpmiPassword
 			g.IpmiUserName = group.IpmiUserName
 			g.SystemOverlay = group.SystemOverlay
@@ -214,6 +218,7 @@ func (self *nodeYaml) FindAllProfiles() ([]ProfileInfo, error) {
 		p.Ipxe = profile.Ipxe
 		p.KernelVersion = profile.KernelVersion
 		p.KernelArgs = profile.KernelArgs
+		p.IpmiNetmask = profile.IpmiNetmask
 		p.IpmiUserName = profile.IpmiUserName
 		p.IpmiPassword = profile.IpmiPassword
 		p.DomainName = profile.DomainName

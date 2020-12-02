@@ -4,31 +4,32 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "set",
-		Short:              "Set node configurations",
-		Long:               "Set node configurations ",
-		RunE:				CobraRunE,
+		Use:   "set",
+		Short: "Set node configurations",
+		Long:  "Set node configurations ",
+		RunE:  CobraRunE,
 	}
-	SetVnfs string
-	SetKernel string
-	SetNetDev string
-	SetIpaddr string
-	SetNetmask string
-	SetGateway string
-	SetHwaddr string
-	SetNetDevDel bool
-	SetDomainName string
-	SetIpxe string
+	SetVnfs           string
+	SetKernel         string
+	SetNetDev         string
+	SetIpaddr         string
+	SetNetmask        string
+	SetGateway        string
+	SetHwaddr         string
+	SetNetDevDel      bool
+	SetDomainName     string
+	SetIpxe           string
 	SetRuntimeOverlay string
-	SetSystemOverlay string
-	SetHostname string
-	SetIpmiIpaddr string
-	SetIpmiUsername string
-	SetIpmiPassword string
-	SetNodeAll bool
-	SetYes bool
-	SetAddProfile []string
-	SetDelProfile []string
+	SetSystemOverlay  string
+	SetHostname       string
+	SetIpmiIpaddr     string
+	SetIpmiNetmask    string
+	SetIpmiUsername   string
+	SetIpmiPassword   string
+	SetNodeAll        bool
+	SetYes            bool
+	SetAddProfile     []string
+	SetDelProfile     []string
 )
 
 func init() {
@@ -39,7 +40,8 @@ func init() {
 	baseCmd.PersistentFlags().StringVarP(&SetRuntimeOverlay, "runtime", "R", "", "Set the node's runtime overlay")
 	baseCmd.PersistentFlags().StringVarP(&SetSystemOverlay, "system", "S", "", "Set the node's system overlay")
 	baseCmd.PersistentFlags().StringVarP(&SetHostname, "hostname", "N", "", "Set the node's hostname")
-	baseCmd.PersistentFlags().StringVar(&SetIpmiIpaddr, "ipmi", "", "Set the node's IPMI address")
+	baseCmd.PersistentFlags().StringVar(&SetIpmiIpaddr, "ipmi", "", "Set the node's IPMI IP address")
+	baseCmd.PersistentFlags().StringVar(&SetIpmiNetmask, "ipminetmask", "", "Set the node's IPMI netmask")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiUsername, "ipmiuser", "", "Set the node's IPMI username")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiPassword, "ipmipass", "", "Set the node's IPMI password")
 
