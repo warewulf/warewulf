@@ -6,6 +6,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -28,6 +29,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.ERROR, "Cloud not get nodeList: %s\n", err)
 		os.Exit(1)
 	}
+
+	sort.Slice(nodes, func(i, j int) bool {
+		if nodes[i].Gid.Get() < nodes[j].Gid.Get() {
+			return true
+		} else if nodes[i].Gid.Get() == nodes[j].Gid.Get() {
+			if nodes[i].Id.Get() < nodes[j].Id.Get() {
+				return true
+			}
+		}
+		return false
+	})
 
 	if ShowAll == true {
 		for _, node := range nodes {
@@ -95,11 +107,19 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 	} else {
-		fmt.Printf("%-22s %-30s %s\n", "NODE NAME", "VNFS", "PROFILES")
-		fmt.Println(strings.Repeat("=", 80))
+		fmt.Printf("%-22s: %-25s %s\n", "NODE NAME", "PROFILES", "NETDEVS")
 
 		for _, node := range nodes {
-			fmt.Printf("%-22s %-30s %s\n", node.Fqdn.Get(), node.Vnfs.Print(), strings.Join(append(node.GroupProfiles, node.Profiles...), ","))
+			var netdevs []string
+			if len(node.NetDevs) > 0 {
+				for name, dev := range node.NetDevs {
+					netdevs = append(netdevs, fmt.Sprintf("%s[%s/%s]", name, dev.Ipaddr, dev.Netmask))
+				}
+			}
+			sort.Strings(netdevs)
+
+			allProfiles := append(node.GroupProfiles, node.Profiles...)
+			fmt.Printf("%-22s: %-25s %s\n", node.Fqdn.Get(), strings.Join(allProfiles, ","), strings.Join(netdevs, ", "))
 		}
 
 	}
