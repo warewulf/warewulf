@@ -70,7 +70,7 @@ func (self *nodeYaml) NodeUpdate(node NodeInfo) error {
 		return errors.New("Group does not exist: " + groupID)
 	}
 
-	if _, ok := self.Controllers[controllerID].NodeGroups[groupID].Nodes[groupID]; !ok {
+	if _, ok := self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID]; !ok {
 		return errors.New("Nodename does not exist in group: " + nodeID)
 	}
 
