@@ -7,7 +7,6 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 	"os"
-	"reflect"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
@@ -23,15 +22,35 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-
 	if ShowAll == true {
-		for _, controller := range controllers {
-			v := reflect.ValueOf(controller)
-			typeOfS := v.Type()
+		for _, c := range controllers {
 			fmt.Printf("################################################################################\n")
-			for i := 0; i< v.NumField(); i++ {
-				fmt.Printf("%-25s %s = %v\n", controller.Id, typeOfS.Field(i).Name, v.Field(i).Interface())
+			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "", "IP Address", c.Ipaddr)
+			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "", "Domain Name", c.DomainName)
+			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "", "FQDN", c.Fqdn)
+			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "", "Comment", c.Comment)
+			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "Warewulf", "Port", c.Services.Warewulfd.Port)
+			fmt.Printf("%-15s %15s : %s = %t\n", c.Id, "Warewulf", "Secure", c.Services.Warewulfd.Secure)
+			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "Warewulf", "Enable CMD", c.Services.Warewulfd.EnableCmd)
+			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "Warewulf", "Restart CMD", c.Services.Warewulfd.RestartCmd)
+			fmt.Printf("%-15s %15s : %s = %t\n", c.Id, "DHCPD", "Enabled", c.Services.Dhcp.Enabled)
+			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "DHCPD", "Template", c.Services.Dhcp.Template)
+			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "DHCPD", "ConfigFile", c.Services.Dhcp.ConfigFile)
+			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "DHCPD", "RangeStart", c.Services.Dhcp.RangeStart)
+			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "DHCPD", "RangeEnd", c.Services.Dhcp.RangeEnd)
+			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "DHCPD", "Enable CMD", c.Services.Dhcp.EnableCmd)
+			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "DHCPD", "Restart CMD", c.Services.Dhcp.RestartCmd)
+			fmt.Printf("%-15s %15s : %s = %t\n", c.Id, "TFTP", "Enabled", c.Services.Tftp.Enabled)
+			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "TFTP", "TftpRoot", c.Services.Tftp.TftpRoot)
+			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "TFTP", "Enable CMD", c.Services.Tftp.EnableCmd)
+			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "TFTP", "Restart CMD", c.Services.Tftp.RestartCmd)
+			fmt.Printf("%-15s %15s : %s = %t\n", c.Id, "NFS", "Enabled", c.Services.Nfs.Enabled)
+			for _, e := range c.Services.Nfs.Exports {
+				fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "NFS", "Exports", e)
 			}
+			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "NFS", "Enable CMD", c.Services.Nfs.EnableCmd)
+			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "NFS", "Restart CMD", c.Services.Nfs.RestartCmd)
+
 		}
 	} else {
 		fmt.Printf("%-22s\n", "CONTROLLER NAME")
@@ -39,7 +58,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			fmt.Printf("%-22s\n", c.Id)
 		}
 	}
-
 
 	return nil
 }

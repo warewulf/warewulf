@@ -59,6 +59,26 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	for _, c := range controllers {
 
+		if SetComment != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Controller: %s, Setting Comment: %s\n", c.Id, SetComment)
+
+			c.Comment = SetComment
+			err := nodeDB.ControllerUpdate(c)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
+		if SetFqdn != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Controller: %s, Setting FQDN: %s\n", c.Id, SetFqdn)
+
+			c.Fqdn = SetFqdn
+			err := nodeDB.ControllerUpdate(c)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
 		if SetIpaddr != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Controller: %s, Setting IP Addr to: %s\n", c.Id, SetIpaddr)
 

@@ -147,11 +147,14 @@ func (self *nodeYaml) FindAllControllers() ([]ControllerInfo, error) {
 
 		c.Id = controllername
 		c.Ipaddr = controller.Ipaddr
+		c.Comment = controller.Comment
+		c.Fqdn = controller.Fqdn
+
 		//TODO: Is there a better way to do this, cause EWWW!
 		c.Services = struct {
 			Warewulfd struct {
 				Port       string
-				Secure     string
+				Secure     bool
 				StartCmd   string
 				RestartCmd string
 				EnableCmd  string
@@ -181,6 +184,16 @@ func (self *nodeYaml) FindAllControllers() ([]ControllerInfo, error) {
 				EnableCmd  string
 			}
 		}(controller.Services)
+
+		// Validations //
+
+		if c.Ipaddr == "" {
+			wwlog.Printf(wwlog.WARN, "Controller IP address is unset: %s\n", c.Id)
+		}
+
+		if c.Services.Warewulfd.Port == "" {
+			c.Services.Warewulfd.Port = "987"
+		}
 
 		// TODO: Validate or die on all inputs
 

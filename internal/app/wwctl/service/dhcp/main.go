@@ -24,7 +24,10 @@ type dhcpTemplate struct {
 }
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
+	return ConfigureDHCP()
+}
 
+func ConfigureDHCP() error {
 	nodeDB, err := node.New()
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
@@ -39,7 +42,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	for _, controller := range controllers {
 		var templateFile string
-		var configWriter *os.File
 		var d dhcpTemplate
 		var configured bool
 
@@ -64,6 +66,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					break
 				}
 			}
+		}
+
+		hostname, err := os.Hostname()
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "Could not obtain system's hostname\n")
+			os.Exit(1)
+		}
+		if hostname != controller.Fqdn {
+			wwlog.Printf(wwlog.WARN, "The system hostname does not match Warewulf config: %s != %s\n", hostname, controller.Fqdn)
 		}
 
 		if configured == false {
@@ -107,25 +118,32 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			os.Exit(1)
 		}
 
-		if ShowConfig == true {
-			configWriter = os.Stdout
-		} else {
-			configWriter, err = os.OpenFile(controller.Services.Dhcp.ConfigFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0640)
+		if DoConfig == true {
+			fmt.Printf("Writing the DHCP configuration file\n")
+			configWriter, err := os.OpenFile(controller.Services.Dhcp.ConfigFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0640)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
 			}
 			defer configWriter.Close()
-		}
+			err = tmpl.Execute(configWriter, d)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
 
-		err = tmpl.Execute(configWriter, d)
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "%s\n", err)
-			os.Exit(1)
-		}
+			fmt.Printf("Enabling and restarting the DHCP services\n")
+			util.ExecInteractive("/bin/sh", "-c", controller.Services.Dhcp.EnableCmd)
+			util.ExecInteractive("/bin/sh", "-c", controller.Services.Dhcp.RestartCmd)
 
-		util.ExecInteractive("/bin/sh", "-c", controller.Services.Dhcp.EnableCmd)
-		util.ExecInteractive("/bin/sh", "-c", controller.Services.Dhcp.RestartCmd)
+		} else {
+			err = tmpl.Execute(os.Stdout, d)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+
+		}
 
 		// Just in case we get here, we've now finished the loop
 		break
