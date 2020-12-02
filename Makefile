@@ -48,7 +48,7 @@ files: all
 	install -d -m 0755 /etc/warewulf/
 	install -d -m 0755 /etc/warewulf/ipxe
 	install -d -m 0755 /var/lib/tftpboot/warewulf/ipxe/
-	cp -r etc* /etc/warewulf/
+	cp -r etc/* /etc/warewulf/
 	cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
 	restorecon -r /var/lib/tftpboot/warewulf
 	cp -r overlays /var/warewulf/
