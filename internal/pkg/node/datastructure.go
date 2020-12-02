@@ -118,32 +118,32 @@ type NetDevs struct {
  * Code internal data representations
  ******/
 
-type NodeInfoEntry struct {
-	value      string
-	profile    string
-	group      string
-	controller string
-	def        string
+type Entry struct {
+	Node       string
+	Profile    string
+	Group      string
+	Controller string
+	Default    string
 }
 
 type NodeInfo struct {
-	Id             NodeInfoEntry
-	Gid            NodeInfoEntry
-	Cid            NodeInfoEntry
-	Comment        NodeInfoEntry
-	HostName       NodeInfoEntry
-	Fqdn           NodeInfoEntry
-	DomainName     NodeInfoEntry
-	Vnfs           NodeInfoEntry
-	Ipxe           NodeInfoEntry
-	KernelVersion  NodeInfoEntry
-	KernelArgs     NodeInfoEntry
-	IpmiIpaddr     NodeInfoEntry
-	IpmiNetmask    NodeInfoEntry
-	IpmiUserName   NodeInfoEntry
-	IpmiPassword   NodeInfoEntry
-	RuntimeOverlay NodeInfoEntry
-	SystemOverlay  NodeInfoEntry
+	Id             Entry
+	Gid            Entry
+	Cid            Entry
+	Comment        Entry
+	HostName       Entry
+	Fqdn           Entry
+	DomainName     Entry
+	Vnfs           Entry
+	Ipxe           Entry
+	KernelVersion  Entry
+	KernelArgs     Entry
+	IpmiIpaddr     Entry
+	IpmiNetmask    Entry
+	IpmiUserName   Entry
+	IpmiPassword   Entry
+	RuntimeOverlay Entry
+	SystemOverlay  Entry
 	Profiles       []string
 	GroupProfiles  []string
 	NetDevs        map[string]*NetDevs
@@ -191,19 +191,19 @@ type ControllerInfo struct {
 }
 
 type GroupInfo struct {
-	Id             string
-	Cid            string
-	Comment        string
-	Vnfs           string
-	Ipxe           string
-	KernelVersion  string
-	KernelArgs     string
-	IpmiNetmask    string
-	IpmiUserName   string
-	IpmiPassword   string
-	DomainName     string
-	RuntimeOverlay string
-	SystemOverlay  string
+	Id             Entry
+	Cid            Entry
+	Comment        Entry
+	Vnfs           Entry
+	Ipxe           Entry
+	KernelVersion  Entry
+	KernelArgs     Entry
+	IpmiNetmask    Entry
+	IpmiUserName   Entry
+	IpmiPassword   Entry
+	DomainName     Entry
+	RuntimeOverlay Entry
+	SystemOverlay  Entry
 	Profiles       []string
 }
 
