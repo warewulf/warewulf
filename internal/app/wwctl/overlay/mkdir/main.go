@@ -15,8 +15,7 @@ import (
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	config := config.New()
 	var overlaySourceDir string
-//	mode := uint32(strconv.ParseUint(PermMode, 8, 32))
-
+	//	mode := uint32(strconv.ParseUint(PermMode, 8, 32))
 
 	if SystemOverlay == true {
 		overlaySourceDir = config.SystemOverlaySource(args[0])
@@ -57,9 +56,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		var updateNodes []node.NodeInfo
 
 		for _, node := range nodes {
-			if SystemOverlay == true && node.SystemOverlay.String() == args[0] {
+			if SystemOverlay == true && node.SystemOverlay.Get() == args[0] {
 				updateNodes = append(updateNodes, node)
-			} else if node.RuntimeOverlay.String() == args[0] {
+			} else if node.RuntimeOverlay.Get() == args[0] {
 				updateNodes = append(updateNodes, node)
 			}
 		}

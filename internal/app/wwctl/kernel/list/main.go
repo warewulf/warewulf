@@ -19,7 +19,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	nodemap := make(map[string]int)
 
 	for _, n := range nodes {
-		nodemap[n.KernelVersion.String()] ++
+		nodemap[n.KernelVersion.Get()]++
 	}
 
 	images, _ := ioutil.ReadDir(config.KernelParentDir())
@@ -31,11 +31,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if util.IsDir(path.Join(config.KernelParentDir(), file.Name())) {
 			var kernel_size int64
 			var kmods_size int64
-			if util.IsFile( config.KernelImage(file.Name())) {
+			if util.IsFile(config.KernelImage(file.Name())) {
 				s, _ := os.Stat(config.KernelImage(file.Name()))
 				kernel_size = s.Size() / 1024
 			}
-			if util.IsFile( config.KmodsImage(file.Name())) {
+			if util.IsFile(config.KmodsImage(file.Name())) {
 				s, _ := os.Stat(config.KmodsImage(file.Name()))
 				kmods_size = s.Size() / 1024
 			}
@@ -47,7 +47,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 		}
 	}
-
 
 	return nil
 }

@@ -36,13 +36,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 		var powerCmd power.PowerOnInterface
 
-		if node.IpmiIpaddr.String() == "" {
+		if node.IpmiIpaddr.Get() == "" {
 			wwlog.Printf(wwlog.ERROR, "%s: No IPMI IP address\n", node.HostName)
 			continue
 		}
 
 		ipmiCmd := power.IPMI{
-			HostName: node.IpmiIpaddr.String(),
+			HostName: node.IpmiIpaddr.Get(),
 			User:     "ADMIN",
 			Password: "ADMIN",
 			AuthType: "MD5",
