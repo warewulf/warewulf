@@ -31,10 +31,11 @@ type ProfileConf struct {
 type ControllerConf struct {
 	Comment  string `yaml:"comment"`
 	Ipaddr   string `yaml:"ipaddr"`
+	Fqdn     string `yaml:"fqdn"`
 	Services struct {
 		Warewulfd struct {
 			Port       string `yaml:"port"`
-			Secure     string `yaml:"secure,omitempty"`
+			Secure     bool   `yaml:"secure,omitempty"`
 			StartCmd   string `yaml:"start command,omitempty"`
 			RestartCmd string `yaml:"restart command,omitempty"`
 			EnableCmd  string `yaml:"enable command,omitempty"`
@@ -153,7 +154,7 @@ type ControllerInfo struct {
 	Services   struct {
 		Warewulfd struct {
 			Port       string
-			Secure     string
+			Secure     bool
 			StartCmd   string
 			RestartCmd string
 			EnableCmd  string

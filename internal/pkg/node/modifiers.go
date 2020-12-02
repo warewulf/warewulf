@@ -19,11 +19,11 @@ func (self *nodeYaml) AddNode(controllerID string, groupID string, nodeID string
 
 	wwlog.Printf(wwlog.VERBOSE, "Adding new node: %s/%s\n", groupID, nodeID)
 
-	if _, ok := self.Controllers[controllerID]; ! ok {
+	if _, ok := self.Controllers[controllerID]; !ok {
 		return errors.New("Controller does not exist: " + controllerID)
 	}
 
-	if _, ok := self.Controllers[controllerID].NodeGroups[groupID]; ! ok {
+	if _, ok := self.Controllers[controllerID].NodeGroups[groupID]; !ok {
 		return errors.New("Group does not exist: " + groupID)
 	}
 
@@ -39,11 +39,11 @@ func (self *nodeYaml) AddNode(controllerID string, groupID string, nodeID string
 
 func (self *nodeYaml) DelNode(controllerID string, groupID string, nodeID string) error {
 
-	if _, ok := self.Controllers[controllerID]; ! ok {
+	if _, ok := self.Controllers[controllerID]; !ok {
 		return errors.New("Controller does not exist: " + controllerID)
 	}
 
-	if _, ok := self.Controllers[controllerID].NodeGroups[groupID]; ! ok {
+	if _, ok := self.Controllers[controllerID].NodeGroups[groupID]; !ok {
 		return errors.New("Group does not exist: " + groupID)
 	}
 
@@ -57,20 +57,20 @@ func (self *nodeYaml) DelNode(controllerID string, groupID string, nodeID string
 	return nil
 }
 
-func(self *nodeYaml) NodeUpdate(node NodeInfo) error {
+func (self *nodeYaml) NodeUpdate(node NodeInfo) error {
 	controllerID := node.Cid.Get()
 	groupID := node.Gid.Get()
 	nodeID := node.Id.Get()
 
-	if _, ok := self.Controllers[controllerID]; ! ok {
+	if _, ok := self.Controllers[controllerID]; !ok {
 		return errors.New("Controller does not exist: " + controllerID)
 	}
 
-	if _, ok := self.Controllers[controllerID].NodeGroups[groupID]; ! ok {
+	if _, ok := self.Controllers[controllerID].NodeGroups[groupID]; !ok {
 		return errors.New("Group does not exist: " + groupID)
 	}
 
-	if _, ok := self.Controllers[controllerID].NodeGroups[groupID].Nodes[groupID]; ! ok {
+	if _, ok := self.Controllers[controllerID].NodeGroups[groupID].Nodes[groupID]; !ok {
 		return errors.New("Nodename does not exist in group: " + nodeID)
 	}
 
@@ -91,8 +91,6 @@ func(self *nodeYaml) NodeUpdate(node NodeInfo) error {
 	return nil
 }
 
-
-
 /****
  *
  * GROUP MODIFIERS
@@ -104,7 +102,7 @@ func (self *nodeYaml) AddGroup(controllerID string, groupID string) error {
 
 	wwlog.Printf(wwlog.VERBOSE, "Adding new group: %s/%s\n", groupID)
 
-	if _, ok := self.Controllers[controllerID]; ! ok {
+	if _, ok := self.Controllers[controllerID]; !ok {
 		return errors.New("Controller does not exist: " + controllerID)
 	}
 
@@ -121,11 +119,11 @@ func (self *nodeYaml) AddGroup(controllerID string, groupID string) error {
 
 func (self *nodeYaml) DelGroup(controllerID string, groupID string) error {
 
-	if _, ok := self.Controllers[controllerID]; ! ok {
+	if _, ok := self.Controllers[controllerID]; !ok {
 		return errors.New("Controller does not exist: " + controllerID)
 	}
 
-	if _, ok := self.Controllers[controllerID].NodeGroups[groupID]; ! ok {
+	if _, ok := self.Controllers[controllerID].NodeGroups[groupID]; !ok {
 		return errors.New("Group does not exist: " + groupID)
 	}
 
@@ -135,15 +133,15 @@ func (self *nodeYaml) DelGroup(controllerID string, groupID string) error {
 	return nil
 }
 
-func(self *nodeYaml) GroupUpdate(group GroupInfo) error {
+func (self *nodeYaml) GroupUpdate(group GroupInfo) error {
 	controllerID := group.Cid
 	groupID := group.Id
 
-	if _, ok := self.Controllers[controllerID]; ! ok {
+	if _, ok := self.Controllers[controllerID]; !ok {
 		return errors.New("Controller does not exist: " + controllerID)
 	}
 
-	if _, ok := self.Controllers[controllerID].NodeGroups[groupID]; ! ok {
+	if _, ok := self.Controllers[controllerID].NodeGroups[groupID]; !ok {
 		return errors.New("Group does not exist: " + groupID)
 	}
 
@@ -160,8 +158,6 @@ func(self *nodeYaml) GroupUpdate(group GroupInfo) error {
 
 	return nil
 }
-
-
 
 /****
  *
@@ -188,7 +184,7 @@ func (self *nodeYaml) AddController(controllerID string) error {
 
 func (self *nodeYaml) DelController(controllerID string) error {
 
-	if _, ok := self.Controllers[controllerID]; ! ok {
+	if _, ok := self.Controllers[controllerID]; !ok {
 		return errors.New("Controller does not exist: " + controllerID)
 	}
 
@@ -198,15 +194,16 @@ func (self *nodeYaml) DelController(controllerID string) error {
 	return nil
 }
 
-func(self *nodeYaml) ControllerUpdate(controller ControllerInfo) error {
+func (self *nodeYaml) ControllerUpdate(controller ControllerInfo) error {
 	controllerID := controller.Id
 
-	if _, ok := self.Controllers[controllerID]; ! ok {
+	if _, ok := self.Controllers[controllerID]; !ok {
 		return errors.New("Controller does not exist: " + controllerID)
 	}
 
 	self.Controllers[controllerID].Ipaddr = controller.Ipaddr
 	self.Controllers[controllerID].Comment = controller.Comment
+	self.Controllers[controllerID].Fqdn = controller.Fqdn
 
 	self.Controllers[controllerID].Services.Warewulfd.Port = controller.Services.Warewulfd.Port
 	self.Controllers[controllerID].Services.Warewulfd.Secure = controller.Services.Warewulfd.Secure
@@ -237,9 +234,6 @@ func(self *nodeYaml) ControllerUpdate(controller ControllerInfo) error {
 	return nil
 }
 
-
-
-
 /****
  *
  * PROFILE MODIFIERS
@@ -261,7 +255,7 @@ func (self *nodeYaml) AddProfile(profileID string) error {
 }
 
 func (self *nodeYaml) DelProfile(profileID string) error {
-	if _, ok := self.NodeProfiles[profileID]; ! ok {
+	if _, ok := self.NodeProfiles[profileID]; !ok {
 		return errors.New("Group '" + profileID + "' was not found")
 	}
 
@@ -271,10 +265,10 @@ func (self *nodeYaml) DelProfile(profileID string) error {
 	return nil
 }
 
-func(self *nodeYaml) ProfileUpdate(profile ProfileInfo) error {
+func (self *nodeYaml) ProfileUpdate(profile ProfileInfo) error {
 	profileID := profile.Id
 
-	if _, ok := self.NodeProfiles[profileID]; ! ok {
+	if _, ok := self.NodeProfiles[profileID]; !ok {
 		return errors.New("Group '" + profileID + "' was not found")
 	}
 
@@ -289,9 +283,6 @@ func(self *nodeYaml) ProfileUpdate(profile ProfileInfo) error {
 
 	return nil
 }
-
-
-
 
 /****
  *
