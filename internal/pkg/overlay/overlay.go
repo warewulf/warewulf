@@ -19,11 +19,15 @@ import (
 
 type TemplateStruct struct {
 	Self struct {
-		Fqdn      string
-		Hostname  string
-		GroupName string
-		Vnfs      string
-		NetDevs   map[string]*node.NetDevs
+		Fqdn         string
+		Hostname     string
+		GroupName    string
+		Vnfs         string
+		IpmiIpaddr   string
+		IpmiNetmask  string
+		IpmiUserName string
+		IpmiPassword string
+		NetDevs      map[string]*node.NetDevs
 	}
 	AllNodes []node.NodeInfo
 }
@@ -134,6 +138,10 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 		t.Self.Hostname = node.HostName.Get()
 		t.Self.GroupName = node.Gid.Get()
 		t.Self.Vnfs = node.Vnfs.Get()
+		t.Self.IpmiIpaddr = node.IpmiIpaddr.Get()
+		t.Self.IpmiNetmask = node.IpmiNetmask.Get()
+		t.Self.IpmiUserName = node.IpmiUserName.Get()
+		t.Self.IpmiPassword = node.IpmiPassword.Get()
 		t.Self.NetDevs = node.NetDevs
 		t.AllNodes = allNodes
 
