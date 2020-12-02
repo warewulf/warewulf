@@ -7,6 +7,7 @@ import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/node"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay"
 	"github.com/hpcng/warewulf/internal/app/wwctl/profile"
+	"github.com/hpcng/warewulf/internal/app/wwctl/ready"
 	"github.com/hpcng/warewulf/internal/app/wwctl/service"
 	"github.com/hpcng/warewulf/internal/app/wwctl/vnfs"
 
@@ -39,6 +40,7 @@ func init() {
 	rootCmd.AddCommand(group.GetCommand())
 	rootCmd.AddCommand(profile.GetCommand())
 	rootCmd.AddCommand(service.GetCommand())
+	rootCmd.AddCommand(ready.GetCommand())
 
 }
 

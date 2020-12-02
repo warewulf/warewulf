@@ -24,6 +24,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
+	if len(args) == 0 {
+		args = append(args, "default")
+	}
+
 	if SetAll == true {
 		var tmp []node.ProfileInfo
 		tmp, err = nodeDB.FindAllProfiles()
@@ -36,7 +40,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			profiles = append(profiles, p)
 		}
 
-	} else if len(args) > 0 {
+	} else {
 		var tmp []node.ProfileInfo
 		tmp, err = nodeDB.FindAllProfiles()
 		if err != nil {
@@ -51,10 +55,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				}
 			}
 		}
-
-	} else {
-		cmd.Usage()
-		os.Exit(1)
 	}
 
 	for _, p := range profiles {

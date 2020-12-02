@@ -21,7 +21,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	nodeList, err := nodeDB.SearchByNameList(args)
 
 	for _, n := range nodeList {
-		if SetGroup != "" && SetGroup != n.Gid.String() {
+		if SetGroup != "" && SetGroup != n.Gid.Print() {
 			wwlog.Printf(wwlog.DEBUG, "skipping node of different group: %s/%s\n", n.Gid, n.Id)
 			continue
 		}

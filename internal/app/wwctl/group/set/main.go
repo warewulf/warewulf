@@ -25,19 +25,18 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
+	if len(args) == 0 {
+		args = append(args, "default")
+	}
+
 	if SetGroupAll == true {
-		var tmp []node.GroupInfo
-		tmp, err = nodeDB.FindAllGroups()
+		groups, err = nodeDB.FindAllGroups()
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			os.Exit(1)
 		}
 
-		for _, g := range tmp {
-			groups = append(groups, g)
-		}
-
-	} else if len(args) > 0 {
+	} else {
 		var tmp []node.GroupInfo
 		tmp, err = nodeDB.FindAllGroups()
 		if err != nil {
@@ -47,15 +46,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 		for _, a := range args {
 			for _, g := range tmp {
-				if g.Id == a {
+				if g.Id.Get() == a {
 					groups = append(groups, g)
 				}
 			}
 		}
-
-	} else {
-		cmd.Usage()
-		os.Exit(1)
 	}
 
 	for _, g := range groups {
@@ -63,7 +58,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if SetDomainName != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Group: %s, Setting domain name to: %s\n", g.Id, SetDomainName)
 
-			g.DomainName = SetDomainName
+			g.DomainName.SetGroup(SetDomainName)
 			err := nodeDB.GroupUpdate(g)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
@@ -73,7 +68,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if SetVnfs != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Group: %s, Setting VNFS to: %s\n", g.Id, SetVnfs)
 
-			g.Vnfs = SetVnfs
+			g.Vnfs.SetGroup(SetVnfs)
 			err := nodeDB.GroupUpdate(g)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
@@ -83,7 +78,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if SetKernel != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Group: %s, Setting kernel to: %s\n", g.Id, SetKernel)
 
-			g.KernelVersion = SetKernel
+			g.KernelVersion.SetGroup(SetKernel)
 			err := nodeDB.GroupUpdate(g)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
@@ -93,7 +88,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if SetIpmiNetmask != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Group: %s, Setting IPMI username to: %s\n", g.Id, SetIpmiNetmask)
 
-			g.IpmiNetmask = SetIpmiNetmask
+			g.IpmiNetmask.SetGroup(SetIpmiNetmask)
 			err := nodeDB.GroupUpdate(g)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
@@ -103,7 +98,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if SetIpmiUsername != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Group: %s, Setting IPMI username to: %s\n", g.Id, SetIpmiUsername)
 
-			g.IpmiUserName = SetIpmiUsername
+			g.IpmiUserName.SetGroup(SetIpmiUsername)
 			err := nodeDB.GroupUpdate(g)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
@@ -113,7 +108,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if SetIpmiPassword != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Group: %s, Setting IPMI password to: %s\n", g.Id, SetIpmiPassword)
 
-			g.IpmiPassword = SetIpmiPassword
+			g.IpmiPassword.SetGroup(SetIpmiPassword)
 			err := nodeDB.GroupUpdate(g)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
@@ -123,7 +118,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if SetSystemOverlay != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Group: %s, Setting system overlay to: %s\n", g.Id, SetSystemOverlay)
 
-			g.SystemOverlay = SetSystemOverlay
+			g.SystemOverlay.SetGroup(SetSystemOverlay)
 			err := nodeDB.GroupUpdate(g)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
@@ -133,7 +128,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if SetRuntimeOverlay != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Group: %s, Setting runtime overlay to: %s\n", g.Id, SetRuntimeOverlay)
 
-			g.RuntimeOverlay = SetRuntimeOverlay
+			g.RuntimeOverlay.SetGroup(SetRuntimeOverlay)
 			err := nodeDB.GroupUpdate(g)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)

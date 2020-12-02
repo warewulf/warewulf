@@ -133,8 +133,16 @@ func ConfigureDHCP() error {
 			}
 
 			fmt.Printf("Enabling and restarting the DHCP services\n")
-			util.ExecInteractive("/bin/sh", "-c", controller.Services.Dhcp.EnableCmd)
-			util.ExecInteractive("/bin/sh", "-c", controller.Services.Dhcp.RestartCmd)
+			if controller.Services.Dhcp.EnableCmd != "" {
+				util.ExecInteractive("/bin/sh", "-c", controller.Services.Dhcp.EnableCmd)
+			} else {
+				util.ExecInteractive("/bin/sh", "-c", "systemctl enable dhcpd")
+			}
+			if controller.Services.Dhcp.RestartCmd != "" {
+				util.ExecInteractive("/bin/sh", "-c", controller.Services.Dhcp.RestartCmd)
+			} else {
+				util.ExecInteractive("/bin/sh", "-c", "systemctl restart dhcpd")
+			}
 
 		} else {
 			err = tmpl.Execute(os.Stdout, d)

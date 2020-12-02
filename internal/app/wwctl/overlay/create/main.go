@@ -8,8 +8,6 @@ import (
 	"os"
 )
 
-
-
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	if len(args) < 1 {
 		cmd.Help()
@@ -48,9 +46,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		var updateNodes []node.NodeInfo
 
 		for _, node := range nodes {
-			if SystemOverlay == true && node.SystemOverlay.String() == args[0] {
+			if SystemOverlay == true && node.SystemOverlay.Get() == args[0] {
 				updateNodes = append(updateNodes, node)
-			} else if node.RuntimeOverlay.String() == args[0] {
+			} else if node.RuntimeOverlay.Get() == args[0] {
 				updateNodes = append(updateNodes, node)
 			}
 		}
@@ -63,7 +61,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			return overlay.BuildRuntimeOverlay(updateNodes)
 		}
 	}
-
 
 	return nil
 }

@@ -3,13 +3,11 @@ package build
 import (
 	"github.com/hpcng/warewulf/internal/pkg/kernel"
 	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/vnfs"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 	"os"
 )
-
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var nodes []node.NodeInfo
@@ -46,7 +44,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.INFO, "Building VNFS images...\n")
 
 		for _, node := range nodes {
-			set[node.Vnfs.String()] ++
+			set[node.Vnfs.Get()]++
 		}
 		for e := range set {
 			vnfs.Build(e, buildForce)
@@ -60,7 +58,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.INFO, "Building Kernel images...\n")
 
 		for _, node := range nodes {
-			set[node.KernelVersion.String()] ++
+			set[node.KernelVersion.Get()]++
 		}
 		for e := range set {
 			kernel.Build(e)
@@ -71,14 +69,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.INFO, "Building System Overlays...\n")
 		showHelp = false
 
-		overlay.SystemBuild(nodes, buildForce)
+		//		overlay.SystemBuild(nodes, buildForce)
 	}
 
 	if buildRuntimeOverlay == true || buildAll == true {
 		wwlog.Printf(wwlog.INFO, "Building Runtime Overlays...n")
 		showHelp = false
 
-		overlay.RuntimeBuild(nodes, buildForce)
+		//		overlay.RuntimeBuild(nodes, buildForce)
 	}
 
 	if showHelp == true {
