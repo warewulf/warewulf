@@ -81,6 +81,7 @@ func (self *nodeYaml) NodeUpdate(node NodeInfo) error {
 	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].KernelVersion = node.KernelVersion.GetReal()
 	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].KernelArgs = node.KernelArgs.GetReal()
 	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].IpmiIpaddr = node.IpmiIpaddr.GetReal()
+	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].IpmiNetmask = node.IpmiNetmask.GetReal()
 	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].IpmiUserName = node.IpmiUserName.GetReal()
 	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].IpmiPassword = node.IpmiPassword.GetReal()
 	self.Controllers[controllerID].NodeGroups[groupID].Nodes[nodeID].RuntimeOverlay = node.RuntimeOverlay.GetReal()
@@ -150,6 +151,7 @@ func (self *nodeYaml) GroupUpdate(group GroupInfo) error {
 	self.Controllers[controllerID].NodeGroups[groupID].KernelVersion = group.KernelVersion
 	self.Controllers[controllerID].NodeGroups[groupID].KernelArgs = group.KernelArgs
 	self.Controllers[controllerID].NodeGroups[groupID].Ipxe = group.Ipxe
+	self.Controllers[controllerID].NodeGroups[groupID].IpmiNetmask = group.IpmiNetmask
 	self.Controllers[controllerID].NodeGroups[groupID].IpmiUserName = group.IpmiUserName
 	self.Controllers[controllerID].NodeGroups[groupID].IpmiPassword = group.IpmiPassword
 	self.Controllers[controllerID].NodeGroups[groupID].RuntimeOverlay = group.RuntimeOverlay
@@ -276,6 +278,7 @@ func (self *nodeYaml) ProfileUpdate(profile ProfileInfo) error {
 	self.NodeProfiles[profileID].Vnfs = profile.Vnfs
 	self.NodeProfiles[profileID].Ipxe = profile.Ipxe
 	self.NodeProfiles[profileID].KernelVersion = profile.KernelVersion
+	self.NodeProfiles[profileID].IpmiNetmask = profile.IpmiNetmask
 	self.NodeProfiles[profileID].IpmiUserName = profile.IpmiUserName
 	self.NodeProfiles[profileID].IpmiPassword = profile.IpmiPassword
 	self.NodeProfiles[profileID].RuntimeOverlay = profile.RuntimeOverlay

@@ -4,21 +4,21 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "set",
-		Short:              "Set profile configurations",
-		Long:               "Profile configurations ",
-		RunE:				CobraRunE,
+		Use:   "set",
+		Short: "Set profile configurations",
+		Long:  "Profile configurations ",
+		RunE:  CobraRunE,
 	}
-	SetAll bool
-	SetVnfs string
-	SetKernel string
-	SetDomainName string
-	SetIpxe string
+	SetAll            bool
+	SetVnfs           string
+	SetKernel         string
+	SetDomainName     string
+	SetIpxe           string
 	SetRuntimeOverlay string
-	SetSystemOverlay string
-	SetIpmiUsername string
-	SetIpmiPassword string
-
+	SetSystemOverlay  string
+	SetIpmiNetmask    string
+	SetIpmiUsername   string
+	SetIpmiPassword   string
 )
 
 func init() {
@@ -28,6 +28,7 @@ func init() {
 	baseCmd.PersistentFlags().StringVarP(&SetIpxe, "ipxe", "P", "", "Set the node's iPXE template name")
 	baseCmd.PersistentFlags().StringVarP(&SetRuntimeOverlay, "runtime", "R", "", "Set the node's runtime overlay")
 	baseCmd.PersistentFlags().StringVarP(&SetSystemOverlay, "system", "S", "", "Set the node's system overlay")
+	baseCmd.PersistentFlags().StringVar(&SetIpmiNetmask, "ipminetmask", "", "Set the node's IPMI netmask")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiUsername, "ipmiuser", "", "Set the node's IPMI username")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiPassword, "ipmipass", "", "Set the node's IPMI password")
 

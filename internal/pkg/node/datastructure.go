@@ -21,6 +21,7 @@ type ProfileConf struct {
 	Ipxe           string `yaml:"ipxe template,omitempty"`
 	KernelVersion  string `yaml:"kernel version,omitempty"`
 	KernelArgs     string `yaml:"kernel args,omitempty"`
+	IpmiNetmask    string `yaml:"ipmi netmask,omitempty"`
 	IpmiUserName   string `yaml:"ipmi username,omitempty"`
 	IpmiPassword   string `yaml:"ipmi password,omitempty"`
 	DomainName     string `yaml:"domain name,omitempty"`
@@ -76,6 +77,7 @@ type GroupConf struct {
 	Ipxe           string   `yaml:"ipxe template,omitempty"`
 	KernelVersion  string   `yaml:"kernel version,omitempty"`
 	KernelArgs     string   `yaml:"kernel args,omitempty"`
+	IpmiNetmask    string   `yaml:"ipmi netmask,omitempty"`
 	IpmiUserName   string   `yaml:"ipmi username,omitempty"`
 	IpmiPassword   string   `yaml:"ipmi password,omitempty"`
 	RuntimeOverlay string   `yaml:"runtime overlay files,omitempty"`
@@ -96,6 +98,7 @@ type NodeConf struct {
 	IpmiUserName   string   `yaml:"ipmi username,omitempty"`
 	IpmiPassword   string   `yaml:"ipmi password,omitempty"`
 	IpmiIpaddr     string   `yaml:"ipmi ipaddr,omitempty"`
+	IpmiNetmask    string   `yaml:"ipmi netmask,omitempty"`
 	RuntimeOverlay string   `yaml:"runtime overlay files,omitempty"`
 	SystemOverlay  string   `yaml:"system overlay files,omitempty"`
 	Profiles       []string `yaml:"profiles,omitempty"`
@@ -136,6 +139,7 @@ type NodeInfo struct {
 	KernelVersion  NodeInfoEntry
 	KernelArgs     NodeInfoEntry
 	IpmiIpaddr     NodeInfoEntry
+	IpmiNetmask    NodeInfoEntry
 	IpmiUserName   NodeInfoEntry
 	IpmiPassword   NodeInfoEntry
 	RuntimeOverlay NodeInfoEntry
@@ -194,6 +198,7 @@ type GroupInfo struct {
 	Ipxe           string
 	KernelVersion  string
 	KernelArgs     string
+	IpmiNetmask    string
 	IpmiUserName   string
 	IpmiPassword   string
 	DomainName     string
@@ -209,6 +214,7 @@ type ProfileInfo struct {
 	Ipxe           string
 	KernelVersion  string
 	KernelArgs     string
+	IpmiNetmask    string
 	IpmiUserName   string
 	IpmiPassword   string
 	DomainName     string

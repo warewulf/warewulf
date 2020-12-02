@@ -90,6 +90,16 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				os.Exit(1)
 			}
 		}
+		if SetIpmiNetmask != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Group: %s, Setting IPMI username to: %s\n", g.Id, SetIpmiNetmask)
+
+			g.IpmiNetmask = SetIpmiNetmask
+			err := nodeDB.GroupUpdate(g)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
 		if SetIpmiUsername != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Group: %s, Setting IPMI username to: %s\n", g.Id, SetIpmiUsername)
 
@@ -153,7 +163,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				os.Exit(1)
 			}
 		}
-
 
 	}
 
