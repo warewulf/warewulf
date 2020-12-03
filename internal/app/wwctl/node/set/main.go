@@ -185,12 +185,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
 				os.Exit(1)
 			}
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Deleting network device: %s\n", n.Id.Get(), SetNetDev)
 
 			if _, ok := n.NetDevs[SetNetDev]; !ok {
 				wwlog.Printf(wwlog.ERROR, "Network Device doesn't exist: %s\n", SetNetDev)
 				os.Exit(1)
 			}
+
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Deleting network device: %s\n", n.Id.Get(), SetNetDev)
 
 			delete(n.NetDevs, SetNetDev)
 			err := nodeDB.NodeUpdate(n)
@@ -206,9 +207,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 			if _, ok := n.NetDevs[SetNetDev]; !ok {
-				wwlog.Printf(wwlog.ERROR, "Network Device doesn't exist: %s\n", SetNetDev)
-				os.Exit(1)
+				var nd node.NetDevEntry
+				n.NetDevs[SetNetDev] = &nd
 			}
+
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Ipaddr to: %s\n", n.Id.Get(), SetNetDev, SetIpaddr)
 
 			n.NetDevs[SetNetDev].Ipaddr.Set(SetIpaddr)
@@ -225,9 +227,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 			if _, ok := n.NetDevs[SetNetDev]; !ok {
-				wwlog.Printf(wwlog.ERROR, "Network Device doesn't exist: %s\n", SetNetDev)
-				os.Exit(1)
+				var nd node.NetDevEntry
+				n.NetDevs[SetNetDev] = &nd
 			}
+
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting netmask to: %s\n", n.Id.Get(), SetNetDev, SetNetmask)
 
 			n.NetDevs[SetNetDev].Netmask.Set(SetNetmask)
@@ -244,9 +247,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 			if _, ok := n.NetDevs[SetNetDev]; !ok {
-				wwlog.Printf(wwlog.ERROR, "Network Device doesn't exist: %s\n", SetNetDev)
-				os.Exit(1)
+				var nd node.NetDevEntry
+				n.NetDevs[SetNetDev] = &nd
 			}
+
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting gateway to: %s\n", n.Id.Get(), SetNetDev, SetGateway)
 
 			n.NetDevs[SetNetDev].Gateway.Set(SetGateway)
@@ -263,9 +267,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 			if _, ok := n.NetDevs[SetNetDev]; !ok {
-				wwlog.Printf(wwlog.ERROR, "Network Device doesn't exist: %s\n", SetNetDev)
-				os.Exit(1)
+				var nd node.NetDevEntry
+				n.NetDevs[SetNetDev] = &nd
 			}
+
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting HW address to: %s\n", n.Id.Get(), SetNetDev, SetHwaddr)
 
 			n.NetDevs[SetNetDev].Hwaddr.Set(SetHwaddr)

@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+const ConfigFile = "/etc/warewulf/nodes.conf"
+
 func New() (nodeYaml, error) {
 	var ret nodeYaml
 
@@ -20,10 +22,13 @@ func New() (nodeYaml, error) {
 		return ret, err
 	}
 
+	wwlog.Printf(wwlog.DEBUG, "Unmarshaling the node configuration\n")
 	err = yaml.Unmarshal(data, &ret)
 	if err != nil {
 		return ret, err
 	}
+
+	wwlog.Printf(wwlog.DEBUG, "Returning node object\n")
 
 	return ret, nil
 }
@@ -31,17 +36,19 @@ func New() (nodeYaml, error) {
 func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 	var ret []NodeInfo
 
+	wwlog.Printf(wwlog.DEBUG, "Finding all nodes...\n")
 	for nodename, node := range self.Nodes {
 		var n NodeInfo
 
+		wwlog.Printf(wwlog.DEBUG, "In node loop: %s\n", nodename)
 		n.NetDevs = make(map[string]*NetDevEntry)
-		n.SystemOverlay.Set("default")
-		n.RuntimeOverlay.Set("default")
-		n.Ipxe.Set("default")
+		n.SystemOverlay.SetDefault("default")
+		n.RuntimeOverlay.SetDefault("default")
+		n.Ipxe.SetDefault("default")
 
 		fullname := strings.SplitN(nodename, ".", 2)
 		if len(fullname) > 1 {
-			n.DomainName.Set(fullname[1])
+			n.DomainName.SetDefault(fullname[1])
 		}
 
 		if len(node.Profiles) == 0 {
@@ -106,6 +113,7 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 					var netdev NetDevEntry
 					n.NetDevs[devname] = &netdev
 				}
+				wwlog.Printf(wwlog.DEBUG, "Updating profile (%s) netdev: %s\n", p, devname)
 
 				n.NetDevs[devname].Ipaddr.SetAlt(netdev.Ipaddr, pstring)
 				n.NetDevs[devname].Netmask.SetAlt(netdev.Netmask, pstring)
@@ -193,6 +201,7 @@ func (self *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 
 	for name, profile := range self.NodeProfiles {
 		var p NodeInfo
+		p.NetDevs = make(map[string]*NetDevEntry)
 
 		p.Id.Set(name)
 		p.Comment.Set(profile.Comment)
@@ -211,6 +220,8 @@ func (self *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 				var netdev NetDevEntry
 				p.NetDevs[devname] = &netdev
 			}
+
+			wwlog.Printf(wwlog.DEBUG, "Updating profile netdev: %s\n", devname)
 
 			p.NetDevs[devname].Ipaddr.Set(netdev.Ipaddr)
 			p.NetDevs[devname].Netmask.Set(netdev.Netmask)

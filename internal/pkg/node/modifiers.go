@@ -66,12 +66,11 @@ func (self *nodeYaml) NodeUpdate(node NodeInfo) error {
 	self.Nodes[nodeID].RuntimeOverlay = node.RuntimeOverlay.GetReal()
 	self.Nodes[nodeID].SystemOverlay = node.SystemOverlay.GetReal()
 	self.Nodes[nodeID].Profiles = node.Profiles
+	self.Nodes[nodeID].NetDevs = make(map[string]*NetDevs)
 
 	for devname, netdev := range node.NetDevs {
-		if _, ok := self.Nodes[nodeID].NetDevs[devname]; !ok {
-			var netdev NetDevs
-			self.Nodes[nodeID].NetDevs[devname] = &netdev
-		}
+		var newdev NetDevs
+		self.Nodes[nodeID].NetDevs[devname] = &newdev
 
 		self.Nodes[nodeID].NetDevs[devname].Ipaddr = netdev.Ipaddr.GetReal()
 		self.Nodes[nodeID].NetDevs[devname].Netmask = netdev.Netmask.GetReal()
@@ -137,12 +136,11 @@ func (self *nodeYaml) ProfileUpdate(profile NodeInfo) error {
 	self.NodeProfiles[profileID].RuntimeOverlay = profile.RuntimeOverlay.GetReal()
 	self.NodeProfiles[profileID].SystemOverlay = profile.SystemOverlay.GetReal()
 	self.NodeProfiles[profileID].Profiles = profile.Profiles
+	self.NodeProfiles[profileID].NetDevs = make(map[string]*NetDevs)
 
 	for devname, netdev := range profile.NetDevs {
-		if _, ok := self.NodeProfiles[profileID].NetDevs[devname]; !ok {
-			var netdev NetDevs
-			self.NodeProfiles[profileID].NetDevs[devname] = &netdev
-		}
+		var newdev NetDevs
+		self.NodeProfiles[profileID].NetDevs[devname] = &newdev
 
 		self.NodeProfiles[profileID].NetDevs[devname].Ipaddr = netdev.Ipaddr.GetReal()
 		self.NodeProfiles[profileID].NetDevs[devname].Netmask = netdev.Netmask.GetReal()

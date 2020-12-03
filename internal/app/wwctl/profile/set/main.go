@@ -47,6 +47,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, p := range profiles {
+		wwlog.Printf(wwlog.VERBOSE, "Modifying profile: %s\n", p.Id.Get())
 
 		if SetComment != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting comment to: %s\n", p.Id, SetComment)
@@ -142,6 +143,107 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting IPMI username to: %s\n", p.Id, SetIpmiPassword)
 
 			p.IpmiPassword.Set(SetIpmiPassword)
+			err := nodeDB.ProfileUpdate(p)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
+
+		if SetNetDevDel == true {
+			if SetNetDev == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
+				os.Exit(1)
+			}
+
+			if _, ok := p.NetDevs[SetNetDev]; !ok {
+				wwlog.Printf(wwlog.ERROR, "Profile '%s': network Device doesn't exist: %s\n", p.Id.Get(), SetNetDev)
+				os.Exit(1)
+			}
+
+			wwlog.Printf(wwlog.VERBOSE, "Profile %s: Deleting network device: %s\n", p.Id.Get(), SetNetDev)
+
+			delete(p.NetDevs, SetNetDev)
+			err := nodeDB.ProfileUpdate(p)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
+		if SetIpaddr != "" {
+			if SetNetDev == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
+				os.Exit(1)
+			}
+
+			if _, ok := p.NetDevs[SetNetDev]; !ok {
+				var nd node.NetDevEntry
+				p.NetDevs[SetNetDev] = &nd
+			}
+
+			wwlog.Printf(wwlog.VERBOSE, "Profile '%s': Setting IP address to: %s:%s\n", p.Id.Get(), SetNetDev, SetHwaddr)
+
+			p.NetDevs[SetNetDev].Ipaddr.Set(SetIpaddr)
+			err := nodeDB.ProfileUpdate(p)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
+		if SetNetmask != "" {
+			if SetNetDev == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
+				os.Exit(1)
+			}
+
+			if _, ok := p.NetDevs[SetNetDev]; !ok {
+				var nd node.NetDevEntry
+				p.NetDevs[SetNetDev] = &nd
+			}
+
+			wwlog.Printf(wwlog.VERBOSE, "Profile '%s': Setting netmask to: %s:%s\n", p.Id.Get(), SetNetDev, SetHwaddr)
+
+			p.NetDevs[SetNetDev].Netmask.Set(SetNetmask)
+			err := nodeDB.ProfileUpdate(p)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
+		if SetGateway != "" {
+			if SetNetDev == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
+				os.Exit(1)
+			}
+
+			if _, ok := p.NetDevs[SetNetDev]; !ok {
+				var nd node.NetDevEntry
+				p.NetDevs[SetNetDev] = &nd
+			}
+
+			wwlog.Printf(wwlog.VERBOSE, "Profile '%s': Setting gateway to: %s:%s\n", p.Id.Get(), SetNetDev, SetHwaddr)
+
+			p.NetDevs[SetNetDev].Gateway.Set(SetGateway)
+			err := nodeDB.ProfileUpdate(p)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
+		if SetHwaddr != "" {
+			if SetNetDev == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
+				os.Exit(1)
+			}
+
+			if _, ok := p.NetDevs[SetNetDev]; !ok {
+				var nd node.NetDevEntry
+				p.NetDevs[SetNetDev] = &nd
+			}
+
+			wwlog.Printf(wwlog.VERBOSE, "Profile '%s': Setting HW address to: %s:%s\n", p.Id.Get(), SetNetDev, SetHwaddr)
+
+			p.NetDevs[SetNetDev].Hwaddr.Set(SetHwaddr)
 			err := nodeDB.ProfileUpdate(p)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)

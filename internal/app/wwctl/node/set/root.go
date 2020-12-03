@@ -48,7 +48,7 @@ func init() {
 	baseCmd.PersistentFlags().StringSliceVarP(&SetAddProfile, "addprofile", "p", []string{}, "Add Profile(s) to node")
 	baseCmd.PersistentFlags().StringSliceVarP(&SetDelProfile, "delprofile", "r", []string{}, "Remove Profile(s) to node")
 
-	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdev", "n", "eth0", "Define the network device to configure")
+	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdev", "n", "", "Define the network device to configure")
 	baseCmd.PersistentFlags().StringVarP(&SetIpaddr, "ipaddr", "I", "", "Set the node's network device IP address")
 	baseCmd.PersistentFlags().StringVarP(&SetNetmask, "netmask", "M", "", "Set the node's network device netmask")
 	baseCmd.PersistentFlags().StringVarP(&SetGateway, "gateway", "G", "", "Set the node's network device gateway")

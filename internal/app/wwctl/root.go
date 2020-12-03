@@ -36,7 +36,7 @@ func init() {
 	rootCmd.AddCommand(kernel.GetCommand())
 	//	rootCmd.AddCommand(group.GetCommand())
 	rootCmd.AddCommand(profile.GetCommand())
-	//  rootCmd.AddCommand(service.GetCommand())
+	//rootCmd.AddCommand(service.GetCommand())
 	rootCmd.AddCommand(ready.GetCommand())
 
 }

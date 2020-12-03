@@ -1,6 +1,8 @@
 package node
 
-import "strings"
+import (
+	"strings"
+)
 
 /**********
  *
@@ -44,6 +46,16 @@ func (self *Entry) SetAltB(val bool, from string) {
 	return
 }
 
+func (self *Entry) SetDefault(val string) {
+	if val == "" {
+		return
+	}
+
+	self.def = val
+
+	return
+}
+
 /**********
  *
  * Gets
@@ -56,6 +68,9 @@ func (self *Entry) Get() string {
 	}
 	if self.altvalue != "" {
 		return self.altvalue
+	}
+	if self.def != "" {
+		return self.def
 	}
 	return ""
 }
@@ -85,11 +100,17 @@ func (self *Entry) Print() string {
 	if self.altvalue != "" {
 		return self.altvalue
 	}
+	if self.def != "" {
+		return self.def
+	}
 	return "--"
 }
 
 func (self *Entry) Source() string {
-	if self.from == "" {
+	if self.value != "" && self.altvalue != "" {
+		return "OVERRIDDEN"
+		//return fmt.Sprintf("(%s)", self.from)
+	} else if self.from == "" {
 		return "--"
 	}
 	return self.from

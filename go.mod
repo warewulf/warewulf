@@ -44,6 +44,7 @@ require (
 	github.com/russross/blackfriday/v2 v2.0.1 // indirect
 	github.com/sirupsen/logrus v1.7.0 // indirect
 	github.com/spf13/cobra v1.1.1
+	github.com/ttacon/chalk v0.0.0-20160626202418-22c06c80ed31
 	github.com/ulikunitz/xz v0.5.8 // indirect
 	github.com/vbauerster/mpb/v5 v5.3.0 // indirect
 	go.etcd.io/bbolt v1.3.5 // indirect
