@@ -11,22 +11,28 @@ import (
  ******/
 
 type nodeYaml struct {
-	NodeProfiles map[string]*ProfileConf
-	Controllers  map[string]*ControllerConf `yaml:"control"`
+	Controllers  map[string]*ControllerConf `yaml:"controlers"`
+	NodeProfiles map[string]*NodeConf
+	Nodes        map[string]*NodeConf
 }
 
-type ProfileConf struct {
-	Comment        string `yaml:"comment"`
-	Vnfs           string `yaml:"vnfs,omitempty"`
-	Ipxe           string `yaml:"ipxe template,omitempty"`
-	KernelVersion  string `yaml:"kernel version,omitempty"`
-	KernelArgs     string `yaml:"kernel args,omitempty"`
-	IpmiNetmask    string `yaml:"ipmi netmask,omitempty"`
-	IpmiUserName   string `yaml:"ipmi username,omitempty"`
-	IpmiPassword   string `yaml:"ipmi password,omitempty"`
-	DomainName     string `yaml:"domain name,omitempty"`
-	RuntimeOverlay string `yaml:"runtime overlay files,omitempty"`
-	SystemOverlay  string `yaml:"system overlay files,omitempty"`
+type NodeConf struct {
+	Comment  string `yaml:"comment,omitempty"`
+	Disabled bool   `yaml:"disabled,omitempty"`
+	//	Hostname       string   `yaml:"hostname,omitempty"`
+	DomainName     string   `yaml:"domain name,omitempty"`
+	Vnfs           string   `yaml:"vnfs,omitempty"`
+	Ipxe           string   `yaml:"ipxe template,omitempty"`
+	KernelVersion  string   `yaml:"kernel version,omitempty"`
+	KernelArgs     string   `yaml:"kernel args,omitempty"`
+	IpmiUserName   string   `yaml:"ipmi username,omitempty"`
+	IpmiPassword   string   `yaml:"ipmi password,omitempty"`
+	IpmiIpaddr     string   `yaml:"ipmi ipaddr,omitempty"`
+	IpmiNetmask    string   `yaml:"ipmi netmask,omitempty"`
+	RuntimeOverlay string   `yaml:"runtime overlay files,omitempty"`
+	SystemOverlay  string   `yaml:"system overlay files,omitempty"`
+	Profiles       []string `yaml:"profiles,omitempty"`
+	NetDevs        map[string]*NetDevs
 }
 
 type ControllerConf struct {
@@ -66,43 +72,6 @@ type ControllerConf struct {
 			EnableCmd  string   `yaml:"enable command,omitempty"`
 		} `yaml:"nfs,omitempty"`
 	} `yaml:"services"`
-	NodeGroups map[string]*GroupConf
-}
-
-type GroupConf struct {
-	Comment        string   `yaml:"comment"`
-	Disabled       bool     `yaml:"disabled,omitempty"`
-	DomainName     string   `yaml:"domain name"`
-	Vnfs           string   `yaml:"vnfs,omitempty"`
-	Ipxe           string   `yaml:"ipxe template,omitempty"`
-	KernelVersion  string   `yaml:"kernel version,omitempty"`
-	KernelArgs     string   `yaml:"kernel args,omitempty"`
-	IpmiNetmask    string   `yaml:"ipmi netmask,omitempty"`
-	IpmiUserName   string   `yaml:"ipmi username,omitempty"`
-	IpmiPassword   string   `yaml:"ipmi password,omitempty"`
-	RuntimeOverlay string   `yaml:"runtime overlay files,omitempty"`
-	SystemOverlay  string   `yaml:"system overlay files,omitempty"`
-	Profiles       []string `yaml:"profiles,omitempty"`
-	Nodes          map[string]*NodeConf
-}
-
-type NodeConf struct {
-	Comment        string   `yaml:"comment,omitempty"`
-	Disabled       bool     `yaml:"disabled,omitempty"`
-	Hostname       string   `yaml:"hostname,omitempty"`
-	DomainName     string   `yaml:"domain name,omitempty"`
-	Vnfs           string   `yaml:"vnfs,omitempty"`
-	Ipxe           string   `yaml:"ipxe template,omitempty"`
-	KernelVersion  string   `yaml:"kernel version,omitempty"`
-	KernelArgs     string   `yaml:"kernel args,omitempty"`
-	IpmiUserName   string   `yaml:"ipmi username,omitempty"`
-	IpmiPassword   string   `yaml:"ipmi password,omitempty"`
-	IpmiIpaddr     string   `yaml:"ipmi ipaddr,omitempty"`
-	IpmiNetmask    string   `yaml:"ipmi netmask,omitempty"`
-	RuntimeOverlay string   `yaml:"runtime overlay files,omitempty"`
-	SystemOverlay  string   `yaml:"system overlay files,omitempty"`
-	Profiles       []string `yaml:"profiles,omitempty"`
-	NetDevs        map[string]*NetDevs
 }
 
 type NetDevs struct {
@@ -115,24 +84,23 @@ type NetDevs struct {
 }
 
 /******
- * Code internal data representations
+ * Internal code data representations
  ******/
 
 type Entry struct {
-	Node       string
-	Profile    string
-	Group      string
-	Controller string
-	Default    string
+	value    string
+	altvalue string
+	bool     bool
+	altbool  bool
+	from     string
 }
 
 type NodeInfo struct {
-	Id             Entry
-	Gid            Entry
-	Cid            Entry
-	Comment        Entry
-	HostName       Entry
-	Fqdn           Entry
+	Id      Entry
+	Cid     Entry
+	Comment Entry
+	//	HostName       Entry
+	//	Fqdn           Entry
 	DomainName     Entry
 	Vnfs           Entry
 	Ipxe           Entry
@@ -146,80 +114,16 @@ type NodeInfo struct {
 	SystemOverlay  Entry
 	Profiles       []string
 	GroupProfiles  []string
-	NetDevs        map[string]*NetDevs
+	NetDevs        map[string]*NetDevEntry
 }
 
-type ControllerInfo struct {
-	Id         string
-	Comment    string
-	Ipaddr     string
-	Fqdn       string
-	DomainName string
-	Services   struct {
-		Warewulfd struct {
-			Port       string
-			Secure     bool
-			StartCmd   string
-			RestartCmd string
-			EnableCmd  string
-		}
-		Dhcp struct {
-			Enabled    bool
-			Template   string
-			RangeStart string
-			RangeEnd   string
-			ConfigFile string
-			StartCmd   string
-			RestartCmd string
-			EnableCmd  string
-		}
-		Tftp struct {
-			Enabled    bool
-			TftpRoot   string
-			StartCmd   string
-			RestartCmd string
-			EnableCmd  string
-		}
-		Nfs struct {
-			Enabled    bool
-			Exports    []string
-			StartCmd   string
-			RestartCmd string
-			EnableCmd  string
-		}
-	}
-}
-
-type GroupInfo struct {
-	Id             Entry
-	Cid            Entry
-	Comment        Entry
-	Vnfs           Entry
-	Ipxe           Entry
-	KernelVersion  Entry
-	KernelArgs     Entry
-	IpmiNetmask    Entry
-	IpmiUserName   Entry
-	IpmiPassword   Entry
-	DomainName     Entry
-	RuntimeOverlay Entry
-	SystemOverlay  Entry
-	Profiles       []string
-}
-
-type ProfileInfo struct {
-	Id             string
-	Comment        string
-	Vnfs           string
-	Ipxe           string
-	KernelVersion  string
-	KernelArgs     string
-	IpmiNetmask    string
-	IpmiUserName   string
-	IpmiPassword   string
-	DomainName     string
-	RuntimeOverlay string
-	SystemOverlay  string
+type NetDevEntry struct {
+	Type    Entry `yaml:"type,omitempty"`
+	Default Entry `yaml:"default"`
+	Hwaddr  Entry
+	Ipaddr  Entry
+	Netmask Entry
+	Gateway Entry `yaml:"gateway,omitempty"`
 }
 
 const ConfigFile = "/etc/warewulf/nodes.conf"

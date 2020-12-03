@@ -41,7 +41,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		for _, node := range nodes {
-			wwlog.Printf(wwlog.DEBUG, "evaluating node/kernel: %s/%s\n", node.Fqdn.Get(), node.KernelVersion.Get())
+			wwlog.Printf(wwlog.DEBUG, "evaluating node/kernel: %s/%s\n", node.Id.Get(), node.KernelVersion.Get())
 			if node.KernelVersion.Defined() == true {
 				set[node.KernelVersion.Get()]++
 			}

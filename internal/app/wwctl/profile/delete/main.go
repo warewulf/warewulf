@@ -15,7 +15,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	var numNodes int
 	var numGroups int
 
-
 	nodeDB, err := node.New()
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Failed to open node database: %s\n", err)
@@ -27,12 +26,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.ERROR, "Could not load all nodes: %s\n", err)
 		os.Exit(1)
 	}
-	groups, err := nodeDB.FindAllGroups()
-	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not load all groups: %s\n", err)
-		os.Exit(1)
-	}
-
 
 	for _, p := range args {
 		err := nodeDB.DelProfile(p)
@@ -44,19 +37,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			for _, np := range n.Profiles {
 				if np == p {
 					numNodes++
-					wwlog.Printf(wwlog.VERBOSE, "Removing profile from node %s: %s\n", n.Fqdn.Get(), p)
+					wwlog.Printf(wwlog.VERBOSE, "Removing profile from node %s: %s\n", n.Id.Get(), p)
 					n.Profiles = util.SliceRemoveElement(n.Profiles, p)
 					nodeDB.NodeUpdate(n)
-				}
-			}
-		}
-		for _, g := range groups {
-			for _, np := range g.Profiles {
-				if np == p {
-					numGroups++
-					wwlog.Printf(wwlog.VERBOSE, "Removing profile from group %s: %s\n", g.Id, p)
-					g.Profiles = util.SliceRemoveElement(g.Profiles, p)
-					nodeDB.GroupUpdate(g)
 				}
 			}
 		}

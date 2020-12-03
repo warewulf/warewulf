@@ -10,6 +10,7 @@ var (
 		RunE:  CobraRunE,
 	}
 	SetAll            bool
+	SetComment        string
 	SetVnfs           string
 	SetKernel         string
 	SetDomainName     string
@@ -22,6 +23,7 @@ var (
 )
 
 func init() {
+	baseCmd.PersistentFlags().StringVarP(&SetComment, "comment", "C", "", "Set a comment for this node")
 	baseCmd.PersistentFlags().StringVarP(&SetVnfs, "vnfs", "V", "", "Set node Virtual Node File System (VNFS)")
 	baseCmd.PersistentFlags().StringVarP(&SetKernel, "kernel", "K", "", "Set Kernel version for nodes")
 	baseCmd.PersistentFlags().StringVarP(&SetDomainName, "domain", "D", "", "Set the node's domain name")

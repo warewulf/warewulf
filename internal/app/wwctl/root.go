@@ -1,14 +1,11 @@
 package wwctl
 
 import (
-	"github.com/hpcng/warewulf/internal/app/wwctl/controller"
-	"github.com/hpcng/warewulf/internal/app/wwctl/group"
 	"github.com/hpcng/warewulf/internal/app/wwctl/kernel"
 	"github.com/hpcng/warewulf/internal/app/wwctl/node"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay"
 	"github.com/hpcng/warewulf/internal/app/wwctl/profile"
 	"github.com/hpcng/warewulf/internal/app/wwctl/ready"
-	"github.com/hpcng/warewulf/internal/app/wwctl/service"
 	"github.com/hpcng/warewulf/internal/app/wwctl/vnfs"
 
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -33,13 +30,13 @@ func init() {
 	//rootCmd.AddCommand(build.GetCommand())
 
 	rootCmd.AddCommand(overlay.GetCommand())
-	rootCmd.AddCommand(controller.GetCommand())
+	//	rootCmd.AddCommand(controller.GetCommand())
 	rootCmd.AddCommand(vnfs.GetCommand())
 	rootCmd.AddCommand(node.GetCommand())
 	rootCmd.AddCommand(kernel.GetCommand())
-	rootCmd.AddCommand(group.GetCommand())
+	//	rootCmd.AddCommand(group.GetCommand())
 	rootCmd.AddCommand(profile.GetCommand())
-	rootCmd.AddCommand(service.GetCommand())
+	//  rootCmd.AddCommand(service.GetCommand())
 	rootCmd.AddCommand(ready.GetCommand())
 
 }
