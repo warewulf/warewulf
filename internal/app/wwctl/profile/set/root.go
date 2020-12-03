@@ -20,6 +20,12 @@ var (
 	SetIpmiNetmask    string
 	SetIpmiUsername   string
 	SetIpmiPassword   string
+	SetNetDev         string
+	SetIpaddr         string
+	SetNetmask        string
+	SetGateway        string
+	SetHwaddr         string
+	SetNetDevDel      bool
 )
 
 func init() {
@@ -33,6 +39,13 @@ func init() {
 	baseCmd.PersistentFlags().StringVar(&SetIpmiNetmask, "ipminetmask", "", "Set the node's IPMI netmask")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiUsername, "ipmiuser", "", "Set the node's IPMI username")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiPassword, "ipmipass", "", "Set the node's IPMI password")
+
+	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdev", "n", "", "Define the network device to configure")
+	baseCmd.PersistentFlags().StringVarP(&SetIpaddr, "ipaddr", "I", "", "Set the node's network device IP address")
+	baseCmd.PersistentFlags().StringVarP(&SetNetmask, "netmask", "M", "", "Set the node's network device netmask")
+	baseCmd.PersistentFlags().StringVarP(&SetGateway, "gateway", "G", "", "Set the node's network device gateway")
+	baseCmd.PersistentFlags().StringVarP(&SetHwaddr, "hwaddr", "H", "", "Set the node's network device HW address")
+	baseCmd.PersistentFlags().BoolVar(&SetNetDevDel, "netdel", false, "Delete the node's network device")
 
 	baseCmd.PersistentFlags().BoolVarP(&SetAll, "all", "a", false, "Set all profiles")
 }

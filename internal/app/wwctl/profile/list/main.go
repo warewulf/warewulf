@@ -6,6 +6,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 	"os"
+	"sort"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
@@ -21,6 +22,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.ERROR, "Could not find all nodes: %s\n", err)
 		os.Exit(1)
 	}
+
+	sort.Slice(profiles, func(i, j int) bool {
+		if profiles[i].Id.Get() < profiles[j].Id.Get() {
+			return true
+		}
+		return false
+	})
 
 	for _, node := range profiles {
 		fmt.Printf("################################################################################\n")
@@ -38,11 +46,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), "IpmiUserName", node.IpmiUserName.Print())
 
 		for name, netdev := range node.NetDevs {
-			fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), name+":IPADDR", netdev.Ipaddr.Get())
-			fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), name+":NETMASK", netdev.Netmask.Get())
-			fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), name+":GATEWAY", netdev.Gateway.Get())
-			fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), name+":HWADDR", netdev.Hwaddr.Get())
-			fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), name+":TYPE", netdev.Hwaddr.Get())
+			fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), name+":IPADDR", netdev.Ipaddr.Print())
+			fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), name+":NETMASK", netdev.Netmask.Print())
+			fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), name+":GATEWAY", netdev.Gateway.Print())
+			fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), name+":HWADDR", netdev.Hwaddr.Print())
+			fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), name+":TYPE", netdev.Hwaddr.Print())
 
 		}
 	}

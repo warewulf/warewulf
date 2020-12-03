@@ -20,19 +20,19 @@ type NodeConf struct {
 	Comment  string `yaml:"comment,omitempty"`
 	Disabled bool   `yaml:"disabled,omitempty"`
 	//	Hostname       string   `yaml:"hostname,omitempty"`
-	DomainName     string   `yaml:"domain name,omitempty"`
-	Vnfs           string   `yaml:"vnfs,omitempty"`
-	Ipxe           string   `yaml:"ipxe template,omitempty"`
-	KernelVersion  string   `yaml:"kernel version,omitempty"`
-	KernelArgs     string   `yaml:"kernel args,omitempty"`
-	IpmiUserName   string   `yaml:"ipmi username,omitempty"`
-	IpmiPassword   string   `yaml:"ipmi password,omitempty"`
-	IpmiIpaddr     string   `yaml:"ipmi ipaddr,omitempty"`
-	IpmiNetmask    string   `yaml:"ipmi netmask,omitempty"`
-	RuntimeOverlay string   `yaml:"runtime overlay files,omitempty"`
-	SystemOverlay  string   `yaml:"system overlay files,omitempty"`
-	Profiles       []string `yaml:"profiles,omitempty"`
-	NetDevs        map[string]*NetDevs
+	DomainName     string              `yaml:"domain name,omitempty"`
+	Vnfs           string              `yaml:"vnfs,omitempty"`
+	Ipxe           string              `yaml:"ipxe template,omitempty"`
+	KernelVersion  string              `yaml:"kernel version,omitempty"`
+	KernelArgs     string              `yaml:"kernel args,omitempty"`
+	IpmiUserName   string              `yaml:"ipmi username,omitempty"`
+	IpmiPassword   string              `yaml:"ipmi password,omitempty"`
+	IpmiIpaddr     string              `yaml:"ipmi ipaddr,omitempty"`
+	IpmiNetmask    string              `yaml:"ipmi netmask,omitempty"`
+	RuntimeOverlay string              `yaml:"runtime overlay files,omitempty"`
+	SystemOverlay  string              `yaml:"system overlay files,omitempty"`
+	Profiles       []string            `yaml:"profiles,omitempty"`
+	NetDevs        map[string]*NetDevs `yaml:"network devices,omitempty"`
 }
 
 type ControllerConf struct {
@@ -93,6 +93,7 @@ type Entry struct {
 	bool     bool
 	altbool  bool
 	from     string
+	def      string
 }
 
 type NodeInfo struct {
@@ -125,8 +126,6 @@ type NetDevEntry struct {
 	Netmask Entry
 	Gateway Entry `yaml:"gateway,omitempty"`
 }
-
-const ConfigFile = "/etc/warewulf/nodes.conf"
 
 func init() {
 	//TODO: Check to make sure nodes.conf is found
