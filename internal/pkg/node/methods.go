@@ -1,135 +1,103 @@
 package node
 
-import (
-	"strings"
-)
+import "strings"
+
+/**********
+ *
+ * Sets
+ *
+ *********/
+
+func (self *Entry) Set(val string) {
+	if val == "" {
+		return
+	}
+
+	if strings.ToUpper(val) == "DELETE" {
+		self.value = ""
+	} else {
+		self.value = val
+	}
+
+	return
+}
+
+func (self *Entry) SetB(val bool) {
+	self.bool = val
+	return
+}
+
+func (self *Entry) SetAlt(val string, from string) {
+	if val == "" {
+		return
+	}
+
+	self.altvalue = val
+	self.from = from
+
+	return
+}
+
+func (self *Entry) SetAltB(val bool, from string) {
+	self.altbool = val
+	self.from = from
+	return
+}
+
+/**********
+ *
+ * Gets
+ *
+ *********/
+
+func (self *Entry) Get() string {
+	if self.value != "" {
+		return self.value
+	}
+	if self.altvalue != "" {
+		return self.altvalue
+	}
+	return ""
+}
+
+func (self *Entry) GetB() bool {
+	return self.bool
+}
+
+func (self *Entry) GetReal() string {
+	return self.value
+}
+
+func (self *Entry) GetRealB() bool {
+	return self.bool
+}
+
+/**********
+ *
+ * Misc
+ *
+ *********/
 
 func (self *Entry) Print() string {
-	if self.Node != "" {
-		return self.Node
+	if self.value != "" {
+		return self.value
 	}
-	if self.Group != "" {
-		return self.Group
-	}
-	if self.Profile != "" {
-		return self.Profile
-	}
-	if self.Controller != "" {
-		return self.Controller
-	}
-	if self.Default != "" {
-		return self.Default
+	if self.altvalue != "" {
+		return self.altvalue
 	}
 	return "--"
 }
 
 func (self *Entry) Source() string {
-	if self.Node != "" {
-		return "node"
+	if self.from == "" {
+		return "--"
 	}
-	if self.Group != "" {
-		return "group"
-	}
-	if self.Profile != "" {
-		return "profile"
-	}
-	if self.Controller != "" {
-		return "controller"
-	}
-	if self.Default != "" {
-		return "default"
-	}
-	return ""
-}
-
-func (self *Entry) Get() string {
-	if self.Node != "" {
-		return self.Node
-	}
-	if self.Group != "" {
-		return self.Group
-	}
-	if self.Profile != "" {
-		return self.Profile
-	}
-	if self.Controller != "" {
-		return self.Controller
-	}
-	if self.Default != "" {
-		return self.Default
-	}
-	return ""
+	return self.from
 }
 
 func (self *Entry) Defined() bool {
-	if self.Get() == "" {
-		return false
+	if self.value != "" {
+		return true
 	}
-
-	return true
-}
-
-func (self *Entry) SetDefault(value string) {
-	if value == "" {
-		return
-	} else if strings.ToUpper(value) == "UNDEF" {
-		value = ""
-	}
-	self.Default = value
-}
-
-func (self *Entry) SetGroup(value string) {
-	if value == "" {
-		return
-	} else if strings.ToUpper(value) == "UNDEF" {
-		value = ""
-	}
-	self.Group = value
-}
-
-func (self *Entry) SetProfile(value string) {
-	if value == "" {
-		return
-	} else if strings.ToUpper(value) == "UNDEF" {
-		value = ""
-	}
-	self.Profile = value
-}
-
-func (self *Entry) SetController(value string) {
-	if value == "" {
-		return
-	} else if strings.ToUpper(value) == "UNDEF" {
-		value = ""
-	}
-	self.Controller = value
-}
-
-func (self *Entry) SetNode(value string) {
-	if value == "" {
-		return
-	} else if strings.ToUpper(value) == "UNDEF" {
-		value = ""
-	}
-	self.Node = value
-}
-
-func (self *Entry) GetNode() string {
-	return self.Node
-}
-
-func (self *Entry) GetGroup() string {
-	return self.Group
-}
-
-func (self *Entry) GetController() string {
-	return self.Controller
-}
-
-func (self *Entry) GetProfile() string {
-	return self.Profile
-}
-
-func (self *Entry) GetDefault() string {
-	return self.Default
+	return false
 }

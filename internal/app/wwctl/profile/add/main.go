@@ -15,7 +15,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, p := range args {
-		err = nodeDB.AddProfile(p)
+		_, err := nodeDB.AddProfile(p)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			os.Exit(1)
