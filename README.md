@@ -1,3 +1,5 @@
+![Warewulf](warewulf-logo.png)
+
 # warewulf v4 WIP
 
 This is built on CentOS-7/8. More needs to be done to make it work on other
