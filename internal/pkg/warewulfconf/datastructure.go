@@ -20,10 +20,11 @@ type ControllerConf struct {
 }
 
 type WarewulfConf struct {
-	Port    int    `yaml:"port,omitempty"`
-	Secure  bool   `yaml:"secure,omitempty"`
-	Enable  string `yaml:"enable command,omitempty"`
-	Restart string `yaml:"restart command,omitempty"`
+	Port           int    `yaml:"port,omitempty"`
+	Secure         bool   `yaml:"secure,omitempty"`
+	Enable         string `yaml:"enable command,omitempty"`
+	Restart        string `yaml:"restart command,omitempty"`
+	UpdateInterval int    `yaml:"update interval,omitempty"`
 }
 
 type DhcpConf struct {
