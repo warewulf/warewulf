@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"time"
-
 	//   "strings"
 )
 
@@ -90,8 +89,9 @@ func CopyFile(source string, dest string) error {
 
 //TODO: func CopyRecursive ...
 
+func IsDir(path string) bool {
+	wwlog.Printf(wwlog.DEBUG, "Chcking if path exists as a directory: %s\n", path)
 
-func IsDir(path string) (bool) {
 	if path == "" {
 		return false
 	}
@@ -101,7 +101,9 @@ func IsDir(path string) (bool) {
 	return false
 }
 
-func IsFile(path string) (bool) {
+func IsFile(path string) bool {
+	wwlog.Printf(wwlog.DEBUG, "Chcking if path exists as a file: %s\n", path)
+
 	if path == "" {
 		return false
 	}
@@ -111,7 +113,6 @@ func IsFile(path string) (bool) {
 	}
 	return false
 }
-
 
 func TaintCheck(pattern string, expr string) bool {
 	if b, _ := regexp.MatchString(expr, pattern); b == true {
@@ -148,7 +149,7 @@ func FindFiles(path string) []string {
 
 		if IsDir(location) == true {
 			wwlog.Printf(wwlog.DEBUG, "FindFiles() found directory: %s\n", location)
-			ret = append(ret, location +"/")
+			ret = append(ret, location+"/")
 		} else {
 			wwlog.Printf(wwlog.DEBUG, "FindFiles() found file: %s\n", location)
 			ret = append(ret, location)
@@ -163,7 +164,7 @@ func FindFiles(path string) []string {
 	return ret
 }
 
-func ExecInteractive(command string, a...string) error {
+func ExecInteractive(command string, a ...string) error {
 	wwlog.Printf(wwlog.DEBUG, "ExecInteractive(%s, %s)\n", command, a)
 	c := exec.Command(command, a...)
 	c.Stdin = os.Stdin
@@ -172,8 +173,6 @@ func ExecInteractive(command string, a...string) error {
 	err := c.Run()
 	return err
 }
-
-
 
 func ShaSumFile(file string) (string, error) {
 	var ret string
@@ -191,7 +190,6 @@ func ShaSumFile(file string) (string, error) {
 
 	return fmt.Sprintf("%x", h.Sum(nil)), nil
 }
-
 
 func SliceRemoveElement(array []string, remove string) []string {
 	var ret []string

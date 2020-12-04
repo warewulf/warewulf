@@ -24,19 +24,18 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
+	if len(args) == 0 {
+		args = append(args, "localhost")
+	}
+
 	if SetAll == true {
-		var tmp []node.ControllerInfo
-		tmp, err = nodeDB.FindAllControllers()
+		controllers, err = nodeDB.FindAllControllers()
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			os.Exit(1)
 		}
 
-		for _, c := range tmp {
-			controllers = append(controllers, c)
-		}
-
-	} else if len(args) > 0 {
+	} else {
 		var tmp []node.ControllerInfo
 		tmp, err = nodeDB.FindAllControllers()
 		if err != nil {
@@ -51,10 +50,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				}
 			}
 		}
-
-	} else {
-		cmd.Usage()
-		os.Exit(1)
 	}
 
 	for _, c := range controllers {

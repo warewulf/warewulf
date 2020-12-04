@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"os/exec"
 	"time"
-
-	"github.com/hpcng/warewulf/internal/pkg/config"
 )
 
 func main() {
@@ -24,10 +24,14 @@ func main() {
 		os.Chdir("/warewulf/wwclient-test")
 	}
 
-	config := config.New()
+	conf, err := warewulfconf.New()
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Could not get Warewulf configuration: %s\n", err)
+		os.Exit(1)
+	}
 
 	localTCPAddr := net.TCPAddr{}
-	if config.InsecureRuntime == false {
+	if conf.Warewulf.Secure == true {
 		// Setup local port to something privileged (<1024)
 		localTCPAddr.Port = 987
 	} else {
@@ -56,7 +60,7 @@ func main() {
 		for true {
 			var err error
 
-			getString := fmt.Sprintf("http://%s:%d/overlay-runtime", config.Ipaddr, config.Port)
+			getString := fmt.Sprintf("http://%s:%d/overlay-runtime", conf.Ipaddr, conf.Warewulf.Port)
 			resp, err = webclient.Get(getString)
 			if err == nil {
 				break

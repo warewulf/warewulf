@@ -13,7 +13,6 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	config := config.New()
 	set := make(map[string]int)
 	var o []string
 	var err error
@@ -54,11 +53,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	for _, node := range nodeList {
 		if SystemOverlay == true {
 			if node.SystemOverlay.Get() != "" {
-				set[node.SystemOverlay.Get()] ++
+				set[node.SystemOverlay.Get()]++
 			}
 		} else {
 			if node.RuntimeOverlay.Get() != "" {
-				set[node.RuntimeOverlay.Get()] ++
+				set[node.RuntimeOverlay.Get()]++
 			}
 		}
 	}

@@ -34,22 +34,28 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "Warewulf", "Enable CMD", c.Services.Warewulfd.EnableCmd)
 			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "Warewulf", "Restart CMD", c.Services.Warewulfd.RestartCmd)
 			fmt.Printf("%-15s %15s : %s = %t\n", c.Id, "DHCPD", "Enabled", c.Services.Dhcp.Enabled)
-			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "DHCPD", "Template", c.Services.Dhcp.Template)
-			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "DHCPD", "ConfigFile", c.Services.Dhcp.ConfigFile)
-			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "DHCPD", "RangeStart", c.Services.Dhcp.RangeStart)
-			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "DHCPD", "RangeEnd", c.Services.Dhcp.RangeEnd)
-			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "DHCPD", "Enable CMD", c.Services.Dhcp.EnableCmd)
-			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "DHCPD", "Restart CMD", c.Services.Dhcp.RestartCmd)
-			fmt.Printf("%-15s %15s : %s = %t\n", c.Id, "TFTP", "Enabled", c.Services.Tftp.Enabled)
-			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "TFTP", "TftpRoot", c.Services.Tftp.TftpRoot)
-			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "TFTP", "Enable CMD", c.Services.Tftp.EnableCmd)
-			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "TFTP", "Restart CMD", c.Services.Tftp.RestartCmd)
-			fmt.Printf("%-15s %15s : %s = %t\n", c.Id, "NFS", "Enabled", c.Services.Nfs.Enabled)
-			for _, e := range c.Services.Nfs.Exports {
-				fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "NFS", "Exports", e)
+			if c.Services.Dhcp.Enabled == true {
+				fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "DHCPD", "Template", c.Services.Dhcp.Template)
+				fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "DHCPD", "ConfigFile", c.Services.Dhcp.ConfigFile)
+				fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "DHCPD", "RangeStart", c.Services.Dhcp.RangeStart)
+				fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "DHCPD", "RangeEnd", c.Services.Dhcp.RangeEnd)
+				fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "DHCPD", "Enable CMD", c.Services.Dhcp.EnableCmd)
+				fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "DHCPD", "Restart CMD", c.Services.Dhcp.RestartCmd)
 			}
-			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "NFS", "Enable CMD", c.Services.Nfs.EnableCmd)
-			fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "NFS", "Restart CMD", c.Services.Nfs.RestartCmd)
+			fmt.Printf("%-15s %15s : %s = %t\n", c.Id, "TFTP", "Enabled", c.Services.Tftp.Enabled)
+			if c.Services.Tftp.Enabled == true {
+				fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "TFTP", "TftpRoot", c.Services.Tftp.TftpRoot)
+				fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "TFTP", "Enable CMD", c.Services.Tftp.EnableCmd)
+				fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "TFTP", "Restart CMD", c.Services.Tftp.RestartCmd)
+			}
+			fmt.Printf("%-15s %15s : %s = %t\n", c.Id, "NFS", "Enabled", c.Services.Nfs.Enabled)
+			if c.Services.Nfs.Enabled == true {
+				for _, e := range c.Services.Nfs.Exports {
+					fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "NFS", "Exports", e)
+				}
+				fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "NFS", "Enable CMD", c.Services.Nfs.EnableCmd)
+				fmt.Printf("%-15s %15s : %s = %s\n", c.Id, "NFS", "Restart CMD", c.Services.Nfs.RestartCmd)
+			}
 
 		}
 	} else {

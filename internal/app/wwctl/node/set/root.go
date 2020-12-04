@@ -9,6 +9,7 @@ var (
 		Long:  "Set node configurations ",
 		RunE:  CobraRunE,
 	}
+	SetComment        string
 	SetVnfs           string
 	SetKernel         string
 	SetNetDev         string
@@ -21,7 +22,6 @@ var (
 	SetIpxe           string
 	SetRuntimeOverlay string
 	SetSystemOverlay  string
-	SetHostname       string
 	SetIpmiIpaddr     string
 	SetIpmiNetmask    string
 	SetIpmiUsername   string
@@ -33,13 +33,13 @@ var (
 )
 
 func init() {
+	baseCmd.PersistentFlags().StringVarP(&SetComment, "comment", "C", "", "Set a comment for this node")
 	baseCmd.PersistentFlags().StringVarP(&SetVnfs, "vnfs", "V", "", "Set node Virtual Node File System (VNFS)")
 	baseCmd.PersistentFlags().StringVarP(&SetKernel, "kernel", "K", "", "Set Kernel version for nodes")
 	baseCmd.PersistentFlags().StringVarP(&SetDomainName, "domain", "D", "", "Set the node's domain name")
 	baseCmd.PersistentFlags().StringVarP(&SetIpxe, "ipxe", "P", "", "Set the node's iPXE template name")
 	baseCmd.PersistentFlags().StringVarP(&SetRuntimeOverlay, "runtime", "R", "", "Set the node's runtime overlay")
 	baseCmd.PersistentFlags().StringVarP(&SetSystemOverlay, "system", "S", "", "Set the node's system overlay")
-	baseCmd.PersistentFlags().StringVarP(&SetHostname, "hostname", "N", "", "Set the node's hostname")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiIpaddr, "ipmi", "", "Set the node's IPMI IP address")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiNetmask, "ipminetmask", "", "Set the node's IPMI netmask")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiUsername, "ipmiuser", "", "Set the node's IPMI username")
@@ -53,7 +53,7 @@ func init() {
 	baseCmd.PersistentFlags().StringVarP(&SetNetmask, "netmask", "M", "", "Set the node's network device netmask")
 	baseCmd.PersistentFlags().StringVarP(&SetGateway, "gateway", "G", "", "Set the node's network device gateway")
 	baseCmd.PersistentFlags().StringVarP(&SetHwaddr, "hwaddr", "H", "", "Set the node's network device HW address")
-	baseCmd.PersistentFlags().BoolVar(&SetNetDevDel, "delete", false, "Delete the node's network device")
+	baseCmd.PersistentFlags().BoolVar(&SetNetDevDel, "netdel", false, "Delete the node's network device")
 	baseCmd.PersistentFlags().BoolVarP(&SetNodeAll, "all", "a", false, "Set all nodes")
 
 	baseCmd.PersistentFlags().BoolVarP(&SetYes, "yes", "y", false, "Set 'yes' to all questions asked")

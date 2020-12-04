@@ -7,7 +7,10 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"regexp"
+	"strings"
 )
+
+const ConfigFile = "/etc/warewulf/nodes.conf"
 
 func New() (nodeYaml, error) {
 	var ret nodeYaml
@@ -19,10 +22,13 @@ func New() (nodeYaml, error) {
 		return ret, err
 	}
 
+	wwlog.Printf(wwlog.DEBUG, "Unmarshaling the node configuration\n")
 	err = yaml.Unmarshal(data, &ret)
 	if err != nil {
 		return ret, err
 	}
+
+	wwlog.Printf(wwlog.DEBUG, "Returning node object\n")
 
 	return ret, nil
 }
@@ -30,200 +36,135 @@ func New() (nodeYaml, error) {
 func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 	var ret []NodeInfo
 
-	for controllername, controller := range self.Controllers {
-		for groupname, group := range controller.NodeGroups {
-			for nodename, node := range group.Nodes {
-				var n NodeInfo
-				var allProfiles []string
+	wwlog.Printf(wwlog.DEBUG, "Finding all nodes...\n")
+	for nodename, node := range self.Nodes {
+		var n NodeInfo
 
-				if node.Disabled == true || group.Disabled == true {
-					wwlog.Printf(wwlog.VERBOSE, "Skipping disabled node: %s/%s\n", groupname, nodename)
-					continue
+		wwlog.Printf(wwlog.DEBUG, "In node loop: %s\n", nodename)
+		n.NetDevs = make(map[string]*NetDevEntry)
+		n.SystemOverlay.SetDefault("default")
+		n.RuntimeOverlay.SetDefault("default")
+		n.Ipxe.SetDefault("default")
+
+		fullname := strings.SplitN(nodename, ".", 2)
+		if len(fullname) > 1 {
+			n.DomainName.SetDefault(fullname[1])
+		}
+
+		if len(node.Profiles) == 0 {
+			n.Profiles = []string{"default"}
+		} else {
+			n.Profiles = node.Profiles
+		}
+
+		n.Id.Set(nodename)
+		n.Comment.Set(node.Comment)
+		n.Vnfs.Set(node.Vnfs)
+		n.KernelVersion.Set(node.KernelVersion)
+		n.KernelArgs.Set(node.KernelArgs)
+		n.DomainName.Set(node.DomainName)
+		n.Ipxe.Set(node.Ipxe)
+		n.IpmiIpaddr.Set(node.IpmiIpaddr)
+		n.IpmiNetmask.Set(node.IpmiNetmask)
+		n.IpmiUserName.Set(node.IpmiUserName)
+		n.IpmiPassword.Set(node.IpmiPassword)
+		n.SystemOverlay.Set(node.SystemOverlay)
+		n.RuntimeOverlay.Set(node.RuntimeOverlay)
+
+		for devname, netdev := range node.NetDevs {
+			if _, ok := n.NetDevs[devname]; !ok {
+				var netdev NetDevEntry
+				n.NetDevs[devname] = &netdev
+			}
+
+			n.NetDevs[devname].Ipaddr.Set(netdev.Ipaddr)
+			n.NetDevs[devname].Netmask.Set(netdev.Netmask)
+			n.NetDevs[devname].Hwaddr.Set(netdev.Hwaddr)
+			n.NetDevs[devname].Gateway.Set(netdev.Gateway)
+			n.NetDevs[devname].Type.Set(netdev.Type)
+			n.NetDevs[devname].Default.SetB(netdev.Default)
+		}
+
+		for _, p := range n.Profiles {
+			if _, ok := self.NodeProfiles[p]; !ok {
+				wwlog.Printf(wwlog.WARN, "Profile not found for node '%s': %s\n", nodename, p)
+				continue
+			}
+
+			wwlog.Printf(wwlog.VERBOSE, "Merging profile into node: %s <- %s\n", nodename, p)
+
+			pstring := fmt.Sprintf("%s", p)
+
+			n.Comment.SetAlt(self.NodeProfiles[p].Comment, pstring)
+			n.DomainName.SetAlt(self.NodeProfiles[p].DomainName, pstring)
+			n.Vnfs.SetAlt(self.NodeProfiles[p].Vnfs, pstring)
+			n.KernelVersion.SetAlt(self.NodeProfiles[p].KernelVersion, pstring)
+			n.KernelArgs.SetAlt(self.NodeProfiles[p].KernelArgs, pstring)
+			n.Ipxe.SetAlt(self.NodeProfiles[p].Ipxe, pstring)
+			n.IpmiIpaddr.SetAlt(self.NodeProfiles[p].IpmiIpaddr, pstring)
+			n.IpmiNetmask.SetAlt(self.NodeProfiles[p].IpmiNetmask, pstring)
+			n.IpmiUserName.SetAlt(self.NodeProfiles[p].IpmiUserName, pstring)
+			n.IpmiPassword.SetAlt(self.NodeProfiles[p].IpmiPassword, pstring)
+			n.SystemOverlay.SetAlt(self.NodeProfiles[p].SystemOverlay, pstring)
+			n.RuntimeOverlay.SetAlt(self.NodeProfiles[p].RuntimeOverlay, pstring)
+
+			for devname, netdev := range self.NodeProfiles[p].NetDevs {
+				if _, ok := n.NetDevs[devname]; !ok {
+					var netdev NetDevEntry
+					n.NetDevs[devname] = &netdev
 				}
+				wwlog.Printf(wwlog.DEBUG, "Updating profile (%s) netdev: %s\n", p, devname)
 
-				n.Id.Set(nodename)
-				n.Gid.Set(groupname)
-				n.Cid.Set(controllername)
-				n.HostName.Set(node.Hostname)
-				n.IpmiIpaddr.Set(node.IpmiIpaddr)
-				n.IpmiNetmask.Set(node.IpmiNetmask)
-				n.DomainName.Set(node.DomainName)
-				n.Vnfs.Set(node.Vnfs)
-				n.KernelVersion.Set(node.KernelVersion)
-				n.KernelArgs.Set(node.KernelArgs)
-				n.Ipxe.Set(node.Ipxe)
-				n.IpmiUserName.Set(node.IpmiUserName)
-				n.IpmiPassword.Set(node.IpmiPassword)
-				n.SystemOverlay.Set(node.SystemOverlay)
-				n.RuntimeOverlay.Set(node.RuntimeOverlay)
-
-				n.DomainName.SetGroup(group.DomainName)
-				n.Vnfs.SetGroup(group.Vnfs)
-				n.KernelVersion.SetGroup(group.KernelVersion)
-				n.KernelArgs.SetGroup(group.KernelArgs)
-				n.Ipxe.SetGroup(group.Ipxe)
-				n.IpmiNetmask.SetGroup(group.IpmiNetmask)
-				n.IpmiUserName.SetGroup(group.IpmiUserName)
-				n.IpmiPassword.SetGroup(group.IpmiPassword)
-				n.SystemOverlay.SetGroup(group.SystemOverlay)
-				n.RuntimeOverlay.SetGroup(group.RuntimeOverlay)
-
-				n.RuntimeOverlay.SetDefault("default")
-				n.SystemOverlay.SetDefault("default")
-				n.Ipxe.SetDefault("default")
-				n.KernelArgs.SetDefault("crashkernel=no quiet")
-
-				n.GroupProfiles = group.Profiles
-				n.Profiles = node.Profiles
-
-				allProfiles = append(allProfiles, group.Profiles...)
-				allProfiles = append(allProfiles, node.Profiles...)
-
-				for _, p := range allProfiles {
-					if _, ok := self.NodeProfiles[p]; !ok {
-						wwlog.Printf(wwlog.WARN, "Profile not found for node '%s': %s\n", nodename, p)
-						continue
-					}
-
-					n.DomainName.SetProfile(self.NodeProfiles[p].DomainName)
-					n.Vnfs.SetProfile(self.NodeProfiles[p].Vnfs)
-					n.KernelVersion.SetProfile(self.NodeProfiles[p].KernelVersion)
-					n.KernelArgs.SetProfile(self.NodeProfiles[p].KernelArgs)
-					n.Ipxe.SetProfile(self.NodeProfiles[p].Ipxe)
-					n.IpmiNetmask.SetProfile(self.NodeProfiles[p].IpmiNetmask)
-					n.IpmiUserName.SetProfile(self.NodeProfiles[p].IpmiUserName)
-					n.IpmiPassword.SetProfile(self.NodeProfiles[p].IpmiPassword)
-					n.SystemOverlay.SetProfile(self.NodeProfiles[p].SystemOverlay)
-					n.RuntimeOverlay.SetProfile(self.NodeProfiles[p].RuntimeOverlay)
-				}
-
-				if n.DomainName.Defined() == true {
-					n.Fqdn.Set(node.Hostname + "." + n.DomainName.Get())
-				} else {
-					n.Fqdn.Set(node.Hostname)
-				}
-
-				n.NetDevs = node.NetDevs
-
-				ret = append(ret, n)
+				n.NetDevs[devname].Ipaddr.SetAlt(netdev.Ipaddr, pstring)
+				n.NetDevs[devname].Netmask.SetAlt(netdev.Netmask, pstring)
+				n.NetDevs[devname].Hwaddr.SetAlt(netdev.Hwaddr, pstring)
+				n.NetDevs[devname].Gateway.SetAlt(netdev.Gateway, pstring)
+				n.NetDevs[devname].Type.SetAlt(netdev.Type, pstring)
+				n.NetDevs[devname].Default.SetAltB(netdev.Default, pstring)
 			}
 		}
+
+		ret = append(ret, n)
+
 	}
 
 	return ret, nil
 }
 
-func (self *nodeYaml) FindAllGroups() ([]GroupInfo, error) {
-	var ret []GroupInfo
-
-	for controllername, controller := range self.Controllers {
-		for groupname, group := range controller.NodeGroups {
-			var g GroupInfo
-
-			g.Id = groupname
-			g.Cid = controllername
-			g.DomainName = group.DomainName
-			g.Comment = group.Comment
-			g.Vnfs = group.Vnfs
-			g.KernelVersion = group.KernelVersion
-			g.KernelArgs = group.KernelArgs
-			g.IpmiNetmask = group.IpmiNetmask
-			g.IpmiPassword = group.IpmiPassword
-			g.IpmiUserName = group.IpmiUserName
-			g.SystemOverlay = group.SystemOverlay
-			g.RuntimeOverlay = group.RuntimeOverlay
-
-			g.Profiles = group.Profiles
-
-			// TODO: Validate or die on all inputs
-
-			ret = append(ret, g)
-		}
-	}
-	return ret, nil
-}
-
-func (self *nodeYaml) FindAllControllers() ([]ControllerInfo, error) {
-	var ret []ControllerInfo
-
-	for controllername, controller := range self.Controllers {
-		var c ControllerInfo
-
-		c.Id = controllername
-		c.Ipaddr = controller.Ipaddr
-		c.Comment = controller.Comment
-		c.Fqdn = controller.Fqdn
-
-		//TODO: Is there a better way to do this, cause EWWW!
-		c.Services = struct {
-			Warewulfd struct {
-				Port       string
-				Secure     bool
-				StartCmd   string
-				RestartCmd string
-				EnableCmd  string
-			}
-			Dhcp struct {
-				Enabled    bool
-				Template   string
-				RangeStart string
-				RangeEnd   string
-				ConfigFile string
-				StartCmd   string
-				RestartCmd string
-				EnableCmd  string
-			}
-			Tftp struct {
-				Enabled    bool
-				TftpRoot   string
-				StartCmd   string
-				RestartCmd string
-				EnableCmd  string
-			}
-			Nfs struct {
-				Enabled    bool
-				Exports    []string
-				StartCmd   string
-				RestartCmd string
-				EnableCmd  string
-			}
-		}(controller.Services)
-
-		// Validations //
-
-		if c.Ipaddr == "" {
-			wwlog.Printf(wwlog.WARN, "Controller IP address is unset: %s\n", c.Id)
-		}
-
-		if c.Services.Warewulfd.Port == "" {
-			c.Services.Warewulfd.Port = "987"
-		}
-
-		// TODO: Validate or die on all inputs
-
-		ret = append(ret, c)
-	}
-	return ret, nil
-}
-
-func (self *nodeYaml) FindAllProfiles() ([]ProfileInfo, error) {
-	var ret []ProfileInfo
+func (self *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
+	var ret []NodeInfo
 
 	for name, profile := range self.NodeProfiles {
-		var p ProfileInfo
+		var p NodeInfo
+		p.NetDevs = make(map[string]*NetDevEntry)
 
-		p.Id = name
-		p.Comment = profile.Comment
-		p.Vnfs = profile.Vnfs
-		p.Ipxe = profile.Ipxe
-		p.KernelVersion = profile.KernelVersion
-		p.KernelArgs = profile.KernelArgs
-		p.IpmiNetmask = profile.IpmiNetmask
-		p.IpmiUserName = profile.IpmiUserName
-		p.IpmiPassword = profile.IpmiPassword
-		p.DomainName = profile.DomainName
-		p.RuntimeOverlay = profile.RuntimeOverlay
-		p.SystemOverlay = profile.SystemOverlay
+		p.Id.Set(name)
+		p.Comment.Set(profile.Comment)
+		p.Vnfs.Set(profile.Vnfs)
+		p.Ipxe.Set(profile.Ipxe)
+		p.KernelVersion.Set(profile.KernelVersion)
+		p.KernelArgs.Set(profile.KernelArgs)
+		p.IpmiNetmask.Set(profile.IpmiNetmask)
+		p.IpmiUserName.Set(profile.IpmiUserName)
+		p.IpmiPassword.Set(profile.IpmiPassword)
+		p.RuntimeOverlay.Set(profile.RuntimeOverlay)
+		p.SystemOverlay.Set(profile.SystemOverlay)
+
+		for devname, netdev := range profile.NetDevs {
+			if _, ok := p.NetDevs[devname]; !ok {
+				var netdev NetDevEntry
+				p.NetDevs[devname] = &netdev
+			}
+
+			wwlog.Printf(wwlog.DEBUG, "Updating profile netdev: %s\n", devname)
+
+			p.NetDevs[devname].Ipaddr.Set(netdev.Ipaddr)
+			p.NetDevs[devname].Netmask.Set(netdev.Netmask)
+			p.NetDevs[devname].Hwaddr.Set(netdev.Hwaddr)
+			p.NetDevs[devname].Gateway.Set(netdev.Gateway)
+			p.NetDevs[devname].Type.Set(netdev.Type)
+			p.NetDevs[devname].Default.SetB(netdev.Default)
+		}
 
 		// TODO: Validate or die on all inputs
 
@@ -239,7 +180,7 @@ func (self *nodeYaml) FindByHwaddr(hwa string) (NodeInfo, error) {
 
 	for _, node := range n {
 		for _, dev := range node.NetDevs {
-			if dev.Hwaddr == hwa {
+			if dev.Hwaddr.Get() == hwa {
 				return node, nil
 			}
 		}
@@ -255,7 +196,7 @@ func (self *nodeYaml) FindByIpaddr(ipaddr string) (NodeInfo, error) {
 
 	for _, node := range n {
 		for _, dev := range node.NetDevs {
-			if dev.Ipaddr == ipaddr {
+			if dev.Ipaddr.Get() == ipaddr {
 				return node, nil
 			}
 		}
@@ -270,7 +211,7 @@ func (nodes *nodeYaml) SearchByName(search string) ([]NodeInfo, error) {
 	n, _ := nodes.FindAllNodes()
 
 	for _, node := range n {
-		b, _ := regexp.MatchString(search, node.Fqdn.Get())
+		b, _ := regexp.MatchString(search, node.Id.Get())
 		if b == true {
 			ret = append(ret, node)
 		}
@@ -286,7 +227,7 @@ func (nodes *nodeYaml) SearchByNameList(searchList []string) ([]NodeInfo, error)
 
 	for _, search := range searchList {
 		for _, node := range n {
-			b, _ := regexp.MatchString(search, node.Fqdn.Get())
+			b, _ := regexp.MatchString(search, node.Id.Get())
 			if b == true {
 				ret = append(ret, node)
 			}

@@ -34,13 +34,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	for _, node := range nodeList {
 
-		if node.IpmiIpaddr.String() == "" {
-			wwlog.Printf(wwlog.ERROR, "%s: No IPMI IP address\n", node.HostName)
+		if node.IpmiIpaddr.Get() == "" {
+			wwlog.Printf(wwlog.ERROR, "%s: No IPMI IP address\n", node.Id.Get())
 			continue
 		}
 
 		ipmiCmd := power.IPMI{
-			HostName: node.IpmiIpaddr.String(),
+			HostName: node.IpmiIpaddr.Get(),
 			User:     "ADMIN",
 			Password: "ADMIN",
 			AuthType: "MD5",
@@ -49,12 +49,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		out, err := ipmiCmd.PowerStatus()
 
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "%s: %s\n", node.HostName, out)
+			wwlog.Printf(wwlog.ERROR, "%s: %s\n", node.Id.Get(), out)
 			returnErr = err
 			continue
 		}
 
-		wwlog.Printf(wwlog.INFO, "%s: %s\n", node.HostName, out)
+		wwlog.Printf(wwlog.INFO, "%s: %s\n", node.Id.Get(), out)
 	}
 
 	return returnErr

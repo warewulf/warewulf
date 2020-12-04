@@ -14,7 +14,6 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var overlayPath string
-	config := config.New()
 
 	if SystemOverlay == true {
 		overlayPath = config.SystemOverlaySource(args[0])
@@ -110,9 +109,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		var updateNodes []node.NodeInfo
 
 		for _, node := range nodes {
-			if SystemOverlay == true && node.SystemOverlay.String() == args[0] {
+			if SystemOverlay == true && node.SystemOverlay.Get() == args[0] {
 				updateNodes = append(updateNodes, node)
-			} else if node.RuntimeOverlay.String() == args[0] {
+			} else if node.RuntimeOverlay.Get() == args[0] {
 				updateNodes = append(updateNodes, node)
 			}
 		}
