@@ -2,10 +2,6 @@
 
 ![Warewulf](warewulf-logo.png)
 
-This is built on CentOS-7/8. More needs to be done to make it work on other
-distributions and versions specifically with the system service
-components.
-
 In a nutshell, to install and start provisioning nodes, do the following:
 
 ####Build Warewulf and dependencies:
