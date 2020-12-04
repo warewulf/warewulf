@@ -1,6 +1,6 @@
-![Warewulf](warewulf-logo.png)
+# warewulf v4 (work in progress)
 
-# warewulf v4 WIP
+![Warewulf](warewulf-logo.png)
 
 This is built on CentOS-7/8. More needs to be done to make it work on other
 distributions and versions specifically with the system service
