@@ -14,13 +14,12 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	config := config.New()
 	nconfig, _ := node.New()
 	nodes, _ := nconfig.FindAllNodes()
 	nodemap := make(map[string]int)
 
 	for _, n := range nodes {
-		nodemap[n.Vnfs.Get()] ++
+		nodemap[n.Vnfs.Get()]++
 	}
 
 	images, _ := ioutil.ReadDir(config.VnfsImageParentDir())
@@ -32,7 +31,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		v, err := vnfs.Load(file.Name())
 		if err == nil {
 			var vnfs_size int64
-			if util.IsFile( config.VnfsImage(file.Name())) {
+			if util.IsFile(config.VnfsImage(file.Name())) {
 				s, _ := os.Stat(config.VnfsImage(file.Name()))
 				vnfs_size = s.Size() / 1024
 			}
@@ -48,7 +47,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 		if util.IsDir(path.Join(config.VnfsImageParentDir(), file.Name())) {
 			var vnfs_size int64
-			if util.IsFile( config.VnfsImage(file.Name())) {
+			if util.IsFile(config.VnfsImage(file.Name())) {
 				s, _ := os.Stat(config.VnfsImage(file.Name()))
 				vnfs_size = s.Size() / 1024
 			}

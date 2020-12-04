@@ -4,18 +4,101 @@ import (
 	"strings"
 )
 
-func (self *NodeInfoEntry) String() string {
+/**********
+ *
+ * Sets
+ *
+ *********/
+
+func (self *Entry) Set(val string) {
+	if val == "" {
+		return
+	}
+
+	if strings.ToUpper(val) == "DELETE" {
+		self.value = ""
+	} else {
+		self.value = val
+	}
+
+	return
+}
+
+func (self *Entry) SetB(val bool) {
+	self.bool = val
+	return
+}
+
+func (self *Entry) SetAlt(val string, from string) {
+	if val == "" {
+		return
+	}
+
+	self.altvalue = val
+	self.from = from
+
+	return
+}
+
+func (self *Entry) SetAltB(val bool, from string) {
+	self.altbool = val
+	self.from = from
+	return
+}
+
+func (self *Entry) SetDefault(val string) {
+	if val == "" {
+		return
+	}
+
+	self.def = val
+
+	return
+}
+
+/**********
+ *
+ * Gets
+ *
+ *********/
+
+func (self *Entry) Get() string {
 	if self.value != "" {
 		return self.value
 	}
-	if self.group != "" {
-		return self.group
+	if self.altvalue != "" {
+		return self.altvalue
 	}
-	if self.profile != "" {
-		return self.profile
+	if self.def != "" {
+		return self.def
 	}
-	if self.controller != "" {
-		return self.controller
+	return ""
+}
+
+func (self *Entry) GetB() bool {
+	return self.bool
+}
+
+func (self *Entry) GetReal() string {
+	return self.value
+}
+
+func (self *Entry) GetRealB() bool {
+	return self.bool
+}
+
+/**********
+ *
+ * Misc
+ *
+ *********/
+
+func (self *Entry) Print() string {
+	if self.value != "" {
+		return self.value
+	}
+	if self.altvalue != "" {
+		return self.altvalue
 	}
 	if self.def != "" {
 		return self.def
@@ -23,93 +106,25 @@ func (self *NodeInfoEntry) String() string {
 	return "--"
 }
 
-func (self *NodeInfoEntry) Source() string {
+func (self *Entry) Source() string {
+	if self.value != "" && self.altvalue != "" {
+		return "SUPERSEDED"
+		//return fmt.Sprintf("[%s]", self.from)
+	} else if self.from == "" {
+		return "--"
+	}
+	return self.from
+}
+
+func (self *Entry) Defined() bool {
 	if self.value != "" {
-		return "node"
+		return true
 	}
-	if self.group != "" {
-		return "group"
-	}
-	if self.profile != "" {
-		return "profile"
-	}
-	if self.controller != "" {
-		return "controller"
+	if self.altvalue != "" {
+		return true
 	}
 	if self.def != "" {
-		return "default"
+		return true
 	}
-	return ""
-}
-
-func (self *NodeInfoEntry) Get() string {
-	if self.value != "" {
-		return self.value
-	}
-	if self.group != "" {
-		return self.group
-	}
-	if self.profile != "" {
-		return self.profile
-	}
-	if self.controller != "" {
-		return self.controller
-	}
-	if self.def != "" {
-		return self.def
-	}
-	return ""
-}
-
-func (self *NodeInfoEntry) Defined() bool {
-	if self.Get() == "" {
-		return false
-	}
-
-	return true
-}
-
-func (self *NodeInfoEntry) SetDefault(value string) {
-	if value == "" {
-		return
-	}
-	self.def = value
-}
-
-func (self *NodeInfoEntry) SetGroup(value string) {
-	if value == "" {
-		return
-	}
-	self.group = value
-}
-
-func (self *NodeInfoEntry) SetProfile(value string) {
-	if value == "" {
-		return
-	}
-	self.profile = value
-}
-
-func (self *NodeInfoEntry) SetController(value string) {
-	if value == "" {
-		return
-	}
-	self.controller = value
-}
-
-func (self *NodeInfoEntry) Set(value string) {
-	if value == "" {
-		return
-	} else if strings.ToUpper(value) == "UNDEF" {
-		value = ""
-	}
-	self.value = value
-}
-
-func (self *NodeInfoEntry) Unset() {
-	self.value = ""
-}
-
-func (self *NodeInfoEntry) GetReal() string {
-	return self.value
+	return false
 }

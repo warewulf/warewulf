@@ -9,7 +9,7 @@ var (
 	baseCmd = &cobra.Command{
 		Use:   "service",
 		Short: "Initialize Warewulf services",
-		Long:  "Warewulf Initialization",
+		Long:  "Warewulf Service Initialization",
 	}
 )
 

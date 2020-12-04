@@ -13,15 +13,14 @@ import (
 )
 
 type VnfsObject struct {
-	Name string
+	Name   string
 	Source string
 	Chroot string
-	Image string
+	Image  string
 	Config string
 }
 
-func Load (name string) (VnfsObject, error) {
-	config := config.New()
+func Load(name string) (VnfsObject, error) {
 	var ret VnfsObject
 
 	if name == "" {
@@ -68,7 +67,6 @@ func CleanName(source string) string {
 
 func New(source string) (VnfsObject, error) {
 	var ret VnfsObject
-	config := config.New()
 
 	if source == "" {
 		wwlog.Printf(wwlog.DEBUG, "Called vnfs.Load() without a name, returning error\n")
@@ -122,11 +120,6 @@ func (self *VnfsObject) SaveConfig() error {
 	return nil
 }
 
-
-
-
-
-
 func Build(name string, force bool) error {
 
 	vnfs, err := New(name)
@@ -153,12 +146,6 @@ func Build(name string, force bool) error {
 
 	return nil
 }
-
-
-
-
-
-
 
 func (self *VnfsObject) Nameold() string {
 	if self.Source == "" {

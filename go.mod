@@ -44,16 +44,17 @@ require (
 	github.com/russross/blackfriday/v2 v2.0.1
 	github.com/sirupsen/logrus v1.7.0
 	github.com/spf13/cobra v1.1.1
-	github.com/ulikunitz/xz v0.5.8
-	github.com/vbauerster/mpb/v5 v5.3.0
-	go.etcd.io/bbolt v1.3.5
-	golang.org/x/crypto v0.0.0-20200604202706-70a84ac30bf9
-	golang.org/x/net v0.0.0-20200602114024-627f9648deb9
-	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
-	golang.org/x/sys v0.0.0-20200909081042-eff7692f9009
-	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013
-	google.golang.org/grpc v1.27.0
-	google.golang.org/protobuf v1.24.0
-	gopkg.in/square/go-jose.v2 v2.3.1
+	github.com/ttacon/chalk v0.0.0-20160626202418-22c06c80ed31
+	github.com/ulikunitz/xz v0.5.8 // indirect
+	github.com/vbauerster/mpb/v5 v5.3.0 // indirect
+	go.etcd.io/bbolt v1.3.5 // indirect
+	golang.org/x/crypto v0.0.0-20200604202706-70a84ac30bf9 // indirect
+	golang.org/x/net v0.0.0-20200602114024-627f9648deb9 // indirect
+	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a // indirect
+	golang.org/x/sys v0.0.0-20200909081042-eff7692f9009 // indirect
+	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect
+	google.golang.org/grpc v1.27.0 // indirect
+	google.golang.org/protobuf v1.24.0 // indirect
+	gopkg.in/square/go-jose.v2 v2.3.1 // indirect
 	gopkg.in/yaml.v2 v2.3.0
 )
