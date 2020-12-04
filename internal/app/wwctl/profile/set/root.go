@@ -13,7 +13,7 @@ var (
 	SetComment        string
 	SetVnfs           string
 	SetKernel         string
-	SetDomainName     string
+	SetClusterName    string
 	SetIpxe           string
 	SetRuntimeOverlay string
 	SetSystemOverlay  string
@@ -29,10 +29,10 @@ var (
 )
 
 func init() {
-	baseCmd.PersistentFlags().StringVarP(&SetComment, "comment", "C", "", "Set a comment for this node")
+	baseCmd.PersistentFlags().StringVar(&SetComment, "comment", "", "Set a comment for this node")
 	baseCmd.PersistentFlags().StringVarP(&SetVnfs, "vnfs", "V", "", "Set node Virtual Node File System (VNFS)")
 	baseCmd.PersistentFlags().StringVarP(&SetKernel, "kernel", "K", "", "Set Kernel version for nodes")
-	baseCmd.PersistentFlags().StringVarP(&SetDomainName, "domain", "D", "", "Set the node's domain name")
+	baseCmd.PersistentFlags().StringVarP(&SetClusterName, "cluster", "C", "", "Set the node's cluster name")
 	baseCmd.PersistentFlags().StringVarP(&SetIpxe, "ipxe", "P", "", "Set the node's iPXE template name")
 	baseCmd.PersistentFlags().StringVarP(&SetRuntimeOverlay, "runtime", "R", "", "Set the node's runtime overlay")
 	baseCmd.PersistentFlags().StringVarP(&SetSystemOverlay, "system", "S", "", "Set the node's system overlay")

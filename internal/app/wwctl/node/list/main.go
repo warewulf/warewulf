@@ -31,9 +31,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	sort.Slice(nodes, func(i, j int) bool {
-		if nodes[i].DomainName.Get() < nodes[j].DomainName.Get() {
+		if nodes[i].ClusterName.Get() < nodes[j].ClusterName.Get() {
 			return true
-		} else if nodes[i].DomainName.Get() == nodes[j].DomainName.Get() {
+		} else if nodes[i].ClusterName.Get() == nodes[j].ClusterName.Get() {
 			if nodes[i].Id.Get() < nodes[j].Id.Get() {
 				return true
 			}
@@ -47,7 +47,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			fmt.Printf("%-20s %-18s %-12s %s\n", "NODE", "FIELD", "PROFILE", "VALUE")
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Id", node.Id.Source(), node.Id.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Comment", node.Comment.Source(), node.Comment.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "DomainName", node.DomainName.Source(), node.DomainName.Print())
+			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "ClusterName", node.ClusterName.Source(), node.ClusterName.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Profiles", "--", strings.Join(node.Profiles, ","))
 
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Vnfs", node.Vnfs.Source(), node.Vnfs.Print())

@@ -59,10 +59,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				os.Exit(1)
 			}
 		}
-		if SetDomainName != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting domain name to: %s\n", p.Id, SetDomainName)
+		if SetClusterName != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting cluster name to: %s\n", p.Id, SetClusterName)
 
-			p.DomainName.Set(SetDomainName)
+			p.ClusterName.Set(SetClusterName)
 			err := nodeDB.ProfileUpdate(p)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
