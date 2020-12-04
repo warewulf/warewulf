@@ -91,6 +91,10 @@ func main() {
 			log.Printf("ERROR: Failed running CPIO: %s\n", err)
 		}
 
-		time.Sleep(30000 * time.Millisecond)
+		if conf.Warewulf.UpdateInterval > 0 {
+			time.Sleep(time.Duration(conf.Warewulf.UpdateInterval*1000) * time.Millisecond)
+		} else {
+			time.Sleep(30000 * time.Millisecond * 1000)
+		}
 	}
 }
