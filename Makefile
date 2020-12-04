@@ -59,8 +59,6 @@ files: all
 services: files
 	sudo systemctl enable tftp
 	sudo systemctl restart tftp
-	sudo systemctl enable dhcpd
-	sudo systemctl restart dhcpd
 
 warewulfd:
 	cd cmd/warewulfd; go build -mod vendor -o ../../warewulfd
