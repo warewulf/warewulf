@@ -12,7 +12,6 @@ import (
 )
 
 func Build(kernelVersion string) error {
-	config := config.New()
 
 	kernelImage := "/boot/vmlinuz-" + kernelVersion
 	kernelDrivers := "/lib/modules/" + kernelVersion

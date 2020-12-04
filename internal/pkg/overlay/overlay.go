@@ -19,7 +19,7 @@ import (
 
 type TemplateStruct struct {
 	Self struct {
-		Fqdn         string
+		Id           string
 		Hostname     string
 		GroupName    string
 		Vnfs         string
@@ -57,7 +57,6 @@ func RuntimeOverlayInit(name string) error {
 }
 
 func findAllOverlays(overlayType string) ([]string, error) {
-	config := config.New()
 	var ret []string
 	var files []os.FileInfo
 	var err error
@@ -89,7 +88,6 @@ func findAllOverlays(overlayType string) ([]string, error) {
 
 func overlayInit(name string, overlayType string) error {
 	var path string
-	config := config.New()
 
 	if overlayType == "system" {
 		wwlog.Printf(wwlog.DEBUG, "Looking for system overlays...")
@@ -112,36 +110,39 @@ func overlayInit(name string, overlayType string) error {
 }
 
 func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
-	config := config.New()
 	nodeDB, _ := node.New()
 	allNodes, _ := nodeDB.FindAllNodes()
 
-	for _, node := range nodeList {
+	for _, n := range nodeList {
 		var t TemplateStruct
 		var OverlayDir string
 		var OverlayFile string
 
 		if overlayType == "runtime" {
-			OverlayDir = config.RuntimeOverlaySource(node.RuntimeOverlay.Get())
-			OverlayFile = config.RuntimeOverlayImage(node.Id.Get())
+			OverlayDir = config.RuntimeOverlaySource(n.RuntimeOverlay.Get())
+			OverlayFile = config.RuntimeOverlayImage(n.Id.Get())
 		} else if overlayType == "system" {
-			OverlayDir = config.SystemOverlaySource(node.RuntimeOverlay.Get())
-			OverlayFile = config.SystemOverlayImage(node.Id.Get())
+			OverlayDir = config.SystemOverlaySource(n.RuntimeOverlay.Get())
+			OverlayFile = config.SystemOverlayImage(n.Id.Get())
 		} else {
 			wwlog.Printf(wwlog.ERROR, "overlayType requested is not supported: %s\n", overlayType)
 			os.Exit(1)
 		}
 
-		wwlog.Printf(wwlog.DEBUG, "Processing overlay for node: %s\n", node.Id.Get())
+		wwlog.Printf(wwlog.DEBUG, "Processing overlay for node: %s\n", n.Id.Get())
 
-		t.Self.Fqdn = node.Id.Get()
-		t.Self.Hostname = node.Id.Get()
-		t.Self.Vnfs = node.Vnfs.Get()
-		t.Self.IpmiIpaddr = node.IpmiIpaddr.Get()
-		t.Self.IpmiNetmask = node.IpmiNetmask.Get()
-		t.Self.IpmiUserName = node.IpmiUserName.Get()
-		t.Self.IpmiPassword = node.IpmiPassword.Get()
-		for devname, netdev := range node.NetDevs {
+		t.Self.Id = n.Id.Get()
+		t.Self.Hostname = n.Id.Get()
+		t.Self.Vnfs = n.Vnfs.Get()
+		t.Self.IpmiIpaddr = n.IpmiIpaddr.Get()
+		t.Self.IpmiNetmask = n.IpmiNetmask.Get()
+		t.Self.IpmiUserName = n.IpmiUserName.Get()
+		t.Self.IpmiPassword = n.IpmiPassword.Get()
+		t.Self.NetDevs = make(map[string]*node.NetDevs)
+		for devname, netdev := range n.NetDevs {
+			var nd node.NetDevs
+			t.Self.NetDevs[devname] = &nd
+			t.Self.NetDevs[devname].Hwaddr = netdev.Hwaddr.Get()
 			t.Self.NetDevs[devname].Ipaddr = netdev.Ipaddr.Get()
 			t.Self.NetDevs[devname].Netmask = netdev.Netmask.Get()
 			t.Self.NetDevs[devname].Gateway = netdev.Gateway.Get()
@@ -149,16 +150,16 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 		}
 		t.AllNodes = allNodes
 
-		if overlayType == "runtime" && node.RuntimeOverlay.Defined() == false {
-			wwlog.Printf(wwlog.WARN, "Undefined runtime overlay, skipping node: %s\n", node.Id.Get())
+		if overlayType == "runtime" && n.RuntimeOverlay.Defined() == false {
+			wwlog.Printf(wwlog.WARN, "Undefined runtime overlay, skipping node: %s\n", n.Id.Get())
 		}
-		if overlayType == "system" && node.SystemOverlay.Defined() == false {
-			wwlog.Printf(wwlog.WARN, "Undefined system overlay, skipping node: %s\n", node.Id.Get())
+		if overlayType == "system" && n.SystemOverlay.Defined() == false {
+			wwlog.Printf(wwlog.WARN, "Undefined system overlay, skipping node: %s\n", n.Id.Get())
 		}
 
 		wwlog.Printf(wwlog.DEBUG, "Checking to see if overlay directory exists: %s\n", OverlayDir)
 		if util.IsDir(OverlayDir) == false {
-			wwlog.Printf(wwlog.WARN, "%-35s: Skipped (runtime overlay template not found)\n", node.Id.Get())
+			wwlog.Printf(wwlog.WARN, "%-35s: Skipped (runtime overlay template not found)\n", n.Id.Get())
 			continue
 		}
 
@@ -207,7 +208,7 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 				}).ParseGlob(path.Join(OverlayDir, destFile+".ww*"))
 				if err != nil {
 					wwlog.Printf(wwlog.ERROR, "%s\n", err)
-					return err
+					return nil
 				}
 
 				w, err := os.OpenFile(path.Join(tmpDir, destFile), os.O_RDWR|os.O_CREATE, info.Mode())
@@ -220,7 +221,7 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 				err = tmpl.Execute(w, t)
 				if err != nil {
 					wwlog.Printf(wwlog.ERROR, "%s\n", err)
-					return err
+					return nil
 				}
 
 			} else if b, _ := regexp.MatchString(`\.ww[a-zA-Z0-9\-\._]*$`, location); b == true {
@@ -239,7 +240,7 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 			return nil
 		})
 
-		wwlog.Printf(wwlog.VERBOSE, "Finished generating overlay directory for: %s\n", node.Id.Get())
+		wwlog.Printf(wwlog.VERBOSE, "Finished generating overlay directory for: %s\n", n.Id.Get())
 
 		cmd := fmt.Sprintf("cd \"%s\"; find . | cpio --quiet -o -H newc -F \"%s\"", tmpDir, OverlayFile)
 		wwlog.Printf(wwlog.DEBUG, "RUNNING: %s\n", cmd)
@@ -248,7 +249,7 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 			wwlog.Printf(wwlog.ERROR, "Could not generate runtime image overlay: %s\n", err)
 			continue
 		}
-		wwlog.Printf(wwlog.INFO, "%-35s: Done\n", node.Id.Get())
+		wwlog.Printf(wwlog.INFO, "%-35s: Done\n", n.Id.Get())
 
 		wwlog.Printf(wwlog.DEBUG, "Removing temporary directory: %s\n", tmpDir)
 		os.RemoveAll(tmpDir)
