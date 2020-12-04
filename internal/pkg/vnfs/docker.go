@@ -10,10 +10,8 @@ import (
 	"path"
 )
 
-
 func BuildDocker(vnfs VnfsObject, buildForce bool) {
 	wwlog.Printf(wwlog.VERBOSE, "Building OCI Container: %s\n", vnfs.Source)
-	config := config.New()
 
 	OciCacheDir := config.LocalStateDir + "/oci"
 	VnfsHashDir := config.LocalStateDir + "/oci/vnfs"
@@ -73,12 +71,12 @@ func BuildDocker(vnfs VnfsObject, buildForce bool) {
 
 	// Setup links from OCI image to provision path
 	_ = os.Remove(vnfs.Image + "-link")
-	err = os.Symlink(hashDestination, vnfs.Image + "-link")
+	err = os.Symlink(hashDestination, vnfs.Image+"-link")
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not create symlink for Image: %s\n", err)
 		os.Exit(1)
 	}
-	err = os.Rename(vnfs.Image + "-link", vnfs.Image)
+	err = os.Rename(vnfs.Image+"-link", vnfs.Image)
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not rename link: %s\n", err)
 		os.Exit(1)
@@ -86,20 +84,18 @@ func BuildDocker(vnfs VnfsObject, buildForce bool) {
 
 	// Setup links from OCI rootfs to chroot path
 	_ = os.Remove(vnfs.Chroot + "-link")
-	err = os.Symlink(sourcePath, vnfs.Chroot + "-link")
+	err = os.Symlink(sourcePath, vnfs.Chroot+"-link")
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not create symlink for Chroot: %s\n", err)
 		os.Exit(1)
 	}
-	err = os.Rename(vnfs.Chroot + "-link", vnfs.Chroot)
+	err = os.Rename(vnfs.Chroot+"-link", vnfs.Chroot)
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not rename link: %s\n", err)
 		os.Exit(1)
 	}
 
-
 	wwlog.Printf(wwlog.INFO, "%-35s: Done\n", vnfs.Source)
 
 	return
 }
-
