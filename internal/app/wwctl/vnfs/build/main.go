@@ -29,7 +29,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 		for _, node := range nodes {
 			if node.Vnfs.Defined() == true {
-				set[node.Vnfs.Get()] ++
+				set[node.Vnfs.Get()]++
 			}
 		}
 
@@ -43,12 +43,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 		for _, node := range nodes {
 			if node.Vnfs.Defined() == true {
-				set[node.Vnfs.Get()] ++
+				wwlog.Printf(wwlog.VERBOSE, "Adding VNFS to list: %s (%s)\n", node.Vnfs.Get(), node.Id.Get())
+				set[node.Vnfs.Get()]++
 			}
 		}
 
 	} else if len(args) == 1 {
-		set[args[0]] ++
+		set[args[0]]++
 	} else {
 		cmd.Usage()
 		os.Exit(1)

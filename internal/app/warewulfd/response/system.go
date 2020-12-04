@@ -7,8 +7,6 @@ import (
 )
 
 func SystemOverlaySend(w http.ResponseWriter, req *http.Request) {
-	config := config.New()
-
 	node, err := getSanity(req)
 	if err != nil {
 		w.WriteHeader(404)
@@ -17,17 +15,17 @@ func SystemOverlaySend(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if node.SystemOverlay.Defined() == true {
-		fileName := config.SystemOverlayImage(node.Fqdn.Get())
+		fileName := config.SystemOverlayImage(node.Id.Get())
 
-		err := sendFile(w, fileName, node.Fqdn.Get())
+		err := sendFile(w, fileName, node.Id.Get())
 		if err != nil {
 			log.Printf("ERROR: %s\n", err)
 		} else {
-			log.Printf("SEND:  %15s: %s\n", node.Fqdn.Get(), fileName)
+			log.Printf("SEND:  %15s: %s\n", node.Id.Get(), fileName)
 		}
 	} else {
 		w.WriteHeader(503)
-		log.Printf("ERROR: No 'system system-overlay' set for node %s\n", node.Fqdn.Get())
+		log.Printf("ERROR: No 'system system-overlay' set for node %s\n", node.Id.Get())
 	}
 
 	return

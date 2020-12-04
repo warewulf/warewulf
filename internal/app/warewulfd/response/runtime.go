@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"log"
 	"net/http"
 	"strconv"
@@ -11,7 +12,13 @@ import (
 )
 
 func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
-	config := config.New()
+	conf, err := warewulfconf.New()
+	if err != nil {
+		log.Printf("Could not read Warewulf configuration file: %s\n", err)
+		w.WriteHeader(503)
+		return
+	}
+
 	nodes, err := node.New()
 	if err != nil {
 		log.Printf("Could not read node configuration file: %s\n", err)
@@ -32,7 +39,7 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if config.InsecureRuntime == false {
+	if conf.Warewulf.Secure == true {
 		if port >= 1024 {
 			log.Panicf("DENIED: Connection coming from non-privledged port: %s\n", req.RemoteAddr)
 			w.WriteHeader(401)
@@ -52,21 +59,21 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(404)
 		return
 	} else {
-		log.Printf("REQ:   %15s: %s\n", node.Fqdn.Get(), req.URL.Path)
+		log.Printf("REQ:   %15s: %s\n", node.Id.Get(), req.URL.Path)
 	}
 
 	if node.RuntimeOverlay.Defined() == true {
-		fileName := config.RuntimeOverlayImage(node.Fqdn.Get())
+		fileName := config.RuntimeOverlayImage(node.Id.Get())
 
-		err := sendFile(w, fileName, node.Fqdn.Get())
+		err := sendFile(w, fileName, node.Id.Get())
 		if err != nil {
 			log.Printf("ERROR: %s\n", err)
 		} else {
-			log.Printf("SEND:  %15s: %s\n", node.Fqdn.Get(), fileName)
+			log.Printf("SEND:  %15s: %s\n", node.Id.Get(), fileName)
 		}
 	} else {
 		w.WriteHeader(503)
-		log.Printf("ERROR: No 'runtime system-overlay' set for node %s\n", node.Fqdn.Get())
+		log.Printf("ERROR: No 'runtime system-overlay' set for node %s\n", node.Id.Get())
 	}
 
 	return

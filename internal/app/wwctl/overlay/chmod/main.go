@@ -13,7 +13,6 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	config := config.New()
 	var overlaySourceDir string
 	overlayName := args[0]
 	fileName := args[2]

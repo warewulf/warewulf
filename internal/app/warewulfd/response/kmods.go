@@ -7,7 +7,6 @@ import (
 )
 
 func KmodsSend(w http.ResponseWriter, req *http.Request) {
-	config := config.New()
 
 	node, err := getSanity(req)
 	if err != nil {
@@ -19,16 +18,16 @@ func KmodsSend(w http.ResponseWriter, req *http.Request) {
 	if node.KernelVersion.Defined() == true {
 		fileName := config.KmodsImage(node.KernelVersion.Get())
 
-		err := sendFile(w, fileName, node.Fqdn.Get())
+		err := sendFile(w, fileName, node.Id.Get())
 		if err != nil {
 			log.Printf("ERROR: %s\n", err)
 		} else {
-			log.Printf("SEND:  %15s: %s\n", node.Fqdn.Get(), fileName)
+			log.Printf("SEND:  %15s: %s\n", node.Id.Get(), fileName)
 		}
 
 	} else {
 		w.WriteHeader(503)
-		log.Printf("ERROR: No 'kernel version' set for node %s\n", node.Fqdn.Get())
+		log.Printf("ERROR: No 'kernel version' set for node %s\n", node.Id.Get())
 	}
 
 	return
