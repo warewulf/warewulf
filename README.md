@@ -4,7 +4,7 @@
 
 In a nutshell, to install and start provisioning nodes, do the following:
 
-####Build Warewulf and dependencies:
+#### Build Warewulf and dependencies:
 
 Warewulf is programmed in GoLang, so you will need to also install a Go compiler
 on your system. The easiest way to do this on RHEL and CentOS is by using the Go
