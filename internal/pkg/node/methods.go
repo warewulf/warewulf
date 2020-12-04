@@ -101,7 +101,7 @@ func (self *Entry) Print() string {
 		return self.altvalue
 	}
 	if self.def != "" {
-		return self.def
+		return "(" + self.def + ")"
 	}
 	return "--"
 }

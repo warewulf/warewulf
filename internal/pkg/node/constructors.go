@@ -48,7 +48,7 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 
 		fullname := strings.SplitN(nodename, ".", 2)
 		if len(fullname) > 1 {
-			n.DomainName.SetDefault(fullname[1])
+			n.ClusterName.SetDefault(fullname[1])
 		}
 
 		if len(node.Profiles) == 0 {
@@ -62,7 +62,7 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.Vnfs.Set(node.Vnfs)
 		n.KernelVersion.Set(node.KernelVersion)
 		n.KernelArgs.Set(node.KernelArgs)
-		n.DomainName.Set(node.DomainName)
+		n.ClusterName.Set(node.ClusterName)
 		n.Ipxe.Set(node.Ipxe)
 		n.IpmiIpaddr.Set(node.IpmiIpaddr)
 		n.IpmiNetmask.Set(node.IpmiNetmask)
@@ -96,7 +96,7 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			pstring := fmt.Sprintf("%s", p)
 
 			n.Comment.SetAlt(self.NodeProfiles[p].Comment, pstring)
-			n.DomainName.SetAlt(self.NodeProfiles[p].DomainName, pstring)
+			n.ClusterName.SetAlt(self.NodeProfiles[p].ClusterName, pstring)
 			n.Vnfs.SetAlt(self.NodeProfiles[p].Vnfs, pstring)
 			n.KernelVersion.SetAlt(self.NodeProfiles[p].KernelVersion, pstring)
 			n.KernelArgs.SetAlt(self.NodeProfiles[p].KernelArgs, pstring)

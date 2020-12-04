@@ -18,7 +18,7 @@ type nodeYaml struct {
 type NodeConf struct {
 	Comment        string              `yaml:"comment,omitempty"`
 	Disabled       bool                `yaml:"disabled,omitempty"`
-	DomainName     string              `yaml:"domain name,omitempty"`
+	ClusterName    string              `yaml:"cluster name,omitempty"`
 	Vnfs           string              `yaml:"vnfs,omitempty"`
 	Ipxe           string              `yaml:"ipxe template,omitempty"`
 	KernelVersion  string              `yaml:"kernel version,omitempty"`
@@ -59,7 +59,7 @@ type NodeInfo struct {
 	Id             Entry
 	Cid            Entry
 	Comment        Entry
-	DomainName     Entry
+	ClusterName    Entry
 	Vnfs           Entry
 	Ipxe           Entry
 	KernelVersion  Entry
