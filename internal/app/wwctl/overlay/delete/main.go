@@ -14,7 +14,6 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var overlayPath string
-	config := config.New()
 
 	if SystemOverlay == true {
 		overlayPath = config.SystemOverlaySource(args[0])

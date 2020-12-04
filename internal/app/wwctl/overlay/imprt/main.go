@@ -12,7 +12,6 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	config := config.New()
 	overlayName := args[0]
 	source := args[1]
 	var dest string

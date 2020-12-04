@@ -12,7 +12,6 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	config := config.New()
 
 	n, err := node.New()
 	if err != nil {

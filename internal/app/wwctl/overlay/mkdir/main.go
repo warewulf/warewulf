@@ -13,7 +13,6 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	config := config.New()
 	var overlaySourceDir string
 	//	mode := uint32(strconv.ParseUint(PermMode, 8, 32))
 

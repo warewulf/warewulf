@@ -13,7 +13,6 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	config := config.New()
 	nconfig, _ := node.New()
 	nodes, _ := nconfig.FindAllNodes()
 	nodemap := make(map[string]int)

@@ -20,19 +20,19 @@ func VnfsSend(w http.ResponseWriter, req *http.Request) {
 		v, err := vnfs.Load(node.Vnfs.Get())
 		if err != nil {
 			w.WriteHeader(503)
-			log.Printf("ERROR: Could not load VNFS: %s\n", node.Fqdn.Get())
+			log.Printf("ERROR: Could not load VNFS: %s\n", node.Id.Get())
 			return
 		}
 
-		err = sendFile(w, v.Image, node.Fqdn.Get())
+		err = sendFile(w, v.Image, node.Id.Get())
 		if err != nil {
 			log.Printf("ERROR1: %s\n", err)
 		} else {
-			log.Printf("SEND:  %15s: %s\n", node.Fqdn.Get(), v.Image)
+			log.Printf("SEND:  %15s: %s\n", node.Id.Get(), v.Image)
 		}
 	} else {
 		w.WriteHeader(503)
-		log.Printf("ERROR: No VNFS set for node %s\n", node.Fqdn.Get())
+		log.Printf("ERROR: No VNFS set for node %s\n", node.Id.Get())
 	}
 
 	return
