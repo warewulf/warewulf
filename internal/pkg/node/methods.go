@@ -108,8 +108,8 @@ func (self *Entry) Print() string {
 
 func (self *Entry) Source() string {
 	if self.value != "" && self.altvalue != "" {
-		return "OVERRIDDEN"
-		//return fmt.Sprintf("(%s)", self.from)
+		return "SUPERSEDED"
+		//return fmt.Sprintf("[%s]", self.from)
 	} else if self.from == "" {
 		return "--"
 	}
@@ -118,6 +118,12 @@ func (self *Entry) Source() string {
 
 func (self *Entry) Defined() bool {
 	if self.value != "" {
+		return true
+	}
+	if self.altvalue != "" {
+		return true
+	}
+	if self.def != "" {
 		return true
 	}
 	return false

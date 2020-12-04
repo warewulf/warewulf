@@ -153,60 +153,6 @@ func (self *nodeYaml) ProfileUpdate(profile NodeInfo) error {
 	return nil
 }
 
-/*
-
-
-func (self *nodeYaml) AddProfile(profileID string) error {
-	var profile ProfileConf
-
-	wwlog.Printf(wwlog.VERBOSE, "Adding new profile: %s/%s\n", profileID)
-
-	if _, ok := self.NodeProfiles[profileID]; ok {
-		return errors.New("Profile name already exists: " + profileID)
-	}
-
-	self.NodeProfiles[profileID] = &profile
-
-	return nil
-}
-
-func (self *nodeYaml) DelProfile(profileID string) error {
-	if _, ok := self.NodeProfiles[profileID]; !ok {
-		return errors.New("Group '" + profileID + "' was not found")
-	}
-
-	wwlog.Printf(wwlog.VERBOSE, "Deleting profile: %s\n", profileID)
-	delete(self.NodeProfiles, profileID)
-
-	return nil
-}
-
-func (self *nodeYaml) ProfileUpdate(profile ProfileInfo) error {
-	profileID := profile.Id
-
-	if _, ok := self.NodeProfiles[profileID]; !ok {
-		return errors.New("Group '" + profileID + "' was not found")
-	}
-
-	self.NodeProfiles[profileID].DomainName = get2Set(profile.DomainName)
-	self.NodeProfiles[profileID].Vnfs = get2Set(profile.Vnfs)
-	self.NodeProfiles[profileID].Ipxe = get2Set(profile.Ipxe)
-	self.NodeProfiles[profileID].KernelVersion = get2Set(profile.KernelVersion)
-	self.NodeProfiles[profileID].IpmiNetmask = get2Set(profile.IpmiNetmask)
-	self.NodeProfiles[profileID].IpmiUserName = get2Set(profile.IpmiUserName)
-	self.NodeProfiles[profileID].IpmiPassword = get2Set(profile.IpmiPassword)
-	self.NodeProfiles[profileID].RuntimeOverlay = get2Set(profile.RuntimeOverlay)
-	self.NodeProfiles[profileID].SystemOverlay = get2Set(profile.SystemOverlay)
-
-	return nil
-}
-
-
-
-
-
-*/
-
 /****
  *
  * PERSISTENCE
