@@ -224,3 +224,14 @@ func SliceAddUniqueElement(array []string, add string) []string {
 
 	return ret
 }
+
+func SystemdStart(systemdName string) error {
+	startCmd := fmt.Sprintf("systemctl restart %s", systemdName)
+	enableCmd := fmt.Sprintf("systemctl enable %s", systemdName)
+
+	wwlog.Printf(wwlog.DEBUG, "Setting up Systemd service: %s\n", systemdName)
+	ExecInteractive("/bin/sh", "-c", startCmd)
+	ExecInteractive("/bin/sh", "-c", enableCmd)
+
+	return nil
+}
