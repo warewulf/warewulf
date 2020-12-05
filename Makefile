@@ -61,7 +61,7 @@ services: files
 	sudo systemctl restart tftp
 
 warewulfd:
-	cd cmd/warewulfd; go build -mod vendor -o ../../warewulfd
+	cd cmd/warewulfd; go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../warewulfd
 
 wwctl:
 	cd cmd/wwctl; go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwctl
