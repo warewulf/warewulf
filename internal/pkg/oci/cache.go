@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	defaultCachePath = "/var/warewulf/vnfs-cache/oci/"
+	defaultCachePath = "/var/warewulf/container-cache/oci/"
 	blobPrefix       = "blobs"
 	rootfsPrefix     = "rootfs"
 )

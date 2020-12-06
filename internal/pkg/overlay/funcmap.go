@@ -1,7 +1,7 @@
 package overlay
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/vnfs"
+	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"io/ioutil"
 	"path"
@@ -17,24 +17,24 @@ func templateFileInclude(path string) string {
 	return strings.TrimSuffix(string(content), "\n")
 }
 
-func templateVnfsFileInclude(vnfsname string, filepath string) string {
-	wwlog.Printf(wwlog.DEBUG, "Including VNFS file into template: %s: %s\n", vnfsname, filepath)
+func templateContainerFileInclude(containername string, filepath string) string {
+	wwlog.Printf(wwlog.DEBUG, "Including VNFS file into template: %s: %s\n", containername, filepath)
 
-	if vnfsname == "" {
-		wwlog.Printf(wwlog.WARN, "VNFS not set for template import request: %s: %s\n", vnfsname, filepath)
+	if containername == "" {
+		wwlog.Printf(wwlog.WARN, "VNFS not set for template import request: %s: %s\n", containername, filepath)
 		return ""
 	}
 
-	if vnfs.ValidSource(vnfsname) == false {
-		wwlog.Printf(wwlog.WARN, "Template required VNFS does not exist: %s\n", vnfsname)
+	if container.ValidSource(containername) == false {
+		wwlog.Printf(wwlog.WARN, "Template required VNFS does not exist: %s\n", containername)
 		return ""
 	}
 
-	vnfsDir := vnfs.RootFsDir(vnfsname)
+	containerDir := container.RootFsDir(containername)
 
-	wwlog.Printf(wwlog.DEBUG, "Including file from VNFS: %s:%s\n", vnfsDir, filepath)
+	wwlog.Printf(wwlog.DEBUG, "Including file from container: %s:%s\n", containerDir, filepath)
 
-	content, err := ioutil.ReadFile(path.Join(vnfsDir, filepath))
+	content, err := ioutil.ReadFile(path.Join(containerDir, filepath))
 
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Template include: %s\n", err)

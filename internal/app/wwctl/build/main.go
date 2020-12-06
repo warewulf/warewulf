@@ -1,9 +1,9 @@
 package build
 
 import (
+	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/kernel"
 	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/vnfs"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 	"os"
@@ -47,7 +47,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			set[node.Vnfs.Get()]++
 		}
 		for e := range set {
-			vnfs.Build(e, buildForce)
+			container.Build(e, buildForce)
 		}
 	}
 

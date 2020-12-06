@@ -8,10 +8,10 @@ if [ ! -e /dev/ipmi0 ]; then
     ls -la /dev/ipmi0
 fi
 
-IP="{{$.Self.IpmiIpaddr}}"
-NETMASK="{{$.Self.IpmiNetmask}}"
-USER="{{$.Self.IpmiUserName}}"
-PASS="{{$.Self.IpmiPassword}}"
+IP="{{$.IpmiIpaddr}}"
+NETMASK="{{$.IpmiNetmask}}"
+USER="{{$.IpmiUserName}}"
+PASS="{{$.IpmiPassword}}"
 
 echo IP is $IP
 echo NETMASK is $NETMASK

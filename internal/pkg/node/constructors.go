@@ -59,7 +59,7 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 
 		n.Id.Set(nodename)
 		n.Comment.Set(node.Comment)
-		n.Vnfs.Set(node.Vnfs)
+		n.ContainerName.Set(node.ContainerName)
 		n.KernelVersion.Set(node.KernelVersion)
 		n.KernelArgs.Set(node.KernelArgs)
 		n.ClusterName.Set(node.ClusterName)
@@ -97,7 +97,7 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 
 			n.Comment.SetAlt(self.NodeProfiles[p].Comment, pstring)
 			n.ClusterName.SetAlt(self.NodeProfiles[p].ClusterName, pstring)
-			n.Vnfs.SetAlt(self.NodeProfiles[p].Vnfs, pstring)
+			n.ContainerName.SetAlt(self.NodeProfiles[p].ContainerName, pstring)
 			n.KernelVersion.SetAlt(self.NodeProfiles[p].KernelVersion, pstring)
 			n.KernelArgs.SetAlt(self.NodeProfiles[p].KernelArgs, pstring)
 			n.Ipxe.SetAlt(self.NodeProfiles[p].Ipxe, pstring)
@@ -140,7 +140,7 @@ func (self *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 
 		p.Id.Set(name)
 		p.Comment.Set(profile.Comment)
-		p.Vnfs.Set(profile.Vnfs)
+		p.ContainerName.Set(profile.ContainerName)
 		p.Ipxe.Set(profile.Ipxe)
 		p.KernelVersion.Set(profile.KernelVersion)
 		p.KernelArgs.Set(profile.KernelArgs)

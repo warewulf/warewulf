@@ -1,4 +1,4 @@
-package vnfs
+package container
 
 import (
 	"github.com/hpcng/warewulf/internal/pkg/config"
@@ -31,7 +31,7 @@ func RootFsDir(name string) string {
 }
 
 func ImageParentDir() string {
-	return path.Join(config.LocalStateDir, "provision/vnfs/")
+	return path.Join(config.LocalStateDir, "provision/container/")
 }
 
 func ImageFile(name string) string {

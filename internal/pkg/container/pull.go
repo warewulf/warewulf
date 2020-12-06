@@ -1,4 +1,4 @@
-package vnfs
+package container
 
 import (
 	"context"
