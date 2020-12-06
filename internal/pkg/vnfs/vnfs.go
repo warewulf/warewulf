@@ -5,169 +5,86 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/errors"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"path"
-	"strings"
 )
 
-type VnfsObject struct {
-	Name   string
-	Source string
-	Chroot string
-	Image  string
-	Config string
+func ValidName(name string) bool {
+	if util.ValidString(name, "^[a-zA-Z0-9.:-]+$") == false {
+		wwlog.Printf(wwlog.WARN, "VNFS name has illegal characters: %s\n", name)
+		return false
+	}
+	return true
 }
 
-func Load(name string) (VnfsObject, error) {
-	var ret VnfsObject
+func SourceParentDir() string {
+	return path.Join(config.LocalStateDir, "chroots")
+}
 
-	if name == "" {
-		wwlog.Printf(wwlog.DEBUG, "Called vnfs.Load() without a name, returning error\n")
-		return ret, errors.New("Called vnfs.Load() without a VNFS name")
-	}
+func SourceDir(name string) string {
+	return path.Join(SourceParentDir(), name)
+}
 
-	pathFriendlyName := CleanName(name)
+func RootFsDir(name string) string {
+	return path.Join(SourceDir(name), "rootfs")
+}
 
-	configFile := path.Join(config.VnfsImageDir(pathFriendlyName), "config.yaml")
+func ImageParentDir() string {
+	return path.Join(config.LocalStateDir, "provision/vnfs/")
+}
 
-	if util.IsFile(configFile) == false {
-		return ret, errors.New("VNFS has not been imported: " + name)
-	}
+func ImageFile(name string) string {
+	return path.Join(ImageParentDir(), name+".img.gz")
+}
 
-	data, err := ioutil.ReadFile(configFile)
+func ListSources() ([]string, error) {
+	var ret []string
+
+	err := os.MkdirAll(SourceParentDir(), 0755)
 	if err != nil {
-		return ret, errors.New("Error reading VNFS configuration file: " + name)
+		return ret, errors.New("Could not create VNFS source parent directory: " + SourceParentDir())
 	}
+	wwlog.Printf(wwlog.DEBUG, "Searching for VNFS Rootfs directories: %s\n", SourceParentDir())
 
-	err = yaml.Unmarshal(data, &ret)
+	sources, err := ioutil.ReadDir(SourceParentDir())
 	if err != nil {
 		return ret, err
 	}
 
-	return ret, nil
-}
+	for _, source := range sources {
+		wwlog.Printf(wwlog.VERBOSE, "Found VNFS source: %s\n", source.Name())
 
-func CleanName(source string) string {
-	var tmp string
-
-	if strings.HasPrefix(source, "/") == true {
-		tmp = path.Base(source)
-	} else {
-		tmp = source
-	}
-
-	tmp = strings.ReplaceAll(tmp, "://", ":")
-	tmp = strings.ReplaceAll(tmp, "/", "-")
-	tmp = strings.ReplaceAll(tmp, ":", ":")
-
-	return tmp
-}
-
-func New(source string) (VnfsObject, error) {
-	var ret VnfsObject
-
-	if source == "" {
-		wwlog.Printf(wwlog.DEBUG, "Called vnfs.Load() without a name, returning error\n")
-		return ret, errors.New("Called vnfs.Load() without a VNFS name")
-	}
-
-	if util.IsFile(ret.Config) {
-		return Load(source)
-	}
-
-	pathFriendlyName := CleanName(source)
-
-	if strings.HasPrefix(source, "/") == true {
-		ret.Source = source
-		ret.Name = pathFriendlyName
-	} else {
-		tmp := strings.ReplaceAll(source, "://", "-")
-		tmp = strings.ReplaceAll(tmp, "/", ".")
-		tmp = strings.ReplaceAll(tmp, ":", ".")
-		ret.Name = source
-		ret.Source = source
-	}
-
-	ret.Chroot = config.VnfsChroot(pathFriendlyName)
-	ret.Image = config.VnfsImage(pathFriendlyName)
-	ret.Config = path.Join(config.VnfsImageDir(pathFriendlyName), "config.yaml")
-
-	return ret, nil
-}
-
-func (self *VnfsObject) SaveConfig() error {
-
-	out, err := yaml.Marshal(self)
-	if err != nil {
-		return err
-	}
-
-	file, err := os.OpenFile(self.Config, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "%s\n", err)
-		os.Exit(1)
-	}
-
-	defer file.Close()
-
-	_, err = file.WriteString(string(out))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func Build(name string, force bool) error {
-
-	vnfs, err := New(name)
-	if err != nil {
-		return err
-	}
-
-	wwlog.Printf(wwlog.VERBOSE, "Building VNFS: %s\n", vnfs.Name)
-	if strings.HasPrefix(vnfs.Source, "/") {
-		if strings.HasSuffix(vnfs.Source, "tar.gz") {
-			//wwlog.Printf(wwlog.WARN, "Building VNFS from local tarball: %s\n", uri)
-			wwlog.Printf(wwlog.WARN, "Building VNFS from local tarball is not supported yet: %s\n", vnfs.Name)
-		} else {
-			BuildContainerdir(vnfs, force)
+		if ValidName(source.Name()) == false {
+			continue
 		}
-	} else {
-		BuildDocker(vnfs, force)
+
+		if ValidSource(source.Name()) == false {
+			continue
+		}
+
+		ret = append(ret, source.Name())
 	}
 
-	err = vnfs.SaveConfig()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return ret, nil
 }
 
-func (self *VnfsObject) Nameold() string {
-	if self.Source == "" {
-		return ""
+func ValidSource(name string) bool {
+	fullPath := RootFsDir(name)
+
+	if ValidName(name) == false {
+		return false
 	}
 
-	if strings.HasPrefix(self.Source, "/") {
-		return path.Base(self.Source)
+	if util.IsDir(fullPath) == false {
+		wwlog.Printf(wwlog.VERBOSE, "Location is not a VNFS source directory: %s\n", name)
+		return false
 	}
 
-	return self.Source
-}
-
-func NameClean1(SourcePath string) string {
-	if SourcePath == "" {
-		return ""
+	if util.IsFile(path.Join(fullPath, "/sbin/init")) == false {
+		wwlog.Printf(wwlog.VERBOSE, "VNFS Source does not have a valid /sbin/init: %s\n", name)
+		return false
 	}
 
-	if strings.HasPrefix(SourcePath, "/") {
-		return path.Base(SourcePath)
-	}
-	uri := strings.Split(SourcePath, "://")
-
-	return strings.ReplaceAll(uri[0]+":"+uri[1], "/", "_")
+	return true
 }

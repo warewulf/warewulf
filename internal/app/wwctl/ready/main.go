@@ -3,6 +3,7 @@ package ready
 import (
 	"fmt"
 	"github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/kernel"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/vnfs"
@@ -36,12 +37,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		status := true
 
 		if node.Vnfs.Get() != "" {
-			v, _ := vnfs.Load(node.Vnfs.Get())
-			if util.IsFile(v.Image) == true {
+			vnfsImage := vnfs.ImageFile(node.Vnfs.Get())
+
+			if util.IsFile(vnfsImage) == true {
 				vnfs_good = true
 			} else {
 				status = false
-				wwlog.Printf(wwlog.VERBOSE, "VNFS not found: %s, %s\n", node.Id.Get(), v.Source)
+				wwlog.Printf(wwlog.VERBOSE, "VNFS not found: %s, %s\n", node.Id.Get(), vnfsImage)
 			}
 		} else {
 			status = false
@@ -49,13 +51,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		if node.KernelVersion.Get() != "" {
-			if util.IsFile(config.KernelImage(node.KernelVersion.Get())) == true {
+			if util.IsFile(kernel.KernelImage(node.KernelVersion.Get())) == true {
 				kernel_good = true
 			} else {
 				status = false
 				wwlog.Printf(wwlog.VERBOSE, "Node Kernel not found: %s, %s\n", node.Id.Get(), node.KernelVersion.Get())
 			}
-			if util.IsFile(config.KmodsImage(node.KernelVersion.Get())) == true {
+			if util.IsFile(kernel.KmodsImage(node.KernelVersion.Get())) == true {
 				kmods_good = true
 			} else {
 				status = false

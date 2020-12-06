@@ -1,20 +1,19 @@
 package build
 
 import (
-"github.com/spf13/cobra"
+	"github.com/spf13/cobra"
 )
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "build (kernel version | node search pattern)",
-		Short:              "Kernel Image Build",
-		Long:               "Build kernel images",
-		RunE:				CobraRunE,
-		Args: 				cobra.RangeArgs(0,1),
-
+		Use:   "build (kernel version | node search pattern)",
+		Short: "Kernel Image Build",
+		Long:  "Build kernel images",
+		RunE:  CobraRunE,
+		Args:  cobra.MinimumNArgs(1),
 	}
 	BuildAll bool
-	ByNode bool
+	ByNode   bool
 )
 
 func init() {

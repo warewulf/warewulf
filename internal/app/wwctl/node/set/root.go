@@ -30,6 +30,7 @@ var (
 	SetYes            bool
 	SetAddProfile     []string
 	SetDelProfile     []string
+	SetForce          bool
 )
 
 func init() {
@@ -57,6 +58,7 @@ func init() {
 	baseCmd.PersistentFlags().BoolVarP(&SetNodeAll, "all", "a", false, "Set all nodes")
 
 	baseCmd.PersistentFlags().BoolVarP(&SetYes, "yes", "y", false, "Set 'yes' to all questions asked")
+	baseCmd.PersistentFlags().BoolVarP(&SetForce, "force", "f", false, "Force configuration (even on error)")
 
 }
 
