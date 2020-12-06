@@ -3,6 +3,8 @@ package set
 import (
 	"fmt"
 	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/vnfs"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -42,6 +44,23 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				if p.Id.Get() == a {
 					profiles = append(profiles, p)
 				}
+			}
+		}
+	}
+
+	if SetVnfs != "" {
+		if vnfs.ValidSource(SetVnfs) == true {
+			imageFile := vnfs.ImageFile(SetVnfs)
+			if util.IsFile(imageFile) == false {
+				wwlog.Printf(wwlog.ERROR, "VNFS has not been built: %s\n", SetVnfs)
+				if SetForce == false {
+					os.Exit(1)
+				}
+			}
+		} else {
+			wwlog.Printf(wwlog.ERROR, "VNFS does not exist: %s\n", SetVnfs)
+			if SetForce == false {
+				os.Exit(1)
 			}
 		}
 	}

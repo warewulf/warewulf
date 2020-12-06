@@ -1,7 +1,6 @@
 package overlay
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/vnfs"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"io/ioutil"
@@ -26,14 +25,14 @@ func templateVnfsFileInclude(vnfsname string, filepath string) string {
 		return ""
 	}
 
-	v, _ := vnfs.Load(vnfsname)
-	vnfsDir := v.Chroot
-
-	if util.IsDir(vnfsDir) == false {
-		wwlog.Printf(wwlog.WARN, "Template requires VNFS (%s) to be imported: %s\n", vnfsname, filepath)
+	if vnfs.ValidSource(vnfsname) == false {
+		wwlog.Printf(wwlog.WARN, "Template required VNFS does not exist: %s\n", vnfsname)
 		return ""
 	}
-	wwlog.Printf(wwlog.DEBUG, "IncludeVnfs file from: %s/%s\n", vnfsDir, filepath)
+
+	vnfsDir := vnfs.RootFsDir(vnfsname)
+
+	wwlog.Printf(wwlog.DEBUG, "Including file from VNFS: %s:%s\n", vnfsDir, filepath)
 
 	content, err := ioutil.ReadFile(path.Join(vnfsDir, filepath))
 

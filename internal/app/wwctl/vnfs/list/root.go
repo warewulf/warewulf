@@ -4,13 +4,13 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "list",
-		Short:              "List VNFS images",
-		Long:               "List VNFS images ",
-		RunE:				CobraRunE,
+		Use:   "list",
+		Short: "List VNFS images",
+		Long:  "List VNFS images ",
+		RunE:  CobraRunE,
 	}
 	SystemOverlay bool
-	BuildAll bool
+	BuildAll      bool
 )
 
 func init() {

@@ -10,6 +10,7 @@ var (
 		RunE:  CobraRunE,
 	}
 	SetAll            bool
+	SetForce          bool
 	SetComment        string
 	SetVnfs           string
 	SetKernel         string
@@ -48,6 +49,7 @@ func init() {
 	baseCmd.PersistentFlags().BoolVar(&SetNetDevDel, "netdel", false, "Delete the node's network device")
 
 	baseCmd.PersistentFlags().BoolVarP(&SetAll, "all", "a", false, "Set all profiles")
+	baseCmd.PersistentFlags().BoolVarP(&SetForce, "force", "f", false, "Force configuration (even on error)")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
