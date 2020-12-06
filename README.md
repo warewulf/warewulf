@@ -17,7 +17,7 @@ To install these and compile Warewulf, do the following:
 
 ```
 sudo yum install epel-release
-sudo yum install golang tftp-server dhcp
+sudo yum install --tolerant golang tftp-server dhcp dhcp-server
 
 sudo systemctl stop firewalld
 sudo systemctl disable firewalld
@@ -51,59 +51,71 @@ netmask: 255.255.255.0
 warewulf:
   port: 9873
   secure: true
+  update interval: 60
 dhcp:
   enabled: true
   range start: 192.168.1.150
   range end: 192.168.1.200
   template: default
+  systemd name: dhcpd
+tftp:
+  enabled: true
+  tftproot: /var/lib/tftpboot
+  systemd name: tftp
 ```
+
+Note: You may need to change the systemd service names for your distribution.
 
 Once it has been configured, you can have Warewulf configure the services:
 
 ```
-sudo ./wwctl service dhcp -c
-# sudo ./wwctl service tftp -c
+sudo ./wwctl service -a
 ```
-    
-#### Use the controller's kernel and default VNFS into your "default" node profile:
 
-Next we are going to start configuring Warewulf. Use the following two commands to
-set the kernel and VNFS for the "default" profile which all nodes will utilize, and
-then configure node specific information as you add a new node to the configuration:
-
-```
-sudo ./wwctl profile set default -K $(uname -r) -V docker://warewulf/centos-8
-sudo ./wwctl node add n0000.cluster --netdev eth0 -I 192.168.1.100 -M 255.255.255.0 -G 192.168.1.1 -H 00:0c:29:23:8b:48
-```
-    
-
-#### Build the kernel, VNFS, and overlays:
+#### Pull and build the VNFS container and kernel:
 
 Once you have added the node, you can start building the needed bootable components.
 There are three major groups of data to provision:
 
 1. Kernel: This is the boot kernel and driver overlay pair. The `wwctl kernel build`
-command will create these files. The `-a` option will scan your configuration looking
-for all needed kernel images and then go through and build them all. The caveat is
-that all these kernels must be installed to your host controller node.
+   command will create these files. The `-a` option will scan your configuration looking
+   for all needed kernel images and then go through and build them all. The caveat is
+   that all these kernels must be installed to your host controller node.
 
 1. VNFS: The "VNFS" is the "Virtual Node File System", and that is the template that
-nodes will be provisioned to boot into. Warewulf v4 can support standard "chroot"
-style VNFS formats (e.g. same as Warewulf 3 and/or Singularity Sandboxes) as well as
-OCI (Open Container Initiative) formats which include Docker containers and containers
-in Docker Hub. As you can see in the above `wwctl profile set` command, we configured
-the VNFS to be a container hosted in Docker Hub. This can also be a local path or a
-container in a `docker-daemon`.
+   nodes will be provisioned to boot into. Warewulf v4 can support standard "chroot"
+   style VNFS formats (e.g. same as Warewulf 3 and/or Singularity Sandboxes) as well as
+   OCI (Open Container Initiative) formats which include Docker containers and containers
+   in Docker Hub. As you can see in the above `wwctl profile set` command, we configured
+   the VNFS to be a container hosted in Docker Hub. This can also be a local path or a
+   container in a `docker-daemon`.
 
 1. Overlays: There are two types of overlays, "system" and "runtime". The difference is
-that the system overlay is provisioned before `/sbin/init` is called and the runtime
-overlay is provisioned after `/sbin/init` is called and is done from the booted operating
-system at periodic intervals (the time of this writing, it is ever 30 seconds).
+   that the system overlay is provisioned before `/sbin/init` is called and the runtime
+   overlay is provisioned after `/sbin/init` is called and is done from the booted operating
+   system at periodic intervals (the time of this writing, it is ever 30 seconds).
+   
 
 ```
-sudo ./wwctl kernel build -a
-sudo ./wwctl vnfs build -a
-sudo ./wwctl overlay build -sa
+sudo ./wwctl container pull docker://warewulf/centos-7 centos-7
+sudo ./wwctl container build centos-7
+sudo ./wwctl kernel build $(uname -r)
+```
+
+#### Set up the default node profile
+
+```
+sudo ./wwctl profile set default -K $(uname -r) -C centos-7
+sudo ./wwctl profile set default --netdev eth0 -M 255.255.255.0 -G 192.168.1.1
+sudo ./wwctl profile list
+```
+    
+#### Add a node and build node specific overlays
+
+```
+sudo ./wwctl node add n0000.cluster --netdev eth0 -I 192.168.1.100 -H 00:0c:29:23:8b:48
+sudo ./wwctl node list -a n0000
+sudo ./wwctl overlay build -a
 ```
     
 #### Start the Warewulf daemon:
