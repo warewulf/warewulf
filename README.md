@@ -82,7 +82,7 @@ There are three major groups of data to provision:
    for all needed kernel images and then go through and build them all. The caveat is
    that all these kernels must be installed to your host controller node.
 
-1. VNFS: The "VNFS" is the "Virtual Node File System", and that is the template that
+1. Container/VNFS: The "VNFS" is the "Virtual Node File System", and that is the template that
    nodes will be provisioned to boot into. Warewulf v4 can support standard "chroot"
    style VNFS formats (e.g. same as Warewulf 3 and/or Singularity Sandboxes) as well as
    OCI (Open Container Initiative) formats which include Docker containers and containers
