@@ -18,18 +18,16 @@ import (
 )
 
 type TemplateStruct struct {
-	Self struct {
-		Id           string
-		Hostname     string
-		GroupName    string
-		Vnfs         string
-		IpmiIpaddr   string
-		IpmiNetmask  string
-		IpmiUserName string
-		IpmiPassword string
-		NetDevs      map[string]*node.NetDevs
-	}
-	AllNodes []node.NodeInfo
+	Id           string
+	Hostname     string
+	GroupName    string
+	Container    string
+	IpmiIpaddr   string
+	IpmiNetmask  string
+	IpmiUserName string
+	IpmiPassword string
+	NetDevs      map[string]*node.NetDevs
+	AllNodes     []node.NodeInfo
 }
 
 func BuildSystemOverlay(nodeList []node.NodeInfo) error {
@@ -131,22 +129,22 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 
 		wwlog.Printf(wwlog.DEBUG, "Processing overlay for node: %s\n", n.Id.Get())
 
-		t.Self.Id = n.Id.Get()
-		t.Self.Hostname = n.Id.Get()
-		t.Self.Vnfs = n.Vnfs.Get()
-		t.Self.IpmiIpaddr = n.IpmiIpaddr.Get()
-		t.Self.IpmiNetmask = n.IpmiNetmask.Get()
-		t.Self.IpmiUserName = n.IpmiUserName.Get()
-		t.Self.IpmiPassword = n.IpmiPassword.Get()
-		t.Self.NetDevs = make(map[string]*node.NetDevs)
+		t.Id = n.Id.Get()
+		t.Hostname = n.Id.Get()
+		t.Container = n.ContainerName.Get()
+		t.IpmiIpaddr = n.IpmiIpaddr.Get()
+		t.IpmiNetmask = n.IpmiNetmask.Get()
+		t.IpmiUserName = n.IpmiUserName.Get()
+		t.IpmiPassword = n.IpmiPassword.Get()
+		t.NetDevs = make(map[string]*node.NetDevs)
 		for devname, netdev := range n.NetDevs {
 			var nd node.NetDevs
-			t.Self.NetDevs[devname] = &nd
-			t.Self.NetDevs[devname].Hwaddr = netdev.Hwaddr.Get()
-			t.Self.NetDevs[devname].Ipaddr = netdev.Ipaddr.Get()
-			t.Self.NetDevs[devname].Netmask = netdev.Netmask.Get()
-			t.Self.NetDevs[devname].Gateway = netdev.Gateway.Get()
-			t.Self.NetDevs[devname].Type = netdev.Type.Get()
+			t.NetDevs[devname] = &nd
+			t.NetDevs[devname].Hwaddr = netdev.Hwaddr.Get()
+			t.NetDevs[devname].Ipaddr = netdev.Ipaddr.Get()
+			t.NetDevs[devname].Netmask = netdev.Netmask.Get()
+			t.NetDevs[devname].Gateway = netdev.Gateway.Get()
+			t.NetDevs[devname].Type = netdev.Type.Get()
 		}
 		t.AllNodes = allNodes
 
@@ -203,8 +201,8 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 				destFile := strings.TrimSuffix(location, ".ww")
 
 				tmpl, err := template.New(path.Base(location)).Funcs(template.FuncMap{
-					"Include":         templateFileInclude,
-					"IncludeFromVnfs": templateVnfsFileInclude,
+					"Include":     templateFileInclude,
+					"IncludeFrom": templateContainerFileInclude,
 				}).ParseGlob(path.Join(OverlayDir, destFile+".ww*"))
 				if err != nil {
 					wwlog.Printf(wwlog.ERROR, "%s\n", err)

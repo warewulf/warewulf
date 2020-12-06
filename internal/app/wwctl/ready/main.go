@@ -3,10 +3,10 @@ package ready
 import (
 	"fmt"
 	"github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/kernel"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/vnfs"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 	"os"
@@ -36,8 +36,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		var runtimeo_good bool
 		status := true
 
-		if node.Vnfs.Get() != "" {
-			vnfsImage := vnfs.ImageFile(node.Vnfs.Get())
+		if node.ContainerName.Get() != "" {
+			vnfsImage := container.ImageFile(node.ContainerName.Get())
 
 			if util.IsFile(vnfsImage) == true {
 				vnfs_good = true

@@ -19,7 +19,7 @@ type NodeConf struct {
 	Comment        string              `yaml:"comment,omitempty"`
 	Disabled       bool                `yaml:"disabled,omitempty"`
 	ClusterName    string              `yaml:"cluster name,omitempty"`
-	Vnfs           string              `yaml:"vnfs,omitempty"`
+	ContainerName  string              `yaml:"container name,omitempty"`
 	Ipxe           string              `yaml:"ipxe template,omitempty"`
 	KernelVersion  string              `yaml:"kernel version,omitempty"`
 	KernelArgs     string              `yaml:"kernel args,omitempty"`
@@ -60,7 +60,7 @@ type NodeInfo struct {
 	Cid            Entry
 	Comment        Entry
 	ClusterName    Entry
-	Vnfs           Entry
+	ContainerName  Entry
 	Ipxe           Entry
 	KernelVersion  Entry
 	KernelArgs     Entry
