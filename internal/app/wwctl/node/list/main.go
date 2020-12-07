@@ -50,12 +50,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "ClusterName", node.ClusterName.Source(), node.ClusterName.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Profiles", "--", strings.Join(node.Profiles, ","))
 
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Vnfs", node.Vnfs.Source(), node.Vnfs.Print())
+			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "ContainerName", node.ContainerName.Source(), node.ContainerName.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "KernelVersion", node.KernelVersion.Source(), node.KernelVersion.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "KernelArgs", node.KernelArgs.Source(), node.KernelArgs.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "RuntimeOverlay", node.RuntimeOverlay.Source(), node.RuntimeOverlay.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "SystemOverlay", node.SystemOverlay.Source(), node.SystemOverlay.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Ipxe", node.Ipxe.Source(), node.Ipxe.Print())
+			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Init", node.Init.Source(), node.Init.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiIpaddr", node.IpmiIpaddr.Source(), node.IpmiIpaddr.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiNetmask", node.IpmiNetmask.Source(), node.IpmiNetmask.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiUserName", node.IpmiUserName.Source(), node.IpmiUserName.Print())
@@ -99,11 +100,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 	} else if ShowLong == true {
-		fmt.Printf("%-22s %-26s %-35s %s\n", "NODE NAME", "KERNEL VERSION", "VNFS IMAGE", "OVERLAYS (S/R)")
+		fmt.Printf("%-22s %-26s %-35s %s\n", "NODE NAME", "KERNEL VERSION", "CONTAINER", "OVERLAYS (S/R)")
 		fmt.Println(strings.Repeat("=", 120))
 
 		for _, node := range nodes {
-			fmt.Printf("%-22s %-26s %-35s %s\n", node.Id.Get(), node.KernelVersion.Print(), node.Vnfs.Print(), node.SystemOverlay.Print()+"/"+node.RuntimeOverlay.Print())
+			fmt.Printf("%-22s %-26s %-35s %s\n", node.Id.Get(), node.KernelVersion.Print(), node.ContainerName.Print(), node.SystemOverlay.Print()+"/"+node.RuntimeOverlay.Print())
 		}
 
 	} else {

@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	defaultCachePath = "/var/warewulf/vnfs-cache/oci/"
+	defaultCachePath = "/var/warewulf/container-cache/oci/"
 	blobPrefix       = "blobs"
 	rootfsPrefix     = "rootfs"
 )
@@ -79,15 +79,15 @@ func NewCache(opts ...CacheOpt) (*Cache, error) {
 }
 
 func (c *Cache) Pull(ctx context.Context, uri string, sysCtx *types.SystemContext) (string, error) {
-	p, err := newPuller(
-		optSetBlobCachePath(c.blobDir()),
-		optSetSystemContext(sysCtx),
+	p, err := NewPuller(
+		OptSetBlobCachePath(c.blobDir()),
+		OptSetSystemContext(sysCtx),
 	)
 	if err != nil {
 		return "", err
 	}
 
-	id, err := p.generateID(ctx, uri)
+	id, err := p.GenerateID(ctx, uri)
 	if err != nil {
 		return "", err
 	}
@@ -107,7 +107,7 @@ func (c *Cache) Pull(ctx context.Context, uri string, sysCtx *types.SystemContex
 	}
 
 	// populate entry
-	if err := p.pull(ctx, uri, path); err != nil {
+	if err := p.Pull(ctx, uri, path); err != nil {
 		// clean up entry on error
 		os.RemoveAll(path)
 		return "", err

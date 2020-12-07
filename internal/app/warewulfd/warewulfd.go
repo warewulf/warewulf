@@ -14,7 +14,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	http.HandleFunc("/ipxe/", response.IpxeSend)
 	http.HandleFunc("/kernel/", response.KernelSend)
 	http.HandleFunc("/kmods/", response.KmodsSend)
-	http.HandleFunc("/vnfs/", response.VnfsSend)
+	http.HandleFunc("/container/", response.ContainerSend)
 	http.HandleFunc("/overlay-system/", response.SystemOverlaySend)
 	http.HandleFunc("/overlay-runtime", response.RuntimeOverlaySend)
 

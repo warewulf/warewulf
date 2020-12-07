@@ -11,11 +11,11 @@ var (
 		Long:  "DHCP Config",
 		RunE:  CobraRunE,
 	}
-	DoConfig bool
+	SetShow bool
 )
 
 func init() {
-	baseCmd.PersistentFlags().BoolVarP(&DoConfig, "configure", "c", false, "Do the DHCP Configuration")
+	baseCmd.PersistentFlags().BoolVarP(&SetShow, "show", "s", false, "Show configuration (don't update)")
 
 }
 

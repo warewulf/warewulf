@@ -54,9 +54,10 @@ func (self *nodeYaml) NodeUpdate(node NodeInfo) error {
 	}
 
 	self.Nodes[nodeID].Comment = node.Comment.GetReal()
-	self.Nodes[nodeID].Vnfs = node.Vnfs.GetReal()
+	self.Nodes[nodeID].ContainerName = node.ContainerName.GetReal()
 	self.Nodes[nodeID].ClusterName = node.ClusterName.GetReal()
 	self.Nodes[nodeID].Ipxe = node.Ipxe.GetReal()
+	self.Nodes[nodeID].Init = node.Init.GetReal()
 	self.Nodes[nodeID].KernelVersion = node.KernelVersion.GetReal()
 	self.Nodes[nodeID].KernelArgs = node.KernelArgs.GetReal()
 	self.Nodes[nodeID].IpmiIpaddr = node.IpmiIpaddr.GetReal()
@@ -125,8 +126,9 @@ func (self *nodeYaml) ProfileUpdate(profile NodeInfo) error {
 		return errors.New("Profile name does not exist: " + profileID)
 	}
 	self.NodeProfiles[profileID].Comment = profile.Comment.GetReal()
-	self.NodeProfiles[profileID].Vnfs = profile.Vnfs.GetReal()
+	self.NodeProfiles[profileID].ContainerName = profile.ContainerName.GetReal()
 	self.NodeProfiles[profileID].Ipxe = profile.Ipxe.GetReal()
+	self.NodeProfiles[profileID].Init = profile.Init.GetReal()
 	self.NodeProfiles[profileID].ClusterName = profile.ClusterName.GetReal()
 	self.NodeProfiles[profileID].KernelVersion = profile.KernelVersion.GetReal()
 	self.NodeProfiles[profileID].KernelArgs = profile.KernelArgs.GetReal()

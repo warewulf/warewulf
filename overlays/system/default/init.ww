@@ -35,8 +35,8 @@ nohup /warewulf/bin/wwclient >/var/log/wwclient.log 2>&1 </dev/null &
 
 nohup /ipmi >/var/log/ipmi.log 2>&1 </dev/null &
 
-echo "Calling /sbin/init..."
+echo "Calling {{$.Init}}..."
 echo
 
 sleep 2
-exec /sbin/init
+exec {{$.Init}}

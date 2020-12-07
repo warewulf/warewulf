@@ -14,7 +14,7 @@ func BuildDocker(vnfs VnfsObject, buildForce bool) {
 	wwlog.Printf(wwlog.VERBOSE, "Building OCI Container: %s\n", vnfs.Source)
 
 	OciCacheDir := config.LocalStateDir + "/oci"
-	VnfsHashDir := config.LocalStateDir + "/oci/vnfs"
+	VnfsHashDir := config.LocalStateDir + "/oci/container"
 
 	c, err := oci.NewCache(oci.OptSetCachePath(OciCacheDir))
 	if err != nil {

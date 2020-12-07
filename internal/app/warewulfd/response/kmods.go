@@ -1,7 +1,7 @@
 package response
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/kernel"
 	"log"
 	"net/http"
 )
@@ -16,7 +16,7 @@ func KmodsSend(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if node.KernelVersion.Defined() == true {
-		fileName := config.KmodsImage(node.KernelVersion.Get())
+		fileName := kernel.KmodsImage(node.KernelVersion.Get())
 
 		err := sendFile(w, fileName, node.Id.Get())
 		if err != nil {
