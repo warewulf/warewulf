@@ -45,6 +45,7 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.SystemOverlay.SetDefault("default")
 		n.RuntimeOverlay.SetDefault("default")
 		n.Ipxe.SetDefault("default")
+		n.Init.SetDefault("/sbin/init")
 
 		fullname := strings.SplitN(nodename, ".", 2)
 		if len(fullname) > 1 {
@@ -64,6 +65,7 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.KernelArgs.Set(node.KernelArgs)
 		n.ClusterName.Set(node.ClusterName)
 		n.Ipxe.Set(node.Ipxe)
+		n.Init.Set(node.Init)
 		n.IpmiIpaddr.Set(node.IpmiIpaddr)
 		n.IpmiNetmask.Set(node.IpmiNetmask)
 		n.IpmiUserName.Set(node.IpmiUserName)
@@ -101,6 +103,7 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.KernelVersion.SetAlt(self.NodeProfiles[p].KernelVersion, pstring)
 			n.KernelArgs.SetAlt(self.NodeProfiles[p].KernelArgs, pstring)
 			n.Ipxe.SetAlt(self.NodeProfiles[p].Ipxe, pstring)
+			n.Init.SetAlt(self.NodeProfiles[p].Init, pstring)
 			n.IpmiIpaddr.SetAlt(self.NodeProfiles[p].IpmiIpaddr, pstring)
 			n.IpmiNetmask.SetAlt(self.NodeProfiles[p].IpmiNetmask, pstring)
 			n.IpmiUserName.SetAlt(self.NodeProfiles[p].IpmiUserName, pstring)
@@ -142,6 +145,7 @@ func (self *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		p.Comment.Set(profile.Comment)
 		p.ContainerName.Set(profile.ContainerName)
 		p.Ipxe.Set(profile.Ipxe)
+		p.Init.Set(profile.Init)
 		p.KernelVersion.Set(profile.KernelVersion)
 		p.KernelArgs.Set(profile.KernelArgs)
 		p.IpmiNetmask.Set(profile.IpmiNetmask)

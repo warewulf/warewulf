@@ -52,7 +52,7 @@ files: all
 #	cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
 #	restorecon -r /var/lib/tftpboot/warewulf
 	cp -r overlays /var/warewulf/
-	chmod +x /var/warewulf/overlays/system/default/init
+	chmod +x /var/warewulf/overlays/system/default/init.ww
 	mkdir -p /var/warewulf/overlays/system/default/warewulf/bin/
 	cp wwclient /var/warewulf/overlays/system/default/warewulf/bin/
 

@@ -33,8 +33,8 @@ mount -t devtmpfs devtmpfs /dev
 
 nohup /warewulf/bin/wwclient >/var/log/wwclient.log 2>&1 </dev/null &
 
-echo "Calling /sbin/init..."
+echo "Calling {{$.Init}}..."
 echo
 
 sleep 2
-exec /sbin/init
+exec {{$.Init}}
