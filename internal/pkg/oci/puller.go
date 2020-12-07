@@ -23,21 +23,21 @@ import (
 
 type pullerOpt func(*puller) error
 
-func optSetBlobCachePath(path string) pullerOpt {
+func OptSetBlobCachePath(path string) pullerOpt {
 	return func(p *puller) error {
 		p.blobCachePath = path
 		return nil
 	}
 }
 
-func optSetTmpDirPath(path string) pullerOpt {
+func OptSetTmpDirPath(path string) pullerOpt {
 	return func(p *puller) error {
 		p.tmpDirPath = path
 		return nil
 	}
 }
 
-func optSetSystemContext(s *types.SystemContext) pullerOpt {
+func OptSetSystemContext(s *types.SystemContext) pullerOpt {
 	return func(p *puller) error {
 		p.sysCtx = s
 		return nil
@@ -51,7 +51,7 @@ type puller struct {
 	sysCtx        *types.SystemContext
 }
 
-func newPuller(opts ...pullerOpt) (*puller, error) {
+func NewPuller(opts ...pullerOpt) (*puller, error) {
 	p := &puller{
 		// default to a sensible value, but caller should set this with opts
 		blobCachePath: filepath.Join(defaultCachePath, blobPrefix),
@@ -93,8 +93,8 @@ func getReference(uri string) (types.ImageReference, error) {
 	}
 }
 
-// generateID stores and returns a unique identifier derived from the sha256sum of the image manifest
-func (p *puller) generateID(ctx context.Context, uri string) (string, error) {
+// GenerateID stores and returns a unique identifier derived from the sha256sum of the image manifest
+func (p *puller) GenerateID(ctx context.Context, uri string) (string, error) {
 	ref, err := getReference(uri)
 	if err != nil {
 		return "", fmt.Errorf("unable to parse uri: %v", err)
@@ -114,7 +114,7 @@ func (p *puller) generateID(ctx context.Context, uri string) (string, error) {
 	return p.id, nil
 }
 
-func (p *puller) pull(ctx context.Context, uri, dst string) (err error) {
+func (p *puller) Pull(ctx context.Context, uri, dst string) (err error) {
 	srcRef, err := getReference(uri)
 	if err != nil {
 		return fmt.Errorf("unable to parse uri: %v", err)
@@ -135,7 +135,7 @@ func (p *puller) pull(ctx context.Context, uri, dst string) (err error) {
 	// copy to cache location
 	_, err = copy.Image(ctx, policyCtx, cacheRef, srcRef, &copy.Options{
 		ReportWriter: os.Stdout,
-		SourceCtx: p.sysCtx,
+		SourceCtx:    p.sysCtx,
 	})
 	if err != nil {
 		return err

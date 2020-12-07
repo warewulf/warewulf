@@ -2,7 +2,7 @@ package build
 
 import (
 	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/kernel"
+	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
@@ -10,18 +10,26 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
+	var containers []string
 
-	for _, arg := range args {
-		err := kernel.Build(arg)
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Failed building kernel: %s\n", err)
+	if BuildAll == true {
+		containers, _ = container.ListSources()
+	} else {
+		containers = args
+	}
+
+	for _, c := range containers {
+		if container.ValidSource(c) == false {
+			wwlog.Printf(wwlog.ERROR, "VNFS name does not exist: %s\n", c)
 			os.Exit(1)
 		}
+
+		container.Build(c, BuildForce)
 	}
 
 	if SetDefault == true {
-		if len(args) != 1 {
-			wwlog.Printf(wwlog.ERROR, "Can only set default for one kernel version\n")
+		if len(containers) != 1 {
+			wwlog.Printf(wwlog.ERROR, "Can only set default for one container\n")
 		} else {
 			nodeDB, err := node.New()
 			if err != nil {
@@ -34,13 +42,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			for _, profile := range profiles {
 				wwlog.Printf(wwlog.DEBUG, "Looking for profile default: %s\n", profile.Id.Get())
 				if profile.Id.Get() == "default" {
-					wwlog.Printf(wwlog.DEBUG, "Found profile default, setting kernel version to: %s\n", args[0])
-					profile.KernelVersion.Set(args[0])
+					wwlog.Printf(wwlog.DEBUG, "Found profile default, setting container name to: %s\n", containers[0])
+					profile.ContainerName.Set(containers[0])
 					nodeDB.ProfileUpdate(profile)
 				}
 			}
 			nodeDB.Persist()
-			fmt.Printf("Set default kernel version to: %s\n", args[0])
+			fmt.Printf("Set default profile to container: %s\n", containers[0])
 		}
 	}
 
@@ -63,8 +71,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 			for _, node := range nodes {
-				if node.KernelVersion.Defined() == true {
-					set[node.KernelVersion.Get()]++
+				if node.Vnfs.Defined() == true {
+					set[node.Vnfs.Get()]++
 				}
 			}
 
@@ -77,9 +85,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 			for _, node := range nodes {
-				wwlog.Printf(wwlog.DEBUG, "evaluating node/kernel: %s/%s\n", node.Id.Get(), node.KernelVersion.Get())
-				if node.KernelVersion.Defined() == true {
-					set[node.KernelVersion.Get()]++
+				if node.Vnfs.Defined() == true {
+					wwlog.Printf(wwlog.VERBOSE, "Adding VNFS to list: %s (%s)\n", node.Vnfs.Get(), node.Id.Get())
+					set[node.Vnfs.Get()]++
 				}
 			}
 
@@ -90,9 +98,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			os.Exit(1)
 		}
 
-		for k := range set {
-			wwlog.Printf(wwlog.INFO, "Building kernel: %s\n", k)
-			err := kernel.Build(k)
+		for v := range set {
+			fmt.Printf("Building VNFS: %s\n", v)
+			err := container.Build(v, BuildForce)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)

@@ -13,13 +13,14 @@ import (
 )
 
 type iPxeTemplate struct {
-	Hostname   string
-	Fqdn       string
-	Vnfs       string
-	Hwaddr     string
-	Ipaddr     string
-	Port       string
-	Kernelargs string
+	Hostname      string
+	Fqdn          string
+	ContainerName string
+	Hwaddr        string
+	Ipaddr        string
+	Port          string
+	KernelArgs    string
+	KernelVersion string
 }
 
 func IpxeSend(w http.ResponseWriter, req *http.Request) {
@@ -70,8 +71,9 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 		replace.Port = strconv.Itoa(conf.Warewulf.Port)
 		replace.Hostname = node.Id.Get()
 		replace.Hwaddr = url[2]
-		replace.Vnfs = node.Vnfs.Get()
-		replace.Kernelargs = node.KernelArgs.Get()
+		replace.ContainerName = node.ContainerName.Get()
+		replace.KernelArgs = node.KernelArgs.Get()
+		replace.KernelVersion = node.KernelVersion.Get()
 
 		err = tmpl.Execute(w, replace)
 		if err != nil {

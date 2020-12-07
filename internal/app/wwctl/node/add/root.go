@@ -22,7 +22,7 @@ var (
 func init() {
 	baseCmd.PersistentFlags().StringVarP(&SetGroup, "group", "g", "default", "Group to add nodes to")
 	baseCmd.PersistentFlags().StringVarP(&SetController, "controller", "c", "localhost", "Controller to add nodes to")
-	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdev", "n", "eth0", "Define the network device to configure")
+	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdev", "N", "eth0", "Define the network device to configure")
 	baseCmd.PersistentFlags().StringVarP(&SetIpaddr, "ipaddr", "I", "", "Set the node's network device IP address")
 	baseCmd.PersistentFlags().StringVarP(&SetNetmask, "netmask", "M", "", "Set the node's network device netmask")
 	baseCmd.PersistentFlags().StringVarP(&SetGateway, "gateway", "G", "", "Set the node's network device gateway")

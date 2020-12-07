@@ -24,8 +24,8 @@ func Load(name string) (VnfsObject, error) {
 	var ret VnfsObject
 
 	if name == "" {
-		wwlog.Printf(wwlog.DEBUG, "Called vnfs.Load() without a name, returning error\n")
-		return ret, errors.New("Called vnfs.Load() without a VNFS name")
+		wwlog.Printf(wwlog.DEBUG, "Called container.Load() without a name, returning error\n")
+		return ret, errors.New("Called container.Load() without a VNFS name")
 	}
 
 	pathFriendlyName := CleanName(name)
@@ -69,8 +69,8 @@ func New(source string) (VnfsObject, error) {
 	var ret VnfsObject
 
 	if source == "" {
-		wwlog.Printf(wwlog.DEBUG, "Called vnfs.Load() without a name, returning error\n")
-		return ret, errors.New("Called vnfs.Load() without a VNFS name")
+		wwlog.Printf(wwlog.DEBUG, "Called container.Load() without a name, returning error\n")
+		return ret, errors.New("Called container.Load() without a VNFS name")
 	}
 
 	if util.IsFile(ret.Config) {

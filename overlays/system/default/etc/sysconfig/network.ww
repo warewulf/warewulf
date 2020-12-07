@@ -1,2 +1,2 @@
 NETWORKING=yes
-HOSTNAME={{$.Self.Id}}
+HOSTNAME={{$.Id}}
