@@ -1,7 +1,9 @@
 package build
 
 import (
+	"fmt"
 	"github.com/hpcng/warewulf/internal/pkg/container"
+	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 	"os"
@@ -23,6 +25,31 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		container.Build(c, BuildForce)
+	}
+
+	if SetDefault == true {
+		if len(containers) != 1 {
+			wwlog.Printf(wwlog.ERROR, "Can only set default for one container\n")
+		} else {
+			nodeDB, err := node.New()
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
+				os.Exit(1)
+			}
+
+			//TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
+			profiles, _ := nodeDB.FindAllProfiles()
+			for _, profile := range profiles {
+				wwlog.Printf(wwlog.DEBUG, "Looking for profile default: %s\n", profile.Id.Get())
+				if profile.Id.Get() == "default" {
+					wwlog.Printf(wwlog.DEBUG, "Found profile default, setting container name to: %s\n", containers[0])
+					profile.ContainerName.Set(containers[0])
+					nodeDB.ProfileUpdate(profile)
+				}
+			}
+			nodeDB.Persist()
+			fmt.Printf("Set default profile to container: %s\n", containers[0])
+		}
 	}
 
 	/*

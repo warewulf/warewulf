@@ -77,12 +77,7 @@ func ValidSource(name string) bool {
 	}
 
 	if util.IsDir(fullPath) == false {
-		wwlog.Printf(wwlog.VERBOSE, "Location is not a VNFS source directory: %s\n", name)
-		return false
-	}
-
-	if util.IsFile(path.Join(fullPath, "/sbin/init")) == false {
-		wwlog.Printf(wwlog.VERBOSE, "VNFS Source does not have a valid /sbin/init: %s\n", name)
+		wwlog.Printf(wwlog.WARN, "Location is not a VNFS source directory: %s\n", name)
 		return false
 	}
 

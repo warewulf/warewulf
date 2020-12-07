@@ -29,6 +29,7 @@ type NodeConf struct {
 	IpmiNetmask    string              `yaml:"ipmi netmask,omitempty"`
 	RuntimeOverlay string              `yaml:"runtime overlay files,omitempty"`
 	SystemOverlay  string              `yaml:"system overlay files,omitempty"`
+	Init           string              `yaml:"init,omitempty"`
 	Profiles       []string            `yaml:"profiles,omitempty"`
 	NetDevs        map[string]*NetDevs `yaml:"network devices,omitempty"`
 }
@@ -70,6 +71,7 @@ type NodeInfo struct {
 	IpmiPassword   Entry
 	RuntimeOverlay Entry
 	SystemOverlay  Entry
+	Init           Entry //TODO: Finish adding this...
 	Profiles       []string
 	GroupProfiles  []string
 	NetDevs        map[string]*NetDevEntry
