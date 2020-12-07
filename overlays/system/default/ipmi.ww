@@ -1,36 +1,62 @@
 #!/bin/bash
 
+error_exit() {
+    echo "ERROR: $*"
+    exit 1
+}
+
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
-if [ ! -e /dev/ipmi0 ]; then
-    ipmi_dev=$(grep ipmidev /proc/devices | awk '{ print $1; }')
-    mknod -m 0666 /dev/ipmi0 c $ipmi_dev 0
-    ls -la /dev/ipmi0
-fi
-
 IP="{{$.Self.IpmiIpaddr}}"
-NETMASK="{{$.Self.IpmiNetmask}}"
+NETMASK="{{$.Self.NetDevs.eth0.Netmask}}"
+GATEWAY="{{$.Self.NetDevs.eth0.Gateway}}"
 USER="{{$.Self.IpmiUserName}}"
 PASS="{{$.Self.IpmiPassword}}"
 
 echo IP is $IP
 echo NETMASK is $NETMASK
+echo GATEWAY is $GATEWAY
 echo USER is $USER
 echo PASS is $PASS
 
-exit 0
+if [ -z "$IP" ]; then
+    error_exit "No IPMI IP address supplied, skipping IPMI configuration"
+fi
+
+modprobe ipmi_si
+modprobe ipmi_ssif
+modprobe ipmi_devintf
+modprobe ipmi_msghandler
+
+if [ ! -e /dev/ipmi0 ]; then
+    sleep 1
+    ipmi_dev=$(grep ipmidev /proc/devices | awk '{ print $1; }')
+    mknod -m 0666 /dev/ipmi0 c $ipmi_dev 0
+    ls -la /dev/ipmi0
+fi
 
 # Network
+ipmitool lan set 1 access on
 ipmitool lan set 1 ipsrc static
 ipmitool lan set 1 ipaddr $IP
 ipmitool lan set 1 netmask $NETMASK
+ipmitool lan set 1 defgw ipaddr $GATEWAY
+
+# User
+if [ "$USER" != "" ]; then
+    ipmitool user set name 2 $USER
+    ipmitool user set password 2 $PASS
+    sleep 1
+    ipmitool user priv 2 4 1
+    ipmitool user enable 2
+fi
 
 # Authentication
-ipmitool lan set 1 auth user md5,password
-ipmitool lan set 1 auth operator md5,password
-ipmitool lan set 1 auth admin md5,password
-ipmitool user enable 1
-ipmitool user priv 1 4 1
+#ipmitool lan set 1 auth user md5,password
+#ipmitool lan set 1 auth operator md5,password
+#ipmitool lan set 1 auth admin md5,password
+#ipmitool user enable 1
+#ipmitool user priv 1 4 1
 
 # Authentication (allow None)
 #ipmitool lan set 1 auth user none,md5,password
@@ -42,7 +68,9 @@ ipmitool user priv 1 4 1
 # Serial Over LAN
 ipmitool sol set force-encryption true 1
 ipmitool sol set force-authentication true 1
-ipmitool sol set privilege-level user 1
+ipmitool sol set privilege-level admin 1
+ipmitool sol payload enable 1 4
+ipmitool sol set enabled true 1
 ipmitool sol set non-volatile-bit-rate 19.2 1
 ipmitool sol set volatile-bit-rate 19.2 1
 

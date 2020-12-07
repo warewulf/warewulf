@@ -14,4 +14,4 @@ Include: yum
     shadow-utils rsyslog tcp_wrappers tzdata util-linux words \
     zlib tar less gzip which util-linux openssh-clients  \
     openssh-server dhclient pciutils vim-minimal shadow-utils \
-    strace cronie crontabs cpio wget centos-release
+    strace cronie crontabs cpio wget centos-release ipmitool
