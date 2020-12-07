@@ -19,7 +19,7 @@ type NodeConf struct {
 	Comment        string              `yaml:"comment,omitempty"`
 	Disabled       bool                `yaml:"disabled,omitempty"`
 	ClusterName    string              `yaml:"cluster name,omitempty"`
-	Vnfs           string              `yaml:"vnfs,omitempty"`
+	ContainerName  string              `yaml:"container name,omitempty"`
 	Ipxe           string              `yaml:"ipxe template,omitempty"`
 	KernelVersion  string              `yaml:"kernel version,omitempty"`
 	KernelArgs     string              `yaml:"kernel args,omitempty"`
@@ -29,6 +29,7 @@ type NodeConf struct {
 	IpmiNetmask    string              `yaml:"ipmi netmask,omitempty"`
 	RuntimeOverlay string              `yaml:"runtime overlay files,omitempty"`
 	SystemOverlay  string              `yaml:"system overlay files,omitempty"`
+	Init           string              `yaml:"init,omitempty"`
 	Profiles       []string            `yaml:"profiles,omitempty"`
 	NetDevs        map[string]*NetDevs `yaml:"network devices,omitempty"`
 }
@@ -60,7 +61,7 @@ type NodeInfo struct {
 	Cid            Entry
 	Comment        Entry
 	ClusterName    Entry
-	Vnfs           Entry
+	ContainerName  Entry
 	Ipxe           Entry
 	KernelVersion  Entry
 	KernelArgs     Entry
@@ -70,6 +71,7 @@ type NodeInfo struct {
 	IpmiPassword   Entry
 	RuntimeOverlay Entry
 	SystemOverlay  Entry
+	Init           Entry //TODO: Finish adding this...
 	Profiles       []string
 	GroupProfiles  []string
 	NetDevs        map[string]*NetDevEntry

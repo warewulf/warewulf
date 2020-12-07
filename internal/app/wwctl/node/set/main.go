@@ -2,6 +2,7 @@ package set
 
 import (
 	"fmt"
+	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -43,6 +44,23 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
+	if SetContainer != "" {
+		if container.ValidSource(SetContainer) == true {
+			imageFile := container.ImageFile(SetContainer)
+			if util.IsFile(imageFile) == false {
+				wwlog.Printf(wwlog.ERROR, "Container has not been built: %s\n", SetContainer)
+				if SetForce == false {
+					os.Exit(1)
+				}
+			}
+		} else {
+			wwlog.Printf(wwlog.ERROR, "Container does not exist: %s\n", SetContainer)
+			if SetForce == false {
+				os.Exit(1)
+			}
+		}
+	}
+
 	for _, n := range nodes {
 		wwlog.Printf(wwlog.VERBOSE, "Evaluating node: %s\n", n.Id.Get())
 
@@ -56,10 +74,20 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				os.Exit(1)
 			}
 		}
-		if SetVnfs != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting vnfs to: %s\n", n.Id.Get(), SetVnfs)
+		if SetContainer != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting container name to: %s\n", n.Id.Get(), SetContainer)
 
-			n.Vnfs.Set(SetVnfs)
+			n.ContainerName.Set(SetContainer)
+			err := nodeDB.NodeUpdate(n)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
+		if SetInit != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting init command to: %s\n", n.Id.Get(), SetInit)
+
+			n.Init.Set(SetInit)
 			err := nodeDB.NodeUpdate(n)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)

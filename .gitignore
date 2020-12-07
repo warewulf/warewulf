@@ -1,10 +1,10 @@
 # project data
-.idea
-.tools
-vendor/
+/.idea
+/.tools
+/vendor/
 
 # binaries
-warewulfd
-wwbuild
-wwclient
-wwctl
+/warewulfd
+/wwbuild
+/wwclient
+/wwctl

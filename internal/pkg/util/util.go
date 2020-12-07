@@ -114,7 +114,7 @@ func IsFile(path string) bool {
 	return false
 }
 
-func TaintCheck(pattern string, expr string) bool {
+func ValidString(pattern string, expr string) bool {
 	if b, _ := regexp.MatchString(expr, pattern); b == true {
 		return true
 	}
@@ -122,7 +122,7 @@ func TaintCheck(pattern string, expr string) bool {
 }
 
 func ValidateOrDie(message string, pattern string, expr string) {
-	if TaintCheck(pattern, expr) == false {
+	if ValidString(pattern, expr) == false {
 		wwlog.Printf(wwlog.ERROR, "%s does not validate: '%s'\n", message, pattern)
 		os.Exit(1)
 	}
