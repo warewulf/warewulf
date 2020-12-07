@@ -49,19 +49,19 @@ files: all
 	install -d -m 0755 /etc/warewulf/ipxe
 	install -d -m 0755 /var/lib/tftpboot/warewulf/ipxe/
 	cp -r etc/* /etc/warewulf/
-	cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
-	restorecon -r /var/lib/tftpboot/warewulf
+#	cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
+#	restorecon -r /var/lib/tftpboot/warewulf
 	cp -r overlays /var/warewulf/
-	chmod +x /var/warewulf/overlays/system/default/init
+	chmod +x /var/warewulf/overlays/system/default/init.ww
 	mkdir -p /var/warewulf/overlays/system/default/warewulf/bin/
 	cp wwclient /var/warewulf/overlays/system/default/warewulf/bin/
 
 services: files
-	sudo systemctl enable tftp
-	sudo systemctl restart tftp
+#	sudo systemctl enable tftp
+#	sudo systemctl restart tftp
 
 warewulfd:
-	cd cmd/warewulfd; go build -mod vendor -o ../../warewulfd
+	cd cmd/warewulfd; go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../warewulfd
 
 wwctl:
 	cd cmd/wwctl; go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwctl

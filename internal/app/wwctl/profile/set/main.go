@@ -2,7 +2,9 @@ package set
 
 import (
 	"fmt"
+	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -46,6 +48,23 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	if SetContainer != "" {
+		if container.ValidSource(SetContainer) == true {
+			imageFile := container.ImageFile(SetContainer)
+			if util.IsFile(imageFile) == false {
+				wwlog.Printf(wwlog.ERROR, "Container has not been built: %s\n", SetContainer)
+				if SetForce == false {
+					os.Exit(1)
+				}
+			}
+		} else {
+			wwlog.Printf(wwlog.ERROR, "Container name does not exist: %s\n", SetContainer)
+			if SetForce == false {
+				os.Exit(1)
+			}
+		}
+	}
+
 	for _, p := range profiles {
 		wwlog.Printf(wwlog.VERBOSE, "Modifying profile: %s\n", p.Id.Get())
 
@@ -69,16 +88,27 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				os.Exit(1)
 			}
 		}
-		if SetVnfs != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting VNFS to: %s\n", p.Id, SetVnfs)
+		if SetContainer != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting Container name to: %s\n", p.Id, SetContainer)
 
-			p.Vnfs.Set(SetVnfs)
+			p.ContainerName.Set(SetContainer)
 			err := nodeDB.ProfileUpdate(p)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
 			}
 		}
+		if SetInit != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting init command to: %s\n", p.Id, SetInit)
+
+			p.Init.Set(SetInit)
+			err := nodeDB.ProfileUpdate(p)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
+
 		if SetKernel != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting Kernel version to: %s\n", p.Id, SetKernel)
 

@@ -30,28 +30,31 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		return false
 	})
 
-	for _, node := range profiles {
+	for _, profile := range profiles {
 		fmt.Printf("################################################################################\n")
-		fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), "Id", node.Id.Print())
-		fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), "Comment", node.Comment.Print())
-		fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), "ClusterName", node.ClusterName.Print())
+		fmt.Printf("%-20s %-18s %s\n", "PROFILE NAME", "FIELD", "VALUE")
+		fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Id", profile.Id.Print())
+		fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Comment", profile.Comment.Print())
+		fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "ClusterName", profile.ClusterName.Print())
 
-		fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), "Vnfs", node.Vnfs.Print())
-		fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), "KernelVersion", node.KernelVersion.Print())
-		fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), "KernelArgs", node.KernelArgs.Print())
-		fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), "RuntimeOverlay", node.RuntimeOverlay.Print())
-		fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), "SystemOverlay", node.SystemOverlay.Print())
-		fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), "Ipxe", node.Ipxe.Print())
-		fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), "IpmiIpaddr", node.IpmiIpaddr.Print())
-		fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), "IpmiNetmask", node.IpmiNetmask.Print())
-		fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), "IpmiUserName", node.IpmiUserName.Print())
+		fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "ContainerName", profile.ContainerName.Print())
+		fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "KernelVersion", profile.KernelVersion.Print())
+		fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "KernelArgs", profile.KernelArgs.Print())
+		fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Init", profile.Init.Print())
 
-		for name, netdev := range node.NetDevs {
-			fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), name+":IPADDR", netdev.Ipaddr.Print())
-			fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), name+":NETMASK", netdev.Netmask.Print())
-			fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), name+":GATEWAY", netdev.Gateway.Print())
-			fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), name+":HWADDR", netdev.Hwaddr.Print())
-			fmt.Printf("%-20s %-18s: %s\n", node.Id.Get(), name+":TYPE", netdev.Hwaddr.Print())
+		fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "RuntimeOverlay", profile.RuntimeOverlay.Print())
+		fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "SystemOverlay", profile.SystemOverlay.Print())
+		fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Ipxe", profile.Ipxe.Print())
+		fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiIpaddr", profile.IpmiIpaddr.Print())
+		fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiNetmask", profile.IpmiNetmask.Print())
+		fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiUserName", profile.IpmiUserName.Print())
+
+		for name, netdev := range profile.NetDevs {
+			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), name+":IPADDR", netdev.Ipaddr.Print())
+			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), name+":NETMASK", netdev.Netmask.Print())
+			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), name+":GATEWAY", netdev.Gateway.Print())
+			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), name+":HWADDR", netdev.Hwaddr.Print())
+			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), name+":TYPE", netdev.Hwaddr.Print())
 
 		}
 	}

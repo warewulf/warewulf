@@ -25,10 +25,10 @@ type dhcpTemplate struct {
 }
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	return ConfigureDHCP()
+	return Configure(SetShow)
 }
 
-func ConfigureDHCP() error {
+func Configure(show bool) error {
 	var d dhcpTemplate
 	var templateFile string
 
@@ -110,7 +110,7 @@ func ConfigureDHCP() error {
 	d.RangeStart = controller.Dhcp.RangeStart
 	d.RangeEnd = controller.Dhcp.RangeEnd
 
-	if DoConfig == true {
+	if show == false {
 		fmt.Printf("Writing the DHCP configuration file\n")
 		configWriter, err := os.OpenFile(controller.Dhcp.ConfigFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0640)
 		if err != nil {
@@ -125,16 +125,7 @@ func ConfigureDHCP() error {
 		}
 
 		fmt.Printf("Enabling and restarting the DHCP services\n")
-		if controller.Dhcp.Enable != "" {
-			util.ExecInteractive("/bin/sh", "-c", controller.Dhcp.Enable)
-		} else {
-			util.ExecInteractive("/bin/sh", "-c", "systemctl enable dhcpd")
-		}
-		if controller.Dhcp.Restart != "" {
-			util.ExecInteractive("/bin/sh", "-c", controller.Dhcp.Restart)
-		} else {
-			util.ExecInteractive("/bin/sh", "-c", "systemctl restart dhcpd")
-		}
+		util.SystemdStart(controller.Dhcp.SystemdName)
 
 	} else {
 		err = tmpl.Execute(os.Stdout, d)

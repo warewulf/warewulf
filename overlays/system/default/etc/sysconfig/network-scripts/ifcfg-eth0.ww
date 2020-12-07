@@ -1,9 +1,9 @@
 DEVICE=eth0
 NAME=eth0
-IPADDR={{$.Self.NetDevs.eth0.Ipaddr}}
-NETMASK={{$.Self.NetDevs.eth0.Netmask}}
-GATEWAY={{$.Self.NetDevs.eth0.Gateway}}
-HWADDR={{$.Self.NetDevs.eth0.Hwaddr}}
+IPADDR={{$.NetDevs.eth0.Ipaddr}}
+NETMASK={{$.NetDevs.eth0.Netmask}}
+GATEWAY={{$.NetDevs.eth0.Gateway}}
+HWADDR={{$.NetDevs.eth0.Hwaddr}}
 BOOTPROTO=static
 ONBOOT=yes
 DEVTIMEOUT=10

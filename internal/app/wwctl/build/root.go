@@ -6,24 +6,24 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "build",
-		Short:              "Warewulf build subcommand",
-		Long:               "Warewulf build is used to build VNFS, kernel, and system-overlay objects for\n" +
-							"provisioning. The default usage will be to build and/or update anything\n" +
-							"that seems to be needed.",
-		RunE:				CobraRunE,
+		Use:   "build",
+		Short: "Warewulf build subcommand",
+		Long: "Warewulf build is used to build VNFS, kernel, and system-overlay objects for\n" +
+			"provisioning. The default usage will be to build and/or update anything\n" +
+			"that seems to be needed.",
+		RunE: CobraRunE,
 	}
 
-	buildVnfs bool
-	buildKernel bool
+	buildVnfs           bool
+	buildKernel         bool
 	buildRuntimeOverlay bool
-	buildSystemOverlay bool
-	buildAll bool
-	buildForce bool
+	buildSystemOverlay  bool
+	buildAll            bool
+	buildForce          bool
 )
 
 func init() {
-	baseCmd.PersistentFlags().BoolVarP(&buildVnfs, "vnfs", "V", false, "Build and/or update VNFS images.")
+	baseCmd.PersistentFlags().BoolVarP(&buildVnfs, "container", "V", false, "Build and/or update VNFS images.")
 	baseCmd.PersistentFlags().BoolVarP(&buildKernel, "kernel", "K", false, "Build and/or update Kernel images.")
 	baseCmd.PersistentFlags().BoolVarP(&buildRuntimeOverlay, "runtime", "R", false, "Build and/or update runtime overlays")
 	baseCmd.PersistentFlags().BoolVarP(&buildSystemOverlay, "system", "S", false, "Build and/or update system overlays")
