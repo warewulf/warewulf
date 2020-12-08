@@ -7,6 +7,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -174,7 +175,37 @@ func (self *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 
 		ret = append(ret, p)
 	}
+
+	sort.Slice(ret, func(i, j int) bool {
+		if ret[i].ClusterName.Get() < ret[j].ClusterName.Get() {
+			return true
+		} else if ret[i].ClusterName.Get() == ret[j].ClusterName.Get() {
+			if ret[i].Id.Get() < ret[j].Id.Get() {
+				return true
+			}
+		}
+		return false
+	})
+
 	return ret, nil
+}
+
+func (self *nodeYaml) FindUnconfiguredNode() (NodeInfo, string, error) {
+	var ret NodeInfo
+
+	nodes, _ := self.FindAllNodes()
+
+	for _, node := range nodes {
+		for netdev, dev := range node.NetDevs {
+			if dev.Hwaddr.Defined() == false && dev.Ipaddr.Defined() == true {
+				if dev.Type.Defined() == false || dev.Type.Get() == "ethernet" {
+					return node, netdev, nil
+				}
+			}
+		}
+	}
+
+	return ret, "", errors.New("No unconfigured nodes found")
 }
 
 func (self *nodeYaml) FindByHwaddr(hwa string) (NodeInfo, error) {
