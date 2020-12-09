@@ -7,11 +7,11 @@ error_exit() {
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
-IP="{{$.Self.IpmiIpaddr}}"
-NETMASK="{{$.Self.NetDevs.eth0.Netmask}}"
-GATEWAY="{{$.Self.NetDevs.eth0.Gateway}}"
-USER="{{$.Self.IpmiUserName}}"
-PASS="{{$.Self.IpmiPassword}}"
+IP="{{$.IpmiIpaddr}}"
+NETMASK="{{$.NetDevs.eth0.Netmask}}"
+GATEWAY="{{$.NetDevs.eth0.Gateway}}"
+USER="{{$.IpmiUserName}}"
+PASS="{{$.IpmiPassword}}"
 
 echo IP is $IP
 echo NETMASK is $NETMASK
