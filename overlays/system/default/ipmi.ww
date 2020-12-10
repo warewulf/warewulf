@@ -7,9 +7,13 @@ error_exit() {
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
+set -x
+
 IP="{{$.IpmiIpaddr}}"
-NETMASK="{{$.NetDevs.eth0.Netmask}}"
-GATEWAY="{{$.NetDevs.eth0.Gateway}}"
+NETMASK="{{$.IpmiNetmask}}"
+[ -z "$NETMASK" ] && NETMASK="{{$.NetDevs.eth0.Netmask}}"
+GATEWAY="{{$.IpmiGateway}}"
+[ -z "$GATEWAY" ] && GATEWAY="{{$.NetDevs.eth0.Gateway}}"
 USER="{{$.IpmiUserName}}"
 PASS="{{$.IpmiPassword}}"
 
