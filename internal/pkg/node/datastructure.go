@@ -27,6 +27,7 @@ type NodeConf struct {
 	IpmiPassword   string              `yaml:"ipmi password,omitempty"`
 	IpmiIpaddr     string              `yaml:"ipmi ipaddr,omitempty"`
 	IpmiNetmask    string              `yaml:"ipmi netmask,omitempty"`
+	IpmiGateway    string              `yaml:"ipmi gateway,omitempty"`
 	RuntimeOverlay string              `yaml:"runtime overlay files,omitempty"`
 	SystemOverlay  string              `yaml:"system overlay files,omitempty"`
 	Init           string              `yaml:"init,omitempty"`
@@ -67,6 +68,7 @@ type NodeInfo struct {
 	KernelArgs     Entry
 	IpmiIpaddr     Entry
 	IpmiNetmask    Entry
+	IpmiGateway    Entry
 	IpmiUserName   Entry
 	IpmiPassword   Entry
 	RuntimeOverlay Entry

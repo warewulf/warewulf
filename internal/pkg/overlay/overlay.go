@@ -25,6 +25,7 @@ type TemplateStruct struct {
 	Init         string
 	IpmiIpaddr   string
 	IpmiNetmask  string
+	IpmiGateway  string
 	IpmiUserName string
 	IpmiPassword string
 	NetDevs      map[string]*node.NetDevs
@@ -136,6 +137,7 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 		t.Init = n.Init.Get()
 		t.IpmiIpaddr = n.IpmiIpaddr.Get()
 		t.IpmiNetmask = n.IpmiNetmask.Get()
+		t.IpmiGateway = n.IpmiGateway.Get()
 		t.IpmiUserName = n.IpmiUserName.Get()
 		t.IpmiPassword = n.IpmiPassword.Get()
 		t.NetDevs = make(map[string]*node.NetDevs)
