@@ -7,16 +7,15 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "warewulfd",
-		Short:              "Warewulf Daemon Service",
-		Long:               "This is the primary Warewulf service for provisioning nodes",
-		RunE:				CobraRunE,
-		PersistentPreRunE:  rootPersistentPreRunE,
+		Use:               "warewulfd",
+		Short:             "Warewulf Daemon Service",
+		Long:              "This is the primary Warewulf system for provisioning nodes",
+		RunE:              CobraRunE,
+		PersistentPreRunE: rootPersistentPreRunE,
 	}
 	verboseArg bool
-	debugArg bool
+	debugArg   bool
 )
-
 
 func init() {
 	baseCmd.PersistentFlags().BoolVarP(&verboseArg, "verbose", "v", false, "Run with increased verbosity.")
