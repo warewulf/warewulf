@@ -85,7 +85,7 @@ func ValidSource(name string) bool {
 }
 
 func DeleteSource(name string) error {
-	fullPath := RootFsDir(name)
+	fullPath := SourceDir(name)
 
 	return os.RemoveAll(fullPath)
 }
