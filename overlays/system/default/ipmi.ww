@@ -39,20 +39,34 @@ if [ ! -e /dev/ipmi0 ]; then
     ls -la /dev/ipmi0
 fi
 
+x=$(ipmitool lan print 1)
+PREV_IP=$(echo "$x" | grep "^IP Address   " | awk '{ print $4; }')
+PREV_NETMASK=$(echo "$x" | grep "^Subnet Mask" | awk '{ print $4; }')
+PREV_GATEWAY=$(echo "$x" | grep "^Default Gateway IP" | awk '{ print $5; }')
+echo PREV_IP is $PREV_IP
+echo PREV_NETMASK is $PREV_NETMASK
+echo PREV_GATEWAY is $PREV_GATEWAY
+
 # Network
-ipmitool lan set 1 access on
-ipmitool lan set 1 ipsrc static
-ipmitool lan set 1 ipaddr $IP
-ipmitool lan set 1 netmask $NETMASK
-ipmitool lan set 1 defgw ipaddr $GATEWAY
+if [ "$PREV_IP" != "$IP" -o "$PREV_NETMASK" != "$NETMASK" -o "$PREV_GATEWAY" != "$GATEWAY" ]; then
+    ipmitool lan set 1 access on
+    ipmitool lan set 1 ipsrc static
+    ipmitool lan set 1 ipaddr $IP
+    ipmitool lan set 1 netmask $NETMASK
+    ipmitool lan set 1 defgw ipaddr $GATEWAY
+fi
 
 # User
 if [ "$USER" != "" ]; then
-    ipmitool user set name 2 $USER
-    ipmitool user set password 2 $PASS
-    sleep 1
-    ipmitool user priv 2 4 1
-    ipmitool user enable 2
+    PREV_USER=$(ipmitool user list | grep "^2 " | awk '{ print $2; }')
+    TEST_PASSWORD=$(ipmitool user test 2 20 $PASS)
+    if [ "$USER" != "$PREV_USER" -o "$TEST_PASSWORD" != "Success" ]; then
+        ipmitool user set name 2 $USER
+        ipmitool user set password 2 $PASS
+        sleep 1
+        ipmitool user priv 2 4 1
+        ipmitool user enable 2
+    fi
 fi
 
 # Authentication
