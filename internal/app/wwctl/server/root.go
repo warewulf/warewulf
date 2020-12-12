@@ -1,6 +1,11 @@
 package server
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/hpcng/warewulf/internal/app/wwctl/server/start"
+	"github.com/hpcng/warewulf/internal/app/wwctl/server/status"
+	"github.com/hpcng/warewulf/internal/app/wwctl/server/stop"
+	"github.com/spf13/cobra"
+)
 
 var (
 	baseCmd = &cobra.Command{
@@ -12,6 +17,10 @@ var (
 )
 
 func init() {
+	baseCmd.AddCommand(start.GetCommand())
+	baseCmd.AddCommand(status.GetCommand())
+	baseCmd.AddCommand(stop.GetCommand())
+
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

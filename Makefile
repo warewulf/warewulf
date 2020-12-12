@@ -40,7 +40,7 @@ lint:
 	@echo Running golangci-lint...
 	@$(GOLANGCI_LINT) run --build-tags "$(WW_BUILD_GO_BUILD_TAGS)" ./...
 
-all: vendor warewulfd wwctl wwclient
+all: vendor wwctl wwclient
 
 files: all
 	install -d -m 0755 /var/warewulf/
@@ -60,9 +60,6 @@ services: files
 #	sudo systemctl enable tftp
 #	sudo systemctl restart tftp
 
-warewulfd:
-	cd cmd/warewulfd; go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../warewulfd
-
 wwctl:
 	cd cmd/wwctl; go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwctl
 
@@ -70,7 +67,6 @@ wwclient:
 	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags '-extldflags -static' -o ../../wwclient
 
 clean:
-	rm -f warewulfd
 	rm -f wwclient
 	rm -f wwctl
 
