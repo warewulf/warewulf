@@ -7,5 +7,5 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 
-	return warewulfd.RunServer()
+	return warewulfd.DaemonStart()
 }
