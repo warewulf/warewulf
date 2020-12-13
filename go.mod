@@ -42,6 +42,7 @@ require (
 	github.com/prometheus/common v0.6.0 // indirect
 	github.com/prometheus/procfs v0.0.3 // indirect
 	github.com/russross/blackfriday/v2 v2.0.1 // indirect
+	github.com/sevlyar/go-daemon v0.1.5
 	github.com/sirupsen/logrus v1.7.0 // indirect
 	github.com/spf13/cobra v1.1.1
 	github.com/ttacon/chalk v0.0.0-20160626202418-22c06c80ed31 // indirect
