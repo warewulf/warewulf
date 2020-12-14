@@ -50,6 +50,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "ClusterName", node.ClusterName.Source(), node.ClusterName.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Profiles", "--", strings.Join(node.Profiles, ","))
 
+			fmt.Printf("%-20s %-18s %-12s %t\n", node.Id.Get(), "Disabled", node.Disabled.Source(), node.Disabled.PrintB())
+			fmt.Printf("%-20s %-18s %-12s %t\n", node.Id.Get(), "Discoverable", node.Discoverable.Source(), node.Discoverable.PrintB())
+
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "ContainerName", node.ContainerName.Source(), node.ContainerName.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "KernelVersion", node.KernelVersion.Source(), node.KernelVersion.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "KernelArgs", node.KernelArgs.Source(), node.KernelArgs.Print())

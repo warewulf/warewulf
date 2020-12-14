@@ -7,11 +7,12 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "exec",
-		Short: "Spawn any command inside a Warewulf container",
-		Long:  "Run a command inside a Warewulf container ",
-		RunE:  CobraRunE,
-		Args:  cobra.MinimumNArgs(1),
+		Use:                "exec",
+		Short:              "Spawn any command inside a Warewulf container",
+		Long:               "Run a command inside a Warewulf container ",
+		RunE:               CobraRunE,
+		Args:               cobra.MinimumNArgs(1),
+		FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
 	}
 )
 

@@ -18,8 +18,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	nconfig, _ := node.New()
-	nodes, _ := nconfig.FindAllNodes()
+	nodeDB, _ := node.New()
+	nodes, _ := nodeDB.FindAllNodes()
 	nodemap := make(map[string]int)
 
 	for _, n := range nodes {
