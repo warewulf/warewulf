@@ -2,6 +2,7 @@ package container
 
 import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/build"
+	"github.com/hpcng/warewulf/internal/app/wwctl/container/delete"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/exec"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/list"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/pull"
@@ -22,7 +23,7 @@ func init() {
 	baseCmd.AddCommand(list.GetCommand())
 	baseCmd.AddCommand(pull.GetCommand())
 	baseCmd.AddCommand(exec.GetCommand())
-
+	baseCmd.AddCommand(delete.GetCommand())
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

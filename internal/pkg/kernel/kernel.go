@@ -69,7 +69,7 @@ func ListKernels() ([]string, error) {
 	return ret, nil
 }
 
-func Build(kernelVersion string) error {
+func Build(kernelVersion string) (string, error) {
 
 	kernelImage := "/boot/vmlinuz-" + kernelVersion
 	kernelDrivers := "/lib/modules/" + kernelVersion
@@ -81,20 +81,19 @@ func Build(kernelVersion string) error {
 	os.MkdirAll(path.Dir(driversDestination), 0755)
 
 	if util.IsFile(kernelImage) == false {
-		return errors.New("Could not locate kernel image: " + kernelImage)
+		return "", errors.New("Could not locate kernel image")
 	}
 
 	if util.IsDir(kernelDrivers) == false {
-		return errors.New("Could not locate kernel drivers: " + kernelDrivers)
+		return "", errors.New("Could not locate kernel drivers")
 	}
 
 	wwlog.Printf(wwlog.VERBOSE, "Setting up Kernel\n")
 	if _, err := os.Stat(kernelImage); err == nil {
 		err := util.CopyFile(kernelImage, kernelDestination)
 		if err != nil {
-			return err
+			return "", err
 		}
-		wwlog.Printf(wwlog.INFO, "%-45s: Done\n", "vmlinuz-"+kernelVersion)
 	}
 
 	wwlog.Printf(wwlog.VERBOSE, "Building Kernel driver image\n")
@@ -102,10 +101,9 @@ func Build(kernelVersion string) error {
 		cmd := fmt.Sprintf("cd /; find .%s | cpio --quiet -o -H newc -F \"%s\"", kernelDrivers, driversDestination)
 		err := exec.Command("/bin/sh", "-c", cmd).Run()
 		if err != nil {
-			return err
+			return "", err
 		}
-		wwlog.Printf(wwlog.INFO, "%-45s: Done\n", "kmods-"+kernelVersion+".img")
 	}
 
-	return nil
+	return "Done", nil
 }

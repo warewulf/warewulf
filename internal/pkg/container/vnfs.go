@@ -77,9 +77,15 @@ func ValidSource(name string) bool {
 	}
 
 	if util.IsDir(fullPath) == false {
-		wwlog.Printf(wwlog.WARN, "Location is not a VNFS source directory: %s\n", name)
+		wwlog.Printf(wwlog.VERBOSE, "Location is not a VNFS source directory: %s\n", name)
 		return false
 	}
 
 	return true
+}
+
+func DeleteSource(name string) error {
+	fullPath := SourceDir(name)
+
+	return os.RemoveAll(fullPath)
 }

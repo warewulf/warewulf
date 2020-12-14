@@ -4,10 +4,11 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:    "__child",
-		Hidden: true,
-		RunE:   CobraRunE,
-		Args:   cobra.MinimumNArgs(1),
+		Use:                "__child",
+		Hidden:             true,
+		RunE:               CobraRunE,
+		Args:               cobra.MinimumNArgs(1),
+		FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
 	}
 )
 
