@@ -179,7 +179,8 @@ and then begin booting nodes.
 
 ```
 sudo ./wwctl ready
-./warewulfd
+sudo ./wwctl server start
+sudo ./wwctl server status
 ```
     
 #### Boot your compute node and watch it boot
