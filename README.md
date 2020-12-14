@@ -9,7 +9,7 @@ In a nutshell, to install and start provisioning nodes, do the following:
 Warewulf is programmed in GoLang, so you will need to also install a Go compiler
 on your system. The easiest way to do this on RHEL and CentOS is by using the Go
 packages that are included in EPEL. In addition there are some dependencies that
-Warewulf will reuire to operate properly and because this is a quick HOWTO, we
+Warewulf will require to operate properly and because this is a quick HOWTO, we
 disable the firewall so any provisioning issues we have won't be caused by
 packets being dropped.
 
