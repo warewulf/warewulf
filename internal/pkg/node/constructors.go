@@ -74,6 +74,9 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.SystemOverlay.Set(node.SystemOverlay)
 		n.RuntimeOverlay.Set(node.RuntimeOverlay)
 
+		n.Discoverable.SetB(node.Discoverable)
+		n.Disabled.SetB(node.Disabled)
+
 		for devname, netdev := range node.NetDevs {
 			if _, ok := n.NetDevs[devname]; !ok {
 				var netdev NetDevEntry
@@ -111,6 +114,9 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.IpmiPassword.SetAlt(self.NodeProfiles[p].IpmiPassword, pstring)
 			n.SystemOverlay.SetAlt(self.NodeProfiles[p].SystemOverlay, pstring)
 			n.RuntimeOverlay.SetAlt(self.NodeProfiles[p].RuntimeOverlay, pstring)
+
+			n.Disabled.SetAltB(self.NodeProfiles[p].Disabled, pstring)
+			n.Discoverable.SetAltB(self.NodeProfiles[p].Discoverable, pstring)
 
 			for devname, netdev := range self.NodeProfiles[p].NetDevs {
 				if _, ok := n.NetDevs[devname]; !ok {
@@ -155,6 +161,9 @@ func (self *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		p.RuntimeOverlay.Set(profile.RuntimeOverlay)
 		p.SystemOverlay.Set(profile.SystemOverlay)
 
+		p.Disabled.SetB(profile.Disabled)
+		p.Discoverable.SetB(profile.Discoverable)
+
 		for devname, netdev := range profile.NetDevs {
 			if _, ok := p.NetDevs[devname]; !ok {
 				var netdev NetDevEntry
@@ -190,17 +199,18 @@ func (self *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 	return ret, nil
 }
 
-func (self *nodeYaml) FindUnconfiguredNode() (NodeInfo, string, error) {
+func (self *nodeYaml) FindDiscoverableNode() (NodeInfo, string, error) {
 	var ret NodeInfo
 
 	nodes, _ := self.FindAllNodes()
 
 	for _, node := range nodes {
+		if node.Discoverable.GetB() == false {
+			continue
+		}
 		for netdev, dev := range node.NetDevs {
-			if dev.Hwaddr.Defined() == false && dev.Ipaddr.Defined() == true {
-				if dev.Type.Defined() == false || dev.Type.Get() == "ethernet" {
-					return node, netdev, nil
-				}
+			if dev.Hwaddr.Defined() == false {
+				return node, netdev, nil
 			}
 		}
 	}

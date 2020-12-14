@@ -59,7 +59,7 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 
 		wwlog.Printf(wwlog.INFO, "Node was not found, looking for discoverable nodes...\n")
 
-		n, netdev, err = nodeDB.FindUnconfiguredNode()
+		n, netdev, err = nodeDB.FindDiscoverableNode()
 		if err != nil {
 			wwlog.Printf(wwlog.WARN, "Node was not found, no nodes are discoverable...\n")
 			unconfiguredNode = true
@@ -68,6 +68,7 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 			wwlog.Printf(wwlog.INFO, "Adding new configuration to discoverable node: %s\n", n.Id.Get())
 
 			n.NetDevs[netdev].Hwaddr.Set(hwaddr)
+			n.Discoverable.SetB(false)
 			err := nodeDB.NodeUpdate(n)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "Could not add discovered configuration for node: %s\n", n.Id.Get())
