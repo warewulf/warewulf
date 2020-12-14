@@ -66,6 +66,10 @@ func (self *nodeYaml) NodeUpdate(node NodeInfo) error {
 	self.Nodes[nodeID].IpmiPassword = node.IpmiPassword.GetReal()
 	self.Nodes[nodeID].RuntimeOverlay = node.RuntimeOverlay.GetReal()
 	self.Nodes[nodeID].SystemOverlay = node.SystemOverlay.GetReal()
+
+	self.Nodes[nodeID].Disabled = node.Disabled.GetRealB()
+	self.Nodes[nodeID].Discoverable = node.Discoverable.GetRealB()
+
 	self.Nodes[nodeID].Profiles = node.Profiles
 	self.Nodes[nodeID].NetDevs = make(map[string]*NetDevs)
 
@@ -138,6 +142,10 @@ func (self *nodeYaml) ProfileUpdate(profile NodeInfo) error {
 	self.NodeProfiles[profileID].IpmiPassword = profile.IpmiPassword.GetReal()
 	self.NodeProfiles[profileID].RuntimeOverlay = profile.RuntimeOverlay.GetReal()
 	self.NodeProfiles[profileID].SystemOverlay = profile.SystemOverlay.GetReal()
+
+	self.NodeProfiles[profileID].Disabled = profile.Disabled.GetRealB()
+	self.NodeProfiles[profileID].Discoverable = profile.Discoverable.GetRealB()
+
 	self.NodeProfiles[profileID].Profiles = profile.Profiles
 	self.NodeProfiles[profileID].NetDevs = make(map[string]*NetDevs)
 

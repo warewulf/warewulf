@@ -41,7 +41,8 @@ func DaemonStart() error {
 		cmd.Start()
 		pid := cmd.Process.Pid
 
-		p.WriteString(fmt.Sprintf("%d", pid))
+		fmt.Fprintf(p, "%d", pid)
+
 		p.Close()
 
 		time.Sleep(1 * time.Second)
