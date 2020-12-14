@@ -97,24 +97,78 @@ There are three major groups of data to provision:
    
 
 ```
-sudo ./wwctl container pull docker://warewulf/centos-7 centos-7
-sudo ./wwctl container build centos-7
-sudo ./wwctl kernel build $(uname -r)
+sudo ./wwctl container pull docker://warewulf/centos-7 centos-7 --setdefault
+sudo ./wwctl kernel build $(uname -r) --setdefault
 ```
 
 #### Set up the default node profile
 
+The `--setdefault` arguments above will automatically set those entries in the default
+profile, but if you wanted to set them by hand to something different, you can do the
+following:
+
 ```
 sudo ./wwctl profile set default -K $(uname -r) -C centos-7
+```
+
+Next we set some default networking configurations for the first ethernet device. On
+modern Linux distributions, the name of the device is not critical, as it will be setup
+according to the HW address. Because all nodes will share the netmask and gateway, we
+can configure them in the default profile as follows:
+
+```
 sudo ./wwctl profile set default --netdev eth0 -M 255.255.255.0 -G 192.168.1.1
 sudo ./wwctl profile list
 ```
     
 #### Add a node and build node specific overlays
 
+Adding nodes can be done while setting configurations in one command. Here we are setting
+the IP address of `eth0` and setting this node to be discoverable, which will then
+automatically have the HW address added to the configuration as the node boots.
+
+Node names must be unique. If you have node groups and/or multiple clusters, designate
+them using dot notation.
+
+Note that the full node configuration comes from both cascading profiles and node
+configurations which always supersede profile configurations.
+
 ```
-sudo ./wwctl node add n0000.cluster --netdev eth0 -I 192.168.1.100 -H 00:0c:29:23:8b:48
+sudo ./wwctl node add n0000.cluster --netdev eth0 -I 192.168.1.100 --discoverable
 sudo ./wwctl node list -a n0000
+```
+
+### Warewulf Overlays
+
+There are two types of overlays: system and runtime overlays.
+
+System overlays are provisioned to the node before `/sbin/init` is called. This enables us
+to prepopulate node configurations with content that is node specific like networking and
+service configurations. When using the overlay subsystem, system overlays are never shown
+by default. So when running `overlay` commands, you are always looking at runtime overlays
+unless the `-s` option is passed.
+
+Runtime overlays are provisioned after the node has booted and periodically during the
+normal runtime of the node. Runtime overlays are also obtained using privileged source
+ports such that non-root users can not obtain this from the Warewulf service (note: there
+are other ways to secure the provisioned files like a provisioning VLan). Because these
+overlays are provisioned at periodic intervals, they are very useful for content that
+changes, like users and groups.
+
+Overlays are generated from a template structure that is viewed using the `wwctl overlay`
+commands. Files that end in the `.ww` suffix are templates and abide by standard
+text/template rules. This supports loops, arrays, variables, and functions making overlays
+extremely flexible.
+
+All overlays are compiled before being provisioned. This accelerates the provisioning
+process because there is less to do when nodes are being managed at scale.
+
+Here are some of the common `overlay` commands:
+
+```
+sudo ./wwctl overlay list -l
+sudo ./wwctl overlay list -ls
+sudo EDITOR=vim ./wwctl overlay edit default /etc/hello_world.ww
 sudo ./wwctl overlay build -a
 ```
     
