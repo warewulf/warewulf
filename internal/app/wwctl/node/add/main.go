@@ -102,6 +102,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 		}
 
+		if SetDiscoverable == true {
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting node to discoverable\n", n.Id.Get())
+
+			n.Discoverable.SetB(true)
+			err := nodeDB.NodeUpdate(n)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
+
 	}
 
 	nodeDB.Persist()
