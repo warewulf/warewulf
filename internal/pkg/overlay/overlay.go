@@ -119,9 +119,13 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 		var OverlayFile string
 
 		if overlayType == "runtime" {
+			wwlog.Printf(wwlog.VERBOSE, "Building runtime overlay for: %s\n", n.Id.Get())
+
 			OverlayDir = config.RuntimeOverlaySource(n.RuntimeOverlay.Get())
 			OverlayFile = config.RuntimeOverlayImage(n.Id.Get())
 		} else if overlayType == "system" {
+			wwlog.Printf(wwlog.VERBOSE, "Building system overlay for: %s\n", n.Id.Get())
+
 			OverlayDir = config.SystemOverlaySource(n.RuntimeOverlay.Get())
 			OverlayFile = config.SystemOverlayImage(n.Id.Get())
 		} else {

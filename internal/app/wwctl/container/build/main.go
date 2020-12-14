@@ -24,7 +24,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			os.Exit(1)
 		}
 
-		container.Build(c, BuildForce)
+		output, err := container.Build(c, BuildForce)
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "Could not build container %s: %s\n", c, err)
+			os.Exit(1)
+		} else {
+			fmt.Printf("%-20s: %s\n", c, output)
+		}
 	}
 
 	if SetDefault == true {

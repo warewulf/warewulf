@@ -33,6 +33,8 @@ var (
 	SetDelProfile     []string
 	SetForce          bool
 	SetInit           string
+	SetDiscoverable   bool
+	SetUndiscoverable bool
 )
 
 func init() {
@@ -63,6 +65,8 @@ func init() {
 
 	baseCmd.PersistentFlags().BoolVarP(&SetYes, "yes", "y", false, "Set 'yes' to all questions asked")
 	baseCmd.PersistentFlags().BoolVarP(&SetForce, "force", "f", false, "Force configuration (even on error)")
+	baseCmd.PersistentFlags().BoolVar(&SetDiscoverable, "discoverable", false, "Make this node discoverable")
+	baseCmd.PersistentFlags().BoolVar(&SetUndiscoverable, "undiscoverable", false, "Remove the discoverable flag")
 
 }
 
