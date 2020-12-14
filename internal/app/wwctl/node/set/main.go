@@ -185,6 +185,27 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 		}
 
+		if SetDiscoverable == true {
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting node to discoverable\n", n.Id.Get())
+
+			n.Discoverable.SetB(true)
+			err := nodeDB.NodeUpdate(n)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
+		if SetUndiscoverable == true {
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting node to undiscoverable\n", n.Id.Get())
+
+			n.Discoverable.SetB(false)
+			err := nodeDB.NodeUpdate(n)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
+
 		if len(SetAddProfile) > 0 {
 			for _, p := range SetAddProfile {
 				wwlog.Printf(wwlog.VERBOSE, "Node: %s, adding profile to '%s'\n", n.Id.Get(), p)

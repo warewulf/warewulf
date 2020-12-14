@@ -1,13 +1,14 @@
 package wwctl
 
 import (
+	"github.com/hpcng/warewulf/internal/app/wwctl/configure"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container"
 	"github.com/hpcng/warewulf/internal/app/wwctl/kernel"
 	"github.com/hpcng/warewulf/internal/app/wwctl/node"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay"
 	"github.com/hpcng/warewulf/internal/app/wwctl/profile"
 	"github.com/hpcng/warewulf/internal/app/wwctl/ready"
-	"github.com/hpcng/warewulf/internal/app/wwctl/service"
+	"github.com/hpcng/warewulf/internal/app/wwctl/server"
 
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
@@ -37,8 +38,9 @@ func init() {
 	rootCmd.AddCommand(kernel.GetCommand())
 	//	rootCmd.AddCommand(group.GetCommand())
 	rootCmd.AddCommand(profile.GetCommand())
-	rootCmd.AddCommand(service.GetCommand())
+	rootCmd.AddCommand(configure.GetCommand())
 	rootCmd.AddCommand(ready.GetCommand())
+	rootCmd.AddCommand(server.GetCommand())
 
 }
 
