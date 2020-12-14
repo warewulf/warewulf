@@ -57,11 +57,11 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 		// If we failed to find a node, let's see if we can add one...
 		var netdev string
 
-		wwlog.Printf(wwlog.INFO, "Node was not found, looking for discoverable nodes...\n")
+		wwlog.Printf(wwlog.VERBOSE, "Node was not found, looking for discoverable nodes...\n")
 
 		n, netdev, err = nodeDB.FindDiscoverableNode()
 		if err != nil {
-			wwlog.Printf(wwlog.WARN, "Node was not found, no nodes are discoverable...\n")
+			wwlog.Printf(wwlog.WARN, "No nodes are set as discoverable...\n")
 			unconfiguredNode = true
 
 		} else {
@@ -79,7 +79,9 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 					wwlog.Printf(wwlog.ERROR, "Could not persist new node configuration while adding node: %s\n", n.Id.Get())
 					unconfiguredNode = true
 				} else {
+					wwlog.Printf(wwlog.INFO, "Building System Overlay:\n")
 					_ = overlay.BuildSystemOverlay([]node.NodeInfo{n})
+					wwlog.Printf(wwlog.INFO, "Building Runtime Overlay:\n")
 					_ = overlay.BuildRuntimeOverlay([]node.NodeInfo{n})
 				}
 			}
@@ -89,9 +91,7 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 	if unconfiguredNode == true {
 		log.Printf("UNCONFIGURED NODE:  %15s\n", hwaddr)
 
-		ipxeTemplate := fmt.Sprintf("/etc/warewulf/ipxe/unconfigured.ipxe", n.Ipxe.Get())
-
-		tmpl, err := template.ParseFiles(ipxeTemplate)
+		tmpl, err := template.ParseFiles("/etc/warewulf/ipxe/unconfigured.ipxe")
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			return

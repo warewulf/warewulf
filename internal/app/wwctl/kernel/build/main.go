@@ -12,10 +12,12 @@ import (
 func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	for _, arg := range args {
-		err := kernel.Build(arg)
+		output, err := kernel.Build(arg)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Failed building kernel: %s\n", err)
 			os.Exit(1)
+		} else {
+			fmt.Printf("%s: %s\n", arg, output)
 		}
 	}
 
