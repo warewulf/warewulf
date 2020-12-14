@@ -1,17 +1,17 @@
-package service
+package configure
 
 import (
 	"fmt"
-	"github.com/hpcng/warewulf/internal/app/wwctl/service/dhcp"
-	"github.com/hpcng/warewulf/internal/app/wwctl/service/tftp"
+	"github.com/hpcng/warewulf/internal/app/wwctl/configure/dhcp"
+	"github.com/hpcng/warewulf/internal/app/wwctl/configure/tftp"
 	"github.com/spf13/cobra"
 	"os"
 )
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "service",
-		Short: "Initialize Warewulf services",
+		Use:   "configure",
+		Short: "Configure Warewulf services",
 		Long:  "Warewulf Service Initialization",
 		RunE:  CobraRunE,
 	}

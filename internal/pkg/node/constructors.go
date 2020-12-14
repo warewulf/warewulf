@@ -7,6 +7,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -73,6 +74,9 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.SystemOverlay.Set(node.SystemOverlay)
 		n.RuntimeOverlay.Set(node.RuntimeOverlay)
 
+		n.Discoverable.SetB(node.Discoverable)
+		n.Disabled.SetB(node.Disabled)
+
 		for devname, netdev := range node.NetDevs {
 			if _, ok := n.NetDevs[devname]; !ok {
 				var netdev NetDevEntry
@@ -110,6 +114,9 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.IpmiPassword.SetAlt(self.NodeProfiles[p].IpmiPassword, pstring)
 			n.SystemOverlay.SetAlt(self.NodeProfiles[p].SystemOverlay, pstring)
 			n.RuntimeOverlay.SetAlt(self.NodeProfiles[p].RuntimeOverlay, pstring)
+
+			n.Disabled.SetAltB(self.NodeProfiles[p].Disabled, pstring)
+			n.Discoverable.SetAltB(self.NodeProfiles[p].Discoverable, pstring)
 
 			for devname, netdev := range self.NodeProfiles[p].NetDevs {
 				if _, ok := n.NetDevs[devname]; !ok {
@@ -154,6 +161,9 @@ func (self *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		p.RuntimeOverlay.Set(profile.RuntimeOverlay)
 		p.SystemOverlay.Set(profile.SystemOverlay)
 
+		p.Disabled.SetB(profile.Disabled)
+		p.Discoverable.SetB(profile.Discoverable)
+
 		for devname, netdev := range profile.NetDevs {
 			if _, ok := p.NetDevs[devname]; !ok {
 				var netdev NetDevEntry
@@ -174,7 +184,38 @@ func (self *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 
 		ret = append(ret, p)
 	}
+
+	sort.Slice(ret, func(i, j int) bool {
+		if ret[i].ClusterName.Get() < ret[j].ClusterName.Get() {
+			return true
+		} else if ret[i].ClusterName.Get() == ret[j].ClusterName.Get() {
+			if ret[i].Id.Get() < ret[j].Id.Get() {
+				return true
+			}
+		}
+		return false
+	})
+
 	return ret, nil
+}
+
+func (self *nodeYaml) FindDiscoverableNode() (NodeInfo, string, error) {
+	var ret NodeInfo
+
+	nodes, _ := self.FindAllNodes()
+
+	for _, node := range nodes {
+		if node.Discoverable.GetB() == false {
+			continue
+		}
+		for netdev, dev := range node.NetDevs {
+			if dev.Hwaddr.Defined() == false {
+				return node, netdev, nil
+			}
+		}
+	}
+
+	return ret, "", errors.New("No unconfigured nodes found")
 }
 
 func (self *nodeYaml) FindByHwaddr(hwa string) (NodeInfo, error) {

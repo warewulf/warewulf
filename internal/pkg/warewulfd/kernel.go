@@ -1,4 +1,4 @@
-package response
+package warewulfd
 
 import (
 	"github.com/hpcng/warewulf/internal/pkg/kernel"
@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func KmodsSend(w http.ResponseWriter, req *http.Request) {
+func KernelSend(w http.ResponseWriter, req *http.Request) {
 
 	node, err := getSanity(req)
 	if err != nil {
@@ -16,7 +16,7 @@ func KmodsSend(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if node.KernelVersion.Defined() == true {
-		fileName := kernel.KmodsImage(node.KernelVersion.Get())
+		fileName := kernel.KernelImage(node.KernelVersion.Get())
 
 		err := sendFile(w, fileName, node.Id.Get())
 		if err != nil {

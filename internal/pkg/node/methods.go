@@ -41,8 +41,10 @@ func (self *Entry) SetAlt(val string, from string) {
 }
 
 func (self *Entry) SetAltB(val bool, from string) {
-	self.altbool = val
-	self.from = from
+	if val == true {
+		self.altbool = val
+		self.from = from
+	}
 	return
 }
 
@@ -104,6 +106,13 @@ func (self *Entry) Print() string {
 		return "(" + self.def + ")"
 	}
 	return "--"
+}
+
+func (self *Entry) PrintB() bool {
+	if self.from == "" {
+		return self.bool
+	}
+	return self.altbool
 }
 
 func (self *Entry) Source() string {
