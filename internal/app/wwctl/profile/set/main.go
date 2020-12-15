@@ -159,6 +159,16 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				os.Exit(1)
 			}
 		}
+		if SetIpmiGateway != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting IPMI username to: %s\n", p.Id, SetIpmiGateway)
+
+			p.IpmiGateway.Set(SetIpmiGateway)
+			err := nodeDB.ProfileUpdate(p)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
 		if SetIpmiUsername != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting IPMI username to: %s\n", p.Id, SetIpmiUsername)
 

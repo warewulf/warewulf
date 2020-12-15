@@ -24,6 +24,7 @@ var (
 	SetSystemOverlay  string
 	SetIpmiIpaddr     string
 	SetIpmiNetmask    string
+	SetIpmiGateway    string
 	SetIpmiUsername   string
 	SetIpmiPassword   string
 	SetNodeAll        bool
@@ -47,6 +48,7 @@ func init() {
 	baseCmd.PersistentFlags().StringVarP(&SetSystemOverlay, "system", "S", "", "Set the node's system overlay")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiIpaddr, "ipmi", "", "Set the node's IPMI IP address")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiNetmask, "ipminetmask", "", "Set the node's IPMI netmask")
+	baseCmd.PersistentFlags().StringVar(&SetIpmiGateway, "ipmigateway", "", "Set the node's IPMI gateway")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiUsername, "ipmiuser", "", "Set the node's IPMI username")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiPassword, "ipmipass", "", "Set the node's IPMI password")
 

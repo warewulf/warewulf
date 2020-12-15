@@ -6,3 +6,5 @@ GATEWAY={{$.NetDevs.eth0.Gateway}}
 HWADDR={{$.NetDevs.eth0.Hwaddr}}
 BOOTPROTO=static
 ONBOOT=yes
+DEVTIMEOUT=10
+
