@@ -8,7 +8,7 @@
 {{- if $netdev.Default}}
 {{$netdev.Ipaddr}} {{$node.Id}}
 {{- else}}
-{{$netdev.Ipaddr}} {{$node.Fqdn}}-{{$devname}}
+{{$netdev.Ipaddr}} {{$node.Id}}-{{$devname}}
 {{- end}}
 {{- end}}
 {{end}}
