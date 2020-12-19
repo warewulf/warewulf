@@ -1,13 +1,14 @@
 package powerstatus
 
 import (
+	"fmt"
+	"os"
+
+	"github.com/hpcng/warewulf/internal/pkg/batch"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/power"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"github.com/hpcng/warewulf/internal/pkg/batch"
 	"github.com/spf13/cobra"
-	"os"
-	"fmt"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
@@ -34,7 +35,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.VERBOSE, "Found %d matching nodes for power command\n", len(nodeList))
 	}
 
-	batchpool := batch.New(50, 0)
+	batchpool := batch.New(50)
 	jobcount := len(nodeList)
 	results := make(chan power.IPMI, jobcount)
 
@@ -80,4 +81,3 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	return returnErr
 }
-
