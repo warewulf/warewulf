@@ -4,8 +4,10 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/power"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/hpcng/warewulf/internal/pkg/batch"
 	"github.com/spf13/cobra"
 	"os"
+	"fmt"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
@@ -28,9 +30,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if len(nodeList) == 0 {
 		wwlog.Printf(wwlog.ERROR, "No nodes found matching: '%s'\n", args[0])
 		os.Exit(255)
-	} else {
-		wwlog.Printf(wwlog.VERBOSE, "Found %d matching nodes for power command\n", len(nodeList))
 	}
+
+	batchpool := batch.New(50, 0)
+	jobcount := len(nodeList)
+	results := make(chan power.IPMI, jobcount)
 
 	for _, node := range nodeList {
 
@@ -40,22 +44,38 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		ipmiCmd := power.IPMI{
+			NodeName: node.Id.Get(),
 			HostName: node.IpmiIpaddr.Get(),
-			User:     "ADMIN",
-			Password: "ADMIN",
+			User:     node.IpmiUserName.Get(),
+			Password: node.IpmiPassword.Get(),
 			AuthType: "MD5",
 		}
 
-		out, err := ipmiCmd.PowerOff()
+		batchpool.Submit(func() {
+			ipmiCmd.PowerOff()
+			results <- ipmiCmd
+		})
+
+	}
+
+	batchpool.Run()
+
+	close(results)
+
+	for result := range results {
+
+		out, err := result.Result()
 
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "%s: %s\n", node.Id.Get(), out)
+			wwlog.Printf(wwlog.ERROR, "%s: %s\n", result.NodeName, out)
 			returnErr = err
 			continue
 		}
 
-		wwlog.Printf(wwlog.INFO, "%s: %s\n", node.Id.Get(), out)
+		fmt.Printf("%s: %s\n", result.NodeName, out)
+
 	}
 
 	return returnErr
 }
+

@@ -1,4 +1,4 @@
-package powerstatus
+package sensors
 
 import (
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -30,8 +30,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if len(nodeList) == 0 {
 		wwlog.Printf(wwlog.ERROR, "No nodes found matching: '%s'\n", args[0])
 		os.Exit(255)
-	} else {
-		wwlog.Printf(wwlog.VERBOSE, "Found %d matching nodes for power command\n", len(nodeList))
 	}
 
 	batchpool := batch.New(50, 0)
@@ -53,8 +51,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			AuthType: "MD5",
 		}
 
+		fullFlag := full
+
 		batchpool.Submit(func() {
-			ipmiCmd.PowerStatus()
+			if fullFlag == true {
+				ipmiCmd.SensorList()
+			} else {
+				ipmiCmd.SDRList()
+			}
 			results <- ipmiCmd
 		})
 
@@ -74,7 +78,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			continue
 		}
 
-		fmt.Printf("%s: %s\n", result.NodeName, out)
+		fmt.Printf("%s:\n%s\n", result.NodeName, out)
 
 	}
 
