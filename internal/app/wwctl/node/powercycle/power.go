@@ -1,4 +1,4 @@
-package poweron
+package powercycle
 
 import (
 	"fmt"
@@ -31,8 +31,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if len(nodeList) == 0 {
 		wwlog.Printf(wwlog.ERROR, "No nodes found matching: '%s'\n", args[0])
 		os.Exit(255)
-	} else {
-		wwlog.Printf(wwlog.VERBOSE, "Found %d matching nodes for power command\n", len(nodeList))
 	}
 
 	batchpool := batch.New(50)
@@ -55,7 +53,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		batchpool.Submit(func() {
-			ipmiCmd.PowerOn()
+			ipmiCmd.PowerCycle()
 			results <- ipmiCmd
 		})
 
