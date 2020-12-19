@@ -1,4 +1,4 @@
-package powerstatus
+package powercycle
 
 import (
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -30,8 +30,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if len(nodeList) == 0 {
 		wwlog.Printf(wwlog.ERROR, "No nodes found matching: '%s'\n", args[0])
 		os.Exit(255)
-	} else {
-		wwlog.Printf(wwlog.VERBOSE, "Found %d matching nodes for power command\n", len(nodeList))
 	}
 
 	batchpool := batch.New(50, 0)
@@ -54,7 +52,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		batchpool.Submit(func() {
-			ipmiCmd.PowerStatus()
+			ipmiCmd.PowerCycle()
 			results <- ipmiCmd
 		})
 
