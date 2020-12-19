@@ -53,6 +53,8 @@ files: all
 #	restorecon -r /var/lib/tftpboot/warewulf
 	cp -r overlays /var/warewulf/
 	chmod +x /var/warewulf/overlays/system/default/init.ww
+	chmod 600 /var/warewulf/overlays/system/default/etc/ssh/ssh*
+	chmod 644 /var/warewulf/overlays/system/default/etc/ssh/ssh*.pub.ww
 	mkdir -p /var/warewulf/overlays/system/default/warewulf/bin/
 	cp wwclient /var/warewulf/overlays/system/default/warewulf/bin/
 
