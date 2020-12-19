@@ -84,11 +84,14 @@ fi
 #ipmitool user priv 1 4 1
 
 # Serial Over LAN
+ipmitool channel setaccess 1 2 link=on ipmi=on callin=on privilege=4
 ipmitool sol set force-encryption true 1
 ipmitool sol set force-authentication true 1
 ipmitool sol set privilege-level admin 1
-ipmitool sol payload enable 1 4
-ipmitool sol set enabled true 1
-ipmitool sol set non-volatile-bit-rate 19.2 1
-ipmitool sol set volatile-bit-rate 19.2 1
+#ipmitool sol payload enable 1 4
+ipmitool sol payload enable 1 2 1
+ipmitool sol set enabled true 1 1
+speed=38.4  # 19.2 38.4 115.2
+ipmitool sol set non-volatile-bit-rate $speed 1
+ipmitool sol set volatile-bit-rate $speed 1
 
