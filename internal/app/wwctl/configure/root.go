@@ -3,6 +3,8 @@ package configure
 import (
 	"fmt"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/dhcp"
+	"github.com/hpcng/warewulf/internal/app/wwctl/configure/hosts"
+	"github.com/hpcng/warewulf/internal/app/wwctl/configure/ssh"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/tftp"
 	"github.com/spf13/cobra"
 	"os"
@@ -21,6 +23,9 @@ var (
 func init() {
 	baseCmd.AddCommand(dhcp.GetCommand())
 	baseCmd.AddCommand(tftp.GetCommand())
+	baseCmd.AddCommand(hosts.GetCommand())
+	baseCmd.AddCommand(ssh.GetCommand())
+
 	baseCmd.PersistentFlags().BoolVarP(&SetDoAll, "all", "a", false, "Configure all services")
 }
 
