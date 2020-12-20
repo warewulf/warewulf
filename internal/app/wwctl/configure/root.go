@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/dhcp"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/hosts"
+	"github.com/hpcng/warewulf/internal/app/wwctl/configure/nfs"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/ssh"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/tftp"
 	"github.com/spf13/cobra"
@@ -25,6 +26,7 @@ func init() {
 	baseCmd.AddCommand(tftp.GetCommand())
 	baseCmd.AddCommand(hosts.GetCommand())
 	baseCmd.AddCommand(ssh.GetCommand())
+	baseCmd.AddCommand(nfs.GetCommand())
 
 	baseCmd.PersistentFlags().BoolVarP(&SetDoAll, "all", "a", false, "Configure all services")
 }
