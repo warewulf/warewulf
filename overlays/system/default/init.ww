@@ -25,6 +25,21 @@ if false; then
 
 fi
 
+# This will eventually be optional
+if true; then
+    if [ -f "/etc/pam.d/system-auth" ]; then
+        sed -i -e '/^account.*pam_unix\.so\s*$/s/\s*$/\ broken_shadow/' /etc/pam.d/system-auth
+    fi
+
+    if [ -f "/etc/pam.d/password-auth" ]; then
+        sed -i -e '/^account.*pam_unix\.so\s*$/s/\s*$/\ broken_shadow/' /etc/pam.d/password-auth
+    fi
+
+    if [ -f "/etc/pam.d/common-account" ]; then
+        sed -i -e '/^account.*pam_unix\.so\s*$/s/\s*$/\ broken_shadow/' /etc/pam.d/common-account
+    fi
+fi
+
 mount -t proc none /proc
 mount -t sysfs none /sys
 mount -t devtmpfs devtmpfs /dev
@@ -35,6 +50,7 @@ nohup /warewulf/bin/wwclient >/var/log/wwclient.log 2>&1 </dev/null &
 
 nohup /ipmi >/var/log/ipmi.log 2>&1 </dev/null &
 
+chmod 755 /
 echo "Calling {{$.Init}}..."
 echo
 
