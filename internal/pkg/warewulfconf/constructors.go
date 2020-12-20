@@ -2,9 +2,11 @@ package warewulfconf
 
 import (
 	"fmt"
+	"github.com/brotherpowers/ipsubnet"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"net"
 )
 
 func New() (ControllerConf, error) {
@@ -21,6 +23,22 @@ func New() (ControllerConf, error) {
 	err = yaml.Unmarshal(data, &ret)
 	if err != nil {
 		return ret, err
+	}
+
+	if ret.Ipaddr == "" {
+		wwlog.Printf(wwlog.WARN, "IP address is not configured in warewulfd.conf\n")
+	}
+	if ret.Netmask == "" {
+		wwlog.Printf(wwlog.WARN, "Netmask is not configured in warewulfd.conf\n")
+	}
+
+	if ret.Network == "" {
+		mask := net.IPMask(net.ParseIP(ret.Netmask).To4())
+		size, _ := mask.Size()
+
+		sub := ipsubnet.SubnetCalculator(ret.Ipaddr, size)
+
+		ret.Network = sub.GetNetworkPortion()
 	}
 
 	if ret.Warewulf.Port == 0 {
