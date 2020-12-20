@@ -4,86 +4,36 @@
 # know what you are doing and even then you should make a backup.
 #
 # Edit at your own risk! DANGER DANGER.
-mkdir /newroot
-mount wwroot /newroot -t tmpfs
 
-cat <<EOF >/newroot/wwinit
-#!/bin/sh
 
-mount -t proc none /proc
-mount -t sysfs none /sys
+echo "Warewulf v4 is now booting"
+
+chmod 755 /warewulf/wwinit
+
+echo "Mounting up kernel file systems"
+mkdir /proc /dev /sys /run 2>/dev/null
+mount -t proc proc /proc
 mount -t devtmpfs devtmpfs /dev
+mount -t sysfs sysfs /sys
+mount -t tmpfs tmpfs /run
 
-# This will eventually be optional
-if true; then
-    if [ -f "/etc/pam.d/system-auth" ]; then
-        sed -i -e '/^account.*pam_unix\.so\s*$/s/\s*$/\ broken_shadow/' /etc/pam.d/system-auth
-    fi
+echo "Checking for 'rootfstype=ramfs'"
+ROOTFSTYPE=`stat -f -c "%T" /`
 
-    if [ -f "/etc/pam.d/password-auth" ]; then
-        sed -i -e '/^account.*pam_unix\.so\s*$/s/\s*$/\ broken_shadow/' /etc/pam.d/password-auth
-    fi
-
-    if [ -f "/etc/pam.d/common-account" ]; then
-        sed -i -e '/^account.*pam_unix\.so\s*$/s/\s*$/\ broken_shadow/' /etc/pam.d/common-account
-    fi
+if test "$ROOTFSTYPE" == "ramfs"; then
+    echo "Running on ramfs, setting up tmpfs"
+    mkdir /newroot
+    mount wwroot /newroot -t tmpfs
+    echo "Moving RAMFS to TMPFS"
+    tar -cf - --exclude ./proc --exclude ./sys --exclude ./dev --exclude ./newroot . | tar -xf - -C /newroot
+    mkdir /newroot/proc /newroot/dev /newroot/sys /newroot/run 2>/dev/null
+    echo "Calling switch_root() and invoking WW Init"
+    exec /sbin/switch_root /newroot /warewulf/wwinit
+else
+    echo "Running on tmpfs"
+    echo "Calling WW Init"
+    exec /warewulf/wwinit
 fi
 
-/sbin/ip link set dev lo up
-
-nohup /warewulf/bin/wwclient >/var/log/wwclient.log 2>&1 </dev/null &
-
-if test -x /sbin/load_policy && test -x /sbin/restorecon; then
-    /sbin/load_policy -i
-    /sbin/restorecon -r /
-fi
-
-echo "Calling {{$.Init}}..."
-echo
-
-rm /wwinit
-chmod 755 /
-
-sleep 2
-exec {{$.Init}}
-EOF
-chmod 755 /newroot/wwinit
-
-tar -cf - --exclude /proc --exclude /sys --exclude /dev --exclude /newroot . | tar -xf - -C /newroot
-mount proc /proc -t proc
-exec /sbin/switch_root /newroot /wwinit
-
-
-
-
-
-
-
-/bin/bash
-
-# Considering what to do if we are operating on a read only root
-if false; then
-  mkdir -p /mnt/.lowerdir
-  mkdir -p /mnt/.overlaytmp
-  mount -t tmpfs -o size=10M none /mnt/.overlaytmp
-  mkdir -p /mnt/.overlaytmp/upperdir
-  mkdir -p /mnt/.overlaytmp/workdir
-  mkdir -p /mnt/.newroot
-
-  mount -t overlay -o lowerdir=/mnt/.lowerdir,upperdir=/mnt/.overlaytmp/upperdir,workdir=/mnt/.overlaytmp/workdir none /mnt/.newroot
-
-  cd /mnt/.newroot
-  pivot_root . /mnt
-
-fi
-
-nohup /warewulf/bin/wwclient >/var/log/wwclient.log 2>&1 </dev/null &
-
-nohup /ipmi >/var/log/ipmi.log 2>&1 </dev/null &
-
-chmod 755 /
-echo "Calling {{$.Init}}..."
-echo
-
-sleep 2
-exec {{$.Init}}
+echo "We should never ever get here, but since we did, it means something went wrong so rebooting"
+/sbin/reboot
