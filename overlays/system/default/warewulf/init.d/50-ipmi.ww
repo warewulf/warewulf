@@ -7,8 +7,6 @@ error_exit() {
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
-set -x
-
 IP="{{$.IpmiIpaddr}}"
 NETMASK="{{$.IpmiNetmask}}"
 [ -z "$NETMASK" ] && NETMASK="{{$.NetDevs.eth0.Netmask}}"
