@@ -12,6 +12,7 @@ type ControllerConf struct {
 	Comment  string        `yaml:"comment"`
 	Ipaddr   string        `yaml:"ipaddr"`
 	Netmask  string        `yaml:"netmask"`
+	Network  string        `yaml:"network,omitempty"`
 	Fqdn     string        `yaml:"fqdn,omitempty"`
 	Warewulf *WarewulfConf `yaml:"warewulf"`
 	Dhcp     *DhcpConf     `yaml:"dhcp"`

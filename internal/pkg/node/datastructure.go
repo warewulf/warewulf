@@ -29,8 +29,8 @@ type NodeConf struct {
 	IpmiIpaddr     string              `yaml:"ipmi ipaddr,omitempty"`
 	IpmiNetmask    string              `yaml:"ipmi netmask,omitempty"`
 	IpmiGateway    string              `yaml:"ipmi gateway,omitempty"`
-	RuntimeOverlay string              `yaml:"runtime overlay files,omitempty"`
-	SystemOverlay  string              `yaml:"system overlay files,omitempty"`
+	RuntimeOverlay string              `yaml:"runtime overlay,omitempty"`
+	SystemOverlay  string              `yaml:"system overlay,omitempty"`
 	Init           string              `yaml:"init,omitempty"`
 	Discoverable   bool                `yaml:"discoverable,omitempty"`
 	Profiles       []string            `yaml:"profiles,omitempty"`

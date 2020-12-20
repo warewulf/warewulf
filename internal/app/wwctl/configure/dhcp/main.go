@@ -2,13 +2,11 @@ package dhcp
 
 import (
 	"fmt"
-	"github.com/brotherpowers/ipsubnet"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
-	"net"
 	"os"
 	"path"
 	"strings"
@@ -99,14 +97,9 @@ func Configure(show bool) error {
 		os.Exit(1)
 	}
 
-	mask := net.IPMask(net.ParseIP(controller.Netmask).To4())
-	size, _ := mask.Size()
-
-	sub := ipsubnet.SubnetCalculator(controller.Ipaddr, size)
-
 	d.Ipaddr = controller.Ipaddr
-	d.Network = sub.GetNetworkPortion()
-	d.Netmask = sub.GetSubnetMask()
+	d.Network = controller.Network
+	d.Netmask = controller.Netmask
 	d.RangeStart = controller.Dhcp.RangeStart
 	d.RangeEnd = controller.Dhcp.RangeEnd
 

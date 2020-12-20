@@ -12,7 +12,7 @@ func templateFileInclude(path string) string {
 	wwlog.Printf(wwlog.DEBUG, "Including file into template: %s\n", path)
 	content, err := ioutil.ReadFile(path)
 	if err != nil {
-		wwlog.Printf(wwlog.WARN, "Could not include file into template: %s\n", err)
+		wwlog.Printf(wwlog.VERBOSE, "Could not include file into template: %s\n", err)
 	}
 	return strings.TrimSuffix(string(content), "\n")
 }
