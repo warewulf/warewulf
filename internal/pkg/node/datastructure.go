@@ -104,7 +104,7 @@ func init() {
 		fmt.Fprintf(c, "nodeprofiles:\n")
 		fmt.Fprintf(c, "  default:\n")
 		fmt.Fprintf(c, "    comment: This profile is automatically included for each node\n")
-		fmt.Fprintf(c, "    kernel args: crashkernel=no quiet\n")
+		fmt.Fprintf(c, "    kernel args: crashkernel=no vga=791 rootfstype=ramfs quiet\n")
 		fmt.Fprintf(c, "nodes: {}\n")
 
 		c.Close()
