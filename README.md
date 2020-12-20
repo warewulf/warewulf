@@ -69,8 +69,11 @@ Note: You may need to change the systemd service names for your distribution.
 Once it has been configured, you can have Warewulf configure the services:
 
 ```
-sudo ./wwctl service -a
+sudo ./wwctl configure -a
 ```
+
+note, at the time of this writing, there are additional services which are not included
+in the `-a` option. Please do a `wwctl configure --help` to see all configurable services.
 
 #### Pull and build the VNFS container and kernel:
 
