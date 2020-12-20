@@ -1,0 +1,4 @@
+#!/bin/sh
+
+echo "Bringing up lo:127.0.0.1"
+/sbin/ip link set dev lo up

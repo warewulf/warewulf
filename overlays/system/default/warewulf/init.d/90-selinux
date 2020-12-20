@@ -1,0 +1,17 @@
+#!/bin/bash
+
+
+if test -f "/etc/sysconfig/selinux"; then
+    . /etc/sysconfig/selinux
+    if test "\$SELINUX" == "disabled"; then
+        echo "Skipping SELinux setup per /etc/sysconfig/selinux"
+    elif grep -q "selinux=0" /proc/cmdline; then
+        echo "Skipping SELinux setup per kernel command line"
+    else
+        echo "Setting up SELinux"
+        /sbin/load_policy -i
+        /sbin/restorecon -r /
+    fi
+else
+    echo "Skipping SELinux setup"
+fi
