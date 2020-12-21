@@ -14,14 +14,15 @@ echo "Cleaning up"
 unset WWCONTAINER
 unset WWHOSTNAME
 unset WWROOT
+unset WWINIT
 unset WWIPMI_IPADDR
 unset WWIPMI_NETMASK
 unset WWIPMI_GATEWAY
 unset WWIPMI_USER
 unset WWIPMI_PASSWORD
 
-echo "Calling {{$.Init}}..."
+echo "Calling $WWINIT..."
 echo
 
 sleep 2
-exec {{$.Init}}
+exec $WWINIT
