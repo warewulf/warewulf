@@ -1,5 +1,7 @@
 #!/bin/bash
 
+. /warewulf/config
+
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
 if [ -z "$WWIPMI_IPADDR" ]; then
