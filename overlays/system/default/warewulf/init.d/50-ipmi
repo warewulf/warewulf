@@ -6,6 +6,10 @@ if [ -z "$WWIPMI_IPADDR" ]; then
     echo "No IPMI IP address supplied, skipping IPMI configuration"
     exit
 fi
+if [ -z "$WWIPMI_NETMASK" ]; then
+    echo "No IPMI netmask supplied, skipping IPMI configuration"
+    exit
+fi
 
 echo "IPMI IP address: $WWIPMI_IPADDR"
 echo "IPMI netmask: $WWIPMI_NETMASK"
