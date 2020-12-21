@@ -2,6 +2,8 @@
 
 echo "Hello from WWINIT"
 
+. /warewulf/config
+
 for i in /warewulf/init.d/*; do
     NAME=`basename $i`
     echo "Launching: $NAME"
@@ -10,20 +12,9 @@ done
 
 /bin/bash
 
-INIT=$WWINIT
-echo "Cleaning up"
-unset WWCONTAINER
-unset WWHOSTNAME
-unset WWROOT
-unset WWINIT
-unset WWIPMI_IPADDR
-unset WWIPMI_NETMASK
-unset WWIPMI_GATEWAY
-unset WWIPMI_USER
-unset WWIPMI_PASSWORD
 
-echo "Calling $INIT..."
+echo "Calling $WWINIT..."
 echo
 
 sleep 2
-exec $INIT
+exec $WWINIT

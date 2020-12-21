@@ -5,24 +5,14 @@
 #
 # Edit at your own risk! DANGER DANGER.
 
-WWCONTAINER={{$.Container}}
-export WWCONTAINER
-WWHOSTNAME={{$.Id}}
-export WWHOSTNAME
-WWROOT={{$.Root}}
-export WWROOT
-WWINIT={{$.Init}}
-export WWINIT
-WWIPMI_IPADDR="{{$.IpmiIpaddr}}"
-export WWIPMI_IPADDR
-WWIPMI_NETMASK="{{$.IpmiNetmask}}"
-export WWIPMI_NETMASK
-WWIPMI_GATEWAY="{{$.IpmiGateway}}"
-export WWIPMI_GATEWAY
-WWIPMI_USER="{{$.IpmiUserName}}"
-export WWIPMI_USER
-WWIPMI_PASSWORD="{{$.IpmiPassword}}"
-export WWIPMI_PASSWORD
+
+if test -f "/warewulf/config"; then
+    . /warewulf/config
+else
+    echo "ERROR: Warewulf configuration file not found... rebooting in 1 minute"
+    sleep 60
+    /sbin/reboot
+fi
 
 echo "Warewulf v4 is now booting: $WWHOSTNAME"
 echo
