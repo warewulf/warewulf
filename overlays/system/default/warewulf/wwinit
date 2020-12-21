@@ -10,6 +10,7 @@ done
 
 /bin/bash
 
+INIT=$WWINIT
 echo "Cleaning up"
 unset WWCONTAINER
 unset WWHOSTNAME
@@ -21,8 +22,8 @@ unset WWIPMI_GATEWAY
 unset WWIPMI_USER
 unset WWIPMI_PASSWORD
 
-echo "Calling $WWINIT..."
+echo "Calling $INIT..."
 echo
 
 sleep 2
-exec $WWINIT
+exec $INIT
