@@ -47,6 +47,8 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.RuntimeOverlay.SetDefault("default")
 		n.Ipxe.SetDefault("default")
 		n.Init.SetDefault("/sbin/init")
+		n.Root.SetDefault("tmpfs")
+		n.KernelArgs.SetDefault("rootfstype=ramfs crashkernel=no vga=791 quiet")
 
 		fullname := strings.SplitN(nodename, ".", 2)
 		if len(fullname) > 1 {
@@ -74,6 +76,7 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.IpmiPassword.Set(node.IpmiPassword)
 		n.SystemOverlay.Set(node.SystemOverlay)
 		n.RuntimeOverlay.Set(node.RuntimeOverlay)
+		n.Root.Set(node.Root)
 
 		n.Discoverable.SetB(node.Discoverable)
 		n.Disabled.SetB(node.Disabled)
@@ -116,6 +119,7 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.IpmiPassword.SetAlt(self.NodeProfiles[p].IpmiPassword, pstring)
 			n.SystemOverlay.SetAlt(self.NodeProfiles[p].SystemOverlay, pstring)
 			n.RuntimeOverlay.SetAlt(self.NodeProfiles[p].RuntimeOverlay, pstring)
+			n.Root.SetAlt(self.NodeProfiles[p].Root, pstring)
 
 			n.Disabled.SetAltB(self.NodeProfiles[p].Disabled, pstring)
 			n.Discoverable.SetAltB(self.NodeProfiles[p].Discoverable, pstring)
@@ -163,6 +167,7 @@ func (self *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		p.IpmiPassword.Set(profile.IpmiPassword)
 		p.RuntimeOverlay.Set(profile.RuntimeOverlay)
 		p.SystemOverlay.Set(profile.SystemOverlay)
+		p.Root.Set(profile.Root)
 
 		p.Disabled.SetB(profile.Disabled)
 		p.Discoverable.SetB(profile.Discoverable)

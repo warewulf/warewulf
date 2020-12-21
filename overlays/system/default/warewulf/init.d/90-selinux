@@ -1,17 +1,34 @@
 #!/bin/bash
 
 
+if test -z "$WWROOT"; then
+    echo "Skipping SELinux configuration: Warewulf Root device not set"
+    exit
+fi
+
 if test -f "/etc/sysconfig/selinux"; then
     . /etc/sysconfig/selinux
-    if test "\$SELINUX" == "disabled"; then
-        echo "Skipping SELinux setup per /etc/sysconfig/selinux"
-    elif grep -q "selinux=0" /proc/cmdline; then
-        echo "Skipping SELinux setup per kernel command line"
-    else
-        echo "Setting up SELinux"
-        /sbin/load_policy -i
-        /sbin/restorecon -r /
-    fi
 else
-    echo "Skipping SELinux setup"
+    echo "Skipping SELinux configuration: Host config not found: /etc/sysconfig/selinux"
+    exit
+fi
+
+if test "$WWROOT" == "initramfs"; then
+    echo "Skipping SELinux configuration: 'Root=initramfs'"
+    if test "$SELINUX" != "disabled"; then
+        echo "WARNING: SELinux prep is being skipped, but SELinux is enabled on host! This may"
+        echo "WARNING: cause the system to not work properly. Try setting 'Root=tmpfs'"
+        sleep 5
+    fi
+    exit
+fi
+
+if test "$SELINUX" == "disabled"; then
+    echo "Skipping SELinux setup per /etc/sysconfig/selinux"
+elif grep -q "selinux=0" /proc/cmdline; then
+    echo "Skipping SELinux setup per kernel command line"
+else
+    echo "Setting up SELinux"
+    /sbin/load_policy -i
+    /sbin/restorecon -r /
 fi

@@ -23,6 +23,7 @@ type TemplateStruct struct {
 	GroupName    string
 	Container    string
 	Init         string
+	Root         string
 	IpmiIpaddr   string
 	IpmiNetmask  string
 	IpmiGateway  string
@@ -139,6 +140,7 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 		t.Hostname = n.Id.Get()
 		t.Container = n.ContainerName.Get()
 		t.Init = n.Init.Get()
+		t.Root = n.Root.Get()
 		t.IpmiIpaddr = n.IpmiIpaddr.Get()
 		t.IpmiNetmask = n.IpmiNetmask.Get()
 		t.IpmiGateway = n.IpmiGateway.Get()
