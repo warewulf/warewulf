@@ -174,7 +174,7 @@ sudo ./wwctl overlay list -ls
 sudo EDITOR=vim ./wwctl overlay edit default /etc/hello_world.ww
 sudo ./wwctl overlay build -a
 ```
-    
+
 #### Start the Warewulf daemon:
 
 Once the above provisioning images are built, you can check the provisioning "rediness"

@@ -108,6 +108,16 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				os.Exit(1)
 			}
 		}
+		if SetRoot != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting root to: %s\n", p.Id, SetRoot)
+
+			p.Root.Set(SetRoot)
+			err := nodeDB.ProfileUpdate(p)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
 
 		if SetKernel != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting Kernel version to: %s\n", p.Id, SetKernel)

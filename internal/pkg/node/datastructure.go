@@ -32,6 +32,7 @@ type NodeConf struct {
 	RuntimeOverlay string              `yaml:"runtime overlay,omitempty"`
 	SystemOverlay  string              `yaml:"system overlay,omitempty"`
 	Init           string              `yaml:"init,omitempty"`
+	Root           string              `yaml:"root,omitempty"`
 	Discoverable   bool                `yaml:"discoverable,omitempty"`
 	Profiles       []string            `yaml:"profiles,omitempty"`
 	NetDevs        map[string]*NetDevs `yaml:"network devices,omitempty"`
@@ -75,6 +76,7 @@ type NodeInfo struct {
 	IpmiPassword   Entry
 	RuntimeOverlay Entry
 	SystemOverlay  Entry
+	Root           Entry
 	Discoverable   Entry
 	Disabled       Entry
 	Init           Entry //TODO: Finish adding this...
@@ -104,7 +106,6 @@ func init() {
 		fmt.Fprintf(c, "nodeprofiles:\n")
 		fmt.Fprintf(c, "  default:\n")
 		fmt.Fprintf(c, "    comment: This profile is automatically included for each node\n")
-		fmt.Fprintf(c, "    kernel args: crashkernel=no vga=791 rootfstype=ramfs quiet\n")
 		fmt.Fprintf(c, "nodes: {}\n")
 
 		c.Close()
