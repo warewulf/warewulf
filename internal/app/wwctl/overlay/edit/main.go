@@ -17,6 +17,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	editor := os.Getenv("EDITOR")
 	var overlaySourceDir string
 
+	if editor == "" {
+		editor = "vi"
+	}
+
 	if SystemOverlay == true {
 		overlaySourceDir = config.SystemOverlaySource(args[0])
 	} else {

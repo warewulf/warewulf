@@ -2,6 +2,8 @@
 
 echo "Hello from WWINIT"
 
+. /warewulf/config
+
 for i in /warewulf/init.d/*; do
     NAME=`basename $i`
     echo "Launching: $NAME"
@@ -10,10 +12,9 @@ done
 
 /bin/bash
 
-echo "Cleaning up"
 
-echo "Calling {{$.Init}}..."
+echo "Calling $WWINIT..."
 echo
 
 sleep 2
-exec {{$.Init}}
+exec $WWINIT
