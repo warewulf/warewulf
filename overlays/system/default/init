@@ -30,7 +30,7 @@ echo "Checking Rootfs type"
 ROOTFSTYPE=`stat -f -c "%T" /`
 
 if test "$WWROOT" == "initramfs"; then
-    echo "Provisioned to Rootfs type: $ROOTFSTYPE"
+    echo "Provisioned to default initramfs file system: $ROOTFSTYPE"
     echo "Calling WW Init"
     exec /warewulf/wwinit
 elif test "$WWROOT" == "tmpfs"; then
