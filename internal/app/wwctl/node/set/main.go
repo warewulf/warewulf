@@ -114,6 +114,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				os.Exit(1)
 			}
 		}
+		if SetKernelArgs != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting kernel args to: %s\n", n.Id.Get(), SetKernelArgs)
+
+			n.KernelArgs.Set(SetKernelArgs)
+			err := nodeDB.NodeUpdate(n)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
+
 		if SetClusterName != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting cluster name to: %s\n", n.Id.Get(), SetClusterName)
 
