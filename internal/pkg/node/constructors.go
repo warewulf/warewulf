@@ -47,8 +47,8 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.RuntimeOverlay.SetDefault("default")
 		n.Ipxe.SetDefault("default")
 		n.Init.SetDefault("/sbin/init")
-		n.Root.SetDefault("tmpfs")
-		n.KernelArgs.SetDefault("rootfstype=ramfs crashkernel=no vga=791 quiet")
+		n.Root.SetDefault("initramfs")
+		n.KernelArgs.SetDefault("quiet crashkernel=no vga=791 rootfstype=tmpfs")
 
 		fullname := strings.SplitN(nodename, ".", 2)
 		if len(fullname) > 1 {
