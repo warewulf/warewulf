@@ -1,4 +1,4 @@
-# warewulf v4 (work in progress)
+# warewulf v4
 
 ![Warewulf](warewulf-logo.png)
 
