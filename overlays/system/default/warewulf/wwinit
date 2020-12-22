@@ -10,9 +10,6 @@ for i in /warewulf/init.d/*; do
     sh "$i"
 done
 
-/bin/bash
-
-
 echo "Calling $WWINIT..."
 echo
 
