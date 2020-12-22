@@ -2,8 +2,9 @@
 
 #### Install Warewulf and dependencies
 ```
+sudo yum groupinstall "Development Tools"
 sudo yum install epel-release
-sudo yum install --tolerant golang tftp-server dhcp dhcp-server
+sudo yum install golang tftp-server dhcp-server nfs-utils
 
 sudo systemctl stop firewalld
 sudo systemctl disable firewalld
@@ -58,7 +59,7 @@ This will pull a basic VNFS container from Docker Hub and import the default run
 kernel from the controller node and set both in the "default" node profile.
 
 ```
-sudo ./wwctl container pull docker://warewulf/centos-7 centos-7 --setdefault
+sudo ./wwctl container pull docker://warewulf/centos-8 centos-8 --setdefault
 sudo ./wwctl kernel build $(uname -r) --setdefault
 ```
 

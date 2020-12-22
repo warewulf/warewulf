@@ -3,7 +3,7 @@
 #### Install Warewulf and dependencies
 ```
 sudo yum install epel-release
-sudo yum install --tolerant golang tftp-server dhcp dhcp-server
+sudo yum install golang tftp-server dhcp nfs-utils
 
 sudo systemctl stop firewalld
 sudo systemctl disable firewalld
