@@ -120,7 +120,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		if SetKernel != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting Kernel version to: %s\n", p.Id, SetKernel)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting Kernel to: %s\n", p.Id, SetKernel)
 
 			p.KernelVersion.Set(SetKernel)
 			err := nodeDB.ProfileUpdate(p)
@@ -129,6 +129,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				os.Exit(1)
 			}
 		}
+		if SetKernelArgs != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting Kernel args to: %s\n", p.Id, SetKernelArgs)
+
+			p.KernelArgs.Set(SetKernelArgs)
+			err := nodeDB.ProfileUpdate(p)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
+
 		if SetIpxe != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting iPXE template to: %s\n", p.Id, SetIpxe)
 
