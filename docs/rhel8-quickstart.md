@@ -129,7 +129,7 @@ Here are some of the common `overlay` commands:
 ```
 sudo ./wwctl overlay list -l
 sudo ./wwctl overlay list -ls
-sudo EDITOR=vim ./wwctl overlay edit default /etc/hello_world.ww
+sudo ./wwctl overlay edit default /etc/hello_world.ww
 sudo ./wwctl overlay build -a
 ```
 
