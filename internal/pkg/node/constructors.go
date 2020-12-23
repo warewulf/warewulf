@@ -144,6 +144,17 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 
 	}
 
+	sort.Slice(ret, func(i, j int) bool {
+		if ret[i].ClusterName.Get() < ret[j].ClusterName.Get() {
+			return true
+		} else if ret[i].ClusterName.Get() == ret[j].ClusterName.Get() {
+			if ret[i].Id.Get() < ret[j].Id.Get() {
+				return true
+			}
+		}
+		return false
+	})
+
 	return ret, nil
 }
 
