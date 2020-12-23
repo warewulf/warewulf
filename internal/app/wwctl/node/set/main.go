@@ -66,175 +66,87 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 		if SetComment != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting comment to: %s\n", n.Id.Get(), SetComment)
-
 			n.Comment.Set(SetComment)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetContainer != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting container name to: %s\n", n.Id.Get(), SetContainer)
-
 			n.ContainerName.Set(SetContainer)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetInit != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting init command to: %s\n", n.Id.Get(), SetInit)
-
 			n.Init.Set(SetInit)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetRoot != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting root to: %s\n", n.Id.Get(), SetRoot)
-
 			n.Root.Set(SetRoot)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetKernel != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting kernel to: %s\n", n.Id.Get(), SetKernel)
-
 			n.KernelVersion.Set(SetKernel)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetKernelArgs != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting kernel args to: %s\n", n.Id.Get(), SetKernelArgs)
-
 			n.KernelArgs.Set(SetKernelArgs)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
 
 		if SetClusterName != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting cluster name to: %s\n", n.Id.Get(), SetClusterName)
-
 			n.ClusterName.Set(SetClusterName)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetIpxe != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting iPXE template to: %s\n", n.Id.Get(), SetIpxe)
-
 			n.Ipxe.Set(SetIpxe)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetRuntimeOverlay != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting runtime overlay to: %s\n", n.Id.Get(), SetRuntimeOverlay)
-
 			n.RuntimeOverlay.Set(SetRuntimeOverlay)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetSystemOverlay != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting system overlay to: %s\n", n.Id.Get(), SetSystemOverlay)
-
 			n.SystemOverlay.Set(SetSystemOverlay)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetIpmiIpaddr != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI IP address to: %s\n", n.Id.Get(), SetIpmiIpaddr)
-
 			n.IpmiIpaddr.Set(SetIpmiIpaddr)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetIpmiNetmask != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI netmask to: %s\n", n.Id.Get(), SetIpmiNetmask)
-
 			n.IpmiNetmask.Set(SetIpmiNetmask)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetIpmiGateway != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI gateway to: %s\n", n.Id.Get(), SetIpmiGateway)
-
 			n.IpmiGateway.Set(SetIpmiGateway)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetIpmiUsername != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI IP username to: %s\n", n.Id.Get(), SetIpmiUsername)
-
 			n.IpmiUserName.Set(SetIpmiUsername)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetIpmiPassword != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI IP password to: %s\n", n.Id.Get(), SetIpmiPassword)
-
 			n.IpmiPassword.Set(SetIpmiPassword)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
 
 		if SetDiscoverable == true {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting node to discoverable\n", n.Id.Get())
-
 			n.Discoverable.SetB(true)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetUndiscoverable == true {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting node to undiscoverable\n", n.Id.Get())
-
 			n.Discoverable.SetB(false)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
 
 		if len(SetAddProfile) > 0 {
@@ -242,21 +154,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				wwlog.Printf(wwlog.VERBOSE, "Node: %s, adding profile to '%s'\n", n.Id.Get(), p)
 				n.Profiles = util.SliceAddUniqueElement(n.Profiles, p)
 			}
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if len(SetDelProfile) > 0 {
 			for _, p := range SetDelProfile {
 				wwlog.Printf(wwlog.VERBOSE, "Node: %s, deleting profile from '%s'\n", n.Id.Get(), p)
 				n.Profiles = util.SliceRemoveElement(n.Profiles, p)
-			}
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
 			}
 		}
 
@@ -272,13 +175,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Deleting network device: %s\n", n.Id.Get(), SetNetDev)
-
 			delete(n.NetDevs, SetNetDev)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
 		if SetIpaddr != "" {
 			if SetNetDev == "" {
@@ -292,13 +189,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Ipaddr to: %s\n", n.Id.Get(), SetNetDev, SetIpaddr)
-
 			n.NetDevs[SetNetDev].Ipaddr.Set(SetIpaddr)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
 		if SetNetmask != "" {
 			if SetNetDev == "" {
@@ -312,13 +203,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting netmask to: %s\n", n.Id.Get(), SetNetDev, SetNetmask)
-
 			n.NetDevs[SetNetDev].Netmask.Set(SetNetmask)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
 		if SetGateway != "" {
 			if SetNetDev == "" {
@@ -332,13 +217,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting gateway to: %s\n", n.Id.Get(), SetNetDev, SetGateway)
-
 			n.NetDevs[SetNetDev].Gateway.Set(SetGateway)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
 		if SetHwaddr != "" {
 			if SetNetDev == "" {
@@ -352,13 +231,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting HW address to: %s\n", n.Id.Get(), SetNetDev, SetHwaddr)
-
 			n.NetDevs[SetNetDev].Hwaddr.Set(SetHwaddr)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
+		}
+
+		err := nodeDB.NodeUpdate(n)
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "%s\n", err)
+			os.Exit(1)
 		}
 	}
 
