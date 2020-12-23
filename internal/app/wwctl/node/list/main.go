@@ -30,17 +30,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	sort.Slice(nodes, func(i, j int) bool {
-		if nodes[i].ClusterName.Get() < nodes[j].ClusterName.Get() {
-			return true
-		} else if nodes[i].ClusterName.Get() == nodes[j].ClusterName.Get() {
-			if nodes[i].Id.Get() < nodes[j].Id.Get() {
-				return true
-			}
-		}
-		return false
-	})
-
 	if ShowAll == true {
 		for _, node := range nodes {
 			fmt.Printf("################################################################################\n")
