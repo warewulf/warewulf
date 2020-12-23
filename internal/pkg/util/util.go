@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"time"
+	"bufio"
 	//   "strings"
 )
 
@@ -112,6 +113,20 @@ func IsFile(path string) bool {
 		return true
 	}
 	return false
+}
+
+func ReadFile(path string) ([]string, error) {
+	lines := []string{}
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	f.Close()
+	return lines, nil
 }
 
 func ValidString(pattern string, expr string) bool {
