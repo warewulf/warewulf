@@ -70,145 +70,72 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 		if SetComment != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting comment to: %s\n", p.Id, SetComment)
-
 			p.Comment.Set(SetComment)
-			err := nodeDB.ProfileUpdate(p)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetClusterName != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting cluster name to: %s\n", p.Id, SetClusterName)
-
 			p.ClusterName.Set(SetClusterName)
-			err := nodeDB.ProfileUpdate(p)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetContainer != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting Container name to: %s\n", p.Id, SetContainer)
-
 			p.ContainerName.Set(SetContainer)
-			err := nodeDB.ProfileUpdate(p)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetInit != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting init command to: %s\n", p.Id, SetInit)
-
 			p.Init.Set(SetInit)
-			err := nodeDB.ProfileUpdate(p)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetRoot != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting root to: %s\n", p.Id, SetRoot)
-
 			p.Root.Set(SetRoot)
-			err := nodeDB.ProfileUpdate(p)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
 
 		if SetKernel != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting Kernel to: %s\n", p.Id, SetKernel)
-
 			p.KernelVersion.Set(SetKernel)
-			err := nodeDB.ProfileUpdate(p)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetKernelArgs != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting Kernel args to: %s\n", p.Id, SetKernelArgs)
-
 			p.KernelArgs.Set(SetKernelArgs)
-			err := nodeDB.ProfileUpdate(p)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
 
 		if SetIpxe != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting iPXE template to: %s\n", p.Id, SetIpxe)
-
 			p.Ipxe.Set(SetIpxe)
-			err := nodeDB.ProfileUpdate(p)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetRuntimeOverlay != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting runtime overlay to: %s\n", p.Id, SetRuntimeOverlay)
-
 			p.RuntimeOverlay.Set(SetRuntimeOverlay)
-			err := nodeDB.ProfileUpdate(p)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetSystemOverlay != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting system overlay to: %s\n", p.Id, SetSystemOverlay)
-
 			p.SystemOverlay.Set(SetSystemOverlay)
-			err := nodeDB.ProfileUpdate(p)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetIpmiNetmask != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting IPMI username to: %s\n", p.Id, SetIpmiNetmask)
-
 			p.IpmiNetmask.Set(SetIpmiNetmask)
-			err := nodeDB.ProfileUpdate(p)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetIpmiGateway != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting IPMI username to: %s\n", p.Id, SetIpmiGateway)
-
 			p.IpmiGateway.Set(SetIpmiGateway)
-			err := nodeDB.ProfileUpdate(p)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetIpmiUsername != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting IPMI username to: %s\n", p.Id, SetIpmiUsername)
-
 			p.IpmiUserName.Set(SetIpmiUsername)
-			err := nodeDB.ProfileUpdate(p)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetIpmiPassword != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting IPMI username to: %s\n", p.Id, SetIpmiPassword)
-
 			p.IpmiPassword.Set(SetIpmiPassword)
-			err := nodeDB.ProfileUpdate(p)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
 
 		if SetNetDevDel == true {
@@ -223,14 +150,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 			wwlog.Printf(wwlog.VERBOSE, "Profile %s: Deleting network device: %s\n", p.Id.Get(), SetNetDev)
-
 			delete(p.NetDevs, SetNetDev)
-			err := nodeDB.ProfileUpdate(p)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetIpaddr != "" {
 			if SetNetDev == "" {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
@@ -243,14 +165,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 			wwlog.Printf(wwlog.VERBOSE, "Profile '%s': Setting IP address to: %s:%s\n", p.Id.Get(), SetNetDev, SetHwaddr)
-
 			p.NetDevs[SetNetDev].Ipaddr.Set(SetIpaddr)
-			err := nodeDB.ProfileUpdate(p)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetNetmask != "" {
 			if SetNetDev == "" {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
@@ -263,14 +180,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 			wwlog.Printf(wwlog.VERBOSE, "Profile '%s': Setting netmask to: %s:%s\n", p.Id.Get(), SetNetDev, SetHwaddr)
-
 			p.NetDevs[SetNetDev].Netmask.Set(SetNetmask)
-			err := nodeDB.ProfileUpdate(p)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetGateway != "" {
 			if SetNetDev == "" {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
@@ -283,14 +195,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 			wwlog.Printf(wwlog.VERBOSE, "Profile '%s': Setting gateway to: %s:%s\n", p.Id.Get(), SetNetDev, SetHwaddr)
-
 			p.NetDevs[SetNetDev].Gateway.Set(SetGateway)
-			err := nodeDB.ProfileUpdate(p)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
+
 		if SetHwaddr != "" {
 			if SetNetDev == "" {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
@@ -303,15 +210,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 			wwlog.Printf(wwlog.VERBOSE, "Profile '%s': Setting HW address to: %s:%s\n", p.Id.Get(), SetNetDev, SetHwaddr)
-
 			p.NetDevs[SetNetDev].Hwaddr.Set(SetHwaddr)
-			err := nodeDB.ProfileUpdate(p)
-			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
-			}
 		}
 
+		err := nodeDB.ProfileUpdate(p)
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "%s\n", err)
+			os.Exit(1)
+		}
 	}
 
 	if len(profiles) > 0 {
