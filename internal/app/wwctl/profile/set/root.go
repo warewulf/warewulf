@@ -29,6 +29,7 @@ var (
 	SetGateway        string
 	SetHwaddr         string
 	SetNetDevDel      bool
+	SetNetDevDefault  bool
 	SetInit           string
 	SetRoot           string
 )
@@ -56,6 +57,7 @@ func init() {
 	baseCmd.PersistentFlags().StringVarP(&SetGateway, "gateway", "G", "", "Set the node's network device gateway")
 	baseCmd.PersistentFlags().StringVarP(&SetHwaddr, "hwaddr", "H", "", "Set the node's network device HW address")
 	baseCmd.PersistentFlags().BoolVar(&SetNetDevDel, "netdel", false, "Delete the node's network device")
+	baseCmd.PersistentFlags().BoolVar(&SetNetDevDefault, "netdefault", false, "Set this network to be default")
 
 	baseCmd.PersistentFlags().BoolVarP(&SetAll, "all", "a", false, "Set all profiles")
 	baseCmd.PersistentFlags().BoolVarP(&SetForce, "force", "f", false, "Force configuration (even on error)")

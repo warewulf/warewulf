@@ -3,10 +3,12 @@
 {{range $node := $.AllNodes}}
 # Entry for {{$node.Id.Get}}
 {{- range $devname, $netdev := $node.NetDevs}}
-{{- if $netdev.Default}}
+{{- if $netdev.Ipaddr.Defined}}
+{{- if $netdev.Default.GetB}}
 {{$netdev.Ipaddr.Get}} {{$node.Id.Get}}
 {{- else}}
 {{$netdev.Ipaddr.Get}} {{$node.Id.Get}}-{{$devname}}
+{{- end}}
 {{- end}}
 {{- end}}
 {{end}}

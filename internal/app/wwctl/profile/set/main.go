@@ -213,6 +213,25 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			p.NetDevs[SetNetDev].Hwaddr.Set(SetHwaddr)
 		}
 
+		if SetNetDevDefault == true {
+			if SetNetDev == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
+				os.Exit(1)
+			}
+
+			if _, ok := p.NetDevs[SetNetDev]; !ok {
+				var nd node.NetDevEntry
+				p.NetDevs[SetNetDev] = &nd
+			}
+
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting device as default\n", p.Id.Get(), SetNetDev)
+			for _, dev := range p.NetDevs {
+				// First clear all other devices that might be configured as default
+				dev.Default.SetB(false)
+			}
+			p.NetDevs[SetNetDev].Default.SetB(true)
+		}
+
 		err := nodeDB.ProfileUpdate(p)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
