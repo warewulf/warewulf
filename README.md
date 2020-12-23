@@ -9,6 +9,7 @@
 
 ## About Warewulf
 
+### History
 For over two decades, Warewulf has powered HPC systems around the world. From simple “under the desk” clusters to large
 institutional systems at HPC centers as well as enterprises who rely on performance critical computing.
 
@@ -23,7 +24,22 @@ solution. But over the last few years, there have been many innovations in Enter
 should) be leveraged as part of Warewulf. Additionally, some of the lessons learned from Warewulf v3 architecture
 should be rolled into an updated architecture for provisioning management.
 
-At the core, Warewulf focuses on what has made Warewulf so widely utilized: simplicity, ultra scalable, lightweight,
-and easy to manage solution built for entry level system administrators to be able to design a highly functional and
-easy to maintain cluster no matter how big or small it is.
+### Warewulf v4
+Leveraging this legacy of provisioning and cluster management brings us to where we are today. The next generation 
+of Warewulf. Warewulf v4 is a complete rewrite in GoLang, taking in the legacy of what we've come to expect with 
+Warewulf, bringing it into the present, and looking out into the future.
 
+Warewulf v4 combines ultra scalability, flexibility, and simplicity with being light weight, non-intrusive, and a 
+great tool for scientists and seasoned system administrators alike. Warewulf empowers you to scalably and easily manage 
+thousands of compute resources.
+
+### Architecture
+One of the design tenants of Warewulf is how to scalably administrate many thousands of compute nodes. Generally 
+speaking, operating system state introduce a surface for potential discrepancies and version creep between nodes and 
+thus Warewulf has always gone with the "single system image" approach to clustered operating system management. 
+This means that you can have a single management node "image". For the last 20 years, we've been calling this a
+Virtual Node File System (VNFS), but in hindsight, this is a container.
+
+At its core, Warewulf v4 focuses on what has made Warewulf so widely loved: simplicity, ultra scalable, lightweight,
+and an easy to manage solution built for both scientists and seasons system administrators to be able to design a 
+highly functional yet easy to maintain cluster no matter how big or small or customized it needs to be.
