@@ -6,7 +6,6 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 	"os"
-	"sort"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
@@ -22,13 +21,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.ERROR, "Could not find all nodes: %s\n", err)
 		os.Exit(1)
 	}
-
-	sort.Slice(profiles, func(i, j int) bool {
-		if profiles[i].Id.Get() < profiles[j].Id.Get() {
-			return true
-		}
-		return false
-	})
 
 	for _, profile := range profiles {
 		fmt.Printf("################################################################################\n")
