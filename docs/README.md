@@ -12,6 +12,7 @@ community on this. Please see the [contributing](Contributing.md) document for h
 (all coming soon)
 
 * [Introduction](introduction.md)
+* [Terms and Definitions](terms.md)
 * [Architecture](architecture.md)
 * [System Services and Dependencies](system_services.md)
 * [Profiles](profiles.md)
