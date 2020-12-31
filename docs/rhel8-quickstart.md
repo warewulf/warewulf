@@ -6,13 +6,27 @@ sudo dnf -y groupinstall "Development Tools"
 sudo dnf -y install epel-release
 sudo dnf -y install golang tftp-server dhcp-server nfs-utils
 
-sudo systemctl stop firewalld
-sudo systemctl disable firewalld
 
 git clone https://github.com/ctrliq/warewulf.git
 cd warewulf
 make all
 sudo make install
+```
+#### Configure any local/Host based firewalls
+
+Warewulf needs the following ports to be open on the controller host - XX,XX, XX....  
+These ports can be enabled on systems using firewalld by running:
+
+```
+sudo firewall-cmd  --permanent --add-port=XX-XX/tcp
+sudo firewall-cmd  --reload
+```
+
+You can also alternativly stop and disable firewalld on the controller by running:
+```
+sudo systemctl stop firewalld
+sudo systemctl disable firewalld
+
 ```
 
 #### Configure the controller:
