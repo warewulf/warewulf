@@ -72,7 +72,7 @@ wwctl:
 wwclient:
 	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags '-extldflags -static' -o ../../wwclient
 
-dist:
+dist: vendor
 	rm -rf _dist/warewulf-$(VERSION)
 	mkdir -p _dist/warewulf-$(VERSION)
 	git archive --format=tar main | tar -xf - -C _dist/warewulf-$(VERSION)
