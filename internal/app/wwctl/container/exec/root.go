@@ -7,9 +7,11 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "exec",
-		Short:              "Spawn any command inside a Warewulf container",
-		Long:               "Run a command inside a Warewulf container ",
+		Use:   "exec [flags] [container name]",
+		Short: "Run a command inside of a Warewulf container",
+		Long: "This command will allow you to run any command inside of a given\n" +
+			"warewulf container. This is commonly used with an interactive shell such as /bin/bash\n" +
+			"to run a virtual environment within the container.",
 		RunE:               CobraRunE,
 		Args:               cobra.MinimumNArgs(1),
 		FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
@@ -18,7 +20,6 @@ var (
 
 func init() {
 	baseCmd.AddCommand(child.GetCommand())
-
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

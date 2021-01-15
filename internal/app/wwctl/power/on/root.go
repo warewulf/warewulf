@@ -1,4 +1,4 @@
-package powercycle
+package poweron
 
 import (
 	"github.com/spf13/cobra"
@@ -6,9 +6,9 @@ import (
 
 var (
 	powerCmd = &cobra.Command{
-		Use:   "powercycle",
-		Short: "power cycle node(s)",
-		Long:  "cycle power for one or more nodes",
+		Use:   "on",
+		Short: "Power on the given node(s)",
+		Long:  "This command will power on a given set of nodes.",
 		RunE:  CobraRunE,
 	}
 )

@@ -23,6 +23,11 @@ type dhcpTemplate struct {
 }
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
+	if SetShow == false && SetPersist == false {
+		fmt.Println(cmd.Help())
+		os.Exit(0)
+	}
+
 	return Configure(SetShow)
 }
 

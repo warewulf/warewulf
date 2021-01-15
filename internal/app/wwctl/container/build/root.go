@@ -4,11 +4,11 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "build (container location | node search pattern)",
-		Short: "VNFS Image Build",
-		Long:  "VNFS kernel images",
+		Use:   "build [flags] [container name]...",
+		Short: "(Re)build a bootable VNFS image",
+		Long:  "This command will build a bootable VNFS image from an imported container image.",
 		RunE:  CobraRunE,
-		Args:  cobra.RangeArgs(0, 1),
+		Args:  cobra.MinimumNArgs(1),
 	}
 	BuildForce bool
 	BuildAll   bool

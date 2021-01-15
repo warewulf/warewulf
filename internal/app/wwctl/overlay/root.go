@@ -15,16 +15,14 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "overlay",
-		Short:              "Warewulf Overlay Management",
-		Long:               "Management interface for Warewulf overlays",
+		Use:   "overlay",
+		Short: "Warewulf Overlay Management",
+		Long:  "Management interface for Warewulf overlays",
 	}
 	test bool
 )
 
 func init() {
-//	baseCmd.PersistentFlags().BoolVarP(&test, "test", "t", false, "Testing.")
-
 	baseCmd.AddCommand(list.GetCommand())
 	baseCmd.AddCommand(show.GetCommand())
 	baseCmd.AddCommand(create.GetCommand())

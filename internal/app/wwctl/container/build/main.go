@@ -18,6 +18,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		containers = args
 	}
 
+	if len(containers) == 0 {
+		fmt.Println(cmd.Help())
+		os.Exit(0)
+	}
+
 	for _, c := range containers {
 		if container.ValidSource(c) == false {
 			wwlog.Printf(wwlog.ERROR, "VNFS name does not exist: %s\n", c)

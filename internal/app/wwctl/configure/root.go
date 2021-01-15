@@ -14,9 +14,10 @@ import (
 var (
 	baseCmd = &cobra.Command{
 		Use:   "configure",
-		Short: "Configure Warewulf services",
-		Long:  "Warewulf Service Initialization",
-		RunE:  CobraRunE,
+		Short: "Manage system services",
+		Long: "This application allows you to manage and initialize Warewulf dependent system\n" +
+			"services based on the configuration in the warewulf.conf file.",
+		RunE: CobraRunE,
 	}
 	SetDoAll bool
 )

@@ -6,9 +6,9 @@ import (
 
 var (
 	powerCmd = &cobra.Command{
-		Use:   "poweroff",
-		Short: "power off node(s)",
-		Long:  "turn power off for one or more nodes",
+		Use:   "off",
+		Short: "Power off the given node(s)",
+		Long:  "This command will shutdown the power to a given set of nodes.",
 		RunE:  CobraRunE,
 	}
 )

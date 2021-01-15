@@ -1,4 +1,4 @@
-package powerstatus
+package powercycle
 
 import (
 	"github.com/spf13/cobra"
@@ -6,9 +6,9 @@ import (
 
 var (
 	powerCmd = &cobra.Command{
-		Use:   "powerstatus",
-		Short: "node power status",
-		Long:  "Get Node Power Status",
+		Use:   "cycle [flags] <node pattern>...",
+		Short: "Power cycle the given node(s)",
+		Long:  "This command will cycle the power for a given set of nodes.",
 		RunE:  CobraRunE,
 	}
 )

@@ -10,11 +10,10 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "profile",
-		Short:              "Management of node configuration profiles",
-		Long:               "Warewulf profiles...",
+		Use:   "profile",
+		Short: "Node configuration profile management",
+		Long:  "Management of node profile settings",
 	}
-	test bool
 )
 
 func init() {

@@ -6,15 +6,16 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "list",
-		Short:              "List Warewulf Overlays",
-		Long:               "Warewulf List overlay",
-		RunE:				CobraRunE,
-		Aliases: 			[]string{"ls"},
+		Use:   "list [flags] [overlay name]",
+		Short: "List Warewulf Overlays and files",
+		Long: "This command will show you information about Warewulf overlays and the\n" +
+			"files contained within.",
+		RunE:    CobraRunE,
+		Aliases: []string{"ls"},
 	}
 	SystemOverlay bool
-	ListContents bool
-	ListLong bool
+	ListContents  bool
+	ListLong      bool
 )
 
 func init() {

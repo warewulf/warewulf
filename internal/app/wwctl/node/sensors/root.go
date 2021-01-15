@@ -6,16 +6,17 @@ import (
 
 var (
 	powerCmd = &cobra.Command{
-		Use:   "sensors",
-		Short: "node sensor information",
-		Long:  "Get Node Sensor Information",
+		Use:   "sensors [flags] [node pattern]",
+		Short: "Show node's IPMI sensor information",
+		Long:  "Show IPMI sensors for a single node.",
+		Args:  cobra.MinimumNArgs(1),
 		RunE:  CobraRunE,
 	}
 	full bool
 )
 
 func init() {
-        powerCmd.PersistentFlags().BoolVarP(&full, "full", "F", false, "show detailed output.")
+	powerCmd.PersistentFlags().BoolVarP(&full, "full", "F", false, "show detailed output.")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

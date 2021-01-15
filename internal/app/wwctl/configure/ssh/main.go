@@ -10,6 +10,10 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
+	if SetPersist == false {
+		fmt.Println(cmd.Help())
+		os.Exit(0)
+	}
 
 	if os.Getuid() == 0 {
 		fmt.Printf("Updating system keys\n")

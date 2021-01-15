@@ -6,17 +6,18 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "edit [overlay name] [file path]",
-		Short:              "Edit Warewulf Overlay files",
-		Long:               "Warewulf edit overlay files",
-		RunE:				CobraRunE,
-		Args: 				cobra.ExactArgs(2),
-
+		Use:   "edit [flags] <overlay name> <file path>",
+		Short: "Edit/Create a file within a Warewulf Overlay",
+		Long: "This command will allow you to edit or create a new file within a given\n" +
+			"overlay. Note: when creating files ending in a '.ww' suffix this will always be\n" +
+			"parsed as a Warewulf template file, and the suffix will be removed automatically.",
+		RunE: CobraRunE,
+		Args: cobra.ExactArgs(2),
 	}
-	SystemOverlay bool
-	ListFiles bool
-	CreateDirs bool
-	PermMode int32
+	SystemOverlay   bool
+	ListFiles       bool
+	CreateDirs      bool
+	PermMode        int32
 	NoOverlayUpdate bool
 )
 
@@ -32,5 +33,3 @@ func init() {
 func GetCommand() *cobra.Command {
 	return baseCmd
 }
-
-

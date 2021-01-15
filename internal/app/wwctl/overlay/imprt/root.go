@@ -4,15 +4,15 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "import [overlay name] [source file] (dest location)",
-		Short:              "Import Warewulf Overlay files",
-		Long:               "Warewulf Import overlay files",
-		RunE:				CobraRunE,
-		Args: 				cobra.RangeArgs(2, 3),
-		Aliases: 			[]string{"cp"},
+		Use:     "import [flags] <overlay name> <source file> [dest location]",
+		Short:   "Import a file into a Warewulf Overlay",
+		Long:    "This command will import a file into a given Warewulf overlay.",
+		RunE:    CobraRunE,
+		Args:    cobra.RangeArgs(2, 3),
+		Aliases: []string{"cp"},
 	}
-	SystemOverlay bool
-	PermMode int32
+	SystemOverlay   bool
+	PermMode        int32
 	NoOverlayUpdate bool
 )
 

@@ -4,15 +4,13 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "delete",
-		Short:              "Delete profiles",
-		Long:               "Profile configurations ",
-		RunE:				CobraRunE,
+		Use:   "delete [flags] <profile pattern>",
+		Short: "Delete a node profile",
+		Long:  "This command will delete a node profile.",
+		RunE:  CobraRunE,
+		Args:  cobra.MinimumNArgs(1),
 	}
 )
-
-func init() {
-}
 
 // GetRootCommand returns the root cobra.Command for the application.
 func GetCommand() *cobra.Command {
