@@ -46,7 +46,7 @@ func FindSystemOverlays() ([]string, error) {
 }
 
 func FindRuntimeOverlays() ([]string, error) {
-	return findAllOverlays("system")
+	return findAllOverlays("runtime")
 }
 
 func SystemOverlayInit(name string) error {

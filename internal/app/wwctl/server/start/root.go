@@ -6,12 +6,13 @@ var (
 	baseCmd = &cobra.Command{
 		Use:   "start",
 		Short: "Start Warewulf server",
-		Long:  "Warewulf Server ",
 		RunE:  CobraRunE,
 	}
+	SetForeground bool
 )
 
 func init() {
+	baseCmd.PersistentFlags().BoolVarP(&SetForeground, "foreground", "f", false, "Run daemon process in the foreground")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

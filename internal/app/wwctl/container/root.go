@@ -4,8 +4,8 @@ import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/build"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/delete"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/exec"
+	"github.com/hpcng/warewulf/internal/app/wwctl/container/imprt"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/list"
-	"github.com/hpcng/warewulf/internal/app/wwctl/container/pull"
 	"github.com/spf13/cobra"
 )
 
@@ -13,7 +13,9 @@ var (
 	baseCmd = &cobra.Command{
 		Use:   "container",
 		Short: "Container / VNFS image management",
-		Long:  "Virtual Node File System (VNFS) image management",
+		Long: "Starting with version 4, Warewulf uses containers to build the bootable VNFS\n" +
+			"images for nodes to boot. These commands will help you import, management, and\n" +
+			"transform containers into bootable Warewulf VNFS images.",
 	}
 	test bool
 )
@@ -21,7 +23,7 @@ var (
 func init() {
 	baseCmd.AddCommand(build.GetCommand())
 	baseCmd.AddCommand(list.GetCommand())
-	baseCmd.AddCommand(pull.GetCommand())
+	baseCmd.AddCommand(imprt.GetCommand())
 	baseCmd.AddCommand(exec.GetCommand())
 	baseCmd.AddCommand(delete.GetCommand())
 }

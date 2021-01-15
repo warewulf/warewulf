@@ -4,11 +4,12 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "list",
-		Short:              "List Installed Kernel Images",
-		Long:               "List installed kernel images",
-		RunE:				CobraRunE,
-		Args: 				cobra.ExactArgs(0),
+		Use:     "list [flags]",
+		Short:   "List imported Kernel images",
+		Long:    "This command will list the kernels that have been imported into Warewulf.",
+		RunE:    CobraRunE,
+		Args:    cobra.ExactArgs(0),
+		Aliases: []string{"ls"},
 	}
 )
 

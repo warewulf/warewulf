@@ -4,9 +4,10 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "set",
-		Short: "Set node configurations",
-		Long:  "Set node configurations ",
+		Use:   "set [flags] [node pattern]...",
+		Short: "Configure node properties",
+		Long:  "This command will allow you to set configuration properties for nodes.",
+		Args:  cobra.MinimumNArgs(1),
 		RunE:  CobraRunE,
 	}
 	SetComment        string

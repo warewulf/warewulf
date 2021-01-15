@@ -4,14 +4,15 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "list",
-		Short:              "List all nodes",
-		Long:               "List all nodes",
-		RunE:				CobraRunE,
+		Use:     "list [flags] (node pattern)",
+		Short:   "List nodes matching pattern",
+		Long:    "This command will show you configured nodes.",
+		RunE:    CobraRunE,
+		Aliases: []string{"ls"},
 	}
-	ShowNet bool
+	ShowNet  bool
 	ShowIpmi bool
-	ShowAll bool
+	ShowAll  bool
 	ShowLong bool
 )
 

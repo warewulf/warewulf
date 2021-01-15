@@ -4,9 +4,10 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "set",
-		Short: "Set profile configurations",
-		Long:  "Profile configurations ",
+		Use:   "set [flags] <profile pattern>...",
+		Short: "Configure node profile properties",
+		Long:  "This command will allow you to set configuration properties for node profiles.",
+		Args:  cobra.MinimumNArgs(1),
 		RunE:  CobraRunE,
 	}
 	SetAll            bool

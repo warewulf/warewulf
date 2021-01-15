@@ -11,7 +11,7 @@ var (
 	baseCmd = &cobra.Command{
 		Use:   "server",
 		Short: "Warewulf server process commands",
-		Long:  "Warewulf profiles...",
+		Long:  "This command will allow you to control the Warewulf daemon process.",
 	}
 	test bool
 )
@@ -20,7 +20,6 @@ func init() {
 	baseCmd.AddCommand(start.GetCommand())
 	baseCmd.AddCommand(status.GetCommand())
 	baseCmd.AddCommand(stop.GetCommand())
-
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

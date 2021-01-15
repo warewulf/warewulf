@@ -4,9 +4,9 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "add",
-		Short: "Add new node",
-		Long:  "Add new node ",
+		Use:   "add [flags] [node pattern]",
+		Short: "Add new node to Warewulf",
+		Long:  "This command will add a new node to Warewulf.",
 		RunE:  CobraRunE,
 		Args:  cobra.MinimumNArgs(1),
 	}

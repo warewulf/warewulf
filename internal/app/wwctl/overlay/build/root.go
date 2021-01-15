@@ -4,13 +4,14 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "build [overlay name]",
-		Short:              "Build/Rebuild an overlay",
-		Long:               "Build or rebuild a Warewulf overlay ",
-		RunE:				CobraRunE,
+		Use:   "build [flags] <overlay name>",
+		Short: "(Re)build an overlay",
+		Long:  "This command will build a system or runtime overlay.",
+		Args:  cobra.MinimumNArgs(1),
+		RunE:  CobraRunE,
 	}
 	SystemOverlay bool
-	BuildAll bool
+	BuildAll      bool
 )
 
 func init() {

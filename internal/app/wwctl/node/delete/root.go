@@ -4,13 +4,15 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "delete",
-		Short:              "Set node configurations",
-		Long:               "Set node configurations ",
-		RunE:				CobraRunE,
+		Use:     "delete [flags] [node pattern]...",
+		Short:   "Delete a node from Warewulf",
+		Long:    "This command will remove a node from the Warewulf node configuration.",
+		Args:    cobra.MinimumNArgs(1),
+		RunE:    CobraRunE,
+		Aliases: []string{"rm", "del"},
 	}
-	SetForce string
-	SetGroup string
+	SetForce      string
+	SetGroup      string
 	SetController string
 )
 

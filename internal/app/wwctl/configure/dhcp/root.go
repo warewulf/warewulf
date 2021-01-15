@@ -7,16 +7,18 @@ import (
 var (
 	baseCmd = &cobra.Command{
 		Use:   "dhcp",
-		Short: "DHCP configuration",
-		Long:  "DHCP Config",
-		RunE:  CobraRunE,
+		Short: "Manage and initialize DHCP",
+		Long: "DHCP is a dependent service to Warewulf. This command will configure DHCP as defined\n" +
+			"in the warewulf.conf file.",
+		RunE: CobraRunE,
 	}
-	SetShow bool
+	SetShow    bool
+	SetPersist bool
 )
 
 func init() {
 	baseCmd.PersistentFlags().BoolVarP(&SetShow, "show", "s", false, "Show configuration (don't update)")
-
+	baseCmd.PersistentFlags().BoolVar(&SetShow, "persist", false, "Persist the configuration and initialize the service")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

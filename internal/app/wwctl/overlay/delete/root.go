@@ -6,16 +6,17 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "delete [overlay name]",
-		Short:              "Delete Warewulf Overlay files",
-		Long:               "Warewulf Delete overlay files",
-		RunE:				CobraRunE,
-		Args: 				cobra.MinimumNArgs(1),
-		Aliases: 			[]string{"rm", "del"},
+		Use:   "delete [flags] <overlay name> [overlay file]",
+		Short: "Delete Warewulf Overlay or files",
+		Long: "This command will delete files within an overlay or an entire overlay if no\n" +
+			"files are given to remove (use with caution).",
+		RunE:    CobraRunE,
+		Args:    cobra.MinimumNArgs(1),
+		Aliases: []string{"rm", "del"},
 	}
-	SystemOverlay bool
-	Force bool
-	Parents bool
+	SystemOverlay   bool
+	Force           bool
+	Parents         bool
 	NoOverlayUpdate bool
 )
 
@@ -30,4 +31,3 @@ func init() {
 func GetCommand() *cobra.Command {
 	return baseCmd
 }
-

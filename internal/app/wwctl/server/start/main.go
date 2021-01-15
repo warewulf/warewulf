@@ -7,5 +7,9 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 
-	return warewulfd.DaemonStart()
+	if SetForeground == true {
+		return warewulfd.RunServer()
+	} else {
+		return warewulfd.DaemonStart()
+	}
 }

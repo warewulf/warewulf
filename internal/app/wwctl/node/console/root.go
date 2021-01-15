@@ -6,9 +6,10 @@ import (
 
 var (
 	powerCmd = &cobra.Command{
-		Use:   "console",
-		Short: "IPMI console",
-		Long:  "Start IPMI console for a singe node",
+		Use:   "console [flags] [node pattern]",
+		Short: "Connect to IPMI console",
+		Long:  "Start IPMI console for a singe node.",
+		Args:  cobra.MinimumNArgs(1),
 		RunE:  CobraRunE,
 	}
 )

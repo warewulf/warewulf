@@ -1,4 +1,4 @@
-package poweron
+package powerstatus
 
 import (
 	"github.com/spf13/cobra"
@@ -6,9 +6,9 @@ import (
 
 var (
 	powerCmd = &cobra.Command{
-		Use:   "poweron",
-		Short: "power on node(s)",
-		Long:  "turn power on for one or more nodes",
+		Use:   "status",
+		Short: "Show power status for the given node(s)",
+		Long:  "This command will show the power status of a given set of nodes.",
 		RunE:  CobraRunE,
 	}
 )

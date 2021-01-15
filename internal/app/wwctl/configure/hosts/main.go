@@ -1,13 +1,14 @@
 package hosts
 
 import (
+	"bytes"
+	"fmt"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 	"os"
-	"bytes"
 	"text/template"
 )
 
@@ -15,11 +16,16 @@ type TemplateStruct struct {
 	PrevHostFile string
 	Ipaddr       string
 	Fqdn         string
-	AllNodes []node.NodeInfo
+	AllNodes     []node.NodeInfo
 }
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var replace TemplateStruct
+
+	if SetShow == false && SetPersist == false {
+		fmt.Println(cmd.Help())
+		os.Exit(0)
+	}
 
 	if util.IsFile("/etc/warewulf/hosts.tmpl") == false {
 		wwlog.Printf(wwlog.WARN, "Template not found, not updating host file\n")
@@ -50,7 +56,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.WARN, "%s\n", err)
 	} else {
 		// if /etc/hosts.ww does not exist, backup /etc/hosts to /etc/hosts.wwbackup
-		if ! util.IsFile("/etc/hosts.wwbackup") {
+		if !util.IsFile("/etc/hosts.wwbackup") {
 			err = util.CopyFile("/etc/hosts", "/etc/hosts.wwbackup")
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
