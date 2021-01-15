@@ -1,5 +1,7 @@
 .PHONY: all
 
+VERSION := 4.0
+
 # auto installed tooling
 TOOLS_DIR := .tools
 TOOLS_BIN := $(TOOLS_DIR)/bin
@@ -43,20 +45,22 @@ lint:
 all: vendor wwctl wwclient
 
 files: all
-	install -d -m 0755 /var/warewulf/
-	install -d -m 0755 /var/warewulf/chroots
-	install -d -m 0755 /etc/warewulf/
-	install -d -m 0755 /etc/warewulf/ipxe
-	install -d -m 0755 /var/lib/tftpboot/warewulf/ipxe/
-	cp -r etc/* /etc/warewulf/
+	install -d -m 0755 $(DESTDIR)/usr/bin/
+	install -d -m 0755 $(DESTDIR)/var/warewulf/
+	install -d -m 0755 $(DESTDIR)/var/warewulf/chroots
+	install -d -m 0755 $(DESTDIR)/etc/warewulf/
+	install -d -m 0755 $(DESTDIR)/etc/warewulf/ipxe
+	install -d -m 0755 $(DESTDIR)/var/lib/tftpboot/warewulf/ipxe/
+	cp -r etc/* $(DESTDIR)/etc/warewulf/
+	cp -r overlays $(DESTDIR)/var/warewulf/
+	chmod +x $(DESTDIR)/var/warewulf/overlays/system/default/init
+	chmod 600 $(DESTDIR)/var/warewulf/overlays/system/default/etc/ssh/ssh*
+	chmod 644 $(DESTDIR)/var/warewulf/overlays/system/default/etc/ssh/ssh*.pub.ww
+	mkdir -p $(DESTDIR)/var/warewulf/overlays/system/default/warewulf/bin/
+	cp wwclient $(DESTDIR)/var/warewulf/overlays/system/default/warewulf/bin/
+	cp wwctl $(DESTDIR)/usr/bin/
 #	cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
 #	restorecon -r /var/lib/tftpboot/warewulf
-	cp -r overlays /var/warewulf/
-	chmod +x /var/warewulf/overlays/system/default/init
-	chmod 600 /var/warewulf/overlays/system/default/etc/ssh/ssh*
-	chmod 644 /var/warewulf/overlays/system/default/etc/ssh/ssh*.pub.ww
-	mkdir -p /var/warewulf/overlays/system/default/warewulf/bin/
-	cp wwclient /var/warewulf/overlays/system/default/warewulf/bin/
 
 services: files
 #	sudo systemctl enable tftp
@@ -67,6 +71,14 @@ wwctl:
 
 wwclient:
 	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags '-extldflags -static' -o ../../wwclient
+
+dist:
+	rm -rf _dist/warewulf-$(VERSION)
+	mkdir -p _dist/warewulf-$(VERSION)
+	git archive --format=tar main | tar -xf - -C _dist/warewulf-$(VERSION)
+	cp -r vendor _dist/warewulf-$(VERSION)/
+	sed -e 's/@VERSION@/$(VERSION)/g' warewulf.spec.in > _dist/warewulf-$(VERSION)/warewulf.spec
+	cd _dist; tar -czf ../warewulf-$(VERSION).tar.gz warewulf-$(VERSION)
 
 clean:
 	rm -f wwclient
