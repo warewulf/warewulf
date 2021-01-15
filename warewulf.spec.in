@@ -1,7 +1,9 @@
+%define debug_package %{nil}
+
 Name: warewulf
 Summary: A suite of tools for bare metal provisioning of containers
 Version: @VERSION@
-Release: 1.%{?dist}
+Release: 1%{?dist}
 License: BSD
 Group: System Environment/Clustering
 Source: %{name}-%{version}.tar.gz
