@@ -4,7 +4,7 @@
 
 #### Quick Links:
 
-* [Documentation](docs/README.md)
+* [Documentation](https://warewulf.readthedocs.io)
 * [GitHub](http://github.com/ctrliq/warewulf)
 
 ## About Warewulf
