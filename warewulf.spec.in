@@ -1,0 +1,43 @@
+Name: warewulf
+Summary: A suite of tools for bare metal provisioning of containers
+Version: @VERSION@
+Release: 1.%{?dist}
+License: BSD
+Group: System Environment/Clustering
+Source: %{name}-%{version}.tar.gz
+ExclusiveOS: linux
+BuildRoot: %{?_tmppath}/%{name}-%{version}-%{release}-root
+
+%description
+Warewulf is a bare metal container provisioning system.
+
+
+%prep
+%setup -q
+
+%build
+make all
+
+%install
+%{__make} install DESTDIR=$RPM_BUILD_ROOT %{?mflags_install}
+
+#%pre
+#groupadd -r warewulf >/dev/null 2>&1 || :
+
+%post
+%if %{?rhel}%{!?rhel:0} >= 7
+systemctl start warewulfd >/dev/null 2>&1 || :
+systemctl enable warewulfd >/dev/null 2>&1 || :
+%endif
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%files
+%defattr(-, root, root)
+%attr(0755, root, warewulf) %dir /etc/warewulf/
+%config(noreplace) /etc/warewulf/*
+/usr/bin/*
+/var/warewulf
+
+%changelog
