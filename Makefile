@@ -83,5 +83,7 @@ dist: vendor
 clean:
 	rm -f wwclient
 	rm -f wwctl
+	rm -rf _dist
+	rm -f warewulf-$(VERSION).tar.gz
 
 install: files services
