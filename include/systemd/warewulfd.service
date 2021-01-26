@@ -1,0 +1,15 @@
+[Unit]
+Description=Warewulf cluster management daemon
+Documentation=https://warewulf.readthedocs.io
+After=network-online.target
+AssertFileIsExecutable=/usr/bin/wwctl
+
+[Service]
+User=root
+Group=warewulf
+
+ExecStart=/usr/bin/wwctl server start --foreground
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
