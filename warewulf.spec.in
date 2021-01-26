@@ -43,3 +43,5 @@ rm -rf $RPM_BUILD_ROOT
 /var/warewulf
 
 %changelog
+* Tue Jan 26 14:46:24 JST 2021 Brian Clemens <bclemens@ctrliq.com> - 4.0.0
+- Initial release
