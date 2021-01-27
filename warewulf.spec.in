@@ -39,10 +39,10 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-, root, root)
 %attr(0755, root, warewulf) %dir /etc/warewulf/
 %config(noreplace) /etc/warewulf/*
-/usr/bin/*
+/usr/bin/wwctl
+/usr/lib/systemd/system/warewulfd.service
 /var/warewulf
 
 %changelog
-
-* Tue Jan 26 14:46:24 JST 2021 Brian Clemens <bclemens@ctrliq.com> - v4.0.0
+* Tue Jan 26 14:46:24 JST 2021 Brian Clemens <bclemens@ctrliq.com> - 4.0.0
 - Initial release
