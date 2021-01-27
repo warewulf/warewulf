@@ -39,7 +39,8 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-, root, root)
 %attr(0755, root, warewulf) %dir /etc/warewulf/
 %config(noreplace) /etc/warewulf/*
-/usr/bin/*
+/usr/bin/wwctl
+/usr/lib/systemd/system/warewulfd.service
 /var/warewulf
 
 %changelog
