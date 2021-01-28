@@ -127,7 +127,7 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 		} else if overlayType == "system" {
 			wwlog.Printf(wwlog.VERBOSE, "Building system overlay for: %s\n", n.Id.Get())
 
-			OverlayDir = config.SystemOverlaySource(n.RuntimeOverlay.Get())
+			OverlayDir = config.SystemOverlaySource(n.SystemOverlay.Get())
 			OverlayFile = config.SystemOverlayImage(n.Id.Get())
 		} else {
 			wwlog.Printf(wwlog.ERROR, "overlayType requested is not supported: %s\n", overlayType)
