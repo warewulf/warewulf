@@ -83,13 +83,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	w.Close()
 
-	w, err = os.OpenFile("/etc/hosts", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "%s\n", err)
-		os.Exit(1)
-	}
-	defer w.Close()
-
 	nodes, _ := n.FindAllNodes()
 
 	replace.AllNodes = nodes
@@ -97,6 +90,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	replace.Fqdn = controller.Fqdn
 
 	if SetShow == false {
+		// only open "/etc/hosts" when intended to write, as 'os.O_TRUNC' will empty the file otherwise.
+		w, err = os.OpenFile("/etc/hosts", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "%s\n", err)
+			os.Exit(1)
+		}
+		defer w.Close()
+
 		err = tmpl.Execute(w, replace)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
