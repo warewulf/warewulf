@@ -69,10 +69,10 @@ func ListKernels() ([]string, error) {
 	return ret, nil
 }
 
-func Build(kernelVersion string) (string, error) {
+func Build(kernelVersion string, root string) (string, error) {
 
-	kernelImage := "/boot/vmlinuz-" + kernelVersion
-	kernelDrivers := "/lib/modules/" + kernelVersion
+	kernelImage := path.Join(root, "/boot/vmlinuz-"+kernelVersion)
+	kernelDrivers := path.Join(root, "/lib/modules/"+kernelVersion)
 	kernelDestination := KernelImage(kernelVersion)
 	driversDestination := KmodsImage(kernelVersion)
 
