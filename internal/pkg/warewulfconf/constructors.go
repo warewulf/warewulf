@@ -15,7 +15,7 @@ func New() (ControllerConf, error) {
 	wwlog.Printf(wwlog.DEBUG, "Opening Warewulf configuration file: %s\n", ConfigFile)
 	data, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
-		fmt.Printf("error reading node configuration file\n")
+		fmt.Printf("error reading Warewulf configuration file\n")
 		return ret, err
 	}
 
