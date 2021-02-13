@@ -5,6 +5,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 	"os"
@@ -79,6 +80,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 		nodeDB.Persist()
 		fmt.Printf("Set default profile to container: %s\n", name)
+		warewulfd.DaemonReload()
 
 	}
 
