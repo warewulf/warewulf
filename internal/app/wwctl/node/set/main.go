@@ -5,6 +5,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -274,6 +275,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 			if result == "y" || result == "yes" {
 				nodeDB.Persist()
+				warewulfd.DaemonReload()
 			}
 		}
 
