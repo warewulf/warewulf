@@ -83,6 +83,34 @@ func DaemonStatus() error {
 	return nil
 }
 
+func DaemonReload() error {
+	if util.IsFile(WAREWULFD_PIDFILE) == false {
+		wwlog.Printf(wwlog.INFO, "Warewulf daemon process not running (%s)\n", WAREWULFD_PIDFILE)
+		return nil
+	}
+
+	dat, err := ioutil.ReadFile(WAREWULFD_PIDFILE)
+	if err != nil {
+		return err
+	}
+
+	pid, _ := strconv.Atoi(string(dat))
+	process, err := os.FindProcess(pid)
+
+	if err != nil {
+		fmt.Printf("Failed to find process: %s\n", err)
+		return err
+	} else {
+		err := process.Signal(syscall.Signal(syscall.SIGHUP))
+		if err != nil {
+			fmt.Printf("SIGCONT on pid %d returned: %v\n", pid, err)
+			return err
+		}
+	}
+
+	return nil
+}
+
 func DaemonStop() error {
 
 	if util.IsFile(WAREWULFD_PIDFILE) == false {
