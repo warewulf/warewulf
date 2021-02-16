@@ -1,15 +1,16 @@
 package vnfs
 
 import (
+	"io/ioutil"
+	"os"
+	"path"
+	"strings"
+
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/errors"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
-	"os"
-	"path"
-	"strings"
 )
 
 type VnfsObject struct {

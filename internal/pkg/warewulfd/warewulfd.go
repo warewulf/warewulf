@@ -1,11 +1,12 @@
 package warewulfd
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
 // TODO: https://github.com/danderson/netboot/blob/master/pixiecore/dhcp.go

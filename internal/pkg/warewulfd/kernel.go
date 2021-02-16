@@ -1,9 +1,10 @@
 package warewulfd
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/kernel"
 	"log"
 	"net/http"
+
+	"github.com/hpcng/warewulf/internal/pkg/kernel"
 )
 
 func KernelSend(w http.ResponseWriter, req *http.Request) {

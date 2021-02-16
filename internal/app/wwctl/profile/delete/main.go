@@ -2,12 +2,13 @@ package delete
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
