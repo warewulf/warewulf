@@ -2,10 +2,11 @@ package vnfs
 
 import (
 	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"os"
 	"path"
+
+	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
 func BuildContainerdir(vnfs VnfsObject, buildForce bool) {
@@ -51,7 +52,7 @@ func BuildContainerdir(vnfs VnfsObject, buildForce bool) {
 		wwlog.Printf(wwlog.ERROR, "Could not create symlink for Chroot: %s\n", err)
 		os.Exit(1)
 	}
-	err = os.Rename(vnfs.Chroot + "-link", vnfs.Chroot)
+	err = os.Rename(vnfs.Chroot+"-link", vnfs.Chroot)
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not rename link: %s\n", err)
 		os.Exit(1)

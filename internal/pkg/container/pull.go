@@ -2,10 +2,11 @@ package container
 
 import (
 	"context"
+	"os"
+
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/errors"
 	"github.com/hpcng/warewulf/internal/pkg/oci"
-	"os"
 )
 
 func PullURI(uri string, name string) error {

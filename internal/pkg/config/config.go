@@ -2,9 +2,10 @@ package config
 
 import (
 	"fmt"
+	"path"
+
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"path"
 )
 
 const (
