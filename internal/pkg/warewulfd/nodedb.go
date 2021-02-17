@@ -1,10 +1,11 @@
 package warewulfd
 
 import (
+	"sync"
+
 	"github.com/hpcng/warewulf/internal/pkg/errors"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"sync"
 )
 
 type nodeDB struct {

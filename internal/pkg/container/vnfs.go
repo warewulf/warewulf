@@ -1,13 +1,14 @@
 package container
 
 import (
+	"io/ioutil"
+	"os"
+	"path"
+
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/errors"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"io/ioutil"
-	"os"
-	"path"
 )
 
 func ValidName(name string) bool {

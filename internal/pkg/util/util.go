@@ -1,9 +1,9 @@
 package util
 
 import (
+	"bufio"
 	"crypto/sha256"
 	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"io"
 	"math/rand"
 	"os"
@@ -11,8 +11,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"time"
-	"bufio"
-	//   "strings"
+
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
 func DirModTime(path string) (time.Time, error) {

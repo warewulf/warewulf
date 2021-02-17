@@ -1,9 +1,10 @@
 package warewulfconf
 
 import (
+	"os"
+
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v2"
-	"os"
 )
 
 func (self *ControllerConf) Persist() error {

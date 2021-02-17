@@ -1,15 +1,16 @@
 package chmod
 
 import (
+	"os"
+	"path"
+	"strconv"
+
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
-	"os"
-	"path"
-	"strconv"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {

@@ -8,6 +8,6 @@ import (
 func main() {
 	nodeDB, _ := node.New()
 	nodes, _ := nodeDB.FindAllNodes()
-//	wwlog.SetLevel(wwlog.DEBUG)
+	//	wwlog.SetLevel(wwlog.DEBUG)
 	overlay.OverlayBuild(nodes, "runtime")
 }

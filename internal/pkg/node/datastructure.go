@@ -2,9 +2,10 @@ package node
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"os"
 )
 
 /******
