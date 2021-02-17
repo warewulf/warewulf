@@ -4,12 +4,13 @@ import (
 	"context"
 	"os"
 
+	"github.com/containers/image/v5/types"
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/errors"
 	"github.com/hpcng/warewulf/internal/pkg/oci"
 )
 
-func PullURI(uri string, name string) error {
+func PullURI(uri string, name string, sCtx *types.SystemContext) error {
 	OciBlobCacheDir := config.LocalStateDir + "/oci/blobs"
 
 	err := os.MkdirAll(OciBlobCacheDir, 0755)
@@ -30,13 +31,15 @@ func PullURI(uri string, name string) error {
 
 	p, err := oci.NewPuller(
 		oci.OptSetBlobCachePath(OciBlobCacheDir),
-		oci.OptSetSystemContext(nil),
+		oci.OptSetSystemContext(sCtx),
 	)
 	if err != nil {
 		return err
 	}
 
-	p.GenerateID(context.Background(), uri)
+	if _, err := p.GenerateID(context.Background(), uri); err != nil {
+		return err
+	}
 
 	if err := p.Pull(context.Background(), uri, fullPath); err != nil {
 		return err
