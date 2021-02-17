@@ -100,7 +100,7 @@ func (p *puller) GenerateID(ctx context.Context, uri string) (string, error) {
 		return "", fmt.Errorf("unable to parse uri: %v", err)
 	}
 
-	src, err := ref.NewImageSource(ctx, nil)
+	src, err := ref.NewImageSource(ctx, p.sysCtx)
 	if err != nil {
 		return "", err
 	}
