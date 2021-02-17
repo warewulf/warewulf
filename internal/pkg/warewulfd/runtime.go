@@ -2,13 +2,14 @@ package warewulfd
 
 import (
 	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/config"
-	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 )
 
 func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {

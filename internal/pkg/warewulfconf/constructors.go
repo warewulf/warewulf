@@ -2,11 +2,12 @@ package warewulfconf
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net"
+
 	"github.com/brotherpowers/ipsubnet"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
-	"net"
 )
 
 func New() (ControllerConf, error) {

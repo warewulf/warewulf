@@ -2,11 +2,12 @@ package list
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/hpcng/warewulf/internal/pkg/kernel"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {

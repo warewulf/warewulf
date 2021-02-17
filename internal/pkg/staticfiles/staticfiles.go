@@ -1,8 +1,9 @@
 package staticfiles
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"io/ioutil"
+
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
 func WriteData(source string, dest string) error {

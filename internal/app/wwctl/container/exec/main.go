@@ -4,12 +4,13 @@ package exec
 
 import (
 	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/container"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"github.com/spf13/cobra"
 	"os"
 	"os/exec"
 	"syscall"
+
+	"github.com/hpcng/warewulf/internal/pkg/container"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/spf13/cobra"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
