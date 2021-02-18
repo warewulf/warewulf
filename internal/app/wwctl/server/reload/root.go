@@ -1,20 +1,16 @@
-package delete
+package reload
 
 import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "delete",
-		Short: "Delete",
-		Long:  "Delete",
+		Use:   "reload",
+		Short: "Reload the Warewulf server configuration",
 		RunE:  CobraRunE,
-		Args:  cobra.MinimumNArgs(1),
 	}
-	SetController string
 )
 
 func init() {
-
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

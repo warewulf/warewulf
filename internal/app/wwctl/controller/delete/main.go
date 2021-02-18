@@ -2,11 +2,12 @@ package delete
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
@@ -19,7 +20,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	nodes, err := nodeDB. FindAllNodes()
+	nodes, err := nodeDB.FindAllNodes()
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not load all nodes: %s\n", err)
 		os.Exit(1)
@@ -32,10 +33,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		} else {
 			for _, n := range nodes {
 				if n.Cid.Get() == c {
-					numNodes ++
+					numNodes++
 				}
 			}
-			count ++
+			count++
 		}
 	}
 

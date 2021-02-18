@@ -4,10 +4,10 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "list",
-		Short:              "List",
-		Long:               "List",
-		RunE:				CobraRunE,
+		Use:   "list",
+		Short: "List",
+		Long:  "List",
+		RunE:  CobraRunE,
 	}
 	ShowAll bool
 )

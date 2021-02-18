@@ -1,11 +1,12 @@
 package overlay
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/container"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"io/ioutil"
 	"path"
 	"strings"
+
+	"github.com/hpcng/warewulf/internal/pkg/container"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
 func templateFileInclude(path string) string {

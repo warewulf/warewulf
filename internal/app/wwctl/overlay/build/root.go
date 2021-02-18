@@ -7,7 +7,6 @@ var (
 		Use:   "build [flags] <overlay name>",
 		Short: "(Re)build an overlay",
 		Long:  "This command will build a system or runtime overlay.",
-		Args:  cobra.MinimumNArgs(1),
 		RunE:  CobraRunE,
 	}
 	SystemOverlay bool

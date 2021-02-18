@@ -2,15 +2,16 @@ package warewulfd
 
 import (
 	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/overlay"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"text/template"
+
+	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/overlay"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
 type iPxeTemplate struct {
@@ -30,18 +31,13 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 	url := strings.Split(req.URL.Path, "/")
 	var unconfiguredNode bool
 
-	nodeDB, err := node.New()
-	if err != nil {
-		log.Printf("Could not read node configuration file: %s\n", err)
-		w.WriteHeader(503)
-		return
-	}
-
 	if url[2] == "" {
 		log.Printf("ERROR: Bad iPXE request from %s\n", req.RemoteAddr)
 		w.WriteHeader(404)
 		return
 	}
+
+	hwaddr := strings.ReplaceAll(url[2], "-", ":")
 
 	conf, err := warewulfconf.New()
 	if err != nil {
@@ -50,16 +46,22 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	hwaddr := strings.ReplaceAll(url[2], "-", ":")
+	nodeobj, err := GetNode(hwaddr)
 
-	n, err := nodeDB.FindByHwaddr(hwaddr)
 	if err != nil {
 		// If we failed to find a node, let's see if we can add one...
 		var netdev string
 
+		nodeDB, err := node.New()
+		if err != nil {
+			log.Printf("Could not read node configuration file: %s\n", err)
+			w.WriteHeader(503)
+			return
+		}
+
 		wwlog.Printf(wwlog.VERBOSE, "Node was not found, looking for discoverable nodes...\n")
 
-		n, netdev, err = nodeDB.FindDiscoverableNode()
+		n, netdev, err := nodeDB.FindDiscoverableNode()
 		if err != nil {
 			wwlog.Printf(wwlog.WARN, "No nodes are set as discoverable...\n")
 			unconfiguredNode = true
@@ -79,6 +81,7 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 					wwlog.Printf(wwlog.ERROR, "Could not persist new node configuration while adding node: %s\n", n.Id.Get())
 					unconfiguredNode = true
 				} else {
+					nodeobj = n
 					wwlog.Printf(wwlog.INFO, "Building System Overlay:\n")
 					_ = overlay.BuildSystemOverlay([]node.NodeInfo{n})
 					wwlog.Printf(wwlog.INFO, "Building Runtime Overlay:\n")
@@ -110,9 +113,10 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 		return
 
 	} else {
-		log.Printf("IPXE:  %15s: %s\n", n.Id.Get(), req.URL.Path)
 
-		ipxeTemplate := fmt.Sprintf("/etc/warewulf/ipxe/%s.ipxe", n.Ipxe.Get())
+		log.Printf("IPXE:  %15s: %s\n", nodeobj.Id.Get(), req.URL.Path)
+
+		ipxeTemplate := fmt.Sprintf("/etc/warewulf/ipxe/%s.ipxe", nodeobj.Ipxe.Get())
 
 		tmpl, err := template.ParseFiles(ipxeTemplate)
 		if err != nil {
@@ -122,14 +126,14 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 
 		var replace iPxeTemplate
 
-		replace.Fqdn = n.Id.Get()
+		replace.Fqdn = nodeobj.Id.Get()
 		replace.Ipaddr = conf.Ipaddr
 		replace.Port = strconv.Itoa(conf.Warewulf.Port)
-		replace.Hostname = n.Id.Get()
+		replace.Hostname = nodeobj.Id.Get()
 		replace.Hwaddr = url[2]
-		replace.ContainerName = n.ContainerName.Get()
-		replace.KernelArgs = n.KernelArgs.Get()
-		replace.KernelVersion = n.KernelVersion.Get()
+		replace.ContainerName = nodeobj.ContainerName.Get()
+		replace.KernelArgs = nodeobj.KernelArgs.Get()
+		replace.KernelVersion = nodeobj.KernelVersion.Get()
 
 		err = tmpl.Execute(w, replace)
 		if err != nil {
@@ -137,7 +141,7 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		log.Printf("SEND:  %15s: %s\n", n.Id.Get(), ipxeTemplate)
+		log.Printf("SEND:  %15s: %s\n", nodeobj.Id.Get(), ipxeTemplate)
 
 	}
 	return

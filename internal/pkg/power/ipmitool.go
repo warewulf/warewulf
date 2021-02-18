@@ -1,8 +1,8 @@
 package power
 
 import (
-	"os/exec"
 	"os"
+	"os/exec"
 )
 
 type IPMIResult struct {
@@ -16,7 +16,7 @@ type IPMI struct {
 	User     string
 	Password string
 	AuthType string
-	result IPMIResult
+	result   IPMIResult
 }
 
 func (ipmi *IPMI) Result() (string, error) {
@@ -96,4 +96,3 @@ func (ipmi *IPMI) SensorList() (string, error) {
 func (ipmi *IPMI) Console() error {
 	return ipmi.IPMIInteractiveCommand("sol", "activate")
 }
-

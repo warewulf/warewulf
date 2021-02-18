@@ -2,11 +2,12 @@ package warewulfconf
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net"
+
 	"github.com/brotherpowers/ipsubnet"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
-	"net"
 )
 
 func New() (ControllerConf, error) {
@@ -15,7 +16,7 @@ func New() (ControllerConf, error) {
 	wwlog.Printf(wwlog.DEBUG, "Opening Warewulf configuration file: %s\n", ConfigFile)
 	data, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
-		fmt.Printf("error reading node configuration file\n")
+		fmt.Printf("error reading Warewulf configuration file\n")
 		return ret, err
 	}
 

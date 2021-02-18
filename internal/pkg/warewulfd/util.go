@@ -1,35 +1,31 @@
 package warewulfd
 
 import (
-	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/errors"
-	"github.com/hpcng/warewulf/internal/pkg/node"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/hpcng/warewulf/internal/pkg/errors"
+	"github.com/hpcng/warewulf/internal/pkg/node"
 )
 
 func getSanity(req *http.Request) (node.NodeInfo, error) {
 	url := strings.Split(req.URL.Path, "/")
-	var ret node.NodeInfo
-
-	nodes, err := node.New()
-	if err != nil {
-		return ret, errors.New(fmt.Sprintf("%s", err))
-	}
 
 	hwaddr := strings.ReplaceAll(url[2], "-", ":")
-	ret, err = nodes.FindByHwaddr(hwaddr)
+
+	nodeobj, err := GetNode(hwaddr)
 	if err != nil {
+		var ret node.NodeInfo
 		return ret, errors.New("Could not find node by HW address")
 	}
 
-	log.Printf("REQ:   %15s: %s\n", ret.Id.Get(), req.URL.Path)
+	log.Printf("REQ:   %15s: %s\n", nodeobj.Id.Get(), req.URL.Path)
 
-	return ret, nil
+	return nodeobj, nil
 }
 
 func sendFile(w http.ResponseWriter, filename string, sendto string) error {

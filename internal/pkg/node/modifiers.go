@@ -1,10 +1,11 @@
 package node
 
 import (
+	"os"
+
 	"github.com/hpcng/warewulf/internal/pkg/errors"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v2"
-	"os"
 )
 
 /****

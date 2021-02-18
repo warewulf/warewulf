@@ -3,11 +3,12 @@ package vnfs
 import (
 	"context"
 	"fmt"
+	"os"
+	"path"
+
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/oci"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"os"
-	"path"
 )
 
 func BuildDocker(vnfs VnfsObject, buildForce bool) {

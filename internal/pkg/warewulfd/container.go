@@ -1,9 +1,10 @@
 package warewulfd
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/container"
 	"log"
 	"net/http"
+
+	"github.com/hpcng/warewulf/internal/pkg/container"
 )
 
 func ContainerSend(w http.ResponseWriter, req *http.Request) {
