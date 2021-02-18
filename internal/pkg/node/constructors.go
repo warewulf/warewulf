@@ -2,13 +2,14 @@ package node
 
 import (
 	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/errors"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/hpcng/warewulf/internal/pkg/errors"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"gopkg.in/yaml.v2"
 )
 
 const ConfigFile = "/etc/warewulf/nodes.conf"

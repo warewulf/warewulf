@@ -2,11 +2,6 @@ package overlay
 
 import (
 	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/config"
-	"github.com/hpcng/warewulf/internal/pkg/errors"
-	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -15,6 +10,12 @@ import (
 	"regexp"
 	"strings"
 	"text/template"
+
+	"github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/errors"
+	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
 type TemplateStruct struct {

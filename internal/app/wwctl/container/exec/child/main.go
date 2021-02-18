@@ -4,13 +4,14 @@ package child
 
 import (
 	"fmt"
+	"os"
+	"path"
+	"syscall"
+
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
-	"os"
-	"path"
-	"syscall"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {

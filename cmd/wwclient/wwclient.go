@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"os/exec"
 	"time"
+
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
 func main() {

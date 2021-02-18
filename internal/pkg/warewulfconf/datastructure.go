@@ -1,9 +1,10 @@
 package warewulfconf
 
 import (
+	"os"
+
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"os"
 )
 
 const ConfigFile = "/etc/warewulf/warewulf.conf"

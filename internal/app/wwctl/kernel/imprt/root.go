@@ -16,12 +16,14 @@ var (
 	BuildAll   bool
 	ByNode     bool
 	SetDefault bool
+	OptRoot    string
 )
 
 func init() {
 	baseCmd.PersistentFlags().BoolVarP(&BuildAll, "all", "a", false, "Build all overlays (runtime and system)")
 	baseCmd.PersistentFlags().BoolVarP(&ByNode, "node", "n", false, "Build overlay for a particular node(s)")
 	baseCmd.PersistentFlags().BoolVar(&SetDefault, "setdefault", false, "Set this kernel for the default profile")
+	baseCmd.PersistentFlags().StringVarP(&OptRoot, "root", "r", "/", "Import kernel from root (chroot) directory")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

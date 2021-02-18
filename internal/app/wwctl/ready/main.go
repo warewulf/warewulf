@@ -2,6 +2,8 @@ package ready
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/kernel"
@@ -9,7 +11,6 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {

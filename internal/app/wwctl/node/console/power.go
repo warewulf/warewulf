@@ -1,11 +1,12 @@
 package console
 
 import (
+	"os"
+
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/power"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
@@ -57,4 +58,3 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	return returnErr
 }
-
