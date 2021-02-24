@@ -3,13 +3,14 @@ package hosts
 import (
 	"bytes"
 	"fmt"
+	"os"
+	"text/template"
+
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
-	"os"
-	"text/template"
 )
 
 type TemplateStruct struct {

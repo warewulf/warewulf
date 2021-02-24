@@ -1,19 +1,18 @@
 package controller
 
 import (
-	"github.com/spf13/cobra"
 	"github.com/hpcng/warewulf/internal/app/wwctl/controller/add"
 	"github.com/hpcng/warewulf/internal/app/wwctl/controller/delete"
 	"github.com/hpcng/warewulf/internal/app/wwctl/controller/list"
 	"github.com/hpcng/warewulf/internal/app/wwctl/controller/set"
-
+	"github.com/spf13/cobra"
 )
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "controller",
-		Short:              "Controller management",
-		Long:               "Management of group settings and power management",
+		Use:   "controller",
+		Short: "Controller management",
+		Long:  "Management of group settings and power management",
 	}
 )
 

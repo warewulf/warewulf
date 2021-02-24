@@ -1,9 +1,10 @@
 package warewulfd
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/config"
 	"log"
 	"net/http"
+
+	"github.com/hpcng/warewulf/internal/pkg/config"
 )
 
 func SystemOverlaySend(w http.ResponseWriter, req *http.Request) {

@@ -2,15 +2,16 @@ package warewulfd
 
 import (
 	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/overlay"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"text/template"
+
+	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/overlay"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
 type iPxeTemplate struct {

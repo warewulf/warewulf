@@ -2,13 +2,14 @@ package show
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path"
+
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
-	"io/ioutil"
-	"os"
-	"path"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {

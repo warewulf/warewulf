@@ -1,14 +1,15 @@
 package warewulfd
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/errors"
-	"github.com/hpcng/warewulf/internal/pkg/node"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/hpcng/warewulf/internal/pkg/errors"
+	"github.com/hpcng/warewulf/internal/pkg/node"
 )
 
 func getSanity(req *http.Request) (node.NodeInfo, error) {
