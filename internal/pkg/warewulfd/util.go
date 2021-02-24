@@ -19,7 +19,7 @@ func getSanity(req *http.Request) (node.NodeInfo, error) {
 	nodeobj, err := GetNode(hwaddr)
 	if err != nil {
 		var ret node.NodeInfo
-		return ret, errors.New("Could not find node by HW address")
+		return ret, errors.New("Could not find node by HW address: " + req.URL.Path)
 	}
 
 	log.Printf("REQ:   %15s: %s\n", nodeobj.Id.Get(), req.URL.Path)
