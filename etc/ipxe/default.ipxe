@@ -11,8 +11,16 @@ echo
 
 set base http://{{.Ipaddr}}:{{.Port}}
 
-kernel ${base}/kernel/{{.Hwaddr}} {{.KernelArgs}}          || reboot
-initrd ${base}/container/{{.Hwaddr}}                       || reboot
-initrd ${base}/kmods/{{.Hwaddr}}                           || reboot
-initrd ${base}/overlay-system/{{.Hwaddr}}                  || reboot
-boot                                                       || reboot
+kernel ${base}/kernel/{{.Hwaddr}} {{.KernelArgs}}          || goto reboot
+initrd ${base}/container/{{.Hwaddr}}                       || goto reboot
+initrd ${base}/kmods/{{.Hwaddr}}                           || goto reboot
+initrd ${base}/overlay-system/{{.Hwaddr}}                  || goto reboot
+boot                                                       || goto reboot
+
+
+:reboot
+echo
+echo There was an error, rebooting in 15s...
+echo
+sleep 15
+reboot
