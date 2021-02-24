@@ -2,12 +2,13 @@ package container
 
 import (
 	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/errors"
-	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"os"
 	"os/exec"
 	"path"
+
+	"github.com/hpcng/warewulf/internal/pkg/errors"
+	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
 func Build(name string, buildForce bool) (string, error) {

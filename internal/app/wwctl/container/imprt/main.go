@@ -2,15 +2,68 @@ package imprt
 
 import (
 	"fmt"
+	"os"
+	"path"
+	"strconv"
+
+	"github.com/containers/image/v5/types"
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
-	"os"
-	"path"
 )
+
+func setOCICredentials(sCtx *types.SystemContext) error {
+	username, userSet := os.LookupEnv("WAREWULF_OCI_USERNAME")
+	password, passSet := os.LookupEnv("WAREWULF_OCI_PASSWORD")
+	if userSet || passSet {
+		if userSet && passSet {
+			sCtx.DockerAuthConfig = &types.DockerAuthConfig{
+				Username: username,
+				Password: password,
+			}
+		} else {
+			return fmt.Errorf("oci username and password env vars must be specified together")
+		}
+	}
+	return nil
+}
+
+func setNoHTTPSOpts(sCtx *types.SystemContext) error {
+	val, ok := os.LookupEnv("WAREWULF_OCI_NOHTTPS")
+	if !ok {
+		return nil
+	}
+
+	noHTTPS, err := strconv.ParseBool(val)
+	if err != nil {
+		return fmt.Errorf("while parsing insecure http option: %v", err)
+	}
+
+	// only set this if we want to disable, otherwise leave as undefined
+	if noHTTPS {
+		sCtx.DockerInsecureSkipTLSVerify = types.NewOptionalBool(true)
+	}
+	sCtx.OCIInsecureSkipTLSVerify = noHTTPS
+
+	return nil
+}
+
+func getSystemContext() (sCtx *types.SystemContext, err error) {
+	sCtx = &types.SystemContext{}
+
+	if err := setOCICredentials(sCtx); err != nil {
+		return nil, err
+	}
+
+	if err := setNoHTTPSOpts(sCtx); err != nil {
+		return nil, err
+	}
+
+	return sCtx, nil
+}
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var name string
@@ -46,7 +99,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	err := container.PullURI(uri, name)
+	sCtx, err := getSystemContext()
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "%s\n", err)
+	}
+
+	err = container.PullURI(uri, name, sCtx)
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not pull image: %s\n", err)
 		os.Exit(1)

@@ -4,11 +4,11 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:                "add",
-		Short:              "Add",
-		Long:               "Add",
-		RunE:				CobraRunE,
-		Args: 				cobra.MinimumNArgs(1),
+		Use:   "add",
+		Short: "Add",
+		Long:  "Add",
+		RunE:  CobraRunE,
+		Args:  cobra.MinimumNArgs(1),
 	}
 	SetController string
 )

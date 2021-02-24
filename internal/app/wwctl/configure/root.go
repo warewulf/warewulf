@@ -2,13 +2,14 @@ package configure
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/dhcp"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/hosts"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/nfs"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/ssh"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/tftp"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 var (

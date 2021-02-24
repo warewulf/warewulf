@@ -2,14 +2,15 @@ package list
 
 import (
 	"fmt"
+	"os"
+	"syscall"
+
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
-	"os"
-	"syscall"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {

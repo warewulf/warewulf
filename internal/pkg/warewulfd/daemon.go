@@ -2,14 +2,15 @@ package warewulfd
 
 import (
 	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"strconv"
 	"syscall"
 	"time"
+
+	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
 const (

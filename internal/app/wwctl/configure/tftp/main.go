@@ -2,13 +2,14 @@ package tftp
 
 import (
 	"fmt"
+	"os"
+	"path"
+
 	"github.com/hpcng/warewulf/internal/pkg/staticfiles"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
-	"os"
-	"path"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
