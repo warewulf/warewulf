@@ -2,7 +2,9 @@ package container
 
 import (
 	"context"
+	"github.com/hpcng/warewulf/internal/pkg/util"
 	"os"
+	"path"
 
 	"github.com/containers/image/v5/types"
 	"github.com/hpcng/warewulf/internal/pkg/config"
@@ -10,7 +12,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/oci"
 )
 
-func PullURI(uri string, name string, sCtx *types.SystemContext) error {
+func ImportDocker(uri string, name string, sCtx *types.SystemContext) error {
 	OciBlobCacheDir := config.LocalStateDir + "/oci/blobs"
 
 	err := os.MkdirAll(OciBlobCacheDir, 0755)
@@ -42,6 +44,30 @@ func PullURI(uri string, name string, sCtx *types.SystemContext) error {
 	}
 
 	if err := p.Pull(context.Background(), uri, fullPath); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ImportDirectory(uri string, name string) error {
+	fullPath := RootFsDir(name)
+
+	err := os.MkdirAll(fullPath, 0755)
+	if err != nil {
+		return err
+	}
+
+	if !util.IsDir(uri) {
+		return errors.New("Import directory does not exist: " + uri)
+	}
+
+	if !util.IsFile(path.Join(fullPath, "/bin/sh")) {
+		return errors.New("Source directory has no /bin/sh: " + uri)
+	}
+
+	err = util.CopyFiles(uri, fullPath)
+	if err != nil {
 		return err
 	}
 
