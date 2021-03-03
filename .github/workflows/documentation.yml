@@ -3,13 +3,11 @@ name: documentation
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
     paths:
       - 'docs/**'
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
       - 'docs/**'
 
