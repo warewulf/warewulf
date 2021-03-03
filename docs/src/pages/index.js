@@ -71,6 +71,14 @@ function Home() {
               to={useBaseUrl('docs/')}>
               Get Started
             </Link>
+            <Link
+              className={clsx(
+                'button button--outline button--secondary button--lg',
+                styles.getStarted,
+              )}
+              to={useBaseUrl('download/')}>
+              Download
+            </Link>
           </div>
         </div>
       </header>
