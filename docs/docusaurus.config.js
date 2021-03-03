@@ -79,12 +79,12 @@ module.exports = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           editUrl:
-            'https://github.com/ctrliq/warewulf-docs/edit/master/',
+            'https://github.com/ctrliq/warewulf/edit/main/docs/',
         },
         blog: {
           showReadingTime: true,
           editUrl:
-            'https://github.com/ctrliq/warewulf-docs/edit/master/blog/',
+            'https://github.com/ctrliq/warewulf/edit/main/docs/blog/',
           routeBasePath: 'news',
           path: './news',
         },
