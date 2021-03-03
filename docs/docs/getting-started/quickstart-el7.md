@@ -102,10 +102,8 @@ Runtime overlays are provisioned after the node has booted and periodically duri
 
 Overlays are generated from a template structure that is viewed using the `wwctl overlay` commands. Files that end in the ``.ww`` suffix are templates and abide by standard text/template rules. This supports loops, arrays, variables, and functions making overlays extremely flexible.
 
-::: note
-
+:::note
 When using the overlay subsystem, system overlays are never shown by default. So when running `overlay` commands, you are always looking at runtime overlays unless the `-s` option is passed.
-
 :::
 
 All overlays are compiled before being provisioned. This accelerates the provisioning process because there is less to do when nodes are being managed at scale.
