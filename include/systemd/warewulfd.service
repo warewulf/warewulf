@@ -5,10 +5,12 @@ After=network-online.target
 AssertFileIsExecutable=/usr/bin/wwctl
 
 [Service]
+Type=forking
 User=root
 Group=warewulf
 
-ExecStart=/usr/bin/wwctl server start --foreground
+ExecStart=/usr/bin/wwctl server start
+PIDFile=/tmp/warewulfd.pid
 Restart=always
 
 [Install]
