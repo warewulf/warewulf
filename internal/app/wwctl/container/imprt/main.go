@@ -109,12 +109,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		err = container.ImportDocker(uri, name, sCtx)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Could not import image: %s\n", err)
+			_ = container.DeleteSource(uri)
 			os.Exit(1)
 		}
 	} else if util.IsDir(uri) {
 		err := container.ImportDirectory(uri, name)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Could not import image: %s\n", err)
+			_ = container.DeleteSource(uri)
 			os.Exit(1)
 		}
 	}
