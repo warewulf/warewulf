@@ -64,11 +64,6 @@ files: all
 #	cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
 #	restorecon -r /var/lib/tftpboot/warewulf
 
-services: files
-	groupadd -r warewulf
-	systemctl daemon-reload
-	systemctl enable --now warewulfd
-
 wwctl:
 	cd cmd/wwctl; go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwctl
 
@@ -89,4 +84,4 @@ clean:
 	rm -rf _dist
 	rm -f warewulf-$(VERSION).tar.gz
 
-install: files services
+install: files

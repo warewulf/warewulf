@@ -88,5 +88,6 @@ func ValidSource(name string) bool {
 func DeleteSource(name string) error {
 	fullPath := SourceDir(name)
 
+	wwlog.Printf(wwlog.VERBOSE, "Removing path: %s\n", fullPath)
 	return os.RemoveAll(fullPath)
 }
