@@ -28,8 +28,10 @@ groupadd -r warewulf >/dev/null 2>&1 || :
 
 %post
 %if %{?rhel}%{!?rhel:0} >= 7
-systemctl start warewulfd >/dev/null 2>&1 || :
-systemctl enable warewulfd >/dev/null 2>&1 || :
+    groupadd -r warewulf >/dev/null 2>&1 || :
+    systemctl daemon-reload >/dev/null 2>&1 || :
+    systemctl start warewulfd >/dev/null 2>&1 || :
+    systemctl enable warewulfd >/dev/null 2>&1 || :
 %endif
 
 %clean
