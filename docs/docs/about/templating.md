@@ -1,0 +1,4 @@
+---
+id: templating
+title: Templating
+---

@@ -65,8 +65,9 @@ files: all
 #	restorecon -r /var/lib/tftpboot/warewulf
 
 services: files
-#	sudo systemctl enable tftp
-#	sudo systemctl restart tftp
+	groupadd -r warewulf
+	systemctl daemon-reload
+	systemctl enable --now warewulfd
 
 wwctl:
 	cd cmd/wwctl; go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwctl
