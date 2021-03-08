@@ -13,7 +13,7 @@ Control interface to the Cluster Warewulf Provisioning System
 ## Options
 
 ### -d, --debug
-Run with debugging messages enabled
+Run with increased verbosity and debug messages enabled
 
 ### -v, --verbose
 Run with increased verbosity
