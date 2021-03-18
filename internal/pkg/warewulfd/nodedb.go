@@ -54,7 +54,6 @@ func GetNode(val string) (node.NodeInfo, error) {
 	defer db.lock.RUnlock()
 
 	if _, ok := db.NodeInfo[val]; ok {
-		wwlog.Printf(wwlog.DEBUG, "Found node:\n%+v\n", db.NodeInfo[val])
 
 		return db.NodeInfo[val], nil
 	}

@@ -1,0 +1,4 @@
+---
+id: hardware
+title: Hardware
+---

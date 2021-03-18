@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"strings"
 
 	"github.com/containers/image/v5/types"
 	"github.com/hpcng/warewulf/internal/pkg/container"
@@ -85,38 +86,48 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	if util.IsDir(fullPath) == true {
 		if SetForce == true {
-			wwlog.Printf(wwlog.WARN, "Overwriting existing VNFS\n")
+			fmt.Printf("Overwriting existing VNFS\n")
 			err := os.RemoveAll(fullPath)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
 			}
 		} else if SetUpdate == true {
-			wwlog.Printf(wwlog.WARN, "Updating existing VNFS\n")
+			fmt.Printf("Updating existing VNFS\n")
 		} else {
 			wwlog.Printf(wwlog.ERROR, "VNFS Name exists, specify --force, --update, or choose a different name: %s\n", name)
 			os.Exit(1)
 		}
 	}
 
-	sCtx, err := getSystemContext()
-	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "%s\n", err)
-	}
+	if strings.HasPrefix(uri, "docker://") || strings.HasPrefix(uri, "docker-daemon://") {
+		sCtx, err := getSystemContext()
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "%s\n", err)
+		}
 
-	err = container.PullURI(uri, name, sCtx)
-	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not pull image: %s\n", err)
-		os.Exit(1)
+		err = container.ImportDocker(uri, name, sCtx)
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "Could not import image: %s\n", err)
+			_ = container.DeleteSource(name)
+			os.Exit(1)
+		}
+	} else if util.IsDir(uri) {
+		err := container.ImportDirectory(uri, name)
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "Could not import image: %s\n", err)
+			_ = container.DeleteSource(name)
+			os.Exit(1)
+		}
 	}
 
 	fmt.Printf("Building container: %s\n", name)
-	output, err := container.Build(name, true)
+	err := container.Build(name, true)
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not build container %s: %s\n", name, err)
 		os.Exit(1)
 	} else {
-		fmt.Printf("%s: %s\n", name, output)
+		//fmt.Printf("%s: %s\n", name, output)
 	}
 
 	if SetDefault == true {

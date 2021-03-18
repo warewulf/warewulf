@@ -16,6 +16,7 @@ var (
 		Long: "Starting with version 4, Warewulf uses containers to build the bootable VNFS\n" +
 			"images for nodes to boot. These commands will help you import, management, and\n" +
 			"transform containers into bootable Warewulf VNFS images.",
+		Aliases: []string{"vnfs"},
 	}
 	test bool
 )

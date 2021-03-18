@@ -28,6 +28,7 @@ type iPxeTemplate struct {
 }
 
 func IpxeSend(w http.ResponseWriter, req *http.Request) {
+
 	url := strings.Split(req.URL.Path, "/")
 	var unconfiguredNode bool
 
@@ -46,6 +47,8 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	log.Printf("IPXEREQ:   %s\n", req.URL.Path)
+
 	nodeobj, err := GetNode(hwaddr)
 
 	if err != nil {
@@ -59,7 +62,7 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		wwlog.Printf(wwlog.VERBOSE, "Node was not found, looking for discoverable nodes...\n")
+		wwlog.Printf(wwlog.INFO, "Node was not found, looking for discoverable nodes...\n")
 
 		n, netdev, err := nodeDB.FindDiscoverableNode()
 		if err != nil {
@@ -86,6 +89,14 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 					_ = overlay.BuildSystemOverlay([]node.NodeInfo{n})
 					wwlog.Printf(wwlog.INFO, "Building Runtime Overlay:\n")
 					_ = overlay.BuildRuntimeOverlay([]node.NodeInfo{n})
+
+					wwlog.Printf(wwlog.INFO, "Added node %s\n", nodeobj.Id.Get())
+
+					err := LoadNodeDB()
+					if err != nil {
+						wwlog.Printf(wwlog.WARN, "Could not reload database: %s\n", err)
+					}
+
 				}
 			}
 		}

@@ -50,10 +50,10 @@ func GetRootCommand() *cobra.Command {
 }
 
 func rootPersistentPreRunE(cmd *cobra.Command, args []string) error {
-	if verboseArg == true {
-		wwlog.SetLevel(wwlog.VERBOSE)
-	} else if debugArg == true {
+	if debugArg == true {
 		wwlog.SetLevel(wwlog.DEBUG)
+	} else if verboseArg == true {
+		wwlog.SetLevel(wwlog.VERBOSE)
 	} else {
 		wwlog.SetLevel(wwlog.INFO)
 	}
