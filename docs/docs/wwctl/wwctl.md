@@ -24,7 +24,7 @@ Run with increased verbosity
 Skip TLS verification when connecting to an OCI registry
 
 ### WAREWULF_OCI_PASSWORD
-OCI registry password used in `wwctl container imprt`
+OCI registry password used in `wwctl container import`
 
 ### WAREWULF_OCI_USERNAME
-OCI registry username used in `wwctl container imprt`
+OCI registry username used in `wwctl container import`
