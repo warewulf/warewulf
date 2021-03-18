@@ -1,9 +1,5 @@
 package node
 
-import (
-	"strings"
-)
-
 /**********
  *
  * Sets
@@ -15,7 +11,7 @@ func (self *Entry) Set(val string) {
 		return
 	}
 
-	if strings.ToUpper(val) == "DELETE" {
+	if val == "UNDEF" || val == "DELETE" || val == "UNSET" {
 		self.value = ""
 	} else {
 		self.value = val

@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"regexp"
 	"time"
@@ -86,6 +87,40 @@ func CopyFile(source string, dest string) error {
 	sourceFD.Close()
 
 	return destFD.Close()
+}
+
+func CopyFiles(source string, dest string) error {
+	err := filepath.Walk(source, func(location string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			wwlog.Printf(wwlog.DEBUG, "Creating directory: %s\n", location)
+
+			err := os.MkdirAll(path.Join(dest, location), info.Mode())
+			if err != nil {
+				return err
+			}
+
+		} else {
+			wwlog.Printf(wwlog.DEBUG, "Writing file: %s\n", location)
+
+			err := CopyFile(location, path.Join(dest, location))
+			if err != nil {
+				return err
+			}
+
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 //TODO: func CopyRecursive ...

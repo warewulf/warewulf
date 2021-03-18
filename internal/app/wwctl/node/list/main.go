@@ -80,7 +80,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		for _, node := range nodes {
 			if len(node.NetDevs) > 0 {
 				for name, dev := range node.NetDevs {
-					fmt.Printf("%-22s %-6s %-18s %-15s %-15s\n", node.Id.Get(), name, dev.Hwaddr, dev.Ipaddr, dev.Gateway)
+					fmt.Printf("%-22s %-6s %-18s %-15s %-15s\n", node.Id.Get(), name, dev.Hwaddr.Print(), dev.Ipaddr.Print(), dev.Gateway.Print())
 				}
 			} else {
 				fmt.Printf("%-22s %-6s %-18s %-15s %-15s\n", node.Id.Get(), "--", "--", "--", "--")
@@ -110,7 +110,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			var netdevs []string
 			if len(node.NetDevs) > 0 {
 				for name, dev := range node.NetDevs {
-					netdevs = append(netdevs, fmt.Sprintf("%s:%s", name, dev.Ipaddr.Get()))
+					netdevs = append(netdevs, fmt.Sprintf("%s:%s", name, dev.Ipaddr.Print()))
 				}
 			}
 			sort.Strings(netdevs)

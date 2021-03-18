@@ -12,7 +12,7 @@ import (
 )
 
 func ValidName(name string) bool {
-	if util.ValidString(name, "^[a-zA-Z0-9.:-]+$") == false {
+	if util.ValidString(name, "^[a-zA-Z0-9.:-_]+$") == false {
 		wwlog.Printf(wwlog.WARN, "VNFS name has illegal characters: %s\n", name)
 		return false
 	}
@@ -88,5 +88,6 @@ func ValidSource(name string) bool {
 func DeleteSource(name string) error {
 	fullPath := SourceDir(name)
 
+	wwlog.Printf(wwlog.VERBOSE, "Removing path: %s\n", fullPath)
 	return os.RemoveAll(fullPath)
 }
