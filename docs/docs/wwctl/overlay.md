@@ -45,8 +45,8 @@ This command will allow you to edit or create a new file within a given overlay.
 -m, --mode  Permission mode for directory
 -n, --noupdate  Don't update overlays
 
-imprt
-~~~~~
+import
+~~~~~~
 This command will import a file into a given Warewulf overlay.
 
 -s, --system  Show system overlays instead of runtime
