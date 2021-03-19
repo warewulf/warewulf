@@ -1,0 +1,9 @@
+WWCONTAINER={{$.Container}}
+WWHOSTNAME={{$.Id}}
+WWROOT={{$.Root}}
+WWINIT={{$.Init}}
+WWIPMI_IPADDR="{{$.IpmiIpaddr}}"
+WWIPMI_NETMASK="{{$.IpmiNetmask}}"
+WWIPMI_GATEWAY="{{$.IpmiGateway}}"
+WWIPMI_USER="{{$.IpmiUserName}}"
+WWIPMI_PASSWORD="{{$.IpmiPassword}}"

@@ -1,0 +1,6 @@
+#!/bin/sh
+
+. /warewulf/config
+
+echo "Starting wwclient"
+nohup /warewulf/bin/wwclient >/var/log/wwclient.log 2>&1 </dev/null &
