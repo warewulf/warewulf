@@ -1,0 +1,15 @@
+#!/bin/sh
+
+. /warewulf/config
+
+#echo `ls /dev`
+#sleep 10
+
+#echo `lspci`
+#sleep 10
+
+#ip a
+#sleep 10
+
+#ls -la /lib/modules
+#sleep 20
