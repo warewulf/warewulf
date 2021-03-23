@@ -1,22 +1,24 @@
-FROM debian:buster-slim
+FROM debian
 
-RUN apt-get update
+ENV DEBIAN_FRONTEND noninteractive
+ENV RUNLEVEL 1
 
-RUN apt-get -y install \
+RUN apt-get update && apt-get install -y --no-install-recommends \
 	kmod \
 	systemd-sysv \
-	openssh-server \
 	openssh-client \
+	openssh-server \
 	isc-dhcp-client \
 	pciutils \
 	strace \
 	nfs-common \
 	ethtool\
-	ifupdown
-
-RUN apt-get -y install --no-install-recommends \
-  linux-image-amd64
-
-RUN rm -rf /var/lib/apt/lists/*
+	ifupdown \
+	linux-image-amd64 \
+	ifmetric \
+	netbase && \
+	rm -rf /var/lib/apt/lists/*
 
 RUN echo "root:r00tr00t" | chpasswd
+
+ENV DEBIAN_FRONTEND teletype
