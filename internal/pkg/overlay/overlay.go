@@ -156,6 +156,7 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 			t.NetDevs[devname].Netmask = netdev.Netmask.Get()
 			t.NetDevs[devname].Gateway = netdev.Gateway.Get()
 			t.NetDevs[devname].Type = netdev.Type.Get()
+			t.NetDevs[devname].Default = netdev.Default.GetB()
 		}
 		t.AllNodes = allNodes
 
