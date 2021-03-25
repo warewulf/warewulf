@@ -5,8 +5,8 @@ title: wwctl kernel
 
 This command is for management of Warewulf Kernels to be used for bootstrapping nodes.
 
-imprt
-~~~~~
+import
+~~~~~~
 This will import a Kernel version from the control node into Warewulf for nodes to be configured to boot on.
 
 -a, --all  Build all overlays (runtime and system)
