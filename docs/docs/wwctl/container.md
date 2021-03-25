@@ -21,8 +21,8 @@ exec
 ~~~~
 This command will allow you to run any command inside of a given warewulf container. This is commonly used with an interactive shell such as ``/bin/bash`` to run a virtual environment within the container.
 
-imprt
-~~~~~
+import
+~~~~~~
 This command will pull and import a container into Warewulf so it can be used as a source to create a bootable VNFS image.
 
 -f, --force  Force overwrite of an existing container
