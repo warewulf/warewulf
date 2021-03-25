@@ -1,0 +1,57 @@
+#!/bin/sh
+#
+# This is one of those types of files that you shouldn't edit unless you really
+# know what you are doing and even then you should make a backup.
+#
+# Edit at your own risk! DANGER DANGER.
+
+
+if test -f "/warewulf/config"; then
+    . /warewulf/config
+else
+    echo "ERROR: Warewulf configuration file not found... rebooting in 1 minute"
+    sleep 60
+    /sbin/reboot
+fi
+
+echo "Warewulf v4 is now booting: ${WWHOSTNAME}"
+echo "debian specific overlay"
+
+echo "Mounting up kernel file systems"
+mkdir /proc /dev /sys /run 2>/dev/null
+mount -t proc proc /proc
+mount -t devtmpfs devtmpfs /dev
+mount -t sysfs sysfs /sys
+mount -t tmpfs tmpfs /run
+
+chmod 755 /warewulf/wwinit
+
+echo "Checking Rootfs type"
+ROOTFSTYPE=`stat -f -c "%T" /`
+
+if test "${WWROOT}" = "initramfs"; then
+    echo "Provisioned to default initramfs file system: ${ROOTFSTYPE}"
+    echo "Calling WW Init"
+    exec /warewulf/wwinit
+elif test "${WWROOT}" = "tmpfs"; then
+    if test "${ROOTFSTYPE}" == "tmpfs"; then
+        echo "ERROR: Switching the root file system requires the kernel argument: 'rootfstype=ramfs'"
+    else
+        echo "Setting up tmpfs root file system"
+        mkdir /newroot
+        mount wwroot /newroot -t tmpfs
+        echo "Moving RAMFS to TMPFS"
+        tar -cf - --exclude ./proc --exclude ./sys --exclude ./dev --exclude ./newroot . | tar -xf - -C /newroot
+        mkdir /newroot/proc /newroot/dev /newroot/sys /newroot/run 2>/dev/null
+        echo "Calling switch_root and invoking WW Init"
+        exec /sbin/switch_root /newroot /warewulf/wwinit
+    fi
+else
+    echo "ERROR: Unknown Warewulf Root file system: ${WWROOT}"
+fi
+
+echo
+echo "There was a problem with the provisioning process, rebooting in 1 minute..."
+sleep 60
+/sbin/reboot
+

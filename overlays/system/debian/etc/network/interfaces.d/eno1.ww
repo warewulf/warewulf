@@ -1,0 +1,7 @@
+auto eno1
+allow-hotplug eno1
+iface eno1 inet static
+  address {{.NetDevs.eno1.Ipaddr}}
+  netmask {{.NetDevs.eno1.Netmask}}
+  gateway {{.NetDevs.eno1.Gateway}}
+

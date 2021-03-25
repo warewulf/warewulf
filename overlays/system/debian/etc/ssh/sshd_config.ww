@@ -1,0 +1,14 @@
+{{Include "/etc/warewulf/ssh/sshd_config"}}
+
+# This is a Warewulf Template file.
+#
+# This file (suffix '.ww') will be automatically rewritten without the suffix
+# when the overlay is rendered for the individual nodes. Here are some examples
+# of macros and logic which can be used within this file:
+#
+# Node FQDN = {{.Id}}
+# Node Group = {{.GroupName}}
+# Network Config = {{.NetDevs.eth0.Ipaddr}}, {{.NetDevs.eth0.Hwaddr}}, etc.
+#
+# Goto the documentation pages for more information: http://www.hpcng.org/...
+
