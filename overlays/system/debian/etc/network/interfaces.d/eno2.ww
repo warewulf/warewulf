@@ -1,0 +1,4 @@
+# The facility network interface
+allow-hotplug eno2
+iface eno2 inet dhcp
+

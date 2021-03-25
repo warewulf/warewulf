@@ -44,6 +44,8 @@ lint:
 
 all: vendor wwctl wwclient
 
+debian: all 
+
 files: all
 	install -d -m 0755 $(DESTDIR)/usr/bin/
 	install -d -m 0755 $(DESTDIR)/var/warewulf/
@@ -63,6 +65,13 @@ files: all
 	install -c -m 0644 include/systemd/warewulfd.service $(DESTDIR)/usr/lib/systemd/system
 #	cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
 #	restorecon -r /var/lib/tftpboot/warewulf
+
+debfiles: debian
+	chmod +x $(DESTDIR)/var/warewulf/overlays/system/debian/init
+	chmod 600 $(DESTDIR)/var/warewulf/overlays/system/debian/etc/ssh/ssh*
+	chmod 644 $(DESTDIR)/var/warewulf/overlays/system/debian/etc/ssh/ssh*.pub.ww
+	mkdir -p $(DESTDIR)/var/warewulf/overlays/system/debian/warewulf/bin/
+	cp wwclient $(DESTDIR)/var/warewulf/overlays/system/debian/warewulf/bin/
 
 wwctl:
 	cd cmd/wwctl; go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwctl
@@ -85,3 +94,6 @@ clean:
 	rm -f warewulf-$(VERSION).tar.gz
 
 install: files
+
+debinstall: files debfiles
+
