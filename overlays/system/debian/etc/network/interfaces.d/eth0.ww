@@ -1,0 +1,10 @@
+auto eth0
+allow-hotplug eth0
+iface eth0 inet static
+  address {{.NetDevs.eth0.Ipaddr}}
+  netmask {{.NetDevs.eth0.Netmask}}
+  gateway {{.NetDevs.eth0.Gateway}}
+  up ifmetric eth0 30
+
+
+
