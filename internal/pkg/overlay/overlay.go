@@ -215,22 +215,24 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 				tmpl, err := template.New(path.Base(location)).Funcs(template.FuncMap{
 					"Include":     templateFileInclude,
 					"IncludeFrom": templateContainerFileInclude,
+					"inc": func(i int) int { return i + 1 },
+					"dec": func(i int) int { return i - 1 },
 				}).ParseGlob(path.Join(OverlayDir, destFile+".ww*"))
 				if err != nil {
-					wwlog.Printf(wwlog.ERROR, "%s\n", err)
+					wwlog.Printf(wwlog.ERROR, "template.New %s\n", err)
 					return nil
 				}
 
 				w, err := os.OpenFile(path.Join(tmpDir, destFile), os.O_RDWR|os.O_CREATE, info.Mode())
 				if err != nil {
-					wwlog.Printf(wwlog.ERROR, "%s\n", err)
+					wwlog.Printf(wwlog.ERROR, "path.Join %s\n", err)
 					return err
 				}
 				defer w.Close()
 
 				err = tmpl.Execute(w, t)
 				if err != nil {
-					wwlog.Printf(wwlog.ERROR, "%s\n", err)
+					wwlog.Printf(wwlog.ERROR, "tmpl.Execute %s\n", err)
 					return nil
 				}
 
