@@ -215,6 +215,21 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			p.NetDevs[SetNetDev].Hwaddr.Set(SetHwaddr)
 		}
 
+		if SetType != "" {
+			if SetNetDev == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
+				os.Exit(1)
+			}
+
+			if _, ok := p.NetDevs[SetNetDev]; !ok {
+				var nd node.NetDevEntry
+				p.NetDevs[SetNetDev] = &nd
+			}
+
+			wwlog.Printf(wwlog.VERBOSE, "Profile '%s': Setting HW address to: %s:%s\n", p.Id.Get(), SetNetDev, SetType)
+			p.NetDevs[SetNetDev].Type.Set(SetType)
+		}
+
 		if SetNetDevDefault == true {
 			if SetNetDev == "" {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
