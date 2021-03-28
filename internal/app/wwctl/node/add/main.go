@@ -103,6 +103,26 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 		}
 
+		if SetType != "" {
+			if SetNetDev == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
+				os.Exit(1)
+			}
+
+			if _, ok := n.NetDevs[SetNetDev]; !ok {
+				wwlog.Printf(wwlog.ERROR, "Network Device doesn't exist: %s\n", SetNetDev)
+				os.Exit(1)
+			}
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Type to: %s\n", n.Id, SetNetDev, SetType)
+
+			n.NetDevs[SetNetDev].Type.Set(SetType)
+			err := nodeDB.NodeUpdate(n)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
+		}
+
 		if SetDiscoverable == true {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting node to discoverable\n", n.Id.Get())
 

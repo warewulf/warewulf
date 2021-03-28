@@ -221,6 +221,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting gateway to: %s\n", n.Id.Get(), SetNetDev, SetGateway)
 			n.NetDevs[SetNetDev].Gateway.Set(SetGateway)
 		}
+
 		if SetHwaddr != "" {
 			if SetNetDev == "" {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
@@ -235,6 +236,37 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting HW address to: %s\n", n.Id.Get(), SetNetDev, SetHwaddr)
 			n.NetDevs[SetNetDev].Hwaddr.Set(SetHwaddr)
 		}
+
+		if SetType != "" {
+			if SetNetDev == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
+				os.Exit(1)
+			}
+
+			if _, ok := n.NetDevs[SetNetDev]; !ok {
+				var nd node.NetDevEntry
+				n.NetDevs[SetNetDev] = &nd
+			}
+
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting HW address to: %s\n", n.Id.Get(), SetNetDev, SetType)
+			n.NetDevs[SetNetDev].Type.Set(SetType)
+		}
+
+		if SetType != "" {
+			if SetNetDev == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
+				os.Exit(1)
+			}
+
+			if _, ok := n.NetDevs[SetNetDev]; !ok {
+				var nd node.NetDevEntry
+				n.NetDevs[SetNetDev] = &nd
+			}
+
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Type %s\n", n.Id.Get(), SetNetDev, SetType)
+			n.NetDevs[SetNetDev].Type.Set(SetType)
+		}
+
 		if SetNetDevDefault == true {
 			if SetNetDev == "" {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
