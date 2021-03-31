@@ -54,7 +54,7 @@ Once the worker node has received all the required files, the kernel will boot, 
 1. System Overlay
 1. Runtime Overlay
 
-::: note
+:::note
 The Runtime Overlay may be resent to the worker node in the future or at regular intervals.
 :::
 
