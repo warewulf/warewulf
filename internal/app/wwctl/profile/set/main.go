@@ -257,20 +257,23 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(profiles) > 0 {
-		q := fmt.Sprintf("Are you sure you want to modify %d profile(s)", len(profiles))
-
-		prompt := promptui.Prompt{
-			Label:     q,
-			IsConfirm: true,
-		}
-
-		result, _ := prompt.Run()
-
-		if result == "y" || result == "yes" {
+		if SetYes == true {
 			nodeDB.Persist()
-			warewulfd.DaemonReload()
-		}
+		} else {
+			q := fmt.Sprintf("Are you sure you want to modify %d profile(s)", len(profiles))
 
+			prompt := promptui.Prompt{
+				Label:     q,
+				IsConfirm: true,
+			}
+
+			result, _ := prompt.Run()
+
+			if result == "y" || result == "yes" {
+				nodeDB.Persist()
+				warewulfd.DaemonReload()
+			}
+		}
 	} else {
 		fmt.Printf("No profiles found\n")
 	}

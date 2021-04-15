@@ -11,6 +11,7 @@ var (
 		RunE:  CobraRunE,
 	}
 	SetAll            bool
+	SetYes            bool
 	SetForce          bool
 	SetComment        string
 	SetContainer      string
@@ -64,6 +65,7 @@ func init() {
 
 	baseCmd.PersistentFlags().BoolVarP(&SetAll, "all", "a", false, "Set all profiles")
 	baseCmd.PersistentFlags().BoolVarP(&SetForce, "force", "f", false, "Force configuration (even on error)")
+	baseCmd.PersistentFlags().BoolVarP(&SetYes, "yes", "y", false, "Set 'yes' to all questions asked")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
