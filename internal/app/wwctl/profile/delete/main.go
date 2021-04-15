@@ -48,19 +48,22 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if count > 0 {
-		q := fmt.Sprintf("Are you sure you want to delete %d profile(s) (%d groups, %d nodes)", count, numGroups, numNodes)
-
-		prompt := promptui.Prompt{
-			Label:     q,
-			IsConfirm: true,
-		}
-
-		result, _ := prompt.Run()
-
-		if result == "y" || result == "yes" {
+		if SetYes == true {
 			nodeDB.Persist()
-		}
+		} else {
+			q := fmt.Sprintf("Are you sure you want to delete %d profile(s) (%d groups, %d nodes)", count, numGroups, numNodes)
 
+			prompt := promptui.Prompt{
+				Label:     q,
+				IsConfirm: true,
+			}
+
+			result, _ := prompt.Run()
+
+			if result == "y" || result == "yes" {
+				nodeDB.Persist()
+			}
+		}
 	} else {
 		wwlog.Printf(wwlog.INFO, "No groups found\n")
 	}
