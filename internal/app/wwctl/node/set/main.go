@@ -296,6 +296,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if len(nodes) > 0 {
 		if SetYes == true {
 			nodeDB.Persist()
+			warewulfd.DaemonReload()
 		} else {
 			q := fmt.Sprintf("Are you sure you want to modify %d nodes(s)", len(nodes))
 

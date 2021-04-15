@@ -259,6 +259,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if len(profiles) > 0 {
 		if SetYes == true {
 			nodeDB.Persist()
+			warewulfd.DaemonReload()
 		} else {
 			q := fmt.Sprintf("Are you sure you want to modify %d profile(s)", len(profiles))
 
