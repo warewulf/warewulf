@@ -10,11 +10,11 @@ var (
 		RunE:  CobraRunE,
 		Args:  cobra.MinimumNArgs(1),
 	}
-	SetYes            bool
+	SetYes bool
 )
 
 func init() {
-baseCmd.PersistentFlags().BoolVarP(&SetYes, "yes", "y", false, "Set 'yes' to all questions asked")
+	baseCmd.PersistentFlags().BoolVarP(&SetYes, "yes", "y", false, "Set 'yes' to all questions asked")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

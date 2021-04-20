@@ -11,7 +11,7 @@ var (
 		RunE:    CobraRunE,
 		Aliases: []string{"rm", "del"},
 	}
-	SetYes            bool
+	SetYes        bool
 	SetForce      string
 	SetGroup      string
 	SetController string
