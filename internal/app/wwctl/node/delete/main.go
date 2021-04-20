@@ -31,19 +31,22 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if count > 0 {
-		q := fmt.Sprintf("Are you sure you want to delete %d nodes(s)", count)
-
-		prompt := promptui.Prompt{
-			Label:     q,
-			IsConfirm: true,
-		}
-
-		result, _ := prompt.Run()
-
-		if result == "y" || result == "yes" {
+		if SetYes == true {
 			nodeDB.Persist()
-		}
+		} else {
+			q := fmt.Sprintf("Are you sure you want to delete %d nodes(s)", count)
 
+			prompt := promptui.Prompt{
+				Label:     q,
+				IsConfirm: true,
+			}
+
+			result, _ := prompt.Run()
+
+			if result == "y" || result == "yes" {
+				nodeDB.Persist()
+			}
+		}
 	} else {
 		fmt.Printf("No nodes found\n")
 	}
