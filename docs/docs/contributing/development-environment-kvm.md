@@ -84,7 +84,7 @@ sudo yum install golang
 sudo yum install nfs-utils
 
 # Install Warewulf and dependencies
-git clone https://github.com/ctrliq/warewulf.git
+git clone https://github.com/hpcng/warewulf.git
 cd warewulf
 
 make all

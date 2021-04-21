@@ -13,7 +13,7 @@ $ sudo dnf install golang tftp-server dhcp-server nfs-utils
 $ sudo systemctl stop firewalld
 $ sudo systemctl disable firewalld
 
-$ git clone https://github.com/ctrliq/warewulf.git
+$ git clone https://github.com/hpcng/warewulf.git
 $ cd warewulf
 $ make all
 $ sudo make install
