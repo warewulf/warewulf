@@ -108,3 +108,10 @@ func Build(kernelVersion string, root string) (string, error) {
 
 	return "Done", nil
 }
+
+func DeleteKernel(name string) error {
+	fullPath := path.Join(ParentDir(), name)
+
+	wwlog.Printf(wwlog.VERBOSE, "Removing path: %s\n", fullPath)
+	return os.RemoveAll(fullPath)
+}
