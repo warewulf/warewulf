@@ -10,6 +10,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/errors"
 	"github.com/hpcng/warewulf/internal/pkg/oci"
+	"github.com/docker/docker/daemon/graphdriver/copy"
 )
 
 func ImportDocker(uri string, name string, sCtx *types.SystemContext) error {
@@ -62,11 +63,11 @@ func ImportDirectory(uri string, name string) error {
 		return errors.New("Import directory does not exist: " + uri)
 	}
 
-	if !util.IsFile(path.Join(fullPath, "/bin/sh")) {
+	if !util.IsFile(path.Join(uri, "/bin/sh")) {
 		return errors.New("Source directory has no /bin/sh: " + uri)
 	}
 
-	err = util.CopyFiles(uri, fullPath)
+	err = copy.DirCopy(uri, fullPath, copy.Content, true)
 	if err != nil {
 		return err
 	}

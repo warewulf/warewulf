@@ -126,7 +126,7 @@ func CopyFiles(source string, dest string) error {
 //TODO: func CopyRecursive ...
 
 func IsDir(path string) bool {
-	wwlog.Printf(wwlog.DEBUG, "Chcking if path exists as a directory: %s\n", path)
+	wwlog.Printf(wwlog.DEBUG, "Checking if path exists as a directory: %s\n", path)
 
 	if path == "" {
 		return false
@@ -138,7 +138,7 @@ func IsDir(path string) bool {
 }
 
 func IsFile(path string) bool {
-	wwlog.Printf(wwlog.DEBUG, "Chcking if path exists as a file: %s\n", path)
+	wwlog.Printf(wwlog.DEBUG, "Checking if path exists as a file: %s\n", path)
 
 	if path == "" {
 		return false
