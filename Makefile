@@ -62,6 +62,7 @@ files: all
 	cp wwclient $(DESTDIR)/var/warewulf/overlays/system/default/warewulf/bin/
 	cp wwctl $(DESTDIR)/usr/bin/
 	mkdir -p $(DESTDIR)/usr/lib/systemd/system
+	install -c -m 0644 include/firewalld/warewulf.xml $(DESTDIR)/usr/lib/firewalld/services
 	install -c -m 0644 include/systemd/warewulfd.service $(DESTDIR)/usr/lib/systemd/system
 #	cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
 #	restorecon -r /var/lib/tftpboot/warewulf
