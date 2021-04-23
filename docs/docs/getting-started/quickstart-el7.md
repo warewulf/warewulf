@@ -9,13 +9,20 @@ title: Quick Start for RHEL and CentOS 7
 $ sudo yum install epel-release
 $ sudo yum install golang tftp-server dhcp nfs-utils
 
-$ sudo systemctl stop firewalld
-$ sudo systemctl disable firewalld
-
 $ git clone https://github.com/hpcng/warewulf.git
 $ cd warewulf
 $ make all
 $ sudo make install
+```
+
+## Configure firewalld
+
+Restart firewalld to register the added service file, add the service to the default zone, and reload.
+
+```bash
+$ sudo systemctl restart firewalld
+$ sudo firewall-cmd --permanent --add-service warewulf
+$ sudo firewall-cmd --reload
 ```
 
 ## Configure the controller
