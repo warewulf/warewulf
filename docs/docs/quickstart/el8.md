@@ -1,19 +1,19 @@
 ---
-id: quickstart-el8
+id: el8
 title: Quick Start for RHEL, CentOS, and Rocky 8
 ---
 
 ## Install Warewulf and dependencies
 
 ```bash
-$ sudo dnf groupinstall "Development Tools"
-$ sudo dnf install epel-release
-$ sudo dnf install golang tftp-server dhcp-server nfs-utils
+sudo dnf groupinstall "Development Tools"
+sudo dnf install epel-release
+sudo dnf install golang tftp-server dhcp-server nfs-utils
 
-$ git clone https://github.com/hpcng/warewulf.git
-$ cd warewulf
-$ make all
-$ sudo make install
+git clone https://github.com/hpcng/warewulf.git
+cd warewulf
+make all
+sudo make install
 ```
 
 ## Configure firewalld
@@ -21,9 +21,9 @@ $ sudo make install
 Restart firewalld to register the added service file, add the service to the default zone, and reload.
 
 ```bash
-$ sudo systemctl restart firewalld
-$ sudo firewall-cmd --permanent --add-service warewulf
-$ sudo firewall-cmd --reload
+sudo systemctl restart firewalld
+sudo firewall-cmd --permanent --add-service warewulf
+sudo firewall-cmd --reload
 ```
 
 ## Configure the controller
@@ -59,22 +59,23 @@ nfs:
 
 ```bash
 # Create the group the warewulfd service will run as
-$ sudo groupadd -r warewulf
+sudo groupadd -r warewulf
 
 # Reload system services
-$ sudo systemctl daemon-reload
+sudo systemctl daemon-reload
 
 # Start and enable the warewulfd service
-$ sudo systemctl enable --now warewulfd
+sudo systemctl enable --now warewulfd
 ```
 
 ## Configure system services automatically
 
 ```bash
-$ sudo wwctl configure dhcp # Create the default dhcpd.conf file and start/enable service
-$ sudo wwctl configure tftp # Install the base tftp/PXE boot files and start/enable service
-$ sudo wwctl configure nfs  # Configure the exports and create an fstab in the default system overlay
-$ sudo wwctl configure ssh  # Build the basic ssh keys to be included by the default system overlay
+sudo wwctl configure dhcp # Create the default dhcpd.conf file and start/enable service
+sudo wwctl configure tftp # Install the base tftp/PXE boot files and start/enable service
+sudo wwctl configure nfs  # Configure the exports and create an fstab in the default system overlay
+sudo wwctl configure ssh  # Build the basic ssh keys to be included by the default system overlay
+sudo systemctl start warewulfd
 ```
 
 
@@ -84,8 +85,8 @@ This will pull a basic VNFS container from Docker Hub and import the default run
 kernel from the controller node and set both in the "default" node profile.
 
 ```bash
-$ sudo wwctl container import docker://warewulf/centos-8 centos-8 --setdefault
-$ sudo wwctl kernel import $(uname -r) --setdefault
+sudo wwctl container import docker://warewulf/centos-8 centos-8 --setdefault
+sudo wwctl kernel import $(uname -r) --setdefault
 ```
 
 ## Set up the default node profile
@@ -95,7 +96,7 @@ profile, but if you wanted to set them by hand to something different, you can d
 following:
 
 ```bash
-$ sudo wwctl profile set default -K $(uname -r) -C centos-8
+sudo wwctl profile set default -K $(uname -r) -C centos-8
 ```
 
 Next we set some default networking configurations for the first ethernet device. On
@@ -104,8 +105,8 @@ according to the HW address. Because all nodes will share the netmask and gatewa
 configuration, we can set them in the default profile as follows:
 
 ```bash
-$ sudo wwctl profile set default --netdev eth0 -M 255.255.255.0 -G 192.168.1.1
-$ sudo wwctl profile list
+sudo wwctl profile set default --netdev eth0 -M 255.255.255.0 -G 192.168.1.1
+sudo wwctl profile list
 ```
 
 ## Add a node and build node specific overlays
@@ -121,8 +122,8 @@ Note that the full node configuration comes from both cascading profiles and nod
 configurations which always supersede profile configurations.
 
 ```bash
-$ sudo wwctl node add n0000.cluster --netdev eth0 -I 192.168.1.100 --discoverable
-$ sudo wwctl node list -a n0000
+sudo wwctl node add n0000.cluster --netdev eth0 -I 192.168.1.100 --discoverable
+sudo wwctl node list -a n0000
 ```
 
 ## Warewulf Overlays
@@ -152,21 +153,10 @@ process because there is less to do when nodes are being managed at scale.
 Here are some of the common ``overlay`` commands:
 
 ```bash
-$ sudo wwctl overlay list -l
-$ sudo wwctl overlay list -ls
-$ sudo wwctl overlay edit default /etc/hello_world.ww
-$ sudo wwctl overlay build -a
-```
-
-## Start the Warewulf daemon
-
-Once the above provisioning images are built, you can check the provisioning "rediness"
-and then begin booting nodes.
-
-```bash
-$ sudo wwctl ready
-$ sudo wwctl server start
-$ sudo wwctl server status
+sudo wwctl overlay list -l
+sudo wwctl overlay list -ls
+sudo wwctl overlay edit default /etc/hello_world.ww
+sudo wwctl overlay build -a
 ```
 
 ## Boot your compute node and watch it boot
