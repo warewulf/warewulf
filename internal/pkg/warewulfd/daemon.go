@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	WAREWULFD_PIDFILE = "/tmp/warewulfd.pid"
-	WAREWULFD_LOGFILE = "/tmp/warewulfd.log"
+	WAREWULFD_PIDFILE = "/var/run/warewulfd.pid"
+	WAREWULFD_LOGFILE = "/var/log/warewulfd.log"
 )
 
 func DaemonStart() error {
