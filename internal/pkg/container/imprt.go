@@ -8,6 +8,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/util"
 
 	"github.com/containers/image/v5/types"
+	"github.com/containers/storage/drivers/copy"
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/errors"
 	"github.com/hpcng/warewulf/internal/pkg/oci"
@@ -67,7 +68,7 @@ func ImportDirectory(uri string, name string) error {
 		return errors.New("Source directory has no /bin/sh: " + uri)
 	}
 
-	err = util.CopyFiles(uri, fullPath)
+	err = copy.DirCopy(uri, fullPath, copy.Content, true)
 	if err != nil {
 		return err
 	}
