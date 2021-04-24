@@ -23,7 +23,7 @@ func KernelImage(kernelVersion string) string {
 		return ""
 	}
 
-	if util.ValidString(kernelVersion, "^[a-zA-Z0-9-._]+$") == false {
+	if !util.ValidString(kernelVersion, "^[a-zA-Z0-9-._]+$") {
 		wwlog.Printf(wwlog.ERROR, "Runtime overlay name contains illegal characters: %s\n", kernelVersion)
 		return ""
 	}
@@ -37,7 +37,7 @@ func KmodsImage(kernelVersion string) string {
 		return ""
 	}
 
-	if util.ValidString(kernelVersion, "^[a-zA-Z0-9-._]+$") == false {
+	if !util.ValidString(kernelVersion, "^[a-zA-Z0-9-._]+$") {
 		wwlog.Printf(wwlog.ERROR, "Runtime overlay name contains illegal characters: %s\n", kernelVersion)
 		return ""
 	}
@@ -81,11 +81,11 @@ func Build(kernelVersion string, root string) (string, error) {
 	os.MkdirAll(path.Dir(kernelDestination), 0755)
 	os.MkdirAll(path.Dir(driversDestination), 0755)
 
-	if util.IsFile(kernelImage) == false {
+	if !util.IsFile(kernelImage) {
 		return "", errors.New("Could not locate kernel image")
 	}
 
-	if util.IsDir(kernelDrivers) == false {
+	if !util.IsDir(kernelDrivers) {
 		return "", errors.New("Could not locate kernel drivers")
 	}
 
