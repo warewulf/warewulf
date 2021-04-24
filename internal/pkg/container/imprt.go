@@ -2,15 +2,15 @@ package container
 
 import (
 	"context"
-	"github.com/hpcng/warewulf/internal/pkg/util"
 	"os"
 	"path"
+
+	"github.com/hpcng/warewulf/internal/pkg/util"
 
 	"github.com/containers/image/v5/types"
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/errors"
 	"github.com/hpcng/warewulf/internal/pkg/oci"
-	"github.com/docker/docker/daemon/graphdriver/copy"
 )
 
 func ImportDocker(uri string, name string, sCtx *types.SystemContext) error {
@@ -67,7 +67,7 @@ func ImportDirectory(uri string, name string) error {
 		return errors.New("Source directory has no /bin/sh: " + uri)
 	}
 
-	err = copy.DirCopy(uri, fullPath, copy.Content, true)
+	err = util.CopyFiles(uri, fullPath)
 	if err != nil {
 		return err
 	}
