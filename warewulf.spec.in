@@ -40,6 +40,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0755, root, warewulf) %dir /etc/warewulf/
 %config(noreplace) /etc/warewulf/*
 /usr/bin/wwctl
+/usr/lib/firewalld/services/warewulf.xml
 /usr/lib/systemd/system/warewulfd.service
 /var/warewulf
 

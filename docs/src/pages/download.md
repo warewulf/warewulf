@@ -24,4 +24,4 @@ Compatible with RHEL, CentOS, Oracle, and Rocky Linux
 
 ---
 
-Ctrl IQ packages are signed with the Ctrl IQ release key, [E97E 8F85 D71A B47F](https://repo.ctrliq.com/gpg).
+Packages are signed with the Ctrl IQ release key, [E97E 8F85 D71A B47F](https://repo.ctrliq.com/gpg).

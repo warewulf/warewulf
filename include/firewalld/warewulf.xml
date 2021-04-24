@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>warewulf</short>
+  <description>Warewulf is a stateless and diskless container operating system provisioning system for large clusters of bare metal and/or virtual systems.</description>
+  <port protocol="tcp" port="9873"/>
+</service>
