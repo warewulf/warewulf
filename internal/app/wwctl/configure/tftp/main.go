@@ -61,6 +61,11 @@ func Configure(show bool) error {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			os.Exit(1)
 		}
+		err = staticfiles.WriteData("files/tftp/arm64.efi", path.Join(controller.Tftp.TftpRoot, "warewulf/arm64.efi"))
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "%s\n", err)
+			os.Exit(1)
+		}
 
 		fmt.Printf("Enabling and restarting the TFTP services\n")
 		err = util.SystemdStart(controller.Tftp.SystemdName)
