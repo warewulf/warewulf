@@ -6,52 +6,46 @@ package node
  *
  *********/
 
-func (self *Entry) Set(val string) {
+func (ent *Entry) Set(val string) {
 	if val == "" {
 		return
 	}
 
 	if val == "UNDEF" || val == "DELETE" || val == "UNSET" {
-		self.value = ""
+		ent.value = ""
 	} else {
-		self.value = val
+		ent.value = val
 	}
 
-	return
 }
 
-func (self *Entry) SetB(val bool) {
-	self.bool = val
-	return
+func (ent *Entry) SetB(val bool) {
+	ent.bool = val
 }
 
-func (self *Entry) SetAlt(val string, from string) {
+func (ent *Entry) SetAlt(val string, from string) {
 	if val == "" {
 		return
 	}
 
-	self.altvalue = val
-	self.from = from
+	ent.altvalue = val
+	ent.from = from
 
-	return
 }
 
-func (self *Entry) SetAltB(val bool, from string) {
-	if val == true {
-		self.altbool = val
-		self.from = from
-	}
-	return
+func (ent *Entry) SetAltB(val bool, from string) {
+	ent.altbool = val
+	ent.from = from
+
 }
 
-func (self *Entry) SetDefault(val string) {
+func (ent *Entry) SetDefault(val string) {
 	if val == "" {
 		return
 	}
 
-	self.def = val
+	ent.def = val
 
-	return
 }
 
 /**********
@@ -60,29 +54,29 @@ func (self *Entry) SetDefault(val string) {
  *
  *********/
 
-func (self *Entry) Get() string {
-	if self.value != "" {
-		return self.value
+func (ent *Entry) Get() string {
+	if ent.value != "" {
+		return ent.value
 	}
-	if self.altvalue != "" {
-		return self.altvalue
+	if ent.altvalue != "" {
+		return ent.altvalue
 	}
-	if self.def != "" {
-		return self.def
+	if ent.def != "" {
+		return ent.def
 	}
 	return ""
 }
 
-func (self *Entry) GetB() bool {
-	return self.bool
+func (ent *Entry) GetB() bool {
+	return ent.bool
 }
 
-func (self *Entry) GetReal() string {
-	return self.value
+func (ent *Entry) GetReal() string {
+	return ent.value
 }
 
-func (self *Entry) GetRealB() bool {
-	return self.bool
+func (ent *Entry) GetRealB() bool {
+	return ent.bool
 }
 
 /**********
@@ -91,44 +85,44 @@ func (self *Entry) GetRealB() bool {
  *
  *********/
 
-func (self *Entry) Print() string {
-	if self.value != "" {
-		return self.value
+func (ent *Entry) Print() string {
+	if ent.value != "" {
+		return ent.value
 	}
-	if self.altvalue != "" {
-		return self.altvalue
+	if ent.altvalue != "" {
+		return ent.altvalue
 	}
-	if self.def != "" {
-		return "(" + self.def + ")"
+	if ent.def != "" {
+		return "(" + ent.def + ")"
 	}
 	return "--"
 }
 
-func (self *Entry) PrintB() bool {
-	if self.from == "" {
-		return self.bool
+func (ent *Entry) PrintB() bool {
+	if ent.from == "" {
+		return ent.bool
 	}
-	return self.altbool
+	return ent.altbool
 }
 
-func (self *Entry) Source() string {
-	if self.value != "" && self.altvalue != "" {
+func (ent *Entry) Source() string {
+	if ent.value != "" && ent.altvalue != "" {
 		return "SUPERSEDED"
-		//return fmt.Sprintf("[%s]", self.from)
-	} else if self.from == "" {
+		//return fmt.Sprintf("[%s]", ent.from)
+	} else if ent.from == "" {
 		return "--"
 	}
-	return self.from
+	return ent.from
 }
 
-func (self *Entry) Defined() bool {
-	if self.value != "" {
+func (ent *Entry) Defined() bool {
+	if ent.value != "" {
 		return true
 	}
-	if self.altvalue != "" {
+	if ent.altvalue != "" {
 		return true
 	}
-	if self.def != "" {
+	if ent.def != "" {
 		return true
 	}
 	return false

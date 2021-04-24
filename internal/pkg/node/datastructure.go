@@ -97,7 +97,7 @@ type NetDevEntry struct {
 
 func init() {
 	//TODO: Check to make sure nodes.conf is found
-	if util.IsFile(ConfigFile) == false {
+	if !util.IsFile(ConfigFile) {
 		c, err := os.OpenFile(ConfigFile, os.O_RDWR|os.O_CREATE, 0644)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Could not create new configuration file: %s\n", err)
