@@ -2,7 +2,6 @@ package hosts
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"text/template"
 
@@ -21,14 +20,13 @@ type TemplateStruct struct {
 }
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
+	return Configure(SetShow)
+}
+
+func Configure(show bool) error {
 	var replace TemplateStruct
 
-	if SetShow == false && SetPersist == false {
-		fmt.Println(cmd.Help())
-		os.Exit(0)
-	}
-
-	if util.IsFile("/etc/warewulf/hosts.tmpl") == false {
+	if !util.IsFile("/etc/warewulf/hosts.tmpl") {
 		wwlog.Printf(wwlog.WARN, "Template not found, not updating host file\n")
 		return nil
 	}
@@ -90,7 +88,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	replace.Ipaddr = controller.Ipaddr
 	replace.Fqdn = controller.Fqdn
 
-	if SetShow == false {
+	if !SetShow {
 		// only open "/etc/hosts" when intended to write, as 'os.O_TRUNC' will empty the file otherwise.
 		w, err = os.OpenFile("/etc/hosts", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 		if err != nil {

@@ -11,11 +11,11 @@ var (
 			"keys.",
 		RunE: CobraRunE,
 	}
-	SetPersist bool
+	SetShow bool
 )
 
 func init() {
-	baseCmd.PersistentFlags().BoolVar(&SetPersist, "persist", false, "Persist the configuration and initialize the service")
+	baseCmd.PersistentFlags().BoolVarP(&SetShow, "show", "s", false, "Show configuration (don't update)")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

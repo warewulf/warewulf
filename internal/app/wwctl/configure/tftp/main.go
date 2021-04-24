@@ -13,11 +13,6 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	if SetShow == false && SetPersist == false {
-		fmt.Println(cmd.Help())
-		os.Exit(0)
-	}
-
 	return Configure(SetShow)
 }
 
@@ -33,7 +28,7 @@ func Configure(show bool) error {
 		os.Exit(1)
 	}
 
-	if util.IsDir(controller.Tftp.TftpRoot) == false {
+	if !util.IsDir(controller.Tftp.TftpRoot) {
 		wwlog.Printf(wwlog.ERROR, "Configured TFTP Root directory does not exist: %s\n", controller.Tftp.TftpRoot)
 		os.Exit(1)
 	}
@@ -44,7 +39,7 @@ func Configure(show bool) error {
 		os.Exit(1)
 	}
 
-	if show == false {
+	if !show {
 		fmt.Printf("Writing PXE files to: %s\n", path.Join(controller.Tftp.TftpRoot, "warewulf"))
 		err = staticfiles.WriteData("files/tftp/x86.efi", path.Join(controller.Tftp.TftpRoot, "warewulf/x86.efi"))
 		if err != nil {

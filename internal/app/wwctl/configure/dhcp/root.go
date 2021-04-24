@@ -12,13 +12,11 @@ var (
 			"in the warewulf.conf file.",
 		RunE: CobraRunE,
 	}
-	SetShow    bool
-	SetPersist bool
+	SetShow bool
 )
 
 func init() {
 	baseCmd.PersistentFlags().BoolVarP(&SetShow, "show", "s", false, "Show configuration (don't update)")
-	baseCmd.PersistentFlags().BoolVar(&SetPersist, "persist", false, "Persist the configuration and initialize the service")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

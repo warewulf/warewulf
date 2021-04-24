@@ -24,11 +24,6 @@ type dhcpTemplate struct {
 }
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	if SetShow == false && SetPersist == false {
-		fmt.Println(cmd.Help())
-		os.Exit(0)
-	}
-
 	return Configure(SetShow)
 }
 
@@ -58,7 +53,7 @@ func Configure(show bool) error {
 		os.Exit(1)
 	}
 
-	if controller.Dhcp.Enabled == false {
+	if !controller.Dhcp.Enabled {
 		wwlog.Printf(wwlog.INFO, "This system is not configured as a Warewulf DHCP controller\n")
 		os.Exit(1)
 	}
@@ -109,7 +104,7 @@ func Configure(show bool) error {
 	d.RangeStart = controller.Dhcp.RangeStart
 	d.RangeEnd = controller.Dhcp.RangeEnd
 
-	if show == false {
+	if !show {
 		fmt.Printf("Writing the DHCP configuration file\n")
 		configWriter, err := os.OpenFile(controller.Dhcp.ConfigFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0640)
 		if err != nil {

@@ -11,11 +11,10 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
+	return Configure(SetShow)
+}
 
-	if SetShow == false && SetPersist == false {
-		fmt.Println(cmd.Help())
-		os.Exit(0)
-	}
+func Configure(show bool) error {
 
 	controller, err := warewulfconf.New()
 	if err != nil {
@@ -32,7 +31,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	if SetShow == false {
+	if !SetShow {
 		exports, err := os.OpenFile("/etc/exports", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
