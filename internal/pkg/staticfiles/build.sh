@@ -1,5 +1,6 @@
 #!/bin/sh
 
+test -z "$GOPATH" && GOPATH="$HOME/go"
 
 if ! test -x $GOPATH/bin/implant; then
   IMPLANT_GIT="https://github.com/skx/implant"
