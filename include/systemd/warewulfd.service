@@ -10,7 +10,7 @@ User=root
 Group=warewulf
 
 ExecStart=/usr/bin/wwctl server start
-PIDFile=/tmp/warewulfd.pid
+PIDFile=/var/run/warewulfd.pid
 Restart=always
 
 [Install]
