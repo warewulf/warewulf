@@ -1,0 +1,17 @@
+BootStrap: yum
+OSVersion: 8
+MirrorURL: http://mirror.centos.org/centos-%{OSVERSION}/%{OSVERSION}/BaseOS/x86_64/os
+Include: dnf
+
+
+%post
+
+    sed -i 's/^root:.:/root::/g' /etc/passwd
+
+    dnf install -y basesystem bash chkconfig coreutils e2fsprogs \
+    ethtool filesystem findutils gawk grep initscripts iproute \
+    iputils net-tools nfs-utils pam psmisc rsync sed setup \
+    shadow-utils rsyslog tzdata util-linux words zlib tar less \
+    gzip which util-linux openssh-clients openssh-server dhclient \
+    pciutils vim-minimal shadow-utils strace cronie crontabs cpio \
+    wget centos-release ipmitool
