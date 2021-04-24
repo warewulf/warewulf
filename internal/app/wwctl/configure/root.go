@@ -42,22 +42,25 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	if SetDoAll {
 		fmt.Printf("################################################################################\n")
+		fmt.Printf("Configuring: DHCP\n")
 		dhcp.Configure(false)
 
 		fmt.Printf("################################################################################\n")
+		fmt.Printf("Configuring: TFTP\n")
 		tftp.Configure(false)
 
 		fmt.Printf("################################################################################\n")
+		fmt.Printf("Configuring: /etc/hosts\n")
 		hosts.Configure(false)
 
 		fmt.Printf("################################################################################\n")
+		fmt.Printf("Configuring: NFS\n")
 		nfs.Configure(false)
 
 		fmt.Printf("################################################################################\n")
+		fmt.Printf("Configuring: SSH\n")
 		ssh.Configure(false)
 
-		fmt.Printf("################################################################################\n")
-		tftp.Configure(false)
 	} else {
 		cmd.Help()
 		os.Exit(0)
