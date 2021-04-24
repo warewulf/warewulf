@@ -95,7 +95,7 @@ profile, but if you wanted to set them by hand to something different, you can d
 following:
 
 ```bash
-$ sudo wwctl profile set default -K $(uname -r) -C centos-7
+$ sudo wwctl profile set default -K $(uname -r) -C centos-8
 ```
 
 Next we set some default networking configurations for the first ethernet device. On
