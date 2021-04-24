@@ -7,7 +7,7 @@ AssertFileIsExecutable=/usr/bin/wwctl
 [Service]
 Type=forking
 User=root
-Group=warewulf
+Group=root
 
 ExecStart=/usr/bin/wwctl server start
 PIDFile=/tmp/warewulfd.pid

@@ -7,7 +7,6 @@ import (
 	"os/exec"
 	"strconv"
 	"syscall"
-	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -46,9 +45,6 @@ func DaemonStart() error {
 
 		p.Close()
 
-		time.Sleep(1 * time.Second)
-
-		DaemonStatus()
 	}
 
 	return nil
