@@ -53,7 +53,10 @@ files: all
 	install -d -m 0755 $(DESTDIR)/etc/warewulf/
 	install -d -m 0755 $(DESTDIR)/etc/warewulf/ipxe
 	install -d -m 0755 $(DESTDIR)/var/lib/tftpboot/warewulf/ipxe/
-	cp -r etc/* $(DESTDIR)/etc/warewulf/
+	test -f $(DESTDIR)/etc/warewulf/warewulf.conf || install -m 644 etc/warewulf.conf $(DESTDIR)/etc/warewulf/
+	test -f $(DESTDIR)/etc/warewulf/hosts.tmpl || install -m 644 etc/hosts.tmpl $(DESTDIR)/etc/warewulf/
+	cp -r etc/dhcp $(DESTDIR)/etc/warewulf/
+	cp -r etc/ipxe $(DESTDIR)/etc/warewulf/
 	cp -r overlays $(DESTDIR)/var/warewulf/
 	chmod +x $(DESTDIR)/var/warewulf/overlays/system/default/init
 	chmod 600 $(DESTDIR)/var/warewulf/overlays/system/default/etc/ssh/ssh*
