@@ -40,13 +40,17 @@ func Build(name string, buildForce bool) error {
 		return errors.New("Failed creating directory")
 	}
 
-	wwlog.Printf(wwlog.DEBUG, "Building VNFS image: '%s' -> '%s'\n", rootfsPath, imagePath)
-	cmd := fmt.Sprintf("cd %s; find . | cpio --quiet -o -H newc | gzip -c > \"%s\"", rootfsPath, imagePath)
-	// use pigz if available
-	err = exec.Command("/bin/sh", "-c", "command -v pigz").Run()
-	if err == nil {
-		cmd = fmt.Sprintf("cd %s; find . | cpio --quiet -o -H newc | pigz -c > \"%s\"", rootfsPath, imagePath)
+	compressor, err := exec.LookPath("pigz")
+	if err != nil {
+		wwlog.Printf(wwlog.VERBOSE, "Could not locate PIGZ, using GZIP\n")
+		compressor = "gzip"
+	} else {
+		wwlog.Printf(wwlog.VERBOSE, "Using PIGZ to compress the container: %s\n", compressor)
 	}
+
+	wwlog.Printf(wwlog.DEBUG, "Building VNFS image: '%s' -> '%s'\n", rootfsPath, imagePath)
+	cmd := fmt.Sprintf("cd %s; find . | cpio --quiet -o -H newc | %s -c > \"%s\"", rootfsPath, compressor, imagePath)
+
 	wwlog.Printf(wwlog.DEBUG, "RUNNING: %s\n", cmd)
 	err = exec.Command("/bin/sh", "-c", cmd).Run()
 	if err != nil {

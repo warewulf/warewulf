@@ -99,12 +99,16 @@ func Build(kernelVersion string, root string) (string, error) {
 
 	wwlog.Printf(wwlog.VERBOSE, "Building Kernel driver image\n")
 	if _, err := os.Stat(kernelDrivers); err == nil {
-		cmd := fmt.Sprintf("cd /; find .%s | cpio --quiet -o -H newc | gzip -c > \"%s\"", kernelDrivers, driversDestination)
-		// use pigz if available
-		err := exec.Command("/bin/sh", "-c", "command -v pigz").Run()
-		if err == nil {
-			cmd = fmt.Sprintf("cd /; find .%s | cpio --quiet -o -H newc | pigz -c > \"%s\"", kernelDrivers, driversDestination)
+		compressor, err := exec.LookPath("pigz")
+		if err != nil {
+			wwlog.Printf(wwlog.VERBOSE, "Could not locate PIGZ, using GZIP\n")
+			compressor = "gzip"
+		} else {
+			wwlog.Printf(wwlog.VERBOSE, "Using PIGZ to compress the container: %s\n", compressor)
 		}
+
+		cmd := fmt.Sprintf("cd /; find .%s | cpio --quiet -o -H newc | %s -c > \"%s\"", kernelDrivers, compressor, driversDestination)
+
 		wwlog.Printf(wwlog.DEBUG, "RUNNING: %s\n", cmd)
 		err = exec.Command("/bin/sh", "-c", cmd).Run()
 		if err != nil {
