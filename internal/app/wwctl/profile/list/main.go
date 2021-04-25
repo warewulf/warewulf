@@ -25,7 +25,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if ShowAll {
-		for _, profile := range profiles {
+		for _, profile := range node.FilterByName(profiles, args) {
 			fmt.Printf("################################################################################\n")
 			fmt.Printf("%-20s %-18s %s\n", "PROFILE NAME", "FIELD", "VALUE")
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Id", profile.Id.Print())
@@ -59,7 +59,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Printf("%-20s %s\n", "PROFILE NAME", "COMMENT/DESCRIPTION")
 		fmt.Println(strings.Repeat("=", 80))
 
-		for _, profile := range profiles {
+		for _, profile := range node.FilterByName(profiles, args) {
 			fmt.Printf("%-20s %s\n", profile.Id.Print(), profile.Comment.Print())
 		}
 	}

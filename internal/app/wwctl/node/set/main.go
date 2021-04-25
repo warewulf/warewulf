@@ -16,7 +16,6 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var err error
-	var nodes []node.NodeInfo
 	var SetProfiles []string
 
 	nodeDB, err := node.New()
@@ -25,26 +24,23 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
+	nodes, err := nodeDB.FindAllNodes()
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Cloud not get nodeList: %s\n", err)
 		os.Exit(1)
 	}
 
-	if SetNodeAll == true {
-		nodes, err = nodeDB.FindAllNodes()
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Cloud not get nodeList: %s\n", err)
+	if !SetNodeAll {
+		if len(args) > 0 {
+			nodes = node.FilterByName(nodes, args)
+		} else {
+			cmd.Usage()
 			os.Exit(1)
 		}
+	}
 
-	} else if len(args) > 0 {
-		nodes, err = nodeDB.SearchByNameList(args)
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Cloud not get nodeList: %s\n", err)
-			os.Exit(1)
-		}
-	} else {
-		cmd.Usage()
+	if len(nodes) == 0 {
+		fmt.Printf("No nodes found\n")
 		os.Exit(1)
 	}
 
@@ -336,28 +332,23 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if len(nodes) > 0 {
-		if SetYes == true {
-			nodeDB.Persist()
-			warewulfd.DaemonReload()
-		} else {
-			q := fmt.Sprintf("Are you sure you want to modify %d nodes(s)", len(nodes))
+	if SetYes == true {
+		nodeDB.Persist()
+		warewulfd.DaemonReload()
+	} else {
+		q := fmt.Sprintf("Are you sure you want to modify %d nodes(s)", len(nodes))
 
-			prompt := promptui.Prompt{
-				Label:     q,
-				IsConfirm: true,
-			}
-
-			result, _ := prompt.Run()
-
-			if result == "y" || result == "yes" {
-				nodeDB.Persist()
-				warewulfd.DaemonReload()
-			}
+		prompt := promptui.Prompt{
+			Label:     q,
+			IsConfirm: true,
 		}
 
-	} else {
-		fmt.Printf("No nodes found\n")
+		result, _ := prompt.Run()
+
+		if result == "y" || result == "yes" {
+			nodeDB.Persist()
+			warewulfd.DaemonReload()
+		}
 	}
 
 	return nil

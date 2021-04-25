@@ -3,7 +3,6 @@ package node
 import (
 	"fmt"
 	"io/ioutil"
-	"regexp"
 	"sort"
 	"strings"
 
@@ -263,36 +262,4 @@ func (config *nodeYaml) FindByIpaddr(ipaddr string) (NodeInfo, error) {
 	}
 
 	return ret, errors.New("No nodes found with IP Addr: " + ipaddr)
-}
-
-func (nodes *nodeYaml) SearchByName(search string) ([]NodeInfo, error) {
-	var ret []NodeInfo
-
-	n, _ := nodes.FindAllNodes()
-
-	for _, node := range n {
-		b, _ := regexp.MatchString(search, node.Id.Get())
-		if b {
-			ret = append(ret, node)
-		}
-	}
-
-	return ret, nil
-}
-
-func (nodes *nodeYaml) SearchByNameList(searchList []string) ([]NodeInfo, error) {
-	var ret []NodeInfo
-
-	n, _ := nodes.FindAllNodes()
-
-	for _, search := range searchList {
-		for _, node := range n {
-			b, _ := regexp.MatchString(search, node.Id.Get())
-			if b {
-				ret = append(ret, node)
-			}
-		}
-	}
-
-	return ret, nil
 }

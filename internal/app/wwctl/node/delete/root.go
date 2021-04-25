@@ -4,7 +4,7 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:     "delete [flags] [node pattern]...",
+		Use:     "delete [flags] [exact node name]...",
 		Short:   "Delete a node from Warewulf",
 		Long:    "This command will remove a node from the Warewulf node configuration.",
 		Args:    cobra.MinimumNArgs(1),

@@ -1,5 +1,32 @@
 package node
 
+import "regexp"
+
+/**********
+ *
+ * Filters
+ *
+ *********/
+
+func FilterByName(set []NodeInfo, searchList []string) []NodeInfo {
+	var ret []NodeInfo
+
+	if len(searchList) > 0 {
+		for _, search := range searchList {
+			for _, entry := range set {
+				b, _ := regexp.MatchString(search, entry.Id.Get())
+				if b {
+					ret = append(ret, entry)
+				}
+			}
+		}
+	} else {
+		ret = set
+	}
+
+	return ret
+}
+
 /**********
  *
  * Sets

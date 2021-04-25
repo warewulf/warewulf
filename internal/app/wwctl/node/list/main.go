@@ -13,26 +13,21 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var err error
-	var nodes []node.NodeInfo
 
-	n, err := node.New()
+	nodeDB, err := node.New()
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
 		os.Exit(1)
 	}
 
-	if len(args) > 0 {
-		nodes, err = n.SearchByNameList(args)
-	} else {
-		nodes, err = n.FindAllNodes()
-	}
+	nodes, err := nodeDB.FindAllNodes()
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Cloud not get nodeList: %s\n", err)
 		os.Exit(1)
 	}
 
 	if ShowAll {
-		for _, node := range nodes {
+		for _, node := range node.FilterByName(nodes, args) {
 			fmt.Printf("################################################################################\n")
 			fmt.Printf("%-20s %-18s %-12s %s\n", "NODE", "FIELD", "PROFILE", "VALUE")
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Id", node.Id.Source(), node.Id.Print())
@@ -63,20 +58,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":TYPE", netdev.Type.Source(), netdev.Type.Print())
 				fmt.Printf("%-20s %-18s %-12s %t\n", node.Id.Get(), name+":DEFAULT", netdev.Default.Source(), netdev.Default.PrintB())
 			}
-
-			//			v := reflect.ValueOf(node)
-			//			typeOfS := v.Type()
-			//			for i := 0; i< v.NumField(); i++ {
-			//				//TODO: Fix for NetDevs and Interface should print Fprint() method
-			//				fmt.Printf("%-25s %s = %#v\n", node.Fqdn.Get(), typeOfS.Field(i).Name, v.Field(i).Interface())
-			//			}
 		}
 
 	} else if ShowNet {
 		fmt.Printf("%-22s %-6s %-18s %-15s %-15s\n", "NODE NAME", "DEVICE", "HWADDR", "IPADDR", "GATEWAY")
 		fmt.Println(strings.Repeat("=", 80))
 
-		for _, node := range nodes {
+		for _, node := range node.FilterByName(nodes, args) {
 			if len(node.NetDevs) > 0 {
 				for name, dev := range node.NetDevs {
 					fmt.Printf("%-22s %-6s %-18s %-15s %-15s\n", node.Id.Get(), name, dev.Hwaddr.Print(), dev.Ipaddr.Print(), dev.Gateway.Print())
@@ -90,7 +78,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Printf("%-22s %-16s %-20s %-20s\n", "NODE NAME", "IPMI IPADDR", "IPMI USERNAME", "IPMI PASSWORD")
 		fmt.Println(strings.Repeat("=", 80))
 
-		for _, node := range nodes {
+		for _, node := range node.FilterByName(nodes, args) {
 			fmt.Printf("%-22s %-16s %-20s %-20s\n", node.Id.Get(), node.IpmiIpaddr.Print(), node.IpmiUserName.Print(), node.IpmiPassword.Print())
 		}
 
@@ -98,7 +86,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Printf("%-22s %-26s %-35s %s\n", "NODE NAME", "KERNEL VERSION", "CONTAINER", "OVERLAYS (S/R)")
 		fmt.Println(strings.Repeat("=", 120))
 
-		for _, node := range nodes {
+		for _, node := range node.FilterByName(nodes, args) {
 			fmt.Printf("%-22s %-26s %-35s %s\n", node.Id.Get(), node.KernelVersion.Print(), node.ContainerName.Print(), node.SystemOverlay.Print()+"/"+node.RuntimeOverlay.Print())
 		}
 
@@ -106,7 +94,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Printf("%-22s %-26s %s\n", "NODE NAME", "PROFILES", "NETWORK")
 		fmt.Println(strings.Repeat("=", 80))
 
-		for _, node := range nodes {
+		for _, node := range node.FilterByName(nodes, args) {
 			var netdevs []string
 			if len(node.NetDevs) > 0 {
 				for name, dev := range node.NetDevs {
