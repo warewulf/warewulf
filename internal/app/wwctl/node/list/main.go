@@ -104,6 +104,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	} else {
 		fmt.Printf("%-22s %-26s %s\n", "NODE NAME", "PROFILES", "NETWORK")
+		fmt.Println(strings.Repeat("=", 80))
 
 		for _, node := range nodes {
 			var netdevs []string
