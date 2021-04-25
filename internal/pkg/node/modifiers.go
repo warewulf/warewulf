@@ -70,7 +70,6 @@ func (config *nodeYaml) NodeUpdate(node NodeInfo) error {
 	config.Nodes[nodeID].SystemOverlay = node.SystemOverlay.GetReal()
 	config.Nodes[nodeID].Root = node.Root.GetReal()
 
-	config.Nodes[nodeID].Disabled = node.Disabled.GetRealB()
 	config.Nodes[nodeID].Discoverable = node.Discoverable.GetRealB()
 
 	config.Nodes[nodeID].Profiles = node.Profiles
@@ -148,7 +147,6 @@ func (config *nodeYaml) ProfileUpdate(profile NodeInfo) error {
 	config.NodeProfiles[profileID].SystemOverlay = profile.SystemOverlay.GetReal()
 	config.NodeProfiles[profileID].Root = profile.Root.GetReal()
 
-	config.NodeProfiles[profileID].Disabled = profile.Disabled.GetRealB()
 	config.NodeProfiles[profileID].Discoverable = profile.Discoverable.GetRealB()
 
 	config.NodeProfiles[profileID].Profiles = profile.Profiles

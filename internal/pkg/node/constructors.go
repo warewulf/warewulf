@@ -80,7 +80,6 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.Root.Set(node.Root)
 
 		n.Discoverable.SetB(node.Discoverable)
-		n.Disabled.SetB(node.Disabled)
 
 		for devname, netdev := range node.NetDevs {
 			if _, ok := n.NetDevs[devname]; !ok {
@@ -120,7 +119,6 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.RuntimeOverlay.SetAlt(config.NodeProfiles[p].RuntimeOverlay, p)
 			n.Root.SetAlt(config.NodeProfiles[p].Root, p)
 
-			n.Disabled.SetAltB(config.NodeProfiles[p].Disabled, p)
 			n.Discoverable.SetAltB(config.NodeProfiles[p].Discoverable, p)
 
 			for devname, netdev := range config.NodeProfiles[p].NetDevs {
@@ -179,7 +177,6 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		p.SystemOverlay.Set(profile.SystemOverlay)
 		p.Root.Set(profile.Root)
 
-		p.Disabled.SetB(profile.Disabled)
 		p.Discoverable.SetB(profile.Discoverable)
 
 		for devname, netdev := range profile.NetDevs {

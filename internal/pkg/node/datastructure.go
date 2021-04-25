@@ -19,7 +19,6 @@ type nodeYaml struct {
 
 type NodeConf struct {
 	Comment        string              `yaml:"comment,omitempty"`
-	Disabled       bool                `yaml:"disabled,omitempty"`
 	ClusterName    string              `yaml:"cluster name,omitempty"`
 	ContainerName  string              `yaml:"container name,omitempty"`
 	Ipxe           string              `yaml:"ipxe template,omitempty"`
@@ -79,7 +78,6 @@ type NodeInfo struct {
 	SystemOverlay  Entry
 	Root           Entry
 	Discoverable   Entry
-	Disabled       Entry
 	Init           Entry //TODO: Finish adding this...
 	Profiles       []string
 	GroupProfiles  []string
