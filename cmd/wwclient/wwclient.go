@@ -85,7 +85,7 @@ func main() {
 		}
 
 		log.Printf("Updating system\n")
-		command := exec.Command("/bin/cpio", "-iu")
+		command := exec.Command("/bin/sh", "-c", "gzip -dc | cpio -iu")
 		command.Stdin = resp.Body
 		err := command.Run()
 		if err != nil {
