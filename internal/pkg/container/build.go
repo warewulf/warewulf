@@ -42,6 +42,12 @@ func Build(name string, buildForce bool) error {
 
 	wwlog.Printf(wwlog.DEBUG, "Building VNFS image: '%s' -> '%s'\n", rootfsPath, imagePath)
 	cmd := fmt.Sprintf("cd %s; find . | cpio --quiet -o -H newc | gzip -c > \"%s\"", rootfsPath, imagePath)
+	// use pigz if available
+	err = exec.Command("/bin/sh", "-c", "command -v pigz").Run()
+	if err == nil {
+		cmd = fmt.Sprintf("cd %s; find . | cpio --quiet -o -H newc | pigz -c > \"%s\"", rootfsPath, imagePath)
+	}
+	wwlog.Printf(wwlog.DEBUG, "RUNNING: %s\n", cmd)
 	err = exec.Command("/bin/sh", "-c", cmd).Run()
 	if err != nil {
 		return errors.New("Failed building VNFS")

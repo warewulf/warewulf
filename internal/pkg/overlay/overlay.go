@@ -255,6 +255,11 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 		wwlog.Printf(wwlog.VERBOSE, "Finished generating overlay directory for: %s\n", n.Id.Get())
 
 		cmd := fmt.Sprintf("cd \"%s\"; find . | cpio --quiet -o -H newc | gzip -c > \"%s\"", tmpDir, OverlayFile)
+		// use pigz if available
+		err = exec.Command("/bin/sh", "-c", "command -v pigz").Run()
+		if err == nil {
+			cmd = fmt.Sprintf("cd \"%s\"; find . | cpio --quiet -o -H newc | pigz -c > \"%s\"", tmpDir, OverlayFile)
+		}
 		wwlog.Printf(wwlog.DEBUG, "RUNNING: %s\n", cmd)
 		err = exec.Command("/bin/sh", "-c", cmd).Run()
 		if err != nil {
