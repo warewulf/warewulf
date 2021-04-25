@@ -96,7 +96,7 @@ profile, but if you wanted to set them by hand to something different, you can d
 following:
 
 ```bash
-sudo wwctl profile set default -K $(uname -r) -C centos-8
+sudo wwctl profile set -y default -K $(uname -r) -C centos-8
 ```
 
 Next we set some default networking configurations for the first ethernet device. On
@@ -105,7 +105,7 @@ according to the HW address. Because all nodes will share the netmask and gatewa
 configuration, we can set them in the default profile as follows:
 
 ```bash
-sudo wwctl profile set default --netdev eth0 -M 255.255.255.0 -G 192.168.1.1
+sudo wwctl profile set -y default --netdev eth0 -M 255.255.255.0 -G 192.168.1.1
 sudo wwctl profile list
 ```
 

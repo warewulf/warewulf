@@ -90,13 +90,13 @@ sudo wwctl kernel import $(uname -r) --setdefault
 The `--setdefault` arguments above will automatically set those entries in the default profile, but if you wanted to set them by hand to something different, you can do the following:
 
 ```bash
-sudo wwctl profile set default -K $(uname -r) -C centos-7
+sudo wwctl profile set -y default -K $(uname -r) -C centos-7
 ```
 
 Next we set some default networking configurations for the first ethernet device. On modern Linux distributions, the name of the device is not critical, as it will be setup according to the HW address. Because all nodes will share the netmask and gateway configuration, we can set them in the default profile as follows:
 
 ```bash
-sudo wwctl profile set default --netdev eth0 -M 255.255.255.0 -G 192.168.1.1
+sudo wwctl profile set -y default --netdev eth0 -M 255.255.255.0 -G 192.168.1.1
 sudo wwctl profile list
 ```
 
