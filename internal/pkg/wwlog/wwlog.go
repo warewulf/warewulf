@@ -25,7 +25,7 @@ func SetLevel(level int) {
 	if level == DEBUG {
 		log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lmsgprefix)
 	} else {
-		log.SetFlags(log.LstdFlags | log.Lmsgprefix)
+		log.SetFlags(0)
 	}
 
 	Printf(DEBUG, "Set log level to: %d\n", logLevel)
