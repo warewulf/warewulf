@@ -15,6 +15,8 @@ GOLANGCI_LINT_VERSION := v1.31.0
 # built tags needed for wwbuild binary
 WW_BUILD_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
+all: setup_tools vendor wwctl wwclient
+
 # set the go tools into the tools bin.
 setup_tools: $(GO_TOOLS_BIN) $(GOLANGCI_LINT)
 
@@ -41,8 +43,6 @@ $(TOOLS_DIR):
 lint:
 	@echo Running golangci-lint...
 	@$(GOLANGCI_LINT) run --build-tags "$(WW_BUILD_GO_BUILD_TAGS)" ./...
-
-all: vendor wwctl wwclient
 
 debian: all 
 
