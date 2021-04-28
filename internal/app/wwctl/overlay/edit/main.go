@@ -66,7 +66,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Fprintf(w, "# of macros and logic which can be used within this file:\n")
 		fmt.Fprintf(w, "#\n")
 		fmt.Fprintf(w, "# Node FQDN = {{.Id}}\n")
-		fmt.Fprintf(w, "# Node Group = {{.GroupName}}\n")
+		fmt.Fprintf(w, "# Node Cluster = {{.ClusterName}}\n")
 		fmt.Fprintf(w, "# Network Config = {{.NetDevs.eth0.Ipaddr}}, {{.NetDevs.eth0.Hwaddr}}, etc.\n")
 		fmt.Fprintf(w, "#\n")
 		fmt.Fprintf(w, "# Goto the documentation pages for more information: http://www.hpcng.org/...\n")
