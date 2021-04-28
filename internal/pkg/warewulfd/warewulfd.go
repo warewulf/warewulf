@@ -18,7 +18,7 @@ func RunServer() error {
 	signal.Notify(c, syscall.SIGHUP)
 
 	go func() {
-		for _ = range c {
+		for range c {
 			err := LoadNodeDB()
 			if err != nil {
 				wwlog.Printf(wwlog.WARN, "Could not load database: %s\n", err)

@@ -15,7 +15,6 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var err error
-	var profiles []node.NodeInfo
 
 	nodeDB, err := node.New()
 	if err != nil {
@@ -23,31 +22,24 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	if len(args) == 0 {
-		args = append(args, "default")
+	profiles, err := nodeDB.FindAllProfiles()
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "%s\n", err)
+		os.Exit(1)
 	}
 
-	if SetAll == true {
-		profiles, err = nodeDB.FindAllProfiles()
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "%s\n", err)
+	if !SetAll {
+		if len(args) > 0 {
+			profiles = node.FilterByName(profiles, args)
+		} else {
+			cmd.Usage()
 			os.Exit(1)
 		}
-	} else {
-		var tmp []node.NodeInfo
-		tmp, err = nodeDB.FindAllProfiles()
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "%s\n", err)
-			os.Exit(1)
-		}
+	}
 
-		for _, a := range args {
-			for _, p := range tmp {
-				if p.Id.Get() == a {
-					profiles = append(profiles, p)
-				}
-			}
-		}
+	if len(profiles) == 0 {
+		fmt.Printf("No profiles found\n")
+		os.Exit(1)
 	}
 
 	if SetContainer != "" {
@@ -257,20 +249,24 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(profiles) > 0 {
-		q := fmt.Sprintf("Are you sure you want to modify %d profile(s)", len(profiles))
-
-		prompt := promptui.Prompt{
-			Label:     q,
-			IsConfirm: true,
-		}
-
-		result, _ := prompt.Run()
-
-		if result == "y" || result == "yes" {
+		if SetYes == true {
 			nodeDB.Persist()
 			warewulfd.DaemonReload()
-		}
+		} else {
+			q := fmt.Sprintf("Are you sure you want to modify %d profile(s)", len(profiles))
 
+			prompt := promptui.Prompt{
+				Label:     q,
+				IsConfirm: true,
+			}
+
+			result, _ := prompt.Run()
+
+			if result == "y" || result == "yes" {
+				nodeDB.Persist()
+				warewulfd.DaemonReload()
+			}
+		}
 	} else {
 		fmt.Printf("No profiles found\n")
 	}

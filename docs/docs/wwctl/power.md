@@ -5,18 +5,14 @@ title: wwctl power
 
 This command can control the power state of nodes.
 
-cycle
-~~~~~
+## cycle
 This command will cycle the power for a given set of nodes.
 
-off
-~~~
+## off
 This command will shutdown the power to a given set of nodes.
 
-on
-~~
+## on
 This command will power on a given set of nodes.
 
-status
-~~~~~~
+## status
 Show power status for the given node(s)

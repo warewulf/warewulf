@@ -1,12 +1,12 @@
 module.exports = {
   title: 'Warewulf',
   tagline: 'A stateless and diskless container operating system provisioning system for large clusters of bare metal and/or virtual systems.',
-  url: 'https://ctrliq.github.io',
+  url: 'https://hpcng.github.io',
   baseUrl: '/warewulf/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.png',
-  organizationName: 'ctrliq',
+  organizationName: 'hpcng',
   projectName: 'warewulf',
   themeConfig: {
     navbar: {
@@ -24,7 +24,7 @@ module.exports = {
         },
         {to: 'news', label: 'News', position: 'left'},
         {
-          href: 'https://github.com/ctrliq/warewulf',
+          href: 'https://github.com/hpcng/warewulf',
           label: 'GitHub',
           position: 'right',
         },
@@ -64,12 +64,12 @@ module.exports = {
             },
             {
               label: 'GitHub',
-              href: 'https://github.com/ctrliq/warewulf',
+              href: 'https://github.com/hpcng/warewulf',
             },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} Ctrl IQ, Inc. - All Rights Reserved.`,
+      copyright: `Copyright © ${new Date().getFullYear()} HPCng. - All Rights Reserved.`,
     },
   },
   presets: [
@@ -79,12 +79,12 @@ module.exports = {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           editUrl:
-            'https://github.com/ctrliq/warewulf/edit/main/docs/',
+            'https://github.com/hpcng/warewulf/edit/main/docs/',
         },
         blog: {
           showReadingTime: true,
           editUrl:
-            'https://github.com/ctrliq/warewulf/edit/main/docs/blog/',
+            'https://github.com/hpcng/warewulf/edit/main/docs/blog/',
           routeBasePath: 'news',
           path: './news',
         },

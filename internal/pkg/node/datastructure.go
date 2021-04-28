@@ -19,7 +19,6 @@ type nodeYaml struct {
 
 type NodeConf struct {
 	Comment        string              `yaml:"comment,omitempty"`
-	Disabled       bool                `yaml:"disabled,omitempty"`
 	ClusterName    string              `yaml:"cluster name,omitempty"`
 	ContainerName  string              `yaml:"container name,omitempty"`
 	Ipxe           string              `yaml:"ipxe template,omitempty"`
@@ -79,7 +78,6 @@ type NodeInfo struct {
 	SystemOverlay  Entry
 	Root           Entry
 	Discoverable   Entry
-	Disabled       Entry
 	Init           Entry //TODO: Finish adding this...
 	Profiles       []string
 	GroupProfiles  []string
@@ -97,7 +95,7 @@ type NetDevEntry struct {
 
 func init() {
 	//TODO: Check to make sure nodes.conf is found
-	if util.IsFile(ConfigFile) == false {
+	if !util.IsFile(ConfigFile) {
 		c, err := os.OpenFile(ConfigFile, os.O_RDWR|os.O_CREATE, 0644)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Could not create new configuration file: %s\n", err)

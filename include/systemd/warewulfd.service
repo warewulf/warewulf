@@ -1,16 +1,16 @@
 [Unit]
 Description=Warewulf cluster management daemon
-Documentation=https://docs.ctrliq.com/warewulf
+Documentation=https://hpcng.github.io/warewulf
 After=network-online.target
 AssertFileIsExecutable=/usr/bin/wwctl
 
 [Service]
 Type=forking
 User=root
-Group=warewulf
+Group=root
 
 ExecStart=/usr/bin/wwctl server start
-PIDFile=/tmp/warewulfd.pid
+PIDFile=/var/run/warewulfd.pid
 Restart=always
 
 [Install]

@@ -15,6 +15,8 @@ GOLANGCI_LINT_VERSION := v1.31.0
 # built tags needed for wwbuild binary
 WW_BUILD_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
+all: setup_tools vendor wwctl wwclient
+
 # set the go tools into the tools bin.
 setup_tools: $(GO_TOOLS_BIN) $(GOLANGCI_LINT)
 
@@ -42,8 +44,6 @@ lint:
 	@echo Running golangci-lint...
 	@$(GOLANGCI_LINT) run --build-tags "$(WW_BUILD_GO_BUILD_TAGS)" ./...
 
-all: vendor wwctl wwclient
-
 debian: all 
 
 files: all
@@ -53,7 +53,10 @@ files: all
 	install -d -m 0755 $(DESTDIR)/etc/warewulf/
 	install -d -m 0755 $(DESTDIR)/etc/warewulf/ipxe
 	install -d -m 0755 $(DESTDIR)/var/lib/tftpboot/warewulf/ipxe/
-	cp -r etc/* $(DESTDIR)/etc/warewulf/
+	test -f $(DESTDIR)/etc/warewulf/warewulf.conf || install -m 644 etc/warewulf.conf $(DESTDIR)/etc/warewulf/
+	test -f $(DESTDIR)/etc/warewulf/hosts.tmpl || install -m 644 etc/hosts.tmpl $(DESTDIR)/etc/warewulf/
+	cp -r etc/dhcp $(DESTDIR)/etc/warewulf/
+	cp -r etc/ipxe $(DESTDIR)/etc/warewulf/
 	cp -r overlays $(DESTDIR)/var/warewulf/
 	chmod +x $(DESTDIR)/var/warewulf/overlays/system/default/init
 	chmod 600 $(DESTDIR)/var/warewulf/overlays/system/default/etc/ssh/ssh*
@@ -62,7 +65,9 @@ files: all
 	cp wwclient $(DESTDIR)/var/warewulf/overlays/system/default/warewulf/bin/
 	cp wwctl $(DESTDIR)/usr/bin/
 	mkdir -p $(DESTDIR)/usr/lib/systemd/system
+	install -c -m 0644 include/firewalld/warewulf.xml $(DESTDIR)/usr/lib/firewalld/services
 	install -c -m 0644 include/systemd/warewulfd.service $(DESTDIR)/usr/lib/systemd/system
+	systemctl daemon-reload
 #	cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
 #	restorecon -r /var/lib/tftpboot/warewulf
 

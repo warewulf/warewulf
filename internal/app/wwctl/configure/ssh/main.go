@@ -11,10 +11,10 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	if SetPersist == false {
-		fmt.Println(cmd.Help())
-		os.Exit(0)
-	}
+	return Configure(SetShow)
+}
+
+func Configure(show bool) error {
 
 	if os.Getuid() == 0 {
 		fmt.Printf("Updating system keys\n")
@@ -25,28 +25,28 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			os.Exit(1)
 		}
 
-		if util.IsFile("/etc/warewulf/keys/ssh_host_rsa_key") == false {
+		if !util.IsFile("/etc/warewulf/keys/ssh_host_rsa_key") {
 			fmt.Printf("Setting up key: ssh_host_rsa_key\n")
 			util.ExecInteractive("ssh-keygen", "-q", "-t", "rsa", "-f", "/etc/warewulf/keys/ssh_host_rsa_key", "-C", "", "-N", "")
 		} else {
 			fmt.Printf("Skipping, key already exists: ssh_host_rsa_key\n")
 		}
 
-		if util.IsFile("/etc/warewulf/keys/ssh_host_dsa_key") == false {
+		if !util.IsFile("/etc/warewulf/keys/ssh_host_dsa_key") {
 			fmt.Printf("Setting up key: ssh_host_dsa_key\n")
 			util.ExecInteractive("ssh-keygen", "-q", "-t", "dsa", "-f", "/etc/warewulf/keys/ssh_host_dsa_key", "-C", "", "-N", "")
 		} else {
 			fmt.Printf("Skipping, key already exists: ssh_host_dsa_key\n")
 		}
 
-		if util.IsFile("/etc/warewulf/keys/ssh_host_ecdsa_key") == false {
+		if !util.IsFile("/etc/warewulf/keys/ssh_host_ecdsa_key") {
 			fmt.Printf("Setting up key: ssh_host_ecdsa_key\n")
 			util.ExecInteractive("ssh-keygen", "-q", "-t", "ecdsa", "-f", "/etc/warewulf/keys/ssh_host_ecdsa_key", "-C", "", "-N", "")
 		} else {
 			fmt.Printf("Skipping, key already exists: ssh_host_ecdsa_key\n")
 		}
 
-		if util.IsFile("/etc/warewulf/keys/ssh_host_ed25519_key") == false {
+		if !util.IsFile("/etc/warewulf/keys/ssh_host_ed25519_key") {
 			fmt.Printf("Setting up key: ssh_host_ed25519_key\n")
 			util.ExecInteractive("ssh-keygen", "-q", "-t", "ed25519", "-f", "/etc/warewulf/keys/ssh_host_ed25519_key", "-C", "", "-N", "")
 		} else {
@@ -66,7 +66,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	rsaPriv := path.Join(homeDir, "/.ssh/id_rsa")
 	rsaPub := path.Join(homeDir, "/.ssh/id_rsa.pub")
 
-	if util.IsFile(authorizedKeys) == false {
+	if !util.IsFile(authorizedKeys) {
 		fmt.Printf("Setting up: %s\n", authorizedKeys)
 		util.ExecInteractive("ssh-keygen", "-q", "-t", "rsa", "-f", rsaPriv, "-C", "", "-N", "")
 		util.CopyFile(rsaPub, authorizedKeys)

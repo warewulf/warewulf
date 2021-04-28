@@ -3,6 +3,7 @@ package set
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -15,7 +16,7 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var err error
-	var nodes []node.NodeInfo
+	var SetProfiles []string
 
 	nodeDB, err := node.New()
 	if err != nil {
@@ -23,26 +24,23 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
+	nodes, err := nodeDB.FindAllNodes()
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Cloud not get nodeList: %s\n", err)
 		os.Exit(1)
 	}
 
-	if SetNodeAll == true {
-		nodes, err = nodeDB.FindAllNodes()
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Cloud not get nodeList: %s\n", err)
+	if !SetNodeAll {
+		if len(args) > 0 {
+			nodes = node.FilterByName(nodes, args)
+		} else {
+			cmd.Usage()
 			os.Exit(1)
 		}
+	}
 
-	} else if len(args) > 0 {
-		nodes, err = nodeDB.SearchByNameList(args)
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Cloud not get nodeList: %s\n", err)
-			os.Exit(1)
-		}
-	} else {
-		cmd.Usage()
+	if len(nodes) == 0 {
+		fmt.Printf("No nodes found\n")
 		os.Exit(1)
 	}
 
@@ -59,6 +57,42 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Printf(wwlog.ERROR, "Container does not exist: %s\n", SetContainer)
 			if SetForce == false {
 				os.Exit(1)
+			}
+		}
+	}
+
+	if SetProfile != "" {
+		profiles, _ := nodeDB.FindAllProfiles()
+		for _, r := range strings.Split(SetProfile, ",") {
+			var match bool
+
+			for _, p := range profiles {
+				if p.Id.Get() == r || SetForce {
+					match = true
+					SetProfiles = append(SetProfiles, r)
+				}
+			}
+
+			if !match {
+				wwlog.Printf(wwlog.WARN, "Requested profile is undefined: %s\n", r)
+			}
+		}
+	}
+
+	if len(SetAddProfile) > 0 {
+		profiles, _ := nodeDB.FindAllProfiles()
+		for _, r := range SetAddProfile {
+			var match bool
+
+			for _, p := range profiles {
+				if p.Id.Get() == r || SetForce {
+					match = true
+				}
+			}
+
+			if !match {
+				wwlog.Printf(wwlog.WARN, "Requested profile is undefined: %s\n", r)
+				SetAddProfile = util.SliceRemoveElement(SetAddProfile, r)
 			}
 		}
 	}
@@ -151,16 +185,21 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			n.Discoverable.SetB(false)
 		}
 
+		if len(SetProfiles) > 0 {
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting profiles to: %s\n", n.Id.Get(), strings.Join(SetProfiles, ","))
+			n.Profiles = SetProfiles
+		}
+
 		if len(SetAddProfile) > 0 {
 			for _, p := range SetAddProfile {
-				wwlog.Printf(wwlog.VERBOSE, "Node: %s, adding profile to '%s'\n", n.Id.Get(), p)
+				wwlog.Printf(wwlog.VERBOSE, "Node: %s, adding profile '%s'\n", n.Id.Get(), p)
 				n.Profiles = util.SliceAddUniqueElement(n.Profiles, p)
 			}
 		}
 
 		if len(SetDelProfile) > 0 {
 			for _, p := range SetDelProfile {
-				wwlog.Printf(wwlog.VERBOSE, "Node: %s, deleting profile from '%s'\n", n.Id.Get(), p)
+				wwlog.Printf(wwlog.VERBOSE, "Node: %s, deleting profile '%s'\n", n.Id.Get(), p)
 				n.Profiles = util.SliceRemoveElement(n.Profiles, p)
 			}
 		}
@@ -293,27 +332,23 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if len(nodes) > 0 {
-		if SetYes == true {
-			nodeDB.Persist()
-		} else {
-			q := fmt.Sprintf("Are you sure you want to modify %d nodes(s)", len(nodes))
+	if SetYes == true {
+		nodeDB.Persist()
+		warewulfd.DaemonReload()
+	} else {
+		q := fmt.Sprintf("Are you sure you want to modify %d nodes(s)", len(nodes))
 
-			prompt := promptui.Prompt{
-				Label:     q,
-				IsConfirm: true,
-			}
-
-			result, _ := prompt.Run()
-
-			if result == "y" || result == "yes" {
-				nodeDB.Persist()
-				warewulfd.DaemonReload()
-			}
+		prompt := promptui.Prompt{
+			Label:     q,
+			IsConfirm: true,
 		}
 
-	} else {
-		fmt.Printf("No nodes found\n")
+		result, _ := prompt.Run()
+
+		if result == "y" || result == "yes" {
+			nodeDB.Persist()
+			warewulfd.DaemonReload()
+		}
 	}
 
 	return nil

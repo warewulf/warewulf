@@ -32,7 +32,7 @@ func main() {
 	}
 
 	localTCPAddr := net.TCPAddr{}
-	if conf.Warewulf.Secure == true {
+	if conf.Warewulf.Secure {
 		// Setup local port to something privileged (<1024)
 		localTCPAddr.Port = 987
 	} else {
@@ -54,11 +54,11 @@ func main() {
 		},
 	}
 
-	for true {
+	for {
 		var resp *http.Response
 		counter := 0
 
-		for true {
+		for {
 			var err error
 
 			getString := fmt.Sprintf("http://%s:%d/overlay-runtime", conf.Ipaddr, conf.Warewulf.Port)
@@ -85,7 +85,7 @@ func main() {
 		}
 
 		log.Printf("Updating system\n")
-		command := exec.Command("/bin/cpio", "-iu")
+		command := exec.Command("/bin/sh", "-c", "gzip -dc | cpio -iu")
 		command.Stdin = resp.Body
 		err := command.Run()
 		if err != nil {

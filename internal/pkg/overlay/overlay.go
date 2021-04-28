@@ -215,8 +215,8 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 				tmpl, err := template.New(path.Base(location)).Funcs(template.FuncMap{
 					"Include":     templateFileInclude,
 					"IncludeFrom": templateContainerFileInclude,
-					"inc": func(i int) int { return i + 1 },
-					"dec": func(i int) int { return i - 1 },
+					"inc":         func(i int) int { return i + 1 },
+					"dec":         func(i int) int { return i - 1 },
 				}).ParseGlob(path.Join(OverlayDir, destFile+".ww*"))
 				if err != nil {
 					wwlog.Printf(wwlog.ERROR, "template.New %s\n", err)
@@ -254,7 +254,16 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 
 		wwlog.Printf(wwlog.VERBOSE, "Finished generating overlay directory for: %s\n", n.Id.Get())
 
-		cmd := fmt.Sprintf("cd \"%s\"; find . | cpio --quiet -o -H newc -F \"%s\"", tmpDir, OverlayFile)
+		compressor, err := exec.LookPath("pigz")
+		if err != nil {
+			wwlog.Printf(wwlog.VERBOSE, "Could not locate PIGZ, using GZIP\n")
+			compressor = "gzip"
+		} else {
+			wwlog.Printf(wwlog.VERBOSE, "Using PIGZ to compress the container: %s\n", compressor)
+		}
+
+		cmd := fmt.Sprintf("cd \"%s\"; find . | cpio --quiet -o -H newc | %s -c > \"%s\"", tmpDir, compressor, OverlayFile)
+
 		wwlog.Printf(wwlog.DEBUG, "RUNNING: %s\n", cmd)
 		err = exec.Command("/bin/sh", "-c", cmd).Run()
 		if err != nil {

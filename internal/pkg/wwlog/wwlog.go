@@ -23,7 +23,7 @@ func SetLevel(level int) {
 	logLevel = level
 
 	if level == DEBUG {
-		log.SetFlags(log.Lmicroseconds)
+		log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lmsgprefix)
 	} else {
 		log.SetFlags(0)
 	}

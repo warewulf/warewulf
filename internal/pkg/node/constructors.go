@@ -3,7 +3,6 @@ package node
 import (
 	"fmt"
 	"io/ioutil"
-	"regexp"
 	"sort"
 	"strings"
 
@@ -35,11 +34,11 @@ func New() (nodeYaml, error) {
 	return ret, nil
 }
 
-func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
+func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 	var ret []NodeInfo
 
 	wwlog.Printf(wwlog.DEBUG, "Finding all nodes...\n")
-	for nodename, node := range self.Nodes {
+	for nodename, node := range config.Nodes {
 		var n NodeInfo
 
 		wwlog.Printf(wwlog.DEBUG, "In node loop: %s\n", nodename)
@@ -49,7 +48,7 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.Ipxe.SetDefault("default")
 		n.Init.SetDefault("/sbin/init")
 		n.Root.SetDefault("initramfs")
-		n.KernelArgs.SetDefault("quiet crashkernel=no vga=791 rootfstype=tmpfs")
+		n.KernelArgs.SetDefault("quiet crashkernel=no vga=791 rootfstype=rootfs")
 
 		fullname := strings.SplitN(nodename, ".", 2)
 		if len(fullname) > 1 {
@@ -80,7 +79,6 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.Root.Set(node.Root)
 
 		n.Discoverable.SetB(node.Discoverable)
-		n.Disabled.SetB(node.Disabled)
 
 		for devname, netdev := range node.NetDevs {
 			if _, ok := n.NetDevs[devname]; !ok {
@@ -97,47 +95,44 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		}
 
 		for _, p := range n.Profiles {
-			if _, ok := self.NodeProfiles[p]; !ok {
+			if _, ok := config.NodeProfiles[p]; !ok {
 				wwlog.Printf(wwlog.WARN, "Profile not found for node '%s': %s\n", nodename, p)
 				continue
 			}
 
 			wwlog.Printf(wwlog.VERBOSE, "Merging profile into node: %s <- %s\n", nodename, p)
 
-			pstring := fmt.Sprintf("%s", p)
+			n.Comment.SetAlt(config.NodeProfiles[p].Comment, p)
+			n.ClusterName.SetAlt(config.NodeProfiles[p].ClusterName, p)
+			n.ContainerName.SetAlt(config.NodeProfiles[p].ContainerName, p)
+			n.KernelVersion.SetAlt(config.NodeProfiles[p].KernelVersion, p)
+			n.KernelArgs.SetAlt(config.NodeProfiles[p].KernelArgs, p)
+			n.Ipxe.SetAlt(config.NodeProfiles[p].Ipxe, p)
+			n.Init.SetAlt(config.NodeProfiles[p].Init, p)
+			n.IpmiIpaddr.SetAlt(config.NodeProfiles[p].IpmiIpaddr, p)
+			n.IpmiNetmask.SetAlt(config.NodeProfiles[p].IpmiNetmask, p)
+			n.IpmiGateway.SetAlt(config.NodeProfiles[p].IpmiGateway, p)
+			n.IpmiUserName.SetAlt(config.NodeProfiles[p].IpmiUserName, p)
+			n.IpmiPassword.SetAlt(config.NodeProfiles[p].IpmiPassword, p)
+			n.SystemOverlay.SetAlt(config.NodeProfiles[p].SystemOverlay, p)
+			n.RuntimeOverlay.SetAlt(config.NodeProfiles[p].RuntimeOverlay, p)
+			n.Root.SetAlt(config.NodeProfiles[p].Root, p)
 
-			n.Comment.SetAlt(self.NodeProfiles[p].Comment, pstring)
-			n.ClusterName.SetAlt(self.NodeProfiles[p].ClusterName, pstring)
-			n.ContainerName.SetAlt(self.NodeProfiles[p].ContainerName, pstring)
-			n.KernelVersion.SetAlt(self.NodeProfiles[p].KernelVersion, pstring)
-			n.KernelArgs.SetAlt(self.NodeProfiles[p].KernelArgs, pstring)
-			n.Ipxe.SetAlt(self.NodeProfiles[p].Ipxe, pstring)
-			n.Init.SetAlt(self.NodeProfiles[p].Init, pstring)
-			n.IpmiIpaddr.SetAlt(self.NodeProfiles[p].IpmiIpaddr, pstring)
-			n.IpmiNetmask.SetAlt(self.NodeProfiles[p].IpmiNetmask, pstring)
-			n.IpmiGateway.SetAlt(self.NodeProfiles[p].IpmiGateway, pstring)
-			n.IpmiUserName.SetAlt(self.NodeProfiles[p].IpmiUserName, pstring)
-			n.IpmiPassword.SetAlt(self.NodeProfiles[p].IpmiPassword, pstring)
-			n.SystemOverlay.SetAlt(self.NodeProfiles[p].SystemOverlay, pstring)
-			n.RuntimeOverlay.SetAlt(self.NodeProfiles[p].RuntimeOverlay, pstring)
-			n.Root.SetAlt(self.NodeProfiles[p].Root, pstring)
+			n.Discoverable.SetAltB(config.NodeProfiles[p].Discoverable, p)
 
-			n.Disabled.SetAltB(self.NodeProfiles[p].Disabled, pstring)
-			n.Discoverable.SetAltB(self.NodeProfiles[p].Discoverable, pstring)
-
-			for devname, netdev := range self.NodeProfiles[p].NetDevs {
+			for devname, netdev := range config.NodeProfiles[p].NetDevs {
 				if _, ok := n.NetDevs[devname]; !ok {
 					var netdev NetDevEntry
 					n.NetDevs[devname] = &netdev
 				}
 				wwlog.Printf(wwlog.DEBUG, "Updating profile (%s) netdev: %s\n", p, devname)
 
-				n.NetDevs[devname].Ipaddr.SetAlt(netdev.Ipaddr, pstring)
-				n.NetDevs[devname].Netmask.SetAlt(netdev.Netmask, pstring)
-				n.NetDevs[devname].Hwaddr.SetAlt(netdev.Hwaddr, pstring)
-				n.NetDevs[devname].Gateway.SetAlt(netdev.Gateway, pstring)
-				n.NetDevs[devname].Type.SetAlt(netdev.Type, pstring)
-				n.NetDevs[devname].Default.SetAltB(netdev.Default, pstring)
+				n.NetDevs[devname].Ipaddr.SetAlt(netdev.Ipaddr, p)
+				n.NetDevs[devname].Netmask.SetAlt(netdev.Netmask, p)
+				n.NetDevs[devname].Hwaddr.SetAlt(netdev.Hwaddr, p)
+				n.NetDevs[devname].Gateway.SetAlt(netdev.Gateway, p)
+				n.NetDevs[devname].Type.SetAlt(netdev.Type, p)
+				n.NetDevs[devname].Default.SetAltB(netdev.Default, p)
 			}
 		}
 
@@ -159,10 +154,10 @@ func (self *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 	return ret, nil
 }
 
-func (self *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
+func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 	var ret []NodeInfo
 
-	for name, profile := range self.NodeProfiles {
+	for name, profile := range config.NodeProfiles {
 		var p NodeInfo
 		p.NetDevs = make(map[string]*NetDevEntry)
 
@@ -181,7 +176,6 @@ func (self *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		p.SystemOverlay.Set(profile.SystemOverlay)
 		p.Root.Set(profile.Root)
 
-		p.Disabled.SetB(profile.Disabled)
 		p.Discoverable.SetB(profile.Discoverable)
 
 		for devname, netdev := range profile.NetDevs {
@@ -219,17 +213,17 @@ func (self *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 	return ret, nil
 }
 
-func (self *nodeYaml) FindDiscoverableNode() (NodeInfo, string, error) {
+func (config *nodeYaml) FindDiscoverableNode() (NodeInfo, string, error) {
 	var ret NodeInfo
 
-	nodes, _ := self.FindAllNodes()
+	nodes, _ := config.FindAllNodes()
 
 	for _, node := range nodes {
-		if node.Discoverable.GetB() == false {
+		if !node.Discoverable.GetB() {
 			continue
 		}
 		for netdev, dev := range node.NetDevs {
-			if dev.Hwaddr.Defined() == false {
+			if !dev.Hwaddr.Defined() {
 				return node, netdev, nil
 			}
 		}
@@ -238,10 +232,10 @@ func (self *nodeYaml) FindDiscoverableNode() (NodeInfo, string, error) {
 	return ret, "", errors.New("No unconfigured nodes found")
 }
 
-func (self *nodeYaml) FindByHwaddr(hwa string) (NodeInfo, error) {
+func (config *nodeYaml) FindByHwaddr(hwa string) (NodeInfo, error) {
 	var ret NodeInfo
 
-	n, _ := self.FindAllNodes()
+	n, _ := config.FindAllNodes()
 
 	for _, node := range n {
 		for _, dev := range node.NetDevs {
@@ -254,10 +248,10 @@ func (self *nodeYaml) FindByHwaddr(hwa string) (NodeInfo, error) {
 	return ret, errors.New("No nodes found with HW Addr: " + hwa)
 }
 
-func (self *nodeYaml) FindByIpaddr(ipaddr string) (NodeInfo, error) {
+func (config *nodeYaml) FindByIpaddr(ipaddr string) (NodeInfo, error) {
 	var ret NodeInfo
 
-	n, _ := self.FindAllNodes()
+	n, _ := config.FindAllNodes()
 
 	for _, node := range n {
 		for _, dev := range node.NetDevs {
@@ -268,36 +262,4 @@ func (self *nodeYaml) FindByIpaddr(ipaddr string) (NodeInfo, error) {
 	}
 
 	return ret, errors.New("No nodes found with IP Addr: " + ipaddr)
-}
-
-func (nodes *nodeYaml) SearchByName(search string) ([]NodeInfo, error) {
-	var ret []NodeInfo
-
-	n, _ := nodes.FindAllNodes()
-
-	for _, node := range n {
-		b, _ := regexp.MatchString(search, node.Id.Get())
-		if b == true {
-			ret = append(ret, node)
-		}
-	}
-
-	return ret, nil
-}
-
-func (nodes *nodeYaml) SearchByNameList(searchList []string) ([]NodeInfo, error) {
-	var ret []NodeInfo
-
-	n, _ := nodes.FindAllNodes()
-
-	for _, search := range searchList {
-		for _, node := range n {
-			b, _ := regexp.MatchString(search, node.Id.Get())
-			if b == true {
-				ret = append(ret, node)
-			}
-		}
-	}
-
-	return ret, nil
 }

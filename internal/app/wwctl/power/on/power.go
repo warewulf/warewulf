@@ -13,33 +13,36 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var returnErr error = nil
-	var nodeList []node.NodeInfo
 
-	n, err := node.New()
+	nodeDB, err := node.New()
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
 		os.Exit(1)
 	}
 
-	if len(args) >= 1 {
-		nodeList, _ = n.SearchByNameList(args)
-	} else {
-		wwlog.Printf(wwlog.ERROR, "No requested nodes\n")
-		os.Exit(255)
+	nodes, err := nodeDB.FindAllNodes()
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Cloud not get nodeList: %s\n", err)
+		os.Exit(1)
 	}
 
-	if len(nodeList) == 0 {
-		wwlog.Printf(wwlog.ERROR, "No nodes found matching: '%s'\n", args[0])
-		os.Exit(255)
+	if len(args) > 0 {
+		nodes = node.FilterByName(nodes, args)
 	} else {
-		wwlog.Printf(wwlog.VERBOSE, "Found %d matching nodes for power command\n", len(nodeList))
+		cmd.Usage()
+		os.Exit(1)
+	}
+
+	if len(nodes) == 0 {
+		fmt.Printf("No nodes found\n")
+		os.Exit(1)
 	}
 
 	batchpool := batch.New(50)
-	jobcount := len(nodeList)
+	jobcount := len(nodes)
 	results := make(chan power.IPMI, jobcount)
 
-	for _, node := range nodeList {
+	for _, node := range nodes {
 
 		if node.IpmiIpaddr.Get() == "" {
 			wwlog.Printf(wwlog.ERROR, "%s: No IPMI IP address\n", node.Id.Get())

@@ -2,11 +2,13 @@ package container
 
 import (
 	"context"
-	"github.com/hpcng/warewulf/internal/pkg/util"
 	"os"
 	"path"
 
+	"github.com/hpcng/warewulf/internal/pkg/util"
+
 	"github.com/containers/image/v5/types"
+	"github.com/containers/storage/drivers/copy"
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/errors"
 	"github.com/hpcng/warewulf/internal/pkg/oci"
@@ -62,11 +64,11 @@ func ImportDirectory(uri string, name string) error {
 		return errors.New("Import directory does not exist: " + uri)
 	}
 
-	if !util.IsFile(path.Join(fullPath, "/bin/sh")) {
+	if !util.IsFile(path.Join(uri, "/bin/sh")) {
 		return errors.New("Source directory has no /bin/sh: " + uri)
 	}
 
-	err = util.CopyFiles(uri, fullPath)
+	err = copy.DirCopy(uri, fullPath, copy.Content, true)
 	if err != nil {
 		return err
 	}

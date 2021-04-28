@@ -23,7 +23,7 @@ func KernelImage(kernelVersion string) string {
 		return ""
 	}
 
-	if util.ValidString(kernelVersion, "^[a-zA-Z0-9-._]+$") == false {
+	if !util.ValidString(kernelVersion, "^[a-zA-Z0-9-._]+$") {
 		wwlog.Printf(wwlog.ERROR, "Runtime overlay name contains illegal characters: %s\n", kernelVersion)
 		return ""
 	}
@@ -37,7 +37,7 @@ func KmodsImage(kernelVersion string) string {
 		return ""
 	}
 
-	if util.ValidString(kernelVersion, "^[a-zA-Z0-9-._]+$") == false {
+	if !util.ValidString(kernelVersion, "^[a-zA-Z0-9-._]+$") {
 		wwlog.Printf(wwlog.ERROR, "Runtime overlay name contains illegal characters: %s\n", kernelVersion)
 		return ""
 	}
@@ -81,11 +81,11 @@ func Build(kernelVersion string, root string) (string, error) {
 	os.MkdirAll(path.Dir(kernelDestination), 0755)
 	os.MkdirAll(path.Dir(driversDestination), 0755)
 
-	if util.IsFile(kernelImage) == false {
+	if !util.IsFile(kernelImage) {
 		return "", errors.New("Could not locate kernel image")
 	}
 
-	if util.IsDir(kernelDrivers) == false {
+	if !util.IsDir(kernelDrivers) {
 		return "", errors.New("Could not locate kernel drivers")
 	}
 
@@ -99,12 +99,29 @@ func Build(kernelVersion string, root string) (string, error) {
 
 	wwlog.Printf(wwlog.VERBOSE, "Building Kernel driver image\n")
 	if _, err := os.Stat(kernelDrivers); err == nil {
-		cmd := fmt.Sprintf("cd /; find .%s | cpio --quiet -o -H newc -F \"%s\"", kernelDrivers, driversDestination)
-		err := exec.Command("/bin/sh", "-c", cmd).Run()
+		compressor, err := exec.LookPath("pigz")
+		if err != nil {
+			wwlog.Printf(wwlog.VERBOSE, "Could not locate PIGZ, using GZIP\n")
+			compressor = "gzip"
+		} else {
+			wwlog.Printf(wwlog.VERBOSE, "Using PIGZ to compress the container: %s\n", compressor)
+		}
+
+		cmd := fmt.Sprintf("cd /; find .%s | cpio --quiet -o -H newc | %s -c > \"%s\"", kernelDrivers, compressor, driversDestination)
+
+		wwlog.Printf(wwlog.DEBUG, "RUNNING: %s\n", cmd)
+		err = exec.Command("/bin/sh", "-c", cmd).Run()
 		if err != nil {
 			return "", err
 		}
 	}
 
 	return "Done", nil
+}
+
+func DeleteKernel(name string) error {
+	fullPath := path.Join(ParentDir(), name)
+
+	wwlog.Printf(wwlog.VERBOSE, "Removing path: %s\n", fullPath)
+	return os.RemoveAll(fullPath)
 }
