@@ -21,7 +21,7 @@ import (
 type TemplateStruct struct {
 	Id           string
 	Hostname     string
-	GroupName    string
+	ClusterName    string
 	Container    string
 	Init         string
 	Root         string
@@ -139,6 +139,7 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 
 		t.Id = n.Id.Get()
 		t.Hostname = n.Id.Get()
+		t.ClusterName = n.ClusterName.Get()
 		t.Container = n.ContainerName.Get()
 		t.Init = n.Init.Get()
 		t.Root = n.Root.Get()
