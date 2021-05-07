@@ -1,4 +1,0 @@
----
-id: security
-title: Security
----
