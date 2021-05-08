@@ -325,6 +325,20 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			n.NetDevs[SetNetDev].Default.SetB(true)
 		}
 
+		if SetValue != "" {
+			if SetParam == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--param' option\n")
+				os.Exit(1)
+			}
+
+			if _, ok := n.Params[SetParam]; !ok {
+				var nd node.ParamEntry
+				n.Params[SetParam] = &nd
+			}
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Value %s\n", n.Id.Get(), SetParam, SetValue)
+			n.Params[SetParam].Value.Set(SetValue)
+		}
+
 		err := nodeDB.NodeUpdate(n)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)

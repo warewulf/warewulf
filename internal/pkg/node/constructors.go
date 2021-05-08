@@ -43,6 +43,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 
 		wwlog.Printf(wwlog.DEBUG, "In node loop: %s\n", nodename)
 		n.NetDevs = make(map[string]*NetDevEntry)
+		n.Params = make(map[string]*ParamEntry)
 		n.SystemOverlay.SetDefault("default")
 		n.RuntimeOverlay.SetDefault("default")
 		n.Ipxe.SetDefault("default")
@@ -92,6 +93,14 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.NetDevs[devname].Gateway.Set(netdev.Gateway)
 			n.NetDevs[devname].Type.Set(netdev.Type)
 			n.NetDevs[devname].Default.SetB(netdev.Default)
+		}
+
+		for paramname, param := range node.Params {
+			if _, ok := n.Params[paramname]; !ok {
+				var param ParamEntry
+				n.Params[paramname] = &param
+			}
+			n.Params[paramname].Value.Set(param.Value)
 		}
 
 		for _, p := range n.Profiles {

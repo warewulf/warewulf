@@ -36,6 +36,7 @@ type NodeConf struct {
 	Discoverable   bool                `yaml:"discoverable,omitempty"`
 	Profiles       []string            `yaml:"profiles,omitempty"`
 	NetDevs        map[string]*NetDevs `yaml:"network devices,omitempty"`
+	Params         map[string]*Params   `yaml:"parameters,omitempty"`
 }
 
 type NetDevs struct {
@@ -45,6 +46,10 @@ type NetDevs struct {
 	Ipaddr  string
 	Netmask string
 	Gateway string `yaml:"gateway,omitempty"`
+}
+
+type Params struct {
+	Value   string `yaml:"value,omitempty"`
 }
 
 /******
@@ -82,6 +87,7 @@ type NodeInfo struct {
 	Profiles       []string
 	GroupProfiles  []string
 	NetDevs        map[string]*NetDevEntry
+	Params         map[string]*ParamEntry
 }
 
 type NetDevEntry struct {
@@ -91,6 +97,10 @@ type NetDevEntry struct {
 	Ipaddr  Entry
 	Netmask Entry
 	Gateway Entry `yaml:"gateway,omitempty"`
+}
+
+type ParamEntry struct {
+	Value   Entry `yaml:"value,omitempty"`
 }
 
 func init() {
