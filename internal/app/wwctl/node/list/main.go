@@ -60,7 +60,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 			for name, param := range node.Params {
-				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":VALUE", param.Value.Source(), param.Value.Print())
+				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name, param.Source(), param.Print())
 			}
 		}
 

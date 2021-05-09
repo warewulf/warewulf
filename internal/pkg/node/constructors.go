@@ -43,7 +43,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 
 		wwlog.Printf(wwlog.DEBUG, "In node loop: %s\n", nodename)
 		n.NetDevs = make(map[string]*NetDevEntry)
-		n.Params = make(map[string]*ParamEntry)
+		n.Params = make(map[string]*Entry)
 		n.SystemOverlay.SetDefault("default")
 		n.RuntimeOverlay.SetDefault("default")
 		n.Ipxe.SetDefault("default")
@@ -97,10 +97,10 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 
 		for paramname, param := range node.Params {
 			if _, ok := n.Params[paramname]; !ok {
-				var param ParamEntry
+				var param Entry
 				n.Params[paramname] = &param
 			}
-			n.Params[paramname].Value.Set(param.Value)
+			n.Params[paramname].Set(param)
 		}
 
 		for _, p := range n.Profiles {
@@ -143,6 +143,14 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.NetDevs[devname].Type.SetAlt(netdev.Type, p)
 				n.NetDevs[devname].Default.SetAltB(netdev.Default, p)
 			}
+
+			for paramname, param := range config.NodeProfiles[p].Params {
+				if _, ok := n.Params[paramname]; !ok {
+					var param Entry
+					n.Params[paramname] = &param
+				}
+				n.Params[paramname].SetAlt(param, p)
+			}
 		}
 
 		ret = append(ret, n)
@@ -169,6 +177,7 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 	for name, profile := range config.NodeProfiles {
 		var p NodeInfo
 		p.NetDevs = make(map[string]*NetDevEntry)
+		p.Params = make(map[string]*Entry)
 
 		p.Id.Set(name)
 		p.Comment.Set(profile.Comment)
@@ -201,6 +210,14 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 			p.NetDevs[devname].Gateway.Set(netdev.Gateway)
 			p.NetDevs[devname].Type.Set(netdev.Type)
 			p.NetDevs[devname].Default.SetB(netdev.Default)
+		}
+
+		for paramname, param := range profile.Params {
+			if _, ok := p.Params[paramname]; !ok {
+				var param Entry
+				p.Params[paramname] = &param
+			}
+			p.Params[paramname].Set(param)
 		}
 
 		// TODO: Validate or die on all inputs

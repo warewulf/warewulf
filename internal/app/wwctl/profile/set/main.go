@@ -233,12 +233,41 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				p.NetDevs[SetNetDev] = &nd
 			}
 
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting device as default\n", p.Id.Get(), SetNetDev)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s:%s, Setting device as default\n", p.Id.Get(), SetNetDev)
 			for _, dev := range p.NetDevs {
 				// First clear all other devices that might be configured as default
 				dev.Default.SetB(false)
 			}
 			p.NetDevs[SetNetDev].Default.SetB(true)
+		}
+
+		if SetValue != "" {
+			if SetParam == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--param' option\n")
+				os.Exit(1)
+			}
+
+			if _, ok := p.Params[SetParam]; !ok {
+				var nd node.Entry
+				p.Params[SetParam] = &nd
+			}
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s:%s, Setting Value %s\n", p.Id.Get(), SetParam, SetValue)
+			p.Params[SetParam].Set(SetValue)
+		}
+
+		if SetParamDel == true {
+			if SetParam == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--param' option\n")
+				os.Exit(1)
+			}
+
+			if _, ok := p.Params[SetParam]; !ok {
+				wwlog.Printf(wwlog.ERROR, "Custom parameter doesn't exist: %s\n", SetParam)
+				os.Exit(1)
+			}
+
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Deleting custom parameter: %s\n", p.Id.Get(), SetNetDev)
+			delete(p.Params, SetParam)
 		}
 
 		err := nodeDB.ProfileUpdate(p)

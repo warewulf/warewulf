@@ -43,6 +43,7 @@ var (
 	SetRoot           string
 	SetParam          string
 	SetValue          string
+	SetParamDel       bool
 )
 
 func init() {
@@ -78,6 +79,7 @@ func init() {
 
 	baseCmd.PersistentFlags().StringVarP(&SetParam, "param", "p", "", "Define custom parameter")
 	baseCmd.PersistentFlags().StringVarP(&SetValue, "value", "", "", "Set custom parameter value")
+	baseCmd.PersistentFlags().BoolVar(&SetParamDel, "paramdel", false, "Delete custom parameter")
 
 	baseCmd.PersistentFlags().BoolVarP(&SetNodeAll, "all", "a", false, "Set all nodes")
 
