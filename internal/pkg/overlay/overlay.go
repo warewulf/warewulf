@@ -162,8 +162,6 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 			t.NetDevs[devname].Default = netdev.Default.GetB()
 		}
 		for paramname, param := range n.Params {
-			// var nd node.Params
-			// t.Params[paramname] = &nd
 			t.Params[paramname] = param.Get()
 		}
 		t.AllNodes = allNodes
