@@ -4,8 +4,8 @@
 
 #### Quick Links:
 
-* [Documentation](https://hpcng.github.io/warewulf/)
-* [GitHub](http://github.com/ctrliq/warewulf)
+* [Documentation](https://warewulf.hpcng.org)
+* [GitHub](http://github.com/hpcng/warewulf)
 
 ## About Warewulf
 
