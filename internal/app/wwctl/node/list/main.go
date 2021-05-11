@@ -59,8 +59,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				fmt.Printf("%-20s %-18s %-12s %t\n", node.Id.Get(), name+":DEFAULT", netdev.Default.Source(), netdev.Default.PrintB())
 			}
 
-			for name, key := range node.Keys {
-				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name, key.Source(), key.Print())
+			for keyname, key := range node.Keys {
+				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Keys."+keyname, key.Source(), key.Print())
 			}
 		}
 
