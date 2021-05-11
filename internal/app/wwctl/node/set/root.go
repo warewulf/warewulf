@@ -41,9 +41,9 @@ var (
 	SetDiscoverable   bool
 	SetUndiscoverable bool
 	SetRoot           string
-	SetParam          string
+	SetKey            string
 	SetValue          string
-	SetParamDel       bool
+	SetKeyDel         bool
 )
 
 func init() {
@@ -77,9 +77,10 @@ func init() {
 	baseCmd.PersistentFlags().BoolVar(&SetNetDevDel, "netdel", false, "Delete the node's network device")
 	baseCmd.PersistentFlags().BoolVar(&SetNetDevDefault, "netdefault", false, "Set this network to be default")
 
-	baseCmd.PersistentFlags().StringVarP(&SetParam, "param", "p", "", "Define custom parameter")
-	baseCmd.PersistentFlags().StringVarP(&SetValue, "value", "", "", "Set custom parameter value")
-	baseCmd.PersistentFlags().BoolVar(&SetParamDel, "paramdel", false, "Delete custom parameter")
+	baseCmd.PersistentFlags().StringVarP(&SetKey, "key", "k", "", "Define custom key")
+	baseCmd.PersistentFlags().BoolVar(&SetKeyDel, "keydel", false, "Delete custom key")
+
+	baseCmd.PersistentFlags().StringVarP(&SetValue, "value", "", "", "Set value")
 
 	baseCmd.PersistentFlags().BoolVarP(&SetNodeAll, "all", "a", false, "Set all nodes")
 

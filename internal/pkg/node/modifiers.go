@@ -75,7 +75,7 @@ func (config *nodeYaml) NodeUpdate(node NodeInfo) error {
 	config.Nodes[nodeID].Profiles = node.Profiles
 	config.Nodes[nodeID].NetDevs = make(map[string]*NetDevs)
 
-	config.Nodes[nodeID].Params = make(map[string]string)
+	config.Nodes[nodeID].Keys = make(map[string]string)
 
 	for devname, netdev := range node.NetDevs {
 		var newdev NetDevs
@@ -89,8 +89,8 @@ func (config *nodeYaml) NodeUpdate(node NodeInfo) error {
 		config.Nodes[nodeID].NetDevs[devname].Default = netdev.Default.GetRealB()
 	}
 
-	for paramname, param := range node.Params {
-		config.Nodes[nodeID].Params[paramname] = param.GetReal()
+	for keyname, key := range node.Keys {
+		config.Nodes[nodeID].Keys[keyname] = key.GetReal()
 	}
 
 	return nil
@@ -158,7 +158,7 @@ func (config *nodeYaml) ProfileUpdate(profile NodeInfo) error {
 	config.NodeProfiles[profileID].Profiles = profile.Profiles
 	config.NodeProfiles[profileID].NetDevs = make(map[string]*NetDevs)
 	
-	config.NodeProfiles[profileID].Params = make(map[string]string)
+	config.NodeProfiles[profileID].Keys = make(map[string]string)
 
 	for devname, netdev := range profile.NetDevs {
 		var newdev NetDevs
@@ -172,8 +172,8 @@ func (config *nodeYaml) ProfileUpdate(profile NodeInfo) error {
 		config.NodeProfiles[profileID].NetDevs[devname].Default = netdev.Default.GetRealB()
 	}
 
-	for paramname, param := range profile.Params {
-		config.NodeProfiles[profileID].Params[paramname] = param.GetReal()
+	for keyname, key := range profile.Keys {
+		config.NodeProfiles[profileID].Keys[keyname] = key.GetReal()
 	}
 
 	return nil

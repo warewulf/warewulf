@@ -43,7 +43,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 
 		wwlog.Printf(wwlog.DEBUG, "In node loop: %s\n", nodename)
 		n.NetDevs = make(map[string]*NetDevEntry)
-		n.Params = make(map[string]*Entry)
+		n.Keys = make(map[string]*Entry)
 		n.SystemOverlay.SetDefault("default")
 		n.RuntimeOverlay.SetDefault("default")
 		n.Ipxe.SetDefault("default")
@@ -95,12 +95,12 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.NetDevs[devname].Default.SetB(netdev.Default)
 		}
 
-		for paramname, param := range node.Params {
-			if _, ok := n.Params[paramname]; !ok {
-				var param Entry
-				n.Params[paramname] = &param
+		for keyname, key := range node.Keys {
+			if _, ok := n.Keys[keyname]; !ok {
+				var key Entry
+				n.Keys[keyname] = &key
 			}
-			n.Params[paramname].Set(param)
+			n.Keys[keyname].Set(key)
 		}
 
 		for _, p := range n.Profiles {
@@ -144,12 +144,12 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.NetDevs[devname].Default.SetAltB(netdev.Default, p)
 			}
 
-			for paramname, param := range config.NodeProfiles[p].Params {
-				if _, ok := n.Params[paramname]; !ok {
-					var param Entry
-					n.Params[paramname] = &param
+			for keyname, key := range config.NodeProfiles[p].Keys {
+				if _, ok := n.Keys[keyname]; !ok {
+					var key Entry
+					n.Keys[keyname] = &key
 				}
-				n.Params[paramname].SetAlt(param, p)
+				n.Keys[keyname].SetAlt(key, p)
 			}
 		}
 
@@ -177,7 +177,7 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 	for name, profile := range config.NodeProfiles {
 		var p NodeInfo
 		p.NetDevs = make(map[string]*NetDevEntry)
-		p.Params = make(map[string]*Entry)
+		p.Keys = make(map[string]*Entry)
 
 		p.Id.Set(name)
 		p.Comment.Set(profile.Comment)
@@ -212,12 +212,12 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 			p.NetDevs[devname].Default.SetB(netdev.Default)
 		}
 
-		for paramname, param := range profile.Params {
-			if _, ok := p.Params[paramname]; !ok {
-				var param Entry
-				p.Params[paramname] = &param
+		for keyname, key := range profile.Keys {
+			if _, ok := p.Keys[keyname]; !ok {
+				var key Entry
+				p.Keys[keyname] = &key
 			}
-			p.Params[paramname].Set(param)
+			p.Keys[keyname].Set(key)
 		}
 
 		// TODO: Validate or die on all inputs
