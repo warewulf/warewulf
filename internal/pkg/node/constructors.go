@@ -43,6 +43,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 
 		wwlog.Printf(wwlog.DEBUG, "In node loop: %s\n", nodename)
 		n.NetDevs = make(map[string]*NetDevEntry)
+		n.Keys = make(map[string]*Entry)
 		n.SystemOverlay.SetDefault("default")
 		n.RuntimeOverlay.SetDefault("default")
 		n.Ipxe.SetDefault("default")
@@ -94,6 +95,14 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.NetDevs[devname].Default.SetB(netdev.Default)
 		}
 
+		for keyname, key := range node.Keys {
+			if _, ok := n.Keys[keyname]; !ok {
+				var key Entry
+				n.Keys[keyname] = &key
+			}
+			n.Keys[keyname].Set(key)
+		}
+
 		for _, p := range n.Profiles {
 			if _, ok := config.NodeProfiles[p]; !ok {
 				wwlog.Printf(wwlog.WARN, "Profile not found for node '%s': %s\n", nodename, p)
@@ -134,6 +143,14 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.NetDevs[devname].Type.SetAlt(netdev.Type, p)
 				n.NetDevs[devname].Default.SetAltB(netdev.Default, p)
 			}
+
+			for keyname, key := range config.NodeProfiles[p].Keys {
+				if _, ok := n.Keys[keyname]; !ok {
+					var key Entry
+					n.Keys[keyname] = &key
+				}
+				n.Keys[keyname].SetAlt(key, p)
+			}
 		}
 
 		ret = append(ret, n)
@@ -160,6 +177,7 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 	for name, profile := range config.NodeProfiles {
 		var p NodeInfo
 		p.NetDevs = make(map[string]*NetDevEntry)
+		p.Keys = make(map[string]*Entry)
 
 		p.Id.Set(name)
 		p.Comment.Set(profile.Comment)
@@ -192,6 +210,14 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 			p.NetDevs[devname].Gateway.Set(netdev.Gateway)
 			p.NetDevs[devname].Type.Set(netdev.Type)
 			p.NetDevs[devname].Default.SetB(netdev.Default)
+		}
+
+		for keyname, key := range profile.Keys {
+			if _, ok := p.Keys[keyname]; !ok {
+				var key Entry
+				p.Keys[keyname] = &key
+			}
+			p.Keys[keyname].Set(key)
 		}
 
 		// TODO: Validate or die on all inputs

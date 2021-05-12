@@ -35,6 +35,9 @@ var (
 	SetNetDevDefault  bool
 	SetInit           string
 	SetRoot           string
+	SetKey            string
+	SetValue          string
+	SetKeyDel         bool
 )
 
 func init() {
@@ -62,6 +65,11 @@ func init() {
 	baseCmd.PersistentFlags().StringVarP(&SetType, "type", "T", "", "Set the node's network device type")
 	baseCmd.PersistentFlags().BoolVar(&SetNetDevDel, "netdel", false, "Delete the node's network device")
 	baseCmd.PersistentFlags().BoolVar(&SetNetDevDefault, "netdefault", false, "Set this network to be default")
+
+	baseCmd.PersistentFlags().StringVarP(&SetKey, "key", "k", "", "Define custom key")
+	baseCmd.PersistentFlags().BoolVar(&SetKeyDel, "keydel", false, "Delete custom key")
+
+	baseCmd.PersistentFlags().StringVarP(&SetValue, "value", "", "", "Set value")
 
 	baseCmd.PersistentFlags().BoolVarP(&SetAll, "all", "a", false, "Set all profiles")
 	baseCmd.PersistentFlags().BoolVarP(&SetForce, "force", "f", false, "Force configuration (even on error)")

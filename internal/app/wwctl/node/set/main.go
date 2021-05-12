@@ -325,6 +325,35 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			n.NetDevs[SetNetDev].Default.SetB(true)
 		}
 
+		if SetValue != "" {
+			if SetKey == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--key/-k' option\n")
+				os.Exit(1)
+			}
+
+			if _, ok := n.Keys[SetKey]; !ok {
+				var nd node.Entry
+				n.Keys[SetKey] = &nd
+			}
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Value %s\n", n.Id.Get(), SetKey, SetValue)
+			n.Keys[SetKey].Set(SetValue)
+		}
+
+		if SetKeyDel == true {
+			if SetKey == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--key/-k' option\n")
+				os.Exit(1)
+			}
+
+			if _, ok := n.Keys[SetKey]; !ok {
+				wwlog.Printf(wwlog.ERROR, "Custom parameter doesn't exist: %s\n", SetKey)
+				os.Exit(1)
+			}
+
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Deleting custom parameter: %s\n", n.Id.Get(), SetNetDev)
+			delete(n.Keys, SetKey)
+		}
+
 		err := nodeDB.NodeUpdate(n)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)

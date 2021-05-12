@@ -233,12 +233,41 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				p.NetDevs[SetNetDev] = &nd
 			}
 
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting device as default\n", p.Id.Get(), SetNetDev)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s:%s, Setting device as default\n", p.Id.Get(), SetNetDev)
 			for _, dev := range p.NetDevs {
 				// First clear all other devices that might be configured as default
 				dev.Default.SetB(false)
 			}
 			p.NetDevs[SetNetDev].Default.SetB(true)
+		}
+
+		if SetValue != "" {
+			if SetKey == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--key/-k' option\n")
+				os.Exit(1)
+			}
+
+			if _, ok := p.Keys[SetKey]; !ok {
+				var nd node.Entry
+				p.Keys[SetKey] = &nd
+			}
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s:%s, Setting Value %s\n", p.Id.Get(), SetKey, SetValue)
+			p.Keys[SetKey].Set(SetValue)
+		}
+
+		if SetKeyDel == true {
+			if SetKey == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--key/-k' option\n")
+				os.Exit(1)
+			}
+
+			if _, ok := p.Keys[SetKey]; !ok {
+				wwlog.Printf(wwlog.ERROR, "Custom key doesn't exist: %s\n", SetKey)
+				os.Exit(1)
+			}
+
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Deleting custom key: %s\n", p.Id.Get(), SetNetDev)
+			delete(p.Keys, SetKey)
 		}
 
 		err := nodeDB.ProfileUpdate(p)

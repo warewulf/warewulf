@@ -36,6 +36,7 @@ type NodeConf struct {
 	Discoverable   bool                `yaml:"discoverable,omitempty"`
 	Profiles       []string            `yaml:"profiles,omitempty"`
 	NetDevs        map[string]*NetDevs `yaml:"network devices,omitempty"`
+	Keys           map[string]string   `yaml:"keys,omitempty"`
 }
 
 type NetDevs struct {
@@ -82,6 +83,7 @@ type NodeInfo struct {
 	Profiles       []string
 	GroupProfiles  []string
 	NetDevs        map[string]*NetDevEntry
+	Keys           map[string]*Entry
 }
 
 type NetDevEntry struct {
