@@ -24,6 +24,16 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 		fmt.Printf("Added node: %s\n", a)
 
+	        if SetClusterName != "" {
+                        wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting cluster name to: %s\n", n.Id.Get(), SetClusterName)
+                        n.ClusterName.Set(SetClusterName)
+			err := nodeDB.NodeUpdate(n)
+			if err != nil {
+                                wwlog.Printf(wwlog.ERROR, "%s\n", err)
+                                os.Exit(1)
+                        }
+                }
+
 		if SetIpaddr != "" {
 			if SetNetDev == "" {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
