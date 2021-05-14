@@ -45,7 +45,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				n.NetDevs[SetNetDev] = &netdev
 			}
 
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Ipaddr to: %s\n", n.Id, SetNetDev, SetIpaddr)
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Ipaddr to: %s\n", n.Id.Get(), SetNetDev, SetIpaddr)
 
 			n.NetDevs[SetNetDev].Ipaddr.Set(SetIpaddr)
 			n.NetDevs[SetNetDev].Default.SetB(true)
@@ -65,7 +65,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				wwlog.Printf(wwlog.ERROR, "Network Device doesn't exist: %s\n", SetNetDev)
 				os.Exit(1)
 			}
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting netmask to: %s\n", n.Id, SetNetDev, SetNetmask)
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting netmask to: %s\n", n.Id.Get(), SetNetDev, SetNetmask)
 
 			n.NetDevs[SetNetDev].Netmask.Set(SetNetmask)
 			err := nodeDB.NodeUpdate(n)
@@ -84,7 +84,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				wwlog.Printf(wwlog.ERROR, "Network Device doesn't exist: %s\n", SetNetDev)
 				os.Exit(1)
 			}
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting gateway to: %s\n", n.Id, SetNetDev, SetGateway)
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting gateway to: %s\n", n.Id.Get(), SetNetDev, SetGateway)
 
 			n.NetDevs[SetNetDev].Gateway.Set(SetGateway)
 			err := nodeDB.NodeUpdate(n)
@@ -103,7 +103,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				wwlog.Printf(wwlog.ERROR, "Network Device doesn't exist: %s\n", SetNetDev)
 				os.Exit(1)
 			}
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting HW address to: %s\n", n.Id, SetNetDev, SetHwaddr)
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting HW address to: %s\n", n.Id.Get(), SetNetDev, SetHwaddr)
 
 			n.NetDevs[SetNetDev].Hwaddr.Set(SetHwaddr)
 			err := nodeDB.NodeUpdate(n)
@@ -123,7 +123,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				wwlog.Printf(wwlog.ERROR, "Network Device doesn't exist: %s\n", SetNetDev)
 				os.Exit(1)
 			}
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Type to: %s\n", n.Id, SetNetDev, SetType)
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Type to: %s\n", n.Id.Get(), SetNetDev, SetType)
 
 			n.NetDevs[SetNetDev].Type.Set(SetType)
 			err := nodeDB.NodeUpdate(n)
