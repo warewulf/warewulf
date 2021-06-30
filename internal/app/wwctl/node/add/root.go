@@ -10,8 +10,7 @@ var (
 		RunE:  CobraRunE,
 		Args:  cobra.MinimumNArgs(1),
 	}
-	SetGroup        string
-	SetController   string
+	SetClusterName  string
 	SetNetDev       string
 	SetIpaddr       string
 	SetNetmask      string
@@ -22,8 +21,7 @@ var (
 )
 
 func init() {
-	baseCmd.PersistentFlags().StringVarP(&SetGroup, "group", "g", "default", "Group to add nodes to")
-	baseCmd.PersistentFlags().StringVarP(&SetController, "controller", "c", "localhost", "Controller to add nodes to")
+	baseCmd.PersistentFlags().StringVarP(&SetClusterName, "cluster", "c", "", "Set the node's cluster name")
 	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdev", "N", "eth0", "Define the network device to configure")
 	baseCmd.PersistentFlags().StringVarP(&SetIpaddr, "ipaddr", "I", "", "Set the node's network device IP address")
 	baseCmd.PersistentFlags().StringVarP(&SetNetmask, "netmask", "M", "", "Set the node's network device netmask")
