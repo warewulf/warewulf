@@ -58,6 +58,9 @@ files: all
 	cp -r etc/dhcp $(DESTDIR)/etc/warewulf/
 	cp -r etc/ipxe $(DESTDIR)/etc/warewulf/
 	cp -r overlays $(DESTDIR)/var/warewulf/
+	# remove conflicting files from RedHat or SUSE distros
+	test -d /etc/sysconfig/network/ && rm $(DESTDIR)/var/warewulf/overlays//etc/sysconfig/network.ww \
+		|| rm -r $(DESTDIR)/var/warewulf/overlays//etc/sysconfig/network
 	chmod +x $(DESTDIR)/var/warewulf/overlays/system/default/init
 	chmod 600 $(DESTDIR)/var/warewulf/overlays/system/default/etc/ssh/ssh*
 	chmod 644 $(DESTDIR)/var/warewulf/overlays/system/default/etc/ssh/ssh*.pub.ww
