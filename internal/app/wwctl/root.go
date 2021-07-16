@@ -1,6 +1,7 @@
 package wwctl
 
 import (
+  "io"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container"
 	"github.com/hpcng/warewulf/internal/app/wwctl/kernel"
@@ -59,3 +60,10 @@ func rootPersistentPreRunE(cmd *cobra.Command, args []string) error {
 	}
 	return nil
 }
+
+// GenBashCompletionFile
+func GenBashCompletion(w io.Writer) error {
+  return rootCmd.GenBashCompletion(w)
+}
+
+

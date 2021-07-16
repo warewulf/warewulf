@@ -1,7 +1,6 @@
 package warewulfconf
 
 import (
-	"os"
 
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -52,6 +51,7 @@ func init() {
 	//TODO: Check to make sure nodes.conf is found
 	if util.IsFile(ConfigFile) == false {
 		wwlog.Printf(wwlog.ERROR, "Configuration file not found: %s\n", ConfigFile)
-		os.Exit(1)
+    // fail silently as this also called by bash_completion
+    return
 	}
 }
