@@ -1,0 +1,19 @@
+BootStrap: zypper
+OSVersion: 15.3
+MirrorURL: http://download.opensuse.org/distribution/leap/%{OSVERSION}/repo/oss/
+Include: zypper
+
+
+%post
+
+    sed -i 's/^root:.:/root::/g' /etc/passwd
+
+    zypper install -y patterns-openSUSE-base bash coreutils e2fsprogs \
+    ethtool filesystem findutils gawk grep \
+    ifplugd iputils iproute2 net-tools nfs-client pam psmisc rsync sed \
+    rsyslog util-linux words wicked tar less \
+    gzip which util-linux openssh-clients openssh-server \
+    pciutils vim strace sudo syslinux tcpdump timezone cronie cpio \
+    wget  ipmitool zypper
+
+    systemctl enable sshd
