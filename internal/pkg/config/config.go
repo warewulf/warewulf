@@ -6,11 +6,21 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+  "github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 )
 
-const (
-	LocalStateDir = "/var/warewulf"
-)
+var LocalStateDir = "/var/warewulf"
+
+func init() {
+  conf, err := warewulfconf.New()
+  if err != nil {
+    wwlog.Printf(wwlog.ERROR, "%s\n", err)
+    return
+  }
+  if conf.LocalStateDir != ""  {
+    LocalStateDir = conf.LocalStateDir
+  }
+}
 
 func OverlayDir() string {
 	return fmt.Sprintf("%s/overlays/", LocalStateDir)
