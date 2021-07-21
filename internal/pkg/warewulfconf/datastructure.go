@@ -15,6 +15,7 @@ type ControllerConf struct {
 	Netmask  string        `yaml:"netmask"`
 	Network  string        `yaml:"network,omitempty"`
 	Fqdn     string        `yaml:"fqdn,omitempty"`
+  LocalStateDir string   `yaml:"localstatedir"`
 	Warewulf *WarewulfConf `yaml:"warewulf"`
 	Dhcp     *DhcpConf     `yaml:"dhcp"`
 	Tftp     *TftpConf     `yaml:"tftp"`

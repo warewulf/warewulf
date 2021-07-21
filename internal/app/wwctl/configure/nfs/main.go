@@ -39,7 +39,7 @@ func Configure(show bool) error {
 		}
 		defer exports.Close()
 
-		fstab, err := os.OpenFile("/var/warewulf/overlays/system/default/etc/fstab", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+		fstab, err := os.OpenFile(fmt.Sprintf("%s/overlays/system/default/etc/fstab",LocalStateDir, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			os.Exit(1)

@@ -1,6 +1,7 @@
 .PHONY: all
 
 VERSION := 4.0.0
+LOCALSTATE ?= /var/warewulf/
 
 # auto installed tooling
 TOOLS_DIR := .tools
@@ -48,8 +49,8 @@ debian: all
 
 files: all
 	install -d -m 0755 $(DESTDIR)/usr/bin/
-	install -d -m 0755 $(DESTDIR)/var/warewulf/
-	install -d -m 0755 $(DESTDIR)/var/warewulf/chroots
+	install -d -m 0755 $(DESTDIR)$(LOCALSTATE)/
+	install -d -m 0755 $(DESTDIR)$(LOCALSTATE)/chroots
 	install -d -m 0755 $(DESTDIR)/etc/warewulf/
 	install -d -m 0755 $(DESTDIR)/etc/warewulf/ipxe
 	install -d -m 0755 $(DESTDIR)/var/lib/tftpboot/warewulf/ipxe/
@@ -57,12 +58,12 @@ files: all
 	test -f $(DESTDIR)/etc/warewulf/hosts.tmpl || install -m 644 etc/hosts.tmpl $(DESTDIR)/etc/warewulf/
 	cp -r etc/dhcp $(DESTDIR)/etc/warewulf/
 	cp -r etc/ipxe $(DESTDIR)/etc/warewulf/
-	cp -r overlays $(DESTDIR)/var/warewulf/
-	chmod +x $(DESTDIR)/var/warewulf/overlays/system/default/init
-	chmod 600 $(DESTDIR)/var/warewulf/overlays/system/default/etc/ssh/ssh*
-	chmod 644 $(DESTDIR)/var/warewulf/overlays/system/default/etc/ssh/ssh*.pub.ww
-	mkdir -p $(DESTDIR)/var/warewulf/overlays/system/default/warewulf/bin/
-	cp wwclient $(DESTDIR)/var/warewulf/overlays/system/default/warewulf/bin/
+	cp -r overlays $(DESTDIR)$(LOCALSTATE)/
+	chmod +x $(DESTDIR)$(LOCALSTATE)/overlays/system/default/init
+	chmod 600 $(DESTDIR)$(LOCALSTATE)/overlays/system/default/etc/ssh/ssh*
+	chmod 644 $(DESTDIR)$(LOCALSTATE)/overlays/system/default/etc/ssh/ssh*.pub.ww
+	mkdir -p $(DESTDIR)$(LOCALSTATE)/overlays/system/default/warewulf/bin/
+	cp wwclient $(DESTDIR)$(LOCALSTATE)/overlays/system/default/warewulf/bin/
 	cp wwctl $(DESTDIR)/usr/bin/
 	mkdir -p $(DESTDIR)/usr/lib/systemd/system
 	install -c -m 0644 include/firewalld/warewulf.xml $(DESTDIR)/usr/lib/firewalld/services
@@ -72,11 +73,11 @@ files: all
 #	restorecon -r /var/lib/tftpboot/warewulf
 
 debfiles: debian
-	chmod +x $(DESTDIR)/var/warewulf/overlays/system/debian/init
-	chmod 600 $(DESTDIR)/var/warewulf/overlays/system/debian/etc/ssh/ssh*
-	chmod 644 $(DESTDIR)/var/warewulf/overlays/system/debian/etc/ssh/ssh*.pub.ww
-	mkdir -p $(DESTDIR)/var/warewulf/overlays/system/debian/warewulf/bin/
-	cp wwclient $(DESTDIR)/var/warewulf/overlays/system/debian/warewulf/bin/
+	chmod +x $(DESTDIR)$(LOCALSTATE)/overlays/system/debian/init
+	chmod 600 $(DESTDIR)$(LOCALSTATE)/overlays/system/debian/etc/ssh/ssh*
+	chmod 644 $(DESTDIR)$(LOCALSTATE)/overlays/system/debian/etc/ssh/ssh*.pub.ww
+	mkdir -p $(DESTDIR)$(LOCALSTATE)/overlays/system/debian/warewulf/bin/
+	cp wwclient $(DESTDIR)$(LOCALSTATE)/overlays/system/debian/warewulf/bin/
 
 wwctl:
 	cd cmd/wwctl; go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwctl
