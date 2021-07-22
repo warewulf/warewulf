@@ -15,7 +15,7 @@ GOLANGCI_LINT_VERSION := v1.31.0
 # built tags needed for wwbuild binary
 WW_BUILD_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
-all: setup_tools vendor wwctl wwclient bash_completion
+all: setup_tools vendor wwctl wwclient bash_completion man_page
 
 # set the go tools into the tools bin.
 setup_tools: $(GO_TOOLS_BIN) $(GOLANGCI_LINT)
@@ -54,7 +54,10 @@ files: all
 	install -d -m 0755 $(DESTDIR)/etc/warewulf/ipxe
 	install -d -m 0755 $(DESTDIR)/var/lib/tftpboot/warewulf/ipxe/
 	install -d -m 0755 $(DESTDIR)/etc/bash_completion.d/
+	install -d -m 0755 $(DESTDIR)/usr/share/man/man1
 	./bash_completion  $(DESTDIR)/etc/bash_completion.d/warewulf
+	./man_page $(DESTDIR)/usr/share/man/man1
+	gzip $(DESTDIR)/usr/share/man/man1/wwctl*1
 	test -f $(DESTDIR)/etc/warewulf/warewulf.conf || install -m 644 etc/warewulf.conf $(DESTDIR)/etc/warewulf/
 	test -f $(DESTDIR)/etc/warewulf/hosts.tmpl || install -m 644 etc/hosts.tmpl $(DESTDIR)/etc/warewulf/
 	cp -r etc/dhcp $(DESTDIR)/etc/warewulf/
@@ -89,6 +92,9 @@ wwclient:
 bash_completion:
 	cd cmd/bash_completion; go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../bash_completion
 
+man_page:
+	cd cmd/man_page; go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../man_page
+
 dist: vendor
 	rm -rf _dist/warewulf-$(VERSION)
 	mkdir -p _dist/warewulf-$(VERSION)
@@ -102,6 +108,8 @@ clean:
 	rm -f wwctl
 	rm -rf _dist
 	rm -f warewulf-$(VERSION).tar.gz
+	rm -f bash_completion
+	rm -f man_page
 
 install: files
 

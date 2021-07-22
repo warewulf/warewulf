@@ -1,7 +1,7 @@
 package wwctl
 
 import (
-  "io"
+  	"io"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container"
 	"github.com/hpcng/warewulf/internal/app/wwctl/kernel"
@@ -13,6 +13,7 @@ import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/server"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
+	"github.com/spf13/cobra/doc"
 )
 
 var (
@@ -66,4 +67,10 @@ func GenBashCompletion(w io.Writer) error {
   return rootCmd.GenBashCompletion(w)
 }
 
-
+func GenManTree(fileName string) error{
+	header := &doc.GenManHeader{
+		Title: "MINE",
+		Section: "1",
+	}
+	return doc.GenManTree(rootCmd,header,fileName)
+}
