@@ -49,6 +49,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiNetmask", node.IpmiNetmask.Source(), node.IpmiNetmask.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiGateway", node.IpmiGateway.Source(), node.IpmiGateway.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiUserName", node.IpmiUserName.Source(), node.IpmiUserName.Print())
+			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiInterface", node.IpmiInterface.Source(), node.IpmiInterface.Print())
+
 
 			for name, netdev := range node.NetDevs {
 				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":HWADDR", netdev.Hwaddr.Source(), netdev.Hwaddr.Print())
@@ -79,11 +81,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 	} else if ShowIpmi {
-		fmt.Printf("%-22s %-16s %-20s %-20s\n", "NODE NAME", "IPMI IPADDR", "IPMI USERNAME", "IPMI PASSWORD")
+		fmt.Printf("%-22s %-16s %-20s %-20s\n", "NODE NAME", "IPMI IPADDR", "IPMI USERNAME", "IPMI PASSWORD IPMI INTERFACE")
 		fmt.Println(strings.Repeat("=", 80))
 
 		for _, node := range node.FilterByName(nodes, args) {
-			fmt.Printf("%-22s %-16s %-20s %-20s\n", node.Id.Get(), node.IpmiIpaddr.Print(), node.IpmiUserName.Print(), node.IpmiPassword.Print())
+			fmt.Printf("%-22s %-16s %-20s %-20s\n", node.Id.Get(), node.IpmiIpaddr.Print(), node.IpmiUserName.Print(), node.IpmiPassword.Print(), node.IpmiInterface.Print())
 		}
 
 	} else if ShowLong {

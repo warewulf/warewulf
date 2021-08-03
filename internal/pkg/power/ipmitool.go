@@ -11,11 +11,12 @@ type IPMIResult struct {
 }
 
 type IPMI struct {
-	NodeName string
-	HostName string
-	User     string
-	Password string
-	AuthType string
+	NodeName  string
+	HostName  string
+	User      string
+	Password  string
+	AuthType  string
+  Interface string
 	result   IPMIResult
 }
 
@@ -27,9 +28,12 @@ func (ipmi *IPMI) Command(ipmiArgs []string) ([]byte, error) {
 
 	var args []string
 
-	args = append(args, "-I", "lan", "-H", ipmi.HostName, "-U", ipmi.User, "-P", ipmi.Password)
+  if ipmi.Interface == "" {
+    ipmi.Interface = "lanplus"
+  }
+	args = append(args, "-I", ipmi.Interface, "-H", ipmi.HostName, "-U", ipmi.User, "-P", ipmi.Password)
 	args = append(args, ipmiArgs...)
-	ipmiCmd := exec.Command("/usr/bin/ipmitool", args...)
+	ipmiCmd := exec.Command("ipmitool", args...)
 	return ipmiCmd.CombinedOutput()
 }
 
@@ -37,9 +41,13 @@ func (ipmi *IPMI) InteractiveCommand(ipmiArgs []string) error {
 
 	var args []string
 
-	args = append(args, "-I", "lanplus", "-H", ipmi.HostName, "-U", ipmi.User, "-P", ipmi.Password)
+  if ipmi.Interface == "" {
+    ipmi.Interface = "lan"
+  }
+
+	args = append(args, "-I", ipmi.Interface, "-H", ipmi.HostName, "-U", ipmi.User, "-P", ipmi.Password)
 	args = append(args, ipmiArgs...)
-	ipmiCmd := exec.Command("/usr/bin/ipmitool", args...)
+	ipmiCmd := exec.Command("ipmitool", args...)
 	ipmiCmd.Stdout = os.Stdout
 	ipmiCmd.Stdin = os.Stdin
 	ipmiCmd.Stderr = os.Stderr

@@ -19,17 +19,18 @@ import (
 )
 
 type TemplateStruct struct {
-	Id           string
-	Hostname     string
-	ClusterName    string
-	Container    string
-	Init         string
-	Root         string
-	IpmiIpaddr   string
-	IpmiNetmask  string
-	IpmiGateway  string
-	IpmiUserName string
-	IpmiPassword string
+	Id            string
+	Hostname      string
+	ClusterName   string
+	Container     string
+	Init          string
+	Root          string
+	IpmiIpaddr    string
+	IpmiNetmask   string
+	IpmiGateway   string
+	IpmiUserName  string
+	IpmiPassword  string
+	IpmiInterface string
 	NetDevs      map[string]*node.NetDevs
 	Keys       map[string]string
 	AllNodes     []node.NodeInfo
@@ -149,6 +150,7 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 		t.IpmiGateway = n.IpmiGateway.Get()
 		t.IpmiUserName = n.IpmiUserName.Get()
 		t.IpmiPassword = n.IpmiPassword.Get()
+		t.IpmiInterface = n.IpmiInterface.Get()
 		t.NetDevs = make(map[string]*node.NetDevs)
 		t.Keys = make(map[string]string)
 		for devname, netdev := range n.NetDevs {
