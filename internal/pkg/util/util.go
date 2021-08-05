@@ -11,6 +11,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+  "syscall"
 	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -67,6 +68,17 @@ func RandomString(n int) string {
 
 func CopyFile(source string, dest string) error {
 	wwlog.Printf(wwlog.DEBUG, "Copying '%s' to '%s'\n", source, dest)
+  info, err := os.Stat(source)
+	if err != nil {
+		return err
+	}
+  // root is always good, if we failt to get UID/GID of a file
+  var UID int = 0
+  var GID int = 0
+  if stat, ok := info.Sys().(*syscall.Stat_t); ok {
+    UID = int(stat.Uid)
+    GID = int(stat.Gid)
+  }
 	sourceFD, err := os.Open(source)
 	if err != nil {
 		return err
@@ -83,7 +95,11 @@ func CopyFile(source string, dest string) error {
 	if err != nil {
 		return err
 	}
+  err = os.Chown(dest,UID,GID)
 
+	if err != nil {
+		return err
+	}
 	sourceFD.Close()
 
 	return destFD.Close()
@@ -97,11 +113,26 @@ func CopyFiles(source string, dest string) error {
 
 		if info.IsDir() {
 			wwlog.Printf(wwlog.DEBUG, "Creating directory: %s\n", location)
+      info, err := os.Stat(source)
+      if err != nil {
+        return err
+      }
+      // root is always good, if we failt to get UID/GID of a file
+      var UID int = 0
+      var GID int = 0
+      if stat, ok := info.Sys().(*syscall.Stat_t); ok {
+        UID = int(stat.Uid)
+        GID = int(stat.Gid)
+      }
 
-			err := os.MkdirAll(path.Join(dest, location), info.Mode())
+			err = os.MkdirAll(path.Join(dest, location), info.Mode())
 			if err != nil {
 				return err
 			}
+      err = os.Chown(dest,UID,GID)
+      if err != nil {
+        return err
+      }
 
 		} else {
 			wwlog.Printf(wwlog.DEBUG, "Writing file: %s\n", location)
