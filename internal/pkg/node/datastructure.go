@@ -44,6 +44,8 @@ type NetDevs struct {
 	Default bool   `yaml:"default"`
 	Hwaddr  string
 	Ipaddr  string
+	IpCIDR  string
+	Prefix  string
 	Netmask string
 	Gateway string `yaml:"gateway,omitempty"`
 }
@@ -91,6 +93,8 @@ type NetDevEntry struct {
 	Default Entry `yaml:"default"`
 	Hwaddr  Entry
 	Ipaddr  Entry
+	IpCIDR  Entry
+	Prefix  Entry
 	Netmask Entry
 	Gateway Entry `yaml:"gateway,omitempty"`
 }

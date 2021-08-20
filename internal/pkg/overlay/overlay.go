@@ -3,11 +3,13 @@ package overlay
 import (
 	"fmt"
 	"io/ioutil"
+  "net"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
+  "strconv"
 	"strings"
 	"text/template"
 
@@ -160,6 +162,13 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 			t.NetDevs[devname].Gateway = netdev.Gateway.Get()
 			t.NetDevs[devname].Type = netdev.Type.Get()
 			t.NetDevs[devname].Default = netdev.Default.GetB()
+      mask := net.IPMask(net.ParseIP(netdev.Netmask.Get()).To4())
+      ipaddr := net.ParseIP(netdev.Ipaddr.Get()).To4()
+      netaddr := net.IPNet{IP: ipaddr,Mask: mask}
+      netPrefix, _ := net.IPMask(net.ParseIP(netdev.Netmask.Get()).To4()).Size()
+      t.NetDevs[devname].Prefix = strconv.Itoa(netPrefix)
+      t.NetDevs[devname].IpCIDR = netaddr.String()
+
 		}
 		for keyname, key := range n.Keys {
 			t.Keys[keyname] = key.Get()
