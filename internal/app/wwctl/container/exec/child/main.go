@@ -1,3 +1,4 @@
+//go:build linux
 // +build linux
 
 package child
@@ -6,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 	"syscall"
 
 	"github.com/hpcng/warewulf/internal/pkg/container"
@@ -35,6 +37,27 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	if util.IsFile(path.Join(containerPath, "/etc/resolv.conf")) == true {
 		syscall.Mount("/etc/resolv.conf", path.Join(containerPath, "/etc/resolv.conf"), "", syscall.MS_BIND, "")
+	}
+
+	fmt.Printf("Evaluating bind points\n")
+	for _, b := range binds {
+		var source string
+		var dest string
+
+		bind := strings.Split(b, ":")
+		source = bind[0]
+
+		if len(bind) == 1 {
+			dest = source
+		} else {
+			dest = bind[1]
+		}
+
+		err := syscall.Mount(source, path.Join(containerPath, dest), "", syscall.MS_BIND, "")
+		if err != nil {
+			fmt.Printf("BIND ERROR: %s\n", err)
+			os.Exit(1)
+		}
 	}
 
 	syscall.Chroot(containerPath)
