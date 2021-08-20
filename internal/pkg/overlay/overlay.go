@@ -3,13 +3,13 @@ package overlay
 import (
 	"fmt"
 	"io/ioutil"
-  "net"
+	"net"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
-  "strconv"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -33,9 +33,9 @@ type TemplateStruct struct {
 	IpmiUserName  string
 	IpmiPassword  string
 	IpmiInterface string
-	NetDevs      map[string]*node.NetDevs
-	Keys       map[string]string
-	AllNodes     []node.NodeInfo
+	NetDevs       map[string]*node.NetDevs
+	Keys          map[string]string
+	AllNodes      []node.NodeInfo
 }
 
 func BuildSystemOverlay(nodeList []node.NodeInfo) error {
@@ -164,12 +164,12 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 			t.NetDevs[devname].Gateway = netdev.Gateway.Get()
 			t.NetDevs[devname].Type = netdev.Type.Get()
 			t.NetDevs[devname].Default = netdev.Default.GetB()
-      mask := net.IPMask(net.ParseIP(netdev.Netmask.Get()).To4())
-      ipaddr := net.ParseIP(netdev.Ipaddr.Get()).To4()
-      netaddr := net.IPNet{IP: ipaddr,Mask: mask}
-      netPrefix, _ := net.IPMask(net.ParseIP(netdev.Netmask.Get()).To4()).Size()
-      t.NetDevs[devname].Prefix = strconv.Itoa(netPrefix)
-      t.NetDevs[devname].IpCIDR = netaddr.String()
+			mask := net.IPMask(net.ParseIP(netdev.Netmask.Get()).To4())
+			ipaddr := net.ParseIP(netdev.Ipaddr.Get()).To4()
+			netaddr := net.IPNet{IP: ipaddr, Mask: mask}
+			netPrefix, _ := net.IPMask(net.ParseIP(netdev.Netmask.Get()).To4()).Size()
+			t.NetDevs[devname].Prefix = strconv.Itoa(netPrefix)
+			t.NetDevs[devname].IpCIDR = netaddr.String()
 
 		}
 		for keyname, key := range n.Keys {
