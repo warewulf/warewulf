@@ -12,6 +12,10 @@ GO_TOOLS_VENDOR := $(addprefix vendor/, $(GO_TOOLS))
 GOLANGCI_LINT := $(TOOLS_BIN)/golangci-lint
 GOLANGCI_LINT_VERSION := v1.31.0
 
+# use GOPROXY for older git clients and speed up downloads
+GOPROXY ?= https://proxy.golang.org
+export GOPROXY
+
 # built tags needed for wwbuild binary
 WW_BUILD_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
