@@ -101,7 +101,8 @@ func init() {
 		c, err := os.OpenFile(ConfigFile, os.O_RDWR|os.O_CREATE, 0644)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Could not create new configuration file: %s\n", err)
-			os.Exit(1)
+      // just return silently, as init is also called for bash_completion
+      return
 		}
 
 		fmt.Fprintf(c, "nodeprofiles:\n")
