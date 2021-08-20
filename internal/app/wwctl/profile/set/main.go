@@ -132,6 +132,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			p.IpmiPassword.Set(SetIpmiPassword)
 		}
 
+		if SetIpmiInterface != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting IPMI username to: %s\n", p.Id, SetIpmiInterface)
+			p.IpmiInterface.Set(SetIpmiInterface)
+		}
+
 		if SetNetDevDel == true {
 			if SetNetDev == "" {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")

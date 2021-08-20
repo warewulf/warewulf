@@ -29,6 +29,7 @@ type NodeConf struct {
 	IpmiIpaddr     string              `yaml:"ipmi ipaddr,omitempty"`
 	IpmiNetmask    string              `yaml:"ipmi netmask,omitempty"`
 	IpmiGateway    string              `yaml:"ipmi gateway,omitempty"`
+  IpmiInterface  string              `yaml:"ipmi interface,omitempty"`
 	RuntimeOverlay string              `yaml:"runtime overlay,omitempty"`
 	SystemOverlay  string              `yaml:"system overlay,omitempty"`
 	Init           string              `yaml:"init,omitempty"`
@@ -44,6 +45,8 @@ type NetDevs struct {
 	Default bool   `yaml:"default"`
 	Hwaddr  string
 	Ipaddr  string
+	IpCIDR  string
+	Prefix  string
 	Netmask string
 	Gateway string `yaml:"gateway,omitempty"`
 }
@@ -75,6 +78,7 @@ type NodeInfo struct {
 	IpmiGateway    Entry
 	IpmiUserName   Entry
 	IpmiPassword   Entry
+	IpmiInterface  Entry
 	RuntimeOverlay Entry
 	SystemOverlay  Entry
 	Root           Entry
@@ -91,6 +95,8 @@ type NetDevEntry struct {
 	Default Entry `yaml:"default"`
 	Hwaddr  Entry
 	Ipaddr  Entry
+	IpCIDR  Entry
+	Prefix  Entry
 	Netmask Entry
 	Gateway Entry `yaml:"gateway,omitempty"`
 }
@@ -101,7 +107,8 @@ func init() {
 		c, err := os.OpenFile(ConfigFile, os.O_RDWR|os.O_CREATE, 0644)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Could not create new configuration file: %s\n", err)
-			os.Exit(1)
+      // just return silently, as init is also called for bash_completion
+      return
 		}
 
 		fmt.Fprintf(c, "nodeprofiles:\n")
