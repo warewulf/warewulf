@@ -175,6 +175,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			n.IpmiPassword.Set(SetIpmiPassword)
 		}
 
+		if SetIpmiInterface != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI IP interface to: %s\n", n.Id.Get(), SetIpmiInterface)
+			n.IpmiInterface.Set(SetIpmiInterface)
+		}
+
 		if SetDiscoverable == true {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting node to discoverable\n", n.Id.Get())
 			n.Discoverable.SetB(true)

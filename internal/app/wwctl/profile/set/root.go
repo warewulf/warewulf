@@ -25,6 +25,7 @@ var (
 	SetIpmiGateway    string
 	SetIpmiUsername   string
 	SetIpmiPassword   string
+	SetIpmiInterface  string
 	SetNetDev         string
 	SetIpaddr         string
 	SetNetmask        string
@@ -56,6 +57,7 @@ func init() {
 	baseCmd.PersistentFlags().StringVar(&SetIpmiGateway, "ipmigateway", "", "Set the node's IPMI gateway")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiUsername, "ipmiuser", "", "Set the node's IPMI username")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiPassword, "ipmipass", "", "Set the node's IPMI password")
+	baseCmd.PersistentFlags().StringVar(&SetIpmiInterface, "ipmiinterface", "", "Set the node's IPMI interface (defaults to lan if empty)")
 
 	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdev", "N", "", "Define the network device to configure")
 	baseCmd.PersistentFlags().StringVarP(&SetIpaddr, "ipaddr", "I", "", "Set the node's network device IP address")
