@@ -39,7 +39,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		syscall.Mount("/etc/resolv.conf", path.Join(containerPath, "/etc/resolv.conf"), "", syscall.MS_BIND, "")
 	}
 
-	fmt.Printf("Evaluating bind points\n")
 	for _, b := range binds {
 		var source string
 		var dest string
