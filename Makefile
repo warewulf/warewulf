@@ -74,12 +74,10 @@ files: all
 	install -c -m 0644 include/firewalld/warewulf.xml $(DESTDIR)/usr/lib/firewalld/services
 	mkdir -p $(DESTDIR)/usr/lib/systemd/system
 	install -c -m 0644 include/systemd/warewulfd.service $(DESTDIR)/usr/lib/systemd/system
-	systemctl daemon-reload
 	./bash_completion  $(DESTDIR)/etc/bash_completion.d/warewulf
 	./man_page $(DESTDIR)/usr/share/man/man1
 	gzip --force $(DESTDIR)/usr/share/man/man1/wwctl*1
-
-
+#	systemctl daemon-reload
 #	cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
 #	restorecon -r /var/lib/tftpboot/warewulf
 
