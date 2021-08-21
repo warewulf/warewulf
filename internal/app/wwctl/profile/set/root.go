@@ -6,9 +6,10 @@ var (
 	baseCmd = &cobra.Command{
 		Use:   "set [flags] <profile pattern>...",
 		Short: "Configure node profile properties",
-		Long:  "This command will allow you to set configuration properties for node profiles.",
-		Args:  cobra.MinimumNArgs(1),
-		RunE:  CobraRunE,
+		Long: "This command will allow you to set configuration properties for node profiles.\n\n" +
+			"Note: use the string 'UNSET' to remove a configuration",
+		Args: cobra.MinimumNArgs(1),
+		RunE: CobraRunE,
 	}
 	SetAll            bool
 	SetYes            bool
