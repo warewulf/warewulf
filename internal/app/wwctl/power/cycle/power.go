@@ -58,7 +58,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			User:      node.IpmiUserName.Get(),
 			Password:  node.IpmiPassword.Get(),
 			Interface: ipmiInterface,
-			AuthType: "MD5",
+			AuthType:  "MD5",
 		}
 
 		batchpool.Submit(func() {

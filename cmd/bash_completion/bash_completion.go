@@ -3,8 +3,8 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"github.com/hpcng/warewulf/internal/app/wwctl"
+	"os"
 )
 
 func main() {

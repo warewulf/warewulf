@@ -2,13 +2,13 @@
 package main
 
 import (
-	"fmt"	
-	"os"
+	"fmt"
 	"github.com/hpcng/warewulf/internal/app/wwctl"
+	"os"
 )
 
 func main() {
-	
+
 	if err := wwctl.GenManTree(os.Args[1]); err != nil {
 		fmt.Println(err)
 		return

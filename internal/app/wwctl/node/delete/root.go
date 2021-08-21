@@ -11,8 +11,8 @@ var (
 		RunE:    CobraRunE,
 		Aliases: []string{"rm", "del"},
 	}
-	SetYes        bool
-	SetForce      string
+	SetYes   bool
+	SetForce string
 )
 
 func init() {

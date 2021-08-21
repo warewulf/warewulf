@@ -1,7 +1,6 @@
 package wwctl
 
 import (
-  	"io"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container"
 	"github.com/hpcng/warewulf/internal/app/wwctl/kernel"
@@ -14,6 +13,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
+	"io"
 )
 
 var (
@@ -64,13 +64,13 @@ func rootPersistentPreRunE(cmd *cobra.Command, args []string) error {
 
 // GenBashCompletionFile
 func GenBashCompletion(w io.Writer) error {
-  return rootCmd.GenBashCompletion(w)
+	return rootCmd.GenBashCompletion(w)
 }
 
-func GenManTree(fileName string) error{
+func GenManTree(fileName string) error {
 	header := &doc.GenManHeader{
-		Title: "MINE",
+		Title:   "MINE",
 		Section: "1",
 	}
-	return doc.GenManTree(rootCmd,header,fileName)
+	return doc.GenManTree(rootCmd, header, fileName)
 }
