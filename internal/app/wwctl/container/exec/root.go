@@ -16,10 +16,12 @@ var (
 		Args:               cobra.MinimumNArgs(1),
 		FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
 	}
+	binds []string
 )
 
 func init() {
 	baseCmd.AddCommand(child.GetCommand())
+	baseCmd.PersistentFlags().StringArrayVarP(&binds, "bind", "b", []string{}, "Bind a local path into the container (must exist)")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

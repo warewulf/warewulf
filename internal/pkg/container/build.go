@@ -23,8 +23,8 @@ func Build(name string, buildForce bool) error {
 	if buildForce == false {
 		wwlog.Printf(wwlog.DEBUG, "Checking if there have been any updates to the VNFS directory\n")
 		if util.PathIsNewer(rootfsPath, imagePath) {
-
-			return errors.New("Skipping (VNFS is current)")
+			wwlog.Printf(wwlog.INFO, "Skipping (VNFS is current)\n")
+			return nil
 		}
 	}
 
