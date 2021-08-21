@@ -59,9 +59,6 @@ files: all
 	install -d -m 0755 $(DESTDIR)/var/lib/tftpboot/warewulf/ipxe/
 	install -d -m 0755 $(DESTDIR)/etc/bash_completion.d/
 	install -d -m 0755 $(DESTDIR)/usr/share/man/man1
-	./bash_completion  $(DESTDIR)/etc/bash_completion.d/warewulf
-	./man_page $(DESTDIR)/usr/share/man/man1
-	gzip $(DESTDIR)/usr/share/man/man1/wwctl*1
 	test -f $(DESTDIR)/etc/warewulf/warewulf.conf || install -m 644 etc/warewulf.conf $(DESTDIR)/etc/warewulf/
 	test -f $(DESTDIR)/etc/warewulf/hosts.tmpl || install -m 644 etc/hosts.tmpl $(DESTDIR)/etc/warewulf/
 	cp -r etc/dhcp $(DESTDIR)/etc/warewulf/
@@ -78,6 +75,11 @@ files: all
 	mkdir -p $(DESTDIR)/usr/lib/systemd/system
 	install -c -m 0644 include/systemd/warewulfd.service $(DESTDIR)/usr/lib/systemd/system
 	systemctl daemon-reload
+	./bash_completion  $(DESTDIR)/etc/bash_completion.d/warewulf
+	./man_page $(DESTDIR)/usr/share/man/man1
+	gzip --force $(DESTDIR)/usr/share/man/man1/wwctl*1
+
+
 #	cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
 #	restorecon -r /var/lib/tftpboot/warewulf
 
