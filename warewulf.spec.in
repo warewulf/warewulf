@@ -9,6 +9,9 @@ Group: System Environment/Clustering
 Source: %{name}-%{version}.tar.gz
 ExclusiveOS: linux
 BuildRoot: %{?_tmppath}/%{name}-%{version}-%{release}-root
+Requires: dhcp-server
+Requires: tftp-server
+Requires: nfs-utils
 
 %description
 Warewulf is a bare metal container provisioning system.
