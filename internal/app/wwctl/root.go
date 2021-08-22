@@ -8,11 +8,11 @@ import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay"
 	"github.com/hpcng/warewulf/internal/app/wwctl/power"
 	"github.com/hpcng/warewulf/internal/app/wwctl/profile"
-	"github.com/hpcng/warewulf/internal/app/wwctl/ready"
 	"github.com/hpcng/warewulf/internal/app/wwctl/server"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
+
 	"io"
 )
 
@@ -31,17 +31,13 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verboseArg, "verbose", "v", false, "Run with increased verbosity.")
 	rootCmd.PersistentFlags().BoolVarP(&debugArg, "debug", "d", false, "Run with debugging messages enabled.")
 
-	//rootCmd.AddCommand(build.GetCommand())
-
 	rootCmd.AddCommand(overlay.GetCommand())
-	//	rootCmd.AddCommand(controller.GetCommand())
 	rootCmd.AddCommand(container.GetCommand())
 	rootCmd.AddCommand(node.GetCommand())
 	rootCmd.AddCommand(kernel.GetCommand())
 	rootCmd.AddCommand(power.GetCommand())
 	rootCmd.AddCommand(profile.GetCommand())
 	rootCmd.AddCommand(configure.GetCommand())
-	rootCmd.AddCommand(ready.GetCommand())
 	rootCmd.AddCommand(server.GetCommand())
 
 }
