@@ -17,13 +17,19 @@ import (
 func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	containerName := args[0]
+	var allargs []string
 
 	if container.ValidSource(containerName) == false {
 		wwlog.Printf(wwlog.ERROR, "Unknown Warewulf container: %s\n", containerName)
 		os.Exit(1)
 	}
 
-	c := exec.Command("/proc/self/exe", append([]string{"container", "exec", "__child"}, args...)...)
+	for _, b := range binds {
+		allargs = append(allargs, "--bind", b)
+	}
+	allargs = append(allargs, args...)
+
+	c := exec.Command("/proc/self/exe", append([]string{"container", "exec", "__child"}, allargs...)...)
 
 	//c := exec.Command("/bin/sh")
 	c.SysProcAttr = &syscall.SysProcAttr{
