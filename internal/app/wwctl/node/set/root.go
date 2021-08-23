@@ -6,9 +6,10 @@ var (
 	baseCmd = &cobra.Command{
 		Use:   "set [flags] [node pattern]...",
 		Short: "Configure node properties",
-		Long:  "This command will allow you to set configuration properties for nodes.",
-		Args:  cobra.MinimumNArgs(1),
-		RunE:  CobraRunE,
+		Long: "This command will allow you to set configuration properties for nodes.\n\n" +
+			"Note: use the string 'UNSET' to remove a configuration",
+		Args: cobra.MinimumNArgs(1),
+		RunE: CobraRunE,
 	}
 	SetComment        string
 	SetContainer      string
@@ -31,7 +32,7 @@ var (
 	SetIpmiGateway    string
 	SetIpmiUsername   string
 	SetIpmiPassword   string
-  SetIpmiInterface  string
+	SetIpmiInterface  string
 	SetNodeAll        bool
 	SetYes            bool
 	SetProfile        string

@@ -38,7 +38,7 @@ func (ent *Entry) Set(val string) {
 		return
 	}
 
-	if val == "UNDEF" || val == "DELETE" || val == "UNSET" {
+	if val == "UNDEF" || val == "DELETE" || val == "UNSET" || val == "--" {
 		ent.value = ""
 	} else {
 		ent.value = val

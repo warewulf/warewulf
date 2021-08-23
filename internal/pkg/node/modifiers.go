@@ -159,7 +159,7 @@ func (config *nodeYaml) ProfileUpdate(profile NodeInfo) error {
 
 	config.NodeProfiles[profileID].Profiles = profile.Profiles
 	config.NodeProfiles[profileID].NetDevs = make(map[string]*NetDevs)
-	
+
 	config.NodeProfiles[profileID].Keys = make(map[string]string)
 
 	for devname, netdev := range profile.NetDevs {

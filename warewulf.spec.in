@@ -9,6 +9,9 @@ Group: System Environment/Clustering
 Source: %{name}-%{version}.tar.gz
 ExclusiveOS: linux
 BuildRoot: %{?_tmppath}/%{name}-%{version}-%{release}-root
+Requires: dhcp-server
+Requires: tftp-server
+Requires: nfs-utils
 
 %description
 Warewulf is a bare metal container provisioning system.
@@ -39,10 +42,12 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-, root, root)
 %attr(0755, root, warewulf) %dir /etc/warewulf/
 %config(noreplace) /etc/warewulf/*
+/etc/bash_completion.d/warewulf
 /usr/bin/wwctl
 /usr/lib/firewalld/services/warewulf.xml
 /usr/lib/systemd/system/warewulfd.service
 /var/warewulf
+/usr/share/man/man1/*
 
 %changelog
 * Tue Jan 26 2021 14:46:24 JST Brian Clemens <bclemens@ctrliq.com> - 4.0.0

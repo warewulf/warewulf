@@ -117,7 +117,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	var unconfigured bool
-	for overlay, _ := range set {
+	for overlay := range set {
 		var overlayPath string
 
 		if SystemOverlay == true {
