@@ -129,8 +129,6 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.RuntimeOverlay.SetAlt(config.NodeProfiles[p].RuntimeOverlay, p)
 			n.Root.SetAlt(config.NodeProfiles[p].Root, p)
 
-			n.Discoverable.SetAltB(config.NodeProfiles[p].Discoverable, p)
-
 			for devname, netdev := range config.NodeProfiles[p].NetDevs {
 				if _, ok := n.NetDevs[devname]; !ok {
 					var netdev NetDevEntry
