@@ -37,8 +37,8 @@ setup: vendor $(TOOLS_DIR) setup_tools
 
 # vendor
 vendor:
-	@go mod tidy -v
-	@go mod vendor
+	go mod tidy -v
+	go mod vendor
 
 $(TOOLS_DIR):
 	@mkdir -p $@
