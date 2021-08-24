@@ -43,6 +43,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Ipxe", profile.Ipxe.Print())
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiIpaddr", profile.IpmiIpaddr.Print())
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiNetmask", profile.IpmiNetmask.Print())
+			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiPort", profile.IpmiPort.Print())
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiGateway", profile.IpmiGateway.Print())
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiUserName", profile.IpmiUserName.Print())
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiInterface", profile.IpmiInterface.Print())

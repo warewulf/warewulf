@@ -29,6 +29,7 @@ var (
 	SetSystemOverlay  string
 	SetIpmiIpaddr     string
 	SetIpmiNetmask    string
+	SetIpmiPort       string
 	SetIpmiGateway    string
 	SetIpmiUsername   string
 	SetIpmiPassword   string
@@ -62,10 +63,11 @@ func init() {
 	baseCmd.PersistentFlags().StringVarP(&SetSystemOverlay, "system", "S", "", "Set the node's system overlay")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiIpaddr, "ipmi", "", "Set the node's IPMI IP address")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiNetmask, "ipminetmask", "", "Set the node's IPMI netmask")
+	baseCmd.PersistentFlags().StringVar(&SetIpmiPort, "ipmiport", "", "Set the node's IPMI port")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiGateway, "ipmigateway", "", "Set the node's IPMI gateway")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiUsername, "ipmiuser", "", "Set the node's IPMI username")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiPassword, "ipmipass", "", "Set the node's IPMI password")
-	baseCmd.PersistentFlags().StringVar(&SetIpmiInterface, "ipmiinterface", "", "Set the node's IPMI interface (defaults to lan if empty)")
+	baseCmd.PersistentFlags().StringVar(&SetIpmiInterface, "ipmiinterface", "", "Set the node's IPMI interface (defaults to 'lan' if empty)")
 
 	baseCmd.PersistentFlags().StringSliceVar(&SetAddProfile, "addprofile", []string{}, "Add Profile(s) to node")
 	baseCmd.PersistentFlags().StringSliceVar(&SetDelProfile, "delprofile", []string{}, "Remove Profile(s) to node")
