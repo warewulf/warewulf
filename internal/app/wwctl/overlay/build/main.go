@@ -21,7 +21,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if len(args) > 0 && BuildAll == false {
 		nodes, err := n.FindAllNodes()
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Cloud not get nodeList: %s\n", err)
+			wwlog.Printf(wwlog.ERROR, "Could not get node list: %s\n", err)
 			os.Exit(1)
 		}
 
@@ -36,7 +36,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		var err error
 		updateNodes, err = n.FindAllNodes()
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Cloud not get nodeList: %s\n", err)
+			wwlog.Printf(wwlog.ERROR, "Could not get node list: %s\n", err)
 			os.Exit(1)
 		}
 	}
