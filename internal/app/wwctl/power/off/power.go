@@ -48,12 +48,21 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Printf(wwlog.ERROR, "%s: No IPMI IP address\n", node.Id.Get())
 			continue
 		}
-
+		var ipmiInterface = "lan"
+		if node.IpmiInterface.Get() != "" {
+			ipmiInterface = node.IpmiInterface.Get()
+		}
+		var ipmiPort = "623"
+		if node.IpmiPort.Get() != "" {
+			ipmiPort = node.IpmiPort.Get()
+		}
 		ipmiCmd := power.IPMI{
 			NodeName: node.Id.Get(),
 			HostName: node.IpmiIpaddr.Get(),
+			Port:     ipmiPort,
 			User:     node.IpmiUserName.Get(),
 			Password: node.IpmiPassword.Get(),
+			Interface: ipmiInterface,
 			AuthType: "MD5",
 		}
 
