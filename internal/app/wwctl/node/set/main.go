@@ -160,6 +160,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			n.IpmiNetmask.Set(SetIpmiNetmask)
 		}
 
+		if SetIpmiPort != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI port to: %s\n", n.Id.Get(), SetIpmiPort)
+			n.IpmiPort.Set(SetIpmiPort)
+		}
+
 		if SetIpmiGateway != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI gateway to: %s\n", n.Id.Get(), SetIpmiGateway)
 			n.IpmiGateway.Set(SetIpmiGateway)

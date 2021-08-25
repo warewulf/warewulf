@@ -52,9 +52,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if node.IpmiInterface.Get() != "" {
 			ipmiInterface = node.IpmiInterface.Get()
 		}
+		var ipmiPort = "623"
+		if node.IpmiPort.Get() != "" {
+			ipmiPort = node.IpmiPort.Get()
+		}
 		ipmiCmd := power.IPMI{
 			NodeName:  node.Id.Get(),
 			HostName:  node.IpmiIpaddr.Get(),
+			Port:      ipmiPort,
 			User:      node.IpmiUserName.Get(),
 			Password:  node.IpmiPassword.Get(),
 			Interface: ipmiInterface,
