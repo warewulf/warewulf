@@ -68,17 +68,6 @@ func RandomString(n int) string {
 
 func CopyFile(source string, dest string) error {
 	wwlog.Printf(wwlog.DEBUG, "Copying '%s' to '%s'\n", source, dest)
-  info, err := os.Stat(source)
-	if err != nil {
-		return err
-	}
-  // root is always good, if we failt to get UID/GID of a file
-  var UID int = 0
-  var GID int = 0
-  if stat, ok := info.Sys().(*syscall.Stat_t); ok {
-    UID = int(stat.Uid)
-    GID = int(stat.Gid)
-  }
 	sourceFD, err := os.Open(source)
 	if err != nil {
 		return err
@@ -95,8 +84,8 @@ func CopyFile(source string, dest string) error {
 	if err != nil {
 		return err
 	}
-  err = os.Chown(dest,UID,GID)
 
+  CopyUIDGID(source,dest);
 	if err != nil {
 		return err
 	}
@@ -315,4 +304,21 @@ func SystemdStart(systemdName string) error {
 	ExecInteractive("/bin/sh", "-c", enableCmd)
 
 	return nil
+}
+
+func CopyUIDGID(source string, dest string) error {
+  info, err := os.Stat(source)
+	if err != nil {
+		return err
+	}
+  // root is always good, if we failt to get UID/GID of a file
+  var UID int = 0
+  var GID int = 0
+  if stat, ok := info.Sys().(*syscall.Stat_t); ok {
+    UID = int(stat.Uid)
+    GID = int(stat.Gid)
+  }
+  wwlog.Printf(wwlog.DEBUG, "Chown '%i':'%i' '%s'\n",UID,GID, dest)
+  err = os.Chown(dest,UID,GID)
+  return err
 }

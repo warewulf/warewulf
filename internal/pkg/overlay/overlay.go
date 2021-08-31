@@ -11,7 +11,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-  "syscall"
 	"text/template"
 
 	"github.com/hpcng/warewulf/internal/pkg/config"
@@ -220,25 +219,13 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 
 			if info.IsDir() {
 				wwlog.Printf(wwlog.DEBUG, "Found directory: %s\n", location)
-        info, err := os.Stat(location)
-        if err != nil {
-					wwlog.Printf(wwlog.ERROR, "%s\n", err)
-          return err
-        }
-        // root is always good, if we failt to get UID/GID of a file
-        var UID int = 0
-        var GID int = 0
-        if stat, ok := info.Sys().(*syscall.Stat_t); ok {
-          UID = int(stat.Uid)
-          GID = int(stat.Gid)
-        }
 
 				err = os.MkdirAll(path.Join(tmpDir, location), info.Mode())
 				if err != nil {
 					wwlog.Printf(wwlog.ERROR, "%s\n", err)
 					return err
 				}
-        err = os.Chown(path.Join(tmpDir, location),UID,GID)
+        err = util.CopyUIDGID(location,path.Join(tmpDir, location))
         if err != nil {
 					wwlog.Printf(wwlog.ERROR, "%s\n", err)
           return err
@@ -246,18 +233,6 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 
 			} else if filepath.Ext(location) == ".ww" {
 				wwlog.Printf(wwlog.DEBUG, "Found template file: %s\n", location)
-        info, err := os.Stat(location)
-        if err != nil {
-					wwlog.Printf(wwlog.ERROR, "%s\n", err)
-          return err
-        }
-        // root is always good, if we failt to get UID/GID of a file
-        var UID int = 0
-        var GID int = 0
-        if stat, ok := info.Sys().(*syscall.Stat_t); ok {
-          UID = int(stat.Uid)
-          GID = int(stat.Gid)
-        }
 
 				destFile := strings.TrimSuffix(location, ".ww")
 
@@ -284,7 +259,7 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 					wwlog.Printf(wwlog.ERROR, "tmpl.Execute %s\n", err)
 					return nil
 				}
-        err = os.Chown(path.Join(tmpDir, destFile),UID,GID)
+        err = util.CopyUIDGID(location,path.Join(tmpDir, location))
         if err != nil {
           return err
         }
