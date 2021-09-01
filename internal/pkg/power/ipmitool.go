@@ -95,6 +95,14 @@ func (ipmi *IPMI) PowerCycle() (string, error) {
 	return ipmi.IPMICommand("chassis", "power", "cycle")
 }
 
+func (ipmi *IPMI) PowerReset() (string, error) {
+	return ipmi.IPMICommand("chassis", "power", "reset")
+}
+
+func (ipmi *IPMI) PowerSoft() (string, error) {
+	return ipmi.IPMICommand("chassis", "power", "soft")
+}
+
 func (ipmi *IPMI) PowerStatus() (string, error) {
 	return ipmi.IPMICommand("chassis", "power", "status")
 }

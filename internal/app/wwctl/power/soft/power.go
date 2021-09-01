@@ -1,4 +1,4 @@
-package poweroff
+package powersoft
 
 import (
 	"fmt"
@@ -22,7 +22,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	nodes, err := nodeDB.FindAllNodes()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not get node list: %s\n", err)
+		wwlog.Printf(wwlog.ERROR, "Cloud not get nodeList: %s\n", err)
 		os.Exit(1)
 	}
 
@@ -57,17 +57,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			ipmiPort = node.IpmiPort.Get()
 		}
 		ipmiCmd := power.IPMI{
-			NodeName: node.Id.Get(),
-			HostName: node.IpmiIpaddr.Get(),
-			Port:     ipmiPort,
-			User:     node.IpmiUserName.Get(),
-			Password: node.IpmiPassword.Get(),
+			NodeName:  node.Id.Get(),
+			HostName:  node.IpmiIpaddr.Get(),
+			Port:      ipmiPort,
+			User:      node.IpmiUserName.Get(),
+			Password:  node.IpmiPassword.Get(),
 			Interface: ipmiInterface,
-			AuthType: "MD5",
+			AuthType:  "MD5",
 		}
 
 		batchpool.Submit(func() {
-			ipmiCmd.PowerOff()
+			ipmiCmd.PowerSoft()
 			results <- ipmiCmd
 		})
 

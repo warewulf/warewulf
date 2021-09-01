@@ -40,7 +40,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 		nodes, err := n.FindAllNodes()
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Cloud not get nodeList: %s\n", err)
+			wwlog.Printf(wwlog.ERROR, "Could not get nodeList: %s\n", err)
 			os.Exit(1)
 		}
 
