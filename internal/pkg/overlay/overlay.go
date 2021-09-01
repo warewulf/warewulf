@@ -220,7 +220,12 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 			if info.IsDir() {
 				wwlog.Printf(wwlog.DEBUG, "Found directory: %s\n", location)
 
-				err := os.MkdirAll(path.Join(tmpDir, location), info.Mode())
+				err = os.MkdirAll(path.Join(tmpDir, location), info.Mode())
+				if err != nil {
+					wwlog.Printf(wwlog.ERROR, "%s\n", err)
+					return err
+				}
+				err = util.CopyUIDGID(location, path.Join(tmpDir, location))
 				if err != nil {
 					wwlog.Printf(wwlog.ERROR, "%s\n", err)
 					return err
@@ -253,6 +258,10 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 				if err != nil {
 					wwlog.Printf(wwlog.ERROR, "tmpl.Execute %s\n", err)
 					return nil
+				}
+				err = util.CopyUIDGID(location, path.Join(tmpDir, location))
+				if err != nil {
+					return err
 				}
 
 			} else if b, _ := regexp.MatchString(`\.ww[a-zA-Z0-9\-\._]*$`, location); b == true {
