@@ -14,4 +14,4 @@ Include: dnf
     shadow-utils rsyslog tzdata util-linux words zlib tar less \
     gzip which util-linux openssh-clients openssh-server dhclient \
     pciutils vim-minimal shadow-utils strace cronie crontabs cpio \
-    wget rocky-release ipmitool yum
+    wget rocky-release ipmitool yum NetworkManager
