@@ -342,11 +342,13 @@ func SplitPaths(input, delim string) []string {
 	str := ""
 	for i := 1; i < len(input); i++ {
 		str += string(input[i-1])
-		//if (string(input[i]) == delim && string(input[i-1]) != "/") && (IsDir(str) || IsFile(str)) {
-		if string(input[i]) == delim && (IsDir(str) || IsFile(str)) {
+		if (string(input[i]) == delim && string(input[i-1]) != "\\") && (IsDir(str) || IsFile(str)) {
 			i++
 			ret = append(ret, str)
 			str = ""
+		}
+		if string(input[i]) == "\\" {
+			i++
 		}
 
 	}
