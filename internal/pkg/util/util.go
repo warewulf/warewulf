@@ -337,7 +337,7 @@ func SplitEscaped(input, delim, escape string) []string {
 	return (ret)
 }
 
-func SplitPaths(input, delim string) []string {
+func SplitValidPaths(input, delim string) []string {
 	var ret []string
 	str := ""
 	for i := 1; i < len(input); i++ {

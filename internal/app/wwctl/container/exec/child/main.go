@@ -38,7 +38,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		var source string
 		var dest string
 
-		bind := util.SplitPaths(b, ":")
+		bind := util.SplitValidPaths(b, ":")
 		source = bind[0]
 
 		if len(bind) == 1 {
