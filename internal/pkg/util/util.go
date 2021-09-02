@@ -111,7 +111,7 @@ func CopyFiles(source string, dest string) error {
 			if err != nil {
 				return err
 			}
-			err = CopyUIDGID(source,dest)
+			err = CopyUIDGID(source, dest)
 			if err != nil {
 				return err
 			}

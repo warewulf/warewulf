@@ -11,7 +11,6 @@ import (
 	"syscall"
 
 	"github.com/hpcng/warewulf/internal/pkg/container"
-	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 )
@@ -34,10 +33,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	syscall.Mount("", "/", "", syscall.MS_PRIVATE, "")
 	syscall.Mount("/dev", path.Join(containerPath, "/dev"), "", syscall.MS_BIND, "")
-
-	if util.IsFile(path.Join(containerPath, "/etc/resolv.conf")) == true {
-		syscall.Mount("/etc/resolv.conf", path.Join(containerPath, "/etc/resolv.conf"), "", syscall.MS_BIND, "")
-	}
 
 	for _, b := range binds {
 		var source string
@@ -67,6 +62,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	ps1string := fmt.Sprintf("[%s] Warewulf> ", containerName)
 	os.Setenv("PS1", ps1string)
+	os.Setenv("PATH", "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin")
 	os.Setenv("HISTFILE", "/dev/null")
 
 	err := syscall.Exec(args[1], args[1:], os.Environ())

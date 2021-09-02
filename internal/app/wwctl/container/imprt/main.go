@@ -121,8 +121,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	fmt.Printf("Updating the container's /etc/resolv.conf\n")
+	err := util.CopyFile("/etc/resolv.conf", path.Join(container.RootFsDir(name), "/etc/resolv.conf"))
+	if err != nil {
+		wwlog.Printf(wwlog.WARN, "Could not copy /etc/resolv.conf into container: %s\n", err)
+	}
+
 	fmt.Printf("Building container: %s\n", name)
-	err := container.Build(name, true)
+	err = container.Build(name, true)
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not build container %s: %s\n", name, err)
 		os.Exit(1)
