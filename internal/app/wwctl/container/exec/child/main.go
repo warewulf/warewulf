@@ -62,6 +62,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	ps1string := fmt.Sprintf("[%s] Warewulf> ", containerName)
 	os.Setenv("PS1", ps1string)
+	os.Setenv("PATH", "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin")
 	os.Setenv("HISTFILE", "/dev/null")
 
 	err := syscall.Exec(args[1], args[1:], os.Environ())
