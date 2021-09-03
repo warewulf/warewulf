@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"strings"
 	"syscall"
 
 	"github.com/hpcng/warewulf/internal/pkg/container"
+	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 )
@@ -38,7 +38,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		var source string
 		var dest string
 
-		bind := strings.Split(b, ":")
+		bind := util.SplitValidPaths(b, ":")
 		source = bind[0]
 
 		if len(bind) == 1 {
