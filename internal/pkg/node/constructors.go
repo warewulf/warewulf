@@ -6,9 +6,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/errors"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
+
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
 const ConfigFile = "/etc/warewulf/nodes.conf"

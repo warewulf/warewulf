@@ -8,7 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/errors"
+	"github.com/pkg/errors"
+
 	"github.com/hpcng/warewulf/internal/pkg/node"
 )
 
