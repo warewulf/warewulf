@@ -217,6 +217,8 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 				return err
 			}
 
+			wwlog.Printf(wwlog.VERBOSE, "Overlay Walk: OVERLAY:/%s\n", location)
+
 			if info.IsDir() {
 				wwlog.Printf(wwlog.DEBUG, "Found directory: %s\n", location)
 
@@ -254,12 +256,14 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 				}
 				defer w.Close()
 
+				wwlog.Printf(wwlog.VERBOSE, "Writing overlay template: OVERLAY:/%s\n", destFile)
 				err = tmpl.Execute(w, t)
 				if err != nil {
 					wwlog.Printf(wwlog.ERROR, "tmpl.Execute %s\n", err)
 					return nil
 				}
-				err = util.CopyUIDGID(location, path.Join(tmpDir, location))
+
+				err = util.CopyUIDGID(location, path.Join(tmpDir, destFile))
 				if err != nil {
 					return err
 				}
@@ -279,6 +283,11 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 
 			return nil
 		})
+
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "Error with filepath walk: %s\n", err)
+			os.Exit(1)
+		}
 
 		wwlog.Printf(wwlog.VERBOSE, "Finished generating overlay directory for: %s\n", n.Id.Get())
 
