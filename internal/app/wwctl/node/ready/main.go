@@ -40,7 +40,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if node.ContainerName.Get() != "" {
 			vnfsImage := container.ImageFile(node.ContainerName.Get())
 
-			if util.IsFile(vnfsImage) == true {
+			if util.IsFile(vnfsImage) {
 				vnfs_good = true
 			} else {
 				status = false
@@ -52,13 +52,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		if node.KernelVersion.Get() != "" {
-			if util.IsFile(kernel.KernelImage(node.KernelVersion.Get())) == true {
+			if util.IsFile(kernel.KernelImage(node.KernelVersion.Get())) {
 				kernel_good = true
 			} else {
 				status = false
 				wwlog.Printf(wwlog.VERBOSE, "Node Kernel not found: %s, %s\n", node.Id.Get(), node.KernelVersion.Get())
 			}
-			if util.IsFile(kernel.KmodsImage(node.KernelVersion.Get())) == true {
+			if util.IsFile(kernel.KmodsImage(node.KernelVersion.Get())) {
 				kmods_good = true
 			} else {
 				status = false
@@ -70,7 +70,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		if node.SystemOverlay.Get() != "" {
-			if util.IsFile(config.SystemOverlayImage(node.Id.Get())) == true {
+			if util.IsFile(config.SystemOverlayImage(node.Id.Get())) {
 				systemo_good = true
 			} else {
 				status = false
@@ -82,7 +82,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		if node.RuntimeOverlay.Get() != "" {
-			if util.IsFile(config.RuntimeOverlayImage(node.Id.Get())) == true {
+			if util.IsFile(config.RuntimeOverlayImage(node.Id.Get())) {
 				runtimeo_good = true
 			} else {
 				status = false

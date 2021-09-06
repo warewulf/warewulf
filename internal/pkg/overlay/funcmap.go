@@ -26,7 +26,7 @@ func templateContainerFileInclude(containername string, filepath string) string 
 		return ""
 	}
 
-	if container.ValidSource(containername) == false {
+	if !container.ValidSource(containername) {
 		wwlog.Printf(wwlog.WARN, "Template required VNFS does not exist: %s\n", containername)
 		return ""
 	}

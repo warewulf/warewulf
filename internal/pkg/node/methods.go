@@ -61,7 +61,7 @@ func (ent *Entry) SetAlt(val string, from string) {
 }
 
 func (ent *Entry) SetAltB(val bool, from string) {
-	if val == true {
+	if val {
 		ent.altbool = val
 		ent.from = from
 	}

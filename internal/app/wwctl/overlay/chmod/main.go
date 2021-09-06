@@ -24,20 +24,20 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	if SystemOverlay == true {
+	if SystemOverlay {
 		overlaySourceDir = config.SystemOverlaySource(overlayName)
 	} else {
 		overlaySourceDir = config.RuntimeOverlaySource(overlayName)
 	}
 
-	if util.IsDir(overlaySourceDir) == false {
+	if !util.IsDir(overlaySourceDir) {
 		wwlog.Printf(wwlog.ERROR, "Overlay does not exist: %s\n", overlayName)
 		os.Exit(1)
 	}
 
 	overlayFile := path.Join(overlaySourceDir, fileName)
 
-	if util.IsFile(overlayFile) == false {
+	if !util.IsFile(overlayFile) {
 		wwlog.Printf(wwlog.ERROR, "File does not exist within overlay: %s:%s\n", overlayName, fileName)
 		os.Exit(1)
 	}
@@ -48,7 +48,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	if NoOverlayUpdate == false {
+	if !NoOverlayUpdate {
 		n, err := node.New()
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
@@ -64,14 +64,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		var updateNodes []node.NodeInfo
 
 		for _, node := range nodes {
-			if SystemOverlay == true && node.SystemOverlay.Get() == overlayName {
+			if SystemOverlay && node.SystemOverlay.Get() == overlayName {
 				updateNodes = append(updateNodes, node)
 			} else if node.RuntimeOverlay.Get() == overlayName {
 				updateNodes = append(updateNodes, node)
 			}
 		}
 
-		if SystemOverlay == true {
+		if SystemOverlay {
 			wwlog.Printf(wwlog.INFO, "Updating System Overlays...\n")
 			return overlay.BuildSystemOverlay(updateNodes)
 		} else {

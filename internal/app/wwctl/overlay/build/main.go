@@ -18,7 +18,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	if len(args) > 0 && BuildAll == false {
+	if len(args) > 0 && !BuildAll {
 		nodes, err := n.FindAllNodes()
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Could not get node list: %s\n", err)
@@ -26,7 +26,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		for _, node := range nodes {
-			if SystemOverlay == true && node.SystemOverlay.Get() == args[0] {
+			if SystemOverlay && node.SystemOverlay.Get() == args[0] {
 				updateNodes = append(updateNodes, node)
 			} else if node.RuntimeOverlay.Get() == args[0] {
 				updateNodes = append(updateNodes, node)
@@ -42,7 +42,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	wwlog.Printf(wwlog.DEBUG, "Checking on system overlay update\n")
-	if SystemOverlay == true || BuildAll == true {
+	if SystemOverlay || BuildAll {
 		wwlog.Printf(wwlog.INFO, "Updating System Overlays...\n")
 		err := overlay.BuildSystemOverlay(updateNodes)
 		if err != nil {
@@ -51,7 +51,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	wwlog.Printf(wwlog.DEBUG, "Checking on system overlay update\n")
-	if SystemOverlay == false || BuildAll == true {
+	if !SystemOverlay || BuildAll {
 		wwlog.Printf(wwlog.INFO, "Updating Runtime Overlays...\n")
 		err := overlay.BuildRuntimeOverlay(updateNodes)
 		if err != nil {

@@ -98,6 +98,7 @@ func getResource(path string) ([]byte, error) {
 //
 // Return the available resources in a slice.
 //
+//nolint:unused,deadcode
 func getResources() []EmbeddedResource {
 	i := 0
 	ret := make([]EmbeddedResource, len(RESOURCES))

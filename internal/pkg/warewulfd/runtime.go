@@ -40,7 +40,7 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if conf.Warewulf.Secure == true {
+	if conf.Warewulf.Secure {
 		if port >= 1024 {
 			log.Panicf("DENIED: Connection coming from non-privledged port: %s\n", req.RemoteAddr)
 			w.WriteHeader(401)
@@ -55,7 +55,7 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if node.Id.Defined() == false {
+	if node.Id.Defined() {
 		log.Printf("UNKNOWN: %15s: %s\n", remote[0], req.URL.Path)
 		w.WriteHeader(404)
 		return
@@ -63,7 +63,7 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 		log.Printf("REQ:   %15s: %s\n", node.Id.Get(), req.URL.Path)
 	}
 
-	if node.RuntimeOverlay.Defined() == true {
+	if node.RuntimeOverlay.Defined() {
 		fileName := config.RuntimeOverlayImage(node.Id.Get())
 
 		err := sendFile(w, fileName, node.Id.Get())
@@ -76,6 +76,4 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(503)
 		log.Printf("ERROR: No 'runtime system-overlay' set for node %s\n", node.Id.Get())
 	}
-
-	return
 }

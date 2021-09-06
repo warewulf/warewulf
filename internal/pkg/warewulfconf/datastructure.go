@@ -48,7 +48,7 @@ type NfsConf struct {
 
 func init() {
 	//TODO: Check to make sure nodes.conf is found
-	if util.IsFile(ConfigFile) == false {
+	if !util.IsFile(ConfigFile) {
 		wwlog.Printf(wwlog.ERROR, "Configuration file not found: %s\n", ConfigFile)
 		// fail silently as this also called by bash_completion
 		return

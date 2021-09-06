@@ -29,7 +29,7 @@ ARG_LOOP:
 			}
 		}
 
-		if container.ValidSource(arg) == false {
+		if !container.ValidSource(arg) {
 			wwlog.Printf(wwlog.ERROR, "Container name is not a valid source: %s\n", arg)
 			continue
 		}

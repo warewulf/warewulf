@@ -13,7 +13,7 @@ import (
 )
 
 func ValidName(name string) bool {
-	if util.ValidString(name, "^[\\w\\-\\.\\:]+$") == false {
+	if !util.ValidString(name, "^[\\w\\-\\.\\:]+$") {
 		wwlog.Printf(wwlog.WARN, "VNFS name has illegal characters: %s\n", name)
 		return false
 	}
@@ -57,11 +57,11 @@ func ListSources() ([]string, error) {
 	for _, source := range sources {
 		wwlog.Printf(wwlog.VERBOSE, "Found VNFS source: %s\n", source.Name())
 
-		if ValidName(source.Name()) == false {
+		if !ValidName(source.Name()) {
 			continue
 		}
 
-		if ValidSource(source.Name()) == false {
+		if !ValidSource(source.Name()) {
 			continue
 		}
 
@@ -74,11 +74,11 @@ func ListSources() ([]string, error) {
 func ValidSource(name string) bool {
 	fullPath := RootFsDir(name)
 
-	if ValidName(name) == false {
+	if !ValidName(name) {
 		return false
 	}
 
-	if util.IsDir(fullPath) == false {
+	if !util.IsDir(fullPath) {
 		wwlog.Printf(wwlog.VERBOSE, "Location is not a VNFS source directory: %s\n", name)
 		return false
 	}

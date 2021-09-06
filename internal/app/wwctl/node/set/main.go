@@ -11,6 +11,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/manifoldco/promptui"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -34,6 +35,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if len(args) > 0 {
 			nodes = node.FilterByName(nodes, args)
 		} else {
+			//nolint:errcheck
 			cmd.Usage()
 			os.Exit(1)
 		}
@@ -45,17 +47,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if SetContainer != "" {
-		if container.ValidSource(SetContainer) == true {
+		if container.ValidSource(SetContainer) {
 			imageFile := container.ImageFile(SetContainer)
-			if util.IsFile(imageFile) == false {
+			if !util.IsFile(imageFile) {
 				wwlog.Printf(wwlog.ERROR, "Container has not been built: %s\n", SetContainer)
-				if SetForce == false {
+				if !SetForce {
 					os.Exit(1)
 				}
 			}
 		} else {
 			wwlog.Printf(wwlog.ERROR, "Container does not exist: %s\n", SetContainer)
-			if SetForce == false {
+			if !SetForce {
 				os.Exit(1)
 			}
 		}
@@ -185,12 +187,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			n.IpmiInterface.Set(SetIpmiInterface)
 		}
 
-		if SetDiscoverable == true {
+		if SetDiscoverable {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting node to discoverable\n", n.Id.Get())
 			n.Discoverable.SetB(true)
 		}
 
-		if SetUndiscoverable == true {
+		if SetUndiscoverable {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting node to undiscoverable\n", n.Id.Get())
 			n.Discoverable.SetB(false)
 		}
@@ -214,7 +216,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 		}
 
-		if SetNetDevDel == true {
+		if SetNetDevDel {
 			if SetNetDev == "" {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
 				os.Exit(1)
@@ -301,7 +303,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			n.NetDevs[SetNetDev].Type.Set(SetType)
 		}
 
-		if SetNetDevDefault == true {
+		if SetNetDevDefault {
 			if SetNetDev == "" {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
 				os.Exit(1)
@@ -334,7 +336,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			n.Keys[SetKey].Set(SetValue)
 		}
 
-		if SetKeyDel == true {
+		if SetKeyDel {
 			if SetKey == "" {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--key/-k' option\n")
 				os.Exit(1)
@@ -356,9 +358,16 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if SetYes == true {
-		nodeDB.Persist()
-		warewulfd.DaemonReload()
+	if SetYes {
+		err := nodeDB.Persist()
+		if err != nil {
+			return errors.Wrap(err, "failed to persist nodedb")
+		}
+
+		err = warewulfd.DaemonReload()
+		if err != nil {
+			return errors.Wrap(err, "failed to reload warewulf daemon")
+		}
 	} else {
 		q := fmt.Sprintf("Are you sure you want to modify %d nodes(s)", len(nodes))
 
@@ -370,8 +379,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		result, _ := prompt.Run()
 
 		if result == "y" || result == "yes" {
-			nodeDB.Persist()
-			warewulfd.DaemonReload()
+			err := nodeDB.Persist()
+			if err != nil {
+				return errors.Wrap(err, "failed to persist nodedb")
+			}
+
+			err = warewulfd.DaemonReload()
+			if err != nil {
+				return errors.Wrap(err, "failed to reload warewulf daemon")
+			}
 		}
 	}
 

@@ -6,6 +6,7 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -133,7 +134,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 		}
 
-		if SetDiscoverable == true {
+		if SetDiscoverable {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting node to discoverable\n", n.Id.Get())
 
 			n.Discoverable.SetB(true)
@@ -146,7 +147,5 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	}
 
-	nodeDB.Persist()
-
-	return nil
+	return errors.Wrap(nodeDB.Persist(), "failed to persist nodedb")
 }

@@ -11,11 +11,12 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	if len(args) < 1 {
+		//nolint:errcheck
 		cmd.Help()
 		os.Exit(1)
 	}
 
-	if SystemOverlay == true {
+	if SystemOverlay {
 		err := overlay.SystemOverlayInit(args[0])
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
@@ -31,7 +32,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.INFO, "Created new runtime overlay: %s\n", args[0])
 	}
 
-	if NoOverlayUpdate == false {
+	if !NoOverlayUpdate {
 		n, err := node.New()
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
@@ -47,14 +48,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		var updateNodes []node.NodeInfo
 
 		for _, node := range nodes {
-			if SystemOverlay == true && node.SystemOverlay.Get() == args[0] {
+			if SystemOverlay && node.SystemOverlay.Get() == args[0] {
 				updateNodes = append(updateNodes, node)
 			} else if node.RuntimeOverlay.Get() == args[0] {
 				updateNodes = append(updateNodes, node)
 			}
 		}
 
-		if SystemOverlay == true {
+		if SystemOverlay {
 			wwlog.Printf(wwlog.INFO, "Updating System Overlays...\n")
 			return overlay.BuildSystemOverlay(updateNodes)
 		} else {

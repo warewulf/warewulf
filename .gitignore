@@ -1,10 +1,12 @@
 # project data
 /.idea
 /.tools
-/vendor/
+/vendor
 
 # binaries
 /warewulfd
 /wwbuild
 /wwclient
 /wwctl
+/bash_completion
+/man_page

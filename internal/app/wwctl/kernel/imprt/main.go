@@ -8,11 +8,11 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-
 	for _, arg := range args {
 		output, err := kernel.Build(arg, OptRoot)
 		if err != nil {
@@ -23,7 +23,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if SetDefault == true {
+	if SetDefault {
 		if len(args) != 1 {
 			wwlog.Printf(wwlog.ERROR, "Can only set default for one kernel version\n")
 		} else {
@@ -40,13 +40,22 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				if profile.Id.Get() == "default" {
 					wwlog.Printf(wwlog.DEBUG, "Found profile default, setting kernel version to: %s\n", args[0])
 					profile.KernelVersion.Set(args[0])
-					nodeDB.ProfileUpdate(profile)
+					err := nodeDB.ProfileUpdate(profile)
+					if err != nil {
+						return errors.Wrap(err, "failed to update node profile")
+					}
 				}
 			}
-			nodeDB.Persist()
+			err = nodeDB.Persist()
+			if err != nil {
+				return errors.Wrap(err, "failed to persist nodedb")
+			}
 			fmt.Printf("Set default kernel version to: %s\n", args[0])
 
-			warewulfd.DaemonReload()
+			err = warewulfd.DaemonReload()
+			if err != nil {
+				return errors.Wrap(err, "failed to reload warewulf daemon")
+			}
 		}
 	}
 

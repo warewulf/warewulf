@@ -7,6 +7,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -62,9 +63,15 @@ func Configure(show bool) error {
 
 		fmt.Printf("Enabling and restarting the NFS services\n")
 		if controller.Nfs.SystemdName == "" {
-			util.SystemdStart("nfs-server")
+			err := util.SystemdStart("nfs-server")
+			if err != nil {
+				return errors.Wrap(err, "failed to start nfs-server")
+			}
 		} else {
-			util.SystemdStart(controller.Nfs.SystemdName)
+			err := util.SystemdStart(controller.Nfs.SystemdName)
+			if err != nil {
+				return errors.Wrap(err, "failed to start")
+			}
 		}
 
 	} else {

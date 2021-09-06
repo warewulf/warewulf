@@ -9,6 +9,7 @@ import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/nfs"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/ssh"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/tftp"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -39,31 +40,46 @@ func GetCommand() *cobra.Command {
 }
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-
 	if SetDoAll {
 		fmt.Printf("################################################################################\n")
 		fmt.Printf("Configuring: DHCP\n")
-		dhcp.Configure(false)
+		err := dhcp.Configure(false)
+		if err != nil {
+			return errors.Wrap(err, "failed to configure dhcp")
+		}
 
 		fmt.Printf("################################################################################\n")
 		fmt.Printf("Configuring: TFTP\n")
-		tftp.Configure(false)
+		err = tftp.Configure(false)
+		if err != nil {
+			return errors.Wrap(err, "failed to configure tftp")
+		}
 
 		fmt.Printf("################################################################################\n")
 		fmt.Printf("Configuring: /etc/hosts\n")
-		hosts.Configure(false)
+		err = hosts.Configure(false)
+		if err != nil {
+			return errors.Wrap(err, "failed to configure hosts")
+		}
 
 		fmt.Printf("################################################################################\n")
 		fmt.Printf("Configuring: NFS\n")
-		nfs.Configure(false)
+		err = nfs.Configure(false)
+		if err != nil {
+			return errors.Wrap(err, "failed to configure nfs")
+		}
 
 		fmt.Printf("################################################################################\n")
 		fmt.Printf("Configuring: SSH\n")
-		ssh.Configure(false)
-
+		err = ssh.Configure(false)
+		if err != nil {
+			return errors.Wrap(err, "failed to configure ssh")
+		}
 	} else {
+		//nolint:errcheck
 		cmd.Help()
 		os.Exit(0)
 	}
+
 	return nil
 }

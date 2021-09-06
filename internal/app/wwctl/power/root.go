@@ -16,7 +16,6 @@ var (
 		Short: "Warewulf node power management",
 		Long:  "This command can control the power state of nodes.",
 	}
-	test bool
 )
 
 func init() {

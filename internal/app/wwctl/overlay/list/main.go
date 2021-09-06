@@ -25,15 +25,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	if SystemOverlay == true {
-		if ListLong == false {
+	if SystemOverlay {
+		if !ListLong {
 			fmt.Printf("%-30s %-12s %-12s\n", "SYSTEM OVERLAY NAME", "NODES", "FILES/DIRS")
 		} else {
 			fmt.Printf("%-10s %5s %-5s %-18s %s\n", "PERM MODE", "UID", "GID", "SYSTEM-OVERLAY", "FILE PATH")
 		}
 		o, err = overlay.FindSystemOverlays()
 	} else {
-		if ListLong == false {
+		if !ListLong {
 			fmt.Printf("%-30s %-12s %-12s\n", "RUNTIME OVERLAY NAME", "NODES", "FILES/DIRS")
 		} else {
 			fmt.Printf("%-10s %5s %-5s %-18s %s\n", "PERM MODE", "UID", "GID", "RUNTIME-OVERLAY", "FILE PATH")
@@ -52,7 +52,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, node := range nodeList {
-		if SystemOverlay == true {
+		if SystemOverlay {
 			if node.SystemOverlay.Get() != "" {
 				set[node.SystemOverlay.Get()]++
 			}
@@ -73,17 +73,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 		}
 
-		if SystemOverlay == true {
+		if SystemOverlay {
 			path = config.SystemOverlaySource(o[overlay])
 		} else {
 			path = config.RuntimeOverlaySource(o[overlay])
 		}
 
-		if util.IsDir(path) == true {
+		if util.IsDir(path) {
 			files := util.FindFiles(path)
 
 			wwlog.Printf(wwlog.DEBUG, "Iterating overlay path: %s\n", path)
-			if ListContents == true {
+			if ListContents {
 				var fileCount int
 				for file := range files {
 					fmt.Printf("%-30s %-12d /%-12s\n", name, set[name], files[file])
@@ -92,7 +92,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				if fileCount == 0 {
 					fmt.Printf("%-30s %-12d %-12d\n", name, set[name], 0)
 				}
-			} else if ListLong == true {
+			} else if ListLong {
 				for file := range files {
 					s, err := os.Stat(files[file])
 					if err != nil {
@@ -120,19 +120,19 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	for overlay := range set {
 		var overlayPath string
 
-		if SystemOverlay == true {
+		if SystemOverlay {
 			overlayPath = config.SystemOverlaySource(overlay)
 		} else {
 			overlayPath = config.SystemOverlaySource(overlay)
 		}
 
-		if util.IsDir(overlayPath) == false {
+		if !util.IsDir(overlayPath) {
 			fmt.Printf("%-30s %-12d 0\n", "("+overlay+")", set[overlay])
 			unconfigured = true
 		}
 	}
 
-	if unconfigured == true {
+	if unconfigured {
 		fmt.Printf("\n")
 		wwlog.Printf(wwlog.WARN, "There are unconfigured overlays present, run the following command to\n")
 		wwlog.Printf(wwlog.WARN, "create a new overlay:\n")

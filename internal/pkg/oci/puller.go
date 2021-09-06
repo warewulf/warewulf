@@ -68,6 +68,7 @@ func NewPuller(opts ...pullerOpt) (*puller, error) {
 
 // stripScheme prepares the docker uri for external library parsing and returns an error
 // if it detects a malformed schema
+//nolint:deadcode,unused
 func stripScheme(uri string) (string, error) {
 	if !strings.HasPrefix(uri, "docker://") {
 		return "", fmt.Errorf("unsupported uri schema: %q", uri)

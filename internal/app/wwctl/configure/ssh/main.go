@@ -7,6 +7,7 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -15,7 +16,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 }
 
 func Configure(show bool) error {
-
 	if os.Getuid() == 0 {
 		fmt.Printf("Updating system keys\n")
 
@@ -27,28 +27,40 @@ func Configure(show bool) error {
 
 		if !util.IsFile("/etc/warewulf/keys/ssh_host_rsa_key") {
 			fmt.Printf("Setting up key: ssh_host_rsa_key\n")
-			util.ExecInteractive("ssh-keygen", "-q", "-t", "rsa", "-f", "/etc/warewulf/keys/ssh_host_rsa_key", "-C", "", "-N", "")
+			err = util.ExecInteractive("ssh-keygen", "-q", "-t", "rsa", "-f", "/etc/warewulf/keys/ssh_host_rsa_key", "-C", "", "-N", "")
+			if err != nil {
+				return errors.Wrap(err, "failed to exec ssh-keygen command")
+			}
 		} else {
 			fmt.Printf("Skipping, key already exists: ssh_host_rsa_key\n")
 		}
 
 		if !util.IsFile("/etc/warewulf/keys/ssh_host_dsa_key") {
 			fmt.Printf("Setting up key: ssh_host_dsa_key\n")
-			util.ExecInteractive("ssh-keygen", "-q", "-t", "dsa", "-f", "/etc/warewulf/keys/ssh_host_dsa_key", "-C", "", "-N", "")
+			err = util.ExecInteractive("ssh-keygen", "-q", "-t", "dsa", "-f", "/etc/warewulf/keys/ssh_host_dsa_key", "-C", "", "-N", "")
+			if err != nil {
+				return errors.Wrap(err, "failed to exec ssh-keygen command")
+			}
 		} else {
 			fmt.Printf("Skipping, key already exists: ssh_host_dsa_key\n")
 		}
 
 		if !util.IsFile("/etc/warewulf/keys/ssh_host_ecdsa_key") {
 			fmt.Printf("Setting up key: ssh_host_ecdsa_key\n")
-			util.ExecInteractive("ssh-keygen", "-q", "-t", "ecdsa", "-f", "/etc/warewulf/keys/ssh_host_ecdsa_key", "-C", "", "-N", "")
+			err = util.ExecInteractive("ssh-keygen", "-q", "-t", "ecdsa", "-f", "/etc/warewulf/keys/ssh_host_ecdsa_key", "-C", "", "-N", "")
+			if err != nil {
+				return errors.Wrap(err, "failed to exec ssh-keygen command")
+			}
 		} else {
 			fmt.Printf("Skipping, key already exists: ssh_host_ecdsa_key\n")
 		}
 
 		if !util.IsFile("/etc/warewulf/keys/ssh_host_ed25519_key") {
 			fmt.Printf("Setting up key: ssh_host_ed25519_key\n")
-			util.ExecInteractive("ssh-keygen", "-q", "-t", "ed25519", "-f", "/etc/warewulf/keys/ssh_host_ed25519_key", "-C", "", "-N", "")
+			err = util.ExecInteractive("ssh-keygen", "-q", "-t", "ed25519", "-f", "/etc/warewulf/keys/ssh_host_ed25519_key", "-C", "", "-N", "")
+			if err != nil {
+				return errors.Wrap(err, "failed to exec ssh-keygen command")
+			}
 		} else {
 			fmt.Printf("Skipping, key already exists: ssh_host_ed25519_key\n")
 		}
@@ -68,8 +80,14 @@ func Configure(show bool) error {
 
 	if !util.IsFile(authorizedKeys) {
 		fmt.Printf("Setting up: %s\n", authorizedKeys)
-		util.ExecInteractive("ssh-keygen", "-q", "-t", "rsa", "-f", rsaPriv, "-C", "", "-N", "")
-		util.CopyFile(rsaPub, authorizedKeys)
+		err = util.ExecInteractive("ssh-keygen", "-q", "-t", "rsa", "-f", rsaPriv, "-C", "", "-N", "")
+		if err != nil {
+			return errors.Wrap(err, "failed to exec ssh-keygen command")
+		}
+		err := util.CopyFile(rsaPub, authorizedKeys)
+		if err != nil {
+			return errors.Wrap(err, "failed to copy keys")
+		}
 	} else {
 		fmt.Printf("Skipping, authorized_keys already exists: %s\n", authorizedKeys)
 	}

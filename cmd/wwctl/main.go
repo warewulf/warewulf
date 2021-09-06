@@ -7,5 +7,6 @@ import (
 func main() {
 	root := wwctl.GetRootCommand()
 
+	//nolint:errcheck
 	root.Execute()
 }
