@@ -217,7 +217,7 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 				return err
 			}
 
-			wwlog.Printf(wwlog.VERBOSE, "Overlay Walk: OVERLAY:/%s\n", location)
+			wwlog.Printf(wwlog.DEBUG, "Overlay Walk for '%s': OVERLAY:/%s\n", n.Id.Get(), location)
 
 			if info.IsDir() {
 				wwlog.Printf(wwlog.DEBUG, "Found directory: %s\n", location)
