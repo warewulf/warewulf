@@ -73,7 +73,7 @@ func CopyFile(source string, dest string) error {
 		return err
 	}
 
-	finfo, err := sourceFD.Stat()
+	finfo, _ := sourceFD.Stat()
 
 	destFD, err := os.OpenFile(dest, os.O_RDWR|os.O_CREATE, finfo.Mode())
 	if err != nil {
@@ -178,14 +178,14 @@ func ReadFile(path string) ([]string, error) {
 }
 
 func ValidString(pattern string, expr string) bool {
-	if b, _ := regexp.MatchString(expr, pattern); b == true {
+	if b, _ := regexp.MatchString(expr, pattern); b {
 		return true
 	}
 	return false
 }
 
 func ValidateOrDie(message string, pattern string, expr string) {
-	if ValidString(pattern, expr) == false {
+	if ValidString(pattern, expr) {
 		wwlog.Printf(wwlog.ERROR, "%s does not validate: '%s'\n", message, pattern)
 		os.Exit(1)
 	}
@@ -210,7 +210,7 @@ func FindFiles(path string) []string {
 			return nil
 		}
 
-		if IsDir(location) == true {
+		if IsDir(location) {
 			wwlog.Printf(wwlog.DEBUG, "FindFiles() found directory: %s\n", location)
 			ret = append(ret, location+"/")
 		} else {
@@ -281,7 +281,7 @@ func SliceAddUniqueElement(array []string, add string) []string {
 		}
 	}
 
-	if found == false {
+	if !found {
 		ret = append(ret, add)
 	}
 
@@ -304,6 +304,7 @@ func CopyUIDGID(source string, dest string) error {
 	if err != nil {
 		return err
 	}
+
 	// root is always good, if we failt to get UID/GID of a file
 	var UID int = 0
 	var GID int = 0
@@ -311,7 +312,8 @@ func CopyUIDGID(source string, dest string) error {
 		UID = int(stat.Uid)
 		GID = int(stat.Gid)
 	}
-	wwlog.Printf(wwlog.DEBUG, "Chown '%i':'%i' '%s'\n", UID, GID, dest)
+
+	wwlog.Printf(wwlog.DEBUG, "Chown %d:%d '%s'\n", UID, GID, dest)
 	err = os.Chown(dest, UID, GID)
 	return err
 }
