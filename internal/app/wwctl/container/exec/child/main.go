@@ -31,7 +31,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	containerPath := container.RootFsDir(containerName)
 
-	err := syscall.Mount("", "/", "", syscall.MS_PRIVATE, "")
+	err := syscall.Mount("", "/", "", syscall.MS_PRIVATE|syscall.MS_REC, "")
 	if err != nil {
 		return errors.Wrap(err, "failed to mount")
 	}
