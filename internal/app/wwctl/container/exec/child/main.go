@@ -61,6 +61,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	//return errors.New("Test error")
+
 	err = syscall.Chroot(containerPath)
 	if err != nil {
 		return errors.Wrap(err, "failed to chroot")
@@ -71,17 +73,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to chdir")
 	}
 
-	err = syscall.Mount("rootfs", "rootfs", "", syscall.MS_BIND, "")
-	if err != nil {
-		return errors.Wrap(err, "failed to mount rootfs")
-	}
 	err = syscall.Mount("/proc", "/proc", "proc", 0, "")
 	if err != nil {
 		return errors.Wrap(err, "failed to mount proc")
 	}
 
-	ps1string := fmt.Sprintf("[%s] Warewulf> ", containerName)
-	os.Setenv("PS1", ps1string)
+	os.Setenv("PS1", fmt.Sprintf("[%s] Warewulf> ", containerName))
 	os.Setenv("PATH", "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin")
 	os.Setenv("HISTFILE", "/dev/null")
 

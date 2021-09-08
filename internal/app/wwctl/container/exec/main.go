@@ -40,7 +40,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	c.Stderr = os.Stderr
 
 	if err := c.Run(); err != nil {
-		fmt.Println("ERROR", err)
+		fmt.Println(err)
 		os.Exit(1)
 	}
 
