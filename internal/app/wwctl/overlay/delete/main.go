@@ -16,7 +16,7 @@ import (
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var overlayPath string
 
-	if SystemOverlay == true {
+	if SystemOverlay {
 		overlayPath = config.SystemOverlaySource(args[0])
 	} else {
 		overlayPath = config.RuntimeOverlaySource(args[0])
@@ -27,13 +27,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	if util.IsDir(overlayPath) == false {
+	if !util.IsDir(overlayPath) {
 		wwlog.Printf(wwlog.ERROR, "Overlay name does not exist: '%s'\n", args[0])
 		os.Exit(1)
 	}
 
 	if len(args) == 1 {
-		if Force == true {
+		if Force {
 			err := os.RemoveAll(overlayPath)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "Failed deleting overlay: %s\n", args[0])
@@ -54,12 +54,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		for i := 1; i < len(args); i++ {
 			removePath := path.Join(overlayPath, args[i])
 
-			if util.IsDir(removePath) == false && util.IsFile(removePath) == false {
+			if !util.IsDir(removePath) && !util.IsFile(removePath) {
 				wwlog.Printf(wwlog.ERROR, "Path to remove doesn't exist in overlay: %s\n", removePath)
 				os.Exit(1)
 			}
 
-			if Force == true {
+			if Force {
 				err := os.RemoveAll(removePath)
 				if err != nil {
 					wwlog.Printf(wwlog.ERROR, "Failed deleting file from overlay: %s:%s\n", args[0], args[i])
@@ -75,7 +75,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				}
 			}
 
-			if Parents == true {
+			if Parents {
 				// Cleanup any empty directories left behind...
 				i := path.Dir(removePath)
 				for i != overlayPath {
@@ -94,7 +94,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	}
 
-	if NoOverlayUpdate == false {
+	if !NoOverlayUpdate {
 		n, err := node.New()
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
@@ -110,14 +110,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		var updateNodes []node.NodeInfo
 
 		for _, node := range nodes {
-			if SystemOverlay == true && node.SystemOverlay.Get() == args[0] {
+			if SystemOverlay && node.SystemOverlay.Get() == args[0] {
 				updateNodes = append(updateNodes, node)
 			} else if node.RuntimeOverlay.Get() == args[0] {
 				updateNodes = append(updateNodes, node)
 			}
 		}
 
-		if SystemOverlay == true {
+		if SystemOverlay {
 			wwlog.Printf(wwlog.INFO, "Updating System Overlays...\n")
 			return overlay.BuildSystemOverlay(updateNodes)
 		} else {

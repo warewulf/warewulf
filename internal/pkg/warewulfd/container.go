@@ -8,7 +8,6 @@ import (
 )
 
 func ContainerSend(w http.ResponseWriter, req *http.Request) {
-
 	node, err := getSanity(req)
 	if err != nil {
 		w.WriteHeader(404)
@@ -16,7 +15,7 @@ func ContainerSend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if node.ContainerName.Defined() == true {
+	if node.ContainerName.Defined() {
 		containerImage := container.ImageFile(node.ContainerName.Get())
 
 		err = sendFile(w, containerImage, node.Id.Get())
@@ -30,6 +29,4 @@ func ContainerSend(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(503)
 		log.Printf("ERROR: No Container set for node %s\n", node.Id.Get())
 	}
-
-	return
 }

@@ -22,6 +22,7 @@ var (
 		Short:             "Warewulf Control",
 		Long:              "Control interface to the Cluster Warewulf Provisioning System.",
 		PersistentPreRunE: rootPersistentPreRunE,
+		SilenceUsage:      true,
 	}
 	verboseArg bool
 	debugArg   bool
@@ -48,9 +49,9 @@ func GetRootCommand() *cobra.Command {
 }
 
 func rootPersistentPreRunE(cmd *cobra.Command, args []string) error {
-	if debugArg == true {
+	if debugArg {
 		wwlog.SetLevel(wwlog.DEBUG)
-	} else if verboseArg == true {
+	} else if verboseArg {
 		wwlog.SetLevel(wwlog.VERBOSE)
 	} else {
 		wwlog.SetLevel(wwlog.INFO)

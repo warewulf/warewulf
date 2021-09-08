@@ -15,14 +15,27 @@ import (
 
 func main() {
 	if os.Args[0] == "/warewulf/bin/wwclient" {
-		os.Chdir("/")
+		err := os.Chdir("/")
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "failed to change dir: %s", err)
+			os.Exit(1)
+		}
 		log.Printf("Updating live file system LIVE, cancel now if this is in error")
 		time.Sleep(5000 * time.Millisecond)
 	} else {
 		fmt.Printf("Called via: %s\n", os.Args[0])
 		fmt.Printf("Runtime overlay is being put in '/warewulf/wwclient-test' rather than '/'\n")
-		os.MkdirAll("/warewulf/wwclient-test", 0755)
-		os.Chdir("/warewulf/wwclient-test")
+		err := os.MkdirAll("/warewulf/wwclient-test", 0755)
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "failed to create dir: %s", err)
+			os.Exit(1)
+		}
+
+		err = os.Chdir("/warewulf/wwclient-test")
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "failed to change dir: %s", err)
+			os.Exit(1)
+		}
 	}
 
 	conf, err := warewulfconf.New()

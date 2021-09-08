@@ -29,6 +29,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if len(args) > 0 {
 		nodes = node.FilterByName(nodes, args)
 	} else {
+		//nolint:errcheck
 		cmd.Usage()
 		os.Exit(1)
 	}
@@ -43,7 +44,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	results := make(chan power.IPMI, jobcount)
 
 	for _, node := range nodes {
-
 		if node.IpmiIpaddr.Get() == "" {
 			wwlog.Printf(wwlog.ERROR, "%s: No IPMI IP address\n", node.Id.Get())
 			continue
@@ -70,8 +70,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 		batchpool.Submit(func() {
 			if fullFlag {
+				//nolint:errcheck
 				ipmiCmd.SensorList()
 			} else {
+				//nolint:errcheck
 				ipmiCmd.SDRList()
 			}
 			results <- ipmiCmd
@@ -84,7 +86,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	close(results)
 
 	for result := range results {
-
 		out, err := result.Result()
 
 		if err != nil {
@@ -94,7 +95,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		fmt.Printf("%s:\n%s\n", result.NodeName, out)
-
 	}
 
 	return returnErr

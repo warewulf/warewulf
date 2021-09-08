@@ -17,11 +17,11 @@ func Build(name string, buildForce bool) error {
 	rootfsPath := RootFsDir(name)
 	imagePath := ImageFile(name)
 
-	if ValidSource(name) == false {
+	if !ValidSource(name) {
 		return errors.New("Container does not exist")
 	}
 
-	if buildForce == false {
+	if !buildForce {
 		wwlog.Printf(wwlog.DEBUG, "Checking if there have been any updates to the VNFS directory\n")
 		if util.PathIsNewer(rootfsPath, imagePath) {
 			wwlog.Printf(wwlog.INFO, "Skipping (VNFS is current)\n")

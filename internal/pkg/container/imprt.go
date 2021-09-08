@@ -22,7 +22,7 @@ func ImportDocker(uri string, name string, sCtx *types.SystemContext) error {
 		return err
 	}
 
-	if ValidName(name) == false {
+	if !ValidName(name) {
 		return errors.New("VNFS name contains illegal characters: " + name)
 	}
 

@@ -72,15 +72,21 @@ func ListKernels() ([]string, error) {
 }
 
 func Build(kernelVersion string, root string) (string, error) {
-
 	kernelImage := path.Join(root, "/boot/vmlinuz-"+kernelVersion)
 	kernelDrivers := path.Join(root, "/lib/modules/"+kernelVersion)
 	kernelDestination := KernelImage(kernelVersion)
 	driversDestination := KmodsImage(kernelVersion)
 
 	// Create the destination paths just in case it doesn't exist
-	os.MkdirAll(path.Dir(kernelDestination), 0755)
-	os.MkdirAll(path.Dir(driversDestination), 0755)
+	err := os.MkdirAll(path.Dir(kernelDestination), 0755)
+	if err != nil {
+		return "", fmt.Errorf("failed to create kernal dest: %s", err)
+	}
+
+	err = os.MkdirAll(path.Dir(driversDestination), 0755)
+	if err != nil {
+		return "", fmt.Errorf("failed to create driver dest: %s", err)
+	}
 
 	if !util.IsFile(kernelImage) {
 		return "", errors.New("Could not locate kernel image")

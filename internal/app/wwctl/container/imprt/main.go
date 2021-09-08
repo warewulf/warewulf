@@ -13,6 +13,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -77,22 +78,22 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Printf("Setting VNFS name: %s\n", name)
 	}
 
-	if container.ValidName(name) == false {
+	if !container.ValidName(name) {
 		wwlog.Printf(wwlog.ERROR, "VNFS name contains illegal characters: %s\n", name)
 		os.Exit(1)
 	}
 
 	fullPath := container.SourceDir(name)
 
-	if util.IsDir(fullPath) == true {
-		if SetForce == true {
+	if util.IsDir(fullPath) {
+		if SetForce {
 			fmt.Printf("Overwriting existing VNFS\n")
 			err := os.RemoveAll(fullPath)
 			if err != nil {
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
 			}
-		} else if SetUpdate == true {
+		} else if SetUpdate {
 			fmt.Printf("Updating existing VNFS\n")
 		} else {
 			wwlog.Printf(wwlog.ERROR, "VNFS Name exists, specify --force, --update, or choose a different name: %s\n", name)
@@ -132,11 +133,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not build container %s: %s\n", name, err)
 		os.Exit(1)
-	} else {
-		//fmt.Printf("%s: %s\n", name, output)
 	}
 
-	if SetDefault == true {
+	if SetDefault {
 		nodeDB, err := node.New()
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
@@ -150,13 +149,22 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			if profile.Id.Get() == "default" {
 				wwlog.Printf(wwlog.DEBUG, "Found profile default, setting container name to: %s\n", name)
 				profile.ContainerName.Set(name)
-				nodeDB.ProfileUpdate(profile)
+				err := nodeDB.ProfileUpdate(profile)
+				if err != nil {
+					return errors.Wrap(err, "failed to update profile")
+				}
 			}
 		}
-		nodeDB.Persist()
-		fmt.Printf("Set default profile to container: %s\n", name)
-		warewulfd.DaemonReload()
+		err = nodeDB.Persist()
+		if err != nil {
+			return errors.Wrap(err, "failed to persist nodedb")
+		}
 
+		fmt.Printf("Set default profile to container: %s\n", name)
+		err = warewulfd.DaemonReload()
+		if err != nil {
+			return errors.Wrap(err, "failed to reload warewulf daemon")
+		}
 	}
 
 	return nil

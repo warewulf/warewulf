@@ -13,12 +13,11 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/pkg/errors"
-
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/pkg/errors"
 )
 
 type TemplateStruct struct {
@@ -86,7 +85,7 @@ func findAllOverlays(overlayType string) ([]string, error) {
 
 	for _, file := range files {
 		wwlog.Printf(wwlog.DEBUG, "Evaluating overlay source: %s\n", file.Name())
-		if file.IsDir() == true {
+		if file.IsDir() {
 			ret = append(ret, file.Name())
 		}
 	}
@@ -108,7 +107,7 @@ func overlayInit(name string, overlayType string) error {
 		os.Exit(1)
 	}
 
-	if util.IsDir(path) == true {
+	if util.IsDir(path) {
 		return errors.New("Overlay already exists: " + name)
 	}
 
@@ -180,15 +179,15 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 		}
 		t.AllNodes = allNodes
 
-		if overlayType == "runtime" && n.RuntimeOverlay.Defined() == false {
+		if overlayType == "runtime" && !n.RuntimeOverlay.Defined() {
 			wwlog.Printf(wwlog.WARN, "Undefined runtime overlay, skipping node: %s\n", n.Id.Get())
 		}
-		if overlayType == "system" && n.SystemOverlay.Defined() == false {
+		if overlayType == "system" && !n.SystemOverlay.Defined() {
 			wwlog.Printf(wwlog.WARN, "Undefined system overlay, skipping node: %s\n", n.Id.Get())
 		}
 
 		wwlog.Printf(wwlog.DEBUG, "Checking to see if overlay directory exists: %s\n", OverlayDir)
-		if util.IsDir(OverlayDir) == false {
+		if !util.IsDir(OverlayDir) {
 			wwlog.Printf(wwlog.WARN, "%-35s: Skipped (runtime overlay template not found)\n", n.Id.Get())
 			continue
 		}
@@ -269,7 +268,7 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 					return err
 				}
 
-			} else if b, _ := regexp.MatchString(`\.ww[a-zA-Z0-9\-\._]*$`, location); b == true {
+			} else if b, _ := regexp.MatchString(`\.ww[a-zA-Z0-9\-\._]*$`, location); b {
 				wwlog.Printf(wwlog.DEBUG, "Ignoring WW template file: %s\n", location)
 			} else {
 				wwlog.Printf(wwlog.DEBUG, "Found file: %s\n", location)
@@ -279,11 +278,13 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 					wwlog.Printf(wwlog.ERROR, "%s\n", err)
 					return err
 				}
-
 			}
 
 			return nil
 		})
+		if err != nil {
+			return errors.Wrap(err, "failed to open dir")
+		}
 
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Error with filepath walk: %s\n", err)

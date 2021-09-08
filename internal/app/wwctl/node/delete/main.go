@@ -7,6 +7,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/manifoldco/promptui"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -56,7 +57,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if SetYes {
-		nodeDB.Persist()
+		err := nodeDB.Persist()
+		if err != nil {
+			return errors.Wrap(err, "failed to persist nodedb")
+		}
 	} else {
 		q := fmt.Sprintf("Are you sure you want to delete %d nodes(s)", count)
 
@@ -68,7 +72,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		result, _ := prompt.Run()
 
 		if result == "y" || result == "yes" {
-			nodeDB.Persist()
+			err := nodeDB.Persist()
+			if err != nil {
+				return errors.Wrap(err, "failed to persist nodedb")
+			}
 		}
 	}
 

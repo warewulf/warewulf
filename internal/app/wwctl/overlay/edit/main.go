@@ -22,13 +22,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		editor = "vi"
 	}
 
-	if SystemOverlay == true {
+	if SystemOverlay {
 		overlaySourceDir = config.SystemOverlaySource(args[0])
 	} else {
 		overlaySourceDir = config.RuntimeOverlaySource(args[0])
 	}
 
-	if util.IsDir(overlaySourceDir) == false {
+	if !util.IsDir(overlaySourceDir) {
 		wwlog.Printf(wwlog.ERROR, "Overlay does not exist: %s\n", args[0])
 		os.Exit(1)
 	}
@@ -37,21 +37,21 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	wwlog.Printf(wwlog.DEBUG, "Will edit overlay file: %s\n", overlayFile)
 
-	if CreateDirs == true {
+	if CreateDirs {
 		err := os.MkdirAll(path.Dir(overlayFile), 0755)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Could not create directory: %s\n", path.Dir(overlayFile))
 			os.Exit(1)
 		}
 	} else {
-		if util.IsDir(path.Dir(overlayFile)) == false {
+		if !util.IsDir(path.Dir(overlayFile)) {
 			wwlog.Printf(wwlog.ERROR, "Can not create file, parent directory does not exist, try adding the\n")
 			wwlog.Printf(wwlog.ERROR, "'--parents' option to create the directory.\n")
 			os.Exit(1)
 		}
 	}
 
-	if util.IsFile(overlayFile) == false && filepath.Ext(overlayFile) == ".ww" {
+	if !util.IsFile(overlayFile) && filepath.Ext(overlayFile) == ".ww" {
 		wwlog.Printf(wwlog.WARN, "This is a new file, creating some default content\n")
 
 		w, err := os.OpenFile(overlayFile, os.O_RDWR|os.O_CREATE, os.FileMode(PermMode))
@@ -95,7 +95,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		NoOverlayUpdate = true
 	}
 
-	if NoOverlayUpdate == false {
+	if !NoOverlayUpdate {
 		n, err := node.New()
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
@@ -111,14 +111,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		var updateNodes []node.NodeInfo
 
 		for _, node := range nodes {
-			if SystemOverlay == true && node.SystemOverlay.Get() == args[0] {
+			if SystemOverlay && node.SystemOverlay.Get() == args[0] {
 				updateNodes = append(updateNodes, node)
 			} else if node.RuntimeOverlay.Get() == args[0] {
 				updateNodes = append(updateNodes, node)
 			}
 		}
 
-		if SystemOverlay == true {
+		if SystemOverlay {
 			wwlog.Printf(wwlog.INFO, "Updating System Overlays...\n")
 			return overlay.BuildSystemOverlay(updateNodes)
 		} else {

@@ -11,6 +11,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -78,9 +79,7 @@ func Configure(show bool) error {
 		os.Exit(1)
 	}
 
-	for _, node := range nodes {
-		d.Nodes = append(d.Nodes, node)
-	}
+	d.Nodes = append(d.Nodes, nodes...)
 
 	if controller.Dhcp.Template == "" {
 		templateFile = "/etc/warewulf/dhcp/default-dhcpd.conf"
@@ -119,8 +118,10 @@ func Configure(show bool) error {
 		}
 
 		fmt.Printf("Enabling and restarting the DHCP services\n")
-		util.SystemdStart(controller.Dhcp.SystemdName)
-
+		err = util.SystemdStart(controller.Dhcp.SystemdName)
+		if err != nil {
+			return errors.Wrap(err, "failed to start")
+		}
 	} else {
 		err = tmpl.Execute(os.Stdout, d)
 		if err != nil {

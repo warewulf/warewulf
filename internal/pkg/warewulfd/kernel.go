@@ -8,7 +8,6 @@ import (
 )
 
 func KernelSend(w http.ResponseWriter, req *http.Request) {
-
 	node, err := getSanity(req)
 	if err != nil {
 		w.WriteHeader(404)
@@ -16,7 +15,7 @@ func KernelSend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if node.KernelVersion.Defined() == true {
+	if node.KernelVersion.Defined() {
 		fileName := kernel.KernelImage(node.KernelVersion.Get())
 
 		err := sendFile(w, fileName, node.Id.Get())
@@ -30,6 +29,4 @@ func KernelSend(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(503)
 		log.Printf("ERROR: No 'kernel version' set for node %s\n", node.Id.Get())
 	}
-
-	return
 }

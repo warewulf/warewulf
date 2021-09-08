@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/pkg/errors"
 )
 
 func DirModTime(path string) (time.Time, error) {
@@ -73,7 +74,10 @@ func CopyFile(source string, dest string) error {
 		return err
 	}
 
-	finfo, _ := sourceFD.Stat()
+	finfo, err := sourceFD.Stat()
+	if err != nil {
+		return errors.Wrap(err, "failed to stat source")
+	}
 
 	destFD, err := os.OpenFile(dest, os.O_RDWR|os.O_CREATE, finfo.Mode())
 	if err != nil {
@@ -85,9 +89,9 @@ func CopyFile(source string, dest string) error {
 		return err
 	}
 
-	CopyUIDGID(source, dest)
+	err = CopyUIDGID(source, dest)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to copy")
 	}
 	sourceFD.Close()
 
@@ -293,8 +297,14 @@ func SystemdStart(systemdName string) error {
 	enableCmd := fmt.Sprintf("systemctl enable %s", systemdName)
 
 	wwlog.Printf(wwlog.DEBUG, "Setting up Systemd service: %s\n", systemdName)
-	ExecInteractive("/bin/sh", "-c", startCmd)
-	ExecInteractive("/bin/sh", "-c", enableCmd)
+	err := ExecInteractive("/bin/sh", "-c", startCmd)
+	if err != nil {
+		return errors.Wrap(err, "failed to run start cmd")
+	}
+	err = ExecInteractive("/bin/sh", "-c", enableCmd)
+	if err != nil {
+		return errors.Wrap(err, "failed to run enable cmd")
+	}
 
 	return nil
 }
@@ -312,7 +322,6 @@ func CopyUIDGID(source string, dest string) error {
 		UID = int(stat.Uid)
 		GID = int(stat.Gid)
 	}
-
 	wwlog.Printf(wwlog.DEBUG, "Chown %d:%d '%s'\n", UID, GID, dest)
 	err = os.Chown(dest, UID, GID)
 	return err

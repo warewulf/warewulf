@@ -18,7 +18,6 @@ var (
 			"transform containers into bootable Warewulf VNFS images.",
 		Aliases: []string{"vnfs"},
 	}
-	test bool
 )
 
 func init() {

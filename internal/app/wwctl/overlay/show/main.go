@@ -17,20 +17,20 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	overlayName := args[0]
 	fileName := args[1]
 
-	if SystemOverlay == true {
+	if SystemOverlay {
 		overlaySourceDir = config.SystemOverlaySource(overlayName)
 	} else {
 		overlaySourceDir = config.RuntimeOverlaySource(overlayName)
 	}
 
-	if util.IsDir(overlaySourceDir) == false {
+	if !util.IsDir(overlaySourceDir) {
 		wwlog.Printf(wwlog.ERROR, "Overlay does not exist: %s\n", overlayName)
 		os.Exit(1)
 	}
 
 	overlayFile := path.Join(overlaySourceDir, fileName)
 
-	if util.IsFile(overlayFile) == false {
+	if !util.IsFile(overlayFile) {
 		wwlog.Printf(wwlog.ERROR, "File does not exist within overlay: %s:%s\n", overlayName, fileName)
 		os.Exit(1)
 	}

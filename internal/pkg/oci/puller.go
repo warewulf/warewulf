@@ -66,16 +66,6 @@ func NewPuller(opts ...pullerOpt) (*puller, error) {
 	return p, nil
 }
 
-// stripScheme prepares the docker uri for external library parsing and returns an error
-// if it detects a malformed schema
-func stripScheme(uri string) (string, error) {
-	if !strings.HasPrefix(uri, "docker://") {
-		return "", fmt.Errorf("unsupported uri schema: %q", uri)
-	}
-
-	return strings.TrimPrefix(uri, "docker:"), nil
-}
-
 // getReference parsed the uri scheme to determine
 func getReference(uri string) (types.ImageReference, error) {
 	s := strings.SplitN(uri, ":", 2)

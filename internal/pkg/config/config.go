@@ -30,7 +30,7 @@ func SystemOverlaySource(overlayName string) string {
 		return ""
 	}
 
-	if util.ValidString(overlayName, "^[a-zA-Z0-9-._]+$") == false {
+	if !util.ValidString(overlayName, "^[a-zA-Z0-9-._]+$") {
 		wwlog.Printf(wwlog.ERROR, "System overlay name contains illegal characters: %s\n", overlayName)
 		return ""
 	}
@@ -44,7 +44,7 @@ func RuntimeOverlaySource(overlayName string) string {
 		return ""
 	}
 
-	if util.ValidString(overlayName, "^[a-zA-Z0-9-._]+$") == false {
+	if !util.ValidString(overlayName, "^[a-zA-Z0-9-._]+$") {
 		wwlog.Printf(wwlog.ERROR, "Runtime overlay name contains illegal characters: %s\n", overlayName)
 		return ""
 	}
@@ -58,7 +58,7 @@ func SystemOverlayImage(nodeName string) string {
 		return ""
 	}
 
-	if util.ValidString(nodeName, "^[a-zA-Z0-9-._:]+$") == false {
+	if !util.ValidString(nodeName, "^[a-zA-Z0-9-._:]+$") {
 		wwlog.Printf(wwlog.ERROR, "System overlay name contains illegal characters: %s\n", nodeName)
 		return ""
 	}
@@ -72,7 +72,7 @@ func RuntimeOverlayImage(nodeName string) string {
 		return ""
 	}
 
-	if util.ValidString(nodeName, "^[a-zA-Z0-9-._:]+$") == false {
+	if !util.ValidString(nodeName, "^[a-zA-Z0-9-._:]+$") {
 		wwlog.Printf(wwlog.ERROR, "System overlay name contains illegal characters: %s\n", nodeName)
 		return ""
 	}

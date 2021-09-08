@@ -15,7 +15,7 @@ func SystemOverlaySend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if node.SystemOverlay.Defined() == true {
+	if node.SystemOverlay.Defined() {
 		fileName := config.SystemOverlayImage(node.Id.Get())
 
 		err := sendFile(w, fileName, node.Id.Get())
@@ -28,6 +28,4 @@ func SystemOverlaySend(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(503)
 		log.Printf("ERROR: No 'system system-overlay' set for node %s\n", node.Id.Get())
 	}
-
-	return
 }

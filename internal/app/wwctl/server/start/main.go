@@ -6,8 +6,7 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-
-	if SetForeground == true {
+	if SetForeground {
 		return warewulfd.RunServer()
 	} else {
 		return warewulfd.DaemonStart()

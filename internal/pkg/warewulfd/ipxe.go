@@ -102,7 +102,7 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	if unconfiguredNode == true {
+	if unconfiguredNode {
 		log.Printf("UNCONFIGURED NODE:  %15s\n", hwaddr)
 
 		tmpl, err := template.ParseFiles("/etc/warewulf/ipxe/unconfigured.ipxe")
@@ -155,5 +155,4 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 		log.Printf("SEND:  %15s: %s\n", nodeobj.Id.Get(), ipxeTemplate)
 
 	}
-	return
 }

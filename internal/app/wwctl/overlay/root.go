@@ -19,7 +19,6 @@ var (
 		Short: "Warewulf Overlay Management",
 		Long:  "Management interface for Warewulf overlays",
 	}
-	test bool
 )
 
 func init() {

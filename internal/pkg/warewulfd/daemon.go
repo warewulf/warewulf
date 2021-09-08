@@ -10,6 +10,7 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -18,10 +19,11 @@ const (
 )
 
 func DaemonStart() error {
-
 	if os.Getenv("WAREWULFD_BACKGROUND") == "1" {
-		RunServer()
-
+		err := RunServer()
+		if err != nil {
+			return errors.Wrap(err, "failed to run server")
+		}
 	} else {
 		os.Setenv("WAREWULFD_BACKGROUND", "1")
 
@@ -38,7 +40,10 @@ func DaemonStart() error {
 		cmd := exec.Command(os.Args[0], "server", "start")
 		cmd.Stdout = f
 		cmd.Stderr = f
-		cmd.Start()
+		err = cmd.Start()
+		if err != nil {
+			return errors.Wrap(err, "failed to start command")
+		}
 		pid := cmd.Process.Pid
 
 		fmt.Fprintf(p, "%d", pid)
@@ -51,8 +56,7 @@ func DaemonStart() error {
 }
 
 func DaemonStatus() error {
-
-	if util.IsFile(WAREWULFD_PIDFILE) == false {
+	if !util.IsFile(WAREWULFD_PIDFILE) {
 		wwlog.Printf(wwlog.INFO, "Warewulf daemon process not running (%s)\n", WAREWULFD_PIDFILE)
 		return nil
 	}
@@ -81,7 +85,7 @@ func DaemonStatus() error {
 }
 
 func DaemonReload() error {
-	if util.IsFile(WAREWULFD_PIDFILE) == false {
+	if !util.IsFile(WAREWULFD_PIDFILE) {
 		wwlog.Printf(wwlog.INFO, "Warewulf daemon process not running (%s)\n", WAREWULFD_PIDFILE)
 		return nil
 	}
@@ -109,8 +113,7 @@ func DaemonReload() error {
 }
 
 func DaemonStop() error {
-
-	if util.IsFile(WAREWULFD_PIDFILE) == false {
+	if !util.IsFile(WAREWULFD_PIDFILE) {
 		wwlog.Printf(wwlog.INFO, "Warewulf daemon process not running (%s)\n", WAREWULFD_PIDFILE)
 		return nil
 	}

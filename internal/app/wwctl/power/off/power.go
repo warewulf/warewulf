@@ -29,6 +29,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if len(args) > 0 {
 		nodes = node.FilterByName(nodes, args)
 	} else {
+		//nolint:errcheck
 		cmd.Usage()
 		os.Exit(1)
 	}
@@ -57,16 +58,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			ipmiPort = node.IpmiPort.Get()
 		}
 		ipmiCmd := power.IPMI{
-			NodeName: node.Id.Get(),
-			HostName: node.IpmiIpaddr.Get(),
-			Port:     ipmiPort,
-			User:     node.IpmiUserName.Get(),
-			Password: node.IpmiPassword.Get(),
+			NodeName:  node.Id.Get(),
+			HostName:  node.IpmiIpaddr.Get(),
+			Port:      ipmiPort,
+			User:      node.IpmiUserName.Get(),
+			Password:  node.IpmiPassword.Get(),
 			Interface: ipmiInterface,
-			AuthType: "MD5",
+			AuthType:  "MD5",
 		}
 
 		batchpool.Submit(func() {
+			//nolint:errcheck
 			ipmiCmd.PowerOff()
 			results <- ipmiCmd
 		})

@@ -12,11 +12,11 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-
 	if os.Getpid() != 1 {
 		wwlog.Printf(wwlog.ERROR, "PID is not 1: %d\n", os.Getpid())
 		os.Exit(1)
@@ -24,15 +24,22 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	containerName := args[0]
 
-	if container.ValidSource(containerName) == false {
+	if !container.ValidSource(containerName) {
 		wwlog.Printf(wwlog.ERROR, "Unknown Warewulf container: %s\n", containerName)
 		os.Exit(1)
 	}
 
 	containerPath := container.RootFsDir(containerName)
 
-	syscall.Mount("", "/", "", syscall.MS_PRIVATE, "")
-	syscall.Mount("/dev", path.Join(containerPath, "/dev"), "", syscall.MS_BIND, "")
+	err := syscall.Mount("", "/", "", syscall.MS_PRIVATE, "")
+	if err != nil {
+		return errors.Wrap(err, "failed to mount")
+	}
+
+	err = syscall.Mount("/dev", path.Join(containerPath, "/dev"), "", syscall.MS_BIND, "")
+	if err != nil {
+		return errors.Wrap(err, "failed to mount /dev")
+	}
 
 	for _, b := range binds {
 		var source string
@@ -54,18 +61,28 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	syscall.Chroot(containerPath)
-	os.Chdir("/")
+	//return errors.New("Test error")
 
-	syscall.Mount("rootfs", "rootfs", "", syscall.MS_BIND, "")
-	syscall.Mount("/proc", "/proc", "proc", 0, "")
+	err = syscall.Chroot(containerPath)
+	if err != nil {
+		return errors.Wrap(err, "failed to chroot")
+	}
 
-	ps1string := fmt.Sprintf("[%s] Warewulf> ", containerName)
-	os.Setenv("PS1", ps1string)
+	err = os.Chdir("/")
+	if err != nil {
+		return errors.Wrap(err, "failed to chdir")
+	}
+
+	err = syscall.Mount("/proc", "/proc", "proc", 0, "")
+	if err != nil {
+		return errors.Wrap(err, "failed to mount proc")
+	}
+
+	os.Setenv("PS1", fmt.Sprintf("[%s] Warewulf> ", containerName))
 	os.Setenv("PATH", "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin")
 	os.Setenv("HISTFILE", "/dev/null")
 
-	err := syscall.Exec(args[1], args[1:], os.Environ())
+	err = syscall.Exec(args[1], args[1:], os.Environ())
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "%s\n", err)
 		os.Exit(1)

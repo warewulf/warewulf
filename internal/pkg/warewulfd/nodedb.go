@@ -19,9 +19,7 @@ var (
 )
 
 func LoadNodeDB() error {
-
-	var TmpMap map[string]node.NodeInfo
-	TmpMap = make(map[string]node.NodeInfo)
+	TmpMap := make(map[string]node.NodeInfo)
 
 	wwlog.Printf(wwlog.INFO, "Loading the node Database\n")
 
