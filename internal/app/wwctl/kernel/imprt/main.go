@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/kernel"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
@@ -14,6 +15,15 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	for _, arg := range args {
+		// Checking if container flag was set, then overwriting OptRoot
+		if OptContainer != "" {
+			if container.ValidSource(OptContainer) == true {
+				OptRoot = container.RootFsDir(OptContainer)
+			} else {
+				wwlog.Printf(wwlog.ERROR, " %s is not a valid container", OptContainer)
+				os.Exit(1)
+			}
+		}
 		output, err := kernel.Build(arg, OptRoot)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Failed building kernel: %s\n", err)

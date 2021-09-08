@@ -13,10 +13,11 @@ var (
 		RunE: CobraRunE,
 		Args: cobra.MinimumNArgs(1),
 	}
-	BuildAll   bool
-	ByNode     bool
-	SetDefault bool
-	OptRoot    string
+	BuildAll     bool
+	ByNode       bool
+	SetDefault   bool
+	OptRoot      string
+	OptContainer string
 )
 
 func init() {
@@ -24,6 +25,7 @@ func init() {
 	baseCmd.PersistentFlags().BoolVarP(&ByNode, "node", "n", false, "Build overlay for a particular node(s)")
 	baseCmd.PersistentFlags().BoolVar(&SetDefault, "setdefault", false, "Set this kernel for the default profile")
 	baseCmd.PersistentFlags().StringVarP(&OptRoot, "root", "r", "/", "Import kernel from root (chroot) directory")
+	baseCmd.PersistentFlags().StringVarP(&OptContainer, "container", "c", "", "Import kernel from container")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
