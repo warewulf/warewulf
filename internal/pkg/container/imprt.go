@@ -5,13 +5,13 @@ import (
 	"os"
 	"path"
 
-	"github.com/hpcng/warewulf/internal/pkg/util"
-
 	"github.com/containers/image/v5/types"
 	"github.com/containers/storage/drivers/copy"
+	"github.com/pkg/errors"
+
 	"github.com/hpcng/warewulf/internal/pkg/config"
-	"github.com/hpcng/warewulf/internal/pkg/errors"
 	"github.com/hpcng/warewulf/internal/pkg/oci"
+	"github.com/hpcng/warewulf/internal/pkg/util"
 )
 
 func ImportDocker(uri string, name string, sCtx *types.SystemContext) error {
