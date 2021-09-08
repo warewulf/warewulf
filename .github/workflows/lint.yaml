@@ -18,6 +18,5 @@ jobs:
           version: v1.31
           skip-build-cache: true
           skip-pkg-cache: true
-          args: --build-tags "containers_image_openpgp containers_image_ostree"
-
+          args: --build-tags "containers_image_openpgp containers_image_ostree" --skip-dirs internal/pkg/staticfiles
 
