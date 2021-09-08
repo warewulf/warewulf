@@ -61,8 +61,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	//return errors.New("Test error")
-
 	err = syscall.Chroot(containerPath)
 	if err != nil {
 		return errors.Wrap(err, "failed to chroot")
