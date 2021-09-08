@@ -65,77 +65,77 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.VERBOSE, "Modifying profile: %s\n", p.Id.Get())
 
 		if SetComment != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %v, Setting comment to: %s\n", p.Id, SetComment)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting comment to: %s\n", p.Id.Get(), SetComment)
 			p.Comment.Set(SetComment)
 		}
 
 		if SetClusterName != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %v, Setting cluster name to: %s\n", p.Id, SetClusterName)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting cluster name to: %s\n", p.Id.Get(), SetClusterName)
 			p.ClusterName.Set(SetClusterName)
 		}
 
 		if SetContainer != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %v, Setting Container name to: %s\n", p.Id, SetContainer)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting Container name to: %s\n", p.Id.Get(), SetContainer)
 			p.ContainerName.Set(SetContainer)
 		}
 
 		if SetInit != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %v, Setting init command to: %s\n", p.Id, SetInit)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting init command to: %s\n", p.Id.Get(), SetInit)
 			p.Init.Set(SetInit)
 		}
 
 		if SetRoot != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %v, Setting root to: %s\n", p.Id, SetRoot)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting root to: %s\n", p.Id.Get(), SetRoot)
 			p.Root.Set(SetRoot)
 		}
 
 		if SetKernel != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %v, Setting Kernel to: %s\n", p.Id, SetKernel)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting Kernel to: %s\n", p.Id.Get(), SetKernel)
 			p.KernelVersion.Set(SetKernel)
 		}
 
 		if SetKernelArgs != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %v, Setting Kernel args to: %s\n", p.Id, SetKernelArgs)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting Kernel args to: %s\n", p.Id.Get(), SetKernelArgs)
 			p.KernelArgs.Set(SetKernelArgs)
 		}
 
 		if SetIpxe != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %v, Setting iPXE template to: %s\n", p.Id, SetIpxe)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting iPXE template to: %s\n", p.Id.Get(), SetIpxe)
 			p.Ipxe.Set(SetIpxe)
 		}
 
 		if SetRuntimeOverlay != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %v, Setting runtime overlay to: %s\n", p.Id, SetRuntimeOverlay)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting runtime overlay to: %s\n", p.Id.Get(), SetRuntimeOverlay)
 			p.RuntimeOverlay.Set(SetRuntimeOverlay)
 		}
 
 		if SetSystemOverlay != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %v, Setting system overlay to: %s\n", p.Id, SetSystemOverlay)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting system overlay to: %s\n", p.Id.Get(), SetSystemOverlay)
 			p.SystemOverlay.Set(SetSystemOverlay)
 		}
 
 		if SetIpmiNetmask != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %v, Setting IPMI username to: %s\n", p.Id, SetIpmiNetmask)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting IPMI username to: %s\n", p.Id.Get(), SetIpmiNetmask)
 			p.IpmiNetmask.Set(SetIpmiNetmask)
 		}
 
 		if SetIpmiGateway != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %v, Setting IPMI username to: %s\n", p.Id, SetIpmiGateway)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting IPMI username to: %s\n", p.Id.Get(), SetIpmiGateway)
 			p.IpmiGateway.Set(SetIpmiGateway)
 		}
 
 		if SetIpmiUsername != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %v, Setting IPMI username to: %s\n", p.Id, SetIpmiUsername)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting IPMI username to: %s\n", p.Id.Get(), SetIpmiUsername)
 			p.IpmiUserName.Set(SetIpmiUsername)
 		}
 
 		if SetIpmiPassword != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %v, Setting IPMI username to: %s\n", p.Id, SetIpmiPassword)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting IPMI username to: %s\n", p.Id.Get(), SetIpmiPassword)
 			p.IpmiPassword.Set(SetIpmiPassword)
 		}
 
 		if SetIpmiInterface != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %v, Setting IPMI username to: %s\n", p.Id, SetIpmiInterface)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting IPMI username to: %s\n", p.Id.Get(), SetIpmiInterface)
 			p.IpmiInterface.Set(SetIpmiInterface)
 		}
 
