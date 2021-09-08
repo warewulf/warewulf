@@ -1,15 +1,15 @@
-package chmod
+package chown
 
 import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "chmod [flags] <overlay> <path> <mode>",
-		Short: "Change file permissions within an overlay",
-		Long: "This command will allow you to change the permissions of a file within an\n" +
+		Use:   "chown [flags] <overlay> <path> <UID> [<GID>]",
+		Short: "Change file ownership within an overlay",
+		Long: "This command will allow you to change the ownership of a file within an\n" +
 			"overlay.",
 		RunE: CobraRunE,
-		Args: cobra.ExactArgs(3),
+		Args: cobra.RangeArgs(3, 4),
 	}
 	SystemOverlay   bool
 	NoOverlayUpdate bool
