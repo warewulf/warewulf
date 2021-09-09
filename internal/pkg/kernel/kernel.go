@@ -6,12 +6,12 @@ import (
 	"os"
 	"os/exec"
 	"path"
-
-	"github.com/pkg/errors"
+	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/pkg/errors"
 )
 
 func ParentDir() string {
@@ -72,28 +72,30 @@ func ListKernels() ([]string, error) {
 }
 
 func Build(kernelVersion string, root string) (string, error) {
+
 	kernelImage := path.Join(root, "/boot/vmlinuz-"+kernelVersion)
 	kernelDrivers := path.Join(root, "/lib/modules/"+kernelVersion)
 	kernelDestination := KernelImage(kernelVersion)
 	driversDestination := KmodsImage(kernelVersion)
 
 	// Create the destination paths just in case it doesn't exist
-	err := os.MkdirAll(path.Dir(kernelDestination), 0755)
-	if err != nil {
-		return "", fmt.Errorf("failed to create kernal dest: %s", err)
-	}
-
-	err = os.MkdirAll(path.Dir(driversDestination), 0755)
-	if err != nil {
-		return "", fmt.Errorf("failed to create driver dest: %s", err)
-	}
+	os.MkdirAll(path.Dir(kernelDestination), 0755)
+	os.MkdirAll(path.Dir(driversDestination), 0755)
 
 	if !util.IsFile(kernelImage) {
-		return "", errors.New("Could not locate kernel image")
+		// allow uncompressed kernels (can be handy for aarch64)
+		kernelImage = path.Join(root, "/boot/vmlinux-"+kernelVersion)
+		if !util.IsFile(kernelImage) {
+			return "", errors.New("Could not locate kernel image")
+		}
 	}
 
 	if !util.IsDir(kernelDrivers) {
-		return "", errors.New("Could not locate kernel drivers")
+		// strip a gz suffix
+		kernelDrivers = strings.TrimRight(kernelDrivers, ".gz")
+		if !util.IsDir(kernelDrivers) {
+			return "", errors.New("Could not locate kernel drivers")
+		}
 	}
 
 	wwlog.Printf(wwlog.VERBOSE, "Setting up Kernel\n")
