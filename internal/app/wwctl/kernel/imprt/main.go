@@ -17,7 +17,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	for _, arg := range args {
 		// Checking if container flag was set, then overwriting OptRoot
 		if OptContainer != "" {
-			if container.ValidSource(OptContainer) == true {
+			if container.ValidSource(OptContainer) {
 				OptRoot = container.RootFsDir(OptContainer)
 			} else {
 				wwlog.Printf(wwlog.ERROR, " %s is not a valid container", OptContainer)
