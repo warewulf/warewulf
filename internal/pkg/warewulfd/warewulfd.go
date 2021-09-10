@@ -1,12 +1,11 @@
 package warewulfd
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
 // TODO: https://github.com/danderson/netboot/blob/master/pixiecore/dhcp.go
@@ -21,17 +20,15 @@ func RunServer() error {
 		for range c {
 			err := LoadNodeDB()
 			if err != nil {
-				wwlog.Printf(wwlog.WARN, "Could not load database: %s\n", err)
+				fmt.Printf("ERROR: Could not load database: %s\n", err)
 			}
 		}
 	}()
 
 	err := LoadNodeDB()
 	if err != nil {
-		wwlog.Printf(wwlog.WARN, "Could not load database: %s\n", err)
+		fmt.Printf("ERROR: Could not load database: %s\n", err)
 	}
-
-	wwlog.Printf(wwlog.DEBUG, "Registering handlers for the web service\n")
 
 	http.HandleFunc("/ipxe/", IpxeSend)
 	http.HandleFunc("/kernel/", KernelSend)
@@ -40,11 +37,11 @@ func RunServer() error {
 	http.HandleFunc("/overlay-system/", SystemOverlaySend)
 	http.HandleFunc("/overlay-runtime", RuntimeOverlaySend)
 
-	wwlog.Printf(wwlog.VERBOSE, "Starting HTTPD REST service\n")
+	daemonLogf("Starting HTTPD REST service\n")
 
 	err = http.ListenAndServe(":9873", nil)
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not start listening service: %s\n", err)
+		fmt.Printf("ERROR: Could not start listening service: %s\n", err)
 		os.Exit(1)
 	}
 

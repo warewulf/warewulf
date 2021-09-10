@@ -1,7 +1,6 @@
 package warewulfd
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/hpcng/warewulf/internal/pkg/config"
@@ -11,7 +10,7 @@ func SystemOverlaySend(w http.ResponseWriter, req *http.Request) {
 	node, err := getSanity(req)
 	if err != nil {
 		w.WriteHeader(404)
-		log.Println(err)
+		daemonLogf("ERROR: %s\n", err)
 		return
 	}
 
@@ -20,12 +19,10 @@ func SystemOverlaySend(w http.ResponseWriter, req *http.Request) {
 
 		err := sendFile(w, fileName, node.Id.Get())
 		if err != nil {
-			log.Printf("ERROR: %s\n", err)
-		} else {
-			log.Printf("SEND:  %15s: %s\n", node.Id.Get(), fileName)
+			daemonLogf("ERROR: %s\n", err)
 		}
 	} else {
 		w.WriteHeader(503)
-		log.Printf("ERROR: No 'system system-overlay' set for node %s\n", node.Id.Get())
+		daemonLogf("WARNING: No 'system system-overlay' set for node %s\n", node.Id.Get())
 	}
 }

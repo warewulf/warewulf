@@ -1,16 +1,22 @@
 package warewulfd
 
 import (
+	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/pkg/errors"
 )
+
+func daemonLogf(message string, a ...interface{}) {
+	prefix := fmt.Sprintf("[%s] ", time.Now().Format(time.UnixDate))
+	fmt.Printf(prefix+message, a...)
+}
 
 func getSanity(req *http.Request) (node.NodeInfo, error) {
 	url := strings.Split(req.URL.Path, "/")
@@ -23,7 +29,7 @@ func getSanity(req *http.Request) (node.NodeInfo, error) {
 		return ret, errors.New("Could not find node by HW address: " + req.URL.Path)
 	}
 
-	log.Printf("REQ:   %15s: %s\n", nodeobj.Id.Get(), req.URL.Path)
+	daemonLogf("REQ:   %15s: %s\n", nodeobj.Id.Get(), req.URL.Path)
 
 	return nodeobj, nil
 }
@@ -57,6 +63,8 @@ func sendFile(w http.ResponseWriter, filename string, sendto string) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to copy")
 	}
+
+	daemonLogf("SEND:  %15s: %s\n", sendto, filename)
 
 	return nil
 }
