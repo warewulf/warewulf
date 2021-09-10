@@ -79,8 +79,12 @@ func Build(kernelVersion string, root string) (string, error) {
 	driversDestination := KmodsImage(kernelVersion)
 
 	// Create the destination paths just in case it doesn't exist
-	os.MkdirAll(path.Dir(kernelDestination), 0755)
-	os.MkdirAll(path.Dir(driversDestination), 0755)
+  if  err := os.MkdirAll(path.Dir(kernelDestination), 0755) ; err != nil {
+    return "", err
+  }
+	if err := os.MkdirAll(path.Dir(driversDestination), 0755) ; err != nil {
+    return "", err
+  }
 
 	if !util.IsFile(kernelImage) {
 		// allow uncompressed kernels (can be handy for aarch64)
