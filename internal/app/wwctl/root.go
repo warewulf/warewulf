@@ -25,12 +25,12 @@ var (
 		SilenceUsage:      true,
 	}
 	verboseArg bool
-	debugArg   bool
+	DebugFlag  bool
 )
 
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verboseArg, "verbose", "v", false, "Run with increased verbosity.")
-	rootCmd.PersistentFlags().BoolVarP(&debugArg, "debug", "d", false, "Run with debugging messages enabled.")
+	rootCmd.PersistentFlags().BoolVarP(&DebugFlag, "debug", "d", false, "Run with debugging messages enabled.")
 
 	rootCmd.AddCommand(overlay.GetCommand())
 	rootCmd.AddCommand(container.GetCommand())
@@ -49,7 +49,7 @@ func GetRootCommand() *cobra.Command {
 }
 
 func rootPersistentPreRunE(cmd *cobra.Command, args []string) error {
-	if debugArg {
+	if DebugFlag {
 		wwlog.SetLevel(wwlog.DEBUG)
 	} else if verboseArg {
 		wwlog.SetLevel(wwlog.VERBOSE)
