@@ -53,7 +53,7 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if node.Id.Defined() {
+	if !node.Id.Defined() {
 		daemonLogf("REQ:   %15s: %s (unknown/unconfigured node)\n", node.Id.Get(), req.URL.Path)
 		w.WriteHeader(404)
 		return
