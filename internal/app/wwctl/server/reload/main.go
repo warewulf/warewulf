@@ -2,9 +2,10 @@ package reload
 
 import (
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	return warewulfd.DaemonReload()
+	return errors.Wrap(warewulfd.DaemonReload(), "failed to reload Warewulf server")
 }
