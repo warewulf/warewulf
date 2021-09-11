@@ -1,4 +1,4 @@
-.PHONY: all
+.PHONY: all wwctl wwclient bash_completion man_page
 
 VERSION := 4.1.0
 
