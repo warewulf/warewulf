@@ -1,9 +1,6 @@
 package add
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
@@ -13,32 +10,28 @@ import (
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Failed to open node database: %s\n", err)
-		os.Exit(1)
+		return errors.Wrap(err, "failed to open node database")
 	}
 
 	for _, a := range args {
 		n, err := nodeDB.AddNode(a)
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "%s\n", err)
-			os.Exit(1)
+			return errors.Wrap(err, "failed to add node")
 		}
-		fmt.Printf("Added node: %s\n", a)
+		wwlog.Printf(wwlog.INFO, "Added node: %s\n", a)
 
 		if SetClusterName != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting cluster name to: %s\n", n.Id.Get(), SetClusterName)
 			n.ClusterName.Set(SetClusterName)
 			err := nodeDB.NodeUpdate(n)
 			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
+				return errors.Wrap(err, "failed to update node")
 			}
 		}
 
 		if SetIpaddr != "" {
 			if SetNetDev == "" {
-				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
-				os.Exit(1)
+				return errors.New("you must include the '--netdev' option")
 			}
 
 			if _, ok := n.NetDevs[SetNetDev]; !ok {
@@ -52,85 +45,72 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			n.NetDevs[SetNetDev].Default.SetB(true)
 			err := nodeDB.NodeUpdate(n)
 			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
+				return errors.Wrap(err, "failed to update nodedb")
 			}
 		}
 		if SetNetmask != "" {
 			if SetNetDev == "" {
-				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
-				os.Exit(1)
+				return errors.New("you must include the '--netdev' option")
 			}
 
 			if _, ok := n.NetDevs[SetNetDev]; !ok {
-				wwlog.Printf(wwlog.ERROR, "Network Device doesn't exist: %s\n", SetNetDev)
-				os.Exit(1)
+				return errors.New("network device does not exist: " + SetNetDev)
 			}
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting netmask to: %s\n", n.Id.Get(), SetNetDev, SetNetmask)
 
 			n.NetDevs[SetNetDev].Netmask.Set(SetNetmask)
 			err := nodeDB.NodeUpdate(n)
 			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
+				return errors.Wrap(err, "failed to update nodedb")
 			}
 		}
 		if SetGateway != "" {
 			if SetNetDev == "" {
-				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
-				os.Exit(1)
+				return errors.New("you must include the '--netdev' option")
 			}
 
 			if _, ok := n.NetDevs[SetNetDev]; !ok {
-				wwlog.Printf(wwlog.ERROR, "Network Device doesn't exist: %s\n", SetNetDev)
-				os.Exit(1)
+				return errors.New("network device does not exist: " + SetNetDev)
 			}
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting gateway to: %s\n", n.Id.Get(), SetNetDev, SetGateway)
 
 			n.NetDevs[SetNetDev].Gateway.Set(SetGateway)
 			err := nodeDB.NodeUpdate(n)
 			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
+				return errors.Wrap(err, "failed to update nodedb")
 			}
 		}
 		if SetHwaddr != "" {
 			if SetNetDev == "" {
-				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
-				os.Exit(1)
+				return errors.New("you must include the '--netdev' option")
 			}
 
 			if _, ok := n.NetDevs[SetNetDev]; !ok {
-				wwlog.Printf(wwlog.ERROR, "Network Device doesn't exist: %s\n", SetNetDev)
-				os.Exit(1)
+				return errors.New("network device does not exist: " + SetNetDev)
 			}
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting HW address to: %s\n", n.Id.Get(), SetNetDev, SetHwaddr)
 
 			n.NetDevs[SetNetDev].Hwaddr.Set(SetHwaddr)
 			err := nodeDB.NodeUpdate(n)
 			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
+				return errors.Wrap(err, "failed to update nodedb")
 			}
 		}
 
 		if SetType != "" {
 			if SetNetDev == "" {
-				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
-				os.Exit(1)
+				return errors.New("you must include the '--netdev' option")
 			}
 
 			if _, ok := n.NetDevs[SetNetDev]; !ok {
-				wwlog.Printf(wwlog.ERROR, "Network Device doesn't exist: %s\n", SetNetDev)
-				os.Exit(1)
+				return errors.New("network device does not exist: " + SetNetDev)
 			}
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Type to: %s\n", n.Id.Get(), SetNetDev, SetType)
 
 			n.NetDevs[SetNetDev].Type.Set(SetType)
 			err := nodeDB.NodeUpdate(n)
 			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
+				return errors.Wrap(err, "failed to update nodedb")
 			}
 		}
 
@@ -140,8 +120,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			n.Discoverable.SetB(true)
 			err := nodeDB.NodeUpdate(n)
 			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
+				return errors.Wrap(err, "failed to update nodedb")
 			}
 		}
 
