@@ -6,7 +6,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
 type nodeDB struct {
@@ -21,7 +20,7 @@ var (
 func LoadNodeDB() error {
 	TmpMap := make(map[string]node.NodeInfo)
 
-	wwlog.Printf(wwlog.INFO, "Loading the node Database\n")
+	daemonLogf("(re)Loading the node Database\n")
 
 	DB, err := node.New()
 	if err != nil {
@@ -35,8 +34,6 @@ func LoadNodeDB() error {
 
 	for _, n := range nodes {
 		for _, netdev := range n.NetDevs {
-			wwlog.Printf(wwlog.DEBUG, "Caching node entry: '%s' -> %s\n", netdev.Hwaddr.Get(), n.Id.Get())
-
 			TmpMap[netdev.Hwaddr.Get()] = n
 		}
 	}
@@ -57,7 +54,6 @@ func GetNode(val string) (node.NodeInfo, error) {
 		return db.NodeInfo[val], nil
 	}
 
-	wwlog.Printf(wwlog.VERBOSE, "Node not found in DB: %s\n", val)
 	var empty node.NodeInfo
 	return empty, errors.New("No node found")
 }

@@ -2,7 +2,6 @@ package warewulfd
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -33,7 +32,7 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 	var unconfiguredNode bool
 
 	if url[2] == "" {
-		log.Printf("ERROR: Bad iPXE request from %s\n", req.RemoteAddr)
+		daemonLogf("ERROR: Bad iPXE request from %s\n", req.RemoteAddr)
 		w.WriteHeader(404)
 		return
 	}
@@ -42,12 +41,10 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 
 	conf, err := warewulfconf.New()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "%s\n", err)
+		daemonLogf("ERROR: Could not open Warewulf configuration: %s\n", err)
 		w.WriteHeader(503)
 		return
 	}
-
-	log.Printf("IPXEREQ:   %s\n", req.URL.Path)
 
 	nodeobj, err := GetNode(hwaddr)
 
@@ -57,44 +54,41 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 
 		nodeDB, err := node.New()
 		if err != nil {
-			log.Printf("Could not read node configuration file: %s\n", err)
+			daemonLogf("Could not read node configuration file: %s\n", err)
 			w.WriteHeader(503)
 			return
 		}
 
-		wwlog.Printf(wwlog.INFO, "Node was not found, looking for discoverable nodes...\n")
+		daemonLogf("IPXEREQ:   %s (node not configured)\n", hwaddr)
 
 		n, netdev, err := nodeDB.FindDiscoverableNode()
 		if err != nil {
-			wwlog.Printf(wwlog.WARN, "No nodes are set as discoverable...\n")
 			unconfiguredNode = true
 
 		} else {
-			wwlog.Printf(wwlog.INFO, "Adding new configuration to discoverable node: %s\n", n.Id.Get())
-
 			n.NetDevs[netdev].Hwaddr.Set(hwaddr)
 			n.Discoverable.SetB(false)
 			err := nodeDB.NodeUpdate(n)
 			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "Could not add discovered configuration for node: %s\n", n.Id.Get())
+				daemonLogf("IPXEREQ:   %s (failed to set node configuration)\n", hwaddr)
+
 				unconfiguredNode = true
 			} else {
 				err := nodeDB.Persist()
 				if err != nil {
-					wwlog.Printf(wwlog.ERROR, "Could not persist new node configuration while adding node: %s\n", n.Id.Get())
+					daemonLogf("IPXEREQ:   %s (failed to persist node configuration)\n", hwaddr)
+
 					unconfiguredNode = true
 				} else {
 					nodeobj = n
-					wwlog.Printf(wwlog.INFO, "Building System Overlay:\n")
 					_ = overlay.BuildSystemOverlay([]node.NodeInfo{n})
-					wwlog.Printf(wwlog.INFO, "Building Runtime Overlay:\n")
 					_ = overlay.BuildRuntimeOverlay([]node.NodeInfo{n})
 
-					wwlog.Printf(wwlog.INFO, "Added node %s\n", nodeobj.Id.Get())
+					daemonLogf("IPXEREQ:   %s (node automatically configured)\n", hwaddr)
 
 					err := LoadNodeDB()
 					if err != nil {
-						wwlog.Printf(wwlog.WARN, "Could not reload database: %s\n", err)
+						daemonLogf("Could not reload configuration: %s\n", err)
 					}
 
 				}
@@ -103,11 +97,11 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if unconfiguredNode {
-		log.Printf("UNCONFIGURED NODE:  %15s\n", hwaddr)
+		daemonLogf("IPXEREQ:   %s (unknown/unconfigured node)\n", hwaddr)
 
 		tmpl, err := template.ParseFiles("/etc/warewulf/ipxe/unconfigured.ipxe")
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "%s\n", err)
+			daemonLogf("ERROR: Could not parse unconfigured node IPXE template: %s\n", err)
 			return
 		}
 
@@ -117,15 +111,13 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 
 		err = tmpl.Execute(w, replace)
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "%s\n", err)
+			daemonLogf("ERROR: Could not update unconfigured node IPXE template: %s\n", err)
 			return
 		}
 
 		return
 
 	} else {
-
-		log.Printf("IPXE:  %15s: %s\n", nodeobj.Id.Get(), req.URL.Path)
 
 		ipxeTemplate := fmt.Sprintf("/etc/warewulf/ipxe/%s.ipxe", nodeobj.Ipxe.Get())
 
@@ -152,7 +144,7 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		log.Printf("SEND:  %15s: %s\n", nodeobj.Id.Get(), ipxeTemplate)
+		daemonLogf("SEND:  %15s: %s\n", nodeobj.Id.Get(), ipxeTemplate)
 
 	}
 }

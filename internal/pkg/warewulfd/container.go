@@ -1,7 +1,6 @@
 package warewulfd
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/hpcng/warewulf/internal/pkg/container"
@@ -11,7 +10,7 @@ func ContainerSend(w http.ResponseWriter, req *http.Request) {
 	node, err := getSanity(req)
 	if err != nil {
 		w.WriteHeader(404)
-		log.Panicln(err)
+		daemonLogf("ERROR: %s\n", err)
 		return
 	}
 
@@ -20,13 +19,11 @@ func ContainerSend(w http.ResponseWriter, req *http.Request) {
 
 		err = sendFile(w, containerImage, node.Id.Get())
 		if err != nil {
-			log.Printf("ERROR1: %s\n", err)
+			daemonLogf("ERROR: %s\n", err)
 			w.WriteHeader(503)
-		} else {
-			log.Printf("SEND:  %15s: %s\n", node.Id.Get(), containerImage)
 		}
 	} else {
 		w.WriteHeader(503)
-		log.Printf("ERROR: No Container set for node %s\n", node.Id.Get())
+		daemonLogf("WARNING: No Container set for node %s\n", node.Id.Get())
 	}
 }

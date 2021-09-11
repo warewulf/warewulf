@@ -7,5 +7,9 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	return errors.Wrap(warewulfd.DaemonStop(), "failed to stop warewulf daemon")
+	err := warewulfd.DaemonStop()
+	if err != nil {
+		return errors.Wrap(err, "failed to stop Warewulf server")
+	}
+	return errors.Wrap(warewulfd.DaemonStart(), "failed to start Warewulf server")
 }

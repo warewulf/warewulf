@@ -9,7 +9,6 @@ import (
 	"syscall"
 
 	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 )
 
@@ -24,7 +23,12 @@ func DaemonStart() error {
 		if err != nil {
 			return errors.Wrap(err, "failed to run server")
 		}
+
 	} else {
+		if util.IsFile(WAREWULFD_PIDFILE) {
+			return errors.New("process is already running")
+		}
+
 		os.Setenv("WAREWULFD_BACKGROUND", "1")
 
 		f, err := os.OpenFile(WAREWULFD_LOGFILE, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
@@ -36,6 +40,7 @@ func DaemonStart() error {
 		if err != nil {
 			return err
 		}
+		defer p.Close()
 
 		cmd := exec.Command(os.Args[0], "server", "start")
 		cmd.Stdout = f
@@ -48,7 +53,7 @@ func DaemonStart() error {
 
 		fmt.Fprintf(p, "%d", pid)
 
-		p.Close()
+		fmt.Printf("Started Warewulf server at PID: %d\n", pid)
 
 	}
 
@@ -57,27 +62,24 @@ func DaemonStart() error {
 
 func DaemonStatus() error {
 	if !util.IsFile(WAREWULFD_PIDFILE) {
-		wwlog.Printf(wwlog.INFO, "Warewulf daemon process not running (%s)\n", WAREWULFD_PIDFILE)
-		return nil
+		return errors.New("Warewulf server is not running")
 	}
 
 	dat, err := ioutil.ReadFile(WAREWULFD_PIDFILE)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "could not read Warewulfd PID file")
 	}
 
 	pid, _ := strconv.Atoi(string(dat))
 	process, err := os.FindProcess(pid)
 	if err != nil {
-		fmt.Printf("Failed to find process: %s\n", err)
-		return err
+		return errors.Wrap(err, "failed to find running PID")
 	} else {
 		err := process.Signal(syscall.Signal(0))
 		if err != nil {
-			fmt.Printf("SIGCONT on pid %d returned: %v\n", pid, err)
-			return err
+			return errors.Wrap(err, "failed to send process SIGCONT")
 		} else {
-			fmt.Printf("Warewulf daemon is running at PID: %d\n", pid)
+			fmt.Printf("Warewulf server is running at PID: %d\n", pid)
 		}
 	}
 
@@ -86,26 +88,22 @@ func DaemonStatus() error {
 
 func DaemonReload() error {
 	if !util.IsFile(WAREWULFD_PIDFILE) {
-		wwlog.Printf(wwlog.INFO, "Warewulf daemon process not running (%s)\n", WAREWULFD_PIDFILE)
-		return nil
+		return errors.New("Warewulf server is not running")
 	}
 
 	dat, err := ioutil.ReadFile(WAREWULFD_PIDFILE)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "could not read Warewulfd PID file")
 	}
 
 	pid, _ := strconv.Atoi(string(dat))
 	process, err := os.FindProcess(pid)
-
 	if err != nil {
-		fmt.Printf("Failed to find process: %s\n", err)
-		return err
+		return errors.Wrap(err, "failed to find running PID")
 	} else {
 		err := process.Signal(syscall.Signal(syscall.SIGHUP))
 		if err != nil {
-			fmt.Printf("SIGCONT on pid %d returned: %v\n", pid, err)
-			return err
+			return errors.Wrap(err, "failed to send process SIGHUP")
 		}
 	}
 
@@ -114,7 +112,7 @@ func DaemonReload() error {
 
 func DaemonStop() error {
 	if !util.IsFile(WAREWULFD_PIDFILE) {
-		wwlog.Printf(wwlog.INFO, "Warewulf daemon process not running (%s)\n", WAREWULFD_PIDFILE)
+		fmt.Printf("Warewulf daemon process not running\n")
 		return nil
 	}
 
@@ -123,20 +121,21 @@ func DaemonStop() error {
 		return err
 	}
 
+	_ = os.Remove(WAREWULFD_PIDFILE)
+
 	pid, _ := strconv.Atoi(string(dat))
 	process, err := os.FindProcess(pid)
+
 	if err != nil {
-		fmt.Printf("Failed to find process: %s\n", err)
+		return errors.Wrap(err, "failed to find running PID")
 	} else {
 		err := process.Signal(syscall.Signal(15))
 		if err != nil {
-			fmt.Printf("SIGCONT on pid %d returned: %v\n", pid, err)
+			return errors.Wrap(err, "failed to send process SIGTERM")
 		} else {
-			fmt.Printf("Terminated Warewulf process at PID: %d\n", pid)
+			fmt.Printf("Terminated Warewulf server at PID: %d\n", pid)
 		}
 	}
-
-	os.Remove(WAREWULFD_PIDFILE)
 
 	return nil
 }
