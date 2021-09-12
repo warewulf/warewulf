@@ -32,8 +32,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Comment", profile.Comment.Print())
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "ClusterName", profile.ClusterName.Print())
 
-			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "ContainerName", profile.ContainerName.Print())
-			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "KernelVersion", profile.KernelVersion.Print())
+			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Container", profile.ContainerName.Print())
+			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Kernel", profile.KernelVersion.Print())
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "KernelArgs", profile.KernelArgs.Print())
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Init", profile.Init.Print())
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Root", profile.Root.Print())
