@@ -184,6 +184,7 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 
 		p.Id.Set(name)
 		p.Comment.Set(profile.Comment)
+		p.ClusterName.Set(profile.ClusterName)
 		p.ContainerName.Set(profile.ContainerName)
 		p.Ipxe.Set(profile.Ipxe)
 		p.Init.Set(profile.Init)
