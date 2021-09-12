@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/manifoldco/promptui"
@@ -42,23 +40,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if len(profiles) == 0 {
 		fmt.Printf("No profiles found\n")
 		os.Exit(1)
-	}
-
-	if SetContainer != "" {
-		if container.ValidSource(SetContainer) {
-			imageFile := container.ImageFile(SetContainer)
-			if !util.IsFile(imageFile) {
-				wwlog.Printf(wwlog.ERROR, "Container has not been built: %s\n", SetContainer)
-				if !SetForce {
-					os.Exit(1)
-				}
-			}
-		} else {
-			wwlog.Printf(wwlog.ERROR, "Container name does not exist: %s\n", SetContainer)
-			if !SetForce {
-				os.Exit(1)
-			}
-		}
 	}
 
 	for _, p := range profiles {
