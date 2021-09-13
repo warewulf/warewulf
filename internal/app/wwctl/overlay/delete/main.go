@@ -10,88 +10,94 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var overlayPath string
+	var fileName string
 
-	if SystemOverlay {
-		overlayPath = config.SystemOverlaySource(args[0])
-	} else {
-		overlayPath = config.RuntimeOverlaySource(args[0])
+	overlayKind := args[0]
+	overlayName := args[1]
+
+	if len(args) == 3 {
+		fileName = args[2]
+	}
+
+	if overlayKind != "system" && overlayKind != "runtime" {
+		return errors.New("overlay kind must be of type 'system' or 'runtime'")
+	}
+
+	if overlayKind == "system" {
+		overlayPath = config.SystemOverlaySource(overlayName)
+	} else if overlayKind == "runtime" {
+		overlayPath = config.RuntimeOverlaySource(overlayName)
 	}
 
 	if overlayPath == "" {
-		wwlog.Printf(wwlog.ERROR, "Overlay name did not render: '%s'\n", args[0])
+		wwlog.Printf(wwlog.ERROR, "Overlay name did not resolve: '%s'\n", overlayName)
 		os.Exit(1)
 	}
 
 	if !util.IsDir(overlayPath) {
-		wwlog.Printf(wwlog.ERROR, "Overlay name does not exist: '%s'\n", args[0])
+		wwlog.Printf(wwlog.ERROR, "Overlay does not exist: '%s:%s'\n", overlayKind, overlayName)
 		os.Exit(1)
 	}
 
-	if len(args) == 1 {
+	if fileName == "" {
 		if Force {
 			err := os.RemoveAll(overlayPath)
 			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "Failed deleting overlay: %s\n", args[0])
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
+				return errors.Wrap(err, "failed deleting overlay")
 			}
 		} else {
 			err := os.Remove(overlayPath)
 			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "Failed deleting overlay: %s\n", args[0])
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
+				return errors.Wrap(err, "failed deleting overlay")
 			}
 		}
 		fmt.Printf("Deleted overlay: %s\n", args[0])
 
-	} else if len(args) > 1 {
-		for i := 1; i < len(args); i++ {
-			removePath := path.Join(overlayPath, args[i])
+	} else {
+		removePath := path.Join(overlayPath, overlayPath)
 
-			if !util.IsDir(removePath) && !util.IsFile(removePath) {
-				wwlog.Printf(wwlog.ERROR, "Path to remove doesn't exist in overlay: %s\n", removePath)
+		if !util.IsDir(removePath) && !util.IsFile(removePath) {
+			wwlog.Printf(wwlog.ERROR, "Path to remove doesn't exist in overlay: %s\n", removePath)
+			os.Exit(1)
+		}
+
+		if Force {
+			err := os.RemoveAll(removePath)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "Failed deleting file from overlay: %s:%s:%s\n", overlayKind, overlayName, overlayPath)
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
 			}
-
-			if Force {
-				err := os.RemoveAll(removePath)
-				if err != nil {
-					wwlog.Printf(wwlog.ERROR, "Failed deleting file from overlay: %s:%s\n", args[0], args[i])
-					wwlog.Printf(wwlog.ERROR, "%s\n", err)
-					os.Exit(1)
-				}
-			} else {
-				err := os.Remove(removePath)
-				if err != nil {
-					wwlog.Printf(wwlog.ERROR, "Failed deleting overlay: %s:%s\n", args[0], args[i])
-					wwlog.Printf(wwlog.ERROR, "%s\n", err)
-					os.Exit(1)
-				}
-			}
-
-			if Parents {
-				// Cleanup any empty directories left behind...
-				i := path.Dir(removePath)
-				for i != overlayPath {
-					wwlog.Printf(wwlog.DEBUG, "Evaluating directory to remove: %s\n", i)
-					err := os.Remove(i)
-					if err != nil {
-						break
-					}
-
-					wwlog.Printf(wwlog.VERBOSE, "Removed empty directory: %s\n", i)
-					i = path.Dir(i)
-				}
+		} else {
+			err := os.Remove(removePath)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "Failed deleting overlay: %s:%s:%s\n", overlayKind, overlayName, overlayPath)
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
 			}
 		}
-		fmt.Printf("Deleted from overlay: %s:%s\n", args[0], args[1])
 
+		if Parents {
+			// Cleanup any empty directories left behind...
+			i := path.Dir(removePath)
+			for i != overlayPath {
+				wwlog.Printf(wwlog.DEBUG, "Evaluating directory to remove: %s\n", i)
+				err := os.Remove(i)
+				if err != nil {
+					break
+				}
+
+				wwlog.Printf(wwlog.VERBOSE, "Removed empty directory: %s\n", i)
+				i = path.Dir(i)
+			}
+		}
+		fmt.Printf("Deleted from overlay: %s:%s:%s\n", overlayKind, overlayName, overlayPath)
 	}
 
 	if !NoOverlayUpdate {
@@ -110,17 +116,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		var updateNodes []node.NodeInfo
 
 		for _, node := range nodes {
-			if SystemOverlay && node.SystemOverlay.Get() == args[0] {
+			if overlayKind == "system" && node.SystemOverlay.Get() == overlayName {
 				updateNodes = append(updateNodes, node)
-			} else if node.RuntimeOverlay.Get() == args[0] {
+			} else if overlayKind == "runtime" && node.RuntimeOverlay.Get() == overlayName {
 				updateNodes = append(updateNodes, node)
 			}
 		}
 
-		if SystemOverlay {
+		if overlayKind == "system" {
 			wwlog.Printf(wwlog.INFO, "Updating System Overlays...\n")
 			return overlay.BuildSystemOverlay(updateNodes)
-		} else {
+		} else if overlayKind == "runtime" {
 			wwlog.Printf(wwlog.INFO, "Updating Runtime Overlays...\n")
 			return overlay.BuildRuntimeOverlay(updateNodes)
 		}

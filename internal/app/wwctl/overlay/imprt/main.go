@@ -9,39 +9,44 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	overlayName := args[0]
-	source := args[1]
 	var dest string
 	var overlaySource string
 
-	if len(args) == 3 {
-		dest = args[2]
+	overlayKind := args[0]
+	overlayName := args[1]
+	source := args[2]
+
+	if overlayKind != "system" && overlayKind != "runtime" {
+		return errors.New("overlay kind must be of type 'system' or 'runtime'")
+	}
+
+	if len(args) == 4 {
+		dest = args[3]
 	} else {
 		dest = source
 	}
 
-	if SystemOverlay {
-		wwlog.Printf(wwlog.VERBOSE, "Importing '%s' into system overlay '%s:%s'\n", source, overlayName, dest)
+	if overlayKind == "system" {
+		wwlog.Printf(wwlog.VERBOSE, "Copying '%s' into system overlay '%s:%s'\n", source, overlayName, dest)
 		overlaySource = config.SystemOverlaySource(overlayName)
-	} else {
-		wwlog.Printf(wwlog.VERBOSE, "Importing '%s' into runtime overlay '%s:%s'\n", source, overlayName, dest)
+	} else if overlayKind == "runtime" {
+		wwlog.Printf(wwlog.VERBOSE, "Copying '%s' into runtime overlay '%s:%s'\n", source, overlayName, dest)
 		overlaySource = config.RuntimeOverlaySource(overlayName)
 	}
 
 	if !util.IsDir(overlaySource) {
-		wwlog.Printf(wwlog.ERROR, "Overlay does not exist: %s\n", overlayName)
+		wwlog.Printf(wwlog.ERROR, "Overlay does not exist: %s:%s\n", overlayKind, overlayName)
 		os.Exit(1)
 	}
 
 	err := util.CopyFile(source, path.Join(overlaySource, dest))
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Failed copying file into overlay sourcedir:\n")
-		wwlog.Printf(wwlog.ERROR, "%s\n", err)
-		os.Exit(1)
+		return errors.Wrap(err, "could not copy file into overlay")
 	}
 
 	if !NoOverlayUpdate {
@@ -60,17 +65,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		var updateNodes []node.NodeInfo
 
 		for _, node := range nodes {
-			if SystemOverlay && node.SystemOverlay.Get() == overlayName {
+			if overlayKind == "system" && node.SystemOverlay.Get() == overlayName {
 				updateNodes = append(updateNodes, node)
-			} else if node.RuntimeOverlay.Get() == overlayName {
+			} else if overlayKind == "runtime" && node.RuntimeOverlay.Get() == overlayName {
 				updateNodes = append(updateNodes, node)
 			}
 		}
 
-		if SystemOverlay {
+		if overlayKind == "system" {
 			wwlog.Printf(wwlog.INFO, "Updating System Overlays...\n")
 			return overlay.BuildSystemOverlay(updateNodes)
-		} else {
+		} else if overlayKind == "runtime" {
 			wwlog.Printf(wwlog.INFO, "Updating Runtime Overlays...\n")
 			return overlay.BuildRuntimeOverlay(updateNodes)
 		}
