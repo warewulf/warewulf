@@ -44,7 +44,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	overlayFile := path.Join(overlaySourceDir, fileName)
 
-	if !util.IsFile(overlayFile) {
+	if !util.IsFile(overlayFile) && !util.IsDir(overlayFile) {
 		wwlog.Printf(wwlog.ERROR, "File does not exist within overlay: %s:%s\n", overlayName, fileName)
 		os.Exit(1)
 	}
