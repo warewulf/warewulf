@@ -35,7 +35,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	if len(args) > 3 {
+	if len(args) > 4 {
 		gid, err = strconv.Atoi(args[4])
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "GID is not an integer: %s\n", args[4])
