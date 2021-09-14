@@ -6,11 +6,12 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "list [flags] <overlay kind> <overlay name>",
+		Use:   "list [flags] <overlay kind> [overlay name]",
 		Short: "List Warewulf Overlays and files",
 		Long: "This command will show you information about Warewulf overlays and the\n" +
 			"files contained within.",
 		RunE:    CobraRunE,
+		Args:    cobra.MinimumNArgs(1),
 		Aliases: []string{"ls"},
 	}
 	ListContents bool
