@@ -5,7 +5,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
@@ -44,59 +43,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if len(nodes) == 0 {
 		fmt.Printf("No nodes found\n")
 		os.Exit(1)
-	}
-
-	if SetContainer != "" {
-		if container.ValidSource(SetContainer) {
-			imageFile := container.ImageFile(SetContainer)
-			if !util.IsFile(imageFile) {
-				wwlog.Printf(wwlog.ERROR, "Container has not been built: %s\n", SetContainer)
-				if !SetForce {
-					os.Exit(1)
-				}
-			}
-		} else {
-			wwlog.Printf(wwlog.ERROR, "Container does not exist: %s\n", SetContainer)
-			if !SetForce {
-				os.Exit(1)
-			}
-		}
-	}
-
-	if SetProfile != "" {
-		profiles, _ := nodeDB.FindAllProfiles()
-		for _, r := range strings.Split(SetProfile, ",") {
-			var match bool
-
-			for _, p := range profiles {
-				if p.Id.Get() == r || SetForce {
-					match = true
-					SetProfiles = append(SetProfiles, r)
-				}
-			}
-
-			if !match {
-				wwlog.Printf(wwlog.WARN, "Requested profile is undefined: %s\n", r)
-			}
-		}
-	}
-
-	if len(SetAddProfile) > 0 {
-		profiles, _ := nodeDB.FindAllProfiles()
-		for _, r := range SetAddProfile {
-			var match bool
-
-			for _, p := range profiles {
-				if p.Id.Get() == r || SetForce {
-					match = true
-				}
-			}
-
-			if !match {
-				wwlog.Printf(wwlog.WARN, "Requested profile is undefined: %s\n", r)
-				SetAddProfile = util.SliceRemoveElement(SetAddProfile, r)
-			}
-		}
 	}
 
 	for _, n := range nodes {
