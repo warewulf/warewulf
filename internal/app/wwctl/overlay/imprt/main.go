@@ -44,6 +44,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
+	if util.IsDir(path.Join(overlaySource, dest)) {
+		dest = path.Join(dest, path.Base(source))
+	}
+
 	if util.IsFile(path.Join(overlaySource, dest)) {
 		wwlog.Printf(wwlog.ERROR, "A file with that name already exists in the %s overlay %s\n:", overlayKind, overlayName)
 		os.Exit(1)
