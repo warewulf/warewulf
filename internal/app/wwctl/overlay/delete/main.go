@@ -25,6 +25,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fileName = args[2]
 	}
 
+	if overlayName == "default" {
+		return errors.New("refusing to delete the default overlay")
+	}
+
 	if overlayKind != "system" && overlayKind != "runtime" {
 		return errors.New("overlay kind must be of type 'system' or 'runtime'")
 	}
@@ -59,8 +63,35 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 		fmt.Printf("Deleted overlay: %s\n", args[0])
 
+		n, err := node.New()
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
+			os.Exit(1)
+		}
+
+		nodes, err := n.FindAllNodes()
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "Could not get node list: %s\n", err)
+			os.Exit(1)
+		}
+
+		for _, node := range nodes {
+			if overlayKind == "system" && node.SystemOverlay.Get() == overlayName {
+				node.SystemOverlay.Set("default")
+			} else if overlayKind == "runtime" && node.RuntimeOverlay.Get() == overlayName {
+				node.RuntimeOverlay.Set("default")
+			}
+		}
+
+		err = n.Persist()
+		if err != nil {
+			return errors.Wrap(err, "failed to persist node updates")
+		}
+
+		overlayName = "default"
+
 	} else {
-		removePath := path.Join(overlayPath, overlayPath)
+		removePath := path.Join(overlayPath, fileName)
 
 		if !util.IsDir(removePath) && !util.IsFile(removePath) {
 			wwlog.Printf(wwlog.ERROR, "Path to remove doesn't exist in overlay: %s\n", removePath)
