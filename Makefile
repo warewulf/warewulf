@@ -19,7 +19,7 @@ export GOPROXY
 # built tags needed for wwbuild binary
 WW_BUILD_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
-all: setup_tools vendor wwctl wwclient bash_completion man_page
+all: vendor wwctl wwclient bash_completion man_page
 
 # set the go tools into the tools bin.
 setup_tools: $(GO_TOOLS_BIN) $(GOLANGCI_LINT)
