@@ -44,7 +44,7 @@ $(TOOLS_DIR):
 	@mkdir -p $@
 
 # Lint
-lint:
+lint: setup_tools
 	@echo Running golangci-lint...
 	@$(GOLANGCI_LINT) run --build-tags "$(WW_BUILD_GO_BUILD_TAGS)" --skip-dirs internal/pkg/staticfiles ./...
 
@@ -89,7 +89,7 @@ debfiles: debian
 	cp wwclient $(DESTDIR)/var/warewulf/overlays/system/debian/warewulf/bin/
 
 wwctl:
-	cd cmd/wwctl; go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwctl
+	cd cmd/wwctl; GOOS=linux go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwctl
 
 wwclient:
 	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags '-extldflags -static' -o ../../wwclient
