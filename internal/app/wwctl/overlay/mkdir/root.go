@@ -6,19 +6,17 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "mkdir [flags] <overlay name> <directory path>",
+		Use:   "mkdir [flags] <overlay kind> <overlay name> <directory path>",
 		Short: "Create a new directory within an Overlay",
 		Long:  "This command will allow you to create a new file within a given Warewulf overlay.",
 		RunE:  CobraRunE,
-		Args:  cobra.MinimumNArgs(2),
+		Args:  cobra.MinimumNArgs(3),
 	}
-	SystemOverlay   bool
 	PermMode        int32
 	NoOverlayUpdate bool
 )
 
 func init() {
-	baseCmd.PersistentFlags().BoolVarP(&SystemOverlay, "system", "s", false, "Show System Overlays as well")
 	baseCmd.PersistentFlags().Int32VarP(&PermMode, "mode", "m", 0755, "Permission mode for directory")
 	baseCmd.PersistentFlags().BoolVarP(&NoOverlayUpdate, "noupdate", "n", false, "Don't update overlays")
 }

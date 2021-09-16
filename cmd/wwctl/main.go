@@ -12,7 +12,7 @@ func main() {
 
 	err := root.Execute()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s: %s\n", os.Args[0], err)
+		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		if wwctl.DebugFlag {
 			fmt.Printf("\nSTACK TRACE: %+v\n", err)
 		}

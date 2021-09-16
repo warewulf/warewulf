@@ -10,23 +10,30 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var overlaySourceDir string
-	overlayName := args[0]
-	fileName := args[1]
 
-	permissionMode, err := strconv.ParseInt(args[2], 8, 32)
+	overlayKind := args[0]
+	overlayName := args[1]
+	fileName := args[2]
+
+	if overlayKind != "system" && overlayKind != "runtime" {
+		return errors.New("overlay kind must be of type 'system' or 'runtime'")
+	}
+
+	permissionMode, err := strconv.ParseInt(args[3], 8, 32)
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not convert requested mode: %s\n", err)
 		os.Exit(1)
 	}
 
-	if SystemOverlay {
+	if overlayKind == "system" {
 		overlaySourceDir = config.SystemOverlaySource(overlayName)
-	} else {
+	} else if overlayKind == "runtime" {
 		overlaySourceDir = config.RuntimeOverlaySource(overlayName)
 	}
 
@@ -37,7 +44,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	overlayFile := path.Join(overlaySourceDir, fileName)
 
-	if !util.IsFile(overlayFile) {
+	if !util.IsFile(overlayFile) && !util.IsDir(overlayFile) {
 		wwlog.Printf(wwlog.ERROR, "File does not exist within overlay: %s:%s\n", overlayName, fileName)
 		os.Exit(1)
 	}
@@ -64,17 +71,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		var updateNodes []node.NodeInfo
 
 		for _, node := range nodes {
-			if SystemOverlay && node.SystemOverlay.Get() == overlayName {
+			if overlayKind == "system" && node.SystemOverlay.Get() == overlayName {
 				updateNodes = append(updateNodes, node)
-			} else if node.RuntimeOverlay.Get() == overlayName {
+			} else if overlayKind == "runtime" && node.RuntimeOverlay.Get() == overlayName {
 				updateNodes = append(updateNodes, node)
 			}
 		}
 
-		if SystemOverlay {
+		if overlayKind == "system" {
 			wwlog.Printf(wwlog.INFO, "Updating System Overlays...\n")
 			return overlay.BuildSystemOverlay(updateNodes)
-		} else {
+		} else if overlayKind == "runtime" {
 			wwlog.Printf(wwlog.INFO, "Updating Runtime Overlays...\n")
 			return overlay.BuildRuntimeOverlay(updateNodes)
 		}

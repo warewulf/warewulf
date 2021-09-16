@@ -23,6 +23,7 @@ var (
 		Long:              "Control interface to the Cluster Warewulf Provisioning System.",
 		PersistentPreRunE: rootPersistentPreRunE,
 		SilenceUsage:      true,
+		SilenceErrors:     true,
 	}
 	verboseArg bool
 	DebugFlag  bool

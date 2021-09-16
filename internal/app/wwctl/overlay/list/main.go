@@ -10,6 +10,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -18,6 +19,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	var o []string
 	var err error
 	var nodeList []node.NodeInfo
+	var overlayName string
+
+	overlayKind := args[0]
+
+	if len(args) > 1 {
+		overlayName = args[1]
+	}
+
+	if overlayKind != "system" && overlayKind != "runtime" {
+		return errors.New("overlay kind must be of type 'system' or 'runtime'")
+	}
 
 	n, err := node.New()
 	if err != nil {
@@ -25,14 +37,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	if SystemOverlay {
+	if overlayKind == "system" {
 		if !ListLong {
 			fmt.Printf("%-30s %-12s %-12s\n", "SYSTEM OVERLAY NAME", "NODES", "FILES/DIRS")
 		} else {
 			fmt.Printf("%-10s %5s %-5s %-18s %s\n", "PERM MODE", "UID", "GID", "SYSTEM-OVERLAY", "FILE PATH")
 		}
 		o, err = overlay.FindSystemOverlays()
-	} else {
+	} else if overlayKind == "runtime" {
 		if !ListLong {
 			fmt.Printf("%-30s %-12s %-12s\n", "RUNTIME OVERLAY NAME", "NODES", "FILES/DIRS")
 		} else {
@@ -52,11 +64,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, node := range nodeList {
-		if SystemOverlay {
+		if overlayKind == "system" {
 			if node.SystemOverlay.Get() != "" {
 				set[node.SystemOverlay.Get()]++
 			}
-		} else {
+		} else if overlayKind == "runtime" {
 			if node.RuntimeOverlay.Get() != "" {
 				set[node.RuntimeOverlay.Get()]++
 			}
@@ -67,15 +79,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		var path string
 		name := o[overlay]
 
-		if len(args) > 0 {
-			if args[0] != name {
-				continue
-			}
+		if overlayName != "" && overlayName != name {
+			continue
 		}
 
-		if SystemOverlay {
+		if overlayKind == "system" {
 			path = config.SystemOverlaySource(o[overlay])
-		} else {
+		} else if overlayKind == "runtime" {
 			path = config.RuntimeOverlaySource(o[overlay])
 		}
 
@@ -114,30 +124,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		} else {
 			wwlog.Printf(wwlog.ERROR, "system/%s (path not found:%s)\n", o[overlay], path)
 		}
-	}
-
-	var unconfigured bool
-	for overlay := range set {
-		var overlayPath string
-
-		if SystemOverlay {
-			overlayPath = config.SystemOverlaySource(overlay)
-		} else {
-			overlayPath = config.SystemOverlaySource(overlay)
-		}
-
-		if !util.IsDir(overlayPath) {
-			fmt.Printf("%-30s %-12d 0\n", "("+overlay+")", set[overlay])
-			unconfigured = true
-		}
-	}
-
-	if unconfigured {
-		fmt.Printf("\n")
-		wwlog.Printf(wwlog.WARN, "There are unconfigured overlays present, run the following command to\n")
-		wwlog.Printf(wwlog.WARN, "create a new overlay:\n")
-		wwlog.Printf(wwlog.WARN, "\n")
-		wwlog.Printf(wwlog.WARN, "   $ sudo wwctl overlay create ...\n")
 	}
 
 	return nil

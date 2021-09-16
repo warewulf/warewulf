@@ -298,7 +298,7 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 			wwlog.Printf(wwlog.VERBOSE, "Could not locate PIGZ, using GZIP\n")
 			compressor = "gzip"
 		} else {
-			wwlog.Printf(wwlog.VERBOSE, "Using PIGZ to compress the container: %s\n", compressor)
+			wwlog.Printf(wwlog.VERBOSE, "Using PIGZ to compress the overlay: %s\n", compressor)
 		}
 
 		cmd := fmt.Sprintf("cd \"%s\"; find . | cpio --quiet -o -H newc | %s -c > \"%s\"", tmpDir, compressor, OverlayFile)

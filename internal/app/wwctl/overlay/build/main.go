@@ -6,11 +6,19 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var updateNodes []node.NodeInfo
+
+	overlayKind := args[0]
+	overlayName := args[1]
+
+	if overlayKind != "system" && overlayKind != "runtime" {
+		return errors.New("overlay kind must be of type 'system' or 'runtime'")
+	}
 
 	n, err := node.New()
 	if err != nil {
@@ -26,9 +34,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		for _, node := range nodes {
-			if SystemOverlay && node.SystemOverlay.Get() == args[0] {
+			if overlayKind == "system" && node.SystemOverlay.Get() == overlayName {
 				updateNodes = append(updateNodes, node)
-			} else if node.RuntimeOverlay.Get() == args[0] {
+			} else if overlayKind == "runtime" && node.RuntimeOverlay.Get() == overlayName {
 				updateNodes = append(updateNodes, node)
 			}
 		}
@@ -42,7 +50,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	wwlog.Printf(wwlog.DEBUG, "Checking on system overlay update\n")
-	if SystemOverlay || BuildAll {
+	if overlayKind == "system" || BuildAll {
 		wwlog.Printf(wwlog.INFO, "Updating System Overlays...\n")
 		err := overlay.BuildSystemOverlay(updateNodes)
 		if err != nil {
@@ -50,8 +58,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	wwlog.Printf(wwlog.DEBUG, "Checking on system overlay update\n")
-	if !SystemOverlay || BuildAll {
+	wwlog.Printf(wwlog.DEBUG, "Checking on runtime overlay update\n")
+	if overlayKind == "runtime" || BuildAll {
 		wwlog.Printf(wwlog.INFO, "Updating Runtime Overlays...\n")
 		err := overlay.BuildRuntimeOverlay(updateNodes)
 		if err != nil {
