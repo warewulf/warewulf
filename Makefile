@@ -1,6 +1,6 @@
 .PHONY: all wwctl wwclient bash_completion man_page
 
-VERSION := 4.1.0
+VERSION := 4.2.0
 
 # auto installed tooling
 TOOLS_DIR := .tools
