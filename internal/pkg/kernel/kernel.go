@@ -80,7 +80,7 @@ func Build(kernelVersion string, root string) (string, error) {
 
 	// Create the destination paths just in case it doesn't exist
   if  err := os.MkdirAll(path.Dir(kernelDestination), 0755) ; err != nil {
-    return "", err
+		return "", errors.Wrap(err, "failed to create kernal dest")
   }
 	if err := os.MkdirAll(path.Dir(driversDestination), 0755) ; err != nil {
     return "", err
