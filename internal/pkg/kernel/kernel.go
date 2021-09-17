@@ -83,7 +83,7 @@ func Build(kernelVersion string, root string) (string, error) {
 		return "", errors.Wrap(err, "failed to create kernal dest")
   }
 	if err := os.MkdirAll(path.Dir(driversDestination), 0755) ; err != nil {
-    return "", err
+		return "", errors.Wrap(err, "failed to create driver dest")
   }
 
 	if !util.IsFile(kernelImage) {
