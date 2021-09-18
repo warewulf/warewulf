@@ -1,7 +1,9 @@
 package kernel
 
 import (
+	"compress/gzip"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -80,16 +82,20 @@ func Build(kernelVersion string, root string) (string, error) {
 	// Create the destination paths just in case it doesn't exist
 	err := os.MkdirAll(path.Dir(kernelDestination), 0755)
 	if err != nil {
-		return "", fmt.Errorf("failed to create kernal dest: %s", err)
+		return "", errors.Wrap(err, "failed to create kernel dest")
 	}
 
 	err = os.MkdirAll(path.Dir(driversDestination), 0755)
 	if err != nil {
-		return "", fmt.Errorf("failed to create driver dest: %s", err)
+		return "", errors.Wrap(err, "failed to create driver dest")
 	}
 
 	if !util.IsFile(kernelImage) {
-		return "", errors.New("Could not locate kernel image")
+		if !util.IsFile(kernelImage + ".gz") {
+			return "", errors.New("Could not locate kernel image")
+		} else {
+			kernelImage = kernelImage + ".gz"
+		}
 	}
 
 	if !util.IsDir(kernelDrivers) {
@@ -98,10 +104,35 @@ func Build(kernelVersion string, root string) (string, error) {
 
 	wwlog.Printf(wwlog.VERBOSE, "Setting up Kernel\n")
 	if _, err := os.Stat(kernelImage); err == nil {
-		err := util.CopyFile(kernelImage, kernelDestination)
+		kernel, err := os.Open(kernelImage)
 		if err != nil {
-			return "", err
+			return "", errors.Wrap(err, "could not open kernel")
 		}
+		defer kernel.Close()
+
+		gzipreader, err := gzip.NewReader(kernel)
+		if err == nil {
+			defer gzipreader.Close()
+
+			writer, err := os.Create(kernelDestination)
+			if err != nil {
+				return "", errors.Wrap(err, "could not decompress kernel")
+			}
+			defer writer.Close()
+
+			_, err = io.Copy(writer, gzipreader)
+			if err != nil {
+				return "", errors.Wrap(err, "could not write decompressed kernel")
+			}
+
+		} else {
+
+			err := util.CopyFile(kernelImage, kernelDestination)
+			if err != nil {
+				return "", errors.Wrap(err, "could not copy kernel")
+			}
+		}
+
 	}
 
 	wwlog.Printf(wwlog.VERBOSE, "Building Kernel driver image\n")
