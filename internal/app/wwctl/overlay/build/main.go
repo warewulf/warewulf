@@ -12,11 +12,17 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var updateNodes []node.NodeInfo
+	var overlayKind string
+	var overlayName string
 
-	overlayKind := args[0]
-	overlayName := args[1]
+	if len(args) == 2 {
+		overlayKind = args[0]
+		overlayName = args[1]
+	} else if len(args) == 1 {
+		overlayKind = args[0]
+	}
 
-	if overlayKind != "system" && overlayKind != "runtime" {
+	if (overlayKind != "system" && overlayKind != "runtime") && !BuildAll {
 		return errors.New("overlay kind must be of type 'system' or 'runtime'")
 	}
 
@@ -26,7 +32,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	if len(args) > 0 && !BuildAll {
+	if overlayName != "" {
 		nodes, err := n.FindAllNodes()
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Could not get node list: %s\n", err)
