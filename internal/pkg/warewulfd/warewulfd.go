@@ -9,7 +9,7 @@ import (
 	"strconv"
 
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/pkg/errors"
 )
 
 // TODO: https://github.com/danderson/netboot/blob/master/pixiecore/dhcp.go
@@ -43,23 +43,15 @@ func RunServer() error {
 
 	conf, err := warewulfconf.New()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not get Warewulf configuration: %s\n", err)
-		os.Exit(1)
+	  return errors.Wrap(err, "could not get Warewulf configuration")
 	}
 
-	daemonPort := 9873
-	if conf.Warewulf.Port != daemonPort {
-		daemonPort = conf.Warewulf.Port
-	} else {
-		fmt.Printf("INFO: warewulfd port not configured, defaulting to 9873\n")
-	}
-
-	daemonLogf("Starting HTTPD REST service\n")
+  daemonPort := conf.Warewulf.Port
+	daemonLogf("Starting HTTPD REST service on port %d\n", daemonPort)
 
 	err = http.ListenAndServe(":" + strconv.Itoa(daemonPort), nil)
 	if err != nil {
-		fmt.Printf("ERROR: Could not start listening service: %s\n", err)
-		os.Exit(1)
+	  return errors.Wrap(err, "Could not start listening service")
 	}
 
 	return nil
