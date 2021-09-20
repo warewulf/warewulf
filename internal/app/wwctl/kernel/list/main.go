@@ -26,9 +26,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		nodemap[n.KernelVersion.Get()]++
 	}
 
-	fmt.Printf("%-35s %-6s\n", "KERNEL NAME","KERNEL VERSION" "NODES")
+	fmt.Printf("%-35s %-25s %-6s\n", "KERNEL NAME", "KERNEL VERSION", "NODES")
 	for _, k := range kernels {
-		fmt.Printf("%-35s %-25s %6d\n", k, kernel.GetVersion(k), nodemap[k])
+		fmt.Printf("%-35s %-25s %6d\n", k, kernel.GetKernelVersion(k), nodemap[k])
 	}
 
 	return nil

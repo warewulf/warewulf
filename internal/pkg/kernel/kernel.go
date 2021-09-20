@@ -98,7 +98,7 @@ func ListKernels() ([]string, error) {
 	return ret, nil
 }
 
-func Build(kernelVersion string, root string, kernelName string) (string, error) {
+func Build(kernelVersion string, kernelName string, root string) (string, error) {
 	kernelImage := path.Join(root, "/boot/vmlinuz-"+kernelVersion)
 	kernelDrivers := path.Join(root, "/lib/modules/"+kernelVersion)
 	kernelDestination := KernelImage(kernelName)
@@ -166,7 +166,10 @@ func Build(kernelVersion string, root string, kernelName string) (string, error)
 	if err != nil {
 		return "", errors.Wrap(err, "Could not write kernel version")
 	}
-	file.Sync()
+	err = file.Sync()
+	if err != nil {
+		return "", errors.Wrap(err, "Could not sync kernel version")
+	}
 	return "Done", nil
 }
 
