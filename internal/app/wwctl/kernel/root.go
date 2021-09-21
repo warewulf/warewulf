@@ -4,6 +4,7 @@ import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/kernel/delete"
 	"github.com/hpcng/warewulf/internal/app/wwctl/kernel/imprt"
 	"github.com/hpcng/warewulf/internal/app/wwctl/kernel/list"
+	"github.com/hpcng/warewulf/internal/app/wwctl/kernel/set"
 	"github.com/spf13/cobra"
 )
 
@@ -20,6 +21,7 @@ func init() {
 	baseCmd.AddCommand(imprt.GetCommand())
 	baseCmd.AddCommand(list.GetCommand())
 	baseCmd.AddCommand(delete.GetCommand())
+	baseCmd.AddCommand(set.GetCommand())
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
