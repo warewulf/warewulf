@@ -19,8 +19,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		} else {
 			nodeDB, err := node.New()
 			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
-				os.Exit(1)
+				return errors.Wrap(err, "Could not open node configuration")
 			}
 
 			//TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
