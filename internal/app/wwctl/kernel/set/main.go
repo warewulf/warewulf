@@ -2,7 +2,6 @@ package set
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
