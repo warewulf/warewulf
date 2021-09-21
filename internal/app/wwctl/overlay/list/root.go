@@ -11,7 +11,6 @@ var (
 		Long: "This command will show you information about Warewulf overlays and the\n" +
 			"files contained within.",
 		RunE:    CobraRunE,
-		Args:    cobra.MinimumNArgs(1),
 		Aliases: []string{"ls"},
 	}
 	ListContents bool

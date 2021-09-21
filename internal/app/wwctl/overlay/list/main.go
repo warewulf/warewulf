@@ -21,14 +21,18 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	var nodeList []node.NodeInfo
 	var overlayName string
 
-	overlayKind := args[0]
-
-	if len(args) > 1 {
-		overlayName = args[1]
+	if len(args) < 1 {
+		return errors.New("overlay kind must be specified. Use -h or --help for additional information.")
 	}
+
+	overlayKind := args[0]
 
 	if overlayKind != "system" && overlayKind != "runtime" {
 		return errors.New("overlay kind must be of type 'system' or 'runtime'")
+	}
+
+	if len(args) > 1 {
+		overlayName = args[1]
 	}
 
 	n, err := node.New()
