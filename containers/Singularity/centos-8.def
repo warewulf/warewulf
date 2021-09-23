@@ -14,4 +14,11 @@ Include: dnf
     shadow-utils rsyslog tzdata util-linux words zlib tar less \
     gzip which util-linux openssh-clients openssh-server dhclient \
     pciutils vim-minimal shadow-utils strace cronie crontabs cpio \
-    wget centos-release ipmitool yum
+    wget centos-release ipmitool yum NetworkManager network-scripts
+
+    systemctl disable NetworkManager
+    systemctl disable NetworkManager-dispatcher
+    systemctl disable NetworkManager-wait-online
+    systemctl enable network-scripts
+    
+    touch /etc/sysconfig/disable-deprecation-warnings
