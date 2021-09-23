@@ -91,7 +91,7 @@ func CopyFile(source string, dest string) error {
 
 	err = CopyUIDGID(source, dest)
 	if err != nil {
-		return errors.Wrap(err, "failed to copy")
+		return errors.Wrap(err, "failed to set ownership")
 	}
 	sourceFD.Close()
 
