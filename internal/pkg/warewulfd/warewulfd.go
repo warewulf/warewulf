@@ -6,6 +6,10 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"strconv"
+
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	"github.com/pkg/errors"
 )
 
 // TODO: https://github.com/danderson/netboot/blob/master/pixiecore/dhcp.go
@@ -37,12 +41,17 @@ func RunServer() error {
 	http.HandleFunc("/overlay-system/", SystemOverlaySend)
 	http.HandleFunc("/overlay-runtime", RuntimeOverlaySend)
 
-	daemonLogf("Starting HTTPD REST service\n")
-
-	err = http.ListenAndServe(":9873", nil)
+	conf, err := warewulfconf.New()
 	if err != nil {
-		fmt.Printf("ERROR: Could not start listening service: %s\n", err)
-		os.Exit(1)
+	  return errors.Wrap(err, "could not get Warewulf configuration")
+	}
+
+  daemonPort := conf.Warewulf.Port
+	daemonLogf("Starting HTTPD REST service on port %d\n", daemonPort)
+
+	err = http.ListenAndServe(":" + strconv.Itoa(daemonPort), nil)
+	if err != nil {
+	  return errors.Wrap(err, "Could not start listening service")
 	}
 
 	return nil
