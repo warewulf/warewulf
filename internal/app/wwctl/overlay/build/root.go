@@ -8,7 +8,7 @@ var (
 		Short: "(Re)build an overlay",
 		Long:  "This command will build a system or runtime overlay.",
 		RunE:  CobraRunE,
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.RangeArgs(0, 2),
 	}
 	BuildAll bool
 )
