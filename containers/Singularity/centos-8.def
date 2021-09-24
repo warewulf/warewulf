@@ -16,6 +16,6 @@ Include: dnf
     pciutils vim-minimal shadow-utils strace cronie crontabs cpio \
     wget centos-release ipmitool yum network-scripts
 
-    systemctl enable network-scripts
+    systemctl enable network
 
     touch /etc/sysconfig/disable-deprecation-warnings
