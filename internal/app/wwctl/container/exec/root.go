@@ -2,6 +2,7 @@ package exec
 
 import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/exec/child"
+	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/spf13/cobra"
 )
 
@@ -12,8 +13,15 @@ var (
 		Long: "This command will allow you to run any command inside of a given\n" +
 			"warewulf container. This is commonly used with an interactive shell such as /bin/bash\n" +
 			"to run a virtual environment within the container.",
-		RunE:               CobraRunE,
-		Args:               cobra.MinimumNArgs(2),
+		RunE: CobraRunE,
+		Args: cobra.MinimumNArgs(2),
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) != 0 {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			list, _ := container.ListSources()
+			return list, cobra.ShellCompDirectiveNoFileComp
+		},
 		FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
 	}
 	binds []string
