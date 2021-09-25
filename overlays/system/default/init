@@ -29,12 +29,12 @@ chmod 755 /warewulf/wwinit
 echo "Checking Rootfs type"
 ROOTFSTYPE=`stat -f -c "%T" /`
 
-if test "$WWROOT" == "initramfs"; then
+if test "$WWROOT" = "initramfs"; then
     echo "Provisioned to default initramfs file system: $ROOTFSTYPE"
     echo "Calling WW Init"
     exec /warewulf/wwinit
-elif test "$WWROOT" == "tmpfs"; then
-    if test "$ROOTFSTYPE" == "tmpfs"; then
+elif test "$WWROOT" = "tmpfs"; then
+    if test "$ROOTFSTYPE" = "tmpfs"; then
         echo "ERROR: Switching the root file system requires the kernel argument: 'rootfstype=ramfs'"
     else
         echo "Setting up tmpfs root file system"
