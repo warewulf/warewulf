@@ -5,17 +5,29 @@ Summary: A suite of tools for bare metal provisioning of containers
 Version: @VERSION@
 Release: 1%{?dist}
 License: BSD
-Group: System Environment/Clustering
-Source: %{name}-%{version}.tar.gz
+Source: https://github.com/hpcng/warewulf/archive/refs/tags/%{name}-%{version}.tar.gz
 ExclusiveOS: linux
-BuildRoot: %{?_tmppath}/%{name}-%{version}-%{release}-root
+
+BuildRequires: make
+BuildRequires: golang
+
+%if 0%{?rhel}
+BuildRequires: systemd
+%else
+BuildRequires: systemd-rpm-macros
+%endif
+
+%if 0%{?rhel} > 7
 Requires: dhcp-server
+%else
+Requires: dhcp
+%endif
+
 Requires: tftp-server
 Requires: nfs-utils
 
 %description
 Warewulf is a bare metal container provisioning system.
-
 
 %prep
 %setup -q
@@ -24,31 +36,43 @@ Warewulf is a bare metal container provisioning system.
 make all
 
 %install
-%{__make} install DESTDIR=$RPM_BUILD_ROOT %{?mflags_install}
+%make_install DESTDIR=%{buildroot} %{?mflags_install}
 
-#%pre
-groupadd -r warewulf >/dev/null 2>&1 || :
+%pre
+getent group warewulf >/dev/null || groupadd -r warewulf
 
 %post
-%if %{?rhel}%{!?rhel:0} >= 7
-    groupadd -r warewulf >/dev/null 2>&1 || :
-    systemctl daemon-reload >/dev/null 2>&1 || :
-%endif
+%systemd_post warewulfd.service
 
-%clean
-rm -rf $RPM_BUILD_ROOT
+%preun
+%systemd_preun warewulfd.service
+
+%postun
+%systemd_postun_with_restart warewulfd.service
 
 %files
-%defattr(-, root, root)
-%attr(0755, root, warewulf) %dir /etc/warewulf/
-%config(noreplace) /etc/warewulf/*
-/etc/bash_completion.d/warewulf
-/usr/bin/wwctl
-/usr/lib/firewalld/services/warewulf.xml
-/usr/lib/systemd/system/warewulfd.service
-/var/warewulf
-/usr/share/man/man1/*
+%attr(0755, root, warewulf) %dir %{_sysconfdir}/%{name}
+%config(noreplace) %{_sysconfdir}/%{name}/*
+
+%{_sysconfdir}/bash_completion.d/warewulf
+
+%{_bindir}/wwctl
+
+%{_prefix}/lib/firewalld/services/warewulf.xml
+
+%{_unitdir}/warewulfd.service
+
+%attr(0755, root, warewulf) %dir %{_localstatedir}/%{name}
+%{_localstatedir}/%{name}/overlays/runtime/*
+%{_localstatedir}/%{name}/overlays/system/*
+
+%{_mandir}/man1/wwctl*
 
 %changelog
+* Fri Sep 24 2021 Michael L. Young <myoung@ciq.co> - 4.2.0-1
+- Update spec file to use systemd macros
+- Use macros to refer to system paths
+- Update syntax
+
 * Tue Jan 26 2021 14:46:24 JST Brian Clemens <bclemens@ctrliq.com> - 4.0.0
 - Initial release
