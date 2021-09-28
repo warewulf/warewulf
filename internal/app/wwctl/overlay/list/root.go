@@ -10,9 +10,10 @@ var (
 		Short: "List Warewulf Overlays and files",
 		Long: "This command will show you information about Warewulf overlays and the\n" +
 			"files contained within.",
-		RunE:    CobraRunE,
-		Args:    cobra.MinimumNArgs(1),
-		Aliases: []string{"ls"},
+		RunE:      CobraRunE,
+		Args:      cobra.MinimumNArgs(1),
+		Aliases:   []string{"ls"},
+		ValidArgs: []string{"system", "runtime"},
 	}
 	ListContents bool
 	ListLong     bool
