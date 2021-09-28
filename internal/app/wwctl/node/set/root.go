@@ -1,6 +1,12 @@
 package set
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/hpcng/warewulf/internal/pkg/container"
+	"github.com/hpcng/warewulf/internal/pkg/kernel"
+	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/overlay"
+	"github.com/spf13/cobra"
+)
 
 var (
 	baseCmd = &cobra.Command{
@@ -10,6 +16,19 @@ var (
 			"Note: use the string 'UNSET' to remove a configuration",
 		Args: cobra.MinimumNArgs(1),
 		RunE: CobraRunE,
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) != 0 {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+
+			nodeDB, _ := node.New()
+			nodes, _ := nodeDB.FindAllNodes()
+			var node_names []string
+			for _, node := range nodes {
+				node_names = append(node_names, node.Id.Get())
+			}
+			return node_names, cobra.ShellCompDirectiveNoFileComp
+		},
 	}
 	SetComment        string
 	SetContainer      string
@@ -52,15 +71,30 @@ var (
 func init() {
 	baseCmd.PersistentFlags().StringVar(&SetComment, "comment", "", "Set a comment for this node")
 	baseCmd.PersistentFlags().StringVarP(&SetContainer, "container", "C", "", "Set the container (VNFS) for this node")
+	baseCmd.RegisterFlagCompletionFunc("container", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		list, _ := container.ListSources()
+		return list, cobra.ShellCompDirectiveNoFileComp
+	})
 	baseCmd.PersistentFlags().StringVarP(&SetKernel, "kernel", "K", "", "Set Kernel version for nodes")
+	baseCmd.RegisterFlagCompletionFunc("kernel", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		list, _ := kernel.ListKernels()
+		return list, cobra.ShellCompDirectiveNoFileComp
+	})
 	baseCmd.PersistentFlags().StringVarP(&SetKernelArgs, "kernelargs", "A", "", "Set Kernel argument for nodes")
 	baseCmd.PersistentFlags().StringVarP(&SetClusterName, "cluster", "c", "", "Set the node's cluster group")
 	baseCmd.PersistentFlags().StringVar(&SetIpxe, "ipxe", "", "Set the node's iPXE template name")
 	baseCmd.PersistentFlags().StringVarP(&SetInit, "init", "i", "", "Define the init process to boot the container")
 	baseCmd.PersistentFlags().StringVar(&SetRoot, "root", "", "Define the rootfs")
-
 	baseCmd.PersistentFlags().StringVarP(&SetRuntimeOverlay, "runtime", "R", "", "Set the node's runtime overlay")
+	baseCmd.RegisterFlagCompletionFunc("runtime", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		list, _ := overlay.FindRuntimeOverlays()
+		return list, cobra.ShellCompDirectiveNoFileComp
+	})
 	baseCmd.PersistentFlags().StringVarP(&SetSystemOverlay, "system", "S", "", "Set the node's system overlay")
+	baseCmd.RegisterFlagCompletionFunc("system", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		list, _ := overlay.FindSystemOverlays()
+		return list, cobra.ShellCompDirectiveNoFileComp
+	})
 	baseCmd.PersistentFlags().StringVar(&SetIpmiIpaddr, "ipmi", "", "Set the node's IPMI IP address")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiNetmask, "ipminetmask", "", "Set the node's IPMI netmask")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiPort, "ipmiport", "", "Set the node's IPMI port")
@@ -68,11 +102,19 @@ func init() {
 	baseCmd.PersistentFlags().StringVar(&SetIpmiUsername, "ipmiuser", "", "Set the node's IPMI username")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiPassword, "ipmipass", "", "Set the node's IPMI password")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiInterface, "ipmiinterface", "", "Set the node's IPMI interface (defaults to 'lan' if empty)")
-
 	baseCmd.PersistentFlags().StringSliceVar(&SetAddProfile, "addprofile", []string{}, "Add Profile(s) to node")
 	baseCmd.PersistentFlags().StringSliceVar(&SetDelProfile, "delprofile", []string{}, "Remove Profile(s) to node")
 	baseCmd.PersistentFlags().StringVarP(&SetProfile, "profile", "P", "", "Set the node's profile members (comma separated)")
+	baseCmd.RegisterFlagCompletionFunc("profile", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		var list []string
+		nodeDB, _ := node.New()
+		profiles, _ := nodeDB.FindAllProfiles()
+		for _, profile := range profiles {
+			list = append(list, profile.Id.Get())
+		}
+		return list, cobra.ShellCompDirectiveNoFileComp
 
+	})
 	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdev", "N", "", "Define the network device to configure")
 	baseCmd.PersistentFlags().StringVarP(&SetIpaddr, "ipaddr", "I", "", "Set the node's network device IP address")
 	baseCmd.PersistentFlags().StringVarP(&SetNetmask, "netmask", "M", "", "Set the node's network device netmask")
