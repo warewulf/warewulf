@@ -66,7 +66,7 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 	if n.RuntimeOverlay.Defined() {
 		fileName := config.RuntimeOverlayImage(n.Id.Get())
 
-		if util.PathIsNewer(fileName, node.ConfigFile) {
+		if !util.IsFile(fileName) || util.PathIsNewer(fileName, node.ConfigFile) || util.PathIsNewer(fileName, config.RuntimeOverlaySource(n.RuntimeOverlay.Get())) {
 			daemonLogf("BUILD: %15s: Runtime Overlay\n", n.Id.Get())
 			_ = overlay.BuildRuntimeOverlay([]node.NodeInfo{n})
 		}
