@@ -7,6 +7,8 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/overlay"
+	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 )
 
@@ -46,30 +48,35 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	node, err := nodes.FindByIpaddr(remote[0])
+	n, err := nodes.FindByIpaddr(remote[0])
 	if err != nil {
 		daemonLogf("WARNING: Could not find node by IP address: %s\n", remote[0])
 		w.WriteHeader(404)
 		return
 	}
 
-	if !node.Id.Defined() {
-		daemonLogf("REQ:   %15s: %s (unknown/unconfigured node)\n", node.Id.Get(), req.URL.Path)
+	if !n.Id.Defined() {
+		daemonLogf("REQ:   %15s: %s (unknown/unconfigured node)\n", n.Id.Get(), req.URL.Path)
 		w.WriteHeader(404)
 		return
 	} else {
-		daemonLogf("REQ:   %15s: %s\n", node.Id.Get(), req.URL.Path)
+		daemonLogf("REQ:   %15s: %s\n", n.Id.Get(), req.URL.Path)
 	}
 
-	if node.RuntimeOverlay.Defined() {
-		fileName := config.RuntimeOverlayImage(node.Id.Get())
+	if n.RuntimeOverlay.Defined() {
+		fileName := config.RuntimeOverlayImage(n.Id.Get())
 
-		err := sendFile(w, fileName, node.Id.Get())
+		if util.PathIsNewer(fileName, node.ConfigFile) {
+			daemonLogf("BUILD: %15s: Runtime Overlay\n", n.Id.Get())
+			_ = overlay.BuildRuntimeOverlay([]node.NodeInfo{n})
+		}
+
+		err := sendFile(w, fileName, n.Id.Get())
 		if err != nil {
 			daemonLogf("ERROR: %s\n", err)
 		}
 	} else {
 		w.WriteHeader(503)
-		daemonLogf("WARNING: No 'runtime system-overlay' set for node %s\n", node.Id.Get())
+		daemonLogf("WARNING: No 'runtime system-overlay' set for node %s\n", n.Id.Get())
 	}
 }
