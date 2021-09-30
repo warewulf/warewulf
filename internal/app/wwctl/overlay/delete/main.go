@@ -87,8 +87,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			return errors.Wrap(err, "failed to persist node updates")
 		}
 
-		overlayName = "default"
-
 	} else {
 		removePath := path.Join(overlayPath, fileName)
 
