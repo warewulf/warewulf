@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -17,6 +18,7 @@ import (
 
 type dhcpTemplate struct {
 	Ipaddr     string
+	Port       string
 	RangeStart string
 	RangeEnd   string
 	Network    string
@@ -98,6 +100,7 @@ func Configure(show bool) error {
 	}
 
 	d.Ipaddr = controller.Ipaddr
+	d.Port = strconv.Itoa(controller.Warewulf.Port)
 	d.Network = controller.Network
 	d.Netmask = controller.Netmask
 	d.RangeStart = controller.Dhcp.RangeStart
