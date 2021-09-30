@@ -20,32 +20,58 @@ func ParentDir() string {
 	return path.Join(config.LocalStateDir, "provision/kernel")
 }
 
-func KernelImage(kernelVersion string) string {
-	if kernelVersion == "" {
-		wwlog.Printf(wwlog.ERROR, "Kernel Version is not defined\n")
+func KernelImage(kernelName string) string {
+	if kernelName == "" {
+		wwlog.Printf(wwlog.ERROR, "Kernel Name is not defined\n")
 		return ""
 	}
 
-	if !util.ValidString(kernelVersion, "^[a-zA-Z0-9-._]+$") {
-		wwlog.Printf(wwlog.ERROR, "Runtime overlay name contains illegal characters: %s\n", kernelVersion)
+	if !util.ValidString(kernelName, "^[a-zA-Z0-9-._]+$") {
+		wwlog.Printf(wwlog.ERROR, "Runtime overlay name contains illegal characters: %s\n", kernelName)
 		return ""
 	}
 
-	return path.Join(ParentDir(), kernelVersion, "vmlinuz")
+	return path.Join(ParentDir(), kernelName, "vmlinuz")
 }
 
-func KmodsImage(kernelVersion string) string {
-	if kernelVersion == "" {
-		wwlog.Printf(wwlog.ERROR, "Kernel Version is not defined\n")
+func GetKernelVersion(kernelName string) string {
+	if kernelName == "" {
+		wwlog.Printf(wwlog.ERROR, "Kernel Name is not defined\n")
+		return ""
+	}
+	kernelVersion, err := ioutil.ReadFile(path.Join(ParentDir(), kernelName, "version"))
+	if err != nil {
+		return ""
+	}
+	return string(kernelVersion)
+}
+
+func KmodsImage(kernelName string) string {
+	if kernelName == "" {
+		wwlog.Printf(wwlog.ERROR, "Kernel Name is not defined\n")
 		return ""
 	}
 
-	if !util.ValidString(kernelVersion, "^[a-zA-Z0-9-._]+$") {
-		wwlog.Printf(wwlog.ERROR, "Runtime overlay name contains illegal characters: %s\n", kernelVersion)
+	if !util.ValidString(kernelName, "^[a-zA-Z0-9-._]+$") {
+		wwlog.Printf(wwlog.ERROR, "Runtime overlay name contains illegal characters: %s\n", kernelName)
 		return ""
 	}
 
-	return path.Join(ParentDir(), kernelVersion, "kmods.img")
+	return path.Join(ParentDir(), kernelName, "kmods.img")
+}
+
+func KernelVersion(kernelName string) string {
+	if kernelName == "" {
+		wwlog.Printf(wwlog.ERROR, "Kernel Name is not defined\n")
+		return ""
+	}
+
+	if !util.ValidString(kernelName, "^[a-zA-Z0-9-._]+$") {
+		wwlog.Printf(wwlog.ERROR, "Runtime overlay name contains illegal characters: %s\n", kernelName)
+		return ""
+	}
+
+	return path.Join(ParentDir(), kernelName, "version")
 }
 
 func ListKernels() ([]string, error) {
@@ -73,11 +99,12 @@ func ListKernels() ([]string, error) {
 	return ret, nil
 }
 
-func Build(kernelVersion string, root string) (string, error) {
+func Build(kernelVersion string, kernelName string, root string) (string, error) {
 	kernelImage := path.Join(root, "/boot/vmlinuz-"+kernelVersion)
 	kernelDrivers := path.Join(root, "/lib/modules/"+kernelVersion)
-	kernelDestination := KernelImage(kernelVersion)
-	driversDestination := KmodsImage(kernelVersion)
+	kernelDestination := KernelImage(kernelName)
+	driversDestination := KmodsImage(kernelName)
+	versionDestination := KernelVersion(kernelName)
 
 	// Create the destination paths just in case it doesn't exist
 	err := os.MkdirAll(path.Dir(kernelDestination), 0755)
@@ -88,6 +115,11 @@ func Build(kernelVersion string, root string) (string, error) {
 	err = os.MkdirAll(path.Dir(driversDestination), 0755)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to create driver dest")
+	}
+
+	err = os.MkdirAll(path.Dir(versionDestination), 0755)
+	if err != nil {
+		return "", fmt.Errorf("failed to create version dest: %s", err)
 	}
 
 	if !util.IsFile(kernelImage) {
@@ -154,6 +186,20 @@ func Build(kernelVersion string, root string) (string, error) {
 		}
 	}
 
+	wwlog.Printf(wwlog.VERBOSE, "Creating version file\n")
+	file, err := os.Create(versionDestination)
+	if err != nil {
+		return "", errors.Wrap(err, "Failed to create version file")
+	}
+	defer file.Close()
+	_, err = io.WriteString(file, kernelVersion)
+	if err != nil {
+		return "", errors.Wrap(err, "Could not write kernel version")
+	}
+	err = file.Sync()
+	if err != nil {
+		return "", errors.Wrap(err, "Could not sync kernel version")
+	}
 	return "Done", nil
 }
 
