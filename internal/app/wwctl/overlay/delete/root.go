@@ -14,15 +14,13 @@ var (
 		Args:    cobra.RangeArgs(2, 3),
 		Aliases: []string{"rm", "del"},
 	}
-	Force           bool
-	Parents         bool
-	NoOverlayUpdate bool
+	Force   bool
+	Parents bool
 )
 
 func init() {
 	baseCmd.PersistentFlags().BoolVarP(&Force, "force", "f", false, "Force deletion of a non-empty overlay")
 	baseCmd.PersistentFlags().BoolVarP(&Parents, "parents", "p", false, "Remove empty parent directories")
-	baseCmd.PersistentFlags().BoolVarP(&NoOverlayUpdate, "noupdate", "n", false, "Don't update overlays")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
