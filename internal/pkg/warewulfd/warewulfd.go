@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"syscall"
 	"strconv"
+	"syscall"
 
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/pkg/errors"
@@ -39,19 +39,19 @@ func RunServer() error {
 	http.HandleFunc("/kmods/", KmodsSend)
 	http.HandleFunc("/container/", ContainerSend)
 	http.HandleFunc("/overlay-system/", SystemOverlaySend)
-	http.HandleFunc("/overlay-runtime", RuntimeOverlaySend)
+	http.HandleFunc("/overlay-runtime/", RuntimeOverlaySend)
 
 	conf, err := warewulfconf.New()
 	if err != nil {
-	  return errors.Wrap(err, "could not get Warewulf configuration")
+		return errors.Wrap(err, "could not get Warewulf configuration")
 	}
 
-  daemonPort := conf.Warewulf.Port
+	daemonPort := conf.Warewulf.Port
 	daemonLogf("Starting HTTPD REST service on port %d\n", daemonPort)
 
-	err = http.ListenAndServe(":" + strconv.Itoa(daemonPort), nil)
+	err = http.ListenAndServe(":"+strconv.Itoa(daemonPort), nil)
 	if err != nil {
-	  return errors.Wrap(err, "Could not start listening service")
+		return errors.Wrap(err, "Could not start listening service")
 	}
 
 	return nil
