@@ -20,9 +20,10 @@ type ControllerConf struct {
 }
 
 type WarewulfConf struct {
-	Port           int  `yaml:"port"`
-	Secure         bool `yaml:"secure"`
-	UpdateInterval int  `yaml:"update interval"`
+	Port              int  `yaml:"port"`
+	Secure            bool `yaml:"secure"`
+	UpdateInterval    int  `yaml:"update interval"`
+	AutobuildOverlays bool `yaml:"autobuild overlays"`
 }
 
 type DhcpConf struct {

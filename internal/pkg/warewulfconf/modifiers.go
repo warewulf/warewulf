@@ -7,9 +7,9 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func (self *ControllerConf) Persist() error {
+func (controller *ControllerConf) Persist() error {
 
-	out, err := yaml.Marshal(self)
+	out, err := yaml.Marshal(controller)
 	if err != nil {
 		return err
 	}

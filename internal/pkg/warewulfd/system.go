@@ -7,9 +7,17 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 )
 
 func SystemOverlaySend(w http.ResponseWriter, req *http.Request) {
+	conf, err := warewulfconf.New()
+	if err != nil {
+		daemonLogf("ERROR: Could not read Warewulf configuration file: %s\n", err)
+		w.WriteHeader(503)
+		return
+	}
+
 	n, err := getSanity(req)
 	if err != nil {
 		w.WriteHeader(404)
@@ -20,9 +28,11 @@ func SystemOverlaySend(w http.ResponseWriter, req *http.Request) {
 	if n.SystemOverlay.Defined() {
 		fileName := config.SystemOverlayImage(n.Id.Get())
 
-		if !util.IsFile(fileName) || util.PathIsNewer(fileName, node.ConfigFile) || util.PathIsNewer(fileName, config.SystemOverlaySource(n.SystemOverlay.Get())) {
-			daemonLogf("BUILD: %15s: System Overlay\n", n.Id.Get())
-			_ = overlay.BuildSystemOverlay([]node.NodeInfo{n})
+		if conf.Warewulf.AutobuildOverlays == true {
+			if !util.IsFile(fileName) || util.PathIsNewer(fileName, node.ConfigFile) || util.PathIsNewer(fileName, config.SystemOverlaySource(n.SystemOverlay.Get())) {
+				daemonLogf("BUILD: %15s: System Overlay\n", n.Id.Get())
+				_ = overlay.BuildSystemOverlay([]node.NodeInfo{n})
+			}
 		}
 
 		err := sendFile(w, fileName, n.Id.Get())
