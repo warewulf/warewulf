@@ -16,7 +16,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-var logwriter syslog.Writer
+var logwriter *syslog.Writer
 var loginit bool
 
 func daemonLogf(message string, a ...interface{}) {
@@ -26,19 +26,22 @@ func daemonLogf(message string, a ...interface{}) {
 		return
 	}
 
-	if conf.Warewulf.Syslog == true {
-		if loginit == false {
-			logwriter, err := syslog.New(syslog.LOG_NOTICE, "warewulfd")
+	if conf.Warewulf.Syslog {
+		if !loginit {
+			var err error
+
+			logwriter, err = syslog.New(syslog.LOG_NOTICE, "warewulfd")
 			if err != nil {
 				return
 			}
 			log.SetOutput(logwriter)
 			loginit = true
 		}
+
 		log.SetFlags(0)
 		log.SetPrefix("")
-
 		log.Printf(message, a...)
+
 	} else {
 		prefix := fmt.Sprintf("[%s] ", time.Now().Format(time.UnixDate))
 		fmt.Printf(prefix+message, a...)

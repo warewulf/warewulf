@@ -28,7 +28,7 @@ func SystemOverlaySend(w http.ResponseWriter, req *http.Request) {
 	if n.SystemOverlay.Defined() {
 		fileName := config.SystemOverlayImage(n.Id.Get())
 
-		if conf.Warewulf.AutobuildOverlays == true {
+		if conf.Warewulf.AutobuildOverlays {
 			if !util.IsFile(fileName) || util.PathIsNewer(fileName, node.ConfigFile) || util.PathIsNewer(fileName, config.SystemOverlaySource(n.SystemOverlay.Get())) {
 				daemonLogf("BUILD: %15s: System Overlay\n", n.Id.Get())
 				_ = overlay.BuildSystemOverlay([]node.NodeInfo{n})

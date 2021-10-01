@@ -22,7 +22,7 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 
 	nodes, err := node.New()
 	if err != nil {
-		daemonLogf("%s | ERROR: Could not read node configuration file: %s\n", err)
+		daemonLogf("ERROR: Could not read node configuration file: %s\n", err)
 		w.WriteHeader(503)
 		return
 	}
@@ -30,13 +30,13 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 	remote := strings.Split(req.RemoteAddr, ":")
 	port, err := strconv.Atoi(remote[1])
 	if err != nil {
-		daemonLogf("%s | ERROR: Could not convert port to integer: %s\n", remote[1])
+		daemonLogf("ERROR: Could not convert port to integer: %s\n", remote[1])
 		w.WriteHeader(503)
 		return
 	}
 
 	if err != nil {
-		daemonLogf("%s | ERROR: Could not load configuration file: %s\n", err)
+		daemonLogf("ERROR: Could not load configuration file: %s\n", err)
 		return
 	}
 
@@ -66,7 +66,7 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 	if n.RuntimeOverlay.Defined() {
 		fileName := config.RuntimeOverlayImage(n.Id.Get())
 
-		if conf.Warewulf.AutobuildOverlays == true {
+		if conf.Warewulf.AutobuildOverlays {
 			if !util.IsFile(fileName) || util.PathIsNewer(fileName, node.ConfigFile) || util.PathIsNewer(fileName, config.RuntimeOverlaySource(n.RuntimeOverlay.Get())) {
 				daemonLogf("BUILD: %15s: Runtime Overlay\n", n.Id.Get())
 				_ = overlay.BuildRuntimeOverlay([]node.NodeInfo{n})
