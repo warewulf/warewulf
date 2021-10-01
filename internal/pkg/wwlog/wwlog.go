@@ -1,8 +1,8 @@
 package wwlog
 
 import (
-	"log"
-	"strings"
+	"fmt"
+	"os"
 )
 
 const (
@@ -16,55 +16,39 @@ const (
 
 var (
 	logLevel = INFO
-	Indent   string
 )
 
 func SetLevel(level int) {
 	logLevel = level
 
-	if level == DEBUG {
-		log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lmsgprefix)
-	} else {
-		log.SetFlags(0)
-	}
-
 	Printf(DEBUG, "Set log level to: %d\n", logLevel)
 }
 
-func SetIndent(i int) {
-	Indent = strings.Repeat(" ", i)
-}
-
-func prefixLevel(level int) {
+func prefixGen(level int) string {
 	if level == DEBUG {
-		log.SetPrefix("[DEBUG]    " + Indent)
+		return "[DEBUG]"
 	} else if level == VERBOSE {
-		log.SetPrefix("[VERBOSE]  " + Indent)
+		return "[VERBOSE]"
 	} else if level == INFO {
-		log.SetPrefix("[INFO]     " + Indent)
+		return "[INFO]"
 	} else if level == WARN {
-		log.SetPrefix("[WARN]     " + Indent)
+		return "[WARNING]"
 	} else if level == ERROR {
-		log.SetPrefix("[ERROR] 	  " + Indent)
+		return "[ERROR]"
 	} else if level == CRITICAL {
-		log.SetPrefix("[CRITICAL] " + Indent)
+		return "[CRITICAL]"
 	}
+	return "[UNDEF]"
 }
 
 func Println(level int, message string) {
 	if level <= logLevel {
-		prefixLevel(level)
-		log.Println(message)
+		fmt.Fprintln(os.Stderr, prefixGen(level)+" "+message)
 	}
-
-	log.SetPrefix("[LOG]      " + Indent)
 }
 
 func Printf(level int, message string, a ...interface{}) {
 	if level <= logLevel {
-		prefixLevel(level)
-		log.Printf(message, a...)
+		fmt.Fprintf(os.Stderr, prefixGen(level)+" "+message, a...)
 	}
-
-	log.SetPrefix("[LOG]      " + Indent)
 }
