@@ -1,6 +1,9 @@
 package imprt
 
 import (
+	"log"
+
+	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/spf13/cobra"
 )
 
@@ -26,6 +29,13 @@ func init() {
 	baseCmd.PersistentFlags().BoolVar(&SetDefault, "setdefault", false, "Set this kernel for the default profile")
 	baseCmd.PersistentFlags().StringVarP(&OptRoot, "root", "r", "/", "Import kernel from root (chroot) directory")
 	baseCmd.PersistentFlags().StringVarP(&OptContainer, "container", "C", "", "Import kernel from container")
+	err := baseCmd.RegisterFlagCompletionFunc("container", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		list, _ := container.ListSources()
+		return list, cobra.ShellCompDirectiveNoFileComp
+	})
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

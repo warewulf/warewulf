@@ -1,6 +1,9 @@
 package build
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/hpcng/warewulf/internal/pkg/container"
+	"github.com/spf13/cobra"
+)
 
 var (
 	baseCmd = &cobra.Command{
@@ -9,6 +12,13 @@ var (
 		Long:  "This command will build a bootable VNFS image from an imported container image.",
 		RunE:  CobraRunE,
 		Args:  cobra.MinimumNArgs(1),
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) != 0 {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			list, _ := container.ListSources()
+			return list, cobra.ShellCompDirectiveNoFileComp
+		},
 	}
 	BuildForce bool
 	BuildAll   bool
