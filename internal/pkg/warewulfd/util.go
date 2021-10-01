@@ -3,6 +3,8 @@ package warewulfd
 import (
 	"fmt"
 	"io"
+	"log"
+	"log/syslog"
 	"net/http"
 	"os"
 	"strconv"
@@ -10,12 +12,37 @@ import (
 	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/pkg/errors"
 )
 
+var logwriter syslog.Writer
+var loginit bool
+
 func daemonLogf(message string, a ...interface{}) {
-	prefix := fmt.Sprintf("[%s] ", time.Now().Format(time.UnixDate))
-	fmt.Printf(prefix+message, a...)
+	conf, err := warewulfconf.New()
+	if err != nil {
+		fmt.Printf("ERROR: Could not read Warewulf configuration file: %s\n", err)
+		return
+	}
+
+	if conf.Warewulf.Syslog == true {
+		if loginit == false {
+			logwriter, err := syslog.New(syslog.LOG_NOTICE, "warewulfd")
+			if err != nil {
+				return
+			}
+			log.SetOutput(logwriter)
+			loginit = true
+		}
+		log.SetFlags(0)
+		log.SetPrefix("")
+
+		log.Printf(message, a...)
+	} else {
+		prefix := fmt.Sprintf("[%s] ", time.Now().Format(time.UnixDate))
+		fmt.Printf(prefix+message, a...)
+	}
 }
 
 func getSanity(req *http.Request) (node.NodeInfo, error) {
