@@ -126,12 +126,12 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 		var OverlayFile string
 
 		if overlayType == "runtime" {
-			wwlog.Printf(wwlog.VERBOSE, "Building runtime overlay for: %s\n", n.Id.Get())
+			wwlog.Printf(wwlog.DEBUG, "Building runtime overlay for: %s\n", n.Id.Get())
 
 			OverlayDir = config.RuntimeOverlaySource(n.RuntimeOverlay.Get())
 			OverlayFile = config.RuntimeOverlayImage(n.Id.Get())
 		} else if overlayType == "system" {
-			wwlog.Printf(wwlog.VERBOSE, "Building system overlay for: %s\n", n.Id.Get())
+			wwlog.Printf(wwlog.DEBUG, "Building system overlay for: %s\n", n.Id.Get())
 
 			OverlayDir = config.SystemOverlaySource(n.SystemOverlay.Get())
 			OverlayFile = config.SystemOverlayImage(n.Id.Get())
@@ -256,7 +256,7 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 				}
 				defer w.Close()
 
-				wwlog.Printf(wwlog.VERBOSE, "Writing overlay template: OVERLAY:/%s\n", destFile)
+				wwlog.Printf(wwlog.DEBUG, "Writing overlay template: OVERLAY:/%s\n", destFile)
 				err = tmpl.Execute(w, t)
 				if err != nil {
 					wwlog.Printf(wwlog.ERROR, "tmpl.Execute %s\n", err)
@@ -291,14 +291,14 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 			os.Exit(1)
 		}
 
-		wwlog.Printf(wwlog.VERBOSE, "Finished generating overlay directory for: %s\n", n.Id.Get())
+		wwlog.Printf(wwlog.DEBUG, "Finished generating overlay directory for: %s\n", n.Id.Get())
 
 		compressor, err := exec.LookPath("pigz")
 		if err != nil {
-			wwlog.Printf(wwlog.VERBOSE, "Could not locate PIGZ, using GZIP\n")
+			wwlog.Printf(wwlog.DEBUG, "Could not locate PIGZ, using GZIP\n")
 			compressor = "gzip"
 		} else {
-			wwlog.Printf(wwlog.VERBOSE, "Using PIGZ to compress the overlay: %s\n", compressor)
+			wwlog.Printf(wwlog.DEBUG, "Using PIGZ to compress the overlay: %s\n", compressor)
 		}
 
 		cmd := fmt.Sprintf("cd \"%s\"; find . | cpio --quiet -o -H newc | %s -c > \"%s\"", tmpDir, compressor, OverlayFile)
@@ -309,7 +309,7 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 			wwlog.Printf(wwlog.ERROR, "Could not generate runtime image overlay: %s\n", err)
 			continue
 		}
-		wwlog.Printf(wwlog.INFO, "%-35s: Done\n", n.Id.Get())
+		wwlog.Printf(wwlog.VERBOSE, "%-35s: Done\n", n.Id.Get())
 
 		wwlog.Printf(wwlog.DEBUG, "Removing temporary directory: %s\n", tmpDir)
 		os.RemoveAll(tmpDir)

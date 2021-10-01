@@ -11,11 +11,9 @@ var (
 		RunE: CobraRunE,
 		Args: cobra.ExactArgs(4),
 	}
-	NoOverlayUpdate bool
 )
 
 func init() {
-	baseCmd.PersistentFlags().BoolVarP(&NoOverlayUpdate, "noupdate", "n", false, "Don't update overlays")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
