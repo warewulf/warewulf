@@ -130,6 +130,9 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.IpmiInterface.SetAlt(config.NodeProfiles[p].IpmiInterface, p)
 			n.SystemOverlay.SetAlt(config.NodeProfiles[p].SystemOverlay, p)
 			n.RuntimeOverlay.SetAlt(config.NodeProfiles[p].RuntimeOverlay, p)
+
+			n.Discoverable.SetAltB(config.NodeProfiles[p].Discoverable, p)
+
 			n.Root.SetAlt(config.NodeProfiles[p].Root, p)
 
 			for devname, netdev := range config.NodeProfiles[p].NetDevs {

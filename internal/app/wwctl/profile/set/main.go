@@ -120,6 +120,16 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			p.IpmiInterface.Set(SetIpmiInterface)
 		}
 
+		if SetDiscoverable {
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting all nodes to discoverable\n", p.Id.Get())
+			p.Discoverable.SetB(true)
+		}
+
+		if SetUndiscoverable {
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting all nodes to undiscoverable\n", p.Id.Get())
+			p.Discoverable.SetB(false)
+		}
+
 		if SetNetDevDel {
 			if SetNetDev == "" {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
