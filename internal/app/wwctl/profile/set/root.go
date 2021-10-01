@@ -56,6 +56,8 @@ var (
 	SetType           string
 	SetNetDevDel      bool
 	SetNetDevDefault  bool
+	SetDiscoverable   bool
+	SetUndiscoverable bool
 	SetInit           string
 	SetRoot           string
 	SetKey            string
@@ -123,6 +125,8 @@ func init() {
 	baseCmd.PersistentFlags().BoolVarP(&SetAll, "all", "a", false, "Set all profiles")
 	baseCmd.PersistentFlags().BoolVarP(&SetForce, "force", "f", false, "Force configuration (even on error)")
 	baseCmd.PersistentFlags().BoolVarP(&SetYes, "yes", "y", false, "Set 'yes' to all questions asked")
+	baseCmd.PersistentFlags().BoolVar(&SetDiscoverable, "discoverable", false, "Make this node discoverable")
+	baseCmd.PersistentFlags().BoolVar(&SetUndiscoverable, "undiscoverable", false, "Remove the discoverable flag")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
