@@ -100,11 +100,11 @@ func ListKernels() ([]string, error) {
 }
 
 func Build(kernelVersion string, kernelName string, root string) (string, error) {
-	kernelImage := path.Join(root, "/boot/vmlinuz-"+kernelVersion)
 	kernelDrivers := path.Join(root, "/lib/modules/"+kernelVersion)
 	kernelDestination := KernelImage(kernelName)
 	driversDestination := KmodsImage(kernelName)
 	versionDestination := KernelVersion(kernelName)
+	var kernelSource string
 
 	// Create the destination paths just in case it doesn't exist
 	err := os.MkdirAll(path.Dir(kernelDestination), 0755)
@@ -122,12 +122,16 @@ func Build(kernelVersion string, kernelName string, root string) (string, error)
 		return "", fmt.Errorf("failed to create version dest: %s", err)
 	}
 
-	if !util.IsFile(kernelImage) {
-		if !util.IsFile(kernelImage + ".gz") {
-			return "", errors.New("Could not locate kernel image")
-		} else {
-			kernelImage = kernelImage + ".gz"
-		}
+	if util.IsFile(path.Join(root, "/boot/vmlinuz-"+kernelVersion)) {
+		kernelSource = path.Join(root, "/boot/vmlinuz-"+kernelVersion)
+	} else if util.IsFile(path.Join(root, "/boot/vmlinuz-"+kernelVersion+".gz")) {
+		kernelSource = path.Join(root, "/boot/vmlinuz-"+kernelVersion+".gz")
+	} else if util.IsFile(path.Join(root, "/lib/modules/"+kernelVersion+"/vmlinuz")) {
+		kernelSource = path.Join(root, "/lib/modules/"+kernelVersion+"/vmlinuz")
+	} else if util.IsFile(path.Join(root, "/lib/modules/"+kernelVersion+"/vmlinuz.gz")) {
+		kernelSource = path.Join(root, "/lib/modules/"+kernelVersion+"/vmlinuz.gz")
+	} else {
+		return "", errors.New("Could not locate kernel image")
 	}
 
 	if !util.IsDir(kernelDrivers) {
@@ -135,8 +139,8 @@ func Build(kernelVersion string, kernelName string, root string) (string, error)
 	}
 
 	wwlog.Printf(wwlog.VERBOSE, "Setting up Kernel\n")
-	if _, err := os.Stat(kernelImage); err == nil {
-		kernel, err := os.Open(kernelImage)
+	if _, err := os.Stat(kernelSource); err == nil {
+		kernel, err := os.Open(kernelSource)
 		if err != nil {
 			return "", errors.Wrap(err, "could not open kernel")
 		}
@@ -159,7 +163,7 @@ func Build(kernelVersion string, kernelName string, root string) (string, error)
 
 		} else {
 
-			err := util.CopyFile(kernelImage, kernelDestination)
+			err := util.CopyFile(kernelSource, kernelDestination)
 			if err != nil {
 				return "", errors.Wrap(err, "could not copy kernel")
 			}
