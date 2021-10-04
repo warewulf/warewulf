@@ -5,6 +5,12 @@ RELEASE ?= 1
 
 SRC ?= main
 
+VERSION_FULL ?= $(shell test -e .git && git describe --tags --long)
+ifeq ($(VERSION_FULL),)
+VERSION_FULL := $(VERSION)
+endif
+
+
 # auto installed tooling
 TOOLS_DIR := .tools
 TOOLS_BIN := $(TOOLS_DIR)/bin
@@ -115,7 +121,7 @@ debfiles: debian
 	cp wwclient $(DESTDIR)/var/warewulf/overlays/system/debian/warewulf/bin/
 
 wwctl:
-	cd cmd/wwctl; GOOS=linux go build -ldflags="-X 'github.com/hpcng/warewulf/internal/app/wwctl/version/version.Version=$(VERSION)'" -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwctl
+	cd cmd/wwctl; GOOS=linux go build -ldflags="-X 'github.com/hpcng/warewulf/internal/app/wwctl/version.Version=$(VERSION_FULL)'" -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwctl
 
 wwclient:
 	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags '-extldflags -static' -o ../../wwclient

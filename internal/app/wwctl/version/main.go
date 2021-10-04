@@ -10,7 +10,7 @@ var Version = "development"
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 
-	fmt.Println("Version foo:\t", Version)
+	fmt.Println("Version:\t", Version)
 
 	return nil
 }
