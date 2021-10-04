@@ -9,6 +9,7 @@ import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/power"
 	"github.com/hpcng/warewulf/internal/app/wwctl/profile"
 	"github.com/hpcng/warewulf/internal/app/wwctl/server"
+	"github.com/hpcng/warewulf/internal/app/wwctl/version"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/hpcng/warewulf/internal/pkg/help"
 	"github.com/spf13/cobra"
@@ -46,6 +47,7 @@ func init() {
 	rootCmd.AddCommand(profile.GetCommand())
 	rootCmd.AddCommand(configure.GetCommand())
 	rootCmd.AddCommand(server.GetCommand())
+	rootCmd.AddCommand(version.GetCommand())
 
 }
 
