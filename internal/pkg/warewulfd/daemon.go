@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/version"
 	"github.com/pkg/errors"
 )
 
@@ -53,7 +54,7 @@ func DaemonStart() error {
 
 		fmt.Fprintf(p, "%d", pid)
 
-		fmt.Printf("Started Warewulf server at PID: %d\n", pid)
+		fmt.Printf("Started Warewulf (%s) server at PID: %d\n", version.GetVersion(), pid)
 
 	}
 

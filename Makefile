@@ -121,7 +121,7 @@ debfiles: debian
 	cp wwclient $(DESTDIR)/var/warewulf/overlays/system/debian/warewulf/bin/
 
 wwctl:
-	cd cmd/wwctl; GOOS=linux go build -ldflags="-X 'github.com/hpcng/warewulf/internal/app/wwctl/version.Version=$(VERSION_FULL)'" -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwctl
+	cd cmd/wwctl; GOOS=linux go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/version.Version=$(VERSION_FULL)'" -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwctl
 
 wwclient:
 	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags '-extldflags -static' -o ../../wwclient
