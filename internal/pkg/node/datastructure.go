@@ -103,23 +103,33 @@ type NetDevEntry struct {
 	Gateway Entry `yaml:"gateway,omitempty"`
 }
 
-func init() {
-	//TODO: Check to make sure nodes.conf is found
+func newConfig() {
+	//TODO: Add interface option to call this function
+	//TODO: Also, validate that this fuction works as expected
+	//Check to make sure nodes.conf does not exist
 	if !util.IsFile(ConfigFile) {
-		c, err := os.OpenFile(ConfigFile, os.O_RDWR|os.O_CREATE, 0644)
+		txt := "nodeprofiles:\n" +
+		       "  default:\n" +
+		       "    comment: This profile is automatically included for each node\n\n" +
+		       "nodes: {}\n"
+		err := os.WriteFile(ConfigFile, []byte(txt), 0640)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Could not create new configuration file: %s\n", err)
-			// just return silently, as init is also called for bash_completion
-			return
+			return 1
 		}
-
-		fmt.Fprintf(c, "nodeprofiles:\n")
-		fmt.Fprintf(c, "  default:\n")
-		fmt.Fprintf(c, "    comment: This profile is automatically included for each node\n")
-		fmt.Fprintf(c, "nodes: {}\n")
-
-		c.Close()
-
 		wwlog.Printf(wwlog.INFO, "Created default node configuration\n")
+		return 0
+	} else {
+		wwlog.Printf(wwlog.ERROR, "Could not create new configuration file: file exists\n")
+		return 2
+	}
+}
+
+func init() {
+	//Check to make sure nodes.conf is found
+	if !util.IsFile(ConfigFile) {
+		wwlog.Printf(wwlog.WARN, "Node configuration file not found\n")
+		// just return silently, as init is also called for bash_completion
+		return
 	}
 }
