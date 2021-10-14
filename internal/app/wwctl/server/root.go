@@ -11,7 +11,8 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "server",
+		DisableFlagsInUseLine: true,
+		Use:   "server COMMAND [OPTIONS]",
 		Short: "Warewulf server process commands",
 		Long:  "This command will allow you to control the Warewulf daemon process.",
 	}

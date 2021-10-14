@@ -7,9 +7,10 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "delete [flags] [kernel version]...",
-		Short: "Delete an imported kernel",
-		Long:  "This command will delete a kernel that has been imported into Warewulf.",
+		DisableFlagsInUseLine: true,
+		Use:   "delete [OPTIONS] KERNEL [...]",
+		Short: "Delete imported kernels",
+		Long:  "This command will delete KERNEL versions that have been imported into Warewulf.",
 		RunE:  CobraRunE,
 		Args:  cobra.MinimumNArgs(1),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

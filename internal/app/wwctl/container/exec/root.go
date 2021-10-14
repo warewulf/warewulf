@@ -8,10 +8,11 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "exec [flags] [container name] [command]",
+		DisableFlagsInUseLine: true,
+		Use:   "exec [OPTIONS] CONTAINER COMMAND",
 		Short: "Run a command inside of a Warewulf container",
-		Long: "This command will allow you to run any command inside of a given\n" +
-			"warewulf container. This is commonly used with an interactive shell such as /bin/bash\n" +
+		Long: "Run a COMMAND inside of a warewulf CONTAINER.\n" +
+		      "This is commonly used with an interactive shell such as /bin/bash\n" +
 			"to run a virtual environment within the container.",
 		RunE: CobraRunE,
 		Args: cobra.MinimumNArgs(2),

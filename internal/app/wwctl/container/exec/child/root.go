@@ -4,6 +4,7 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
+		DisableFlagsInUseLine: true,
 		Use:                "__child",
 		Hidden:             true,
 		RunE:               CobraRunE,

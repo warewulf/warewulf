@@ -18,9 +18,9 @@ import (
 
 var (
 	rootCmd = &cobra.Command{
-		Use:               "wwctl",
+		Use:               "wwctl COMMAND [OPTIONS]",
 		Short:             "Warewulf Control",
-		Long:              "Control interface to the Cluster Warewulf Provisioning System.",
+		Long:              "Control interface to the Warewulf Cluster Provisioning System.",
 		PersistentPreRunE: rootPersistentPreRunE,
 		SilenceUsage:      true,
 		SilenceErrors:     true,
@@ -67,7 +67,7 @@ func GenBashCompletion(w io.Writer) error {
 
 func GenManTree(fileName string) error {
 	header := &doc.GenManHeader{
-		Title:   "MINE",
+		Title:   "WWCTL",
 		Section: "1",
 	}
 	return doc.GenManTree(rootCmd, header, fileName)

@@ -13,7 +13,8 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "node",
+		DisableFlagsInUseLine: true,
+		Use:   "node COMMAND [OPTONS]",
 		Short: "Node management",
 		Long:  "Management of node settings",
 	}

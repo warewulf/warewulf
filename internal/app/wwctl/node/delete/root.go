@@ -7,9 +7,10 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:     "delete [flags] [exact node name]...",
+		DisableFlagsInUseLine: true,
+		Use:     "delete [OPTIONS] NODE [NODE ...]",
 		Short:   "Delete a node from Warewulf",
-		Long:    "This command will remove a node from the Warewulf node configuration.",
+		Long:    "This command will remove NODE(s) from the Warewulf node configuration.",
 		Args:    cobra.MinimumNArgs(1),
 		RunE:    CobraRunE,
 		Aliases: []string{"rm", "del"},
