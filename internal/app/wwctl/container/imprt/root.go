@@ -5,12 +5,13 @@ import "github.com/spf13/cobra"
 var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:   "import [OPTIONS] SOURCE [NAME]",
+		Use:   "imprt [OPTIONS] SOURCE [NAME]",
 		Short: "Import a container into Warewulf",
-		Long:  "This command will pull and import a container into Warewulf from SOURCE,\n" +
-		       "optionally renaming it to NAME. The SOURCE must be in a supported URI format.\n" +
-		       "Imported containers are used to create bootable VNFS images.",
-		Example: "wwctl container import docker://warewulf/centos-8 my_container"
+		Long:
+`This command will pull and import a container into Warewulf from SOURCE,
+optionally renaming it to NAME. The SOURCE must be in a supported URI format.
+Imported containers are used to create bootable VNFS images.`,
+		Example: "wwctl container import docker://warewulf/centos-8 my_container",
 		RunE: CobraRunE,
 		Args: cobra.MinimumNArgs(1),
 	}

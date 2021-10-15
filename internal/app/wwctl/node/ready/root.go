@@ -10,7 +10,7 @@ var (
 		DisableFlagsInUseLine: true,
 		Use:   "ready [OPTIONS]",
 		Short: "Warewulf status check",
-		Long:  "Provides the current status of all Warewulf nodes."
+		Long:  "Provides the current status of all Warewulf nodes.",
 		RunE:  CobraRunE,
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {

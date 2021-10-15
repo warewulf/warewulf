@@ -1,8 +1,7 @@
 package node
 
 import (
-	"fmt"
-	"os"
+	"io/ioutil"
 
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -103,7 +102,7 @@ type NetDevEntry struct {
 	Gateway Entry `yaml:"gateway,omitempty"`
 }
 
-func newConfig() {
+func newConfig() int {
 	//TODO: Add interface option to call this function
 	//TODO: Also, validate that this fuction works as expected
 	//Check to make sure nodes.conf does not exist
@@ -112,7 +111,7 @@ func newConfig() {
 		       "  default:\n" +
 		       "    comment: This profile is automatically included for each node\n\n" +
 		       "nodes: {}\n"
-		err := os.WriteFile(ConfigFile, []byte(txt), 0640)
+		err := ioutil.WriteFile(ConfigFile, []byte(txt), 0640)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Could not create new configuration file: %s\n", err)
 			return 1
