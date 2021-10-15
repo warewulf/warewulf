@@ -61,7 +61,7 @@ files: all
 	install -d -m 0755 $(DESTDIR)/usr/share/man/man1
 	test -f $(DESTDIR)/etc/warewulf/warewulf.conf || install -m 644 etc/warewulf.conf $(DESTDIR)/etc/warewulf/
 	test -f $(DESTDIR)/etc/warewulf/hosts.tmpl || install -m 644 etc/hosts.tmpl $(DESTDIR)/etc/warewulf/
-	test -f $(DESTDIR)/etc/warewulf/nodes.conf || install -m 644 etc/nodes.conf $(DESTDIR)/etc/warewulf/
+	test -f $(DESTDIR)/etc/warewulf/nodes.conf || install -m 640 etc/nodes.conf $(DESTDIR)/etc/warewulf/
 	cp -r etc/dhcp $(DESTDIR)/etc/warewulf/
 	cp -r etc/ipxe $(DESTDIR)/etc/warewulf/
 	cp -r overlays $(DESTDIR)/var/warewulf/
