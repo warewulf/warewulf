@@ -75,16 +75,21 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 
 %files
 %defattr(-, root, %{wwgroup})
-%dir %{_sysconfdir}/%{pname}
-%config(noreplace) %{_sysconfdir}/%{pname}/*
+%dir %{_sysconfdir}/%{name}
+%config(noreplace) %{_sysconfdir}/%{name}/*
 %{_sysconfdir}/bash_completion.d/warewulf
 
-%dir %{_localstatedir}/%{pname}
-%{_localstatedir}/%{pname}/overlays/runtime/*
-%{_localstatedir}/%{pname}/overlays/system/*
+%dir %{_localstatedir}/%{name}
+%{_localstatedir}/%{name}/overlays/runtime/*
+%{_localstatedir}/%{name}/overlays/system/*
 
 %attr(-, root, root) %{_bindir}/wwctl
+%if 0%{?rhel}
 %attr(-, root, root) %{_prefix}/lib/firewalld/services/warewulf.xml
+%else
+# sle_version
+%attr(-, root, root) %{_libexecdir}/firewalld/services/warewulf.xml
+%endif
 %attr(-, root, root) %{_unitdir}/warewulfd.service
 %attr(-, root, root) %{_mandir}/man1/wwctl*
 
