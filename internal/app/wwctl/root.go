@@ -10,6 +10,7 @@ import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/profile"
 	"github.com/hpcng/warewulf/internal/app/wwctl/server"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/hpcng/warewulf/internal/pkg/help"
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 
@@ -18,6 +19,7 @@ import (
 
 var (
 	rootCmd = &cobra.Command{
+		DisableFlagsInUseLine: true,
 		Use:               "wwctl COMMAND [OPTIONS]",
 		Short:             "Warewulf Control",
 		Long:              "Control interface to the Warewulf Cluster Provisioning System.",
@@ -32,6 +34,9 @@ var (
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verboseArg, "verbose", "v", false, "Run with increased verbosity.")
 	rootCmd.PersistentFlags().BoolVarP(&DebugFlag, "debug", "d", false, "Run with debugging messages enabled.")
+
+        rootCmd.SetUsageTemplate(help.UsageTemplate)
+        rootCmd.SetHelpTemplate(help.HelpTemplate)
 
 	rootCmd.AddCommand(overlay.GetCommand())
 	rootCmd.AddCommand(container.GetCommand())
@@ -60,11 +65,14 @@ func rootPersistentPreRunE(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// GenBashCompletionFile
+// External functions not used by the wwctl command line
+
+// Generate Bash completion file
 func GenBashCompletion(w io.Writer) error {
 	return rootCmd.GenBashCompletion(w)
 }
 
+// Generate man pages
 func GenManTree(fileName string) error {
 	header := &doc.GenManHeader{
 		Title:   "WWCTL",

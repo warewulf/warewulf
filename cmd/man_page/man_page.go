@@ -1,4 +1,5 @@
-// usage: ./bash_completion <FILE>
+// Generate man pages for wwctl command.
+// usage: ./man_page <DIRECTORY>
 package main
 
 import (
