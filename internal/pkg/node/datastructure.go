@@ -102,6 +102,7 @@ type NetDevEntry struct {
 	Gateway Entry `yaml:"gateway,omitempty"`
 }
 
+//nolint
 func newConfig() int {
 	//TODO: Add interface option to call this function
 	//TODO: Also, validate that this fuction works as expected
