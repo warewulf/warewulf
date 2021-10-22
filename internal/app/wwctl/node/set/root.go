@@ -105,13 +105,13 @@ func init() {
 	}); err != nil {
 		log.Println(err)
 	}
-	baseCmd.PersistentFlags().StringVar(&SetIpmiIpaddr, "ipmi", "", "Set the node's IPMI IP address")
+	baseCmd.PersistentFlags().StringVar(&SetIpmiIpaddr, "ipmiaddr", "", "Set the node's IPMI IP address")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiNetmask, "ipminetmask", "", "Set the node's IPMI netmask")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiPort, "ipmiport", "", "Set the node's IPMI port")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiGateway, "ipmigateway", "", "Set the node's IPMI gateway")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiUsername, "ipmiuser", "", "Set the node's IPMI username")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiPassword, "ipmipass", "", "Set the node's IPMI password")
-	baseCmd.PersistentFlags().StringVar(&SetIpmiInterface, "ipmiinterface", "", "Set the node's IPMI interface (defaults to 'lan' if empty)")
+	baseCmd.PersistentFlags().StringVar(&SetIpmiInterface, "ipmiinterface", "", "Set the node's IPMI interface (defaults: 'lan')")
 	baseCmd.PersistentFlags().StringSliceVar(&SetAddProfile, "addprofile", []string{}, "Add Profile(s) to node")
 	baseCmd.PersistentFlags().StringSliceVar(&SetDelProfile, "delprofile", []string{}, "Remove Profile(s) to node")
 	baseCmd.PersistentFlags().StringVarP(&SetProfile, "profile", "P", "", "Set the node's profile members (comma separated)")
