@@ -102,6 +102,7 @@ func ListKernels() ([]string, error) {
 func Build(kernelVersion string, kernelName string, root string) (string, error) {
 	kernelImage := path.Join(root, "/boot/vmlinuz-"+kernelVersion)
 	kernelDrivers := path.Join(root, "/lib/modules/"+kernelVersion)
+  kernelDriversRelative := path.Join("/lib/modules/"+kernelVersion)
 	kernelDestination := KernelImage(kernelName)
 	driversDestination := KmodsImage(kernelName)
 	versionDestination := KernelVersion(kernelName)
@@ -177,7 +178,7 @@ func Build(kernelVersion string, kernelName string, root string) (string, error)
 			wwlog.Printf(wwlog.VERBOSE, "Using PIGZ to compress the container: %s\n", compressor)
 		}
 
-		cmd := fmt.Sprintf("cd /; find .%s | cpio --quiet -o -H newc | %s -c > \"%s\"", kernelDrivers, compressor, driversDestination)
+		cmd := fmt.Sprintf("cd %s; find .%s | cpio --quiet -o -H newc | %s -c > \"%s\"", root, kernelDriversRelative, compressor, driversDestination)
 
 		wwlog.Printf(wwlog.DEBUG, "RUNNING: %s\n", cmd)
 		err = exec.Command("/bin/sh", "-c", cmd).Run()

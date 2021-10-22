@@ -18,7 +18,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	// Checking if container flag was set, then overwriting OptRoot
 	kernelVersion := args[0]
 	kernelName := kernelVersion
-  if len(args) > 1 {
+	if len(args) > 1 {
 		kernelName = args[1]
 	}
 	if OptContainer != "" {
