@@ -161,11 +161,14 @@ func buildOverlay(nodeList []node.NodeInfo, overlayType string) error {
 			var nd node.NetDevs
 			t.NetDevs[devname] = &nd
 			t.NetDevs[devname].Name = devname
+			t.NetDevs[devname].Device = netdev.Device.Get()
 			t.NetDevs[devname].Hwaddr = netdev.Hwaddr.Get()
 			t.NetDevs[devname].Ipaddr = netdev.Ipaddr.Get()
 			t.NetDevs[devname].Netmask = netdev.Netmask.Get()
 			t.NetDevs[devname].Gateway = netdev.Gateway.Get()
 			t.NetDevs[devname].Type = netdev.Type.Get()
+			t.NetDevs[devname].OnBoot = netdev.OnBoot.GetB()
+
 			mask := net.IPMask(net.ParseIP(netdev.Netmask.Get()).To4())
 			ipaddr := net.ParseIP(netdev.Ipaddr.Get()).To4()
 			netaddr := net.IPNet{IP: ipaddr, Mask: mask}

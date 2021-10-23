@@ -1,4 +1,4 @@
-DEVICE={{.NetDevs.default.Device}}
+DEVICE={{$.NetDevs.default.Device}}
 NAME=default
 BOOTPROTO=static
 DEVTIMEOUT=10
@@ -6,8 +6,8 @@ IPADDR={{$.NetDevs.default.Ipaddr}}
 NETMASK={{$.NetDevs.default.Netmask}}
 GATEWAY={{$.NetDevs.default.Gateway}}
 HWADDR={{$.NetDevs.default.Hwaddr}}
-{{if eq $.NetDevs.default.OnBoot "true"}}
+{{- if $.NetDevs.default.OnBoot}}
 ONBOOT=yes
-{{else}}
+{{- else}}
 ONBOOT=no
-{{end}}
+{{- end}}
