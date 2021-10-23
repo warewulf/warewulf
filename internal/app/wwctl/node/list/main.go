@@ -8,6 +8,7 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/hpcng/warewulf/pkg/hostlist"
 	"github.com/spf13/cobra"
 )
 
@@ -25,6 +26,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.ERROR, "Could not get node list: %s\n", err)
 		os.Exit(1)
 	}
+
+	args = hostlist.Expand(args)
 
 	if ShowAll {
 		for _, node := range node.FilterByName(nodes, args) {
