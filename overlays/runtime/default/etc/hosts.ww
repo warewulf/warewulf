@@ -5,7 +5,7 @@
 {{range $node := $.AllNodes}}
 # Entry for {{$node.Id.Get}}
 {{- range $devname, $netdev := $node.NetDevs}}
-{{- if $netdev.Default}}
+{{- if eq $netdev.Name.Get "default"}}
 {{$netdev.Ipaddr.Get}} {{$node.Id.Get}}
 {{- else}}
 {{$netdev.Ipaddr.Get}} {{$node.Id.Get}}-{{$devname}}

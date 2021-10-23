@@ -42,8 +42,10 @@ type NodeConf struct {
 }
 
 type NetDevs struct {
+	Name    string
 	Type    string `yaml:"type,omitempty"`
-	Default bool   `yaml:"default"`
+	OnBoot  bool   `yaml:"onboot"`
+	Device  string `yaml:"device"`
 	Hwaddr  string
 	Ipaddr  string
 	IpCIDR  string
@@ -93,8 +95,10 @@ type NodeInfo struct {
 }
 
 type NetDevEntry struct {
+	Name    Entry
 	Type    Entry `yaml:"type,omitempty"`
-	Default Entry `yaml:"default"`
+	OnBoot  Entry `yaml:"onboot"`
+	Device  Entry `yaml:"device"`
 	Hwaddr  Entry
 	Ipaddr  Entry
 	IpCIDR  Entry

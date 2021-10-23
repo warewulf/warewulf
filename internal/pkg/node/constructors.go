@@ -90,12 +90,14 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.NetDevs[devname] = &netdev
 			}
 
+			n.NetDevs[devname].Name.Set(devname)
+			n.NetDevs[devname].Device.Set(netdev.Device)
 			n.NetDevs[devname].Ipaddr.Set(netdev.Ipaddr)
 			n.NetDevs[devname].Netmask.Set(netdev.Netmask)
 			n.NetDevs[devname].Hwaddr.Set(netdev.Hwaddr)
 			n.NetDevs[devname].Gateway.Set(netdev.Gateway)
 			n.NetDevs[devname].Type.Set(netdev.Type)
-			n.NetDevs[devname].Default.SetB(netdev.Default)
+			n.NetDevs[devname].OnBoot.SetB(netdev.OnBoot)
 		}
 
 		for keyname, key := range node.Keys {
@@ -142,12 +144,13 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				}
 				wwlog.Printf(wwlog.DEBUG, "Updating profile (%s) netdev: %s\n", p, devname)
 
+				n.NetDevs[devname].Device.SetAlt(netdev.Device, p)
 				n.NetDevs[devname].Ipaddr.SetAlt(netdev.Ipaddr, p)
 				n.NetDevs[devname].Netmask.SetAlt(netdev.Netmask, p)
 				n.NetDevs[devname].Hwaddr.SetAlt(netdev.Hwaddr, p)
 				n.NetDevs[devname].Gateway.SetAlt(netdev.Gateway, p)
 				n.NetDevs[devname].Type.SetAlt(netdev.Type, p)
-				n.NetDevs[devname].Default.SetAltB(netdev.Default, p)
+				n.NetDevs[devname].OnBoot.SetAltB(netdev.OnBoot, p)
 			}
 
 			for keyname, key := range config.NodeProfiles[p].Keys {
@@ -213,12 +216,14 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 
 			wwlog.Printf(wwlog.DEBUG, "Updating profile netdev: %s\n", devname)
 
+			p.NetDevs[devname].Name.Set(devname)
+			p.NetDevs[devname].Device.Set(netdev.Device)
 			p.NetDevs[devname].Ipaddr.Set(netdev.Ipaddr)
 			p.NetDevs[devname].Netmask.Set(netdev.Netmask)
 			p.NetDevs[devname].Hwaddr.Set(netdev.Hwaddr)
 			p.NetDevs[devname].Gateway.Set(netdev.Gateway)
 			p.NetDevs[devname].Type.Set(netdev.Type)
-			p.NetDevs[devname].Default.SetB(netdev.Default)
+			p.NetDevs[devname].OnBoot.SetB(netdev.OnBoot)
 		}
 
 		for keyname, key := range profile.Keys {

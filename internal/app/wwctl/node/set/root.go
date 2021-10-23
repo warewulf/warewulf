@@ -36,14 +36,15 @@ var (
 	SetContainer      string
 	SetKernel         string
 	SetKernelArgs     string
+	SetNetName        string
 	SetNetDev         string
 	SetIpaddr         string
 	SetNetmask        string
 	SetGateway        string
 	SetHwaddr         string
 	SetType           string
+	SetNetOnBoot      string
 	SetNetDevDel      bool
-	SetNetDevDefault  bool
 	SetClusterName    string
 	SetIpxe           string
 	SetRuntimeOverlay string
@@ -126,14 +127,16 @@ func init() {
 	}); err != nil {
 		log.Println(err)
 	}
-	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdev", "N", "", "Define the network device to configure")
+	baseCmd.PersistentFlags().StringVarP(&SetNetName, "netname", "n", "default", "Define the network name to configure")
+	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdev", "N", "", "Define the network device")
 	baseCmd.PersistentFlags().StringVarP(&SetIpaddr, "ipaddr", "I", "", "Set the node's network device IP address")
 	baseCmd.PersistentFlags().StringVarP(&SetNetmask, "netmask", "M", "", "Set the node's network device netmask")
 	baseCmd.PersistentFlags().StringVarP(&SetGateway, "gateway", "G", "", "Set the node's network device gateway")
 	baseCmd.PersistentFlags().StringVarP(&SetHwaddr, "hwaddr", "H", "", "Set the node's network device HW address")
 	baseCmd.PersistentFlags().StringVarP(&SetType, "type", "T", "", "Set the node's network device type")
+	baseCmd.PersistentFlags().StringVar(&SetNetOnBoot, "onboot", "yes", "Enable/disable device (yes/no)")
+
 	baseCmd.PersistentFlags().BoolVar(&SetNetDevDel, "netdel", false, "Delete the node's network device")
-	baseCmd.PersistentFlags().BoolVar(&SetNetDevDefault, "netdefault", false, "Set this network to be default")
 
 	baseCmd.PersistentFlags().StringVarP(&SetKey, "key", "k", "", "Define custom key")
 	baseCmd.PersistentFlags().BoolVar(&SetKeyDel, "keydel", false, "Delete custom key")

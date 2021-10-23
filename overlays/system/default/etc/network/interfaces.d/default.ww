@@ -1,0 +1,7 @@
+auto {{.NetDevs.default.Device}}
+allow-hotplug {{.NetDevs.default.Device}}
+iface {{.NetDevs.default.Device}} inet static
+  address {{.NetDevs.default.Ipaddr}}
+  netmask {{.NetDevs.default.Netmask}}
+  gateway {{.NetDevs.default.Gateway}}
+  up ifmetric {{.NetDevs.default.Device}} 30

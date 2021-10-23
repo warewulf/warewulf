@@ -84,12 +84,13 @@ func (config *nodeYaml) NodeUpdate(node NodeInfo) error {
 		var newdev NetDevs
 		config.Nodes[nodeID].NetDevs[devname] = &newdev
 
+		config.Nodes[nodeID].NetDevs[devname].Device = netdev.Device.GetReal()
 		config.Nodes[nodeID].NetDevs[devname].Ipaddr = netdev.Ipaddr.GetReal()
 		config.Nodes[nodeID].NetDevs[devname].Netmask = netdev.Netmask.GetReal()
 		config.Nodes[nodeID].NetDevs[devname].Hwaddr = netdev.Hwaddr.GetReal()
 		config.Nodes[nodeID].NetDevs[devname].Gateway = netdev.Gateway.GetReal()
 		config.Nodes[nodeID].NetDevs[devname].Type = netdev.Type.GetReal()
-		config.Nodes[nodeID].NetDevs[devname].Default = netdev.Default.GetRealB()
+		config.Nodes[nodeID].NetDevs[devname].OnBoot = netdev.OnBoot.GetRealB()
 	}
 
 	for keyname, key := range node.Keys {
@@ -169,12 +170,13 @@ func (config *nodeYaml) ProfileUpdate(profile NodeInfo) error {
 		var newdev NetDevs
 		config.NodeProfiles[profileID].NetDevs[devname] = &newdev
 
+		config.NodeProfiles[profileID].NetDevs[devname].Device = netdev.Device.GetReal()
 		config.NodeProfiles[profileID].NetDevs[devname].Ipaddr = netdev.Ipaddr.GetReal()
 		config.NodeProfiles[profileID].NetDevs[devname].Netmask = netdev.Netmask.GetReal()
 		config.NodeProfiles[profileID].NetDevs[devname].Hwaddr = netdev.Hwaddr.GetReal()
 		config.NodeProfiles[profileID].NetDevs[devname].Gateway = netdev.Gateway.GetReal()
 		config.NodeProfiles[profileID].NetDevs[devname].Type = netdev.Type.GetReal()
-		config.NodeProfiles[profileID].NetDevs[devname].Default = netdev.Default.GetRealB()
+		config.NodeProfiles[profileID].NetDevs[devname].OnBoot = netdev.OnBoot.GetRealB()
 	}
 
 	for keyname, key := range profile.Keys {

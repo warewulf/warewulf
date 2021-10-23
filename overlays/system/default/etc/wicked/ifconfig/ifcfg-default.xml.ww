@@ -1,5 +1,5 @@
 <interface origin="static generated warewulf config">
-  <name>eth0</name>
+  <name>{{.NetDevs.default.Device}}</name>
   <control>
     <mode>boot</mode>
   </control>
@@ -11,11 +11,11 @@
   </ipv4>
   <ipv4:static>
     <address>
-      <local>{{$.NetDevs.eth0.IpCIDR}}</local>
+      <local>{{$.NetDevs.default.IpCIDR}}</local>
     </address>
     <route>
       <nexthop>
-        <gateway>{{$.NetDevs.eth0.Gateway}}</gateway>
+        <gateway>{{$.NetDevs.default.Gateway}}</gateway>
       </nexthop>
     </route>
   </ipv4:static>
