@@ -17,6 +17,7 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var err error
+	var count uint
 	var SetProfiles []string
 
 	nodeDB, err := node.New()
@@ -100,8 +101,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		if SetIpmiIpaddr != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI IP address to: %s\n", n.Id.Get(), SetIpmiIpaddr)
-			n.IpmiIpaddr.Set(SetIpmiIpaddr)
+			NewIpaddr := util.IncrementIPv4(SetIpmiIpaddr, count)
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI IP address to: %s\n", n.Id.Get(), NewIpaddr)
+			n.IpmiIpaddr.Set(NewIpaddr)
 		}
 
 		if SetIpmiNetmask != "" {
@@ -189,8 +191,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				n.NetDevs[SetNetName] = &nd
 			}
 
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Ipaddr to: %s\n", n.Id.Get(), SetNetName, SetIpaddr)
-			n.NetDevs[SetNetName].Ipaddr.Set(SetIpaddr)
+			NewIpaddr := util.IncrementIPv4(SetIpaddr, count)
+
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Ipaddr to: %s\n", n.Id.Get(), SetNetName, NewIpaddr)
+			n.NetDevs[SetNetName].Ipaddr.Set(NewIpaddr)
 		}
 
 		if SetNetmask != "" {
@@ -322,6 +326,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			os.Exit(1)
 		}
+
+		count++
 	}
 
 	if SetYes {
