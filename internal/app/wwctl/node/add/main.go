@@ -49,10 +49,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			n.NetDevs[SetNetName].Device.Set(SetNetDev)
 			n.NetDevs[SetNetName].OnBoot.SetB(true)
 
-			//			err := nodeDB.NodeUpdate(n)
-			//			if err != nil {
-			//				return errors.Wrap(err, "failed to update nodedb")
-			//			}
 		}
 
 		if SetIpaddr != "" {
