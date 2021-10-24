@@ -106,7 +106,7 @@ type NetDevEntry struct {
 func init() {
 	//TODO: Check to make sure nodes.conf is found
 	if !util.IsFile(ConfigFile) {
-		c, err := os.OpenFile(ConfigFile, os.O_RDWR|os.O_CREATE, 0644)
+		c, err := os.OpenFile(ConfigFile, os.O_RDWR|os.O_CREATE, 0640)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Could not create new configuration file: %s\n", err)
 			// just return silently, as init is also called for bash_completion
