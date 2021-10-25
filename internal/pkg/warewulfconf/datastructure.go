@@ -22,6 +22,7 @@ type ControllerConf struct {
 type WarewulfConf struct {
 	Port              int  `yaml:"port"`
 	Secure            bool `yaml:"secure"`
+	DisableInfo       bool `yaml:"disable info"`
 	UpdateInterval    int  `yaml:"update interval"`
 	AutobuildOverlays bool `yaml:"autobuild overlays"`
 	Syslog            bool `yaml:"syslog"`

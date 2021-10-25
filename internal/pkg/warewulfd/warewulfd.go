@@ -34,16 +34,19 @@ func RunServer() error {
 		fmt.Printf("ERROR: Could not load database: %s\n", err)
 	}
 
+	conf, err := warewulfconf.New()
+	if err != nil {
+		return errors.Wrap(err, "could not get Warewulf configuration")
+	}
+
 	http.HandleFunc("/ipxe/", IpxeSend)
 	http.HandleFunc("/kernel/", KernelSend)
 	http.HandleFunc("/kmods/", KmodsSend)
 	http.HandleFunc("/container/", ContainerSend)
 	http.HandleFunc("/overlay-system/", SystemOverlaySend)
 	http.HandleFunc("/overlay-runtime/", RuntimeOverlaySend)
-
-	conf, err := warewulfconf.New()
-	if err != nil {
-		return errors.Wrap(err, "could not get Warewulf configuration")
+	if !conf.Warewulf.DisableInfo {
+		http.HandleFunc("/info/", InfoSend)
 	}
 
 	daemonPort := conf.Warewulf.Port
