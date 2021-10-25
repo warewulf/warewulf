@@ -45,7 +45,14 @@ type TftpConf struct {
 type NfsConf struct {
 	Enabled     bool     `yaml:"enabled"`
 	Exports     []string `yaml:"exports"`
+	ExportsExtended []*NfsExportConf `yaml:"exports extended"`
 	SystemdName string   `yaml:"systemd name"`
+}
+
+type NfsExportConf struct {
+	Path     string  `yaml:"path"`
+	Options  string  `yaml:"options"`
+	Mount    bool    `yaml:"mount"`
 }
 
 func init() {

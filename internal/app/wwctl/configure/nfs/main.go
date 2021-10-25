@@ -63,6 +63,13 @@ func Configure(show bool) error {
 				fmt.Fprintf(fstab, "%s:%s %s nfs defaults 0 0\n", controller.Ipaddr, export, export)
 			}
 
+			for _, export := range controller.Nfs.ExportsExtended {
+				fmt.Fprintf(exports, "%s %s/%s(%s)\n", export.Path, controller.Network, controller.Netmask, export.Options)
+				if export.Mount {
+					fmt.Fprintf(fstab, "%s:%s %s nfs defaults 0 0\n", controller.Ipaddr, export.Path, export.Path)
+				}
+			}
+
 			fmt.Printf("Enabling and restarting the NFS services\n")
 			if controller.Nfs.SystemdName == "" {
 				err := util.SystemdStart("nfs-server")
@@ -81,12 +88,17 @@ func Configure(show bool) error {
 		for _, export := range controller.Nfs.Exports {
 			fmt.Printf("%s %s/%s\n", export, controller.Network, controller.Netmask)
 		}
+		for _, export := range controller.Nfs.ExportsExtended {
+			fmt.Printf("%s %s/%s\n", export.Path, controller.Network, controller.Netmask)
+		}
 		fmt.Printf("\n")
 		fmt.Printf("SYSTEM OVERLAY: default/etc/fstab:\n")
 		for _, export := range controller.Nfs.Exports {
 			fmt.Printf("%s:%s %s nfs defaults 0 0\n", controller.Ipaddr, export, export)
 		}
-
+		for _, export := range controller.Nfs.ExportsExtended {
+			fmt.Printf("%s:%s %s nfs defaults 0 0\n", controller.Ipaddr, export.Path, export.Path)
+		}
 	}
 
 	return nil
