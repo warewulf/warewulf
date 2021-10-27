@@ -3,7 +3,7 @@
 Name: warewulf
 Summary: A suite of tools for bare metal provisioning of containers
 Version: @VERSION@
-Release: 1%{?dist}
+Release: @RELEASE@%{?dist}
 License: BSD
 Source: https://github.com/hpcng/warewulf/archive/refs/tags/%{name}-%{version}.tar.gz
 ExclusiveOS: linux
