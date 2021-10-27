@@ -35,8 +35,9 @@ func InfoSend(w http.ResponseWriter, req *http.Request) {
 		stdout = []byte(err.Error() + "\n")
 	}
 
-	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "text/plain")
-	w.Write(stdout)
-	return
+	err := w.Write(stdout)
+	if err != nil {
+		daemonLogf("ERROR: %s\n", err)
+	}
 }
