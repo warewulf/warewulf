@@ -21,7 +21,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	overlayName := args[1]
 
 	if len(args) == 3 {
-		fileName = args[2]
+        fileName := args[2]
 	}
 
 	if overlayKind != "system" && overlayKind != "runtime" {
