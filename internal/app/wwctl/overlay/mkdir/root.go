@@ -6,7 +6,7 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "mkdir [flags] <overlay kind> <overlay name> <directory path>",
+		Use:   "mkdir [flags] (overlay kind) (overlay name) (directory path)",
 		Short: "Create a new directory within an Overlay",
 		Long:  "This command will allow you to create a new file within a given Warewulf overlay.",
 		RunE:  CobraRunE,
