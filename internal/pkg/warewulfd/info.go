@@ -36,7 +36,7 @@ func InfoSend(w http.ResponseWriter, req *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "text/plain")
-	err := w.Write(stdout)
+	_, err := w.Write(stdout)
 	if err != nil {
 		daemonLogf("ERROR: %s\n", err)
 	}
