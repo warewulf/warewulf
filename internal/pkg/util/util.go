@@ -27,9 +27,14 @@ func DirModTime(path string) (time.Time, error) {
 			return err
 		}
 
-		cur := info.ModTime()
+		fi, err := os.Stat(path)
+		if err != nil {
+			return err
+		}
+		stat := fi.Sys().(*syscall.Stat_t)
+		cur := time.Unix(int64(stat.Ctim.Sec), int64(stat.Ctim.Nsec))
 		if cur.After(lastTime) {
-			lastTime = info.ModTime()
+			lastTime = time.Unix(int64(stat.Ctim.Sec), int64(stat.Ctim.Nsec))
 		}
 
 		return nil
