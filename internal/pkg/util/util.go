@@ -29,7 +29,7 @@ func DirModTime(path string) (time.Time, error) {
 
 		fi, err := os.Stat(path)
 		if err != nil {
-			return err
+			return nil
 		}
 		stat := fi.Sys().(*syscall.Stat_t)
 		cur := time.Unix(int64(stat.Ctim.Sec), int64(stat.Ctim.Nsec))
