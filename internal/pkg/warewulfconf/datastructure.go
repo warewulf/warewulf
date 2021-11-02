@@ -25,6 +25,7 @@ type WarewulfConf struct {
 	UpdateInterval    int  `yaml:"update interval"`
 	AutobuildOverlays bool `yaml:"autobuild overlays"`
 	Syslog            bool `yaml:"syslog"`
+	MacIdentify       bool `yaml:"MAC identification"`
 }
 
 type DhcpConf struct {

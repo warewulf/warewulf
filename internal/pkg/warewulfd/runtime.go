@@ -1,18 +1,16 @@
 package warewulfd
 
 import (
-	"net/http"
-	"strconv"
-	"strings"
-
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	"net/http"
 )
 
 func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
+
 	conf, err := warewulfconf.New()
 	if err != nil {
 		daemonLogf("ERROR: Could not read Warewulf configuration file: %s\n", err)
@@ -27,32 +25,43 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	remote := strings.Split(req.RemoteAddr, ":")
-	port, err := strconv.Atoi(remote[1])
+	// save way to obtain IP and Port, for IPv4 and IPv6
+	host, port, err := getHostPort(w, req)
 	if err != nil {
-		daemonLogf("ERROR: Could not convert port to integer: %s\n", remote[1])
-		w.WriteHeader(503)
-		return
-	}
-
-	if err != nil {
-		daemonLogf("ERROR: Could not load configuration file: %s\n", err)
+		daemonLogf("ERROR: failed to obtain host and port: %s\n", err)
 		return
 	}
 
 	if conf.Warewulf.Secure {
 		if port >= 1024 {
-			daemonLogf("DENIED: Connection coming from non-privledged port: %s\n", req.RemoteAddr)
+			daemonLogf("DENIED: Connection coming from non-privileged port: %s\n", req.RemoteAddr)
 			w.WriteHeader(401)
 			return
 		}
 	}
 
-	n, err := nodes.FindByIpaddr(remote[0])
-	if err != nil {
-		daemonLogf("WARNING: Could not find node by IP address: %s\n", remote[0])
-		w.WriteHeader(404)
-		return
+	var n node.NodeInfo
+	// default to IP based host identification
+	if !conf.Warewulf.MacIdentify {
+		n, err = nodes.FindByIpaddr(host)
+		if err != nil {
+			daemonLogf("WARNING: Could not find node by IP address: %s\n", host)
+			w.WriteHeader(404)
+			return
+		}
+	} else {
+		hwAddresses, ok := req.URL.Query()["hwAddr"]
+		if !ok || len(hwAddresses[0]) < 1 {
+			daemonLogf("ERROR: Url Param 'hwAddr' is missing")
+			return
+		}
+		for _, hwa := range hwAddresses {
+			n, err = nodes.FindByHwaddr(hwa)
+			if n.Id.Defined() {
+				daemonLogf("DEBUG: nodeId: %s, HardwareAddr: %s\n", n.Id.Get(), hwa)
+				break
+			}
+		}
 	}
 
 	if !n.Id.Defined() {
@@ -73,7 +82,7 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 			}
 		}
 
-		err := sendFile(w, fileName, n.Id.Get())
+		http.ServeFile(w, req, fileName)
 		if err != nil {
 			daemonLogf("ERROR: %s\n", err)
 		}
