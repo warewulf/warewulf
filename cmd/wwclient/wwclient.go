@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"time"
@@ -43,6 +44,7 @@ func main() {
 		wwlog.Printf(wwlog.ERROR, "Could not get Warewulf configuration: %s\n", err)
 		os.Exit(1)
 	}
+	fmt.Printf("conf: \n %v\n", conf)
 
 	localTCPAddr := net.TCPAddr{}
 	if conf.Warewulf.Secure {
@@ -67,6 +69,31 @@ func main() {
 		},
 	}
 
+	// build the URL
+	base := fmt.Sprintf("http://%s:%d", conf.Ipaddr, conf.Warewulf.Port)
+	daemonURL, err := url.Parse(base)
+	if err != nil {
+		return
+	}
+	daemonURL.Path += "overlay-runtime"
+	// Query params
+	params := url.Values{}
+
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		log.Printf("failed to obtain network interfaces:\n")
+	}
+	for _, i := range interfaces {
+		hwAddr := i.HardwareAddr.String()
+		if len(hwAddr) == 0 {
+			continue
+		}
+		params.Add("hwAddr", hwAddr)
+	}
+
+	daemonURL.RawQuery = params.Encode()
+	log.Printf("Encoded URL is %q\n", daemonURL.String())
+
 	for {
 		var resp *http.Response
 		counter := 0
@@ -74,8 +101,8 @@ func main() {
 		for {
 			var err error
 
-			getString := fmt.Sprintf("http://%s:%d/overlay-runtime", conf.Ipaddr, conf.Warewulf.Port)
-			resp, err = webclient.Get(getString)
+			resp, err = webclient.Get(daemonURL.String())
+
 			if err == nil {
 				break
 			} else {
@@ -87,7 +114,6 @@ func main() {
 				}
 				counter++
 			}
-
 			time.Sleep(1000 * time.Millisecond)
 		}
 
