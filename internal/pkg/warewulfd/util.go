@@ -89,7 +89,7 @@ func sendFile(w http.ResponseWriter, filename string, sendto string) error {
 	defer func(fd *os.File) {
 		err := fd.Close()
 		if err != nil {
-
+            daemonLogf("failed to close file: %s", err)
 		}
 	}(fd)
 
