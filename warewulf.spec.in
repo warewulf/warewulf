@@ -5,7 +5,7 @@
 Name: warewulf
 Summary: A provisioning system for large clusters of bare metal and/or virtual systems
 Version: @VERSION@
-Release: 1
+Release: 1%{?dist}
 License: BSD-3-Clause
 URL:     https://github.com/hpcng/warewulf
 Source:  https://github.com/hpcng/warewulf/archive/refs/tags/v%{version}.tar.gz
