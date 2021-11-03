@@ -24,8 +24,10 @@ func Test_getHostPort(t *testing.T) {
 	}{
 		{"IPv4", args{w, req}, "10.0.0.1:987", "10.0.0.1", 987, false},
 		{"IPv4noPort", args{w, req}, "10.0.0.1", "", 0, true},
+		{"IPv4noInt", args{w, req}, "10.0.0.1:foo", "10.0.0.1", 0, true},
 		{"IPv6", args{w, req}, "[::ffff:192.0.2.128]:8080", "::ffff:192.0.2.128", 8080, false},
 		{"IPv6noBrackets", args{w, req}, "::ffff:192.0.2.128:8080", "", 0, true},
+		{"IPv6", args{w, req}, "[::ffff:192.0.2.128]:foo", "::ffff:192.0.2.128", 0, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
