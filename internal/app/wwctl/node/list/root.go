@@ -10,10 +10,11 @@ var (
 		RunE:    CobraRunE,
 		Aliases: []string{"ls"},
 	}
-	ShowNet  bool
-	ShowIpmi bool
-	ShowAll  bool
-	ShowLong bool
+	ShowNet      bool
+	ShowIpmi     bool
+	ShowAll      bool
+	ShowLong     bool
+	ShowLastSeen bool
 )
 
 func init() {
@@ -21,6 +22,7 @@ func init() {
 	baseCmd.PersistentFlags().BoolVarP(&ShowIpmi, "ipmi", "i", false, "Show node IPMI configurations")
 	baseCmd.PersistentFlags().BoolVarP(&ShowAll, "all", "a", false, "Show all node configurations")
 	baseCmd.PersistentFlags().BoolVarP(&ShowLong, "long", "l", false, "Show long or wide format")
+	baseCmd.PersistentFlags().BoolVarP(&ShowLastSeen, "lastseen", "L", false, "Show last seen")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

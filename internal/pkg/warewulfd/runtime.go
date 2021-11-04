@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -61,6 +62,13 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 		return
 	} else {
 		daemonLogf("REQ:   %15s: %s\n", n.Id.Get(), req.URL.Path)
+		timestamp := strconv.FormatInt(time.Now().UTC().Unix(), 10)
+		nodes.Nodes[n.Id.Get()].LastSeen = timestamp
+		err := nodes.Persist()
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	}
 
 	if n.RuntimeOverlay.Defined() {

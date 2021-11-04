@@ -5,6 +5,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -39,6 +40,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Profiles", "--", strings.Join(node.Profiles, ","))
 
 			fmt.Printf("%-20s %-18s %-12s %t\n", node.Id.Get(), "Discoverable", node.Discoverable.Source(), node.Discoverable.PrintB())
+
+			//fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "last seen", node.LastSeen.Source(), node.LastSeen.Print())
 
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Container", node.ContainerName.Source(), node.ContainerName.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Kernel", node.KernelVersion.Source(), node.KernelVersion.Print())
@@ -97,6 +100,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 		for _, node := range node.FilterByName(nodes, args) {
 			fmt.Printf("%-22s %-26s %-35s %s\n", node.Id.Get(), node.KernelVersion.Print(), node.ContainerName.Print(), node.SystemOverlay.Print()+"/"+node.RuntimeOverlay.Print())
+		}
+	} else if ShowLastSeen {
+		now := time.Now().UTC().Unix()
+		fmt.Printf("%-22s %s\n", "NODE NAME", "last seen (s)")
+		for _, node := range node.SortByLastSeen(nodes) {
+			timeElapsed := now - node.LastSeen.GetInt64()
+			fmt.Printf("%-22s %d\n", node.Id.Get(), timeElapsed)
 		}
 
 	} else {
