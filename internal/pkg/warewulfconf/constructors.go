@@ -1,19 +1,18 @@
 package warewulfconf
 
 import (
-	"fmt"
-	"io/ioutil"
-	"net"
-
-	"github.com/brotherpowers/ipsubnet"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"gopkg.in/yaml.v2"
+    "fmt"
+    "github.com/brotherpowers/ipsubnet"
+    "github.com/hpcng/warewulf/internal/pkg/util"
+    "github.com/hpcng/warewulf/internal/pkg/wwlog"
+    "gopkg.in/yaml.v2"
+    "io/ioutil"
+    "net"
 )
 
 var singleton ControllerConf
 
-func New() (ControllerConf, error) {
-	var ret ControllerConf
+func New() (ret ControllerConf, err error) {
 
 	if (ControllerConf{}) == singleton {
 		wwlog.Printf(wwlog.DEBUG, "Opening Warewulf configuration file: %s\n", ConfigFile)
@@ -24,10 +23,9 @@ func New() (ControllerConf, error) {
 		}
 
 		wwlog.Printf(wwlog.DEBUG, "Unmarshaling the Warewulf configuration\n")
-		err = yaml.Unmarshal(data, &ret)
-		if err != nil {
-			return ret, err
-		}
+		if err = yaml.Unmarshal(data, &ret); err != nil {
+		    return ret, err
+        }
 
 		if ret.Ipaddr == "" {
 			wwlog.Printf(wwlog.WARN, "IP address is not configured in warewulfd.conf\n")
@@ -37,6 +35,12 @@ func New() (ControllerConf, error) {
 		}
 
 		if ret.Network == "" {
+            if ip := net.ParseIP(ret.Ipaddr); ip == nil {
+                if ret.Ipaddr, err = util.HostnameToV4(ret.Ipaddr); err != nil {
+                    return ret, err
+                }
+            }
+
 			mask := net.IPMask(net.ParseIP(ret.Netmask).To4())
 			size, _ := mask.Size()
 

@@ -382,3 +382,19 @@ func IncrementIPv4(start string, inc uint) string {
 	ipv4_new := net.IPv4(v4_o0, v4_o1, v4_o2, v4_o3)
 	return ipv4_new.String()
 }
+
+func HostnameToV4(hostname string) (ipv4 string, err error) {
+   if len(hostname) == 0 {
+        return ipv4, fmt.Errorf("hostname cannot be empty")
+    }
+    ips, err := net.LookupIP(hostname)
+    if err != nil {
+        return ipv4, err
+    }
+    for _, ip := range ips {
+        if v4 := ip.To4(); v4 != nil {
+            return v4.String(), nil
+        }
+    }
+    return ipv4, fmt.Errorf("could not get ipv4 from hostname")
+}
