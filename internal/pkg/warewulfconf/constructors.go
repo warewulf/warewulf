@@ -22,23 +22,40 @@ func New() (ret ControllerConf, err error) {
 			return ret, err
 		}
 
-		wwlog.Printf(wwlog.DEBUG, "Unmarshaling the Warewulf configuration\n")
+		wwlog.Printf(wwlog.DEBUG, "Unmarshalling the Warewulf configuration\n")
 		if err = yaml.Unmarshal(data, &ret); err != nil {
 		    return ret, err
         }
 
-		if ret.Ipaddr == "" {
+		if ret.Ipaddr == "" && ret.HostBinding == "" {
 			wwlog.Printf(wwlog.WARN, "IP address is not configured in warewulfd.conf\n")
 		}
-		if ret.Netmask == "" {
+		if ret.Netmask == "" && ret.HostBinding == "" {
 			wwlog.Printf(wwlog.WARN, "Netmask is not configured in warewulfd.conf\n")
 		}
 
 		if ret.Network == "" {
-            if ip := net.ParseIP(ret.Ipaddr); ip == nil {
-                if ret.Ipaddr, err = util.HostnameToV4(ret.Ipaddr); err != nil {
+		    var deviceIP string
+		    if ret.HostBinding != "" {
+                if deviceIP, err = util.HostnameToV4(ret.HostBinding); err != nil {
                     return ret, err
                 }
+                if len(ret.Ipaddr)+len(ret.Netmask) > 0 {
+                    if !net.ParseIP(deviceIP).Equal(net.ParseIP(ret.Ipaddr)) {
+                        return ret, fmt.Errorf("IP resolved from device hostname (%s) does not match '%s'", deviceIP, ret.Ipaddr)
+                    }
+                } else {
+                    ret.Ipaddr = net.ParseIP(deviceIP).String()
+                }
+            }
+
+            Addresses, err := util.GetLocalAddresses()
+            if err != nil {
+                return ret, err
+            }
+
+            if _, ok := Addresses[ret.Ipaddr]; !ok {
+                return ret, fmt.Errorf("specified IP could not be found locally")
             }
 
 			mask := net.IPMask(net.ParseIP(ret.Netmask).To4())

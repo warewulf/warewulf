@@ -398,3 +398,23 @@ func HostnameToV4(hostname string) (ipv4 string, err error) {
     }
     return ipv4, fmt.Errorf("could not get ipv4 from hostname")
 }
+
+func GetLocalAddresses() (addresses map[string]struct{}, err error) {
+    addresses = make(map[string]struct{})
+
+    ifaces, err := net.Interfaces()
+    if err != nil {
+        return nil, err
+    }
+    for _, v := range ifaces {
+        addrs, err := v.Addrs()
+        if err != nil {
+            return nil, err
+        }
+        for _, v := range addrs {
+            addresses[v.String()] = struct{}{}
+        }
+    }
+
+    return
+}
