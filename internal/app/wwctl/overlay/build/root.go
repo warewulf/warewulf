@@ -4,7 +4,7 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "build [flags] <overlay kind> <overlay name>",
+		Use:   "build [flags] (overlay kind) (overlay name)",
 		Short: "(Re)build an overlay",
 		Long:  "This command will build a system or runtime overlay.",
 		RunE:  CobraRunE,

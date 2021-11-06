@@ -4,7 +4,7 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "delete [flags] <profile pattern>",
+		Use:   "delete [flags] (profile pattern)",
 		Short: "Delete a node profile",
 		Long:  "This command will delete a node profile.",
 		RunE:  CobraRunE,

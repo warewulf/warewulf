@@ -6,7 +6,7 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "create [flags] <overlay kind> <overlay name>",
+		Use:   "create [flags] (overlay kind) (overlay name)",
 		Short: "Initialize a new Overlay",
 		Long:  "This command will create a new empty overlay.",
 		RunE:  CobraRunE,

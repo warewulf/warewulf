@@ -4,7 +4,7 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "add <profile name>",
+		Use:   "add (profile name)",
 		Short: "Add a new node profile",
 		Long:  "This command will add a new node profile.",
 		RunE:  CobraRunE,
