@@ -38,10 +38,12 @@ func New() (ret ControllerConf, err error) {
 		    var deviceIP string
 		    if ret.HostBinding != "" {
                 if deviceIP, err = util.HostnameToV4(ret.HostBinding); err != nil {
+                    wwlog.Printf(wwlog.WARN, "Error converting HostBinding to ipv4: %v\n", err)
                     return ret, err
                 }
                 if len(ret.Ipaddr)+len(ret.Netmask) > 0 {
                     if !net.ParseIP(deviceIP).Equal(net.ParseIP(ret.Ipaddr)) {
+                        wwlog.Printf(wwlog.WARN, "IP resolved from device hostname (%s) does not match '%s'\n", deviceIP, ret.Ipaddr)
                         return ret, fmt.Errorf("IP resolved from device hostname (%s) does not match '%s'", deviceIP, ret.Ipaddr)
                     }
                 } else {
@@ -51,10 +53,12 @@ func New() (ret ControllerConf, err error) {
 
             Addresses, err := util.GetLocalAddresses()
             if err != nil {
+                wwlog.Printf(wwlog.WARN, "Error getting local addresses: %v\n", err)
                 return ret, err
             }
 
             if _, ok := Addresses[ret.Ipaddr]; !ok {
+                wwlog.Printf(wwlog.WARN, "Specified IP could not be found locally\n")
                 return ret, fmt.Errorf("specified IP could not be found locally")
             }
 
