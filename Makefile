@@ -21,6 +21,8 @@ WW_BUILD_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
 all: vendor wwctl wwclient bash_completion man_page
 
+build: lint test-it vet all
+
 # set the go tools into the tools bin.
 setup_tools: $(GO_TOOLS_BIN) $(GOLANGCI_LINT)
 
@@ -47,6 +49,22 @@ $(TOOLS_DIR):
 lint: setup_tools
 	@echo Running golangci-lint...
 	@$(GOLANGCI_LINT) run --build-tags "$(WW_BUILD_GO_BUILD_TAGS)" --skip-dirs internal/pkg/staticfiles ./...
+
+vet:
+	go vet ./...
+
+test-it:
+	go test -v ./...
+
+# Generate test coverage
+test-cover:     ## Run test coverage and generate html report
+	rm -fr coverage
+	mkdir coverage
+	go list -f '{{if gt (len .TestGoFiles) 0}}"go test -covermode count -coverprofile {{.Name}}.coverprofile -coverpkg ./... {{.ImportPath}}"{{end}}' ./... | xargs -I {} bash -c {}
+	echo "mode: count" > coverage/cover.out
+	grep -h -v "^mode:" *.coverprofile >> "coverage/cover.out"
+	rm *.coverprofile
+	go tool cover -html=coverage/cover.out -o=coverage/cover.html
 
 debian: all 
 
