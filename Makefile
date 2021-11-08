@@ -3,9 +3,7 @@
 VERSION ?= 4.2.0
 RELEASE ?= 1
 
-ifndef SRC
-	SRC := main
-endif
+SRC ?= main
 
 # auto installed tooling
 TOOLS_DIR := .tools
