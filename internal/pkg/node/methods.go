@@ -2,7 +2,6 @@ package node
 
 import (
 	"regexp"
-	"sort"
 	"strconv"
 )
 
@@ -28,39 +27,6 @@ func FilterByName(set []NodeInfo, searchList []string) []NodeInfo {
 		ret = set
 	}
 
-	return ret
-}
-
-/**********
- *
- * Sort
- *
- *********/
-
-type Pair struct {
-	Key   NodeInfo
-	Value int64
-}
-
-type PairList []Pair
-
-func (p PairList) Len() int           { return len(p) }
-func (p PairList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
-func (p PairList) Less(i, j int) bool { return p[i].Value < p[j].Value }
-
-func SortByLastSeen(set []NodeInfo) []NodeInfo {
-	var ret []NodeInfo
-
-	p := make(PairList, len(set))
-	i := 0
-	for _, n := range set {
-		p[i] = Pair{n, n.LastSeen.GetInt64()}
-		i++
-	}
-	sort.Sort(p)
-	for _, k := range p {
-		ret = append(ret, k.Key)
-	}
 	return ret
 }
 

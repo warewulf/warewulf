@@ -40,6 +40,7 @@ func RunServer() error {
 	http.HandleFunc("/container/", ContainerSend)
 	http.HandleFunc("/overlay-system/", SystemOverlaySend)
 	http.HandleFunc("/overlay-runtime/", RuntimeOverlaySend)
+	http.HandleFunc("/status/", NodeStatusSend)
 
 	conf, err := warewulfconf.New()
 	if err != nil {

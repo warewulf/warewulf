@@ -81,7 +81,6 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.SystemOverlay.Set(node.SystemOverlay)
 		n.RuntimeOverlay.Set(node.RuntimeOverlay)
 		n.Root.Set(node.Root)
-		n.LastSeen.Set(node.LastSeen)
 
 		n.Discoverable.SetB(node.Discoverable)
 

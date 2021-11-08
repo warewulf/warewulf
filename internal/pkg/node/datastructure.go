@@ -39,7 +39,6 @@ type NodeConf struct {
 	Profiles       []string            `yaml:"profiles,omitempty"`
 	NetDevs        map[string]*NetDevs `yaml:"network devices,omitempty"`
 	Keys           map[string]string   `yaml:"keys,omitempty"`
-	LastSeen       string              `yaml:"last_seen,omitempty"`
 }
 
 type NetDevs struct {
@@ -91,7 +90,7 @@ type NodeInfo struct {
 	GroupProfiles  []string
 	NetDevs        map[string]*NetDevEntry
 	Keys           map[string]*Entry
-	LastSeen       Entry
+	LastSeen       int64
 }
 
 type NetDevEntry struct {

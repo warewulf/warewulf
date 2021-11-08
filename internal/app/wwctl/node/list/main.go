@@ -5,7 +5,6 @@ import (
 	"os"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -101,14 +100,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		for _, node := range node.FilterByName(nodes, args) {
 			fmt.Printf("%-22s %-26s %-35s %s\n", node.Id.Get(), node.KernelVersion.Print(), node.ContainerName.Print(), node.SystemOverlay.Print()+"/"+node.RuntimeOverlay.Print())
 		}
-	} else if ShowLastSeen {
-		now := time.Now().UTC().Unix()
-		fmt.Printf("%-22s %s\n", "NODE NAME", "last seen (s)")
-		for _, node := range node.SortByLastSeen(nodes) {
-			timeElapsed := now - node.LastSeen.GetInt64()
-			fmt.Printf("%-22s %d\n", node.Id.Get(), timeElapsed)
-		}
-
 	} else {
 		fmt.Printf("%-22s %-26s %s\n", "NODE NAME", "PROFILES", "NETWORK")
 		fmt.Println(strings.Repeat("=", 80))
