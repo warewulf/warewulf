@@ -176,7 +176,11 @@ func TestNodeSlice_Less(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.d.Less(tt.args.i, tt.args.j); got != tt.want {
-				t.Errorf("Less() = %v, want %v, data: %v", got, tt.want, tt.d)
+				res := []int64{}
+				for _, v := range tt.d {
+					res = append(res, v.LastSeen)
+				}
+				t.Errorf("Less() = %v, want %v, result: %v", got, tt.want, res)
 			}
 		})
 	}
