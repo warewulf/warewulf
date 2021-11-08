@@ -1,7 +1,7 @@
 .PHONY: all
 
-VERSION := 4.2.0
-RELEASE := 1
+VERSION ?= 4.2.0
+RELEASE ?= 1
 
 ifndef SRC
 	SRC := main
