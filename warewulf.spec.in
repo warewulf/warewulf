@@ -1,74 +1,107 @@
+%global wwgroup warewulf
+%{!?wwshared: %global wwshared %{_localstatedir}}
 %define debug_package %{nil}
 
 Name: warewulf
-Summary: A suite of tools for bare metal provisioning of containers
+Summary: A provisioning system for large clusters of bare metal and/or virtual systems
 Version: @VERSION@
 Release: @RELEASE@%{?dist}
-License: BSD
-Source: https://github.com/hpcng/warewulf/archive/refs/tags/%{name}-%{version}.tar.gz
+License: BSD-3-Clause
+URL:     https://github.com/hpcng/warewulf
+Source:  https://github.com/hpcng/warewulf/archive/refs/tags/v%{version}.tar.gz
+
 ExclusiveOS: linux
 
+Conflicts: warewulf < 4
+Conflicts: warewulf-common
+Conflicts: warewulf-cluster
+Conflicts: warewulf-vnfs
+Conflicts: warewulf-provision
+Conflicts: warewulf-ipmi
+
 BuildRequires: make
-BuildRequires: golang
 
 %if 0%{?rhel}
 BuildRequires: systemd
+BuildRequires: golang
+Requires: tftp-server
+Requires: nfs-utils
 %else
+# sle_version
 BuildRequires: systemd-rpm-macros
+BuildRequires: go
+Requires: tftp
+Requires: nfs-kernel-server
 %endif
 
-%if 0%{?rhel} > 7
+%if 0%{?rhel} >= 8 || 0%{?sle_version}
 Requires: dhcp-server
 %else
+# rhel < 8
 Requires: dhcp
 %endif
 
-Requires: tftp-server
-Requires: nfs-utils
-
 %description
-Warewulf is a bare metal container provisioning system.
+Warewulf is a stateless and diskless container operating system provisioning
+system for large clusters of bare metal and/or virtual systems.
+
 
 %prep
-%setup -q
+%setup -q -n %{name}-%{version}
+
 
 %build
 make all
 
+
 %install
 %make_install DESTDIR=%{buildroot} %{?mflags_install}
 
+
 %pre
-getent group warewulf >/dev/null || groupadd -r warewulf
+getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
+
 
 %post
 %systemd_post warewulfd.service
 
+
 %preun
 %systemd_preun warewulfd.service
+
 
 %postun
 %systemd_postun_with_restart warewulfd.service
 
-%files
-%attr(0755, root, warewulf) %dir %{_sysconfdir}/%{name}
-%config(noreplace) %{_sysconfdir}/%{name}/*
 
+%files
+%defattr(-, root, %{wwgroup})
+%dir %{_sysconfdir}/%{name}
+%config(noreplace) %{_sysconfdir}/%{name}/*
+%config(noreplace) %attr(0640,-,-) %{_sysconfdir}/%{name}/nodes.conf
 %{_sysconfdir}/bash_completion.d/warewulf
 
-%{_bindir}/wwctl
+%dir %{wwshared}/%{name}
+%{wwshared}/%{name}/overlays/runtime/*
+%{wwshared}/%{name}/overlays/system/*
 
-%{_prefix}/lib/firewalld/services/warewulf.xml
-
-%{_unitdir}/warewulfd.service
-
-%attr(0755, root, warewulf) %dir %{_localstatedir}/%{name}
-%{_localstatedir}/%{name}/overlays/runtime/*
-%{_localstatedir}/%{name}/overlays/system/*
-
-%{_mandir}/man1/wwctl*
+%attr(-, root, root) %{_bindir}/wwctl
+%if 0%{?rhel}
+%attr(-, root, root) %{_prefix}/lib/firewalld/services/warewulf.xml
+%else
+# sle_version
+%attr(-, root, root) %{_libexecdir}/firewalld/services/warewulf.xml
+%endif
+%attr(-, root, root) %{_unitdir}/warewulfd.service
+%attr(-, root, root) %{_mandir}/man1/wwctl*
 
 %changelog
+* Mon Nov 1 2021 Jeremy Siadal <jeremy.c.siadal@intel.com> - 4.2.0-1
+- Add support for OpenSUSE
+- Update file attribs
+- Update license string
+- Make shared store relocatable
+
 * Fri Sep 24 2021 Michael L. Young <myoung@ciq.co> - 4.2.0-1
 - Update spec file to use systemd macros
 - Use macros to refer to system paths

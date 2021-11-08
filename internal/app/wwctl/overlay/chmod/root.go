@@ -4,7 +4,7 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "chmod [flags] <overlay kind> <overlay name> <path> <mode>",
+		Use:   "chmod [flags] (overlay kind) (overlay name) (path) (mode)",
 		Short: "Change file permissions within an overlay",
 		Long: "This command will allow you to change the permissions of a file within an\n" +
 			"overlay.",

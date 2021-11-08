@@ -26,6 +26,8 @@ WW_BUILD_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
 all: vendor wwctl wwclient bash_completion man_page
 
+build: lint test-it vet all
+
 # set the go tools into the tools bin.
 setup_tools: $(GO_TOOLS_BIN) $(GOLANGCI_LINT)
 
@@ -53,6 +55,22 @@ lint: setup_tools
 	@echo Running golangci-lint...
 	@$(GOLANGCI_LINT) run --build-tags "$(WW_BUILD_GO_BUILD_TAGS)" --skip-dirs internal/pkg/staticfiles ./...
 
+vet:
+	go vet ./...
+
+test-it:
+	go test -v ./...
+
+# Generate test coverage
+test-cover:     ## Run test coverage and generate html report
+	rm -fr coverage
+	mkdir coverage
+	go list -f '{{if gt (len .TestGoFiles) 0}}"go test -covermode count -coverprofile {{.Name}}.coverprofile -coverpkg ./... {{.ImportPath}}"{{end}}' ./... | xargs -I {} bash -c {}
+	echo "mode: count" > coverage/cover.out
+	grep -h -v "^mode:" *.coverprofile >> "coverage/cover.out"
+	rm *.coverprofile
+	go tool cover -html=coverage/cover.out -o=coverage/cover.html
+
 debian: all 
 
 files: all
@@ -66,6 +84,7 @@ files: all
 	install -d -m 0755 $(DESTDIR)/usr/share/man/man1
 	test -f $(DESTDIR)/etc/warewulf/warewulf.conf || install -m 644 etc/warewulf.conf $(DESTDIR)/etc/warewulf/
 	test -f $(DESTDIR)/etc/warewulf/hosts.tmpl || install -m 644 etc/hosts.tmpl $(DESTDIR)/etc/warewulf/
+	test -f $(DESTDIR)/etc/warewulf/nodes.conf || install -m 640 etc/nodes.conf $(DESTDIR)/etc/warewulf/
 	cp -r etc/dhcp $(DESTDIR)/etc/warewulf/
 	cp -r etc/ipxe $(DESTDIR)/etc/warewulf/
 	cp -r overlays $(DESTDIR)/var/warewulf/
@@ -79,12 +98,13 @@ files: all
 	install -c -m 0644 include/firewalld/warewulf.xml $(DESTDIR)/usr/lib/firewalld/services
 	mkdir -p $(DESTDIR)/usr/lib/systemd/system
 	install -c -m 0644 include/systemd/warewulfd.service $(DESTDIR)/usr/lib/systemd/system
-	./bash_completion  $(DESTDIR)/etc/bash_completion.d/warewulf
-	./man_page $(DESTDIR)/usr/share/man/man1
-	gzip --force $(DESTDIR)/usr/share/man/man1/wwctl*1
-#	systemctl daemon-reload
-#	cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
-#	restorecon -r /var/lib/tftpboot/warewulf
+	cp etc/bash_completion.d/warewulf $(DESTDIR)/etc/bash_completion.d/
+	cp usr/share/man/man1/* $(DESTDIR)/usr/share/man/man1/
+
+init:
+	systemctl daemon-reload
+	cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
+	restorecon -r /var/lib/tftpboot/warewulf
 
 debfiles: debian
 	chmod +x $(DESTDIR)/var/warewulf/overlays/system/debian/init
@@ -100,10 +120,15 @@ wwclient:
 	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags '-extldflags -static' -o ../../wwclient
 
 bash_completion:
-	cd cmd/bash_completion; go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../bash_completion
+	cd cmd/bash_completion && go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../bash_completion
+	install -d -m 0755 ./etc/bash_completion.d/
+	./bash_completion  ./etc/bash_completion.d/warewulf
 
 man_page:
-	cd cmd/man_page; go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../man_page
+	cd cmd/man_page && go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../man_page
+	install -d -m 0755 ./usr/share/man/man1
+	./man_page ./usr/share/man/man1
+	gzip --force ./usr/share/man/man1/wwctl*1
 
 dist: vendor
 	rm -rf _dist/warewulf-$(VERSION)
