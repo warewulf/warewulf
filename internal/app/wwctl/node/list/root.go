@@ -4,9 +4,11 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:     "list [flags] (node pattern)",
-		Short:   "List nodes matching pattern",
-		Long:    "This command will show you configured nodes.",
+		DisableFlagsInUseLine: true,
+		Use:     "list [OPTIONS] [PATTERN]",
+		Short:   "List nodes",
+		Long:    "This command lists all configured nodes. Optionally, it will list only\n" +
+		         "nodes matching a glob PATTERN.",
 		RunE:    CobraRunE,
 		Aliases: []string{"ls"},
 	}

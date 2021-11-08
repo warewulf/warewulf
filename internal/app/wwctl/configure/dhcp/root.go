@@ -6,7 +6,8 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "dhcp",
+		DisableFlagsInUseLine: true,
+		Use:   "dhcp [OPTIONS]",
 		Short: "Manage and initialize DHCP",
 		Long: "DHCP is a dependent service to Warewulf. This command will configure DHCP as defined\n" +
 			"in the warewulf.conf file.",

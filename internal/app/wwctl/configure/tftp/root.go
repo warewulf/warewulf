@@ -4,7 +4,8 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "tftp",
+		DisableFlagsInUseLine: true,
+		Use:   "tftp [OPTIONS]",
 		Short: "Manage and initialize TFTP",
 		Long: "TFTP is a dependent service of Warewulf, this tool will enable the tftp services\n" +
 			"on your Warewulf master.",
