@@ -6,7 +6,7 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "edit [flags] <overlay kind> <overlay name> <file path>",
+		Use:   "edit [flags] (overlay kind) (overlay name) (file path)",
 		Short: "Edit/Create a file within a Warewulf Overlay",
 		Long: "This command will allow you to edit or create a new file within a given\n" +
 			"overlay. Note: when creating files ending in a '.ww' suffix this will always be\n" +

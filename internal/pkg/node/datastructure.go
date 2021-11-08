@@ -1,9 +1,6 @@
 package node
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
@@ -105,22 +102,10 @@ type NetDevEntry struct {
 }
 
 func init() {
-	//TODO: Check to make sure nodes.conf is found
+	// Check that nodes.conf is found
 	if !util.IsFile(ConfigFile) {
-		c, err := os.OpenFile(ConfigFile, os.O_RDWR|os.O_CREATE, 0640)
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Could not create new configuration file: %s\n", err)
-			// just return silently, as init is also called for bash_completion
-			return
-		}
-
-		fmt.Fprintf(c, "nodeprofiles:\n")
-		fmt.Fprintf(c, "  default:\n")
-		fmt.Fprintf(c, "    comment: This profile is automatically included for each node\n")
-		fmt.Fprintf(c, "nodes: {}\n")
-
-		c.Close()
-
-		wwlog.Printf(wwlog.INFO, "Created default node configuration\n")
+		wwlog.Printf(wwlog.WARN, "Missing node configuration file\n")
+		// just return silently, as init is also called for bash_completion
+		return
 	}
 }
