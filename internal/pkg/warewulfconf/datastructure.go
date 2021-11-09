@@ -51,7 +51,9 @@ type NfsConf struct {
 }
 
 func (s *NfsConf) UnmarshalYAML(unmarshal func(interface{}) error) error {
-    defaults.Set(s)
+    if err := defaults.Set(s); err != nil {
+		return err
+	}
 
     type plain NfsConf
     if err := unmarshal((*plain)(s)); err != nil {
