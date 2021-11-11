@@ -29,7 +29,7 @@ func (c *DaemonConnection) init() {
 func (c *DaemonConnection) AddInterfaces() error {
 	interfaces, err := net.Interfaces()
 	if err != nil {
-		return errors.Wrap(err, "failed to obtain network interfaces")
+		return errors.Wrap(err, "Failed to obtain network interfaces")
 	}
 	for _, i := range interfaces {
 		hwAddr := i.HardwareAddr.String()
@@ -44,7 +44,7 @@ func (c *DaemonConnection) AddInterfaces() error {
 func (c *DaemonConnection) AddHostname() error {
 	hostname, err := os.Hostname()
 	if err != nil {
-		return errors.Wrap(err, "failed to get hostname")
+		return errors.Wrap(err, "Failed to get hostname")
 	}
 	c.Values.Add("name", hostname)
 	return err
@@ -76,18 +76,18 @@ func (c *DaemonConnection) New() error {
 
 func NewDaemonConnection() (*DaemonConnection, error) {
 	ret := DaemonConnection{}
+	ret.init()
 	err := ret.New()
 	if err != nil {
-		return &DaemonConnection{}, errors.Wrap(err, "failed to prepare daemon connection")
+		return &DaemonConnection{}, errors.Wrap(err, "Failed to prepare daemon connection")
 	}
-	ret.init()
 	return &ret, err
 }
 
 func runProductionEnv() error {
 	err := os.Chdir("/")
 	if err != nil {
-		return errors.Wrap(err, "failed to change dir")
+		return errors.Wrap(err, "Failed to change dir")
 	}
 	wwlog.Println(wwlog.WARN, "Updating live file system LIVE, cancel now if this is in error")
 	time.Sleep(5000 * time.Millisecond)
@@ -99,12 +99,12 @@ func runTestEnv() error {
 	wwlog.Println(wwlog.WARN, "Runtime overlay is being put in '/warewulf/wwclient-test' rather than '/'")
 	err := os.MkdirAll("/warewulf/wwclient-test", 0755)
 	if err != nil {
-		return errors.Wrap(err, "failed to create dir")
+		return errors.Wrap(err, "Failed to create dir")
 	}
 
 	err = os.Chdir("/warewulf/wwclient-test")
 	if err != nil {
-		return errors.Wrap(err, "failed to change dir")
+		return errors.Wrap(err, "Failed to change dir")
 	}
 	return nil
 }
@@ -114,32 +114,32 @@ func main() {
 	if os.Args[0] == "/warewulf/bin/wwclient" {
 		err := runProductionEnv()
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "failed to run in production environment: %s\n", err)
+			wwlog.Printf(wwlog.ERROR, "Failed to run in production environment: %s\n", err)
 			return
 		}
 	} else {
 		err := runTestEnv()
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "failed to run in test environment: %s\n", err)
+			wwlog.Printf(wwlog.ERROR, "Failed to run in test environment: %s\n", err)
 			return
 		}
 	}
 
 	conn, err := NewDaemonConnection()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "failed to create daemon connection: %s\n", err)
+		wwlog.Printf(wwlog.ERROR, "Failed to create daemon connection: %s\n", err)
 		return
 	}
 
 	err = conn.AddHostname()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "failed to add hostname to query string: %s\n", err)
+		wwlog.Printf(wwlog.ERROR, "Failed to add hostname to query string: %s\n", err)
 		return
 	}
 
 	err = conn.AddInterfaces()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "failed to add interfaces to query string: %s\n", err)
+		wwlog.Printf(wwlog.ERROR, "Failed to add interfaces to query string: %s\n", err)
 		return
 	}
 
@@ -195,7 +195,7 @@ func main() {
 		command.Stdin = resp.Body
 		err := command.Run()
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "ERROR: Failed running CPIO: %s\n", err)
+			wwlog.Printf(wwlog.ERROR, "Failed running CPIO: %s\n", err)
 		}
 
 		if conn.updateInterval > 0 {
