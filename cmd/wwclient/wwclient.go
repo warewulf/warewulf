@@ -19,6 +19,69 @@ type DaemonConnection struct {
 	URL            url.URL
 	TCPAddr        net.TCPAddr
 	updateInterval int
+	Values         url.Values
+}
+
+func (c *DaemonConnection) init() {
+	c.Values = url.Values{}
+}
+
+func (c *DaemonConnection) AddInterfaces() error {
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		return errors.Wrap(err, "failed to obtain network interfaces")
+	}
+	for _, i := range interfaces {
+		hwAddr := i.HardwareAddr.String()
+		if len(hwAddr) == 0 {
+			continue
+		}
+		c.Values.Add("hwAddr", hwAddr)
+	}
+	return err
+}
+
+func (c *DaemonConnection) AddHostname() error {
+	hostname, err := os.Hostname()
+	if err != nil {
+		return errors.Wrap(err, "failed to get hostname")
+	}
+	c.Values.Add("name", hostname)
+	return err
+}
+
+func (c *DaemonConnection) New() error {
+	conf, err := warewulfconf.New()
+	if err != nil {
+		return errors.Wrap(err, "Could not get Warewulf configuration")
+	}
+
+	c.updateInterval = conf.Warewulf.UpdateInterval
+
+	if conf.Warewulf.Secure {
+		c.TCPAddr.Port = 987
+	} else {
+		wwlog.Println(wwlog.WARN, "Running from an insecure port")
+	}
+
+	// build the URL
+	base := fmt.Sprintf("%s:%d", conf.Ipaddr, conf.Warewulf.Port)
+	c.URL = url.URL{Scheme: "http", Host: base}
+	c.URL.Path += "overlay-runtime"
+
+	wwlog.Printf(wwlog.DEBUG, "baseURL: %s", c.URL.String())
+
+	return err
+}
+
+func NewDaemonConnection() (*DaemonConnection, error) {
+	ret := DaemonConnection{}
+	err := ret.New()
+	if err != nil {
+		return &DaemonConnection{}, errors.Wrap(err, "failed to prepare daemon connection")
+	}
+	ret.init()
+	return &ret, err
 }
 
 func runProductionEnv() error {
@@ -46,48 +109,6 @@ func runTestEnv() error {
 	return nil
 }
 
-func prepDaemon() (DaemonConnection, error) {
-	var ret DaemonConnection
-
-	conf, err := warewulfconf.New()
-	if err != nil {
-		return DaemonConnection{}, errors.Wrap(err, "Could not get Warewulf configuration")
-	}
-
-	ret.updateInterval = conf.Warewulf.UpdateInterval
-
-	if conf.Warewulf.Secure {
-		ret.TCPAddr.Port = 987
-	} else {
-		wwlog.Println(wwlog.INFO, "Running from an insecure port")
-	}
-
-	// build the URL
-	base := fmt.Sprintf("%s:%d", conf.Ipaddr, conf.Warewulf.Port)
-	ret.URL = url.URL{Scheme: "http", Host: base}
-	ret.URL.Path += "overlay-runtime"
-
-	wwlog.Printf(wwlog.DEBUG, "baseURL: %s", ret.URL.String())
-
-	return ret, nil
-}
-
-func InterfacesToValues() (url.Values, error) {
-	interfaces, err := net.Interfaces()
-	if err != nil {
-		return url.Values{}, errors.Wrap(err, "failed to obtain network interfaces")
-	}
-	params := url.Values{}
-	for _, i := range interfaces {
-		hwAddr := i.HardwareAddr.String()
-		if len(hwAddr) == 0 {
-			continue
-		}
-		params.Add("hwAddr", hwAddr)
-	}
-	return params, nil
-}
-
 func main() {
 
 	if os.Args[0] == "/warewulf/bin/wwclient" {
@@ -104,17 +125,25 @@ func main() {
 		}
 	}
 
-	conn, err := prepDaemon()
+	conn, err := NewDaemonConnection()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "failed to prepare daemon connection: %s\n", err)
+		wwlog.Printf(wwlog.ERROR, "failed to create daemon connection: %s\n", err)
 		return
 	}
-	params, err := InterfacesToValues()
+
+	err = conn.AddHostname()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "failed to query Interfaces: %s\n", err)
+		wwlog.Printf(wwlog.ERROR, "failed to add hostname to query string: %s\n", err)
 		return
 	}
-	conn.URL.RawQuery = params.Encode()
+
+	err = conn.AddInterfaces()
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "failed to add interfaces to query string: %s\n", err)
+		return
+	}
+
+	conn.URL.RawQuery = conn.Values.Encode()
 	wwlog.Printf(wwlog.INFO, "Encoded URL is %q\n", conn.URL.String())
 
 	webclient := &http.Client{
