@@ -8,9 +8,12 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/talos-systems/go-smbios/smbios"
@@ -68,7 +71,6 @@ func main() {
 			ExpectContinueTimeout: 1 * time.Second,
 		},
 	}
-
 	smbiosDump, err := smbios.New()
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not get SMBIOS info: %s\n", err)
@@ -93,48 +95,58 @@ func main() {
 
 	wwid := strings.Split(wwid_tmp[1], " ")[0]
 
+	// listen on SIGHUP
+	sigs := make(chan os.Signal)
+	signal.Notify(sigs, syscall.SIGHUP)
+
+	go func() {
+		for sig := range sigs {
+			log.Printf("Received SIGNAL: %s\n", sig)
+			updateSystem(webclient, conf.Ipaddr, conf.Warewulf.Port, wwid, tag, localUUID)
+		}
+	}()
+
 	for {
-		var resp *http.Response
-		counter := 0
-
-		for {
-			var err error
-
-			getString := fmt.Sprintf("http://%s:%d/overlay-runtime/%s?assetkey=%s&uuid=%s", conf.Ipaddr, conf.Warewulf.Port, wwid, tag, localUUID)
-			resp, err = webclient.Get(getString)
-			if err == nil {
-				break
-			} else {
-				if counter > 60 {
-					counter = 0
-				}
-				if counter == 0 {
-					log.Println(err)
-				}
-				counter++
-			}
-
-			time.Sleep(1000 * time.Millisecond)
-		}
-
-		if resp.StatusCode != 200 {
-			log.Printf("Not updating runtime overlay, got status code: %d\n", resp.StatusCode)
-			time.Sleep(60000 * time.Millisecond)
-			continue
-		}
-
-		log.Printf("Updating system\n")
-		command := exec.Command("/bin/sh", "-c", "gzip -dc | cpio -iu")
-		command.Stdin = resp.Body
-		err := command.Run()
-		if err != nil {
-			log.Printf("ERROR: Failed running CPIO: %s\n", err)
-		}
+		updateSystem(webclient, conf.Ipaddr, conf.Warewulf.Port, wwid, tag, localUUID)
 
 		if conf.Warewulf.UpdateInterval > 0 {
 			time.Sleep(time.Duration(conf.Warewulf.UpdateInterval*1000) * time.Millisecond)
 		} else {
 			time.Sleep(30000 * time.Millisecond * 1000)
 		}
+	}
+}
+
+func updateSystem(webclient *http.Client, ipaddr string, port int, wwid string, tag string, localUUID uuid.UUID) {
+	var resp *http.Response
+	counter := 0
+	for {
+		var err error
+		getString := fmt.Sprintf("http://%s:%d/overlay-runtime/%s?assetkey=%s&uuid=%s", ipaddr, port, wwid, tag, localUUID)
+		resp, err = webclient.Get(getString)
+		if err == nil {
+			break
+		} else {
+			if counter > 60 {
+				counter = 0
+			}
+			if counter == 0 {
+				log.Println(err)
+			}
+			counter++
+		}
+		time.Sleep(1000 * time.Millisecond)
+	}
+	if resp.StatusCode != 200 {
+		log.Printf("Not updating runtime overlay, got status code: %d\n", resp.StatusCode)
+		time.Sleep(60000 * time.Millisecond)
+		return
+	}
+	log.Printf("Updating system\n")
+	command := exec.Command("/bin/sh", "-c", "gzip -dc | cpio -iu")
+	command.Stdin = resp.Body
+	err := command.Run()
+	if err != nil {
+		log.Printf("ERROR: Failed running CPIO: %s\n", err)
 	}
 }
