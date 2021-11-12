@@ -47,6 +47,11 @@ func GetRootCommand() *cobra.Command {
 }
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
+	conf, err := warewulfconf.New()
+	if err != nil {
+		return err
+	}
+
 	if util.IsFile(PIDFile) {
 		return errors.New("wwclient is already running")
 	}
@@ -72,20 +77,16 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		err := os.MkdirAll("/warewulf/wwclient-test", 0755)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "failed to create dir: %s", err)
+			_ = os.Remove(PIDFile)
 			os.Exit(1)
 		}
 
 		err = os.Chdir("/warewulf/wwclient-test")
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "failed to change dir: %s", err)
+			_ = os.Remove(PIDFile)
 			os.Exit(1)
 		}
-	}
-
-	conf, err := warewulfconf.New()
-	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not get Warewulf configuration: %s\n", err)
-		os.Exit(1)
 	}
 
 	localTCPAddr := net.TCPAddr{}
