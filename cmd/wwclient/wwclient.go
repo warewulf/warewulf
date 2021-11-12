@@ -103,14 +103,13 @@ func main() {
 	}
 
 	// listen on SIGHUP
-	sigs := make(chan os.Signal)
+	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGHUP)
 
 	go func() {
-		for sig := range sigs {
-			wwlog.Printf(wwlog.INFO, "Received SIGNAL: %s\n", sig)
-			updateSystem(webclient, *conn)
-		}
+		s := <-sigs
+		wwlog.Printf(wwlog.INFO, "Received SIGNAL: %s\n", s)
+		updateSystem(webclient, *conn)
 	}()
 
 	for {
