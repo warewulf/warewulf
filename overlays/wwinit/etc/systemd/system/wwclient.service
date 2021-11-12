@@ -1,0 +1,14 @@
+[Unit]
+Description=Warewulf node runtime overlay update
+After=network.target
+After=local-fs.target
+
+[Service]
+Type=simple
+ExecStart=/warewulf/bin/wwclient
+ExecReload=/bin/kill -s SIGHUP "$MAINPID"
+PIDFile=/var/run/wwclient.pid
+TimeoutSec=5
+ 
+[Install]
+WantedBy=multi-user.target
