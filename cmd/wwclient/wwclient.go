@@ -9,6 +9,8 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
@@ -161,47 +163,60 @@ func main() {
 		},
 	}
 
+	// listen on SIGHUP
+	sigs := make(chan os.Signal)
+	signal.Notify(sigs, syscall.SIGHUP)
+
+	go func() {
+		for sig := range sigs {
+			wwlog.Printf(wwlog.INFO, "Received SIGNAL: %s\n", sig)
+			updateSystem(webclient, *conn)
+		}
+	}()
+
 	for {
-		var resp *http.Response
-		counter := 0
-
-		for {
-			var err error
-
-			resp, err = webclient.Get(conn.URL.String())
-
-			if err == nil {
-				break
-			} else {
-				if counter > 60 {
-					counter = 0
-				}
-				if counter == 0 {
-					log.Println(err)
-				}
-				counter++
-			}
-			time.Sleep(1000 * time.Millisecond)
-		}
-
-		if resp.StatusCode != 200 {
-			wwlog.Printf(wwlog.WARN, "Not updating runtime overlay, got status code: %d\n", resp.StatusCode)
-			time.Sleep(60000 * time.Millisecond)
-			continue
-		}
-
-		wwlog.Println(wwlog.INFO, "Updating system")
-		command := exec.Command("/bin/sh", "-c", "gzip -dc | cpio -iu")
-		command.Stdin = resp.Body
-		err := command.Run()
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Failed running CPIO: %s\n", err)
-		}
+		updateSystem(webclient, *conn)
 
 		if conn.updateInterval > 0 {
 			time.Sleep(time.Duration(conn.updateInterval*1000) * time.Millisecond)
 		} else {
 			time.Sleep(30000 * time.Millisecond * 1000)
 		}
+	}
+}
+
+func updateSystem(webclient *http.Client, conn DaemonConnection) {
+	var resp *http.Response
+	counter := 0
+	var err error
+
+	for {
+		resp, err = webclient.Get(conn.URL.String())
+		if err == nil {
+			break
+		} else {
+			if counter > 60 {
+				counter = 0
+			}
+			if counter == 0 {
+				log.Println(err)
+			}
+			counter++
+		}
+		time.Sleep(1000 * time.Millisecond)
+	}
+
+	if resp.StatusCode != 200 {
+		wwlog.Printf(wwlog.WARN, "Not updating runtime overlay, got status code: %d\n", resp.StatusCode)
+		time.Sleep(60000 * time.Millisecond)
+		return
+	}
+
+	wwlog.Println(wwlog.INFO, "Updating system")
+	command := exec.Command("/bin/sh", "-c", "gzip -dc | cpio -iu")
+	command.Stdin = resp.Body
+	err = command.Run()
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Failed running CPIO: %s\n", err)
 	}
 }
