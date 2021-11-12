@@ -1,6 +1,7 @@
-package main
+package wwclient
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -14,12 +15,49 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/talos-systems/go-smbios/smbios"
+	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"github.com/talos-systems/go-smbios/smbios"
+	"github.com/spf13/cobra"
 )
 
-func main() {
+var (
+	rootCmd = &cobra.Command{
+		Use:          "wwclient",
+		Short:        "wwclient",
+		Long:         "wwclient fetches the runtime overlay and puts it on the disk",
+		RunE:         CobraRunE,
+		SilenceUsage: true,
+	}
+	DebugFlag bool
+	PIDFile   string
+)
+
+func init() {
+	rootCmd.PersistentFlags().BoolVarP(&DebugFlag, "debug", "d", false, "Run with debugging messages enabled.")
+	rootCmd.PersistentFlags().StringVarP(&PIDFile, "pidfile", "p", "/var/run/wwclient.pid", "PIDFile to use")
+
+}
+
+// GetRootCommand returns the root cobra.Command for the application.
+func GetRootCommand() *cobra.Command {
+	// Run cobra
+	return rootCmd
+}
+
+func CobraRunE(cmd *cobra.Command, args []string) error {
+	if util.IsFile(PIDFile) {
+		return errors.New("wwclient is already running")
+	}
+	p, err := os.OpenFile(PIDFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+		return err
+	}
+	defer p.Close()
+
+	fmt.Fprintf(p, "%d", os.Getpid())
+
 	if os.Args[0] == "/warewulf/bin/wwclient" {
 		err := os.Chdir("/")
 		if err != nil {
@@ -97,12 +135,22 @@ func main() {
 
 	// listen on SIGHUP
 	sigs := make(chan os.Signal)
-	signal.Notify(sigs, syscall.SIGHUP)
+
+	signal.Notify(sigs, syscall.SIGHUP, syscall.SIGTERM)
 
 	go func() {
 		for sig := range sigs {
-			log.Printf("Received SIGNAL: %s\n", sig)
-			updateSystem(webclient, conf.Ipaddr, conf.Warewulf.Port, wwid, tag, localUUID)
+			switch sig {
+			case syscall.SIGHUP:
+				log.Printf("Received SIGNAL: %s\n", sig)
+        updateSystem(webclient, conf.Ipaddr, conf.Warewulf.Port, wwid, tag, localUUID)
+			case syscall.SIGTERM:
+				err = os.Remove(PIDFile)
+				if err != nil {
+					errors.New("could not remove pidfile")
+				}
+				os.Exit(0)
+			}
 		}
 	}()
 
