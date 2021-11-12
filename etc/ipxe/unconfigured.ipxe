@@ -7,6 +7,6 @@ echo
 echo MESSAGE: This node is unconfigured. Please have your system administrator add a
 echo          configuration for this node with HW address: {{$.Hwaddr}}
 echo
-echo Rebooting in 1 minute...
-sleep 60
-reboot
+echo Retrying provisioning in 15s...
+sleep 15
+autoboot
