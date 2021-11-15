@@ -202,8 +202,7 @@ func updateSystem(ipaddr string, port int, wwid string, tag string, localUUID uu
 func cleanUp() {
 	err := os.Remove(PIDFile)
 	if err != nil {
-		errors.New("could not remove pidfile")
+		log.Printf("could not remove pidfile: %s\n", err)
 	}
 
-	Webclient.CloseIdleConnections()
 }
