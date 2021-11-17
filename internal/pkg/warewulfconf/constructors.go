@@ -41,7 +41,7 @@ func New() (ret ControllerConf, err error) {
 					return ret, err
 				}
 				ret.Ipaddr = ip.String()
-				wwlog.Printf(wwlog.DEBUG, "Resolved DNS name '%s' to ipv4: '%s'\n", ret.Ipaddr, ret)
+				wwlog.Printf(wwlog.DEBUG, "Resolved DNS name '%s' to ipv4: '%s'\n", ret.Ipaddr, ip.String())
 			}
 
 			if !util.AddressExists(ip) {
