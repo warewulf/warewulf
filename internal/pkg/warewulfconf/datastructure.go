@@ -8,15 +8,16 @@ import (
 const ConfigFile = "/etc/warewulf/warewulf.conf"
 
 type ControllerConf struct {
-	Comment  string        `yaml:"comment"`
-	Ipaddr   string        `yaml:"ipaddr"`
-	Netmask  string        `yaml:"netmask"`
-	Network  string        `yaml:"network,omitempty"`
-	Fqdn     string        `yaml:"fqdn,omitempty"`
-	Warewulf *WarewulfConf `yaml:"warewulf"`
-	Dhcp     *DhcpConf     `yaml:"dhcp"`
-	Tftp     *TftpConf     `yaml:"tftp"`
-	Nfs      *NfsConf      `yaml:"nfs"`
+	Comment    string        `yaml:"comment"`
+	Ipaddr     string        `yaml:"ipaddr"`
+	Netmask    string        `yaml:"netmask"`
+	DeviceName string        `yaml:"device_name"`
+	Network    string        `yaml:"network,omitempty"`
+	Fqdn       string        `yaml:"fqdn,omitempty"`
+	Warewulf   *WarewulfConf `yaml:"warewulf"`
+	Dhcp       *DhcpConf     `yaml:"dhcp"`
+	Tftp       *TftpConf     `yaml:"tftp"`
+	Nfs        *NfsConf      `yaml:"nfs"`
 }
 
 type WarewulfConf struct {

@@ -34,7 +34,24 @@ func New() (ret ControllerConf, err error) {
 			wwlog.Printf(wwlog.WARN, "Netmask is not configured in warewulfd.conf\n")
 		}
 
-		if ret.Network == "" {
+		switch {
+		case ret.DeviceName != "":
+			iface, err := net.InterfaceByName(ret.DeviceName)
+			if err != nil {
+				return ret, err
+			}
+			ipv4, err := util.GetFirstIPv4(iface)
+			if err != nil {
+				return ret, err
+			}
+			ret.Ipaddr = ipv4.To4().String()
+			mask := net.IPMask(net.ParseIP(ret.Netmask).To4())
+			size, _ := mask.Size()
+
+			sub := ipsubnet.SubnetCalculator(ret.Ipaddr, size)
+
+			ret.Network = sub.GetNetworkPortion()
+		case ret.Network == "":
 			ip := net.ParseIP(ret.Ipaddr)
 			if ip == nil {
 				if ip, err = util.HostnameToV4(ret.Ipaddr); err != nil {

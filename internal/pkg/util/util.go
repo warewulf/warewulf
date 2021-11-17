@@ -417,3 +417,22 @@ func AddressExists(addr net.IP) bool {
 	}
 	return false
 }
+
+func GetFirstIPv4(iface *net.Interface) (ipv4 net.IP, err error) {
+	if iface == nil {
+		return nil, fmt.Errorf("iface cannot be nil")
+	}
+	addrs, err := iface.Addrs()
+	if err != nil {
+		return nil, err
+	}
+	for _, v := range addrs {
+		switch ip := v.(type) {
+		case *net.IPAddr:
+			if ipv4 = ip.IP.To4(); ipv4 != nil {
+				return ipv4, nil
+			}
+		}
+	}
+	return nil, fmt.Errorf("could not find any ipv4 addresses")
+}
