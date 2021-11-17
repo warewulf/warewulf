@@ -317,8 +317,8 @@ func CopyUIDGID(source string, dest string) error {
 	}
 
 	// root is always good, if we failt to get UID/GID of a file
-	var UID int = 0
-	var GID int = 0
+	var UID = 0
+	var GID = 0
 	if stat, ok := info.Sys().(*syscall.Stat_t); ok {
 		UID = int(stat.Uid)
 		GID = int(stat.Gid)
@@ -346,7 +346,7 @@ func SplitEscaped(input, delim, escape string) []string {
 	str += string(input[len(input)-1])
 	ret = append(ret, str)
 
-	return (ret)
+	return ret
 }
 
 func SplitValidPaths(input, delim string) []string {
@@ -367,7 +367,7 @@ func SplitValidPaths(input, delim string) []string {
 	str += string(input[len(input)-1])
 	ret = append(ret, str)
 
-	return (ret)
+	return ret
 }
 
 func IncrementIPv4(start string, inc uint) string {
@@ -383,18 +383,37 @@ func IncrementIPv4(start string, inc uint) string {
 	return ipv4_new.String()
 }
 
-func HostnameToV4(hostname string) (ipv4 string, err error) {
-   if len(hostname) == 0 {
-        return ipv4, fmt.Errorf("hostname cannot be empty")
-    }
-    ips, err := net.LookupIP(hostname)
-    if err != nil {
-        return ipv4, err
-    }
-    for _, ip := range ips {
-        if v4 := ip.To4(); v4 != nil {
-            return v4.String(), nil
-        }
-    }
-    return ipv4, fmt.Errorf("could not get ipv4 from hostname")
+func HostnameToV4(hostname string) (ipv4 net.IP, err error) {
+	if len(hostname) == 0 {
+		return ipv4, fmt.Errorf("hostname cannot be empty")
+	}
+	ips, err := net.LookupIP(hostname)
+	if err != nil {
+		return ipv4, err
+	}
+	for _, ip := range ips {
+		if v4 := ip.To4(); v4 != nil {
+			return v4, nil
+		}
+	}
+	return ipv4, fmt.Errorf("could not get ipv4 from hostname")
+}
+
+func AddressExists(addr net.IP) bool {
+	ifaces, _ := net.Interfaces()
+	for _, v := range ifaces {
+		addrs, err := v.Addrs()
+		if err != nil {
+			continue
+		}
+		for _, a := range addrs {
+			switch t := a.(type) {
+			case *net.IPAddr:
+				if t.IP.Equal(addr) {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
