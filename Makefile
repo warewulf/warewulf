@@ -5,6 +5,7 @@ VERSION := 4.2.0
 # auto installed tooling
 TOOLS_DIR := .tools
 TOOLS_BIN := $(TOOLS_DIR)/bin
+CONFIG := $(shell pwd)
 
 # tools
 GO_TOOLS_BIN := $(addprefix $(TOOLS_BIN)/, $(notdir $(GO_TOOLS)))
@@ -115,12 +116,16 @@ wwclient:
 	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags '-extldflags -static' -o ../../wwclient
 
 bash_completion:
-	cd cmd/bash_completion && go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../bash_completion
+	cd cmd/bash_completion && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=$(CONFIG)/etc/warewulf.conf'\
+	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=$(CONFIG)/etc/nodes.conf'"\
+	 -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../bash_completion
 	install -d -m 0755 ./etc/bash_completion.d/
 	./bash_completion  ./etc/bash_completion.d/warewulf
 
 man_page:
-	cd cmd/man_page && go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../man_page
+	cd cmd/man_page && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=$(CONFIG)/etc/warewulf.conf'\
+	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=$(CONFIG)/etc/nodes.conf'"\
+	 -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../man_page
 	install -d -m 0755 ./usr/share/man/man1
 	./man_page ./usr/share/man/man1
 	gzip --force ./usr/share/man/man1/wwctl*1

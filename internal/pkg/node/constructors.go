@@ -3,14 +3,15 @@ package node
 import (
 	"errors"
 	"fmt"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"sort"
 	"strings"
+
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"gopkg.in/yaml.v2"
 )
 
-const ConfigFile = "/etc/warewulf/nodes.conf"
+var ConfigFile = "/etc/warewulf/nodes.conf"
 
 func New() (nodeYaml, error) {
 	var ret nodeYaml
