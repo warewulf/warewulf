@@ -132,7 +132,7 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 		var replace iPxeTemplate
 
 		replace.Id = nodeobj.Id.Get()
-		replace.Cluster = nodeobj.Cluster.Get()
+		replace.Cluster = nodeobj.ClusterName.Get()
 		replace.Fqdn = nodeobj.Id.Get()
 		replace.Ipaddr = conf.Ipaddr
 		replace.Port = strconv.Itoa(conf.Warewulf.Port)
