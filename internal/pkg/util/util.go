@@ -1,22 +1,22 @@
 package util
 
 import (
-	"bufio"
-	"crypto/sha256"
-	"fmt"
-	"io"
-	"math/rand"
-	"net"
-	"os"
-	"os/exec"
-	"path"
-	"path/filepath"
-	"regexp"
-	"syscall"
-	"time"
+    "bufio"
+    "crypto/sha256"
+    "fmt"
+    "io"
+    "math/rand"
+    "net"
+    "os"
+    "os/exec"
+    "path"
+    "path/filepath"
+    "regexp"
+    "syscall"
+    "time"
 
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"github.com/pkg/errors"
+    "github.com/hpcng/warewulf/internal/pkg/wwlog"
+    "github.com/pkg/errors"
 )
 
 func DirModTime(path string) (time.Time, error) {
@@ -399,25 +399,6 @@ func HostnameToV4(hostname string) (ipv4 net.IP, err error) {
 	return ipv4, fmt.Errorf("could not get ipv4 from hostname")
 }
 
-func AddressExists(addr net.IP) bool {
-	ifaces, _ := net.Interfaces()
-	for _, v := range ifaces {
-		addrs, err := v.Addrs()
-		if err != nil {
-			continue
-		}
-		for _, a := range addrs {
-			switch t := a.(type) {
-			case *net.IPAddr:
-				if t.IP.Equal(addr) {
-					return true
-				}
-			}
-		}
-	}
-	return false
-}
-
 func GetFirstIPv4(iface *net.Interface) (ipv4 net.IP, err error) {
 	if iface == nil {
 		return nil, fmt.Errorf("iface cannot be nil")
@@ -429,10 +410,21 @@ func GetFirstIPv4(iface *net.Interface) (ipv4 net.IP, err error) {
 	for _, v := range addrs {
 		switch ip := v.(type) {
 		case *net.IPAddr:
-			if ipv4 = ip.IP.To4(); ipv4 != nil {
-				return ipv4, nil
+			if ip.IP != nil {
+				return ip.IP, nil
 			}
+        case *net.IPNet:
+            return ip.IP, nil
 		}
 	}
-	return nil, fmt.Errorf("could not find any ipv4 addresses")
+    var results string
+    for i, v := range addrs {
+        if i == (len(addrs)-1) {
+            results += v.String()
+        } else {
+            results += fmt.Sprintf("%s, ", v.String())
+        }
+    }
+
+	return nil, fmt.Errorf("could not find any ipv4 addresses in result list: [%s]", results)
 }
