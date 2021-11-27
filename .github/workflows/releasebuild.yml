@@ -1,0 +1,88 @@
+---
+name: releasebuild
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+
+  distbuild:
+    name: Checkout code and build tar.gz
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set the version
+        id: version_number
+        run: |
+          echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+      - name: Set the git source location
+        id: source_loc
+        run: |
+          echo "SRC=${GITHUB_REF}" >> $GITHUB_ENV
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Install Go
+        uses: actions/setup-go@v2
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Build tar.gz
+        run: make dist
+      - name: Upload mock script
+        uses: actions/upload-artifact@v2
+        with:
+          name: mockbuild.sh
+          path: ci/mockbuild.sh
+      - name: Upload tar.gz
+        uses: actions/upload-artifact@v2
+        with:
+          name: warewulf-${{ env.VERSION }}.tar.gz
+          path: warewulf-${{ env.VERSION }}.tar.gz
+
+  rpmbuild:
+      name: Build using Rocky Linux
+      needs: distbuild
+      runs-on: ubuntu-latest
+      container: 
+        image: rockylinux/rockylinux
+        options: --privileged
+      steps:
+        - name: Set the version
+          id: version_number
+          run: |
+            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+        - name: Download mock build script
+          uses: actions/download-artifact@v2
+          with:
+            name: mockbuild.sh
+        - name: Download tar.gz
+          uses: actions/download-artifact@v2
+          with:
+            name: warewulf-${{ env.VERSION }}.tar.gz
+        - name: Set execute bit
+          run: chmod +x mockbuild.sh
+        - name: Run rpm build script
+          run: ./mockbuild.sh  ${{ env.VERSION }}
+        - name: Upload EL8 RPM
+          uses: actions/upload-artifact@v2
+          with:
+            name: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.el8.x86_64.rpm
+            path: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.el8.x86_64.rpm
+        - name: Upload EL7 RPM
+          uses: actions/upload-artifact@v2
+          with:
+            name: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.el7.x86_64.rpm
+            path: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.el7.x86_64.rpm
+        - name: Upload Assets To Release
+          uses: xresloader/upload-to-github-release@master
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            file: 'warewulf-${{ env.VERSION }}.tar.gz;warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.*.rpm'
+            draft: false
+            update_latest_release: true
+            tags: true
