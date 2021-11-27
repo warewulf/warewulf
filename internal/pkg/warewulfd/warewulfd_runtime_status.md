@@ -43,10 +43,4 @@ This will create 40 test nodes `test_0..39` in the cluster `test`.
 But, only 13 of those will be shown.
 A subsequent request with a lower number of nodes will retain the earlier instantiated nodes.
 This can be used to mimic nodes that fail to check-in.
-
-#### json
-A full report of all NodeInfo data is returned to requests with the `json` parameter.
-```shell
-curl  "http://localhost:9873/status/?test=40&json" | python -m json.tool
-```
-In this case, the `limit` parameter takes no affect.
+, the `limit` parameter takes no affect.
