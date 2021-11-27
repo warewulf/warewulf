@@ -6,11 +6,12 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "edit [flags] (overlay kind) (overlay name) (file path)",
-		Short: "Edit/Create a file within a Warewulf Overlay",
-		Long: "This command will allow you to edit or create a new file within a given\n" +
-			"overlay. Note: when creating files ending in a '.ww' suffix this will always be\n" +
-			"parsed as a Warewulf template file, and the suffix will be removed automatically.",
+		DisableFlagsInUseLine: true,
+		Use:   "edit [OPTIONS] {system|runtime} OVERLAY_NAME FILE",
+		Short: "Edit or create a file within a Warewulf Overlay",
+		Long: "This command will open the FILE for editing or create a new file within the\n" +
+			"OVERLAY_NAME. Note: files created with a '.ww' suffix will always be\n" +
+			"parsed as Warewulf template files, and the suffix will be removed automatically.",
 		RunE: CobraRunE,
 		Args: cobra.ExactArgs(3),
 	}

@@ -6,9 +6,10 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "create [flags] (overlay kind) (overlay name)",
+		DisableFlagsInUseLine: true,
+		Use:   "create [OPTIONS] {system|runtime} OVERLAY_NAME",
 		Short: "Initialize a new Overlay",
-		Long:  "This command will create a new empty overlay.",
+		Long:  "This command creates a new empty system or runtime overlay named OVERLAY_NAME.",
 		RunE:  CobraRunE,
 		Args:  cobra.ExactArgs(2),
 	}

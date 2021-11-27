@@ -7,9 +7,10 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "delete [flags] [container name]...",
+		DisableFlagsInUseLine: true,
+		Use:   "delete [OPTIONS] CONTAINER [...]",
 		Short: "Delete an imported container",
-		Long:  "This command will delete a container that has been imported into Warewulf.",
+		Long:  "This command will delete CONTAINERs that have been imported into Warewulf.",
 		RunE:  CobraRunE,
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {

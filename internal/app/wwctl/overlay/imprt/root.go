@@ -4,9 +4,11 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:     "import [flags] (overlay kind) (overlay name) (host source) [overlay target]",
+		DisableFlagsInUseLine: true,
+		Use:     "import [OPTIONS] {system|runtime} OVERLAY_NAME FILE [NEW_NAME]",
 		Short:   "Import a file into a Warewulf Overlay",
-		Long:    "This command will import a file into a given Warewulf overlay.",
+		Long:    "This command imports the FILE into the Warewulf OVERLAY_NAME.\n" +
+		         "Optionally, the file can be renamed to NEW_NAME",
 		RunE:    CobraRunE,
 		Args:    cobra.RangeArgs(3, 4),
 		Aliases: []string{"cp"},

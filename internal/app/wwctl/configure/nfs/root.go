@@ -4,7 +4,8 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "nfs",
+		DisableFlagsInUseLine: true,
+		Use:   "nfs [OPTIONS]",
 		Short: "Manage and initialize NFS",
 		Long: "NFS is an optional dependent service of Warewulf, this tool will automatically\n" +
 			"configure NFS as per the configuration in the warewulf.conf file.",

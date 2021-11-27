@@ -16,7 +16,8 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "overlay",
+		DisableFlagsInUseLine: true,
+		Use:   "overlay COMMAND [OPTIONS]",
 		Short: "Warewulf Overlay Management",
 		Long:  "Management interface for Warewulf overlays",
 	}

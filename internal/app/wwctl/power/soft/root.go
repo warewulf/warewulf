@@ -7,9 +7,10 @@ import (
 
 var (
 	powerCmd = &cobra.Command{
+		DisableFlagsInUseLine: true,
 		Use:   "soft",
 		Short: "Gracefully shuts down the given node(s)",
-		Long:  "This command will gracefully shutdown the given set of nodes.",
+		Long:  "This command uses the operationg system to shut down the set of nodes specified by PATTERN.",
 		RunE:  CobraRunE,
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {

@@ -7,9 +7,10 @@ import (
 
 var (
 	powerCmd = &cobra.Command{
-		Use:   "sensors [flags] [node pattern]",
-		Short: "Show node's IPMI sensor information",
-		Long:  "Show IPMI sensors for a single node.",
+		DisableFlagsInUseLine: true,
+		Use:   "sensors [OPTIONS] PATTERN",
+		Short: "Show node IPMI sensor information",
+		Long:  "Show IPMI sensor information for nodes matching PATTERN.",
 		Args:  cobra.MinimumNArgs(1),
 		RunE:  CobraRunE,
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

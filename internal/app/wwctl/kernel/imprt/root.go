@@ -9,10 +9,10 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "import [flags] [kernel version]",
+		DisableFlagsInUseLine: true,
+		Use:   "import [OPTIONS] KERNEL",
 		Short: "Import Kernel version into Warewulf",
-		Long: "This will import a Kernel version from the control node into Warewulf for nodes\n" +
-			"to be configured to boot on.",
+		Long: "This will import a boot KERNEL version from the control node into Warewulf",
 		RunE: CobraRunE,
 		Args: cobra.MinimumNArgs(1),
 	}
