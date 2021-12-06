@@ -16,6 +16,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/talos-systems/go-smbios/smbios"
+	"github.com/coreos/go-systemd/daemon"
 	"github.com/hpcng/warewulf/internal/pkg/pidfile"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -149,9 +150,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			os.Exit(0)
 		}
 	}()
-
+	var finishedInitialSync bool = false
 	for {
 		updateSystem(conf.Ipaddr, conf.Warewulf.Port, wwid, tag, localUUID)
+		if !finishedInitialSync {
+			// ignore error and status here, as this wouldn't change anything
+			_, _ = daemon.SdNotify(false, daemon.SdNotifyReady)
+			finishedInitialSync = true
+		}
 
 		if conf.Warewulf.UpdateInterval > 0 {
 			time.Sleep(time.Duration(conf.Warewulf.UpdateInterval*1000) * time.Millisecond)
