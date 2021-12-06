@@ -5,7 +5,7 @@ After=network-online.target
 AssertFileIsExecutable=@BINDIR@/wwctl
 
 [Service]
-Type=notify
+Type=simple
 User=root
 Group=root
 

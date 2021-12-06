@@ -4,11 +4,11 @@ After=network.target
 After=local-fs.target
 
 [Service]
-Type=simple
+Type=notify
 ExecStart=/warewulf/bin/wwclient
 ExecReload=/bin/kill -s SIGHUP "$MAINPID"
 PIDFile=/var/run/wwclient.pid
-TimeoutSec=5
+TimeoutSec=60
  
 [Install]
 WantedBy=multi-user.target
