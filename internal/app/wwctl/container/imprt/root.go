@@ -5,7 +5,7 @@ import "github.com/spf13/cobra"
 var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:   "imprt [OPTIONS] SOURCE [NAME]",
+		Use:   "import [OPTIONS] SOURCE [NAME]",
 		Short: "Import a container into Warewulf",
 		Long:
 `This command will pull and import a container into Warewulf from SOURCE,
