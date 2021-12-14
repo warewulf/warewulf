@@ -10,6 +10,13 @@ ifeq ($(VERSION_FULL),)
 VERSION_FULL := $(VERSION)
 endif
 
+WWROOT ?= /var/lib
+# warewulf subdir automatcally added to TFTPROOT
+TFTPROOT ?= /var/lib/tftpboot
+# SUSE: TFTPROOT ?= /srv/tftpboot
+# Ubuntu: TFTPROOT ?= /srv/tftp
+FIREWALLDIR ?= /usr/lib/firewalld/services
+OVERLAYDIR ?= $(WWROOT)/warewulf/overlays
 
 # auto installed tooling
 TOOLS_DIR := .tools
@@ -29,8 +36,7 @@ export GOPROXY
 # built tags needed for wwbuild binary
 WW_BUILD_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
-# all build targets
-all: vendor wwctl wwclient bash_completion.d man_pages
+all: config vendor wwctl wwclient bash_completion.d man_pages
 
 build: lint test-it vet all
 
@@ -46,7 +52,7 @@ $(GOLANGCI_LINT):
 	@curl -qq -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(TOOLS_BIN) $(GOLANGCI_LINT_VERSION)
 
 
-setup: vendor $(TOOLS_DIR) setup_tools
+setup: vendor $(TOOLS_DIR) setup_tools config
 
 # vendor
 vendor:
@@ -56,8 +62,13 @@ vendor:
 $(TOOLS_DIR):
 	@mkdir -p $@
 
+# Pre-build steps for source, such as "go generate"
+config:
+	sed -e 's,@WWROOT@,$(WWROOT),g; s,@VERSION@,$(VERSION),g; s,@RELEASE@,$(RELEASE),g' warewulf.spec.in > warewulf.spec
+	sed -e 's,@WWROOT@,$(WWROOT),g; s,@TFTPROOT@,$(TFTPROOT),g' etc/warewulf.conf.in > etc/warewulf.conf
+
 # Lint
-lint: setup_tools
+lint: setup_tools config
 	@echo Running golangci-lint...
 	@$(GOLANGCI_LINT) run --build-tags "$(WW_BUILD_GO_BUILD_TAGS)" --skip-dirs internal/pkg/staticfiles ./...
 
@@ -81,11 +92,12 @@ debian: all
 
 files: all
 	install -d -m 0755 $(DESTDIR)/usr/bin/
-	install -d -m 0755 $(DESTDIR)/var/warewulf/
-	install -d -m 0755 $(DESTDIR)/var/warewulf/chroots
+	install -d -m 0755 $(DESTDIR)$(WWROOT)/warewulf/
+	install -d -m 0755 $(DESTDIR)$(WWROOT)/warewulf/chroots
+	install -d -m 0755 $(DESTDIR)$(WWROOT)/warewulf/provision
 	install -d -m 0755 $(DESTDIR)/etc/warewulf/
 	install -d -m 0755 $(DESTDIR)/etc/warewulf/ipxe
-	install -d -m 0755 $(DESTDIR)/var/lib/tftpboot/warewulf/ipxe/
+	install -d -m 0755 $(DESTDIR)$(TFTPROOT)/warewulf/ipxe/
 	install -d -m 0755 $(DESTDIR)/etc/bash_completion.d/
 	install -d -m 0755 $(DESTDIR)/usr/share/man/man1
 	test -f $(DESTDIR)/etc/warewulf/warewulf.conf || install -m 644 etc/warewulf.conf $(DESTDIR)/etc/warewulf/
@@ -94,15 +106,25 @@ files: all
 	cp -r etc/dhcp $(DESTDIR)/etc/warewulf/
 	cp -r etc/ipxe $(DESTDIR)/etc/warewulf/
 	cp -r overlays $(DESTDIR)/var/warewulf/
-	mkdir -p $(DESTDIR)/var/warewulf/overlays/wwinit/bin/
-	mkdir -p $(DESTDIR)/var/warewulf/overlays/wwinit/warewulf/bin/
-	chmod +x $(DESTDIR)/var/warewulf/overlays/wwinit/init
-	chmod 600 $(DESTDIR)/var/warewulf/overlays/wwinit/etc/ssh/ssh*
-	chmod 644 $(DESTDIR)/var/warewulf/overlays/wwinit/etc/ssh/ssh*.pub.ww
-	mkdir -p $(DESTDIR)/var/warewulf/overlays/wwinit/warewulf/bin/
+	mkdir -p $(DESTDIR)$(OVERLAYIR)/wwinit/bin/
+	mkdir -p $(DESTDIR)$(OVERLAYIR)/wwinit/warewulf/bin/
+	chmod +x $(DESTDIR)$(OVERLAYIR)/wwinit/init
+	chmod 600 $(DESTDIR)$(OVERLAYIR)/wwinit/etc/ssh/ssh*
+	chmod 644 $(DESTDIR)$(OVERLAYIR)/wwinit/etc/ssh/ssh*.pub.ww
+	mkdir -p $(DESTDIR)$(OVERLAYIR)/wwinit/warewulf/bin/
 	install -m 0755 wwctl $(DESTDIR)/usr/bin/
 	mkdir -p $(DESTDIR)/usr/lib/firewalld/services
 	install -c -m 0644 include/firewalld/warewulf.xml $(DESTDIR)/usr/lib/firewalld/services
+	cp -r overlays $(DESTDIR)$(WWROOT)/warewulf/
+	mkdir -p $(DESTDIR)$(OVERLAYIR)/wwinit/bin/
+	mkdir -p $(DESTDIR)$(OVERLAYIR)/wwinit/warewulf/bin/
+	chmod +x $(DESTDIR)$(OVERLAYIR)/wwinit/init
+	chmod 600 $(DESTDIR)$(OVERLAYIR)/wwinit/etc/ssh/ssh*
+	chmod 644 $(DESTDIR)$(OVERLAYIR)/wwinit/etc/ssh/ssh*.pub.ww
+	mkdir -p $(DESTDIR)$(OVERLAYIR)/wwinit/warewulf/bin/
+	install -m 0755 wwctl $(DESTDIR)/usr/bin/
+	mkdir -p $(DESTDIR)$(FIREWALLDIR)
+	install -c -m 0644 include/firewalld/warewulf.xml $(DESTDIR)$(FIREWALLDIR)
 	mkdir -p $(DESTDIR)/usr/lib/systemd/system
 	install -c -m 0644 include/systemd/warewulfd.service $(DESTDIR)/usr/lib/systemd/system
 	cp bash_completion.d/warewulf $(DESTDIR)/etc/bash_completion.d/
@@ -110,15 +132,15 @@ files: all
 
 init:
 	systemctl daemon-reload
-	cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
-	restorecon -r /var/lib/tftpboot/warewulf
+	cp -r tftpboot/* $(TFTPROOT)/warewulf/ipxe/
+	restorecon -r $(TFTPROOT)/warewulf
 
 debfiles: debian
-	chmod +x $(DESTDIR)/var/warewulf/overlays/system/debian/init
-	chmod 600 $(DESTDIR)/var/warewulf/overlays/system/debian/etc/ssh/ssh*
-	chmod 644 $(DESTDIR)/var/warewulf/overlays/system/debian/etc/ssh/ssh*.pub.ww
-	mkdir -p $(DESTDIR)/var/warewulf/overlays/system/debian/warewulf/bin/
-	cp wwclient $(DESTDIR)/var/warewulf/overlays/system/debian/warewulf/bin/
+	chmod +x $(DESTDIR)$(WWROOT)/warewulf/overlays/system/debian/init
+	chmod 600 $(DESTDIR)$(WWROOT)/warewulf/overlays/system/debian/etc/ssh/ssh*
+	chmod 644 $(DESTDIR)$(WWROOT)/warewulf/overlays/system/debian/etc/ssh/ssh*.pub.ww
+	mkdir -p $(DESTDIR)$(WWROOT)/warewulf/overlays/system/debian/warewulf/bin/
+	cp wwclient $(DESTDIR)$(WWROOT)/warewulf/overlays/system/debian/warewulf/bin/
 
 wwctl:
 	cd cmd/wwctl; GOOS=linux go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/version.Version=$(VERSION_FULL)'" -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwctl
@@ -148,12 +170,17 @@ man_pages: man_page
 	./man_page ./man_pages
 	cd man_pages; for i in wwctl*1; do echo "Compressing manpage: $$i"; gzip --force $$i; done
 
+config_defaults:
+	cd cmd/config_defaults && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=$(CONFIG)/etc/warewulf.conf'\
+	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=$(CONFIG)/etc/nodes.conf'"\
+	 -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../config_defaults
+
 dist: vendor
 	rm -rf _dist/warewulf-$(VERSION)
 	mkdir -p _dist/warewulf-$(VERSION)
 	git archive --format=tar $(SRC) | tar -xf - -C _dist/warewulf-$(VERSION)
 	cp -r vendor _dist/warewulf-$(VERSION)/
-	sed -e 's/@VERSION@/$(VERSION)/g; s/@RELEASE@/$(RELEASE)/g' warewulf.spec.in > _dist/warewulf-$(VERSION)/warewulf.spec
+	cp warewulf.spec _dist/warewulf-$(VERSION)/
 	cd _dist; tar -czf ../warewulf-$(VERSION).tar.gz warewulf-$(VERSION)
 
 clean:
@@ -166,6 +193,7 @@ clean:
 	rm -f man_page
 	rm -rf man_pages
 	rm -rf vendor
+	rm -f config_defaults
 
 install: files install_wwclient
 

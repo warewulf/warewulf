@@ -1,19 +1,15 @@
-package config
+package overlay
 
 import (
-	"fmt"
 	"path"
 
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-)
-
-const (
-	LocalStateDir = "/var/warewulf"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 )
 
 func OverlayDir() string {
-	return fmt.Sprintf("%s/overlays/", LocalStateDir)
+	return path.Join(warewulfconf.DataStore(), "provision/overlays")
 }
 
 func SystemOverlayDir() string {
@@ -63,7 +59,7 @@ func SystemOverlayImage(nodeName string) string {
 		return ""
 	}
 
-	return fmt.Sprintf("%s/provision/overlays/system/%s.img", LocalStateDir, nodeName)
+	return path.Join(SystemOverlayDir(), nodeName+".img")
 }
 
 func RuntimeOverlayImage(nodeName string) string {
@@ -77,5 +73,5 @@ func RuntimeOverlayImage(nodeName string) string {
 		return ""
 	}
 
-	return fmt.Sprintf("%s/provision/overlays/runtime/%s.img", LocalStateDir, nodeName)
+	return path.Join(RuntimeOverlayDir(), nodeName+".img")
 }

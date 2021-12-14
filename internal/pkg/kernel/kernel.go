@@ -11,7 +11,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
@@ -27,7 +27,7 @@ var (
 )
 
 func ParentDir() string {
-	return path.Join(config.LocalStateDir, "provision/kernel")
+	return path.Join(warewulfconf.DataStore(), "provision/kernel")
 }
 
 func KernelImage(kernelName string) string {
@@ -111,7 +111,7 @@ func ListKernels() ([]string, error) {
 
 func Build(kernelVersion string, kernelName string, root string) (string, error) {
 	kernelDrivers := path.Join(root, "/lib/modules/"+kernelVersion)
-  kernelDriversRelative := path.Join("/lib/modules/"+kernelVersion)
+    kernelDriversRelative := path.Join("/lib/modules/"+kernelVersion)
 	kernelDestination := KernelImage(kernelName)
 	driversDestination := KmodsImage(kernelName)
 	versionDestination := KernelVersion(kernelName)

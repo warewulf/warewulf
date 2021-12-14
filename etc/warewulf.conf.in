@@ -6,6 +6,7 @@ warewulf:
   autobuild overlays: true
   update interval: 60
   syslog: false
+  datastore: @WWROOT@/warewulf
 dhcp:
   enabled: true
   range start: 192.168.200.50
@@ -14,7 +15,7 @@ dhcp:
   systemd name: dhcpd
 tftp:
   enabled: true
-  tftproot: /var/lib/tftpboot
+  tftproot: @TFTPROOT@
   systemd name: tftp
 nfs:
   systemd name: nfs-server

@@ -6,10 +6,8 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
-var ConfigFile = "/etc/warewulf/warewulf.conf"
-
 type ControllerConf struct {
-	Comment  string        `yaml:"comment"`
+	Comment  string        `yaml:"comment,omitempty"`
 	Ipaddr   string        `yaml:"ipaddr"`
 	Netmask  string        `yaml:"netmask"`
 	Network  string        `yaml:"network,omitempty"`
@@ -18,14 +16,16 @@ type ControllerConf struct {
 	Dhcp     *DhcpConf     `yaml:"dhcp"`
 	Tftp     *TftpConf     `yaml:"tftp"`
 	Nfs      *NfsConf      `yaml:"nfs"`
+	current  bool
 }
 
 type WarewulfConf struct {
-	Port              int  `yaml:"port"`
-	Secure            bool `yaml:"secure"`
-	UpdateInterval    int  `yaml:"update interval"`
-	AutobuildOverlays bool `yaml:"autobuild overlays"`
-	Syslog            bool `yaml:"syslog"`
+	Port              int    `yaml:"port"`
+	Secure            bool   `yaml:"secure"`
+	UpdateInterval    int    `yaml:"update interval"`
+	AutobuildOverlays bool   `yaml:"autobuild overlays"`
+	Syslog            bool   `yaml:"syslog"`
+	DataStore         string `yaml:"datastore"`
 }
 
 type DhcpConf struct {
@@ -34,7 +34,7 @@ type DhcpConf struct {
 	RangeStart  string `yaml:"range start"`
 	RangeEnd    string `yaml:"range end"`
 	SystemdName string `yaml:"systemd name"`
-	ConfigFile  string `yaml:"config file"`
+	ConfigFile  string `yaml:"config file,omitempty"`
 }
 
 type TftpConf struct {
@@ -70,11 +70,20 @@ func (s *NfsConf) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
+
 func init() {
-	//TODO: Check to make sure nodes.conf is found
 	if !util.IsFile(ConfigFile) {
 		wwlog.Printf(wwlog.ERROR, "Configuration file not found: %s\n", ConfigFile)
 		// fail silently as this also called by bash_completion
-		return
 	}
+	_, err := New()
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Could not read Warewulf configuration file: %s\n", err)
+	}
+}
+
+// Waste processor cycles to make code more readable
+
+func DataStore() string {
+	return cachedConf.Warewulf.DataStore
 }

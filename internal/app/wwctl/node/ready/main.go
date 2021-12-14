@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/kernel"
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -70,11 +70,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		if node.SystemOverlay.Get() != "" {
-			if util.IsFile(config.SystemOverlayImage(node.Id.Get())) {
+			if util.IsFile(overlay.SystemOverlayImage(node.Id.Get())) {
 				systemo_good = true
 			} else {
 				status = false
-				wwlog.Printf(wwlog.VERBOSE, "System Overlay not found: %s\n", config.SystemOverlayImage(node.Id.Get()))
+				wwlog.Printf(wwlog.VERBOSE, "System Overlay not found: %s\n", overlay.SystemOverlayImage(node.Id.Get()))
 			}
 		} else {
 			status = false
@@ -82,11 +82,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		if node.RuntimeOverlay.Get() != "" {
-			if util.IsFile(config.RuntimeOverlayImage(node.Id.Get())) {
+			if util.IsFile(overlay.RuntimeOverlayImage(node.Id.Get())) {
 				runtimeo_good = true
 			} else {
 				status = false
-				wwlog.Printf(wwlog.VERBOSE, "Runtime Overlay not found: %s\n", config.RuntimeOverlaySource(node.Id.Get()))
+				wwlog.Printf(wwlog.VERBOSE, "Runtime Overlay not found: %s\n", overlay.RuntimeOverlaySource(node.Id.Get()))
 			}
 		} else {
 			status = false

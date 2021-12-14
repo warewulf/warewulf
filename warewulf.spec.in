@@ -1,5 +1,5 @@
 %global wwgroup warewulf
-%{!?wwshared: %global wwshared %{_localstatedir}}
+%global wwshared @WWROOT@/warewulf
 %define debug_package %{nil}
 
 Name: warewulf
@@ -51,6 +51,9 @@ system for large clusters of bare metal and/or virtual systems.
 
 
 %build
+%if 0%{?sle_version}
+make all TFTPROOT="/srv/tftpboot"
+%else
 make all
 
 
@@ -86,16 +89,15 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %{wwshared}/%{name}/overlays/system/*
 
 %attr(-, root, root) %{_bindir}/wwctl
-%if 0%{?rhel}
 %attr(-, root, root) %{_prefix}/lib/firewalld/services/warewulf.xml
-%else
-# sle_version
-%attr(-, root, root) %{_libexecdir}/firewalld/services/warewulf.xml
-%endif
 %attr(-, root, root) %{_unitdir}/warewulfd.service
 %attr(-, root, root) %{_mandir}/man1/wwctl*
 
 %changelog
+* Wed Dec 15 2021 Jeremy Siadal <jeremy.c.siadal@intel.com> - 4.2.0-1
+- Relocate tftpboot for OpenSUSE
+- Remove libexecdir macro; changing in OpenSUSE 15.4
+
 * Mon Nov 1 2021 Jeremy Siadal <jeremy.c.siadal@intel.com> - 4.2.0-1
 - Add support for OpenSUSE
 - Update file attribs

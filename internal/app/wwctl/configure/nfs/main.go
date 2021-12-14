@@ -9,6 +9,8 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/hpcng/warewulf/internal/pkg/overlay"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )

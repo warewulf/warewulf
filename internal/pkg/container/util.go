@@ -7,7 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
@@ -21,7 +21,7 @@ func ValidName(name string) bool {
 }
 
 func SourceParentDir() string {
-	return path.Join(config.LocalStateDir, "chroots")
+	return path.Join(warewulfconf.DataStore(), "chroots")
 }
 
 func SourceDir(name string) string {
@@ -33,7 +33,7 @@ func RootFsDir(name string) string {
 }
 
 func ImageParentDir() string {
-	return path.Join(config.LocalStateDir, "provision/container/")
+	return path.Join(warewulfconf.DataStore(), "provision/container/")
 }
 
 func ImageFile(name string) string {

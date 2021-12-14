@@ -9,12 +9,6 @@ import (
 	"github.com/containers/image/v5/types"
 )
 
-const (
-	defaultCachePath = "/var/warewulf/container-cache/oci/"
-	blobPrefix       = "blobs"
-	rootfsPrefix     = "rootfs"
-)
-
 type CacheOpt func(*Cache) error
 
 func OptSetCachePath(path string) CacheOpt {

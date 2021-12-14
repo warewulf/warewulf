@@ -31,9 +31,25 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Printf("%-30s %-12s\n", "OVERLAY NAME", "FILES/DIRS")
 	}
 
+<<<<<<< HEAD
 	for o := range overlays {
 		name := overlays[o]
 		path := overlay.OverlaySourceDir(name)
+=======
+	for o := range overlayList {
+		var path string
+		name := overlayList[o]
+
+		if overlayName != "" && overlayName != name {
+			continue
+		}
+
+		if overlayKind == "system" {
+			path = overlay.SystemOverlaySource(overlayList[o])
+		} else if overlayKind == "runtime" {
+			path = overlay.RuntimeOverlaySource(overlayList[o])
+		}
+>>>>>>> eb32d41... Add config option for shared state dir
 
 		if util.IsDir(path) {
 			files := util.FindFiles(path)
@@ -60,7 +76,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 					sys := s.Sys()
 
+<<<<<<< HEAD
 					fmt.Printf("%v %5d %-5d %-18s /%s\n", perms, sys.(*syscall.Stat_t).Uid, sys.(*syscall.Stat_t).Gid, overlays[o], files[file])
+=======
+					fmt.Printf("%v %5d %-5d %-18s /%s\n", perms, sys.(*syscall.Stat_t).Uid, sys.(*syscall.Stat_t).Gid, overlayList[o], files[file])
+>>>>>>> eb32d41... Add config option for shared state dir
 
 				}
 			} else {
@@ -68,7 +88,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 		} else {
+<<<<<<< HEAD
 			wwlog.Printf(wwlog.ERROR, "system/%s (path not found:%s)\n", overlays[o], path)
+=======
+			wwlog.Printf(wwlog.ERROR, "system/%s (path not found:%s)\n", overlayList[o], path)
+>>>>>>> eb32d41... Add config option for shared state dir
 		}
 	}
 
