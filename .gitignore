@@ -14,3 +14,7 @@
 # other created files
 /man_pages
 /bash_completion.d
+/usr/share/man/man1/
+/etc/bash_completion.d/
+/etc/warewulf.conf
+warewulf.spec
