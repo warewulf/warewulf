@@ -1,5 +1,5 @@
 %global wwgroup warewulf
-%global wwshared @WWROOT@/warewulf
+%global wwshared @WWROOT@
 %define debug_package %{nil}
 
 Name: warewulf
@@ -55,6 +55,7 @@ system for large clusters of bare metal and/or virtual systems.
 make all TFTPROOT="/srv/tftpboot"
 %else
 make all
+%endif
 
 
 %install

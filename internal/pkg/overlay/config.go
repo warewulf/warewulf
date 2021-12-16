@@ -9,7 +9,7 @@ import (
 )
 
 func OverlayDir() string {
-	return path.Join(warewulfconf.DataStore(), "provision/overlays")
+	return path.Join(warewulfconf.DataStore(), "/overlays")
 }
 
 func SystemOverlayDir() string {
