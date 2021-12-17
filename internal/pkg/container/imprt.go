@@ -15,7 +15,7 @@ import (
 )
 
 func ImportDocker(uri string, name string, sCtx *types.SystemContext) error {
-	OciBlobCacheDir := 	warewulfconf.DataStore() + "/oci/blobs"
+	OciBlobCacheDir := 	warewulfconf.DataStore() + "/oci"
 
 	err := os.MkdirAll(OciBlobCacheDir, 0755)
 	if err != nil {

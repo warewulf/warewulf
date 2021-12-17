@@ -2,46 +2,46 @@ package warewulfconf
 
 const (
 	defaultDataStore string = "/srv/warewulf"
-	defaultPort int = 9983
+	defaultPort      int    = 9983
 )
 
 var ConfigFile string = "/etc/warewulf/warewulf.conf"
 
 func defaultConfig() *ControllerConf {
 	Warewulf := &WarewulfConf{
-		Port: defaultPort,
-		Secure: true,
-		UpdateInterval: 60,
+		Port:              defaultPort,
+		Secure:            true,
+		UpdateInterval:    60,
 		AutobuildOverlays: true,
-		Syslog: false,
-		DataStore: defaultDataStore,
+		Syslog:            false,
+		DataStore:         defaultDataStore,
 	}
 	Dhcp := &DhcpConf{
-			Enabled: true,
-			Template: "default",
-			RangeStart: "192.168.200.50",
-			RangeEnd: "192.168.200.99",
-			SystemdName: "dhcpd",
-			ConfigFile: "/etc/dhcp/dhcpd.conf",
-		}
+		Enabled:     true,
+		Template:    "default",
+		RangeStart:  "192.168.200.50",
+		RangeEnd:    "192.168.200.99",
+		SystemdName: "dhcpd",
+		ConfigFile:  "/etc/dhcp/dhcpd.conf",
+	}
 	Tftp := &TftpConf{
-			Enabled: true,
-			TftpRoot: "/var/lib/tftpboot",
-			SystemdName: "tftp",
-		}
+		Enabled:     true,
+		TftpRoot:    "/var/lib/tftpboot",
+		SystemdName: "tftp",
+	}
 	Nfs := &NfsConf{
-		    Enabled: true,
-			Exports: []string{"/home",
-				defaultDataStore,
-			},
-			SystemdName: "nfs-server",
-		}
+		Enabled: true,
+		Exports: []string{"/home",
+			defaultDataStore,
+		},
+		SystemdName: "nfs-server",
+	}
 
 	return &ControllerConf{
 		Warewulf: Warewulf,
-        Dhcp: Dhcp,
-		Tftp: Tftp,
-		Nfs: Nfs,
-		current: false,
+		Dhcp:     Dhcp,
+		Tftp:     Tftp,
+		Nfs:      Nfs,
+		current:  false,
 	}
 }
