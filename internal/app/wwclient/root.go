@@ -133,21 +133,28 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	wwid := strings.Split(wwid_tmp[1], " ")[0]
 
+
+	duration := 300
+	if conf.Warewulf.UpdateInterval > 0 {
+		duration = conf.Warewulf.UpdateInterval
+	}
+	stopTimer := time.NewTimer(time.Duration(duration) * time.Second)
 	// listen on SIGHUP
 	sigs := make(chan os.Signal, 1)
-
 	signal.Notify(sigs, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGINT)
-
 	go func() {
-		sig := <-sigs
-		switch sig {
-		case syscall.SIGHUP:
-			log.Printf("Received SIGNAL: %s\n", sig)
-      updateSystem(conf.Ipaddr, conf.Warewulf.Port, wwid, tag, localUUID)
-		case syscall.SIGTERM, syscall.SIGINT:
-			wwlog.Printf(wwlog.INFO, "termination wwclient!, %v", sig)
-			cleanUp()
-			os.Exit(0)
+		for {
+			sig := <-sigs
+			switch sig {
+			case syscall.SIGHUP:
+				log.Printf("Received SIGNAL: %s\n", sig)
+				stopTimer.Stop()
+				stopTimer.Reset(0)
+			case syscall.SIGTERM, syscall.SIGINT:
+				wwlog.Printf(wwlog.INFO, "termination wwclient!, %v", sig)
+				cleanUp()
+				os.Exit(0)
+			}
 		}
 	}()
 	var finishedInitialSync bool = false
@@ -159,11 +166,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			finishedInitialSync = true
 		}
 
-		if conf.Warewulf.UpdateInterval > 0 {
-			time.Sleep(time.Duration(conf.Warewulf.UpdateInterval*1000) * time.Millisecond)
-		} else {
-			time.Sleep(30000 * time.Millisecond * 1000)
-		}
+		<-stopTimer.C
+		stopTimer.Reset(time.Duration(duration) * time.Second)
 	}
 }
 
