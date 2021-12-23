@@ -1,5 +1,10 @@
 %global wwgroup warewulf
 %global wwshared @WWROOT@
+%if 0%{?sle_version}
+%global tftpdir "/srv/tftpboot"
+%else
+%global tftpdir "/var/lib/tftpboot"
+%endif
 %define debug_package %{nil}
 
 Name: warewulf
@@ -51,15 +56,11 @@ system for large clusters of bare metal and/or virtual systems.
 
 
 %build
-%if 0%{?sle_version}
-make all TFTPROOT="/srv/tftpboot"
-%else
-make all
-%endif
+make TFTPROOT="%{tftpdir}" WWROOT="%{wwshared}"
 
 
 %install
-%make_install DESTDIR=%{buildroot} %{?mflags_install}
+%make_install DESTDIR=%{buildroot} TFTPROOT="%{tftpdir}" WWROOT="%{wwshared}" %{?mflags_install}
 
 
 %pre
@@ -95,7 +96,8 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %attr(-, root, root) %{_mandir}/man1/wwctl*
 
 %changelog
-* Wed Dec 15 2021 Jeremy Siadal <jeremy.c.siadal@intel.com> - 4.2.0-1
+* Wed Dec 22 2021 Jeremy Siadal <jeremy.c.siadal@intel.com> - 4.2.0-1
+- Add configuration options to make
 - Relocate tftpboot for OpenSUSE
 - Remove libexecdir macro; changing in OpenSUSE 15.4
 
