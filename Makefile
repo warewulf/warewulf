@@ -143,7 +143,10 @@ debfiles: debian
 	cp wwclient $(DESTDIR)$(WWROOT)/warewulf/overlays/system/debian/warewulf/bin/
 
 wwctl:
-	cd cmd/wwctl; GOOS=linux go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/version.Version=$(VERSION_FULL)'" -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwctl
+	cd cmd/wwctl; GOOS=linux go build \
+	-ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/version.Version=$(VERSION_FULL)' \
+	-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.defaultDataStore=$(WWROOT)/warewulf'" \
+	-mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwctl
 
 wwclient:
 	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags '-extldflags -static' -o ../../wwclient
@@ -171,8 +174,9 @@ man_pages: man_page
 	cd man_pages; for i in wwctl*1; do echo "Compressing manpage: $$i"; gzip --force $$i; done
 
 config_defaults:
-	cd cmd/config_defaults && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=$(CONFIG)/etc/warewulf.conf'\
-	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=$(CONFIG)/etc/nodes.conf'"\
+	cd cmd/config_defaults && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=$(CONFIG)/etc/warewulf.conf' \
+	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=$(CONFIG)/etc/nodes.conf' \
+	 -X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.defaultDataStore=/srv/warewulf'" \
 	 -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../config_defaults
 
 dist: vendor

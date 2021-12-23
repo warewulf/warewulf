@@ -1,11 +1,11 @@
 package warewulfconf
 
-const (
-	defaultDataStore string = "/srv/warewulf"
-	defaultPort      int    = 9983
-)
+const defaultPort      int    = 9983
 
-var ConfigFile string = "/etc/warewulf/warewulf.conf"
+var (
+	ConfigFile string = "/etc/warewulf/warewulf.conf"
+	defaultDataStore string = "/var/lib/warewulf"
+)
 
 func defaultConfig() *ControllerConf {
 	Warewulf := &WarewulfConf{
