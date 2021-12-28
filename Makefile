@@ -5,7 +5,7 @@ RELEASE ?= 1
 
 SRC ?= main
 
-VERSION_FULL ?= $(shell test -e .git && git describe --tags --long --first-parent)
+VERSION_FULL ?= $(shell test -e .git && git describe --tags --long --first-parent --always)
 ifeq ($(VERSION_FULL),)
 VERSION_FULL := $(VERSION)
 endif
