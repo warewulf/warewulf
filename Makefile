@@ -33,7 +33,7 @@ WW_BUILD_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 OVERLAY_DIR ?= $(DESTDIR)/var/warewulf/overlays/system/
 overlays = ${dir ${wildcard ${OVERLAY_DIR}*/}}
 
-all: vendor wwctl wwclient bash_completion man_page
+all: vendor wwctl wwclient bash_completion.d man_pages
 
 build: lint test-it vet all
 
@@ -106,8 +106,8 @@ files: all
 	install -c -m 0644 include/firewalld/warewulf.xml $(DESTDIR)/usr/lib/firewalld/services
 	mkdir -p $(DESTDIR)/usr/lib/systemd/system
 	install -c -m 0644 include/systemd/warewulfd.service $(DESTDIR)/usr/lib/systemd/system
-	cp etc/bash_completion.d/warewulf $(DESTDIR)/etc/bash_completion.d/
-	cp usr/share/man/man1/* $(DESTDIR)/usr/share/man/man1/
+	cp bash_completion.d/warewulf $(DESTDIR)/etc/bash_completion.d/
+	cp man_pages/* $(DESTDIR)/usr/share/man/man1/
 
 init:
 	systemctl daemon-reload
@@ -134,16 +134,20 @@ bash_completion:
 	cd cmd/bash_completion && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=$(CONFIG)/etc/warewulf.conf'\
 	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=$(CONFIG)/etc/nodes.conf'"\
 	 -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../bash_completion
-	install -d -m 0755 ./etc/bash_completion.d/
-	./bash_completion  ./etc/bash_completion.d/warewulf
+
+bash_completion.d: bash_completion
+	install -d -m 0755 bash_completion.d
+	./bash_completion  bash_completion.d/warewulf
 
 man_page:
 	cd cmd/man_page && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=$(CONFIG)/etc/warewulf.conf'\
 	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=$(CONFIG)/etc/nodes.conf'"\
 	 -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../man_page
-	install -d -m 0755 ./usr/share/man/man1
-	./man_page ./usr/share/man/man1
-	gzip --force ./usr/share/man/man1/wwctl*1
+
+man_pages: man_page
+	install -d man_pages
+	./man_page ./man_pages
+	cd man_pages; for i in wwctl*1; do echo "Compressing manpage: $$i"; gzip --force $$i; done
 
 dist: vendor
 	rm -rf _dist/warewulf-$(VERSION)
@@ -159,7 +163,9 @@ clean:
 	rm -rf _dist
 	rm -f warewulf-$(VERSION).tar.gz
 	rm -f bash_completion
+	rm -rf bash_completion.d
 	rm -f man_page
+	rm -rf man_pages
 
 install: files install_wwclient
 
