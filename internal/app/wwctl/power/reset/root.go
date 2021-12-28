@@ -7,9 +7,10 @@ import (
 
 var (
 	powerCmd = &cobra.Command{
-		Use:   "reset",
-		Short: "Issue a reset to the given node(s)",
-		Long:  "This command will issue a reset to the given set of nodes.",
+		DisableFlagsInUseLine: true,
+		Use:   "reset [OPTIONS] [PATTERN ...]",
+		Short: "Issue a reset to node(s)",
+		Long:  "This command will issue a reset to a set of nodes specified by PATTERN.",
 		RunE:  CobraRunE,
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {

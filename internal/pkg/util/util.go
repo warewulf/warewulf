@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"math/rand"
+	"net"
 	"os"
 	"os/exec"
 	"path"
@@ -367,4 +368,17 @@ func SplitValidPaths(input, delim string) []string {
 	ret = append(ret, str)
 
 	return (ret)
+}
+
+func IncrementIPv4(start string, inc uint) string {
+	ip_start := net.ParseIP(start)
+	ipv4 := ip_start.To4()
+	v4_int := uint(ipv4[0])<<24 + uint(ipv4[1])<<16 + uint(ipv4[2])<<8 + uint(ipv4[3])
+	v4_int += inc
+	v4_o3 := byte(v4_int & 0xFF)
+	v4_o2 := byte((v4_int >> 8) & 0xFF)
+	v4_o1 := byte((v4_int >> 16) & 0xFF)
+	v4_o0 := byte((v4_int >> 24) & 0xFF)
+	ipv4_new := net.IPv4(v4_o0, v4_o1, v4_o2, v4_o3)
+	return ipv4_new.String()
 }

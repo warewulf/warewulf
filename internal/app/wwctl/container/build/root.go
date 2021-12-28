@@ -7,9 +7,10 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "build [flags] [container name]...",
+		DisableFlagsInUseLine: true,
+		Use:   "build [OPTIONS] CONTAINER [...]",
 		Short: "(Re)build a bootable VNFS image",
-		Long:  "This command will build a bootable VNFS image from an imported container image.",
+		Long:  "This command will build a bootable VNFS image from imported CONTAINER image(s).",
 		RunE:  CobraRunE,
 		Args:  cobra.MinimumNArgs(1),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

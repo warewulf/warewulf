@@ -7,6 +7,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/power"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/hpcng/warewulf/pkg/hostlist"
 	"github.com/spf13/cobra"
 )
 
@@ -24,6 +25,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.ERROR, "Could not get node list: %s\n", err)
 		os.Exit(1)
 	}
+
+	args = hostlist.Expand(args)
 
 	if len(args) > 0 {
 		nodes = node.FilterByName(nodes, args)
@@ -46,11 +49,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		ipmiCmd := power.IPMI{
-			NodeName: node.Id.Get(),
-			HostName: node.IpmiIpaddr.Get(),
-			User:     node.IpmiUserName.Get(),
-			Password: node.IpmiPassword.Get(),
-			AuthType: "MD5",
+			NodeName:  node.Id.Get(),
+			HostName:  node.IpmiIpaddr.Get(),
+			Port:      node.IpmiPort.Get(),
+			User:      node.IpmiUserName.Get(),
+			Password:  node.IpmiPassword.Get(),
+			AuthType:  "MD5",
+			Interface: node.IpmiInterface.Get(),
 		}
 
 		err := ipmiCmd.Console()

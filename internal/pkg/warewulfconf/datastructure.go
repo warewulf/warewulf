@@ -5,7 +5,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
-const ConfigFile = "/etc/warewulf/warewulf.conf"
+var ConfigFile = "/etc/warewulf/warewulf.conf"
 
 type ControllerConf struct {
 	Comment  string        `yaml:"comment"`

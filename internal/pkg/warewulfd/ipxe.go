@@ -18,6 +18,8 @@ type iPxeTemplate struct {
 	WaitTime      string
 	Hostname      string
 	Fqdn          string
+	Id            string
+	Cluster       string
 	ContainerName string
 	Hwaddr        string
 	Ipaddr        string
@@ -129,6 +131,8 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 
 		var replace iPxeTemplate
 
+		replace.Id = nodeobj.Id.Get()
+		replace.Cluster = nodeobj.ClusterName.Get()
 		replace.Fqdn = nodeobj.Id.Get()
 		replace.Ipaddr = conf.Ipaddr
 		replace.Port = strconv.Itoa(conf.Warewulf.Port)

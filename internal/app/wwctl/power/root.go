@@ -12,9 +12,10 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "power",
+		DisableFlagsInUseLine: true,
+		Use:   "power COMMAND [OPTIONS]",
 		Short: "Warewulf node power management",
-		Long:  "This command can control the power state of nodes.",
+		Long:  "This command controls the power state of nodes.",
 	}
 )
 
