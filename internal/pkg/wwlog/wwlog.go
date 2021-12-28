@@ -44,7 +44,7 @@ func prefixGen(level int) string {
 
 func printlog(level int, message string) {
 	if level == INFO && logLevel <= INFO {
-		fmt.Printf(message)
+		fmt.Print(message)
 	} else if level <= logLevel {
 		if level < INFO {
 			fmt.Fprintf(os.Stderr, prefixGen(level)+message)
