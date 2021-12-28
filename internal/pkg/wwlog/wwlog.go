@@ -25,30 +25,39 @@ func SetLevel(level int) {
 }
 
 func prefixGen(level int) string {
-	if level == DEBUG {
-		return "[DEBUG]"
-	} else if level == VERBOSE {
-		return "[VERBOSE]"
-	} else if level == INFO {
-		return "[INFO]"
-	} else if level == WARN {
-		return "[WARNING]"
-	} else if level == ERROR {
-		return "[ERROR]"
-	} else if level == CRITICAL {
-		return "[CRITICAL]"
+	switch level {
+	case DEBUG:
+		return "[DEBUG]   : "
+	case VERBOSE:
+		return "[VERBOSE] : "
+	case INFO:
+		return "[INFO]    : "
+	case WARN:
+		return "[WARNING] : "
+	case ERROR:
+		return "[ERROR]   : "
+	case CRITICAL:
+		return "[CRITICAL]: "
 	}
-	return "[UNDEF]"
+	return "[UNDEF]   : "
+}
+
+func printlog(level int, message string) {
+	if level == INFO && logLevel <= INFO {
+		fmt.Printf(message)
+	} else if level <= logLevel {
+		if level < INFO {
+			fmt.Fprintf(os.Stderr, prefixGen(level)+message)
+		} else {
+			fmt.Printf(prefixGen(level) + message)
+		}
+	}
 }
 
 func Println(level int, message string) {
-	if level <= logLevel {
-		fmt.Fprintln(os.Stderr, prefixGen(level)+" "+message)
-	}
+	printlog(level, message)
 }
 
 func Printf(level int, message string, a ...interface{}) {
-	if level <= logLevel {
-		fmt.Fprintf(os.Stderr, prefixGen(level)+" "+message, a...)
-	}
+	printlog(level, fmt.Sprintf(message, a...))
 }
