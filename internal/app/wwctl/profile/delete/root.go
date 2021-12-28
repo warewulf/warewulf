@@ -4,9 +4,10 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "delete [flags] <profile pattern>",
+		DisableFlagsInUseLine: true,
+		Use:   "delete [OPTIONS] PROFILE",
 		Short: "Delete a node profile",
-		Long:  "This command will delete a node profile.",
+		Long:  "This command deletes the node PROFILE. You may use a pattern for PROFILE.",
 		RunE:  CobraRunE,
 		Args:  cobra.MinimumNArgs(1),
 	}

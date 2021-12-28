@@ -12,9 +12,10 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "set [flags] [node pattern]...",
+		DisableFlagsInUseLine: true,
+		Use:   "set [OPTIONS] PATTERN [PATTERN ...]",
 		Short: "Configure node properties",
-		Long: "This command will allow you to set configuration properties for nodes.\n\n" +
+		Long: "This command sets configuration properties for nodes matching PATTERN.\n\n" +
 			"Note: use the string 'UNSET' to remove a configuration",
 		Args: cobra.MinimumNArgs(1),
 		RunE: CobraRunE,

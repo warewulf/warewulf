@@ -12,9 +12,9 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "set [flags] <profile pattern>...",
+		Use:   "set [OPTIONS] [PROFILE ...]",
 		Short: "Configure node profile properties",
-		Long: "This command will allow you to set configuration properties for node profiles.\n\n" +
+		Long: "This command sets configuration properties for the node PROFILE(s).\n\n" +
 			"Note: use the string 'UNSET' to remove a configuration",
 		Args: cobra.MinimumNArgs(1),
 		RunE: CobraRunE,
@@ -44,6 +44,7 @@ var (
 	SetRuntimeOverlay string
 	SetSystemOverlay  string
 	SetIpmiNetmask    string
+	SetIpmiPort       string
 	SetIpmiGateway    string
 	SetIpmiUsername   string
 	SetIpmiPassword   string
@@ -104,10 +105,11 @@ func init() {
 		log.Println(err)
 	}
 	baseCmd.PersistentFlags().StringVar(&SetIpmiNetmask, "ipminetmask", "", "Set the node's IPMI netmask")
+	baseCmd.PersistentFlags().StringVar(&SetIpmiPort, "ipmiport", "", "Set the node's IPMI port")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiGateway, "ipmigateway", "", "Set the node's IPMI gateway")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiUsername, "ipmiuser", "", "Set the node's IPMI username")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiPassword, "ipmipass", "", "Set the node's IPMI password")
-	baseCmd.PersistentFlags().StringVar(&SetIpmiInterface, "ipmiinterface", "", "Set the node's IPMI interface (defaults to 'lan' if empty)")
+	baseCmd.PersistentFlags().StringVar(&SetIpmiInterface, "ipmiinterface", "", "Set the node's IPMI interface (defaults to 'lan')")
 
 	baseCmd.PersistentFlags().StringVarP(&SetNetName, "netname", "n", "default", "Define the network name to configure")
 	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdev", "N", "", "Define the network device")

@@ -85,11 +85,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 	} else if ShowIpmi {
-		fmt.Printf("%-22s %-16s %-5s %-20s %-20s %-20s\n", "NODE NAME", "IPMI IPADDR", "IPMI PORT", "IPMI USERNAME", "IPMI PASSWORD", "IPMI INTERFACE")
-		fmt.Println(strings.Repeat("=", 80))
+		fmt.Printf("%-22s %-16s %-10s %-20s %-20s %-14s\n", "NODE NAME", "IPMI IPADDR", "IPMI PORT", "IPMI USERNAME", "IPMI PASSWORD", "IPMI INTERFACE")
+		fmt.Println(strings.Repeat("=", 108))
 
 		for _, node := range node.FilterByName(nodes, args) {
-			fmt.Printf("%-22s %-16s %-5s %-20s %-20s %-20s\n", node.Id.Get(), node.IpmiIpaddr.Print(), node.IpmiPort.Print(), node.IpmiUserName.Print(), node.IpmiPassword.Print(), node.IpmiInterface.Print())
+			fmt.Printf("%-22s %-16s %-10s %-20s %-20s %-14s\n", node.Id.Get(), node.IpmiIpaddr.Print(), node.IpmiPort.Print(), node.IpmiUserName.Print(), node.IpmiPassword.Print(), node.IpmiInterface.Print())
 		}
 
 	} else if ShowLong {

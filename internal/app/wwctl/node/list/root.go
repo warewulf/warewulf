@@ -1,14 +1,32 @@
 package list
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/spf13/cobra"
+)
 
 var (
 	baseCmd = &cobra.Command{
-		Use:     "list [flags] (node pattern)",
-		Short:   "List nodes matching pattern",
-		Long:    "This command will show you configured nodes.",
+		DisableFlagsInUseLine: true,
+		Use:                   "list [OPTIONS] [PATTERN]",
+		Short:                 "List nodes",
+		Long: "This command lists all configured nodes. Optionally, it will list only\n" +
+			"nodes matching a glob PATTERN.",
 		RunE:    CobraRunE,
 		Aliases: []string{"ls"},
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) != 0 {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+
+			nodeDB, _ := node.New()
+			nodes, _ := nodeDB.FindAllNodes()
+			var node_names []string
+			for _, node := range nodes {
+				node_names = append(node_names, node.Id.Get())
+			}
+			return node_names, cobra.ShellCompDirectiveNoFileComp
+		},
 	}
 	ShowNet  bool
 	ShowIpmi bool

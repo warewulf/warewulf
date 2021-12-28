@@ -96,12 +96,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		if SetIpmiNetmask != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting IPMI username to: %s\n", p.Id.Get(), SetIpmiNetmask)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting IPMI netmask to: %s\n", p.Id.Get(), SetIpmiNetmask)
 			p.IpmiNetmask.Set(SetIpmiNetmask)
 		}
 
+		if SetIpmiPort != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting IPMI port to: %s\n", p.Id.Get(), SetIpmiPort)
+			p.IpmiPort.Set(SetIpmiPort)
+		}
+
 		if SetIpmiGateway != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting IPMI username to: %s\n", p.Id.Get(), SetIpmiGateway)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting IPMI gateway to: %s\n", p.Id.Get(), SetIpmiGateway)
 			p.IpmiGateway.Set(SetIpmiGateway)
 		}
 
@@ -111,12 +116,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		if SetIpmiPassword != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting IPMI username to: %s\n", p.Id.Get(), SetIpmiPassword)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting IPMI password to: %s\n", p.Id.Get(), SetIpmiPassword)
 			p.IpmiPassword.Set(SetIpmiPassword)
 		}
 
 		if SetIpmiInterface != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting IPMI username to: %s\n", p.Id.Get(), SetIpmiInterface)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting IPMI interface to: %s\n", p.Id.Get(), SetIpmiInterface)
 			p.IpmiInterface.Set(SetIpmiInterface)
 		}
 

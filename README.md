@@ -4,8 +4,10 @@
 
 #### Quick Links:
 
-* [Documentation](https://warewulf.hpcng.org)
-* [GitHub](http://github.com/hpcng/warewulf)
+* [Website](https://warewulf.org)
+* [Documentation](https://warewulf.org/docs)
+* [Download / Releases](http://github.com/hpcng/warewulf/releases)
+* [Support](http://www.ciq.co/warewulf)
 
 ## About Warewulf
 

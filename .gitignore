@@ -10,3 +10,7 @@
 /wwctl
 /bash_completion
 /man_page
+
+# other created files
+/usr/share/man/man1/
+/etc/bash_completion.d/

@@ -6,10 +6,11 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "list [flags] <overlay kind> [overlay name]",
+		DisableFlagsInUseLine: true,
+		Use:   "list [OPTIONS] {system|runtime} [OVERLAY_NAME]",
 		Short: "List Warewulf Overlays and files",
-		Long: "This command will show you information about Warewulf overlays and the\n" +
-			"files contained within.",
+		Long: "This command displays information about all Warewulf overlays or the specified\n" +
+			"OVERLAY_NAME. It also supports listing overlay content information.",
 		RunE:      CobraRunE,
 		Args:      cobra.MinimumNArgs(1),
 		Aliases:   []string{"ls"},

@@ -9,10 +9,10 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "kernel",
+		DisableFlagsInUseLine: true,
+		Use:   "kernel COMMAND [OPTIONS]",
 		Short: "Kernel Image Management",
-		Long: "This command is for management of Warewulf Kernels to be used for\n" +
-			"bootstrapping nodes",
+		Long: "This command manages Warewulf Kernels used for bootstrapping nodes",
 	}
 )
 
