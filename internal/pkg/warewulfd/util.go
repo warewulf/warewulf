@@ -36,10 +36,11 @@ func daemonLogf(message string, a ...interface{}) {
 			}
 			log.SetOutput(logwriter)
 			loginit = true
+
+			log.SetFlags(0)
+			log.SetPrefix("")
 		}
 
-		log.SetFlags(0)
-		log.SetPrefix("")
 		log.Printf(message, a...)
 
 	} else {
