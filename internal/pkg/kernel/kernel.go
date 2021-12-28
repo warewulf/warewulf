@@ -16,6 +16,16 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
+var (
+	kernelSearchPaths = []string{
+		// This is a printf format where the %s will be the kernel version
+		"/boot/vmlinuz-%s",
+		"/boot/vmlinuz-%s.gz",
+		"/lib/mmodules/%s/vmlinuz",
+		"/lib/mmodules/%s/vmlinuz.gz",
+	}
+)
+
 func ParentDir() string {
 	return path.Join(config.LocalStateDir, "provision/kernel")
 }
@@ -122,16 +132,20 @@ func Build(kernelVersion string, kernelName string, root string) (string, error)
 		return "", fmt.Errorf("failed to create version dest: %s", err)
 	}
 
-	if util.IsFile(path.Join(root, "/boot/vmlinuz-"+kernelVersion)) {
-		kernelSource = path.Join(root, "/boot/vmlinuz-"+kernelVersion)
-	} else if util.IsFile(path.Join(root, "/boot/vmlinuz-"+kernelVersion+".gz")) {
-		kernelSource = path.Join(root, "/boot/vmlinuz-"+kernelVersion+".gz")
-	} else if util.IsFile(path.Join(root, "/lib/modules/"+kernelVersion+"/vmlinuz")) {
-		kernelSource = path.Join(root, "/lib/modules/"+kernelVersion+"/vmlinuz")
-	} else if util.IsFile(path.Join(root, "/lib/modules/"+kernelVersion+"/vmlinuz.gz")) {
-		kernelSource = path.Join(root, "/lib/modules/"+kernelVersion+"/vmlinuz.gz")
+	for _, path := range kernelSearchPaths {
+		testPath := fmt.Sprintf(path, kernelVersion)
+		wwlog.Printf(wwlog.VERBOSE, "Looking for kernel at: %s\n", testPath)
+		if util.IsFile(testPath) {
+			kernelSource = testPath
+			break
+		}
+	}
+
+	if kernelSource == "" {
+		wwlog.Printf(wwlog.ERROR, "Could not locate kernel image\n")
+		return "", errors.New("could not locate kernel image")
 	} else {
-		return "", errors.New("Could not locate kernel image")
+		wwlog.Printf(wwlog.INFO, "Found kernel at: %s\n", kernelSource)
 	}
 
 	if !util.IsDir(kernelDrivers) {
