@@ -1,18 +1,17 @@
 package node
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"sort"
 	"strings"
 
-	"github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
-
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"gopkg.in/yaml.v2"
 )
 
-const ConfigFile = "/etc/warewulf/nodes.conf"
+var ConfigFile = "/etc/warewulf/nodes.conf"
 
 func New() (nodeYaml, error) {
 	var ret nodeYaml
@@ -265,36 +264,4 @@ func (config *nodeYaml) FindDiscoverableNode() (NodeInfo, string, error) {
 	}
 
 	return ret, "", errors.New("No unconfigured nodes found")
-}
-
-func (config *nodeYaml) FindByHwaddr(hwa string) (NodeInfo, error) {
-	var ret NodeInfo
-
-	n, _ := config.FindAllNodes()
-
-	for _, node := range n {
-		for _, dev := range node.NetDevs {
-			if dev.Hwaddr.Get() == hwa {
-				return node, nil
-			}
-		}
-	}
-
-	return ret, errors.New("No nodes found with HW Addr: " + hwa)
-}
-
-func (config *nodeYaml) FindByIpaddr(ipaddr string) (NodeInfo, error) {
-	var ret NodeInfo
-
-	n, _ := config.FindAllNodes()
-
-	for _, node := range n {
-		for _, dev := range node.NetDevs {
-			if dev.Ipaddr.Get() == ipaddr {
-				return node, nil
-			}
-		}
-	}
-
-	return ret, errors.New("No nodes found with IP Addr: " + ipaddr)
 }

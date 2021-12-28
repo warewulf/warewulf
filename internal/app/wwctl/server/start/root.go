@@ -4,7 +4,8 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "start",
+		DisableFlagsInUseLine: true,
+		Use:   "start [OPTIONS]",
 		Short: "Start Warewulf server",
 		RunE:  CobraRunE,
 	}

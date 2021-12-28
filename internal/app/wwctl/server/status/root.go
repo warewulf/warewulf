@@ -4,7 +4,8 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "status",
+		DisableFlagsInUseLine: true,
+		Use:   "status [OPTIONS]",
 		Short: "Warewulf server status",
 		RunE:  CobraRunE,
 	}

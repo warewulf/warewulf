@@ -4,9 +4,10 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:     "list [flags] [profile pattern]...",
+		DisableFlagsInUseLine: true,
+		Use:     "list [OPTIONS] [PROFILE ...]",
 		Short:   "List profiles and configurations",
-		Long:    "This command will list and show the profile configurations.",
+		Long:    "This command will display configurations for PROFILE.",
 		RunE:    CobraRunE,
 		Aliases: []string{"ls"},
 	}

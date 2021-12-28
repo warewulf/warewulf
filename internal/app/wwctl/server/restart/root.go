@@ -4,7 +4,8 @@ import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "restart",
+		DisableFlagsInUseLine: true,
+		Use:   "restart [OPTIONS]",
 		Short: "Restart the Warewulf server",
 		RunE:  CobraRunE,
 	}

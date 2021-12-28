@@ -15,7 +15,8 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "configure",
+		DisableFlagsInUseLine: true,
+		Use:   "configure [OPTIONS]",
 		Short: "Manage system services",
 		Long: "This application allows you to manage and initialize Warewulf dependent system\n" +
 			"services based on the configuration in the warewulf.conf file.",

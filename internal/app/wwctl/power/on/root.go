@@ -7,9 +7,9 @@ import (
 
 var (
 	powerCmd = &cobra.Command{
-		Use:   "on",
+		Use:   "on [OPTIONS] [PATTERN ...]",
 		Short: "Power on the given node(s)",
-		Long:  "This command will power on a given set of nodes.",
+		Long:  "This command will power on a set of nodes specified by PATTERN.",
 		RunE:  CobraRunE,
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {

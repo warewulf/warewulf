@@ -24,10 +24,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fileName = args[2]
 	}
 
-	if overlayName == "default" {
-		return errors.New("refusing to delete the default overlay")
-	}
-
 	if overlayKind != "system" && overlayKind != "runtime" {
 		return errors.New("overlay kind must be of type 'system' or 'runtime'")
 	}
@@ -49,6 +45,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if fileName == "" {
+		if overlayName == "default" {
+			return errors.New("refusing to delete the default overlay")
+		}
 		if Force {
 			err := os.RemoveAll(overlayPath)
 			if err != nil {

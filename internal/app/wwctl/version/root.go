@@ -1,16 +1,15 @@
-package list
+package version
 
 import "github.com/spf13/cobra"
 
 var (
 	baseCmd = &cobra.Command{
-		DisableFlagsInUseLine: true,
-		Use:     "list [OPTIONS]",
-		Short:   "List imported Kernel images",
-		Long:    "This command will list the kernels that have been imported into Warewulf.",
+		Use:     "version",
+		Short:   "Version information",
+		Long:    "This command will print the Warewulf version.",
 		RunE:    CobraRunE,
 		Args:    cobra.ExactArgs(0),
-		Aliases: []string{"ls"},
+		Aliases: []string{"vers"},
 	}
 )
 

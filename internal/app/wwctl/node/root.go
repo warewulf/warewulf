@@ -13,7 +13,8 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:   "node",
+		DisableFlagsInUseLine: true,
+		Use:   "node COMMAND [OPTONS]",
 		Short: "Node management",
 		Long: "Management of node settings. All node ranges can use brackets to identify\n" +
 			"node ranges. For example: n00[00-4].cluster[0-1] will identify the first 5 nodes\n" +
