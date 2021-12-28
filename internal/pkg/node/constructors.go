@@ -1,7 +1,6 @@
 package node
 
 import (
-	"fmt"
 	"io/ioutil"
 	"sort"
 	"strings"
@@ -17,10 +16,9 @@ const ConfigFile = "/etc/warewulf/nodes.conf"
 func New() (nodeYaml, error) {
 	var ret nodeYaml
 
-	wwlog.Printf(wwlog.DEBUG, "Opening node configuration file: %s\n", ConfigFile)
+	wwlog.Printf(wwlog.VERBOSE, "Opening node configuration file: %s\n", ConfigFile)
 	data, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
-		fmt.Printf("error reading node configuration file\n")
 		return ret, err
 	}
 
