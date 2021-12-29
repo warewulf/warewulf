@@ -140,6 +140,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				var nd node.NetDevEntry
 				p.NetDevs[SetNetName] = &nd
 
+				SetNetOnBoot = "yes"
+
 				if SetNetDev == "" {
 					p.NetDevs[SetNetName].Device.Set(SetNetName)
 				}
