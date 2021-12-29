@@ -12,5 +12,5 @@
 /man_page
 
 # other created files
-/usr/share/man/man1/
-/etc/bash_completion.d/
+/man_pages
+/bash_completion.d
