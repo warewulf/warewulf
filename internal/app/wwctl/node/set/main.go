@@ -165,15 +165,21 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 		}
 
+		if SetNetName != "" {
+			if _, ok := n.NetDevs[SetNetName]; !ok {
+				var nd node.NetDevEntry
+				n.NetDevs[SetNetName] = &nd
+
+				if SetNetDev == "" {
+					n.NetDevs[SetNetName].Device.Set(SetNetName)
+				}
+			}
+		}
+
 		if SetNetDev != "" {
 			if SetNetName == "" {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netname' option\n")
 				os.Exit(1)
-			}
-
-			if _, ok := n.NetDevs[SetNetName]; !ok {
-				var nd node.NetDevEntry
-				n.NetDevs[SetNetName] = &nd
 			}
 
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting net Device to: %s\n", n.Id.Get(), SetNetName, SetNetDev)
@@ -184,11 +190,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			if SetNetName == "" {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netname' option\n")
 				os.Exit(1)
-			}
-
-			if _, ok := n.NetDevs[SetNetName]; !ok {
-				var nd node.NetDevEntry
-				n.NetDevs[SetNetName] = &nd
 			}
 
 			NewIpaddr := util.IncrementIPv4(SetIpaddr, count)
@@ -203,11 +204,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				os.Exit(1)
 			}
 
-			if _, ok := n.NetDevs[SetNetName]; !ok {
-				var nd node.NetDevEntry
-				n.NetDevs[SetNetName] = &nd
-			}
-
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting netmask to: %s\n", n.Id.Get(), SetNetName, SetNetmask)
 			n.NetDevs[SetNetName].Netmask.Set(SetNetmask)
 		}
@@ -216,11 +212,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			if SetNetName == "" {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netname' option\n")
 				os.Exit(1)
-			}
-
-			if _, ok := n.NetDevs[SetNetName]; !ok {
-				var nd node.NetDevEntry
-				n.NetDevs[SetNetName] = &nd
 			}
 
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting gateway to: %s\n", n.Id.Get(), SetNetName, SetGateway)
@@ -233,11 +224,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				os.Exit(1)
 			}
 
-			if _, ok := n.NetDevs[SetNetName]; !ok {
-				var nd node.NetDevEntry
-				n.NetDevs[SetNetName] = &nd
-			}
-
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting HW address to: %s\n", n.Id.Get(), SetNetName, SetHwaddr)
 			n.NetDevs[SetNetName].Hwaddr.Set(SetHwaddr)
 		}
@@ -248,11 +234,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				os.Exit(1)
 			}
 
-			if _, ok := n.NetDevs[SetNetName]; !ok {
-				var nd node.NetDevEntry
-				n.NetDevs[SetNetName] = &nd
-			}
-
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Type %s\n", n.Id.Get(), SetNetName, SetType)
 			n.NetDevs[SetNetName].Type.Set(SetType)
 		}
@@ -261,11 +242,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			if SetNetName == "" {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netname' option\n")
 				os.Exit(1)
-			}
-
-			if _, ok := n.NetDevs[SetNetName]; !ok {
-				var nd node.NetDevEntry
-				n.NetDevs[SetNetName] = &nd
 			}
 
 			if SetNetOnBoot == "yes" || SetNetOnBoot == "y" || SetNetOnBoot == "1" || SetNetOnBoot == "true" {

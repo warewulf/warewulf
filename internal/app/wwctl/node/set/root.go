@@ -13,8 +13,8 @@ import (
 var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:   "set [OPTIONS] PATTERN [PATTERN ...]",
-		Short: "Configure node properties",
+		Use:                   "set [OPTIONS] PATTERN [PATTERN ...]",
+		Short:                 "Configure node properties",
 		Long: "This command sets configuration properties for nodes matching PATTERN.\n\n" +
 			"Note: use the string 'UNSET' to remove a configuration",
 		Args: cobra.MinimumNArgs(1),
@@ -128,8 +128,9 @@ func init() {
 	}); err != nil {
 		log.Println(err)
 	}
-	baseCmd.PersistentFlags().StringVarP(&SetNetName, "netname", "n", "default", "Define the network name to configure")
-	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdev", "N", "", "Define the network device")
+	baseCmd.PersistentFlags().StringVarP(&SetNetName, "netname", "n", "", "Define the network name to configure")
+	baseCmd.PersistentFlags().StringVarP(&SetNetName, "netdev", "N", "", "Alias to --netname")
+	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdevice", "D", "", "Define the network device")
 	baseCmd.PersistentFlags().StringVarP(&SetIpaddr, "ipaddr", "I", "", "Set the node's network device IP address")
 	baseCmd.PersistentFlags().StringVarP(&SetNetmask, "netmask", "M", "", "Set the node's network device netmask")
 	baseCmd.PersistentFlags().StringVarP(&SetGateway, "gateway", "G", "", "Set the node's network device gateway")
