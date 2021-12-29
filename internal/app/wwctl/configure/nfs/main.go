@@ -64,9 +64,15 @@ func Configure(show bool) error {
 			}
 
 			for _, export := range controller.Nfs.ExportsExtended {
-				fmt.Fprintf(exports, "%s %s/%s(%s)\n", export.Path, controller.Network, controller.Netmask, export.Options)
+				fmt.Fprintf(exports, "%s %s/%s(%s)\n", export.Path, controller.Network, controller.Netmask, export.ExportOptions)
 				if export.Mount {
-					fmt.Fprintf(fstab, "%s:%s %s nfs defaults 0 0\n", controller.Ipaddr, export.Path, export.Path)
+					var mountOpts string
+					if export.MountOptions == "" {
+						mountOpts = "defaults"
+					} else {
+						mountOpts = export.MountOptions
+					}
+					fmt.Fprintf(fstab, "%s:%s %s nfs %s 0 0\n", controller.Ipaddr, export.Path, export.Path, mountOpts)
 				}
 			}
 
