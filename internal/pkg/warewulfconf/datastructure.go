@@ -3,6 +3,7 @@ package warewulfconf
 import (
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/creasty/defaults"
 )
 
 var ConfigFile = "/etc/warewulf/warewulf.conf"
@@ -43,9 +44,29 @@ type TftpConf struct {
 }
 
 type NfsConf struct {
-	Enabled     bool     `yaml:"enabled"`
+	Enabled     bool     `default:"true" yaml:"enabled"`
 	Exports     []string `yaml:"exports"`
+	ExportsExtended []*NfsExportConf `yaml:"exports extended"`
 	SystemdName string   `yaml:"systemd name"`
+}
+
+func (s *NfsConf) UnmarshalYAML(unmarshal func(interface{}) error) error {
+    if err := defaults.Set(s); err != nil {
+		return err
+	}
+
+    type plain NfsConf
+    if err := unmarshal((*plain)(s)); err != nil {
+        return err
+    }
+
+    return nil
+}
+
+type NfsExportConf struct {
+	Path     string  `yaml:"path"`
+	Options  string  `yaml:"options"`
+	Mount    bool    `yaml:"mount"`
 }
 
 func init() {
