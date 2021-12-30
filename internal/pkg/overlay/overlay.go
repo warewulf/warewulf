@@ -74,7 +74,7 @@ func BuildAllOverlays(nodes []node.NodeInfo) error {
 	for _, n := range nodes {
 		var overlays []string
 
-		overlays = append(overlays, "wwinit")
+		overlays = append(overlays, n.SystemOverlay.Get())
 		overlays = append(overlays, n.RuntimeOverlay.Get())
 
 		for _, overlay := range overlays {
@@ -194,6 +194,7 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 		tstruct.NetDevs[devname].Gateway = netdev.Gateway.Get()
 		tstruct.NetDevs[devname].Type = netdev.Type.Get()
 		tstruct.NetDevs[devname].OnBoot = netdev.OnBoot.GetB()
+		tstruct.NetDevs[devname].Default = netdev.Default.GetB()
 
 		mask := net.IPMask(net.ParseIP(netdev.Netmask.Get()).To4())
 		ipaddr := net.ParseIP(netdev.Ipaddr.Get()).To4()

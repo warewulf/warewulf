@@ -1,14 +1,1 @@
-127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
-::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
-
-
-{{range $node := $.AllNodes}}
-# Entry for {{$node.Id.Get}}
-{{- range $devname, $netdev := $node.NetDevs}}
-{{- if eq $netdev.Name.Get "default"}}
-{{$netdev.Ipaddr.Get}} {{$node.Id.Get}}
-{{- else}}
-{{$netdev.Ipaddr.Get}} {{$node.Id.Get}}-{{$devname}}
-{{- end}}
-{{- end}}
-{{end}}
+{{Include "/etc/hosts"}}

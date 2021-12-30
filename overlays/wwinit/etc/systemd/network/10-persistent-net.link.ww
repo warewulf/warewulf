@@ -1,11 +1,9 @@
 # /etc/systemd/network/10-persistent-net.link
-
 {{range $devname, $netdev := .NetDevs}}
-{{- if eq $netdev.Name "default"}}
+{{- if $netdev.Default}}
 [Match]
 MACAddress={{$netdev.Hwaddr}}
 [Link]
 Name={{$devname}}
 {{- end}}
 {{end}}
-
