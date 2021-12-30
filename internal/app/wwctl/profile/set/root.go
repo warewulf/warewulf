@@ -41,6 +41,7 @@ var (
 	SetKernelArgs     string
 	SetClusterName    string
 	SetIpxe           string
+	SetInitOverlay    string
 	SetRuntimeOverlay string
 	SetSystemOverlay  string
 	SetIpmiNetmask    string
@@ -91,7 +92,7 @@ func init() {
 
 	baseCmd.PersistentFlags().StringVarP(&SetRuntimeOverlay, "runtime", "R", "", "Set the node's runtime overlay")
 	if err := baseCmd.RegisterFlagCompletionFunc("runtime", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		list, _ := overlay.FindRuntimeOverlays()
+		list, _ := overlay.FindOverlays()
 		return list, cobra.ShellCompDirectiveNoFileComp
 	}); err != nil {
 		log.Println(err)
@@ -99,7 +100,7 @@ func init() {
 	}
 	baseCmd.PersistentFlags().StringVarP(&SetSystemOverlay, "system", "S", "", "Set the node's system overlay")
 	if err := baseCmd.RegisterFlagCompletionFunc("system", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		list, _ := overlay.FindSystemOverlays()
+		list, _ := overlay.FindOverlays()
 		return list, cobra.ShellCompDirectiveNoFileComp
 	}); err != nil {
 		log.Println(err)
@@ -119,7 +120,7 @@ func init() {
 	baseCmd.PersistentFlags().StringVarP(&SetGateway, "gateway", "G", "", "Set the node's network device gateway")
 	baseCmd.PersistentFlags().StringVarP(&SetHwaddr, "hwaddr", "H", "", "Set the node's network device HW address")
 	baseCmd.PersistentFlags().StringVarP(&SetType, "type", "T", "", "Set the node's network device type")
-	baseCmd.PersistentFlags().StringVar(&SetNetOnBoot, "onboot", "yes", "Enable/disable device (yes/no)")
+	baseCmd.PersistentFlags().StringVar(&SetNetOnBoot, "onboot", "", "Enable/disable device (yes/no)")
 
 	baseCmd.PersistentFlags().BoolVar(&SetNetDevDel, "netdel", false, "Delete the node's network device")
 

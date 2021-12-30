@@ -29,10 +29,7 @@ export GOPROXY
 # built tags needed for wwbuild binary
 WW_BUILD_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
-# system-overlay directories for install_wwclient
-OVERLAY_DIR ?= $(DESTDIR)/var/warewulf/overlays/system/
-overlays = ${dir ${wildcard ${OVERLAY_DIR}*/}}
-
+# all build targets
 all: vendor wwctl wwclient bash_completion.d man_pages
 
 build: lint test-it vet all
@@ -128,7 +125,7 @@ wwclient:
 	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags '-extldflags -static' -o ../../wwclient
 
 install_wwclient: wwclient
-	$(foreach overlay, ${overlays}, install -D -m 0755 wwclient ${overlay}warewulf/bin/wwclient;)
+	install -m 0755 wwclient $(DESSTDIR)/var/warewulf/overlays/wwinit/bin/wwclient
 
 bash_completion:
 	cd cmd/bash_completion && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=$(CONFIG)/etc/warewulf.conf'\

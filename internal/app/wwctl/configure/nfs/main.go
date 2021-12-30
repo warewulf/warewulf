@@ -3,7 +3,9 @@ package nfs
 import (
 	"fmt"
 	"os"
+	"path"
 
+	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -33,7 +35,7 @@ func Configure(show bool) error {
 	}
 
 	if !SetShow {
-		fstab, err := os.OpenFile("/var/warewulf/overlays/system/default/etc/fstab", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+		fstab, err := os.OpenFile(path.Join(overlay.OverlaySourceDir("wwinit"), "etc/fstab"), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			os.Exit(1)

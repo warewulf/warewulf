@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
@@ -64,12 +63,12 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if n.RuntimeOverlay.Defined() {
-		fileName := config.RuntimeOverlayImage(n.Id.Get())
+		fileName := overlay.OverlayImage(n.Id.Get(), n.RuntimeOverlay.Get())
 
 		if conf.Warewulf.AutobuildOverlays {
-			if !util.IsFile(fileName) || util.PathIsNewer(fileName, node.ConfigFile) || util.PathIsNewer(fileName, config.RuntimeOverlaySource(n.RuntimeOverlay.Get())) {
+			if !util.IsFile(fileName) || util.PathIsNewer(fileName, node.ConfigFile) || util.PathIsNewer(fileName, overlay.OverlaySourceDir(n.RuntimeOverlay.Get())) {
 				daemonLogf("BUILD: %15s: Runtime Overlay\n", n.Id.Get())
-				_ = overlay.BuildRuntimeOverlay([]node.NodeInfo{n})
+				_ = overlay.BuildOverlay(n, n.RuntimeOverlay.Get())
 			}
 		}
 

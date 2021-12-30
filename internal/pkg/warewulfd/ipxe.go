@@ -83,8 +83,7 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 					unconfiguredNode = true
 				} else {
 					nodeobj = n
-					_ = overlay.BuildSystemOverlay([]node.NodeInfo{n})
-					_ = overlay.BuildRuntimeOverlay([]node.NodeInfo{n})
+					_ = overlay.BuildAllOverlays([]node.NodeInfo{n})
 
 					daemonLogf("IPXEREQ:   %s (node automatically configured)\n", hwaddr)
 

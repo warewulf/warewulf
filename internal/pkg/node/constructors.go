@@ -42,8 +42,8 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		wwlog.Printf(wwlog.DEBUG, "In node loop: %s\n", nodename)
 		n.NetDevs = make(map[string]*NetDevEntry)
 		n.Keys = make(map[string]*Entry)
-		n.SystemOverlay.SetDefault("default")
-		n.RuntimeOverlay.SetDefault("default")
+		n.SystemOverlay.SetDefault("wwinit")
+		n.RuntimeOverlay.SetDefault("generic")
 		n.Ipxe.SetDefault("default")
 		n.Init.SetDefault("/sbin/init")
 		n.Root.SetDefault("initramfs")
@@ -266,5 +266,5 @@ func (config *nodeYaml) FindDiscoverableNode() (NodeInfo, string, error) {
 		}
 	}
 
-	return ret, "", errors.New("No unconfigured nodes found")
+	return ret, "", errors.New("no unconfigured nodes found")
 }
