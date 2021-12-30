@@ -77,8 +77,9 @@ func BuildAllOverlays(nodes []node.NodeInfo) error {
 		overlays = append(overlays, n.SystemOverlay.Get())
 		overlays = append(overlays, n.RuntimeOverlay.Get())
 
+		wwlog.Printf(wwlog.INFO, "Building overlays for %s: [%s]\n", n.Id.Get(), strings.Join(overlays, ", "))
+
 		for _, overlay := range overlays {
-			wwlog.Printf(wwlog.INFO, "Building overlay for %s: %s\n", n.Id.Get(), overlay)
 			err := BuildOverlay(n, overlay)
 			if err != nil {
 				return errors.Wrap(err, "could not build overlay "+n.Id.Get()+"/"+overlay+".img")
