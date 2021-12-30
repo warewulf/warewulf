@@ -138,9 +138,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if SetNetName != "" {
 			if _, ok := p.NetDevs[SetNetName]; !ok {
 				var nd node.NetDevEntry
-				p.NetDevs[SetNetName] = &nd
 
 				SetNetOnBoot = "yes"
+
+				if len(p.NetDevs) == 0 {
+					SetNetDefault = "yes"
+				}
+
+				p.NetDevs[SetNetName] = &nd
 
 				if SetNetDev == "" {
 					p.NetDevs[SetNetName].Device.Set(SetNetName)
@@ -215,11 +220,32 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 			if SetNetOnBoot == "yes" || SetNetOnBoot == "y" || SetNetOnBoot == "1" || SetNetOnBoot == "true" {
-				wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting ONBOOT\n", p.Id.Get(), SetNetName)
+				wwlog.Printf(wwlog.VERBOSE, "Profile: %s:%s, Setting ONBOOT\n", p.Id.Get(), SetNetName)
 				p.NetDevs[SetNetName].OnBoot.SetB(true)
 			} else {
-				wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Unsetting ONBOOT\n", p.Id.Get(), SetNetName)
+				wwlog.Printf(wwlog.VERBOSE, "Profile: %s:%s, Unsetting ONBOOT\n", p.Id.Get(), SetNetName)
 				p.NetDevs[SetNetName].OnBoot.SetB(false)
+			}
+		}
+
+		if SetNetDefault != "" {
+			if SetNetName == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--netname' option\n")
+				os.Exit(1)
+			}
+
+			if SetNetDefault == "yes" || SetNetDefault == "y" || SetNetDefault == "1" || SetNetDefault == "true" {
+
+				// Set all other devices to non-default
+				for _, n := range p.NetDevs {
+					n.Default.SetB(false)
+				}
+
+				wwlog.Printf(wwlog.VERBOSE, "Profile: %s:%s, Setting DEFAULT\n", p.Id.Get(), SetNetName)
+				p.NetDevs[SetNetName].Default.SetB(true)
+			} else {
+				wwlog.Printf(wwlog.VERBOSE, "Profile: %s:%s, Unsetting DEFAULT\n", p.Id.Get(), SetNetName)
+				p.NetDevs[SetNetName].Default.SetB(false)
 			}
 		}
 

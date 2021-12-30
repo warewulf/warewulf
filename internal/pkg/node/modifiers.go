@@ -91,6 +91,7 @@ func (config *nodeYaml) NodeUpdate(node NodeInfo) error {
 		config.Nodes[nodeID].NetDevs[devname].Gateway = netdev.Gateway.GetReal()
 		config.Nodes[nodeID].NetDevs[devname].Type = netdev.Type.GetReal()
 		config.Nodes[nodeID].NetDevs[devname].OnBoot = netdev.OnBoot.GetRealB()
+		config.Nodes[nodeID].NetDevs[devname].Default = netdev.Default.GetRealB()
 	}
 
 	for keyname, key := range node.Keys {
@@ -177,6 +178,7 @@ func (config *nodeYaml) ProfileUpdate(profile NodeInfo) error {
 		config.NodeProfiles[profileID].NetDevs[devname].Gateway = netdev.Gateway.GetReal()
 		config.NodeProfiles[profileID].NetDevs[devname].Type = netdev.Type.GetReal()
 		config.NodeProfiles[profileID].NetDevs[devname].OnBoot = netdev.OnBoot.GetRealB()
+		config.NodeProfiles[profileID].NetDevs[devname].Default = netdev.Default.GetRealB()
 	}
 
 	for keyname, key := range profile.Keys {

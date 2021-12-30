@@ -187,7 +187,6 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 	for devname, netdev := range nodeInfo.NetDevs {
 		var nd node.NetDevs
 		tstruct.NetDevs[devname] = &nd
-		tstruct.NetDevs[devname].Name = devname
 		tstruct.NetDevs[devname].Device = netdev.Device.Get()
 		tstruct.NetDevs[devname].Hwaddr = netdev.Hwaddr.Get()
 		tstruct.NetDevs[devname].Ipaddr = netdev.Ipaddr.Get()

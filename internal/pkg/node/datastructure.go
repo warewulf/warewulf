@@ -39,16 +39,16 @@ type NodeConf struct {
 }
 
 type NetDevs struct {
-	Name    string
-	Type    string `yaml:"type,omitempty"`
-	OnBoot  bool   `yaml:"onboot"`
-	Device  string `yaml:"device"`
+	Type    string
+	OnBoot  bool
+	Device  string
 	Hwaddr  string
 	Ipaddr  string
-	IpCIDR  string
-	Prefix  string
+	IpCIDR  string `yaml:"ipcidr,omitempty"`
+	Prefix  string `yaml:"prefix,omitempty"`
 	Netmask string
-	Gateway string `yaml:"gateway,omitempty"`
+	Gateway string `yaml:"gateway"`
+	Default bool
 }
 
 /******
@@ -92,16 +92,16 @@ type NodeInfo struct {
 }
 
 type NetDevEntry struct {
-	Name    Entry
-	Type    Entry `yaml:"type,omitempty"`
-	OnBoot  Entry `yaml:"onboot"`
-	Device  Entry `yaml:"device"`
+	Type    Entry
+	OnBoot  Entry
+	Device  Entry
 	Hwaddr  Entry
 	Ipaddr  Entry
 	IpCIDR  Entry
 	Prefix  Entry
 	Netmask Entry
-	Gateway Entry `yaml:"gateway,omitempty"`
+	Gateway Entry
+	Default Entry
 }
 
 func init() {

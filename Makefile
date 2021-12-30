@@ -94,11 +94,13 @@ files: all
 	cp -r etc/dhcp $(DESTDIR)/etc/warewulf/
 	cp -r etc/ipxe $(DESTDIR)/etc/warewulf/
 	cp -r overlays $(DESTDIR)/var/warewulf/
-	chmod +x $(DESTDIR)/var/warewulf/overlays/system/default/init
-	chmod 600 $(DESTDIR)/var/warewulf/overlays/system/default/etc/ssh/ssh*
-	chmod 644 $(DESTDIR)/var/warewulf/overlays/system/default/etc/ssh/ssh*.pub.ww
-	mkdir -p $(DESTDIR)/var/warewulf/overlays/system/default/warewulf/bin/
-	cp wwctl $(DESTDIR)/usr/bin/
+	mkdir -p $(DESTDIR)/var/warewulf/overlays/wwinit/bin/
+	mkdir -p $(DESTDIR)/var/warewulf/overlays/wwinit/warewulf/bin/
+	chmod +x $(DESTDIR)/var/warewulf/overlays/wwinit/init
+	chmod 600 $(DESTDIR)/var/warewulf/overlays/wwinit/etc/ssh/ssh*
+	chmod 644 $(DESTDIR)/var/warewulf/overlays/wwinit/etc/ssh/ssh*.pub.ww
+	mkdir -p $(DESTDIR)/var/warewulf/overlays/wwinit/warewulf/bin/
+	install -m 0755 wwctl $(DESTDIR)/usr/bin/
 	mkdir -p $(DESTDIR)/usr/lib/firewalld/services
 	install -c -m 0644 include/firewalld/warewulf.xml $(DESTDIR)/usr/lib/firewalld/services
 	mkdir -p $(DESTDIR)/usr/lib/systemd/system
