@@ -31,9 +31,7 @@ func defaultConfig() *ControllerConf {
 	}
 	Nfs := &NfsConf{
 		Enabled: true,
-		Exports: []string{"/home",
-			defaultDataStore,
-		},
+		Exports: []string{"/home",},
 		SystemdName: "nfs-server",
 	}
 
