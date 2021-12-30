@@ -2,6 +2,7 @@ package warewulfd
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -39,6 +40,9 @@ func SystemOverlaySend(w http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			daemonLogf("ERROR: %s\n", err)
 		}
+
+		updateStatus(n.Id.Get(), "SYSTEM OVERLAY", n.SystemOverlay.Get()+".img", strings.Split(req.RemoteAddr, ":")[0])
+
 	} else {
 		w.WriteHeader(503)
 		daemonLogf("WARNING: No 'system system-overlay' set for node %s\n", n.Id.Get())

@@ -12,5 +12,6 @@ require (
 	github.com/opencontainers/umoci v0.4.6
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.1.1
+	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
 	gopkg.in/yaml.v2 v2.4.0
 )

@@ -2,6 +2,7 @@ package warewulfd
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/kernel"
 )
@@ -21,6 +22,8 @@ func KernelSend(w http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			daemonLogf("ERROR: %s\n", err)
 		}
+
+		updateStatus(node.Id.Get(), "KERNEL", node.KernelVersion.Get(), strings.Split(req.RemoteAddr, ":")[0])
 
 	} else {
 		w.WriteHeader(503)
