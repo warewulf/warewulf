@@ -11,10 +11,10 @@ echo
 
 set base http://{{.Ipaddr}}:{{.Port}}
 
-kernel --name kernel ${base}/kernel/{{.Hwaddr}}         || goto reboot
-initrd --name container ${base}/container/{{.Hwaddr}}   || goto reboot
-initrd --name kmods ${base}/kmods/{{.Hwaddr}}           || goto reboot
-initrd --name system ${base}/overlay-system/{{.Hwaddr}} || goto reboot
+kernel --name kernel ${base}/kernel/{{.Hwaddr}}                 || goto reboot
+imgextract --name container ${base}/container/{{.Hwaddr}}       || goto reboot
+imgextract --name kmods ${base}/kmods/{{.Hwaddr}}               || goto reboot
+imgextract --name system ${base}/overlay-system/{{.Hwaddr}}     || goto reboot
 
 boot kernel initrd=container initrd=kmods initrd=system {{.KernelArgs}} ||  goto reboot
 
