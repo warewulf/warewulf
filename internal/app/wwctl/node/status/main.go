@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
@@ -85,10 +86,19 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		sort.Strings(keys)
 
 		for _, id := range keys {
+			if SetTime > 0 && rightnow-nodeStatus.Nodes[id].Lastseen < SetTime {
+				continue
+			}
 			if nodeStatus.Nodes[id].Lastseen > 0 {
-				fmt.Printf("%-20s %-20s %-25s %-10d\n", id, nodeStatus.Nodes[id].Stage, nodeStatus.Nodes[id].Sent, rightnow-nodeStatus.Nodes[id].Lastseen)
+				if rightnow-nodeStatus.Nodes[id].Lastseen >= 600 {
+					color.Red("%-20s %-20s %-25s %-10d\n", id, nodeStatus.Nodes[id].Stage, nodeStatus.Nodes[id].Sent, rightnow-nodeStatus.Nodes[id].Lastseen)
+				} else if rightnow-nodeStatus.Nodes[id].Lastseen >= 300 {
+					color.Yellow("%-20s %-20s %-25s %-10d\n", id, nodeStatus.Nodes[id].Stage, nodeStatus.Nodes[id].Sent, rightnow-nodeStatus.Nodes[id].Lastseen)
+				} else {
+					fmt.Printf("%-20s %-20s %-25s %-10d\n", id, nodeStatus.Nodes[id].Stage, nodeStatus.Nodes[id].Sent, rightnow-nodeStatus.Nodes[id].Lastseen)
+				}
 			} else {
-				fmt.Printf("%-20s %-20s %-25s %-10s\n", id, "--", "--", "--")
+				color.HiBlack("%-20s %-20s %-25s %-10s\n", id, "--", "--", "--")
 			}
 			if count+4 >= height && SetWatch {
 				if count+1 != len(keys) {
