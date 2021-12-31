@@ -12,10 +12,12 @@ var (
 		Args:                  cobra.MinimumNArgs(0),
 	}
 	SetWatch bool
+	SetUpdate int16
 )
 
 func init() {
 	baseCmd.PersistentFlags().BoolVarP(&SetWatch, "watch", "w", false, "Watch the status automatically")
+	baseCmd.PersistentFlags().Int16VarP(&SetUpdate, "update", "u", 500, "Set the update frequency for 'watch' (ms)")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

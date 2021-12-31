@@ -103,7 +103,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			if elipsis {
 				fmt.Printf("... ")
 			}
-			time.Sleep(1000 * time.Millisecond)
+			time.Sleep(time.Duration(SetUpdate) * time.Millisecond)
 		} else {
 			break
 		}
