@@ -41,7 +41,7 @@ func SystemOverlaySend(w http.ResponseWriter, req *http.Request) {
 			daemonLogf("ERROR: %s\n", err)
 		}
 
-		updateStatus(n.Id.Get(), "SYSTEM OVERLAY", n.SystemOverlay.Get()+".img", strings.Split(req.RemoteAddr, ":")[0])
+		updateStatus(n.Id.Get(), "SYSTEM_OVERLAY", n.SystemOverlay.Get()+".img", strings.Split(req.RemoteAddr, ":")[0])
 
 	} else {
 		w.WriteHeader(503)

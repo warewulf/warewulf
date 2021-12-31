@@ -24,7 +24,7 @@ func KmodsSend(w http.ResponseWriter, req *http.Request) {
 			daemonLogf("ERROR: %s\n", err)
 		}
 
-		updateStatus(node.Id.Get(), "KMODS", node.KernelVersion.Get()+".img", strings.Split(req.RemoteAddr, ":")[0])
+		updateStatus(node.Id.Get(), "KMODS_OVERLAY", node.KernelVersion.Get()+".img", strings.Split(req.RemoteAddr, ":")[0])
 
 	} else {
 		w.WriteHeader(503)

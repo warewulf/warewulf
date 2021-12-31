@@ -78,7 +78,7 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 			daemonLogf("ERROR: %s\n", err)
 		}
 
-		updateStatus(n.Id.Get(), "RUNTIME OVERLAY", n.RuntimeOverlay.Get()+".img", strings.Split(req.RemoteAddr, ":")[0])
+		updateStatus(n.Id.Get(), "RUNTIME_OVERLAY", n.RuntimeOverlay.Get()+".img", strings.Split(req.RemoteAddr, ":")[0])
 
 	} else {
 		w.WriteHeader(503)
