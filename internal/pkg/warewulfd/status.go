@@ -26,7 +26,7 @@ func init() {
 	statusDB.Nodes = make(map[string]*NodeStatus)
 }
 
-func updateStatus(nodeID, stage, sent, ipaddr string) error {
+func updateStatus(nodeID, stage, sent, ipaddr string) {
 	rightnow := time.Now().Unix()
 
 	wwlog.Printf(wwlog.DEBUG, "Updating node status data: %s\n", nodeID)
@@ -37,8 +37,6 @@ func updateStatus(nodeID, stage, sent, ipaddr string) error {
 	n.Sent = sent
 	n.Ipaddr = ipaddr
 	statusDB.Nodes[nodeID] = &n
-
-	return nil
 }
 
 func statusJSON() ([]byte, error) {
@@ -60,5 +58,8 @@ func StatusSend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	w.Write(status)
+	_, err = w.Write(status)
+	if err != nil {
+		wwlog.Printf(wwlog.WARN, "Could not send status JSON: %s\n", err)
+	}
 }
