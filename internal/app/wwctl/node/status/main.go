@@ -12,6 +12,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/hpcng/warewulf/pkg/hostlist"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 )
@@ -79,8 +80,24 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Printf("%s\n", strings.Repeat("=", 80))
 
 		keys := make([]string, 0, len(nodeStatus.Nodes))
-		for k := range nodeStatus.Nodes {
-			keys = append(keys, k)
+
+		if len(args) > 0 {
+			tmpMap := make(map[string]bool)
+			nodeList := hostlist.Expand(args)
+
+			for _, name := range nodeList {
+				tmpMap[name] = true
+			}
+
+			for name := range nodeStatus.Nodes {
+				if _, ok := tmpMap[name]; ok {
+					keys = append(keys, name)
+				}
+			}
+		} else {
+			for k := range nodeStatus.Nodes {
+				keys = append(keys, k)
+			}
 		}
 
 		sort.Strings(keys)
