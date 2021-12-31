@@ -107,9 +107,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				continue
 			}
 			if nodeStatus.Nodes[id].Lastseen > 0 {
-				if rightnow-nodeStatus.Nodes[id].Lastseen >= 600 {
+				if rightnow-nodeStatus.Nodes[id].Lastseen >= int64(controller.Warewulf.UpdateInterval*2) {
 					color.Red("%-20s %-20s %-25s %-10d\n", id, nodeStatus.Nodes[id].Stage, nodeStatus.Nodes[id].Sent, rightnow-nodeStatus.Nodes[id].Lastseen)
-				} else if rightnow-nodeStatus.Nodes[id].Lastseen >= 300 {
+				} else if rightnow-nodeStatus.Nodes[id].Lastseen >= int64(controller.Warewulf.UpdateInterval) {
 					color.Yellow("%-20s %-20s %-25s %-10d\n", id, nodeStatus.Nodes[id].Stage, nodeStatus.Nodes[id].Sent, rightnow-nodeStatus.Nodes[id].Lastseen)
 				} else {
 					fmt.Printf("%-20s %-20s %-25s %-10d\n", id, nodeStatus.Nodes[id].Stage, nodeStatus.Nodes[id].Sent, rightnow-nodeStatus.Nodes[id].Lastseen)
