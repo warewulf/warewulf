@@ -166,6 +166,7 @@ clean:
 	rm -rf bash_completion.d
 	rm -f man_page
 	rm -rf man_pages
+	rm -rf vendor
 
 install: files install_wwclient
 
