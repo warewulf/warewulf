@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 )
@@ -24,6 +25,37 @@ var statusDB allStatus
 
 func init() {
 	statusDB.Nodes = make(map[string]*NodeStatus)
+
+	err := LoadNodeStatus()
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Could not prepopulate status DB with nodes: %s\n", err)
+	}
+}
+
+func LoadNodeStatus() error {
+	var newDB allStatus
+	newDB.Nodes = make(map[string]*NodeStatus)
+
+	DB, err := node.New()
+	if err != nil {
+		return err
+	}
+
+	nodes, err := DB.FindAllNodes()
+	if err != nil {
+		return err
+	}
+
+	for _, n := range nodes {
+		if _, ok := statusDB.Nodes[n.Id.Get()]; !ok {
+			newDB.Nodes[n.Id.Get()] = &NodeStatus{}
+		} else {
+			newDB.Nodes[n.Id.Get()] = statusDB.Nodes[n.Id.Get()]
+		}
+	}
+
+	statusDB = newDB
+	return nil
 }
 
 func updateStatus(nodeID, stage, sent, ipaddr string) {

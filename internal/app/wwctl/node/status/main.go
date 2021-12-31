@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
-	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"github.com/hpcng/warewulf/pkg/hostlist"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 )
@@ -29,18 +28,6 @@ type NodeStatus struct {
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 
-	nodeDB, err := node.New()
-	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
-		os.Exit(1)
-	}
-
-	nodes, err := nodeDB.FindAllNodes()
-	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not get node list: %s\n", err)
-		os.Exit(1)
-	}
-
 	controller, err := warewulfconf.New()
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "%s\n", err)
@@ -55,8 +42,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	statusURL := fmt.Sprintf("http://%s:%d/status", controller.Ipaddr, controller.Warewulf.Port)
 
 	for {
+		var elipsis bool
 		var height int
-		count := 4
+		var count int
 		rightnow := time.Now().Unix()
 
 		wwlog.Printf(wwlog.VERBOSE, "Connecting to: %s\n", statusURL)
@@ -86,26 +74,35 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 		}
 
-		args = hostlist.Expand(args)
-
 		fmt.Printf("%-20s %-20s %-25s %-10s\n", "NODENAME", "STATUS", "SENT", "LASTSEEN (s)")
 		fmt.Printf("%s\n", strings.Repeat("=", 80))
 
-		for _, node := range node.FilterByName(nodes, args) {
-			id := node.Id.Get()
-			if _, ok := nodeStatus.Nodes[id]; ok {
+		keys := make([]string, 0, len(nodeStatus.Nodes))
+		for k := range nodeStatus.Nodes {
+			keys = append(keys, k)
+		}
+
+		sort.Strings(keys)
+
+		for _, id := range keys {
+			if nodeStatus.Nodes[id].Lastseen > 0 {
 				fmt.Printf("%-20s %-20s %-25s %-10d\n", id, nodeStatus.Nodes[id].Stage, nodeStatus.Nodes[id].Sent, rightnow-nodeStatus.Nodes[id].Lastseen)
 			} else {
 				fmt.Printf("%-20s %-20s %-25s %-10s\n", id, "--", "--", "--")
 			}
-			if count >= height && SetWatch {
+			if count+4 >= height && SetWatch {
+				if count+1 != len(keys) {
+					elipsis = true
+				}
 				break
 			}
 			count++
 		}
 
 		if SetWatch {
-			fmt.Printf("... ")
+			if elipsis {
+				fmt.Printf("... ")
+			}
 			time.Sleep(1000 * time.Millisecond)
 		} else {
 			break

@@ -15,7 +15,7 @@ var (
 )
 
 func init() {
-	baseCmd.PersistentFlags().BoolVar(&SetWatch, "watch", false, "Watch the status automatically")
+	baseCmd.PersistentFlags().BoolVarP(&SetWatch, "watch", "w", false, "Watch the status automatically")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

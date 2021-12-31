@@ -20,8 +20,6 @@ var (
 func LoadNodeDB() error {
 	TmpMap := make(map[string]node.NodeInfo)
 
-	daemonLogf("(re)Loading the node Database\n")
-
 	DB, err := node.New()
 	if err != nil {
 		return err

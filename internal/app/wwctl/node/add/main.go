@@ -3,6 +3,7 @@ package add
 import (
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/hpcng/warewulf/pkg/hostlist"
 	"github.com/pkg/errors"
@@ -137,5 +138,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		count++
 	}
 
-	return errors.Wrap(nodeDB.Persist(), "failed to persist nodedb")
+	err = nodeDB.Persist()
+	if err != nil {
+		return errors.Wrap(err, "failed to persist new node")
+	}
+
+	err = warewulfd.DaemonReload()
+	if err != nil {
+		return errors.Wrap(err, "failed to reload warewulf daemon")
+	}
+
+	return nil
 }

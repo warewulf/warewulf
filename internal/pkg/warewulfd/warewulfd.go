@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 )
 
@@ -22,9 +23,15 @@ func RunServer() error {
 
 	go func() {
 		for range c {
+			daemonLogf("Recieved SIGHUP, reloading...\n")
 			err := LoadNodeDB()
 			if err != nil {
-				fmt.Printf("ERROR: Could not load database: %s\n", err)
+				wwlog.Printf(wwlog.ERROR, "Could not load node DB: %s\n", err)
+			}
+
+			err = LoadNodeStatus()
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "Could not prepopulate node status DB: %s\n", err)
 			}
 		}
 	}()
