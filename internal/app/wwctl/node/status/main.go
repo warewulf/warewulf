@@ -76,7 +76,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 		}
 
-		fmt.Printf("%-20s %-20s %-25s %-10s\n", "NODENAME", "STATUS", "SENT", "LASTSEEN (s)")
+		fmt.Printf("%-20s %-20s %-25s %-10s\n", "NODENAME", "STAGE", "SENT", "LASTSEEN (s)")
 		fmt.Printf("%s\n", strings.Repeat("=", 80))
 
 		keys := make([]string, 0, len(nodeStatus.Nodes))
