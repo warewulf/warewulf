@@ -10,15 +10,19 @@ import "regexp"
 
 func FilterByName(set []NodeInfo, searchList []string) []NodeInfo {
 	var ret []NodeInfo
+	unique := make(map[string]NodeInfo)
 
 	if len(searchList) > 0 {
 		for _, search := range searchList {
 			for _, entry := range set {
 				b, _ := regexp.MatchString("^"+search+"$", entry.Id.Get())
 				if b {
-					ret = append(ret, entry)
+					unique[entry.Id.Get()] = entry
 				}
 			}
+		}
+		for _, n := range unique {
+			ret = append(ret, n)
 		}
 	} else {
 		ret = set
