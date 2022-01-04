@@ -88,7 +88,11 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			}
 
 			n.NetDevs[devname].Name.Set(devname)
-			n.NetDevs[devname].Device.Set(netdev.Device)
+			if netdev.Device != "" {
+				n.NetDevs[devname].Device.Set(netdev.Device)
+			} else {
+				n.NetDevs[devname].Device.Set(devname)
+			}
 			n.NetDevs[devname].Ipaddr.Set(netdev.Ipaddr)
 			n.NetDevs[devname].Netmask.Set(netdev.Netmask)
 			n.NetDevs[devname].Hwaddr.Set(netdev.Hwaddr)
