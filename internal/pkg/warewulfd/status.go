@@ -15,6 +15,7 @@ type allStatus struct {
 }
 
 type NodeStatus struct {
+	NodeName string `json:"node name"`
 	Stage    string `json:"stage"`
 	Sent     string `json:"sent"`
 	Ipaddr   string `json:"ipaddr"`
@@ -49,6 +50,7 @@ func LoadNodeStatus() error {
 	for _, n := range nodes {
 		if _, ok := statusDB.Nodes[n.Id.Get()]; !ok {
 			newDB.Nodes[n.Id.Get()] = &NodeStatus{}
+			newDB.Nodes[n.Id.Get()].NodeName = n.Id.Get()
 		} else {
 			newDB.Nodes[n.Id.Get()] = statusDB.Nodes[n.Id.Get()]
 		}
@@ -64,6 +66,7 @@ func updateStatus(nodeID, stage, sent, ipaddr string) {
 	wwlog.Printf(wwlog.DEBUG, "Updating node status data: %s\n", nodeID)
 
 	var n NodeStatus
+	n.NodeName = nodeID
 	n.Stage = stage
 	n.Lastseen = rightnow
 	n.Sent = sent

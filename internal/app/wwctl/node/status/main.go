@@ -22,6 +22,7 @@ type allStatus struct {
 }
 
 type NodeStatus struct {
+	NodeName string `json:"node name"`
 	Stage    string `json:"stage"`
 	Sent     string `json:"sent"`
 	Ipaddr   string `json:"ipaddr"`
@@ -79,8 +80,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Printf("%-20s %-20s %-25s %-10s\n", "NODENAME", "STAGE", "SENT", "LASTSEEN (s)")
 		fmt.Printf("%s\n", strings.Repeat("=", 80))
 
-		keys := make([]string, 0, len(nodeStatus.Nodes))
+		keys := make([]*NodeStatus, 0, len(nodeStatus.Nodes))
 
+		wwlog.Printf(wwlog.VERBOSE, "Building sort index\n")
 		if len(args) > 0 {
 			tmpMap := make(map[string]bool)
 			nodeList := hostlist.Expand(args)
@@ -91,31 +93,69 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 			for name := range nodeStatus.Nodes {
 				if _, ok := tmpMap[name]; ok {
-					keys = append(keys, name)
+					keys = append(keys, nodeStatus.Nodes[name])
 				}
 			}
 		} else {
-			for k := range nodeStatus.Nodes {
-				keys = append(keys, k)
+
+			for name := range nodeStatus.Nodes {
+				keys = append(keys, nodeStatus.Nodes[name])
 			}
 		}
 
-		sort.Strings(keys)
+		wwlog.Printf(wwlog.VERBOSE, "Sorting index\n")
+		if SetSortLast {
+			sort.Slice(keys, func(i, j int) bool {
+				if keys[i].Lastseen > keys[j].Lastseen {
+					return true
+				} else if keys[i].Lastseen < keys[j].Lastseen {
+					return false
+				} else {
+					if keys[i].NodeName < keys[j].NodeName {
+						return true
+					} else {
+						return false
+					}
+				}
+				//return keys[i].Lastseen > keys[j].Lastseen
+			})
+		} else {
+			sort.Slice(keys, func(i, j int) bool {
+				return keys[i].NodeName < keys[j].NodeName
+			})
+		}
 
-		for _, id := range keys {
-			if SetTime > 0 && rightnow-nodeStatus.Nodes[id].Lastseen < SetTime {
+		if SetSortReverse {
+			var tmpsort []*NodeStatus
+
+			wwlog.Printf(wwlog.VERBOSE, "Reversing sort order\n")
+
+			for l := len(keys) - 1; l >= 0; l-- {
+				tmpsort = append(tmpsort, keys[l])
+			}
+
+			keys = tmpsort
+		}
+
+		wwlog.Printf(wwlog.VERBOSE, "Printing results\n")
+		for _, o := range keys {
+			if SetTime > 0 && o.Lastseen < SetTime {
 				continue
 			}
-			if nodeStatus.Nodes[id].Lastseen > 0 {
-				if rightnow-nodeStatus.Nodes[id].Lastseen >= int64(controller.Warewulf.UpdateInterval*2) {
-					color.Red("%-20s %-20s %-25s %-10d\n", id, nodeStatus.Nodes[id].Stage, nodeStatus.Nodes[id].Sent, rightnow-nodeStatus.Nodes[id].Lastseen)
-				} else if rightnow-nodeStatus.Nodes[id].Lastseen >= int64(controller.Warewulf.UpdateInterval) {
-					color.Yellow("%-20s %-20s %-25s %-10d\n", id, nodeStatus.Nodes[id].Stage, nodeStatus.Nodes[id].Sent, rightnow-nodeStatus.Nodes[id].Lastseen)
+
+			if o.Lastseen > 0 {
+				if SetUnknown {
+					continue
+				}
+				if rightnow-o.Lastseen >= int64(controller.Warewulf.UpdateInterval*2) {
+					color.Red("%-20s %-20s %-25s %-10d\n", o.NodeName, o.Stage, o.Sent, rightnow-o.Lastseen)
+				} else if rightnow-o.Lastseen >= int64(controller.Warewulf.UpdateInterval) {
+					color.Yellow("%-20s %-20s %-25s %-10d\n", o.NodeName, o.Stage, o.Sent, rightnow-o.Lastseen)
 				} else {
-					fmt.Printf("%-20s %-20s %-25s %-10d\n", id, nodeStatus.Nodes[id].Stage, nodeStatus.Nodes[id].Sent, rightnow-nodeStatus.Nodes[id].Lastseen)
+					fmt.Printf("%-20s %-20s %-25s %-10d\n", o.NodeName, o.Stage, o.Sent, rightnow-o.Lastseen)
 				}
 			} else {
-				color.HiBlack("%-20s %-20s %-25s %-10s\n", id, "--", "--", "--")
+				color.HiBlack("%-20s %-20s %-25s %-10s\n", o.NodeName, "--", "--", "--")
 			}
 			if count+4 >= height && SetWatch {
 				if count+1 != len(keys) {
