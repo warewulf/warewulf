@@ -149,5 +149,6 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 
 		daemonLogf("SEND:  %15s: %s\n", nodeobj.Id.Get(), ipxeTemplate)
 
+		updateStatus(nodeobj.Id.Get(), "IPXE_TEMPLATE", nodeobj.Ipxe.Get()+".ipxe", strings.Split(req.RemoteAddr, ":")[0])
 	}
 }

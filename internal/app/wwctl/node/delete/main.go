@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/hpcng/warewulf/pkg/hostlist"
 	"github.com/manifoldco/promptui"
@@ -79,6 +80,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			if err != nil {
 				return errors.Wrap(err, "failed to persist nodedb")
 			}
+
+			err = warewulfd.DaemonReload()
+			if err != nil {
+				return errors.Wrap(err, "failed to reload warewulf daemon")
+			}
+
 		}
 	}
 

@@ -76,6 +76,9 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			daemonLogf("ERROR: %s\n", err)
 		}
+
+		updateStatus(n.Id.Get(), "RUNTIME_OVERLAY", n.RuntimeOverlay.Get()+".img", strings.Split(req.RemoteAddr, ":")[0])
+
 	} else {
 		w.WriteHeader(503)
 		daemonLogf("WARNING: No 'runtime system-overlay' set for node %s\n", n.Id.Get())
