@@ -38,8 +38,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Init", profile.Init.Print())
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Root", profile.Root.Print())
 
-			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "RuntimeOverlay", profile.RuntimeOverlay.Print())
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "SystemOverlay", profile.SystemOverlay.Print())
+			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "RuntimeOverlay", profile.RuntimeOverlay.Print())
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Ipxe", profile.Ipxe.Print())
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiNetmask", profile.IpmiNetmask.Print())
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiPort", profile.IpmiPort.Print())
@@ -53,6 +53,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), name+":GATEWAY", netdev.Gateway.Print())
 				fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), name+":HWADDR", netdev.Hwaddr.Print())
 				fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), name+":TYPE", netdev.Hwaddr.Print())
+				fmt.Printf("%-20s %-18s %t\n", profile.Id.Get(), name+":ONBOOT", netdev.OnBoot.PrintB())
+				fmt.Printf("%-20s %-18s %t\n", profile.Id.Get(), name+":DEFAULT", netdev.Default.PrintB())
 			}
 
 			for keyname, key := range profile.Keys {

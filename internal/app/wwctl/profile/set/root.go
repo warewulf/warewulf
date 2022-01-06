@@ -41,6 +41,7 @@ var (
 	SetKernelArgs     string
 	SetClusterName    string
 	SetIpxe           string
+	SetInitOverlay    string
 	SetRuntimeOverlay string
 	SetSystemOverlay  string
 	SetIpmiNetmask    string
@@ -57,6 +58,7 @@ var (
 	SetHwaddr         string
 	SetType           string
 	SetNetOnBoot      string
+	SetNetDefault     string
 	SetNetDevDel      bool
 	SetDiscoverable   bool
 	SetUndiscoverable bool
@@ -91,7 +93,7 @@ func init() {
 
 	baseCmd.PersistentFlags().StringVarP(&SetRuntimeOverlay, "runtime", "R", "", "Set the node's runtime overlay")
 	if err := baseCmd.RegisterFlagCompletionFunc("runtime", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		list, _ := overlay.FindRuntimeOverlays()
+		list, _ := overlay.FindOverlays()
 		return list, cobra.ShellCompDirectiveNoFileComp
 	}); err != nil {
 		log.Println(err)
@@ -99,7 +101,7 @@ func init() {
 	}
 	baseCmd.PersistentFlags().StringVarP(&SetSystemOverlay, "system", "S", "", "Set the node's system overlay")
 	if err := baseCmd.RegisterFlagCompletionFunc("system", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		list, _ := overlay.FindSystemOverlays()
+		list, _ := overlay.FindOverlays()
 		return list, cobra.ShellCompDirectiveNoFileComp
 	}); err != nil {
 		log.Println(err)

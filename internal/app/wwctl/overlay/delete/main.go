@@ -5,8 +5,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/hpcng/warewulf/internal/pkg/config"
-	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
@@ -17,22 +16,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	var overlayPath string
 	var fileName string
 
-	overlayKind := args[0]
-	overlayName := args[1]
+	overlayName := args[0]
 
-	if len(args) == 3 {
-		fileName = args[2]
+	if len(args) == 2 {
+		fileName = args[1]
 	}
 
-	if overlayKind != "system" && overlayKind != "runtime" {
-		return errors.New("overlay kind must be of type 'system' or 'runtime'")
-	}
-
-	if overlayKind == "system" {
-		overlayPath = config.SystemOverlaySource(overlayName)
-	} else if overlayKind == "runtime" {
-		overlayPath = config.RuntimeOverlaySource(overlayName)
-	}
+	overlayPath = overlay.OverlaySourceDir(overlayName)
 
 	if overlayPath == "" {
 		wwlog.Printf(wwlog.ERROR, "Overlay name did not resolve: '%s'\n", overlayName)
@@ -40,13 +30,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if !util.IsDir(overlayPath) {
-		wwlog.Printf(wwlog.ERROR, "Overlay does not exist: '%s:%s'\n", overlayKind, overlayName)
+		wwlog.Printf(wwlog.ERROR, "Overlay does not exist: %s\n", overlayName)
 		os.Exit(1)
 	}
 
 	if fileName == "" {
-		if overlayName == "default" {
-			return errors.New("refusing to delete the default overlay")
+		if overlayName == "wwinit" {
+			return errors.New("refusing to delete the Warewulf overlay")
 		}
 		if Force {
 			err := os.RemoveAll(overlayPath)
@@ -61,31 +51,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 		fmt.Printf("Deleted overlay: %s\n", args[0])
 
-		n, err := node.New()
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
-			os.Exit(1)
-		}
-
-		nodes, err := n.FindAllNodes()
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Could not get node list: %s\n", err)
-			os.Exit(1)
-		}
-
-		for _, node := range nodes {
-			if overlayKind == "system" && node.SystemOverlay.Get() == overlayName {
-				node.SystemOverlay.Set("default")
-			} else if overlayKind == "runtime" && node.RuntimeOverlay.Get() == overlayName {
-				node.RuntimeOverlay.Set("default")
-			}
-		}
-
-		err = n.Persist()
-		if err != nil {
-			return errors.Wrap(err, "failed to persist node updates")
-		}
-
 	} else {
 		removePath := path.Join(overlayPath, fileName)
 
@@ -97,14 +62,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if Force {
 			err := os.RemoveAll(removePath)
 			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "Failed deleting file from overlay: %s:%s:%s\n", overlayKind, overlayName, overlayPath)
+				wwlog.Printf(wwlog.ERROR, "Failed deleting file from overlay: %s:%s\n", overlayName, overlayPath)
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
 			}
 		} else {
 			err := os.Remove(removePath)
 			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "Failed deleting overlay: %s:%s:%s\n", overlayKind, overlayName, overlayPath)
+				wwlog.Printf(wwlog.ERROR, "Failed deleting overlay: %s:%s\n", overlayName, overlayPath)
 				wwlog.Printf(wwlog.ERROR, "%s\n", err)
 				os.Exit(1)
 			}

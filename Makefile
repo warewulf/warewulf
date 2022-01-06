@@ -29,10 +29,7 @@ export GOPROXY
 # built tags needed for wwbuild binary
 WW_BUILD_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
-# system-overlay directories for install_wwclient
-OVERLAY_DIR ?= $(DESTDIR)/var/warewulf/overlays/system/
-overlays = ${dir ${wildcard ${OVERLAY_DIR}*/}}
-
+# all build targets
 all: vendor wwctl wwclient bash_completion.d man_pages
 
 build: lint test-it vet all
@@ -93,15 +90,17 @@ files: all
 	install -d -m 0755 $(DESTDIR)/usr/share/man/man1
 	test -f $(DESTDIR)/etc/warewulf/warewulf.conf || install -m 644 etc/warewulf.conf $(DESTDIR)/etc/warewulf/
 	test -f $(DESTDIR)/etc/warewulf/hosts.tmpl || install -m 644 etc/hosts.tmpl $(DESTDIR)/etc/warewulf/
-	test -f $(DESTDIR)/etc/warewulf/nodes.conf || install -m 640 etc/nodes.conf $(DESTDIR)/etc/warewulf/
+	test -f $(DESTDIR)/etc/warewulf/nodes.conf || install -m 644 etc/nodes.conf $(DESTDIR)/etc/warewulf/
 	cp -r etc/dhcp $(DESTDIR)/etc/warewulf/
 	cp -r etc/ipxe $(DESTDIR)/etc/warewulf/
 	cp -r overlays $(DESTDIR)/var/warewulf/
-	chmod +x $(DESTDIR)/var/warewulf/overlays/system/default/init
-	chmod 600 $(DESTDIR)/var/warewulf/overlays/system/default/etc/ssh/ssh*
-	chmod 644 $(DESTDIR)/var/warewulf/overlays/system/default/etc/ssh/ssh*.pub.ww
-	mkdir -p $(DESTDIR)/var/warewulf/overlays/system/default/warewulf/bin/
-	cp wwctl $(DESTDIR)/usr/bin/
+	mkdir -p $(DESTDIR)/var/warewulf/overlays/wwinit/bin/
+	mkdir -p $(DESTDIR)/var/warewulf/overlays/wwinit/warewulf/bin/
+	chmod +x $(DESTDIR)/var/warewulf/overlays/wwinit/init
+	chmod 600 $(DESTDIR)/var/warewulf/overlays/wwinit/etc/ssh/ssh*
+	chmod 644 $(DESTDIR)/var/warewulf/overlays/wwinit/etc/ssh/ssh*.pub.ww
+	mkdir -p $(DESTDIR)/var/warewulf/overlays/wwinit/warewulf/bin/
+	install -m 0755 wwctl $(DESTDIR)/usr/bin/
 	mkdir -p $(DESTDIR)/usr/lib/firewalld/services
 	install -c -m 0644 include/firewalld/warewulf.xml $(DESTDIR)/usr/lib/firewalld/services
 	mkdir -p $(DESTDIR)/usr/lib/systemd/system
@@ -128,7 +127,7 @@ wwclient:
 	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags '-extldflags -static' -o ../../wwclient
 
 install_wwclient: wwclient
-	$(foreach overlay, ${overlays}, install -D -m 0755 wwclient ${overlay}warewulf/bin/wwclient;)
+	install -m 0755 wwclient $(DESSTDIR)/var/warewulf/overlays/wwinit/bin/wwclient
 
 bash_completion:
 	cd cmd/bash_completion && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=$(CONFIG)/etc/warewulf.conf'\
@@ -166,6 +165,7 @@ clean:
 	rm -rf bash_completion.d
 	rm -f man_page
 	rm -rf man_pages
+	rm -rf vendor
 
 install: files install_wwclient
 

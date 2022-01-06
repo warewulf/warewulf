@@ -42,8 +42,8 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		wwlog.Printf(wwlog.DEBUG, "In node loop: %s\n", nodename)
 		n.NetDevs = make(map[string]*NetDevEntry)
 		n.Keys = make(map[string]*Entry)
-		n.SystemOverlay.SetDefault("default")
-		n.RuntimeOverlay.SetDefault("default")
+		n.SystemOverlay.SetDefault("wwinit")
+		n.RuntimeOverlay.SetDefault("generic")
 		n.Ipxe.SetDefault("default")
 		n.Init.SetDefault("/sbin/init")
 		n.Root.SetDefault("initramfs")
@@ -87,14 +87,18 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.NetDevs[devname] = &netdev
 			}
 
-			n.NetDevs[devname].Name.Set(devname)
-			n.NetDevs[devname].Device.Set(netdev.Device)
+			if netdev.Device != "" {
+				n.NetDevs[devname].Device.Set(netdev.Device)
+			} else {
+				n.NetDevs[devname].Device.Set(devname)
+			}
 			n.NetDevs[devname].Ipaddr.Set(netdev.Ipaddr)
 			n.NetDevs[devname].Netmask.Set(netdev.Netmask)
 			n.NetDevs[devname].Hwaddr.Set(netdev.Hwaddr)
 			n.NetDevs[devname].Gateway.Set(netdev.Gateway)
 			n.NetDevs[devname].Type.Set(netdev.Type)
 			n.NetDevs[devname].OnBoot.SetB(netdev.OnBoot)
+			n.NetDevs[devname].Default.SetB(netdev.Default)
 		}
 
 		for keyname, key := range node.Keys {
@@ -148,6 +152,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.NetDevs[devname].Gateway.SetAlt(netdev.Gateway, p)
 				n.NetDevs[devname].Type.SetAlt(netdev.Type, p)
 				n.NetDevs[devname].OnBoot.SetAltB(netdev.OnBoot, p)
+				n.NetDevs[devname].Default.SetAltB(netdev.Default, p)
 			}
 
 			for keyname, key := range config.NodeProfiles[p].Keys {
@@ -213,7 +218,6 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 
 			wwlog.Printf(wwlog.DEBUG, "Updating profile netdev: %s\n", devname)
 
-			p.NetDevs[devname].Name.Set(devname)
 			p.NetDevs[devname].Device.Set(netdev.Device)
 			p.NetDevs[devname].Ipaddr.Set(netdev.Ipaddr)
 			p.NetDevs[devname].Netmask.Set(netdev.Netmask)
@@ -221,6 +225,7 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 			p.NetDevs[devname].Gateway.Set(netdev.Gateway)
 			p.NetDevs[devname].Type.Set(netdev.Type)
 			p.NetDevs[devname].OnBoot.SetB(netdev.OnBoot)
+			p.NetDevs[devname].Default.SetB(netdev.Default)
 		}
 
 		for keyname, key := range profile.Keys {
@@ -266,5 +271,5 @@ func (config *nodeYaml) FindDiscoverableNode() (NodeInfo, string, error) {
 		}
 	}
 
-	return ret, "", errors.New("No unconfigured nodes found")
+	return ret, "", errors.New("no unconfigured nodes found")
 }

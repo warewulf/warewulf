@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
@@ -27,12 +26,12 @@ func SystemOverlaySend(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if n.SystemOverlay.Defined() {
-		fileName := config.SystemOverlayImage(n.Id.Get())
+		fileName := overlay.OverlayImage(n.Id.Get(), n.SystemOverlay.Get())
 
 		if conf.Warewulf.AutobuildOverlays {
-			if !util.IsFile(fileName) || util.PathIsNewer(fileName, node.ConfigFile) || util.PathIsNewer(fileName, config.SystemOverlaySource(n.SystemOverlay.Get())) {
+			if !util.IsFile(fileName) || util.PathIsNewer(fileName, node.ConfigFile) || util.PathIsNewer(fileName, overlay.OverlaySourceDir(n.SystemOverlay.Get())) {
 				daemonLogf("BUILD: %15s: System Overlay\n", n.Id.Get())
-				_ = overlay.BuildSystemOverlay([]node.NodeInfo{n})
+				_ = overlay.BuildOverlay(n, n.SystemOverlay.Get())
 			}
 		}
 
