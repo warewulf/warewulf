@@ -81,18 +81,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Printf(wwlog.VERBOSE, "System Overlay not defined: %s\n", node.Id.Get())
 		}
 
-		if node.RuntimeOverlay.Get() != "" {
-			if util.IsFile(overlay.RuntimeOverlayImage(node.Id.Get())) {
-				runtimeo_good = true
-			} else {
-				status = false
-				wwlog.Printf(wwlog.VERBOSE, "Runtime Overlay not found: %s\n", overlay.RuntimeOverlaySource(node.Id.Get()))
-			}
-		} else {
-			status = false
-			wwlog.Printf(wwlog.VERBOSE, "Runtime Overlay not defined: %s\n", node.Id.Get())
-		}
-
 		fmt.Printf("%-25s %-10t %-6t %-6t %-6t %-6t %-6t\n", node.Id.Get(), status, vnfs_good, kernel_good, kmods_good, systemo_good, runtimeo_good)
 	}
 

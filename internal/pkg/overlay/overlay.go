@@ -57,18 +57,6 @@ func FindRuntimeOverlays() ([]string, error) {
 }
 */
 
-func OverlaySourceTopDir() string {
-	return path.Join(config.LocalStateDir, "overlays/")
-}
-
-func OverlaySourceDir(overlayName string) string {
-	return path.Join(OverlaySourceTopDir(), overlayName)
-}
-
-func OverlayImage(nodename string, overlayname string) string {
-	return fmt.Sprintf("%s/provision/overlays/%s/%s.img", config.LocalStateDir, nodename, overlayname)
-}
-
 func BuildAllOverlays(nodes []node.NodeInfo) error {
 	for _, n := range nodes {
 		var overlays []string

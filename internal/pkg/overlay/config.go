@@ -3,21 +3,28 @@ package overlay
 import (
 	"path"
 
-	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/hpcng/warewulf/internal/pkg/util"
 )
 
-func OverlayDir() string {
-	return path.Join(warewulfconf.DataStore(), "/overlays")
+func OverlaySourceTopDir() string {
+	return path.Join(warewulfconf.DataStore(), "overlays/")
 }
 
+func OverlaySourceDir(overlayName string) string {
+	return path.Join(OverlaySourceTopDir(), overlayName)
+}
+
+func OverlayImage(nodeName string, overlayName string) string {
+	return path.Join(warewulfconf.DataStore(), "/provision/overlays/", nodeName, overlayName + ".img")
+}
 func SystemOverlayDir() string {
-	return path.Join(OverlayDir(), "/system")
+	return path.Join(OverlaySourceTopDir(), "/system")
 }
 
 func RuntimeOverlayDir() string {
-	return path.Join(OverlayDir(), "/runtime")
+	return path.Join(OverlaySourceTopDir(), "/runtime")
 }
 
 func SystemOverlaySource(overlayName string) string {
@@ -59,7 +66,7 @@ func SystemOverlayImage(nodeName string) string {
 		return ""
 	}
 
-	return path.Join(SystemOverlayDir(), nodeName+".img")
+	return path.Join(warewulfconf.DataStore(), "/provision/overlays/runtime/", nodeName + ".img")
 }
 
 func RuntimeOverlayImage(nodeName string) string {
@@ -73,5 +80,5 @@ func RuntimeOverlayImage(nodeName string) string {
 		return ""
 	}
 
-	return path.Join(RuntimeOverlayDir(), nodeName+".img")
+	return path.Join(warewulfconf.DataStore(), "/provision/overlays/system/", nodeName + ".img")
 }
