@@ -87,8 +87,7 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %{_sysconfdir}/bash_completion.d/warewulf
 
 %dir %{wwshared}/%{name}
-%{wwshared}/%{name}/overlays/runtime/*
-%{wwshared}/%{name}/overlays/system/*
+%{wwshared}/%{name}/overlays/*
 
 %attr(-, root, root) %{_bindir}/wwctl
 %attr(-, root, root) %{_prefix}/lib/firewalld/services/warewulf.xml
@@ -96,7 +95,8 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %attr(-, root, root) %{_mandir}/man1/wwctl*
 
 %changelog
-* Wed Dec 22 2021 Jeremy Siadal <jeremy.c.siadal@intel.com> - 4.2.0-1
+* Tue Jan 11 2022 Jeremy Siadal <jeremy.c.siadal@intel.com> - 4.2.0-1
+- Merge overlay subdirectories
 - Add configuration options to make
 - Relocate tftpboot for OpenSUSE
 - Remove libexecdir macro; changing in OpenSUSE 15.4

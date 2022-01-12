@@ -105,23 +105,14 @@ files: all
 	test -f $(DESTDIR)/etc/warewulf/nodes.conf || install -m 644 etc/nodes.conf $(DESTDIR)/etc/warewulf/
 	cp -r etc/dhcp $(DESTDIR)/etc/warewulf/
 	cp -r etc/ipxe $(DESTDIR)/etc/warewulf/
-	cp -r overlays $(DESTDIR)/var/warewulf/
-	mkdir -p $(DESTDIR)$(OVERLAYIR)/wwinit/bin/
-	mkdir -p $(DESTDIR)$(OVERLAYIR)/wwinit/warewulf/bin/
-	chmod +x $(DESTDIR)$(OVERLAYIR)/wwinit/init
-	chmod 600 $(DESTDIR)$(OVERLAYIR)/wwinit/etc/ssh/ssh*
-	chmod 644 $(DESTDIR)$(OVERLAYIR)/wwinit/etc/ssh/ssh*.pub.ww
-	mkdir -p $(DESTDIR)$(OVERLAYIR)/wwinit/warewulf/bin/
-	install -m 0755 wwctl $(DESTDIR)/usr/bin/
-	mkdir -p $(DESTDIR)/usr/lib/firewalld/services
-	install -c -m 0644 include/firewalld/warewulf.xml $(DESTDIR)/usr/lib/firewalld/services
-	cp -r overlays $(DESTDIR)$(WWROOT)/warewulf/
-	mkdir -p $(DESTDIR)$(OVERLAYIR)/wwinit/bin/
-	mkdir -p $(DESTDIR)$(OVERLAYIR)/wwinit/warewulf/bin/
-	chmod +x $(DESTDIR)$(OVERLAYIR)/wwinit/init
-	chmod 600 $(DESTDIR)$(OVERLAYIR)/wwinit/etc/ssh/ssh*
-	chmod 644 $(DESTDIR)$(OVERLAYIR)/wwinit/etc/ssh/ssh*.pub.ww
-	mkdir -p $(DESTDIR)$(OVERLAYIR)/wwinit/warewulf/bin/
+	mkdir -p $(DESTDIR)$(OVERLAYDIR)
+	cp -r overlays/* $(DESTDIR)$(OVERLAYDIR)/
+	mkdir -p $(DESTDIR)$(OVERLAYDIR)/wwinit/bin/
+	mkdir -p $(DESTDIR)$(OVERLAYDIR)/wwinit/warewulf/bin/
+	chmod +x $(DESTDIR)$(OVERLAYDIR)/wwinit/init
+	chmod 600 $(DESTDIR)$(OVERLAYDIR)/wwinit/etc/ssh/ssh*
+	chmod 644 $(DESTDIR)$(OVERLAYDIR)/wwinit/etc/ssh/ssh*.pub.ww
+	mkdir -p $(DESTDIR)$(OVERLAYDIR)/wwinit/warewulf/bin/
 	install -m 0755 wwctl $(DESTDIR)/usr/bin/
 	mkdir -p $(DESTDIR)$(FIREWALLDIR)
 	install -c -m 0644 include/firewalld/warewulf.xml $(DESTDIR)$(FIREWALLDIR)
@@ -152,7 +143,7 @@ wwclient:
 	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags '-extldflags -static' -o ../../wwclient
 
 install_wwclient: wwclient
-	install -m 0755 wwclient $(DESSTDIR)/var/warewulf/overlays/wwinit/bin/wwclient
+	install -m 0755 wwclient $(DESTDIR)$(WWROOT)/warewulf/overlays/wwinit/bin/wwclient
 
 bash_completion:
 	cd cmd/bash_completion && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=$(CONFIG)/etc/warewulf.conf'\
@@ -176,7 +167,7 @@ man_pages: man_page
 config_defaults:
 	cd cmd/config_defaults && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=$(CONFIG)/etc/warewulf.conf' \
 	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=$(CONFIG)/etc/nodes.conf' \
-	 -X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.defaultDataStore=/srv/warewulf'" \
+	 -X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.defaultDataStore=$(WWROOT)/warewulf'" \
 	 -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../config_defaults
 
 dist: vendor
