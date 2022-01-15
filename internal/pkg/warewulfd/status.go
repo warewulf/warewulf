@@ -26,11 +26,6 @@ var statusDB allStatus
 
 func init() {
 	statusDB.Nodes = make(map[string]*NodeStatus)
-
-	err := LoadNodeStatus()
-	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not prepopulate status DB with nodes: %s\n", err)
-	}
 }
 
 func LoadNodeStatus() error {
