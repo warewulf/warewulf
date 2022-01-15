@@ -1,18 +1,28 @@
 package warewulfconf
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
-	"errors"
+	"path"
 
 	"github.com/brotherpowers/ipsubnet"
+	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 
 	"gopkg.in/yaml.v2"
 )
 
 var cachedConf ControllerConf
+
+var ConfigFile string
+
+func init() {
+	if ConfigFile == "" {
+		ConfigFile = path.Join(buildconfig.SYSCONFDIR, "warewulf/warewulf.conf")
+	}
+}
 
 func New() (ControllerConf, error) {
 	var ret ControllerConf = *defaultConfig()
@@ -32,8 +42,8 @@ func New() (ControllerConf, error) {
 			return ret, err
 		}
 
-// TODO: Need to add comprehensive config file validator
-// TODO: Change function to guess default IP address and/or mask from local system
+		// TODO: Need to add comprehensive config file validator
+		// TODO: Change function to guess default IP address and/or mask from local system
 		if ret.Ipaddr == "" {
 			wwlog.Printf(wwlog.ERROR, "IP address is not configured in warewulfd.conf\n")
 			return ret, errors.New("no IP Address")
@@ -63,7 +73,7 @@ func New() (ControllerConf, error) {
 
 	} else {
 		wwlog.Printf(wwlog.DEBUG, "Returning cached warewulf config object\n")
-		// If cached struct isn't empty, use it as the return value 
+		// If cached struct isn't empty, use it as the return value
 		ret = cachedConf
 	}
 

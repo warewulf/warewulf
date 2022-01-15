@@ -1,11 +1,8 @@
 package warewulfconf
 
-const defaultPort      int    = 9983
+const defaultPort int = 9983
 
-var (
-	ConfigFile string = "/etc/warewulf/warewulf.conf"
-	defaultDataStore string = "/var/lib/warewulf"
-)
+var defaultDataStore string = "/var/lib/warewulf"
 
 func defaultConfig() *ControllerConf {
 	Warewulf := &WarewulfConf{
@@ -30,8 +27,8 @@ func defaultConfig() *ControllerConf {
 		SystemdName: "tftp",
 	}
 	Nfs := &NfsConf{
-		Enabled: true,
-		Exports: []string{"/home",},
+		Enabled:     true,
+		Exports:     []string{"/home"},
 		SystemdName: "nfs-server",
 	}
 

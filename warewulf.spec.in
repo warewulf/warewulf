@@ -1,9 +1,10 @@
 %global wwgroup warewulf
-%global wwshared @WWROOT@
 %if 0%{?sle_version}
 %global tftpdir "/srv/tftpboot"
+%global srvdir "/srv"
 %else
 %global tftpdir "/var/lib/tftpboot"
+%global srvdir "%{_localstatedir}/warewulf/srv"
 %endif
 %define debug_package %{nil}
 
@@ -13,7 +14,7 @@ Version: @VERSION@
 Release: @RELEASE@%{?dist}
 License: BSD-3-Clause
 URL:     https://github.com/hpcng/warewulf
-Source:  https://github.com/hpcng/warewulf/archive/refs/tags/v%{version}.tar.gz
+Source:  warewulf-%{version}.tar.gz
 
 ExclusiveOS: linux
 
@@ -56,11 +57,30 @@ system for large clusters of bare metal and/or virtual systems.
 
 
 %build
-make TFTPROOT="%{tftpdir}" WWROOT="%{wwshared}"
-
+make PREFIX=/usr \
+    SRVDIR=%{srvdir} \
+    LOCALSTATEDIR=%{_localstatedir} \
+    SYSCONFDIR=%{_sysconfdir} \
+    BINDIR=%{_bindir} \
+    TFTPDIR=%{tftpdir} \
+    SYSTEMDDIR=%{_unitdir} \
+    MANDIR=%{_mandir} \
+    BASH_COMPLETION=/etc/bash_completion.d/ \
+    FIREWALLDDIR=/usr/lib/firewalld/services \
+    DESTDIR=%{buildroot}
 
 %install
-%make_install DESTDIR=%{buildroot} TFTPROOT="%{tftpdir}" WWROOT="%{wwshared}" %{?mflags_install}
+make install PREFIX=/usr \
+    SRVDIR=%{srvdir} \
+    LOCALSTATEDIR=%{_localstatedir} \
+    SYSCONFDIR=%{_sysconfdir} \
+    BINDIR=%{_bindir} \
+    TFTPDIR=%{tftpdir} \
+    SYSTEMDDIR=%{_unitdir} \
+    MANDIR=%{_mandir} \
+    BASH_COMPLETION=/etc/bash_completion.d/ \
+    FIREWALLDDIR=/usr/lib/firewalld/services \
+    DESTDIR=%{buildroot}
 
 
 %pre
@@ -86,8 +106,10 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %config(noreplace) %attr(0640,-,-) %{_sysconfdir}/%{name}/nodes.conf
 %{_sysconfdir}/bash_completion.d/warewulf
 
-%dir %{wwshared}/%{name}
-%{wwshared}/%{name}/overlays/*
+%dir %{_localstatedir}/warewulf
+%{_localstatedir}/warewulf/chroots
+%{_localstatedir}/warewulf/overlays
+%{srvdir}
 
 %attr(-, root, root) %{_bindir}/wwctl
 %attr(-, root, root) %{_prefix}/lib/firewalld/services/warewulf.xml

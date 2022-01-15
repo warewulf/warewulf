@@ -1,7 +1,11 @@
 package version
 
-var Version string = "development"
+import (
+	"fmt"
+
+	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
+)
 
 func GetVersion() string {
-	return Version
+	return fmt.Sprintf("%s-%s", buildconfig.VERSION, buildconfig.RELEASE)
 }

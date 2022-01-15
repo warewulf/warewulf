@@ -18,3 +18,8 @@
 /etc/bash_completion.d/
 /etc/warewulf.conf
 warewulf.spec
+internal/pkg/buildconfig/buildconfig.go
+include/systemd/warewulfd.service
+_dist/
+config
+warewulf-*.tar.gz

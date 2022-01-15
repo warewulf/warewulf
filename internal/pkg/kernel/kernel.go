@@ -11,7 +11,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
@@ -26,8 +26,8 @@ var (
 	}
 )
 
-func ParentDir() string {
-	return path.Join(warewulfconf.DataStore(), "provision/kernel")
+func KernelImageTopDir() string {
+	return path.Join(buildconfig.WWPROVISIONDIR, "kernel")
 }
 
 func KernelImage(kernelName string) string {
@@ -41,7 +41,7 @@ func KernelImage(kernelName string) string {
 		return ""
 	}
 
-	return path.Join(ParentDir(), kernelName, "vmlinuz")
+	return path.Join(KernelImageTopDir(), kernelName, "vmlinuz")
 }
 
 func GetKernelVersion(kernelName string) string {
@@ -49,7 +49,7 @@ func GetKernelVersion(kernelName string) string {
 		wwlog.Printf(wwlog.ERROR, "Kernel Name is not defined\n")
 		return ""
 	}
-	kernelVersion, err := ioutil.ReadFile(path.Join(ParentDir(), kernelName, "version"))
+	kernelVersion, err := ioutil.ReadFile(KernelVersionFile(kernelName))
 	if err != nil {
 		return ""
 	}
@@ -67,10 +67,10 @@ func KmodsImage(kernelName string) string {
 		return ""
 	}
 
-	return path.Join(ParentDir(), kernelName, "kmods.img")
+	return path.Join(KernelImageTopDir(), kernelName, "kmods.img")
 }
 
-func KernelVersion(kernelName string) string {
+func KernelVersionFile(kernelName string) string {
 	if kernelName == "" {
 		wwlog.Printf(wwlog.ERROR, "Kernel Name is not defined\n")
 		return ""
@@ -81,20 +81,20 @@ func KernelVersion(kernelName string) string {
 		return ""
 	}
 
-	return path.Join(ParentDir(), kernelName, "version")
+	return path.Join(KernelImageTopDir(), kernelName, "version")
 }
 
 func ListKernels() ([]string, error) {
 	var ret []string
 
-	err := os.MkdirAll(ParentDir(), 0755)
+	err := os.MkdirAll(KernelImageTopDir(), 0755)
 	if err != nil {
-		return ret, errors.New("Could not create Kernel parent directory: " + ParentDir())
+		return ret, errors.New("Could not create Kernel parent directory: " + KernelImageTopDir())
 	}
 
-	wwlog.Printf(wwlog.DEBUG, "Searching for Kernel image directories: %s\n", ParentDir())
+	wwlog.Printf(wwlog.DEBUG, "Searching for Kernel image directories: %s\n", KernelImageTopDir())
 
-	kernels, err := ioutil.ReadDir(ParentDir())
+	kernels, err := ioutil.ReadDir(KernelImageTopDir())
 	if err != nil {
 		return ret, err
 	}
@@ -109,12 +109,12 @@ func ListKernels() ([]string, error) {
 	return ret, nil
 }
 
-func Build(kernelVersion string, kernelName string, root string) (string, error) {
+func Build(kernelVersion, kernelName, root string) (string, error) {
 	kernelDrivers := path.Join(root, "/lib/modules/"+kernelVersion)
-    kernelDriversRelative := path.Join("/lib/modules/"+kernelVersion)
+	kernelDriversRelative := path.Join("/lib/modules/" + kernelVersion)
 	kernelDestination := KernelImage(kernelName)
 	driversDestination := KmodsImage(kernelName)
-	versionDestination := KernelVersion(kernelName)
+	versionDestination := KernelVersionFile(kernelName)
 	var kernelSource string
 
 	// Create the destination paths just in case it doesn't exist
@@ -223,7 +223,7 @@ func Build(kernelVersion string, kernelName string, root string) (string, error)
 }
 
 func DeleteKernel(name string) error {
-	fullPath := path.Join(ParentDir(), name)
+	fullPath := path.Join(KernelImageTopDir(), name)
 
 	wwlog.Printf(wwlog.VERBOSE, "Removing path: %s\n", fullPath)
 	return os.RemoveAll(fullPath)

@@ -3,14 +3,23 @@ package node
 import (
 	"errors"
 	"io/ioutil"
+	"path"
 	"sort"
 	"strings"
 
+	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+
 	"gopkg.in/yaml.v2"
 )
 
-var ConfigFile = "/etc/warewulf/nodes.conf"
+var ConfigFile string
+
+func init() {
+	if ConfigFile == "" {
+		ConfigFile = path.Join(buildconfig.SYSCONFDIR, "warewulf/nodes.conf")
+	}
+}
 
 func New() (nodeYaml, error) {
 	var ret nodeYaml

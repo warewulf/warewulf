@@ -101,7 +101,7 @@ func Configure(show bool) error {
 			fmt.Printf("%s %s/%s\n", export.Path, controller.Network, controller.Netmask)
 		}
 		fmt.Printf("\n")
-		fmt.Printf("SYSTEM OVERLAY: default/etc/fstab:\n")
+		fmt.Printf("SYSTEM OVERLAY: wwinit/etc/fstab:\n")
 		for _, export := range controller.Nfs.Exports {
 			fmt.Printf("%s:%s %s nfs defaults 0 0\n", controller.Ipaddr, export, export)
 		}

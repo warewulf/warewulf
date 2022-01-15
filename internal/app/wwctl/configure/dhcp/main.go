@@ -8,6 +8,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
@@ -84,12 +85,12 @@ func Configure(show bool) error {
 	d.Nodes = append(d.Nodes, nodes...)
 
 	if controller.Dhcp.Template == "" {
-		templateFile = "/etc/warewulf/dhcp/default-dhcpd.conf"
+		templateFile = path.Join(buildconfig.SYSCONFDIR, "warewulf/dhcp/default-dhcpd.conf")
 	} else {
 		if strings.HasPrefix(controller.Dhcp.Template, "/") {
 			templateFile = controller.Dhcp.Template
 		} else {
-			templateFile = fmt.Sprintf("/etc/warewulf/dhcp/%s-dhcpd.conf", controller.Dhcp.Template)
+			templateFile = path.Join(buildconfig.SYSCONFDIR, "warewulf/dhcp/"+controller.Dhcp.Template+"dhcpd.conf")
 		}
 	}
 
