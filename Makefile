@@ -98,7 +98,7 @@ config:
 	touch config
 
 # Lint
-lint: setup_tools config
+lint: setup_tools
 	@echo Running golangci-lint...
 	@$(GOLANGCI_LINT) run --build-tags "$(WW_BUILD_GO_BUILD_TAGS)" --skip-dirs internal/pkg/staticfiles ./...
 
