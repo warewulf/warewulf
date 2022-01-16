@@ -1,13 +1,14 @@
 .PHONY: all
 
+-include Defaults.mk
+
 VERSION ?= 4.2.0
-RELEASE ?= 1
+GIT_TAG := $(shell test -e .git && git describe --tags --long --first-parent --always)
 
-SRC ?= HEAD
-
-VERSION_FULL ?= $(shell test -e .git && git describe --tags --long --first-parent --always)
-ifeq ($(VERSION_FULL),)
-VERSION_FULL := $(VERSION)
+ifndef $(GIT_TAG)
+    RELEASE ?= 1.git_$(GIT_TAG)
+else
+	RELEASE ?= 1
 endif
 
 # System locations
@@ -15,8 +16,8 @@ PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
 SYSCONFDIR ?= $(PREFIX)/etc
 SRVDIR ?= $(PREFIX)/srv
-SHAREDIR ?= $(PREFIX)/share
-MANDIR ?= $(SHAREDIR)/man
+DATADIR ?= $(PREFIX)/share
+MANDIR ?= $(DATADIR)/man
 LOCALSTATEDIR ?= $(PREFIX)/var
 
 TFTPDIR ?= /var/lib/tftpboot
@@ -25,9 +26,9 @@ SYSTEMDDIR ?= /usr/lib/systemd/system
 BASH_COMPLETION ?= /etc/bash_completion.d/
 
 # Warewulf locations
-WWPROVISIONDIR ?= $(SRVDIR)/warewulf
-WWOVERLAYDIR ?= $(LOCALSTATEDIR)/warewulf/overlays
-WWCHROOTDIR ?= $(LOCALSTATEDIR)/warewulf/chroots
+WWPROVISIONDIR = $(SRVDIR)/warewulf
+WWOVERLAYDIR = $(LOCALSTATEDIR)/warewulf/overlays
+WWCHROOTDIR = $(LOCALSTATEDIR)/warewulf/chroots
 
 # SuSE
 #TFTPDIR ?= /srv/tftpboot
@@ -67,7 +68,7 @@ $(GOLANGCI_LINT):
 	@curl -qq -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(TOOLS_BIN) $(GOLANGCI_LINT_VERSION)
 
 
-setup: vendor $(TOOLS_DIR) setup_tools config
+setup: vendor $(TOOLS_DIR) setup_tools
 
 # vendor
 vendor:
@@ -85,10 +86,14 @@ config:
 		sed -e 's,@BINDIR@,$(BINDIR),g' \
 			-e 's,@SYSCONFDIR@,$(SYSCONFDIR),g' \
 			-e 's,@LOCALSTATEDIR@,$(LOCALSTATEDIR),g' \
+			-e 's,@PREFIX@,$(PREFIX),g' \
+			-e 's,@DATADIR@,$(DATADIR),g' \
+			-e 's,@MANDIR@,$(MANDIR),g' \
 			-e 's,@SRVDIR@,$(SRVDIR),g' \
 			-e 's,@TFTPDIR@,$(TFTPDIR),g' \
 			-e 's,@FIREWALLDDIR@,$(FIREWALLDDIR),g' \
 			-e 's,@SYSTEMDDIR@,$(SYSTEMDDIR),g' \
+			-e 's,@BASH_COMPLETION@,$(BASH_COMPLETION),g' \
 			-e 's,@WWOVERLAYDIR@,$(WWOVERLAYDIR),g' \
 			-e 's,@WWCHROOTDIR@,$(WWCHROOTDIR),g' \
 			-e 's,@WWPROVISIONDIR@,$(WWPROVISIONDIR),g' \
@@ -96,6 +101,12 @@ config:
 			-e 's,@RELEASE@,$(RELEASE),g' $$i > $$NAME; \
 	done
 	touch config
+
+rm_config:
+	rm -f config
+
+genconfig: rm_config config
+
 
 # Lint
 lint: setup_tools
@@ -131,7 +142,7 @@ files: all
 	install -d -m 0755 $(DESTDIR)$(SYSCONFDIR)/warewulf/ipxe
 	install -d -m 0755 $(DESTDIR)$(TFTPDIR)/warewulf/ipxe/
 	install -d -m 0755 $(DESTDIR)$(BASH_COMPLETION)
-	install -d -m 0755 $(DESTDIR)$(SHAREDIR)/man/man1
+	install -d -m 0755 $(DESTDIR)$(MANDIR)/man1
 	install -d -m 0755 $(DESTDIR)$(FIREWALLDDIR)
 	install -d -m 0755 $(DESTDIR)$(SYSTEMDDIR)
 	test -f $(DESTDIR)$(SYSCONFDIR)/warewulf/warewulf.conf || install -m 644 etc/warewulf.conf $(DESTDIR)$(SYSCONFDIR)/warewulf/
@@ -198,17 +209,16 @@ man_pages: man_page
 #	 -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../config_defaults
 
 dist: vendor config
-	rm -rf _dist/warewulf-$(VERSION)
-	mkdir -p _dist/warewulf-$(VERSION)
-	git archive --format=tar $(SRC) | tar -xf - -C _dist/warewulf-$(VERSION)
-	cp -r vendor _dist/warewulf-$(VERSION)/
-	cp warewulf.spec _dist/warewulf-$(VERSION)/
-	cd _dist; tar -czf ../warewulf-$(VERSION).tar.gz warewulf-$(VERSION)
+	rm -rf .dist/warewulf-$(VERSION)
+	mkdir -p .dist/warewulf-$(VERSION)
+	cp -rap * .dist/warewulf-$(VERSION)/
+	cd .dist; tar -czf ../warewulf-$(VERSION).tar.gz warewulf-$(VERSION)
+	rm -rf .dist
 
 clean:
 	rm -f wwclient
 	rm -f wwctl
-	rm -rf _dist
+	rm -rf .dist
 	rm -f warewulf-$(VERSION).tar.gz
 	rm -f bash_completion
 	rm -rf bash_completion.d
@@ -217,6 +227,7 @@ clean:
 	rm -rf vendor
 #	rm -f config_defaults
 	rm -f config
+	rm -f Defaults.mk
 
 install: files install_wwclient
 

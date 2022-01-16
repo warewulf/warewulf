@@ -57,31 +57,23 @@ system for large clusters of bare metal and/or virtual systems.
 
 
 %build
-make PREFIX=/usr \
+make genconfig PREFIX=/usr \
     SRVDIR=%{srvdir} \
     LOCALSTATEDIR=%{_localstatedir} \
     SYSCONFDIR=%{_sysconfdir} \
+    DATADIR=%{_datadir} \
+    MANDIR=%{_mandir} \
     BINDIR=%{_bindir} \
     TFTPDIR=%{tftpdir} \
     SYSTEMDDIR=%{_unitdir} \
     MANDIR=%{_mandir} \
     BASH_COMPLETION=/etc/bash_completion.d/ \
-    FIREWALLDDIR=/usr/lib/firewalld/services \
-    DESTDIR=%{buildroot}
+    FIREWALLDDIR=/usr/lib/firewalld/services
+
+make
 
 %install
-make install PREFIX=/usr \
-    SRVDIR=%{srvdir} \
-    LOCALSTATEDIR=%{_localstatedir} \
-    SYSCONFDIR=%{_sysconfdir} \
-    BINDIR=%{_bindir} \
-    TFTPDIR=%{tftpdir} \
-    SYSTEMDDIR=%{_unitdir} \
-    MANDIR=%{_mandir} \
-    BASH_COMPLETION=/etc/bash_completion.d/ \
-    FIREWALLDDIR=/usr/lib/firewalld/services \
-    DESTDIR=%{buildroot}
-
+make install DESTDIR=%{buildroot}
 
 %pre
 getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
@@ -117,6 +109,10 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %attr(-, root, root) %{_mandir}/man1/wwctl*
 
 %changelog
+* Sat Jan 15 2022 Gregory Kurtzer <gmkurtzer@gmail.com> - 4.2.0-1
+- Integrated genconfig Make options
+- Cleaned up SPEC to use default RPM macros
+
 * Tue Jan 11 2022 Jeremy Siadal <jeremy.c.siadal@intel.com> - 4.2.0-1
 - Merge overlay subdirectories
 - Add configuration options to make
