@@ -110,8 +110,8 @@ func ListKernels() ([]string, error) {
 }
 
 func Build(kernelVersion, kernelName, root string) (string, error) {
-	kernelDrivers := path.Join(root, "/lib/modules/"+kernelVersion)
-	kernelDriversRelative := path.Join("/lib/modules/" + kernelVersion)
+	kernelDrivers := path.Join(root, "/lib/modules/", kernelVersion)
+	kernelDriversRelative := path.Join("/lib/modules/", kernelVersion)
 	kernelDestination := KernelImage(kernelName)
 	driversDestination := KmodsImage(kernelName)
 	versionDestination := KernelVersionFile(kernelName)
