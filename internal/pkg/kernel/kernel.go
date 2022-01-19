@@ -133,8 +133,8 @@ func Build(kernelVersion, kernelName, root string) (string, error) {
 		return "", fmt.Errorf("failed to create version dest: %s", err)
 	}
 
-	for _, path := range kernelSearchPaths {
-		testPath := fmt.Sprintf(path, kernelVersion)
+	for _, searchPath := range kernelSearchPaths {
+		testPath := fmt.Sprintf(path.Join(root, searchPath), kernelVersion)
 		wwlog.Printf(wwlog.VERBOSE, "Looking for kernel at: %s\n", testPath)
 		if util.IsFile(testPath) {
 			kernelSource = testPath
