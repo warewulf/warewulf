@@ -7,7 +7,7 @@ import (
 )
 
 func OverlaySourceTopDir() string {
-	return buildconfig.WWOVERLAYDIR
+	return buildconfig.WWOVERLAYDIR()
 }
 
 func OverlaySourceDir(overlayName string) string {
@@ -15,5 +15,5 @@ func OverlaySourceDir(overlayName string) string {
 }
 
 func OverlayImage(nodeName string, overlayName string) string {
-	return path.Join(buildconfig.WWPROVISIONDIR, "overlays/", nodeName, overlayName+".img")
+	return path.Join(buildconfig.WWPROVISIONDIR(), "overlays/", nodeName, overlayName+".img")
 }

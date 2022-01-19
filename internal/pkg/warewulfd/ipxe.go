@@ -101,7 +101,7 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 	if unconfiguredNode {
 		daemonLogf("IPXEREQ:   %s (unknown/unconfigured node)\n", hwaddr)
 
-		tmpl, err := template.ParseFiles(path.Join(buildconfig.SYSCONFDIR, "/warewulf/ipxe/unconfigured.ipxe"))
+		tmpl, err := template.ParseFiles(path.Join(buildconfig.SYSCONFDIR(), "/warewulf/ipxe/unconfigured.ipxe"))
 		if err != nil {
 			daemonLogf("ERROR: Could not parse unconfigured node IPXE template: %s\n", err)
 			return
@@ -121,7 +121,7 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 
 	} else {
 
-		ipxeTemplate := path.Join(buildconfig.SYSCONFDIR, "warewulf/ipxe/"+nodeobj.Ipxe.Get()+".ipxe")
+		ipxeTemplate := path.Join(buildconfig.SYSCONFDIR(), "warewulf/ipxe/"+nodeobj.Ipxe.Get()+".ipxe")
 
 		tmpl, err := template.ParseFiles(ipxeTemplate)
 		if err != nil {

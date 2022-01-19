@@ -17,7 +17,7 @@ var ConfigFile string
 
 func init() {
 	if ConfigFile == "" {
-		ConfigFile = path.Join(buildconfig.SYSCONFDIR, "warewulf/nodes.conf")
+		ConfigFile = path.Join(buildconfig.SYSCONFDIR(), "warewulf/nodes.conf")
 	}
 }
 

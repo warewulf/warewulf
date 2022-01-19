@@ -7,5 +7,5 @@ import (
 )
 
 func GetVersion() string {
-	return fmt.Sprintf("%s-%s", buildconfig.VERSION, buildconfig.RELEASE)
+	return fmt.Sprintf("%s-%s", buildconfig.VERSION(), buildconfig.RELEASE())
 }

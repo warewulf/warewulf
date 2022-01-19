@@ -24,35 +24,35 @@ func Configure(show bool) error {
 		os.Exit(1)
 	}
 
-	if buildconfig.TFTPDIR == "" {
+	if buildconfig.TFTPDIR() == "" {
 		wwlog.Printf(wwlog.ERROR, "Tftp root directory is not configured by build\n")
 		os.Exit(1)
 	}
 
-	err = os.MkdirAll(path.Join(buildconfig.TFTPDIR, "warewulf"), 0755)
+	err = os.MkdirAll(path.Join(buildconfig.TFTPDIR(), "warewulf"), 0755)
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "%s\n", err)
 		os.Exit(1)
 	}
 
 	if !show {
-		fmt.Printf("Writing PXE files to: %s\n", path.Join(buildconfig.TFTPDIR, "warewulf"))
-		err = staticfiles.WriteData("files/tftp/x86.efi", path.Join(buildconfig.TFTPDIR, "warewulf/x86.efi"))
+		fmt.Printf("Writing PXE files to: %s\n", path.Join(buildconfig.TFTPDIR(), "warewulf"))
+		err = staticfiles.WriteData("files/tftp/x86.efi", path.Join(buildconfig.TFTPDIR(), "warewulf/x86.efi"))
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			os.Exit(1)
 		}
-		err = staticfiles.WriteData("files/tftp/i386.efi", path.Join(buildconfig.TFTPDIR, "warewulf/i386.efi"))
+		err = staticfiles.WriteData("files/tftp/i386.efi", path.Join(buildconfig.TFTPDIR(), "warewulf/i386.efi"))
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			os.Exit(1)
 		}
-		err = staticfiles.WriteData("files/tftp/i386.kpxe", path.Join(buildconfig.TFTPDIR, "warewulf/i386.kpxe"))
+		err = staticfiles.WriteData("files/tftp/i386.kpxe", path.Join(buildconfig.TFTPDIR(), "warewulf/i386.kpxe"))
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			os.Exit(1)
 		}
-		err = staticfiles.WriteData("files/tftp/arm64.efi", path.Join(buildconfig.TFTPDIR, "warewulf/arm64.efi"))
+		err = staticfiles.WriteData("files/tftp/arm64.efi", path.Join(buildconfig.TFTPDIR(), "warewulf/arm64.efi"))
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			os.Exit(1)

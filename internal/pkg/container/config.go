@@ -7,7 +7,7 @@ import (
 )
 
 func SourceParentDir() string {
-	return buildconfig.WWCHROOTDIR
+	return buildconfig.WWCHROOTDIR()
 }
 
 func SourceDir(name string) string {
@@ -19,7 +19,7 @@ func RootFsDir(name string) string {
 }
 
 func ImageParentDir() string {
-	return path.Join(buildconfig.WWPROVISIONDIR, "container/")
+	return path.Join(buildconfig.WWPROVISIONDIR(), "container/")
 }
 
 func ImageFile(name string) string {

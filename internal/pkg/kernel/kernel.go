@@ -27,7 +27,7 @@ var (
 )
 
 func KernelImageTopDir() string {
-	return path.Join(buildconfig.WWPROVISIONDIR, "kernel")
+	return path.Join(buildconfig.WWPROVISIONDIR(), "kernel")
 }
 
 func KernelImage(kernelName string) string {

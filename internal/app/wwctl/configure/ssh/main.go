@@ -20,9 +20,9 @@ func Configure(show bool) error {
 	if os.Getuid() == 0 {
 		fmt.Printf("Updating system keys\n")
 
-		wwkeydir := path.Join(buildconfig.SYSCONFDIR, "/etc/warewulf/keys") + "/"
+		wwkeydir := path.Join(buildconfig.SYSCONFDIR(), "/etc/warewulf/keys") + "/"
 
-		err := os.MkdirAll(path.Join(buildconfig.SYSCONFDIR, "warewulf/keys"), 0755)
+		err := os.MkdirAll(path.Join(buildconfig.SYSCONFDIR(), "warewulf/keys"), 0755)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Could not create base directory: %s\n", err)
 			os.Exit(1)
