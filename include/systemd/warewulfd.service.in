@@ -2,14 +2,14 @@
 Description=Warewulf cluster management daemon
 Documentation=https://warewulf.hpcng.org/
 After=network-online.target
-AssertFileIsExecutable=/usr/bin/wwctl
+AssertFileIsExecutable=@BINDIR@/wwctl
 
 [Service]
 Type=forking
 User=root
 Group=root
 
-ExecStart=/usr/bin/wwctl server start
+ExecStart=@BINDIR@/wwctl server start
 PIDFile=/var/run/warewulfd.pid
 Restart=always
 

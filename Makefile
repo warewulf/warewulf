@@ -1,15 +1,38 @@
 .PHONY: all
 
+-include Defaults.mk
+
 VERSION ?= 4.2.0
-RELEASE ?= 1
+GIT_TAG := $(shell test -e .git && git describe --tags --long --first-parent --always)
 
-SRC ?= main
-
-VERSION_FULL ?= $(shell test -e .git && git describe --tags --long --first-parent --always)
-ifeq ($(VERSION_FULL),)
-VERSION_FULL := $(VERSION)
+ifndef $(GIT_TAG)
+    RELEASE ?= 1.git_$(GIT_TAG)
+else
+	RELEASE ?= 1
 endif
 
+# System locations
+PREFIX ?= /usr/local
+BINDIR ?= $(PREFIX)/bin
+SYSCONFDIR ?= $(PREFIX)/etc
+SRVDIR ?= $(PREFIX)/srv
+DATADIR ?= $(PREFIX)/share
+MANDIR ?= $(DATADIR)/man
+LOCALSTATEDIR ?= $(PREFIX)/var
+
+TFTPDIR ?= /var/lib/tftpboot
+FIREWALLDDIR ?= /usr/lib/firewalld/services
+SYSTEMDDIR ?= /usr/lib/systemd/system
+BASH_COMPLETION ?= /etc/bash_completion.d/
+
+# Warewulf locations
+WWPROVISIONDIR = $(SRVDIR)/warewulf
+WWOVERLAYDIR = $(LOCALSTATEDIR)/warewulf/overlays
+WWCHROOTDIR = $(LOCALSTATEDIR)/warewulf/chroots
+
+# SuSE
+#TFTPDIR ?= /srv/tftpboot
+#FIREWALLDIR ?= /srv/tftp
 
 # auto installed tooling
 TOOLS_DIR := .tools
@@ -29,8 +52,7 @@ export GOPROXY
 # built tags needed for wwbuild binary
 WW_BUILD_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
-# all build targets
-all: vendor wwctl wwclient bash_completion.d man_pages
+all: config vendor wwctl wwclient bash_completion.d man_pages
 
 build: lint test-it vet all
 
@@ -56,6 +78,36 @@ vendor:
 $(TOOLS_DIR):
 	@mkdir -p $@
 
+# Pre-build steps for source, such as "go generate"
+config:
+	set -x ;\
+	for i in `find . -type f -name "*.in" -not -path "./vendor/*"`; do \
+		NAME=`echo $$i | sed -e 's,\.in,,'`; \
+		sed -e 's,@BINDIR@,$(BINDIR),g' \
+			-e 's,@SYSCONFDIR@,$(SYSCONFDIR),g' \
+			-e 's,@LOCALSTATEDIR@,$(LOCALSTATEDIR),g' \
+			-e 's,@PREFIX@,$(PREFIX),g' \
+			-e 's,@DATADIR@,$(DATADIR),g' \
+			-e 's,@MANDIR@,$(MANDIR),g' \
+			-e 's,@SRVDIR@,$(SRVDIR),g' \
+			-e 's,@TFTPDIR@,$(TFTPDIR),g' \
+			-e 's,@FIREWALLDDIR@,$(FIREWALLDDIR),g' \
+			-e 's,@SYSTEMDDIR@,$(SYSTEMDDIR),g' \
+			-e 's,@BASH_COMPLETION@,$(BASH_COMPLETION),g' \
+			-e 's,@WWOVERLAYDIR@,$(WWOVERLAYDIR),g' \
+			-e 's,@WWCHROOTDIR@,$(WWCHROOTDIR),g' \
+			-e 's,@WWPROVISIONDIR@,$(WWPROVISIONDIR),g' \
+			-e 's,@VERSION@,$(VERSION),g' \
+			-e 's,@RELEASE@,$(RELEASE),g' $$i > $$NAME; \
+	done
+	touch config
+
+rm_config:
+	rm -f config
+
+genconfig: rm_config config
+
+
 # Lint
 lint: setup_tools
 	@echo Running golangci-lint...
@@ -80,58 +132,60 @@ test-cover:     ## Run test coverage and generate html report
 debian: all 
 
 files: all
-	install -d -m 0755 $(DESTDIR)/usr/bin/
-	install -d -m 0755 $(DESTDIR)/var/warewulf/
-	install -d -m 0755 $(DESTDIR)/var/warewulf/chroots
-	install -d -m 0755 $(DESTDIR)/etc/warewulf/
-	install -d -m 0755 $(DESTDIR)/etc/warewulf/ipxe
-	install -d -m 0755 $(DESTDIR)/var/lib/tftpboot/warewulf/ipxe/
-	install -d -m 0755 $(DESTDIR)/etc/bash_completion.d/
-	install -d -m 0755 $(DESTDIR)/usr/share/man/man1
-	test -f $(DESTDIR)/etc/warewulf/warewulf.conf || install -m 644 etc/warewulf.conf $(DESTDIR)/etc/warewulf/
-	test -f $(DESTDIR)/etc/warewulf/hosts.tmpl || install -m 644 etc/hosts.tmpl $(DESTDIR)/etc/warewulf/
-	test -f $(DESTDIR)/etc/warewulf/nodes.conf || install -m 644 etc/nodes.conf $(DESTDIR)/etc/warewulf/
-	cp -r etc/dhcp $(DESTDIR)/etc/warewulf/
-	cp -r etc/ipxe $(DESTDIR)/etc/warewulf/
-	cp -r overlays $(DESTDIR)/var/warewulf/
-	mkdir -p $(DESTDIR)/var/warewulf/overlays/wwinit/bin/
-	mkdir -p $(DESTDIR)/var/warewulf/overlays/wwinit/warewulf/bin/
-	chmod +x $(DESTDIR)/var/warewulf/overlays/wwinit/init
-	chmod 600 $(DESTDIR)/var/warewulf/overlays/wwinit/etc/ssh/ssh*
-	chmod 644 $(DESTDIR)/var/warewulf/overlays/wwinit/etc/ssh/ssh*.pub.ww
-	mkdir -p $(DESTDIR)/var/warewulf/overlays/wwinit/warewulf/bin/
-	install -m 0755 wwctl $(DESTDIR)/usr/bin/
-	mkdir -p $(DESTDIR)/usr/lib/firewalld/services
-	install -c -m 0644 include/firewalld/warewulf.xml $(DESTDIR)/usr/lib/firewalld/services
-	mkdir -p $(DESTDIR)/usr/lib/systemd/system
-	install -c -m 0644 include/systemd/warewulfd.service $(DESTDIR)/usr/lib/systemd/system
-	cp bash_completion.d/warewulf $(DESTDIR)/etc/bash_completion.d/
-	cp man_pages/* $(DESTDIR)/usr/share/man/man1/
+	install -d -m 0755 $(DESTDIR)$(BINDIR)
+	install -d -m 0755 $(DESTDIR)$(WWCHROOTDIR)
+	install -d -m 0755 $(DESTDIR)$(WWPROVISIONDIR)
+	install -d -m 0755 $(DESTDIR)$(WWOVERLAYDIR)
+	install -d -m 0755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/bin/
+	install -d -m 0755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/warewulf/bin/
+	install -d -m 0755 $(DESTDIR)$(SYSCONFDIR)/warewulf/
+	install -d -m 0755 $(DESTDIR)$(SYSCONFDIR)/warewulf/ipxe
+	install -d -m 0755 $(DESTDIR)$(TFTPDIR)/warewulf/ipxe/
+	install -d -m 0755 $(DESTDIR)$(BASH_COMPLETION)
+	install -d -m 0755 $(DESTDIR)$(MANDIR)/man1
+	install -d -m 0755 $(DESTDIR)$(FIREWALLDDIR)
+	install -d -m 0755 $(DESTDIR)$(SYSTEMDDIR)
+	test -f $(DESTDIR)$(SYSCONFDIR)/warewulf/warewulf.conf || install -m 644 etc/warewulf.conf $(DESTDIR)$(SYSCONFDIR)/warewulf/
+	test -f $(DESTDIR)$(SYSCONFDIR)/warewulf/hosts.tmpl || install -m 644 etc/hosts.tmpl $(DESTDIR)$(SYSCONFDIR)/warewulf/
+	test -f $(DESTDIR)$(SYSCONFDIR)/warewulf/nodes.conf || install -m 644 etc/nodes.conf $(DESTDIR)$(SYSCONFDIR)/warewulf/
+	cp -r etc/dhcp $(DESTDIR)$(SYSCONFDIR)/warewulf/
+	cp -r etc/ipxe $(DESTDIR)$(SYSCONFDIR)/warewulf/
+	cp -r overlays/* $(DESTDIR)$(WWOVERLAYDIR)/
+	chmod 755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/init
+	chmod 600 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/etc/ssh/ssh*
+	chmod 644 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/etc/ssh/ssh*.pub.ww
+	install -m 0755 wwctl $(DESTDIR)$(BINDIR)
+	install -c -m 0644 include/firewalld/warewulf.xml $(DESTDIR)$(FIREWALLDDIR)
+	install -c -m 0644 include/systemd/warewulfd.service $(DESTDIR)$(SYSTEMDDIR)
+	cp bash_completion.d/warewulf $(DESTDIR)$(BASH_COMPLETION)
+	cp man_pages/* $(DESTDIR)$(MANDIR)/man1/
 
 init:
 	systemctl daemon-reload
-	cp -r tftpboot/* /var/lib/tftpboot/warewulf/ipxe/
-	restorecon -r /var/lib/tftpboot/warewulf
+	cp -r tftpboot/* $(TFTPDIR)/warewulf/ipxe/
+	restorecon -r $(TFTPDIR)/warewulf
 
-debfiles: debian
-	chmod +x $(DESTDIR)/var/warewulf/overlays/system/debian/init
-	chmod 600 $(DESTDIR)/var/warewulf/overlays/system/debian/etc/ssh/ssh*
-	chmod 644 $(DESTDIR)/var/warewulf/overlays/system/debian/etc/ssh/ssh*.pub.ww
-	mkdir -p $(DESTDIR)/var/warewulf/overlays/system/debian/warewulf/bin/
-	cp wwclient $(DESTDIR)/var/warewulf/overlays/system/debian/warewulf/bin/
+# Overlay file system has changed
+#debfiles: debian
+#	chmod +x $(DESTDIR)$(WWROOT)/warewulf/overlays/system/debian/init
+#	chmod 600 $(DESTDIR)$(WWROOT)/warewulf/overlays/system/debian/etc/ssh/ssh*
+#	chmod 644 $(DESTDIR)$(WWROOT)/warewulf/overlays/system/debian/etc/ssh/ssh*.pub.ww
+#	mkdir -p $(DESTDIR)$(WWROOT)/warewulf/overlays/system/debian/warewulf/bin/
+#	cp wwclient $(DESTDIR)$(WWROOT)/warewulf/overlays/system/debian/warewulf/bin/
 
 wwctl:
-	cd cmd/wwctl; GOOS=linux go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/version.Version=$(VERSION_FULL)'" -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwctl
+	cd cmd/wwctl; GOOS=linux go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwctl
 
 wwclient:
 	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags '-extldflags -static' -o ../../wwclient
 
 install_wwclient: wwclient
-	install -m 0755 wwclient $(DESSTDIR)/var/warewulf/overlays/wwinit/bin/wwclient
+	install -m 0755 wwclient $(DESTDIR)$(WWOVERLAYDIR)/wwinit/bin/wwclient
+
 
 bash_completion:
-	cd cmd/bash_completion && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=$(CONFIG)/etc/warewulf.conf'\
-	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=$(CONFIG)/etc/nodes.conf'"\
+	cd cmd/bash_completion && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'\
+	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'"\
 	 -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../bash_completion
 
 bash_completion.d: bash_completion
@@ -139,8 +193,8 @@ bash_completion.d: bash_completion
 	./bash_completion  bash_completion.d/warewulf
 
 man_page:
-	cd cmd/man_page && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=$(CONFIG)/etc/warewulf.conf'\
-	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=$(CONFIG)/etc/nodes.conf'"\
+	cd cmd/man_page && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'\
+	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'"\
 	 -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../man_page
 
 man_pages: man_page
@@ -148,24 +202,32 @@ man_pages: man_page
 	./man_page ./man_pages
 	cd man_pages; for i in wwctl*1; do echo "Compressing manpage: $$i"; gzip --force $$i; done
 
-dist: vendor
-	rm -rf _dist/warewulf-$(VERSION)
-	mkdir -p _dist/warewulf-$(VERSION)
-	git archive --format=tar $(SRC) | tar -xf - -C _dist/warewulf-$(VERSION)
-	cp -r vendor _dist/warewulf-$(VERSION)/
-	sed -e 's/@VERSION@/$(VERSION)/g; s/@RELEASE@/$(RELEASE)/g' warewulf.spec.in > _dist/warewulf-$(VERSION)/warewulf.spec
-	cd _dist; tar -czf ../warewulf-$(VERSION).tar.gz warewulf-$(VERSION)
+#config_defaults:
+#	cd cmd/config_defaults && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf' \
+#	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf' \
+#	 -X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.defaultDataStore=$(WWROOT)/warewulf'" \
+#	 -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../config_defaults
+
+dist: vendor config
+	rm -rf .dist/warewulf-$(VERSION)
+	mkdir -p .dist/warewulf-$(VERSION)
+	cp -rap * .dist/warewulf-$(VERSION)/
+	cd .dist; tar -czf ../warewulf-$(VERSION).tar.gz warewulf-$(VERSION)
+	rm -rf .dist
 
 clean:
 	rm -f wwclient
 	rm -f wwctl
-	rm -rf _dist
+	rm -rf .dist
 	rm -f warewulf-$(VERSION).tar.gz
 	rm -f bash_completion
 	rm -rf bash_completion.d
 	rm -f man_page
 	rm -rf man_pages
 	rm -rf vendor
+#	rm -f config_defaults
+	rm -f config
+	rm -f Defaults.mk
 
 install: files install_wwclient
 

@@ -41,6 +41,11 @@ func RunServer() error {
 		fmt.Printf("ERROR: Could not load database: %s\n", err)
 	}
 
+	err = LoadNodeStatus()
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Could not prepopulate node status DB: %s\n", err)
+	}
+
 	http.HandleFunc("/ipxe/", IpxeSend)
 	http.HandleFunc("/kernel/", KernelSend)
 	http.HandleFunc("/kmods/", KmodsSend)

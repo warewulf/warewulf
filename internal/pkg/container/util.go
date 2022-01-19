@@ -3,11 +3,9 @@ package container
 import (
 	"io/ioutil"
 	"os"
-	"path"
 
 	"github.com/pkg/errors"
 
-	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
@@ -18,26 +16,6 @@ func ValidName(name string) bool {
 		return false
 	}
 	return true
-}
-
-func SourceParentDir() string {
-	return path.Join(config.LocalStateDir, "chroots")
-}
-
-func SourceDir(name string) string {
-	return path.Join(SourceParentDir(), name)
-}
-
-func RootFsDir(name string) string {
-	return path.Join(SourceDir(name), "rootfs")
-}
-
-func ImageParentDir() string {
-	return path.Join(config.LocalStateDir, "provision/container/")
-}
-
-func ImageFile(name string) string {
-	return path.Join(ImageParentDir(), name+".img.gz")
 }
 
 func ListSources() ([]string, error) {

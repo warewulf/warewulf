@@ -12,7 +12,6 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -57,18 +56,6 @@ func FindRuntimeOverlays() ([]string, error) {
 	return findAllOverlays("runtime")
 }
 */
-
-func OverlaySourceTopDir() string {
-	return path.Join(config.LocalStateDir, "overlays/")
-}
-
-func OverlaySourceDir(overlayName string) string {
-	return path.Join(OverlaySourceTopDir(), overlayName)
-}
-
-func OverlayImage(nodename string, overlayname string) string {
-	return fmt.Sprintf("%s/provision/overlays/%s/%s.img", config.LocalStateDir, nodename, overlayname)
-}
 
 func BuildAllOverlays(nodes []node.NodeInfo) error {
 	for _, n := range nodes {

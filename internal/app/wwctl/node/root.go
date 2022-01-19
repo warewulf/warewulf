@@ -5,7 +5,6 @@ import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/node/console"
 	"github.com/hpcng/warewulf/internal/app/wwctl/node/delete"
 	"github.com/hpcng/warewulf/internal/app/wwctl/node/list"
-	"github.com/hpcng/warewulf/internal/app/wwctl/node/ready"
 	"github.com/hpcng/warewulf/internal/app/wwctl/node/sensors"
 	"github.com/hpcng/warewulf/internal/app/wwctl/node/set"
 	nodestatus "github.com/hpcng/warewulf/internal/app/wwctl/node/status"
@@ -30,7 +29,6 @@ func init() {
 	baseCmd.AddCommand(add.GetCommand())
 	baseCmd.AddCommand(delete.GetCommand())
 	baseCmd.AddCommand(console.GetCommand())
-	baseCmd.AddCommand(ready.GetCommand())
 	baseCmd.AddCommand(nodestatus.GetCommand())
 }
 

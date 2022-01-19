@@ -1,12 +1,13 @@
 package warewulfd
 
 import (
-	"fmt"
 	"net/http"
+	"path"
 	"strconv"
 	"strings"
 	"text/template"
 
+	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
@@ -100,7 +101,7 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 	if unconfiguredNode {
 		daemonLogf("IPXEREQ:   %s (unknown/unconfigured node)\n", hwaddr)
 
-		tmpl, err := template.ParseFiles("/etc/warewulf/ipxe/unconfigured.ipxe")
+		tmpl, err := template.ParseFiles(path.Join(buildconfig.SYSCONFDIR(), "/warewulf/ipxe/unconfigured.ipxe"))
 		if err != nil {
 			daemonLogf("ERROR: Could not parse unconfigured node IPXE template: %s\n", err)
 			return
@@ -120,7 +121,7 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 
 	} else {
 
-		ipxeTemplate := fmt.Sprintf("/etc/warewulf/ipxe/%s.ipxe", nodeobj.Ipxe.Get())
+		ipxeTemplate := path.Join(buildconfig.SYSCONFDIR(), "warewulf/ipxe/"+nodeobj.Ipxe.Get()+".ipxe")
 
 		tmpl, err := template.ParseFiles(ipxeTemplate)
 		if err != nil {
