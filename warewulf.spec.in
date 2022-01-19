@@ -14,7 +14,7 @@ Version: @VERSION@
 Release: @RELEASE@%{?dist}
 License: BSD-3-Clause
 URL:     https://github.com/hpcng/warewulf
-Source:  warewulf-%{version}.tar.gz
+Source:  https://github.com/hpcng/warewulf/releases/download/v%{version}/warewulf-%{version}.tar.gz
 
 ExclusiveOS: linux
 
