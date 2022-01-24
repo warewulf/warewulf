@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -78,7 +79,7 @@ func main() {
 	x := smbiosDump.SystemEnclosure()
 	tag := x.AssetTagNumber()
 
-	cmdline, err := os.ReadFile("/proc/cmdline")
+	cmdline, err := ioutil.ReadFile("/proc/cmdline")
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not read from /proc/cmdline: %s\n", err)
 		os.Exit(1)
