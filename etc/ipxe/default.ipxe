@@ -17,7 +17,7 @@ imgextract --name kmods ${base}/kmods/{{.Hwaddr}}?assetkey=${asset}&uuid=${uuid}
 imgextract --name system ${base}/overlay-system/{{.Hwaddr}}?assetkey=${asset}&uuid=${uuid}   || goto reboot
 imgextract --name runtime ${base}/overlay-runtime/{{.Hwaddr}}?assetkey=${asset}&uuid=${uuid} || goto reboot
 
-boot kernel initrd=container initrd=kmods initrd=system initrd=runtime {{.KernelArgs}} ||  goto reboot
+boot kernel initrd=container initrd=kmods initrd=system initrd=runtime wwid={{.Hwaddr}} {{.KernelArgs}} ||  goto reboot
 
 :reboot
 echo
