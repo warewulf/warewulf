@@ -11,6 +11,7 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/talos-systems/go-smbios/smbios"
 )
 
 func main() {
@@ -67,6 +68,12 @@ func main() {
 		},
 	}
 
+	smbiosDump, _ := smbios.New()
+	sysinfoDump := smbiosDump.SystemInformation()
+	localUUID, _ := sysinfoDump.UUID()
+	x := smbiosDump.SystemEnclosure()
+	tag := x.AssetTagNumber()
+
 	for {
 		var resp *http.Response
 		counter := 0
@@ -74,7 +81,7 @@ func main() {
 		for {
 			var err error
 
-			getString := fmt.Sprintf("http://%s:%d/overlay-runtime", conf.Ipaddr, conf.Warewulf.Port)
+			getString := fmt.Sprintf("http://%s:%d/overlay-runtime?assetkey=%s&uuid=%s", conf.Ipaddr, conf.Warewulf.Port, tag, localUUID)
 			resp, err = webclient.Get(getString)
 			if err == nil {
 				break
