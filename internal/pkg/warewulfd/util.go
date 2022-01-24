@@ -5,27 +5,9 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/pkg/errors"
 )
-
-func getSanity(req *http.Request) (node.NodeInfo, error) {
-	url := strings.Split(req.URL.Path, "/")
-
-	hwaddr := strings.ReplaceAll(url[2], "-", ":")
-
-	nodeobj, err := GetNode(hwaddr)
-	if err != nil {
-		var ret node.NodeInfo
-		return ret, errors.New("Could not find node by HW address: " + req.URL.Path)
-	}
-
-	daemonLogf("REQ:   %15s: %s\n", nodeobj.Id.Get(), req.URL.Path)
-
-	return nodeobj, nil
-}
 
 func sendFile(w http.ResponseWriter, filename string, sendto string) error {
 	fd, err := os.Open(filename)
