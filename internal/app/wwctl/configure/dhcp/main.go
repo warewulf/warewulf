@@ -84,16 +84,7 @@ func Configure(show bool) error {
 
 	d.Nodes = append(d.Nodes, nodes...)
 
-	if controller.Dhcp.Template == "" {
-		templateFile = path.Join(buildconfig.SYSCONFDIR(), "warewulf/dhcp/default-dhcpd.conf")
-	} else {
-		if strings.HasPrefix(controller.Dhcp.Template, "/") {
-			templateFile = controller.Dhcp.Template
-		} else {
-			templateFile = path.Join(buildconfig.SYSCONFDIR(), "warewulf/dhcp/"+controller.Dhcp.Template+"dhcpd.conf")
-		}
-	}
-
+	templateFile = dhcpTemplateFile(controller.Dhcp.Template)
 	tmpl, err := template.New(path.Base(templateFile)).ParseFiles(templateFile)
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "%s\n", err)
@@ -136,4 +127,18 @@ func Configure(show bool) error {
 	}
 
 	return nil
+}
+
+// dhcpTemplateFile returns the path of the warewulf dhcp template given controller.Dhcp.Template.
+func dhcpTemplateFile(controllerDhcpTemplate string) (templateFile string) {
+	if controllerDhcpTemplate == "" {
+		templateFile = path.Join(buildconfig.SYSCONFDIR(), "warewulf/dhcp/default-dhcpd.conf")
+	} else {
+		if strings.HasPrefix(controllerDhcpTemplate, "/") {
+			templateFile = controllerDhcpTemplate
+		} else {
+			templateFile = path.Join(buildconfig.SYSCONFDIR(), "warewulf/dhcp/"+controllerDhcpTemplate+"-dhcpd.conf")
+		}
+	}
+	return
 }
