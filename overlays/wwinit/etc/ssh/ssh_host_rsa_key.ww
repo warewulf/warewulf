@@ -1,1 +1,1 @@
-{{Include "/etc/warewulf/keys/ssh_host_rsa_key"}}
+{{Include "keys/ssh_host_rsa_key"}}
