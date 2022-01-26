@@ -15,9 +15,8 @@ kernel --name kernel ${base}/kernel/{{.Hwaddr}}?assetkey=${asset}&uuid=${uuid}  
 initrd --name container ${base}/container/{{.Hwaddr}}?assetkey=${asset}&uuid=${uuid}     || goto reboot
 initrd --name kmods ${base}/kmods/{{.Hwaddr}}?assetkey=${asset}&uuid=${uuid}             || goto reboot
 initrd --name system ${base}/overlay-system/{{.Hwaddr}}?assetkey=${asset}&uuid=${uuid}   || goto reboot
-initrd --name runtime ${base}/overlay-runtime/{{.Hwaddr}}?assetkey=${asset}&uuid=${uuid} || goto reboot
 
-boot kernel initrd=container initrd=kmods initrd=system initrd=runtime wwid={{.Hwaddr}} {{.KernelArgs}} ||  goto reboot
+boot kernel initrd=container initrd=kmods initrd=system wwid={{.Hwaddr}} {{.KernelArgs}} ||  goto reboot
 
 :reboot
 echo
