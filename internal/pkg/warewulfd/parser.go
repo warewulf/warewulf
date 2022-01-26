@@ -22,7 +22,7 @@ func parseReq(req *http.Request) (parserInfo, error) {
 	url := strings.Split(req.URL.Path, "?")[0]
 	hwaddr := strings.Split(url, "/")[2]
 	hwaddr = strings.ReplaceAll(hwaddr, "-", ":")
-	hwaddr = strings.ToUpper(hwaddr)
+	hwaddr = strings.ToLower(hwaddr)
 
 	ret.hwaddr = hwaddr
 	ret.ipaddr = strings.Split(req.RemoteAddr, ":")[0]
