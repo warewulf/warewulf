@@ -5,14 +5,18 @@ import (
 	"path"
 	"strings"
 
+	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
-func templateFileInclude(path string) string {
-	wwlog.Printf(wwlog.DEBUG, "Including file into template: %s\n", path)
-	content, err := ioutil.ReadFile(path)
+func templateFileInclude(inc string) string {
+	if !strings.HasPrefix(inc, "/") {
+		inc = path.Join(buildconfig.SYSCONFDIR(), "warewulf", inc)
+	}
+	wwlog.Printf(wwlog.DEBUG, "Including file into template: %s\n", inc)
+	content, err := ioutil.ReadFile(inc)
 	if err != nil {
 		wwlog.Printf(wwlog.VERBOSE, "Could not include file into template: %s\n", err)
 	}

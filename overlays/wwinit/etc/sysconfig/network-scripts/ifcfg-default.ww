@@ -6,8 +6,4 @@ IPADDR={{$.NetDevs.default.Ipaddr}}
 NETMASK={{$.NetDevs.default.Netmask}}
 GATEWAY={{$.NetDevs.default.Gateway}}
 HWADDR={{$.NetDevs.default.Hwaddr}}
-{{- if $.NetDevs.default.OnBoot}}
 ONBOOT=yes
-{{- else}}
-ONBOOT=no
-{{- end}}
