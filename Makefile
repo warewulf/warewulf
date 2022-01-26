@@ -136,7 +136,6 @@ files: all
 	install -d -m 0755 $(DESTDIR)$(WWCHROOTDIR)
 	install -d -m 0755 $(DESTDIR)$(WWPROVISIONDIR)
 	install -d -m 0755 $(DESTDIR)$(WWOVERLAYDIR)
-	install -d -m 0755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/bin/
 	install -d -m 0755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/warewulf/bin/
 	install -d -m 0755 $(DESTDIR)$(SYSCONFDIR)/warewulf/
 	install -d -m 0755 $(DESTDIR)$(SYSCONFDIR)/warewulf/ipxe
@@ -152,6 +151,7 @@ files: all
 	cp -r etc/ipxe $(DESTDIR)$(SYSCONFDIR)/warewulf/
 	cp -r overlays/* $(DESTDIR)$(WWOVERLAYDIR)/
 	chmod 755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/init
+	chmod 755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/warewulf/wwinit
 	chmod 600 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/etc/ssh/ssh*
 	chmod 644 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/etc/ssh/ssh*.pub.ww
 	install -m 0755 wwctl $(DESTDIR)$(BINDIR)
@@ -180,7 +180,7 @@ wwclient:
 	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags '-extldflags -static' -o ../../wwclient
 
 install_wwclient: wwclient
-	install -m 0755 wwclient $(DESTDIR)$(WWOVERLAYDIR)/wwinit/bin/wwclient
+	install -m 0755 wwclient $(DESTDIR)$(WWOVERLAYDIR)/wwinit/warewulf/bin/wwclient
 
 
 bash_completion:
