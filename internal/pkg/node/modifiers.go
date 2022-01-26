@@ -72,6 +72,7 @@ func (config *nodeYaml) NodeUpdate(node NodeInfo) error {
 	config.Nodes[nodeID].RuntimeOverlay = node.RuntimeOverlay.GetReal()
 	config.Nodes[nodeID].SystemOverlay = node.SystemOverlay.GetReal()
 	config.Nodes[nodeID].Root = node.Root.GetReal()
+	config.Nodes[nodeID].AssetKey = node.AssetKey.GetReal()
 
 	config.Nodes[nodeID].Discoverable = node.Discoverable.GetRealB()
 
@@ -159,6 +160,7 @@ func (config *nodeYaml) ProfileUpdate(profile NodeInfo) error {
 	config.NodeProfiles[profileID].RuntimeOverlay = profile.RuntimeOverlay.GetReal()
 	config.NodeProfiles[profileID].SystemOverlay = profile.SystemOverlay.GetReal()
 	config.NodeProfiles[profileID].Root = profile.Root.GetReal()
+	config.NodeProfiles[profileID].AssetKey = profile.AssetKey.GetReal()
 
 	config.NodeProfiles[profileID].Discoverable = profile.Discoverable.GetRealB()
 

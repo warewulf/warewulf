@@ -8,7 +8,7 @@ import (
 	"text/template"
 
 	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
-	"github.com/hpcng/warewulf/internal/pkg/node"
+	nodepkg "github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -30,18 +30,6 @@ type iPxeTemplate struct {
 }
 
 func IpxeSend(w http.ResponseWriter, req *http.Request) {
-
-	url := strings.Split(req.URL.Path, "/")
-	var unconfiguredNode bool
-
-	if url[2] == "" {
-		daemonLogf("ERROR: Bad iPXE request from %s\n", req.RemoteAddr)
-		w.WriteHeader(404)
-		return
-	}
-
-	hwaddr := strings.ReplaceAll(url[2], "-", ":")
-
 	conf, err := warewulfconf.New()
 	if err != nil {
 		daemonLogf("ERROR: Could not open Warewulf configuration: %s\n", err)
@@ -49,44 +37,51 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	nodeobj, err := GetNode(hwaddr)
+	rinfo, err := parseReq(req)
+	if err != nil {
+		w.WriteHeader(404)
+		daemonLogf("ERROR: %s\n", err)
+		return
+	}
 
+	node, err := GetNode(rinfo.hwaddr)
 	if err != nil {
 		// If we failed to find a node, let's see if we can add one...
 		var netdev string
+		var unconfiguredNode bool
 
-		nodeDB, err := node.New()
+		daemonLogf("IPXEREQ:   %s (node not configured)\n", rinfo.hwaddr)
+
+		nodeDB, err := nodepkg.New()
 		if err != nil {
 			daemonLogf("Could not read node configuration file: %s\n", err)
 			w.WriteHeader(503)
 			return
 		}
 
-		daemonLogf("IPXEREQ:   %s (node not configured)\n", hwaddr)
-
 		n, netdev, err := nodeDB.FindDiscoverableNode()
 		if err != nil {
 			unconfiguredNode = true
 
 		} else {
-			n.NetDevs[netdev].Hwaddr.Set(hwaddr)
+			n.NetDevs[netdev].Hwaddr.Set(rinfo.hwaddr)
 			n.Discoverable.SetB(false)
 			err := nodeDB.NodeUpdate(n)
 			if err != nil {
-				daemonLogf("IPXEREQ:   %s (failed to set node configuration)\n", hwaddr)
+				daemonLogf("IPXEREQ:   %s (failed to set node configuration)\n", rinfo.hwaddr)
 
 				unconfiguredNode = true
 			} else {
 				err := nodeDB.Persist()
 				if err != nil {
-					daemonLogf("IPXEREQ:   %s (failed to persist node configuration)\n", hwaddr)
+					daemonLogf("IPXEREQ:   %s (failed to persist node configuration)\n", rinfo.hwaddr)
 
 					unconfiguredNode = true
 				} else {
-					nodeobj = n
-					_ = overlay.BuildAllOverlays([]node.NodeInfo{n})
+					node = n
+					_ = overlay.BuildAllOverlays([]nodepkg.NodeInfo{n})
 
-					daemonLogf("IPXEREQ:   %s (node automatically configured)\n", hwaddr)
+					daemonLogf("IPXEREQ:   %s (node automatically configured)\n", rinfo.hwaddr)
 
 					err := LoadNodeDB()
 					if err != nil {
@@ -96,60 +91,65 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 				}
 			}
 		}
+		if unconfiguredNode {
+			daemonLogf("IPXEREQ:   %s (unknown/unconfigured node)\n", rinfo.hwaddr)
+
+			tmpl, err := template.ParseFiles(path.Join(buildconfig.SYSCONFDIR(), "/warewulf/ipxe/unconfigured.ipxe"))
+			if err != nil {
+				daemonLogf("ERROR: Could not parse unconfigured node IPXE template: %s\n", err)
+				return
+			}
+
+			var replace iPxeTemplate
+
+			replace.Hwaddr = rinfo.hwaddr
+
+			err = tmpl.Execute(w, replace)
+			if err != nil {
+				daemonLogf("ERROR: Could not update unconfigured node IPXE template: %s\n", err)
+				return
+			}
+
+			return
+		}
 	}
 
-	if unconfiguredNode {
-		daemonLogf("IPXEREQ:   %s (unknown/unconfigured node)\n", hwaddr)
-
-		tmpl, err := template.ParseFiles(path.Join(buildconfig.SYSCONFDIR(), "/warewulf/ipxe/unconfigured.ipxe"))
-		if err != nil {
-			daemonLogf("ERROR: Could not parse unconfigured node IPXE template: %s\n", err)
-			return
-		}
-
-		var replace iPxeTemplate
-
-		replace.Hwaddr = hwaddr
-
-		err = tmpl.Execute(w, replace)
-		if err != nil {
-			daemonLogf("ERROR: Could not update unconfigured node IPXE template: %s\n", err)
-			return
-		}
-
+	if node.AssetKey.Defined() && node.AssetKey.Get() != rinfo.assetkey {
+		w.WriteHeader(404)
+		daemonLogf("ERROR: Incorrect asset key for node: %s\n", node.Id.Get())
+		updateStatus(node.Id.Get(), "IPXE", "BAD_ASSET", rinfo.ipaddr)
 		return
-
-	} else {
-
-		ipxeTemplate := path.Join(buildconfig.SYSCONFDIR(), "warewulf/ipxe/"+nodeobj.Ipxe.Get()+".ipxe")
-
-		tmpl, err := template.ParseFiles(ipxeTemplate)
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "%s\n", err)
-			return
-		}
-
-		var replace iPxeTemplate
-
-		replace.Id = nodeobj.Id.Get()
-		replace.Cluster = nodeobj.ClusterName.Get()
-		replace.Fqdn = nodeobj.Id.Get()
-		replace.Ipaddr = conf.Ipaddr
-		replace.Port = strconv.Itoa(conf.Warewulf.Port)
-		replace.Hostname = nodeobj.Id.Get()
-		replace.Hwaddr = url[2]
-		replace.ContainerName = nodeobj.ContainerName.Get()
-		replace.KernelArgs = nodeobj.KernelArgs.Get()
-		replace.KernelVersion = nodeobj.KernelVersion.Get()
-
-		err = tmpl.Execute(w, replace)
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "%s\n", err)
-			return
-		}
-
-		daemonLogf("SEND:  %15s: %s\n", nodeobj.Id.Get(), ipxeTemplate)
-
-		updateStatus(nodeobj.Id.Get(), "IPXE_TEMPLATE", nodeobj.Ipxe.Get()+".ipxe", strings.Split(req.RemoteAddr, ":")[0])
 	}
+
+	ipxeTemplate := path.Join(buildconfig.SYSCONFDIR(), "warewulf/ipxe/"+node.Ipxe.Get()+".ipxe")
+
+	tmpl, err := template.ParseFiles(ipxeTemplate)
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "%s\n", err)
+		return
+	}
+
+	var replace iPxeTemplate
+
+	replace.Id = node.Id.Get()
+	replace.Cluster = node.ClusterName.Get()
+	replace.Fqdn = node.Id.Get()
+	replace.Ipaddr = conf.Ipaddr
+	replace.Port = strconv.Itoa(conf.Warewulf.Port)
+	replace.Hostname = node.Id.Get()
+	replace.Hwaddr = rinfo.hwaddr
+	replace.ContainerName = node.ContainerName.Get()
+	replace.KernelArgs = node.KernelArgs.Get()
+	replace.KernelVersion = node.KernelVersion.Get()
+
+	err = tmpl.Execute(w, replace)
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "%s\n", err)
+		return
+	}
+
+	daemonLogf("SEND:  %15s: %s\n", node.Id.Get(), ipxeTemplate)
+
+	updateStatus(node.Id.Get(), "IPXE", node.Ipxe.Get()+".ipxe", strings.Split(req.RemoteAddr, ":")[0])
+
 }

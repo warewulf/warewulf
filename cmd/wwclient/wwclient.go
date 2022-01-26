@@ -2,15 +2,18 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/talos-systems/go-smbios/smbios"
 )
 
 func main() {
@@ -48,8 +51,7 @@ func main() {
 	if conf.Warewulf.Secure {
 		// Setup local port to something privileged (<1024)
 		localTCPAddr.Port = 987
-	} else {
-		fmt.Printf("INFO: Running from an insecure port\n")
+		wwlog.Printf(wwlog.INFO, "Running from trusted port\n")
 	}
 
 	webclient := &http.Client{
@@ -67,6 +69,30 @@ func main() {
 		},
 	}
 
+	smbiosDump, err := smbios.New()
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Could not get SMBIOS info: %s\n", err)
+		os.Exit(1)
+	}
+	sysinfoDump := smbiosDump.SystemInformation()
+	localUUID, _ := sysinfoDump.UUID()
+	x := smbiosDump.SystemEnclosure()
+	tag := x.AssetTagNumber()
+
+	cmdline, err := ioutil.ReadFile("/proc/cmdline")
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Could not read from /proc/cmdline: %s\n", err)
+		os.Exit(1)
+	}
+
+	wwid_tmp := strings.Split(string(cmdline), "wwid=")
+	if len(wwid_tmp) < 2 {
+		wwlog.Printf(wwlog.ERROR, "'wwid' is not defined in /proc/cmdline\n")
+		os.Exit(1)
+	}
+
+	wwid := strings.Split(wwid_tmp[1], " ")[0]
+
 	for {
 		var resp *http.Response
 		counter := 0
@@ -74,7 +100,7 @@ func main() {
 		for {
 			var err error
 
-			getString := fmt.Sprintf("http://%s:%d/overlay-runtime", conf.Ipaddr, conf.Warewulf.Port)
+			getString := fmt.Sprintf("http://%s:%d/overlay-runtime/%s?assetkey=%s&uuid=%s", conf.Ipaddr, conf.Warewulf.Port, wwid, tag, localUUID)
 			resp, err = webclient.Get(getString)
 			if err == nil {
 				break

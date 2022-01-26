@@ -3,13 +3,17 @@ package warewulfd
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
+	"log/syslog"
 	"os"
 	"os/exec"
 	"strconv"
 	"syscall"
+	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/version"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/pkg/errors"
 )
 
@@ -17,6 +21,39 @@ const (
 	WAREWULFD_PIDFILE = "/var/run/warewulfd.pid"
 	WAREWULFD_LOGFILE = "/var/log/warewulfd.log"
 )
+
+var logwriter *syslog.Writer
+var loginit bool
+
+func daemonLogf(message string, a ...interface{}) {
+	conf, err := warewulfconf.New()
+	if err != nil {
+		fmt.Printf("ERROR: Could not read Warewulf configuration file: %s\n", err)
+		return
+	}
+
+	if conf.Warewulf.Syslog {
+		if !loginit {
+			var err error
+
+			logwriter, err = syslog.New(syslog.LOG_NOTICE, "warewulfd")
+			if err != nil {
+				return
+			}
+			log.SetOutput(logwriter)
+			loginit = true
+
+			log.SetFlags(0)
+			log.SetPrefix("")
+		}
+
+		log.Printf(message, a...)
+
+	} else {
+		prefix := fmt.Sprintf("[%s] ", time.Now().Format(time.UnixDate))
+		fmt.Printf(prefix+message, a...)
+	}
+}
 
 func DaemonStart() error {
 	if os.Getenv("WAREWULFD_BACKGROUND") == "1" {

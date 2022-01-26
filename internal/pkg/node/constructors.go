@@ -87,6 +87,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.SystemOverlay.Set(node.SystemOverlay)
 		n.RuntimeOverlay.Set(node.RuntimeOverlay)
 		n.Root.Set(node.Root)
+		n.AssetKey.Set(node.AssetKey)
 
 		n.Discoverable.SetB(node.Discoverable)
 
@@ -142,10 +143,10 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.IpmiInterface.SetAlt(config.NodeProfiles[p].IpmiInterface, p)
 			n.SystemOverlay.SetAlt(config.NodeProfiles[p].SystemOverlay, p)
 			n.RuntimeOverlay.SetAlt(config.NodeProfiles[p].RuntimeOverlay, p)
+			n.Root.SetAlt(config.NodeProfiles[p].Root, p)
+			n.AssetKey.SetAlt(config.NodeProfiles[p].AssetKey, p)
 
 			n.Discoverable.SetAltB(config.NodeProfiles[p].Discoverable, p)
-
-			n.Root.SetAlt(config.NodeProfiles[p].Root, p)
 
 			for devname, netdev := range config.NodeProfiles[p].NetDevs {
 				if _, ok := n.NetDevs[devname]; !ok {
@@ -216,6 +217,7 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		p.RuntimeOverlay.Set(profile.RuntimeOverlay)
 		p.SystemOverlay.Set(profile.SystemOverlay)
 		p.Root.Set(profile.Root)
+		p.AssetKey.Set(profile.AssetKey)
 
 		p.Discoverable.SetB(profile.Discoverable)
 

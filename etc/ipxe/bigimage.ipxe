@@ -1,0 +1,27 @@
+#!ipxe
+
+echo
+echo ================================================================================
+echo Warewulf v4 now booting: {{.Fqdn}}
+echo
+echo Container:     {{.ContainerName}}
+echo Kernel:        {{.KernelVersion}}
+echo KernelArgs:    {{.KernelArgs}}
+echo
+
+set base http://{{.Ipaddr}}:{{.Port}}
+
+kernel --name kernel ${base}/kernel/{{.Hwaddr}}?assetkey=${asset}&uuid=${uuid}           || goto reboot
+imgextract --name container ${base}/container/{{.Hwaddr}}?assetkey=${asset}&uuid=${uuid}     || goto reboot
+imgextract --name kmods ${base}/kmods/{{.Hwaddr}}?assetkey=${asset}&uuid=${uuid}             || goto reboot
+imgextract --name system ${base}/overlay-system/{{.Hwaddr}}?assetkey=${asset}&uuid=${uuid}   || goto reboot
+imgextract --name runtime ${base}/overlay-runtime/{{.Hwaddr}}?assetkey=${asset}&uuid=${uuid} || goto reboot
+
+boot kernel initrd=container initrd=kmods initrd=system initrd=runtime wwid={{.Hwaddr}} {{.KernelArgs}} ||  goto reboot
+
+:reboot
+echo
+echo There was an error, rebooting in 15s...
+echo
+sleep 15
+reboot
