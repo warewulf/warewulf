@@ -11,7 +11,7 @@ var (
 		Short:                 "Create a new directory within an Overlay",
 		Long:                  "This command creates a new directory within the Warewulf OVERLAY_NAME.",
 		RunE:                  CobraRunE,
-		Args:                  cobra.MinimumNArgs(3),
+		Args:                  cobra.MinimumNArgs(2),
 	}
 	PermMode int32
 )
