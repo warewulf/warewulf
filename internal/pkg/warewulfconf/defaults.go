@@ -26,17 +26,11 @@ func defaultConfig() *ControllerConf {
 		TftpRoot:    "/var/lib/tftpboot",
 		SystemdName: "tftp",
 	}
-	Nfs := &NfsConf{
-		Enabled:     true,
-		Exports:     []string{"/home"},
-		SystemdName: "nfs-server",
-	}
 
 	return &ControllerConf{
 		Warewulf: Warewulf,
 		Dhcp:     Dhcp,
 		Tftp:     Tftp,
-		Nfs:      Nfs,
 		current:  false,
 	}
 }
