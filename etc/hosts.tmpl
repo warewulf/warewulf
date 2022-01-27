@@ -1,15 +1,15 @@
 {{$.PrevHostFile}}# Do not edit after this line - these host entries are maintained by warewulf
 
-{{range $node := $.AllNodes}}
+{{range $node := $.AllNodes}}                  {{/* for each node */}}
 # Entry for {{$node.Id.Get}}
-{{- range $devname, $netdev := $node.NetDevs}}
-{{- if $netdev.Ipaddr.Defined}}
-{{- if $netdev.Default.GetB}}
-{{$netdev.Ipaddr.Get}} {{$node.Id.Get}}
+{{- range $devname, $netdev := $node.NetDevs}} {{/* for each network device on the node */}}
+{{- if $netdev.Ipaddr.Defined}}                {{/* if we have an ip address on this network device */}}
+{{- if $netdev.Default.GetB}}                  {{/* emit the node name as hostname if this is the default */}}
+{{$netdev.Ipaddr.Get}} {{$node.Id.Get}} {{$node.Id.Get}}-{{$devname}} {{$node.Id.Get}}-{{$netdev.Device.Get}}
 {{- else}}
-{{$netdev.Ipaddr.Get}} {{$node.Id.Get}}-{{$devname}}
-{{- end}}
-{{- end}}
-{{- end}}
-{{end}}
+{{$netdev.Ipaddr.Get}} {{$node.Id.Get}}-{{$devname}} {{$node.Id.Get}}-{{$netdev.Device.Get}}
+{{- end}} {{/* end if default */}}
+{{- end}} {{/* end if ip */}}
+{{- end}} {{/* end for each network device */}}
+{{end}}   {{/* end for each node */}}
 
