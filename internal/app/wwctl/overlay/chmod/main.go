@@ -17,7 +17,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	overlayName := args[0]
 	fileName := args[1]
 
-	permissionMode, err := strconv.ParseInt(args[3], 8, 32)
+	permissionMode, err := strconv.ParseUint(args[2], 8, 32)
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not convert requested mode: %s\n", err)
 		os.Exit(1)
