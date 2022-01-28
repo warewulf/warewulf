@@ -14,6 +14,7 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 )
@@ -39,6 +40,7 @@ type TemplateStruct struct {
 	NetDevs        map[string]*node.NetDevs
 	Keys           map[string]string
 	AllNodes       []node.NodeInfo
+	NFSMounts      []string
 }
 
 /*
@@ -127,6 +129,12 @@ func OverlayInit(overlayName string) error {
 }
 
 func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
+	controller, err := warewulfconf.New()
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "%s\n", err)
+		os.Exit(1)
+	}
+
 	nodeDB, _ := node.New()
 	allNodes, _ := nodeDB.FindAllNodes()
 	var tstruct TemplateStruct
@@ -143,7 +151,7 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 		return errors.New("overlay does not exist: " + overlayName)
 	}
 
-	err := os.MkdirAll(OverlayImageDir, 0755)
+	err = os.MkdirAll(OverlayImageDir, 0755)
 	if err == nil {
 		wwlog.Printf(wwlog.DEBUG, "Created parent directory for Overlay Images: %s\n", OverlayImageDir)
 	} else {
@@ -204,6 +212,17 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 		tstruct.Keys[keyname] = key.Get()
 	}
 	tstruct.AllNodes = allNodes
+	for _, export := range controller.Nfs.ExportsExtended {
+		if export.Mount {
+			var mountOpts string
+			if export.MountOptions == "" {
+				mountOpts = "defaults"
+			} else {
+				mountOpts = export.MountOptions
+			}
+			tstruct.NFSMounts = append(tstruct.NFSMounts, fmt.Sprintf("%s:%s %s nfs %s 0 0\n", controller.Ipaddr, export.Path, export.Path, mountOpts))
+		}
+	}
 
 	wwlog.Printf(wwlog.DEBUG, "Changing directory to OverlayDir: %s\n", OverlaySourceDir)
 	err = os.Chdir(OverlaySourceDir)
