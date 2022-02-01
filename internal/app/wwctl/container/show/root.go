@@ -1,4 +1,4 @@
-package list
+package show
 
 import (
 	"github.com/hpcng/warewulf/internal/pkg/container"
