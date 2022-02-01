@@ -9,7 +9,7 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	containerName := args[1]
+	containerName := args[0]
 	if !container.ValidName(containerName) {
 		return fmt.Errorf("%s is not a valid container", containerName)
 	}
@@ -17,7 +17,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Printf("%s\n", container.RootFsDir(containerName))
 	} else {
 		fmt.Printf("Name: %s\n", containerName)
-		fmt.Printf("Rootsfs: %s\n", container.RootFsDir(containerName))
+		fmt.Printf("Rootfs: %s\n", container.RootFsDir(containerName))
 		nodeDB, _ := node.New()
 
 		nodes, _ := nodeDB.FindAllNodes()

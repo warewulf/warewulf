@@ -11,7 +11,7 @@ var (
 		Use:                   "show [OPTIONS] CONTAINER",
 		Short:                 "Show root fs dir for container",
 		Long: `Shows the base directory for the chroot of the given container. 
-		More information about the conainer can be hosw with -a option.`,
+More information about the conainer can be shown with the '-a' option.`,
 		RunE: CobraRunE,
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
@@ -27,7 +27,7 @@ var (
 	ShowAll bool
 )
 
-func Init() {
+func init() {
 	baseCmd.PersistentFlags().BoolVarP(&ShowAll, "all", "a", false, "Show all information about a container")
 
 }
