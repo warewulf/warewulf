@@ -2,24 +2,31 @@ package node
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
+	"path"
 	"sort"
 	"strings"
 
+	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+
 	"gopkg.in/yaml.v2"
 )
 
-var ConfigFile = "/etc/warewulf/nodes.conf"
+var ConfigFile string
+
+func init() {
+	if ConfigFile == "" {
+		ConfigFile = path.Join(buildconfig.SYSCONFDIR(), "warewulf/nodes.conf")
+	}
+}
 
 func New() (nodeYaml, error) {
 	var ret nodeYaml
 
-	wwlog.Printf(wwlog.DEBUG, "Opening node configuration file: %s\n", ConfigFile)
+	wwlog.Printf(wwlog.VERBOSE, "Opening node configuration file: %s\n", ConfigFile)
 	data, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
-		fmt.Printf("error reading node configuration file\n")
 		return ret, err
 	}
 
@@ -44,8 +51,8 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		wwlog.Printf(wwlog.DEBUG, "In node loop: %s\n", nodename)
 		n.NetDevs = make(map[string]*NetDevEntry)
 		n.Keys = make(map[string]*Entry)
-		n.SystemOverlay.SetDefault("default")
-		n.RuntimeOverlay.SetDefault("default")
+		n.SystemOverlay.SetDefault("wwinit")
+		n.RuntimeOverlay.SetDefault("generic")
 		n.Ipxe.SetDefault("default")
 		n.Init.SetDefault("/sbin/init")
 		n.Root.SetDefault("initramfs")
@@ -80,6 +87,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.SystemOverlay.Set(node.SystemOverlay)
 		n.RuntimeOverlay.Set(node.RuntimeOverlay)
 		n.Root.Set(node.Root)
+		n.AssetKey.Set(node.AssetKey)
 
 		n.Discoverable.SetB(node.Discoverable)
 
@@ -89,11 +97,17 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.NetDevs[devname] = &netdev
 			}
 
+			if netdev.Device != "" {
+				n.NetDevs[devname].Device.Set(netdev.Device)
+			} else {
+				n.NetDevs[devname].Device.Set(devname)
+			}
 			n.NetDevs[devname].Ipaddr.Set(netdev.Ipaddr)
 			n.NetDevs[devname].Netmask.Set(netdev.Netmask)
 			n.NetDevs[devname].Hwaddr.Set(netdev.Hwaddr)
 			n.NetDevs[devname].Gateway.Set(netdev.Gateway)
 			n.NetDevs[devname].Type.Set(netdev.Type)
+			n.NetDevs[devname].OnBoot.SetB(netdev.OnBoot)
 			n.NetDevs[devname].Default.SetB(netdev.Default)
 		}
 
@@ -129,10 +143,10 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.IpmiInterface.SetAlt(config.NodeProfiles[p].IpmiInterface, p)
 			n.SystemOverlay.SetAlt(config.NodeProfiles[p].SystemOverlay, p)
 			n.RuntimeOverlay.SetAlt(config.NodeProfiles[p].RuntimeOverlay, p)
+			n.Root.SetAlt(config.NodeProfiles[p].Root, p)
+			n.AssetKey.SetAlt(config.NodeProfiles[p].AssetKey, p)
 
 			n.Discoverable.SetAltB(config.NodeProfiles[p].Discoverable, p)
-
-			n.Root.SetAlt(config.NodeProfiles[p].Root, p)
 
 			for devname, netdev := range config.NodeProfiles[p].NetDevs {
 				if _, ok := n.NetDevs[devname]; !ok {
@@ -141,11 +155,13 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				}
 				wwlog.Printf(wwlog.DEBUG, "Updating profile (%s) netdev: %s\n", p, devname)
 
+				n.NetDevs[devname].Device.SetAlt(netdev.Device, p)
 				n.NetDevs[devname].Ipaddr.SetAlt(netdev.Ipaddr, p)
 				n.NetDevs[devname].Netmask.SetAlt(netdev.Netmask, p)
 				n.NetDevs[devname].Hwaddr.SetAlt(netdev.Hwaddr, p)
 				n.NetDevs[devname].Gateway.SetAlt(netdev.Gateway, p)
 				n.NetDevs[devname].Type.SetAlt(netdev.Type, p)
+				n.NetDevs[devname].OnBoot.SetAltB(netdev.OnBoot, p)
 				n.NetDevs[devname].Default.SetAltB(netdev.Default, p)
 			}
 
@@ -201,6 +217,7 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		p.RuntimeOverlay.Set(profile.RuntimeOverlay)
 		p.SystemOverlay.Set(profile.SystemOverlay)
 		p.Root.Set(profile.Root)
+		p.AssetKey.Set(profile.AssetKey)
 
 		p.Discoverable.SetB(profile.Discoverable)
 
@@ -212,11 +229,13 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 
 			wwlog.Printf(wwlog.DEBUG, "Updating profile netdev: %s\n", devname)
 
+			p.NetDevs[devname].Device.Set(netdev.Device)
 			p.NetDevs[devname].Ipaddr.Set(netdev.Ipaddr)
 			p.NetDevs[devname].Netmask.Set(netdev.Netmask)
 			p.NetDevs[devname].Hwaddr.Set(netdev.Hwaddr)
 			p.NetDevs[devname].Gateway.Set(netdev.Gateway)
 			p.NetDevs[devname].Type.Set(netdev.Type)
+			p.NetDevs[devname].OnBoot.SetB(netdev.OnBoot)
 			p.NetDevs[devname].Default.SetB(netdev.Default)
 		}
 
@@ -263,5 +282,5 @@ func (config *nodeYaml) FindDiscoverableNode() (NodeInfo, string, error) {
 		}
 	}
 
-	return ret, "", errors.New("No unconfigured nodes found")
+	return ret, "", errors.New("no unconfigured nodes found")
 }

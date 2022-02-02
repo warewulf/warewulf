@@ -7,13 +7,12 @@ import (
 var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:   "delete [OPTIONS] {runtime|system} OVERLAY_NAME [FILE [FILE ...]]",
-		Short: "Delete Warewulf Overlay or files",
-		Long: "This command will delete FILEs within OVERLAY_NAME or the entire OVERLAY_NAME if no\n" +
-			"files are listed. Use with caution!",
-		RunE:    CobraRunE,
-		Args:    cobra.RangeArgs(2, 3),
-		Aliases: []string{"rm", "del"},
+		Use:                   "delete [OPTIONS] OVERLAY_NAME [FILE [FILE ...]]",
+		Short:                 "Delete Warewulf Overlay or files",
+		Long:                  "This command will delete FILEs within OVERLAY_NAME or the entire OVERLAY_NAME if no\nfiles are listed. Use with caution!",
+		RunE:                  CobraRunE,
+		Args:                  cobra.RangeArgs(1, 2),
+		Aliases:               []string{"rm", "del"},
 	}
 	Force   bool
 	Parents bool

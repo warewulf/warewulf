@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed 
+- Provision interface is not tied to 'eth0' any more. The provision interface must be named
+  'default' now. The file `nodes.yaml' must be changed accordingly.
+- Creating of '/etc/exports' can now be disabled, so that `wwctl configure -a` wont overwrite
+  a existing '/etc/exports'.
+
 
 ## [4.1.0] - 2021-07-29
 ### Added

@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/staticfiles"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
@@ -23,40 +24,35 @@ func Configure(show bool) error {
 		os.Exit(1)
 	}
 
-	if controller.Tftp.TftpRoot == "" {
-		wwlog.Printf(wwlog.ERROR, "Tftp root directory is not configured in warewulfd.conf\n")
+	if buildconfig.TFTPDIR() == "" {
+		wwlog.Printf(wwlog.ERROR, "Tftp root directory is not configured by build\n")
 		os.Exit(1)
 	}
 
-	if !util.IsDir(controller.Tftp.TftpRoot) {
-		wwlog.Printf(wwlog.ERROR, "Configured TFTP Root directory does not exist: %s\n", controller.Tftp.TftpRoot)
-		os.Exit(1)
-	}
-
-	err = os.MkdirAll(path.Join(controller.Tftp.TftpRoot, "warewulf"), 0755)
+	err = os.MkdirAll(path.Join(buildconfig.TFTPDIR(), "warewulf"), 0755)
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "%s\n", err)
 		os.Exit(1)
 	}
 
 	if !show {
-		fmt.Printf("Writing PXE files to: %s\n", path.Join(controller.Tftp.TftpRoot, "warewulf"))
-		err = staticfiles.WriteData("files/tftp/x86.efi", path.Join(controller.Tftp.TftpRoot, "warewulf/x86.efi"))
+		fmt.Printf("Writing PXE files to: %s\n", path.Join(buildconfig.TFTPDIR(), "warewulf"))
+		err = staticfiles.WriteData("files/tftp/x86.efi", path.Join(buildconfig.TFTPDIR(), "warewulf/x86.efi"))
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			os.Exit(1)
 		}
-		err = staticfiles.WriteData("files/tftp/i386.efi", path.Join(controller.Tftp.TftpRoot, "warewulf/i386.efi"))
+		err = staticfiles.WriteData("files/tftp/i386.efi", path.Join(buildconfig.TFTPDIR(), "warewulf/i386.efi"))
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			os.Exit(1)
 		}
-		err = staticfiles.WriteData("files/tftp/i386.kpxe", path.Join(controller.Tftp.TftpRoot, "warewulf/i386.kpxe"))
+		err = staticfiles.WriteData("files/tftp/i386.kpxe", path.Join(buildconfig.TFTPDIR(), "warewulf/i386.kpxe"))
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			os.Exit(1)
 		}
-		err = staticfiles.WriteData("files/tftp/arm64.efi", path.Join(controller.Tftp.TftpRoot, "warewulf/arm64.efi"))
+		err = staticfiles.WriteData("files/tftp/arm64.efi", path.Join(buildconfig.TFTPDIR(), "warewulf/arm64.efi"))
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			os.Exit(1)

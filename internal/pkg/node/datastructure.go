@@ -32,6 +32,7 @@ type NodeConf struct {
 	SystemOverlay  string              `yaml:"system overlay,omitempty"`
 	Init           string              `yaml:"init,omitempty"`
 	Root           string              `yaml:"root,omitempty"`
+	AssetKey       string              `yaml:"asset key,omitempty"`
 	Discoverable   bool                `yaml:"discoverable,omitempty"`
 	Profiles       []string            `yaml:"profiles,omitempty"`
 	NetDevs        map[string]*NetDevs `yaml:"network devices,omitempty"`
@@ -39,14 +40,16 @@ type NodeConf struct {
 }
 
 type NetDevs struct {
-	Type    string `yaml:"type,omitempty"`
-	Default bool   `yaml:"default"`
+	Type    string
+	OnBoot  bool
+	Device  string
 	Hwaddr  string
 	Ipaddr  string
-	IpCIDR  string
-	Prefix  string
+	IpCIDR  string `yaml:"ipcidr,omitempty"`
+	Prefix  string `yaml:"prefix,omitempty"`
 	Netmask string
-	Gateway string `yaml:"gateway,omitempty"`
+	Gateway string `yaml:"gateway"`
+	Default bool
 }
 
 /******
@@ -83,6 +86,7 @@ type NodeInfo struct {
 	Root           Entry
 	Discoverable   Entry
 	Init           Entry //TODO: Finish adding this...
+	AssetKey       Entry
 	Profiles       []string
 	GroupProfiles  []string
 	NetDevs        map[string]*NetDevEntry
@@ -90,14 +94,16 @@ type NodeInfo struct {
 }
 
 type NetDevEntry struct {
-	Type    Entry `yaml:"type,omitempty"`
-	Default Entry `yaml:"default"`
+	Type    Entry
+	OnBoot  Entry
+	Device  Entry
 	Hwaddr  Entry
 	Ipaddr  Entry
 	IpCIDR  Entry
 	Prefix  Entry
 	Netmask Entry
-	Gateway Entry `yaml:"gateway,omitempty"`
+	Gateway Entry
+	Default Entry
 }
 
 func init() {

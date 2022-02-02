@@ -70,6 +70,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			n.Root.Set(SetRoot)
 		}
 
+		if SetAssetKey != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting asset key to: %s\n", n.Id.Get(), SetAssetKey)
+			n.AssetKey.Set(SetAssetKey)
+		}
+
 		if SetKernel != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting kernel to: %s\n", n.Id.Get(), SetKernel)
 			n.KernelVersion.Set(SetKernel)
@@ -165,112 +170,135 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 		}
 
-		if SetNetDevDel {
-			if SetNetDev == "" {
-				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
-				os.Exit(1)
-			}
+		if SetNetName != "" {
+			if _, ok := n.NetDevs[SetNetName]; !ok {
+				var nd node.NetDevEntry
 
-			if _, ok := n.NetDevs[SetNetDev]; !ok {
-				wwlog.Printf(wwlog.ERROR, "Network Device doesn't exist: %s\n", SetNetDev)
-				os.Exit(1)
-			}
+				SetNetOnBoot = "yes"
 
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Deleting network device: %s\n", n.Id.Get(), SetNetDev)
-			delete(n.NetDevs, SetNetDev)
+				if len(n.NetDevs) == 0 {
+					SetNetDefault = "yes"
+				}
+
+				n.NetDevs[SetNetName] = &nd
+
+				if SetNetDev == "" {
+					n.NetDevs[SetNetName].Device.Set(SetNetName)
+				}
+			}
 		}
+
+		if SetNetDev != "" {
+			if SetNetName == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--netname' option\n")
+				os.Exit(1)
+			}
+
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting net Device to: %s\n", n.Id.Get(), SetNetName, SetNetDev)
+			n.NetDevs[SetNetName].Device.Set(SetNetDev)
+		}
+
 		if SetIpaddr != "" {
-			if SetNetDev == "" {
-				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
+			if SetNetName == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--netname' option\n")
 				os.Exit(1)
 			}
 
 			NewIpaddr := util.IncrementIPv4(SetIpaddr, count)
 
-			if _, ok := n.NetDevs[SetNetDev]; !ok {
-				var nd node.NetDevEntry
-				n.NetDevs[SetNetDev] = &nd
-			}
-
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Ipaddr to: %s\n", n.Id.Get(), SetNetDev, NewIpaddr)
-			n.NetDevs[SetNetDev].Ipaddr.Set(NewIpaddr)
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Ipaddr to: %s\n", n.Id.Get(), SetNetName, NewIpaddr)
+			n.NetDevs[SetNetName].Ipaddr.Set(NewIpaddr)
 		}
+
 		if SetNetmask != "" {
-			if SetNetDev == "" {
-				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
+			if SetNetName == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--netname' option\n")
 				os.Exit(1)
 			}
 
-			if _, ok := n.NetDevs[SetNetDev]; !ok {
-				var nd node.NetDevEntry
-				n.NetDevs[SetNetDev] = &nd
-			}
-
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting netmask to: %s\n", n.Id.Get(), SetNetDev, SetNetmask)
-			n.NetDevs[SetNetDev].Netmask.Set(SetNetmask)
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting netmask to: %s\n", n.Id.Get(), SetNetName, SetNetmask)
+			n.NetDevs[SetNetName].Netmask.Set(SetNetmask)
 		}
+
 		if SetGateway != "" {
-			if SetNetDev == "" {
-				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
+			if SetNetName == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--netname' option\n")
 				os.Exit(1)
 			}
 
-			if _, ok := n.NetDevs[SetNetDev]; !ok {
-				var nd node.NetDevEntry
-				n.NetDevs[SetNetDev] = &nd
-			}
-
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting gateway to: %s\n", n.Id.Get(), SetNetDev, SetGateway)
-			n.NetDevs[SetNetDev].Gateway.Set(SetGateway)
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting gateway to: %s\n", n.Id.Get(), SetNetName, SetGateway)
+			n.NetDevs[SetNetName].Gateway.Set(SetGateway)
 		}
 
 		if SetHwaddr != "" {
-			if SetNetDev == "" {
-				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
+			if SetNetName == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--netname' option\n")
 				os.Exit(1)
 			}
 
-			if _, ok := n.NetDevs[SetNetDev]; !ok {
-				var nd node.NetDevEntry
-				n.NetDevs[SetNetDev] = &nd
-			}
-
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting HW address to: %s\n", n.Id.Get(), SetNetDev, SetHwaddr)
-			n.NetDevs[SetNetDev].Hwaddr.Set(SetHwaddr)
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting HW address to: %s\n", n.Id.Get(), SetNetName, SetHwaddr)
+			n.NetDevs[SetNetName].Hwaddr.Set(strings.ToLower(SetHwaddr))
 		}
 
 		if SetType != "" {
-			if SetNetDev == "" {
-				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
+			if SetNetName == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--netname' option\n")
 				os.Exit(1)
 			}
 
-			if _, ok := n.NetDevs[SetNetDev]; !ok {
-				var nd node.NetDevEntry
-				n.NetDevs[SetNetDev] = &nd
-			}
-
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Type %s\n", n.Id.Get(), SetNetDev, SetType)
-			n.NetDevs[SetNetDev].Type.Set(SetType)
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Type %s\n", n.Id.Get(), SetNetName, SetType)
+			n.NetDevs[SetNetName].Type.Set(SetType)
 		}
 
-		if SetNetDevDefault {
-			if SetNetDev == "" {
-				wwlog.Printf(wwlog.ERROR, "You must include the '--netdev' option\n")
+		if SetNetOnBoot != "" {
+			if SetNetName == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--netname' option\n")
 				os.Exit(1)
 			}
 
-			if _, ok := n.NetDevs[SetNetDev]; !ok {
-				var nd node.NetDevEntry
-				n.NetDevs[SetNetDev] = &nd
+			if SetNetOnBoot == "yes" || SetNetOnBoot == "y" || SetNetOnBoot == "1" || SetNetOnBoot == "true" {
+				wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting ONBOOT\n", n.Id.Get(), SetNetName)
+				n.NetDevs[SetNetName].OnBoot.SetB(true)
+			} else {
+				wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Unsetting ONBOOT\n", n.Id.Get(), SetNetName)
+				n.NetDevs[SetNetName].OnBoot.SetB(false)
+			}
+		}
+
+		if SetNetDefault != "" {
+			if SetNetName == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--netname' option\n")
+				os.Exit(1)
 			}
 
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting device as default\n", n.Id.Get(), SetNetDev)
-			for _, dev := range n.NetDevs {
-				// First clear all other devices that might be configured as default
-				dev.Default.SetB(false)
+			if SetNetDefault == "yes" || SetNetDefault == "y" || SetNetDefault == "1" || SetNetDefault == "true" {
+
+				// Set all other devices to non-default
+				for _, n := range n.NetDevs {
+					n.Default.SetB(false)
+				}
+
+				wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting DEFAULT\n", n.Id.Get(), SetNetName)
+				n.NetDevs[SetNetName].Default.SetB(true)
+			} else {
+				wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Unsetting DEFAULT\n", n.Id.Get(), SetNetName)
+				n.NetDevs[SetNetName].Default.SetB(false)
 			}
-			n.NetDevs[SetNetDev].Default.SetB(true)
+		}
+
+		if SetNetDevDel {
+			if SetNetName == "" {
+				wwlog.Printf(wwlog.ERROR, "You must include the '--netname' option\n")
+				os.Exit(1)
+			}
+
+			if _, ok := n.NetDevs[SetNetName]; !ok {
+				wwlog.Printf(wwlog.ERROR, "Network device name doesn't exist: %s\n", SetNetName)
+				os.Exit(1)
+			}
+
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Deleting network device: %s\n", n.Id.Get(), SetNetName)
+			delete(n.NetDevs, SetNetName)
 		}
 
 		if SetValue != "" {

@@ -1,25 +1,38 @@
 package warewulfconf
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
+	"path"
 
 	"github.com/brotherpowers/ipsubnet"
+	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+
 	"gopkg.in/yaml.v2"
 )
 
-var singleton ControllerConf
+var cachedConf ControllerConf
+
+var ConfigFile string
+
+func init() {
+	if ConfigFile == "" {
+		ConfigFile = path.Join(buildconfig.SYSCONFDIR(), "warewulf/warewulf.conf")
+	}
+}
 
 func New() (ControllerConf, error) {
-	var ret ControllerConf
+	var ret ControllerConf = *defaultConfig()
 
-	if (ControllerConf{}) == singleton {
+	// Check if cached config is old before re-reading config file
+	if !cachedConf.current {
 		wwlog.Printf(wwlog.DEBUG, "Opening Warewulf configuration file: %s\n", ConfigFile)
 		data, err := ioutil.ReadFile(ConfigFile)
 		if err != nil {
-			fmt.Printf("error reading Warewulf configuration file\n")
+			fmt.Printf("Error reading Warewulf configuration file\n")
 			return ret, err
 		}
 
@@ -29,11 +42,16 @@ func New() (ControllerConf, error) {
 			return ret, err
 		}
 
+		// TODO: Need to add comprehensive config file validator
+		// TODO: Change function to guess default IP address and/or mask from local system
 		if ret.Ipaddr == "" {
-			wwlog.Printf(wwlog.WARN, "IP address is not configured in warewulfd.conf\n")
+			wwlog.Printf(wwlog.ERROR, "IP address is not configured in warewulfd.conf\n")
+			return ret, errors.New("no IP Address")
 		}
+
 		if ret.Netmask == "" {
-			wwlog.Printf(wwlog.WARN, "Netmask is not configured in warewulfd.conf\n")
+			wwlog.Printf(wwlog.ERROR, "Netmask is not configured in warewulfd.conf\n")
+			return ret, errors.New("no netmask")
 		}
 
 		if ret.Network == "" {
@@ -46,16 +64,17 @@ func New() (ControllerConf, error) {
 		}
 
 		if ret.Warewulf.Port == 0 {
-			ret.Warewulf.Port = 9873
+			ret.Warewulf.Port = defaultPort
 		}
 
 		wwlog.Printf(wwlog.DEBUG, "Returning warewulf config object\n")
-		singleton = ret
+		cachedConf = ret
+		cachedConf.current = true
 
 	} else {
 		wwlog.Printf(wwlog.DEBUG, "Returning cached warewulf config object\n")
-
-		ret = singleton
+		// If cached struct isn't empty, use it as the return value
+		ret = cachedConf
 	}
 
 	return ret, nil

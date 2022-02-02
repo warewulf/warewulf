@@ -3,8 +3,10 @@ package hosts
 import (
 	"bytes"
 	"os"
+	"path"
 	"text/template"
 
+	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
@@ -26,7 +28,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 func Configure(show bool) error {
 	var replace TemplateStruct
 
-	if !util.IsFile("/etc/warewulf/hosts.tmpl") {
+	if !util.IsFile(path.Join(buildconfig.SYSCONFDIR(), "warewulf/hosts.tmpl")) {
 		wwlog.Printf(wwlog.WARN, "Template not found, not updating host file\n")
 		return nil
 	}
@@ -43,7 +45,7 @@ func Configure(show bool) error {
 		os.Exit(1)
 	}
 
-	tmpl, err := template.ParseFiles("/etc/warewulf/hosts.tmpl")
+	tmpl, err := template.ParseFiles(path.Join(buildconfig.SYSCONFDIR(), "warewulf/hosts.tmpl"))
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not parse hosts template: %s\n", err)
 		os.Exit(1)
