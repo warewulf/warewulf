@@ -14,13 +14,15 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-
-	// Checking if container flag was set, then overwriting OptRoot
-	kernelVersion := args[0]
-	kernelName := kernelVersion
-	if len(args) > 1 {
-		kernelName = args[1]
+	if len(args) == 0 && !OptDetect {
+		wwlog.Printf(wwlog.ERROR, "the '--detect' flag is needed, if no kernel version is suppiled")
+		os.Exit(1)
 	}
+	if OptDetect && (OptRoot == "" || OptContainer == "") {
+		wwlog.Printf(wwlog.ERROR, "the '--detect flag needs the '--container' or '--root' flag")
+		os.Exit(1)
+	}
+	// Checking if container flag was set, then overwriting OptRoot
 	if OptContainer != "" {
 		if container.ValidSource(OptContainer) {
 			OptRoot = container.RootFsDir(OptContainer)
@@ -28,6 +30,24 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Printf(wwlog.ERROR, " %s is not a valid container", OptContainer)
 			os.Exit(1)
 		}
+	}
+
+	var kernelVersion string
+	var err error
+	if len(args) > 0 {
+		kernelVersion = args[0]
+	} else {
+		kernelVersion, err = kernel.FindKernelVersion(OptRoot)
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "could not detect kernel under %s\n", OptRoot)
+			os.Exit(1)
+		}
+	}
+	kernelName := kernelVersion
+	if len(args) > 1 {
+		kernelName = args[1]
+	} else if OptDetect && (OptContainer != "") {
+		kernelName = OptContainer
 	}
 	output, err := kernel.Build(kernelVersion, kernelName, OptRoot)
 	if err != nil {
