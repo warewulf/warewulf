@@ -6,14 +6,15 @@ import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/exec"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/imprt"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/list"
+	"github.com/hpcng/warewulf/internal/app/wwctl/container/show"
 	"github.com/spf13/cobra"
 )
 
 var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:   "container COMMAND [OPTIONS]",
-		Short: "Container / VNFS image management",
+		Use:                   "container COMMAND [OPTIONS]",
+		Short:                 "Container / VNFS image management",
 		Long: "Starting with version 4, Warewulf uses containers to build the bootable VNFS\n" +
 			"node images. These commands will help you import, manage, and transform\n" +
 			"containers into bootable Warewulf VNFS images.",
@@ -27,6 +28,8 @@ func init() {
 	baseCmd.AddCommand(imprt.GetCommand())
 	baseCmd.AddCommand(exec.GetCommand())
 	baseCmd.AddCommand(delete.GetCommand())
+	baseCmd.AddCommand(show.GetCommand())
+
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
