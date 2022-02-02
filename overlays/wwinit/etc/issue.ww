@@ -1,4 +1,4 @@
-ode: {{.Id}}
+Node: {{.Id}}
 Container: {{.Container}}
 ipmi: {{.IpmiIpaddr}}
 {{range $devname, $netdev := .NetDevs}}
