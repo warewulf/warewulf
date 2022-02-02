@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 
 	"gopkg.in/yaml.v2"
@@ -17,7 +17,7 @@ var ConfigFile string
 
 func init() {
 	if ConfigFile == "" {
-		ConfigFile = path.Join(buildconfig.SYSCONFDIR(), "warewulf/nodes.conf")
+		ConfigFile = path.Join(warewulfconf.Config("WWCONFDIR"), "/nodes.conf")
 	}
 }
 

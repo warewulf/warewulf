@@ -2,8 +2,6 @@ package warewulfconf
 
 const defaultPort int = 9983
 
-var defaultDataStore string = "/var/lib/warewulf"
-
 func defaultConfig() *ControllerConf {
 	Warewulf := &WarewulfConf{
 		Port:              defaultPort,
@@ -11,7 +9,7 @@ func defaultConfig() *ControllerConf {
 		UpdateInterval:    60,
 		AutobuildOverlays: true,
 		Syslog:            false,
-		DataStore:         defaultDataStore,
+		DataStore:         Config("SRVDIR"),
 	}
 	Dhcp := &DhcpConf{
 		Enabled:     true,
@@ -23,7 +21,7 @@ func defaultConfig() *ControllerConf {
 	}
 	Tftp := &TftpConf{
 		Enabled:     true,
-		TftpRoot:    "/var/lib/tftpboot",
+		TftpRoot:    Config("TFTPDIR"),
 		SystemdName: "tftp",
 	}
 	Nfs := &NfsConf{

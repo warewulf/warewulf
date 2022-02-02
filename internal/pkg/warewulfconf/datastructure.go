@@ -1,6 +1,8 @@
 package warewulfconf
 
 import (
+	"path"
+
 	"github.com/creasty/defaults"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -12,11 +14,14 @@ type ControllerConf struct {
 	Netmask  string        `yaml:"netmask"`
 	Network  string        `yaml:"network,omitempty"`
 	Fqdn     string        `yaml:"fqdn,omitempty"`
+	Chroots  string        `yaml:"chroots,omitempty"`
+	Overlays string        `yaml:"overlays,omitempty"`
 	Warewulf *WarewulfConf `yaml:"warewulf"`
 	Dhcp     *DhcpConf     `yaml:"dhcp"`
 	Tftp     *TftpConf     `yaml:"tftp"`
 	Nfs      *NfsConf      `yaml:"nfs"`
-	current  bool
+
+	current bool
 }
 
 type WarewulfConf struct {
@@ -25,7 +30,7 @@ type WarewulfConf struct {
 	UpdateInterval    int    `yaml:"update interval"`
 	AutobuildOverlays bool   `yaml:"autobuild overlays"`
 	Syslog            bool   `yaml:"syslog"`
-	DataStore         string `yaml:"datastore"`
+	DataStore         string `yaml:"datastore,omitempty"`
 }
 
 type DhcpConf struct {
@@ -70,7 +75,6 @@ func (s *NfsConf) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-
 func init() {
 	if !util.IsFile(ConfigFile) {
 		wwlog.Printf(wwlog.ERROR, "Configuration file not found: %s\n", ConfigFile)
@@ -82,8 +86,25 @@ func init() {
 	}
 }
 
-// Waste processor cycles to make code more readable
-
-func DataStore() string {
-	return cachedConf.Warewulf.DataStore
+// Global application and server configuration GET function
+func Config(key string) string {
+	// Simplify access to other configuration settings here.
+	switch key {
+	case "datastore":
+		value := path.Join(cachedConf.Warewulf.DataStore, buildData["WAREWULF"])
+		wwlog.Printf(wwlog.DEBUG, "%s = '%s'\n", key, value)
+		return value
+	case "tftproot":
+		value := path.Join(cachedConf.Tftp.TftpRoot, buildData["WAREWULF"])
+		wwlog.Printf(wwlog.DEBUG, "%s = '%s'\n", key, value)
+		return value
+	}
+	// Return data from the build configuration map
+	if value, exists := buildData[key]; exists {
+		wwlog.Printf(wwlog.DEBUG, "%s = '%s'\n", key, value)
+		return value
+	} else {
+		wwlog.Printf(wwlog.ERROR, "%s is undefined\n", key)
+		return "UNDEF"
+	}
 }

@@ -8,7 +8,6 @@ import (
 	"path"
 
 	"github.com/brotherpowers/ipsubnet"
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 
 	"gopkg.in/yaml.v2"
@@ -20,7 +19,7 @@ var ConfigFile string
 
 func init() {
 	if ConfigFile == "" {
-		ConfigFile = path.Join(buildconfig.SYSCONFDIR(), "warewulf/warewulf.conf")
+		ConfigFile = path.Join(Config("WWCONFIGDIR"), "warewulf.conf")
 	}
 }
 
@@ -52,6 +51,11 @@ func New() (ControllerConf, error) {
 		if ret.Netmask == "" {
 			wwlog.Printf(wwlog.ERROR, "Netmask is not configured in warewulfd.conf\n")
 			return ret, errors.New("no netmask")
+		}
+
+		if ret.Tftp.TftpRoot == "" {
+			wwlog.Printf(wwlog.ERROR, "Tftp root directory is not configured\n")
+			return ret, errors.New("no tftp root directory")
 		}
 
 		if ret.Network == "" {

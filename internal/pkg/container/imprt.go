@@ -9,13 +9,13 @@ import (
 	"github.com/containers/storage/drivers/copy"
 	"github.com/pkg/errors"
 
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/oci"
 	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 )
 
 func ImportDocker(uri string, name string, sCtx *types.SystemContext) error {
-	OciBlobCacheDir := 	warewulfconf.DataStore() + "/oci"
+	OciBlobCacheDir := path.Join(warewulfconf.Config("datastore"), "oci")
 
 	err := os.MkdirAll(OciBlobCacheDir, 0755)
 	if err != nil {

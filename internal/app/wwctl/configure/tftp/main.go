@@ -5,13 +5,14 @@ import (
 	"os"
 	"path"
 
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/staticfiles"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 )
+
+var tftpdir string = warewulfconf.Config("tftproot")
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	return Configure(SetShow)
@@ -24,38 +25,20 @@ func Configure(show bool) error {
 		os.Exit(1)
 	}
 
-	if buildconfig.TFTPDIR() == "" {
-		wwlog.Printf(wwlog.ERROR, "Tftp root directory is not configured by build\n")
-		os.Exit(1)
-	}
-
-	err = os.MkdirAll(path.Join(buildconfig.TFTPDIR(), "warewulf"), 0755)
+	err = os.MkdirAll(tftpdir, 0755)
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "%s\n", err)
 		os.Exit(1)
 	}
 
 	if !show {
-		fmt.Printf("Writing PXE files to: %s\n", path.Join(buildconfig.TFTPDIR(), "warewulf"))
-		err = staticfiles.WriteData("files/tftp/x86.efi", path.Join(buildconfig.TFTPDIR(), "warewulf/x86.efi"))
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "%s\n", err)
-			os.Exit(1)
-		}
-		err = staticfiles.WriteData("files/tftp/i386.efi", path.Join(buildconfig.TFTPDIR(), "warewulf/i386.efi"))
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "%s\n", err)
-			os.Exit(1)
-		}
-		err = staticfiles.WriteData("files/tftp/i386.kpxe", path.Join(buildconfig.TFTPDIR(), "warewulf/i386.kpxe"))
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "%s\n", err)
-			os.Exit(1)
-		}
-		err = staticfiles.WriteData("files/tftp/arm64.efi", path.Join(buildconfig.TFTPDIR(), "warewulf/arm64.efi"))
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "%s\n", err)
-			os.Exit(1)
+		fmt.Printf("Writing PXE files to: %s\n", tftpdir)
+		for _, f := range [4]string{"x86.efi", "i386.efi", "i386.kpxe", "arm64.efi"} {
+			err = staticfiles.WriteData(path.Join("files/tftp", f), path.Join(tftpdir, f))
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				os.Exit(1)
+			}
 		}
 
 		fmt.Printf("Enabling and restarting the TFTP services\n")
