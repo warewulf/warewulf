@@ -1,0 +1,8 @@
+Node: {{.Id}}
+Container: {{.Container}}
+ipmi: {{.IpmiIpaddr}}
+{{range $devname, $netdev := .NetDevs}}
+{{$devname}}: {{$netdev.Device}}
+{{$devname}}: {{$netdev.IpCIDR}}
+{{$devname}}: {{$netdev.Hwaddr}}
+{{end}}
