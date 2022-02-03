@@ -19,22 +19,26 @@ import (
 )
 
 type TemplateStruct struct {
-	Id            string
-	Hostname      string
-	ClusterName   string
-	Container     string
-	Init          string
-	Root          string
-	IpmiIpaddr    string
-	IpmiNetmask   string
-	IpmiPort      string
-	IpmiGateway   string
-	IpmiUserName  string
-	IpmiPassword  string
-	IpmiInterface string
-	NetDevs       map[string]*node.NetDevs
-	Keys          map[string]string
-	AllNodes      []node.NodeInfo
+	Id             string
+	Hostname       string
+	ClusterName    string
+	Container      string
+	KernelVersion  string
+	KernelArgs     string
+	Init           string
+	Root           string
+	IpmiIpaddr     string
+	IpmiNetmask    string
+	IpmiPort       string
+	IpmiGateway    string
+	IpmiUserName   string
+	IpmiPassword   string
+	IpmiInterface  string
+	RuntimeOverlay string
+	SystemOverlay  string
+	NetDevs        map[string]*node.NetDevs
+	Keys           map[string]string
+	AllNodes       []node.NodeInfo
 }
 
 /*
@@ -161,6 +165,8 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 	tstruct.Hostname = nodeInfo.Id.Get()
 	tstruct.ClusterName = nodeInfo.ClusterName.Get()
 	tstruct.Container = nodeInfo.ContainerName.Get()
+	tstruct.KernelVersion = nodeInfo.KernelVersion.Get()
+	tstruct.KernelArgs = nodeInfo.KernelArgs.Get()
 	tstruct.Init = nodeInfo.Init.Get()
 	tstruct.Root = nodeInfo.Root.Get()
 	tstruct.IpmiIpaddr = nodeInfo.IpmiIpaddr.Get()
@@ -170,6 +176,8 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 	tstruct.IpmiUserName = nodeInfo.IpmiUserName.Get()
 	tstruct.IpmiPassword = nodeInfo.IpmiPassword.Get()
 	tstruct.IpmiInterface = nodeInfo.IpmiInterface.Get()
+	tstruct.RuntimeOverlay = nodeInfo.RuntimeOverlay.Get()
+	tstruct.SystemOverlay = nodeInfo.SystemOverlay.Get()
 	tstruct.NetDevs = make(map[string]*node.NetDevs)
 	tstruct.Keys = make(map[string]string)
 	for devname, netdev := range nodeInfo.NetDevs {
@@ -262,16 +270,16 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 
 			//		} else if b, _ := regexp.MatchString(`\.ww[a-zA-Z0-9\-\._]*$`, location); b {
 			//			wwlog.Printf(wwlog.DEBUG, "Ignoring WW template file: %s\n", location)
-			} else if info.Mode()&os.ModeSymlink == os.ModeSymlink {
-				wwlog.Printf(wwlog.DEBUG, "Found symlink %s\n", location)
-				destination, err := os.Readlink(location)
-				if err != nil {
-					wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				}
-				err = os.Symlink(destination, path.Join(tmpDir, location))
-				if err != nil {
-					wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				}
+		} else if info.Mode()&os.ModeSymlink == os.ModeSymlink {
+			wwlog.Printf(wwlog.DEBUG, "Found symlink %s\n", location)
+			destination, err := os.Readlink(location)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+			}
+			err = os.Symlink(destination, path.Join(tmpDir, location))
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+			}
 		} else {
 
 			err := util.CopyFile(location, path.Join(tmpDir, location))
