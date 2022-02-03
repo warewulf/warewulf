@@ -49,13 +49,13 @@ func Build(name string, buildForce bool) error {
 		wwlog.Printf(wwlog.VERBOSE, "Using PIGZ to compress the container: %s\n", compressor)
 	}
 	var cmd string
-	_, err = os.Stat(path.Join(rootfsPath, "./.ww4/exclude"))
+	_, err = os.Stat(path.Join(rootfsPath, "./etc/warewulf/exclude"))
 	if os.IsNotExist(err) {
 		wwlog.Printf(wwlog.DEBUG, "Building VNFS image: '%s' -> '%s'\n", rootfsPath, imagePath)
-		cmd = fmt.Sprintf("cd %s; find . | cpio --quiet -o -H newc | %s -c > \"%s\"", rootfsPath, compressor, imagePath)
+		cmd = fmt.Sprintf("cd %s; find . -xdev -xautofs | cpio --quiet -o -H newc | %s -c > \"%s\"", rootfsPath, compressor, imagePath)
 	} else {
 		wwlog.Printf(wwlog.DEBUG, "Building VNFS image with excludes: '%s' -> '%s'\n", rootfsPath, imagePath)
-		cmd = fmt.Sprintf("cd %s; find . | grep -v -f .ww4/exclude | cpio --quiet -o -H newc | %s -c > \"%s\"", rootfsPath, compressor, imagePath)
+		cmd = fmt.Sprintf("cd %s; find . -xdev -xautofs | grep -v -f ./etc/warewulf/exclude | cpio --quiet -o -H newc | %s -c > \"%s\"", rootfsPath, compressor, imagePath)
 	}
 	wwlog.Printf(wwlog.DEBUG, "RUNNING: %s\n", cmd)
 	err = exec.Command("/bin/sh", "-c", cmd).Run()
