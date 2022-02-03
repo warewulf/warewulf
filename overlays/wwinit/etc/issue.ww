@@ -1,8 +1,12 @@
 Node: {{.Id}}
 Container: {{.Container}}
-ipmi: {{.IpmiIpaddr}}
+Kernel: {{.KernelVersion}}
+Kernelargs: {{.KernelArgs}}
+wwinit overlay: {{.SystemOverlay}}
+genric overlay: {{.RuntimeOverlay}}
+{{if .IpmiIpaddr }}Ipmi: {{.IpmiIpaddr}} {{- end -}}
 {{range $devname, $netdev := .NetDevs}}
 {{$devname}}: {{$netdev.Device}}
 {{$devname}}: {{$netdev.IpCIDR}}
 {{$devname}}: {{$netdev.Hwaddr}}
-{{end}}
+{{- end}}
