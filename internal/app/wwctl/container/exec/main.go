@@ -18,6 +18,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	containerName := args[0]
 	var allargs []string
+	if len(args) == 1 {
+		allargs = append(allargs, "/usr/bin/bash")
+	}
 
 	if !container.ValidSource(containerName) {
 		wwlog.Printf(wwlog.ERROR, "Unknown Warewulf container: %s\n", containerName)
