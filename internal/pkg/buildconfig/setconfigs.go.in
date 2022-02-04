@@ -1,0 +1,16 @@
+package buildconfig
+
+func init() {
+    bindir = "@BINDIR@"
+    sysconfdir = "@SYSCONFDIR@"
+    localstatedir = "@LOCALSTATEDIR@"
+    srvdir = "@SRVDIR@"
+    tftpdir = "@TFTPDIR@"
+    firewallddir = "@FIREWALLDDIR@"
+    systemddir = "@SYSTEMDDIR@"
+    wwoverlaydir = "@WWOVERLAYDIR@"
+    wwchrootdir = "@WWCHROOTDIR@"
+    wwprovisiondir = "@WWPROVISIONDIR@"
+    version = "@VERSION@"
+    release = "@RELEASE@"
+}

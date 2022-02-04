@@ -99,9 +99,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Printf(wwlog.ERROR, "VNFS Name exists, specify --force, --update, or choose a different name: %s\n", name)
 			os.Exit(1)
 		}
-	}
-
-	if strings.HasPrefix(uri, "docker://") || strings.HasPrefix(uri, "docker-daemon://") {
+	} else if strings.HasPrefix(uri, "docker://") || strings.HasPrefix(uri, "docker-daemon://") {
 		sCtx, err := getSystemContext()
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
@@ -120,6 +118,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			_ = container.DeleteSource(name)
 			os.Exit(1)
 		}
+	} else {
+		wwlog.Printf(wwlog.ERROR, "Invalid dir or uri: %s\n", uri)
+		os.Exit(1)
 	}
 
 	fmt.Printf("Updating the container's /etc/resolv.conf\n")

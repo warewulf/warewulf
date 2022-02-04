@@ -12,5 +12,14 @@
 /man_page
 
 # other created files
+/man_pages
+/bash_completion.d
 /usr/share/man/man1/
 /etc/bash_completion.d/
+warewulf.spec
+internal/pkg/buildconfig/setconfigs.go
+include/systemd/warewulfd.service
+_dist/
+config
+warewulf-*.tar.gz
+Defaults.mk

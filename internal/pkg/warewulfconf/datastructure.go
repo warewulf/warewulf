@@ -1,14 +1,13 @@
 package warewulfconf
 
 import (
+	"github.com/creasty/defaults"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
-var ConfigFile = "/etc/warewulf/warewulf.conf"
-
 type ControllerConf struct {
-	Comment  string        `yaml:"comment"`
+	Comment  string        `yaml:"comment,omitempty"`
 	Ipaddr   string        `yaml:"ipaddr"`
 	Netmask  string        `yaml:"netmask"`
 	Network  string        `yaml:"network,omitempty"`
@@ -17,14 +16,16 @@ type ControllerConf struct {
 	Dhcp     *DhcpConf     `yaml:"dhcp"`
 	Tftp     *TftpConf     `yaml:"tftp"`
 	Nfs      *NfsConf      `yaml:"nfs"`
+	current  bool
 }
 
 type WarewulfConf struct {
-	Port              int  `yaml:"port"`
-	Secure            bool `yaml:"secure"`
-	UpdateInterval    int  `yaml:"update interval"`
-	AutobuildOverlays bool `yaml:"autobuild overlays"`
-	Syslog            bool `yaml:"syslog"`
+	Port              int    `yaml:"port"`
+	Secure            bool   `yaml:"secure"`
+	UpdateInterval    int    `yaml:"update interval"`
+	AutobuildOverlays bool   `yaml:"autobuild overlays"`
+	Syslog            bool   `yaml:"syslog"`
+	DataStore         string `yaml:"datastore"`
 }
 
 type DhcpConf struct {
@@ -33,7 +34,7 @@ type DhcpConf struct {
 	RangeStart  string `yaml:"range start"`
 	RangeEnd    string `yaml:"range end"`
 	SystemdName string `yaml:"systemd name"`
-	ConfigFile  string `yaml:"config file"`
+	ConfigFile  string `yaml:"config file,omitempty"`
 }
 
 type TftpConf struct {
@@ -43,16 +44,46 @@ type TftpConf struct {
 }
 
 type NfsConf struct {
-	Enabled     bool     `yaml:"enabled"`
-	Exports     []string `yaml:"exports"`
-	SystemdName string   `yaml:"systemd name"`
+	Enabled         bool             `default:"true" yaml:"enabled"`
+	Exports         []string         `yaml:"exports"`
+	ExportsExtended []*NfsExportConf `yaml:"export paths"`
+	SystemdName     string           `yaml:"systemd name"`
 }
 
+type NfsExportConf struct {
+	Path          string `yaml:"path"`
+	ExportOptions string `yaml:"export options"`
+	MountOptions  string `yaml:"mount options"`
+	Mount         bool   `yaml:"mount"`
+}
+
+func (s *NfsConf) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	if err := defaults.Set(s); err != nil {
+		return err
+	}
+
+	type plain NfsConf
+	if err := unmarshal((*plain)(s)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+
 func init() {
-	//TODO: Check to make sure nodes.conf is found
 	if !util.IsFile(ConfigFile) {
 		wwlog.Printf(wwlog.ERROR, "Configuration file not found: %s\n", ConfigFile)
 		// fail silently as this also called by bash_completion
-		return
 	}
+	_, err := New()
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Could not read Warewulf configuration file: %s\n", err)
+	}
+}
+
+// Waste processor cycles to make code more readable
+
+func DataStore() string {
+	return cachedConf.Warewulf.DataStore
 }

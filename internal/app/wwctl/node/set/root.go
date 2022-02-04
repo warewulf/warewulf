@@ -13,12 +13,11 @@ import (
 var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:   "set [OPTIONS] PATTERN [PATTERN ...]",
-		Short: "Configure node properties",
-		Long: "This command sets configuration properties for nodes matching PATTERN.\n\n" +
-			"Note: use the string 'UNSET' to remove a configuration",
-		Args: cobra.MinimumNArgs(1),
-		RunE: CobraRunE,
+		Use:                   "set [OPTIONS] PATTERN [PATTERN ...]",
+		Short:                 "Configure node properties",
+		Long:                  "This command sets configuration properties for nodes matching PATTERN.\n\nNote: use the string 'UNSET' to remove a configuration",
+		Args:                  cobra.MinimumNArgs(1),
+		RunE:                  CobraRunE,
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp
@@ -37,16 +36,19 @@ var (
 	SetContainer      string
 	SetKernel         string
 	SetKernelArgs     string
+	SetNetName        string
 	SetNetDev         string
 	SetIpaddr         string
 	SetNetmask        string
 	SetGateway        string
 	SetHwaddr         string
 	SetType           string
+	SetNetOnBoot      string
+	SetNetDefault     string
 	SetNetDevDel      bool
-	SetNetDevDefault  bool
 	SetClusterName    string
 	SetIpxe           string
+	SetInitOverlay    string
 	SetRuntimeOverlay string
 	SetSystemOverlay  string
 	SetIpmiIpaddr     string
@@ -69,6 +71,7 @@ var (
 	SetKey            string
 	SetValue          string
 	SetKeyDel         bool
+	SetAssetKey       string
 )
 
 func init() {
@@ -92,16 +95,18 @@ func init() {
 	baseCmd.PersistentFlags().StringVar(&SetIpxe, "ipxe", "", "Set the node's iPXE template name")
 	baseCmd.PersistentFlags().StringVarP(&SetInit, "init", "i", "", "Define the init process to boot the container")
 	baseCmd.PersistentFlags().StringVar(&SetRoot, "root", "", "Define the rootfs")
+	baseCmd.PersistentFlags().StringVar(&SetAssetKey, "assetkey", "", "Set the node's Asset tag (key)")
+	baseCmd.PersistentFlags().StringVarP(&SetInitOverlay, "wwinit", "O", "", "Set the node's initialization overlay")
 	baseCmd.PersistentFlags().StringVarP(&SetRuntimeOverlay, "runtime", "R", "", "Set the node's runtime overlay")
 	if err := baseCmd.RegisterFlagCompletionFunc("runtime", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		list, _ := overlay.FindRuntimeOverlays()
+		list, _ := overlay.FindOverlays()
 		return list, cobra.ShellCompDirectiveNoFileComp
 	}); err != nil {
 		log.Println(err)
 	}
 	baseCmd.PersistentFlags().StringVarP(&SetSystemOverlay, "system", "S", "", "Set the node's system overlay")
 	if err := baseCmd.RegisterFlagCompletionFunc("system", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		list, _ := overlay.FindSystemOverlays()
+		list, _ := overlay.FindOverlays()
 		return list, cobra.ShellCompDirectiveNoFileComp
 	}); err != nil {
 		log.Println(err)
@@ -127,14 +132,18 @@ func init() {
 	}); err != nil {
 		log.Println(err)
 	}
-	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdev", "N", "", "Define the network device to configure")
+	baseCmd.PersistentFlags().StringVarP(&SetNetName, "netname", "n", "", "Define the network name to configure")
+	baseCmd.PersistentFlags().StringVarP(&SetNetName, "netdev", "N", "", "Alias to --netname")
+	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdevice", "D", "", "Define the network device")
 	baseCmd.PersistentFlags().StringVarP(&SetIpaddr, "ipaddr", "I", "", "Set the node's network device IP address")
 	baseCmd.PersistentFlags().StringVarP(&SetNetmask, "netmask", "M", "", "Set the node's network device netmask")
 	baseCmd.PersistentFlags().StringVarP(&SetGateway, "gateway", "G", "", "Set the node's network device gateway")
 	baseCmd.PersistentFlags().StringVarP(&SetHwaddr, "hwaddr", "H", "", "Set the node's network device HW address")
 	baseCmd.PersistentFlags().StringVarP(&SetType, "type", "T", "", "Set the node's network device type")
+	baseCmd.PersistentFlags().StringVar(&SetNetOnBoot, "onboot", "", "Enable/disable device (yes/no)")
+	baseCmd.PersistentFlags().StringVar(&SetNetDefault, "default", "", "Enable/disable device as default (yes/no)")
+
 	baseCmd.PersistentFlags().BoolVar(&SetNetDevDel, "netdel", false, "Delete the node's network device")
-	baseCmd.PersistentFlags().BoolVar(&SetNetDevDefault, "netdefault", false, "Set this network to be default")
 
 	baseCmd.PersistentFlags().StringVarP(&SetKey, "key", "k", "", "Define custom key")
 	baseCmd.PersistentFlags().BoolVar(&SetKeyDel, "keydel", false, "Delete custom key")

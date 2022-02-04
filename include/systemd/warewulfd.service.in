@@ -1,0 +1,17 @@
+[Unit]
+Description=Warewulf cluster management daemon
+Documentation=https://warewulf.hpcng.org/
+After=network-online.target
+AssertFileIsExecutable=@BINDIR@/wwctl
+
+[Service]
+Type=simple
+User=root
+Group=root
+
+ExecStart=@BINDIR@/wwctl server start
+PIDFile=/var/run/warewulfd.pid
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

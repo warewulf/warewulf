@@ -22,8 +22,9 @@ func (controller *ControllerConf) Persist() error {
 
 	defer file.Close()
 
-	_, err = file.WriteString(string(out))
+	_, err = file.WriteString(string(out)+"\n")
 	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Unable to write to warewulf.conf\n")
 		return err
 	}
 

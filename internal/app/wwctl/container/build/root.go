@@ -12,7 +12,7 @@ var (
 		Short: "(Re)build a bootable VNFS image",
 		Long:  "This command will build a bootable VNFS image from imported CONTAINER image(s).",
 		RunE:  CobraRunE,
-		Args:  cobra.MinimumNArgs(1),
+		Args:  cobra.ArbitraryArgs,
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp

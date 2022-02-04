@@ -1,5 +1,11 @@
 %global wwgroup warewulf
-%{!?wwshared: %global wwshared %{_localstatedir}}
+%if 0%{?sle_version}
+%global tftpdir "/srv/tftpboot"
+%global srvdir "/srv"
+%else
+%global tftpdir "/var/lib/tftpboot"
+%global srvdir "%{_localstatedir}/warewulf/srv"
+%endif
 %define debug_package %{nil}
 
 Name: warewulf
@@ -8,7 +14,7 @@ Version: @VERSION@
 Release: @RELEASE@%{?dist}
 License: BSD-3-Clause
 URL:     https://github.com/hpcng/warewulf
-Source:  https://github.com/hpcng/warewulf/archive/refs/tags/v%{version}.tar.gz
+Source:  https://github.com/hpcng/warewulf/releases/download/v%{version}/warewulf-%{version}.tar.gz
 
 ExclusiveOS: linux
 
@@ -51,12 +57,23 @@ system for large clusters of bare metal and/or virtual systems.
 
 
 %build
-make all
+make genconfig PREFIX=/usr \
+    SRVDIR=%{srvdir} \
+    LOCALSTATEDIR=%{_localstatedir} \
+    SYSCONFDIR=%{_sysconfdir} \
+    DATADIR=%{_datadir} \
+    MANDIR=%{_mandir} \
+    BINDIR=%{_bindir} \
+    TFTPDIR=%{tftpdir} \
+    SYSTEMDDIR=%{_unitdir} \
+    MANDIR=%{_mandir} \
+    BASH_COMPLETION=/etc/bash_completion.d/ \
+    FIREWALLDDIR=/usr/lib/firewalld/services
 
+make
 
 %install
-%make_install DESTDIR=%{buildroot} %{?mflags_install}
-
+make install DESTDIR=%{buildroot}
 
 %pre
 getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
@@ -81,21 +98,27 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %config(noreplace) %attr(0640,-,-) %{_sysconfdir}/%{name}/nodes.conf
 %{_sysconfdir}/bash_completion.d/warewulf
 
-%dir %{wwshared}/%{name}
-%{wwshared}/%{name}/overlays/runtime/*
-%{wwshared}/%{name}/overlays/system/*
+%dir %{_localstatedir}/warewulf
+%{_localstatedir}/warewulf/chroots
+%{_localstatedir}/warewulf/overlays
+%{srvdir}
 
 %attr(-, root, root) %{_bindir}/wwctl
-%if 0%{?rhel}
 %attr(-, root, root) %{_prefix}/lib/firewalld/services/warewulf.xml
-%else
-# sle_version
-%attr(-, root, root) %{_libexecdir}/firewalld/services/warewulf.xml
-%endif
 %attr(-, root, root) %{_unitdir}/warewulfd.service
 %attr(-, root, root) %{_mandir}/man1/wwctl*
 
 %changelog
+* Sat Jan 15 2022 Gregory Kurtzer <gmkurtzer@gmail.com> - 4.2.0-1
+- Integrated genconfig Make options
+- Cleaned up SPEC to use default RPM macros
+
+* Tue Jan 11 2022 Jeremy Siadal <jeremy.c.siadal@intel.com> - 4.2.0-1
+- Merge overlay subdirectories
+- Add configuration options to make
+- Relocate tftpboot for OpenSUSE
+- Remove libexecdir macro; changing in OpenSUSE 15.4
+
 * Mon Nov 1 2021 Jeremy Siadal <jeremy.c.siadal@intel.com> - 4.2.0-1
 - Add support for OpenSUSE
 - Update file attribs
