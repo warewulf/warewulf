@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. /warewulf/config
+. @WWCLIENTDIR@/config
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 

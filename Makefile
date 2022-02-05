@@ -1,39 +1,69 @@
 .PHONY: all
 
+# Linux distro (set to /etc/os-release ID)
+OS ?= rocky
+
+# List of variables to save or replace in files
+VARLIST := OS
+
 -include Defaults.mk
 
+# Project Information
+VARLIST += WAREWULF VERSION RELEASE
+WAREWULF ?= warewulf
 VERSION ?= 4.2.0
 GIT_TAG := $(shell test -e .git && git describe --tags --long --first-parent --always)
 
 ifndef $(GIT_TAG)
-    RELEASE ?= 1.git_$(GIT_TAG)
+  ifdef $(filter $(OS),ubuntu debian)
+    RELEASE ?= 1.git_$(subst -,+,$(GIT_TAG))
+  else
+    RELEASE ?= 1.git_$(subst -,_,$(GIT_TAG))
+  endif
 else
-	RELEASE ?= 1
+  RELEASE ?= 1
 endif
 
-# System locations
+# System directory paths
+VARLIST += PREFIX BINDIR SYSCONFDIR SRVDIR DATADIR MANDIR DOCDIR LOCALSTATEDIR SHAREDSTATEDIR
 PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
 SYSCONFDIR ?= $(PREFIX)/etc
-SRVDIR ?= $(PREFIX)/srv
+SRVDIR ?= /srv
 DATADIR ?= $(PREFIX)/share
 MANDIR ?= $(DATADIR)/man
+<<<<<<< HEAD
 LOCALSTATEDIR ?= $(PREFIX)/var
 WWCLIENTLOC ?= /warewulf/bin
 
+=======
+DOCDIR ?= $(DATADIR)/doc
+LOCALSTATEDIR ?= /var
+SHAREDSTATEDIR ?= /var/local
+
+# OS-Specific Service Locations
+VARLIST += TFTPDIR FIREWALLDDIR SYSTEMDDIR
+ifeq ($(OS),suse)
+TFTPDIR ?= /srv/tftpboot
+endif
+ifeq ($(OS),ubuntu)
+TFTPDIR ?= /srv/tftp
+endif
+>>>>>>> 7b0a40a... Updates specfile to match distro guidelines. Suppots modifying client directory path at build time.
 TFTPDIR ?= /var/lib/tftpboot
 FIREWALLDDIR ?= /usr/lib/firewalld/services
 SYSTEMDDIR ?= /usr/lib/systemd/system
-BASH_COMPLETION ?= /etc/bash_completion.d/
+BASHCOMPDIR ?= /etc/bash_completion.d
 
-# Warewulf locations
-WWPROVISIONDIR = $(SRVDIR)/warewulf
-WWOVERLAYDIR = $(LOCALSTATEDIR)/warewulf/overlays
-WWCHROOTDIR = $(LOCALSTATEDIR)/warewulf/chroots
-
-# SuSE
-#TFTPDIR ?= /srv/tftpboot
-#FIREWALLDIR ?= /srv/tftp
+# Warewulf directory paths
+VARLIST += WWCLIENTDIR WWCONFIGDIR  WWPROVISIONDIR WWOVERLAYDIR WWCHROOTDIR WWTFTPDIR WWDOCDIR
+WWCONFIGDIR := $(SYSCONFDIR)/$(WAREWULF)
+WWPROVISIONDIR := $(SHAREDSTATEDIR)/$(WAREWULF)
+WWOVERLAYDIR := $(SHAREDSTATEDIR)/$(WAREWULF)/overlays
+WWCHROOTDIR := $(SHAREDSTATEDIR)/$(WAREWULF)/chroots
+WWTFTPDIR := $(TFTPDIR)/$(WAREWULF)
+WWDOCDIR := $(DOCDIR)/$(WAREWULF)
+WWCLIENTDIR ?= /warewulf
 
 # auto installed tooling
 TOOLS_DIR := .tools
@@ -51,7 +81,7 @@ GOPROXY ?= https://proxy.golang.org
 export GOPROXY
 
 # built tags needed for wwbuild binary
-WW_BUILD_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
+WW_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
 all: config vendor wwctl wwclient bash_completion.d man_pages
 
@@ -68,10 +98,8 @@ $(GO_TOOLS_BIN):
 $(GOLANGCI_LINT):
 	@curl -qq -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(TOOLS_BIN) $(GOLANGCI_LINT_VERSION)
 
-
 setup: vendor $(TOOLS_DIR) setup_tools
 
-# vendor
 vendor:
 	go mod tidy -v
 	go mod vendor
@@ -81,27 +109,11 @@ $(TOOLS_DIR):
 
 # Pre-build steps for source, such as "go generate"
 config:
-	set -x ;\
-	for i in `find . -type f -name "*.in" -not -path "./vendor/*"`; do \
-		NAME=`echo $$i | sed -e 's,\.in,,'`; \
-		sed -e 's,@BINDIR@,$(BINDIR),g' \
-			-e 's,@SYSCONFDIR@,$(SYSCONFDIR),g' \
-			-e 's,@LOCALSTATEDIR@,$(LOCALSTATEDIR),g' \
-			-e 's,@PREFIX@,$(PREFIX),g' \
-			-e 's,@DATADIR@,$(DATADIR),g' \
-			-e 's,@MANDIR@,$(MANDIR),g' \
-			-e 's,@SRVDIR@,$(SRVDIR),g' \
-			-e 's,@TFTPDIR@,$(TFTPDIR),g' \
-			-e 's,@FIREWALLDDIR@,$(FIREWALLDDIR),g' \
-			-e 's,@SYSTEMDDIR@,$(SYSTEMDDIR),g' \
-			-e 's,@BASH_COMPLETION@,$(BASH_COMPLETION),g' \
-			-e 's,@WWOVERLAYDIR@,$(WWOVERLAYDIR),g' \
-			-e 's,@WWCHROOTDIR@,$(WWCHROOTDIR),g' \
-			-e 's,@WWPROVISIONDIR@,$(WWPROVISIONDIR),g' \
-			-e 's,@VERSION@,$(VERSION),g' \
-			-e 's,@WWCLIENTLOC@,$(WWCLIENTLOC),g' \
-			-e 's,@RELEASE@,$(RELEASE),g' $$i > $$NAME; \
-	done
+    # Store configuration for subsequent runs
+	printf " $(foreach V,$(VARLIST),$V := $(strip $($V))\n)" > Defaults.mk
+    # Global variable search and replace for all *.in files
+	find . -type f -name "*.in" -not -path "./vendor/*" \
+		-exec sh -c 'sed -ne "$(foreach V,$(VARLIST),s,@$V@,$(strip $($V)),g;)p" $${0} > $${0%.in}' {} \;
 	touch config
 
 rm_config:
@@ -109,11 +121,10 @@ rm_config:
 
 genconfig: rm_config config
 
-
 # Lint
 lint: setup_tools
 	@echo Running golangci-lint...
-	@$(GOLANGCI_LINT) run --build-tags "$(WW_BUILD_GO_BUILD_TAGS)" --skip-dirs internal/pkg/staticfiles ./...
+	@$(GOLANGCI_LINT) run --build-tags "$(WW_GO_BUILD_TAGS)" --skip-dirs internal/pkg/staticfiles ./...
 
 vet:
 	go vet ./...
@@ -137,98 +148,86 @@ files: all
 	install -d -m 0755 $(DESTDIR)$(BINDIR)
 	install -d -m 0755 $(DESTDIR)$(WWCHROOTDIR)
 	install -d -m 0755 $(DESTDIR)$(WWPROVISIONDIR)
-	install -d -m 0755 $(DESTDIR)$(WWOVERLAYDIR)
-	install -d -m 0755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/warewulf/bin/
-	install -d -m 0755 $(DESTDIR)$(SYSCONFDIR)/warewulf/
-	install -d -m 0755 $(DESTDIR)$(SYSCONFDIR)/warewulf/ipxe
-	install -d -m 0755 $(DESTDIR)$(TFTPDIR)/warewulf/ipxe/
-	install -d -m 0755 $(DESTDIR)$(BASH_COMPLETION)
+	install -d -m 0755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/$(WWCLIENTDIR)
+	install -d -m 0755 $(DESTDIR)$(WWCONFIGDIR)/ipxe
+	install -d -m 0755 $(DESTDIR)$(WWTFTPDIR)/ipxe/
+	install -d -m 0755 $(DESTDIR)$(BASHCOMPDIR)
 	install -d -m 0755 $(DESTDIR)$(MANDIR)/man1
+	install -d -m 0755 $(DESTDIR)$(WWDOCDIR)
 	install -d -m 0755 $(DESTDIR)$(FIREWALLDDIR)
 	install -d -m 0755 $(DESTDIR)$(SYSTEMDDIR)
-	test -f $(DESTDIR)$(SYSCONFDIR)/warewulf/warewulf.conf || install -m 644 etc/warewulf.conf $(DESTDIR)$(SYSCONFDIR)/warewulf/
-	test -f $(DESTDIR)$(SYSCONFDIR)/warewulf/hosts.tmpl || install -m 644 etc/hosts.tmpl $(DESTDIR)$(SYSCONFDIR)/warewulf/
-	test -f $(DESTDIR)$(SYSCONFDIR)/warewulf/nodes.conf || install -m 644 etc/nodes.conf $(DESTDIR)$(SYSCONFDIR)/warewulf/
-	cp -r etc/dhcp $(DESTDIR)$(SYSCONFDIR)/warewulf/
-	cp -r etc/ipxe $(DESTDIR)$(SYSCONFDIR)/warewulf/
-	cp -r overlays/* $(DESTDIR)$(WWOVERLAYDIR)/
+	test -f $(DESTDIR)$(WWCONFIGDIR)/warewulf.conf || install -m 644 etc/warewulf.conf $(DESTDIR)$(WWCONFIGDIR)
+	test -f $(DESTDIR)$(WWCONFIGDIR)/hosts.tmpl || install -m 644 etc/hosts.tmpl $(DESTDIR)$(WWCONFIGDIR)
+	test -f $(DESTDIR)$(WWCONFIGDIR)/nodes.conf || install -m 644 etc/nodes.conf $(DESTDIR)$(WWCONFIGDIR)
+	cp -r etc/dhcp $(DESTDIR)$(WWCONFIGDIR)/
+	cp -r etc/ipxe $(DESTDIR)$(WWCONFIGDIR)/
+	cp -r overlays/wwinit $(DESTDIR)$(WWOVERLAYDIR)/
+	cp -r overlays/generic $(DESTDIR)$(WWOVERLAYDIR)/
+	cp -r overlays/wwclient/* $(DESTDIR)$(WWOVERLAYDIR)/wwinit/$(WWCLIENTDIR)/
 	chmod 755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/init
-	chmod 755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/warewulf/wwinit
+	rm -f $(DESTDIR)$(WWOVERLAYDIR)/wwinit/init.in
+	find $(DESTDIR)$(WWOVERLAYDIR) -type f -name "*.in" -exec rm -f {} \;
+	chmod 755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/$(WWCLIENTDIR)/wwinit
 	chmod 600 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/etc/ssh/ssh*
 	chmod 644 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/etc/ssh/ssh*.pub.ww
 	install -m 0755 wwctl $(DESTDIR)$(BINDIR)
-	install -c -m 0644 include/firewalld/warewulf.xml $(DESTDIR)$(FIREWALLDDIR)
-	install -c -m 0644 include/systemd/warewulfd.service $(DESTDIR)$(SYSTEMDDIR)
-	cp bash_completion.d/warewulf $(DESTDIR)$(BASH_COMPLETION)
+	install -m 0644 include/firewalld/warewulf.xml $(DESTDIR)$(FIREWALLDDIR)
+	install -m 0644 include/systemd/warewulfd.service $(DESTDIR)$(SYSTEMDDIR)
+	install -m 0644 LICENSE.md $(DESTDIR)$(WWDOCDIR)
+	cp bash_completion.d/warewulf $(DESTDIR)$(BASHCOMPDIR)
 	cp man_pages/* $(DESTDIR)$(MANDIR)/man1/
 
 init:
 	systemctl daemon-reload
-	cp -r tftpboot/* $(TFTPDIR)/warewulf/ipxe/
-	restorecon -r $(TFTPDIR)/warewulf
-
-# Overlay file system has changed
-#debfiles: debian
-#	chmod +x $(DESTDIR)$(WWROOT)/warewulf/overlays/system/debian/init
-#	chmod 600 $(DESTDIR)$(WWROOT)/warewulf/overlays/system/debian/etc/ssh/ssh*
-#	chmod 644 $(DESTDIR)$(WWROOT)/warewulf/overlays/system/debian/etc/ssh/ssh*.pub.ww
-#	mkdir -p $(DESTDIR)$(WWROOT)/warewulf/overlays/system/debian/warewulf/bin/
-#	cp wwclient $(DESTDIR)$(WWROOT)/warewulf/overlays/system/debian/warewulf/bin/
+	cp -r tftpboot/* $(WWTFTPDIR)/ipxe/
+	restorecon -r $(WWTFTPDIR)
 
 wwctl:
-	cd cmd/wwctl; GOOS=linux go build -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../wwctl
+	cd cmd/wwctl; GOOS=linux go build -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o ../../wwctl
 
 wwclient:
 	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags "-extldflags -static \
 	 -X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=/etc/warewulf/warewulf.conf'" -o ../../wwclient
 
 install_wwclient: wwclient
-	install -m 0755 wwclient $(DESTDIR)$(WWOVERLAYDIR)/wwinit/$(WWCLIENTLOC)/wwclient
-
+	install -m 0755 wwclient $(DESTDIR)$(WWOVERLAYDIR)/wwinit/$(WWCLIENTDIR)/wwclient
 
 bash_completion:
 	cd cmd/bash_completion && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'\
 	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'"\
-	 -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../bash_completion
+	 -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o ../../bash_completion
 
 bash_completion.d: bash_completion
 	install -d -m 0755 bash_completion.d
-	./bash_completion  bash_completion.d/warewulf
+	./bash_completion bash_completion.d/warewulf
 
 man_page:
 	cd cmd/man_page && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'\
 	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'"\
-	 -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../man_page
+	 -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o ../../man_page
 
 man_pages: man_page
 	install -d man_pages
 	./man_page ./man_pages
 	cd man_pages; for i in wwctl*1; do echo "Compressing manpage: $$i"; gzip --force $$i; done
 
-#config_defaults:
-#	cd cmd/config_defaults && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf' \
-#	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf' \
-#	 -X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.defaultDataStore=$(WWROOT)/warewulf'" \
-#	 -mod vendor -tags "$(WW_BUILD_GO_BUILD_TAGS)" -o ../../config_defaults
-
 dist: vendor config
-	rm -rf .dist/warewulf-$(VERSION)
-	mkdir -p .dist/warewulf-$(VERSION)
-	cp -rap * .dist/warewulf-$(VERSION)/
-	cd .dist; tar -czf ../warewulf-$(VERSION).tar.gz warewulf-$(VERSION)
+	rm -rf .dist/$(WAREWULF)-$(VERSION)
+	mkdir -p .dist/$(WAREWULF)-$(VERSION)
+	cp -rap * .dist/$(WAREWULF)-$(VERSION)/
+	cd .dist; tar -czf ../$(WAREWULF)-$(VERSION).tar.gz $(WAREWULF)-$(VERSION)
 	rm -rf .dist
 
 clean:
 	rm -f wwclient
 	rm -f wwctl
 	rm -rf .dist
-	rm -f warewulf-$(VERSION).tar.gz
+	rm -f $(WAREWULF)-$(VERSION).tar.gz
 	rm -f bash_completion
 	rm -rf bash_completion.d
 	rm -f man_page
 	rm -rf man_pages
 	rm -rf vendor
-#	rm -f config_defaults
 	rm -f config
 	rm -f Defaults.mk
 
