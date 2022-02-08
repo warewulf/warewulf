@@ -8,6 +8,8 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
+	"regexp"
 
 	"github.com/pkg/errors"
 
@@ -227,4 +229,29 @@ func DeleteKernel(name string) error {
 
 	wwlog.Printf(wwlog.VERBOSE, "Removing path: %s\n", fullPath)
 	return os.RemoveAll(fullPath)
+}
+
+func FindKernelVersion(root string) (string, error) {
+	for _, searchPath := range kernelSearchPaths {
+		testPattern := fmt.Sprintf(path.Join(root, searchPath), `*`)
+		wwlog.Printf(wwlog.VERBOSE, "Looking for kernel version with pattern at: %s\n", testPattern)
+		potentialKernel, _ := filepath.Glob(testPattern)
+		if len(potentialKernel) == 0 {
+			continue
+		}
+		for _, foundKernel := range potentialKernel {
+			wwlog.Printf(wwlog.VERBOSE, "Parsing out kernel version for %s\n", foundKernel)
+			re := regexp.MustCompile(fmt.Sprintf(path.Join(root, searchPath), `([\w\d-\.]*)`))
+			version := re.FindAllStringSubmatch(foundKernel, -1)
+			if version == nil {
+				return "", fmt.Errorf("could not parse kernel version")
+			}
+			wwlog.Printf(wwlog.VERBOSE, "found kernel version %s\n", version)
+			return version[0][1], nil
+
+		}
+
+	}
+	return "", fmt.Errorf("could not find kernel version")
+
 }
