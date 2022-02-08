@@ -3,9 +3,7 @@ package nfs
 import (
 	"fmt"
 	"os"
-	"path"
 
-	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -36,20 +34,6 @@ func Configure(show bool) error {
 	}
 
 	if !SetShow {
-		fstab, err := os.OpenFile(path.Join(overlay.OverlaySourceDir("wwinit"), "etc/fstab"), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "%s\n", err)
-			os.Exit(1)
-		}
-		defer fstab.Close()
-
-		fmt.Fprintf(fstab, "# This file was written by Warewulf (wwctl configure nfs)\n")
-
-		fmt.Fprintf(fstab, "rootfs / tmpfs defaults 0 0\n")
-		fmt.Fprintf(fstab, "devpts /dev/pts devpts gid=5,mode=620 0 0\n")
-		fmt.Fprintf(fstab, "tmpfs /run/shm tmpfs defaults 0 0\n")
-		fmt.Fprintf(fstab, "sysfs /sys sysfs defaults 0 0\n")
-		fmt.Fprintf(fstab, "proc /proc proc defaults 0 0\n")
 
 		if controller.Nfs.Enabled {
 			exports, err := os.OpenFile("/etc/exports", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
@@ -63,15 +47,6 @@ func Configure(show bool) error {
 
 			for _, export := range controller.Nfs.ExportsExtended {
 				fmt.Fprintf(exports, "%s %s/%s(%s)\n", export.Path, controller.Network, controller.Netmask, export.ExportOptions)
-				if export.Mount {
-					var mountOpts string
-					if export.MountOptions == "" {
-						mountOpts = "defaults"
-					} else {
-						mountOpts = export.MountOptions
-					}
-					fmt.Fprintf(fstab, "%s:%s %s nfs %s 0 0\n", controller.Ipaddr, export.Path, export.Path, mountOpts)
-				}
 			}
 
 			fmt.Printf("Enabling and restarting the NFS services\n")
@@ -89,17 +64,11 @@ func Configure(show bool) error {
 		}
 	} else {
 		fmt.Printf("/etc/exports:\n")
-		for _, export := range controller.Nfs.Exports {
-			fmt.Printf("%s %s/%s\n", export, controller.Network, controller.Netmask)
-		}
+
 		for _, export := range controller.Nfs.ExportsExtended {
 			fmt.Printf("%s %s/%s\n", export.Path, controller.Network, controller.Netmask)
 		}
 		fmt.Printf("\n")
-		fmt.Printf("SYSTEM OVERLAY: wwinit/etc/fstab:\n")
-		for _, export := range controller.Nfs.ExportsExtended {
-			fmt.Printf("%s:%s %s nfs defaults 0 0\n", controller.Ipaddr, export.Path, export.Path)
-		}
 	}
 
 	return nil
