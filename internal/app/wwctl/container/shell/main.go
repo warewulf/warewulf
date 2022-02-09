@@ -1,7 +1,7 @@
 //go:build linux
 // +build linux
 
-package exec
+package shell
 
 import (
 	"fmt"
@@ -28,8 +28,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		allargs = append(allargs, "--bind", b)
 	}
 	allargs = append(allargs, args...)
+	allargs = append(allargs, "/usr/bin/bash")
 
-	c := exec.Command("/proc/self/exe", append([]string{"container", "exec", "__child"}, allargs...)...)
+	c := exec.Command("/proc/self/exe", append([]string{"container", "exec"}, allargs...)...)
 
 	//c := exec.Command("/bin/sh")
 	c.SysProcAttr = &syscall.SysProcAttr{
@@ -43,13 +44,5 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-
-	fmt.Printf("Rebuilding container...\n")
-	err := container.Build(containerName, false)
-	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not build container %s: %s\n", containerName, err)
-		os.Exit(1)
-	}
-
 	return nil
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/exec"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/imprt"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/list"
+	"github.com/hpcng/warewulf/internal/app/wwctl/container/shell"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/show"
 	"github.com/spf13/cobra"
 )
@@ -27,6 +28,7 @@ func init() {
 	baseCmd.AddCommand(list.GetCommand())
 	baseCmd.AddCommand(imprt.GetCommand())
 	baseCmd.AddCommand(exec.GetCommand())
+	baseCmd.AddCommand(shell.GetCommand())
 	baseCmd.AddCommand(delete.GetCommand())
 	baseCmd.AddCommand(show.GetCommand())
 
