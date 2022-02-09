@@ -19,6 +19,7 @@ SRVDIR ?= $(PREFIX)/srv
 DATADIR ?= $(PREFIX)/share
 MANDIR ?= $(DATADIR)/man
 LOCALSTATEDIR ?= $(PREFIX)/var
+WWCLIENTLOC ?= /warewulf/bin
 
 TFTPDIR ?= /var/lib/tftpboot
 FIREWALLDDIR ?= /usr/lib/firewalld/services
@@ -98,6 +99,7 @@ config:
 			-e 's,@WWCHROOTDIR@,$(WWCHROOTDIR),g' \
 			-e 's,@WWPROVISIONDIR@,$(WWPROVISIONDIR),g' \
 			-e 's,@VERSION@,$(VERSION),g' \
+			-e 's,@WWCLIENTLOC@,$(WWCLIENTLOC),g' \
 			-e 's,@RELEASE@,$(RELEASE),g' $$i > $$NAME; \
 	done
 	touch config
@@ -181,7 +183,7 @@ wwclient:
 	 -X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=/etc/warewulf/warewulf.conf'" -o ../../wwclient
 
 install_wwclient: wwclient
-	install -m 0755 wwclient $(DESTDIR)$(WWOVERLAYDIR)/wwinit/warewulf/bin/wwclient
+	install -m 0755 wwclient $(DESTDIR)$(WWOVERLAYDIR)/wwinit/$(WWCLIENTLOC)/wwclient
 
 
 bash_completion:

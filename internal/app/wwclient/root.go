@@ -14,13 +14,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/google/uuid"
-	"github.com/talos-systems/go-smbios/smbios"
 	"github.com/coreos/go-systemd/daemon"
+	"github.com/google/uuid"
+	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/pidfile"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
+	"github.com/talos-systems/go-smbios/smbios"
 )
 
 var (
@@ -61,7 +62,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		return errors.New("found pidfile " + PIDFile + " not starting")
 	}
 
-	if os.Args[0] == "/warewulf/bin/wwclient" {
+	if os.Args[0] == buildconfig.WWCLIENTLOC() {
 		err := os.Chdir("/")
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "failed to change dir: %s", err)
@@ -132,7 +133,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	wwid := strings.Split(wwid_tmp[1], " ")[0]
-
 
 	duration := 300
 	if conf.Warewulf.UpdateInterval > 0 {
