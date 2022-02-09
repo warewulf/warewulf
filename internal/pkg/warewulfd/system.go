@@ -41,6 +41,8 @@ func SystemOverlaySend(w http.ResponseWriter, req *http.Request) {
 	if node.SystemOverlay.Defined() {
 		fileName := overlay.OverlayImage(node.Id.Get(), node.SystemOverlay.Get())
 
+		updateStatus(node.Id.Get(), "SYSTEM_OVERLAY", node.SystemOverlay.Get()+".img", strings.Split(req.RemoteAddr, ":")[0])
+
 		if conf.Warewulf.AutobuildOverlays {
 			if !util.IsFile(fileName) || util.PathIsNewer(fileName, nodepkg.ConfigFile) || util.PathIsNewer(fileName, overlay.OverlaySourceDir(node.SystemOverlay.Get())) {
 				daemonLogf("BUILD: %15s: System Overlay\n", node.Id.Get())
@@ -52,8 +54,6 @@ func SystemOverlaySend(w http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			daemonLogf("ERROR: %s\n", err)
 		}
-
-		updateStatus(node.Id.Get(), "SYSTEM_OVERLAY", node.SystemOverlay.Get()+".img", strings.Split(req.RemoteAddr, ":")[0])
 
 	} else {
 		w.WriteHeader(503)

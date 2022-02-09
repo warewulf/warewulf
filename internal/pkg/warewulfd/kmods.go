@@ -31,12 +31,12 @@ func KmodsSend(w http.ResponseWriter, req *http.Request) {
 	if node.KernelVersion.Defined() {
 		fileName := kernel.KmodsImage(node.KernelVersion.Get())
 
+		updateStatus(node.Id.Get(), "KMODS_OVERLAY", node.KernelVersion.Get()+".img", strings.Split(req.RemoteAddr, ":")[0])
+
 		err := sendFile(w, fileName, node.Id.Get())
 		if err != nil {
 			daemonLogf("ERROR: %s\n", err)
 		}
-
-		updateStatus(node.Id.Get(), "KMODS_OVERLAY", node.KernelVersion.Get()+".img", strings.Split(req.RemoteAddr, ":")[0])
 
 	} else {
 		w.WriteHeader(503)

@@ -49,6 +49,8 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 	if node.RuntimeOverlay.Defined() {
 		fileName := overlay.OverlayImage(node.Id.Get(), node.RuntimeOverlay.Get())
 
+		updateStatus(node.Id.Get(), "RUNTIME_OVERLAY", node.RuntimeOverlay.Get()+".img", strings.Split(req.RemoteAddr, ":")[0])
+
 		if conf.Warewulf.AutobuildOverlays {
 			if !util.IsFile(fileName) || util.PathIsNewer(fileName, nodepkg.ConfigFile) || util.PathIsNewer(fileName, overlay.OverlaySourceDir(node.RuntimeOverlay.Get())) {
 				daemonLogf("BUILD: %15s: Runtime Overlay\n", node.Id.Get())
@@ -60,8 +62,6 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			daemonLogf("ERROR: %s\n", err)
 		}
-
-		updateStatus(node.Id.Get(), "RUNTIME_OVERLAY", node.RuntimeOverlay.Get()+".img", strings.Split(req.RemoteAddr, ":")[0])
 
 	} else {
 		w.WriteHeader(503)
