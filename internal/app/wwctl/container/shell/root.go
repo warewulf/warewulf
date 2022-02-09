@@ -1,7 +1,6 @@
-package exec
+package shell
 
 import (
-	"github.com/hpcng/warewulf/internal/app/wwctl/container/exec/child"
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/spf13/cobra"
 )
@@ -9,13 +8,11 @@ import (
 var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:                   "exec [OPTIONS] CONTAINER COMMAND",
-		Short:                 "Run a command inside of a Warewulf container",
-		Long: "Run a COMMAND inside of a warewulf CONTAINER.\n" +
-			"This is commonly used with an interactive shell such as /bin/bash\n" +
-			"to run a virtual environment within the container.",
-		RunE: CobraRunE,
-		Args: cobra.MinimumNArgs(2),
+		Use:                   "shell [OPTIONS] CONTAINER",
+		Short:                 "Run a shell inside of a Warewulf container",
+		Long:                  "Run a interactive shell inside of a warewulf CONTAINER.\n",
+		RunE:                  CobraRunE,
+		Args:                  cobra.MinimumNArgs(1),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp
@@ -29,7 +26,6 @@ var (
 )
 
 func init() {
-	baseCmd.AddCommand(child.GetCommand())
 	baseCmd.PersistentFlags().StringArrayVarP(&binds, "bind", "b", []string{}, "Bind a local path into the container (must exist)")
 }
 
