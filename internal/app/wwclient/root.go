@@ -118,7 +118,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	sysinfoDump := smbiosDump.SystemInformation()
 	localUUID, _ := sysinfoDump.UUID()
 	x := smbiosDump.SystemEnclosure()
-	tag := x.AssetTagNumber()
+	tag := strings.ReplaceAll(x.AssetTagNumber(), " ", "_")
 
 	cmdline, err := ioutil.ReadFile("/proc/cmdline")
 	if err != nil {
@@ -177,6 +177,7 @@ func updateSystem(ipaddr string, port int, wwid string, tag string, localUUID uu
 	for {
 		var err error
 		getString := fmt.Sprintf("http://%s:%d/overlay-runtime/%s?assetkey=%s&uuid=%s", ipaddr, port, wwid, tag, localUUID)
+		wwlog.Printf(wwlog.DEBUG, "Making request: %s\n", getString)
 		resp, err = Webclient.Get(getString)
 		if err == nil {
 			break
