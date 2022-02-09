@@ -56,7 +56,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.Ipxe.SetDefault("default")
 		n.Init.SetDefault("/sbin/init")
 		n.Root.SetDefault("initramfs")
-		n.KernelArgs.SetDefault("quiet crashkernel=no vga=791 rootfstype=rootfs")
+		n.KernelArgs.SetDefault("quiet crashkernel=no vga=791")
 
 		fullname := strings.SplitN(nodename, ".", 2)
 		if len(fullname) > 1 {
