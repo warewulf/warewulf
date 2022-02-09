@@ -31,13 +31,13 @@ func ContainerSend(w http.ResponseWriter, req *http.Request) {
 	if node.ContainerName.Defined() {
 		containerImage := container.ImageFile(node.ContainerName.Get())
 
+		updateStatus(node.Id.Get(), "CONTAINER", node.ContainerName.Get()+".img", strings.Split(req.RemoteAddr, ":")[0])
+
 		err = sendFile(w, containerImage, node.Id.Get())
 		if err != nil {
 			daemonLogf("ERROR: %s\n", err)
 			w.WriteHeader(503)
 		}
-
-		updateStatus(node.Id.Get(), "CONTAINER", node.ContainerName.Get()+".img", strings.Split(req.RemoteAddr, ":")[0])
 
 	} else {
 		w.WriteHeader(503)
