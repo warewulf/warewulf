@@ -177,7 +177,7 @@ func Build(kernelVersion string, kernelName string, root string) (string, error)
 			wwlog.Printf(wwlog.VERBOSE, "Using PIGZ to compress the container: %s\n", compressor)
 		}
 
-		cmd := fmt.Sprintf("cd /; find .%s | cpio --quiet -o -H newc | %s -c > \"%s\"", kernelDrivers, compressor, driversDestination)
+		cmd := fmt.Sprintf("cd /; find .%s | cpio --quiet -o -L -H newc | %s -c > \"%s\"", kernelDrivers, compressor, driversDestination)
 
 		wwlog.Printf(wwlog.DEBUG, "RUNNING: %s\n", cmd)
 		err = exec.Command("/bin/sh", "-c", cmd).Run()

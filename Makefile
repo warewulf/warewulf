@@ -1,6 +1,6 @@
 .PHONY: all
 
-VERSION := 4.2.0
+VERSION := 4.2.1
 
 # auto installed tooling
 TOOLS_DIR := .tools
@@ -103,7 +103,7 @@ man_page:
 dist: vendor
 	rm -rf _dist/warewulf-$(VERSION)
 	mkdir -p _dist/warewulf-$(VERSION)
-	git archive --format=tar main | tar -xf - -C _dist/warewulf-$(VERSION)
+	git archive --format=tar 4.2.x | tar -xf - -C _dist/warewulf-$(VERSION)
 	cp -r vendor _dist/warewulf-$(VERSION)/
 	sed -e 's/@VERSION@/$(VERSION)/g' warewulf.spec.in > _dist/warewulf-$(VERSION)/warewulf.spec
 	cd _dist; tar -czf ../warewulf-$(VERSION).tar.gz warewulf-$(VERSION)
