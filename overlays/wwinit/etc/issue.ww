@@ -1,12 +1,11 @@
-Node: {{.Id}}
-Container: {{.Container}}
-Kernel: {{.KernelVersion}}
-Kernelargs: {{.KernelArgs}}
-wwinit overlay: {{.SystemOverlay}}
-genric overlay: {{.RuntimeOverlay}}
-{{if .IpmiIpaddr }}Ipmi: {{.IpmiIpaddr}} {{- end -}}
-{{range $devname, $netdev := .NetDevs}}
-{{$devname}}: {{$netdev.Device}}
-{{$devname}}: {{$netdev.IpCIDR}}
-{{$devname}}: {{$netdev.Hwaddr}}
-{{- end}}
+Warewulf Node:      {{.Id}}
+Container:          {{.Container}}
+Kernel:             {{.KernelVersion}}
+Kernelargs:         {{.KernelArgs}}
+
+Network:
+{{- range $devname, $netdev := .NetDevs}}
+    {{$devname}}: {{$netdev.Device}}
+    {{$devname}}: {{$netdev.IpCIDR}}
+    {{$devname}}: {{$netdev.Hwaddr}}
+{{end}}
