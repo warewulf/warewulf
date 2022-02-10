@@ -17,7 +17,6 @@ var (
 	wwclientdir    string = "UNDEF"
 	version        string = "UNDEF"
 	release        string = "UNDEF"
-	wwclientloc    string = "UNDEF"
 )
 
 func BINDIR() string {

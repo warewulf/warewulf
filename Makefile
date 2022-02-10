@@ -32,11 +32,6 @@ SYSCONFDIR ?= $(PREFIX)/etc
 SRVDIR ?= /srv
 DATADIR ?= $(PREFIX)/share
 MANDIR ?= $(DATADIR)/man
-<<<<<<< HEAD
-LOCALSTATEDIR ?= $(PREFIX)/var
-WWCLIENTLOC ?= /warewulf/bin
-
-=======
 DOCDIR ?= $(DATADIR)/doc
 LOCALSTATEDIR ?= /var
 SHAREDSTATEDIR ?= /var/local
@@ -49,7 +44,6 @@ endif
 ifeq ($(OS),ubuntu)
 TFTPDIR ?= /srv/tftp
 endif
->>>>>>> 7b0a40a... Updates specfile to match distro guidelines. Suppots modifying client directory path at build time.
 TFTPDIR ?= /var/lib/tftpboot
 FIREWALLDDIR ?= /usr/lib/firewalld/services
 SYSTEMDDIR ?= /usr/lib/systemd/system
