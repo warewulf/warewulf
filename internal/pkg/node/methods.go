@@ -137,10 +137,7 @@ func (ent *Entry) Print() string {
 }
 
 func (ent *Entry) PrintB() bool {
-	if ent.GetB() {
-		return true
-	}
-	return false
+	return ent.GetB()
 }
 
 func (ent *Entry) Source() string {
