@@ -33,7 +33,7 @@ type NodeConf struct {
 	Init           string              `yaml:"init,omitempty"`
 	Root           string              `yaml:"root,omitempty"`
 	AssetKey       string              `yaml:"asset key,omitempty"`
-	Discoverable   bool                `yaml:"discoverable,omitempty"`
+	Discoverable   string              `yaml:"discoverable,omitempty"`
 	Profiles       []string            `yaml:"profiles,omitempty"`
 	NetDevs        map[string]*NetDevs `yaml:"network devices,omitempty"`
 	Keys           map[string]string   `yaml:"keys,omitempty"`
@@ -41,7 +41,7 @@ type NodeConf struct {
 
 type NetDevs struct {
 	Type    string
-	OnBoot  bool
+	OnBoot  string
 	Device  string
 	Hwaddr  string
 	Ipaddr  string
@@ -49,7 +49,7 @@ type NetDevs struct {
 	Prefix  string `yaml:"prefix,omitempty"`
 	Netmask string
 	Gateway string `yaml:"gateway"`
-	Default bool
+	Default string
 }
 
 /******
@@ -59,8 +59,6 @@ type NetDevs struct {
 type Entry struct {
 	value    string
 	altvalue string
-	bool     bool
-	altbool  bool
 	from     string
 	def      string
 }

@@ -89,7 +89,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.Root.Set(node.Root)
 		n.AssetKey.Set(node.AssetKey)
 
-		n.Discoverable.SetB(node.Discoverable)
+		n.Discoverable.Set(node.Discoverable)
 
 		for devname, netdev := range node.NetDevs {
 			if _, ok := n.NetDevs[devname]; !ok {
@@ -97,18 +97,14 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.NetDevs[devname] = &netdev
 			}
 
-			if netdev.Device != "" {
-				n.NetDevs[devname].Device.Set(netdev.Device)
-			} else {
-				n.NetDevs[devname].Device.Set(devname)
-			}
+			n.NetDevs[devname].Device.Set(netdev.Device)
 			n.NetDevs[devname].Ipaddr.Set(netdev.Ipaddr)
 			n.NetDevs[devname].Netmask.Set(netdev.Netmask)
 			n.NetDevs[devname].Hwaddr.Set(netdev.Hwaddr)
 			n.NetDevs[devname].Gateway.Set(netdev.Gateway)
 			n.NetDevs[devname].Type.Set(netdev.Type)
-			n.NetDevs[devname].OnBoot.SetB(netdev.OnBoot)
-			n.NetDevs[devname].Default.SetB(netdev.Default)
+			n.NetDevs[devname].OnBoot.Set(netdev.OnBoot)
+			n.NetDevs[devname].Default.Set(netdev.Default)
 		}
 
 		for keyname, key := range node.Keys {
@@ -146,7 +142,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.Root.SetAlt(config.NodeProfiles[p].Root, p)
 			n.AssetKey.SetAlt(config.NodeProfiles[p].AssetKey, p)
 
-			n.Discoverable.SetAltB(config.NodeProfiles[p].Discoverable, p)
+			n.Discoverable.SetAlt(config.NodeProfiles[p].Discoverable, p)
 
 			for devname, netdev := range config.NodeProfiles[p].NetDevs {
 				if _, ok := n.NetDevs[devname]; !ok {
@@ -161,8 +157,8 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.NetDevs[devname].Hwaddr.SetAlt(netdev.Hwaddr, p)
 				n.NetDevs[devname].Gateway.SetAlt(netdev.Gateway, p)
 				n.NetDevs[devname].Type.SetAlt(netdev.Type, p)
-				n.NetDevs[devname].OnBoot.SetAltB(netdev.OnBoot, p)
-				n.NetDevs[devname].Default.SetAltB(netdev.Default, p)
+				n.NetDevs[devname].OnBoot.SetAlt(netdev.OnBoot, p)
+				n.NetDevs[devname].Default.SetAlt(netdev.Default, p)
 			}
 
 			for keyname, key := range config.NodeProfiles[p].Keys {
@@ -219,7 +215,7 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		p.Root.Set(profile.Root)
 		p.AssetKey.Set(profile.AssetKey)
 
-		p.Discoverable.SetB(profile.Discoverable)
+		p.Discoverable.Set(profile.Discoverable)
 
 		for devname, netdev := range profile.NetDevs {
 			if _, ok := p.NetDevs[devname]; !ok {
@@ -235,8 +231,8 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 			p.NetDevs[devname].Hwaddr.Set(netdev.Hwaddr)
 			p.NetDevs[devname].Gateway.Set(netdev.Gateway)
 			p.NetDevs[devname].Type.Set(netdev.Type)
-			p.NetDevs[devname].OnBoot.SetB(netdev.OnBoot)
-			p.NetDevs[devname].Default.SetB(netdev.Default)
+			p.NetDevs[devname].OnBoot.Set(netdev.OnBoot)
+			p.NetDevs[devname].Default.Set(netdev.Default)
 		}
 
 		for keyname, key := range profile.Keys {

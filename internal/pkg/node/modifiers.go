@@ -74,7 +74,7 @@ func (config *nodeYaml) NodeUpdate(node NodeInfo) error {
 	config.Nodes[nodeID].Root = node.Root.GetReal()
 	config.Nodes[nodeID].AssetKey = node.AssetKey.GetReal()
 
-	config.Nodes[nodeID].Discoverable = node.Discoverable.GetRealB()
+	config.Nodes[nodeID].Discoverable = node.Discoverable.GetReal()
 
 	config.Nodes[nodeID].Profiles = node.Profiles
 	config.Nodes[nodeID].NetDevs = make(map[string]*NetDevs)
@@ -91,8 +91,8 @@ func (config *nodeYaml) NodeUpdate(node NodeInfo) error {
 		config.Nodes[nodeID].NetDevs[devname].Hwaddr = netdev.Hwaddr.GetReal()
 		config.Nodes[nodeID].NetDevs[devname].Gateway = netdev.Gateway.GetReal()
 		config.Nodes[nodeID].NetDevs[devname].Type = netdev.Type.GetReal()
-		config.Nodes[nodeID].NetDevs[devname].OnBoot = netdev.OnBoot.GetRealB()
-		config.Nodes[nodeID].NetDevs[devname].Default = netdev.Default.GetRealB()
+		config.Nodes[nodeID].NetDevs[devname].OnBoot = netdev.OnBoot.GetReal()
+		config.Nodes[nodeID].NetDevs[devname].Default = netdev.Default.GetReal()
 	}
 
 	for keyname, key := range node.Keys {
@@ -162,7 +162,7 @@ func (config *nodeYaml) ProfileUpdate(profile NodeInfo) error {
 	config.NodeProfiles[profileID].Root = profile.Root.GetReal()
 	config.NodeProfiles[profileID].AssetKey = profile.AssetKey.GetReal()
 
-	config.NodeProfiles[profileID].Discoverable = profile.Discoverable.GetRealB()
+	config.NodeProfiles[profileID].Discoverable = profile.Discoverable.GetReal()
 
 	config.NodeProfiles[profileID].Profiles = profile.Profiles
 	config.NodeProfiles[profileID].NetDevs = make(map[string]*NetDevs)
@@ -179,8 +179,8 @@ func (config *nodeYaml) ProfileUpdate(profile NodeInfo) error {
 		config.NodeProfiles[profileID].NetDevs[devname].Hwaddr = netdev.Hwaddr.GetReal()
 		config.NodeProfiles[profileID].NetDevs[devname].Gateway = netdev.Gateway.GetReal()
 		config.NodeProfiles[profileID].NetDevs[devname].Type = netdev.Type.GetReal()
-		config.NodeProfiles[profileID].NetDevs[devname].OnBoot = netdev.OnBoot.GetRealB()
-		config.NodeProfiles[profileID].NetDevs[devname].Default = netdev.Default.GetRealB()
+		config.NodeProfiles[profileID].NetDevs[devname].OnBoot = netdev.OnBoot.GetReal()
+		config.NodeProfiles[profileID].NetDevs[devname].Default = netdev.Default.GetReal()
 	}
 
 	for keyname, key := range profile.Keys {
