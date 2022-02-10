@@ -1,7 +1,10 @@
 package dhcp
 
 import (
+	"path"
 	"testing"
+
+	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 )
 
 func TestDhcpTemplateFile(t *testing.T) {
@@ -9,9 +12,9 @@ func TestDhcpTemplateFile(t *testing.T) {
 		parameter string
 		expected string
 	}{
-		{"", "/usr/local/etc/warewulf/dhcp/default-dhcpd.conf"},
-		{"default", "/usr/local/etc/warewulf/dhcp/default-dhcpd.conf"},
-		{"static", "/usr/local/etc/warewulf/dhcp/static-dhcpd.conf"},
+		{"", path.Join(buildconfig.SYSCONFDIR(), "warewulf/dhcp/default-dhcpd.conf")},
+		{"default", path.Join(buildconfig.SYSCONFDIR(),  "warewulf/dhcp/default-dhcpd.conf")},
+		{"static", path.Join(buildconfig.SYSCONFDIR(), "warewulf/dhcp/static-dhcpd.conf")},
 		{"/test/absolute/path.conf", "/test/absolute/path.conf"},
 	}
 	for _, tt := range tests {
