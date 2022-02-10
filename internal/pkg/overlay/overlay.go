@@ -197,8 +197,8 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 		tstruct.NetDevs[devname].Netmask = netdev.Netmask.Get()
 		tstruct.NetDevs[devname].Gateway = netdev.Gateway.Get()
 		tstruct.NetDevs[devname].Type = netdev.Type.Get()
-		tstruct.NetDevs[devname].OnBoot = netdev.OnBoot.GetB()
-		tstruct.NetDevs[devname].Default = netdev.Default.GetB()
+		tstruct.NetDevs[devname].OnBoot = netdev.OnBoot.Get()
+		tstruct.NetDevs[devname].Default = netdev.Default.Get()
 
 		mask := net.IPMask(net.ParseIP(netdev.Netmask.Get()).To4())
 		ipaddr := net.ParseIP(netdev.Ipaddr.Get()).To4()
