@@ -7,8 +7,10 @@ import (
 )
 
 func Configure(s string, v bool) error {
-	fmt.Printf("################################################################################\n")
-	fmt.Printf("Configuring: %s\n", s)
+	if !v {
+		fmt.Printf("################################################################################\n")
+		fmt.Printf("Configuring: %s\n", s)
+	}
 
 	var err error
 	switch s {
