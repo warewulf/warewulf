@@ -37,6 +37,7 @@ type NodeConf struct {
 	Profiles       []string            `yaml:"profiles,omitempty"`
 	NetDevs        map[string]*NetDevs `yaml:"network devices,omitempty"`
 	Tags           map[string]string   `yaml:"tags,omitempty"`
+	Keys           map[string]string   `yaml:"keys,omitempty"` // Reverse compatibility
 }
 
 type NetDevs struct {

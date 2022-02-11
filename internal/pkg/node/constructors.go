@@ -107,6 +107,15 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.NetDevs[devname].Default.Set(netdev.Default)
 		}
 
+		// Merge Keys into Tags for backwards compatibility
+		if len(node.Tags) == 0 {
+			node.Tags = make(map[string]string)
+		}
+		for keyname, key := range node.Keys {
+			node.Tags[keyname] = key
+			delete(node.Keys, keyname)
+		}
+
 		for keyname, key := range node.Tags {
 			if _, ok := n.Tags[keyname]; !ok {
 				var key Entry
@@ -159,6 +168,15 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.NetDevs[devname].Type.SetAlt(netdev.Type, p)
 				n.NetDevs[devname].OnBoot.SetAlt(netdev.OnBoot, p)
 				n.NetDevs[devname].Default.SetAlt(netdev.Default, p)
+			}
+
+			// Merge Keys into Tags for backwards compatibility
+			if len(config.NodeProfiles[p].Tags) == 0 {
+				config.NodeProfiles[p].Tags = make(map[string]string)
+			}
+			for keyname, key := range config.NodeProfiles[p].Keys {
+				config.NodeProfiles[p].Tags[keyname] = key
+				delete(config.NodeProfiles[p].Keys, keyname)
 			}
 
 			for keyname, key := range config.NodeProfiles[p].Tags {
@@ -233,6 +251,15 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 			p.NetDevs[devname].Type.Set(netdev.Type)
 			p.NetDevs[devname].OnBoot.Set(netdev.OnBoot)
 			p.NetDevs[devname].Default.Set(netdev.Default)
+		}
+
+		// Merge Keys into Tags for backwards compatibility
+		if len(profile.Tags) == 0 {
+			profile.Tags = make(map[string]string)
+		}
+		for keyname, key := range profile.Keys {
+			profile.Tags[keyname] = key
+			delete(profile.Keys, keyname)
 		}
 
 		for keyname, key := range profile.Tags {
