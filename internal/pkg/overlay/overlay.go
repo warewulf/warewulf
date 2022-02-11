@@ -39,6 +39,7 @@ type TemplateStruct struct {
 	SystemOverlay  string
 	NetDevs        map[string]*node.NetDevs
 	Tags           map[string]string
+	Keys           map[string]string
 	AllNodes       []node.NodeInfo
 	NFSMounts      []string
 }
@@ -207,6 +208,10 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 		tstruct.NetDevs[devname].Prefix = strconv.Itoa(netPrefix)
 		tstruct.NetDevs[devname].IpCIDR = netaddr.String()
 
+	}
+	// Backwards compatibility for templates using "Keys"
+	for keyname, key := range nodeInfo.Tags {
+		tstruct.Keys[keyname] = key.Get()
 	}
 	for keyname, key := range nodeInfo.Tags {
 		tstruct.Tags[keyname] = key.Get()
