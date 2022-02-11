@@ -73,14 +73,11 @@ func (config *nodeYaml) NodeUpdate(node NodeInfo) error {
 	config.Nodes[nodeID].SystemOverlay = node.SystemOverlay.GetReal()
 	config.Nodes[nodeID].Root = node.Root.GetReal()
 	config.Nodes[nodeID].AssetKey = node.AssetKey.GetReal()
-
 	config.Nodes[nodeID].Discoverable = node.Discoverable.GetReal()
 
 	config.Nodes[nodeID].Profiles = node.Profiles
+
 	config.Nodes[nodeID].NetDevs = make(map[string]*NetDevs)
-
-	config.Nodes[nodeID].Keys = make(map[string]string)
-
 	for devname, netdev := range node.NetDevs {
 		var newdev NetDevs
 		config.Nodes[nodeID].NetDevs[devname] = &newdev
@@ -95,8 +92,11 @@ func (config *nodeYaml) NodeUpdate(node NodeInfo) error {
 		config.Nodes[nodeID].NetDevs[devname].Default = netdev.Default.GetReal()
 	}
 
-	for keyname, key := range node.Keys {
-		config.Nodes[nodeID].Keys[keyname] = key.GetReal()
+	config.Nodes[nodeID].Tags = make(map[string]string)
+	for keyname, key := range node.Tags {
+		if key.GetReal() != "" {
+			config.Nodes[nodeID].Tags[keyname] = key.GetReal()
+		}
 	}
 
 	return nil
@@ -161,14 +161,11 @@ func (config *nodeYaml) ProfileUpdate(profile NodeInfo) error {
 	config.NodeProfiles[profileID].SystemOverlay = profile.SystemOverlay.GetReal()
 	config.NodeProfiles[profileID].Root = profile.Root.GetReal()
 	config.NodeProfiles[profileID].AssetKey = profile.AssetKey.GetReal()
-
 	config.NodeProfiles[profileID].Discoverable = profile.Discoverable.GetReal()
 
 	config.NodeProfiles[profileID].Profiles = profile.Profiles
+
 	config.NodeProfiles[profileID].NetDevs = make(map[string]*NetDevs)
-
-	config.NodeProfiles[profileID].Keys = make(map[string]string)
-
 	for devname, netdev := range profile.NetDevs {
 		var newdev NetDevs
 		config.NodeProfiles[profileID].NetDevs[devname] = &newdev
@@ -183,8 +180,9 @@ func (config *nodeYaml) ProfileUpdate(profile NodeInfo) error {
 		config.NodeProfiles[profileID].NetDevs[devname].Default = netdev.Default.GetReal()
 	}
 
-	for keyname, key := range profile.Keys {
-		config.NodeProfiles[profileID].Keys[keyname] = key.GetReal()
+	config.NodeProfiles[profileID].Tags = make(map[string]string)
+	for keyname, key := range profile.Tags {
+		config.NodeProfiles[profileID].Tags[keyname] = key.GetReal()
 	}
 
 	return nil

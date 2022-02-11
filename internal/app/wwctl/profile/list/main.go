@@ -48,6 +48,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiUserName", profile.IpmiUserName.Print())
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiInterface", profile.IpmiInterface.Print())
 
+			for keyname, key := range profile.Tags {
+				fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Tag["+keyname+"]", key.Print())
+			}
+
 			for name, netdev := range profile.NetDevs {
 				fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), name+":IPADDR", netdev.Ipaddr.Print())
 				fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), name+":NETMASK", netdev.Netmask.Print())
@@ -56,10 +60,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), name+":TYPE", netdev.Hwaddr.Print())
 				fmt.Printf("%-20s %-18s %t\n", profile.Id.Get(), name+":ONBOOT", netdev.OnBoot.PrintB())
 				fmt.Printf("%-20s %-18s %t\n", profile.Id.Get(), name+":DEFAULT", netdev.Default.PrintB())
-			}
-
-			for keyname, key := range profile.Keys {
-				fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Keys."+keyname, key.Print())
 			}
 		}
 	} else {

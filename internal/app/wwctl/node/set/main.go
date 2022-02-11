@@ -301,33 +301,34 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			delete(n.NetDevs, SetNetName)
 		}
 
-		if SetValue != "" {
-			if SetKey == "" {
-				wwlog.Printf(wwlog.ERROR, "You must include the '--key/-k' option\n")
-				os.Exit(1)
-			}
+		if len(SetTags) > 0 {
+			for _, t := range SetTags {
+				keyval := strings.SplitN(t, "=", 2)
+				key := keyval[0]
+				val := keyval[1]
 
-			if _, ok := n.Keys[SetKey]; !ok {
-				var nd node.Entry
-				n.Keys[SetKey] = &nd
+				if _, ok := n.Tags[key]; !ok {
+					var nd node.Entry
+					n.Tags[key] = &nd
+				}
+
+				wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting Tag '%s'='%s'\n", n.Id.Get(), key, val)
+				n.Tags[key].Set(val)
 			}
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Value %s\n", n.Id.Get(), SetKey, SetValue)
-			n.Keys[SetKey].Set(SetValue)
 		}
+		if len(SetDelTags) > 0 {
+			for _, t := range SetDelTags {
+				keyval := strings.SplitN(t, "=", 1)
+				key := keyval[0]
 
-		if SetKeyDel {
-			if SetKey == "" {
-				wwlog.Printf(wwlog.ERROR, "You must include the '--key/-k' option\n")
-				os.Exit(1)
+				if _, ok := n.Tags[key]; !ok {
+					wwlog.Printf(wwlog.WARN, "Key does not exist: %s\n", key)
+					os.Exit(1)
+				}
+
+				wwlog.Printf(wwlog.VERBOSE, "Node: %s, Deleting tag: %s\n", n.Id.Get(), key)
+				delete(n.Tags, key)
 			}
-
-			if _, ok := n.Keys[SetKey]; !ok {
-				wwlog.Printf(wwlog.ERROR, "Custom parameter doesn't exist: %s\n", SetKey)
-				os.Exit(1)
-			}
-
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Deleting custom parameter: %s\n", n.Id.Get(), SetNetDev)
-			delete(n.Keys, SetKey)
 		}
 
 		err := nodeDB.NodeUpdate(n)

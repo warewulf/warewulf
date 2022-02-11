@@ -68,9 +68,8 @@ var (
 	SetDiscoverable   bool
 	SetUndiscoverable bool
 	SetRoot           string
-	SetKey            string
-	SetValue          string
-	SetKeyDel         bool
+	SetTags           []string
+	SetDelTags        []string
 	SetAssetKey       string
 )
 
@@ -133,7 +132,7 @@ func init() {
 		log.Println(err)
 	}
 	baseCmd.PersistentFlags().StringVarP(&SetNetName, "netname", "n", "default", "Define the network name to configure")
-	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdev", "N", "", "Alias to --netname")
+	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdev", "N", "", "Set the node's network device")
 	baseCmd.PersistentFlags().StringVarP(&SetIpaddr, "ipaddr", "I", "", "Set the node's network device IP address")
 	baseCmd.PersistentFlags().StringVarP(&SetNetmask, "netmask", "M", "", "Set the node's network device netmask")
 	baseCmd.PersistentFlags().StringVarP(&SetGateway, "gateway", "G", "", "Set the node's network device gateway")
@@ -144,10 +143,8 @@ func init() {
 
 	baseCmd.PersistentFlags().BoolVar(&SetNetDevDel, "netdel", false, "Delete the node's network device")
 
-	baseCmd.PersistentFlags().StringVarP(&SetKey, "key", "k", "", "Define custom key")
-	baseCmd.PersistentFlags().BoolVar(&SetKeyDel, "keydel", false, "Delete custom key")
-
-	baseCmd.PersistentFlags().StringVarP(&SetValue, "value", "", "", "Set value")
+	baseCmd.PersistentFlags().StringSliceVarP(&SetTags, "tag", "t", []string{}, "Define custom tag (key=value)")
+	baseCmd.PersistentFlags().StringSliceVar(&SetDelTags, "tagdel", []string{}, "Delete tag")
 
 	baseCmd.PersistentFlags().BoolVarP(&SetNodeAll, "all", "a", false, "Set all nodes")
 
