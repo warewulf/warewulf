@@ -38,7 +38,7 @@ type TemplateStruct struct {
 	RuntimeOverlay string
 	SystemOverlay  string
 	NetDevs        map[string]*node.NetDevs
-	Keys           map[string]string
+	Tags           map[string]string
 	AllNodes       []node.NodeInfo
 	NFSMounts      []string
 }
@@ -187,7 +187,7 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 	tstruct.RuntimeOverlay = nodeInfo.RuntimeOverlay.Get()
 	tstruct.SystemOverlay = nodeInfo.SystemOverlay.Get()
 	tstruct.NetDevs = make(map[string]*node.NetDevs)
-	tstruct.Keys = make(map[string]string)
+	tstruct.Tags = make(map[string]string)
 	for devname, netdev := range nodeInfo.NetDevs {
 		var nd node.NetDevs
 		tstruct.NetDevs[devname] = &nd
@@ -208,8 +208,8 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 		tstruct.NetDevs[devname].IpCIDR = netaddr.String()
 
 	}
-	for keyname, key := range nodeInfo.Keys {
-		tstruct.Keys[keyname] = key.Get()
+	for keyname, key := range nodeInfo.Tags {
+		tstruct.Tags[keyname] = key.Get()
 	}
 	tstruct.AllNodes = allNodes
 	for _, export := range controller.Nfs.ExportsExtended {

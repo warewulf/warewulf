@@ -65,8 +65,8 @@ var (
 	SetInit           string
 	SetRoot           string
 	SetKey            string
-	SetValue          string
-	SetKeyDel         bool
+	SetTags           []string
+	SetDelTags        []string
 	SetAssetKey       string
 )
 
@@ -126,10 +126,8 @@ func init() {
 
 	baseCmd.PersistentFlags().BoolVar(&SetNetDevDel, "netdel", false, "Delete the node's network device")
 
-	baseCmd.PersistentFlags().StringVarP(&SetKey, "key", "k", "", "Define custom key")
-	baseCmd.PersistentFlags().BoolVar(&SetKeyDel, "keydel", false, "Delete custom key")
-
-	baseCmd.PersistentFlags().StringVarP(&SetValue, "value", "", "", "Set value")
+	baseCmd.PersistentFlags().StringSliceVarP(&SetTags, "tag", "t", []string{}, "Define custom tag (key=value)")
+	baseCmd.PersistentFlags().StringSliceVar(&SetDelTags, "tagdel", []string{}, "Delete tag")
 
 	baseCmd.PersistentFlags().BoolVarP(&SetAll, "all", "a", false, "Set all profiles")
 	baseCmd.PersistentFlags().BoolVarP(&SetForce, "force", "f", false, "Force configuration (even on error)")

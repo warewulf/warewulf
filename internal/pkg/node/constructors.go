@@ -50,7 +50,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 
 		wwlog.Printf(wwlog.DEBUG, "In node loop: %s\n", nodename)
 		n.NetDevs = make(map[string]*NetDevEntry)
-		n.Keys = make(map[string]*Entry)
+		n.Tags = make(map[string]*Entry)
 		n.SystemOverlay.SetDefault("wwinit")
 		n.RuntimeOverlay.SetDefault("generic")
 		n.Ipxe.SetDefault("default")
@@ -107,12 +107,12 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.NetDevs[devname].Default.Set(netdev.Default)
 		}
 
-		for keyname, key := range node.Keys {
-			if _, ok := n.Keys[keyname]; !ok {
+		for keyname, key := range node.Tags {
+			if _, ok := n.Tags[keyname]; !ok {
 				var key Entry
-				n.Keys[keyname] = &key
+				n.Tags[keyname] = &key
 			}
-			n.Keys[keyname].Set(key)
+			n.Tags[keyname].Set(key)
 		}
 
 		for _, p := range n.Profiles {
@@ -161,12 +161,12 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.NetDevs[devname].Default.SetAlt(netdev.Default, p)
 			}
 
-			for keyname, key := range config.NodeProfiles[p].Keys {
-				if _, ok := n.Keys[keyname]; !ok {
+			for keyname, key := range config.NodeProfiles[p].Tags {
+				if _, ok := n.Tags[keyname]; !ok {
 					var key Entry
-					n.Keys[keyname] = &key
+					n.Tags[keyname] = &key
 				}
-				n.Keys[keyname].SetAlt(key, p)
+				n.Tags[keyname].SetAlt(key, p)
 			}
 		}
 
@@ -194,7 +194,7 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 	for name, profile := range config.NodeProfiles {
 		var p NodeInfo
 		p.NetDevs = make(map[string]*NetDevEntry)
-		p.Keys = make(map[string]*Entry)
+		p.Tags = make(map[string]*Entry)
 
 		p.Id.Set(name)
 		p.Comment.Set(profile.Comment)
@@ -235,12 +235,12 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 			p.NetDevs[devname].Default.Set(netdev.Default)
 		}
 
-		for keyname, key := range profile.Keys {
-			if _, ok := p.Keys[keyname]; !ok {
+		for keyname, key := range profile.Tags {
+			if _, ok := p.Tags[keyname]; !ok {
 				var key Entry
-				p.Keys[keyname] = &key
+				p.Tags[keyname] = &key
 			}
-			p.Keys[keyname].Set(key)
+			p.Tags[keyname].Set(key)
 		}
 
 		// TODO: Validate or die on all inputs
