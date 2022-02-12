@@ -28,14 +28,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	if !SetAll {
-		if len(args) > 0 {
-			profiles = node.FilterByName(profiles, args)
-		} else {
-			//nolint:errcheck
-			cmd.Usage()
-			os.Exit(1)
-		}
+	if SetAll {
+		fmt.Printf("\n*** WARNING: This command will modify all profiles! ***\n\n")
+	} else if len(args) > 0 {
+		profiles = node.FilterByName(profiles, args)
+	} else {
+		wwlog.Printf(wwlog.INFO, "No profile specified, selecting the 'default' profile\n")
+		profiles = node.FilterByName(profiles, []string{"default"})
 	}
 
 	if len(profiles) == 0 {

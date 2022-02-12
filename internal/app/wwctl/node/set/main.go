@@ -9,7 +9,6 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"github.com/hpcng/warewulf/pkg/hostlist"
 	"github.com/manifoldco/promptui"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -32,14 +31,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	if !SetNodeAll {
-		if len(args) > 0 {
-			nodes = node.FilterByName(nodes, hostlist.Expand(args))
-		} else {
-			//nolint:errcheck
-			cmd.Usage()
-			os.Exit(1)
-		}
+	if SetNodeAll || (len(args) == 0 && len(nodes) > 0) {
+		fmt.Printf("\n*** WARNING: This command will modify all nodes! ***\n\n")
+	} else {
+		nodes = node.FilterByName(nodes, args)
 	}
 
 	if len(nodes) == 0 {
