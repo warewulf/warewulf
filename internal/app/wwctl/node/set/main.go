@@ -181,10 +181,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				}
 
 				n.NetDevs[SetNetName] = &nd
-
-				if SetNetDev == "" {
-					n.NetDevs[SetNetName].Device.Set(SetNetName)
-				}
 			}
 		}
 
