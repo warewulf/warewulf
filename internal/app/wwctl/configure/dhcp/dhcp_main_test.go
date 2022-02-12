@@ -1,4 +1,4 @@
-package configure
+package dhcp
 
 import (
 	"path"
@@ -8,12 +8,12 @@ import (
 )
 
 func TestDhcpTemplateFile(t *testing.T) {
-	tests := []struct {
+	tests := []struct{
 		parameter string
-		expected  string
+		expected string
 	}{
 		{"", path.Join(buildconfig.SYSCONFDIR(), "warewulf/dhcp/default-dhcpd.conf")},
-		{"default", path.Join(buildconfig.SYSCONFDIR(), "warewulf/dhcp/default-dhcpd.conf")},
+		{"default", path.Join(buildconfig.SYSCONFDIR(),  "warewulf/dhcp/default-dhcpd.conf")},
 		{"static", path.Join(buildconfig.SYSCONFDIR(), "warewulf/dhcp/static-dhcpd.conf")},
 		{"/test/absolute/path.conf", "/test/absolute/path.conf"},
 	}
@@ -25,3 +25,4 @@ func TestDhcpTemplateFile(t *testing.T) {
 		}
 	}
 }
+
