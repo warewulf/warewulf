@@ -4,7 +4,6 @@ func init() {
     bindir = "@BINDIR@"
     sysconfdir = "@SYSCONFDIR@"
     localstatedir = "@LOCALSTATEDIR@"
-    sharedstatedir = "@SHAREDSTATEDIR@"
     srvdir = "@SRVDIR@"
     tftpdir = "@TFTPDIR@"
     firewallddir = "@FIREWALLDDIR@"
@@ -12,7 +11,7 @@ func init() {
     wwoverlaydir = "@WWOVERLAYDIR@"
     wwchrootdir = "@WWCHROOTDIR@"
     wwprovisiondir = "@WWPROVISIONDIR@"
-    wwclientdir = "@WWCLIENTDIR@"
     version = "@VERSION@"
     release = "@RELEASE@"
+    wwclientloc = "@WWCLIENTLOC"
 }

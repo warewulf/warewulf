@@ -1,7 +1,7 @@
 #!/bin/sh
 
-. @WWCLIENTDIR@/config
+. /warewulf/config
 # Only start if the systemd is no available
 test -e /usr/lib/systemd/systemd && exit 0
 echo "Starting wwclient"
-nohup @WWCLIENTDIR@/wwclient >/var/log/wwclient.log 2>&1 </dev/null &
+nohup /warewulf/bin/wwclient >/var/log/wwclient.log 2>&1 </dev/null &
