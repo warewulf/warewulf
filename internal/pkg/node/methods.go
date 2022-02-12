@@ -104,10 +104,10 @@ func (ent *Entry) Get() string {
 }
 
 func (ent *Entry) GetB() bool {
-	if ent.value == "false" || ent.value == "no" {
-		return false
-	}
-	if ent.altvalue == "false" || ent.altvalue == "no" || ent.altvalue == "" {
+	if ent.value == "false" || ent.value == "no" || ent.value == "" {
+		if ent.altvalue == "false" || ent.altvalue == "no" || ent.altvalue == "" {
+			return false
+		}
 		return false
 	}
 	return true

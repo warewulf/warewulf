@@ -88,7 +88,6 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.RuntimeOverlay.Set(node.RuntimeOverlay)
 		n.Root.Set(node.Root)
 		n.AssetKey.Set(node.AssetKey)
-
 		n.Discoverable.Set(node.Discoverable)
 
 		for devname, netdev := range node.NetDevs {
@@ -150,7 +149,6 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.RuntimeOverlay.SetAlt(config.NodeProfiles[p].RuntimeOverlay, p)
 			n.Root.SetAlt(config.NodeProfiles[p].Root, p)
 			n.AssetKey.SetAlt(config.NodeProfiles[p].AssetKey, p)
-
 			n.Discoverable.SetAlt(config.NodeProfiles[p].Discoverable, p)
 
 			for devname, netdev := range config.NodeProfiles[p].NetDevs {
@@ -232,7 +230,6 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		p.SystemOverlay.Set(profile.SystemOverlay)
 		p.Root.Set(profile.Root)
 		p.AssetKey.Set(profile.AssetKey)
-
 		p.Discoverable.Set(profile.Discoverable)
 
 		for devname, netdev := range profile.NetDevs {
