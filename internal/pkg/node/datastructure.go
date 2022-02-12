@@ -41,16 +41,16 @@ type NodeConf struct {
 }
 
 type NetDevs struct {
-	Type    string
-	OnBoot  string
-	Device  string
-	Hwaddr  string
-	Ipaddr  string
+	Type    string `yaml:"type,omitempty"`
+	OnBoot  string `yaml:"onboot,omitempty"`
+	Device  string `yaml:"device,omitempty"`
+	Hwaddr  string `yaml:"hwaddr,omitempty"`
+	Ipaddr  string `yaml:"ipaddr,omitempty"`
 	IpCIDR  string `yaml:"ipcidr,omitempty"`
 	Prefix  string `yaml:"prefix,omitempty"`
-	Netmask string
-	Gateway string `yaml:"gateway"`
-	Default string
+	Netmask string `yaml:"netmask,omitempty"`
+	Gateway string `yaml:"gateway,omitempty"`
+	Default string `yaml:"default,omitempty"`
 }
 
 /******

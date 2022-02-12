@@ -169,18 +169,26 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			if _, ok := n.NetDevs[SetNetName]; !ok {
 				var nd node.NetDevEntry
 
-				SetNetOnBoot = "yes"
-
-				if len(n.NetDevs) == 0 {
-					SetNetDefault = "yes"
-				}
-
 				n.NetDevs[SetNetName] = &nd
 
 				if SetNetDev == "" {
 					n.NetDevs[SetNetName].Device.Set(SetNetName)
 				}
 			}
+			var def bool = true
+
+			SetNetOnBoot = "yes"
+
+			for _, n := range n.NetDevs {
+				if n.Default.GetB() {
+					def = false
+				}
+			}
+
+			if def {
+				SetNetDefault = "yes"
+			}
+
 		}
 
 		if SetNetDev != "" {
