@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. /warewulf/config
+. @WWCLIENTDIR@/config
 
 if test -z "$WWROOT"; then
     echo "Skipping SELinux configuration: Warewulf Root device not set"

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. /warewulf/config
+. @WWCLIENTDIR@/config
 
 # This will eventually be optional
 if true; then

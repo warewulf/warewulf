@@ -6,6 +6,7 @@ var (
 	bindir         string = "UNDEF"
 	sysconfdir     string = "UNDEF"
 	localstatedir  string = "UNDEF"
+	sharedstatedir string = "UNDEF"
 	srvdir         string = "UNDEF"
 	tftpdir        string = "UNDEF"
 	firewallddir   string = "UNDEF"
@@ -13,9 +14,9 @@ var (
 	wwoverlaydir   string = "UNDEF"
 	wwchrootdir    string = "UNDEF"
 	wwprovisiondir string = "UNDEF"
+	wwclientdir    string = "UNDEF"
 	version        string = "UNDEF"
 	release        string = "UNDEF"
-	wwclientloc    string = "UNDEF"
 )
 
 func BINDIR() string {
@@ -78,7 +79,12 @@ func RELEASE() string {
 	return release
 }
 
-func WWCLIENTLOC() string {
-	wwlog.Printf(wwlog.DEBUG, "WWCLIENTLOC = '%s'\n", wwclientloc)
-	return wwclientloc
+func WWCLIENTDIR() string {
+	wwlog.Printf(wwlog.DEBUG, "WWPROVISIONDIR = '%s'\n", wwclientdir)
+	return wwclientdir
+}
+
+func SHAREDSTATEDIR() string {
+	wwlog.Printf(wwlog.DEBUG, "SHAREDSTATEDIR = '%s'\n", sharedstatedir)
+	return sharedstatedir
 }
