@@ -14,6 +14,7 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 )
@@ -37,8 +38,10 @@ type TemplateStruct struct {
 	RuntimeOverlay string
 	SystemOverlay  string
 	NetDevs        map[string]*node.NetDevs
+	Tags           map[string]string
 	Keys           map[string]string
 	AllNodes       []node.NodeInfo
+	NFSMounts      []string
 }
 
 /*
@@ -127,6 +130,12 @@ func OverlayInit(overlayName string) error {
 }
 
 func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
+	controller, err := warewulfconf.New()
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "%s\n", err)
+		os.Exit(1)
+	}
+
 	nodeDB, _ := node.New()
 	allNodes, _ := nodeDB.FindAllNodes()
 	var tstruct TemplateStruct
@@ -143,7 +152,7 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 		return errors.New("overlay does not exist: " + overlayName)
 	}
 
-	err := os.MkdirAll(OverlayImageDir, 0755)
+	err = os.MkdirAll(OverlayImageDir, 0755)
 	if err == nil {
 		wwlog.Printf(wwlog.DEBUG, "Created parent directory for Overlay Images: %s\n", OverlayImageDir)
 	} else {
@@ -179,7 +188,7 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 	tstruct.RuntimeOverlay = nodeInfo.RuntimeOverlay.Get()
 	tstruct.SystemOverlay = nodeInfo.SystemOverlay.Get()
 	tstruct.NetDevs = make(map[string]*node.NetDevs)
-	tstruct.Keys = make(map[string]string)
+	tstruct.Tags = make(map[string]string)
 	for devname, netdev := range nodeInfo.NetDevs {
 		var nd node.NetDevs
 		tstruct.NetDevs[devname] = &nd
@@ -189,8 +198,8 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 		tstruct.NetDevs[devname].Netmask = netdev.Netmask.Get()
 		tstruct.NetDevs[devname].Gateway = netdev.Gateway.Get()
 		tstruct.NetDevs[devname].Type = netdev.Type.Get()
-		tstruct.NetDevs[devname].OnBoot = netdev.OnBoot.GetB()
-		tstruct.NetDevs[devname].Default = netdev.Default.GetB()
+		tstruct.NetDevs[devname].OnBoot = netdev.OnBoot.Get()
+		tstruct.NetDevs[devname].Default = netdev.Default.Get()
 
 		mask := net.IPMask(net.ParseIP(netdev.Netmask.Get()).To4())
 		ipaddr := net.ParseIP(netdev.Ipaddr.Get()).To4()
@@ -200,10 +209,25 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 		tstruct.NetDevs[devname].IpCIDR = netaddr.String()
 
 	}
-	for keyname, key := range nodeInfo.Keys {
+	// Backwards compatibility for templates using "Keys"
+	for keyname, key := range nodeInfo.Tags {
 		tstruct.Keys[keyname] = key.Get()
 	}
+	for keyname, key := range nodeInfo.Tags {
+		tstruct.Tags[keyname] = key.Get()
+	}
 	tstruct.AllNodes = allNodes
+	for _, export := range controller.Nfs.ExportsExtended {
+		if export.Mount {
+			var mountOpts string
+			if export.MountOptions == "" {
+				mountOpts = "defaults"
+			} else {
+				mountOpts = export.MountOptions
+			}
+			tstruct.NFSMounts = append(tstruct.NFSMounts, fmt.Sprintf("%s:%s %s nfs %s 0 0\n", controller.Ipaddr, export.Path, export.Path, mountOpts))
+		}
+	}
 
 	wwlog.Printf(wwlog.DEBUG, "Changing directory to OverlayDir: %s\n", OverlaySourceDir)
 	err = os.Chdir(OverlaySourceDir)

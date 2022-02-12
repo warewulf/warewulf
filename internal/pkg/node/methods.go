@@ -1,6 +1,8 @@
 package node
 
-import "regexp"
+import (
+	"regexp"
+)
 
 /**********
  *
@@ -51,7 +53,9 @@ func (ent *Entry) Set(val string) {
 }
 
 func (ent *Entry) SetB(val bool) {
-	ent.bool = val
+	if val {
+		ent.value = "true"
+	}
 }
 
 func (ent *Entry) SetAlt(val string, from string) {
@@ -66,10 +70,9 @@ func (ent *Entry) SetAlt(val string, from string) {
 
 func (ent *Entry) SetAltB(val bool, from string) {
 	if val {
-		ent.altbool = val
+		ent.altvalue = "true"
 		ent.from = from
 	}
-
 }
 
 func (ent *Entry) SetDefault(val string) {
@@ -101,15 +104,17 @@ func (ent *Entry) Get() string {
 }
 
 func (ent *Entry) GetB() bool {
-	return ent.bool
+	if ent.value == "false" || ent.value == "no" || ent.value == "" {
+		if ent.altvalue == "false" || ent.altvalue == "no" || ent.altvalue == "" {
+			return false
+		}
+		return false
+	}
+	return true
 }
 
 func (ent *Entry) GetReal() string {
 	return ent.value
-}
-
-func (ent *Entry) GetRealB() bool {
-	return ent.bool
 }
 
 /**********
@@ -132,10 +137,7 @@ func (ent *Entry) Print() string {
 }
 
 func (ent *Entry) PrintB() bool {
-	if ent.from == "" {
-		return ent.bool
-	}
-	return ent.altbool
+	return ent.GetB()
 }
 
 func (ent *Entry) Source() string {

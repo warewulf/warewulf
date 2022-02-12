@@ -57,6 +57,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiUserName", node.IpmiUserName.Source(), node.IpmiUserName.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiInterface", node.IpmiInterface.Source(), node.IpmiInterface.Print())
 
+			for keyname, key := range node.Tags {
+				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Tag["+keyname+"]", key.Source(), key.Print())
+			}
+
 			for name, netdev := range node.NetDevs {
 				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":DEVICE", netdev.Device.Source(), netdev.Device.Print())
 				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":HWADDR", netdev.Hwaddr.Source(), netdev.Hwaddr.Print())
@@ -68,9 +72,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				fmt.Printf("%-20s %-18s %-12s %t\n", node.Id.Get(), name+":DEFAULT", netdev.Default.Source(), netdev.Default.PrintB())
 			}
 
-			for keyname, key := range node.Keys {
-				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Keys."+keyname, key.Source(), key.Print())
-			}
 		}
 
 	} else if ShowNet {

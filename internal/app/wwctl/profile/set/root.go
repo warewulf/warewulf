@@ -16,7 +16,7 @@ var (
 		Short: "Configure node profile properties",
 		Long: "This command sets configuration properties for the node PROFILE(s).\n\n" +
 			"Note: use the string 'UNSET' to remove a configuration",
-		Args: cobra.MinimumNArgs(1),
+		Args: cobra.MinimumNArgs(0),
 		RunE: CobraRunE,
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
@@ -65,8 +65,8 @@ var (
 	SetInit           string
 	SetRoot           string
 	SetKey            string
-	SetValue          string
-	SetKeyDel         bool
+	SetTags           []string
+	SetDelTags        []string
 	SetAssetKey       string
 )
 
@@ -115,9 +115,8 @@ func init() {
 	baseCmd.PersistentFlags().StringVar(&SetIpmiPassword, "ipmipass", "", "Set the node's IPMI password")
 	baseCmd.PersistentFlags().StringVar(&SetIpmiInterface, "ipmiinterface", "", "Set the node's IPMI interface (defaults to 'lan')")
 
-	baseCmd.PersistentFlags().StringVarP(&SetNetName, "netname", "n", "", "Define the network name to configure")
-	baseCmd.PersistentFlags().StringVarP(&SetNetName, "netdev", "N", "", "Alias to --netname")
-	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdevice", "D", "", "Define the network device")
+	baseCmd.PersistentFlags().StringVarP(&SetNetName, "netname", "n", "default", "Define the network name to configure")
+	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdev", "N", "", "Set the node's network device")
 	baseCmd.PersistentFlags().StringVarP(&SetIpaddr, "ipaddr", "I", "", "Set the node's network device IP address")
 	baseCmd.PersistentFlags().StringVarP(&SetNetmask, "netmask", "M", "", "Set the node's network device netmask")
 	baseCmd.PersistentFlags().StringVarP(&SetGateway, "gateway", "G", "", "Set the node's network device gateway")
@@ -127,10 +126,8 @@ func init() {
 
 	baseCmd.PersistentFlags().BoolVar(&SetNetDevDel, "netdel", false, "Delete the node's network device")
 
-	baseCmd.PersistentFlags().StringVarP(&SetKey, "key", "k", "", "Define custom key")
-	baseCmd.PersistentFlags().BoolVar(&SetKeyDel, "keydel", false, "Delete custom key")
-
-	baseCmd.PersistentFlags().StringVarP(&SetValue, "value", "", "", "Set value")
+	baseCmd.PersistentFlags().StringSliceVarP(&SetTags, "tag", "t", []string{}, "Define custom tag (key=value)")
+	baseCmd.PersistentFlags().StringSliceVar(&SetDelTags, "tagdel", []string{}, "Delete tag")
 
 	baseCmd.PersistentFlags().BoolVarP(&SetAll, "all", "a", false, "Set all profiles")
 	baseCmd.PersistentFlags().BoolVarP(&SetForce, "force", "f", false, "Force configuration (even on error)")

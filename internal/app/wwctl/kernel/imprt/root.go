@@ -10,17 +10,18 @@ import (
 var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:   "import [OPTIONS] KERNEL",
-		Short: "Import Kernel version into Warewulf",
-		Long: "This will import a boot KERNEL version from the control node into Warewulf",
-		RunE: CobraRunE,
-		Args: cobra.MinimumNArgs(1),
+		Use:                   "import [OPTIONS] KERNEL",
+		Short:                 "Import Kernel version into Warewulf",
+		Long:                  "This will import a boot KERNEL version from the control node into Warewulf",
+		RunE:                  CobraRunE,
+		Args:                  cobra.MinimumNArgs(0),
 	}
 	BuildAll     bool
 	ByNode       bool
 	SetDefault   bool
 	OptRoot      string
 	OptContainer string
+	OptDetect    bool
 )
 
 func init() {
@@ -36,6 +37,7 @@ func init() {
 	if err != nil {
 		log.Println(err)
 	}
+	baseCmd.PersistentFlags().BoolVarP(&OptDetect, "detect", "D", false, "Try to detect the kernel version in an automated way, needs the -C or -r option")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

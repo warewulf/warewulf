@@ -149,7 +149,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				}
 				if rightnow-o.Lastseen >= int64(controller.Warewulf.UpdateInterval*2) {
 					color.Red("%-20s %-20s %-25s %-10d\n", o.NodeName, o.Stage, o.Sent, rightnow-o.Lastseen)
-				} else if rightnow-o.Lastseen >= int64(controller.Warewulf.UpdateInterval) {
+				} else if rightnow-o.Lastseen >= int64(controller.Warewulf.UpdateInterval+5) {
 					color.Yellow("%-20s %-20s %-25s %-10d\n", o.NodeName, o.Stage, o.Sent, rightnow-o.Lastseen)
 				} else {
 					fmt.Printf("%-20s %-20s %-25s %-10d\n", o.NodeName, o.Stage, o.Sent, rightnow-o.Lastseen)

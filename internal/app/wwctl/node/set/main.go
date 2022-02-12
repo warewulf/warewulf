@@ -9,7 +9,6 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"github.com/hpcng/warewulf/pkg/hostlist"
 	"github.com/manifoldco/promptui"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -32,14 +31,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	if !SetNodeAll {
-		if len(args) > 0 {
-			nodes = node.FilterByName(nodes, hostlist.Expand(args))
-		} else {
-			//nolint:errcheck
-			cmd.Usage()
-			os.Exit(1)
-		}
+	if SetNodeAll || (len(args) == 0 && len(nodes) > 0) {
+		fmt.Printf("\n*** WARNING: This command will modify all nodes! ***\n\n")
+	} else {
+		nodes = node.FilterByName(nodes, args)
 	}
 
 	if len(nodes) == 0 {
@@ -174,18 +169,26 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			if _, ok := n.NetDevs[SetNetName]; !ok {
 				var nd node.NetDevEntry
 
-				SetNetOnBoot = "yes"
-
-				if len(n.NetDevs) == 0 {
-					SetNetDefault = "yes"
-				}
-
 				n.NetDevs[SetNetName] = &nd
 
 				if SetNetDev == "" {
 					n.NetDevs[SetNetName].Device.Set(SetNetName)
 				}
 			}
+			var def bool = true
+
+			SetNetOnBoot = "yes"
+
+			for _, n := range n.NetDevs {
+				if n.Default.GetB() {
+					def = false
+				}
+			}
+
+			if def {
+				SetNetDefault = "yes"
+			}
+
 		}
 
 		if SetNetDev != "" {
@@ -301,33 +304,34 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			delete(n.NetDevs, SetNetName)
 		}
 
-		if SetValue != "" {
-			if SetKey == "" {
-				wwlog.Printf(wwlog.ERROR, "You must include the '--key/-k' option\n")
-				os.Exit(1)
-			}
+		if len(SetTags) > 0 {
+			for _, t := range SetTags {
+				keyval := strings.SplitN(t, "=", 2)
+				key := keyval[0]
+				val := keyval[1]
 
-			if _, ok := n.Keys[SetKey]; !ok {
-				var nd node.Entry
-				n.Keys[SetKey] = &nd
+				if _, ok := n.Tags[key]; !ok {
+					var nd node.Entry
+					n.Tags[key] = &nd
+				}
+
+				wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting Tag '%s'='%s'\n", n.Id.Get(), key, val)
+				n.Tags[key].Set(val)
 			}
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Value %s\n", n.Id.Get(), SetKey, SetValue)
-			n.Keys[SetKey].Set(SetValue)
 		}
+		if len(SetDelTags) > 0 {
+			for _, t := range SetDelTags {
+				keyval := strings.SplitN(t, "=", 1)
+				key := keyval[0]
 
-		if SetKeyDel {
-			if SetKey == "" {
-				wwlog.Printf(wwlog.ERROR, "You must include the '--key/-k' option\n")
-				os.Exit(1)
+				if _, ok := n.Tags[key]; !ok {
+					wwlog.Printf(wwlog.WARN, "Key does not exist: %s\n", key)
+					os.Exit(1)
+				}
+
+				wwlog.Printf(wwlog.VERBOSE, "Node: %s, Deleting tag: %s\n", n.Id.Get(), key)
+				delete(n.Tags, key)
 			}
-
-			if _, ok := n.Keys[SetKey]; !ok {
-				wwlog.Printf(wwlog.ERROR, "Custom parameter doesn't exist: %s\n", SetKey)
-				os.Exit(1)
-			}
-
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Deleting custom parameter: %s\n", n.Id.Get(), SetNetDev)
-			delete(n.Keys, SetKey)
 		}
 
 		err := nodeDB.NodeUpdate(n)

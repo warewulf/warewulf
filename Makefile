@@ -19,6 +19,7 @@ SRVDIR ?= $(PREFIX)/srv
 DATADIR ?= $(PREFIX)/share
 MANDIR ?= $(DATADIR)/man
 LOCALSTATEDIR ?= $(PREFIX)/var
+WWCLIENTLOC ?= /warewulf/bin
 
 TFTPDIR ?= /var/lib/tftpboot
 FIREWALLDDIR ?= /usr/lib/firewalld/services
@@ -98,6 +99,7 @@ config:
 			-e 's,@WWCHROOTDIR@,$(WWCHROOTDIR),g' \
 			-e 's,@WWPROVISIONDIR@,$(WWPROVISIONDIR),g' \
 			-e 's,@VERSION@,$(VERSION),g' \
+			-e 's,@WWCLIENTLOC@,$(WWCLIENTLOC),g' \
 			-e 's,@RELEASE@,$(RELEASE),g' $$i > $$NAME; \
 	done
 	touch config
@@ -159,6 +161,12 @@ files: all
 	install -c -m 0644 include/systemd/warewulfd.service $(DESTDIR)$(SYSTEMDDIR)
 	cp bash_completion.d/warewulf $(DESTDIR)$(BASH_COMPLETION)
 	cp man_pages/* $(DESTDIR)$(MANDIR)/man1/
+	install -c -m 0644 staticfiles/arm64.efi $(DESTDIR)$(TFTPDIR)/warewulf
+	install -c -m 0644 staticfiles/i386.efi $(DESTDIR)$(TFTPDIR)/warewulf
+	install -c -m 0644 staticfiles/i386.kpxe $(DESTDIR)$(TFTPDIR)/warewulf
+	install -c -m 0644 staticfiles/x86.efi $(DESTDIR)$(TFTPDIR)/warewulf
+
+
 
 init:
 	systemctl daemon-reload
@@ -181,7 +189,7 @@ wwclient:
 	 -X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=/etc/warewulf/warewulf.conf'" -o ../../wwclient
 
 install_wwclient: wwclient
-	install -m 0755 wwclient $(DESTDIR)$(WWOVERLAYDIR)/wwinit/warewulf/bin/wwclient
+	install -m 0755 wwclient $(DESTDIR)$(WWOVERLAYDIR)/wwinit/$(WWCLIENTLOC)/wwclient
 
 
 bash_completion:

@@ -15,6 +15,7 @@ var (
 	wwprovisiondir string = "UNDEF"
 	version        string = "UNDEF"
 	release        string = "UNDEF"
+	wwclientloc    string = "UNDEF"
 )
 
 func BINDIR() string {
@@ -75,4 +76,9 @@ func VERSION() string {
 func RELEASE() string {
 	wwlog.Printf(wwlog.DEBUG, "RELEASE = '%s'\n", release)
 	return release
+}
+
+func WWCLIENTLOC() string {
+	wwlog.Printf(wwlog.DEBUG, "WWCLIENTLOC = '%s'\n", wwclientloc)
+	return wwclientloc
 }

@@ -33,23 +33,24 @@ type NodeConf struct {
 	Init           string              `yaml:"init,omitempty"`
 	Root           string              `yaml:"root,omitempty"`
 	AssetKey       string              `yaml:"asset key,omitempty"`
-	Discoverable   bool                `yaml:"discoverable,omitempty"`
+	Discoverable   string              `yaml:"discoverable,omitempty"`
 	Profiles       []string            `yaml:"profiles,omitempty"`
 	NetDevs        map[string]*NetDevs `yaml:"network devices,omitempty"`
-	Keys           map[string]string   `yaml:"keys,omitempty"`
+	Tags           map[string]string   `yaml:"tags,omitempty"`
+	Keys           map[string]string   `yaml:"keys,omitempty"` // Reverse compatibility
 }
 
 type NetDevs struct {
-	Type    string
-	OnBoot  bool
-	Device  string
-	Hwaddr  string
-	Ipaddr  string
+	Type    string `yaml:"type,omitempty"`
+	OnBoot  string `yaml:"onboot,omitempty"`
+	Device  string `yaml:"device,omitempty"`
+	Hwaddr  string `yaml:"hwaddr,omitempty"`
+	Ipaddr  string `yaml:"ipaddr,omitempty"`
 	IpCIDR  string `yaml:"ipcidr,omitempty"`
 	Prefix  string `yaml:"prefix,omitempty"`
-	Netmask string
-	Gateway string `yaml:"gateway"`
-	Default bool
+	Netmask string `yaml:"netmask,omitempty"`
+	Gateway string `yaml:"gateway,omitempty"`
+	Default string `yaml:"default,omitempty"`
 }
 
 /******
@@ -59,8 +60,6 @@ type NetDevs struct {
 type Entry struct {
 	value    string
 	altvalue string
-	bool     bool
-	altbool  bool
 	from     string
 	def      string
 }
@@ -90,7 +89,7 @@ type NodeInfo struct {
 	Profiles       []string
 	GroupProfiles  []string
 	NetDevs        map[string]*NetDevEntry
-	Keys           map[string]*Entry
+	Tags           map[string]*Entry
 }
 
 type NetDevEntry struct {

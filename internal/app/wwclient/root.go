@@ -14,13 +14,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/google/uuid"
-	"github.com/talos-systems/go-smbios/smbios"
 	"github.com/coreos/go-systemd/daemon"
+	"github.com/google/uuid"
+	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/pidfile"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
+	"github.com/talos-systems/go-smbios/smbios"
 )
 
 var (
@@ -61,7 +62,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		return errors.New("found pidfile " + PIDFile + " not starting")
 	}
 
-	if os.Args[0] == "/warewulf/bin/wwclient" {
+	if os.Args[0] == buildconfig.WWCLIENTLOC() {
 		err := os.Chdir("/")
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "failed to change dir: %s", err)
@@ -117,7 +118,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	sysinfoDump := smbiosDump.SystemInformation()
 	localUUID, _ := sysinfoDump.UUID()
 	x := smbiosDump.SystemEnclosure()
-	tag := x.AssetTagNumber()
+	tag := strings.ReplaceAll(x.AssetTagNumber(), " ", "_")
 
 	cmdline, err := ioutil.ReadFile("/proc/cmdline")
 	if err != nil {
@@ -132,7 +133,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	wwid := strings.Split(wwid_tmp[1], " ")[0]
-
 
 	duration := 300
 	if conf.Warewulf.UpdateInterval > 0 {
@@ -177,6 +177,7 @@ func updateSystem(ipaddr string, port int, wwid string, tag string, localUUID uu
 	for {
 		var err error
 		getString := fmt.Sprintf("http://%s:%d/overlay-runtime/%s?assetkey=%s&uuid=%s", ipaddr, port, wwid, tag, localUUID)
+		wwlog.Printf(wwlog.DEBUG, "Making request: %s\n", getString)
 		resp, err = Webclient.Get(getString)
 		if err == nil {
 			break

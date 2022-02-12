@@ -13,4 +13,5 @@ func init() {
     wwprovisiondir = "@WWPROVISIONDIR@"
     version = "@VERSION@"
     release = "@RELEASE@"
+    wwclientloc = "@WWCLIENTLOC"
 }

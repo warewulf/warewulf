@@ -3,6 +3,7 @@ package set
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
@@ -27,14 +28,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	if !SetAll {
-		if len(args) > 0 {
-			profiles = node.FilterByName(profiles, args)
-		} else {
-			//nolint:errcheck
-			cmd.Usage()
-			os.Exit(1)
-		}
+	if SetAll {
+		fmt.Printf("\n*** WARNING: This command will modify all profiles! ***\n\n")
+	} else if len(args) > 0 {
+		profiles = node.FilterByName(profiles, args)
+	} else {
+		wwlog.Printf(wwlog.INFO, "No profile specified, selecting the 'default' profile\n")
+		profiles = node.FilterByName(profiles, []string{"default"})
 	}
 
 	if len(profiles) == 0 {
@@ -144,17 +144,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			if _, ok := p.NetDevs[SetNetName]; !ok {
 				var nd node.NetDevEntry
 
-				SetNetOnBoot = "yes"
-
-				if len(p.NetDevs) == 0 {
-					SetNetDefault = "yes"
-				}
-
 				p.NetDevs[SetNetName] = &nd
-
-				if SetNetDev == "" {
-					p.NetDevs[SetNetName].Device.Set(SetNetName)
-				}
 			}
 		}
 
@@ -269,33 +259,34 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			delete(p.NetDevs, SetNetDev)
 		}
 
-		if SetValue != "" {
-			if SetKey == "" {
-				wwlog.Printf(wwlog.ERROR, "You must include the '--key/-k' option\n")
-				os.Exit(1)
-			}
+		if len(SetTags) > 0 {
+			for _, t := range SetTags {
+				keyval := strings.SplitN(t, "=", 2)
+				key := keyval[0]
+				val := keyval[1]
 
-			if _, ok := p.Keys[SetKey]; !ok {
-				var nd node.Entry
-				p.Keys[SetKey] = &nd
+				if _, ok := p.Tags[key]; !ok {
+					var nd node.Entry
+					p.Tags[key] = &nd
+				}
+
+				wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting Tag '%s'='%s'\n", p.Id.Get(), key, val)
+				p.Tags[key].Set(val)
 			}
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %s:%s, Setting Value %s\n", p.Id.Get(), SetKey, SetValue)
-			p.Keys[SetKey].Set(SetValue)
 		}
+		if len(SetDelTags) > 0 {
+			for _, t := range SetDelTags {
+				keyval := strings.SplitN(t, "=", 1)
+				key := keyval[0]
 
-		if SetKeyDel {
-			if SetKey == "" {
-				wwlog.Printf(wwlog.ERROR, "You must include the '--key/-k' option\n")
-				os.Exit(1)
+				if _, ok := p.Tags[key]; !ok {
+					wwlog.Printf(wwlog.WARN, "Key does not exist: %s\n", key)
+					os.Exit(1)
+				}
+
+				wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Deleting tag: %s\n", p.Id.Get(), key)
+				delete(p.Tags, key)
 			}
-
-			if _, ok := p.Keys[SetKey]; !ok {
-				wwlog.Printf(wwlog.ERROR, "Custom key doesn't exist: %s\n", SetKey)
-				os.Exit(1)
-			}
-
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Deleting custom key: %s\n", p.Id.Get(), SetNetDev)
-			delete(p.Keys, SetKey)
 		}
 
 		err := nodeDB.ProfileUpdate(p)
