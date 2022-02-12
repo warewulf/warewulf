@@ -161,10 +161,10 @@ files: all
 	install -c -m 0644 include/systemd/warewulfd.service $(DESTDIR)$(SYSTEMDDIR)
 	cp bash_completion.d/warewulf $(DESTDIR)$(BASH_COMPLETION)
 	cp man_pages/* $(DESTDIR)$(MANDIR)/man1/
-	install -c -m 0644 internal/pkg/staticfiles/files/tftp/arm64.efi $(DESTDIR)$(TFTPDIR)/warewulf
-	install -c -m 0644 internal/pkg/staticfiles/files/tftp/i386.efi $(DESTDIR)$(TFTPDIR)/warewulf
-	install -c -m 0644 internal/pkg/staticfiles/files/tftp/i386.kpxe $(DESTDIR)$(TFTPDIR)/warewulf
-	install -c -m 0644 internal/pkg/staticfiles/files/tftp/x86.efi $(DESTDIR)$(TFTPDIR)/warewulf
+	install -c -m 0644 staticfiles/arm64.efi $(DESTDIR)$(TFTPDIR)/warewulf
+	install -c -m 0644 staticfiles/i386.efi $(DESTDIR)$(TFTPDIR)/warewulf
+	install -c -m 0644 staticfiles/i386.kpxe $(DESTDIR)$(TFTPDIR)/warewulf
+	install -c -m 0644 staticfiles/x86.efi $(DESTDIR)$(TFTPDIR)/warewulf
 
 
 
