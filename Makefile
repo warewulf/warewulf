@@ -3,7 +3,7 @@
 -include Defaults.mk
 
 VERSION ?= 4.2.0
-GIT_TAG := $(shell test -e .git && git describe --tags --long --first-parent --always)
+GIT_TAG := $(shell test -e .git && git describe --tags --long --first-parent --always | tr '-' '_')
 
 ifndef $(GIT_TAG)
     RELEASE ?= 1.git_$(GIT_TAG)
