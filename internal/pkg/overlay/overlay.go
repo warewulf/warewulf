@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
@@ -18,31 +19,6 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 )
-
-type TemplateStruct struct {
-	Id             string
-	Hostname       string
-	ClusterName    string
-	Container      string
-	KernelVersion  string
-	KernelArgs     string
-	Init           string
-	Root           string
-	IpmiIpaddr     string
-	IpmiNetmask    string
-	IpmiPort       string
-	IpmiGateway    string
-	IpmiUserName   string
-	IpmiPassword   string
-	IpmiInterface  string
-	RuntimeOverlay string
-	SystemOverlay  string
-	NetDevs        map[string]*node.NetDevs
-	Tags           map[string]string
-	Keys           map[string]string
-	AllNodes       []node.NodeInfo
-	NFSMounts      []string
-}
 
 /*
 
@@ -234,18 +210,15 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 		tstruct.Tags[keyname] = key.Get()
 	}
 	tstruct.AllNodes = allNodes
-	for _, export := range controller.Nfs.ExportsExtended {
-		if export.Mount {
-			var mountOpts string
-			if export.MountOptions == "" {
-				mountOpts = "defaults"
-			} else {
-				mountOpts = export.MountOptions
-			}
-			tstruct.NFSMounts = append(tstruct.NFSMounts, fmt.Sprintf("%s:%s %s nfs %s 0 0\n", controller.Ipaddr, export.Path, export.Path, mountOpts))
-		}
-	}
-
+	tstruct.Nfs = *controller.Nfs
+	tstruct.Dhcp = *controller.Dhcp
+	tstruct.Ipaddr = controller.Ipaddr
+	tstruct.Netmask = controller.Netmask
+	tstruct.Network = controller.Network
+	hostname, _ := os.Hostname()
+	tstruct.BuildHost = hostname
+	dt := time.Now()
+	tstruct.BuildTime = dt.Format("01-02-2006 15:04:05 MST")
 	wwlog.Printf(wwlog.DEBUG, "Changing directory to OverlayDir: %s\n", OverlaySourceDir)
 	err = os.Chdir(OverlaySourceDir)
 	if err != nil {
@@ -275,6 +248,7 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 			wwlog.Printf(wwlog.DEBUG, "Created directory in overlay: %s\n", location)
 
 		} else if filepath.Ext(location) == ".ww" {
+			tstruct.BuildSource = path.Join(OverlaySourceDir, location)
 			wwlog.Printf(wwlog.VERBOSE, "Evaluating overlay template file: %s\n", location)
 
 			destFile := strings.TrimSuffix(location, ".ww")

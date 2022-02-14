@@ -52,9 +52,9 @@ type NfsConf struct {
 
 type NfsExportConf struct {
 	Path          string `yaml:"path"`
-	ExportOptions string `yaml:"export options"`
-	MountOptions  string `yaml:"mount options"`
-	Mount         bool   `yaml:"mount"`
+	ExportOptions string `default:"rw,sync" yaml:"export options"`
+	MountOptions  string `default:"defaults" yaml:"mount options"`
+	Mount         bool   `default:"true" yaml:"mount"`
 }
 
 func (s *NfsConf) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -69,7 +69,6 @@ func (s *NfsConf) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	return nil
 }
-
 
 func init() {
 	if !util.IsFile(ConfigFile) {
