@@ -4,7 +4,6 @@ import (
 	"log"
 
 	"github.com/hpcng/warewulf/internal/pkg/container"
-	"github.com/hpcng/warewulf/internal/pkg/kernel"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/spf13/cobra"
@@ -34,7 +33,6 @@ var (
 	}
 	SetComment        string
 	SetContainer      string
-	SetKernel         string
 	SetKernelArgs     string
 	SetNetName        string
 	SetNetDev         string
@@ -78,13 +76,6 @@ func init() {
 	baseCmd.PersistentFlags().StringVarP(&SetContainer, "container", "C", "", "Set the container (VNFS) for this node")
 	if err := baseCmd.RegisterFlagCompletionFunc("container", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		list, _ := container.ListSources()
-		return list, cobra.ShellCompDirectiveNoFileComp
-	}); err != nil {
-		log.Println(err)
-	}
-	baseCmd.PersistentFlags().StringVarP(&SetKernel, "kernel", "K", "", "Set Kernel version for nodes")
-	if err := baseCmd.RegisterFlagCompletionFunc("kernel", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		list, _ := kernel.ListKernels()
 		return list, cobra.ShellCompDirectiveNoFileComp
 	}); err != nil {
 		log.Println(err)

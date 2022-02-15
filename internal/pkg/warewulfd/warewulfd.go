@@ -48,7 +48,6 @@ func RunServer() error {
 
 	http.HandleFunc("/ipxe/", IpxeSend)
 	http.HandleFunc("/kernel/", KernelSend)
-	http.HandleFunc("/kmods/", KmodsSend)
 	http.HandleFunc("/container/", ContainerSend)
 	http.HandleFunc("/overlay-system/", SystemOverlaySend)
 	http.HandleFunc("/overlay-runtime/", RuntimeOverlaySend)

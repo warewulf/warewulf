@@ -2,9 +2,10 @@ package warewulfd
 
 import (
 	"net/http"
+	"path"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/kernel"
+	"github.com/hpcng/warewulf/internal/pkg/container"
 )
 
 func KernelSend(w http.ResponseWriter, req *http.Request) {
@@ -28,10 +29,10 @@ func KernelSend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if node.KernelVersion.Defined() {
-		fileName := kernel.KernelImage(node.KernelVersion.Get())
+	if node.ContainerName.Defined() {
+		fileName := container.KernelFind(node.ContainerName.Get())
 
-		updateStatus(node.Id.Get(), "KERNEL", node.KernelVersion.Get(), strings.Split(req.RemoteAddr, ":")[0])
+		updateStatus(node.Id.Get(), "KERNEL", path.Base(fileName), strings.Split(req.RemoteAddr, ":")[0])
 
 		err := sendFile(w, fileName, node.Id.Get())
 		if err != nil {

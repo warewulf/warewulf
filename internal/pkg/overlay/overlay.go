@@ -174,7 +174,6 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 	tstruct.Hostname = nodeInfo.Id.Get()
 	tstruct.ClusterName = nodeInfo.ClusterName.Get()
 	tstruct.Container = nodeInfo.ContainerName.Get()
-	tstruct.KernelVersion = nodeInfo.KernelVersion.Get()
 	tstruct.KernelArgs = nodeInfo.KernelArgs.Get()
 	tstruct.Init = nodeInfo.Init.Get()
 	tstruct.Root = nodeInfo.Root.Get()
