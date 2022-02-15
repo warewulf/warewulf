@@ -229,7 +229,9 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		p.RuntimeOverlay.Set(profile.RuntimeOverlay)
 		p.SystemOverlay.Set(profile.SystemOverlay)
 		p.Root.Set(profile.Root)
-		p.AssetKey.Set(profile.AssetKey)
+		if profile.AssetKey != "" {
+			wwlog.Printf(wwlog.WARN, "Ignoring asset key %v in profile %v\n", profile.AssetKey, name)
+		}
 		p.Discoverable.Set(profile.Discoverable)
 
 		for devname, netdev := range profile.NetDevs {

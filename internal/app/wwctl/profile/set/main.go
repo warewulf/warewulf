@@ -70,11 +70,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			p.Root.Set(SetRoot)
 		}
 
-		if SetAssetKey != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting asset key to: %s\n", p.Id.Get(), SetAssetKey)
-			p.AssetKey.Set(SetAssetKey)
-		}
-
 		if SetKernel != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting Kernel to: %s\n", p.Id.Get(), SetKernel)
 			p.KernelVersion.Set(SetKernel)
@@ -158,23 +153,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			p.NetDevs[SetNetName].Device.Set(SetNetDev)
 		}
 
-		if SetIpaddr != "" {
-			if SetNetName == "" {
-				wwlog.Printf(wwlog.ERROR, "You must include the '--netname' option\n")
-				os.Exit(1)
-			}
-
-			wwlog.Printf(wwlog.VERBOSE, "Profile '%s': Setting IP address to: %s:%s\n", p.Id.Get(), SetNetName, SetHwaddr)
-			p.NetDevs[SetNetName].Ipaddr.Set(SetIpaddr)
-		}
-
 		if SetNetmask != "" {
 			if SetNetName == "" {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netname' option\n")
 				os.Exit(1)
 			}
 
-			wwlog.Printf(wwlog.VERBOSE, "Profile '%s': Setting netmask to: %s:%s\n", p.Id.Get(), SetNetName, SetHwaddr)
+			wwlog.Printf(wwlog.VERBOSE, "Profile '%s': Setting netmask to: %s\n", p.Id.Get(), SetNetName)
 			p.NetDevs[SetNetName].Netmask.Set(SetNetmask)
 		}
 
@@ -184,18 +169,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				os.Exit(1)
 			}
 
-			wwlog.Printf(wwlog.VERBOSE, "Profile '%s': Setting gateway to: %s:%s\n", p.Id.Get(), SetNetName, SetHwaddr)
+			wwlog.Printf(wwlog.VERBOSE, "Profile '%s': Setting gateway to: %s\n", p.Id.Get(), SetNetName)
 			p.NetDevs[SetNetName].Gateway.Set(SetGateway)
-		}
-
-		if SetHwaddr != "" {
-			if SetNetName == "" {
-				wwlog.Printf(wwlog.ERROR, "You must include the '--netname' option\n")
-				os.Exit(1)
-			}
-
-			wwlog.Printf(wwlog.VERBOSE, "Profile '%s': Setting HW address to: %s:%s\n", p.Id.Get(), SetNetName, SetHwaddr)
-			p.NetDevs[SetNetName].Hwaddr.Set(SetHwaddr)
 		}
 
 		if SetType != "" {

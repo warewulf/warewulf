@@ -52,10 +52,8 @@ var (
 	SetIpmiInterface  string
 	SetNetName        string
 	SetNetDev         string
-	SetIpaddr         string
 	SetNetmask        string
 	SetGateway        string
-	SetHwaddr         string
 	SetType           string
 	SetNetOnBoot      string
 	SetNetDefault     string
@@ -67,7 +65,6 @@ var (
 	SetKey            string
 	SetTags           []string
 	SetDelTags        []string
-	SetAssetKey       string
 )
 
 func init() {
@@ -91,7 +88,6 @@ func init() {
 	baseCmd.PersistentFlags().StringVarP(&SetIpxe, "ipxe", "P", "", "Set the node's iPXE template name")
 	baseCmd.PersistentFlags().StringVarP(&SetInit, "init", "i", "", "Define the init process to boot the container")
 	baseCmd.PersistentFlags().StringVar(&SetRoot, "root", "", "Define the rootfs")
-	baseCmd.PersistentFlags().StringVar(&SetAssetKey, "assetkey", "", "Set the node's Asset tag (key)")
 
 	baseCmd.PersistentFlags().StringVarP(&SetRuntimeOverlay, "runtime", "R", "", "Set the node's runtime overlay")
 	if err := baseCmd.RegisterFlagCompletionFunc("runtime", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -117,10 +113,8 @@ func init() {
 
 	baseCmd.PersistentFlags().StringVarP(&SetNetName, "netname", "n", "default", "Define the network name to configure")
 	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdev", "N", "", "Set the node's network device")
-	baseCmd.PersistentFlags().StringVarP(&SetIpaddr, "ipaddr", "I", "", "Set the node's network device IP address")
 	baseCmd.PersistentFlags().StringVarP(&SetNetmask, "netmask", "M", "", "Set the node's network device netmask")
 	baseCmd.PersistentFlags().StringVarP(&SetGateway, "gateway", "G", "", "Set the node's network device gateway")
-	baseCmd.PersistentFlags().StringVarP(&SetHwaddr, "hwaddr", "H", "", "Set the node's network device HW address")
 	baseCmd.PersistentFlags().StringVarP(&SetType, "type", "T", "", "Set the node's network device type")
 	baseCmd.PersistentFlags().StringVar(&SetNetOnBoot, "onboot", "", "Enable/disable device (yes/no)")
 
