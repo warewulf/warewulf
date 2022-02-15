@@ -73,37 +73,6 @@ func RandomString(n int) string {
 	return string(b)
 }
 
-func CopyFile(source string, dest string) error {
-	wwlog.Printf(wwlog.DEBUG, "Copying '%s' to '%s'\n", source, dest)
-	sourceFD, err := os.Open(source)
-	if err != nil {
-		return err
-	}
-
-	finfo, err := sourceFD.Stat()
-	if err != nil {
-		return errors.Wrap(err, "failed to stat source")
-	}
-
-	destFD, err := os.OpenFile(dest, os.O_RDWR|os.O_CREATE, finfo.Mode())
-	if err != nil {
-		return err
-	}
-
-	_, err = io.Copy(destFD, sourceFD)
-	if err != nil {
-		return err
-	}
-
-	err = CopyUIDGID(source, dest)
-	if err != nil {
-		return errors.Wrap(err, "failed to set ownership")
-	}
-	sourceFD.Close()
-
-	return destFD.Close()
-}
-
 func CopyFiles(source string, dest string) error {
 	err := filepath.Walk(source, func(location string, info os.FileInfo, err error) error {
 		if err != nil {
