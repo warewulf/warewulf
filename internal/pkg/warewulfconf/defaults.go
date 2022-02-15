@@ -19,7 +19,6 @@ func defaultConfig() *ControllerConf {
 		RangeStart:  "192.168.200.50",
 		RangeEnd:    "192.168.200.99",
 		SystemdName: "dhcpd",
-		ConfigFile:  "/etc/dhcp/dhcpd.conf",
 	}
 	Tftp := &TftpConf{
 		Enabled:     true,

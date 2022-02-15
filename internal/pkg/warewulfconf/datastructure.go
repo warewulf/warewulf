@@ -34,7 +34,6 @@ type DhcpConf struct {
 	RangeStart  string `yaml:"range start"`
 	RangeEnd    string `yaml:"range end"`
 	SystemdName string `yaml:"systemd name"`
-	ConfigFile  string `yaml:"config file,omitempty"`
 }
 
 type TftpConf struct {

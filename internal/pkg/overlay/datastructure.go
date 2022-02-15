@@ -35,4 +35,5 @@ type TemplateStruct struct {
 	Network        string
 	Dhcp           warewulfconf.DhcpConf
 	Nfs            warewulfconf.NfsConf
+	Warewulf       warewulfconf.WarewulfConf
 }
