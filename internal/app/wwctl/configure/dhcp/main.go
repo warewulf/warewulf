@@ -49,10 +49,12 @@ func Configure(show bool) error {
 
 	if !show {
 
-		overlay.BuildHostOverlay()
-
+		err := overlay.BuildHostOverlay()
+		if err != nil {
+			wwlog.Printf(wwlog.WARN, "host overlay could not be built: %s\n", err)
+		}
 		fmt.Printf("Enabling and restarting the DHCP services\n")
-		err := util.SystemdStart(controller.Dhcp.SystemdName)
+		err = util.SystemdStart(controller.Dhcp.SystemdName)
 		if err != nil {
 			return errors.Wrap(err, "failed to start")
 		}

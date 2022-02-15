@@ -40,7 +40,10 @@ func Configure(show bool) error {
 		if err != nil {
 			fmt.Println(err)
 		}
-		overlay.BuildHostOverlay()
+		err = overlay.BuildHostOverlay()
+		if err != nil {
+			wwlog.Printf(wwlog.WARN, "host overlay could not be built: %s\n", err)
+		}
 		fmt.Printf("Enabling and restarting the NFS services\n")
 		if controller.Nfs.SystemdName == "" {
 			err := util.SystemdStart("nfs-server")
