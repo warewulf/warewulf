@@ -212,6 +212,7 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 	tstruct.AllNodes = allNodes
 	tstruct.Nfs = *controller.Nfs
 	tstruct.Dhcp = *controller.Dhcp
+	tstruct.Warewulf = *controller.Warewulf
 	tstruct.Ipaddr = controller.Ipaddr
 	tstruct.Netmask = controller.Netmask
 	tstruct.Network = controller.Network
