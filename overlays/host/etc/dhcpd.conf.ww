@@ -40,4 +40,6 @@ subnet {{$.Network}} netmask {{$.Netmask}} {
     range {{$.Dhcp.RangeStart}} {{$.Dhcp.RangeEnd}};
     next-server {{$.Ipaddr}};
 }
+{{- else }}
+{{- abort }}
 {{- end }}

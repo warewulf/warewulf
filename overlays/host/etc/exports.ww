@@ -11,4 +11,7 @@
 {{range .Nfs.Exports }}
 {{ . }} {{ $network }}/{{ $netmask }}(rw,sync,no_subtree_check)
 {{- end }}
+{{- else }}
+{{- abort }}
 {{- end }}
+
