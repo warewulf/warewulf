@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-
 	"github.com/pkg/errors"
+
 	"github.com/spf13/cobra"
 )
 
@@ -33,42 +34,25 @@ func Configure(show bool) error {
 		os.Exit(1)
 	}
 
-	if !SetShow {
-
-		if controller.Nfs.Enabled {
-			exports, err := os.OpenFile("/etc/exports", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	if controller.Nfs.Enabled && !SetShow {
+		// remove exports as templating may fail on existing files
+		err := os.Remove("/etc/exports")
+		if err != nil {
+			fmt.Println(err)
+		}
+		overlay.BuildHostOverlay()
+		fmt.Printf("Enabling and restarting the NFS services\n")
+		if controller.Nfs.SystemdName == "" {
+			err := util.SystemdStart("nfs-server")
 			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
-				os.Exit(1)
+				return errors.Wrap(err, "failed to start nfs-server")
 			}
-			defer exports.Close()
-
-			fmt.Fprintf(exports, "# This file was written by Warewulf (wwctl configure nfs)\n")
-
-			for _, export := range controller.Nfs.ExportsExtended {
-				fmt.Fprintf(exports, "%s %s/%s(%s)\n", export.Path, controller.Network, controller.Netmask, export.ExportOptions)
-			}
-
-			fmt.Printf("Enabling and restarting the NFS services\n")
-			if controller.Nfs.SystemdName == "" {
-				err := util.SystemdStart("nfs-server")
-				if err != nil {
-					return errors.Wrap(err, "failed to start nfs-server")
-				}
-			} else {
-				err := util.SystemdStart(controller.Nfs.SystemdName)
-				if err != nil {
-					return errors.Wrap(err, "failed to start")
-				}
+		} else {
+			err := util.SystemdStart(controller.Nfs.SystemdName)
+			if err != nil {
+				return errors.Wrap(err, "failed to start")
 			}
 		}
-	} else {
-		fmt.Printf("/etc/exports:\n")
-
-		for _, export := range controller.Nfs.ExportsExtended {
-			fmt.Printf("%s %s/%s\n", export.Path, controller.Network, controller.Netmask)
-		}
-		fmt.Printf("\n")
 	}
 
 	return nil

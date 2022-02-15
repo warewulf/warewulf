@@ -52,7 +52,7 @@ type NfsConf struct {
 
 type NfsExportConf struct {
 	Path          string `yaml:"path"`
-	ExportOptions string `default:"rw,sync" yaml:"export options"`
+	ExportOptions string `default:"rw,sync,no_subtree_check" yaml:"export options"`
 	MountOptions  string `default:"defaults" yaml:"mount options"`
 	Mount         bool   `default:"true" yaml:"mount"`
 }
