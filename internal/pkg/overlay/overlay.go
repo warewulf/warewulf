@@ -253,39 +253,47 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 			wwlog.Printf(wwlog.VERBOSE, "Evaluating overlay template file: %s\n", location)
 
 			destFile := strings.TrimSuffix(location, ".ww")
-
+			var ErrorAbort = errors.New("abort_template")
 			tmpl, err := template.New(path.Base(location)).Option("missingkey=default").Funcs(template.FuncMap{
 				// TODO: Fix for missingkey=zero
 				"Include":     templateFileInclude,
 				"IncludeFrom": templateContainerFileInclude,
 				"inc":         func(i int) int { return i + 1 },
 				"dec":         func(i int) int { return i - 1 },
+				"abort":       func() (string, error) { return "", ErrorAbort },
 				// }).ParseGlob(path.Join(OverlayDir, destFile+".ww*"))
 			}).ParseGlob(location)
 			if err != nil {
 				return errors.Wrap(err, "could not parse template "+location)
 			}
 
-			w, err := os.OpenFile(path.Join(destDir, destFile), os.O_RDWR|os.O_CREATE, info.Mode())
+			err = tmpl.Execute(ioutil.Discard, tstruct)
 			if err != nil {
-				return errors.Wrap(err, "could not open new file for template")
+				// complicated workarround as error is not exported correctly: https://github.com/golang/go/issues/34201
+				if strings.Contains(fmt.Sprint(err), "abort_template") {
+					wwlog.Printf(wwlog.VERBOSE, "Aborting template file due to abort call in template: %s\n", location)
+				} else {
+					return errors.Wrap(err, "could not execute template")
+				}
+			} else {
+				w, err := os.OpenFile(path.Join(destDir, destFile), os.O_RDWR|os.O_CREATE, info.Mode())
+				if err != nil {
+					return errors.Wrap(err, "could not open new file for template")
+				}
+				defer w.Close()
+
+				_ = tmpl.Execute(w, tstruct)
+
+				err = util.CopyUIDGID(location, path.Join(destDir, destFile))
+				if err != nil {
+					return errors.Wrap(err, "failed setting permissions on template output file")
+				}
+
+				wwlog.Printf(wwlog.DEBUG, "Wrote template file into overlay: %s\n", destFile)
+
+				//		} else if b, _ := regexp.MatchString(`\.ww[a-zA-Z0-9\-\._]*$`, location); b {
+				//			wwlog.Printf(wwlog.DEBUG, "Ignoring WW template file: %s\n", location)
 			}
-			defer w.Close()
-
-			err = tmpl.Execute(w, tstruct)
-			if err != nil {
-				return errors.Wrap(err, "could not execute template")
-			}
-
-			err = util.CopyUIDGID(location, path.Join(destDir, destFile))
-			if err != nil {
-				return errors.Wrap(err, "failed setting permissions on template output file")
-			}
-
-			wwlog.Printf(wwlog.DEBUG, "Wrote template file into overlay: %s\n", destFile)
-
-			//		} else if b, _ := regexp.MatchString(`\.ww[a-zA-Z0-9\-\._]*$`, location); b {
-			//			wwlog.Printf(wwlog.DEBUG, "Ignoring WW template file: %s\n", location)
 		} else if info.Mode()&os.ModeSymlink == os.ModeSymlink {
 			wwlog.Printf(wwlog.DEBUG, "Found symlink %s\n", location)
 			destination, err := os.Readlink(location)
