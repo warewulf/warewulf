@@ -8,3 +8,4 @@ import (
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	return configure.Configure("DHCP", setShow)
 }
+
