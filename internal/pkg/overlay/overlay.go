@@ -273,18 +273,21 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 				return errors.Wrap(err, "could not parse template "+location)
 			}
 			var buffer bytes.Buffer
-			err = tmpl.Execute(&buffer, tstruct)
 			backupFile := true
+			writeFile := true
+			err = tmpl.Execute(&buffer, tstruct)
 			if err != nil {
 				// complicated workarround as error is not exported correctly: https://github.com/golang/go/issues/34201
 				if strings.Contains(fmt.Sprint(err), "abort_template") {
 					wwlog.Printf(wwlog.VERBOSE, "Aborting template file due to abort call in template: %s\n", location)
+					writeFile = false
 				} else if strings.Contains(fmt.Sprint(err), "nobackup_template") {
 					backupFile = false
 				} else {
 					return errors.Wrap(err, "could not execute template")
 				}
-			} else {
+			}
+			if writeFile {
 				if backupFile {
 					if !util.IsFile(path.Join(destDir, destFile+".wwbackup")) {
 						err = util.CopyFile(path.Join(destDir, destFile), path.Join(destDir, destFile+".wwbackup"))
