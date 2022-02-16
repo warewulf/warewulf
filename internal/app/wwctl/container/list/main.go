@@ -3,7 +3,6 @@ package list
 import (
 	"fmt"
 	"os"
-	"path"
 
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -27,14 +26,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		nodemap[n.ContainerName.Get()]++
 	}
 
-	fmt.Printf("%-25s %-6s %-6s\n", "CONTAINER NAME", "NODES", "KERNEL")
+	fmt.Printf("%-25s %-6s %-6s\n", "CONTAINER NAME", "NODES", "KERNEL VERSION")
 	for _, source := range sources {
 		if nodemap[source] == 0 {
 			nodemap[source] = 0
 		}
 
-		kernel := container.KernelFind(source)
-		fmt.Printf("%-25s %-6d %s\n", source, nodemap[source], path.Base(kernel))
+		kernelVersion := container.KernelVersion(source)
+		fmt.Printf("%-25s %-6d %s\n", source, nodemap[source], kernelVersion)
 
 	}
 	return nil
