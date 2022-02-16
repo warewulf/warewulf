@@ -289,7 +289,7 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 			}
 			if writeFile {
 				if backupFile {
-					if !util.IsFile(path.Join(destDir, destFile+".wwbackup")) {
+					if !util.IsFile(path.Join(destDir, destFile+".wwbackup")) && util.IsFile(path.Join(destDir, destFile)) {
 						err = util.CopyFile(path.Join(destDir, destFile), path.Join(destDir, destFile+".wwbackup"))
 						if err != nil {
 							wwlog.Printf(wwlog.ERROR, "%s\n", err)
