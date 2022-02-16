@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/dhcp"
-	"github.com/hpcng/warewulf/internal/app/wwctl/configure/hosts"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/nfs"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/ssh"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/tftp"
@@ -27,10 +26,8 @@ var (
 func init() {
 	baseCmd.AddCommand(dhcp.GetCommand())
 	baseCmd.AddCommand(tftp.GetCommand())
-	baseCmd.AddCommand(hosts.GetCommand())
 	baseCmd.AddCommand(ssh.GetCommand())
 	baseCmd.AddCommand(nfs.GetCommand())
-
 	baseCmd.PersistentFlags().BoolVarP(&allFunctions, "all", "a", false, "Configure all services")
 }
 
@@ -42,12 +39,11 @@ func GetCommand() *cobra.Command {
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var err error
 	if allFunctions {
-		for _, s := range [5]string{"DHPC", "hosts", "NFS", "SSH", "TFTP"} {
+		for _, s := range [5]string{"DHPC", "NFS", "SSH", "TFTP"} {
 			err = configure.Configure(s, false)
 			if err != nil {
 				os.Exit(1)
 			}
-
 		}
 	} else {
 		_ = cmd.Help()
