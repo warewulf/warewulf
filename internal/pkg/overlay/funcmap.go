@@ -1,7 +1,9 @@
 package overlay
 
 import (
+	"bufio"
 	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 
@@ -11,6 +13,11 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
+/*
+Reads a file file from the host fs. If the file has nor '/' prefix
+the path is relative to SYSCONFDIR.
+Templates in the file are no evaluated.
+*/
 func templateFileInclude(inc string) string {
 	if !strings.HasPrefix(inc, "/") {
 		inc = path.Join(buildconfig.SYSCONFDIR(), "warewulf", inc)
@@ -23,6 +30,39 @@ func templateFileInclude(inc string) string {
 	return strings.TrimSuffix(string(content), "\n")
 }
 
+/*
+Reads a file into template the abort string is found in a line. First argument
+is the file to read, the second the abort string
+Templates in the file are no evaluated.
+*/
+func templateFileBlock(inc string, abortStr string) (string, error) {
+	if !strings.HasPrefix(inc, "/") {
+		inc = path.Join(buildconfig.SYSCONFDIR(), "warewulf", inc)
+	}
+	wwlog.Printf(wwlog.DEBUG, "Including file block into template: %s\n", inc)
+	readFile, err := os.Open(inc)
+	defer readFile.Close()
+	if err != nil {
+		return "", err
+	}
+	var cont string
+	fileScanner := bufio.NewScanner(readFile)
+	fileScanner.Split(bufio.ScanLines)
+	for fileScanner.Scan() {
+		line := fileScanner.Text()
+		if strings.Contains(line, abortStr) {
+			break
+		}
+		cont += line + "\n"
+	}
+	return cont, nil
+
+}
+
+/*
+Reads a file relative to given container.
+Templates in the file are no evaluated.
+*/
 func templateContainerFileInclude(containername string, filepath string) string {
 	wwlog.Printf(wwlog.VERBOSE, "Including file from Container into template: %s:%s\n", containername, filepath)
 

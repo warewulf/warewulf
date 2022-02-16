@@ -1,6 +1,7 @@
 package overlay
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -74,7 +75,9 @@ func BuildSpecificOverlays(nodes []node.NodeInfo, overlayName string) error {
 	return nil
 }
 
-// Build overlay for the host, so no argument needs to be given
+/*
+Build overlay for the host, so no argument needs to be given
+*/
 func BuildHostOverlay() error {
 	var host node.NodeInfo
 	var idEntry node.Entry
@@ -253,36 +256,55 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 			wwlog.Printf(wwlog.VERBOSE, "Evaluating overlay template file: %s\n", location)
 
 			destFile := strings.TrimSuffix(location, ".ww")
-			var ErrorAbort = errors.New("abort_template")
+			ErrorAbort := errors.New("abort_template")
+			ErrorNoBackup := errors.New("nobackup_template")
 			tmpl, err := template.New(path.Base(location)).Option("missingkey=default").Funcs(template.FuncMap{
 				// TODO: Fix for missingkey=zero
-				"Include":     templateFileInclude,
-				"IncludeFrom": templateContainerFileInclude,
-				"inc":         func(i int) int { return i + 1 },
-				"dec":         func(i int) int { return i - 1 },
-				"abort":       func() (string, error) { return "", ErrorAbort },
+				"Include":      templateFileInclude,
+				"IncludeFrom":  templateContainerFileInclude,
+				"IncludeBlock": templateFileBlock,
+				"inc":          func(i int) int { return i + 1 },
+				"dec":          func(i int) int { return i - 1 },
+				"abort":        func() (string, error) { return "", ErrorAbort },
+				"nobackup":     func() (string, error) { return "", ErrorNoBackup },
 				// }).ParseGlob(path.Join(OverlayDir, destFile+".ww*"))
 			}).ParseGlob(location)
 			if err != nil {
 				return errors.Wrap(err, "could not parse template "+location)
 			}
-
-			err = tmpl.Execute(ioutil.Discard, tstruct)
+			var buffer bytes.Buffer
+			err = tmpl.Execute(&buffer, tstruct)
+			backupFile := true
 			if err != nil {
 				// complicated workarround as error is not exported correctly: https://github.com/golang/go/issues/34201
 				if strings.Contains(fmt.Sprint(err), "abort_template") {
 					wwlog.Printf(wwlog.VERBOSE, "Aborting template file due to abort call in template: %s\n", location)
+				} else if strings.Contains(fmt.Sprint(err), "nobackup_template") {
+					backupFile = false
 				} else {
 					return errors.Wrap(err, "could not execute template")
 				}
 			} else {
-				w, err := os.OpenFile(path.Join(destDir, destFile), os.O_RDWR|os.O_CREATE, info.Mode())
+				if backupFile {
+					if !util.IsFile(path.Join(destDir, destFile+".wwbackup")) {
+						err = util.CopyFile(path.Join(destDir, destFile), path.Join(destDir, destFile+".wwbackup"))
+						if err != nil {
+							wwlog.Printf(wwlog.ERROR, "%s\n", err)
+						}
+					}
+
+				}
+				w, err := os.OpenFile(path.Join(destDir, destFile), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, info.Mode())
 				if err != nil {
 					return errors.Wrap(err, "could not open new file for template")
 				}
 				defer w.Close()
 
-				_ = tmpl.Execute(w, tstruct)
+				_, err = buffer.WriteTo(w)
+
+				if err != nil {
+					return errors.Wrap(err, "could not write file from template")
+				}
 
 				err = util.CopyUIDGID(location, path.Join(destDir, destFile))
 				if err != nil {
