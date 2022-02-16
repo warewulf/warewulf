@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/dhcp"
-	"github.com/hpcng/warewulf/internal/app/wwctl/configure/hosts"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/nfs"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/ssh"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/tftp"
@@ -16,8 +15,8 @@ import (
 var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:   "configure [OPTIONS]",
-		Short: "Manage system services",
+		Use:                   "configure [OPTIONS]",
+		Short:                 "Manage system services",
 		Long: "This application allows you to manage and initialize Warewulf dependent system\n" +
 			"services based on the configuration in the warewulf.conf file.",
 		RunE: CobraRunE,
@@ -28,7 +27,6 @@ var (
 func init() {
 	baseCmd.AddCommand(dhcp.GetCommand())
 	baseCmd.AddCommand(tftp.GetCommand())
-	baseCmd.AddCommand(hosts.GetCommand())
 	baseCmd.AddCommand(ssh.GetCommand())
 	baseCmd.AddCommand(nfs.GetCommand())
 
@@ -54,13 +52,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		err = tftp.Configure(false)
 		if err != nil {
 			return errors.Wrap(err, "failed to configure tftp")
-		}
-
-		fmt.Printf("################################################################################\n")
-		fmt.Printf("Configuring: /etc/hosts\n")
-		err = hosts.Configure(false)
-		if err != nil {
-			return errors.Wrap(err, "failed to configure hosts")
 		}
 
 		fmt.Printf("################################################################################\n")
