@@ -41,10 +41,10 @@ func templateFileBlock(inc string, abortStr string) (string, error) {
 	}
 	wwlog.Printf(wwlog.DEBUG, "Including file block into template: %s\n", inc)
 	readFile, err := os.Open(inc)
-	defer readFile.Close()
 	if err != nil {
 		return "", err
 	}
+	defer readFile.Close()
 	var cont string
 	fileScanner := bufio.NewScanner(readFile)
 	fileScanner.Split(bufio.ScanLines)
