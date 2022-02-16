@@ -51,7 +51,7 @@ func CopyFile(src string, dst string) error {
 	return nil
 }
 
-func CopyFileSafe(src string, dst string) error {
+func SafeCopyFile(src string, dst string) error {
 	var err error
 	// Don't overwrite existing files -- should add force overwrite switch
 	if _, err = os.Stat(dst); err == nil {

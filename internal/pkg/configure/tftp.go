@@ -28,7 +28,7 @@ func configureTFTP() error {
 
 	fmt.Printf("Writing PXE files to: %s\n", tftpdir)
 	for _, f := range [4]string{"x86.efi", "i386.efi", "i386.kpxe", "arm64.efi"} {
-		err = util.CopyFileSafe(path.Join(buildconfig.DATADIR(), "warewulf", "ipxe", f), path.Join(tftpdir, f))
+		err = util.SafeCopyFile(path.Join(buildconfig.DATADIR(), "warewulf", "ipxe", f), path.Join(tftpdir, f))
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 		}
