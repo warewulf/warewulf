@@ -70,6 +70,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			p.Root.Set(SetRoot)
 		}
 
+		if SetAssetKey != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting asset key to: %s\n", p.Id.Get(), SetAssetKey)
+			p.AssetKey.Set(SetAssetKey)
+		}
+
 		if SetKernel != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting Kernel to: %s\n", p.Id.Get(), SetKernel)
 			p.KernelVersion.Set(SetKernel)

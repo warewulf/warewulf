@@ -229,9 +229,7 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		p.RuntimeOverlay.Set(profile.RuntimeOverlay)
 		p.SystemOverlay.Set(profile.SystemOverlay)
 		p.Root.Set(profile.Root)
-		if profile.AssetKey != "" {
-			wwlog.Printf(wwlog.WARN, "Ignoring asset key %v in profile %v\n", profile.AssetKey, name)
-		}
+		p.AssetKey.Set(profile.AssetKey)
 		p.Discoverable.Set(profile.Discoverable)
 
 		for devname, netdev := range profile.NetDevs {
@@ -243,13 +241,19 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 			wwlog.Printf(wwlog.DEBUG, "Updating profile netdev: %s\n", devname)
 
 			p.NetDevs[devname].Device.Set(netdev.Device)
-			p.NetDevs[devname].Ipaddr.Set(netdev.Ipaddr)
 			p.NetDevs[devname].Netmask.Set(netdev.Netmask)
-			p.NetDevs[devname].Hwaddr.Set(netdev.Hwaddr)
 			p.NetDevs[devname].Gateway.Set(netdev.Gateway)
 			p.NetDevs[devname].Type.Set(netdev.Type)
 			p.NetDevs[devname].OnBoot.Set(netdev.OnBoot)
 			p.NetDevs[devname].Default.Set(netdev.Default)
+
+			// The following should not be set in a profile.
+			if netdev.Ipaddr != "" {
+				wwlog.Printf(wwlog.WARN, "Ignoring ip address %v in profile %v\n", netdev.Ipaddr, name)
+			}
+			if netdev.Hwaddr != "" {
+				wwlog.Printf(wwlog.WARN, "Ignoring hardware address %v in profile %v\n", netdev.Hwaddr, name)
+			}
 		}
 
 		// Merge Keys into Tags for backwards compatibility
