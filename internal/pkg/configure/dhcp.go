@@ -16,19 +16,21 @@ import (
 	"github.com/pkg/errors"
 )
 
-type dhcpTemplate struct {
-	Ipaddr     string
-	Port       string
-	RangeStart string
-	RangeEnd   string
-	Network    string
-	Netmask    string
-	Nodes      []node.NodeInfo
-}
-
 func configureDHCP(show bool) error {
-	var d dhcpTemplate
-	var templateFile string
+
+	var (
+		d struct {
+			Ipaddr     string
+			Port       string
+			RangeStart string
+			RangeEnd   string
+			Network    string
+			Netmask    string
+			Nodes      []node.NodeInfo
+		}
+
+		templateFile string
+	)
 
 	nodeDB, err := node.New()
 	if err != nil {
@@ -39,16 +41,6 @@ func configureDHCP(show bool) error {
 	controller, err := warewulfconf.New()
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "%s\n", err)
-		os.Exit(1)
-	}
-
-	if controller.Ipaddr == "" {
-		wwlog.Printf(wwlog.ERROR, "The Warewulf IP Address is not properly configured\n")
-		os.Exit(1)
-	}
-
-	if controller.Netmask == "" {
-		wwlog.Printf(wwlog.ERROR, "The Warewulf Netmask is not properly configured\n")
 		os.Exit(1)
 	}
 

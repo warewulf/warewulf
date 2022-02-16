@@ -9,7 +9,6 @@ import (
 	"net"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"regexp"
 	"syscall"
@@ -72,50 +71,6 @@ func RandomString(n int) string {
 	}
 	return string(b)
 }
-
-func CopyFiles(source string, dest string) error {
-	err := filepath.Walk(source, func(location string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if info.IsDir() {
-			wwlog.Printf(wwlog.DEBUG, "Creating directory: %s\n", location)
-			info, err := os.Stat(source)
-			if err != nil {
-				return err
-			}
-
-			err = os.MkdirAll(path.Join(dest, location), info.Mode())
-			if err != nil {
-				return err
-			}
-			err = CopyUIDGID(source, dest)
-			if err != nil {
-				return err
-			}
-
-		} else {
-			wwlog.Printf(wwlog.DEBUG, "Writing file: %s\n", location)
-
-			err := CopyFile(location, path.Join(dest, location))
-			if err != nil {
-				return err
-			}
-
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-//TODO: func CopyRecursive ...
 
 func IsDir(path string) bool {
 	wwlog.Printf(wwlog.DEBUG, "Checking if path exists as a directory: %s\n", path)

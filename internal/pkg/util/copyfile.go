@@ -3,6 +3,8 @@ package util
 import (
 	"io"
 	"os"
+	"path"
+	"path/filepath"
 
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
@@ -48,3 +50,58 @@ func CopyFile(src string, dst string) error {
 	}
 	return nil
 }
+
+func CopyFileSafe(src string, dst string) error {
+	var err error
+	// Don't overwrite existing files -- should add force overwrite switch
+	if _, err = os.Stat(dst); err == nil {
+		wwlog.Printf(wwlog.DEBUG, "Destination file %s exists.\n", dst)
+	} else {
+		err = CopyFile(src, dst)
+	}
+	return err
+}
+
+func CopyFiles(source string, dest string) error {
+	err := filepath.Walk(source, func(location string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			wwlog.Printf(wwlog.DEBUG, "Creating directory: %s\n", location)
+			info, err := os.Stat(source)
+			if err != nil {
+				return err
+			}
+
+			err = os.MkdirAll(path.Join(dest, location), info.Mode())
+			if err != nil {
+				return err
+			}
+			err = CopyUIDGID(source, dest)
+			if err != nil {
+				return err
+			}
+
+		} else {
+			wwlog.Printf(wwlog.DEBUG, "Writing file: %s\n", location)
+
+			err := CopyFile(location, path.Join(dest, location))
+			if err != nil {
+				return err
+			}
+
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+//TODO: func CopyRecursive ...
