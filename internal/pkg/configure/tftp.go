@@ -31,8 +31,8 @@ func configureTFTP() error {
 		err = util.SafeCopyFile(path.Join(buildconfig.DATADIR(), "warewulf", "ipxe", f), path.Join(tftpdir, f))
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
+			return err
 		}
-		return err
 	}
 
 	fmt.Printf("Enabling and restarting the TFTP services\n")
