@@ -148,7 +148,6 @@ files: all
 	install -d -m 0755 $(DESTDIR)$(FIREWALLDDIR)
 	install -d -m 0755 $(DESTDIR)$(SYSTEMDDIR)
 	test -f $(DESTDIR)$(SYSCONFDIR)/warewulf/warewulf.conf || install -m 644 etc/warewulf.conf $(DESTDIR)$(SYSCONFDIR)/warewulf/
-	test -f $(DESTDIR)$(SYSCONFDIR)/warewulf/hosts.tmpl || install -m 644 etc/hosts.tmpl $(DESTDIR)$(SYSCONFDIR)/warewulf/
 	test -f $(DESTDIR)$(SYSCONFDIR)/warewulf/nodes.conf || install -m 644 etc/nodes.conf $(DESTDIR)$(SYSCONFDIR)/warewulf/
 	cp -r etc/examples $(DESTDIR)$(SYSCONFDIR)/warewulf/
 	cp -r etc/ipxe $(DESTDIR)$(SYSCONFDIR)/warewulf/
