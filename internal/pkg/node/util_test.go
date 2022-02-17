@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func NewTestNode() (nodeYaml, error) {
+func NewTestNode() (NodeYaml, error) {
 	var data = `
 nodeprofiles:
   default:
@@ -48,7 +48,7 @@ nodes:
         prefix: ""
         netmask: ""
 `
-	var ret nodeYaml
+	var ret NodeYaml
 	err := yaml.Unmarshal([]byte(data), &ret)
 	if err != nil {
 		return ret, err
@@ -56,7 +56,7 @@ nodes:
 	return ret, nil
 }
 
-func Test_nodeYaml_FindByHwaddr(t *testing.T) {
+func Test_NodeYaml_FindByHwaddr(t *testing.T) {
 	c, _ := NewTestNode()
 	//type fields struct {
 	//	NodeProfiles map[string]*NodeConf
@@ -68,7 +68,7 @@ func Test_nodeYaml_FindByHwaddr(t *testing.T) {
 	tests := []struct {
 		name string
 		//fields  fields
-		config  nodeYaml
+		config  NodeYaml
 		args    args
 		want    string
 		wantErr bool
@@ -97,14 +97,14 @@ func Test_nodeYaml_FindByHwaddr(t *testing.T) {
 	}
 }
 
-func Test_nodeYaml_FindByIpaddr(t *testing.T) {
+func Test_NodeYaml_FindByIpaddr(t *testing.T) {
 	c, _ := NewTestNode()
 	type args struct {
 		ipaddr string
 	}
 	tests := []struct {
 		name    string
-		config  nodeYaml
+		config  NodeYaml
 		args    args
 		want    string
 		wantErr bool

@@ -9,7 +9,7 @@ import (
  * YAML data representations
  ******/
 
-type nodeYaml struct {
+type NodeYaml struct {
 	NodeProfiles map[string]*NodeConf
 	Nodes        map[string]*NodeConf
 }

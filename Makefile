@@ -222,6 +222,25 @@ dist: vendor config
 	cd .dist; tar -czf ../warewulf-$(VERSION).tar.gz warewulf-$(VERSION)
 	rm -rf .dist
 
+proto: ## wwapi generate code from protobuf. Not under make all. Requires protoc to generate code.
+	protoc -I internal/pkg/api/routes/v1 -I=. \
+		--grpc-gateway_out=. \
+		--grpc-gateway_opt logtostderr=true \
+		--go_out=. \
+		--go-grpc_out=. \
+		routes.proto
+
+wwapid: ## Build the grpc api server. TODO: not under make all.
+	go build -race -ldflags "-s -w" -o ./wwapid internal/app/api/wwapid/wwapid.go
+
+wwapic: ## Build the sample wwapi client. TODO: not under make all.
+	go build -race -ldflags "-s -w" -o ./wwapic  internal/app/api/wwapic/wwapic.go
+
+wwapird: ## Build the rest api server (revese proxy to the grpc api server). TODO: Not under make all.
+	go build -race -ldflags "-s -w" -o ./wwapird internal/app/api/wwapird/wwapird.go
+
+# TODO: Need service installers for wwapid, wwapird.
+
 clean:
 	rm -f wwclient
 	rm -f wwctl
@@ -235,6 +254,9 @@ clean:
 #	rm -f config_defaults
 	rm -f config
 	rm -f Defaults.mk
+	rm -f wwapid
+	rm -f wwapic
+	rm -f wwapird
 
 install: files install_wwclient
 

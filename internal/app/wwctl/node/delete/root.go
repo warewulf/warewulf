@@ -8,12 +8,12 @@ import (
 var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:     "delete [OPTIONS] NODE [NODE ...]",
-		Short:   "Delete a node from Warewulf",
-		Long:    "This command will remove NODE(s) from the Warewulf node configuration.",
-		Args:    cobra.MinimumNArgs(1),
-		RunE:    CobraRunE,
-		Aliases: []string{"rm", "del"},
+		Use:                   "delete [OPTIONS] NODE [NODE ...]",
+		Short:                 "Delete a node from Warewulf",
+		Long:                  "This command will remove NODE(s) from the Warewulf node configuration.",
+		Args:                  cobra.MinimumNArgs(1),
+		RunE:                  CobraRunE,
+		Aliases:               []string{"rm", "del"},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp
@@ -29,11 +29,11 @@ var (
 		},
 	}
 	SetYes   bool
-	SetForce string
+	SetForce bool // currently unused
 )
 
 func init() {
-	baseCmd.PersistentFlags().StringVarP(&SetForce, "force", "f", "", "Force node delete")
+	baseCmd.PersistentFlags().BoolVarP(&SetForce, "force", "f", false, "Force node delete")
 	baseCmd.PersistentFlags().BoolVarP(&SetYes, "yes", "y", false, "Set 'yes' to all questions asked")
 
 }

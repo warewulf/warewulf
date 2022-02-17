@@ -10,6 +10,9 @@
 /wwctl
 /bash_completion
 /man_page
+/wwapic
+/wwapid
+/wwapird
 
 # other created files
 /man_pages
