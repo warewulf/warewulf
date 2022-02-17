@@ -140,6 +140,7 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 	replace.Hwaddr = rinfo.hwaddr
 	replace.ContainerName = node.ContainerName.Get()
 	replace.KernelArgs = node.KernelArgs.Get()
+	replace.KernelVersion = node.KernelVersion.Get()
 
 	err = tmpl.Execute(w, replace)
 	if err != nil {

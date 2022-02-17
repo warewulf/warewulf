@@ -75,8 +75,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			p.AssetKey.Set(SetAssetKey)
 		}
 
+		if SetKernel != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting Kernel to: %s\n", p.Id.Get(), SetKernel)
+			p.KernelVersion.Set(SetKernel)
+		}
+
 		if SetKernelArgs != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting kernel args to: %s\n", p.Id.Get(), SetKernelArgs)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting Kernel args to: %s\n", p.Id.Get(), SetKernelArgs)
 			p.KernelArgs.Set(SetKernelArgs)
 		}
 
