@@ -24,8 +24,6 @@ RUN dnf install -y --allowerasing coreutils \
     which \
     words
 
-RUN sed -i 's/^root:.:/root::/g' /etc/passwd
-
 # These changes make it possible for users to ssh into nodes even
 # if there is no shadow entry for the user
 RUN sed -i -e '/^account.*pam_unix\.so\s*$/s/\s*$/\ broken_shadow/' /etc/pam.d/system-auth
@@ -34,3 +32,6 @@ RUN sed -i -e '/^account.*pam_unix\.so\s*$/s/\s*$/\ broken_shadow/' /etc/pam.d/p
 RUN systemctl unmask console-getty.service dev-hugepages.mount \
     getty.target sys-fs-fuse-connections.mount systemd-logind.service \
     systemd-remount-fs.service
+
+RUN systemctl enable network
+RUN touch /etc/sysconfig/disable-deprecation-warnings
