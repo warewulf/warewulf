@@ -136,6 +136,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			n.IpmiInterface.Set(SetIpmiInterface)
 		}
 
+		if SetIpmiWrite == "yes" || SetNetOnBoot == "y" || SetNetOnBoot == "1" || SetNetOnBoot == "true" {
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting Ipmiwrite\n", n.Id.Get(), SetIpmiWrite)
+			n.IpmiWrite.SetB(true)
+		} else {
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting Ipmiwrite \n", n.Id.Get(), SetIpmiWrite)
+			n.IpmiWrite.SetB(false)
+		}
+
 		if SetDiscoverable {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting node to discoverable\n", n.Id.Get())
 			n.Discoverable.SetB(true)

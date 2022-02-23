@@ -4,6 +4,11 @@
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
+if [ "$WWIPMI_WRITE" == "false" ]; then
+    echo "No write to IMPI configured"
+    exit
+fi
+
 if [ -z "$WWIPMI_IPADDR" ]; then
     echo "No IPMI IP address supplied, skipping IPMI configuration"
     exit
