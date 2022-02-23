@@ -188,6 +188,7 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 	tstruct.RuntimeOverlay = nodeInfo.RuntimeOverlay.Get()
 	tstruct.SystemOverlay = nodeInfo.SystemOverlay.Get()
 	tstruct.NetDevs = make(map[string]*node.NetDevs)
+	tstruct.Keys = make(map[string]string)
 	tstruct.Tags = make(map[string]string)
 	for devname, netdev := range nodeInfo.NetDevs {
 		var nd node.NetDevs

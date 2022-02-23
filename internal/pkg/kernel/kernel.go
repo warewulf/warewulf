@@ -21,6 +21,7 @@ import (
 var (
 	kernelSearchPaths = []string{
 		// This is a printf format where the %s will be the kernel version
+		"/boot/vmlinuz-linux%.s",
 		"/boot/vmlinuz-%s",
 		"/boot/vmlinuz-%s.gz",
 		"/lib/mmodules/%s/vmlinuz",
