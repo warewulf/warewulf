@@ -137,10 +137,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		if SetIpmiWrite == "yes" || SetNetOnBoot == "y" || SetNetOnBoot == "1" || SetNetOnBoot == "true" {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting Ipmiwrite\n", n.Id.Get(), SetIpmiWrite)
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting Ipmiwrite to %s\n", n.Id.Get(), SetIpmiWrite)
 			n.IpmiWrite.SetB(true)
 		} else {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting Ipmiwrite \n", n.Id.Get(), SetIpmiWrite)
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting Ipmiwrite to %s\n", n.Id.Get(), SetIpmiWrite)
 			n.IpmiWrite.SetB(false)
 		}
 
