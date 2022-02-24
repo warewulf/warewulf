@@ -5,7 +5,11 @@ echo ===========================================================================
 echo Warewulf v4 now booting: {{.Fqdn}}
 echo
 echo Container:     {{.ContainerName}}
-echo Kernel:        {{.KernelVersion}}
+{{if .KernelOverride }}
+echo Kernel:        {{.KernelOverride}}
+{{else}}
+echo Kernel:        {{.ContainerName}} (container default)
+{{end}}
 echo KernelArgs:    {{.KernelArgs}}
 echo
 
