@@ -32,6 +32,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			nodemap[source] = 0
 		}
 
+		wwlog.Printf(wwlog.DEBUG, "Finding kernel version for: %s\n", source)
 		kernelVersion := container.KernelVersion(source)
 		fmt.Printf("%-25s %-6d %s\n", source, nodemap[source], kernelVersion)
 
