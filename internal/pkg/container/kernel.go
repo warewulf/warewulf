@@ -3,6 +3,7 @@ package container
 import (
 	"path"
 	"path/filepath"
+	"sort"
 
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -30,6 +31,11 @@ func KernelFind(container string) string {
 		if err != nil {
 			return ""
 		}
+
+		sort.Slice(kernelPaths, func(i, j int) bool {
+			return kernelPaths[i] > kernelPaths[j]
+		})
+
 		for _, kernelPath := range kernelPaths {
 			wwlog.Printf(wwlog.DEBUG, "Checking for kernel path: %s\n", kernelPath)
 			if util.IsFile(kernelPath) {
