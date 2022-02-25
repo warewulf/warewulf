@@ -24,14 +24,29 @@ RUN dnf install -y --allowerasing coreutils \
     which \
     words
 
-# These changes make it possible for users to ssh into nodes even
-# if there is no shadow entry for the user
-RUN sed -i -e '/^account.*pam_unix\.so\s*$/s/\s*$/\ broken_shadow/' /etc/pam.d/system-auth
-RUN sed -i -e '/^account.*pam_unix\.so\s*$/s/\s*$/\ broken_shadow/' /etc/pam.d/password-auth
+RUN <<EOF
+    sed -i -e '/^account.*pam_unix\.so\s*$/s/\s*$/\ broken_shadow/' /etc/pam.d/system-auth
+    sed -i -e '/^account.*pam_unix\.so\s*$/s/\s*$/\ broken_shadow/' /etc/pam.d/password-auth
 
-RUN systemctl unmask console-getty.service dev-hugepages.mount \
-    getty.target sys-fs-fuse-connections.mount systemd-logind.service \
-    systemd-remount-fs.service
+    systemctl unmask console-getty.service dev-hugepages.mount \
+        getty.target sys-fs-fuse-connections.mount systemd-logind.service \
+        systemd-remount-fs.service
 
-RUN systemctl enable network
-RUN touch /etc/sysconfig/disable-deprecation-warnings
+    systemctl enable network
+    touch /etc/sysconfig/disable-deprecation-warnings
+
+    mkdir -p /etc/warewulf
+    touch /etc/warewulf/excludes
+    touch /etc/warewulf/container_exit.sh
+    chmod +x /etc/warewulf/container_exit.sh
+EOF
+
+COPY <<EOF /etc/warewulf/container_exit.sh
+#!/bin/sh
+set -x
+dnf clean all
+EOF
+
+COPY <<EOF /etc/warewulf/excludes
+/boot/
+EOF
