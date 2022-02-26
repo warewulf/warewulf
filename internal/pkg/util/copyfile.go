@@ -21,14 +21,13 @@ func CopyFile(src string, dst string) error {
 	}
 	defer srcFD.Close()
 
-	// Confirm source file structure is readable
-	_, err = srcFD.Stat()
+	srcInfo, err := srcFD.Stat()
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not stat source file %s: %s\n", src, err)
 		return err
 	}
 
-	dstFD, err := os.Create(dst)
+	dstFD, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE, srcInfo.Mode())
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not create destination file %s: %s\n", dst, err)
 		return err
