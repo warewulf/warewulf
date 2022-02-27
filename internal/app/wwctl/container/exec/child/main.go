@@ -85,17 +85,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.ERROR, "%s\n", err)
 		os.Exit(1)
 	}
-	_, err = os.Stat("./etc/warewulf/runExit")
-	if os.IsNotExist(err) {
-		wwlog.Printf(wwlog.DEBUG, "no exit script")
-		return nil
-	}
-	wwlog.Printf(wwlog.INFO, "Running exit script %s\n", path.Join(container.RootFsDir(containerName), "./etc/warewulf/runExit"))
-	err = syscall.Exec("./etc/warewulf/runExit", []string{""}, os.Environ())
-	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "%s\n", err)
-		os.Exit(1)
-	}
 
 	return nil
 }
