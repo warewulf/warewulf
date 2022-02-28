@@ -100,7 +100,6 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				var netdev NetDevEntry
 				n.NetDevs[devname] = &netdev
 			}
-
 			n.NetDevs[devname].Device.Set(netdev.Device)
 			n.NetDevs[devname].Ipaddr.Set(netdev.Ipaddr)
 			n.NetDevs[devname].Netmask.Set(netdev.Netmask)
@@ -109,6 +108,10 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.NetDevs[devname].Type.Set(netdev.Type)
 			n.NetDevs[devname].OnBoot.Set(netdev.OnBoot)
 			n.NetDevs[devname].Default.Set(netdev.Default)
+			// for just one netdeve, it is always the default
+			if len(node.NetDevs) == 1 {
+				n.NetDevs[devname].Default.Set("true")
+			}
 		}
 
 		// Merge Keys into Tags for backwards compatibility
