@@ -28,18 +28,14 @@ func KmodsSend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if node.KernelVersion.Defined() {
-		fileName := kernel.KmodsImage(node.KernelVersion.Get())
+	if node.KernelOverride.Defined() {
+		fileName := kernel.KmodsImage(node.KernelOverride.Get())
 
-		updateStatus(node.Id.Get(), "KMODS_OVERLAY", node.KernelVersion.Get()+".img", strings.Split(req.RemoteAddr, ":")[0])
+		updateStatus(node.Id.Get(), "KMODS_OVERLAY", node.KernelOverride.Get()+".img", strings.Split(req.RemoteAddr, ":")[0])
 
 		err := sendFile(w, fileName, node.Id.Get())
 		if err != nil {
 			daemonLogf("ERROR: %s\n", err)
 		}
-
-	} else {
-		w.WriteHeader(503)
-		daemonLogf("WARNING: No 'kernel version' set for node %s\n", node.Id.Get())
 	}
 }

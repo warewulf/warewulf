@@ -34,7 +34,7 @@ var (
 	}
 	SetComment        string
 	SetContainer      string
-	SetKernel         string
+	SetKernelOverride string
 	SetKernelArgs     string
 	SetNetName        string
 	SetNetDev         string
@@ -82,8 +82,8 @@ func init() {
 	}); err != nil {
 		log.Println(err)
 	}
-	baseCmd.PersistentFlags().StringVarP(&SetKernel, "kernel", "K", "", "Set Kernel version for nodes")
-	if err := baseCmd.RegisterFlagCompletionFunc("kernel", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	baseCmd.PersistentFlags().StringVarP(&SetKernelOverride, "kerneloverride", "K", "", "Set kernel override version for nodes")
+	if err := baseCmd.RegisterFlagCompletionFunc("kerneloverride", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		list, _ := kernel.ListKernels()
 		return list, cobra.ShellCompDirectiveNoFileComp
 	}); err != nil {
