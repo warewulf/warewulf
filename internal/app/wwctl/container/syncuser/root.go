@@ -1,4 +1,4 @@
-package show
+package syncuser
 
 import (
 	"github.com/hpcng/warewulf/internal/pkg/container"
@@ -8,10 +8,11 @@ import (
 var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:                   "show [OPTIONS] CONTAINER",
-		Short:                 "Show root fs dir for container",
-		Long: `Shows the base directory for the chroot of the given container. 
-More information about the conainer can be shown with the '-a' option.`,
+		Use:                   "syncuser [OPTIONS] CONTAINER",
+		Short:                 "Synchronizes user in container",
+		Long: `Synchronize the uids and gids from the host to the container.
+Users/groups which are only present in the container will be preserved if no
+uid/gid collision is detected. File ownerships are also changed.`,
 		RunE: CobraRunE,
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
@@ -23,12 +24,9 @@ More information about the conainer can be shown with the '-a' option.`,
 
 		Args: cobra.MinimumNArgs(1),
 	}
-	ShowAll bool
 )
 
 func init() {
-	baseCmd.PersistentFlags().BoolVarP(&ShowAll, "all", "a", false, "Show all information about a container")
-
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
