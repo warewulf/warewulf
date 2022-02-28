@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func configureSSH() error {
+func SSH() error {
 	if os.Getuid() == 0 {
 		fmt.Printf("Updating system keys\n")
 

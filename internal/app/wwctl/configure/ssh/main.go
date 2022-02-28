@@ -6,5 +6,5 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	return configure.Configure("SSH", setShow)
+	return configure.SSH()
 }

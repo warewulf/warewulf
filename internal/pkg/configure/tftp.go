@@ -13,7 +13,7 @@ import (
 
 var tftpdir string = path.Join(buildconfig.TFTPDIR(), "warewulf")
 
-func configureTFTP() error {
+func TFTP() error {
 	controller, err := warewulfconf.New()
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "%s\n", err)

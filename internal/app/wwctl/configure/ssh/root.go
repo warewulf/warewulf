@@ -12,11 +12,9 @@ var (
 			"keys.",
 		RunE: CobraRunE,
 	}
-	setShow bool
 )
 
 func init() {
-	baseCmd.PersistentFlags().BoolVarP(&setShow, "show", "s", false, "Show configuration (don't update)")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

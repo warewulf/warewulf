@@ -12,10 +12,10 @@ import (
 )
 
 /*
-Creates '/etc/exports' from the host template, enables and start the 
+Creates '/etc/exports' from the host template, enables and start the
 nfs server.
 */
-func configureNFS() error {
+func NFS() error {
 
 	controller, err := warewulfconf.New()
 	if err != nil {
@@ -28,7 +28,7 @@ func configureNFS() error {
 			fmt.Println(err)
 		}
 		err = overlay.BuildHostOverlay()
-    if err != nil {
+		if err != nil {
 			wwlog.Printf(wwlog.WARN, "host overlay could not be built: %s\n", err)
 		}
 		fmt.Printf("Enabling and restarting the NFS services\n")
@@ -49,7 +49,7 @@ func configureNFS() error {
 }
 
 /*
-Prints the configured nfs exports in formated style, needs not to be 
+Prints the configured nfs exports in formated style, needs not to be
 the content of '/etc/exports'
 */
 func showNFS() {
