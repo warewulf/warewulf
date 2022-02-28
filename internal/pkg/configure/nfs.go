@@ -47,21 +47,3 @@ func NFS() error {
 
 	return nil
 }
-
-/*
-Prints the configured nfs exports in formated style, needs not to be
-the content of '/etc/exports'
-*/
-func showNFS() {
-	controller, err := warewulfconf.New()
-	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "%s\n", err)
-		os.Exit(1)
-	}
-
-	fmt.Printf("/etc/exports:\n")
-	for _, export := range controller.Nfs.ExportsExtended {
-		fmt.Printf("%s %s/%s\n", export.Path, controller.Network, controller.Netmask)
-	}
-	fmt.Printf("\n")
-}
