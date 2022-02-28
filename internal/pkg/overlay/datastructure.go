@@ -11,6 +11,7 @@ type TemplateStruct struct {
 	ClusterName    string
 	Container      string
 	KernelVersion  string
+	KernelOverride string
 	KernelArgs     string
 	Init           string
 	Root           string
