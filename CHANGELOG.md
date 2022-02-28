@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   'default' now. The file `nodes.yaml' must be changed accordingly.
 - Creating of '/etc/exports' can now be disabled, so that `wwctl configure -a` wont overwrite
   a existing '/etc/exports'.
+- All configurations files for the host (/etc/exports, /etc/dhcpd.conf, /etc/hosts) are now
+  popublated from the (OVERLAYDIR/host/etc/{exports|dhcpd|hosts}.ww . Also other configuration
+  files like prometheus.yml.ww or slurm.conf.ww which depend on the cluster nodes can be
+  placed. Also the new templated functions {{ abort }}, {{ IncludeBlock }} abd {{ no_backup }}
+  are allowed now.
 
 
 ## [4.1.0] - 2021-07-29

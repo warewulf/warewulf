@@ -9,7 +9,6 @@ import (
 	"net"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"regexp"
 	"syscall"
@@ -72,81 +71,6 @@ func RandomString(n int) string {
 	}
 	return string(b)
 }
-
-func CopyFile(source string, dest string) error {
-	wwlog.Printf(wwlog.DEBUG, "Copying '%s' to '%s'\n", source, dest)
-	sourceFD, err := os.Open(source)
-	if err != nil {
-		return err
-	}
-
-	finfo, err := sourceFD.Stat()
-	if err != nil {
-		return errors.Wrap(err, "failed to stat source")
-	}
-
-	destFD, err := os.OpenFile(dest, os.O_RDWR|os.O_CREATE, finfo.Mode())
-	if err != nil {
-		return err
-	}
-
-	_, err = io.Copy(destFD, sourceFD)
-	if err != nil {
-		return err
-	}
-
-	err = CopyUIDGID(source, dest)
-	if err != nil {
-		return errors.Wrap(err, "failed to set ownership")
-	}
-	sourceFD.Close()
-
-	return destFD.Close()
-}
-
-func CopyFiles(source string, dest string) error {
-	err := filepath.Walk(source, func(location string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if info.IsDir() {
-			wwlog.Printf(wwlog.DEBUG, "Creating directory: %s\n", location)
-			info, err := os.Stat(source)
-			if err != nil {
-				return err
-			}
-
-			err = os.MkdirAll(path.Join(dest, location), info.Mode())
-			if err != nil {
-				return err
-			}
-			err = CopyUIDGID(source, dest)
-			if err != nil {
-				return err
-			}
-
-		} else {
-			wwlog.Printf(wwlog.DEBUG, "Writing file: %s\n", location)
-
-			err := CopyFile(location, path.Join(dest, location))
-			if err != nil {
-				return err
-			}
-
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-//TODO: func CopyRecursive ...
 
 func IsDir(path string) bool {
 	wwlog.Printf(wwlog.DEBUG, "Checking if path exists as a directory: %s\n", path)
