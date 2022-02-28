@@ -34,7 +34,7 @@ func CopyFile(src string, dst string) error {
 	}
 	defer dstFD.Close()
 
-	bytes, err := io.Copy(srcFD, dstFD)
+	bytes, err := io.Copy(dstFD, srcFD)
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "File copy from %s to %s failed.\n %s\n", src, dst, err)
 		return err
