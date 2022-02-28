@@ -2,8 +2,10 @@ package warewulfd
 
 import (
 	"net/http"
+	"path"
 	"strings"
 
+	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/kernel"
 )
 
@@ -28,18 +30,25 @@ func KernelSend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if node.KernelVersion.Defined() {
-		fileName := kernel.KernelImage(node.KernelVersion.Get())
+	var fileName string
+	if node.KernelOverride.Defined() {
+		fileName = kernel.KernelImage(node.KernelOverride.Get())
 
-		updateStatus(node.Id.Get(), "KERNEL", node.KernelVersion.Get(), strings.Split(req.RemoteAddr, ":")[0])
-
-		err := sendFile(w, fileName, node.Id.Get())
-		if err != nil {
-			daemonLogf("ERROR: %s\n", err)
-		}
+	} else if node.ContainerName.Defined() {
+		fileName = container.KernelFind(node.ContainerName.Get())
 
 	} else {
 		w.WriteHeader(503)
 		daemonLogf("WARNING: No 'kernel version' set for node %s\n", node.Id.Get())
+
+		return
 	}
+
+	updateStatus(node.Id.Get(), "KERNEL", path.Base(fileName), strings.Split(req.RemoteAddr, ":")[0])
+
+	err = sendFile(w, fileName, node.Id.Get())
+	if err != nil {
+		daemonLogf("ERROR: %s\n", err)
+	}
+
 }

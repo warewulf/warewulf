@@ -1,0 +1,52 @@
+FROM docker.io/library/centos:8
+
+RUN dnf install -y --allowerasing coreutils \
+    cpio \
+    dhclient \
+    e2fsprogs \
+    ethtool \
+    findutils \
+    initscripts \
+    ipmitool \
+    iproute \
+    kernel-core \
+    net-tools \
+    network-scripts \
+    nfs-utils \
+    openssh-clients \
+    openssh-server \
+    pciutils \
+    psmisc \
+    rsync \
+    rsyslog \
+    strace \
+    wget \
+    which \
+    words
+
+RUN <<EOF
+    sed -i -e '/^account.*pam_unix\.so\s*$/s/\s*$/\ broken_shadow/' /etc/pam.d/system-auth
+    sed -i -e '/^account.*pam_unix\.so\s*$/s/\s*$/\ broken_shadow/' /etc/pam.d/password-auth
+
+    systemctl unmask console-getty.service dev-hugepages.mount \
+        getty.target sys-fs-fuse-connections.mount systemd-logind.service \
+        systemd-remount-fs.service
+
+    systemctl enable network
+    touch /etc/sysconfig/disable-deprecation-warnings
+
+    mkdir -p /etc/warewulf
+    touch /etc/warewulf/excludes
+    touch /etc/warewulf/container_exit.sh
+    chmod +x /etc/warewulf/container_exit.sh
+EOF
+
+COPY <<EOF /etc/warewulf/container_exit.sh
+#!/bin/sh
+set -x
+dnf clean all
+EOF
+
+COPY <<EOF /etc/warewulf/excludes
+/boot/
+EOF
