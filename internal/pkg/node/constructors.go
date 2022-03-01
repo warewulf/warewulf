@@ -72,7 +72,6 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.Id.Set(nodename)
 		n.Comment.Set(node.Comment)
 		n.ContainerName.Set(node.ContainerName)
-		n.KernelVersion.Set(node.KernelVersion)
 		n.KernelArgs.Set(node.KernelArgs)
 		n.ClusterName.Set(node.ClusterName)
 		n.Ipxe.Set(node.Ipxe)
@@ -90,12 +89,17 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.AssetKey.Set(node.AssetKey)
 		n.Discoverable.Set(node.Discoverable)
 
+		if node.KernelOverride != "" {
+			n.KernelOverride.Set(node.KernelOverride)
+		} else if node.KernelVersion != "" {
+			n.KernelOverride.Set(node.KernelVersion)
+		}
+
 		for devname, netdev := range node.NetDevs {
 			if _, ok := n.NetDevs[devname]; !ok {
 				var netdev NetDevEntry
 				n.NetDevs[devname] = &netdev
 			}
-
 			n.NetDevs[devname].Device.Set(netdev.Device)
 			n.NetDevs[devname].Ipaddr.Set(netdev.Ipaddr)
 			n.NetDevs[devname].Netmask.Set(netdev.Netmask)
@@ -104,6 +108,10 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.NetDevs[devname].Type.Set(netdev.Type)
 			n.NetDevs[devname].OnBoot.Set(netdev.OnBoot)
 			n.NetDevs[devname].Default.Set(netdev.Default)
+			// for just one netdeve, it is always the default
+			if len(node.NetDevs) == 1 {
+				n.NetDevs[devname].Default.Set("true")
+			}
 		}
 
 		// Merge Keys into Tags for backwards compatibility
@@ -134,7 +142,6 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.Comment.SetAlt(config.NodeProfiles[p].Comment, p)
 			n.ClusterName.SetAlt(config.NodeProfiles[p].ClusterName, p)
 			n.ContainerName.SetAlt(config.NodeProfiles[p].ContainerName, p)
-			n.KernelVersion.SetAlt(config.NodeProfiles[p].KernelVersion, p)
 			n.KernelArgs.SetAlt(config.NodeProfiles[p].KernelArgs, p)
 			n.Ipxe.SetAlt(config.NodeProfiles[p].Ipxe, p)
 			n.Init.SetAlt(config.NodeProfiles[p].Init, p)
@@ -150,6 +157,12 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.Root.SetAlt(config.NodeProfiles[p].Root, p)
 			n.AssetKey.SetAlt(config.NodeProfiles[p].AssetKey, p)
 			n.Discoverable.SetAlt(config.NodeProfiles[p].Discoverable, p)
+
+			if config.NodeProfiles[p].KernelOverride != "" {
+				n.KernelOverride.SetAlt(config.NodeProfiles[p].KernelOverride, p)
+			} else if config.NodeProfiles[p].KernelVersion != "" {
+				n.KernelOverride.SetAlt(config.NodeProfiles[p].KernelVersion, p)
+			}
 
 			for devname, netdev := range config.NodeProfiles[p].NetDevs {
 				if _, ok := n.NetDevs[devname]; !ok {
@@ -218,7 +231,6 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		p.ContainerName.Set(profile.ContainerName)
 		p.Ipxe.Set(profile.Ipxe)
 		p.Init.Set(profile.Init)
-		p.KernelVersion.Set(profile.KernelVersion)
 		p.KernelArgs.Set(profile.KernelArgs)
 		p.IpmiNetmask.Set(profile.IpmiNetmask)
 		p.IpmiPort.Set(profile.IpmiPort)
@@ -231,6 +243,12 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		p.Root.Set(profile.Root)
 		p.AssetKey.Set(profile.AssetKey)
 		p.Discoverable.Set(profile.Discoverable)
+
+		if profile.KernelOverride != "" {
+			p.KernelOverride.Set(profile.KernelOverride)
+		} else if profile.KernelVersion != "" {
+			p.KernelOverride.Set(profile.KernelVersion)
+		}
 
 		for devname, netdev := range profile.NetDevs {
 			if _, ok := p.NetDevs[devname]; !ok {

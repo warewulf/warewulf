@@ -10,10 +10,13 @@ var (
 		Long:                  "This command builds overlays for given nodes.",
 		RunE:                  CobraRunE,
 	}
+	BuildHost  bool
+	BuildNodes bool
 )
 
 func init() {
-	//baseCmd.PersistentFlags().BoolVarP(&BuildAll, "all", "a", false, "Build overlays for all nodes")
+	baseCmd.PersistentFlags().BoolVarP(&BuildHost, "host", "H", false, "Build overlays only for the host")
+	baseCmd.PersistentFlags().BoolVarP(&BuildNodes, "nodes", "N", false, "Build overlays only for the nodes")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

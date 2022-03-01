@@ -15,18 +15,18 @@ import (
 )
 
 type iPxeTemplate struct {
-	Message       string
-	WaitTime      string
-	Hostname      string
-	Fqdn          string
-	Id            string
-	Cluster       string
-	ContainerName string
-	Hwaddr        string
-	Ipaddr        string
-	Port          string
-	KernelArgs    string
-	KernelVersion string
+	Message        string
+	WaitTime       string
+	Hostname       string
+	Fqdn           string
+	Id             string
+	Cluster        string
+	ContainerName  string
+	Hwaddr         string
+	Ipaddr         string
+	Port           string
+	KernelArgs     string
+	KernelOverride string
 }
 
 func IpxeSend(w http.ResponseWriter, req *http.Request) {
@@ -140,7 +140,7 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 	replace.Hwaddr = rinfo.hwaddr
 	replace.ContainerName = node.ContainerName.Get()
 	replace.KernelArgs = node.KernelArgs.Get()
-	replace.KernelVersion = node.KernelVersion.Get()
+	replace.KernelOverride = node.KernelOverride.Get()
 
 	err = tmpl.Execute(w, replace)
 	if err != nil {

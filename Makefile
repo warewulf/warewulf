@@ -142,14 +142,14 @@ files: all
 	install -d -m 0755 $(DESTDIR)$(SYSCONFDIR)/warewulf/
 	install -d -m 0755 $(DESTDIR)$(SYSCONFDIR)/warewulf/ipxe
 	install -d -m 0755 $(DESTDIR)$(TFTPDIR)/warewulf/ipxe/
+	install -d -m 0755 $(DESTDIR)$(DATADIR)/warewulf/ipxe/
 	install -d -m 0755 $(DESTDIR)$(BASH_COMPLETION)
 	install -d -m 0755 $(DESTDIR)$(MANDIR)/man1
 	install -d -m 0755 $(DESTDIR)$(FIREWALLDDIR)
 	install -d -m 0755 $(DESTDIR)$(SYSTEMDDIR)
 	test -f $(DESTDIR)$(SYSCONFDIR)/warewulf/warewulf.conf || install -m 644 etc/warewulf.conf $(DESTDIR)$(SYSCONFDIR)/warewulf/
-	test -f $(DESTDIR)$(SYSCONFDIR)/warewulf/hosts.tmpl || install -m 644 etc/hosts.tmpl $(DESTDIR)$(SYSCONFDIR)/warewulf/
 	test -f $(DESTDIR)$(SYSCONFDIR)/warewulf/nodes.conf || install -m 644 etc/nodes.conf $(DESTDIR)$(SYSCONFDIR)/warewulf/
-	cp -r etc/dhcp $(DESTDIR)$(SYSCONFDIR)/warewulf/
+	cp -r etc/examples $(DESTDIR)$(SYSCONFDIR)/warewulf/
 	cp -r etc/ipxe $(DESTDIR)$(SYSCONFDIR)/warewulf/
 	cp -r overlays/* $(DESTDIR)$(WWOVERLAYDIR)/
 	chmod 755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/init
@@ -161,12 +161,10 @@ files: all
 	install -c -m 0644 include/systemd/warewulfd.service $(DESTDIR)$(SYSTEMDDIR)
 	cp bash_completion.d/warewulf $(DESTDIR)$(BASH_COMPLETION)
 	cp man_pages/* $(DESTDIR)$(MANDIR)/man1/
-	install -c -m 0644 staticfiles/arm64.efi $(DESTDIR)$(TFTPDIR)/warewulf
-	install -c -m 0644 staticfiles/i386.efi $(DESTDIR)$(TFTPDIR)/warewulf
-	install -c -m 0644 staticfiles/i386.kpxe $(DESTDIR)$(TFTPDIR)/warewulf
-	install -c -m 0644 staticfiles/x86.efi $(DESTDIR)$(TFTPDIR)/warewulf
-
-
+	install -c -m 0644 staticfiles/arm64.efi $(DESTDIR)$(DATADIR)/warewulf/ipxe
+	install -c -m 0644 staticfiles/i386.efi $(DESTDIR)$(DATADIR)/warewulf/ipxe
+	install -c -m 0644 staticfiles/i386.kpxe $(DESTDIR)$(DATADIR)/warewulf/ipxe
+	install -c -m 0644 staticfiles/x86.efi $(DESTDIR)$(DATADIR)/warewulf/ipxe
 
 init:
 	systemctl daemon-reload

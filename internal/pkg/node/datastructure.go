@@ -20,6 +20,7 @@ type NodeConf struct {
 	ContainerName  string              `yaml:"container name,omitempty"`
 	Ipxe           string              `yaml:"ipxe template,omitempty"`
 	KernelVersion  string              `yaml:"kernel version,omitempty"`
+	KernelOverride string              `yaml:"kernel override,omitempty"`
 	KernelArgs     string              `yaml:"kernel args,omitempty"`
 	IpmiUserName   string              `yaml:"ipmi username,omitempty"`
 	IpmiPassword   string              `yaml:"ipmi password,omitempty"`
@@ -71,7 +72,7 @@ type NodeInfo struct {
 	ClusterName    Entry
 	ContainerName  Entry
 	Ipxe           Entry
-	KernelVersion  Entry
+	KernelOverride Entry
 	KernelArgs     Entry
 	IpmiIpaddr     Entry
 	IpmiNetmask    Entry

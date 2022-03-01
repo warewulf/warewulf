@@ -6,7 +6,6 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 )
@@ -27,14 +26,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		nodemap[n.ContainerName.Get()]++
 	}
 
-	fmt.Printf("%-35s %-6s %-6s\n", "CONTAINER NAME", "BUILT", "NODES")
+	fmt.Printf("%-25s %-6s %-6s\n", "CONTAINER NAME", "NODES", "KERNEL VERSION")
 	for _, source := range sources {
-		image := container.ImageFile(source)
-
 		if nodemap[source] == 0 {
 			nodemap[source] = 0
 		}
-		fmt.Printf("%-35s %-6t %-6d\n", source, util.IsFile(image), nodemap[source])
+
+		wwlog.Printf(wwlog.DEBUG, "Finding kernel version for: %s\n", source)
+		kernelVersion := container.KernelVersion(source)
+		fmt.Printf("%-25s %-6d %s\n", source, nodemap[source], kernelVersion)
 
 	}
 	return nil

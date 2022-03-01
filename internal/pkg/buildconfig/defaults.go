@@ -16,11 +16,17 @@ var (
 	version        string = "UNDEF"
 	release        string = "UNDEF"
 	wwclientloc    string = "UNDEF"
+	datadir        string = "UNDEF"
 )
 
 func BINDIR() string {
 	wwlog.Printf(wwlog.DEBUG, "BINDIR = '%s'\n", bindir)
 	return bindir
+}
+
+func DATADIR() string {
+	wwlog.Printf(wwlog.DEBUG, "DATADIR = '%s'\n", bindir)
+	return datadir
 }
 
 func SYSCONFDIR() string {
