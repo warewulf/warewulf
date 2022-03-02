@@ -182,6 +182,9 @@ func SyncUids(name string) error {
 				}
 				return nil
 			})
+			if err != nil {
+				return err
+			}
 		}
 	}
 	// change uids and gid of file

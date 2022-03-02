@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/hpcng/warewulf/internal/pkg/container"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 )
 
@@ -15,7 +16,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 	err := container.SyncUids(containerName)
 	if err != nil {
-		fmt.Sprint(err)
+		wwlog.Printf(wwlog.ERROR, "Error in synchronize: %s\n", err)
 		os.Exit(1)
 	}
 
