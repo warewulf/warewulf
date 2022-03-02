@@ -1,7 +1,6 @@
 package exec
 
 import (
-	"github.com/hpcng/warewulf/internal/app/wwctl/container/exec/child"
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/spf13/cobra"
 )
@@ -29,7 +28,6 @@ var (
 )
 
 func init() {
-	baseCmd.AddCommand(child.GetCommand())
 	baseCmd.PersistentFlags().StringArrayVarP(&binds, "bind", "b", []string{}, "Bind a local path into the container (must exist)")
 }
 
