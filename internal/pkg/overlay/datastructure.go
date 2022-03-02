@@ -22,6 +22,7 @@ type TemplateStruct struct {
 	IpmiUserName   string
 	IpmiPassword   string
 	IpmiInterface  string
+	IpmiWrite      string
 	RuntimeOverlay string
 	SystemOverlay  string
 	NetDevs        map[string]*node.NetDevs
