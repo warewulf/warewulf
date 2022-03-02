@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"syscall"
+	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/util"
@@ -28,8 +29,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.ERROR, "Unknown Warewulf container: %s\n", containerName)
 		os.Exit(1)
 	}
-
 	containerPath := container.RootFsDir(containerName)
+	passwdTime := time.Now()
+	fileStat, _ := os.Stat(path.Join(containerPath, "/etc/passwd"))
+	unixStat := fileStat.Sys().(*syscall.Stat_t)
+	passwdTime = time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))
+	groupTime := time.Now()
+	fileStat, _ = os.Stat(path.Join(containerPath, "/etc/group"))
+	unixStat = fileStat.Sys().(*syscall.Stat_t)
+	groupTime = time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))
+	wwlog.Printf(wwlog.DEBUG, "passwd: %v\n", passwdTime)
+	wwlog.Printf(wwlog.DEBUG, "group: %v\n", groupTime)
 
 	err := syscall.Mount("", "/", "", syscall.MS_PRIVATE|syscall.MS_REC, "")
 	if err != nil {
@@ -85,6 +95,18 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.ERROR, "%s\n", err)
 		os.Exit(1)
 	}
+	fileStat, _ = os.Stat(path.Join(containerPath, "/etc/passwd"))
+	unixStat = fileStat.Sys().(*syscall.Stat_t)
+	if passwdTime.Before(time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))) {
+		wwlog.Printf(wwlog.WARN, "/etc/passwd has been modified, maybe you want to run syncuser")
+	}
+	wwlog.Printf(wwlog.DEBUG, "passwd: %v\n", time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec)))
+	fileStat, _ = os.Stat(path.Join(containerPath, "/etc/group"))
+	unixStat = fileStat.Sys().(*syscall.Stat_t)
+	if groupTime.Before(time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))) {
+		wwlog.Printf(wwlog.WARN, "/etc/group has been modified, maybe you want to run syncuser")
+	}
+	wwlog.Printf(wwlog.DEBUG, "group: %v\n", time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec)))
 
 	return nil
 }
