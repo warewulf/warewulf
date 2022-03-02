@@ -98,11 +98,11 @@ type simpleUserInfo struct {
 /*
 sync the uids,gids from the host to the container
 */
-func SyncUids(name string) error {
+func SyncUids(containerName string) error {
 	var userDb []completeUserInfo
 	passwdName := "/etc/passwd"
 	groupName := "/etc/group"
-	fullPath := RootFsDir(name)
+	fullPath := RootFsDir(containerName)
 	hostName, err := createPasswdMap(passwdName)
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not open "+passwdName)
@@ -119,6 +119,7 @@ func SyncUids(name string) error {
 		wwlog.Printf(wwlog.ERROR, "Could not open "+path.Join(fullPath, passwdName))
 		return err
 	}
+	var userOnlyCont []string
 	for _, userCont := range contName {
 		foundUser := false
 		for idxHost, userHost := range userDb {
@@ -131,15 +132,14 @@ func SyncUids(name string) error {
 		if !foundUser {
 			userDb = append(userDb, completeUserInfo{Name: userCont.name,
 				UidHost: -1, GidHost: -1, UidCont: userCont.uid, GidCont: userCont.gid})
-			wwlog.Printf(wwlog.WARN, "user: %s:%v:%v not present on host", userCont.name, userCont.uid, userCont.gid)
+			wwlog.Printf(wwlog.WARN, "user: %s:%v:%v not present on host\n", userCont.name, userCont.uid, userCont.gid)
+			userOnlyCont = append(userOnlyCont, userCont.name)
 		}
 
 	}
-	// find out which user/goup are only in the container
-	var userOnlyCont []string
+	// find out which user/group are only in the container
 	for _, user := range userDb {
 		if user.UidHost == -1 {
-			userOnlyCont = append(userOnlyCont, user.Name)
 			for _, userCheck := range userDb {
 				if userCheck.UidHost == user.UidCont {
 					wwlog.Printf(wwlog.WARN, fmt.Sprintf("uid(%v) collision for host: %s and container: %s\n",
@@ -149,6 +149,7 @@ func SyncUids(name string) error {
 				}
 			}
 		}
+		/* Users can have same gid, disabling this code
 		if user.GidHost == -1 {
 			for _, userCheck := range userDb {
 				if userCheck.GidHost == user.GidCont {
@@ -159,16 +160,18 @@ func SyncUids(name string) error {
 				}
 			}
 		}
+		*/
 
 	}
 	// create list of files which need changed ownerships in order to change them later what
 	// avoid uid/gid collisions
 	for idx, user := range userDb {
-		if (user.UidHost != user.UidCont && user.UidCont != -1) || (user.GidHost != user.GidCont && user.GidCont != -1) {
+		if (user.UidHost != user.UidCont && user.UidHost != -1) ||
+			(user.GidHost != user.GidCont && user.GidHost != -1 && user.UidHost != -1) {
 			wwlog.Printf(wwlog.VERBOSE, fmt.Sprintf("host %s:%v:%v <-> container %s:%v:%v\n",
 				user.Name, user.UidHost, user.GidHost, user.Name, user.UidCont, user.GidCont))
 			err = filepath.Walk(fullPath, func(filePath string, info fs.FileInfo, err error) error {
-				// root is always good, if we failt to get UID/GID of a file
+				// root is always good, if we fail to get UID/GID of a file
 				var uid, gid int
 				if stat, ok := info.Sys().(*syscall.Stat_t); ok {
 					uid = int(stat.Uid)
@@ -190,7 +193,7 @@ func SyncUids(name string) error {
 	// change uids and gid of file
 	for _, user := range userDb {
 		if len(user.FileListUid) != 0 {
-			fmt.Printf("uidList(%s): %v\n", user.Name, user.FileListUid)
+			//fmt.Printf("uidList(%s): %v\n", user.Name, user.FileListUid)
 			for _, file := range user.FileListUid {
 				fsInfo, err := os.Stat(file)
 				if err != nil {
@@ -208,7 +211,7 @@ func SyncUids(name string) error {
 			}
 		}
 		if len(user.FileListGid) != 0 {
-			fmt.Printf("gidList(%s): %v\n", user.Name, user.FileListGid)
+			//fmt.Printf("gidList(%s): %v\n", user.Name, user.FileListGid)
 			for _, file := range user.FileListGid {
 				fsInfo, err := os.Stat(file)
 				if err != nil {
@@ -219,9 +222,12 @@ func SyncUids(name string) error {
 					uid = int(stat.Uid)
 				}
 				wwlog.Printf(wwlog.DEBUG, "%s chown(%v,%v)\n", file, user.UidHost, uid)
-				err = os.Chown(file, uid, user.GidHost)
-				if err != nil {
-					return err
+				// only chown files and dirs
+				if fsInfo.IsDir() && fsInfo.Mode().IsRegular() {
+					err = os.Chown(file, uid, user.GidHost)
+					if err != nil {
+						return err
+					}
 				}
 			}
 
@@ -238,16 +244,22 @@ func SyncUids(name string) error {
 	if err != nil {
 		return err
 	}
+	if err = os.Remove(path.Join(fullPath, passwdName)); err != nil {
+		return err
+	}
+	if err = os.Remove(path.Join(fullPath, groupName)); err != nil {
+		return err
+	}
 	if err = util.CopyFile(passwdName, path.Join(fullPath, passwdName)); err != nil {
 		return err
 	}
 	if err = util.CopyFile(groupName, path.Join(fullPath, groupName)); err != nil {
 		return err
 	}
-	if err = appendLines(passwdName, passwdEntries); err != nil {
+	if err = appendLines(path.Join(fullPath, passwdName), passwdEntries); err != nil {
 		return err
 	}
-	if err = appendLines(groupName, groupEntries); err != nil {
+	if err = appendLines(path.Join(fullPath, groupName), groupEntries); err != nil {
 		return err
 	}
 	return nil
@@ -295,19 +307,19 @@ func getEntires(fileName string, names []string) ([]string, error) {
 		return nil, err
 	}
 	defer file.Close()
-	var entries []string
+	var list []string
 	fileScanner := bufio.NewScanner(file)
 	for fileScanner.Scan() {
 		line := fileScanner.Text()
 		entries := strings.Split(line, ":")
 		for _, name := range names {
 			if entries[0] == name {
-				entries = append(entries, line)
+				list = append(list, line)
 			}
 		}
 	}
-	return entries, nil
-
+	wwlog.Printf(wwlog.DEBUG, "file: %s, list: %v\n", fileName, list)
+	return list, nil
 }
 
 /*
@@ -315,14 +327,15 @@ Appending the lines to the given file
 */
 func appendLines(fileName string, lines []string) error {
 	wwlog.Printf(wwlog.VERBOSE, "appending %v lines to %s\n", len(lines), fileName)
-	file, err := os.OpenFile(fileName, os.O_APPEND, 0644)
+	file, err := os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		return err
+		return errors.Errorf("Can't open file %s: %s", fileName, err)
 	}
 	defer file.Close()
 	for _, line := range lines {
-		if _, err := file.WriteString(line); err != nil {
-			return err
+		wwlog.Printf(wwlog.DEBUG, "Appending '%s' to %s\n", line, fileName)
+		if _, err := file.WriteString(fmt.Sprintf("%s\n", line)); err != nil {
+			return errors.Errorf("Can't write to file %s: %s", fileName, err)
 		}
 
 	}
