@@ -98,7 +98,7 @@ type simpleUserInfo struct {
 /*
 sync the uids,gids from the host to the container
 */
-func SyncUids(containerName string) error {
+func SyncUids(containerName string, showOnly bool) error {
 	var userDb []completeUserInfo
 	passwdName := "/etc/passwd"
 	groupName := "/etc/group"
@@ -162,6 +162,9 @@ func SyncUids(containerName string) error {
 		}
 		*/
 
+	}
+	if !showOnly {
+		return nil
 	}
 	// create list of files which need changed ownerships in order to change them later what
 	// avoid uid/gid collisions
