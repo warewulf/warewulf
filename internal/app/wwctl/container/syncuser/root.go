@@ -24,9 +24,11 @@ uid/gid collision is detected. File ownerships are also changed.`,
 
 		Args: cobra.MinimumNArgs(1),
 	}
+	noSyncUser bool
 )
 
 func init() {
+	baseCmd.PersistentFlags().BoolVar(&noSyncUser, "nosyncuser", false, "Don't synchronize uis/gods just check")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
