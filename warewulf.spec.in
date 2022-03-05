@@ -107,8 +107,7 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %attr(-, root, root) %{_prefix}/lib/firewalld/services/warewulf.xml
 %attr(-, root, root) %{_unitdir}/warewulfd.service
 %attr(-, root, root) %{_mandir}/man1/wwctl*
-
-%attr(-, root, root) %{tftpdir}/warewulf
+%attr(-, root, root) %{_datadir}/warewulf
 
 %changelog
 * Sat Jan 15 2022 Gregory Kurtzer <gmkurtzer@gmail.com> - 4.2.0-1
