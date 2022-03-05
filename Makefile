@@ -232,7 +232,7 @@ clean:
 	rm -f man_page
 	rm -rf man_pages
 	rm -rf vendor
-#	rm -f config_defaults
+	rm -f warewulf.spec
 	rm -f config
 	rm -f Defaults.mk
 
