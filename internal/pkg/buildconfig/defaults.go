@@ -15,7 +15,7 @@ var (
 	wwprovisiondir string = "UNDEF"
 	version        string = "UNDEF"
 	release        string = "UNDEF"
-	wwclientloc    string = "UNDEF"
+	wwclientdir    string = "UNDEF"
 	datadir        string = "UNDEF"
 )
 
@@ -84,7 +84,7 @@ func RELEASE() string {
 	return release
 }
 
-func WWCLIENTLOC() string {
-	wwlog.Printf(wwlog.DEBUG, "WWCLIENTLOC = '%s'\n", wwclientloc)
-	return wwclientloc
+func WWCLIENTDIR() string {
+	wwlog.Printf(wwlog.DEBUG, "WWCLIENTDIR = '%s'\n", wwclientdir)
+	return wwclientdir
 }

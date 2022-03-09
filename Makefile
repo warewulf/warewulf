@@ -3,7 +3,8 @@
 -include Defaults.mk
 
 # Linux distro (try and set to /etc/os-release ID)
-OS ?= $(sed -n "s/^ID\s*=\s*['"\""]\(.*\)['"\""]/\1/p" /etc/os-release)
+OS_REL := $(shell sed -n "s/^ID\s*=\s*['"\""]\(.*\)['"\""]/\1/p" /etc/os-release)
+OS ?= $(OS_REL)
 
 # List of variables to save and replace in files
 VARLIST := OS
@@ -14,7 +15,7 @@ WAREWULF ?= warewulf
 VERSION ?= 4.2.0
 GIT_TAG := $(shell test -e .git && git describe --tags --long --first-parent --always)
 
-ifndef $(GIT_TAG)
+ifndef GIT_TAG
   ifdef $(filter $(OS),ubuntu debian)
     RELEASE ?= 1.git_$(subst -,+,$(GIT_TAG))
   else
@@ -30,12 +31,12 @@ ifneq ($(OS),)
 endif
 
 # Always default to GNU autotools default paths if PREFIX has been redefined
-ifndef $(PREFIX)
+ifdef PREFIX
   USE_LSB_PATHS := false
 endif
 
 # System directory paths
-VARLIST += PREFIX BINDIR SYSCONFDIR SRVDIR DATADIR MANDIR DOCDIR LOCALSTATEDIR SHAREDSTATEDIR
+VARLIST += PREFIX BINDIR SYSCONFDIR SRVDIR DATADIR MANDIR DOCDIR LOCALSTATEDIR
 PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
 SYSCONFDIR ?= $(PREFIX)/etc
@@ -46,11 +47,9 @@ DOCDIR ?= $(DATADIR)/doc
 ifeq ($(USE_LSB_PATHS),true)
   SRVDIR ?= /srv
   LOCALSTATEDIR ?= /var/local
-  SHAREDSTATEDIR ?= /var/lib
 else
   SRVDIR ?= $(PREFIX)/srv
   LOCALSTATEDIR ?= $(PREFIX)/var
-  SHAREDSTATEDIR ?= $(PREFIX)/com
 endif
 
 # OS-Specific Service Locations
@@ -70,9 +69,9 @@ TFTPDIR ?= /var/lib/tftpboot
 # Warewulf directory paths
 VARLIST += WWCLIENTDIR WWCONFIGDIR WWPROVISIONDIR WWOVERLAYDIR WWCHROOTDIR WWTFTPDIR WWDOCDIR WWDATADIR
 WWCONFIGDIR := $(SYSCONFDIR)/$(WAREWULF)
-WWPROVISIONDIR := $(LOCALSTATEDIR)$(WAREWULF)
-WWOVERLAYDIR := $(LOCALSTATEDIR)$(WAREWULF)/overlays
-WWCHROOTDIR := $(LOCALSTATEDIR)$(WAREWULF)/chroots
+WWPROVISIONDIR := $(LOCALSTATEDIR)/$(WAREWULF)
+WWOVERLAYDIR := $(LOCALSTATEDIR)/$(WAREWULF)/overlays
+WWCHROOTDIR := $(LOCALSTATEDIR)/$(WAREWULF)/chroots
 WWTFTPDIR := $(TFTPDIR)/$(WAREWULF)
 WWDOCDIR := $(DOCDIR)/$(WAREWULF)
 WWDATADIR := $(DATADIR)/$(WAREWULF)
@@ -169,6 +168,7 @@ files: all
 	install -d -m 0755 $(DESTDIR)$(WWDOCDIR)
 	install -d -m 0755 $(DESTDIR)$(FIREWALLDDIR)
 	install -d -m 0755 $(DESTDIR)$(SYSTEMDDIR)
+	install -d -m 0755 $(DESTDIR)$(WWDATADIR)
 	test -f $(DESTDIR)$(WWCONFIGDIR)/warewulf.conf || install -m 644 etc/warewulf.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(WWCONFIGDIR)/nodes.conf || install -m 644 etc/nodes.conf $(DESTDIR)$(WWCONFIGDIR)
 	cp -r etc/examples $(DESTDIR)$(WWCONFIGDIR)/

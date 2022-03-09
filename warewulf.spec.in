@@ -61,12 +61,13 @@ system for large clusters of bare metal and/or virtual systems.
 
 
 %build
+# Install to sharedstatedir by redirecting LOCALSTATEDIR
 make genconfig \
     PREFIX=%{_prefix} \
     BINDIR=%{_bindir} \
     SYSCONFDIR=%{_sysconfdir} \
     DATADIR=%{_datadir} \
-    LOCALSTATEDIR=%{_localstatedir} \
+    LOCALSTATEDIR=%{_sharedstatedir} \
     SHAREDSTATEDIR=%{_sharedstatedir} \
     MANDIR=%{_mandir} \
     INFODIR=%{_infodir} \
@@ -76,7 +77,7 @@ make genconfig \
     SYSTEMDDIR=%{_unitdir} \
     BASHCOMPDIR=/etc/bash_completion.d/ \
     FIREWALLDDIR=/usr/lib/firewalld/services \
-    WWCLIENTDIR=%{_libexecdir}/warewulf
+    WWCLIENTDIR=/warewulf
 make
 
 
