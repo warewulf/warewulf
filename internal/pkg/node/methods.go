@@ -2,6 +2,9 @@ package node
 
 import (
 	"regexp"
+	"strings"
+
+	"github.com/hpcng/warewulf/internal/pkg/util"
 )
 
 /**********
@@ -49,7 +52,6 @@ func (ent *Entry) Set(val string) {
 	} else {
 		ent.value = val
 	}
-
 }
 
 func (ent *Entry) SetB(val bool) {
@@ -85,10 +87,10 @@ func (ent *Entry) SetDefault(val string) {
 }
 
 /**********
- *
- * Gets
- *
- *********/
+*
+* Gets
+*
+*********/
 
 func (ent *Entry) Get() string {
 	if ent.value != "" {
@@ -115,6 +117,25 @@ func (ent *Entry) GetB() bool {
 
 func (ent *Entry) GetReal() string {
 	return ent.value
+}
+
+/*
+Returns a string slice, which is the combination of value, altvalue and def.
+The elemtent in the slice are uniq.
+*/
+func (ent *Entry) GetSlice() []string {
+	var retval []string
+	if ent.value != "" {
+		retval = util.SliceAppendUniq(retval, strings.Split(ent.value, ","))
+	}
+	if ent.altvalue != "" {
+		retval = util.SliceAppendUniq(retval, strings.Split(ent.altvalue, ","))
+	}
+	if ent.def != "" {
+		retval = util.SliceAppendUniq(retval, strings.Split(ent.def, ","))
+
+	}
+	return retval
 }
 
 /**********

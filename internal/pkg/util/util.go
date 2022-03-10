@@ -203,6 +203,9 @@ func SliceRemoveElement(array []string, remove string) []string {
 	return ret
 }
 
+/*
+Adds a string, to string slice if the given string is not present in the slice.
+*/
 func SliceAddUniqueElement(array []string, add string) []string {
 	var ret []string
 	var found bool
@@ -219,6 +222,17 @@ func SliceAddUniqueElement(array []string, add string) []string {
 		ret = append(ret, add)
 	}
 
+	return ret
+}
+
+/*
+Appends a string slice to another slice. Guarantess that the elements are uniq.
+*/
+func SliceAppendUniq(array []string, add []string) []string {
+	var ret []string
+	for _, r := range add {
+		ret = SliceAddUniqueElement(array, r)
+	}
 	return ret
 }
 

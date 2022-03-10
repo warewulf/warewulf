@@ -1,12 +1,15 @@
-%global wwgroup warewulf
-%if 0%{?sle_version}
-%global tftpdir "/srv/tftpboot"
-%global srvdir "/srv"
-%else
-%global tftpdir "/var/lib/tftpboot"
-%global srvdir "%{_localstatedir}/warewulf/srv"
-%endif
 %define debug_package %{nil}
+
+%if 0%{?sle_version}
+%global tftpdir /srv/tftpboot
+%global srvdir /srv
+%else
+# Assume Fedora-based OS if not SUSE-based
+%global tftpdir /var/lib/tftpboot
+%global srvdir %{_sharedstatedir}
+%endif
+
+%global wwgroup warewulf
 
 Name: warewulf
 Summary: A provisioning system for large clusters of bare metal and/or virtual systems
@@ -27,17 +30,18 @@ Conflicts: warewulf-ipmi
 
 BuildRequires: make
 
-%if 0%{?rhel}
-BuildRequires: systemd
-BuildRequires: golang
-Requires: tftp-server
-Requires: nfs-utils
-%else
-# sle_version
+%if 0%{?sle_version}
 BuildRequires: systemd-rpm-macros
 BuildRequires: go
+BuildRequires: firewall-macros
 Requires: tftp
 Requires: nfs-kernel-server
+%else
+BuildRequires: systemd
+BuildRequires: golang
+BuildRequires: firewalld-filesystem
+Requires: tftp-server
+Requires: nfs-utils
 %endif
 
 %if 0%{?rhel} >= 8 || 0%{?sle_version}
@@ -57,23 +61,29 @@ system for large clusters of bare metal and/or virtual systems.
 
 
 %build
-make genconfig PREFIX=/usr \
-    SRVDIR=%{srvdir} \
-    LOCALSTATEDIR=%{_localstatedir} \
+# Install to sharedstatedir by redirecting LOCALSTATEDIR
+make genconfig \
+    PREFIX=%{_prefix} \
+    BINDIR=%{_bindir} \
     SYSCONFDIR=%{_sysconfdir} \
     DATADIR=%{_datadir} \
+    LOCALSTATEDIR=%{_sharedstatedir} \
+    SHAREDSTATEDIR=%{_sharedstatedir} \
     MANDIR=%{_mandir} \
-    BINDIR=%{_bindir} \
+    INFODIR=%{_infodir} \
+    DOCDIR=%{_docdir} \
+    SRVDIR=%{srvdir} \
     TFTPDIR=%{tftpdir} \
     SYSTEMDDIR=%{_unitdir} \
-    MANDIR=%{_mandir} \
-    BASH_COMPLETION=/etc/bash_completion.d/ \
-    FIREWALLDDIR=/usr/lib/firewalld/services
-
+    BASHCOMPDIR=/etc/bash_completion.d/ \
+    FIREWALLDDIR=/usr/lib/firewalld/services \
+    WWCLIENTDIR=/warewulf
 make
+
 
 %install
 make install DESTDIR=%{buildroot}
+
 
 %pre
 getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
@@ -81,6 +91,7 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 
 %post
 %systemd_post warewulfd.service
+%firewalld_reload
 
 
 %preun
@@ -89,19 +100,20 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 
 %postun
 %systemd_postun_with_restart warewulfd.service
+%firewalld_reload
 
 
 %files
 %defattr(-, root, %{wwgroup})
-%dir %{_sysconfdir}/%{name}
-%config(noreplace) %{_sysconfdir}/%{name}/*
-%config(noreplace) %attr(0640,-,-) %{_sysconfdir}/%{name}/nodes.conf
+%dir %{_sysconfdir}/warewulf
+%config(noreplace) %{_sysconfdir}/warewulf/*
+%config(noreplace) %attr(0640,-,-) %{_sysconfdir}/warewulf/nodes.conf
 %{_sysconfdir}/bash_completion.d/warewulf
 
-%dir %{_localstatedir}/warewulf
-%{_localstatedir}/warewulf/chroots
-%{_localstatedir}/warewulf/overlays
-%{srvdir}
+%dir %{_sharedstatedir}/warewulf
+%{_sharedstatedir}/warewulf/chroots
+%{_sharedstatedir}/warewulf/overlays
+%{srvdir}/warewulf
 
 %attr(-, root, root) %{_bindir}/wwctl
 %attr(-, root, root) %{_prefix}/lib/firewalld/services/warewulf.xml
@@ -109,7 +121,14 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %attr(-, root, root) %{_mandir}/man1/wwctl*
 %attr(-, root, root) %{_datadir}/warewulf
 
+%license %{_docdir}/warewulf/LICENSE.md
+
+
 %changelog
+* Wed Jan 26 2022 Jeremy Siadal <jeremy.c.siadal@intel.com> - 4.2.0-1
+- Add license install
+- Updates for RH and SUSE RPM guidelines
+
 * Sat Jan 15 2022 Gregory Kurtzer <gmkurtzer@gmail.com> - 4.2.0-1
 - Integrated genconfig Make options
 - Cleaned up SPEC to use default RPM macros
