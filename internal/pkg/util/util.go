@@ -311,3 +311,23 @@ func IncrementIPv4(start string, inc uint) string {
 	ipv4_new := net.IPv4(v4_o0, v4_o1, v4_o2, v4_o3)
 	return ipv4_new.String()
 }
+
+/*
+Appending the lines to the given file
+*/
+func AppendLines(fileName string, lines []string) error {
+	wwlog.Printf(wwlog.VERBOSE, "appending %v lines to %s\n", len(lines), fileName)
+	file, err := os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return errors.Errorf("Can't open file %s: %s", fileName, err)
+	}
+	defer file.Close()
+	for _, line := range lines {
+		wwlog.Printf(wwlog.DEBUG, "Appending '%s' to %s\n", line, fileName)
+		if _, err := file.WriteString(fmt.Sprintf("%s\n", line)); err != nil {
+			return errors.Errorf("Can't write to file %s: %s", fileName, err)
+		}
+
+	}
+	return nil
+}
