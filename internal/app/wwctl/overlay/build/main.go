@@ -33,9 +33,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 		if len(args) > 0 {
 			args = hostlist.Expand(args)
-			err = overlay.BuildAllOverlays(node.FilterByName(nodes, args))
+			if OverlayName != "" {
+				err = overlay.BuildSpecificOverlays(node.FilterByName(nodes, args), OverlayName)
+			} else {
+				err = overlay.BuildAllOverlays(node.FilterByName(nodes, args))
+			}
 		} else {
-			err = overlay.BuildAllOverlays(nodes)
+			if OverlayName != "" {
+				err = overlay.BuildSpecificOverlays(nodes, OverlayName)
+			} else {
+				err = overlay.BuildAllOverlays(nodes)
+			}
 		}
 
 		if err != nil {
