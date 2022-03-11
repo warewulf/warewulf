@@ -35,7 +35,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if fileName == "" {
-		if overlayName == "wwinit" {
+		if overlayName == "wwinit" || overlayName == "host" {
 			return errors.New("refusing to delete the Warewulf overlay")
 		}
 		if Force {

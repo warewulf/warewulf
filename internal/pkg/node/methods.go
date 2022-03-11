@@ -131,7 +131,7 @@ func (ent *Entry) GetSlice() []string {
 	if ent.altvalue != "" {
 		retval = util.SliceAppendUniq(retval, strings.Split(ent.altvalue, ","))
 	}
-	if ent.def != "" {
+	if ent.def != "" && len(retval) == 0 {
 		retval = util.SliceAppendUniq(retval, strings.Split(ent.def, ","))
 
 	}
