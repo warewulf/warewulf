@@ -45,8 +45,16 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 	}
-
-	if len(node.RuntimeOverlay.GetSlice()) != 0 {
+	if rinfo.overlay != "" {
+		fileName := overlay.OverlayImage(node.Id.Get(), []string{rinfo.overlay})
+		if conf.Warewulf.AutobuildOverlays {
+			_ = overlay.BuildOverlay(node, []string{rinfo.overlay})
+		}
+		err := sendFile(w, fileName, node.Id.Get())
+		if err != nil {
+			daemonLogf("ERROR: %s\n", err)
+		}
+	} else if len(node.RuntimeOverlay.GetSlice()) != 0 {
 		fileName := overlay.OverlayImage(node.Id.Get(), node.RuntimeOverlay.GetSlice())
 
 		updateStatus(node.Id.Get(), "RUNTIME_OVERLAY", node.RuntimeOverlay.Get(), strings.Split(req.RemoteAddr, ":")[0])
