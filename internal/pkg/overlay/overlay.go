@@ -114,6 +114,9 @@ func FindOverlays() ([]string, error) {
 	return ret, nil
 }
 
+/*
+Creates an emtpy overlay
+*/
 func OverlayInit(overlayName string) error {
 	path := OverlaySourceDir(overlayName)
 
@@ -232,19 +235,18 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayNames []string) error {
 	dt := time.Now()
 	tstruct.BuildTime = dt.Format("01-02-2006 15:04:05 MST")
 	for _, overlayName := range overlayNames {
-		wwlog.Printf(wwlog.DEBUG, "Staring to build overlay %s\nChanging directory to OverlayDir: %s\n",
-			overlayName, OverlaySourceDir)
-		OverlaySourceDir := OverlaySourceDir(overlayName)
-		err = os.Chdir(OverlaySourceDir)
+		overlaySourceDir := OverlaySourceDir(overlayName)
+		wwlog.Printf(wwlog.DEBUG, "Starting to build overlay %s\nChanging directory to OverlayDir: %s\n", overlayName, overlaySourceDir)
+		err = os.Chdir(overlaySourceDir)
 		if err != nil {
 			return errors.Wrap(err, "could not change directory to overlay dir")
 		}
-		wwlog.Printf(wwlog.DEBUG, "Checking to see if overlay directory exists: %s\n", OverlaySourceDir)
-		if !util.IsDir(OverlaySourceDir) {
+		wwlog.Printf(wwlog.DEBUG, "Checking to see if overlay directory exists: %s\n", overlaySourceDir)
+		if !util.IsDir(overlaySourceDir) {
 			return errors.New("overlay does not exist: " + overlayName)
 		}
 
-		wwlog.Printf(wwlog.VERBOSE, "Walking the overlay structure: %s\n", OverlaySourceDir)
+		wwlog.Printf(wwlog.VERBOSE, "Walking the overlay structure: %s\n", overlaySourceDir)
 		err = filepath.Walk(".", func(location string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
@@ -267,7 +269,7 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayNames []string) error {
 				wwlog.Printf(wwlog.DEBUG, "Created directory in overlay: %s\n", location)
 
 			} else if filepath.Ext(location) == ".ww" {
-				tstruct.BuildSource = path.Join(OverlaySourceDir, location)
+				tstruct.BuildSource = path.Join(overlaySourceDir, location)
 				wwlog.Printf(wwlog.VERBOSE, "Evaluating overlay template file: %s\n", location)
 
 				destFile := strings.TrimSuffix(location, ".ww")
