@@ -46,17 +46,20 @@ Build all overlays (runtime and generic) for a node
 */
 func BuildAllOverlays(nodes []node.NodeInfo) error {
 	for _, n := range nodes {
-		var overlays []string
 
-		overlays = append(overlays, n.SystemOverlay.GetSlice()...)
-		overlays = append(overlays, n.RuntimeOverlay.GetSlice()...)
-
-		wwlog.Printf(wwlog.INFO, "Building overlays for %s: [%s]\n", n.Id.Get(), strings.Join(overlays, ", "))
-
-		err := BuildOverlay(n, overlays)
+		sysOverlays := n.SystemOverlay.GetSlice()
+		wwlog.Printf(wwlog.INFO, "Building system overlays for %s: [%s]\n", n.Id.Get(), strings.Join(sysOverlays, ", "))
+		err := BuildOverlay(n, sysOverlays)
 		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("could not build overlays %v for nide %s\n", overlays, n.Id.Get()))
+			return errors.Wrap(err, fmt.Sprintf("could not build system overlays %v for nide %s\n", sysOverlays, n.Id.Get()))
 		}
+		runOverlays := n.RuntimeOverlay.GetSlice()
+		wwlog.Printf(wwlog.INFO, "Building runtime overlays for %s: [%s]\n", n.Id.Get(), strings.Join(runOverlays, ", "))
+		err = BuildOverlay(n, runOverlays)
+		if err != nil {
+			return errors.Wrap(err, fmt.Sprintf("could not build runtime overlays %v for nide %s\n", runOverlays, n.Id.Get()))
+		}
+
 	}
 	return nil
 }
