@@ -181,6 +181,7 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 	tstruct.IpmiUserName = nodeInfo.IpmiUserName.Get()
 	tstruct.IpmiPassword = nodeInfo.IpmiPassword.Get()
 	tstruct.IpmiInterface = nodeInfo.IpmiInterface.Get()
+	tstruct.IpmiWrite = nodeInfo.IpmiWrite.Get()
 	tstruct.RuntimeOverlay = nodeInfo.RuntimeOverlay.Get()
 	tstruct.SystemOverlay = nodeInfo.SystemOverlay.Get()
 	tstruct.NetDevs = make(map[string]*node.NetDevs)

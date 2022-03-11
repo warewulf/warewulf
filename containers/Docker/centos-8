@@ -41,12 +41,17 @@ RUN <<EOF
     chmod +x /etc/warewulf/container_exit.sh
 EOF
 
+
 COPY <<EOF /etc/warewulf/container_exit.sh
 #!/bin/sh
 set -x
+LANG=C
+LC_CTYPE=C
+export LANG LC_CTYPE
 dnf clean all
 EOF
 
 COPY <<EOF /etc/warewulf/excludes
 /boot/
+/usr/share/GeoIP
 EOF
