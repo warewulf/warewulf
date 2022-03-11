@@ -158,10 +158,10 @@ func (ent *Entry) Print() string {
 }
 
 func (ent *Entry) PrintComb() string {
-	if ent.value != "" && ent.def != "" {
-		return "[" + ent.value + "," + ent.def + "]"
+	if ent.value != "" && ent.altvalue != "" {
+		return "[" + ent.value + "," + ent.altvalue + "]"
 	}
-	return ent.PrintComb()
+	return ent.Print()
 }
 
 func (ent *Entry) PrintB() bool {
