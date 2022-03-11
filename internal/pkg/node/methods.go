@@ -157,6 +157,13 @@ func (ent *Entry) Print() string {
 	return "--"
 }
 
+func (ent *Entry) PrintComb() string {
+	if ent.value != "" && ent.def != "" {
+		return "[" + ent.value + "," + ent.def + "]"
+	}
+	return ent.PrintComb()
+}
+
 func (ent *Entry) PrintB() bool {
 	return ent.GetB()
 }
