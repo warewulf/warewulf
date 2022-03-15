@@ -76,7 +76,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 	} else if ShowNet {
-		fmt.Printf("%-22s %-6s %-18s %-15s %-15s\n", "NODE NAME", "DEVICE", "HWADDR", "IPADDR", "GATEWAY", "IPADDR6")
+		fmt.Printf("%-22s %-6s %-18s %-15s %-15s %-15s\n", "NODE NAME", "DEVICE", "HWADDR", "IPADDR", "GATEWAY", "IPADDR6")
 		fmt.Println(strings.Repeat("=", 80))
 
 		for _, node := range node.FilterByName(nodes, args) {
