@@ -205,7 +205,7 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 		netPrefix, _ := net.IPMask(net.ParseIP(netdev.Netmask.Get()).To4()).Size()
 		tstruct.NetDevs[devname].Prefix = strconv.Itoa(netPrefix)
 		tstruct.NetDevs[devname].IpCIDR = netaddr.String()
-
+		tstruct.NetDevs[devname].Ipaddr6 = netdev.Ipaddr6.Get()
 	}
 	// Backwards compatibility for templates using "Keys"
 	for keyname, key := range nodeInfo.Tags {
@@ -219,8 +219,14 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayName string) error {
 	tstruct.Dhcp = *controller.Dhcp
 	tstruct.Warewulf = *controller.Warewulf
 	tstruct.Ipaddr = controller.Ipaddr
+	tstruct.Ipaddr6 = controller.Ipaddr6
 	tstruct.Netmask = controller.Netmask
 	tstruct.Network = controller.Network
+	if controller.Ipaddr6 != "" {
+		tstruct.Ipv6 = true
+	} else {
+		tstruct.Ipv6 = false
+	}
 	hostname, _ := os.Hostname()
 	tstruct.BuildHost = hostname
 	dt := time.Now()

@@ -65,6 +65,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":DEVICE", netdev.Device.Source(), netdev.Device.Print())
 				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":HWADDR", netdev.Hwaddr.Source(), netdev.Hwaddr.Print())
 				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":IPADDR", netdev.Ipaddr.Source(), netdev.Ipaddr.Print())
+				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":IPADDR6", netdev.Ipaddr.Source(), netdev.Ipaddr6.Print())
 				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":NETMASK", netdev.Netmask.Source(), netdev.Netmask.Print())
 				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":GATEWAY", netdev.Gateway.Source(), netdev.Gateway.Print())
 				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":TYPE", netdev.Type.Source(), netdev.Type.Print())
@@ -75,16 +76,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 	} else if ShowNet {
-		fmt.Printf("%-22s %-6s %-18s %-15s %-15s\n", "NODE NAME", "DEVICE", "HWADDR", "IPADDR", "GATEWAY")
+		fmt.Printf("%-22s %-6s %-18s %-15s %-15s\n", "NODE NAME", "DEVICE", "HWADDR", "IPADDR", "GATEWAY", "IPADDR6")
 		fmt.Println(strings.Repeat("=", 80))
 
 		for _, node := range node.FilterByName(nodes, args) {
 			if len(node.NetDevs) > 0 {
 				for name, dev := range node.NetDevs {
-					fmt.Printf("%-22s %-6s %-18s %-15s %-15s\n", node.Id.Get(), name, dev.Hwaddr.Print(), dev.Ipaddr.Print(), dev.Gateway.Print())
+					fmt.Printf("%-22s %-6s %-18s %-15s %-15s %-15s\n",
+						node.Id.Get(), name, dev.Hwaddr.Print(), dev.Ipaddr.Print(), dev.Gateway.Print(), dev.Ipaddr6.Print())
 				}
 			} else {
-				fmt.Printf("%-22s %-6s %-18s %-15s %-15s\n", node.Id.Get(), "--", "--", "--", "--")
+				fmt.Printf("%-22s %-6s %-18s %-15s %-15s %-15s\n", node.Id.Get(), "--", "--", "--", "--", "--")
 			}
 		}
 

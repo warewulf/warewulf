@@ -2,12 +2,15 @@ package node
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
+	"net"
 	"path"
 	"sort"
 	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 
 	"gopkg.in/yaml.v2"
@@ -43,7 +46,10 @@ func New() (nodeYaml, error) {
 
 func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 	var ret []NodeInfo
-
+	wwconfig, err := warewulfconf.New()
+	if err != nil {
+		return ret, err
+	}
 	wwlog.Printf(wwlog.DEBUG, "Finding all nodes...\n")
 	for nodename, node := range config.Nodes {
 		var n NodeInfo
@@ -103,13 +109,28 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			}
 			n.NetDevs[devname].Device.Set(netdev.Device)
 			n.NetDevs[devname].Ipaddr.Set(netdev.Ipaddr)
+			n.NetDevs[devname].Ipaddr6.Set(netdev.Ipaddr6)
+
+			// Derive value of ipv6 address from ipv4 if not explicitly set
+			if wwconfig.Ipaddr6 != "" {
+				ipv4Arr := strings.Split(netdev.Ipaddr, ".")
+				// error can be ignored as check was done at init
+				_, ipv6Net, _ := net.ParseCIDR(wwconfig.Ipaddr6)
+				mSize, _ := ipv6Net.Mask.Size()
+				ipv6str := fmt.Sprintf("%s%s:%s:%s:%s/%v",
+					ipv6Net.IP.String(), ipv4Arr[0], ipv4Arr[1], ipv4Arr[2], ipv4Arr[3], mSize)
+				if strings.Count(ipv6Net.IP.String(), ":") == 5 {
+					ipv6str = strings.Replace(ipv6str, "::", ":", -1)
+				}
+				n.NetDevs[devname].Ipaddr6.SetDefault(ipv6str)
+			}
 			n.NetDevs[devname].Netmask.Set(netdev.Netmask)
 			n.NetDevs[devname].Hwaddr.Set(netdev.Hwaddr)
 			n.NetDevs[devname].Gateway.Set(netdev.Gateway)
 			n.NetDevs[devname].Type.Set(netdev.Type)
 			n.NetDevs[devname].OnBoot.Set(netdev.OnBoot)
 			n.NetDevs[devname].Default.Set(netdev.Default)
-			// for just one netdeve, it is always the default
+			// for just one netdev, it is always the default
 			if len(node.NetDevs) == 1 {
 				n.NetDevs[devname].Default.Set("true")
 			}
@@ -174,7 +195,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				wwlog.Printf(wwlog.DEBUG, "Updating profile (%s) netdev: %s\n", p, devname)
 
 				n.NetDevs[devname].Device.SetAlt(netdev.Device, p)
-				n.NetDevs[devname].Ipaddr.SetAlt(netdev.Ipaddr, p)
+				//n.NetDevs[devname].Ipaddr.SetAlt(netdev.Ipaddr, p) <- Ipaddr must be uniq
 				n.NetDevs[devname].Netmask.SetAlt(netdev.Netmask, p)
 				n.NetDevs[devname].Hwaddr.SetAlt(netdev.Hwaddr, p)
 				n.NetDevs[devname].Gateway.SetAlt(netdev.Gateway, p)

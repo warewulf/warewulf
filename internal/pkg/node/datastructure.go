@@ -49,6 +49,7 @@ type NetDevs struct {
 	Hwaddr  string `yaml:"hwaddr,omitempty"`
 	Ipaddr  string `yaml:"ipaddr,omitempty"`
 	IpCIDR  string `yaml:"ipcidr,omitempty"`
+	Ipaddr6 string `yaml:"ip6addr,omitempty"`
 	Prefix  string `yaml:"prefix,omitempty"`
 	Netmask string `yaml:"netmask,omitempty"`
 	Gateway string `yaml:"gateway,omitempty"`
@@ -101,6 +102,7 @@ type NetDevEntry struct {
 	Device  Entry
 	Hwaddr  Entry
 	Ipaddr  Entry
+	Ipaddr6 Entry
 	IpCIDR  Entry
 	Prefix  Entry
 	Netmask Entry

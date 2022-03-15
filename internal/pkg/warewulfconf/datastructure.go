@@ -9,8 +9,10 @@ import (
 type ControllerConf struct {
 	Comment  string        `yaml:"comment,omitempty"`
 	Ipaddr   string        `yaml:"ipaddr"`
+	Ipaddr6  string        `yaml:"ipaddr6,omitempty"`
 	Netmask  string        `yaml:"netmask"`
 	Network  string        `yaml:"network,omitempty"`
+	Ipv6net  string        `yaml:"ipv6net,omitempty"`
 	Fqdn     string        `yaml:"fqdn,omitempty"`
 	Warewulf *WarewulfConf `yaml:"warewulf"`
 	Dhcp     *DhcpConf     `yaml:"dhcp"`

@@ -33,8 +33,10 @@ type TemplateStruct struct {
 	BuildTime      string
 	BuildSource    string
 	Ipaddr         string
+	Ipaddr6        string
 	Netmask        string
 	Network        string
+	Ipv6           bool
 	Dhcp           warewulfconf.DhcpConf
 	Nfs            warewulfconf.NfsConf
 	Warewulf       warewulfconf.WarewulfConf
