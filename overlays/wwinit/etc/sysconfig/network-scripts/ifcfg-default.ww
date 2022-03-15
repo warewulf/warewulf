@@ -2,7 +2,7 @@
 # Host:   {{.BuildHost}}
 # Time:   {{.BuildTime}}
 # Source: {{.BuildSource}}
-# DEVICE={{$.NetDevs.default.Device}}
+DEVICE={{$.NetDevs.default.Device}}
 NAME=default
 BOOTPROTO=static
 DEVTIMEOUT=10
