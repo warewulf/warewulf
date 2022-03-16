@@ -1,7 +1,9 @@
 package build
 
 import (
+	"errors"
 	"os"
+	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
@@ -11,7 +13,29 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
+	nodeDB, err := node.New()
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
+		os.Exit(1)
+	}
 
+	nodes, err := nodeDB.FindAllNodes()
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Could not get node list: %s\n", err)
+		os.Exit(1)
+	}
+	if OverlayDir != "" {
+		if OverlayName == "" {
+			return errors.New("no overlay name given")
+		}
+		if len(args) > 0 {
+			args = hostlist.Expand(args)
+			for _, node := range nodes {
+				return overlay.BuildOverlayIndir(node, strings.Split(OverlayName, ","), OverlayDir)
+			}
+		}
+
+	}
 	if BuildHost || (!BuildHost && !BuildNodes && len(args) == 0) {
 		err := overlay.BuildHostOverlay()
 		if err != nil {
@@ -19,17 +43,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 	if BuildNodes || (!BuildHost && !BuildNodes) {
-		nodeDB, err := node.New()
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
-			os.Exit(1)
-		}
-
-		nodes, err := nodeDB.FindAllNodes()
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Could not get node list: %s\n", err)
-			os.Exit(1)
-		}
 
 		if len(args) > 0 {
 			args = hostlist.Expand(args)
