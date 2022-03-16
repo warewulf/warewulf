@@ -272,6 +272,7 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 	dt := time.Now()
 	tstruct.BuildTime = dt.Format("01-02-2006 15:04:05 MST")
 	for _, overlayName := range overlayNames {
+		wwlog.Printf(wwlog.VERBOSE, "Building overlay %s for node %s in %s\n", overlayName, nodeInfo.Id.Get(), outputDir)
 		overlaySourceDir := OverlaySourceDir(overlayName)
 		wwlog.Printf(wwlog.DEBUG, "Starting to build overlay %s\nChanging directory to OverlayDir: %s\n", overlayName, overlaySourceDir)
 		err = os.Chdir(overlaySourceDir)
@@ -319,6 +320,7 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 					"IncludeBlock": templateFileBlock,
 					"inc":          func(i int) int { return i + 1 },
 					"dec":          func(i int) int { return i - 1 },
+					"file":         func(str string) string { return fmt.Sprintf("{{ /* file %s*/ }}", str) },
 					"abort":        func() (string, error) { return "", ErrorAbort },
 					"nobackup":     func() (string, error) { return "", ErrorNoBackup },
 					// }).ParseGlob(path.Join(OverlayDir, destFile+".ww*"))

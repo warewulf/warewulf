@@ -33,6 +33,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			for _, node := range nodes {
 				return overlay.BuildOverlayIndir(node, strings.Split(OverlayName, ","), OverlayDir)
 			}
+		} else {
+			var host node.NodeInfo
+			var idEntry node.Entry
+			hostname, _ := os.Hostname()
+			wwlog.Printf(wwlog.INFO, "Building overlay for %s: host\n", hostname)
+			idEntry.Set(hostname)
+			host.Id = idEntry
+			return overlay.BuildOverlayIndir(host, strings.Split(OverlayName, ","), OverlayDir)
+
 		}
 
 	}
