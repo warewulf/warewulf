@@ -361,7 +361,7 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 							destFileName = filenameFromTemplate[0][1]
 							fileBuffer.Reset()
 						} else {
-							_, _ = fileBuffer.WriteString(line)
+							_, _ = fileBuffer.WriteString(line + "\n")
 						}
 					}
 					err = carefulWriteBuffer(path.Join(outputDir, destFileName), fileBuffer, backupFile, info.Mode())
