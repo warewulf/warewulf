@@ -1,14 +1,17 @@
 package overlay
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"net"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"text/template"
@@ -320,7 +323,7 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 					"IncludeBlock": templateFileBlock,
 					"inc":          func(i int) int { return i + 1 },
 					"dec":          func(i int) int { return i - 1 },
-					"file":         func(str string) string { return fmt.Sprintf("{{ /* file %s*/ }}", str) },
+					"file":         func(str string) string { return fmt.Sprintf("{{ /* file \"%s\" */ }}", str) },
 					"abort":        func() (string, error) { return "", ErrorAbort },
 					"nobackup":     func() (string, error) { return "", ErrorNoBackup },
 					// }).ParseGlob(path.Join(OverlayDir, destFile+".ww*"))
@@ -344,23 +347,24 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 					}
 				}
 				if writeFile {
-					if backupFile {
-						if !util.IsFile(path.Join(outputDir, destFile+".wwbackup")) && util.IsFile(path.Join(outputDir, destFile)) {
-							err = util.CopyFile(path.Join(outputDir, destFile), path.Join(outputDir, destFile+".wwbackup"))
-							if err != nil {
-								wwlog.Printf(wwlog.ERROR, "%s\n", err)
-							}
+					destFileName := destFile
+					var fileBuffer bytes.Buffer
+					// search for magic file name comment
+					fileScanner := bufio.NewScanner(bytes.NewReader(buffer.Bytes()))
+					fileScanner.Split(bufio.ScanLines)
+					reg := regexp.MustCompile(`.*{{\s*/\*\s*file\s*["'](.*)["']\s*\*/\s*}}.*`)
+					for fileScanner.Scan() {
+						line := fileScanner.Text()
+						filenameFromTemplate := reg.FindAllStringSubmatch(line, -1)
+						if len(filenameFromTemplate) != 0 {
+							carefulWriteBuffer(path.Join(outputDir, destFileName), fileBuffer, backupFile, info.Mode())
+							destFileName = filenameFromTemplate[0][1]
+							fileBuffer.Reset()
+						} else {
+							_, _ = fileBuffer.WriteString(line)
 						}
-
 					}
-					w, err := os.OpenFile(path.Join(outputDir, destFile), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, info.Mode())
-					if err != nil {
-						return errors.Wrap(err, "could not open new file for template")
-					}
-					defer w.Close()
-
-					_, err = buffer.WriteTo(w)
-
+					err = carefulWriteBuffer(path.Join(outputDir, destFileName), fileBuffer, backupFile, info.Mode())
 					if err != nil {
 						return errors.Wrap(err, "could not write file from template")
 					}
@@ -403,4 +407,23 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 	}
 
 	return nil
+}
+func carefulWriteBuffer(destFile string, buffer bytes.Buffer, backupFile bool, perm fs.FileMode) error {
+	if backupFile {
+		// if !util.IsFile(path.Join(outputDir, destFile+".wwbackup")) && util.IsFile(path.Join(outputDir, destFile)) {
+		if !util.IsFile(destFile+".wwbackup") && util.IsFile(destFile) {
+			err := util.CopyFile(destFile, destFile+".wwbackup")
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+			}
+		}
+
+	}
+	w, err := os.OpenFile(destFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, perm)
+	if err != nil {
+		return errors.Wrap(err, "could not open new file for template")
+	}
+	defer w.Close()
+	_, err = buffer.WriteTo(w)
+	return err
 }
