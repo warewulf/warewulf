@@ -14,7 +14,11 @@ BOOTPROTO=static
 DEVTIMEOUT=10
 IPADDR={{ $netdev.Ipaddr }}
 NETMASK={{ $netdev.Netmask }}
+{{ if $netdev.Gateway -}}
 GATEWAY={{ $netdev.Gateway }}
+{{ end -}}
+{{ if $netdev.Hwaddr -}}
 HWADDR={{ $netdev.Hwaddr }}
+{{ end -}}
 ONBOOT=yes
 {{ end -}}

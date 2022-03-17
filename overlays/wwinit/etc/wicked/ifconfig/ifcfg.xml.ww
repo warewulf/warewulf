@@ -25,11 +25,13 @@ Source: {{ $source }}
     <address>
       <local>{{$netdev.IpCIDR}}</local>
     </address>
+{{ if $netdev.Gateway -}}
     <route>
       <nexthop>
         <gateway>{{$netdev.Gateway}}</gateway>
       </nexthop>
     </route>
+{{ end -}}
   </ipv4:static>
   <ipv6>
     <enabled>true</enabled>
