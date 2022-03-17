@@ -1,6 +1,7 @@
 package overlay
 
 import (
+	"os"
 	"path"
 	"strings"
 
@@ -11,8 +12,18 @@ func OverlaySourceTopDir() string {
 	return buildconfig.WWOVERLAYDIR()
 }
 
+/*
+Return the path for the base of the overlay, strips rootfs
+prefix in the overlay dir if this it exists
+*/
 func OverlaySourceDir(overlayName string) string {
-	return path.Join(OverlaySourceTopDir(), overlayName)
+	/* Assume using old style overlay dir without rootfs */
+	var overlaypath = path.Join(OverlaySourceTopDir(), overlayName)
+	if _, err := os.Stat(path.Join(overlaypath, "rootfs")); err == nil {
+		/* rootfs exists, use it. */
+		overlaypath = path.Join(overlaypath, "rootfs")
+	}
+	return overlaypath
 }
 
 /*
