@@ -3,8 +3,6 @@ package node
 import (
 	"regexp"
 	"strings"
-
-	"github.com/hpcng/warewulf/internal/pkg/util"
 )
 
 /**********
@@ -120,19 +118,22 @@ func (ent *Entry) GetReal() string {
 }
 
 /*
-Returns a string slice, which is the combination of value, altvalue and def.
-The elemtent in the slice are uniq.
+Returns a string slice created from a comma seperated list of the value.
 */
 func (ent *Entry) GetSlice() []string {
 	var retval []string
 	if ent.value != "" {
-		retval = util.SliceAppendUniq(retval, strings.Split(ent.value, ","))
+		//retval = util.SliceAppendUniq(retval, strings.Split(ent.value, ","))
+		return strings.Split(ent.value, ",")
 	}
 	if ent.altvalue != "" {
-		retval = util.SliceAppendUniq(retval, strings.Split(ent.altvalue, ","))
+		//retval = util.SliceAppendUniq(retval, strings.Split(ent.altvalue, ","))
+		return strings.Split(ent.altvalue, ",")
 	}
-	if ent.def != "" && len(retval) == 0 {
-		retval = util.SliceAppendUniq(retval, strings.Split(ent.def, ","))
+	//if ent.def != "" && len(retval) == 0 {
+	if ent.def != "" {
+		//retval = util.SliceAppendUniq(retval, strings.Split(ent.def, ","))
+		return strings.Split(ent.def, ",")
 
 	}
 	return retval
@@ -157,13 +158,16 @@ func (ent *Entry) Print() string {
 	return "--"
 }
 
+/*
+Was used for combined stringSlice
+
 func (ent *Entry) PrintComb() string {
 	if ent.value != "" && ent.altvalue != "" {
 		return "[" + ent.value + "," + ent.altvalue + "]"
 	}
 	return ent.Print()
 }
-
+*/
 func (ent *Entry) PrintB() bool {
 	return ent.GetB()
 }
