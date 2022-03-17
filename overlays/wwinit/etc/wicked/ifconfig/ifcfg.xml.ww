@@ -37,4 +37,4 @@ Source: {{ $source }}
     <accept-redirects>false</accept-redirects>
   </ipv6>
 </interface>
-{{- end }}
+{{ end -}}

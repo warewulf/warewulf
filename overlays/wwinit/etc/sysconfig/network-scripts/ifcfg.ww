@@ -17,4 +17,4 @@ NETMASK={{ $netdev.Netmask }}
 GATEWAY={{ $netdev.Gateway }}
 HWADDR={{ $netdev.Hwaddr }}
 ONBOOT=yes
-{{- end}} {{/* end for each network device */
+{{ end -}}

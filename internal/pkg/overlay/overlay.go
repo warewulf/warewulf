@@ -153,8 +153,8 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayNames []string) error {
 		return errors.Wrap(err, "could not create overlay temporary directory")
 	}
 	err = BuildOverlayIndir(nodeInfo, overlayNames, outputDir)
-	if err == nil {
-		return err
+	if err != nil {
+		wwlog.Printf(wwlog.WARN, "Got following error when building overlay: %s\n", err)
 	}
 
 	wwlog.Printf(wwlog.DEBUG, "Finished generating overlay working directory for: %s/%v\n", nodeInfo.Id.Get(), overlayNames)
@@ -247,7 +247,6 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 		tstruct.NetDevs[devname].Type = netdev.Type.Get()
 		tstruct.NetDevs[devname].OnBoot = netdev.OnBoot.Get()
 		tstruct.NetDevs[devname].Default = netdev.Default.Get()
-
 		mask := net.IPMask(net.ParseIP(netdev.Netmask.Get()).To4())
 		ipaddr := net.ParseIP(netdev.Ipaddr.Get()).To4()
 		netaddr := net.IPNet{IP: ipaddr, Mask: mask}
@@ -290,7 +289,7 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 		wwlog.Printf(wwlog.VERBOSE, "Walking the overlay structure: %s\n", overlaySourceDir)
 		err = filepath.Walk(".", func(location string, info os.FileInfo, err error) error {
 			if err != nil {
-				return err
+				return errors.Wrap(err, "error for "+location)
 			}
 
 			wwlog.Printf(wwlog.DEBUG, "Found overlay file: %s\n", location)
@@ -336,7 +335,7 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 				writeFile := true
 				err = tmpl.Execute(&buffer, tstruct)
 				if err != nil {
-					// complicated workarround as error is not exported correctly: https://github.com/golang/go/issues/34201
+					// complicated workaround as error is not exported correctly: https://github.com/golang/go/issues/34201
 					if strings.Contains(fmt.Sprint(err), "abort_template") {
 						wwlog.Printf(wwlog.VERBOSE, "Aborting template file due to abort call in template: %s\n", location)
 						writeFile = false
@@ -357,8 +356,12 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 						line := fileScanner.Text()
 						filenameFromTemplate := reg.FindAllStringSubmatch(line, -1)
 						if len(filenameFromTemplate) != 0 {
-							carefulWriteBuffer(path.Join(outputDir, destFileName), fileBuffer, backupFile, info.Mode())
-							destFileName = filenameFromTemplate[0][1]
+							err = carefulWriteBuffer(path.Join(outputDir, destFileName),
+								fileBuffer, backupFile, info.Mode())
+							if err != nil {
+								return errors.Wrap(err, "could not write file from template")
+							}
+							destFileName = path.Join(path.Dir(destFile), filenameFromTemplate[0][1])
 							fileBuffer.Reset()
 						} else {
 							_, _ = fileBuffer.WriteString(line + "\n")
@@ -368,7 +371,6 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 					if err != nil {
 						return errors.Wrap(err, "could not write file from template")
 					}
-
 					err = util.CopyUIDGID(location, path.Join(outputDir, destFile))
 					if err != nil {
 						return errors.Wrap(err, "failed setting permissions on template output file")
@@ -408,7 +410,12 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 
 	return nil
 }
+
+/*
+Writes buffer to the destination file. If wwbackup is set a wwbackup will be created.
+*/
 func carefulWriteBuffer(destFile string, buffer bytes.Buffer, backupFile bool, perm fs.FileMode) error {
+	wwlog.Printf(wwlog.DEBUG, "Trying to careful write file %s\n", destFile)
 	if backupFile {
 		// if !util.IsFile(path.Join(outputDir, destFile+".wwbackup")) && util.IsFile(path.Join(outputDir, destFile)) {
 		if !util.IsFile(destFile+".wwbackup") && util.IsFile(destFile) {
