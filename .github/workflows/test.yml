@@ -15,11 +15,16 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: [ '1.16', '1.17', '1.18' ]
     steps:
     - uses: actions/checkout@v2
 
-    - name: Install Go
+    - name: Setup go ${{ matrix.go }}
       uses: actions/setup-go@v2
+      with:
+        go-version: ${{ matrix.go }}
 
     - uses: actions/cache@v2
       with:
@@ -28,5 +33,5 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-go-
 
-    - name: Build
+    - name: Build with go ${{ matrix.go }}
       run: make all
