@@ -45,16 +45,28 @@ func RuntimeOverlaySend(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 	}
+	if rinfo.overlay != "" {
+		fileName := overlay.OverlayImage(node.Id.Get(), []string{rinfo.overlay})
+		if conf.Warewulf.AutobuildOverlays {
+			_ = overlay.BuildOverlay(node, []string{rinfo.overlay})
+		}
+		err := sendFile(w, fileName, node.Id.Get())
+		if err != nil {
+			daemonLogf("ERROR: %s\n", err)
+		}
+	} else if len(node.RuntimeOverlay.GetSlice()) != 0 {
+		fileName := overlay.OverlayImage(node.Id.Get(), node.RuntimeOverlay.GetSlice())
 
-	if node.RuntimeOverlay.Defined() {
-		fileName := overlay.OverlayImage(node.Id.Get(), node.RuntimeOverlay.Get())
-
-		updateStatus(node.Id.Get(), "RUNTIME_OVERLAY", node.RuntimeOverlay.Get()+".img", strings.Split(req.RemoteAddr, ":")[0])
+		updateStatus(node.Id.Get(), "RUNTIME_OVERLAY", node.RuntimeOverlay.Get(), strings.Split(req.RemoteAddr, ":")[0])
 
 		if conf.Warewulf.AutobuildOverlays {
-			if !util.IsFile(fileName) || util.PathIsNewer(fileName, nodepkg.ConfigFile) || util.PathIsNewer(fileName, overlay.OverlaySourceDir(node.RuntimeOverlay.Get())) {
+			oneoverlaynewer := false
+			for _, overlayname := range node.RuntimeOverlay.GetSlice() {
+				oneoverlaynewer = oneoverlaynewer || util.PathIsNewer(fileName, overlay.OverlaySourceDir(overlayname))
+			}
+			if !util.IsFile(fileName) || util.PathIsNewer(fileName, nodepkg.ConfigFile) || oneoverlaynewer {
 				daemonLogf("BUILD: %15s: Runtime Overlay\n", node.Id.Get())
-				_ = overlay.BuildOverlay(node, node.RuntimeOverlay.Get())
+				_ = overlay.BuildOverlay(node, node.RuntimeOverlay.GetSlice())
 			}
 		}
 

@@ -2,6 +2,7 @@ package node
 
 import (
 	"regexp"
+	"strings"
 )
 
 /**********
@@ -49,7 +50,6 @@ func (ent *Entry) Set(val string) {
 	} else {
 		ent.value = val
 	}
-
 }
 
 func (ent *Entry) SetB(val bool) {
@@ -85,10 +85,10 @@ func (ent *Entry) SetDefault(val string) {
 }
 
 /**********
- *
- * Gets
- *
- *********/
+*
+* Gets
+*
+*********/
 
 func (ent *Entry) Get() string {
 	if ent.value != "" {
@@ -117,6 +117,28 @@ func (ent *Entry) GetReal() string {
 	return ent.value
 }
 
+/*
+Returns a string slice created from a comma seperated list of the value.
+*/
+func (ent *Entry) GetSlice() []string {
+	var retval []string
+	if ent.value != "" {
+		//retval = util.SliceAppendUniq(retval, strings.Split(ent.value, ","))
+		return strings.Split(ent.value, ",")
+	}
+	if ent.altvalue != "" {
+		//retval = util.SliceAppendUniq(retval, strings.Split(ent.altvalue, ","))
+		return strings.Split(ent.altvalue, ",")
+	}
+	//if ent.def != "" && len(retval) == 0 {
+	if ent.def != "" {
+		//retval = util.SliceAppendUniq(retval, strings.Split(ent.def, ","))
+		return strings.Split(ent.def, ",")
+
+	}
+	return retval
+}
+
 /**********
  *
  * Misc
@@ -136,6 +158,16 @@ func (ent *Entry) Print() string {
 	return "--"
 }
 
+/*
+Was used for combined stringSlice
+
+func (ent *Entry) PrintComb() string {
+	if ent.value != "" && ent.altvalue != "" {
+		return "[" + ent.value + "," + ent.altvalue + "]"
+	}
+	return ent.Print()
+}
+*/
 func (ent *Entry) PrintB() bool {
 	return ent.GetB()
 }

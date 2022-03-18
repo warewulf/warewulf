@@ -1,6 +1,6 @@
 module github.com/hpcng/warewulf
 
-go 1.15
+go 1.16
 
 require (
 	github.com/brotherpowers/ipsubnet v0.0.0-20170914094241-30bc98f0a5b1
