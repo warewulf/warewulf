@@ -1,6 +1,9 @@
 package add
 
 import (
+	"fmt"
+	"net"
+
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
@@ -123,7 +126,19 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 			n.NetDevs[SetNetName].Type.Set(SetType)
 		}
+		if SetIpaddr6 != "" {
+			if SetNetName == "" {
+				return errors.New("you must include the '--netname' option")
+			}
+			if _, ok := n.NetDevs[SetNetName]; !ok {
+				return errors.New("network device does not exist: " + SetNetName)
+			}
+			// just check if address is a valid ipv6 CIDR address
+			if _, _, err := net.ParseCIDR(SetIpaddr6); err != nil {
+				return errors.New(fmt.Sprintf("%s is not a valid ipv6 address in CIDR notation\n", SetIpaddr6))
+			}
 
+		}
 		if SetDiscoverable {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting node to discoverable\n", n.Id.Get())
 

@@ -62,7 +62,18 @@ func New() (ControllerConf, error) {
 
 			ret.Network = sub.GetNetworkPortion()
 		}
-
+		// check validity of ipv6 net
+		if ret.Ipaddr6 != "" {
+			_, ipv6net, err := net.ParseCIDR(ret.Ipaddr6)
+			if err != nil {
+				wwlog.Printf(wwlog.ERROR, "Invalid ipv6 address specified, mut be CIDR notation: %s\n", ret.Ipaddr6)
+				return ret, errors.New("invalid ipv6 network")
+			}
+			if msize, _ := ipv6net.Mask.Size(); msize > 64 {
+				wwlog.Printf(wwlog.ERROR, "ipv6 mask size must be smaller than 64\n")
+				return ret, errors.New("invalid ipv6 network size")
+			}
+		}
 		if ret.Warewulf.Port == 0 {
 			ret.Warewulf.Port = defaultPort
 		}
