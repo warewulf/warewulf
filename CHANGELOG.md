@@ -17,6 +17,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   are allowed now.
 - nodes and profiles can now have multiple system and runtime overlays, as a comma separated list. 
   The overlays of the profile and the nodes are combined. 
+- simple ipv6 support is now enabled. In `warewulf.conf` the option `ipaddr6`/`Ipv6net` must
+  be set to enable ipv6. If enabled on of these options is set a node will get a derived
+  ipv6 in the scheme `ipv6net:ipaddr4`. This address can also be overwritten for every 
+  node
+- Multiple file can now created from a single `template.ww` file with the `{{ file FILENAME }}` 
+  command in the template. The command is expanded to the magic template command 
+  `{{ /* file FILENAME */}}` which is picked up by wwctl and everything which comes after this
+  magic comment will be written to the file `FILENAME`. This mechanism is leveraged in the 
+  configuration files for the network, see `ifcfg.xml.ww` and `ifcgf.ww`.
 
 
 ## [4.1.0] - 2021-07-29
