@@ -14,6 +14,7 @@ type parserInfo struct {
 	remoteport int
 	assetkey   string
 	uuid       string
+	overlay    string
 }
 
 func parseReq(req *http.Request) (parserInfo, error) {
@@ -35,7 +36,9 @@ func parseReq(req *http.Request) (parserInfo, error) {
 	if len(req.URL.Query()["uuid"]) > 0 {
 		ret.uuid = req.URL.Query()["uuid"][0]
 	}
-
+	if len(req.URL.Query()["overlay"]) > 0 {
+		ret.overlay = req.URL.Query()["overlay"][0]
+	}
 	if ret.hwaddr == "" {
 		return ret, errors.New("no hwaddr encoded in GET")
 	}

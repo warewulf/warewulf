@@ -1,9 +1,0 @@
-DEVICE={{$.NetDevs.default.Device}}
-NAME=default
-BOOTPROTO=static
-DEVTIMEOUT=10
-IPADDR={{$.NetDevs.default.Ipaddr}}
-NETMASK={{$.NetDevs.default.Netmask}}
-GATEWAY={{$.NetDevs.default.Gateway}}
-HWADDR={{$.NetDevs.default.Hwaddr}}
-ONBOOT=yes

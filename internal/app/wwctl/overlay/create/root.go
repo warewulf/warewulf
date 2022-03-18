@@ -11,7 +11,7 @@ var (
 		Short:                 "Initialize a new Overlay",
 		Long:                  "This command creates a new empty overlay with the given OVERLAY_NAME.",
 		RunE:                  CobraRunE,
-		Args:                  cobra.ExactArgs(2),
+		Args:                  cobra.ExactArgs(1),
 	}
 )
 

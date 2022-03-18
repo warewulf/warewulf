@@ -7,5 +7,7 @@ Network:
 {{- range $devname, $netdev := .NetDevs}}
     {{$devname}}: {{$netdev.Device}}
     {{$devname}}: {{$netdev.IpCIDR}}
+{{if $netdev.Hwaddr }}
     {{$devname}}: {{$netdev.Hwaddr}}
+{{ end -}}
 {{end}}
