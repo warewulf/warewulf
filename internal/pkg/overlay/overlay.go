@@ -358,17 +358,26 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 					fileScanner := bufio.NewScanner(bytes.NewReader(buffer.Bytes()))
 					fileScanner.Split(bufio.ScanLines)
 					reg := regexp.MustCompile(`.*{{\s*/\*\s*file\s*["'](.*)["']\s*\*/\s*}}.*`)
+					foundFileComment := false
 					for fileScanner.Scan() {
 						line := fileScanner.Text()
 						filenameFromTemplate := reg.FindAllStringSubmatch(line, -1)
 						if len(filenameFromTemplate) != 0 {
-							err = carefulWriteBuffer(path.Join(outputDir, destFileName),
-								fileBuffer, backupFile, info.Mode())
-							if err != nil {
-								return errors.Wrap(err, "could not write file from template")
+							wwlog.Printf(wwlog.DEBUG, "Found multifle comment, new filename %s\n", filenameFromTemplate[0][1])
+							if foundFileComment {
+								err = carefulWriteBuffer(path.Join(outputDir, destFileName),
+									fileBuffer, backupFile, info.Mode())
+								if err != nil {
+									return errors.Wrap(err, "could not write file from template")
+								}
+								err = util.CopyUIDGID(location, path.Join(outputDir, destFileName))
+								if err != nil {
+									return errors.Wrap(err, "failed setting permissions on template output file")
+								}
+								fileBuffer.Reset()
 							}
 							destFileName = path.Join(path.Dir(destFile), filenameFromTemplate[0][1])
-							fileBuffer.Reset()
+							foundFileComment = true
 						} else {
 							_, _ = fileBuffer.WriteString(line + "\n")
 						}
@@ -377,7 +386,7 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 					if err != nil {
 						return errors.Wrap(err, "could not write file from template")
 					}
-					err = util.CopyUIDGID(location, path.Join(outputDir, destFile))
+					err = util.CopyUIDGID(location, path.Join(outputDir, destFileName))
 					if err != nil {
 						return errors.Wrap(err, "failed setting permissions on template output file")
 					}
