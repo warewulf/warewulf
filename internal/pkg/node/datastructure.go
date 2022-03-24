@@ -30,8 +30,8 @@ type NodeConf struct {
 	IpmiGateway    string              `yaml:"ipmi gateway,omitempty"`
 	IpmiInterface  string              `yaml:"ipmi interface,omitempty"`
 	IpmiWrite      bool                `yaml:"ipmi write,omitempty"`
-	RuntimeOverlay string              `yaml:"runtime overlay,omitempty"`
-	SystemOverlay  string              `yaml:"system overlay,omitempty"`
+	RuntimeOverlay []string            `yaml:"runtime overlay,omitempty"`
+	SystemOverlay  []string            `yaml:"system overlay,omitempty"`
 	Init           string              `yaml:"init,omitempty"`
 	Root           string              `yaml:"root,omitempty"`
 	AssetKey       string              `yaml:"asset key,omitempty"`
@@ -59,12 +59,16 @@ type NetDevs struct {
 /******
  * Internal code data representations
  ******/
-
+/*
+Holds a strtng value, when accessed via Get, its value
+is returned which is the default or if set the value
+from the profile or if set the value of the node itself
+*/
 type Entry struct {
-	value    string
-	altvalue string
+	value    []string
+	altvalue []string
 	from     string
-	def      string
+	def      []string
 }
 
 type NodeInfo struct {

@@ -90,14 +90,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			p.Ipxe.Set(SetIpxe)
 		}
 
-		if SetRuntimeOverlay != "" {
+		if len(SetRuntimeOverlay) != 0 {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting runtime overlay to: %s\n", p.Id.Get(), SetRuntimeOverlay)
-			p.RuntimeOverlay.Set(SetRuntimeOverlay)
+			p.RuntimeOverlay.SetSlice(SetRuntimeOverlay)
 		}
 
-		if SetSystemOverlay != "" {
+		if len(SetSystemOverlay) != 0 {
 			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Setting system overlay to: %s\n", p.Id.Get(), SetSystemOverlay)
-			p.SystemOverlay.Set(SetSystemOverlay)
+			p.SystemOverlay.SetSlice(SetSystemOverlay)
 		}
 
 		if SetIpmiNetmask != "" {

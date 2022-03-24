@@ -5,6 +5,10 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 )
 
+/*
+struct which contains the variables to which are available in
+the templates.
+*/
 type TemplateStruct struct {
 	Id             string
 	Hostname       string
