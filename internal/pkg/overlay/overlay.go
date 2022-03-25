@@ -356,28 +356,37 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 					var fileBuffer bytes.Buffer
 					// search for magic file name comment
 					fileScanner := bufio.NewScanner(bytes.NewReader(buffer.Bytes()))
-					fileScanner.Split(bufio.ScanLines)
+					fileScanner.Split(scanLines)
 					reg := regexp.MustCompile(`.*{{\s*/\*\s*file\s*["'](.*)["']\s*\*/\s*}}.*`)
+					foundFileComment := false
 					for fileScanner.Scan() {
 						line := fileScanner.Text()
 						filenameFromTemplate := reg.FindAllStringSubmatch(line, -1)
 						if len(filenameFromTemplate) != 0 {
-							err = carefulWriteBuffer(path.Join(outputDir, destFileName),
-								fileBuffer, backupFile, info.Mode())
-							if err != nil {
-								return errors.Wrap(err, "could not write file from template")
+							wwlog.Printf(wwlog.DEBUG, "Found multifile comment, new filename %s\n", filenameFromTemplate[0][1])
+							if foundFileComment {
+								err = carefulWriteBuffer(path.Join(outputDir, destFileName),
+									fileBuffer, backupFile, info.Mode())
+								if err != nil {
+									return errors.Wrap(err, "could not write file from template")
+								}
+								err = util.CopyUIDGID(location, path.Join(outputDir, destFileName))
+								if err != nil {
+									return errors.Wrap(err, "failed setting permissions on template output file")
+								}
+								fileBuffer.Reset()
 							}
 							destFileName = path.Join(path.Dir(destFile), filenameFromTemplate[0][1])
-							fileBuffer.Reset()
+							foundFileComment = true
 						} else {
-							_, _ = fileBuffer.WriteString(line + "\n")
+							_, _ = fileBuffer.WriteString(line)
 						}
 					}
 					err = carefulWriteBuffer(path.Join(outputDir, destFileName), fileBuffer, backupFile, info.Mode())
 					if err != nil {
 						return errors.Wrap(err, "could not write file from template")
 					}
-					err = util.CopyUIDGID(location, path.Join(outputDir, destFile))
+					err = util.CopyUIDGID(location, path.Join(outputDir, destFileName))
 					if err != nil {
 						return errors.Wrap(err, "failed setting permissions on template output file")
 					}
@@ -439,4 +448,21 @@ func carefulWriteBuffer(destFile string, buffer bytes.Buffer, backupFile bool, p
 	defer w.Close()
 	_, err = buffer.WriteTo(w)
 	return err
+}
+
+// Simple version of ScanLines, but include the line break
+func scanLines(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	if atEOF && len(data) == 0 {
+		return 0, nil, nil
+	}
+	if i := bytes.IndexByte(data, '\n'); i >= 0 {
+		// We have a full newline-terminated line.
+		return i + 1, data[0 : i+1], nil
+	}
+	// If we're at EOF, we have a final, non-terminated line. Return it.
+	if atEOF {
+		return len(data), data, nil
+	}
+	// Request more data.
+	return 0, nil, nil
 }

@@ -44,6 +44,11 @@ func New() (nodeYaml, error) {
 	return ret, nil
 }
 
+/*
+Get all the nodes of a configuration. This function also merges
+the nodes with the given profiles and set the default values
+for every node
+*/
 func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 	var ret []NodeInfo
 	wwconfig, err := warewulfconf.New()
@@ -125,6 +130,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.NetDevs[devname].Ipaddr6.SetDefault(ipv6str)
 			}
 			n.NetDevs[devname].Netmask.Set(netdev.Netmask)
+			n.NetDevs[devname].Netmask.SetDefault("255.255.255.0")
 			n.NetDevs[devname].Hwaddr.Set(netdev.Hwaddr)
 			n.NetDevs[devname].Gateway.Set(netdev.Gateway)
 			n.NetDevs[devname].Type.Set(netdev.Type)
