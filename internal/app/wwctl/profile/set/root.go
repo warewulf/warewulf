@@ -42,8 +42,8 @@ var (
 	SetClusterName    string
 	SetIpxe           string
 	SetInitOverlay    string
-	SetRuntimeOverlay string
-	SetSystemOverlay  string
+	SetRuntimeOverlay []string
+	SetSystemOverlay  []string
 	SetIpmiNetmask    string
 	SetIpmiPort       string
 	SetIpmiGateway    string
@@ -91,7 +91,7 @@ func init() {
 	baseCmd.PersistentFlags().StringVarP(&SetInit, "init", "i", "", "Define the init process to boot the container")
 	baseCmd.PersistentFlags().StringVar(&SetRoot, "root", "", "Define the rootfs")
 	baseCmd.PersistentFlags().StringVar(&SetAssetKey, "assetkey", "", "Set the node's Asset tag (key)")
-	baseCmd.PersistentFlags().StringVarP(&SetRuntimeOverlay, "runtime", "R", "", "Set the node's runtime overlay")
+	baseCmd.PersistentFlags().StringSliceVarP(&SetRuntimeOverlay, "runtime", "R", []string{}, "Set the node's runtime overlay")
 	if err := baseCmd.RegisterFlagCompletionFunc("runtime", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		list, _ := overlay.FindOverlays()
 		return list, cobra.ShellCompDirectiveNoFileComp
@@ -99,7 +99,7 @@ func init() {
 		log.Println(err)
 
 	}
-	baseCmd.PersistentFlags().StringVarP(&SetSystemOverlay, "system", "S", "", "Set the node's system overlay")
+	baseCmd.PersistentFlags().StringSliceVarP(&SetSystemOverlay, "system", "S", []string{}, "Set the node's system overlay")
 	if err := baseCmd.RegisterFlagCompletionFunc("system", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		list, _ := overlay.FindOverlays()
 		return list, cobra.ShellCompDirectiveNoFileComp
