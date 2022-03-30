@@ -27,9 +27,11 @@ func NFS() error {
 		if err != nil {
 			fmt.Println(err)
 		}
-		err = overlay.BuildHostOverlay()
-		if err != nil {
-			wwlog.Printf(wwlog.WARN, "host overlay could not be built: %s\n", err)
+		if controller.Warewulf.EnableHostOverlay {
+			err = overlay.BuildHostOverlay()
+			if err != nil {
+				wwlog.Printf(wwlog.WARN, "host overlay could not be built: %s\n", err)
+			}
 		}
 		fmt.Printf("Enabling and restarting the NFS services\n")
 		if controller.Nfs.SystemdName == "" {

@@ -10,6 +10,7 @@ func defaultConfig() *ControllerConf {
 		Secure:            true,
 		UpdateInterval:    60,
 		AutobuildOverlays: true,
+		EnableHostOverlay: true,
 		Syslog:            false,
 		DataStore:         defaultDataStore,
 	}
