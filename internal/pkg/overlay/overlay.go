@@ -317,10 +317,9 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 			} else if filepath.Ext(location) == ".ww" {
 				tstruct.BuildSource = path.Join(overlaySourceDir, location)
 				wwlog.Printf(wwlog.VERBOSE, "Evaluating overlay template file: %s\n", location)
-
 				destFile := strings.TrimSuffix(location, ".ww")
-				ErrorAbort := errors.New("abort_template")
-				ErrorNoBackup := errors.New("nobackup_template")
+				backupFile := true
+				writeFile := true
 				tmpl, err := template.New(path.Base(location)).Option("missingkey=default").Funcs(template.FuncMap{
 					// TODO: Fix for missingkey=zero
 					"Include":      templateFileInclude,
@@ -329,27 +328,26 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 					"inc":          func(i int) int { return i + 1 },
 					"dec":          func(i int) int { return i - 1 },
 					"file":         func(str string) string { return fmt.Sprintf("{{ /* file \"%s\" */ }}", str) },
-					"abort":        func() (string, error) { return "", ErrorAbort },
-					"nobackup":     func() (string, error) { return "", ErrorNoBackup },
+					"abort": func() string {
+						wwlog.Printf(wwlog.DEBUG, "abort file called in %s\n", location)
+						writeFile = false
+						return ""
+					},
+					"nobackup": func() string {
+						wwlog.Printf(wwlog.DEBUG, "not backup for %s\n", location)
+						backupFile = false
+						return ""
+					},
 					// }).ParseGlob(path.Join(OverlayDir, destFile+".ww*"))
 				}).ParseGlob(location)
 				if err != nil {
 					return errors.Wrap(err, "could not parse template "+location)
 				}
 				var buffer bytes.Buffer
-				backupFile := true
-				writeFile := true
 				err = tmpl.Execute(&buffer, tstruct)
 				if err != nil {
-					// complicated workaround as error is not exported correctly: https://github.com/golang/go/issues/34201
-					if strings.Contains(fmt.Sprint(err), "abort_template") {
-						wwlog.Printf(wwlog.VERBOSE, "Aborting template file due to abort call in template: %s\n", location)
-						writeFile = false
-					} else if strings.Contains(fmt.Sprint(err), "nobackup_template") {
-						backupFile = false
-					} else {
-						return errors.Wrap(err, "could not execute template")
-					}
+					return errors.Wrap(err, "could not execute template")
+
 				}
 				if writeFile {
 					destFileName := destFile
