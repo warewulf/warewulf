@@ -44,12 +44,6 @@ func FindRuntimeOverlays() ([]string, error) {
 }
 */
 
-type testVar struct {
-	calledOnce  bool
-	calledTwice bool
-	myName      string
-}
-
 /*
 Build all overlays (runtime and generic) for a node
 */
