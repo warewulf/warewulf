@@ -26,7 +26,7 @@ type WarewulfConf struct {
 	Secure            bool   `yaml:"secure"`
 	UpdateInterval    int    `yaml:"update interval"`
 	AutobuildOverlays bool   `yaml:"autobuild overlays"`
-	EnableHostOverlay bool   `yaml:"enable host overlay"`
+	EnableHostOverlay bool   `yaml:"host overlay"`
 	Syslog            bool   `yaml:"syslog"`
 	DataStore         string `yaml:"datastore"`
 }
