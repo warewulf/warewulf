@@ -47,7 +47,6 @@ type TftpConf struct {
 
 type NfsConf struct {
 	Enabled         bool             `default:"true" yaml:"enabled"`
-	Exports         []string         `yaml:"exports"`
 	ExportsExtended []*NfsExportConf `yaml:"export paths"`
 	SystemdName     string           `yaml:"systemd name"`
 }
