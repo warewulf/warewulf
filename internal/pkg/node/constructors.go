@@ -117,7 +117,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.NetDevs[devname].Ipaddr6.Set(netdev.Ipaddr6)
 
 			// Derive value of ipv6 address from ipv4 if not explicitly set
-			if wwconfig.Ipaddr6 != "" {
+			if wwconfig.Ipaddr6 != "" && netdev.Ipaddr != "" {
 				ipv4Arr := strings.Split(netdev.Ipaddr, ".")
 				// error can be ignored as check was done at init
 				_, ipv6Net, _ := net.ParseCIDR(wwconfig.Ipaddr6)
