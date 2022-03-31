@@ -254,6 +254,10 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 		tstruct.NetDevs[devname].Prefix = strconv.Itoa(netPrefix)
 		tstruct.NetDevs[devname].IpCIDR = netaddr.String()
 		tstruct.NetDevs[devname].Ipaddr6 = netdev.Ipaddr6.Get()
+		tstruct.NetDevs[devname].Tags = make(map[string]string)
+		for key, value := range netdev.Tags {
+			tstruct.NetDevs[devname].Tags[key] = value.Get()
+		}
 	}
 	// Backwards compatibility for templates using "Keys"
 	for keyname, key := range nodeInfo.Tags {

@@ -91,6 +91,12 @@ func (config *nodeYaml) NodeUpdate(node NodeInfo) error {
 		config.Nodes[nodeID].NetDevs[devname].Type = netdev.Type.GetReal()
 		config.Nodes[nodeID].NetDevs[devname].OnBoot = netdev.OnBoot.GetReal()
 		config.Nodes[nodeID].NetDevs[devname].Default = netdev.Default.GetReal()
+		config.Nodes[nodeID].NetDevs[devname].Tags = make(map[string]string)
+		for keyname, key := range netdev.Tags {
+			if key.GetReal() != "" {
+				config.Nodes[nodeID].NetDevs[devname].Tags[keyname] = key.GetReal()
+			}
+		}
 	}
 
 	config.Nodes[nodeID].Tags = make(map[string]string)

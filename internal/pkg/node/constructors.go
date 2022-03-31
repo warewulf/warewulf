@@ -140,6 +140,15 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			if len(node.NetDevs) == 1 {
 				n.NetDevs[devname].Default.Set("true")
 			}
+			n.NetDevs[devname].Tags = make(map[string]*Entry)
+			for keyname, key := range netdev.Tags {
+				if _, ok := n.Tags[keyname]; !ok {
+					var keyVar Entry
+					n.NetDevs[devname].Tags[keyname] = &keyVar
+				}
+				n.NetDevs[devname].Tags[keyname].Set(key)
+			}
+
 		}
 
 		// Merge Keys into Tags for backwards compatibility
@@ -201,13 +210,22 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				wwlog.Printf(wwlog.DEBUG, "Updating profile (%s) netdev: %s\n", p, devname)
 
 				n.NetDevs[devname].Device.SetAlt(netdev.Device, p)
-				//n.NetDevs[devname].Ipaddr.SetAlt(netdev.Ipaddr, p) <- Ipaddr must be uniq
+				n.NetDevs[devname].Ipaddr.SetAlt(netdev.Ipaddr, p) //FIXME? <- Ipaddr must be uniq
 				n.NetDevs[devname].Netmask.SetAlt(netdev.Netmask, p)
 				n.NetDevs[devname].Hwaddr.SetAlt(netdev.Hwaddr, p)
 				n.NetDevs[devname].Gateway.SetAlt(netdev.Gateway, p)
 				n.NetDevs[devname].Type.SetAlt(netdev.Type, p)
 				n.NetDevs[devname].OnBoot.SetAlt(netdev.OnBoot, p)
 				n.NetDevs[devname].Default.SetAlt(netdev.Default, p)
+				if len(netdev.Tags) != 0 {
+					for keyname, key := range netdev.Tags {
+						if _, ok := n.Tags[keyname]; !ok {
+							var keyVar Entry
+							n.NetDevs[devname].Tags[keyname] = &keyVar
+						}
+						n.NetDevs[devname].Tags[keyname].SetAlt(key, p)
+					}
+				}
 			}
 
 			// Merge Keys into Tags for backwards compatibility
@@ -302,6 +320,15 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 			if netdev.Hwaddr != "" {
 				wwlog.Printf(wwlog.WARN, "Ignoring hardware address %v in profile %v\n", netdev.Hwaddr, name)
 			}
+			p.NetDevs[devname].Tags = make(map[string]*Entry)
+			for keyname, key := range netdev.Tags {
+				if _, ok := p.Tags[keyname]; !ok {
+					var keyVar Entry
+					p.NetDevs[devname].Tags[keyname] = &keyVar
+				}
+				p.NetDevs[devname].Tags[keyname].Set(key)
+			}
+
 		}
 
 		// Merge Keys into Tags for backwards compatibility

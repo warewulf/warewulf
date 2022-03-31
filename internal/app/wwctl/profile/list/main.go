@@ -60,6 +60,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), name+":TYPE", netdev.Hwaddr.Print())
 				fmt.Printf("%-20s %-18s %t\n", profile.Id.Get(), name+":ONBOOT", netdev.OnBoot.PrintB())
 				fmt.Printf("%-20s %-18s %t\n", profile.Id.Get(), name+":DEFAULT", netdev.Default.PrintB())
+				for keyname, key := range netdev.Tags {
+					fmt.Printf("%-20s %-18s %-12s %s\n", profile.Id.Get(), name+":TAG["+keyname+"]", key.Source(), key.Print())
+				}
 			}
 		}
 	} else {
