@@ -176,9 +176,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if SetNetName != "" {
 			if _, ok := n.NetDevs[SetNetName]; !ok {
 				var nd node.NetDevEntry
+				nd.Tags = make(map[string]*node.Entry)
 
 				n.NetDevs[SetNetName] = &nd
-
 				if SetNetDev == "" {
 					n.NetDevs[SetNetName].Device.Set(SetNetName)
 				}
@@ -341,7 +341,34 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				delete(n.Tags, key)
 			}
 		}
+		if len(SetNetTags) > 0 {
+			for _, t := range SetNetTags {
+				keyval := strings.SplitN(t, "=", 2)
+				key := keyval[0]
+				val := keyval[1]
+				if _, ok := n.NetDevs[SetNetName].Tags[key]; !ok {
+					var nd node.Entry
+					n.NetDevs[SetNetName].Tags[key] = &nd
+				}
 
+				wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting NETTAG '%s'='%s'\n", n.Id.Get(), SetNetName, key, val)
+				n.NetDevs[SetNetName].Tags[key].Set(val)
+			}
+
+		}
+		if len(SetNetDelTags) > 0 {
+			for _, t := range SetNetDelTags {
+				keyval := strings.SplitN(t, "=", 1)
+				key := keyval[0]
+				if _, ok := n.NetDevs[SetNetName].Tags[key]; !ok {
+					wwlog.Printf(wwlog.WARN, "Node: %s:%s Key %s does not exist\n", n.Id.Get(), SetNetName, key)
+					os.Exit(1)
+				}
+
+				wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Deleting Tag %s\n", n.Id.Get(), SetNetName, key)
+				delete(n.NetDevs[SetNetName].Tags, key)
+			}
+		}
 		err := nodeDB.NodeUpdate(n)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)

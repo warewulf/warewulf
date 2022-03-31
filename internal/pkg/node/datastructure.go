@@ -14,6 +14,9 @@ type nodeYaml struct {
 	Nodes        map[string]*NodeConf
 }
 
+/*
+NodeConf is the datastructure which is stored on disk.
+*/
 type NodeConf struct {
 	Comment        string              `yaml:"comment,omitempty"`
 	ClusterName    string              `yaml:"cluster name,omitempty"`
@@ -43,24 +46,25 @@ type NodeConf struct {
 }
 
 type NetDevs struct {
-	Type    string `yaml:"type,omitempty"`
-	OnBoot  string `yaml:"onboot,omitempty"`
-	Device  string `yaml:"device,omitempty"`
-	Hwaddr  string `yaml:"hwaddr,omitempty"`
-	Ipaddr  string `yaml:"ipaddr,omitempty"`
-	IpCIDR  string `yaml:"ipcidr,omitempty"`
-	Ipaddr6 string `yaml:"ip6addr,omitempty"`
-	Prefix  string `yaml:"prefix,omitempty"`
-	Netmask string `yaml:"netmask,omitempty"`
-	Gateway string `yaml:"gateway,omitempty"`
-	Default string `yaml:"default,omitempty"`
+	Type    string            `yaml:"type,omitempty"`
+	OnBoot  string            `yaml:"onboot,omitempty"`
+	Device  string            `yaml:"device,omitempty"`
+	Hwaddr  string            `yaml:"hwaddr,omitempty"`
+	Ipaddr  string            `yaml:"ipaddr,omitempty"`
+	IpCIDR  string            `yaml:"ipcidr,omitempty"`
+	Ipaddr6 string            `yaml:"ip6addr,omitempty"`
+	Prefix  string            `yaml:"prefix,omitempty"`
+	Netmask string            `yaml:"netmask,omitempty"`
+	Gateway string            `yaml:"gateway,omitempty"`
+	Default string            `yaml:"default,omitempty"`
+	Tags    map[string]string `yaml:"tags,omitempty"`
 }
 
 /******
  * Internal code data representations
  ******/
 /*
-Holds a strtng value, when accessed via Get, its value
+Holds string values, when accessed via Get, its value
 is returned which is the default or if set the value
 from the profile or if set the value of the node itself
 */
@@ -71,6 +75,12 @@ type Entry struct {
 	def      []string
 }
 
+/*
+NodeInfo is the in memory datastructure, which can containe
+a default value, which is overwritten by the overlay from the
+overlay (altvalue) which is overwitten by the value of the
+node itself, for all values of type Entry.
+*/
 type NodeInfo struct {
 	Id             Entry
 	Cid            Entry
@@ -112,6 +122,7 @@ type NetDevEntry struct {
 	Netmask Entry
 	Gateway Entry
 	Default Entry
+	Tags    map[string]*Entry
 }
 
 func init() {
