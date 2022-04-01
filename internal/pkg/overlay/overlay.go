@@ -92,6 +92,14 @@ func BuildHostOverlay() error {
 	wwlog.Printf(wwlog.INFO, "Building overlay for %s: host\n", hostname)
 	idEntry.Set(hostname)
 	host.Id = idEntry
+	hostdir := OverlaySourceDir("host")
+	stats, err := os.Stat(hostdir)
+	if err != nil {
+		return errors.Wrap(err, "could not build host overlay ")
+	}
+	if !(stats.Mode() == os.FileMode(0750|os.ModeDir) || stats.Mode() == os.FileMode(0700|os.ModeDir)) {
+		wwlog.Printf(wwlog.WARN, "Permissions of host overlay dir %s are %s (750 is considered as secure)\n", hostdir, stats.Mode())
+	}
 	return BuildOverlayIndir(host, []string{"host"}, "/")
 }
 
