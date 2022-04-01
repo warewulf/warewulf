@@ -15,6 +15,3 @@ proc /proc proc defaults 0 0
 {{- end }}
 {{- end }}
 {{- end }}
-{{- range .Nfs.Exports }}
-{{ $IP }}:{{ . }} {{ . }} nfs defaults 0 0
-{{- end }}
