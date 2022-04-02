@@ -168,7 +168,7 @@ files: all
 	install -d -m 0755 $(DESTDIR)$(WWDOCDIR)
 	install -d -m 0755 $(DESTDIR)$(FIREWALLDDIR)
 	install -d -m 0755 $(DESTDIR)$(SYSTEMDDIR)
-	install -d -m 0755 $(DESTDIR)$(WWDATADIR)
+	install -d -m 0755 $(DESTDIR)$(WWDATADIR)/ipxe
 	test -f $(DESTDIR)$(WWCONFIGDIR)/warewulf.conf || install -m 644 etc/warewulf.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(WWCONFIGDIR)/nodes.conf || install -m 644 etc/nodes.conf $(DESTDIR)$(WWCONFIGDIR)
 	cp -r etc/examples $(DESTDIR)$(WWCONFIGDIR)/
@@ -185,10 +185,10 @@ files: all
 	install -m 0644 LICENSE.md $(DESTDIR)$(WWDOCDIR)
 	cp bash_completion.d/warewulf $(DESTDIR)$(BASHCOMPDIR)
 	cp man_pages/* $(DESTDIR)$(MANDIR)/man1/
-	install -c -m 0644 staticfiles/arm64.efi $(DESTDIR)$(WWDATADIR)/ipxe
-	install -c -m 0644 staticfiles/i386.efi $(DESTDIR)$(WWDATADIR)/ipxe
-	install -c -m 0644 staticfiles/i386.kpxe $(DESTDIR)$(WWDATADIR)/ipxe
-	install -c -m 0644 staticfiles/x86.efi $(DESTDIR)$(WWDATADIR)/ipxe
+	install -m 0644 staticfiles/arm64.efi $(DESTDIR)$(WWDATADIR)/ipxe
+	install -m 0644 staticfiles/i386.efi $(DESTDIR)$(WWDATADIR)/ipxe
+	install -m 0644 staticfiles/i386.kpxe $(DESTDIR)$(WWDATADIR)/ipxe
+	install -m 0644 staticfiles/x86.efi $(DESTDIR)$(WWDATADIR)/ipxe
 
 init:
 	systemctl daemon-reload

@@ -37,10 +37,11 @@ func Dhcp() error {
 		wwlog.Printf(wwlog.ERROR, "Configuration is not defined: `dhcpd range end`\n")
 		os.Exit(1)
 	}
-
-	err = overlay.BuildHostOverlay()
-	if err != nil {
-		wwlog.Printf(wwlog.WARN, "host overlay could not be built: %s\n", err)
+	if controller.Warewulf.EnableHostOverlay {
+		err = overlay.BuildHostOverlay()
+		if err != nil {
+			wwlog.Printf(wwlog.WARN, "host overlay could not be built: %s\n", err)
+		}
 	}
 	fmt.Printf("Enabling and restarting the DHCP services\n")
 	err = util.SystemdStart(controller.Dhcp.SystemdName)

@@ -7,12 +7,18 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/hpcng/warewulf/pkg/hostlist"
 	"github.com/spf13/cobra"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
+	controller, err := warewulfconf.New()
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "%s\n", err)
+		os.Exit(1)
+	}
 	nodeDB, err := node.New()
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
@@ -45,7 +51,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 	}
-	if BuildHost || (!BuildHost && !BuildNodes && len(args) == 0) {
+	if BuildHost || (!BuildHost && !BuildNodes && len(args) == 0 && controller.Warewulf.EnableHostOverlay) {
 		err := overlay.BuildHostOverlay()
 		if err != nil {
 			wwlog.Printf(wwlog.WARN, "host overlay could not be built: %s\n", err)
