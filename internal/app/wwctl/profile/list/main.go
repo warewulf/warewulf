@@ -33,8 +33,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Cluster", profile.ClusterName.Print())
 
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Container", profile.ContainerName.Print())
-			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "KernelOverride", profile.KernelOverride.Print())
-			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "KernelArgs", profile.KernelArgs.Print())
+			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "KernelOverride", profile.Kernel.Override.Print())
+			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "KernelArgs", profile.Kernel.Args.Print())
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Init", profile.Init.Print())
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Root", profile.Root.Print())
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "AssetKey", profile.AssetKey.Print())
@@ -42,11 +42,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "SystemOverlay", profile.SystemOverlay.Print())
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "RuntimeOverlay", profile.RuntimeOverlay.Print())
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Ipxe", profile.Ipxe.Print())
-			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiNetmask", profile.IpmiNetmask.Print())
-			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiPort", profile.IpmiPort.Print())
-			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiGateway", profile.IpmiGateway.Print())
-			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiUserName", profile.IpmiUserName.Print())
-			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiInterface", profile.IpmiInterface.Print())
+			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiNetmask", profile.Ipmi.Netmask.Print())
+			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiPort", profile.Ipmi.Port.Print())
+			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiGateway", profile.Ipmi.Gateway.Print())
+			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiUserName", profile.Ipmi.UserName.Print())
+			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiInterface", profile.Ipmi.Interface.Print())
 
 			for keyname, key := range profile.Tags {
 				fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Tag["+keyname+"]", key.Print())

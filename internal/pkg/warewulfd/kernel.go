@@ -31,8 +31,8 @@ func KernelSend(w http.ResponseWriter, req *http.Request) {
 	}
 
 	var fileName string
-	if node.KernelOverride.Defined() {
-		fileName = kernel.KernelImage(node.KernelOverride.Get())
+	if node.Kernel.Override.Defined() {
+		fileName = kernel.KernelImage(node.Kernel.Override.Get())
 
 	} else if node.ContainerName.Defined() {
 		fileName = container.KernelFind(node.ContainerName.Get())
