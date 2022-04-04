@@ -2,6 +2,8 @@ package buildconfig
 
 import "github.com/hpcng/warewulf/internal/pkg/wwlog"
 
+const WWVer = 43
+
 var (
 	bindir         string = "UNDEF"
 	sysconfdir     string = "UNDEF"

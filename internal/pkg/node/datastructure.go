@@ -10,6 +10,7 @@ import (
  ******/
 
 type nodeYaml struct {
+	WWInternal   int `yaml:"WW_INTERNAL"`
 	NodeProfiles map[string]*NodeConf
 	Nodes        map[string]*NodeConf
 }
@@ -19,11 +20,9 @@ type NodeConf struct {
 	ClusterName    string              `yaml:"cluster name,omitempty"`
 	ContainerName  string              `yaml:"container name,omitempty"`
 	Ipxe           string              `yaml:"ipxe template,omitempty"`
-	KernelVersion  string              `yaml:"kernel version,omitempty"`
-	KernelOverride string              `yaml:"kernel override,omitempty"`
-	KernelArgs     string              `yaml:"kernel args,omitempty"`
 	RuntimeOverlay []string            `yaml:"runtime overlay,omitempty"`
 	SystemOverlay  []string            `yaml:"system overlay,omitempty"`
+	Kernel         *KernelConf         `yaml:"kernel,omitempty"`
 	Ipmi           *IpmiConf           `yaml:"ipmi,omitempty"`
 	Init           string              `yaml:"init,omitempty"`
 	Root           string              `yaml:"root,omitempty"`
@@ -44,6 +43,11 @@ type IpmiConf struct {
 	Gateway   string `yaml:"gateway,omitempty"`
 	Interface string `yaml:"interface,omitempty"`
 	Write     bool   `yaml:"write,omitempty"`
+}
+type KernelConf struct {
+	Version  string `yaml:"version,omitempty"`
+	Override string `yaml:"override,omitempty"`
+	Args     string `yaml:"args,omitempty"`
 }
 
 type NetDevs struct {
@@ -82,14 +86,13 @@ type NodeInfo struct {
 	ClusterName    Entry
 	ContainerName  Entry
 	Ipxe           Entry
-	KernelOverride Entry
-	KernelArgs     Entry
 	RuntimeOverlay Entry
 	SystemOverlay  Entry
 	Root           Entry
 	Discoverable   Entry
 	Init           Entry //TODO: Finish adding this...
 	AssetKey       Entry
+	Kernel         *KernelEntry
 	Ipmi           *IpmiEntry
 	Profiles       []string
 	GroupProfiles  []string
@@ -106,6 +109,12 @@ type IpmiEntry struct {
 	Password  Entry
 	Interface Entry
 	Write     Entry
+}
+
+type KernelEntry struct {
+	Version  Entry
+	Override Entry
+	Args     Entry
 }
 
 type NetDevEntry struct {
