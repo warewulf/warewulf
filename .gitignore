@@ -10,6 +10,7 @@
 /wwctl
 /bash_completion
 /man_page
+/config_defaults
 
 # other created files
 /man_pages
