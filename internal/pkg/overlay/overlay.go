@@ -101,6 +101,7 @@ Get all overlays present in warewulf
 func FindOverlays() ([]string, error) {
 	var ret []string
 	var files []os.FileInfo
+        dotfilecheck, _ := regexp.Compile(`^\..*`)
 
 	files, err := ioutil.ReadDir(OverlaySourceTopDir())
 	if err != nil {
@@ -109,7 +110,9 @@ func FindOverlays() ([]string, error) {
 
 	for _, file := range files {
 		wwlog.Printf(wwlog.DEBUG, "Evaluating overlay source: %s\n", file.Name())
-		if file.IsDir() {
+		isdotfile := dotfilecheck.MatchString(file.Name())
+
+		if (file.IsDir()) && !(isdotfile) {
 			ret = append(ret, file.Name())
 		}
 	}
