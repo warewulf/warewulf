@@ -1,8 +1,8 @@
 package warewulfconf
 
-const defaultPort int = 9983
+import "github.com/hpcng/warewulf/internal/pkg/buildconfig"
 
-var defaultDataStore string = "/var/lib/warewulf"
+const defaultPort int = 9983
 
 func defaultConfig() *ControllerConf {
 	Warewulf := &WarewulfConf{
@@ -12,7 +12,7 @@ func defaultConfig() *ControllerConf {
 		AutobuildOverlays: true,
 		EnableHostOverlay: true,
 		Syslog:            false,
-		DataStore:         defaultDataStore,
+		DataStore:         buildconfig.LOCALSTATEDIR(),
 	}
 	Dhcp := &DhcpConf{
 		Enabled:     true,
@@ -23,14 +23,15 @@ func defaultConfig() *ControllerConf {
 	}
 	Tftp := &TftpConf{
 		Enabled:     true,
-		TftpRoot:    "/var/lib/tftpboot",
+		TftpRoot:    buildconfig.TFTPDIR(),
 		SystemdName: "tftp",
 	}
 
 	return &ControllerConf{
-		Warewulf: Warewulf,
-		Dhcp:     Dhcp,
-		Tftp:     Tftp,
-		current:  false,
+		WWInternal: buildconfig.WWVer,
+		Warewulf:   Warewulf,
+		Dhcp:       Dhcp,
+		Tftp:       Tftp,
+		current:    false,
 	}
 }

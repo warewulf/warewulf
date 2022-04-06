@@ -28,10 +28,10 @@ func KmodsSend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if node.KernelOverride.Defined() {
-		fileName := kernel.KmodsImage(node.KernelOverride.Get())
+	if node.Kernel.Override.Defined() {
+		fileName := kernel.KmodsImage(node.Kernel.Override.Get())
 
-		updateStatus(node.Id.Get(), "KMODS_OVERLAY", node.KernelOverride.Get()+".img", strings.Split(req.RemoteAddr, ":")[0])
+		updateStatus(node.Id.Get(), "KMODS_OVERLAY", node.Kernel.Override.Get()+".img", strings.Split(req.RemoteAddr, ":")[0])
 
 		err := sendFile(w, fileName, node.Id.Get())
 		if err != nil {

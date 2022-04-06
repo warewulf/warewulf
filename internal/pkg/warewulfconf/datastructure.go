@@ -7,18 +7,19 @@ import (
 )
 
 type ControllerConf struct {
-	Comment  string        `yaml:"comment,omitempty"`
-	Ipaddr   string        `yaml:"ipaddr"`
-	Ipaddr6  string        `yaml:"ipaddr6,omitempty"`
-	Netmask  string        `yaml:"netmask"`
-	Network  string        `yaml:"network,omitempty"`
-	Ipv6net  string        `yaml:"ipv6net,omitempty"`
-	Fqdn     string        `yaml:"fqdn,omitempty"`
-	Warewulf *WarewulfConf `yaml:"warewulf"`
-	Dhcp     *DhcpConf     `yaml:"dhcp"`
-	Tftp     *TftpConf     `yaml:"tftp"`
-	Nfs      *NfsConf      `yaml:"nfs"`
-	current  bool
+	WWInternal int           `yaml:"WW_INTERNAL"`
+	Comment    string        `yaml:"comment,omitempty"`
+	Ipaddr     string        `yaml:"ipaddr"`
+	Ipaddr6    string        `yaml:"ipaddr6,omitempty"`
+	Netmask    string        `yaml:"netmask"`
+	Network    string        `yaml:"network,omitempty"`
+	Ipv6net    string        `yaml:"ipv6net,omitempty"`
+	Fqdn       string        `yaml:"fqdn,omitempty"`
+	Warewulf   *WarewulfConf `yaml:"warewulf"`
+	Dhcp       *DhcpConf     `yaml:"dhcp"`
+	Tftp       *TftpConf     `yaml:"tftp"`
+	Nfs        *NfsConf      `yaml:"nfs"`
+	current    bool
 }
 
 type WarewulfConf struct {

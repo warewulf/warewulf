@@ -72,12 +72,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 		if SetKernelOverride != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting kernel override to: %s\n", n.Id.Get(), SetKernelOverride)
-			n.KernelOverride.Set(SetKernelOverride)
+			n.Kernel.Override.Set(SetKernelOverride)
 		}
 
 		if SetKernelArgs != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting kernel args to: %s\n", n.Id.Get(), SetKernelArgs)
-			n.KernelArgs.Set(SetKernelArgs)
+			n.Kernel.Args.Set(SetKernelArgs)
 		}
 
 		if SetClusterName != "" {
@@ -103,45 +103,45 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if SetIpmiIpaddr != "" {
 			NewIpaddr := util.IncrementIPv4(SetIpmiIpaddr, count)
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI IP address to: %s\n", n.Id.Get(), NewIpaddr)
-			n.IpmiIpaddr.Set(NewIpaddr)
+			n.Ipmi.Ipaddr.Set(NewIpaddr)
 		}
 
 		if SetIpmiNetmask != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI netmask to: %s\n", n.Id.Get(), SetIpmiNetmask)
-			n.IpmiNetmask.Set(SetIpmiNetmask)
+			n.Ipmi.Netmask.Set(SetIpmiNetmask)
 		}
 
 		if SetIpmiPort != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI port to: %s\n", n.Id.Get(), SetIpmiPort)
-			n.IpmiPort.Set(SetIpmiPort)
+			n.Ipmi.Port.Set(SetIpmiPort)
 		}
 
 		if SetIpmiGateway != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI gateway to: %s\n", n.Id.Get(), SetIpmiGateway)
-			n.IpmiGateway.Set(SetIpmiGateway)
+			n.Ipmi.Gateway.Set(SetIpmiGateway)
 		}
 
 		if SetIpmiUsername != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI IP username to: %s\n", n.Id.Get(), SetIpmiUsername)
-			n.IpmiUserName.Set(SetIpmiUsername)
+			n.Ipmi.UserName.Set(SetIpmiUsername)
 		}
 
 		if SetIpmiPassword != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI IP password to: %s\n", n.Id.Get(), SetIpmiPassword)
-			n.IpmiPassword.Set(SetIpmiPassword)
+			n.Ipmi.Password.Set(SetIpmiPassword)
 		}
 
 		if SetIpmiInterface != "" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI IP interface to: %s\n", n.Id.Get(), SetIpmiInterface)
-			n.IpmiInterface.Set(SetIpmiInterface)
+			n.Ipmi.Interface.Set(SetIpmiInterface)
 		}
 
 		if SetIpmiWrite == "yes" || SetNetOnBoot == "y" || SetNetOnBoot == "1" || SetNetOnBoot == "true" {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting Ipmiwrite to %s\n", n.Id.Get(), SetIpmiWrite)
-			n.IpmiWrite.SetB(true)
+			n.Ipmi.Write.SetB(true)
 		} else {
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting Ipmiwrite to %s\n", n.Id.Get(), SetIpmiWrite)
-			n.IpmiWrite.SetB(false)
+			n.Ipmi.Write.SetB(false)
 		}
 
 		if SetDiscoverable {
