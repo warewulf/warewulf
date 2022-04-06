@@ -8,6 +8,7 @@ import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/list"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/shell"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/show"
+	"github.com/hpcng/warewulf/internal/app/wwctl/container/syncuser"
 	"github.com/spf13/cobra"
 )
 
@@ -31,6 +32,7 @@ func init() {
 	baseCmd.AddCommand(shell.GetCommand())
 	baseCmd.AddCommand(delete.GetCommand())
 	baseCmd.AddCommand(show.GetCommand())
+	baseCmd.AddCommand(syncuser.GetCommand())
 
 }
 

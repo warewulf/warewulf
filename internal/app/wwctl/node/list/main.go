@@ -41,8 +41,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			fmt.Printf("%-20s %-18s %-12s %t\n", node.Id.Get(), "Discoverable", node.Discoverable.Source(), node.Discoverable.PrintB())
 
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Container", node.ContainerName.Source(), node.ContainerName.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "KernelOverride", node.KernelOverride.Source(), node.KernelOverride.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "KernelArgs", node.KernelArgs.Source(), node.KernelArgs.Print())
+			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "KernelOverride", node.Kernel.Override.Source(), node.Kernel.Override.Print())
+			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "KernelArgs", node.Kernel.Args.Source(), node.Kernel.Args.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "SystemOverlay", node.SystemOverlay.Source(), node.SystemOverlay.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "RuntimeOverlay", node.RuntimeOverlay.Source(), node.RuntimeOverlay.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Ipxe", node.Ipxe.Source(), node.Ipxe.Print())
@@ -50,12 +50,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Root", node.Root.Source(), node.Root.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "AssetKey", node.AssetKey.Source(), node.AssetKey.Print())
 
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiIpaddr", node.IpmiIpaddr.Source(), node.IpmiIpaddr.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiNetmask", node.IpmiNetmask.Source(), node.IpmiNetmask.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiPort", node.IpmiPort.Source(), node.IpmiPort.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiGateway", node.IpmiGateway.Source(), node.IpmiGateway.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiUserName", node.IpmiUserName.Source(), node.IpmiUserName.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiInterface", node.IpmiInterface.Source(), node.IpmiInterface.Print())
+			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiIpaddr", node.Ipmi.Ipaddr.Source(), node.Ipmi.Ipaddr.Print())
+			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiNetmask", node.Ipmi.Netmask.Source(), node.Ipmi.Netmask.Print())
+			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiPort", node.Ipmi.Port.Source(), node.Ipmi.Port.Print())
+			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiGateway", node.Ipmi.Gateway.Source(), node.Ipmi.Gateway.Print())
+			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiUserName", node.Ipmi.UserName.Source(), node.Ipmi.UserName.Print())
+			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiInterface", node.Ipmi.Interface.Source(), node.Ipmi.Interface.Print())
 
 			for keyname, key := range node.Tags {
 				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Tag["+keyname+"]", key.Source(), key.Print())
@@ -71,6 +71,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":TYPE", netdev.Type.Source(), netdev.Type.Print())
 				fmt.Printf("%-20s %-18s %-12s %t\n", node.Id.Get(), name+":ONBOOT", netdev.OnBoot.Source(), netdev.OnBoot.PrintB())
 				fmt.Printf("%-20s %-18s %-12s %t\n", node.Id.Get(), name+":DEFAULT", netdev.Default.Source(), netdev.Default.PrintB())
+				for keyname, key := range netdev.Tags {
+					fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":TAG["+keyname+"]", key.Source(), key.Print())
+				}
 			}
 
 		}
@@ -95,7 +98,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Println(strings.Repeat("=", 108))
 
 		for _, node := range node.FilterByName(nodes, args) {
-			fmt.Printf("%-22s %-16s %-10s %-20s %-20s %-14s\n", node.Id.Get(), node.IpmiIpaddr.Print(), node.IpmiPort.Print(), node.IpmiUserName.Print(), node.IpmiPassword.Print(), node.IpmiInterface.Print())
+			fmt.Printf("%-22s %-16s %-10s %-20s %-20s %-14s\n", node.Id.Get(), node.Ipmi.Ipaddr.Print(), node.Ipmi.Port.Print(), node.Ipmi.UserName.Print(), node.Ipmi.Password.Print(), node.Ipmi.Interface.Print())
 		}
 
 	} else if ShowLong {
@@ -103,7 +106,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Println(strings.Repeat("=", 120))
 
 		for _, node := range node.FilterByName(nodes, args) {
-			fmt.Printf("%-22s %-26s %-35s %s\n", node.Id.Get(), node.KernelOverride.Print(), node.ContainerName.Print(), node.SystemOverlay.Print()+"/"+node.RuntimeOverlay.Print())
+			fmt.Printf("%-22s %-26s %-35s %s\n", node.Id.Get(), node.Kernel.Override.Print(), node.ContainerName.Print(), node.SystemOverlay.Print()+"/"+node.RuntimeOverlay.Print())
 		}
 
 	} else {

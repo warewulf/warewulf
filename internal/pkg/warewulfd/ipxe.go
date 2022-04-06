@@ -139,8 +139,8 @@ func IpxeSend(w http.ResponseWriter, req *http.Request) {
 	replace.Hostname = node.Id.Get()
 	replace.Hwaddr = rinfo.hwaddr
 	replace.ContainerName = node.ContainerName.Get()
-	replace.KernelArgs = node.KernelArgs.Get()
-	replace.KernelOverride = node.KernelOverride.Get()
+	replace.KernelArgs = node.Kernel.Args.Get()
+	replace.KernelOverride = node.Kernel.Override.Get()
 
 	err = tmpl.Execute(w, replace)
 	if err != nil {

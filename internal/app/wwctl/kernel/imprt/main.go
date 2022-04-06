@@ -70,7 +70,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Printf(wwlog.DEBUG, "Looking for profile default: %s\n", profile.Id.Get())
 			if profile.Id.Get() == "default" {
 				wwlog.Printf(wwlog.DEBUG, "Found profile default, setting kernel version to: %s\n", args[0])
-				profile.KernelOverride.Set(args[0])
+				profile.Kernel.Override.Set(args[0])
 				err := nodeDB.ProfileUpdate(profile)
 				if err != nil {
 					return errors.Wrap(err, "failed to update node profile")

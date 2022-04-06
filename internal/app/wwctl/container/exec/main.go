@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path"
 	"syscall"
+	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/util"
@@ -48,6 +49,18 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		allargs = append(allargs, "--bind", b)
 	}
 	allargs = append(allargs, args...)
+	containerPath := container.RootFsDir(containerName)
+
+	passwdTime := time.Now()
+	fileStat, _ := os.Stat(path.Join(containerPath, "/etc/passwd"))
+	unixStat := fileStat.Sys().(*syscall.Stat_t)
+	passwdTime = time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))
+	groupTime := time.Now()
+	fileStat, _ = os.Stat(path.Join(containerPath, "/etc/group"))
+	unixStat = fileStat.Sys().(*syscall.Stat_t)
+	groupTime = time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))
+	wwlog.Printf(wwlog.DEBUG, "passwd: %v\n", passwdTime)
+	wwlog.Printf(wwlog.DEBUG, "group: %v\n", groupTime)
 
 	err := runContainedCmd(allargs)
 	if err != nil {
@@ -61,6 +74,31 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Failed executing exit script: %s\n", err)
 			os.Exit(1)
+		}
+	}
+	fileStat, _ = os.Stat(path.Join(containerPath, "/etc/passwd"))
+	unixStat = fileStat.Sys().(*syscall.Stat_t)
+	syncuids := false
+	if passwdTime.Before(time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))) {
+		if NoSyncUser {
+			wwlog.Printf(wwlog.WARN, "/etc/passwd has been modified, maybe you want to run syncuser\n")
+		}
+		syncuids = true
+	}
+	wwlog.Printf(wwlog.DEBUG, "passwd: %v\n", time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec)))
+	fileStat, _ = os.Stat(path.Join(containerPath, "/etc/group"))
+	unixStat = fileStat.Sys().(*syscall.Stat_t)
+	if groupTime.Before(time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))) {
+		if NoSyncUser {
+			wwlog.Printf(wwlog.WARN, "/etc/group has been modified, maybe you want to run syncuser\n")
+		}
+		syncuids = true
+	}
+	wwlog.Printf(wwlog.DEBUG, "group: %v\n", time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec)))
+	if syncuids && !NoSyncUser {
+		err = container.SyncUids(containerName, true)
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "Error in user sync, fix error and run 'syncuser' manually, but trying to build container: %s\n", err)
 		}
 	}
 

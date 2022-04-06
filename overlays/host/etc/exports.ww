@@ -8,9 +8,6 @@
 {{- range .Nfs.ExportsExtended }}
 {{ .Path }} {{ $network }}/{{ $netmask }}({{ .ExportOptions }})
 {{- end }}
-{{range .Nfs.Exports }}
-{{ . }} {{ $network }}/{{ $netmask }}(rw,sync)
-{{- end }}
 {{- else }}
 {{ abort }}
 {{- end }}

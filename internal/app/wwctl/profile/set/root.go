@@ -67,6 +67,8 @@ var (
 	SetTags           []string
 	SetDelTags        []string
 	SetAssetKey       string
+	SetNetTags        []string
+	SetNetDelTags     []string
 )
 
 func init() {
@@ -122,6 +124,8 @@ func init() {
 	baseCmd.PersistentFlags().StringVar(&SetNetOnBoot, "onboot", "", "Enable/disable device (yes/no)")
 
 	baseCmd.PersistentFlags().BoolVar(&SetNetDevDel, "netdel", false, "Delete the node's network device")
+	baseCmd.PersistentFlags().StringSliceVar(&SetNetTags, "nettag", []string{}, "Define custom tag to network device (key=value)")
+	baseCmd.PersistentFlags().StringSliceVar(&SetNetDelTags, "netdeltag", []string{}, "Delete tag for network device")
 
 	baseCmd.PersistentFlags().StringSliceVarP(&SetTags, "tag", "t", []string{}, "Define custom tag (key=value)")
 	baseCmd.PersistentFlags().StringSliceVar(&SetDelTags, "tagdel", []string{}, "Delete tag")

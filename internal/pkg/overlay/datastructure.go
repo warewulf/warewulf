@@ -14,19 +14,10 @@ type TemplateStruct struct {
 	Hostname       string
 	ClusterName    string
 	Container      string
-	KernelVersion  string
-	KernelOverride string
-	KernelArgs     string
+	Kernel         *node.KernelConf
 	Init           string
 	Root           string
-	IpmiIpaddr     string
-	IpmiNetmask    string
-	IpmiPort       string
-	IpmiGateway    string
-	IpmiUserName   string
-	IpmiPassword   string
-	IpmiInterface  string
-	IpmiWrite      string
+	Ipmi           *node.IpmiConf
 	RuntimeOverlay string
 	SystemOverlay  string
 	NetDevs        map[string]*node.NetDevs
