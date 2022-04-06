@@ -10,8 +10,17 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    strategy:
+      matrix: # Pin go version to the one(s) below.
+        go ['1.17']
     steps:
       - uses: actions/checkout@v2
+
+      - name Setup go ${{ matrix.go }}
+        uses: actions/setup.go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
       - name: Lint
         uses: golangci/golangci-lint-action@v2
         with:
