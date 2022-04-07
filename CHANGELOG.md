@@ -21,11 +21,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   be set to enable ipv6. If enabled on of these options is set a node will get a derived
   ipv6 in the scheme `ipv6net:ipaddr4`. This address can also be overwritten for every 
   node
-- Multiple file can now created from a single `template.ww` file with the `{{ file FILENAME }}` 
+- Multiple files can now created from a single `template.ww` file with the `{{ file FILENAME }}` 
   command in the template. The command is expanded to the magic template command 
   `{{ /* file FILENAME */}}` which is picked up by wwctl and everything which comes after this
   magic comment will be written to the file `FILENAME`. This mechanism is leveraged in the 
   configuration files for the network, see `ifcfg.xml.ww` and `ifcgf.ww`.
+- Networks can now have arbitrary keys value pairs in the profiles and on the node, so that 
+  things like bridges and mtu sizes can be set
+- The yaml format for nodes has now sub-keys for ipmi and kernel, old nodes.conf files have to
+  to be changed accordingly
+- uids and gids of a container now get synced at import time, so that at least users with the
+  same name have the same uid. This is not necessarily needed for warewulf, but services like
+  munge.
 
 
 ## [4.1.0] - 2021-07-29
