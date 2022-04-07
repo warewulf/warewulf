@@ -8,6 +8,7 @@ import (
 	"path"
 
 	"github.com/brotherpowers/ipsubnet"
+	"github.com/creasty/defaults"
 	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 
@@ -25,15 +26,26 @@ func init() {
 }
 
 func New() (ControllerConf, error) {
-	var ret ControllerConf = *defaultConfig()
-
+	var ret ControllerConf
+	var warewulfconf WarewulfConf
+	var dhpdconf DhcpConf
+	var tftpconf TftpConf
+	var nfsConf NfsConf
+	ret.Warewulf = &warewulfconf
+	ret.Dhcp = &dhpdconf
+	ret.Tftp = &tftpconf
+	ret.Nfs = &nfsConf
+	err := defaults.Set(&ret)
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, "Coult initialize default variables\n")
+		return ret, err
+	}
 	// Check if cached config is old before re-reading config file
 	if !cachedConf.current {
 		wwlog.Printf(wwlog.DEBUG, "Opening Warewulf configuration file: %s\n", ConfigFile)
 		data, err := ioutil.ReadFile(ConfigFile)
 		if err != nil {
-			fmt.Printf("Error reading Warewulf configuration file\n")
-			return ret, err
+			wwlog.Printf(wwlog.WARN, "Error reading Warewulf configuration file\n")
 		}
 
 		wwlog.Printf(wwlog.DEBUG, "Unmarshaling the Warewulf configuration\n")
@@ -42,16 +54,22 @@ func New() (ControllerConf, error) {
 			return ret, err
 		}
 
-		// TODO: Need to add comprehensive config file validator
-		// TODO: Change function to guess default IP address and/or mask from local system
-		if ret.Ipaddr == "" {
-			wwlog.Printf(wwlog.ERROR, "IP address is not configured in warewulfd.conf\n")
-			return ret, errors.New("no IP Address")
-		}
-
-		if ret.Netmask == "" {
-			wwlog.Printf(wwlog.ERROR, "Netmask is not configured in warewulfd.conf\n")
-			return ret, errors.New("no netmask")
+		if ret.Ipaddr == "" || ret.Netmask == "" {
+			conn, error := net.Dial("udp", "8.8.8.8:80")
+			if error != nil {
+				return ret, err
+			}
+			defer conn.Close()
+			localIp := conn.LocalAddr().(*net.UDPAddr)
+			if ret.Ipaddr == "" {
+				ret.Ipaddr = localIp.IP.String()
+				wwlog.Printf(wwlog.WARN, "IP address is not configured in warewulfd.conf, using %s\n", ret.Ipaddr)
+			}
+			if ret.Netmask == "" {
+				mask := localIp.IP.DefaultMask()
+				ret.Netmask = fmt.Sprintf("%d.%d.%d.%d", mask[0], mask[1], mask[2], mask[3])
+				wwlog.Printf(wwlog.WARN, "Netmask address is not configured in warewulfd.conf, using %s\n", ret.Netmask)
+			}
 		}
 
 		if ret.Network == "" {
@@ -73,9 +91,6 @@ func New() (ControllerConf, error) {
 				wwlog.Printf(wwlog.ERROR, "ipv6 mask size must be smaller than 64\n")
 				return ret, errors.New("invalid ipv6 network size")
 			}
-		}
-		if ret.Warewulf.Port == 0 {
-			ret.Warewulf.Port = defaultPort
 		}
 
 		wwlog.Printf(wwlog.DEBUG, "Returning warewulf config object\n")

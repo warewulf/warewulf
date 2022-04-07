@@ -23,52 +23,46 @@ type ControllerConf struct {
 }
 
 type WarewulfConf struct {
-	Port              int    `yaml:"port"`
-	Secure            bool   `yaml:"secure"`
-	UpdateInterval    int    `yaml:"update interval"`
-	AutobuildOverlays bool   `yaml:"autobuild overlays"`
-	EnableHostOverlay bool   `yaml:"host overlay"`
-	Syslog            bool   `yaml:"syslog"`
-	DataStore         string `yaml:"datastore"`
+	Port              int    `yaml:"port" default:"9983"`
+	Secure            bool   `yaml:"secure" default:"true"`
+	UpdateInterval    int    `yaml:"update interval" default:"60"`
+	AutobuildOverlays bool   `yaml:"autobuild overlays" default:"true"`
+	EnableHostOverlay bool   `yaml:"host overlay" default:"true"`
+	Syslog            bool   `yaml:"syslog" default:"false"`
+	DataStore         string `yaml:"datastore" default:"/var/lib/warewulf"`
 }
 
 type DhcpConf struct {
-	Enabled     bool   `yaml:"enabled"`
-	Template    string `yaml:"template"`
-	RangeStart  string `yaml:"range start"`
-	RangeEnd    string `yaml:"range end"`
-	SystemdName string `yaml:"systemd name"`
+	Enabled     bool   `yaml:"enabled" default:"true"`
+	Template    string `yaml:"template" default:"default"`
+	RangeStart  string `yaml:"range start" default:"192.168.200.50"`
+	RangeEnd    string `yaml:"range end" default:"192.168.200.99"`
+	SystemdName string `yaml:"systemd name" default:"dhcpd"`
 }
 
 type TftpConf struct {
-	Enabled     bool   `yaml:"enabled"`
-	TftpRoot    string `yaml:"tftproot"`
-	SystemdName string `yaml:"systemd name"`
+	Enabled     bool   `yaml:"enabled" default:"true"`
+	TftpRoot    string `yaml:"tftproot" default:"/var/lib/tftpboot"`
+	SystemdName string `yaml:"systemd name" default:"tftp"`
 }
 
 type NfsConf struct {
-	Enabled         bool             `default:"true" yaml:"enabled"`
-	ExportsExtended []*NfsExportConf `yaml:"export paths"`
-	SystemdName     string           `yaml:"systemd name"`
+	Enabled         bool             `yaml:"enabled" default:"true"`
+	ExportsExtended []*NfsExportConf `yaml:"export paths" default:"[{\"Path\": \"home\"}]"`
+	SystemdName     string           `yaml:"systemd name" default:"nfsd"`
 }
 
 type NfsExportConf struct {
-	Path          string `yaml:"path"`
+	Path          string `yaml:"path" default:"/home"`
 	ExportOptions string `default:"rw,sync,no_subtree_check" yaml:"export options"`
 	MountOptions  string `default:"defaults" yaml:"mount options"`
 	Mount         bool   `default:"true" yaml:"mount"`
 }
 
-func (s *NfsConf) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (s *NfsConf) Unmarshal(unmarshal func(interface{}) error) error {
 	if err := defaults.Set(s); err != nil {
 		return err
 	}
-
-	type plain NfsConf
-	if err := unmarshal((*plain)(s)); err != nil {
-		return err
-	}
-
 	return nil
 }
 

@@ -95,7 +95,7 @@ export GOPROXY
 # built tags needed for wwbuild binary
 WW_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
-all: config vendor wwctl wwclient bash_completion.d man_pages
+all: config vendor wwctl wwclient bash_completion.d man_pages config_defaults
 
 build: lint test-it vet all
 
@@ -225,6 +225,14 @@ man_pages: man_page
 	./man_page ./man_pages
 	cd man_pages; for i in wwctl*1; do echo "Compressing manpage: $$i"; gzip --force $$i; done
 
+config_defaults:
+	cd cmd/config_defaults && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'\
+	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'"\
+	 -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o ../../config_defaults
+
+warewulfconf: config_defaults
+	./config_defaults
+
 dist: vendor config
 	rm -rf .dist/$(WAREWULF)-$(VERSION)
 	mkdir -p .dist/$(WAREWULF)-$(VERSION)
@@ -246,6 +254,7 @@ clean:
 	rm -f config
 	rm -f Defaults.mk
 	rm -rf $(TOOLS_DIR)
+	rm -f config_defaults
 
 install: files install_wwclient
 
