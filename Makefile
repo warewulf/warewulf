@@ -12,7 +12,7 @@ VARLIST := OS
 # Project Information
 VARLIST += WAREWULF VERSION RELEASE
 WAREWULF ?= warewulf
-VERSION ?= 4.2.0
+VERSION ?= 4.3.0-rc1
 GIT_TAG := $(shell test -e .git && git describe --tags --long --first-parent --always)
 
 ifndef GIT_TAG
