@@ -67,6 +67,10 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.Ipxe.SetDefault("default")
 		n.Init.SetDefault("/sbin/init")
 		n.Root.SetDefault("initramfs")
+
+		if n.Kernel == nil {
+			n.Kernel = &KernelEntry{}
+		}
 		n.Kernel.Args.SetDefault("quiet crashkernel=no vga=791")
 
 		fullname := strings.SplitN(nodename, ".", 2)
@@ -83,28 +87,34 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.Id.Set(nodename)
 		n.Comment.Set(node.Comment)
 		n.ContainerName.Set(node.ContainerName)
-		n.Kernel.Args.Set(node.Kernel.Args)
+		if node.Kernel != nil {
+			n.Kernel.Args.Set(node.Kernel.Args)
+		}
 		n.ClusterName.Set(node.ClusterName)
 		n.Ipxe.Set(node.Ipxe)
 		n.Init.Set(node.Init)
-		n.Ipmi.Ipaddr.Set(node.Ipmi.Ipaddr)
-		n.Ipmi.Netmask.Set(node.Ipmi.Netmask)
-		n.Ipmi.Port.Set(node.Ipmi.Port)
-		n.Ipmi.Gateway.Set(node.Ipmi.Gateway)
-		n.Ipmi.UserName.Set(node.Ipmi.UserName)
-		n.Ipmi.Password.Set(node.Ipmi.Password)
-		n.Ipmi.Interface.Set(node.Ipmi.Interface)
-		n.Ipmi.Write.SetB(node.Ipmi.Write)
+		if node.Ipmi != nil {
+			n.Ipmi.Ipaddr.Set(node.Ipmi.Ipaddr)
+			n.Ipmi.Netmask.Set(node.Ipmi.Netmask)
+			n.Ipmi.Port.Set(node.Ipmi.Port)
+			n.Ipmi.Gateway.Set(node.Ipmi.Gateway)
+			n.Ipmi.UserName.Set(node.Ipmi.UserName)
+			n.Ipmi.Password.Set(node.Ipmi.Password)
+			n.Ipmi.Interface.Set(node.Ipmi.Interface)
+			n.Ipmi.Write.SetB(node.Ipmi.Write)
+		}
 		n.SystemOverlay.SetSlice(node.SystemOverlay)
 		n.RuntimeOverlay.SetSlice(node.RuntimeOverlay)
 		n.Root.Set(node.Root)
 		n.AssetKey.Set(node.AssetKey)
 		n.Discoverable.Set(node.Discoverable)
 
+		if node.Kernel != nil {
 		if node.Kernel.Override != "" {
-			n.Kernel.Override.Set(node.Kernel.Override)
-		} else if node.Kernel.Version != "" {
-			n.Kernel.Override.Set(node.Kernel.Version)
+				n.Kernel.Override.Set(node.Kernel.Override)
+			} else if node.Kernel.Version != "" {
+				n.Kernel.Override.Set(node.Kernel.Version)
+			}
 		}
 
 		for devname, netdev := range node.NetDevs {
@@ -179,27 +189,33 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.Comment.SetAlt(config.NodeProfiles[p].Comment, p)
 			n.ClusterName.SetAlt(config.NodeProfiles[p].ClusterName, p)
 			n.ContainerName.SetAlt(config.NodeProfiles[p].ContainerName, p)
-			n.Kernel.Args.SetAlt(config.NodeProfiles[p].Kernel.Args, p)
+			if config.NodeProfiles[p].Kernel != nil {
+				n.Kernel.Args.SetAlt(config.NodeProfiles[p].Kernel.Args, p)
+			}
 			n.Ipxe.SetAlt(config.NodeProfiles[p].Ipxe, p)
 			n.Init.SetAlt(config.NodeProfiles[p].Init, p)
-			n.Ipmi.Ipaddr.SetAlt(config.NodeProfiles[p].Ipmi.Ipaddr, p)
-			n.Ipmi.Netmask.SetAlt(config.NodeProfiles[p].Ipmi.Netmask, p)
-			n.Ipmi.Port.SetAlt(config.NodeProfiles[p].Ipmi.Port, p)
-			n.Ipmi.Gateway.SetAlt(config.NodeProfiles[p].Ipmi.Gateway, p)
-			n.Ipmi.UserName.SetAlt(config.NodeProfiles[p].Ipmi.UserName, p)
-			n.Ipmi.Password.SetAlt(config.NodeProfiles[p].Ipmi.Password, p)
-			n.Ipmi.Interface.SetAlt(config.NodeProfiles[p].Ipmi.Interface, p)
-			n.Ipmi.Write.SetB(config.NodeProfiles[p].Ipmi.Write)
+			if config.NodeProfiles[p].Ipmi != nil {
+				n.Ipmi.Ipaddr.SetAlt(config.NodeProfiles[p].Ipmi.Ipaddr, p)
+				n.Ipmi.Netmask.SetAlt(config.NodeProfiles[p].Ipmi.Netmask, p)
+				n.Ipmi.Port.SetAlt(config.NodeProfiles[p].Ipmi.Port, p)
+				n.Ipmi.Gateway.SetAlt(config.NodeProfiles[p].Ipmi.Gateway, p)
+				n.Ipmi.UserName.SetAlt(config.NodeProfiles[p].Ipmi.UserName, p)
+				n.Ipmi.Password.SetAlt(config.NodeProfiles[p].Ipmi.Password, p)
+				n.Ipmi.Interface.SetAlt(config.NodeProfiles[p].Ipmi.Interface, p)
+				n.Ipmi.Write.SetB(config.NodeProfiles[p].Ipmi.Write)
+			}
 			n.SystemOverlay.SetAltSlice(config.NodeProfiles[p].SystemOverlay, p)
 			n.RuntimeOverlay.SetAltSlice(config.NodeProfiles[p].RuntimeOverlay, p)
 			n.Root.SetAlt(config.NodeProfiles[p].Root, p)
 			n.AssetKey.SetAlt(config.NodeProfiles[p].AssetKey, p)
 			n.Discoverable.SetAlt(config.NodeProfiles[p].Discoverable, p)
 
-			if config.NodeProfiles[p].Kernel.Override != "" {
-				n.Kernel.Override.SetAlt(config.NodeProfiles[p].Kernel.Override, p)
-			} else if config.NodeProfiles[p].Kernel.Version != "" {
-				n.Kernel.Override.SetAlt(config.NodeProfiles[p].Kernel.Version, p)
+			if config.NodeProfiles[p].Kernel != nil {
+				if config.NodeProfiles[p].Kernel.Override != "" {
+					n.Kernel.Override.SetAlt(config.NodeProfiles[p].Kernel.Override, p)
+				} else if config.NodeProfiles[p].Kernel.Version != "" {
+					n.Kernel.Override.SetAlt(config.NodeProfiles[p].Kernel.Version, p)
+				}
 			}
 
 			for devname, netdev := range config.NodeProfiles[p].NetDevs {
