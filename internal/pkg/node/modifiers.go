@@ -14,10 +14,17 @@ import (
  * NODE MODIFIERS
  *
 ****/
-
+/*
+Add a node to the database with the given name and return an empty
+NodeInfo.
+*/
 func (config *nodeYaml) AddNode(nodeID string) (NodeInfo, error) {
 	var node NodeConf
 	var n NodeInfo
+	var kEnt KernelEntry
+	var ipmiEnt IpmiEntry
+	n.Kernel = &kEnt
+	n.Ipmi = &ipmiEnt
 
 	wwlog.Printf(wwlog.VERBOSE, "Adding new node: %s\n", nodeID)
 
