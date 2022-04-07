@@ -30,14 +30,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 	containerPath := container.RootFsDir(containerName)
-	passwdTime := time.Now()
 	fileStat, _ := os.Stat(path.Join(containerPath, "/etc/passwd"))
 	unixStat := fileStat.Sys().(*syscall.Stat_t)
-	passwdTime = time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))
-	groupTime := time.Now()
+	passwdTime := time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))
 	fileStat, _ = os.Stat(path.Join(containerPath, "/etc/group"))
 	unixStat = fileStat.Sys().(*syscall.Stat_t)
-	groupTime = time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))
+	groupTime := time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))
 	wwlog.Printf(wwlog.DEBUG, "passwd: %v\n", passwdTime)
 	wwlog.Printf(wwlog.DEBUG, "group: %v\n", groupTime)
 
