@@ -35,3 +35,9 @@ jobs:
 
     - name: Build with go ${{ matrix.go }}
       run: make all
+
+    - name: vet
+      run: make vet
+
+    - name: test
+      run: make test-it
