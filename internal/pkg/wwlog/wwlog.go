@@ -6,38 +6,63 @@ import (
 )
 
 const (
-	CRITICAL = 0
-	ERROR    = 1
-	WARN     = 2
-	INFO     = 3
-	VERBOSE  = 4
-	DEBUG    = 5
+	CRITICAL    = 0
+	SECCRITICAL = 1
+	ERROR       = 2
+	SECERROR    = 3
+	WARN        = 4
+	SECWARN     = 5
+	INFO        = 6
+	SECINFO     = 7
+	VERBOSE     = 8
+	SECVERBOSE  = 9
+	DEBUG       = 10
+	SECDEBUG    = 11
 )
 
 var (
 	logLevel = INFO
 )
 
+/*
+Set the central log level. Uneven values are security related
+lof entries.
+*/
 func SetLevel(level int) {
 	logLevel = level
 
 	Printf(DEBUG, "Set log level to: %d\n", logLevel)
 }
 
+/*
+generate the prefix for log level
+*/
 func prefixGen(level int) string {
 	switch level {
 	case DEBUG:
-		return "[DEBUG]   : "
+		return "[DEBUG]      : "
+	case SECDEBUG:
+		return "[SECDEBUG]   : "
 	case VERBOSE:
-		return "[VERBOSE] : "
+		return "[VERBOSE]    : "
+	case SECVERBOSE:
+		return "[SECVERBOSE] : "
 	case INFO:
-		return "[INFO]    : "
+		return "[INFO]       : "
+	case SECINFO:
+		return "[SECINFO]    : "
 	case WARN:
-		return "[WARNING] : "
+		return "[WARNING]    : "
+	case SECWARN:
+		return "[SECWARNING] : "
 	case ERROR:
-		return "[ERROR]   : "
+		return "[ERROR]      : "
+	case SECERROR:
+		return "[SECERROR]   : "
 	case CRITICAL:
-		return "[CRITICAL]: "
+		return "[CRITICAL]   : "
+	case SECCRITICAL:
+		return "[SECCRITICAL]: "
 	}
 	return "[UNDEF]   : "
 }
