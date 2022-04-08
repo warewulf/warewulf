@@ -62,6 +62,8 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		wwlog.Printf(wwlog.DEBUG, "In node loop: %s\n", nodename)
 		n.NetDevs = make(map[string]*NetDevEntry)
 		n.Tags = make(map[string]*Entry)
+		n.Kernel = new(KernelEntry)
+		n.Ipmi = new(IpmiEntry)
 		n.SystemOverlay.SetDefault("wwinit")
 		n.RuntimeOverlay.SetDefault("generic")
 		n.Ipxe.SetDefault("default")
@@ -110,7 +112,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.Discoverable.Set(node.Discoverable)
 
 		if node.Kernel != nil {
-		if node.Kernel.Override != "" {
+			if node.Kernel.Override != "" {
 				n.Kernel.Override.Set(node.Kernel.Override)
 			} else if node.Kernel.Version != "" {
 				n.Kernel.Override.Set(node.Kernel.Version)

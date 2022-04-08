@@ -28,10 +28,11 @@ func (config *nodeYaml) AddNode(nodeID string) (NodeInfo, error) {
 	config.Nodes[nodeID] = &node
 	config.Nodes[nodeID].Profiles = []string{"default"}
 	config.Nodes[nodeID].NetDevs = make(map[string]*NetDevs)
-
 	n.Id.Set(nodeID)
 	n.Profiles = []string{"default"}
 	n.NetDevs = make(map[string]*NetDevEntry)
+	n.Ipmi = new(IpmiEntry)
+	n.Kernel = new(KernelEntry)
 
 	return n, nil
 }
@@ -60,16 +61,24 @@ func (config *nodeYaml) NodeUpdate(node NodeInfo) error {
 	config.Nodes[nodeID].ClusterName = node.ClusterName.GetReal()
 	config.Nodes[nodeID].Ipxe = node.Ipxe.GetReal()
 	config.Nodes[nodeID].Init = node.Init.GetReal()
-	config.Nodes[nodeID].Kernel.Override = node.Kernel.Override.GetReal()
-	config.Nodes[nodeID].Kernel.Args = node.Kernel.Args.GetReal()
-	config.Nodes[nodeID].Ipmi.Ipaddr = node.Ipmi.Ipaddr.GetReal()
-	config.Nodes[nodeID].Ipmi.Netmask = node.Ipmi.Netmask.GetReal()
-	config.Nodes[nodeID].Ipmi.Port = node.Ipmi.Port.GetReal()
-	config.Nodes[nodeID].Ipmi.Gateway = node.Ipmi.Gateway.GetReal()
-	config.Nodes[nodeID].Ipmi.UserName = node.Ipmi.UserName.GetReal()
-	config.Nodes[nodeID].Ipmi.Password = node.Ipmi.Password.GetReal()
-	config.Nodes[nodeID].Ipmi.Interface = node.Ipmi.Interface.GetReal()
-	config.Nodes[nodeID].Ipmi.Write = node.Ipmi.Write.GetB()
+	if node.Kernel.Override.GotReal() || node.Kernel.Args.GotReal() {
+		config.Nodes[nodeID].Kernel = new(KernelConf)
+		config.Nodes[nodeID].Kernel.Override = node.Kernel.Override.GetReal()
+		config.Nodes[nodeID].Kernel.Args = node.Kernel.Args.GetReal()
+	}
+	if node.Ipmi.Ipaddr.GotReal() || node.Ipmi.Netmask.GotReal() ||
+		node.Ipmi.Port.GotReal() || node.Ipmi.Gateway.GotReal() || node.Ipmi.UserName.GotReal() ||
+		node.Ipmi.Password.GotReal() || node.Ipmi.Interface.GotReal() || node.Ipmi.Write.GotReal() {
+		config.Nodes[nodeID].Ipmi = new(IpmiConf)
+		config.Nodes[nodeID].Ipmi.Ipaddr = node.Ipmi.Ipaddr.GetReal()
+		config.Nodes[nodeID].Ipmi.Netmask = node.Ipmi.Netmask.GetReal()
+		config.Nodes[nodeID].Ipmi.Port = node.Ipmi.Port.GetReal()
+		config.Nodes[nodeID].Ipmi.Gateway = node.Ipmi.Gateway.GetReal()
+		config.Nodes[nodeID].Ipmi.UserName = node.Ipmi.UserName.GetReal()
+		config.Nodes[nodeID].Ipmi.Password = node.Ipmi.Password.GetReal()
+		config.Nodes[nodeID].Ipmi.Interface = node.Ipmi.Interface.GetReal()
+		config.Nodes[nodeID].Ipmi.Write = node.Ipmi.Write.GetB()
+	}
 	config.Nodes[nodeID].RuntimeOverlay = node.RuntimeOverlay.GetRealSlice()
 	config.Nodes[nodeID].SystemOverlay = node.SystemOverlay.GetRealSlice()
 	config.Nodes[nodeID].Root = node.Root.GetReal()
