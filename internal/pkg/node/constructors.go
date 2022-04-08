@@ -289,7 +289,8 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		var p NodeInfo
 		p.NetDevs = make(map[string]*NetDevEntry)
 		p.Tags = make(map[string]*Entry)
-
+		p.Kernel = new(KernelEntry)
+		p.Ipmi = new(IpmiEntry)
 		p.Id.Set(name)
 		p.Comment.Set(profile.Comment)
 		p.ClusterName.Set(profile.ClusterName)
