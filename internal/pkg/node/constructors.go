@@ -297,25 +297,28 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		p.ContainerName.Set(profile.ContainerName)
 		p.Ipxe.Set(profile.Ipxe)
 		p.Init.Set(profile.Init)
-		p.Kernel.Args.Set(profile.Kernel.Args)
-		p.Ipmi.Netmask.Set(profile.Ipmi.Netmask)
-		p.Ipmi.Port.Set(profile.Ipmi.Port)
-		p.Ipmi.Gateway.Set(profile.Ipmi.Gateway)
-		p.Ipmi.UserName.Set(profile.Ipmi.UserName)
-		p.Ipmi.Password.Set(profile.Ipmi.Password)
-		p.Ipmi.Interface.Set(profile.Ipmi.Interface)
-		p.Ipmi.Write.SetB(profile.Ipmi.Write)
+		if profile.Kernel != nil {
+			p.Kernel.Args.Set(profile.Kernel.Args)
+			if profile.Kernel.Override != "" {
+				p.Kernel.Override.Set(profile.Kernel.Override)
+			} else if profile.Kernel.Version != "" {
+				p.Kernel.Override.Set(profile.Kernel.Version)
+			}
+		}
+		if profile.Ipmi != nil {
+			p.Ipmi.Netmask.Set(profile.Ipmi.Netmask)
+			p.Ipmi.Port.Set(profile.Ipmi.Port)
+			p.Ipmi.Gateway.Set(profile.Ipmi.Gateway)
+			p.Ipmi.UserName.Set(profile.Ipmi.UserName)
+			p.Ipmi.Password.Set(profile.Ipmi.Password)
+			p.Ipmi.Interface.Set(profile.Ipmi.Interface)
+			p.Ipmi.Write.SetB(profile.Ipmi.Write)
+		}
 		p.RuntimeOverlay.SetSlice(profile.RuntimeOverlay)
 		p.SystemOverlay.SetSlice(profile.SystemOverlay)
 		p.Root.Set(profile.Root)
 		p.AssetKey.Set(profile.AssetKey)
 		p.Discoverable.Set(profile.Discoverable)
-
-		if profile.Kernel.Override != "" {
-			p.Kernel.Override.Set(profile.Kernel.Override)
-		} else if profile.Kernel.Version != "" {
-			p.Kernel.Override.Set(profile.Kernel.Version)
-		}
 
 		for devname, netdev := range profile.NetDevs {
 			if _, ok := p.NetDevs[devname]; !ok {
