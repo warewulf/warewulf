@@ -25,7 +25,7 @@ IPV6INIT=yes
 IPV6_AUTOCONF=yes
 IPV6_DEFROUTE=yes
 IPV6_FAILURE_FATAL=no
-{{ if $.NetDevs.default.Ipaddr6 -}}
-IPV6ADDR="{{ $.NetDevs.default.Ipaddr6 }}" 
+{{ if $netdev.Ipaddr6 -}}
+IPV6ADDR="{{ $netdev.Ipaddr6 }}" 
 {{ end -}}
 {{ end -}}

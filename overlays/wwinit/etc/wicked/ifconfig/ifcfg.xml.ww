@@ -38,10 +38,10 @@ Source: {{ $source }}
     <privacy>prefer-public</privacy>
     <accept-redirects>false</accept-redirects>
   </ipv6>
-{{ if $.NetDevs.default.Ipaddr6 -}}
+{{ if $netdev.Ipaddr6 -}}
   <ipv6:static>
     <address>
-      <local>{{ $.NetDevs.default.Ipaddr6 }}</local>
+      <local>{{ $netdev.Ipaddr6 }}</local>
     </address>
   </ipv6:static>
 {{ end -}}
