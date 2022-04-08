@@ -87,6 +87,8 @@ Build overlay for the host, so no argument needs to be given
 */
 func BuildHostOverlay() error {
 	var host node.NodeInfo
+	host.Kernel = new(node.KernelEntry)
+	host.Ipmi = new(node.IpmiEntry)
 	var idEntry node.Entry
 	hostname, _ := os.Hostname()
 	wwlog.Printf(wwlog.INFO, "Building overlay for %s: host\n", hostname)
@@ -220,6 +222,8 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 	}
 	wwlog.Printf(wwlog.VERBOSE, "Processing node/overlay: %s/%s\n", nodeInfo.Id.Get(), strings.Join(overlayNames, "-"))
 	var tstruct TemplateStruct
+	tstruct.Kernel = new(node.KernelConf)
+	tstruct.Ipmi = new(node.IpmiConf)
 	tstruct.Id = nodeInfo.Id.Get()
 	tstruct.Hostname = nodeInfo.Id.Get()
 	tstruct.Id = nodeInfo.Id.Get()

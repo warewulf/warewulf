@@ -1,7 +1,7 @@
 Warewulf Node:      {{.Id}}
 Container:          {{.Container}}
-Kernel:             {{.KernelVersion}}
-Kernelargs:         {{.KernelArgs}}
+Kernel:             {{.Kernel.Version}}
+Kernelargs:         {{.Kernel.Args}}
 
 Network:
 {{- range $devname, $netdev := .NetDevs}}

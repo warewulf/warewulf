@@ -153,6 +153,9 @@ func (config *nodeYaml) DelProfile(profileID string) error {
 	return nil
 }
 
+/*
+Update the the config for the given profile so that it can unmarshalled.
+*/
 func (config *nodeYaml) ProfileUpdate(profile NodeInfo) error {
 	profileID := profile.Id.Get()
 
@@ -164,16 +167,24 @@ func (config *nodeYaml) ProfileUpdate(profile NodeInfo) error {
 	config.NodeProfiles[profileID].Ipxe = profile.Ipxe.GetReal()
 	config.NodeProfiles[profileID].Init = profile.Init.GetReal()
 	config.NodeProfiles[profileID].ClusterName = profile.ClusterName.GetReal()
-	config.NodeProfiles[profileID].Kernel.Override = profile.Kernel.Override.GetReal()
-	config.NodeProfiles[profileID].Kernel.Args = profile.Kernel.Args.GetReal()
-	config.NodeProfiles[profileID].Ipmi.Ipaddr = profile.Ipmi.Ipaddr.GetReal()
-	config.NodeProfiles[profileID].Ipmi.Netmask = profile.Ipmi.Netmask.GetReal()
-	config.NodeProfiles[profileID].Ipmi.Port = profile.Ipmi.Port.GetReal()
-	config.NodeProfiles[profileID].Ipmi.Gateway = profile.Ipmi.Gateway.GetReal()
-	config.NodeProfiles[profileID].Ipmi.UserName = profile.Ipmi.UserName.GetReal()
-	config.NodeProfiles[profileID].Ipmi.Password = profile.Ipmi.Password.GetReal()
-	config.NodeProfiles[profileID].Ipmi.Interface = profile.Ipmi.Interface.GetReal()
-	config.NodeProfiles[profileID].Ipmi.Write = profile.Ipmi.Interface.GetB()
+	if profile.Kernel.Override.GotReal() || profile.Kernel.Args.GotReal() {
+		config.NodeProfiles[profileID].Kernel = new(KernelConf)
+		config.NodeProfiles[profileID].Kernel.Override = profile.Kernel.Override.GetReal()
+		config.NodeProfiles[profileID].Kernel.Args = profile.Kernel.Args.GetReal()
+	}
+	if profile.Ipmi.Ipaddr.GotReal() || profile.Ipmi.Netmask.GotReal() ||
+		profile.Ipmi.Port.GotReal() || profile.Ipmi.Gateway.GotReal() || profile.Ipmi.UserName.GotReal() ||
+		profile.Ipmi.Password.GotReal() || profile.Ipmi.Interface.GotReal() || profile.Ipmi.Write.GotReal() {
+		config.NodeProfiles[profileID].Ipmi = new(IpmiConf)
+		config.NodeProfiles[profileID].Ipmi.Ipaddr = profile.Ipmi.Ipaddr.GetReal()
+		config.NodeProfiles[profileID].Ipmi.Netmask = profile.Ipmi.Netmask.GetReal()
+		config.NodeProfiles[profileID].Ipmi.Port = profile.Ipmi.Port.GetReal()
+		config.NodeProfiles[profileID].Ipmi.Gateway = profile.Ipmi.Gateway.GetReal()
+		config.NodeProfiles[profileID].Ipmi.UserName = profile.Ipmi.UserName.GetReal()
+		config.NodeProfiles[profileID].Ipmi.Password = profile.Ipmi.Password.GetReal()
+		config.NodeProfiles[profileID].Ipmi.Interface = profile.Ipmi.Interface.GetReal()
+		config.NodeProfiles[profileID].Ipmi.Write = profile.Ipmi.Interface.GetB()
+	}
 	config.NodeProfiles[profileID].RuntimeOverlay = profile.RuntimeOverlay.GetRealSlice()
 	config.NodeProfiles[profileID].SystemOverlay = profile.SystemOverlay.GetRealSlice()
 	config.NodeProfiles[profileID].Root = profile.Root.GetReal()
