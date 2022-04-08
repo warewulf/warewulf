@@ -213,10 +213,7 @@ func (ent *Entry) GetRealSlice() []string {
 true if the entry has set a real value, else false.
 */
 func (ent *Entry) GotReal() bool {
-	if len(ent.value) == 0 {
-		return false
-	}
-	return true
+	return len(ent.value) != 0
 }
 
 /**********
