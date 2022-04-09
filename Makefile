@@ -12,7 +12,7 @@ VARLIST := OS
 # Project Information
 VARLIST += WAREWULF VERSION RELEASE
 WAREWULF ?= warewulf
-VERSION ?= 4.3.0-rc1
+VERSION ?= 4.3.0rc1
 GIT_TAG := $(shell test -e .git && git describe --tags --long --first-parent --always)
 
 ifndef GIT_TAG
@@ -142,7 +142,7 @@ vet:
 	go vet ./...
 
 test-it:
-	go test -v ./...
+	go test -v ./... -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=$(shell pwd)/etc/warewulf.conf'"
 
 # Generate test coverage
 test-cover:     ## Run test coverage and generate html report
