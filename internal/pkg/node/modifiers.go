@@ -61,14 +61,16 @@ func (config *nodeYaml) NodeUpdate(node NodeInfo) error {
 	config.Nodes[nodeID].ClusterName = node.ClusterName.GetReal()
 	config.Nodes[nodeID].Ipxe = node.Ipxe.GetReal()
 	config.Nodes[nodeID].Init = node.Init.GetReal()
-	if node.Kernel.Override.GotReal() || node.Kernel.Args.GotReal() {
+
+	if node.Kernel != nil && (node.Kernel.Override.GotReal() || node.Kernel.Args.GotReal()) {
 		config.Nodes[nodeID].Kernel = new(KernelConf)
 		config.Nodes[nodeID].Kernel.Override = node.Kernel.Override.GetReal()
 		config.Nodes[nodeID].Kernel.Args = node.Kernel.Args.GetReal()
 	}
-	if node.Ipmi.Ipaddr.GotReal() || node.Ipmi.Netmask.GotReal() ||
+
+	if node.Ipmi != nil && (node.Ipmi.Ipaddr.GotReal() || node.Ipmi.Netmask.GotReal() ||
 		node.Ipmi.Port.GotReal() || node.Ipmi.Gateway.GotReal() || node.Ipmi.UserName.GotReal() ||
-		node.Ipmi.Password.GotReal() || node.Ipmi.Interface.GotReal() || node.Ipmi.Write.GotReal() {
+		node.Ipmi.Password.GotReal() || node.Ipmi.Interface.GotReal() || node.Ipmi.Write.GotReal()) {
 		config.Nodes[nodeID].Ipmi = new(IpmiConf)
 		config.Nodes[nodeID].Ipmi.Ipaddr = node.Ipmi.Ipaddr.GetReal()
 		config.Nodes[nodeID].Ipmi.Netmask = node.Ipmi.Netmask.GetReal()
