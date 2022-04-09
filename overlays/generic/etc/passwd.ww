@@ -1,3 +1,1 @@
-root::0:0:root:/root:/bin/bash
 {{IncludeFrom $.Container "/etc/passwd"}}
-{{Include "/etc/passwd"}}
