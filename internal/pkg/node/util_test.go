@@ -1,8 +1,9 @@
 package node
 
 import (
-	"gopkg.in/yaml.v2"
 	"testing"
+
+	"gopkg.in/yaml.v2"
 )
 
 func NewTestNode() (nodeYaml, error) {
@@ -15,38 +16,28 @@ nodes:
     profiles:
     - default
     network devices:
-      eth0:
+      net0:
         default: true
         hwaddr: 00:00:00:00:12:34
         ipaddr: 1.2.3.4
-        ipcidr: ""
-        prefix: ""
-        netmask: ""
-      eno1:
-        default: true
+        device: eth0
+      net1:
+        default: false
         hwaddr: ab:cd:ef:00:12:34
         ipaddr: 1.2.3.4
-        ipcidr: ""
-        prefix: ""
-        netmask: ""
-      eno2:
-        default: true
+        device: eth1
+      net2:
+        default: false
         hwaddr: aB:Cd:eF:12:34:56
         ipaddr: 1.2.3.4
-        ipcidr: ""
-        prefix: ""
-        netmask: ""
+        device: eth2
   test_node_IPv6:
     profiles:
     - default
     network devices:
-      eth1:
+      net1:
         default: false
-        hwaddr: ""
         ipaddr: fd1a:2b3c:4d5e:06f0:1234:5678:90ab:cdef
-        ipcidr: ""
-        prefix: ""
-        netmask: ""
 `
 	var ret nodeYaml
 	err := yaml.Unmarshal([]byte(data), &ret)
