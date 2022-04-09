@@ -24,8 +24,8 @@ var (
 		"/boot/vmlinuz-linux%.s",
 		"/boot/vmlinuz-%s",
 		"/boot/vmlinuz-%s.gz",
-		"/lib/mmodules/%s/vmlinuz",
-		"/lib/mmodules/%s/vmlinuz.gz",
+		"/lib/modules/%s/vmlinuz",
+		"/lib/modules/%s/vmlinuz.gz",
 	}
 )
 
