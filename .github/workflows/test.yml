@@ -35,3 +35,12 @@ jobs:
 
     - name: Build with go ${{ matrix.go }}
       run: make all
+
+    # vet is failing due to:
+    #  Error: vendor/github.com/mtrmac/gpgme/data.go:4:11: fatal error: gpgme.h: No such file or directory
+    # 4 | // #include <gpgme.h>
+    # - name: vet
+    #  run: make vet
+
+    - name: test
+      run: make test-it
