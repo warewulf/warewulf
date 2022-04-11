@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
+	"github.com/hpcng/warewulf/internal/pkg/kernel"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 
@@ -263,7 +264,17 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.Tags[keyname].SetAlt(key, p)
 			}
 		}
-
+		// set default name of kernel to the kernelname of the container
+		if n.ContainerName.Get() != "" {
+			listKernel, err := kernel.ListKernels()
+			if err != nil {
+				for _, kern := range listKernel {
+					if kern == n.ContainerName.Get() {
+						n.Kernel.Override.SetDefault(n.ContainerName.Get())
+					}
+				}
+			}
+		}
 		ret = append(ret, n)
 
 	}

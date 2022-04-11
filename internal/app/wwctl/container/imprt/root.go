@@ -19,6 +19,7 @@ Imported containers are used to create bootable VNFS images.`,
 	SetBuild   bool
 	SetDefault bool
 	NoSyncUser bool
+	FindKernel bool
 )
 
 func init() {
@@ -27,6 +28,7 @@ func init() {
 	baseCmd.PersistentFlags().BoolVarP(&SetBuild, "build", "b", false, "Build container when after pulling")
 	baseCmd.PersistentFlags().BoolVar(&SetDefault, "setdefault", false, "Set this container for the default profile")
 	baseCmd.PersistentFlags().BoolVar(&NoSyncUser, "nosyncuser", false, "Don't synchronize uis/gods from host to container")
+	baseCmd.PersistentFlags().BoolVar(&FindKernel, "nokernel", true, "Don't try to find a kernel in the imported container")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

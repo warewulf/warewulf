@@ -10,6 +10,9 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
+/*
+check if its possible to have this containername.
+*/
 func ValidName(name string) bool {
 	if !util.ValidString(name, "^[\\w\\-\\.\\:]+$") {
 		wwlog.Printf(wwlog.WARN, "VNFS name has illegal characters: %s\n", name)
@@ -18,6 +21,10 @@ func ValidName(name string) bool {
 	return true
 }
 
+/*
+List all dirs in the container directory which is subsequently the list of all
+available containers.
+*/
 func ListSources() ([]string, error) {
 	var ret []string
 
@@ -49,6 +56,9 @@ func ListSources() ([]string, error) {
 	return ret, nil
 }
 
+/*
+Check if name ends up in a valid container directory.
+*/
 func ValidSource(name string) bool {
 	fullPath := RootFsDir(name)
 
@@ -64,6 +74,9 @@ func ValidSource(name string) bool {
 	return true
 }
 
+/*
+Remove the rootfs of container but not the images.
+*/
 func DeleteSource(name string) error {
 	fullPath := SourceDir(name)
 

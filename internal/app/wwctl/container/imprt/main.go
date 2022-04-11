@@ -9,6 +9,7 @@ import (
 
 	"github.com/containers/image/v5/types"
 	"github.com/hpcng/warewulf/internal/pkg/container"
+	"github.com/hpcng/warewulf/internal/pkg/kernel"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
@@ -173,6 +174,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			return errors.Wrap(err, "failed to reload warewulf daemon")
 		}
 	}
-
+	if FindKernel {
+		kernelVersion, err := kernel.FindKernelVersion(name)
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "could not detect kernel under %s\n", path.Join(container.RootFsDir(name)))
+			os.Exit(1)
+		}
+		_, err = kernel.Build(kernelVersion, name, path.Join(container.RootFsDir(name)))
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "Failed building kernel: %s\n", err)
+			os.Exit(1)
+		}
+	}
 	return nil
 }
