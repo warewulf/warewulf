@@ -45,7 +45,7 @@ func FilterByName(set []NodeInfo, searchList []string) []NodeInfo {
 
 /*
  Set value. If argument is 'UNDEF', 'DELETE',
- 'UNSET" or '--'. The value is removed.
+ 'UNSET" or '--' the value is removed.
  N.B. the '--' might never ever happen as '--'
  is parsed out by cobra
 */

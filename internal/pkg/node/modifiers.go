@@ -208,6 +208,10 @@ func (config *nodeYaml) ProfileUpdate(profile NodeInfo) error {
 		config.NodeProfiles[profileID].NetDevs[devname].Type = netdev.Type.GetReal()
 		config.NodeProfiles[profileID].NetDevs[devname].OnBoot = netdev.OnBoot.GetReal()
 		config.NodeProfiles[profileID].NetDevs[devname].Default = netdev.Default.GetReal()
+		config.NodeProfiles[profileID].NetDevs[devname].Tags = make(map[string]string)
+		for key, _ := range netdev.Tags {
+			config.NodeProfiles[profileID].NetDevs[devname].Tags[key] = netdev.Tags[key].GetReal()
+		}
 	}
 
 	config.NodeProfiles[profileID].Tags = make(map[string]string)
