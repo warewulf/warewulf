@@ -5,7 +5,7 @@ package vers42
  ******/
 
 //type nodeYaml struct {
-type NodeYaml struct {
+type NodeYaml struct { // <-Needs to be exported
 	NodeProfiles map[string]*NodeConf
 	Nodes        map[string]*NodeConf
 }
@@ -43,55 +43,4 @@ type NetDevs struct {
 	Prefix  string
 	Netmask string
 	Gateway string `yaml:"gateway,omitempty"`
-}
-
-/******
- * Internal code data representations
- ******/
-
-type Entry struct {
-	value    string
-	altvalue string
-	bool     bool
-	altbool  bool
-	from     string
-	def      string
-}
-
-type NodeInfo struct {
-	Id             Entry
-	Cid            Entry
-	Comment        Entry
-	ClusterName    Entry
-	ContainerName  Entry
-	Ipxe           Entry
-	KernelVersion  Entry
-	KernelArgs     Entry
-	IpmiIpaddr     Entry
-	IpmiNetmask    Entry
-	IpmiPort       Entry
-	IpmiGateway    Entry
-	IpmiUserName   Entry
-	IpmiPassword   Entry
-	IpmiInterface  Entry
-	RuntimeOverlay Entry
-	SystemOverlay  Entry
-	Root           Entry
-	Discoverable   Entry
-	Init           Entry //TODO: Finish adding this...
-	Profiles       []string
-	GroupProfiles  []string
-	NetDevs        map[string]*NetDevEntry
-	Keys           map[string]*Entry
-}
-
-type NetDevEntry struct {
-	Type    Entry `yaml:"type,omitempty"`
-	Default Entry `yaml:"default"`
-	Hwaddr  Entry
-	Ipaddr  Entry
-	IpCIDR  Entry
-	Prefix  Entry
-	Netmask Entry
-	Gateway Entry `yaml:"gateway,omitempty"`
 }

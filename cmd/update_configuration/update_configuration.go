@@ -40,6 +40,10 @@ func saveConf(conf interface{}) {
 			os.Exit(1)
 		}
 		err = ioutil.WriteFile(confFile, out, info.Mode())
+		if err != nil {
+			fmt.Printf("Could not write file: %s\n", err)
+			os.Exit(1)
+		}
 	}
 }
 
