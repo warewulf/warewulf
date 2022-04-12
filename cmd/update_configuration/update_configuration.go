@@ -15,6 +15,7 @@ import (
 )
 
 var nowrite bool
+var quiet bool
 var confFile string
 
 const actvers int = 43
@@ -26,26 +27,26 @@ type nodeVersionOnly struct {
 func saveConf(conf interface{}) {
 	out, err := yaml.Marshal(conf)
 	if err != nil {
-		fmt.Printf("Error in marshal of conf: %s\n", err)
+		myprintf("Error in marshal of conf: %s\n", err)
 		os.Exit(1)
 	}
 	if nowrite {
-		fmt.Println(string(out))
+		fmt.Print(string(out))
 	} else {
 		err = util.CopyFile(confFile, confFile+".bak")
 		if err != nil {
-			fmt.Printf("Could write file: %s\n", err)
+			myprintf("Could write file: %s\n", err)
 			os.Exit(1)
 		}
 		info, err := os.Stat(confFile)
 		if err != nil {
-			fmt.Printf("Could not get file mode: %s\n", err)
+			myprintf("Could not get file mode: %s\n", err)
 			os.Exit(1)
 		}
-		fmt.Printf("writing configuration file %s as type %s\n", confFile, reflect.TypeOf(conf))
+		myprintf("writing configuration file %s as type %s\n", confFile, reflect.TypeOf(conf))
 		err = ioutil.WriteFile(confFile, out, info.Mode())
 		if err != nil {
-			fmt.Printf("Could not write file: %s\n", err)
+			myprintf("Could not write file: %s\n", err)
 			os.Exit(1)
 		}
 	}
@@ -58,6 +59,69 @@ func printB(x bool) string {
 	return "false"
 }
 
+func update42to43(conf42 vers42.NodeConf) vers43.NodeConf {
+	ret := vers43.NodeConf{
+		Comment:       conf42.Comment,
+		ClusterName:   conf42.ClusterName,
+		ContainerName: conf42.ContainerName,
+		Init:          conf42.Init,
+		Root:          conf42.Root,
+		Discoverable:  printB(conf42.Discoverable),
+		Profiles:      conf42.Profiles,
+		Ipxe:          conf42.Ipxe}
+	if conf42.RuntimeOverlay != "" {
+		ret.RuntimeOverlay = []string{conf42.RuntimeOverlay}
+	}
+	if conf42.SystemOverlay != "" {
+		ret.SystemOverlay = []string{conf42.SystemOverlay}
+	}
+	if conf42.KernelArgs != "" || conf42.KernelVersion != "" {
+		ret.Kernel = new(vers43.KernelConf)
+		ret.Kernel.Override = conf42.KernelVersion
+		ret.Kernel.Args = conf42.KernelArgs
+
+	}
+	if conf42.IpmiUserName != "" || conf42.IpmiPassword != "" || conf42.IpmiIpaddr != "" ||
+		conf42.IpmiNetmask != "" || conf42.IpmiPort != "" || conf42.IpmiGateway != "" ||
+		conf42.IpmiInterface != "" {
+		ret.Ipmi = new(vers43.IpmiConf)
+		ret.Ipmi.UserName = conf42.IpmiUserName
+		ret.Ipmi.Password = conf42.IpmiPassword
+		ret.Ipmi.Ipaddr = conf42.IpmiIpaddr
+		ret.Ipmi.Netmask = conf42.IpmiNetmask
+		ret.Ipmi.Port = conf42.IpmiPort
+		ret.Ipmi.Gateway = conf42.IpmiGateway
+		ret.Ipmi.Interface = conf42.IpmiInterface
+	}
+	if len(conf42.Keys) != 0 {
+		ret.Keys = map[string]string{}
+		for k, v := range conf42.Keys {
+			ret.Keys[k] = v
+		}
+	}
+	ret.NetDevs = make(map[string]*vers43.NetDevs)
+	for devn, netdev := range conf42.NetDevs {
+		var device vers43.NetDevs = vers43.NetDevs{
+			Type:    netdev.Type,
+			Device:  devn,
+			Default: printB(netdev.Default),
+			Hwaddr:  netdev.Hwaddr,
+			Ipaddr:  netdev.Ipaddr,
+			IpCIDR:  netdev.IpCIDR,
+			Prefix:  netdev.Prefix,
+			Netmask: netdev.Netmask,
+			Gateway: netdev.Gateway}
+		ret.NetDevs[devn] = &device
+	}
+	return ret
+}
+
+func myprintf(format string, a ...interface{}) {
+	if !quiet {
+		fmt.Printf(format, a...)
+	}
+}
+
 func main() {
 	var endVers int
 	var startVers int
@@ -65,26 +129,27 @@ func main() {
 	flag.IntVar(&endVers, "e", buildconfig.WWVer, "Final version of configuration file")
 	flag.IntVar(&startVers, "s", 0, "Start version  of configuration file, 0  is for autodetection")
 	flag.BoolVar(&nowrite, "n", false, "Do not write, just print new conf to terminal")
+	flag.BoolVar(&quiet, "q", false, "Do not print what the program is doing")
 	flag.Parse()
 	if confFile == "" {
-		fmt.Printf("No config file given\n!")
+		myprintf("No config file given\n!")
 		os.Exit(1)
 	}
-	fmt.Printf("Opening node configuration file: %s\n", confFile)
+	myprintf("Opening node configuration file: %s\n", confFile)
 	data, err := ioutil.ReadFile(confFile)
 	if err != nil {
-		fmt.Printf("Could open file %v\n", err)
+		myprintf("Could open file %v\n", err)
 		os.Exit(1)
 	}
 	var getConf nodeVersionOnly
-	fmt.Printf("Unmarshaling the node configuration\n")
+	myprintf("Unmarshaling the node configuration\n")
 	err = yaml.Unmarshal(data, &getConf)
 	if err != nil {
-		fmt.Printf("Could not unmarshall: %v\n", err)
+		myprintf("Could not unmarshall: %v\n", err)
 	}
-	fmt.Printf("Got version %v in %s\n", getConf.WWInternal, confFile)
+	myprintf("Got version %v in %s\n", getConf.WWInternal, confFile)
 	if getConf.WWInternal == actvers {
-		fmt.Printf("On actual version, bailing out\n")
+		myprintf("On actual version, bailing out\n")
 		os.Exit(0)
 	}
 	if startVers == 0 && getConf.WWInternal == 0 {
@@ -100,121 +165,18 @@ func main() {
 	conf43.WWInternal = 43
 
 	if startVers == 42 {
-		fmt.Printf("Unmarshaling the node configuration vers 42\n")
+		myprintf("Unmarshaling the node configuration vers 42\n")
 		err = yaml.Unmarshal(data, &conf42)
 		if err != nil {
-			fmt.Printf("Could not unmarshall version 42: %v\n", err)
+			myprintf("Could not unmarshall version 42: %v\n", err)
 		}
 		for pname, profile := range conf42.NodeProfiles {
-			profileConf := vers43.NodeConf{
-				Comment:       profile.Comment,
-				ClusterName:   profile.ClusterName,
-				ContainerName: profile.ContainerName,
-				Init:          profile.Init,
-				Root:          profile.Root,
-				Discoverable:  printB(profile.Discoverable),
-				Profiles:      profile.Profiles,
-				Ipxe:          profile.Ipxe}
-			conf43.NodeProfiles[pname] = &profileConf
-			if profile.RuntimeOverlay != "" {
-				conf43.NodeProfiles[pname].RuntimeOverlay = []string{profile.RuntimeOverlay}
-			}
-			if profile.SystemOverlay != "" {
-				conf43.NodeProfiles[pname].SystemOverlay = []string{profile.SystemOverlay}
-			}
-			if profile.KernelArgs != "" || profile.KernelVersion != "" {
-				conf43.NodeProfiles[pname].Kernel = new(vers43.KernelConf)
-				conf43.NodeProfiles[pname].Kernel.Override = profile.KernelVersion
-				conf43.NodeProfiles[pname].Kernel.Args = profile.KernelArgs
-
-			}
-			if profile.IpmiUserName != "" || profile.IpmiPassword != "" || profile.IpmiIpaddr != "" ||
-				profile.IpmiNetmask != "" || profile.IpmiPort != "" || profile.IpmiGateway != "" ||
-				profile.IpmiInterface != "" {
-				conf43.NodeProfiles[pname].Ipmi = new(vers43.IpmiConf)
-				conf43.NodeProfiles[pname].Ipmi.UserName = profile.IpmiUserName
-				conf43.NodeProfiles[pname].Ipmi.Password = profile.IpmiPassword
-				conf43.NodeProfiles[pname].Ipmi.Ipaddr = profile.IpmiIpaddr
-				conf43.NodeProfiles[pname].Ipmi.Netmask = profile.IpmiNetmask
-				conf43.NodeProfiles[pname].Ipmi.Port = profile.IpmiPort
-				conf43.NodeProfiles[pname].Ipmi.Gateway = profile.IpmiGateway
-				conf43.NodeProfiles[pname].Ipmi.Interface = profile.IpmiInterface
-			}
-			if len(profile.Keys) != 0 {
-				conf43.NodeProfiles[pname].Keys = map[string]string{}
-				for k, v := range profile.Keys {
-					conf43.NodeProfiles[pname].Keys[k] = v
-				}
-			}
-			conf43.NodeProfiles[pname].NetDevs = make(map[string]*vers43.NetDevs)
-			for devn, netdev := range profile.NetDevs {
-				var device vers43.NetDevs = vers43.NetDevs{
-					Type:    netdev.Type,
-					Default: printB(netdev.Default),
-					Hwaddr:  netdev.Hwaddr,
-					Ipaddr:  netdev.Ipaddr,
-					IpCIDR:  netdev.IpCIDR,
-					Prefix:  netdev.Prefix,
-					Netmask: netdev.Netmask,
-					Gateway: netdev.Gateway}
-				conf43.NodeProfiles[pname].NetDevs[devn] = &device
-			}
-
+			p43 := update42to43(*profile)
+			conf43.NodeProfiles[pname] = &p43
 		}
 		for nname, node := range conf42.Nodes {
-			nodeConf := vers43.NodeConf{
-				Comment:       node.Comment,
-				ClusterName:   node.ClusterName,
-				ContainerName: node.ContainerName,
-				Init:          node.Init,
-				Root:          node.Root,
-				Discoverable:  printB(node.Discoverable),
-				Profiles:      node.Profiles,
-				Ipxe:          node.Ipxe}
-			conf43.Nodes[nname] = &nodeConf
-			if node.RuntimeOverlay != "" {
-				conf43.Nodes[nname].RuntimeOverlay = []string{node.RuntimeOverlay}
-			}
-			if node.SystemOverlay != "" {
-				conf43.Nodes[nname].SystemOverlay = []string{node.SystemOverlay}
-			}
-			if node.KernelArgs != "" || node.KernelVersion != "" {
-				conf43.Nodes[nname].Kernel = new(vers43.KernelConf)
-				conf43.Nodes[nname].Kernel.Override = node.KernelVersion
-				conf43.Nodes[nname].Kernel.Args = node.KernelArgs
-
-			}
-			if node.IpmiUserName != "" || node.IpmiPassword != "" || node.IpmiIpaddr != "" ||
-				node.IpmiNetmask != "" || node.IpmiPort != "" || node.IpmiGateway != "" ||
-				node.IpmiInterface != "" {
-				conf43.Nodes[nname].Ipmi = new(vers43.IpmiConf)
-				conf43.Nodes[nname].Ipmi.UserName = node.IpmiUserName
-				conf43.Nodes[nname].Ipmi.Password = node.IpmiPassword
-				conf43.Nodes[nname].Ipmi.Ipaddr = node.IpmiIpaddr
-				conf43.Nodes[nname].Ipmi.Netmask = node.IpmiNetmask
-				conf43.Nodes[nname].Ipmi.Port = node.IpmiPort
-				conf43.Nodes[nname].Ipmi.Gateway = node.IpmiGateway
-				conf43.Nodes[nname].Ipmi.Interface = node.IpmiInterface
-			}
-			if len(node.Keys) != 0 {
-				conf43.Nodes[nname].Keys = map[string]string{}
-				for k, v := range node.Keys {
-					conf43.Nodes[nname].Keys[k] = v
-				}
-			}
-			conf43.Nodes[nname].NetDevs = make(map[string]*vers43.NetDevs)
-			for devn, netdev := range node.NetDevs {
-				var device vers43.NetDevs = vers43.NetDevs{
-					Type:    netdev.Type,
-					Default: printB(netdev.Default),
-					Hwaddr:  netdev.Hwaddr,
-					Ipaddr:  netdev.Ipaddr,
-					IpCIDR:  netdev.IpCIDR,
-					Prefix:  netdev.Prefix,
-					Netmask: netdev.Netmask,
-					Gateway: netdev.Gateway}
-				conf43.Nodes[nname].NetDevs[devn] = &device
-			}
+			n43 := update42to43(*node)
+			conf43.Nodes[nname] = &n43
 		}
 		saveConf(conf43)
 
