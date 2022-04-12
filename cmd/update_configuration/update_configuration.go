@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"reflect"
 
 	"github.com/hpcng/warewulf/cmd/update_configuration/vers42"
 	"github.com/hpcng/warewulf/cmd/update_configuration/vers43"
@@ -15,6 +16,8 @@ import (
 
 var nowrite bool
 var confFile string
+
+const actvers int = 43
 
 type nodeVersionOnly struct {
 	WWInternal int `yaml:"WW_INTERNAL"`
@@ -39,6 +42,7 @@ func saveConf(conf interface{}) {
 			fmt.Printf("Could not get file mode: %s\n", err)
 			os.Exit(1)
 		}
+		fmt.Printf("writing configuration file %s as type %s\n", confFile, reflect.TypeOf(conf))
 		err = ioutil.WriteFile(confFile, out, info.Mode())
 		if err != nil {
 			fmt.Printf("Could not write file: %s\n", err)
@@ -72,17 +76,19 @@ func main() {
 		fmt.Printf("Could open file %v\n", err)
 		os.Exit(1)
 	}
-	if startVers == 0 {
-		var getConf nodeVersionOnly
-		fmt.Printf("Unmarshaling the node configuration\n")
-		err = yaml.Unmarshal(data, &getConf)
-		if err != nil {
-			fmt.Printf("Could not unmarshall: %v\n", err)
-		}
-		fmt.Printf("Got version %v in %s\n", getConf.WWInternal, confFile)
-		if getConf.WWInternal == 0 {
-			startVers = 42
-		}
+	var getConf nodeVersionOnly
+	fmt.Printf("Unmarshaling the node configuration\n")
+	err = yaml.Unmarshal(data, &getConf)
+	if err != nil {
+		fmt.Printf("Could not unmarshall: %v\n", err)
+	}
+	fmt.Printf("Got version %v in %s\n", getConf.WWInternal, confFile)
+	if getConf.WWInternal == actvers {
+		fmt.Printf("On actual version, bailing out\n")
+		os.Exit(0)
+	}
+	if startVers == 0 && getConf.WWInternal == 0 {
+		startVers = 42
 	}
 	var conf42 vers42.NodeYaml
 	conf42.NodeProfiles = make(map[string]*vers42.NodeConf)
