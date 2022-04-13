@@ -137,7 +137,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			}
 			n.NetDevs[devname].Netmask.Set(netdev.Netmask)
 			n.NetDevs[devname].Netmask.SetDefault("255.255.255.0")
-			n.NetDevs[devname].Hwaddr.Set(netdev.Hwaddr)
+			n.NetDevs[devname].Hwaddr.Set(strings.ToLower(netdev.Hwaddr))
 			n.NetDevs[devname].Gateway.Set(netdev.Gateway)
 			n.NetDevs[devname].Type.Set(netdev.Type)
 			n.NetDevs[devname].OnBoot.Set(netdev.OnBoot)
@@ -225,6 +225,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.NetDevs[devname].Ipaddr.SetAlt(netdev.Ipaddr, p) //FIXME? <- Ipaddr must be uniq
 				n.NetDevs[devname].Netmask.SetAlt(netdev.Netmask, p)
 				n.NetDevs[devname].Hwaddr.SetAlt(netdev.Hwaddr, p)
+				n.NetDevs[devname].Hwaddr.SetAlt(strings.ToLower(netdev.Hwaddr), p)
 				n.NetDevs[devname].Gateway.SetAlt(netdev.Gateway, p)
 				n.NetDevs[devname].Type.SetAlt(netdev.Type, p)
 				n.NetDevs[devname].OnBoot.SetAlt(netdev.OnBoot, p)
