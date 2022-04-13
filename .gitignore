@@ -11,6 +11,7 @@
 /bash_completion
 /man_page
 /config_defaults
+/update_configuration
 
 # other created files
 /man_pages
@@ -24,3 +25,4 @@ _dist/
 config
 warewulf-*.tar.gz
 Defaults.mk
+
