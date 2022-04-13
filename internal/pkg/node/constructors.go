@@ -69,10 +69,6 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.Ipxe.SetDefault("default")
 		n.Init.SetDefault("/sbin/init")
 		n.Root.SetDefault("initramfs")
-
-		if n.Kernel == nil {
-			n.Kernel = &KernelEntry{}
-		}
 		n.Kernel.Args.SetDefault("quiet crashkernel=no vga=791")
 
 		fullname := strings.SplitN(nodename, ".", 2)
@@ -89,9 +85,6 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.Id.Set(nodename)
 		n.Comment.Set(node.Comment)
 		n.ContainerName.Set(node.ContainerName)
-		if node.Kernel != nil {
-			n.Kernel.Args.Set(node.Kernel.Args)
-		}
 		n.ClusterName.Set(node.ClusterName)
 		n.Ipxe.Set(node.Ipxe)
 		n.Init.Set(node.Init)
@@ -112,6 +105,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.Discoverable.Set(node.Discoverable)
 
 		if node.Kernel != nil {
+			n.Kernel.Args.Set(node.Kernel.Args)
 			if node.Kernel.Override != "" {
 				n.Kernel.Override.Set(node.Kernel.Override)
 			} else if node.Kernel.Version != "" {
@@ -237,7 +231,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.NetDevs[devname].Default.SetAlt(netdev.Default, p)
 				if len(netdev.Tags) != 0 {
 					for keyname, key := range netdev.Tags {
-						if _, ok := n.Tags[keyname]; !ok {
+						if _, ok := n.NetDevs[devname].Tags[keyname]; !ok {
 							var keyVar Entry
 							n.NetDevs[devname].Tags[keyname] = &keyVar
 						}
