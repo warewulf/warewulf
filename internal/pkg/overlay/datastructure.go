@@ -31,6 +31,7 @@ type TemplateStruct struct {
 	Ipaddr6        string
 	Netmask        string
 	Network        string
+	NetworkCIDR    string
 	Ipv6           bool
 	Dhcp           warewulfconf.DhcpConf
 	Nfs            warewulfconf.NfsConf

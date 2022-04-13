@@ -289,6 +289,8 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 	tstruct.Ipaddr6 = controller.Ipaddr6
 	tstruct.Netmask = controller.Netmask
 	tstruct.Network = controller.Network
+	netaddrStruct := net.IPNet{IP: net.ParseIP(controller.Network), Mask: net.IPMask(net.ParseIP(controller.Netmask))}
+	tstruct.NetworkCIDR = netaddrStruct.String()
 	if controller.Ipaddr6 != "" {
 		tstruct.Ipv6 = true
 	} else {
