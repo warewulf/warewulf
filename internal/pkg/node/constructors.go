@@ -224,7 +224,6 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.NetDevs[devname].Device.SetAlt(netdev.Device, p)
 				n.NetDevs[devname].Ipaddr.SetAlt(netdev.Ipaddr, p) //FIXME? <- Ipaddr must be uniq
 				n.NetDevs[devname].Netmask.SetAlt(netdev.Netmask, p)
-				n.NetDevs[devname].Hwaddr.SetAlt(netdev.Hwaddr, p)
 				n.NetDevs[devname].Hwaddr.SetAlt(strings.ToLower(netdev.Hwaddr), p)
 				n.NetDevs[devname].Gateway.SetAlt(netdev.Gateway, p)
 				n.NetDevs[devname].Type.SetAlt(netdev.Type, p)
