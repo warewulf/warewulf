@@ -12,10 +12,12 @@ import (
 
 	"github.com/containers/image/v5/copy"
 	"github.com/containers/image/v5/docker"
+	dockerarchive "github.com/containers/image/v5/docker/archive"
 	"github.com/containers/image/v5/docker/daemon"
 	"github.com/containers/image/v5/oci/layout"
 	"github.com/containers/image/v5/signature"
 	"github.com/containers/image/v5/types"
+	"github.com/hpcng/warewulf/internal/pkg/util"
 	imgSpecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/opencontainers/umoci"
 	"github.com/opencontainers/umoci/oci/layer"
@@ -68,6 +70,9 @@ func NewPuller(opts ...pullerOpt) (*puller, error) {
 
 // getReference parsed the uri scheme to determine
 func getReference(uri string) (types.ImageReference, error) {
+	if util.IsFile(uri) {
+		uri = "file://" + uri
+	}
 	s := strings.SplitN(uri, ":", 2)
 	if len(s) != 2 {
 		return nil, fmt.Errorf("invalid uri: %q", uri)
@@ -78,8 +83,10 @@ func getReference(uri string) (types.ImageReference, error) {
 		return docker.ParseReference(s[1])
 	case "docker-daemon":
 		return daemon.ParseReference(strings.TrimPrefix(s[1], "//"))
+	case "file":
+		return dockerarchive.ParseReference(strings.TrimPrefix(s[1], "/"))
 	default:
-		return nil, fmt.Errorf("unknown uri sceme: %q", uri)
+		return nil, fmt.Errorf("unknown uri scheme: %q", uri)
 	}
 }
 
