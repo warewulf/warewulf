@@ -1,6 +1,7 @@
 package node
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 )
@@ -254,8 +255,8 @@ func (ent *Entry) PrintComb() string {
 /*
 same as GetB()
 */
-func (ent *Entry) PrintB() bool {
-	return ent.GetB()
+func (ent *Entry) PrintB() string {
+	return fmt.Sprintf("%t", ent.GetB())
 }
 
 /*
