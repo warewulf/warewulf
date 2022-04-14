@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - uids and gids of a container now get synced at import time, so that at least users with the
   same name have the same uid. This is not necessarily needed for warewulf, but services like
   munge.
+- oci container tar balls can be imported with the 'file://$PATH' scheme
 
 
 ## [4.1.0] - 2021-07-29

@@ -99,7 +99,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Printf(wwlog.ERROR, "VNFS Name exists, specify --force, --update, or choose a different name: %s\n", name)
 			os.Exit(1)
 		}
-	} else if strings.HasPrefix(uri, "docker://") || strings.HasPrefix(uri, "docker-daemon://") {
+	} else if strings.HasPrefix(uri, "docker://") || strings.HasPrefix(uri, "docker-daemon://") || strings.HasPrefix(uri, "file://") {
 		sCtx, err := getSystemContext()
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)

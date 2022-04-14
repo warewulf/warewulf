@@ -12,6 +12,7 @@ import (
 
 	"github.com/containers/image/v5/copy"
 	"github.com/containers/image/v5/docker"
+	dockerarchive "github.com/containers/image/v5/docker/archive"
 	"github.com/containers/image/v5/docker/daemon"
 	"github.com/containers/image/v5/oci/layout"
 	"github.com/containers/image/v5/signature"
@@ -78,8 +79,10 @@ func getReference(uri string) (types.ImageReference, error) {
 		return docker.ParseReference(s[1])
 	case "docker-daemon":
 		return daemon.ParseReference(strings.TrimPrefix(s[1], "//"))
+	case "file":
+		return dockerarchive.ParseReference(strings.TrimPrefix(s[1], "/"))
 	default:
-		return nil, fmt.Errorf("unknown uri sceme: %q", uri)
+		return nil, fmt.Errorf("unknown uri scheme: %q", uri)
 	}
 }
 
