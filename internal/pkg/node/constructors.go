@@ -88,7 +88,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.ClusterName.Set(node.ClusterName)
 		n.Ipxe.Set(node.Ipxe)
 		n.Init.Set(node.Init)
-		// backward compatiblity for old Ipmi config
+		// backward compatibility for old Ipmi config
 		n.Ipmi.Ipaddr.Set(node.IpmiIpaddr)
 		n.Ipmi.Netmask.Set(node.IpmiNetmask)
 		n.Ipmi.Port.Set(node.IpmiPort)
@@ -97,6 +97,15 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.Ipmi.Password.Set(node.IpmiPassword)
 		n.Ipmi.Interface.Set(node.IpmiInterface)
 		n.Ipmi.Write.SetB(node.IpmiWrite)
+		// delete deprectated structures so that they do not get unmarshalled
+		node.IpmiIpaddr = ""
+		node.IpmiNetmask = ""
+		node.IpmiGateway = ""
+		node.IpmiUserName = ""
+		node.IpmiPassword = ""
+		node.IpmiInterface = ""
+		node.IpmiWrite = false
+
 		if node.Ipmi != nil {
 			n.Ipmi.Ipaddr.Set(node.Ipmi.Ipaddr)
 			n.Ipmi.Netmask.Set(node.Ipmi.Netmask)
@@ -112,10 +121,14 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.Root.Set(node.Root)
 		n.AssetKey.Set(node.AssetKey)
 		n.Discoverable.Set(node.Discoverable)
-		// backward compatibilty
+		// backward compatibility
 		n.Kernel.Args.Set(node.KernelArgs)
 		n.Kernel.Override.Set(node.KernelOverride)
 		n.Kernel.Override.Set(node.KernelVersion)
+		node.KernelArgs = ""
+		node.KernelOverride = ""
+		node.KernelVersion = ""
+
 		if node.Kernel != nil {
 			n.Kernel.Args.Set(node.Kernel.Args)
 			if node.Kernel.Override != "" {
@@ -303,11 +316,13 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		p.ContainerName.Set(profile.ContainerName)
 		p.Ipxe.Set(profile.Ipxe)
 		p.Init.Set(profile.Init)
-		// backward compatibilty
+		// backward compatibility
 		p.Kernel.Args.Set(profile.KernelArgs)
 		p.Kernel.Override.Set(profile.KernelOverride)
 		p.Kernel.Override.Set(profile.KernelVersion)
-
+		profile.KernelArgs = ""
+		profile.KernelOverride = ""
+		profile.KernelVersion = ""
 		if profile.Kernel != nil {
 			p.Kernel.Args.Set(profile.Kernel.Args)
 			if profile.Kernel.Override != "" {
@@ -316,7 +331,7 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 				p.Kernel.Override.Set(profile.Kernel.Version)
 			}
 		}
-		// backward compatiblity for old Ipmi config
+		// backward compatibility for old Ipmi config
 		p.Ipmi.Ipaddr.Set(profile.IpmiIpaddr)
 		p.Ipmi.Netmask.Set(profile.IpmiNetmask)
 		p.Ipmi.Port.Set(profile.IpmiPort)
@@ -325,6 +340,14 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		p.Ipmi.Password.Set(profile.IpmiPassword)
 		p.Ipmi.Interface.Set(profile.IpmiInterface)
 		p.Ipmi.Write.SetB(profile.IpmiWrite)
+		// delete deprectated structures so that they do not get unmarshalled
+		profile.IpmiIpaddr = ""
+		profile.IpmiNetmask = ""
+		profile.IpmiGateway = ""
+		profile.IpmiUserName = ""
+		profile.IpmiPassword = ""
+		profile.IpmiInterface = ""
+		profile.IpmiWrite = false
 		if profile.Ipmi != nil {
 			p.Ipmi.Netmask.Set(profile.Ipmi.Netmask)
 			p.Ipmi.Port.Set(profile.Ipmi.Port)
