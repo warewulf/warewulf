@@ -96,7 +96,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.Ipmi.UserName.Set(node.IpmiUserName)
 		n.Ipmi.Password.Set(node.IpmiPassword)
 		n.Ipmi.Interface.Set(node.IpmiInterface)
-		n.Ipmi.Write.SetB(node.IpmiWrite)
+		n.Ipmi.Write.Set(node.IpmiWrite)
 		// delete deprectated structures so that they do not get unmarshalled
 		node.IpmiIpaddr = ""
 		node.IpmiNetmask = ""
@@ -104,7 +104,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		node.IpmiUserName = ""
 		node.IpmiPassword = ""
 		node.IpmiInterface = ""
-		node.IpmiWrite = false
+		node.IpmiWrite = ""
 
 		if node.Ipmi != nil {
 			n.Ipmi.Ipaddr.Set(node.Ipmi.Ipaddr)
@@ -114,7 +114,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.Ipmi.UserName.Set(node.Ipmi.UserName)
 			n.Ipmi.Password.Set(node.Ipmi.Password)
 			n.Ipmi.Interface.Set(node.Ipmi.Interface)
-			n.Ipmi.Write.SetB(node.Ipmi.Write)
+			n.Ipmi.Write.Set(node.Ipmi.Write)
 		}
 		n.SystemOverlay.SetSlice(node.SystemOverlay)
 		n.RuntimeOverlay.SetSlice(node.RuntimeOverlay)
@@ -223,7 +223,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.Ipmi.UserName.SetAlt(config.NodeProfiles[p].Ipmi.UserName, p)
 				n.Ipmi.Password.SetAlt(config.NodeProfiles[p].Ipmi.Password, p)
 				n.Ipmi.Interface.SetAlt(config.NodeProfiles[p].Ipmi.Interface, p)
-				n.Ipmi.Write.SetAltB(config.NodeProfiles[p].Ipmi.Write, p)
+				n.Ipmi.Write.SetAlt(config.NodeProfiles[p].Ipmi.Write, p)
 			}
 			n.SystemOverlay.SetAltSlice(config.NodeProfiles[p].SystemOverlay, p)
 			n.RuntimeOverlay.SetAltSlice(config.NodeProfiles[p].RuntimeOverlay, p)
@@ -339,7 +339,7 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		p.Ipmi.UserName.Set(profile.IpmiUserName)
 		p.Ipmi.Password.Set(profile.IpmiPassword)
 		p.Ipmi.Interface.Set(profile.IpmiInterface)
-		p.Ipmi.Write.SetB(profile.IpmiWrite)
+		p.Ipmi.Write.Set(profile.IpmiWrite)
 		// delete deprectated structures so that they do not get unmarshalled
 		profile.IpmiIpaddr = ""
 		profile.IpmiNetmask = ""
@@ -347,7 +347,7 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		profile.IpmiUserName = ""
 		profile.IpmiPassword = ""
 		profile.IpmiInterface = ""
-		profile.IpmiWrite = false
+		profile.IpmiWrite = ""
 		if profile.Ipmi != nil {
 			p.Ipmi.Netmask.Set(profile.Ipmi.Netmask)
 			p.Ipmi.Port.Set(profile.Ipmi.Port)
@@ -355,7 +355,7 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 			p.Ipmi.UserName.Set(profile.Ipmi.UserName)
 			p.Ipmi.Password.Set(profile.Ipmi.Password)
 			p.Ipmi.Interface.Set(profile.Ipmi.Interface)
-			p.Ipmi.Write.SetB(profile.Ipmi.Write)
+			p.Ipmi.Write.Set(profile.Ipmi.Write)
 		}
 		p.RuntimeOverlay.SetSlice(profile.RuntimeOverlay)
 		p.SystemOverlay.SetSlice(profile.SystemOverlay)

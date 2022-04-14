@@ -33,7 +33,7 @@ type NodeConf struct {
 	IpmiPort       string              `yaml:"ipmi port,omitempty"`
 	IpmiGateway    string              `yaml:"ipmi gateway,omitempty"`
 	IpmiInterface  string              `yaml:"ipmi interface,omitempty"`
-	IpmiWrite      bool                `yaml:"ipmi write,omitempty"`
+	IpmiWrite      string              `yaml:"ipmi write,omitempty"`
 	RuntimeOverlay []string            `yaml:"runtime overlay,omitempty"`
 	SystemOverlay  []string            `yaml:"system overlay,omitempty"`
 	Kernel         *KernelConf         `yaml:"kernel,omitempty"`
@@ -56,7 +56,7 @@ type IpmiConf struct {
 	Port      string `yaml:"port,omitempty"`
 	Gateway   string `yaml:"gateway,omitempty"`
 	Interface string `yaml:"interface,omitempty"`
-	Write     bool   `yaml:"write,omitempty"`
+	Write     string `yaml:"write,omitempty"`
 }
 type KernelConf struct {
 	Version  string `yaml:"version,omitempty"`

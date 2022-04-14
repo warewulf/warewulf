@@ -245,7 +245,7 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 	tstruct.Ipmi.UserName = nodeInfo.Ipmi.UserName.Get()
 	tstruct.Ipmi.Password = nodeInfo.Ipmi.Password.Get()
 	tstruct.Ipmi.Interface = nodeInfo.Ipmi.Interface.Get()
-	tstruct.Ipmi.Write = nodeInfo.Ipmi.Write.GetB()
+	tstruct.Ipmi.Write = nodeInfo.Ipmi.Write.Get()
 	tstruct.RuntimeOverlay = nodeInfo.RuntimeOverlay.Print()
 	tstruct.SystemOverlay = nodeInfo.SystemOverlay.Print()
 	tstruct.NetDevs = make(map[string]*node.NetDevs)
