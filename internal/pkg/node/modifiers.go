@@ -79,7 +79,7 @@ func (config *nodeYaml) NodeUpdate(node NodeInfo) error {
 		config.Nodes[nodeID].Ipmi.UserName = node.Ipmi.UserName.GetReal()
 		config.Nodes[nodeID].Ipmi.Password = node.Ipmi.Password.GetReal()
 		config.Nodes[nodeID].Ipmi.Interface = node.Ipmi.Interface.GetReal()
-		config.Nodes[nodeID].Ipmi.Write = node.Ipmi.Write.GetB()
+		config.Nodes[nodeID].Ipmi.Write = node.Ipmi.Write.GetReal()
 	}
 	config.Nodes[nodeID].RuntimeOverlay = node.RuntimeOverlay.GetRealSlice()
 	config.Nodes[nodeID].SystemOverlay = node.SystemOverlay.GetRealSlice()
@@ -185,7 +185,7 @@ func (config *nodeYaml) ProfileUpdate(profile NodeInfo) error {
 		config.NodeProfiles[profileID].Ipmi.UserName = profile.Ipmi.UserName.GetReal()
 		config.NodeProfiles[profileID].Ipmi.Password = profile.Ipmi.Password.GetReal()
 		config.NodeProfiles[profileID].Ipmi.Interface = profile.Ipmi.Interface.GetReal()
-		config.NodeProfiles[profileID].Ipmi.Write = profile.Ipmi.Interface.GetB()
+		config.NodeProfiles[profileID].Ipmi.Write = profile.Ipmi.Interface.GetReal()
 	}
 	config.NodeProfiles[profileID].RuntimeOverlay = profile.RuntimeOverlay.GetRealSlice()
 	config.NodeProfiles[profileID].SystemOverlay = profile.SystemOverlay.GetRealSlice()

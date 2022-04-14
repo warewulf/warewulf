@@ -88,6 +88,24 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.ClusterName.Set(node.ClusterName)
 		n.Ipxe.Set(node.Ipxe)
 		n.Init.Set(node.Init)
+		// backward compatibility for old Ipmi config
+		n.Ipmi.Ipaddr.Set(node.IpmiIpaddr)
+		n.Ipmi.Netmask.Set(node.IpmiNetmask)
+		n.Ipmi.Port.Set(node.IpmiPort)
+		n.Ipmi.Gateway.Set(node.IpmiGateway)
+		n.Ipmi.UserName.Set(node.IpmiUserName)
+		n.Ipmi.Password.Set(node.IpmiPassword)
+		n.Ipmi.Interface.Set(node.IpmiInterface)
+		n.Ipmi.Write.Set(node.IpmiWrite)
+		// delete deprectated structures so that they do not get unmarshalled
+		node.IpmiIpaddr = ""
+		node.IpmiNetmask = ""
+		node.IpmiGateway = ""
+		node.IpmiUserName = ""
+		node.IpmiPassword = ""
+		node.IpmiInterface = ""
+		node.IpmiWrite = ""
+
 		if node.Ipmi != nil {
 			n.Ipmi.Ipaddr.Set(node.Ipmi.Ipaddr)
 			n.Ipmi.Netmask.Set(node.Ipmi.Netmask)
@@ -96,13 +114,20 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.Ipmi.UserName.Set(node.Ipmi.UserName)
 			n.Ipmi.Password.Set(node.Ipmi.Password)
 			n.Ipmi.Interface.Set(node.Ipmi.Interface)
-			n.Ipmi.Write.SetB(node.Ipmi.Write)
+			n.Ipmi.Write.Set(node.Ipmi.Write)
 		}
 		n.SystemOverlay.SetSlice(node.SystemOverlay)
 		n.RuntimeOverlay.SetSlice(node.RuntimeOverlay)
 		n.Root.Set(node.Root)
 		n.AssetKey.Set(node.AssetKey)
 		n.Discoverable.Set(node.Discoverable)
+		// backward compatibility
+		n.Kernel.Args.Set(node.KernelArgs)
+		n.Kernel.Override.Set(node.KernelOverride)
+		n.Kernel.Override.Set(node.KernelVersion)
+		node.KernelArgs = ""
+		node.KernelOverride = ""
+		node.KernelVersion = ""
 
 		if node.Kernel != nil {
 			n.Kernel.Args.Set(node.Kernel.Args)
@@ -198,7 +223,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.Ipmi.UserName.SetAlt(config.NodeProfiles[p].Ipmi.UserName, p)
 				n.Ipmi.Password.SetAlt(config.NodeProfiles[p].Ipmi.Password, p)
 				n.Ipmi.Interface.SetAlt(config.NodeProfiles[p].Ipmi.Interface, p)
-				n.Ipmi.Write.SetB(config.NodeProfiles[p].Ipmi.Write)
+				n.Ipmi.Write.SetAlt(config.NodeProfiles[p].Ipmi.Write, p)
 			}
 			n.SystemOverlay.SetAltSlice(config.NodeProfiles[p].SystemOverlay, p)
 			n.RuntimeOverlay.SetAltSlice(config.NodeProfiles[p].RuntimeOverlay, p)
@@ -291,6 +316,13 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		p.ContainerName.Set(profile.ContainerName)
 		p.Ipxe.Set(profile.Ipxe)
 		p.Init.Set(profile.Init)
+		// backward compatibility
+		p.Kernel.Args.Set(profile.KernelArgs)
+		p.Kernel.Override.Set(profile.KernelOverride)
+		p.Kernel.Override.Set(profile.KernelVersion)
+		profile.KernelArgs = ""
+		profile.KernelOverride = ""
+		profile.KernelVersion = ""
 		if profile.Kernel != nil {
 			p.Kernel.Args.Set(profile.Kernel.Args)
 			if profile.Kernel.Override != "" {
@@ -299,6 +331,23 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 				p.Kernel.Override.Set(profile.Kernel.Version)
 			}
 		}
+		// backward compatibility for old Ipmi config
+		p.Ipmi.Ipaddr.Set(profile.IpmiIpaddr)
+		p.Ipmi.Netmask.Set(profile.IpmiNetmask)
+		p.Ipmi.Port.Set(profile.IpmiPort)
+		p.Ipmi.Gateway.Set(profile.IpmiGateway)
+		p.Ipmi.UserName.Set(profile.IpmiUserName)
+		p.Ipmi.Password.Set(profile.IpmiPassword)
+		p.Ipmi.Interface.Set(profile.IpmiInterface)
+		p.Ipmi.Write.Set(profile.IpmiWrite)
+		// delete deprectated structures so that they do not get unmarshalled
+		profile.IpmiIpaddr = ""
+		profile.IpmiNetmask = ""
+		profile.IpmiGateway = ""
+		profile.IpmiUserName = ""
+		profile.IpmiPassword = ""
+		profile.IpmiInterface = ""
+		profile.IpmiWrite = ""
 		if profile.Ipmi != nil {
 			p.Ipmi.Netmask.Set(profile.Ipmi.Netmask)
 			p.Ipmi.Port.Set(profile.Ipmi.Port)
@@ -306,7 +355,7 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 			p.Ipmi.UserName.Set(profile.Ipmi.UserName)
 			p.Ipmi.Password.Set(profile.Ipmi.Password)
 			p.Ipmi.Interface.Set(profile.Ipmi.Interface)
-			p.Ipmi.Write.SetB(profile.Ipmi.Write)
+			p.Ipmi.Write.Set(profile.Ipmi.Write)
 		}
 		p.RuntimeOverlay.SetSlice(profile.RuntimeOverlay)
 		p.SystemOverlay.SetSlice(profile.SystemOverlay)
