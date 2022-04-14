@@ -223,7 +223,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.Ipmi.UserName.SetAlt(config.NodeProfiles[p].Ipmi.UserName, p)
 				n.Ipmi.Password.SetAlt(config.NodeProfiles[p].Ipmi.Password, p)
 				n.Ipmi.Interface.SetAlt(config.NodeProfiles[p].Ipmi.Interface, p)
-				n.Ipmi.Write.SetB(config.NodeProfiles[p].Ipmi.Write)
+				n.Ipmi.Write.SetAltB(config.NodeProfiles[p].Ipmi.Write, p)
 			}
 			n.SystemOverlay.SetAltSlice(config.NodeProfiles[p].SystemOverlay, p)
 			n.RuntimeOverlay.SetAltSlice(config.NodeProfiles[p].RuntimeOverlay, p)
