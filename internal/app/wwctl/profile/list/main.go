@@ -47,6 +47,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiGateway", profile.Ipmi.Gateway.Print())
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiUserName", profile.Ipmi.UserName.Print())
 			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiInterface", profile.Ipmi.Interface.Print())
+			fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "IpmiWrite", profile.Ipmi.Write.Print())
 
 			for keyname, key := range profile.Tags {
 				fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), "Tag["+keyname+"]", key.Print())

@@ -56,6 +56,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiGateway", node.Ipmi.Gateway.Source(), node.Ipmi.Gateway.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiUserName", node.Ipmi.UserName.Source(), node.Ipmi.UserName.Print())
 			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiInterface", node.Ipmi.Interface.Source(), node.Ipmi.Interface.Print())
+			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiWrite", node.Ipmi.Interface.Source(), node.Ipmi.Write.Print())
 
 			for keyname, key := range node.Tags {
 				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Tag["+keyname+"]", key.Source(), key.Print())
