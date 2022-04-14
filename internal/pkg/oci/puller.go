@@ -17,6 +17,7 @@ import (
 	"github.com/containers/image/v5/oci/layout"
 	"github.com/containers/image/v5/signature"
 	"github.com/containers/image/v5/types"
+	"github.com/hpcng/warewulf/internal/pkg/util"
 	imgSpecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/opencontainers/umoci"
 	"github.com/opencontainers/umoci/oci/layer"
@@ -69,6 +70,9 @@ func NewPuller(opts ...pullerOpt) (*puller, error) {
 
 // getReference parsed the uri scheme to determine
 func getReference(uri string) (types.ImageReference, error) {
+	if util.IsFile(uri) {
+		uri = "file://" + uri
+	}
 	s := strings.SplitN(uri, ":", 2)
 	if len(s) != 2 {
 		return nil, fmt.Errorf("invalid uri: %q", uri)

@@ -8,7 +8,13 @@ var (
 		Use:                   "import [OPTIONS] SOURCE [NAME]",
 		Short:                 "Import a container into Warewulf",
 		Long: `This command will pull and import a container into Warewulf from SOURCE,
-optionally renaming it to NAME. The SOURCE must be in a supported URI format.
+optionally renaming it to NAME. The SOURCE must be in a supported URI format. Formats 
+are:
+ * docker://registry.example.org/example:latest
+ * docker-daemon://example:latest
+ * file://path/to/archive/tar/ball
+ * /path/to/archive/tar/ball
+ * /path/to/chroot/
 Imported containers are used to create bootable VNFS images.`,
 		Example: "wwctl container import docker://warewulf/centos-8 my_container",
 		RunE:    CobraRunE,
