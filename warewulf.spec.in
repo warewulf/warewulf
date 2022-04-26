@@ -1,13 +1,12 @@
 %define debug_package %{nil}
 
-%if 0%{?sle_version}
+%if 0%{?suse_version}
 %global tftpdir /srv/tftpboot
-%global srvdir /srv
 %else
 # Assume Fedora-based OS if not SUSE-based
 %global tftpdir /var/lib/tftpboot
-%global srvdir %{_sharedstatedir}
 %endif
+%global srvdir %{_sharedstatedir}
 
 %global wwgroup warewulf
 
@@ -30,12 +29,15 @@ Conflicts: warewulf-ipmi
 
 BuildRequires: make
 
-%if 0%{?sle_version}
+%if 0%{?suse_version}
 BuildRequires: systemd-rpm-macros
 BuildRequires: go
 BuildRequires: firewall-macros
+BuildRequires: firewalld
+BuildRequires: tftp
 Requires: tftp
 Requires: nfs-kernel-server
+Requires: firewalld
 %else
 BuildRequires: systemd
 BuildRequires: golang
@@ -44,7 +46,7 @@ Requires: tftp-server
 Requires: nfs-utils
 %endif
 
-%if 0%{?rhel} >= 8 || 0%{?sle_version}
+%if 0%{?rhel} >= 8 || 0%{?suse_version}
 Requires: dhcp-server
 %else
 # rhel < 8
@@ -82,6 +84,7 @@ make
 
 
 %install
+export NO_BRP_STALE_LINK_ERROR=yes
 make install DESTDIR=%{buildroot}
 
 
@@ -121,6 +124,7 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %attr(-, root, root) %{_mandir}/man1/wwctl*
 %attr(-, root, root) %{_datadir}/warewulf
 
+%dir %{_docdir}/warewulf
 %license %{_docdir}/warewulf/LICENSE.md
 
 
