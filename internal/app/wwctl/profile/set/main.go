@@ -233,7 +233,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		if SetNetDevDel {
-			if SetNetDev == "" {
+			if SetNetName == "" {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netname' option\n")
 				os.Exit(1)
 			}
