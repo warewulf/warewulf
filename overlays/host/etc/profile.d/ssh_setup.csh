@@ -19,7 +19,7 @@ if ( ! -f "$HOME/.ssh/config" && ! -f "$HOME/.ssh/cluster" ) then
 
     touch $HOME/.ssh/config
     echo -n "# Added by Warewulf " >>! $HOME/.ssh/config
-    (date +%Y-%m-%d >> $HOME/.ssh/config) |& /dev/null
+    (date +%Y-%m-%d >> $HOME/.ssh/config) >& /dev/null
     echo "Host *" >> $HOME/.ssh/config
     echo "   IdentityFile ~/.ssh/cluster" >> $HOME/.ssh/config
     echo "   StrictHostKeyChecking=no" >> $HOME/.ssh/config
