@@ -23,7 +23,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Printf("%s=%s\n", "WWPROVISIONDIR", buildconfig.WWPROVISIONDIR())
 		fmt.Printf("%s=%s\n", "BASEVERSION", buildconfig.VERSION())
 		fmt.Printf("%s=%s\n", "RELEASE", buildconfig.RELEASE())
-		fmt.Printf("%s=%s\n", "WWCLIENTDIR", buildconfig.WWCLIENTDIR())o
+		fmt.Printf("%s=%s\n", "WWCLIENTDIR", buildconfig.WWCLIENTDIR())
 	} else {
 		fmt.Println(version.GetVersion())
 	}
