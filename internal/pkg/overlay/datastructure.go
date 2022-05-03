@@ -37,4 +37,8 @@ type TemplateStruct struct {
 	Dhcp           warewulfconf.DhcpConf
 	Nfs            warewulfconf.NfsConf
 	Warewulf       warewulfconf.WarewulfConf
+	Overlays       []string
+	Containers     []string
+	Kernels        []string
+	Profiles       []string
 }
