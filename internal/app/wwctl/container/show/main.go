@@ -18,6 +18,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	} else {
 		fmt.Printf("Name: %s\n", containerName)
 		fmt.Printf("Rootfs: %s\n", container.RootFsDir(containerName))
+		kernelVersion := container.KernelVersion(containerName)
+		if kernelVersion != "" {
+			kernelVersion = "not found"
+			fmt.Printf("Kernelversion: %s\n", kernelVersion)
+		}
 		nodeDB, _ := node.New()
 
 		nodes, _ := nodeDB.FindAllNodes()
