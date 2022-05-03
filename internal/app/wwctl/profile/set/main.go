@@ -233,18 +233,18 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		if SetNetDevDel {
-			if SetNetDev == "" {
+			if SetNetName == "" {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netname' option\n")
 				os.Exit(1)
 			}
 
-			if _, ok := p.NetDevs[SetNetDev]; !ok {
-				wwlog.Printf(wwlog.ERROR, "Profile '%s': network Device doesn't exist: %s\n", p.Id.Get(), SetNetDev)
+			if _, ok := p.NetDevs[SetNetName]; !ok {
+				wwlog.Printf(wwlog.ERROR, "Profile '%s': network Device doesn't exist: %s\n", p.Id.Get(), SetNetName)
 				os.Exit(1)
 			}
 
-			wwlog.Printf(wwlog.VERBOSE, "Profile %s: Deleting network device: %s\n", p.Id.Get(), SetNetDev)
-			delete(p.NetDevs, SetNetDev)
+			wwlog.Printf(wwlog.VERBOSE, "Profile %s: Deleting network device: %s\n", p.Id.Get(), SetNetName)
+			delete(p.NetDevs, SetNetName)
 		}
 
 		if len(SetTags) > 0 {
