@@ -219,15 +219,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 			if SetNetDefault == "yes" || SetNetDefault == "y" || SetNetDefault == "1" || SetNetDefault == "true" {
 
-				// Set all other devices to non-default
+				// Set all other networks to non-default
 				for _, n := range p.NetDevs {
 					n.Default.SetB(false)
 				}
 
-				wwlog.Printf(wwlog.VERBOSE, "Profile: %s:%s, Setting DEFAULT\n", p.Id.Get(), SetNetName)
+				wwlog.Printf(wwlog.VERBOSE, "Profile: %s:%s, Setting PRIMARY\n", p.Id.Get(), SetNetName)
 				p.NetDevs[SetNetName].Default.SetB(true)
 			} else {
-				wwlog.Printf(wwlog.VERBOSE, "Profile: %s:%s, Unsetting DEFAULT\n", p.Id.Get(), SetNetName)
+				wwlog.Printf(wwlog.VERBOSE, "Profile: %s:%s, Unsetting PRIMARY\n", p.Id.Get(), SetNetName)
 				p.NetDevs[SetNetName].Default.SetB(false)
 			}
 		}
@@ -239,11 +239,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 			if _, ok := p.NetDevs[SetNetName]; !ok {
-				wwlog.Printf(wwlog.ERROR, "Profile '%s': network Device doesn't exist: %s\n", p.Id.Get(), SetNetName)
+				wwlog.Printf(wwlog.ERROR, "Profile '%s': network name doesn't exist: %s\n", p.Id.Get(), SetNetName)
 				os.Exit(1)
 			}
 
-			wwlog.Printf(wwlog.VERBOSE, "Profile %s: Deleting network device: %s\n", p.Id.Get(), SetNetName)
+			wwlog.Printf(wwlog.VERBOSE, "Profile %s: Deleting network: %s\n", p.Id.Get(), SetNetName)
 			delete(p.NetDevs, SetNetName)
 		}
 
