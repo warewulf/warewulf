@@ -13,7 +13,7 @@ VARLIST := OS
 VARLIST += WAREWULF VERSION RELEASE
 WAREWULF ?= warewulf
 VERSION ?= 4.3.0rc2
-GIT_TAG := $(shell test -e .git && git describe --tags --long --first-parent --always)
+GIT_TAG := $(shell test -e .git && git log -1 --format="%h")
 
 ifdef GIT_TAG
   ifdef $(filter $(OS),ubuntu debian)

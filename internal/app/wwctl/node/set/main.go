@@ -289,10 +289,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					n.Default.SetB(false)
 				}
 
-				wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting DEFAULT\n", n.Id.Get(), SetNetName)
+				wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting PRIMARY\n", n.Id.Get(), SetNetName)
 				n.NetDevs[SetNetName].Default.SetB(true)
 			} else {
-				wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Unsetting DEFAULT\n", n.Id.Get(), SetNetName)
+				wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Unsetting PRIMARY\n", n.Id.Get(), SetNetName)
 				n.NetDevs[SetNetName].Default.SetB(false)
 			}
 		}
