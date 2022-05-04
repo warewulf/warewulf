@@ -78,7 +78,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	unixStat = fileStat.Sys().(*syscall.Stat_t)
 	syncuids := false
 	if passwdTime.Before(time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))) {
-		if NoSyncUser {
+		if !SyncUser {
 			wwlog.Printf(wwlog.WARN, "/etc/passwd has been modified, maybe you want to run syncuser\n")
 		}
 		syncuids = true
@@ -87,13 +87,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	fileStat, _ = os.Stat(path.Join(containerPath, "/etc/group"))
 	unixStat = fileStat.Sys().(*syscall.Stat_t)
 	if groupTime.Before(time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))) {
-		if NoSyncUser {
+		if !SyncUser {
 			wwlog.Printf(wwlog.WARN, "/etc/group has been modified, maybe you want to run syncuser\n")
 		}
 		syncuids = true
 	}
 	wwlog.Printf(wwlog.DEBUG, "group: %v\n", time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec)))
-	if syncuids && !NoSyncUser {
+	if syncuids && SyncUser {
 		err = container.SyncUids(containerName, true)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Error in user sync, fix error and run 'syncuser' manually, but trying to build container: %s\n", err)

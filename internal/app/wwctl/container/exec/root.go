@@ -25,14 +25,14 @@ var (
 		},
 		FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
 	}
-	NoSyncUser bool
-	binds      []string
+	SyncUser bool
+	binds    []string
 )
 
 func init() {
 	baseCmd.AddCommand(child.GetCommand())
 	baseCmd.PersistentFlags().StringArrayVarP(&binds, "bind", "b", []string{}, "Bind a local path into the container (must exist)")
-	baseCmd.PersistentFlags().BoolVar(&NoSyncUser, "nosyncuser", false, "Don't synchronize uis/gods from host to container")
+	baseCmd.PersistentFlags().BoolVar(&SyncUser, "syncuser", false, "Synchronize UIDs/GIDs from host to container")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
