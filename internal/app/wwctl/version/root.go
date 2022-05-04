@@ -11,9 +11,11 @@ var (
 		Args:    cobra.ExactArgs(0),
 		Aliases: []string{"vers"},
 	}
+	ListFull bool
 )
 
 func init() {
+	baseCmd.PersistentFlags().BoolVarP(&ListFull, "full", "f", false, "List all compiled in variables.")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
