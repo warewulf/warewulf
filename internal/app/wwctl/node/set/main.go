@@ -248,7 +248,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting HW address to: %s\n", n.Id.Get(), SetNetName, SetHwaddr)
-			n.NetDevs[SetNetName].Hwaddr.Set(strings.ToLower(SetHwaddr))
+			n.NetDevs[SetNetName].Hwaddr.Set(SetHwaddr)
 		}
 
 		if SetType != "" {

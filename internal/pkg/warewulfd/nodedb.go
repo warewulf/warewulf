@@ -1,6 +1,7 @@
 package warewulfd
 
 import (
+	"strings"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -32,7 +33,8 @@ func LoadNodeDB() error {
 
 	for _, n := range nodes {
 		for _, netdev := range n.NetDevs {
-			TmpMap[netdev.Hwaddr.Get()] = n
+			hwaddr := strings.ToLower(netdev.Hwaddr.Get())
+			TmpMap[hwaddr] = n
 		}
 	}
 
