@@ -68,6 +68,8 @@ Set bool
 func (ent *Entry) SetB(val bool) {
 	if val {
 		ent.value = []string{"true"}
+	} else {
+		ent.value = []string{"false"}
 	}
 }
 
@@ -99,6 +101,9 @@ Sets alternative bool
 func (ent *Entry) SetAltB(val bool, from string) {
 	if val {
 		ent.altvalue = []string{"true"}
+		ent.from = from
+	} else {
+		ent.altvalue = []string{"false"}
 		ent.from = from
 	}
 }
