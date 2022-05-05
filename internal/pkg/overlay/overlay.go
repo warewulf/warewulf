@@ -300,6 +300,7 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 	tstruct.BuildHost = hostname
 	dt := time.Now()
 	tstruct.BuildTime = dt.Format("01-02-2006 15:04:05 MST")
+	tstruct.BuildTimeUnix = strconv.FormatInt(dt.Unix(), 10)
 	for _, overlayName := range overlayNames {
 		wwlog.Printf(wwlog.VERBOSE, "Building overlay %s for node %s in %s\n", overlayName, nodeInfo.Id.Get(), outputDir)
 		overlaySourceDir := OverlaySourceDir(overlayName)

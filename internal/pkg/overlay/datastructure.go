@@ -26,6 +26,7 @@ type TemplateStruct struct {
 	AllNodes       []node.NodeInfo
 	BuildHost      string
 	BuildTime      string
+	BuildTimeUnix  string
 	BuildSource    string
 	Ipaddr         string
 	Ipaddr6        string
