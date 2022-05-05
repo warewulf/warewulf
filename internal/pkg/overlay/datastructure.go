@@ -26,7 +26,6 @@ type TemplateStruct struct {
 	AllNodes       []node.NodeInfo
 	BuildHost      string
 	BuildTime      string
-	BuildTimeUnix  string
 	BuildSource    string
 	Ipaddr         string
 	Ipaddr6        string
@@ -37,8 +36,4 @@ type TemplateStruct struct {
 	Dhcp           warewulfconf.DhcpConf
 	Nfs            warewulfconf.NfsConf
 	Warewulf       warewulfconf.WarewulfConf
-	Overlays       []string
-	Containers     []string
-	Kernels        []string
-	Profiles       []string
 }

@@ -17,8 +17,6 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/hpcng/warewulf/internal/pkg/container"
-	"github.com/hpcng/warewulf/internal/pkg/kernel"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
@@ -302,16 +300,6 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 	tstruct.BuildHost = hostname
 	dt := time.Now()
 	tstruct.BuildTime = dt.Format("01-02-2006 15:04:05 MST")
-	tstruct.BuildTimeUnix = strconv.FormatInt(dt.Unix(), 10)
-	tstruct.Containers, _ = container.ListSources()
-	profiles, _ := nodeDB.FindAllProfiles()
-	var profileList []string
-	for _, profile := range profiles {
-		profileList = append(profileList, profile.Id.Get())
-	}
-	tstruct.Profiles = profileList
-	tstruct.Overlays, _ = FindOverlays()
-	tstruct.Kernels, _ = kernel.ListKernels()
 	for _, overlayName := range overlayNames {
 		wwlog.Printf(wwlog.VERBOSE, "Building overlay %s for node %s in %s\n", overlayName, nodeInfo.Id.Get(), outputDir)
 		overlaySourceDir := OverlaySourceDir(overlayName)
