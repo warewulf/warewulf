@@ -360,6 +360,9 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 						backupFile = false
 						return ""
 					},
+					"split": func(s string, d string) []string {
+						return strings.Split(s, d)
+					},
 					// }).ParseGlob(path.Join(OverlayDir, destFile+".ww*"))
 				}).ParseGlob(location)
 				if err != nil {
