@@ -49,7 +49,7 @@ func Build(name string, buildForce bool) error {
 		wwlog.Printf(wwlog.VERBOSE, "Using PIGZ to compress the container: %s\n", compressor)
 	}
 	var cmd string
-	_, err = os.Stat(path.Join(rootfsPath, "./etc/warewulf/exclude"))
+	_, err = os.Stat(path.Join(rootfsPath, "./etc/warewulf/excludes"))
 	if os.IsNotExist(err) {
 		wwlog.Printf(wwlog.DEBUG, "Building VNFS image: '%s' -> '%s'\n", rootfsPath, imagePath)
 		cmd = fmt.Sprintf("cd %s; find . -xdev -xautofs | cpio --quiet -o -H newc | %s -c > \"%s\"", rootfsPath, compressor, imagePath)
