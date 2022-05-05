@@ -8,7 +8,7 @@
 # Entry for {{$node.Id.Get}}
 {{- range $devname, $netdev := $node.NetDevs}} {{/* for each network device on the node */}}
 {{- if $netdev.Ipaddr.Defined}}                {{/* if we have an ip address on this network device */}}
-{{- if $netdev.Default.GetB}}                  {{/* emit the node name as hostname if this is the default */}}
+{{- if $netdev.Primary.GetB}}                  {{/* emit the node name as hostname if this is the default */}}
 {{$netdev.Ipaddr.Get}} {{$node.Id.Get}} {{$node.Id.Get}}-{{$devname}} {{$node.Id.Get}}-{{$netdev.Device.Get}}
 {{- else}}
 {{$netdev.Ipaddr.Get}} {{$node.Id.Get}}-{{$devname}} {{$node.Id.Get}}-{{$netdev.Device.Get}}

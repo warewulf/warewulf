@@ -101,7 +101,7 @@ func (config *nodeYaml) NodeUpdate(node NodeInfo) error {
 		config.Nodes[nodeID].NetDevs[devname].Gateway = netdev.Gateway.GetReal()
 		config.Nodes[nodeID].NetDevs[devname].Type = netdev.Type.GetReal()
 		config.Nodes[nodeID].NetDevs[devname].OnBoot = netdev.OnBoot.GetReal()
-		config.Nodes[nodeID].NetDevs[devname].Default = netdev.Default.GetReal()
+		config.Nodes[nodeID].NetDevs[devname].Primary = netdev.Primary.GetReal()
 		config.Nodes[nodeID].NetDevs[devname].Tags = make(map[string]string)
 		for keyname, key := range netdev.Tags {
 			if key.GetReal() != "" {
@@ -207,7 +207,7 @@ func (config *nodeYaml) ProfileUpdate(profile NodeInfo) error {
 		config.NodeProfiles[profileID].NetDevs[devname].Gateway = netdev.Gateway.GetReal()
 		config.NodeProfiles[profileID].NetDevs[devname].Type = netdev.Type.GetReal()
 		config.NodeProfiles[profileID].NetDevs[devname].OnBoot = netdev.OnBoot.GetReal()
-		config.NodeProfiles[profileID].NetDevs[devname].Default = netdev.Default.GetReal()
+		config.NodeProfiles[profileID].NetDevs[devname].Primary = netdev.Primary.GetReal()
 		config.NodeProfiles[profileID].NetDevs[devname].Tags = make(map[string]string)
 		for key := range netdev.Tags {
 			config.NodeProfiles[profileID].NetDevs[devname].Tags[key] = netdev.Tags[key].GetReal()

@@ -41,7 +41,7 @@ subnet {{$.Network}} netmask {{$.Netmask}} {
 }
 {{range $nodes := .AllNodes}}
 {{- range $netdevs := $nodes.NetDevs}}
-{{- if $netdevs.Default.Get}}
+{{- if $netdevs.Primary.Get}}
 host {{$nodes.Id.Get}} {
    hardware ethernet {{$netdevs.Hwaddr.Get}};
    fixed-address {{$netdevs.Ipaddr.Get}};

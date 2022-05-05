@@ -211,24 +211,24 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 		}
 
-		if SetNetDefault != "" {
+		if SetNetPrimary != "" {
 			if SetNetName == "" {
 				wwlog.Printf(wwlog.ERROR, "You must include the '--netname' option\n")
 				os.Exit(1)
 			}
 
-			if SetNetDefault == "yes" || SetNetDefault == "y" || SetNetDefault == "1" || SetNetDefault == "true" {
+			if SetNetPrimary == "yes" || SetNetPrimary == "y" || SetNetPrimary == "1" || SetNetPrimary == "true" {
 
 				// Set all other networks to non-default
 				for _, n := range p.NetDevs {
-					n.Default.SetB(false)
+					n.Primary.SetB(false)
 				}
 
 				wwlog.Printf(wwlog.VERBOSE, "Profile: %s:%s, Setting PRIMARY\n", p.Id.Get(), SetNetName)
-				p.NetDevs[SetNetName].Default.SetB(true)
+				p.NetDevs[SetNetName].Primary.SetB(true)
 			} else {
 				wwlog.Printf(wwlog.VERBOSE, "Profile: %s:%s, Unsetting PRIMARY\n", p.Id.Get(), SetNetName)
-				p.NetDevs[SetNetName].Default.SetB(false)
+				p.NetDevs[SetNetName].Primary.SetB(false)
 			}
 		}
 
