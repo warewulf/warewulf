@@ -42,6 +42,8 @@ func Dhcp() error {
 		if err != nil {
 			wwlog.Printf(wwlog.WARN, "host overlay could not be built: %s\n", err)
 		}
+	} else {
+		wwlog.Printf(wwlog.INFO, "host overlays are disabled, did not modify/create dhcpd configuration")
 	}
 	fmt.Printf("Enabling and restarting the DHCP services\n")
 	err = util.SystemdStart(controller.Dhcp.SystemdName)
