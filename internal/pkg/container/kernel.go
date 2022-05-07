@@ -13,9 +13,13 @@ var (
 	kernelNames = []string{
 		`vmlinux`,
 		`vmlinuz`,
-		`vmlinuz.gz`,
-	}
-	modulePath = "/lib/modules/"
+		`vmlinux-*`,
+		`vmlinuz-*`,
+		`vmlinuz.gz` }
+
+	kernelDirs = []string{
+		`/lib/modules/*/`,
+		`/boot/` }
 )
 
 func KernelFind(container string) string {
@@ -25,21 +29,28 @@ func KernelFind(container string) string {
 		return ""
 	}
 
-	for _, kname := range kernelNames {
-		wwlog.Printf(wwlog.DEBUG, "Checking for kernel name within module path: %s\n", kname)
-		kernelPaths, err := filepath.Glob(path.Join(container_path, modulePath, "/*/", kname))
-		if err != nil {
-			return ""
-		}
+	for _, kdir := range kernelDirs {
+		wwlog.Printf(wwlog.DEBUG, "Checking kernel directory: %s\n", kdir)
+		for _, kname := range kernelNames {
+			wwlog.Printf(wwlog.DEBUG, "Checking for kernel name: %s\n", kname)
+			kernelPaths, err := filepath.Glob(path.Join(container_path, kdir, kname))
+			if err != nil {
+				return ""
+			}
 
-		sort.Slice(kernelPaths, func(i, j int) bool {
-			return kernelPaths[i] > kernelPaths[j]
-		})
+			if len(kernelPaths) == 0 {
+				continue
+			}
 
-		for _, kernelPath := range kernelPaths {
-			wwlog.Printf(wwlog.DEBUG, "Checking for kernel path: %s\n", kernelPath)
-			if util.IsFile(kernelPath) {
-				return kernelPath
+			sort.Slice(kernelPaths, func(i, j int) bool {
+				return kernelPaths[i] > kernelPaths[j]
+			})
+
+			for _, kernelPath := range kernelPaths {
+				wwlog.Printf(wwlog.DEBUG, "Checking for kernel path: %s\n", kernelPath)
+				if util.IsFile(kernelPath) {
+					return kernelPath
+				}
 			}
 		}
 	}

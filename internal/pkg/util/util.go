@@ -9,8 +9,10 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"syscall"
 	"time"
 
@@ -45,17 +47,17 @@ func DirModTime(path string) (time.Time, error) {
 }
 
 func PathIsNewer(source string, compare string) bool {
-	wwlog.Printf(wwlog.DEBUG, "Comparing times on paths: '%s' - '%s'\n", source, compare)
+	wwlog.Debug("Comparing times on paths: '%s' - '%s'", source, compare)
 
 	time1, err := DirModTime(source)
 	if err != nil {
-		wwlog.Printf(wwlog.DEBUG, "%s\n", err)
+		wwlog.DebugExc(err, "")
 		return false
 	}
 
 	time2, err := DirModTime(compare)
 	if err != nil {
-		wwlog.Printf(wwlog.DEBUG, "%s\n", err)
+		wwlog.DebugExc(err, "")
 		return false
 	}
 
@@ -73,7 +75,7 @@ func RandomString(n int) string {
 }
 
 func IsDir(path string) bool {
-	wwlog.Printf(wwlog.DEBUG, "Checking if path exists as a directory: %s\n", path)
+	wwlog.Debug("Checking if path exists as a directory: %s", path)
 
 	if path == "" {
 		return false
@@ -85,7 +87,7 @@ func IsDir(path string) bool {
 }
 
 func IsFile(path string) bool {
-	wwlog.Printf(wwlog.DEBUG, "Checking if path exists as a file: %s\n", path)
+	wwlog.Debug("Checking if path exists as a file: %s", path)
 
 	if path == "" {
 		return false
@@ -120,18 +122,19 @@ func ValidString(pattern string, expr string) bool {
 
 func ValidateOrDie(message string, pattern string, expr string) {
 	if ValidString(pattern, expr) {
-		wwlog.Printf(wwlog.ERROR, "%s does not validate: '%s'\n", message, pattern)
+		wwlog.Error("%s does not validate: '%s'", message, pattern)
 		os.Exit(1)
 	}
 }
 
+//******************************************************************************
 func FindFiles(path string) []string {
 	var ret []string
 
-	wwlog.Printf(wwlog.DEBUG, "Changing directory to FindFiles path: %s\n", path)
+	wwlog.Debug("Changing directory to FindFiles path: %s", path)
 	err := os.Chdir(path)
 	if err != nil {
-		wwlog.Printf(wwlog.WARN, "Could not chdir() to: %s\n", path)
+		wwlog.Warn("Could not chdir() to: %s", path)
 		return ret
 	}
 
@@ -145,10 +148,10 @@ func FindFiles(path string) []string {
 		}
 
 		if IsDir(location) {
-			wwlog.Printf(wwlog.DEBUG, "FindFiles() found directory: %s\n", location)
+			wwlog.Debug("FindFiles() found directory: %s", location)
 			ret = append(ret, location+"/")
 		} else {
-			wwlog.Printf(wwlog.DEBUG, "FindFiles() found file: %s\n", location)
+			wwlog.Debug("FindFiles() found file: %s", location)
 			ret = append(ret, location)
 		}
 
@@ -161,8 +164,123 @@ func FindFiles(path string) []string {
 	return ret
 }
 
+//******************************************************************************
+func FindFilterFiles(
+	path string,
+	include []string,
+	ignore []string,
+	ignore_xdev bool) ([]string, error) {
+
+	wwlog.Debug("Finding files: %s", path)
+
+	ofiles := []string{}
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		return ofiles, err
+	}
+	defer os.Chdir(cwd)
+
+	err = os.Chdir(path)
+	if err != nil {
+		return ofiles, errors.Wrapf(err, "Failed to change path: %s", path)
+	}
+
+	files := []string{}
+
+	for _, pattern := range include {
+
+		_files, err := filepath.Glob(pattern)
+		if err != nil {
+			return ofiles, errors.Wrapf(err, "Failed to apply pattern: %s", pattern)
+		}
+		wwlog.Debug("Including pattern: %s -> %d matches", pattern, len(_files))
+
+		files = append(files, _files...)
+	}
+
+
+	for i, pattern := range(ignore) {
+		if strings.HasPrefix(pattern, "./") {
+			ignore[i] = pattern[2:]
+		}
+		wwlog.Debug("Ignore pattern (%d): %s", i, ignore[i])
+	}
+
+
+	if ignore_xdev {
+		wwlog.Debug("Ignoring cross-device (xdev) files")
+	}
+
+	path_stat, err := os.Stat(".")
+	if err != nil {
+		return ofiles, err
+	}
+
+	dev := path_stat.Sys().(*syscall.Stat_t).Dev
+
+	for _, ifile := range files {
+		if stat, err := os.Stat(ifile); err == nil && stat.IsDir() {
+			// recursivly include from the matched directory
+
+			num_init := len(ofiles)
+			err = filepath.Walk(ifile, func(location string, info os.FileInfo, err error) error {
+				var file string
+
+				if err != nil {
+					return err
+				}
+
+				if location == "." {
+					return nil
+				}
+
+				if info.IsDir() {
+					file = location + "/"
+				} else {
+					file = location
+				}
+
+				if ignore_xdev && info.Sys().(*syscall.Stat_t).Dev != dev {
+					wwlog.Debug("Ignored (cross-device): %s", file)
+					return nil
+				}
+
+				for i, pattern := range(ignore) {
+					m, err := filepath.Match(pattern, location)
+					if err != nil {
+						return err
+					}
+
+					if m {
+						wwlog.Debug("Ignored (%d): %s", i, file)
+						return nil
+					}
+				}
+
+				ofiles = append(ofiles, file)
+
+				return nil
+			})
+
+			num_final := len(ofiles)
+			wwlog.Debug("Included: %s -> %d files", ifile, num_final-num_init)
+
+			if err != nil {
+				return ofiles, err
+			}
+		}else{
+			wwlog.Debug("Included: %s", ifile)
+			ofiles = append(ofiles, ifile)
+		}
+	}
+
+	return ofiles, err
+}
+
+//******************************************************************************
 func ExecInteractive(command string, a ...string) error {
-	wwlog.Printf(wwlog.DEBUG, "ExecInteractive(%s, %s)\n", command, a)
+	wwlog.Debug("ExecInteractive(%s, %s)", command, a)
 	c := exec.Command(command, a...)
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
@@ -196,7 +314,7 @@ func SliceRemoveElement(array []string, remove string) []string {
 		if r != remove {
 			ret = append(ret, r)
 		} else {
-			wwlog.Printf(wwlog.DEBUG, "Removing slice from array: %s\n", remove)
+			wwlog.Debug("Removing slice from array: %s", remove)
 		}
 	}
 
@@ -240,7 +358,7 @@ func SystemdStart(systemdName string) error {
 	startCmd := fmt.Sprintf("systemctl restart %s", systemdName)
 	enableCmd := fmt.Sprintf("systemctl enable %s", systemdName)
 
-	wwlog.Printf(wwlog.DEBUG, "Setting up Systemd service: %s\n", systemdName)
+	wwlog.Debug("Setting up Systemd service: %s", systemdName)
 	err := ExecInteractive("/bin/sh", "-c", startCmd)
 	if err != nil {
 		return errors.Wrap(err, "failed to run start cmd")
@@ -266,7 +384,7 @@ func CopyUIDGID(source string, dest string) error {
 		UID = int(stat.Uid)
 		GID = int(stat.Gid)
 	}
-	wwlog.Printf(wwlog.DEBUG, "Chown %d:%d '%s'\n", UID, GID, dest)
+	wwlog.Debug("Chown %d:%d '%s'", UID, GID, dest)
 	err = os.Chown(dest, UID, GID)
 	return err
 }
@@ -330,18 +448,161 @@ func IncrementIPv4(start string, inc uint) string {
 Appending the lines to the given file
 */
 func AppendLines(fileName string, lines []string) error {
-	wwlog.Printf(wwlog.VERBOSE, "appending %v lines to %s\n", len(lines), fileName)
+	wwlog.Verbose("appending %v lines to %s", len(lines), fileName)
 	file, err := os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		return errors.Errorf("Can't open file %s: %s", fileName, err)
+		return errors.Wrapf(err, "Can't open file: %s", fileName)
 	}
 	defer file.Close()
 	for _, line := range lines {
-		wwlog.Printf(wwlog.DEBUG, "Appending '%s' to %s\n", line, fileName)
+		wwlog.Debug("Appending '%s' to %s", line, fileName)
 		if _, err := file.WriteString(fmt.Sprintf("%s\n", line)); err != nil {
-			return errors.Errorf("Can't write to file %s: %s", fileName, err)
+			return errors.Wrapf(err, "Can't write to file: %s", fileName)
 		}
 
 	}
+	return nil
+}
+
+/*******************************************************************************
+	Create an archive using cpio
+*/
+func CpioCreate(
+	ifiles []string,
+	ofile string,
+	format string,
+	cpio_args ...string ) error {
+
+	args := []string{
+		"--quiet",
+		"--create",
+		"-H", format,
+		"--file=" + ofile }
+
+	args = append(args, cpio_args...)
+
+	proc := exec.Command("cpio", args...)
+
+	stdin, err := proc.StdinPipe()
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		defer stdin.Close()
+		io.WriteString(stdin, strings.Join(ifiles, "\n"))
+	}()
+
+	out, err := proc.CombinedOutput()
+	if len(out) > 0 {
+		wwlog.Debug(string(out))
+	}
+
+	return err
+}
+
+/*******************************************************************************
+	Compress a file using gzip or pigz
+*/
+func FileGz(
+	file string ) error {
+
+	file_gz := file + ".gz"
+
+	if IsFile(file_gz) {
+		err := os.Remove(file_gz)
+
+		if err != nil {
+			return errors.Wrapf(err, "Could not remove existing file: ", file_gz)
+		}
+	}
+
+	compressor, err := exec.LookPath("pigz")
+	if err != nil {
+		wwlog.Verbose("Could not locate PIGZ")
+		compressor = "gzip"
+	}
+
+	wwlog.Verbose("Using gz compressor: %s", compressor)
+
+	proc := exec.Command(
+		compressor,
+		"--keep",
+	 	file )
+
+	out, err := proc.CombinedOutput()
+	if len(out) > 0 {
+		wwlog.Debug(string(out))
+	}
+
+	return err
+}
+
+/*******************************************************************************
+	Create an archive using cpio
+*/
+func BuildFsImage(
+	name string,
+	rootfsPath string,
+	imagePath string,
+	include []string,
+	ignore []string,
+	ignore_xdev bool,
+	format string,
+	cpio_args ...string ) error {
+
+	err := os.MkdirAll(path.Dir(imagePath), 0755)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to create image directory for %s: %s", name, imagePath)
+	}
+
+	wwlog.Debug("Created image directory for %s: %s", name, imagePath)
+
+	// TODO: why is this done if the container must already exist?
+	err = os.MkdirAll(path.Dir(rootfsPath), 0755)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to create fs directory for %s: %s", name, rootfsPath)
+	}
+
+	wwlog.Debug("Created fs directory for %s: %s", name, rootfsPath)
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	defer os.Chdir(cwd)
+
+	err = os.Chdir(rootfsPath)
+	if err != nil {
+		return errors.Wrapf(err, "Failed chdir to fs directory for %s: %s", name, rootfsPath)
+	}
+
+	files, err := FindFilterFiles(
+		".",
+		include,
+		ignore,
+		ignore_xdev )
+	if err != nil {
+		return errors.Wrapf(err, "Failed discovering files for %s: %s", name, rootfsPath)
+	}
+
+	err = CpioCreate(
+		files,
+	 	imagePath,
+		format,
+ 		cpio_args...)
+	if err != nil {
+		return errors.Wrapf(err, "Failed creating image for %s: %s", name, imagePath)
+	}
+
+	wwlog.Info("Created image for %s: %s", name, imagePath)
+
+	err = FileGz(imagePath)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to compress image for %s: %s", name, imagePath + ".gz")
+	}
+
+	wwlog.Info("Compressed image for %s: %s", name, imagePath + ".gz")
+
 	return nil
 }

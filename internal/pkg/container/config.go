@@ -23,5 +23,5 @@ func ImageParentDir() string {
 }
 
 func ImageFile(name string) string {
-	return path.Join(ImageParentDir(), name+".img.gz")
+	return path.Join(ImageParentDir(), name+".img")
 }

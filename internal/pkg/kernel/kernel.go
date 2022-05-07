@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -35,12 +34,12 @@ func KernelImageTopDir() string {
 
 func KernelImage(kernelName string) string {
 	if kernelName == "" {
-		wwlog.Printf(wwlog.ERROR, "Kernel Name is not defined\n")
+		wwlog.Error("Kernel Name is not defined")
 		return ""
 	}
 
 	if !util.ValidString(kernelName, "^[a-zA-Z0-9-._]+$") {
-		wwlog.Printf(wwlog.ERROR, "Runtime overlay name contains illegal characters: %s\n", kernelName)
+		wwlog.Error("Runtime overlay name contains illegal characters: %s", kernelName)
 		return ""
 	}
 
@@ -49,7 +48,7 @@ func KernelImage(kernelName string) string {
 
 func GetKernelVersion(kernelName string) string {
 	if kernelName == "" {
-		wwlog.Printf(wwlog.ERROR, "Kernel Name is not defined\n")
+		wwlog.Error("Kernel Name is not defined")
 		return ""
 	}
 	kernelVersion, err := ioutil.ReadFile(KernelVersionFile(kernelName))
@@ -61,12 +60,12 @@ func GetKernelVersion(kernelName string) string {
 
 func KmodsImage(kernelName string) string {
 	if kernelName == "" {
-		wwlog.Printf(wwlog.ERROR, "Kernel Name is not defined\n")
+		wwlog.Error("Kernel Name is not defined")
 		return ""
 	}
 
 	if !util.ValidString(kernelName, "^[a-zA-Z0-9-._]+$") {
-		wwlog.Printf(wwlog.ERROR, "Runtime overlay name contains illegal characters: %s\n", kernelName)
+		wwlog.Error("Runtime overlay name contains illegal characters: %s", kernelName)
 		return ""
 	}
 
@@ -75,12 +74,12 @@ func KmodsImage(kernelName string) string {
 
 func KernelVersionFile(kernelName string) string {
 	if kernelName == "" {
-		wwlog.Printf(wwlog.ERROR, "Kernel Name is not defined\n")
+		wwlog.Error("Kernel Name is not defined")
 		return ""
 	}
 
 	if !util.ValidString(kernelName, "^[a-zA-Z0-9-._]+$") {
-		wwlog.Printf(wwlog.ERROR, "Runtime overlay name contains illegal characters: %s\n", kernelName)
+		wwlog.Error("Runtime overlay name contains illegal characters: %s", kernelName)
 		return ""
 	}
 
@@ -95,7 +94,7 @@ func ListKernels() ([]string, error) {
 		return ret, errors.New("Could not create Kernel parent directory: " + KernelImageTopDir())
 	}
 
-	wwlog.Printf(wwlog.DEBUG, "Searching for Kernel image directories: %s\n", KernelImageTopDir())
+	wwlog.Debug("Searching for Kernel image directories: %s", KernelImageTopDir())
 
 	kernels, err := ioutil.ReadDir(KernelImageTopDir())
 	if err != nil {
@@ -103,7 +102,7 @@ func ListKernels() ([]string, error) {
 	}
 
 	for _, kernel := range kernels {
-		wwlog.Printf(wwlog.VERBOSE, "Found Kernel: %s\n", kernel.Name())
+		wwlog.Verbose("Found Kernel: %s", kernel.Name())
 
 		ret = append(ret, kernel.Name())
 
@@ -113,8 +112,8 @@ func ListKernels() ([]string, error) {
 }
 
 func Build(kernelVersion, kernelName, root string) (string, error) {
-	kernelDrivers := path.Join(root, "/lib/modules/", kernelVersion)
 	kernelDriversRelative := path.Join("/lib/modules/", kernelVersion)
+	kernelDrivers := path.Join(root, kernelDriversRelative)
 	kernelDestination := KernelImage(kernelName)
 	driversDestination := KmodsImage(kernelName)
 	versionDestination := KernelVersionFile(kernelName)
@@ -138,7 +137,7 @@ func Build(kernelVersion, kernelName, root string) (string, error) {
 
 	for _, searchPath := range kernelSearchPaths {
 		testPath := fmt.Sprintf(path.Join(root, searchPath), kernelVersion)
-		wwlog.Printf(wwlog.VERBOSE, "Looking for kernel at: %s\n", testPath)
+		wwlog.Verbose("Looking for kernel at: %s", testPath)
 		if util.IsFile(testPath) {
 			kernelSource = testPath
 			break
@@ -146,17 +145,17 @@ func Build(kernelVersion, kernelName, root string) (string, error) {
 	}
 
 	if kernelSource == "" {
-		wwlog.Printf(wwlog.ERROR, "Could not locate kernel image\n")
+		wwlog.Error("Could not locate kernel image")
 		return "", errors.New("could not locate kernel image")
 	} else {
-		wwlog.Printf(wwlog.INFO, "Found kernel at: %s\n", kernelSource)
+		wwlog.Info("Found kernel at: %s", kernelSource)
 	}
 
 	if !util.IsDir(kernelDrivers) {
 		return "", errors.New("Could not locate kernel drivers")
 	}
 
-	wwlog.Printf(wwlog.VERBOSE, "Setting up Kernel\n")
+	wwlog.Verbose("Setting up Kernel")
 	if _, err := os.Stat(kernelSource); err == nil {
 		kernel, err := os.Open(kernelSource)
 		if err != nil {
@@ -189,26 +188,30 @@ func Build(kernelVersion, kernelName, root string) (string, error) {
 
 	}
 
-	wwlog.Printf(wwlog.VERBOSE, "Building Kernel driver image\n")
 	if _, err := os.Stat(kernelDrivers); err == nil {
-		compressor, err := exec.LookPath("pigz")
-		if err != nil {
-			wwlog.Printf(wwlog.VERBOSE, "Could not locate PIGZ, using GZIP\n")
-			compressor = "gzip"
-		} else {
-			wwlog.Printf(wwlog.VERBOSE, "Using PIGZ to compress the container: %s\n", compressor)
-		}
+		name := kernelName + " drivers"
+		wwlog.Verbose("Creating image for %s: %s", name, root)
 
-		cmd := fmt.Sprintf("cd %s; find .%s ./lib/firmware | cpio --quiet -o -L -H newc | %s -c > \"%s\"", root, kernelDriversRelative, compressor, driversDestination)
+		err = util.BuildFsImage(
+			name,
+			root,
+			driversDestination,
+			[]string{
+				"." + kernelDriversRelative,
+				"./lib/firmware" },
+			[]string{},
+			// ignore cross-device files
+			true,
+			"newc",
+			// dereference symbolic links
+			"-L")
 
-		wwlog.Printf(wwlog.DEBUG, "RUNNING: %s\n", cmd)
-		err = exec.Command("/bin/sh", "-c", cmd).Run()
 		if err != nil {
 			return "", err
 		}
 	}
 
-	wwlog.Printf(wwlog.VERBOSE, "Creating version file\n")
+	wwlog.Verbose("Creating version file")
 	file, err := os.Create(versionDestination)
 	if err != nil {
 		return "", errors.Wrap(err, "Failed to create version file")
@@ -228,26 +231,26 @@ func Build(kernelVersion, kernelName, root string) (string, error) {
 func DeleteKernel(name string) error {
 	fullPath := path.Join(KernelImageTopDir(), name)
 
-	wwlog.Printf(wwlog.VERBOSE, "Removing path: %s\n", fullPath)
+	wwlog.Verbose("Removing path: %s", fullPath)
 	return os.RemoveAll(fullPath)
 }
 
 func FindKernelVersion(root string) (string, error) {
 	for _, searchPath := range kernelSearchPaths {
 		testPattern := fmt.Sprintf(path.Join(root, searchPath), `*`)
-		wwlog.Printf(wwlog.VERBOSE, "Looking for kernel version with pattern at: %s\n", testPattern)
+		wwlog.Verbose("Looking for kernel version with pattern at: %s", testPattern)
 		potentialKernel, _ := filepath.Glob(testPattern)
 		if len(potentialKernel) == 0 {
 			continue
 		}
 		for _, foundKernel := range potentialKernel {
-			wwlog.Printf(wwlog.VERBOSE, "Parsing out kernel version for %s\n", foundKernel)
+			wwlog.Verbose("Parsing out kernel version for %s", foundKernel)
 			re := regexp.MustCompile(fmt.Sprintf(path.Join(root, searchPath), `([\w\d-\.]*)`))
 			version := re.FindAllStringSubmatch(foundKernel, -1)
 			if version == nil {
 				return "", fmt.Errorf("could not parse kernel version")
 			}
-			wwlog.Printf(wwlog.VERBOSE, "found kernel version %s\n", version)
+			wwlog.Verbose("found kernel version %s", version)
 			return version[0][1], nil
 
 		}

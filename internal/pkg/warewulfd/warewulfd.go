@@ -1,7 +1,6 @@
 package warewulfd
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,41 +16,43 @@ import (
 // TODO: https://github.com/pin/tftp
 
 func RunServer() error {
+	DaemonInitLogging()
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGHUP)
 
 	go func() {
 		for range c {
-			daemonLogf("Recieved SIGHUP, reloading...\n")
+			wwlog.Warn("Recieved SIGHUP, reloading...")
 			err := LoadNodeDB()
 			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "Could not load node DB: %s\n", err)
+				wwlog.Error("Could not load node DB: %s", err)
 			}
 
 			err = LoadNodeStatus()
 			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "Could not prepopulate node status DB: %s\n", err)
+				wwlog.Error("Could not prepopulate node status DB: %s", err)
 			}
 		}
 	}()
 
 	err := LoadNodeDB()
 	if err != nil {
-		fmt.Printf("ERROR: Could not load database: %s\n", err)
+		wwlog.Error("Could not load database: %s", err)
 	}
 
 	err = LoadNodeStatus()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not prepopulate node status DB: %s\n", err)
+		wwlog.Error("Could not prepopulate node status DB: %s", err)
 	}
 
-	http.HandleFunc("/ipxe/", IpxeSend)
-	http.HandleFunc("/kernel/", KernelSend)
-	http.HandleFunc("/kmods/", KmodsSend)
-	http.HandleFunc("/container/", ContainerSend)
-	http.HandleFunc("/overlay-system/", SystemOverlaySend)
-	http.HandleFunc("/overlay-runtime/", RuntimeOverlaySend)
+	http.HandleFunc("/provision/", ProvisionSend)
+	http.HandleFunc("/ipxe/", ProvisionSend)
+	http.HandleFunc("/kernel/", ProvisionSend)
+	http.HandleFunc("/kmods/", ProvisionSend)
+	http.HandleFunc("/container/", ProvisionSend)
+	http.HandleFunc("/overlay-system/", ProvisionSend)
+	http.HandleFunc("/overlay-runtime/", ProvisionSend)
 	http.HandleFunc("/status", StatusSend)
 
 	conf, err := warewulfconf.New()
@@ -60,7 +61,7 @@ func RunServer() error {
 	}
 
 	daemonPort := conf.Warewulf.Port
-	daemonLogf("Starting HTTPD REST service on port %d\n", daemonPort)
+	wwlog.Info("Starting HTTPD REST service on port %d", daemonPort)
 
 	err = http.ListenAndServe(":"+strconv.Itoa(daemonPort), nil)
 	if err != nil {

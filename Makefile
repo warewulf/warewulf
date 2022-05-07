@@ -154,7 +154,7 @@ test-cover:     ## Run test coverage and generate html report
 	rm *.coverprofile
 	go tool cover -html=coverage/cover.out -o=coverage/cover.html
 
-debian: all 
+debian: all
 
 files: all
 	install -d -m 0755 $(DESTDIR)$(BINDIR)
@@ -265,4 +265,3 @@ clean:
 install: files install_wwclient
 
 debinstall: files debfiles
-

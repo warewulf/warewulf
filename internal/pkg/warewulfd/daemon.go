@@ -3,7 +3,6 @@ package warewulfd
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"log/syslog"
 	"os"
 	"os/exec"
@@ -14,6 +13,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/version"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 )
 
@@ -22,37 +22,50 @@ const (
 	WAREWULFD_LOGFILE = "/var/log/warewulfd.log"
 )
 
-var logwriter *syslog.Writer
 var loginit bool
 
-func daemonLogf(message string, a ...interface{}) {
+func DaemonFormatter(logLevel int, rec *wwlog.LogRecord) string {
+	return "[" + rec.Time.Format(time.UnixDate) + "] " + wwlog.DefaultFormatter(logLevel, rec)
+}
+
+func DaemonInitLogging() error {
+	if loginit {
+		return nil
+	}
+
+	wwlog.SetLogFormatter(DaemonFormatter)
+
+	level_str, ok := os.LookupEnv("WAREWULFD_LOGLEVEL")
+	if ok {
+		level, err := strconv.Atoi(level_str)
+		if err == nil {
+			wwlog.SetLogLevel(level)
+		}
+	}
+
 	conf, err := warewulfconf.New()
 	if err != nil {
-		fmt.Printf("ERROR: Could not read Warewulf configuration file: %s\n", err)
-		return
+		return errors.Wrap(err, "Could not read Warewulf configuration file")
 	}
 
 	if conf.Warewulf.Syslog {
-		if !loginit {
-			var err error
 
-			logwriter, err = syslog.New(syslog.LOG_NOTICE, "warewulfd")
-			if err != nil {
-				return
-			}
-			log.SetOutput(logwriter)
-			loginit = true
+		wwlog.Debug("Changingq log output to syslog")
 
-			log.SetFlags(0)
-			log.SetPrefix("")
+		logwriter, err := syslog.New(syslog.LOG_NOTICE, "warewulfd")
+		if err != nil {
+			return errors.Wrap(err, "Could not create syslog writer")
 		}
 
-		log.Printf(message, a...)
+		wwlog.SetLogWriters(logwriter, logwriter)
 
-	} else {
-		prefix := fmt.Sprintf("[%s] ", time.Now().Format(time.UnixDate))
-		fmt.Printf(prefix+message, a...)
+		wwlog.SetLogFormatter(wwlog.DefaultFormatter)
+
 	}
+
+	loginit = true
+
+	return nil
 }
 
 func DaemonStart() error {
@@ -68,6 +81,7 @@ func DaemonStart() error {
 		}
 
 		os.Setenv("WAREWULFD_BACKGROUND", "1")
+		os.Setenv("WAREWULFD_LOGLEVEL", strconv.Itoa(wwlog.GetLogLevel()))
 
 		f, err := os.OpenFile(WAREWULFD_LOGFILE, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 		if err != nil {
@@ -91,7 +105,7 @@ func DaemonStart() error {
 
 		fmt.Fprintf(p, "%d", pid)
 
-		fmt.Printf("Started Warewulf (%s) server at PID: %d\n", version.GetVersion(), pid)
+		wwlog.Info("Started Warewulf (%s) server at PID: %d", version.GetVersion(), pid)
 
 	}
 
@@ -117,7 +131,7 @@ func DaemonStatus() error {
 		if err != nil {
 			return errors.Wrap(err, "failed to send process SIGCONT")
 		} else {
-			fmt.Printf("Warewulf server is running at PID: %d\n", pid)
+			wwlog.Info("Warewulf server is running at PID: %d", pid)
 		}
 	}
 
@@ -145,12 +159,14 @@ func DaemonReload() error {
 		}
 	}
 
+	os.Setenv("WAREWULFD_LOGLEVEL", strconv.Itoa(wwlog.GetLogLevel()))
+
 	return nil
 }
 
 func DaemonStop() error {
 	if !util.IsFile(WAREWULFD_PIDFILE) {
-		fmt.Printf("Warewulf daemon process not running\n")
+		wwlog.Warn("Warewulf daemon process not running")
 		return nil
 	}
 
@@ -171,7 +187,7 @@ func DaemonStop() error {
 		if err != nil {
 			return errors.Wrap(err, "failed to send process SIGTERM")
 		} else {
-			fmt.Printf("Terminated Warewulf server at PID: %d\n", pid)
+			wwlog.Info("Terminated Warewulf server at PID: %d", pid)
 		}
 	}
 

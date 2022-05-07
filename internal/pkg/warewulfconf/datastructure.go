@@ -38,6 +38,10 @@ type DhcpConf struct {
 	RangeStart  string `yaml:"range start" default:"192.168.200.50"`
 	RangeEnd    string `yaml:"range end" default:"192.168.200.99"`
 	SystemdName string `yaml:"systemd name" default:"dhcpd"`
+	Syslog      string `yaml:"syslog" default:""`
+	Syslogs     string `yaml:"syslogs" default:""`
+	Interface   string `yaml:"interface" default:""`
+	Hwaddr      string `yaml:"hwaddr" default:""`
 }
 
 type TftpConf struct {
