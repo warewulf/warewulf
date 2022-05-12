@@ -104,7 +104,7 @@ func update42to43(conf42 vers42.NodeConf) vers43.NodeConf {
 		var device vers43.NetDevs = vers43.NetDevs{
 			Type:    netdev.Type,
 			Device:  devn,
-			Default: printB(netdev.Default),
+			Primary: printB(netdev.Default),
 			Hwaddr:  netdev.Hwaddr,
 			Ipaddr:  netdev.Ipaddr,
 			IpCIDR:  netdev.IpCIDR,

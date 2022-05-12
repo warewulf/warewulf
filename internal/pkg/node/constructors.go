@@ -166,10 +166,11 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.NetDevs[devname].Gateway.Set(netdev.Gateway)
 			n.NetDevs[devname].Type.Set(netdev.Type)
 			n.NetDevs[devname].OnBoot.Set(netdev.OnBoot)
-			n.NetDevs[devname].Default.Set(netdev.Default)
-			// for just one netdev, it is always the default
+			n.NetDevs[devname].Primary.Set(netdev.Primary)
+			n.NetDevs[devname].Primary.Set(netdev.Default) // backwards compatibility
+			// for just one netdev, it is always the primary
 			if len(node.NetDevs) == 1 {
-				n.NetDevs[devname].Default.Set("true")
+				n.NetDevs[devname].Primary.Set("true")
 			}
 			n.NetDevs[devname].Tags = make(map[string]*Entry)
 			for keyname, key := range netdev.Tags {
@@ -253,7 +254,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.NetDevs[devname].Gateway.SetAlt(netdev.Gateway, p)
 				n.NetDevs[devname].Type.SetAlt(netdev.Type, p)
 				n.NetDevs[devname].OnBoot.SetAlt(netdev.OnBoot, p)
-				n.NetDevs[devname].Default.SetAlt(netdev.Default, p)
+				n.NetDevs[devname].Primary.SetAlt(netdev.Primary, p)
 				if len(netdev.Tags) != 0 {
 					for keyname, key := range netdev.Tags {
 						if _, ok := n.NetDevs[devname].Tags[keyname]; !ok {
@@ -376,7 +377,8 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 			p.NetDevs[devname].Gateway.Set(netdev.Gateway)
 			p.NetDevs[devname].Type.Set(netdev.Type)
 			p.NetDevs[devname].OnBoot.Set(netdev.OnBoot)
-			p.NetDevs[devname].Default.Set(netdev.Default)
+			p.NetDevs[devname].Primary.Set(netdev.Primary)
+			p.NetDevs[devname].Primary.Set(netdev.Default) // backwards compatibility
 
 			// The following should not be set in a profile.
 			if netdev.Ipaddr != "" {

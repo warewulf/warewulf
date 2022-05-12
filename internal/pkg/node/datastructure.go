@@ -75,7 +75,8 @@ type NetDevs struct {
 	Prefix  string            `yaml:"prefix,omitempty"`
 	Netmask string            `yaml:"netmask,omitempty"`
 	Gateway string            `yaml:"gateway,omitempty"`
-	Default string            `yaml:"primary,omitempty"`
+	Primary string            `yaml:"primary,omitempty"`
+	Default string            `yaml:"default,omitempty"` /* backward compatibility */
 	Tags    map[string]string `yaml:"tags,omitempty"`
 }
 
@@ -149,7 +150,7 @@ type NetDevEntry struct {
 	Prefix  Entry
 	Netmask Entry
 	Gateway Entry
-	Default Entry
+	Primary Entry
 	Tags    map[string]*Entry
 }
 
