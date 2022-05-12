@@ -74,7 +74,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 		} else {
 			if OverlayName != "" {
-				err = overlay.BuildSpecificOverlays(nodes, OverlayName)
+				for _, n := range nodes {
+					if util.InSlice(n.RuntimeOverlay.GetSlice(), OverlayName) ||
+						util.InSlice(n.SystemOverlay.GetSlice(), OverlayName) {
+						err = overlay.BuildSpecificOverlays([]node.NodeInfo{n}, OverlayName)
+					}
+				}
 			} else {
 				err = overlay.BuildAllOverlays(nodes)
 			}
