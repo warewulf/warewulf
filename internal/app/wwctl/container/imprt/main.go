@@ -130,8 +130,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.WARN, "Could not copy /etc/resolv.conf into container: %s\n", err)
 	}
 
-	err = container.SyncUids(name, !NoSyncUser)
-	if err != nil && !NoSyncUser {
+	err = container.SyncUids(name, !SyncUser)
+	if err != nil && !SyncUser {
 		wwlog.Printf(wwlog.ERROR, "Error in user sync, fix error and run 'syncuser' manually: %s\n", err)
 		os.Exit(1)
 	}
