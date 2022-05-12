@@ -76,6 +76,7 @@ type NetDevs struct {
 	Netmask string            `yaml:"netmask,omitempty"`
 	Gateway string            `yaml:"gateway,omitempty"`
 	Primary string            `yaml:"primary,omitempty"`
+	Default string            `yaml:"default,omitempty"` /* backward compatibility */
 	Tags    map[string]string `yaml:"tags,omitempty"`
 }
 

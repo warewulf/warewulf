@@ -167,7 +167,8 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.NetDevs[devname].Type.Set(netdev.Type)
 			n.NetDevs[devname].OnBoot.Set(netdev.OnBoot)
 			n.NetDevs[devname].Primary.Set(netdev.Primary)
-			// for just one netdev, it is always the default
+			n.NetDevs[devname].Primary.Set(netdev.Default) // backwards compatibility
+			// for just one netdev, it is always the primary
 			if len(node.NetDevs) == 1 {
 				n.NetDevs[devname].Primary.Set("true")
 			}
@@ -377,6 +378,7 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 			p.NetDevs[devname].Type.Set(netdev.Type)
 			p.NetDevs[devname].OnBoot.Set(netdev.OnBoot)
 			p.NetDevs[devname].Primary.Set(netdev.Primary)
+			p.NetDevs[devname].Primary.Set(netdev.Default) // backwards compatibility
 
 			// The following should not be set in a profile.
 			if netdev.Ipaddr != "" {
