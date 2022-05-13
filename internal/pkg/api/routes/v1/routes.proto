@@ -1,0 +1,317 @@
+// Routes for the wwapi (WareWulf API).
+// TODO: Try protoc-gen-doc for generating documentation.
+
+syntax = "proto3";
+
+option go_package = "internal/pkg/api/routes/wwapiv1;wwapiv1";
+
+package wwapi.v1;
+
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+
+// Container
+
+// ContainerBuildParameter contains input for building zero or more containers.
+message ContainerBuildParameter {
+	repeated string containerNames = 1;
+	bool force = 2;
+	bool all = 3;
+	bool default = 4;
+}
+
+// ContainerDeleteParameter contains input for removing containers from Warewulf
+// management.
+message ContainerDeleteParameter {
+	repeated string containerNames = 1;
+}
+
+// ContainerImportParameter has all input for importing a container.
+message ContainerImportParameter{
+	string source = 1; // container source uri
+	string name = 2; // container name
+	bool force = 3;
+	bool update = 4;
+	bool build = 5;
+	bool default = 6;
+	bool syncUser = 7;
+}
+
+// ContainerInfo has data on each container. This is emitted in the
+// ContainerListResponse.
+message ContainerInfo {
+	string name = 1;
+	uint32 nodeCount = 2;
+	string kernelVersion = 3;
+}
+
+// ContainerListResponse has all information that ContainerList provides.
+message ContainerListResponse {
+	repeated ContainerInfo containers = 1;
+}
+
+// ContainerShowParameter is the input for ContainerShow.
+message ContainerShowParameter {
+	string containerName = 1;
+}
+
+// ContainerShowResponse has all information emitted on ContainerShow.
+message ContainerShowResponse {
+	string Name = 1;
+	string Rootfs = 2;
+	repeated string Nodes = 3;
+	string KernelVersion = 4;
+}
+
+// ContainerSyncUserParameter is the input for ContainerSyncUser.
+message ContainerSyncUserParameter {
+	string containerName = 1;
+}
+
+// Nodes
+
+// NodeNames is an array of node ids.
+message NodeNames {
+	repeated string nodeNames = 1;
+}
+
+// NodeField contains data output on NodeList.
+message NodeField {
+	string source = 1;
+	string value = 2; // TODO: Variable name okay?
+	string print = 3; // Empty values printed as -- in wwctl.
+}
+
+// NetDev is network devices (NICs) on a node.
+message NetDev {
+	NodeField type = 1;
+	NodeField onboot = 2;
+	NodeField device = 3;
+	NodeField hwaddr = 4;
+	NodeField ipaddr = 5;
+	NodeField netmask = 6;
+	NodeField gateway = 7;
+	NodeField primary = 8;
+	map<string, NodeField> Tags = 9;
+}
+
+// NodeInfo contains details about a node managed by Warewulf/
+message NodeInfo {
+	NodeField id = 1;
+	NodeField comment = 2;
+	NodeField cluster = 3;
+	NodeField discoverable = 4;
+	NodeField container = 5;
+	NodeField kernelOverride =  6;
+	NodeField kernelArgs = 7;
+	NodeField systemOverlay = 8;
+	NodeField runtimeOverlay = 9;
+	NodeField ipxe = 10;
+	NodeField init = 11;
+	NodeField root = 12;
+	NodeField assetKey = 13;
+	NodeField ipmiIpaddr = 14;
+	NodeField ipmiNetmask = 15;
+	NodeField ipmiPort = 16;
+	NodeField ipmiGateway = 17;
+	NodeField ipmiUserName = 18;
+	NodeField ipmiInterface = 19;
+	NodeField ipmiPassword = 20;
+
+	repeated string profiles = 21;
+	repeated string groupProfiles = 22;
+
+	map<string, NetDev> NetDevs = 23;
+	map<string, NodeField> Tags = 24;
+	map<string, NodeField> Keys = 25; // TODO: We may not need this. Tags may be it. Ask Greg.
+}
+
+// NodeListResponse is the output of NodeList.
+message NodeListResponse {
+	repeated NodeInfo nodes = 1;
+}
+
+// NodeAddParameter contains all input for adding a node to be managed by
+// Warewulf.
+message NodeAddParameter {
+	string cluster = 1;
+	bool discoverable = 2;
+	string gateway = 3;
+	string hwaddr = 4;
+	string ipaddr = 5;
+	string netdev = 6;
+	string netmask = 7;
+	string netname = 8;
+	string type = 9;
+	repeated string nodeNames = 10;
+	string ipaddr6 = 11;
+}
+
+// NodeDeleteParameter contains input for removing nodes from Warewulf
+// management.
+message NodeDeleteParameter {
+	bool force = 1;
+	repeated string nodeNames = 2;
+}
+
+// NodeSetParameter contains all fields for updating aspects of nodes managed
+// by Warewulf.
+message NodeSetParameter {
+	string comment = 1;
+	string container = 2;
+	string kernelOverride = 3;
+	string kernelArgs = 4;
+	string netname = 5;
+	string netdev = 6;
+	string ipaddr = 7;
+	string netmask = 8;
+	string gateway = 9;
+	string hwaddr = 10;
+	string type = 11;
+	string onboot = 12;
+	string netDefault = 13;
+	bool netdevDelete = 14;
+	string cluster = 15;
+	string ipxe = 16;
+	string initOverlay = 17;
+	repeated string runtimeOverlay = 18;
+	repeated string systemOverlay = 19;
+	string ipmiIpaddr = 20;
+	string ipmiNetmask = 21;
+	string ipmiPort = 22;
+	string ipmiGateway = 23;
+	string ipmiUsername = 24;
+	string ipmiPassword = 25;
+	string ipmiInterface = 26;
+	bool allNodes = 27;
+	string profile = 28;
+	repeated string profileAdd = 29;
+	repeated string profileDelete = 30;
+	bool force = 31;
+	string init = 32;
+	bool discoverable = 33;
+	bool undiscoverable = 34;
+	string root = 35;
+	repeated string tags = 36;
+	repeated string tagsDelete = 37;
+	string assetKey = 38;
+	repeated string nodeNames = 39;
+	string ipmiWrite = 40;
+	repeated string NetTags = 41;
+	repeated string NetDeleteTags = 42;
+}
+
+// NodeStatus contains information about the imaging status per node.
+message NodeStatus {
+	string nodeName = 1;	// Name (Id) of the node.
+	string stage = 2;		// Stage of imaging.
+	string sent = 3;		// Last overlay sent.
+	string ipaddr = 4;		// Node IP address.
+	int64 lastseen = 5;		// Time in seconds since the node was last seen.
+}
+
+// NodeStatusResponse contains NodeStatus for zero or more nodes.
+message NodeStatusResponse {
+	repeated NodeStatus nodeStatus = 1;
+}
+
+// Version
+
+// VersionReponse contains versions of the software.
+message VersionResponse {
+	string apiPrefix = 1;
+	string apiVersion = 2;
+	string warewulfVersion = 3;
+}
+
+// WWApi defines the wwapid service web interface.
+service WWApi {
+
+	// Containers
+
+	// ContainerBuild builds zero or more containers.
+	rpc ContainerBuild(ContainerBuildParameter) returns (ContainerListResponse) {
+		option (google.api.http) = {
+			post: "/v1/containerbuild"
+			body: "*"
+		};
+	}
+
+	// ContainerDelete removes one or more container from Warewulf management.
+	rpc ContainerDelete(ContainerDeleteParameter) returns (google.protobuf.Empty) {
+		option (google.api.http) = {
+			delete: "/v1/container"
+		};
+	}
+
+	// ContainerImport imports a container to Warewulf.
+	rpc ContainerImport(ContainerImportParameter) returns (ContainerListResponse) {
+		option(google.api.http) = {
+			post: "/v1/container"
+			body: "*"
+		};
+	}
+
+	// ContainerList lists ContainerInfo for each container.
+	rpc ContainerList(google.protobuf.Empty) returns (ContainerListResponse) {
+		option (google.api.http) = {
+			get: "/v1/container"
+		};
+	}
+
+	// ContainerShow lists ContainerShow for each container.
+	rpc ContainerShow(ContainerShowParameter) returns (ContainerShowResponse) {
+		option (google.api.http) = {
+			get: "/v1/containershow"
+		};
+	}
+
+	// Nodes
+
+	// NodeAdd adds one or more nodes for management by Warewulf and returns
+	// the added nodes. Node fields may be shimmed in per profiles.
+	rpc NodeAdd(NodeAddParameter) returns (NodeListResponse) {
+		option (google.api.http) = {
+			post: "/v1/node"
+			body: "*"
+		};
+	}
+
+	// NodeDelete removes one or more nodes from Warewulf management.
+	rpc NodeDelete(NodeDeleteParameter) returns (google.protobuf.Empty) {
+		option (google.api.http) = {
+			delete: "/v1/node"
+		};
+	}
+
+	// NodeList lists some or all nodes managed by Warewulf.
+	rpc NodeList(NodeNames) returns (NodeListResponse) {
+		option (google.api.http) = {
+			get: "/v1/node"
+		};
+	}
+
+	// NodeSet updates node fields for one or more nodes.
+	rpc NodeSet(NodeSetParameter) returns (NodeListResponse) {
+		option (google.api.http) = {
+			post: "/v1/nodeset" // TODO: This should be a patch. Had trouble getting patch to work at all.
+			body: "*"
+		};
+	}
+
+	// NodeStatus returns the imaging state for nodes.
+	// This requires warewulfd.
+	rpc NodeStatus(NodeNames) returns (NodeStatusResponse) {
+		option (google.api.http) = {
+			get: "/v1/nodestatus"
+		};
+	}
+
+	// Version returns the wwapi version, the api prefix, and the Warewulf
+	// version. This is also useful for testing if the service is up.
+	rpc Version(google.protobuf.Empty) returns (VersionResponse) {
+        option (google.api.http) = {
+            get: "/version"
+        };
+    }
+}

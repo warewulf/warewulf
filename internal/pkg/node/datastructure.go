@@ -9,7 +9,7 @@ import (
  * YAML data representations
  ******/
 
-type nodeYaml struct {
+type NodeYaml struct {
 	WWInternal   int `yaml:"WW_INTERNAL"`
 	NodeProfiles map[string]*NodeConf
 	Nodes        map[string]*NodeConf
