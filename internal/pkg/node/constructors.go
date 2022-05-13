@@ -24,8 +24,8 @@ func init() {
 	}
 }
 
-func New() (nodeYaml, error) {
-	var ret nodeYaml
+func New() (NodeYaml, error) {
+	var ret NodeYaml
 
 	wwlog.Printf(wwlog.VERBOSE, "Opening node configuration file: %s\n", ConfigFile)
 	data, err := ioutil.ReadFile(ConfigFile)
@@ -49,7 +49,7 @@ Get all the nodes of a configuration. This function also merges
 the nodes with the given profiles and set the default values
 for every node
 */
-func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
+func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 	var ret []NodeInfo
 	wwconfig, err := warewulfconf.New()
 	if err != nil {
@@ -302,7 +302,7 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 	return ret, nil
 }
 
-func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
+func (config *NodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 	var ret []NodeInfo
 
 	for name, profile := range config.NodeProfiles {
@@ -434,7 +434,7 @@ func (config *nodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 	return ret, nil
 }
 
-func (config *nodeYaml) FindDiscoverableNode() (NodeInfo, string, error) {
+func (config *NodeYaml) FindDiscoverableNode() (NodeInfo, string, error) {
 	var ret NodeInfo
 
 	nodes, _ := config.FindAllNodes()

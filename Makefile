@@ -245,6 +245,32 @@ dist: vendor config
 	cd .dist; tar -czf ../$(WAREWULF)-$(VERSION).tar.gz $(WAREWULF)-$(VERSION)
 	rm -rf .dist
 
+#TODO: Christian has a commit to fix up this part of the Makefile. We should take it.
+#TODO: proc install and protoc-gen-grpc-gateway need to be in the docs.
+proto: ## wwapi generate code from protobuf. Not under make all. Requires protoc to generate code.
+	protoc -I internal/pkg/api/routes/v1 -I=. \
+		--grpc-gateway_out=. \
+		--grpc-gateway_opt logtostderr=true \
+		--go_out=. \
+		--go-grpc_out=. \
+		routes.proto
+
+wwapid: ## Build the grpc api server. TODO: not under make all.
+	go build -race -ldflags "-s -w" -o ./wwapid internal/app/api/wwapid/wwapid.go
+
+wwapic: ## Build the sample wwapi client. TODO: not under make all.
+	go build -race -ldflags "-s -w" -o ./wwapic  internal/app/api/wwapic/wwapic.go
+
+wwapird: ## Build the rest api server (revese proxy to the grpc api server). TODO: Not under make all.
+	go build -race -ldflags "-s -w" -o ./wwapird internal/app/api/wwapird/wwapird.gowwapid: ## Build the grpc api server. TODO: not under make all.
+	go build -race -ldflags "-s -w" -o ./wwapid internal/app/api/wwapid/wwapid.go
+
+wwapic: ## Build the sample wwapi client. TODO: not under make all.
+	go build -race -ldflags "-s -w" -o ./wwapic  internal/app/api/wwapic/wwapic.go
+
+wwapird: ## Build the rest api server (revese proxy to the grpc api server). TODO: Not under make all.
+	go build -race -ldflags "-s -w" -o ./wwapird internal/app/api/wwapird/wwapird.go
+
 clean:
 	rm -f wwclient
 	rm -f wwctl
