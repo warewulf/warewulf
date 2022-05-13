@@ -1,0 +1,20 @@
+# Configuration for wwapird, the grpc / http reverse proxy REST server.
+# This server allows one to curl the wwapi.
+clientapi:
+  server: localhost
+  port: 9872
+serverapi:
+  version: ignored
+  prefix: ignored
+  port: 9871
+clienttls:
+  enabled: true
+  cert: @SYSCONFDIR@/warewulf/keys/wwapird/client.pem
+  key: @SYSCONFDIR@/warewulf/keys/wwapird/client.key
+  cacert: @SYSCONFDIR@/warewulf/keys/wwapird/cacert.pem
+servertls:
+  enabled: true
+  cert: ignored
+  key: @SYSCONFDIR@/warewulf/keys/server.key
+  cacert: ignored
+  concatcert: @SYSCONFDIR@/warewulf/keys/serverAndCacert.pem # This is a cat of server.pem and cacert.pem

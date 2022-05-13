@@ -95,7 +95,7 @@ export GOPROXY
 # built tags needed for wwbuild binary
 WW_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
-all: config vendor wwctl wwclient bash_completion.d man_pages config_defaults
+all: config vendor wwctl wwclient bash_completion.d man_pages config_defaults wwapid wwapic wwapird
 
 build: lint test-it vet all
 
@@ -170,6 +170,9 @@ files: all
 	install -d -m 0755 $(DESTDIR)$(WWDATADIR)/ipxe
 	test -f $(DESTDIR)$(WWCONFIGDIR)/warewulf.conf || install -m 644 etc/warewulf.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(WWCONFIGDIR)/nodes.conf || install -m 644 etc/nodes.conf $(DESTDIR)$(WWCONFIGDIR)
+	test -f $(DESTDIR)$(SYSCONFDIR)/warewulf/wwapic.conf || install -m 644 etc/wwapic.conf $(DESTDIR)$(SYSCONFDIR)/warewulf/
+	test -f $(DESTDIR)$(SYSCONFDIR)/warewulf/wwapid.conf || install -m 644 etc/wwapid.conf $(DESTDIR)$(SYSCONFDIR)/warewulf/
+	test -f $(DESTDIR)$(SYSCONFDIR)/warewulf/wwapird.conf || install -m 644 etc/wwapird.conf $(DESTDIR)$(SYSCONFDIR)/warewulf/
 	cp -r etc/examples $(DESTDIR)$(WWCONFIGDIR)/
 	cp -r etc/ipxe $(DESTDIR)$(WWCONFIGDIR)/
 	cp -r overlays/* $(DESTDIR)$(WWOVERLAYDIR)/
@@ -180,6 +183,9 @@ files: all
 	chmod 644 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/etc/ssh/ssh*.pub.ww
 	chmod 750 $(DESTDIR)$(WWOVERLAYDIR)/host
 	install -m 0755 wwctl $(DESTDIR)$(BINDIR)
+	install -m 0755 wwapic $(DESTDIR)$(BINDIR)
+	install -m 0755 wwapid $(DESTDIR)$(BINDIR)
+	install -m 0755 wwapird $(DESTDIR)$(BINDIR)
 	install -m 0644 include/firewalld/warewulf.xml $(DESTDIR)$(FIREWALLDDIR)
 	install -m 0644 include/systemd/warewulfd.service $(DESTDIR)$(SYSTEMDDIR)
 	install -m 0644 LICENSE.md $(DESTDIR)$(WWDOCDIR)
@@ -242,6 +248,25 @@ dist: vendor config
 	cp -rap * .dist/$(WAREWULF)-$(VERSION)/
 	cd .dist; tar -czf ../$(WAREWULF)-$(VERSION).tar.gz $(WAREWULF)-$(VERSION)
 	rm -rf .dist
+
+#TODO: Christian has a commit to fix up this part of the Makefile. We should take it.
+#TODO: proc install and protoc-gen-grpc-gateway need to be in the docs.
+proto: ## wwapi generate code from protobuf. Not under make all. Requires protoc to generate code.
+	protoc -I internal/pkg/api/routes/v1 -I=. \
+		--grpc-gateway_out=. \
+		--grpc-gateway_opt logtostderr=true \
+		--go_out=. \
+		--go-grpc_out=. \
+		routes.proto
+
+wwapid: ## Build the grpc api server. TODO: not under make all.
+	go build -o ./wwapid internal/app/api/wwapid/wwapid.go
+
+wwapic: ## Build the sample wwapi client. TODO: not under make all.
+	go build -o ./wwapic  internal/app/api/wwapic/wwapic.go
+
+wwapird: ## Build the rest api server (revese proxy to the grpc api server).
+	go build -o ./wwapird internal/app/api/wwapird/wwapird.go
 
 clean:
 	rm -f wwclient

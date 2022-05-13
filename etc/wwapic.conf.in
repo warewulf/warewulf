@@ -1,0 +1,9 @@
+# Configuration for wwapic, the grpc wwapi client.
+api:
+  server: localhost
+  port: 9872
+tls:
+  enabled: true
+  cert: @SYSCONFDIR@/warewulf/keys/wwapic/client.pem
+  key: @SYSCONFDIR@/warewulf/keys/wwapic/client.key
+  cacert: @SYSCONFDIR@/warewulf/keys/wwapic/cacert.pem

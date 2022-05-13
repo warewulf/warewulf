@@ -25,7 +25,7 @@ nodes:
         hwaddr: 08:00:27:39:46:70
         ipaddr: 10.0.8.150	
 `
-	var nodeYaml nodeYaml
+	var nodeYaml NodeYaml
 	err := yaml.Unmarshal([]byte(nodeConfig), &nodeYaml)
 	assert.NoError(t, err)
 

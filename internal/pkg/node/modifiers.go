@@ -15,7 +15,7 @@ import (
  *
 ****/
 
-func (config *nodeYaml) AddNode(nodeID string) (NodeInfo, error) {
+func (config *NodeYaml) AddNode(nodeID string) (NodeInfo, error) {
 	var node NodeConf
 	var n NodeInfo
 
@@ -37,7 +37,7 @@ func (config *nodeYaml) AddNode(nodeID string) (NodeInfo, error) {
 	return n, nil
 }
 
-func (config *nodeYaml) DelNode(nodeID string) error {
+func (config *NodeYaml) DelNode(nodeID string) error {
 
 	if _, ok := config.Nodes[nodeID]; !ok {
 		return errors.New("Nodename does not exist: " + nodeID)
@@ -49,7 +49,7 @@ func (config *nodeYaml) DelNode(nodeID string) error {
 	return nil
 }
 
-func (config *nodeYaml) NodeUpdate(node NodeInfo) error {
+func (config *NodeYaml) NodeUpdate(node NodeInfo) error {
 	nodeID := node.Id.Get()
 
 	if _, ok := config.Nodes[nodeID]; !ok {
@@ -126,7 +126,7 @@ func (config *nodeYaml) NodeUpdate(node NodeInfo) error {
  *
 ****/
 
-func (config *nodeYaml) AddProfile(profileID string) (NodeInfo, error) {
+func (config *NodeYaml) AddProfile(profileID string) (NodeInfo, error) {
 	var node NodeConf
 	var n NodeInfo
 
@@ -143,7 +143,7 @@ func (config *nodeYaml) AddProfile(profileID string) (NodeInfo, error) {
 	return n, nil
 }
 
-func (config *nodeYaml) DelProfile(profileID string) error {
+func (config *NodeYaml) DelProfile(profileID string) error {
 
 	if _, ok := config.NodeProfiles[profileID]; !ok {
 		return errors.New("Profile does not exist: " + profileID)
@@ -158,7 +158,7 @@ func (config *nodeYaml) DelProfile(profileID string) error {
 /*
 Update the the config for the given profile so that it can unmarshalled.
 */
-func (config *nodeYaml) ProfileUpdate(profile NodeInfo) error {
+func (config *NodeYaml) ProfileUpdate(profile NodeInfo) error {
 	profileID := profile.Id.Get()
 
 	if _, ok := config.NodeProfiles[profileID]; !ok {
@@ -228,7 +228,7 @@ func (config *nodeYaml) ProfileUpdate(profile NodeInfo) error {
  *
 ****/
 
-func (config *nodeYaml) Persist() error {
+func (config *NodeYaml) Persist() error {
 
 	out, err := yaml.Marshal(config)
 	if err != nil {
