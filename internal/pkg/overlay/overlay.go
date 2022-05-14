@@ -254,7 +254,7 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 		tstruct.NetDevs[devname].Gateway = netdev.Gateway.Get()
 		tstruct.NetDevs[devname].Type = netdev.Type.Get()
 		tstruct.NetDevs[devname].OnBoot = netdev.OnBoot.Get()
-		tstruct.NetDevs[devname].Default = netdev.Default.Get()
+		tstruct.NetDevs[devname].Primary = netdev.Primary.Get()
 		mask := net.IPMask(net.ParseIP(netdev.Netmask.Get()).To4())
 		ipaddr := net.ParseIP(netdev.Ipaddr.Get()).To4()
 		netaddr := net.IPNet{IP: ipaddr, Mask: mask}

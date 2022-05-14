@@ -7,6 +7,7 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
+	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/hpcng/warewulf/pkg/hostlist"
@@ -37,7 +38,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if len(args) > 0 {
 			args = hostlist.Expand(args)
 			for _, node := range nodes {
-				return overlay.BuildOverlayIndir(node, strings.Split(OverlayName, ","), OverlayDir)
+				if util.InSlice(node.RuntimeOverlay.GetSlice(), OverlayName) ||
+					util.InSlice(node.SystemOverlay.GetSlice(), OverlayName) {
+					return overlay.BuildOverlayIndir(node, strings.Split(OverlayName, ","), OverlayDir)
+				} else {
+					return errors.New("no node uses the given overlay")
+				}
 			}
 		} else {
 			var host node.NodeInfo
@@ -68,7 +74,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 		} else {
 			if OverlayName != "" {
-				err = overlay.BuildSpecificOverlays(nodes, OverlayName)
+				for _, n := range nodes {
+					if util.InSlice(n.RuntimeOverlay.GetSlice(), OverlayName) ||
+						util.InSlice(n.SystemOverlay.GetSlice(), OverlayName) {
+						err = overlay.BuildSpecificOverlays([]node.NodeInfo{n}, OverlayName)
+					}
+				}
 			} else {
 				err = overlay.BuildAllOverlays(nodes)
 			}

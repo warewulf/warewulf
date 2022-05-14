@@ -74,6 +74,33 @@ func RandomString(n int) string {
 	return string(b)
 }
 
+/*
+Checks if given string is in slice. I yes returns true, false otherwise.
+*/
+func InSlice(slice []string, match string) bool {
+	for _, val := range slice {
+		if val == match {
+			return true
+		}
+	}
+	return false
+}
+
+/*
+Checks if one or more elements of a slice A are a part of slice B. Returns true
+as soon as one element matches.\
+*/
+func SliceInSlice(A []string, B []string) bool {
+	for _, a := range A {
+		for _, b := range B {
+			if a == b {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func IsDir(path string) bool {
 	wwlog.Debug("Checking if path exists as a directory: %s", path)
 

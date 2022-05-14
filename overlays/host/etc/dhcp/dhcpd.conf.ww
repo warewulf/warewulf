@@ -71,7 +71,7 @@ host {{$nodes.Id.Get}}-{{if $netdevs.Device.Defined}}{{$netdevs.Device.Get}}{{el
     {{- if $netdevs.Ipaddr.Defined}}
     fixed-address {{$netdevs.Ipaddr.Get}};
     {{- end}}
-    {{- if $netdevs.Default.GetB}}
+    {{- if $netdevs.Primary.GetB}}
     option host-name "{{$nodes.Id.Get}}";
     {{else}}
     option host-name "{{$nodes.Id.Get}}-{{if $netdevs.Device.Defined}}{{$netdevs.Device.Get}}{{else}}{{$netname}}{{end}}";
