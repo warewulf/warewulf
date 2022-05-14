@@ -28,6 +28,8 @@ func FirstError(errs ...error) (err error) {
 			wwlog.ErrorExc(e, "Unhandled error")
 		}
 	}
+
+	return
 }
 
 func DirModTime(path string) (time.Time, error) {
@@ -530,10 +532,11 @@ func CpioCreate(
 		return err
 	}
 
-	var err_in error
+	err_in := make(chan error, 1)
 	go func() {
 		defer stdin.Close()
-		_, err_in := io.WriteString(stdin, strings.Join(ifiles, "\n"))
+		_, err := io.WriteString(stdin, strings.Join(ifiles, "\n"))
+		err_in <- err
 	}()
 
 	out, err := proc.CombinedOutput()
@@ -541,7 +544,7 @@ func CpioCreate(
 		wwlog.Debug(string(out))
 	}
 
-	return FirstError(err, err_in)
+	return FirstError(err, <- err_in)
 }
 
 /*******************************************************************************
