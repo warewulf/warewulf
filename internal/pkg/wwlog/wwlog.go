@@ -190,9 +190,9 @@ func recordLog(level int, err error, message string, a ...interface{}) {
 		message = logFormatter(logLevel, &rec)
 
 		if level >= ERROR {
-			fmt.Fprintf(logErr, message)
+			fmt.Fprint(logErr, message)
 		} else {
-			fmt.Fprintf(logOut, message)
+			fmt.Fprint(logOut, message)
 		}
 	}
 }

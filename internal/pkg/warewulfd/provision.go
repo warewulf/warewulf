@@ -236,7 +236,10 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 
 			w.Header().Set("Content-Type", "text")
 			w.Header().Set("Content-Length", strconv.Itoa(buf.Len()))
-			buf.WriteTo(w)
+			_, err = buf.WriteTo(w)
+			if err != nil {
+				wwlog.ErrorExc(err, "")
+			}
 
 			wwlog.Info("SEND:  %15s: %s", node.Id.Get(), stage_file)
 

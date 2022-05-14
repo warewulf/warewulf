@@ -20,6 +20,16 @@ import (
 	"github.com/pkg/errors"
 )
 
+func FirstError(errs ...error) (err error) {
+	for _, e := range errs {
+		if err == nil {
+			err = e
+		}else if e != nil {
+			wwlog.ErrorExc(e, "Unhandled error")
+		}
+	}
+}
+
 func DirModTime(path string) (time.Time, error) {
 
 	var lastTime time.Time
@@ -196,17 +206,17 @@ func FindFilterFiles(
 	path string,
 	include []string,
 	ignore []string,
-	ignore_xdev bool) ([]string, error) {
+	ignore_xdev bool) (ofiles []string, err error) {
 
 	wwlog.Debug("Finding files: %s", path)
-
-	ofiles := []string{}
 
 	cwd, err := os.Getwd()
 	if err != nil {
 		return ofiles, err
 	}
-	defer os.Chdir(cwd)
+	defer func() {
+		err = FirstError(err, os.Chdir(cwd))
+	}()
 
 	err = os.Chdir(path)
 	if err != nil {
@@ -247,7 +257,12 @@ func FindFilterFiles(
 	dev := path_stat.Sys().(*syscall.Stat_t).Dev
 
 	for _, ifile := range files {
-		if stat, err := os.Stat(ifile); err == nil && stat.IsDir() {
+		stat, err := os.Stat(ifile)
+		if err != nil {
+			return ofiles, err
+		}
+
+		if stat.IsDir() {
 			// recursivly include from the matched directory
 
 			num_init := len(ofiles)
@@ -498,7 +513,7 @@ func CpioCreate(
 	ifiles []string,
 	ofile string,
 	format string,
-	cpio_args ...string ) error {
+	cpio_args ...string ) (err error) {
 
 	args := []string{
 		"--quiet",
@@ -515,9 +530,10 @@ func CpioCreate(
 		return err
 	}
 
+	var err_in error
 	go func() {
 		defer stdin.Close()
-		io.WriteString(stdin, strings.Join(ifiles, "\n"))
+		_, err_in := io.WriteString(stdin, strings.Join(ifiles, "\n"))
 	}()
 
 	out, err := proc.CombinedOutput()
@@ -525,14 +541,14 @@ func CpioCreate(
 		wwlog.Debug(string(out))
 	}
 
-	return err
+	return FirstError(err, err_in)
 }
 
 /*******************************************************************************
 	Compress a file using gzip or pigz
 */
 func FileGz(
-	file string ) error {
+	file string ) (err error) {
 
 	file_gz := file + ".gz"
 
@@ -540,7 +556,7 @@ func FileGz(
 		err := os.Remove(file_gz)
 
 		if err != nil {
-			return errors.Wrapf(err, "Could not remove existing file: ", file_gz)
+			return errors.Wrapf(err, "Could not remove existing file: %s", file_gz)
 		}
 	}
 
@@ -576,9 +592,9 @@ func BuildFsImage(
 	ignore []string,
 	ignore_xdev bool,
 	format string,
-	cpio_args ...string ) error {
+	cpio_args ...string ) (err error) {
 
-	err := os.MkdirAll(path.Dir(imagePath), 0755)
+	err = os.MkdirAll(path.Dir(imagePath), 0755)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to create image directory for %s: %s", name, imagePath)
 	}
@@ -597,7 +613,9 @@ func BuildFsImage(
 	if err != nil {
 		return err
 	}
-	defer os.Chdir(cwd)
+	defer func() {
+		err = FirstError(err, os.Chdir(cwd))
+	}()
 
 	err = os.Chdir(rootfsPath)
 	if err != nil {
