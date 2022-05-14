@@ -16,7 +16,10 @@ import (
 // TODO: https://github.com/pin/tftp
 
 func RunServer() error {
-	DaemonInitLogging()
+	err := DaemonInitLogging()
+	if err != nil {
+		return errors.Wrap(err, "Failed to initialize logging")
+	}
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGHUP)
@@ -36,7 +39,7 @@ func RunServer() error {
 		}
 	}()
 
-	err := LoadNodeDB()
+	err = LoadNodeDB()
 	if err != nil {
 		wwlog.Error("Could not load database: %s", err)
 	}
