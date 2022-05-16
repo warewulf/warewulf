@@ -48,7 +48,7 @@ func sendFile(w http.ResponseWriter, filename string, sendto string) error {
 	w.Header().Set("Content-Length", FileSize)
 	_, err = buf.WriteTo(w)
 
-	wwlog.Info("SEND:  %15s: %s", sendto, filename)
+	wwlog.Send("%15s: %s", sendto, filename)
 
 	return err
 }

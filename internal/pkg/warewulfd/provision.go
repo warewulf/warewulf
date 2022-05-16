@@ -49,9 +49,11 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if conf.Warewulf.Secure {
+	wwlog.Recv("hwaddr: %s, ipaddr: %s, stage: %s", rinfo.hwaddr, req.RemoteAddr, rinfo.stage )
+
+	if rinfo.stage == "runtime" && conf.Warewulf.Secure {
 		if rinfo.remoteport >= 1024 {
-			wwlog.Error("DENIED: Non-privledged port: %s", req.RemoteAddr)
+			wwlog.Denied("Non-privledged port: %s", req.RemoteAddr)
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
@@ -64,8 +66,6 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		"system": "SYSTEM_OVERLAY",
 		"runtime": "RUNTIME_OVERLAY" }
 
-	wwlog.Info("REQ: %s: %s", rinfo.hwaddr, rinfo.stage )
-
 	status_stage := status_stages[rinfo.stage]
 	var stage_overlays []string
 	var stage_file string = ""
@@ -77,7 +77,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		// If we failed to find a node, let's see if we can add one...
 		var netdev string
 
-		wwlog.Info("%s (node not configured)", rinfo.hwaddr)
+		wwlog.Warn("%s (node not configured)", rinfo.hwaddr)
 
 		nodeDB, err := nodepkg.New()
 		if err != nil {
@@ -92,18 +92,18 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			n.Discoverable.SetB(false)
 			err := nodeDB.NodeUpdate(n)
 			if err != nil {
-				wwlog.Info("%s (failed to set node configuration)", rinfo.hwaddr)
+				wwlog.Serv("%s (failed to set node configuration)", rinfo.hwaddr)
 
 			} else {
 				err := nodeDB.Persist()
 				if err != nil {
-					wwlog.Info("%s (failed to persist node configuration)", rinfo.hwaddr)
+					wwlog.Serv("%s (failed to persist node configuration)", rinfo.hwaddr)
 
 				} else {
 					node = n
 					_ = overlay.BuildAllOverlays([]nodepkg.NodeInfo{n})
 
-					wwlog.Info("%s (node automatically configured)", rinfo.hwaddr)
+					wwlog.Serv("%s (node automatically configured)", rinfo.hwaddr)
 
 					err := LoadNodeDB()
 					if err != nil {
@@ -117,7 +117,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 
 	if node.AssetKey.Defined() && node.AssetKey.Get() != rinfo.assetkey {
 		w.WriteHeader(http.StatusUnauthorized)
-		wwlog.Error("Incorrect asset key for node: %s", node.Id.Get())
+		wwlog.Denied("Incorrect asset key for node: %s", node.Id.Get())
 		updateStatus(node.Id.Get(), status_stage, "BAD_ASSET", rinfo.ipaddr)
 		return
 	}
@@ -199,13 +199,13 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 				oneoverlaynewer = oneoverlaynewer || util.PathIsNewer(stage_file, overlay.OverlaySourceDir(overlayname))
 			}
 			if !util.IsFile(stage_file) || util.PathIsNewer(stage_file, nodepkg.ConfigFile) || oneoverlaynewer {
-				wwlog.Info("BUILD %15s, overlays %v", node.Id.Get(), stage_overlays)
+				wwlog.Serv("BUILD %15s, overlays %v", node.Id.Get(), stage_overlays)
 				_ = overlay.BuildOverlay(node, stage_overlays)
 			}
 		}
 	}
 
-	wwlog.Info("stage_file '%s'", stage_file )
+	wwlog.Serv("stage_file '%s'", stage_file )
 
 	if util.IsFile(stage_file) {
 
@@ -241,7 +241,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 				wwlog.ErrorExc(err, "")
 			}
 
-			wwlog.Info("SEND:  %15s: %s", node.Id.Get(), stage_file)
+			wwlog.Send("%15s: %s", node.Id.Get(), stage_file)
 
 		}else{
 			if rinfo.compress == "gz" {

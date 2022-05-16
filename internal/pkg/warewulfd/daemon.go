@@ -41,6 +41,8 @@ func DaemonInitLogging() error {
 		if err == nil {
 			wwlog.SetLogLevel(level)
 		}
+	}else{
+		wwlog.SetLogLevel(wwlog.SERV)
 	}
 
 	conf, err := warewulfconf.New()
@@ -57,9 +59,8 @@ func DaemonInitLogging() error {
 			return errors.Wrap(err, "Could not create syslog writer")
 		}
 
-		wwlog.SetLogWriters(logwriter, logwriter)
-
 		wwlog.SetLogFormatter(wwlog.DefaultFormatter)
+		wwlog.SetLogWriters(logwriter, logwriter)
 
 	}
 
@@ -81,7 +82,13 @@ func DaemonStart() error {
 		}
 
 		os.Setenv("WAREWULFD_BACKGROUND", "1")
-		os.Setenv("WAREWULFD_LOGLEVEL", strconv.Itoa(wwlog.GetLogLevel()))
+
+		logLevel := wwlog.GetLogLevel()
+		if logLevel == wwlog.INFO {
+			os.Setenv("WAREWULFD_LOGLEVEL", strconv.Itoa(wwlog.SERV))
+		}else{
+			os.Setenv("WAREWULFD_LOGLEVEL", strconv.Itoa(logLevel))
+		}
 
 		f, err := os.OpenFile(WAREWULFD_LOGFILE, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 		if err != nil {
@@ -105,7 +112,7 @@ func DaemonStart() error {
 
 		fmt.Fprintf(p, "%d", pid)
 
-		wwlog.Info("Started Warewulf (%s) server at PID: %d", version.GetVersion(), pid)
+		wwlog.Serv("Started Warewulf (%s) server at PID: %d", version.GetVersion(), pid)
 
 	}
 
@@ -131,7 +138,7 @@ func DaemonStatus() error {
 		if err != nil {
 			return errors.Wrap(err, "failed to send process SIGCONT")
 		} else {
-			wwlog.Info("Warewulf server is running at PID: %d", pid)
+			wwlog.Serv("Warewulf server is running at PID: %d", pid)
 		}
 	}
 
@@ -159,7 +166,12 @@ func DaemonReload() error {
 		}
 	}
 
-	os.Setenv("WAREWULFD_LOGLEVEL", strconv.Itoa(wwlog.GetLogLevel()))
+	logLevel := wwlog.GetLogLevel()
+	if logLevel == wwlog.INFO {
+		os.Setenv("WAREWULFD_LOGLEVEL", strconv.Itoa(wwlog.SERV))
+	}else{
+		os.Setenv("WAREWULFD_LOGLEVEL", strconv.Itoa(logLevel))
+	}
 
 	return nil
 }
@@ -187,7 +199,7 @@ func DaemonStop() error {
 		if err != nil {
 			return errors.Wrap(err, "failed to send process SIGTERM")
 		} else {
-			wwlog.Info("Terminated Warewulf server at PID: %d", pid)
+			wwlog.Serv("Terminated Warewulf server at PID: %d", pid)
 		}
 	}
 

@@ -34,9 +34,6 @@ imgextract --name system ${uri_base}&stage=system&compress=gz       || goto noco
 echo Container image:
 imgextract --name container ${uri_base}&stage=container&compress=gz || goto reboot
 
-echo Runtime image:
-imgextract --name runtime ${uri_base}&stage=runtime&compress=gz     || goto reboot
-
 {{if ne .KernelOverride "" -}}
 echo Kernel modules image:
 imgextract --name kmods ${uri_base}&stage=kmods&compress=gz         || goto reboot
@@ -54,8 +51,6 @@ initrd --name system ${uri_base}&stage=system           || goto reboot
 echo Container image:
 initrd --name container ${uri_base}&stage=container     || goto reboot
 
-echo Runtime image:
-initrd --name runtime ${uri_base}&stage=runtime         || goto reboot
 
 {{if ne .KernelOverride "" -}}
 echo Kernel modules image:
@@ -67,13 +62,13 @@ initrd --name kmods ${uri_base}&stage=kmods             || goto reboot
 
 echo Booting in 3s...
 {{if ne .KernelOverride "" -}}
-echo boot kernel initrd=container initrd=kmods initrd=system initrd=runtime wwid={{.Hwaddr}} {{.KernelArgs}}
+echo boot kernel initrd=container initrd=kmods initrd=system wwid={{.Hwaddr}} {{.KernelArgs}}
 sleep 3
-boot kernel initrd=container initrd=kmods initrd=system initrd=runtime wwid={{.Hwaddr}} {{.KernelArgs}} ||  goto reboot
+boot kernel initrd=container initrd=kmods initrd=system wwid={{.Hwaddr}} {{.KernelArgs}} ||  goto reboot
 {{- else -}}
-echo boot kernel initrd=container initrd=system initrd=runtime wwid={{.Hwaddr}} {{.KernelArgs}}
+echo boot kernel initrd=container initrd=system wwid={{.Hwaddr}} {{.KernelArgs}}
 sleep 3
-boot kernel initrd=container initrd=system initrd=runtime wwid={{.Hwaddr}} {{.KernelArgs}} ||  goto reboot
+boot kernel initrd=container initrd=system wwid={{.Hwaddr}} {{.KernelArgs}} ||  goto reboot
 {{- end}}
 
 :reboot

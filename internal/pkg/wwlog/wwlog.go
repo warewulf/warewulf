@@ -8,22 +8,7 @@ import (
 	"time"
 	"runtime"
 	"reflect"
-)
-
-const (
-	SECCRITICAL = 51
-	CRITICAL    = 50
-	SECERROR    = 41
-	ERROR       = 40
-	SECWARN     = 31
-	WARN        = 30
-	SECINFO     = 21
-	INFO        = 20
-	SECVERBOSE  = 16
-	VERBOSE     = 15
-	SECDEBUG    = 11
-	DEBUG       = 10
-	NOTSET      = 0
+	"sort"
 )
 
 type LogRecord struct {
@@ -39,52 +24,78 @@ type LogRecord struct {
 
 /*
 	Format a log message from a record
-	rec.level >= logLevel
+	Only called if rec.level >= logLevel
 */
 type LogFormatter func(logLevel int, rec *LogRecord) string
 
-/*
-	Get string level name for level number
-*/
-func LevelName(level int) string {
-	if level >= SECCRITICAL {
-    return "SECCRITICAL"
-  }
-	if level >= CRITICAL {
-    return "CRITICAL"
-  }
-	if level >= SECERROR {
-    return "SECERROR"
-  }
-	if level >= ERROR {
-    return "ERROR"
-  }
-	if level >= SECWARN {
-    return "SECWARN"
-  }
-	if level >= WARN {
-    return "WARN"
-  }
-	if level >= SECINFO {
-    return "SECINFO"
-  }
-	if level >= INFO {
-    return "INFO"
-  }
-	if level >= SECVERBOSE {
-    return "SECVERBOSE"
-  }
-	if level >= VERBOSE {
-    return "VERBOSE"
-  }
-	if level >= SECDEBUG {
-    return "SECDEBUG"
-  }
-	if level >= DEBUG {
-    return "DEBUG"
-  }
+var (
+	SECCRITICAL = SetLevelName(51, "SECCRITICAL")
+	CRITICAL    = SetLevelName(50, "CRITICAL")
+	DENIED      = SetLevelName(42, "DENIED")
+	SECERROR    = SetLevelName(41, "SECERROR")
+	ERROR       = SetLevelName(40, "ERROR")
+	SECWARN     = SetLevelName(31, "SECWARN")
+	WARN        = SetLevelName(30, "WARN")
+	SEND        = SetLevelName(27, "SEND")
+	RECV        = SetLevelName(26, "RECV")
+	SERV        = SetLevelName(25, "SERV")
+	SECINFO     = SetLevelName(21, "SECINFO")
+	INFO        = SetLevelName(20, "INFO")
+	SECVERBOSE  = SetLevelName(16, "SECVERBOSE")
+	VERBOSE     = SetLevelName(15, "VERBOSE")
+	SECDEBUG    = SetLevelName(11, "SECDEBUG")
+	DEBUG       = SetLevelName(10, "DEBUG")
+)
 
-	return "NOTSET"
+var levelNums = []int{0}
+var levelNames = []string{"NOTSET"}
+var logLevel = INFO
+var logOut io.Writer = os.Stdout
+var logErr io.Writer = os.Stderr
+var logFormatter LogFormatter = DefaultFormatter
+
+func LevelNameEff(level int) (int, int, string) {
+	n := len(levelNums)
+	idx := sort.SearchInts(levelNums, level)
+
+	if idx >= n {
+		idx = n-1
+	}
+
+	eff_level := levelNums[idx]
+	eff_name := levelNames[idx]
+
+	return idx, eff_level, eff_name
+}
+
+func LevelName(level int) string {
+
+	_, _, name := LevelNameEff(level)
+	return name
+}
+
+func SetLevelName(level int, name string) int {
+	n := len(levelNums)
+	idx := sort.SearchInts(levelNums, level)
+
+	if idx < n && levelNums[idx] == level {
+		levelNames[idx] = name
+
+	}else{
+
+		levelNums = append(levelNums, level)
+		levelNames = append(levelNames, name)
+
+		if idx < n {
+			copy(levelNums[idx+1:], levelNums[idx:])
+			copy(levelNames[idx+1:], levelNames[idx:])
+
+			levelNums[idx] = level
+			levelNames[idx] = name
+		}
+	}
+
+	return level
 }
 
 func DefaultFormatter(logLevel int, rec *LogRecord) string {
@@ -96,7 +107,7 @@ func DefaultFormatter(logLevel int, rec *LogRecord) string {
 	}
 
 	if rec.Err != nil {
-		if logLevel <= VERBOSE {
+		if logLevel < VERBOSE {
 			// when debugging errors, add file and line number, and any stack trace
 			message += fmt.Sprintf("%s:%d\n%+v\n", rec.File, rec.Line, rec.Err )
 
@@ -113,13 +124,15 @@ func DefaultFormatter(logLevel int, rec *LogRecord) string {
 		return message
 	}
 
-	return fmt.Sprintf("%-7s: %s", LevelName(rec.Level), message)
+	name := LevelName(rec.Level)
+
+	if len(name) <= 7 {
+		return fmt.Sprintf("%-7s: %s", name, message)
+	}
+
+	return fmt.Sprintf("%-11s: %s", name, message)
 }
 
-var logLevel = INFO
-var logOut io.Writer = os.Stdout
-var logErr io.Writer = os.Stderr
-var logFormatter LogFormatter = DefaultFormatter
 
 func EnabledForLevel(level int) bool {
 	return level >= logLevel
@@ -169,10 +182,10 @@ func GetLogFormatter() LogFormatter {
 /*
 	Internal method to create a log record
 */
-func recordLog(level int, err error, message string, a ...interface{}) {
+func LogCaller(level int, skip int, err error, message string, a ...interface{}) {
 
 	if EnabledForLevel(level) {
-		pc, file, line, ok := runtime.Caller(2)
+		pc, file, line, ok := runtime.Caller(skip + 1)
 		if !ok {
 			file = "[unknown]"
 		}
@@ -198,92 +211,108 @@ func recordLog(level int, err error, message string, a ...interface{}) {
 }
 
 func Println(level int, message string) {
-	recordLog(level, nil, message)
+	LogCaller(level, 1, nil, message)
 }
 
 func Printf(level int, message string, a ...interface{}) {
-	recordLog(level, nil, message, a...)
+	LogCaller(level, 1, nil, message, a...)
 }
 
 /*******************************************************************************
 	Named log level functions
 */
 func Log(level int, message string, a ...interface{}) {
-	recordLog(level, nil, message, a...)
+	LogCaller(level, 1, nil, message, a...)
 }
 
 func LogExc(level int, err error, message string, a ...interface{}) {
-	recordLog(level, err, message, a...)
+	LogCaller(level, 1, err, message, a...)
 }
 
 func Debug(message string, a ...interface{}) {
-	recordLog(DEBUG, nil, message, a...)
+	LogCaller(DEBUG, 1, nil, message, a...)
 }
 
 func DebugExc(err error, message string, a ...interface{}) {
-	recordLog(DEBUG, err, message, a...)
+	LogCaller(DEBUG, 1, err, message, a...)
 }
 
 func SecDebug(message string, a ...interface{}) {
-	recordLog(SECDEBUG, nil, message, a...)
+	LogCaller(SECDEBUG, 1, nil, message, a...)
 }
 
 func Verbose(message string, a ...interface{}) {
-	recordLog(VERBOSE, nil, message, a...)
+	LogCaller(VERBOSE, 1, nil, message, a...)
 }
 
 func VerboseExc(err error, message string, a ...interface{}) {
-	recordLog(VERBOSE, err, message, a...)
+	LogCaller(VERBOSE, 1, err, message, a...)
 }
 
 func SecVerbose(message string, a ...interface{}) {
-	recordLog(SECVERBOSE, nil, message, a...)
+	LogCaller(SECVERBOSE, 1, nil, message, a...)
 }
 
 func Info(message string, a ...interface{}) {
-	recordLog(INFO, nil, message, a...)
+	LogCaller(INFO, 1, nil, message, a...)
 }
 
 func InfoExc(err error, message string, a ...interface{}) {
-	recordLog(INFO, err, message, a...)
+	LogCaller(INFO, 1, err, message, a...)
 }
 
 func SecInfo(message string, a ...interface{}) {
-	recordLog(SECINFO, nil, message, a...)
+	LogCaller(SECINFO, 1, nil, message, a...)
+}
+
+func Serv(message string, a ...interface{}) {
+	LogCaller(SERV, 1, nil, message, a...)
+}
+
+func Recv(message string, a ...interface{}) {
+	LogCaller(RECV, 1, nil, message, a...)
+}
+
+func Send(message string, a ...interface{}) {
+	LogCaller(SEND, 1, nil, message, a...)
 }
 
 func Warn(message string, a ...interface{}) {
-	recordLog(WARN, nil, message, a...)
+	LogCaller(WARN, 1, nil, message, a...)
 }
 
 func WarnExc(err error, message string, a ...interface{}) {
-	recordLog(WARN, err, message, a...)
+	LogCaller(WARN, 1, err, message, a...)
 }
 
 func SecWarn(message string, a ...interface{}) {
-	recordLog(SECWARN, nil, message, a...)
+	LogCaller(SECWARN, 1, nil, message, a...)
 }
 
 func Error(message string, a ...interface{}) {
-	recordLog(ERROR, nil, message, a...)
+	LogCaller(ERROR, 1, nil, message, a...)
 }
 
 func ErrorExc(err error, message string, a ...interface{}) {
-	recordLog(ERROR, err, message, a...)
+	LogCaller(ERROR, 1, err, message, a...)
 }
 
 func SecError(message string, a ...interface{}) {
-	recordLog(SECERROR, nil, message, a...)
+	LogCaller(SECERROR, 1, nil, message, a...)
+}
+
+func Denied(message string, a ...interface{}) {
+	LogCaller(DENIED, 1, nil, message, a...)
 }
 
 func Critical(message string, a ...interface{}) {
-	recordLog(CRITICAL, nil, message, a...)
+	LogCaller(CRITICAL, 1, nil, message, a...)
 }
 
 func CriticalExc(err error, message string, a ...interface{}) {
-	recordLog(CRITICAL, err, message, a...)
+	LogCaller(CRITICAL, 1, err, message, a...)
 }
 
 func SecCritical(message string, a ...interface{}) {
-	recordLog(SECCRITICAL, nil, message, a...)
+	LogCaller(SECCRITICAL, 1, nil, message, a...)
 }

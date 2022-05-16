@@ -64,7 +64,7 @@ func RunServer() error {
 	}
 
 	daemonPort := conf.Warewulf.Port
-	wwlog.Info("Starting HTTPD REST service on port %d", daemonPort)
+	wwlog.Serv("Starting HTTPD REST service on port %d", daemonPort)
 
 	err = http.ListenAndServe(":"+strconv.Itoa(daemonPort), nil)
 	if err != nil {
