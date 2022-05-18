@@ -5,11 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Changed 
-- Provision interface is not tied to 'eth0' any more. The provision interface must be named
-  'default' now. The file `nodes.yaml' must be changed accordingly.
-- Creating of '/etc/exports' can now be disabled, so that `wwctl configure -a` wont overwrite
-  a existing '/etc/exports'.
+### Added
 - All configurations files for the host (/etc/exports, /etc/dhcpd.conf, /etc/hosts) are now
   populated from the (OVERLAYDIR/host/etc/{exports|dhcpd|hosts}.ww . Also other configuration
   files like prometheus.yml.ww or slurm.conf.ww which depend on the cluster nodes can be
@@ -28,12 +24,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   configuration files for the network, see `ifcfg.xml.ww` and `ifcgf.ww`.
 - Networks can now have arbitrary keys value pairs in the profiles and on the node, so that 
   things like bridges and mtu sizes can be set
-- The yaml format for nodes has now sub-keys for ipmi and kernel, old nodes.conf files have to
-  to be changed accordingly
-- uids and gids of a container now get synced at import time, so that at least users with the
+- oci container tar balls can be imported with the 'file://$PATH' scheme
+- uids and gids of a container can now get synced at import time, so that at least users with the
   same name have the same uid. This is not necessarily needed for warewulf, but services like
   munge.
-- oci container tar balls can be imported with the 'file://$PATH' scheme
+### Changed 
+- Provision interface is not tied to 'eth0' any more. The provision interface must be have the
+  'primary' flag now. The file `nodes.conf' must be changed accordingly.
+- the provisioning network is now called primary and not default
+- Creating of '/etc/exports' can now be disabled, so that `wwctl configure -a` wont overwrite
+  a existing '/etc/exports'.
+- The yaml format for nodes has now sub-keys for ipmi and kernel, old nodes.conf files have to
+  to be changed accordingly
+- host overlays can globaly disbaled, but are enabled per default
+- `wwctl overlay build -H` will only nuild the overlays which are assigned to the nodes
 
 
 ## [4.1.0] - 2021-07-29
