@@ -1,6 +1,6 @@
 Warewulf Node:      {{.Id}}
 Container:          {{.Container}}
-Kernel:             {{.Kernel.Version}}
+{{ if .Kernel.Version }}Kernel:             {{.Kernel.Version}} {{ end -}}
 Kernelargs:         {{.Kernel.Args}}
 
 Network:
