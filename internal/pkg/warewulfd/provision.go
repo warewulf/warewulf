@@ -28,8 +28,6 @@ type iPxeTemplate struct {
 	Hwaddr         string
 	Ipaddr         string
 	Port           string
-	Syslog         string
-	Syslogs        string
 	KernelArgs     string
 	KernelOverride string
 }
@@ -138,8 +136,6 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			Fqdn : node.Id.Get(),
 			Ipaddr : conf.Ipaddr,
 			Port : strconv.Itoa(conf.Warewulf.Port),
-			Syslog : conf.Dhcp.Syslog,
-			Syslogs : conf.Dhcp.Syslogs,
 			Hostname : node.Id.Get(),
 			Hwaddr : rinfo.hwaddr,
 			ContainerName : node.ContainerName.Get(),

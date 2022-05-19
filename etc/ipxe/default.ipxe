@@ -13,13 +13,6 @@ echo Kernel:        {{.ContainerName}} (container default)
 echo KernelArgs:    {{.KernelArgs}}
 echo
 
-{{if ne .Syslog "" -}}
-set syslog {{$.Syslog}};
-{{- end}}
-{{if ne .Syslogs "" -}}
-set syslogs {{$.Syslogs}};
-{{- end}}
-
 set uri_base http://{{.Ipaddr}}:{{.Port}}/provision/{{.Hwaddr}}?assetkey=${asset}&uuid=${uuid}
 echo Downloading node provisions: ${uri_base}
 
