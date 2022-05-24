@@ -333,39 +333,8 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 				tstruct.BuildSource = path.Join(overlaySourceDir, location)
 				wwlog.Verbose("Evaluating overlay template file: %s", location)
 				destFile := strings.TrimSuffix(location, ".ww")
-				backupFile := true
-				writeFile := true
-				tmpl, err := template.New(path.Base(location)).Option("missingkey=default").Funcs(template.FuncMap{
-					// TODO: Fix for missingkey=zero
-					"Include":      templateFileInclude,
-					"IncludeFrom":  templateContainerFileInclude,
-					"IncludeBlock": templateFileBlock,
-					"inc":          func(i int) int { return i + 1 },
-					"dec":          func(i int) int { return i - 1 },
-					"file":         func(str string) string { return fmt.Sprintf("{{ /* file \"%s\" */ }}", str) },
-					"abort": func() string {
-						wwlog.Debug("abort file called in %s", location)
-						writeFile = false
-						return ""
-					},
-					"nobackup": func() string {
-						wwlog.Debug("not backup for %s", location)
-						backupFile = false
-						return ""
-					},
-					"split": func(s string, d string) []string {
-						return strings.Split(s, d)
-					},
-					// }).ParseGlob(path.Join(OverlayDir, destFile+".ww*"))
-				}).ParseGlob(location)
-				if err != nil {
-					return errors.Wrap(err, "could not parse template "+location)
-				}
-				var buffer bytes.Buffer
-				err = tmpl.Execute(&buffer, tstruct)
-				if err != nil {
-					return errors.Wrap(err, "could not execute template")
-				}
+
+				buffer, backupFile, writeFile, err := RenderTemplateFile(location, tstruct)
 				if writeFile {
 					destFileName := destFile
 					var fileBuffer bytes.Buffer
@@ -462,6 +431,49 @@ func carefulWriteBuffer(destFile string, buffer bytes.Buffer, backupFile bool, p
 	defer w.Close()
 	_, err = buffer.WriteTo(w)
 	return err
+}
+
+/*
+Parses the template with the given filename, variables must be in data. Returns the
+parsed template as bytes.Buffer, and the bool variables for backupFile and writeFile.
+If something goes wrong an error is returned.
+*/
+func RenderTemplateFile(fileName string, data TemplateStruct) (buffer bytes.Buffer, backupFile bool, writeFile bool, err error) {
+	backupFile = true
+	writeFile = true
+	tmpl, err := template.New(path.Base(fileName)).Option("missingkey=default").Funcs(template.FuncMap{
+		// TODO: Fix for missingkey=zero
+		"Include":      templateFileInclude,
+		"IncludeFrom":  templateContainerFileInclude,
+		"IncludeBlock": templateFileBlock,
+		"inc":          func(i int) int { return i + 1 },
+		"dec":          func(i int) int { return i - 1 },
+		"file":         func(str string) string { return fmt.Sprintf("{{ /* file \"%s\" */ }}", str) },
+		"abort": func() string {
+			wwlog.Printf(wwlog.DEBUG, "abort file called in %s\n", fileName)
+			writeFile = false
+			return ""
+		},
+		"nobackup": func() string {
+			wwlog.Printf(wwlog.DEBUG, "not backup for %s\n", fileName)
+			backupFile = false
+			return ""
+		},
+		"split": func(s string, d string) []string {
+			return strings.Split(s, d)
+		},
+		// }).ParseGlob(path.Join(OverlayDir, destFile+".ww*"))
+	}).ParseGlob(fileName)
+	if err != nil {
+		err = errors.Wrap(err, "could not parse template "+fileName)
+		return
+	}
+	err = tmpl.Execute(&buffer, data)
+	if err != nil {
+		err = errors.Wrap(err, "could not execute template")
+		return
+	}
+	return
 }
 
 // Simple version of ScanLines, but include the line break
