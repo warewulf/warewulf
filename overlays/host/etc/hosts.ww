@@ -4,9 +4,11 @@
 # Time:   {{.BuildTime}}
 # Source: {{.BuildSource}}
 
+
 # Warewulf Server
-{{$.Ipaddr}} {{$.BuildHost}}
-{{range $node := $.AllNodes}}                  {{/* for each node */}}
+{{$.Ipaddr}} warewulf {{$.BuildHost}}
+
+{{-range $node := $.AllNodes}}                  {{/* for each node */}}
 # Entry for {{$node.Id.Get}}
 {{- range $devname, $netdev := $node.NetDevs}} {{/* for each network device on the node */}}
 {{- if $netdev.Ipaddr.Defined}}                {{/* if we have an ip address on this network device */}}

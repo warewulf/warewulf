@@ -4,7 +4,7 @@
 
 
 # Warewulf Server
-{{$.Ipaddr}} {{$.BuildHost}}
+{{$.Ipaddr}} warewulf {{$.BuildHost}}
 
 {{-range $node := $.AllNodes}}                  {{/* for each node */}}
 # Entry for {{$node.Id.Get}}
