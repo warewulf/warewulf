@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
@@ -52,31 +53,31 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if filepath.Ext(args[0]) != ".ww" {
 		wwlog.Printf(wwlog.WARN, "%s has not the '.ww' so wont be rendered if in overlay\n", args[0])
 	}
-	wwlog.Printf(wwlog.INFO, "backupFile: %v\nwriteFile: %v\n", backupFile, writeFile)
 	var outBuffer bytes.Buffer
 	// search for magic file name comment
 	bufferScanner := bufio.NewScanner(bytes.NewReader(buffer.Bytes()))
 	bufferScanner.Split(overlay.ScanLines)
 	reg := regexp.MustCompile(`.*{{\s*/\*\s*file\s*["'](.*)["']\s*\*/\s*}}.*`)
 	foundFileComment := false
-	destFileName := args[0]
+	destFileName := strings.TrimSuffix(args[0], ".ww")
 	for bufferScanner.Scan() {
 		line := bufferScanner.Text()
 		filenameFromTemplate := reg.FindAllStringSubmatch(line, -1)
 		if len(filenameFromTemplate) != 0 {
 			wwlog.Printf(wwlog.DEBUG, "Found multifile comment, new filename %s\n", filenameFromTemplate[0][1])
 			if foundFileComment {
+				wwlog.Printf(wwlog.INFO, "backupFile: %v\nwriteFile: %v\n", backupFile, writeFile)
+				wwlog.Printf(wwlog.INFO, "Filename: %s\n\n", destFileName)
 				wwlog.Printf(wwlog.INFO, "%s", outBuffer.String())
 				outBuffer.Reset()
 			}
 			destFileName = filenameFromTemplate[0][1]
-			wwlog.Printf(wwlog.INFO, "Filename: %s\n\n", destFileName)
-			wwlog.Printf(wwlog.INFO, "%s", outBuffer.String())
 			foundFileComment = true
 		} else {
 			_, _ = outBuffer.WriteString(line)
 		}
 	}
+	wwlog.Printf(wwlog.INFO, "backupFile: %v\nwriteFile: %v\n", backupFile, writeFile)
 	wwlog.Printf(wwlog.INFO, "Filename: %s\n\n", destFileName)
 	wwlog.Printf(wwlog.INFO, "%s", outBuffer.String())
 	return nil
