@@ -243,12 +243,15 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 				destFile := strings.TrimSuffix(location, ".ww")
 
 				buffer, backupFile, writeFile, err := RenderTemplateFile(location, tstruct)
+				if err != nil {
+					return errors.Wrap(err, fmt.Sprintf("Failed to render template %s", location))
+				}
 				if writeFile {
 					destFileName := destFile
 					var fileBuffer bytes.Buffer
 					// search for magic file name comment
 					fileScanner := bufio.NewScanner(bytes.NewReader(buffer.Bytes()))
-					fileScanner.Split(scanLines)
+					fileScanner.Split(ScanLines)
 					reg := regexp.MustCompile(`.*{{\s*/\*\s*file\s*["'](.*)["']\s*\*/\s*}}.*`)
 					foundFileComment := false
 					for fileScanner.Scan() {
@@ -346,7 +349,11 @@ Parses the template with the given filename, variables must be in data. Returns 
 parsed template as bytes.Buffer, and the bool variables for backupFile and writeFile.
 If something goes wrong an error is returned.
 */
-func RenderTemplateFile(fileName string, data TemplateStruct) (buffer bytes.Buffer, backupFile bool, writeFile bool, err error) {
+func RenderTemplateFile(fileName string, data TemplateStruct) (
+	buffer bytes.Buffer,
+	backupFile bool,
+	writeFile bool,
+	err error) {
 	backupFile = true
 	writeFile = true
 	tmpl, err := template.New(path.Base(fileName)).Option("missingkey=default").Funcs(template.FuncMap{
@@ -385,7 +392,7 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (buffer bytes.Buff
 }
 
 // Simple version of ScanLines, but include the line break
-func scanLines(data []byte, atEOF bool) (advance int, token []byte, err error) {
+func ScanLines(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	if atEOF && len(data) == 0 {
 		return 0, nil, nil
 	}

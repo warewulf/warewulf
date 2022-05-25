@@ -10,6 +10,7 @@ import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/imprt"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/list"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/mkdir"
+	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/parse"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/show"
 	"github.com/spf13/cobra"
 )
@@ -17,9 +18,9 @@ import (
 var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:   "overlay COMMAND [OPTIONS]",
-		Short: "Warewulf Overlay Management",
-		Long:  "Management interface for Warewulf overlays",
+		Use:                   "overlay COMMAND [OPTIONS]",
+		Short:                 "Warewulf Overlay Management",
+		Long:                  "Management interface for Warewulf overlays",
 	}
 )
 
@@ -34,6 +35,8 @@ func init() {
 	baseCmd.AddCommand(imprt.GetCommand())
 	baseCmd.AddCommand(chmod.GetCommand())
 	baseCmd.AddCommand(chown.GetCommand())
+	baseCmd.AddCommand(parse.GetCommand())
+
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
