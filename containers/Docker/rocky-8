@@ -28,6 +28,7 @@ RUN dnf update -y ;\
 
 RUN sed -i -e '/^account.*pam_unix\.so\s*$/s/\s*$/\ broken_shadow/' /etc/pam.d/system-auth ;\
     sed -i -e '/^account.*pam_unix\.so\s*$/s/\s*$/\ broken_shadow/' /etc/pam.d/password-auth ;\
+    rm -f /etc/sysconfig/network-scripts/ifcfg-e* ;\
     systemctl unmask console-getty.service dev-hugepages.mount getty.target sys-fs-fuse-connections.mount systemd-logind.service systemd-remount-fs.service ;\
     systemctl enable network ;\
     touch /etc/sysconfig/disable-deprecation-warnings ;\
