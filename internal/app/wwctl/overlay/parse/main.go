@@ -46,6 +46,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.ERROR, "%s is not a file\n", args[0])
 	}
 	tstruct := overlay.InitStruct(host)
+	tstruct.BuildSource = args[0]
 	buffer, backupFile, writeFile, err := overlay.RenderTemplateFile(args[0], tstruct)
 	if err != nil {
 		return err
