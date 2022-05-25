@@ -67,8 +67,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if len(filenameFromTemplate) != 0 {
 			wwlog.Printf(wwlog.DEBUG, "Found multifile comment, new filename %s\n", filenameFromTemplate[0][1])
 			if foundFileComment {
-				wwlog.Printf(wwlog.INFO, "backupFile: %v\nwriteFile: %v\n", backupFile, writeFile)
-				wwlog.Printf(wwlog.INFO, "Filename: %s\n\n", destFileName)
+				if !Quiet {
+					wwlog.Printf(wwlog.INFO, "backupFile: %v\nwriteFile: %v\n", backupFile, writeFile)
+					wwlog.Printf(wwlog.INFO, "Filename: %s\n\n", destFileName)
+				}
 				wwlog.Printf(wwlog.INFO, "%s", outBuffer.String())
 				outBuffer.Reset()
 			}
@@ -78,8 +80,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			_, _ = outBuffer.WriteString(line)
 		}
 	}
-	wwlog.Printf(wwlog.INFO, "backupFile: %v\nwriteFile: %v\n", backupFile, writeFile)
-	wwlog.Printf(wwlog.INFO, "Filename: %s\n\n", destFileName)
+	if !Quiet {
+		wwlog.Printf(wwlog.INFO, "backupFile: %v\nwriteFile: %v\n", backupFile, writeFile)
+		wwlog.Printf(wwlog.INFO, "Filename: %s\n\n", destFileName)
+	}
 	wwlog.Printf(wwlog.INFO, "%s", outBuffer.String())
 	return nil
 }

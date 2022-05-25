@@ -18,6 +18,7 @@ var (
 		Args:                  cobra.ExactArgs(1),
 	}
 	NodeName string
+	Quiet    bool
 )
 
 func init() {
@@ -33,6 +34,7 @@ func init() {
 	}); err != nil {
 		log.Println(err)
 	}
+	baseCmd.PersistentFlags().BoolVarP(&Quiet, "quiet", "q", false, "do not print information if multiple, backup files are written")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
