@@ -178,7 +178,7 @@ func updateSystem(ipaddr string, port int, wwid string, tag string, localUUID uu
 	counter := 0
 	for {
 		var err error
-		getString := fmt.Sprintf("http://%s:%d/overlay-runtime/%s?assetkey=%s&uuid=%s", ipaddr, port, wwid, tag, localUUID)
+		getString := fmt.Sprintf("http://%s:%d/provision/%s?assetkey=%s&uuid=%s&stage=runtime&compress=gz", ipaddr, port, wwid, tag, localUUID)
 		wwlog.Printf(wwlog.DEBUG, "Making request: %s\n", getString)
 		resp, err = Webclient.Get(getString)
 		if err == nil {

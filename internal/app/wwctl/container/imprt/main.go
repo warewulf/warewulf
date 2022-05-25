@@ -75,11 +75,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		name = args[1]
 	} else {
 		name = path.Base(uri)
-		fmt.Printf("Setting VNFS name: %s\n", name)
+		wwlog.Info("Setting VNFS name: %s", name)
 	}
 
 	if !container.ValidName(name) {
-		wwlog.Printf(wwlog.ERROR, "VNFS name contains illegal characters: %s\n", name)
+		wwlog.Error("VNFS name contains illegal characters: %s", name)
 		os.Exit(1)
 	}
 
@@ -87,75 +87,75 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	if util.IsDir(fullPath) {
 		if SetForce {
-			fmt.Printf("Overwriting existing VNFS\n")
+			wwlog.Info("Overwriting existing VNFS")
 			err := os.RemoveAll(fullPath)
 			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				wwlog.ErrorExc(err, "")
 				os.Exit(1)
 			}
 		} else if SetUpdate {
-			fmt.Printf("Updating existing VNFS\n")
+			wwlog.Info("Updating existing VNFS")
 		} else {
-			wwlog.Printf(wwlog.ERROR, "VNFS Name exists, specify --force, --update, or choose a different name: %s\n", name)
+			wwlog.Error("VNFS Name exists, specify --force, --update, or choose a different name: %s", name)
 			os.Exit(1)
 		}
 	} else if strings.HasPrefix(uri, "docker://") || strings.HasPrefix(uri, "docker-daemon://") ||
 		strings.HasPrefix(uri, "file://") || util.IsFile(uri) {
 		sCtx, err := getSystemContext()
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "%s\n", err)
+			wwlog.ErrorExc(err, "")
 		}
 
 		err = container.ImportDocker(uri, name, sCtx)
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Could not import image: %s\n", err)
+			wwlog.Error("Could not import image: %s", err)
 			_ = container.DeleteSource(name)
 			os.Exit(1)
 		}
 	} else if util.IsDir(uri) {
 		err := container.ImportDirectory(uri, name)
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Could not import image: %s\n", err)
+			wwlog.Error("Could not import image: %s", err)
 			_ = container.DeleteSource(name)
 			os.Exit(1)
 		}
 	} else {
-		wwlog.Printf(wwlog.ERROR, "Invalid dir or uri: %s\n", uri)
+		wwlog.Error("Invalid dir or uri: %s", uri)
 		os.Exit(1)
 	}
 
-	fmt.Printf("Updating the container's /etc/resolv.conf\n")
+	wwlog.Info("Updating the container's /etc/resolv.conf")
 	err := util.CopyFile("/etc/resolv.conf", path.Join(container.RootFsDir(name), "/etc/resolv.conf"))
 	if err != nil {
-		wwlog.Printf(wwlog.WARN, "Could not copy /etc/resolv.conf into container: %s\n", err)
+		wwlog.Warn("Could not copy /etc/resolv.conf into container: %s", err)
 	}
 
 	err = container.SyncUids(name, !SyncUser)
 	if err != nil && !SyncUser {
-		wwlog.Printf(wwlog.ERROR, "Error in user sync, fix error and run 'syncuser' manually: %s\n", err)
+		wwlog.Error("Error in user sync, fix error and run 'syncuser' manually: %s", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("Building container: %s\n", name)
+	wwlog.Info("Building container: %s", name)
 	err = container.Build(name, true)
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not build container %s: %s\n", name, err)
+		wwlog.Error("Could not build container %s: %s", name, err)
 		os.Exit(1)
 	}
 
 	if SetDefault {
 		nodeDB, err := node.New()
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
+			wwlog.Error("Could not open node configuration: %s", err)
 			os.Exit(1)
 		}
 
 		//TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
 		profiles, _ := nodeDB.FindAllProfiles()
 		for _, profile := range profiles {
-			wwlog.Printf(wwlog.DEBUG, "Looking for profile default: %s\n", profile.Id.Get())
+			wwlog.Printf(wwlog.DEBUG, "Looking for profile default: %s", profile.Id.Get())
 			if profile.Id.Get() == "default" {
-				wwlog.Printf(wwlog.DEBUG, "Found profile default, setting container name to: %s\n", name)
+				wwlog.Printf(wwlog.DEBUG, "Found profile default, setting container name to: %s", name)
 				profile.ContainerName.Set(name)
 				err := nodeDB.ProfileUpdate(profile)
 				if err != nil {
@@ -168,7 +168,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			return errors.Wrap(err, "failed to persist nodedb")
 		}
 
-		fmt.Printf("Set default profile to container: %s\n", name)
+		wwlog.Info("Set default profile to container: %s", name)
 		err = warewulfd.DaemonReload()
 		if err != nil {
 			return errors.Wrap(err, "failed to reload warewulf daemon")

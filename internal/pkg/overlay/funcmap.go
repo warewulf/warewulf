@@ -55,6 +55,14 @@ func templateFileBlock(inc string, abortStr string) (string, error) {
 		}
 		cont += line + "\n"
 	}
+
+	// NOTE: the text originally contains N-1 newlines for N lines, but the above
+	// loop will always add one at the end
+	// Avoids adding a blank line that was not present in the original file
+	// by adding 'abort' string to the end of the included block (without a newline)
+	// instead of manually in the template
+	cont += abortStr
+
 	return cont, nil
 
 }

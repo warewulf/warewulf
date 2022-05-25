@@ -1,7 +1,6 @@
 package add
 
 import (
-	"fmt"
 	"net"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -135,7 +134,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 			// just check if address is a valid ipv6 CIDR address
 			if _, _, err := net.ParseCIDR(SetIpaddr6); err != nil {
-				return errors.New(fmt.Sprintf("%s is not a valid ipv6 address in CIDR notation\n", SetIpaddr6))
+				return errors.Errorf("%s is not a valid ipv6 address in CIDR notation\n", SetIpaddr6)
 			}
 
 		}

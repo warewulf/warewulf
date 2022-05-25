@@ -1,10 +1,8 @@
 package container
 
 import (
-	"fmt"
-	"os"
-	"os/exec"
 	"path"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -18,50 +16,42 @@ func Build(name string, buildForce bool) error {
 	imagePath := ImageFile(name)
 
 	if !ValidSource(name) {
-		return errors.New("Container does not exist")
+		return errors.Errorf("Container does not exist: %s", name)
 	}
 
 	if !buildForce {
-		wwlog.Printf(wwlog.DEBUG, "Checking if there have been any updates to the VNFS directory\n")
+		wwlog.Debug("Checking if there have been any updates to the VNFS directory")
 		if util.PathIsNewer(rootfsPath, imagePath) {
-			wwlog.Printf(wwlog.INFO, "Skipping (VNFS is current)\n")
+			wwlog.Info("Skipping (VNFS is current)")
 			return nil
 		}
 	}
 
-	wwlog.Printf(wwlog.DEBUG, "Making parent directory for: %s\n", name)
-	err := os.MkdirAll(path.Dir(imagePath), 0755)
-	if err != nil {
-		return errors.New("Failed creating directory")
+	excludes_file := path.Join(rootfsPath, "./etc/warewulf/excludes")
+	ignore := []string{}
+
+	if util.IsFile(excludes_file) {
+		ignore, err := util.ReadFile(excludes_file)
+		if err != nil {
+			return errors.Wrapf(err, "Failed creating directory: %s", imagePath)
+		}
+
+		for i, pattern := range ignore {
+			if ( strings.HasPrefix(pattern, "/") ) {
+				ignore[i] = pattern[1:]
+			}
+		}
 	}
 
-	wwlog.Printf(wwlog.DEBUG, "Making parent directory for: %s\n", rootfsPath)
-	err = os.MkdirAll(path.Dir(rootfsPath), 0755)
-	if err != nil {
-		return errors.New("Failed creating directory")
-	}
+	err := util.BuildFsImage(
+		"VNFS container " + name,
+		rootfsPath,
+		imagePath,
+		[]string{"*"},
+		ignore,
+		// ignore cross-device files
+		true,
+		"newc")
 
-	compressor, err := exec.LookPath("pigz")
-	if err != nil {
-		wwlog.Printf(wwlog.VERBOSE, "Could not locate PIGZ, using GZIP\n")
-		compressor = "gzip"
-	} else {
-		wwlog.Printf(wwlog.VERBOSE, "Using PIGZ to compress the container: %s\n", compressor)
-	}
-	var cmd string
-	_, err = os.Stat(path.Join(rootfsPath, "./etc/warewulf/excludes"))
-	if os.IsNotExist(err) {
-		wwlog.Printf(wwlog.DEBUG, "Building VNFS image: '%s' -> '%s'\n", rootfsPath, imagePath)
-		cmd = fmt.Sprintf("cd %s; find . -xdev -xautofs | cpio --quiet -o -H newc | %s -c > \"%s\"", rootfsPath, compressor, imagePath)
-	} else {
-		wwlog.Printf(wwlog.DEBUG, "Building VNFS image with excludes: '%s' -> '%s'\n", rootfsPath, imagePath)
-		cmd = fmt.Sprintf("cd %s; find . -xdev -xautofs | grep -v -f ./etc/warewulf/excludes | cpio --quiet -o -H newc | %s -c > \"%s\"", rootfsPath, compressor, imagePath)
-	}
-	wwlog.Printf(wwlog.DEBUG, "RUNNING: %s\n", cmd)
-	err = exec.Command("/bin/sh", "-c", cmd).Run()
-	if err != nil {
-		return errors.New("Failed building VNFS")
-	}
-
-	return nil
+	return err
 }
