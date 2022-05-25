@@ -29,8 +29,8 @@ func runContainedCmd(args []string) error {
 	c.Stderr = os.Stderr
 
 	if err := c.Run(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		fmt.Printf("Command exited non-zero, not rebuilding/updating VNFS image\n")
+		os.Exit(0)
 	}
 	return nil
 }
