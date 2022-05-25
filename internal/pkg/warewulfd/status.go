@@ -58,7 +58,7 @@ func LoadNodeStatus() error {
 func updateStatus(nodeID, stage, sent, ipaddr string) {
 	rightnow := time.Now().Unix()
 
-	wwlog.Printf(wwlog.DEBUG, "Updating node status data: %s\n", nodeID)
+	wwlog.Debug("Updating node status data: %s", nodeID)
 
 	var n NodeStatus
 	n.NodeName = nodeID
@@ -71,7 +71,7 @@ func updateStatus(nodeID, stage, sent, ipaddr string) {
 
 func statusJSON() ([]byte, error) {
 
-	wwlog.Printf(wwlog.DEBUG, "Request for node status data...\n")
+	wwlog.Debug("Request for node status data...")
 
 	ret, err := json.MarshalIndent(statusDB, "", "  ")
 	if err != nil {
@@ -85,11 +85,12 @@ func StatusSend(w http.ResponseWriter, req *http.Request) {
 
 	status, err := statusJSON()
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	_, err = w.Write(status)
 	if err != nil {
-		wwlog.Printf(wwlog.WARN, "Could not send status JSON: %s\n", err)
+		wwlog.Warn("Could not send status JSON: %s", err)
 	}
 }
