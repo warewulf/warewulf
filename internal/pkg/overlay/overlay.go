@@ -162,7 +162,7 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayNames []string) error {
 
 	buildDir, err := ioutil.TempDir(os.TempDir(), ".wwctl-overlay-")
 	if err != nil {
-		return errors.Wrapf(err, "Failed to create temporary directory for %s", name )
+		return errors.Wrapf(err, "Failed to create temporary directory for %s", name)
 	}
 	defer os.RemoveAll(buildDir)
 
@@ -445,7 +445,7 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 Writes buffer to the destination file. If wwbackup is set a wwbackup will be created.
 */
 func carefulWriteBuffer(destFile string, buffer bytes.Buffer, backupFile bool, perm fs.FileMode) error {
-	wwlog.Debug("Trying to careful write file (%d bytes): %s", buffer.Len(), destFile )
+	wwlog.Debug("Trying to careful write file (%d bytes): %s", buffer.Len(), destFile)
 	if backupFile {
 		if !util.IsFile(destFile+".wwbackup") && util.IsFile(destFile) {
 			err := util.CopyFile(destFile, destFile+".wwbackup")

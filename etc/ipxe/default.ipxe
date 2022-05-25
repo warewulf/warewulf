@@ -14,39 +14,44 @@ echo KernelArgs:    {{.KernelArgs}}
 echo
 
 set uri_base http://{{.Ipaddr}}:{{.Port}}/provision/{{.Hwaddr}}?assetkey=${asset}&uuid=${uuid}
-echo Downloading node provisions: ${uri_base}
+echo Warewulf Controller: {{.Ipaddr}}
 
-echo Kernel image:
+echo Downloading Kernel Image:
 kernel --name kernel ${uri_base}&stage=kernel       || goto reboot
 
-# try extracting compressed images first
-# NOTE: system overlay tends to be the smallest, so failure here is the cheapest
-echo System image:
-imgextract --name system ${uri_base}&stage=system&compress=gz       || goto nocompress
+## try extracting compressed images first
+## NOTE: system overlay tends to be the smallest, so failure here is the cheapest
+#echo Downloading Container Image:
+#imgextract --name container ${uri_base}&stage=container&compress=gz || goto nocompress
+#
+#echo Downloading System Overlay:
+#imgextract --name system ${uri_base}&stage=system&compress=gz       || goto reboot
+#
+#echo Downloading Runtime Overlay:
+#imgextract --name runtime ${uri_base}&stage=runtime&compress=gz     || goto reboot
+#
+#{{if ne .KernelOverride "" -}}
+#echo Downloading Kernel Modules:
+#imgextract --name kmods ${uri_base}&stage=kmods&compress=gz         || goto reboot
+#{{- end}}
+#
+#goto imoktogo
+#
+#:nocompress
+#
+#echo Extraction failed, attempting un-compressed version of images
 
-echo Container image:
-imgextract --name container ${uri_base}&stage=container&compress=gz || goto reboot
-
-{{if ne .KernelOverride "" -}}
-echo Kernel modules image:
-imgextract --name kmods ${uri_base}&stage=kmods&compress=gz         || goto reboot
-{{- end}}
-
-goto imoktogo
-
-:nocompress
-
-echo Extraction failed, attempting un-compressed version of images
-
-echo System image:
-initrd --name system ${uri_base}&stage=system           || goto reboot
-
-echo Container image:
+echo Downloading Container Image:
 initrd --name container ${uri_base}&stage=container     || goto reboot
 
+echo Downloading System Overlay:
+initrd --name system ${uri_base}&stage=system           || goto reboot
+
+echo Downloading Runtime Overlay:
+initrd --name runtime ${uri_base}&stage=runtime         || goto reboot
 
 {{if ne .KernelOverride "" -}}
-echo Kernel modules image:
+echo Downloading Kernel Modules:
 initrd --name kmods ${uri_base}&stage=kmods             || goto reboot
 {{- end}}
 
@@ -55,13 +60,13 @@ initrd --name kmods ${uri_base}&stage=kmods             || goto reboot
 
 echo Booting in 3s...
 {{if ne .KernelOverride "" -}}
-echo boot kernel initrd=container initrd=kmods initrd=system wwid={{.Hwaddr}} {{.KernelArgs}}
+echo boot kernel initrd=container initrd=kmods initrd=system initrd=runtime wwid={{.Hwaddr}} {{.KernelArgs}}
 sleep 3
-boot kernel initrd=container initrd=kmods initrd=system wwid={{.Hwaddr}} {{.KernelArgs}} ||  goto reboot
+boot kernel initrd=container initrd=kmods initrd=system initrd=runtime wwid={{.Hwaddr}} {{.KernelArgs}} ||  goto reboot
 {{- else -}}
-echo boot kernel initrd=container initrd=system wwid={{.Hwaddr}} {{.KernelArgs}}
+echo boot kernel initrd=container initrd=system initrd=runtime wwid={{.Hwaddr}} {{.KernelArgs}}
 sleep 3
-boot kernel initrd=container initrd=system wwid={{.Hwaddr}} {{.KernelArgs}} ||  goto reboot
+boot kernel initrd=container initrd=system initrd=runtime wwid={{.Hwaddr}} {{.KernelArgs}} ||  goto reboot
 {{- end}}
 
 :reboot
