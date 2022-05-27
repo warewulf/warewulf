@@ -24,6 +24,8 @@ if exists user-class and option user-class = "iPXE" {
         filename "/warewulf/arm64.efi";
     } elsif option architecture-type = 00:09 {
         filename "/warewulf/x86_64.efi";
+    } elsif option architecture-type = 00:07 {
+        filename "/warewulf/x86_64.efi";
     } elsif option architecture-type = 00:00 {
         filename "/warewulf/x86_64.kpxe";
     }
