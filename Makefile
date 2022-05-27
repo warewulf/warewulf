@@ -162,7 +162,6 @@ files: all
 	install -d -m 0755 $(DESTDIR)$(WWPROVISIONDIR)
 	install -d -m 0755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/$(WWCLIENTDIR)
 	install -d -m 0755 $(DESTDIR)$(WWCONFIGDIR)/ipxe
-	install -d -m 0755 $(DESTDIR)$(WWTFTPDIR)/ipxe/
 	install -d -m 0755 $(DESTDIR)$(BASHCOMPDIR)
 	install -d -m 0755 $(DESTDIR)$(MANDIR)/man1
 	install -d -m 0755 $(DESTDIR)$(WWDOCDIR)
@@ -187,9 +186,8 @@ files: all
 	cp bash_completion.d/warewulf $(DESTDIR)$(BASHCOMPDIR)
 	cp man_pages/* $(DESTDIR)$(MANDIR)/man1/
 	install -m 0644 staticfiles/arm64.efi $(DESTDIR)$(WWDATADIR)/ipxe
-	install -m 0644 staticfiles/i386.efi $(DESTDIR)$(WWDATADIR)/ipxe
-	install -m 0644 staticfiles/i386.kpxe $(DESTDIR)$(WWDATADIR)/ipxe
-	install -m 0644 staticfiles/x86.efi $(DESTDIR)$(WWDATADIR)/ipxe
+	install -m 0644 staticfiles/x86_64.efi $(DESTDIR)$(WWDATADIR)/ipxe
+	install -m 0644 staticfiles/x86_64.kpxe $(DESTDIR)$(WWDATADIR)/ipxe
 
 init:
 	systemctl daemon-reload
