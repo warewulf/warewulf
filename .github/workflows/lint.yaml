@@ -17,14 +17,15 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Setup go ${{ matrix.go }}
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go }}
+          cache: true
 
       - name: Lint
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.45.2
+          version: v1.46.2
           skip-build-cache: true
           skip-pkg-cache: true
           args: --build-tags "containers_image_openpgp containers_image_ostree" --timeout 5m --skip-dirs internal/pkg/staticfiles
