@@ -17,11 +17,15 @@ cd "$TMPDIR"
 git clone https://github.com/ipxe/ipxe.git
 cd ipxe/src
 
-sed -i -e 's@//#define	CONSOLE_SERIAL@#define	CONSOLE_SERIAL@' config/console.h
-sed -i -e 's@//#define	CONSOLE_FRAMEBUFFER@#define	CONSOLE_FRAMEBUFFER@' config/console.h
+sed -i.bak \
+    -e 's,//\(#define.*CONSOLE_SERIAL.*\),\1,' \
+    -e 's,//\(#define.*CONSOLE_FRAMEBUFFER.*\),\1,' \
+    config/console.h
 
-sed -i -e 's@//#define	IMAGE_ZLIB@#define	IMAGE_ZLIB@' config/general.h
-sed -i -e 's@//#define	IMAGE_GZIP@#define	IMAGE_GZIP@' config/general.h
+sed -i.bak \
+    -e 's,//\(#define.*IMAGE_ZLIB.*\),\1,' \
+    -e 's,//\(#define.*IMAGE_GZIP.*\),\1,' \
+    config/general.h
 
 make -j 8 $PCBIOS
 make -j 8 $EFI
