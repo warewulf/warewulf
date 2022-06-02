@@ -2,7 +2,6 @@ package warewulfd
 
 import (
 	"io"
-	"bytes"
 	"net/http"
 	"os"
 	"strconv"
@@ -36,17 +35,15 @@ func sendFile(w http.ResponseWriter, filename string, sendto string) error {
 		return errors.Wrap(err, "failed to seek")
 	}
 
-	var buf bytes.Buffer
-	_, err = io.Copy(&buf, fd)
+	w.Header().Set("Content-Disposition", "attachment; filename=kernel")
+	w.Header().Set("Content-Type", FileContentType)
+	w.Header().Set("Content-Length", FileSize)
+
+	_, err = io.Copy(w, fd)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return errors.Wrap(err, "failed to copy")
 	}
-
-	w.Header().Set("Content-Disposition", "attachment; filename=kernel")
-	w.Header().Set("Content-Type", FileContentType)
-	w.Header().Set("Content-Length", FileSize)
-	_, err = buf.WriteTo(w)
 
 	wwlog.Send("%15s: %s", sendto, filename)
 
