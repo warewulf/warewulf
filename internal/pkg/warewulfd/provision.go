@@ -70,47 +70,11 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 	// TODO: when module version is upgraded to go1.18, should be 'any' type
 	var tmpl_data interface{}
 
-	node, err := GetNode(rinfo.hwaddr)
+	node, err := GetNodeOrSetDiscoverable(rinfo.hwaddr)
 	if err != nil {
-		// If we failed to find a node, let's see if we can add one...
-		var netdev string
-
-		wwlog.Warn("%s (node not configured)", rinfo.hwaddr)
-
-		nodeDB, err := nodepkg.New()
-		if err != nil {
-			wwlog.Error("Could not read node configuration file: %s", err)
-			w.WriteHeader(http.StatusServiceUnavailable)
-			return
-		}
-
-		n, netdev, err := nodeDB.FindDiscoverableNode()
-		if err == nil {
-			n.NetDevs[netdev].Hwaddr.Set(rinfo.hwaddr)
-			n.Discoverable.SetB(false)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Serv("%s (failed to set node configuration)", rinfo.hwaddr)
-
-			} else {
-				err := nodeDB.Persist()
-				if err != nil {
-					wwlog.Serv("%s (failed to persist node configuration)", rinfo.hwaddr)
-
-				} else {
-					node = n
-					_ = overlay.BuildAllOverlays([]nodepkg.NodeInfo{n})
-
-					wwlog.Serv("%s (node automatically configured)", rinfo.hwaddr)
-
-					err := LoadNodeDB()
-					if err != nil {
-						wwlog.Warn("Could not reload configuration: %s", err)
-					}
-
-				}
-			}
-		}
+		wwlog.ErrorExc(err, "")
+		w.WriteHeader(http.StatusServiceUnavailable)
+		return
 	}
 
 	if node.AssetKey.Defined() && node.AssetKey.Get() != rinfo.assetkey {
