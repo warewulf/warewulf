@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
