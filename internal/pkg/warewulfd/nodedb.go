@@ -20,6 +20,12 @@ var (
 )
 
 func LoadNodeDB() error {
+	db.lock.Lock()
+	defer db.lock.Unlock()
+	return loadNodeDB()
+}
+
+func loadNodeDB() error {
 	TmpMap := make(map[string]node.NodeInfo)
 
 	DB, err := node.New()
@@ -39,8 +45,6 @@ func LoadNodeDB() error {
 		}
 	}
 
-	db.lock.Lock()
-	defer db.lock.Unlock()
 	db.NodeInfo = TmpMap
 
 	return nil
@@ -49,6 +53,10 @@ func LoadNodeDB() error {
 func GetNode(val string) (node.NodeInfo, error) {
 	db.lock.RLock()
 	defer db.lock.RUnlock()
+	return getNode(val)
+}
+
+func getNode(val string) (node.NodeInfo, error) {
 
 	if _, ok := db.NodeInfo[val]; ok {
 
@@ -60,14 +68,19 @@ func GetNode(val string) (node.NodeInfo, error) {
 }
 
 func GetNodeOrSetDiscoverable(hwaddr string) (node.NodeInfo, error) {
+	db.lock.Lock()
+	defer db.lock.Unlock()
+	return getNodeOrSetDiscoverable(hwaddr)
+}
+
+func getNodeOrSetDiscoverable(hwaddr string) (node.NodeInfo, error) {
 	// NOTE: since discoverable nodes will write an updated DB to file and then
 	// reload, it is not enough to lock individual reads from the DB
 	// to ensure the condition on which the node is updated is still satisfied
 	// after the DB is read back in.
-	db.lock.Lock()
-	defer db.lock.Unlock()
 
-	n, err := GetNode(hwaddr)
+
+	n, err := getNode(hwaddr)
 	if err == nil {
 		return n, nil
 	}
@@ -105,7 +118,7 @@ func GetNodeOrSetDiscoverable(hwaddr string) (node.NodeInfo, error) {
 		return n, errors.Wrapf(err, "%s (failed to persist node configuration)", hwaddr)
 	}
 
-	err = LoadNodeDB()
+	err = loadNodeDB()
 	if err != nil {
 		return n, errors.Wrapf(err, "%s (failed to reload configuration)", hwaddr)
 	}
