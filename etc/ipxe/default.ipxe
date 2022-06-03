@@ -43,17 +43,17 @@ echo
 echo Image extract not supported in this iPXE, using standard initrd mode
 
 echo Downloading Container Image:
-initrd --name container ${uri_base}&stage=container&compress=gz     || goto reboot
+initrd --name container ${uri_base}&stage=container     || goto reboot
 
 echo Downloading System Overlay:
-initrd --name system ${uri_base}&stage=system&compress=gz           || goto reboot
+initrd --name system ${uri_base}&stage=system           || goto reboot
 
 echo Downloading Runtime Overlay:
-initrd --name runtime ${uri_base}&stage=runtime&compress=gz         || goto reboot
+initrd --name runtime ${uri_base}&stage=runtime         || goto reboot
 
 {{if ne .KernelOverride "" -}}
 echo Downloading Kernel Modules:
-initrd --name kmods ${uri_base}&stage=kmods&compress=gz             || goto reboot
+initrd --name kmods ${uri_base}&stage=kmods             || goto reboot
 {{- end}}
 
 
