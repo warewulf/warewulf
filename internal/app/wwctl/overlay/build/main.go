@@ -3,11 +3,9 @@ package build
 import (
 	"errors"
 	"os"
-	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
-	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/hpcng/warewulf/pkg/hostlist"
@@ -54,7 +52,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 			for _, node := range nodes {
-				return overlay.BuildOverlayIndir(node, OverlayNames), OverlayDir)
+				return overlay.BuildOverlayIndir(node, OverlayNames, OverlayDir)
 			}
 		} else {
 			// TODO this seems different than what is set in BuildHostOverlay

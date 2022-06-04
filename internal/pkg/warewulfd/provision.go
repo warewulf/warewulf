@@ -162,7 +162,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			if !util.IsFile(stage_file) || util.PathIsNewer(stage_file, nodepkg.ConfigFile) || oneoverlaynewer {
 				wwlog.Serv("BUILD %15s, overlays %v", node.Id.Get(), stage_overlays)
 
-				args := []string{}
+				args := []string{"overlay", "build"}
 
 				for _, overlayname := range stage_overlays {
 					args = append(args, "-O", overlayname)
@@ -170,11 +170,11 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 
 				args = append(args, node.Id.Get())
 
-				out, err := util.RunWWCTL("overlay", "build", args...)
+				out, err := util.RunWWCTL(args...)
 
 				if err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
-					wwlog.ErrorExc(err, out)
+					wwlog.ErrorExc(err, string(out))
 					return
 				}
 			}
