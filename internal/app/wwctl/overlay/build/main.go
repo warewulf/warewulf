@@ -3,6 +3,7 @@ package build
 import (
 	"errors"
 	"os"
+	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
@@ -38,6 +39,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			return errors.New("Failed to find nodes")
 		}
 	}
+
+	// NOTE: this is to keep backward compatible
+	// passing -O a,b,c versus -O a -O b -O c, but will also accept -O a,b -O c
+	overlayNames := []string{}
+	for _, name := range OverlayNames {
+		names := strings.Split(name, ",")
+		overlayNames = append(overlayNames, names...)
+	}
+	OverlayNames = overlayNames
 
 	if OverlayDir != "" {
 		if len(OverlayNames) == 0 {
