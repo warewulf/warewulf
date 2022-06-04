@@ -68,13 +68,13 @@ func BuildAllOverlays(nodes []node.NodeInfo) error {
 
 // TODO: Add an Overlay Delete for both sourcedir and image
 
-func BuildSpecificOverlays(nodes []node.NodeInfo, overlayName string) error {
+func BuildSpecificOverlays(nodes []node.NodeInfo, overlayNames []string) error {
 	for _, n := range nodes {
 
-		wwlog.Info("Building overlay for %s: %s", n.Id.Get(), overlayName)
-		err := BuildOverlay(n, []string{overlayName})
+		wwlog.Info("Building overlay for %s: %v", n.Id.Get(), overlayNames)
+		err := BuildOverlay(n, overlayNames)
 		if err != nil {
-			return errors.Wrap(err, "could not build overlay "+n.Id.Get()+"/"+overlayName+".img")
+			return errors.Wrapf(err, "could not build overlay for node %s: %v", n.Id.Get(), overlayNames)
 		}
 
 	}

@@ -31,14 +31,15 @@ var (
 	}
 	BuildHost   bool
 	BuildNodes  bool
-	OverlayName string
+	OverlayNames []string
 	OverlayDir  string
 )
 
 func init() {
 	baseCmd.PersistentFlags().BoolVarP(&BuildHost, "host", "H", false, "Build overlays only for the host")
 	baseCmd.PersistentFlags().BoolVarP(&BuildNodes, "nodes", "N", false, "Build overlays only for the nodes")
-	baseCmd.PersistentFlags().StringVarP(&OverlayName, "overlay", "O", "", "Build only specific overlay")
+	baseCmd.PersistentFlags().StringSliceVar(&OverlayNames, "overlay", "O", []string{}, "Build only specific overlay(s)")
+
 	if err := baseCmd.RegisterFlagCompletionFunc("overlay", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		list, _ := overlay.FindOverlays()
 		return list, cobra.ShellCompDirectiveNoFileComp

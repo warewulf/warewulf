@@ -70,7 +70,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 		}
 
-		return overlay.BuildSpecificOverlays(updateNodes, overlayName)
+		return overlay.BuildSpecificOverlays(updateNodes, []string{overlayName})
 	}
 
 	return nil

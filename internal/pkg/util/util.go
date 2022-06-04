@@ -654,3 +654,15 @@ func BuildFsImage(
 
 	return nil
 }
+
+/*******************************************************************************
+	Runs wwctl command
+*/
+func RunWWCTL(args ...string) (out string, err error) {
+
+	proc := exec.Command("wwctl", args...)
+
+	out, err := proc.CombinedOutput()
+
+	return out, err
+}
