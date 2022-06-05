@@ -31,7 +31,7 @@ var processLimitedNum int32 = 0
 // Counter over total history of started processes
 var processLimitedCounter uint32 = 0
 
-func ProcessLimitedEnter() (index int32) {
+func ProcessLimitedEnter() (index uint32) {
 	atomic.AddInt32(&processLimitedNum, 1)
 	index = atomic.AddUint32(&processLimitedCounter, 1)
 	// NOTE: blocks when channel is full (i.e. processLimitedMax)
@@ -45,8 +45,8 @@ func ProcessLimitedExit() {
 	atomic.AddInt32(&processLimitedNum, -1)
 }
 
-func ProcessLimitedStatus() (running int, queued int) {
-	running = len(processLimitedChan)
+func ProcessLimitedStatus() (running int32, queued int32) {
+	running = int32(len(processLimitedChan))
 	queued = processLimitedNum - running
 	return
 }
