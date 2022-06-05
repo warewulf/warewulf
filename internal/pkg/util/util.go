@@ -12,13 +12,44 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
+	"sync/atomic"
 	"syscall"
 	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 )
+
+// maximum number of concurrent spawned processes
+var processLimitedMax = runtime.NumCPU()
+// Channel used as semaphore to specififed processLimitedMax
+var processLimitedChan = make(chan int, processLimitedMax)
+// Current number of processes started + queued
+var processLimitedNum int32 = 0
+// Counter over total history of started processes
+var processLimitedCounter uint32 = 0
+
+func ProcessLimitedEnter() (index int32) {
+	atomic.AddInt32(&processLimitedNum, 1)
+	index = atomic.AddUint32(&processLimitedCounter, 1)
+	// NOTE: blocks when channel is full (i.e. processLimitedMax)
+	// until a process exists and takes one out of channel
+	processLimitedChan <- 1
+	return
+}
+
+func ProcessLimitedExit() {
+	<-processLimitedChan
+	atomic.AddInt32(&processLimitedNum, -1)
+}
+
+func ProcessLimitedStatus() (running int, queued int) {
+	running = len(processLimitedChan)
+	queued = processLimitedNum - running
+	return
+}
 
 func FirstError(errs ...error) (err error) {
 	for _, e := range errs {
@@ -659,10 +690,18 @@ func BuildFsImage(
 	Runs wwctl command
 */
 func RunWWCTL(args ...string) (out []byte, err error) {
+	index := ProcessLimitedEnter()
+	defer ProcessLimitedExit()
+	running, queued := ProcessLimitedStatus()
+
+	wwlog.Debug("Starting wwctl process %d (%d running, %d queued): %v",
+		index, running, queued, args )
 
 	proc := exec.Command("wwctl", args...)
 
 	out, err = proc.CombinedOutput()
+
+	wwlog.Debug("Finished wwctl process %d", index)
 
 	return out, err
 }
