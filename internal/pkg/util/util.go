@@ -22,8 +22,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+// reserve some number of cpus for system/warwulfd usage
+var processLimitedReserve int = 4
 // maximum number of concurrent spawned processes
-var processLimitedMax = runtime.NumCPU()
+var processLimitedMax = MaxInt(1, runtime.NumCPU() - processLimitedReserve)
 // Channel used as semaphore to specififed processLimitedMax
 var processLimitedChan = make(chan int, processLimitedMax)
 // Current number of processes started + queued
@@ -49,6 +51,14 @@ func ProcessLimitedStatus() (running int32, queued int32) {
 	running = int32(len(processLimitedChan))
 	queued = processLimitedNum - running
 	return
+}
+
+func MaxInt( a int, b int ) int {
+	if a > b {
+		return a
+	}
+
+	return b
 }
 
 func FirstError(errs ...error) (err error) {
@@ -694,14 +704,14 @@ func RunWWCTL(args ...string) (out []byte, err error) {
 	defer ProcessLimitedExit()
 	running, queued := ProcessLimitedStatus()
 
-	wwlog.Debug("Starting wwctl process %d (%d running, %d queued): %v",
+	wwlog.Verbose("Starting wwctl process %d (%d running, %d queued): %v",
 		index, running, queued, args )
 
 	proc := exec.Command("wwctl", args...)
 
 	out, err = proc.CombinedOutput()
 
-	wwlog.Debug("Finished wwctl process %d", index)
+	wwlog.Verbose("Finished wwctl process %d", index)
 
 	return out, err
 }
