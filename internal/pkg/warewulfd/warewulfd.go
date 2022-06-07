@@ -26,7 +26,7 @@ func RunServer() error {
 
 	go func() {
 		for range c {
-			wwlog.Warn("Recieved SIGHUP, reloading...")
+			wwlog.Warn("Received SIGHUP, reloading...")
 			err := LoadNodeDB()
 			if err != nil {
 				wwlog.Error("Could not load node DB: %s", err)
