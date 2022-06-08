@@ -57,7 +57,7 @@ func (ent *Entry) Set(val string) {
 		return
 	}
 
-	if val == "UNDEF" || val == "DELETE" || val == "UNSET" || val == "--" {
+	if val == "UNDEF" || val == "DELETE" || val == "UNSET" || val == "--" || val == "nil" {
 		wwlog.Debug("Removing value for %v\n", *ent)
 		ent.value = []string{""}
 	} else {
