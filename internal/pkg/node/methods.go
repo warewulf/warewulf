@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
 /**********
@@ -56,7 +58,8 @@ func (ent *Entry) Set(val string) {
 	}
 
 	if val == "UNDEF" || val == "DELETE" || val == "UNSET" || val == "--" {
-		ent.value = []string{}
+		wwlog.Debug("Removing value for %v\n", *ent)
+		ent.value = []string{""}
 	} else {
 		ent.value = []string{val}
 	}
