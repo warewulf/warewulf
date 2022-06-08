@@ -23,21 +23,21 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	overlayName := args[0]
 	fileName := args[1]
+	overlaySourceDir = overlay.OverlaySourceDir(overlayName)
+
+	if !util.IsDir(overlaySourceDir) {
+		wwlog.Printf(wwlog.ERROR, "Overlay does not exist: %s\n", overlayName)
+		os.Exit(1)
+	}
+
+	overlayFile := path.Join(overlaySourceDir, fileName)
+
+	if !util.IsFile(overlayFile) {
+		wwlog.Printf(wwlog.ERROR, "File does not exist within overlay: %s:%s\n", overlayName, fileName)
+		os.Exit(1)
+	}
+
 	if NodeName == "" {
-		overlaySourceDir = overlay.OverlaySourceDir(overlayName)
-
-		if !util.IsDir(overlaySourceDir) {
-			wwlog.Printf(wwlog.ERROR, "Overlay does not exist: %s\n", overlayName)
-			os.Exit(1)
-		}
-
-		overlayFile := path.Join(overlaySourceDir, fileName)
-
-		if !util.IsFile(overlayFile) {
-			wwlog.Printf(wwlog.ERROR, "File does not exist within overlay: %s:%s\n", overlayName, fileName)
-			os.Exit(1)
-		}
-
 		f, err := ioutil.ReadFile(overlayFile)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "Could not read file: %s\n", err)
@@ -69,7 +69,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 		tstruct := overlay.InitStruct(host)
 		tstruct.BuildSource = args[0]
-		buffer, backupFile, writeFile, err := overlay.RenderTemplateFile(args[0], tstruct)
+		buffer, backupFile, writeFile, err := overlay.RenderTemplateFile(overlayFile, tstruct)
 		if err != nil {
 			return err
 		}
