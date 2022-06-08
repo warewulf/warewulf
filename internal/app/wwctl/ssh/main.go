@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/batch"
@@ -58,24 +59,28 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 		batchpool.Submit(func() {
 
-			wwlog.Printf(wwlog.DEBUG, "Sending command to node '%s': %s\n", nodename, command)
-			var stdout, stderr bytes.Buffer
-			cmd := exec.Command(SshPath, command...)
-			cmd.Stdin = os.Stdin
-			cmd.Stdout = &stdout
-			cmd.Stderr = &stderr
-			_ = cmd.Run()
+			if DryRun {
+				fmt.Printf("%s: %s %s\n", nodename, SshPath, strings.Join(command, " "))
+			} else {
 
-			scan_stdout := bufio.NewScanner(&stdout)
-			for scan_stdout.Scan() {
-				fmt.Printf("%s: %s\n", nodename, scan_stdout.Text())
+				wwlog.Printf(wwlog.DEBUG, "Sending command to node '%s': %s\n", nodename, command)
+				var stdout, stderr bytes.Buffer
+				cmd := exec.Command(SshPath, command...)
+				cmd.Stdin = os.Stdin
+				cmd.Stdout = &stdout
+				cmd.Stderr = &stderr
+				_ = cmd.Run()
+
+				scan_stdout := bufio.NewScanner(&stdout)
+				for scan_stdout.Scan() {
+					fmt.Printf("%s: %s\n", nodename, scan_stdout.Text())
+				}
+
+				scan_stderr := bufio.NewScanner(&stderr)
+				for scan_stderr.Scan() {
+					fmt.Fprintf(os.Stderr, "%s: %s\n", nodename, scan_stderr.Text())
+				}
 			}
-
-			scan_stderr := bufio.NewScanner(&stderr)
-			for scan_stderr.Scan() {
-				fmt.Fprintf(os.Stderr, "%s: %s\n", nodename, scan_stderr.Text())
-			}
-
 			//util.ExecInteractive(SshPath, command...)
 			time.Sleep(time.Duration(Sleep) * time.Second)
 

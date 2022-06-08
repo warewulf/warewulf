@@ -12,14 +12,14 @@ var (
 		Long:                  "Easily ssh into nodes in parallel to run non-interactive commands\n",
 		RunE:                  CobraRunE,
 	}
-	Show    bool
+	DryRun  bool
 	FanOut  int
 	Sleep   int
 	SshPath string
 )
 
 func init() {
-	baseCmd.PersistentFlags().BoolVarP(&Show, "dryrun", "n", false, "Show commands to run")
+	baseCmd.PersistentFlags().BoolVarP(&DryRun, "dryrun", "n", false, "Show commands to run")
 	baseCmd.PersistentFlags().IntVarP(&FanOut, "fanout", "f", 32, "How many connections to run in parallel")
 	baseCmd.PersistentFlags().IntVarP(&Sleep, "sleep", "s", 0, "Seconds to sleep inbetween processes")
 	baseCmd.PersistentFlags().StringVar(&SshPath, "rsh", "/usr/bin/ssh", "Path to use for RSH/SSH command")
