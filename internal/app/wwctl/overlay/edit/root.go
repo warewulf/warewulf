@@ -1,6 +1,7 @@
 package edit
 
 import (
+	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/spf13/cobra"
 )
 
@@ -12,6 +13,13 @@ var (
 		Long:                  "This command will open the FILE for editing or create a new file within the\nOVERLAY_NAME. Note: files created with a '.ww' suffix will always be\nparsed as Warewulf template files, and the suffix will be removed automatically.",
 		RunE:                  CobraRunE,
 		Args:                  cobra.ExactArgs(2),
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) != 0 {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			list, _ := overlay.FindOverlays()
+			return list, cobra.ShellCompDirectiveNoFileComp
+		},
 	}
 	ListFiles  bool
 	CreateDirs bool

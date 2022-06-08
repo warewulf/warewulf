@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/spf13/cobra"
 )
 
@@ -16,14 +17,21 @@ var (
 		RunE:                  CobraRunE,
 		Aliases:               []string{"cat"},
 		Args:                  cobra.ExactArgs(2),
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) != 0 {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			list, _ := overlay.FindOverlays()
+			return list, cobra.ShellCompDirectiveNoFileComp
+		},
 	}
 	NodeName string
 	Quiet    bool
 )
 
 func init() {
-	baseCmd.PersistentFlags().StringVarP(&NodeName, "name", "n", "", "node used for the variables in the template")
-	if err := baseCmd.RegisterFlagCompletionFunc("name", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	baseCmd.PersistentFlags().StringVarP(&NodeName, "render", "r", "", "node used for the variables in the template")
+	if err := baseCmd.RegisterFlagCompletionFunc("render", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		nodeDB, _ := node.New()
 		nodes, _ := nodeDB.FindAllNodes()
 		var node_names []string
