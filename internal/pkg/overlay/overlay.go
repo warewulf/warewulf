@@ -417,12 +417,23 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 				if err != nil {
 					wwlog.ErrorExc(err, "")
 				}
+				if util.IsFile(path.Join(outputDir, location)) {
+					if !util.IsFile(path.Join(outputDir, location+".wwbackup")) {
+						wwlog.Debug("Target exists, creating backup file")
+						err = os.Rename(path.Join(outputDir, location), path.Join(outputDir, location+"wwbackup"))
+					} else {
+						wwlog.Debug("%s exists, keeping the backup file", path.Join(outputDir, location+".wwbackup"))
+						err = os.Remove(path.Join(outputDir, location))
+					}
+					if err != nil {
+						wwlog.ErrorExc(err, "")
+					}
+				}
 				err = os.Symlink(destination, path.Join(outputDir, location))
 				if err != nil {
 					wwlog.ErrorExc(err, "")
 				}
 			} else {
-
 				err := util.CopyFile(location, path.Join(outputDir, location))
 				if err == nil {
 					wwlog.Debug("Copied file into overlay: %s", location)
