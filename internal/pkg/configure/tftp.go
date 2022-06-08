@@ -35,6 +35,11 @@ func TFTP() error {
 		}
 	}
 
+	if !controller.Tftp.Enabled {
+		wwlog.Printf(wwlog.INFO, "Warewulf does not auto start TFTP services due to disable by warewulf.conf\n")
+		os.Exit(0)
+	}
+	
 	fmt.Printf("Enabling and restarting the TFTP services\n")
 	err = util.SystemdStart(controller.Tftp.SystemdName)
 	if err != nil {
