@@ -7,10 +7,11 @@ import (
 var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:                   "ssh [OPTIONS] NODE_PATTERN...",
+		Use:                   "ssh [OPTIONS] NODE_PATTERN COMMAND",
 		Short:                 "SSH into configured nodes in parallel",
 		Long:                  "Easily ssh into nodes in parallel to run non-interactive commands\n",
 		RunE:                  CobraRunE,
+		Args:                  cobra.MinimumNArgs(2),
 	}
 	DryRun  bool
 	FanOut  int
