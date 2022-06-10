@@ -7,7 +7,6 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
-	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/hpcng/warewulf/pkg/hostlist"
@@ -31,63 +30,70 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Printf(wwlog.ERROR, "Could not get node list: %s\n", err)
 		os.Exit(1)
 	}
-	if OverlayDir != "" {
-		if OverlayName == "" {
-			return errors.New("no overlay name given")
+
+	if len(args) > 0 {
+		args = hostlist.Expand(args)
+		nodes = node.FilterByName(nodes, args)
+
+		if len(nodes) < len(args) {
+			return errors.New("Failed to find nodes")
 		}
+	}
+
+	// NOTE: this is to keep backward compatible
+	// passing -O a,b,c versus -O a -O b -O c, but will also accept -O a,b -O c
+	overlayNames := []string{}
+	for _, name := range OverlayNames {
+		names := strings.Split(name, ",")
+		overlayNames = append(overlayNames, names...)
+	}
+	OverlayNames = overlayNames
+
+	if OverlayDir != "" {
+		if len(OverlayNames) == 0 {
+			// TODO: should this behave the same as OverlayDir == "", and build default
+			// set to overlays?
+			return errors.New("Must specify overlay(s) to build")
+		}
+
 		if len(args) > 0 {
-			args = hostlist.Expand(args)
+			if len(nodes) != 1 {
+				return errors.New("Must specify one node to build overlay")
+			}
+
 			for _, node := range nodes {
-				if util.InSlice(node.RuntimeOverlay.GetSlice(), OverlayName) ||
-					util.InSlice(node.SystemOverlay.GetSlice(), OverlayName) {
-					return overlay.BuildOverlayIndir(node, strings.Split(OverlayName, ","), OverlayDir)
-				} else {
-					return errors.New("no node uses the given overlay")
-				}
+				return overlay.BuildOverlayIndir(node, OverlayNames, OverlayDir)
 			}
 		} else {
+			// TODO this seems different than what is set in BuildHostOverlay
 			var host node.NodeInfo
 			var idEntry node.Entry
 			hostname, _ := os.Hostname()
-			wwlog.Printf(wwlog.INFO, "Building overlay for %s: host\n", hostname)
+			wwlog.Info("Building overlay for host: %s", hostname)
 			idEntry.Set(hostname)
 			host.Id = idEntry
-			return overlay.BuildOverlayIndir(host, strings.Split(OverlayName, ","), OverlayDir)
+			return overlay.BuildOverlayIndir(host, OverlayNames, OverlayDir)
 
 		}
 
 	}
+
 	if BuildHost || (!BuildHost && !BuildNodes && len(args) == 0 && controller.Warewulf.EnableHostOverlay) {
 		err := overlay.BuildHostOverlay()
 		if err != nil {
 			wwlog.Printf(wwlog.WARN, "host overlay could not be built: %s\n", err)
 		}
 	}
-	if BuildNodes || (!BuildHost && !BuildNodes) {
 
-		if len(args) > 0 {
-			args = hostlist.Expand(args)
-			if OverlayName != "" {
-				err = overlay.BuildSpecificOverlays(node.FilterByName(nodes, args), OverlayName)
-			} else {
-				err = overlay.BuildAllOverlays(node.FilterByName(nodes, args))
-			}
+	if BuildNodes || (!BuildHost && !BuildNodes) {
+		if len(OverlayNames) > 0 {
+			err = overlay.BuildSpecificOverlays(nodes, OverlayNames)
 		} else {
-			if OverlayName != "" {
-				for _, n := range nodes {
-					if util.InSlice(n.RuntimeOverlay.GetSlice(), OverlayName) ||
-						util.InSlice(n.SystemOverlay.GetSlice(), OverlayName) {
-						err = overlay.BuildSpecificOverlays([]node.NodeInfo{n}, OverlayName)
-					}
-				}
-			} else {
-				err = overlay.BuildAllOverlays(nodes)
-			}
+			err = overlay.BuildAllOverlays(nodes)
 		}
 
 		if err != nil {
-			wwlog.Printf(wwlog.WARN, "Some system overlays failed to be generated: %s\n", err)
-
+			wwlog.Printf(wwlog.WARN, "Some overlays failed to be generated: %s\n", err)
 		}
 	}
 	return nil

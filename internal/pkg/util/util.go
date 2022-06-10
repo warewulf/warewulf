@@ -12,13 +12,54 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
+	"sync/atomic"
 	"syscall"
 	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 )
+
+// reserve some number of cpus for system/warwulfd usage
+var processLimitedReserve int = 4
+// maximum number of concurrent spawned processes
+var processLimitedMax = MaxInt(1, runtime.NumCPU() - processLimitedReserve)
+// Channel used as semaphore to specififed processLimitedMax
+var processLimitedChan = make(chan int, processLimitedMax)
+// Current number of processes started + queued
+var processLimitedNum int32 = 0
+// Counter over total history of started processes
+var processLimitedCounter uint32 = 0
+
+func ProcessLimitedEnter() (index uint32) {
+	atomic.AddInt32(&processLimitedNum, 1)
+	index = atomic.AddUint32(&processLimitedCounter, 1)
+	// NOTE: blocks when channel is full (i.e. processLimitedMax)
+	// until a process exists and takes one out of channel
+	processLimitedChan <- 1
+	return
+}
+
+func ProcessLimitedExit() {
+	<-processLimitedChan
+	atomic.AddInt32(&processLimitedNum, -1)
+}
+
+func ProcessLimitedStatus() (running int32, queued int32) {
+	running = int32(len(processLimitedChan))
+	queued = processLimitedNum - running
+	return
+}
+
+func MaxInt( a int, b int ) int {
+	if a > b {
+		return a
+	}
+
+	return b
+}
 
 func FirstError(errs ...error) (err error) {
 	for _, e := range errs {
@@ -653,4 +694,24 @@ func BuildFsImage(
 	wwlog.Info("Compressed image for %s: %s", name, imagePath + ".gz")
 
 	return nil
+}
+
+/*******************************************************************************
+	Runs wwctl command
+*/
+func RunWWCTL(args ...string) (out []byte, err error) {
+	index := ProcessLimitedEnter()
+	defer ProcessLimitedExit()
+	running, queued := ProcessLimitedStatus()
+
+	wwlog.Verbose("Starting wwctl process %d (%d running, %d queued): %v",
+		index, running, queued, args )
+
+	proc := exec.Command("wwctl", args...)
+
+	out, err = proc.CombinedOutput()
+
+	wwlog.Verbose("Finished wwctl process %d", index)
+
+	return out, err
 }

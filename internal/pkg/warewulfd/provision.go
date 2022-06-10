@@ -1,17 +1,15 @@
 package warewulfd
 
 import (
+	"bytes"
 	"net/http"
 	"path"
 	"strconv"
-	"bytes"
 	"text/template"
 
 	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
-	nodepkg "github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/kernel"
-	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -70,47 +68,11 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 	// TODO: when module version is upgraded to go1.18, should be 'any' type
 	var tmpl_data interface{}
 
-	node, err := GetNode(rinfo.hwaddr)
+	node, err := GetNodeOrSetDiscoverable(rinfo.hwaddr)
 	if err != nil {
-		// If we failed to find a node, let's see if we can add one...
-		var netdev string
-
-		wwlog.Warn("%s (node not configured)", rinfo.hwaddr)
-
-		nodeDB, err := nodepkg.New()
-		if err != nil {
-			wwlog.Error("Could not read node configuration file: %s", err)
-			w.WriteHeader(http.StatusServiceUnavailable)
-			return
-		}
-
-		n, netdev, err := nodeDB.FindDiscoverableNode()
-		if err == nil {
-			n.NetDevs[netdev].Hwaddr.Set(rinfo.hwaddr)
-			n.Discoverable.SetB(false)
-			err := nodeDB.NodeUpdate(n)
-			if err != nil {
-				wwlog.Serv("%s (failed to set node configuration)", rinfo.hwaddr)
-
-			} else {
-				err := nodeDB.Persist()
-				if err != nil {
-					wwlog.Serv("%s (failed to persist node configuration)", rinfo.hwaddr)
-
-				} else {
-					node = n
-					_ = overlay.BuildAllOverlays([]nodepkg.NodeInfo{n})
-
-					wwlog.Serv("%s (node automatically configured)", rinfo.hwaddr)
-
-					err := LoadNodeDB()
-					if err != nil {
-						wwlog.Warn("Could not reload configuration: %s", err)
-					}
-
-				}
-			}
-		}
+		wwlog.ErrorExc(err, "")
+		w.WriteHeader(http.StatusServiceUnavailable)
+		return
 	}
 
 	if node.AssetKey.Defined() && node.AssetKey.Get() != rinfo.assetkey {
@@ -188,16 +150,15 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if len(stage_overlays) > 0 {
-		stage_file = overlay.OverlayImage(node.Id.Get(), stage_overlays)
-		if conf.Warewulf.AutobuildOverlays {
-			oneoverlaynewer := false
-			for _, overlayname := range stage_overlays {
-				oneoverlaynewer = oneoverlaynewer || util.PathIsNewer(stage_file, overlay.OverlaySourceDir(overlayname))
-			}
-			if !util.IsFile(stage_file) || util.PathIsNewer(stage_file, nodepkg.ConfigFile) || oneoverlaynewer {
-				wwlog.Serv("BUILD %15s, overlays %v", node.Id.Get(), stage_overlays)
-				_ = overlay.BuildOverlay(node, stage_overlays)
-			}
+		stage_file, err = getOverlayFile(
+			node.Id.Get(),
+			stage_overlays,
+			conf.Warewulf.AutobuildOverlays )
+
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			wwlog.ErrorExc(err, "")
+			return
 		}
 	}
 
@@ -255,7 +216,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 				w.WriteHeader(http.StatusNotFound)
 			}
 
-			err = sendFile(w, stage_file, node.Id.Get())
+			err = sendFile(w, req, stage_file, node.Id.Get())
 			if err != nil {
 				wwlog.ErrorExc(err, "")
 				return

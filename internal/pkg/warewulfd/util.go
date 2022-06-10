@@ -1,16 +1,21 @@
 package warewulfd
 
 import (
-	"io"
 	"net/http"
 	"os"
-	"strconv"
 
+	nodepkg "github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/overlay"
+	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"github.com/pkg/errors"
 )
 
-func sendFile(w http.ResponseWriter, filename string, sendto string) error {
+func sendFile(
+	w http.ResponseWriter,
+	req *http.Request,
+	filename string,
+	sendto string) error {
+
 	fd, err := os.Open(filename)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -18,34 +23,60 @@ func sendFile(w http.ResponseWriter, filename string, sendto string) error {
 	}
 	defer fd.Close()
 
-	FileHeader := make([]byte, 512)
-	_, err = fd.Read(FileHeader)
+	stat, err := fd.Stat()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		return errors.Wrap(err, "failed to read header")
+		return err
 	}
 
-	FileContentType := http.DetectContentType(FileHeader)
-	FileStat, _ := fd.Stat()
-	FileSize := strconv.FormatInt(FileStat.Size(), 10)
-
-	_, err = fd.Seek(0, 0)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return errors.Wrap(err, "failed to seek")
-	}
-
-	w.Header().Set("Content-Disposition", "attachment; filename=kernel")
-	w.Header().Set("Content-Type", FileContentType)
-	w.Header().Set("Content-Length", FileSize)
-
-	_, err = io.Copy(w, fd)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return errors.Wrap(err, "failed to copy")
-	}
+	http.ServeContent(
+		w,
+		req,
+		filename,
+		stat.ModTime(),
+		fd )
 
 	wwlog.Send("%15s: %s", sendto, filename)
 
-	return err
+	return nil
+}
+
+func getOverlayFile(
+	nodeId string,
+	stage_overlays []string,
+	autobuild bool ) (stage_file string, err error) {
+
+	stage_file = overlay.OverlayImage(nodeId, stage_overlays)
+	err = nil
+
+	build := !util.IsFile(stage_file)
+
+	if !build && autobuild {
+		build = util.PathIsNewer(stage_file, nodepkg.ConfigFile)
+
+		for _, overlayname := range stage_overlays {
+			build = build || util.PathIsNewer(stage_file, overlay.OverlaySourceDir(overlayname))
+		}
+	}
+
+	if build {
+		wwlog.Serv("BUILD %15s, overlays %v", nodeId, stage_overlays)
+
+		args := []string{"overlay", "build"}
+
+		for _, overlayname := range stage_overlays {
+			args = append(args, "-O", overlayname)
+		}
+
+		args = append(args, nodeId)
+
+		out, err := util.RunWWCTL(args...)
+
+		if err != nil {
+			wwlog.Error("Failed to build overlay: %s, %s, %s\n%s",
+				nodeId, stage_overlays, stage_file, string(out))
+		}
+	}
+
+	return
 }
