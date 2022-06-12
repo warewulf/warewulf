@@ -7,7 +7,6 @@ on:
       - published
 
 jobs:
-
   distbuild:
     name: Checkout code and build tar.gz
     runs-on: ubuntu-latest
@@ -35,13 +34,13 @@ jobs:
         run: make dist
 
       - name: Upload mock script
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: mockbuild.sh
           path: ci/mockbuild.sh
 
       - name: Upload tar.gz
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: warewulf-${{ env.VERSION }}.tar.gz
           path: warewulf-${{ env.VERSION }}.tar.gz
@@ -60,12 +59,12 @@ jobs:
             echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
 
         - name: Download mock build script
-          uses: actions/download-artifact@v2
+          uses: actions/download-artifact@v3
           with:
             name: mockbuild.sh
 
         - name: Download tar.gz
-          uses: actions/download-artifact@v2
+          uses: actions/download-artifact@v3
           with:
             name: warewulf-${{ env.VERSION }}.tar.gz
 
@@ -76,19 +75,20 @@ jobs:
           run: ./mockbuild.sh  ${{ env.VERSION }}
 
         - name: Upload EL8 RPM
-          uses: actions/upload-artifact@v2
+          uses: actions/upload-artifact@v3
           with:
             name: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.el8.x86_64.rpm
             path: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.el8.x86_64.rpm
 
         - name: Upload EL7 RPM
-          uses: actions/upload-artifact@v2
+          uses: actions/upload-artifact@v3
           with:
             name: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.el7.x86_64.rpm
             path: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.el7.x86_64.rpm
 
         - name: Upload Assets To Release
-          uses: xresloader/upload-to-github-release@master
+          if: "!github.event.release.prerelease"
+          uses: xresloader/upload-to-github-release@v1
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
@@ -96,3 +96,16 @@ jobs:
             draft: false
             update_latest_release: true
             tags: true
+
+        - name: Upload Assets To Pre-Release
+          if: "github.event.release.prerelease"
+          uses: xresloader/upload-to-github-release@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            file: 'warewulf-${{ env.VERSION }}.tar.gz;warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.*.rpm'
+            draft: false
+            update_latest_release: false
+            prerelease: true
+            tags: true
+            
