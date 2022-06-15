@@ -17,7 +17,6 @@ import (
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var err error
 	var count uint
-	var SetProfiles []string
 
 	nodeDB, err := node.New()
 	if err != nil {
@@ -154,9 +153,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			n.Discoverable.SetB(false)
 		}
 
-		if len(SetProfiles) > 0 {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting profiles to: %s\n", n.Id.Get(), strings.Join(SetProfiles, ","))
-			n.Profiles = SetProfiles
+		if SetProfile != "" {
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting profiles to: %s\n", n.Id.Get(), SetProfile)
+			n.Profiles = []string{SetProfile}
 		}
 
 		if len(SetAddProfile) > 0 {
