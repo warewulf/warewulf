@@ -86,6 +86,12 @@ jobs:
             name: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.el7.x86_64.rpm
             path: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.el7.x86_64.rpm
 
+        - name: Upload openSUSE Leap 15.3 RPM
+          uses: actions/upload-artifact@v3
+          with:
+            name: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.suse.lp153.x86_64.rpm
+            path: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.suse.lp153.x86_64.rpm
+            
         - name: Upload Assets To Release
           if: "!github.event.release.prerelease"
           uses: xresloader/upload-to-github-release@v1
