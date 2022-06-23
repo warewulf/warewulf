@@ -264,7 +264,10 @@ func (ent *Entry) PrintComb() string {
 same as GetB()
 */
 func (ent *Entry) PrintB() string {
-	return fmt.Sprintf("%t", ent.GetB())
+	if len(ent.value) != 0 || len(ent.altvalue) != 0 {
+		return fmt.Sprintf("%t", ent.GetB())
+	}
+	return fmt.Sprintf("(%t)", ent.GetB())
 }
 
 /*
