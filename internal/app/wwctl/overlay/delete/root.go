@@ -1,6 +1,7 @@
 package delete
 
 import (
+	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/spf13/cobra"
 )
 
@@ -13,6 +14,13 @@ var (
 		RunE:                  CobraRunE,
 		Args:                  cobra.RangeArgs(1, 2),
 		Aliases:               []string{"rm", "del"},
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) != 0 {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			list, _ := overlay.FindOverlays()
+			return list, cobra.ShellCompDirectiveNoFileComp
+		},
 	}
 	Force   bool
 	Parents bool

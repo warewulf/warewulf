@@ -1,6 +1,9 @@
 package chown
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/hpcng/warewulf/internal/pkg/overlay"
+	"github.com/spf13/cobra"
+)
 
 var (
 	baseCmd = &cobra.Command{
@@ -10,6 +13,13 @@ var (
 		Long:                  "This command changes the ownership of a FILE within the system or runtime OVERLAY_NAME\nto the user specified by UID. Optionally, it will also change group ownership to GID.",
 		RunE:                  CobraRunE,
 		Args:                  cobra.RangeArgs(3, 4),
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) != 0 {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			list, _ := overlay.FindOverlays()
+			return list, cobra.ShellCompDirectiveNoFileComp
+		},
 	}
 )
 
