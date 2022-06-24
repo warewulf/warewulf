@@ -256,6 +256,9 @@ func (config *nodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.NetDevs[devname].OnBoot.SetAlt(netdev.OnBoot, p)
 				n.NetDevs[devname].Primary.SetAlt(netdev.Primary, p)
 				if len(netdev.Tags) != 0 {
+					if len(n.NetDevs[devname].Tags) == 0 {
+						n.NetDevs[devname].Tags = make(map[string]*Entry)
+					}
 					for keyname, key := range netdev.Tags {
 						if _, ok := n.NetDevs[devname].Tags[keyname]; !ok {
 							var keyVar Entry
