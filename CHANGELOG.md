@@ -37,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The yaml format for nodes has now sub-keys for ipmi and kernel, old nodes.conf files have to
   to be changed accordingly
 - host overlays can globaly disbaled, but are enabled per default
-- `wwctl overlay build -H` will only nuild the overlays which are assigned to the nodes
+- `wwctl overlay build -H` will only build the overlays which are assigned to the nodes
 
 
 ## [4.1.0] - 2021-07-29
