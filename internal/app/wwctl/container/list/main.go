@@ -13,6 +13,10 @@ import (
 func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	sources, err := container.ListSources()
+	if len(sources) == 0 {
+		wwlog.Info("no containers found\n")
+		os.Exit(1)
+	}
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "%s\n", err)
 		os.Exit(1)
