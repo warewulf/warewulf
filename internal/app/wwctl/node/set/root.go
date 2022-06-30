@@ -2,6 +2,7 @@ package set
 
 import (
 	"log"
+	"reflect"
 
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/kernel"
@@ -74,10 +75,38 @@ var (
 	SetAssetKey       string
 	SetNetTags        []string
 	SetNetDelTags     []string
+	OptionStrMap      map[string]*string
 )
 
 func init() {
-	baseCmd.PersistentFlags().StringVar(&SetComment, "comment", "", "Set a comment for this node")
+	OptionStrMap = make(map[string]*string)
+	var emptyNodeConf node.NodeConf
+	nodeStruct := reflect.ValueOf(emptyNodeConf)
+	nodeType := nodeStruct.Type()
+	for i := 0; i < nodeStruct.NumField(); i++ {
+		field := nodeType.Field(i)
+		if field.Tag.Get("comment") != "" {
+			kind := field.Type.Kind()
+			if kind == reflect.String {
+				var optionVal string
+				OptionStrMap[field.Name] = &optionVal
+				if field.Tag.Get("sopt") != "" {
+					baseCmd.PersistentFlags().StringVarP(&optionVal,
+						field.Tag.Get("lopt"),
+						field.Tag.Get("sopt"),
+						field.Tag.Get("default"),
+						field.Tag.Get("comment"))
+				} else {
+					baseCmd.PersistentFlags().StringVar(&optionVal,
+						field.Tag.Get("lopt"),
+						field.Tag.Get("default"),
+						field.Tag.Get("comment"))
+
+				}
+			}
+		}
+	}
+	//baseCmd.PersistentFlags().StringVar(&SetComment, "comment", "", "Set a comment for this node")
 	baseCmd.PersistentFlags().StringVarP(&SetContainer, "container", "C", "", "Set the container (VNFS) for this node")
 	if err := baseCmd.RegisterFlagCompletionFunc("container", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		list, _ := container.ListSources()

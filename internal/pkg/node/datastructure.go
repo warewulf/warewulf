@@ -19,7 +19,7 @@ type NodeYaml struct {
 NodeConf is the datastructure which is stored on disk.
 */
 type NodeConf struct {
-	Comment        string              `yaml:"comment,omitempty"`
+	Comment        string              `yaml:"comment,omitempty" lopt:"comment" comment:"Set Comment"`
 	ClusterName    string              `yaml:"cluster name,omitempty"`
 	ContainerName  string              `yaml:"container name,omitempty"`
 	Ipxe           string              `yaml:"ipxe template,omitempty"`
