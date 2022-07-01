@@ -2,6 +2,7 @@ package node
 
 import (
 	"fmt"
+	"reflect"
 	"regexp"
 	"strings"
 
@@ -298,4 +299,30 @@ func (ent *Entry) Defined() bool {
 		return true
 	}
 	return false
+}
+
+/*
+Set the Entry trough an interface by trying to cast the interface
+*/
+func SetEntry(entryPrt interface{}, val string) {
+	fmt.Printf("entryPtr: %v\n", reflect.TypeOf(entryPrt))
+	if entry, ok := entryPrt.(*Entry); ok {
+		entry.Set(val)
+	} else {
+		panic(fmt.Sprintf("Can't convert %s to *node.Entry\n", reflect.TypeOf(entryPrt)))
+	}
+
+}
+
+/*
+Call SetEntry for given field
+*/
+func (node *NodeInfo) SetField(fieldName string, val interface{}) {
+	field := reflect.ValueOf(node).Elem().FieldByName(fieldName)
+	if field.IsValid() {
+		SetEntry(field.Addr().Interface(), val.(string))
+	} else {
+		panic(fmt.Sprintf("field %s does not exists in node.NodeInfo\n", fieldName))
+	}
+
 }
