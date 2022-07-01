@@ -101,7 +101,7 @@ func SyncUids(containerName string, showOnly bool) error {
 
 	}
 	if showOnly {
-		wwlog.Printf(wwlog.INFO, "uid./gid not synced, run \nwwctl container syncuser --write %s\nto synchronize uid/gids.\n", containerName)
+		wwlog.Printf(wwlog.INFO, "uid/gid not synced, run \nwwctl container syncuser --write %s\nto synchronize uid/gids.\n", containerName)
 		return nil
 	}
 	// create list of files which need changed ownerships in order to change them later what
