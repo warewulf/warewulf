@@ -11,6 +11,7 @@ RUN dnf update -y ;\
     ipmitool \
     iproute \
     kernel-core \
+    kernel-modules \
     net-tools \
     network-scripts \
     nfs-utils \
