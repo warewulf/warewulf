@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/spf13/cobra"
 )
 
 /**********
@@ -304,25 +305,152 @@ func (ent *Entry) Defined() bool {
 /*
 Set the Entry trough an interface by trying to cast the interface
 */
-func SetEntry(entryPrt interface{}, val string) {
-	fmt.Printf("entryPtr: %v\n", reflect.TypeOf(entryPrt))
-	if entry, ok := entryPrt.(*Entry); ok {
-		entry.Set(val)
+func SetEntry(entryPtr interface{}, val interface{}) {
+	if reflect.TypeOf(entryPtr) == reflect.TypeOf((*Entry)(nil)) {
+		entry := entryPtr.(*Entry)
+		valKind := reflect.TypeOf(val)
+		if valKind.Kind() == reflect.String {
+			entry.Set(val.(string))
+		} else if valKind.Kind() == reflect.Slice {
+			if valKind.Elem().Kind() == reflect.String {
+				entry.SetSlice(val.([]string))
+			} else {
+				panic("Got unknown slice type")
+			}
+		}
 	} else {
-		panic(fmt.Sprintf("Can't convert %s to *node.Entry\n", reflect.TypeOf(entryPrt)))
+		panic(fmt.Sprintf("Can't convert %s to *node.Entry\n", reflect.TypeOf(entryPtr)))
 	}
 
 }
 
 /*
-Call SetEntry for given field
+Call SetEntry for given field (NodeInfo)
 */
 func (node *NodeInfo) SetField(fieldName string, val interface{}) {
 	field := reflect.ValueOf(node).Elem().FieldByName(fieldName)
 	if field.IsValid() {
-		SetEntry(field.Addr().Interface(), val.(string))
+		//fmt.Println(reflect.TypeOf(field.Addr().Interface()))
+		SetEntry(field.Addr().Interface(), val)
 	} else {
-		panic(fmt.Sprintf("field %s does not exists in node.NodeInfo\n", fieldName))
+		fieldNames := strings.Split(fieldName, ".")
+		if len(fieldNames) == 2 {
+			nestedField := reflect.ValueOf(node).Elem().FieldByName(fieldNames[0])
+			if nestedField.IsValid() {
+				switch nestedField.Addr().Type() {
+				case reflect.TypeOf((**KernelEntry)(nil)):
+					entry := nestedField.Addr().Interface().(**KernelEntry)
+					(*entry).SetField(fieldNames[1], val)
+				case reflect.TypeOf((**IpmiEntry)(nil)):
+					entry := nestedField.Addr().Interface().(**IpmiEntry)
+					(*entry).SetField(fieldNames[1], val)
+				default:
+					panic(fmt.Sprintf("not implemented type %v\n", nestedField.Addr().Type()))
+				}
+			} else {
+				panic(fmt.Sprintf("field %s is not a nested type of %s", fieldNames[0], fieldName))
+			}
+		} else {
+			panic(fmt.Sprintf("field %s does not exists in node.NodeInfo\n", fieldName))
+		}
 	}
 
+}
+
+/*
+Call SetEntry for given field (KernelEntry)
+*/
+func (node *KernelEntry) SetField(fieldName string, val interface{}) {
+	field := reflect.ValueOf(node).Elem().FieldByName(fieldName)
+	if field.IsValid() {
+		SetEntry(field.Addr().Interface(), val)
+	} else {
+		panic(fmt.Sprintf("field %s does not exists in node.KernEntry\n", fieldName))
+	}
+}
+
+/*
+Call SetEntry for given field (ImpiEntry)
+*/
+func (node *IpmiEntry) SetField(fieldName string, val interface{}) {
+	field := reflect.ValueOf(node).Elem().FieldByName(fieldName)
+	if field.IsValid() {
+		SetEntry(field.Addr().Interface(), val)
+	} else {
+		panic(fmt.Sprintf("field %s does not exists in node.KernEntry\n", fieldName))
+	}
+}
+
+/*
+Get all names of the fields in the given struct (recursive)
+and create a map[name of struct field]*string if the the field
+of the struct bears the comment tag.
+*/
+func GetOptionsMap(theStruct interface{}) map[string]*string {
+	optionsMap := make(map[string]*string)
+	structVal := reflect.ValueOf(theStruct)
+	structTyp := structVal.Type()
+	for i := 0; i < structVal.NumField(); i++ {
+		field := structTyp.Field(i)
+		if field.Type.Kind() == reflect.Struct {
+			subStruct := GetOptionsMap(field)
+			for key, val := range subStruct {
+				optionsMap[key] = val
+			}
+		} else if field.Tag.Get("comment") != "" {
+			var newStr string
+			optionsMap[field.Name] = &newStr
+		}
+
+	}
+	return optionsMap
+}
+
+type CobraCommand struct {
+	*cobra.Command
+}
+
+/*
+Get all names of the fields in the given struct (recursive)
+and create a map[name of struct field]*string if the the field
+of the struct bears the comment tag.
+*/
+func (baseCmd *CobraCommand) CreateFlags(theStruct interface{}) map[string]*string {
+	optionsMap := make(map[string]*string)
+	structVal := reflect.ValueOf(theStruct)
+	structTyp := structVal.Type()
+	for i := 0; i < structVal.NumField(); i++ {
+		field := structTyp.Field(i)
+		fmt.Printf("%s: field.Kind() == %s\n", field.Name, field.Type.Kind())
+		if field.Type.Kind() == reflect.Ptr {
+			a := structVal.Field(i).Elem().Interface()
+			subStruct := baseCmd.CreateFlags(a)
+			for key, val := range subStruct {
+				optionsMap[field.Name+"."+key] = val
+			}
+
+		} else if field.Type.Kind() == reflect.Map {
+			// Just check for network map
+			fmt.Println(reflect.TypeOf(structVal.Field(i).Elem()))
+
+		} else if field.Tag.Get("comment") != "" {
+			var newStr string
+			optionsMap[field.Name] = &newStr
+			if field.Tag.Get("sopt") != "" {
+				baseCmd.PersistentFlags().StringVarP(&newStr,
+					field.Tag.Get("lopt"),
+					field.Tag.Get("sopt"),
+					field.Tag.Get("default"),
+					field.Tag.Get("comment"))
+			} else {
+				baseCmd.PersistentFlags().StringVar(&newStr,
+					field.Tag.Get("lopt"),
+					field.Tag.Get("default"),
+					field.Tag.Get("comment"))
+
+			}
+		}
+
+	}
+	return optionsMap
 }

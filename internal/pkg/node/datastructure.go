@@ -19,9 +19,9 @@ type NodeYaml struct {
 NodeConf is the datastructure which is stored on disk.
 */
 type NodeConf struct {
-	Comment        string              `yaml:"comment,omitempty" lopt:"comment" comment:"Set Comment"`
+	Comment        string              `yaml:"comment,omitempty" lopt:"comment" comment:"Set arbitrary string comment"`
 	ClusterName    string              `yaml:"cluster name,omitempty"`
-	ContainerName  string              `yaml:"container name,omitempty"`
+	ContainerName  string              `yaml:"container name,omitempty" lopt:"container" sopt:"C" comment:"Set container name"`
 	Ipxe           string              `yaml:"ipxe template,omitempty"`
 	KernelVersion  string              `yaml:"kernel version,omitempty"`
 	KernelOverride string              `yaml:"kernel override,omitempty"`
@@ -38,9 +38,9 @@ type NodeConf struct {
 	SystemOverlay  []string            `yaml:"system overlay,omitempty"`
 	Kernel         *KernelConf         `yaml:"kernel,omitempty"`
 	Ipmi           *IpmiConf           `yaml:"ipmi,omitempty"`
-	Init           string              `yaml:"init,omitempty"`
-	Root           string              `yaml:"root,omitempty"`
-	AssetKey       string              `yaml:"asset key,omitempty"`
+	Init           string              `yaml:"init,omitempty" lopt:"init" sopt:"i" comment:"Define the init process to boot the container"`
+	Root           string              `yaml:"root,omitempty" lopt:"root" comment:"Define the rootfs" `
+	AssetKey       string              `yaml:"asset key,omitempty" lopt:"asset" comment:"Set the node's Asset tag (key)"`
 	Discoverable   string              `yaml:"discoverable,omitempty"`
 	Profiles       []string            `yaml:"profiles,omitempty"`
 	NetDevs        map[string]*NetDevs `yaml:"network devices,omitempty"`
@@ -61,7 +61,7 @@ type IpmiConf struct {
 type KernelConf struct {
 	Version  string `yaml:"version,omitempty"`
 	Override string `yaml:"override,omitempty"`
-	Args     string `yaml:"args,omitempty"`
+	Args     string `yaml:"args,omitempty" lopt:"kernelargs" sopt:"A" comment:"Set Kernel argument"`
 }
 
 type NetDevs struct {

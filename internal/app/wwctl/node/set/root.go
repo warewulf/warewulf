@@ -1,8 +1,8 @@
 package set
 
 import (
+	"fmt"
 	"log"
-	"reflect"
 
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/kernel"
@@ -33,10 +33,7 @@ var (
 			return node_names, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
-	SetComment        string
-	SetContainer      string
 	SetKernelOverride string
-	SetKernelArgs     string
 	SetNetName        string
 	SetNetDev         string
 	SetIpaddr         string
@@ -66,48 +63,27 @@ var (
 	SetAddProfile     []string
 	SetDelProfile     []string
 	SetForce          bool
-	SetInit           string
 	SetDiscoverable   bool
 	SetUndiscoverable bool
-	SetRoot           string
 	SetTags           []string
 	SetDelTags        []string
-	SetAssetKey       string
 	SetNetTags        []string
 	SetNetDelTags     []string
 	OptionStrMap      map[string]*string
+	KernelStrMapmap   map[string]*string
 )
 
 func init() {
-	OptionStrMap = make(map[string]*string)
+	//var emptyNodeConf node.NodeConf
+	//var emptyKernelE node.KernelEntry
+	myBase := node.CobraCommand{baseCmd}
 	var emptyNodeConf node.NodeConf
-	nodeStruct := reflect.ValueOf(emptyNodeConf)
-	nodeType := nodeStruct.Type()
-	for i := 0; i < nodeStruct.NumField(); i++ {
-		field := nodeType.Field(i)
-		if field.Tag.Get("comment") != "" {
-			kind := field.Type.Kind()
-			if kind == reflect.String {
-				var optionVal string
-				OptionStrMap[field.Name] = &optionVal
-				if field.Tag.Get("sopt") != "" {
-					baseCmd.PersistentFlags().StringVarP(&optionVal,
-						field.Tag.Get("lopt"),
-						field.Tag.Get("sopt"),
-						field.Tag.Get("default"),
-						field.Tag.Get("comment"))
-				} else {
-					baseCmd.PersistentFlags().StringVar(&optionVal,
-						field.Tag.Get("lopt"),
-						field.Tag.Get("default"),
-						field.Tag.Get("comment"))
+	emptyNodeConf.Kernel = new(node.KernelConf)
+	emptyNodeConf.Ipmi = new(node.IpmiConf)
+	//emptyNodeConf.NetDevs = make(map[string]*node.NetDevs)
+	OptionStrMap = myBase.CreateFlags(emptyNodeConf)
 
-				}
-			}
-		}
-	}
-	//baseCmd.PersistentFlags().StringVar(&SetComment, "comment", "", "Set a comment for this node")
-	baseCmd.PersistentFlags().StringVarP(&SetContainer, "container", "C", "", "Set the container (VNFS) for this node")
+	fmt.Printf("OptionStrMap: %v\n", OptionStrMap)
 	if err := baseCmd.RegisterFlagCompletionFunc("container", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		list, _ := container.ListSources()
 		return list, cobra.ShellCompDirectiveNoFileComp
@@ -121,12 +97,8 @@ func init() {
 	}); err != nil {
 		log.Println(err)
 	}
-	baseCmd.PersistentFlags().StringVarP(&SetKernelArgs, "kernelargs", "A", "", "Set Kernel argument for nodes")
 	baseCmd.PersistentFlags().StringVarP(&SetClusterName, "cluster", "c", "", "Set the node's cluster group")
 	baseCmd.PersistentFlags().StringVar(&SetIpxe, "ipxe", "", "Set the node's iPXE template name")
-	baseCmd.PersistentFlags().StringVarP(&SetInit, "init", "i", "", "Define the init process to boot the container")
-	baseCmd.PersistentFlags().StringVar(&SetRoot, "root", "", "Define the rootfs")
-	baseCmd.PersistentFlags().StringVar(&SetAssetKey, "assetkey", "", "Set the node's Asset tag (key)")
 	baseCmd.PersistentFlags().StringVarP(&SetInitOverlay, "wwinit", "O", "", "Set the node's initialization overlay")
 	baseCmd.PersistentFlags().StringSliceVarP(&SetRuntimeOverlay, "runtime", "R", []string{}, "Set the node's runtime overlay")
 	if err := baseCmd.RegisterFlagCompletionFunc("runtime", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
