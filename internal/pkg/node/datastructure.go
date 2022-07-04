@@ -69,7 +69,7 @@ type NetDevs struct {
 	OnBoot  string            `yaml:"onboot,omitempty"`
 	Device  string            `yaml:"device,omitempty"`
 	Hwaddr  string            `yaml:"hwaddr,omitempty"`
-	Ipaddr  string            `yaml:"ipaddr,omitempty"`
+	Ipaddr  string            `yaml:"ipaddr,omitempty" comment:"IPv4 address" sopt:"I" lopt:"ipaddr"`
 	IpCIDR  string            `yaml:"ipcidr,omitempty"`
 	Ipaddr6 string            `yaml:"ip6addr,omitempty"`
 	Prefix  string            `yaml:"prefix,omitempty"`

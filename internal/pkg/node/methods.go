@@ -424,14 +424,24 @@ func (baseCmd *CobraCommand) CreateFlags(theStruct interface{}) map[string]*stri
 		fmt.Printf("%s: field.Kind() == %s\n", field.Name, field.Type.Kind())
 		if field.Type.Kind() == reflect.Ptr {
 			a := structVal.Field(i).Elem().Interface()
+			fmt.Println(structVal.Field(i).Elem())
 			subStruct := baseCmd.CreateFlags(a)
 			for key, val := range subStruct {
 				optionsMap[field.Name+"."+key] = val
 			}
 
 		} else if field.Type.Kind() == reflect.Map {
-			// Just check for network map
-			fmt.Println(reflect.TypeOf(structVal.Field(i).Elem()))
+			// check the type of map
+			mapType := field.Type.Elem()
+			if mapType.Kind() == reflect.Ptr {
+				//a := reflect.ValueOf((mapType.Elem())) node.NetDevs
+				subMap := baseCmd.CreateFlags(reflect.New(mapType.Elem()).Elem().Interface())
+				for key, val := range subMap {
+					optionsMap[field.Name+"."+key] = val
+				}
+			} else {
+				fmt.Println(mapType)
+			}
 
 		} else if field.Tag.Get("comment") != "" {
 			var newStr string
