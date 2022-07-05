@@ -114,7 +114,7 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.Ipmi.UserName.Set(node.Ipmi.UserName)
 			n.Ipmi.Password.Set(node.Ipmi.Password)
 			n.Ipmi.Interface.Set(node.Ipmi.Interface)
-			n.Ipmi.Write.Set(node.Ipmi.Write)
+			n.Ipmi.Write.SetB(node.Ipmi.Write)
 		}
 		n.SystemOverlay.SetSlice(node.SystemOverlay)
 		n.RuntimeOverlay.SetSlice(node.RuntimeOverlay)
@@ -231,7 +231,7 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.Ipmi.UserName.SetAlt(config.NodeProfiles[p].Ipmi.UserName, p)
 				n.Ipmi.Password.SetAlt(config.NodeProfiles[p].Ipmi.Password, p)
 				n.Ipmi.Interface.SetAlt(config.NodeProfiles[p].Ipmi.Interface, p)
-				n.Ipmi.Write.SetAlt(config.NodeProfiles[p].Ipmi.Write, p)
+				n.Ipmi.Write.SetAltB(config.NodeProfiles[p].Ipmi.Write, p)
 			}
 			n.SystemOverlay.SetAltSlice(config.NodeProfiles[p].SystemOverlay, p)
 			n.RuntimeOverlay.SetAltSlice(config.NodeProfiles[p].RuntimeOverlay, p)
@@ -366,7 +366,7 @@ func (config *NodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 			p.Ipmi.UserName.Set(profile.Ipmi.UserName)
 			p.Ipmi.Password.Set(profile.Ipmi.Password)
 			p.Ipmi.Interface.Set(profile.Ipmi.Interface)
-			p.Ipmi.Write.Set(profile.Ipmi.Write)
+			p.Ipmi.Write.SetB(profile.Ipmi.Write)
 		}
 		p.RuntimeOverlay.SetSlice(profile.RuntimeOverlay)
 		p.SystemOverlay.SetSlice(profile.SystemOverlay)

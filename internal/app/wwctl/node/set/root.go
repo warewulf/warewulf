@@ -32,43 +32,16 @@ var (
 			return node_names, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
-	SetKernelOverride string
-	SetNetName        string
-	SetNetDev         string
-	SetNetmask        string
-	SetGateway        string
-	SetHwaddr         string
-	SetType           string
-	SetNetOnBoot      string
-	SetNetPrimary     string
-	SetNetDevDel      bool
-	SetClusterName    string
-	SetIpxe           string
-	SetInitOverlay    string
-	SetRuntimeOverlay []string
-	SetSystemOverlay  []string
-	SetIpmiIpaddr     string
-	SetIpmiNetmask    string
-	SetIpmiPort       string
-	SetIpmiGateway    string
-	SetIpmiUsername   string
-	SetIpmiPassword   string
-	SetIpmiInterface  string
-	SetIpmiWrite      string
-	SetNodeAll        bool
-	SetYes            bool
-	SetProfile        string
-	SetAddProfile     []string
-	SetDelProfile     []string
-	SetForce          bool
-	SetDiscoverable   bool
-	SetUndiscoverable bool
-	SetTags           []string
-	SetDelTags        []string
-	SetNetTags        []string
-	SetNetDelTags     []string
-	OptionStrMap      map[string]*string
-	KernelStrMapmap   map[string]*string
+	SetNetDevDel  bool
+	SetNodeAll    bool
+	SetYes        bool
+	SetForce      bool
+	SetTags       []string
+	SetDelTags    []string
+	SetNetTags    []string
+	SetNetDelTags []string
+	OptionStrMap  map[string]*string
+	KernelStrMap  map[string]*string
 )
 
 func init() {
@@ -87,41 +60,28 @@ func init() {
 	}); err != nil {
 		log.Println(err)
 	}
-	baseCmd.PersistentFlags().StringVarP(&SetKernelOverride, "kerneloverride", "K", "", "Set kernel override version for nodes")
 	if err := baseCmd.RegisterFlagCompletionFunc("kerneloverride", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		list, _ := kernel.ListKernels()
 		return list, cobra.ShellCompDirectiveNoFileComp
 	}); err != nil {
 		log.Println(err)
 	}
-	baseCmd.PersistentFlags().StringVarP(&SetClusterName, "cluster", "c", "", "Set the node's cluster group")
-	baseCmd.PersistentFlags().StringVar(&SetIpxe, "ipxe", "", "Set the node's iPXE template name")
-	baseCmd.PersistentFlags().StringVarP(&SetInitOverlay, "wwinit", "O", "", "Set the node's initialization overlay")
-	baseCmd.PersistentFlags().StringSliceVarP(&SetRuntimeOverlay, "runtime", "R", []string{}, "Set the node's runtime overlay")
 	if err := baseCmd.RegisterFlagCompletionFunc("runtime", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		list, _ := overlay.FindOverlays()
 		return list, cobra.ShellCompDirectiveNoFileComp
 	}); err != nil {
 		log.Println(err)
 	}
-	baseCmd.PersistentFlags().StringSliceVarP(&SetSystemOverlay, "system", "S", []string{}, "Set the node's system overlay")
 	if err := baseCmd.RegisterFlagCompletionFunc("system", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		list, _ := overlay.FindOverlays()
 		return list, cobra.ShellCompDirectiveNoFileComp
 	}); err != nil {
 		log.Println(err)
 	}
-	baseCmd.PersistentFlags().StringVar(&SetIpmiIpaddr, "ipmiaddr", "", "Set the node's IPMI IP address")
-	baseCmd.PersistentFlags().StringVar(&SetIpmiNetmask, "ipminetmask", "", "Set the node's IPMI netmask")
-	baseCmd.PersistentFlags().StringVar(&SetIpmiPort, "ipmiport", "", "Set the node's IPMI port")
-	baseCmd.PersistentFlags().StringVar(&SetIpmiGateway, "ipmigateway", "", "Set the node's IPMI gateway")
-	baseCmd.PersistentFlags().StringVar(&SetIpmiUsername, "ipmiuser", "", "Set the node's IPMI username")
-	baseCmd.PersistentFlags().StringVar(&SetIpmiPassword, "ipmipass", "", "Set the node's IPMI password")
-	baseCmd.PersistentFlags().StringVar(&SetIpmiInterface, "ipmiinterface", "", "Set the node's IPMI interface (defaults: 'lan')")
-	baseCmd.PersistentFlags().StringVar(&SetIpmiWrite, "ipmiwrite", "", "Enable/disable the write of impi configuration (yes/no)")
-	baseCmd.PersistentFlags().StringSliceVar(&SetAddProfile, "addprofile", []string{}, "Add Profile(s) to node")
-	baseCmd.PersistentFlags().StringSliceVar(&SetDelProfile, "delprofile", []string{}, "Remove Profile(s) to node")
-	baseCmd.PersistentFlags().StringVarP(&SetProfile, "profile", "P", "", "Set the node's profile members (comma separated)")
+	/*
+		baseCmd.PersistentFlags().StringSliceVar(&SetAddProfile, "addprofile", []string{}, "Add Profile(s) to node")
+		baseCmd.PersistentFlags().StringSliceVar(&SetDelProfile, "delprofile", []string{}, "Remove Profile(s) to node")
+	*/
 	if err := baseCmd.RegisterFlagCompletionFunc("profile", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		var list []string
 		nodeDB, _ := node.New()
@@ -133,13 +93,6 @@ func init() {
 	}); err != nil {
 		log.Println(err)
 	}
-	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdev", "N", "", "Set the node's network device")
-	baseCmd.PersistentFlags().StringVarP(&SetNetmask, "netmask", "M", "", "Set the node's network device netmask")
-	baseCmd.PersistentFlags().StringVarP(&SetGateway, "gateway", "G", "", "Set the node's network device gateway")
-	baseCmd.PersistentFlags().StringVarP(&SetHwaddr, "hwaddr", "H", "", "Set the node's network device HW address")
-	baseCmd.PersistentFlags().StringVarP(&SetType, "type", "T", "", "Set the node's network device type")
-	baseCmd.PersistentFlags().StringVar(&SetNetOnBoot, "onboot", "", "Enable/disable device (yes/no)")
-	baseCmd.PersistentFlags().StringVar(&SetNetPrimary, "primary", "", "Enable/disable device as primary (yes/no)")
 
 	baseCmd.PersistentFlags().BoolVar(&SetNetDevDel, "netdel", false, "Delete the node's network device")
 	baseCmd.PersistentFlags().StringSliceVar(&SetNetTags, "nettag", []string{}, "Define custom tag to network device (key=value)")
@@ -152,8 +105,7 @@ func init() {
 
 	baseCmd.PersistentFlags().BoolVarP(&SetYes, "yes", "y", false, "Set 'yes' to all questions asked")
 	baseCmd.PersistentFlags().BoolVarP(&SetForce, "force", "f", false, "Force configuration (even on error)")
-	baseCmd.PersistentFlags().BoolVar(&SetDiscoverable, "discoverable", false, "Make this node discoverable")
-	baseCmd.PersistentFlags().BoolVar(&SetUndiscoverable, "undiscoverable", false, "Remove the discoverable flag")
+	//baseCmd.PersistentFlags().BoolVar(&SetUndiscoverable, "undiscoverable", false, "Remove the discoverable flag")
 
 }
 
