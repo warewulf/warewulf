@@ -319,7 +319,7 @@ func SetEntry(entryPtr interface{}, val interface{}) {
 			}
 		}
 	} else {
-		panic(fmt.Sprintf("Can't convert %s to *node.Entry\n", reflect.TypeOf(entryPtr)))
+		panic(fmt.Sprintf("Can't convert %s to *node.Entry to call Set\n", reflect.TypeOf(entryPtr)))
 	}
 
 }
@@ -330,11 +330,15 @@ Call SetEntry for given field (NodeInfo)
 func (node *NodeInfo) SetField(fieldName string, val interface{}) {
 	field := reflect.ValueOf(node).Elem().FieldByName(fieldName)
 	if field.IsValid() {
-		//fmt.Println(reflect.TypeOf(field.Addr().Interface()))
-		SetEntry(field.Addr().Interface(), val)
+		if field.Addr().Type() == reflect.TypeOf((*Entry)(nil)) {
+			//fmt.Println(reflect.TypeOf(field.Addr().Interface()))
+			SetEntry(field.Addr().Interface(), val)
+		} else {
+			// is most likely NetDevEntry, ignore it
+		}
 	} else {
 		fieldNames := strings.Split(fieldName, ".")
-		if len(fieldNames) == 2 {
+		if len(fieldNames) >= 2 {
 			nestedField := reflect.ValueOf(node).Elem().FieldByName(fieldNames[0])
 			if nestedField.IsValid() {
 				switch nestedField.Addr().Type() {
@@ -344,6 +348,17 @@ func (node *NodeInfo) SetField(fieldName string, val interface{}) {
 				case reflect.TypeOf((**IpmiEntry)(nil)):
 					entry := nestedField.Addr().Interface().(**IpmiEntry)
 					(*entry).SetField(fieldNames[1], val)
+				case reflect.TypeOf((*map[string]*NetDevEntry)(nil)):
+					if len(fieldNames) == 3 {
+						entryMap := nestedField.Addr().Interface().(*map[string]*NetDevEntry)
+						if myVal, ok := (*entryMap)[fieldNames[1]]; ok {
+							myVal.SetField(fieldNames[2], val)
+						} else {
+							var newEntry NetDevEntry
+							(*entryMap)[fieldNames[1]] = &newEntry
+							newEntry.SetField(fieldNames[2], val)
+						}
+					}
 				default:
 					panic(fmt.Sprintf("not implemented type %v\n", nestedField.Addr().Type()))
 				}
@@ -373,6 +388,18 @@ func (node *KernelEntry) SetField(fieldName string, val interface{}) {
 Call SetEntry for given field (ImpiEntry)
 */
 func (node *IpmiEntry) SetField(fieldName string, val interface{}) {
+	field := reflect.ValueOf(node).Elem().FieldByName(fieldName)
+	if field.IsValid() {
+		SetEntry(field.Addr().Interface(), val)
+	} else {
+		panic(fmt.Sprintf("field %s does not exists in node.KernEntry\n", fieldName))
+	}
+}
+
+/*
+Call SetEntry for given field (NetDevEntry)
+*/
+func (node *NetDevEntry) SetField(fieldName string, val interface{}) {
 	field := reflect.ValueOf(node).Elem().FieldByName(fieldName)
 	if field.IsValid() {
 		SetEntry(field.Addr().Interface(), val)
@@ -421,7 +448,7 @@ func (baseCmd *CobraCommand) CreateFlags(theStruct interface{}) map[string]*stri
 	structTyp := structVal.Type()
 	for i := 0; i < structVal.NumField(); i++ {
 		field := structTyp.Field(i)
-		fmt.Printf("%s: field.Kind() == %s\n", field.Name, field.Type.Kind())
+		//fmt.Printf("%s: field.Kind() == %s\n", field.Name, field.Type.Kind())
 		if field.Type.Kind() == reflect.Ptr {
 			a := structVal.Field(i).Elem().Interface()
 			fmt.Println(structVal.Field(i).Elem())
@@ -439,8 +466,16 @@ func (baseCmd *CobraCommand) CreateFlags(theStruct interface{}) map[string]*stri
 				for key, val := range subMap {
 					optionsMap[field.Name+"."+key] = val
 				}
+				if mapType == reflect.TypeOf((*NetDevs)(nil)) {
+					// set the option for the network name here
+					var netName string
+					optionsMap[field.Name] = &netName
+					baseCmd.PersistentFlags().StringVarP(&netName,
+						"netname", "n", "", "Define the network name to configure")
+				}
 			} else {
-				fmt.Println(mapType)
+				// TODO: implement handling of string maps
+				wwlog.Warn("handling of %v not implemented\n", field.Type)
 			}
 
 		} else if field.Tag.Get("comment") != "" {
@@ -463,4 +498,27 @@ func (baseCmd *CobraCommand) CreateFlags(theStruct interface{}) map[string]*stri
 
 	}
 	return optionsMap
+}
+
+/* Add the netname to the options map, as its only known after the map
+command line options have been read out.
+*/
+func AddNetname(theMap *map[string]*string) {
+	foundNetname := false
+	netname := ""
+	for key, val := range *theMap {
+		if key == "NetDevs" {
+			foundNetname = true
+			netname = *val
+		}
+	}
+	if foundNetname {
+		for key, val := range *theMap {
+			keys := strings.Split(key, ".")
+			if len(keys) == 2 && keys[0] == "NetDevs" {
+				(*theMap)[keys[0]+"."+netname+"."+keys[1]] = val
+				delete(*theMap, key)
+			}
+		}
+	}
 }

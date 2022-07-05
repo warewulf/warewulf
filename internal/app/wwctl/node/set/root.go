@@ -1,7 +1,6 @@
 package set
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/hpcng/warewulf/internal/pkg/container"
@@ -82,7 +81,6 @@ func init() {
 	//emptyNodeConf.NetDevs = make(map[string]*node.NetDevs)
 	OptionStrMap = myBase.CreateFlags(emptyNodeConf)
 
-	fmt.Printf("OptionStrMap: %v\n", OptionStrMap)
 	if err := baseCmd.RegisterFlagCompletionFunc("container", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		list, _ := container.ListSources()
 		return list, cobra.ShellCompDirectiveNoFileComp
@@ -135,7 +133,6 @@ func init() {
 	}); err != nil {
 		log.Println(err)
 	}
-	baseCmd.PersistentFlags().StringVarP(&SetNetName, "netname", "n", "default", "Define the network name to configure")
 	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdev", "N", "", "Set the node's network device")
 	baseCmd.PersistentFlags().StringVarP(&SetNetmask, "netmask", "M", "", "Set the node's network device netmask")
 	baseCmd.PersistentFlags().StringVarP(&SetGateway, "gateway", "G", "", "Set the node's network device gateway")
