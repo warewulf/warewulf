@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func (config *nodeYaml) FindByHwaddr(hwa string) (NodeInfo, error) {
+func (config *NodeYaml) FindByHwaddr(hwa string) (NodeInfo, error) {
 	if _, err := net.ParseMAC(hwa); err != nil {
 		return NodeInfo{}, errors.New("invalid hardware address: " + hwa)
 	}
@@ -26,7 +26,7 @@ func (config *nodeYaml) FindByHwaddr(hwa string) (NodeInfo, error) {
 	return ret, errors.New("No nodes found with HW Addr: " + hwa)
 }
 
-func (config *nodeYaml) FindByIpaddr(ipaddr string) (NodeInfo, error) {
+func (config *NodeYaml) FindByIpaddr(ipaddr string) (NodeInfo, error) {
 	if net.ParseIP(ipaddr) == nil {
 		return NodeInfo{}, errors.New("invalid IP:" + ipaddr)
 	}

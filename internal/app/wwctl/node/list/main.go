@@ -2,131 +2,127 @@ package list
 
 import (
 	"fmt"
-	"os"
 	"sort"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/api/node"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"github.com/hpcng/warewulf/pkg/hostlist"
 	"github.com/spf13/cobra"
 )
 
-func CobraRunE(cmd *cobra.Command, args []string) error {
-	var err error
+func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 
-	nodeDB, err := node.New()
+	nodeInfo, err := node.NodeList(args)
 	if err != nil {
 		wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
-		os.Exit(1)
+		return
 	}
-
-	nodes, err := nodeDB.FindAllNodes()
-	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not get node list: %s\n", err)
-		os.Exit(1)
-	}
-
-	args = hostlist.Expand(args)
 
 	if ShowAll {
-		for _, node := range node.FilterByName(nodes, args) {
+		for i := 0; i < len(nodeInfo); i++ {
+			ni := nodeInfo[i]
+			nodeName := ni.Id.Value
+
 			fmt.Printf("################################################################################\n")
 			fmt.Printf("%-20s %-18s %-12s %s\n", "NODE", "FIELD", "PROFILE", "VALUE")
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Id", node.Id.Source(), node.Id.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Comment", node.Comment.Source(), node.Comment.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Cluster", node.ClusterName.Source(), node.ClusterName.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Profiles", "--", strings.Join(node.Profiles, ","))
 
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Discoverable", node.Discoverable.Source(), node.Discoverable.PrintB())
+			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "Id", ni.Id.Source, ni.Id.Print)
+			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "Comment", ni.Comment.Source, ni.Comment.Print)
+			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "Cluster", ni.Cluster.Source, ni.Cluster.Print)
+			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "Profiles", "--", strings.Join(ni.Profiles, ",'"))
 
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Container", node.ContainerName.Source(), node.ContainerName.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "KernelOverride", node.Kernel.Override.Source(), node.Kernel.Override.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "KernelArgs", node.Kernel.Args.Source(), node.Kernel.Args.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "SystemOverlay", node.SystemOverlay.Source(), node.SystemOverlay.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "RuntimeOverlay", node.RuntimeOverlay.Source(), node.RuntimeOverlay.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Ipxe", node.Ipxe.Source(), node.Ipxe.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Init", node.Init.Source(), node.Init.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Root", node.Root.Source(), node.Root.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "AssetKey", node.AssetKey.Source(), node.AssetKey.Print())
+			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "Discoverable", ni.Discoverable.Source, ni.Discoverable.Print)
 
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiIpaddr", node.Ipmi.Ipaddr.Source(), node.Ipmi.Ipaddr.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiNetmask", node.Ipmi.Netmask.Source(), node.Ipmi.Netmask.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiPort", node.Ipmi.Port.Source(), node.Ipmi.Port.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiGateway", node.Ipmi.Gateway.Source(), node.Ipmi.Gateway.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiUserName", node.Ipmi.UserName.Source(), node.Ipmi.UserName.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiInterface", node.Ipmi.Interface.Source(), node.Ipmi.Interface.Print())
-			fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "IpmiWrite", node.Ipmi.Interface.Source(), node.Ipmi.Write.PrintB())
+			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "Container", ni.Container.Source, ni.Container.Print)
+			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "KernelOverride", ni.KernelOverride.Source, ni.KernelOverride.Print)
+			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "KernelArgs", ni.KernelArgs.Source, ni.KernelArgs.Print)
+			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "SystemOverlay", ni.SystemOverlay.Source, ni.SystemOverlay.Print)
+			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "RuntimeOverlay", ni.RuntimeOverlay.Source, ni.RuntimeOverlay.Print)
+			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "Ipxe", ni.Ipxe.Source, ni.Ipxe.Print)
+			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "Init", ni.Init.Source, ni.Init.Print)
+			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "Root", ni.Root.Source, ni.Root.Print)
+			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "AssetKey", ni.AssetKey.Source, ni.AssetKey.Print)
 
-			for keyname, key := range node.Tags {
-				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), "Tag["+keyname+"]", key.Source(), key.Print())
+			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "IpmiIpaddr", ni.IpmiIpaddr.Source, ni.IpmiIpaddr.Print)
+			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "IpmiNetmask", ni.IpmiNetmask.Source, ni.IpmiNetmask.Print)
+			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "IpmiPort", ni.IpmiPort.Source, ni.IpmiPort.Print)
+			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "IpmiGateway", ni.IpmiGateway.Source, ni.IpmiGateway.Print)
+			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "IpmiUserName", ni.IpmiUserName.Source, ni.IpmiUserName.Print)
+			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "IpmiInterface", ni.IpmiInterface.Source, ni.IpmiInterface.Print)
+
+			for keyname, key := range ni.Tags {
+				fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "Tag["+keyname+"]", key.Source, key.Print)
 			}
 
-			for name, netdev := range node.NetDevs {
-				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":DEVICE", netdev.Device.Source(), netdev.Device.Print())
-				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":HWADDR", netdev.Hwaddr.Source(), netdev.Hwaddr.Print())
-				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":IPADDR", netdev.Ipaddr.Source(), netdev.Ipaddr.Print())
-				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":IPADDR6", netdev.Ipaddr.Source(), netdev.Ipaddr6.Print())
-				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":NETMASK", netdev.Netmask.Source(), netdev.Netmask.Print())
-				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":GATEWAY", netdev.Gateway.Source(), netdev.Gateway.Print())
-				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":TYPE", netdev.Type.Source(), netdev.Type.Print())
-				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":ONBOOT", netdev.OnBoot.Source(), netdev.OnBoot.PrintB())
-				fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":PRIMARY", netdev.Primary.Source(), netdev.Primary.PrintB())
+			for name, netdev := range ni.NetDevs {
+				fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, name+":DEVICE", netdev.Device.Source, netdev.Device.Print)
+				fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, name+":HWADDR", netdev.Hwaddr.Source, netdev.Hwaddr.Print)
+				fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, name+":IPADDR", netdev.Ipaddr.Source, netdev.Ipaddr.Print)
+				fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, name+":NETMASK", netdev.Netmask.Source, netdev.Netmask.Print)
+				fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, name+":GATEWAY", netdev.Gateway.Source, netdev.Gateway.Print)
+				fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, name+":TYPE", netdev.Type.Source, netdev.Type.Print)
+				fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, name+":ONBOOT", netdev.Onboot.Source, netdev.Onboot.Print)
+				fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, name+":DEFAULT", netdev.Primary.Source, netdev.Primary.Print)
 				for keyname, key := range netdev.Tags {
-					fmt.Printf("%-20s %-18s %-12s %s\n", node.Id.Get(), name+":TAG["+keyname+"]", key.Source(), key.Print())
+					fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, name+":TAG["+keyname+"]", key.Source, key.Print)
 				}
 			}
-
 		}
-
 	} else if ShowNet {
-		fmt.Printf("%-22s %-6s %-18s %-15s %-15s %-15s\n", "NODE NAME", "DEVICE", "HWADDR", "IPADDR", "GATEWAY", "IPADDR6")
+		fmt.Printf("%-22s %-6s %-18s %-15s %-15s\n", "NODE NAME", "DEVICE", "HWADDR", "IPADDR", "GATEWAY")
 		fmt.Println(strings.Repeat("=", 80))
 
-		for _, node := range node.FilterByName(nodes, args) {
-			if len(node.NetDevs) > 0 {
-				for name, dev := range node.NetDevs {
-					fmt.Printf("%-22s %-6s %-18s %-15s %-15s %-15s\n",
-						node.Id.Get(), name, dev.Hwaddr.Print(), dev.Ipaddr.Print(), dev.Gateway.Print(), dev.Ipaddr6.Print())
+		for i := 0; i < len(nodeInfo); i++ {
+			ni := nodeInfo[i]
+			nodeName := ni.Id.Value
+
+			if len(ni.NetDevs) > 0 {
+				for name, dev := range ni.NetDevs {
+					fmt.Printf("%-22s %-6s %-18s %-15s %-15s\n", nodeName, name, dev.Hwaddr.Print, dev.Ipaddr.Print, dev.Gateway.Print)
 				}
 			} else {
-				fmt.Printf("%-22s %-6s %-18s %-15s %-15s %-15s\n", node.Id.Get(), "--", "--", "--", "--", "--")
+				fmt.Printf("%-22s %-6s %-18s %-15s %-15s\n", nodeName, "--", "--", "--", "--")
 			}
 		}
-
 	} else if ShowIpmi {
 		fmt.Printf("%-22s %-16s %-10s %-20s %-20s %-14s\n", "NODE NAME", "IPMI IPADDR", "IPMI PORT", "IPMI USERNAME", "IPMI PASSWORD", "IPMI INTERFACE")
 		fmt.Println(strings.Repeat("=", 108))
 
-		for _, node := range node.FilterByName(nodes, args) {
-			fmt.Printf("%-22s %-16s %-10s %-20s %-20s %-14s\n", node.Id.Get(), node.Ipmi.Ipaddr.Print(), node.Ipmi.Port.Print(), node.Ipmi.UserName.Print(), node.Ipmi.Password.Print(), node.Ipmi.Interface.Print())
+		for i := 0; i < len(nodeInfo); i++ {
+			ni := nodeInfo[i]
+			nodeName := ni.Id.Value
+
+			fmt.Printf("%-22s %-16s %-10s %-20s %-20s %-14s\n", nodeName, ni.IpmiIpaddr.Print, ni.IpmiPort.Print, ni.IpmiUserName.Print, ni.IpmiPassword.Print, ni.IpmiInterface.Print)
 		}
 
 	} else if ShowLong {
 		fmt.Printf("%-22s %-26s %-35s %s\n", "NODE NAME", "KERNEL OVERRIDE", "CONTAINER", "OVERLAYS (S/R)")
 		fmt.Println(strings.Repeat("=", 120))
 
-		for _, node := range node.FilterByName(nodes, args) {
-			fmt.Printf("%-22s %-26s %-35s %s\n", node.Id.Get(), node.Kernel.Override.Print(), node.ContainerName.Print(), node.SystemOverlay.Print()+"/"+node.RuntimeOverlay.Print())
+		for i := 0; i < len(nodeInfo); i++ {
+			ni := nodeInfo[i]
+			nodeName := ni.Id.Value
+
+			fmt.Printf("%-22s %-26s %-35s %s\n", nodeName, ni.KernelOverride.Print, ni.Container.Print, ni.SystemOverlay.Print+"/"+ni.RuntimeOverlay.Print)
 		}
 
 	} else {
 		fmt.Printf("%-22s %-26s %s\n", "NODE NAME", "PROFILES", "NETWORK")
 		fmt.Println(strings.Repeat("=", 80))
 
-		for _, node := range node.FilterByName(nodes, args) {
+		for i := 0; i < len(nodeInfo); i++ {
+			ni := nodeInfo[i]
+			nodeName := ni.Id.Value
+
 			var netdevs []string
-			if len(node.NetDevs) > 0 {
-				for name, dev := range node.NetDevs {
-					netdevs = append(netdevs, fmt.Sprintf("%s:%s", name, dev.Ipaddr.Print()))
+			if len(ni.NetDevs) > 0 {
+				for name, dev := range ni.NetDevs {
+					netdevs = append(netdevs, fmt.Sprintf("%s:%s", name, dev.Ipaddr.Print))
 				}
 			}
 			sort.Strings(netdevs)
-
-			fmt.Printf("%-22s %-26s %s\n", node.Id.Get(), strings.Join(node.Profiles, ","), strings.Join(netdevs, ", "))
+			fmt.Printf("%-22s %-26s %s\n", nodeName, strings.Join(ni.Profiles, ","), strings.Join(netdevs, ", "))
 		}
-
 	}
-
-	return nil
+	return
 }
