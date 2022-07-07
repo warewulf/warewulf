@@ -41,13 +41,14 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "Ipxe", ni.Ipxe.Source, ni.Ipxe.Print)
 			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "Init", ni.Init.Source, ni.Init.Print)
 			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "Root", ni.Root.Source, ni.Root.Print)
-			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "AssetKey", ni.AssetKey.Source, ni.AssetKey.Print)
+			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "AssetKey", ni.AssetKey.Source, "****")
 
 			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "IpmiIpaddr", ni.IpmiIpaddr.Source, ni.IpmiIpaddr.Print)
 			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "IpmiNetmask", ni.IpmiNetmask.Source, ni.IpmiNetmask.Print)
 			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "IpmiPort", ni.IpmiPort.Source, ni.IpmiPort.Print)
 			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "IpmiGateway", ni.IpmiGateway.Source, ni.IpmiGateway.Print)
 			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "IpmiUserName", ni.IpmiUserName.Source, ni.IpmiUserName.Print)
+			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "IpmiPassword", ni.IpmiPassword.Source, "****")
 			fmt.Printf("%-20s %-18s %-12s %s\n", nodeName, "IpmiInterface", ni.IpmiInterface.Source, ni.IpmiInterface.Print)
 
 			for keyname, key := range ni.Tags {
@@ -92,7 +93,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			ni := nodeInfo[i]
 			nodeName := ni.Id.Value
 
-			fmt.Printf("%-22s %-16s %-10s %-20s %-20s %-14s\n", nodeName, ni.IpmiIpaddr.Print, ni.IpmiPort.Print, ni.IpmiUserName.Print, ni.IpmiPassword.Print, ni.IpmiInterface.Print)
+			fmt.Printf("%-22s %-16s %-10s %-20s %-20s %-14s\n", nodeName, ni.IpmiIpaddr.Print, ni.IpmiPort.Print, ni.IpmiUserName.Print, "****", ni.IpmiInterface.Print)
 		}
 
 	} else if ShowLong {
