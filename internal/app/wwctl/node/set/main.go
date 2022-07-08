@@ -10,49 +10,16 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
+	realMap := make(map[string]string)
+	for key, val := range OptionStrMap {
+		realMap[key] = *val
+	}
 	set := wwapiv1.NodeSetParameter{
-		Comment:        SetComment,
-		Container:      SetContainer,
-		KernelOverride: SetKernelOverride,
-		KernelArgs:     SetKernelArgs,
-		Netname:        SetNetName,
-		Netdev:         SetNetDev,
-		Ipaddr:         SetIpaddr,
-		Netmask:        SetNetmask,
-		Gateway:        SetGateway,
-		Hwaddr:         SetHwaddr,
-		Type:           SetType,
-		Onboot:         SetNetOnBoot,
-		NetDefault:     SetNetPrimary,
-		NetdevDelete:   SetNetDevDel,
-		Cluster:        SetClusterName,
-		Ipxe:           SetIpxe,
-		InitOverlay:    SetInitOverlay,
-		RuntimeOverlay: SetRuntimeOverlay,
-		SystemOverlay:  SetSystemOverlay,
-		IpmiIpaddr:     SetIpmiIpaddr,
-		IpmiNetmask:    SetIpmiNetmask,
-		IpmiPort:       SetIpmiPort,
-		IpmiGateway:    SetIpmiGateway,
-		IpmiUsername:   SetIpmiUsername,
-		IpmiPassword:   SetIpmiPassword,
-		IpmiInterface:  SetIpmiInterface,
-		IpmiWrite:      SetIpmiWrite,
-		AllNodes:       SetNodeAll,
-		Profile:        SetProfile,
-		ProfileAdd:     SetAddProfile,
-		ProfileDelete:  SetDelProfile,
-		Force:          SetForce,
-		Init:           SetInit,
-		Discoverable:   SetDiscoverable,
-		Undiscoverable: SetUndiscoverable,
-		Root:           SetRoot,
-		Tags:           SetTags,
-		TagsDelete:     SetDelTags,
-		AssetKey:       SetAssetKey,
-		NodeNames:      args,
-		NetTags:        SetNetTags,
-		NetDeleteTags:  SetNetDelTags,
+		OptionsStrMap: realMap,
+		NetdevDelete:  SetNetDevDel,
+		AllNodes:      SetNodeAll,
+		Force:         SetForce,
+		NodeNames:     args,
 	}
 
 	if !SetYes {

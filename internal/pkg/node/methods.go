@@ -325,45 +325,103 @@ func SetEntry(entryPtr interface{}, val interface{}) {
 }
 
 /*
+Add an entry in a map
+*/
+func AddEntry(entryMapInt interface{}, val interface{}) {
+	if reflect.TypeOf(entryMapInt) == reflect.TypeOf((map[string]*Entry)(nil)) {
+		entryMap := entryMapInt.(map[string]*Entry)
+		str, ok := (val).(string)
+		if !ok {
+			panic("AddEntry must be called with string value")
+		}
+		for _, token := range strings.Split(str, ",") {
+			keyVal := strings.Split(token, "=")
+			if len(keyVal) == 2 {
+				_, mapOk := entryMap[keyVal[0]]
+				if !mapOk {
+					var entr Entry
+					entryMap[keyVal[0]] = &entr
+				}
+				entryMap[keyVal[0]].Set(keyVal[1])
+			}
+		}
+	}
+}
+
+/*
+Del an entry in a map
+*/
+func DelEntry(entryMapInt interface{}, val interface{}) {
+	if reflect.TypeOf(entryMapInt) == reflect.TypeOf((map[string]*Entry)(nil)) {
+		entryMap := entryMapInt.(map[string]*Entry)
+		str, ok := (val).(string)
+		if !ok {
+			panic("DelEntry must be called with string value")
+		}
+		for _, token := range strings.Split(str, ",") {
+			delete(entryMap, token)
+		}
+	}
+
+}
+
+/*
 Call SetEntry for given field (NodeInfo)
 */
 func (node *NodeInfo) SetField(fieldName string, val interface{}) {
 	field := reflect.ValueOf(node).Elem().FieldByName(fieldName)
+	fmt.Println("On field:", fieldName)
 	if field.IsValid() {
 		if field.Addr().Type() == reflect.TypeOf((*Entry)(nil)) {
 			//fmt.Println(reflect.TypeOf(field.Addr().Interface()))
 			SetEntry(field.Addr().Interface(), val)
+		} else if field.Addr().Kind() == reflect.Map {
+			fmt.Println(field.Addr())
 		} else {
+			fmt.Println("Not working field.Addr().Kind():", field.Addr().Kind())
 			// is most likely NetDevEntry, ignore it
 		}
 	} else {
 		fieldNames := strings.Split(fieldName, ".")
 		if len(fieldNames) >= 2 {
-			nestedField := reflect.ValueOf(node).Elem().FieldByName(fieldNames[0])
-			if nestedField.IsValid() {
-				switch nestedField.Addr().Type() {
-				case reflect.TypeOf((**KernelEntry)(nil)):
-					entry := nestedField.Addr().Interface().(**KernelEntry)
-					(*entry).SetField(fieldNames[1], val)
-				case reflect.TypeOf((**IpmiEntry)(nil)):
-					entry := nestedField.Addr().Interface().(**IpmiEntry)
-					(*entry).SetField(fieldNames[1], val)
-				case reflect.TypeOf((*map[string]*NetDevEntry)(nil)):
-					if len(fieldNames) == 3 {
-						entryMap := nestedField.Addr().Interface().(*map[string]*NetDevEntry)
-						if myVal, ok := (*entryMap)[fieldNames[1]]; ok {
-							myVal.SetField(fieldNames[2], val)
-						} else {
-							var newEntry NetDevEntry
-							(*entryMap)[fieldNames[1]] = &newEntry
-							newEntry.SetField(fieldNames[2], val)
-						}
+			if fieldNames[0] == "del" || fieldNames[0] == "add" {
+				fieldMap := reflect.ValueOf(node).Elem().FieldByName(fieldNames[1])
+				if fieldMap.IsValid() {
+					if fieldNames[0] == "del" {
+						DelEntry(fieldMap.Addr().Elem().Interface(), val)
+					} else if fieldNames[0] == "add" {
+						AddEntry(fieldMap.Addr().Elem().Interface(), val)
 					}
-				default:
-					panic(fmt.Sprintf("not implemented type %v\n", nestedField.Addr().Type()))
+				} else {
+					panic(fmt.Sprintf("invalid del/add operation with name %s called, field %s does not exists\n", fieldName, fieldNames[0]))
 				}
 			} else {
-				panic(fmt.Sprintf("field %s is not a nested type of %s", fieldNames[0], fieldName))
+				nestedField := reflect.ValueOf(node).Elem().FieldByName(fieldNames[0])
+				if nestedField.IsValid() {
+					switch nestedField.Addr().Type() {
+					case reflect.TypeOf((**KernelEntry)(nil)):
+						entry := nestedField.Addr().Interface().(**KernelEntry)
+						(*entry).SetField(fieldNames[1], val)
+					case reflect.TypeOf((**IpmiEntry)(nil)):
+						entry := nestedField.Addr().Interface().(**IpmiEntry)
+						(*entry).SetField(fieldNames[1], val)
+					case reflect.TypeOf((*map[string]*NetDevEntry)(nil)):
+						if len(fieldNames) == 3 {
+							entryMap := nestedField.Addr().Interface().(*map[string]*NetDevEntry)
+							if myVal, ok := (*entryMap)[fieldNames[1]]; ok {
+								myVal.SetField(fieldNames[2], val)
+							} else {
+								var newEntry NetDevEntry
+								(*entryMap)[fieldNames[1]] = &newEntry
+								newEntry.SetField(fieldNames[2], val)
+							}
+						}
+					default:
+						panic(fmt.Sprintf("not implemented type %v\n", nestedField.Addr().Type()))
+					}
+				} else {
+					panic(fmt.Sprintf("field %s is not a nested type of %s", fieldNames[0], fieldName))
+				}
 			}
 		} else {
 			panic(fmt.Sprintf("field %s does not exists in node.NodeInfo\n", fieldName))
@@ -451,7 +509,6 @@ func (baseCmd *CobraCommand) CreateFlags(theStruct interface{}) map[string]*stri
 		//fmt.Printf("%s: field.Kind() == %s\n", field.Name, field.Type.Kind())
 		if field.Type.Kind() == reflect.Ptr {
 			a := structVal.Field(i).Elem().Interface()
-			fmt.Println(structVal.Field(i).Elem())
 			subStruct := baseCmd.CreateFlags(a)
 			for key, val := range subStruct {
 				optionsMap[field.Name+"."+key] = val
@@ -472,6 +529,17 @@ func (baseCmd *CobraCommand) CreateFlags(theStruct interface{}) map[string]*stri
 					optionsMap[field.Name] = &netName
 					baseCmd.PersistentFlags().StringVarP(&netName,
 						"netname", "n", "", "Define the network name to configure")
+				}
+			} else if mapType.Kind() == reflect.String {
+				if field.Tag.Get("lopt") != "" {
+					var addPair string
+					optionsMap["add"+"."+field.Name] = &addPair
+					baseCmd.PersistentFlags().StringVarP(&addPair,
+						field.Tag.Get("lopt")+"add", "", "", "Add key/value pair to "+field.Tag.Get("comment"))
+					var delPair string
+					optionsMap["del"+"."+field.Name] = &delPair
+					baseCmd.PersistentFlags().StringVarP(&delPair,
+						field.Tag.Get("lopt")+"del", "", "", "Delete key/value pair to "+field.Tag.Get("comment"))
 				}
 			} else {
 				// TODO: implement handling of string maps
@@ -497,6 +565,7 @@ func (baseCmd *CobraCommand) CreateFlags(theStruct interface{}) map[string]*stri
 		}
 
 	}
+	fmt.Println(optionsMap)
 	return optionsMap
 }
 

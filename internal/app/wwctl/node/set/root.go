@@ -32,16 +32,12 @@ var (
 			return node_names, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
-	SetNetDevDel  bool
-	SetNodeAll    bool
-	SetYes        bool
-	SetForce      bool
-	SetTags       []string
-	SetDelTags    []string
-	SetNetTags    []string
-	SetNetDelTags []string
-	OptionStrMap  map[string]*string
-	KernelStrMap  map[string]*string
+	SetNetDevDel bool
+	SetNodeAll   bool
+	SetYes       bool
+	SetForce     bool
+	OptionStrMap map[string]*string
+	KernelStrMap map[string]*string
 )
 
 func init() {
@@ -53,7 +49,6 @@ func init() {
 	emptyNodeConf.Ipmi = new(node.IpmiConf)
 	//emptyNodeConf.NetDevs = make(map[string]*node.NetDevs)
 	OptionStrMap = myBase.CreateFlags(emptyNodeConf)
-
 	if err := baseCmd.RegisterFlagCompletionFunc("container", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		list, _ := container.ListSources()
 		return list, cobra.ShellCompDirectiveNoFileComp
@@ -72,7 +67,7 @@ func init() {
 	}); err != nil {
 		log.Println(err)
 	}
-	if err := baseCmd.RegisterFlagCompletionFunc("system", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if err := baseCmd.RegisterFlagCompletionFunc("wwinit", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		list, _ := overlay.FindOverlays()
 		return list, cobra.ShellCompDirectiveNoFileComp
 	}); err != nil {
@@ -95,11 +90,6 @@ func init() {
 	}
 
 	baseCmd.PersistentFlags().BoolVar(&SetNetDevDel, "netdel", false, "Delete the node's network device")
-	baseCmd.PersistentFlags().StringSliceVar(&SetNetTags, "nettag", []string{}, "Define custom tag to network device (key=value)")
-	baseCmd.PersistentFlags().StringSliceVar(&SetNetDelTags, "netdeltag", []string{}, "Delete tag for network device")
-
-	baseCmd.PersistentFlags().StringSliceVarP(&SetTags, "tag", "t", []string{}, "Define custom tag (key=value)")
-	baseCmd.PersistentFlags().StringSliceVar(&SetDelTags, "tagdel", []string{}, "Delete tag")
 
 	baseCmd.PersistentFlags().BoolVarP(&SetNodeAll, "all", "a", false, "Set all nodes")
 

@@ -533,10 +533,11 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 
 	for _, n := range nodes {
 		wwlog.Printf(wwlog.VERBOSE, "Evaluating node: %s\n", n.Id.Get())
-
-		if set.Comment != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting comment to: %s\n", n.Id.Get(), set.Comment)
-			n.Comment.Set(set.Comment)
+		for key, val := range set.OptionsStrMap {
+			if val != "" {
+				wwlog.Verbose("node:%s setting %s to %s\n", n.Id.Get(), key, val)
+				n.SetField(key, val)
+			}
 		}
 
 		if set.Container != "" {
@@ -544,266 +545,23 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 			n.ContainerName.Set(set.Container)
 		}
 
-		if set.Init != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting init command to: %s\n", n.Id.Get(), set.Init)
-			n.Init.Set(set.Init)
-		}
-
-		if set.Root != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting root to: %s\n", n.Id.Get(), set.Root)
-			n.Root.Set(set.Root)
-		}
-
-		if set.AssetKey != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting asset key to: %s\n", n.Id.Get(), set.AssetKey)
-			n.AssetKey.Set(set.AssetKey)
-		}
-
-		if set.KernelOverride != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting kernel override to: %s\n", n.Id.Get(), set.KernelOverride)
-			n.Kernel.Override.Set(set.KernelOverride)
-		}
-
-		if set.KernelArgs != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting kernel args to: %s\n", n.Id.Get(), set.KernelArgs)
-			n.Kernel.Args.Set(set.KernelArgs)
-		}
-
-		if set.Cluster != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting cluster name to: %s\n", n.Id.Get(), set.Cluster)
-			n.ClusterName.Set(set.Cluster)
-		}
-
-		if set.Ipxe != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting iPXE template to: %s\n", n.Id.Get(), set.Ipxe)
-			n.Ipxe.Set(set.Ipxe)
-		}
-
-		if len(set.RuntimeOverlay) != 0 {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting runtime overlay to: %s\n", n.Id.Get(), set.RuntimeOverlay)
-			n.RuntimeOverlay.SetSlice(set.RuntimeOverlay)
-		}
-
-		if len(set.SystemOverlay) != 0 {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting system overlay to: %s\n", n.Id.Get(), set.SystemOverlay)
-			n.SystemOverlay.SetSlice(set.SystemOverlay)
-		}
-
-		if set.IpmiIpaddr != "" {
-			newIpaddr := util.IncrementIPv4(set.IpmiIpaddr, nodeCount)
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI IP address to: %s\n", n.Id.Get(), newIpaddr)
-			n.Ipmi.Ipaddr.Set(newIpaddr)
-		}
-
-		if set.IpmiNetmask != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI netmask to: %s\n", n.Id.Get(), set.IpmiNetmask)
-			n.Ipmi.Netmask.Set(set.IpmiNetmask)
-		}
-
-		if set.IpmiPort != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI port to: %s\n", n.Id.Get(), set.IpmiPort)
-			n.Ipmi.Port.Set(set.IpmiPort)
-		}
-
-		if set.IpmiGateway != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI gateway to: %s\n", n.Id.Get(), set.IpmiGateway)
-			n.Ipmi.Gateway.Set(set.IpmiGateway)
-		}
-
-		if set.IpmiUsername != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI IP username to: %s\n", n.Id.Get(), set.IpmiUsername)
-			n.Ipmi.UserName.Set(set.IpmiUsername)
-		}
-
-		if set.IpmiPassword != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI IP password to: %s\n", n.Id.Get(), set.IpmiPassword)
-			n.Ipmi.Password.Set(set.IpmiPassword)
-		}
-
-		if set.IpmiInterface != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting IPMI IP interface to: %s\n", n.Id.Get(), set.IpmiInterface)
-			n.Ipmi.Interface.Set(set.IpmiInterface)
-		}
-
-		if set.IpmiWrite == "yes" || set.Onboot == "y" || set.Onboot == "1" || set.Onboot == "true" {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting Ipmiwrite to %s\n", n.Id.Get(), set.IpmiWrite)
-			n.Ipmi.Write.SetB(true)
-		} else {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting Ipmiwrite to %s\n", n.Id.Get(), set.IpmiWrite)
-			n.Ipmi.Write.SetB(false)
-		}
-
-		if set.Discoverable {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting node to discoverable\n", n.Id.Get())
-			n.Discoverable.SetB(true)
-		}
-
-		if set.Undiscoverable {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting node to undiscoverable\n", n.Id.Get())
-			n.Discoverable.SetB(false)
-		}
-
-		if set.Profile != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting profiles to: %s\n", n.Id.Get(), set.Profile)
-			n.Profiles = []string{set.Profile}
-		}
-
-		if len(set.ProfileAdd) > 0 {
-			for _, p := range set.ProfileAdd {
-				wwlog.Printf(wwlog.VERBOSE, "Node: %s, adding profile '%s'\n", n.Id.Get(), p)
-				n.Profiles = util.SliceAddUniqueElement(n.Profiles, p)
-			}
-		}
-
-		if len(set.ProfileDelete) > 0 {
-			for _, p := range set.ProfileDelete {
-				wwlog.Printf(wwlog.VERBOSE, "Node: %s, deleting profile '%s'\n", n.Id.Get(), p)
-				n.Profiles = util.SliceRemoveElement(n.Profiles, p)
-			}
-		}
-
-		if set.Netname != "" {
-			if _, ok := n.NetDevs[set.Netname]; !ok {
-				var nd node.NetDevEntry
-				nd.Tags = make(map[string]*node.Entry)
-
-				n.NetDevs[set.Netname] = &nd
-
-				if set.Netdev == "" {
-					n.NetDevs[set.Netname].Device.Set(set.Netname)
-				}
-			}
-			var def bool = true
-
-			// NOTE: This is overriding parameters passed in by the caller.
-			set.Onboot = "yes"
-
-			for _, n := range n.NetDevs {
-				if n.Primary.GetB() {
-					def = false
-				}
-			}
-
-			if def {
-				set.NetDefault = "yes"
-			}
-		}
-
-		if set.Netdev != "" {
-			err = checkNetNameRequired(set.Netname)
-			if err != nil {
-				return
-			}
-
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting net Device to: %s\n", n.Id.Get(), set.Netname, set.Netdev)
-			n.NetDevs[set.Netname].Device.Set(set.Netdev)
-		}
-
-		if set.Ipaddr != "" {
-			err = checkNetNameRequired(set.Netname)
-			if err != nil {
-				return
-			}
-
-			newIpaddr := util.IncrementIPv4(set.Ipaddr, nodeCount)
-
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Ipaddr to: %s\n", n.Id.Get(), set.Netname, newIpaddr)
-			n.NetDevs[set.Netname].Ipaddr.Set(newIpaddr)
-		}
-
-		if set.Netmask != "" {
-			err = checkNetNameRequired(set.Netname)
-			if err != nil {
-				return
-			}
-
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting netmask to: %s\n", n.Id.Get(), set.Netname, set.Netmask)
-			n.NetDevs[set.Netname].Netmask.Set(set.Netmask)
-		}
-
-		if set.Gateway != "" {
-			err = checkNetNameRequired(set.Netname)
-			if err != nil {
-				return
-			}
-
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting gateway to: %s\n", n.Id.Get(), set.Netname, set.Gateway)
-			n.NetDevs[set.Netname].Gateway.Set(set.Gateway)
-		}
-
-		if set.Hwaddr != "" {
-			err = checkNetNameRequired(set.Netname)
-			if err != nil {
-				return
-			}
-
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting HW address to: %s\n", n.Id.Get(), set.Netname, set.Hwaddr)
-			n.NetDevs[set.Netname].Hwaddr.Set(strings.ToLower(set.Hwaddr))
-		}
-
-		if set.Type != "" {
-			err = checkNetNameRequired(set.Netname)
-			if err != nil {
-				return
-			}
-
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Type %s\n", n.Id.Get(), set.Netname, set.Type)
-			n.NetDevs[set.Netname].Type.Set(set.Type)
-		}
-
-		if set.Onboot != "" {
-			err = checkNetNameRequired(set.Netname)
-			if err != nil {
-				return
-			}
-
-			if set.Onboot == "yes" || set.Onboot == "y" || set.Onboot == "1" || set.Onboot == "true" {
-				wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting ONBOOT\n", n.Id.Get(), set.Netname)
-				n.NetDevs[set.Netname].OnBoot.SetB(true)
-			} else {
-				wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Unsetting ONBOOT\n", n.Id.Get(), set.Netname)
-				n.NetDevs[set.Netname].OnBoot.SetB(false)
-			}
-		}
-
-		if set.NetDefault != "" {
-			if set.Netname == "" {
-				err = fmt.Errorf("You must include the '--netname' option")
-				wwlog.Printf(wwlog.ERROR, fmt.Sprintf("%v\n", err.Error()))
-				return
-			}
-
-			if set.NetDefault == "yes" || set.NetDefault == "y" || set.NetDefault == "1" || set.NetDefault == "true" {
-
-				// Set all other devices to non-default
-				for _, n := range n.NetDevs {
-					n.Primary.SetB(false)
+		/*
+			if set.NetdevDelete {
+				err = checkNetNameRequired(set.Netname)
+				if err != nil {
+					return
 				}
 
-				wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting PRIMARY\n", n.Id.Get(), set.Netname)
-				n.NetDevs[set.Netname].Primary.SetB(true)
-			} else {
-				wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Unsetting PRIMARY\n", n.Id.Get(), set.Netname)
-				n.NetDevs[set.Netname].Primary.SetB(false)
+				if _, ok := n.NetDevs[set.Netname]; !ok {
+					err = fmt.Errorf("Network device name doesn't exist: %s", set.Netname)
+					wwlog.Printf(wwlog.ERROR, fmt.Sprintf("%v\n", err.Error()))
+					return
+				}
+
+				wwlog.Printf(wwlog.VERBOSE, "Node: %s, Deleting network device: %s\n", n.Id.Get(), set.Netname)
+				delete(n.NetDevs, set.Netname)
 			}
-		}
-
-		if set.NetdevDelete {
-			err = checkNetNameRequired(set.Netname)
-			if err != nil {
-				return
-			}
-
-			if _, ok := n.NetDevs[set.Netname]; !ok {
-				err = fmt.Errorf("Network device name doesn't exist: %s", set.Netname)
-				wwlog.Printf(wwlog.ERROR, fmt.Sprintf("%v\n", err.Error()))
-				return
-			}
-
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Deleting network device: %s\n", n.Id.Get(), set.Netname)
-			delete(n.NetDevs, set.Netname)
-		}
-
+		*/
 		if len(set.Tags) > 0 {
 			for _, t := range set.Tags {
 				keyval := strings.SplitN(t, "=", 2)
@@ -833,36 +591,36 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 				delete(n.Tags, key)
 			}
 		}
+		/*
+			if len(set.NetTags) > 0 {
+				for _, t := range set.NetTags {
+					keyval := strings.SplitN(t, "=", 2)
+					key := keyval[0]
+					val := keyval[1]
+					if _, ok := n.NetDevs[set.Netname].Tags[key]; !ok {
+						var nd node.Entry
+						n.NetDevs[set.Netname].Tags[key] = &nd
+					}
 
-		if len(set.NetTags) > 0 {
-			for _, t := range set.NetTags {
-				keyval := strings.SplitN(t, "=", 2)
-				key := keyval[0]
-				val := keyval[1]
-				if _, ok := n.NetDevs[set.Netname].Tags[key]; !ok {
-					var nd node.Entry
-					n.NetDevs[set.Netname].Tags[key] = &nd
+					wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting NETTAG '%s'='%s'\n", n.Id.Get(), set.Netname, key, val)
+					n.NetDevs[set.Netname].Tags[key].Set(val)
 				}
 
-				wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting NETTAG '%s'='%s'\n", n.Id.Get(), set.Netname, key, val)
-				n.NetDevs[set.Netname].Tags[key].Set(val)
 			}
+			if len(set.NetDeleteTags) > 0 {
+				for _, t := range set.NetDeleteTags {
+					keyval := strings.SplitN(t, "=", 1)
+					key := keyval[0]
+					if _, ok := n.NetDevs[set.Netname].Tags[key]; !ok {
+						wwlog.Printf(wwlog.WARN, "Node: %s:%s Key %s does not exist\n", n.Id.Get(), set.Netname, key)
+						os.Exit(1)
+					}
 
-		}
-		if len(set.NetDeleteTags) > 0 {
-			for _, t := range set.NetDeleteTags {
-				keyval := strings.SplitN(t, "=", 1)
-				key := keyval[0]
-				if _, ok := n.NetDevs[set.Netname].Tags[key]; !ok {
-					wwlog.Printf(wwlog.WARN, "Node: %s:%s Key %s does not exist\n", n.Id.Get(), set.Netname, key)
-					os.Exit(1)
+					wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Deleting Tag %s\n", n.Id.Get(), set.Netname, key)
+					delete(n.NetDevs[set.Netname].Tags, key)
 				}
-
-				wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Deleting Tag %s\n", n.Id.Get(), set.Netname, key)
-				delete(n.NetDevs[set.Netname].Tags, key)
 			}
-		}
-
+		*/
 		err := nodeDB.NodeUpdate(n)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)

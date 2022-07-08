@@ -13,6 +13,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/utilities"
 	"google.golang.org/grpc"
@@ -21,7 +22,6 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // Suppress "imported and not used" errors
@@ -137,7 +137,7 @@ func local_request_WWApi_ContainerImport_0(ctx context.Context, marshaler runtim
 }
 
 func request_WWApi_ContainerList_0(ctx context.Context, marshaler runtime.Marshaler, client WWApiClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq emptypb.Empty
+	var protoReq empty.Empty
 	var metadata runtime.ServerMetadata
 
 	msg, err := client.ContainerList(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -146,7 +146,7 @@ func request_WWApi_ContainerList_0(ctx context.Context, marshaler runtime.Marsha
 }
 
 func local_request_WWApi_ContainerList_0(ctx context.Context, marshaler runtime.Marshaler, server WWApiServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq emptypb.Empty
+	var protoReq empty.Empty
 	var metadata runtime.ServerMetadata
 
 	msg, err := server.ContainerList(ctx, &protoReq)
@@ -367,7 +367,7 @@ func local_request_WWApi_NodeStatus_0(ctx context.Context, marshaler runtime.Mar
 }
 
 func request_WWApi_Version_0(ctx context.Context, marshaler runtime.Marshaler, client WWApiClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq emptypb.Empty
+	var protoReq empty.Empty
 	var metadata runtime.ServerMetadata
 
 	msg, err := client.Version(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -376,7 +376,7 @@ func request_WWApi_Version_0(ctx context.Context, marshaler runtime.Marshaler, c
 }
 
 func local_request_WWApi_Version_0(ctx context.Context, marshaler runtime.Marshaler, server WWApiServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq emptypb.Empty
+	var protoReq empty.Empty
 	var metadata runtime.ServerMetadata
 
 	msg, err := server.Version(ctx, &protoReq)
@@ -396,13 +396,12 @@ func RegisterWWApiHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/wwapi.v1.WWApi/ContainerBuild", runtime.WithHTTPPathPattern("/v1/containerbuild"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/wwapi.v1.WWApi/ContainerBuild", runtime.WithHTTPPathPattern("/v1/containerbuild"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WWApi_ContainerBuild_0(ctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WWApi_ContainerBuild_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -420,13 +419,12 @@ func RegisterWWApiHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/wwapi.v1.WWApi/ContainerDelete", runtime.WithHTTPPathPattern("/v1/container"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/wwapi.v1.WWApi/ContainerDelete", runtime.WithHTTPPathPattern("/v1/container"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WWApi_ContainerDelete_0(ctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WWApi_ContainerDelete_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -444,13 +442,12 @@ func RegisterWWApiHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/wwapi.v1.WWApi/ContainerImport", runtime.WithHTTPPathPattern("/v1/container"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/wwapi.v1.WWApi/ContainerImport", runtime.WithHTTPPathPattern("/v1/container"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WWApi_ContainerImport_0(ctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WWApi_ContainerImport_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -468,13 +465,12 @@ func RegisterWWApiHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/wwapi.v1.WWApi/ContainerList", runtime.WithHTTPPathPattern("/v1/container"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/wwapi.v1.WWApi/ContainerList", runtime.WithHTTPPathPattern("/v1/container"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WWApi_ContainerList_0(ctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WWApi_ContainerList_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -492,13 +488,12 @@ func RegisterWWApiHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/wwapi.v1.WWApi/ContainerShow", runtime.WithHTTPPathPattern("/v1/containershow"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/wwapi.v1.WWApi/ContainerShow", runtime.WithHTTPPathPattern("/v1/containershow"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WWApi_ContainerShow_0(ctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WWApi_ContainerShow_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -516,13 +511,12 @@ func RegisterWWApiHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/wwapi.v1.WWApi/NodeAdd", runtime.WithHTTPPathPattern("/v1/node"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/wwapi.v1.WWApi/NodeAdd", runtime.WithHTTPPathPattern("/v1/node"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WWApi_NodeAdd_0(ctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WWApi_NodeAdd_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -540,13 +534,12 @@ func RegisterWWApiHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/wwapi.v1.WWApi/NodeDelete", runtime.WithHTTPPathPattern("/v1/node"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/wwapi.v1.WWApi/NodeDelete", runtime.WithHTTPPathPattern("/v1/node"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WWApi_NodeDelete_0(ctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WWApi_NodeDelete_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -564,13 +557,12 @@ func RegisterWWApiHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/wwapi.v1.WWApi/NodeList", runtime.WithHTTPPathPattern("/v1/node"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/wwapi.v1.WWApi/NodeList", runtime.WithHTTPPathPattern("/v1/node"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WWApi_NodeList_0(ctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WWApi_NodeList_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -588,13 +580,12 @@ func RegisterWWApiHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/wwapi.v1.WWApi/NodeSet", runtime.WithHTTPPathPattern("/v1/nodeset"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/wwapi.v1.WWApi/NodeSet", runtime.WithHTTPPathPattern("/v1/nodeset"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WWApi_NodeSet_0(ctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WWApi_NodeSet_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -612,13 +603,12 @@ func RegisterWWApiHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/wwapi.v1.WWApi/NodeStatus", runtime.WithHTTPPathPattern("/v1/nodestatus"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/wwapi.v1.WWApi/NodeStatus", runtime.WithHTTPPathPattern("/v1/nodestatus"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WWApi_NodeStatus_0(ctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WWApi_NodeStatus_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -636,13 +626,12 @@ func RegisterWWApiHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/wwapi.v1.WWApi/Version", runtime.WithHTTPPathPattern("/version"))
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/wwapi.v1.WWApi/Version", runtime.WithHTTPPathPattern("/version"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WWApi_Version_0(ctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WWApi_Version_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -699,13 +688,12 @@ func RegisterWWApiHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/wwapi.v1.WWApi/ContainerBuild", runtime.WithHTTPPathPattern("/v1/containerbuild"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/wwapi.v1.WWApi/ContainerBuild", runtime.WithHTTPPathPattern("/v1/containerbuild"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WWApi_ContainerBuild_0(ctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WWApi_ContainerBuild_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -720,13 +708,12 @@ func RegisterWWApiHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/wwapi.v1.WWApi/ContainerDelete", runtime.WithHTTPPathPattern("/v1/container"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/wwapi.v1.WWApi/ContainerDelete", runtime.WithHTTPPathPattern("/v1/container"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WWApi_ContainerDelete_0(ctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WWApi_ContainerDelete_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -741,13 +728,12 @@ func RegisterWWApiHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/wwapi.v1.WWApi/ContainerImport", runtime.WithHTTPPathPattern("/v1/container"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/wwapi.v1.WWApi/ContainerImport", runtime.WithHTTPPathPattern("/v1/container"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WWApi_ContainerImport_0(ctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WWApi_ContainerImport_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -762,13 +748,12 @@ func RegisterWWApiHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/wwapi.v1.WWApi/ContainerList", runtime.WithHTTPPathPattern("/v1/container"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/wwapi.v1.WWApi/ContainerList", runtime.WithHTTPPathPattern("/v1/container"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WWApi_ContainerList_0(ctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WWApi_ContainerList_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -783,13 +768,12 @@ func RegisterWWApiHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/wwapi.v1.WWApi/ContainerShow", runtime.WithHTTPPathPattern("/v1/containershow"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/wwapi.v1.WWApi/ContainerShow", runtime.WithHTTPPathPattern("/v1/containershow"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WWApi_ContainerShow_0(ctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WWApi_ContainerShow_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -804,13 +788,12 @@ func RegisterWWApiHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/wwapi.v1.WWApi/NodeAdd", runtime.WithHTTPPathPattern("/v1/node"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/wwapi.v1.WWApi/NodeAdd", runtime.WithHTTPPathPattern("/v1/node"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WWApi_NodeAdd_0(ctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WWApi_NodeAdd_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -825,13 +808,12 @@ func RegisterWWApiHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/wwapi.v1.WWApi/NodeDelete", runtime.WithHTTPPathPattern("/v1/node"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/wwapi.v1.WWApi/NodeDelete", runtime.WithHTTPPathPattern("/v1/node"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WWApi_NodeDelete_0(ctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WWApi_NodeDelete_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -846,13 +828,12 @@ func RegisterWWApiHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/wwapi.v1.WWApi/NodeList", runtime.WithHTTPPathPattern("/v1/node"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/wwapi.v1.WWApi/NodeList", runtime.WithHTTPPathPattern("/v1/node"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WWApi_NodeList_0(ctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WWApi_NodeList_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -867,13 +848,12 @@ func RegisterWWApiHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/wwapi.v1.WWApi/NodeSet", runtime.WithHTTPPathPattern("/v1/nodeset"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/wwapi.v1.WWApi/NodeSet", runtime.WithHTTPPathPattern("/v1/nodeset"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WWApi_NodeSet_0(ctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WWApi_NodeSet_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -888,13 +868,12 @@ func RegisterWWApiHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/wwapi.v1.WWApi/NodeStatus", runtime.WithHTTPPathPattern("/v1/nodestatus"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/wwapi.v1.WWApi/NodeStatus", runtime.WithHTTPPathPattern("/v1/nodestatus"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WWApi_NodeStatus_0(ctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WWApi_NodeStatus_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
@@ -909,13 +888,12 @@ func RegisterWWApiHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/wwapi.v1.WWApi/Version", runtime.WithHTTPPathPattern("/version"))
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/wwapi.v1.WWApi/Version", runtime.WithHTTPPathPattern("/version"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WWApi_Version_0(ctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WWApi_Version_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)

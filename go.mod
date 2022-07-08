@@ -10,6 +10,7 @@ require (
 	github.com/creasty/defaults v1.5.2
 	github.com/fatih/color v1.13.0
 	github.com/golang/glog v1.0.0
+	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.1.2
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.0
 	github.com/manifoldco/promptui v0.8.0

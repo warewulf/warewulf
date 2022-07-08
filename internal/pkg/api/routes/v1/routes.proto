@@ -157,46 +157,14 @@ message NodeDeleteParameter {
 // NodeSetParameter contains all fields for updating aspects of nodes managed
 // by Warewulf.
 message NodeSetParameter {
-	string comment = 1;
+	map<string,string > optionsStrMap = 1;
 	string container = 2;
-	string kernelOverride = 3;
-	string kernelArgs = 4;
-	string netname = 5;
-	string netdev = 6;
-	string ipaddr = 7;
-	string netmask = 8;
-	string gateway = 9;
-	string hwaddr = 10;
-	string type = 11;
-	string onboot = 12;
-	string netDefault = 13;
 	bool netdevDelete = 14;
-	string cluster = 15;
-	string ipxe = 16;
-	string initOverlay = 17;
-	repeated string runtimeOverlay = 18;
-	repeated string systemOverlay = 19;
-	string ipmiIpaddr = 20;
-	string ipmiNetmask = 21;
-	string ipmiPort = 22;
-	string ipmiGateway = 23;
-	string ipmiUsername = 24;
-	string ipmiPassword = 25;
-	string ipmiInterface = 26;
 	bool allNodes = 27;
-	string profile = 28;
-	repeated string profileAdd = 29;
-	repeated string profileDelete = 30;
 	bool force = 31;
-	string init = 32;
-	bool discoverable = 33;
-	bool undiscoverable = 34;
-	string root = 35;
 	repeated string tags = 36;
 	repeated string tagsDelete = 37;
-	string assetKey = 38;
 	repeated string nodeNames = 39;
-	string ipmiWrite = 40;
 	repeated string NetTags = 41;
 	repeated string NetDeleteTags = 42;
 }
