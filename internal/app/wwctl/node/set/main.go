@@ -1,6 +1,7 @@
 package set
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/hpcng/warewulf/internal/pkg/api/node"
@@ -10,10 +11,16 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
+	OptionStrMap, haveNetname := node.AddNetname(OptionStrMap)
+	if !haveNetname {
+		return errors.New("A netname must be given for any network related configuration\n")
+	}
 	realMap := make(map[string]string)
+
 	for key, val := range OptionStrMap {
 		realMap[key] = *val
 	}
+
 	set := wwapiv1.NodeSetParameter{
 		OptionsStrMap: realMap,
 		NetdevDelete:  SetNetDevDel,

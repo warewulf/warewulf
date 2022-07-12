@@ -159,14 +159,10 @@ message NodeDeleteParameter {
 message NodeSetParameter {
 	map<string,string > optionsStrMap = 1;
 	string container = 2;
-	bool netdevDelete = 14;
+    string netdevDelete = 14;
 	bool allNodes = 27;
 	bool force = 31;
-	repeated string tags = 36;
-	repeated string tagsDelete = 37;
 	repeated string nodeNames = 39;
-	repeated string NetTags = 41;
-	repeated string NetDeleteTags = 42;
 }
 
 // NodeStatus contains information about the imaging status per node.

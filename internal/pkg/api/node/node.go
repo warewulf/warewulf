@@ -407,13 +407,13 @@ func NodeList(nodeNames []string) (nodeInfo []*wwapiv1.NodeInfo, err error) {
 			Value:  node.Ipmi.Interface.Get(),
 			Print:  node.Ipmi.Interface.Print(),
 		}
-
+		ni.Tags = map[string]*wwapiv1.NodeField{}
 		for keyname, keyvalue := range node.Tags {
+			ni.Tags[keyname] = new(wwapiv1.NodeField)
 			ni.Tags[keyname].Source = keyvalue.Source()
 			ni.Tags[keyname].Value = keyvalue.Get()
 			ni.Tags[keyname].Print = keyvalue.Print()
 		}
-
 		ni.NetDevs = map[string]*wwapiv1.NetDev{}
 		for name, netdev := range node.NetDevs {
 
@@ -540,87 +540,18 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 			}
 		}
 
-		if set.Container != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting container name to: %s\n", n.Id.Get(), set.Container)
-			n.ContainerName.Set(set.Container)
+		if set.NetdevDelete != "" {
+
+			if _, ok := n.NetDevs[set.NetdevDelete]; !ok {
+				err = fmt.Errorf("Network device name doesn't exist: %s", set.NetdevDelete)
+				wwlog.Printf(wwlog.ERROR, fmt.Sprintf("%v\n", err.Error()))
+				return
+			}
+
+			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Deleting network device: %s\n", n.Id.Get(), set.NetdevDelete)
+			delete(n.NetDevs, set.NetdevDelete)
 		}
 
-		/*
-			if set.NetdevDelete {
-				err = checkNetNameRequired(set.Netname)
-				if err != nil {
-					return
-				}
-
-				if _, ok := n.NetDevs[set.Netname]; !ok {
-					err = fmt.Errorf("Network device name doesn't exist: %s", set.Netname)
-					wwlog.Printf(wwlog.ERROR, fmt.Sprintf("%v\n", err.Error()))
-					return
-				}
-
-				wwlog.Printf(wwlog.VERBOSE, "Node: %s, Deleting network device: %s\n", n.Id.Get(), set.Netname)
-				delete(n.NetDevs, set.Netname)
-			}
-		*/
-		if len(set.Tags) > 0 {
-			for _, t := range set.Tags {
-				keyval := strings.SplitN(t, "=", 2)
-				key := keyval[0]
-				val := keyval[1]
-
-				if _, ok := n.Tags[key]; !ok {
-					var nd node.Entry
-					n.Tags[key] = &nd
-				}
-
-				wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting Tag '%s'='%s'\n", n.Id.Get(), key, val)
-				n.Tags[key].Set(val)
-			}
-		}
-		if len(set.TagsDelete) > 0 {
-			for _, t := range set.TagsDelete {
-				keyval := strings.SplitN(t, "=", 1)
-				key := keyval[0]
-
-				if _, ok := n.Tags[key]; !ok {
-					wwlog.Printf(wwlog.WARN, "Key does not exist: %s\n", key)
-					os.Exit(1)
-				}
-
-				wwlog.Printf(wwlog.VERBOSE, "Node: %s, Deleting tag: %s\n", n.Id.Get(), key)
-				delete(n.Tags, key)
-			}
-		}
-		/*
-			if len(set.NetTags) > 0 {
-				for _, t := range set.NetTags {
-					keyval := strings.SplitN(t, "=", 2)
-					key := keyval[0]
-					val := keyval[1]
-					if _, ok := n.NetDevs[set.Netname].Tags[key]; !ok {
-						var nd node.Entry
-						n.NetDevs[set.Netname].Tags[key] = &nd
-					}
-
-					wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting NETTAG '%s'='%s'\n", n.Id.Get(), set.Netname, key, val)
-					n.NetDevs[set.Netname].Tags[key].Set(val)
-				}
-
-			}
-			if len(set.NetDeleteTags) > 0 {
-				for _, t := range set.NetDeleteTags {
-					keyval := strings.SplitN(t, "=", 1)
-					key := keyval[0]
-					if _, ok := n.NetDevs[set.Netname].Tags[key]; !ok {
-						wwlog.Printf(wwlog.WARN, "Node: %s:%s Key %s does not exist\n", n.Id.Get(), set.Netname, key)
-						os.Exit(1)
-					}
-
-					wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Deleting Tag %s\n", n.Id.Get(), set.Netname, key)
-					delete(n.NetDevs[set.Netname].Tags, key)
-				}
-			}
-		*/
 		err := nodeDB.NodeUpdate(n)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
@@ -743,4 +674,32 @@ func nodeDbSave(nodeDB *node.NodeYaml) (err error) {
 		return errors.Wrap(err, "failed to reload warewulf daemon")
 	}
 	return
+}
+
+/*
+Add the netname to the options map, as its only known after the map
+command line options have been read out.
+*/
+func AddNetname(theMap map[string]*string) (map[string]*string, bool) {
+	foundNetname := false
+	netname := ""
+	retMap := make(map[string]*string)
+	for key, val := range theMap {
+		if key == "NetDevs" {
+			foundNetname = true
+			netname = *val
+		}
+	}
+	if foundNetname {
+		for key, val := range theMap {
+			keys := strings.Split(key, ".")
+			myVal := *val
+			if len(keys) >= 2 && keys[0] == "NetDevs" {
+				retMap[keys[0]+"."+netname+"."+strings.Join(keys[1:], ".")] = &myVal
+			} else {
+				retMap[key] = &myVal
+			}
+		}
+	}
+	return retMap, foundNetname
 }

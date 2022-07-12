@@ -32,7 +32,7 @@ var (
 			return node_names, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
-	SetNetDevDel bool
+	SetNetDevDel string
 	SetNodeAll   bool
 	SetYes       bool
 	SetForce     bool
@@ -49,6 +49,12 @@ func init() {
 	emptyNodeConf.Ipmi = new(node.IpmiConf)
 	//emptyNodeConf.NetDevs = make(map[string]*node.NetDevs)
 	OptionStrMap = myBase.CreateFlags(emptyNodeConf)
+
+	baseCmd.PersistentFlags().StringVarP(&SetNetDevDel, "netdel", "D", "", "Delete the node's network device")
+	baseCmd.PersistentFlags().BoolVarP(&SetNodeAll, "all", "a", false, "Set all nodes")
+	baseCmd.PersistentFlags().BoolVarP(&SetYes, "yes", "y", false, "Set 'yes' to all questions asked")
+	baseCmd.PersistentFlags().BoolVarP(&SetForce, "force", "f", false, "Force configuration (even on error)")
+	// register the command line completions
 	if err := baseCmd.RegisterFlagCompletionFunc("container", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		list, _ := container.ListSources()
 		return list, cobra.ShellCompDirectiveNoFileComp
@@ -73,10 +79,6 @@ func init() {
 	}); err != nil {
 		log.Println(err)
 	}
-	/*
-		baseCmd.PersistentFlags().StringSliceVar(&SetAddProfile, "addprofile", []string{}, "Add Profile(s) to node")
-		baseCmd.PersistentFlags().StringSliceVar(&SetDelProfile, "delprofile", []string{}, "Remove Profile(s) to node")
-	*/
 	if err := baseCmd.RegisterFlagCompletionFunc("profile", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		var list []string
 		nodeDB, _ := node.New()
@@ -88,14 +90,6 @@ func init() {
 	}); err != nil {
 		log.Println(err)
 	}
-
-	baseCmd.PersistentFlags().BoolVar(&SetNetDevDel, "netdel", false, "Delete the node's network device")
-
-	baseCmd.PersistentFlags().BoolVarP(&SetNodeAll, "all", "a", false, "Set all nodes")
-
-	baseCmd.PersistentFlags().BoolVarP(&SetYes, "yes", "y", false, "Set 'yes' to all questions asked")
-	baseCmd.PersistentFlags().BoolVarP(&SetForce, "force", "f", false, "Force configuration (even on error)")
-	//baseCmd.PersistentFlags().BoolVar(&SetUndiscoverable, "undiscoverable", false, "Remove the discoverable flag")
 
 }
 

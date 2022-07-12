@@ -328,8 +328,8 @@ func SetEntry(entryPtr interface{}, val interface{}) {
 Add an entry in a map
 */
 func AddEntry(entryMapInt interface{}, val interface{}) {
-	if reflect.TypeOf(entryMapInt) == reflect.TypeOf((map[string]*Entry)(nil)) {
-		entryMap := entryMapInt.(map[string]*Entry)
+	if reflect.TypeOf(entryMapInt) == reflect.TypeOf((*map[string]*Entry)(nil)) {
+		entryMap := entryMapInt.(*map[string]*Entry)
 		str, ok := (val).(string)
 		if !ok {
 			panic("AddEntry must be called with string value")
@@ -337,14 +337,15 @@ func AddEntry(entryMapInt interface{}, val interface{}) {
 		for _, token := range strings.Split(str, ",") {
 			keyVal := strings.Split(token, "=")
 			if len(keyVal) == 2 {
-				_, mapOk := entryMap[keyVal[0]]
+				_, mapOk := (*entryMap)[keyVal[0]]
 				if !mapOk {
-					var entr Entry
-					entryMap[keyVal[0]] = &entr
+					(*entryMap)[keyVal[0]] = new(Entry)
 				}
-				entryMap[keyVal[0]].Set(keyVal[1])
+				(*entryMap)[keyVal[0]].Set(keyVal[1])
 			}
 		}
+	} else {
+		panic(fmt.Sprintf("Do not know how to add %v to %v\n", val, entryMapInt))
 	}
 }
 
@@ -352,15 +353,17 @@ func AddEntry(entryMapInt interface{}, val interface{}) {
 Del an entry in a map
 */
 func DelEntry(entryMapInt interface{}, val interface{}) {
-	if reflect.TypeOf(entryMapInt) == reflect.TypeOf((map[string]*Entry)(nil)) {
-		entryMap := entryMapInt.(map[string]*Entry)
+	if reflect.TypeOf(entryMapInt) == reflect.TypeOf((*map[string]*Entry)(nil)) {
+		entryMap := entryMapInt.(*map[string]*Entry)
 		str, ok := (val).(string)
 		if !ok {
 			panic("DelEntry must be called with string value")
 		}
 		for _, token := range strings.Split(str, ",") {
-			delete(entryMap, token)
+			delete(*entryMap, token)
 		}
+	} else {
+		panic(fmt.Sprintf("Do not know how to del %v to %v\n", val, entryMapInt))
 	}
 
 }
@@ -370,17 +373,19 @@ Call SetEntry for given field (NodeInfo)
 */
 func (node *NodeInfo) SetField(fieldName string, val interface{}) {
 	field := reflect.ValueOf(node).Elem().FieldByName(fieldName)
-	fmt.Println("On field:", fieldName)
 	if field.IsValid() {
 		if field.Addr().Type() == reflect.TypeOf((*Entry)(nil)) {
 			//fmt.Println(reflect.TypeOf(field.Addr().Interface()))
 			SetEntry(field.Addr().Interface(), val)
-		} else if field.Addr().Kind() == reflect.Map {
-			fmt.Println(field.Addr())
-		} else {
-			fmt.Println("Not working field.Addr().Kind():", field.Addr().Kind())
-			// is most likely NetDevEntry, ignore it
 		}
+		/*
+			else if field.Addr().Kind() == reflect.Map {
+				fmt.Println(field.Addr())
+			} else {
+				//fmt.Println("Not working field.Addr().Kind():", field.Addr().Type())
+				// is most likely NetDevEntry, ignore it
+			}
+		*/
 	} else {
 		fieldNames := strings.Split(fieldName, ".")
 		if len(fieldNames) >= 2 {
@@ -406,14 +411,14 @@ func (node *NodeInfo) SetField(fieldName string, val interface{}) {
 						entry := nestedField.Addr().Interface().(**IpmiEntry)
 						(*entry).SetField(fieldNames[1], val)
 					case reflect.TypeOf((*map[string]*NetDevEntry)(nil)):
-						if len(fieldNames) == 3 {
+						if len(fieldNames) >= 3 {
 							entryMap := nestedField.Addr().Interface().(*map[string]*NetDevEntry)
 							if myVal, ok := (*entryMap)[fieldNames[1]]; ok {
-								myVal.SetField(fieldNames[2], val)
+								myVal.SetField(strings.Join(fieldNames[2:], "."), val)
 							} else {
 								var newEntry NetDevEntry
 								(*entryMap)[fieldNames[1]] = &newEntry
-								newEntry.SetField(fieldNames[2], val)
+								newEntry.SetField(strings.Join(fieldNames[2:], "."), val)
 							}
 						}
 					default:
@@ -450,7 +455,7 @@ func (node *IpmiEntry) SetField(fieldName string, val interface{}) {
 	if field.IsValid() {
 		SetEntry(field.Addr().Interface(), val)
 	} else {
-		panic(fmt.Sprintf("field %s does not exists in node.KernEntry\n", fieldName))
+		panic(fmt.Sprintf("field %s does not exists in node.ImpiEntry\n", fieldName))
 	}
 }
 
@@ -462,7 +467,15 @@ func (node *NetDevEntry) SetField(fieldName string, val interface{}) {
 	if field.IsValid() {
 		SetEntry(field.Addr().Interface(), val)
 	} else {
-		panic(fmt.Sprintf("field %s does not exists in node.KernEntry\n", fieldName))
+		valFields := strings.Split(fieldName, ".")
+		field = reflect.ValueOf(node).Elem().FieldByName(valFields[1])
+		if field.IsValid() && len(valFields) == 2 && valFields[0] == "add" {
+			AddEntry(field.Addr().Interface(), val)
+		} else if field.IsValid() && len(valFields) == 2 && valFields[0] == "del" {
+			DelEntry(field.Addr().Interface(), val)
+		} else {
+			panic(fmt.Sprintf("field %s does not exists in node.NetDevEntry\n", fieldName))
+		}
 	}
 }
 
@@ -483,8 +496,7 @@ func GetOptionsMap(theStruct interface{}) map[string]*string {
 				optionsMap[key] = val
 			}
 		} else if field.Tag.Get("comment") != "" {
-			var newStr string
-			optionsMap[field.Name] = &newStr
+			optionsMap[field.Name] = new(string)
 		}
 
 	}
@@ -565,29 +577,5 @@ func (baseCmd *CobraCommand) CreateFlags(theStruct interface{}) map[string]*stri
 		}
 
 	}
-	fmt.Println(optionsMap)
 	return optionsMap
-}
-
-/* Add the netname to the options map, as its only known after the map
-command line options have been read out.
-*/
-func AddNetname(theMap *map[string]*string) {
-	foundNetname := false
-	netname := ""
-	for key, val := range *theMap {
-		if key == "NetDevs" {
-			foundNetname = true
-			netname = *val
-		}
-	}
-	if foundNetname {
-		for key, val := range *theMap {
-			keys := strings.Split(key, ".")
-			if len(keys) == 2 && keys[0] == "NetDevs" {
-				(*theMap)[keys[0]+"."+netname+"."+keys[1]] = val
-				delete(*theMap, key)
-			}
-		}
-	}
 }
