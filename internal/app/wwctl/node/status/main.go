@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/hpcng/warewulf/internal/pkg/api/node"
+	apinode "github.com/hpcng/warewulf/internal/pkg/api/node"
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -37,7 +37,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		rightnow := time.Now().Unix()
 
 		var nodeStatusResponse *wwapiv1.NodeStatusResponse
-		nodeStatusResponse, err = node.NodeStatus([]string{})
+		nodeStatusResponse, err = apinode.NodeStatus([]string{})
 		if err != nil {
 			return err
 		}

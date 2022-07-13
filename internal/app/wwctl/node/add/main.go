@@ -1,7 +1,7 @@
 package add
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/api/node"
+	apinode "github.com/hpcng/warewulf/internal/pkg/api/node"
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/spf13/cobra"
 )
@@ -20,5 +20,5 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		Type:         SetType,
 		NodeNames:    args,
 	}
-	return node.NodeAdd(&nap)
+	return apinode.NodeAdd(&nap)
 }
