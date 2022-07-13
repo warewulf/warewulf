@@ -13,7 +13,7 @@ import (
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	OptionStrMap, haveNetname := node.AddNetname(OptionStrMap)
 	if !haveNetname {
-		return errors.New("A netname must be given for any network related configuration\n")
+		return errors.New("a netname must be given for any network related configuration")
 	}
 	realMap := make(map[string]string)
 

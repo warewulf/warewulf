@@ -43,7 +43,7 @@ var (
 func init() {
 	//var emptyNodeConf node.NodeConf
 	//var emptyKernelE node.KernelEntry
-	myBase := node.CobraCommand{baseCmd}
+	myBase := node.CobraCommand{Command: baseCmd}
 	var emptyNodeConf node.NodeConf
 	emptyNodeConf.Kernel = new(node.KernelConf)
 	emptyNodeConf.Ipmi = new(node.IpmiConf)
