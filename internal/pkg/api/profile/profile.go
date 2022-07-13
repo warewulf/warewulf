@@ -10,7 +10,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
-// NodeSet is the wwapiv1 implmentation for updating node fields.
+// NodeSet is the wwapiv1 implmentation for updating nodeinfo fields.
 func ProfileSet(set *wwapiv1.NodeSetParameter) (err error) {
 
 	if set == nil {
@@ -25,7 +25,7 @@ func ProfileSet(set *wwapiv1.NodeSetParameter) (err error) {
 	return apinode.DbSave(&nodeDB)
 }
 
-// NodeSetParameterCheck does error checking on NodeSetParameter.
+// ProfileSetParameterCheck does error checking on ProfileSetParameter.
 // Output to the console if console is true.
 // TODO: Determine if the console switch does wwlog or not.
 // - console may end up being textOutput?
@@ -49,13 +49,13 @@ func ProfileSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (node
 
 	nodeDB, err = node.New()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not open configuration: %s\n", err)
+		wwlog.Error("Could not open configuration: %s\n", err)
 		return
 	}
 
 	profiles, err := nodeDB.FindAllProfiles()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not get profile list: %s\n", err)
+		wwlog.Error("Could not get profile list: %s\n", err)
 		return
 	}
 
@@ -65,8 +65,6 @@ func ProfileSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (node
 		if console {
 			fmt.Printf("\n*** WARNING: This command will modify all profiles! ***\n\n")
 		}
-	} else {
-		profiles = node.FilterByName(profiles, set.NodeNames)
 	}
 
 	if len(profiles) == 0 {
@@ -89,17 +87,17 @@ func ProfileSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (node
 
 			if _, ok := p.NetDevs[set.NetdevDelete]; !ok {
 				err = fmt.Errorf("Network device name doesn't exist: %s", set.NetdevDelete)
-				wwlog.Printf(wwlog.ERROR, fmt.Sprintf("%v\n", err.Error()))
+				wwlog.Error(fmt.Sprintf("%v\n", err.Error()))
 				return
 			}
 
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Deleting network device: %s\n", p.Id.Get(), set.NetdevDelete)
+			wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Deleting network device: %s\n", p.Id.Get(), set.NetdevDelete)
 			delete(p.NetDevs, set.NetdevDelete)
 		}
 
-		err := nodeDB.NodeUpdate(p)
+		err := nodeDB.ProfileUpdate(p)
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "%s\n", err)
+			wwlog.Error("%s\n", err)
 			os.Exit(1)
 		}
 

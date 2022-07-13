@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 )
@@ -512,7 +513,7 @@ Get all names of the fields in the given struct (recursive)
 and create a map[name of struct field]*string if the the field
 of the struct bears the comment tag.
 */
-func (baseCmd *CobraCommand) CreateFlags(theStruct interface{}) map[string]*string {
+func (baseCmd *CobraCommand) CreateFlags(theStruct interface{}, excludeList []string) map[string]*string {
 	optionsMap := make(map[string]*string)
 	structVal := reflect.ValueOf(theStruct)
 	structTyp := structVal.Type()
@@ -521,7 +522,7 @@ func (baseCmd *CobraCommand) CreateFlags(theStruct interface{}) map[string]*stri
 		//fmt.Printf("%s: field.Kind() == %s\n", field.Name, field.Type.Kind())
 		if field.Type.Kind() == reflect.Ptr {
 			a := structVal.Field(i).Elem().Interface()
-			subStruct := baseCmd.CreateFlags(a)
+			subStruct := baseCmd.CreateFlags(a, excludeList)
 			for key, val := range subStruct {
 				optionsMap[field.Name+"."+key] = val
 			}
@@ -531,7 +532,7 @@ func (baseCmd *CobraCommand) CreateFlags(theStruct interface{}) map[string]*stri
 			mapType := field.Type.Elem()
 			if mapType.Kind() == reflect.Ptr {
 				//a := reflect.ValueOf((mapType.Elem())) node.NetDevs
-				subMap := baseCmd.CreateFlags(reflect.New(mapType.Elem()).Elem().Interface())
+				subMap := baseCmd.CreateFlags(reflect.New(mapType.Elem()).Elem().Interface(), excludeList)
 				for key, val := range subMap {
 					optionsMap[field.Name+"."+key] = val
 				}
@@ -558,7 +559,7 @@ func (baseCmd *CobraCommand) CreateFlags(theStruct interface{}) map[string]*stri
 				wwlog.Warn("handling of %v not implemented\n", field.Type)
 			}
 
-		} else if field.Tag.Get("comment") != "" {
+		} else if field.Tag.Get("comment") != "" && !util.InSlice(excludeList, field.Name) {
 			var newStr string
 			optionsMap[field.Name] = &newStr
 			if field.Tag.Get("sopt") != "" {
@@ -567,7 +568,7 @@ func (baseCmd *CobraCommand) CreateFlags(theStruct interface{}) map[string]*stri
 					field.Tag.Get("sopt"),
 					field.Tag.Get("default"),
 					field.Tag.Get("comment"))
-			} else {
+			} else if !util.InSlice(excludeList, field.Name) {
 				baseCmd.PersistentFlags().StringVar(&newStr,
 					field.Tag.Get("lopt"),
 					field.Tag.Get("default"),

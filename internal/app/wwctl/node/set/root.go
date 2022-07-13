@@ -45,7 +45,7 @@ func init() {
 	var emptyNodeConf node.NodeConf
 	emptyNodeConf.Kernel = new(node.KernelConf)
 	emptyNodeConf.Ipmi = new(node.IpmiConf)
-	OptionStrMap = myBase.CreateFlags(emptyNodeConf)
+	OptionStrMap = myBase.CreateFlags(emptyNodeConf, []string{})
 
 	baseCmd.PersistentFlags().StringVarP(&SetNetDevDel, "netdel", "D", "", "Delete the node's network device")
 	baseCmd.PersistentFlags().BoolVarP(&SetNodeAll, "all", "a", false, "Set all nodes")
