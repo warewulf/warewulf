@@ -37,17 +37,14 @@ var (
 	SetYes       bool
 	SetForce     bool
 	OptionStrMap map[string]*string
-	KernelStrMap map[string]*string
 )
 
 func init() {
-	//var emptyNodeConf node.NodeConf
-	//var emptyKernelE node.KernelEntry
+	// init empty helper structs, so that we know what's inside
 	myBase := node.CobraCommand{Command: baseCmd}
 	var emptyNodeConf node.NodeConf
 	emptyNodeConf.Kernel = new(node.KernelConf)
 	emptyNodeConf.Ipmi = new(node.IpmiConf)
-	//emptyNodeConf.NetDevs = make(map[string]*node.NetDevs)
 	OptionStrMap = myBase.CreateFlags(emptyNodeConf)
 
 	baseCmd.PersistentFlags().StringVarP(&SetNetDevDel, "netdel", "D", "", "Delete the node's network device")

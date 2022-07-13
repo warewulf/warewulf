@@ -1,4 +1,4 @@
-package node
+package apinode
 
 import (
 	"encoding/json"
@@ -477,7 +477,7 @@ func NodeSet(set *wwapiv1.NodeSetParameter) (err error) {
 	if err != nil {
 		return
 	}
-	return nodeDbSave(&nodeDB)
+	return DbSave(&nodeDB)
 }
 
 // NodeSetParameterCheck does error checking on NodeSetParameter.
@@ -654,24 +654,6 @@ func checkNetNameRequired(netname string) (err error) {
 	if netname == "" {
 		err = fmt.Errorf("You must include the '--netname' option")
 		wwlog.Printf(wwlog.ERROR, fmt.Sprintf("%v\n", err.Error()))
-	}
-	return
-}
-
-// nodeDbSave persists the nodeDB to disk and restarts warewulfd.
-// TODO: We will likely need locking around anything changing nodeDB
-// or restarting warewulfd. Determine if the reason for restart is
-// just to reinitialize warewulfd with the new nodeDB or if there is
-// something more to it.
-func nodeDbSave(nodeDB *node.NodeYaml) (err error) {
-	err = nodeDB.Persist()
-	if err != nil {
-		return errors.Wrap(err, "failed to persist nodedb")
-	}
-
-	err = warewulfd.DaemonReload()
-	if err != nil {
-		return errors.Wrap(err, "failed to reload warewulf daemon")
 	}
 	return
 }

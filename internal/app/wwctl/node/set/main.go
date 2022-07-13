@@ -4,14 +4,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/hpcng/warewulf/internal/pkg/api/node"
+	apinode "github.com/hpcng/warewulf/internal/pkg/api/node"
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/hpcng/warewulf/internal/pkg/api/util"
 	"github.com/spf13/cobra"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
-	OptionStrMap, haveNetname := node.AddNetname(OptionStrMap)
+	OptionStrMap, haveNetname := apinode.AddNetname(OptionStrMap)
 	if !haveNetname {
 		return errors.New("a netname must be given for any network related configuration")
 	}
@@ -33,7 +33,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		var nodeCount uint
 		// The checks run twice in the prompt case.
 		// Avoiding putting in a blocking prompt in an API.
-		_, nodeCount, err = node.NodeSetParameterCheck(&set, false)
+		_, nodeCount, err = apinode.NodeSetParameterCheck(&set, false)
 		if err != nil {
 			return
 		}
@@ -42,5 +42,5 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			return
 		}
 	}
-	return node.NodeSet(&set)
+	return apinode.NodeSet(&set)
 }
