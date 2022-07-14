@@ -1,7 +1,6 @@
 package set
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/hpcng/warewulf/internal/pkg/container"
@@ -46,15 +45,9 @@ func init() {
 	var emptyNodeConf node.NodeConf
 	emptyNodeConf.Kernel = new(node.KernelConf)
 	emptyNodeConf.Ipmi = new(node.IpmiConf)
-	OptionStrMap = myBase.CreateFlags(emptyNodeConf, []string{})
-	fmt.Println(baseCmd.Flags().Args())
-	flag := baseCmd.Flag("ipaddr")
-	if flag != nil {
-		flag.Name = "donotuse"
-		flag.Usage = "FooBaar"
-	} else {
-		fmt.Println("Flag not found")
-	}
+	OptionStrMap = myBase.CreateFlags(emptyNodeConf,
+		[]string{"ipaddr", "ipaddr6", "ipmiaddr", "profile"})
+
 	baseCmd.PersistentFlags().StringVarP(&SetNetDevDel, "netdel", "D", "", "Delete the node's network device")
 	baseCmd.PersistentFlags().BoolVarP(&SetNodeAll, "all", "a", false, "Set all nodes")
 	baseCmd.PersistentFlags().BoolVarP(&SetYes, "yes", "y", false, "Set 'yes' to all questions asked")

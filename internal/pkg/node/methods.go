@@ -559,7 +559,7 @@ func (baseCmd *CobraCommand) CreateFlags(theStruct interface{}, excludeList []st
 				wwlog.Warn("handling of %v not implemented\n", field.Type)
 			}
 
-		} else if field.Tag.Get("comment") != "" && !util.InSlice(excludeList, field.Name) {
+		} else if field.Tag.Get("comment") != "" && !util.InSlice(excludeList, field.Tag.Get("lopt")) {
 			var newStr string
 			optionsMap[field.Name] = &newStr
 			if field.Tag.Get("sopt") != "" {
@@ -568,7 +568,7 @@ func (baseCmd *CobraCommand) CreateFlags(theStruct interface{}, excludeList []st
 					field.Tag.Get("sopt"),
 					field.Tag.Get("default"),
 					field.Tag.Get("comment"))
-			} else if !util.InSlice(excludeList, field.Name) {
+			} else if !util.InSlice(excludeList, field.Tag.Get("lopt")) {
 				baseCmd.PersistentFlags().StringVar(&newStr,
 					field.Tag.Get("lopt"),
 					field.Tag.Get("default"),
