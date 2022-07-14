@@ -312,6 +312,9 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 	return ret, nil
 }
 
+/*
+Return all profiles as NodeInfo
+*/
 func (config *NodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 	var ret []NodeInfo
 
@@ -429,7 +432,6 @@ func (config *NodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 
 		ret = append(ret, p)
 	}
-
 	sort.Slice(ret, func(i, j int) bool {
 		if ret[i].ClusterName.Get() < ret[j].ClusterName.Get() {
 			return true
@@ -442,6 +444,17 @@ func (config *NodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 	})
 
 	return ret, nil
+}
+
+/*
+Return the names of all available profiles
+*/
+func (config *NodeYaml) ListAllProfiles() []string {
+	var ret []string
+	for name, _ := range config.NodeProfiles {
+		ret = append(ret, name)
+	}
+	return ret
 }
 
 func (config *NodeYaml) FindDiscoverableNode() (NodeInfo, string, error) {

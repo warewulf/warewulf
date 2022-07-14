@@ -1,28 +1,52 @@
 package add
 
 import (
-	"os"
+	"fmt"
 
-	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	apinode "github.com/hpcng/warewulf/internal/pkg/api/node"
+	apiprofile "github.com/hpcng/warewulf/internal/pkg/api/profile"
+
+	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/hpcng/warewulf/internal/pkg/api/util"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
-func CobraRunE(cmd *cobra.Command, args []string) error {
-	nodeDB, err := node.New()
-	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Failed opening node database: %s\n", err)
-		os.Exit(1)
+func CobraRunE(cmd *cobra.Command, args []string) (err error) {
+	OptionStrMap, haveNetname := apinode.AddNetname(OptionStrMap)
+	if !haveNetname {
+		return errors.New("a netname must be given for any network related configuration")
+	}
+	realMap := make(map[string]string)
+
+	for key, val := range OptionStrMap {
+		realMap[key] = *val
 	}
 
-	for _, p := range args {
-		_, err := nodeDB.AddProfile(p)
+	set := wwapiv1.NodeSetParameter{
+		OptionsStrMap: realMap,
+		NetdevDelete:  SetNetDevDel,
+		AllNodes:      SetNodeAll,
+		Force:         SetForce,
+		NodeNames:     args,
+	}
+
+	if !SetYes {
+		// The checks run twice in the prompt case.
+		// Avoiding putting in a blocking prompt in an API.
+		apiprofile.AddProfile(&set, false)
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "%s\n", err)
-			os.Exit(1)
+			return
+		}
+		_, _, err = apiprofile.ProfileSetParameterCheck(&set, false)
+		if err != nil {
+			return
+		}
+
+		yes := util.ConfirmationPrompt(fmt.Sprintf("Are you sure you add the profile %s", args))
+		if !yes {
+			return
 		}
 	}
-
-	return errors.Wrap(nodeDB.Persist(), "failed to persist nodedb")
+	return apiprofile.ProfileSet(&set)
 }
