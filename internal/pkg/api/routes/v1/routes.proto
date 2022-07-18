@@ -134,17 +134,8 @@ message NodeListResponse {
 // NodeAddParameter contains all input for adding a node to be managed by
 // Warewulf.
 message NodeAddParameter {
-	string cluster = 1;
-	bool discoverable = 2;
-	string gateway = 3;
-	string hwaddr = 4;
-	string ipaddr = 5;
-	string netdev = 6;
-	string netmask = 7;
-	string netname = 8;
-	string type = 9;
+	map<string,string > optionsStrMap = 1;
 	repeated string nodeNames = 10;
-	string ipaddr6 = 11;
 }
 
 // NodeDeleteParameter contains input for removing nodes from Warewulf

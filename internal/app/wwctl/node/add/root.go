@@ -1,6 +1,14 @@
 package add
 
-import "github.com/spf13/cobra"
+import (
+	"log"
+
+	"github.com/hpcng/warewulf/internal/pkg/container"
+	"github.com/hpcng/warewulf/internal/pkg/kernel"
+	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/overlay"
+	"github.com/spf13/cobra"
+)
 
 var (
 	baseCmd = &cobra.Command{
@@ -11,29 +19,53 @@ var (
 		RunE:                  CobraRunE,
 		Args:                  cobra.MinimumNArgs(1),
 	}
-	SetClusterName  string
-	SetNetName      string
-	SetNetDev       string
-	SetIpaddr       string
-	SetIpaddr6      string
-	SetNetmask      string
-	SetGateway      string
-	SetHwaddr       string
-	SetType         string
-	SetDiscoverable bool
+	OptionStrMap map[string]*string
 )
 
 func init() {
-	baseCmd.PersistentFlags().StringVarP(&SetClusterName, "cluster", "c", "", "Set the node's cluster name")
-	baseCmd.PersistentFlags().StringVarP(&SetNetName, "netname", "n", "default", "Define the network name to configure")
-	baseCmd.PersistentFlags().StringVarP(&SetNetDev, "netdev", "N", "", "Define the network device to configure")
-	baseCmd.PersistentFlags().StringVarP(&SetIpaddr, "ipaddr", "I", "", "Set the node's network device IP address")
-	baseCmd.PersistentFlags().StringVarP(&SetIpaddr6, "ipaddr6", "6", "", "Set the node's network device IPv6 address")
-	baseCmd.PersistentFlags().StringVarP(&SetNetmask, "netmask", "M", "", "Set the node's network device netmask")
-	baseCmd.PersistentFlags().StringVarP(&SetGateway, "gateway", "G", "", "Set the node's network device gateway")
-	baseCmd.PersistentFlags().StringVarP(&SetHwaddr, "hwaddr", "H", "", "Set the node's network device HW address")
-	baseCmd.PersistentFlags().StringVarP(&SetType, "type", "T", "", "Set the node's network device type")
-	baseCmd.PersistentFlags().BoolVar(&SetDiscoverable, "discoverable", false, "Make this node discoverable")
+	// init empty helper structs, so that we know what's inside
+	myBase := node.CobraCommand{Command: baseCmd}
+	var emptyNodeConf node.NodeConf
+	emptyNodeConf.Kernel = new(node.KernelConf)
+	emptyNodeConf.Ipmi = new(node.IpmiConf)
+	OptionStrMap = myBase.CreateFlags(emptyNodeConf, []string{})
+	// register the command line completions
+	if err := baseCmd.RegisterFlagCompletionFunc("container", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		list, _ := container.ListSources()
+		return list, cobra.ShellCompDirectiveNoFileComp
+	}); err != nil {
+		log.Println(err)
+	}
+	if err := baseCmd.RegisterFlagCompletionFunc("kerneloverride", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		list, _ := kernel.ListKernels()
+		return list, cobra.ShellCompDirectiveNoFileComp
+	}); err != nil {
+		log.Println(err)
+	}
+	if err := baseCmd.RegisterFlagCompletionFunc("runtime", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		list, _ := overlay.FindOverlays()
+		return list, cobra.ShellCompDirectiveNoFileComp
+	}); err != nil {
+		log.Println(err)
+	}
+	if err := baseCmd.RegisterFlagCompletionFunc("wwinit", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		list, _ := overlay.FindOverlays()
+		return list, cobra.ShellCompDirectiveNoFileComp
+	}); err != nil {
+		log.Println(err)
+	}
+	if err := baseCmd.RegisterFlagCompletionFunc("profile", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		var list []string
+		nodeDB, _ := node.New()
+		profiles, _ := nodeDB.FindAllProfiles()
+		for _, profile := range profiles {
+			list = append(list, profile.Id.Get())
+		}
+		return list, cobra.ShellCompDirectiveNoFileComp
+	}); err != nil {
+		log.Println(err)
+	}
+
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

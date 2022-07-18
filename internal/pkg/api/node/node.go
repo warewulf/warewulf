@@ -3,7 +3,6 @@ package apinode
 import (
 	"encoding/json"
 	"fmt"
-	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -42,124 +41,26 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 			return errors.Wrap(err, "failed to add node")
 		}
 		wwlog.Printf(wwlog.INFO, "Added node: %s\n", a)
+		if nap.OptionsStrMap["ipaddr"] != "" {
+			// if more nodes are added increment IPv4 address
+			nap.OptionsStrMap["ipaddr"] = util.IncrementIPv4(nap.OptionsStrMap["ipaddr"], count)
 
-		if nap.Cluster != "" {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting cluster name to: %s\n", n.Id.Get(), nap.Cluster)
-			n.ClusterName.Set(nap.Cluster)
-			err = nodeDB.NodeUpdate(n)
-			if err != nil {
-				return errors.Wrap(err, "failed to update node")
-			}
+			wwlog.Verbose("Node: %s:%s, Setting Ipaddr to: %s\n",
+				n.Id.Get(), nap.OptionsStrMap["netname"], nap.OptionsStrMap["ipaddr"])
 		}
+		if nap.OptionsStrMap["ipmiaddr"] != "" {
+			// if more nodes are added increment IPv4 address
+			nap.OptionsStrMap["ipmiaddr"] = util.IncrementIPv4(nap.OptionsStrMap["ipmiaddr"], count)
 
-		if nap.Netdev != "" {
-			err = checkNetNameRequired(nap.Netname)
-			if err != nil {
-				return
-			}
-
-			if _, ok := n.NetDevs[nap.Netname]; !ok {
-				var netdev node.NetDevEntry
-				n.NetDevs[nap.Netname] = &netdev
-			}
-
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Device to: %s\n", n.Id.Get(), nap.Netname, nap.Netdev)
-
-			n.NetDevs[nap.Netname].Device.Set(nap.Netdev)
-			n.NetDevs[nap.Netname].OnBoot.SetB(true)
+			wwlog.Verbose("Node: %s:, Setting IPMIIpaddr to: %s\n",
+				n.Id.Get(), nap.OptionsStrMap["ipmiaddr"])
 		}
-
-		if nap.Ipaddr != "" {
-			err = checkNetNameRequired(nap.Netname)
-			if err != nil {
-				return
+		// Now set all the rest
+		for key, val := range nap.OptionsStrMap {
+			if val != "" {
+				wwlog.Verbose("node:%s setting %s to %s\n", n.Id.Get(), key, val)
+				n.SetField(key, val)
 			}
-
-			NewIpaddr := util.IncrementIPv4(nap.Ipaddr, count)
-
-			if _, ok := n.NetDevs[nap.Netname]; !ok {
-				var netdev node.NetDevEntry
-				n.NetDevs[nap.Netname] = &netdev
-			}
-
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Ipaddr to: %s\n", n.Id.Get(), nap.Netname, NewIpaddr)
-
-			n.NetDevs[nap.Netname].Ipaddr.Set(NewIpaddr)
-			n.NetDevs[nap.Netname].OnBoot.SetB(true)
-		}
-
-		if nap.Netmask != "" {
-			err = checkNetNameRequired(nap.Netname)
-			if err != nil {
-				return
-			}
-
-			if _, ok := n.NetDevs[nap.Netname]; !ok {
-				return errors.New("network device does not exist: " + nap.Netname)
-			}
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting netmask to: %s\n", n.Id.Get(), nap.Netname, nap.Netmask)
-
-			n.NetDevs[nap.Netname].Netmask.Set(nap.Netmask)
-		}
-
-		if nap.Gateway != "" {
-			err = checkNetNameRequired(nap.Netname)
-			if err != nil {
-				return
-			}
-
-			if _, ok := n.NetDevs[nap.Netname]; !ok {
-				return errors.New("network device does not exist: " + nap.Netname)
-			}
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting gateway to: %s\n", n.Id.Get(), nap.Netname, nap.Gateway)
-
-			n.NetDevs[nap.Netname].Gateway.Set(nap.Gateway)
-		}
-
-		if nap.Hwaddr != "" {
-			if nap.Netname == "" {
-				return errors.New("you must include the '--netname' option")
-			}
-
-			if _, ok := n.NetDevs[nap.Netname]; !ok {
-				return errors.New("network device does not exist: " + nap.Netname)
-			}
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting HW address to: %s\n", n.Id.Get(), nap.Netname, nap.Hwaddr)
-
-			n.NetDevs[nap.Netname].Hwaddr.Set(nap.Hwaddr)
-			n.NetDevs[nap.Netname].OnBoot.SetB(true)
-		}
-
-		if nap.Type != "" {
-			if nap.Netname == "" {
-				return errors.New("you must include the '--netname' option")
-			}
-
-			if _, ok := n.NetDevs[nap.Netname]; !ok {
-				return errors.New("network device does not exist: " + nap.Netname)
-			}
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s:%s, Setting Type to: %s\n", n.Id.Get(), nap.Netname, nap.Type)
-
-			n.NetDevs[nap.Netname].Type.Set(nap.Type)
-		}
-
-		if nap.Ipaddr6 != "" {
-			if nap.Netname == "" {
-				return errors.New("you must include the '--netname' option")
-			}
-			if _, ok := n.NetDevs[nap.Netname]; !ok {
-				return errors.New("network device does not exist: " + nap.Netname)
-			}
-			// just check if address is a valid ipv6 CIDR address
-			if _, _, err := net.ParseCIDR(nap.Ipaddr6); err != nil {
-				return errors.Errorf("%s is not a valid ipv6 address in CIDR notation", nap.Ipaddr6)
-			}
-		}
-
-		if nap.Discoverable {
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Setting node to discoverable\n", n.Id.Get())
-
-			n.Discoverable.SetB(true)
 		}
 
 		err = nodeDB.NodeUpdate(n)
@@ -168,7 +69,7 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 		}
 
 		count++
-	} // end for
+	}
 
 	err = nodeDB.Persist()
 	if err != nil {
