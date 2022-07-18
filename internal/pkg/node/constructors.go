@@ -451,7 +451,7 @@ Return the names of all available profiles
 */
 func (config *NodeYaml) ListAllProfiles() []string {
 	var ret []string
-	for name, _ := range config.NodeProfiles {
+	for name := range config.NodeProfiles {
 		ret = append(ret, name)
 	}
 	return ret

@@ -549,16 +549,6 @@ func NodeStatus(nodeNames []string) (nodeStatusResponse *wwapiv1.NodeStatusRespo
 	return
 }
 
-// checkNetNameRequired is a helper for determining if netname is set.
-// Certain settings require it.
-func checkNetNameRequired(netname string) (err error) {
-	if netname == "" {
-		err = fmt.Errorf("You must include the '--netname' option")
-		wwlog.Printf(wwlog.ERROR, fmt.Sprintf("%v\n", err.Error()))
-	}
-	return
-}
-
 /*
 Add the netname to the options map, as its only known after the map
 command line options have been read out.
