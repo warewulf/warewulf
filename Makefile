@@ -260,7 +260,7 @@ dist: vendor config
 ##    sudo ldconfig # refresh shared library cache.
 ## To setup protoc-gen-grpc-gateway, see https://github.com/grpc-ecosystem/grpc-gateway
 proto:
-	rm -r  internal/pkg/api/routes/wwapiv1/
+	rm -rf internal/pkg/api/routes/wwapiv1/
 	protoc -I internal/pkg/api/routes/v1 -I=. \
 		--grpc-gateway_out=. \
 		--grpc-gateway_opt logtostderr=true \

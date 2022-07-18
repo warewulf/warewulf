@@ -84,42 +84,13 @@ message NodeField {
 
 // NetDev is network devices (NICs) on a node.
 message NetDev {
-	NodeField type = 1;
-	NodeField onboot = 2;
-	NodeField device = 3;
-	NodeField hwaddr = 4;
-	NodeField ipaddr = 5;
-	NodeField netmask = 6;
-	NodeField gateway = 7;
-	NodeField primary = 8;
+	map<string, NodeField> Field = 1;
 	map<string, NodeField> Tags = 9;
 }
 
 // NodeInfo contains details about a node managed by Warewulf/
 message NodeInfo {
-	NodeField id = 1;
-	NodeField comment = 2;
-	NodeField cluster = 3;
-	NodeField discoverable = 4;
-	NodeField container = 5;
-	NodeField kernelOverride =  6;
-	NodeField kernelArgs = 7;
-	NodeField systemOverlay = 8;
-	NodeField runtimeOverlay = 9;
-	NodeField ipxe = 10;
-	NodeField init = 11;
-	NodeField root = 12;
-	NodeField assetKey = 13;
-	NodeField ipmiIpaddr = 14;
-	NodeField ipmiNetmask = 15;
-	NodeField ipmiPort = 16;
-	NodeField ipmiGateway = 17;
-	NodeField ipmiUserName = 18;
-	NodeField ipmiInterface = 19;
-	NodeField ipmiPassword = 20;
-
-	repeated string profiles = 21;
-	repeated string groupProfiles = 22;
+	map<string, NodeField> Fields = 1;
 
 	map<string, NetDev> NetDevs = 23;
 	map<string, NodeField> Tags = 24;

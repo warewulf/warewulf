@@ -108,7 +108,6 @@ node itself, for all values of type Entry.
 */
 type NodeInfo struct {
 	Id             Entry
-	Cid            Entry
 	Comment        Entry
 	ClusterName    Entry
 	ContainerName  Entry
@@ -122,7 +121,6 @@ type NodeInfo struct {
 	Kernel         *KernelEntry
 	Ipmi           *IpmiEntry
 	Profiles       []string
-	GroupProfiles  []string
 	NetDevs        map[string]*NetDevEntry
 	Tags           map[string]*Entry
 }
@@ -140,7 +138,6 @@ type IpmiEntry struct {
 }
 
 type KernelEntry struct {
-	Version  Entry
 	Override Entry
 	Args     Entry
 }
@@ -159,6 +156,9 @@ type NetDevEntry struct {
 	Primary Entry
 	Tags    map[string]*Entry
 }
+
+// string which is printed if no value is set
+const NoValue = "--"
 
 func init() {
 	// Check that nodes.conf is found

@@ -580,3 +580,20 @@ func (baseCmd *CobraCommand) CreateFlags(theStruct interface{}, excludeList []st
 	}
 	return optionsMap
 }
+
+/*
+Helper function which gets the lopt of a given interface
+*/
+func GetLoptOf(myStruct interface{}, name string) string {
+	retStr := ""
+	if reflect.TypeOf(myStruct).Kind() != reflect.Struct {
+		return retStr
+	}
+	myType := reflect.TypeOf(myStruct)
+	field, ok := myType.FieldByName(name)
+	if ok {
+		retStr = field.Tag.Get("lopt")
+	}
+	return retStr
+
+}
