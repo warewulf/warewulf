@@ -597,3 +597,22 @@ func GetLoptOf(myStruct interface{}, name string) string {
 	return retStr
 
 }
+
+/*
+Returns a translation map of field name and its associated lopt.
+*/
+func GetloptMap(myStruct interface{}) map[string]string {
+	retMap := make(map[string]string)
+	if reflect.TypeOf(myStruct).Kind() != reflect.Struct {
+		return retMap
+	}
+	structType := reflect.TypeOf(myStruct)
+	for i := 0; i < structType.NumField(); i++ {
+		retMap[structType.Field(i).Name] = structType.Field(i).Name
+		lopt := structType.Field(i).Tag.Get("lopt")
+		if lopt != "" {
+			retMap[structType.Field(i).Name] = lopt
+		}
+	}
+	return retMap
+}

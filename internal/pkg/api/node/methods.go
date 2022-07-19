@@ -46,13 +46,13 @@ func GetFields(n interface{}) map[string]*wwapiv1.NodeField {
 			entry := nodeVal.Field(i).Elem().Interface().(node.KernelEntry)
 			kernelMap := GetFields(entry)
 			for key, val := range kernelMap {
-				fieldMap["kernel:"+key] = val
+				fieldMap["KernelEntry:"+key] = val
 			}
 		case reflect.TypeOf((*node.IpmiEntry)(nil)):
 			entry := nodeVal.Field(i).Elem().Interface().(node.IpmiEntry)
 			kernelMap := GetFields(entry)
 			for key, val := range kernelMap {
-				fieldMap["ipmi:"+key] = val
+				fieldMap["IpmiEntry:"+key] = val
 			}
 		case reflect.TypeOf(map[string]*node.Entry(nil)):
 			keyMap := nodeVal.Field(i).Interface().(map[string]*node.Entry)
@@ -68,7 +68,7 @@ func GetFields(n interface{}) map[string]*wwapiv1.NodeField {
 			for net, netdev := range netMap {
 				netMapEntr := GetFields(*netdev)
 				for key, val := range netMapEntr {
-					fieldMap[net+":"+key] = val
+					fieldMap["NetDevEntry:"+net+":"+key] = val
 				}
 			}
 		default:
