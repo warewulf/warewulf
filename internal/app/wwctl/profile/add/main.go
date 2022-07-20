@@ -13,8 +13,8 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
-	OptionStrMap, haveNetname := apinode.AddNetname(OptionStrMap)
-	if !haveNetname {
+	OptionStrMap, netWithoutName := apinode.AddNetname(OptionStrMap)
+	if netWithoutName {
 		return errors.New("a netname must be given for any network related configuration")
 	}
 	realMap := make(map[string]string)

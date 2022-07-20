@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -25,7 +24,6 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 		return fmt.Errorf("NodeAddParameter is nil")
 	}
 
-	var count uint
 	nodeDB, err := node.New()
 	if err != nil {
 		return errors.Wrap(err, "failed to open node database")
@@ -40,19 +38,20 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 			return errors.Wrap(err, "failed to add node")
 		}
 		wwlog.Printf(wwlog.INFO, "Added node: %s\n", a)
-		if nap.OptionsStrMap["ipaddr"] != "" {
+		netName := nap.OptionsStrMap["NetDevs"]
+		if nap.OptionsStrMap["NetDevs."+netName+".Ipaddr"] != "" {
 			// if more nodes are added increment IPv4 address
-			nap.OptionsStrMap["ipaddr"] = util.IncrementIPv4(nap.OptionsStrMap["ipaddr"], count)
+			nap.OptionsStrMap["NetDevs."+netName+".Ipaddr"] = util.IncrementIPv4(nap.OptionsStrMap["NetDevs."+netName+".Ipaddr"], 1)
 
 			wwlog.Verbose("Node: %s:%s, Setting Ipaddr to: %s\n",
-				n.Id.Get(), nap.OptionsStrMap["netname"], nap.OptionsStrMap["ipaddr"])
+				n.Id.Get(), nap.OptionsStrMap["NetDevs"], nap.OptionsStrMap["NetDevs."+netName+".Ipaddr"])
 		}
-		if nap.OptionsStrMap["ipmiaddr"] != "" {
+		if nap.OptionsStrMap["Ipmi.Ipaddr"] != "" {
 			// if more nodes are added increment IPv4 address
-			nap.OptionsStrMap["ipmiaddr"] = util.IncrementIPv4(nap.OptionsStrMap["ipmiaddr"], count)
+			nap.OptionsStrMap["Ipmi.Ipaddr"] = util.IncrementIPv4(nap.OptionsStrMap["Ipmi.Ipaddr"], 1)
 
 			wwlog.Verbose("Node: %s:, Setting IPMIIpaddr to: %s\n",
-				n.Id.Get(), nap.OptionsStrMap["ipmiaddr"])
+				n.Id.Get(), nap.OptionsStrMap["Ipmi.Ipaddr"])
 		}
 		// Now set all the rest
 		for key, val := range nap.OptionsStrMap {
@@ -67,7 +66,6 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 			return errors.Wrap(err, "failed to update nodedb")
 		}
 
-		count++
 	}
 
 	err = nodeDB.Persist()
@@ -371,32 +369,4 @@ func NodeStatus(nodeNames []string) (nodeStatusResponse *wwapiv1.NodeStatusRespo
 		}
 	}
 	return
-}
-
-/*
-Add the netname to the options map, as its only known after the map
-command line options have been read out.
-*/
-func AddNetname(theMap map[string]*string) (map[string]*string, bool) {
-	foundNetname := false
-	netname := ""
-	retMap := make(map[string]*string)
-	for key, val := range theMap {
-		if key == "NetDevs" {
-			foundNetname = true
-			netname = *val
-		}
-	}
-	if foundNetname {
-		for key, val := range theMap {
-			keys := strings.Split(key, ".")
-			myVal := *val
-			if len(keys) >= 2 && keys[0] == "NetDevs" {
-				retMap[keys[0]+"."+netname+"."+strings.Join(keys[1:], ".")] = &myVal
-			} else {
-				retMap[key] = &myVal
-			}
-		}
-	}
-	return retMap, foundNetname
 }
