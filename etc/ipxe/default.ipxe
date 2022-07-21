@@ -19,6 +19,15 @@ echo Warewulf Controller: {{.Ipaddr}}
 echo Downloading Kernel Image:
 kernel --name kernel ${uri_base}&stage=kernel       || goto reboot
 
+# imgextract causes RAM space problems on non-EFI systems (because of the 3GB barrier
+# in 32-Bit mode).
+# -> Use the old initrd method with a compressed image to save as much RAM as possible
+# in this early boot stage.
+# See <https://github.com/hpcng/warewulf/issues/222> for more details.
+iseq ${platform} efi && goto efi || goto noefi
+
+:efi
+
 # try extracting compressed images first
 # NOTE: system overlay tends to be the smallest, so failure here is the cheapest
 echo Downloading Container Image:
@@ -54,6 +63,27 @@ initrd --name runtime ${uri_base}&stage=runtime         || goto reboot
 {{if ne .KernelOverride "" -}}
 echo Downloading Kernel Modules:
 initrd --name kmods ${uri_base}&stage=kmods             || goto reboot
+{{- end}}
+
+goto imoktogo
+
+:noefi
+
+echo
+echo Use legacy initrd mode with compressed images
+
+echo Downloading Container Image:
+initrd --name container ${uri_base}&stage=container&compress=gz || goto reboot
+
+echo Downloading System Overlay:
+initrd --name system ${uri_base}&stage=system&compress=gz       || goto reboot
+
+echo Downloading Runtime Overlay:
+initrd --name runtime ${uri_base}&stage=runtime&compress=gz     || goto reboot
+
+{{if ne .KernelOverride "" -}}
+echo Downloading Kernel Modules:
+initrd --name kmods ${uri_base}&stage=kmods&compress=gz         || goto reboot
 {{- end}}
 
 
