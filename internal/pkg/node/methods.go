@@ -307,14 +307,26 @@ func (ent *Entry) Defined() bool {
 Set the Entry trough an interface by trying to cast the interface
 */
 func SetEntry(entryPtr interface{}, val interface{}) {
+	valKind := reflect.TypeOf(val)
 	if reflect.TypeOf(entryPtr) == reflect.TypeOf((*Entry)(nil)) {
 		entry := entryPtr.(*Entry)
-		valKind := reflect.TypeOf(val)
 		if valKind.Kind() == reflect.String {
 			entry.Set(val.(string))
 		} else if valKind.Kind() == reflect.Slice {
 			if valKind.Elem().Kind() == reflect.String {
 				entry.SetSlice(val.([]string))
+			} else {
+				panic("Got unknown slice type")
+			}
+		}
+	} else if reflect.TypeOf(entryPtr) == reflect.TypeOf((*[]string)(nil)) {
+		entry := entryPtr.(*[]string)
+		if valKind.Kind() == reflect.String {
+			// most likely we got a comma seperated string slice
+			*entry = strings.Split(val.(string), ",")
+		} else if valKind.Kind() == reflect.Slice {
+			if valKind.Elem().Kind() == reflect.String {
+				*entry = val.([]string)
 			} else {
 				panic("Got unknown slice type")
 			}
@@ -370,13 +382,15 @@ func DelEntry(entryMapInt interface{}, val interface{}) {
 }
 
 /*
-Call SetEntry for given field (NodeInfo)
+Call SetEntry for given field (NodeInfo).
 */
 func (node *NodeInfo) SetField(fieldName string, val interface{}) {
 	field := reflect.ValueOf(node).Elem().FieldByName(fieldName)
 	if field.IsValid() {
 		if field.Addr().Type() == reflect.TypeOf((*Entry)(nil)) {
 			//fmt.Println(reflect.TypeOf(field.Addr().Interface()))
+			SetEntry(field.Addr().Interface(), val)
+		} else if field.Addr().Type() == reflect.TypeOf((*[]string)(nil)) {
 			SetEntry(field.Addr().Interface(), val)
 		}
 		/*
