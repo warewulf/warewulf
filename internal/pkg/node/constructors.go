@@ -4,13 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"path"
+	"reflect"
 	"sort"
 	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 
 	"gopkg.in/yaml.v2"
@@ -51,10 +50,12 @@ for every node
 */
 func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 	var ret []NodeInfo
-	wwconfig, err := warewulfconf.New()
-	if err != nil {
-		return ret, err
-	}
+	/*
+		wwconfig, err := warewulfconf.New()
+		if err != nil {
+			return ret, err
+		}
+	*/
 	wwlog.Printf(wwlog.DEBUG, "Finding all nodes...\n")
 	for nodename, node := range config.Nodes {
 		var n NodeInfo
@@ -75,29 +76,98 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		if len(fullname) > 1 {
 			n.ClusterName.SetDefault(fullname[1])
 		}
-
+		// special handling for profile to get the default one
 		if len(node.Profiles) == 0 {
 			n.Profiles = []string{"default"}
 		} else {
 			n.Profiles = node.Profiles
 		}
-
+		// node explciti nodename field in NodeConf
 		n.Id.Set(nodename)
-		n.Comment.Set(node.Comment)
-		n.ContainerName.Set(node.ContainerName)
-		n.ClusterName.Set(node.ClusterName)
-		n.Ipxe.Set(node.Ipxe)
-		n.Init.Set(node.Init)
-		// backward compatibility for old Ipmi config
-		n.Ipmi.Ipaddr.Set(node.IpmiIpaddr)
-		n.Ipmi.Netmask.Set(node.IpmiNetmask)
-		n.Ipmi.Port.Set(node.IpmiPort)
-		n.Ipmi.Gateway.Set(node.IpmiGateway)
-		n.Ipmi.UserName.Set(node.IpmiUserName)
-		n.Ipmi.Password.Set(node.IpmiPassword)
-		n.Ipmi.Interface.Set(node.IpmiInterface)
-		n.Ipmi.Write.Set(node.IpmiWrite)
-		// delete deprectated structures so that they do not get unmarshalled
+		/*
+			n.Comment.Set(node.Comment)
+			n.ContainerName.Set(node.ContainerName)
+			n.ClusterName.Set(node.ClusterName)
+			n.Ipxe.Set(node.Ipxe)
+			n.Init.Set(node.Init)
+			// backward compatibility for old Ipmi config
+			n.Ipmi.Ipaddr.Set(node.IpmiIpaddr)
+			n.Ipmi.Netmask.Set(node.IpmiNetmask)
+			n.Ipmi.Port.Set(node.IpmiPort)
+			n.Ipmi.Gateway.Set(node.IpmiGateway)
+			n.Ipmi.UserName.Set(node.IpmiUserName)
+			n.Ipmi.Password.Set(node.IpmiPassword)
+			n.Ipmi.Interface.Set(node.IpmiInterface)
+			n.Ipmi.Write.Set(node.IpmiWrite)
+		*/
+		nodeInfoType := reflect.TypeOf(&n)
+		nodeInfoVal := reflect.ValueOf(&n)
+		nodeConfVal := reflect.ValueOf(node)
+		// now iterate of every field
+		for i := 0; i < nodeInfoType.Elem().NumField(); i++ {
+			valField := nodeConfVal.Elem().FieldByName(nodeInfoType.Elem().Field(i).Name)
+			if valField.IsValid() {
+				// found field with same name
+				if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(Entry{}) {
+					if valField.Type().Kind() == reflect.String {
+						(nodeInfoVal.Elem().Field(i).Addr().Interface()).(*Entry).Set(valField.String())
+					} else if valField.Type() == reflect.TypeOf([]string{}) {
+						(nodeInfoVal.Elem().Field(i).Addr().Interface()).(*Entry).SetSlice(valField.Interface().([]string))
+					}
+				} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr {
+					nestedInfoType := reflect.TypeOf(nodeInfoVal.Elem().Field(i).Interface())
+					netstedInfoVal := reflect.ValueOf(nodeInfoVal.Elem().Field(i).Interface())
+					nestedConfVal := reflect.ValueOf(valField.Interface())
+					for j := 0; j < nestedInfoType.Elem().NumField(); j++ {
+						nestedVal := nestedConfVal.Elem().FieldByName(nestedInfoType.Elem().Field(j).Name)
+						if nestedVal.IsValid() {
+							if netstedInfoVal.Elem().Field(j).Type() == reflect.TypeOf(Entry{}) {
+								netstedInfoVal.Elem().Field(j).Addr().Interface().(*Entry).Set(nestedVal.String())
+							}
+						}
+					}
+				} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string](*Entry)(nil)) {
+					fmt.Println("Found map")
+					confMap := valField.Interface().(map[string]string)
+					for key, val := range confMap {
+						var entr Entry
+						entr.Set(val)
+						(nodeInfoVal.Elem().Field(i).Interface()).(map[string](*Entry))[key] = &entr
+					}
+				} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string](*NetDevEntry)(nil)) {
+					nestedMap := valField.Interface().(map[string](*NetDevs))
+					for netName, netVals := range nestedMap {
+						netValsType := reflect.ValueOf(netVals)
+						netMap := nodeInfoVal.Elem().Field(i).Interface().(map[string](*NetDevEntry))
+						var newNet NetDevEntry
+						newNet.Tags = make(map[string]*Entry)
+						// This should be done a bit down, but didn'tknow how to do it
+						netMap[netName] = &newNet
+						netInfoType := reflect.TypeOf(newNet)
+						netInfoVal := reflect.ValueOf(&newNet)
+						for j := 0; j < netInfoType.NumField(); j++ {
+							netVal := netValsType.Elem().FieldByName(netInfoType.Field(j).Name)
+							if netVal.IsValid() {
+								if netVal.Type().Kind() == reflect.String {
+									netInfoVal.Elem().Field(j).Addr().Interface().((*Entry)).Set(netVal.String())
+									if netInfoType.Field(j).Name == "Netmask" {
+										netInfoVal.Elem().Field(j).Addr().Interface().((*Entry)).SetDefault("255.255.255.0")
+									}
+								} else if netVal.Type() == reflect.TypeOf(map[string]string{}) {
+									// normaly the map should be created here, but did not manage it
+									for key, val := range (netVal.Interface()).(map[string]string) {
+										var entr Entry
+										entr.Set(val)
+										netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))[key] = &entr
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		// delete deprecated structures so that they do not get unmarshalled
 		node.IpmiIpaddr = ""
 		node.IpmiNetmask = ""
 		node.IpmiGateway = ""
@@ -105,22 +175,23 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		node.IpmiPassword = ""
 		node.IpmiInterface = ""
 		node.IpmiWrite = ""
-
-		if node.Ipmi != nil {
-			n.Ipmi.Ipaddr.Set(node.Ipmi.Ipaddr)
-			n.Ipmi.Netmask.Set(node.Ipmi.Netmask)
-			n.Ipmi.Port.Set(node.Ipmi.Port)
-			n.Ipmi.Gateway.Set(node.Ipmi.Gateway)
-			n.Ipmi.UserName.Set(node.Ipmi.UserName)
-			n.Ipmi.Password.Set(node.Ipmi.Password)
-			n.Ipmi.Interface.Set(node.Ipmi.Interface)
-			n.Ipmi.Write.SetB(node.Ipmi.Write)
-		}
-		n.SystemOverlay.SetSlice(node.SystemOverlay)
-		n.RuntimeOverlay.SetSlice(node.RuntimeOverlay)
-		n.Root.Set(node.Root)
-		n.AssetKey.Set(node.AssetKey)
-		n.Discoverable.Set(node.Discoverable)
+		/*
+				if node.Ipmi != nil {
+					n.Ipmi.Ipaddr.Set(node.Ipmi.Ipaddr)
+					n.Ipmi.Netmask.Set(node.Ipmi.Netmask)
+					n.Ipmi.Port.Set(node.Ipmi.Port)
+					n.Ipmi.Gateway.Set(node.Ipmi.Gateway)
+					n.Ipmi.UserName.Set(node.Ipmi.UserName)
+					n.Ipmi.Password.Set(node.Ipmi.Password)
+					n.Ipmi.Interface.Set(node.Ipmi.Interface)
+					n.Ipmi.Write.SetB(node.Ipmi.Write)
+				}
+			n.SystemOverlay.SetSlice(node.SystemOverlay)
+			n.RuntimeOverlay.SetSlice(node.RuntimeOverlay)
+				n.Root.Set(node.Root)
+				n.AssetKey.Set(node.AssetKey)
+				n.Discoverable.Set(node.Discoverable)
+		*/
 		// backward compatibility
 		n.Kernel.Args.Set(node.KernelArgs)
 		n.Kernel.Override.Set(node.KernelOverride)
@@ -128,68 +199,67 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		node.KernelArgs = ""
 		node.KernelOverride = ""
 		node.KernelVersion = ""
-
-		if node.Kernel != nil {
-			n.Kernel.Args.Set(node.Kernel.Args)
-			if node.Kernel.Override != "" {
-				n.Kernel.Override.Set(node.Kernel.Override)
-			} else if node.Kernel.Version != "" {
-				n.Kernel.Override.Set(node.Kernel.Version)
-			}
-		}
-
-		for devname, netdev := range node.NetDevs {
-			if _, ok := n.NetDevs[devname]; !ok {
-				var netdev NetDevEntry
-				n.NetDevs[devname] = &netdev
-			}
-			n.NetDevs[devname].Device.Set(netdev.Device)
-			n.NetDevs[devname].Ipaddr.Set(netdev.Ipaddr)
-			n.NetDevs[devname].Ipaddr6.Set(netdev.Ipaddr6)
-
-			// Derive value of ipv6 address from ipv4 if not explicitly set
-			if wwconfig.Ipaddr6 != "" && netdev.Ipaddr != "" {
-				ipv4Arr := strings.Split(netdev.Ipaddr, ".")
-				// error can be ignored as check was done at init
-				_, ipv6Net, _ := net.ParseCIDR(wwconfig.Ipaddr6)
-				mSize, _ := ipv6Net.Mask.Size()
-				ipv6str := fmt.Sprintf("%s%s:%s:%s:%s/%v",
-					ipv6Net.IP.String(), ipv4Arr[0], ipv4Arr[1], ipv4Arr[2], ipv4Arr[3], mSize)
-				if strings.Count(ipv6Net.IP.String(), ":") == 5 {
-					ipv6str = strings.Replace(ipv6str, "::", ":", -1)
+		/*
+				if node.Kernel != nil {
+					n.Kernel.Args.Set(node.Kernel.Args)
+					if node.Kernel.Override != "" {
+						n.Kernel.Override.Set(node.Kernel.Override)
+					} else if node.Kernel.Version != "" {
+						n.Kernel.Override.Set(node.Kernel.Version)
+					}
 				}
-				n.NetDevs[devname].Ipaddr6.SetDefault(ipv6str)
-			}
-			n.NetDevs[devname].Netmask.Set(netdev.Netmask)
-			n.NetDevs[devname].Netmask.SetDefault("255.255.255.0")
-			n.NetDevs[devname].Hwaddr.Set(strings.ToLower(netdev.Hwaddr))
-			n.NetDevs[devname].Gateway.Set(netdev.Gateway)
-			n.NetDevs[devname].Type.Set(netdev.Type)
-			n.NetDevs[devname].OnBoot.Set(netdev.OnBoot)
-			n.NetDevs[devname].Primary.Set(netdev.Primary)
-			n.NetDevs[devname].Primary.Set(netdev.Default) // backwards compatibility
-			// for just one netdev, it is always the primary
-			if len(node.NetDevs) == 1 {
-				n.NetDevs[devname].Primary.Set("true")
-			}
-			n.NetDevs[devname].Tags = make(map[string]*Entry)
-			for keyname, key := range netdev.Tags {
-				if _, ok := n.Tags[keyname]; !ok {
-					var keyVar Entry
-					n.NetDevs[devname].Tags[keyname] = &keyVar
+			for devname, netdev := range node.NetDevs {
+				if _, ok := n.NetDevs[devname]; !ok {
+					var netdev NetDevEntry
+					n.NetDevs[devname] = &netdev
 				}
-				n.NetDevs[devname].Tags[keyname].Set(key)
-			}
-			n.NetDevs[devname].Tags = make(map[string]*Entry)
-			for keyname, key := range netdev.Tags {
-				if _, ok := n.Tags[keyname]; !ok {
-					var keyVar Entry
-					n.NetDevs[devname].Tags[keyname] = &keyVar
-				}
-				n.NetDevs[devname].Tags[keyname].Set(key)
-			}
-		}
+				n.NetDevs[devname].Device.Set(netdev.Device)
+				n.NetDevs[devname].Ipaddr.Set(netdev.Ipaddr)
+				n.NetDevs[devname].Ipaddr6.Set(netdev.Ipaddr6)
 
+				// Derive value of ipv6 address from ipv4 if not explicitly set
+				if wwconfig.Ipaddr6 != "" && netdev.Ipaddr != "" {
+					ipv4Arr := strings.Split(netdev.Ipaddr, ".")
+					// error can be ignored as check was done at init
+					_, ipv6Net, _ := net.ParseCIDR(wwconfig.Ipaddr6)
+					mSize, _ := ipv6Net.Mask.Size()
+					ipv6str := fmt.Sprintf("%s%s:%s:%s:%s/%v",
+						ipv6Net.IP.String(), ipv4Arr[0], ipv4Arr[1], ipv4Arr[2], ipv4Arr[3], mSize)
+					if strings.Count(ipv6Net.IP.String(), ":") == 5 {
+						ipv6str = strings.Replace(ipv6str, "::", ":", -1)
+					}
+					n.NetDevs[devname].Ipaddr6.SetDefault(ipv6str)
+				}
+				n.NetDevs[devname].Netmask.Set(netdev.Netmask)
+				n.NetDevs[devname].Netmask.SetDefault("255.255.255.0")
+				n.NetDevs[devname].Hwaddr.Set(strings.ToLower(netdev.Hwaddr))
+				n.NetDevs[devname].Gateway.Set(netdev.Gateway)
+				n.NetDevs[devname].Type.Set(netdev.Type)
+				n.NetDevs[devname].OnBoot.Set(netdev.OnBoot)
+				n.NetDevs[devname].Primary.Set(netdev.Primary)
+				n.NetDevs[devname].Primary.Set(netdev.Default) // backwards compatibility
+				// for just one netdev, it is always the primary
+				if len(node.NetDevs) == 1 {
+					n.NetDevs[devname].Primary.Set("true")
+				}
+				n.NetDevs[devname].Tags = make(map[string]*Entry)
+				for keyname, key := range netdev.Tags {
+					if _, ok := n.Tags[keyname]; !ok {
+						var keyVar Entry
+						n.NetDevs[devname].Tags[keyname] = &keyVar
+					}
+					n.NetDevs[devname].Tags[keyname].Set(key)
+				}
+				n.NetDevs[devname].Tags = make(map[string]*Entry)
+				for keyname, key := range netdev.Tags {
+					if _, ok := n.Tags[keyname]; !ok {
+						var keyVar Entry
+						n.NetDevs[devname].Tags[keyname] = &keyVar
+					}
+					n.NetDevs[devname].Tags[keyname].Set(key)
+				}
+			}
+		*/
 		// Merge Keys into Tags for backwards compatibility
 		if len(node.Tags) == 0 {
 			node.Tags = make(map[string]string)
@@ -231,7 +301,7 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				n.Ipmi.UserName.SetAlt(config.NodeProfiles[p].Ipmi.UserName, p)
 				n.Ipmi.Password.SetAlt(config.NodeProfiles[p].Ipmi.Password, p)
 				n.Ipmi.Interface.SetAlt(config.NodeProfiles[p].Ipmi.Interface, p)
-				n.Ipmi.Write.SetAltB(config.NodeProfiles[p].Ipmi.Write, p)
+				n.Ipmi.Write.SetAlt(config.NodeProfiles[p].Ipmi.Write, p)
 			}
 			n.SystemOverlay.SetAltSlice(config.NodeProfiles[p].SystemOverlay, p)
 			n.RuntimeOverlay.SetAltSlice(config.NodeProfiles[p].RuntimeOverlay, p)
@@ -369,7 +439,7 @@ func (config *NodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 			p.Ipmi.UserName.Set(profile.Ipmi.UserName)
 			p.Ipmi.Password.Set(profile.Ipmi.Password)
 			p.Ipmi.Interface.Set(profile.Ipmi.Interface)
-			p.Ipmi.Write.SetB(profile.Ipmi.Write)
+			p.Ipmi.Write.Set(profile.Ipmi.Write)
 		}
 		p.RuntimeOverlay.SetSlice(profile.RuntimeOverlay)
 		p.SystemOverlay.SetSlice(profile.SystemOverlay)
