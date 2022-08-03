@@ -83,13 +83,13 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		}
 		// node explciti nodename field in NodeConf
 		n.Id.Set(nodename)
-		nodeInfoType := reflect.TypeOf(&n)
-		nodeInfoVal := reflect.ValueOf(&n)
 		// backward compatibilty
 		for keyname, key := range node.Keys {
 			node.Tags[keyname] = key
 			delete(node.Keys, keyname)
 		}
+		nodeInfoVal := reflect.ValueOf(&n)
+		nodeInfoType := reflect.TypeOf(&n)
 		nodeConfVal := reflect.ValueOf(node)
 		// now iterate of every field
 		for i := 0; i < nodeInfoType.Elem().NumField(); i++ {
@@ -102,7 +102,7 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 					} else if valField.Type() == reflect.TypeOf([]string{}) {
 						(nodeInfoVal.Elem().Field(i).Addr().Interface()).(*Entry).SetSlice(valField.Interface().([]string))
 					}
-				} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr {
+				} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr && !valField.IsZero() {
 					nestedInfoType := reflect.TypeOf(nodeInfoVal.Elem().Field(i).Interface())
 					netstedInfoVal := reflect.ValueOf(nodeInfoVal.Elem().Field(i).Interface())
 					nestedConfVal := reflect.ValueOf(valField.Interface())
@@ -174,95 +174,77 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			node.Tags = make(map[string]string)
 		}
 
-		for _, p := range n.Profiles {
-			if _, ok := config.NodeProfiles[p]; !ok {
-				wwlog.Printf(wwlog.WARN, "Profile not found for node '%s': %s\n", nodename, p)
+		for _, profileName := range n.Profiles {
+			if _, ok := config.NodeProfiles[profileName]; !ok {
+				wwlog.Printf(wwlog.WARN, "Profile not found for node '%s': %s\n", nodename, profileName)
 				continue
 			}
 
-			wwlog.Printf(wwlog.VERBOSE, "Merging profile into node: %s <- %s\n", nodename, p)
-
-			n.Comment.SetAlt(config.NodeProfiles[p].Comment, p)
-			n.ClusterName.SetAlt(config.NodeProfiles[p].ClusterName, p)
-			n.ContainerName.SetAlt(config.NodeProfiles[p].ContainerName, p)
-			if config.NodeProfiles[p].Kernel != nil {
-				n.Kernel.Args.SetAlt(config.NodeProfiles[p].Kernel.Args, p)
-			}
-			n.Ipxe.SetAlt(config.NodeProfiles[p].Ipxe, p)
-			n.Init.SetAlt(config.NodeProfiles[p].Init, p)
-			if config.NodeProfiles[p].Ipmi != nil {
-				n.Ipmi.Ipaddr.SetAlt(config.NodeProfiles[p].Ipmi.Ipaddr, p)
-				n.Ipmi.Netmask.SetAlt(config.NodeProfiles[p].Ipmi.Netmask, p)
-				n.Ipmi.Port.SetAlt(config.NodeProfiles[p].Ipmi.Port, p)
-				n.Ipmi.Gateway.SetAlt(config.NodeProfiles[p].Ipmi.Gateway, p)
-				n.Ipmi.UserName.SetAlt(config.NodeProfiles[p].Ipmi.UserName, p)
-				n.Ipmi.Password.SetAlt(config.NodeProfiles[p].Ipmi.Password, p)
-				n.Ipmi.Interface.SetAlt(config.NodeProfiles[p].Ipmi.Interface, p)
-				n.Ipmi.Write.SetAlt(config.NodeProfiles[p].Ipmi.Write, p)
-			}
-			n.SystemOverlay.SetAltSlice(config.NodeProfiles[p].SystemOverlay, p)
-			n.RuntimeOverlay.SetAltSlice(config.NodeProfiles[p].RuntimeOverlay, p)
-			n.Root.SetAlt(config.NodeProfiles[p].Root, p)
-			n.AssetKey.SetAlt(config.NodeProfiles[p].AssetKey, p)
-			n.Discoverable.SetAlt(config.NodeProfiles[p].Discoverable, p)
-
-			if config.NodeProfiles[p].Kernel != nil {
-				if config.NodeProfiles[p].Kernel.Override != "" {
-					n.Kernel.Override.SetAlt(config.NodeProfiles[p].Kernel.Override, p)
-				} else if config.NodeProfiles[p].Kernel.Version != "" {
-					n.Kernel.Override.SetAlt(config.NodeProfiles[p].Kernel.Version, p)
-				}
-			}
-
-			for devname, netdev := range config.NodeProfiles[p].NetDevs {
-				if _, ok := n.NetDevs[devname]; !ok {
-					var netdev NetDevEntry
-					n.NetDevs[devname] = &netdev
-				}
-				wwlog.Printf(wwlog.DEBUG, "Updating profile (%s) netdev: %s\n", p, devname)
-
-				n.NetDevs[devname].Device.SetAlt(netdev.Device, p)
-				n.NetDevs[devname].Ipaddr.SetAlt(netdev.Ipaddr, p) //FIXME? <- Ipaddr must be uniq
-				n.NetDevs[devname].Netmask.SetAlt(netdev.Netmask, p)
-				n.NetDevs[devname].Hwaddr.SetAlt(strings.ToLower(netdev.Hwaddr), p)
-				n.NetDevs[devname].Gateway.SetAlt(netdev.Gateway, p)
-				n.NetDevs[devname].Type.SetAlt(netdev.Type, p)
-				n.NetDevs[devname].OnBoot.SetAlt(netdev.OnBoot, p)
-				n.NetDevs[devname].Primary.SetAlt(netdev.Primary, p)
-				if len(netdev.Tags) != 0 {
-					if len(n.NetDevs[devname].Tags) == 0 {
-						n.NetDevs[devname].Tags = make(map[string]*Entry)
-					}
-					for keyname, key := range netdev.Tags {
-						if _, ok := n.NetDevs[devname].Tags[keyname]; !ok {
-							var keyVar Entry
-							n.NetDevs[devname].Tags[keyname] = &keyVar
+			wwlog.Printf(wwlog.VERBOSE, "Merging profile into node: %s <- %s\n", nodename, profileName)
+			nodeInfoVal := reflect.ValueOf(&n)
+			nodeInfoType := reflect.TypeOf(&n)
+			profileConfVal := reflect.ValueOf(config.NodeProfiles[profileName])
+			for i := 0; i < nodeInfoType.Elem().NumField(); i++ {
+				valField := profileConfVal.Elem().FieldByName(nodeInfoType.Elem().Field(i).Name)
+				if valField.IsValid() {
+					// found field with same name for Conf and Info
+					if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(Entry{}) {
+						if valField.Type().Kind() == reflect.String {
+							(nodeInfoVal.Elem().Field(i).Addr().Interface()).(*Entry).SetAlt(valField.String(), profileName)
+						} else if valField.Type() == reflect.TypeOf([]string{}) {
+							(nodeInfoVal.Elem().Field(i).Addr().Interface()).(*Entry).SetAltSlice(valField.Interface().([]string), profileName)
 						}
-						n.NetDevs[devname].Tags[keyname].SetAlt(key, p)
+					} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr && !valField.IsZero() {
+						nestedInfoType := reflect.TypeOf(nodeInfoVal.Elem().Field(i).Interface())
+						netstedInfoVal := reflect.ValueOf(nodeInfoVal.Elem().Field(i).Interface())
+						nestedConfVal := reflect.ValueOf(valField.Interface())
+						for j := 0; j < nestedInfoType.Elem().NumField(); j++ {
+							nestedVal := nestedConfVal.Elem().FieldByName(nestedInfoType.Elem().Field(j).Name)
+							if nestedVal.IsValid() {
+								if netstedInfoVal.Elem().Field(j).Type() == reflect.TypeOf(Entry{}) {
+									netstedInfoVal.Elem().Field(j).Addr().Interface().(*Entry).SetAlt(nestedVal.String(), profileName)
+								}
+							}
+						}
+					} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string](*Entry)(nil)) {
+						confMap := valField.Interface().(map[string]string)
+						for key, val := range confMap {
+							var entr Entry
+							entr.SetAlt(val, profileName)
+							(nodeInfoVal.Elem().Field(i).Interface()).(map[string](*Entry))[key] = &entr
+						}
+					} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string](*NetDevEntry)(nil)) {
+						nestedMap := valField.Interface().(map[string](*NetDevs))
+						for netName, netVals := range nestedMap {
+							netValsType := reflect.ValueOf(netVals)
+							netMap := nodeInfoVal.Elem().Field(i).Interface().(map[string](*NetDevEntry))
+							var newNet NetDevEntry
+							newNet.Tags = make(map[string]*Entry)
+							// This should be done a bit down, but didn'tknow how to do it
+							netMap[netName] = &newNet
+							netInfoType := reflect.TypeOf(newNet)
+							netInfoVal := reflect.ValueOf(&newNet)
+							for j := 0; j < netInfoType.NumField(); j++ {
+								netVal := netValsType.Elem().FieldByName(netInfoType.Field(j).Name)
+								if netVal.IsValid() {
+									if netVal.Type().Kind() == reflect.String {
+										netInfoVal.Elem().Field(j).Addr().Interface().((*Entry)).SetAlt(netVal.String(), profileName)
+									} else if netVal.Type() == reflect.TypeOf(map[string]string{}) {
+										// normaly the map should be created here, but did not manage it
+										for key, val := range (netVal.Interface()).(map[string]string) {
+											var entr Entry
+											entr.SetAlt(val, profileName)
+											netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))[key] = &entr
+										}
+									}
+								}
+							}
+						}
 					}
 				}
-			}
-
-			// Merge Keys into Tags for backwards compatibility
-			if len(config.NodeProfiles[p].Tags) == 0 {
-				config.NodeProfiles[p].Tags = make(map[string]string)
-			}
-			for keyname, key := range config.NodeProfiles[p].Keys {
-				config.NodeProfiles[p].Tags[keyname] = key
-				delete(config.NodeProfiles[p].Keys, keyname)
-			}
-
-			for keyname, key := range config.NodeProfiles[p].Tags {
-				if _, ok := n.Tags[keyname]; !ok {
-					var key Entry
-					n.Tags[keyname] = &key
-				}
-				n.Tags[keyname].SetAlt(key, p)
 			}
 		}
-
 		ret = append(ret, n)
-
 	}
 
 	sort.Slice(ret, func(i, j int) bool {
