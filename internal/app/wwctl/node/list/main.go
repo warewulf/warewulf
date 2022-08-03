@@ -69,7 +69,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 				if len(subkeys) >= 2 {
 					switch subkeys[0] {
 					case "key":
-						fieldName = "key:" + subkeys[1]
+						fieldName = "tag:" + subkeys[1]
 					case "IpmiEntry":
 						fieldName = ipmiLopt[subkeys[1]]
 					case "KernelEntry":

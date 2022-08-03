@@ -85,6 +85,11 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.Id.Set(nodename)
 		nodeInfoType := reflect.TypeOf(&n)
 		nodeInfoVal := reflect.ValueOf(&n)
+		// backward compatibilty
+		for keyname, key := range node.Keys {
+			node.Tags[keyname] = key
+			delete(node.Keys, keyname)
+		}
 		nodeConfVal := reflect.ValueOf(node)
 		// now iterate of every field
 		for i := 0; i < nodeInfoType.Elem().NumField(); i++ {
@@ -167,18 +172,6 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		// Merge Keys into Tags for backwards compatibility
 		if len(node.Tags) == 0 {
 			node.Tags = make(map[string]string)
-		}
-		for keyname, key := range node.Keys {
-			node.Tags[keyname] = key
-			delete(node.Keys, keyname)
-		}
-
-		for keyname, key := range node.Tags {
-			if _, ok := n.Tags[keyname]; !ok {
-				var key Entry
-				n.Tags[keyname] = &key
-			}
-			n.Tags[keyname].Set(key)
 		}
 
 		for _, p := range n.Profiles {

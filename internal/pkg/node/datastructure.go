@@ -48,7 +48,7 @@ type NodeConf struct {
 	Discoverable   string              `yaml:"discoverable,omitempty" lopt:"discoverable" comment:"Make discoverable in given network (yes/no)"`
 	Profiles       []string            `yaml:"profiles,omitempty" lopt:"profile" sopt:"P" comment:"Set the node's profile members (comma separated)"`
 	NetDevs        map[string]*NetDevs `yaml:"network devices,omitempty"`
-	Tags           map[string]string   `yaml:"tags,omitempty" lopt:"keys" comment:"base key"`
+	Tags           map[string]string   `yaml:"tags,omitempty" lopt:"tag" comment:"base key"`
 	Keys           map[string]string   `yaml:"keys,omitempty"` // Reverse compatibility
 }
 
@@ -61,7 +61,7 @@ type IpmiConf struct {
 	Gateway   string            `yaml:"gateway,omitempty" lopt:"ipmigateway" comment:"Set the IPMI gateway"`
 	Interface string            `yaml:"interface,omitempty" lopt:"ipmiinterface" comment:"Set the node's IPMI interface (defaults: 'lan')"`
 	Write     string            `yaml:"write,omitempty" lopt:"ipmiwrite" comment:"Enable the write of impi configuration (yes/no)"`
-	Tags      map[string]string `yaml:"tags,omitempty" lopt:"impitag" comment:"ipmi keys"`
+	Tags      map[string]string `yaml:"tags,omitempty" lopt:"ipmitag" comment:"ipmi keys"`
 }
 type KernelConf struct {
 	Version  string `yaml:"version,omitempty"`
