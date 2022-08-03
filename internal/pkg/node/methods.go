@@ -342,6 +342,10 @@ Add an entry in a map
 */
 func AddEntry(entryMapInt interface{}, val interface{}) {
 	if reflect.TypeOf(entryMapInt) == reflect.TypeOf((*map[string]*Entry)(nil)) {
+		if reflect.ValueOf(entryMapInt).Elem().IsNil() {
+			newMap := make(map[string]*Entry)
+			entryMapInt = &newMap
+		}
 		entryMap := entryMapInt.(*map[string]*Entry)
 		str, ok := (val).(string)
 		if !ok {
@@ -388,7 +392,6 @@ func (node *NodeInfo) SetField(fieldName string, val interface{}) {
 	field := reflect.ValueOf(node).Elem().FieldByName(fieldName)
 	if field.IsValid() {
 		if field.Addr().Type() == reflect.TypeOf((*Entry)(nil)) {
-			//fmt.Println(reflect.TypeOf(field.Addr().Interface()))
 			SetEntry(field.Addr().Interface(), val)
 		} else if field.Addr().Type() == reflect.TypeOf((*[]string)(nil)) {
 			SetEntry(field.Addr().Interface(), val)
@@ -421,10 +424,11 @@ func (node *NodeInfo) SetField(fieldName string, val interface{}) {
 					switch nestedField.Addr().Type() {
 					case reflect.TypeOf((**KernelEntry)(nil)):
 						entry := nestedField.Addr().Interface().(**KernelEntry)
-						(*entry).SetField(fieldNames[1], val)
+						(*entry).SetField(strings.Join(fieldNames[1:], "."), val)
 					case reflect.TypeOf((**IpmiEntry)(nil)):
 						entry := nestedField.Addr().Interface().(**IpmiEntry)
-						(*entry).SetField(fieldNames[1], val)
+						fmt.Println(fieldNames)
+						(*entry).SetField(strings.Join(fieldNames[1:], "."), val)
 					case reflect.TypeOf((*map[string]*NetDevEntry)(nil)):
 						if len(fieldNames) >= 3 {
 							entryMap := nestedField.Addr().Interface().(*map[string]*NetDevEntry)
@@ -458,7 +462,15 @@ func (node *KernelEntry) SetField(fieldName string, val interface{}) {
 	if field.IsValid() {
 		SetEntry(field.Addr().Interface(), val)
 	} else {
-		panic(fmt.Sprintf("field %s does not exists in node.KernEntry\n", fieldName))
+		valFields := strings.Split(fieldName, ".")
+		field = reflect.ValueOf(node).Elem().FieldByName(valFields[1])
+		if field.IsValid() && len(valFields) == 2 && valFields[0] == "add" {
+			AddEntry(field.Addr().Interface(), val)
+		} else if field.IsValid() && len(valFields) == 2 && valFields[0] == "del" {
+			DelEntry(field.Addr().Interface(), val)
+		} else {
+			panic(fmt.Sprintf("field %s does not exists in node.NetDevEntry\n", fieldName))
+		}
 	}
 }
 
@@ -470,7 +482,16 @@ func (node *IpmiEntry) SetField(fieldName string, val interface{}) {
 	if field.IsValid() {
 		SetEntry(field.Addr().Interface(), val)
 	} else {
-		panic(fmt.Sprintf("field %s does not exists in node.ImpiEntry\n", fieldName))
+		fmt.Println(fieldName)
+		valFields := strings.Split(fieldName, ".")
+		field = reflect.ValueOf(node).Elem().FieldByName(valFields[1])
+		if field.IsValid() && len(valFields) == 2 && valFields[0] == "add" {
+			AddEntry(field.Addr().Interface(), val)
+		} else if field.IsValid() && len(valFields) == 2 && valFields[0] == "del" {
+			DelEntry(field.Addr().Interface(), val)
+		} else {
+			panic(fmt.Sprintf("field %s does not exists in node.NetDevEntry\n", fieldName))
+		}
 	}
 }
 

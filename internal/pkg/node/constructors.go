@@ -42,6 +42,76 @@ func New() (NodeYaml, error) {
 	return ret, nil
 }
 
+func (node *NodeInfo) initFrom(n *NodeConf) {
+	nodeInfoVal := reflect.ValueOf(node)
+	nodeInfoType := reflect.TypeOf(node)
+	nodeConfVal := reflect.ValueOf(n)
+	// now iterate of every field
+	for i := 0; i < nodeInfoType.Elem().NumField(); i++ {
+		valField := nodeConfVal.Elem().FieldByName(nodeInfoType.Elem().Field(i).Name)
+		if valField.IsValid() {
+			// found field with same name for Conf and Info
+			if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(Entry{}) {
+				if valField.Type().Kind() == reflect.String {
+					(nodeInfoVal.Elem().Field(i).Addr().Interface()).(*Entry).Set(valField.String())
+				} else if valField.Type() == reflect.TypeOf([]string{}) {
+					(nodeInfoVal.Elem().Field(i).Addr().Interface()).(*Entry).SetSlice(valField.Interface().([]string))
+				}
+			} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr && !valField.IsZero() {
+				nestedInfoType := reflect.TypeOf(nodeInfoVal.Elem().Field(i).Interface())
+				netstedInfoVal := reflect.ValueOf(nodeInfoVal.Elem().Field(i).Interface())
+				nestedConfVal := reflect.ValueOf(valField.Interface())
+				for j := 0; j < nestedInfoType.Elem().NumField(); j++ {
+					nestedVal := nestedConfVal.Elem().FieldByName(nestedInfoType.Elem().Field(j).Name)
+					if nestedVal.IsValid() {
+						if netstedInfoVal.Elem().Field(j).Type() == reflect.TypeOf(Entry{}) {
+							netstedInfoVal.Elem().Field(j).Addr().Interface().(*Entry).Set(nestedVal.String())
+						}
+					}
+				}
+			} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string](*Entry)(nil)) {
+				confMap := valField.Interface().(map[string]string)
+				for key, val := range confMap {
+					var entr Entry
+					entr.Set(val)
+					(nodeInfoVal.Elem().Field(i).Interface()).(map[string](*Entry))[key] = &entr
+				}
+			} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string](*NetDevEntry)(nil)) {
+				nestedMap := valField.Interface().(map[string](*NetDevs))
+				for netName, netVals := range nestedMap {
+					netValsType := reflect.ValueOf(netVals)
+					netMap := nodeInfoVal.Elem().Field(i).Interface().(map[string](*NetDevEntry))
+					var newNet NetDevEntry
+					newNet.Tags = make(map[string]*Entry)
+					// This should be done a bit down, but didn'tknow how to do it
+					netMap[netName] = &newNet
+					netInfoType := reflect.TypeOf(newNet)
+					netInfoVal := reflect.ValueOf(&newNet)
+					for j := 0; j < netInfoType.NumField(); j++ {
+						netVal := netValsType.Elem().FieldByName(netInfoType.Field(j).Name)
+						if netVal.IsValid() {
+							if netVal.Type().Kind() == reflect.String {
+								netInfoVal.Elem().Field(j).Addr().Interface().((*Entry)).Set(netVal.String())
+								if netInfoType.Field(j).Name == "Netmask" {
+									netInfoVal.Elem().Field(j).Addr().Interface().((*Entry)).SetDefault("255.255.255.0")
+								}
+							} else if netVal.Type() == reflect.TypeOf(map[string]string{}) {
+								// normaly the map should be created here, but did not manage it
+								for key, val := range (netVal.Interface()).(map[string]string) {
+									var entr Entry
+									entr.Set(val)
+									netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))[key] = &entr
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+}
+
 /*
 Get all the nodes of a configuration. This function also merges
 the nodes with the given profiles and set the default values
@@ -88,72 +158,19 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			node.Tags[keyname] = key
 			delete(node.Keys, keyname)
 		}
-		nodeInfoVal := reflect.ValueOf(&n)
-		nodeInfoType := reflect.TypeOf(&n)
-		nodeConfVal := reflect.ValueOf(node)
-		// now iterate of every field
-		for i := 0; i < nodeInfoType.Elem().NumField(); i++ {
-			valField := nodeConfVal.Elem().FieldByName(nodeInfoType.Elem().Field(i).Name)
-			if valField.IsValid() {
-				// found field with same name for Conf and Info
-				if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(Entry{}) {
-					if valField.Type().Kind() == reflect.String {
-						(nodeInfoVal.Elem().Field(i).Addr().Interface()).(*Entry).Set(valField.String())
-					} else if valField.Type() == reflect.TypeOf([]string{}) {
-						(nodeInfoVal.Elem().Field(i).Addr().Interface()).(*Entry).SetSlice(valField.Interface().([]string))
-					}
-				} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr && !valField.IsZero() {
-					nestedInfoType := reflect.TypeOf(nodeInfoVal.Elem().Field(i).Interface())
-					netstedInfoVal := reflect.ValueOf(nodeInfoVal.Elem().Field(i).Interface())
-					nestedConfVal := reflect.ValueOf(valField.Interface())
-					for j := 0; j < nestedInfoType.Elem().NumField(); j++ {
-						nestedVal := nestedConfVal.Elem().FieldByName(nestedInfoType.Elem().Field(j).Name)
-						if nestedVal.IsValid() {
-							if netstedInfoVal.Elem().Field(j).Type() == reflect.TypeOf(Entry{}) {
-								netstedInfoVal.Elem().Field(j).Addr().Interface().(*Entry).Set(nestedVal.String())
-							}
-						}
-					}
-				} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string](*Entry)(nil)) {
-					confMap := valField.Interface().(map[string]string)
-					for key, val := range confMap {
-						var entr Entry
-						entr.Set(val)
-						(nodeInfoVal.Elem().Field(i).Interface()).(map[string](*Entry))[key] = &entr
-					}
-				} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string](*NetDevEntry)(nil)) {
-					nestedMap := valField.Interface().(map[string](*NetDevs))
-					for netName, netVals := range nestedMap {
-						netValsType := reflect.ValueOf(netVals)
-						netMap := nodeInfoVal.Elem().Field(i).Interface().(map[string](*NetDevEntry))
-						var newNet NetDevEntry
-						newNet.Tags = make(map[string]*Entry)
-						// This should be done a bit down, but didn'tknow how to do it
-						netMap[netName] = &newNet
-						netInfoType := reflect.TypeOf(newNet)
-						netInfoVal := reflect.ValueOf(&newNet)
-						for j := 0; j < netInfoType.NumField(); j++ {
-							netVal := netValsType.Elem().FieldByName(netInfoType.Field(j).Name)
-							if netVal.IsValid() {
-								if netVal.Type().Kind() == reflect.String {
-									netInfoVal.Elem().Field(j).Addr().Interface().((*Entry)).Set(netVal.String())
-									if netInfoType.Field(j).Name == "Netmask" {
-										netInfoVal.Elem().Field(j).Addr().Interface().((*Entry)).SetDefault("255.255.255.0")
-									}
-								} else if netVal.Type() == reflect.TypeOf(map[string]string{}) {
-									// normaly the map should be created here, but did not manage it
-									for key, val := range (netVal.Interface()).(map[string]string) {
-										var entr Entry
-										entr.Set(val)
-										netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))[key] = &entr
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
+		n.initFrom(node)
+		// backward compatibility
+		n.Ipmi.Ipaddr.Set(node.IpmiIpaddr)
+		n.Ipmi.Netmask.Set(node.IpmiNetmask)
+		n.Ipmi.Port.Set(node.IpmiPort)
+		n.Ipmi.Gateway.Set(node.IpmiGateway)
+		n.Ipmi.UserName.Set(node.IpmiUserName)
+		n.Ipmi.Password.Set(node.IpmiPassword)
+		n.Ipmi.Interface.Set(node.IpmiInterface)
+		n.Ipmi.Write.Set(node.IpmiWrite)
+		n.Kernel.Args.Set(node.KernelArgs)
+		n.Kernel.Override.Set(node.KernelOverride)
+		n.Kernel.Override.Set(node.KernelVersion)
 		// delete deprecated structures so that they do not get unmarshalled
 		node.IpmiIpaddr = ""
 		node.IpmiNetmask = ""
@@ -162,10 +179,6 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		node.IpmiPassword = ""
 		node.IpmiInterface = ""
 		node.IpmiWrite = ""
-		// backward compatibility
-		n.Kernel.Args.Set(node.KernelArgs)
-		n.Kernel.Override.Set(node.KernelOverride)
-		n.Kernel.Override.Set(node.KernelVersion)
 		node.KernelArgs = ""
 		node.KernelOverride = ""
 		node.KernelVersion = ""
@@ -179,7 +192,7 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 				wwlog.Printf(wwlog.WARN, "Profile not found for node '%s': %s\n", nodename, profileName)
 				continue
 			}
-
+			// can't call setFrom() as we have to use SetAlt instead of Set for an Entry
 			wwlog.Printf(wwlog.VERBOSE, "Merging profile into node: %s <- %s\n", nodename, profileName)
 			nodeInfoVal := reflect.ValueOf(&n)
 			nodeInfoType := reflect.TypeOf(&n)
@@ -230,7 +243,7 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 									if netVal.Type().Kind() == reflect.String {
 										netInfoVal.Elem().Field(j).Addr().Interface().((*Entry)).SetAlt(netVal.String(), profileName)
 									} else if netVal.Type() == reflect.TypeOf(map[string]string{}) {
-										// normaly the map should be created here, but did not manage it
+										// normally the map should be created here, but did not manage it
 										for key, val := range (netVal.Interface()).(map[string]string) {
 											var entr Entry
 											entr.SetAlt(val, profileName)
@@ -269,32 +282,12 @@ func (config *NodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 
 	for name, profile := range config.NodeProfiles {
 		var p NodeInfo
-		p.NetDevs = make(map[string]*NetDevEntry)
-		p.Tags = make(map[string]*Entry)
-		p.Kernel = new(KernelEntry)
-		p.Ipmi = new(IpmiEntry)
 		p.Id.Set(name)
-		p.Comment.Set(profile.Comment)
-		p.ClusterName.Set(profile.ClusterName)
-		p.ContainerName.Set(profile.ContainerName)
-		p.Ipxe.Set(profile.Ipxe)
-		p.Init.Set(profile.Init)
-		// backward compatibility
-		p.Kernel.Args.Set(profile.KernelArgs)
-		p.Kernel.Override.Set(profile.KernelOverride)
-		p.Kernel.Override.Set(profile.KernelVersion)
-		profile.KernelArgs = ""
-		profile.KernelOverride = ""
-		profile.KernelVersion = ""
-		if profile.Kernel != nil {
-			p.Kernel.Args.Set(profile.Kernel.Args)
-			if profile.Kernel.Override != "" {
-				p.Kernel.Override.Set(profile.Kernel.Override)
-			} else if profile.Kernel.Version != "" {
-				p.Kernel.Override.Set(profile.Kernel.Version)
-			}
+		for keyname, key := range profile.Keys {
+			profile.Tags[keyname] = key
+			delete(profile.Keys, keyname)
 		}
-		// backward compatibility for old Ipmi config
+		p.initFrom(profile)
 		p.Ipmi.Ipaddr.Set(profile.IpmiIpaddr)
 		p.Ipmi.Netmask.Set(profile.IpmiNetmask)
 		p.Ipmi.Port.Set(profile.IpmiPort)
@@ -303,7 +296,10 @@ func (config *NodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		p.Ipmi.Password.Set(profile.IpmiPassword)
 		p.Ipmi.Interface.Set(profile.IpmiInterface)
 		p.Ipmi.Write.Set(profile.IpmiWrite)
-		// delete deprectated structures so that they do not get unmarshalled
+		p.Kernel.Args.Set(profile.KernelArgs)
+		p.Kernel.Override.Set(profile.KernelOverride)
+		p.Kernel.Override.Set(profile.KernelVersion)
+		// delete deprecated stuff
 		profile.IpmiIpaddr = ""
 		profile.IpmiNetmask = ""
 		profile.IpmiGateway = ""
@@ -311,74 +307,9 @@ func (config *NodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		profile.IpmiPassword = ""
 		profile.IpmiInterface = ""
 		profile.IpmiWrite = ""
-		if profile.Ipmi != nil {
-			p.Ipmi.Netmask.Set(profile.Ipmi.Netmask)
-			p.Ipmi.Port.Set(profile.Ipmi.Port)
-			p.Ipmi.Gateway.Set(profile.Ipmi.Gateway)
-			p.Ipmi.UserName.Set(profile.Ipmi.UserName)
-			p.Ipmi.Password.Set(profile.Ipmi.Password)
-			p.Ipmi.Interface.Set(profile.Ipmi.Interface)
-			p.Ipmi.Write.Set(profile.Ipmi.Write)
-		}
-		p.RuntimeOverlay.SetSlice(profile.RuntimeOverlay)
-		p.SystemOverlay.SetSlice(profile.SystemOverlay)
-		p.Root.Set(profile.Root)
-		p.AssetKey.Set(profile.AssetKey)
-		p.Discoverable.Set(profile.Discoverable)
-
-		for devname, netdev := range profile.NetDevs {
-			if _, ok := p.NetDevs[devname]; !ok {
-				var netdev NetDevEntry
-				p.NetDevs[devname] = &netdev
-			}
-
-			wwlog.Printf(wwlog.DEBUG, "Updating profile netdev: %s\n", devname)
-
-			p.NetDevs[devname].Device.Set(netdev.Device)
-			p.NetDevs[devname].Netmask.Set(netdev.Netmask)
-			p.NetDevs[devname].Gateway.Set(netdev.Gateway)
-			p.NetDevs[devname].Type.Set(netdev.Type)
-			p.NetDevs[devname].OnBoot.Set(netdev.OnBoot)
-			p.NetDevs[devname].Primary.Set(netdev.Primary)
-			p.NetDevs[devname].Primary.Set(netdev.Default) // backwards compatibility
-
-			// The following should not be set in a profile.
-			if netdev.Ipaddr != "" {
-				wwlog.Printf(wwlog.WARN, "Ignoring ip address %v in profile %v\n", netdev.Ipaddr, name)
-			}
-			if netdev.Hwaddr != "" {
-				wwlog.Printf(wwlog.WARN, "Ignoring hardware address %v in profile %v\n", netdev.Hwaddr, name)
-			}
-			p.NetDevs[devname].Tags = make(map[string]*Entry)
-			for keyname, key := range netdev.Tags {
-				if _, ok := p.Tags[keyname]; !ok {
-					var keyVar Entry
-					p.NetDevs[devname].Tags[keyname] = &keyVar
-				}
-				p.NetDevs[devname].Tags[keyname].Set(key)
-			}
-
-		}
-
-		// Merge Keys into Tags for backwards compatibility
-		if len(profile.Tags) == 0 {
-			profile.Tags = make(map[string]string)
-		}
-		for keyname, key := range profile.Keys {
-			profile.Tags[keyname] = key
-			delete(profile.Keys, keyname)
-		}
-
-		for keyname, key := range profile.Tags {
-			if _, ok := p.Tags[keyname]; !ok {
-				var key Entry
-				p.Tags[keyname] = &key
-			}
-			p.Tags[keyname].Set(key)
-		}
-
-		// TODO: Validate or die on all inputs
-
+		profile.KernelArgs = ""
+		profile.KernelOverride = ""
+		profile.KernelVersion = ""
 		ret = append(ret, p)
 	}
 	sort.Slice(ret, func(i, j int) bool {
