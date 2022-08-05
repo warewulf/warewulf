@@ -120,7 +120,7 @@ type NodeInfo struct {
 	AssetKey       Entry
 	Kernel         *KernelEntry
 	Ipmi           *IpmiEntry
-	Profiles       []string
+	Profiles       Entry
 	NetDevs        map[string]*NetDevEntry
 	Tags           map[string]*Entry
 }

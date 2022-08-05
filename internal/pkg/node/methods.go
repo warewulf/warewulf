@@ -50,10 +50,10 @@ func FilterByName(set []NodeInfo, searchList []string) []NodeInfo {
  *********/
 
 /*
- Set value. If argument is 'UNDEF', 'DELETE',
- 'UNSET" or '--' the value is removed.
- N.B. the '--' might never ever happen as '--'
- is parsed out by cobra
+Set value. If argument is 'UNDEF', 'DELETE',
+'UNSET" or '--' the value is removed.
+N.B. the '--' might never ever happen as '--'
+is parsed out by cobra
 */
 func (ent *Entry) Set(val string) {
 	if val == "" {
@@ -145,6 +145,13 @@ func (ent *Entry) SetDefaultSlice(val []string) {
 	}
 	ent.def = val
 
+}
+
+/*
+Remove a elemnt from a slice
+*/
+func (ent *Entry) SliceRemoveElement(val string) {
+	util.SliceRemoveElement(ent.value, val)
 }
 
 /**********
@@ -340,7 +347,7 @@ func SetEntry(entryPtr interface{}, val interface{}) {
 /*
 Add an entry in a map
 */
-func AddEntry(entryMapInt interface{}, val interface{}) {
+func addEntry(entryMapInt interface{}, val interface{}) {
 	if reflect.TypeOf(entryMapInt) == reflect.TypeOf((*map[string]*Entry)(nil)) {
 		if reflect.ValueOf(entryMapInt).Elem().IsNil() {
 			newMap := make(map[string]*Entry)
@@ -369,7 +376,7 @@ func AddEntry(entryMapInt interface{}, val interface{}) {
 /*
 Del an entry in a map
 */
-func DelEntry(entryMapInt interface{}, val interface{}) {
+func delEntry(entryMapInt interface{}, val interface{}) {
 	if reflect.TypeOf(entryMapInt) == reflect.TypeOf((*map[string]*Entry)(nil)) {
 		entryMap := entryMapInt.(*map[string]*Entry)
 		str, ok := (val).(string)
@@ -411,9 +418,9 @@ func (node *NodeInfo) SetField(fieldName string, val interface{}) {
 				fieldMap := reflect.ValueOf(node).Elem().FieldByName(fieldNames[1])
 				if fieldMap.IsValid() {
 					if fieldNames[0] == "del" {
-						DelEntry(fieldMap.Addr().Elem().Interface(), val)
+						delEntry(fieldMap.Addr().Interface(), val)
 					} else if fieldNames[0] == "add" {
-						AddEntry(fieldMap.Addr().Elem().Interface(), val)
+						addEntry(fieldMap.Addr().Interface(), val)
 					}
 				} else {
 					panic(fmt.Sprintf("invalid del/add operation with name %s called, field %s does not exists\n", fieldName, fieldNames[0]))
@@ -427,7 +434,6 @@ func (node *NodeInfo) SetField(fieldName string, val interface{}) {
 						(*entry).SetField(strings.Join(fieldNames[1:], "."), val)
 					case reflect.TypeOf((**IpmiEntry)(nil)):
 						entry := nestedField.Addr().Interface().(**IpmiEntry)
-						fmt.Println(fieldNames)
 						(*entry).SetField(strings.Join(fieldNames[1:], "."), val)
 					case reflect.TypeOf((*map[string]*NetDevEntry)(nil)):
 						if len(fieldNames) >= 3 {
@@ -465,9 +471,9 @@ func (node *KernelEntry) SetField(fieldName string, val interface{}) {
 		valFields := strings.Split(fieldName, ".")
 		field = reflect.ValueOf(node).Elem().FieldByName(valFields[1])
 		if field.IsValid() && len(valFields) == 2 && valFields[0] == "add" {
-			AddEntry(field.Addr().Interface(), val)
+			addEntry(field.Addr().Interface(), val)
 		} else if field.IsValid() && len(valFields) == 2 && valFields[0] == "del" {
-			DelEntry(field.Addr().Interface(), val)
+			delEntry(field.Addr().Interface(), val)
 		} else {
 			panic(fmt.Sprintf("field %s does not exists in node.NetDevEntry\n", fieldName))
 		}
@@ -482,13 +488,12 @@ func (node *IpmiEntry) SetField(fieldName string, val interface{}) {
 	if field.IsValid() {
 		SetEntry(field.Addr().Interface(), val)
 	} else {
-		fmt.Println(fieldName)
 		valFields := strings.Split(fieldName, ".")
 		field = reflect.ValueOf(node).Elem().FieldByName(valFields[1])
 		if field.IsValid() && len(valFields) == 2 && valFields[0] == "add" {
-			AddEntry(field.Addr().Interface(), val)
+			addEntry(field.Addr().Interface(), val)
 		} else if field.IsValid() && len(valFields) == 2 && valFields[0] == "del" {
-			DelEntry(field.Addr().Interface(), val)
+			delEntry(field.Addr().Interface(), val)
 		} else {
 			panic(fmt.Sprintf("field %s does not exists in node.NetDevEntry\n", fieldName))
 		}
@@ -506,9 +511,9 @@ func (node *NetDevEntry) SetField(fieldName string, val interface{}) {
 		valFields := strings.Split(fieldName, ".")
 		field = reflect.ValueOf(node).Elem().FieldByName(valFields[1])
 		if field.IsValid() && len(valFields) == 2 && valFields[0] == "add" {
-			AddEntry(field.Addr().Interface(), val)
+			addEntry(field.Addr().Interface(), val)
 		} else if field.IsValid() && len(valFields) == 2 && valFields[0] == "del" {
-			DelEntry(field.Addr().Interface(), val)
+			delEntry(field.Addr().Interface(), val)
 		} else {
 			panic(fmt.Sprintf("field %s does not exists in node.NetDevEntry\n", fieldName))
 		}

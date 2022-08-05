@@ -4,7 +4,6 @@ import (
 	"errors"
 	"io/ioutil"
 	"path"
-	"reflect"
 	"sort"
 	"strings"
 
@@ -42,76 +41,6 @@ func New() (NodeYaml, error) {
 	return ret, nil
 }
 
-func (node *NodeInfo) initFrom(n *NodeConf) {
-	nodeInfoVal := reflect.ValueOf(node)
-	nodeInfoType := reflect.TypeOf(node)
-	nodeConfVal := reflect.ValueOf(n)
-	// now iterate of every field
-	for i := 0; i < nodeInfoType.Elem().NumField(); i++ {
-		valField := nodeConfVal.Elem().FieldByName(nodeInfoType.Elem().Field(i).Name)
-		if valField.IsValid() {
-			// found field with same name for Conf and Info
-			if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(Entry{}) {
-				if valField.Type().Kind() == reflect.String {
-					(nodeInfoVal.Elem().Field(i).Addr().Interface()).(*Entry).Set(valField.String())
-				} else if valField.Type() == reflect.TypeOf([]string{}) {
-					(nodeInfoVal.Elem().Field(i).Addr().Interface()).(*Entry).SetSlice(valField.Interface().([]string))
-				}
-			} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr && !valField.IsZero() {
-				nestedInfoType := reflect.TypeOf(nodeInfoVal.Elem().Field(i).Interface())
-				netstedInfoVal := reflect.ValueOf(nodeInfoVal.Elem().Field(i).Interface())
-				nestedConfVal := reflect.ValueOf(valField.Interface())
-				for j := 0; j < nestedInfoType.Elem().NumField(); j++ {
-					nestedVal := nestedConfVal.Elem().FieldByName(nestedInfoType.Elem().Field(j).Name)
-					if nestedVal.IsValid() {
-						if netstedInfoVal.Elem().Field(j).Type() == reflect.TypeOf(Entry{}) {
-							netstedInfoVal.Elem().Field(j).Addr().Interface().(*Entry).Set(nestedVal.String())
-						}
-					}
-				}
-			} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string](*Entry)(nil)) {
-				confMap := valField.Interface().(map[string]string)
-				for key, val := range confMap {
-					var entr Entry
-					entr.Set(val)
-					(nodeInfoVal.Elem().Field(i).Interface()).(map[string](*Entry))[key] = &entr
-				}
-			} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string](*NetDevEntry)(nil)) {
-				nestedMap := valField.Interface().(map[string](*NetDevs))
-				for netName, netVals := range nestedMap {
-					netValsType := reflect.ValueOf(netVals)
-					netMap := nodeInfoVal.Elem().Field(i).Interface().(map[string](*NetDevEntry))
-					var newNet NetDevEntry
-					newNet.Tags = make(map[string]*Entry)
-					// This should be done a bit down, but didn'tknow how to do it
-					netMap[netName] = &newNet
-					netInfoType := reflect.TypeOf(newNet)
-					netInfoVal := reflect.ValueOf(&newNet)
-					for j := 0; j < netInfoType.NumField(); j++ {
-						netVal := netValsType.Elem().FieldByName(netInfoType.Field(j).Name)
-						if netVal.IsValid() {
-							if netVal.Type().Kind() == reflect.String {
-								netInfoVal.Elem().Field(j).Addr().Interface().((*Entry)).Set(netVal.String())
-								if netInfoType.Field(j).Name == "Netmask" {
-									netInfoVal.Elem().Field(j).Addr().Interface().((*Entry)).SetDefault("255.255.255.0")
-								}
-							} else if netVal.Type() == reflect.TypeOf(map[string]string{}) {
-								// normaly the map should be created here, but did not manage it
-								for key, val := range (netVal.Interface()).(map[string]string) {
-									var entr Entry
-									entr.Set(val)
-									netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))[key] = &entr
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-}
-
 /*
 Get all the nodes of a configuration. This function also merges
 the nodes with the given profiles and set the default values
@@ -147,9 +76,9 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		}
 		// special handling for profile to get the default one
 		if len(node.Profiles) == 0 {
-			n.Profiles = []string{"default"}
+			n.Profiles.SetSlice([]string{"default"})
 		} else {
-			n.Profiles = node.Profiles
+			n.Profiles.SetSlice(node.Profiles)
 		}
 		// node explciti nodename field in NodeConf
 		n.Id.Set(nodename)
@@ -158,7 +87,7 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			node.Tags[keyname] = key
 			delete(node.Keys, keyname)
 		}
-		n.initFrom(node)
+		n.setFrom(node)
 		// backward compatibility
 		n.Ipmi.Ipaddr.Set(node.IpmiIpaddr)
 		n.Ipmi.Netmask.Set(node.IpmiNetmask)
@@ -187,75 +116,14 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			node.Tags = make(map[string]string)
 		}
 
-		for _, profileName := range n.Profiles {
+		for _, profileName := range n.Profiles.GetSlice() {
 			if _, ok := config.NodeProfiles[profileName]; !ok {
 				wwlog.Printf(wwlog.WARN, "Profile not found for node '%s': %s\n", nodename, profileName)
 				continue
 			}
 			// can't call setFrom() as we have to use SetAlt instead of Set for an Entry
 			wwlog.Printf(wwlog.VERBOSE, "Merging profile into node: %s <- %s\n", nodename, profileName)
-			nodeInfoVal := reflect.ValueOf(&n)
-			nodeInfoType := reflect.TypeOf(&n)
-			profileConfVal := reflect.ValueOf(config.NodeProfiles[profileName])
-			for i := 0; i < nodeInfoType.Elem().NumField(); i++ {
-				valField := profileConfVal.Elem().FieldByName(nodeInfoType.Elem().Field(i).Name)
-				if valField.IsValid() {
-					// found field with same name for Conf and Info
-					if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(Entry{}) {
-						if valField.Type().Kind() == reflect.String {
-							(nodeInfoVal.Elem().Field(i).Addr().Interface()).(*Entry).SetAlt(valField.String(), profileName)
-						} else if valField.Type() == reflect.TypeOf([]string{}) {
-							(nodeInfoVal.Elem().Field(i).Addr().Interface()).(*Entry).SetAltSlice(valField.Interface().([]string), profileName)
-						}
-					} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr && !valField.IsZero() {
-						nestedInfoType := reflect.TypeOf(nodeInfoVal.Elem().Field(i).Interface())
-						netstedInfoVal := reflect.ValueOf(nodeInfoVal.Elem().Field(i).Interface())
-						nestedConfVal := reflect.ValueOf(valField.Interface())
-						for j := 0; j < nestedInfoType.Elem().NumField(); j++ {
-							nestedVal := nestedConfVal.Elem().FieldByName(nestedInfoType.Elem().Field(j).Name)
-							if nestedVal.IsValid() {
-								if netstedInfoVal.Elem().Field(j).Type() == reflect.TypeOf(Entry{}) {
-									netstedInfoVal.Elem().Field(j).Addr().Interface().(*Entry).SetAlt(nestedVal.String(), profileName)
-								}
-							}
-						}
-					} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string](*Entry)(nil)) {
-						confMap := valField.Interface().(map[string]string)
-						for key, val := range confMap {
-							var entr Entry
-							entr.SetAlt(val, profileName)
-							(nodeInfoVal.Elem().Field(i).Interface()).(map[string](*Entry))[key] = &entr
-						}
-					} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string](*NetDevEntry)(nil)) {
-						nestedMap := valField.Interface().(map[string](*NetDevs))
-						for netName, netVals := range nestedMap {
-							netValsType := reflect.ValueOf(netVals)
-							netMap := nodeInfoVal.Elem().Field(i).Interface().(map[string](*NetDevEntry))
-							var newNet NetDevEntry
-							newNet.Tags = make(map[string]*Entry)
-							// This should be done a bit down, but didn'tknow how to do it
-							netMap[netName] = &newNet
-							netInfoType := reflect.TypeOf(newNet)
-							netInfoVal := reflect.ValueOf(&newNet)
-							for j := 0; j < netInfoType.NumField(); j++ {
-								netVal := netValsType.Elem().FieldByName(netInfoType.Field(j).Name)
-								if netVal.IsValid() {
-									if netVal.Type().Kind() == reflect.String {
-										netInfoVal.Elem().Field(j).Addr().Interface().((*Entry)).SetAlt(netVal.String(), profileName)
-									} else if netVal.Type() == reflect.TypeOf(map[string]string{}) {
-										// normally the map should be created here, but did not manage it
-										for key, val := range (netVal.Interface()).(map[string]string) {
-											var entr Entry
-											entr.SetAlt(val, profileName)
-											netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))[key] = &entr
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
+			config.NodeProfiles[profileName].setAltFrom(n, profileName)
 		}
 		ret = append(ret, n)
 	}
@@ -287,7 +155,7 @@ func (config *NodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 			profile.Tags[keyname] = key
 			delete(profile.Keys, keyname)
 		}
-		p.initFrom(profile)
+		p.setFrom(profile)
 		p.Ipmi.Ipaddr.Set(profile.IpmiIpaddr)
 		p.Ipmi.Netmask.Set(profile.IpmiNetmask)
 		p.Ipmi.Port.Set(profile.IpmiPort)

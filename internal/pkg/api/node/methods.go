@@ -72,7 +72,7 @@ func GetFields(n interface{}) map[string]*wwapiv1.NodeField {
 				}
 			}
 		default:
-			fmt.Println(nodeType.Field(i).Type)
+			panic(fmt.Sprintf("Can't handle: %s\n", nodeType.Field(i).Type))
 		}
 	}
 	return fieldMap

@@ -72,6 +72,9 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 						fieldName = "tag:" + subkeys[1]
 					case "IpmiEntry":
 						fieldName = ipmiLopt[subkeys[1]]
+						if len(subkeys) == 3 {
+							fieldName = "ipmikey:" + subkeys[2]
+						}
 					case "KernelEntry":
 						fieldName = kernelLopt[subkeys[1]]
 					case "NetDevEntry":
