@@ -16,6 +16,7 @@ import (
  * Filters
  *
  *********/
+
 /*
 Filter a given slice of NodeInfo against a given
 regular expression

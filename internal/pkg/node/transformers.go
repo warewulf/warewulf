@@ -1,6 +1,8 @@
 package node
 
-import "reflect"
+import (
+	"reflect"
+)
 
 /*
 Populates a NodeConf struct (the one which goes to disk) from a
@@ -8,7 +10,7 @@ NodeInfo (which just lives in memory), with the values from all
 the underlying entries using GetReal, so just the explicit values
 go do disk.
 */
-func (nodeConf *NodeConf) getRealFrom(nodeInfo NodeInfo) {
+func (nodeConf *NodeConf) GetRealFrom(nodeInfo NodeInfo) {
 	nodeInfoType := reflect.TypeOf(nodeInfo)
 	nodeInfoVal := reflect.ValueOf(nodeInfo)
 	configVal := reflect.ValueOf(nodeConf)
@@ -45,7 +47,6 @@ func (nodeConf *NodeConf) getRealFrom(nodeInfo NodeInfo) {
 						*newConfPtr = &newConf
 					}
 				}
-				needNestedStruct := false
 				nestedInfoType := reflect.TypeOf(nodeInfoVal.Field(i).Interface())
 				nestedInfoVal := reflect.ValueOf(nodeInfoVal.Field(i).Interface())
 				nestedConfVal := reflect.ValueOf(confField.Interface())
@@ -56,12 +57,10 @@ func (nodeConf *NodeConf) getRealFrom(nodeInfo NodeInfo) {
 							newValue := (nestedVal.Addr().Interface()).(*string)
 							entryVal := nestedInfoVal.Elem().Field(j).Interface().(Entry)
 							*newValue = entryVal.GetReal()
-							needNestedStruct = needNestedStruct || entryVal.GotReal()
 						} else if nestedVal.Type() == reflect.TypeOf([]string{}) {
 							newValue := (nestedVal.Addr().Interface()).(*[]string)
 							entryVal := nestedInfoVal.Elem().Field(j).Interface().(Entry)
 							*newValue = entryVal.GetRealSlice()
-							needNestedStruct = needNestedStruct || entryVal.GotReal()
 
 						}
 					} else if nestedInfoVal.Elem().Field(j).Type() == reflect.TypeOf(map[string]*Entry{}) {
@@ -76,18 +75,7 @@ func (nodeConf *NodeConf) getRealFrom(nodeInfo NodeInfo) {
 					}
 					//}
 				}
-				// Check if the nested struct has any values, if not replace it with a nil pointer so
-				// that it does not get unmarshalled to someting like ipmi: {}
-				if !needNestedStruct {
-					switch confField.Type() {
-					case reflect.TypeOf((*IpmiConf)(nil)):
-						newConf := (confField.Addr().Interface()).(**IpmiConf)
-						*newConf = (*IpmiConf)(nil)
-					case reflect.TypeOf((*KernelConf)(nil)):
-						newConf := (confField.Addr().Interface()).(**KernelConf)
-						*newConf = (*KernelConf)(nil)
-					}
-				}
+
 			} else if nodeInfoVal.Field(i).Type() == reflect.TypeOf(map[string]*NetDevEntry{}) {
 				nestedMap := nodeInfoVal.Field(i).Interface().(map[string]*NetDevEntry)
 				for netName, netVal := range nestedMap {
@@ -127,10 +115,129 @@ func (nodeConf *NodeConf) getRealFrom(nodeInfo NodeInfo) {
 }
 
 /*
+Populates a NodeConf struct from a NodeInfo, with the combined
+values from the underlying entries using Get.
+*/
+func (nodeConf *NodeConf) GetFrom(nodeInfo NodeInfo) {
+	nodeInfoType := reflect.TypeOf(nodeInfo)
+	nodeInfoVal := reflect.ValueOf(nodeInfo)
+	configVal := reflect.ValueOf(nodeConf)
+	// now iterate of every field
+	for i := 0; i < nodeInfoType.NumField(); i++ {
+		// found field with same name for Conf and Info
+		confField := configVal.Elem().FieldByName(nodeInfoType.Field(i).Name)
+		if confField.IsValid() {
+			if nodeInfoVal.Field(i).Type() == reflect.TypeOf(Entry{}) {
+				if confField.Type().Kind() == reflect.String {
+					newValue := (confField.Addr().Interface()).(*string)
+					entryVal := nodeInfoVal.Field(i).Interface().(Entry)
+					*newValue = entryVal.Get()
+				} else if confField.Type() == reflect.TypeOf([]string{}) {
+					newValue := (confField.Addr().Interface()).(*[]string)
+					entryVal := nodeInfoVal.Field(i).Interface().(Entry)
+					*newValue = entryVal.GetSlice()
+				}
+			} else if nodeInfoVal.Field(i).Type() == reflect.TypeOf(map[string]*Entry{}) {
+				if confField.IsNil() {
+					confFieldPtr := confField.Addr().Interface().(*map[string]string)
+					*confFieldPtr = make(map[string]string)
+				}
+				entryMap := nodeInfoVal.Field(i).Interface().(map[string]*Entry)
+				for key, val := range entryMap {
+					confField.Interface().(map[string]string)[key] = val.Get()
+				}
+			} else if nodeInfoVal.Field(i).Type().Kind() == reflect.Ptr {
+				if confField.Addr().Elem().IsZero() {
+					switch confField.Addr().Elem().Type() {
+					case reflect.TypeOf((*KernelConf)(nil)):
+						var newConf KernelConf
+						newConfPtr := (confField.Addr().Elem().Addr().Interface()).(**KernelConf)
+						*newConfPtr = &newConf
+					case reflect.TypeOf((*IpmiConf)(nil)):
+						var newConf IpmiConf
+						newConfPtr := (confField.Addr().Elem().Addr().Interface()).(**IpmiConf)
+						*newConfPtr = &newConf
+					}
+				}
+				nestedInfoType := reflect.TypeOf(nodeInfoVal.Field(i).Interface())
+				nestedInfoVal := reflect.ValueOf(nodeInfoVal.Field(i).Interface())
+				nestedConfVal := reflect.ValueOf(confField.Interface())
+				for j := 0; j < nestedInfoType.Elem().NumField(); j++ {
+					nestedVal := nestedConfVal.Elem().FieldByName(nestedInfoType.Elem().Field(j).Name)
+					if nestedInfoVal.Elem().Field(j).Type() == reflect.TypeOf(Entry{}) {
+						if nestedVal.Type().Kind() == reflect.String {
+							newValue := (nestedVal.Addr().Interface()).(*string)
+							entryVal := nestedInfoVal.Elem().Field(j).Interface().(Entry)
+							*newValue = entryVal.Get()
+						} else if nestedVal.Type() == reflect.TypeOf([]string{}) {
+							newValue := (nestedVal.Addr().Interface()).(*[]string)
+							entryVal := nestedInfoVal.Elem().Field(j).Interface().(Entry)
+							*newValue = entryVal.GetSlice()
+
+						}
+					} else if nestedInfoVal.Elem().Field(j).Type() == reflect.TypeOf(map[string]*Entry{}) {
+						if nestedVal.IsNil() {
+							mapPtr := nestedVal.Addr().Interface().(*map[string]string)
+							*mapPtr = make(map[string]string)
+						}
+						entryMap := nestedInfoVal.Elem().Field(j).Interface().(map[string]*Entry)
+						for key, val := range entryMap {
+							nestedVal.Interface().(map[string]string)[key] = val.Get()
+						}
+					}
+				}
+			} else if nodeInfoVal.Field(i).Type() == reflect.TypeOf(map[string]*NetDevEntry{}) {
+				nestedMap := nodeInfoVal.Field(i).Interface().(map[string]*NetDevEntry)
+				for netName, netVal := range nestedMap {
+					netValsType := reflect.ValueOf(netVal)
+					if confField.IsNil() {
+						netMapPtr := confField.Addr().Interface().(*map[string](*NetDevs))
+						*netMapPtr = make(map[string](*NetDevs))
+					}
+					netMap := confField.Interface().(map[string](*NetDevs))
+					var newNet NetDevs
+					newNet.Tags = make(map[string]string)
+					netMap[netName] = &newNet
+					netConfType := reflect.TypeOf(newNet)
+					netConfVal := reflect.ValueOf(&newNet)
+					for j := 0; j < netConfType.NumField(); j++ {
+						netVal := netValsType.Elem().FieldByName(netConfType.Field(j).Name)
+						if netVal.IsValid() {
+							if netVal.Type() == reflect.TypeOf(Entry{}) {
+								newVal := netConfVal.Elem().Field(j).Addr().Interface().((*string))
+								*newVal = (netVal.Addr().Interface()).(*Entry).Get()
+							} else if netVal.Type() == reflect.TypeOf(map[string]string{}) {
+								// normaly the map should be created here, but did not manage it
+								for key, val := range (netVal.Interface()).(map[string]string) {
+									var entr Entry
+									entr.Set(val)
+									netConfVal.Elem().Field(j).Interface().((map[string](*Entry)))[key] = &entr
+								}
+							}
+						}
+
+					}
+				}
+			}
+		} /*else {
+			// NodeInfo has the Id field, nodeConf not
+			fmt.Println("INVALID", nodeInfoType.Field(i).Name)
+		} */
+	}
+}
+
+/*
 Populates all fields of NodeInfo with Set from the
 values of NodeConf.
 */
-func (node *NodeInfo) setFrom(n *NodeConf) {
+func (node *NodeInfo) SetFrom(n *NodeConf) {
+	// get the full memory, taking the shortcut and init Ipmi and Kernel directly
+	if node.Kernel == nil {
+		node.Kernel = new(KernelEntry)
+	}
+	if node.Ipmi == nil {
+		node.Ipmi = new(IpmiEntry)
+	}
 	nodeInfoVal := reflect.ValueOf(node)
 	nodeInfoType := reflect.TypeOf(node)
 	nodeConfVal := reflect.ValueOf(n)
@@ -217,7 +324,7 @@ values of NodeConf. The string profileName is used to
 destermine from which source/NodeInfo the entry came
 from.
 */
-func (node *NodeConf) setAltFrom(nodeInfo NodeInfo, profileName string) {
+func (node *NodeConf) SetAltFrom(nodeInfo NodeInfo, profileName string) {
 	nodeInfoVal := reflect.ValueOf(&nodeInfo)
 	nodeInfoType := reflect.TypeOf(&nodeInfo)
 	profileConfVal := reflect.ValueOf(node)

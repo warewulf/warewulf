@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sort"
 
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -177,7 +178,7 @@ func NodeList(nodeNames []string) (nodeInfo []*wwapiv1.NodeInfo, err error) {
 	}
 
 	nodeNames = hostlist.Expand(nodeNames)
-
+	sort.Strings(nodeNames)
 	// Translate to the protobuf structure so wwapiv1 can use this across the wire.
 	// This is the same logic as was in wwctl.
 	for _, n := range node.FilterByName(nodes, nodeNames) {

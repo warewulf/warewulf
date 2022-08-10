@@ -55,7 +55,7 @@ func (config *NodeYaml) NodeUpdate(node NodeInfo) error {
 	if _, ok := config.Nodes[nodeID]; !ok {
 		return errors.New("Nodename does not exist: " + nodeID)
 	}
-	config.Nodes[nodeID].getRealFrom(node)
+	config.Nodes[nodeID].GetRealFrom(node)
 	return nil
 }
 
@@ -103,7 +103,7 @@ func (config *NodeYaml) ProfileUpdate(profile NodeInfo) error {
 	if _, ok := config.NodeProfiles[profileID]; !ok {
 		return errors.New("Profile name does not exist: " + profileID)
 	}
-	config.NodeProfiles[profileID].getRealFrom(profile)
+	config.NodeProfiles[profileID].GetRealFrom(profile)
 	return nil
 }
 
