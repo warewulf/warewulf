@@ -163,7 +163,8 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 			wwlog.Error(err.Error())
 			return
 		}
-	} else if strings.HasPrefix(cip.Source, "docker://") || strings.HasPrefix(cip.Source, "docker-daemon://") {
+	} else if strings.HasPrefix(cip.Source, "docker://") || strings.HasPrefix(cip.Source, "docker-daemon://") ||
+		strings.HasPrefix(cip.Source, "file://") || util.IsFile(cip.Source) {
 		var sCtx *types.SystemContext
 		sCtx, err = getSystemContext()
 		if err != nil {
