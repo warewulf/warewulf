@@ -84,6 +84,14 @@ func InitStruct(nodeInfo node.NodeInfo) TemplateStruct {
 	tstruct.BuildTime = dt.Format("01-02-2006 15:04:05 MST")
 	tstruct.BuildTimeUnix = strconv.FormatInt(dt.Unix(), 10)
 	tstruct.NodeConf.GetFrom(nodeInfo)
+	// FIXME: Set ipCIDR address at this point, will fail with
+	// invalid ipv4 addr
+	for _, network := range tstruct.NetDevs {
+		ipCIDR := net.IPNet{
+			IP:   net.ParseIP(network.Ipaddr),
+			Mask: net.IPMask(net.ParseIP(network.Netmask))}
+		network.IpCIDR = ipCIDR.String()
+	}
 	// backward compatibilty
 	tstruct.Container = tstruct.ContainerName
 
