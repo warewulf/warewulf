@@ -91,7 +91,7 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		// set default/primary network is just one network exist
 		if len(n.NetDevs) == 1 {
 			// only way to get the key
-			for key, _ := range node.NetDevs {
+			for key := range node.NetDevs {
 				n.NetDevs[key].Primary.SetB(true)
 			}
 		}
