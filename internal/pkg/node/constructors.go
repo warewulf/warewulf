@@ -88,6 +88,13 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			delete(node.Keys, keyname)
 		}
 		n.setFrom(node)
+		// set default/primary network is just one network exist
+		if len(n.NetDevs) == 1 {
+			// only way to get the key
+			for key, _ := range node.NetDevs {
+				n.NetDevs[key].Primary.SetB(true)
+			}
+		}
 		// backward compatibility
 		n.Ipmi.Ipaddr.Set(node.IpmiIpaddr)
 		n.Ipmi.Netmask.Set(node.IpmiNetmask)
