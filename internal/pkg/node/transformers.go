@@ -230,7 +230,7 @@ func (nodeConf *NodeConf) GetFrom(nodeInfo NodeInfo) {
 Populates all fields of NodeInfo with Set from the
 values of NodeConf.
 */
-func (node *NodeInfo) SetFrom(n *NodeConf) {
+func (node *NodeInfo) setFrom(n *NodeConf) {
 	// get the full memory, taking the shortcut and init Ipmi and Kernel directly
 	if node.Kernel == nil {
 		node.Kernel = new(KernelEntry)
@@ -324,12 +324,20 @@ values of NodeConf. The string profileName is used to
 destermine from which source/NodeInfo the entry came
 from.
 */
-func (node *NodeConf) SetAltFrom(nodeInfo NodeInfo, profileName string) {
-	nodeInfoVal := reflect.ValueOf(&nodeInfo)
-	nodeInfoType := reflect.TypeOf(&nodeInfo)
-	profileConfVal := reflect.ValueOf(node)
+func (node *NodeInfo) setAltFrom(n *NodeConf, profileName string) {
+	// get the full memory, taking the shortcut and init Ipmi and Kernel directly
+	if node.Kernel == nil {
+		node.Kernel = new(KernelEntry)
+	}
+	if node.Ipmi == nil {
+		node.Ipmi = new(IpmiEntry)
+	}
+	nodeInfoVal := reflect.ValueOf(node)
+	nodeInfoType := reflect.TypeOf(node)
+	nodeConfVal := reflect.ValueOf(n)
+	// now iterate of every field
 	for i := 0; i < nodeInfoType.Elem().NumField(); i++ {
-		valField := profileConfVal.Elem().FieldByName(nodeInfoType.Elem().Field(i).Name)
+		valField := nodeConfVal.Elem().FieldByName(nodeInfoType.Elem().Field(i).Name)
 		if valField.IsValid() {
 			// found field with same name for Conf and Info
 			if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(Entry{}) {
@@ -347,6 +355,18 @@ func (node *NodeConf) SetAltFrom(nodeInfo NodeInfo, profileName string) {
 					if nestedVal.IsValid() {
 						if netstedInfoVal.Elem().Field(j).Type() == reflect.TypeOf(Entry{}) {
 							netstedInfoVal.Elem().Field(j).Addr().Interface().(*Entry).SetAlt(nestedVal.String(), profileName)
+						} else {
+							confMap := nestedVal.Interface().(map[string]string)
+							if netstedInfoVal.Elem().Field(j).IsNil() {
+								newMap := make(map[string]*Entry)
+								mapPtr := (netstedInfoVal.Elem().Field(j).Addr().Interface()).(*map[string](*Entry))
+								*mapPtr = newMap
+							}
+							for key, val := range confMap {
+								var entr Entry
+								entr.SetAlt(val, profileName)
+								(netstedInfoVal.Elem().Field(j).Interface()).(map[string](*Entry))[key] = &entr
+							}
 						}
 					}
 				}
@@ -364,7 +384,7 @@ func (node *NodeConf) SetAltFrom(nodeInfo NodeInfo, profileName string) {
 					netMap := nodeInfoVal.Elem().Field(i).Interface().(map[string](*NetDevEntry))
 					var newNet NetDevEntry
 					newNet.Tags = make(map[string]*Entry)
-					// This should be done a bit down, but didn'tknow how to do it
+					// This should be done a bit down, but didn't know how to do it
 					netMap[netName] = &newNet
 					netInfoType := reflect.TypeOf(newNet)
 					netInfoVal := reflect.ValueOf(&newNet)
@@ -374,7 +394,7 @@ func (node *NodeConf) SetAltFrom(nodeInfo NodeInfo, profileName string) {
 							if netVal.Type().Kind() == reflect.String {
 								netInfoVal.Elem().Field(j).Addr().Interface().((*Entry)).SetAlt(netVal.String(), profileName)
 							} else if netVal.Type() == reflect.TypeOf(map[string]string{}) {
-								// normally the map should be created here, but did not manage it
+								// normaly the map should be created here, but did not manage it
 								for key, val := range (netVal.Interface()).(map[string]string) {
 									var entr Entry
 									entr.SetAlt(val, profileName)

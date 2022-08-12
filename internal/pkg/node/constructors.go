@@ -87,7 +87,7 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			node.Tags[keyname] = key
 			delete(node.Keys, keyname)
 		}
-		n.SetFrom(node)
+		n.setFrom(node)
 		// backward compatibility
 		n.Ipmi.Ipaddr.Set(node.IpmiIpaddr)
 		n.Ipmi.Netmask.Set(node.IpmiNetmask)
@@ -123,7 +123,7 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			}
 			// can't call setFrom() as we have to use SetAlt instead of Set for an Entry
 			wwlog.Printf(wwlog.VERBOSE, "Merging profile into node: %s <- %s\n", nodename, profileName)
-			config.NodeProfiles[profileName].SetAltFrom(n, profileName)
+			n.setAltFrom(config.NodeProfiles[profileName], profileName)
 		}
 		ret = append(ret, n)
 	}
@@ -155,7 +155,7 @@ func (config *NodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 			profile.Tags[keyname] = key
 			delete(profile.Keys, keyname)
 		}
-		p.SetFrom(profile)
+		p.setFrom(profile)
 		p.Ipmi.Ipaddr.Set(profile.IpmiIpaddr)
 		p.Ipmi.Netmask.Set(profile.IpmiNetmask)
 		p.Ipmi.Port.Set(profile.IpmiPort)
