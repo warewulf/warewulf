@@ -149,7 +149,7 @@ func (ent *Entry) SetDefaultSlice(val []string) {
 }
 
 /*
-Remove a elemnt from a slice
+Remove a element from a slice
 */
 func (ent *Entry) SliceRemoveElement(val string) {
 	util.SliceRemoveElement(ent.value, val)

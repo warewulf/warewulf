@@ -87,7 +87,7 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			node.Tags[keyname] = key
 			delete(node.Keys, keyname)
 		}
-		n.setFrom(node)
+		n.SetFrom(node)
 		// set default/primary network is just one network exist
 		if len(n.NetDevs) == 1 {
 			// only way to get the key
@@ -130,7 +130,7 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			}
 			// can't call setFrom() as we have to use SetAlt instead of Set for an Entry
 			wwlog.Printf(wwlog.VERBOSE, "Merging profile into node: %s <- %s\n", nodename, profileName)
-			n.setAltFrom(config.NodeProfiles[profileName], profileName)
+			n.SetAltFrom(config.NodeProfiles[profileName], profileName)
 		}
 		ret = append(ret, n)
 	}
@@ -162,7 +162,7 @@ func (config *NodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 			profile.Tags[keyname] = key
 			delete(profile.Keys, keyname)
 		}
-		p.setFrom(profile)
+		p.SetFrom(profile)
 		p.Ipmi.Ipaddr.Set(profile.IpmiIpaddr)
 		p.Ipmi.Netmask.Set(profile.IpmiNetmask)
 		p.Ipmi.Port.Set(profile.IpmiPort)
