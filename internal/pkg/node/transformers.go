@@ -95,6 +95,10 @@ func (nodeConf *NodeConf) getterFrom(nodeInfo NodeInfo,
 				}
 
 			} else if nodeInfoVal.Field(i).Type() == reflect.TypeOf(map[string]*NetDevEntry{}) {
+				if confField.IsNil() {
+					netMapPtr := confField.Addr().Interface().(*map[string](*NetDevs))
+					*netMapPtr = make(map[string](*NetDevs))
+				}
 				nestedMap := nodeInfoVal.Field(i).Interface().(map[string]*NetDevEntry)
 				for netName, netVal := range nestedMap {
 					netValsType := reflect.ValueOf(netVal)
@@ -238,6 +242,46 @@ func (node *NodeInfo) setterFrom(n *NodeConf, nameArg string,
 							}
 						}
 					}
+				}
+			}
+		}
+	}
+}
+
+/*
+Flattens out a NodeConf, which means if there are no explicit values in *IpmiConf
+or *KernelConf, these pointer will set to nil. This will remove something like
+ipmi: {} from nodes.conf
+*/
+func (info *NodeConf) Flatten() {
+	confType := reflect.TypeOf(info)
+	confVal := reflect.ValueOf(info)
+	for j := 0; j < confType.Elem().NumField(); j++ {
+		if confVal.Elem().Field(j).Type().Kind() == reflect.Ptr && !confVal.Elem().Field(j).IsNil() {
+			// iterate now over the ptr fields
+			setToNil := true
+			nestedType := reflect.TypeOf(confVal.Elem().Field(j).Interface())
+			nestedVal := reflect.ValueOf(confVal.Elem().Field(j).Interface())
+			for i := 0; i < nestedType.Elem().NumField(); i++ {
+				if nestedType.Elem().Field(i).Type.Kind() == reflect.String &&
+					nestedVal.Elem().Field(i).Interface().(string) != "" {
+					setToNil = false
+				} else if nestedType.Elem().Field(i).Type == reflect.TypeOf([]string{}) &&
+					len(nestedVal.Elem().Field(i).Interface().([]string)) != 0 {
+					setToNil = false
+				} else if nestedType.Elem().Field(i).Type == reflect.TypeOf(map[string]string{}) &&
+					len(nestedVal.Elem().Field(i).Interface().(map[string]string)) != 0 {
+					setToNil = false
+				}
+			}
+			if setToNil {
+				switch confType.Elem().Field(j).Type {
+				case reflect.TypeOf((*IpmiConf)(nil)):
+					ptr := confVal.Elem().Field(j).Addr().Interface().(**IpmiConf)
+					*ptr = (*IpmiConf)(nil)
+				case reflect.TypeOf((*KernelConf)(nil)):
+					ptr := confVal.Elem().Field(j).Addr().Interface().(**KernelConf)
+					*ptr = (*KernelConf)(nil)
 				}
 			}
 		}

@@ -112,9 +112,17 @@ func (config *NodeYaml) ProfileUpdate(profile NodeInfo) error {
  * PERSISTENCE
  *
 ****/
-
+/*
+Write the the NodeYaml to disk.
+*/
 func (config *NodeYaml) Persist() error {
-
+	// flatten out profiles and nodes
+	for _, val := range config.NodeProfiles {
+		val.Flatten()
+	}
+	for _, val := range config.Nodes {
+		val.Flatten()
+	}
 	out, err := yaml.Marshal(config)
 	if err != nil {
 		return err
