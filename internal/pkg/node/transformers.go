@@ -2,6 +2,9 @@ package node
 
 import (
 	"reflect"
+
+	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/spf13/cobra"
 )
 
 /*
@@ -131,6 +134,74 @@ func (nodeConf *NodeConf) getterFrom(nodeInfo NodeInfo,
 		}
 		*/
 	}
+}
+func (nodeConf *NodeConf) CreateFlags(baseCmd *cobra.Command, excludeList []string) {
+	// nodeInfoType := reflect.TypeOf(nodeConf)
+	nodeInfoVal := reflect.ValueOf(nodeConf)
+	// now iterate of every field
+	for i := 0; i < nodeInfoVal.Elem().NumField(); i++ {
+		field := nodeInfoVal.Elem().Type().Field(i)
+		//fmt.Printf("%s: field.Kind() == %s\n", field.Name, field.Type.Kind())
+		// if field.Type.Kind() == reflect.Ptr {
+		// 	a := structVal.Field(i).Elem().Interface()
+		// 	subStruct := baseCmd.CreateFlags(a, excludeList)
+		// 	for key, val := range subStruct {
+		// 		optionsMap[field.Name+"."+key] = val
+		// 	}
+
+		// } else if field.Type.Kind() == reflect.Map {
+		// 	// check the type of map
+		// 	mapType := field.Type.Elem()
+		// 	if mapType.Kind() == reflect.Ptr {
+		// 		//a := reflect.ValueOf((mapType.Elem())) node.NetDevs
+		// 		subMap := baseCmd.CreateFlags(reflect.New(mapType.Elem()).Elem().Interface(), excludeList)
+		// 		for key, val := range subMap {
+		// 			optionsMap[field.Name+"."+key] = val
+		// 		}
+		// 		if mapType == reflect.TypeOf((*NetDevs)(nil)) {
+		// 			// set the option for the network name here
+		// 			var netName string
+		// 			optionsMap[field.Name] = &netName
+		// 			baseCmd.PersistentFlags().StringVarP(&netName,
+		// 				"netname", "n", "", "Define the network name to configure")
+		// 		}
+		// } else
+		// if mapType.Kind() == reflect.String {
+		// 	if field.Tag.Get("lopt") != "" {
+		// 		baseCmd.PersistentFlags().StringVarP(nodeInfoVal.Field(i).Interface()(string),
+		// 			field.Tag.Get("lopt")+"add", "", "", "Add key/value pair to "+field.Tag.Get("comment"))
+		// 		var delPair string
+		// 		optionsMap["del"+"."+field.Name] = &delPair
+		// 		baseCmd.PersistentFlags().StringVarP(&delPair,
+		// 			field.Tag.Get("lopt")+"del", "", "", "Delete key/value pair to "+field.Tag.Get("comment"))
+		// 	}
+		// } else {
+		// 	// TODO: implement handling of string maps
+		// 	wwlog.Warn("handling of %v not implemented\n", field.Type)
+		// }
+
+		// } else
+		if field.Type.Kind() == reflect.String &&
+			field.Tag.Get("comment") != "" &&
+			!util.InSlice(excludeList, field.Tag.Get("lopt")) {
+			ptr := nodeInfoVal.Elem().Field(i).Addr().Interface().(*string)
+			if field.Tag.Get("sopt") != "" {
+				baseCmd.PersistentFlags().StringVarP(ptr,
+					field.Tag.Get("lopt"),
+					field.Tag.Get("sopt"),
+					field.Tag.Get("default"),
+					field.Tag.Get("comment"))
+			} else if !util.InSlice(excludeList, field.Tag.Get("lopt")) {
+				baseCmd.PersistentFlags().StringVar(ptr,
+					field.Tag.Get("lopt"),
+					field.Tag.Get("default"),
+					field.Tag.Get("comment"))
+
+			}
+		}
+
+	}
+	// return optionsMap
 }
 
 /*

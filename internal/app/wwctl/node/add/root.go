@@ -19,16 +19,12 @@ var (
 		RunE:                  CobraRunE,
 		Args:                  cobra.MinimumNArgs(1),
 	}
-	OptionStrMap map[string]*string
+	nodeConf node.NodeConf
 )
 
 func init() {
-	// init empty helper structs, so that we know what's inside
-	myBase := node.CobraCommand{Command: baseCmd}
-	var emptyNodeConf node.NodeConf
-	emptyNodeConf.Kernel = new(node.KernelConf)
-	emptyNodeConf.Ipmi = new(node.IpmiConf)
-	OptionStrMap = myBase.CreateFlags(emptyNodeConf, []string{})
+	nodeConf := node.NewConf()
+	nodeConf.CreateFlags(baseCmd, []string{})
 	// register the command line completions
 	if err := baseCmd.RegisterFlagCompletionFunc("container", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		list, _ := container.ListSources()

@@ -2,32 +2,32 @@ package set
 
 import (
 	"fmt"
+	"os"
 
-	apinode "github.com/hpcng/warewulf/internal/pkg/api/node"
 	apiprofile "github.com/hpcng/warewulf/internal/pkg/api/profile"
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/hpcng/warewulf/internal/pkg/api/util"
-	"github.com/pkg/errors"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
-	OptionStrMap, netWithoutName := apinode.AddNetname(OptionStrMap)
-	if netWithoutName {
-		return errors.New("a netname must be given for any network related configuration")
+	// OptionStrMap, netWithoutName := apinode.AddNetname(OptionStrMap)
+	// if netWithoutName {
+	// 	return errors.New("a netname must be given for any network related configuration")
+	// }
+	buffer, err := yaml.Marshal(profileConf)
+	if err != nil {
+		wwlog.Error("Cant marshall nodeInfo", err)
+		os.Exit(1)
 	}
-	realMap := make(map[string]string)
-
-	for key, val := range OptionStrMap {
-		realMap[key] = *val
-	}
-
 	set := wwapiv1.NodeSetParameter{
-		OptionsStrMap: realMap,
-		NetdevDelete:  SetNetDevDel,
-		AllNodes:      SetNodeAll,
-		Force:         SetForce,
-		NodeNames:     args,
+		NodeConfYaml: string(buffer[:]),
+		NetdevDelete: SetNetDevDel,
+		AllNodes:     SetNodeAll,
+		Force:        SetForce,
+		NodeNames:    args,
 	}
 
 	if !SetYes {

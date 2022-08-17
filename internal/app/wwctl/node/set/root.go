@@ -36,17 +36,12 @@ var (
 	SetNodeAll   bool
 	SetYes       bool
 	SetForce     bool
-	OptionStrMap map[string]*string
+	nodeConf     node.NodeConf
 )
 
 func init() {
-	// init empty helper structs, so that we know what's inside
-	myBase := node.CobraCommand{Command: baseCmd}
-	var emptyNodeConf node.NodeConf
-	emptyNodeConf.Kernel = new(node.KernelConf)
-	emptyNodeConf.Ipmi = new(node.IpmiConf)
-	OptionStrMap = myBase.CreateFlags(emptyNodeConf, []string{})
-
+	nodeConf := node.NewConf()
+	nodeConf.CreateFlags(baseCmd, []string{})
 	baseCmd.PersistentFlags().StringVarP(&SetNetDevDel, "netdel", "D", "", "Delete the node's network device")
 	baseCmd.PersistentFlags().BoolVarP(&SetNodeAll, "all", "a", false, "Set all nodes")
 	baseCmd.PersistentFlags().BoolVarP(&SetYes, "yes", "y", false, "Set 'yes' to all questions asked")

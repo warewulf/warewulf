@@ -10,6 +10,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
 )
 
 // NodeSet is the wwapiv1 implmentation for updating nodeinfo fields.
@@ -34,7 +35,7 @@ func ProfileSet(set *wwapiv1.NodeSetParameter) (err error) {
 func ProfileSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB node.NodeYaml, profileCount uint, err error) {
 
 	if set == nil {
-		err = fmt.Errorf("Profile set parameter is nil")
+		err = fmt.Errorf("profile set parameter is nil")
 		if console {
 			fmt.Printf("%v\n", err)
 			return
@@ -42,7 +43,7 @@ func ProfileSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (node
 	}
 
 	if set.NodeNames == nil {
-		err = fmt.Errorf("Profile set parameter: ProfileNames is nil")
+		err = fmt.Errorf("profile set parameter: ProfileNames is nil")
 		if console {
 			fmt.Printf("%v\n", err)
 			return
@@ -75,16 +76,17 @@ func ProfileSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (node
 		}
 		return
 	}
+	var pConf node.NodeConf
+	err = yaml.Unmarshal([]byte(set.NodeConfYaml), &pConf)
+	if err != nil {
+		wwlog.Printf(wwlog.ERROR, fmt.Sprintf("%v\n", err.Error()))
+		return
+	}
 
 	for _, p := range profiles {
 		if util.InSlice(set.NodeNames, p.Id.Get()) {
 			wwlog.Printf(wwlog.VERBOSE, "Evaluating profile: %s\n", p.Id.Get())
-			for key, val := range set.OptionsStrMap {
-				if val != "" {
-					wwlog.Verbose("profile:%s setting %s to %s\n", p.Id.Get(), key, val)
-					p.SetField(key, val)
-				}
-			}
+			p.SetFrom(&pConf)
 
 			if set.NetdevDelete != "" {
 

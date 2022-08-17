@@ -23,17 +23,13 @@ var (
 	SetNodeAll   bool
 	SetYes       bool
 	SetForce     bool
-	OptionStrMap map[string]*string
+	profileConf  node.NodeConf
 )
 
 // GetRootCommand returns the root cobra.Command for the application.
 func GetCommand() *cobra.Command {
-	// init empty helper structs, so that we know what's inside
-	myBase := node.CobraCommand{Command: baseCmd}
-	var emptyNodeConf node.NodeConf
-	emptyNodeConf.Kernel = new(node.KernelConf)
-	emptyNodeConf.Ipmi = new(node.IpmiConf)
-	OptionStrMap = myBase.CreateFlags(emptyNodeConf,
+	profileConf = node.NewConf()
+	profileConf.CreateFlags(baseCmd,
 		[]string{"ipaddr", "ipaddr6", "ipmiaddr", "profile"})
 	// register the command line completions
 	if err := baseCmd.RegisterFlagCompletionFunc("container", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"sort"
 
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -14,6 +13,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/hpcng/warewulf/pkg/hostlist"
 	"github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
 
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 )
@@ -31,6 +31,11 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 	}
 
 	node_args := hostlist.Expand(nap.NodeNames)
+	var nodeConf node.NodeConf
+	err = yaml.Unmarshal([]byte(nap.NodeConfYaml), &nodeConf)
+	if err != nil {
+		return errors.Wrap(err, "Failed to decode nodeConf")
+	}
 
 	for _, a := range node_args {
 		var n node.NodeInfo
@@ -39,29 +44,24 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 			return errors.Wrap(err, "failed to add node")
 		}
 		wwlog.Printf(wwlog.INFO, "Added node: %s\n", a)
-		netName := nap.OptionsStrMap["NetDevs"]
-		if nap.OptionsStrMap["NetDevs."+netName+".Ipaddr"] != "" {
+		var netName string
+		for netName = range nodeConf.NetDevs {
+			// as map should only have key this should give is the first and
+			// only key
+		}
+		// setting node from the received yaml
+		n.SetFrom(&nodeConf)
+		if netName != "" && nodeConf.NetDevs[netName].Ipaddr != "" {
 			// if more nodes are added increment IPv4 address
-			nap.OptionsStrMap["NetDevs."+netName+".Ipaddr"] = util.IncrementIPv4(nap.OptionsStrMap["NetDevs."+netName+".Ipaddr"], 1)
+			nodeConf.NetDevs[netName].Ipaddr = util.IncrementIPv4(nodeConf.NetDevs[netName].Ipaddr, 1)
 
-			wwlog.Verbose("Node: %s:%s, Setting Ipaddr to: %s\n",
-				n.Id.Get(), nap.OptionsStrMap["NetDevs"], nap.OptionsStrMap["NetDevs."+netName+".Ipaddr"])
+			wwlog.Verbose("Incremented IP addr to %s\n", nodeConf.NetDevs[netName].Ipaddr)
 		}
-		if nap.OptionsStrMap["Ipmi.Ipaddr"] != "" {
+		if nodeConf.Ipmi != nil && nodeConf.Ipmi.Ipaddr != "" {
 			// if more nodes are added increment IPv4 address
-			nap.OptionsStrMap["Ipmi.Ipaddr"] = util.IncrementIPv4(nap.OptionsStrMap["Ipmi.Ipaddr"], 1)
-
-			wwlog.Verbose("Node: %s:, Setting IPMIIpaddr to: %s\n",
-				n.Id.Get(), nap.OptionsStrMap["Ipmi.Ipaddr"])
+			nodeConf.Ipmi.Ipaddr = util.IncrementIPv4(nodeConf.Ipmi.Ipaddr, 1)
+			wwlog.Verbose("Incremented IP addr to %s\n", nodeConf.Ipmi.Ipaddr)
 		}
-		// Now set all the rest
-		for key, val := range nap.OptionsStrMap {
-			if val != "" {
-				wwlog.Verbose("node:%s setting %s to %s\n", n.Id.Get(), key, val)
-				n.SetField(key, val)
-			}
-		}
-
 		err = nodeDB.NodeUpdate(n)
 		if err != nil {
 			return errors.Wrap(err, "failed to update nodedb")
@@ -162,33 +162,6 @@ func NodeDeleteParameterCheck(ndp *wwapiv1.NodeDeleteParameter, console bool) (n
 	return
 }
 
-// NodeList lists all to none of the nodes managed by Warewulf.
-func NodeList(nodeNames []string) (nodeInfo []*wwapiv1.NodeInfo, err error) {
-
-	// nil is okay for nodeNames
-
-	nodeDB, err := node.New()
-	if err != nil {
-		return
-	}
-
-	nodes, err := nodeDB.FindAllNodes()
-	if err != nil {
-		return
-	}
-
-	nodeNames = hostlist.Expand(nodeNames)
-	sort.Strings(nodeNames)
-	// Translate to the protobuf structure so wwapiv1 can use this across the wire.
-	// This is the same logic as was in wwctl.
-	for _, n := range node.FilterByName(nodes, nodeNames) {
-		var ni wwapiv1.NodeInfo
-		ni.Fields = GetFields(n)
-		nodeInfo = append(nodeInfo, &ni)
-	}
-	return
-}
-
 // NodeSet is the wwapiv1 implmentation for updating node fields.
 func NodeSet(set *wwapiv1.NodeSetParameter) (err error) {
 
@@ -211,7 +184,7 @@ func NodeSet(set *wwapiv1.NodeSetParameter) (err error) {
 func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB node.NodeYaml, nodeCount uint, err error) {
 
 	if set == nil {
-		err = fmt.Errorf("Node set parameter is nil")
+		err = fmt.Errorf("node set parameter is nil")
 		if console {
 			fmt.Printf("%v\n", err)
 			return
@@ -219,7 +192,7 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 	}
 
 	if set.NodeNames == nil {
-		err = fmt.Errorf("Node set parameter: NodeNames is nil")
+		err = fmt.Errorf("node set parameter: NodeNames is nil")
 		if console {
 			fmt.Printf("%v\n", err)
 			return
@@ -257,17 +230,17 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 
 	for _, n := range nodes {
 		wwlog.Printf(wwlog.VERBOSE, "Evaluating node: %s\n", n.Id.Get())
-		for key, val := range set.OptionsStrMap {
-			if val != "" {
-				wwlog.Verbose("node:%s setting %s to %s\n", n.Id.Get(), key, val)
-				n.SetField(key, val)
-			}
+		var nodeConf node.NodeConf
+		err = yaml.Unmarshal([]byte(set.NodeConfYaml), &nodeConf)
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, fmt.Sprintf("%v\n", err.Error()))
+			return
 		}
-
+		n.SetFrom(&nodeConf)
 		if set.NetdevDelete != "" {
 
 			if _, ok := n.NetDevs[set.NetdevDelete]; !ok {
-				err = fmt.Errorf("Network device name doesn't exist: %s", set.NetdevDelete)
+				err = fmt.Errorf("network device name doesn't exist: %s", set.NetdevDelete)
 				wwlog.Printf(wwlog.ERROR, fmt.Sprintf("%v\n", err.Error()))
 				return
 			}
@@ -313,7 +286,7 @@ func NodeStatus(nodeNames []string) (nodeStatusResponse *wwapiv1.NodeStatusRespo
 	}
 
 	if controller.Ipaddr == "" {
-		err = fmt.Errorf("The Warewulf Server IP Address is not properly configured")
+		err = fmt.Errorf("the Warewulf Server IP Address is not properly configured")
 		wwlog.Printf(wwlog.ERROR, fmt.Sprintf("%v\n", err.Error()))
 		return
 	}

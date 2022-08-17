@@ -331,11 +331,12 @@ func (s *apiServer) Version(ctx context.Context, request *emptypb.Empty) (respon
 func (s *apiServer) nodeListInternal(nodeNames []string) (response *wwapiv1.NodeListResponse, err error) {
 
 	var nodes []*wwapiv1.NodeInfo
-	nodes, err = apinode.NodeList(nodeNames)
-	if err != nil {
-		return
-	}
-
+	/*
+		nodes, err = apinode.NodeList(nodeNames)
+		if err != nil {
+			return
+		}
+	*/
 	response = &wwapiv1.NodeListResponse{
 		Nodes: nodes,
 	}

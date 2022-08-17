@@ -102,10 +102,27 @@ message NodeListResponse {
 	repeated NodeInfo nodes = 1;
 }
 
+// Request a node list
+message GetNodeList {
+	enum ListType {
+		Simple = 0; 
+		Ipmi = 1;
+		Network = 2;
+		Long = 3;
+		All = 4;
+	}
+	ListType type = 7;
+	repeated string Nodes = 8;
+}
+
+message NodeList {
+	repeated string Output = 1;
+}
+
 // NodeAddParameter contains all input for adding a node to be managed by
 // Warewulf.
 message NodeAddParameter {
-	map<string,string > optionsStrMap = 1;
+	string nodeConfYaml = 1;
 	repeated string nodeNames = 10;
 }
 
@@ -119,7 +136,7 @@ message NodeDeleteParameter {
 // NodeSetParameter contains all fields for updating aspects of nodes managed
 // by Warewulf.
 message NodeSetParameter {
-	map<string,string > optionsStrMap = 1;
+	string nodeConfYaml = 1;
 	string container = 2;
     string netdevDelete = 14;
 	bool allNodes = 27;
