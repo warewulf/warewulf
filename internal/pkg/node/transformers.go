@@ -136,72 +136,85 @@ func (nodeConf *NodeConf) getterFrom(nodeInfo NodeInfo,
 	}
 }
 func (nodeConf *NodeConf) CreateFlags(baseCmd *cobra.Command, excludeList []string) {
-	// nodeInfoType := reflect.TypeOf(nodeConf)
+	nodeInfoType := reflect.TypeOf(nodeConf)
 	nodeInfoVal := reflect.ValueOf(nodeConf)
 	// now iterate of every field
 	for i := 0; i < nodeInfoVal.Elem().NumField(); i++ {
-		field := nodeInfoVal.Elem().Type().Field(i)
-		//fmt.Printf("%s: field.Kind() == %s\n", field.Name, field.Type.Kind())
-		// if field.Type.Kind() == reflect.Ptr {
-		// 	a := structVal.Field(i).Elem().Interface()
-		// 	subStruct := baseCmd.CreateFlags(a, excludeList)
-		// 	for key, val := range subStruct {
-		// 		optionsMap[field.Name+"."+key] = val
-		// 	}
+		if nodeInfoType.Elem().Field(i).Tag.Get("comment") != "" &&
+			!util.InSlice(excludeList, nodeInfoType.Elem().Field(i).Tag.Get("lopt")) {
+			createFlags(baseCmd, excludeList, nodeInfoType.Elem().Field(i), nodeInfoVal.Elem().Field(i))
+		} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr {
+			nestType := reflect.TypeOf(nodeInfoVal.Elem().Field(i).Interface())
+			nestVal := reflect.ValueOf(nodeInfoVal.Elem().Field(i).Interface())
+			for j := 0; j < nestType.Elem().NumField(); j++ {
+				createFlags(baseCmd, excludeList, nestType.Elem().Field(j), nestVal.Elem().Field(j))
+			}
+		} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string]*NetDevs(nil)) {
+			netMap := nodeInfoVal.Elem().Field(i).Interface().(map[string]*NetDevs)
+			// add a default network so that it can hold values
+			netMap["default"] = new(NetDevs)
+			netType := reflect.TypeOf(netMap["default"])
+			netVal := reflect.ValueOf(netMap["default"])
+			for j := 0; j < netType.Elem().NumField(); j++ {
+				createFlags(baseCmd, excludeList, netType.Elem().Field(j), netVal.Elem().Field(j))
+			}
+		}
+	}
+}
 
-		// } else if field.Type.Kind() == reflect.Map {
-		// 	// check the type of map
-		// 	mapType := field.Type.Elem()
-		// 	if mapType.Kind() == reflect.Ptr {
-		// 		//a := reflect.ValueOf((mapType.Elem())) node.NetDevs
-		// 		subMap := baseCmd.CreateFlags(reflect.New(mapType.Elem()).Elem().Interface(), excludeList)
-		// 		for key, val := range subMap {
-		// 			optionsMap[field.Name+"."+key] = val
-		// 		}
-		// 		if mapType == reflect.TypeOf((*NetDevs)(nil)) {
-		// 			// set the option for the network name here
-		// 			var netName string
-		// 			optionsMap[field.Name] = &netName
-		// 			baseCmd.PersistentFlags().StringVarP(&netName,
-		// 				"netname", "n", "", "Define the network name to configure")
-		// 		}
-		// } else
-		// if mapType.Kind() == reflect.String {
-		// 	if field.Tag.Get("lopt") != "" {
-		// 		baseCmd.PersistentFlags().StringVarP(nodeInfoVal.Field(i).Interface()(string),
-		// 			field.Tag.Get("lopt")+"add", "", "", "Add key/value pair to "+field.Tag.Get("comment"))
-		// 		var delPair string
-		// 		optionsMap["del"+"."+field.Name] = &delPair
-		// 		baseCmd.PersistentFlags().StringVarP(&delPair,
-		// 			field.Tag.Get("lopt")+"del", "", "", "Delete key/value pair to "+field.Tag.Get("comment"))
-		// 	}
-		// } else {
-		// 	// TODO: implement handling of string maps
-		// 	wwlog.Warn("handling of %v not implemented\n", field.Type)
-		// }
-
-		// } else
-		if field.Type.Kind() == reflect.String &&
-			field.Tag.Get("comment") != "" &&
-			!util.InSlice(excludeList, field.Tag.Get("lopt")) {
-			ptr := nodeInfoVal.Elem().Field(i).Addr().Interface().(*string)
-			if field.Tag.Get("sopt") != "" {
+/*
+Helper function to create the different PerisitantFlags() for different types.
+*/
+func createFlags(baseCmd *cobra.Command, excludeList []string,
+	myType reflect.StructField, myVal reflect.Value) {
+	if myType.Tag.Get("lopt") != "" {
+		if myType.Type.Kind() == reflect.String {
+			ptr := myVal.Addr().Interface().(*string)
+			if myType.Tag.Get("sopt") != "" {
 				baseCmd.PersistentFlags().StringVarP(ptr,
-					field.Tag.Get("lopt"),
-					field.Tag.Get("sopt"),
-					field.Tag.Get("default"),
-					field.Tag.Get("comment"))
-			} else if !util.InSlice(excludeList, field.Tag.Get("lopt")) {
+					myType.Tag.Get("lopt"),
+					myType.Tag.Get("sopt"),
+					myType.Tag.Get("default"),
+					myType.Tag.Get("comment"))
+			} else if !util.InSlice(excludeList, myType.Tag.Get("lopt")) {
 				baseCmd.PersistentFlags().StringVar(ptr,
-					field.Tag.Get("lopt"),
-					field.Tag.Get("default"),
-					field.Tag.Get("comment"))
+					myType.Tag.Get("lopt"),
+					myType.Tag.Get("default"),
+					myType.Tag.Get("comment"))
+
+			}
+		} else if myType.Type == reflect.TypeOf([]string{}) {
+			ptr := myVal.Addr().Interface().(*[]string)
+			if myType.Tag.Get("sopt") != "" {
+				baseCmd.PersistentFlags().StringSliceVarP(ptr,
+					myType.Tag.Get("lopt"),
+					myType.Tag.Get("sopt"),
+					[]string{myType.Tag.Get("default")},
+					myType.Tag.Get("comment"))
+			} else if !util.InSlice(excludeList, myType.Tag.Get("lopt")) {
+				baseCmd.PersistentFlags().StringSliceVar(ptr,
+					myType.Tag.Get("lopt"),
+					[]string{myType.Tag.Get("default")},
+					myType.Tag.Get("comment"))
+
+			}
+		} else if myType.Type == reflect.TypeOf(map[string]string{}) {
+			ptr := myVal.Addr().Interface().(*map[string]string)
+			if myType.Tag.Get("sopt") != "" {
+				baseCmd.PersistentFlags().StringToStringVarP(ptr,
+					myType.Tag.Get("lopt"),
+					myType.Tag.Get("sopt"),
+					map[string]string{}, // empty default!
+					myType.Tag.Get("comment"))
+			} else if !util.InSlice(excludeList, myType.Tag.Get("lopt")) {
+				baseCmd.PersistentFlags().StringToStringVar(ptr,
+					myType.Tag.Get("lopt"),
+					map[string]string{}, // empty default!
+					myType.Tag.Get("comment"))
 
 			}
 		}
-
 	}
-	// return optionsMap
 }
 
 /*

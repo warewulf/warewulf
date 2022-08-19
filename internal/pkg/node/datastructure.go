@@ -48,8 +48,9 @@ type NodeConf struct {
 	Discoverable   string              `yaml:"discoverable,omitempty" lopt:"discoverable" comment:"Make discoverable in given network (yes/no)"`
 	Profiles       []string            `yaml:"profiles,omitempty" lopt:"profile" sopt:"P" comment:"Set the node's profile members (comma separated)"`
 	NetDevs        map[string]*NetDevs `yaml:"network devices,omitempty"`
-	Tags           map[string]string   `yaml:"tags,omitempty" lopt:"tag" comment:"base key"`
-	Keys           map[string]string   `yaml:"keys,omitempty"` // Reverse compatibility
+	Tags           map[string]string   `yaml:"tags,omitempty" lopt:"tagadd" comment:"base key"`
+	TagsDel        []string            `lopt:"tagdel" comment:"remove this tags"` // does not go to disk only to wire
+	Keys           map[string]string   `yaml:"keys,omitempty"`                    // Reverse compatibility
 }
 
 type IpmiConf struct {
@@ -61,7 +62,8 @@ type IpmiConf struct {
 	Gateway   string            `yaml:"gateway,omitempty" lopt:"ipmigateway" comment:"Set the IPMI gateway"`
 	Interface string            `yaml:"interface,omitempty" lopt:"ipmiinterface" comment:"Set the node's IPMI interface (defaults: 'lan')"`
 	Write     string            `yaml:"write,omitempty" lopt:"ipmiwrite" comment:"Enable the write of impi configuration (yes/no)"`
-	Tags      map[string]string `yaml:"tags,omitempty" lopt:"ipmitag" comment:"ipmi keys"`
+	Tags      map[string]string `yaml:"tags,omitempty" lopt:"ipmitagadd" comment:"add ipmitags"`
+	TagsDel   []string          `lopt:"ipmitagdel" comment:"remove ipmitags"` // does not go to disk only to wire
 }
 type KernelConf struct {
 	Version  string `yaml:"version,omitempty"`
@@ -82,7 +84,8 @@ type NetDevs struct {
 	Gateway string            `yaml:"gateway,omitempty" lopt:"gateway" sopt:"G" comment:"Set the node's network device gateway"`
 	Primary string            `yaml:"primary,omitempty" lopt:"primary" comment:"Enable/disable network device as primary (yes/no)"`
 	Default string            `yaml:"default,omitempty"` /* backward compatibility */
-	Tags    map[string]string `yaml:"tags,omitempty" lopt:"nettag" comment:"network keys"`
+	Tags    map[string]string `yaml:"tags,omitempty" lopt:"nettagadd" comment:"network tags"`
+	TagsDel []string          `lopt:"nettagdel" comment:"delete network tags"` // does not go to disk only to wire
 }
 
 /******
