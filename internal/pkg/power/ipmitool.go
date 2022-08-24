@@ -3,6 +3,7 @@ package power
 import (
 	"os"
 	"os/exec"
+	"strings"
 )
 
 type IPMIResult struct {
@@ -66,7 +67,7 @@ func (ipmi *IPMI) IPMIInteractiveCommand(args ...string) error {
 
 func (ipmi *IPMI) IPMICommand(args ...string) (string, error) {
 	ipmiOut, err := ipmi.Command(args)
-	ipmi.result.out = string(ipmiOut)
+	ipmi.result.out = strings.TrimSpace(string(ipmiOut))
 	ipmi.result.err = err
 	return ipmi.result.out, ipmi.result.err
 
