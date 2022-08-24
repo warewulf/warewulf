@@ -35,8 +35,8 @@ type WarewulfConf struct {
 type DhcpConf struct {
 	Enabled     bool   `yaml:"enabled" default:"true"`
 	Template    string `yaml:"template" default:"default"`
-	RangeStart  string `yaml:"range start" default:"192.168.200.50"`
-	RangeEnd    string `yaml:"range end" default:"192.168.200.99"`
+	RangeStart  string `yaml:"range start,omitempty"`
+	RangeEnd    string `yaml:"range end,omitempty"`
 	SystemdName string `yaml:"systemd name" default:"dhcpd"`
 }
 
@@ -48,12 +48,12 @@ type TftpConf struct {
 
 type NfsConf struct {
 	Enabled         bool             `yaml:"enabled" default:"true"`
-	ExportsExtended []*NfsExportConf `yaml:"export paths" default:"[{\"Path\": \"home\"}]"`
+	ExportsExtended []*NfsExportConf `yaml:"export paths" default:"[]"`
 	SystemdName     string           `yaml:"systemd name" default:"nfsd"`
 }
 
 type NfsExportConf struct {
-	Path          string `yaml:"path" default:"/home"`
+	Path          string `yaml:"path" default:"/dev/null"`
 	ExportOptions string `default:"rw,sync,no_subtree_check" yaml:"export options"`
 	MountOptions  string `default:"defaults" yaml:"mount options"`
 	Mount         bool   `default:"true" yaml:"mount"`
