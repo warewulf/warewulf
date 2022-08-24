@@ -246,6 +246,7 @@ dist: vendor config
 	rm -rf .dist/$(WAREWULF)-$(VERSION)
 	mkdir -p .dist/$(WAREWULF)-$(VERSION)
 	cp -rap * .dist/$(WAREWULF)-$(VERSION)/
+	find .dist/$(WAREWULF)-$(VERSION)/ -type f -name '*~' -delete
 	cd .dist; tar -czf ../$(WAREWULF)-$(VERSION).tar.gz $(WAREWULF)-$(VERSION)
 	rm -rf .dist
 
