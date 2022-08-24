@@ -164,6 +164,7 @@ files: all
 	install -d -m 0755 $(DESTDIR)$(WWCONFIGDIR)/ipxe
 	install -d -m 0755 $(DESTDIR)$(BASHCOMPDIR)
 	install -d -m 0755 $(DESTDIR)$(MANDIR)/man1
+	install -d -m 0755 $(DESTDIR)$(MANDIR)/man5
 	install -d -m 0755 $(DESTDIR)$(WWDOCDIR)
 	install -d -m 0755 $(DESTDIR)$(FIREWALLDDIR)
 	install -d -m 0755 $(DESTDIR)$(SYSTEMDDIR)
@@ -190,7 +191,8 @@ files: all
 	install -m 0644 include/systemd/warewulfd.service $(DESTDIR)$(SYSTEMDDIR)
 	install -m 0644 LICENSE.md $(DESTDIR)$(WWDOCDIR)
 	cp bash_completion.d/warewulf $(DESTDIR)$(BASHCOMPDIR)
-	cp man_pages/* $(DESTDIR)$(MANDIR)/man1/
+	cp man_pages/*.1* $(DESTDIR)$(MANDIR)/man1/
+	cp man_pages/*.5* $(DESTDIR)$(MANDIR)/man5/
 	install -m 0644 staticfiles/arm64.efi $(DESTDIR)$(WWDATADIR)/ipxe
 	install -m 0644 staticfiles/x86_64.efi $(DESTDIR)$(WWDATADIR)/ipxe
 	install -m 0644 staticfiles/x86_64.kpxe $(DESTDIR)$(WWDATADIR)/ipxe
@@ -227,7 +229,8 @@ man_page:
 man_pages: man_page
 	install -d man_pages
 	./man_page ./man_pages
-	cd man_pages; for i in wwctl*1; do echo "Compressing manpage: $$i"; gzip --force $$i; done
+	cp docs/man/man5/*.5 ./man_pages/
+	cd man_pages; for i in wwctl*1 *.5; do echo "Compressing manpage: $$i"; gzip --force $$i; done
 
 config_defaults: vendor cmd/config_defaults/config_defaults.go
 	cd cmd/config_defaults && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'\
