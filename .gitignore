@@ -32,4 +32,4 @@ Defaults.mk
 /etc/wwapid.config
 /etc/wwapic.config
 /etc/wwapird.config
-
+.dist/
