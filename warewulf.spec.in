@@ -123,6 +123,7 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %attr(-, root, root) %{_prefix}/lib/firewalld/services/warewulf.xml
 %attr(-, root, root) %{_unitdir}/warewulfd.service
 %attr(-, root, root) %{_mandir}/man1/wwctl*
+%attr(-, root, root) %{_mandir}/man5/*.5*
 %attr(-, root, root) %{_datadir}/warewulf
 
 %dir %{_docdir}/warewulf

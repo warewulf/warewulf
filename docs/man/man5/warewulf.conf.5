@@ -1,0 +1,321 @@
+.TH "WAREWULF.CONF" "5"
+
+.SH NAME
+
+warewulf.conf \- warewulf server configuration file
+
+.SH DESCRIPTION
+.LP
+\fBwarewulf.conf\fP is the main configuration file for the warewulf
+server daemon and defines the configuration for its service
+dependencies, including dhcp, tftp, and nfs.
+.LP
+warewulf.conf is defined using YAML document markup syntax.
+
+.SH PARAMETERS
+.LP
+The configuration parameters available include:
+
+.TP
+\fBWW_INTERNAL\fP
+Specifies the version of the configuration file format. The current
+version is 43.
+.IP
+
+.TP
+\fBipaddr\fP
+This is the control node's networking interface connecting to the
+cluster's private network. This configuration must match the host's
+network IP address for the cluster's private interface.
+.IP
+
+.TP
+\fBipaddr6\fP
+This is the control node's networking interface connecting to the
+cluster's IPv6 private network. This configuration must match the
+host's network IP address for the cluster's private interface.
+.IP
+
+.TP
+\fBnetwork\fP
+The subnet address for the cluster's private network, used in
+conjunction with the netmask parameter.
+.IP
+
+.TP
+\fBnetmask\fP
+Similar to the ipaddr, this is the subnet mask for the cluster's
+private network and it must also match the host's subnet mask for the
+cluster's private interface.
+.IP
+
+.SS WAREWULF
+.LP
+The \fBwarewulf\fP parameter is a map of individual sub-parameters
+which configure warewulf specifically. (See the \fBEXAMPLE\fP section
+for overall structure.)
+
+.TP
+\fBport\fP
+
+This is the port that the Warewulf web server will be listening on. It
+is recommended not to change this so there is no misalignment with
+node's expectations of how to contact the Warewulf service.
+
+Default: 9983
+.IP
+
+.TP
+\fBsecure\fP
+
+When true, this limits the Warewulf server to only respond to runtime
+overlay requests originating from a privileged report port. This makes
+it so that only the root user on a compute node can request the
+runtime overlay. While generally there is nothing super "secure" in
+these overlays, this adds the necessary protection that the users can
+not obtain this information.
+
+When true, wwclient uses TCP port 987.
+
+Default: true
+.IP
+
+.TP
+\fBupdate interval\fP
+
+The frequency (in seconds) with which wwclient will fetch its
+configuration (e.g., its overlays) from the Warewulf server.
+
+Default: 60
+.IP
+
+.TP
+\fBautobuild overlays\fP
+
+When true, overlays will be automatically rebuilt when indicated by
+changes to nodes, profiles, and overlays.
+
+Default: true
+.IP
+
+.TP
+\fBhost overlay\fP
+
+Host overlays are used to configure dependent services on the Warewulf
+server. When disabled, these services' configuration files will not be
+updated by \fBwwctl-configure(1)\fP.
+
+Default: true
+.IP
+
+.TP
+\fBsyslog\fP
+
+When true, warewulf server logs are written to syslog, rather than a
+local file.
+
+When false, warewulf server logs are written to
+`/var/log/warewulfd.log'.
+
+Default: false
+.IP
+
+.TP
+\fBdatastore\fP
+
+The location where Warewulf caches and stores OCI data.
+
+Default: /var/lib/warewulf
+.IP
+
+.SS DHCP
+.LP
+The \fBdhcp\fP parameter is a map of individual sub-parameters which
+inform how \fBwwctl-configure(1)\fP should configure the DHCP
+service. (See the \fBEXAMPLE\fP section for overall structure.)
+
+.TP
+\fBenabled\fP
+
+When false, the DHCP service will not be configured by
+\fBwwctl-configure(1)\fP.
+
+Default: true
+.IP
+
+.TP
+\fBrange start\fP
+
+An IP address which defines the start of a dynamic address range which
+can be used when configuring the DHCP service. Provided to the host
+overlay as the variable \fB$.Dhcp.RangeStart\fP, typically for use in
+generating dhcpd.conf or similar.
+
+Templates typically expect this range to be within the \fBnetwork\fP
+defined above.
+.IP
+
+.TP
+\fBrange end\fP
+
+An IP address which defines the end of a dynamic address range which
+can be used when configuring the DHCP service. Provided to the host
+overlay as the variable \fB$.Dhcp.RangeEnd\fP, typically for use in
+generating dhcpd.conf or similar.
+
+Templates typically expect this range to be within the \fBnetwork\fP
+defined above.
+.IP
+
+.TP
+\fBsystemd name\fP
+
+The systemd unit name which will be used to (re)start the DHCP service
+during \fBwwctl-configure(1)\fP, if necessary.
+
+Default: dhcpd
+.IP
+
+.SS TFTP
+.LP
+The \fBtftp\fP parameter is a map of individual sub-parameters which
+inform how \fBwwctl-configure(1)\fP should configure the TFTP
+service. (See the \fBEXAMPLE\fP section for overall structure.)
+
+.TP
+\fBenabled\fP
+
+When false, the TFTP service will not be configured by
+\fBwwctl-configure(1)\fP.
+
+Default: true
+.IP
+
+.TP
+\fBsystemd name\fP
+
+The systemd unit name which will be used to (re)start the TFTP service
+during \fBwwctl-configure(1)\fP, if necessary.
+
+Default: tftp
+.IP
+
+.SS NFS
+.LP
+The nfs parameter is a map of individual sub-parameters which inform
+how \fBwwctl-configure(1)\fP should configure the NFS service. (See
+the \fBEXAMPLE\fP section for overall structure.)
+
+.TP
+\fBenabled\fP
+
+When false, the NFS service will not be configured by
+\fBwwctl-configure(1)\fP.
+
+Default: true
+.IP
+
+.TP
+\fBexport paths\fP
+
+A list of paths to be exported by the NFS service and, optionally, to
+be automatically mounted on compute nodes. Each item in the list is,
+itself, a map of parameters for the mount. (See the \fBEXAMPLE\fP
+section for overall structure.)
+
+.RS
+.TP
+\fBpath\fP
+
+The path on the server to be exported via the NFS service. Provided to
+the host overlay as the variable \fB.Nfs.ExportsExtended[].Path\fP,
+typically for use in generating /etc/exports or similar.
+.IP
+
+.TP
+\fBexport options\fP
+
+The NFS export options to use when exporting the given \fBpath\fP via
+the NFS service. Provided to the host overlay as the variable
+\fB.Nfs.ExportsExtended[].ExportOptions\fP, typically for use in
+generating /etc/exports or similar.
+
+Default: rw,sync,no_subtree_check
+.IP
+
+.TP
+\fBmount options\fP
+
+The NFS mount options to use when mounting the given \fBpath\fP on
+compute nodes via the NFS service. Provided to the compute node's
+overlays as the variable \fB.Nfs.ExportsExtended[].MountOptions\fP,
+typically for use in generating /etc/fstab or similar.
+
+Default: defaults
+.IP
+
+.TP
+\fBmount\fP
+
+If true, mount the NFS share automatically on compute nodes. Provided
+to the compute node's overlays as the variable
+\fB.Nfs.ExportsExtended[].Mount\fP, typically for use in generating
+/etc/fstab or similar.
+
+Default: true
+.IP
+.RE
+.IP
+
+.TP
+\fBsystemd name\fP
+
+The systemd unit name which will be used to (re)start the NFS service
+during \fBwwctl-configure(1)\fP, if necessary.
+
+Default: nfsd
+.IP
+
+.SH EXAMPLE
+.LP
+A sample configuration file for a typical deployment, with all
+dependent services enabled.
+
+.EX
+WW_INTERNAL: 43
+ipaddr: 10.0.0.1
+network: 10.0.0.0
+netmask: 255.255.0.0
+warewulf:
+  port: 9873
+  secure: false
+  update interval: 60
+  autobuild overlays: true
+  host overlay: true
+  syslog: false
+  datastore: ""
+dhcp:
+  enabled: true
+  range start: 10.0.0.10
+  range end: 10.0.0.99
+  systemd name: dhcpd
+tftp:
+  enabled: true
+  systemd name: tftp
+nfs:
+  enabled: true
+  export paths:
+  - path: /home
+    export options: rw,sync
+    mount options: defaults
+    mount: true
+  - path: /opt
+    export options: ro,sync,no_root_squash
+    mount options: defaults
+    mount: true
+  systemd name: nfs-server
+.EE
+
+.SH SEE ALSO
+
+\fBwwctl\-server(1)\fP, \fBwwctl-configure(1)\fP, \fBnodes.conf(5)\fP
