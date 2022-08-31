@@ -142,12 +142,14 @@ func (nodeConf *NodeConf) CreateFlags(baseCmd *cobra.Command, excludeList []stri
 	for i := 0; i < nodeInfoVal.Elem().NumField(); i++ {
 		if nodeInfoType.Elem().Field(i).Tag.Get("comment") != "" &&
 			!util.InSlice(excludeList, nodeInfoType.Elem().Field(i).Tag.Get("lopt")) {
-			createFlags(baseCmd, excludeList, nodeInfoType.Elem().Field(i), nodeInfoVal.Elem().Field(i))
+			field := nodeInfoVal.Elem().Field(i)
+			createFlags(baseCmd, excludeList, nodeInfoType.Elem().Field(i), &field)
 		} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr {
 			nestType := reflect.TypeOf(nodeInfoVal.Elem().Field(i).Interface())
 			nestVal := reflect.ValueOf(nodeInfoVal.Elem().Field(i).Interface())
 			for j := 0; j < nestType.Elem().NumField(); j++ {
-				createFlags(baseCmd, excludeList, nestType.Elem().Field(j), nestVal.Elem().Field(j))
+				field := nestVal.Elem().Field(j)
+				createFlags(baseCmd, excludeList, nestType.Elem().Field(j), &field)
 			}
 		} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string]*NetDevs(nil)) {
 			netMap := nodeInfoVal.Elem().Field(i).Interface().(map[string]*NetDevs)
@@ -156,7 +158,8 @@ func (nodeConf *NodeConf) CreateFlags(baseCmd *cobra.Command, excludeList []stri
 			netType := reflect.TypeOf(netMap["default"])
 			netVal := reflect.ValueOf(netMap["default"])
 			for j := 0; j < netType.Elem().NumField(); j++ {
-				createFlags(baseCmd, excludeList, netType.Elem().Field(j), netVal.Elem().Field(j))
+				field := netVal.Elem().Field(j)
+				createFlags(baseCmd, excludeList, netType.Elem().Field(j), &field)
 			}
 		}
 	}
@@ -166,7 +169,7 @@ func (nodeConf *NodeConf) CreateFlags(baseCmd *cobra.Command, excludeList []stri
 Helper function to create the different PerisitantFlags() for different types.
 */
 func createFlags(baseCmd *cobra.Command, excludeList []string,
-	myType reflect.StructField, myVal reflect.Value) {
+	myType reflect.StructField, myVal *reflect.Value) {
 	if myType.Tag.Get("lopt") != "" {
 		if myType.Type.Kind() == reflect.String {
 			ptr := myVal.Addr().Interface().(*string)

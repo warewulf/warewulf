@@ -19,12 +19,15 @@ var (
 		RunE:                  CobraRunE,
 		Args:                  cobra.MinimumNArgs(1),
 	}
-	nodeConf node.NodeConf
+	NodeConf node.NodeConf
+	NetName  string
 )
 
 func init() {
-	nodeConf := node.NewConf()
-	nodeConf.CreateFlags(baseCmd, []string{})
+	NodeConf = node.NewConf()
+	NodeConf.CreateFlags(baseCmd, []string{})
+	baseCmd.PersistentFlags().StringVar(&NetName, "netname", "", "Set network name for network options")
+
 	// register the command line completions
 	if err := baseCmd.RegisterFlagCompletionFunc("container", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		list, _ := container.ListSources()

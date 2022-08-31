@@ -81,6 +81,8 @@ func (ent *Entry) SetB(val bool) {
 func (ent *Entry) SetSlice(val []string) {
 	if len(val) == 0 {
 		return
+	} else if len(val) == 1 && val[0] == "" { // check also for an "empty" slice
+		return
 	}
 	if val[0] == "UNDEF" || val[0] == "DELETE" || val[0] == "UNSET" || val[0] == "--" {
 		ent.value = []string{}

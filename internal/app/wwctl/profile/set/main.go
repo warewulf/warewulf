@@ -13,11 +13,16 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
-	// OptionStrMap, netWithoutName := apinode.AddNetname(OptionStrMap)
-	// if netWithoutName {
-	// 	return errors.New("a netname must be given for any network related configuration")
-	// }
-	buffer, err := yaml.Marshal(profileConf)
+
+	// remove the default network as the all network values are assigned
+	// to this network
+	if NetName != "" {
+		netDev := *ProfileConf.NetDevs["default"]
+		ProfileConf.NetDevs[NetName] = &netDev
+		delete(ProfileConf.NetDevs, "default")
+
+	}
+	buffer, err := yaml.Marshal(ProfileConf)
 	if err != nil {
 		wwlog.Error("Cant marshall nodeInfo", err)
 		os.Exit(1)
