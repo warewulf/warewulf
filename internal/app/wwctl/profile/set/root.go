@@ -44,7 +44,7 @@ func init() {
 	ProfileConf = node.NewConf()
 	ProfileConf.CreateFlags(baseCmd,
 		[]string{"ipaddr", "ipaddr6", "ipmiaddr", "profile"})
-	baseCmd.PersistentFlags().StringVar(&NetName, "netname", "", "Set network name for network options")
+	baseCmd.PersistentFlags().StringVar(&NetName, "netname", "default", "Set network name for network options")
 	baseCmd.PersistentFlags().StringVarP(&SetNetDevDel, "netdel", "D", "", "Delete the node's network device")
 	baseCmd.PersistentFlags().BoolVarP(&SetNodeAll, "all", "a", false, "Set all nodes")
 	baseCmd.PersistentFlags().BoolVarP(&SetYes, "yes", "y", false, "Set 'yes' to all questions asked")

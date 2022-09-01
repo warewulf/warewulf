@@ -33,7 +33,6 @@ func ProfileSet(set *wwapiv1.NodeSetParameter) (err error) {
 // TODO: Determine if the console switch does wwlog or not.
 // - console may end up being textOutput?
 func ProfileSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB node.NodeYaml, profileCount uint, err error) {
-
 	if set == nil {
 		err = fmt.Errorf("profile set parameter is nil")
 		if console {
@@ -87,19 +86,28 @@ func ProfileSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (node
 		if util.InSlice(set.NodeNames, p.Id.Get()) {
 			wwlog.Printf(wwlog.VERBOSE, "Evaluating profile: %s\n", p.Id.Get())
 			p.SetFrom(&pConf)
-
 			if set.NetdevDelete != "" {
-
 				if _, ok := p.NetDevs[set.NetdevDelete]; !ok {
-					err = fmt.Errorf("Network device name doesn't exist: %s", set.NetdevDelete)
+					err = fmt.Errorf("network device name doesn't exist: %s", set.NetdevDelete)
 					wwlog.Error(fmt.Sprintf("%v\n", err.Error()))
 					return
 				}
-
 				wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Deleting network device: %s\n", p.Id.Get(), set.NetdevDelete)
 				delete(p.NetDevs, set.NetdevDelete)
 			}
-
+			for _, key := range pConf.TagsDel {
+				delete(p.Tags, key)
+			}
+			for _, key := range pConf.Ipmi.TagsDel {
+				delete(p.Ipmi.Tags, key)
+			}
+			for net := range pConf.NetDevs {
+				for _, key := range pConf.NetDevs[net].TagsDel {
+					if _, ok := p.NetDevs[net]; ok {
+						delete(p.NetDevs[net].Tags, key)
+					}
+				}
+			}
 			err := nodeDB.ProfileUpdate(p)
 			if err != nil {
 				wwlog.Error("%s\n", err)

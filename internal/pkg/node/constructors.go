@@ -157,11 +157,16 @@ func (config *NodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 
 	for name, profile := range config.NodeProfiles {
 		var p NodeInfo
+		p.NetDevs = make(map[string]*NetDevEntry)
+		p.Tags = make(map[string]*Entry)
+		p.Kernel = new(KernelEntry)
+		p.Ipmi = new(IpmiEntry)
 		p.Id.Set(name)
 		for keyname, key := range profile.Keys {
 			profile.Tags[keyname] = key
 			delete(profile.Keys, keyname)
 		}
+
 		p.SetFrom(profile)
 		p.Ipmi.Ipaddr.Set(profile.IpmiIpaddr)
 		p.Ipmi.Netmask.Set(profile.IpmiNetmask)
@@ -185,6 +190,11 @@ func (config *NodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		profile.KernelArgs = ""
 		profile.KernelOverride = ""
 		profile.KernelVersion = ""
+		// Merge Keys into Tags for backwards compatibility
+		if len(profile.Tags) == 0 {
+			profile.Tags = make(map[string]string)
+		}
+
 		ret = append(ret, p)
 	}
 	sort.Slice(ret, func(i, j int) bool {

@@ -70,7 +70,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	} else {
 		fmt.Printf("%-20s %s\n", "PROFILE NAME", "COMMENT/DESCRIPTION")
-		fmt.Println(strings.Repeat("=", 80))
+		fmt.Printf(strings.Repeat("=", 80) + "\n")
 
 		for _, profile := range node.FilterByName(profiles, args) {
 			fmt.Printf("%-20s %s\n", profile.Id.Print(), profile.Comment.Print())

@@ -131,11 +131,11 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 								}
 							} else if netInfoType.Field(j).Type == reflect.TypeOf(map[string]*node.Entry{}) {
 								for key, val := range netInfoVal.Field(j).Interface().(map[string]*node.Entry) {
-									fieldName = fieldName + ":" + key
+									keyfieldName := fieldName + ":" + key
 									fieldSource = val.Source()
 									fieldVal = val.Print()
 									nodeList.Output = append(nodeList.Output,
-										fmt.Sprintf("%-20s %-18s %-12s %s", n.Id.Print(), fieldName, fieldSource, fieldVal))
+										fmt.Sprintf("%-20s %-18s %-12s %s", n.Id.Print(), keyfieldName, fieldSource, fieldVal))
 								}
 							}
 

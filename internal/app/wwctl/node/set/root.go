@@ -44,7 +44,7 @@ func init() {
 	NodeConf = node.NewConf()
 	NodeConf.CreateFlags(baseCmd, []string{})
 	baseCmd.PersistentFlags().StringVarP(&SetNetDevDel, "netdel", "D", "", "Delete the node's network device")
-	baseCmd.PersistentFlags().StringVar(&NetName, "netname", "", "Set network name for network options")
+	baseCmd.PersistentFlags().StringVar(&NetName, "netname", "default", "Set network name for network options")
 	baseCmd.PersistentFlags().BoolVarP(&SetNodeAll, "all", "a", false, "Set all nodes")
 	baseCmd.PersistentFlags().BoolVarP(&SetYes, "yes", "y", false, "Set 'yes' to all questions asked")
 	baseCmd.PersistentFlags().BoolVarP(&SetForce, "force", "f", false, "Force configuration (even on error)")

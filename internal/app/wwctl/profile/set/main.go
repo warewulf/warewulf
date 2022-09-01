@@ -16,11 +16,9 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 
 	// remove the default network as the all network values are assigned
 	// to this network
-	if NetName != "" {
-		netDev := *ProfileConf.NetDevs["default"]
-		ProfileConf.NetDevs[NetName] = &netDev
+	if NetName != "default" {
+		ProfileConf.NetDevs[NetName] = ProfileConf.NetDevs["default"]
 		delete(ProfileConf.NetDevs, "default")
-
 	}
 	buffer, err := yaml.Marshal(ProfileConf)
 	if err != nil {

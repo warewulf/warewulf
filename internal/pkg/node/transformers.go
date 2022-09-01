@@ -52,8 +52,23 @@ func (nodeConf *NodeConf) getterFrom(nodeInfo NodeInfo,
 				}
 			} else if nodeInfoVal.Field(i).Type() == reflect.TypeOf(map[string]*Entry{}) {
 				entryMap := nodeInfoVal.Field(i).Interface().(map[string]*Entry)
+				confMap := confField.Interface().(map[string]string)
+
+				if len(confMap) > len(entryMap) {
+					for confKey := range confMap {
+						foundKey := false
+						for entrKey := range entryMap {
+							if confKey == entrKey {
+								foundKey = true
+							}
+						}
+						if !foundKey {
+							delete(confMap, confKey)
+						}
+					}
+				}
 				for key, val := range entryMap {
-					confField.Interface().(map[string]string)[key] = getter(val)
+					confMap[key] = getter(val)
 				}
 			} else if nodeInfoVal.Field(i).Type().Kind() == reflect.Ptr {
 				if confField.Addr().Elem().IsZero() {
@@ -90,11 +105,24 @@ func (nodeConf *NodeConf) getterFrom(nodeInfo NodeInfo,
 							*mapPtr = make(map[string]string)
 						}
 						entryMap := nestedInfoVal.Elem().Field(j).Interface().(map[string]*Entry)
+						confMap := nestedVal.Interface().(map[string]string)
+						if len(confMap) > len(entryMap) {
+							for confKey := range confMap {
+								foundKey := false
+								for entrKey := range entryMap {
+									if confKey == entrKey {
+										foundKey = true
+									}
+								}
+								if !foundKey {
+									delete(confMap, confKey)
+								}
+							}
+						}
 						for key, val := range entryMap {
-							nestedVal.Interface().(map[string]string)[key] = getter(val)
+							confMap[key] = getter(val)
 						}
 					}
-					//}
 				}
 
 			} else if nodeInfoVal.Field(i).Type() == reflect.TypeOf(map[string]*NetDevEntry{}) {
@@ -103,36 +131,59 @@ func (nodeConf *NodeConf) getterFrom(nodeInfo NodeInfo,
 					*netMapPtr = make(map[string](*NetDevs))
 				}
 				nestedMap := nodeInfoVal.Field(i).Interface().(map[string]*NetDevEntry)
+				netMap := confField.Interface().(map[string](*NetDevs))
+				// check if a network was deleted
+				if len(netMap) > len(nestedMap) {
+					for netMapKey := range netMap {
+						foundKey := false
+						for nestedMapKey := range nestedMap {
+							if netMapKey == nestedMapKey {
+								foundKey = true
+							}
+						}
+						if !foundKey {
+							delete(netMap, netMapKey)
+						}
+					}
+				}
 				for netName, netVal := range nestedMap {
 					netValsType := reflect.ValueOf(netVal)
-					netMap := confField.Interface().(map[string](*NetDevs))
-					var newNet NetDevs
-					newNet.Tags = make(map[string]string)
-					netMap[netName] = &newNet
-					netConfType := reflect.TypeOf(newNet)
-					netConfVal := reflect.ValueOf(&newNet)
+					if _, ok := netMap[netName]; !ok {
+						netMap[netName] = new(NetDevs)
+					}
+					netConfType := reflect.TypeOf(*netMap[netName])
+					netConfVal := reflect.ValueOf(netMap[netName])
 					for j := 0; j < netConfType.NumField(); j++ {
 						netVal := netValsType.Elem().FieldByName(netConfType.Field(j).Name)
 						if netVal.IsValid() {
 							if netVal.Type() == reflect.TypeOf(Entry{}) {
 								newVal := netConfVal.Elem().Field(j).Addr().Interface().((*string))
 								*newVal = getter((netVal.Addr().Interface()).(*Entry))
-							} else if netVal.Type() == reflect.TypeOf(map[string]string{}) {
-								for key, val := range (netVal.Interface()).(map[string]*string) {
-									*val = getter(netConfVal.Elem().Field(j).Interface().((map[string](*Entry)))[key])
+							} else if netVal.Type() == reflect.TypeOf(map[string]*Entry{}) {
+								entryMap := netVal.Interface().(map[string](*Entry))
+								confMap := netConfVal.Elem().Field(j).Interface().(map[string]string)
+								if len(confMap) > len(entryMap) {
+									for confMapKey := range confMap {
+										foundKey := false
+										for entryMapKey := range entryMap {
+											if confMapKey == entryMapKey {
+												foundKey = true
+											}
+										}
+										if !foundKey {
+											delete(netConfVal.Elem().Field(j).Interface().(map[string]string), confMapKey)
+										}
+									}
+								}
+								for key, val := range entryMap {
+									netConfVal.Elem().Field(j).Interface().(map[string]string)[key] = getter(val)
 								}
 							}
 						}
-
 					}
 				}
 			}
 		}
-		/* else {
-			// NodeInfo has the Id field, nodeConf not
-			fmt.Println("INVALID", nodeInfoType.Field(i).Name)
-		}
-		*/
 	}
 }
 func (nodeConf *NodeConf) CreateFlags(baseCmd *cobra.Command, excludeList []string) {
@@ -154,9 +205,17 @@ func (nodeConf *NodeConf) CreateFlags(baseCmd *cobra.Command, excludeList []stri
 		} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string]*NetDevs(nil)) {
 			netMap := nodeInfoVal.Elem().Field(i).Interface().(map[string]*NetDevs)
 			// add a default network so that it can hold values
-			netMap["default"] = new(NetDevs)
-			netType := reflect.TypeOf(netMap["default"])
-			netVal := reflect.ValueOf(netMap["default"])
+			key := "default"
+			if len(netMap) == 0 {
+				netMap[key] = new(NetDevs)
+			} else {
+				for keyIt := range netMap {
+					key = keyIt
+					break
+				}
+			}
+			netType := reflect.TypeOf(netMap[key])
+			netVal := reflect.ValueOf(netMap[key])
 			for j := 0; j < netType.Elem().NumField(); j++ {
 				field := netVal.Elem().Field(j)
 				createFlags(baseCmd, excludeList, netType.Elem().Field(j), &field)
@@ -304,27 +363,32 @@ func (node *NodeInfo) setterFrom(n *NodeConf, nameArg string,
 					(nodeInfoVal.Elem().Field(i).Interface()).(map[string](*Entry))[key] = entr
 				}
 			} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string](*NetDevEntry)(nil)) {
-				nestedMap := valField.Interface().(map[string](*NetDevs))
-				for netName, netVals := range nestedMap {
+				netValMap := valField.Interface().(map[string](*NetDevs))
+				for netName, netVals := range netValMap {
 					netValsType := reflect.ValueOf(netVals)
 					netMap := nodeInfoVal.Elem().Field(i).Interface().(map[string](*NetDevEntry))
-					var newNet NetDevEntry
-					newNet.Tags = make(map[string]*Entry)
-					// This should be done a bit down, but didn't know how to do it
-					netMap[netName] = &newNet
-					netInfoType := reflect.TypeOf(newNet)
-					netInfoVal := reflect.ValueOf(&newNet)
+					if nodeInfoVal.Elem().Field(i).IsNil() {
+						netMap = make(map[string]*NetDevEntry)
+					}
+					if _, ok := netMap[netName]; !ok {
+						var newNet NetDevEntry
+						newNet.Tags = make(map[string]*Entry)
+						netMap[netName] = &newNet
+					}
+					netInfoType := reflect.TypeOf(*netMap[netName])
+					netInfoVal := reflect.ValueOf(netMap[netName])
 					for j := 0; j < netInfoType.NumField(); j++ {
 						netVal := netValsType.Elem().FieldByName(netInfoType.Field(j).Name)
 						if netVal.IsValid() {
 							if netVal.Type().Kind() == reflect.String {
 								setter(netInfoVal.Elem().Field(j).Addr().Interface().((*Entry)), netVal.String(), nameArg)
 							} else if netVal.Type() == reflect.TypeOf(map[string]string{}) {
-								// normaly the map should be created here, but did not manage it
 								for key, val := range (netVal.Interface()).(map[string]string) {
-									entr := new(Entry)
-									setter(entr, val, nameArg)
-									netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))[key] = entr
+									//netTagMap := netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))
+									if _, ok := netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))[key]; !ok {
+										netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))[key] = new(Entry)
+									}
+									setter(netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))[key], val, nameArg)
 								}
 							}
 						}

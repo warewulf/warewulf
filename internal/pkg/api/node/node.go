@@ -238,7 +238,6 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 		}
 		n.SetFrom(&nodeConf)
 		if set.NetdevDelete != "" {
-
 			if _, ok := n.NetDevs[set.NetdevDelete]; !ok {
 				err = fmt.Errorf("network device name doesn't exist: %s", set.NetdevDelete)
 				wwlog.Printf(wwlog.ERROR, fmt.Sprintf("%v\n", err.Error()))
@@ -248,7 +247,19 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Deleting network device: %s\n", n.Id.Get(), set.NetdevDelete)
 			delete(n.NetDevs, set.NetdevDelete)
 		}
-
+		for _, key := range nodeConf.TagsDel {
+			delete(n.Tags, key)
+		}
+		for _, key := range nodeConf.Ipmi.TagsDel {
+			delete(n.Ipmi.Tags, key)
+		}
+		for net := range nodeConf.NetDevs {
+			for _, key := range nodeConf.NetDevs[net].TagsDel {
+				if _, ok := n.NetDevs[net]; ok {
+					delete(n.NetDevs[net].Tags, key)
+				}
+			}
+		}
 		err := nodeDB.NodeUpdate(n)
 		if err != nil {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
