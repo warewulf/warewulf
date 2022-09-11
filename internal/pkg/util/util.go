@@ -281,8 +281,9 @@ func FindFilterFiles(
 
 
 	for i, pattern := range(ignore) {
+		ignore[i] = strings.TrimLeft(pattern, "/")
 		if strings.HasPrefix(pattern, "./") {
-			ignore[i] = pattern[2:]
+			ignore[i] = strings.TrimPrefix(pattern, "./")
 		}
 		wwlog.Debug("Ignore pattern (%d): %s", i, ignore[i])
 	}
@@ -309,6 +310,7 @@ func FindFilterFiles(
 			// recursivly include from the matched directory
 
 			num_init := len(ofiles)
+			ignoreDirs := []string{}
 			err = filepath.Walk(ifile, func(location string, info os.FileInfo, err error) error {
 				var file string
 
@@ -331,6 +333,12 @@ func FindFilterFiles(
 					return nil
 				}
 
+				for _, ignoreDir := range(ignoreDirs) {
+					if strings.HasPrefix(location, ignoreDir) {
+						wwlog.Debug("Ignored (dir): %s", location)
+						return nil
+					}
+				}
 				for i, pattern := range(ignore) {
 					m, err := filepath.Match(pattern, location)
 					if err != nil {
@@ -339,6 +347,9 @@ func FindFilterFiles(
 
 					if m {
 						wwlog.Debug("Ignored (%d): %s", i, file)
+						if info.IsDir() {
+							ignoreDirs = append(ignoreDirs, file)
+						}
 						return nil
 					}
 				}
@@ -354,7 +365,7 @@ func FindFilterFiles(
 			if err != nil {
 				return ofiles, err
 			}
-		}else{
+		} else {
 			wwlog.Debug("Included: %s", ifile)
 			ofiles = append(ofiles, ifile)
 		}
