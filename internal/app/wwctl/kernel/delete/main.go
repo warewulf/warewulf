@@ -14,7 +14,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not open nodeDB: %s\n", err)
+		wwlog.Error("Could not open nodeDB: %s\n", err)
 		os.Exit(1)
 	}
 
@@ -24,14 +24,14 @@ ARG_LOOP:
 	for _, arg := range args {
 		for _, n := range nodes {
 			if n.Kernel.Override.Get() == arg {
-				wwlog.Printf(wwlog.ERROR, "Kernel is configured for nodes, skipping: %s\n", arg)
+				wwlog.Error("Kernel is configured for nodes, skipping: %s\n", arg)
 				continue ARG_LOOP
 			}
 		}
 
 		err := kernel.DeleteKernel(arg)
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Could not delete kernel: %s\n", arg)
+			wwlog.Error("Could not delete kernel: %s\n", arg)
 		} else {
 			fmt.Printf("Kernel has been deleted: %s\n", arg)
 		}

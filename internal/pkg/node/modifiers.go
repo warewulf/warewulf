@@ -19,7 +19,7 @@ func (config *NodeYaml) AddNode(nodeID string) (NodeInfo, error) {
 	var node NodeConf
 	var n NodeInfo
 
-	wwlog.Printf(wwlog.VERBOSE, "Adding new node: %s\n", nodeID)
+	wwlog.Verbose("Adding new node: %s\n", nodeID)
 
 	if _, ok := config.Nodes[nodeID]; ok {
 		return n, errors.New("Nodename already exists: " + nodeID)
@@ -43,7 +43,7 @@ func (config *NodeYaml) DelNode(nodeID string) error {
 		return errors.New("Nodename does not exist: " + nodeID)
 	}
 
-	wwlog.Printf(wwlog.VERBOSE, "Deleting node: %s\n", nodeID)
+	wwlog.Verbose("Deleting node: %s\n", nodeID)
 	delete(config.Nodes, nodeID)
 
 	return nil
@@ -69,7 +69,7 @@ func (config *NodeYaml) AddProfile(profileID string) (NodeInfo, error) {
 	var node NodeConf
 	var n NodeInfo
 
-	wwlog.Printf(wwlog.VERBOSE, "Adding new profile: %s\n", profileID)
+	wwlog.Verbose("Adding new profile: %s\n", profileID)
 
 	if _, ok := config.NodeProfiles[profileID]; ok {
 		return n, errors.New("Profile name already exists: " + profileID)
@@ -88,7 +88,7 @@ func (config *NodeYaml) DelProfile(profileID string) error {
 		return errors.New("Profile does not exist: " + profileID)
 	}
 
-	wwlog.Printf(wwlog.VERBOSE, "Deleting profile: %s\n", profileID)
+	wwlog.Verbose("Deleting profile: %s\n", profileID)
 	delete(config.NodeProfiles, profileID)
 
 	return nil
@@ -130,7 +130,7 @@ func (config *NodeYaml) Persist() error {
 
 	file, err := os.OpenFile(ConfigFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "%s\n", err)
+		wwlog.Error("%s\n", err)
 		os.Exit(1)
 	}
 

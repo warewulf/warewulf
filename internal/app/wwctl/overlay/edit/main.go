@@ -26,34 +26,34 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	overlaySourceDir = overlay.OverlaySourceDir(overlayName)
 
 	if !util.IsDir(overlaySourceDir) {
-		wwlog.Printf(wwlog.ERROR, "Overlay does not exist: %s\n", overlayName)
+		wwlog.Error("Overlay does not exist: %s\n", overlayName)
 		os.Exit(1)
 	}
 
 	overlayFile := path.Join(overlaySourceDir, fileName)
 
-	wwlog.Printf(wwlog.DEBUG, "Will edit overlay file: %s\n", overlayFile)
+	wwlog.Debug("Will edit overlay file: %s\n", overlayFile)
 
 	if CreateDirs {
 		err := os.MkdirAll(path.Dir(overlayFile), 0755)
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Could not create directory: %s\n", path.Dir(overlayFile))
+			wwlog.Error("Could not create directory: %s\n", path.Dir(overlayFile))
 			os.Exit(1)
 		}
 	} else {
 		if !util.IsDir(path.Dir(overlayFile)) {
-			wwlog.Printf(wwlog.ERROR, "Can not create file, parent directory does not exist, try adding the\n")
-			wwlog.Printf(wwlog.ERROR, "'--parents' option to create the directory.\n")
+			wwlog.Error("Can not create file, parent directory does not exist, try adding the\n")
+			wwlog.Error("'--parents' option to create the directory.\n")
 			os.Exit(1)
 		}
 	}
 
 	if !util.IsFile(overlayFile) && filepath.Ext(overlayFile) == ".ww" {
-		wwlog.Printf(wwlog.VERBOSE, "This is a new file, creating some default content\n")
+		wwlog.Verbose("This is a new file, creating some default content\n")
 
 		w, err := os.OpenFile(overlayFile, os.O_RDWR|os.O_CREATE, os.FileMode(PermMode))
 		if err != nil {
-			wwlog.Printf(wwlog.WARN, "Could not create file for writing: %s\n", err)
+			wwlog.Warn("Could not create file for writing: %s\n", err)
 		}
 
 		fmt.Fprintf(w, "# This is a Warewulf Template file.\n")
@@ -72,7 +72,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	err := util.ExecInteractive(editor, overlayFile)
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Editor process existed with non-zero\n")
+		wwlog.Error("Editor process existed with non-zero\n")
 		os.Exit(1)
 	}
 

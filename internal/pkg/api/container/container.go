@@ -38,34 +38,34 @@ func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 	for _, c := range containers {
 		if !container.ValidSource(c) {
 			err = fmt.Errorf("VNFS name does not exist: %s", c)
-			wwlog.Printf(wwlog.ERROR, "%s\n", err)
+			wwlog.Error("%s\n", err)
 			return
 		}
 
 		err = container.Build(c, cbp.Force)
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Could not build container %s: %s\n", c, err)
+			wwlog.Error("Could not build container %s: %s\n", c, err)
 			return
 		}
 	}
 
 	if cbp.Default {
 		if len(containers) != 1 {
-			wwlog.Printf(wwlog.ERROR, "Can only set default for one container\n")
+			wwlog.Error("Can only set default for one container\n")
 		} else {
 			var nodeDB node.NodeYaml
 			nodeDB, err = node.New()
 			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
+				wwlog.Error("Could not open node configuration: %s\n", err)
 				return
 			}
 
 			//TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
 			profiles, _ := nodeDB.FindAllProfiles()
 			for _, profile := range profiles {
-				wwlog.Printf(wwlog.DEBUG, "Looking for profile default: %s\n", profile.Id.Get())
+				wwlog.Debug("Looking for profile default: %s\n", profile.Id.Get())
 				if profile.Id.Get() == "default" {
-					wwlog.Printf(wwlog.DEBUG, "Found profile default, setting container name to: %s\n", containers[0])
+					wwlog.Debug("Found profile default, setting container name to: %s\n", containers[0])
 					profile.ContainerName.Set(containers[0])
 					err := nodeDB.ProfileUpdate(profile)
 					if err != nil {
@@ -92,7 +92,7 @@ func ContainerDelete(cdp *wwapiv1.ContainerDeleteParameter) (err error) {
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not open nodeDB: %s\n", err)
+		wwlog.Error("Could not open nodeDB: %s\n", err)
 		return
 	}
 
@@ -107,18 +107,18 @@ ARG_LOOP:
 		containerName := cdp.ContainerNames[i]
 		for _, n := range nodes {
 			if n.ContainerName.Get() == containerName {
-				wwlog.Printf(wwlog.ERROR, "Container is configured for nodes, skipping: %s\n", containerName)
+				wwlog.Error("Container is configured for nodes, skipping: %s\n", containerName)
 				continue ARG_LOOP
 			}
 		}
 
 		if !container.ValidSource(containerName) {
-			wwlog.Printf(wwlog.ERROR, "Container name is not a valid source: %s\n", containerName)
+			wwlog.Error("Container name is not a valid source: %s\n", containerName)
 			continue
 		}
 		err := container.DeleteSource(containerName)
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Could not remove source: %s\n", containerName)
+			wwlog.Error("Could not remove source: %s\n", containerName)
 		} else {
 			fmt.Printf("Container has been deleted: %s\n", containerName)
 		}
@@ -196,7 +196,7 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 	wwlog.Info("Updating the container's /etc/resolv.conf")
 	err = util.CopyFile("/etc/resolv.conf", path.Join(container.RootFsDir(cip.Name), "/etc/resolv.conf"))
 	if err != nil {
-		wwlog.Printf(wwlog.WARN, "Could not copy /etc/resolv.conf into container: %s\n", err)
+		wwlog.Warn("Could not copy /etc/resolv.conf into container: %s\n", err)
 	}
 
 	err = container.SyncUids(cip.Name, !cip.SyncUser)
@@ -226,9 +226,9 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		//TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
 		profiles, _ := nodeDB.FindAllProfiles()
 		for _, profile := range profiles {
-			wwlog.Printf(wwlog.DEBUG, "Looking for profile default: %s", profile.Id.Get())
+			wwlog.Debug("Looking for profile default: %s", profile.Id.Get())
 			if profile.Id.Get() == "default" {
-				wwlog.Printf(wwlog.DEBUG, "Found profile default, setting container name to: %s", cip.Name)
+				wwlog.Debug("Found profile default, setting container name to: %s", cip.Name)
 				profile.ContainerName.Set(cip.Name)
 				err = nodeDB.ProfileUpdate(profile)
 				if err != nil {
@@ -261,19 +261,19 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 
 	sources, err = container.ListSources()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "%s\n", err)
+		wwlog.Error("%s\n", err)
 		return
 	}
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "%s\n", err)
+		wwlog.Error("%s\n", err)
 		return
 	}
 
 	nodes, err := nodeDB.FindAllNodes()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "%s\n", err)
+		wwlog.Error("%s\n", err)
 		return
 	}
 
@@ -287,7 +287,7 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 			nodemap[source] = 0
 		}
 
-		wwlog.Printf(wwlog.DEBUG, "Finding kernel version for: %s\n", source)
+		wwlog.Debug("Finding kernel version for: %s\n", source)
 		kernelVersion := container.KernelVersion(source)
 
 		containerInfo = append(containerInfo, &wwapiv1.ContainerInfo{

@@ -200,11 +200,11 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 		return errors.Errorf("overlay names contains illegal characters: %v", overlayNames)
 	}
 
-	wwlog.Printf(wwlog.VERBOSE, "Processing node/overlay: %s/%s\n", nodeInfo.Id.Get(), strings.Join(overlayNames, "-"))
+	wwlog.Verbose("Processing node/overlay: %s/%s\n", nodeInfo.Id.Get(), strings.Join(overlayNames, "-"))
 	for _, overlayName := range overlayNames {
 		wwlog.Verbose("Building overlay %s for node %s in %s", overlayName, nodeInfo.Id.Get(), outputDir)
 		overlaySourceDir := OverlaySourceDir(overlayName)
-		wwlog.Printf(wwlog.DEBUG, "Starting to build overlay %s\nChanging directory to OverlayDir: %s\n", overlayName, overlaySourceDir)
+		wwlog.Debug("Starting to build overlay %s\nChanging directory to OverlayDir: %s\n", overlayName, overlaySourceDir)
 		err := os.Chdir(overlaySourceDir)
 		if err != nil {
 			return errors.Wrap(err, "could not change directory to overlay dir")
@@ -376,12 +376,12 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (
 		"dec":          func(i int) int { return i - 1 },
 		"file":         func(str string) string { return fmt.Sprintf("{{ /* file \"%s\" */ }}", str) },
 		"abort": func() string {
-			wwlog.Printf(wwlog.DEBUG, "abort file called in %s\n", fileName)
+			wwlog.Debug("abort file called in %s\n", fileName)
 			writeFile = false
 			return ""
 		},
 		"nobackup": func() string {
-			wwlog.Printf(wwlog.DEBUG, "not backup for %s\n", fileName)
+			wwlog.Debug("not backup for %s\n", fileName)
 			backupFile = false
 			return ""
 		},

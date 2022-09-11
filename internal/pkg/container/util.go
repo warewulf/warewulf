@@ -12,7 +12,7 @@ import (
 
 func ValidName(name string) bool {
 	if !util.ValidString(name, "^[\\w\\-\\.\\:]+$") {
-		wwlog.Printf(wwlog.WARN, "VNFS name has illegal characters: %s\n", name)
+		wwlog.Warn("VNFS name has illegal characters: %s\n", name)
 		return false
 	}
 	return true
@@ -25,7 +25,7 @@ func ListSources() ([]string, error) {
 	if err != nil {
 		return ret, errors.New("Could not create VNFS source parent directory: " + SourceParentDir())
 	}
-	wwlog.Printf(wwlog.DEBUG, "Searching for VNFS Rootfs directories: %s\n", SourceParentDir())
+	wwlog.Debug("Searching for VNFS Rootfs directories: %s\n", SourceParentDir())
 
 	sources, err := ioutil.ReadDir(SourceParentDir())
 	if err != nil {
@@ -33,7 +33,7 @@ func ListSources() ([]string, error) {
 	}
 
 	for _, source := range sources {
-		wwlog.Printf(wwlog.VERBOSE, "Found VNFS source: %s\n", source.Name())
+		wwlog.Verbose("Found VNFS source: %s\n", source.Name())
 
 		if !ValidName(source.Name()) {
 			continue
@@ -57,7 +57,7 @@ func ValidSource(name string) bool {
 	}
 
 	if !util.IsDir(fullPath) {
-		wwlog.Printf(wwlog.VERBOSE, "Location is not a VNFS source directory: %s\n", name)
+		wwlog.Verbose("Location is not a VNFS source directory: %s\n", name)
 		return false
 	}
 
@@ -67,6 +67,6 @@ func ValidSource(name string) bool {
 func DeleteSource(name string) error {
 	fullPath := SourceDir(name)
 
-	wwlog.Printf(wwlog.VERBOSE, "Removing path: %s\n", fullPath)
+	wwlog.Verbose("Removing path: %s\n", fullPath)
 	return os.RemoveAll(fullPath)
 }

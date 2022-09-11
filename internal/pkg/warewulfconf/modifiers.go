@@ -16,7 +16,7 @@ func (controller *ControllerConf) Persist() error {
 
 	file, err := os.OpenFile(ConfigFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "%s\n", err)
+		wwlog.Error("%s\n", err)
 		os.Exit(1)
 	}
 
@@ -24,7 +24,7 @@ func (controller *ControllerConf) Persist() error {
 
 	_, err = file.WriteString(string(out)+"\n")
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Unable to write to warewulf.conf\n")
+		wwlog.Error("Unable to write to warewulf.conf\n")
 		return err
 	}
 

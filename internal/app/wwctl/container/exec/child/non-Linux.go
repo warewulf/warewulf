@@ -9,7 +9,7 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	wwlog.Printf(wwlog.ERROR, "This command does not work on non-Linux hosts\n")
+	wwlog.Error("This command does not work on non-Linux hosts\n")
 
 	return nil
 }

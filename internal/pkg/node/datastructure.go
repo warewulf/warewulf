@@ -166,7 +166,7 @@ const NoValue = "--"
 func init() {
 	// Check that nodes.conf is found
 	if !util.IsFile(ConfigFile) {
-		wwlog.Printf(wwlog.WARN, "Missing node configuration file\n")
+		wwlog.Warn("Missing node configuration file\n")
 		// just return silently, as init is also called for bash_completion
 		return
 	}
