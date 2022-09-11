@@ -260,34 +260,16 @@ func FindFilterFiles(
 	defer func() {
 		err = FirstError(err, os.Chdir(cwd))
 	}()
-
 	err = os.Chdir(path)
 	if err != nil {
 		return ofiles, errors.Wrapf(err, "Failed to change path: %s", path)
 	}
 
-	files := []string{}
-
-	for _, pattern := range include {
-
-		_files, err := filepath.Glob(pattern)
-		if err != nil {
-			return ofiles, errors.Wrapf(err, "Failed to apply pattern: %s", pattern)
-		}
-		wwlog.Debug("Including pattern: %s -> %d matches", pattern, len(_files))
-
-		files = append(files, _files...)
-	}
-
-
-	for i, pattern := range(ignore) {
-		ignore[i] = strings.TrimLeft(pattern, "/")
-		if strings.HasPrefix(pattern, "./") {
-			ignore[i] = strings.TrimPrefix(pattern, "./")
-		}
+	for i := range(ignore) {
+		ignore[i] = strings.TrimLeft(ignore[i], "/")
+		ignore[i] = strings.TrimPrefix(ignore[i], "./")
 		wwlog.Debug("Ignore pattern (%d): %s", i, ignore[i])
 	}
-
 
 	if ignore_xdev {
 		wwlog.Debug("Ignoring cross-device (xdev) files")
@@ -300,76 +282,72 @@ func FindFilterFiles(
 
 	dev := path_stat.Sys().(*syscall.Stat_t).Dev
 
-	for _, ifile := range files {
-		stat, err := os.Stat(ifile)
+
+	includeDirs := []string{}
+	ignoreDirs := []string{}
+	err = filepath.Walk(".", func(location string, info os.FileInfo, err error) error {
 		if err != nil {
-			return ofiles, err
+			return err
 		}
 
-		if stat.IsDir() {
-			// recursivly include from the matched directory
+		if location == "." {
+			return nil
+		}
 
-			num_init := len(ofiles)
-			ignoreDirs := []string{}
-			err = filepath.Walk(ifile, func(location string, info os.FileInfo, err error) error {
-				var file string
-
-				if err != nil {
-					return err
-				}
-
-				if location == "." {
-					return nil
-				}
-
-				if info.IsDir() {
-					file = location + "/"
-				} else {
-					file = location
-				}
-
-				if ignore_xdev && info.Sys().(*syscall.Stat_t).Dev != dev {
-					wwlog.Debug("Ignored (cross-device): %s", file)
-					return nil
-				}
-
-				for _, ignoreDir := range(ignoreDirs) {
-					if strings.HasPrefix(location, ignoreDir) {
-						wwlog.Debug("Ignored (dir): %s", location)
-						return nil
-					}
-				}
-				for i, pattern := range(ignore) {
-					m, err := filepath.Match(pattern, location)
-					if err != nil {
-						return err
-					}
-
-					if m {
-						wwlog.Debug("Ignored (%d): %s", i, file)
-						if info.IsDir() {
-							ignoreDirs = append(ignoreDirs, file)
-						}
-						return nil
-					}
-				}
-
-				ofiles = append(ofiles, file)
-
-				return nil
-			})
-
-			num_final := len(ofiles)
-			wwlog.Debug("Included: %s -> %d files", ifile, num_final-num_init)
-
-			if err != nil {
-				return ofiles, err
-			}
+		var file string
+		if info.IsDir() {
+			file = location + "/"
 		} else {
-			wwlog.Debug("Included: %s", ifile)
-			ofiles = append(ofiles, ifile)
+			file = location
 		}
-	}
+
+		if ignore_xdev && info.Sys().(*syscall.Stat_t).Dev != dev {
+			wwlog.Debug("Ignored (cross-device): %s", file)
+			return nil
+		}
+
+		for _, ignoreDir := range(ignoreDirs) {
+			if strings.HasPrefix(location, ignoreDir) {
+				wwlog.Debug("Ignored (dir): %s", file)
+				return nil
+			}
+		}
+		for i, pattern := range(ignore) {
+			m, err := filepath.Match(pattern, location)
+			if err != nil {
+				return err
+			} else if m {
+				wwlog.Debug("Ignored (%d): %s", i, file)
+				if info.IsDir() {
+					ignoreDirs = append(ignoreDirs, file)
+				}
+				return nil
+			}
+		}
+
+		for _, includeDir := range(includeDirs) {
+			if strings.HasPrefix(location, includeDir) {
+				wwlog.Debug("Included (dir): %s", file)
+				ofiles = append(ofiles, location)
+				return nil
+			}
+		}
+		for i, pattern := range(include) {
+			m, err := filepath.Match(pattern, location)
+			if err != nil {
+				return err
+			} else if m {
+				wwlog.Debug("Included (%d): %s", i, file)
+				ofiles = append(ofiles, location)
+				if info.IsDir() {
+					includeDirs = append(includeDirs, file)
+				}
+				return nil
+			}
+		}
+
+		return nil
+	})
 
 	return ofiles, err
 }
