@@ -14,7 +14,7 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/api/apiconfig"
 	"github.com/hpcng/warewulf/internal/pkg/api/container"
-	"github.com/hpcng/warewulf/internal/pkg/api/node"
+	apinode "github.com/hpcng/warewulf/internal/pkg/api/node"
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/version"
@@ -241,7 +241,7 @@ func (s *apiServer) NodeAdd(ctx context.Context, request *wwapiv1.NodeAddParamet
 	}
 
 	// Add the node(s).
-	err = node.NodeAdd(request)
+	err = apinode.NodeAdd(request)
 	if err != nil {
 		return
 	}
@@ -264,7 +264,7 @@ func (s *apiServer) NodeDelete(ctx context.Context, request *wwapiv1.NodeDeleteP
 		return response, status.Errorf(codes.InvalidArgument, "nil request.NodeNames")
 	}
 
-	err = node.NodeDelete(request)
+	err = apinode.NodeDelete(request)
 	return
 }
 
@@ -293,7 +293,7 @@ func (s *apiServer) NodeSet(ctx context.Context, request *wwapiv1.NodeSetParamet
 	}
 
 	// Perform the NodeSet.
-	err = node.NodeSet(request)
+	err = apinode.NodeSet(request)
 	if err != nil {
 		return
 	}
@@ -309,7 +309,7 @@ func (s *apiServer) NodeStatus(ctx context.Context, request *wwapiv1.NodeNames) 
 		return response, status.Errorf(codes.InvalidArgument, "nil request")
 	}
 
-	return node.NodeStatus(request.NodeNames)
+	return apinode.NodeStatus(request.NodeNames)
 }
 
 // Version returns the versions of the wwapiv1 and warewulf as well as the api
@@ -331,11 +331,12 @@ func (s *apiServer) Version(ctx context.Context, request *emptypb.Empty) (respon
 func (s *apiServer) nodeListInternal(nodeNames []string) (response *wwapiv1.NodeListResponse, err error) {
 
 	var nodes []*wwapiv1.NodeInfo
-	nodes, err = node.NodeList(nodeNames)
-	if err != nil {
-		return
-	}
-
+	/*
+		nodes, err = apinode.NodeList(nodeNames)
+		if err != nil {
+			return
+		}
+	*/
 	response = &wwapiv1.NodeListResponse{
 		Nodes: nodes,
 	}

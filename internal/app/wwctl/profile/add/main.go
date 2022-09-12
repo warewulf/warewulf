@@ -1,28 +1,56 @@
 package add
 
 import (
+	"fmt"
 	"os"
 
-	"github.com/hpcng/warewulf/internal/pkg/node"
+	apiprofile "github.com/hpcng/warewulf/internal/pkg/api/profile"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
+
+	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/hpcng/warewulf/internal/pkg/api/util"
 	"github.com/spf13/cobra"
 )
 
-func CobraRunE(cmd *cobra.Command, args []string) error {
-	nodeDB, err := node.New()
+func CobraRunE(cmd *cobra.Command, args []string) (err error) {
+	// remove the default network as the all network values are assigned
+	// to this network
+	if NetName != "" {
+		netDev := *ProfileConf.NetDevs["default"]
+		ProfileConf.NetDevs[NetName] = &netDev
+		delete(ProfileConf.NetDevs, "default")
+
+	}
+	buffer, err := yaml.Marshal(ProfileConf)
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Failed opening node database: %s\n", err)
+		wwlog.Error("Cant marshall nodeInfo", err)
 		os.Exit(1)
 	}
-
-	for _, p := range args {
-		_, err := nodeDB.AddProfile(p)
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "%s\n", err)
-			os.Exit(1)
-		}
+	set := wwapiv1.NodeSetParameter{
+		NodeConfYaml: string(buffer[:]),
+		NetdevDelete: SetNetDevDel,
+		AllNodes:     SetNodeAll,
+		Force:        SetForce,
+		NodeNames:    args,
 	}
 
-	return errors.Wrap(nodeDB.Persist(), "failed to persist nodedb")
+	if !SetYes {
+		// The checks run twice in the prompt case.
+		// Avoiding putting in a blocking prompt in an API.
+		err = apiprofile.AddProfile(&set, false)
+		if err != nil {
+			return
+		}
+		_, _, err = apiprofile.ProfileSetParameterCheck(&set, false)
+		if err != nil {
+			return
+		}
+
+		yes := util.ConfirmationPrompt(fmt.Sprintf("Are you sure you add the profile %s", args))
+		if !yes {
+			return
+		}
+	}
+	return apiprofile.ProfileSet(&set)
 }

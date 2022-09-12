@@ -84,42 +84,13 @@ message NodeField {
 
 // NetDev is network devices (NICs) on a node.
 message NetDev {
-	NodeField type = 1;
-	NodeField onboot = 2;
-	NodeField device = 3;
-	NodeField hwaddr = 4;
-	NodeField ipaddr = 5;
-	NodeField netmask = 6;
-	NodeField gateway = 7;
-	NodeField primary = 8;
+	map<string, NodeField> Field = 1;
 	map<string, NodeField> Tags = 9;
 }
 
 // NodeInfo contains details about a node managed by Warewulf/
 message NodeInfo {
-	NodeField id = 1;
-	NodeField comment = 2;
-	NodeField cluster = 3;
-	NodeField discoverable = 4;
-	NodeField container = 5;
-	NodeField kernelOverride =  6;
-	NodeField kernelArgs = 7;
-	NodeField systemOverlay = 8;
-	NodeField runtimeOverlay = 9;
-	NodeField ipxe = 10;
-	NodeField init = 11;
-	NodeField root = 12;
-	NodeField assetKey = 13;
-	NodeField ipmiIpaddr = 14;
-	NodeField ipmiNetmask = 15;
-	NodeField ipmiPort = 16;
-	NodeField ipmiGateway = 17;
-	NodeField ipmiUserName = 18;
-	NodeField ipmiInterface = 19;
-	NodeField ipmiPassword = 20;
-
-	repeated string profiles = 21;
-	repeated string groupProfiles = 22;
+	map<string, NodeField> Fields = 1;
 
 	map<string, NetDev> NetDevs = 23;
 	map<string, NodeField> Tags = 24;
@@ -131,20 +102,28 @@ message NodeListResponse {
 	repeated NodeInfo nodes = 1;
 }
 
+// Request a node list
+message GetNodeList {
+	enum ListType {
+		Simple = 0; 
+		Ipmi = 1;
+		Network = 2;
+		Long = 3;
+		All = 4;
+	}
+	ListType type = 7;
+	repeated string Nodes = 8;
+}
+
+message NodeList {
+	repeated string Output = 1;
+}
+
 // NodeAddParameter contains all input for adding a node to be managed by
 // Warewulf.
 message NodeAddParameter {
-	string cluster = 1;
-	bool discoverable = 2;
-	string gateway = 3;
-	string hwaddr = 4;
-	string ipaddr = 5;
-	string netdev = 6;
-	string netmask = 7;
-	string netname = 8;
-	string type = 9;
+	string nodeConfYaml = 1;
 	repeated string nodeNames = 10;
-	string ipaddr6 = 11;
 }
 
 // NodeDeleteParameter contains input for removing nodes from Warewulf
@@ -157,48 +136,12 @@ message NodeDeleteParameter {
 // NodeSetParameter contains all fields for updating aspects of nodes managed
 // by Warewulf.
 message NodeSetParameter {
-	string comment = 1;
+	string nodeConfYaml = 1;
 	string container = 2;
-	string kernelOverride = 3;
-	string kernelArgs = 4;
-	string netname = 5;
-	string netdev = 6;
-	string ipaddr = 7;
-	string netmask = 8;
-	string gateway = 9;
-	string hwaddr = 10;
-	string type = 11;
-	string onboot = 12;
-	string netDefault = 13;
-	bool netdevDelete = 14;
-	string cluster = 15;
-	string ipxe = 16;
-	string initOverlay = 17;
-	repeated string runtimeOverlay = 18;
-	repeated string systemOverlay = 19;
-	string ipmiIpaddr = 20;
-	string ipmiNetmask = 21;
-	string ipmiPort = 22;
-	string ipmiGateway = 23;
-	string ipmiUsername = 24;
-	string ipmiPassword = 25;
-	string ipmiInterface = 26;
+    string netdevDelete = 14;
 	bool allNodes = 27;
-	string profile = 28;
-	repeated string profileAdd = 29;
-	repeated string profileDelete = 30;
 	bool force = 31;
-	string init = 32;
-	bool discoverable = 33;
-	bool undiscoverable = 34;
-	string root = 35;
-	repeated string tags = 36;
-	repeated string tagsDelete = 37;
-	string assetKey = 38;
 	repeated string nodeNames = 39;
-	string ipmiWrite = 40;
-	repeated string NetTags = 41;
-	repeated string NetDeleteTags = 42;
 }
 
 // NodeStatus contains information about the imaging status per node.

@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
@@ -13,6 +14,7 @@ import (
  * Filters
  *
  *********/
+
 /*
 Filter a given slice of NodeInfo against a given
 regular expression
@@ -47,10 +49,10 @@ func FilterByName(set []NodeInfo, searchList []string) []NodeInfo {
  *********/
 
 /*
- Set value. If argument is 'UNDEF', 'DELETE',
- 'UNSET" or '--' the value is removed.
- N.B. the '--' might never ever happen as '--'
- is parsed out by cobra
+Set value. If argument is 'UNDEF', 'DELETE',
+'UNSET" or '--' the value is removed.
+N.B. the '--' might never ever happen as '--'
+is parsed out by cobra
 */
 func (ent *Entry) Set(val string) {
 	if val == "" {
@@ -78,6 +80,8 @@ func (ent *Entry) SetB(val bool) {
 
 func (ent *Entry) SetSlice(val []string) {
 	if len(val) == 0 {
+		return
+	} else if len(val) == 1 && val[0] == "" { // check also for an "empty" slice
 		return
 	}
 	if val[0] == "UNDEF" || val[0] == "DELETE" || val[0] == "UNSET" || val[0] == "--" {
@@ -142,6 +146,13 @@ func (ent *Entry) SetDefaultSlice(val []string) {
 	}
 	ent.def = val
 
+}
+
+/*
+Remove a element from a slice
+*/
+func (ent *Entry) SliceRemoveElement(val string) {
+	util.SliceRemoveElement(ent.value, val)
 }
 
 /**********
@@ -298,4 +309,14 @@ func (ent *Entry) Defined() bool {
 		return true
 	}
 	return false
+}
+
+/*
+Create an empty node NodeConf
+*/
+func NewConf() (nodeconf NodeConf) {
+	nodeconf.Ipmi = new(IpmiConf)
+	nodeconf.Kernel = new(KernelConf)
+	nodeconf.NetDevs = map[string]*NetDevs{}
+	return nodeconf
 }

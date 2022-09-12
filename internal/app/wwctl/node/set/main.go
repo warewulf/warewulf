@@ -2,64 +2,42 @@ package set
 
 import (
 	"fmt"
+	"os"
 
-	"github.com/hpcng/warewulf/internal/pkg/api/node"
+	apinode "github.com/hpcng/warewulf/internal/pkg/api/node"
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/hpcng/warewulf/internal/pkg/api/util"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
+	// remove the default network as the all network values are assigned
+	// to this network
+	if NetName != "default" {
+		NodeConf.NetDevs[NetName] = NodeConf.NetDevs["default"]
+		delete(NodeConf.NetDevs, "default")
+	}
+	buffer, err := yaml.Marshal(NodeConf)
+	if err != nil {
+		wwlog.Error("Can't marshall nodeInfo", err)
+		os.Exit(1)
+	}
 	set := wwapiv1.NodeSetParameter{
-		Comment:        SetComment,
-		Container:      SetContainer,
-		KernelOverride: SetKernelOverride,
-		KernelArgs:     SetKernelArgs,
-		Netname:        SetNetName,
-		Netdev:         SetNetDev,
-		Ipaddr:         SetIpaddr,
-		Netmask:        SetNetmask,
-		Gateway:        SetGateway,
-		Hwaddr:         SetHwaddr,
-		Type:           SetType,
-		Onboot:         SetNetOnBoot,
-		NetDefault:     SetNetPrimary,
-		NetdevDelete:   SetNetDevDel,
-		Cluster:        SetClusterName,
-		Ipxe:           SetIpxe,
-		InitOverlay:    SetInitOverlay,
-		RuntimeOverlay: SetRuntimeOverlay,
-		SystemOverlay:  SetSystemOverlay,
-		IpmiIpaddr:     SetIpmiIpaddr,
-		IpmiNetmask:    SetIpmiNetmask,
-		IpmiPort:       SetIpmiPort,
-		IpmiGateway:    SetIpmiGateway,
-		IpmiUsername:   SetIpmiUsername,
-		IpmiPassword:   SetIpmiPassword,
-		IpmiInterface:  SetIpmiInterface,
-		IpmiWrite:      SetIpmiWrite,
-		AllNodes:       SetNodeAll,
-		Profile:        SetProfile,
-		ProfileAdd:     SetAddProfile,
-		ProfileDelete:  SetDelProfile,
-		Force:          SetForce,
-		Init:           SetInit,
-		Discoverable:   SetDiscoverable,
-		Undiscoverable: SetUndiscoverable,
-		Root:           SetRoot,
-		Tags:           SetTags,
-		TagsDelete:     SetDelTags,
-		AssetKey:       SetAssetKey,
-		NodeNames:      args,
-		NetTags:        SetNetTags,
-		NetDeleteTags:  SetNetDelTags,
+		NodeConfYaml: string(buffer[:]),
+
+		NetdevDelete: SetNetDevDel,
+		AllNodes:     SetNodeAll,
+		Force:        SetForce,
+		NodeNames:    args,
 	}
 
 	if !SetYes {
 		var nodeCount uint
 		// The checks run twice in the prompt case.
 		// Avoiding putting in a blocking prompt in an API.
-		_, nodeCount, err = node.NodeSetParameterCheck(&set, false)
+		_, nodeCount, err = apinode.NodeSetParameterCheck(&set, false)
 		if err != nil {
 			return
 		}
@@ -68,5 +46,5 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			return
 		}
 	}
-	return node.NodeSet(&set)
+	return apinode.NodeSet(&set)
 }
