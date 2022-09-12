@@ -13,11 +13,11 @@ Welcome to the Warewulf User Guide!
    Stateless Provisioning <stateless>
    Control Server Setup <setup>
    Warewulf Installation <installation>
-   Warewulf Configuration
-   Warewulf Initialization
-   Container Management
-   Node Kernels
-   Node Configuration
+   Warewulf Configuration <configuration>
+   Warewulf Initialization <initialization>
+   Container Management <containers>
+   Kernel Management <kernel>
+   Node Configuration <nodeconfig>
    Node Profiles
    Warewulf Overlays
    Node Provisioning
