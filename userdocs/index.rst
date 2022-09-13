@@ -18,9 +18,9 @@ Welcome to the Warewulf User Guide!
    Container Management <containers>
    Kernel Management <kernel>
    Node Configuration <nodeconfig>
-   Node Profiles
-   Warewulf Overlays
-   Node Provisioning
-   IPMI
-   Security
-   Templating
+   Node Profiles <profiles>
+   Warewulf Overlays <overlays>
+   Node Provisioning <provisioning>
+   IPMI <ipmi>
+   Security <security>
+   Templating <templating>
