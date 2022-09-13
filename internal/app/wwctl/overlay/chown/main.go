@@ -21,16 +21,16 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	overlayName := args[0]
 	fileName := args[1]
 
-	uid, err = strconv.Atoi(args[3])
+	uid, err = strconv.Atoi(args[2])
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "UID is not an integer: %s\n", args[3])
+		wwlog.Printf(wwlog.ERROR, "UID is not an integer: %s\n", args[2])
 		os.Exit(1)
 	}
 
-	if len(args) > 4 {
-		gid, err = strconv.Atoi(args[4])
+	if len(args) > 3 {
+		gid, err = strconv.Atoi(args[3])
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "GID is not an integer: %s\n", args[4])
+			wwlog.Printf(wwlog.ERROR, "GID is not an integer: %s\n", args[3])
 			os.Exit(1)
 		}
 	} else {
