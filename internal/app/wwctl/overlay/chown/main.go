@@ -34,7 +34,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			os.Exit(1)
 		}
 	} else {
-		gid = 0
+		gid = -1
 	}
 
 	overlaySourceDir = overlay.OverlaySourceDir(overlayName)

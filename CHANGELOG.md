@@ -38,6 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   to be changed accordingly
 - host overlays can globaly disbaled, but are enabled per default
 - `wwctl overlay build -H` will only build the overlays which are assigned to the nodes
+### Fixes
+- GID is no longer changed to `0` when unspecified during chown
 
 
 ## [4.1.0] - 2021-07-29
