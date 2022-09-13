@@ -6,21 +6,35 @@ Welcome to the Warewulf User Guide!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Contents
 
-   Introduction <introduction>
-   Background <background>
-   Stateless Provisioning <stateless>
-   Control Server Setup <setup>
-   Warewulf Installation <installation>
-   Warewulf Configuration <configuration>
-   Warewulf Initialization <initialization>
-   Container Management <containers>
-   Kernel Management <kernel>
-   Node Configuration <nodeconfig>
-   Node Profiles <profiles>
-   Warewulf Overlays <overlays>
-   Node Provisioning <provisioning>
-   IPMI <ipmi>
-   Security <security>
-   Templating <templating>
+   Introduction <contents/introduction>
+   Background <contents/background>
+   Stateless Provisioning <contents/stateless>
+   Control Server Setup <contents/setup>
+   Warewulf Installation <contents/installation>
+   Warewulf Configuration <contents/configuration>
+   Warewulf Initialization <contents/initialization>
+   Container Management <contents/containers>
+   Kernel Management <contents/kernel>
+   Node Configuration <contents/nodeconfig>
+   Node Profiles <contents/profiles>
+   Warewulf Overlays <contents/overlays>
+   Node Provisioning <contents/provisioning>
+   IPMI <contents/ipmi>
+   Security <contents/security>
+   Templating <contents/templating>
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Quickstart
+
+   EL7 (CentOS and RHEL) <quickstart/el7>
+   EL8 (Rocky Linux and RHEL) <quickstart/el8>
+   openSUSE Leap and SLES 15 <quickstart/suse15>
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Reference
+
+   Glossary <reference/glossary>
