@@ -260,7 +260,7 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 						if len(filenameFromTemplate) != 0 {
 							wwlog.Debug("Found multifile comment, new filename %s", filenameFromTemplate[0][1])
 							if foundFileComment {
-								err = carefulWriteBuffer(path.Join(outputDir, destFileName),
+								err = CarefulWriteBuffer(path.Join(outputDir, destFileName),
 									fileBuffer, backupFile, info.Mode())
 								if err != nil {
 									return errors.Wrap(err, "could not write file from template")
@@ -277,7 +277,7 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 							_, _ = fileBuffer.WriteString(line)
 						}
 					}
-					err = carefulWriteBuffer(path.Join(outputDir, destFileName), fileBuffer, backupFile, info.Mode())
+					err = CarefulWriteBuffer(path.Join(outputDir, destFileName), fileBuffer, backupFile, info.Mode())
 					if err != nil {
 						return errors.Wrap(err, "could not write file from template")
 					}
@@ -335,7 +335,7 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 /*
 Writes buffer to the destination file. If wwbackup is set a wwbackup will be created.
 */
-func carefulWriteBuffer(destFile string, buffer bytes.Buffer, backupFile bool, perm fs.FileMode) error {
+func CarefulWriteBuffer(destFile string, buffer bytes.Buffer, backupFile bool, perm fs.FileMode) error {
 	wwlog.Debug("Trying to careful write file (%d bytes): %s", buffer.Len(), destFile)
 	if backupFile {
 		if !util.IsFile(destFile+".wwbackup") && util.IsFile(destFile) {

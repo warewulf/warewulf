@@ -34,6 +34,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Printf(wwlog.ERROR, "%s\n", err)
 			os.Exit(1)
 		}
+		err = configure.Hostfile()
+		if err != nil {
+			wwlog.Printf(wwlog.ERROR, "%s\n", err)
+			os.Exit(1)
+		}
+
 	} else {
 		_ = cmd.Help()
 		os.Exit(0)

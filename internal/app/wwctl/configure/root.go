@@ -2,6 +2,7 @@ package configure
 
 import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/dhcp"
+	"github.com/hpcng/warewulf/internal/app/wwctl/configure/hostfile"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/nfs"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/ssh"
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure/tftp"
@@ -25,6 +26,8 @@ func init() {
 	baseCmd.AddCommand(tftp.GetCommand())
 	baseCmd.AddCommand(ssh.GetCommand())
 	baseCmd.AddCommand(nfs.GetCommand())
+	baseCmd.AddCommand(hostfile.GetCommand())
+
 	baseCmd.PersistentFlags().BoolVarP(&allFunctions, "all", "a", false, "Configure all services")
 }
 
