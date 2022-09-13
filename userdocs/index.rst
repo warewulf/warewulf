@@ -35,6 +35,15 @@ Welcome to the Warewulf User Guide!
 
 .. toctree::
    :maxdepth: 2
+   :caption: Contributing
+
+   Contributing <contributing/contributing>
+   Documentation <contributing/documentation>
+   Development Environment (KVM) <contributing/development-environment-kvm>
+   Development Environment (VirtualBox) <contributing/development-environment-vbox>
+
+.. toctree::
+   :maxdepth: 2
    :caption: Reference
 
    Glossary <reference/glossary>
