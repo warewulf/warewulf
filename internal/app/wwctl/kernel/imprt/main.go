@@ -15,11 +15,11 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 && !OptDetect {
-		wwlog.Printf(wwlog.ERROR, "the '--detect' flag is needed, if no kernel version is suppiled")
+		wwlog.Error("the '--detect' flag is needed, if no kernel version is suppiled")
 		os.Exit(1)
 	}
 	if OptDetect && (OptRoot == "" || OptContainer == "") {
-		wwlog.Printf(wwlog.ERROR, "the '--detect flag needs the '--container' or '--root' flag")
+		wwlog.Error("the '--detect flag needs the '--container' or '--root' flag")
 		os.Exit(1)
 	}
 	// Checking if container flag was set, then overwriting OptRoot
@@ -27,7 +27,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if container.ValidSource(OptContainer) {
 			OptRoot = container.RootFsDir(OptContainer)
 		} else {
-			wwlog.Printf(wwlog.ERROR, " %s is not a valid container", OptContainer)
+			wwlog.Error(" %s is not a valid container", OptContainer)
 			os.Exit(1)
 		}
 	}
@@ -39,7 +39,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	} else {
 		kernelVersion, err = kernel.FindKernelVersion(OptRoot)
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "could not detect kernel under %s\n", OptRoot)
+			wwlog.Error("could not detect kernel under %s\n", OptRoot)
 			os.Exit(1)
 		}
 	}
@@ -51,7 +51,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 	output, err := kernel.Build(kernelVersion, kernelName, OptRoot)
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Failed building kernel: %s\n", err)
+		wwlog.Error("Failed building kernel: %s\n", err)
 		os.Exit(1)
 	} else {
 		fmt.Printf("%s: %s\n", kernelName, output)
@@ -61,15 +61,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 		nodeDB, err := node.New()
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
+			wwlog.Error("Could not open node configuration: %s\n", err)
 			os.Exit(1)
 		}
 		//TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
 		profiles, _ := nodeDB.FindAllProfiles()
 		for _, profile := range profiles {
-			wwlog.Printf(wwlog.DEBUG, "Looking for profile default: %s\n", profile.Id.Get())
+			wwlog.Debug("Looking for profile default: %s\n", profile.Id.Get())
 			if profile.Id.Get() == "default" {
-				wwlog.Printf(wwlog.DEBUG, "Found profile default, setting kernel version to: %s\n", args[0])
+				wwlog.Debug("Found profile default, setting kernel version to: %s\n", args[0])
 				profile.Kernel.Override.Set(args[0])
 				err := nodeDB.ProfileUpdate(profile)
 				if err != nil {

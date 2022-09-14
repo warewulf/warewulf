@@ -78,13 +78,13 @@ func ProfileSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (node
 	var pConf node.NodeConf
 	err = yaml.Unmarshal([]byte(set.NodeConfYaml), &pConf)
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, fmt.Sprintf("%v\n", err.Error()))
+		wwlog.Error(fmt.Sprintf("%v\n", err.Error()))
 		return
 	}
 
 	for _, p := range profiles {
 		if util.InSlice(set.NodeNames, p.Id.Get()) {
-			wwlog.Printf(wwlog.VERBOSE, "Evaluating profile: %s\n", p.Id.Get())
+			wwlog.Verbose("Evaluating profile: %s\n", p.Id.Get())
 			p.SetFrom(&pConf)
 			if set.NetdevDelete != "" {
 				if _, ok := p.NetDevs[set.NetdevDelete]; !ok {
@@ -92,7 +92,7 @@ func ProfileSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (node
 					wwlog.Error(fmt.Sprintf("%v\n", err.Error()))
 					return
 				}
-				wwlog.Printf(wwlog.VERBOSE, "Profile: %s, Deleting network device: %s\n", p.Id.Get(), set.NetdevDelete)
+				wwlog.Verbose("Profile: %s, Deleting network device: %s\n", p.Id.Get(), set.NetdevDelete)
 				delete(p.NetDevs, set.NetdevDelete)
 			}
 			for _, key := range pConf.TagsDel {

@@ -21,12 +21,12 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 
 	controller, err := warewulfconf.New()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "%s\n", err)
+		wwlog.Error("%s\n", err)
 		os.Exit(1)
 	}
 
 	if controller.Ipaddr == "" {
-		wwlog.Printf(wwlog.ERROR, "The Warewulf Server IP Address is not properly configured\n")
+		wwlog.Error("The Warewulf Server IP Address is not properly configured\n")
 		os.Exit(1)
 	}
 
@@ -46,7 +46,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			fmt.Print("\033[H\033[2J")
 			_, height, err = term.GetSize(0)
 			if err != nil {
-				wwlog.Printf(wwlog.WARN, "Could not get terminal height, using 24\n")
+				wwlog.Warn("Could not get terminal height, using 24\n")
 				height = 24
 			}
 		}
@@ -54,7 +54,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		fmt.Printf("%-20s %-20s %-25s %-10s\n", "NODENAME", "STAGE", "SENT", "LASTSEEN (s)")
 		fmt.Printf("%s\n", strings.Repeat("=", 80))
 
-		wwlog.Printf(wwlog.VERBOSE, "Building sort index\n")
+		wwlog.Verbose("Building sort index\n")
 		var statuses []*wwapiv1.NodeStatus
 		if len(args) > 0 {
 			nodeList := hostlist.Expand(args)
@@ -72,7 +72,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			}
 		}
 
-		wwlog.Printf(wwlog.VERBOSE, "Sorting index\n")
+		wwlog.Verbose("Sorting index\n")
 		if SetSortLast {
 			sort.Slice(statuses, func(i, j int) bool {
 				if statuses[i].Lastseen > statuses[j].Lastseen {
@@ -84,7 +84,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 				}
 			})
 		} else if SetSortReverse {
-			wwlog.Printf(wwlog.VERBOSE, "Reversing sort order\n")
+			wwlog.Verbose("Reversing sort order\n")
 			sort.Slice(statuses, func(i, j int) bool {
 				return statuses[i].NodeName > statuses[j].NodeName
 			})
@@ -95,7 +95,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			})
 		}
 
-		wwlog.Printf(wwlog.VERBOSE, "Printing results\n")
+		wwlog.Verbose("Printing results\n")
 		for i := 0; i < len(statuses); i++ {
 			o := statuses[i]
 			if SetTime > 0 && o.Lastseen < SetTime {

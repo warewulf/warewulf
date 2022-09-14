@@ -43,7 +43,7 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 		if err != nil {
 			return errors.Wrap(err, "failed to add node")
 		}
-		wwlog.Printf(wwlog.INFO, "Added node: %s\n", a)
+		wwlog.Info("Added node: %s\n", a)
 		var netName string
 		for netName = range nodeConf.NetDevs {
 			// as map should only have key this should give is the first and
@@ -92,14 +92,14 @@ func NodeDelete(ndp *wwapiv1.NodeDeleteParameter) (err error) {
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Failed to open node database: %s\n", err)
+		wwlog.Error("Failed to open node database: %s\n", err)
 		return
 	}
 
 	for _, n := range nodeList {
 		err := nodeDB.DelNode(n.Id.Get())
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "%s\n", err)
+			wwlog.Error("%s\n", err)
 		} else {
 			//count++
 			fmt.Printf("Deleting node: %s\n", n.Id.Print())
@@ -130,13 +130,13 @@ func NodeDeleteParameterCheck(ndp *wwapiv1.NodeDeleteParameter, console bool) (n
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Failed to open node database: %s\n", err)
+		wwlog.Error("Failed to open node database: %s\n", err)
 		return
 	}
 
 	nodes, err := nodeDB.FindAllNodes()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not get node list: %s\n", err)
+		wwlog.Error("Could not get node list: %s\n", err)
 		return
 	}
 
@@ -201,13 +201,13 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 
 	nodeDB, err = node.New()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
+		wwlog.Error("Could not open node configuration: %s\n", err)
 		return
 	}
 
 	nodes, err := nodeDB.FindAllNodes()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not get node list: %s\n", err)
+		wwlog.Error("Could not get node list: %s\n", err)
 		return
 	}
 
@@ -229,22 +229,22 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 	}
 
 	for _, n := range nodes {
-		wwlog.Printf(wwlog.VERBOSE, "Evaluating node: %s\n", n.Id.Get())
+		wwlog.Verbose("Evaluating node: %s\n", n.Id.Get())
 		var nodeConf node.NodeConf
 		err = yaml.Unmarshal([]byte(set.NodeConfYaml), &nodeConf)
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, fmt.Sprintf("%v\n", err.Error()))
+			wwlog.Error(fmt.Sprintf("%v\n", err.Error()))
 			return
 		}
 		n.SetFrom(&nodeConf)
 		if set.NetdevDelete != "" {
 			if _, ok := n.NetDevs[set.NetdevDelete]; !ok {
 				err = fmt.Errorf("network device name doesn't exist: %s", set.NetdevDelete)
-				wwlog.Printf(wwlog.ERROR, fmt.Sprintf("%v\n", err.Error()))
+				wwlog.Error(fmt.Sprintf("%v\n", err.Error()))
 				return
 			}
 
-			wwlog.Printf(wwlog.VERBOSE, "Node: %s, Deleting network device: %s\n", n.Id.Get(), set.NetdevDelete)
+			wwlog.Verbose("Node: %s, Deleting network device: %s\n", n.Id.Get(), set.NetdevDelete)
 			delete(n.NetDevs, set.NetdevDelete)
 		}
 		for _, key := range nodeConf.TagsDel {
@@ -262,7 +262,7 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 		}
 		err := nodeDB.NodeUpdate(n)
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "%s\n", err)
+			wwlog.Error("%s\n", err)
 			os.Exit(1)
 		}
 
@@ -292,22 +292,22 @@ func NodeStatus(nodeNames []string) (nodeStatusResponse *wwapiv1.NodeStatusRespo
 
 	controller, err := warewulfconf.New()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "%s\n", err)
+		wwlog.Error("%s\n", err)
 		return
 	}
 
 	if controller.Ipaddr == "" {
 		err = fmt.Errorf("the Warewulf Server IP Address is not properly configured")
-		wwlog.Printf(wwlog.ERROR, fmt.Sprintf("%v\n", err.Error()))
+		wwlog.Error(fmt.Sprintf("%v\n", err.Error()))
 		return
 	}
 
 	statusURL := fmt.Sprintf("http://%s:%d/status", controller.Ipaddr, controller.Warewulf.Port)
-	wwlog.Printf(wwlog.VERBOSE, "Connecting to: %s\n", statusURL)
+	wwlog.Verbose("Connecting to: %s\n", statusURL)
 
 	resp, err := http.Get(statusURL)
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not connect to Warewulf server: %s\n", err)
+		wwlog.Error("Could not connect to Warewulf server: %s\n", err)
 		return
 	}
 	defer resp.Body.Close()
@@ -317,7 +317,7 @@ func NodeStatus(nodeNames []string) (nodeStatusResponse *wwapiv1.NodeStatusRespo
 
 	err = decoder.Decode(&wwNodeStatus)
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not decode JSON: %s\n", err)
+		wwlog.Error("Could not decode JSON: %s\n", err)
 		return
 	}
 

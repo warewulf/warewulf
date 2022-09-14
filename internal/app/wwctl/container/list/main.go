@@ -12,7 +12,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 
 	containerInfo, err := container.ContainerList()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "%s\n", err)
+		wwlog.Error("%s\n", err)
 		return
 	}
 
