@@ -2,6 +2,7 @@ package list
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/api/container"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -16,12 +17,16 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		return
 	}
 
-	fmt.Printf("%-25s %-6s %-6s\n", "CONTAINER NAME", "NODES", "KERNEL VERSION")
+	fmt.Printf("%-16s %-6s %-16s %-18s %-18s\n", "CONTAINER NAME", "NODES", "KERNEL VERSION", "CREATION TIME", "MODIFICATION TIME")
 	for i := 0; i < len(containerInfo); i++ {
-		fmt.Printf("%-25s %-6d %-6s\n",
+		createTime := time.Unix(int64(containerInfo[i].CreateDate), 0)
+		modTime := time.Unix(int64(containerInfo[i].ModDate), 0)
+		fmt.Printf("%-16s %-6d %-16s %-18s %-18s\n",
 			containerInfo[i].Name,
 			containerInfo[i].NodeCount,
-			containerInfo[i].KernelVersion)
+			containerInfo[i].KernelVersion,
+			createTime.Format(time.RFC822),
+			modTime.Format(time.RFC822))
 	}
 	return
 }
