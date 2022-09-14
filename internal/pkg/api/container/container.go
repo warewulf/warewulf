@@ -119,9 +119,13 @@ ARG_LOOP:
 		err := container.DeleteSource(containerName)
 		if err != nil {
 			wwlog.Error("Could not remove source: %s\n", containerName)
-		} else {
-			fmt.Printf("Container has been deleted: %s\n", containerName)
 		}
+		err = container.DeleteImage(containerName)
+		if err != nil {
+			wwlog.Error("Could not remove image files %s\n", containerName)
+		}
+
+		fmt.Printf("Container has been deleted: %s\n", containerName)
 	}
 
 	return
