@@ -298,12 +298,28 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 		if err != nil {
 			wwlog.Error("%s\n", err)
 		}
+		size, err := util.DirSize(container.SourceDir(source))
+		if err != nil {
+			wwlog.Error("%s\n", err)
+		}
+		imgSize, err := os.Stat(container.ImageFile(source))
+		if err != nil {
+			wwlog.Error("%s\n", err)
+		}
+		size += imgSize.Size()
+		imgSize, err = os.Stat(container.ImageFile(source) + ".gz")
+		if err != nil {
+			wwlog.Error("%s\n", err)
+		}
+		size += imgSize.Size()
+
 		containerInfo = append(containerInfo, &wwapiv1.ContainerInfo{
 			Name:          source,
 			NodeCount:     uint32(nodemap[source]),
 			KernelVersion: kernelVersion,
 			CreateDate:    uint64(creationTime.ModTime().Unix()),
 			ModDate:       uint64(modTime.ModTime().Unix()),
+			Size:          uint64(size),
 		})
 
 	}
