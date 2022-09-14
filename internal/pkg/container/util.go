@@ -64,9 +64,33 @@ func ValidSource(name string) bool {
 	return true
 }
 
+/*
+Delete the chroot of a container
+*/
 func DeleteSource(name string) error {
 	fullPath := SourceDir(name)
 
 	wwlog.Verbose("Removing path: %s\n", fullPath)
 	return os.RemoveAll(fullPath)
+}
+
+/*
+Delete the image of a container
+*/
+func DeleteImage(name string) error {
+	imageFile := ImageFile(name)
+	if util.IsFile(imageFile) {
+		wwlog.Verbose("removing %s for container %s\n", imageFile, name)
+		errImg := os.Remove(imageFile)
+		wwlog.Verbose("removing %s for container %s\n", imageFile+".gz", name)
+		errGz := os.Remove(imageFile + ".gz")
+		if errImg != nil {
+			return errors.Errorf("Problems delete %s for container %s: %s\n", imageFile, name, errImg)
+		}
+		if errGz != nil {
+			return errors.Errorf("Problems delete %s for container %s: %s\n", imageFile+".gz", name, errGz)
+		}
+		return nil
+	}
+	return errors.Errorf("Image %s of container %s doesn't exist\n", imageFile, name)
 }
