@@ -16,18 +16,18 @@ import (
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	controller, err := warewulfconf.New()
 	if err != nil {
-		wwlog.Error("%s\n", err)
+		wwlog.Error("%s", err)
 		os.Exit(1)
 	}
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("Could not open node configuration: %s\n", err)
+		wwlog.Error("Could not open node configuration: %s", err)
 		os.Exit(1)
 	}
 
 	nodes, err := nodeDB.FindAllNodes()
 	if err != nil {
-		wwlog.Error("Could not get node list: %s\n", err)
+		wwlog.Error("Could not get node list: %s", err)
 		os.Exit(1)
 	}
 
@@ -81,7 +81,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if BuildHost || (!BuildHost && !BuildNodes && len(args) == 0 && controller.Warewulf.EnableHostOverlay) {
 		err := overlay.BuildHostOverlay()
 		if err != nil {
-			wwlog.Warn("host overlay could not be built: %s\n", err)
+			wwlog.Warn("host overlay could not be built: %s", err)
 		}
 	}
 
@@ -93,7 +93,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		if err != nil {
-			wwlog.Warn("Some overlays failed to be generated: %s\n", err)
+			wwlog.Warn("Some overlays failed to be generated: %s", err)
 		}
 	}
 	return nil

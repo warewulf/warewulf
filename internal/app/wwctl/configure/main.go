@@ -13,30 +13,30 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if allFunctions {
 		err = configure.Dhcp()
 		if err != nil {
-			wwlog.Error("%s\n", err)
+			wwlog.Error("%s", err)
 			os.Exit(1)
 		}
 
 		err = configure.NFS()
 		if err != nil {
-			wwlog.Error("%s\n", err)
+			wwlog.Error("%s", err)
 			os.Exit(1)
 		}
 
 		err = configure.SSH()
 		if err != nil {
-			wwlog.Error("%s\n", err)
+			wwlog.Error("%s", err)
 			os.Exit(1)
 		}
 
 		err = configure.TFTP()
 		if err != nil {
-			wwlog.Error("%s\n", err)
+			wwlog.Error("%s", err)
 			os.Exit(1)
 		}
 		err = configure.Hostfile()
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "%s\n", err)
+			wwlog.Error("%s", err)
 			os.Exit(1)
 		}
 

@@ -24,19 +24,19 @@ func init() {
 func New() (NodeYaml, error) {
 	var ret NodeYaml
 
-	wwlog.Verbose("Opening node configuration file: %s\n", ConfigFile)
+	wwlog.Verbose("Opening node configuration file: %s", ConfigFile)
 	data, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
 		return ret, err
 	}
 
-	wwlog.Debug("Unmarshaling the node configuration\n")
+	wwlog.Debug("Unmarshaling the node configuration")
 	err = yaml.Unmarshal(data, &ret)
 	if err != nil {
 		return ret, err
 	}
 
-	wwlog.Debug("Returning node object\n")
+	wwlog.Debug("Returning node object")
 
 	return ret, nil
 }
@@ -54,11 +54,11 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			return ret, err
 		}
 	*/
-	wwlog.Debug("Finding all nodes...\n")
+	wwlog.Debug("Finding all nodes...")
 	for nodename, node := range config.Nodes {
 		var n NodeInfo
 
-		wwlog.Debug("In node loop: %s\n", nodename)
+		wwlog.Debug("In node loop: %s", nodename)
 		n.NetDevs = make(map[string]*NetDevEntry)
 		n.Tags = make(map[string]*Entry)
 		n.Kernel = new(KernelEntry)
@@ -125,11 +125,11 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 
 		for _, profileName := range n.Profiles.GetSlice() {
 			if _, ok := config.NodeProfiles[profileName]; !ok {
-				wwlog.Warn("Profile not found for node '%s': %s\n", nodename, profileName)
+				wwlog.Warn("Profile not found for node '%s': %s", nodename, profileName)
 				continue
 			}
 			// can't call setFrom() as we have to use SetAlt instead of Set for an Entry
-			wwlog.Verbose("Merging profile into node: %s <- %s\n", nodename, profileName)
+			wwlog.Verbose("Merging profile into node: %s <- %s", nodename, profileName)
 			n.SetAltFrom(config.NodeProfiles[profileName], profileName)
 		}
 		ret = append(ret, n)

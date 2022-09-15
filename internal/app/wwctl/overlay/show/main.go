@@ -26,48 +26,48 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	overlaySourceDir = overlay.OverlaySourceDir(overlayName)
 
 	if !util.IsDir(overlaySourceDir) {
-		wwlog.Error("Overlay does not exist: %s\n", overlayName)
+		wwlog.Error("Overlay does not exist: %s", overlayName)
 		os.Exit(1)
 	}
 
 	overlayFile := path.Join(overlaySourceDir, fileName)
 
 	if !util.IsFile(overlayFile) {
-		wwlog.Error("File does not exist within overlay: %s:%s\n", overlayName, fileName)
+		wwlog.Error("File does not exist within overlay: %s:%s", overlayName, fileName)
 		os.Exit(1)
 	}
 
 	if NodeName == "" {
 		f, err := ioutil.ReadFile(overlayFile)
 		if err != nil {
-			wwlog.Error("Could not read file: %s\n", err)
+			wwlog.Error("Could not read file: %s", err)
 			os.Exit(1)
 		}
 
 		fmt.Print(string(f))
 	} else {
 		if !util.IsFile(overlayFile) {
-			wwlog.Debug("%s is not a file\n", overlayFile)
-			wwlog.Error("%s:%s is not a file\n", overlayName, fileName)
+			wwlog.Debug("%s is not a file", overlayFile)
+			wwlog.Error("%s:%s is not a file", overlayName, fileName)
 			os.Exit(1)
 		}
 		if filepath.Ext(overlayFile) != ".ww" {
-			wwlog.Warn("%s lacks the '.ww' suffix, will not be rendered in an overlay\n", fileName)
+			wwlog.Warn("%s lacks the '.ww' suffix, will not be rendered in an overlay", fileName)
 		}
 
 		nodeDB, err := node.New()
 		if err != nil {
-			wwlog.Error("Could not open node configuration: %s\n", err)
+			wwlog.Error("Could not open node configuration: %s", err)
 			os.Exit(1)
 		}
 		nodes, err := nodeDB.FindAllNodes()
 		if err != nil {
-			wwlog.Error("Could not get node list: %s\n", err)
+			wwlog.Error("Could not get node list: %s", err)
 			os.Exit(1)
 		}
 		filteredNodes := node.FilterByName(nodes, []string{NodeName})
 		if len(filteredNodes) != 1 {
-			wwlog.Error("%v does not identify a single node\n", NodeName)
+			wwlog.Error("%v does not identify a single node", NodeName)
 			os.Exit(1)
 		}
 		tstruct := overlay.InitStruct(filteredNodes[0])
@@ -87,11 +87,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			line := bufferScanner.Text()
 			filenameFromTemplate := reg.FindAllStringSubmatch(line, -1)
 			if len(filenameFromTemplate) != 0 {
-				wwlog.Debug("Found multifile comment, new filename %s\n", filenameFromTemplate[0][1])
+				wwlog.Debug("Found multifile comment, new filename %s", filenameFromTemplate[0][1])
 				if foundFileComment {
 					if !Quiet {
-						wwlog.Info("backupFile: %v\nwriteFile: %v\n", backupFile, writeFile)
-						wwlog.Info("Filename: %s\n\n", destFileName)
+						wwlog.Info("backupFile: %v\nwriteFile: %v", backupFile, writeFile)
+						wwlog.Info("Filename: %s\n", destFileName)
 					}
 					wwlog.Info("%s", outBuffer.String())
 					outBuffer.Reset()
@@ -103,8 +103,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 		}
 		if !Quiet {
-			wwlog.Info("backupFile: %v\nwriteFile: %v\n", backupFile, writeFile)
-			wwlog.Info("Filename: %s\n\n", destFileName)
+			wwlog.Info("backupFile: %v\nwriteFile: %v", backupFile, writeFile)
+			wwlog.Info("Filename: %s\n", destFileName)
 		}
 		fmt.Print(outBuffer.String())
 	}

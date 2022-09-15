@@ -40,34 +40,34 @@ func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 	for _, c := range containers {
 		if !container.ValidSource(c) {
 			err = fmt.Errorf("VNFS name does not exist: %s", c)
-			wwlog.Error("%s\n", err)
+			wwlog.Error("%s", err)
 			return
 		}
 
 		err = container.Build(c, cbp.Force)
 		if err != nil {
-			wwlog.Error("Could not build container %s: %s\n", c, err)
+			wwlog.Error("Could not build container %s: %s", c, err)
 			return
 		}
 	}
 
 	if cbp.Default {
 		if len(containers) != 1 {
-			wwlog.Error("Can only set default for one container\n")
+			wwlog.Error("Can only set default for one container")
 		} else {
 			var nodeDB node.NodeYaml
 			nodeDB, err = node.New()
 			if err != nil {
-				wwlog.Error("Could not open node configuration: %s\n", err)
+				wwlog.Error("Could not open node configuration: %s", err)
 				return
 			}
 
 			//TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
 			profiles, _ := nodeDB.FindAllProfiles()
 			for _, profile := range profiles {
-				wwlog.Debug("Looking for profile default: %s\n", profile.Id.Get())
+				wwlog.Debug("Looking for profile default: %s", profile.Id.Get())
 				if profile.Id.Get() == "default" {
-					wwlog.Debug("Found profile default, setting container name to: %s\n", containers[0])
+					wwlog.Debug("Found profile default, setting container name to: %s", containers[0])
 					profile.ContainerName.Set(containers[0])
 					err := nodeDB.ProfileUpdate(profile)
 					if err != nil {
@@ -94,7 +94,7 @@ func ContainerDelete(cdp *wwapiv1.ContainerDeleteParameter) (err error) {
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("Could not open nodeDB: %s\n", err)
+		wwlog.Error("Could not open nodeDB: %s", err)
 		return
 	}
 
@@ -109,18 +109,18 @@ ARG_LOOP:
 		containerName := cdp.ContainerNames[i]
 		for _, n := range nodes {
 			if n.ContainerName.Get() == containerName {
-				wwlog.Error("Container is configured for nodes, skipping: %s\n", containerName)
+				wwlog.Error("Container is configured for nodes, skipping: %s", containerName)
 				continue ARG_LOOP
 			}
 		}
 
 		if !container.ValidSource(containerName) {
-			wwlog.Error("Container name is not a valid source: %s\n", containerName)
+			wwlog.Error("Container name is not a valid source: %s", containerName)
 			continue
 		}
 		err := container.DeleteSource(containerName)
 		if err != nil {
-			wwlog.Error("Could not remove source: %s\n", containerName)
+			wwlog.Error("Could not remove source: %s", containerName)
 		} else {
 			fmt.Printf("Container has been deleted: %s\n", containerName)
 		}
@@ -143,7 +143,7 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 	}
 	if !container.ValidName(cip.Name) {
 		err = fmt.Errorf("VNFS name contains illegal characters: %s", cip.Name)
-		wwlog.Error("%s\n", err)
+		wwlog.Error("%s", err)
 		return
 	}
 
@@ -155,53 +155,53 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 			fmt.Printf("Overwriting existing VNFS\n")
 			err = os.RemoveAll(fullPath)
 			if err != nil {
-				wwlog.Error("%s\n", err)
+				wwlog.Error("%s", err)
 				return
 			}
 		} else if cip.Update {
 			fmt.Printf("Updating existing VNFS\n")
 		} else {
 			err = fmt.Errorf("VNFS Name exists, specify --force, --update, or choose a different name: %s", cip.Name)
-			wwlog.Error("%s\n", err)
+			wwlog.Error("%s", err)
 			return
 		}
 	} else if strings.HasPrefix(cip.Source, "docker://") || strings.HasPrefix(cip.Source, "docker-daemon://") {
 		var sCtx *types.SystemContext
 		sCtx, err = getSystemContext()
 		if err != nil {
-			wwlog.Error("%s\n", err)
+			wwlog.Error("%s", err)
 			// return was missing here. Was that deliberate?
 		}
 
 		err = container.ImportDocker(cip.Source, cip.Name, sCtx)
 		if err != nil {
-			wwlog.Error("Could not import image: %s\n", err)
+			wwlog.Error("Could not import image: %s", err)
 			_ = container.DeleteSource(cip.Name)
 			return
 		}
 	} else if util.IsDir(cip.Source) {
 		err = container.ImportDirectory(cip.Source, cip.Name)
 		if err != nil {
-			wwlog.Error("Could not import image: %s\n", err)
+			wwlog.Error("Could not import image: %s", err)
 			_ = container.DeleteSource(cip.Name)
 			return
 		}
 	} else {
 		err = fmt.Errorf("Invalid dir or uri: %s", cip.Source)
-		wwlog.Error("%s\n", err)
+		wwlog.Error("%s", err)
 		return
 	}
 
 	fmt.Printf("Updating the container's /etc/resolv.conf\n")
 	err = util.CopyFile("/etc/resolv.conf", path.Join(container.RootFsDir(cip.Name), "/etc/resolv.conf"))
 	if err != nil {
-		wwlog.Warn("Could not copy /etc/resolv.conf into container: %s\n", err)
+		wwlog.Warn("Could not copy /etc/resolv.conf into container: %s", err)
 	}
 
 	fmt.Printf("Building container: %s\n", cip.Name)
 	err = container.Build(cip.Name, true)
 	if err != nil {
-		wwlog.Error("Could not build container %s: %s\n", cip.Name, err)
+		wwlog.Error("Could not build container %s: %s", cip.Name, err)
 		return
 	}
 
@@ -209,16 +209,16 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		var nodeDB node.NodeYaml
 		nodeDB, err = node.New()
 		if err != nil {
-			wwlog.Error("Could not open node configuration: %s\n", err)
+			wwlog.Error("Could not open node configuration: %s", err)
 			return
 		}
 
 		//TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
 		profiles, _ := nodeDB.FindAllProfiles()
 		for _, profile := range profiles {
-			wwlog.Debug("Looking for profile default: %s\n", profile.Id.Get())
+			wwlog.Debug("Looking for profile default: %s", profile.Id.Get())
 			if profile.Id.Get() == "default" {
-				wwlog.Debug("Found profile default, setting container name to: %s\n", cip.Name)
+				wwlog.Debug("Found profile default, setting container name to: %s", cip.Name)
 				profile.ContainerName.Set(cip.Name)
 				err = nodeDB.ProfileUpdate(profile)
 				if err != nil {
@@ -251,19 +251,19 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 
 	sources, err = container.ListSources()
 	if err != nil {
-		wwlog.Error("%s\n", err)
+		wwlog.Error("%s", err)
 		return
 	}
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("%s\n", err)
+		wwlog.Error("%s", err)
 		return
 	}
 
 	nodes, err := nodeDB.FindAllNodes()
 	if err != nil {
-		wwlog.Error("%s\n", err)
+		wwlog.Error("%s", err)
 		return
 	}
 
@@ -277,7 +277,7 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 			nodemap[source] = 0
 		}
 
-		wwlog.Debug("Finding kernel version for: %s\n", source)
+		wwlog.Debug("Finding kernel version for: %s", source)
 		kernelVersion := container.KernelVersion(source)
 
 		containerInfo = append(containerInfo, &wwapiv1.ContainerInfo{

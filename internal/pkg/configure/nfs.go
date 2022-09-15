@@ -19,7 +19,7 @@ func NFS() error {
 
 	controller, err := warewulfconf.New()
 	if err != nil {
-		wwlog.Error("%s\n", err)
+		wwlog.Error("%s", err)
 		os.Exit(1)
 	}
 
@@ -30,7 +30,7 @@ func NFS() error {
 		if controller.Warewulf.EnableHostOverlay {
 			err = overlay.BuildHostOverlay()
 			if err != nil {
-				wwlog.Warn("host overlay could not be built: %s\n", err)
+				wwlog.Warn("host overlay could not be built: %s", err)
 			}
 		} else {
 			wwlog.Info("host overlays are disabled, did not modify exports")

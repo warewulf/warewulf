@@ -16,7 +16,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 	err := container.SyncUids(containerName, !write)
 	if err != nil {
-		wwlog.Error("Error in synchronize: %s\n", err)
+		wwlog.Error("Error in synchronize: %s", err)
 		os.Exit(1)
 	}
 
