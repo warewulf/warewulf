@@ -34,10 +34,12 @@ jobs:
 
       - name: Build PDF documentation
         run: |
+          cd userdocs
           make latexpdf
 
       - name: Build EPUB documentation
         run: |
+          cd userdocs
           make epub
 
       - name: Install SSH key
@@ -61,7 +63,7 @@ jobs:
           git clone git@github.com:hpcng/warewulf-web.git ~/warewulf-web
           mkdir -p ~/warewulf-web/src/static/docs
           rm -rf ~/warewulf-web/src/static/docs/${GITHUB_REF##*/}
-          cp -r _build/html ~/warewulf-web/src/static/docs/${GITHUB_REF##*/}
+          cp -r userdocs/_build/html ~/warewulf-web/src/static/docs/${GITHUB_REF##*/}
           cd ~/warewulf-web
           git add src/static/docs/${GITHUB_REF##*/}
           git commit -m "Update ${GITHUB_REF##*/} docs"
