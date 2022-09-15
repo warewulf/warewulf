@@ -1,0 +1,70 @@
+package apinode
+
+import (
+	"os"
+
+	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
+)
+
+/*
+Returns the nodes as a yaml string
+*/
+func FindAllNodeConfs() *wwapiv1.NodeYaml {
+	nodeDB, err := node.New()
+	if err != nil {
+		wwlog.Error("Could not open nodeDB: %s\n", err)
+		os.Exit(1)
+	}
+	nodeMap := nodeDB.Nodes
+	// ignore err as nodeDB should always be correct
+	buffer, _ := yaml.Marshal(nodeMap)
+	retVal := wwapiv1.NodeYaml{
+		NodeConfMapYaml: string(buffer),
+	}
+	return &retVal
+}
+
+/*
+Returns filtered list of nodes
+*/
+func FilteredNodes(nodeList *wwapiv1.NodeList) *wwapiv1.NodeYaml {
+	nodeDB, err := node.New()
+	if err != nil {
+		wwlog.Error("Could not open nodeDB: %s\n", err)
+		os.Exit(1)
+	}
+	nodeMap := nodeDB.Nodes
+	nodeMap = node.FilterMapByName(nodeMap, nodeList.Output)
+	buffer, _ := yaml.Marshal(nodeMap)
+	retVal := wwapiv1.NodeYaml{
+		NodeConfMapYaml: string(buffer),
+	}
+	return &retVal
+}
+
+/*
+Add nodes from yaml
+*/
+func NodeAddFromYaml(nodeList *wwapiv1.NodeYaml) (err error) {
+	nodeDB, err := node.New()
+	if err != nil {
+		return errors.Wrap(err, "Could not open NodeDB: %s\n")
+	}
+	nodeMap := make(map[string]*node.NodeConf)
+	err = yaml.Unmarshal([]byte(nodeList.NodeConfMapYaml), nodeMap)
+	if err != nil {
+		return errors.Wrap(err, "Could not unmarshall Yaml: %s\n")
+	}
+	for nodeName, node := range nodeMap {
+		nodeDB.Nodes[nodeName] = node
+	}
+	nodeDB.Persist()
+	if err != nil {
+		return errors.Wrap(err, "failed to persist nodedb")
+	}
+	return nil
+}

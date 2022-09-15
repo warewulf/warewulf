@@ -126,6 +126,12 @@ message NodeAddParameter {
 	repeated string nodeNames = 10;
 }
 
+// NodeYaml is just the updated YAML config which will be added
+// to nodes.conf (is resused for profile edit)
+message NodeYaml {
+	string nodeConfMapYaml = 1;
+}
+
 // NodeDeleteParameter contains input for removing nodes from Warewulf
 // management.
 message NodeDeleteParameter {
