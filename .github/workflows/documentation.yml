@@ -32,16 +32,6 @@ jobs:
           cd userdocs
           make html
 
-      - name: Build PDF documentation
-        run: |
-          cd userdocs
-          make latexpdf
-
-      - name: Build EPUB documentation
-        run: |
-          cd userdocs
-          make epub
-
       - name: Install SSH key
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
