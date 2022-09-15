@@ -304,6 +304,20 @@ func (node *NodeInfo) SetAltFrom(n *NodeConf, profileName string) {
 }
 
 /*
+Populates all fields of NodeInfo with SetDefault from the
+values of NodeConf.
+*/
+func (node *NodeInfo) SetDefFrom(n *NodeConf) {
+	setWrap := func(entr *Entry, val string, nameArg string) {
+		entr.SetDefault(val)
+	}
+	setSliceWrap := func(entr *Entry, val []string, nameArg string) {
+		entr.SetDefaultSlice(val)
+	}
+	node.setterFrom(n, "", setWrap, setSliceWrap)
+}
+
+/*
 Abstract function which populates a NodeInfo from a NodeConf via
 setter functionns.
 */
