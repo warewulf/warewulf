@@ -3,8 +3,6 @@ name: publish_docs
 
 on:
   push:
-    branches:
-      - main
 
 jobs:
   publish:
