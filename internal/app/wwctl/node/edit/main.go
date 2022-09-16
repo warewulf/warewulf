@@ -31,17 +31,18 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 	nodeListMsg := apinode.FilteredNodes(&filterList)
 	nodeMap := make(map[string]*node.NodeConf)
-	yaml.Unmarshal([]byte(nodeListMsg.NodeConfMapYaml), nodeMap)
+	// got proper yaml back
+	_ = yaml.Unmarshal([]byte(nodeListMsg.NodeConfMapYaml), nodeMap)
 	file, err := ioutil.TempFile("/tmp", "ww4NodeEdit*.yaml")
 	if err != nil {
 		wwlog.Error("Could not create temp file:%s \n", err)
 	}
 	defer os.Remove(file.Name())
 	for {
-		file.Truncate(0)
-		file.Seek(0, 0)
-		file.WriteString(nodeListMsg.NodeConfMapYaml)
-		file.Seek(0, 0)
+		_ = file.Truncate(0)
+		_, _ = file.Seek(0, 0)
+		_, _ = file.WriteString(nodeListMsg.NodeConfMapYaml)
+		_, _ = file.Seek(0, 0)
 		hasher := sha256.New()
 		if _, err := io.Copy(hasher, file); err != nil {
 			wwlog.Error("Problems getting checksum of file %s\n", err)
@@ -52,7 +53,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Error("Editor process existed with non-zero\n")
 			os.Exit(1)
 		}
-		file.Seek(0, 0)
+		_, _ = file.Seek(0, 0)
 		hasher.Reset()
 		if _, err := io.Copy(hasher, file); err != nil {
 			wwlog.Error("Problems getting checksum of file %s\n", err)
@@ -62,7 +63,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if sum1 != sum2 {
 			wwlog.Debug("Nodes were modified")
 			modifiedNodeMap := make(map[string]*node.NodeConf)
-			file.Seek(0, 0)
+			_, _ = file.Seek(0, 0)
 			// ignore error as only may occurs under strange circumstances
 			buffer, _ := io.ReadAll(file)
 			err = yaml.Unmarshal(buffer, modifiedNodeMap)

@@ -62,7 +62,7 @@ func NodeAddFromYaml(nodeList *wwapiv1.NodeYaml) (err error) {
 	for nodeName, node := range nodeMap {
 		nodeDB.Nodes[nodeName] = node
 	}
-	nodeDB.Persist()
+	err = nodeDB.Persist()
 	if err != nil {
 		return errors.Wrap(err, "failed to persist nodedb")
 	}
