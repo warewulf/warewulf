@@ -315,9 +315,8 @@ func ContainerShow(csp *wwapiv1.ContainerShowParameter) (response *wwapiv1.Conta
 	rootFsDir := container.RootFsDir(containerName)
 
 	kernelVersion := container.KernelVersion(containerName)
-	if kernelVersion != "" {
+	if kernelVersion == "" {
 		kernelVersion = "not found"
-		fmt.Printf("Kernelversion: %s\n", kernelVersion)
 	}
 
 	nodeDB, err := node.New()
@@ -333,7 +332,6 @@ func ContainerShow(csp *wwapiv1.ContainerShowParameter) (response *wwapiv1.Conta
 	var nodeList []string
 	for _, n := range nodes {
 		if n.ContainerName.Get() == containerName {
-
 			nodeList = append(nodeList, n.Id.Get())
 		}
 	}
