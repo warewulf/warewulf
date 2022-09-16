@@ -315,9 +315,6 @@ func ContainerShow(csp *wwapiv1.ContainerShowParameter) (response *wwapiv1.Conta
 	rootFsDir := container.RootFsDir(containerName)
 
 	kernelVersion := container.KernelVersion(containerName)
-	if kernelVersion == "" {
-		kernelVersion = "not found"
-	}
 
 	nodeDB, err := node.New()
 	if err != nil {
