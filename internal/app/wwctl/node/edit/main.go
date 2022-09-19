@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	apinode "github.com/hpcng/warewulf/internal/pkg/api/node"
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
@@ -43,9 +44,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Error("Could not create temp file:%s \n", err)
 	}
 	defer os.Remove(file.Name())
+	nodeConf := node.NewConf()
+	yamlTemplate := nodeConf.UnmarshalConf([]string{"tagsdel"})
 	for {
 		_ = file.Truncate(0)
 		_, _ = file.Seek(0, 0)
+		if !NoHeader {
+			_, _ = file.WriteString("#nodename:\n#  " + strings.Join(yamlTemplate, "\n#  ") + "\n")
+		}
 		_, _ = file.WriteString(nodeListMsg.NodeConfMapYaml)
 		_, _ = file.Seek(0, 0)
 		hasher := sha256.New()

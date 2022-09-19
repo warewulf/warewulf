@@ -2,6 +2,7 @@ package node
 
 import (
 	"reflect"
+	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/spf13/cobra"
@@ -186,6 +187,10 @@ func (nodeConf *NodeConf) getterFrom(nodeInfo NodeInfo,
 		}
 	}
 }
+
+/*
+Create cmd line flags from the NodeConf fields
+*/
 func (nodeConf *NodeConf) CreateFlags(baseCmd *cobra.Command, excludeList []string) {
 	nodeInfoType := reflect.TypeOf(nodeConf)
 	nodeInfoVal := reflect.ValueOf(nodeConf)
@@ -437,4 +442,78 @@ func (info *NodeConf) Flatten() {
 			}
 		}
 	}
+}
+
+/*
+Create a string slice, where every element represents a yaml entry
+*/
+func (nodeConf *NodeConf) UnmarshalConf(excludeList []string) (lines []string) {
+	nodeInfoType := reflect.TypeOf(nodeConf)
+	nodeInfoVal := reflect.ValueOf(nodeConf)
+	// now iterate of every field
+	for i := 0; i < nodeInfoVal.Elem().NumField(); i++ {
+		if nodeInfoType.Elem().Field(i).Tag.Get("lopt") != "" {
+			if ymlStr, ok := getYamlString(nodeInfoType.Elem().Field(i), excludeList); ok {
+				lines = append(lines, ymlStr)
+			}
+		} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr {
+			nestType := reflect.TypeOf(nodeInfoVal.Elem().Field(i).Interface())
+			if ymlStr, ok := getYamlString(nodeInfoType.Elem().Field(i), excludeList); ok {
+				lines = append(lines, ymlStr)
+			}
+			for j := 0; j < nestType.Elem().NumField(); j++ {
+				if nestType.Elem().Field(j).Tag.Get("lopt") != "" &&
+					!util.InSlice(excludeList, nestType.Elem().Field(j).Tag.Get("lopt")) {
+					if ymlStr, ok := getYamlString(nestType.Elem().Field(j), excludeList); ok {
+						lines = append(lines, "  "+ymlStr)
+					}
+				}
+			}
+		} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string]*NetDevs(nil)) {
+			netMap := nodeInfoVal.Elem().Field(i).Interface().(map[string]*NetDevs)
+			// add a default network so that it can hold values
+			key := "default"
+			if len(netMap) == 0 {
+				netMap[key] = new(NetDevs)
+			} else {
+				for keyIt := range netMap {
+					key = keyIt
+					break
+				}
+			}
+			if ymlStr, ok := getYamlString(nodeInfoType.Elem().Field(i), excludeList); ok {
+				lines = append(lines, ymlStr+":", "  "+key+":")
+				netType := reflect.TypeOf(netMap[key])
+				for j := 0; j < netType.Elem().NumField(); j++ {
+					if ymlStr, ok := getYamlString(netType.Elem().Field(j), excludeList); ok {
+						lines = append(lines, "    "+ymlStr)
+					}
+				}
+			}
+		}
+	}
+	return lines
+}
+
+/*
+Get the string of the yaml tag
+*/
+func getYamlString(myType reflect.StructField, excludeList []string) (string, bool) {
+	ymlStr := myType.Tag.Get("yaml")
+	if len(strings.Split(ymlStr, ",")) > 1 {
+		ymlStr = strings.Split(ymlStr, ",")[0]
+	}
+	if util.InSlice(excludeList, ymlStr) {
+		return "", false
+	}
+	if myType.Type.Kind() == reflect.String {
+		ymlStr += ": string"
+	} else if myType.Type == reflect.TypeOf([]string{}) {
+		ymlStr += ": {string}"
+	} else if myType.Type == reflect.TypeOf(map[string]string{}) {
+		ymlStr += ": {key: value}"
+	} else if myType.Type.Kind() == reflect.Pointer {
+		ymlStr += ":"
+	}
+	return ymlStr, true
 }
