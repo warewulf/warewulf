@@ -25,8 +25,10 @@ func ConfirmationPrompt(label string) (yes bool) {
 	return
 }
 
-func CanWriteConfig() (canwrite wwapiv1.CanWriteConfig) {
-
+/*
+Simple check if the config can be written in case wwctl isn't run as root
+*/
+func CanWriteConfig() (canwrite *wwapiv1.CanWriteConfig) {
 	err := syscall.Access(node.ConfigFile, syscall.O_RDWR)
 	if err != nil {
 		wwlog.Warn("Couldn't open %s:%s", node.ConfigFile, err)
