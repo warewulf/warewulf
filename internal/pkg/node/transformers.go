@@ -512,7 +512,7 @@ func getYamlString(myType reflect.StructField, excludeList []string) (string, bo
 		ymlStr += ": {string}"
 	} else if myType.Type == reflect.TypeOf(map[string]string{}) {
 		ymlStr += ": {key: value}"
-	} else if myType.Type.Kind() == reflect.Pointer {
+	} else if myType.Type.Kind() == reflect.Ptr {
 		ymlStr += ":"
 	}
 	return ymlStr, true
