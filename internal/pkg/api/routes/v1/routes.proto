@@ -91,7 +91,6 @@ message NetDev {
 // NodeInfo contains details about a node managed by Warewulf/
 message NodeInfo {
 	map<string, NodeField> Fields = 1;
-
 	map<string, NetDev> NetDevs = 23;
 	map<string, NodeField> Tags = 24;
 	map<string, NodeField> Keys = 25; // TODO: We may not need this. Tags may be it. Ask Greg.
@@ -171,6 +170,11 @@ message VersionResponse {
 	string apiPrefix = 1;
 	string apiVersion = 2;
 	string warewulfVersion = 3;
+}
+
+// Check if config is writeable
+message CanWriteConfig {
+	bool canWriteConfig = 1;
 }
 
 // WWApi defines the wwapid service web interface.

@@ -19,6 +19,11 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
+	canWrite := apiutil.CanWriteConfig()
+	if !canWrite.CanWriteConfig {
+		wwlog.Error("Can't write to config exiting")
+		os.Exit(1)
+	}
 	editor := os.Getenv("EDITOR")
 	if editor == "" {
 		editor = "/bin/vi"
