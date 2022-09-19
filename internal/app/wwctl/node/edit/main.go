@@ -45,7 +45,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 	defer os.Remove(file.Name())
 	nodeConf := node.NewConf()
-	yamlTemplate := nodeConf.UnmarshalConf([]string{"tagsdel"})
+	yamlTemplate := nodeConf.UnmarshalConf([]string{"tagsdel", "default", "profiles"})
 	for {
 		_ = file.Truncate(0)
 		_, _ = file.Seek(0, 0)
