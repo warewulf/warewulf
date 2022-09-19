@@ -454,18 +454,20 @@ func (nodeConf *NodeConf) UnmarshalConf(excludeList []string) (lines []string) {
 	for i := 0; i < nodeInfoVal.Elem().NumField(); i++ {
 		if nodeInfoType.Elem().Field(i).Tag.Get("lopt") != "" {
 			if ymlStr, ok := getYamlString(nodeInfoType.Elem().Field(i), excludeList); ok {
-				lines = append(lines, ymlStr)
+				lines = append(lines, ymlStr...)
 			}
 		} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr {
 			nestType := reflect.TypeOf(nodeInfoVal.Elem().Field(i).Interface())
 			if ymlStr, ok := getYamlString(nodeInfoType.Elem().Field(i), excludeList); ok {
-				lines = append(lines, ymlStr)
+				lines = append(lines, ymlStr...)
 			}
 			for j := 0; j < nestType.Elem().NumField(); j++ {
 				if nestType.Elem().Field(j).Tag.Get("lopt") != "" &&
 					!util.InSlice(excludeList, nestType.Elem().Field(j).Tag.Get("lopt")) {
 					if ymlStr, ok := getYamlString(nestType.Elem().Field(j), excludeList); ok {
-						lines = append(lines, "  "+ymlStr)
+						for _, str := range ymlStr {
+							lines = append(lines, "  "+str)
+						}
 					}
 				}
 			}
@@ -482,12 +484,15 @@ func (nodeConf *NodeConf) UnmarshalConf(excludeList []string) (lines []string) {
 				}
 			}
 			if ymlStr, ok := getYamlString(nodeInfoType.Elem().Field(i), excludeList); ok {
-				lines = append(lines, ymlStr+":", "  "+key+":")
+				lines = append(lines, ymlStr[0]+":", "  "+key+":")
 				netType := reflect.TypeOf(netMap[key])
 				for j := 0; j < netType.Elem().NumField(); j++ {
 					if ymlStr, ok := getYamlString(netType.Elem().Field(j), excludeList); ok {
-						lines = append(lines, "    "+ymlStr)
+						for _, str := range ymlStr {
+							lines = append(lines, "  "+str)
+						}
 					}
+
 				}
 			}
 		}
@@ -498,22 +503,25 @@ func (nodeConf *NodeConf) UnmarshalConf(excludeList []string) (lines []string) {
 /*
 Get the string of the yaml tag
 */
-func getYamlString(myType reflect.StructField, excludeList []string) (string, bool) {
+func getYamlString(myType reflect.StructField, excludeList []string) ([]string, bool) {
 	ymlStr := myType.Tag.Get("yaml")
 	if len(strings.Split(ymlStr, ",")) > 1 {
 		ymlStr = strings.Split(ymlStr, ",")[0]
 	}
 	if util.InSlice(excludeList, ymlStr) {
-		return "", false
+		return []string{""}, false
+	} else if myType.Tag.Get("lopt") == "" && myType.Type.Kind() == reflect.String {
+		return []string{""}, false
 	}
 	if myType.Type.Kind() == reflect.String {
 		ymlStr += ": string"
+		return []string{ymlStr}, true
 	} else if myType.Type == reflect.TypeOf([]string{}) {
-		ymlStr += ": {string}"
+		return []string{ymlStr + ":", "  - string"}, true
 	} else if myType.Type == reflect.TypeOf(map[string]string{}) {
-		ymlStr += ": {key: value}"
+		return []string{ymlStr + ":", "  key: value"}, true
 	} else if myType.Type.Kind() == reflect.Ptr {
-		ymlStr += ":"
+		return []string{ymlStr + ":"}, true
 	}
-	return ymlStr, true
+	return []string{ymlStr}, true
 }
