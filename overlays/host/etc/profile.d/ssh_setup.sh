@@ -13,12 +13,7 @@
 
 _UID=`id -u`
 
-if [ $_UID -lt 500 -a $_UID -ne 0 ]; then
-    exit
-fi
-
-
-if [ ! -f "$HOME/.ssh/config" -a ! -f "$HOME/.ssh/cluster" ]; then
+if [ $_UID -ge 500 -o $_UID -eq 0 ] && [ ! -f "$HOME/.ssh/config" -a ! -f "$HOME/.ssh/cluster" ]; then
     echo "Configuring SSH for cluster access"
     install -d -m 700 $HOME/.ssh
     ssh-keygen -t rsa -f $HOME/.ssh/cluster -N '' -C "Warewulf Cluster key" > /dev/null 2>&1
