@@ -38,20 +38,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		cmd.Usage()
 		os.Exit(1)
 	}
-	globalPrimary := ""
 	for _, node := range nodes {
 		var primaryNet string
-		if _, ok := node.NetDevs[globalPrimary]; ok {
-			if node.NetDevs[globalPrimary].Primary.GetB() {
-				primaryNet = globalPrimary
-			}
-		}
 		for netName := range node.NetDevs {
 			if node.NetDevs[netName].Primary.GetB() {
 				primaryNet = netName
-				if globalPrimary == "" {
-					globalPrimary = netName
-				}
 				break
 			}
 		}
