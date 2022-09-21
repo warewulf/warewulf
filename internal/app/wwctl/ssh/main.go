@@ -38,20 +38,29 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		cmd.Usage()
 		os.Exit(1)
 	}
-
+	globalPrimary := ""
 	for _, node := range nodes {
 		var primaryNet string
+		if _, ok := node.NetDevs[globalPrimary]; ok {
+			if node.NetDevs[globalPrimary].Primary.GetB() {
+				primaryNet = globalPrimary
+			}
+		}
 		for netName := range node.NetDevs {
 			if node.NetDevs[netName].Primary.GetB() {
 				primaryNet = netName
+				if globalPrimary == "" {
+					globalPrimary = netName
+				}
+				break
 			}
 		}
 		if primaryNet == "" {
-			fmt.Fprintf(os.Stderr, "%s: Primary network device doesn't exist\n", node.Id.Get())
+			wwlog.Error("%s: Primary network device doesn't exist\n", node.Id.Get())
 			continue
 		}
 		if node.NetDevs[primaryNet].Ipaddr.Get() == "" {
-			fmt.Fprintf(os.Stderr, "%s: Primary  network IP address not configured\n", node.Id.Get())
+			wwlog.Error("%s: Primary  network IP address not configured\n", node.Id.Get())
 			continue
 		}
 
