@@ -51,7 +51,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			continue
 		}
 		if node.NetDevs[primaryNet].Ipaddr.Get() == "" {
-			wwlog.Error("%s: Primary  network IP address not configured\n", node.Id.Get())
+			wwlog.Error("%s: Primary network IP address not configured\n", node.Id.Get())
 			continue
 		}
 
