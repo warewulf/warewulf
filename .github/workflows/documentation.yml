@@ -51,10 +51,10 @@ jobs:
       - name: Update website repo
         run: |
           git clone git@github.com:hpcng/warewulf-web.git ~/warewulf-web
-          mkdir -p ~/warewulf-web/src/static/docs
-          rm -rf ~/warewulf-web/src/static/docs/${GITHUB_REF##*/}
-          cp -r userdocs/_build/html ~/warewulf-web/src/static/docs/${GITHUB_REF##*/}
+          mkdir -p ~/warewulf-web/static/docs
+          rm -rf ~/warewulf-web/static/docs/${GITHUB_REF##*/}
+          cp -r userdocs/_build/html ~/warewulf-web/static/docs/${GITHUB_REF##*/}
           cd ~/warewulf-web
-          git add src/static/docs/${GITHUB_REF##*/}
+          git add static/docs/${GITHUB_REF##*/}
           git commit -m "Update ${GITHUB_REF##*/} docs"
           git push
