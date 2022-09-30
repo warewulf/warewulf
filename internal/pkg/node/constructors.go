@@ -18,16 +18,22 @@ var DefaultConfig string
 
 // used as fallback if DefaultConfig can't be read
 var FallBackConf = `
-runtime overlay:
-- generic
-system overlay:
-- wwinit
-kernel:
-  args: quiet crashkernel=no vga=791
-init: /sbin/init
-root: initramfs
-profiles:
-- default`
+defaultnode:
+  runtime overlay:
+  - generic
+  system overlay:
+  - wwinit
+  kernel:
+    args: quiet crashkernel=no vga=791
+  init: /sbin/init
+  root: initramfs
+  profiles:
+  - default
+  network devices:
+    dummy:
+      device: eth0
+      type: ethernet
+      netmask: 255.255.255.0`
 
 func init() {
 	if ConfigFile == "" {
@@ -71,8 +77,7 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			return ret, err
 		}
 	*/
-	var defConf NodeConf
-	readBuildin := false
+	var defConf map[string]*NodeConf
 	wwlog.Verbose("Opening defaults failed %s\n", DefaultConfig)
 	defData, err := ioutil.ReadFile(DefaultConfig)
 	if err != nil {
@@ -81,15 +86,19 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 	wwlog.Debug("Unmarshalling default config\n")
 	err = yaml.Unmarshal(defData, &defConf)
 	if err != nil {
-		readBuildin = true
 		wwlog.Verbose("Couldn't unmarshall defaults from file :%s\n", err)
-	}
-	if readBuildin {
 		wwlog.Verbose("Using building defaults")
 		err = yaml.Unmarshal([]byte(FallBackConf), &defConf)
 		if err != nil {
 			wwlog.Warn("Could not get any defaults")
 		}
+	}
+	var defConfNet *NetDevs
+	if _, ok := defConf["defaultnode"]; ok {
+		if _, ok := defConf["defaultnode"].NetDevs["dummy"]; ok {
+			defConfNet = defConf["defaultnode"].NetDevs["dummy"]
+		}
+		defConf["defaultnode"].NetDevs = nil
 	}
 
 	wwlog.Debug("Finding all nodes...\n")
@@ -101,7 +110,7 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.Tags = make(map[string]*Entry)
 		n.Kernel = new(KernelEntry)
 		n.Ipmi = new(IpmiEntry)
-		n.SetDefFrom(&defConf)
+		n.SetDefFrom(defConf["defaultnode"])
 		fullname := strings.SplitN(nodename, ".", 2)
 		if len(fullname) > 1 {
 			n.ClusterName.SetDefault(fullname[1])
@@ -120,6 +129,10 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			delete(node.Keys, keyname)
 		}
 		n.SetFrom(node)
+		// only now the netdevs start to exist so that default values can be set
+		for _, netdev := range n.NetDevs {
+			netdev.SetDefFrom(defConfNet)
+		}
 		// set default/primary network is just one network exist
 		if len(n.NetDevs) == 1 {
 			// only way to get the key
