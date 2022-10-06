@@ -24,7 +24,7 @@ defaultnode:
   system overlay:
   - wwinit
   kernel:
-    args: quiet crashkernel=no vga=791
+    args: quiet crashkernel=no vga=791 net.naming-scheme=v238
   init: /sbin/init
   root: initramfs
   profiles:
