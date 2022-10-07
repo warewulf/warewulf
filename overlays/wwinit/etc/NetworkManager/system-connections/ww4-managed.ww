@@ -23,6 +23,11 @@ mac-address={{ $netdev.Hwaddr }}
 {{ end -}}
 {{ end -}}
 
+{{ if eq $netdev.Type "infiniband" -}}
+[infiniband]
+transport-mode=datagram
+{{ end -}}
+
 {{ if $netdev.IpCIDR -}}
 [ipv4]
 address={{ $netdev.IpCIDR }}
