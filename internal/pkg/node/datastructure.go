@@ -1,10 +1,5 @@
 package node
 
-import (
-	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-)
-
 /******
  * YAML data representations
  ******/
@@ -163,6 +158,8 @@ type NetDevEntry struct {
 // string which is printed if no value is set
 const NoValue = "--"
 
+/*
+Has no real purpose as only New() needs it
 func init() {
 	// Check that nodes.conf is found
 	if !util.IsFile(ConfigFile) {
@@ -171,3 +168,4 @@ func init() {
 		return
 	}
 }
+*/
