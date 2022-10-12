@@ -2,7 +2,6 @@ package container
 
 import (
 	"path"
-	"strings"
 
 	"github.com/pkg/errors"
 
@@ -27,19 +26,13 @@ func Build(name string, buildForce bool) error {
 		}
 	}
 
-	excludes_file := path.Join(rootfsPath, "./etc/warewulf/excludes")
 	ignore := []string{}
-
+	excludes_file := path.Join(rootfsPath, "./etc/warewulf/excludes")
 	if util.IsFile(excludes_file) {
-		ignore, err := util.ReadFile(excludes_file)
+		var err error
+		ignore, err = util.ReadFile(excludes_file)
 		if err != nil {
 			return errors.Wrapf(err, "Failed creating directory: %s", imagePath)
-		}
-
-		for i, pattern := range ignore {
-			if ( strings.HasPrefix(pattern, "/") ) {
-				ignore[i] = pattern[1:]
-			}
 		}
 	}
 
