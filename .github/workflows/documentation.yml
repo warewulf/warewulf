@@ -6,6 +6,7 @@ on:
 
 jobs:
   publish:
+    if: ${{ github.repository_owner == 'hcpng' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
