@@ -167,7 +167,7 @@ Has no real purpose as only New() needs it
 func init() {
 	// Check that nodes.conf is found
 	if !util.IsFile(ConfigFile) {
-		wwlog.Warn("Missing node configuration file\n")
+		wwlog.Warn("Missing node configuration file")
 		// just return silently, as init is also called for bash_completion
 		return
 	}

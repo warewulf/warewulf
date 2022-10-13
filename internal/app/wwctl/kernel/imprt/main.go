@@ -39,7 +39,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	} else {
 		kernelVersion, err = kernel.FindKernelVersion(OptRoot)
 		if err != nil {
-			wwlog.Error("could not detect kernel under %s\n", OptRoot)
+			wwlog.Error("could not detect kernel under %s", OptRoot)
 			os.Exit(1)
 		}
 	}
@@ -51,7 +51,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 	output, err := kernel.Build(kernelVersion, kernelName, OptRoot)
 	if err != nil {
-		wwlog.Error("Failed building kernel: %s\n", err)
+		wwlog.Error("Failed building kernel: %s", err)
 		os.Exit(1)
 	} else {
 		fmt.Printf("%s: %s\n", kernelName, output)
@@ -61,15 +61,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 		nodeDB, err := node.New()
 		if err != nil {
-			wwlog.Error("Could not open node configuration: %s\n", err)
+			wwlog.Error("Could not open node configuration: %s", err)
 			os.Exit(1)
 		}
 		//TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
 		profiles, _ := nodeDB.FindAllProfiles()
 		for _, profile := range profiles {
-			wwlog.Debug("Looking for profile default: %s\n", profile.Id.Get())
+			wwlog.Debug("Looking for profile default: %s", profile.Id.Get())
 			if profile.Id.Get() == "default" {
-				wwlog.Debug("Found profile default, setting kernel version to: %s\n", args[0])
+				wwlog.Debug("Found profile default, setting kernel version to: %s", args[0])
 				profile.Kernel.Override.Set(args[0])
 				err := nodeDB.ProfileUpdate(profile)
 				if err != nil {

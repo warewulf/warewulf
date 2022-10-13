@@ -38,34 +38,34 @@ func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 	for _, c := range containers {
 		if !container.ValidSource(c) {
 			err = fmt.Errorf("VNFS name does not exist: %s", c)
-			wwlog.Error("%s\n", err)
+			wwlog.Error("%s", err)
 			return
 		}
 
 		err = container.Build(c, cbp.Force)
 		if err != nil {
-			wwlog.Error("Could not build container %s: %s\n", c, err)
+			wwlog.Error("Could not build container %s: %s", c, err)
 			return
 		}
 	}
 
 	if cbp.Default {
 		if len(containers) != 1 {
-			wwlog.Error("Can only set default for one container\n")
+			wwlog.Error("Can only set default for one container")
 		} else {
 			var nodeDB node.NodeYaml
 			nodeDB, err = node.New()
 			if err != nil {
-				wwlog.Error("Could not open node configuration: %s\n", err)
+				wwlog.Error("Could not open node configuration: %s", err)
 				return
 			}
 
 			//TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
 			profiles, _ := nodeDB.FindAllProfiles()
 			for _, profile := range profiles {
-				wwlog.Debug("Looking for profile default: %s\n", profile.Id.Get())
+				wwlog.Debug("Looking for profile default: %s", profile.Id.Get())
 				if profile.Id.Get() == "default" {
-					wwlog.Debug("Found profile default, setting container name to: %s\n", containers[0])
+					wwlog.Debug("Found profile default, setting container name to: %s", containers[0])
 					profile.ContainerName.Set(containers[0])
 					err := nodeDB.ProfileUpdate(profile)
 					if err != nil {
@@ -92,7 +92,7 @@ func ContainerDelete(cdp *wwapiv1.ContainerDeleteParameter) (err error) {
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("Could not open nodeDB: %s\n", err)
+		wwlog.Error("Could not open nodeDB: %s", err)
 		return
 	}
 
@@ -107,22 +107,22 @@ ARG_LOOP:
 		containerName := cdp.ContainerNames[i]
 		for _, n := range nodes {
 			if n.ContainerName.Get() == containerName {
-				wwlog.Error("Container is configured for nodes, skipping: %s\n", containerName)
+				wwlog.Error("Container is configured for nodes, skipping: %s", containerName)
 				continue ARG_LOOP
 			}
 		}
 
 		if !container.ValidSource(containerName) {
-			wwlog.Error("Container name is not a valid source: %s\n", containerName)
+			wwlog.Error("Container name is not a valid source: %s", containerName)
 			continue
 		}
 		err := container.DeleteSource(containerName)
 		if err != nil {
-			wwlog.Error("Could not remove source: %s\n", containerName)
+			wwlog.Error("Could not remove source: %s", containerName)
 		}
 		err = container.DeleteImage(containerName)
 		if err != nil {
-			wwlog.Error("Could not remove image files %s\n", containerName)
+			wwlog.Error("Could not remove image files %s", containerName)
 		}
 
 		fmt.Printf("Container has been deleted: %s\n", containerName)
@@ -200,7 +200,7 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 	wwlog.Info("Updating the container's /etc/resolv.conf")
 	err = util.CopyFile("/etc/resolv.conf", path.Join(container.RootFsDir(cip.Name), "/etc/resolv.conf"))
 	if err != nil {
-		wwlog.Warn("Could not copy /etc/resolv.conf into container: %s\n", err)
+		wwlog.Warn("Could not copy /etc/resolv.conf into container: %s", err)
 	}
 
 	err = container.SyncUids(cip.Name, !cip.SyncUser)
@@ -265,19 +265,19 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 
 	sources, err = container.ListSources()
 	if err != nil {
-		wwlog.Error("%s\n", err)
+		wwlog.Error("%s", err)
 		return
 	}
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("%s\n", err)
+		wwlog.Error("%s", err)
 		return
 	}
 
 	nodes, err := nodeDB.FindAllNodes()
 	if err != nil {
-		wwlog.Error("%s\n", err)
+		wwlog.Error("%s", err)
 		return
 	}
 
@@ -291,7 +291,7 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 			nodemap[source] = 0
 		}
 
-		wwlog.Debug("Finding kernel version for: %s\n", source)
+		wwlog.Debug("Finding kernel version for: %s", source)
 		kernelVersion := container.KernelVersion(source)
 
 		creationTime, err := os.Stat(container.SourceDir(source))

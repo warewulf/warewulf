@@ -51,13 +51,13 @@ func ProfileSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (node
 
 	nodeDB, err = node.New()
 	if err != nil {
-		wwlog.Error("Could not open configuration: %s\n", err)
+		wwlog.Error("Could not open configuration: %s", err)
 		return
 	}
 
 	profiles, err := nodeDB.FindAllProfiles()
 	if err != nil {
-		wwlog.Error("Could not get profile list: %s\n", err)
+		wwlog.Error("Could not get profile list: %s", err)
 		return
 	}
 
@@ -78,21 +78,21 @@ func ProfileSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (node
 	var pConf node.NodeConf
 	err = yaml.Unmarshal([]byte(set.NodeConfYaml), &pConf)
 	if err != nil {
-		wwlog.Error(fmt.Sprintf("%v\n", err.Error()))
+		wwlog.Error(fmt.Sprintf("%v", err.Error()))
 		return
 	}
 
 	for _, p := range profiles {
 		if util.InSlice(set.NodeNames, p.Id.Get()) {
-			wwlog.Verbose("Evaluating profile: %s\n", p.Id.Get())
+			wwlog.Verbose("Evaluating profile: %s", p.Id.Get())
 			p.SetFrom(&pConf)
 			if set.NetdevDelete != "" {
 				if _, ok := p.NetDevs[set.NetdevDelete]; !ok {
 					err = fmt.Errorf("network device name doesn't exist: %s", set.NetdevDelete)
-					wwlog.Error(fmt.Sprintf("%v\n", err.Error()))
+					wwlog.Error(fmt.Sprintf("%v", err.Error()))
 					return
 				}
-				wwlog.Verbose("Profile: %s, Deleting network device: %s\n", p.Id.Get(), set.NetdevDelete)
+				wwlog.Verbose("Profile: %s, Deleting network device: %s", p.Id.Get(), set.NetdevDelete)
 				delete(p.NetDevs, set.NetdevDelete)
 			}
 			for _, key := range pConf.TagsDel {
@@ -110,7 +110,7 @@ func ProfileSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (node
 			}
 			err := nodeDB.ProfileUpdate(p)
 			if err != nil {
-				wwlog.Error("%s\n", err)
+				wwlog.Error("%s", err)
 				os.Exit(1)
 			}
 

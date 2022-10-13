@@ -44,17 +44,17 @@ func InitStruct(nodeInfo node.NodeInfo) TemplateStruct {
 	var tstruct TemplateStruct
 	controller, err := warewulfconf.New()
 	if err != nil {
-		wwlog.Error("%s\n", err)
+		wwlog.Error("%s", err)
 		os.Exit(1)
 	}
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("%s\n", err)
+		wwlog.Error("%s", err)
 		os.Exit(1)
 	}
 	allNodes, err := nodeDB.FindAllNodes()
 	if err != nil {
-		wwlog.Error("%s\n", err)
+		wwlog.Error("%s", err)
 		os.Exit(1)
 	}
 	// init some convininence vars

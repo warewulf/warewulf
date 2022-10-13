@@ -19,14 +19,14 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	if os.Getpid() != 1 {
-		wwlog.Error("PID is not 1: %d\n", os.Getpid())
+		wwlog.Error("PID is not 1: %d", os.Getpid())
 		os.Exit(1)
 	}
 
 	containerName := args[0]
 
 	if !container.ValidSource(containerName) {
-		wwlog.Error("Unknown Warewulf container: %s\n", containerName)
+		wwlog.Error("Unknown Warewulf container: %s", containerName)
 		os.Exit(1)
 	}
 	containerPath := container.RootFsDir(containerName)
@@ -36,8 +36,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	fileStat, _ = os.Stat(path.Join(containerPath, "/etc/group"))
 	unixStat = fileStat.Sys().(*syscall.Stat_t)
 	groupTime := time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))
-	wwlog.Debug("passwd: %v\n", passwdTime)
-	wwlog.Debug("group: %v\n", groupTime)
+	wwlog.Debug("passwd: %v", passwdTime)
+	wwlog.Debug("group: %v", groupTime)
 
 	err := syscall.Mount("", "/", "", syscall.MS_PRIVATE|syscall.MS_REC, "")
 	if err != nil {
@@ -90,7 +90,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	err = syscall.Exec(args[1], args[1:], os.Environ())
 	if err != nil {
-		wwlog.Error("%s\n", err)
+		wwlog.Error("%s", err)
 		os.Exit(1)
 	}
 	fileStat, _ = os.Stat(path.Join(containerPath, "/etc/passwd"))
@@ -98,13 +98,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if passwdTime.Before(time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))) {
 		wwlog.Warn("/etc/passwd has been modified, maybe you want to run syncuser")
 	}
-	wwlog.Debug("passwd: %v\n", time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec)))
+	wwlog.Debug("passwd: %v", time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec)))
 	fileStat, _ = os.Stat(path.Join(containerPath, "/etc/group"))
 	unixStat = fileStat.Sys().(*syscall.Stat_t)
 	if groupTime.Before(time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))) {
 		wwlog.Warn("/etc/group has been modified, maybe you want to run syncuser")
 	}
-	wwlog.Debug("group: %v\n", time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec)))
+	wwlog.Debug("group: %v", time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec)))
 
 	return nil
 }

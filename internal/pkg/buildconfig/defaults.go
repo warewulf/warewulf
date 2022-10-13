@@ -22,71 +22,71 @@ var (
 )
 
 func BINDIR() string {
-	wwlog.Debug("BINDIR = '%s'\n", bindir)
+	wwlog.Debug("BINDIR = '%s'", bindir)
 	return bindir
 }
 
 func DATADIR() string {
-	wwlog.Debug("DATADIR = '%s'\n", bindir)
+	wwlog.Debug("DATADIR = '%s'", bindir)
 	return datadir
 }
 
 func SYSCONFDIR() string {
-	wwlog.Debug("SYSCONFDIR = '%s'\n", sysconfdir)
+	wwlog.Debug("SYSCONFDIR = '%s'", sysconfdir)
 	return sysconfdir
 }
 
 func LOCALSTATEDIR() string {
-	wwlog.Debug("LOCALSTATEDIR = '%s'\n", localstatedir)
+	wwlog.Debug("LOCALSTATEDIR = '%s'", localstatedir)
 	return localstatedir
 }
 
 func SRVDIR() string {
-	wwlog.Debug("SRVDIR = '%s'\n", srvdir)
+	wwlog.Debug("SRVDIR = '%s'", srvdir)
 	return srvdir
 }
 
 func TFTPDIR() string {
-	wwlog.Debug("TFTPDIR = '%s'\n", tftpdir)
+	wwlog.Debug("TFTPDIR = '%s'", tftpdir)
 	return tftpdir
 }
 
 func FIREWALLDDIR() string {
-	wwlog.Debug("FIREWALLDDIR = '%s'\n", firewallddir)
+	wwlog.Debug("FIREWALLDDIR = '%s'", firewallddir)
 	return firewallddir
 }
 
 func SYSTEMDDIR() string {
-	wwlog.Debug("SYSTEMDDIR = '%s'\n", systemddir)
+	wwlog.Debug("SYSTEMDDIR = '%s'", systemddir)
 	return systemddir
 }
 
 func WWOVERLAYDIR() string {
-	wwlog.Debug("WWOVERLAYDIR = '%s'\n", wwoverlaydir)
+	wwlog.Debug("WWOVERLAYDIR = '%s'", wwoverlaydir)
 	return wwoverlaydir
 }
 
 func WWCHROOTDIR() string {
-	wwlog.Debug("WWCHROOTDIR = '%s'\n", wwchrootdir)
+	wwlog.Debug("WWCHROOTDIR = '%s'", wwchrootdir)
 	return wwchrootdir
 }
 
 func WWPROVISIONDIR() string {
-	wwlog.Debug("WWPROVISIONDIR = '%s'\n", wwprovisiondir)
+	wwlog.Debug("WWPROVISIONDIR = '%s'", wwprovisiondir)
 	return wwprovisiondir
 }
 
 func VERSION() string {
-	wwlog.Debug("VERSION = '%s'\n", version)
+	wwlog.Debug("VERSION = '%s'", version)
 	return version
 }
 
 func RELEASE() string {
-	wwlog.Debug("RELEASE = '%s'\n", release)
+	wwlog.Debug("RELEASE = '%s'", release)
 	return release
 }
 
 func WWCLIENTDIR() string {
-	wwlog.Debug("WWCLIENTDIR = '%s'\n", wwclientdir)
+	wwlog.Debug("WWCLIENTDIR = '%s'", wwclientdir)
 	return wwclientdir
 }

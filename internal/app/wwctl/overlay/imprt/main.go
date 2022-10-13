@@ -25,11 +25,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		dest = source
 	}
 
-	wwlog.Verbose("Copying '%s' into overlay '%s:%s'\n", source, overlayName, dest)
+	wwlog.Verbose("Copying '%s' into overlay '%s:%s'", source, overlayName, dest)
 	overlaySource = overlay.OverlaySourceDir(overlayName)
 
 	if !util.IsDir(overlaySource) {
-		wwlog.Error("Overlay does not exist: %s\n", overlayName)
+		wwlog.Error("Overlay does not exist: %s", overlayName)
 		os.Exit(1)
 	}
 
@@ -50,13 +50,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if !NoOverlayUpdate {
 		n, err := node.New()
 		if err != nil {
-			wwlog.Error("Could not open node configuration: %s\n", err)
+			wwlog.Error("Could not open node configuration: %s", err)
 			os.Exit(1)
 		}
 
 		nodes, err := n.FindAllNodes()
 		if err != nil {
-			wwlog.Error("Could not get node list: %s\n", err)
+			wwlog.Error("Could not get node list: %s", err)
 			os.Exit(1)
 		}
 

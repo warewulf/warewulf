@@ -14,13 +14,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("Could not open node configuration: %s\n", err)
+		wwlog.Error("Could not open node configuration: %s", err)
 		os.Exit(1)
 	}
 
 	profiles, err := nodeDB.FindAllProfiles()
 	if err != nil {
-		wwlog.Error("Could not find all nodes: %s\n", err)
+		wwlog.Error("Could not find all nodes: %s", err)
 		os.Exit(1)
 	}
 

@@ -21,13 +21,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("Could not open node configuration: %s\n", err)
+		wwlog.Error("Could not open node configuration: %s", err)
 		os.Exit(1)
 	}
 
 	nodes, err := nodeDB.FindAllNodes()
 	if err != nil {
-		wwlog.Error("Could not get node list: %s\n", err)
+		wwlog.Error("Could not get node list: %s", err)
 		os.Exit(1)
 	}
 
@@ -67,7 +67,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				fmt.Printf("%s: %s %s\n", nodename, SshPath, strings.Join(command, " "))
 			} else {
 
-				wwlog.Debug("Sending command to node '%s': %s\n", nodename, command)
+				wwlog.Debug("Sending command to node '%s': %s", nodename, command)
 				var stdout, stderr bytes.Buffer
 				cmd := exec.Command(SshPath, command...)
 				cmd.Stdin = os.Stdin

@@ -43,7 +43,7 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 		if err != nil {
 			return errors.Wrap(err, "failed to add node")
 		}
-		wwlog.Info("Added node: %s\n", a)
+		wwlog.Info("Added node: %s", a)
 		var netName string
 		for netName = range nodeConf.NetDevs {
 			// as map should only have key this should give is the first and
@@ -55,12 +55,12 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 			// if more nodes are added increment IPv4 address
 			nodeConf.NetDevs[netName].Ipaddr = util.IncrementIPv4(nodeConf.NetDevs[netName].Ipaddr, 1)
 
-			wwlog.Verbose("Incremented IP addr to %s\n", nodeConf.NetDevs[netName].Ipaddr)
+			wwlog.Verbose("Incremented IP addr to %s", nodeConf.NetDevs[netName].Ipaddr)
 		}
 		if nodeConf.Ipmi != nil && nodeConf.Ipmi.Ipaddr != "" {
 			// if more nodes are added increment IPv4 address
 			nodeConf.Ipmi.Ipaddr = util.IncrementIPv4(nodeConf.Ipmi.Ipaddr, 1)
-			wwlog.Verbose("Incremented IP addr to %s\n", nodeConf.Ipmi.Ipaddr)
+			wwlog.Verbose("Incremented IP addr to %s", nodeConf.Ipmi.Ipaddr)
 		}
 		err = nodeDB.NodeUpdate(n)
 		if err != nil {
@@ -92,14 +92,14 @@ func NodeDelete(ndp *wwapiv1.NodeDeleteParameter) (err error) {
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("Failed to open node database: %s\n", err)
+		wwlog.Error("Failed to open node database: %s", err)
 		return
 	}
 
 	for _, n := range nodeList {
 		err := nodeDB.DelNode(n.Id.Get())
 		if err != nil {
-			wwlog.Error("%s\n", err)
+			wwlog.Error("%s", err)
 		} else {
 			//count++
 			wwlog.Verbose("Deleting node: %s\n", n.Id.Print())
@@ -130,13 +130,13 @@ func NodeDeleteParameterCheck(ndp *wwapiv1.NodeDeleteParameter, console bool) (n
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("Failed to open node database: %s\n", err)
+		wwlog.Error("Failed to open node database: %s", err)
 		return
 	}
 
 	nodes, err := nodeDB.FindAllNodes()
 	if err != nil {
-		wwlog.Error("Could not get node list: %s\n", err)
+		wwlog.Error("Could not get node list: %s", err)
 		return
 	}
 
@@ -201,13 +201,13 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 
 	nodeDB, err = node.New()
 	if err != nil {
-		wwlog.Error("Could not open node configuration: %s\n", err)
+		wwlog.Error("Could not open node configuration: %s", err)
 		return
 	}
 
 	nodes, err := nodeDB.FindAllNodes()
 	if err != nil {
-		wwlog.Error("Could not get node list: %s\n", err)
+		wwlog.Error("Could not get node list: %s", err)
 		return
 	}
 
@@ -229,22 +229,22 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 	}
 
 	for _, n := range nodes {
-		wwlog.Verbose("Evaluating node: %s\n", n.Id.Get())
+		wwlog.Verbose("Evaluating node: %s", n.Id.Get())
 		var nodeConf node.NodeConf
 		err = yaml.Unmarshal([]byte(set.NodeConfYaml), &nodeConf)
 		if err != nil {
-			wwlog.Error(fmt.Sprintf("%v\n", err.Error()))
+			wwlog.Error(fmt.Sprintf("%v", err.Error()))
 			return
 		}
 		n.SetFrom(&nodeConf)
 		if set.NetdevDelete != "" {
 			if _, ok := n.NetDevs[set.NetdevDelete]; !ok {
 				err = fmt.Errorf("network device name doesn't exist: %s", set.NetdevDelete)
-				wwlog.Error(fmt.Sprintf("%v\n", err.Error()))
+				wwlog.Error(fmt.Sprintf("%v", err.Error()))
 				return
 			}
 
-			wwlog.Verbose("Node: %s, Deleting network device: %s\n", n.Id.Get(), set.NetdevDelete)
+			wwlog.Verbose("Node: %s, Deleting network device: %s", n.Id.Get(), set.NetdevDelete)
 			delete(n.NetDevs, set.NetdevDelete)
 		}
 		for _, key := range nodeConf.TagsDel {
@@ -262,7 +262,7 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 		}
 		err := nodeDB.NodeUpdate(n)
 		if err != nil {
-			wwlog.Error("%s\n", err)
+			wwlog.Error("%s", err)
 			os.Exit(1)
 		}
 
@@ -292,22 +292,22 @@ func NodeStatus(nodeNames []string) (nodeStatusResponse *wwapiv1.NodeStatusRespo
 
 	controller, err := warewulfconf.New()
 	if err != nil {
-		wwlog.Error("%s\n", err)
+		wwlog.Error("%s", err)
 		return
 	}
 
 	if controller.Ipaddr == "" {
 		err = fmt.Errorf("the Warewulf Server IP Address is not properly configured")
-		wwlog.Error(fmt.Sprintf("%v\n", err.Error()))
+		wwlog.Error(fmt.Sprintf("%v", err.Error()))
 		return
 	}
 
 	statusURL := fmt.Sprintf("http://%s:%d/status", controller.Ipaddr, controller.Warewulf.Port)
-	wwlog.Verbose("Connecting to: %s\n", statusURL)
+	wwlog.Verbose("Connecting to: %s", statusURL)
 
 	resp, err := http.Get(statusURL)
 	if err != nil {
-		wwlog.Error("Could not connect to Warewulf server: %s\n", err)
+		wwlog.Error("Could not connect to Warewulf server: %s", err)
 		return
 	}
 	defer resp.Body.Close()
@@ -317,7 +317,7 @@ func NodeStatus(nodeNames []string) (nodeStatusResponse *wwapiv1.NodeStatusRespo
 
 	err = decoder.Decode(&wwNodeStatus)
 	if err != nil {
-		wwlog.Error("Could not decode JSON: %s\n", err)
+		wwlog.Error("Could not decode JSON: %s", err)
 		return
 	}
 

@@ -68,12 +68,12 @@ func (s *NfsConf) Unmarshal(unmarshal func(interface{}) error) error {
 
 func init() {
 	if !util.IsFile(ConfigFile) {
-		wwlog.Error("Configuration file not found: %s\n", ConfigFile)
+		wwlog.Error("Configuration file not found: %s", ConfigFile)
 		// fail silently as this also called by bash_completion
 	}
 	_, err := New()
 	if err != nil {
-		wwlog.Error("Could not read Warewulf configuration file: %s\n", err)
+		wwlog.Error("Could not read Warewulf configuration file: %s", err)
 	}
 }
 

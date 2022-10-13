@@ -95,7 +95,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if conf.Warewulf.Secure {
 		// Setup local port to something privileged (<1024)
 		localTCPAddr.Port = 987
-		wwlog.Info("Running from trusted port\n")
+		wwlog.Info("Running from trusted port")
 	}
 
 	Webclient = &http.Client{
@@ -114,7 +114,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 	smbiosDump, err := smbios.New()
 	if err != nil {
-		wwlog.Error("Could not get SMBIOS info: %s\n", err)
+		wwlog.Error("Could not get SMBIOS info: %s", err)
 		os.Exit(1)
 	}
 	sysinfoDump := smbiosDump.SystemInformation()
@@ -124,13 +124,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	cmdline, err := ioutil.ReadFile("/proc/cmdline")
 	if err != nil {
-		wwlog.Error("Could not read from /proc/cmdline: %s\n", err)
+		wwlog.Error("Could not read from /proc/cmdline: %s", err)
 		os.Exit(1)
 	}
 
 	wwid_tmp := strings.Split(string(cmdline), "wwid=")
 	if len(wwid_tmp) < 2 {
-		wwlog.Error("'wwid' is not defined in /proc/cmdline\n")
+		wwlog.Error("'wwid' is not defined in /proc/cmdline")
 		os.Exit(1)
 	}
 
@@ -179,7 +179,7 @@ func updateSystem(ipaddr string, port int, wwid string, tag string, localUUID uu
 	for {
 		var err error
 		getString := fmt.Sprintf("http://%s:%d/provision/%s?assetkey=%s&uuid=%s&stage=runtime&compress=gz", ipaddr, port, wwid, tag, localUUID)
-		wwlog.Debug("Making request: %s\n", getString)
+		wwlog.Debug("Making request: %s", getString)
 		resp, err = Webclient.Get(getString)
 		if err == nil {
 			break
@@ -211,6 +211,6 @@ func updateSystem(ipaddr string, port int, wwid string, tag string, localUUID uu
 func cleanUp() {
 	err := pidfile.Remove(PIDFile)
 	if err != nil {
-		wwlog.Error("could not remove pidfile: %s\n", err)
+		wwlog.Error("could not remove pidfile: %s", err)
 	}
 }
