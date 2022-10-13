@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   have the type ethernet or infiniband that these will be brought up by NetworkManager
 - Listings of container via `wwctl container list` will now show the creation,modification 
   date and the size.
+- Initial cut of the warewulf API. See https://github.com/hpcng/warewulf/pull/471
 
 ### Bug fixes
 - For the connections of `wwctl ssh` the primary interface will be used
