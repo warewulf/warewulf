@@ -3,7 +3,9 @@ package node
 /******
  * YAML data representations
  ******/
-
+/*
+Structure of which goes to disk
+*/
 type NodeYaml struct {
 	WWInternal   int `yaml:"WW_INTERNAL"`
 	NodeProfiles map[string]*NodeConf
@@ -11,7 +13,7 @@ type NodeYaml struct {
 }
 
 /*
-NodeConf is the datastructure which is stored on disk.
+NodeConf is the datastructure describing a node and a profile which in disk format.
 */
 type NodeConf struct {
 	Comment       string `yaml:"comment,omitempty" lopt:"comment" comment:"Set arbitrary string comment"`
@@ -19,11 +21,11 @@ type NodeConf struct {
 	ContainerName string `yaml:"container name,omitempty" lopt:"container" sopt:"C" comment:"Set container name"`
 	Ipxe          string `yaml:"ipxe template,omitempty" lopt:"ipxe" comment:"Set the iPXE template name"`
 	// Deprecated start
-	// Kernel settings here are deprecated and here for backward comptability
+	// Kernel settings here are deprecated and here for backward compatibility
 	KernelVersion  string `yaml:"kernel version,omitempty"`
 	KernelOverride string `yaml:"kernel override,omitempty"`
 	KernelArgs     string `yaml:"kernel args,omitempty"`
-	// Ipmi settings herer are deprecated and here for backward comptability
+	// Ipmi settings herer are deprecated and here for backward compatibility
 	IpmiUserName  string `yaml:"ipmi username,omitempty"`
 	IpmiPassword  string `yaml:"ipmi password,omitempty"`
 	IpmiIpaddr    string `yaml:"ipmi ipaddr,omitempty"`

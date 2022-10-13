@@ -2,8 +2,10 @@ package node
 
 import (
 	"reflect"
+	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 )
 
@@ -186,6 +188,10 @@ func (nodeConf *NodeConf) getterFrom(nodeInfo NodeInfo,
 		}
 	}
 }
+
+/*
+Create cmd line flags from the NodeConf fields
+*/
 func (nodeConf *NodeConf) CreateFlags(baseCmd *cobra.Command, excludeList []string) {
 	nodeInfoType := reflect.TypeOf(nodeConf)
 	nodeInfoVal := reflect.ValueOf(nodeConf)
@@ -519,4 +525,146 @@ func (netDev *NetDevEntry) setterFrom(netYaml *NetDevs, nameArg string,
 			}
 		}
 	}
+}
+
+/*
+Create a string slice, where every element represents a yaml entry
+*/
+func (nodeConf *NodeConf) UnmarshalConf(excludeList []string) (lines []string) {
+	nodeInfoType := reflect.TypeOf(nodeConf)
+	nodeInfoVal := reflect.ValueOf(nodeConf)
+	// now iterate of every field
+	for i := 0; i < nodeInfoVal.Elem().NumField(); i++ {
+		if nodeInfoType.Elem().Field(i).Tag.Get("lopt") != "" {
+			if ymlStr, ok := getYamlString(nodeInfoType.Elem().Field(i), excludeList); ok {
+				lines = append(lines, ymlStr...)
+			}
+		} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr {
+			nestType := reflect.TypeOf(nodeInfoVal.Elem().Field(i).Interface())
+			if ymlStr, ok := getYamlString(nodeInfoType.Elem().Field(i), excludeList); ok {
+				lines = append(lines, ymlStr...)
+			}
+			for j := 0; j < nestType.Elem().NumField(); j++ {
+				if nestType.Elem().Field(j).Tag.Get("lopt") != "" &&
+					!util.InSlice(excludeList, nestType.Elem().Field(j).Tag.Get("lopt")) {
+					if ymlStr, ok := getYamlString(nestType.Elem().Field(j), excludeList); ok {
+						for _, str := range ymlStr {
+							lines = append(lines, "  "+str)
+						}
+					}
+				}
+			}
+		} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string]*NetDevs(nil)) {
+			netMap := nodeInfoVal.Elem().Field(i).Interface().(map[string]*NetDevs)
+			// add a default network so that it can hold values
+			key := "default"
+			if len(netMap) == 0 {
+				netMap[key] = new(NetDevs)
+			} else {
+				for keyIt := range netMap {
+					key = keyIt
+					break
+				}
+			}
+			if ymlStr, ok := getYamlString(nodeInfoType.Elem().Field(i), excludeList); ok {
+				lines = append(lines, ymlStr[0]+":", "  "+key+":")
+				netType := reflect.TypeOf(netMap[key])
+				for j := 0; j < netType.Elem().NumField(); j++ {
+					if ymlStr, ok := getYamlString(netType.Elem().Field(j), excludeList); ok {
+						for _, str := range ymlStr {
+							lines = append(lines, "  "+str)
+						}
+					}
+				} // lines
+			} // this
+		} //not
+	} //do
+	return lines
+}
+
+/*
+Get the string of the yaml tag
+*/
+func getYamlString(myType reflect.StructField, excludeList []string) ([]string, bool) {
+	ymlStr := myType.Tag.Get("yaml")
+	if len(strings.Split(ymlStr, ",")) > 1 {
+		ymlStr = strings.Split(ymlStr, ",")[0]
+	}
+	if util.InSlice(excludeList, ymlStr) {
+		return []string{""}, false
+	} else if myType.Tag.Get("lopt") == "" && myType.Type.Kind() == reflect.String {
+		return []string{""}, false
+	}
+	if myType.Type.Kind() == reflect.String {
+		ymlStr += ": string"
+		return []string{ymlStr}, true
+	} else if myType.Type == reflect.TypeOf([]string{}) {
+		return []string{ymlStr + ":", "  - string"}, true
+	} else if myType.Type == reflect.TypeOf(map[string]string{}) {
+		return []string{ymlStr + ":", "  key: value"}, true
+	} else if myType.Type.Kind() == reflect.Ptr {
+		return []string{ymlStr + ":"}, true
+	}
+	return []string{ymlStr}, true
+}
+
+/*
+Set the field of the NodeConf with the given lopt name, returns true if the
+field was found. String slices must be comma separated. Network must have the form
+net.$NETNAME.lopt or netname.$NETNAME.lopt
+*/
+func (nodeConf *NodeConf) SetLopt(lopt string, value string) (found bool) {
+	found = false
+	nodeInfoType := reflect.TypeOf(nodeConf)
+	nodeInfoVal := reflect.ValueOf(nodeConf)
+	// try to find the normal fields, networks come later
+	for i := 0; i < nodeInfoVal.Elem().NumField(); i++ {
+		//fmt.Println(nodeInfoType.Elem().Field(i).Tag.Get("lopt"), lopt)
+		if nodeInfoType.Elem().Field(i).Tag.Get("lopt") == lopt {
+			if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.String {
+				wwlog.Verbose("Found lopt %s mapping to %s, setting to %s\n",
+					lopt, nodeInfoType.Elem().Field(i).Name, value)
+				confVal := nodeInfoVal.Elem().Field(i).Addr().Interface().(*string)
+				*confVal = value
+				found = true
+			} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf([]string{}) {
+				wwlog.Verbose("Found lopt %s mapping to %s, setting to %s\n",
+					lopt, nodeInfoType.Elem().Field(i).Name, value)
+				confVal := nodeInfoVal.Elem().Field(i).Addr().Interface().(*[]string)
+				*confVal = strings.Split(value, ",")
+				found = true
+			}
+		}
+	}
+	// check network
+	loptSlice := strings.Split(lopt, ".")
+	wwlog.Debug("Trying to get network out of %s\n", loptSlice)
+	if !found && len(loptSlice) == 3 && (loptSlice[0] == "net" || loptSlice[0] == "network" || loptSlice[0] == "netname") {
+		if nodeConf.NetDevs == nil {
+			nodeConf.NetDevs = make(map[string]*NetDevs)
+		}
+		if nodeConf.NetDevs[loptSlice[1]] == nil {
+			nodeConf.NetDevs[loptSlice[1]] = new(NetDevs)
+		}
+		netInfoType := reflect.TypeOf(nodeConf.NetDevs[loptSlice[1]])
+		netInfoVal := reflect.ValueOf(nodeConf.NetDevs[loptSlice[1]])
+		for i := 0; i < netInfoVal.Elem().NumField(); i++ {
+			if netInfoType.Elem().Field(i).Tag.Get("lopt") == loptSlice[2] {
+				if netInfoType.Elem().Field(i).Type.Kind() == reflect.String {
+					wwlog.Verbose("Found lopt %s for network %s mapping to %s, setting to %s\n",
+						lopt, loptSlice[1], netInfoType.Elem().Field(i).Name, value)
+					confVal := netInfoVal.Elem().Field(i).Addr().Interface().(*string)
+					*confVal = value
+					found = true
+				} else if netInfoType.Elem().Field(i).Type == reflect.TypeOf([]string{}) {
+					wwlog.Verbose("Found lopt %s for network %s mapping to %s, setting to %s\n",
+						lopt, loptSlice[1], netInfoType.Elem().Field(i).Name, value)
+					confVal := netInfoVal.Elem().Field(i).Addr().Interface().(*[]string)
+					*confVal = strings.Split(value, ",")
+					found = true
+				}
+			}
+		}
+	}
+	return found
 }

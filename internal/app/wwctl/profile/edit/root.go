@@ -1,4 +1,4 @@
-package delete
+package edit
 
 import (
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -8,11 +8,10 @@ import (
 var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:                   "delete [OPTIONS] PROFILE",
-		Short:                 "Delete a node profile",
-		Long:                  "This command deletes the node PROFILE. You may use a pattern for PROFILE.",
+		Use:                   "edit [OPTIONS] NODENAME",
+		Short:                 "Edit node(s) with editor",
+		Long:                  "This command opens an editor for the given profiles.",
 		RunE:                  CobraRunE,
-		Args:                  cobra.MinimumNArgs(1),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp
@@ -26,11 +25,11 @@ var (
 			return p_names, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
-	SetYes bool
+	NoHeader bool
 )
 
 func init() {
-	baseCmd.PersistentFlags().BoolVarP(&SetYes, "yes", "y", false, "Set 'yes' to all questions asked")
+	baseCmd.PersistentFlags().BoolVar(&NoHeader, "noheader", false, "Do not print header")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
