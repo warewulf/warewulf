@@ -43,6 +43,9 @@ message ContainerInfo {
 	string name = 1;
 	uint32 nodeCount = 2;
 	string kernelVersion = 3;
+	uint64 createDate = 4; // creation date in unix time
+	uint64 modDate = 5; // date of last modification in unix time
+	uint64 size = 6; // size of chroot and images in bytes
 }
 
 // ContainerListResponse has all information that ContainerList provides.

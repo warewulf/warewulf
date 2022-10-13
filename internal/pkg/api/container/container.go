@@ -294,11 +294,38 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 		wwlog.Debug("Finding kernel version for: %s\n", source)
 		kernelVersion := container.KernelVersion(source)
 
+		creationTime, err := os.Stat(container.SourceDir(source))
+		if err != nil {
+			wwlog.Error("%s\n", err)
+		}
+		modTime, err := os.Stat(container.ImageFile(source))
+		if err != nil {
+			wwlog.Error("%s\n", err)
+		}
+		size, err := util.DirSize(container.SourceDir(source))
+		if err != nil {
+			wwlog.Error("%s\n", err)
+		}
+		imgSize, err := os.Stat(container.ImageFile(source))
+		if err != nil {
+			wwlog.Error("%s\n", err)
+		}
+		size += imgSize.Size()
+		imgSize, err = os.Stat(container.ImageFile(source) + ".gz")
+		if err != nil {
+			wwlog.Error("%s\n", err)
+		}
+		size += imgSize.Size()
+
 		containerInfo = append(containerInfo, &wwapiv1.ContainerInfo{
 			Name:          source,
 			NodeCount:     uint32(nodemap[source]),
 			KernelVersion: kernelVersion,
+			CreateDate:    uint64(creationTime.ModTime().Unix()),
+			ModDate:       uint64(modTime.ModTime().Unix()),
+			Size:          uint64(size),
 		})
+
 	}
 	return
 }

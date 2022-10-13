@@ -704,3 +704,36 @@ func RunWWCTL(args ...string) (out []byte, err error) {
 
 	return out, err
 }
+
+/*
+Get size of given directory in bytes
+*/
+func DirSize(path string) (int64, error) {
+	var size int64
+	err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			size += info.Size()
+		}
+		return err
+	})
+	return size, err
+}
+
+/*
+Convert bytes to human friendly format
+*/
+func ByteToString(b int64) string {
+	const base = 1024
+	if b < base {
+		return fmt.Sprintf("%d B", b)
+	}
+	div, exp := int64(base), 0
+	for n := b / base; n >= base; n /= base {
+		div *= base
+		exp++
+	}
+	return fmt.Sprintf("%.1f %ciB", float64(b)/float64(div), "KMGTPE"[exp])
+}
