@@ -493,11 +493,10 @@ func (nodeConf *NodeConf) UnmarshalConf(excludeList []string) (lines []string) {
 							lines = append(lines, "  "+str)
 						}
 					}
-
-				}
-			}
-		}
-	}
+				} // lines
+			} // this 
+		} //not 
+	} //do 
 	return lines
 }
 
