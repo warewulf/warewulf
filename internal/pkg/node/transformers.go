@@ -310,6 +310,20 @@ func (node *NodeInfo) SetAltFrom(n *NodeConf, profileName string) {
 }
 
 /*
+Populates all fields of NodeInfo with SetDefault from the
+values of NodeConf.
+*/
+func (node *NodeInfo) SetDefFrom(n *NodeConf) {
+	setWrap := func(entr *Entry, val string, nameArg string) {
+		entr.SetDefault(val)
+	}
+	setSliceWrap := func(entr *Entry, val []string, nameArg string) {
+		entr.SetDefaultSlice(val)
+	}
+	node.setterFrom(n, "", setWrap, setSliceWrap)
+}
+
+/*
 Abstract function which populates a NodeInfo from a NodeConf via
 setter functionns.
 */
@@ -446,6 +460,74 @@ func (info *NodeConf) Flatten() {
 }
 
 /*
+Populates all fields of NetDevEntry with Set from the
+values of NetDevs.
+Actually not used, just for completeness.
+*/
+func (netDev *NetDevEntry) SetFrom(netYaml *NetDevs) {
+	setWrap := func(entr *Entry, val string, nameArg string) {
+		entr.Set(val)
+	}
+	setSliceWrap := func(entr *Entry, val []string, nameArg string) {
+		entr.SetSlice(val)
+	}
+	netDev.setterFrom(netYaml, "", setWrap, setSliceWrap)
+}
+
+/*
+Populates all fields of NetDevEntry with SetAlt from the
+values of NetDevs. The string profileName is used to
+destermine from which source/NodeInfo the entry came
+from.
+Actually not used, just for completeness.
+*/
+func (netDev *NetDevEntry) SetAltFrom(netYaml *NetDevs, profileName string) {
+	netDev.setterFrom(netYaml, profileName, (*Entry).SetAlt, (*Entry).SetAltSlice)
+}
+
+/*
+Populates all fields of NodeInfo with SetDefault from the
+values of NodeConf.
+*/
+func (netDev *NetDevEntry) SetDefFrom(netYaml *NetDevs) {
+	setWrap := func(entr *Entry, val string, nameArg string) {
+		entr.SetDefault(val)
+	}
+	setSliceWrap := func(entr *Entry, val []string, nameArg string) {
+		entr.SetDefaultSlice(val)
+	}
+	netDev.setterFrom(netYaml, "", setWrap, setSliceWrap)
+}
+
+/*
+Abstract function for setting a NetDevEntry from a NetDevs
+*/
+func (netDev *NetDevEntry) setterFrom(netYaml *NetDevs, nameArg string,
+	setter func(*Entry, string, string),
+	setterSlice func(*Entry, []string, string)) {
+	netValues := reflect.ValueOf(netDev)
+	netInfoType := reflect.TypeOf(*netYaml)
+	netInfoVal := reflect.ValueOf(*netYaml)
+	for j := 0; j < netInfoType.NumField(); j++ {
+		netVal := netValues.Elem().FieldByName(netInfoType.Field(j).Name)
+		if netVal.IsValid() {
+			if netInfoVal.Field(j).Type().Kind() == reflect.String {
+				setter(netVal.Addr().Interface().((*Entry)), netInfoVal.Field(j).String(), nameArg)
+			} else if netVal.Type() == reflect.TypeOf(map[string]string{}) {
+				// danger zone following code is not tested
+				for key, val := range (netVal.Interface()).(map[string]string) {
+					//netTagMap := netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))
+					if _, ok := netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))[key]; !ok {
+						netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))[key] = new(Entry)
+					}
+					setter(netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))[key], val, nameArg)
+				}
+			}
+		}
+	}
+}
+
+/*
 Create a string slice, where every element represents a yaml entry
 */
 func (nodeConf *NodeConf) UnmarshalConf(excludeList []string) (lines []string) {
@@ -494,9 +576,9 @@ func (nodeConf *NodeConf) UnmarshalConf(excludeList []string) (lines []string) {
 						}
 					}
 				} // lines
-			} // this 
-		} //not 
-	} //do 
+			} // this
+		} //not
+	} //do
 	return lines
 }
 

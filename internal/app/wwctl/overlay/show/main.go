@@ -46,7 +46,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 		fmt.Print(string(f))
 	} else {
-		var host node.NodeInfo
+		if !util.IsFile(overlayFile) {
+			wwlog.Debug("%s is not a file\n", overlayFile)
+			wwlog.Error("%s:%s is not a file\n", overlayName, fileName)
+			os.Exit(1)
+		}
+		if filepath.Ext(overlayFile) != ".ww" {
+			wwlog.Warn("%s lacks the '.ww' suffix, will not be rendered in an overlay\n", fileName)
+		}
+
 		nodeDB, err := node.New()
 		if err != nil {
 			wwlog.Error("Could not open node configuration: %s\n", err)
@@ -57,24 +65,16 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Error("Could not get node list: %s\n", err)
 			os.Exit(1)
 		}
-		node := node.FilterByName(nodes, []string{NodeName})
-		if len(node) != 1 {
+		filteredNodes := node.FilterByName(nodes, []string{NodeName})
+		if len(filteredNodes) != 1 {
 			wwlog.Error("%v does not identify a single node\n", NodeName)
 			os.Exit(1)
 		}
-		host = node[0]
-
-		if !util.IsFile(args[0]) {
-			wwlog.Error("%s is not a file\n", args[0])
-		}
-		tstruct := overlay.InitStruct(host)
-		tstruct.BuildSource = args[0]
+		tstruct := overlay.InitStruct(filteredNodes[0])
+		tstruct.BuildSource = overlayFile
 		buffer, backupFile, writeFile, err := overlay.RenderTemplateFile(overlayFile, tstruct)
 		if err != nil {
 			return err
-		}
-		if filepath.Ext(args[0]) != ".ww" {
-			wwlog.Warn("%s has not the '.ww' so wont be rendered if in overlay\n", args[0])
 		}
 		var outBuffer bytes.Buffer
 		// search for magic file name comment
@@ -82,7 +82,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		bufferScanner.Split(overlay.ScanLines)
 		reg := regexp.MustCompile(`.*{{\s*/\*\s*file\s*["'](.*)["']\s*\*/\s*}}.*`)
 		foundFileComment := false
-		destFileName := strings.TrimSuffix(args[0], ".ww")
+		destFileName := strings.TrimSuffix(fileName, ".ww")
 		for bufferScanner.Scan() {
 			line := bufferScanner.Text()
 			filenameFromTemplate := reg.FindAllStringSubmatch(line, -1)
@@ -106,8 +106,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Info("backupFile: %v\nwriteFile: %v\n", backupFile, writeFile)
 			wwlog.Info("Filename: %s\n\n", destFileName)
 		}
-		wwlog.Info("%s", outBuffer.String())
-
+		fmt.Print(outBuffer.String())
 	}
 	return nil
 }

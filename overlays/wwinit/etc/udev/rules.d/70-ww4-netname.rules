@@ -4,13 +4,6 @@
 # Source: {{.BuildSource}}
 {{range $devname, $netdev := .NetDevs}}
 {{- if $netdev.Hwaddr }}
-[Match]
-MACAddress={{$netdev.Hwaddr}}
-[Link]
-{{ if $netdev.Device -}}
-Name={{ $netdev.Device }}
-{{ else -}}
-Name={{ $devname }}
+SUBSYSTEM=="net", ACTION=="add", ATTR{address}=="{{ $netdev.Hwaddr }}", NAME="{{ $netdev.Device }}"
 {{ end -}}
 {{ end -}}
-{{end}}
