@@ -95,7 +95,7 @@ export GOPROXY
 # built tags needed for wwbuild binary
 WW_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
-all: config vendor wwctl wwclient bash_completion.d man_pages config_defaults wwapid wwapic wwapird
+all: config vendor wwctl wwclient bash_completion.d man_pages config_defaults print_defaults wwapid wwapic wwapird
 
 build: lint test-it vet all
 
@@ -174,6 +174,7 @@ files: all
 	test -f $(DESTDIR)$(SYSCONFDIR)/warewulf/wwapic.conf || install -m 644 etc/wwapic.conf $(DESTDIR)$(SYSCONFDIR)/warewulf/
 	test -f $(DESTDIR)$(SYSCONFDIR)/warewulf/wwapid.conf || install -m 644 etc/wwapid.conf $(DESTDIR)$(SYSCONFDIR)/warewulf/
 	test -f $(DESTDIR)$(SYSCONFDIR)/warewulf/wwapird.conf || install -m 644 etc/wwapird.conf $(DESTDIR)$(SYSCONFDIR)/warewulf/
+	test -f $(DESTDIR)$(SYSCONFDIR)/warewulf/defaults.conf || ./print_defaults > $(DESTDIR)$(SYSCONFDIR)/warewulf/defaults.conf
 	cp -r etc/examples $(DESTDIR)$(WWCONFIGDIR)/
 	cp -r etc/ipxe $(DESTDIR)$(WWCONFIGDIR)/
 	cp -r overlays/* $(DESTDIR)$(WWOVERLAYDIR)/
@@ -237,6 +238,9 @@ config_defaults: vendor cmd/config_defaults/config_defaults.go
 	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'"\
 	 -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o ../../config_defaults
 
+print_defaults: vendor cmd/print_defaults/print_defaults.go
+	cd cmd/print_defaults && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'" -o ../../print_defaults
+
 update_configuration: vendor cmd/update_configuration/update_configuration.go
 	cd cmd/update_configuration && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'\
 	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'"\
@@ -297,6 +301,7 @@ clean:
 	rm -rf $(TOOLS_DIR)
 	rm -f config_defaults
 	rm -f update_configuration
+	rm -f print_defaults
 
 install: files install_wwclient
 

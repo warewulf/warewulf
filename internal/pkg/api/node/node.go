@@ -102,7 +102,7 @@ func NodeDelete(ndp *wwapiv1.NodeDeleteParameter) (err error) {
 			wwlog.Error("%s", err)
 		} else {
 			//count++
-			fmt.Printf("Deleting node: %s\n", n.Id.Print())
+			wwlog.Verbose("Deleting node: %s\n", n.Id.Print())
 		}
 	}
 

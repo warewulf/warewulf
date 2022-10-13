@@ -43,6 +43,9 @@ message ContainerInfo {
 	string name = 1;
 	uint32 nodeCount = 2;
 	string kernelVersion = 3;
+	uint64 createDate = 4; // creation date in unix time
+	uint64 modDate = 5; // date of last modification in unix time
+	uint64 size = 6; // size of chroot and images in bytes
 }
 
 // ContainerListResponse has all information that ContainerList provides.
@@ -91,7 +94,6 @@ message NetDev {
 // NodeInfo contains details about a node managed by Warewulf/
 message NodeInfo {
 	map<string, NodeField> Fields = 1;
-
 	map<string, NetDev> NetDevs = 23;
 	map<string, NodeField> Tags = 24;
 	map<string, NodeField> Keys = 25; // TODO: We may not need this. Tags may be it. Ask Greg.
@@ -124,6 +126,12 @@ message NodeList {
 message NodeAddParameter {
 	string nodeConfYaml = 1;
 	repeated string nodeNames = 10;
+}
+
+// NodeYaml is just the updated YAML config which will be added
+// to nodes.conf (is resused for profile edit)
+message NodeYaml {
+	string nodeConfMapYaml = 1;
 }
 
 // NodeDeleteParameter contains input for removing nodes from Warewulf
@@ -165,6 +173,11 @@ message VersionResponse {
 	string apiPrefix = 1;
 	string apiVersion = 2;
 	string warewulfVersion = 3;
+}
+
+// Check if config is writeable
+message CanWriteConfig {
+	bool canWriteConfig = 1;
 }
 
 // WWApi defines the wwapid service web interface.
