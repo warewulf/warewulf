@@ -26,8 +26,7 @@ func FilterByName(set []NodeInfo, searchList []string) []NodeInfo {
 	if len(searchList) > 0 {
 		for _, search := range searchList {
 			for _, entry := range set {
-				b, _ := regexp.MatchString("^"+search+"$", entry.Id.Get())
-				if b {
+				if match, _ := regexp.MatchString("^"+search+"$", entry.Id.Get()); match {
 					unique[entry.Id.Get()] = entry
 				}
 			}
@@ -40,6 +39,24 @@ func FilterByName(set []NodeInfo, searchList []string) []NodeInfo {
 	}
 
 	return ret
+}
+
+/*
+Filter a given map of NodeConf against given regular expression.
+*/
+func FilterMapByName(inputMap map[string]*NodeConf, searchList []string) (retMap map[string]*NodeConf) {
+	retMap = map[string]*NodeConf{}
+	if len(searchList) > 0 {
+		for _, search := range searchList {
+			for name, nConf := range inputMap {
+				if match, _ := regexp.MatchString("^"+search+"$", name); match {
+					retMap[name] = nConf
+				}
+			}
+
+		}
+	}
+	return retMap
 }
 
 /**********

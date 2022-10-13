@@ -16,6 +16,7 @@
 /wwapic
 /wwapid
 /wwapird
+/print_defaults
 
 # other created files
 /man_pages
@@ -33,3 +34,4 @@ Defaults.mk
 /etc/wwapic.config
 /etc/wwapird.config
 .dist/
+userdocs/_*

@@ -3,7 +3,7 @@
 # Time:   {{.BuildTime}}
 # Source: {{.BuildSource}}
 {{range $devname, $netdev := .NetDevs}}
-{{- if $netdev.Primary}}
+{{- if $netdev.Hwaddr }}
 [Match]
 MACAddress={{$netdev.Hwaddr}}
 [Link]

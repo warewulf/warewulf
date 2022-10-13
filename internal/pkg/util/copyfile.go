@@ -27,7 +27,7 @@ func CopyFile(src string, dst string) error {
 		return err
 	}
 
-	dstFD, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE, srcInfo.Mode())
+	dstFD, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE|os.O_TRUNC, srcInfo.Mode())
 	if err != nil {
 		wwlog.Error("Could not create destination file %s: %s\n", dst, err)
 		return err
