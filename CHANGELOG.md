@@ -41,6 +41,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - GID is no longer changed to `0` when unspecified during chown
 - Proper handling of uid/gid arguments during `wwctl overlay chown`
+- /etc/warewulf/excludes stored in the container definition is now
+  processed correctly, also excluding the contents of an excluded
+  directory automatically.
 
 
 ## [4.1.0] - 2021-07-29

@@ -38,23 +38,27 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		cmd.Usage()
 		os.Exit(1)
 	}
-
 	for _, node := range nodes {
-
-		if _, ok := node.NetDevs["default"]; !ok {
-			fmt.Fprintf(os.Stderr, "%s: Default network device doesn't exist\n", node.Id.Get())
+		var primaryNet string
+		for netName := range node.NetDevs {
+			if node.NetDevs[netName].Primary.GetB() {
+				primaryNet = netName
+				break
+			}
+		}
+		if primaryNet == "" {
+			wwlog.Error("%s: Primary network device doesn't exist\n", node.Id.Get())
 			continue
 		}
-
-		if node.NetDevs["default"].Ipaddr.Get() == "" {
-			fmt.Fprintf(os.Stderr, "%s: Default network IP address not configured\n", node.Id.Get())
+		if node.NetDevs[primaryNet].Ipaddr.Get() == "" {
+			wwlog.Error("%s: Primary network IP address not configured\n", node.Id.Get())
 			continue
 		}
 
 		nodename := node.Id.Print()
 		var command []string
 
-		command = append(command, node.NetDevs["default"].Ipaddr.Get())
+		command = append(command, node.NetDevs[primaryNet].Ipaddr.Get())
 		command = append(command, args[1:]...)
 
 		batchpool.Submit(func() {

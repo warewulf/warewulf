@@ -1,10 +1,5 @@
 package node
 
-import (
-	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-)
-
 /******
  * YAML data representations
  ******/
@@ -84,6 +79,7 @@ type NetDevs struct {
 	Prefix  string            `yaml:"prefix,omitempty"`
 	Netmask string            `yaml:"netmask,omitempty" lopt:"netmask" sopt:"M" comment:"Set the networks netmask"`
 	Gateway string            `yaml:"gateway,omitempty" lopt:"gateway" sopt:"G" comment:"Set the node's network device gateway"`
+	MTU     string            `yaml:"mtu,omitempty" lopt:"mtu" comment:"Set the mtu"`
 	Primary string            `yaml:"primary,omitempty" lopt:"primary" comment:"Enable/disable network device as primary (yes/no)"`
 	Default string            `yaml:"default,omitempty"` /* backward compatibility */
 	Tags    map[string]string `yaml:"tags,omitempty" lopt:"nettagadd" comment:"network tags"`
@@ -158,6 +154,7 @@ type NetDevEntry struct {
 	Prefix  Entry
 	Netmask Entry
 	Gateway Entry
+	MTU     Entry
 	Primary Entry
 	Tags    map[string]*Entry
 }
@@ -165,6 +162,8 @@ type NetDevEntry struct {
 // string which is printed if no value is set
 const NoValue = "--"
 
+/*
+Has no real purpose as only New() needs it
 func init() {
 	// Check that nodes.conf is found
 	if !util.IsFile(ConfigFile) {
@@ -173,3 +172,4 @@ func init() {
 		return
 	}
 }
+*/
