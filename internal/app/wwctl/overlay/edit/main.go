@@ -78,6 +78,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Fprint(w, fmtStr)
 	}
 	fileDesc, err := os.OpenFile(overlayFile, os.O_RDWR, os.FileMode(PermMode))
+	if err != nil {
+		wwlog.Warn("Could not open file for editing: %s", err)
+	}
 	defer fileDesc.Close()
 	_, _ = fileDesc.Seek(0, 0)
 	hasher := sha256.New()
