@@ -78,6 +78,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Fprint(w, fmtStr)
 	}
 	fileDesc, err := os.OpenFile(overlayFile, os.O_RDWR, os.FileMode(PermMode))
+	if err != nil {
+		wwlog.Warn("Could not open file for editing: %s", err)
+	}
 	defer fileDesc.Close()
 	_, _ = fileDesc.Seek(0, 0)
 	hasher := sha256.New()
@@ -96,6 +99,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Error("Problems getting checksum of file %s\n", err)
 	}
 	sum2 := hex.EncodeToString(hasher.Sum(nil))
+	fmt.Println("sum1,sum2", sum1, sum2)
 	if sum1 == sum2 && newFile {
 		wwlog.Verbose("New template %s wasn't modified, deleting it", overlayFile)
 		err = os.Remove(overlayFile)
