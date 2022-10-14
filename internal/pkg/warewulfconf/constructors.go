@@ -3,8 +3,8 @@ package warewulfconf
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net"
+	"os"
 	"path"
 
 	"github.com/brotherpowers/ipsubnet"
@@ -43,7 +43,7 @@ func New() (ControllerConf, error) {
 	// Check if cached config is old before re-reading config file
 	if !cachedConf.current {
 		wwlog.Debug("Opening Warewulf configuration file: %s", ConfigFile)
-		data, err := ioutil.ReadFile(ConfigFile)
+		data, err := os.ReadFile(ConfigFile)
 		if err != nil {
 			wwlog.Warn("Error reading Warewulf configuration file")
 		}

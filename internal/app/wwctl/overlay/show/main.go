@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -38,7 +37,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if NodeName == "" {
-		f, err := ioutil.ReadFile(overlayFile)
+		f, err := os.ReadFile(overlayFile)
 		if err != nil {
 			wwlog.Error("Could not read file: %s", err)
 			os.Exit(1)

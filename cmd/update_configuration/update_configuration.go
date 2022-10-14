@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"reflect"
 
@@ -44,7 +43,7 @@ func saveConf(conf interface{}) {
 			os.Exit(1)
 		}
 		myprintf("writing configuration file %s as type %s\n", confFile, reflect.TypeOf(conf))
-		err = ioutil.WriteFile(confFile, out, info.Mode())
+		err = os.WriteFile(confFile, out, info.Mode())
 		if err != nil {
 			myprintf("Could not write file: %s\n", err)
 			os.Exit(1)
@@ -136,7 +135,7 @@ func main() {
 		os.Exit(1)
 	}
 	myprintf("Opening node configuration file: %s\n", confFile)
-	data, err := ioutil.ReadFile(confFile)
+	data, err := os.ReadFile(confFile)
 	if err != nil {
 		myprintf("Could open file %v\n", err)
 		os.Exit(1)

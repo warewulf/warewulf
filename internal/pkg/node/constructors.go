@@ -2,7 +2,7 @@ package node
 
 import (
 	"errors"
-	"io/ioutil"
+	"os"
 	"path"
 	"sort"
 	"strings"
@@ -48,7 +48,7 @@ func New() (NodeYaml, error) {
 	var ret NodeYaml
 
 	wwlog.Verbose("Opening node configuration file: %s", ConfigFile)
-	data, err := ioutil.ReadFile(ConfigFile)
+	data, err := os.ReadFile(ConfigFile)
 	if err != nil {
 		return ret, err
 	}
@@ -79,7 +79,7 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 	*/
 	var defConf map[string]*NodeConf
 	wwlog.Verbose("Opening defaults failed %s\n", DefaultConfig)
-	defData, err := ioutil.ReadFile(DefaultConfig)
+	defData, err := os.ReadFile(DefaultConfig)
 	if err != nil {
 		wwlog.Verbose("Couldn't read DefaultConfig :%s\n", err)
 	}
