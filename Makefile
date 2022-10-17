@@ -95,8 +95,10 @@ export GOPROXY
 # built tags needed for wwbuild binary
 WW_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
+# Default target
 all: config vendor wwctl wwclient bash_completion.d man_pages config_defaults print_defaults wwapid wwapic wwapird
 
+# Validate source and build all packages
 build: lint test-it vet all
 
 # set the go tools into the tools bin.
@@ -113,8 +115,10 @@ $(GOLANGCI_LINT):
 setup: vendor $(TOOLS_DIR) setup_tools
 
 vendor:
-	go mod tidy -v
-	go mod vendor
+    ifndef OFFLINE_BUILD
+	  go mod tidy -v
+	  go mod vendor
+endif
 
 $(TOOLS_DIR):
 	@mkdir -p $@
