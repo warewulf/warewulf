@@ -164,6 +164,10 @@ func (nodeConf *NodeConf) getterFrom(nodeInfo NodeInfo,
 							} else if netVal.Type() == reflect.TypeOf(map[string]*Entry{}) {
 								entryMap := netVal.Interface().(map[string](*Entry))
 								confMap := netConfVal.Elem().Field(j).Interface().(map[string]string)
+								if confMap == nil {
+									confMapPtr := netConfVal.Elem().Field(j).Addr().Interface().(*map[string]string)
+									*confMapPtr = make(map[string]string)
+								}
 								if len(confMap) > len(entryMap) {
 									for confMapKey := range confMap {
 										foundKey := false
