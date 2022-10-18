@@ -116,7 +116,11 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 						for j := 0; j < netInfoType.NumField(); j++ {
 							netConfField, ok := netConfType.FieldByName(netInfoType.Field(j).Name)
 							if ok {
-								fieldName = netName + ":" + netConfField.Tag.Get("lopt")
+								if netConfField.Tag.Get("lopt") != "nettagadd" {
+									fieldName = netName + ":" + netConfField.Tag.Get("lopt")
+								} else {
+									fieldName = netName + ":tag"
+								}
 							} else {
 								fieldName = netName + ":" + netInfoType.Field(j).Name
 							}
