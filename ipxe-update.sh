@@ -37,8 +37,8 @@ sed -i.bak \
     -e 's,//\(#define.*VLAN_CMD.*\),\1,' \
     config/general.h
 
-make -j 8 $PCBIOS
-make -j 8 $EFI
+make -j 8 $PCBIOS "$@"
+make -j 8 $EFI "$@"
 
 
 cp $PCBIOS $PCBIOS_output
