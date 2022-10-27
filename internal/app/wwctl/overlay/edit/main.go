@@ -106,7 +106,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Error("Problems getting checksum of file %s\n", err)
 	}
 	sum2 := hex.EncodeToString(hasher.Sum(nil))
-	fmt.Println("sum1,sum2", sum1, sum2)
 	if sum1 == sum2 && newFile {
 		wwlog.Verbose("New template %s wasn't modified, deleting it", overlayFile)
 		err = os.Remove(overlayFile)
