@@ -76,26 +76,33 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 # Source: {{.BuildSource}}
 `
 		fmt.Fprint(w, fmtStr)
+		w.Close()
 	}
-	fileDesc, err := os.OpenFile(overlayFile, os.O_RDWR, os.FileMode(PermMode))
+	fileDesc1, err := os.OpenFile(overlayFile, os.O_RDWR, os.FileMode(PermMode))
 	if err != nil {
 		wwlog.Warn("Could not open file for editing: %s", err)
 	}
-	defer fileDesc.Close()
-	_, _ = fileDesc.Seek(0, 0)
+	defer fileDesc1.Close()
+	_, _ = fileDesc1.Seek(0, 0)
 	hasher := sha256.New()
-	if _, err := io.Copy(hasher, fileDesc); err != nil {
+	if _, err := io.Copy(hasher, fileDesc1); err != nil {
 		wwlog.Error("Problems getting checksum of file %s\n", err)
 	}
 	sum1 := hex.EncodeToString(hasher.Sum(nil))
+	fileDesc1.Close()
 	err = util.ExecInteractive(editor, overlayFile)
 	if err != nil {
 		wwlog.Error("Editor process existed with non-zero")
 		os.Exit(1)
 	}
-	_, _ = fileDesc.Seek(0, 0)
+	fileDesc2, err := os.OpenFile(overlayFile, os.O_RDWR, os.FileMode(PermMode))
+	if err != nil {
+		wwlog.Warn("Could not open file for editing: %s", err)
+	}
+	defer fileDesc2.Close()
+	_, _ = fileDesc2.Seek(0, 0)
 	hasher.Reset()
-	if _, err := io.Copy(hasher, fileDesc); err != nil {
+	if _, err := io.Copy(hasher, fileDesc2); err != nil {
 		wwlog.Error("Problems getting checksum of file %s\n", err)
 	}
 	sum2 := hex.EncodeToString(hasher.Sum(nil))
