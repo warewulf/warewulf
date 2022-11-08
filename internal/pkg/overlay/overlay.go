@@ -49,13 +49,13 @@ func BuildAllOverlays(nodes []node.NodeInfo) error {
 		wwlog.Info("Building system overlays for %s: [%s]", n.Id.Get(), strings.Join(sysOverlays, ", "))
 		err := BuildOverlay(n, sysOverlays)
 		if err != nil {
-			return errors.Wrapf(err, "could not build system overlays %v for nide %s", sysOverlays, n.Id.Get())
+			return errors.Wrapf(err, "could not build system overlays %v for node %s", sysOverlays, n.Id.Get())
 		}
 		runOverlays := n.RuntimeOverlay.GetSlice()
 		wwlog.Info("Building runtime overlays for %s: [%s]", n.Id.Get(), strings.Join(runOverlays, ", "))
 		err = BuildOverlay(n, runOverlays)
 		if err != nil {
-			return errors.Wrapf(err, "could not build runtime overlays %v for nide %s", runOverlays, n.Id.Get())
+			return errors.Wrapf(err, "could not build runtime overlays %v for node %s", runOverlays, n.Id.Get())
 		}
 
 	}
