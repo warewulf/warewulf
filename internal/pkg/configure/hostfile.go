@@ -15,7 +15,8 @@ import (
 Creates '/etc/hosts' from the host template.
 */
 func Hostfile() error {
-	if !(util.IsFile(path.Join(overlay.OverlaySourceDir("host"), "/host/etc/hosts.ww"))) {
+	hostTemplate := path.Join(overlay.OverlaySourceDir("host"), "/etc/hosts.ww")
+	if !(util.IsFile(hostTemplate)) {
 		wwlog.Error("'the overlay template '/etc/hosts.ww' does not exists in 'host' overlay")
 		os.Exit(1)
 	}
@@ -24,13 +25,13 @@ func Hostfile() error {
 	hostname, _ := os.Hostname()
 	nodeInfo.Id.Set(hostname)
 	buffer, backupFile, writeFile, err := overlay.RenderTemplateFile(
-		path.Join(overlay.OverlaySourceDir("host"), "/host/etc/hosts.ww"),
+		hostTemplate,
 		tstruct)
 	if err != nil {
 		wwlog.Error("%s", err)
 		os.Exit(1)
 	}
-	info, err := os.Stat(path.Join(overlay.OverlaySourceDir("host"), "/host/etc/hosts.ww"))
+	info, err := os.Stat(hostTemplate)
 	if err != nil {
 		wwlog.Error("%s", err)
 		os.Exit(1)
