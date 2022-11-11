@@ -334,6 +334,16 @@ Create an empty node NodeConf
 func NewConf() (nodeconf NodeConf) {
 	nodeconf.Ipmi = new(IpmiConf)
 	nodeconf.Kernel = new(KernelConf)
-	nodeconf.NetDevs = map[string]*NetDevs{}
+	nodeconf.NetDevs = make(map[string]*NetDevs)
 	return nodeconf
+}
+
+/*
+Create an empty node NodeInfo
+*/
+func NewInfo() (nodeInfo NodeInfo) {
+	nodeInfo.Ipmi = new(IpmiEntry)
+	nodeInfo.Kernel = new(KernelEntry)
+	nodeInfo.NetDevs = make(map[string]*NetDevEntry)
+	return nodeInfo
 }
