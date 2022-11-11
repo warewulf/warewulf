@@ -81,14 +81,11 @@ func BuildSpecificOverlays(nodes []node.NodeInfo, overlayNames []string) error {
 Build overlay for the host, so no argument needs to be given
 */
 func BuildHostOverlay() error {
-	var host node.NodeInfo
-	host.Kernel = new(node.KernelEntry)
-	host.Ipmi = new(node.IpmiEntry)
-	var idEntry node.Entry
+	host := node.NewInfo()
 	hostname, _ := os.Hostname()
+	host.Id.Set(hostname)
+
 	wwlog.Info("Building overlay for %s: host", hostname)
-	idEntry.Set(hostname)
-	host.Id = idEntry
 	hostdir := OverlaySourceDir("host")
 	stats, err := os.Stat(hostdir)
 	if err != nil {

@@ -20,10 +20,11 @@ func Hostfile() error {
 		wwlog.Error("'the overlay template '/etc/hosts.ww' does not exists in 'host' overlay")
 		os.Exit(1)
 	}
-	var nodeInfo node.NodeInfo
-	tstruct := overlay.InitStruct(nodeInfo)
+
+	nodeInfo := node.NewInfo()
 	hostname, _ := os.Hostname()
 	nodeInfo.Id.Set(hostname)
+	tstruct := overlay.InitStruct(nodeInfo)
 	buffer, backupFile, writeFile, err := overlay.RenderTemplateFile(
 		hostTemplate,
 		tstruct)
