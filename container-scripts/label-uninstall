@@ -1,0 +1,20 @@
+#!/bin/sh -eu
+
+# This is the uninstall script for grafana when run in a privileged
+# container.
+
+CONTAINER=warewulf
+cd /
+PATH="/usr/bin:/usr/sbin"
+
+if [ ! -d /host/etc ] || [ ! -d /host/usr/local/bin ]; then
+    echo "${CONTAINER}-uninstall: host file system is not mounted at /host"
+    exit 1
+fi
+
+# removing installed files
+echo "LABEL UNINSTALL: Removing all files"
+rm -vf /host/usr/local/bin/wwctl
+rm -vf /host/usr/local/bin/warewulf-container-manage.sh
+rm -vf /host/etc/systemd/system/${CONTAINER}.service
+rm -vf /host/usr/share/bash-completion/completions/wwctl
