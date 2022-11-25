@@ -1,0 +1,8 @@
+#!/bin/bash
+
+source /etc/warewulf-container.conf
+
+set -euxo pipefail
+
+# Run the domain
+podman exec -ti ${CONTAINER_NAME} wwctl $@

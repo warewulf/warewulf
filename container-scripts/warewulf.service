@@ -1,0 +1,25 @@
+[Unit]
+Description=warewulf daemon container
+Documentation=https://build.opensuse.org/package/show/SUSE:ALP:Workloads/warewulf-container
+After=network-online.target
+After=local-fs.target
+Wants=network-online.target
+StartLimitIntervalSec=40
+StartLimitBurst=5
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+Restart=always
+RestartSec=1s
+TimeoutStopSec=70
+#Environment=WAREWULF_IMAGE_PATH=registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/warewulf:latest
+Environment=WAREWULF_IMAGE_PATH=warewulf:latest
+ExecStartPre=-/usr/bin/podman container runlabel --name warewulf install  ${WAREWULF_IMAGE_PATH} 
+ExecStart=/usr/bin/podman container runlabel --name warewulf run ${WAREWULF_IMAGE_PATH}
+ExecStop=/usr/bin/podman container stop warewulf
+ExecStopPost=/usr/bin/podman container rm warewulf
+Type=notify
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target
