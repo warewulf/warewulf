@@ -1,4 +1,4 @@
-.PHONY: all
+.PHONY: all clean contclean
 
 -include Defaults.mk
 
@@ -289,7 +289,7 @@ wwapic: ## Build the sample wwapi client.
 wwapird: ## Build the rest api server (revese proxy to the grpc api server).
 	go build -o ./wwapird internal/app/api/wwapird/wwapird.go
 
-clean:
+contclean:
 	rm -f wwclient
 	rm -f wwctl
 	rm -rf .dist
@@ -298,7 +298,6 @@ clean:
 	rm -rf bash_completion.d
 	rm -f man_page
 	rm -rf man_pages
-	rm -rf vendor
 	rm -f warewulf.spec
 	rm -f config
 	rm -f Defaults.mk
@@ -306,6 +305,9 @@ clean:
 	rm -f config_defaults
 	rm -f update_configuration
 	rm -f print_defaults
+
+clean: contclean
+	rm -rf vendor
 
 install: files install_wwclient
 
