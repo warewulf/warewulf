@@ -48,6 +48,7 @@ RUN zypper  -n install \
   openssh-clients \
   less \
   dhcp-server \
+  iproute2 \
   tftp \
   systemd \
   && \
