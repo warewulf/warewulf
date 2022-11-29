@@ -618,7 +618,7 @@ func FileGz(
 			var     gzipStderr io.ReadCloser
             
 			/* Older version of gzip, try it another way: */
-			wwlog.Verbose("%s does not recognize the --keep flag, trying piped stdout", compressor)
+			wwlog.Verbose("%s does not recognize the --keep flag, trying redirected stdout", compressor)
 			
 			/* Open the output file for writing: */
 			gzippedFile, err = os.Create(file_gz)
