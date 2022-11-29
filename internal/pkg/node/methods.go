@@ -2,6 +2,7 @@ package node
 
 import (
 	"fmt"
+	"reflect"
 	"regexp"
 	"strings"
 
@@ -346,4 +347,20 @@ func NewInfo() (nodeInfo NodeInfo) {
 	nodeInfo.Kernel = new(KernelEntry)
 	nodeInfo.NetDevs = make(map[string]*NetDevEntry)
 	return nodeInfo
+}
+
+/*
+Get a entry by its name
+*/
+func GetByName(node interface{}, name string) (string, error) {
+	valEntry := reflect.ValueOf(node)
+	entryField := valEntry.Elem().FieldByName(name)
+	if entryField == (reflect.Value{}) {
+		return "", fmt.Errorf("couldn't find field with name: %s", name)
+	}
+	if entryField.Type() != reflect.TypeOf(Entry{}) {
+		return "", fmt.Errorf("field %s is not of type node.Entry", name)
+	}
+	myEntry := entryField.Interface().(Entry)
+	return myEntry.Get(), nil
 }
