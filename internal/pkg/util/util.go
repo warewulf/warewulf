@@ -596,7 +596,7 @@ func FileGz(
 	compressor, err := exec.LookPath("pigz")
 	if err != nil {
 		wwlog.Verbose("Could not locate PIGZ")
-		compressor, err := exec.LookPath("gzip")
+		compressor, err = exec.LookPath("gzip")
 		if err != nil {
 			wwlog.Verbose("Could not locate GZIP")
 			return errors.Wrapf(err, "No compressor program for image file: %s", file_gz)
@@ -612,12 +612,15 @@ func FileGz(
 
 	out, err := proc.CombinedOutput()
 	if len(out) > 0 {
-		if err != nil && strings.HasSuffix(compressor, "gzip") && strings.Contains(out, "unrecognized option") {
+		outStr := string(out[:])
+		if err != nil && strings.HasSuffix(compressor, "gzip") && strings.Contains(outStr, "unrecognized option") {
+			var		gzippedFile *os.File
+			
 			/* Older version of gzip, try it another way: */
 			wwlog.Verbose("%s does not recognize the --keep flag, trying piped stdout", compressor)
 			
 			/* Open the output file for writing: */
-			gzippedFile, err := os.Create(file_gz)
+			gzippedFile, err = os.Create(file_gz)
 			if err != nil {
 				return errors.Wrapf(err, "Unable to open compressed image file for writing: %s", file_gz)
 			}
