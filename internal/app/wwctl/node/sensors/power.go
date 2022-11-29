@@ -17,13 +17,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("Could not open node configuration: %s\n", err)
+		wwlog.Error("Could not open node configuration: %s", err)
 		os.Exit(1)
 	}
 
 	nodes, err := nodeDB.FindAllNodes()
 	if err != nil {
-		wwlog.Error("Could not get node list: %s\n", err)
+		wwlog.Error("Could not get node list: %s", err)
 		os.Exit(1)
 	}
 
@@ -48,7 +48,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	for _, node := range nodes {
 		if node.Ipmi.Ipaddr.Get() == "" {
-			wwlog.Error("%s: No IPMI IP address\n", node.Id.Get())
+			wwlog.Error("%s: No IPMI IP address", node.Id.Get())
 			continue
 		}
 		var ipmiInterface = "lan"
@@ -92,7 +92,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		out, err := result.Result()
 
 		if err != nil {
-			wwlog.Error("%s: %s\n", result.NodeName, out)
+			wwlog.Error("%s: %s", result.NodeName, out)
 			returnErr = err
 			continue
 		}

@@ -14,29 +14,52 @@ import (
 )
 
 var ConfigFile string
+var DefaultConfig string
+
+// used as fallback if DefaultConfig can't be read
+var FallBackConf = `
+defaultnode:
+  runtime overlay:
+  - generic
+  system overlay:
+  - wwinit
+  kernel:
+    args: quiet crashkernel=no vga=791 net.naming-scheme=v238
+  init: /sbin/init
+  root: initramfs
+  profiles:
+  - default
+  network devices:
+    dummy:
+      device: eth0
+      type: ethernet
+      netmask: 255.255.255.0`
 
 func init() {
 	if ConfigFile == "" {
 		ConfigFile = path.Join(buildconfig.SYSCONFDIR(), "warewulf/nodes.conf")
+	}
+	if DefaultConfig == "" {
+		DefaultConfig = path.Join(buildconfig.SYSCONFDIR(), "warewulf/defaults.conf")
 	}
 }
 
 func New() (NodeYaml, error) {
 	var ret NodeYaml
 
-	wwlog.Verbose("Opening node configuration file: %s\n", ConfigFile)
+	wwlog.Verbose("Opening node configuration file: %s", ConfigFile)
 	data, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
 		return ret, err
 	}
 
-	wwlog.Debug("Unmarshaling the node configuration\n")
+	wwlog.Debug("Unmarshaling the node configuration")
 	err = yaml.Unmarshal(data, &ret)
 	if err != nil {
 		return ret, err
 	}
 
-	wwlog.Debug("Returning node object\n")
+	wwlog.Debug("Returning node object")
 
 	return ret, nil
 }
@@ -54,22 +77,40 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			return ret, err
 		}
 	*/
-	wwlog.Debug("Finding all nodes...\n")
+	var defConf map[string]*NodeConf
+	wwlog.Verbose("Opening defaults failed %s\n", DefaultConfig)
+	defData, err := ioutil.ReadFile(DefaultConfig)
+	if err != nil {
+		wwlog.Verbose("Couldn't read DefaultConfig :%s\n", err)
+	}
+	wwlog.Debug("Unmarshalling default config\n")
+	err = yaml.Unmarshal(defData, &defConf)
+	if err != nil {
+		wwlog.Verbose("Couldn't unmarshall defaults from file :%s\n", err)
+		wwlog.Verbose("Using building defaults")
+		err = yaml.Unmarshal([]byte(FallBackConf), &defConf)
+		if err != nil {
+			wwlog.Warn("Could not get any defaults")
+		}
+	}
+	var defConfNet *NetDevs
+	if _, ok := defConf["defaultnode"]; ok {
+		if _, ok := defConf["defaultnode"].NetDevs["dummy"]; ok {
+			defConfNet = defConf["defaultnode"].NetDevs["dummy"]
+		}
+		defConf["defaultnode"].NetDevs = nil
+	}
+
+	wwlog.Debug("Finding all nodes...")
 	for nodename, node := range config.Nodes {
 		var n NodeInfo
 
-		wwlog.Debug("In node loop: %s\n", nodename)
+		wwlog.Debug("In node loop: %s", nodename)
 		n.NetDevs = make(map[string]*NetDevEntry)
 		n.Tags = make(map[string]*Entry)
 		n.Kernel = new(KernelEntry)
 		n.Ipmi = new(IpmiEntry)
-		n.SystemOverlay.SetDefault("wwinit")
-		n.RuntimeOverlay.SetDefault("generic")
-		n.Ipxe.SetDefault("default")
-		n.Init.SetDefault("/sbin/init")
-		n.Root.SetDefault("initramfs")
-		n.Kernel.Args.SetDefault("quiet crashkernel=no vga=791")
-
+		n.SetDefFrom(defConf["defaultnode"])
 		fullname := strings.SplitN(nodename, ".", 2)
 		if len(fullname) > 1 {
 			n.ClusterName.SetDefault(fullname[1])
@@ -80,14 +121,18 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		} else {
 			n.Profiles.SetSlice(node.Profiles)
 		}
-		// node explciti nodename field in NodeConf
+		// node explicitly nodename field in NodeConf
 		n.Id.Set(nodename)
-		// backward compatibilty
+		// backward compatibility
 		for keyname, key := range node.Keys {
 			node.Tags[keyname] = key
 			delete(node.Keys, keyname)
 		}
 		n.SetFrom(node)
+		// only now the netdevs start to exist so that default values can be set
+		for _, netdev := range n.NetDevs {
+			netdev.SetDefFrom(defConfNet)
+		}
 		// set default/primary network is just one network exist
 		if len(n.NetDevs) == 1 {
 			// only way to get the key
@@ -125,11 +170,11 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 
 		for _, profileName := range n.Profiles.GetSlice() {
 			if _, ok := config.NodeProfiles[profileName]; !ok {
-				wwlog.Warn("Profile not found for node '%s': %s\n", nodename, profileName)
+				wwlog.Warn("Profile not found for node '%s': %s", nodename, profileName)
 				continue
 			}
 			// can't call setFrom() as we have to use SetAlt instead of Set for an Entry
-			wwlog.Verbose("Merging profile into node: %s <- %s\n", nodename, profileName)
+			wwlog.Verbose("Merging profile into node: %s <- %s", nodename, profileName)
 			n.SetAltFrom(config.NodeProfiles[profileName], profileName)
 		}
 		ret = append(ret, n)

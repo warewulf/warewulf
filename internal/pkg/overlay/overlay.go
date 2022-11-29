@@ -49,13 +49,13 @@ func BuildAllOverlays(nodes []node.NodeInfo) error {
 		wwlog.Info("Building system overlays for %s: [%s]", n.Id.Get(), strings.Join(sysOverlays, ", "))
 		err := BuildOverlay(n, sysOverlays)
 		if err != nil {
-			return errors.Wrapf(err, "could not build system overlays %v for nide %s", sysOverlays, n.Id.Get())
+			return errors.Wrapf(err, "could not build system overlays %v for node %s", sysOverlays, n.Id.Get())
 		}
 		runOverlays := n.RuntimeOverlay.GetSlice()
 		wwlog.Info("Building runtime overlays for %s: [%s]", n.Id.Get(), strings.Join(runOverlays, ", "))
 		err = BuildOverlay(n, runOverlays)
 		if err != nil {
-			return errors.Wrapf(err, "could not build runtime overlays %v for nide %s", runOverlays, n.Id.Get())
+			return errors.Wrapf(err, "could not build runtime overlays %v for node %s", runOverlays, n.Id.Get())
 		}
 
 	}
@@ -81,14 +81,11 @@ func BuildSpecificOverlays(nodes []node.NodeInfo, overlayNames []string) error {
 Build overlay for the host, so no argument needs to be given
 */
 func BuildHostOverlay() error {
-	var host node.NodeInfo
-	host.Kernel = new(node.KernelEntry)
-	host.Ipmi = new(node.IpmiEntry)
-	var idEntry node.Entry
+	host := node.NewInfo()
 	hostname, _ := os.Hostname()
+	host.Id.Set(hostname)
+
 	wwlog.Info("Building overlay for %s: host", hostname)
-	idEntry.Set(hostname)
-	host.Id = idEntry
 	hostdir := OverlaySourceDir("host")
 	stats, err := os.Stat(hostdir)
 	if err != nil {
@@ -200,11 +197,11 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 		return errors.Errorf("overlay names contains illegal characters: %v", overlayNames)
 	}
 
-	wwlog.Verbose("Processing node/overlay: %s/%s\n", nodeInfo.Id.Get(), strings.Join(overlayNames, "-"))
+	wwlog.Verbose("Processing node/overlay: %s/%s", nodeInfo.Id.Get(), strings.Join(overlayNames, "-"))
 	for _, overlayName := range overlayNames {
 		wwlog.Verbose("Building overlay %s for node %s in %s", overlayName, nodeInfo.Id.Get(), outputDir)
 		overlaySourceDir := OverlaySourceDir(overlayName)
-		wwlog.Debug("Starting to build overlay %s\nChanging directory to OverlayDir: %s\n", overlayName, overlaySourceDir)
+		wwlog.Debug("Starting to build overlay %s\nChanging directory to OverlayDir: %s", overlayName, overlaySourceDir)
 		err := os.Chdir(overlaySourceDir)
 		if err != nil {
 			return errors.Wrap(err, "could not change directory to overlay dir")
@@ -376,12 +373,12 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (
 		"dec":          func(i int) int { return i - 1 },
 		"file":         func(str string) string { return fmt.Sprintf("{{ /* file \"%s\" */ }}", str) },
 		"abort": func() string {
-			wwlog.Debug("abort file called in %s\n", fileName)
+			wwlog.Debug("abort file called in %s", fileName)
 			writeFile = false
 			return ""
 		},
 		"nobackup": func() string {
-			wwlog.Debug("not backup for %s\n", fileName)
+			wwlog.Debug("not backup for %s", fileName)
 			backupFile = false
 			return ""
 		},

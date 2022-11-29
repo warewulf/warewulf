@@ -12,7 +12,7 @@ import (
 
 func ValidName(name string) bool {
 	if !util.ValidString(name, "^[\\w\\-\\.\\:]+$") {
-		wwlog.Warn("VNFS name has illegal characters: %s\n", name)
+		wwlog.Warn("VNFS name has illegal characters: %s", name)
 		return false
 	}
 	return true
@@ -25,7 +25,7 @@ func ListSources() ([]string, error) {
 	if err != nil {
 		return ret, errors.New("Could not create VNFS source parent directory: " + SourceParentDir())
 	}
-	wwlog.Debug("Searching for VNFS Rootfs directories: %s\n", SourceParentDir())
+	wwlog.Debug("Searching for VNFS Rootfs directories: %s", SourceParentDir())
 
 	sources, err := ioutil.ReadDir(SourceParentDir())
 	if err != nil {
@@ -33,7 +33,7 @@ func ListSources() ([]string, error) {
 	}
 
 	for _, source := range sources {
-		wwlog.Verbose("Found VNFS source: %s\n", source.Name())
+		wwlog.Verbose("Found VNFS source: %s", source.Name())
 
 		if !ValidName(source.Name()) {
 			continue
@@ -57,7 +57,7 @@ func ValidSource(name string) bool {
 	}
 
 	if !util.IsDir(fullPath) {
-		wwlog.Verbose("Location is not a VNFS source directory: %s\n", name)
+		wwlog.Verbose("Location is not a VNFS source directory: %s", name)
 		return false
 	}
 
@@ -70,7 +70,7 @@ Delete the chroot of a container
 func DeleteSource(name string) error {
 	fullPath := SourceDir(name)
 
-	wwlog.Verbose("Removing path: %s\n", fullPath)
+	wwlog.Verbose("Removing path: %s", fullPath)
 	return os.RemoveAll(fullPath)
 }
 
@@ -80,9 +80,9 @@ Delete the image of a container
 func DeleteImage(name string) error {
 	imageFile := ImageFile(name)
 	if util.IsFile(imageFile) {
-		wwlog.Verbose("removing %s for container %s\n", imageFile, name)
+		wwlog.Verbose("removing %s for container %s", imageFile, name)
 		errImg := os.Remove(imageFile)
-		wwlog.Verbose("removing %s for container %s\n", imageFile+".gz", name)
+		wwlog.Verbose("removing %s for container %s", imageFile+".gz", name)
 		errGz := os.Remove(imageFile + ".gz")
 		if errImg != nil {
 			return errors.Errorf("Problems delete %s for container %s: %s\n", imageFile, name, errImg)

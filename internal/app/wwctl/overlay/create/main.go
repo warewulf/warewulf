@@ -12,7 +12,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	err := overlay.OverlayInit(args[0])
 	if err != nil {
-		wwlog.Error("%s\n", err)
+		wwlog.Error("%s", err)
 		os.Exit(1)
 	}
 

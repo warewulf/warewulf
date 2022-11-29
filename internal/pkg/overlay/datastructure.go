@@ -44,17 +44,17 @@ func InitStruct(nodeInfo node.NodeInfo) TemplateStruct {
 	var tstruct TemplateStruct
 	controller, err := warewulfconf.New()
 	if err != nil {
-		wwlog.Error("%s\n", err)
+		wwlog.Error("%s", err)
 		os.Exit(1)
 	}
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("%s\n", err)
+		wwlog.Error("%s", err)
 		os.Exit(1)
 	}
 	allNodes, err := nodeDB.FindAllNodes()
 	if err != nil {
-		wwlog.Error("%s\n", err)
+		wwlog.Error("%s", err)
 		os.Exit(1)
 	}
 	// init some convininence vars
@@ -83,6 +83,7 @@ func InitStruct(nodeInfo node.NodeInfo) TemplateStruct {
 	dt := time.Now()
 	tstruct.BuildTime = dt.Format("01-02-2006 15:04:05 MST")
 	tstruct.BuildTimeUnix = strconv.FormatInt(dt.Unix(), 10)
+	tstruct.NodeConf.Tags = map[string]string{}
 	tstruct.NodeConf.GetFrom(nodeInfo)
 	// FIXME: Set ipCIDR address at this point, will fail with
 	// invalid ipv4 addr

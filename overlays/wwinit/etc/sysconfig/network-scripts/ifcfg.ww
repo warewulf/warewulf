@@ -8,8 +8,9 @@
 # Host:   {{ $host }}
 # Time:   {{ $time }}
 # Source: {{ $source }}
+TYPE={{ $netdev.Type }}
 DEVICE={{ $netdev.Device }}
-NAME=default
+NAME={{ $devname }}
 BOOTPROTO=static
 DEVTIMEOUT=10
 IPADDR={{ $netdev.Ipaddr }}

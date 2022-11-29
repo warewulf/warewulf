@@ -23,14 +23,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	uid, err = strconv.Atoi(args[2])
 	if err != nil {
-		wwlog.Error("UID is not an integer: %s\n", args[2])
+		wwlog.Error("UID is not an integer: %s", args[2])
 		os.Exit(1)
 	}
 
 	if len(args) > 3 {
 		gid, err = strconv.Atoi(args[3])
 		if err != nil {
-			wwlog.Error("GID is not an integer: %s\n", args[3])
+			wwlog.Error("GID is not an integer: %s", args[3])
 			os.Exit(1)
 		}
 	} else {
@@ -40,20 +40,20 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	overlaySourceDir = overlay.OverlaySourceDir(overlayName)
 
 	if !util.IsDir(overlaySourceDir) {
-		wwlog.Error("Overlay does not exist: %s\n", overlayName)
+		wwlog.Error("Overlay does not exist: %s", overlayName)
 		os.Exit(1)
 	}
 
 	overlayFile := path.Join(overlaySourceDir, fileName)
 
 	if !util.IsFile(overlayFile) && !util.IsDir(overlayFile) {
-		wwlog.Error("File does not exist within overlay: %s:%s\n", overlayName, fileName)
+		wwlog.Error("File does not exist within overlay: %s:%s", overlayName, fileName)
 		os.Exit(1)
 	}
 
 	err = os.Chown(overlayFile, uid, gid)
 	if err != nil {
-		wwlog.Error("Could not set ownership: %s\n", err)
+		wwlog.Error("Could not set ownership: %s", err)
 		os.Exit(1)
 	}
 

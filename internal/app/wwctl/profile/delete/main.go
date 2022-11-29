@@ -16,13 +16,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("Failed to open node database: %s\n", err)
+		wwlog.Error("Failed to open node database: %s", err)
 		os.Exit(1)
 	}
 
 	profiles, err := nodeDB.FindAllProfiles()
 	if err != nil {
-		wwlog.Error("Could not load all profiles: %s\n", err)
+		wwlog.Error("Could not load all profiles: %s", err)
 		os.Exit(1)
 	}
 
@@ -31,13 +31,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			if p.Id.Get() == r {
 				nodes, err := nodeDB.FindAllNodes()
 				if err != nil {
-					wwlog.Error("Could not load all nodes: %s\n", err)
+					wwlog.Error("Could not load all nodes: %s", err)
 					os.Exit(1)
 				}
 				for _, n := range nodes {
 					for _, np := range n.Profiles.GetSlice() {
 						if np == r {
-							wwlog.Verbose("Removing profile from node %s: %s\n", n.Id.Get(), r)
+							wwlog.Verbose("Removing profile from node %s: %s", n.Id.Get(), r)
 							n.Profiles.SliceRemoveElement(r)
 							err := nodeDB.NodeUpdate(n)
 							if err != nil {
@@ -58,7 +58,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				found = true
 				err := nodeDB.DelProfile(r)
 				if err != nil {
-					wwlog.Error("%s\n", err)
+					wwlog.Error("%s", err)
 				}
 			}
 		}

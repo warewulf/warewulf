@@ -37,18 +37,18 @@ func New() (ControllerConf, error) {
 	ret.Nfs = &nfsConf
 	err := defaults.Set(&ret)
 	if err != nil {
-		wwlog.Error("Coult initialize default variables\n")
+		wwlog.Error("Coult initialize default variables")
 		return ret, err
 	}
 	// Check if cached config is old before re-reading config file
 	if !cachedConf.current {
-		wwlog.Debug("Opening Warewulf configuration file: %s\n", ConfigFile)
+		wwlog.Debug("Opening Warewulf configuration file: %s", ConfigFile)
 		data, err := ioutil.ReadFile(ConfigFile)
 		if err != nil {
-			wwlog.Warn("Error reading Warewulf configuration file\n")
+			wwlog.Warn("Error reading Warewulf configuration file")
 		}
 
-		wwlog.Debug("Unmarshaling the Warewulf configuration\n")
+		wwlog.Debug("Unmarshaling the Warewulf configuration")
 		err = yaml.Unmarshal(data, &ret)
 		if err != nil {
 			return ret, err
@@ -63,12 +63,12 @@ func New() (ControllerConf, error) {
 			localIp := conn.LocalAddr().(*net.UDPAddr)
 			if ret.Ipaddr == "" {
 				ret.Ipaddr = localIp.IP.String()
-				wwlog.Warn("IP address is not configured in warewulfd.conf, using %s\n", ret.Ipaddr)
+				wwlog.Warn("IP address is not configured in warewulfd.conf, using %s", ret.Ipaddr)
 			}
 			if ret.Netmask == "" {
 				mask := localIp.IP.DefaultMask()
 				ret.Netmask = fmt.Sprintf("%d.%d.%d.%d", mask[0], mask[1], mask[2], mask[3])
-				wwlog.Warn("Netmask address is not configured in warewulfd.conf, using %s\n", ret.Netmask)
+				wwlog.Warn("Netmask address is not configured in warewulfd.conf, using %s", ret.Netmask)
 			}
 		}
 
@@ -84,21 +84,21 @@ func New() (ControllerConf, error) {
 		if ret.Ipaddr6 != "" {
 			_, ipv6net, err := net.ParseCIDR(ret.Ipaddr6)
 			if err != nil {
-				wwlog.Error("Invalid ipv6 address specified, mut be CIDR notation: %s\n", ret.Ipaddr6)
+				wwlog.Error("Invalid ipv6 address specified, mut be CIDR notation: %s", ret.Ipaddr6)
 				return ret, errors.New("invalid ipv6 network")
 			}
 			if msize, _ := ipv6net.Mask.Size(); msize > 64 {
-				wwlog.Error("ipv6 mask size must be smaller than 64\n")
+				wwlog.Error("ipv6 mask size must be smaller than 64")
 				return ret, errors.New("invalid ipv6 network size")
 			}
 		}
 
-		wwlog.Debug("Returning warewulf config object\n")
+		wwlog.Debug("Returning warewulf config object")
 		cachedConf = ret
 		cachedConf.current = true
 
 	} else {
-		wwlog.Debug("Returning cached warewulf config object\n")
+		wwlog.Debug("Returning cached warewulf config object")
 		// If cached struct isn't empty, use it as the return value
 		ret = cachedConf
 	}
