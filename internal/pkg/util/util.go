@@ -615,7 +615,8 @@ func FileGz(
 		outStr := string(out[:])
 		if err != nil && strings.HasSuffix(compressor, "gzip") && strings.Contains(outStr, "unrecognized option") {
 			var		gzippedFile *os.File
-			
+			var     gzipStderr io.ReadCloser
+            
 			/* Older version of gzip, try it another way: */
 			wwlog.Verbose("%s does not recognize the --keep flag, trying piped stdout", compressor)
 			
@@ -633,7 +634,7 @@ func FileGz(
 				"--stdout",
 				file )
 			proc.Stdout = gzippedFile
-			gzipStderr, err := proc.StderrPipe()
+			gzipStderr, err = proc.StderrPipe()
 			if err != nil {
 				return errors.Wrapf(err, "Unable to open stderr pipe for compression program: %s", compressor)
 			}
