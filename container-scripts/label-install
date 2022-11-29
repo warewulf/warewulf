@@ -12,7 +12,8 @@ OVERLAYDIR=/var/lib/warewulf/overlays
 CHROOTDIR=/var/lib/warewulf/chroots
 CONTAINERDIR=/var/lib/warewulf/container
 WAREWULFCONF=/etc/warewulf
-BASHCOMPLETION=/usr/share/bash-completion/completions/wwctl
+BASHCOMPLETION=/usr/share/bash_completion/completions/wwctl
+CONFSCRIPT=/container/config-warewulf
 
 echo "LABEL INSTALL"
 # ensure all scripts will be present on the host 
@@ -23,6 +24,7 @@ mkdir -p $BASEDIR
 if [ ! -e /host/usr/local/bin/${SCRIPT} ]; then
         echo "copy /container/${SCRIPT} in /host/usr/local/bin/"
         rsync -u /container/${SCRIPT} /host/usr/local/bin/${SCRIPT}
+        chmod 755 /host/usr/local/bin/${SCRIPT}
 else
         echo "/host/usr/local/bin/${SCRIPT} already exist, will not update it"
 fi
@@ -73,3 +75,6 @@ fi
 
 # containerdir
 mkdir -p /host/$CONTAINERDIR
+
+# now config the container
+$CONFSCRIPT

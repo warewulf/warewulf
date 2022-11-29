@@ -66,6 +66,8 @@ RUN zypper  -n install \
   cp -vr container-scripts/label-* \
   container-scripts/wwctl \
   container-scripts/warewulf.service \
+  container-scripts/warewulf-container-manage.sh \
+  container-scripts/config-warewul \
   /container &&\
   mkdir -p /usr/share/bash_completion/completions/ &&\
   cp /etc/warewulf/bash_completion.d/warewulf /usr/share/bash_completion/completions/wwctl &&\

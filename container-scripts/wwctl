@@ -1,7 +1,5 @@
 #!/bin/bash
 
-source /etc/warewulf-container.conf
-
 set -euxo pipefail
 
 # Run the domain

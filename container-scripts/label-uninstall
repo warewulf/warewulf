@@ -17,4 +17,4 @@ echo "LABEL UNINSTALL: Removing all files"
 rm -vf /host/usr/local/bin/wwctl
 rm -vf /host/usr/local/bin/warewulf-container-manage.sh
 rm -vf /host/etc/systemd/system/${CONTAINER}.service
-rm -vf /host/usr/share/bash-completion/completions/wwctl
+rm -vf /host/usr/share/bash_completion/completions/wwctl

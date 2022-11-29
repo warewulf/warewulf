@@ -254,7 +254,7 @@ warewulfconf: config_defaults
 	./config_defaults
 
 dist: vendor config
-	rm -rf .dist/$(WAREWULF)-$(VERSION)
+	rm -rf .dist/$(WAREWULF)-$(VERSION) $(WAREWULF)-$(VERSION).tar.gz
 	mkdir -p .dist/$(WAREWULF)-$(VERSION)
 	cp -rap * .dist/$(WAREWULF)-$(VERSION)/
 	find .dist/$(WAREWULF)-$(VERSION)/ -type f -name '*~' -delete
