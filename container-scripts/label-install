@@ -13,7 +13,6 @@ CHROOTDIR=/var/lib/warewulf/chroots
 CONTAINERDIR=/var/lib/warewulf/container
 WAREWULFCONF=/etc/warewulf
 BASHCOMPLETION=/usr/share/bash_completion/completions/wwctl
-CONFSCRIPT=/container/config-warewulf
 
 echo "LABEL INSTALL"
 # ensure all scripts will be present on the host 
@@ -75,6 +74,3 @@ fi
 
 # containerdir
 mkdir -p /host/$CONTAINERDIR
-
-# now config the container
-$CONFSCRIPT

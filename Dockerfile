@@ -36,6 +36,7 @@ LABEL maintainer="Christian Goll <cgoll@suse.com>"
 
 COPY --from=builder /usr/bin/wwctl /usr/bin/wwctl
 COPY --from=builder /var/lib/warewulf /var/lib/warewulf
+COPY --from=builder /usr/share/warewulf /usr/share/warewulf
 COPY --from=builder /etc/warewulf /etc/warewulf
 COPY --from=builder /warewulf-src/container-scripts /container-scripts 
 
@@ -67,7 +68,7 @@ RUN zypper  -n install \
   container-scripts/wwctl \
   container-scripts/warewulf.service \
   container-scripts/warewulf-container-manage.sh \
-  container-scripts/config-warewul \
+  container-scripts/config-warewulf \
   /container &&\
   mkdir -p /usr/share/bash_completion/completions/ &&\
   cp /etc/warewulf/bash_completion.d/warewulf /usr/share/bash_completion/completions/wwctl &&\
