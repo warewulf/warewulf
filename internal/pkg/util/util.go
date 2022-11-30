@@ -642,7 +642,7 @@ func FileGz(
 			/* Execute the command: */
 			err = proc.Start()
 			if err != nil {
-				proc.Wait()
+                _ = proc.Wait()
 				gzippedFile.Close()
 				os.Remove(file_gz)
 				err = errors.Wrapf(err, "Unable to successfully execute compression program: %s", compressor)
