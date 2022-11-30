@@ -27,6 +27,7 @@ defaultnode:
     args: quiet crashkernel=no vga=791 net.naming-scheme=v238
   init: /sbin/init
   root: initramfs
+  ipxe template: default
   profiles:
   - default
   network devices:
