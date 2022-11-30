@@ -69,6 +69,7 @@ fi
 
 # configure the services of the host by building the host overlay
 echo "-- Running wwctl --"
-wwctl overlay build
 # enable tftp if systemd is running
 test -e /run/systemd/system && wwctl configure tftp
+test -e /run/systemd/system && wwctl configure ssh
+wwctl overlay build

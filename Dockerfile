@@ -51,6 +51,7 @@ RUN zypper  -n install \
   dhcp-server \
   iproute2 \
   vim \
+  yq \
   tftp \
   systemd \
   && \
@@ -61,11 +62,12 @@ RUN zypper  -n install \
 	sed -i 's/^DHCPD_INTERFACE=""/DHCPD_INTERFACE="ANY"/' $DHCPDCONF && \
 	sed -i 's/^DHCPD_RUN_CHROOTED="yes"/DHCPD_RUN_CHROOTED="no"/' $DHCPDCONF && \
   WW4CONF=/etc/warewulf/warewulf.conf; test -e $WW4CONF && \
-  sed -i 's/^ipaddr:.*/ipaddr: EMPTY/' $WW4CONF && \
-  sed -i 's/^netmask:.*/netmask: EMPTY/' $WW4CONF && \
-  sed -i 's/^network:.*/network: EMPTY/' $WW4CONF && \
-  sed -i 's/^  range start:.*/  range start: EMPTY/' $WW4CONF && \
-  sed -i 's/^  range end:.*/  range end: EMPTY/' $WW4CONF && \
+  yq e '.ipaddr |= "EMPTY"' -i $WW4CONF && \
+  yq e '.netmask |= "EMPTY"' -i $WW4CONF && \
+  yq e '.network |= "EMPTY"' -i $WW4CONF && \
+  yq e '.dhcp.["range start"] |= "EMPTY"'  -i $WW4CONF && \
+  yq e '.dhcp.["range end"] |= "EMPTY"'  -i $WW4CONF && \
+  yq e '.nfs.enabled |= false' -i $WW4CONF && \
   mkdir -p /container && \
   cp -vr container-scripts/label-* \
   container-scripts/wwctl \
@@ -74,7 +76,7 @@ RUN zypper  -n install \
   container-scripts/config-warewulf \
   /container &&\
   mkdir -p /usr/share/bash_completion/completions/ &&\
-  cp /etc/warewulf/bash_completion.d/warewulf /usr/share/bash_completion/completions/wwctl &&\
+  cp /etc/warewulf/bash_completion.d/warewulf /usr/share/bash_completion/completions/warewulf &&\
   mv -v container-scripts/ww4-config.service /etc/systemd/system/ &&\
   mv -v container-scripts/warewulfd.service /etc/systemd/system/ &&\
   systemctl enable ww4-config &&\

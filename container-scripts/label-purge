@@ -1,6 +1,7 @@
 #!/bin/bash
 OVERLAYDIR=/var/lib/warewulf/overlays
 CHROOTDIR=/var/lib/warewulf/chroots
+OCIDIR=/var/lib/warewulf/oci
 CONTAINERDIR=/var/lib/warewulf/container
 WAREWULFCONF=/etc/warewulf
 BASEDIR=/var/lib/warewulf
@@ -28,6 +29,6 @@ while true ; do
 done
 echo "PURGING"
 /container/label-uninstall
-rm -rv /host/$WAREWULFCONF /host/$OVERLAYDIR /host/$CHROOTDIR /host/$CONTAINERDIR
+rm -rv /host/$WAREWULFCONF /host/$OVERLAYDIR /host/$CHROOTDIR /host/$CONTAINERDIR /host/$OCIDIR
 rmdir /host/$BASEDIR
 

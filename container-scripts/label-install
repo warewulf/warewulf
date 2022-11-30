@@ -12,7 +12,8 @@ OVERLAYDIR=/var/lib/warewulf/overlays
 CHROOTDIR=/var/lib/warewulf/chroots
 CONTAINERDIR=/var/lib/warewulf/container
 WAREWULFCONF=/etc/warewulf
-BASHCOMPLETION=/usr/share/bash_completion/completions/wwctl
+BASHCOMPLETION=/usr/share/bash_completion/completions/w*
+AUTHKEYDIR=/root/.ssh
 
 echo "LABEL INSTALL"
 # ensure all scripts will be present on the host 
@@ -67,10 +68,15 @@ sync_dir $CHROOTDIR
 sync_dir $WAREWULFCONF
 
 # bash completion
-if [ ! -e /host/etc/bash_completion.d/wwctl ] ; then 
+if [ ! -e /host/etc/bash_completion.d/warewulf ] ; then 
   mkdir -p /host/etc/bash_completion.d
   cp $BASHCOMPLETION /host/etc/bash_completion.d/
 fi
 
 # containerdir
 mkdir -p /host/$CONTAINERDIR
+
+# authorized keys
+mkdir -p /root/.ssh/
+echo "Copy authorized keys to container"
+test -e /host/${AUTHKEYDIR}/*pub && cp -v /host/${AUTHKEYDIR}/*pub  ${AUTHKEYDIR} || echo "no public keys found"
