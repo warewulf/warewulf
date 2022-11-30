@@ -40,7 +40,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
 
-	os.Setenv("WW_CONTAINER_SHELL", "true")
+	os.Setenv("WW_CONTAINER_SHELL", "1")
 
 	if err := c.Run(); err != nil {
 		fmt.Println(err)
