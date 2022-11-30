@@ -115,7 +115,7 @@ $(GOLANGCI_LINT):
 setup: vendor $(TOOLS_DIR) setup_tools
 
 vendor:
-    ifndef OFFLINE_BUILD
+ifndef OFFLINE_BUILD
 	  go mod tidy -v
 	  go mod vendor
 endif
@@ -125,7 +125,7 @@ $(TOOLS_DIR):
 
 # Pre-build steps for source, such as "go generate"
 config:
-    # Store configuration for subsequent runs
+# Store configuration for subsequent runs
 	printf " $(foreach V,$(VARLIST),$V := $(strip $($V))\n)" > Defaults.mk
     # Global variable search and replace for all *.in files
 	find . -type f -name "*.in" -not -path "./vendor/*" \
@@ -256,8 +256,7 @@ warewulfconf: config_defaults
 dist: vendor config
 	rm -rf .dist/$(WAREWULF)-$(VERSION) $(WAREWULF)-$(VERSION).tar.gz
 	mkdir -p .dist/$(WAREWULF)-$(VERSION)
-	cp -rap * .dist/$(WAREWULF)-$(VERSION)/
-	find .dist/$(WAREWULF)-$(VERSION)/ -type f -name '*~' -delete
+	rsync -a --exclude=".*" --exclude "*~" * .dist/$(WAREWULF)-$(VERSION)/
 	cd .dist; tar -czf ../$(WAREWULF)-$(VERSION).tar.gz $(WAREWULF)-$(VERSION)
 	rm -rf .dist
 

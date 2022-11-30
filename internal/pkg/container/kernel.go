@@ -15,11 +15,11 @@ var (
 		`vmlinuz`,
 		`vmlinux-*`,
 		`vmlinuz-*`,
-		`vmlinuz.gz` }
+		`vmlinuz.gz`}
 
 	kernelDirs = []string{
 		`/lib/modules/*/`,
-		`/boot/` }
+		`/boot/`}
 )
 
 func KernelFind(container string) string {

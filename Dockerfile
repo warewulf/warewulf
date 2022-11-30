@@ -37,6 +37,7 @@ LABEL maintainer="Christian Goll <cgoll@suse.com>"
 COPY --from=builder /usr/bin/wwctl /usr/bin/wwctl
 COPY --from=builder /var/lib/warewulf /var/lib/warewulf
 COPY --from=builder /usr/share/warewulf /usr/share/warewulf
+COPY --from=builder /usr/lib/systemd/system/warewulfd.service /container-scripts/warewulfd.service
 COPY --from=builder /etc/warewulf /etc/warewulf
 COPY --from=builder /warewulf-src/container-scripts /container-scripts 
 
@@ -49,6 +50,7 @@ RUN zypper  -n install \
   less \
   dhcp-server \
   iproute2 \
+  vim \
   tftp \
   systemd \
   && \
@@ -74,11 +76,13 @@ RUN zypper  -n install \
   mkdir -p /usr/share/bash_completion/completions/ &&\
   cp /etc/warewulf/bash_completion.d/warewulf /usr/share/bash_completion/completions/wwctl &&\
   mv -v container-scripts/ww4-config.service /etc/systemd/system/ &&\
-  systemctl enable ww4-config
+  mv -v container-scripts/warewulfd.service /etc/systemd/system/ &&\
+  systemctl enable ww4-config &&\
+  systemctl enable warewulfd
 
 CMD  [ "/usr/sbin/init" ]
 
-EXPOSE 67/udp 68/udp 69/udp 9873
+EXPOSE 67/udp 68/udp 69/udp 80 9873
 
 LABEL INSTALL="/usr/bin/docker run --env IMAGE=IMAGE --rm --privileged -v /:/host IMAGE /bin/bash /container/label-install"
 LABEL UNINSTALL="/usr/bin/docker run --rm --privileged -v /:/host IMAGE /bin/bash /container/label-uninstall"

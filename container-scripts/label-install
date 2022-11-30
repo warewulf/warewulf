@@ -43,7 +43,7 @@ fi
 sync_dir() {
   DIR=$1
   test -e /host/${DIR} || mkdir -pv /host/${DIR}
-  test -e /host/${DIR} && (rsync -au ${DIR} `dirname /host/${DIR}`; echo "updating $DIR") 
+  test -e /host/${DIR} && (rsync -au --ignore-existing ${DIR} `dirname /host/${DIR}`; echo "updating $DIR") 
 }
 
 # For podman, cp a systemd unit for starting on boot
