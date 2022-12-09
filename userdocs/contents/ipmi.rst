@@ -16,13 +16,13 @@ Here is a table outlining the fields on a Profile and Node level, along with the
 ============= =============== ======== ======= ================== =============
 Field         Parameter       Profile  Node    Valid Values       Default Value
 ============= =============== ======== ======= ================== =============
-IpmiIpaddr    --ipmi                   X                                       
-IpmiNetmask   --ipminetmask    X       X                                       
-IpmiPort      --ipmiport       X       X                          623          
-IpmiGateway   --ipmigateway    X       X                                       
-IpmiUserName  --ipmiuser       X       X                                       
-IpmiPassword  --ipmipass       X       X                                       
-IpmiInterface --ipmiinterface  X       X       'lan' or 'lanplus' lan       
+IpmiIpaddr    --ipmi                   X
+IpmiNetmask   --ipminetmask    X       X
+IpmiPort      --ipmiport       X       X                          623
+IpmiGateway   --ipmigateway    X       X
+IpmiUserName  --ipmiuser       X       X
+IpmiPassword  --ipmipass       X       X
+IpmiInterface --ipmiinterface  X       X       'lan' or 'lanplus' lan
 ============= =============== ======== ======= ================== =============
 
 Reviewing Settings
@@ -36,7 +36,7 @@ Profile View
 .. code-block:: bash
 
    $ sudo wwctl profile list -a
-   
+
    ################################################################################
    PROFILE NAME         FIELD              VALUE
    default              Id                 default
@@ -68,10 +68,10 @@ Node View
 .. code-block:: bash
 
    $ sudo wwctl node list node0001      -a
-   
+
    ################################################################################
    NODE                 FIELD              PROFILE      VALUE
-   node0001             Id                 --           node0001     
+   node0001             Id                 --           node0001
    node0001             Comment            default      This profile is automatically included for each node
    node0001             Cluster            --           --
    node0001             Profiles           --           default
@@ -105,7 +105,7 @@ The above views show you everything that is set on a Profile or Node level. That
 .. code-block:: bash
 
    $ sudo wwctl node list -i
-   
+
    NODE NAME              IPMI IPADDR      IPMI PORT  IPMI USERNAME        IPMI PASSWORD        IPMI INTERFACE
    ============================================================================================================
    node0001               192.168.99.10    --         admin                supersecret          lanplus

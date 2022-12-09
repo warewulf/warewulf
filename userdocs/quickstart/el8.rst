@@ -125,7 +125,7 @@ Once those configurations have been set, you can view the changes by listing the
 
    sudo wwctl profile list -a
 
-Add a node 
+Add a node
 ==========
 
 Adding nodes can be done while setting configurations in one command. Here we are setting
