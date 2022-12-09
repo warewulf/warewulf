@@ -127,7 +127,7 @@ specified as an override at the node or profile.
 
    $ sudo wwctl node set --kerneloverride $(uname -r) n0000
    Are you sure you want to modify 1 nodes(s): y
-   
+
    $ sudo wwctl node list -a n0000 | grep KernelOverride
    n0000                KernelOverride     --           4.18.0-305.3.1.el8_4.x86_64
 

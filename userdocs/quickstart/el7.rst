@@ -8,7 +8,7 @@ Install Warewulf and dependencies
 .. code-block:: bash
 
    sudo yum install -y golang tftp-server dhcp nfs-utils
-   
+
    git clone https://github.com/hpcng/warewulf.git
    cd warewulf
    make all

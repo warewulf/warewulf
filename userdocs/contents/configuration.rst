@@ -94,15 +94,15 @@ explained as follows:
 * ``warewulf:update interval``: This defines the frequency (in seconds)
   with which the Warewulf client on the compute node fetches overlay
   updates.
-  
+
 * ``warewulf:autobuild overlays``: This determines whether per-node
   overlays will automatically be rebuilt, e.g., when an underlying
   overlay is changed.
-  
+
 * ``warewulf:host overlay``: This determines whether the special ``host``
   overlay is applied to the Warewulf server during configuration. (The
   host overlay is used to configure the dependent services.)
-  
+
 * ``warewulf:syslog``: This determines whether Warewulf server logs go
   to syslog or are written directly to a log file. (e.g.,
   ``/var/log/warewulfd.log``)

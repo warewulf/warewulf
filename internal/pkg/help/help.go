@@ -24,7 +24,7 @@ Additional help topics:{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
   {{rpad .CommandPath .CommandPathPadding}} {{.Short}}{{end}}{{end}}
 {{end}}{{if .HasAvailableSubCommands}}
 Use "{{.CommandPath}} COMMAND --help" for more information about a COMMAND.
-{{end}} 
+{{end}}
 `
 // End UsageTemplate
 
