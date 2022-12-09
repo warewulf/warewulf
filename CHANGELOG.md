@@ -5,15 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [4.4.0rc2] 2022-12-09
 
 ### Added
 
+- The environment variable `WW_CONTAINER_SHELL` is defined in a `wwctl
+  container shell` environment to indicate the container in use. #
 - Network interface configuration (`ifcfg`) files now include the
-  interface name and type. #575
+  interface name and type. #574
 
 ### Fixed
 
+- Work-around for older versions of gzip that lack a `--keep` flag
+  during `wwctl container build`. #580
+- The default ipxe template is once again specified as a built-in
+  default and in `defaults.conf`. #581
+- `wwctl container list` no longer segfaults when a container chroot
+  is present without a built image. #585
 - `wwctl configure hostfile` now correctly detects the presence of the
   hostfile overlay template. #571
 - `wwctl overlay build` no longer panics when rendering an template
