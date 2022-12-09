@@ -107,7 +107,7 @@ message NodeListResponse {
 // Request a node list
 message GetNodeList {
 	enum ListType {
-		Simple = 0; 
+		Simple = 0;
 		Ipmi = 1;
 		Network = 2;
 		Long = 3;

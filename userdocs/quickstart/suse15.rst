@@ -10,17 +10,17 @@ Install Warewulf and dependencies
    sudo zypper install -t pattern devel_basis
    sudo zypper install go
    sudo zypper install tftp dhcp-server nfs-kernel-server
-   
+
    sudo systemctl stop firewalld
    sudo systemctl disable firewalld
-   
+
    git clone https://github.com/hpcng/warewulf.git
    cd warewulf
    PREFIX=/usr SYSCONFDIR=/etc TFTPDIR=/srv/tftproot LOCALSTATEDIR=/var/lib make genconfig
    make all
    sudo make install
 
-The standard configuration template for the dhcpd service is installed at the wrong location, you have to fix this with 
+The standard configuration template for the dhcpd service is installed at the wrong location, you have to fix this with
 
 .. code-block:: bash
 
@@ -29,7 +29,7 @@ The standard configuration template for the dhcpd service is installed at the wr
 Install Warewulf from the open build service
 ============================================
 
-You can also just install the 'warewulf4' package with ``zypper`` from the openbuild service. Up to date versions are available on the devel project 
+You can also just install the 'warewulf4' package with ``zypper`` from the openbuild service. Up to date versions are available on the devel project
 
 ``https://build.opensuse.org/project/show/network:cluster``
 

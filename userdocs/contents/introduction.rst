@@ -24,13 +24,13 @@ Features
 ========
 
 * **Lightweight**: Warewulf provisions stateless operating system images and then gets out of the way. There should be no underlying system dependencies or changes to the provisioned cluster node operating systems.
-   
+
 * **Simple**: Warewulf is used by hobbyists, researchers, scientists, engineers and systems administrators because it is easy, lightweight, and simple.
-   
+
 * **Flexible**: Warewulf is highly flexible and can address the needs of any environment-- from a computer lab with graphical workstations, to under-the-desk clusters, to massive supercomputing centers providing traditional HPC capabilities to thousands of users.
-   
+
 * **Agnostic**: From the Linux distribution of choice to the underlying hardware, Warewulf is agnostic and standards compliant. From ARM to x86, Atos to Dell, Debian, SuSE, Rocky, CentOS, and RHEL, Warewulf can do it all.
 
 * **Secure**: Warewulf is the only stateless provisioning system that will support SELinux out of the box. Just enable your node operating system container to support SELinux, and Warewulf do the rest!
-   
+
 * **Open Source**: For the last 20 years, Warewulf has remained open source and continues to be the golden standard for cluster provisioning.

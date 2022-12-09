@@ -33,9 +33,9 @@ curl http://localhost:9871/v1/node?nodeNames=testnode1 # this works! case sensit
 curl http://localhost:9871/v1/node?nodeNames=testnode%5B1-2%5D
 
 # node add single discoverable node
-curl -d '{"nodeNames": ["testApiNode0"], "discoverable": true}' -H "Content-Type: application/json" -X POST http://localhost:9871/v1/node 
+curl -d '{"nodeNames": ["testApiNode0"], "discoverable": true}' -H "Content-Type: application/json" -X POST http://localhost:9871/v1/node
 
-curl -d '{"nodeNames": ["testApiNode1"], "discoverable": true}' -H "Content-Type: application/json" -X POST http://localhost:9871/v1/node 
+curl -d '{"nodeNames": ["testApiNode1"], "discoverable": true}' -H "Content-Type: application/json" -X POST http://localhost:9871/v1/node
 
 
 # list the node we just added
@@ -45,7 +45,7 @@ curl http://localhost:9871/v1/node?nodeNames=testApiNode0
 curl -d '{"nodeNames": ["testApiNode0"], "ipmiIpAddr": "10.0.8.220", "updateMask": "ipmiIpAddr,nodeNames"}' -H "Content-Type: application/json" -X PATCH http://localhost:9871/v1/node
 
 # Node set with post:
-curl -d '{"nodeNames": ["testApiNode0"], "ipmiIpaddr": "6.7.8.9"}' -H "Content-Type: application/json" -X POST http://localhost:9871/v1/nodeset 
+curl -d '{"nodeNames": ["testApiNode0"], "ipmiIpaddr": "6.7.8.9"}' -H "Content-Type: application/json" -X POST http://localhost:9871/v1/nodeset
 
 # node status
 curl http://localhost:9871/v1/nodestatus

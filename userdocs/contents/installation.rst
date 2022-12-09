@@ -12,7 +12,7 @@ While the Warewulf project does not build binary RPMs, you can obtain them from 
 This is the easiest method to install Warewulf and can be done as follows:
 
 .. code-block:: bash
-   
+
    sudo yum install -y https://repo.ctrliq.com/rhel/8/ciq-release.rpm
    sudo yum install -y warewulf
 

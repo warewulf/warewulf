@@ -8,7 +8,7 @@ var (
 		Use:                   "import [OPTIONS] SOURCE [NAME]",
 		Short:                 "Import a container into Warewulf",
 		Long: `This command will pull and import a container into Warewulf from SOURCE,
-optionally renaming it to NAME. The SOURCE must be in a supported URI format. Formats 
+optionally renaming it to NAME. The SOURCE must be in a supported URI format. Formats
 are:
  * docker://registry.example.org/example:latest
  * docker-daemon://example:latest

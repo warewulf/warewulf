@@ -15,7 +15,7 @@ You can see what kernel is included in a container by using the ``wwctl containe
 
    $ sudo wwctl container list
    CONTAINER NAME            NODES  KERNEL VERSION
-   alpine                    0      
+   alpine                    0
    rocky                     0      4.18.0-348.12.2.el8_5.x86_64
    rocky_updated             1      4.18.0-348.23.1.el8_5.x86_64
 
@@ -37,7 +37,7 @@ In this case you will also need to import a kernel specifically into Warewulf fo
    $ sudo wwctl kernel import $(uname -r)
    4.18.0-305.3.1.el8_4.x86_64: Done
 
-This process will import not only the kernel image itself, but also all of the kernel modules and firmware associated to this kernel. 
+This process will import not only the kernel image itself, but also all of the kernel modules and firmware associated to this kernel.
 
 Listing All Imported Kernels
 ----------------------------
@@ -47,7 +47,7 @@ Once the kernel has been imported, you can list them all with the following comm
 .. code-block:: bash
 
    $ sudo wwctl kernel list
-   VNFS NAME                           NODES 
+   VNFS NAME                           NODES
    4.18.0-305.3.1.el8_4.x86_64             0
 
 Once a kernel has been imported and showing up in this list you can configure it to boot compute nodes.
