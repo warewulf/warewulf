@@ -17,7 +17,7 @@ var ConfigFile string
 var DefaultConfig string
 
 // used as fallback if DefaultConfig can't be read
-var FallBackConf = `
+var FallBackConf = `---
 defaultnode:
   runtime overlay:
   - generic
