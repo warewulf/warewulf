@@ -22,3 +22,5 @@
 * David McFarlane <54093156+Prepultrue@users.noreply.github.com>
 * Jean-Baptiste Denis <jbd@jbdenis.net>
 * TerranWorks <tdunn3@uco.edu>
+* Jonathon Anderson <janderson@ciq.co>
+* Brian Phan <bphan@ciq.co>
