@@ -1,2 +1,5 @@
-# iPXE binaries
-Binaries can be rebuild with the `ixpe-update.sh` script.
+# Warewulf-bundled static files
+
+These files are bundled statically with Warewulf 4.
+
+See also: [README-ipxe.md](README-ipxe.md)

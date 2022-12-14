@@ -198,6 +198,7 @@ files: all
 	cp bash_completion.d/warewulf $(DESTDIR)$(BASHCOMPDIR)
 	cp man_pages/*.1* $(DESTDIR)$(MANDIR)/man1/
 	cp man_pages/*.5* $(DESTDIR)$(MANDIR)/man5/
+	install -m 0644 staticfiles/README-ipxe.md $(DESTDIR)$(WWDATADIR)/ipxe
 	install -m 0644 staticfiles/arm64.efi $(DESTDIR)$(WWDATADIR)/ipxe
 	install -m 0644 staticfiles/x86_64.efi $(DESTDIR)$(WWDATADIR)/ipxe
 	install -m 0644 staticfiles/x86_64.kpxe $(DESTDIR)$(WWDATADIR)/ipxe
