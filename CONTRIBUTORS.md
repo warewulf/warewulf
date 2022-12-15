@@ -19,8 +19,9 @@
 * John Hanks <griznog@gmail.com> @griznog
 * Rob Jansen <jansen@cs.umn.edu>
 * svdavidson <svdavidson@charter.net>
-* David McFarlane <54093156+Prepultrue@users.noreply.github.com>
+* David McFarlane @Prepultrue
 * Jean-Baptiste Denis <jbd@jbdenis.net>
 * TerranWorks <tdunn3@uco.edu>
-* Jonathon Anderson <janderson@ciq.co>
+* Jonathon Anderson <janderson@ciq.co> @anderbubble
 * Brian Phan <bphan@ciq.co>
+* Jeffrey Frey @jtfrey 
