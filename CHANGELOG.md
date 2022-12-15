@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - The environment variable `WW_CONTAINER_SHELL` is defined in a `wwctl
-  container shell` environment to indicate the container in use. #
+  container shell` environment to indicate the container in use. #579
 - Network interface configuration (`ifcfg`) files now include the
   interface name and type. #574
 
