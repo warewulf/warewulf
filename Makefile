@@ -308,6 +308,7 @@ clean:
 	rm -f config_defaults
 	rm -f update_configuration
 	rm -f print_defaults
+	rm -f etc/wwapi{c,d,rd}.conf
 
 install: files install_wwclient
 
