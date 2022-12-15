@@ -115,7 +115,7 @@ $(GOLANGCI_LINT):
 setup: vendor $(TOOLS_DIR) setup_tools
 
 vendor:
-    ifndef OFFLINE_BUILD
+ifndef OFFLINE_BUILD
 	  go mod tidy -v
 	  go mod vendor
 endif
@@ -125,7 +125,7 @@ $(TOOLS_DIR):
 
 # Pre-build steps for source, such as "go generate"
 config:
-    # Store configuration for subsequent runs
+# Store configuration for subsequent runs
 	printf " $(foreach V,$(VARLIST),$V := $(strip $($V))\n)" > Defaults.mk
     # Global variable search and replace for all *.in files
 	find . -type f -name "*.in" -not -path "./vendor/*" \
@@ -186,6 +186,7 @@ files: all
 	find $(DESTDIR)$(WWOVERLAYDIR) -type f -name "*.in" -exec rm -f {} \;
 	chmod 755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/$(WWCLIENTDIR)/wwinit
 	chmod 600 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/etc/ssh/ssh*
+	chmod 600 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/etc/NetworkManager/system-connections/ww4-managed.ww
 	chmod 644 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/etc/ssh/ssh*.pub.ww
 	chmod 750 $(DESTDIR)$(WWOVERLAYDIR)/host
 	install -m 0755 wwctl $(DESTDIR)$(BINDIR)
