@@ -34,14 +34,14 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	if !SetYes {
-		var nodeCount uint
+		var profileCount uint
 		// The checks run twice in the prompt case.
 		// Avoiding putting in a blocking prompt in an API.
-		_, nodeCount, err = apiprofile.ProfileSetParameterCheck(&set, false)
+		_, profileCount, err = apiprofile.ProfileSetParameterCheck(&set, false)
 		if err != nil {
 			return
 		}
-		yes := util.ConfirmationPrompt(fmt.Sprintf("Are you sure you want to modify %d nodes(s)", nodeCount))
+		yes := util.ConfirmationPrompt(fmt.Sprintf("Are you sure you want to modify %d profile(s)", profileCount))
 		if !yes {
 			return
 		}
