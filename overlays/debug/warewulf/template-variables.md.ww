@@ -47,7 +47,7 @@ data from other structures.
   - Tags: {{ range $key, $value := .Ipmi.Tags }}{{ $key }}={{ $value }} {{ end }}
   - TagsDel: {{ range $key, $value := .Ipmi.TagsDel }}{{ $key }}={{ $value }} {{ end }}
 {{- range $index, $netdev := .NetDevs }}
-- NetDevs[{{ $index }}]: 
+- NetDevs[{{ $index }}]:
   - Type: {{ $netdev.Type }}
   - OnBoot: {{ $netdev.OnBoot }}
   - Device: {{ $netdev.Device }}
@@ -150,7 +150,7 @@ data from other structures.
     - Write: {{ $node.Ipmi.Write.Get }}
     - Tags: {{ range $key, $value := $node.Ipmi.Tags }}{{ $key }}={{ $value.Get }} {{ end }}
 {{- range $index, $netdev := $node.NetDevs }}
-  - NetDevs[{{ $index }}]: 
+  - NetDevs[{{ $index }}]:
     - Type: {{ $netdev.Type.Get }}
     - OnBoot: {{ $netdev.OnBoot.Get }}
     - Device: {{ $netdev.Device.Get }}
