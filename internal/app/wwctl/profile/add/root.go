@@ -58,6 +58,7 @@ func GetCommand() *cobra.Command {
 	}); err != nil {
 		log.Println(err)
 	}
+	baseCmd.PersistentFlags().BoolVarP(&SetYes, "yes", "y", false, "Set 'yes' to all questions asked")
 
 	return baseCmd
 }
