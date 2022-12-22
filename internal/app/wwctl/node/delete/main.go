@@ -25,6 +25,9 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		if err != nil {
 			return
 		}
+		if len(nodeList) == 0 {
+			return
+		}
 		yes := util.ConfirmationPrompt(fmt.Sprintf("Are you sure you want to delete %d nodes(s)", len(nodeList)))
 		if !yes {
 			return
