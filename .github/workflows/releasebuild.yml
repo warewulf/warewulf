@@ -22,7 +22,7 @@ jobs:
           echo "SRC=${GITHUB_REF}" >> $GITHUB_ENV
 
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install Go
         uses: actions/setup-go@v3
@@ -74,23 +74,23 @@ jobs:
         - name: Run rpm build script
           run: ./mockbuild.sh  ${{ env.VERSION }}
 
-        - name: Upload EL8 RPM
+        - name: Upload EL8 RPMs
           uses: actions/upload-artifact@v3
           with:
-            name: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.el8.x86_64.rpm
-            path: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.el8.x86_64.rpm
+            name: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.el8
+            path: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.el8.*.rpm
 
-        - name: Upload EL7 RPM
+        - name: Upload EL7 RPMs
           uses: actions/upload-artifact@v3
           with:
-            name: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.el7.x86_64.rpm
-            path: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.el7.x86_64.rpm
+            name: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.el7
+            path: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.el7.*.rpm
 
-        - name: Upload openSUSE Leap 15.3 RPM
+        - name: Upload openSUSE Leap 15.3 RPMs
           uses: actions/upload-artifact@v3
           with:
-            name: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.suse.lp153.x86_64.rpm
-            path: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.suse.lp153.x86_64.rpm
+            name: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.suse.lp153
+            path: warewulf-${{ env.VERSION }}-${{ env.RELEASE }}.suse.lp153.*.rpm
 
         - name: Upload Assets To Release
           if: "!github.event.release.prerelease"
