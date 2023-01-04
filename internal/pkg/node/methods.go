@@ -201,10 +201,8 @@ func (ent *Entry) Get() string {
 Get the bool value of an entry.
 */
 func (ent *Entry) GetB() bool {
-	if len(ent.value) == 0 || ent.value[0] == "false" || ent.value[0] == "no" {
-		if len(ent.altvalue) == 0 || ent.altvalue[0] == "false" || ent.altvalue[0] == "no" {
-			return false
-		}
+	if len(ent.value) == 0 || ent.value[0] == "false" || ent.value[0] == "no" ||
+		len(ent.altvalue) == 0 || ent.altvalue[0] == "false" || ent.altvalue[0] == "no" {
 		return false
 	}
 	return true
