@@ -79,7 +79,7 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		}
 	*/
 	var defConf map[string]*NodeConf
-	wwlog.Verbose("Opening defaults failed %s\n", DefaultConfig)
+	wwlog.Verbose("Opening defaults from file %s\n", DefaultConfig)
 	defData, err := ioutil.ReadFile(DefaultConfig)
 	if err != nil {
 		wwlog.Verbose("Couldn't read DefaultConfig :%s\n", err)
