@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The 'nodes' alias now correctly refers to 'node' rather than 'profile'
 - Work-around for older versions of gzip that lack a `--keep` flag
   during `wwctl container build`. #580
 - The default ipxe template is once again specified as a built-in
