@@ -209,6 +209,11 @@ func (ent *Entry) GetB() bool {
 		if ent.altvalue[0] == "false" || ent.altvalue[0] == "no" ||
 			ent.altvalue[0] == "No" || ent.altvalue[0] == "0" {
 			return false
+		} else if len(ent.altvalue) == 0 {
+			if ent.def[0] == "false" || ent.def[0] == "no" ||
+				ent.def[0] == "No" || ent.def[0] == "0" {
+				return false
+			}
 		}
 	}
 	return true
