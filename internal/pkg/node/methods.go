@@ -201,22 +201,22 @@ func (ent *Entry) Get() string {
 Get the bool value of an entry.
 */
 func (ent *Entry) GetB() bool {
-	if ent.value[0] == "false" || ent.value[0] == "no" ||
-		ent.value[0] == "No" || ent.value[0] == "0" {
-		return false
-	}
-	if len(ent.value) == 0 {
-		if ent.altvalue[0] == "false" || ent.altvalue[0] == "no" ||
-			ent.altvalue[0] == "No" || ent.altvalue[0] == "0" {
-			return false
-		} else if len(ent.altvalue) == 0 {
-			if ent.def[0] == "false" || ent.def[0] == "no" ||
-				ent.def[0] == "No" || ent.def[0] == "0" {
-				return false
-			}
+	if len(ent.value) > 0 {
+		return !(strings.ToLower(ent.value[0]) == "false" ||
+			strings.ToLower(ent.value[0]) == "no" ||
+			ent.value[0] == "0")
+	} else {
+		if len(ent.altvalue) > 0 {
+			return !(strings.ToLower(ent.altvalue[0]) == "false" ||
+				strings.ToLower(ent.altvalue[0]) == "no" ||
+				ent.altvalue[0] == "0")
+		} else {
+			return !(len(ent.def) == 0 ||
+				strings.ToLower(ent.def[0]) == "false" ||
+				strings.ToLower(ent.def[0]) == "no" ||
+				ent.def[0] == "0")
 		}
 	}
-	return true
 }
 
 /*
