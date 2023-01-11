@@ -138,7 +138,7 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		if len(n.NetDevs) == 1 {
 			// only way to get the key
 			for key := range node.NetDevs {
-				n.NetDevs[key].Primary.SetB(true)
+				n.NetDevs[key].Primary.SetDefaultB(true)
 			}
 		}
 		// backward compatibility
