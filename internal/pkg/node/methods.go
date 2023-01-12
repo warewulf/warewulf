@@ -205,17 +205,15 @@ func (ent *Entry) GetB() bool {
 		return !(strings.ToLower(ent.value[0]) == "false" ||
 			strings.ToLower(ent.value[0]) == "no" ||
 			ent.value[0] == "0")
+	} else if len(ent.altvalue) > 0 {
+		return !(strings.ToLower(ent.altvalue[0]) == "false" ||
+			strings.ToLower(ent.altvalue[0]) == "no" ||
+			ent.altvalue[0] == "0")
 	} else {
-		if len(ent.altvalue) > 0 {
-			return !(strings.ToLower(ent.altvalue[0]) == "false" ||
-				strings.ToLower(ent.altvalue[0]) == "no" ||
-				ent.altvalue[0] == "0")
-		} else {
-			return !(len(ent.def) == 0 ||
-				strings.ToLower(ent.def[0]) == "false" ||
-				strings.ToLower(ent.def[0]) == "no" ||
-				ent.def[0] == "0")
-		}
+		return !(len(ent.def) == 0 ||
+			strings.ToLower(ent.def[0]) == "false" ||
+			strings.ToLower(ent.def[0]) == "no" ||
+			ent.def[0] == "0")
 	}
 }
 
