@@ -17,9 +17,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+/*
+fork off a process with a new PID space
+*/
 func runContainedCmd(args []string) error {
+	logStr := fmt.Sprint(wwlog.GetLogLevel())
 	wwlog.Verbose("Running contained command: %s", args[1:])
-	c := exec.Command("/proc/self/exe", append([]string{"container", "exec", "__child"}, args...)...)
+	c := exec.Command("/proc/self/exe", append([]string{"--loglevel", logStr, "container", "exec", "__child"}, args...)...)
 
 	c.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,
