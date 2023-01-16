@@ -8,7 +8,6 @@ import (
 	"os"
 	"path"
 	"syscall"
-	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/util"
@@ -30,16 +29,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 	containerPath := container.RootFsDir(containerName)
-	fileStat, _ := os.Stat(path.Join(containerPath, "/etc/passwd"))
-	unixStat := fileStat.Sys().(*syscall.Stat_t)
-	passwdTime := time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))
-	fileStat, _ = os.Stat(path.Join(containerPath, "/etc/group"))
-	unixStat = fileStat.Sys().(*syscall.Stat_t)
-	groupTime := time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))
-	wwlog.Debug("passwd: %v", passwdTime)
-	wwlog.Debug("group: %v", groupTime)
 
-	err := syscall.Mount("", "/", "", syscall.MS_PRIVATE|syscall.MS_REC, "")
+	mountFlags := uintptr(syscall.MS_PRIVATE | syscall.MS_REC)
+	if unix.Access(containerPath, unix.W_OK) != nil {
+		wwlog.Verbose("Path %s is readonly, mounting %s as ro", containerPath, containerName)
+		mountFlags |= syscall.MS_RDONLY
+	}
+	err := syscall.Mount("", "/", "", mountFlags, "")
 	if err != nil {
 		return errors.Wrap(err, "failed to mount")
 	}
@@ -93,18 +89,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Error("%s", err)
 		os.Exit(1)
 	}
-	fileStat, _ = os.Stat(path.Join(containerPath, "/etc/passwd"))
-	unixStat = fileStat.Sys().(*syscall.Stat_t)
-	if passwdTime.Before(time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))) {
-		wwlog.Warn("/etc/passwd has been modified, maybe you want to run syncuser")
-	}
-	wwlog.Debug("passwd: %v", time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec)))
-	fileStat, _ = os.Stat(path.Join(containerPath, "/etc/group"))
-	unixStat = fileStat.Sys().(*syscall.Stat_t)
-	if groupTime.Before(time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))) {
-		wwlog.Warn("/etc/group has been modified, maybe you want to run syncuser")
-	}
-	wwlog.Debug("group: %v", time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec)))
 
 	return nil
 }

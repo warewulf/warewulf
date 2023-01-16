@@ -31,23 +31,4 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	wwlog.Debug("Calling exec with args: %s", allargs)
 	cntexec.SetBinds(binds)
 	return cntexec.CobraRunE(cmd, allargs)
-	/*
-		c := exec.Command("/proc/self/exe", append([]string{"container", "exec"}, allargs...)...)
-
-		//c := exec.Command("/bin/sh")
-		c.SysProcAttr = &syscall.SysProcAttr{
-			Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,
-		}
-		c.Stdin = os.Stdin
-		c.Stdout = os.Stdout
-		c.Stderr = os.Stderr
-
-		os.Setenv("WW_CONTAINER_SHELL", containerName)
-
-		if err := c.Run(); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-	*/
-	return nil
 }
