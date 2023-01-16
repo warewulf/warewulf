@@ -42,6 +42,8 @@ func runContainedCmd(args []string) error {
 func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	containerName := args[0]
+	os.Setenv("WW_CONTAINER_SHELL", containerName)
+
 	var allargs []string
 
 	if !container.ValidSource(containerName) {
@@ -112,4 +114,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
+}
+func SetBinds(myBinds []string) {
+	binds = append(binds, myBinds...)
 }
