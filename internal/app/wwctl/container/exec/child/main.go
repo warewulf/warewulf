@@ -29,15 +29,22 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 	containerPath := container.RootFsDir(containerName)
-
-	mountFlags := uintptr(syscall.MS_PRIVATE | syscall.MS_REC)
-	if unix.Access(containerPath, unix.W_OK) != nil {
-		wwlog.Verbose("Path %s is readonly, mounting %s as ro", containerPath, containerName)
-		mountFlags |= syscall.MS_RDONLY
-	}
-	err := syscall.Mount("", "/", "", mountFlags, "")
+	err := syscall.Mount("", "/", "", syscall.MS_PRIVATE|syscall.MS_REC, "")
 	if err != nil {
 		return errors.Wrap(err, "failed to mount")
+	}
+	ps1Str := fmt.Sprintf("[%s] Warewulf> ", containerName)
+	if !util.IsWriteAble(containerPath) {
+		wwlog.Verbose("mounting %s ro", containerPath)
+		ps1Str = fmt.Sprintf("[%s] (ro) Warewulf> ", containerName)
+		err = syscall.Mount(containerPath, containerPath, "", syscall.MS_BIND, "")
+		if err != nil {
+			return errors.Wrap(err, fmt.Sprintf("failed to prepare bind mount"))
+		}
+		err = syscall.Mount(containerPath, containerPath, "", syscall.MS_REMOUNT|syscall.MS_RDONLY|syscall.MS_BIND, "")
+		if err != nil {
+			return errors.Wrap(err, fmt.Sprintf("failed to remount ro"))
+		}
 	}
 
 	err = syscall.Mount("/dev", path.Join(containerPath, "/dev"), "", syscall.MS_BIND, "")
@@ -80,7 +87,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to mount proc")
 	}
 
-	os.Setenv("PS1", fmt.Sprintf("[%s] Warewulf> ", containerName))
+	os.Setenv("PS1", ps1Str)
 	os.Setenv("PATH", "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin")
 	os.Setenv("HISTFILE", "/dev/null")
 
