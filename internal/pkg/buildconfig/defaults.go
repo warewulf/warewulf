@@ -19,6 +19,7 @@ var (
 	release        string = "UNDEF"
 	wwclientdir    string = "UNDEF"
 	datadir        string = "UNDEF"
+	tmpdir         string = "UNDEF"
 )
 
 func BINDIR() string {
@@ -89,4 +90,9 @@ func RELEASE() string {
 func WWCLIENTDIR() string {
 	wwlog.Debug("WWCLIENTDIR = '%s'", wwclientdir)
 	return wwclientdir
+}
+
+func TMPDIR() string {
+	wwlog.Debug("TMPDIR = '%s'", tmpdir)
+	return tmpdir
 }
