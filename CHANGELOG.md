@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4..4.0] 2023-01-18
+## [4.4.0] 2023-01-18
 
 ### Added
 
@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed a typo in a log message. #631
 - Boolean attributes now correctly account for profile and default
   values. #630
-- Kernvel version is shown correctly
+- Kernel version is shown correctly for symlink'd kernels #640
 
 ## [4.4.0rc3] 2022-12-23
 
