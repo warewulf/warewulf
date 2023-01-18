@@ -44,6 +44,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Set correct overlay permissions for a NetworkManager configuration
   file. #591
 
+### Fixed
+
+- Directories within overlays no longer lose group/other write permissions #584
+
 ## [4.4.0rc2] 2022-12-09
 
 ### Added
