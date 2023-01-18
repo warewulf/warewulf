@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - New man page for `defaults.conf` #593
 - New debug overlay template
+- Fix directories within overlays losing group/other write permissions #584
 
 ## [4.4.0rc2] 2022-12-09
 

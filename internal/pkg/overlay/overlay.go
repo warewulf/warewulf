@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"syscall"
 	"text/template"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -196,6 +197,9 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 	if !util.ValidString(strings.Join(overlayNames, ""), "^[a-zA-Z0-9-._:]+$") {
 		return errors.Errorf("overlay names contains illegal characters: %v", overlayNames)
 	}
+
+	// Temporarily set umask to 0000, so directories in the overlay retain permissions
+	defer syscall.Umask(syscall.Umask(0))
 
 	wwlog.Verbose("Processing node/overlay: %s/%s", nodeInfo.Id.Get(), strings.Join(overlayNames, "-"))
 	for _, overlayName := range overlayNames {
