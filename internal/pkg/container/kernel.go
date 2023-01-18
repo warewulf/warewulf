@@ -1,13 +1,11 @@
 package container
 
 import (
-	"os"
 	"path"
 	"path/filepath"
 	"sort"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
@@ -50,17 +48,11 @@ func KernelFind(container string) string {
 
 			for _, kernelPath := range kernelPaths {
 				wwlog.Debug("Checking for kernel path: %s", kernelPath)
-				if util.IsFile(kernelPath) {
-					// IsFile does not check if file is a softlink
-					stat, _ := os.Lstat(kernelPath)
-					if stat.Mode()&os.ModeSymlink == os.ModeSymlink {
-						wwlog.Verbose("%s is a softlink", kernelPath)
-						kernelPath, err = filepath.EvalSymlinks(kernelPath)
-						if err != nil {
-							wwlog.Warn("could evaluate symlink %s: %s", kernelPath, err)
-						}
-						wwlog.Debug("softlink is %s", kernelPath)
-					}
+				// Only succeeds if kernelPath exists and, if a
+				// symlink, links to a path that also exists
+				kernelPath, err = filepath.EvalSymlinks(kernelPath)
+				if err == nil {
+					wwlog.Debug("found kernel: %s", kernelPath)
 					return kernelPath
 				}
 			}
