@@ -4,8 +4,8 @@ import (
 	"path"
 	"path/filepath"
 	"sort"
+	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
@@ -15,11 +15,11 @@ var (
 		`vmlinuz`,
 		`vmlinux-*`,
 		`vmlinuz-*`,
-		`vmlinuz.gz` }
+		`vmlinuz.gz`}
 
 	kernelDirs = []string{
 		`/lib/modules/*/`,
-		`/boot/` }
+		`/boot/`}
 )
 
 func KernelFind(container string) string {
@@ -48,7 +48,11 @@ func KernelFind(container string) string {
 
 			for _, kernelPath := range kernelPaths {
 				wwlog.Debug("Checking for kernel path: %s", kernelPath)
-				if util.IsFile(kernelPath) {
+				// Only succeeds if kernelPath exists and, if a
+				// symlink, links to a path that also exists
+				kernelPath, err = filepath.EvalSymlinks(kernelPath)
+				if err == nil {
+					wwlog.Debug("found kernel: %s", kernelPath)
 					return kernelPath
 				}
 			}
@@ -65,5 +69,10 @@ func KernelVersion(container string) string {
 		return ""
 	}
 
-	return path.Base(path.Dir(kernel))
+	ret := path.Base(path.Dir(kernel))
+	if ret == "boot" {
+		ret = path.Base(kernel)
+	}
+
+	return strings.TrimPrefix(ret, "vmlinuz-")
 }
