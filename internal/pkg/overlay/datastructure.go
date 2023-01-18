@@ -60,8 +60,6 @@ func InitStruct(nodeInfo node.NodeInfo) TemplateStruct {
 	// init some convininence vars
 	tstruct.Id = nodeInfo.Id.Get()
 	tstruct.Hostname = nodeInfo.Id.Get()
-	tstruct.Id = nodeInfo.Id.Get()
-	tstruct.Hostname = nodeInfo.Id.Get()
 	// Backwards compatibility for templates using "Keys"
 	tstruct.AllNodes = allNodes
 	tstruct.Nfs = *controller.Nfs
