@@ -36,8 +36,14 @@ func New() (ControllerConf, error) {
 	ret.Tftp = &tftpconf
 	ret.Nfs = &nfsConf
 	err := defaults.Set(&ret)
+	// ipxe binaries are merged not overwritten, store defaults separate
+	defIpxe := make(map[string]string)
+	for k, v := range ret.Tftp.IpxeBinaries {
+		defIpxe[k] = v
+		delete(ret.Tftp.IpxeBinaries, k)
+	}
 	if err != nil {
-		wwlog.Error("Coult initialize default variables")
+		wwlog.Error("Could initialize default variables")
 		return ret, err
 	}
 	// Check if cached config is old before re-reading config file
@@ -53,7 +59,9 @@ func New() (ControllerConf, error) {
 		if err != nil {
 			return ret, err
 		}
-
+		if len(ret.Tftp.IpxeBinaries) == 0 {
+			ret.Tftp.IpxeBinaries = defIpxe
+		}
 		if ret.Ipaddr == "" || ret.Netmask == "" {
 			conn, error := net.Dial("udp", "8.8.8.8:80")
 			if error != nil {

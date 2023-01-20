@@ -27,7 +27,7 @@ func BINDIR() string {
 }
 
 func DATADIR() string {
-	wwlog.Debug("DATADIR = '%s'", bindir)
+	wwlog.Debug("DATADIR = '%s'", datadir)
 	return datadir
 }
 
