@@ -28,6 +28,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Error("Unknown Warewulf container: %s", containerName)
 		os.Exit(1)
 	}
+	// check for valid mount points
 	containerPath := container.RootFsDir(containerName)
 	err := syscall.Mount("", "/", "", syscall.MS_PRIVATE|syscall.MS_REC, "")
 	if err != nil {
@@ -98,4 +99,29 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
+}
+func checkMountPoints(containerName string, binds []string) (overlayObjects []string) {
+	overlayObjects = []string{}
+	for _, b := range binds {
+		var source string
+		var dest string
+
+		bind := util.SplitValidPaths(b, ":")
+		source = bind[0]
+
+		if len(bind) == 1 {
+			dest = source
+		} else {
+			dest = bind[1]
+		}
+		err, _ := os.Stat(source)
+		if err != nil {
+			// no need to create a mount location if source doesn't exist
+			continue
+		}
+		err, stat := os.Stat(path.Join(container.RootFsDir(containerName),dest))
+		if err != nil {
+			if 
+		}
+	}
 }
