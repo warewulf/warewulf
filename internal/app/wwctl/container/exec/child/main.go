@@ -7,8 +7,11 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
+	"strings"
 	"syscall"
 
+	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -28,11 +31,63 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Error("Unknown Warewulf container: %s", containerName)
 		os.Exit(1)
 	}
+	var err error
+	tempDir := ""
 	// check for valid mount points
+	lowerObjects := checkMountPoints(containerName, binds)
+	if len(lowerObjects) != 0 {
+		// need to create a overlay, where the lower layer contains
+		// the missing mount points
+		tempDir, err = os.MkdirTemp(buildconfig.TMPDIR(), "overlay")
+		if err == nil {
+			wwlog.Verbose("for ephermal mount use tempdir %s", tempDir)
+			// ignore errors as we are doomed if a tmp dir couldn't be written
+			_ = os.Mkdir(path.Join(tempDir, "work"), os.ModePerm)
+			_ = os.Mkdir(path.Join(tempDir, "lower"), os.ModePerm)
+			for _, obj := range lowerObjects {
+				newFile := ""
+				if !strings.HasSuffix(obj, "/") {
+					newFile = filepath.Base(obj)
+					obj = filepath.Dir(obj)
+				}
+				err = os.MkdirAll(filepath.Join(tempDir, "lower", obj), os.ModePerm)
+				if err != nil {
+					wwlog.Warn("couldn't create directory for mounts: %s", err)
+				}
+				if newFile != "" {
+					desc, err := os.Create(filepath.Join(tempDir, "lower", obj, newFile))
+					if err != nil {
+						wwlog.Warn("couldn't create directory for mounts: %s", err)
+					}
+					defer desc.Close()
+				}
+
+			}
+		} else {
+			wwlog.Warn("couldn't create temp dir for overlay", err)
+			lowerObjects = []string{}
+		}
+		/*
+			\TODO check why defer isn't called at exit
+			defer func() {
+				fmt.Println("defer called")
+				_ = os.RemoveAll(tempDir)
+			}()
+		*/
+	}
 	containerPath := container.RootFsDir(containerName)
-	err := syscall.Mount("", "/", "", syscall.MS_PRIVATE|syscall.MS_REC, "")
+	err = syscall.Mount("", "/", "", syscall.MS_PRIVATE|syscall.MS_REC, "")
 	if err != nil {
 		return errors.Wrap(err, "failed to mount")
+	}
+	if len(lowerObjects) != 0 {
+		options := fmt.Sprintf("lowerdir=%s,upperdir=%s,workdir=%s",
+			path.Join(tempDir, "lower"), containerPath, path.Join(tempDir, "work"))
+		wwlog.Debug("overlay options: %s", options)
+		err = syscall.Mount("overlay", containerPath, "overlay", 0, options)
+		if err != nil {
+			wwlog.Warn(fmt.Sprintf("Couldn't create overlay for ephermal mount points: %s", err))
+		}
 	}
 	ps1Str := fmt.Sprintf("[%s] Warewulf> ", containerName)
 	if !util.IsWriteAble(containerPath) {
@@ -40,11 +95,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		ps1Str = fmt.Sprintf("[%s] (ro) Warewulf> ", containerName)
 		err = syscall.Mount(containerPath, containerPath, "", syscall.MS_BIND, "")
 		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("failed to prepare bind mount"))
+			return errors.Wrap(err, "failed to prepare bind mount")
 		}
 		err = syscall.Mount(containerPath, containerPath, "", syscall.MS_REMOUNT|syscall.MS_RDONLY|syscall.MS_BIND, "")
 		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("failed to remount ro"))
+			return errors.Wrap(err, "failed to remount ro")
 		}
 	}
 
@@ -69,8 +124,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		err := syscall.Mount(source, path.Join(containerPath, dest), "", syscall.MS_BIND, "")
 		if err != nil {
 			fmt.Printf("BIND ERROR: %s\n", err)
-			os.Exit(1)
+			wwlog.Warn("Couldn't mount %s", source)
 		}
+		wwlog.Verbose("mounted from host to container: %s:%s", source, dest)
 	}
 
 	err = syscall.Chroot(containerPath)
@@ -93,14 +149,23 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	os.Setenv("HISTFILE", "/dev/null")
 
 	err = syscall.Exec(args[1], args[1:], os.Environ())
+	fmt.Println("After exec")
+	_ = os.RemoveAll(tempDir)
 	if err != nil {
 		wwlog.Error("%s", err)
+
 		os.Exit(1)
 	}
 
 	return nil
 }
+
+/*
+Check if the bind mount points exists in the given container. Returns
+the invalid mount points. Directories always have '/' as suffix
+*/
 func checkMountPoints(containerName string, binds []string) (overlayObjects []string) {
+	wwlog.Debug("Checking if container %s has paths: %v", containerName, binds)
 	overlayObjects = []string{}
 	for _, b := range binds {
 		var source string
@@ -115,13 +180,19 @@ func checkMountPoints(containerName string, binds []string) (overlayObjects []st
 			dest = bind[1]
 		}
 		err, _ := os.Stat(source)
-		if err != nil {
+		if err == nil {
 			// no need to create a mount location if source doesn't exist
 			continue
 		}
-		err, stat := os.Stat(path.Join(container.RootFsDir(containerName),dest))
-		if err != nil {
-			if 
+		if _, err := os.Stat(path.Join(container.RootFsDir(containerName), dest)); err != nil {
+			if os.IsNotExist(err) {
+				if util.IsDir(dest) && !strings.HasSuffix(dest, "/") {
+					dest += "/"
+				}
+				overlayObjects = append(overlayObjects, source)
+				wwlog.Debug("Container %s, needs following path: %s", containerName, dest)
+			}
 		}
 	}
+	return overlayObjects
 }
