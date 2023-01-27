@@ -32,14 +32,20 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 	var err error
-	tempDir := ""
 	// check for valid mount points
 	lowerObjects := checkMountPoints(containerName, binds)
 	if len(lowerObjects) != 0 {
+		if tempDir == "" {
+			tempDir, err = os.MkdirTemp(buildconfig.TMPDIR(), "overlay")
+			if err != nil {
+				wwlog.Warn("couldn't create temp dir for overlay", err)
+				lowerObjects = []string{}
+				tempDir = ""
+			}
+		}
 		// need to create a overlay, where the lower layer contains
 		// the missing mount points
-		tempDir, err = os.MkdirTemp(buildconfig.TMPDIR(), "overlay")
-		if err == nil {
+		if tempDir != "" {
 			wwlog.Verbose("for ephermal mount use tempdir %s", tempDir)
 			// ignore errors as we are doomed if a tmp dir couldn't be written
 			_ = os.Mkdir(path.Join(tempDir, "work"), os.ModePerm)
@@ -61,19 +67,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					}
 					defer desc.Close()
 				}
-
 			}
-		} else {
-			wwlog.Warn("couldn't create temp dir for overlay", err)
-			lowerObjects = []string{}
 		}
-		/*
-			\TODO check why defer isn't called at exit
-			defer func() {
-				fmt.Println("defer called")
-				_ = os.RemoveAll(tempDir)
-			}()
-		*/
 	}
 	containerPath := container.RootFsDir(containerName)
 	err = syscall.Mount("", "/", "", syscall.MS_PRIVATE|syscall.MS_REC, "")
@@ -148,15 +143,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	os.Setenv("PATH", "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin")
 	os.Setenv("HISTFILE", "/dev/null")
 
-	err = syscall.Exec(args[1], args[1:], os.Environ())
-	fmt.Println("After exec")
-	_ = os.RemoveAll(tempDir)
-	if err != nil {
-		wwlog.Error("%s", err)
-
-		os.Exit(1)
-	}
-
+	_ = syscall.Exec(args[1], args[1:], os.Environ())
+	/*
+		Exec replaces the actual program, so nothing to do here afterwards
+	*/
 	return nil
 }
 

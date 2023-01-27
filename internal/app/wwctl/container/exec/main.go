@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -21,9 +22,22 @@ import (
 fork off a process with a new PID space
 */
 func runContainedCmd(args []string) error {
+	var err error
+	if tempDir == "" {
+		tempDir, err = os.MkdirTemp(buildconfig.TMPDIR(), "overlay")
+		if err != nil {
+			wwlog.Warn("couldn't create temp dir for overlay", err)
+		}
+		defer func() {
+			err = os.RemoveAll(tempDir)
+			if err != nil {
+				wwlog.Warn("Couldn't remove temp dir for ephermal mounts:", err)
+			}
+		}()
+	}
 	logStr := fmt.Sprint(wwlog.GetLogLevel())
 	wwlog.Verbose("Running contained command: %s", args[1:])
-	c := exec.Command("/proc/self/exe", append([]string{"--loglevel", logStr, "container", "exec", "__child"}, args...)...)
+	c := exec.Command("/proc/self/exe", append([]string{"--loglevel", logStr, "--tempdir", tempDir, "container", "exec", "__child"}, args...)...)
 
 	c.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,
