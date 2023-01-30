@@ -32,8 +32,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 	var err error
+	mountPts := container.DefaultMntPts()
+	mountPts = append(container.InitMountPnts(binds), mountPts...)
 	// check for valid mount points
-	lowerObjects := checkMountPoints(containerName, binds)
+	lowerObjects := checkMountPoints(containerName, mountPts)
 	if len(lowerObjects) != 0 {
 		if tempDir == "" {
 			tempDir, err = os.MkdirTemp(buildconfig.TMPDIR(), "overlay")
@@ -154,33 +156,22 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 Check if the bind mount points exists in the given container. Returns
 the invalid mount points. Directories always have '/' as suffix
 */
-func checkMountPoints(containerName string, binds []string) (overlayObjects []string) {
+func checkMountPoints(containerName string, binds []container.MntDetails) (overlayObjects []string) {
 	wwlog.Debug("Checking if container %s has paths: %v", containerName, binds)
 	overlayObjects = []string{}
 	for _, b := range binds {
-		var source string
-		var dest string
-
-		bind := util.SplitValidPaths(b, ":")
-		source = bind[0]
-
-		if len(bind) == 1 {
-			dest = source
-		} else {
-			dest = bind[1]
-		}
-		err, _ := os.Stat(source)
+		err, _ := os.Stat(b.Source)
 		if err == nil {
 			// no need to create a mount location if source doesn't exist
 			continue
 		}
-		if _, err := os.Stat(path.Join(container.RootFsDir(containerName), dest)); err != nil {
+		if _, err := os.Stat(path.Join(container.RootFsDir(containerName), b.Dest)); err != nil {
 			if os.IsNotExist(err) {
-				if util.IsDir(dest) && !strings.HasSuffix(dest, "/") {
-					dest += "/"
+				if util.IsDir(b.Dest) && !strings.HasSuffix(b.Dest, "/") {
+					b.Dest += "/"
 				}
-				overlayObjects = append(overlayObjects, source)
-				wwlog.Debug("Container %s, needs following path: %s", containerName, dest)
+				overlayObjects = append(overlayObjects, b.Dest)
+				wwlog.Debug("Container %s, needs following path: %s", containerName, b.Dest)
 			}
 		}
 	}
