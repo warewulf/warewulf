@@ -7,19 +7,20 @@ import (
 )
 
 type ControllerConf struct {
-	WWInternal int           `yaml:"WW_INTERNAL"`
-	Comment    string        `yaml:"comment,omitempty"`
-	Ipaddr     string        `yaml:"ipaddr"`
-	Ipaddr6    string        `yaml:"ipaddr6,omitempty"`
-	Netmask    string        `yaml:"netmask"`
-	Network    string        `yaml:"network,omitempty"`
-	Ipv6net    string        `yaml:"ipv6net,omitempty"`
-	Fqdn       string        `yaml:"fqdn,omitempty"`
-	Warewulf   *WarewulfConf `yaml:"warewulf"`
-	Dhcp       *DhcpConf     `yaml:"dhcp"`
-	Tftp       *TftpConf     `yaml:"tftp"`
-	Nfs        *NfsConf      `yaml:"nfs"`
-	current    bool
+	WWInternal      int           `yaml:"WW_INTERNAL"`
+	Comment         string        `yaml:"comment,omitempty"`
+	Ipaddr          string        `yaml:"ipaddr"`
+	Ipaddr6         string        `yaml:"ipaddr6,omitempty"`
+	Netmask         string        `yaml:"netmask"`
+	Network         string        `yaml:"network,omitempty"`
+	Ipv6net         string        `yaml:"ipv6net,omitempty"`
+	Fqdn            string        `yaml:"fqdn,omitempty"`
+	Warewulf        *WarewulfConf `yaml:"warewulf"`
+	Dhcp            *DhcpConf     `yaml:"dhcp"`
+	Tftp            *TftpConf     `yaml:"tftp"`
+	Nfs             *NfsConf      `yaml:"nfs"`
+	MountsContainer []*MountEntry `yaml:"container mounts"`
+	current         bool
 }
 
 type WarewulfConf struct {
@@ -57,6 +58,16 @@ type NfsExportConf struct {
 	ExportOptions string `default:"rw,sync,no_subtree_check" yaml:"export options"`
 	MountOptions  string `default:"defaults" yaml:"mount options"`
 	Mount         bool   `default:"true" yaml:"mount"`
+}
+
+/*
+Describe a mount point for a container exec
+*/
+type MountEntry struct {
+	Source   string `yaml:"source" default:"/etc/resolv.conf"`
+	Dest     string `yaml:"dest,omitempty" default:"/etc/resolv.conf"`
+	ReadOnly bool   `yaml:"readonly,omitempty" default:"false"`
+	Options  string `yaml:"options,omitempty"` // ignored at the moment
 }
 
 func (s *NfsConf) Unmarshal(unmarshal func(interface{}) error) error {

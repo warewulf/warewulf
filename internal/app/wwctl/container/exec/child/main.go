@@ -14,6 +14,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -31,8 +32,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Error("Unknown Warewulf container: %s", containerName)
 		os.Exit(1)
 	}
-	var err error
-	mountPts := container.DefaultMntPts()
+	conf, err := warewulfconf.New()
+	if err != nil {
+		wwlog.Verbose("Couldn't get warewulf ocnfiguration: %s", err)
+	}
+	mountPts := conf.MountsContainer
 	mountPts = append(container.InitMountPnts(binds), mountPts...)
 	// check for valid mount points
 	lowerObjects := checkMountPoints(containerName, mountPts)
@@ -105,25 +109,21 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to mount /dev")
 	}
 
-	for _, b := range binds {
-		var source string
-		var dest string
-
-		bind := util.SplitValidPaths(b, ":")
-		source = bind[0]
-
-		if len(bind) == 1 {
-			dest = source
-		} else {
-			dest = bind[1]
-		}
-
-		err := syscall.Mount(source, path.Join(containerPath, dest), "", syscall.MS_BIND, "")
+	for _, mntPnt := range mountPts {
+		err = syscall.Mount(mntPnt.Source, path.Join(containerPath, mntPnt.Dest), "", syscall.MS_BIND, "")
 		if err != nil {
 			fmt.Printf("BIND ERROR: %s\n", err)
-			wwlog.Warn("Couldn't mount %s", source)
+			wwlog.Warn("Couldn't mount %s to %s", mntPnt.Source, mntPnt.Dest)
+		} else if mntPnt.ReadOnly {
+			err = syscall.Mount(mntPnt.Source, path.Join(containerPath, mntPnt.Dest), "", syscall.MS_REMOUNT|syscall.MS_RDONLY|syscall.MS_BIND, "")
+			if err != nil {
+				wwlog.Warn("failed to following mount readonly: %s", mntPnt.Source)
+			} else {
+				wwlog.Verbose("mounted readonly from host to container: %s:%s", mntPnt.Source, mntPnt.Dest)
+			}
+		} else {
+			wwlog.Verbose("mounted from host to container: %s:%s", mntPnt.Source, mntPnt.Dest)
 		}
-		wwlog.Verbose("mounted from host to container: %s:%s", source, dest)
 	}
 
 	err = syscall.Chroot(containerPath)
@@ -156,16 +156,16 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 Check if the bind mount points exists in the given container. Returns
 the invalid mount points. Directories always have '/' as suffix
 */
-func checkMountPoints(containerName string, binds []container.MntDetails) (overlayObjects []string) {
-	wwlog.Debug("Checking if container %s has paths: %v", containerName, binds)
+func checkMountPoints(containerName string, binds []*warewulfconf.MountEntry) (overlayObjects []string) {
 	overlayObjects = []string{}
 	for _, b := range binds {
-		err, _ := os.Stat(b.Source)
-		if err == nil {
-			// no need to create a mount location if source doesn't exist
+		_, err := os.Stat(b.Source)
+		if err != nil {
+			wwlog.Debug("Couldn't stat %s create no mount point in container", b.Source)
 			continue
 		}
-		if _, err := os.Stat(path.Join(container.RootFsDir(containerName), b.Dest)); err != nil {
+		wwlog.Debug("Checking in container for %s", path.Join(container.RootFsDir(containerName), b.Dest))
+		if _, err = os.Stat(path.Join(container.RootFsDir(containerName), b.Dest)); err != nil {
 			if os.IsNotExist(err) {
 				if util.IsDir(b.Dest) && !strings.HasSuffix(b.Dest, "/") {
 					b.Dest += "/"
