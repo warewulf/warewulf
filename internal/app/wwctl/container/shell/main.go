@@ -26,9 +26,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			allargs = append(allargs, "--bind", b)
 		}
 	*/
-	args = append(args, "/usr/bin/bash")
+	shellName := os.Getenv("SHELL")
+	if shellName == "" {
+		shellName = "/usr/bin/bash"
+	}
+	args = append(args, shellName)
 	allargs = append(allargs, args...)
 	wwlog.Debug("Calling exec with args: %s", allargs)
 	cntexec.SetBinds(binds)
+	cntexec.SetNode(nodeName)
 	return cntexec.CobraRunE(cmd, allargs)
 }

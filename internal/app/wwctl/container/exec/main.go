@@ -48,6 +48,11 @@ func runContainedCmd(args []string) error {
 
 	if err := c.Run(); err != nil {
 		fmt.Printf("Command exited non-zero, not rebuilding/updating VNFS image\n")
+		// defer is not called before os.Exit(0)
+		err = os.RemoveAll(tempDir)
+		if err != nil {
+			wwlog.Warn("Couldn't remove temp dir for ephermal mounts:", err)
+		}
 		os.Exit(0)
 	}
 	return nil
@@ -134,4 +139,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 }
 func SetBinds(myBinds []string) {
 	binds = append(binds, myBinds...)
+}
+
+func SetNode(myNode string) {
+	nodeName = myNode
 }
