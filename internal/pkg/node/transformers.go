@@ -28,7 +28,7 @@ func (nodeConf *NodeConf) GetFrom(nodeInfo NodeInfo) {
 }
 
 /*
-Abstract function which populates a NodeConf form the given NodeInfo
+Abstract function which populates a NodeConf from the given NodeInfo
 via getter functions.
 */
 func (nodeConf *NodeConf) getterFrom(nodeInfo NodeInfo,
