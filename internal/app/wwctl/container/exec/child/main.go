@@ -13,6 +13,8 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/container"
+	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -56,6 +58,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			// ignore errors as we are doomed if a tmp dir couldn't be written
 			_ = os.Mkdir(path.Join(tempDir, "work"), os.ModePerm)
 			_ = os.Mkdir(path.Join(tempDir, "lower"), os.ModePerm)
+			_ = os.Mkdir(path.Join(tempDir, "nodeoverlay"), os.ModePerm)
 			for _, obj := range lowerObjects {
 				newFile := ""
 				if !strings.HasSuffix(obj, "/") {
@@ -81,7 +84,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to mount")
 	}
-	if len(lowerObjects) != 0 {
+	ps1Str := fmt.Sprintf("[%s] Warewulf> ", containerName)
+	if len(lowerObjects) != 0 && nodename == "" {
 		options := fmt.Sprintf("lowerdir=%s,upperdir=%s,workdir=%s",
 			path.Join(tempDir, "lower"), containerPath, path.Join(tempDir, "work"))
 		wwlog.Debug("overlay options: %s", options)
@@ -89,11 +93,43 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			wwlog.Warn(fmt.Sprintf("Couldn't create overlay for ephermal mount points: %s", err))
 		}
+	} else if nodename != "" {
+		nodeDB, err := node.New()
+		if err != nil {
+			wwlog.Error("Could not open node configuration: %s", err)
+			os.Exit(1)
+		}
+
+		nodes, err := nodeDB.FindAllNodes()
+		if err != nil {
+			wwlog.Error("Could not get node list: %s", err)
+			os.Exit(1)
+		}
+		nodes = node.FilterByName(nodes, []string{nodename})
+		if len(nodes) != 1 {
+			wwlog.Error("No single node idendified with %s", nodename)
+			os.Exit(1)
+		}
+		overlays := nodes[0].SystemOverlay.GetSlice()
+		overlays = append(overlays, nodes[0].RuntimeOverlay.GetSlice()...)
+		err = overlay.BuildOverlayIndir(nodes[0], overlays, path.Join(tempDir, "nodeoverlay"))
+		if err != nil {
+			wwlog.Error("Could not build overlay: %s", err)
+			os.Exit(1)
+		}
+		options := fmt.Sprintf("lowerdir=%s:%s:%s",
+			path.Join(tempDir, "lower"), containerPath, path.Join(tempDir, "nodeoverlay"))
+		wwlog.Debug("overlay options: %s", options)
+		err = syscall.Mount("overlay", containerPath, "overlay", 0, options)
+		if err != nil {
+			wwlog.Warn(fmt.Sprintf("Couldn't create overlay for node render overlay: %s", err))
+			os.Exit(1)
+		}
+		ps1Str = fmt.Sprintf("[%s|ro|%s] Warewulf> ", containerName, nodename)
 	}
-	ps1Str := fmt.Sprintf("[%s] Warewulf> ", containerName)
-	if !util.IsWriteAble(containerPath) {
+	if !util.IsWriteAble(containerPath) && nodename == "" {
 		wwlog.Verbose("mounting %s ro", containerPath)
-		ps1Str = fmt.Sprintf("[%s] (ro) Warewulf> ", containerName)
+		ps1Str = fmt.Sprintf("[%s|ro] Warewulf> ", containerName)
 		err = syscall.Mount(containerPath, containerPath, "", syscall.MS_BIND, "")
 		if err != nil {
 			return errors.Wrap(err, "failed to prepare bind mount")

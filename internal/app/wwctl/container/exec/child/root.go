@@ -11,11 +11,13 @@ var (
 		Args:                  cobra.MinimumNArgs(1),
 		FParseErrWhitelist:    cobra.FParseErrWhitelist{UnknownFlags: true},
 	}
-	binds   []string
-	tempDir string
+	binds    []string
+	tempDir  string
+	nodename string
 )
 
 func init() {
+	baseCmd.Flags().StringVarP(&nodename, "node", "n", "", "create ro overlay for given node")
 	baseCmd.Flags().StringArrayVarP(&binds, "bind", "b", []string{}, "bind points")
 	baseCmd.Flags().StringVar(&tempDir, "tempdir", "", "tempdir")
 }

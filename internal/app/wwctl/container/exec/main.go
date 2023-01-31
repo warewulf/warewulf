@@ -68,6 +68,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	for _, b := range binds {
 		allargs = append(allargs, "--bind", b)
 	}
+	if nodeName != "" {
+		allargs = append(allargs, "--node", nodeName)
+	}
 	allargs = append(allargs, args...)
 	containerPath := container.RootFsDir(containerName)
 
