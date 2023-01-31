@@ -192,12 +192,6 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		return
 	}
 
-	fmt.Printf("Updating the container's /etc/resolv.conf\n")
-	err = util.CopyFile("/etc/resolv.conf", path.Join(container.RootFsDir(cip.Name), "/etc/resolv.conf"))
-	if err != nil {
-		wwlog.Warn("Could not copy /etc/resolv.conf into container: %s", err)
-	}
-
 	fmt.Printf("Building container: %s\n", cip.Name)
 	err = container.Build(cip.Name, true)
 	if err != nil {
