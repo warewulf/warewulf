@@ -10,8 +10,8 @@ User=root
 Group=root
 
 ExecStart=@BINDIR@/wwctl server start
-ExecReload=/usr/bin/wwctl server reload
-ExecStop=/usr/bin/wwctl server stop
+ExecReload=@BINDIR@/wwctl server reload
+ExecStop=@BINDIR/wwctl server stop
 
 PIDFile=/var/run/warewulfd.pid
 Restart=always
