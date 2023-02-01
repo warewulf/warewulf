@@ -36,6 +36,7 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 			for k := range n.NetDevs {
 				netNames = append(netNames, k)
 			}
+			sort.Strings(netNames)
 			nodeList.Output = append(nodeList.Output,
 				fmt.Sprintf("%-22s %-26s %s", n.Id.Print(), n.Profiles.Print(), strings.Join(netNames, ", ")))
 		}
