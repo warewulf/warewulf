@@ -11,7 +11,7 @@ Group=root
 
 ExecStart=@BINDIR@/wwctl server start
 ExecReload=@BINDIR@/wwctl server reload
-ExecStop=@BINDIR/wwctl server stop
+ExecStop=@BINDIR@/wwctl server stop
 
 PIDFile=/var/run/warewulfd.pid
 Restart=always
