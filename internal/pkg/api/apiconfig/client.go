@@ -1,9 +1,10 @@
 package apiconfig
 
 import (
-	"gopkg.in/yaml.v2"
-	"io/ioutil"
 	"log"
+	"os"
+
+	"gopkg.in/yaml.v2"
 )
 
 // ClientApiConfig contains configuration parameters for an API server.
@@ -26,7 +27,7 @@ func NewClient(configFilePath string) (config ClientConfig, err error) {
 	log.Printf("Loading api client configuration from: %v\n", configFilePath)
 
 	var fileBytes []byte
-	fileBytes, err = ioutil.ReadFile(configFilePath)
+	fileBytes, err = os.ReadFile(configFilePath)
 	if err != nil {
 		return
 	}
