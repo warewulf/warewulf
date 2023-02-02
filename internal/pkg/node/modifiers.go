@@ -17,24 +17,24 @@ import (
 
 func (config *NodeYaml) AddNode(nodeID string) (NodeInfo, error) {
 	var node NodeConf
-	var n NodeInfo
+	var nodeInfo NodeInfo
 
 	wwlog.Verbose("Adding new node: %s", nodeID)
 
 	if _, ok := config.Nodes[nodeID]; ok {
-		return n, errors.New("Nodename already exists: " + nodeID)
+		return nodeInfo, errors.New("Nodename already exists: " + nodeID)
 	}
 
 	config.Nodes[nodeID] = &node
 	config.Nodes[nodeID].Profiles = []string{"default"}
 	config.Nodes[nodeID].NetDevs = make(map[string]*NetDevs)
-	n.Id.Set(nodeID)
-	n.Profiles.SetSlice([]string{"default"})
-	n.NetDevs = make(map[string]*NetDevEntry)
-	n.Ipmi = new(IpmiEntry)
-	n.Kernel = new(KernelEntry)
 
-	return n, nil
+	nodeInfo.Id.Set(nodeID)
+	nodeInfo.Profiles.SetSlice([]string{"default"})
+	nodeInfo.NetDevs = make(map[string]*NetDevEntry)
+	nodeInfo.Ipmi = new(IpmiEntry)
+	nodeInfo.Kernel = new(KernelEntry)
+	return nodeInfo, nil
 }
 
 func (config *NodeYaml) DelNode(nodeID string) error {
@@ -66,20 +66,23 @@ func (config *NodeYaml) NodeUpdate(node NodeInfo) error {
 ****/
 
 func (config *NodeYaml) AddProfile(profileID string) (NodeInfo, error) {
-	var node NodeConf
-	var n NodeInfo
+	var profile NodeConf
+	var profileInfo NodeInfo
 
 	wwlog.Verbose("Adding new profile: %s", profileID)
 
 	if _, ok := config.NodeProfiles[profileID]; ok {
-		return n, errors.New("Profile name already exists: " + profileID)
+		return profileInfo, errors.New("Profile name already exists: " + profileID)
 	}
 
-	config.NodeProfiles[profileID] = &node
+	config.NodeProfiles[profileID] = &profile
+	config.NodeProfiles[profileID].NetDevs = make(map[string]*NetDevs)
 
-	n.Id.Set(profileID)
-
-	return n, nil
+	profileInfo.Id.Set(profileID)
+	profileInfo.NetDevs = make(map[string]*NetDevEntry)
+	profileInfo.Ipmi = new(IpmiEntry)
+	profileInfo.Kernel = new(KernelEntry)
+	return profileInfo, nil
 }
 
 func (config *NodeYaml) DelProfile(profileID string) error {
