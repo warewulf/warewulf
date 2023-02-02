@@ -15,7 +15,7 @@ import (
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	// remove the default network as the all network values are assigned
 	// to this network
-	if NetName != "default" {
+	if NetName != "" && NetName != "default" {
 		NodeConf.NetDevs[NetName] = NodeConf.NetDevs["default"]
 		delete(NodeConf.NetDevs, "default")
 	}

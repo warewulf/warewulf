@@ -9,9 +9,84 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/hpcng/warewulf/pkg/hostlist"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
+
+	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 )
+
+
+func ProfileAdd(nap *wwapiv1.NodeAddParameter) (err error) {
+	if nap == nil {
+		return fmt.Errorf("NodeAddParameter is nil")
+	}
+
+	nodeDB, err := node.New()
+	if err != nil {
+		return errors.Wrap(err, "failed to open node database")
+	}
+
+	profiles := hostlist.Expand(nap.NodeNames)
+	var profileConf node.NodeConf
+	err = yaml.Unmarshal([]byte(nap.NodeConfYaml), &profileConf)
+	if err != nil {
+		return errors.Wrap(err, "Failed to decode profileConf")
+	}
+
+	for _, profile := range profiles {
+		var profileInfo node.NodeInfo
+		profileInfo, err = nodeDB.AddProfile(profile)
+		if err != nil {
+			return errors.Wrap(err, "failed to add profile")
+		}
+		wwlog.Info("Added profile: %s", profile)
+		var netName string
+		for netName = range profileConf.NetDevs {
+			wwlog.Debug("ProfileAdd netName %s", netName)
+			// NetDevs should only have one key, so this
+			// will return the first and only key
+		}
+		// setting profile from the received yaml
+		buffer, _ := yaml.Marshal(profileConf)
+		wwlog.Debug("profileConf before:\n%s", string(buffer))
+		buffer, _ = yaml.Marshal(profileInfo)
+		wwlog.Debug("profileInfo before:\n%s", string(buffer))
+		profileInfo.SetFrom(&profileConf)
+		buffer, _ = yaml.Marshal(profileInfo)
+		wwlog.Debug("profileInfo after:\n%s", string(buffer))
+
+		if netName != "" && profileConf.NetDevs[netName].Ipaddr != "" {
+			// if more profiles are added increment IPv4 address
+			profileConf.NetDevs[netName].Ipaddr = util.IncrementIPv4(profileConf.NetDevs[netName].Ipaddr, 1)
+
+			wwlog.Verbose("Incremented IP addr to %s", profileConf.NetDevs[netName].Ipaddr)
+		}
+		if profileConf.Ipmi != nil && profileConf.Ipmi.Ipaddr != "" {
+			// if more profiles are added increment IPv4 address
+			profileConf.Ipmi.Ipaddr = util.IncrementIPv4(profileConf.Ipmi.Ipaddr, 1)
+			wwlog.Verbose("Incremented IP addr to %s", profileConf.Ipmi.Ipaddr)
+		}
+		err = nodeDB.ProfileUpdate(profileInfo)
+		if err != nil {
+			return errors.Wrap(err, "failed to update nodedb")
+		}
+		buffer, _ = yaml.Marshal(nodeDB)
+		wwlog.Debug("nodeDB after:\n%s", buffer)
+	}
+
+	err = nodeDB.Persist()
+	if err != nil {
+		return errors.Wrap(err, "failed to persist new profile(s)")
+	}
+
+	err = warewulfd.DaemonReload()
+	if err != nil {
+		return errors.Wrap(err, "failed to reload warewulf daemon")
+	}
+	return
+}
+
 
 // NodeSet is the wwapiv1 implmentation for updating nodeinfo fields.
 func ProfileSet(set *wwapiv1.NodeSetParameter) (err error) {
@@ -118,27 +193,4 @@ func ProfileSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (node
 		}
 	}
 	return
-}
-
-/*
-Adds a new profile with the given name
-*/
-func AddProfile(set *wwapiv1.NodeSetParameter, console bool) error {
-	nodeDB, err := node.New()
-	if err != nil {
-		return errors.Wrap(err, "Could not open database")
-	}
-
-	if util.InSlice(nodeDB.ListAllProfiles(), set.NodeNames[0]) {
-		return errors.New(fmt.Sprintf("profile with name %s allready exists", set.NodeNames[0]))
-	}
-	_, err = nodeDB.AddProfile(set.NodeNames[0])
-	if err != nil {
-		return errors.Wrap(err, "Could not create new profile")
-	}
-	err = apinode.DbSave(&nodeDB)
-	if err != nil {
-		return errors.Wrap(err, "Could not persist new profile")
-	}
-	return nil
 }

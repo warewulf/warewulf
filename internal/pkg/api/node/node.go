@@ -20,7 +20,6 @@ import (
 
 // NodeAdd adds nodes for management by Warewulf.
 func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
-
 	if nap == nil {
 		return fmt.Errorf("NodeAddParameter is nil")
 	}
@@ -38,19 +37,26 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 	}
 
 	for _, a := range node_args {
-		var n node.NodeInfo
-		n, err = nodeDB.AddNode(a)
+		var nodeInfo node.NodeInfo
+		nodeInfo, err = nodeDB.AddNode(a)
 		if err != nil {
 			return errors.Wrap(err, "failed to add node")
 		}
 		wwlog.Info("Added node: %s", a)
 		var netName string
 		for netName = range nodeConf.NetDevs {
-			// as map should only have key this should give is the first and
-			// only key
+			// NetDevs should only have one key, so this
+			// will return the first and only key
 		}
 		// setting node from the received yaml
-		n.SetFrom(&nodeConf)
+		buffer, _ := yaml.Marshal(nodeConf)
+		wwlog.Debug("nodeConf before:\n%s", string(buffer))
+		buffer, _ = yaml.Marshal(nodeInfo)
+		wwlog.Debug("nodeInfo before:\n%s", string(buffer))
+		nodeInfo.SetFrom(&nodeConf)
+		buffer, _ = yaml.Marshal(nodeInfo)
+		wwlog.Debug("nodeInfo after:\n%s", string(buffer))
+
 		if netName != "" && nodeConf.NetDevs[netName].Ipaddr != "" {
 			// if more nodes are added increment IPv4 address
 			nodeConf.NetDevs[netName].Ipaddr = util.IncrementIPv4(nodeConf.NetDevs[netName].Ipaddr, 1)
@@ -62,16 +68,17 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 			nodeConf.Ipmi.Ipaddr = util.IncrementIPv4(nodeConf.Ipmi.Ipaddr, 1)
 			wwlog.Verbose("Incremented IP addr to %s", nodeConf.Ipmi.Ipaddr)
 		}
-		err = nodeDB.NodeUpdate(n)
+		err = nodeDB.NodeUpdate(nodeInfo)
 		if err != nil {
 			return errors.Wrap(err, "failed to update nodedb")
 		}
-
+		buffer, _ = yaml.Marshal(nodeDB)
+		wwlog.Debug("nodeDB after:\n%s", buffer)
 	}
 
 	err = nodeDB.Persist()
 	if err != nil {
-		return errors.Wrap(err, "failed to persist new node")
+		return errors.Wrap(err, "failed to persist new node(s)")
 	}
 
 	err = warewulfd.DaemonReload()

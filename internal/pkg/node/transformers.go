@@ -37,11 +37,13 @@ func (nodeConf *NodeConf) getterFrom(nodeInfo NodeInfo,
 	nodeInfoType := reflect.TypeOf(nodeInfo)
 	nodeInfoVal := reflect.ValueOf(nodeInfo)
 	configVal := reflect.ValueOf(nodeConf)
+	wwlog.Debug("getterFrom")
 	// now iterate of every field
 	for i := 0; i < nodeInfoType.NumField(); i++ {
 		// found field with same name for Conf and Info
 		confField := configVal.Elem().FieldByName(nodeInfoType.Field(i).Name)
 		if confField.IsValid() {
+			wwlog.Debug("getterFrom: nodeInfoVal %s", confField.String())
 			if nodeInfoVal.Field(i).Type() == reflect.TypeOf(Entry{}) {
 				if confField.Type().Kind() == reflect.String {
 					newValue := (confField.Addr().Interface()).(*string)
@@ -129,11 +131,13 @@ func (nodeConf *NodeConf) getterFrom(nodeInfo NodeInfo,
 				}
 
 			} else if nodeInfoVal.Field(i).Type() == reflect.TypeOf(map[string]*NetDevEntry{}) {
+				wwlog.Debug("getterFrom found NetDevEntry")
 				if confField.IsNil() {
 					netMapPtr := confField.Addr().Interface().(*map[string](*NetDevs))
 					*netMapPtr = make(map[string](*NetDevs))
 				}
 				nestedMap := nodeInfoVal.Field(i).Interface().(map[string]*NetDevEntry)
+				wwlog.Debug("getterFrom nestedMap %s", nestedMap)
 				netMap := confField.Interface().(map[string](*NetDevs))
 				// check if a network was deleted
 				if len(netMap) > len(nestedMap) {
@@ -150,6 +154,7 @@ func (nodeConf *NodeConf) getterFrom(nodeInfo NodeInfo,
 					}
 				}
 				for netName, netVal := range nestedMap {
+					wwlog.Debug("getterFrom netName %s netVal %s", netName, netVal)
 					netValsType := reflect.ValueOf(netVal)
 					if _, ok := netMap[netName]; !ok {
 						netMap[netName] = new(NetDevs)
@@ -395,6 +400,7 @@ func (node *NodeInfo) setterFrom(n *NodeConf, nameArg string,
 			} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string](*NetDevEntry)(nil)) {
 				netValMap := valField.Interface().(map[string](*NetDevs))
 				for netName, netVals := range netValMap {
+					wwlog.Debug("setterFrom netName %s netVals %s", netName, netVals)
 					netValsType := reflect.ValueOf(netVals)
 					netMap := nodeInfoVal.Elem().Field(i).Interface().(map[string](*NetDevEntry))
 					if nodeInfoVal.Elem().Field(i).IsNil() {
@@ -405,14 +411,18 @@ func (node *NodeInfo) setterFrom(n *NodeConf, nameArg string,
 						newNet.Tags = make(map[string]*Entry)
 						netMap[netName] = &newNet
 					}
+					wwlog.Debug("setterFrom netMap[netName] %s", netMap[netName])
 					netInfoType := reflect.TypeOf(*netMap[netName])
 					netInfoVal := reflect.ValueOf(netMap[netName])
 					for j := 0; j < netInfoType.NumField(); j++ {
 						netVal := netValsType.Elem().FieldByName(netInfoType.Field(j).Name)
 						if netVal.IsValid() {
+							wwlog.Debug("setterFrom netVal %s %s", netInfoType.Field(j).Name, netVal.String())
 							if netVal.Type().Kind() == reflect.String {
+								wwlog.Debug("setterFrom netVal simple string")
 								setter(netInfoVal.Elem().Field(j).Addr().Interface().((*Entry)), netVal.String(), nameArg)
 							} else if netVal.Type() == reflect.TypeOf(map[string]string{}) {
+								wwlog.Debug("setterFrom netVal map of strings")
 								for key, val := range (netVal.Interface()).(map[string]string) {
 									//netTagMap := netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))
 									if _, ok := netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))[key]; !ok {
