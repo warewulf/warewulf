@@ -17,7 +17,7 @@ var ConfigFile string
 var DefaultConfig string
 
 // used as fallback if DefaultConfig can't be read
-var FallBackConf = `
+var FallBackConf = `---
 defaultnode:
   runtime overlay:
   - generic
@@ -27,6 +27,7 @@ defaultnode:
     args: quiet crashkernel=no vga=791 net.naming-scheme=v238
   init: /sbin/init
   root: initramfs
+  ipxe template: default
   profiles:
   - default
   network devices:
@@ -78,7 +79,7 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		}
 	*/
 	var defConf map[string]*NodeConf
-	wwlog.Verbose("Opening defaults failed %s\n", DefaultConfig)
+	wwlog.Verbose("Opening defaults from file failed %s\n", DefaultConfig)
 	defData, err := os.ReadFile(DefaultConfig)
 	if err != nil {
 		wwlog.Verbose("Couldn't read DefaultConfig :%s\n", err)

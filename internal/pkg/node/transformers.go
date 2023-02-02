@@ -28,7 +28,7 @@ func (nodeConf *NodeConf) GetFrom(nodeInfo NodeInfo) {
 }
 
 /*
-Abstract function which populates a NodeConf form the given NodeInfo
+Abstract function which populates a NodeConf from the given NodeInfo
 via getter functions.
 */
 func (nodeConf *NodeConf) getterFrom(nodeInfo NodeInfo,
@@ -72,7 +72,8 @@ func (nodeConf *NodeConf) getterFrom(nodeInfo NodeInfo,
 				for key, val := range entryMap {
 					confMap[key] = getter(val)
 				}
-			} else if nodeInfoVal.Field(i).Type().Kind() == reflect.Ptr {
+			} else if nodeInfoVal.Field(i).Type().Kind() == reflect.Ptr && !nodeInfoVal.Field(i).IsNil() {
+				// initialize the nested NodeConf structs, but only if these will be set
 				if confField.Addr().Elem().IsZero() {
 					switch confField.Addr().Elem().Type() {
 					case reflect.TypeOf((*KernelConf)(nil)):
@@ -164,6 +165,10 @@ func (nodeConf *NodeConf) getterFrom(nodeInfo NodeInfo,
 							} else if netVal.Type() == reflect.TypeOf(map[string]*Entry{}) {
 								entryMap := netVal.Interface().(map[string](*Entry))
 								confMap := netConfVal.Elem().Field(j).Interface().(map[string]string)
+								if confMap == nil {
+									confMapPtr := netConfVal.Elem().Field(j).Addr().Interface().(*map[string]string)
+									*confMapPtr = make(map[string]string)
+								}
 								if len(confMap) > len(entryMap) {
 									for confMapKey := range confMap {
 										foundKey := false
@@ -337,6 +342,11 @@ func (node *NodeInfo) setterFrom(n *NodeConf, nameArg string,
 	if node.Ipmi == nil {
 		node.Ipmi = new(IpmiEntry)
 	}
+	// also n could be nil
+	if n == nil {
+		myn := NewConf()
+		n = &myn
+	}
 	nodeInfoVal := reflect.ValueOf(node)
 	nodeInfoType := reflect.TypeOf(node)
 	nodeConfVal := reflect.ValueOf(n)
@@ -505,6 +515,10 @@ Abstract function for setting a NetDevEntry from a NetDevs
 func (netDev *NetDevEntry) setterFrom(netYaml *NetDevs, nameArg string,
 	setter func(*Entry, string, string),
 	setterSlice func(*Entry, []string, string)) {
+	// check if netYaml is empty
+	if netYaml == nil {
+		netYaml = new(NetDevs)
+	}
 	netValues := reflect.ValueOf(netDev)
 	netInfoType := reflect.TypeOf(*netYaml)
 	netInfoVal := reflect.ValueOf(*netYaml)

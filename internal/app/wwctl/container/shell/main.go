@@ -40,6 +40,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
 
+	os.Setenv("WW_CONTAINER_SHELL", containerName)
+
 	if err := c.Run(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

@@ -13,6 +13,7 @@ nodeprofiles:
     comment: This profile is automatically included for each node
 nodes:
   test_node:
+    comment: Node Comment
     profiles:
     - default
     network devices:

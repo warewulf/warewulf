@@ -33,5 +33,8 @@ Defaults.mk
 /etc/wwapid.config
 /etc/wwapic.config
 /etc/wwapird.config
+/etc/wwapid.conf
+/etc/wwapic.conf
+/etc/wwapird.conf
 .dist/
 userdocs/_*

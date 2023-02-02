@@ -40,8 +40,8 @@ To contribute to Warewulf, you should obtain a GitHub account and fork the `Ware
 Step 2. Checkout a new branch
 -----------------------------
 
-`Branches <https://guides.github.com/introduction/flow>`_` are a way of 
-isolating your features from the main branch. Given that we’ve just cloned the 
+`Branches <https://guides.github.com/introduction/flow>`_` are a way of
+isolating your features from the main branch. Given that we’ve just cloned the
 repo, we will probably want to make a new branch from master in which to work on
 our new feature. Lets call that branch ``new-feature``:
 

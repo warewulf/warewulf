@@ -60,8 +60,6 @@ func InitStruct(nodeInfo node.NodeInfo) TemplateStruct {
 	// init some convininence vars
 	tstruct.Id = nodeInfo.Id.Get()
 	tstruct.Hostname = nodeInfo.Id.Get()
-	tstruct.Id = nodeInfo.Id.Get()
-	tstruct.Hostname = nodeInfo.Id.Get()
 	// Backwards compatibility for templates using "Keys"
 	tstruct.AllNodes = allNodes
 	tstruct.Nfs = *controller.Nfs
@@ -83,6 +81,7 @@ func InitStruct(nodeInfo node.NodeInfo) TemplateStruct {
 	dt := time.Now()
 	tstruct.BuildTime = dt.Format("01-02-2006 15:04:05 MST")
 	tstruct.BuildTimeUnix = strconv.FormatInt(dt.Unix(), 10)
+	tstruct.NodeConf.Tags = map[string]string{}
 	tstruct.NodeConf.GetFrom(nodeInfo)
 	// FIXME: Set ipCIDR address at this point, will fail with
 	// invalid ipv4 addr

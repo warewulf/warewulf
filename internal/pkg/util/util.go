@@ -596,10 +596,14 @@ func FileGz(
 	compressor, err := exec.LookPath("pigz")
 	if err != nil {
 		wwlog.Verbose("Could not locate PIGZ")
-		compressor = "gzip"
+		compressor, err = exec.LookPath("gzip")
+		if err != nil {
+			wwlog.Verbose("Could not locate GZIP")
+			return errors.Wrapf(err, "No compressor program for image file: %s", file_gz)
+		}
 	}
 
-	wwlog.Verbose("Using gz compressor: %s", compressor)
+	wwlog.Verbose("Using compressor program: %s", compressor)
 
 	proc := exec.Command(
 		compressor,
@@ -608,6 +612,52 @@ func FileGz(
 
 	out, err := proc.CombinedOutput()
 	if len(out) > 0 {
+		outStr := string(out[:])
+		if err != nil && strings.HasSuffix(compressor, "gzip") && strings.Contains(outStr, "unrecognized option") {
+			var		gzippedFile *os.File
+			var     gzipStderr io.ReadCloser
+            
+			/* Older version of gzip, try it another way: */
+			wwlog.Verbose("%s does not recognize the --keep flag, trying redirected stdout", compressor)
+			
+			/* Open the output file for writing: */
+			gzippedFile, err = os.Create(file_gz)
+			if err != nil {
+				return errors.Wrapf(err, "Unable to open compressed image file for writing: %s", file_gz)
+			}
+			
+			/* We'll execute gzip with output to stdout and attach stdout to the compressed file we just
+			   created:
+			 */
+			proc = exec.Command(
+				compressor,
+				"--stdout",
+				file )
+			proc.Stdout = gzippedFile
+			gzipStderr, err = proc.StderrPipe()
+			if err != nil {
+				return errors.Wrapf(err, "Unable to open stderr pipe for compression program: %s", compressor)
+			}
+			
+			/* Execute the command: */
+			err = proc.Start()
+			if err != nil {
+                _ = proc.Wait()
+				gzippedFile.Close()
+				os.Remove(file_gz)
+				err = errors.Wrapf(err, "Unable to successfully execute compression program: %s", compressor)
+			} else {
+				err = proc.Wait()
+				gzippedFile.Close()
+				if err != nil {
+					os.Remove(file_gz)
+					err = errors.Wrapf(err, "Unable to successfully create compressed image file: %s", file_gz)
+				} else {
+					wwlog.Verbose("Successfully compressed image file: %s", file_gz)
+				}
+			}
+			out, _ = io.ReadAll(gzipStderr)
+		}
 		wwlog.Debug(string(out))
 	}
 

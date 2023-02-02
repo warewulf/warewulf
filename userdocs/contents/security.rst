@@ -28,7 +28,7 @@ In Warewulf there are two ways to secure the provisioning process:
 
 #. The provisioning connections and transfers are not secure due to not being able to manage a secure root of trust through a PXE process. The best way to secure the provisioning process is to enact a vLAN used specifically for provisioning. Warewulf supports this but you must consult your switch documentation and features to implement a default vLAN for provisioning and ensure that the runtime operating system is configured for a different tagged vLAN once booted.
 
-#. Warewulf will leverage hardware "asset tags" which almost all vendors support. It is a configurable string that is configured in firmware and accessible only via root or physical access. During provisioning (as well as post provisioning via ``wwclient``) Warewulf, can use the asset tag as a secure token. If you have setup your hardware with an asset tag, you simply need to tell Warewulf what that asset tag is. When the asset tag is defined in Warewulf (``wwctl node set --assetkey "..."``), it will only provision and communicate with requests from that system matching that asset tag. 
+#. Warewulf will leverage hardware "asset tags" which almost all vendors support. It is a configurable string that is configured in firmware and accessible only via root or physical access. During provisioning (as well as post provisioning via ``wwclient``) Warewulf, can use the asset tag as a secure token. If you have setup your hardware with an asset tag, you simply need to tell Warewulf what that asset tag is. When the asset tag is defined in Warewulf (``wwctl node set --assetkey "..."``), it will only provision and communicate with requests from that system matching that asset tag.
 
 Summary
 =======

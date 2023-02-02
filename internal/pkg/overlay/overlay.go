@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"syscall"
 	"text/template"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -48,13 +49,13 @@ func BuildAllOverlays(nodes []node.NodeInfo) error {
 		wwlog.Info("Building system overlays for %s: [%s]", n.Id.Get(), strings.Join(sysOverlays, ", "))
 		err := BuildOverlay(n, sysOverlays)
 		if err != nil {
-			return errors.Wrapf(err, "could not build system overlays %v for nide %s", sysOverlays, n.Id.Get())
+			return errors.Wrapf(err, "could not build system overlays %v for node %s", sysOverlays, n.Id.Get())
 		}
 		runOverlays := n.RuntimeOverlay.GetSlice()
 		wwlog.Info("Building runtime overlays for %s: [%s]", n.Id.Get(), strings.Join(runOverlays, ", "))
 		err = BuildOverlay(n, runOverlays)
 		if err != nil {
-			return errors.Wrapf(err, "could not build runtime overlays %v for nide %s", runOverlays, n.Id.Get())
+			return errors.Wrapf(err, "could not build runtime overlays %v for node %s", runOverlays, n.Id.Get())
 		}
 
 	}
@@ -80,14 +81,11 @@ func BuildSpecificOverlays(nodes []node.NodeInfo, overlayNames []string) error {
 Build overlay for the host, so no argument needs to be given
 */
 func BuildHostOverlay() error {
-	var host node.NodeInfo
-	host.Kernel = new(node.KernelEntry)
-	host.Ipmi = new(node.IpmiEntry)
-	var idEntry node.Entry
+	host := node.NewInfo()
 	hostname, _ := os.Hostname()
+	host.Id.Set(hostname)
+
 	wwlog.Info("Building overlay for %s: host", hostname)
-	idEntry.Set(hostname)
-	host.Id = idEntry
 	hostdir := OverlaySourceDir("host")
 	stats, err := os.Stat(hostdir)
 	if err != nil {
@@ -197,6 +195,9 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 	if !util.ValidString(strings.Join(overlayNames, ""), "^[a-zA-Z0-9-._:]+$") {
 		return errors.Errorf("overlay names contains illegal characters: %v", overlayNames)
 	}
+
+	// Temporarily set umask to 0000, so directories in the overlay retain permissions
+	defer syscall.Umask(syscall.Umask(0))
 
 	wwlog.Verbose("Processing node/overlay: %s/%s", nodeInfo.Id.Get(), strings.Join(overlayNames, "-"))
 	for _, overlayName := range overlayNames {

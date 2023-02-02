@@ -76,7 +76,7 @@ Now that we've created a new profile, let's create a configuration attribute in 
 
    $ sudo wwctl profile set --cluster cluster01 test_profile
    ? Are you sure you want to modify 1 profile(s)? [y/N] y█
-   
+
    $ sudo wwctl profile list -a test_profile | grep Cluster
    test_profile         Cluster            cluster01
 
@@ -105,10 +105,10 @@ Cascading Profiles
 In the previous example, we set a single node to have two profile configurations. We can also overwrite configurations as follows:
 
 .. code-block:: bash
-   
+
    $ sudo wwctl profile set --comment "test comment" test_profile
    Are you sure you want to modify 1 profile(s): y
-   
+
    $ sudo wwctl node list -a | head -n 6
    ################################################################################
    NODE                 FIELD              PROFILE      VALUE
@@ -123,7 +123,7 @@ And if we delete the superseded profile attribute from ``test_profile`` we can n
 
    $ sudo wwctl profile set --comment UNDEF test_profile
    Are you sure you want to modify 1 profile(s): y
-   
+
    $ sudo wwctl node list -a | head -n 6
    ################################################################################
    NODE                 FIELD              PROFILE      VALUE
@@ -143,7 +143,7 @@ All profile configurations can be overwritten by a node configuration as can be 
 
    $ sudo wwctl node set --comment "This value takes precedent" n0000
    Are you sure you want to modify 1 nodes(s): y
-   
+
    $ sudo wwctl node list -a | head -n 6
    ################################################################################
    NODE                 FIELD              PROFILE      VALUE

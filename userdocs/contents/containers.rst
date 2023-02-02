@@ -26,8 +26,8 @@ Here is an example of importing from Docker Hub.
 
    $ sudo wwctl container import docker://warewulf/rocky rocky-8
    Getting image source signatures
-   Copying blob d7f16ed6f451 done  
-   Copying config da2ca70704 done  
+   Copying blob d7f16ed6f451 done
+   Copying config da2ca70704 done
    Writing manifest to image destination
    Storing signatures
    [LOG]       info unpack layer: sha256:d7f16ed6f45129c7f4adb3773412def4ba2bf9902de42e86e77379a65d90a984
@@ -73,8 +73,8 @@ Once the container has been imported, you can list them all with the following c
 .. code-block:: bash
 
    $ sudo wwctl container list
-   CONTAINER NAME                      BUILT  NODES 
-   rocky-8                             true   0     
+   CONTAINER NAME                      BUILT  NODES
+   rocky-8                             true   0
 
 Once a container has been imported and showing up in this list you can configure it to boot compute nodes.
 
@@ -97,7 +97,7 @@ You can also ``--bind`` directories from your host into the container when using
 .. code-block:: bash
 
    $ sudo wwctl container exec --bind /tmp:/mnt rocky-8 /bin/sh
-   [rocky-8] Warewulf> 
+   [rocky-8] Warewulf>
 
 .. note::
    As with any mount command, both the source and the target must exist. This is why the example uses the ``/mnt/`` directory location, as it is almost always present and empty in every Linux distribution (as prescribed by the LSB file hierarchy standard).

@@ -2,6 +2,7 @@ package node
 
 import (
 	"fmt"
+	"reflect"
 	"regexp"
 	"strings"
 
@@ -200,13 +201,20 @@ func (ent *Entry) Get() string {
 Get the bool value of an entry.
 */
 func (ent *Entry) GetB() bool {
-	if len(ent.value) == 0 || ent.value[0] == "false" || ent.value[0] == "no" {
-		if len(ent.altvalue) == 0 || ent.altvalue[0] == "false" || ent.altvalue[0] == "no" {
-			return false
-		}
-		return false
+	if len(ent.value) > 0 {
+		return !(strings.ToLower(ent.value[0]) == "false" ||
+			strings.ToLower(ent.value[0]) == "no" ||
+			ent.value[0] == "0")
+	} else if len(ent.altvalue) > 0 {
+		return !(strings.ToLower(ent.altvalue[0]) == "false" ||
+			strings.ToLower(ent.altvalue[0]) == "no" ||
+			ent.altvalue[0] == "0")
+	} else {
+		return !(len(ent.def) == 0 ||
+			strings.ToLower(ent.def[0]) == "false" ||
+			strings.ToLower(ent.def[0]) == "no" ||
+			ent.def[0] == "0")
 	}
-	return true
 }
 
 /*
@@ -334,6 +342,32 @@ Create an empty node NodeConf
 func NewConf() (nodeconf NodeConf) {
 	nodeconf.Ipmi = new(IpmiConf)
 	nodeconf.Kernel = new(KernelConf)
-	nodeconf.NetDevs = map[string]*NetDevs{}
+	nodeconf.NetDevs = make(map[string]*NetDevs)
 	return nodeconf
+}
+
+/*
+Create an empty node NodeInfo
+*/
+func NewInfo() (nodeInfo NodeInfo) {
+	nodeInfo.Ipmi = new(IpmiEntry)
+	nodeInfo.Kernel = new(KernelEntry)
+	nodeInfo.NetDevs = make(map[string]*NetDevEntry)
+	return nodeInfo
+}
+
+/*
+Get a entry by its name
+*/
+func GetByName(node interface{}, name string) (string, error) {
+	valEntry := reflect.ValueOf(node)
+	entryField := valEntry.Elem().FieldByName(name)
+	if entryField == (reflect.Value{}) {
+		return "", fmt.Errorf("couldn't find field with name: %s", name)
+	}
+	if entryField.Type() != reflect.TypeOf(Entry{}) {
+		return "", fmt.Errorf("field %s is not of type node.Entry", name)
+	}
+	myEntry := entryField.Interface().(Entry)
+	return myEntry.Get(), nil
 }
