@@ -13,6 +13,10 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
+	// run converters for different types
+	for _, c := range Converters {
+		c()
+	}
 	// remove the default network as the all network values are assigned
 	// to this network
 	if NetName != "default" {

@@ -15,7 +15,7 @@ var (
 		Use:   "set [OPTIONS] [PROFILE ...]",
 		Short: "Configure node profile properties",
 		Long: "This command sets configuration properties for the node PROFILE(s).\n\n" +
-			"Note: use the string 'UNSET' to remove a configuration",
+			"Note: use the string 'UNSET'/'0.0.0.0' to remove a configuration",
 		Args: cobra.MinimumNArgs(0),
 		RunE: CobraRunE,
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -38,11 +38,12 @@ var (
 	SetForce     bool
 	NetName      string
 	ProfileConf  node.NodeConf
+	Converters   []func()
 )
 
 func init() {
 	ProfileConf = node.NewConf()
-	ProfileConf.CreateFlags(baseCmd,
+	Converters = ProfileConf.CreateFlags(baseCmd,
 		[]string{"ipaddr", "ipaddr6", "ipmiaddr", "profile"})
 	baseCmd.PersistentFlags().StringVar(&NetName, "netname", "default", "Set network name for network options")
 	baseCmd.PersistentFlags().StringVarP(&SetNetDevDel, "netdel", "D", "", "Delete the node's network device")

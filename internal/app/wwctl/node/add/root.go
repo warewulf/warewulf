@@ -14,6 +14,7 @@ import (
 type variables struct {
 	netName  string
 	nodeConf node.NodeConf
+	converters []func()
 }
 
 // Returns the newly created command
@@ -28,9 +29,8 @@ func GetCommand() *cobra.Command {
 		RunE:                  CobraRunE(&vars),
 		Args:                  cobra.MinimumNArgs(1),
 	}
-	vars.nodeConf.CreateFlags(baseCmd, []string{"tagdel", "nettagdel", "ipmitagdel"})
+	vars.converters = vars.nodeConf.CreateFlags(baseCmd, []string{"tagdel", "nettagdel", "ipmitagdel"})
 	baseCmd.PersistentFlags().StringVar(&vars.netName, "netname", "", "Set network name for network options")
-
 	// register the command line completions
 	if err := baseCmd.RegisterFlagCompletionFunc("container", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		list, _ := container.ListSources()

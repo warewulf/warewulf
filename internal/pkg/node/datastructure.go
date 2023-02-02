@@ -44,7 +44,7 @@ type NodeConf struct {
 	Init           string              `yaml:"init,omitempty" lopt:"init" sopt:"i" comment:"Define the init process to boot the container"`
 	Root           string              `yaml:"root,omitempty" lopt:"root" comment:"Define the rootfs" `
 	AssetKey       string              `yaml:"asset key,omitempty" lopt:"asset" comment:"Set the node's Asset tag (key)"`
-	Discoverable   string              `yaml:"discoverable,omitempty" lopt:"discoverable" comment:"Make discoverable in given network (yes/no)"`
+	Discoverable   string              `yaml:"discoverable,omitempty" lopt:"discoverable" sopt:"e" comment:"Make discoverable in given network (true/false)" type:"bool"`
 	Profiles       []string            `yaml:"profiles,omitempty" lopt:"profile" sopt:"P" comment:"Set the node's profile members (comma separated)"`
 	NetDevs        map[string]*NetDevs `yaml:"network devices,omitempty"`
 	Tags           map[string]string   `yaml:"tags,omitempty" lopt:"tagadd" comment:"base key"`
@@ -56,12 +56,12 @@ type NodeConf struct {
 type IpmiConf struct {
 	UserName  string            `yaml:"username,omitempty" lopt:"ipmiuser" comment:"Set the IPMI username"`
 	Password  string            `yaml:"password,omitempty" lopt:"ipmipass" comment:"Set the IPMI password"`
-	Ipaddr    string            `yaml:"ipaddr,omitempty" lopt:"ipmiaddr" comment:"Set the IPMI IP address"`
-	Netmask   string            `yaml:"netmask,omitempty" lopt:"ipminetmask" comment:"Set the IPMI netmask"`
+	Ipaddr    string            `yaml:"ipaddr,omitempty" lopt:"ipmiaddr" comment:"Set the IPMI IP address" type:"IP"`
+	Netmask   string            `yaml:"netmask,omitempty" lopt:"ipminetmask" comment:"Set the IPMI netmask" type:"IP"`
 	Port      string            `yaml:"port,omitempty" lopt:"ipmiport" comment:"Set the IPMI port"`
-	Gateway   string            `yaml:"gateway,omitempty" lopt:"ipmigateway" comment:"Set the IPMI gateway"`
+	Gateway   string            `yaml:"gateway,omitempty" lopt:"ipmigateway" comment:"Set the IPMI gateway" type:"IP"`
 	Interface string            `yaml:"interface,omitempty" lopt:"ipmiinterface" comment:"Set the node's IPMI interface (defaults: 'lan')"`
-	Write     string            `yaml:"write,omitempty" lopt:"ipmiwrite" comment:"Enable the write of impi configuration (yes/no)"`
+	Write     string            `yaml:"write,omitempty" lopt:"ipmiwrite" comment:"Enable the write of impi configuration (true/false)" type:"bool"`
 	Tags      map[string]string `yaml:"tags,omitempty" lopt:"ipmitagadd" comment:"add ipmitags"`
 	TagsDel   []string          `yaml:"tagsdel,omitempty" lopt:"ipmitagdel" comment:"remove ipmitags"` // should not go to disk only to wire
 }
@@ -73,16 +73,18 @@ type KernelConf struct {
 
 type NetDevs struct {
 	Type    string            `yaml:"type,omitempty" lopt:"type" sopt:"T" comment:"Set device type of given network"`
-	OnBoot  string            `yaml:"onboot,omitempty" lopt:"onboot" comment:"Enable/disable network device (yes/no)"`
+	OnBoot  string            `yaml:"onboot,omitempty" lopt:"onboot" comment:"Enable/disable network device (true/false)" type:"bool"`
 	Device  string            `yaml:"device,omitempty" lopt:"netdev" sopt:"N" comment:"Set the device for given network"`
 	Hwaddr  string            `yaml:"hwaddr,omitempty" lopt:"hwaddr" sopt:"H" comment:"Set the device's HW address for given network"`
-	Ipaddr  string            `yaml:"ipaddr,omitempty" comment:"IPv4 address in given network" sopt:"I" lopt:"ipaddr"`
+	Ipaddr  string            `yaml:"ipaddr,omitempty" comment:"IPv4 address in given network" sopt:"I" lopt:"ipaddr" type:"IP"`
 	IpCIDR  string            `yaml:"ipcidr,omitempty"`
-	Ipaddr6 string            `yaml:"ip6addr,omitempty" lopt:"ipaddr6" comment:"IPv6 address"`
+	Ipaddr6 string            `yaml:"ip6addr,omitempty" lopt:"ipaddr6" comment:"IPv6 address" type:"IP"`
 	Prefix  string            `yaml:"prefix,omitempty"`
-	Netmask string            `yaml:"netmask,omitempty" lopt:"netmask" sopt:"M" comment:"Set the networks netmask"`
-	Gateway string            `yaml:"gateway,omitempty" lopt:"gateway" sopt:"G" comment:"Set the node's network device gateway"`
+	Netmask string            `yaml:"netmask,omitempty" lopt:"netmask" sopt:"M" comment:"Set the networks netmask" type:"IP"`
+	Gateway string            `yaml:"gateway,omitempty" lopt:"gateway" sopt:"G" comment:"Set the node's network device gateway" type:"IP"`
 	MTU     string            `yaml:"mtu,omitempty" lopt:"mtu" comment:"Set the mtu"`
+	Primary string            `yaml:"primary,omitempty" lopt:"primary" comment:"Enable/disable network device as primary (true/false)" type:"bool"`
+	Default string            `yaml:"default,omitempty"` /* backward compatibility */
 	Tags    map[string]string `yaml:"tags,omitempty" lopt:"nettagadd" comment:"network tags"`
 	TagsDel []string          `yaml:"tagsdel,omitempty" lopt:"nettagdel" comment:"delete network tags"` // should not go to disk only to wire
 }

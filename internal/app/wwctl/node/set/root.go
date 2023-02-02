@@ -15,7 +15,7 @@ var (
 		DisableFlagsInUseLine: true,
 		Use:                   "set [OPTIONS] PATTERN [PATTERN ...]",
 		Short:                 "Configure node properties",
-		Long:                  "This command sets configuration properties for nodes matching PATTERN.\n\nNote: use the string 'UNSET' to remove a configuration",
+		Long:                  "This command sets configuration properties for nodes matching PATTERN.\n\nNote: use the string 'UNSET'/'0.0.0.0' to remove a configuration",
 		Args:                  cobra.MinimumNArgs(0),
 		RunE:                  CobraRunE,
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -38,11 +38,12 @@ var (
 	SetYes       bool
 	SetForce     bool
 	NodeConf     node.NodeConf
+	Converters   []func()
 )
 
 func init() {
 	NodeConf = node.NewConf()
-	NodeConf.CreateFlags(baseCmd, []string{})
+	Converters = NodeConf.CreateFlags(baseCmd, []string{})
 	baseCmd.PersistentFlags().StringVarP(&SetNetDevDel, "netdel", "D", "", "Delete the node's network device")
 	baseCmd.PersistentFlags().StringVar(&NetName, "netname", "default", "Set network name for network options")
 	baseCmd.PersistentFlags().BoolVarP(&SetNodeAll, "all", "a", false, "Set all nodes")

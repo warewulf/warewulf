@@ -10,6 +10,10 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
+func GetUnsetVerbs() []string {
+	return []string{"UNSET", "DELETE", "UNDEF", "undef", "--", "nil", "0.0.0.0"}
+}
+
 /**********
  *
  * Filters
@@ -77,7 +81,7 @@ func (ent *Entry) Set(val string) {
 		return
 	}
 
-	if val == "UNDEF" || val == "DELETE" || val == "UNSET" || val == "--" || val == "nil" {
+	if util.InSlice(GetUnsetVerbs(), val) {
 		wwlog.Debug("Removing value for %v", *ent)
 		ent.value = []string{""}
 	} else {
@@ -102,7 +106,7 @@ func (ent *Entry) SetSlice(val []string) {
 	} else if len(val) == 1 && val[0] == "" { // check also for an "empty" slice
 		return
 	}
-	if val[0] == "UNDEF" || val[0] == "DELETE" || val[0] == "UNSET" || val[0] == "--" {
+	if util.InSlice(GetUnsetVerbs(), val[0]) {
 		ent.value = []string{}
 	} else {
 		ent.value = val
