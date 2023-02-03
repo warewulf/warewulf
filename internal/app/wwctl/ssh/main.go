@@ -21,13 +21,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
+		wwlog.Error("Could not open node configuration: %s", err)
 		os.Exit(1)
 	}
 
 	nodes, err := nodeDB.FindAllNodes()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not get node list: %s\n", err)
+		wwlog.Error("Could not get node list: %s", err)
 		os.Exit(1)
 	}
 
@@ -38,23 +38,27 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		cmd.Usage()
 		os.Exit(1)
 	}
-
 	for _, node := range nodes {
-
-		if _, ok := node.NetDevs["default"]; !ok {
-			fmt.Fprintf(os.Stderr, "%s: Default network device doesn't exist\n", node.Id.Get())
+		var primaryNet string
+		for netName := range node.NetDevs {
+			if node.NetDevs[netName].Primary.GetB() {
+				primaryNet = netName
+				break
+			}
+		}
+		if primaryNet == "" {
+			wwlog.Error("%s: Primary network device doesn't exist\n", node.Id.Get())
 			continue
 		}
-
-		if node.NetDevs["default"].Ipaddr.Get() == "" {
-			fmt.Fprintf(os.Stderr, "%s: Default network IP address not configured\n", node.Id.Get())
+		if node.NetDevs[primaryNet].Ipaddr.Get() == "" {
+			wwlog.Error("%s: Primary network IP address not configured\n", node.Id.Get())
 			continue
 		}
 
 		nodename := node.Id.Print()
 		var command []string
 
-		command = append(command, node.NetDevs["default"].Ipaddr.Get())
+		command = append(command, node.NetDevs[primaryNet].Ipaddr.Get())
 		command = append(command, args[1:]...)
 
 		batchpool.Submit(func() {
@@ -63,7 +67,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				fmt.Printf("%s: %s %s\n", nodename, SshPath, strings.Join(command, " "))
 			} else {
 
-				wwlog.Printf(wwlog.DEBUG, "Sending command to node '%s': %s\n", nodename, command)
+				wwlog.Debug("Sending command to node '%s': %s", nodename, command)
 				var stdout, stderr bytes.Buffer
 				cmd := exec.Command(SshPath, command...)
 				cmd.Stdin = os.Stdin

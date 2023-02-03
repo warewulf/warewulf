@@ -58,7 +58,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	pid, err := pidfile.Write(PIDFile)
 	if err != nil && pid == -1 {
-		wwlog.Printf(wwlog.WARN, "%v. starting new wwclient", err)
+		wwlog.Warn("%v. starting new wwclient", err)
 	} else if err != nil && pid > 0 {
 		return errors.New("found pidfile " + PIDFile + " not starting")
 	}
@@ -66,7 +66,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if os.Args[0] == path.Join(buildconfig.WWCLIENTDIR(), "wwclient") {
 		err := os.Chdir("/")
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "failed to change dir: %s", err)
+			wwlog.Error("failed to change dir: %s", err)
 			_ = os.Remove(PIDFile)
 			os.Exit(1)
 		}
@@ -78,14 +78,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fmt.Printf("For full functionality call with: %s\n", path.Join(buildconfig.WWCLIENTDIR(), "wwclient"))
 		err := os.MkdirAll("/warewulf/wwclient-test", 0755)
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "failed to create dir: %s", err)
+			wwlog.Error("failed to create dir: %s", err)
 			_ = os.Remove(PIDFile)
 			os.Exit(1)
 		}
 
 		err = os.Chdir("/warewulf/wwclient-test")
 		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "failed to change dir: %s", err)
+			wwlog.Error("failed to change dir: %s", err)
 			_ = os.Remove(PIDFile)
 			os.Exit(1)
 		}
@@ -95,7 +95,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if conf.Warewulf.Secure {
 		// Setup local port to something privileged (<1024)
 		localTCPAddr.Port = 987
-		wwlog.Printf(wwlog.INFO, "Running from trusted port\n")
+		wwlog.Info("Running from trusted port")
 	}
 
 	Webclient = &http.Client{
@@ -114,7 +114,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 	smbiosDump, err := smbios.New()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not get SMBIOS info: %s\n", err)
+		wwlog.Error("Could not get SMBIOS info: %s", err)
 		os.Exit(1)
 	}
 	sysinfoDump := smbiosDump.SystemInformation()
@@ -124,13 +124,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	cmdline, err := ioutil.ReadFile("/proc/cmdline")
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not read from /proc/cmdline: %s\n", err)
+		wwlog.Error("Could not read from /proc/cmdline: %s", err)
 		os.Exit(1)
 	}
 
 	wwid_tmp := strings.Split(string(cmdline), "wwid=")
 	if len(wwid_tmp) < 2 {
-		wwlog.Printf(wwlog.ERROR, "'wwid' is not defined in /proc/cmdline\n")
+		wwlog.Error("'wwid' is not defined in /proc/cmdline")
 		os.Exit(1)
 	}
 
@@ -153,7 +153,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				stopTimer.Stop()
 				stopTimer.Reset(0)
 			case syscall.SIGTERM, syscall.SIGINT:
-				wwlog.Printf(wwlog.INFO, "termination wwclient!, %v", sig)
+				wwlog.Info("termination wwclient!, %v", sig)
 				cleanUp()
 				os.Exit(0)
 			}
@@ -179,7 +179,7 @@ func updateSystem(ipaddr string, port int, wwid string, tag string, localUUID uu
 	for {
 		var err error
 		getString := fmt.Sprintf("http://%s:%d/provision/%s?assetkey=%s&uuid=%s&stage=runtime&compress=gz", ipaddr, port, wwid, tag, localUUID)
-		wwlog.Printf(wwlog.DEBUG, "Making request: %s\n", getString)
+		wwlog.Debug("Making request: %s", getString)
 		resp, err = Webclient.Get(getString)
 		if err == nil {
 			break
@@ -211,6 +211,6 @@ func updateSystem(ipaddr string, port int, wwid string, tag string, localUUID uu
 func cleanUp() {
 	err := pidfile.Remove(PIDFile)
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "could not remove pidfile: %s\n", err)
+		wwlog.Error("could not remove pidfile: %s", err)
 	}
 }

@@ -2,9 +2,11 @@ package node
 
 import (
 	"fmt"
+	"reflect"
 	"regexp"
 	"strings"
 
+	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
@@ -13,6 +15,7 @@ import (
  * Filters
  *
  *********/
+
 /*
 Filter a given slice of NodeInfo against a given
 regular expression
@@ -24,8 +27,7 @@ func FilterByName(set []NodeInfo, searchList []string) []NodeInfo {
 	if len(searchList) > 0 {
 		for _, search := range searchList {
 			for _, entry := range set {
-				b, _ := regexp.MatchString("^"+search+"$", entry.Id.Get())
-				if b {
+				if match, _ := regexp.MatchString("^"+search+"$", entry.Id.Get()); match {
 					unique[entry.Id.Get()] = entry
 				}
 			}
@@ -40,6 +42,24 @@ func FilterByName(set []NodeInfo, searchList []string) []NodeInfo {
 	return ret
 }
 
+/*
+Filter a given map of NodeConf against given regular expression.
+*/
+func FilterMapByName(inputMap map[string]*NodeConf, searchList []string) (retMap map[string]*NodeConf) {
+	retMap = map[string]*NodeConf{}
+	if len(searchList) > 0 {
+		for _, search := range searchList {
+			for name, nConf := range inputMap {
+				if match, _ := regexp.MatchString("^"+search+"$", name); match {
+					retMap[name] = nConf
+				}
+			}
+
+		}
+	}
+	return retMap
+}
+
 /**********
  *
  * Sets
@@ -47,10 +67,10 @@ func FilterByName(set []NodeInfo, searchList []string) []NodeInfo {
  *********/
 
 /*
- Set value. If argument is 'UNDEF', 'DELETE',
- 'UNSET" or '--' the value is removed.
- N.B. the '--' might never ever happen as '--'
- is parsed out by cobra
+Set value. If argument is 'UNDEF', 'DELETE',
+'UNSET" or '--' the value is removed.
+N.B. the '--' might never ever happen as '--'
+is parsed out by cobra
 */
 func (ent *Entry) Set(val string) {
 	if val == "" {
@@ -58,7 +78,7 @@ func (ent *Entry) Set(val string) {
 	}
 
 	if val == "UNDEF" || val == "DELETE" || val == "UNSET" || val == "--" || val == "nil" {
-		wwlog.Debug("Removing value for %v\n", *ent)
+		wwlog.Debug("Removing value for %v", *ent)
 		ent.value = []string{""}
 	} else {
 		ent.value = []string{val}
@@ -78,6 +98,8 @@ func (ent *Entry) SetB(val bool) {
 
 func (ent *Entry) SetSlice(val []string) {
 	if len(val) == 0 {
+		return
+	} else if len(val) == 1 && val[0] == "" { // check also for an "empty" slice
 		return
 	}
 	if val[0] == "UNDEF" || val[0] == "DELETE" || val[0] == "UNSET" || val[0] == "--" {
@@ -144,6 +166,13 @@ func (ent *Entry) SetDefaultSlice(val []string) {
 
 }
 
+/*
+Remove a element from a slice
+*/
+func (ent *Entry) SliceRemoveElement(val string) {
+	util.SliceRemoveElement(ent.value, val)
+}
+
 /**********
 *
 * Gets
@@ -172,13 +201,20 @@ func (ent *Entry) Get() string {
 Get the bool value of an entry.
 */
 func (ent *Entry) GetB() bool {
-	if len(ent.value) == 0 || ent.value[0] == "false" || ent.value[0] == "no" {
-		if len(ent.altvalue) == 0 || ent.altvalue[0] == "false" || ent.altvalue[0] == "no" {
-			return false
-		}
-		return false
+	if len(ent.value) > 0 {
+		return !(strings.ToLower(ent.value[0]) == "false" ||
+			strings.ToLower(ent.value[0]) == "no" ||
+			ent.value[0] == "0")
+	} else if len(ent.altvalue) > 0 {
+		return !(strings.ToLower(ent.altvalue[0]) == "false" ||
+			strings.ToLower(ent.altvalue[0]) == "no" ||
+			ent.altvalue[0] == "0")
+	} else {
+		return !(len(ent.def) == 0 ||
+			strings.ToLower(ent.def[0]) == "false" ||
+			strings.ToLower(ent.def[0]) == "no" ||
+			ent.def[0] == "0")
 	}
-	return true
 }
 
 /*
@@ -264,7 +300,10 @@ func (ent *Entry) PrintComb() string {
 same as GetB()
 */
 func (ent *Entry) PrintB() string {
-	return fmt.Sprintf("%t", ent.GetB())
+	if len(ent.value) != 0 || len(ent.altvalue) != 0 {
+		return fmt.Sprintf("%t", ent.GetB())
+	}
+	return fmt.Sprintf("(%t)", ent.GetB())
 }
 
 /*
@@ -295,4 +334,40 @@ func (ent *Entry) Defined() bool {
 		return true
 	}
 	return false
+}
+
+/*
+Create an empty node NodeConf
+*/
+func NewConf() (nodeconf NodeConf) {
+	nodeconf.Ipmi = new(IpmiConf)
+	nodeconf.Kernel = new(KernelConf)
+	nodeconf.NetDevs = make(map[string]*NetDevs)
+	return nodeconf
+}
+
+/*
+Create an empty node NodeInfo
+*/
+func NewInfo() (nodeInfo NodeInfo) {
+	nodeInfo.Ipmi = new(IpmiEntry)
+	nodeInfo.Kernel = new(KernelEntry)
+	nodeInfo.NetDevs = make(map[string]*NetDevEntry)
+	return nodeInfo
+}
+
+/*
+Get a entry by its name
+*/
+func GetByName(node interface{}, name string) (string, error) {
+	valEntry := reflect.ValueOf(node)
+	entryField := valEntry.Elem().FieldByName(name)
+	if entryField == (reflect.Value{}) {
+		return "", fmt.Errorf("couldn't find field with name: %s", name)
+	}
+	if entryField.Type() != reflect.TypeOf(Entry{}) {
+		return "", fmt.Errorf("field %s is not of type node.Entry", name)
+	}
+	myEntry := entryField.Interface().(Entry)
+	return myEntry.Get(), nil
 }

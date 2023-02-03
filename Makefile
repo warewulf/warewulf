@@ -12,7 +12,7 @@ VARLIST := OS
 # Project Information
 VARLIST += WAREWULF VERSION RELEASE
 WAREWULF ?= warewulf
-VERSION ?= 4.3.0
+VERSION ?= 4.4.0
 GIT_TAG := $(shell test -e .git && git log -1 --format="%h")
 
 ifdef GIT_TAG
@@ -95,8 +95,10 @@ export GOPROXY
 # built tags needed for wwbuild binary
 WW_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
-all: config vendor wwctl wwclient bash_completion.d man_pages config_defaults
+# Default target
+all: config vendor wwctl wwclient bash_completion.d man_pages config_defaults print_defaults wwapid wwapic wwapird
 
+# Validate source and build all packages
 build: lint test-it vet all
 
 # set the go tools into the tools bin.
@@ -113,15 +115,17 @@ $(GOLANGCI_LINT):
 setup: vendor $(TOOLS_DIR) setup_tools
 
 vendor:
-	go mod tidy -v
-	go mod vendor
+ifndef OFFLINE_BUILD
+	  go mod tidy -v
+	  go mod vendor
+endif
 
 $(TOOLS_DIR):
 	@mkdir -p $@
 
 # Pre-build steps for source, such as "go generate"
 config:
-    # Store configuration for subsequent runs
+# Store configuration for subsequent runs
 	printf " $(foreach V,$(VARLIST),$V := $(strip $($V))\n)" > Defaults.mk
     # Global variable search and replace for all *.in files
 	find . -type f -name "*.in" -not -path "./vendor/*" \
@@ -164,12 +168,17 @@ files: all
 	install -d -m 0755 $(DESTDIR)$(WWCONFIGDIR)/ipxe
 	install -d -m 0755 $(DESTDIR)$(BASHCOMPDIR)
 	install -d -m 0755 $(DESTDIR)$(MANDIR)/man1
+	install -d -m 0755 $(DESTDIR)$(MANDIR)/man5
 	install -d -m 0755 $(DESTDIR)$(WWDOCDIR)
 	install -d -m 0755 $(DESTDIR)$(FIREWALLDDIR)
 	install -d -m 0755 $(DESTDIR)$(SYSTEMDDIR)
 	install -d -m 0755 $(DESTDIR)$(WWDATADIR)/ipxe
 	test -f $(DESTDIR)$(WWCONFIGDIR)/warewulf.conf || install -m 644 etc/warewulf.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(WWCONFIGDIR)/nodes.conf || install -m 644 etc/nodes.conf $(DESTDIR)$(WWCONFIGDIR)
+	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapic.conf || install -m 644 etc/wwapic.conf $(DESTDIR)$(WWCONFIGDIR)
+	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapid.conf || install -m 644 etc/wwapid.conf $(DESTDIR)$(WWCONFIGDIR)
+	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapird.conf || install -m 644 etc/wwapird.conf $(DESTDIR)$(WWCONFIGDIR)
+	test -f $(DESTDIR)$(WWCONFIGDIR)/defaults.conf || ./print_defaults > $(DESTDIR)$(WWCONFIGDIR)/defaults.conf
 	cp -r etc/examples $(DESTDIR)$(WWCONFIGDIR)/
 	cp -r etc/ipxe $(DESTDIR)$(WWCONFIGDIR)/
 	cp -r overlays/* $(DESTDIR)$(WWOVERLAYDIR)/
@@ -177,14 +186,20 @@ files: all
 	find $(DESTDIR)$(WWOVERLAYDIR) -type f -name "*.in" -exec rm -f {} \;
 	chmod 755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/$(WWCLIENTDIR)/wwinit
 	chmod 600 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/etc/ssh/ssh*
+	chmod 600 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/etc/NetworkManager/system-connections/ww4-managed.ww
 	chmod 644 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/etc/ssh/ssh*.pub.ww
 	chmod 750 $(DESTDIR)$(WWOVERLAYDIR)/host
 	install -m 0755 wwctl $(DESTDIR)$(BINDIR)
+	install -m 0755 wwapic $(DESTDIR)$(BINDIR)
+	install -m 0755 wwapid $(DESTDIR)$(BINDIR)
+	install -m 0755 wwapird $(DESTDIR)$(BINDIR)
 	install -m 0644 include/firewalld/warewulf.xml $(DESTDIR)$(FIREWALLDDIR)
 	install -m 0644 include/systemd/warewulfd.service $(DESTDIR)$(SYSTEMDDIR)
 	install -m 0644 LICENSE.md $(DESTDIR)$(WWDOCDIR)
 	cp bash_completion.d/warewulf $(DESTDIR)$(BASHCOMPDIR)
-	cp man_pages/* $(DESTDIR)$(MANDIR)/man1/
+	cp man_pages/*.1* $(DESTDIR)$(MANDIR)/man1/
+	cp man_pages/*.5* $(DESTDIR)$(MANDIR)/man5/
+	install -m 0644 staticfiles/README-ipxe.md $(DESTDIR)$(WWDATADIR)/ipxe
 	install -m 0644 staticfiles/arm64.efi $(DESTDIR)$(WWDATADIR)/ipxe
 	install -m 0644 staticfiles/x86_64.efi $(DESTDIR)$(WWDATADIR)/ipxe
 	install -m 0644 staticfiles/x86_64.kpxe $(DESTDIR)$(WWDATADIR)/ipxe
@@ -221,12 +236,16 @@ man_page:
 man_pages: man_page
 	install -d man_pages
 	./man_page ./man_pages
-	cd man_pages; for i in wwctl*1; do echo "Compressing manpage: $$i"; gzip --force $$i; done
+	cp docs/man/man5/*.5 ./man_pages/
+	cd man_pages; for i in wwctl*1 *.5; do echo "Compressing manpage: $$i"; gzip --force $$i; done
 
 config_defaults: vendor cmd/config_defaults/config_defaults.go
 	cd cmd/config_defaults && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'\
 	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'"\
 	 -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o ../../config_defaults
+
+print_defaults: vendor cmd/print_defaults/print_defaults.go
+	cd cmd/print_defaults && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'" -o ../../print_defaults
 
 update_configuration: vendor cmd/update_configuration/update_configuration.go
 	cd cmd/update_configuration && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'\
@@ -240,8 +259,37 @@ dist: vendor config
 	rm -rf .dist/$(WAREWULF)-$(VERSION)
 	mkdir -p .dist/$(WAREWULF)-$(VERSION)
 	cp -rap * .dist/$(WAREWULF)-$(VERSION)/
+	find .dist/$(WAREWULF)-$(VERSION)/ -type f -name '*~' -delete
 	cd .dist; tar -czf ../$(WAREWULF)-$(VERSION).tar.gz $(WAREWULF)-$(VERSION)
 	rm -rf .dist
+
+## wwapi generate code from protobuf. Requires protoc and protoc-grpc-gen-gateway to generate code.
+## To setup latest protoc:
+##    Download the protobuf-all-[VERSION].tar.gz from https://github.com/protocolbuffers/protobuf/releases
+##    Extract the contents and change in the directory
+##    ./configure
+##    make
+##    make check
+##    sudo make install
+##    sudo ldconfig # refresh shared library cache.
+## To setup protoc-gen-grpc-gateway, see https://github.com/grpc-ecosystem/grpc-gateway
+proto:
+	rm -rf internal/pkg/api/routes/wwapiv1/
+	protoc -I internal/pkg/api/routes/v1 -I=. \
+		--grpc-gateway_out=. \
+		--grpc-gateway_opt logtostderr=true \
+		--go_out=. \
+		--go-grpc_out=. \
+		routes.proto
+
+wwapid: ## Build the grpc api server.
+	go build -o ./wwapid internal/app/api/wwapid/wwapid.go
+
+wwapic: ## Build the sample wwapi client.
+	go build -o ./wwapic  internal/app/api/wwapic/wwapic.go
+
+wwapird: ## Build the rest api server (revese proxy to the grpc api server).
+	go build -o ./wwapird internal/app/api/wwapird/wwapird.go
 
 clean:
 	rm -f wwclient
@@ -259,6 +307,8 @@ clean:
 	rm -rf $(TOOLS_DIR)
 	rm -f config_defaults
 	rm -f update_configuration
+	rm -f print_defaults
+	rm -f etc/wwapi{c,d,rd}.conf
 
 install: files install_wwclient
 

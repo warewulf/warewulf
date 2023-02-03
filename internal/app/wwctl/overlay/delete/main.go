@@ -25,12 +25,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	overlayPath = overlay.OverlaySourceDir(overlayName)
 
 	if overlayPath == "" {
-		wwlog.Printf(wwlog.ERROR, "Overlay name did not resolve: '%s'\n", overlayName)
+		wwlog.Error("Overlay name did not resolve: '%s'", overlayName)
 		os.Exit(1)
 	}
 
 	if !util.IsDir(overlayPath) {
-		wwlog.Printf(wwlog.ERROR, "Overlay does not exist: %s\n", overlayName)
+		wwlog.Error("Overlay does not exist: %s", overlayName)
 		os.Exit(1)
 	}
 
@@ -55,22 +55,22 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		removePath := path.Join(overlayPath, fileName)
 
 		if !util.IsDir(removePath) && !util.IsFile(removePath) {
-			wwlog.Printf(wwlog.ERROR, "Path to remove doesn't exist in overlay: %s\n", removePath)
+			wwlog.Error("Path to remove doesn't exist in overlay: %s", removePath)
 			os.Exit(1)
 		}
 
 		if Force {
 			err := os.RemoveAll(removePath)
 			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "Failed deleting file from overlay: %s:%s\n", overlayName, overlayPath)
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				wwlog.Error("Failed deleting file from overlay: %s:%s", overlayName, overlayPath)
+				wwlog.Error("%s", err)
 				os.Exit(1)
 			}
 		} else {
 			err := os.Remove(removePath)
 			if err != nil {
-				wwlog.Printf(wwlog.ERROR, "Failed deleting overlay: %s:%s\n", overlayName, overlayPath)
-				wwlog.Printf(wwlog.ERROR, "%s\n", err)
+				wwlog.Error("Failed deleting overlay: %s:%s", overlayName, overlayPath)
+				wwlog.Error("%s", err)
 				os.Exit(1)
 			}
 		}
@@ -79,13 +79,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			// Cleanup any empty directories left behind...
 			i := path.Dir(removePath)
 			for i != overlayPath {
-				wwlog.Printf(wwlog.DEBUG, "Evaluating directory to remove: %s\n", i)
+				wwlog.Debug("Evaluating directory to remove: %s", i)
 				err := os.Remove(i)
 				if err != nil {
 					break
 				}
 
-				wwlog.Printf(wwlog.VERBOSE, "Removed empty directory: %s\n", i)
+				wwlog.Verbose("Removed empty directory: %s", i)
 				i = path.Dir(i)
 			}
 		}

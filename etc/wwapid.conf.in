@@ -1,0 +1,10 @@
+# Configuration for wwapird, the wwapi grpc server.
+api:
+  version: 1.0.0
+  prefix: v1
+  port: 9872
+tls:
+  enabled: true
+  cert: @SYSCONFDIR@/warewulf/keys/wwapid/server.pem
+  key: @SYSCONFDIR@/warewulf/keys/wwapid/server.key
+  cacert: @SYSCONFDIR@/warewulf/keys/wwapid/cacert.pem

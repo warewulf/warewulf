@@ -8,7 +8,7 @@ var (
 		Use:                   "import [OPTIONS] SOURCE [NAME]",
 		Short:                 "Import a container into Warewulf",
 		Long: `This command will pull and import a container into Warewulf from SOURCE,
-optionally renaming it to NAME. The SOURCE must be in a supported URI format. Formats 
+optionally renaming it to NAME. The SOURCE must be in a supported URI format. Formats
 are:
  * docker://registry.example.org/example:latest
  * docker-daemon://example:latest
@@ -32,7 +32,7 @@ func init() {
 	baseCmd.PersistentFlags().BoolVarP(&SetUpdate, "update", "u", false, "Update and overwrite an existing container")
 	baseCmd.PersistentFlags().BoolVarP(&SetBuild, "build", "b", false, "Build container when after pulling")
 	baseCmd.PersistentFlags().BoolVar(&SetDefault, "setdefault", false, "Set this container for the default profile")
-	baseCmd.PersistentFlags().BoolVar(&SyncUser, "syncuser", false, "Synchronize uis/gods from host to container")
+	baseCmd.PersistentFlags().BoolVar(&SyncUser, "syncuser", false, "Synchronize UIDs/GIDs from host to container")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

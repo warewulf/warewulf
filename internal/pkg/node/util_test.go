@@ -6,13 +6,14 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func NewTestNode() (nodeYaml, error) {
+func NewTestNode() (NodeYaml, error) {
 	var data = `
 nodeprofiles:
   default:
     comment: This profile is automatically included for each node
 nodes:
   test_node:
+    comment: Node Comment
     profiles:
     - default
     network devices:
@@ -39,7 +40,7 @@ nodes:
         default: false
         ipaddr: fd1a:2b3c:4d5e:06f0:1234:5678:90ab:cdef
 `
-	var ret nodeYaml
+	var ret NodeYaml
 	err := yaml.Unmarshal([]byte(data), &ret)
 	if err != nil {
 		return ret, err
@@ -59,7 +60,7 @@ func Test_nodeYaml_FindByHwaddr(t *testing.T) {
 	tests := []struct {
 		name string
 		//fields  fields
-		config  nodeYaml
+		config  NodeYaml
 		args    args
 		want    string
 		wantErr bool
@@ -95,7 +96,7 @@ func Test_nodeYaml_FindByIpaddr(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		config  nodeYaml
+		config  NodeYaml
 		args    args
 		want    string
 		wantErr bool

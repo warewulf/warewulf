@@ -38,7 +38,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if util.IsDir(path) {
 			files := util.FindFiles(path)
 
-			wwlog.Printf(wwlog.DEBUG, "Iterating overlay path: %s\n", path)
+			wwlog.Debug("Iterating overlay path: %s", path)
 			if ListContents {
 				var fileCount int
 				for file := range files {
@@ -68,7 +68,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 		} else {
-			wwlog.Printf(wwlog.ERROR, "system/%s (path not found:%s)\n", overlays[o], path)
+			wwlog.Error("system/%s (path not found:%s)", overlays[o], path)
 		}
 	}
 

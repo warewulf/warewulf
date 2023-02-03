@@ -6,19 +6,16 @@ import (
 	"fmt"
 	"io/fs"
 	"io/ioutil"
-	"net"
 	"os"
 	"path"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
+	"syscall"
 	"text/template"
-	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 )
@@ -53,13 +50,13 @@ func BuildAllOverlays(nodes []node.NodeInfo) error {
 		wwlog.Info("Building system overlays for %s: [%s]", n.Id.Get(), strings.Join(sysOverlays, ", "))
 		err := BuildOverlay(n, sysOverlays)
 		if err != nil {
-			return errors.Wrapf(err, "could not build system overlays %v for nide %s", sysOverlays, n.Id.Get())
+			return errors.Wrapf(err, "could not build system overlays %v for node %s", sysOverlays, n.Id.Get())
 		}
 		runOverlays := n.RuntimeOverlay.GetSlice()
 		wwlog.Info("Building runtime overlays for %s: [%s]", n.Id.Get(), strings.Join(runOverlays, ", "))
 		err = BuildOverlay(n, runOverlays)
 		if err != nil {
-			return errors.Wrapf(err, "could not build runtime overlays %v for nide %s", runOverlays, n.Id.Get())
+			return errors.Wrapf(err, "could not build runtime overlays %v for node %s", runOverlays, n.Id.Get())
 		}
 
 	}
@@ -85,14 +82,11 @@ func BuildSpecificOverlays(nodes []node.NodeInfo, overlayNames []string) error {
 Build overlay for the host, so no argument needs to be given
 */
 func BuildHostOverlay() error {
-	var host node.NodeInfo
-	host.Kernel = new(node.KernelEntry)
-	host.Ipmi = new(node.IpmiEntry)
-	var idEntry node.Entry
+	host := node.NewInfo()
 	hostname, _ := os.Hostname()
+	host.Id.Set(hostname)
+
 	wwlog.Info("Building overlay for %s: host", hostname)
-	idEntry.Set(hostname)
-	host.Id = idEntry
 	hostdir := OverlaySourceDir("host")
 	stats, err := os.Stat(hostdir)
 	if err != nil {
@@ -199,106 +193,20 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 	if !util.IsDir(outputDir) {
 		return errors.Errorf("output must a be a directory: %s", outputDir)
 	}
-	controller, err := warewulfconf.New()
-	if err != nil {
-		wwlog.ErrorExc(err, "")
-		os.Exit(1)
-	}
-	nodeDB, err := node.New()
-	if err != nil {
-		wwlog.ErrorExc(err, "")
-		os.Exit(1)
-	}
-	allNodes, err := nodeDB.FindAllNodes()
-	if err != nil {
-		wwlog.ErrorExc(err, "")
-		os.Exit(1)
-	}
 
 	if !util.ValidString(strings.Join(overlayNames, ""), "^[a-zA-Z0-9-._:]+$") {
 		return errors.Errorf("overlay names contains illegal characters: %v", overlayNames)
 	}
+
+	// Temporarily set umask to 0000, so directories in the overlay retain permissions
+	defer syscall.Umask(syscall.Umask(0))
+
 	wwlog.Verbose("Processing node/overlay: %s/%s", nodeInfo.Id.Get(), strings.Join(overlayNames, "-"))
-	var tstruct TemplateStruct
-	tstruct.Kernel = new(node.KernelConf)
-	tstruct.Ipmi = new(node.IpmiConf)
-	tstruct.Id = nodeInfo.Id.Get()
-	tstruct.Hostname = nodeInfo.Id.Get()
-	tstruct.ClusterName = nodeInfo.ClusterName.Get()
-	tstruct.Container = nodeInfo.ContainerName.Get()
-	tstruct.Kernel.Version = nodeInfo.Kernel.Override.Get()
-	tstruct.Kernel.Override = nodeInfo.Kernel.Override.Get()
-	tstruct.Kernel.Args = nodeInfo.Kernel.Args.Get()
-	tstruct.Init = nodeInfo.Init.Get()
-	tstruct.Root = nodeInfo.Root.Get()
-	tstruct.Ipmi.Ipaddr = nodeInfo.Ipmi.Ipaddr.Get()
-	tstruct.Ipmi.Netmask = nodeInfo.Ipmi.Netmask.Get()
-	tstruct.Ipmi.Port = nodeInfo.Ipmi.Port.Get()
-	tstruct.Ipmi.Gateway = nodeInfo.Ipmi.Gateway.Get()
-	tstruct.Ipmi.UserName = nodeInfo.Ipmi.UserName.Get()
-	tstruct.Ipmi.Password = nodeInfo.Ipmi.Password.Get()
-	tstruct.Ipmi.Interface = nodeInfo.Ipmi.Interface.Get()
-	tstruct.Ipmi.Write = nodeInfo.Ipmi.Write.Get()
-	tstruct.RuntimeOverlay = nodeInfo.RuntimeOverlay.Print()
-	tstruct.SystemOverlay = nodeInfo.SystemOverlay.Print()
-	tstruct.NetDevs = make(map[string]*node.NetDevs)
-	tstruct.Keys = make(map[string]string)
-	tstruct.Tags = make(map[string]string)
-	for devname, netdev := range nodeInfo.NetDevs {
-		var nd node.NetDevs
-		tstruct.NetDevs[devname] = &nd
-		tstruct.NetDevs[devname].Device = netdev.Device.Get()
-		tstruct.NetDevs[devname].Hwaddr = netdev.Hwaddr.Get()
-		tstruct.NetDevs[devname].Ipaddr = netdev.Ipaddr.Get()
-		tstruct.NetDevs[devname].Netmask = netdev.Netmask.Get()
-		tstruct.NetDevs[devname].Gateway = netdev.Gateway.Get()
-		tstruct.NetDevs[devname].Type = netdev.Type.Get()
-		tstruct.NetDevs[devname].OnBoot = netdev.OnBoot.Get()
-		tstruct.NetDevs[devname].Primary = netdev.Primary.Get()
-		mask := net.IPMask(net.ParseIP(netdev.Netmask.Get()).To4())
-		ipaddr := net.ParseIP(netdev.Ipaddr.Get()).To4()
-		netaddr := net.IPNet{IP: ipaddr, Mask: mask}
-		netPrefix, _ := net.IPMask(net.ParseIP(netdev.Netmask.Get()).To4()).Size()
-		tstruct.NetDevs[devname].Prefix = strconv.Itoa(netPrefix)
-		tstruct.NetDevs[devname].IpCIDR = netaddr.String()
-		tstruct.NetDevs[devname].Ipaddr6 = netdev.Ipaddr6.Get()
-		tstruct.NetDevs[devname].Tags = make(map[string]string)
-		for key, value := range netdev.Tags {
-			tstruct.NetDevs[devname].Tags[key] = value.Get()
-		}
-	}
-	// Backwards compatibility for templates using "Keys"
-	for keyname, key := range nodeInfo.Tags {
-		tstruct.Keys[keyname] = key.Get()
-	}
-	for keyname, key := range nodeInfo.Tags {
-		tstruct.Tags[keyname] = key.Get()
-	}
-	tstruct.AllNodes = allNodes
-	tstruct.Nfs = *controller.Nfs
-	tstruct.Dhcp = *controller.Dhcp
-	tstruct.Warewulf = *controller.Warewulf
-	tstruct.Ipaddr = controller.Ipaddr
-	tstruct.Ipaddr6 = controller.Ipaddr6
-	tstruct.Netmask = controller.Netmask
-	tstruct.Network = controller.Network
-	netaddrStruct := net.IPNet{IP: net.ParseIP(controller.Network), Mask: net.IPMask(net.ParseIP(controller.Netmask))}
-	tstruct.NetworkCIDR = netaddrStruct.String()
-	if controller.Ipaddr6 != "" {
-		tstruct.Ipv6 = true
-	} else {
-		tstruct.Ipv6 = false
-	}
-	hostname, _ := os.Hostname()
-	tstruct.BuildHost = hostname
-	dt := time.Now()
-	tstruct.BuildTime = dt.Format("01-02-2006 15:04:05 MST")
-	tstruct.BuildTimeUnix = strconv.FormatInt(dt.Unix(), 10)
 	for _, overlayName := range overlayNames {
 		wwlog.Verbose("Building overlay %s for node %s in %s", overlayName, nodeInfo.Id.Get(), outputDir)
 		overlaySourceDir := OverlaySourceDir(overlayName)
 		wwlog.Debug("Starting to build overlay %s\nChanging directory to OverlayDir: %s", overlayName, overlaySourceDir)
-		err = os.Chdir(overlaySourceDir)
+		err := os.Chdir(overlaySourceDir)
 		if err != nil {
 			return errors.Wrap(err, "could not change directory to overlay dir")
 		}
@@ -330,48 +238,21 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 				wwlog.Debug("Created directory in overlay: %s", location)
 
 			} else if filepath.Ext(location) == ".ww" {
+				tstruct := InitStruct(nodeInfo)
 				tstruct.BuildSource = path.Join(overlaySourceDir, location)
 				wwlog.Verbose("Evaluating overlay template file: %s", location)
 				destFile := strings.TrimSuffix(location, ".ww")
-				backupFile := true
-				writeFile := true
-				tmpl, err := template.New(path.Base(location)).Option("missingkey=default").Funcs(template.FuncMap{
-					// TODO: Fix for missingkey=zero
-					"Include":      templateFileInclude,
-					"IncludeFrom":  templateContainerFileInclude,
-					"IncludeBlock": templateFileBlock,
-					"inc":          func(i int) int { return i + 1 },
-					"dec":          func(i int) int { return i - 1 },
-					"file":         func(str string) string { return fmt.Sprintf("{{ /* file \"%s\" */ }}", str) },
-					"abort": func() string {
-						wwlog.Debug("abort file called in %s", location)
-						writeFile = false
-						return ""
-					},
-					"nobackup": func() string {
-						wwlog.Debug("not backup for %s", location)
-						backupFile = false
-						return ""
-					},
-					"split": func(s string, d string) []string {
-						return strings.Split(s, d)
-					},
-					// }).ParseGlob(path.Join(OverlayDir, destFile+".ww*"))
-				}).ParseGlob(location)
+
+				buffer, backupFile, writeFile, err := RenderTemplateFile(location, tstruct)
 				if err != nil {
-					return errors.Wrap(err, "could not parse template "+location)
-				}
-				var buffer bytes.Buffer
-				err = tmpl.Execute(&buffer, tstruct)
-				if err != nil {
-					return errors.Wrap(err, "could not execute template")
+					return errors.Wrap(err, fmt.Sprintf("Failed to render template %s", location))
 				}
 				if writeFile {
 					destFileName := destFile
 					var fileBuffer bytes.Buffer
 					// search for magic file name comment
 					fileScanner := bufio.NewScanner(bytes.NewReader(buffer.Bytes()))
-					fileScanner.Split(scanLines)
+					fileScanner.Split(ScanLines)
 					reg := regexp.MustCompile(`.*{{\s*/\*\s*file\s*["'](.*)["']\s*\*/\s*}}.*`)
 					foundFileComment := false
 					for fileScanner.Scan() {
@@ -380,7 +261,7 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 						if len(filenameFromTemplate) != 0 {
 							wwlog.Debug("Found multifile comment, new filename %s", filenameFromTemplate[0][1])
 							if foundFileComment {
-								err = carefulWriteBuffer(path.Join(outputDir, destFileName),
+								err = CarefulWriteBuffer(path.Join(outputDir, destFileName),
 									fileBuffer, backupFile, info.Mode())
 								if err != nil {
 									return errors.Wrap(err, "could not write file from template")
@@ -397,7 +278,7 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 							_, _ = fileBuffer.WriteString(line)
 						}
 					}
-					err = carefulWriteBuffer(path.Join(outputDir, destFileName), fileBuffer, backupFile, info.Mode())
+					err = CarefulWriteBuffer(path.Join(outputDir, destFileName), fileBuffer, backupFile, info.Mode())
 					if err != nil {
 						return errors.Wrap(err, "could not write file from template")
 					}
@@ -420,7 +301,7 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 				if util.IsFile(path.Join(outputDir, location)) {
 					if !util.IsFile(path.Join(outputDir, location+".wwbackup")) {
 						wwlog.Debug("Target exists, creating backup file")
-						err = os.Rename(path.Join(outputDir, location), path.Join(outputDir, location+"wwbackup"))
+						err = os.Rename(path.Join(outputDir, location), path.Join(outputDir, location+".wwbackup"))
 					} else {
 						wwlog.Debug("%s exists, keeping the backup file", path.Join(outputDir, location+".wwbackup"))
 						err = os.Remove(path.Join(outputDir, location))
@@ -455,7 +336,7 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 /*
 Writes buffer to the destination file. If wwbackup is set a wwbackup will be created.
 */
-func carefulWriteBuffer(destFile string, buffer bytes.Buffer, backupFile bool, perm fs.FileMode) error {
+func CarefulWriteBuffer(destFile string, buffer bytes.Buffer, backupFile bool, perm fs.FileMode) error {
 	wwlog.Debug("Trying to careful write file (%d bytes): %s", buffer.Len(), destFile)
 	if backupFile {
 		if !util.IsFile(destFile+".wwbackup") && util.IsFile(destFile) {
@@ -475,8 +356,55 @@ func carefulWriteBuffer(destFile string, buffer bytes.Buffer, backupFile bool, p
 	return err
 }
 
+/*
+Parses the template with the given filename, variables must be in data. Returns the
+parsed template as bytes.Buffer, and the bool variables for backupFile and writeFile.
+If something goes wrong an error is returned.
+*/
+func RenderTemplateFile(fileName string, data TemplateStruct) (
+	buffer bytes.Buffer,
+	backupFile bool,
+	writeFile bool,
+	err error) {
+	backupFile = true
+	writeFile = true
+	tmpl, err := template.New(path.Base(fileName)).Option("missingkey=default").Funcs(template.FuncMap{
+		// TODO: Fix for missingkey=zero
+		"Include":      templateFileInclude,
+		"IncludeFrom":  templateContainerFileInclude,
+		"IncludeBlock": templateFileBlock,
+		"inc":          func(i int) int { return i + 1 },
+		"dec":          func(i int) int { return i - 1 },
+		"file":         func(str string) string { return fmt.Sprintf("{{ /* file \"%s\" */ }}", str) },
+		"abort": func() string {
+			wwlog.Debug("abort file called in %s", fileName)
+			writeFile = false
+			return ""
+		},
+		"nobackup": func() string {
+			wwlog.Debug("not backup for %s", fileName)
+			backupFile = false
+			return ""
+		},
+		"split": func(s string, d string) []string {
+			return strings.Split(s, d)
+		},
+		// }).ParseGlob(path.Join(OverlayDir, destFile+".ww*"))
+	}).ParseGlob(fileName)
+	if err != nil {
+		err = errors.Wrap(err, "could not parse template "+fileName)
+		return
+	}
+	err = tmpl.Execute(&buffer, data)
+	if err != nil {
+		err = errors.Wrap(err, "could not execute template")
+		return
+	}
+	return
+}
+
 // Simple version of ScanLines, but include the line break
-func scanLines(data []byte, atEOF bool) (advance int, token []byte, err error) {
+func ScanLines(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	if atEOF && len(data) == 0 {
 		return 0, nil, nil
 	}

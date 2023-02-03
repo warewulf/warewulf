@@ -1,6 +1,7 @@
 # project data
 /.idea
 /.tools
+/.vscode
 /vendor
 
 # binaries
@@ -12,6 +13,10 @@
 /man_page
 /config_defaults
 /update_configuration
+/wwapic
+/wwapid
+/wwapird
+/print_defaults
 
 # other created files
 /man_pages
@@ -25,4 +30,11 @@ _dist/
 config
 warewulf-*.tar.gz
 Defaults.mk
-
+/etc/wwapid.config
+/etc/wwapic.config
+/etc/wwapird.config
+/etc/wwapid.conf
+/etc/wwapic.conf
+/etc/wwapird.conf
+.dist/
+userdocs/_*

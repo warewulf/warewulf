@@ -260,33 +260,16 @@ func FindFilterFiles(
 	defer func() {
 		err = FirstError(err, os.Chdir(cwd))
 	}()
-
 	err = os.Chdir(path)
 	if err != nil {
 		return ofiles, errors.Wrapf(err, "Failed to change path: %s", path)
 	}
 
-	files := []string{}
-
-	for _, pattern := range include {
-
-		_files, err := filepath.Glob(pattern)
-		if err != nil {
-			return ofiles, errors.Wrapf(err, "Failed to apply pattern: %s", pattern)
-		}
-		wwlog.Debug("Including pattern: %s -> %d matches", pattern, len(_files))
-
-		files = append(files, _files...)
-	}
-
-
-	for i, pattern := range(ignore) {
-		if strings.HasPrefix(pattern, "./") {
-			ignore[i] = pattern[2:]
-		}
+	for i := range(ignore) {
+		ignore[i] = strings.TrimLeft(ignore[i], "/")
+		ignore[i] = strings.TrimPrefix(ignore[i], "./")
 		wwlog.Debug("Ignore pattern (%d): %s", i, ignore[i])
 	}
-
 
 	if ignore_xdev {
 		wwlog.Debug("Ignoring cross-device (xdev) files")
@@ -299,66 +282,72 @@ func FindFilterFiles(
 
 	dev := path_stat.Sys().(*syscall.Stat_t).Dev
 
-	for _, ifile := range files {
-		stat, err := os.Stat(ifile)
+
+	includeDirs := []string{}
+	ignoreDirs := []string{}
+	err = filepath.Walk(".", func(location string, info os.FileInfo, err error) error {
 		if err != nil {
-			return ofiles, err
+			return err
 		}
 
-		if stat.IsDir() {
-			// recursivly include from the matched directory
+		if location == "." {
+			return nil
+		}
 
-			num_init := len(ofiles)
-			err = filepath.Walk(ifile, func(location string, info os.FileInfo, err error) error {
-				var file string
+		var file string
+		if info.IsDir() {
+			file = location + "/"
+		} else {
+			file = location
+		}
 
-				if err != nil {
-					return err
-				}
+		if ignore_xdev && info.Sys().(*syscall.Stat_t).Dev != dev {
+			wwlog.Debug("Ignored (cross-device): %s", file)
+			return nil
+		}
 
-				if location == "." {
-					return nil
-				}
-
-				if info.IsDir() {
-					file = location + "/"
-				} else {
-					file = location
-				}
-
-				if ignore_xdev && info.Sys().(*syscall.Stat_t).Dev != dev {
-					wwlog.Debug("Ignored (cross-device): %s", file)
-					return nil
-				}
-
-				for i, pattern := range(ignore) {
-					m, err := filepath.Match(pattern, location)
-					if err != nil {
-						return err
-					}
-
-					if m {
-						wwlog.Debug("Ignored (%d): %s", i, file)
-						return nil
-					}
-				}
-
-				ofiles = append(ofiles, file)
-
+		for _, ignoreDir := range(ignoreDirs) {
+			if strings.HasPrefix(location, ignoreDir) {
+				wwlog.Debug("Ignored (dir): %s", file)
 				return nil
-			})
-
-			num_final := len(ofiles)
-			wwlog.Debug("Included: %s -> %d files", ifile, num_final-num_init)
-
-			if err != nil {
-				return ofiles, err
 			}
-		}else{
-			wwlog.Debug("Included: %s", ifile)
-			ofiles = append(ofiles, ifile)
 		}
-	}
+		for i, pattern := range(ignore) {
+			m, err := filepath.Match(pattern, location)
+			if err != nil {
+				return err
+			} else if m {
+				wwlog.Debug("Ignored (%d): %s", i, file)
+				if info.IsDir() {
+					ignoreDirs = append(ignoreDirs, file)
+				}
+				return nil
+			}
+		}
+
+		for _, includeDir := range(includeDirs) {
+			if strings.HasPrefix(location, includeDir) {
+				wwlog.Debug("Included (dir): %s", file)
+				ofiles = append(ofiles, location)
+				return nil
+			}
+		}
+		for i, pattern := range(include) {
+			m, err := filepath.Match(pattern, location)
+			if err != nil {
+				return err
+			} else if m {
+				wwlog.Debug("Included (%d): %s", i, file)
+				ofiles = append(ofiles, location)
+				if info.IsDir() {
+					includeDirs = append(includeDirs, file)
+				}
+				return nil
+			}
+		}
+
+		return nil
+	})
 
 	return ofiles, err
 }
@@ -607,10 +596,14 @@ func FileGz(
 	compressor, err := exec.LookPath("pigz")
 	if err != nil {
 		wwlog.Verbose("Could not locate PIGZ")
-		compressor = "gzip"
+		compressor, err = exec.LookPath("gzip")
+		if err != nil {
+			wwlog.Verbose("Could not locate GZIP")
+			return errors.Wrapf(err, "No compressor program for image file: %s", file_gz)
+		}
 	}
 
-	wwlog.Verbose("Using gz compressor: %s", compressor)
+	wwlog.Verbose("Using compressor program: %s", compressor)
 
 	proc := exec.Command(
 		compressor,
@@ -619,6 +612,52 @@ func FileGz(
 
 	out, err := proc.CombinedOutput()
 	if len(out) > 0 {
+		outStr := string(out[:])
+		if err != nil && strings.HasSuffix(compressor, "gzip") && strings.Contains(outStr, "unrecognized option") {
+			var		gzippedFile *os.File
+			var     gzipStderr io.ReadCloser
+            
+			/* Older version of gzip, try it another way: */
+			wwlog.Verbose("%s does not recognize the --keep flag, trying redirected stdout", compressor)
+			
+			/* Open the output file for writing: */
+			gzippedFile, err = os.Create(file_gz)
+			if err != nil {
+				return errors.Wrapf(err, "Unable to open compressed image file for writing: %s", file_gz)
+			}
+			
+			/* We'll execute gzip with output to stdout and attach stdout to the compressed file we just
+			   created:
+			 */
+			proc = exec.Command(
+				compressor,
+				"--stdout",
+				file )
+			proc.Stdout = gzippedFile
+			gzipStderr, err = proc.StderrPipe()
+			if err != nil {
+				return errors.Wrapf(err, "Unable to open stderr pipe for compression program: %s", compressor)
+			}
+			
+			/* Execute the command: */
+			err = proc.Start()
+			if err != nil {
+                _ = proc.Wait()
+				gzippedFile.Close()
+				os.Remove(file_gz)
+				err = errors.Wrapf(err, "Unable to successfully execute compression program: %s", compressor)
+			} else {
+				err = proc.Wait()
+				gzippedFile.Close()
+				if err != nil {
+					os.Remove(file_gz)
+					err = errors.Wrapf(err, "Unable to successfully create compressed image file: %s", file_gz)
+				} else {
+					wwlog.Verbose("Successfully compressed image file: %s", file_gz)
+				}
+			}
+			out, _ = io.ReadAll(gzipStderr)
+		}
 		wwlog.Debug(string(out))
 	}
 
@@ -714,4 +753,37 @@ func RunWWCTL(args ...string) (out []byte, err error) {
 	wwlog.Verbose("Finished wwctl process %d", index)
 
 	return out, err
+}
+
+/*
+Get size of given directory in bytes
+*/
+func DirSize(path string) (int64, error) {
+	var size int64
+	err := filepath.Walk(path, func(_ string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			size += info.Size()
+		}
+		return err
+	})
+	return size, err
+}
+
+/*
+Convert bytes to human friendly format
+*/
+func ByteToString(b int64) string {
+	const base = 1024
+	if b < base {
+		return fmt.Sprintf("%d B", b)
+	}
+	div, exp := int64(base), 0
+	for n := b / base; n >= base; n /= base {
+		div *= base
+		exp++
+	}
+	return fmt.Sprintf("%.1f %ciB", float64(b)/float64(div), "KMGTPE"[exp])
 }

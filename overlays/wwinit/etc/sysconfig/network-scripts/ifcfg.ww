@@ -8,8 +8,9 @@
 # Host:   {{ $host }}
 # Time:   {{ $time }}
 # Source: {{ $source }}
+TYPE={{ $netdev.Type }}
 DEVICE={{ $netdev.Device }}
-NAME=default
+NAME={{ $devname }}
 BOOTPROTO=static
 DEVTIMEOUT=10
 IPADDR={{ $netdev.Ipaddr }}
@@ -20,12 +21,15 @@ GATEWAY={{ $netdev.Gateway }}
 {{ if $netdev.Hwaddr -}}
 HWADDR={{ $netdev.Hwaddr }}
 {{ end -}}
+{{ if $netdev.Type -}}
+TYPE={{ $netdev.Type }}
+{{ end -}}
 ONBOOT=yes
 IPV6INIT=yes
 IPV6_AUTOCONF=yes
 IPV6_DEFROUTE=yes
 IPV6_FAILURE_FATAL=no
 {{ if $netdev.Ipaddr6 -}}
-IPV6ADDR="{{ $netdev.Ipaddr6 }}" 
+IPV6ADDR="{{ $netdev.Ipaddr6 }}"
 {{ end -}}
 {{ end -}}

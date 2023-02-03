@@ -3,39 +3,36 @@ package show
 import (
 	"fmt"
 
-	"github.com/hpcng/warewulf/internal/pkg/container"
-	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/api/container"
+	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
+
 	"github.com/spf13/cobra"
 )
 
-func CobraRunE(cmd *cobra.Command, args []string) error {
-	containerName := args[0]
-	if !container.ValidName(containerName) {
-		return fmt.Errorf("%s is not a valid container", containerName)
+func CobraRunE(cmd *cobra.Command, args []string) (err error) {
+
+	csp := &wwapiv1.ContainerShowParameter{
+		ContainerName: args[0],
 	}
+
+	var r *wwapiv1.ContainerShowResponse
+	r, err = container.ContainerShow(csp)
+	if err != nil {
+		return
+	}
+
 	if !ShowAll {
-		fmt.Printf("%s\n", container.RootFsDir(containerName))
+		fmt.Printf("%s\n", r.Rootfs)
 	} else {
-		fmt.Printf("Name: %s\n", containerName)
-		fmt.Printf("Rootfs: %s\n", container.RootFsDir(containerName))
-		kernelVersion := container.KernelVersion(containerName)
-		if kernelVersion != "" {
+		kernelVersion := r.KernelVersion
+		if kernelVersion == "" {
 			kernelVersion = "not found"
-			fmt.Printf("Kernelversion: %s\n", kernelVersion)
 		}
-		nodeDB, _ := node.New()
-
-		nodes, _ := nodeDB.FindAllNodes()
-		var nodeList []string
-		for _, n := range nodes {
-			if n.ContainerName.Get() == containerName {
-
-				nodeList = append(nodeList, n.Id.Get())
-			}
-		}
-		fmt.Printf("Nr nodes: %d\n", len(nodeList))
-		fmt.Printf("Nodes: %s\n", nodeList)
-
+		fmt.Printf("Name: %s\n", r.Name)
+		fmt.Printf("KernelVersion: %s\n", kernelVersion)
+		fmt.Printf("Rootfs: %s\n", r.Rootfs)
+		fmt.Printf("Nr nodes: %d\n", len(r.Nodes))
+		fmt.Printf("Nodes: %s\n", r.Nodes)
 	}
-	return nil
+	return
 }

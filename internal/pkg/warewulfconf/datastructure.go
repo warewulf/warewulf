@@ -35,8 +35,8 @@ type WarewulfConf struct {
 type DhcpConf struct {
 	Enabled     bool   `yaml:"enabled" default:"true"`
 	Template    string `yaml:"template" default:"default"`
-	RangeStart  string `yaml:"range start" default:"192.168.200.50"`
-	RangeEnd    string `yaml:"range end" default:"192.168.200.99"`
+	RangeStart  string `yaml:"range start,omitempty"`
+	RangeEnd    string `yaml:"range end,omitempty"`
 	SystemdName string `yaml:"systemd name" default:"dhcpd"`
 }
 
@@ -48,12 +48,12 @@ type TftpConf struct {
 
 type NfsConf struct {
 	Enabled         bool             `yaml:"enabled" default:"true"`
-	ExportsExtended []*NfsExportConf `yaml:"export paths" default:"[{\"Path\": \"home\"}]"`
+	ExportsExtended []*NfsExportConf `yaml:"export paths" default:"[]"`
 	SystemdName     string           `yaml:"systemd name" default:"nfsd"`
 }
 
 type NfsExportConf struct {
-	Path          string `yaml:"path" default:"/home"`
+	Path          string `yaml:"path" default:"/dev/null"`
 	ExportOptions string `default:"rw,sync,no_subtree_check" yaml:"export options"`
 	MountOptions  string `default:"defaults" yaml:"mount options"`
 	Mount         bool   `default:"true" yaml:"mount"`
@@ -68,12 +68,12 @@ func (s *NfsConf) Unmarshal(unmarshal func(interface{}) error) error {
 
 func init() {
 	if !util.IsFile(ConfigFile) {
-		wwlog.Printf(wwlog.ERROR, "Configuration file not found: %s\n", ConfigFile)
+		wwlog.Error("Configuration file not found: %s", ConfigFile)
 		// fail silently as this also called by bash_completion
 	}
 	_, err := New()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not read Warewulf configuration file: %s\n", err)
+		wwlog.Error("Could not read Warewulf configuration file: %s", err)
 	}
 }
 
