@@ -1,0 +1,61 @@
+---
+name: publish_docs
+
+on:
+  push:
+
+jobs:
+  publish:
+    if: ${{ github.repository_owner == 'hcpng' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Update repositories
+        run: |
+          sudo apt update
+
+      - name: Install LaTeX dependencies
+        run: |
+          sudo apt-get install -f -y texlive-latex-extra latexmk
+
+      - name: Setup Python
+        uses: actions/setup-python@v1
+
+      - name: Install Sphinx
+        run: |
+          pip install --user --upgrade --upgrade-strategy eager sphinx sphinx-rtd-theme restructuredtext_lint pygments
+
+      - name: Build web documentation
+        run: |
+          cd userdocs
+          make html
+
+      - name: Install SSH key
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          echo "${{ secrets.GH_DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          cat <<EOT >> ~/.ssh/config
+          Host github.com
+          HostName github.com
+          IdentityFile ~/.ssh/id_rsa
+          EOT
+          git config --global user.email "actions@github.com"
+          git config --global user.name "gh-actions"
+
+      - name: Update website repo
+        run: |
+          git clone git@github.com:hpcng/warewulf-web.git ~/warewulf-web
+          mkdir -p ~/warewulf-web/static/docs
+          rm -rf ~/warewulf-web/static/docs/${GITHUB_REF##*/}
+          cp -r userdocs/_build/html ~/warewulf-web/static/docs/${GITHUB_REF##*/}
+          cd ~/warewulf-web
+          git add static/docs/${GITHUB_REF##*/}
+          git commit -m "Update ${GITHUB_REF##*/} docs"
+          git push

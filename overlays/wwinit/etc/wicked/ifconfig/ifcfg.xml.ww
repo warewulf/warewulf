@@ -12,6 +12,9 @@ Source: {{ $source }}
 -->
 <interface origin="static generated warewulf config">
   <name>{{$netdev.Device}}</name>
+  {{ if $netdev.Type -}}
+  <link-type>{{ $netdev.Type }}</link-type>
+  {{ end -}}
   <control>
     <mode>boot</mode>
   </control>

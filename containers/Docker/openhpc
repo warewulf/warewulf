@@ -1,7 +1,0 @@
-FROM docker.io/warewulf/rocky:8
-
-RUN dnf -y install http://repos.openhpc.community/OpenHPC/2/CentOS_8/x86_64/ohpc-release-2-1.el8.x86_64.rpm; \
-    sed -i -e 's/^enabled=0/enabled=1/g' /etc/yum.repos.d/*-PowerTools.repo; \
-    dnf -y install ohpc-base-compute ohpc-slurm-client chrony lmod-ohpc; \
-    dnf -y clean all ;\
-    systemctl enable munge

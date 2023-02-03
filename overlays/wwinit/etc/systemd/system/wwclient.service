@@ -9,6 +9,6 @@ ExecStart=/warewulf/wwclient
 ExecReload=/bin/kill -s SIGHUP "$MAINPID"
 PIDFile=/var/run/wwclient.pid
 TimeoutSec=60
- 
+
 [Install]
 WantedBy=multi-user.target

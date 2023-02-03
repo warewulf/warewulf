@@ -14,7 +14,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	kernels, err := kernel.ListKernels()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "%s\n", err)
+		wwlog.Error("%s", err)
 		os.Exit(1)
 	}
 

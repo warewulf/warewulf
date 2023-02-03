@@ -22,71 +22,71 @@ var (
 )
 
 func BINDIR() string {
-	wwlog.Printf(wwlog.DEBUG, "BINDIR = '%s'\n", bindir)
+	wwlog.Debug("BINDIR = '%s'", bindir)
 	return bindir
 }
 
 func DATADIR() string {
-	wwlog.Printf(wwlog.DEBUG, "DATADIR = '%s'\n", bindir)
+	wwlog.Debug("DATADIR = '%s'", bindir)
 	return datadir
 }
 
 func SYSCONFDIR() string {
-	wwlog.Printf(wwlog.DEBUG, "SYSCONFDIR = '%s'\n", sysconfdir)
+	wwlog.Debug("SYSCONFDIR = '%s'", sysconfdir)
 	return sysconfdir
 }
 
 func LOCALSTATEDIR() string {
-	wwlog.Printf(wwlog.DEBUG, "LOCALSTATEDIR = '%s'\n", localstatedir)
+	wwlog.Debug("LOCALSTATEDIR = '%s'", localstatedir)
 	return localstatedir
 }
 
 func SRVDIR() string {
-	wwlog.Printf(wwlog.DEBUG, "SRVDIR = '%s'\n", srvdir)
+	wwlog.Debug("SRVDIR = '%s'", srvdir)
 	return srvdir
 }
 
 func TFTPDIR() string {
-	wwlog.Printf(wwlog.DEBUG, "TFTPDIR = '%s'\n", tftpdir)
+	wwlog.Debug("TFTPDIR = '%s'", tftpdir)
 	return tftpdir
 }
 
 func FIREWALLDDIR() string {
-	wwlog.Printf(wwlog.DEBUG, "FIREWALLDDIR = '%s'\n", firewallddir)
+	wwlog.Debug("FIREWALLDDIR = '%s'", firewallddir)
 	return firewallddir
 }
 
 func SYSTEMDDIR() string {
-	wwlog.Printf(wwlog.DEBUG, "SYSTEMDDIR = '%s'\n", systemddir)
+	wwlog.Debug("SYSTEMDDIR = '%s'", systemddir)
 	return systemddir
 }
 
 func WWOVERLAYDIR() string {
-	wwlog.Printf(wwlog.DEBUG, "WWOVERLAYDIR = '%s'\n", wwoverlaydir)
+	wwlog.Debug("WWOVERLAYDIR = '%s'", wwoverlaydir)
 	return wwoverlaydir
 }
 
 func WWCHROOTDIR() string {
-	wwlog.Printf(wwlog.DEBUG, "WWCHROOTDIR = '%s'\n", wwchrootdir)
+	wwlog.Debug("WWCHROOTDIR = '%s'", wwchrootdir)
 	return wwchrootdir
 }
 
 func WWPROVISIONDIR() string {
-	wwlog.Printf(wwlog.DEBUG, "WWPROVISIONDIR = '%s'\n", wwprovisiondir)
+	wwlog.Debug("WWPROVISIONDIR = '%s'", wwprovisiondir)
 	return wwprovisiondir
 }
 
 func VERSION() string {
-	wwlog.Printf(wwlog.DEBUG, "VERSION = '%s'\n", version)
+	wwlog.Debug("VERSION = '%s'", version)
 	return version
 }
 
 func RELEASE() string {
-	wwlog.Printf(wwlog.DEBUG, "RELEASE = '%s'\n", release)
+	wwlog.Debug("RELEASE = '%s'", release)
 	return release
 }
 
 func WWCLIENTDIR() string {
-	wwlog.Printf(wwlog.DEBUG, "WWCLIENTDIR = '%s'\n", wwclientdir)
+	wwlog.Debug("WWCLIENTDIR = '%s'", wwclientdir)
 	return wwclientdir
 }

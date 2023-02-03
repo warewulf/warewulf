@@ -2,44 +2,23 @@ package delete
 
 import (
 	"fmt"
-	"os"
 
-	"github.com/hpcng/warewulf/internal/pkg/container"
-	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/hpcng/warewulf/internal/pkg/api/container"
+	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/hpcng/warewulf/internal/pkg/api/util"
 	"github.com/spf13/cobra"
 )
 
-func CobraRunE(cmd *cobra.Command, args []string) error {
-
-	nodeDB, err := node.New()
-	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not open nodeDB: %s\n", err)
-		os.Exit(1)
+func CobraRunE(cmd *cobra.Command, args []string) (err error) {
+	cdp := &wwapiv1.ContainerDeleteParameter{
+		ContainerNames: args,
 	}
-
-	nodes, _ := nodeDB.FindAllNodes()
-
-ARG_LOOP:
-	for _, arg := range args {
-		for _, n := range nodes {
-			if n.ContainerName.Get() == arg {
-				wwlog.Printf(wwlog.ERROR, "Container is configured for nodes, skipping: %s\n", arg)
-				continue ARG_LOOP
-			}
+	if !SetYes {
+		yes := util.ConfirmationPrompt(fmt.Sprintf("Are you sure you want to container %s", args))
+		if !yes {
+			return
 		}
 
-		if !container.ValidSource(arg) {
-			wwlog.Printf(wwlog.ERROR, "Container name is not a valid source: %s\n", arg)
-			continue
-		}
-		err := container.DeleteSource(arg)
-		if err != nil {
-			wwlog.Printf(wwlog.ERROR, "Could not remove source: %s\n", arg)
-		} else {
-			fmt.Printf("Container has been deleted: %s\n", arg)
-		}
 	}
-
-	return nil
+	return container.ContainerDelete(cdp)
 }

@@ -1,0 +1,22 @@
+.TH "NODES.CONF" "5"
+
+.SH NAME
+
+nodes.conf \- Warewulf node configuration database
+
+.SH DESCRIPTION
+.LP
+
+\fBnodes.conf\fP is the primary database file for all compute nodes
+(and node profiles). It is a flat text YAML configuration file that is
+managed by \fBwwctl(1)\fP.
+
+While manual editing of the \fBnodes.conf\fP file is possible and can
+be useful, the internal structure of the file is subject to change
+without notice between Warewulf versions. The recommended and only
+supported mechanism for updating \fBnodes.conf\fP is via
+\fBwwctl(1)\fP.
+
+.SH SEE ALSO
+
+\fBwwctl(1)\fP, \fBwwctl-nodes(1)\fP, \fBwwctl-profile(1)\fP

@@ -14,13 +14,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not open node configuration: %s\n", err)
+		wwlog.Error("Could not open node configuration: %s", err)
 		os.Exit(1)
 	}
 
 	profiles, err := nodeDB.FindAllProfiles()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not find all nodes: %s\n", err)
+		wwlog.Error("Could not find all nodes: %s", err)
 		os.Exit(1)
 	}
 
@@ -70,7 +70,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	} else {
 		fmt.Printf("%-20s %s\n", "PROFILE NAME", "COMMENT/DESCRIPTION")
-		fmt.Println(strings.Repeat("=", 80))
+		fmt.Printf(strings.Repeat("=", 80) + "\n")
 
 		for _, profile := range node.FilterByName(profiles, args) {
 			fmt.Printf("%-20s %s\n", profile.Id.Print(), profile.Comment.Print())

@@ -42,7 +42,7 @@ func SyncUids(containerName string, showOnly bool) error {
 	fullPath := RootFsDir(containerName)
 	hostName, err := createPasswdMap(passwdName)
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not open "+passwdName)
+		wwlog.Error("Could not open "+passwdName)
 		return err
 	}
 	// populate db with the user of the
@@ -53,7 +53,7 @@ func SyncUids(containerName string, showOnly bool) error {
 
 	contName, err := createPasswdMap(path.Join(fullPath, passwdName))
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Could not open "+path.Join(fullPath, passwdName))
+		wwlog.Error("Could not open "+path.Join(fullPath, passwdName))
 		return err
 	}
 	var userOnlyCont []string
@@ -69,7 +69,7 @@ func SyncUids(containerName string, showOnly bool) error {
 		if !foundUser {
 			userDb = append(userDb, completeUserInfo{Name: userCont.name,
 				UidHost: -1, GidHost: -1, UidCont: userCont.uid, GidCont: userCont.gid})
-			wwlog.Printf(wwlog.WARN, "user: %s:%v:%v not present on host\n", userCont.name, userCont.uid, userCont.gid)
+			wwlog.Warn("user: %s:%v:%v not present on host", userCont.name, userCont.uid, userCont.gid)
 			userOnlyCont = append(userOnlyCont, userCont.name)
 		}
 
@@ -79,7 +79,7 @@ func SyncUids(containerName string, showOnly bool) error {
 		if user.UidHost == -1 {
 			for _, userCheck := range userDb {
 				if userCheck.UidHost == user.UidCont {
-					wwlog.Printf(wwlog.WARN, fmt.Sprintf("uid(%v) collision for host: %s and container: %s\n",
+					wwlog.Warn(fmt.Sprintf("uid(%v) collision for host: %s and container: %s",
 						user.UidCont, user.Name, userCheck.Name))
 					return errors.New(fmt.Sprintf("user %s only present in container has same uid(%v) as user %s on host,\n"+
 						"add this user to /etc/passwd on host", user.Name, user.UidCont, userCheck.Name))
@@ -90,7 +90,7 @@ func SyncUids(containerName string, showOnly bool) error {
 		if user.GidHost == -1 {
 			for _, userCheck := range userDb {
 				if userCheck.GidHost == user.GidCont {
-					wwlog.Printf(wwlog.WARN, fmt.Sprintf("gid(%v) collision for host: %s and container: %s\n",
+					wwlog.Warn(fmt.Sprintf("gid(%v) collision for host: %s and container: %s",
 						user.GidCont, user.Name, userCheck.Name))
 					return errors.New(fmt.Sprintf("user %s only present in container has same gid(%v) as user %s on host,\n"+
 						" add this group to /etc/group on host", user.Name, user.GidCont, userCheck.Name))
@@ -101,7 +101,7 @@ func SyncUids(containerName string, showOnly bool) error {
 
 	}
 	if showOnly {
-		wwlog.Printf(wwlog.INFO, "uid./gid not synced, run \nwwctl container syncuser --write %s\nto synchronize uid/gids.\n", containerName)
+		wwlog.Info("uid/gid not synced, run \nwwctl container syncuser --write %s\nto synchronize uid/gids.", containerName)
 		return nil
 	}
 	// create list of files which need changed ownerships in order to change them later what
@@ -109,7 +109,7 @@ func SyncUids(containerName string, showOnly bool) error {
 	for idx, user := range userDb {
 		if (user.UidHost != user.UidCont && user.UidHost != -1) ||
 			(user.GidHost != user.GidCont && user.GidHost != -1 && user.UidHost != -1) {
-			wwlog.Printf(wwlog.VERBOSE, fmt.Sprintf("host %s:%v:%v <-> container %s:%v:%v\n",
+			wwlog.Verbose(fmt.Sprintf("host %s:%v:%v <-> container %s:%v:%v",
 				user.Name, user.UidHost, user.GidHost, user.Name, user.UidCont, user.GidCont))
 			err = filepath.Walk(fullPath, func(filePath string, info fs.FileInfo, err error) error {
 				// root is always good, if we fail to get UID/GID of a file
@@ -144,7 +144,7 @@ func SyncUids(containerName string, showOnly bool) error {
 				if stat, ok := fsInfo.Sys().(*syscall.Stat_t); ok {
 					gid = int(stat.Gid)
 				}
-				wwlog.Printf(wwlog.DEBUG, "%s chown(%v,%v)\n", file, user.UidHost, gid)
+				wwlog.Debug("%s chown(%v,%v)", file, user.UidHost, gid)
 				err = os.Chown(file, user.UidHost, gid)
 				if err != nil {
 					return err
@@ -162,7 +162,7 @@ func SyncUids(containerName string, showOnly bool) error {
 				if stat, ok := fsInfo.Sys().(*syscall.Stat_t); ok {
 					uid = int(stat.Uid)
 				}
-				wwlog.Printf(wwlog.DEBUG, "%s chown(%v,%v)\n", file, user.UidHost, uid)
+				wwlog.Debug("%s chown(%v,%v)", file, user.UidHost, uid)
 				// only chown files and dirs
 				if fsInfo.IsDir() && fsInfo.Mode().IsRegular() {
 					err = os.Chown(file, uid, user.GidHost)
@@ -224,18 +224,18 @@ func createPasswdMap(fileName string) ([]simpleUserInfo, error) {
 		name := entries[0]
 		uid, err := strconv.Atoi(entries[2])
 		if err != nil {
-			wwlog.Printf(wwlog.WARN, "could not parse uid(%s) for %s\n", entries[2], name)
+			wwlog.Warn("could not parse uid(%s) for %s", entries[2], name)
 		}
 		gid, err := strconv.Atoi(entries[3])
 		if err != nil {
-			wwlog.Printf(wwlog.WARN, "could not parse gid(%s) for %s\n", entries[2], name)
+			wwlog.Warn("could not parse gid(%s) for %s", entries[2], name)
 		}
 		if name != "" {
 			nameDb = append(nameDb, simpleUserInfo{name: name, uid: uid, gid: gid})
 
 		}
 	}
-	wwlog.Printf(wwlog.DEBUG, fmt.Sprintf("created uid/gid map with %v entries from %s\n", len(nameDb), fileName))
+	wwlog.Debug(fmt.Sprintf("created uid/gid map with %v entries from %s", len(nameDb), fileName))
 	return nameDb, nil
 }
 
@@ -259,6 +259,6 @@ func getEntires(fileName string, names []string) ([]string, error) {
 			}
 		}
 	}
-	wwlog.Printf(wwlog.DEBUG, "file: %s, list: %v\n", fileName, list)
+	wwlog.Debug("file: %s, list: %v", fileName, list)
 	return list, nil
 }

@@ -1,6 +1,7 @@
 package chmod
 
 import (
+	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/spf13/cobra"
 )
 
@@ -13,6 +14,13 @@ var (
 		Example:               "wwctl overlay chmod default /etc/hostname.ww 0660",
 		RunE:                  CobraRunE,
 		Args:                  cobra.ExactArgs(3),
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) != 0 {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			list, _ := overlay.FindOverlays()
+			return list, cobra.ShellCompDirectiveNoFileComp
+		},
 	}
 )
 

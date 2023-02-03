@@ -20,7 +20,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	var allargs []string
 
 	if !container.ValidSource(containerName) {
-		wwlog.Printf(wwlog.ERROR, "Unknown Warewulf container: %s\n", containerName)
+		wwlog.Error("Unknown Warewulf container: %s", containerName)
 		os.Exit(1)
 	}
 
@@ -39,6 +39,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
+
+	os.Setenv("WW_CONTAINER_SHELL", containerName)
 
 	if err := c.Run(); err != nil {
 		fmt.Println(err)

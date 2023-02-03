@@ -19,7 +19,7 @@ func NFS() error {
 
 	controller, err := warewulfconf.New()
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "%s\n", err)
+		wwlog.Error("%s", err)
 		os.Exit(1)
 	}
 
@@ -30,10 +30,10 @@ func NFS() error {
 		if controller.Warewulf.EnableHostOverlay {
 			err = overlay.BuildHostOverlay()
 			if err != nil {
-				wwlog.Printf(wwlog.WARN, "host overlay could not be built: %s\n", err)
+				wwlog.Warn("host overlay could not be built: %s", err)
 			}
 		} else {
-			wwlog.Printf(wwlog.INFO, "host overlays are disabled, did not modify exports")
+			wwlog.Info("host overlays are disabled, did not modify exports")
 		}
 		fmt.Printf("Enabling and restarting the NFS services\n")
 		if controller.Nfs.SystemdName == "" {

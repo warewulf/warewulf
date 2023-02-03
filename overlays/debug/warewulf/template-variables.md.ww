@@ -1,0 +1,168 @@
+# Warewulf template variables
+
+This Warewulf template serves as a complete example of the variables
+available to Warewulf templates. It may also be rendered against a
+node to debug its apparent configuration.
+
+```sh
+wwctl overlay show --render $nodename debug /warewulf/template-variables.md.ww
+```
+
+The template data structure is defined in
+`internal/pkg/overlay/datastructure.go`, though it also references
+data from other structures.
+
+
+## Node
+
+- Id: {{ .Id }}
+- Hostname: {{ .Hostname }}
+- Comment: {{ .Comment }}
+- ClusterName: {{ .ClusterName }}
+- ContainerName: {{ .ContainerName }}
+- Ipxe: {{ .Ipxe }}
+- RuntimeOverlay: {{ range $index, $value := .RuntimeOverlay }}{{ if $index }},{{ end }}{{ $value }}{{ end }}
+- SystemOverlay: {{ range $index, $value := .SystemOverlay }}{{ if $index }},{{ end }}{{ $value }}{{ end }}
+- Init: {{ .Init }}
+- Root: {{ .Root }}
+- AssetKey: {{ .AssetKey }}
+- Discoverable: {{ .Discoverable }}
+- Profiles: {{ range $index, $value := .Profiles }}{{ if $index }},{{ end }}{{ $value }}{{ end }}
+- Tags: {{ range $key, $value := .Tags }}{{ $key }}={{ $value }} {{ end }}
+- TagsDel: {{ range $key, $value := .TagsDel }}{{ $key }}={{ $value }} {{ end }}
+- Keys: {{ range $key, $value := .Keys }}{{ $key }}={{ $value }} {{ end }}
+- Kernel:
+  - Version: {{ .Kernel.Version }}
+  - Override: {{ .Kernel.Override }}
+  - Args: {{ .Kernel.Args }}
+- Ipmi:
+  - UserName: {{ .Ipmi.UserName }}
+  - Password: {{ .Ipmi.Password }}
+  - Ipaddr: {{ .Ipmi.Ipaddr }}
+  - Netmask: {{ .Ipmi.Netmask }}
+  - Port: {{ .Ipmi.Port }}
+  - Gateway: {{ .Ipmi.Gateway }}
+  - Interface: {{ .Ipmi.Interface }}
+  - Write: {{ .Ipmi.Write }}
+  - Tags: {{ range $key, $value := .Ipmi.Tags }}{{ $key }}={{ $value }} {{ end }}
+  - TagsDel: {{ range $key, $value := .Ipmi.TagsDel }}{{ $key }}={{ $value }} {{ end }}
+{{- range $index, $netdev := .NetDevs }}
+- NetDevs[{{ $index }}]:
+  - Type: {{ $netdev.Type }}
+  - OnBoot: {{ $netdev.OnBoot }}
+  - Device: {{ $netdev.Device }}
+  - Hwaddr: {{ $netdev.Hwaddr }}
+  - Ipaddr: {{ $netdev.Ipaddr }}
+  - IpCIDR: {{ $netdev.IpCIDR }}
+  - Ipaddr6: {{ $netdev.Ipaddr6 }}
+  - Prefix: {{ $netdev.Prefix }}
+  - Netmask: {{ $netdev.Netmask }}
+  - Gateway: {{ $netdev.Gateway }}
+  - MTU: {{ $netdev.MTU }}
+  - Primary: {{ $netdev.Primary }}
+  - Default: {{ $netdev.Default }}
+  - Tags: {{ range $key, $value := $netdev.Tags }}{{ $key }}={{ $value }} {{ end }}
+  - TagsDel: {{ range $key, $value := $netdev.TagsDel }}{{ $key }}={{ $value }} {{ end }}
+{{- end }}
+
+
+## Build variables
+
+- BuildHost: {{ .BuildHost }}
+- BuildTime: {{ .BuildTime }}
+- BuildTimeUnix: {{ .BuildTimeUnix }}
+- BuildSource: {{ .BuildSource }}
+
+
+## Network
+
+- Ipaddr: {{ .Ipaddr }}
+- Ipaddr6: {{ .Ipaddr6 }}
+- Netmask: {{ .Netmask }}
+- Network: {{ .Network }}
+- NetworkCIDR: {{ .NetworkCIDR }}
+- Ipv6: {{ .Ipv6 }}
+
+
+## Services
+
+### DHCP
+
+- Dhcp.Enabled: {{ .Dhcp.Enabled }}
+- Dhcp.Template: {{ .Dhcp.Template }}
+- Dhcp.RangeStart: {{ .Dhcp.RangeStart }}
+- Dhcp.RangeEnd: {{ .Dhcp.RangeEnd }}
+- Dhcp.SystemdName: {{ .Dhcp.SystemdName }}
+
+
+### NFS
+
+- Enabled: {{ .Nfs.Enabled }}
+- SystemdName: {{ .Nfs.SystemdName }}
+{{- range $index, $export := .Nfs.ExportsExtended }}
+- ExportsExtended[{{ $index }}]:
+  - Path: {{ $export.Path }}
+  - ExportOptions: {{ $export.ExportOptions }}
+  - MountOptions: {{ $export.MountOptions }}
+  - Mount: {{ $export.Mount }}
+{{- end }}
+
+
+### Warewulf
+
+- Port: {{ .Warewulf.Port }}
+- Secure: {{ .Warewulf.Secure }}
+- UpdateInterval: {{ .Warewulf.UpdateInterval }}
+- AutobuildOverlays: {{ .Warewulf.AutobuildOverlays }}
+- EnableHostOverlay: {{ .Warewulf.EnableHostOverlay }}
+- Syslog: {{ .Warewulf.Syslog }}
+- DataStore: {{ .Warewulf.DataStore }}
+
+
+### Other nodes
+
+{{ range $index, $node := .AllNodes -}}
+- AllNodes[{{ $index }}]:
+  - Id: {{ $node.Id.Get }}
+  - Comment: {{ $node.Comment.Get }}
+  - ClusterName: {{ $node.ClusterName.Get }}
+  - ContainerName: {{ $node.ContainerName.Get }}
+  - Ipxe: {{ $node.Ipxe.Get }}
+  - RuntimeOverlay: {{ $node.RuntimeOverlay.Get }}
+  - SystemOverlay: {{ $node.SystemOverlay.Get }}
+  - Root: {{ $node.Root.Get }}
+  - Discoverable: {{ $node.Discoverable.Get }}
+  - Init: {{ $node.Init.Get }}
+  - AssetKey: {{ $node.AssetKey.Get }}
+  - Profiles: {{ $node.Profiles.Get }}
+  - Tags: {{ range $key, $value := $node.Tags }}{{ $key }}={{ $value.Get }} {{ end }}
+  - Kernel
+    - Override: {{ $node.Kernel.Override.Get }}
+    - Args: {{ $node.Kernel.Args.Get }}
+  - Ipmi:
+    - Ipaddr: {{ $node.Ipmi.Ipaddr.Get }}
+    - Netmask: {{ $node.Ipmi.Netmask.Get }}
+    - Port: {{ $node.Ipmi.Port.Get }}
+    - Gateway: {{ $node.Ipmi.Gateway.Get }}
+    - UserName: {{ $node.Ipmi.UserName.Get }}
+    - Password: {{ $node.Ipmi.Password.Get }}
+    - Interface: {{ $node.Ipmi.Interface.Get }}
+    - Write: {{ $node.Ipmi.Write.Get }}
+    - Tags: {{ range $key, $value := $node.Ipmi.Tags }}{{ $key }}={{ $value.Get }} {{ end }}
+{{- range $index, $netdev := $node.NetDevs }}
+  - NetDevs[{{ $index }}]:
+    - Type: {{ $netdev.Type.Get }}
+    - OnBoot: {{ $netdev.OnBoot.Get }}
+    - Device: {{ $netdev.Device.Get }}
+    - Hwaddr: {{ $netdev.Hwaddr.Get }}
+    - Ipaddr: {{ $netdev.Ipaddr.Get }}
+    - Ipaddr6: {{ $netdev.Ipaddr6.Get }}
+    - IpCIDR: {{ $netdev.IpCIDR.Get }}
+    - Prefix: {{ $netdev.Prefix.Get }}
+    - Netmask: {{ $netdev.Netmask.Get }}
+    - Gateway: {{ $netdev.Gateway.Get }}
+    - MTU: {{ $netdev.MTU.Get }}
+    - Primary: {{ $netdev.Primary.Get }}
+    - Tags: {{ range $key, $value := $netdev.Tags }}{{ $key }}={{ $value.Get }} {{ end }}
+{{- end }}
+{{- end }}

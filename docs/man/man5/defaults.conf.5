@@ -1,0 +1,40 @@
+.TH "NODES.CONF" "5"
+
+.SH NAME
+
+defaults.conf \- default configuration for Warewulf nodes
+
+.SH DESCRIPTION
+.LP
+
+\fBdefaults.conf\fP defaults default values for node attributes when
+the attributes are not defined via a node's definition or in any of
+its profiles. It is a flat text YAML configuration file with a single
+\fBdefaultnode\fP node. After the definition of this node follows the
+structure of a node within \fBnodes.pp\fP.
+
+.SH EXAMPLE
+
+.EX
+defaultnode:
+  runtime overlay:
+  - generic
+  system overlay:
+  - wwinit
+  kernel:
+    args: quiet crashkernel=no vga=791 net.naming-scheme=v238
+  init: /sbin/init
+  root: initramfs
+  ipxe template: default
+  profiles:
+  - default
+  network devices:
+    dummy:
+      device: eth0
+      type: ethernet
+      netmask: 255.255.255.0
+.EE
+
+.SH SEE ALSO
+
+\fBwwctl(1)\fP, \fBwwctl-nodes(1)\fP, \fBwwctl-profile(1)\fP

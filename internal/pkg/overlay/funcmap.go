@@ -22,10 +22,10 @@ func templateFileInclude(inc string) string {
 	if !strings.HasPrefix(inc, "/") {
 		inc = path.Join(buildconfig.SYSCONFDIR(), "warewulf", inc)
 	}
-	wwlog.Printf(wwlog.DEBUG, "Including file into template: %s\n", inc)
+	wwlog.Debug("Including file into template: %s", inc)
 	content, err := ioutil.ReadFile(inc)
 	if err != nil {
-		wwlog.Printf(wwlog.VERBOSE, "Could not include file into template: %s\n", err)
+		wwlog.Verbose("Could not include file into template: %s", err)
 	}
 	return strings.TrimSuffix(string(content), "\n")
 }
@@ -39,7 +39,7 @@ func templateFileBlock(inc string, abortStr string) (string, error) {
 	if !strings.HasPrefix(inc, "/") {
 		inc = path.Join(buildconfig.SYSCONFDIR(), "warewulf", inc)
 	}
-	wwlog.Printf(wwlog.DEBUG, "Including file block into template: %s\n", inc)
+	wwlog.Debug("Including file block into template: %s", inc)
 	readFile, err := os.Open(inc)
 	if err != nil {
 		return "", err
@@ -72,31 +72,31 @@ Reads a file relative to given container.
 Templates in the file are no evaluated.
 */
 func templateContainerFileInclude(containername string, filepath string) string {
-	wwlog.Printf(wwlog.VERBOSE, "Including file from Container into template: %s:%s\n", containername, filepath)
+	wwlog.Verbose("Including file from Container into template: %s:%s", containername, filepath)
 
 	if containername == "" {
-		wwlog.Printf(wwlog.WARN, "Container is not defined for node: %s\n", filepath)
+		wwlog.Warn("Container is not defined for node: %s", filepath)
 		return ""
 	}
 
 	if !container.ValidSource(containername) {
-		wwlog.Printf(wwlog.WARN, "Template requires file(s) from non-existant container: %s:%s\n", containername, filepath)
+		wwlog.Warn("Template requires file(s) from non-existant container: %s:%s", containername, filepath)
 		return ""
 	}
 
 	containerDir := container.RootFsDir(containername)
 
-	wwlog.Printf(wwlog.DEBUG, "Including file from container: %s:%s\n", containerDir, filepath)
+	wwlog.Debug("Including file from container: %s:%s", containerDir, filepath)
 
 	if !util.IsFile(path.Join(containerDir, filepath)) {
-		wwlog.Printf(wwlog.WARN, "Requested file from container does not exist: %s:%s\n", containername, filepath)
+		wwlog.Warn("Requested file from container does not exist: %s:%s", containername, filepath)
 		return ""
 	}
 
 	content, err := ioutil.ReadFile(path.Join(containerDir, filepath))
 
 	if err != nil {
-		wwlog.Printf(wwlog.ERROR, "Template include failed: %s\n", err)
+		wwlog.Error("Template include failed: %s", err)
 	}
 	return strings.TrimSuffix(string(content), "\n")
 }

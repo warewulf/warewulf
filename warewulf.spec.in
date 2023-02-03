@@ -1,4 +1,4 @@
-%define debug_package %{nil}
+%global debug_package %{nil}
 
 %if 0%{?suse_version}
 %global tftpdir /srv/tftpboot
@@ -17,6 +17,7 @@ Release: @RELEASE@%{?dist}
 License: BSD-3-Clause
 URL:     https://github.com/hpcng/warewulf
 Source:  https://github.com/hpcng/warewulf/releases/download/v%{version}/warewulf-%{version}.tar.gz
+%{?with_offline:Source2: vendor.tgz}
 
 ExclusiveOS: linux
 
@@ -27,11 +28,10 @@ Conflicts: warewulf-vnfs
 Conflicts: warewulf-provision
 Conflicts: warewulf-ipmi
 
-BuildRequires: make
-
-%if 0%{?suse_version}
+%if 0%{?suse_version} || 0%{?sle_version}
+BuildRequires: distribution-release
 BuildRequires: systemd-rpm-macros
-BuildRequires: go
+BuildRequires: go >= 1.16
 BuildRequires: firewall-macros
 BuildRequires: firewalld
 BuildRequires: tftp
@@ -39,8 +39,10 @@ Requires: tftp
 Requires: nfs-kernel-server
 Requires: firewalld
 %else
+# Assume Red Hat/Fedora build
+BuildRequires: system-release
 BuildRequires: systemd
-BuildRequires: golang
+BuildRequires: golang >= 1.16
 BuildRequires: firewalld-filesystem
 Requires: tftp-server
 Requires: nfs-utils
@@ -53,16 +55,21 @@ Requires: dhcp-server
 Requires: dhcp
 %endif
 
+BuildRequires: git
+BuildRequires: make
+BuildRequires: libassuan-devel gpgme-devel
+
 %description
 Warewulf is a stateless and diskless container operating system provisioning
 system for large clusters of bare metal and/or virtual systems.
 
 
 %prep
-%setup -q -n %{name}-%{version}
+%setup -q -n %{name}-%{version} -b0 %if %{?with_offline:-a2}
 
 
 %build
+%{?with_offline:OFFLINE_BUILD=1}
 # Install to sharedstatedir by redirecting LOCALSTATEDIR
 make genconfig \
     PREFIX=%{_prefix} \
@@ -119,9 +126,11 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %{srvdir}/warewulf
 
 %attr(-, root, root) %{_bindir}/wwctl
+%attr(-, root, root) %{_bindir}/wwapi*
 %attr(-, root, root) %{_prefix}/lib/firewalld/services/warewulf.xml
 %attr(-, root, root) %{_unitdir}/warewulfd.service
 %attr(-, root, root) %{_mandir}/man1/wwctl*
+%attr(-, root, root) %{_mandir}/man5/*.5*
 %attr(-, root, root) %{_datadir}/warewulf
 
 %dir %{_docdir}/warewulf
@@ -129,6 +138,10 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 
 
 %changelog
+* Mon Oct 17 2022 Jeremy Siadal <jeremy.c.siadal@intel.com> - 4.4.0-1
+- Add offline build support -- prepping for bcond
+- Add more BuildRequires for new golang vendor modules
+
 * Wed Jan 26 2022 Jeremy Siadal <jeremy.c.siadal@intel.com> - 4.2.0-1
 - Add license install
 - Updates for RH and SUSE RPM guidelines
