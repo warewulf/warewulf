@@ -148,8 +148,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	for _, mntPnt := range mountPts {
 		err = syscall.Mount(mntPnt.Source, path.Join(containerPath, mntPnt.Dest), "", syscall.MS_BIND, "")
 		if err != nil {
-			fmt.Printf("BIND ERROR: %s\n", err)
-			wwlog.Warn("Couldn't mount %s to %s", mntPnt.Source, mntPnt.Dest)
+			wwlog.Warn("Couldn't mount %s to %s: %s", mntPnt.Source, mntPnt.Dest, err)
 		} else if mntPnt.ReadOnly {
 			err = syscall.Mount(mntPnt.Source, path.Join(containerPath, mntPnt.Dest), "", syscall.MS_REMOUNT|syscall.MS_RDONLY|syscall.MS_BIND, "")
 			if err != nil {

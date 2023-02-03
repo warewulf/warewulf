@@ -5,6 +5,7 @@ package shell
 
 import (
 	"os"
+	"path"
 
 	cntexec "github.com/hpcng/warewulf/internal/app/wwctl/container/exec"
 	"github.com/hpcng/warewulf/internal/pkg/container"
@@ -27,8 +28,21 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	*/
 	shellName := os.Getenv("SHELL")
+	if !container.ValidSource(containerName) {
+		wwlog.Error("Unknown Warewulf container: %s", containerName)
+		os.Exit(1)
+	}
+	var shells []string
 	if shellName == "" {
-		shellName = "/usr/bin/bash"
+		shells = append(shells, "/bin/bash")
+	} else {
+		shells = append(shells, shellName, "/bin/bash")
+	}
+	for _, s := range shells {
+		if _, err := os.Stat(path.Join(container.RootFsDir(containerName), s)); err == nil {
+			shellName = s
+			break
+		}
 	}
 	args = append(args, shellName)
 	allargs = append(allargs, args...)
