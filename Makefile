@@ -1,4 +1,4 @@
-.PHONY: all
+.PHONY: all clean contclean
 
 -include Defaults.mk
 
@@ -53,7 +53,7 @@ else
 endif
 
 # OS-Specific Service Locations
-VARLIST += TFTPDIR FIREWALLDDIR SYSTEMDDIR
+VARLIST += TFTPDIR FIREWALLDDIR SYSTEMDDIR BASHCOMPDIR
 SYSTEMDDIR ?= /usr/lib/systemd/system
 BASHCOMPDIR ?= /etc/bash_completion.d
 FIREWALLDDIR ?= /usr/lib/firewalld/services
@@ -257,10 +257,9 @@ warewulfconf: config_defaults
 	./config_defaults
 
 dist: vendor config
-	rm -rf .dist/$(WAREWULF)-$(VERSION)
+	rm -rf .dist/$(WAREWULF)-$(VERSION) $(WAREWULF)-$(VERSION).tar.gz
 	mkdir -p .dist/$(WAREWULF)-$(VERSION)
-	cp -rap * .dist/$(WAREWULF)-$(VERSION)/
-	find .dist/$(WAREWULF)-$(VERSION)/ -type f -name '*~' -delete
+	rsync -a --exclude=".*" --exclude "*~" * .dist/$(WAREWULF)-$(VERSION)/
 	cd .dist; tar -czf ../$(WAREWULF)-$(VERSION).tar.gz $(WAREWULF)-$(VERSION)
 	rm -rf .dist
 
@@ -292,7 +291,7 @@ wwapic: ## Build the sample wwapi client.
 wwapird: ## Build the rest api server (revese proxy to the grpc api server).
 	go build -o ./wwapird internal/app/api/wwapird/wwapird.go
 
-clean:
+contclean:
 	rm -f wwclient
 	rm -f wwctl
 	rm -rf .dist
@@ -301,7 +300,6 @@ clean:
 	rm -rf bash_completion.d
 	rm -f man_page
 	rm -rf man_pages
-	rm -rf vendor
 	rm -f warewulf.spec
 	rm -f config
 	rm -f Defaults.mk
@@ -310,6 +308,9 @@ clean:
 	rm -f update_configuration
 	rm -f print_defaults
 	rm -f etc/wwapi{c,d,rd}.conf
+
+clean: contclean
+	rm -rf vendor
 
 install: files install_wwclient
 
