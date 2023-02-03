@@ -11,7 +11,6 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
@@ -44,7 +43,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	lowerObjects := checkMountPoints(containerName, mountPts)
 	if len(lowerObjects) != 0 {
 		if tempDir == "" {
-			tempDir, err = os.MkdirTemp(buildconfig.TMPDIR(), "overlay")
+			tempDir, err = os.MkdirTemp(os.TempDir(), "overlay")
 			if err != nil {
 				wwlog.Warn("couldn't create temp dir for overlay", err)
 				lowerObjects = []string{}

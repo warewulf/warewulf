@@ -11,7 +11,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -24,7 +23,7 @@ fork off a process with a new PID space
 func runContainedCmd(args []string) error {
 	var err error
 	if tempDir == "" {
-		tempDir, err = os.MkdirTemp(buildconfig.TMPDIR(), "overlay")
+		tempDir, err = os.MkdirTemp(os.TempDir(), "overlay")
 		if err != nil {
 			wwlog.Warn("couldn't create temp dir for overlay", err)
 		}
