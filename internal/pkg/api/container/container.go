@@ -342,12 +342,15 @@ func ContainerShow(csp *wwapiv1.ContainerShowParameter) (response *wwapiv1.Conta
 	containerName := csp.ContainerName
 
 	if !container.ValidName(containerName) {
-		err = fmt.Errorf("%s is not a valid container", containerName)
+		err = fmt.Errorf("%s is not a valid container name", containerName)
 		return
 	}
 
 	rootFsDir := container.RootFsDir(containerName)
-
+	if !util.IsDir(rootFsDir) {
+		err = fmt.Errorf("%s is not a valid container", containerName)
+		return
+	}
 	kernelVersion := container.KernelVersion(containerName)
 
 	nodeDB, err := node.New()
