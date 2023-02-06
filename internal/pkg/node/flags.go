@@ -13,7 +13,9 @@ import (
 )
 
 /*
-Create cmd line flags from the NodeConf fields
+Create cmd line flags from the NodeConf fields. Returns a []func() where every function
+must be called, as the commandline parser returns e.g. netip.IP objects which must be parsedf
+back to strings.
 */
 func (nodeConf *NodeConf) CreateFlags(baseCmd *cobra.Command, excludeList []string) (converters []func()) {
 	nodeInfoType := reflect.TypeOf(nodeConf)
