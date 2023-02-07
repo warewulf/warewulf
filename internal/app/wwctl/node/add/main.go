@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-<<<<<<< HEAD
 /*
 RunE needs a function of type func(*cobraCommand,[]string) err, but
 in order to avoid global variables which mess up testing a function of
@@ -17,10 +16,12 @@ the required type is returned
 */
 func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-	// run converters for different types
-	for _, c := range Converters {
-		c()
-	}
+		// run converters for different types
+		for _, c := range vars.converters {
+			if err := c(); err != nil {
+				return err
+			}
+		}
 		// remove the default network as all network values are assigned
 		// to this network
 		if _, ok := vars.nodeConf.NetDevs["default"]; ok && vars.netName != "" {

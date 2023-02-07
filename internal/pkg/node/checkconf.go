@@ -2,7 +2,7 @@ package node
 
 import (
 	"fmt"
-	"net/netip"
+	"net"
 	"reflect"
 	"strconv"
 	"strings"
@@ -18,9 +18,11 @@ func (nodeConf *NodeConf) Check() (err error) {
 	for i := 0; i < nodeInfoVal.Elem().NumField(); i++ {
 		//wwlog.Debug("checking field: %s type: %s", nodeInfoType.Elem().Field(i).Name, nodeInfoVal.Elem().Field(i).Type())
 		if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.String {
-			err = checker(nodeInfoVal.Elem().Field(i).Interface().(string), nodeInfoType.Elem().Field(i).Tag.Get("type"))
+			newFmt, err := checker(nodeInfoVal.Elem().Field(i).Interface().(string), nodeInfoType.Elem().Field(i).Tag.Get("type"))
 			if err != nil {
 				return fmt.Errorf("field: %s value:%s err: %s", nodeInfoType.Elem().Field(i).Name, nodeInfoVal.Elem().Field(i).String(), err)
+			} else if newFmt != "" {
+				nodeInfoVal.Elem().Field(i).SetString(newFmt)
 			}
 		} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr && !nodeInfoVal.Elem().Field(i).IsNil() {
 			nestType := reflect.TypeOf(nodeInfoVal.Elem().Field(i).Interface())
@@ -28,9 +30,11 @@ func (nodeConf *NodeConf) Check() (err error) {
 			for j := 0; j < nestType.Elem().NumField(); j++ {
 				if nestType.Elem().Field(j).Type.Kind() == reflect.String {
 					//wwlog.Debug("checking field: %s type: %s", nestType.Elem().Field(j).Name, nestType.Elem().Field(j).Tag.Get("type"))
-					err = checker(nestVal.Elem().Field(j).Interface().(string), nestType.Elem().Field(j).Tag.Get("type"))
+					newFmt, err := checker(nestVal.Elem().Field(j).Interface().(string), nestType.Elem().Field(j).Tag.Get("type"))
 					if err != nil {
 						return fmt.Errorf("field: %s value:%s err: %s", nestType.Elem().Field(j).Name, nestVal.Elem().Field(j).String(), err)
+					} else if newFmt != "" {
+						nestVal.Elem().Field(j).SetString(newFmt)
 					}
 				}
 			}
@@ -40,9 +44,11 @@ func (nodeConf *NodeConf) Check() (err error) {
 				netType := reflect.TypeOf(val)
 				netVal := reflect.ValueOf(val)
 				for j := 0; j < netType.Elem().NumField(); j++ {
-					err = checker(netVal.Elem().Field(j).String(), netType.Elem().Field(j).Tag.Get("type"))
+					newFmt, err := checker(netVal.Elem().Field(j).String(), netType.Elem().Field(j).Tag.Get("type"))
 					if err != nil {
 						return fmt.Errorf("field: %s value:%s err: %s", netType.Elem().Field(j).Name, netVal.Elem().Field(j).String(), err)
+					} else if newFmt != "" {
+						netVal.Elem().Field(j).SetString(newFmt)
 					}
 				}
 			}
@@ -51,26 +57,39 @@ func (nodeConf *NodeConf) Check() (err error) {
 	return nil
 }
 
-func checker(value string, valType string) (err error) {
+func checker(value string, valType string) (niceValue string, err error) {
 	if valType == "" || value == "" {
-		return nil
+		return "", nil
 	}
 	//wwlog.Debug("checker: %s is %s", value, valType)
 	switch valType {
 	case "":
-		return nil
+		return "", nil
 	case "bool":
 		if strings.ToLower(value) == "yes" {
-			return nil
+			return "true", nil
 		}
 		if strings.ToLower(value) == "no" {
-			return nil
+			return "false", nil
 		}
-		_, err = strconv.ParseBool(value)
-		return err
+		myBool, err := strconv.ParseBool(value)
+		return strconv.FormatBool(myBool), err
 	case "IP":
-		_, err = netip.ParseAddr(value)
-		return err
+		if addr := net.ParseIP(value); addr == nil {
+			return "", fmt.Errorf("%s can't be parsed to ip address", value)
+		} else {
+			return addr.String(), nil
+		}
+	case "MAC":
+		if mac, err := net.ParseMAC(value); err != nil {
+			return "", fmt.Errorf("%s can't be parsed to MAC address: %s", value, err)
+		} else {
+			return mac.String(), nil
+		}
+	case "uint":
+		if _, err := strconv.ParseUint(value, 10, 64); err != nil {
+			return "", fmt.Errorf("%s is not a uint: %s", value, err)
+		}
 	}
-	return nil
+	return "", nil
 }

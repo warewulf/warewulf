@@ -38,7 +38,7 @@ var (
 	SetForce     bool
 	NetName      string
 	ProfileConf  node.NodeConf
-	Converters   []func()
+	Converters   []func() error
 )
 
 func init() {

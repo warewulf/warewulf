@@ -14,7 +14,7 @@ import (
 type variables struct {
 	netName  string
 	nodeConf node.NodeConf
-	converters []func()
+	converters []func() error
 }
 
 // Returns the newly created command

@@ -266,24 +266,28 @@ func (node *NodeInfo) setterFrom(n *NodeConf, nameArg string,
 				}
 			} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr && !valField.IsZero() {
 				nestedInfoType := reflect.TypeOf(nodeInfoVal.Elem().Field(i).Interface())
-				netstedInfoVal := reflect.ValueOf(nodeInfoVal.Elem().Field(i).Interface())
+				nestedInfoVal := reflect.ValueOf(nodeInfoVal.Elem().Field(i).Interface())
 				nestedConfVal := reflect.ValueOf(valField.Interface())
 				for j := 0; j < nestedInfoType.Elem().NumField(); j++ {
 					nestedVal := nestedConfVal.Elem().FieldByName(nestedInfoType.Elem().Field(j).Name)
 					if nestedVal.IsValid() {
-						if netstedInfoVal.Elem().Field(j).Type() == reflect.TypeOf(Entry{}) {
-							setter(netstedInfoVal.Elem().Field(j).Addr().Interface().(*Entry), nestedVal.String(), nameArg)
-						} else {
+						if nestedInfoVal.Elem().Field(j).Type() == reflect.TypeOf(Entry{}) {
+							setter(nestedInfoVal.Elem().Field(j).Addr().Interface().(*Entry), nestedVal.String(), nameArg)
+						} else if nestedInfoVal.Elem().Field(j).Type() == reflect.TypeOf(map[string](*Entry){}) {
 							confMap := nestedVal.Interface().(map[string]string)
-							if netstedInfoVal.Elem().Field(j).IsNil() {
-								newMap := make(map[string]*Entry)
-								mapPtr := (netstedInfoVal.Elem().Field(j).Addr().Interface()).(*map[string](*Entry))
-								*mapPtr = newMap
+							if nestedInfoVal.Elem().Field(j).IsNil() {
+								ptr := nestedInfoVal.Elem().Field(j).Addr().Interface().(*map[string](*Entry))
+								*ptr = make(map[string]*Entry)
 							}
+							tagMap := nestedInfoVal.Elem().Field(j).Interface().(map[string](*Entry))
 							for key, val := range confMap {
-								entr := new(Entry)
-								setter(entr, val, nameArg)
-								(netstedInfoVal.Elem().Field(j).Interface()).(map[string](*Entry))[key] = entr
+								if entr, ok := tagMap[key]; ok {
+									setter(entr, val, nameArg)
+								} else {
+									entr := new(Entry)
+									tagMap[key] = entr
+									setter(entr, val, nameArg)
+								}
 							}
 						}
 					}
@@ -291,9 +295,17 @@ func (node *NodeInfo) setterFrom(n *NodeConf, nameArg string,
 			} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string](*Entry)(nil)) {
 				confMap := valField.Interface().(map[string]string)
 				for key, val := range confMap {
-					entr := new(Entry)
-					setter(entr, val, nameArg)
-					(nodeInfoVal.Elem().Field(i).Interface()).(map[string](*Entry))[key] = entr
+					tagMap := nodeInfoVal.Elem().Field(i).Interface().(map[string](*Entry))
+					if nodeInfoVal.Elem().Field(i).IsNil() {
+						tagMap = make(map[string]*Entry)
+					}
+					if entr, ok := tagMap[key]; ok {
+						setter(entr, val, nameArg)
+					} else {
+						entr := new(Entry)
+						tagMap[key] = entr
+						setter(entr, val, nameArg)
+					}
 				}
 			} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string](*NetDevEntry)(nil)) {
 				netValMap := valField.Interface().(map[string](*NetDevs))

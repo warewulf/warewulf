@@ -25,7 +25,7 @@ var (
 	SetForce     bool
 	NetName      string
 	ProfileConf  node.NodeConf
-	Converters   []func()
+	Converters   []func() error
 )
 
 // GetRootCommand returns the root cobra.Command for the application.

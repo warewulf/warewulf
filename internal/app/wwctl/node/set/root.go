@@ -38,7 +38,7 @@ var (
 	SetYes       bool
 	SetForce     bool
 	NodeConf     node.NodeConf
-	Converters   []func()
+	Converters   []func() error
 )
 
 func init() {

@@ -1,14 +1,13 @@
 package node
 
 import (
+	"fmt"
 	"net"
-	"os"
 	"reflect"
 	"strconv"
 	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 )
 
@@ -17,7 +16,7 @@ Create cmd line flags from the NodeConf fields. Returns a []func() where every f
 must be called, as the commandline parser returns e.g. netip.IP objects which must be parsedf
 back to strings.
 */
-func (nodeConf *NodeConf) CreateFlags(baseCmd *cobra.Command, excludeList []string) (converters []func()) {
+func (nodeConf *NodeConf) CreateFlags(baseCmd *cobra.Command, excludeList []string) (converters []func() error) {
 	nodeInfoType := reflect.TypeOf(nodeConf)
 	nodeInfoVal := reflect.ValueOf(nodeConf)
 	// now iterate of every field
@@ -60,48 +59,54 @@ func (nodeConf *NodeConf) CreateFlags(baseCmd *cobra.Command, excludeList []stri
 Helper function to create the different PerisitantFlags() for different types.
 */
 func createFlags(baseCmd *cobra.Command, excludeList []string,
-	myType reflect.StructField, myVal *reflect.Value) (converters []func()) {
+	myType reflect.StructField, myVal *reflect.Value) (converters []func() error) {
 	if myType.Tag.Get("lopt") != "" {
 		if myType.Type.Kind() == reflect.String {
 			ptr := myVal.Addr().Interface().(*string)
 			switch myType.Tag.Get("type") {
 			case "uint":
-				defaultConv, _ := strconv.ParseUint(myType.Tag.Get("default"), 10, 32)
-				var valueRaw uint
-				converters = append(converters, func() { *ptr = strconv.FormatUint(uint64(valueRaw), 10) })
+				converters = append(converters, func() error {
+					if !util.InSlice(GetUnsetVerbs(), *ptr) && *ptr != "" {
+						_, err := strconv.ParseUint(myType.Tag.Get(*ptr), 10, 32)
+						if err != nil {
+							return err
+						}
+					}
+					return nil
+				})
 				if myType.Tag.Get("sopt") != "" {
-					baseCmd.PersistentFlags().UintVarP(&valueRaw,
+					baseCmd.PersistentFlags().StringVarP(ptr,
 						myType.Tag.Get("lopt"),
 						myType.Tag.Get("sopt"),
-						uint(defaultConv),
+						myType.Tag.Get("default"),
 						myType.Tag.Get("comment"))
 				} else {
-					baseCmd.PersistentFlags().UintVar(&valueRaw,
+					baseCmd.PersistentFlags().StringVar(ptr,
 						myType.Tag.Get("lopt"),
-						uint(defaultConv),
+						myType.Tag.Get("default"),
 						myType.Tag.Get("comment"))
 				}
 			case "bool":
 				/*
 					Can't use the bool var from pflag as we need the UNSET verbs to be passwd correctly
 				*/
-				converters = append(converters, func() {
+				converters = append(converters, func() error {
 					if !util.InSlice(GetUnsetVerbs(), *ptr) && *ptr != "" {
 						if strings.ToLower(*ptr) != "yes" {
 							*ptr = "true"
-							return
+							return nil
 						}
 						if strings.ToLower(*ptr) != "no" {
 							*ptr = "false"
-							return
+							return nil
 						}
 						val, err := strconv.ParseBool(*ptr)
 						if err != nil {
-							wwlog.Error("commandline option %s needs to be bool", myType.Tag.Get("lopt"))
-							os.Exit(1)
+							return fmt.Errorf("commandline option %s needs to be bool", myType.Tag.Get("lopt"))
 						}
 						*ptr = strconv.FormatBool(val)
 					}
+					return nil
 				})
 				if myType.Tag.Get("sopt") != "" {
 					baseCmd.PersistentFlags().StringVarP(ptr,
@@ -119,10 +124,12 @@ func createFlags(baseCmd *cobra.Command, excludeList []string,
 			case "IP":
 				defaultConv := net.ParseIP(myType.Tag.Get("default"))
 				var valueRaw net.IP
-				converters = append(converters, func() {
+				converters = append(converters, func() error {
 					if valueRaw != nil {
+						// will always get a IP, not a string
 						*ptr = valueRaw.String()
 					}
+					return nil
 				})
 				if myType.Tag.Get("sopt") != "" {
 					baseCmd.PersistentFlags().IPVarP(&valueRaw,
@@ -139,7 +146,14 @@ func createFlags(baseCmd *cobra.Command, excludeList []string,
 			case "IPMask":
 				defaultConv := net.ParseIP(myType.Tag.Get("default")).DefaultMask()
 				var valueRaw net.IPMask
-				converters = append(converters, func() { *ptr = valueRaw.String() })
+				converters = append(converters, func() error {
+					if valueRaw != nil {
+						*ptr = valueRaw.String()
+						return nil
+					} else {
+						return fmt.Errorf("could not parse %s to IP", valueRaw.String())
+					}
+				})
 				if myType.Tag.Get("sopt") != "" {
 					baseCmd.PersistentFlags().IPMaskVarP(&valueRaw,
 						myType.Tag.Get("lopt"),
@@ -150,6 +164,27 @@ func createFlags(baseCmd *cobra.Command, excludeList []string,
 					baseCmd.PersistentFlags().IPMaskVar(&valueRaw,
 						myType.Tag.Get("lopt"),
 						defaultConv,
+						myType.Tag.Get("comment"))
+				}
+			case "MAC":
+				converters = append(converters, func() error {
+					myMac, err := net.ParseMAC(*ptr)
+					if err != nil {
+						return err
+					}
+					*ptr = myMac.String()
+					return nil
+				})
+				if myType.Tag.Get("sopt") != "" {
+					baseCmd.PersistentFlags().StringVarP(ptr,
+						myType.Tag.Get("lopt"),
+						myType.Tag.Get("sopt"),
+						"",
+						myType.Tag.Get("comment"))
+				} else {
+					baseCmd.PersistentFlags().StringVar(ptr,
+						myType.Tag.Get("lopt"),
+						"",
 						myType.Tag.Get("comment"))
 				}
 			default:
