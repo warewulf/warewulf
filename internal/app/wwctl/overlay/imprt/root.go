@@ -22,12 +22,10 @@ var (
 			return list, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
-	PermMode        int32
 	NoOverlayUpdate bool
 )
 
 func init() {
-	baseCmd.PersistentFlags().Int32VarP(&PermMode, "mode", "m", 0755, "Permission mode for directory")
 	baseCmd.PersistentFlags().BoolVarP(&NoOverlayUpdate, "noupdate", "n", false, "Don't update overlays")
 }
 
