@@ -129,6 +129,34 @@ command.
    first time you attempt to run ``wwctl``, this file will be generated
    if it does not exist already.
 
+defaults.conf
+=============
+
+In this file the defaults for which will present for **every** are configured. The values for the network ``dummy`` are applied to everyu network. If this file doesn't exist, following values (which is also installed as ``defaults.conf``) are used:
+
+.. code-block:: yaml
+
+  --
+  defaultnode:
+    runtime overlay:
+    - generic
+    system overlay:
+    - wwinit
+    kernel:
+      args: quiet crashkernel=no vga=791 net.naming-scheme=v238
+    init: /sbin/init
+    root: initramfs
+    ipxe template: default
+    profiles:
+    - default
+    network devices:
+      dummy:
+        device: eth0
+        type: ethernet
+        netmask: 255.255.255.0
+
+There should never be a need to change this file.
+
 Directories
 ===========
 

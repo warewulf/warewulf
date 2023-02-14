@@ -75,7 +75,7 @@ Now that we've created a new profile, let's create a configuration attribute in 
 .. code-block:: bash
 
    $ sudo wwctl profile set --cluster cluster01 test_profile
-   ? Are you sure you want to modify 1 profile(s)? [y/N] y█
+   ? Are you sure you want to modify 1 profile(s)? [y/N] y
 
    $ sudo wwctl profile list -a test_profile | grep Cluster
    test_profile         Cluster            cluster01
