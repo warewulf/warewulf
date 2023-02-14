@@ -1,0 +1,50 @@
+FROM docker.io/opensuse/leap:latest
+RUN zypper update -y &&\
+    zypper install -y \
+        bash \
+        coreutils \
+        cpio \
+        cronie \
+        e2fsprogs \
+        ethtool \
+        filesystem \
+        findutils \
+        gawk \
+        grep \
+        gzip \
+        ifplugd \
+        ipmitool \
+        iproute2 \
+        iputils \
+        kernel-default \
+        less \
+        net-tools \
+        nfs-client \
+        openssh-clients \
+        openssh-server \
+        pam \
+        patterns-openSUSE-base \
+        pciutils \
+        psmisc \
+        rsync \
+        rsyslog \
+        sed \
+        strace \
+        sudo \
+        syslinux \
+        tar \
+        tcpdump \
+        timezone \
+        util-linux \
+        util-linux \
+        vim \
+        wget \
+        which \
+        wicked \
+        words \
+        zypper  && \
+    zypper clean  && \
+    systemctl enable sshd 
+
+COPY excludes /etc/warewulf/excludes
+COPY container_exit.sh /etc/warewulf/container_exit.sh
