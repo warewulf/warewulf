@@ -9,6 +9,8 @@ IPMI Settings
 
 The common settings for the IPMI interfaces on all nodes can be set on a Profile level.  The only field that would need to be assigned to each individual node would be the IP address.
 
+The settings are only written to the IPMI interface, if ``--ipmiwrite`` is set to `true` and the write process happens at every boot of the node through the script ``/warewulf/init.d/50-ipmi`` in the **system** overlay.
+
 If an individual node has different settings, you can set the IPMI settings for that specific node, overriding the default settings.
 
 Here is a table outlining the fields on a Profile and Node which is the same as the parameter that can be used when running `wwctl profile set` or `wwctl node set`.
