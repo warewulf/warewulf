@@ -65,6 +65,23 @@ Here is an example:
 
 The above is just an example. Consideration should be done before doing it this way if you are in a security sensitive environment or shared environments. You would not want these showing up in bash history or logs.
 
+Syncuser
+--------
+
+At import time warewulf checks if the names of the users on the host matches the users and UIDS/GIDS in the imported container, if there is mismatch, the import command will print out a warning.
+By setting the ``--syncuser`` flag you advice warewulf to try to syncronize the users from the host to the container, which means that ``/etc/passwd`` and ``/etc/group`` of the imported container are updated and all the files belonning to these UIDs and GIDs will also be updated.
+
+A check if the users of the host and container matches can be triggered with the
+..code-block:: bash
+
+  wwctl container syncuser container-name
+
+command. With the ``--write`` flag it will update the container to match the user database of the host as described above.
+
+Exclude
+-------
+
+
 Listing All Imported Containers
 ===============================
 
@@ -103,6 +120,8 @@ You can also ``--bind`` directories from your host into the container when using
    As with any mount command, both the source and the target must exist. This is why the example uses the ``/mnt/`` directory location, as it is almost always present and empty in every Linux distribution (as prescribed by the LSB file hierarchy standard).
 
 When the command completes, if anything within the container changed, the container will be rebuilt into a bootable static object automatically.
+
+If the files ``/etc/passwd`` or ``/etc/group`` where updated, there will be an additional check if the users are in sync as described in Syncuser section.
 
 Creating Containers From Scratch
 ================================
