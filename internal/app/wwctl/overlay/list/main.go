@@ -39,16 +39,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			files := util.FindFiles(path)
 
 			wwlog.Debug("Iterating overlay path: %s", path)
-			if ListContents {
-				var fileCount int
-				for file := range files {
-					fmt.Printf("%-30s /%-12s\n", name, files[file])
-					fileCount++
-				}
-				if fileCount == 0 {
-					fmt.Printf("%-30s %-12d\n", name, 0)
-				}
-			} else if ListLong {
+            
+            // The header (above) depends primarily on --long (which implies
+            // --all if no overlay names are provided on the CLI) so test
+            // that flag first:
+			if ListLong {
 				for file := range files {
 					s, err := os.Stat(files[file])
 					if err != nil {
@@ -61,8 +56,16 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					sys := s.Sys()
 
 					fmt.Printf("%v %5d %-5d %-18s /%s\n", perms, sys.(*syscall.Stat_t).Uid, sys.(*syscall.Stat_t).Gid, overlays[o], files[file])
-
 				}
+            } else if ListContents {
+				var fileCount int
+				for file := range files {
+					fmt.Printf("%-30s /%-12s\n", name, files[file])
+					fileCount++
+				}
+				if fileCount == 0 {
+					fmt.Printf("%-30s %-12d\n", name, 0)
+				} 
 			} else {
 				fmt.Printf("%-30s %-12d\n", name, len(files))
 			}
