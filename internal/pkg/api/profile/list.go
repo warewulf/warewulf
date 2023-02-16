@@ -96,6 +96,33 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 
 						}
 					}
+				} else if nType.Field(i).Type.Kind() == reflect.Ptr {
+					nestInfoType := reflect.TypeOf(nVal.Field(i).Interface())
+					nestInfoVal := reflect.ValueOf(nVal.Field(i).Interface())
+					// nestConfType := reflect.TypeOf(nConfField.Type.Elem().FieldByName())
+					for j := 0; j < nestInfoType.Elem().NumField(); j++ {
+						nestConfField, ok := nConfField.Type.Elem().FieldByName(nestInfoType.Elem().Field(j).Name)
+						if ok {
+							fieldName = nestConfField.Tag.Get("lopt")
+						} else {
+							fieldName = nestInfoType.Elem().Field(j).Name
+						}
+						if nestInfoType.Elem().Field(j).Type == reflect.TypeOf(node.Entry{}) {
+							entr := nestInfoVal.Elem().Field(j).Interface().(node.Entry)
+							fieldSource = entr.Source()
+							fieldVal = entr.Print()
+							profileList.Output = append(profileList.Output,
+								fmt.Sprintf("%-20s %-18s %-12s %s", p.Id.Print(), fieldName, fieldSource, fieldVal))
+						} else if nestInfoType.Elem().Field(j).Type == reflect.TypeOf(map[string]*node.Entry{}) {
+							for key, val := range nestInfoVal.Elem().Field(j).Interface().(map[string]*node.Entry) {
+								fieldName = fieldName + ":" + key
+								fieldSource = val.Source()
+								fieldVal = val.Print()
+								profileList.Output = append(profileList.Output,
+									fmt.Sprintf("%-20s %-18s %-12s %s", p.Id.Print(), fieldName, fieldSource, fieldVal))
+							}
+						}
+					}
 				}
 			}
 		}
