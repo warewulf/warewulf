@@ -11,23 +11,14 @@ Warewulf solves this with overlays and uses overlays in different ways through t
 * Before boot, these overlays are called **system overlay** or **wwinit overlay**
 * After boot into the running system which are the **runtime overlay** or **generic overlay**.
 
-For both types preconfigured overlays are installed. Also for both types several overlays combined as list in the node/profile configuration. For conflicting files, the file of last defined one will be used.
+The default profile of warewulf has this two profiles enabled.
+
+
 
 Overlays are compiled for each compute node individually and should not contain static files.
 
 Defined Overlays
 ================
-Host Overlay
-------------
-
-In the host overlay the configuration files used for the configuration of the provision service are stored. In opposite the other overlays, it *must* have the name `host` and is stored under `/usr/share/warewulf/overlays/host/`.  Existing file on the host are copied to backup file with `wwbackup` suffix at the first run. Subsequent builds of the host overlay won't overwrite the `wwbackup` file.
-
-Following services get configuration files via templates
-
-* ssh for which are keys created with the scrips `ssh_setup.sh` and `ssh_setup.csh`
-* hosts entries are created by manipulating `/etc/hosts` with the template `hosts.ww`
-* nfs kernel server receives its exports from the template `exports.ww`
-* the dhcpd service is configured with `dhcpd.conf.ww`
 
 System or wwinit overlay
 ------------------------
@@ -44,11 +35,40 @@ Before the `systemd` init is called, the overlay loops through the scripts in `/
 * selinux
 
 Runtime Overlay or generic Overlay
-==================================
+----------------------------------
 
 The runtime overlay is updated by the `wwclient` service on a regular base (every minute per default). In the standard configuration it includes updates for `/etc/passwd`, `/etc/group` and `/etc/hosts`. Additionally the `authorized_keys` file of the root user is updated.
 It recommended to use this overlay for dynamic configuration files like `slurm.conf`.
 Once the system is provisioned and booted, the ``wwclient`` program (which is provisioned as part of the ``wwinit`` system overlay) will continuously update the node with updates in the runtime overlay.
+
+Host Overlay
+------------
+
+In the host overlay the configuration files used for the configuration of the provision service are stored. In opposite the other overlays, it *must* have the name `host` and is stored under `/usr/share/warewulf/overlays/host/`.  Existing file on the host are copied to backup file with `wwbackup` suffix at the first run. Subsequent builds of the host overlay won't overwrite the `wwbackup` file.
+
+Following services get configuration files via templates
+
+* ssh for which are keys created with the scrips `ssh_setup.sh` and `ssh_setup.csh`
+* hosts entries are created by manipulating `/etc/hosts` with the template `hosts.ww`
+* nfs kernel server receives its exports from the template `exports.ww`
+* the dhcpd service is configured with `dhcpd.conf.ww`
+
+Combining Overlay
+=================
+
+For changes in the overlays its recommended no to change them, but add the changed files to a new overlay and combine them in the configuration. This is possible as the configuration fields for the **wwinit** and **runtime** overlays are lists and can contain several overlays.
+As an example for this, we will overwrite the `/etc/issue` file from the **Wwinit** overlay.
+For this we will create a new overlay called welcome and import the file `/etc/issue` from the host to it. This profile is then combined with the existing **wwinit** overlay.
+
+..code-block:: bash
+  $ wwctl overlay create welcome
+  $ wwctl overlay mkdir welcome /etc
+  $ wwctl overlay import welcome /etc/issue
+  $ wwctl profile set default --wwinit=wwinit,welcome
+  ? Are you sure you want to modify 1 profile(s)? [y/N] y
+  $ wwctl profile list default -a |grep welcome
+  default              SystemOverlay      wwinit,welcome
+
 
 Templates
 =========
@@ -66,6 +86,9 @@ Using Overlays
 ==============
 
 Warewulf includes a command group for manipulating overlays (``wwctl overlay``). With this you can add, edit, remove, change ownership, permissions, etc.
+
+..note::
+  There is now possibility to delete files with an overlay!
 
 Build
 -----
