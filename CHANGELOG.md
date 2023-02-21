@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The correct header is now displayed when `-al` flags are specified to overlay
   list.
 
+### Changed
+
+- The primary hostname and warewulf server fqdn are now the canonical name in
+  `/etc/hosts`
+
 ## [4.4.0] 2023-01-18
 
 ### Added
