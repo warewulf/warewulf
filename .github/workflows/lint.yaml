@@ -2,7 +2,13 @@ on:
   push:
     branches:
       - main
+      - development
   pull_request:
+    branches:
+      - main
+      - development
+    paths-ignore:
+      - 'docs/**'
 
 name: golangci-lint
 
