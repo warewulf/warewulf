@@ -65,7 +65,7 @@ iterate over elements of an array and decrement ``i`` each loop cycle
 Access Tag
 ----------
 
-Acces the value of an individual tag `foo`
+Acces the value of an individual tag ``foo``
 
 .. code-block:: go
 
@@ -78,7 +78,7 @@ Create Multiple Files
 ---------------------
 
 The following template will create a file called
-`ifcfg-NETWORKNAME.xml` for every network present on the node
+``ifcfg-NETWORKNAME.xml`` for every network present on the node
 
 .. code-block:: go
 
@@ -196,9 +196,10 @@ Nobackup
 ^^^^^^^^
 
 If a file exists on the target, a backup file is written with the
-suffix `.wwbackup`. This only happens for the `host` overlay, as
-e.g. the `/etc/hosts` exists on the host. If this is not the intended
-behavior, the ``{{ nobackup }}`` flag can be added to a template.
+suffix ``.wwbackup``. This only happens for the ``host`` overlay, as
+e.g. the ``/etc/hosts`` exists on the host. If this is not the
+intended behavior, the ``{{ nobackup }}`` flag can be added to a
+template.
 
 Split
 ^^^^^

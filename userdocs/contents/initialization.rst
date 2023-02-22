@@ -25,7 +25,7 @@ properly. Here are the things it will do:
 * **nfs**: Configure the NFS server on the control node as well as the
   ``/etc/fstab`` in the system overlay based on the configuration in
   ``/etc/warewulf/warewulf.conf`` and enable the system service. Also
-  the file `/etc/exports.ww` from the **host** template is installed.
+  the file ``/etc/exports.ww`` from the **host** template is installed.
 * **ssh**: Create the appropriate host keys (stored in
   ``/etc/warewulf/keys/``) and user keys for passwordless ``ssh`` into
   the nodes. Addionally the shell profiles
@@ -49,7 +49,7 @@ Systemd service:
 
    # systemctl enable --now warewulfd
 
-You can also check and control the Warewulf service using the `wwctl`
+You can also check and control the Warewulf service using the ``wwctl``
 command line program as follows:
 
 .. code-block:: console

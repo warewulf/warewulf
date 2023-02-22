@@ -6,7 +6,7 @@ Since the inception of Warewulf over 20 years ago, Warewulf has used
 the model of the "Virtual Node File System" (VNFS) as a template image
 for the compute nodes. This is similar to a golden master image,
 except that the node file system exists within a directory on the
-Warewulf control node (e.g. a `chroot()`).
+Warewulf control node (e.g. a ``chroot()``).
 
 In hindsight, we've been using containers all along, but the buzzword
 just didn't exist. Over the last 5-6 years, the enterprise has created
@@ -249,7 +249,7 @@ into Warewulf can be done with the following steps:
 Building A Container Using Podman
 ---------------------------------
 
-You can also build a container using podman via a `Dockerfile`. For
+You can also build a container using podman via a ``Dockerfile``. For
 this step the container must be exported to a tar archive, which then
 can be imported to Warewulf. The following steps will create an
 openSUSE Leap container and import it to Warewulf:

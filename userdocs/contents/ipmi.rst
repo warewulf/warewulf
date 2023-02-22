@@ -10,8 +10,8 @@ IPMI Settings
 =============
 
 The common settings for the IPMI interfaces on all nodes can be set on
-a Profile level.  The only field that would need to be assigned to
-each individual node would be the IP address.
+a Profile level. The only field that would need to be assigned to each
+individual node would be the IP address.
 
 The settings are only written to the IPMI interface if ``--ipmiwrite``
 is set to `true`. The write process happens at every boot of the node
@@ -22,8 +22,8 @@ If an individual node has different settings, you can set the IPMI
 settings for that specific node, overriding the default settings.
 
 Here is a table outlining the fields on a Profile and Node which is
-the same as the parameter that can be used when running `wwctl profile
-set` or `wwctl node set`.
+the same as the parameter that can be used when running ``wwctl
+profile set`` or ``wwctl node set``.
 
 +--------------------+---------+------+--------------------+---------------+
 | Parameter          | Profile | Node | Valid Values       | Default Value |
@@ -175,4 +175,6 @@ Console
 If your node is setup to use serial over lan (SOL), Warewulf can
 connect a console to the node.
 
-``sudo wwctl node console n001``
+.. code-block:: console
+
+   # wwctl node console n001
