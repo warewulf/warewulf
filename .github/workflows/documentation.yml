@@ -3,6 +3,15 @@ name: publish_docs
 
 on:
   push:
+    branches:
+      - main
+      - development
+  pull_request:
+    branches:
+      - main
+      - development
+    paths:
+      - userdocs/**
 
 jobs:
   publish:
@@ -34,6 +43,7 @@ jobs:
           make html
 
       - name: Install SSH key
+        if: github.event_name != 'pull_request'
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
@@ -50,6 +60,7 @@ jobs:
           git config --global user.name "gh-actions"
 
       - name: Update website repo
+        if: github.event_name != 'pull_request'
         run: |
           git clone git@github.com:hpcng/warewulf-web.git ~/warewulf-web
           mkdir -p ~/warewulf-web/static/docs
