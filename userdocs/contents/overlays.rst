@@ -211,7 +211,7 @@ Edit
 ----
 .. code-block:: console
 
-  wwctl overlay edit [--mode,-m MODE|--parents,p] overlay-name file
+  wwctl overlay edit [--mode,-m MODE|--parents,-p] overlay-name file
 
 Use this command to edit an existing or a new file in the given
 overlay. If a the new file ends with a ``.ww`` suffix an example
