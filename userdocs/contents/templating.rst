@@ -2,16 +2,23 @@
 Templating
 ==========
 
-Warewulf uses the ``text/template`` engine to convert dynamic content into static content and auto-populate files with the appropriate data on demand.
+Warewulf uses the ``text/template`` engine to convert dynamic content
+into static content and auto-populate files with the appropriate data
+on demand.
 
-In Warewulf, you can find templates both for the provisioning services (e.g. ``/etc/warewulf/ipxe/``, ``/etc/warewulf/dhcp/``, and ``/etc/warewulf/hosts.tmpl``) as well as within the runtime and system overlays.
+In Warewulf, you can find templates both for the provisioning services
+(e.g. ``/etc/warewulf/ipxe/``, ``/etc/warewulf/dhcp/``, and
+``/etc/warewulf/hosts.tmpl``) as well as within the runtime and system
+overlays.
 
 (more documentation coming soon)
 
 Examples
 ========
+
 Comment
 -------
+
 .. code-block:: go
 
    {{  /* This comment won't show up in file, but an empty line /* }}
@@ -57,6 +64,7 @@ iterate over elements of an array and decrement ``i`` each loop cycle
 
 Access Tag
 ----------
+
 Acces the value of an individual tag `foo`
 
 .. code-block:: go
@@ -68,7 +76,9 @@ Acces the value of an individual tag `foo`
 
 Create Multiple Files
 ---------------------
-The following template will create a file called `ifcfg-NETWORKNAME.xml` for every network present on the node
+
+The following template will create a file called
+`ifcfg-NETWORKNAME.xml` for every network present on the node
 
 .. code-block:: go
 
@@ -125,11 +135,12 @@ The following template will create a file called `ifcfg-NETWORKNAME.xml` for eve
   </interface>
   {{ end -}}
 
-
 Special Commands
 ----------------
+
 Include
 ^^^^^^^
+
 A file from the host can be include with following template
 
 .. code-block:: go
@@ -138,6 +149,7 @@ A file from the host can be include with following template
 
 IncludeFrom
 ^^^^^^^^^^^
+
 With following snippet a file from a given container can be included
 
 .. code-block:: go
@@ -147,10 +159,10 @@ With following snippet a file from a given container can be included
 IncludeBlock
 ^^^^^^^^^^^^
 
-Includes a file up to the line where a abort string is found. This is useful, e.g.,
-for the hosts file, which can have local modifications which are not controlled
-by warewulf. For this example the abort string is
-"# Do not edit after this line"
+Includes a file up to the line where a abort string is found. This is
+useful, e.g., for the hosts file, which can have local modifications
+which are not controlled by warewulf. For this example the abort
+string is "# Do not edit after this line"
 
 .. code-block:: go
 
@@ -159,11 +171,11 @@ by warewulf. For this example the abort string is
   # Host:   {{.BuildHost}}
   # Time:   {{.BuildTime}}
   # Source: {{.BuildSource}}
-  
-  
+
+
   # Warewulf Server
   {{$.Ipaddr}} warewulf {{$.BuildHost}}
-  
+
   {{- range $node := $.AllNodes}}                  {{/* for each node */}}
   # Entry for {{$node.Id.Get}}
   {{- range $devname, $netdev := $node.NetDevs}} {{/* for each network device on the node */}}
@@ -183,10 +195,10 @@ If ``{{ abort }}`` is found in a template, the resulting file isn't written.
 Nobackup
 ^^^^^^^^
 
-If a file exists on the target, a backup file is written with the suffix
-`.wwbackup`. This only happens for the `host` overlay, as e.g. the `/etc/hosts`
-exists on the host. If this is not the intended behavior, the ``{{ nobackup }}``
-flag can be added to a template.
+If a file exists on the target, a backup file is written with the
+suffix `.wwbackup`. This only happens for the `host` overlay, as
+e.g. the `/etc/hosts` exists on the host. If this is not the intended
+behavior, the ``{{ nobackup }}`` flag can be added to a template.
 
 Split
 ^^^^^

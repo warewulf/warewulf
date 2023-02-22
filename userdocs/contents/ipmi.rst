@@ -2,18 +2,28 @@
 IPMI
 ====
 
-It is possible to control the power or connect a console to your nodes being managed by Warewulf by connecting to the BMC through the use of IPMI. We will discuss how to set this up below.
+It is possible to control the power or connect a console to your nodes
+being managed by Warewulf by connecting to the BMC through the use of
+IPMI. We will discuss how to set this up below.
 
 IPMI Settings
 =============
 
-The common settings for the IPMI interfaces on all nodes can be set on a Profile level.  The only field that would need to be assigned to each individual node would be the IP address.
+The common settings for the IPMI interfaces on all nodes can be set on
+a Profile level.  The only field that would need to be assigned to
+each individual node would be the IP address.
 
-The settings are only written to the IPMI interface if ``--ipmiwrite`` is set to `true`. The write process happens at every boot of the node through the script ``/warewulf/init.d/50-ipmi`` in the **system** overlay.
+The settings are only written to the IPMI interface if ``--ipmiwrite``
+is set to `true`. The write process happens at every boot of the node
+through the script ``/warewulf/init.d/50-ipmi`` in the **system**
+overlay.
 
-If an individual node has different settings, you can set the IPMI settings for that specific node, overriding the default settings.
+If an individual node has different settings, you can set the IPMI
+settings for that specific node, overriding the default settings.
 
-Here is a table outlining the fields on a Profile and Node which is the same as the parameter that can be used when running `wwctl profile set` or `wwctl node set`.
+Here is a table outlining the fields on a Profile and Node which is
+the same as the parameter that can be used when running `wwctl profile
+set` or `wwctl node set`.
 
 +----------------+---------+------+--------------------+---------------+
 | Parameter      | Profile | Node | Valid Values       | Default Value |
@@ -39,7 +49,8 @@ Here is a table outlining the fields on a Profile and Node which is the same as 
 Reviewing Settings
 ==================
 
-There are multiple ways to review the IPMI settings. They can be reviewed from a Profile level, all the way down to a specific Node.
+There are multiple ways to review the IPMI settings. They can be
+reviewed from a Profile level, all the way down to a specific Node.
 
 Profile View
 ------------
@@ -75,6 +86,7 @@ Profile View
 
 Node View
 ---------
+
 .. code-block:: bash
 
   $ sudo wwctl node list -a n001
@@ -116,23 +128,26 @@ Node View
 Review Only IPMI Settings
 -------------------------
 
-The above views show you everything that is set on a Profile or Node level. That is a lot of detail. If you want to view key IPMI connecton details for a node or all nodes, you can do the following.
+The above views show you everything that is set on a Profile or Node
+level. That is a lot of detail. If you want to view key IPMI connecton
+details for a node or all nodes, you can do the following.
 
 .. code-block:: bash
 
    $ sudo wwctl node list -i
  NODE NAME              IPMI IPADDR      IPMI PORT  IPMI USERNAME        IPMI INTERFACE
  ==================================================================================================
- n001                   192.168.1.11     --         hwadmin              --            
- n002                   192.168.1.12     --         hwadmin              --            
- n003                   192.168.1.13     --         hwadmin              --            
- n004                   192.168.1.14     --         hwadmin              --            
+ n001                   192.168.1.11     --         hwadmin              --
+ n002                   192.168.1.12     --         hwadmin              --
+ n003                   192.168.1.13     --         hwadmin              --
+ n004                   192.168.1.14     --         hwadmin              --
 
 
 Power Commands
 ==============
 
-The ``power`` command can be used to manage the current power state of your nodes through IPMI.
+The ``power`` command can be used to manage the current power state of
+your nodes through IPMI.
 
 ``wwctl power [command]`` where ``[command]`` is one of:
 
@@ -157,6 +172,7 @@ status
 Console
 =======
 
-If your node is setup to use serial over lan (SOL), Warewulf can connect a console to the node.
+If your node is setup to use serial over lan (SOL), Warewulf can
+connect a console to the node.
 
 ``sudo wwctl node console n001``

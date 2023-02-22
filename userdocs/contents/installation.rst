@@ -54,7 +54,17 @@ Select the version you wish to install and download the tarball to any location 
 Git
 ---
 
-Warewulf is developed in "Git", a source code management platform that allows collaborative development and revision control. From the Git repository, you can download different versions of the project either from tags or branches. By default, when you go to the GitHub page, you will find the default branch entitled ``main``. The ``main`` branch is where most of the active development occurs, so if you want to obtain the latest and greatest version of Warewulf, this is where to go. But be forewarned, using a snapshot from ``main`` is not guaranteed to be stable or generally supported for production. If you are building for production, it is best to download a release tarball from the main site, the GitHub releases page, or from a Git tag.
+Warewulf is developed in "Git", a source code management platform that
+allows collaborative development and revision control. From the Git
+repository, you can download different versions of the project either
+from tags or branches. By default, when you go to the GitHub page, you
+will find the default branch entitled ``main``. The ``main`` branch is
+where most of the active development occurs, so if you want to obtain
+the latest and greatest version of Warewulf, this is where to go. But
+be forewarned, using a snapshot from ``main`` is not guaranteed to be
+stable or generally supported for production. If you are building for
+production, it is best to download a release tarball from the main
+site, the GitHub releases page, or from a Git tag.
 
 .. code-block:: bash
 
@@ -68,7 +78,9 @@ Warewulf is developed in "Git", a source code management platform that allows co
 Runtime Dependencies
 --------------------
 
-In Warewulf's default configuration, it will require some operating system provided services. Generally these are provided by your installation vendor and can be installed over the network.
+In Warewulf's default configuration, it will require some operating
+system provided services. Generally these are provided by your
+installation vendor and can be installed over the network.
 
 These are the services you will need to install:
 
@@ -76,4 +88,5 @@ These are the services you will need to install:
 * ``tftp-server``
 * ``nfs-utils``
 
-If you are using an Enterprise Linux compatible distribution you can install them with: ``yum install dhcp-server tftp-server nfs-utils``
+If you are using an Enterprise Linux compatible distribution you can
+install them with ``yum install dhcp-server tftp-server nfs-utils``.
