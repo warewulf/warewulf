@@ -56,7 +56,7 @@ Turn off default network dhcp on server master1
 
    sudo virsh net-start default
 
-Build and install warewulf on wwdev
+Build and install Warewulf on wwdev
 ===================================
 
 .. code-block:: bash

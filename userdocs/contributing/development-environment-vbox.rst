@@ -28,7 +28,7 @@ I have VirtualBox running on my desktop.
    # Next attach the second Network adapter #2 to the NAT Network and you should be able to choose
    # the 'wwnatnetwork' created above in step #1 from the drop down list.
 
-3. Build and install warewulf on wwdev
+3. Build and install Warewulf on wwdev
 
 .. code-block:: console
 
@@ -135,7 +135,7 @@ I have VirtualBox running on my desktop.
    sudo wwctl server start
    sudo wwctl server status
 
-4. Create a new guest VM instance inside the VirtualBox to be the warewulf client/compute node. Under the system configuration make sure to select the optical and network options only for the boot order. The default iPXE used by VirtualBox does not come with bzImage capability which is needed for warewulf. Download the ipxe.iso available at ipxe.org and mount the ipxe.iso to the optical drive. Enable one Network adapter for this VM and assign it to the NAT Network created in step #1 above.
+4. Create a new guest VM instance inside the VirtualBox to be the Warewulf client/compute node. Under the system configuration make sure to select the optical and network options only for the boot order. The default iPXE used by VirtualBox does not come with bzImage capability which is needed for Warewulf. Download the ipxe.iso available at ipxe.org and mount the ipxe.iso to the optical drive. Enable one Network adapter for this VM and assign it to the NAT Network created in step #1 above.
 
 .. code-block:: console
 
