@@ -6,9 +6,9 @@ The Node Configuration DB
 =========================
 
 As mentioned in the [Configuration](configuration) section, node
-configs are persisted to the ``nodes.conf`` YAML file, but generally it
-is best not to edit this file directly (however that is supported, it
-is just prone to errors).
+configs are persisted to the ``nodes.conf`` YAML file, but generally
+it is best not to edit this file directly (however that is supported,
+it is just prone to errors).
 
 This method of using a YAML configuration file as a backend datastore
 is both scalable and very lightweight. We've tested this out to over
@@ -28,8 +28,8 @@ Creating a new node is as simple as running the following command:
 Adding several nodes
 --------------------
 
-Several nodes can be added with a single command if a node range is given. An
-additional IP address will incremented. So the command
+Several nodes can be added with a single command if a node range is
+given. An additional IP address will incremented. So the command
 
 .. code-block:: bash
 
@@ -77,8 +77,8 @@ their attributes as follows:
 
    $ sudo wwctl node list
 
-You can also see the node's full attribute list by specifying the ``-a``
-option (all):
+You can also see the node's full attribute list by specifying the
+``-a`` option (all):
 
 .. code-block:: bash
 
@@ -120,8 +120,9 @@ option (all):
 
 
 .. note::
-   The attribute values in parenthesis are default values and can
-   be overridden in the next section, granted, the default values are
+
+   The attribute values in parenthesis are default values and can be
+   overridden in the next section, granted, the default values are
    generally usable.
 
 Setting Node Attributes
@@ -133,9 +134,9 @@ are a kernel and container, and for that node to be useful, we will
 also need to configure the network so the nodes are reachable after
 they boot.
 
-Node configurations are set using the ``wwctl node set`` command. To see
-a list of all configuration attributes, use the command ``wwctl node
-set --help``.
+Node configurations are set using the ``wwctl node set`` command. To
+see a list of all configuration attributes, use the command ``wwctl
+node set --help``.
 
 Configuring the Node's Container Image
 ======================================
@@ -157,20 +158,19 @@ Configuring the Node's Kernel
 
 While the recommended method for assigning a kernel in 4.3 and beyond
 is to include it in the container / node image, a kernel can still be
-specified as an override at the node or profile.
-To illustrate this, we import the most recent kernel from a openSUSE Tumbleweed release
-
+specified as an override at the node or profile.  To illustrate this,
+we import the most recent kernel from a openSUSE Tumbleweed release
 
 .. code-block:: bash
 
   $ sudo wwctl container import docker://registry.opensuse.org/science/warewulf/tumbleweed/containerfile/kernel:latest tw
   $ sudo wwctl kernel import -DC tw
   $ sudo wwctl kernel list
-  KERNEL NAME                         KERNEL VERSION            NODES 
+  KERNEL NAME                         KERNEL VERSION            NODES
   tw                                  6.1.10-1-default               0
   $ sudo wwctl node set --kerneloverride tw n001
   Are you sure you want to modify 1 nodes(s): y
-  
+
   $ sudo wwctl node list -a n001 | grep kerneloverride
   n001                 kerneloverride     --           tw
 
@@ -226,18 +226,17 @@ container, kernel, and network:
   n001                 default:mtu        --           --
   n001                 default:primary    --           true
 
-   $ sudo wwctl node set --cluster cluster01 n001
-   Are you sure you want to modify 1 nodes(s): y
+  $ sudo wwctl node set --cluster cluster01 n001
+  Are you sure you want to modify 1 nodes(s): y
 
-   $ sudo wwctl node list -a n001 | grep cluster
-   n001                 cluster            --           cluster01
+  $ sudo wwctl node list -a n001 | grep cluster
+  n001                 cluster            --           cluster01
 
 Un-setting Node Attributes
 ==========================
 
 If you wish to ``unset`` a particular value, set the value to
 ``UNDEF``. For example:
-
 
 And to unset this configuration attribute:
 

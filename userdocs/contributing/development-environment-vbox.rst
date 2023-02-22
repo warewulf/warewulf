@@ -1,11 +1,12 @@
-
 ====================================
 Development Environment (VirtualBox)
 ====================================
 
 I have VirtualBox running on my desktop.
 
-1. Create a NAT Network (a private vlan) to be used for the Warewlf Server and compute nodes inside the VirtualBox. Make sure to turnoff DHCP service within this NAT Network.
+1. Create a NAT Network (a private vlan) to be used for the Warewlf
+   Server and compute nodes inside the VirtualBox. Make sure to
+   turnoff DHCP service within this NAT Network.
 
 .. code-block:: console
 
@@ -13,7 +14,12 @@ I have VirtualBox running on my desktop.
 
    VBoxManage natnetwork add --netname wwnatnetwork --network "10.0.8.0/24" --enable --dhcp off
 
-2. Create a Centos 7 development Virtual machine (wwdev) to be used as the Warewulf Server. Enable two Network adapters one with a standard NAT and SSH port mapping such that you can access this VM from the host machine. Assign the second network adapter to the NAT Network created in step #1. Assign sufficient memory (e.g: 4GB) to the VM.
+2. Create a Centos 7 development Virtual machine (wwdev) to be used as
+   the Warewulf Server. Enable two Network adapters one with a
+   standard NAT and SSH port mapping such that you can access this VM
+   from the host machine. Assign the second network adapter to the NAT
+   Network created in step #1. Assign sufficient memory (e.g: 4GB) to
+   the VM.
 
 .. code-block:: console
 
@@ -135,7 +141,14 @@ I have VirtualBox running on my desktop.
    sudo wwctl server start
    sudo wwctl server status
 
-4. Create a new guest VM instance inside the VirtualBox to be the Warewulf client/compute node. Under the system configuration make sure to select the optical and network options only for the boot order. The default iPXE used by VirtualBox does not come with bzImage capability which is needed for Warewulf. Download the ipxe.iso available at ipxe.org and mount the ipxe.iso to the optical drive. Enable one Network adapter for this VM and assign it to the NAT Network created in step #1 above.
+4. Create a new guest VM instance inside the VirtualBox to be the
+   Warewulf client/compute node. Under the system configuration make
+   sure to select the optical and network options only for the boot
+   order. The default iPXE used by VirtualBox does not come with
+   bzImage capability which is needed for Warewulf. Download the
+   ipxe.iso available at ipxe.org and mount the ipxe.iso to the
+   optical drive. Enable one Network adapter for this VM and assign it
+   to the NAT Network created in step #1 above.
 
 .. code-block:: console
 
@@ -144,4 +157,5 @@ I have VirtualBox running on my desktop.
    # VM Settings -> Storage and mount the above download ipxe.so to the Optical Drive.
    # VM Settings -> Network Enable adapter #1, attach to 'Nat Network' and choose 'wwnatnetwork' from the drop down list.
 
-Boot your node and watch the console and the output of the Warewulfd process
+Boot your node and watch the console and the output of the Warewulfd
+process.
