@@ -10,9 +10,9 @@ initialized and have the associated system services started. To do
 this, start by configuring the system services that Warewulf depends
 on for operation. To do that, run the following command:
 
-.. code-block:: bash
+.. code-block:: console
 
-   sudo wwctl configure --all
+   # wwctl configure --all
 
 This command will configure the system for Warewulf to run
 properly. Here are the things it will do:
@@ -45,16 +45,16 @@ The Warewulf installation attempts to register the Warewulf service
 with Systemd, so it should be as easy to start/stop/check as any other
 Systemd service:
 
-.. code-block:: bash
+.. code-block:: console
 
-   sudo systemctl enable --now warewulfd
+   # systemctl enable --now warewulfd
 
 You can also check and control the Warewulf service using the `wwctl`
 command line program as follows:
 
-.. code-block:: bash
+.. code-block:: console
 
-   sudo wwctl server status
+   # wwctl server status
 
 .. note::
 

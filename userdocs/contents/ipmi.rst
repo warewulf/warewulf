@@ -55,9 +55,9 @@ reviewed from a Profile level, all the way down to a specific Node.
 Profile View
 ------------
 
-.. code-block:: bash
+.. code-block:: console
 
-  $ sudo wwctl profile list -a
+  # wwctl profile list -a
   PROFILE              FIELD              PROFILE      VALUE
   =====================================================================================
   default              Id                 --           default
@@ -87,9 +87,9 @@ Profile View
 Node View
 ---------
 
-.. code-block:: bash
+.. code-block:: console
 
-  $ sudo wwctl node list -a n001
+  # wwctl node list -a n001
   NODE                 FIELD              PROFILE      VALUE
   =====================================================================================
   n001                 Id                 --           n001
@@ -132,9 +132,9 @@ The above views show you everything that is set on a Profile or Node
 level. That is a lot of detail. If you want to view key IPMI connecton
 details for a node or all nodes, you can do the following.
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl node list -i
+ # wwctl node list -i
  NODE NAME              IPMI IPADDR      IPMI PORT  IPMI USERNAME        IPMI INTERFACE
  ==================================================================================================
  n001                   192.168.1.11     --         hwadmin              --

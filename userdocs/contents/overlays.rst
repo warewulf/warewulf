@@ -100,15 +100,15 @@ overlay called welcome and import the file `/etc/issue` from the host
 to it. This overlay is then combined with the existing **wwinit**
 overlay.
 
-..code-block:: bash
-  $ wwctl overlay create welcome
-  $ wwctl overlay mkdir welcome /etc
-  $ wwctl overlay import welcome /etc/issue
-  $ wwctl profile set default --wwinit=wwinit,welcome
-  ? Are you sure you want to modify 1 profile(s)? [y/N] y
-  $ wwctl profile list default -a |grep welcome
-  default              SystemOverlay      wwinit,welcome
+.. code-block:: console
 
+  # wwctl overlay create welcome
+  # wwctl overlay mkdir welcome /etc
+  # wwctl overlay import welcome /etc/issue
+  # wwctl profile set default --wwinit=wwinit,welcome
+  ? Are you sure you want to modify 1 profile(s)? [y/N] y
+  # wwctl profile list default -a |grep welcome
+  default              SystemOverlay      wwinit,welcome
 
 Templates
 =========
@@ -147,9 +147,9 @@ permissions, etc.
 Build
 -----
 
-.. code-block:: bash
+.. code-block:: console
 
-  wwctl overlay build [-H,--hosts|-N,--nodes|-o,--output directory|-O,--overlay-name]  nodepattern
+  wwctl overlay build [-H,--hosts|-N,--nodes|-o,--output directory|-O,--overlay-name] nodepattern
 
 Without any arguments the command will interpret the templates for all
 overlays for every compute node and also all the templates in the host
@@ -167,7 +167,7 @@ By default Warewulf will build/update and cache overlays as needed
 Chmod
 -----
 
-.. code-block:: bash
+.. code-block:: console
 
   wwctl overlay chmod overlay-name filename mode
 
@@ -177,7 +177,7 @@ overlay. You can use any mode format supported by the chmod command.
 Chown
 -----
 
-.. code-block:: bash
+.. code-block:: console
 
   wwctl overlay chown overlay-name filename UID [GID]
 
@@ -188,7 +188,7 @@ change group ownership to GID.
 Create
 ------
 
-.. code-block:: bash
+.. code-block:: console
 
   wwctl overlay create overlay-name
 
@@ -197,7 +197,7 @@ This command creates a new empty overlay with the given name.
 Delete
 ------
 
-.. code-block:: bash
+.. code-block:: console
 
   wwctl overlay delete [-f,--force] overlay-name [File [File ...]]
 
@@ -208,7 +208,7 @@ no other file is in the directory.
 
 Edit
 ----
-.. code-block:: bash
+.. code-block:: console
 
   wwctl overlay edit [--mode,-m MODE|--parents,p] overlay-name file
 
@@ -219,7 +219,7 @@ necessary parent directories for a new file are created.
 
 Import
 ------
-.. code-block:: bash
+.. code-block:: console
 
   wwctl overlay import [--mode,-m|--noupdate,-n] overlay-name file-name [new-file-name]
 
@@ -231,7 +231,7 @@ overlays.
 List
 ----
 
-.. code-block:: bash
+.. code-block:: console
 
   wwctl overlay list [--all,-a|--long,-l] [overlay-name]
 
@@ -244,7 +244,7 @@ GID of each file.
 Show
 ----
 
-.. code-block:: bash
+.. code-block:: console
 
   wwctl overlay show [--quiet,-q|--render,-r nodename] overlay-name file
 

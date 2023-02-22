@@ -46,9 +46,9 @@ private registry.
 
 Here is an example of importing from Docker Hub.
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl container import docker://warewulf/rocky rocky-8
+   # wwctl container import docker://warewulf/rocky rocky-8
    Getting image source signatures
    Copying blob d7f16ed6f451 done
    Copying config da2ca70704 done
@@ -85,7 +85,7 @@ podman on your control node just for importing images into Warewulf.
 
 Here are the environmental variables that can be used.
 
-.. code-block:: bash
+.. code-block:: console
 
    WAREWULF_OCI_USERNAME
    WAREWULF_OCI_PASSWORD
@@ -93,11 +93,11 @@ Here are the environmental variables that can be used.
 
 Here is an example:
 
-.. code-block:: bash
+.. code-block:: console
 
-   export WAREWULF_OCI_USERNAME=privateuser
-   export WAREWULF_OCI_PASSWORD=super-secret-password-or-token
-   sudo -E wwctl import docker://ghcr.io/privatereg/rocky:8
+   # export WAREWULF_OCI_USERNAME=privateuser
+   # export WAREWULF_OCI_PASSWORD=super-secret-password-or-token
+   # wwctl import docker://ghcr.io/privatereg/rocky:8
 
 The above is just an example. Consideration should be done before
 doing it this way if you are in a security sensitive environment or
@@ -118,14 +118,14 @@ belonning to these UIDs and GIDs will also be updated.
 A check if the users of the host and container matches can be
 triggered with the ``syncuser`` command.
 
-.. code-block:: bash
+.. code-block:: console
 
-   wwctl container syncuser container-name
+   # wwctl container syncuser container-name
 
 With the ``--write`` flag it will update the container to match the
 user database of the host as described above.
 
-.. code-block:: bash
+.. code-block:: console
 
    wwctl container syncuser --write container-name
 
@@ -135,9 +135,9 @@ Listing All Imported Containers
 Once the container has been imported, you can list them all with the
 following command:
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl container list
+   # wwctl container list
    CONTAINER NAME                      BUILT  NODES
    rocky-8                             true   0
 
@@ -151,9 +151,9 @@ Warewulf has a minimal container runtime built into it. This means you
 can run commands inside of any of the containers and make changes to
 them as follows:
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl container exec rocky-8 /bin/sh
+   # wwctl container exec rocky-8 /bin/sh
    [rocky-8] Warewulf> cat /etc/rocky-release
    Rocky Linux release 8.4 (Green Obsidian)
    [rocky-8] Warewulf> exit
@@ -163,9 +163,9 @@ them as follows:
 You can also ``--bind`` directories from your host into the container
 when using the exec command. This works as follows:
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl container exec --bind /tmp:/mnt rocky-8 /bin/sh
+   # wwctl container exec --bind /tmp:/mnt rocky-8 /bin/sh
    [rocky-8] Warewulf>
 
 .. note::
@@ -199,9 +199,9 @@ node's container.
 For example, on an RPM based Linux distribution with YUM or DNF, you
 can do something like the following:
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo yum install --installroot /tmp/newroot basesystem bash \
+   # yum install --installroot /tmp/newroot basesystem bash \
        chkconfig coreutils e2fsprogs ethtool filesystem findutils \
        gawk grep initscripts iproute iputils net-tools nfs-utils pam \
        psmisc rsync sed setup shadow-utils rsyslog tzdata util-linux \
@@ -212,20 +212,20 @@ can do something like the following:
 
 You can do something similar with Debian-based distributions:
 
-.. code-block:: bash
+.. code-block:: console
 
-   sudo apt-get install debootstrap
-   sudo debootstrap stable /tmp/newroot http://ftp.us.debian.org/debian
+   # apt-get install debootstrap
+   # debootstrap stable /tmp/newroot http://ftp.us.debian.org/debian
 
 Once you have created and modified your new ``chroot()``, you can
 import it into Warewulf with the following command:
 
-.. code-block:: bash
+.. code-block:: console
 
-   sudo wwctl container import /tmp/newroot containername
+   # wwctl container import /tmp/newroot containername
 
 Building A Container Using Apptainer
---------------------------------------
+------------------------------------
 
 Apptainer, a container platform for HPC and performance intensive
 applications, can also be used to create node containers for
@@ -239,23 +239,23 @@ you want in the ``%post`` section of the recipe file. Once you've done
 that, installing Apptainer, building a container sandbox and importing
 into Warewulf can be done with the following steps:
 
-.. code-block:: bash
+.. code-block:: console
 
-   sudo yum install epel-release
-   sudo yum install Apptainer
-   sudo Apptainer build --sandbox /tmp/newroot /path/to/Apptainer/recipe.def
-   sudo wwctl container import /tmp/newroot containername
+   # yum install epel-release
+   # yum install Apptainer
+   # Apptainer build --sandbox /tmp/newroot /path/to/Apptainer/recipe.def
+   # wwctl container import /tmp/newroot containername
 
 Building A Container Using Podman
---------------------------------------
+---------------------------------
 
 You can also build a container using podman via a `Dockerfile`. For
 this step the container must be exported to a tar archive, which then
 can be imported to Warewulf. The following steps will create an
 openSUSE Leap container and import it to Warewulf:
 
-.. code-block:: bash
+.. code-block:: console
 
-  $ sudo podman build -f containers/Docker/openSUSE/Containerfile --tag leap-ww
-  $ sudo podman save localhost/leap-ww:latest  -o ~/leap-ww.tar
-  $ sudo wwctl container import file://root/leap-ww.tar leap-ww
+  # podman build -f containers/Docker/openSUSE/Containerfile --tag leap-ww
+  # podman save localhost/leap-ww:latest  -o ~/leap-ww.tar
+  # wwctl container import file://root/leap-ww.tar leap-ww

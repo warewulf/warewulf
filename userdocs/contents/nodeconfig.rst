@@ -20,9 +20,9 @@ Adding a New Node
 
 Creating a new node is as simple as running the following command:
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl node add n001 -I 172.16.1.11
+   # wwctl node add n001 -I 172.16.1.11
    Added node: n001
 
 Adding several nodes
@@ -31,13 +31,14 @@ Adding several nodes
 Several nodes can be added with a single command if a node range is
 given. An additional IP address will incremented. So the command
 
-.. code-block:: bash
+.. code-block:: console
 
-  $ sudo wwctl node add n00[2-4] -I 172.16.1.12
+  # wwctl node add n00[2-4] -I 172.16.1.12
   Added node: n002
   Added node: n003
   Added node: n004
-  $ wwctl node list -n  n00[1-4]
+
+  # wwctl node list -n n00[1-4]
   NODE NAME              NAME     HWADDR             IPADDR          GATEWAY         DEVICE
   ==========================================================================================
   n001                   default  --                 172.16.1.11     --              (eth0)
@@ -69,20 +70,19 @@ Listing Nodes
 Once you have configured one or more nodes, you can list them and
 their attributes as follows:
 
-.. code-block:: bash
+.. code-block:: console
 
+  # wwctl node list
   NODE NAME              PROFILES                   NETWORK
   ================================================================================
   n001                            default
-
-   $ sudo wwctl node list
 
 You can also see the node's full attribute list by specifying the
 ``-a`` option (all):
 
 .. code-block:: bash
 
-  $ sudo wwctl node list -a n001
+  # wwctl node list -a n001
   NODE                 FIELD              PROFILE      VALUE
   =====================================================================================
   n001                 Id                 --           n001
@@ -118,7 +118,6 @@ You can also see the node's full attribute list by specifying the
   n001                 default:mtu        --           --
   n001                 default:primary    --           true
 
-
 .. note::
 
    The attribute values in parenthesis are default values and can be
@@ -141,16 +140,16 @@ node set --help``.
 Configuring the Node's Container Image
 ======================================
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl node set --container rocky-8 n001
+   # wwctl node set --container rocky-8 n001
    Are you sure you want to modify 1 nodes(s): y
 
 And you can check that the container name is set for ``n001``:
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl node list -a  n001 | grep Container
+   # wwctl node list -a  n001 | grep Container
    n0000                Container          --           rocky-8
 
 Configuring the Node's Kernel
@@ -159,21 +158,20 @@ Configuring the Node's Kernel
 While the recommended method for assigning a kernel in 4.3 and beyond
 is to include it in the container / node image, a kernel can still be
 specified as an override at the node or profile.  To illustrate this,
-we import the most recent kernel from a openSUSE Tumbleweed release
+we import the most recent kernel from a openSUSE Tumbleweed release.
 
-.. code-block:: bash
+.. code-block:: console
 
-  $ sudo wwctl container import docker://registry.opensuse.org/science/warewulf/tumbleweed/containerfile/kernel:latest tw
-  $ sudo wwctl kernel import -DC tw
-  $ sudo wwctl kernel list
+  # wwctl container import docker://registry.opensuse.org/science/warewulf/tumbleweed/containerfile/kernel:latest tw
+  # wwctl kernel import -DC tw
+  # wwctl kernel list
   KERNEL NAME                         KERNEL VERSION            NODES
   tw                                  6.1.10-1-default               0
-  $ sudo wwctl node set --kerneloverride tw n001
+  # wwctl node set --kerneloverride tw n001
   Are you sure you want to modify 1 nodes(s): y
 
-  $ sudo wwctl node list -a n001 | grep kerneloverride
+  # wwctl node list -a n001 | grep kerneloverride
   n001                 kerneloverride     --           tw
-
 
 Configuring the Node's Network
 ------------------------------
@@ -181,17 +179,17 @@ Configuring the Node's Network
 To configure the network, we have to pick a network device name and
 provide the network information as follows:
 
-.. code-block:: bash
+.. code-block:: console
 
-  $ sudo wwctl node set --netdev eth0 --hwaddr 11:22:33:44:55:66 --ipaddr 10.0.2.1 --netmask 255.255.252.0 n001
+  # wwctl node set --netdev eth0 --hwaddr 11:22:33:44:55:66 --ipaddr 10.0.2.1 --netmask 255.255.252.0 n001
    Are you sure you want to modify 1 nodes(s): y
 
 You can now see that the node contains configuration attributes for
 container, kernel, and network:
 
-.. code-block:: bash
+.. code-block:: console
 
-  $ sudo wwctl node list -a n001
+  # wwctl node list -a n001
   =====================================================================================
   n001                 Id                 --           n001
   n001                 comment            default      This profile is automatically included for each node
@@ -226,10 +224,10 @@ container, kernel, and network:
   n001                 default:mtu        --           --
   n001                 default:primary    --           true
 
-  $ sudo wwctl node set --cluster cluster01 n001
+  # wwctl node set --cluster cluster01 n001
   Are you sure you want to modify 1 nodes(s): y
 
-  $ sudo wwctl node list -a n001 | grep cluster
+  # wwctl node list -a n001 | grep cluster
   n001                 cluster            --           cluster01
 
 Un-setting Node Attributes
@@ -240,10 +238,10 @@ If you wish to ``unset`` a particular value, set the value to
 
 And to unset this configuration attribute:
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl node set --cluster UNDEF n001
+   # wwctl node set --cluster UNDEF n001
    Are you sure you want to modify 1 nodes(s): y
 
-   $ sudo wwctl node list -a n001 | grep Cluster
+   # wwctl node list -a n001 | grep Cluster
    n001                Cluster            --           --

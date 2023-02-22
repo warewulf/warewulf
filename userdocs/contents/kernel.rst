@@ -16,9 +16,9 @@ container image.
 You can see what kernel is included in a container by using the
 ``wwctl container list`` command:
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl container list
+   # wwctl container list
    CONTAINER NAME            NODES  KERNEL VERSION
    alpine                    0
    rocky                     0      4.18.0-348.12.2.el8_5.x86_64
@@ -47,9 +47,9 @@ In this case you will also need to import a kernel specifically into
 Warewulf for this purpose using the ``wwctl kernel import`` command as
 follows:
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl kernel import $(uname -r)
+   # wwctl kernel import $(uname -r)
    4.18.0-305.3.1.el8_4.x86_64: Done
 
 This process will import not only the kernel image itself, but also
@@ -61,9 +61,9 @@ Listing All Imported Kernels
 Once the kernel has been imported, you can list them all with the
 following command:
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl kernel list
+   # wwctl kernel list
    VNFS NAME                           NODES
    4.18.0-305.3.1.el8_4.x86_64             0
 
