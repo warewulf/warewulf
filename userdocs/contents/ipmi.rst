@@ -9,21 +9,32 @@ IPMI Settings
 
 The common settings for the IPMI interfaces on all nodes can be set on a Profile level.  The only field that would need to be assigned to each individual node would be the IP address.
 
+The settings are only written to the IPMI interface if ``--ipmiwrite`` is set to `true`. The write process happens at every boot of the node through the script ``/warewulf/init.d/50-ipmi`` in the **system** overlay.
+
 If an individual node has different settings, you can set the IPMI settings for that specific node, overriding the default settings.
 
-Here is a table outlining the fields on a Profile and Node level, along with the parameters that can be used when running ``wwctl profile set`` or ``wwctl node set``.
+Here is a table outlining the fields on a Profile and Node which is the same as the parameter that can be used when running `wwctl profile set` or `wwctl node set`.
 
-============= =============== ======== ======= ================== =============
-Field         Parameter       Profile  Node    Valid Values       Default Value
-============= =============== ======== ======= ================== =============
-IpmiIpaddr    --ipmi                   X
-IpmiNetmask   --ipminetmask    X       X
-IpmiPort      --ipmiport       X       X                          623
-IpmiGateway   --ipmigateway    X       X
-IpmiUserName  --ipmiuser       X       X
-IpmiPassword  --ipmipass       X       X
-IpmiInterface --ipmiinterface  X       X       'lan' or 'lanplus' lan
-============= =============== ======== ======= ================== =============
++----------------+---------+------+--------------------+---------------+
+| Parameter      | Profile | Node | Valid Values       | Default Value |
++================+=========+======+====================+===============+
+| --ipmiaddr     | false   | true |                    |               |
++----------------+---------+------+--------------------+---------------+
+| --ipminetmask  | true    | true |                    |               |
++----------------+---------+------+--------------------+---------------+
+| --ipmiport     | true    | true |                    | 623           |
++----------------+---------+------+--------------------+---------------+
+| --ipmigateway  | true    | true |                    |               |
++----------------+---------+------+--------------------+---------------+
+| --ipmiuser     | true    | true |                    |               |
++----------------+---------+------+--------------------+---------------+
+| --ipmipass     | true    | true |                    |               |
++----------------+---------+------+--------------------+---------------+
+| --ipmiinterface| true    | true | 'lan' or 'lanplus' | lan           |
++----------------+---------+------+--------------------+---------------+
+| --ipmiwrite    | true    | true | true or false      | false         |
++----------------+---------+------+--------------------+---------------+
+
 
 Reviewing Settings
 ==================
@@ -35,67 +46,72 @@ Profile View
 
 .. code-block:: bash
 
-   $ sudo wwctl profile list -a
+  $ sudo wwctl profile list -a
+  PROFILE              FIELD              PROFILE      VALUE
+  =====================================================================================
+  default              Id                 --           default
+  default              comment            --           This profile is automatically included for each node
+  default              cluster            --           --
+  default              container          --           sle-micro-5.3
+  default              ipxe               --           --
+  default              runtime            --           --
+  default              wwinit             --           --
+  default              root               --           --
+  default              discoverable       --           --
+  default              init               --           --
+  default              asset              --           --
+  default              profile            --           --
+  default              default:type       --           --
+  default              default:onboot     --           --
+  default              default:netdev     --           --
+  default              default:hwaddr     --           --
+  default              default:ipaddr     --           --
+  default              default:ipaddr6    --           --
+  default              default:netmask    --           --
+  default              default:gateway    --           --
+  default              default:mtu        --           --
+  default              default:primary    --           --
 
-   ################################################################################
-   PROFILE NAME         FIELD              VALUE
-   default              Id                 default
-   default              Comment            This profile is automatically included for each node
-   default              Cluster            --
-   default              Container          rocky
-   default              Kernel             4.18.0-348.2.1.el8_5.x86_64
-   default              KernelArgs         --
-   default              Init               --
-   default              Root               --
-   default              RuntimeOverlay     --
-   default              SystemOverlay      --
-   default              Ipxe               --
-   default              IpmiNetmask        255.255.255.0
-   default              IpmiPort           --
-   default              IpmiGateway        192.168.99.1
-   default              IpmiUserName       admin
-   default              IpmiInterface      lanplus
-   default              eth0:IPADDR        --
-   default              eth0:NETMASK       255.255.240.0
-   default              eth0:GATEWAY       10.1.96.6
-   default              eth0:HWADDR        --
-   default              eth0:TYPE          --
-   default              eth0:DEFAULT       false
 
 Node View
 ---------
-
 .. code-block:: bash
 
-   $ sudo wwctl node list node0001      -a
-
-   ################################################################################
-   NODE                 FIELD              PROFILE      VALUE
-   node0001             Id                 --           node0001
-   node0001             Comment            default      This profile is automatically included for each node
-   node0001             Cluster            --           --
-   node0001             Profiles           --           default
-   node0001             Discoverable       --           false
-   node0001             Container          default      rocky
-   node0001             Kernel             default      4.18.0-348.2.1.el8_5.x86_64
-   node0001             KernelArgs         --           (quiet crashkernel=no vga=791 rootfstype=rootfs)
-   node0001             RuntimeOverlay     --           (default)
-   node0001             SystemOverlay      --           (default)
-   node0001             Ipxe               --           (default)
-   node0001             Init               --           (/sbin/init)
-   node0001             Root               --           (initramfs)
-   node0001             IpmiIpaddr         --           192.168.99.10
-   node0001             IpmiNetmask        --           255.255.255.0
-   node0001             IpmiPort           --           --
-   node0001             IpmiGateway        --           192.168.99.1
-   node0001             IpmiUserName       default      admin
-   node0001             IpmiInterface      default      lanplus
-   node0001             eth0:HWADDR        --           52:54:00:1a:08:60
-   node0001             eth0:IPADDR        --           192.168.100.152
-   node0001             eth0:NETMASK       default      255.255.255.0
-   node0001             eth0:GATEWAY       default      192.168.100.1
-   node0001             eth0:TYPE          --           --
-   node0001             eth0:DEFAULT       --           false
+  $ sudo wwctl node list -a n001
+  NODE                 FIELD              PROFILE      VALUE
+  =====================================================================================
+  n001                 Id                 --           n001
+  n001                 comment            default      This profile is automatically included for each node
+  n001                 cluster            --           --
+  n001                 container          default      sle-micro-5.3
+  n001                 ipxe               --           (default)
+  n001                 runtime            --           (generic)
+  n001                 wwinit             --           (wwinit)
+  n001                 root               --           (initramfs)
+  n001                 discoverable       --           --
+  n001                 init               --           (/sbin/init)
+  n001                 asset              --           --
+  n001                 kerneloverride     --           tw
+  n001                 kernelargs         --           (quiet crashkernel=no vga=791 net.naming-scheme=v238)
+  n001                 ipmiaddr           --           --
+  n001                 ipminetmask        --           --
+  n001                 ipmiport           --           --
+  n001                 ipmigateway        --           --
+  n001                 ipmiuser           --           --
+  n001                 ipmipass           --           --
+  n001                 ipmiinterface      --           --
+  n001                 ipmiwrite          --           --
+  n001                 profile            --           default
+  n001                 default:type       --           (ethernet)
+  n001                 default:onboot     --           --
+  n001                 default:netdev     --           eth0
+  n001                 default:hwaddr     --           11:22:33:44:55:66
+  n001                 default:ipaddr     --           10.0.2.1
+  n001                 default:ipaddr6    --           --
+  n001                 default:netmask    --           255.255.252.0
+  n001                 default:gateway    --           --
+  n001                 default:mtu        --           --
+  n001                 default:primary    --           true
 
 Review Only IPMI Settings
 -------------------------
@@ -105,12 +121,13 @@ The above views show you everything that is set on a Profile or Node level. That
 .. code-block:: bash
 
    $ sudo wwctl node list -i
+ NODE NAME              IPMI IPADDR      IPMI PORT  IPMI USERNAME        IPMI INTERFACE
+ ==================================================================================================
+ n001                   192.168.1.11     --         hwadmin              --            
+ n002                   192.168.1.12     --         hwadmin              --            
+ n003                   192.168.1.13     --         hwadmin              --            
+ n004                   192.168.1.14     --         hwadmin              --            
 
-   NODE NAME              IPMI IPADDR      IPMI PORT  IPMI USERNAME        IPMI PASSWORD        IPMI INTERFACE
-   ============================================================================================================
-   node0001               192.168.99.10    --         admin                supersecret          lanplus
-   node0002               192.168.99.11    --         admin                supersecret          lanplus
-   node0003               192.168.99.12    --         admin                supersecret          lanplus
 
 Power Commands
 ==============
@@ -142,4 +159,4 @@ Console
 
 If your node is setup to use serial over lan (SOL), Warewulf can connect a console to the node.
 
-``sudo wwctl node console node0001``
+``sudo wwctl node console n001``

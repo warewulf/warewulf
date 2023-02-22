@@ -113,7 +113,7 @@ explained as follows:
 nodes.conf
 ==========
 
-The ``nodes.conf`` is the primary database file for all compute
+The ``nodes.conf`` file is the primary database file for all compute
 nodes. It is a flat text YAML configuration file that is managed by
 the ``wwctl`` command, but some sites manage the compute nodes and
 infrastructure via configuration management. This file being flat text
@@ -129,8 +129,45 @@ command.
    first time you attempt to run ``wwctl``, this file will be generated
    if it does not exist already.
 
+defaults.conf
+=============
+
+The ``defaults.conf`` file configures default values used when none
+are specified. For example: if a node does not have a "runtime
+overlay" specified, the respective value from ``defaultnode`` is
+used. If a network device does not specify a "device," the device
+value of the ``dummy`` device is used.
+
+If ``defaults.conf`` does not exist, the following values are used as
+compiled into Warewulf at build-time:
+
+.. code-block:: yaml
+
+  --
+  defaultnode:
+    runtime overlay:
+    - generic
+    system overlay:
+    - wwinit
+    kernel:
+      args: quiet crashkernel=no vga=791 net.naming-scheme=v238
+    init: /sbin/init
+    root: initramfs
+    ipxe template: default
+    profiles:
+    - default
+    network devices:
+      dummy:
+        device: eth0
+        type: ethernet
+        netmask: 255.255.255.0
+
+There should never be a need to change this file: all site-local
+parameters should be specified using either nodes or profiles.
+
 Directories
 ===========
 
-The ``/etc/warewulf/ipxe/`` contains *text/templates* that are used by
-the Warewulf configuration process to configure the ``ipxe`` service.
+The ``/etc/warewulf/ipxe/`` directory contains *text/templates* that
+are used by the Warewulf configuration process to configure the
+``ipxe`` service.

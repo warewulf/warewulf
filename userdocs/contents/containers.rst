@@ -13,7 +13,7 @@ It is important to understand that Warewulf is not running a container runtime o
 Container Tools
 ===============
 
-There are different container managment tools available. Docker is probably the most recognizable one in the enterprise. Podman is another one that is gaining traction on the RHEL platforms. In HPC, Singularity is the most utilized container management tool. You can use any of these to create and manage the containers to be later imported into Warewulf.
+There are different container managment tools available. Docker is probably the most recognizable one in the enterprise. Podman is another one that is gaining traction on the RHEL platforms. In HPC, Apptainer is the most utilized container management tool. You can use any of these to create and manage the containers to be later imported into Warewulf.
 
 Importing From A Registry
 =========================
@@ -65,6 +65,24 @@ Here is an example:
 
 The above is just an example. Consideration should be done before doing it this way if you are in a security sensitive environment or shared environments. You would not want these showing up in bash history or logs.
 
+Syncuser
+--------
+
+At import time warewulf checks if the names of the users on the host match the users and UIDs/GIDs in the imported container. If there is mismatch, the import command will print out a warning.
+By setting the ``--syncuser`` flag you advise warewulf to try to syncronize the users from the host to the container, which means that ``/etc/passwd`` and ``/etc/group`` of the imported container are updated and all the files belonning to these UIDs and GIDs will also be updated.
+
+A check if the users of the host and container matches can be triggered with the ``syncuser`` command.
+
+.. code-block:: bash
+
+   wwctl container syncuser container-name
+
+With the ``--write`` flag it will update the container to match the user database of the host as described above.
+
+.. code-block:: bash
+
+   wwctl container syncuser --write container-name
+
 Listing All Imported Containers
 ===============================
 
@@ -104,6 +122,8 @@ You can also ``--bind`` directories from your host into the container when using
 
 When the command completes, if anything within the container changed, the container will be rebuilt into a bootable static object automatically.
 
+If the files ``/etc/passwd`` or ``/etc/group`` were updated, there will be an additional check to confirm if the users are in sync as described in `Syncuser`_ section.
+
 Creating Containers From Scratch
 ================================
 
@@ -140,16 +160,27 @@ Once you have created and modified your new ``chroot()``, you can import it into
 
    sudo wwctl container import /tmp/newroot containername
 
-Building A Container Using Singularity
+Building A Container Using Apptainer
 --------------------------------------
 
-Singularity, a container platform for HPC and performance intensive applications, can also be used to create node containers for Warewulf. There are several Singularity container recipes in the ``containers/Singularity/`` directory and can be found on GitHub at `https://github.com/hpcng/warewulf/tree/main/containers/Singularity <https://github.com/hpcng/warewulf/tree/main/containers/Singularity>`_.
+Apptainer, a container platform for HPC and performance intensive applications, can also be used to create node containers for Warewulf. There are several Apptainer container recipes in the ``containers/Apptainer/`` directory and can be found on GitHub at `https://github.com/hpcng/warewulf/tree/main/containers/Apptainer <https://github.com/hpcng/warewulf/tree/main/containers/Apptainer>`_.
 
-You can use these as starting points and adding any additional steps you want in the ``%post`` section of the recipe file. Once you've done that, installing Singularity, building a container sandbox and importing into Warewulf can be done with the following steps:
+You can use these as starting points and adding any additional steps you want in the ``%post`` section of the recipe file. Once you've done that, installing Apptainer, building a container sandbox and importing into Warewulf can be done with the following steps:
 
 .. code-block:: bash
 
    sudo yum install epel-release
-   sudo yum install singularity
-   sudo singularity build --sandbox /tmp/newroot /path/to/Singularity/recipe.def
+   sudo yum install Apptainer
+   sudo Apptainer build --sandbox /tmp/newroot /path/to/Apptainer/recipe.def
    sudo wwctl container import /tmp/newroot containername
+
+Building A Container Using Podman
+--------------------------------------
+
+You can also build a container using podman via a `Dockerfile`. For this step the container must be exported to a tar archive, which then can be imported to warewulf. The following steps will create an openSUSE Leap container and import it to Warewulf:
+
+.. code-block:: bash
+
+  $ sudo podman build -f containers/Docker/openSUSE/Containerfile --tag leap-ww
+  $ sudo podman save localhost/leap-ww:latest  -o ~/leap-ww.tar
+  $ sudo wwctl container import file://root/leap-ww.tar leap-ww

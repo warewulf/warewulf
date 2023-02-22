@@ -22,8 +22,30 @@ Creating a new node is as simple as running the following command:
 
 .. code-block:: bash
 
-   $ sudo wwctl node add n0000
-   Added node: n0000
+   $ sudo wwctl node add n001 -I 172.16.1.11
+   Added node: n001
+
+Adding several nodes
+--------------------
+
+Several nodes can be added with a single command if a node range is given. An
+additional IP address will incremented. So the command
+
+.. code-block:: bash
+
+  $ sudo wwctl node add n00[2-4] -I 172.16.1.12
+  Added node: n002
+  Added node: n003
+  Added node: n004
+  $ wwctl node list -n  n00[1-4]
+  NODE NAME              NAME     HWADDR             IPADDR          GATEWAY         DEVICE
+  ==========================================================================================
+  n001                   default  --                 172.16.1.11     --              (eth0)
+  n002                   default  --                 172.16.1.12     --              (eth0)
+  n003                   default  --                 172.16.1.13     --              (eth0)
+  n004                   default  --                 172.16.1.14     --              (eth0)
+
+has added 4 nodes with the incremented IP addresses.
 
 Node Names
 ----------
@@ -32,7 +54,7 @@ For small clusters, you can use simple names (e.g. ``n0000``); but for
 larger, more complicated clusters that are comprised of multiple
 clusters and roles it is highly recommended to use node names that
 include a cluster descriptor. In Warewulf, this is generally done by
-using a domain name (e.g. ``n0000.cluster01``). Warewulf will
+using a domain name (e.g. ``n001.cluster01``). Warewulf will
 automatically assume that the domain is the equivalent of the cluster
 name.
 
@@ -49,39 +71,53 @@ their attributes as follows:
 
 .. code-block:: bash
 
+  NODE NAME              PROFILES                   NETWORK
+  ================================================================================
+  n001                            default
+
    $ sudo wwctl node list
-   NODE NAME              PROFILES                   NETWORK
-   ================================================================================
-   n0000                  default
 
 You can also see the node's full attribute list by specifying the ``-a``
 option (all):
 
 .. code-block:: bash
 
-   $ sudo wwctl node list -a
-   ################################################################################
-   NODE                 FIELD              PROFILE      VALUE
-   n0000                Id                 --           n0000
-   n0000                Comment            default      This profile is automatically included for each node
-   n0000                Cluster            --           --
-   n0000                Profiles           --           default
-   n0000                Discoverable       --           false
-   n0000                Container          --           --
-   n0000                KernelOverride     --           --
-   n0000                KernelArgs         --           (quiet crashkernel=no vga=791 rootfstype=rootfs)
-   n0000                RuntimeOverlay     --           (default)
-   n0000                SystemOverlay      --           (default)
-   n0000                Ipxe               --           (default)
-   n0000                Init               --           (/sbin/init)
-   n0000                Root               --           (initramfs)
-   n0000                IpmiIpaddr         --           --
-   n0000                IpmiNetmask        --           --
-   n0000                IpmiPort           --           --
-   n0000                IpmiGateway        --           --
-   n0000                IpmiUserName       --           --
-   n0000                IpmiInterface      --           --
-   n0000                IpmiWrite          --           --
+  $ sudo wwctl node list -a n001
+  NODE                 FIELD              PROFILE      VALUE
+  =====================================================================================
+  n001                 Id                 --           n001
+  n001                 comment            default      This profile is automatically included for each node
+  n001                 cluster            --           --
+  n001                 container          default      sle-micro-5.3
+  n001                 ipxe               --           (default)
+  n001                 runtime            --           (generic)
+  n001                 wwinit             --           (wwinit)
+  n001                 root               --           (initramfs)
+  n001                 discoverable       --           --
+  n001                 init               --           (/sbin/init)
+  n001                 asset              --           --
+  n001                 kerneloverride     --           --
+  n001                 kernelargs         --           (quiet crashkernel=no vga=791 net.naming-scheme=v238)
+  n001                 ipmiaddr           --           --
+  n001                 ipminetmask        --           --
+  n001                 ipmiport           --           --
+  n001                 ipmigateway        --           --
+  n001                 ipmiuser           --           --
+  n001                 ipmipass           --           --
+  n001                 ipmiinterface      --           --
+  n001                 ipmiwrite          --           --
+  n001                 profile            --           default
+  n001                 default:type       --           (ethernet)
+  n001                 default:onboot     --           --
+  n001                 default:netdev     --           (eth0)
+  n001                 default:hwaddr     --           --
+  n001                 default:ipaddr     --           172.16.1.11
+  n001                 default:ipaddr6    --           --
+  n001                 default:netmask    --           (255.255.255.0)
+  n001                 default:gateway    --           --
+  n001                 default:mtu        --           --
+  n001                 default:primary    --           true
+
 
 .. note::
    The attribute values in parenthesis are default values and can
@@ -106,14 +142,14 @@ Configuring the Node's Container Image
 
 .. code-block:: bash
 
-   $ sudo wwctl node set --container rocky-8 n0000
+   $ sudo wwctl node set --container rocky-8 n001
    Are you sure you want to modify 1 nodes(s): y
 
-And you can check that the container name is set for ``n0000``:
+And you can check that the container name is set for ``n001``:
 
 .. code-block:: bash
 
-   $ sudo wwctl node list -a  n0000 | grep Container
+   $ sudo wwctl node list -a  n001 | grep Container
    n0000                Container          --           rocky-8
 
 Configuring the Node's Kernel
@@ -122,14 +158,22 @@ Configuring the Node's Kernel
 While the recommended method for assigning a kernel in 4.3 and beyond
 is to include it in the container / node image, a kernel can still be
 specified as an override at the node or profile.
+To illustrate this, we import the most recent kernel from a openSUSE Tumbleweed release
+
 
 .. code-block:: bash
 
-   $ sudo wwctl node set --kerneloverride $(uname -r) n0000
-   Are you sure you want to modify 1 nodes(s): y
+  $ sudo wwctl container import docker://registry.opensuse.org/science/warewulf/tumbleweed/containerfile/kernel:latest tw
+  $ sudo wwctl kernel import -DC tw
+  $ sudo wwctl kernel list
+  KERNEL NAME                         KERNEL VERSION            NODES 
+  tw                                  6.1.10-1-default               0
+  $ sudo wwctl node set --kerneloverride tw n001
+  Are you sure you want to modify 1 nodes(s): y
+  
+  $ sudo wwctl node list -a n001 | grep kerneloverride
+  n001                 kerneloverride     --           tw
 
-   $ sudo wwctl node list -a n0000 | grep KernelOverride
-   n0000                KernelOverride     --           4.18.0-305.3.1.el8_4.x86_64
 
 Configuring the Node's Network
 ------------------------------
@@ -139,7 +183,7 @@ provide the network information as follows:
 
 .. code-block:: bash
 
-   $ sudo wwctl node set --netdev eth0 --hwaddr 11:22:33:44:55:66 --ipaddr 10.0.2.1 --netmask 255.255.252.0 n0000
+  $ sudo wwctl node set --netdev eth0 --hwaddr 11:22:33:44:55:66 --ipaddr 10.0.2.1 --netmask 255.255.252.0 n001
    Are you sure you want to modify 1 nodes(s): y
 
 You can now see that the node contains configuration attributes for
@@ -147,35 +191,46 @@ container, kernel, and network:
 
 .. code-block:: bash
 
-   $ sudo wwctl node list -a n0000
-   ################################################################################
-   NODE                 FIELD              PROFILE      VALUE
-   n0000                Id                 --           n0000
-   n0000                Comment            default      This profile is automatically included for each node
-   n0000                Cluster            --           --
-   n0000                Profiles           --           default
-   n0000                Discoverable       --           false
-   n0000                Container          --           rocky-8
-   n0000                Kernel             --           4.18.0-305.3.1.el8_4.x86_64
-   n0000                KernelArgs         --           (quiet crashkernel=no vga=791 rootfstype=rootfs)
-   n0000                RuntimeOverlay     --           (default)
-   n0000                SystemOverlay      --           (default)
-   n0000                Ipxe               --           (default)
-   n0000                Init               --           (/sbin/init)
-   n0000                Root               --           (initramfs)
-   n0000                IpmiIpaddr         --           --
-   n0000                IpmiNetmask        --           --
-   n0000                IpmiPort           --           --
-   n0000                IpmiGateway        --           --
-   n0000                IpmiUserName       --           --
-   n0000                IpmiInterface      --           --
-   n0000                default:DEVICE     --           eth0
-   n0000                default:HWADDR     --           11:22:33:44:55:66
-   n0000                default:IPADDR     --           10.0.2.1
-   n0000                default:NETMASK    --           255.255.252.0
-   n0000                default:GATEWAY    --           --
-   n0000                default:TYPE       --           --
-   n0000                default:DEFAULT    --           false
+  $ sudo wwctl node list -a n001
+  =====================================================================================
+  n001                 Id                 --           n001
+  n001                 comment            default      This profile is automatically included for each node
+  n001                 cluster            --           --
+  n001                 container          default      sle-micro-5.3
+  n001                 ipxe               --           (default)
+  n001                 runtime            --           (generic)
+  n001                 wwinit             --           (wwinit)
+  n001                 root               --           (initramfs)
+  n001                 discoverable       --           --
+  n001                 init               --           (/sbin/init)
+  n001                 asset              --           --
+  n001                 kerneloverride     --           tw
+  n001                 kernelargs         --           (quiet crashkernel=no vga=791 net.naming-scheme=v238)
+  n001                 ipmiaddr           --           --
+  n001                 ipminetmask        --           --
+  n001                 ipmiport           --           --
+  n001                 ipmigateway        --           --
+  n001                 ipmiuser           --           --
+  n001                 ipmipass           --           --
+  n001                 ipmiinterface      --           --
+  n001                 ipmiwrite          --           --
+  n001                 profile            --           default
+  n001                 default:type       --           (ethernet)
+  n001                 default:onboot     --           --
+  n001                 default:netdev     --           eth0
+  n001                 default:hwaddr     --           11:22:33:44:55:66
+  n001                 default:ipaddr     --           10.0.2.1
+  n001                 default:ipaddr6    --           --
+  n001                 default:netmask    --           255.255.252.0
+  n001                 default:gateway    --           --
+  n001                 default:mtu        --           --
+  n001                 default:primary    --           true
+
+   $ sudo wwctl node set --cluster cluster01 n001
+   Are you sure you want to modify 1 nodes(s): y
+
+   $ sudo wwctl node list -a n001 | grep cluster
+   n001                 cluster            --           cluster01
 
 Un-setting Node Attributes
 ==========================
@@ -183,20 +238,13 @@ Un-setting Node Attributes
 If you wish to ``unset`` a particular value, set the value to
 ``UNDEF``. For example:
 
-.. code-block:: bash
-
-   $ sudo wwctl node set --cluster cluster01 n0000
-   Are you sure you want to modify 1 nodes(s): y
-
-   $ sudo wwctl node list -a n0000 | grep Cluster
-   n0000                Cluster            --           cluster01
 
 And to unset this configuration attribute:
 
 .. code-block:: bash
 
-   $ sudo wwctl node set --cluster UNDEF n0000
+   $ sudo wwctl node set --cluster UNDEF n001
    Are you sure you want to modify 1 nodes(s): y
 
-   $ sudo wwctl node list -a n0000 | grep Cluster
-   n0000                Cluster            --           --
+   $ sudo wwctl node list -a n001 | grep Cluster
+   n001                Cluster            --           --

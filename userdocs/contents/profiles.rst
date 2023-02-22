@@ -1,13 +1,13 @@
-#############
+=============
 Node Profiles
-#############
+=============
 
 Profiles provide a way to scalably group node configurations together. Instead of redundant configurations for each node, you can put that into a profile and the nodes will inherit these configurations. This is very handy if you have groups of node specific customizations. For example, a few hundred nodes that are running a particular container or kernel, and another group of nodes that are running a different kernel or container.
 
 Any node configuration attributes can be applied to a profile, but there are always going to be some node configurations which must be specific to a node, like a network HW/MAC address or an IP address.
 
 An Introduction To Profiles
-==============================
+===========================
 
 Every new node is automatically added to a profile called ``default``. You can view the configuration attributes of this profile by using the ``wwctl profile list`` command. Like the ``wwctl node list`` command, this will provide a summary, but you can see **all** configuration attributes by using the ``--all`` or ``-a`` flag as follows:
 
@@ -75,7 +75,7 @@ Now that we've created a new profile, let's create a configuration attribute in 
 .. code-block:: bash
 
    $ sudo wwctl profile set --cluster cluster01 test_profile
-   ? Are you sure you want to modify 1 profile(s)? [y/N] y█
+   ? Are you sure you want to modify 1 profile(s)? [y/N] y
 
    $ sudo wwctl profile list -a test_profile | grep Cluster
    test_profile         Cluster            cluster01
