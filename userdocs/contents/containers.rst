@@ -68,19 +68,20 @@ The above is just an example. Consideration should be done before doing it this 
 Syncuser
 --------
 
-At import time warewulf checks if the names of the users on the host matches the users and UIDS/GIDS in the imported container, if there is mismatch, the import command will print out a warning.
-By setting the ``--syncuser`` flag you advice warewulf to try to syncronize the users from the host to the container, which means that ``/etc/passwd`` and ``/etc/group`` of the imported container are updated and all the files belonning to these UIDs and GIDs will also be updated.
+At import time warewulf checks if the names of the users on the host match the users and UIDs/GIDs in the imported container. If there is mismatch, the import command will print out a warning.
+By setting the ``--syncuser`` flag you advise warewulf to try to syncronize the users from the host to the container, which means that ``/etc/passwd`` and ``/etc/group`` of the imported container are updated and all the files belonning to these UIDs and GIDs will also be updated.
 
-A check if the users of the host and container matches can be triggered with the
-..code-block:: bash
+A check if the users of the host and container matches can be triggered with the ``syncuser`` command.
 
-  wwctl container syncuser container-name
+.. code-block:: bash
 
-command. With the ``--write`` flag it will update the container to match the user database of the host as described above.
+   wwctl container syncuser container-name
 
-Exclude
--------
+With the ``--write`` flag it will update the container to match the user database of the host as described above.
 
+.. code-block:: bash
+
+   wwctl container syncuser --write container-name
 
 Listing All Imported Containers
 ===============================
@@ -121,7 +122,7 @@ You can also ``--bind`` directories from your host into the container when using
 
 When the command completes, if anything within the container changed, the container will be rebuilt into a bootable static object automatically.
 
-If the files ``/etc/passwd`` or ``/etc/group`` where updated, there will be an additional check if the users are in sync as described in Syncuser section.
+If the files ``/etc/passwd`` or ``/etc/group`` were updated, there will be an additional check to confirm if the users are in sync as described in `Syncuser`_ section.
 
 Creating Containers From Scratch
 ================================
@@ -176,7 +177,7 @@ You can use these as starting points and adding any additional steps you want in
 Building A Container Using Podman
 --------------------------------------
 
-You can also build a container using podman via a `Dockerfile`. For this step the container must be exported to a tar archive, which then can be imported to warewulf. Follwoing steps will create a openSUSE leap container and import it to warewulf
+You can also build a container using podman via a `Dockerfile`. For this step the container must be exported to a tar archive, which then can be imported to warewulf. The following steps will create an openSUSE Leap container and import it to Warewulf:
 
 .. code-block:: bash
 

@@ -146,7 +146,8 @@ With following snippet a file from a given container can be included
 
 IncludeBlock
 ^^^^^^^^^^^^
-Includes a file up to the line where a abort string is found. This useful e.g
+
+Includes a file up to the line where a abort string is found. This is useful, e.g.,
 for the hosts file, which can have local modifications which are not controlled
 by warewulf. For this example the abort string is
 "# Do not edit after this line"
@@ -177,7 +178,7 @@ by warewulf. For this example the abort string is
 
 Abort
 ^^^^^
-Is ``{{ abort }}`` found in a template, the resulting file isn't written to the template.
+If ``{{ abort }}`` is found in a template, the resulting file isn't written.
 
 Nobackup
 ^^^^^^^^
@@ -185,12 +186,12 @@ Nobackup
 If a file exists on the target, a backup file is written with the suffix
 `.wwbackup`. This only happens for the `host` overlay, as e.g. the `/etc/hosts`
 exists on the host. If this is not the intended behavior, the ``{{ nobackup }}``
-flag can be added to a temlate.
+flag can be added to a template.
 
 Split
 ^^^^^
 
-A given string can be splitted into substrings.
+A given string can be split into substrings.
 
 .. code-block:: go
 

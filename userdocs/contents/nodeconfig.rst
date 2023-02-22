@@ -27,7 +27,8 @@ Creating a new node is as simple as running the following command:
 
 Adding several nodes
 --------------------
-Several nodes can be added with a siingle command if a node range is given. An
+
+Several nodes can be added with a single command if a node range is given. An
 additional IP address will incremented. So the command
 
 .. code-block:: bash
@@ -45,6 +46,7 @@ additional IP address will incremented. So the command
   n004                   default  --                 172.16.1.14     --              (eth0)
 
 has added 4 nodes with the incremented IP addresses.
+
 Node Names
 ----------
 
@@ -156,7 +158,7 @@ Configuring the Node's Kernel
 While the recommended method for assigning a kernel in 4.3 and beyond
 is to include it in the container / node image, a kernel can still be
 specified as an override at the node or profile.
-To illustrate this, we import the most actual kernel from a openSUSE Tumbleweed release
+To illustrate this, we import the most recent kernel from a openSUSE Tumbleweed release
 
 
 .. code-block:: bash
