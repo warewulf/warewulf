@@ -24,18 +24,18 @@ list`` command, this will provide a summary, but you can see **all**
 configuration attributes by using the ``--all`` or ``-a`` flag as
 follows:
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl profile list
+   # wwctl profile list
    PROFILE NAME         COMMENT/DESCRIPTION
    ================================================================================
    default              This profile is automatically included for each node
 
 And with the ``-a`` flag:
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl profile list -a
+   # wwctl profile list -a
    ################################################################################
    PROFILE NAME         FIELD              VALUE
    default              Id                 default
@@ -62,9 +62,9 @@ inherited by any nodes that are configured to use this profile. So if
 we look at the node we configured in the last section, we can see that
 configuration attribute there:
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl node list -a | head -n 5
+   # wwctl node list -a | head -n 5
    ################################################################################
    NODE                 FIELD              PROFILE      VALUE
    n0000                Id                 --           n0000
@@ -83,10 +83,10 @@ Multiple Profiles
 For demonstration purposes, let's create another profile and
 demonstrate how to use this second profile.
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl profile add test_profile
-   $ sudo wwctl profile list
+   # wwctl profile add test_profile
+   # wwctl profile list
    PROFILE NAME         COMMENT/DESCRIPTION
    ================================================================================
    default              This profile is automatically included for each node
@@ -95,26 +95,26 @@ demonstrate how to use this second profile.
 Now that we've created a new profile, let's create a configuration
 attribute in this profile:
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl profile set --cluster cluster01 test_profile
+   # wwctl profile set --cluster cluster01 test_profile
    ? Are you sure you want to modify 1 profile(s)? [y/N] y
 
-   $ sudo wwctl profile list -a test_profile | grep Cluster
+   # wwctl profile list -a test_profile | grep Cluster
    test_profile         Cluster            cluster01
 
 Lastly we just need to configure this profile to our node(s):
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl node set --addprofile test_profile n0000
+   # wwctl node set --addprofile test_profile n0000
    Are you sure you want to modify 1 nodes(s): y
 
 And you can now verify that the node has both profile configurations:
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl node list -a | head -n 6
+   # wwctl node list -a | head -n 6
    ################################################################################
    NODE                 FIELD              PROFILE      VALUE
    n0000                Id                 --           n0000
@@ -128,12 +128,12 @@ Cascading Profiles
 In the previous example, we set a single node to have two profile
 configurations. We can also overwrite configurations as follows:
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl profile set --comment "test comment" test_profile
+   # wwctl profile set --comment "test comment" test_profile
    Are you sure you want to modify 1 profile(s): y
 
-   $ sudo wwctl node list -a | head -n 6
+   # wwctl node list -a | head -n 6
    ################################################################################
    NODE                 FIELD              PROFILE      VALUE
    n0000                Id                 --           n0000
@@ -144,12 +144,12 @@ configurations. We can also overwrite configurations as follows:
 And if we delete the superseded profile attribute from
 ``test_profile`` we can now see the previous configuration:
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl profile set --comment UNDEF test_profile
+   # wwctl profile set --comment UNDEF test_profile
    Are you sure you want to modify 1 profile(s): y
 
-   $ sudo wwctl node list -a | head -n 6
+   # wwctl node list -a | head -n 6
    ################################################################################
    NODE                 FIELD              PROFILE      VALUE
    n0000                Id                 --           n0000
@@ -169,12 +169,12 @@ Overriding Profiles
 All profile configurations can be overwritten by a node configuration
 as can be seen here:
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl node set --comment "This value takes precedent" n0000
+   # wwctl node set --comment "This value takes precedent" n0000
    Are you sure you want to modify 1 nodes(s): y
 
-   $ sudo wwctl node list -a | head -n 6
+   # wwctl node list -a | head -n 6
    ################################################################################
    NODE                 FIELD              PROFILE      VALUE
    n0000                Id                 --           n0000
