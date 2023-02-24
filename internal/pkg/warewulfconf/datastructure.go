@@ -44,6 +44,8 @@ type TftpConf struct {
 	Enabled     bool   `yaml:"enabled" default:"true"`
 	TftpRoot    string `yaml:"tftproot" default:"/var/lib/tftpboot"`
 	SystemdName string `yaml:"systemd name" default:"tftp"`
+	// Path is relative to buildconfig.DATADIR()
+	IpxeBinaries map[string]string `yaml:"ipxe" default:"{\"00:09\": \"x86_64.efi\",\"00:00\": \"x86_64.kpxe\",\"00:0B\": \"arm64.efi\",\"00:07\":  \"x86_64.efi\"}"`
 }
 
 type NfsConf struct {
