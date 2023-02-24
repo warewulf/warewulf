@@ -15,4 +15,5 @@ func init() {
     version = "@VERSION@"
     release = "@RELEASE@"
     wwclientdir = "@WWCLIENTDIR@"
+    tmpdir = "@TMPDIR@"
 }

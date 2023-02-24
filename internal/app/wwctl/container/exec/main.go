@@ -17,9 +17,26 @@ import (
 	"github.com/spf13/cobra"
 )
 
+/*
+fork off a process with a new PID space
+*/
 func runContainedCmd(args []string) error {
+	var err error
+	if tempDir == "" {
+		tempDir, err = os.MkdirTemp(os.TempDir(), "overlay")
+		if err != nil {
+			wwlog.Warn("couldn't create temp dir for overlay", err)
+		}
+		defer func() {
+			err = os.RemoveAll(tempDir)
+			if err != nil {
+				wwlog.Warn("Couldn't remove temp dir for ephermal mounts:", err)
+			}
+		}()
+	}
+	logStr := fmt.Sprint(wwlog.GetLogLevel())
 	wwlog.Verbose("Running contained command: %s", args[1:])
-	c := exec.Command("/proc/self/exe", append([]string{"container", "exec", "__child"}, args...)...)
+	c := exec.Command("/proc/self/exe", append([]string{"--loglevel", logStr, "--tempdir", tempDir, "container", "exec", "__child"}, args...)...)
 
 	c.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,
@@ -30,6 +47,11 @@ func runContainedCmd(args []string) error {
 
 	if err := c.Run(); err != nil {
 		fmt.Printf("Command exited non-zero, not rebuilding/updating VNFS image\n")
+		// defer is not called before os.Exit(0)
+		err = os.RemoveAll(tempDir)
+		if err != nil {
+			wwlog.Warn("Couldn't remove temp dir for ephermal mounts:", err)
+		}
 		os.Exit(0)
 	}
 	return nil
@@ -38,6 +60,8 @@ func runContainedCmd(args []string) error {
 func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	containerName := args[0]
+	os.Setenv("WW_CONTAINER_SHELL", containerName)
+
 	var allargs []string
 
 	if !container.ValidSource(containerName) {
@@ -47,6 +71,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	for _, b := range binds {
 		allargs = append(allargs, "--bind", b)
+	}
+	if nodeName != "" {
+		allargs = append(allargs, "--node", nodeName)
 	}
 	allargs = append(allargs, args...)
 	containerPath := container.RootFsDir(containerName)
@@ -108,4 +135,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
+}
+func SetBinds(myBinds []string) {
+	binds = append(binds, myBinds...)
+}
+
+func SetNode(myNode string) {
+	nodeName = myNode
 }

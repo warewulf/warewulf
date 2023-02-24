@@ -197,12 +197,6 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		return
 	}
 
-	wwlog.Info("Updating the container's /etc/resolv.conf")
-	err = util.CopyFile("/etc/resolv.conf", path.Join(container.RootFsDir(cip.Name), "/etc/resolv.conf"))
-	if err != nil {
-		wwlog.Warn("Could not copy /etc/resolv.conf into container: %s", err)
-	}
-
 	err = container.SyncUids(cip.Name, !cip.SyncUser)
 	if err != nil && !cip.SyncUser {
 		err = fmt.Errorf("error in user sync, fix error and run 'syncuser' manually: %s", err)

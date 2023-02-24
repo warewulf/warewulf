@@ -96,7 +96,7 @@ export GOPROXY
 WW_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
 # Default target
-all: config vendor wwctl wwclient bash_completion.d man_pages config_defaults print_defaults wwapid wwapic wwapird
+all: config vendor wwctl wwclient bash_completion.d man_pages config_defaults print_defaults wwapid wwapic wwapird print_mnts
 
 # Validate source and build all packages
 build: lint test-it vet all
@@ -247,6 +247,7 @@ config_defaults: vendor cmd/config_defaults/config_defaults.go
 
 print_defaults: vendor cmd/print_defaults/print_defaults.go
 	cd cmd/print_defaults && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'" -o ../../print_defaults
+
 
 update_configuration: vendor cmd/update_configuration/update_configuration.go
 	cd cmd/update_configuration && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'\
