@@ -122,25 +122,26 @@ func createFlags(baseCmd *cobra.Command, excludeList []string,
 				}
 				baseCmd.PersistentFlags().Lookup(myType.Tag.Get("lopt")).NoOptDefVal = "true"
 			case "IP":
-				defaultConv := net.ParseIP(myType.Tag.Get("default"))
-				var valueRaw net.IP
 				converters = append(converters, func() error {
-					if valueRaw != nil {
-						// will always get a IP, not a string
-						*ptr = valueRaw.String()
+					if !util.InSlice(GetUnsetVerbs(), *ptr) && *ptr != "" {
+						ipval := net.ParseIP(*ptr)
+						if ipval == nil {
+							return fmt.Errorf("commandline option %s needs to be an IP address", myType.Tag.Get("lopt"))
+						}
+						*ptr = ipval.String()
 					}
 					return nil
 				})
 				if myType.Tag.Get("sopt") != "" {
-					baseCmd.PersistentFlags().IPVarP(&valueRaw,
+					baseCmd.PersistentFlags().StringVarP(ptr,
 						myType.Tag.Get("lopt"),
 						myType.Tag.Get("sopt"),
-						defaultConv,
+						myType.Tag.Get("default"),
 						myType.Tag.Get("comment"))
 				} else {
-					baseCmd.PersistentFlags().IPVar(&valueRaw,
+					baseCmd.PersistentFlags().StringVar(ptr,
 						myType.Tag.Get("lopt"),
-						defaultConv,
+						myType.Tag.Get("default"),
 						myType.Tag.Get("comment"))
 				}
 			case "IPMask":
@@ -168,11 +169,13 @@ func createFlags(baseCmd *cobra.Command, excludeList []string,
 				}
 			case "MAC":
 				converters = append(converters, func() error {
-					myMac, err := net.ParseMAC(*ptr)
-					if err != nil {
-						return err
+					if !util.InSlice(GetUnsetVerbs(), *ptr) && *ptr != "" {
+						myMac, err := net.ParseMAC(*ptr)
+						if err != nil {
+							return err
+						}
+						*ptr = myMac.String()
 					}
-					*ptr = myMac.String()
 					return nil
 				})
 				if myType.Tag.Get("sopt") != "" {

@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/hpcng/warewulf/internal/pkg/util"
 )
 
 /*
@@ -58,7 +60,7 @@ func (nodeConf *NodeConf) Check() (err error) {
 }
 
 func checker(value string, valType string) (niceValue string, err error) {
-	if valType == "" || value == "" {
+	if valType == "" || value == "" || util.InSlice(GetUnsetVerbs(), value) {
 		return "", nil
 	}
 	//wwlog.Debug("checker: %s is %s", value, valType)

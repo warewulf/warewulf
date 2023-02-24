@@ -356,8 +356,10 @@ Create an empty node NodeConf
 */
 func NewConf() (nodeconf NodeConf) {
 	nodeconf.Ipmi = new(IpmiConf)
+	nodeconf.Ipmi.Tags = map[string]string{}
 	nodeconf.Kernel = new(KernelConf)
 	nodeconf.NetDevs = make(map[string]*NetDevs)
+	nodeconf.Tags = map[string]string{}
 	return nodeconf
 }
 
@@ -366,9 +368,16 @@ Create an empty node NodeInfo
 */
 func NewInfo() (nodeInfo NodeInfo) {
 	nodeInfo.Ipmi = new(IpmiEntry)
+	nodeInfo.Ipmi.Tags = map[string]*Entry{}
 	nodeInfo.Kernel = new(KernelEntry)
 	nodeInfo.NetDevs = make(map[string]*NetDevEntry)
+	nodeInfo.Tags = make(map[string]*Entry)
 	return nodeInfo
+}
+
+func NewNetDevEntry() (netdev NetDevEntry) {
+	netdev.Tags = make(map[string]*Entry)
+	return
 }
 
 /*

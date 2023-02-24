@@ -46,6 +46,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
      and an IP configuration derived from the network configuration of the host
 - All paths can now be configured in `warewulf.conf`, check the paths section of of 
    `wwctl --emptyconf genconfig warewulfconf print` for the available paths.
+- Added experimental dnsmasq support.
+- Check for formal correct IP and MAC addresses for command line options and
+  when reading in the configurations
+
 ## [4.4.0] 2023-01-18
 
 ### Added
