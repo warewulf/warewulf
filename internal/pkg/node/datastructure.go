@@ -48,6 +48,7 @@ type NodeConf struct {
 	Tags           map[string]string   `yaml:"tags,omitempty" lopt:"tagadd" comment:"base key"`
 	TagsDel        []string            `yaml:"tagsdel,omitempty" lopt:"tagdel" comment:"remove this tags"` // should not go to disk only to wire
 	Keys           map[string]string   `yaml:"keys,omitempty"`                                             // Reverse compatibility
+	PrimaryNetDev  string              `yaml:"primary network,omitempty" lopt:"primarynet" sopt:"p" comment:"Set the primary network interface"`
 }
 
 type IpmiConf struct {
@@ -80,8 +81,6 @@ type NetDevs struct {
 	Netmask string            `yaml:"netmask,omitempty" lopt:"netmask" sopt:"M" comment:"Set the networks netmask"`
 	Gateway string            `yaml:"gateway,omitempty" lopt:"gateway" sopt:"G" comment:"Set the node's network device gateway"`
 	MTU     string            `yaml:"mtu,omitempty" lopt:"mtu" comment:"Set the mtu"`
-	Primary string            `yaml:"primary,omitempty" lopt:"primary" comment:"Enable/disable network device as primary (yes/no)"`
-	Default string            `yaml:"default,omitempty"` /* backward compatibility */
 	Tags    map[string]string `yaml:"tags,omitempty" lopt:"nettagadd" comment:"network tags"`
 	TagsDel []string          `yaml:"tagsdel,omitempty" lopt:"nettagdel" comment:"delete network tags"` // should not go to disk only to wire
 }
@@ -122,6 +121,7 @@ type NodeInfo struct {
 	Kernel         *KernelEntry
 	Ipmi           *IpmiEntry
 	Profiles       Entry
+	PrimaryNetDev  Entry
 	NetDevs        map[string]*NetDevEntry
 	Tags           map[string]*Entry
 }
