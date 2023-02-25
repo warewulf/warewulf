@@ -17,13 +17,6 @@ func New(active int) *BatchPool {
 	return pool
 }
 
-func Min(x, y int) int {
-	if x < y {
-		return x
-	}
-	return y
-}
-
 func (pool *BatchPool) Submit(f func()) {
 	pool.jobs = append(pool.jobs, f)
 }
