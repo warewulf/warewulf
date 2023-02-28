@@ -24,6 +24,7 @@ func FindAllNodeConfs() *wwapiv1.NodeYaml {
 	buffer, _ := yaml.Marshal(nodeMap)
 	retVal := wwapiv1.NodeYaml{
 		NodeConfMapYaml: string(buffer),
+		Hash:            nodeDB.StringHash(),
 	}
 	return &retVal
 }
@@ -42,6 +43,7 @@ func FilteredNodes(nodeList *wwapiv1.NodeList) *wwapiv1.NodeYaml {
 	buffer, _ := yaml.Marshal(nodeMap)
 	retVal := wwapiv1.NodeYaml{
 		NodeConfMapYaml: string(buffer),
+		Hash:            nodeDB.StringHash(),
 	}
 	return &retVal
 }

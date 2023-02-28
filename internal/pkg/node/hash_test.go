@@ -1,7 +1,6 @@
 package node
 
 import (
-	"fmt"
 	"testing"
 
 	"gopkg.in/yaml.v2"
@@ -30,7 +29,7 @@ nodes:
     profiles:
     - default
     network devices:
-      testnet:
+      default:
         ipaddr: 10.0.10.2
 `
 	nodeConfYml2 := `
@@ -81,7 +80,6 @@ nodes:
 `
 	var nodeConf1, nodeConf2, nodeConf3 NodeYaml
 	err := yaml.Unmarshal([]byte(nodeConfYml1), &nodeConf1)
-	fmt.Println(nodeConf1.Nodes["n01"])
 	assert.NoError(t, err)
 	err = yaml.Unmarshal([]byte(nodeConfYml2), &nodeConf2)
 	assert.NoError(t, err)
@@ -98,8 +96,12 @@ nodes:
 	})
 
 	t.Run("Different sorted NodeYaml with same conf", func(t *testing.T) {
+		yml1, err := yaml.Marshal(nodeConf1)
+		assert.NoError(t, err)
+		yml2, err := yaml.Marshal(nodeConf2)
+		assert.NoError(t, err)
 		if nodeConf2.Hash() != nodeConf1.Hash() {
-			t.Errorf("Hashes for same configuration differs: %x != %x", nodeConf2.Hash(), nodeConf1.Hash())
+			t.Errorf("Hashes for same configuration differs: %x != %x\njson1:\n%s,yml2:\n%s\n", nodeConf2.Hash(), nodeConf1.Hash(), yml1, yml2)
 		}
 	})
 

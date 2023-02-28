@@ -2,6 +2,7 @@ package node
 
 import (
 	"crypto/sha256"
+	"encoding/hex"
 
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v2"
@@ -23,4 +24,12 @@ func (config *NodeYaml) Hash() [32]byte {
 		wwlog.Warn("couldn't marshall NodeYaml for hashing")
 	}
 	return sha256.Sum256(data)
+}
+
+/*
+Return the hash as string
+*/
+func (config *NodeYaml) StringHash() string {
+	buffer := config.Hash()
+	return hex.EncodeToString(buffer[:])
 }
