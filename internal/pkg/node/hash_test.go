@@ -88,9 +88,11 @@ nodes:
 
 	t.Run("Same NodeYaml with same conf", func(t *testing.T) {
 		var testConf NodeYaml
-		yaml.Unmarshal([]byte(nodeConfYml1), &testConf)
+		err = yaml.Unmarshal([]byte(nodeConfYml1), &testConf)
+		assert.NoError(t, err)
 		if testConf.Hash() != nodeConf1.Hash() {
-			yaml.Unmarshal([]byte(nodeConfYml1), nodeConf1)
+			err = yaml.Unmarshal([]byte(nodeConfYml1), nodeConf1)
+			assert.NoError(t, err)
 			t.Errorf("Hashes for same configuration differs: %x != %x", nodeConf1.Hash(), nodeConf1.Hash())
 		}
 	})
