@@ -20,6 +20,7 @@ Rocky Linux 8
    # dnf install https://github.com/hpcng/warewulf/releases/download/v4.4.0/warewulf-4.4.0-1.git_afcdb21.el8.x86_64.rpm
 
 openSuse Leap
+-------------
 
 .. code-block:: console
 
