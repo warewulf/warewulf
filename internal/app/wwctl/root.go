@@ -3,6 +3,7 @@ package wwctl
 import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container"
+	"github.com/hpcng/warewulf/internal/app/wwctl/genconf"
 	"github.com/hpcng/warewulf/internal/app/wwctl/kernel"
 	"github.com/hpcng/warewulf/internal/app/wwctl/node"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay"
@@ -52,6 +53,7 @@ func init() {
 	rootCmd.AddCommand(server.GetCommand())
 	rootCmd.AddCommand(version.GetCommand())
 	rootCmd.AddCommand(ssh.GetCommand())
+	rootCmd.AddCommand(genconf.GetCommand())
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
