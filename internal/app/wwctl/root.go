@@ -15,9 +15,6 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/help"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
-	"github.com/spf13/cobra/doc"
-
-	"io"
 )
 
 var (
@@ -73,20 +70,4 @@ func rootPersistentPreRunE(cmd *cobra.Command, args []string) error {
 		wwlog.SetLogLevel(LogLevel)
 	}
 	return nil
-}
-
-// External functions not used by the wwctl command line
-
-// Generate Bash completion file
-func GenBashCompletion(w io.Writer) error {
-	return rootCmd.GenBashCompletion(w)
-}
-
-// Generate man pages
-func GenManTree(fileName string) error {
-	header := &doc.GenManHeader{
-		Title:   "WWCTL",
-		Section: "1",
-	}
-	return doc.GenManTree(rootCmd, header, fileName)
 }

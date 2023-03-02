@@ -196,6 +196,7 @@ files: all
 	chmod 600 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/warewulf/config.ww
 	chmod 750 $(DESTDIR)$(WWOVERLAYDIR)/host
 	install -m 0755 wwctl $(DESTDIR)$(BINDIR)
+	install -m 0755 wwclient $(DESTDIR)$(WWOVERLAYDIR)/wwinit/$(WWCLIENTDIR)/wwclient
 	install -m 0755 wwapic $(DESTDIR)$(BINDIR)
 	install -m 0755 wwapid $(DESTDIR)$(BINDIR)
 	install -m 0755 wwapird $(DESTDIR)$(BINDIR)
@@ -224,17 +225,9 @@ wwclient: $(WWCLIENT_DEPS)
 	@ cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags "-extldflags -static \
 	 -X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=/etc/warewulf/warewulf.conf'" -o ../../wwclient
 
-install_wwclient: wwclient
-	install -m 0755 wwclient $(DESTDIR)$(WWOVERLAYDIR)/wwinit/$(WWCLIENTDIR)/wwclient
-
-man_page:
-	cd cmd/man_page && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'\
-	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'"\
-	 -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o ../../man_page
-
-man_pages: man_page
+man_pages: wwctl
 	install -d man_pages
-	./man_page ./man_pages
+	./wwctl genconfig man man_pages 
 	cp docs/man/man5/*.5 ./man_pages/
 	cd man_pages; for i in wwctl*1 *.5; do echo "Compressing manpage: $$i"; gzip --force $$i; done
 
@@ -272,7 +265,7 @@ dist: vendor config
 ##    sudo make install
 ##    sudo ldconfig # refresh shared library cache.
 ## To setup protoc-gen-grpc-gateway, see https://github.com/grpc-ecosystem/grpc-gateway
-proto:
+proto: 
 	rm -rf internal/pkg/api/routes/wwapiv1/
 	protoc -I internal/pkg/api/routes/v1 -I=. \
 		--grpc-gateway_out=. \
@@ -295,7 +288,6 @@ contclean:
 	rm -f wwctl
 	rm -rf .dist
 	rm -f $(WAREWULF)-$(VERSION).tar.gz
-	rm -f man_page
 	rm -rf man_pages
 	rm -f warewulf.spec
 	rm -f config
@@ -309,6 +301,6 @@ contclean:
 clean: contclean
 	rm -rf vendor
 
-install: files install_wwclient
+install: files
 
 debinstall: files debfiles
