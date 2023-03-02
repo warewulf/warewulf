@@ -2,7 +2,6 @@ package warewulfconf
 
 import (
 	"github.com/creasty/defaults"
-	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
@@ -80,13 +79,9 @@ func (s *NfsConf) Unmarshal(unmarshal func(interface{}) error) error {
 }
 
 func init() {
-	if !util.IsFile(ConfigFile) {
-		wwlog.Error("Configuration file not found: %s", ConfigFile)
-		// fail silently as this also called by bash_completion
-	}
 	_, err := New()
 	if err != nil {
-		wwlog.Error("Could not read Warewulf configuration file: %s", err)
+		wwlog.Warn("Could not get any Warewulf configuration: %s", err)
 	}
 }
 
