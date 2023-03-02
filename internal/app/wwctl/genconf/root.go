@@ -2,6 +2,7 @@ package genconf
 
 import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/genconf/completions"
+	"github.com/hpcng/warewulf/internal/app/wwctl/genconf/man"
 	"github.com/spf13/cobra"
 )
 
@@ -13,11 +14,13 @@ var (
 		Args:    cobra.ExactArgs(0),
 		Aliases: []string{"cnf"},
 	}
-	ListFull bool
+	ListFull  bool
+	WWctlRoot *cobra.Command
 )
 
 func init() {
 	baseCmd.AddCommand(completions.GetCommand())
+	baseCmd.AddCommand(man.GetCommand())
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
