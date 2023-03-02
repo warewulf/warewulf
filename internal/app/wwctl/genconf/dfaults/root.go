@@ -11,7 +11,6 @@ var (
 		Args:    cobra.NoArgs,
 		Aliases: []string{"dfaults"},
 	}
-	Zsh bool
 )
 
 func init() {

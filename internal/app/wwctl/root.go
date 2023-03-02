@@ -13,6 +13,7 @@ import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/ssh"
 	"github.com/hpcng/warewulf/internal/app/wwctl/version"
 	"github.com/hpcng/warewulf/internal/pkg/help"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 )
@@ -27,9 +28,10 @@ var (
 		SilenceUsage:          true,
 		SilenceErrors:         true,
 	}
-	verboseArg bool
-	DebugFlag  bool
-	LogLevel   int
+	verboseArg      bool
+	DebugFlag       bool
+	LogLevel        int
+	WarewulfConfArg string
 )
 
 func init() {
@@ -37,6 +39,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&DebugFlag, "debug", "d", false, "Run with debugging messages enabled.")
 	rootCmd.PersistentFlags().IntVar(&LogLevel, "loglevel", wwlog.INFO, "Set log level to given string")
 	_ = rootCmd.PersistentFlags().MarkHidden("loglevel")
+	rootCmd.PersistentFlags().StringVar(&WarewulfConfArg, "warewulfconf", "", "Set the warewulf configuration file")
 	rootCmd.SetUsageTemplate(help.UsageTemplate)
 	rootCmd.SetHelpTemplate(help.HelpTemplate)
 
@@ -69,5 +72,6 @@ func rootPersistentPreRunE(cmd *cobra.Command, args []string) error {
 	if LogLevel != wwlog.INFO {
 		wwlog.SetLogLevel(LogLevel)
 	}
+	warewulfconf.ConfigFile = WarewulfConfArg
 	return nil
 }

@@ -19,7 +19,13 @@ var cachedConf ControllerConf
 
 var ConfigFile string
 
+/*
+Get the configFile location from the os.ev if set
+*/
 func init() {
+	if ConfigFile == "" {
+		ConfigFile = os.Getenv("WARWULFCONF")
+	}
 	if ConfigFile == "" {
 		ConfigFile = path.Join(buildconfig.SYSCONFDIR(), "warewulf/warewulf.conf")
 	}
@@ -51,7 +57,7 @@ func New() (ControllerConf, error) {
 		wwlog.Debug("Opening Warewulf configuration file: %s", ConfigFile)
 		data, err := os.ReadFile(ConfigFile)
 		if err != nil {
-			wwlog.Warn("Error reading Warewulf configuration file")
+			wwlog.Warn("Error reading Warewulf configuration file, falling back on defaults")
 		}
 
 		wwlog.Debug("Unmarshaling the Warewulf configuration")
@@ -71,12 +77,12 @@ func New() (ControllerConf, error) {
 			localIp := conn.LocalAddr().(*net.UDPAddr)
 			if ret.Ipaddr == "" {
 				ret.Ipaddr = localIp.IP.String()
-				wwlog.Warn("IP address is not configured in warewulfd.conf, using %s", ret.Ipaddr)
+				wwlog.Verbose("IP address is not configured in warewulfd.conf, using %s", ret.Ipaddr)
 			}
 			if ret.Netmask == "" {
 				mask := localIp.IP.DefaultMask()
 				ret.Netmask = fmt.Sprintf("%d.%d.%d.%d", mask[0], mask[1], mask[2], mask[3])
-				wwlog.Warn("Netmask address is not configured in warewulfd.conf, using %s", ret.Netmask)
+				wwlog.Verbose("Netmask address is not configured in warewulfd.conf, using %s", ret.Netmask)
 			}
 		}
 
