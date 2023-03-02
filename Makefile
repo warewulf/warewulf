@@ -101,7 +101,7 @@ export GOPROXY
 WW_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
 # Default target
-all: config vendor wwctl wwclient man_pages config_defaults print_defaults wwapid wwapic wwapird print_mnts
+all: config vendor wwctl wwclient man_pages config_defaults print_defaults wwapid wwapic wwapird
 
 # Validate source and build all packages
 build: lint test-it vet all
@@ -254,6 +254,12 @@ dist: vendor config
 	rsync -a --exclude=".*" --exclude "*~" * .dist/$(WAREWULF)-$(VERSION)/
 	cd .dist; tar -czf ../$(WAREWULF)-$(VERSION).tar.gz $(WAREWULF)-$(VERSION)
 	rm -rf .dist
+
+reference: wwctl
+	./wwctl genconfig reference userdocs/reference/
+
+latexpdf: reference
+	make -C userdocs latexpdf
 
 ## wwapi generate code from protobuf. Requires protoc and protoc-grpc-gen-gateway to generate code.
 ## To setup latest protoc:
