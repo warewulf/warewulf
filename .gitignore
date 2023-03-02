@@ -38,3 +38,4 @@ Defaults.mk
 /etc/wwapird.conf
 .dist/
 userdocs/_*
+userdocs/reference/*
