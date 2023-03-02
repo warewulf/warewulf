@@ -6,6 +6,7 @@ import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/genconf/man"
 	"github.com/hpcng/warewulf/internal/app/wwctl/genconf/reference"
 	"github.com/hpcng/warewulf/internal/app/wwctl/genconf/warewulfconf"
+	"github.com/hpcng/warewulf/internal/app/wwctl/genconf/man"
 	"github.com/spf13/cobra"
 )
 
