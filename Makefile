@@ -101,7 +101,7 @@ export GOPROXY
 WW_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
 # Default target
-all: config vendor wwctl wwclient man_pages config_defaults print_defaults wwapid wwapic wwapird
+all: config vendor wwctl wwclient man_pages config_defaults wwapid wwapic wwapird
 
 # Validate source and build all packages
 build: lint test-it vet all
@@ -183,7 +183,7 @@ files: all
 	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapic.conf || install -m 644 etc/wwapic.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapid.conf || install -m 644 etc/wwapid.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapird.conf || install -m 644 etc/wwapird.conf $(DESTDIR)$(WWCONFIGDIR)
-	test -f $(DESTDIR)$(WWCONFIGDIR)/defaults.conf || ./print_defaults > $(DESTDIR)$(WWCONFIGDIR)/defaults.conf
+	test -f $(DESTDIR)$(WWCONFIGDIR)/defaults.conf || ./wwctl genconfig defaults > $(DESTDIR)$(WWCONFIGDIR)/defaults.conf
 	cp -r etc/examples $(DESTDIR)$(WWCONFIGDIR)/
 	cp -r etc/ipxe $(DESTDIR)$(WWCONFIGDIR)/
 	cp -r overlays/* $(DESTDIR)$(WWOVERLAYDIR)/
@@ -222,7 +222,7 @@ wwctl: $(WWCTL_DEPS)
 
 wwclient: $(WWCLIENT_DEPS)
 	@echo Building "$@"
-	@ cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags "-extldflags -static \
+	@cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags "-extldflags -static \
 	 -X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=/etc/warewulf/warewulf.conf'" -o ../../wwclient
 
 man_pages: wwctl
@@ -235,10 +235,6 @@ config_defaults: vendor cmd/config_defaults/config_defaults.go
 	cd cmd/config_defaults && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'\
 	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'"\
 	 -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o ../../config_defaults
-
-print_defaults: vendor cmd/print_defaults/print_defaults.go
-	cd cmd/print_defaults && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'" -o ../../print_defaults
-
 
 update_configuration: vendor cmd/update_configuration/update_configuration.go
 	cd cmd/update_configuration && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'\
@@ -301,7 +297,6 @@ contclean:
 	rm -rf $(TOOLS_DIR)
 	rm -f config_defaults
 	rm -f update_configuration
-	rm -f print_defaults
 	rm -f etc/wwapi{c,d,rd}.conf
 
 clean: contclean
