@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 
 	"gopkg.in/yaml.v2"
@@ -37,11 +37,12 @@ defaultnode:
       netmask: 255.255.255.0`
 
 func init() {
+	conf := warewulfconf.New()
 	if ConfigFile == "" {
-		ConfigFile = path.Join(buildconfig.SYSCONFDIR(), "warewulf/nodes.conf")
+		ConfigFile = path.Join(conf.SYSCONFDIR(), "warewulf/nodes.conf")
 	}
 	if DefaultConfig == "" {
-		DefaultConfig = path.Join(buildconfig.SYSCONFDIR(), "warewulf/defaults.conf")
+		DefaultConfig = path.Join(conf.SYSCONFDIR(), "warewulf/defaults.conf")
 	}
 }
 

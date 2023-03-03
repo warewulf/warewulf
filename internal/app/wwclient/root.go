@@ -16,7 +16,6 @@ import (
 
 	"github.com/coreos/go-systemd/daemon"
 	"github.com/google/uuid"
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/pidfile"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -50,10 +49,7 @@ func GetRootCommand() *cobra.Command {
 }
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	conf, err := warewulfconf.New()
-	if err != nil {
-		return err
-	}
+	conf := warewulfconf.New()
 
 	pid, err := pidfile.Write(PIDFile)
 	if err != nil && pid == -1 {

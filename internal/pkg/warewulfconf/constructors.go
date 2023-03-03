@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"path"
 
 	"github.com/brotherpowers/ipsubnet"
 	"github.com/creasty/defaults"
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v2"
 )
@@ -17,18 +15,6 @@ import (
 var cachedConf ControllerConf
 
 var ConfigFile string
-
-/*
-Get the configFile location from the os.ev if set
-*/
-func init() {
-	if ConfigFile == "" {
-		ConfigFile = os.Getenv("WARWULFCONF")
-	}
-	if ConfigFile == "" {
-		ConfigFile = path.Join(buildconfig.SYSCONFDIR(), "warewulf/warewulf.conf")
-	}
-}
 
 /*
 Creates a new empty ControllerConf object, returns a cached
@@ -42,10 +28,9 @@ func New() (ret ControllerConf) {
 		ret.Dhcp = new(DhcpConf)
 		ret.Tftp = new(TftpConf)
 		ret.Nfs = new(NfsConf)
-		err := defaults.Set(&ret)
-		if err != nil {
-			ret.setDynamicDefaults()
-		}
+		ret.Paths = new(BuildConfig)
+		_ = defaults.Set(&ret)
+		ret.setDynamicDefaults()
 
 		cachedConf = ret
 		cachedConf.current = true

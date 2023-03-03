@@ -5,15 +5,14 @@ import (
 	"os"
 	"path"
 
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
 func TFTP() error {
-	var tftpdir string = path.Join(buildconfig.TFTPDIR(), "warewulf")
 	controller := warewulfconf.New()
+	var tftpdir string = path.Join(controller.TFTPDIR(), "warewulf")
 
 	err := os.MkdirAll(tftpdir, 0755)
 	if err != nil {
@@ -28,7 +27,7 @@ func TFTP() error {
 			continue
 		}
 		copyCheck[f] = true
-		err = util.SafeCopyFile(path.Join(buildconfig.DATADIR(), f), path.Join(tftpdir, f))
+		err = util.SafeCopyFile(path.Join(controller.DATADIR(), f), path.Join(tftpdir, f))
 		if err != nil {
 			wwlog.Warn("ipxe binary could not be copied, booting may not work: %s", err)
 		}
