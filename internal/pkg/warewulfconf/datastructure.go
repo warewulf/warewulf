@@ -18,7 +18,7 @@ type ControllerConf struct {
 	Tftp            *TftpConf     `yaml:"tftp"`
 	Nfs             *NfsConf      `yaml:"nfs"`
 	MountsContainer []*MountEntry `yaml:"container mounts" default:"[{\"source\": \"/etc/resolv.conf\", \"dest\": \"/etc/resolv.conf\"}]"`
-	Paths           *BuildConfig  `yaml:"mypaths"`
+	Paths           *BuildConfig  `yaml:"paths"`
 	current         bool
 }
 
