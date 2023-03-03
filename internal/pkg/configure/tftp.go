@@ -13,13 +13,9 @@ import (
 
 func TFTP() error {
 	var tftpdir string = path.Join(buildconfig.TFTPDIR(), "warewulf")
-	controller, err := warewulfconf.New()
-	if err != nil {
-		wwlog.Error("%s", err)
-		return err
-	}
+	controller := warewulfconf.New()
 
-	err = os.MkdirAll(tftpdir, 0755)
+	err := os.MkdirAll(tftpdir, 0755)
 	if err != nil {
 		wwlog.Error("%s", err)
 		return err

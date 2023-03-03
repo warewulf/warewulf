@@ -2,7 +2,6 @@ package nodestatus
 
 import (
 	"fmt"
-	"os"
 	"sort"
 	"strings"
 	"time"
@@ -19,15 +18,11 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 
-	controller, err := warewulfconf.New()
-	if err != nil {
-		wwlog.Error("%s", err)
-		os.Exit(1)
-	}
+	controller := warewulfconf.New()
 
 	if controller.Ipaddr == "" {
-		wwlog.Error("The Warewulf Server IP Address is not properly configured")
-		os.Exit(1)
+		return fmt.Errorf("warewulf Server IP Address is not properly configured")
+
 	}
 
 	for {

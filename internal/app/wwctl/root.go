@@ -1,6 +1,8 @@
 package wwctl
 
 import (
+	"os"
+
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container"
 	"github.com/hpcng/warewulf/internal/app/wwctl/genconf"
@@ -72,6 +74,11 @@ func rootPersistentPreRunE(cmd *cobra.Command, args []string) error {
 	if LogLevel != wwlog.INFO {
 		wwlog.SetLogLevel(LogLevel)
 	}
-	warewulfconf.ConfigFile = WarewulfConfArg
+	conf := warewulfconf.New()
+	if WarewulfConfArg != "" {
+		conf.ReadConf(WarewulfConfArg)
+	} else if os.Getenv("WAREWULFCONF") != "" {
+		conf.ReadConf(os.Getenv("WAREWULFCONF"))
+	}
 	return nil
 }

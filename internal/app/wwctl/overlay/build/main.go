@@ -14,11 +14,7 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	controller, err := warewulfconf.New()
-	if err != nil {
-		wwlog.Error("%s", err)
-		os.Exit(1)
-	}
+	controller := warewulfconf.New()
 	nodeDB, err := node.New()
 	if err != nil {
 		wwlog.Error("Could not open node configuration: %s", err)

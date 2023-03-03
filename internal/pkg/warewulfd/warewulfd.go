@@ -58,10 +58,7 @@ func RunServer() error {
 	http.HandleFunc("/overlay-runtime/", ProvisionSend)
 	http.HandleFunc("/status", StatusSend)
 
-	conf, err := warewulfconf.New()
-	if err != nil {
-		return errors.Wrap(err, "could not get Warewulf configuration")
-	}
+	conf := warewulfconf.New()
 
 	daemonPort := conf.Warewulf.Port
 	wwlog.Serv("Starting HTTPD REST service on port %d", daemonPort)

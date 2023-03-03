@@ -15,13 +15,9 @@ import (
 Configures the dhcpd server, when show is set to false, else the
 dhcp configuration is checked.
 */
-func Dhcp() error {
+func Dhcp() (err error) {
 
-	controller, err := warewulfconf.New()
-	if err != nil {
-		wwlog.Error("%s", err)
-		os.Exit(1)
-	}
+	controller := warewulfconf.New()
 
 	if !controller.Dhcp.Enabled {
 		wwlog.Info("This system is not configured as a Warewulf DHCP controller")
@@ -51,5 +47,5 @@ func Dhcp() error {
 		return errors.Wrap(err, "failed to start")
 	}
 
-	return nil
+	return
 }

@@ -44,10 +44,7 @@ func DaemonInitLogging() error {
 		wwlog.SetLogLevel(wwlog.SERV)
 	}
 
-	conf, err := warewulfconf.New()
-	if err != nil {
-		return errors.Wrap(err, "Could not read Warewulf configuration file")
-	}
+	conf := warewulfconf.New()
 
 	if conf.Warewulf.Syslog {
 
