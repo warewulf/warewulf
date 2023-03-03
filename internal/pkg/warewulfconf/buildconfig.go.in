@@ -1,0 +1,18 @@
+package warewulfconf
+
+type BuildConfig struct {
+	bindir         string `default:"@BINDIR@"`
+	sysconfdir     string `default:"@SYSCONFDIR@"`
+	datadir        string `default:"@DATADIR@"`
+	localstatedir  string `default:"@LOCALSTATEDIR@"`
+	srvdir         string `default:"@SRVDIR@"`
+	tftpdir        string `default:"@TFTPDIR@"`
+	firewallddir   string `default:"@FIREWALLDDIR@"`
+	systemddir     string `default:"@SYSTEMDDIR@"`
+	wwoverlaydir   string `default:"@WWOVERLAYDIR@"`
+	wwchrootdir    string `default:"@WWCHROOTDIR@"`
+	wwprovisiondir string `default:"@WWPROVISIONDIR@"`
+	version        string `default:"@VERSION@"`
+	release        string `default:"@RELEASE@"`
+	wwclientdir    string `default:"@WWCLIENTDIR@"`
+}

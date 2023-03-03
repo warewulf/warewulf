@@ -11,8 +11,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
@@ -28,7 +28,8 @@ var (
 )
 
 func KernelImageTopDir() string {
-	return path.Join(buildconfig.WWPROVISIONDIR(), "kernel")
+	conf := warewulfconf.New()
+	return path.Join(conf.WWPROVISIONDIR(), "kernel")
 }
 
 func KernelImage(kernelName string) string {

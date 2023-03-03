@@ -231,18 +231,10 @@ man_pages: wwctl
 	cp docs/man/man5/*.5 ./man_pages/
 	cd man_pages; for i in wwctl*1 *.5; do echo "Compressing manpage: $$i"; gzip --force $$i; done
 
-config_defaults: vendor cmd/config_defaults/config_defaults.go
-	cd cmd/config_defaults && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'\
-	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'"\
-	 -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o ../../config_defaults
-
 update_configuration: vendor cmd/update_configuration/update_configuration.go
 	cd cmd/update_configuration && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'\
 	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'"\
 	 -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o ../../update_configuration
-
-warewulfconf: config_defaults
-	./config_defaults
 
 dist: vendor config
 	rm -rf .dist/$(WAREWULF)-$(VERSION) $(WAREWULF)-$(VERSION).tar.gz

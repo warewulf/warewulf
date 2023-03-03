@@ -25,6 +25,7 @@
 /etc/bash_completion.d/
 warewulf.spec
 internal/pkg/buildconfig/setconfigs.go
+internal/pkg/warewulfconf/buildconfig.go
 include/systemd/warewulfd.service
 _dist/
 config
