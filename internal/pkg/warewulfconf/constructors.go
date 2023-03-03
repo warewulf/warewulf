@@ -30,7 +30,7 @@ func New() (ret ControllerConf) {
 		ret.Nfs = new(NfsConf)
 		ret.Paths = new(BuildConfig)
 		_ = defaults.Set(&ret)
-		ret.setDynamicDefaults()
+		_ = ret.setDynamicDefaults()
 
 		cachedConf = ret
 		cachedConf.current = true

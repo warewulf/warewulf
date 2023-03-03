@@ -63,7 +63,7 @@ func GetRootCommand() *cobra.Command {
 	return rootCmd
 }
 
-func rootPersistentPreRunE(cmd *cobra.Command, args []string) error {
+func rootPersistentPreRunE(cmd *cobra.Command, args []string) (err error) {
 	if DebugFlag {
 		wwlog.SetLogLevel(wwlog.DEBUG)
 	} else if verboseArg {
@@ -76,9 +76,9 @@ func rootPersistentPreRunE(cmd *cobra.Command, args []string) error {
 	}
 	conf := warewulfconf.New()
 	if WarewulfConfArg != "" {
-		conf.ReadConf(WarewulfConfArg)
+		err = conf.ReadConf(WarewulfConfArg)
 	} else if os.Getenv("WAREWULFCONF") != "" {
-		conf.ReadConf(os.Getenv("WAREWULFCONF"))
+		err = conf.ReadConf(os.Getenv("WAREWULFCONF"))
 	}
-	return nil
+	return
 }
