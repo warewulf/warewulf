@@ -58,7 +58,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		return errors.New("found pidfile " + PIDFile + " not starting")
 	}
 
-	if os.Args[0] == path.Join(buildconfig.WWCLIENTDIR(), "wwclient") {
+	if os.Args[0] == path.Join(conf.WWCLIENTDIR(), "wwclient") {
 		err := os.Chdir("/")
 		if err != nil {
 			wwlog.Error("failed to change dir: %s", err)
@@ -70,7 +70,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	} else {
 		fmt.Printf("Called via: %s\n", os.Args[0])
 		fmt.Printf("Runtime overlay is being put in '/warewulf/wwclient-test' rather than '/'\n")
-		fmt.Printf("For full functionality call with: %s\n", path.Join(buildconfig.WWCLIENTDIR(), "wwclient"))
+		fmt.Printf("For full functionality call with: %s\n", path.Join(conf.WWCLIENTDIR(), "wwclient"))
 		err := os.MkdirAll("/warewulf/wwclient-test", 0755)
 		if err != nil {
 			wwlog.Error("failed to create dir: %s", err)

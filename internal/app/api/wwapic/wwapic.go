@@ -12,7 +12,7 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/api/apiconfig"
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -24,9 +24,10 @@ import (
 
 func main() {
 	log.Println("Client running")
+	conf := warewulfconf.New()
 
 	// Read the config file.
-	config, err := apiconfig.NewClient(path.Join(buildconfig.SYSCONFDIR(), "warewulf/wwapic.conf"))
+	config, err := apiconfig.NewClient(path.Join(conf.SYSCONFDIR(), "warewulf/wwapic.conf"))
 	if err != nil {
 		log.Fatalf("err: %v", err)
 	}
