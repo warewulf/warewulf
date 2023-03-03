@@ -2,7 +2,6 @@ package warewulfconf
 
 import (
 	"github.com/creasty/defaults"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
 type ControllerConf struct {
@@ -78,15 +77,9 @@ func (s *NfsConf) Unmarshal(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-func init() {
-	_, err := New()
-	if err != nil {
-		wwlog.Warn("Could not get any Warewulf configuration: %s", err)
-	}
-}
-
 // Waste processor cycles to make code more readable
 
 func DataStore() string {
+	_ = New()
 	return cachedConf.Warewulf.DataStore
 }

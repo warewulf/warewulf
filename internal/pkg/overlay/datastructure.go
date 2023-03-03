@@ -43,11 +43,7 @@ Initialize an TemplateStruct with the given node.NodeInfo
 */
 func InitStruct(nodeInfo node.NodeInfo) TemplateStruct {
 	var tstruct TemplateStruct
-	controller, err := warewulfconf.New()
-	if err != nil {
-		wwlog.Error("%s", err)
-		os.Exit(1)
-	}
+	controller := warewulfconf.New()
 	nodeDB, err := node.New()
 	if err != nil {
 		wwlog.Error("%s", err)
