@@ -5,6 +5,7 @@ import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/genconf/dfaults"
 	"github.com/hpcng/warewulf/internal/app/wwctl/genconf/man"
 	"github.com/hpcng/warewulf/internal/app/wwctl/genconf/reference"
+	"github.com/hpcng/warewulf/internal/app/wwctl/genconf/warewulfconf"
 	"github.com/spf13/cobra"
 )
 
@@ -25,6 +26,7 @@ func init() {
 	baseCmd.AddCommand(man.GetCommand())
 	baseCmd.AddCommand(reference.GetCommand())
 	baseCmd.AddCommand(dfaults.GetCommand())
+	baseCmd.AddCommand(warewulfconf.GetCommand())
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
