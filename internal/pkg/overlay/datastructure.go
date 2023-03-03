@@ -32,6 +32,7 @@ type TemplateStruct struct {
 	Nfs           warewulfconf.NfsConf
 	Warewulf      warewulfconf.WarewulfConf
 	Tftp          warewulfconf.TftpConf
+	Paths         warewulfconf.BuildConfig
 	AllNodes      []node.NodeInfo
 	node.NodeConf
 	// backward compatiblity
