@@ -15,9 +15,9 @@ func SSH() error {
 	if os.Getuid() == 0 {
 		fmt.Printf("Updating system keys\n")
 		conf := warewulfconf.New()
-		wwkeydir := path.Join(conf.SYSCONFDIR(), "warewulf/keys") + "/"
+		wwkeydir := path.Join(conf.Paths.Sysconfdir, "warewulf/keys") + "/"
 
-		err := os.MkdirAll(path.Join(conf.SYSCONFDIR(), "warewulf/keys"), 0755)
+		err := os.MkdirAll(path.Join(conf.Paths.Sysconfdir, "warewulf/keys"), 0755)
 		if err != nil {
 			wwlog.Error("Could not create base directory: %s", err)
 			os.Exit(1)

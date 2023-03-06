@@ -12,7 +12,7 @@ import (
 
 func TFTP() error {
 	controller := warewulfconf.New()
-	var tftpdir string = path.Join(controller.TFTPDIR(), "warewulf")
+	var tftpdir string = path.Join(controller.Paths.Tftpdir, "warewulf")
 
 	err := os.MkdirAll(tftpdir, 0755)
 	if err != nil {
@@ -27,7 +27,7 @@ func TFTP() error {
 			continue
 		}
 		copyCheck[f] = true
-		err = util.SafeCopyFile(path.Join(controller.DATADIR(), f), path.Join(tftpdir, f))
+		err = util.SafeCopyFile(path.Join(controller.Paths.Datadir, f), path.Join(tftpdir, f))
 		if err != nil {
 			wwlog.Warn("ipxe binary could not be copied, booting may not work: %s", err)
 		}

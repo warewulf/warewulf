@@ -79,13 +79,13 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 	if !node.Id.Defined() {
 		wwlog.Error("%s (unknown/unconfigured node)", rinfo.hwaddr)
 		if rinfo.stage == "ipxe" {
-			stage_file = path.Join(conf.SYSCONFDIR(), "/warewulf/ipxe/unconfigured.ipxe")
+			stage_file = path.Join(conf.Paths.Sysconfdir, "/warewulf/ipxe/unconfigured.ipxe")
 			tmpl_data = iPxeTemplate{
 				Hwaddr: rinfo.hwaddr}
 		}
 
 	} else if rinfo.stage == "ipxe" {
-		stage_file = path.Join(conf.SYSCONFDIR(), "warewulf/ipxe/"+node.Ipxe.Get()+".ipxe")
+		stage_file = path.Join(conf.Paths.Sysconfdir, "warewulf/ipxe/"+node.Ipxe.Get()+".ipxe")
 		tmpl_data = iPxeTemplate{
 			Id:             node.Id.Get(),
 			Cluster:        node.ClusterName.Get(),

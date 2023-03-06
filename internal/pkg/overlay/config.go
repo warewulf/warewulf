@@ -10,7 +10,7 @@ import (
 
 func OverlaySourceTopDir() string {
 	conf := warewulfconf.New()
-	return conf.WWOVERLAYDIR()
+	return conf.Paths.WWOverlaydir
 }
 
 /*
@@ -32,5 +32,5 @@ Returns the overlay name of the image for a given node
 */
 func OverlayImage(nodeName string, overlayName []string) string {
 	conf := warewulfconf.New()
-	return path.Join(conf.WWPROVISIONDIR(), "overlays/", nodeName, strings.Join(overlayName, "-")+".img")
+	return path.Join(conf.Paths.WWProvisiondir, "overlays/", nodeName, strings.Join(overlayName, "-")+".img")
 }

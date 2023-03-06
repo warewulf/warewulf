@@ -12,7 +12,7 @@ Return the version of wwctl
 */
 func GetVersion() string {
 	conf := warewulfconf.New()
-	return fmt.Sprintf("%s-%s", conf.VERSION(), conf.RELEASE())
+	return fmt.Sprintf("%s-%s", conf.Paths.Version, conf.Paths.Release)
 }
 
 /*

@@ -31,7 +31,7 @@ func run() error {
 
 	conf := warewulfconf.New()
 	// Read the config file.
-	config, err := apiconfig.NewClientServer(path.Join(conf.SYSCONFDIR(), "warewulf/wwapird.conf"))
+	config, err := apiconfig.NewClientServer(path.Join(conf.Paths.Sysconfdir, "warewulf/wwapird.conf"))
 	if err != nil {
 		glog.Fatalf("Failed to read config file, err: %v", err)
 	}

@@ -39,10 +39,10 @@ defaultnode:
 func init() {
 	conf := warewulfconf.New()
 	if ConfigFile == "" {
-		ConfigFile = path.Join(conf.SYSCONFDIR(), "warewulf/nodes.conf")
+		ConfigFile = path.Join(conf.Paths.Sysconfdir, "warewulf/nodes.conf")
 	}
 	if DefaultConfig == "" {
-		DefaultConfig = path.Join(conf.SYSCONFDIR(), "warewulf/defaults.conf")
+		DefaultConfig = path.Join(conf.Paths.Sysconfdir, "warewulf/defaults.conf")
 	}
 }
 

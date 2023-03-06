@@ -27,7 +27,7 @@ func main() {
 	conf := warewulfconf.New()
 
 	// Read the config file.
-	config, err := apiconfig.NewClient(path.Join(conf.SYSCONFDIR(), "warewulf/wwapic.conf"))
+	config, err := apiconfig.NewClient(path.Join(conf.Paths.Sysconfdir, "warewulf/wwapic.conf"))
 	if err != nil {
 		log.Fatalf("err: %v", err)
 	}
