@@ -218,7 +218,9 @@ init:
 
 wwctl: $(WWCTL_DEPS)
 	@echo Building "$@"
-	@cd cmd/wwctl; GOOS=linux go build -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o ../../wwctl
+	@cd cmd/wwctl; GOOS=linux go build -mod vendor -tags "$(WW_GO_BUILD_TAGS)" \
+	-ldflags "-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=$(SYSCONFDIR)/warewulf/warewulf.conf'" \
+	-o ../../wwctl
 
 wwclient: $(WWCLIENT_DEPS)
 	@echo Building "$@"

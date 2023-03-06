@@ -34,6 +34,7 @@ var (
 	DebugFlag       bool
 	LogLevel        int
 	WarewulfConfArg string
+	AllowEmptyConf  bool
 )
 
 func init() {
@@ -42,9 +43,10 @@ func init() {
 	rootCmd.PersistentFlags().IntVar(&LogLevel, "loglevel", wwlog.INFO, "Set log level to given string")
 	_ = rootCmd.PersistentFlags().MarkHidden("loglevel")
 	rootCmd.PersistentFlags().StringVar(&WarewulfConfArg, "warewulfconf", "", "Set the warewulf configuration file")
+	rootCmd.PersistentFlags().BoolVar(&AllowEmptyConf, "emptyconf", false, "Allow empty configuration")
+	_ = rootCmd.PersistentFlags().MarkHidden("emptyconf")
 	rootCmd.SetUsageTemplate(help.UsageTemplate)
 	rootCmd.SetHelpTemplate(help.HelpTemplate)
-
 	rootCmd.AddCommand(overlay.GetCommand())
 	rootCmd.AddCommand(container.GetCommand())
 	rootCmd.AddCommand(node.GetCommand())
@@ -75,10 +77,16 @@ func rootPersistentPreRunE(cmd *cobra.Command, args []string) (err error) {
 		wwlog.SetLogLevel(LogLevel)
 	}
 	conf := warewulfconf.New()
-	if WarewulfConfArg != "" {
-		err = conf.ReadConf(WarewulfConfArg)
-	} else if os.Getenv("WAREWULFCONF") != "" {
-		err = conf.ReadConf(os.Getenv("WAREWULFCONF"))
+	if !AllowEmptyConf {
+		if WarewulfConfArg != "" {
+			err = conf.ReadConf(WarewulfConfArg)
+		} else if os.Getenv("WAREWULFCONF") != "" {
+			err = conf.ReadConf(os.Getenv("WAREWULFCONF"))
+		} else {
+			err = conf.ReadConf(warewulfconf.ConfigFile)
+		}
+	} else {
+		conf.SetDynamicDefaults()
 	}
 	return
 }
