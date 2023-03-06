@@ -218,7 +218,9 @@ init:
 
 wwctl: $(WWCTL_DEPS)
 	@echo Building "$@"
-	@cd cmd/wwctl; GOOS=linux go build -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o ../../wwctl
+	@cd cmd/wwctl; GOOS=linux go build -mod vendor -tags "$(WW_GO_BUILD_TAGS)" \
+	-ldflags "-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=$(SYSCONFDIR)/warewulf/warewulf.conf'" \
+	-o ../../wwctl
 
 wwclient: $(WWCLIENT_DEPS)
 	@echo Building "$@"
@@ -226,10 +228,11 @@ wwclient: $(WWCLIENT_DEPS)
 	 -X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=/etc/warewulf/warewulf.conf'" -o ../../wwclient
 
 man_pages: wwctl
-	install -d man_pages
-	./wwctl genconfig man man_pages 
-	cp docs/man/man5/*.5 ./man_pages/
-	cd man_pages; for i in wwctl*1 *.5; do echo "Compressing manpage: $$i"; gzip --force $$i; done
+	@install -d man_pages
+	@./wwctl --emptyconf genconfig man man_pages 
+	@cp docs/man/man5/*.5 ./man_pages/
+	@echo -n "Compressing manpage: "
+	@cd man_pages; for i in wwctl*1 *.5; do gzip --force $$i; echo -n "$$i "; done; echo
 
 update_configuration: vendor cmd/update_configuration/update_configuration.go
 	cd cmd/update_configuration && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'\
