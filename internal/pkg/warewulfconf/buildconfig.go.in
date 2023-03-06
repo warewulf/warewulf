@@ -9,10 +9,10 @@ type BuildConfig struct {
 	Tftpdir        string `default:"@TFTPDIR@"`
 	Firewallddir   string `default:"@FIREWALLDDIR@"`
 	Systemddir     string `default:"@SYSTEMDDIR@"`
-	Wwoverlaydir   string `default:"@WWOVERLAYDIR@"`
-	Wwchrootdir    string `default:"@WWCHROOTDIR@"`
-	Wwprovisiondir string `default:"@WWPROVISIONDIR@"`
+	WWOverlaydir   string `default:"@WWOVERLAYDIR@"`
+	WWChrootdir    string `default:"@WWCHROOTDIR@"`
+	WWProvisiondir string `default:"@WWPROVISIONDIR@"`
 	Version        string `default:"@VERSION@"`
 	Release        string `default:"@RELEASE@"`
-	Wwclientdir    string `default:"@WWCLIENTDIR@"`
+	WWClientdir    string `default:"@WWCLIENTDIR@"`
 }

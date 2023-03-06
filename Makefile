@@ -101,7 +101,7 @@ export GOPROXY
 WW_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
 # Default target
-all: config vendor wwctl wwclient man_pages config_defaults wwapid wwapic wwapird
+all: config vendor wwctl wwclient man_pages wwapid wwapic wwapird
 
 # Validate source and build all packages
 build: lint test-it vet all
@@ -287,7 +287,6 @@ contclean:
 	rm -f config
 	rm -f Defaults.mk
 	rm -rf $(TOOLS_DIR)
-	rm -f config_defaults
 	rm -f update_configuration
 	rm -f etc/wwapi{c,d,rd}.conf
 

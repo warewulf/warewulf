@@ -21,7 +21,8 @@ jobs:
         go: [ '1.17' ]
     steps:
       - uses: actions/checkout@v3
-
+      - name: Create config
+        run: make config
       - name: Setup go ${{ matrix.go }}
         uses: actions/setup-go@v3
         with:

@@ -29,7 +29,7 @@ var (
 
 func KernelImageTopDir() string {
 	conf := warewulfconf.New()
-	return path.Join(conf.WWPROVISIONDIR(), "kernel")
+	return path.Join(conf.Paths.WWProvisiondir, "kernel")
 }
 
 func KernelImage(kernelName string) string {

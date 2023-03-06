@@ -36,7 +36,7 @@ func main() {
 
 	conf := warewulfconf.New()
 	// Read the config file.
-	config, err := apiconfig.NewServer(path.Join(conf.SYSCONFDIR(), "warewulf/wwapid.conf"))
+	config, err := apiconfig.NewServer(path.Join(conf.Paths.Sysconfdir, "warewulf/wwapid.conf"))
 	if err != nil {
 		log.Fatalf("err: %v", err)
 	}
