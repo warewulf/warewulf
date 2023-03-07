@@ -44,7 +44,7 @@ func init() {
 		ConfigFile = path.Join(conf.Paths.Sysconfdir, "warewulf/nodes.conf")
 	}
 	if DefaultConfig == "" {
-		DefaultConfig = path.Join(conf.Paths.Sysconfdir, "warewulf/defaults.conf")
+		DefaultConfig = path.Join(conf.Paths.Datadir, "warewulf/defaults.conf")
 	}
 	cachedDB.current = false
 	cachedDB.persist = true
@@ -114,12 +114,6 @@ for every node
 */
 func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 	var ret []NodeInfo
-	/*
-		wwconfig, err := warewulfconf.New()
-		if err != nil {
-			return ret, err
-		}
-	*/
 	var defConf map[string]*NodeConf
 	wwlog.Verbose("Opening defaults from file failed %s\n", DefaultConfig)
 	defData, err := os.ReadFile(DefaultConfig)

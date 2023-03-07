@@ -33,7 +33,6 @@ func New() (conf ControllerConf) {
 		cachedConf = conf
 		cachedConf.readConf = false
 		cachedConf.current = true
-
 	} else {
 		// If cached struct isn't empty, use it as the return value
 		conf = cachedConf
