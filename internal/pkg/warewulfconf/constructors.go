@@ -33,7 +33,6 @@ func New() (conf ControllerConf) {
 		cachedConf = conf
 		cachedConf.readConf = false
 		cachedConf.current = true
-
 	} else {
 		// If cached struct isn't empty, use it as the return value
 		conf = cachedConf
@@ -101,7 +100,6 @@ func (conf *ControllerConf) SetDynamicDefaults() (err error) {
 		_, network, err = net.ParseCIDR(conf.Ipaddr)
 		if err == nil {
 			mask = network.Mask
-			fmt.Println(mask)
 		} else {
 			return errors.Wrap(err, "Couldn't parse IP address")
 		}

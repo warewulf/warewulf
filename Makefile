@@ -183,7 +183,7 @@ files: all
 	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapic.conf || install -m 644 etc/wwapic.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapid.conf || install -m 644 etc/wwapid.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapird.conf || install -m 644 etc/wwapird.conf $(DESTDIR)$(WWCONFIGDIR)
-	test -f $(DESTDIR)$(WWCONFIGDIR)/defaults.conf || ./wwctl genconfig defaults > $(DESTDIR)$(WWCONFIGDIR)/defaults.conf
+	test -f $(DESTDIR)$(DATADIR)/warewulf/defaults.conf || ./wwctl --emptyconf genconfig defaults > $(DESTDIR)$(DATADIR)/warewulf/defaults.conf
 	cp -r etc/examples $(DESTDIR)$(WWCONFIGDIR)/
 	cp -r etc/ipxe $(DESTDIR)$(WWCONFIGDIR)/
 	cp -r overlays/* $(DESTDIR)$(WWOVERLAYDIR)/
@@ -229,7 +229,7 @@ wwclient: $(WWCLIENT_DEPS)
 
 man_pages: wwctl
 	install -d man_pages
-	./wwctl genconfig man man_pages 
+	./wwctl --emptyconf genconfig man man_pages 
 	cp docs/man/man5/*.5 ./man_pages/
 	cd man_pages; for i in wwctl*1 *.5; do echo "Compressing manpage: $$i"; gzip --force $$i; done
 
@@ -246,7 +246,7 @@ dist: vendor config
 	rm -rf .dist
 
 reference: wwctl
-	./wwctl genconfig reference userdocs/reference/
+	./wwctl --emptyconf genconfig reference userdocs/reference/
 
 latexpdf: reference
 	make -C userdocs latexpdf
