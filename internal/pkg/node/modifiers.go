@@ -127,7 +127,10 @@ func (config *NodeYaml) Persist() error {
 	if err != nil {
 		return err
 	}
-
+	// Can't persist for unit tests
+	if !config.persist {
+		return err
+	}
 	file, err := os.OpenFile(ConfigFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		wwlog.Error("%s", err)
