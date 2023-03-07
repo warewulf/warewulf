@@ -12,13 +12,16 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	// remove the default network as the all network values are assigned
+	// remove the default network as all network values are assigned
 	// to this network
-	if NetName != "" {
+	if _, ok := NodeConf.NetDevs["default"]; ok && NetName != "" {
 		netDev := *NodeConf.NetDevs["default"]
 		NodeConf.NetDevs[NetName] = &netDev
 		delete(NodeConf.NetDevs, "default")
-
+	} else {
+		if NodeConf.NetDevs["default"].Empty() {
+			delete(NodeConf.NetDevs, "default")
+		}
 	}
 	buffer, err := yaml.Marshal(NodeConf)
 	if err != nil {
