@@ -10,6 +10,8 @@ type NodeYaml struct {
 	WWInternal   int `yaml:"WW_INTERNAL"`
 	NodeProfiles map[string]*NodeConf
 	Nodes        map[string]*NodeConf
+	current      bool
+	persist      bool
 }
 
 /*

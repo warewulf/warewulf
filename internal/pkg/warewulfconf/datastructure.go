@@ -20,6 +20,7 @@ type ControllerConf struct {
 	MountsContainer []*MountEntry `yaml:"container mounts" default:"[{\"source\": \"/etc/resolv.conf\", \"dest\": \"/etc/resolv.conf\"}]"`
 	Paths           *BuildConfig  `yaml:"paths"`
 	current         bool
+	readConf        bool
 }
 
 type WarewulfConf struct {

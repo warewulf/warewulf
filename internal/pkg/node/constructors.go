@@ -16,6 +16,8 @@ import (
 var ConfigFile string
 var DefaultConfig string
 
+var cachedDB NodeYaml
+
 // used as fallback if DefaultConfig can't be read
 var FallBackConf = `---
 defaultnode:
@@ -44,9 +46,18 @@ func init() {
 	if DefaultConfig == "" {
 		DefaultConfig = path.Join(conf.Paths.Sysconfdir, "warewulf/defaults.conf")
 	}
+	cachedDB.current = false
+	cachedDB.persist = true
 }
 
+/*
+Creates a new nodeDb object from the actual configuration
+*/
 func New() (NodeYaml, error) {
+	if cachedDB.current {
+		wwlog.Debug("Returning cached object")
+		return cachedDB, nil
+	}
 	var ret NodeYaml
 
 	wwlog.Verbose("Opening node configuration file: %s", ConfigFile)
@@ -62,8 +73,38 @@ func New() (NodeYaml, error) {
 	}
 
 	wwlog.Debug("Returning node object")
-
+	cachedDB = ret
+	cachedDB.current = true
 	return ret, nil
+}
+
+/*
+Creates a database object from a given buffer, always create
+a new object, never return the cached one.
+*/
+func TestNew(buffer []byte) (db NodeYaml, err error) {
+	db.NodeProfiles = make(map[string]*NodeConf)
+	db.Nodes = make(map[string]*NodeConf)
+	err = yaml.Unmarshal(buffer, &db)
+	db.persist = false
+	cachedDB = db
+	cachedDB.current = true
+	wwlog.Debug("Created cached object")
+	return
+}
+
+func (config *NodeYaml) DBDump() (buffer []byte) {
+	for _, n := range config.Nodes {
+		n.Flatten()
+	}
+	for _, p := range config.NodeProfiles {
+		p.Flatten()
+	}
+	buffer, err := yaml.Marshal(config)
+	if err != nil {
+		wwlog.Warn("porblems on dumping nodedb: %s", err)
+	}
+	return
 }
 
 /*

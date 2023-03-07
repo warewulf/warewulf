@@ -30,8 +30,8 @@ func New() (conf ControllerConf) {
 		conf.Nfs = new(NfsConf)
 		conf.Paths = new(BuildConfig)
 		_ = defaults.Set(&conf)
-
 		cachedConf = conf
+		cachedConf.readConf = false
 		cachedConf.current = true
 
 	} else {
@@ -76,6 +76,7 @@ func (conf *ControllerConf) Read(data []byte) (err error) {
 	}
 	cachedConf = *conf
 	cachedConf.current = true
+	cachedConf.readConf = true
 	return
 }
 
@@ -146,4 +147,11 @@ func (conf *ControllerConf) SetDynamicDefaults() (err error) {
 	cachedConf = *conf
 	cachedConf.current = true
 	return
+}
+
+/*
+Return if configuration was read from disk
+*/
+func (conf *ControllerConf) Initialized() bool {
+	return conf.readConf
 }
