@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The correct header is now displayed when `-al` flags are specified to overlay
   list.
+- KERNEL VERSION column is too short
 
 ### Changed
 
@@ -32,9 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed a typo in a log message. #631
 - Boolean attributes now correctly account for profile and default
   values. #630
-- Kernvel version is shown correctly
 - Kernel version is shown correctly for symlink'd kernels #640
-- KERNEL VERSION column is too short
 
 ## [4.4.0rc3] 2022-12-23
 
