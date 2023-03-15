@@ -197,12 +197,6 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		return
 	}
 
-	wwlog.Info("Updating the container's /etc/resolv.conf")
-	err = util.CopyFile("/etc/resolv.conf", path.Join(container.RootFsDir(cip.Name), "/etc/resolv.conf"))
-	if err != nil {
-		wwlog.Warn("Could not copy /etc/resolv.conf into container: %s", err)
-	}
-
 	err = container.SyncUids(cip.Name, !cip.SyncUser)
 	if err != nil && !cip.SyncUser {
 		err = fmt.Errorf("error in user sync, fix error and run 'syncuser' manually: %s", err)
@@ -342,12 +336,15 @@ func ContainerShow(csp *wwapiv1.ContainerShowParameter) (response *wwapiv1.Conta
 	containerName := csp.ContainerName
 
 	if !container.ValidName(containerName) {
-		err = fmt.Errorf("%s is not a valid container", containerName)
+		err = fmt.Errorf("%s is not a valid container name", containerName)
 		return
 	}
 
 	rootFsDir := container.RootFsDir(containerName)
-
+	if !util.IsDir(rootFsDir) {
+		err = fmt.Errorf("%s is not a valid container", containerName)
+		return
+	}
 	kernelVersion := container.KernelVersion(containerName)
 
 	nodeDB, err := node.New()

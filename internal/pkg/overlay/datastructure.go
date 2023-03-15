@@ -31,6 +31,7 @@ type TemplateStruct struct {
 	Dhcp          warewulfconf.DhcpConf
 	Nfs           warewulfconf.NfsConf
 	Warewulf      warewulfconf.WarewulfConf
+	Tftp          warewulfconf.TftpConf
 	AllNodes      []node.NodeInfo
 	node.NodeConf
 	// backward compatiblity
@@ -64,6 +65,7 @@ func InitStruct(nodeInfo node.NodeInfo) TemplateStruct {
 	tstruct.AllNodes = allNodes
 	tstruct.Nfs = *controller.Nfs
 	tstruct.Dhcp = *controller.Dhcp
+	tstruct.Tftp = *controller.Tftp
 	tstruct.Warewulf = *controller.Warewulf
 	tstruct.Ipaddr = controller.Ipaddr
 	tstruct.Ipaddr6 = controller.Ipaddr6

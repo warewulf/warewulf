@@ -2,7 +2,7 @@ package node
 
 import (
 	"errors"
-	"io/ioutil"
+	"os"
 	"path"
 	"sort"
 	"strings"
@@ -49,7 +49,7 @@ func New() (NodeYaml, error) {
 	var ret NodeYaml
 
 	wwlog.Verbose("Opening node configuration file: %s", ConfigFile)
-	data, err := ioutil.ReadFile(ConfigFile)
+	data, err := os.ReadFile(ConfigFile)
 	if err != nil {
 		return ret, err
 	}
@@ -79,8 +79,8 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		}
 	*/
 	var defConf map[string]*NodeConf
-	wwlog.Verbose("Opening defaults from file %s\n", DefaultConfig)
-	defData, err := ioutil.ReadFile(DefaultConfig)
+	wwlog.Verbose("Opening defaults from file failed %s\n", DefaultConfig)
+	defData, err := os.ReadFile(DefaultConfig)
 	if err != nil {
 		wwlog.Verbose("Couldn't read DefaultConfig :%s\n", err)
 	}
@@ -134,13 +134,6 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		for _, netdev := range n.NetDevs {
 			netdev.SetDefFrom(defConfNet)
 		}
-		// set default/primary network is just one network exist
-		if len(n.NetDevs) == 1 {
-			// only way to get the key
-			for key := range node.NetDevs {
-				n.NetDevs[key].Primary.SetB(true)
-			}
-		}
 		// backward compatibility
 		n.Ipmi.Ipaddr.Set(node.IpmiIpaddr)
 		n.Ipmi.Netmask.Set(node.IpmiNetmask)
@@ -177,6 +170,20 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			// can't call setFrom() as we have to use SetAlt instead of Set for an Entry
 			wwlog.Verbose("Merging profile into node: %s <- %s", nodename, profileName)
 			n.SetAltFrom(config.NodeProfiles[profileName], profileName)
+		}
+		// set default/primary network is just one network exist
+		if len(n.NetDevs) >= 1 {
+			tmpNets := make([]string, 0, len(n.NetDevs))
+			for key := range node.NetDevs {
+				tmpNets = append(tmpNets, key)
+			}
+			sort.Strings(tmpNets)
+			// if a value is present in profile or node, default is not visible
+			wwlog.Debug("%s setting primary network device: %s", n.Id.Get(), tmpNets[0])
+			n.PrimaryNetDev.SetDefault(tmpNets[0])
+		}
+		if dev, ok := n.NetDevs[n.PrimaryNetDev.Get()]; ok {
+			dev.Primary.SetDefaultB(true)
 		}
 		ret = append(ret, n)
 	}

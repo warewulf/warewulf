@@ -1,4 +1,4 @@
-.PHONY: all
+.PHONY: all clean contclean
 
 -include Defaults.mk
 
@@ -53,7 +53,7 @@ else
 endif
 
 # OS-Specific Service Locations
-VARLIST += TFTPDIR FIREWALLDDIR SYSTEMDDIR
+VARLIST += TFTPDIR FIREWALLDDIR SYSTEMDDIR BASHCOMPDIR
 SYSTEMDDIR ?= /usr/lib/systemd/system
 BASHCOMPDIR ?= /etc/bash_completion.d
 FIREWALLDDIR ?= /usr/lib/firewalld/services
@@ -86,7 +86,7 @@ CONFIG := $(shell pwd)
 GO_TOOLS_BIN := $(addprefix $(TOOLS_BIN)/, $(notdir $(GO_TOOLS)))
 GO_TOOLS_VENDOR := $(addprefix vendor/, $(GO_TOOLS))
 GOLANGCI_LINT := $(TOOLS_BIN)/golangci-lint
-GOLANGCI_LINT_VERSION := v1.45.2
+GOLANGCI_LINT_VERSION := v1.50.0
 
 # use GOPROXY for older git clients and speed up downloads
 GOPROXY ?= https://proxy.golang.org
@@ -96,7 +96,7 @@ export GOPROXY
 WW_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
 # Default target
-all: config vendor wwctl wwclient bash_completion.d man_pages config_defaults print_defaults wwapid wwapic wwapird
+all: config vendor wwctl wwclient bash_completion.d man_pages config_defaults print_defaults wwapid wwapic wwapird print_mnts
 
 # Validate source and build all packages
 build: lint test-it vet all
@@ -188,6 +188,7 @@ files: all
 	chmod 600 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/etc/ssh/ssh*
 	chmod 600 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/etc/NetworkManager/system-connections/ww4-managed.ww
 	chmod 644 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/etc/ssh/ssh*.pub.ww
+	chmod 644 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/warewulf/config.ww
 	chmod 750 $(DESTDIR)$(WWOVERLAYDIR)/host
 	install -m 0755 wwctl $(DESTDIR)$(BINDIR)
 	install -m 0755 wwapic $(DESTDIR)$(BINDIR)
@@ -247,6 +248,7 @@ config_defaults: vendor cmd/config_defaults/config_defaults.go
 print_defaults: vendor cmd/print_defaults/print_defaults.go
 	cd cmd/print_defaults && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'" -o ../../print_defaults
 
+
 update_configuration: vendor cmd/update_configuration/update_configuration.go
 	cd cmd/update_configuration && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'\
 	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'"\
@@ -256,10 +258,9 @@ warewulfconf: config_defaults
 	./config_defaults
 
 dist: vendor config
-	rm -rf .dist/$(WAREWULF)-$(VERSION)
+	rm -rf .dist/$(WAREWULF)-$(VERSION) $(WAREWULF)-$(VERSION).tar.gz
 	mkdir -p .dist/$(WAREWULF)-$(VERSION)
-	cp -rap * .dist/$(WAREWULF)-$(VERSION)/
-	find .dist/$(WAREWULF)-$(VERSION)/ -type f -name '*~' -delete
+	rsync -a --exclude=".*" --exclude "*~" * .dist/$(WAREWULF)-$(VERSION)/
 	cd .dist; tar -czf ../$(WAREWULF)-$(VERSION).tar.gz $(WAREWULF)-$(VERSION)
 	rm -rf .dist
 
@@ -291,7 +292,7 @@ wwapic: ## Build the sample wwapi client.
 wwapird: ## Build the rest api server (revese proxy to the grpc api server).
 	go build -o ./wwapird internal/app/api/wwapird/wwapird.go
 
-clean:
+contclean:
 	rm -f wwclient
 	rm -f wwctl
 	rm -rf .dist
@@ -300,7 +301,6 @@ clean:
 	rm -rf bash_completion.d
 	rm -f man_page
 	rm -rf man_pages
-	rm -rf vendor
 	rm -f warewulf.spec
 	rm -f config
 	rm -f Defaults.mk
@@ -309,6 +309,9 @@ clean:
 	rm -f update_configuration
 	rm -f print_defaults
 	rm -f etc/wwapi{c,d,rd}.conf
+
+clean: contclean
+	rm -rf vendor
 
 install: files install_wwclient
 

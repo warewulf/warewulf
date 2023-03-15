@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -39,7 +38,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	profileMap := make(map[string]*node.NodeConf)
 	// got proper yaml back
 	_ = yaml.Unmarshal([]byte(profileListMsg.NodeConfMapYaml), profileMap)
-	file, err := ioutil.TempFile("/tmp", "ww4ProfileEdit*.yaml")
+	file, err := os.CreateTemp(os.TempDir(), "ww4ProfileEdit*.yaml")
 	if err != nil {
 		wwlog.Error("Could not create temp file:%s \n", err)
 	}

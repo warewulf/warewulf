@@ -7,11 +7,15 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
+	"strings"
 	"syscall"
-	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/container"
+	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -29,19 +33,110 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Error("Unknown Warewulf container: %s", containerName)
 		os.Exit(1)
 	}
+	conf, err := warewulfconf.New()
+	if err != nil {
+		wwlog.Verbose("Couldn't get warewulf ocnfiguration: %s", err)
+	}
+	mountPts := conf.MountsContainer
+	mountPts = append(container.InitMountPnts(binds), mountPts...)
+	// check for valid mount points
+	lowerObjects := checkMountPoints(containerName, mountPts)
+	if len(lowerObjects) != 0 {
+		if tempDir == "" {
+			tempDir, err = os.MkdirTemp(os.TempDir(), "overlay")
+			if err != nil {
+				wwlog.Warn("couldn't create temp dir for overlay", err)
+				lowerObjects = []string{}
+				tempDir = ""
+			}
+		}
+		// need to create a overlay, where the lower layer contains
+		// the missing mount points
+		if tempDir != "" {
+			wwlog.Verbose("for ephermal mount use tempdir %s", tempDir)
+			// ignore errors as we are doomed if a tmp dir couldn't be written
+			_ = os.Mkdir(path.Join(tempDir, "work"), os.ModePerm)
+			_ = os.Mkdir(path.Join(tempDir, "lower"), os.ModePerm)
+			_ = os.Mkdir(path.Join(tempDir, "nodeoverlay"), os.ModePerm)
+			for _, obj := range lowerObjects {
+				newFile := ""
+				if !strings.HasSuffix(obj, "/") {
+					newFile = filepath.Base(obj)
+					obj = filepath.Dir(obj)
+				}
+				err = os.MkdirAll(filepath.Join(tempDir, "lower", obj), os.ModePerm)
+				if err != nil {
+					wwlog.Warn("couldn't create directory for mounts: %s", err)
+				}
+				if newFile != "" {
+					desc, err := os.Create(filepath.Join(tempDir, "lower", obj, newFile))
+					if err != nil {
+						wwlog.Warn("couldn't create directory for mounts: %s", err)
+					}
+					defer desc.Close()
+				}
+			}
+		}
+	}
 	containerPath := container.RootFsDir(containerName)
-	fileStat, _ := os.Stat(path.Join(containerPath, "/etc/passwd"))
-	unixStat := fileStat.Sys().(*syscall.Stat_t)
-	passwdTime := time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))
-	fileStat, _ = os.Stat(path.Join(containerPath, "/etc/group"))
-	unixStat = fileStat.Sys().(*syscall.Stat_t)
-	groupTime := time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))
-	wwlog.Debug("passwd: %v", passwdTime)
-	wwlog.Debug("group: %v", groupTime)
-
-	err := syscall.Mount("", "/", "", syscall.MS_PRIVATE|syscall.MS_REC, "")
+	err = syscall.Mount("", "/", "", syscall.MS_PRIVATE|syscall.MS_REC, "")
 	if err != nil {
 		return errors.Wrap(err, "failed to mount")
+	}
+	ps1Str := fmt.Sprintf("[%s] Warewulf> ", containerName)
+	if len(lowerObjects) != 0 && nodename == "" {
+		options := fmt.Sprintf("lowerdir=%s,upperdir=%s,workdir=%s",
+			path.Join(tempDir, "lower"), containerPath, path.Join(tempDir, "work"))
+		wwlog.Debug("overlay options: %s", options)
+		err = syscall.Mount("overlay", containerPath, "overlay", 0, options)
+		if err != nil {
+			wwlog.Warn(fmt.Sprintf("Couldn't create overlay for ephermal mount points: %s", err))
+		}
+	} else if nodename != "" {
+		nodeDB, err := node.New()
+		if err != nil {
+			wwlog.Error("Could not open node configuration: %s", err)
+			os.Exit(1)
+		}
+
+		nodes, err := nodeDB.FindAllNodes()
+		if err != nil {
+			wwlog.Error("Could not get node list: %s", err)
+			os.Exit(1)
+		}
+		nodes = node.FilterByName(nodes, []string{nodename})
+		if len(nodes) != 1 {
+			wwlog.Error("No single node idendified with %s", nodename)
+			os.Exit(1)
+		}
+		overlays := nodes[0].SystemOverlay.GetSlice()
+		overlays = append(overlays, nodes[0].RuntimeOverlay.GetSlice()...)
+		err = overlay.BuildOverlayIndir(nodes[0], overlays, path.Join(tempDir, "nodeoverlay"))
+		if err != nil {
+			wwlog.Error("Could not build overlay: %s", err)
+			os.Exit(1)
+		}
+		options := fmt.Sprintf("lowerdir=%s:%s:%s",
+			path.Join(tempDir, "lower"), containerPath, path.Join(tempDir, "nodeoverlay"))
+		wwlog.Debug("overlay options: %s", options)
+		err = syscall.Mount("overlay", containerPath, "overlay", 0, options)
+		if err != nil {
+			wwlog.Warn(fmt.Sprintf("Couldn't create overlay for node render overlay: %s", err))
+			os.Exit(1)
+		}
+		ps1Str = fmt.Sprintf("[%s|ro|%s] Warewulf> ", containerName, nodename)
+	}
+	if !util.IsWriteAble(containerPath) && nodename == "" {
+		wwlog.Verbose("mounting %s ro", containerPath)
+		ps1Str = fmt.Sprintf("[%s|ro] Warewulf> ", containerName)
+		err = syscall.Mount(containerPath, containerPath, "", syscall.MS_BIND, "")
+		if err != nil {
+			return errors.Wrap(err, "failed to prepare bind mount")
+		}
+		err = syscall.Mount(containerPath, containerPath, "", syscall.MS_REMOUNT|syscall.MS_RDONLY|syscall.MS_BIND, "")
+		if err != nil {
+			return errors.Wrap(err, "failed to remount ro")
+		}
 	}
 
 	err = syscall.Mount("/dev", path.Join(containerPath, "/dev"), "", syscall.MS_BIND, "")
@@ -49,23 +144,19 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to mount /dev")
 	}
 
-	for _, b := range binds {
-		var source string
-		var dest string
-
-		bind := util.SplitValidPaths(b, ":")
-		source = bind[0]
-
-		if len(bind) == 1 {
-			dest = source
-		} else {
-			dest = bind[1]
-		}
-
-		err := syscall.Mount(source, path.Join(containerPath, dest), "", syscall.MS_BIND, "")
+	for _, mntPnt := range mountPts {
+		err = syscall.Mount(mntPnt.Source, path.Join(containerPath, mntPnt.Dest), "", syscall.MS_BIND, "")
 		if err != nil {
-			fmt.Printf("BIND ERROR: %s\n", err)
-			os.Exit(1)
+			wwlog.Warn("Couldn't mount %s to %s: %s", mntPnt.Source, mntPnt.Dest, err)
+		} else if mntPnt.ReadOnly {
+			err = syscall.Mount(mntPnt.Source, path.Join(containerPath, mntPnt.Dest), "", syscall.MS_REMOUNT|syscall.MS_RDONLY|syscall.MS_BIND, "")
+			if err != nil {
+				wwlog.Warn("failed to following mount readonly: %s", mntPnt.Source)
+			} else {
+				wwlog.Verbose("mounted readonly from host to container: %s:%s", mntPnt.Source, mntPnt.Dest)
+			}
+		} else {
+			wwlog.Verbose("mounted from host to container: %s:%s", mntPnt.Source, mntPnt.Dest)
 		}
 	}
 
@@ -84,27 +175,39 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "failed to mount proc")
 	}
 
-	os.Setenv("PS1", fmt.Sprintf("[%s] Warewulf> ", containerName))
+	os.Setenv("PS1", ps1Str)
 	os.Setenv("PATH", "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin")
 	os.Setenv("HISTFILE", "/dev/null")
 
-	err = syscall.Exec(args[1], args[1:], os.Environ())
-	if err != nil {
-		wwlog.Error("%s", err)
-		os.Exit(1)
-	}
-	fileStat, _ = os.Stat(path.Join(containerPath, "/etc/passwd"))
-	unixStat = fileStat.Sys().(*syscall.Stat_t)
-	if passwdTime.Before(time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))) {
-		wwlog.Warn("/etc/passwd has been modified, maybe you want to run syncuser")
-	}
-	wwlog.Debug("passwd: %v", time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec)))
-	fileStat, _ = os.Stat(path.Join(containerPath, "/etc/group"))
-	unixStat = fileStat.Sys().(*syscall.Stat_t)
-	if groupTime.Before(time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))) {
-		wwlog.Warn("/etc/group has been modified, maybe you want to run syncuser")
-	}
-	wwlog.Debug("group: %v", time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec)))
-
+	_ = syscall.Exec(args[1], args[1:], os.Environ())
+	/*
+		Exec replaces the actual program, so nothing to do here afterwards
+	*/
 	return nil
+}
+
+/*
+Check if the bind mount points exists in the given container. Returns
+the invalid mount points. Directories always have '/' as suffix
+*/
+func checkMountPoints(containerName string, binds []*warewulfconf.MountEntry) (overlayObjects []string) {
+	overlayObjects = []string{}
+	for _, b := range binds {
+		_, err := os.Stat(b.Source)
+		if err != nil {
+			wwlog.Debug("Couldn't stat %s create no mount point in container", b.Source)
+			continue
+		}
+		wwlog.Debug("Checking in container for %s", path.Join(container.RootFsDir(containerName), b.Dest))
+		if _, err = os.Stat(path.Join(container.RootFsDir(containerName), b.Dest)); err != nil {
+			if os.IsNotExist(err) {
+				if util.IsDir(b.Dest) && !strings.HasSuffix(b.Dest, "/") {
+					b.Dest += "/"
+				}
+				overlayObjects = append(overlayObjects, b.Dest)
+				wwlog.Debug("Container %s, needs following path: %s", containerName, b.Dest)
+			}
+		}
+	}
+	return overlayObjects
 }

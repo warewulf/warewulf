@@ -5,7 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4..4.0] 2023-01-18
+## Unreleased
+
+### Fixed
+
+- The correct header is now displayed when `-al` flags are specified to overlay
+  list.
+
+### Changed
+
+- The primary hostname and warewulf server fqdn are now the canonical name in
+  `/etc/hosts`
+
+## [4.4.0] 2023-01-18
 
 ### Added
 
@@ -21,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Boolean attributes now correctly account for profile and default
   values. #630
 - Kernvel version is shown correctly
+- Kernel version is shown correctly for symlink'd kernels #640
 - KERNEL VERSION column is too short
 
 ## [4.4.0rc3] 2022-12-23
@@ -57,7 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The environment variable `WW_CONTAINER_SHELL` is defined in a `wwctl
   container shell` environment to indicate the container in use. #579
 - Network interface configuration (`ifcfg`) files now include the
-  interface name and type. #574
+  interface name and type. #457
 
 ### Fixed
 

@@ -2,7 +2,6 @@ package warewulfd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log/syslog"
 	"os"
 	"os/exec"
@@ -41,7 +40,7 @@ func DaemonInitLogging() error {
 		if err == nil {
 			wwlog.SetLogLevel(level)
 		}
-	}else{
+	} else {
 		wwlog.SetLogLevel(wwlog.SERV)
 	}
 
@@ -86,7 +85,7 @@ func DaemonStart() error {
 		logLevel := wwlog.GetLogLevel()
 		if logLevel == wwlog.INFO {
 			os.Setenv("WAREWULFD_LOGLEVEL", strconv.Itoa(wwlog.SERV))
-		}else{
+		} else {
 			os.Setenv("WAREWULFD_LOGLEVEL", strconv.Itoa(logLevel))
 		}
 
@@ -124,7 +123,7 @@ func DaemonStatus() error {
 		return errors.New("Warewulf server is not running")
 	}
 
-	dat, err := ioutil.ReadFile(WAREWULFD_PIDFILE)
+	dat, err := os.ReadFile(WAREWULFD_PIDFILE)
 	if err != nil {
 		return errors.Wrap(err, "could not read Warewulfd PID file")
 	}
@@ -150,7 +149,7 @@ func DaemonReload() error {
 		return errors.New("Warewulf server is not running")
 	}
 
-	dat, err := ioutil.ReadFile(WAREWULFD_PIDFILE)
+	dat, err := os.ReadFile(WAREWULFD_PIDFILE)
 	if err != nil {
 		return errors.Wrap(err, "could not read Warewulfd PID file")
 	}
@@ -169,7 +168,7 @@ func DaemonReload() error {
 	logLevel := wwlog.GetLogLevel()
 	if logLevel == wwlog.INFO {
 		os.Setenv("WAREWULFD_LOGLEVEL", strconv.Itoa(wwlog.SERV))
-	}else{
+	} else {
 		os.Setenv("WAREWULFD_LOGLEVEL", strconv.Itoa(logLevel))
 	}
 
@@ -182,7 +181,7 @@ func DaemonStop() error {
 		return nil
 	}
 
-	dat, err := ioutil.ReadFile(WAREWULFD_PIDFILE)
+	dat, err := os.ReadFile(WAREWULFD_PIDFILE)
 	if err != nil {
 		return err
 	}

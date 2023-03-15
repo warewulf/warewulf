@@ -3,7 +3,6 @@ package wwclient
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -122,7 +121,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	x := smbiosDump.SystemEnclosure()
 	tag := strings.ReplaceAll(x.AssetTagNumber(), " ", "_")
 
-	cmdline, err := ioutil.ReadFile("/proc/cmdline")
+	cmdline, err := os.ReadFile("/proc/cmdline")
 	if err != nil {
 		wwlog.Error("Could not read from /proc/cmdline: %s", err)
 		os.Exit(1)

@@ -165,4 +165,4 @@ data from other structures.
     - Primary: {{ $netdev.Primary.Get }}
     - Tags: {{ range $key, $value := $netdev.Tags }}{{ $key }}={{ $value.Get }} {{ end }}
 {{- end }}
-{{- end }}
+{{ end }}
