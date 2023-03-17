@@ -39,73 +39,67 @@ func SyncUids(containerName string, showOnly bool) error {
 	var userDb []completeUserInfo
 	passwdName := "/etc/passwd"
 	groupName := "/etc/group"
-	fullPath := RootFsDir(containerName)
-	hostName, err := createPasswdMap(passwdName)
+
+	// populate db with users from the host
+	hostUsers, err := createPasswdMap(passwdName)
 	if err != nil {
 		wwlog.Error("Could not open "+passwdName)
 		return err
 	}
-	// populate db with the user of the
-	for _, user := range hostName {
-		userDb = append(userDb, completeUserInfo{Name: user.name,
-			UidHost: user.uid, GidHost: user.gid, UidCont: -1, GidCont: -1})
+	for _, hostUser := range hostUsers {
+		userDb = append(userDb, completeUserInfo{Name: hostUser.name,
+			UidHost: hostUser.uid, GidHost: hostUser.gid, UidCont: -1, GidCont: -1})
 	}
 
-	contName, err := createPasswdMap(path.Join(fullPath, passwdName))
+	// merge container users into db and track users that are only in the
+	// container
+	fullPath := RootFsDir(containerName)
+	containerUsers, err := createPasswdMap(path.Join(fullPath, passwdName))
 	if err != nil {
 		wwlog.Error("Could not open "+path.Join(fullPath, passwdName))
 		return err
 	}
 	var userOnlyCont []string
-	for _, userCont := range contName {
+	for _, containerUser := range containerUsers {
 		foundUser := false
-		for idxHost, userHost := range userDb {
-			if userCont.name == userHost.Name {
+		for idxHost, user := range userDb {
+			if containerUser.name == user.Name {
 				foundUser = true
-				(&userDb[idxHost]).UidCont = userCont.uid
-				(&userDb[idxHost]).GidCont = userCont.gid
+				(&userDb[idxHost]).UidCont = containerUser.uid
+				(&userDb[idxHost]).GidCont = containerUser.gid
 			}
 		}
 		if !foundUser {
-			userDb = append(userDb, completeUserInfo{Name: userCont.name,
-				UidHost: -1, GidHost: -1, UidCont: userCont.uid, GidCont: userCont.gid})
-			wwlog.Warn("user: %s:%v:%v not present on host", userCont.name, userCont.uid, userCont.gid)
-			userOnlyCont = append(userOnlyCont, userCont.name)
+			userDb = append(userDb, completeUserInfo{Name: containerUser.name,
+				UidHost: -1, GidHost: -1, UidCont: containerUser.uid, GidCont: containerUser.gid})
+			wwlog.Warn("user: %s:%v:%v not present on host", containerUser.name, containerUser.uid, containerUser.gid)
+			userOnlyCont = append(userOnlyCont, containerUser.name)
 		}
-
 	}
-	// find out which user/group are only in the container
-	for _, user := range userDb {
-		if user.UidHost == -1 {
-			for _, userCheck := range userDb {
-				if userCheck.UidHost == user.UidCont {
-					wwlog.Warn(fmt.Sprintf("uid(%v) collision for host: %s and container: %s",
-						user.UidCont, user.Name, userCheck.Name))
-					return errors.New(fmt.Sprintf("user %s only present in container has same uid(%v) as user %s on host,\n"+
-						"add this user to /etc/passwd on host", user.Name, user.UidCont, userCheck.Name))
-				}
+
+	// detect users in the host and container with conflicting uids
+	for _, containerUser := range userDb {
+		if (containerUser.UidCont == -1 || containerUser.UidHost != -1) {
+			// containerUser is either not actually in the
+			// container or is also in the host
+			continue
+		}
+		for _, hostUser := range userDb {
+			if hostUser.UidHost == containerUser.UidCont {
+				wwlog.Warn("uid(%v) collision for host: %s and container: %s",
+					containerUser.UidCont, hostUser.Name, containerUser.Name)
+				return errors.New(fmt.Sprintf("user %s only present in container has same uid(%v) as user %s on host,\n"+
+					"add this user to /etc/passwd on host", containerUser.Name, containerUser.UidCont, hostUser.Name))
 			}
 		}
-		/* Users can have same gid, disabling this code
-		if user.GidHost == -1 {
-			for _, userCheck := range userDb {
-				if userCheck.GidHost == user.GidCont {
-					wwlog.Warn(fmt.Sprintf("gid(%v) collision for host: %s and container: %s",
-						user.GidCont, user.Name, userCheck.Name))
-					return errors.New(fmt.Sprintf("user %s only present in container has same gid(%v) as user %s on host,\n"+
-						" add this group to /etc/group on host", user.Name, user.GidCont, userCheck.Name))
-				}
-			}
-		}
-		*/
-
 	}
+
 	if showOnly {
 		wwlog.Info("uid/gid not synced, run \nwwctl container syncuser --write %s\nto synchronize uid/gids.", containerName)
 		return nil
 	}
-	// create list of files which need changed ownerships in order to change them later what
-	// avoid uid/gid collisions
+	// create list of files which need changed ownerships in order to
+	// change them later what avoid uid/gid collisions
 	for idx, user := range userDb {
 		if (user.UidHost != user.UidCont && user.UidHost != -1) ||
 			(user.GidHost != user.GidCont && user.GidHost != -1 && user.UidHost != -1) {

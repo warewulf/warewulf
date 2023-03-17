@@ -117,7 +117,18 @@ message GetNodeList {
 	repeated string Nodes = 8;
 }
 
+// Get the formated output as string
 message NodeList {
+	repeated string Output = 1;
+}
+
+// Request a profile list view
+message GetProfileList {
+	bool ShowAll = 1;
+	repeated string Profiles = 2;
+}
+// Get the formated output as string
+message ProfileList {
 	repeated string Output = 1;
 }
 

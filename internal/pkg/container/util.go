@@ -1,7 +1,6 @@
 package container
 
 import (
-	"io/ioutil"
 	"os"
 
 	"github.com/pkg/errors"
@@ -27,7 +26,7 @@ func ListSources() ([]string, error) {
 	}
 	wwlog.Debug("Searching for VNFS Rootfs directories: %s", SourceParentDir())
 
-	sources, err := ioutil.ReadDir(SourceParentDir())
+	sources, err := os.ReadDir(SourceParentDir())
 	if err != nil {
 		return ret, err
 	}

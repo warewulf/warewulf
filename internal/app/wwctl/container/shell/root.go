@@ -22,11 +22,13 @@ var (
 		},
 		FParseErrWhitelist: cobra.FParseErrWhitelist{UnknownFlags: true},
 	}
-	binds []string
+	binds    []string
+	nodeName string
 )
 
 func init() {
 	baseCmd.PersistentFlags().StringArrayVarP(&binds, "bind", "b", []string{}, "Bind a local path into the container (must exist)")
+	baseCmd.PersistentFlags().StringVarP(&nodeName, "node", "n", "", "Create a read only view of the container for the given node")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

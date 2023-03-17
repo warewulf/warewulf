@@ -2,140 +2,255 @@
 Warewulf Overlays
 =================
 
-So at this point, we have discussed how Warewulf is designed to scalably provision and manage thousands of cluster nodes by utilizing identical stateless boot images. And there-in lies a problem to solve. If these boot images are completely identical, then how do we configure things like hostnames? IP addresses? Or any other node specific custom configurations?
+So at this point, we have discussed how Warewulf is designed to
+scalably provision and manage thousands of cluster nodes by utilizing
+identical stateless boot images. And there-in lies a problem to
+solve. If these boot images are completely identical, then how do we
+configure things like hostnames? IP addresses? Or any other node
+specific custom configurations?
 
-While some of this can be managed by services like DHCP, and other bits by configuration management, which can absolutely be done with Warewulf and many people choose to do, these are heavy-weight solutions to a simple problem to solve.
+While some of this can be managed by services like DHCP, and other
+bits by configuration management, which can absolutely be done with
+Warewulf and many people choose to do, these are heavy-weight
+solutions to a simple problem to solve.
 
-Warewulf solves this with overlays and uses overlays in different ways through the provisioning process. Two of these overlays are exposed to the users, the **system overlay** and the **runtime overlay**.
+Warewulf solves this with overlays and uses overlays in different ways
+through the provisioning process. A node or profile can configure an
+overlay in two different ways:
 
-.. note::
-   Another overlay that isn't directly exposed is the **kmods overlay** which contains all of the kernel modules to match the configured kernel. Because this overlay is used "behind the scenes" it is outside the scope of this document.
+* An overlay can be configured to run during boot as part of the
+  ``wwinit`` process. These overlays are called **system overlay** or
+  **wwinit overlays**.
+* An overlay can be configured to run periodically while the system is
+  running. These overlays are called **runtime overlays** or **generic
+  overlays**.
 
-System Overlay
-==============
+The default profile has both a **wwinit** and a **runtime** overlay
+configured.
 
-The System Overlay is used by the core of Warewulf to setup the environment on the node necessary for provisioning. The default system overlay is called ``wwinit``. Generally speaking, it will not be necessary to make changes to this overlay, but it is possible to change or configure this overlay to meet site specific needs if necessary.
+Overlays are compiled for each compute node individually.
 
-Runtime Overlay
-===============
+Defined Overlays
+================
 
-The Runtime Overlay is the overlay that is responsible for most of the typical system administration configurations. Here you will make changes necessary to support your operating system as well as application configurations.
+System or wwinit overlay
+------------------------
 
-Once the system is provisioned and booted, the ``wwclient`` program (which is provisioned as part of the ``wwinit`` system overlay) will continuously update the node with updates in the runtime overlay.
+This overlay contains all the nesscesary scripts to provision a
+Warewulf node. It is available before the ``systemd`` or other init is
+called and contains all configurations which are needed to bring up
+the compute node. It is not updated during run time. Besides the
+network configurations for
+
+* wicked
+* NetworkManager
+* EL legacy network scripts
+
+it also contains udev rules, which will set the interface name of the
+first network device to ``eth0``.  Before the ``systemd`` init is
+called, the overlay loops through the scripts in
+``/wwinit/warwulf/init.d/*`` which will setup
+
+* Ipmi
+* wwclient
+* selinux
+
+Runtime Overlay or generic Overlay
+----------------------------------
+
+The runtime overlay is updated by the ``wwclient`` service on a
+regular basis (by default, once per minute). In the standard
+configuration it includes updates for ``/etc/passwd``, ``/etc/group``
+and ``/etc/hosts``. Additionally the ``authorized_keys`` file of the
+root user is updated.  It is recommended to use this overlay for
+dynamic configuration files like ``slurm.conf``.  Once the system is
+provisioned and booted, the ``wwclient`` program (which is provisioned
+as part of the ``wwinit`` system overlay) will continuously update the
+node with updates in the runtime overlay.
+
+Host Overlay
+------------
+
+Configuration files used for the configuration of the Warewulf host /
+server are stored in the **host** overlay. Unlike other overlays, it
+*must* have the name ``host``. Existing files on the host are copied
+to backup files with a ``wwbackup`` suffix at the first
+run. (Subsequent use of the host overlay won't overwrite existing
+``wwbackup`` files.)
+
+The following services get configuration files via the host overlay:
+
+* ssh keys are created with the scrips ``ssh_setup.sh`` and
+  ``ssh_setup.csh``
+* hosts entries are created by manipulating ``/etc/hosts`` with the
+  template ``hosts.ww``
+* nfs kernel server receives its exports from the template
+  ``exports.ww``
+* the dhcpd service is configured with ``dhcpd.conf.ww``
+
+Combining Overlays
+==================
+
+When changing the overlays, it is recommended not to change them, but
+to add the changed files to a new overlay and combine them in the
+configuration. This is possible as the configuration fields for the
+**wwinit** and **runtime** overlays are lists and can contain several
+overlays.  As an example for this, we will overwrite the
+``/etc/issue`` file from the **wwinit** overlay.  For this we will
+create a new overlay called welcome and import the file ``/etc/issue``
+from the host to it. This overlay is then combined with the existing
+**wwinit** overlay.
+
+.. code-block:: console
+
+  # wwctl overlay create welcome
+  # wwctl overlay mkdir welcome /etc
+  # wwctl overlay import welcome /etc/issue
+  # wwctl profile set default --wwinit=wwinit,welcome
+  ? Are you sure you want to modify 1 profile(s)? [y/N] y
+  # wwctl profile list default -a |grep welcome
+  default              SystemOverlay      wwinit,welcome
 
 Templates
 =========
 
-Templates allow you to create dynamic content such that the files downloaded for each node will be customized for that node. Templates allow you to insert everything from variables, to including files from the control node, as well as conditional content and loops.
+Templates allow you to create dynamic content such that the files
+downloaded for each node will be customized for that node. Templates
+allow you to insert everything from variables, to including files from
+the control node, as well as conditional content and loops.
 
-Warewulf uses the ``text/template`` engine to facilitate implementing dynamic content in a simple and standardized manner.
+Warewulf uses the ``text/template`` engine to facilitate implementing
+dynamic content in a simple and standardized manner.
 
-All template files will end with the suffix of ``.ww``. That tells Warewulf that when building a file, that it should parse that file as a template. When it does that, the resulting file is static and can have node customizations that are obtained from the node configuration attributes.
+All template files will end with the suffix of ``.ww``. That tells
+Warewulf that when building a file, that it should parse that file as
+a template. When it does that, the resulting file is static and can
+have node customizations that are obtained from the node configuration
+attributes.
 
 .. note::
-   When the file is persisted within the built overlay, the ``.ww`` will be dropped, so ``/etc/hosts.ww`` will end up being ``/etc/hosts``.
+
+   When the file is persisted within the built overlay, the ``.ww``
+   will be dropped, so ``/etc/hosts.ww`` will end up being
+   ``/etc/hosts``.
 
 Using Overlays
 ==============
 
-Warewulf includes a command group for manipulating overlays (``wwctl overlay``). With this you can add, edit, remove, change ownership, permissions, etc.
+Warewulf includes a command group for manipulating overlays (``wwctl
+overlay``). With this you can add, edit, remove, change ownership,
+permissions, etc.
 
-The general syntax is as follows:
+..
+  note::
+  There is now possibility to delete files with an overlay! [example needed]
 
-.. code-block:: bash
+Build
+-----
 
-   wwctl overlay [action] [overlay name] ...
+.. code-block:: console
 
-* **action**: the overlay subcommand you are invoking
-* **overlay name**: the name of the overlay in question within a given type
-* **...**: additional arguments are action specific
+  wwctl overlay build [-H,--hosts|-N,--nodes|-o,--output directory|-O,--overlay-name] nodepattern
 
-By default there is one overlay in each of the system and runtime overlay types. Both overlays are called "default". To say it differently, there are two default overlays, one is a system overlay and one is a runtime overlay.
+Without any arguments the command will interpret the templates for all
+overlays for every compute node and also all the templates in the host
+overlay. For every overlay of the compute nodes a gzip compressed cpio
+archive is created. The range of the nodes can be restricted as the
+last argument.  With the ``-H`` flag only the host overlay is
+built. With the ``-N`` flag only compute node overlays are
+built. Specific overlays can be selected with ``-O`` flag. For
+debugging purposes the templates can be written to a directory given
+via the ``-o`` flag.
 
-Viewing the Files Within an Overlay
-===================================
+By default Warewulf will build/update and cache overlays as needed
+(configurable in the ``warewulf.conf``).
 
-Overlays can be viewed with the command ``wwctl overlay list``. You can see the files within an overlay by adding the ``-a`` or ``-l`` options as follows:
+Chmod
+-----
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl overlay list -l generic
-   PERM MODE    UID GID   OVERLAY    FILE PATH
-   -rwxr-xr-x     0 0     generic            /etc/
-   -rw-r--r--     0 0     generic            /etc/group.ww
-   -rw-r--r--     0 0     generic            /etc/hosts.ww
-   -rw-r--r--     0 0     generic            /etc/passwd.ww
-   -rwxr-xr-x     0 0     generic            /root/
-   -rwxr-xr-x     0 0     generic            /root/.ssh/
-   -rw-r--r--     0 0     generic            /root/.ssh/authorized_keys.ww
+  wwctl overlay chmod overlay-name filename mode
 
-Creating a New File Within an Overlay
-=====================================
+This subcommand changes the permissions of a single file within an
+overlay. You can use any mode format supported by the chmod command.
 
-Just like any file on the system, you can create and edit a file at the same time. So to do that, you simple ``edit`` a new file as follows:
+Chown
+-----
 
-.. code-block:: bash
+.. code-block:: console
 
-   $ sudo wwctl overlay edit [overlay name] [file path]
+  wwctl overlay chown overlay-name filename UID [GID]
 
-For example:
+With this command you can change the ownership of a file within a
+given overlay to the user specified by UID. Optionally, it will also
+change group ownership to GID.
 
-.. code-block:: bash
+Create
+------
 
-   $ sudo wwctl overlay edit generic /etc/testfile
+.. code-block:: console
 
-and you can validate that the file is there with the ``list`` command:
+  wwctl overlay create overlay-name
 
-.. code-block:: bash
+This command creates a new empty overlay with the given name.
 
-   $ sudo wwctl overlay list generic -l
-   PERM MODE    UID GID   RUNTIME-OVERLAY    FILE PATH
-   -rwxr-xr-x     0 0     generic            /etc/
-   -rw-r--r--     0 0     generic            /etc/group.ww
-   -rw-r--r--     0 0     generic            /etc/hosts.ww
-   -rw-r--r--     0 0     generic            /etc/passwd.ww
-   -rwxr-xr-x     0 0     generic            /etc/testfile
-   -rwxr-xr-x     0 0     generic            /root/
-   -rwxr-xr-x     0 0     generic            /root/.ssh/
-   -rw-r--r--     0 0     generic            /root/.ssh/authorized_keys.ww
+Delete
+------
 
-.. note::
-   To create a template file, simply name the file with the suffix ``.ww``. This suffix will tell Warewulf that the file should be parsed by the templating engine and written into the overlay with the suffix stripped off.
+.. code-block:: console
 
-Building Overlays
-=================
+  wwctl overlay delete [-f,--force] overlay-name [File [File ...]]
 
-By default Warewulf will build/update and cache overlays as needed (configurable in the ``warewulf.conf``).
+Either the given overlay is deleted (must be empty or use the
+``--force`` flag) or the specified file within the overlay is
+deleted. With the ``--parents`` flag the directory of the deleted file
+is also removed if no other file is in the directory.
 
-You can however build overlays by hand, and in some cases this will be advantageous (like if you are freshly booting thousands of compute nodes in parallel). The command to do that is:
+Edit
+----
+.. code-block:: console
 
-.. code-block:: bash
+  wwctl overlay edit [--mode,-m MODE|--parents,-p] overlay-name file
 
-   # wwctl overlay build n00[00-10]
-   Building overlays for n0000: [wwinit, generic]
-   Building overlays for n0001: [wwinit, generic]
-   Building overlays for n0002: [wwinit, generic]
-   Building overlays for n0003: [wwinit, generic]
-   Building overlays for n0004: [wwinit, generic]
-   Building overlays for n0005: [wwinit, generic]
-   Building overlays for n0006: [wwinit, generic]
-   Building overlays for n0007: [wwinit, generic]
-   Building overlays for n0008: [wwinit, generic]
-   Building overlays for n0009: [wwinit, generic]
-   Building overlays for n0010: [wwinit, generic]
+Use this command to edit an existing or a new file in the given
+overlay. If a the new file ends with a ``.ww`` suffix an example
+template header is added to the file. With the ``--parents`` flag
+necessary parent directories for a new file are created.
 
-Other Overlay Actions
-=====================
+Import
+------
+.. code-block:: console
 
-Warewulf includes a number of overlay action commands to interact with the overlays in a programmatic and controlled manner. All of the commands use very similar usage structure and work as the above examples do. A summary of all of the overlay actions are as follows:
+  wwctl overlay import [--mode,-m|--noupdate,-n] overlay-name file-name [new-file-name]
 
-* **build**: (Re)build an overlay
-* **chmod**: Change file permissions within an overlay
-* **chown**: Change file ownership within an overlay
-* **create**: Initialize a new Overlay
-* **delete**: Delete Warewulf Overlay or files
-* **edit**: Edit/Create a file within a Warewulf Overlay
-* **import**: Import a file into a Warewulf Overlay
-* **list**: List Warewulf Overlays and files
-* **mkdir**: Create a new directory within an Overlay
-* **show**: Show (cat) a file within a Warewulf Overlay
+The given file is imported to the overlay. If no new-file-name is
+given, the file will be placed in the overlay at the same path as on
+the host. With the ``--noupdate`` flag you can block the rebuild of
+the overlays.
+
+List
+----
+
+.. code-block:: console
+
+  wwctl overlay list [--all,-a|--long,-l] [overlay-name]
+
+With this command all existing overlays and files in them can be
+listed. Without any option only the overlay names and their number of
+files are listed. With the ``--all`` switch also the every file is
+shown. The ``--long`` option will also display the permissions, UID,
+and GID of each file.
+
+Show
+----
+
+.. code-block:: console
+
+  wwctl overlay show [--quiet,-q|--render,-r nodename] overlay-name file
+
+The content of the file for the given overlay is displayed with this
+command. With the ``--render`` option a template is rendered as it
+will be rendered for the given node. The node name is a mandatory
+argument to the ``--render`` flag. Additional information for the file
+can be suppressed with the ``--quiet`` option.

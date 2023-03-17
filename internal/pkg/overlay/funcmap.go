@@ -2,7 +2,6 @@ package overlay
 
 import (
 	"bufio"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -23,7 +22,7 @@ func templateFileInclude(inc string) string {
 		inc = path.Join(buildconfig.SYSCONFDIR(), "warewulf", inc)
 	}
 	wwlog.Debug("Including file into template: %s", inc)
-	content, err := ioutil.ReadFile(inc)
+	content, err := os.ReadFile(inc)
 	if err != nil {
 		wwlog.Verbose("Could not include file into template: %s", err)
 	}
@@ -93,7 +92,7 @@ func templateContainerFileInclude(containername string, filepath string) string 
 		return ""
 	}
 
-	content, err := ioutil.ReadFile(path.Join(containerDir, filepath))
+	content, err := os.ReadFile(path.Join(containerDir, filepath))
 
 	if err != nil {
 		wwlog.Error("Template include failed: %s", err)

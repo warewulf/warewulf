@@ -5,8 +5,8 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"path"
 	"time"
 
@@ -42,7 +42,7 @@ func main() {
 
 		// Load the CA cert.
 		var cacert []byte
-		cacert, err = ioutil.ReadFile(config.TlsConfig.CaCert)
+		cacert, err = os.ReadFile(config.TlsConfig.CaCert)
 		if err != nil {
 			log.Fatalf("Failed to load cacert. err: %s\n", err)
 		}

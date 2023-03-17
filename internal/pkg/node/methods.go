@@ -167,6 +167,17 @@ func (ent *Entry) SetDefaultSlice(val []string) {
 }
 
 /*
+Set default etry as bool
+*/
+func (ent *Entry) SetDefaultB(val bool) {
+	if val {
+		ent.def = []string{"true"}
+	} else {
+		ent.def = []string{"false"}
+	}
+}
+
+/*
 Remove a element from a slice
 */
 func (ent *Entry) SliceRemoveElement(val string) {

@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -103,10 +102,9 @@ Get all overlays present in warewulf
 */
 func FindOverlays() ([]string, error) {
 	var ret []string
-	var files []os.FileInfo
 	dotfilecheck, _ := regexp.Compile(`^\..*`)
 
-	files, err := ioutil.ReadDir(OverlaySourceTopDir())
+	files, err := os.ReadDir(OverlaySourceTopDir())
 	if err != nil {
 		return ret, errors.Wrap(err, "could not get list of overlays")
 	}
@@ -154,7 +152,7 @@ func BuildOverlay(nodeInfo node.NodeInfo, overlayNames []string) error {
 
 	wwlog.Debug("Created directory for %s: %s", name, overlayImageDir)
 
-	buildDir, err := ioutil.TempDir(os.TempDir(), ".wwctl-overlay-")
+	buildDir, err := os.MkdirTemp(os.TempDir(), ".wwctl-overlay-")
 	if err != nil {
 		return errors.Wrapf(err, "Failed to create temporary directory for %s", name)
 	}

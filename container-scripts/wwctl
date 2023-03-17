@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -euxo pipefail
+
+# Run the domain
+podman exec -ti ${CONTAINER_NAME} wwctl $@
