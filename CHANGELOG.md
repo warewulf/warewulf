@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The correct header is now displayed when `-al` flags are specified to overlay
   list.
-- KERNEL VERSION column is too short
+- KERNEL VERSION column is too short. #690
 
 ### Changed
 
