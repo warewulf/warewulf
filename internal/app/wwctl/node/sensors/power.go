@@ -15,7 +15,7 @@ import (
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var returnErr error = nil
 
-	nodeDB, err := node.New()
+	nodeDB, err := node.ReadNodeYaml()
 	if err != nil {
 		wwlog.Error("Could not open node configuration: %s", err)
 		os.Exit(1)

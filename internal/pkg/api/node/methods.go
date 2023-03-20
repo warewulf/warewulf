@@ -33,13 +33,13 @@ func GetFields(n interface{}) map[string]*wwapiv1.NodeField {
 			var myField wwapiv1.NodeField
 			entry := nodeVal.Field(i).Interface().([]string)
 			if len(entry) == 0 {
-				myField.Value = node.NoValue
-				myField.Print = node.NoValue
-				myField.Source = node.NoValue
+				myField.Value = NoValue
+				myField.Print = NoValue
+				myField.Source = NoValue
 			} else {
 				myField.Value = strings.Join(entry, ",")
 				myField.Print = strings.Join(entry, ",")
-				myField.Source = node.NoValue
+				myField.Source = NoValue
 				fieldMap[nodeType.Field(i).Name] = &myField
 			}
 		case reflect.TypeOf((*node.KernelEntry)(nil)):

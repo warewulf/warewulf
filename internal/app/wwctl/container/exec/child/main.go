@@ -93,7 +93,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Warn(fmt.Sprintf("Couldn't create overlay for ephermal mount points: %s", err))
 		}
 	} else if nodename != "" {
-		nodeDB, err := node.New()
+		nodeDB, err := node.ReadNodeYaml()
 		if err != nil {
 			wwlog.Error("Could not open node configuration: %s", err)
 			os.Exit(1)

@@ -28,7 +28,7 @@ func LoadNodeDB() error {
 func loadNodeDB() error {
 	TmpMap := make(map[string]node.NodeInfo)
 
-	DB, err := node.New()
+	DB, err := node.ReadNodeYaml()
 	if err != nil {
 		return err
 	}
@@ -90,7 +90,7 @@ func getNodeOrSetDiscoverable(hwaddr string) (node.NodeInfo, error) {
 
 	wwlog.WarnExc(err, "%s (node not configured)", hwaddr)
 
-	config, err := node.New()
+	config, err := node.ReadNodeYaml()
 	if err != nil {
 		return n, errors.Wrapf(err, "%s (failed to read node configuration file)", hwaddr)
 	}

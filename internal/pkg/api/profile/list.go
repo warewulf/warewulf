@@ -16,7 +16,7 @@ Returns the formatted list of profiles as string
 */
 func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileList, err error) {
 	profileList.Output = []string{}
-	nodeDB, err := node.New()
+	nodeDB, err := node.ReadNodeYaml()
 	if err != nil {
 		wwlog.Error("Could not open node configuration: %s", err)
 		return
@@ -63,7 +63,7 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 					for netName, netWork := range netDevs {
 						netInfoType := reflect.TypeOf(*netWork)
 						netInfoVal := reflect.ValueOf(*netWork)
-						netConfType := reflect.TypeOf(node.NetDevs{})
+						netConfType := reflect.TypeOf(node.NetDevConf{})
 						for j := 0; j < netInfoType.NumField(); j++ {
 							netConfField, ok := netConfType.FieldByName(netInfoType.Field(j).Name)
 							if ok {

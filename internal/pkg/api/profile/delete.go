@@ -21,7 +21,7 @@ func ProfileDelete(ndp *wwapiv1.NodeDeleteParameter) (err error) {
 		return
 	}
 
-	nodeDB, err := node.New()
+	nodeDB, err := node.ReadNodeYaml()
 	if err != nil {
 		wwlog.Error("Failed to open node database: %s\n", err)
 		return
@@ -59,7 +59,7 @@ func ProfileDeleteParameterCheck(ndp *wwapiv1.NodeDeleteParameter, console bool)
 		return
 	}
 
-	nodeDB, err := node.New()
+	nodeDB, err := node.ReadNodeYaml()
 	if err != nil {
 		wwlog.Error("Failed to open node database: %s\n", err)
 		return

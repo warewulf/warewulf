@@ -14,7 +14,7 @@ import (
 Returns the nodes as a yaml string
 */
 func FindAllProfileConfs() *wwapiv1.NodeYaml {
-	nodeDB, err := node.New()
+	nodeDB, err := node.ReadNodeYaml()
 	if err != nil {
 		wwlog.Error("Could not open nodeDB: %s\n", err)
 		os.Exit(1)
@@ -32,7 +32,7 @@ func FindAllProfileConfs() *wwapiv1.NodeYaml {
 Returns filtered list of nodes
 */
 func FilteredProfiles(profileList *wwapiv1.NodeList) *wwapiv1.NodeYaml {
-	nodeDB, err := node.New()
+	nodeDB, err := node.ReadNodeYaml()
 	if err != nil {
 		wwlog.Error("Could not open nodeDB: %s\n", err)
 		os.Exit(1)
@@ -50,7 +50,7 @@ func FilteredProfiles(profileList *wwapiv1.NodeList) *wwapiv1.NodeYaml {
 Add profiles from yaml
 */
 func ProfileAddFromYaml(nodeList *wwapiv1.NodeYaml) (err error) {
-	nodeDB, err := node.New()
+	nodeDB, err := node.ReadNodeYaml()
 	if err != nil {
 		return errors.Wrap(err, "Could not open NodeDB: %s\n")
 	}

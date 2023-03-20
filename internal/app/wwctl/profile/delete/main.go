@@ -14,7 +14,7 @@ import (
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var count int
 
-	nodeDB, err := node.New()
+	nodeDB, err := node.ReadNodeYaml()
 	if err != nil {
 		wwlog.Error("Failed to open node database: %s", err)
 		os.Exit(1)

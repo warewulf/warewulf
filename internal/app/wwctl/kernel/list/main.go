@@ -18,7 +18,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	nconfig, _ := node.New()
+	nconfig, _ := node.ReadNodeYaml()
 	nodes, _ := nconfig.FindAllNodes()
 	nodemap := make(map[string]int)
 

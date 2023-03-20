@@ -1,47 +1,34 @@
 package node
 
 import (
-	"errors"
-	"net"
+	"reflect"
 	"strings"
+
+	"github.com/hpcng/warewulf/internal/pkg/util"
 )
 
-func (config *NodeYaml) FindByHwaddr(hwa string) (NodeInfo, error) {
-	if _, err := net.ParseMAC(hwa); err != nil {
-		return NodeInfo{}, errors.New("invalid hardware address: " + hwa)
+/*
+Get the string of the yaml tag
+*/
+func getYamlString(myType reflect.StructField, excludeList []string) ([]string, bool) {
+	ymlStr := myType.Tag.Get("yaml")
+	if len(strings.Split(ymlStr, ",")) > 1 {
+		ymlStr = strings.Split(ymlStr, ",")[0]
 	}
-
-	var ret NodeInfo
-
-	n, _ := config.FindAllNodes()
-
-	for _, node := range n {
-		for _, dev := range node.NetDevs {
-			if strings.EqualFold(dev.Hwaddr.Get(), hwa) {
-				return node, nil
-			}
-		}
+	if util.InSlice(excludeList, ymlStr) {
+		return []string{""}, false
+	} else if myType.Tag.Get("lopt") == "" && myType.Type.Kind() == reflect.String {
+		return []string{""}, false
 	}
-
-	return ret, errors.New("No nodes found with HW Addr: " + hwa)
-}
-
-func (config *NodeYaml) FindByIpaddr(ipaddr string) (NodeInfo, error) {
-	if net.ParseIP(ipaddr) == nil {
-		return NodeInfo{}, errors.New("invalid IP:" + ipaddr)
+	if myType.Type.Kind() == reflect.String {
+		ymlStr += ": string"
+		return []string{ymlStr}, true
+	} else if myType.Type == reflect.TypeOf([]string{}) {
+		return []string{ymlStr + ":", "  - string"}, true
+	} else if myType.Type == reflect.TypeOf(map[string]string{}) {
+		return []string{ymlStr + ":", "  key: value"}, true
+	} else if myType.Type.Kind() == reflect.Ptr {
+		return []string{ymlStr + ":"}, true
 	}
-
-	var ret NodeInfo
-
-	n, _ := config.FindAllNodes()
-
-	for _, node := range n {
-		for _, dev := range node.NetDevs {
-			if dev.Ipaddr.Get() == ipaddr {
-				return node, nil
-			}
-		}
-	}
-
-	return ret, errors.New("No nodes found with IP Addr: " + ipaddr)
+	return []string{ymlStr}, true
 }

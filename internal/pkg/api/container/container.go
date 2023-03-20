@@ -54,7 +54,7 @@ func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 			wwlog.Error("Can only set default for one container")
 		} else {
 			var nodeDB node.NodeYaml
-			nodeDB, err = node.New()
+			nodeDB, err = node.ReadNodeYaml()
 			if err != nil {
 				wwlog.Error("Could not open node configuration: %s", err)
 				return
@@ -89,7 +89,7 @@ func ContainerDelete(cdp *wwapiv1.ContainerDeleteParameter) (err error) {
 		return fmt.Errorf("ContainerDeleteParameter is nil")
 	}
 
-	nodeDB, err := node.New()
+	nodeDB, err := node.ReadNodeYaml()
 	if err != nil {
 		wwlog.Error("Could not open nodeDB: %s", err)
 		return
@@ -220,7 +220,7 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 
 	if cip.Default {
 		var nodeDB node.NodeYaml
-		nodeDB, err = node.New()
+		nodeDB, err = node.ReadNodeYaml()
 		if err != nil {
 			err = fmt.Errorf("could not open node configuration: %s", err.Error())
 			wwlog.Error(err.Error())
@@ -269,7 +269,7 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 		return
 	}
 
-	nodeDB, err := node.New()
+	nodeDB, err := node.ReadNodeYaml()
 	if err != nil {
 		wwlog.Error("%s", err)
 		return
@@ -352,7 +352,7 @@ func ContainerShow(csp *wwapiv1.ContainerShowParameter) (response *wwapiv1.Conta
 	}
 	kernelVersion := container.KernelVersion(containerName)
 
-	nodeDB, err := node.New()
+	nodeDB, err := node.ReadNodeYaml()
 	if err != nil {
 		return
 	}

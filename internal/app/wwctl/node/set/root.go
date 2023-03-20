@@ -23,7 +23,7 @@ var (
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
 
-			nodeDB, _ := node.New()
+			nodeDB, _ := node.ReadNodeYaml()
 			nodes, _ := nodeDB.FindAllNodes()
 			var node_names []string
 			for _, node := range nodes {
@@ -75,7 +75,7 @@ func init() {
 	}
 	if err := baseCmd.RegisterFlagCompletionFunc("profile", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		var list []string
-		nodeDB, _ := node.New()
+		nodeDB, _ := node.ReadNodeYaml()
 		profiles, _ := nodeDB.FindAllProfiles()
 		for _, profile := range profiles {
 			list = append(list, profile.Id.Get())

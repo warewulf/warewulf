@@ -48,7 +48,7 @@ func InitStruct(nodeInfo node.NodeInfo) TemplateStruct {
 		wwlog.Error("%s", err)
 		os.Exit(1)
 	}
-	nodeDB, err := node.New()
+	nodeDB, err := node.ReadNodeYaml()
 	if err != nil {
 		wwlog.Error("%s", err)
 		os.Exit(1)

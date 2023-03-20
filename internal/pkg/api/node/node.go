@@ -18,6 +18,9 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 )
 
+// string which is returned if no value is set
+const NoValue = "--"
+
 // NodeAdd adds nodes for management by Warewulf.
 func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 
@@ -25,7 +28,7 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 		return fmt.Errorf("NodeAddParameter is nil")
 	}
 
-	nodeDB, err := node.New()
+	nodeDB, err := node.ReadNodeYaml()
 	if err != nil {
 		return errors.Wrap(err, "failed to open node database")
 	}
@@ -90,7 +93,7 @@ func NodeDelete(ndp *wwapiv1.NodeDeleteParameter) (err error) {
 		return
 	}
 
-	nodeDB, err := node.New()
+	nodeDB, err := node.ReadNodeYaml()
 	if err != nil {
 		wwlog.Error("Failed to open node database: %s", err)
 		return
@@ -128,7 +131,7 @@ func NodeDeleteParameterCheck(ndp *wwapiv1.NodeDeleteParameter, console bool) (n
 		return
 	}
 
-	nodeDB, err := node.New()
+	nodeDB, err := node.ReadNodeYaml()
 	if err != nil {
 		wwlog.Error("Failed to open node database: %s", err)
 		return
@@ -199,7 +202,7 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 		}
 	}
 
-	nodeDB, err = node.New()
+	nodeDB, err = node.ReadNodeYaml()
 	if err != nil {
 		wwlog.Error("Could not open node configuration: %s", err)
 		return

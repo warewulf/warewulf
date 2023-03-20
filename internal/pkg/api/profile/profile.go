@@ -48,7 +48,7 @@ func ProfileSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (node
 		}
 	}
 
-	nodeDB, err = node.New()
+	nodeDB, err = node.ReadNodeYaml()
 	if err != nil {
 		wwlog.Error("Could not open configuration: %s", err)
 		return
@@ -127,7 +127,7 @@ func ProfileSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (node
 Adds a new profile with the given name
 */
 func AddProfile(set *wwapiv1.NodeSetParameter, console bool) error {
-	nodeDB, err := node.New()
+	nodeDB, err := node.ReadNodeYaml()
 	if err != nil {
 		return errors.Wrap(err, "Could not open database")
 	}

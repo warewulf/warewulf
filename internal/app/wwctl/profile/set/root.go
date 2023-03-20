@@ -23,7 +23,7 @@ var (
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
 
-			nodeDB, _ := node.New()
+			nodeDB, _ := node.ReadNodeYaml()
 			profiles, _ := nodeDB.FindAllProfiles()
 			var p_names []string
 			for _, profile := range profiles {

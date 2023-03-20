@@ -17,7 +17,7 @@ a formated string slice, with each line as separate string
 */
 func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err error) {
 	// nil is okay for nodeNames
-	nodeDB, err := node.New()
+	nodeDB, err := node.ReadNodeYaml()
 	if err != nil {
 		return
 	}
@@ -113,7 +113,7 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 					for netName, netWork := range netDevs {
 						netInfoType := reflect.TypeOf(*netWork)
 						netInfoVal := reflect.ValueOf(*netWork)
-						netConfType := reflect.TypeOf(node.NetDevs{})
+						netConfType := reflect.TypeOf(node.NetDevConf{})
 						for j := 0; j < netInfoType.NumField(); j++ {
 							netConfField, ok := netConfType.FieldByName(netInfoType.Field(j).Name)
 							if ok {

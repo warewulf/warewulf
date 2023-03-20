@@ -48,7 +48,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if !NoOverlayUpdate {
-		n, err := node.New()
+		n, err := node.ReadNodeYaml()
 		if err != nil {
 			wwlog.Error("Could not open node configuration: %s", err)
 			os.Exit(1)
