@@ -16,7 +16,7 @@ are:
  * /path/to/archive/tar/ball
  * /path/to/chroot/
 Imported containers are used to create bootable VNFS images.`,
-		Example: "wwctl container import docker://warewulf/centos-8 my_container",
+		Example: "wwctl container import docker://ghcr.io/hpcng/warewulf-rockylinux:8 rockylinux-8",
 		RunE:    CobraRunE,
 		Args:    cobra.MinimumNArgs(1),
 	}
