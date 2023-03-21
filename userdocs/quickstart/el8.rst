@@ -105,7 +105,7 @@ default running kernel from the controller node and set both in the
 
 .. code-block:: bash
 
-   sudo wwctl container import docker://warewulf/rocky:8 rocky-8
+   sudo wwctl container import docker://ghcr.io/hpcng/warewulf-rockylinux:8 rocky-8
 
 
 Set up the default node profile
