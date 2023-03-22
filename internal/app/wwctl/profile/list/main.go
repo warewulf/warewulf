@@ -11,7 +11,6 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-
 	nodeDB, err := node.New()
 	if err != nil {
 		wwlog.Error("Could not open node configuration: %s", err)
@@ -60,7 +59,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), name+":NETMASK", netdev.Netmask.Print())
 				fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), name+":GATEWAY", netdev.Gateway.Print())
 				fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), name+":HWADDR", netdev.Hwaddr.Print())
-				fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), name+":TYPE", netdev.Hwaddr.Print())
+				fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), name+":TYPE", netdev.Type.Print())
+				fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), name+":MTU", netdev.MTU.Print())
 				fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), name+":ONBOOT", netdev.OnBoot.PrintB())
 				fmt.Printf("%-20s %-18s %s\n", profile.Id.Get(), name+":PRIMARY", netdev.Primary.PrintB())
 				for keyname, key := range netdev.Tags {

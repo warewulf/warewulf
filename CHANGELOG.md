@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Boolean attributes now correctly account for profile and default
   values. #630
 - Kernvel version is shown correctly
+- Show netdev.Type and netdev.MTU in profile list. #660
 
 ## [4.4.0rc3] 2022-12-23
 
