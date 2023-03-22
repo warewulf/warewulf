@@ -118,7 +118,7 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %dir %{_sysconfdir}/warewulf
 %config(noreplace) %{_sysconfdir}/warewulf/*
 %config(noreplace) %attr(0640,-,-) %{_sysconfdir}/warewulf/nodes.conf
-%{_sysconfdir}/bash_completion.d/warewulf
+%{_sysconfdir}/bash_completion.d/wwctl
 
 %dir %{_sharedstatedir}/warewulf
 %{_sharedstatedir}/warewulf/chroots
