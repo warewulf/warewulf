@@ -174,13 +174,13 @@ func (ent *Entry) SetAlt(val string, from string) {
 // Sets alternative bool
 // */
 // func (ent *Entry) SetAltB(val bool, from string) {
-// 	if val {
-// 		ent.altvalue = []string{"true"}
-// 		ent.from = from
-// 	} else {
-// 		ent.altvalue = []string{"false"}
-// 		ent.from = from
-// 	}
+//	if val {
+//		ent.altvalue = []string{"true"}
+//		ent.from = from
+//	} else {
+//		ent.altvalue = []string{"false"}
+//		ent.from = from
+//	}
 // }
 
 /*
@@ -315,7 +315,7 @@ func (ent *Entry) GetRealSlice() []string {
 // true if the entry has set a real value, else false.
 // */
 // func (ent *Entry) GotReal() bool {
-// 	return len(ent.value) != 0
+//	return len(ent.value) != 0
 // }
 
 
@@ -341,10 +341,10 @@ func (ent *Entry) Print() string {
 // same as GetB()
 // */
 // func (ent *Entry) PrintB() string {
-// 	if len(ent.value) != 0 || len(ent.altvalue) != 0 {
-// 		return fmt.Sprintf("%t", ent.GetB())
-// 	}
-// 	return fmt.Sprintf("(%t)", ent.GetB())
+//	if len(ent.value) != 0 || len(ent.altvalue) != 0 {
+//		return fmt.Sprintf("%t", ent.GetB())
+//	}
+//	return fmt.Sprintf("(%t)", ent.GetB())
 // }
 
 /*
@@ -378,13 +378,80 @@ func (ent *Entry) Defined() bool {
 }
 
 
-/*
-Create an empty node NodeInfo
-*/
-func NewInfo() (nodeInfo NodeInfo) {
+// NewNodeInfo constructs a new NodeInfo, optionally initialized with
+// a name and attributes from normal, default, and profile NodeConfs.
+//
+// If any of the initialization parameters are empty, that parameter
+// type is skipped during initilaization.
+func NewNodeInfo(name string, nodeConf *NodeConf, defaultNodeConf *NodeConf, nodeProfiles map[string]*NodeConf) (nodeInfo NodeInfo) {
 	nodeInfo.Ipmi = new(IpmiEntry)
 	nodeInfo.Kernel = new(KernelEntry)
 	nodeInfo.NetDevs = make(map[string]*NetDevEntry)
+	nodeInfo.Tags = make(map[string]*Entry)
+
+	// Load the node name
+	if name != "" {
+		nodeInfo.Id.Set(name)
+
+		// Set ClusterName using the domain portion of the
+		// node's name.
+		//
+		// TODO move this to node create
+		splitname := strings.SplitN(name, ".", 2)
+		if len(splitname) > 1 {
+			nodeInfo.ClusterName.SetDefault(splitname[1])
+		}
+	}
+
+	// Load default attributes
+	var defaultNetDevConf *NetDevConf
+	if defaultNodeConf != nil {
+		if _, ok := defaultNodeConf.NetDevs["dummy"]; ok {
+			defaultNetDevConf = defaultNodeConf.NetDevs["dummy"]
+		}
+		defaultNodeConf.NetDevs = nil
+		nodeInfo.SetDefFrom(defaultNodeConf)
+	}
+
+	// Load normal attributes
+	if nodeConf != nil {
+		// If no profiles are included, automatically include the
+		// default profile.
+		if len(nodeConf.Profiles) == 0 {
+			nodeInfo.Profiles.SetSlice([]string{"default"})
+		} else {
+			nodeInfo.Profiles.SetSlice(nodeConf.Profiles)
+		}
+
+		nodeInfo.SetFrom(nodeConf)
+	}
+
+	// Load default attributes for each NetDev
+	if defaultNetDevConf != nil {
+		for _, netdev := range nodeInfo.NetDevs {
+			netdev.SetDefFrom(defaultNetDevConf)
+		}
+	}
+
+	// Load profile attributes
+	if nodeProfiles != nil {
+		for _, profileName := range nodeInfo.Profiles.GetSlice() {
+			if _, ok := nodeProfiles[profileName]; !ok {
+				wwlog.Warn("Profile not found for node '%s': %s", name, profileName)
+				continue
+			}
+			wwlog.Verbose("Merging profile into node: %s <- %s", name, profileName)
+			nodeInfo.SetAltFrom(nodeProfiles[profileName], profileName)
+		}
+	}
+
+	// Set Primary on the primary NetDev
+	for netDevName, netDev := range nodeInfo.NetDevs {
+		if netDevName == nodeInfo.PrimaryNetDev.Get() || len(nodeInfo.NetDevs) == 1 {
+			netDev.Primary.SetB(true)
+		}
+	}
+
 	return nodeInfo
 }
 
@@ -538,13 +605,13 @@ func (node *NodeInfo) setterFrom(n *NodeConf, nameArg string,
 // Actually not used, just for completeness.
 // */
 // func (netDev *NetDevEntry) SetFrom(netYaml *NetDevConf) {
-// 	setWrap := func(entr *Entry, val string, nameArg string) {
-// 		entr.Set(val)
-// 	}
-// 	setSliceWrap := func(entr *Entry, val []string, nameArg string) {
-// 		entr.SetSlice(val)
-// 	}
-// 	netDev.setterFrom(netYaml, "", setWrap, setSliceWrap)
+//	setWrap := func(entr *Entry, val string, nameArg string) {
+//		entr.Set(val)
+//	}
+//	setSliceWrap := func(entr *Entry, val []string, nameArg string) {
+//		entr.SetSlice(val)
+//	}
+//	netDev.setterFrom(netYaml, "", setWrap, setSliceWrap)
 // }
 
 // /*
@@ -555,7 +622,7 @@ func (node *NodeInfo) setterFrom(n *NodeConf, nameArg string,
 // Actually not used, just for completeness.
 // */
 // func (netDev *NetDevEntry) SetAltFrom(netYaml *NetDevConf, profileName string) {
-// 	netDev.setterFrom(netYaml, profileName, (*Entry).SetAlt, (*Entry).SetAltSlice)
+//	netDev.setterFrom(netYaml, profileName, (*Entry).SetAlt, (*Entry).SetAltSlice)
 // }
 
 /*

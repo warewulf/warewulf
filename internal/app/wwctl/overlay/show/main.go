@@ -59,7 +59,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Error("Could not open node configuration: %s", err)
 			os.Exit(1)
 		}
-		nodes, err := nodeDB.FindAllNodes()
+		nodes, err := nodeDB.GetAllNodeInfo()
 		if err != nil {
 			wwlog.Error("Could not get node list: %s", err)
 			os.Exit(1)

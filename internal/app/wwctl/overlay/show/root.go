@@ -33,7 +33,7 @@ func init() {
 	baseCmd.PersistentFlags().StringVarP(&NodeName, "render", "r", "", "node used for the variables in the template")
 	if err := baseCmd.RegisterFlagCompletionFunc("render", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		nodeDB, _ := node.ReadNodeYaml()
-		nodes, _ := nodeDB.FindAllNodes()
+		nodes, _ := nodeDB.GetAllNodeInfo()
 		var node_names []string
 		for _, node := range nodes {
 			node_names = append(node_names, node.Id.Get())

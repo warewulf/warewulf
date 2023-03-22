@@ -29,7 +29,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	for _, r := range args {
 		for _, p := range profiles {
 			if p.Id.Get() == r {
-				nodes, err := nodeDB.FindAllNodes()
+				nodes, err := nodeDB.GetAllNodeInfo()
 				if err != nil {
 					wwlog.Error("Could not load all nodes: %s", err)
 					os.Exit(1)

@@ -18,7 +18,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	nodes, _ := nodeDB.FindAllNodes()
+	nodes, _ := nodeDB.GetAllNodeInfo()
 
 ARG_LOOP:
 	for _, arg := range args {

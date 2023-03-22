@@ -8,7 +8,7 @@ package node
 // func Test_nodeYaml_SetFrom(t *testing.T) {
 // 	c, _ := NewTestNode()
 // 	singleNodeConf := c.Nodes["test_node"]
-// 	singleNodeInfo := NewInfo()
+// 	singleNodeInfo := NewNodeInfo()
 // 	singleNodeInfo.SetFrom(singleNodeConf)
 // 	tests := []struct {
 // 		name    string

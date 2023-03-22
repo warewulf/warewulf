@@ -24,7 +24,7 @@ var (
 			}
 
 			nodeDB, _ := node.ReadNodeYaml()
-			nodes, _ := nodeDB.FindAllNodes()
+			nodes, _ := nodeDB.GetAllNodeInfo()
 			var node_names []string
 			for _, node := range nodes {
 				node_names = append(node_names, node.Id.Get())

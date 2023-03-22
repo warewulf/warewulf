@@ -37,7 +37,7 @@ func LoadNodeStatus() error {
 		return err
 	}
 
-	nodes, err := DB.FindAllNodes()
+	nodes, err := DB.GetAllNodeInfo()
 	if err != nil {
 		return err
 	}

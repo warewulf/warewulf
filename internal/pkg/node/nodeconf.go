@@ -488,3 +488,80 @@ func (nodeConf *NodeConf) SetLopt(lopt string, value string) (found bool) {
 	}
 	return found
 }
+
+
+// CompatibilityUpdate ports values from old NodeConf attributes to
+// new NodeConf attributes for backwards-compatibility.
+func (nodeConf *NodeConf) CompatibilityUpdate () {
+	// If any "keys" are configured, convert them to tags.
+	if len(nodeConf.Tags) == 0 {
+		nodeConf.Tags = make(map[string]string)
+	}
+	for keyname, keyval := range nodeConf.Keys {
+		nodeConf.Tags[keyname] = keyval
+		delete(nodeConf.Keys, keyname)
+	}
+
+	if nodeConf.Ipmi == nil {
+		nodeConf.Ipmi = new(IpmiConf)
+	}
+
+	if nodeConf.Ipmi.Ipaddr == "" {
+		nodeConf.Ipmi.Ipaddr = nodeConf.IpmiIpaddr
+	}
+	nodeConf.IpmiIpaddr = ""
+
+	if nodeConf.Ipmi.Netmask == "" {
+		nodeConf.Ipmi.Netmask = nodeConf.IpmiNetmask
+	}
+	nodeConf.IpmiNetmask = ""
+
+	if nodeConf.Ipmi.Port == "" {
+		nodeConf.Ipmi.Port = nodeConf.IpmiPort
+	}
+	nodeConf.IpmiPort = ""
+
+	if nodeConf.Ipmi.Gateway == "" {
+		nodeConf.Ipmi.Gateway = nodeConf.IpmiGateway
+	}
+	nodeConf.IpmiGateway = ""
+
+	if nodeConf.Ipmi.UserName == "" {
+		nodeConf.Ipmi.UserName = nodeConf.IpmiUserName
+	}
+	nodeConf.IpmiUserName = ""
+
+	if nodeConf.Ipmi.Password == "" {
+		nodeConf.Ipmi.Password = nodeConf.IpmiPassword
+	}
+	nodeConf.IpmiPassword = ""
+
+	if nodeConf.Ipmi.Interface == "" {
+		nodeConf.Ipmi.Interface = nodeConf.IpmiInterface
+	}
+	nodeConf.IpmiInterface = ""
+
+	if nodeConf.Ipmi.Write == "" {
+		nodeConf.Ipmi.Write = nodeConf.IpmiWrite
+	}
+	nodeConf.IpmiWrite = ""
+
+	if nodeConf.Kernel == nil {
+		nodeConf.Kernel = new(KernelConf)
+	}
+
+	if nodeConf.Kernel.Args == "" {
+		nodeConf.Kernel.Args = nodeConf.KernelArgs
+	}
+	nodeConf.KernelArgs = ""
+
+	if nodeConf.Kernel.Override == "" {
+		nodeConf.Kernel.Override = nodeConf.KernelOverride
+	}
+	nodeConf.KernelOverride = ""
+
+	if nodeConf.Kernel.Override == "" {
+		nodeConf.Kernel.Override = nodeConf.KernelVersion
+	}
+	nodeConf.KernelVersion = ""
+}

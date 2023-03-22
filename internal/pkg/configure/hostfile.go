@@ -21,7 +21,7 @@ func Hostfile() error {
 		os.Exit(1)
 	}
 
-	nodeInfo := node.NewInfo()
+	nodeInfo := node.NewNodeInfo("", nil, nil, nil)
 	hostname, _ := os.Hostname()
 	nodeInfo.Id.Set(hostname)
 	tstruct := overlay.InitStruct(nodeInfo)

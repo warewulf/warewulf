@@ -21,7 +21,7 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 	if err != nil {
 		return
 	}
-	nodes, err := nodeDB.FindAllNodes()
+	nodes, err := nodeDB.GetAllNodeInfo()
 	if err != nil {
 		return
 	}

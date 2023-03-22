@@ -21,7 +21,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	nodes, err := nodeDB.FindAllNodes()
+	nodes, err := nodeDB.GetAllNodeInfo()
 	if err != nil {
 		wwlog.Error("Cloud not get nodeList: %s", err)
 		os.Exit(1)

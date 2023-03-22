@@ -19,7 +19,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	nconfig, _ := node.ReadNodeYaml()
-	nodes, _ := nconfig.FindAllNodes()
+	nodes, _ := nconfig.GetAllNodeInfo()
 	nodemap := make(map[string]int)
 
 	for _, n := range nodes {

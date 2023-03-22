@@ -81,7 +81,7 @@ func BuildSpecificOverlays(nodes []node.NodeInfo, overlayNames []string) error {
 Build overlay for the host, so no argument needs to be given
 */
 func BuildHostOverlay() error {
-	host := node.NewInfo()
+	host := node.NewNodeInfo("", nil, nil, nil)
 	hostname, _ := os.Hostname()
 	host.Id.Set(hostname)
 

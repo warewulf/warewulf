@@ -95,7 +95,7 @@ func ContainerDelete(cdp *wwapiv1.ContainerDeleteParameter) (err error) {
 		return
 	}
 
-	nodes, err := nodeDB.FindAllNodes()
+	nodes, err := nodeDB.GetAllNodeInfo()
 	if err != nil {
 		return
 	}
@@ -275,7 +275,7 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 		return
 	}
 
-	nodes, err := nodeDB.FindAllNodes()
+	nodes, err := nodeDB.GetAllNodeInfo()
 	if err != nil {
 		wwlog.Error("%s", err)
 		return
@@ -357,7 +357,7 @@ func ContainerShow(csp *wwapiv1.ContainerShowParameter) (response *wwapiv1.Conta
 		return
 	}
 
-	nodes, err := nodeDB.FindAllNodes()
+	nodes, err := nodeDB.GetAllNodeInfo()
 	if err != nil {
 		return
 	}

@@ -53,7 +53,7 @@ func InitStruct(nodeInfo node.NodeInfo) TemplateStruct {
 		wwlog.Error("%s", err)
 		os.Exit(1)
 	}
-	allNodes, err := nodeDB.FindAllNodes()
+	allNodes, err := nodeDB.GetAllNodeInfo()
 	if err != nil {
 		wwlog.Error("%s", err)
 		os.Exit(1)

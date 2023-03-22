@@ -137,7 +137,7 @@ func NodeDeleteParameterCheck(ndp *wwapiv1.NodeDeleteParameter, console bool) (n
 		return
 	}
 
-	nodes, err := nodeDB.FindAllNodes()
+	nodes, err := nodeDB.GetAllNodeInfo()
 	if err != nil {
 		wwlog.Error("Could not get node list: %s", err)
 		return
@@ -208,7 +208,7 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 		return
 	}
 
-	nodes, err := nodeDB.FindAllNodes()
+	nodes, err := nodeDB.GetAllNodeInfo()
 	if err != nil {
 		wwlog.Error("Could not get node list: %s", err)
 		return
