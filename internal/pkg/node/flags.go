@@ -92,11 +92,11 @@ func createFlags(baseCmd *cobra.Command, excludeList []string,
 				*/
 				converters = append(converters, func() error {
 					if !util.InSlice(GetUnsetVerbs(), *ptr) && *ptr != "" {
-						if strings.ToLower(*ptr) != "yes" {
+						if strings.ToLower(*ptr) == "yes" {
 							*ptr = "true"
 							return nil
 						}
-						if strings.ToLower(*ptr) != "no" {
+						if strings.ToLower(*ptr) == "no" {
 							*ptr = "false"
 							return nil
 						}
