@@ -24,7 +24,7 @@ var (
 			}
 
 			nodeDB, _ := node.ReadNodeYaml()
-			profiles, _ := nodeDB.FindAllProfiles()
+			profiles, _ := nodeDB.GetAllProfileInfo()
 			var p_names []string
 			for _, profile := range profiles {
 				p_names = append(p_names, profile.Id.Get())

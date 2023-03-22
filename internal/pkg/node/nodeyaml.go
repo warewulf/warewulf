@@ -56,11 +56,10 @@ func ParseNodeYaml(fileData []byte) (NodeYaml, error) {
 }
 
 
-// GetAllNodeInfo returns a slice of NodeInfo, including effective
-// settings inherited from profiles and default values.
+// GetAllNodeInfo returns a slice of NodeInfo representing the nodes
+// defined in the NodeInfo, including effective settings inherited
+// from profiles and default values.
 func (config *NodeYaml) GetAllNodeInfo() ([]NodeInfo, error) {
-	var allNodeInfo []NodeInfo
-
 	var defaultYaml []byte
 	var defaultConf map[string]*NodeConf
 	var err error
@@ -81,6 +80,7 @@ func (config *NodeYaml) GetAllNodeInfo() ([]NodeInfo, error) {
 		}
 	}
 
+	var allNodeInfo []NodeInfo
 	wwlog.Debug("Getting all nodes...")
 	for nodename, nodeConf := range config.Nodes {
 		wwlog.Debug("Getting node: %s", nodename)
@@ -89,81 +89,40 @@ func (config *NodeYaml) GetAllNodeInfo() ([]NodeInfo, error) {
 		allNodeInfo = append(allNodeInfo, nodeInfo)
 	}
 
-	sort.Slice(allNodeInfo, func(i, j int) bool {
-		if allNodeInfo[i].ClusterName.Get() < allNodeInfo[j].ClusterName.Get() {
-			return true
-		} else if allNodeInfo[i].ClusterName.Get() == allNodeInfo[j].ClusterName.Get() {
-			if allNodeInfo[i].Id.Get() < allNodeInfo[j].Id.Get() {
-				return true
-			}
-		}
-		return false
-	})
-
+	sortNodeInfoSlice(allNodeInfo)
 	return allNodeInfo, nil
 }
 
 
-/*
-Return all profiles as NodeInfo
-*/
-func (config *NodeYaml) FindAllProfiles() ([]NodeInfo, error) {
-	var ret []NodeInfo
+// GetAllProfileInfo returns a slice of NodeInfo representing the
+// profiles defined in the NodeYaml.
+func (config *NodeYaml) GetAllProfileInfo() ([]NodeInfo, error) {
+	var allProfileInfo []NodeInfo
 
-	for name, profile := range config.NodeProfiles {
-		var p NodeInfo
-		p.NetDevs = make(map[string]*NetDevEntry)
-		p.Tags = make(map[string]*Entry)
-		p.Kernel = new(KernelEntry)
-		p.Ipmi = new(IpmiEntry)
-		p.Id.Set(name)
-		for keyname, key := range profile.Keys {
-			profile.Tags[keyname] = key
-			delete(profile.Keys, keyname)
-		}
-
-		p.SetFrom(profile)
-		p.Ipmi.Ipaddr.Set(profile.IpmiIpaddr)
-		p.Ipmi.Netmask.Set(profile.IpmiNetmask)
-		p.Ipmi.Port.Set(profile.IpmiPort)
-		p.Ipmi.Gateway.Set(profile.IpmiGateway)
-		p.Ipmi.UserName.Set(profile.IpmiUserName)
-		p.Ipmi.Password.Set(profile.IpmiPassword)
-		p.Ipmi.Interface.Set(profile.IpmiInterface)
-		p.Ipmi.Write.Set(profile.IpmiWrite)
-		p.Kernel.Args.Set(profile.KernelArgs)
-		p.Kernel.Override.Set(profile.KernelOverride)
-		p.Kernel.Override.Set(profile.KernelVersion)
-		// delete deprecated stuff
-		profile.IpmiIpaddr = ""
-		profile.IpmiNetmask = ""
-		profile.IpmiGateway = ""
-		profile.IpmiUserName = ""
-		profile.IpmiPassword = ""
-		profile.IpmiInterface = ""
-		profile.IpmiWrite = ""
-		profile.KernelArgs = ""
-		profile.KernelOverride = ""
-		profile.KernelVersion = ""
-		// Merge Keys into Tags for backwards compatibility
-		if len(profile.Tags) == 0 {
-			profile.Tags = make(map[string]string)
-		}
-
-		ret = append(ret, p)
+	for profileName, profileConf := range config.NodeProfiles {
+		profileConf.CompatibilityUpdate()
+		profileInfo := NewNodeInfo(profileName, profileConf, nil, nil)
+		allProfileInfo = append(allProfileInfo, profileInfo)
 	}
-	sort.Slice(ret, func(i, j int) bool {
-		if ret[i].ClusterName.Get() < ret[j].ClusterName.Get() {
+
+	sortNodeInfoSlice(allProfileInfo)
+	return allProfileInfo, nil
+}
+
+
+// sortNodeInfoSlice sorts a slice of NodeInfo instances according to
+// their ClusterName and Id.
+func sortNodeInfoSlice(nodeInfoSlice []NodeInfo) {
+	sort.Slice(nodeInfoSlice, func(i, j int) bool {
+		if nodeInfoSlice[i].ClusterName.Get() < nodeInfoSlice[j].ClusterName.Get() {
 			return true
-		} else if ret[i].ClusterName.Get() == ret[j].ClusterName.Get() {
-			if ret[i].Id.Get() < ret[j].Id.Get() {
+		} else if nodeInfoSlice[i].ClusterName.Get() == nodeInfoSlice[j].ClusterName.Get() {
+			if nodeInfoSlice[i].Id.Get() < nodeInfoSlice[j].Id.Get() {
 				return true
 			}
 		}
 		return false
 	})
-
-	return ret, nil
 }
 
 

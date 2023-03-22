@@ -76,7 +76,7 @@ func init() {
 	if err := baseCmd.RegisterFlagCompletionFunc("profile", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		var list []string
 		nodeDB, _ := node.ReadNodeYaml()
-		profiles, _ := nodeDB.FindAllProfiles()
+		profiles, _ := nodeDB.GetAllProfileInfo()
 		for _, profile := range profiles {
 			list = append(list, profile.Id.Get())
 		}

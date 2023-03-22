@@ -54,7 +54,7 @@ func ProfileSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (node
 		return
 	}
 
-	profiles, err := nodeDB.FindAllProfiles()
+	profiles, err := nodeDB.GetAllProfileInfo()
 	if err != nil {
 		wwlog.Error("Could not get profile list: %s", err)
 		return

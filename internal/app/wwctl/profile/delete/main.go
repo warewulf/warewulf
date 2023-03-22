@@ -20,7 +20,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	profiles, err := nodeDB.FindAllProfiles()
+	profiles, err := nodeDB.GetAllProfileInfo()
 	if err != nil {
 		wwlog.Error("Could not load all profiles: %s", err)
 		os.Exit(1)

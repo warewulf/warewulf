@@ -22,7 +22,7 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 		return
 	}
 
-	profiles, err := nodeDB.FindAllProfiles()
+	profiles, err := nodeDB.GetAllProfileInfo()
 	if err != nil {
 		wwlog.Error("Could not find all profiles: %s", err)
 		return

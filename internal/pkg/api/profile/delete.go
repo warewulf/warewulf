@@ -65,7 +65,7 @@ func ProfileDeleteParameterCheck(ndp *wwapiv1.NodeDeleteParameter, console bool)
 		return
 	}
 
-	profiles, err := nodeDB.FindAllProfiles()
+	profiles, err := nodeDB.GetAllProfileInfo()
 	if err != nil {
 		wwlog.Error("Could not get node list: %s\n", err)
 		return

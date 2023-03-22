@@ -411,3 +411,215 @@ nodeprofiles:
 	assert.Contains(t, nodeInfo.Tags, "TestTagKey")
 	assert.Equal(t, "TestTagValue", nodeInfo.Tags["TestTagKey"].Get())
 }
+
+
+func Test_GetAllProfileInfoEmpty(t *testing.T) {
+	nodeYaml, err := ParseNodeYaml([]byte(""))
+	assert.NoError(t, err)
+	allProfileInfo, _ := nodeYaml.GetAllProfileInfo()
+	assert.Len(t, allProfileInfo, 0)
+}
+
+
+func Test_GetAllProfileInfoFull(t *testing.T) {
+	nodeYaml, err := ParseNodeYaml([]byte(`
+nodeprofiles:
+  test_profile.cluster.example.net:
+    comment: A single node
+    container name: linux-compute
+    ipxe template: local-ipxe-template
+    runtime overlay:
+    - runtime1
+    - runtime2
+    system overlay:
+    - system1
+    - system2
+    kernel:
+      override: v0.0.1-rc1
+      args: init=/bin/sh
+    ipmi:
+      ipaddr: 127.0.0.1
+      netmask: 255.255.255.0
+      port: 163
+      gateway: 127.0.0.254
+      username: root
+      password: calvin
+      interface: ipmi0
+      write: true
+      tags:
+        IPMITagKey: IPMITagValue
+    init: /sbin/systemd
+    root: tmpfs
+    asset key: ASDF123
+    discoverable: true
+    network devices:
+      fabric:
+        type: infiniband
+        onboot: true
+        device: ib0
+        hwaddr: 00:FF:00:FF:00:FF
+        ipaddr: 127.0.0.2
+        ip6addr: "::2"
+        ipcidr: 127.0.0.2/24
+        prefix: 24
+        netmask: 255.255.255.0
+        gateway: 127.0.0.254
+        mtu: 9000
+        tags:
+          ib0TagKey: ib0TagValue
+    primary network: fabric
+    tags:
+      TestTagKey: TestTagValue`))
+	assert.NoError(t, err)
+	allProfileInfo, _ := nodeYaml.GetAllProfileInfo()
+	profileInfo := allProfileInfo[0]
+	assert.Equal(t, "test_profile.cluster.example.net", profileInfo.Id.Get())
+	assert.Equal(t, "A single node", profileInfo.Comment.Get())
+	assert.Equal(t, "cluster.example.net", profileInfo.ClusterName.Get())
+	assert.Equal(t, "linux-compute", profileInfo.ContainerName.Get())
+	assert.Equal(t, "local-ipxe-template", profileInfo.Ipxe.Get())
+	assert.Equal(t, []string{"runtime1", "runtime2"}, profileInfo.RuntimeOverlay.GetSlice())
+	assert.Equal(t, []string{"system1", "system2"}, profileInfo.SystemOverlay.GetSlice())
+	assert.Equal(t, "v0.0.1-rc1", profileInfo.Kernel.Override.Get())
+	assert.Equal(t, "init=/bin/sh", profileInfo.Kernel.Args.Get())
+
+	assert.Equal(t, "127.0.0.1", profileInfo.Ipmi.Ipaddr.Get())
+	assert.Equal(t, "255.255.255.0", profileInfo.Ipmi.Netmask.Get())
+	assert.Equal(t, "163", profileInfo.Ipmi.Port.Get())
+	assert.Equal(t, "127.0.0.254", profileInfo.Ipmi.Gateway.Get())
+	assert.Equal(t, "root", profileInfo.Ipmi.UserName.Get())
+	assert.Equal(t, "calvin", profileInfo.Ipmi.Password.Get())
+	assert.Equal(t, "ipmi0", profileInfo.Ipmi.Interface.Get())
+	assert.True(t, profileInfo.Ipmi.Write.GetB())
+	assert.Len(t, profileInfo.Ipmi.Tags, 1)
+	assert.Equal(t, "IPMITagValue", profileInfo.Ipmi.Tags["IPMITagKey"].Get())
+	
+	assert.Equal(t, "/sbin/systemd", profileInfo.Init.Get())
+	assert.Equal(t, "tmpfs", profileInfo.Root.Get())
+	assert.Equal(t, "ASDF123", profileInfo.AssetKey.Get())
+	assert.True(t, profileInfo.Discoverable.GetB())
+	assert.Len(t, profileInfo.NetDevs, 1)
+	assert.Contains(t, profileInfo.NetDevs, "fabric")
+	assert.Equal(t, "infiniband", profileInfo.NetDevs["fabric"].Type.Get())
+	assert.True(t, profileInfo.NetDevs["fabric"].OnBoot.GetB())
+	assert.Equal(t, "ib0", profileInfo.NetDevs["fabric"].Device.Get())
+	assert.Equal(t, "00:FF:00:FF:00:FF", profileInfo.NetDevs["fabric"].Hwaddr.Get())
+	assert.Equal(t, "127.0.0.2", profileInfo.NetDevs["fabric"].Ipaddr.Get())
+	assert.Equal(t, "::2", profileInfo.NetDevs["fabric"].Ipaddr6.Get())
+	assert.Equal(t, "127.0.0.2/24", profileInfo.NetDevs["fabric"].IpCIDR.Get())
+	assert.Equal(t, "24", profileInfo.NetDevs["fabric"].Prefix.Get())
+	assert.Equal(t, "255.255.255.0", profileInfo.NetDevs["fabric"].Netmask.Get())
+	assert.Equal(t, "127.0.0.254", profileInfo.NetDevs["fabric"].Gateway.Get())
+	assert.Equal(t, "9000", profileInfo.NetDevs["fabric"].MTU.Get())
+	assert.True(t, profileInfo.NetDevs["fabric"].Primary.GetB())
+	assert.Len(t, profileInfo.NetDevs["fabric"].Tags, 1)
+	assert.Contains(t, profileInfo.NetDevs["fabric"].Tags, "ib0TagKey")
+	assert.Equal(t, "ib0TagValue", profileInfo.NetDevs["fabric"].Tags["ib0TagKey"].Get())
+	assert.Equal(t, "fabric", profileInfo.PrimaryNetDev.Get())
+	assert.Len(t, profileInfo.Tags, 1)
+	assert.Contains(t, profileInfo.Tags, "TestTagKey")
+	assert.Equal(t, "TestTagValue", profileInfo.Tags["TestTagKey"].Get())
+}
+
+
+func Test_GetAllProfileInfoCompatibility(t *testing.T) {
+	nodeYaml, err := ParseNodeYaml([]byte(`
+nodeprofiles:
+  test_profile.cluster.example.net:
+    kernel version: v0.0.1
+    kernel override: v0.0.1-rc2
+    kernel args: init=/bin/sh
+
+    ipmi ipaddr: 127.0.0.1
+    ipmi netmask: 255.255.255.0
+    ipmi port: 163
+    ipmi gateway: 127.0.0.254
+    ipmi username: root
+    ipmi password: calvin
+    ipmi interface: ipmi0
+    ipmi write: true
+
+    keys:
+      TestKeyKey: TestKeyValue`))
+	assert.NoError(t, err)
+	allProfileInfo, _ := nodeYaml.GetAllProfileInfo()
+	profileInfo := allProfileInfo[0]
+	
+	assert.Equal(t, "v0.0.1-rc2", profileInfo.Kernel.Override.Get())
+	assert.Equal(t, "init=/bin/sh", profileInfo.Kernel.Args.Get())
+
+	assert.Equal(t, "127.0.0.1", profileInfo.Ipmi.Ipaddr.Get())
+	assert.Equal(t, "255.255.255.0", profileInfo.Ipmi.Netmask.Get())
+	assert.Equal(t, "163", profileInfo.Ipmi.Port.Get())
+	assert.Equal(t, "127.0.0.254", profileInfo.Ipmi.Gateway.Get())
+	assert.Equal(t, "root", profileInfo.Ipmi.UserName.Get())
+	assert.Equal(t, "calvin", profileInfo.Ipmi.Password.Get())
+	assert.Equal(t, "ipmi0", profileInfo.Ipmi.Interface.Get())
+	assert.True(t, profileInfo.Ipmi.Write.GetB())
+
+	assert.Equal(t, "TestKeyValue", profileInfo.Tags["TestKeyKey"].Get())
+}
+
+
+func Test_GetAllProfileInfoCompatibilityPrecedence(t *testing.T) {
+	nodeYaml, err := ParseNodeYaml([]byte(`
+nodeprofiles:
+  test_node.cluster.example.net:
+    kernel version: v0.0.1
+    kernel override: v0.0.1-rc2
+    kernel args: init=/bin/sh
+
+    ipmi ipaddr: 127.0.0.1
+    ipmi netmask: 255.255.255.0
+    ipmi port: 163
+    ipmi gateway: 127.0.0.254
+    ipmi username: root
+    ipmi password: calvin
+    ipmi interface: ipmi0
+    ipmi write: true
+
+    keys:
+      TestKeyKey: TestKeyValue
+
+    kernel:
+      override: v0.2.1-rc1
+      args: init=/bin/bash
+
+    ipmi:
+      ipaddr: 127.0.2.1
+      netmask: 255.255.0.0
+      port: 8163
+      gateway: 127.0.2.254
+      username: admin
+      password: hobbes
+      interface: ipmi1
+      write: false
+
+    tags:
+      TestTagKey: TestTagValue`))
+	assert.NoError(t, err)
+	allProfileInfo, _ := nodeYaml.GetAllProfileInfo()
+	profileInfo := allProfileInfo[0]
+	
+	assert.Equal(t, "v0.2.1-rc1", profileInfo.Kernel.Override.Get())
+	assert.Equal(t, "init=/bin/bash", profileInfo.Kernel.Args.Get())
+
+	assert.Equal(t, "127.0.2.1", profileInfo.Ipmi.Ipaddr.Get())
+	assert.Equal(t, "255.255.0.0", profileInfo.Ipmi.Netmask.Get())
+	assert.Equal(t, "8163", profileInfo.Ipmi.Port.Get())
+	assert.Equal(t, "127.0.2.254", profileInfo.Ipmi.Gateway.Get())
+	assert.Equal(t, "admin", profileInfo.Ipmi.UserName.Get())
+	assert.Equal(t, "hobbes", profileInfo.Ipmi.Password.Get())
+	assert.Equal(t, "ipmi1", profileInfo.Ipmi.Interface.Get())
+	assert.False(t, profileInfo.Ipmi.Write.GetB())
+
+	assert.Len(t, profileInfo.Tags, 2)
+	assert.Contains(t, profileInfo.Tags, "TestKeyKey")
+	assert.Equal(t, "TestKeyValue", profileInfo.Tags["TestKeyKey"].Get())
+	assert.Contains(t, profileInfo.Tags, "TestTagKey")
+	assert.Equal(t, "TestTagValue", profileInfo.Tags["TestTagKey"].Get())
+}
+
+
+// Test sorting of nodes
+// Test sorting of profiles

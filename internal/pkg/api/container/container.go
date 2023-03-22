@@ -61,7 +61,7 @@ func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 			}
 
 			// TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
-			profiles, _ := nodeDB.FindAllProfiles()
+			profiles, _ := nodeDB.GetAllProfileInfo()
 			for _, profile := range profiles {
 				wwlog.Debug("Looking for profile default: %s", profile.Id.Get())
 				if profile.Id.Get() == "default" {
@@ -228,7 +228,7 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		}
 
 		// TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
-		profiles, _ := nodeDB.FindAllProfiles()
+		profiles, _ := nodeDB.GetAllProfileInfo()
 		for _, profile := range profiles {
 			wwlog.Debug("Looking for profile default: %s", profile.Id.Get())
 			if profile.Id.Get() == "default" {
