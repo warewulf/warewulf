@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a missing `.ww` extension to the `70-ww4-netname.rules` template in the
   wwinit overlay.
 - Restrict access to `/warewulf/config` to root only. (#728, #742)
+- Add support for resolving absolute path automatically. #493
 
 ### Changed
 
