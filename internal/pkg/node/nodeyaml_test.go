@@ -49,14 +49,9 @@ nodes:
 
 
 func Test_GetAllNodeInfoDefaults(t *testing.T) {
-	file, writeErr := writeTestConfigFile(`
+	nodeYaml, err := ParseNodeYaml([]byte(`
 nodes:
-  test_node: {}`)
-	if file != nil {
-		defer os.Remove(file.Name())
-	}
-	assert.NoError(t, writeErr)
-	nodeYaml, err := ReadNodeYamlFromFile(file.Name())
+  test_node: {}`))
 	assert.NoError(t, err)
 	allNodeInfo, _ := nodeYaml.GetAllNodeInfo()
 	nodeInfo := allNodeInfo[0]
@@ -96,7 +91,7 @@ nodes:
 
 
 func Test_GetAllNodeInfoFull(t *testing.T) {
-	file, writeErr := writeTestConfigFile(`
+	nodeYaml, err := ParseNodeYaml([]byte(`
 nodes:
   test_node.cluster.example.net:
     comment: A single node
@@ -145,12 +140,7 @@ nodes:
           ib0TagKey: ib0TagValue
     primary network: fabric
     tags:
-      TestTagKey: TestTagValue`)
-	if file != nil {
-		defer os.Remove(file.Name())
-	}
-	assert.NoError(t, writeErr)
-	nodeYaml, err := ReadNodeYamlFromFile(file.Name())
+      TestTagKey: TestTagValue`))
 	assert.NoError(t, err)
 	allNodeInfo, _ := nodeYaml.GetAllNodeInfo()
 	nodeInfo := allNodeInfo[0]
@@ -204,16 +194,11 @@ nodes:
 }
 
 func Test_GetAllNodeInfoDefaultNetDev(t *testing.T) {
-	file, writeErr := writeTestConfigFile(`
+	nodeYaml, err := ParseNodeYaml([]byte(`
 nodes:
   test_node:
     network devices:
-      default: {}`)
-	if file != nil {
-		defer os.Remove(file.Name())
-	}
-	assert.NoError(t, writeErr)
-	nodeYaml, err := ReadNodeYamlFromFile(file.Name())
+      default: {}`))
 	assert.NoError(t, err)
 	allNodeInfo, _ := nodeYaml.GetAllNodeInfo()
 	nodeInfo := allNodeInfo[0]
@@ -224,7 +209,7 @@ nodes:
 }
 
 func Test_GetAllNodeInfoCompatibility(t *testing.T) {
-	file, writeErr := writeTestConfigFile(`
+	nodeYaml, err := ParseNodeYaml([]byte(`
 nodes:
   test_node.cluster.example.net:
     kernel version: v0.0.1
@@ -241,12 +226,7 @@ nodes:
     ipmi write: true
 
     keys:
-      TestKeyKey: TestKeyValue`)
-	if file != nil {
-		defer os.Remove(file.Name())
-	}
-	assert.NoError(t, writeErr)
-	nodeYaml, err := ReadNodeYamlFromFile(file.Name())
+      TestKeyKey: TestKeyValue`))
 	assert.NoError(t, err)
 	allNodeInfo, _ := nodeYaml.GetAllNodeInfo()
 	nodeInfo := allNodeInfo[0]
@@ -268,7 +248,7 @@ nodes:
 
 
 func Test_GetAllNodeInfoCompatibilityPrecedence(t *testing.T) {
-	file, writeErr := writeTestConfigFile(`
+	nodeYaml, err := ParseNodeYaml([]byte(`
 nodes:
   test_node.cluster.example.net:
     kernel version: v0.0.1
@@ -302,12 +282,7 @@ nodes:
       write: false
 
     tags:
-      TestTagKey: TestTagValue`)
-	if file != nil {
-		defer os.Remove(file.Name())
-	}
-	assert.NoError(t, writeErr)
-	nodeYaml, err := ReadNodeYamlFromFile(file.Name())
+      TestTagKey: TestTagValue`))
 	assert.NoError(t, err)
 	allNodeInfo, _ := nodeYaml.GetAllNodeInfo()
 	nodeInfo := allNodeInfo[0]
@@ -333,7 +308,7 @@ nodes:
 
 
 func Test_GetAllNodeInfoFullProfile(t *testing.T) {
-	file, writeErr := writeTestConfigFile(`
+	nodeYaml, err := ParseNodeYaml([]byte(`
 nodes:
   test_node.cluster.example.net:
     profiles:
@@ -384,12 +359,7 @@ nodeprofiles:
           ib0TagKey: ib0TagValue
     primary network: fabric
     tags:
-      TestTagKey: TestTagValue`)
-	if file != nil {
-		defer os.Remove(file.Name())
-	}
-	assert.NoError(t, writeErr)
-	nodeYaml, err := ReadNodeYamlFromFile(file.Name())
+      TestTagKey: TestTagValue`))
 	assert.NoError(t, err)
 	allNodeInfo, _ := nodeYaml.GetAllNodeInfo()
 	nodeInfo := allNodeInfo[0]

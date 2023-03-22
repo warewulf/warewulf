@@ -32,15 +32,21 @@ func ReadNodeYaml() (NodeYaml, error) {
 // ReadNodeYamlFromFile returns a NodeYaml representing the current
 // state of nodes.conf as read from the specified configFile path.
 func ReadNodeYamlFromFile(configFile string) (NodeYaml, error) {
-	var nodeYaml NodeYaml
 	wwlog.Verbose("Opening node configuration file: %s", configFile)
 	fileData, err := os.ReadFile(configFile)
 	if err != nil {
-		return nodeYaml, err
+		return NodeYaml{}, err
 	}
+	return ParseNodeYaml(fileData)
+}
 
+
+// ParseNodeYaml returns a NodeYaml unmarshalled from the input yaml
+// document.
+func ParseNodeYaml(fileData []byte) (NodeYaml, error) {
+	var nodeYaml NodeYaml
 	wwlog.Debug("Unmarshaling the node configuration")
-	err = yaml.Unmarshal(fileData, &nodeYaml)
+	err := yaml.Unmarshal(fileData, &nodeYaml)
 	if err != nil {
 		return nodeYaml, err
 	}
