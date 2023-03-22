@@ -103,7 +103,7 @@ default running kernel from the controller node and set both in the
 
 .. code-block:: bash
 
-   sudo wwctl container import docker://warewulf/centos-7 centos-7 --setdefault
+   sudo wwctl container import docker://ghcr.io/hpcng/warewulf-centos:7 centos-7 --setdefault
    sudo wwctl kernel import $(uname -r) --setdefault
 
 Set up the default node profile

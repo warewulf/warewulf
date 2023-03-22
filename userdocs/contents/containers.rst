@@ -48,7 +48,7 @@ Here is an example of importing from Docker Hub.
 
 .. code-block:: console
 
-   # wwctl container import docker://warewulf/rocky rocky-8
+   # wwctl container import docker://ghcr.io/hpcng/warewulf-rockylinux:8 rocky-8
    Getting image source signatures
    Copying blob d7f16ed6f451 done
    Copying config da2ca70704 done

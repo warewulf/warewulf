@@ -8,22 +8,23 @@ the installation process of multiple methods:
 Binary RPMs
 ===========
 
-While the Warewulf project does not build binary RPMs, you can obtain
-them from `CIQ <https://www.ctrliq.com/>`_ and use them for
-non-production use from their public YUM and DNF repositories at:
-`https://repo.ctrliq.com <https://repo.ctrliq.com/>`_
+The Warewulf project builds binary RPMs as part of its CI/CD
+process. You can obtain them from the `GitHub releases
+<https://github.com/hpcng/warewulf/releases>`_ page.
 
-This is the easiest method to install Warewulf and can be done as follows:
+Rocky Linux 8
+-------------
 
 .. code-block:: console
 
-   # yum install -y https://repo.ctrliq.com/rhel/8/ciq-release.rpm
-   # yum install -y warewulf
+   # dnf install https://github.com/hpcng/warewulf/releases/download/v4.4.0/warewulf-4.4.0-1.git_afcdb21.el8.x86_64.rpm
 
-> note: as mentioned, these binaries are part of CIQ's commercial
-support offering but they can be used for non-production and testing
-uses. If you are interested in using these binaries for production,
-please contact CIQ at: `info@ctrliq.com <mailto:info@ctrliq.com>`_.
+openSuse Leap
+-------------
+
+.. code-block:: console
+
+   # zypper install https://github.com/hpcng/warewulf/releases/download/v4.4.0/warewulf-4.4.0-1.git_afcdb21.suse.lp153.x86_64.rpm
 
 Compiled Source code
 ====================

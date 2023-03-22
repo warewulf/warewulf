@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The correct header is now displayed when `-al` flags are specified to overlay
   list.
+- Added a missing `.ww` extension to the `70-ww4-netname.rules` template in the
+  wwinit overlay.
+- Restrict access to `/warewulf/config` to root only. (#728, #742)
+- Add support for resolving absolute path automatically. #493
 
 ### Changed
 
@@ -27,6 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
      and an IP configuration derived from the network configuration of the host
 - All paths can now be configured in `warewulf.conf`, check the paths section of of 
    `wwctl --emptyconf genconfig warewulfconf print` for the available paths.
+- Added experimental dnsmasq support.
+
 ## [4.4.0] 2023-01-18
 
 ### Added
@@ -43,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Boolean attributes now correctly account for profile and default
   values. #630
 - Kernel version is shown correctly for symlink'd kernels #640
+- Changing a profile always adds an empty default interface. #661
 
 ## [4.4.0rc3] 2022-12-23
 

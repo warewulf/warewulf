@@ -15,7 +15,6 @@ import (
 
 // NodeSet is the wwapiv1 implmentation for updating nodeinfo fields.
 func ProfileSet(set *wwapiv1.NodeSetParameter) (err error) {
-
 	if set == nil {
 		return fmt.Errorf("NodeAddParameter is nil")
 	}
@@ -85,6 +84,10 @@ func ProfileSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (node
 	for _, p := range profiles {
 		if util.InSlice(set.NodeNames, p.Id.Get()) {
 			wwlog.Verbose("Evaluating profile: %s", p.Id.Get())
+			// Fix issue: https://github.com/hpcng/warewulf/issues/661
+			if p.Id.Get() == "default" && len(p.NetDevs) == 0 {
+				set.NetdevDelete = p.Id.Get()
+			}
 			p.SetFrom(&pConf)
 			if set.NetdevDelete != "" {
 				if _, ok := p.NetDevs[set.NetdevDelete]; !ok {
