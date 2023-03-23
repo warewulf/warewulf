@@ -29,8 +29,7 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 	sort.Strings(nodeGet.Nodes)
 	if nodeGet.Type == wwapiv1.GetNodeList_Simple {
 		nodeList.Output = append(nodeList.Output,
-			fmt.Sprintf("%-22s %-26s %s", "NODE NAME", "PROFILES", "NETWORK"))
-		nodeList.Output = append(nodeList.Output, (strings.Repeat("=", 80)))
+			fmt.Sprintf("%s=%s=%s", "NODE NAME", "PROFILES", "NETWORK"))
 		for _, n := range node.FilterByName(nodes, nodeGet.Nodes) {
 			var netNames []string
 			for k := range n.NetDevs {
@@ -38,33 +37,31 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 			}
 			sort.Strings(netNames)
 			nodeList.Output = append(nodeList.Output,
-				fmt.Sprintf("%-22s %-26s %s", n.Id.Print(), n.Profiles.Print(), strings.Join(netNames, ", ")))
+				fmt.Sprintf("%s=%s=%s", n.Id.Print(), n.Profiles.Print(), strings.Join(netNames, ", ")))
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_Network {
 		nodeList.Output = append(nodeList.Output,
-			fmt.Sprintf("%-22s %-8s %-18s %-15s %-15s %-15s", "NODE NAME", "NAME", "HWADDR", "IPADDR", "GATEWAY", "DEVICE"),
-			strings.Repeat("=", 90))
+			fmt.Sprintf("%s=%s=%s=%s=%s=%s", "NODE NAME", "NAME", "HWADDR", "IPADDR", "GATEWAY", "DEVICE"))
 		for _, n := range node.FilterByName(nodes, nodeGet.Nodes) {
 			if len(n.NetDevs) > 0 {
 				for name := range n.NetDevs {
 					nodeList.Output = append(nodeList.Output,
-						fmt.Sprintf("%-22s %-8s %-18s %-15s %-15s %-15s", n.Id.Print(), name,
+						fmt.Sprintf("%s=%s=%s=%s=%s=%s", n.Id.Print(), name,
 							n.NetDevs[name].Hwaddr.Print(),
 							n.NetDevs[name].Ipaddr.Print(),
 							n.NetDevs[name].Gateway.Print(),
 							n.NetDevs[name].Device.Print()))
 				}
 			} else {
-				fmt.Printf("%-22s %-6s %-18s %-15s %-15s", n.Id.Print(), "--", "--", "--", "--")
+				fmt.Printf("%s=%s=%s=%s=%s=%s", n.Id.Print(), "--", "--", "--", "--", "--")
 			}
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_Ipmi {
 		nodeList.Output = append(nodeList.Output,
-			fmt.Sprintf("%-22s %-16s %-10s %-20s %-14s", "NODE NAME", "IPMI IPADDR", "IPMI PORT", "IPMI USERNAME", "IPMI INTERFACE"),
-			strings.Repeat("=", 98))
+			fmt.Sprintf("%s=%s=%s=%s=%s", "NODE NAME", "IPMI IPADDR", "IPMI PORT", "IPMI USERNAME", "IPMI INTERFACE"))
 		for _, n := range node.FilterByName(nodes, nodeGet.Nodes) {
 			nodeList.Output = append(nodeList.Output,
-				fmt.Sprintf("%-22s %-16s %-10s %-20s %-14s", n.Id.Print(),
+				fmt.Sprintf("%s=%s=%s=%s=%s", n.Id.Print(),
 					n.Ipmi.Ipaddr.Print(),
 					n.Ipmi.Port.Print(),
 					n.Ipmi.UserName.Print(),
@@ -72,19 +69,18 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_Long {
 		nodeList.Output = append(nodeList.Output,
-			fmt.Sprintf("%-22s %-16s %-16s %s", "NODE NAME", "KERNEL OVERRIDE", "CONTAINER", "OVERLAYS (S/R)"),
-			strings.Repeat("=", 85))
+			fmt.Sprintf("%s=%s=%s=%s", "NODE NAME", "KERNEL OVERRIDE", "CONTAINER", "OVERLAYS (S/R)"))
 		for _, n := range node.FilterByName(nodes, nodeGet.Nodes) {
 			nodeList.Output = append(nodeList.Output,
-				fmt.Sprintf("%-22s %-16s %-16s %s", n.Id.Print(),
+				fmt.Sprintf("%s=%s=%s=%s", n.Id.Print(),
 					n.Kernel.Override.Print(),
 					n.ContainerName.Print(),
 					n.SystemOverlay.Print()+"/"+n.RuntimeOverlay.Print()))
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_All {
+		nodeList.Output = append(nodeList.Output,
+			fmt.Sprintf("%s=%s=%s=%s", "NODE", "FIELD", "PROFILE", "VALUE"))
 		for _, n := range node.FilterByName(nodes, nodeGet.Nodes) {
-			nodeList.Output = append(nodeList.Output,
-				fmt.Sprintf("%-20s %-18s %-12s %s", "NODE", "FIELD", "PROFILE", "VALUE"), strings.Repeat("=", 85))
 			nType := reflect.TypeOf(n)
 			nVal := reflect.ValueOf(n)
 			nConfType := reflect.TypeOf(node.NodeConf{})
@@ -101,12 +97,12 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 					fieldSource = entr.Source()
 					fieldVal = entr.Print()
 					nodeList.Output = append(nodeList.Output,
-						fmt.Sprintf("%-20s %-18s %-12s %s", n.Id.Print(), fieldName, fieldSource, fieldVal))
+						fmt.Sprintf("%s=%s=%s=%s", n.Id.Print(), fieldName, fieldSource, fieldVal))
 				} else if nType.Field(i).Type == reflect.TypeOf(map[string]*node.Entry{}) {
 					entrMap := nVal.Field(i).Interface().(map[string]*node.Entry)
 					for key, val := range entrMap {
 						nodeList.Output = append(nodeList.Output,
-							fmt.Sprintf("%-20s %-18s %-12s %s", n.Id.Print(), key, val.Source(), val.Print()))
+							fmt.Sprintf("%s=%s=%s=%s", n.Id.Print(), key, val.Source(), val.Print()))
 					}
 				} else if nType.Field(i).Type == reflect.TypeOf(map[string]*node.NetDevEntry{}) {
 					netDevs := nVal.Field(i).Interface().(map[string]*node.NetDevEntry)
@@ -132,7 +128,7 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 								// only print fields with lopt
 								if netConfField.Tag.Get("lopt") != "" {
 									nodeList.Output = append(nodeList.Output,
-										fmt.Sprintf("%-20s %-18s %-12s %s", n.Id.Print(), fieldName, fieldSource, fieldVal))
+										fmt.Sprintf("%s=%s=%s=%s", n.Id.Print(), fieldName, fieldSource, fieldVal))
 								}
 							} else if netInfoType.Field(j).Type == reflect.TypeOf(map[string]*node.Entry{}) {
 								for key, val := range netInfoVal.Field(j).Interface().(map[string]*node.Entry) {
@@ -140,7 +136,7 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 									fieldSource = val.Source()
 									fieldVal = val.Print()
 									nodeList.Output = append(nodeList.Output,
-										fmt.Sprintf("%-20s %-18s %-12s %s", n.Id.Print(), keyfieldName, fieldSource, fieldVal))
+										fmt.Sprintf("%s=%s=%s=%s", n.Id.Print(), keyfieldName, fieldSource, fieldVal))
 								}
 							}
 
@@ -162,14 +158,14 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 							fieldSource = entr.Source()
 							fieldVal = entr.Print()
 							nodeList.Output = append(nodeList.Output,
-								fmt.Sprintf("%-20s %-18s %-12s %s", n.Id.Print(), fieldName, fieldSource, fieldVal))
+								fmt.Sprintf("%s=%s=%s=%s", n.Id.Print(), fieldName, fieldSource, fieldVal))
 						} else if nestInfoType.Elem().Field(j).Type == reflect.TypeOf(map[string]*node.Entry{}) {
 							for key, val := range nestInfoVal.Elem().Field(j).Interface().(map[string]*node.Entry) {
 								fieldName = fieldName + ":" + key
 								fieldSource = val.Source()
 								fieldVal = val.Print()
 								nodeList.Output = append(nodeList.Output,
-									fmt.Sprintf("%-20s %-18s %-12s %s", n.Id.Print(), fieldName, fieldSource, fieldVal))
+									fmt.Sprintf("%s=%s=%s=%s", n.Id.Print(), fieldName, fieldSource, fieldVal))
 							}
 						}
 					}
@@ -177,7 +173,6 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 
 			}
 		}
-
 	}
 	return
 }

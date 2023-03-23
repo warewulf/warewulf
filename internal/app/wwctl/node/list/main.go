@@ -1,8 +1,9 @@
 package list
 
 import (
-	"fmt"
+	"strings"
 
+	"github.com/hpcng/warewulf/internal/app/wwctl/helper"
 	apinode "github.com/hpcng/warewulf/internal/pkg/api/node"
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/spf13/cobra"
@@ -23,8 +24,12 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		req.Type = wwapiv1.GetNodeList_Long
 	}
 	nodeInfo, err := apinode.NodeList(&req)
-	for _, str := range nodeInfo.Output {
-		fmt.Printf("%s\n", str)
+	if len(nodeInfo.Output) > 0 {
+		ph := helper.NewPrintHelper(strings.Split(nodeInfo.Output[0], "="))
+		for _, val := range nodeInfo.Output[1:] {
+			ph.Append(strings.Split(val, "="))
+		}
+		ph.Render()
 	}
 	return
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -18,7 +19,6 @@ import (
 )
 
 func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
-
 	if cbp == nil {
 		return fmt.Errorf("ContainerBuildParameter is nil")
 	}
@@ -60,7 +60,7 @@ func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 				return
 			}
 
-			//TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
+			// TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
 			profiles, _ := nodeDB.FindAllProfiles()
 			for _, profile := range profiles {
 				wwlog.Debug("Looking for profile default: %s", profile.Id.Get())
@@ -85,7 +85,6 @@ func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 }
 
 func ContainerDelete(cdp *wwapiv1.ContainerDeleteParameter) (err error) {
-
 	if cdp == nil {
 		return fmt.Errorf("ContainerDeleteParameter is nil")
 	}
@@ -132,7 +131,6 @@ ARG_LOOP:
 }
 
 func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName string, err error) {
-
 	if cip == nil {
 		err = fmt.Errorf("NodeAddParameter is nil")
 		return
@@ -176,6 +174,14 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 			// TODO: mhink - return was missing here. Was that deliberate?
 		}
 
+		if util.IsFile(cip.Source) && !filepath.IsAbs(cip.Source) {
+			cip.Source, err = filepath.Abs(cip.Source)
+			if err != nil {
+				err = fmt.Errorf("when resolving absolute path of %s, err: %v", cip.Source, err)
+				wwlog.Error(err.Error())
+				return
+			}
+		}
 		err = container.ImportDocker(cip.Source, cip.Name, sCtx)
 		if err != nil {
 			err = fmt.Errorf("could not import image: %s", err.Error())
@@ -221,7 +227,7 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 			return
 		}
 
-		//TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
+		// TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
 		profiles, _ := nodeDB.FindAllProfiles()
 		for _, profile := range profiles {
 			wwlog.Debug("Looking for profile default: %s", profile.Id.Get())
@@ -332,7 +338,6 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 }
 
 func ContainerShow(csp *wwapiv1.ContainerShowParameter) (response *wwapiv1.ContainerShowResponse, err error) {
-
 	containerName := csp.ContainerName
 
 	if !container.ValidName(containerName) {

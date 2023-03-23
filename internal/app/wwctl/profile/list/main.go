@@ -1,8 +1,9 @@
 package list
 
 import (
-	"fmt"
+	"strings"
 
+	"github.com/hpcng/warewulf/internal/app/wwctl/helper"
 	apiprofile "github.com/hpcng/warewulf/internal/pkg/api/profile"
 
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
@@ -18,8 +19,13 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	if err != nil {
 		return
 	}
-	for _, str := range profileInfo.Output {
-		fmt.Printf("%s\n", str)
+
+	if len(profileInfo.Output) > 0 {
+		ph := helper.NewPrintHelper(strings.Split(profileInfo.Output[0], "="))
+		for _, val := range profileInfo.Output[1:] {
+			ph.Append(strings.Split(val, "="))
+		}
+		ph.Render()
 	}
 	return
 }
