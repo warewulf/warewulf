@@ -88,6 +88,11 @@ GO_TOOLS_VENDOR := $(addprefix vendor/, $(GO_TOOLS))
 GOLANGCI_LINT := $(TOOLS_BIN)/golangci-lint
 GOLANGCI_LINT_VERSION := v1.50.0
 
+# helper functions
+godeps=$(shell go list -deps -f '{{if not .Standard}}{{ $$dep := . }}{{range .GoFiles}}{{$$dep.Dir}}/{{.}} {{end}}{{end}}' $(1) | sed "s%${PWD}/%%g")
+WWCTL_DEPS:=$(call godeps,cmd/wwctl/main.go)
+WWCLIENT_DEPS:=$(call godeps,cmd/wwclient/main.go)
+
 # use GOPROXY for older git clients and speed up downloads
 GOPROXY ?= https://proxy.golang.org
 export GOPROXY
@@ -96,7 +101,7 @@ export GOPROXY
 WW_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
 # Default target
-all: config vendor wwctl wwclient bash_completion.d man_pages config_defaults print_defaults wwapid wwapic wwapird print_mnts
+all: config vendor wwctl wwclient man_pages wwapid wwapic wwapird
 
 # Validate source and build all packages
 build: lint test-it vet all
@@ -178,7 +183,7 @@ files: all
 	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapic.conf || install -m 644 etc/wwapic.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapid.conf || install -m 644 etc/wwapid.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapird.conf || install -m 644 etc/wwapird.conf $(DESTDIR)$(WWCONFIGDIR)
-	test -f $(DESTDIR)$(WWCONFIGDIR)/defaults.conf || ./print_defaults > $(DESTDIR)$(WWCONFIGDIR)/defaults.conf
+	test -f $(DESTDIR)$(DATADIR)/warewulf/defaults.conf || ./wwctl --emptyconf genconfig defaults > $(DESTDIR)$(DATADIR)/warewulf/defaults.conf
 	cp -r etc/examples $(DESTDIR)$(WWCONFIGDIR)/
 	cp -r etc/ipxe $(DESTDIR)$(WWCONFIGDIR)/
 	cp -r overlays/* $(DESTDIR)$(WWOVERLAYDIR)/
@@ -191,13 +196,14 @@ files: all
 	chmod 600 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/warewulf/config.ww
 	chmod 750 $(DESTDIR)$(WWOVERLAYDIR)/host
 	install -m 0755 wwctl $(DESTDIR)$(BINDIR)
+	install -m 0755 wwclient $(DESTDIR)$(WWOVERLAYDIR)/wwinit/$(WWCLIENTDIR)/wwclient
 	install -m 0755 wwapic $(DESTDIR)$(BINDIR)
 	install -m 0755 wwapid $(DESTDIR)$(BINDIR)
 	install -m 0755 wwapird $(DESTDIR)$(BINDIR)
 	install -m 0644 include/firewalld/warewulf.xml $(DESTDIR)$(FIREWALLDDIR)
 	install -m 0644 include/systemd/warewulfd.service $(DESTDIR)$(SYSTEMDDIR)
 	install -m 0644 LICENSE.md $(DESTDIR)$(WWDOCDIR)
-	cp bash_completion.d/warewulf $(DESTDIR)$(BASHCOMPDIR)
+	./wwctl genconfig completions > $(DESTDIR)$(BASHCOMPDIR)/wwctl
 	cp man_pages/*.1* $(DESTDIR)$(MANDIR)/man1/
 	cp man_pages/*.5* $(DESTDIR)$(MANDIR)/man5/
 	install -m 0644 staticfiles/README-ipxe.md $(DESTDIR)$(WWDATADIR)/ipxe
@@ -210,52 +216,27 @@ init:
 	cp -r tftpboot/* $(WWTFTPDIR)/ipxe/
 	restorecon -r $(WWTFTPDIR)
 
-wwctl:
-	cd cmd/wwctl; GOOS=linux go build -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o ../../wwctl
+wwctl: $(WWCTL_DEPS)
+	@echo Building "$@"
+	@cd cmd/wwctl; GOOS=linux go build -mod vendor -tags "$(WW_GO_BUILD_TAGS)" \
+	-ldflags "-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=$(SYSCONFDIR)/warewulf/warewulf.conf'" \
+	-o ../../wwctl
 
-wwclient:
-	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags "-extldflags -static \
+wwclient: $(WWCLIENT_DEPS)
+	@echo Building "$@"
+	@cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags "-extldflags -static \
 	 -X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=/etc/warewulf/warewulf.conf'" -o ../../wwclient
 
-install_wwclient: wwclient
-	install -m 0755 wwclient $(DESTDIR)$(WWOVERLAYDIR)/wwinit/$(WWCLIENTDIR)/wwclient
-
-bash_completion:
-	cd cmd/bash_completion && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'\
-	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'"\
-	 -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o ../../bash_completion
-
-bash_completion.d: bash_completion
-	install -d -m 0755 bash_completion.d
-	./bash_completion bash_completion.d/warewulf
-
-man_page:
-	cd cmd/man_page && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'\
-	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'"\
-	 -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o ../../man_page
-
-man_pages: man_page
+man_pages: wwctl
 	install -d man_pages
-	./man_page ./man_pages
+	./wwctl --emptyconf genconfig man man_pages 
 	cp docs/man/man5/*.5 ./man_pages/
 	cd man_pages; for i in wwctl*1 *.5; do echo "Compressing manpage: $$i"; gzip --force $$i; done
-
-config_defaults: vendor cmd/config_defaults/config_defaults.go
-	cd cmd/config_defaults && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'\
-	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'"\
-	 -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o ../../config_defaults
-
-print_defaults: vendor cmd/print_defaults/print_defaults.go
-	cd cmd/print_defaults && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'" -o ../../print_defaults
-
 
 update_configuration: vendor cmd/update_configuration/update_configuration.go
 	cd cmd/update_configuration && go build -ldflags="-X 'github.com/hpcng/warewulf/internal/pkg/warewulfconf.ConfigFile=./etc/warewulf.conf'\
 	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'"\
 	 -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o ../../update_configuration
-
-warewulfconf: config_defaults
-	./config_defaults
 
 dist: vendor config
 	rm -rf .dist/$(WAREWULF)-$(VERSION) $(WAREWULF)-$(VERSION).tar.gz
@@ -263,6 +244,12 @@ dist: vendor config
 	rsync -a --exclude=".*" --exclude "*~" * .dist/$(WAREWULF)-$(VERSION)/
 	cd .dist; tar -czf ../$(WAREWULF)-$(VERSION).tar.gz $(WAREWULF)-$(VERSION)
 	rm -rf .dist
+
+reference: wwctl
+	./wwctl --emptyconf genconfig reference userdocs/reference/
+
+latexpdf: reference
+	make -C userdocs latexpdf
 
 ## wwapi generate code from protobuf. Requires protoc and protoc-grpc-gen-gateway to generate code.
 ## To setup latest protoc:
@@ -274,7 +261,7 @@ dist: vendor config
 ##    sudo make install
 ##    sudo ldconfig # refresh shared library cache.
 ## To setup protoc-gen-grpc-gateway, see https://github.com/grpc-ecosystem/grpc-gateway
-proto:
+proto: 
 	rm -rf internal/pkg/api/routes/wwapiv1/
 	protoc -I internal/pkg/api/routes/v1 -I=. \
 		--grpc-gateway_out=. \
@@ -297,22 +284,17 @@ contclean:
 	rm -f wwctl
 	rm -rf .dist
 	rm -f $(WAREWULF)-$(VERSION).tar.gz
-	rm -f bash_completion
-	rm -rf bash_completion.d
-	rm -f man_page
 	rm -rf man_pages
 	rm -f warewulf.spec
 	rm -f config
 	rm -f Defaults.mk
 	rm -rf $(TOOLS_DIR)
-	rm -f config_defaults
 	rm -f update_configuration
-	rm -f print_defaults
 	rm -f etc/wwapi{c,d,rd}.conf
 
 clean: contclean
 	rm -rf vendor
 
-install: files install_wwclient
+install: files
 
 debinstall: files debfiles

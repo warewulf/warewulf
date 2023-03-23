@@ -10,23 +10,26 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	baseCmd = &cobra.Command{
+// Holds the variables which are needed in CobraRunE
+type variables struct {
+	netName  string
+	nodeConf node.NodeConf
+}
+
+// Returns the newly created command
+func GetCommand() *cobra.Command {
+	vars := variables{}
+	vars.nodeConf = node.NewConf()
+	baseCmd := &cobra.Command{
 		DisableFlagsInUseLine: true,
 		Use:                   "add [OPTIONS] NODENAME",
 		Short:                 "Add new node to Warewulf",
 		Long:                  "This command will add a new node named NODENAME to Warewulf.",
-		RunE:                  CobraRunE,
+		RunE:                  CobraRunE(&vars),
 		Args:                  cobra.MinimumNArgs(1),
 	}
-	NodeConf node.NodeConf
-	NetName  string
-)
-
-func init() {
-	NodeConf = node.NewConf()
-	NodeConf.CreateFlags(baseCmd, []string{})
-	baseCmd.PersistentFlags().StringVar(&NetName, "netname", "", "Set network name for network options")
+	vars.nodeConf.CreateFlags(baseCmd, []string{"tagdel", "nettagdel", "ipmitagdel"})
+	baseCmd.PersistentFlags().StringVar(&vars.netName, "netname", "", "Set network name for network options")
 
 	// register the command line completions
 	if err := baseCmd.RegisterFlagCompletionFunc("container", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -65,9 +68,6 @@ func init() {
 		log.Println(err)
 	}
 
-}
-
-// GetRootCommand returns the root cobra.Command for the application.
-func GetCommand() *cobra.Command {
+	// GetRootCommand returns the root cobra.Command for the application.
 	return baseCmd
 }

@@ -6,20 +6,20 @@ import (
 	"path"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
 /*
 Reads a file file from the host fs. If the file has nor '/' prefix
-the path is relative to SYSCONFDIR.
-Templates in the file are no evaluated.
+the path is relative to Paths.SysconfdirTemplates in the file are no evaluated.
 */
 func templateFileInclude(inc string) string {
+	conf := warewulfconf.New()
 	if !strings.HasPrefix(inc, "/") {
-		inc = path.Join(buildconfig.SYSCONFDIR(), "warewulf", inc)
+		inc = path.Join(conf.Paths.Sysconfdir, "warewulf", inc)
 	}
 	wwlog.Debug("Including file into template: %s", inc)
 	content, err := os.ReadFile(inc)
@@ -35,8 +35,9 @@ is the file to read, the second the abort string
 Templates in the file are no evaluated.
 */
 func templateFileBlock(inc string, abortStr string) (string, error) {
+	conf := warewulfconf.New()
 	if !strings.HasPrefix(inc, "/") {
-		inc = path.Join(buildconfig.SYSCONFDIR(), "warewulf", inc)
+		inc = path.Join(conf.Paths.Sysconfdir, "warewulf", inc)
 	}
 	wwlog.Debug("Including file block into template: %s", inc)
 	readFile, err := os.Open(inc)

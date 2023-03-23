@@ -2,7 +2,6 @@ package configure
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
@@ -17,18 +16,11 @@ nfs server.
 */
 func NFS() error {
 
-	controller, err := warewulfconf.New()
-	if err != nil {
-		wwlog.Error("%s", err)
-		os.Exit(1)
-	}
+	controller := warewulfconf.New()
 
 	if controller.Nfs.Enabled {
-		if err != nil {
-			fmt.Println(err)
-		}
 		if controller.Warewulf.EnableHostOverlay {
-			err = overlay.BuildHostOverlay()
+			err := overlay.BuildHostOverlay()
 			if err != nil {
 				wwlog.Warn("host overlay could not be built: %s", err)
 			}

@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 
 	"gopkg.in/yaml.v2"
@@ -15,6 +15,8 @@ import (
 
 var ConfigFile string
 var DefaultConfig string
+
+var cachedDB NodeYaml
 
 // used as fallback if DefaultConfig can't be read
 var FallBackConf = `---
@@ -37,15 +39,25 @@ defaultnode:
       netmask: 255.255.255.0`
 
 func init() {
+	conf := warewulfconf.New()
 	if ConfigFile == "" {
-		ConfigFile = path.Join(buildconfig.SYSCONFDIR(), "warewulf/nodes.conf")
+		ConfigFile = path.Join(conf.Paths.Sysconfdir, "warewulf/nodes.conf")
 	}
 	if DefaultConfig == "" {
-		DefaultConfig = path.Join(buildconfig.SYSCONFDIR(), "warewulf/defaults.conf")
+		DefaultConfig = path.Join(conf.Paths.Datadir, "warewulf/defaults.conf")
 	}
+	cachedDB.current = false
+	cachedDB.persist = true
 }
 
+/*
+Creates a new nodeDb object from the actual configuration
+*/
 func New() (NodeYaml, error) {
+	if cachedDB.current {
+		wwlog.Debug("Returning cached object")
+		return cachedDB, nil
+	}
 	var ret NodeYaml
 
 	wwlog.Verbose("Opening node configuration file: %s", ConfigFile)
@@ -61,8 +73,38 @@ func New() (NodeYaml, error) {
 	}
 
 	wwlog.Debug("Returning node object")
-
+	cachedDB = ret
+	cachedDB.current = true
 	return ret, nil
+}
+
+/*
+Creates a database object from a given buffer, always create
+a new object, never return the cached one.
+*/
+func TestNew(buffer []byte) (db NodeYaml, err error) {
+	db.NodeProfiles = make(map[string]*NodeConf)
+	db.Nodes = make(map[string]*NodeConf)
+	err = yaml.Unmarshal(buffer, &db)
+	db.persist = false
+	cachedDB = db
+	cachedDB.current = true
+	wwlog.Debug("Created cached object")
+	return
+}
+
+func (config *NodeYaml) DBDump() (buffer []byte) {
+	for _, n := range config.Nodes {
+		n.Flatten()
+	}
+	for _, p := range config.NodeProfiles {
+		p.Flatten()
+	}
+	buffer, err := yaml.Marshal(config)
+	if err != nil {
+		wwlog.Warn("porblems on dumping nodedb: %s", err)
+	}
+	return
 }
 
 /*
@@ -72,12 +114,6 @@ for every node
 */
 func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 	var ret []NodeInfo
-	/*
-		wwconfig, err := warewulfconf.New()
-		if err != nil {
-			return ret, err
-		}
-	*/
 	var defConf map[string]*NodeConf
 	wwlog.Verbose("Opening defaults from file failed %s\n", DefaultConfig)
 	defData, err := os.ReadFile(DefaultConfig)

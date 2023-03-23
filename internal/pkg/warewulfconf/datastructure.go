@@ -2,8 +2,6 @@ package warewulfconf
 
 import (
 	"github.com/creasty/defaults"
-	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
 type ControllerConf struct {
@@ -19,8 +17,10 @@ type ControllerConf struct {
 	Dhcp            *DhcpConf     `yaml:"dhcp"`
 	Tftp            *TftpConf     `yaml:"tftp"`
 	Nfs             *NfsConf      `yaml:"nfs"`
-	MountsContainer []*MountEntry `yaml:"container mounts"`
+	MountsContainer []*MountEntry `yaml:"container mounts" default:"[{\"source\": \"/etc/resolv.conf\", \"dest\": \"/etc/resolv.conf\"}]"`
+	Paths           *BuildConfig  `yaml:"paths"`
 	current         bool
+	readConf        bool
 }
 
 type WarewulfConf struct {
@@ -79,19 +79,9 @@ func (s *NfsConf) Unmarshal(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-func init() {
-	if !util.IsFile(ConfigFile) {
-		wwlog.Error("Configuration file not found: %s", ConfigFile)
-		// fail silently as this also called by bash_completion
-	}
-	_, err := New()
-	if err != nil {
-		wwlog.Error("Could not read Warewulf configuration file: %s", err)
-	}
-}
-
 // Waste processor cycles to make code more readable
 
 func DataStore() string {
+	_ = New()
 	return cachedConf.Warewulf.DataStore
 }
