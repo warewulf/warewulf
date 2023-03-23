@@ -16,6 +16,7 @@ func Test_Add(t *testing.T) {
 		args    []string
 		wantErr bool
 		stdout  string
+		chkout  bool
 		outDb   string
 	}{
 		{name: "single node add",
@@ -39,6 +40,51 @@ nodes:
   n01:
     profiles:
     - foo
+`},
+		{name: "single node add, discoverable true, explicit",
+			args:    []string{"--discoverable=true", "n01"},
+			wantErr: false,
+			stdout:  "",
+			outDb: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes:
+  n01:
+    discoverable: "true"
+    profiles:
+    - default
+`},
+		{name: "single node add, discoverable true with yes",
+			args:    []string{"--discoverable=yes", "n01"},
+			wantErr: false,
+			stdout:  "",
+			outDb: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes:
+  n01:
+    discoverable: "true"
+    profiles:
+    - default
+`},
+		{name: "single node add, discoverable wrong argument",
+			args:    []string{"--discoverable=maybe", "n01"},
+			wantErr: true,
+			stdout:  "",
+			chkout:  false,
+			outDb: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes: {}
+`},
+		{name: "single node add, discoverable false",
+			args:    []string{"--discoverable=false", "n01"},
+			wantErr: false,
+			stdout:  "",
+			outDb: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes:
+  n01:
+    discoverable: "false"
+    profiles:
+    - default
 `},
 		{name: "single node add with Kernel args",
 			args:    []string{"--kernelargs=foo", "n01"},
@@ -94,6 +140,15 @@ nodes:
     network devices:
       default:
         ipaddr: 10.0.0.1
+`},
+		{name: "single node with malformed ipaddr",
+			args:    []string{"--ipaddr=10.0.1", "n01"},
+			wantErr: true,
+			stdout:  "",
+			chkout:  false,
+			outDb: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes: {}
 `},
 		{name: "three nodes with ipaddr",
 			args:    []string{"--ipaddr=10.10.0.1", "n[01-02,03]"},
@@ -212,7 +267,7 @@ WW_INTERNAL: 43
 				t.Errorf("DB dump is wrong, got:'%s'\nwant:'%s'", dump, tt.outDb)
 				t.FailNow()
 			}
-			if buf.String() != tt.stdout {
+			if tt.chkout && buf.String() != tt.stdout {
 				t.Errorf("Got wrong output, got:'%s'\nwant:'%s'", buf.String(), tt.stdout)
 				t.FailNow()
 			}
