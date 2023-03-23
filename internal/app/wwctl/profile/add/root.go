@@ -25,12 +25,13 @@ var (
 	SetForce     bool
 	NetName      string
 	ProfileConf  node.NodeConf
+	Converters   []func() error
 )
 
 // GetRootCommand returns the root cobra.Command for the application.
 func GetCommand() *cobra.Command {
 	ProfileConf = node.NewConf()
-	ProfileConf.CreateFlags(baseCmd,
+	Converters = ProfileConf.CreateFlags(baseCmd,
 		[]string{"ipaddr", "ipaddr6", "ipmiaddr", "profile"})
 	baseCmd.PersistentFlags().StringVar(&NetName, "netname", "", "Set network name for network options")
 	// register the command line completions

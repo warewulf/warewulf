@@ -77,17 +77,38 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			// ignore error as only may occurs under strange circumstances
 			buffer, _ := io.ReadAll(file)
 			err = yaml.Unmarshal(buffer, modifiedNodeMap)
-			if err == nil {
-				nodeList := make([]string, len(nodeMap))
-				i := 0
-				for key := range nodeMap {
-					nodeList[i] = key
-					i++
-				}
-				yes := apiutil.ConfirmationPrompt(fmt.Sprintf("Are you sure you want to modify %d nodes", len(modifiedNodeMap)))
-				if !yes {
+			if err != nil {
+				yes := apiutil.ConfirmationPrompt(fmt.Sprintf("Got following error on parsing: %s, Retry", err))
+				if yes {
+					continue
+				} else {
 					break
 				}
+			}
+			var checkErrors []error
+			for nodeName, node := range modifiedNodeMap {
+				err = node.Check()
+				if err != nil {
+					checkErrors = append(checkErrors, fmt.Errorf("node: %s parse error: %s", nodeName, err))
+				}
+			}
+			if len(checkErrors) != 0 {
+				yes := apiutil.ConfirmationPrompt(fmt.Sprintf("Got following error on parsing: %s, Retry", checkErrors))
+				if yes {
+					continue
+				} else {
+					break
+				}
+			}
+
+			nodeList := make([]string, len(nodeMap))
+			i := 0
+			for key := range nodeMap {
+				nodeList[i] = key
+				i++
+			}
+			yes := apiutil.ConfirmationPrompt(fmt.Sprintf("Are you sure you want to modify %d nodes", len(modifiedNodeMap)))
+			if yes {
 				err = apinode.NodeDelete(&wwapiv1.NodeDeleteParameter{NodeNames: nodeList, Force: true})
 				if err != nil {
 					wwlog.Verbose("Problem deleting nodes before modification %s")
@@ -99,11 +120,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					os.Exit(1)
 				}
 				break
-			} else {
-				yes := apiutil.ConfirmationPrompt(fmt.Sprintf("Got following error on parsing: %s, Retry", err))
-				if !yes {
-					break
-				}
 			}
 		} else {
 			break
