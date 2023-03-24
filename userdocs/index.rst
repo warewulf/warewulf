@@ -38,6 +38,7 @@ Welcome to the Warewulf User Guide!
    :caption: Contributing
 
    Contributing <contributing/contributing>
+   Debugging <contributing/debugging>
    Documentation <contributing/documentation>
    Development Environment (KVM) <contributing/development-environment-kvm>
    Development Environment (VirtualBox) <contributing/development-environment-vbox>
