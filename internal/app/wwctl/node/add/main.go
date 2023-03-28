@@ -1,8 +1,6 @@
 package add
 
 import (
-	"os"
-
 	"gopkg.in/yaml.v2"
 
 	apinode "github.com/hpcng/warewulf/internal/pkg/api/node"
@@ -11,24 +9,33 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func CobraRunE(cmd *cobra.Command, args []string) error {
-	// remove the default network as the all network values are assigned
-	// to this network
-	if NetName != "" {
-		netDev := *NodeConf.NetDevs["default"]
-		NodeConf.NetDevs[NetName] = &netDev
-		delete(NodeConf.NetDevs, "default")
-
+/*
+RunE needs a function of type func(*cobraCommand,[]string) err, but
+in order to avoid global variables which mess up testing a function of
+the required type is returned
+*/
+func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		// remove the default network as all network values are assigned
+		// to this network
+		if _, ok := vars.nodeConf.NetDevs["default"]; ok && vars.netName != "" {
+			netDev := *vars.nodeConf.NetDevs["default"]
+			vars.nodeConf.NetDevs[vars.netName] = &netDev
+			delete(vars.nodeConf.NetDevs, "default")
+		} else {
+			if vars.nodeConf.NetDevs["default"].Empty() {
+				delete(vars.nodeConf.NetDevs, "default")
+			}
+		}
+		buffer, err := yaml.Marshal(vars.nodeConf)
+		if err != nil {
+			wwlog.Error("Cant marshall nodeInfo", err)
+			return err
+		}
+		set := wwapiv1.NodeAddParameter{
+			NodeConfYaml: string(buffer[:]),
+			NodeNames:    args,
+		}
+		return apinode.NodeAdd(&set)
 	}
-	buffer, err := yaml.Marshal(NodeConf)
-	if err != nil {
-		wwlog.Error("Cant marshall nodeInfo", err)
-		os.Exit(1)
-	}
-	set := wwapiv1.NodeAddParameter{
-		NodeConfYaml: string(buffer[:]),
-		NodeNames:    args,
-	}
-
-	return apinode.NodeAdd(&set)
 }

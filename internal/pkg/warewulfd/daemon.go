@@ -23,6 +23,23 @@ const (
 
 var loginit bool
 
+// allow to run without daemon for tests
+var nodaemon bool
+
+func init() {
+	nodaemon = false
+}
+
+// run without daemon
+func SetNoDaemon() {
+	nodaemon = true
+}
+
+// run with daemon
+func SetDaemon() {
+	nodaemon = false
+}
+
 func DaemonFormatter(logLevel int, rec *wwlog.LogRecord) string {
 	return "[" + rec.Time.Format(time.UnixDate) + "] " + wwlog.DefaultFormatter(logLevel, rec)
 }
@@ -44,10 +61,7 @@ func DaemonInitLogging() error {
 		wwlog.SetLogLevel(wwlog.SERV)
 	}
 
-	conf, err := warewulfconf.New()
-	if err != nil {
-		return errors.Wrap(err, "Could not read Warewulf configuration file")
-	}
+	conf := warewulfconf.New()
 
 	if conf.Warewulf.Syslog {
 
@@ -69,6 +83,10 @@ func DaemonInitLogging() error {
 }
 
 func DaemonStart() error {
+	if nodaemon {
+		return nil
+	}
+
 	if os.Getenv("WAREWULFD_BACKGROUND") == "1" {
 		err := RunServer()
 		if err != nil {
@@ -119,6 +137,10 @@ func DaemonStart() error {
 }
 
 func DaemonStatus() error {
+	if nodaemon {
+		return nil
+	}
+
 	if !util.IsFile(WAREWULFD_PIDFILE) {
 		return errors.New("Warewulf server is not running")
 	}
@@ -145,6 +167,9 @@ func DaemonStatus() error {
 }
 
 func DaemonReload() error {
+	if nodaemon {
+		return nil
+	}
 	if !util.IsFile(WAREWULFD_PIDFILE) {
 		return errors.New("Warewulf server is not running")
 	}

@@ -382,3 +382,30 @@ func GetByName(node interface{}, name string) (string, error) {
 	myEntry := entryField.Interface().(Entry)
 	return myEntry.Get(), nil
 }
+
+/*
+Check if the Netdev is empty, so has no values set
+*/
+func (dev *NetDevs) Empty() bool {
+	if dev == nil {
+		return true
+	}
+	varType := reflect.TypeOf(*dev)
+	varVal := reflect.ValueOf(*dev)
+	if varVal.IsZero() {
+		return true
+	}
+	for i := 0; i < varType.NumField(); i++ {
+		if varType.Field(i).Type.Kind() == reflect.String && !varVal.Field(i).IsZero() {
+			val := varVal.Field(i).Interface().(string)
+			if val != "" {
+				return false
+			}
+		} else if varType.Field(i).Type == reflect.TypeOf(map[string]string{}) {
+			if len(varVal.Field(i).Interface().(map[string]string)) != 0 {
+				return false
+			}
+		}
+	}
+	return true
+}

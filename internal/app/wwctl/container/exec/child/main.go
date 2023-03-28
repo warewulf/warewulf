@@ -21,7 +21,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func CobraRunE(cmd *cobra.Command, args []string) error {
+func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	if os.Getpid() != 1 {
 		wwlog.Error("PID is not 1: %d", os.Getpid())
 		os.Exit(1)
@@ -33,10 +33,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Error("Unknown Warewulf container: %s", containerName)
 		os.Exit(1)
 	}
-	conf, err := warewulfconf.New()
-	if err != nil {
-		wwlog.Verbose("Couldn't get warewulf ocnfiguration: %s", err)
-	}
+	conf := warewulfconf.New()
 	mountPts := conf.MountsContainer
 	mountPts = append(container.InitMountPnts(binds), mountPts...)
 	// check for valid mount points
