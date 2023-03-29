@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
-	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -34,7 +33,7 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 	if ShowOpt.ShowAll {
 		for _, p := range profiles {
 			profileList.Output = append(profileList.Output,
-				fmt.Sprintf("%-20s %-18s %-12s %s", "PROFILE", "FIELD", "PROFILE", "VALUE"), strings.Repeat("=", 85))
+				fmt.Sprintf("%s=%s=%s=%s", "PROFILE", "FIELD", "PROFILE", "VALUE"))
 			nType := reflect.TypeOf(p)
 			nVal := reflect.ValueOf(p)
 			nConfType := reflect.TypeOf(node.NodeConf{})
@@ -51,12 +50,12 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 					fieldSource = entr.Source()
 					fieldVal = entr.Print()
 					profileList.Output = append(profileList.Output,
-						fmt.Sprintf("%-20s %-18s %-12s %s", p.Id.Print(), fieldName, fieldSource, fieldVal))
+						fmt.Sprintf("%s=%s=%s=%s", p.Id.Print(), fieldName, fieldSource, fieldVal))
 				} else if nType.Field(i).Type == reflect.TypeOf(map[string]*node.Entry{}) {
 					entrMap := nVal.Field(i).Interface().(map[string]*node.Entry)
 					for key, val := range entrMap {
 						profileList.Output = append(profileList.Output,
-							fmt.Sprintf("%-20s %-18s %-12s %s", p.Id.Print(), key, val.Source(), val.Print()))
+							fmt.Sprintf("%s=%s=%s=%s", p.Id.Print(), key, val.Source(), val.Print()))
 					}
 				} else if nType.Field(i).Type == reflect.TypeOf(map[string]*node.NetDevEntry{}) {
 					netDevs := nVal.Field(i).Interface().(map[string]*node.NetDevEntry)
@@ -82,7 +81,7 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 								// only print fields with lopt
 								if netConfField.Tag.Get("lopt") != "" {
 									profileList.Output = append(profileList.Output,
-										fmt.Sprintf("%-20s %-18s %-12s %s", p.Id.Print(), fieldName, fieldSource, fieldVal))
+										fmt.Sprintf("%s=%s=%s=%s", p.Id.Print(), fieldName, fieldSource, fieldVal))
 								}
 							} else if netInfoType.Field(j).Type == reflect.TypeOf(map[string]*node.Entry{}) {
 								for key, val := range netInfoVal.Field(j).Interface().(map[string]*node.Entry) {
@@ -90,7 +89,7 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 									fieldSource = val.Source()
 									fieldVal = val.Print()
 									profileList.Output = append(profileList.Output,
-										fmt.Sprintf("%-20s %-18s %-12s %s", p.Id.Print(), keyfieldName, fieldSource, fieldVal))
+										fmt.Sprintf("%s=%s=%s=%s", p.Id.Print(), keyfieldName, fieldSource, fieldVal))
 								}
 							}
 
@@ -112,14 +111,14 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 							fieldSource = entr.Source()
 							fieldVal = entr.Print()
 							profileList.Output = append(profileList.Output,
-								fmt.Sprintf("%-20s %-18s %-12s %s", p.Id.Print(), fieldName, fieldSource, fieldVal))
+								fmt.Sprintf("%s=%s=%s=%s", p.Id.Print(), fieldName, fieldSource, fieldVal))
 						} else if nestInfoType.Elem().Field(j).Type == reflect.TypeOf(map[string]*node.Entry{}) {
 							for key, val := range nestInfoVal.Elem().Field(j).Interface().(map[string]*node.Entry) {
 								fieldName = fieldName + ":" + key
 								fieldSource = val.Source()
 								fieldVal = val.Print()
 								profileList.Output = append(profileList.Output,
-									fmt.Sprintf("%-20s %-18s %-12s %s", p.Id.Print(), fieldName, fieldSource, fieldVal))
+									fmt.Sprintf("%s=%s=%s=%s", p.Id.Print(), fieldName, fieldSource, fieldVal))
 							}
 						}
 					}
@@ -128,12 +127,11 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 		}
 	} else {
 		profileList.Output = append(profileList.Output,
-			fmt.Sprintf("%-20s %s", "PROFILE NAME", "COMMENT/DESCRIPTION"))
-		profileList.Output = append(profileList.Output, strings.Repeat("=", 80))
+			fmt.Sprintf("%s=%s", "PROFILE NAME", "COMMENT/DESCRIPTION"))
 
 		for _, profile := range profiles {
 			profileList.Output = append(profileList.Output,
-				fmt.Sprintf("%-20s %s", profile.Id.Print(), profile.Comment.Print()))
+				fmt.Sprintf("%s=%s", profile.Id.Print(), profile.Comment.Print()))
 		}
 	}
 	return
