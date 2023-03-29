@@ -10,22 +10,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func CobraRunE(cmd *cobra.Command, args []string) (err error) {
-	req := wwapiv1.GetProfileList{
-		ShowAll:  ShowAll,
-		Profiles: args,
-	}
-	profileInfo, err := apiprofile.ProfileList(&req)
-	if err != nil {
+func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err error) {
+	return func(cmd *cobra.Command, args []string) (err error) {
+		req := wwapiv1.GetProfileList{
+			ShowAll:  vars.showAll,
+			Profiles: args,
+		}
+		profileInfo, err := apiprofile.ProfileList(&req)
+		if err != nil {
+			return
+		}
+
+		if len(profileInfo.Output) > 0 {
+			ph := helper.NewPrintHelper(strings.Split(profileInfo.Output[0], "="))
+			for _, val := range profileInfo.Output[1:] {
+				ph.Append(strings.Split(val, "="))
+			}
+			ph.Render()
+		}
 		return
 	}
-
-	if len(profileInfo.Output) > 0 {
-		ph := helper.NewPrintHelper(strings.Split(profileInfo.Output[0], "="))
-		for _, val := range profileInfo.Output[1:] {
-			ph.Append(strings.Split(val, "="))
-		}
-		ph.Render()
-	}
-	return
 }
