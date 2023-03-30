@@ -1,6 +1,6 @@
 module github.com/hpcng/warewulf
 
-go 1.16
+go 1.17
 
 require (
 	github.com/containers/image/v5 v5.7.0
