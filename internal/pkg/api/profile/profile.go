@@ -126,22 +126,41 @@ func ProfileSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (node
 /*
 Adds a new profile with the given name
 */
-func AddProfile(set *wwapiv1.NodeSetParameter, console bool) error {
+
+func AddProfile(nsp *wwapiv1.NodeSetParameter) error {
+	if nsp == nil {
+		return fmt.Errorf("NodeSetParameter is nill")
+	}
+
 	nodeDB, err := node.New()
 	if err != nil {
 		return errors.Wrap(err, "Could not open database")
 	}
 
-	if util.InSlice(nodeDB.ListAllProfiles(), set.NodeNames[0]) {
-		return errors.New(fmt.Sprintf("profile with name %s allready exists", set.NodeNames[0]))
+	if util.InSlice(nodeDB.ListAllProfiles(), nsp.NodeNames[0]) {
+		return errors.New(fmt.Sprintf("profile with name %s allready exists", nsp.NodeNames[0]))
 	}
-	_, err = nodeDB.AddProfile(set.NodeNames[0])
+
+	var nodeConf node.NodeConf
+	err = yaml.Unmarshal([]byte(nsp.NodeConfYaml), &nodeConf)
 	if err != nil {
-		return errors.Wrap(err, "Could not create new profile")
+		return errors.Wrap(err, "failed to decode nodeConf")
 	}
-	err = apinode.DbSave(&nodeDB)
+
+	n, err := nodeDB.AddProfile(nsp.NodeNames[0])
 	if err != nil {
-		return errors.Wrap(err, "Could not persist new profile")
+		return errors.Wrap(err, "failed to add node")
+	}
+	n.SetFrom(&nodeConf)
+
+	err = nodeDB.ProfileUpdate(n)
+	if err != nil {
+		return errors.Wrap(err, "failed to update nodedb")
+	}
+
+	err = nodeDB.Persist()
+	if err != nil {
+		return errors.Wrap(err, "failed to persist new profile")
 	}
 	return nil
 }

@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All paths can now be configured in `warewulf.conf`, check the paths section of of 
    `wwctl --emptyconf genconfig warewulfconf print` for the available paths.
 - Added experimental dnsmasq support.
+- Refactored `profile add` command to make it alike `node add`. #658 #659 
 
 ## [4.4.0] 2023-01-18
 

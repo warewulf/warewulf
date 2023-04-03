@@ -13,8 +13,10 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var ConfigFile string
-var DefaultConfig string
+var (
+	ConfigFile    string
+	DefaultConfig string
+)
 
 var cachedDB NodeYaml
 
@@ -75,7 +77,8 @@ func New() (NodeYaml, error) {
 	wwlog.Debug("Returning node object")
 	cachedDB = ret
 	cachedDB.current = true
-	return ret, nil
+	cachedDB.persist = true
+	return cachedDB, nil
 }
 
 /*
