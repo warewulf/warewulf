@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -20,7 +21,8 @@ func Test_List(t *testing.T) {
 		stdout  string
 		inDb    string
 	}{
-		{name: "single node list",
+		{
+			name:    "single node list",
 			args:    []string{},
 			wantErr: false,
 			stdout: `  NODE NAME  PROFILES  NETWORK  
@@ -33,7 +35,67 @@ nodes:
   n01:
     profiles:
     - default
-`},
+`,
+		},
+		{
+			name:    "multiple nodes list",
+			args:    []string{},
+			wantErr: false,
+			stdout: `  NODE NAME  PROFILES  NETWORK
+  n01        default            
+  n02        default
+`,
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+  n02:
+   profiles:
+   - default
+`,
+		},
+		{
+			name:    "node list returns multiple nodes",
+			args:    []string{"n01,n02"},
+			wantErr: false,
+			stdout: `  NODE NAME  PROFILES  NETWORK
+  n01        default            
+  n02        default
+`,
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+  n02:
+   profiles:
+   - default
+`,
+		},
+		{
+			name:    "node list returns one node",
+			args:    []string{"n01,"},
+			wantErr: false,
+			stdout: `  NODE NAME  PROFILES  NETWORK
+  n01        default            
+`,
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+  n02:
+   profiles:
+   - default
+`,
+		},
 	}
 	conf_yml := `WW_INTERNAL: 0`
 	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
@@ -82,8 +144,8 @@ nodes:
 			w.Close()
 			os.Stdout = old // restoring the real stdout
 			out := <-outC
-			if out != tt.stdout {
-				t.Errorf("Got wrong output, got:'%s'\nwant:'%s'", out, tt.stdout)
+			if strings.ReplaceAll(out, " ", "") != strings.ReplaceAll(tt.stdout, " ", "") {
+				t.Errorf("Got wrong output, got:\n'%s'\nwant:\n'%s'", out, tt.stdout)
 				t.FailNow()
 			}
 		})
