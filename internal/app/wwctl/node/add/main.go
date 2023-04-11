@@ -35,7 +35,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 		}
 		buffer, err := yaml.Marshal(vars.nodeConf)
 		if err != nil {
-			wwlog.Error("Cant marshall nodeInfo", err)
+			wwlog.Error("Can't marshall nodeInfo", err)
 			return err
 		}
 		set := wwapiv1.NodeAddParameter{

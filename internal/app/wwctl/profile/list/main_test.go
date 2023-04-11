@@ -36,16 +36,27 @@ nodes:
 		},
 	}
 
-	conf_yml := `
-WW_INTERNAL: 0
-    `
+	conf_yml := `WW_INTERNAL: 0`
+	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
+	assert.NoError(t, warewulfConfErr)
+	defer os.Remove(tempWarewulfConf.Name())
+	_, warewulfConfErr = tempWarewulfConf.Write([]byte(conf_yml))
+	assert.NoError(t, warewulfConfErr)
+	assert.NoError(t, tempWarewulfConf.Sync())
+	warewulfconf.ConfigFile = tempWarewulfConf.Name()
 
-	conf := warewulfconf.New()
-	err := conf.Read([]byte(conf_yml))
-	assert.NoError(t, err)
+	tempNodeConf, nodesConfErr := os.CreateTemp("", "nodes.conf-")
+	assert.NoError(t, nodesConfErr)
+	defer os.Remove(tempNodeConf.Name())
+	node.ConfigFile = tempNodeConf.Name()
 	warewulfd.SetNoDaemon()
 	for _, tt := range tests {
-		_, err = node.TestNew([]byte(tt.inDb))
+		var err error
+		_, err = tempNodeConf.Seek(0, 0)
+		assert.NoError(t, err)
+		assert.NoError(t, tempNodeConf.Truncate(0))
+		_, err = tempNodeConf.Write([]byte(tt.inDb))
+		assert.NoError(t, tempNodeConf.Sync())
 		assert.NoError(t, err)
 		t.Logf("Running test: %s\n", tt.name)
 		t.Run(tt.name, func(t *testing.T) {

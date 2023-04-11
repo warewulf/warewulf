@@ -60,7 +60,7 @@ WW_INTERNAL: 0
 	assert.NoError(t, err)
 	warewulfd.SetNoDaemon()
 	for _, tt := range tests {
-		_, err = node.TestNew([]byte(tt.inDb))
+		_, err = node.Parse([]byte(tt.inDb))
 		assert.NoError(t, err)
 		t.Logf("Running test: %s\n", tt.name)
 		t.Run(tt.name, func(t *testing.T) {
