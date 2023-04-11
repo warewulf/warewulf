@@ -26,14 +26,16 @@ func ProfileDelete(ndp *wwapiv1.NodeDeleteParameter) (err error) {
 		wwlog.Error("Failed to open node database: %s\n", err)
 		return
 	}
-
+	if nodeDB.StringHash() != ndp.Hash && !ndp.Force {
+		return fmt.Errorf("got wrong hash, not modifying profile database")
+	}
 	for _, p := range profileList {
 		err := nodeDB.DelProfile(p.Id.Get())
 		if err != nil {
 			wwlog.Error("%s\n", err)
 		} else {
 			//count++
-			wwlog.Verbose("Deleting node: %s\n", p.Id.Print())
+			wwlog.Verbose("Deleting profile: %s\n", p.Id.Print())
 		}
 	}
 

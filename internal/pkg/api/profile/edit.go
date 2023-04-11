@@ -1,6 +1,7 @@
 package apiprofile
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
@@ -49,13 +50,17 @@ func FilteredProfiles(profileList *wwapiv1.NodeList) *wwapiv1.NodeYaml {
 /*
 Add profiles from yaml
 */
-func ProfileAddFromYaml(nodeList *wwapiv1.NodeYaml) (err error) {
+func ProfileAddFromYaml(nodeList *wwapiv1.NodeAddParameter) (err error) {
 	nodeDB, err := node.New()
 	if err != nil {
 		return errors.Wrap(err, "Could not open NodeDB: %s\n")
 	}
+	if nodeDB.StringHash() != nodeList.Hash && !nodeList.Force {
+		return fmt.Errorf("got wrong hash, not modifying profile database")
+	}
+
 	profileMap := make(map[string]*node.NodeConf)
-	err = yaml.Unmarshal([]byte(nodeList.NodeConfMapYaml), profileMap)
+	err = yaml.Unmarshal([]byte(nodeList.NodeConfYaml), profileMap)
 	if err != nil {
 		return errors.Wrap(err, "Could not unmarshall Yaml: %s\n")
 	}

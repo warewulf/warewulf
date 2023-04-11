@@ -8,6 +8,8 @@ import (
 	"os"
 	"strings"
 
+	apinode "github.com/hpcng/warewulf/internal/pkg/api/node"
+
 	apiprofile "github.com/hpcng/warewulf/internal/pkg/api/profile"
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	apiutil "github.com/hpcng/warewulf/internal/pkg/api/util"
@@ -88,12 +90,19 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				if !yes {
 					break
 				}
-				err = apiprofile.ProfileDelete(&wwapiv1.NodeDeleteParameter{NodeNames: nodeList, Force: true})
+				err = apiprofile.ProfileDelete(&wwapiv1.NodeDeleteParameter{
+					NodeNames: nodeList,
+					Hash:      profileListMsg.Hash,
+				})
 				if err != nil {
 					wwlog.Verbose("Problem deleting nodes before modification %s")
 				}
 				buffer, _ = yaml.Marshal(modifiedProfileMap)
-				err = apiprofile.ProfileAddFromYaml(&wwapiv1.NodeYaml{NodeConfMapYaml: string(buffer)})
+				newHash := apinode.Hash()
+				err = apiprofile.ProfileAddFromYaml(&wwapiv1.NodeAddParameter{
+					NodeConfYaml: string(buffer),
+					Hash:         newHash.Hash,
+				})
 				if err != nil {
 					wwlog.Error("Got following problem when writing back yaml: %s", err)
 					os.Exit(1)

@@ -35,6 +35,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 		set := wwapiv1.NodeAddParameter{
 			NodeConfYaml: string(buffer[:]),
 			NodeNames:    args,
+			Force:        true,
 		}
 		return apinode.NodeAdd(&set)
 	}
