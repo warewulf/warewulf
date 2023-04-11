@@ -54,6 +54,12 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 			// only key
 		}
 		// setting node from the received yaml
+		err = nodeConf.Check()
+		if err != nil {
+			err = fmt.Errorf("error on check of node %s: %s", n.Id.Get(), err)
+			return
+
+		}
 		n.SetFrom(&nodeConf)
 		if netName != "" && nodeConf.NetDevs[netName].Ipaddr != "" {
 			// if more nodes are added increment IPv4 address
@@ -250,6 +256,12 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 		if err != nil {
 			wwlog.Error(fmt.Sprintf("%v", err.Error()))
 			return
+		}
+		err = nodeConf.Check()
+		if err != nil {
+			err = fmt.Errorf("error on check of node %s: %s", n.Id.Get(), err)
+			return
+
 		}
 		n.SetFrom(&nodeConf)
 		if set.NetdevDelete != "" {

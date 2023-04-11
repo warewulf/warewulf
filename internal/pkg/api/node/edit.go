@@ -62,6 +62,10 @@ func NodeAddFromYaml(nodeList *wwapiv1.NodeYaml) (err error) {
 		return errors.Wrap(err, "Could not unmarshall Yaml: %s\n")
 	}
 	for nodeName, node := range nodeMap {
+		err = node.Check()
+		if err != nil {
+			return errors.Errorf("error on node %s: %s", nodeName, err)
+		}
 		nodeDB.Nodes[nodeName] = node
 	}
 	err = nodeDB.Persist()

@@ -6,7 +6,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func NewTestNode() (NodeYaml, error) {
+func NewUtilTestNode() (NodeYaml, error) {
 	var data = `
 nodeprofiles:
   default:
@@ -49,7 +49,7 @@ nodes:
 }
 
 func Test_nodeYaml_FindByHwaddr(t *testing.T) {
-	c, _ := NewTestNode()
+	c, _ := NewUtilTestNode()
 	//type fields struct {
 	//	NodeProfiles map[string]*NodeConf
 	//	Nodes        map[string]*NodeConf
@@ -90,7 +90,7 @@ func Test_nodeYaml_FindByHwaddr(t *testing.T) {
 }
 
 func Test_nodeYaml_FindByIpaddr(t *testing.T) {
-	c, _ := NewTestNode()
+	c, _ := NewUtilTestNode()
 	type args struct {
 		ipaddr string
 	}

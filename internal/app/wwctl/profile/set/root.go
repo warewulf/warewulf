@@ -38,11 +38,12 @@ var (
 	SetForce     bool
 	NetName      string
 	ProfileConf  node.NodeConf
+	Converters   []func() error
 )
 
 func init() {
 	ProfileConf = node.NewConf()
-	ProfileConf.CreateFlags(baseCmd,
+	Converters = ProfileConf.CreateFlags(baseCmd,
 		[]string{"ipaddr", "ipaddr6", "ipmiaddr", "profile"})
 	baseCmd.PersistentFlags().StringVar(&NetName, "netname", "default", "Set network name for network options")
 	baseCmd.PersistentFlags().StringVarP(&SetNetDevDel, "netdel", "D", "", "Delete the node's network device")

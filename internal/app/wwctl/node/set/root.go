@@ -38,11 +38,12 @@ var (
 	SetYes       bool
 	SetForce     bool
 	NodeConf     node.NodeConf
+	Converters   []func() error
 )
 
 func init() {
 	NodeConf = node.NewConf()
-	NodeConf.CreateFlags(baseCmd, []string{})
+	Converters = NodeConf.CreateFlags(baseCmd, []string{})
 	baseCmd.PersistentFlags().StringVarP(&SetNetDevDel, "netdel", "D", "", "Delete the node's network device")
 	baseCmd.PersistentFlags().StringVar(&NetName, "netname", "default", "Set network name for network options")
 	baseCmd.PersistentFlags().BoolVarP(&SetNodeAll, "all", "a", false, "Set all nodes")

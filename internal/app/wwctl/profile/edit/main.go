@@ -73,27 +73,46 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		sum2 := hex.EncodeToString(hasher.Sum(nil))
 		wwlog.Debug("Hashes are before %s and after %s\n", sum1, sum2)
 		if sum1 != sum2 {
-			wwlog.Debug("Nodes were modified")
+			wwlog.Debug("Profiles were modified")
 			modifiedProfileMap := make(map[string]*node.NodeConf)
 			_, _ = file.Seek(0, 0)
 			// ignore error as only may occurs under strange circumstances
 			buffer, _ := io.ReadAll(file)
 			err = yaml.Unmarshal(buffer, modifiedProfileMap)
-			if err == nil {
-				nodeList := make([]string, len(profileMap))
-				i := 0
-				for key := range profileMap {
-					nodeList[i] = key
-					i++
-				}
-				yes := apiutil.ConfirmationPrompt(fmt.Sprintf("Are you sure you want to modify %d nodes", len(modifiedProfileMap)))
-				if !yes {
+			if err != nil {
+				yes := apiutil.ConfirmationPrompt(fmt.Sprintf("Got following error on parsing: %s, Retry", err))
+				if yes {
+					continue
+				} else {
 					break
 				}
-				err = apiprofile.ProfileDelete(&wwapiv1.NodeDeleteParameter{
-					NodeNames: nodeList,
-					Hash:      profileListMsg.Hash,
-				})
+			}
+			var checkErrors []error
+			for nodeName, node := range modifiedProfileMap {
+				err = node.Check()
+				if err != nil {
+					checkErrors = append(checkErrors, fmt.Errorf("profile: %s parse error: %s", nodeName, err))
+				}
+			}
+			if len(checkErrors) != 0 {
+				yes := apiutil.ConfirmationPrompt(fmt.Sprintf("Got following error on parsing: %s, Retry", checkErrors))
+				if yes {
+					continue
+				} else {
+					break
+				}
+			}
+			pList := make([]string, len(profileMap))
+			i := 0
+			for key := range profileMap {
+				pList[i] = key
+				i++
+			}
+			yes := apiutil.ConfirmationPrompt(fmt.Sprintf("Are you sure you want to modify %d nodes", len(modifiedProfileMap)))
+			if yes {
+				err = apiprofile.ProfileDelete(&wwapiv1.NodeDeleteParameter{NodeNames: pList, Force: true})
+
+
 				if err != nil {
 					wwlog.Verbose("Problem deleting nodes before modification %s")
 				}
@@ -108,11 +127,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					os.Exit(1)
 				}
 				break
-			} else {
-				yes := apiutil.ConfirmationPrompt(fmt.Sprintf("Got following error on parsing: %s, Retry", err))
-				if !yes {
-					break
-				}
 			}
 		} else {
 			break

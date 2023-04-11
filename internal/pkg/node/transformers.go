@@ -6,7 +6,6 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"github.com/spf13/cobra"
 )
 
 /*
@@ -195,102 +194,6 @@ func (nodeConf *NodeConf) getterFrom(nodeInfo NodeInfo,
 }
 
 /*
-Create cmd line flags from the NodeConf fields
-*/
-func (nodeConf *NodeConf) CreateFlags(baseCmd *cobra.Command, excludeList []string) {
-	nodeInfoType := reflect.TypeOf(nodeConf)
-	nodeInfoVal := reflect.ValueOf(nodeConf)
-	// now iterate of every field
-	for i := 0; i < nodeInfoVal.Elem().NumField(); i++ {
-		if nodeInfoType.Elem().Field(i).Tag.Get("comment") != "" &&
-			!util.InSlice(excludeList, nodeInfoType.Elem().Field(i).Tag.Get("lopt")) {
-			field := nodeInfoVal.Elem().Field(i)
-			createFlags(baseCmd, excludeList, nodeInfoType.Elem().Field(i), &field)
-		} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr {
-			nestType := reflect.TypeOf(nodeInfoVal.Elem().Field(i).Interface())
-			nestVal := reflect.ValueOf(nodeInfoVal.Elem().Field(i).Interface())
-			for j := 0; j < nestType.Elem().NumField(); j++ {
-				field := nestVal.Elem().Field(j)
-				createFlags(baseCmd, excludeList, nestType.Elem().Field(j), &field)
-			}
-		} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string]*NetDevs(nil)) {
-			netMap := nodeInfoVal.Elem().Field(i).Interface().(map[string]*NetDevs)
-			// add a default network so that it can hold values
-			key := "default"
-			if len(netMap) == 0 {
-				netMap[key] = new(NetDevs)
-			} else {
-				for keyIt := range netMap {
-					key = keyIt
-					break
-				}
-			}
-			netType := reflect.TypeOf(netMap[key])
-			netVal := reflect.ValueOf(netMap[key])
-			for j := 0; j < netType.Elem().NumField(); j++ {
-				field := netVal.Elem().Field(j)
-				createFlags(baseCmd, excludeList, netType.Elem().Field(j), &field)
-			}
-		}
-	}
-}
-
-/*
-Helper function to create the different PerisitantFlags() for different types.
-*/
-func createFlags(baseCmd *cobra.Command, excludeList []string,
-	myType reflect.StructField, myVal *reflect.Value) {
-	if myType.Tag.Get("lopt") != "" {
-		if myType.Type.Kind() == reflect.String {
-			ptr := myVal.Addr().Interface().(*string)
-			if myType.Tag.Get("sopt") != "" {
-				baseCmd.PersistentFlags().StringVarP(ptr,
-					myType.Tag.Get("lopt"),
-					myType.Tag.Get("sopt"),
-					myType.Tag.Get("default"),
-					myType.Tag.Get("comment"))
-			} else if !util.InSlice(excludeList, myType.Tag.Get("lopt")) {
-				baseCmd.PersistentFlags().StringVar(ptr,
-					myType.Tag.Get("lopt"),
-					myType.Tag.Get("default"),
-					myType.Tag.Get("comment"))
-
-			}
-		} else if myType.Type == reflect.TypeOf([]string{}) {
-			ptr := myVal.Addr().Interface().(*[]string)
-			if myType.Tag.Get("sopt") != "" {
-				baseCmd.PersistentFlags().StringSliceVarP(ptr,
-					myType.Tag.Get("lopt"),
-					myType.Tag.Get("sopt"),
-					[]string{myType.Tag.Get("default")},
-					myType.Tag.Get("comment"))
-			} else if !util.InSlice(excludeList, myType.Tag.Get("lopt")) {
-				baseCmd.PersistentFlags().StringSliceVar(ptr,
-					myType.Tag.Get("lopt"),
-					[]string{myType.Tag.Get("default")},
-					myType.Tag.Get("comment"))
-
-			}
-		} else if myType.Type == reflect.TypeOf(map[string]string{}) {
-			ptr := myVal.Addr().Interface().(*map[string]string)
-			if myType.Tag.Get("sopt") != "" {
-				baseCmd.PersistentFlags().StringToStringVarP(ptr,
-					myType.Tag.Get("lopt"),
-					myType.Tag.Get("sopt"),
-					map[string]string{}, // empty default!
-					myType.Tag.Get("comment"))
-			} else if !util.InSlice(excludeList, myType.Tag.Get("lopt")) {
-				baseCmd.PersistentFlags().StringToStringVar(ptr,
-					myType.Tag.Get("lopt"),
-					map[string]string{}, // empty default!
-					myType.Tag.Get("comment"))
-
-			}
-		}
-	}
-}
-
-/*
 Populates all fields of NodeInfo with Set from the
 values of NodeConf.
 */
@@ -363,24 +266,28 @@ func (node *NodeInfo) setterFrom(n *NodeConf, nameArg string,
 				}
 			} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr && !valField.IsZero() {
 				nestedInfoType := reflect.TypeOf(nodeInfoVal.Elem().Field(i).Interface())
-				netstedInfoVal := reflect.ValueOf(nodeInfoVal.Elem().Field(i).Interface())
+				nestedInfoVal := reflect.ValueOf(nodeInfoVal.Elem().Field(i).Interface())
 				nestedConfVal := reflect.ValueOf(valField.Interface())
 				for j := 0; j < nestedInfoType.Elem().NumField(); j++ {
 					nestedVal := nestedConfVal.Elem().FieldByName(nestedInfoType.Elem().Field(j).Name)
 					if nestedVal.IsValid() {
-						if netstedInfoVal.Elem().Field(j).Type() == reflect.TypeOf(Entry{}) {
-							setter(netstedInfoVal.Elem().Field(j).Addr().Interface().(*Entry), nestedVal.String(), nameArg)
-						} else {
+						if nestedInfoVal.Elem().Field(j).Type() == reflect.TypeOf(Entry{}) {
+							setter(nestedInfoVal.Elem().Field(j).Addr().Interface().(*Entry), nestedVal.String(), nameArg)
+						} else if nestedInfoVal.Elem().Field(j).Type() == reflect.TypeOf(map[string](*Entry){}) {
 							confMap := nestedVal.Interface().(map[string]string)
-							if netstedInfoVal.Elem().Field(j).IsNil() {
-								newMap := make(map[string]*Entry)
-								mapPtr := (netstedInfoVal.Elem().Field(j).Addr().Interface()).(*map[string](*Entry))
-								*mapPtr = newMap
+							if nestedInfoVal.Elem().Field(j).IsNil() {
+								ptr := nestedInfoVal.Elem().Field(j).Addr().Interface().(*map[string](*Entry))
+								*ptr = make(map[string]*Entry)
 							}
+							tagMap := nestedInfoVal.Elem().Field(j).Interface().(map[string](*Entry))
 							for key, val := range confMap {
-								entr := new(Entry)
-								setter(entr, val, nameArg)
-								(netstedInfoVal.Elem().Field(j).Interface()).(map[string](*Entry))[key] = entr
+								if entr, ok := tagMap[key]; ok {
+									setter(entr, val, nameArg)
+								} else {
+									entr := new(Entry)
+									tagMap[key] = entr
+									setter(entr, val, nameArg)
+								}
 							}
 						}
 					}
@@ -388,9 +295,17 @@ func (node *NodeInfo) setterFrom(n *NodeConf, nameArg string,
 			} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string](*Entry)(nil)) {
 				confMap := valField.Interface().(map[string]string)
 				for key, val := range confMap {
-					entr := new(Entry)
-					setter(entr, val, nameArg)
-					(nodeInfoVal.Elem().Field(i).Interface()).(map[string](*Entry))[key] = entr
+					tagMap := nodeInfoVal.Elem().Field(i).Interface().(map[string](*Entry))
+					if nodeInfoVal.Elem().Field(i).IsNil() {
+						tagMap = make(map[string]*Entry)
+					}
+					if entr, ok := tagMap[key]; ok {
+						setter(entr, val, nameArg)
+					} else {
+						entr := new(Entry)
+						tagMap[key] = entr
+						setter(entr, val, nameArg)
+					}
 				}
 			} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string](*NetDevEntry)(nil)) {
 				netValMap := valField.Interface().(map[string](*NetDevs))
