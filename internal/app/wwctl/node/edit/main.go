@@ -111,10 +111,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			if yes {
 				err = apinode.NodeDelete(&wwapiv1.NodeDeleteParameter{NodeNames: nodeList, Force: true})
 				if err != nil {
-					wwlog.Verbose("Problem deleting nodes before modification %s")
+					wwlog.Error("Problem deleting nodes before modification: %s", err)
+					return err
 				}
 				buffer, _ = yaml.Marshal(modifiedNodeMap)
-				err = apinode.NodeAddFromYaml(&wwapiv1.NodeYaml{NodeConfMapYaml: string(buffer)})
+				newHash := apinode.Hash()
+				err = apinode.NodeAddFromYaml(&wwapiv1.NodeYaml{
+					NodeConfMapYaml: string(buffer),
+					Hash:            newHash.Hash,
+				})
 				if err != nil {
 					wwlog.Error("Got following problem when writing back yaml: %s", err)
 					os.Exit(1)

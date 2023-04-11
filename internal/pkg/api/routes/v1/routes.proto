@@ -10,6 +10,12 @@ package wwapi.v1;
 import "google/protobuf/empty.proto";
 import "google/api/annotations.proto";
 
+// Information about the database
+
+message NodeDBHash {
+	string hash = 1;
+}
+
 // Container
 
 // ContainerBuildParameter contains input for building zero or more containers.
@@ -133,9 +139,12 @@ message ProfileList {
 }
 
 // NodeAddParameter contains all input for adding a node to be managed by
-// Warewulf.
+// Warewulf. Only adds nodes if the hash matches the actual hash of the 
+// configuration.
 message NodeAddParameter {
 	string nodeConfYaml = 1;
+	bool force = 2;
+	string hash = 3;
 	repeated string nodeNames = 10;
 }
 
@@ -143,13 +152,17 @@ message NodeAddParameter {
 // to nodes.conf (is resused for profile edit)
 message NodeYaml {
 	string nodeConfMapYaml = 1;
+	string hash = 2;
 }
 
 // NodeDeleteParameter contains input for removing nodes from Warewulf
-// management.
+// management. If the given hash differs with the actual hash of the 
+// configuration, no node is deleted. The force option allows the deletion
+// of nodes with a correct hash.
 message NodeDeleteParameter {
 	bool force = 1;
 	repeated string nodeNames = 2;
+	string hash = 3;
 }
 
 // NodeSetParameter contains all fields for updating aspects of nodes managed

@@ -1,6 +1,7 @@
 package apinode
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -29,7 +30,10 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 	if err != nil {
 		return errors.Wrap(err, "failed to open node database")
 	}
-
+	dbHash := nodeDB.Hash()
+	if hex.EncodeToString(dbHash[:]) != nap.Hash && !nap.Force {
+		return fmt.Errorf("got wrong hash, not modifying node database")
+	}
 	node_args := hostlist.Expand(nap.NodeNames)
 	var nodeConf node.NodeConf
 	err = yaml.Unmarshal([]byte(nap.NodeConfYaml), &nodeConf)
@@ -101,6 +105,10 @@ func NodeDelete(ndp *wwapiv1.NodeDeleteParameter) (err error) {
 		wwlog.Error("Failed to open node database: %s", err)
 		return
 	}
+	dbHash := nodeDB.Hash()
+	if hex.EncodeToString(dbHash[:]) != ndp.Hash && !ndp.Force {
+		return fmt.Errorf("got wrong hash, not modifying node database")
+	}
 
 	for _, n := range nodeList {
 		err := nodeDB.DelNode(n.Id.Get())
@@ -137,6 +145,13 @@ func NodeDeleteParameterCheck(ndp *wwapiv1.NodeDeleteParameter, console bool) (n
 	nodeDB, err := node.New()
 	if err != nil {
 		wwlog.Error("Failed to open node database: %s", err)
+		return
+	}
+	dbHash := nodeDB.Hash()
+	if hex.EncodeToString(dbHash[:]) != ndp.Hash && !ndp.Force {
+		wwlog.Debug("got hash: %s", ndp.Hash)
+		wwlog.Debug("actual hash: %s", hex.EncodeToString(dbHash[:]))
+		err = fmt.Errorf("got wrong hash, not modifying node database")
 		return
 	}
 
