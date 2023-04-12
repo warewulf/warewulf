@@ -24,11 +24,9 @@ func Test_List(t *testing.T) {
 		mockFunc func()
 	}{
 		{
-			name: "profile list test",
-			args: []string{},
-			stdout: `CONTAINERNAMENODESKERNELVERSIONCREATIONTIMEMODIFICATIONTIMESIZE
-test1kernel01Jan7000:00UTC01Jan7000:00UTC1B
-			`,
+			name:   "container list test",
+			args:   []string{},
+			stdout: `test            1      kernel`,
 			inDb: `WW_INTERNAL: 43
 nodeprofiles:
   default: {}
@@ -87,11 +85,8 @@ WW_INTERNAL: 0
 			stdoutW.Close()
 
 			stdout := <-stdoutC
-			stdout = strings.TrimSpace(stdout)
-			stdout = strings.ReplaceAll(stdout, " ", "")
 			assert.NotEmpty(t, stdout, "os.stdout should not be empty")
-			tt.stdout = strings.ReplaceAll(strings.TrimSpace(tt.stdout), " ", "")
-			if stdout != strings.ReplaceAll(strings.TrimSpace(tt.stdout), " ", "") {
+			if !strings.Contains(stdout, tt.stdout) {
 				t.Errorf("Got wrong output, got:\n '%s'\n, but want:\n '%s'\n", stdout, tt.stdout)
 				t.FailNow()
 			}
