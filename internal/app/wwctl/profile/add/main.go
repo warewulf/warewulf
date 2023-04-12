@@ -55,6 +55,6 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 				return
 			}
 		}
-		return apiprofile.ProfileSet(&set)
+		return apiprofile.AddProfile(&set)
 	}
 }
