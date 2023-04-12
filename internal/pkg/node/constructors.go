@@ -2,6 +2,7 @@ package node
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path"
 	"sort"
@@ -73,6 +74,21 @@ func New() (NodeYaml, error) {
 	if err != nil {
 		return ret, err
 	}
+	wwlog.Debug("Checking nodes for types")
+	for nodeName, node := range ret.Nodes {
+		err = node.Check()
+		if err != nil {
+			wwlog.Warn("node: %s parsing error: %s", nodeName, err)
+			return ret, err
+		}
+	}
+	for profileName, profile := range ret.NodeProfiles {
+		err = profile.Check()
+		if err != nil {
+			wwlog.Warn("node: %s parsing error: %s", profileName, err)
+			return ret, err
+		}
+	}
 
 	wwlog.Debug("Returning node object")
 	cachedDB = ret
@@ -122,12 +138,13 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 	defData, err := os.ReadFile(DefaultConfig)
 	if err != nil {
 		wwlog.Verbose("Couldn't read DefaultConfig :%s\n", err)
+		wwlog.Verbose("Using building defaults")
+		defData = []byte(FallBackConf)
 	}
 	wwlog.Debug("Unmarshalling default config\n")
 	err = yaml.Unmarshal(defData, &defConf)
 	if err != nil {
 		wwlog.Verbose("Couldn't unmarshall defaults from file :%s\n", err)
-		wwlog.Verbose("Using building defaults")
 		err = yaml.Unmarshal([]byte(FallBackConf), &defConf)
 		if err != nil {
 			wwlog.Warn("Could not get any defaults")
@@ -167,6 +184,10 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		for keyname, key := range node.Keys {
 			node.Tags[keyname] = key
 			delete(node.Keys, keyname)
+		}
+		err = node.Check()
+		if err != nil {
+			return nil, fmt.Errorf("node: %s check error: %s", nodename, err)
 		}
 		n.SetFrom(node)
 		// only now the netdevs start to exist so that default values can be set

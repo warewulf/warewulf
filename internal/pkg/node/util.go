@@ -27,10 +27,11 @@ func (config *NodeYaml) FindByHwaddr(hwa string) (NodeInfo, error) {
 }
 
 func (config *NodeYaml) FindByIpaddr(ipaddr string) (NodeInfo, error) {
-	if net.ParseIP(ipaddr) == nil {
+	if addr := net.ParseIP(ipaddr); addr == nil {
 		return NodeInfo{}, errors.New("invalid IP:" + ipaddr)
+	} else {
+		ipaddr = addr.String()
 	}
-
 	var ret NodeInfo
 
 	n, _ := config.FindAllNodes()

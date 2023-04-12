@@ -24,6 +24,7 @@ func FindAllNodeConfs() *wwapiv1.NodeYaml {
 	buffer, _ := yaml.Marshal(nodeMap)
 	retVal := wwapiv1.NodeYaml{
 		NodeConfMapYaml: string(buffer),
+		Hash:            nodeDB.StringHash(),
 	}
 	return &retVal
 }
@@ -42,6 +43,7 @@ func FilteredNodes(nodeList *wwapiv1.NodeList) *wwapiv1.NodeYaml {
 	buffer, _ := yaml.Marshal(nodeMap)
 	retVal := wwapiv1.NodeYaml{
 		NodeConfMapYaml: string(buffer),
+		Hash:            nodeDB.StringHash(),
 	}
 	return &retVal
 }
@@ -60,6 +62,10 @@ func NodeAddFromYaml(nodeList *wwapiv1.NodeYaml) (err error) {
 		return errors.Wrap(err, "Could not unmarshall Yaml: %s\n")
 	}
 	for nodeName, node := range nodeMap {
+		err = node.Check()
+		if err != nil {
+			return errors.Errorf("error on node %s: %s", nodeName, err)
+		}
 		nodeDB.Nodes[nodeName] = node
 	}
 	err = nodeDB.Persist()

@@ -29,11 +29,11 @@ var (
 		},
 	}
 	SetYes   bool
-	SetForce bool // currently unused
+	SetForce bool // no hash checking, so always using force
 )
 
 func init() {
-	baseCmd.PersistentFlags().BoolVarP(&SetForce, "force", "f", false, "Force node delete")
+	SetForce = true
 	baseCmd.PersistentFlags().BoolVarP(&SetYes, "yes", "y", false, "Set 'yes' to all questions asked")
 
 }

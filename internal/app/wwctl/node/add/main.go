@@ -16,6 +16,12 @@ the required type is returned
 */
 func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
+		// run converters for different types
+		for _, c := range vars.converters {
+			if err := c(); err != nil {
+				return err
+			}
+		}
 		// remove the default network as all network values are assigned
 		// to this network
 		if _, ok := vars.nodeConf.NetDevs["default"]; ok && vars.netName != "" {
@@ -35,6 +41,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 		set := wwapiv1.NodeAddParameter{
 			NodeConfYaml: string(buffer[:]),
 			NodeNames:    args,
+			Force:        true,
 		}
 		return apinode.NodeAdd(&set)
 	}
