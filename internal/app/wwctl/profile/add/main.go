@@ -44,10 +44,6 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	if !SetYes {
 		// The checks run twice in the prompt case.
 		// Avoiding putting in a blocking prompt in an API.
-		err = apiprofile.AddProfile(&set, false)
-		if err != nil {
-			return
-		}
 		_, _, err = apiprofile.ProfileSetParameterCheck(&set, false)
 		if err != nil {
 			return
@@ -58,5 +54,5 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			return
 		}
 	}
-	return apiprofile.ProfileSet(&set)
+	return apiprofile.AddProfile(&set, false)
 }
