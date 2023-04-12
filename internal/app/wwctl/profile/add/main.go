@@ -13,50 +13,48 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func CobraRunE(cmd *cobra.Command, args []string) (err error) {
-	// run converters for different types
-	for _, c := range Converters {
-		if err := c(); err != nil {
-			return err
+func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err error) {
+	return func(cmd *cobra.Command, args []string) (err error) {
+		// run converters for different types
+		for _, c := range Converters {
+			if err := c(); err != nil {
+				return err
+			}
 		}
-	}
-	// remove the default network as the all network values are assigned
-	// to this network
-	if NetName != "" {
-		netDev := *ProfileConf.NetDevs["default"]
-		ProfileConf.NetDevs[NetName] = &netDev
-		delete(ProfileConf.NetDevs, "default")
+		// remove the default network as the all network values are assigned
+		// to this network
+		if vars.netName != "" {
+			netDev := *vars.profileConf.NetDevs["default"]
+			vars.profileConf.NetDevs[vars.netName] = &netDev
+			delete(vars.profileConf.NetDevs, "default")
+		}
 
-	}
-	buffer, err := yaml.Marshal(ProfileConf)
-	if err != nil {
-		wwlog.Error("Cant marshall nodeInfo", err)
-		os.Exit(1)
-	}
-	set := wwapiv1.NodeSetParameter{
-		NodeConfYaml: string(buffer[:]),
-		NetdevDelete: SetNetDevDel,
-		AllNodes:     SetNodeAll,
-		Force:        SetForce,
-		NodeNames:    args,
-	}
-
-	if !SetYes {
-		// The checks run twice in the prompt case.
-		// Avoiding putting in a blocking prompt in an API.
-		err = apiprofile.AddProfile(&set, false)
+		buffer, err := yaml.Marshal(vars.profileConf)
 		if err != nil {
-			return
+			wwlog.Error("Cant marshall nodeInfo", err)
+			os.Exit(1)
 		}
-		_, _, err = apiprofile.ProfileSetParameterCheck(&set, false)
-		if err != nil {
-			return
+		set := wwapiv1.NodeSetParameter{
+			NodeConfYaml: string(buffer[:]),
+			NetdevDelete: SetNetDevDel,
+			AllNodes:     SetNodeAll,
+			Force:        SetForce,
+			NodeNames:    args,
 		}
 
-		yes := util.ConfirmationPrompt(fmt.Sprintf("Are you sure you add the profile %s", args))
-		if !yes {
-			return
+		if !SetYes {
+			// The checks run twice in the prompt case.
+			// Avoiding putting in a blocking prompt in an API.
+			_, _, err = apiprofile.ProfileSetParameterCheck(&set, false)
+			if err != nil {
+				return
+			}
+
+			yes := util.ConfirmationPrompt(fmt.Sprintf("Are you sure you add the profile %s", args))
+			if !yes {
+				return
+			}
 		}
+		return apiprofile.AddProfile(&set)
 	}
-	return apiprofile.ProfileSet(&set)
 }
