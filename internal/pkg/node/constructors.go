@@ -309,6 +309,14 @@ func (config *NodeYaml) ListAllProfiles() []string {
 	return ret
 }
 
+/*
+FindDiscoverableNode returns the first discoverable node and an
+interface to associate with the discovered interface. If the node has
+a primary interface, it is returned; otherwise, the first interface
+without a hardware address is returned.
+
+If no unconfigured nodes are found, an error is returned.
+*/
 func (config *NodeYaml) FindDiscoverableNode() (NodeInfo, string, error) {
 	var ret NodeInfo
 
@@ -317,6 +325,9 @@ func (config *NodeYaml) FindDiscoverableNode() (NodeInfo, string, error) {
 	for _, node := range nodes {
 		if !node.Discoverable.GetB() {
 			continue
+		}
+		if _, ok := node.NetDevs[node.PrimaryNetDev.Get()]; ok {
+			return node, node.PrimaryNetDev.Get(), nil
 		}
 		for netdev, dev := range node.NetDevs {
 			if !dev.Hwaddr.Defined() {
