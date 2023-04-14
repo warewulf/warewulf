@@ -1,4 +1,4 @@
-package warewulfconf
+package config
 
 type BuildConfig struct {
 	Bindir         string `default:"@BINDIR@"`

@@ -1,4 +1,4 @@
-package warewulfconf
+package config
 
 import (
 	"github.com/creasty/defaults"

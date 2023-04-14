@@ -25,10 +25,11 @@
 /etc/bash_completion.d/
 warewulf.spec
 internal/pkg/buildconfig/setconfigs.go
-internal/pkg/warewulfconf/buildconfig.go
+internal/pkg/config/buildconfig.go
 include/systemd/warewulfd.service
 _dist/
 config
+!internal/pkg/config
 warewulf-*.tar.gz
 Defaults.mk
 /etc/wwapid.config

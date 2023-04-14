@@ -17,7 +17,7 @@ import (
 	"github.com/coreos/go-systemd/daemon"
 	"github.com/google/uuid"
 	"github.com/hpcng/warewulf/internal/pkg/pidfile"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 	"github.com/talos-systems/go-smbios/smbios"

@@ -3,7 +3,7 @@ package container
 import (
 	"path"
 
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 )
 
 func SourceParentDir() string {

@@ -1,7 +1,7 @@
 package start
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"

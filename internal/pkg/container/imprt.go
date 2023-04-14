@@ -9,7 +9,7 @@ import (
 	"github.com/containers/storage/drivers/copy"
 	"github.com/pkg/errors"
 
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/oci"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 )

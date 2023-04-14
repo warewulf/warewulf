@@ -15,7 +15,7 @@ import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/ssh"
 	"github.com/hpcng/warewulf/internal/app/wwctl/version"
 	"github.com/hpcng/warewulf/internal/pkg/help"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 )

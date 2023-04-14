@@ -12,7 +12,7 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/api/apiconfig"
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
