@@ -45,7 +45,8 @@ type RootConf struct {
 	Nfs             *NfsConf      `yaml:"nfs"`
 	MountsContainer []*MountEntry `yaml:"container mounts" default:"[{\"source\": \"/etc/resolv.conf\", \"dest\": \"/etc/resolv.conf\"}]"`
 	Paths           *BuildConfig  `yaml:"paths"`
-	readConf        bool
+
+	fromFile        bool
 }
 
 
@@ -68,7 +69,7 @@ func Get() (RootConf) {
 	//       so using wwlog.Verbose or wwlog.Debug won't work
 	if reflect.ValueOf(cachedConf).IsZero() {
 		cachedConf = New()
-		cachedConf.readConf = false
+		cachedConf.fromFile = false
 	}
 	return cachedConf
 }
@@ -106,7 +107,7 @@ func (conf *RootConf) Read(data []byte) (err error) {
 		conf.Tftp.IpxeBinaries = defIpxe
 	}
 	cachedConf = *conf
-	cachedConf.readConf = true
+	cachedConf.fromFile = true
 	return
 }
 
@@ -179,10 +180,10 @@ func (conf *RootConf) SetDynamicDefaults() (err error) {
 }
 
 
-// Initialized returns true if [RootConf] memory was read from disk,
-// or false otherwise.
-func (conf *RootConf) Initialized() bool {
-	return conf.readConf
+// InitializedFromFile returns true if [RootConf] memory was read from
+// a file, or false otherwise.
+func (conf *RootConf) InitializedFromFile() bool {
+	return conf.fromFile
 }
 
 

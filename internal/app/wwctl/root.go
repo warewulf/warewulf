@@ -77,7 +77,7 @@ func rootPersistentPreRunE(cmd *cobra.Command, args []string) (err error) {
 		wwlog.SetLogLevel(LogLevel)
 	}
 	conf := warewulfconf.Get()
-	if !AllowEmptyConf && !conf.Initialized() {
+	if !AllowEmptyConf && !conf.InitializedFromFile() {
 		if WarewulfConfArg != "" {
 			err = conf.ReadConf(WarewulfConfArg)
 		} else if os.Getenv("WAREWULFCONF") != "" {
