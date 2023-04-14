@@ -59,10 +59,3 @@ func (s *NfsConf) Unmarshal(unmarshal func(interface{}) error) error {
 	}
 	return nil
 }
-
-// Waste processor cycles to make code more readable
-
-func DataStore() string {
-	_ = Get()
-	return cachedConf.Warewulf.DataStore
-}
