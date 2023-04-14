@@ -17,7 +17,7 @@ dhcp configuration is checked.
 */
 func Dhcp() (err error) {
 
-	controller := warewulfconf.New()
+	controller := warewulfconf.Get()
 
 	if !controller.Dhcp.Enabled {
 		wwlog.Info("This system is not configured as a Warewulf DHCP controller")

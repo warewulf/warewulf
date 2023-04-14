@@ -24,7 +24,7 @@ import (
 
 func main() {
 	log.Println("Client running")
-	conf := warewulfconf.New()
+	conf := warewulfconf.Get()
 
 	// Read the config file.
 	config, err := apiconfig.NewClient(path.Join(conf.Paths.Sysconfdir, "warewulf/wwapic.conf"))

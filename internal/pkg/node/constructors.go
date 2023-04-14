@@ -40,7 +40,7 @@ defaultnode:
       netmask: 255.255.255.0`
 
 func init() {
-	conf := warewulfconf.New()
+	conf := warewulfconf.Get()
 	if ConfigFile == "" {
 		ConfigFile = path.Join(conf.Paths.Sysconfdir, "warewulf/nodes.conf")
 	}

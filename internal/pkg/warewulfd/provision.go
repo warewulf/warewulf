@@ -30,7 +30,7 @@ type iPxeTemplate struct {
 }
 
 func ProvisionSend(w http.ResponseWriter, req *http.Request) {
-	conf := warewulfconf.New()
+	conf := warewulfconf.Get()
 
 	rinfo, err := parseReq(req)
 	if err != nil {

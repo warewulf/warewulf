@@ -16,7 +16,7 @@ nfs server.
 */
 func NFS() error {
 
-	controller := warewulfconf.New()
+	controller := warewulfconf.Get()
 
 	if controller.Nfs.Enabled {
 		if controller.Warewulf.EnableHostOverlay {

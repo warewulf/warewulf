@@ -49,7 +49,7 @@ func GetRootCommand() *cobra.Command {
 }
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	conf := warewulfconf.New()
+	conf := warewulfconf.Get()
 
 	pid, err := pidfile.Write(PIDFile)
 	if err != nil && pid == -1 {

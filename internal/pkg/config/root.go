@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"reflect"
 
 	"github.com/pkg/errors"
 
@@ -44,35 +45,37 @@ type RootConf struct {
 	Nfs             *NfsConf      `yaml:"nfs"`
 	MountsContainer []*MountEntry `yaml:"container mounts" default:"[{\"source\": \"/etc/resolv.conf\", \"dest\": \"/etc/resolv.conf\"}]"`
 	Paths           *BuildConfig  `yaml:"paths"`
-	current         bool
 	readConf        bool
 }
 
 
-// New returns a [RootConf] which may have been cached from a previous
-// call.
+// New returns a [RootConf] initialized with empty values.
 func New() (conf RootConf) {
-	// NOTE: This function can be called before any log level is set
-	//       so using wwlog.Verbose or wwlog.Debug won't work
-	if !cachedConf.current {
-		conf.Warewulf = new(WarewulfConf)
-		conf.Dhcp = new(DhcpConf)
-		conf.Tftp = new(TftpConf)
-		conf.Nfs = new(NfsConf)
-		conf.Paths = new(BuildConfig)
-		_ = defaults.Set(&conf)
-		cachedConf = conf
-		cachedConf.readConf = false
-		cachedConf.current = true
-	} else {
-		// If cached struct isn't empty, use it as the return value
-		conf = cachedConf
-	}
-	return conf
+	conf.Warewulf = new(WarewulfConf)
+	conf.Dhcp = new(DhcpConf)
+	conf.Tftp = new(TftpConf)
+	conf.Nfs = new(NfsConf)
+	conf.Paths = new(BuildConfig)
+	_ = defaults.Set(&conf)
+	return
 }
 
-// ReadConf populates the configuration with the values from a
-// configuration file.
+
+// Get returns a [RootConf] which may have been cached from a previous
+// call.
+func Get() (RootConf) {
+	// NOTE: This function can be called before any log level is set
+	//       so using wwlog.Verbose or wwlog.Debug won't work
+	if reflect.ValueOf(cachedConf).IsZero() {
+		cachedConf = New()
+		cachedConf.readConf = false
+	}
+	return cachedConf
+}
+
+
+// ReadConf populates [RootConf] with the values from a configuration
+// file.
 func (conf *RootConf) ReadConf(confFileName string) (err error) {
 	wwlog.Debug("Reading warewulf.conf from: %s", confFileName)
 	fileHandle, err := os.ReadFile(confFileName)
@@ -82,8 +85,8 @@ func (conf *RootConf) ReadConf(confFileName string) (err error) {
 	return conf.Read(fileHandle)
 }
 
-// Read populates the configuration with the values from a yaml
-// document.
+
+// Read populates [RootConf] with the values from a yaml document.
 func (conf *RootConf) Read(data []byte) (err error) {
 	// ipxe binaries are merged not overwritten, store defaults separate
 	defIpxe := make(map[string]string)
@@ -103,13 +106,13 @@ func (conf *RootConf) Read(data []byte) (err error) {
 		conf.Tftp.IpxeBinaries = defIpxe
 	}
 	cachedConf = *conf
-	cachedConf.current = true
 	cachedConf.readConf = true
 	return
 }
 
-// SetDynamicDefaults populates the configuration with plausible
-// defaults for the runtime environment.
+
+// SetDynamicDefaults populates [RootConf] with plausible defaults for
+// the runtime environment.
 func (conf *RootConf) SetDynamicDefaults() (err error) {
 	if conf.Ipaddr == "" || conf.Netmask == "" || conf.Network == "" {
 		var mask net.IPMask
@@ -172,18 +175,18 @@ func (conf *RootConf) SetDynamicDefaults() (err error) {
 		}
 	}
 	cachedConf = *conf
-	cachedConf.current = true
 	return
 }
 
-// Initialized returns true if the configuration in memory was read
-// from disk, or false otherwise.
+
+// Initialized returns true if [RootConf] memory was read from disk,
+// or false otherwise.
 func (conf *RootConf) Initialized() bool {
 	return conf.readConf
 }
 
 
-// Persist writes the configuration to a file as a yaml document.
+// Persist writes [RootConf] to a file as a yaml document.
 func (controller *RootConf) Persist() error {
 
 	out, err := yaml.Marshal(controller)

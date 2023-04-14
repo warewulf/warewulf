@@ -29,7 +29,7 @@ func run() error {
 
 	log.Println("test0")
 
-	conf := warewulfconf.New()
+	conf := warewulfconf.Get()
 	// Read the config file.
 	config, err := apiconfig.NewClientServer(path.Join(conf.Paths.Sysconfdir, "warewulf/wwapird.conf"))
 	if err != nil {

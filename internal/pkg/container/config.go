@@ -7,7 +7,7 @@ import (
 )
 
 func SourceParentDir() string {
-	conf := warewulfconf.New()
+	conf := warewulfconf.Get()
 	return conf.Paths.WWChrootdir
 }
 
@@ -20,7 +20,7 @@ func RootFsDir(name string) string {
 }
 
 func ImageParentDir() string {
-	conf := warewulfconf.New()
+	conf := warewulfconf.Get()
 	return path.Join(conf.Paths.WWProvisiondir, "container/")
 }
 

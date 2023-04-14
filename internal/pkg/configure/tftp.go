@@ -11,7 +11,7 @@ import (
 )
 
 func TFTP() error {
-	controller := warewulfconf.New()
+	controller := warewulfconf.Get()
 	var tftpdir string = path.Join(controller.Paths.Tftpdir, "warewulf")
 
 	err := os.MkdirAll(tftpdir, 0755)

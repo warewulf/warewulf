@@ -33,7 +33,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		wwlog.Error("Unknown Warewulf container: %s", containerName)
 		os.Exit(1)
 	}
-	conf := warewulfconf.New()
+	conf := warewulfconf.Get()
 	mountPts := conf.MountsContainer
 	mountPts = append(container.InitMountPnts(binds), mountPts...)
 	// check for valid mount points

@@ -18,7 +18,7 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 
-	controller := warewulfconf.New()
+	controller := warewulfconf.Get()
 
 	if controller.Ipaddr == "" {
 		return fmt.Errorf("warewulf Server IP Address is not properly configured")

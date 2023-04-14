@@ -55,7 +55,7 @@ nodes:
 WW_INTERNAL: 0
     `
 
-	conf := warewulfconf.New()
+	conf := warewulfconf.Get()
 	err := conf.Read([]byte(conf_yml))
 	assert.NoError(t, err)
 	warewulfd.SetNoDaemon()

@@ -10,7 +10,7 @@ import (
 func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	if SetForeground {
-		conf := warewulfconf.New()
+		conf := warewulfconf.Get()
 		conf.Warewulf.Syslog = false
 		return errors.Wrap(warewulfd.RunServer(), "failed to start Warewulf server")
 	} else {

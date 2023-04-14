@@ -61,7 +61,7 @@ func DaemonInitLogging() error {
 		wwlog.SetLogLevel(wwlog.SERV)
 	}
 
-	conf := warewulfconf.New()
+	conf := warewulfconf.Get()
 
 	if conf.Warewulf.Syslog {
 

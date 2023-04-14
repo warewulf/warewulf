@@ -17,7 +17,7 @@ Reads a file file from the host fs. If the file has nor '/' prefix
 the path is relative to Paths.SysconfdirTemplates in the file are no evaluated.
 */
 func templateFileInclude(inc string) string {
-	conf := warewulfconf.New()
+	conf := warewulfconf.Get()
 	if !strings.HasPrefix(inc, "/") {
 		inc = path.Join(conf.Paths.Sysconfdir, "warewulf", inc)
 	}
@@ -35,7 +35,7 @@ is the file to read, the second the abort string
 Templates in the file are no evaluated.
 */
 func templateFileBlock(inc string, abortStr string) (string, error) {
-	conf := warewulfconf.New()
+	conf := warewulfconf.Get()
 	if !strings.HasPrefix(inc, "/") {
 		inc = path.Join(conf.Paths.Sysconfdir, "warewulf", inc)
 	}

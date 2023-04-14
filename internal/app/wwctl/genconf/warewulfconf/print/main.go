@@ -9,7 +9,7 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
-	conf := warewulfconf.New()
+	conf := warewulfconf.Get()
 	buffer, err := yaml.Marshal(&conf)
 	if err != nil {
 		return

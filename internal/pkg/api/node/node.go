@@ -317,7 +317,7 @@ func NodeStatus(nodeNames []string) (nodeStatusResponse *wwapiv1.NodeStatusRespo
 		Nodes map[string]*nodeStatusInternal `json:"nodes"`
 	}
 
-	controller := warewulfconf.New()
+	controller := warewulfconf.Get()
 
 	if controller.Ipaddr == "" {
 		err = fmt.Errorf("the Warewulf Server IP Address is not properly configured")
