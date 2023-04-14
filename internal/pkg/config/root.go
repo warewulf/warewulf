@@ -1,4 +1,11 @@
+// Package config reads, parses, and represents the warewulf.conf
+// config file.
+//
+// warewulf.conf is a yaml-formatted configuration file that includes
+// configuration for the Warewulf daemon and commands, as well as the
+// DHCP, TFTP and NFS services that Warewulf manages.
 package config
+
 
 import (
 	"fmt"
@@ -12,15 +19,39 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var cachedConf ControllerConf
 
-var ConfigFile string
+var (
+	cachedConf RootConf
+	ConfigFile string
+)
 
-/*
-Creates a new empty ControllerConf object, returns a cached
-one if called in a nother context.
-*/
-func New() (conf ControllerConf) {
+
+// RootConf is the main Warewulf configuration structure. It stores
+// some information about the Warewulf server locally, and has
+// [WarewulfConf], [DhcpConf], [TftpConf], and [NfsConf] sub-sections.
+type RootConf struct {
+	WWInternal      int           `yaml:"WW_INTERNAL"`
+	Comment         string        `yaml:"comment,omitempty"`
+	Ipaddr          string        `yaml:"ipaddr"`
+	Ipaddr6         string        `yaml:"ipaddr6,omitempty"`
+	Netmask         string        `yaml:"netmask"`
+	Network         string        `yaml:"network,omitempty"`
+	Ipv6net         string        `yaml:"ipv6net,omitempty"`
+	Fqdn            string        `yaml:"fqdn,omitempty"`
+	Warewulf        *WarewulfConf `yaml:"warewulf"`
+	Dhcp            *DhcpConf     `yaml:"dhcp"`
+	Tftp            *TftpConf     `yaml:"tftp"`
+	Nfs             *NfsConf      `yaml:"nfs"`
+	MountsContainer []*MountEntry `yaml:"container mounts" default:"[{\"source\": \"/etc/resolv.conf\", \"dest\": \"/etc/resolv.conf\"}]"`
+	Paths           *BuildConfig  `yaml:"paths"`
+	current         bool
+	readConf        bool
+}
+
+
+// New returns a [RootConf] which may have been cached from a previous
+// call.
+func New() (conf RootConf) {
 	// NOTE: This function can be called before any log level is set
 	//       so using wwlog.Verbose or wwlog.Debug won't work
 	if !cachedConf.current {
@@ -40,10 +71,9 @@ func New() (conf ControllerConf) {
 	return conf
 }
 
-/*
-Populate the configuration with the values from the configuration file.
-*/
-func (conf *ControllerConf) ReadConf(confFileName string) (err error) {
+// ReadConf populates the configuration with the values from a
+// configuration file.
+func (conf *RootConf) ReadConf(confFileName string) (err error) {
 	wwlog.Debug("Reading warewulf.conf from: %s", confFileName)
 	fileHandle, err := os.ReadFile(confFileName)
 	if err != nil {
@@ -52,10 +82,9 @@ func (conf *ControllerConf) ReadConf(confFileName string) (err error) {
 	return conf.Read(fileHandle)
 }
 
-/*
-Populate the configuration with the values from the given yaml information
-*/
-func (conf *ControllerConf) Read(data []byte) (err error) {
+// Read populates the configuration with the values from a yaml
+// document.
+func (conf *RootConf) Read(data []byte) (err error) {
 	// ipxe binaries are merged not overwritten, store defaults separate
 	defIpxe := make(map[string]string)
 	for k, v := range conf.Tftp.IpxeBinaries {
@@ -79,10 +108,9 @@ func (conf *ControllerConf) Read(data []byte) (err error) {
 	return
 }
 
-/*
-Set the runtime defaults like IP address of running system to the config
-*/
-func (conf *ControllerConf) SetDynamicDefaults() (err error) {
+// SetDynamicDefaults populates the configuration with plausible
+// defaults for the runtime environment.
+func (conf *RootConf) SetDynamicDefaults() (err error) {
 	if conf.Ipaddr == "" || conf.Netmask == "" || conf.Network == "" {
 		var mask net.IPMask
 		var network *net.IPNet
@@ -148,9 +176,34 @@ func (conf *ControllerConf) SetDynamicDefaults() (err error) {
 	return
 }
 
-/*
-Return if configuration was read from disk
-*/
-func (conf *ControllerConf) Initialized() bool {
+// Initialized returns true if the configuration in memory was read
+// from disk, or false otherwise.
+func (conf *RootConf) Initialized() bool {
 	return conf.readConf
+}
+
+
+// Persist writes the configuration to a file as a yaml document.
+func (controller *RootConf) Persist() error {
+
+	out, err := yaml.Marshal(controller)
+	if err != nil {
+		return err
+	}
+
+	file, err := os.OpenFile(ConfigFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+		wwlog.Error("%s", err)
+		os.Exit(1)
+	}
+
+	defer file.Close()
+
+	_, err = file.WriteString(string(out)+"\n")
+	if err != nil {
+		wwlog.Error("Unable to write to warewulf.conf")
+		return err
+	}
+
+	return nil
 }
