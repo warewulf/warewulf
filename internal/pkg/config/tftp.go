@@ -9,5 +9,5 @@ type TFTPConf struct {
 	SystemdName  string            `yaml:"systemd name" default:"tftp"`
 
 	// Path is relative to buildconfig.DATADIR()
-	IpxeBinaries map[string]string `yaml:"ipxe" default:"{\"00:09\": \"x86_64.efi\",\"00:00\": \"x86_64.kpxe\",\"00:0B\": \"arm64.efi\",\"00:07\":  \"x86_64.efi\"}"`
+	IpxeBinaries map[string]string `yaml:"ipxe" default:"{\"00:09\": \"ipxe/ipxe-snponly-x86_64.efi\",\"00:00\": \"ipxe/undionly.kpxe\",\"00:0B\": \"ipxe/arm64-efi/snponly.efi\",\"00:07\":  \"ipxe/ipxe-snponly-x86_64.efi\"}"`
 }
