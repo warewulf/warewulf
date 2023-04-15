@@ -79,11 +79,11 @@ func rootPersistentPreRunE(cmd *cobra.Command, args []string) (err error) {
 	conf := warewulfconf.Get()
 	if !AllowEmptyConf && !conf.InitializedFromFile() {
 		if WarewulfConfArg != "" {
-			err = conf.ReadConf(WarewulfConfArg)
+			err = conf.Read(WarewulfConfArg)
 		} else if os.Getenv("WAREWULFCONF") != "" {
-			err = conf.ReadConf(os.Getenv("WAREWULFCONF"))
+			err = conf.Read(os.Getenv("WAREWULFCONF"))
 		} else {
-			err = conf.ReadConf(warewulfconf.ConfigFile)
+			err = conf.Read(warewulfconf.ConfigFile)
 		}
 	} else {
 		err = conf.SetDynamicDefaults()

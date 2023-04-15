@@ -243,7 +243,7 @@ nodes:
 	_, warewulfConfErr = tempWarewulfConf.Write([]byte(conf_yml))
 	assert.NoError(t, warewulfConfErr)
 	assert.NoError(t, tempWarewulfConf.Sync())
-	warewulfconf.ConfigFile = tempWarewulfConf.Name()
+	warewulfconf.New().Read(tempWarewulfConf.Name())
 
 	nodes_yml := `WW_INTERNAL: 43`
 	tempNodeConf, nodesConfErr := os.CreateTemp("", "nodes.conf-")

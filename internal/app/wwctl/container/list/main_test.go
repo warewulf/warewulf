@@ -56,7 +56,7 @@ WW_INTERNAL: 0
     `
 
 	conf := warewulfconf.Get()
-	err := conf.Read([]byte(conf_yml))
+	err := conf.Parse([]byte(conf_yml))
 	assert.NoError(t, err)
 	warewulfd.SetNoDaemon()
 	for _, tt := range tests {

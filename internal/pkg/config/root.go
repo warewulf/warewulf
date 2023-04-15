@@ -21,10 +21,7 @@ import (
 )
 
 
-var (
-	cachedConf RootConf
-	ConfigFile string
-)
+var cachedConf RootConf
 
 
 // RootConf is the main Warewulf configuration structure. It stores
@@ -50,65 +47,67 @@ type RootConf struct {
 }
 
 
-// New returns a [RootConf] initialized with empty values.
-func New() (conf RootConf) {
-	conf.Warewulf = new(WarewulfConf)
-	conf.Dhcp = new(DhcpConf)
-	conf.Tftp = new(TftpConf)
-	conf.Nfs = new(NfsConf)
-	conf.Paths = new(BuildConfig)
-	_ = defaults.Set(&conf)
-	return
+// New caches and returns a new [RootConf] initialized with empty
+// values, clearing replacing any previously cached value.
+func New() (*RootConf) {
+	cachedConf = RootConf{}
+	cachedConf.fromFile = false
+	cachedConf.Warewulf = new(WarewulfConf)
+	cachedConf.Dhcp = new(DhcpConf)
+	cachedConf.Tftp = new(TftpConf)
+	cachedConf.Nfs = new(NfsConf)
+	cachedConf.Paths = new(BuildConfig)
+	if err := defaults.Set(&cachedConf); err != nil {
+		panic(err)
+	}
+	return &cachedConf
 }
 
 
-// Get returns a [RootConf] which may have been cached from a previous
-// call.
-func Get() (RootConf) {
+// Get returns a previously cached [RootConf] if it exists, or returns
+// a new RootConf.
+func Get() (*RootConf) {
 	// NOTE: This function can be called before any log level is set
 	//       so using wwlog.Verbose or wwlog.Debug won't work
 	if reflect.ValueOf(cachedConf).IsZero() {
-		cachedConf = New()
-		cachedConf.fromFile = false
+		cachedConf = *New()
 	}
-	return cachedConf
+	return &cachedConf
 }
 
 
 // ReadConf populates [RootConf] with the values from a configuration
 // file.
-func (conf *RootConf) ReadConf(confFileName string) (err error) {
+func (conf *RootConf) Read(confFileName string) (error) {
 	wwlog.Debug("Reading warewulf.conf from: %s", confFileName)
-	fileHandle, err := os.ReadFile(confFileName)
+	data, err := os.ReadFile(confFileName)
 	if err != nil {
 		return err
 	}
-	return conf.Read(fileHandle)
+	return conf.Parse(data)
 }
 
 
 // Read populates [RootConf] with the values from a yaml document.
-func (conf *RootConf) Read(data []byte) (err error) {
+func (conf *RootConf) Parse(data []byte) (error) {
 	// ipxe binaries are merged not overwritten, store defaults separate
 	defIpxe := make(map[string]string)
 	for k, v := range conf.Tftp.IpxeBinaries {
 		defIpxe[k] = v
 		delete(conf.Tftp.IpxeBinaries, k)
 	}
-	err = yaml.Unmarshal(data, &conf)
-	if err != nil {
-		return
+	if err := yaml.Unmarshal(data, &conf); err != nil {
+		return err
 	}
-	err = conf.SetDynamicDefaults()
-	if err != nil {
-		return
+	if err := conf.SetDynamicDefaults(); err != nil {
+		return err
 	}
 	if len(conf.Tftp.IpxeBinaries) == 0 {
 		conf.Tftp.IpxeBinaries = defIpxe
 	}
 	cachedConf = *conf
 	cachedConf.fromFile = true
-	return
+	return nil
 }
 
 
@@ -184,30 +183,4 @@ func (conf *RootConf) SetDynamicDefaults() (err error) {
 // a file, or false otherwise.
 func (conf *RootConf) InitializedFromFile() bool {
 	return conf.fromFile
-}
-
-
-// Persist writes [RootConf] to a file as a yaml document.
-func (controller *RootConf) Persist() error {
-
-	out, err := yaml.Marshal(controller)
-	if err != nil {
-		return err
-	}
-
-	file, err := os.OpenFile(ConfigFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
-		wwlog.Error("%s", err)
-		os.Exit(1)
-	}
-
-	defer file.Close()
-
-	_, err = file.WriteString(string(out)+"\n")
-	if err != nil {
-		wwlog.Error("Unable to write to warewulf.conf")
-		return err
-	}
-
-	return nil
 }

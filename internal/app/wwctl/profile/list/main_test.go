@@ -43,7 +43,7 @@ nodes:
 	_, warewulfConfErr = tempWarewulfConf.Write([]byte(conf_yml))
 	assert.NoError(t, warewulfConfErr)
 	assert.NoError(t, tempWarewulfConf.Sync())
-	warewulfconf.ConfigFile = tempWarewulfConf.Name()
+	warewulfconf.New().Read(tempWarewulfConf.Name())
 
 	tempNodeConf, nodesConfErr := os.CreateTemp("", "nodes.conf-")
 	assert.NoError(t, nodesConfErr)
