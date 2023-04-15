@@ -95,15 +95,15 @@ func (conf *RootConf) Read(confFileName string) (error) {
 func (conf *RootConf) Parse(data []byte) (error) {
 	// ipxe binaries are merged not overwritten, store defaults separate
 	defIpxe := make(map[string]string)
-	for k, v := range conf.TFTP.IPXEBinaries {
+	for k, v := range conf.TFTP.IpxeBinaries {
 		defIpxe[k] = v
-		delete(conf.TFTP.IPXEBinaries, k)
+		delete(conf.TFTP.IpxeBinaries, k)
 	}
 	if err := yaml.Unmarshal(data, &conf); err != nil {
 		return err
 	}
-	if len(conf.TFTP.IPXEBinaries) == 0 {
-		conf.TFTP.IPXEBinaries = defIpxe
+	if len(conf.TFTP.IpxeBinaries) == 0 {
+		conf.TFTP.IpxeBinaries = defIpxe
 	}
 	return nil
 }

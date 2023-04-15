@@ -12,7 +12,7 @@ import (
 
 func TFTP() error {
 	controller := warewulfconf.Get()
-	var tftpdir string = path.Join(controller.Paths.TFTPdir, "warewulf")
+	var tftpdir string = path.Join(controller.Paths.Tftpdir, "warewulf")
 
 	err := os.MkdirAll(tftpdir, 0755)
 	if err != nil {
@@ -22,7 +22,7 @@ func TFTP() error {
 
 	fmt.Printf("Writing PXE files to: %s\n", tftpdir)
 	copyCheck := make(map[string]bool)
-	for _, f := range controller.TFTP.IPXEBinaries {
+	for _, f := range controller.TFTP.IpxeBinaries {
 		if copyCheck[f] {
 			continue
 		}
