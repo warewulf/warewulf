@@ -85,8 +85,10 @@ func rootPersistentPreRunE(cmd *cobra.Command, args []string) (err error) {
 		} else {
 			err = conf.Read(warewulfconf.ConfigFile)
 		}
-	} else {
-		err = conf.SetDynamicDefaults()
 	}
+	if err != nil {
+		return
+	}
+	err = conf.SetDynamicDefaults()
 	return
 }

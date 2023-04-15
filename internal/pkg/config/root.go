@@ -76,19 +76,22 @@ func Get() (*RootConf) {
 }
 
 
-// ReadConf populates [RootConf] with the values from a configuration
+// Read populates [RootConf] with the values from a configuration
 // file.
 func (conf *RootConf) Read(confFileName string) (error) {
 	wwlog.Debug("Reading warewulf.conf from: %s", confFileName)
-	data, err := os.ReadFile(confFileName)
-	if err != nil {
+	if data, err := os.ReadFile(confFileName); err != nil {
 		return err
+	} else if err := conf.Parse(data); err != nil {
+		return err
+	} else {
+		conf.fromFile = true
+		return nil
 	}
-	return conf.Parse(data)
 }
 
 
-// Read populates [RootConf] with the values from a yaml document.
+// Parse populates [RootConf] with the values from a yaml document.
 func (conf *RootConf) Parse(data []byte) (error) {
 	// ipxe binaries are merged not overwritten, store defaults separate
 	defIpxe := make(map[string]string)
@@ -99,14 +102,9 @@ func (conf *RootConf) Parse(data []byte) (error) {
 	if err := yaml.Unmarshal(data, &conf); err != nil {
 		return err
 	}
-	if err := conf.SetDynamicDefaults(); err != nil {
-		return err
-	}
 	if len(conf.Tftp.IpxeBinaries) == 0 {
 		conf.Tftp.IpxeBinaries = defIpxe
 	}
-	cachedConf = *conf
-	cachedConf.fromFile = true
 	return nil
 }
 
@@ -174,7 +172,6 @@ func (conf *RootConf) SetDynamicDefaults() (err error) {
 			return errors.New("invalid ipv6 network size")
 		}
 	}
-	cachedConf = *conf
 	return
 }
 
