@@ -11,7 +11,7 @@ import (
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var err error
 	if allFunctions {
-		err = configure.Dhcp()
+		err = configure.DHCP()
 		if err != nil {
 			wwlog.Error("%s", err)
 			os.Exit(1)

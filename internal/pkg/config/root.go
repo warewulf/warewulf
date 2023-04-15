@@ -26,7 +26,7 @@ var cachedConf RootConf
 
 // RootConf is the main Warewulf configuration structure. It stores
 // some information about the Warewulf server locally, and has
-// [WarewulfConf], [DhcpConf], [TftpConf], and [NfsConf] sub-sections.
+// [WarewulfConf], [DHCPConf], [TFTPConf], and [NFSConf] sub-sections.
 type RootConf struct {
 	WWInternal      int           `yaml:"WW_INTERNAL"`
 	Comment         string        `yaml:"comment,omitempty"`
@@ -37,9 +37,9 @@ type RootConf struct {
 	Ipv6net         string        `yaml:"ipv6net,omitempty"`
 	Fqdn            string        `yaml:"fqdn,omitempty"`
 	Warewulf        *WarewulfConf `yaml:"warewulf"`
-	Dhcp            *DhcpConf     `yaml:"dhcp"`
-	Tftp            *TftpConf     `yaml:"tftp"`
-	Nfs             *NfsConf      `yaml:"nfs"`
+	DHCP            *DHCPConf     `yaml:"dhcp"`
+	TFTP            *TFTPConf     `yaml:"tftp"`
+	NFS             *NFSConf      `yaml:"nfs"`
 	MountsContainer []*MountEntry `yaml:"container mounts" default:"[{\"source\": \"/etc/resolv.conf\", \"dest\": \"/etc/resolv.conf\"}]"`
 	Paths           *BuildConfig  `yaml:"paths"`
 
@@ -53,9 +53,9 @@ func New() (*RootConf) {
 	cachedConf = RootConf{}
 	cachedConf.fromFile = false
 	cachedConf.Warewulf = new(WarewulfConf)
-	cachedConf.Dhcp = new(DhcpConf)
-	cachedConf.Tftp = new(TftpConf)
-	cachedConf.Nfs = new(NfsConf)
+	cachedConf.DHCP = new(DHCPConf)
+	cachedConf.TFTP = new(TFTPConf)
+	cachedConf.NFS = new(NFSConf)
 	cachedConf.Paths = new(BuildConfig)
 	if err := defaults.Set(&cachedConf); err != nil {
 		panic(err)
@@ -95,15 +95,15 @@ func (conf *RootConf) Read(confFileName string) (error) {
 func (conf *RootConf) Parse(data []byte) (error) {
 	// ipxe binaries are merged not overwritten, store defaults separate
 	defIpxe := make(map[string]string)
-	for k, v := range conf.Tftp.IpxeBinaries {
+	for k, v := range conf.TFTP.IPXEBinaries {
 		defIpxe[k] = v
-		delete(conf.Tftp.IpxeBinaries, k)
+		delete(conf.TFTP.IPXEBinaries, k)
 	}
 	if err := yaml.Unmarshal(data, &conf); err != nil {
 		return err
 	}
-	if len(conf.Tftp.IpxeBinaries) == 0 {
-		conf.Tftp.IpxeBinaries = defIpxe
+	if len(conf.TFTP.IPXEBinaries) == 0 {
+		conf.TFTP.IPXEBinaries = defIpxe
 	}
 	return nil
 }
@@ -141,14 +141,14 @@ func (conf *RootConf) SetDynamicDefaults() (err error) {
 			wwlog.Verbose("Network is not configured in warewulf.conf, using %s", conf.Network)
 		}
 	}
-	if conf.Dhcp.RangeStart == "" && conf.Dhcp.RangeEnd == "" {
+	if conf.DHCP.RangeStart == "" && conf.DHCP.RangeEnd == "" {
 		start := net.ParseIP(conf.Network).To4()
 		start[3] += 1
 		if start.Equal(net.ParseIP(conf.Ipaddr)) {
 			start[3] += 1
 		}
-		conf.Dhcp.RangeStart = start.String()
-		wwlog.Verbose("dhpd start is not configured in warewulf.conf, using %s", conf.Dhcp.RangeStart)
+		conf.DHCP.RangeStart = start.String()
+		wwlog.Verbose("dhpd start is not configured in warewulf.conf, using %s", conf.DHCP.RangeStart)
 		sz, _ := net.IPMask(net.ParseIP(conf.Netmask).To4()).Size()
 		range_end := (1 << (32 - sz)) / 8
 		if range_end > 127 {
@@ -156,8 +156,8 @@ func (conf *RootConf) SetDynamicDefaults() (err error) {
 		}
 		end := net.ParseIP(conf.Network).To4()
 		end[3] += byte(range_end)
-		conf.Dhcp.RangeEnd = end.String()
-		wwlog.Verbose("dhpd end is not configured in warewulf.conf, using %s", conf.Dhcp.RangeEnd)
+		conf.DHCP.RangeEnd = end.String()
+		wwlog.Verbose("dhpd end is not configured in warewulf.conf, using %s", conf.DHCP.RangeEnd)
 
 	}
 	// check validity of ipv6 net

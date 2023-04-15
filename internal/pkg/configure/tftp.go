@@ -12,7 +12,7 @@ import (
 
 func TFTP() error {
 	controller := warewulfconf.Get()
-	var tftpdir string = path.Join(controller.Paths.Tftpdir, "warewulf")
+	var tftpdir string = path.Join(controller.Paths.TFTPdir, "warewulf")
 
 	err := os.MkdirAll(tftpdir, 0755)
 	if err != nil {
@@ -22,7 +22,7 @@ func TFTP() error {
 
 	fmt.Printf("Writing PXE files to: %s\n", tftpdir)
 	copyCheck := make(map[string]bool)
-	for _, f := range controller.Tftp.IpxeBinaries {
+	for _, f := range controller.TFTP.IPXEBinaries {
 		if copyCheck[f] {
 			continue
 		}
@@ -33,13 +33,13 @@ func TFTP() error {
 		}
 	}
 
-	if !controller.Tftp.Enabled {
+	if !controller.TFTP.Enabled {
 		wwlog.Info("Warewulf does not auto start TFTP services due to disable by warewulf.conf")
 		os.Exit(0)
 	}
 
 	fmt.Printf("Enabling and restarting the TFTP services\n")
-	err = util.SystemdStart(controller.Tftp.SystemdName)
+	err = util.SystemdStart(controller.TFTP.SystemdName)
 	if err != nil {
 		wwlog.Error("%s", err)
 		return err

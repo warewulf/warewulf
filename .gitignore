@@ -28,8 +28,7 @@ internal/pkg/buildconfig/setconfigs.go
 internal/pkg/config/buildconfig.go
 include/systemd/warewulfd.service
 _dist/
-config
-!internal/pkg/config
+/config
 warewulf-*.tar.gz
 Defaults.mk
 /etc/wwapid.config

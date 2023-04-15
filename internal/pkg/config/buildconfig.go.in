@@ -8,7 +8,7 @@ type BuildConfig struct {
 	Datadir        string `default:"@DATADIR@"`
 	Localstatedir  string `default:"@LOCALSTATEDIR@"`
 	Srvdir         string `default:"@SRVDIR@"`
-	Tftpdir        string `default:"@TFTPDIR@"`
+	TFTPdir        string `default:"@TFTPDIR@"`
 	Firewallddir   string `default:"@FIREWALLDDIR@"`
 	Systemddir     string `default:"@SYSTEMDDIR@"`
 	WWOverlaydir   string `default:"@WWOVERLAYDIR@"`
