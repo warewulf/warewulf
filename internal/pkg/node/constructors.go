@@ -48,7 +48,7 @@ func init() {
 }
 
 /*
-Creates a new nodeDb object from the actual configuration
+Creates a new nodeDb object from the on-disk configuration
 */
 func New() (NodeYaml, error) {
 	wwlog.Verbose("Opening node configuration file: %s", ConfigFile)
@@ -60,6 +60,10 @@ func New() (NodeYaml, error) {
 }
 
 
+// Parse constructs a new nodeDb object from an input YAML
+// document. Passes any errors return from yaml.Unmarshal. Returns an
+// error if any parsed value is not of a valid type for the given
+// parameter.
 func Parse(data []byte) (NodeYaml, error) {
 	var ret NodeYaml
 	var err error
