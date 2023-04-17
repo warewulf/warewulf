@@ -1,10 +1,8 @@
-package list
+package add
 
 import (
 	"bytes"
-	"io"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -13,25 +11,39 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_List(t *testing.T) {
+func Test_Add(t *testing.T) {
 	tests := []struct {
-		name   string
-		args   []string
-		stdout string
-		inDb   string
+		name    string
+		args    []string
+		wantErr bool
+		stdout  string
+		outDb   string
 	}{
 		{
-			name: "profile list test",
-			args: []string{},
-			stdout: `PROFILE NAME  COMMENT/DESCRIPTION
-  default       --`,
-			inDb: `WW_INTERNAL: 43
+			name:    "single profile add",
+			args:    []string{"--yes", "p01"},
+			wantErr: false,
+			stdout:  "",
+			outDb: `WW_INTERNAL: 43
 nodeprofiles:
-  default: {}
-nodes:
-  n01:
-    profiles:
-    - default
+  p01:
+    network devices:
+      default: {}
+nodes: {}
+`,
+		},
+		{
+			name:    "single profile add with netname and netdev",
+			args:    []string{"--yes", "--netname", "primary", "--netdev", "eno3", "p02"},
+			wantErr: false,
+			stdout:  "",
+			outDb: `WW_INTERNAL: 43
+nodeprofiles:
+  p02:
+    network devices:
+      primary:
+        device: eno3
+nodes: {}
 `,
 		},
 	}
@@ -45,6 +57,7 @@ nodes:
 	assert.NoError(t, tempWarewulfConf.Sync())
 	warewulfconf.ConfigFile = tempWarewulfConf.Name()
 
+	nodes_yml := `WW_INTERNAL: 43`
 	tempNodeConf, nodesConfErr := os.CreateTemp("", "nodes.conf-")
 	assert.NoError(t, nodesConfErr)
 	defer os.Remove(tempNodeConf.Name())
@@ -55,40 +68,31 @@ nodes:
 		_, err = tempNodeConf.Seek(0, 0)
 		assert.NoError(t, err)
 		assert.NoError(t, tempNodeConf.Truncate(0))
-		_, err = tempNodeConf.Write([]byte(tt.inDb))
+		_, err = tempNodeConf.Write([]byte(nodes_yml))
 		assert.NoError(t, err)
 		assert.NoError(t, tempNodeConf.Sync())
-		assert.NoError(t, err)
 		t.Logf("Running test: %s\n", tt.name)
 		t.Run(tt.name, func(t *testing.T) {
 			baseCmd := GetCommand()
 			baseCmd.SetArgs(tt.args)
-			baseCmd.SetOut(nil)
-			baseCmd.SetErr(nil)
-			stdoutR, stdoutW, _ := os.Pipe()
-			oriout := os.Stdout
-			os.Stdout = stdoutW
+			buf := new(bytes.Buffer)
+			baseCmd.SetOut(buf)
+			baseCmd.SetErr(buf)
 			err = baseCmd.Execute()
-			if err != nil {
-				t.Errorf("Received error when running command, err: %v", err)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Got unwanted error: %s", err)
 				t.FailNow()
 			}
-			stdoutC := make(chan string)
-			go func() {
-				var buf bytes.Buffer
-				_, _ = io.Copy(&buf, stdoutR)
-				stdoutC <- buf.String()
-			}()
-			stdoutW.Close()
-			os.Stdout = oriout
-
-			stdout := <-stdoutC
-			stdout = strings.TrimSpace(stdout)
-			stdout = strings.ReplaceAll(stdout, " ", "")
-			assert.NotEmpty(t, stdout, "os.stdout should not be empty")
-			tt.stdout = strings.ReplaceAll(strings.TrimSpace(tt.stdout), " ", "")
-			if stdout != strings.ReplaceAll(strings.TrimSpace(tt.stdout), " ", "") {
-				t.Errorf("Got wrong output, got:\n '%s'\n, but want:\n '%s'\n", stdout, tt.stdout)
+			config, configErr := node.New()
+			assert.NoError(t, configErr)
+			dumpBytes, _ := config.Dump()
+			dump := string(dumpBytes)
+			if dump != tt.outDb {
+				t.Errorf("DB dump is wrong, got:'%s'\nwant:'%s'", dump, tt.outDb)
+				t.FailNow()
+			}
+			if buf.String() != tt.stdout {
+				t.Errorf("Got wrong output, got:'%s'\nwant:'%s'", buf.String(), tt.stdout)
 				t.FailNow()
 			}
 		})

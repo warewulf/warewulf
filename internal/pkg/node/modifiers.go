@@ -38,7 +38,6 @@ func (config *NodeYaml) AddNode(nodeID string) (NodeInfo, error) {
 }
 
 func (config *NodeYaml) DelNode(nodeID string) error {
-
 	if _, ok := config.Nodes[nodeID]; !ok {
 		return errors.New("Nodename does not exist: " + nodeID)
 	}
@@ -76,14 +75,14 @@ func (config *NodeYaml) AddProfile(profileID string) (NodeInfo, error) {
 	}
 
 	config.NodeProfiles[profileID] = &node
-
+	config.NodeProfiles[profileID].NetDevs = make(map[string]*NetDevs)
 	n.Id.Set(profileID)
+	n.NetDevs = make(map[string]*NetDevEntry)
 
 	return n, nil
 }
 
 func (config *NodeYaml) DelProfile(profileID string) error {
-
 	if _, ok := config.NodeProfiles[profileID]; !ok {
 		return errors.New("Profile does not exist: " + profileID)
 	}
@@ -121,7 +120,7 @@ func (config *NodeYaml) Persist() error {
 		wwlog.Error("%s", dumpErr)
 		os.Exit(1)
 	}
-	file, err := os.OpenFile(ConfigFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	file, err := os.OpenFile(ConfigFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
 		wwlog.Error("%s", err)
 		os.Exit(1)

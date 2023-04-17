@@ -14,8 +14,10 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var ConfigFile string
-var DefaultConfig string
+var (
+	ConfigFile    string
+	DefaultConfig string
+)
 
 // used as fallback if DefaultConfig can't be read
 var FallBackConf = `---

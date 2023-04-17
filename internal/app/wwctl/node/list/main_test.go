@@ -55,6 +55,7 @@ nodes:
 		assert.NoError(t, err)
 		assert.NoError(t, tempNodeConf.Truncate(0))
 		_, err = tempNodeConf.Write([]byte(tt.inDb))
+		assert.NoError(t, err)
 		assert.NoError(t, tempNodeConf.Sync())
 		t.Logf("Running test: %s\n", tt.name)
 		t.Run(tt.name, func(t *testing.T) {
