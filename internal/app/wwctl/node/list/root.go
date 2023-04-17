@@ -19,7 +19,7 @@ func GetCommand() *cobra.Command {
 		Use:                   "list [OPTIONS] [PATTERN]",
 		Short:                 "List nodes",
 		Long: "This command lists all configured nodes. Optionally, it will list only\n" +
-			"nodes matching a glob PATTERN.",
+			"nodes matching a PATTERN.",
 		RunE:    CobraRunE(&vars),
 		Aliases: []string{"ls"},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
