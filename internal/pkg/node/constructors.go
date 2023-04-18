@@ -17,8 +17,6 @@ import (
 var ConfigFile string
 var DefaultConfig string
 
-var cachedDB NodeYaml
-
 // used as fallback if DefaultConfig can't be read
 var FallBackConf = `---
 defaultnode:
@@ -47,38 +45,46 @@ func init() {
 	if DefaultConfig == "" {
 		DefaultConfig = path.Join(conf.Paths.Datadir, "warewulf/defaults.conf")
 	}
-	cachedDB.current = false
-	cachedDB.persist = true
 }
 
 /*
-Creates a new nodeDb object from the actual configuration
+Creates a new nodeDb object from the on-disk configuration
 */
 func New() (NodeYaml, error) {
-	if cachedDB.current {
-		wwlog.Debug("Returning cached object")
-		return cachedDB, nil
-	}
-	var ret NodeYaml
-
 	wwlog.Verbose("Opening node configuration file: %s", ConfigFile)
 	data, err := os.ReadFile(ConfigFile)
 	if err != nil {
-		return ret, err
+		return NodeYaml{}, err
 	}
+	return Parse(data)
+}
 
+
+// Parse constructs a new nodeDb object from an input YAML
+// document. Passes any errors return from yaml.Unmarshal. Returns an
+// error if any parsed value is not of a valid type for the given
+// parameter.
+func Parse(data []byte) (NodeYaml, error) {
+	var ret NodeYaml
+	var err error
 	wwlog.Debug("Unmarshaling the node configuration")
 	err = yaml.Unmarshal(data, &ret)
 	if err != nil {
 		return ret, err
 	}
 	wwlog.Debug("Checking nodes for types")
+	if ret.Nodes == nil {
+		ret.Nodes = map[string]*NodeConf{}
+	}
 	for nodeName, node := range ret.Nodes {
 		err = node.Check()
 		if err != nil {
 			wwlog.Warn("node: %s parsing error: %s", nodeName, err)
 			return ret, err
 		}
+	}
+	if ret.NodeProfiles == nil {
+		ret.NodeProfiles = map[string]*NodeConf{}
 	}
 	for profileName, profile := range ret.NodeProfiles {
 		err = profile.Check()
@@ -89,39 +95,9 @@ func New() (NodeYaml, error) {
 	}
 
 	wwlog.Debug("Returning node object")
-	cachedDB = ret
-	cachedDB.current = true
 	return ret, nil
 }
 
-/*
-Creates a database object from a given buffer, always create
-a new object, never return the cached one.
-*/
-func TestNew(buffer []byte) (db NodeYaml, err error) {
-	db.NodeProfiles = make(map[string]*NodeConf)
-	db.Nodes = make(map[string]*NodeConf)
-	err = yaml.Unmarshal(buffer, &db)
-	db.persist = false
-	cachedDB = db
-	cachedDB.current = true
-	wwlog.Debug("Created cached object")
-	return
-}
-
-func (config *NodeYaml) DBDump() (buffer []byte) {
-	for _, n := range config.Nodes {
-		n.Flatten()
-	}
-	for _, p := range config.NodeProfiles {
-		p.Flatten()
-	}
-	buffer, err := yaml.Marshal(config)
-	if err != nil {
-		wwlog.Warn("porblems on dumping nodedb: %s", err)
-	}
-	return
-}
 
 /*
 Get all the nodes of a configuration. This function also merges

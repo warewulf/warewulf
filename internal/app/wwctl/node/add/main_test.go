@@ -2,6 +2,7 @@ package add
 
 import (
 	"bytes"
+	"os"
 	"testing"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -235,21 +236,28 @@ nodes:
         ipaddr: 10.10.0.3
 `},
 	}
-	conf_yml := `
-WW_INTERNAL: 0
-    `
-	nodes_yml := `
-WW_INTERNAL: 43
-`
-	conf := warewulfconf.New()
-	err := conf.Read([]byte(conf_yml))
-	assert.NoError(t, err)
-	db, err := node.TestNew([]byte(nodes_yml))
-	assert.NoError(t, err)
+	conf_yml := `WW_INTERNAL: 0`
+	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
+	assert.NoError(t, warewulfConfErr)
+	defer os.Remove(tempWarewulfConf.Name())
+	_, warewulfConfErr = tempWarewulfConf.Write([]byte(conf_yml))
+	assert.NoError(t, warewulfConfErr)
+	assert.NoError(t, tempWarewulfConf.Sync())
+	warewulfconf.ConfigFile = tempWarewulfConf.Name()
+
+	nodes_yml := `WW_INTERNAL: 43`
+	tempNodeConf, nodesConfErr := os.CreateTemp("", "nodes.conf-")
+	assert.NoError(t, nodesConfErr)
+	defer os.Remove(tempNodeConf.Name())
+	node.ConfigFile = tempNodeConf.Name()
 	warewulfd.SetNoDaemon()
 	for _, tt := range tests {
-		db, err = node.TestNew([]byte(nodes_yml))
+		var err error
+		_, err = tempNodeConf.Seek(0, 0)
 		assert.NoError(t, err)
+		assert.NoError(t, tempNodeConf.Truncate(0))
+		_, err = tempNodeConf.Write([]byte(nodes_yml))
+		assert.NoError(t, tempNodeConf.Sync())
 		t.Logf("Running test: %s\n", tt.name)
 		t.Run(tt.name, func(t *testing.T) {
 			baseCmd := GetCommand()
@@ -262,7 +270,10 @@ WW_INTERNAL: 43
 				t.Errorf("Got unwanted error: %s", err)
 				t.FailNow()
 			}
-			dump := string(db.DBDump())
+			config, configErr := node.New()
+			assert.NoError(t, configErr)
+			dumpBytes, _ := config.Dump()
+			dump := string(dumpBytes)
 			if dump != tt.outDb {
 				t.Errorf("DB dump is wrong, got:'%s'\nwant:'%s'", dump, tt.outDb)
 				t.FailNow()
