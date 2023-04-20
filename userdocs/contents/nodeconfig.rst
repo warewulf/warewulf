@@ -5,10 +5,10 @@ Node Configuration
 The Node Configuration DB
 =========================
 
-As mentioned in the [Configuration](configuration) section, node
-configs are persisted to the ``nodes.conf`` YAML file, but generally
-it is best not to edit this file directly (however that is supported,
-it is just prone to errors).
+As mentioned in the :doc:`Warewulf Configuration <configuration>`
+section, node configs are persisted to the ``nodes.conf`` YAML file,
+but generally it is best not to edit this file directly (however that
+is supported, it is just prone to errors).
 
 This method of using a YAML configuration file as a backend datastore
 is both scalable and very lightweight. We've tested this out to over
