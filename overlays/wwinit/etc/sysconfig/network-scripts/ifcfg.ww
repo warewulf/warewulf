@@ -24,7 +24,9 @@ HWADDR={{ $netdev.Hwaddr }}
 {{ if $netdev.Type -}}
 TYPE={{ $netdev.Type }}
 {{ end -}}
-ONBOOT=yes
+{{ if $netdev.OnBoot -}}
+ONBOOT={{ $netdev.OnBoot }}
+{{ end -}}
 IPV6INIT=yes
 IPV6_AUTOCONF=yes
 IPV6_DEFROUTE=yes
