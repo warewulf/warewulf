@@ -37,7 +37,8 @@ defaultnode:
     dummy:
       device: eth0
       type: ethernet
-      netmask: 255.255.255.0`
+      netmask: 255.255.255.0
+      onboot: true`
 
 func init() {
 	conf := warewulfconf.New()
@@ -60,7 +61,6 @@ func New() (NodeYaml, error) {
 	}
 	return Parse(data)
 }
-
 
 // Parse constructs a new nodeDb object from an input YAML
 // document. Passes any errors return from yaml.Unmarshal. Returns an
@@ -99,7 +99,6 @@ func Parse(data []byte) (NodeYaml, error) {
 	wwlog.Debug("Returning node object")
 	return ret, nil
 }
-
 
 /*
 Get all the nodes of a configuration. This function also merges
