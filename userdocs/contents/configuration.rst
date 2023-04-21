@@ -86,11 +86,13 @@ explained as follows:
 
 * ``warewulf:secure``: When ``true``, this limits the Warewulf server
   to only respond to runtime overlay requests originating from a
-  privileged report port. This makes it so that only the ``root`` user
-  on a compute node can request the runtime overlay. While generally
-  there is nothing super "secure" in these overlays, this adds the
-  necessary protection that the user's can not obtain this
-  information.
+  privileged port. This prevents non-root users from requesting the
+  runtime overlay, which may contain sensitive information.
+
+  When ``true``, ``wwclient`` uses TCP port 987.
+
+  Changing this option requires rebuilding node overlays and rebooting
+  compute nodes, to configure them to use a privileged port.
 
 * ``warewulf:update interval``: This defines the frequency (in
   seconds) with which the Warewulf client on the compute node fetches
