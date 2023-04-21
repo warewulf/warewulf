@@ -138,7 +138,7 @@ func Test_nodeYaml_SetFrom(t *testing.T) {
 	t.Run("Get() default network mask", func(t *testing.T) {
 		value := test_node1.NetDevs["net0"].Netmask.Get()
 		if value != "255.255.255.0" {
-			t.Errorf("Get() returned wrong default netmask: %s", value)
+			t.Errorf("Get() returned wrong default netmask, got: %s want: 255.255.255.0", value)
 		}
 	})
 	t.Run("Get() default network mask", func(t *testing.T) {
