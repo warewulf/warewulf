@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Restrict access to `/warewulf/config` to root only. (#728, #742)
 - KERNEL VERSION column is too short. #690
 - Add support for resolving absolute path automatically. #493
+- The network device "OnBoot" parameter correctly configures the ONBOOT ifcfg
+  parameter. (#644)
 
 ### Changed
 
@@ -34,6 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    `wwctl --emptyconf genconfig warewulfconf print` for the available paths.
 - Added experimental dnsmasq support.
 - Refactored `profile add` command to make it alike `node add`. #658 #659 
+- The ifcfg ONBOOT parameter is no longer statically `true`, so unconfigured
+  interfaces may not be enabled by default. (#644)
 
 - new subcommand `wwctl genconf` is available with following subcommands:
   * `completions` which will create the files used for bash-completion. Also
