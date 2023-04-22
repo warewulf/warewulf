@@ -230,6 +230,18 @@ container, kernel, and network:
   # wwctl node list -a n001 | grep cluster
   n001                 cluster            --           cluster01
 
+Node Discovery
+--------------
+
+The hwaddr of a node can be automatically discovered by setting
+`--discoverable` on a node. If a node attempts to provision against
+Warewulf using an interface that is unknown to Warewulf, that address
+is associated with the first discoverable node. (Multiple discoverable
+nodes are sorted lexically, first by cluster, then by ID.)
+
+Once a node has been discovered its "discoverable" flag is
+automatically cleared.
+
 Un-setting Node Attributes
 ==========================
 
