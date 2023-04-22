@@ -37,8 +37,8 @@ Apptainer is the most utilized container management tool. You can use
 any of these to create and manage the containers to be later imported
 into Warewulf.
 
-Importing From A Registry
-=========================
+Importing Containers
+====================
 
 Warewulf supports importing an image from any OCI compliant
 registry. This means you can import from a public registry or from a
@@ -104,8 +104,29 @@ doing it this way if you are in a security sensitive environment or
 shared environments. You would not want these showing up in bash
 history or logs.
 
+Local Files
+-----------
+
+It is also possible to import a container from a local file or
+directory. For example, Podman can save a `.tar` archive of an OCI
+image. This archive can be directly imported into Warewulf, no
+registry required.
+
+.. code-block:: console
+
+   # podman save alpine:latest >alpine.tar
+   # wwctl container import alpine.tar alpine
+
+Chroot directories and Apptainer sandbox images can also be imported
+directly.
+
+.. code-block:: console
+
+   $ apptainer build --sandbox ./rockylinux-8/ docker://ghcr.io/hpcng/warewulf-rockylinux:8
+   $ sudo wwctl container import ./rockylinux-8/ rockylinux-8
+
 Syncuser
---------
+========
 
 At import time Warewulf checks if the names of the users on the host
 match the users and UIDs/GIDs in the imported container. If there is
