@@ -5,7 +5,7 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 )
@@ -16,9 +16,9 @@ nfs server.
 */
 func NFS() error {
 
-	controller := warewulfconf.New()
+	controller := warewulfconf.Get()
 
-	if controller.Nfs.Enabled {
+	if controller.NFS.Enabled {
 		if controller.Warewulf.EnableHostOverlay {
 			err := overlay.BuildHostOverlay()
 			if err != nil {
@@ -28,13 +28,13 @@ func NFS() error {
 			wwlog.Info("host overlays are disabled, did not modify exports")
 		}
 		fmt.Printf("Enabling and restarting the NFS services\n")
-		if controller.Nfs.SystemdName == "" {
+		if controller.NFS.SystemdName == "" {
 			err := util.SystemdStart("nfs-server")
 			if err != nil {
 				return errors.Wrap(err, "failed to start nfs-server")
 			}
 		} else {
-			err := util.SystemdStart(controller.Nfs.SystemdName)
+			err := util.SystemdStart(controller.NFS.SystemdName)
 			if err != nil {
 				return errors.Wrap(err, "failed to start")
 			}

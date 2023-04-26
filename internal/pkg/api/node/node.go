@@ -10,7 +10,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/hpcng/warewulf/pkg/hostlist"
 	"github.com/pkg/errors"
@@ -317,7 +317,7 @@ func NodeStatus(nodeNames []string) (nodeStatusResponse *wwapiv1.NodeStatusRespo
 		Nodes map[string]*nodeStatusInternal `json:"nodes"`
 	}
 
-	controller := warewulfconf.New()
+	controller := warewulfconf.Get()
 
 	if controller.Ipaddr == "" {
 		err = fmt.Errorf("the Warewulf Server IP Address is not properly configured")

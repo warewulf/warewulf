@@ -6,7 +6,7 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 )
@@ -15,21 +15,21 @@ import (
 Configures the dhcpd server, when show is set to false, else the
 dhcp configuration is checked.
 */
-func Dhcp() (err error) {
+func DHCP() (err error) {
 
-	controller := warewulfconf.New()
+	controller := warewulfconf.Get()
 
-	if !controller.Dhcp.Enabled {
+	if !controller.DHCP.Enabled {
 		wwlog.Info("This system is not configured as a Warewulf DHCP controller")
 		os.Exit(1)
 	}
 
-	if controller.Dhcp.RangeStart == "" {
+	if controller.DHCP.RangeStart == "" {
 		wwlog.Error("Configuration is not defined: `dhcpd range start`")
 		os.Exit(1)
 	}
 
-	if controller.Dhcp.RangeEnd == "" {
+	if controller.DHCP.RangeEnd == "" {
 		wwlog.Error("Configuration is not defined: `dhcpd range end`")
 		os.Exit(1)
 	}
@@ -42,7 +42,7 @@ func Dhcp() (err error) {
 		wwlog.Info("host overlays are disabled, did not modify/create dhcpd configuration")
 	}
 	fmt.Printf("Enabling and restarting the DHCP services\n")
-	err = util.SystemdStart(controller.Dhcp.SystemdName)
+	err = util.SystemdStart(controller.DHCP.SystemdName)
 	if err != nil {
 		return errors.Wrap(err, "failed to start")
 	}

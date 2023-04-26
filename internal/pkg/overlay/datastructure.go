@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
@@ -28,10 +28,10 @@ type TemplateStruct struct {
 	Network       string
 	NetworkCIDR   string
 	Ipv6          bool
-	Dhcp          warewulfconf.DhcpConf
-	Nfs           warewulfconf.NfsConf
+	Dhcp          warewulfconf.DHCPConf
+	Nfs           warewulfconf.NFSConf
 	Warewulf      warewulfconf.WarewulfConf
-	Tftp          warewulfconf.TftpConf
+	Tftp          warewulfconf.TFTPConf
 	Paths         warewulfconf.BuildConfig
 	AllNodes      []node.NodeInfo
 	node.NodeConf
@@ -44,7 +44,7 @@ Initialize an TemplateStruct with the given node.NodeInfo
 */
 func InitStruct(nodeInfo node.NodeInfo) TemplateStruct {
 	var tstruct TemplateStruct
-	controller := warewulfconf.New()
+	controller := warewulfconf.Get()
 	nodeDB, err := node.New()
 	if err != nil {
 		wwlog.Error("%s", err)
@@ -60,9 +60,9 @@ func InitStruct(nodeInfo node.NodeInfo) TemplateStruct {
 	tstruct.Hostname = nodeInfo.Id.Get()
 	// Backwards compatibility for templates using "Keys"
 	tstruct.AllNodes = allNodes
-	tstruct.Nfs = *controller.Nfs
-	tstruct.Dhcp = *controller.Dhcp
-	tstruct.Tftp = *controller.Tftp
+	tstruct.Nfs = *controller.NFS
+	tstruct.Dhcp = *controller.DHCP
+	tstruct.Tftp = *controller.TFTP
 	tstruct.Warewulf = *controller.Warewulf
 	tstruct.Ipaddr = controller.Ipaddr
 	tstruct.Ipaddr6 = controller.Ipaddr6

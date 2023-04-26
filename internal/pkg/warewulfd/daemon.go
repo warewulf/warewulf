@@ -11,7 +11,7 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/version"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 )
@@ -61,7 +61,7 @@ func DaemonInitLogging() error {
 		wwlog.SetLogLevel(wwlog.SERV)
 	}
 
-	conf := warewulfconf.New()
+	conf := warewulfconf.Get()
 
 	if conf.Warewulf.Syslog {
 

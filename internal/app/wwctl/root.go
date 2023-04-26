@@ -15,7 +15,7 @@ import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/ssh"
 	"github.com/hpcng/warewulf/internal/app/wwctl/version"
 	"github.com/hpcng/warewulf/internal/pkg/help"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 )
@@ -76,17 +76,19 @@ func rootPersistentPreRunE(cmd *cobra.Command, args []string) (err error) {
 	if LogLevel != wwlog.INFO {
 		wwlog.SetLogLevel(LogLevel)
 	}
-	conf := warewulfconf.New()
-	if !AllowEmptyConf && !conf.Initialized() {
+	conf := warewulfconf.Get()
+	if !AllowEmptyConf && !conf.InitializedFromFile() {
 		if WarewulfConfArg != "" {
-			err = conf.ReadConf(WarewulfConfArg)
+			err = conf.Read(WarewulfConfArg)
 		} else if os.Getenv("WAREWULFCONF") != "" {
-			err = conf.ReadConf(os.Getenv("WAREWULFCONF"))
+			err = conf.Read(os.Getenv("WAREWULFCONF"))
 		} else {
-			err = conf.ReadConf(warewulfconf.ConfigFile)
+			err = conf.Read(warewulfconf.ConfigFile)
 		}
-	} else {
-		err = conf.SetDynamicDefaults()
 	}
+	if err != nil {
+		return
+	}
+	err = conf.SetDynamicDefaults()
 	return
 }

@@ -22,7 +22,7 @@ if exists user-class and option user-class = "iPXE" {
 } else {
 {{range $type,$name := $.Tftp.IpxeBinaries }}
     if option architecture-type = {{ $type }} {
-        filename "/warewulf/{{ $name }}";
+        filename "/warewulf/{{ basename $name }}";
     } 
 {{ end }}
 }

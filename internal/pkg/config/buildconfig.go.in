@@ -1,4 +1,6 @@
-package warewulfconf
+package config
+
+var ConfigFile = "@SYSCONFDIR@/warewulf/warewulf.conf"
 
 type BuildConfig struct {
 	Bindir         string `default:"@BINDIR@"`

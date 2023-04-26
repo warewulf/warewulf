@@ -4,14 +4,14 @@ import (
 	"fmt"
 
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 )
 
 /*
 Return the version of wwctl
 */
 func GetVersion() string {
-	conf := warewulfconf.New()
+	conf := warewulfconf.Get()
 	return fmt.Sprintf("%s-%s", conf.Paths.Version, conf.Paths.Release)
 }
 

@@ -10,7 +10,7 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/stretchr/testify/assert"
 )
@@ -55,8 +55,8 @@ nodes:
 WW_INTERNAL: 0
     `
 
-	conf := warewulfconf.New()
-	err := conf.Read([]byte(conf_yml))
+	conf := warewulfconf.Get()
+	err := conf.Parse([]byte(conf_yml))
 	assert.NoError(t, err)
 	warewulfd.SetNoDaemon()
 	for _, tt := range tests {

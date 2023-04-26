@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/stretchr/testify/assert"
 )
@@ -43,7 +43,7 @@ nodes:
 	_, warewulfConfErr = tempWarewulfConf.Write([]byte(conf_yml))
 	assert.NoError(t, warewulfConfErr)
 	assert.NoError(t, tempWarewulfConf.Sync())
-	warewulfconf.ConfigFile = tempWarewulfConf.Name()
+	assert.NoError(t, warewulfconf.New().Read(tempWarewulfConf.Name()))
 
 	tempNodeConf, nodesConfErr := os.CreateTemp("", "nodes.conf-")
 	assert.NoError(t, nodesConfErr)

@@ -10,7 +10,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/kernel"
 	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
@@ -30,7 +30,7 @@ type iPxeTemplate struct {
 }
 
 func ProvisionSend(w http.ResponseWriter, req *http.Request) {
-	conf := warewulfconf.New()
+	conf := warewulfconf.Get()
 
 	rinfo, err := parseReq(req)
 	if err != nil {

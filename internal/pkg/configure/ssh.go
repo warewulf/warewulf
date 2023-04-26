@@ -6,7 +6,7 @@ import (
 	"path"
 
 	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 )
@@ -14,7 +14,7 @@ import (
 func SSH() error {
 	if os.Getuid() == 0 {
 		fmt.Printf("Updating system keys\n")
-		conf := warewulfconf.New()
+		conf := warewulfconf.Get()
 		wwkeydir := path.Join(conf.Paths.Sysconfdir, "warewulf/keys") + "/"
 
 		err := os.MkdirAll(path.Join(conf.Paths.Sysconfdir, "warewulf/keys"), 0755)

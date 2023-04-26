@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
@@ -28,7 +28,7 @@ var (
 )
 
 func KernelImageTopDir() string {
-	conf := warewulfconf.New()
+	conf := warewulfconf.Get()
 	return path.Join(conf.Paths.WWProvisiondir, "kernel")
 }
 

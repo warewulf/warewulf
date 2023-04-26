@@ -18,7 +18,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/hpcng/warewulf/internal/pkg/api/apiconfig"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 
 	gw "github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 
@@ -29,7 +29,7 @@ func run() error {
 
 	log.Println("test0")
 
-	conf := warewulfconf.New()
+	conf := warewulfconf.Get()
 	// Read the config file.
 	config, err := apiconfig.NewClientServer(path.Join(conf.Paths.Sysconfdir, "warewulf/wwapird.conf"))
 	if err != nil {

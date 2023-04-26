@@ -9,7 +9,7 @@ import (
 	"github.com/fatih/color"
 	apinode "github.com/hpcng/warewulf/internal/pkg/api/node"
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/hpcng/warewulf/pkg/hostlist"
 	"github.com/spf13/cobra"
@@ -18,7 +18,7 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 
-	controller := warewulfconf.New()
+	controller := warewulfconf.Get()
 
 	if controller.Ipaddr == "" {
 		return fmt.Errorf("warewulf Server IP Address is not properly configured")

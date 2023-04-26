@@ -5,11 +5,11 @@ import (
 	"path"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 )
 
 func OverlaySourceTopDir() string {
-	conf := warewulfconf.New()
+	conf := warewulfconf.Get()
 	return conf.Paths.WWOverlaydir
 }
 
@@ -31,6 +31,6 @@ func OverlaySourceDir(overlayName string) string {
 Returns the overlay name of the image for a given node
 */
 func OverlayImage(nodeName string, overlayName []string) string {
-	conf := warewulfconf.New()
+	conf := warewulfconf.Get()
 	return path.Join(conf.Paths.WWProvisiondir, "overlays/", nodeName, strings.Join(overlayName, "-")+".img")
 }
