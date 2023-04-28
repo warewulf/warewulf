@@ -1,6 +1,8 @@
 package child
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+)
 
 var (
 	baseCmd = &cobra.Command{
@@ -12,14 +14,12 @@ var (
 		FParseErrWhitelist:    cobra.FParseErrWhitelist{UnknownFlags: true},
 	}
 	binds    []string
-	tempDir  string
 	nodename string
 )
 
 func init() {
 	baseCmd.Flags().StringVarP(&nodename, "node", "n", "", "create ro overlay for given node")
 	baseCmd.Flags().StringArrayVarP(&binds, "bind", "b", []string{}, "bind points")
-	baseCmd.Flags().StringVar(&tempDir, "tempdir", "", "tempdir")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
