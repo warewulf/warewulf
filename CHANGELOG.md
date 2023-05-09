@@ -66,7 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added experimental dnsmasq support.
 - Check for formal correct IP and MAC addresses for command line options and
   when reading in the configurations
-
+- allow rendering of host templates
 ## [4.4.0] 2023-01-18
 
 ### Added

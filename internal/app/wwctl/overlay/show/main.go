@@ -65,7 +65,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			os.Exit(1)
 		}
 		filteredNodes := node.FilterByName(nodes, []string{NodeName})
-		if len(filteredNodes) != 1 {
+		localHostname, _ := os.Hostname()
+		if len(filteredNodes) != 1 || NodeName != "host" || NodeName != localHostname {
 			wwlog.Error("%v does not identify a single node", NodeName)
 			os.Exit(1)
 		}
