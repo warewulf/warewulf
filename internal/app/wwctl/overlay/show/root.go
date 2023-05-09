@@ -18,11 +18,16 @@ var (
 		Aliases:               []string{"cat"},
 		Args:                  cobra.ExactArgs(2),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			if len(args) != 0 {
-				return nil, cobra.ShellCompDirectiveNoFileComp
+			if len(args) == 0 {
+				list, _ := overlay.FindOverlays()
+				return list, cobra.ShellCompDirectiveNoFileComp
+			} else if len(args) == 1 {
+				ret, err := overlay.OverlayGetFiles(args[0])
+				if err == nil {
+					return ret, cobra.ShellCompDirectiveNoFileComp
+				}
 			}
-			list, _ := overlay.FindOverlays()
-			return list, cobra.ShellCompDirectiveNoFileComp
+			return []string{""}, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
 	NodeName string
@@ -33,12 +38,7 @@ func init() {
 	baseCmd.PersistentFlags().StringVarP(&NodeName, "render", "r", "", "node used for the variables in the template")
 	if err := baseCmd.RegisterFlagCompletionFunc("render", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		nodeDB, _ := node.New()
-		nodes, _ := nodeDB.FindAllNodes()
-		var node_names []string
-		for _, node := range nodes {
-			node_names = append(node_names, node.Id.Get())
-		}
-		return node_names, cobra.ShellCompDirectiveNoFileComp
+		return nodeDB.NodeList(), cobra.ShellCompDirectiveNoFileComp
 	}); err != nil {
 		log.Println(err)
 	}

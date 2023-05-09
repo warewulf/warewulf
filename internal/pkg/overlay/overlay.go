@@ -433,3 +433,19 @@ func ScanLines(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	// Request more data.
 	return 0, nil, nil
 }
+
+// Get all the files as a string slice for a given overlay
+func OverlayGetFiles(name string) (files []string, err error) {
+	baseDir := OverlaySourceDir(name)
+	if !util.IsDir(baseDir) {
+		err = fmt.Errorf("overlay %s doesn't exist", name)
+		return
+	}
+	err = filepath.Walk(baseDir, func(path string, info fs.FileInfo, err error) error {
+		if util.IsFile(path) {
+			files = append(files, strings.TrimPrefix(path, baseDir))
+		}
+		return nil
+	})
+	return
+}
