@@ -364,9 +364,22 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (
 	backupFile bool,
 	writeFile bool,
 	err error) {
+	fileBuffer, err := os.ReadFile(fileName)
+	if err != nil {
+		err = errors.Wrapf(err, "Couldn't read template file %s", fileName)
+		return
+	}
+	return renderTemplateFileRecursive(*bytes.NewBuffer(fileBuffer), fileName, data, 8)
+}
+
+func renderTemplateFileRecursive(inBuffer bytes.Buffer, fileName string, data TemplateStruct, maxIteration int) (
+	outBuffer bytes.Buffer,
+	backupFile bool,
+	writeFile bool,
+	err error) {
 	backupFile = true
 	writeFile = true
-	tmpl, err := template.New(path.Base(fileName)).Option("missingkey=default").Funcs(template.FuncMap{
+	tmpl, err := template.New("recBuffer").Option("missingkey=default").Funcs(template.FuncMap{
 		// TODO: Fix for missingkey=zero
 		"Include":      templateFileInclude,
 		"IncludeFrom":  templateContainerFileInclude,
@@ -389,15 +402,29 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (
 			return strings.Split(s, d)
 		},
 		// }).ParseGlob(path.Join(OverlayDir, destFile+".ww*"))
-	}).ParseGlob(fileName)
+	}).Parse(inBuffer.String())
 	if err != nil {
 		err = errors.Wrap(err, "could not parse template "+fileName)
 		return
 	}
-	err = tmpl.Execute(&buffer, data)
+	err = tmpl.Execute(&outBuffer, data)
 	if err != nil {
 		err = errors.Wrap(err, "could not execute template")
 		return
+	}
+	bufferScanner := bufio.NewScanner(bytes.NewReader(outBuffer.Bytes()))
+	bufferScanner.Split(ScanLines)
+	reg := regexp.MustCompile(`.*{{.*}}.*`)
+	runNested := false
+	for bufferScanner.Scan() {
+		line := bufferScanner.Text()
+		foundTempl := reg.FindAllStringSubmatch(line, -1)
+		if len(foundTempl) != 0 && maxIteration >= 0 {
+			runNested = true
+		}
+	}
+	if runNested {
+		outBuffer, backupFile, writeFile, err = renderTemplateFileRecursive(outBuffer, fileName, data, maxIteration-1)
 	}
 	return
 }
