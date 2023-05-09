@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hpcng/warewulf/internal/pkg/node"
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/stretchr/testify/assert"
 )
@@ -73,6 +73,35 @@ nodes:
     profiles:
     - default
   n02:
+   profiles:
+   - default
+`,
+		},
+		{
+			name:    "node list returns multiple nodes (case 2)",
+			args:    []string{"n01,n03"},
+			wantErr: false,
+			stdout: `  NODE NAME  PROFILES  NETWORK
+  n01        default            
+  n03        default
+`,
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+  n02:
+   profiles:
+   - default
+  n03:
+   profiles:
+   - default
+  n04:
+   profiles:
+   - default
+  n05:
    profiles:
    - default
 `,
