@@ -66,7 +66,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added experimental dnsmasq support.
 - Check for formal correct IP and MAC addresses for command line options and
   when reading in the configurations
-
+- render template several (up to 8 times) if template refrences like '{{ foo }}' are
+  found in a rendered template. This make it possible to use e.g. the ip address of
+  the warewulf master in the kernel command line.
 ## [4.4.0] 2023-01-18
 
 ### Added
