@@ -50,13 +50,38 @@ func loadNodeDB() error {
 	return nil
 }
 
-func GetNode(val string) (node.NodeInfo, error) {
+// get a node by its hwaddress with locking
+func GetNodeByHw(val string) (node.NodeInfo, error) {
 	db.lock.RLock()
 	defer db.lock.RUnlock()
-	return getNode(val)
+	return getNodeByHw(val)
 }
 
-func getNode(val string) (node.NodeInfo, error) {
+// get a node by its name with locking
+func GetNodeById(id string) (node.NodeInfo, error) {
+	db.lock.RLock()
+	defer db.lock.RUnlock()
+	return getNodeById(id)
+}
+
+func getNodeById(id string) (n node.NodeInfo, err error) {
+	DB, err := node.New()
+	if err != nil {
+		return n, err
+	}
+
+	nodes, err := DB.FindAllNodes()
+	if err != nil {
+		return
+	}
+	nodes = node.FilterByName(nodes, []string{id})
+	if len(nodes) == 1 {
+		return nodes[0], nil
+	}
+	return node.NodeInfo{}, errors.New("No node found")
+}
+
+func getNodeByHw(val string) (node.NodeInfo, error) {
 
 	if _, ok := db.NodeInfo[val]; ok {
 
@@ -79,8 +104,7 @@ func getNodeOrSetDiscoverable(hwaddr string) (node.NodeInfo, error) {
 	// to ensure the condition on which the node is updated is still satisfied
 	// after the DB is read back in.
 
-
-	n, err := getNode(hwaddr)
+	n, err := getNodeByHw(hwaddr)
 	if err == nil {
 		return n, nil
 	}

@@ -66,6 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added experimental dnsmasq support.
 - Check for formal correct IP and MAC addresses for command line options and
   when reading in the configurations
+- Added the possibility to retrive files and templates from the overlay directory
+  `wwwroot` which has the following syntax http://$MASTER:$IP/overlays/overlay.ww?node=$nodename
 
 ## [4.4.0] 2023-01-18
 
