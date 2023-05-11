@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add support for resolving absolute path automatically. #493
 - The network device "OnBoot" parameter correctly configures the ONBOOT ifcfg
   parameter. (#644)
+- Add support for listing profile/node via comma-separated values. #739
 
 ### Changed
 
