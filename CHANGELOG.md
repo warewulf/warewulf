@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add support for listing profile/node via comma-separated values. #739
 - Sort the node list returned entries by name. 
 - 'wwctl node edit' inconsistent state with warewulfd.  #691
+- Add `--parents` option to `overlay import` subcommand to create necessary
+  parent folder.  #608
 
 ### Changed
 
