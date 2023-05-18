@@ -1,6 +1,7 @@
 package node
 
 import (
+	"fmt"
 	"reflect"
 	"strconv"
 	"testing"
@@ -141,6 +142,7 @@ func Test_nodeYaml_SetFrom(t *testing.T) {
 		}
 	})
 	t.Run("Get() default network mask", func(t *testing.T) {
+		fmt.Println(len(test_node2.NetDevs))
 		value := test_node2.NetDevs["net0"].Netmask.Get()
 		if value != "1.1.1.1" {
 			t.Errorf("Get() returned wrong default netmask: %s", value)
@@ -310,8 +312,7 @@ ipmi: {}
 
 	})
 	t.Run("Set() netdev foo with device name baar for flattened empty node", func(t *testing.T) {
-		netdev := NewNetDevEntry()
-		test_node4.NetDevs["foo"] = &netdev
+		test_node4.NetDevs["foo"] = new(NetDevEntry)
 		test_node4.NetDevs["foo"].Device.Set("baar")
 		nodeConf := NewConf()
 		nodeConf.GetFrom(test_node4)
@@ -324,7 +325,8 @@ ipmi: {}
 		if !(wanted == string(ymlByte)) {
 			t.Errorf("Got wrong yml, wanted:\n'%s'\nGot:\n'%s'", wanted, string(ymlByte))
 		}
-		test_node4.NetDevs["foo"].Tags["netfoo"] = &Entry{}
+		test_node4.NetDevs["foo"].Tags = make(map[string]*Entry)
+		test_node4.NetDevs["foo"].Tags["netfoo"] = new(Entry)
 		test_node4.NetDevs["foo"].Tags["netfoo"].Set("netbaar")
 		nodeConf.GetFrom(test_node4)
 		nodeConf.Flatten()
@@ -336,10 +338,11 @@ ipmi: {}
 `
 		ymlByte, _ = yaml.Marshal(nodeConf)
 		if string(ymlByte) != wanted {
-			t.Errorf("Couldn set nettag: '%s' got: '%s'", wanted, string(ymlByte))
+			t.Errorf("Couldn't set nettag: '%s' got: '%s'", wanted, string(ymlByte))
 		}
 
 		delete(test_node4.NetDevs, "foo")
+		nodeConf = NewConf()
 		nodeConf.GetFrom(test_node4)
 		nodeConf.Flatten()
 		ymlByte, _ = yaml.Marshal(nodeConf)
