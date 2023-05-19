@@ -14,7 +14,7 @@ else
     echo b > /proc/sysrq-trigger || /sbin/reboot
 fi
 
-echo "Warewulf v4 is now booting: $WWHOSTNAME"
+echo "Warewulf v4 is now booting: ${WWHOSTNAME}"
 echo
 
 echo "Mounting up kernel file systems"
@@ -30,28 +30,31 @@ echo -n "Checking Rootfs type..."
 ROOTFSTYPE=`stat -f -c "%T" /`
 echo "${ROOTFSTYPE}"
 
-if test "$WWROOT" = "initramfs"; then
-    echo "Provisioned to default initramfs file system: $ROOTFSTYPE"
-    echo "Calling WW Init"
-    exec /warewulf/wwinit
-elif test "$WWROOT" = "tmpfs"; then
-    if test "$ROOTFSTYPE" = "tmpfs"; then
-        echo "ERROR: Switching the root file system requires the kernel argument: 'rootfstype=ramfs'"
-    else
-        echo "Setting up tmpfs root file system"
+
+if [ "${WWROOT}" != "${ROOTFSTYPE}" ]; then
+    echo "Requested rootfs type does not match current rootfs type. Pivoting to new rootfs..."
+    if [ "${WWROOT}" == "ramfs" ] || [ "${WWROOT}" == "tmpfs" ]; then
         mkdir /newroot
-        mount wwroot /newroot -t tmpfs -o mpol=interleave
-        echo "Moving RAMFS to TMPFS"
-        tar -cf - --exclude ./proc --exclude ./sys --exclude ./dev --exclude ./newroot . | tar -xf - -C /newroot
+        mount wwroot /newroot -t ${WWROOT} -o mpol=interleave
+        tar cf - --exclude ./proc --exclude ./sys --exclude ./dev --exclude ./run --exclude ./newroot . | tar xf - -C /newroot
         mkdir /newroot/proc /newroot/dev /newroot/sys /newroot/run 2>/dev/null
-        echo "Calling switch_root and invoking WW Init"
+        echo "Switching to new rootfs and invoking /warewulf/wwinit..."
         exec /sbin/switch_root /newroot /warewulf/wwinit
+    elif [ "${WWROOT}" == "initramfs" ]; then
+        echo "Invoking /warewulf/wwinit..."
+        exec /warewulf/wwinit
+    else
+        echo "Unrecognized rootfs type requested: ${WWROOT}"
+        echo "Rebooting in 1 minute..."
+        sleep 60
+        /sbin/reboot
     fi
 else
-    echo "ERROR: Unknown Warewulf Root file system: $WWROOT"
+    echo "Invoking /warewulf/wwinit..."
+    exec /warewulf/wwinit
 fi
 
 echo
-echo "There was a problem with the provisioning process, rebooting in 1 minute..."
+echo "There was a problem with the initial provisioning process, rebooting in 1 minute..."
 sleep 60
 echo b > /proc/sysrq-trigger || /sbin/reboot
