@@ -47,7 +47,7 @@ if [ "${WWROOT}" != "${ROOTFSTYPE}" ]; then
         echo "Unrecognized rootfs type requested: ${WWROOT}"
         echo "Rebooting in 1 minute..."
         sleep 60
-        /sbin/reboot
+        /sbin/reboot -f
     fi
 else
     echo "Invoking /warewulf/wwinit..."
@@ -57,4 +57,4 @@ fi
 echo
 echo "There was a problem with the initial provisioning process, rebooting in 1 minute..."
 sleep 60
-echo b > /proc/sysrq-trigger || /sbin/reboot
+echo b > /proc/sysrq-trigger || /sbin/reboot -f
