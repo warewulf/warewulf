@@ -26,8 +26,9 @@ mount -t tmpfs tmpfs /run
 
 chmod 755 /warewulf/wwinit
 
-echo "Checking Rootfs type"
+echo -n "Checking Rootfs type..."
 ROOTFSTYPE=`stat -f -c "%T" /`
+echo "${ROOTFSTYPE}"
 
 if test "$WWROOT" = "initramfs"; then
     echo "Provisioned to default initramfs file system: $ROOTFSTYPE"
