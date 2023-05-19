@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 'wwctl node edit' inconsistent state with warewulfd.  #691
 - Add `--parents` option to `overlay import` subcommand to create necessary
   parent folder.  #608
+- Refactor of `/warewulf/init` to more properly address rootfs options
 
 ### Changed
 
