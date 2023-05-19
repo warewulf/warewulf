@@ -31,7 +31,7 @@ ROOTFSTYPE=`stat -f -c "%T" /`
 echo "${ROOTFSTYPE}"
 
 
-if [ "${WWROOT}" != "${ROOTFSTYPE}" ]; then
+if [ -n "${WWROOT}" ] && [ "${WWROOT}" != "${ROOTFSTYPE}" ]; then
     echo "Requested rootfs type does not match current rootfs type. Pivoting to new rootfs..."
     if [ "${WWROOT}" == "ramfs" ] || [ "${WWROOT}" == "tmpfs" ]; then
         mkdir /newroot
