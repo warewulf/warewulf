@@ -43,7 +43,7 @@ if [ -n "${WWROOT}" ] && [ "${WWROOT}" != "${ROOTFSTYPE}" ]; then
     elif [ "${WWROOT}" == "initramfs" ]; then
         echo ">>> Deprecated option \"initramfs\" chosen."
         echo ">>> The 'initramfs' can be either a ramfs or a tmpfs natively, depending on kernel configuration."
-        echo ">>> If you wish to use whatever this kernel chooses by default, remove this 'root' setting from your nodes/profiles."
+        echo ">>> If you wish to use whatever this kernel chooses by default, remove the 'root' setting from your nodes/profiles."
         echo "Invoking /warewulf/wwinit..."
         exec /warewulf/wwinit
     else
