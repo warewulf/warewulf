@@ -6,7 +6,7 @@
 # Edit at your own risk! DANGER DANGER.
 
 
-if test -f "/warewulf/config"; then
+if [ -f "/warewulf/config" ]; then
     . /warewulf/config
 else
     echo "ERROR: Warewulf configuration file not found... rebooting in 1 minute"
