@@ -26,3 +26,4 @@
 * Brian Phan <bphan@ciq.co>
 * Jeffrey Frey @jtfrey 
 * Xu Yang(Jason Yang) <jasonyangshadow@gmail.com> @JasonYangShadow
+* Adam Michel <elfurbe@furbism.com> [@elfurbe](https://github.com/elfurbe)
