@@ -11,6 +11,9 @@ import (
 
 func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err error) {
 	return func(cmd *cobra.Command, args []string) (err error) {
+		if len(args) > 0 && strings.Contains(args[0], ",") {
+			args = strings.FieldsFunc(args[0], func(r rune) bool { return r == ',' })
+		}
 		req := wwapiv1.GetNodeList{
 			Nodes: args,
 			Type:  wwapiv1.GetNodeList_Simple,

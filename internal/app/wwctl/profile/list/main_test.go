@@ -34,6 +34,53 @@ nodes:
     - default
 `,
 		},
+		{
+			name: "profile list returns multiple profiles",
+			args: []string{"default,test"},
+			stdout: `PROFILE NAME  COMMENT/DESCRIPTION
+  default       --
+  test          --`,
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+  test: {}
+nodes:
+  n01:
+    profiles:
+    - default
+`,
+		},
+		{
+			name: "profile list returns one profiles",
+			args: []string{"test,"},
+			stdout: `PROFILE NAME  COMMENT/DESCRIPTION
+  test          --`,
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+  test: {}
+nodes:
+  n01:
+    profiles:
+    - default
+`,
+		},
+		{
+			name: "profile list returns all profiles",
+			args: []string{","},
+			stdout: `PROFILE NAME  COMMENT/DESCRIPTION
+  default       --
+  test          --`,
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+  test: {}
+nodes:
+  n01:
+    profiles:
+    - default
+`,
+		},
 	}
 
 	conf_yml := `WW_INTERNAL: 0`

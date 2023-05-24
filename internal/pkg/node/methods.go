@@ -4,11 +4,18 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
+
+type sortByName []NodeInfo
+
+func (a sortByName) Len() int           { return len(a) }
+func (a sortByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a sortByName) Less(i, j int) bool { return a[i].Id.Print() < a[j].Id.Print() }
 
 func GetUnsetVerbs() []string {
 	return []string{"UNSET", "DELETE", "UNDEF", "undef", "--", "nil", "0.0.0.0"}
@@ -43,6 +50,7 @@ func FilterByName(set []NodeInfo, searchList []string) []NodeInfo {
 		ret = set
 	}
 
+	sort.Sort(sortByName(ret))
 	return ret
 }
 
@@ -58,7 +66,6 @@ func FilterMapByName(inputMap map[string]*NodeConf, searchList []string) (retMap
 					retMap[name] = nConf
 				}
 			}
-
 		}
 	}
 	return retMap
@@ -156,7 +163,6 @@ func (ent *Entry) SetDefault(val string) {
 		return
 	}
 	ent.def = []string{val}
-
 }
 
 /*
@@ -167,7 +173,6 @@ func (ent *Entry) SetDefaultSlice(val []string) {
 		return
 	}
 	ent.def = val
-
 }
 
 /*
@@ -328,7 +333,7 @@ per profile. Else -- is returned.
 func (ent *Entry) Source() string {
 	if len(ent.value) != 0 && len(ent.altvalue) != 0 {
 		return "SUPERSEDED"
-		//return fmt.Sprintf("[%s]", ent.from)
+		// return fmt.Sprintf("[%s]", ent.from)
 	} else if ent.from == "" {
 		return "--"
 	}

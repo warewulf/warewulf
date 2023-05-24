@@ -23,10 +23,12 @@ var (
 		},
 	}
 	NoOverlayUpdate bool
+	CreateDirs      bool
 )
 
 func init() {
 	baseCmd.PersistentFlags().BoolVarP(&NoOverlayUpdate, "noupdate", "n", false, "Don't update overlays")
+	baseCmd.PersistentFlags().BoolVarP(&CreateDirs, "parents", "p", false, "Create any necessary parent directories")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

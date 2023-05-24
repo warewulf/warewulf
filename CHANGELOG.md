@@ -18,6 +18,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add support for resolving absolute path automatically. #493
 - The network device "OnBoot" parameter correctly configures the ONBOOT ifcfg
   parameter. (#644)
+- Add support for listing profile/node via comma-separated values. #739
+- Sort the node list returned entries by name. 
+- 'wwctl node edit' inconsistent state with warewulfd.  #691
+- Add `--parents` option to `overlay import` subcommand to create necessary
+  parent folder.  #608
 
 ### Changed
 
@@ -38,20 +43,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactored `profile add` command to make it alike `node add`. #658 #659 
 - The ifcfg ONBOOT parameter is no longer statically `true`, so unconfigured
   interfaces may not be enabled by default. (#644)
-
-- new subcommand `wwctl genconf` is available with following subcommands:
-  * `completions` which will create the files used for bash-completion. Also
-     fish an zsh completions can be generated
-  * `defaults` which will generate a valid `defaults.conf`
-  * `man` which will generate the man pages in the specified directory
-  * `reference` which will generate a reference documentation for the wwctl commands
-  * `warwulfconf print` which will print the used `warewulf.conf`. If there is no valid
-     `warewulf.conf` a valid configuration is provided, prefilled with default values
-     and an IP configuration derived from the network configuration of the host
-- All paths can now be configured in `warewulf.conf`, check the paths section of of 
-   `wwctl --emptyconf genconfig warewulfconf print` for the available paths.
-- Added experimental dnsmasq support.
-
 - new subcommand `wwctl genconf` is available with following subcommands:
   * `completions` which will create the files used for bash-completion. Also
      fish an zsh completions can be generated
@@ -68,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   when reading in the configurations
 - Added the possibility to retrive files and templates from the overlay directory
   `wwwroot` which has the following syntax http://$MASTER:$IP/overlays/overlay.ww?node=$nodename
+- Write log messages to stderr rather than stdout. #768
+
 
 ## [4.4.0] 2023-01-18
 

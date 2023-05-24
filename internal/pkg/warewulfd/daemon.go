@@ -9,9 +9,9 @@ import (
 	"syscall"
 	"time"
 
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/version"
-	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 )
@@ -73,7 +73,7 @@ func DaemonInitLogging() error {
 		}
 
 		wwlog.SetLogFormatter(wwlog.DefaultFormatter)
-		wwlog.SetLogWriters(logwriter, logwriter)
+		wwlog.SetLogWriter(logwriter)
 
 	}
 
@@ -107,12 +107,12 @@ func DaemonStart() error {
 			os.Setenv("WAREWULFD_LOGLEVEL", strconv.Itoa(logLevel))
 		}
 
-		f, err := os.OpenFile(WAREWULFD_LOGFILE, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+		f, err := os.OpenFile(WAREWULFD_LOGFILE, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0o644)
 		if err != nil {
 			return err
 		}
 
-		p, err := os.OpenFile(WAREWULFD_PIDFILE, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+		p, err := os.OpenFile(WAREWULFD_PIDFILE, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
 		if err != nil {
 			return err
 		}
