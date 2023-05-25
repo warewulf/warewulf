@@ -29,9 +29,9 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 		}
 		nodeInfo, err := apinode.NodeList(&req)
 		if len(nodeInfo.Output) > 0 {
-			ph := helper.NewPrintHelper(strings.Split(nodeInfo.Output[0], "="))
+			ph := helper.NewPrintHelper(strings.Split(nodeInfo.Output[0], ":=:"))
 			for _, val := range nodeInfo.Output[1:] {
-				ph.Append(strings.Split(val, "="))
+				ph.Append(strings.Split(val, ":=:"))
 			}
 			ph.Render()
 		}
