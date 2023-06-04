@@ -1,11 +1,10 @@
-Copyright (c) 2001-2020, Gregory M. Kurtzer. All rights reserved.
-
-Copyright (c) 2003-2011, The Regents of the University of California,
-through Lawrence Berkeley National Laboratory (subject to receipt of
-any required approvals from the U.S. Dept. of Energy).  All rights
-reserved.. All rights reserved.
-
-Copyright (c) 2020, Ctrl IQ, Inc. All rights reserved.
+* Copyright (c) 2001-2023, Gregory M. Kurtzer. All rights reserved.
+* Copyright (c) 2003-2011, The Regents of the University of
+  California, through Lawrence Berkeley National Laboratory (subject
+  to receipt of any required approvals from the U.S. Dept. of
+  Energy). All rights reserved.
+* Copyright (c) 2020-2023, CIQ, Inc. All rights reserved.
+* Copyright (c) 2021-2023, SUSE. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
