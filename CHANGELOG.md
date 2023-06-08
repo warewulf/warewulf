@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `--parents` option to `overlay import` subcommand to create necessary
   parent folder.  #608
 - Fix kernelargs are not printing properly in node list output. #828
+- Add Quickstart guide for EL9
 
 ### Changed
 
