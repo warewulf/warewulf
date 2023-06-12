@@ -1,5 +1,5 @@
 =====================================
-EL8 Quickstart (Rocky Linux and RHEL)
+EL9 Quickstart (Rocky Linux and RHEL)
 =====================================
 
 Install Warewulf and dependencies
@@ -9,7 +9,8 @@ Install Warewulf and dependencies
 
    sudo dnf groupinstall "Development Tools"
    sudo dnf install epel-release
-   sudo dnf install golang tftp-server dhcp-server nfs-utils gpgme-devel libassuan-devel
+   sudo dnf config-manager --set-enabled crb
+   sudo dnf install golang tftp-server dhcp-server nfs-utils gpgpme-devel libassuan-devel
 
    git clone https://github.com/hpcng/warewulf.git
    cd warewulf
@@ -121,7 +122,7 @@ default running kernel from the controller node and set both in the
 
 .. code-block:: bash
 
-   sudo wwctl container import docker://ghcr.io/hpcng/warewulf-rockylinux:8 rocky-8
+   sudo wwctl container import docker://ghcr.io/hpcng/warewulf-rockylinux:9 rocky-9
 
 
 Set up the default node profile
@@ -172,7 +173,7 @@ configurations.
 
 .. code-block:: bash
 
-   sudo wwctl node add n0000.cluster --ipaddr 192.168.200.100 --discoverable
+   sudo wwctl node add n0000.cluster --ipaddr 192.168.200.100 --discoverable true
 
 At this point you can view the basic configuration of this node by
 typing the following:

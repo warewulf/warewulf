@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- New documentation for the hostlist syntax. #611
+
 ### Fixed
 
 - The correct header is now displayed when `-al` flags are specified to overlay
@@ -25,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   parent folder.  #608
 - Fix kernelargs are not printing properly in node list output. #828
 - Fix build configuration on Quickstart guide #847
+- Add Quickstart guide for EL9
 
 ### Changed
 
