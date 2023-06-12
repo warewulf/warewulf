@@ -32,6 +32,7 @@ Welcome to the Warewulf User Guide!
 
    EL7 (CentOS and RHEL) <quickstart/el7>
    EL8 (Rocky Linux and RHEL) <quickstart/el8>
+   EL9 (Rocky Linux and RHEL) <quickstart/el9>
    openSUSE Leap and SLES 15 <quickstart/suse15>
 
 .. toctree::
