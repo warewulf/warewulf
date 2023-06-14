@@ -86,7 +86,7 @@ CONFIG := $(shell pwd)
 GO_TOOLS_BIN := $(addprefix $(TOOLS_BIN)/, $(notdir $(GO_TOOLS)))
 GO_TOOLS_VENDOR := $(addprefix vendor/, $(GO_TOOLS))
 GOLANGCI_LINT := $(TOOLS_BIN)/golangci-lint
-GOLANGCI_LINT_VERSION := v1.50.0
+GOLANGCI_LINT_VERSION := v1.53.2
 
 # helper functions
 godeps=$(shell go list -deps -f '{{if not .Standard}}{{ $$dep := . }}{{range .GoFiles}}{{$$dep.Dir}}/{{.}} {{end}}{{end}}' $(1) | sed "s%${PWD}/%%g")
@@ -263,8 +263,7 @@ latexpdf: reference
 ##    sudo ldconfig # refresh shared library cache.
 ## To setup protoc-gen-grpc-gateway, see https://github.com/grpc-ecosystem/grpc-gateway
 proto: 
-	rm -rf internal/pkg/api/routes/wwapiv1/
-	protoc -I internal/pkg/api/routes/v1 -I=. \
+	protoc -I /usr/include -I internal/pkg/api/routes/v1 -I=. \
 		--grpc-gateway_out=. \
 		--grpc-gateway_opt logtostderr=true \
 		--go_out=. \
