@@ -216,12 +216,12 @@ init:
 	cp -r tftpboot/* $(WWTFTPDIR)/ipxe/
 	restorecon -r $(WWTFTPDIR)
 
-wwctl: $(WWCTL_DEPS)
+wwctl: config vendor $(WWCTL_DEPS)
 	@echo Building "$@"
 	@cd cmd/wwctl; GOOS=linux go build -mod vendor -tags "$(WW_GO_BUILD_TAGS)" \
 	-o ../../wwctl
 
-wwclient: $(WWCLIENT_DEPS)
+wwclient: config vendor $(WWCLIENT_DEPS)
 	@echo Building "$@"
 	@cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags "-extldflags -static" \
 	-o ../../wwclient
@@ -246,6 +246,7 @@ dist: vendor config
 	rm -rf .dist
 
 reference: wwctl
+	mkdir -p userdocs/reference
 	./wwctl --emptyconf genconfig reference userdocs/reference/
 
 latexpdf: reference
