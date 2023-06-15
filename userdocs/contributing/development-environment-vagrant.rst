@@ -14,7 +14,7 @@ Host system requirements
 CPU H/W Virtualization support
 --------------------------------
 
-Check CPU virtualization capability using following command. If your system has Intel CPU, you will see Intel VT here, and if your system has AMD CPU, you will see AMD-V here.
+Check CPU virtualization capability using following command. If your system has Intel CPU, you will see `Intel VT` here, and if your system has AMD CPU, you will see `AMD-V` here.
 
 .. code-block:: bash
 
