@@ -184,38 +184,38 @@ Vagrantfile
 
             head.vm.provision "shell", inline: <<-SHELL
                 cat << 'CONF' | sudo tee /etc/warewulf/warewulf.conf
-                WW_INTERNAL: 43
-                ipaddr: 192.168.200.254
-                netmask: 255.255.255.0
-                network: 192.168.200.0
-                warewulf:
-                port: 9873
-                secure: false
-                update interval: 60
-                autobuild overlays: true
-                host overlay: true
-                syslog: false
-                dhcp:
-                enabled: true
-                range start: 192.168.200.50
-                range end: 192.168.200.99
-                systemd name: dhcpd
-                tftp:
-                enabled: true
-                systemd name: tftp
-                nfs:
-                enabled: true
-                export paths:
-                - path: /home
-                    export options: rw,sync
-                    mount options: defaults
-                    mount: true
-                - path: /opt
-                    export options: ro,sync,no_root_squash
-                    mount options: defaults
-                    mount: false
-                systemd name: nfs-server
-                CONF
+    WW_INTERNAL: 43
+    ipaddr: 192.168.200.254
+    netmask: 255.255.255.0
+    network: 192.168.200.0
+    warewulf:
+        port: 9873
+        secure: false
+        update interval: 60
+        autobuild overlays: true
+        host overlay: true
+        syslog: false
+    dhcp:
+        enabled: true
+        range start: 192.168.200.50
+        range end: 192.168.200.99
+        systemd name: dhcpd
+    tftp:
+        enabled: true
+        systemd name: tftp
+    nfs:
+        enabled: true
+        export paths:
+        - path: /home
+            export options: rw,sync
+            mount options: defaults
+            mount: true
+        - path: /opt
+            export options: ro,sync,no_root_squash
+            mount options: defaults
+            mount: false
+        systemd name: nfs-server
+    CONF
 
                 sed -i 's@ExecStart=/usr/bin/wwctl server start@ExecStart=/usr/bin/wwctl server start -d -v@' /usr/lib/systemd/system/warewulfd.service
                 systemctl enable --now warewulfd
