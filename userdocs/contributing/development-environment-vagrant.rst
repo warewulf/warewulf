@@ -50,7 +50,7 @@ Install QEMU, libvirt
     sudo systemctl enable --now libvirtd
 
     # Add user to libvirt group
-    $ sudo usermod -aG libvirt rocky
+    sudo usermod -aG libvirt rocky
 
 Install Cockpit
 -----------------
@@ -105,7 +105,7 @@ Create Rocky Linux 9.2 vagrant box
     }
     EOF
 
-    $ vagrant box add box-metadata.json
+    vagrant box add box-metadata.json
 
 Vagrantfile
 ------------
