@@ -15,9 +15,9 @@ Warewulf (4.3.0):
 .. code-block:: yaml
 
    WW_INTERNAL: 43
-   ipaddr: 192.168.200.1
-   netmask: 255.255.255.0
-   network: 192.168.200.0
+   ipaddr: 10.0.0.1
+   netmask: 255.255.252.0
+   network: 10.0.0.0
    warewulf:
      port: 9873
      secure: false
@@ -27,8 +27,8 @@ Warewulf (4.3.0):
      syslog: false
    dhcp:
      enabled: true
-     range start: 192.168.200.50
-     range end: 192.168.200.99
+     range start: 10.0.1.1
+     range end: 10.0.1.255
      systemd name: dhcpd
    tftp:
      enabled: true
