@@ -10,7 +10,7 @@ warewulf.conf
 =============
 
 The Warewulf configuration exists as follows in the current version of
-Warewulf (4.3.0):
+Warewulf (4.4.0):
 
 .. code-block:: yaml
 
@@ -45,6 +45,10 @@ Warewulf (4.3.0):
        mount options: defaults
        mount: false
      systemd name: nfs-server
+   container mounts:
+     - source: /etc/resolv.conf
+       dest: /etc/resolv.conf
+       readonly: true
 
 Generally you can leave this file as is, as long as you set the
 appropriate networking information. Specifically the following
@@ -64,16 +68,12 @@ configurations:
   network, failures will occur. This specifies the range of addresses
   you want DHCP to use.
 
-.. note::
-
-   The network configuration listed above assumes the network layout
-   in the [Background](background.md) portion of the documentation.
-
 The other configuration options are usually not touched, but they are
 explained as follows:
 
-* ``*:enabled``: This disables Warewulf's control of an external
-  service. This is useful if you want to manage that service directly.
+* ``*:enabled``: This can be used to disable Warewulf's control of a
+  system service. This is useful if you want to manage that service
+  directly.
 
 * ``*:systemd name``: This is so Warewulf can control some of the
   host's services. For the distributions that we've built and tested
@@ -111,8 +111,12 @@ explained as follows:
   to syslog or are written directly to a log file. (e.g.,
   ``/var/log/warewulfd.log``)
 
-* ``nfs:export paths``: Warewulf will automatically set up the NFS
-  exports if you wish for it to do this.
+* ``nfs:export paths``: Warewulf can automatically set up these NFS
+  exports.
+
+* ``container mounts``: These paths are mounted into the container
+  during ``container exec`` or ``container shell``, typically to allow
+  them to operate in the host environment prior to deployment.
 
 nodes.conf
 ==========
@@ -130,18 +134,18 @@ command.
 
 .. note::
 
-   This configuration is not written at install time, but the
-   first time you attempt to run ``wwctl``, this file will be generated
-   if it does not exist already.
+   This configuration is not written at install time; but, the first
+   time you attempt to run ``wwctl``, this file will be generated if
+   it does not exist already.
 
 defaults.conf
 =============
 
 The ``defaults.conf`` file configures default values used when none
-are specified. For example: if a node does not have a "runtime
-overlay" specified, the respective value from ``defaultnode`` is
-used. If a network device does not specify a "device," the device
-value of the ``dummy`` device is used.
+are specified in ``nodes.conf``. For example: if a node does not have
+a "runtime overlay" specified, the respective value from
+``defaultnode`` is used. If a network device does not specify a
+"device," the device value of the ``dummy`` device is used.
 
 If ``defaults.conf`` does not exist, the following values are used as
 compiled into Warewulf at build-time:
