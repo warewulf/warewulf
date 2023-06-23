@@ -17,15 +17,15 @@ process of VNFS image management.
 
 If you are not currently leveraging the container ecosystem in any
 other way, you can still build your own chroot directories and use
-Warewulf as you always have.
+Warewulf as before.
 
 It is important to understand that Warewulf is not running a container
-runtime on the nodes. While that is absolutely possible to run
-containers from the booted hosts, Warewulf is provisioning the
-container image to the bare metal and booting it. This container will
-be used as the base operating system and by default it will run
-stateless in memory. This means when you reboot the node, the node
-persists no information about Warewulf or how it booted.
+runtime on cluster nodes. While it is absolutely possible to run
+containers on cluster nodes, Warewulf is provisioning the container
+image to the bare metal and booting it. This container will be used as
+the base operating system and, by default, it will run entirely in
+memory. This means that when you reboot the node, the node retains no
+information about Warewulf or how it booted.
 
 Container Tools
 ===============
