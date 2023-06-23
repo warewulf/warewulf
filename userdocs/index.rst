@@ -57,6 +57,3 @@ Welcome to the Warewulf User Guide!
    :glob:
 
    reference/*
-
-
-
