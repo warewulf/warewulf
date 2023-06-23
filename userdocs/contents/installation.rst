@@ -2,8 +2,8 @@
 Warewulf Installation
 =====================
 
-There are multiple methods to install Warewulf, this page describes
-the installation process of multiple methods:
+There are multiple methods to install Warewulf. This page describes
+the installation process for some of those methods.
 
 Binary RPMs
 ===========
