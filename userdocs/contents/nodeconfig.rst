@@ -22,7 +22,7 @@ Creating a new node is as simple as running the following command:
 
 .. code-block:: console
 
-   # wwctl node add n001 -I 172.16.1.11
+   # wwctl node add n001 -I 10.0.2.1
    Added node: n001
 
 Adding several nodes
@@ -33,18 +33,17 @@ given. An additional IP address will incremented. So the command
 
 .. code-block:: console
 
-  # wwctl node add n00[2-4] -I 172.16.1.12
+  # wwctl node add n00[2-4] -I 10.0.2.2
   Added node: n002
   Added node: n003
   Added node: n004
 
   # wwctl node list -n n00[1-4]
   NODE NAME              NAME     HWADDR             IPADDR          GATEWAY         DEVICE
-  ==========================================================================================
-  n001                   default  --                 172.16.1.11     --              (eth0)
-  n002                   default  --                 172.16.1.12     --              (eth0)
-  n003                   default  --                 172.16.1.13     --              (eth0)
-  n004                   default  --                 172.16.1.14     --              (eth0)
+  n001                   default  --                 10.0.2.1        --              (eth0)
+  n002                   default  --                 10.0.2.2        --              (eth0)
+  n003                   default  --                 10.0.2.3        --              (eth0)
+  n004                   default  --                 10.0.2.4        --              (eth0)
 
 has added 4 nodes with the incremented IP addresses.
 
@@ -74,17 +73,15 @@ their attributes as follows:
 
   # wwctl node list
   NODE NAME              PROFILES                   NETWORK
-  ================================================================================
-  n001                            default
+  n001                                              default
 
 You can also see the node's full attribute list by specifying the
 ``-a`` option (all):
 
-.. code-block:: bash
+.. code-block:: console
 
   # wwctl node list -a n001
   NODE                 FIELD              PROFILE      VALUE
-  =====================================================================================
   n001                 Id                 --           n001
   n001                 comment            default      This profile is automatically included for each node
   n001                 cluster            --           --
@@ -155,7 +152,7 @@ And you can check that the container name is set for ``n001``:
 Configuring the Node's Kernel
 -----------------------------
 
-While the recommended method for assigning a kernel in 4.3 and beyond
+While the recommended method for assigning a kernel in v4.3 and beyond
 is to include it in the container / node image, a kernel can still be
 specified as an override at the node or profile.  To illustrate this,
 we import the most recent kernel from a openSUSE Tumbleweed release.
@@ -190,7 +187,7 @@ container, kernel, and network:
 .. code-block:: console
 
   # wwctl node list -a n001
-  =====================================================================================
+  NODE                 FIELD              PROFILE      VALUE
   n001                 Id                 --           n001
   n001                 comment            default      This profile is automatically included for each node
   n001                 cluster            --           --
@@ -264,7 +261,7 @@ Node Discovery
 --------------
 
 The hwaddr of a node can be automatically discovered by setting
-`--discoverable` on a node. If a node attempts to provision against
+``--discoverable`` on a node. If a node attempts to provision against
 Warewulf using an interface that is unknown to Warewulf, that address
 is associated with the first discoverable node. (Multiple discoverable
 nodes are sorted lexically, first by cluster, then by ID.)
