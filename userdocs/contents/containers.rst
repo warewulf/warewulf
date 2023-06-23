@@ -11,9 +11,9 @@ Warewulf control node (e.g. a ``chroot()``).
 In hindsight, we've been using containers all along, but the buzzword
 just didn't exist. Over the last 5-6 years, the enterprise has created
 a lot of tooling and standards around defining, building,
-distributing, securing, and managing containers, so Warewulf (as of
-v4.0) now integrates directly within the container ecosystem to
-facilitate the process of VNFS image management.
+distributing, securing, and managing containers, so Warewulf v4 now
+integrates directly within the container ecosystem to facilitate the
+process of VNFS image management.
 
 If you are not currently leveraging the container ecosystem in any
 other way, you can still build your own chroot directories and use
