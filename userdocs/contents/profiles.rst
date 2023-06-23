@@ -28,7 +28,6 @@ follows:
 
    # wwctl profile list
    PROFILE NAME         COMMENT/DESCRIPTION
-   ================================================================================
    default              This profile is automatically included for each node
 
 And with the ``-a`` flag:
@@ -36,25 +35,24 @@ And with the ``-a`` flag:
 .. code-block:: console
 
    # wwctl profile list -a
-   ################################################################################
-   PROFILE NAME         FIELD              VALUE
-   default              Id                 default
-   default              Comment            This profile is automatically included for each node
-   default              Cluster            --
-   default              Container          --
-   default              Kernel             --
-   default              KernelArgs         --
-   default              Init               --
-   default              Root               --
-   default              RuntimeOverlay     --
-   default              SystemOverlay      --
-   default              Ipxe               --
-   default              IpmiIpaddr         --
-   default              IpmiNetmask        --
-   default              IpmiPort           --
-   default              IpmiGateway        --
-   default              IpmiUserName       --
-   default              IpmiInterface      --
+   PROFILE              FIELD              PROFILE  VALUE
+   default              Id                 --       default
+   default              Comment            --       This profile is automatically included for each node
+   default              Cluster            --       --
+   default              Container          --       --
+   default              Kernel             --       --
+   default              KernelArgs         --       --
+   default              Init               --       --
+   default              Root               --       --
+   default              RuntimeOverlay     --       --
+   default              SystemOverlay      --       --
+   default              Ipxe               --       --
+   default              IpmiIpaddr         --       --
+   default              IpmiNetmask        --       --
+   default              IpmiPort           --       --
+   default              IpmiGateway        --       --
+   default              IpmiUserName       --       --
+   default              IpmiInterface      --       --
 
 As you can see here, there is only one attribute set by default in
 this profile, and that is the "Comment" field. That Comment is
@@ -65,7 +63,6 @@ configuration attribute there:
 .. code-block:: console
 
    # wwctl node list -a | head -n 5
-   ################################################################################
    NODE                 FIELD              PROFILE      VALUE
    n0000                Id                 --           n0000
    n0000                Comment            default      This profile is automatically included for each node
@@ -88,7 +85,6 @@ demonstrate how to use this second profile.
    # wwctl profile add test_profile
    # wwctl profile list
    PROFILE NAME         COMMENT/DESCRIPTION
-   ================================================================================
    default              This profile is automatically included for each node
    test_profile         --
 
@@ -115,7 +111,6 @@ And you can now verify that the node has both profile configurations:
 .. code-block:: console
 
    # wwctl node list -a | head -n 6
-   ################################################################################
    NODE                 FIELD              PROFILE      VALUE
    n0000                Id                 --           n0000
    n0000                Comment            default      This profile is automatically included for each node
@@ -134,7 +129,6 @@ configurations. We can also overwrite configurations as follows:
    Are you sure you want to modify 1 profile(s): y
 
    # wwctl node list -a | head -n 6
-   ################################################################################
    NODE                 FIELD              PROFILE      VALUE
    n0000                Id                 --           n0000
    n0000                Comment            test_profile test comment
@@ -150,7 +144,6 @@ And if we delete the superseded profile attribute from
    Are you sure you want to modify 1 profile(s): y
 
    # wwctl node list -a | head -n 6
-   ################################################################################
    NODE                 FIELD              PROFILE      VALUE
    n0000                Id                 --           n0000
    n0000                Comment            default      This profile is automatically included for each node
@@ -175,7 +168,6 @@ as can be seen here:
    Are you sure you want to modify 1 nodes(s): y
 
    # wwctl node list -a | head -n 6
-   ################################################################################
    NODE                 FIELD              PROFILE      VALUE
    n0000                Id                 --           n0000
    n0000                Comment            SUPERSEDED   This value takes precedent
