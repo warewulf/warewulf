@@ -60,7 +60,7 @@ to organize the address allocations. Below is a recommended IP
 addressing scheme which we will use for the rest of this document.
 
 * ``10.0.0.1``: Private network address IP
-* ``255.255.252.0``: Private network subnet mask
+* ``255.255.252.0``: Private network subnet mask (``10.0.0.0/22``)
 
 Here is an example of how the cluster's address can be divided for a
 255 node cluster:
