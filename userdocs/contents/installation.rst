@@ -1,6 +1,6 @@
-#####################
+=====================
 Warewulf Installation
-#####################
+=====================
 
 There are multiple methods to install Warewulf, this page describes
 the installation process of multiple methods:
