@@ -49,10 +49,9 @@ source code as follows:
 Release Tarball
 ---------------
 
-When the Warewulf project releases stable versions, they are available
-via source form here:
-
-`https://github.com/warewulf/warewulf/tags <https://github.com/warewulf/warewulf/tags/>`_
+The Warewulf project releases source distributions alongside its
+binary RPMs. You can obtain them from the `GitHub releases
+<https://github.com/hpcng/warewulf/releases>`_ page.
 
 Select the version you wish to install and download the tarball to any
 location on the server, then follow these directions making the
