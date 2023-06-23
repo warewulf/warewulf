@@ -42,8 +42,8 @@ Warewulf Service
 ================
 
 The Warewulf installation attempts to register the Warewulf service
-with Systemd, so it should be as easy to start/stop/check as any other
-Systemd service:
+with systemd, so it should be as easy to start/stop/check as any other
+systemd service:
 
 .. code-block:: console
 
@@ -58,7 +58,7 @@ command line program as follows:
 
 .. note::
 
-   If the Warewulf service is running via Systemd, restarting
+   If the Warewulf service is running via systemd, restarting
    stopping, and starting it from the ``wwctl`` command may result in
    unexpected results.
 
