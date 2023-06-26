@@ -29,7 +29,7 @@ KVM kernel module
 
 .. code-block:: bash
 
-   lsmode | grep kvm
+   lsmod | grep kvm
    ccp                   118784  1 kvm_amd
    kvm                  1105920  1 kvm_amd
    irqbypass              16384  1 kvm
