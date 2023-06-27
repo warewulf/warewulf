@@ -165,10 +165,10 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 - Update license string
 - Make shared store relocatable
 
-* Fri Sep 24 2021 Michael L. Young <myoung@ciq.co> - 4.2.0-1
+* Fri Sep 24 2021 Michael L. Young <myoung@ciq.com> - 4.2.0-1
 - Update spec file to use systemd macros
 - Use macros to refer to system paths
 - Update syntax
 
-* Tue Jan 26 2021 14:46:24 JST Brian Clemens <bclemens@ctrliq.com> - 4.0.0
+* Tue Jan 26 2021 14:46:24 JST Brian Clemens <bclemens@ciq.com> - 4.0.0
 - Initial release
