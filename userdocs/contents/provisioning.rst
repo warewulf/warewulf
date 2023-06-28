@@ -70,3 +70,30 @@ occur:
 #. Container:
     #. The container now boots exactly as any operating system would
        expect
+
+
+Node status
+========================
+During the whole provisioning process of your nodes, you can check their status
+through the following command :
+.. code-block:: console
+
+   # wwctl node status
+   NODENAME             STAGE                SENT                      LASTSEEN (s)
+   ================================================================================
+   c001                 RUNTIME_OVERLAY      generic.img.gz            16        
+
+
+For each node, there is 4 different stages :
+* **IPXE** 
+* **KERNEL**
+* **SYSTEM_OVERLAY**
+* **RUNTIME_OVERLAY**
+
+Those stages are directly linked to the The Provisioning Process section and are provided
+by the wwclient
+
+Thanks to ``wwctl node status`` command, you can also check your communication between
+the warewulf client and server.
+Depending on your warewulf version, you should see a reset of the last seen counter every 1 minute due to the
+warewulf runtime overlay update.
