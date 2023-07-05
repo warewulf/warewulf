@@ -10,8 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Container file gids are now updated properly during syncuser. #840
-- Added a missing `.ww` extension to the `70-ww4-netname.rules` template in the
-- Restrict access to `/warewulf/config` to root only. (#728, #742)
+- Added a missing `.ww` extension to the `70-ww4-netname.rules` template in the wwinit overlay. #724
+- Restrict access to `/warewulf/config` to root only. #728
 
 ## [4.4.0] 2023-01-18
 
