@@ -31,6 +31,8 @@ defaultnode:
   init: /sbin/init
   root: initramfs
   ipxe template: default
+  grub template: grub.cfg.ww
+  boot method: ipxe
   profiles:
   - default
   network devices:

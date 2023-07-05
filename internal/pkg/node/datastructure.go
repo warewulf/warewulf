@@ -20,6 +20,7 @@ type NodeConf struct {
 	ClusterName   string `yaml:"cluster name,omitempty" lopt:"cluster" sopt:"c" comment:"Set cluster group"`
 	ContainerName string `yaml:"container name,omitempty" lopt:"container" sopt:"C" comment:"Set container name"`
 	Ipxe          string `yaml:"ipxe template,omitempty" lopt:"ipxe" comment:"Set the iPXE template name"`
+	Grub          string `yaml:"grub template,omitempty" lopt:"grub" comment:"Set the grub template name"`
 	// Deprecated start
 	// Kernel settings here are deprecated and here for backward compatibility
 	KernelVersion  string `yaml:"kernel version,omitempty"`
@@ -49,6 +50,7 @@ type NodeConf struct {
 	TagsDel        []string            `yaml:"tagsdel,omitempty" lopt:"tagdel" comment:"remove this tags"` // should not go to disk only to wire
 	Keys           map[string]string   `yaml:"keys,omitempty"`                                             // Reverse compatibility
 	PrimaryNetDev  string              `yaml:"primary network,omitempty" lopt:"primarynet" sopt:"p" comment:"Set the primary network interface"`
+	BootMethod     string              `yaml:"boot method,omitempty" lopt:"bootmethod" comment:" boot method, can be grub or ipxe"`
 }
 
 type IpmiConf struct {
@@ -114,6 +116,7 @@ type NodeInfo struct {
 	ClusterName    Entry
 	ContainerName  Entry
 	Ipxe           Entry
+	Grub           Entry
 	RuntimeOverlay Entry
 	SystemOverlay  Entry
 	Root           Entry
@@ -124,6 +127,7 @@ type NodeInfo struct {
 	Ipmi           *IpmiEntry
 	Profiles       Entry
 	PrimaryNetDev  Entry
+	BootMethod     Entry
 	NetDevs        map[string]*NetDevEntry
 	Tags           map[string]*Entry
 }

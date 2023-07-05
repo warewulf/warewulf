@@ -7,10 +7,10 @@ import (
 	"strconv"
 	"text/template"
 
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/kernel"
 	"github.com/hpcng/warewulf/internal/pkg/util"
-	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
@@ -99,7 +99,19 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			ContainerName:  node.ContainerName.Get(),
 			KernelArgs:     node.Kernel.Args.Get(),
 			KernelOverride: node.Kernel.Override.Get()}
-
+	} else if rinfo.stage == "grub.cfg" {
+		stage_file = path.Join(conf.Paths.Sysconfdir, "warewulf/grub/"+node.Grub.Get()+".ipxe")
+		tmpl_data = iPxeTemplate{
+			Id:             node.Id.Get(),
+			Cluster:        node.ClusterName.Get(),
+			Fqdn:           node.Id.Get(),
+			Ipaddr:         conf.Ipaddr,
+			Port:           strconv.Itoa(conf.Warewulf.Port),
+			Hostname:       node.Id.Get(),
+			Hwaddr:         rinfo.hwaddr,
+			ContainerName:  node.ContainerName.Get(),
+			KernelArgs:     node.Kernel.Args.Get(),
+			KernelOverride: node.Kernel.Override.Get()}
 	} else if rinfo.stage == "kernel" {
 		if node.Kernel.Override.Defined() {
 			stage_file = kernel.KernelImage(node.Kernel.Override.Get())
@@ -134,7 +146,6 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		} else {
 			wwlog.Warn("No system overlay set for node %s", node.Id.Get())
 		}
-
 	} else if rinfo.stage == "runtime" {
 		if rinfo.overlay != "" {
 			stage_overlays = []string{rinfo.overlay}
@@ -145,7 +156,25 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		} else {
 			wwlog.Warn("No runtime overlay set for node %s", node.Id.Get())
 		}
+	} else if rinfo.stage == "shim" {
+		if node.ContainerName.Defined() {
+			stage_file = container.ShimFind(node.ContainerName.Get())
 
+			if stage_file == "" {
+				wwlog.Error("No kernel found for container %s", node.ContainerName.Get())
+			}
+		} else {
+			wwlog.Warn("No container set for this %s", node.Id.Get())
+		}
+	} else if rinfo.stage == "grub" {
+		if node.ContainerName.Defined() {
+			stage_file = container.GrubFind(node.ContainerName.Get())
+			if stage_file == "" {
+				wwlog.Error("No grub found for container %s", node.ContainerName.Get())
+			}
+		} else {
+			wwlog.Warn("No conainer set for node %s", node.Id.Get())
+		}
 	}
 
 	if len(stage_overlays) > 0 {
