@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 )
 
@@ -49,20 +50,22 @@ func parseReq(req *http.Request) (parserInfo, error) {
 
 	if len(req.URL.Query()["stage"]) > 0 {
 		ret.stage = req.URL.Query()["stage"][0]
-	}else{
+	} else {
 
 		if stage == "ipxe" || stage == "provision" {
 			ret.stage = "ipxe"
-		}else if stage == "kernel" {
+		} else if stage == "kernel" {
 			ret.stage = "kernel"
-		}else if stage == "kmods" {
+		} else if stage == "kmods" {
 			ret.stage = "kmods"
-		}else if stage == "container" {
+		} else if stage == "container" {
 			ret.stage = "container"
-		}else if stage == "overlay-system" {
+		} else if stage == "overlay-system" {
 			ret.stage = "system"
-		}else if stage == "overlay-runtime" {
+		} else if stage == "overlay-runtime" {
 			ret.stage = "runtime"
+		} else if stage == "render" {
+			ret.stage = "render"
 		}
 	}
 
@@ -82,8 +85,27 @@ func parseReq(req *http.Request) (parserInfo, error) {
 		return ret, errors.New("could not obtain ipaddr from HTTP request")
 	}
 	if ret.remoteport == 0 {
-		return ret, errors.New("could not obtain remote port from HTTP request: " + req.RemoteAddr)
+		return ret, errors.New("couldn't obtain remote port from HTTP request: " + req.RemoteAddr)
 	}
 
+	return ret, nil
+}
+
+type parserInfoRender struct {
+	overlay    string
+	node       string
+	remoteport int
+}
+
+func parseReqRender(req *http.Request) (ret parserInfoRender, err error) {
+	ret.overlay = strings.TrimPrefix(strings.Split(req.URL.Path, "?")[0], "/overlay")
+	if len(req.URL.Query()["node"]) > 0 {
+		ret.node = req.URL.Query()["node"][0]
+	}
+	wwlog.Recv("path: %s node: %s", ret.overlay, ret.node)
+	ret.remoteport, _ = strconv.Atoi(strings.Split(req.RemoteAddr, ":")[1])
+	if ret.remoteport == 0 {
+		return ret, errors.New("couldn't obtain remote port from HTTP request: " + req.RemoteAddr)
+	}
 	return ret, nil
 }
