@@ -10,5 +10,4 @@ type WarewulfConf struct {
 	EnableHostOverlay bool   `yaml:"host overlay" default:"true"`
 	Syslog            bool   `yaml:"syslog" default:"false"`
 	DataStore         string `yaml:"datastore" default:"/var/lib/warewulf"`
-	DefaultBoot       string `yaml:"boot method" default:"ipxe"`
 }

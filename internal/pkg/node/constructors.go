@@ -311,6 +311,36 @@ func (config *NodeYaml) ListAllProfiles() []string {
 	return ret
 }
 
+/*
+return a map where the key is the profile id
+*/
+func (config *NodeYaml) MapAllProfiles() (retMap map[string]*NodeInfo, err error) {
+	retMap = make(map[string]*NodeInfo)
+	profileList, err := config.FindAllProfiles()
+	if err != nil {
+		return
+	}
+	for _, pr := range profileList {
+		retMap[pr.Id.Get()] = &pr
+	}
+	return
+}
+
+/*
+return a map where the key is the node id
+*/
+func (config *NodeYaml) MapAllNodes() (retMap map[string]*NodeInfo, err error) {
+	retMap = make(map[string]*NodeInfo)
+	nodeList, err := config.FindAllNodes()
+	if err != nil {
+		return
+	}
+	for _, nd := range nodeList {
+		retMap[nd.Id.Get()] = &nd
+	}
+	return
+}
+
 func (config *NodeYaml) FindDiscoverableNode() (NodeInfo, string, error) {
 	var ret NodeInfo
 
