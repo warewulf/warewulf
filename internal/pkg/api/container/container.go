@@ -271,6 +271,10 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 					err = errors.Wrap(err, "failed to update profile")
 					return
 				}
+				err = warewulfd.CopyShimGrub()
+				if err != nil {
+					wwlog.Warn("couldn't copy shim/grub of default container: %s", err)
+				}
 			}
 		}
 		// TODO: We need this in a function with a flock around it.

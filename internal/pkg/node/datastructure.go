@@ -20,7 +20,6 @@ type NodeConf struct {
 	ClusterName   string `yaml:"cluster name,omitempty" lopt:"cluster" sopt:"c" comment:"Set cluster group"`
 	ContainerName string `yaml:"container name,omitempty" lopt:"container" sopt:"C" comment:"Set container name"`
 	Ipxe          string `yaml:"ipxe template,omitempty" lopt:"ipxe" comment:"Set the iPXE template name"`
-	Grub          string `yaml:"grub template,omitempty" lopt:"grub" comment:"Set the grub template name"`
 	// Deprecated start
 	// Kernel settings here are deprecated and here for backward compatibility
 	KernelVersion  string `yaml:"kernel version,omitempty"`
