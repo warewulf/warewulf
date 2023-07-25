@@ -56,6 +56,7 @@ func RunServer() error {
 
 	http.HandleFunc("/provision/", ProvisionSend)
 	http.HandleFunc("/ipxe/", ProvisionSend)
+	http.HandleFunc("/grub/", GrubSend)
 	http.HandleFunc("/kernel/", ProvisionSend)
 	http.HandleFunc("/kmods/", ProvisionSend)
 	http.HandleFunc("/container/", ProvisionSend)

@@ -84,6 +84,7 @@ install: all
 	install -d -m 0755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/$(WWCLIENTDIR)
 	install -d -m 0755 $(DESTDIR)$(WWCONFIGDIR)/examples
 	install -d -m 0755 $(DESTDIR)$(WWCONFIGDIR)/ipxe
+	install -d -m 0755 $(DESTDIR)$(WWCONFIGDIR)/grub
 	install -d -m 0755 $(DESTDIR)$(BASHCOMPDIR)
 	install -d -m 0755 $(DESTDIR)$(MANDIR)/man1
 	install -d -m 0755 $(DESTDIR)$(MANDIR)/man5
@@ -99,6 +100,7 @@ install: all
 	test -f $(DESTDIR)$(DATADIR)/warewulf/defaults.conf || install -m 0644 etc/defaults.conf $(DESTDIR)$(DATADIR)/warewulf/defaults.conf
 	for f in etc/examples/*.ww; do install -m 0644 $$f $(DESTDIR)$(WWCONFIGDIR)/examples/; done
 	for f in etc/ipxe/*.ipxe; do install -m 0644 $$f $(DESTDIR)$(WWCONFIGDIR)/ipxe/; done
+	for f in etc/grub/*; do install -m 0644 $$f $(DESTDIR)$(WWCONFIGDIR)/grub/; done
 	(cd overlays && find * -type f -exec install -D -m 0644 {} $(DESTDIR)$(WWOVERLAYDIR)/{} \;)
 	chmod 0755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/init
 	chmod 0755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/$(WWCLIENTDIR)/wwinit

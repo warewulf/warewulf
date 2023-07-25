@@ -28,7 +28,7 @@ func shimNames() []string {
 find the path of the shim binary
 */
 func ShimFind(container string) string {
-	wwlog.Debug("Finding shim")
+	wwlog.Debug("Finding shim for container %s", container)
 	container_path := RootFsDir(container)
 	if container_path == "" {
 		return ""
