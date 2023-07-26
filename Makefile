@@ -203,7 +203,7 @@ files: all
 	install -m 0644 include/firewalld/warewulf.xml $(DESTDIR)$(FIREWALLDDIR)
 	install -m 0644 include/systemd/warewulfd.service $(DESTDIR)$(SYSTEMDDIR)
 	install -m 0644 LICENSE.md $(DESTDIR)$(WWDOCDIR)
-	./wwctl genconfig completions > $(DESTDIR)$(BASHCOMPDIR)/wwctl
+	./wwctl --warewulfconf etc/warewulf.conf genconfig completions > $(DESTDIR)$(BASHCOMPDIR)/wwctl
 	cp man_pages/*.1* $(DESTDIR)$(MANDIR)/man1/
 	cp man_pages/*.5* $(DESTDIR)$(MANDIR)/man5/
 	install -m 0644 staticfiles/README-ipxe.md $(DESTDIR)$(WWDATADIR)/ipxe
