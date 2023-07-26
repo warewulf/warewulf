@@ -3,7 +3,6 @@ package overlay
 import (
 	"os"
 	"path"
-	"strings"
 
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 )
@@ -32,5 +31,5 @@ Returns the overlay name of the image for a given node
 */
 func OverlayImage(nodeName string, overlayName []string) string {
 	conf := warewulfconf.Get()
-	return path.Join(conf.Paths.WWProvisiondir, "overlays/", nodeName, strings.Join(overlayName, "-")+".img")
+	return path.Join(conf.Paths.WWProvisiondir, "overlays/", nodeName, "RUNTIME_MERGED_OVERLAY.img")
 }
