@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New documentation for development environment (Vagrant)
 
 ### Fixed
-- Use a short name for the merged runtime overlay. (#876)
+- Use a better short name for the merged runtime overlay. (#876)
 - More aggressive `make clean`.
 - Replace deprecated `io.utils` functions with new `os` functions.
 - The correct header is now displayed when `-al` flags are specified to overlay
