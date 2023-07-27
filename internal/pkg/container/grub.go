@@ -20,6 +20,9 @@ func grubNames() []string {
 		`grub-tpm.efi`,
 		`grub.efi`,
 		`grubx64.efi`,
+		`grubia32.efi`,
+		`grubaa64.efi`,
+		`grubarm.efi`,
 	}
 }
 
