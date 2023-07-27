@@ -40,7 +40,7 @@ func sendFile(
 		fd)
 
 	wwlog.Send("%15s: %s", sendto, filename)
-
+	req.Body.Close()
 	return nil
 }
 

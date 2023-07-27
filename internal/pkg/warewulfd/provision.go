@@ -8,24 +8,17 @@ import (
 	"path"
 	"strconv"
 	"strings"
-	"sync"
 	"text/template"
 
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/kernel"
-	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
-var sentMap = make(map[string]string)
-
-// define a mutex lock
-var mu sync.Mutex
-
-type iPxeTemplate struct {
+type templateVars struct {
 	Message        string
 	WaitTime       string
 	Hostname       string
@@ -40,20 +33,13 @@ type iPxeTemplate struct {
 	KernelOverride string
 }
 
-var status_stages = map[string]string{
-	"ipxe":    "IPXE",
-	"kernel":  "KERNEL",
-	"kmods":   "KMODS_OVERLAY",
-	"system":  "SYSTEM_OVERLAY",
-	"runtime": "RUNTIME_OVERLAY"}
-
 func ProvisionSend(w http.ResponseWriter, req *http.Request) {
+	wwlog.Debug("Requested URL: %s", req.URL.String())
 	conf := warewulfconf.Get()
-
 	rinfo, err := parseReq(req)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		wwlog.ErrorExc(err, "")
+		wwlog.ErrorExc(err, "Bad status")
 		return
 	}
 
@@ -66,6 +52,14 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 	}
+
+	status_stages := map[string]string{
+		"efiboot": "EFI",
+		"ipxe":    "IPXE",
+		"kernel":  "KERNEL",
+		"kmods":   "KMODS_OVERLAY",
+		"system":  "SYSTEM_OVERLAY",
+		"runtime": "RUNTIME_OVERLAY"}
 
 	status_stage := status_stages[rinfo.stage]
 	var stage_file string
@@ -91,26 +85,13 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		wwlog.Error("%s (unknown/unconfigured node)", rinfo.hwaddr)
 		if rinfo.stage == "ipxe" {
 			stage_file = path.Join(conf.Paths.Sysconfdir, "/warewulf/ipxe/unconfigured.ipxe")
-			tmpl_data = iPxeTemplate{
+			tmpl_data = templateVars{
 				Hwaddr: rinfo.hwaddr}
 		}
 
 	} else if rinfo.stage == "ipxe" {
 		stage_file = path.Join(conf.Paths.Sysconfdir, "warewulf/ipxe/"+node.Ipxe.Get()+".ipxe")
-		tmpl_data = iPxeTemplate{
-			Id:             node.Id.Get(),
-			Cluster:        node.ClusterName.Get(),
-			Fqdn:           node.Id.Get(),
-			Ipaddr:         conf.Ipaddr,
-			Port:           strconv.Itoa(conf.Warewulf.Port),
-			Hostname:       node.Id.Get(),
-			Hwaddr:         rinfo.hwaddr,
-			ContainerName:  node.ContainerName.Get(),
-			KernelArgs:     node.Kernel.Args.Get(),
-			KernelOverride: node.Kernel.Override.Get()}
-	} else if rinfo.stage == "grub.cfg" {
-		stage_file = path.Join(conf.Paths.Sysconfdir, "warewulf/grub/"+node.Grub.Get()+".ipxe")
-		tmpl_data = iPxeTemplate{
+		tmpl_data = templateVars{
 			Id:             node.Id.Get(),
 			Cluster:        node.ClusterName.Get(),
 			Fqdn:           node.Id.Get(),
@@ -157,7 +138,6 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		} else {
 			context = rinfo.stage
 		}
-
 		stage_file, err = getOverlayFile(
 			node,
 			context,
@@ -173,6 +153,45 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			wwlog.ErrorExc(err, "")
 			return
+		}
+	} else if rinfo.stage == "efiboot" {
+		wwlog.Debug("requested method: %s", req.Method)
+		containerName := node.ContainerName.Get()
+		switch rinfo.efifile {
+		case "shim.efi":
+			stage_file = container.ShimFind(containerName)
+			if stage_file == "" {
+				wwlog.ErrorExc(fmt.Errorf("could't find shim.efi"), containerName)
+				w.WriteHeader(http.StatusNotFound)
+				return
+			}
+		case "grub.efi", "grub-tpm.efi", "grubx64.efi", "grubia32.efi", "grubaa64.efi", "grubarm.efi":
+			stage_file = container.GrubFind(containerName)
+			if stage_file == "" {
+				wwlog.ErrorExc(fmt.Errorf("could't find grub.efi"), containerName)
+				w.WriteHeader(http.StatusNotFound)
+				return
+			}
+		case "grub.cfg":
+			stage_file = path.Join(conf.Paths.Sysconfdir, "warewulf/grub/grub.cfg.ww")
+			tmpl_data = templateVars{
+				Id:             node.Id.Get(),
+				Cluster:        node.ClusterName.Get(),
+				Fqdn:           node.Id.Get(),
+				Ipaddr:         conf.Ipaddr,
+				Port:           strconv.Itoa(conf.Warewulf.Port),
+				Hostname:       node.Id.Get(),
+				Hwaddr:         rinfo.hwaddr,
+				ContainerName:  node.ContainerName.Get(),
+				KernelArgs:     node.Kernel.Args.Get(),
+				KernelOverride: node.Kernel.Override.Get()}
+			if stage_file == "" {
+				wwlog.ErrorExc(fmt.Errorf("could't find grub.cfg template"), containerName)
+				w.WriteHeader(http.StatusNotFound)
+				return
+			}
+		default:
+			wwlog.ErrorExc(fmt.Errorf("could't find efiboot file: %s", rinfo.efifile), "")
 		}
 	} else if rinfo.stage == "shim" {
 		if node.ContainerName.Defined() {
@@ -269,110 +288,4 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		updateStatus(node.Id.Get(), status_stage, "NOT_FOUND", rinfo.ipaddr)
 	}
 
-}
-
-/*
-simple handler for sending only out grub to the nodes, parses the
-GET request, so that for "/grub/shim.efi" the "shim.efi" from the
-container of the default profile will be sent and for "/grub/shim.efi?$container" the
-shim of $container will be sent
-*/
-func GrubSend(w http.ResponseWriter, req *http.Request) {
-	req.Close = true
-	wwlog.Debug("Grub send called with url: %s host: %s", req.URL, req.Host)
-	url := strings.Split(req.URL.Path, "?")[0]
-	path_parts := strings.Split(path.Join(url), "/")
-	remoteIP := strings.Split(req.RemoteAddr, ":")[0]
-	mu.Lock()
-	if last_sent, ok := sentMap[remoteIP]; ok {
-		wwlog.Debug("last sent is: %s", last_sent)
-	}
-	mu.Unlock()
-	if len(path_parts) != 3 {
-		w.WriteHeader(http.StatusBadRequest)
-		wwlog.ErrorExc(fmt.Errorf("unknown path components in GET: %s", req.URL.Path), remoteIP)
-		return
-	}
-	requested_file := path_parts[2]
-	nodeDB, err := node.New()
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	profiles, _ := nodeDB.MapAllProfiles()
-	containerName := ""
-	if profile, ok := profiles["default"]; ok {
-		containerName = profile.ContainerName.Get()
-	}
-	remoteNode, err := nodeDB.FindByIpaddr(remoteIP)
-	if err == nil {
-		containerName = remoteNode.ContainerName.Get()
-	} else {
-		if mac := ArpFind(remoteIP); mac != "" {
-			remoteNode, err := nodeDB.FindByHwaddr(mac)
-			if err != nil {
-				containerName = remoteNode.ContainerName.Get()
-			} else if remoteNode, err = GetNodeOrSetDiscoverable(mac); err == nil {
-				containerName = remoteNode.ContainerName.Get()
-			}
-		}
-	}
-
-	if len(url) == 2 {
-		containerName = strings.Split(req.URL.Path, "?")[1]
-	}
-	mu.Lock()
-	if last_sent, ok := sentMap[remoteIP]; ok && last_sent == "shim.efi" {
-		requested_file = "grub.efi"
-	}
-	mu.Unlock()
-	wwlog.Recv("remoteIP: %s, container: %s, filename: %s", remoteIP, containerName, requested_file)
-	var stage_file string
-	switch requested_file {
-	case "shim.efi":
-		stage_file = container.ShimFind(containerName)
-		if stage_file == "" {
-			wwlog.ErrorExc(fmt.Errorf("could't find shim.efi"), containerName)
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-		mu.Lock()
-		sentMap[remoteIP] = "shim.efi"
-		mu.Unlock()
-	case "grub.efi", "grubx86.efi":
-		stage_file = container.GrubFind(containerName)
-		if stage_file == "" {
-			wwlog.ErrorExc(fmt.Errorf("could't find grub.efi"), containerName)
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-		mu.Lock()
-		sentMap[remoteIP] = "grub.efi"
-		mu.Unlock()
-	}
-	wwlog.Serv("stage_file '%s'", stage_file)
-
-	if util.IsFile(stage_file) {
-		/*
-			fd, err := os.Open(stage_file)
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-			defer fd.Close()
-		*/
-		/*
-			stat, err := fd.Stat()
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-
-			http.ServeContent(w, req, stage_file, stat.ModTime(), fd)
-			io.Copy(w, fd)
-			req.Close = true
-		*/
-		http.ServeFile(w, req, stage_file)
-		wwlog.Send("%15s: %s", remoteIP, stage_file)
-	}
 }
