@@ -25,9 +25,6 @@ func CopyShimGrub() (err error) {
 		return err
 	}
 	conf := warewulfconf.Get()
-	if err != nil {
-		return err
-	}
 	profiles, err := nodeDB.MapAllProfiles()
 	if err != nil {
 		return err

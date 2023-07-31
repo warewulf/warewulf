@@ -16,7 +16,7 @@ func sendFile(
 	w http.ResponseWriter,
 	req *http.Request,
 	filename string,
-	sendto string) error {
+	sendto string, updateSentDB bool) error {
 
 	fd, err := os.Open(filename)
 	if err != nil {
@@ -37,7 +37,14 @@ func sendFile(
 		filename,
 		stat.ModTime(),
 		fd)
-
+	// seek back
+	_, err = fd.Seek(0, 0)
+	if err != nil {
+		wwlog.Warn("couldn't seek in file: %s", filename)
+	}
+	if updateSentDB {
+		DBAddImage(sendto, filename, fd)
+	}
 	wwlog.Send("%15s: %s", sendto, filename)
 
 	return nil

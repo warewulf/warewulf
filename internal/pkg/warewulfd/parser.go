@@ -27,7 +27,7 @@ func parseReq(req *http.Request) (parserInfo, error) {
 	url := strings.Split(req.URL.Path, "?")[0]
 	path_parts := strings.Split(url, "/")
 
-	if len(path_parts) != 3 {
+	if len(path_parts) < 3 {
 		return ret, errors.New("unknown path components in GET")
 	}
 
@@ -38,6 +38,8 @@ func parseReq(req *http.Request) (parserInfo, error) {
 		hwaddr = path_parts[2]
 		hwaddr = strings.ReplaceAll(hwaddr, "-", ":")
 		hwaddr = strings.ToLower(hwaddr)
+	} else if len(path_parts) > 3 {
+		ret.efifile = strings.Join(path_parts[2:], "/")
 	} else {
 		ret.efifile = path_parts[2]
 	}
