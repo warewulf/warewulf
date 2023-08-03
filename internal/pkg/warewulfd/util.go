@@ -44,9 +44,10 @@ func sendFile(
 func getOverlayFile(
 	nodeId string,
 	stage_overlays []string,
-	autobuild bool ) (stage_file string, err error) {
+	autobuild bool,
+        img_context string) (stage_file string, err error) {
 
-	stage_file = overlay.OverlayImage(nodeId, stage_overlays)
+	stage_file = overlay.OverlayImage(nodeId, stage_overlays, img_context)
 	err = nil
 
 	build := !util.IsFile(stage_file)

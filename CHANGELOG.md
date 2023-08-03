@@ -13,7 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New documentation for development environment (Vagrant)
 
 ### Fixed
-
+- More aggressive `make clean`.
+- Replace deprecated `io.utils` functions with new `os` functions.
 - The correct header is now displayed when `-al` flags are specified to overlay
   list.
 - Added a missing `.ww` extension to the `70-ww4-netname.rules` template in the

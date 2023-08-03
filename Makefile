@@ -203,7 +203,7 @@ files: all
 	install -m 0644 include/firewalld/warewulf.xml $(DESTDIR)$(FIREWALLDDIR)
 	install -m 0644 include/systemd/warewulfd.service $(DESTDIR)$(SYSTEMDDIR)
 	install -m 0644 LICENSE.md $(DESTDIR)$(WWDOCDIR)
-	./wwctl genconfig completions > $(DESTDIR)$(BASHCOMPDIR)/wwctl
+	./wwctl --warewulfconf etc/warewulf.conf genconfig completions > $(DESTDIR)$(BASHCOMPDIR)/wwctl
 	cp man_pages/*.1* $(DESTDIR)$(MANDIR)/man1/
 	cp man_pages/*.5* $(DESTDIR)$(MANDIR)/man5/
 	install -m 0644 staticfiles/README-ipxe.md $(DESTDIR)$(WWDATADIR)/ipxe
@@ -281,17 +281,36 @@ wwapird: ## Build the rest api server (revese proxy to the grpc api server).
 	go build -o ./wwapird internal/app/api/wwapird/wwapird.go
 
 contclean:
+	rm -f $(WAREWULF)-$(VERSION).tar.gz
+	rm -f bash_completion
+	rm -f config
+	rm -f config_defaults 
+	rm -f Defaults.mk
+	rm -f etc/wwapi{c,d,rd}.conf
+	rm -f etc/wwapi{c,d,rd}.config
+	rm -f include/systemd/warewulfd.service
+	rm -f internal/pkg/buildconfig/setconfigs.go
+	rm -f internal/pkg/config/buildconfig.go
+	rm -f man_page 
+	rm -f print_defaults 
+	rm -f update_configuration
+	rm -f usr/share/man/man1/
+	rm -f warewulf.spec
+	rm -f warewulf-*.tar.gz
+	rm -f wwapic 
+	rm -f wwapid 
+	rm -f wwapird
 	rm -f wwclient
 	rm -f wwctl
-	rm -rf .dist
-	rm -f $(WAREWULF)-$(VERSION).tar.gz
-	rm -rf man_pages
-	rm -f warewulf.spec
-	rm -f config
-	rm -f Defaults.mk
 	rm -rf $(TOOLS_DIR)
-	rm -f update_configuration
-	rm -f etc/wwapi{c,d,rd}.conf
+	rm -rf bash_completion.d
+	rm -rf /config
+	rm -rf .dist/
+	rm -rf _dist/
+	rm -rf etc/bash_completion.d/
+	rm -rf man_pages
+	rm -rf userdocs/_*
+	rm -rf userdocs/reference/*
 
 clean: contclean
 	rm -rf vendor

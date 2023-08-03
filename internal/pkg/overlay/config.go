@@ -5,6 +5,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 )
 
@@ -30,7 +31,26 @@ func OverlaySourceDir(overlayName string) string {
 /*
 Returns the overlay name of the image for a given node
 */
-func OverlayImage(nodeName string, overlayName []string) string {
+func OverlayImage(nodeName string, overlayName []string, img_context ...string) string {
+	var name string
+	var context string
+
+	/* Check optional context argument. If missing, default to legacy. */
+	if len(img_context) == 0 {
+		context = "legacy"
+	} else {
+		context = img_context[0]
+	}
+
 	conf := warewulfconf.Get()
-	return path.Join(conf.Paths.WWProvisiondir, "overlays/", nodeName, strings.Join(overlayName, "-")+".img")
+
+	switch context {
+	case "legacy":
+		name = strings.Join(overlayName, "-")+".img"
+	default:
+		wwlog.Warn("Context %s passed to OverlayImage(), using %s to build image name.", context, "__" + strings.ToUpper(context) + "__")
+		name = "__" + strings.ToUpper(context) + "__.img"
+	}
+
+	return path.Join(conf.Paths.WWProvisiondir, "overlays/", nodeName, name)
 }
