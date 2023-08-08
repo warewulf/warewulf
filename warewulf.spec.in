@@ -116,14 +116,16 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %files
 %defattr(-, root, %{wwgroup})
 %dir %{_sysconfdir}/warewulf
-%config(noreplace) %{_sysconfdir}/warewulf/*
-%config(noreplace) %attr(0640,-,-) %{_sysconfdir}/warewulf/nodes.conf
+%config(noreplace) %{_sysconfdir}/warewulf/warewulf.conf
+%config(noreplace) %{_sysconfdir}/warewulf/wwapi*.conf
+%config(noreplace) %{_sysconfdir}/warewulf/examples
+%config(noreplace) %{_sysconfdir}/warewulf/ipxe
+%attr(0640,-,-) %{_sysconfdir}/warewulf/nodes.conf
 %{_sysconfdir}/bash_completion.d/wwctl
 
 %dir %{_sharedstatedir}/warewulf
 %{_sharedstatedir}/warewulf/chroots
 %{_sharedstatedir}/warewulf/overlays
-%{srvdir}/warewulf
 
 %attr(-, root, root) %{_bindir}/wwctl
 %attr(-, root, root) %{_bindir}/wwapi*
