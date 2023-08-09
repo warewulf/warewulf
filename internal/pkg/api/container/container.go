@@ -203,11 +203,14 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		return
 	}
 
-	err = container.SyncUids(cip.Name, !cip.SyncUser)
-	if err != nil && !cip.SyncUser {
+	SyncUserShowOnly := !cip.SyncUser
+	err = container.SyncUids(cip.Name, SyncUserShowOnly)
+	if err != nil {
 		err = fmt.Errorf("error in user sync, fix error and run 'syncuser' manually: %s", err)
 		wwlog.Error(err.Error())
-		return
+		if cip.SyncUser {
+			return
+		}
 	}
 
 	wwlog.Info("Building container: %s", cip.Name)

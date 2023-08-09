@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix build configuration on Quickstart guide #847
 - Add Quickstart guide for EL9
 - Add EL9 Quickstart guide to index.rst
+- Container file gids are now updated properly during syncuser. #840
 
 ### Changed
 
