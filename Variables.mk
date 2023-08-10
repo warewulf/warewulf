@@ -88,8 +88,6 @@ GOLANGCI_LINT_VERSION := v1.53.2
 
 # helper functions
 godeps=$(shell go list -deps -f '{{if not .Standard}}{{ $$dep := . }}{{range .GoFiles}}{{$$dep.Dir}}/{{.}} {{end}}{{end}}' $(1) | sed "s%${PWD}/%%g")
-WWCTL_DEPS:=$(call godeps,cmd/wwctl/main.go)
-WWCLIENT_DEPS:=$(call godeps,cmd/wwclient/main.go)
 
 # use GOPROXY for older git clients and speed up downloads
 GOPROXY ?= https://proxy.golang.org

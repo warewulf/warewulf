@@ -120,13 +120,11 @@ init:
 	cp -r tftpboot/* $(WWTFTPDIR)/ipxe/
 	restorecon -r $(WWTFTPDIR)
 
-wwctl: config vendor $(WWCTL_DEPS)
-	cd cmd/wwctl; GOOS=linux go build -mod vendor -tags "$(WW_GO_BUILD_TAGS)" \
-	-o ../../wwctl
+wwctl: config vendor $(call godeps,cmd/wwctl/main.go)
+	GOOS=linux go build -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o wwctl cmd/wwctl/main.go
 
-wwclient: config vendor $(WWCLIENT_DEPS)
-	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags "-extldflags -static" \
-	-o ../../wwclient
+wwclient: config vendor $(call godeps,cmd/wwclient/main.go)
+	CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags "-extldflags -static" -o wwclient cmd/wwclient/main.go
 
 .PHONY: man_pages
 man_pages: wwctl $(wildcard docs/man/man5/*.5)
@@ -135,10 +133,18 @@ man_pages: wwctl $(wildcard docs/man/man5/*.5)
 	gzip --force docs/man/man1/*.1
 	gzip --force --keep docs/man/man5/*.5
 
-update_configuration: vendor cmd/update_configuration/update_configuration.go
-	cd cmd/update_configuration && go build \
-	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'"\
-	 -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o ../../update_configuration
+update_configuration: vendor $(call godeps,cmd/update_configuration/update_configuration.go)
+	go build -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'" \
+	    -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o update_configuration cmd/update_configuration/update_configuration.go
+
+wwapid: $(call godeps,internal/app/api/wwapid/wwapid.go)
+	go build -o ./wwapid internal/app/api/wwapid/wwapid.go
+
+wwapic: $(call godeps,internal/app/api/wwapic/wwapic.go)
+	go build -o ./wwapic  internal/app/api/wwapic/wwapic.go
+
+wwapird: $(call godeps,internal/app/api/wwapird/wwapird.go)
+	go build -o ./wwapird internal/app/api/wwapird/wwapird.go
 
 .PHONY: dist
 dist: vendor config
@@ -174,15 +180,6 @@ proto:
 		--go_out=. \
 		--go-grpc_out=. \
 		routes.proto
-
-wwapid:
-	go build -o ./wwapid internal/app/api/wwapid/wwapid.go
-
-wwapic:
-	go build -o ./wwapic  internal/app/api/wwapic/wwapic.go
-
-wwapird:
-	go build -o ./wwapird internal/app/api/wwapird/wwapird.go
 
 .PHONY: contclean
 contclean:
