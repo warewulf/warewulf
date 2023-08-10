@@ -46,15 +46,15 @@ lint: setup_tools
 	$(GOLANGCI_LINT) run --build-tags "$(WW_GO_BUILD_TAGS)" --skip-dirs internal/pkg/staticfiles ./...
 
 .PHONY: vet
-vet:
+vet: config
 	go vet ./...
 
 .PHONY: test
-test:
+test: config
 	go test ./...
 
 .PHONY: test-cover
-test-cover:
+test-cover: config
 	rm -rf coverage
 	mkdir coverage
 	go list -f '{{if gt (len .TestGoFiles) 0}}"go test -covermode count -coverprofile {{.Name}}.coverprofile -coverpkg ./... {{.ImportPath}}"{{end}}' ./... | xargs -I {} bash -c {}
