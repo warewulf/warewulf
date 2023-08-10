@@ -112,7 +112,7 @@ install: all
 
 etc/bash_completion.d/wwctl: wwctl
 	mkdir -p etc/bash_completion.d/
-	./wwctl --warewulfconf etc/warewulf.conf genconfig completions >etc/bash_completion.d/wwctl
+	./wwctl --emptyconf genconfig completions >etc/bash_completion.d/wwctl
 
 .PHONY: init
 init:
