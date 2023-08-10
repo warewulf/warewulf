@@ -1,24 +1,21 @@
-.PHONY: all clean contclean
-
 include Variables.mk
 
-# Default target
+.PHONY: all
 all: config vendor wwctl wwclient man_pages wwapid wwapic wwapird
 
-# Validate source and build all packages
+.PHONY: build
 build: lint test-it vet all
 
-# set the go tools into the tools bin.
+.PHONY: setup_tools
 setup_tools: $(GO_TOOLS_BIN) $(GOLANGCI_LINT)
 
-# install go tools into TOOLS_BIN
 $(GO_TOOLS_BIN):
 	GOBIN="$(PWD)/$(TOOLS_BIN)" go install -mod=vendor $(GO_TOOLS)
 
-# install golangci-lint into TOOLS_BIN
 $(GOLANGCI_LINT):
 	curl -qq -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(TOOLS_BIN) $(GOLANGCI_LINT_VERSION)
 
+.PHONY: setup
 setup: vendor $(TOOLS_DIR) setup_tools
 
 vendor:
@@ -30,32 +27,33 @@ endif
 $(TOOLS_DIR):
 	mkdir -p $@
 
-# Pre-build steps for source, such as "go generate"
 config:
-# Store configuration for subsequent runs
 	printf " $(foreach V,$(VARLIST),$V := $(strip $($V))\n)" > Defaults.mk
-    # Global variable search and replace for all *.in files
 	find . -type f -name "*.in" -not -path "./vendor/*" \
 		-exec sh -c 'sed -ne "$(foreach V,$(VARLIST),s,@$V@,$(strip $($V)),g;)p" $${0} > $${0%.in}' {} \;
 	touch config
 
+.PHONY: rm_config
 rm_config:
 	rm -f config
 
+.PHONY: genconfig
 genconfig: rm_config config
 
-# Lint
+.PHONY: lint
 lint: setup_tools
 	$(GOLANGCI_LINT) run --build-tags "$(WW_GO_BUILD_TAGS)" --skip-dirs internal/pkg/staticfiles ./...
 
+.PHONY: vet
 vet:
 	go vet ./...
 
+.PHONY: test-it
 test-it:
 	go test -v ./...
 
-# Generate test coverage
-test-cover:     ## Run test coverage and generate html report
+.PHONY: test-cover
+test-cover:
 	rm -fr coverage
 	mkdir coverage
 	go list -f '{{if gt (len .TestGoFiles) 0}}"go test -covermode count -coverprofile {{.Name}}.coverprofile -coverpkg ./... {{.ImportPath}}"{{end}}' ./... | xargs -I {} bash -c {}
@@ -64,8 +62,10 @@ test-cover:     ## Run test coverage and generate html report
 	rm *.coverprofile
 	go tool cover -html=coverage/cover.out -o=coverage/cover.html
 
+.PHONY: debian
 debian: all
 
+.PHONY: files
 files: all
 	install -d -m 0755 $(DESTDIR)$(BINDIR)
 	install -d -m 0755 $(DESTDIR)$(WWCHROOTDIR)
@@ -112,6 +112,7 @@ files: all
 	install -m 0644 staticfiles/x86_64.efi $(DESTDIR)$(WWDATADIR)/ipxe
 	install -m 0644 staticfiles/x86_64.kpxe $(DESTDIR)$(WWDATADIR)/ipxe
 
+.PHONY: init
 init:
 	systemctl daemon-reload
 	cp -r tftpboot/* $(WWTFTPDIR)/ipxe/
@@ -136,6 +137,7 @@ update_configuration: vendor cmd/update_configuration/update_configuration.go
 	 -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'"\
 	 -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o ../../update_configuration
 
+.PHONY: dist
 dist: vendor config
 	rm -rf .dist/$(WAREWULF)-$(VERSION) $(WAREWULF)-$(VERSION).tar.gz
 	mkdir -p .dist/$(WAREWULF)-$(VERSION)
@@ -143,6 +145,7 @@ dist: vendor config
 	cd .dist; tar -czf ../$(WAREWULF)-$(VERSION).tar.gz $(WAREWULF)-$(VERSION)
 	rm -rf .dist
 
+.PHONY: reference
 reference: wwctl
 	mkdir -p userdocs/reference
 	./wwctl --emptyconf genconfig reference userdocs/reference/
@@ -150,16 +153,17 @@ reference: wwctl
 latexpdf: reference
 	make -C userdocs latexpdf
 
-## wwapi generate code from protobuf. Requires protoc and protoc-grpc-gen-gateway to generate code.
-## To setup latest protoc:
-##    Download the protobuf-all-[VERSION].tar.gz from https://github.com/protocolbuffers/protobuf/releases
-##    Extract the contents and change in the directory
-##    ./configure
-##    make
-##    make check
-##    sudo make install
-##    sudo ldconfig # refresh shared library cache.
-## To setup protoc-gen-grpc-gateway, see https://github.com/grpc-ecosystem/grpc-gateway
+# wwapi generate code from protobuf. Requires protoc and protoc-grpc-gen-gateway to generate code.
+# To setup latest protoc:
+#    Download the protobuf-all-[VERSION].tar.gz from https://github.com/protocolbuffers/protobuf/releases
+#    Extract the contents and change in the directory
+#    ./configure
+#    make
+#    make check
+#    sudo make install
+#    sudo ldconfig # refresh shared library cache.
+# To setup protoc-gen-grpc-gateway, see https://github.com/grpc-ecosystem/grpc-gateway
+.PHONY: proto
 proto: 
 	protoc -I /usr/include -I internal/pkg/api/routes/v1 -I=. \
 		--grpc-gateway_out=. \
@@ -168,15 +172,16 @@ proto:
 		--go-grpc_out=. \
 		routes.proto
 
-wwapid: ## Build the grpc api server.
+wwapid:
 	go build -o ./wwapid internal/app/api/wwapid/wwapid.go
 
-wwapic: ## Build the sample wwapi client.
+wwapic:
 	go build -o ./wwapic  internal/app/api/wwapic/wwapic.go
 
-wwapird: ## Build the rest api server (revese proxy to the grpc api server).
+wwapird:
 	go build -o ./wwapird internal/app/api/wwapird/wwapird.go
 
+.PHONY: contclean
 contclean:
 	rm -f $(WAREWULF)-$(VERSION).tar.gz
 	rm -f bash_completion
@@ -209,9 +214,12 @@ contclean:
 	rm -rf userdocs/_*
 	rm -rf userdocs/reference/*
 
+.PHONY: clean
 clean: contclean
 	rm -rf vendor
 
+.PHONY: install
 install: files
 
+.PHONY: debinstall
 debinstall: files debfiles
