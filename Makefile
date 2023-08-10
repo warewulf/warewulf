@@ -185,30 +185,19 @@ proto:
 contclean:
 	rm -f Defaults.mk
 	rm -f $(WAREWULF)-$(VERSION).tar.gz
-	rm -f bash_completion
-	rm -f config_defaults
-	rm -f etc/wwapi{c,d,rd}.conf
-	rm -f etc/wwapi{c,d,rd}.config
+	rm -f wwapi{c,d,rd} etc/wwapi{c,d,rd}.conf
 	rm -f include/systemd/warewulfd.service
-	rm -f internal/pkg/buildconfig/setconfigs.go
 	rm -f internal/pkg/config/buildconfig.go
-	rm -f print_defaults
 	rm -f update_configuration
 	rm -f warewulf.spec
-	rm -f warewulf-*.tar.gz
-	rm -f wwapic
-	rm -f wwapid
-	rm -f wwapird
 	rm -f wwclient
 	rm -f wwctl
 	rm -rf $(TOOLS_DIR)
-	rm -rf bash_completion.d
-	rm -rf /config
 	rm -rf .dist/
-	rm -rf _dist/
 	rm -rf etc/bash_completion.d/
 	rm -rf userdocs/_*
 	rm -rf userdocs/reference/*
+	rm -rf etc/defaults.conf
 
 .PHONY: clean
 clean: contclean
