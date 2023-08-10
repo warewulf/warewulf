@@ -87,7 +87,6 @@ install: all
 	cp -r etc/ipxe $(DESTDIR)$(WWCONFIGDIR)/
 	cp -r overlays/* $(DESTDIR)$(WWOVERLAYDIR)/
 	chmod 0755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/init
-	find $(DESTDIR)$(WWOVERLAYDIR) -type f -name "*.in" -exec rm -f {} \;
 	chmod 0755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/$(WWCLIENTDIR)/wwinit
 	chmod 0600 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/etc/ssh/ssh*
 	chmod 0600 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/etc/NetworkManager/system-connections/ww4-managed.ww
