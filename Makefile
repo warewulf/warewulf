@@ -13,11 +13,11 @@ setup_tools: $(GO_TOOLS_BIN) $(GOLANGCI_LINT)
 
 # install go tools into TOOLS_BIN
 $(GO_TOOLS_BIN):
-	@GOBIN="$(PWD)/$(TOOLS_BIN)" go install -mod=vendor $(GO_TOOLS)
+	GOBIN="$(PWD)/$(TOOLS_BIN)" go install -mod=vendor $(GO_TOOLS)
 
 # install golangci-lint into TOOLS_BIN
 $(GOLANGCI_LINT):
-	@curl -qq -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(TOOLS_BIN) $(GOLANGCI_LINT_VERSION)
+	curl -qq -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(TOOLS_BIN) $(GOLANGCI_LINT_VERSION)
 
 setup: vendor $(TOOLS_DIR) setup_tools
 
@@ -28,7 +28,7 @@ ifndef OFFLINE_BUILD
 endif
 
 $(TOOLS_DIR):
-	@mkdir -p $@
+	mkdir -p $@
 
 # Pre-build steps for source, such as "go generate"
 config:
@@ -46,8 +46,7 @@ genconfig: rm_config config
 
 # Lint
 lint: setup_tools
-	@echo Running golangci-lint...
-	@$(GOLANGCI_LINT) run --build-tags "$(WW_GO_BUILD_TAGS)" --skip-dirs internal/pkg/staticfiles ./...
+	$(GOLANGCI_LINT) run --build-tags "$(WW_GO_BUILD_TAGS)" --skip-dirs internal/pkg/staticfiles ./...
 
 vet:
 	go vet ./...
@@ -119,21 +118,18 @@ init:
 	restorecon -r $(WWTFTPDIR)
 
 wwctl: config vendor $(WWCTL_DEPS)
-	@echo Building "$@"
-	@cd cmd/wwctl; GOOS=linux go build -mod vendor -tags "$(WW_GO_BUILD_TAGS)" \
+	cd cmd/wwctl; GOOS=linux go build -mod vendor -tags "$(WW_GO_BUILD_TAGS)" \
 	-o ../../wwctl
 
 wwclient: config vendor $(WWCLIENT_DEPS)
-	@echo Building "$@"
-	@cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags "-extldflags -static" \
+	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags "-extldflags -static" \
 	-o ../../wwclient
 
 man_pages: wwctl
-	@install -d man_pages
-	@./wwctl --emptyconf genconfig man man_pages 
-	@cp docs/man/man5/*.5 ./man_pages/
-	@echo -n "Compressing manpage: "
-	@cd man_pages; for i in wwctl*1 *.5; do gzip --force $$i; echo -n "$$i "; done; echo
+	install -d man_pages
+	./wwctl --emptyconf genconfig man man_pages 
+	cp docs/man/man5/*.5 ./man_pages/
+	cd man_pages; for i in wwctl*1 *.5; do gzip --force $$i; echo -n "$$i "; done; echo
 
 update_configuration: vendor cmd/update_configuration/update_configuration.go
 	cd cmd/update_configuration && go build \
