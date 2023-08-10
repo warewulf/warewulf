@@ -60,9 +60,6 @@ test-cover:
 	rm *.coverprofile
 	go tool cover -html=coverage/cover.out -o=coverage/cover.html
 
-.PHONY: debian
-debian: all
-
 .PHONY: install
 install: all
 	install -d -m 0755 $(DESTDIR)$(BINDIR)
@@ -214,6 +211,3 @@ contclean:
 .PHONY: clean
 clean: contclean
 	rm -rf vendor
-
-.PHONY: debinstall
-debinstall: files debfiles
