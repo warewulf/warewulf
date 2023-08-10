@@ -16,7 +16,7 @@ Install Warewulf and dependencies
 
    git clone https://github.com/hpcng/warewulf.git
    cd warewulf
-   PREFIX=/usr SYSCONFDIR=/etc TFTPDIR=/srv/tftproot LOCALSTATEDIR=/var/lib make genconfig
+   PREFIX=/usr SYSCONFDIR=/etc TFTPDIR=/srv/tftproot LOCALSTATEDIR=/var/lib make clean Defaults.mk
    make all
    sudo make install
 

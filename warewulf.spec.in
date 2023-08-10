@@ -71,7 +71,7 @@ system for large clusters of bare metal and/or virtual systems.
 %build
 %{?with_offline:OFFLINE_BUILD=1}
 # Install to sharedstatedir by redirecting LOCALSTATEDIR
-make genconfig \
+make Defaults.mk \
     PREFIX=%{_prefix} \
     BINDIR=%{_bindir} \
     SYSCONFDIR=%{_sysconfdir} \
@@ -92,7 +92,8 @@ make
 
 %install
 export NO_BRP_STALE_LINK_ERROR=yes
-make install DESTDIR=%{buildroot}
+make install \
+    DESTDIR=%{buildroot}
 
 
 %pre

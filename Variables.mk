@@ -97,3 +97,6 @@ export GOPROXY
 
 # built tags needed for wwbuild binary
 WW_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
+
+Defaults.mk:
+	printf " $(foreach V,$(VARLIST),$V := $(strip $($V))\n)" >Defaults.mk

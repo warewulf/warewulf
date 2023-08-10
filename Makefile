@@ -27,18 +27,16 @@ endif
 $(TOOLS_DIR):
 	mkdir -p $@
 
-config:
-	printf " $(foreach V,$(VARLIST),$V := $(strip $($V))\n)" > Defaults.mk
-	find . -type f -name "*.in" -not -path "./vendor/*" \
-		-exec sh -c 'sed -ne "$(foreach V,$(VARLIST),s,@$V@,$(strip $($V)),g;)p" $${0} > $${0%.in}' {} \;
-	touch config
+.PHONY: config
+config: etc/wwapic.conf \
+	etc/wwapid.conf \
+	etc/wwapird.conf \
+	include/systemd/warewulfd.service \
+	internal/pkg/config/buildconfig.go \
+	warewulf.spec
 
-.PHONY: rm_config
-rm_config:
-	rm -f config
-
-.PHONY: genconfig
-genconfig: rm_config config
+%: %.in
+	sed -ne "$(foreach V,$(VARLIST),s,@$V@,$(strip $($V)),g;)p" $@.in >$@
 
 .PHONY: lint
 lint: setup_tools
@@ -183,11 +181,10 @@ wwapird:
 
 .PHONY: contclean
 contclean:
+	rm -f Defaults.mk
 	rm -f $(WAREWULF)-$(VERSION).tar.gz
 	rm -f bash_completion
-	rm -f config
-	rm -f config_defaults 
-	rm -f Defaults.mk
+	rm -f config_defaults
 	rm -f etc/wwapi{c,d,rd}.conf
 	rm -f etc/wwapi{c,d,rd}.config
 	rm -f include/systemd/warewulfd.service
