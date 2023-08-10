@@ -20,8 +20,8 @@ setup: vendor $(TOOLS_DIR) setup_tools
 
 vendor:
 ifndef OFFLINE_BUILD
-	  go mod tidy -v
-	  go mod vendor
+	go mod tidy -v
+	go mod vendor
 endif
 
 $(TOOLS_DIR):
@@ -126,7 +126,7 @@ wwclient: config vendor $(WWCLIENT_DEPS)
 
 man_pages: wwctl
 	install -d man_pages
-	./wwctl --emptyconf genconfig man man_pages 
+	./wwctl --emptyconf genconfig man man_pages
 	cp docs/man/man5/*.5 ./man_pages/
 	cd man_pages; for i in wwctl*1 *.5; do gzip --force $$i; echo -n "$$i "; done; echo
 
@@ -162,7 +162,7 @@ latexpdf: reference
 #    sudo ldconfig # refresh shared library cache.
 # To setup protoc-gen-grpc-gateway, see https://github.com/grpc-ecosystem/grpc-gateway
 .PHONY: proto
-proto: 
+proto:
 	protoc -I /usr/include -I internal/pkg/api/routes/v1 -I=. \
 		--grpc-gateway_out=. \
 		--grpc-gateway_opt logtostderr=true \
@@ -190,14 +190,14 @@ contclean:
 	rm -f include/systemd/warewulfd.service
 	rm -f internal/pkg/buildconfig/setconfigs.go
 	rm -f internal/pkg/config/buildconfig.go
-	rm -f man_page 
-	rm -f print_defaults 
+	rm -f man_page
+	rm -f print_defaults
 	rm -f update_configuration
 	rm -f usr/share/man/man1/
 	rm -f warewulf.spec
 	rm -f warewulf-*.tar.gz
-	rm -f wwapic 
-	rm -f wwapid 
+	rm -f wwapic
+	rm -f wwapid
 	rm -f wwapird
 	rm -f wwclient
 	rm -f wwctl
