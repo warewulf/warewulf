@@ -120,7 +120,7 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %config(noreplace) %{_sysconfdir}/warewulf/wwapi*.conf
 %config(noreplace) %{_sysconfdir}/warewulf/examples
 %config(noreplace) %{_sysconfdir}/warewulf/ipxe
-%attr(0640,-,-) %{_sysconfdir}/warewulf/nodes.conf
+%config(noreplace) %attr(0640,-,-) %{_sysconfdir}/warewulf/nodes.conf
 %{_sysconfdir}/bash_completion.d/wwctl
 
 %dir %{_sharedstatedir}/warewulf
