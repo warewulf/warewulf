@@ -36,6 +36,7 @@ Defaults.mk
 /etc/wwapid.conf
 /etc/wwapic.conf
 /etc/wwapird.conf
+/etc/defaults.conf
 .dist/
 userdocs/_*
 userdocs/reference/*

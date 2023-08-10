@@ -1,7 +1,7 @@
 include Variables.mk
 
 .PHONY: all
-all: config vendor wwctl wwclient man_pages wwapid wwapic wwapird
+all: config vendor wwctl wwclient man_pages wwapid wwapic wwapird etc/defaults.conf
 
 .PHONY: build
 build: lint test-it vet all
@@ -34,6 +34,9 @@ config: etc/wwapic.conf \
 	include/systemd/warewulfd.service \
 	internal/pkg/config/buildconfig.go \
 	warewulf.spec
+
+etc/defaults.conf: wwctl
+	./wwctl --emptyconf genconfig defaults >etc/defaults.conf
 
 %: %.in
 	sed -ne "$(foreach V,$(VARLIST),s,@$V@,$(strip $($V)),g;)p" $@.in >$@
@@ -79,7 +82,7 @@ install: all
 	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapic.conf || install -m 644 etc/wwapic.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapid.conf || install -m 644 etc/wwapid.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapird.conf || install -m 644 etc/wwapird.conf $(DESTDIR)$(WWCONFIGDIR)
-	test -f $(DESTDIR)$(DATADIR)/warewulf/defaults.conf || ./wwctl --emptyconf genconfig defaults > $(DESTDIR)$(DATADIR)/warewulf/defaults.conf
+	test -f $(DESTDIR)$(DATADIR)/warewulf/defaults.conf || install -m 644 etc/defaults.conf $(DESTDIR)$(DATADIR)/warewulf/defaults.conf
 	cp -r etc/examples $(DESTDIR)$(WWCONFIGDIR)/
 	cp -r etc/ipxe $(DESTDIR)$(WWCONFIGDIR)/
 	cp -r overlays/* $(DESTDIR)$(WWOVERLAYDIR)/
