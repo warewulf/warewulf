@@ -1,7 +1,7 @@
 include Variables.mk
 
 .PHONY: all
-all: config vendor wwctl wwclient man_pages wwapid wwapic wwapird etc/defaults.conf
+all: config vendor wwctl wwclient man_pages wwapid wwapic wwapird etc/defaults.conf etc/bash_completion.d/wwctl
 
 .PHONY: build
 build: lint test vet all
@@ -101,13 +101,17 @@ install: all
 	install -m 0644 include/firewalld/warewulf.xml $(DESTDIR)$(FIREWALLDDIR)
 	install -m 0644 include/systemd/warewulfd.service $(DESTDIR)$(SYSTEMDDIR)
 	install -m 0644 LICENSE.md $(DESTDIR)$(WWDOCDIR)
-	./wwctl --warewulfconf etc/warewulf.conf genconfig completions > $(DESTDIR)$(BASHCOMPDIR)/wwctl
+	install -m 0644 etc/bash_completion.d/wwctl $(DESTDIR)$(BASHCOMPDIR)/wwctl
 	for f in docs/man/man1/*.1.gz; do install -m 0644 $$f $(DESTDIR)$(MANDIR)/man1/; done
 	for f in docs/man/man5/*.5.gz; do install -m 0644 $$f $(DESTDIR)$(MANDIR)/man5/; done
 	install -m 0644 staticfiles/README-ipxe.md $(DESTDIR)$(WWDATADIR)/ipxe
 	install -m 0644 staticfiles/arm64.efi $(DESTDIR)$(WWDATADIR)/ipxe
 	install -m 0644 staticfiles/x86_64.efi $(DESTDIR)$(WWDATADIR)/ipxe
 	install -m 0644 staticfiles/x86_64.kpxe $(DESTDIR)$(WWDATADIR)/ipxe
+
+etc/bash_completion.d/wwctl: wwctl
+	mkdir -p etc/bash_completion.d/
+	./wwctl --warewulfconf etc/warewulf.conf genconfig completions >etc/bash_completion.d/wwctl
 
 .PHONY: init
 init:
