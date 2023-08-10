@@ -4,7 +4,7 @@ include Variables.mk
 all: config vendor wwctl wwclient man_pages wwapid wwapic wwapird etc/defaults.conf
 
 .PHONY: build
-build: lint test-it vet all
+build: lint test vet all
 
 .PHONY: setup_tools
 setup_tools: $(GO_TOOLS_BIN) $(GOLANGCI_LINT)
@@ -49,17 +49,17 @@ lint: setup_tools
 vet:
 	go vet ./...
 
-.PHONY: test-it
-test-it:
-	go test -v ./...
+.PHONY: test
+test:
+	go test ./...
 
 .PHONY: test-cover
 test-cover:
-	rm -fr coverage
+	rm -rf coverage
 	mkdir coverage
 	go list -f '{{if gt (len .TestGoFiles) 0}}"go test -covermode count -coverprofile {{.Name}}.coverprofile -coverpkg ./... {{.ImportPath}}"{{end}}' ./... | xargs -I {} bash -c {}
-	echo "mode: count" > coverage/cover.out
-	grep -h -v "^mode:" *.coverprofile >> "coverage/cover.out"
+	echo "mode: count" >coverage/cover.out
+	grep -h -v "^mode:" *.coverprofile >>"coverage/cover.out"
 	rm *.coverprofile
 	go tool cover -html=coverage/cover.out -o=coverage/cover.html
 

@@ -41,4 +41,4 @@ jobs:
       run: make vet
 
     - name: test
-      run: make test-it
+      run: make test

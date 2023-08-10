@@ -21,12 +21,12 @@ vet`` on the full codebase.
 Running the full test suite
 ===========================
 
-The Warewulf ``Makefile`` includes a ``test-it`` target which runs the
+The Warewulf ``Makefile`` includes a ``test`` target which runs the
 full test suite.
 
 .. code-block:: console
 
-   $ make test-it
+   $ make test
 
 
 Using delve
