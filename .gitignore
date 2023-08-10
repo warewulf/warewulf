@@ -39,3 +39,4 @@ Defaults.mk
 .dist/
 userdocs/_*
 userdocs/reference/*
+/warewulf-?.?.?/
