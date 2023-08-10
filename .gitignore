@@ -10,7 +10,6 @@
 /wwclient
 /wwctl
 /bash_completion
-/man_page
 /config_defaults
 /update_configuration
 /wwapic
@@ -19,9 +18,9 @@
 /print_defaults
 
 # other created files
-/man_pages
+/docs/man/man1/*.1.gz
+/docs/man/man5/*.5.gz
 /bash_completion.d
-/usr/share/man/man1/
 /etc/bash_completion.d/
 warewulf.spec
 internal/pkg/buildconfig/setconfigs.go

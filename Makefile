@@ -100,8 +100,8 @@ install: all
 	install -m 0644 include/systemd/warewulfd.service $(DESTDIR)$(SYSTEMDDIR)
 	install -m 0644 LICENSE.md $(DESTDIR)$(WWDOCDIR)
 	./wwctl --warewulfconf etc/warewulf.conf genconfig completions > $(DESTDIR)$(BASHCOMPDIR)/wwctl
-	cp man_pages/*.1* $(DESTDIR)$(MANDIR)/man1/
-	cp man_pages/*.5* $(DESTDIR)$(MANDIR)/man5/
+	for f in docs/man/man1/*.1.gz; do install -m 0644 $$f $(DESTDIR)$(MANDIR)/man1/; done
+	for f in docs/man/man5/*.5.gz; do install -m 0644 $$f $(DESTDIR)$(MANDIR)/man5/; done
 	install -m 0644 staticfiles/README-ipxe.md $(DESTDIR)$(WWDATADIR)/ipxe
 	install -m 0644 staticfiles/arm64.efi $(DESTDIR)$(WWDATADIR)/ipxe
 	install -m 0644 staticfiles/x86_64.efi $(DESTDIR)$(WWDATADIR)/ipxe
@@ -121,11 +121,12 @@ wwclient: config vendor $(WWCLIENT_DEPS)
 	cd cmd/wwclient; CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags "-extldflags -static" \
 	-o ../../wwclient
 
-man_pages: wwctl
-	install -d man_pages
-	./wwctl --emptyconf genconfig man man_pages
-	cp docs/man/man5/*.5 ./man_pages/
-	cd man_pages; for i in wwctl*1 *.5; do gzip --force $$i; echo -n "$$i "; done; echo
+.PHONY: man_pages
+man_pages: wwctl $(wildcard docs/man/man5/*.5)
+	mkdir -p docs/man/man1
+	./wwctl --emptyconf genconfig man docs/man/man1
+	gzip --force docs/man/man1/*.1
+	gzip --force --keep docs/man/man5/*.5
 
 update_configuration: vendor cmd/update_configuration/update_configuration.go
 	cd cmd/update_configuration && go build \
@@ -187,10 +188,8 @@ contclean:
 	rm -f include/systemd/warewulfd.service
 	rm -f internal/pkg/buildconfig/setconfigs.go
 	rm -f internal/pkg/config/buildconfig.go
-	rm -f man_page
 	rm -f print_defaults
 	rm -f update_configuration
-	rm -f usr/share/man/man1/
 	rm -f warewulf.spec
 	rm -f warewulf-*.tar.gz
 	rm -f wwapic
@@ -204,7 +203,6 @@ contclean:
 	rm -rf .dist/
 	rm -rf _dist/
 	rm -rf etc/bash_completion.d/
-	rm -rf man_pages
 	rm -rf userdocs/_*
 	rm -rf userdocs/reference/*
 
