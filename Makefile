@@ -69,6 +69,7 @@ install: all
 	install -d -m 0755 $(DESTDIR)$(WWCHROOTDIR)
 	install -d -m 0755 $(DESTDIR)$(WWPROVISIONDIR)
 	install -d -m 0755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/$(WWCLIENTDIR)
+	install -d -m 0755 $(DESTDIR)$(WWCONFIGDIR)/examples
 	install -d -m 0755 $(DESTDIR)$(WWCONFIGDIR)/ipxe
 	install -d -m 0755 $(DESTDIR)$(BASHCOMPDIR)
 	install -d -m 0755 $(DESTDIR)$(MANDIR)/man1
@@ -83,9 +84,9 @@ install: all
 	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapid.conf || install -m 0644 etc/wwapid.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapird.conf || install -m 0644 etc/wwapird.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(DATADIR)/warewulf/defaults.conf || install -m 0644 etc/defaults.conf $(DESTDIR)$(DATADIR)/warewulf/defaults.conf
-	cp -r etc/examples $(DESTDIR)$(WWCONFIGDIR)/
-	cp -r etc/ipxe $(DESTDIR)$(WWCONFIGDIR)/
-	cp -r overlays/* $(DESTDIR)$(WWOVERLAYDIR)/
+	for f in etc/examples/*.ww; do install -m 0644 $$f $(DESTDIR)$(WWCONFIGDIR)/examples/; done
+	for f in etc/ipxe/*.ipxe; do install -m 0644 $$f $(DESTDIR)$(WWCONFIGDIR)/ipxe/; done
+	(cd overlays && find * -type f -exec install -D -m 0644 {} $(DESTDIR)$(WWOVERLAYDIR)/{} \;)
 	chmod 0755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/init
 	chmod 0755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/$(WWCLIENTDIR)/wwinit
 	chmod 0600 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/etc/ssh/ssh*
