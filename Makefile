@@ -63,8 +63,8 @@ test-cover:
 .PHONY: debian
 debian: all
 
-.PHONY: files
-files: all
+.PHONY: install
+install: all
 	install -d -m 0755 $(DESTDIR)$(BINDIR)
 	install -d -m 0755 $(DESTDIR)$(WWCHROOTDIR)
 	install -d -m 0755 $(DESTDIR)$(WWPROVISIONDIR)
@@ -214,9 +214,6 @@ contclean:
 .PHONY: clean
 clean: contclean
 	rm -rf vendor
-
-.PHONY: install
-install: files
 
 .PHONY: debinstall
 debinstall: files debfiles
