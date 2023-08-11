@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hpcng/warewulf/internal/pkg/node"
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/stretchr/testify/assert"
 )
@@ -234,6 +234,65 @@ nodes:
     network devices:
       foo:
         ipaddr: 10.10.0.3
+`},
+		{name: "one node with filesystem",
+			args:    []string{"--fsname=/dev/vda1", "--fspath=/var", "n01"},
+			wantErr: false,
+			stdout:  "",
+			outDb: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes:
+  n01:
+    profiles:
+    - default
+    filesystems:
+      /dev/vda1:
+        path: /var
+`},
+		{name: "one node with filesystem",
+			args:    []string{"--fsname=dev/vda1", "--fspath=/var", "n01"},
+			wantErr: true,
+			stdout:  "",
+			outDb: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes: {}
+`},
+		{name: "one node with filesystem and partition ",
+			args:    []string{"--fsname=var", "--fspath=/var", "--partname=var", "--diskname=/dev/vda", "n01"},
+			wantErr: false,
+			stdout:  "",
+			outDb: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes:
+  n01:
+    profiles:
+    - default
+    disks:
+      /dev/vda:
+        partitions:
+          var: {}
+    filesystems:
+      /dev/disk/by-partlabel/var:
+        path: /var
+`},
+		{name: "one node with filesystem with btrfs and partition ",
+			args:    []string{"--fsname=var", "--fspath=/var", "--fsformat=btrfs", "--partname=var", "--diskname=/dev/vda", "n01"},
+			wantErr: false,
+			stdout:  "",
+			outDb: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes:
+  n01:
+    profiles:
+    - default
+    disks:
+      /dev/vda:
+        partitions:
+          var: {}
+    filesystems:
+      /dev/disk/by-partlabel/var:
+        format: btrfs
+        path: /var
 `},
 	}
 	conf_yml := `WW_INTERNAL: 0`

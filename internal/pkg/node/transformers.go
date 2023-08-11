@@ -256,63 +256,47 @@ func recursiveFlatten(strct interface{}) {
 }
 
 /*
-Create a string slice, where every element represents a yaml entry
+Create a string slice, where every element represents a yaml entry, used for node/profile edit
+in order to get a summary of all available elements
 */
-func (nodeConf *NodeConf) UnmarshalConf(excludeList []string) (lines []string) {
-	nodeInfoType := reflect.TypeOf(nodeConf)
-	nodeInfoVal := reflect.ValueOf(nodeConf)
+func UnmarshalConf(obj interface{}, excludeList []string) (lines []string) {
+	objType := reflect.TypeOf(obj)
 	// now iterate of every field
-	for i := 0; i < nodeInfoVal.Elem().NumField(); i++ {
-		if nodeInfoType.Elem().Field(i).Tag.Get("lopt") != "" {
-			if ymlStr, ok := getYamlString(nodeInfoType.Elem().Field(i), excludeList); ok {
+	for i := 0; i < objType.NumField(); i++ {
+		if objType.Field(i).Tag.Get("comment") != "" {
+			if ymlStr, ok := getYamlString(objType.Field(i), excludeList); ok {
 				lines = append(lines, ymlStr...)
 			}
-		} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr {
-			nestType := reflect.TypeOf(nodeInfoVal.Elem().Field(i).Interface())
-			if ymlStr, ok := getYamlString(nodeInfoType.Elem().Field(i), excludeList); ok {
-				lines = append(lines, ymlStr...)
+		}
+		if objType.Field(i).Type.Kind() == reflect.Ptr && objType.Field(i).Tag.Get("yaml") != "" {
+			typeLine := objType.Field(i).Tag.Get("yaml")
+			if len(strings.Split(typeLine, ",")) > 1 {
+				typeLine = strings.Split(typeLine, ",")[0] + ":"
 			}
-			for j := 0; j < nestType.Elem().NumField(); j++ {
-				if nestType.Elem().Field(j).Tag.Get("lopt") != "" &&
-					!util.InSlice(excludeList, nestType.Elem().Field(j).Tag.Get("lopt")) {
-					if ymlStr, ok := getYamlString(nestType.Elem().Field(j), excludeList); ok {
-						for _, str := range ymlStr {
-							lines = append(lines, "  "+str)
-						}
-					}
-				}
+			lines = append(lines, typeLine)
+			nestedLine := UnmarshalConf(reflect.New(objType.Field(i).Type.Elem()).Elem().Interface(), excludeList)
+			for _, ln := range nestedLine {
+				lines = append(lines, "  "+ln)
 			}
-		} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string]*NetDevs(nil)) {
-			netMap := nodeInfoVal.Elem().Field(i).Interface().(map[string]*NetDevs)
-			// add a default network so that it can hold values
-			key := "default"
-			if len(netMap) == 0 {
-				netMap[key] = new(NetDevs)
-			} else {
-				for keyIt := range netMap {
-					key = keyIt
-					break
-				}
+		} else if objType.Field(i).Type.Kind() == reflect.Map && objType.Field(i).Type.Elem().Kind() == reflect.Ptr {
+			typeLine := objType.Field(i).Tag.Get("yaml")
+			if len(strings.Split(typeLine, ",")) > 1 {
+				typeLine = strings.Split(typeLine, ",")[0] + ":"
 			}
-			if ymlStr, ok := getYamlString(nodeInfoType.Elem().Field(i), excludeList); ok {
-				lines = append(lines, ymlStr[0]+":", "  "+key+":")
-				netType := reflect.TypeOf(netMap[key])
-				for j := 0; j < netType.Elem().NumField(); j++ {
-					if ymlStr, ok := getYamlString(netType.Elem().Field(j), excludeList); ok {
-						for _, str := range ymlStr {
-							lines = append(lines, "  "+str)
-						}
-					}
-				} // lines
-			} // this
-		} //not
-	} //do
+			lines = append(lines, typeLine, "  element:")
+			nestedLine := UnmarshalConf(reflect.New(objType.Field(i).Type.Elem().Elem()).Elem().Interface(), excludeList)
+			for _, ln := range nestedLine {
+				lines = append(lines, "    "+ln)
+			}
+		}
+	}
 	return lines
 }
 
 /*
 Get the string of the yaml tag
 */
+
 func getYamlString(myType reflect.StructField, excludeList []string) ([]string, bool) {
 	ymlStr := myType.Tag.Get("yaml")
 	if len(strings.Split(ymlStr, ",")) > 1 {
@@ -320,11 +304,15 @@ func getYamlString(myType reflect.StructField, excludeList []string) ([]string, 
 	}
 	if util.InSlice(excludeList, ymlStr) {
 		return []string{""}, false
-	} else if myType.Tag.Get("lopt") == "" && myType.Type.Kind() == reflect.String {
+	} else if myType.Tag.Get("comment") == "" && myType.Type.Kind() == reflect.String {
 		return []string{""}, false
 	}
 	if myType.Type.Kind() == reflect.String {
-		ymlStr += ": string"
+		fieldType := myType.Tag.Get("type")
+		if fieldType == "" {
+			fieldType = "string"
+		}
+		ymlStr += ": " + fieldType
 		return []string{ymlStr}, true
 	} else if myType.Type == reflect.TypeOf([]string{}) {
 		return []string{ymlStr + ":", "  - string"}, true
@@ -347,7 +335,6 @@ func (nodeConf *NodeConf) SetLopt(lopt string, value string) (found bool) {
 	nodeInfoVal := reflect.ValueOf(nodeConf)
 	// try to find the normal fields, networks come later
 	for i := 0; i < nodeInfoVal.Elem().NumField(); i++ {
-		//fmt.Println(nodeInfoType.Elem().Field(i).Tag.Get("lopt"), lopt)
 		if nodeInfoType.Elem().Field(i).Tag.Get("lopt") == lopt {
 			if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.String {
 				wwlog.Verbose("Found lopt %s mapping to %s, setting to %s\n",

@@ -399,12 +399,15 @@ func GetByName(node interface{}, name string) (string, error) {
 /*
 Check if the Netdev is empty, so has no values set
 */
-func (dev *NetDevs) Empty() bool {
-	if dev == nil {
+func ObjectIsEmpty(obj interface{}) bool {
+	if obj == nil {
 		return true
 	}
-	varType := reflect.TypeOf(*dev)
-	varVal := reflect.ValueOf(*dev)
+	varType := reflect.TypeOf(obj)
+	varVal := reflect.ValueOf(obj)
+	if varType.Kind() == reflect.Ptr && !varVal.IsNil() {
+		return ObjectIsEmpty(varVal.Elem().Interface())
+	}
 	if varVal.IsZero() {
 		return true
 	}
@@ -416,6 +419,10 @@ func (dev *NetDevs) Empty() bool {
 			}
 		} else if varType.Field(i).Type == reflect.TypeOf(map[string]string{}) {
 			if len(varVal.Field(i).Interface().(map[string]string)) != 0 {
+				return false
+			}
+		} else if varType.Field(i).Type.Kind() == reflect.Ptr {
+			if !ObjectIsEmpty(varVal.Field(i).Interface()) {
 				return false
 			}
 		}

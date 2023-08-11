@@ -45,8 +45,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Error("Could not create temp file:%s \n", err)
 	}
 	defer os.Remove(file.Name())
-	nodeConf := node.NewConf()
-	yamlTemplate := nodeConf.UnmarshalConf([]string{"tagsdel"})
+	yamlTemplate := node.UnmarshalConf(node.NodeConf{}, []string{"tagsdel"})
 	for {
 		_ = file.Truncate(0)
 		_, _ = file.Seek(0, 0)
@@ -111,7 +110,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			yes := apiutil.ConfirmationPrompt(fmt.Sprintf("Are you sure you want to modify %d nodes", len(modifiedProfileMap)))
 			if yes {
 				err = apiprofile.ProfileDelete(&wwapiv1.NodeDeleteParameter{NodeNames: pList, Force: true})
-
 
 				if err != nil {
 					wwlog.Verbose("Problem deleting nodes before modification %s")
