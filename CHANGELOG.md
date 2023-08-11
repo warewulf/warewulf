@@ -88,6 +88,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   test-it with test. #890
 
 - realy reboot also without systemd
+- Specify primary network device per-node rather than per-netdev
+- refactored output `wwctl node/profile list` so that `-a` will only show all the
+  set values and `-A` will show all fields included the ones without a set value
+- Added support for file systems, partitions and disks. Values for these objects can
+  be set with `wwctl profile/node set/add`. The format of this objects is inspired by
+  butane/ignition, but where butane/ignition uses lists for holding disks, partitions
+  and file systems, warewulf uses maps instead. For disks the map key is the underlying
+  block device, for partitions its the partition label and for file systems its the path
+  to the partitions (e.g. `/dev/disk/by-partlabel/scratch`).
+  Not all available options of butane/ignition are exposed to the commandline, but are
+  available via `wwctl node/profile edit`.
+- Added the template function `{{ createIgnitionJson }}` which will create a json object
+  compatible with ignition.
+- Container images need ignition and sgdisk installed in order to the disk management.
+- Added boootup services based on ignition which will manage the disks, partitions and file
+  systems. The services are systemd services as sgdisk needs systemd in order to work
+  correctly. All service use the existence of `/warewulf/ignition.json` as perquisite so
+  that they can be place in the `wwinit` overlay and will only become active if disk management
+  is configured for this node. The service `ignition-disks-ww4.service` will partition and
+  format and create the file systems on the disks. For every a file system a systemd mount unit
+  file is create and will executed after the `ignition-disks-ww4.service` has finished.
+  Entries in `/etc/fstab` for every file system are created with the `noauto` option.
 
 ## [4.4.0] 2023-01-18
 
