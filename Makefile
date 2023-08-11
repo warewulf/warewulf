@@ -7,13 +7,26 @@ all: config vendor wwctl wwclient man_pages wwapid wwapic wwapird etc/defaults.c
 build: lint test vet all
 
 .PHONY: setup_tools
-setup_tools: $(GO_TOOLS_BIN) $(GOLANGCI_LINT)
+setup_tools: $(GO_TOOLS_BIN) $(GOLANGCI_LINT) $(PROTOC_GEN_GO) $(PROTOC_GEN_GO_GRPC)
 
 $(GO_TOOLS_BIN):
 	GOBIN="$(PWD)/$(TOOLS_BIN)" go install -mod=vendor $(GO_TOOLS)
 
 $(GOLANGCI_LINT):
 	curl -qq -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(TOOLS_BIN) $(GOLANGCI_LINT_VERSION)
+
+$(PROTOC):
+	cd $(PWD)/$(TOOLS_DIR) && curl -LO $(PROTOC_URL) && unzip protoc-24.0-linux-aarch_64.zip
+
+$(PROTOC_GEN_GRPC_GATEWAY):
+	curl -L $(PROTOC_GEN_GRPC_GATEWAY_URL) -o $(PROTOC_GEN_GRPC_GATEWAY)
+	chmod +x $(PROTOC_GEN_GRPC_GATEWAY)
+
+$(PROTOC_GEN_GO):
+	GOBIN="$(PWD)/$(TOOLS_BIN)" go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
+
+$(PROTOC_GEN_GO_GRPC):
+	GOBIN="$(PWD)/$(TOOLS_BIN)" go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 
 .PHONY: setup
 setup: vendor $(TOOLS_DIR) setup_tools
@@ -162,19 +175,9 @@ reference: wwctl
 latexpdf: reference
 	make -C userdocs latexpdf
 
-# wwapi generate code from protobuf. Requires protoc and protoc-grpc-gen-gateway to generate code.
-# To setup latest protoc:
-#    Download the protobuf-all-[VERSION].tar.gz from https://github.com/protocolbuffers/protobuf/releases
-#    Extract the contents and change in the directory
-#    ./configure
-#    make
-#    make check
-#    sudo make install
-#    sudo ldconfig # refresh shared library cache.
-# To setup protoc-gen-grpc-gateway, see https://github.com/grpc-ecosystem/grpc-gateway
 .PHONY: proto
-proto:
-	protoc -I /usr/include -I internal/pkg/api/routes/v1 -I=. \
+proto: $(PROTOC) $(PROTOC_GEN_GRPC_GATEWAY) $(PROTOC_GEN_GO) $(PROTOC_GEN_GO_GRPC)
+	PATH=$(TOOLS_BIN):$(PATH) $(PROTOC) -I /usr/include -I internal/pkg/api/routes/v1 -I=. \
 		--grpc-gateway_out=. \
 		--grpc-gateway_opt logtostderr=true \
 		--go_out=. \
