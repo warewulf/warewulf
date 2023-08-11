@@ -380,11 +380,6 @@ func NewInfo() (nodeInfo NodeInfo) {
 	return nodeInfo
 }
 
-func NewNetDevEntry() (netdev NetDevEntry) {
-	netdev.Tags = make(map[string]*Entry)
-	return
-}
-
 /*
 Get a entry by its name
 */
