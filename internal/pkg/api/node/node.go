@@ -7,9 +7,9 @@ import (
 	"os"
 
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/hpcng/warewulf/pkg/hostlist"
 	"github.com/pkg/errors"
@@ -20,7 +20,6 @@ import (
 
 // NodeAdd adds nodes for management by Warewulf.
 func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
-
 	if nap == nil {
 		return fmt.Errorf("NodeAddParameter is nil")
 	}
@@ -83,7 +82,6 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 
 // NodeDelete adds nodes for management by Warewulf.
 func NodeDelete(ndp *wwapiv1.NodeDeleteParameter) (err error) {
-
 	var nodeList []node.NodeInfo
 	nodeList, err = NodeDeleteParameterCheck(ndp, false)
 	if err != nil {
@@ -101,7 +99,7 @@ func NodeDelete(ndp *wwapiv1.NodeDeleteParameter) (err error) {
 		if err != nil {
 			wwlog.Error("%s", err)
 		} else {
-			//count++
+			// count++
 			wwlog.Verbose("Deleting node: %s\n", n.Id.Print())
 		}
 	}
@@ -122,7 +120,6 @@ func NodeDelete(ndp *wwapiv1.NodeDeleteParameter) (err error) {
 // Output to the console if console is true.
 // Returns the nodes to delete.
 func NodeDeleteParameterCheck(ndp *wwapiv1.NodeDeleteParameter, console bool) (nodeList []node.NodeInfo, err error) {
-
 	if ndp == nil {
 		err = fmt.Errorf("NodeDeleteParameter is nil")
 		return
@@ -164,7 +161,6 @@ func NodeDeleteParameterCheck(ndp *wwapiv1.NodeDeleteParameter, console bool) (n
 
 // NodeSet is the wwapiv1 implmentation for updating node fields.
 func NodeSet(set *wwapiv1.NodeSetParameter) (err error) {
-
 	if set == nil {
 		return fmt.Errorf("NodeAddParameter is nil")
 	}
@@ -182,7 +178,6 @@ func NodeSet(set *wwapiv1.NodeSetParameter) (err error) {
 // TODO: Determine if the console switch does wwlog or not.
 // - console may end up being textOutput?
 func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB node.NodeYaml, nodeCount uint, err error) {
-
 	if set == nil {
 		err = fmt.Errorf("node set parameter is nil")
 		if console {
@@ -243,15 +238,51 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 				wwlog.Error(fmt.Sprintf("%v", err.Error()))
 				return
 			}
-
 			wwlog.Verbose("Node: %s, Deleting network device: %s", n.Id.Get(), set.NetdevDelete)
 			delete(n.NetDevs, set.NetdevDelete)
 		}
+		if set.PartitionDelete != "" {
+			deletedPart := false
+			for diskname, disk := range n.Disks {
+				if _, ok := disk.Partitions[set.PartitionDelete]; ok {
+					wwlog.Verbose("Node: %s, on disk %, deleting partition: %s", n.Id.Get(), diskname, set.PartitionDelete)
+					deletedPart = true
+					delete(disk.Partitions, set.PartitionDelete)
+				}
+				if !deletedPart {
+					wwlog.Error(fmt.Sprintf("%v", err.Error()))
+					err = fmt.Errorf("partition doesn't exist: %s", set.PartitionDelete)
+					return
+				}
+			}
+		}
+		if set.DiskDelete != "" {
+			if _, ok := n.Disks[set.DiskDelete]; !ok {
+				err = fmt.Errorf("disk doesn't exist: %s", set.DiskDelete)
+				wwlog.Error(fmt.Sprintf("%v", err.Error()))
+				return
+			}
+			wwlog.Verbose("Node: %s, deleting disk: %s", n.Id.Get(), set.DiskDelete)
+			delete(n.Disks, set.DiskDelete)
+		}
+		if set.FilesystemDelete != "" {
+			if _, ok := n.FileSystems[set.FilesystemDelete]; !ok {
+				err = fmt.Errorf("filesystem doesn't exist: %s", set.FilesystemDelete)
+				wwlog.Error(fmt.Sprintf("%v", err.Error()))
+				return
+			}
+			wwlog.Verbose("Node: %s, deleting filesystem: %s", n.Id.Get(), set.FilesystemDelete)
+			delete(n.FileSystems, set.FilesystemDelete)
+		}
 		for _, key := range nodeConf.TagsDel {
+			wwlog.Debug("deleting tag %s", key)
 			delete(n.Tags, key)
 		}
-		for _, key := range nodeConf.Ipmi.TagsDel {
-			delete(n.Ipmi.Tags, key)
+		if nodeConf.Ipmi != nil {
+			for _, key := range nodeConf.Ipmi.TagsDel {
+				wwlog.Debug("deleting Ipmi tag %s", key)
+				delete(n.Ipmi.Tags, key)
+			}
 		}
 		for net := range nodeConf.NetDevs {
 			for _, key := range nodeConf.NetDevs[net].TagsDel {
@@ -274,7 +305,6 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 // NodeStatus returns the imaging state for nodes.
 // This requires warewulfd.
 func NodeStatus(nodeNames []string) (nodeStatusResponse *wwapiv1.NodeStatusResponse, err error) {
-
 	// Local structs for translating json from warewulfd.
 	type nodeStatusInternal struct {
 		NodeName string `json:"node name"`

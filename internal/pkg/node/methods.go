@@ -54,7 +54,6 @@ func FilterMapByName(inputMap map[string]*NodeConf, searchList []string) (retMap
 					retMap[name] = nConf
 				}
 			}
-
 		}
 	}
 	return retMap
@@ -152,7 +151,6 @@ func (ent *Entry) SetDefault(val string) {
 		return
 	}
 	ent.def = []string{val}
-
 }
 
 /*
@@ -163,7 +161,6 @@ func (ent *Entry) SetDefaultSlice(val []string) {
 		return
 	}
 	ent.def = val
-
 }
 
 /*
@@ -313,7 +310,7 @@ per profile. Else -- is returned.
 func (ent *Entry) Source() string {
 	if len(ent.value) != 0 && len(ent.altvalue) != 0 {
 		return "SUPERSEDED"
-		//return fmt.Sprintf("[%s]", ent.from)
+		// return fmt.Sprintf("[%s]", ent.from)
 	} else if ent.from == "" {
 		return "--"
 	}
@@ -370,4 +367,38 @@ func GetByName(node interface{}, name string) (string, error) {
 	}
 	myEntry := entryField.Interface().(Entry)
 	return myEntry.Get(), nil
+}
+
+/*
+Check if the Netdev is empty, so has no values set
+*/
+func ObjectIsEmpty(obj interface{}) bool {
+	if obj == nil {
+		return true
+	}
+	varType := reflect.TypeOf(obj)
+	varVal := reflect.ValueOf(obj)
+	if varType.Kind() == reflect.Ptr && !varVal.IsNil() {
+		return ObjectIsEmpty(varVal.Elem().Interface())
+	}
+	if varVal.IsZero() {
+		return true
+	}
+	for i := 0; i < varType.NumField(); i++ {
+		if varType.Field(i).Type.Kind() == reflect.String && !varVal.Field(i).IsZero() {
+			val := varVal.Field(i).Interface().(string)
+			if val != "" {
+				return false
+			}
+		} else if varType.Field(i).Type == reflect.TypeOf(map[string]string{}) {
+			if len(varVal.Field(i).Interface().(map[string]string)) != 0 {
+				return false
+			}
+		} else if varType.Field(i).Type.Kind() == reflect.Ptr {
+			if !ObjectIsEmpty(varVal.Field(i).Interface()) {
+				return false
+			}
+		}
+	}
+	return true
 }

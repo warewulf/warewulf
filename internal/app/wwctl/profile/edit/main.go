@@ -44,8 +44,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Error("Could not create temp file:%s \n", err)
 	}
 	defer os.Remove(file.Name())
-	nodeConf := node.NewConf()
-	yamlTemplate := nodeConf.UnmarshalConf([]string{"tagsdel"})
+	yamlTemplate := node.UnmarshalConf(node.NodeConf{}, []string{"tagsdel"})
 	for {
 		_ = file.Truncate(0)
 		_, _ = file.Seek(0, 0)
@@ -85,11 +84,36 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					nodeList[i] = key
 					i++
 				}
-				yes := apiutil.ConfirmationPrompt(fmt.Sprintf("Are you sure you want to modify %d nodes", len(modifiedProfileMap)))
+				yes := apiutil.ConfirationPrompt(fmt.Sprintf("Are you sure you want to modify %d nodes", len(modifiedProfileMap)))
 				if !yes {
 					break
 				}
-				err = apiprofile.ProfileDelete(&wwapiv1.NodeDeleteParameter{NodeNames: nodeList, Force: true})
+			}
+			var checkErrors []error
+			for nodeName, node := range modifiedProfileMap {
+				err = node.Check()
+				if err != nil {
+					checkErrors = append(checkErrors, fmt.Errorf("profile: %s parse error: %s", nodeName, err))
+				}
+			}
+			if len(checkErrors) != 0 {
+				yes := apiutil.ConfirmationPrompt(fmt.Sprintf("Got following error on parsing: %s, Retry", checkErrors))
+				if yes {
+					continue
+				} else {
+					break
+				}
+			}
+			pList := make([]string, len(profileMap))
+			i := 0
+			for key := range profileMap {
+				pList[i] = key
+				i++
+			}
+			yes := apiutil.ConfirmationPrompt(fmt.Sprintf("Are you sure you want to modify %d nodes", len(modifiedProfileMap)))
+			if yes {
+				err = apiprofile.ProfileDelete(&wwapiv1.NodeDeleteParameter{NodeNames: pList, Force: true})
+
 				if err != nil {
 					wwlog.Verbose("Problem deleting nodes before modification %s")
 				}
