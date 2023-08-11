@@ -206,7 +206,7 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			n.SetAltFrom(config.NodeProfiles[profileName], profileName)
 		}
 		// set default/primary network is just one network exist
-		if len(n.NetDevs) >= 1 {
+		if len(n.NetDevs) >= 1 && !n.PrimaryNetDev.Defined() {
 			tmpNets := make([]string, 0, len(n.NetDevs))
 			for key := range node.NetDevs {
 				tmpNets = append(tmpNets, key)
