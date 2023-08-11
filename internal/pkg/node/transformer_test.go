@@ -299,13 +299,14 @@ ipmi: {}
 			t.Errorf("Got wrong yml, wanted:\n'%s'\nGot:\n'%s'", wanted, string(ymlByte))
 		}
 		delete(test_node4.Tags, "foo")
+		nodeConf = NewConf()
 		nodeConf.GetFrom(test_node4)
 		nodeConf.Flatten()
 		ymlByte, _ = yaml.Marshal(nodeConf)
 		wanted = `{}
 `
 		if string(ymlByte) != wanted {
-			t.Errorf("Couldn't remove tag'%s'", string(ymlByte))
+			t.Errorf("Couldn't remove tag, wanted:\n%s\nGot:\n%s", wanted, string(ymlByte))
 		}
 
 	})
