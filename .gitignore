@@ -5,38 +5,27 @@
 /vendor
 
 # binaries
-/warewulfd
-/wwbuild
 /wwclient
 /wwctl
-/bash_completion
-/man_page
-/config_defaults
 /update_configuration
 /wwapic
 /wwapid
 /wwapird
-/print_defaults
 
 # other created files
-/man_pages
-/bash_completion.d
-/usr/share/man/man1/
+/docs/man/man1
+/docs/man/man5/*.5.gz
 /etc/bash_completion.d/
 warewulf.spec
-internal/pkg/buildconfig/setconfigs.go
 internal/pkg/config/buildconfig.go
 include/systemd/warewulfd.service
-_dist/
-/config
 warewulf-*.tar.gz
 Defaults.mk
-/etc/wwapid.config
-/etc/wwapic.config
-/etc/wwapird.config
 /etc/wwapid.conf
 /etc/wwapic.conf
 /etc/wwapird.conf
+/etc/defaults.conf
 .dist/
 userdocs/_*
 userdocs/reference/*
+/warewulf-?.?.?/

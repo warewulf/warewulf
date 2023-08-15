@@ -158,7 +158,7 @@ Vagrantfile
                 git clone https://github.com/hpcng/warewulf.git
                 cd warewulf
                 git checkout v4.4.0
-                make genconfig \
+                make clean Defaults.mk \
                     PREFIX=/usr \
                     BINDIR=/usr/bin \
                     SYSCONFDIR=/etc \

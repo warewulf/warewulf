@@ -84,6 +84,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Check for formal correct IP and MAC addresses for command line options and
   when reading in the configurations
 - Write log messages to stderr rather than stdout. #768
+- Updates to Makefile for clarity, notably removing genconfig and replacing
+  test-it with test. #890
 
 ## [4.4.0] 2023-01-18
 
