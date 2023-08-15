@@ -143,7 +143,7 @@ permissions, etc.
 
 ..
   note::
-  There is now possibility to delete files with an overlay! [example needed]
+  There is no possibility to delete files with an overlay!
 
 Build
 -----
