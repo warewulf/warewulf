@@ -201,6 +201,7 @@ contclean:
 	rm -rf userdocs/_*
 	rm -rf userdocs/reference/*
 	rm -rf etc/defaults.conf
+	rm -rf *.coverprofile
 
 .PHONY: clean
 clean: contclean
