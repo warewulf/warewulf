@@ -87,6 +87,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updates to Makefile for clarity, notably removing genconfig and replacing
   test-it with test. #890
 
+- realy reboot also without systemd
+
 ## [4.4.0] 2023-01-18
 
 ### Added
