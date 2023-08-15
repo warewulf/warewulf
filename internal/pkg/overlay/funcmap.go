@@ -2,13 +2,16 @@ package overlay
 
 import (
 	"bufio"
+	"encoding/json"
+	"fmt"
 	"os"
 	"path"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/container"
-	"github.com/hpcng/warewulf/internal/pkg/util"
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/container"
+	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
@@ -99,4 +102,21 @@ func templateContainerFileInclude(containername string, filepath string) string 
 		wwlog.Error("Template include failed: %s", err)
 	}
 	return strings.TrimSuffix(string(content), "\n")
+}
+
+func createIgnitionJson(node *node.NodeInfo) string {
+	conf, rep, err := node.GetConfig()
+	if len(conf.Storage.Disks) == 0 && len(conf.Storage.Filesystems) == 0 {
+		wwlog.Debug("no disks or filesystems present, don't create a json object")
+		return ""
+	}
+	if err != nil {
+		wwlog.Error("disk, filesystem configuration has following error: ", fmt.Sprint(err))
+		return fmt.Sprint(err)
+	}
+	if rep != "" {
+		wwlog.Warn("%s storage configuration has following non fatal problems: %s", node.Id, rep)
+	}
+	tmpYaml, _ := json.Marshal(&conf)
+	return string(tmpYaml)
 }

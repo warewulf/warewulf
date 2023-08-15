@@ -69,7 +69,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Error("%v does not identify a single node", NodeName)
 			os.Exit(1)
 		}
-		tstruct := overlay.InitStruct(filteredNodes[0])
+		tstruct := overlay.InitStruct(&filteredNodes[0])
 		tstruct.BuildSource = overlayFile
 		buffer, backupFile, writeFile, err := overlay.RenderTemplateFile(overlayFile, tstruct)
 		if err != nil {

@@ -245,7 +245,7 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 				wwlog.Debug("Created directory in overlay: %s", location)
 
 			} else if filepath.Ext(location) == ".ww" {
-				tstruct := InitStruct(nodeInfo)
+				tstruct := InitStruct(&nodeInfo)
 				tstruct.BuildSource = path.Join(overlaySourceDir, location)
 				wwlog.Verbose("Evaluating overlay template file: %s", location)
 				destFile := strings.TrimSuffix(location, ".ww")
@@ -266,7 +266,7 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 						line := fileScanner.Text()
 						filenameFromTemplate := reg.FindAllStringSubmatch(line, -1)
 						if len(filenameFromTemplate) != 0 {
-							wwlog.Debug("Found multifile comment, new filename %s", filenameFromTemplate[0][1])
+							wwlog.Debug("Found multiple comment, new filename %s", filenameFromTemplate[0][1])
 							if foundFileComment {
 								err = CarefulWriteBuffer(path.Join(outputDir, destFileName),
 									fileBuffer, backupFile, info.Mode())
@@ -384,6 +384,14 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (
 		"inc":          func(i int) int { return i + 1 },
 		"dec":          func(i int) int { return i - 1 },
 		"file":         func(str string) string { return fmt.Sprintf("{{ /* file \"%s\" */ }}", str) },
+		"IgnitionJson": func() string {
+			str := createIgnitionJson(data.ThisNode)
+			if str != "" {
+				return str
+			}
+			writeFile = false
+			return ""
+		},
 		"abort": func() string {
 			wwlog.Debug("abort file called in %s", fileName)
 			writeFile = false
@@ -396,6 +404,12 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (
 		},
 		"split": func(s string, d string) []string {
 			return strings.Split(s, d)
+		},
+		"tr": func(source, old, new string) string {
+			return strings.Replace(source, old, new, -1)
+		},
+		"replace": func(source, old, new string) string {
+			return strings.Replace(source, old, new, -1)
 		},
 		// }).ParseGlob(path.Join(OverlayDir, destFile+".ww*"))
 	}).ParseGlob(fileName)

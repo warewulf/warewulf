@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/util"
@@ -279,6 +280,37 @@ true if the entry has set a real value, else false.
 */
 func (ent *Entry) GotReal() bool {
 	return len(ent.value) != 0
+}
+
+/*
+Get a pointer to the value
+*/
+func (ent *Entry) GetPointer() *string {
+	ret := ent.Get()
+	return &ret
+}
+
+/*
+Try to get a int of a value, 0 if value can't be parsed!
+*/
+func (ent *Entry) GetInt() int {
+	var ret int
+	if len(ent.value) != 0 {
+		ret, _ = strconv.Atoi(ent.value[0])
+	} else if len(ent.altvalue) != 0 {
+		ret, _ = strconv.Atoi(ent.altvalue[0])
+	} else if len(ent.def) != 0 {
+		ret, _ = strconv.Atoi(ent.def[0])
+	}
+	return ret
+}
+
+/*
+Ptr to int
+*/
+func (ent *Entry) GetIntPtr() *int {
+	ret := ent.GetInt()
+	return &ret
 }
 
 /**********
