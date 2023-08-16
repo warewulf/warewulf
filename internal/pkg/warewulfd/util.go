@@ -1,9 +1,11 @@
 package warewulfd
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
+	"github.com/hpcng/warewulf/internal/pkg/node"
 	nodepkg "github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
@@ -61,21 +63,22 @@ func getOverlayFile(
 	}
 
 	if build {
-		wwlog.Serv("BUILD %15s, overlays %v", nodeId, stage_overlays)
-
-		args := []string{"overlay", "build"}
-
-		for _, overlayname := range stage_overlays {
-			args = append(args, "-O", overlayname)
+		nodeDB, errNested := node.New()
+		if err != nil {
+			return stage_file, errNested
 		}
-
-		args = append(args, nodeId)
-
-		out, err := util.RunWWCTL(args...)
-
+		myNode, errNested := nodeDB.FindAllNodes()
+		if err != nil {
+			return stage_file, errNested
+		}
+		myNode = node.FilterByName(myNode, []string{nodeId})
+		if len(myNode) != 1 {
+			return stage_file, fmt.Errorf("couldn't find node %s", nodeId)
+		}
+		err = overlay.BuildOverlay(myNode[0], context, stage_overlays)
 		if err != nil {
 			wwlog.Error("Failed to build overlay: %s, %s, %s\n%s",
-				nodeId, stage_overlays, stage_file, string(out))
+				nodeId, stage_overlays, stage_file, err)
 		}
 	}
 

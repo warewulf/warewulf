@@ -20,26 +20,6 @@ import (
 )
 
 /*
-
-func BuildSystemOverlay(nodeList []node.NodeInfo) error {
-	return nil
-}
-
-func BuildRuntimeOverlay(nodeList []node.NodeInfo) error {
-	return nil
-}
-
-
-func FindSystemOverlays() ([]string, error) {
-	return findAllOverlays("system")
-}
-
-func FindRuntimeOverlays() ([]string, error) {
-	return findAllOverlays("runtime")
-}
-*/
-
-/*
 Build all overlays (runtime and generic) for a node
 */
 func BuildAllOverlays(nodes []node.NodeInfo) error {
