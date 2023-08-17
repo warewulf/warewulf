@@ -11,6 +11,8 @@ import (
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // TODO: https://github.com/danderson/netboot/blob/master/pixiecore/dhcp.go
@@ -80,6 +82,8 @@ func RunServer() error {
 	wwHandler.HandleFunc("/overlay-runtime/", ProvisionSend)
 	wwHandler.HandleFunc("/status", StatusSend)
 	wwHandler.HandleFunc("/sentstatus", SentStatus)
+	prometheus.MustRegister(NewCollector())
+	wwHandler.Handle("/metrics", promhttp.Handler())
 
 	conf := warewulfconf.Get()
 

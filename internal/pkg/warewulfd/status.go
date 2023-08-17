@@ -3,11 +3,17 @@ package warewulfd
 import (
 	"encoding/json"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus"
+)
+
+const (
+	namespace = "warewulf_status"
 )
 
 type allStatus struct {
@@ -20,6 +26,14 @@ type NodeStatus struct {
 	Sent     string `json:"sent"`
 	Ipaddr   string `json:"ipaddr"`
 	Lastseen int64  `json:"last seen"`
+}
+
+var prthLabels = []string{"stage", "sent", "ipaddr"}
+
+type Collector struct {
+	sync.Mutex
+	numNodes prometheus.Gauge
+	lastseen *prometheus.GaugeVec
 }
 
 var statusDB allStatus
@@ -93,4 +107,39 @@ func StatusSend(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		wwlog.Warn("Could not send status JSON: %s", err)
 	}
+}
+func NewCollector() *Collector {
+	return &Collector{
+		numNodes: prometheus.NewGauge(
+			prometheus.GaugeOpts{
+				Namespace: namespace,
+				Name:      "num_devices",
+				Help:      "Number of nodes",
+			},
+		),
+		lastseen: prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Namespace: namespace,
+				Name:      "node_lastseen",
+				Help:      "Last time in seconds when the node was last seen in stage",
+			},
+			prthLabels,
+		),
+	}
+}
+
+func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
+	ch <- c.numNodes.Desc()
+	c.lastseen.Describe(ch)
+}
+func (c *Collector) Collect(ch chan<- prometheus.Metric) {
+	c.Lock()
+	defer c.Unlock()
+	c.lastseen.Reset()
+	c.numNodes.Set(float64(len(statusDB.Nodes)))
+	ch <- c.numNodes
+	for _, n := range statusDB.Nodes {
+		c.lastseen.WithLabelValues(n.Stage, n.Sent, n.Ipaddr).Set(float64(n.Lastseen))
+	}
+	c.lastseen.Collect(ch)
 }
