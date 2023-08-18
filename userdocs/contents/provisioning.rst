@@ -73,7 +73,7 @@ occur:
 
 
 Node status
-========================
+===========
 During the whole provisioning process of your nodes, you can check their status
 through the following command :
 .. code-block:: console
@@ -97,3 +97,26 @@ Thanks to ``wwctl node status`` command, you can also check your communication b
 the warewulf client and server.
 Depending on your warewulf version, you should see a reset of the last seen counter every 1 minute due to the
 warewulf runtime overlay update.
+
+Prometheus Exporter
+===================
+
+A simple `Prometheus <http://github.com/prometheus/prometheus>` is enabled by the default, exporting
+the same data as for `wwctl node status`.
+
+Additional to this data, the size used by the containers on disk is exported.
+
+The prometheus exporter is available under the
+```
+http://warewulf-server:9873/metrics
+```
+
+.. NOTE::
+   The port 9873 must be changed if the warewulf port was changed in the configuration
+
+.. NOTE::
+   The prometheus exporter can be disabled by setting 
+   ```
+   prometheus: false
+   ```
+   in the configuration.
