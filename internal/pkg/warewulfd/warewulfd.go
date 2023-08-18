@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -39,9 +40,9 @@ func RunServer() error {
 		return errors.Wrap(err, "Failed to initialize logging")
 	}
 
+	conf := warewulfconf.Get()
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGHUP)
-
 	go func() {
 		for range c {
 			wwlog.Warn("Received SIGHUP, reloading...")
@@ -53,6 +54,9 @@ func RunServer() error {
 			err = LoadNodeStatus()
 			if err != nil {
 				wwlog.Error("Could not prepopulate node status DB: %s", err)
+			}
+			if conf.Warewulf.EnablePrometheus {
+				UpdateContainerSize()
 			}
 		}
 	}()
@@ -82,10 +86,17 @@ func RunServer() error {
 	wwHandler.HandleFunc("/overlay-runtime/", ProvisionSend)
 	wwHandler.HandleFunc("/status", StatusSend)
 	wwHandler.HandleFunc("/sentstatus", SentStatus)
-	prometheus.MustRegister(NewCollector())
-	wwHandler.Handle("/metrics", promhttp.Handler())
-
-	conf := warewulfconf.Get()
+	if conf.Warewulf.EnablePrometheus {
+		go func() {
+			for {
+				// update the container sizes every two h
+				UpdateContainerSize()
+				time.Sleep(3600 * 2 * time.Millisecond)
+			}
+		}()
+		prometheus.MustRegister(NewCollector())
+		wwHandler.Handle("/metrics", promhttp.Handler())
+	}
 
 	daemonPort := conf.Warewulf.Port
 	wwlog.Serv("Starting HTTPD REST service on port %d", daemonPort)
