@@ -31,6 +31,8 @@ defaultnode:
   init: /sbin/init
   root: initramfs
   ipxe template: default
+  grub template: grub.cfg.ww
+  boot method: ipxe
   profiles:
   - default
   network devices:
@@ -309,6 +311,40 @@ func (config *NodeYaml) ListAllProfiles() []string {
 	return ret
 }
 
+/*
+return a map where the key is the profile id
+*/
+func (config *NodeYaml) MapAllProfiles() (retMap map[string]*NodeInfo, err error) {
+	retMap = make(map[string]*NodeInfo)
+	profileList, err := config.FindAllProfiles()
+	if err != nil {
+		return
+	}
+	for _, pr := range profileList {
+		retMap[pr.Id.Get()] = &pr
+	}
+	return
+}
+
+/*
+return a map where the key is the node id
+*/
+func (config *NodeYaml) MapAllNodes() (retMap map[string]*NodeInfo, err error) {
+	retMap = make(map[string]*NodeInfo)
+	nodeList, err := config.FindAllNodes()
+	if err != nil {
+		return
+	}
+	for _, nd := range nodeList {
+		retMap[nd.Id.Get()] = &nd
+	}
+	return
+}
+
+/*
+Find the next node which is discoverable and for which the primary network
+doesn't have a mac address defined
+*/
 func (config *NodeYaml) FindDiscoverableNode() (NodeInfo, string, error) {
 	var ret NodeInfo
 
@@ -318,10 +354,18 @@ func (config *NodeYaml) FindDiscoverableNode() (NodeInfo, string, error) {
 		if !node.Discoverable.GetB() {
 			continue
 		}
-		for netdev, dev := range node.NetDevs {
-			if !dev.Hwaddr.Defined() {
-				return node, netdev, nil
+		/*
+			for netdev, dev := range node.NetDevs {
+				if !dev.Hwaddr.Defined() {
+					return node, netdev, nil
+				}
 			}
+		*/
+		if primaryNet, ok := node.NetDevs[node.PrimaryNetDev.Get()]; ok {
+			if primaryNet.Hwaddr.Defined() {
+				continue
+			}
+			return node, node.PrimaryNetDev.Get(), nil
 		}
 	}
 

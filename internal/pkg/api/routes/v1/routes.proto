@@ -169,7 +169,6 @@ message NodeDeleteParameter {
 // by Warewulf.
 message NodeSetParameter {
 	string nodeConfYaml = 1;
-	string container = 2;
     string netdevDelete = 14;
 	bool allNodes = 27;
 	bool force = 31;

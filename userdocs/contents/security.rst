@@ -55,7 +55,7 @@ when a user lands on a compute node, there is generally nothing
 stopping them from spoofing a provision request and downloading the
 provisioned raw materials for inspection.
 
-In Warewulf there are two ways to secure the provisioning process:
+In Warewulf there are ways to secure the provisioning process:
 
 #. The provisioning connections and transfers are not secure due to
    not being able to manage a secure root of trust through a PXE
@@ -76,6 +76,11 @@ In Warewulf there are two ways to secure the provisioning process:
    Warewulf (``wwctl node set --assetkey "..."``), it will only
    provision and communicate with requests from that system matching
    that asset tag.
+
+#. When the nodes are booted via `shim` and `grub` Secure Boot can be 
+   enabled. This means that the nodes only boot the kernel which is 
+   provided by the distributor and also custom complied modules can't 
+   be loaded.
 
 Summary
 =======

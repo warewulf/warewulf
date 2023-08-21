@@ -81,6 +81,11 @@ func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 			fmt.Printf("Set default profile to container: %s\n", containers[0])
 		}
 	}
+	err = warewulfd.DaemonReload()
+	if err != nil {
+		err = errors.Wrap(err, "failed to reload warewulf daemon")
+		return
+	}
 	return
 }
 
@@ -126,7 +131,11 @@ ARG_LOOP:
 
 		fmt.Printf("Container has been deleted: %s\n", containerName)
 	}
-
+	err = warewulfd.DaemonReload()
+	if err != nil {
+		err = errors.Wrap(err, "failed to reload warewulf daemon")
+		return
+	}
 	return
 }
 
@@ -241,6 +250,10 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 				if err != nil {
 					err = errors.Wrap(err, "failed to update profile")
 					return
+				}
+				err = warewulfd.CopyShimGrub()
+				if err != nil {
+					wwlog.Warn("couldn't copy shim/grub of default container: %s", err)
 				}
 			}
 		}

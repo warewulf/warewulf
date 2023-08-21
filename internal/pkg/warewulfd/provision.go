@@ -2,19 +2,21 @@ package warewulfd
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
+	"os"
 	"path"
 	"strconv"
 	"text/template"
 
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/kernel"
 	"github.com/hpcng/warewulf/internal/pkg/util"
-	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
-type iPxeTemplate struct {
+type templateVars struct {
 	Message        string
 	WaitTime       string
 	Hostname       string
@@ -50,6 +52,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 	}
 
 	status_stages := map[string]string{
+		"efiboot": "EFI",
 		"ipxe":    "IPXE",
 		"kernel":  "KERNEL",
 		"kmods":   "KMODS_OVERLAY",
@@ -59,6 +62,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 	status_stage := status_stages[rinfo.stage]
 	var stage_overlays []string
 	var stage_file string = ""
+	updateSentDB := true
 	var img_context string = "legacy" /* Default to old image name behavior */
 
 	// TODO: when module version is upgraded to go1.18, should be 'any' type
@@ -82,13 +86,13 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		wwlog.Error("%s (unknown/unconfigured node)", rinfo.hwaddr)
 		if rinfo.stage == "ipxe" {
 			stage_file = path.Join(conf.Paths.Sysconfdir, "/warewulf/ipxe/unconfigured.ipxe")
-			tmpl_data = iPxeTemplate{
+			tmpl_data = templateVars{
 				Hwaddr: rinfo.hwaddr}
 		}
 
 	} else if rinfo.stage == "ipxe" {
 		stage_file = path.Join(conf.Paths.Sysconfdir, "warewulf/ipxe/"+node.Ipxe.Get()+".ipxe")
-		tmpl_data = iPxeTemplate{
+		tmpl_data = templateVars{
 			Id:             node.Id.Get(),
 			Cluster:        node.ClusterName.Get(),
 			Fqdn:           node.Id.Get(),
@@ -99,8 +103,20 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			ContainerName:  node.ContainerName.Get(),
 			KernelArgs:     node.Kernel.Args.Get(),
 			KernelOverride: node.Kernel.Override.Get()}
-
 	} else if rinfo.stage == "kernel" {
+		if DBGetWWinit(node.Id.Get()) {
+			DBReset(node.Id.Get())
+		}
+		if DBSize(node.Id.Get()) == 0 {
+			fd, err := os.Open(path.Join(path.Join(conf.Paths.Tftpdir, "warewulf", "grub.cfg")))
+			if err != nil {
+				wwlog.Warn("no grub.cfg detected for potential tftp boot node: %s", node)
+			} else {
+				defer fd.Close()
+				DBAddImage(node.Id.Get(), "grub.cfg", fd)
+			}
+
+		}
 		if node.Kernel.Override.Defined() {
 			stage_file = kernel.KernelImage(node.Kernel.Override.Get())
 		} else if node.ContainerName.Defined() {
@@ -130,22 +146,68 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 	} else if rinfo.stage == "system" {
 		if len(node.SystemOverlay.GetSlice()) != 0 {
 			stage_overlays = node.SystemOverlay.GetSlice()
+			DBWWinitSent(node.Id.Get())
 			img_context = rinfo.stage
 		} else {
 			wwlog.Warn("No system overlay set for node %s", node.Id.Get())
 		}
-
 	} else if rinfo.stage == "runtime" {
 		if rinfo.overlay != "" {
 			stage_overlays = []string{rinfo.overlay}
-                        img_context = "legacy"
+			img_context = "legacy"
 		} else if len(node.RuntimeOverlay.GetSlice()) != 0 {
 			stage_overlays = node.RuntimeOverlay.GetSlice()
-                        img_context = rinfo.stage
+			img_context = rinfo.stage
 		} else {
 			wwlog.Warn("No runtime overlay set for node %s", node.Id.Get())
 		}
-
+		updateSentDB = false
+	} else if rinfo.stage == "efiboot" {
+		wwlog.Debug("requested method: %s", req.Method)
+		containerName := node.ContainerName.Get()
+		switch rinfo.efifile {
+		case "shim.efi":
+			stage_file = container.ShimFind(containerName)
+			if stage_file == "" {
+				wwlog.ErrorExc(fmt.Errorf("could't find shim.efi"), containerName)
+				w.WriteHeader(http.StatusNotFound)
+				return
+			}
+			DBReset(node.Id.Get())
+			// shim is signed not measured
+			updateSentDB = false
+		case "grub.efi", "grub-tpm.efi", "grubx64.efi", "grubia32.efi", "grubaa64.efi", "grubarm.efi":
+			stage_file = container.GrubFind(containerName)
+			if stage_file == "" {
+				wwlog.ErrorExc(fmt.Errorf("could't find grub.efi"), containerName)
+				w.WriteHeader(http.StatusNotFound)
+				return
+			}
+			// grub is signed not measured
+			updateSentDB = false
+		case "grub.cfg":
+			stage_file = path.Join(conf.Paths.Sysconfdir, "warewulf/grub/grub.cfg.ww")
+			tmpl_data = templateVars{
+				Id:             node.Id.Get(),
+				Cluster:        node.ClusterName.Get(),
+				Fqdn:           node.Id.Get(),
+				Ipaddr:         conf.Ipaddr,
+				Port:           strconv.Itoa(conf.Warewulf.Port),
+				Hostname:       node.Id.Get(),
+				Hwaddr:         rinfo.hwaddr,
+				ContainerName:  node.ContainerName.Get(),
+				KernelArgs:     node.Kernel.Args.Get(),
+				KernelOverride: node.Kernel.Override.Get()}
+			if stage_file == "" {
+				wwlog.ErrorExc(fmt.Errorf("could't find grub.cfg template"), containerName)
+				w.WriteHeader(http.StatusNotFound)
+				return
+			}
+		default:
+			wwlog.ErrorExc(fmt.Errorf("could't find efiboot file: %s", rinfo.efifile), "")
+			reader := bytes.NewReader([]byte{})
+			DBAddImage(node.Id.Get(), rinfo.efifile, reader)
+		}
 	}
 
 	if len(stage_overlays) > 0 {
@@ -153,7 +215,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			node.Id.Get(),
 			stage_overlays,
 			conf.Warewulf.AutobuildOverlays,
-			img_context )
+			img_context)
 
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -193,11 +255,12 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 
 			w.Header().Set("Content-Type", "text")
 			w.Header().Set("Content-Length", strconv.Itoa(buf.Len()))
+			reader := bytes.NewReader(buf.Bytes())
+			DBAddImage(node.Id.Get(), stage_file, reader)
 			_, err = buf.WriteTo(w)
 			if err != nil {
 				wwlog.ErrorExc(err, "")
 			}
-
 			wwlog.Send("%15s: %s", node.Id.Get(), stage_file)
 
 		} else {
@@ -216,7 +279,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 				w.WriteHeader(http.StatusNotFound)
 			}
 
-			err = sendFile(w, req, stage_file, node.Id.Get())
+			err = sendFile(w, req, stage_file, node.Id.Get(), updateSentDB)
 			if err != nil {
 				wwlog.ErrorExc(err, "")
 				return

@@ -16,7 +16,7 @@ var (
 		Short: "Configure node profile properties",
 		Long: "This command sets configuration properties for the node PROFILE(s).\n\n" +
 			"Note: use the string 'UNSET' to remove a configuration",
-		Args: cobra.MinimumNArgs(0),
+		Args: cobra.MinimumNArgs(1),
 		RunE: CobraRunE,
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {

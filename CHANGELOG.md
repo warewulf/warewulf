@@ -89,6 +89,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - realy reboot also without systemd
 
+- default is now protected and can't be deleted
+- first container imported container is added to the default profile
+- added a simple pormetheus exporter
 ## [4.4.0] 2023-01-18
 
 ### Added

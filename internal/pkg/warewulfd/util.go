@@ -1,8 +1,10 @@
 package warewulfd
 
 import (
+	"bufio"
 	"net/http"
 	"os"
+	"strings"
 
 	nodepkg "github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
@@ -14,7 +16,7 @@ func sendFile(
 	w http.ResponseWriter,
 	req *http.Request,
 	filename string,
-	sendto string) error {
+	sendto string, updateSentDB bool) error {
 
 	fd, err := os.Open(filename)
 	if err != nil {
@@ -34,8 +36,15 @@ func sendFile(
 		req,
 		filename,
 		stat.ModTime(),
-		fd )
-
+		fd)
+	// seek back
+	_, err = fd.Seek(0, 0)
+	if err != nil {
+		wwlog.Warn("couldn't seek in file: %s", filename)
+	}
+	if updateSentDB {
+		DBAddImage(sendto, filename, fd)
+	}
 	wwlog.Send("%15s: %s", sendto, filename)
 
 	return nil
@@ -45,7 +54,7 @@ func getOverlayFile(
 	nodeId string,
 	stage_overlays []string,
 	autobuild bool,
-        img_context string) (stage_file string, err error) {
+	img_context string) (stage_file string, err error) {
 
 	stage_file = overlay.OverlayImage(nodeId, stage_overlays, img_context)
 	err = nil
@@ -79,5 +88,27 @@ func getOverlayFile(
 		}
 	}
 
+	return
+}
+
+/*
+returns the mac address if it has an entry in the arp cache
+*/
+
+func ArpFind(ip string) (mac string) {
+	arpCache, err := os.Open("/proc/net/arp")
+	if err != nil {
+		return
+	}
+	defer arpCache.Close()
+
+	scanner := bufio.NewScanner(arpCache)
+	scanner.Scan()
+	for scanner.Scan() {
+		fields := strings.Fields(scanner.Text())
+		if strings.EqualFold(fields[0], ip) {
+			return fields[3]
+		}
+	}
 	return
 }

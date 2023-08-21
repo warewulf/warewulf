@@ -1,6 +1,5 @@
 package config
 
-
 // WarewulfConf adds additional Warewulf-specific configuration to
 // BaseConf.
 type WarewulfConf struct {
@@ -11,4 +10,5 @@ type WarewulfConf struct {
 	EnableHostOverlay bool   `yaml:"host overlay" default:"true"`
 	Syslog            bool   `yaml:"syslog" default:"false"`
 	DataStore         string `yaml:"datastore" default:"/var/lib/warewulf"`
+	EnablePrometheus  bool   `yaml:"prometheus" default:"true"`
 }

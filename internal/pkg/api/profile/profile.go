@@ -8,6 +8,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
@@ -24,7 +25,21 @@ func ProfileSet(set *wwapiv1.NodeSetParameter) (err error) {
 	if err != nil {
 		return errors.Wrap(err, "Could not open database")
 	}
-	return apinode.DbSave(&nodeDB)
+
+	var pConf node.NodeConf
+	err = yaml.Unmarshal([]byte(set.NodeConfYaml), &pConf)
+	if err != nil {
+		wwlog.Error(fmt.Sprintf("%v", err.Error()))
+		return
+	}
+	dbError := apinode.DbSave(&nodeDB)
+	if util.InSlice(set.NodeNames, "default") {
+		err = warewulfd.CopyShimGrub()
+		if err != nil {
+			wwlog.Warn("shim/grub couldn't be copied: %s", err)
+		}
+	}
+	return dbError
 }
 
 // ProfileSetParameterCheck does error checking on ProfileSetParameter.

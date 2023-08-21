@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/manifoldco/promptui"
 	"github.com/pkg/errors"
@@ -13,6 +14,9 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var count int
+	if util.InSlice(args, "default") {
+		return fmt.Errorf("can't delete the `default` profile ")
+	}
 
 	nodeDB, err := node.New()
 	if err != nil {
