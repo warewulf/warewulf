@@ -71,7 +71,7 @@ system for large clusters of bare metal and/or virtual systems.
 %build
 %{?with_offline:OFFLINE_BUILD=1}
 # Install to sharedstatedir by redirecting LOCALSTATEDIR
-make Defaults.mk \
+make defaults \
     PREFIX=%{_prefix} \
     BINDIR=%{_bindir} \
     SYSCONFDIR=%{_sysconfdir} \

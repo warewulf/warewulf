@@ -4,6 +4,9 @@
 OS_REL := $(shell sed -n "s/^ID\s*=\s*['"\""]\(.*\)['"\""]/\1/p" /etc/os-release)
 OS ?= $(OS_REL)
 
+ARCH_REL := $(shell uname -p)
+ARCH ?= $(ARCH_REL)
+
 # List of variables to save and replace in files
 VARLIST := OS
 
@@ -75,24 +78,7 @@ WWDOCDIR := $(DOCDIR)/$(WAREWULF)
 WWDATADIR := $(DATADIR)/$(WAREWULF)
 WWCLIENTDIR ?= /warewulf
 
-# auto installed tooling
-TOOLS_DIR := .tools
-TOOLS_BIN := $(TOOLS_DIR)/bin
 CONFIG := $(shell pwd)
-
-# tools
-GO_TOOLS_BIN := $(addprefix $(TOOLS_BIN)/, $(notdir $(GO_TOOLS)))
-GO_TOOLS_VENDOR := $(addprefix vendor/, $(GO_TOOLS))
-GOLANGCI_LINT := $(TOOLS_BIN)/golangci-lint
-GOLANGCI_LINT_VERSION := v1.53.2
-PROTOC_GEN_GO := $(TOOLS_BIN)/protoc-gen-go
-PROTOC_GEN_GO_GRPC := $(TOOLS_BIN)/protoc-gen-go-grpc
-PROTOC := $(TOOLS_BIN)/protoc
-PROTOC_URL := https://github.com/protocolbuffers/protobuf/releases/download/v24.0/protoc-24.0-linux-x86_64.zip
-#PROTOC_URL := https://github.com/protocolbuffers/protobuf/releases/download/v24.0/protoc-24.0-linux-aarch_64.zip
-PROTOC_GEN_GRPC_GATEWAY := $(TOOLS_BIN)/protoc-gen-grpc-gateway
-PROTOC_GEN_GRPC_GATEWAY_URL := https://github.com/grpc-ecosystem/grpc-gateway/releases/download/v2.16.2/protoc-gen-grpc-gateway-v2.16.2-linux-x86_64
-#PROTOC_GEN_GRPC_GATEWAY_URL := https://github.com/grpc-ecosystem/grpc-gateway/releases/download/v2.16.2/protoc-gen-grpc-gateway-v2.16.2-linux-arm64
 
 # helper functions
 godeps=$(shell go list -deps -f '{{if not .Standard}}{{ $$dep := . }}{{range .GoFiles}}{{$$dep.Dir}}/{{.}} {{end}}{{end}}' $(1) | sed "s%${PWD}/%%g")
@@ -106,5 +92,6 @@ export GOPROXY
 # built tags needed for wwbuild binary
 WW_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
-Defaults.mk:
+.PHONY: defaults
+defaults:
 	printf " $(foreach V,$(VARLIST),$V := $(strip $($V))\n)" >Defaults.mk
