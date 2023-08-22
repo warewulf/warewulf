@@ -9,7 +9,7 @@ COPY . /warewulf-src
 RUN cd /warewulf-src &&\
   make contclean Defaults.mk \
     PREFIX=/usr \
-    BINDIRa=/usr/bin \
+    BINDIR=/usr/bin \
     SYSCONFDIR=/etc \
     DATADIR=/usr/share \
     LOCALSTATEDIR=/var/lib \
