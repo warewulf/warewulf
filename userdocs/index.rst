@@ -23,6 +23,7 @@ Welcome to the Warewulf User Guide!
    Warewulf Overlays <contents/overlays>
    Node Provisioning <contents/provisioning>
    IPMI <contents/ipmi>
+   Disk Management <contents/disks>
    Security <contents/security>
    Templating <contents/templating>
 

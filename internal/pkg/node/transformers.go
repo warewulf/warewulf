@@ -1,6 +1,7 @@
 package node
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -15,7 +16,7 @@ the underlying entries using GetReal, so just the explicit values
 go do disk.
 */
 func (nodeConf *NodeConf) GetRealFrom(nodeInfo NodeInfo) {
-	nodeConf.getterFrom(nodeInfo, (*Entry).GetReal, (*Entry).GetRealSlice)
+	recursiveGetter(&nodeInfo, nodeConf, (*Entry).GetReal, (*Entry).GetRealSlice)
 }
 
 /*
@@ -23,168 +24,67 @@ Populates a NodeConf struct from a NodeInfo, with the combined
 values from the underlying entries using Get.
 */
 func (nodeConf *NodeConf) GetFrom(nodeInfo NodeInfo) {
-	nodeConf.getterFrom(nodeInfo, (*Entry).Get, (*Entry).GetSlice)
+	recursiveGetter(&nodeInfo, nodeConf, (*Entry).Get, (*Entry).GetSlice)
 }
 
 /*
 Abstract function which populates a NodeConf from the given NodeInfo
-via getter functions.
+via getter functions. Calls recursive itself for nested structures.
+Panics if the NodeConf has fields which are not type of string,[]string,map[string]*ptr
 */
-func (nodeConf *NodeConf) getterFrom(nodeInfo NodeInfo,
+func recursiveGetter(
+	source, target interface{},
 	getter func(*Entry) string,
 	getterSlice func(*Entry) []string) {
-	nodeInfoType := reflect.TypeOf(nodeInfo)
-	nodeInfoVal := reflect.ValueOf(nodeInfo)
-	configVal := reflect.ValueOf(nodeConf)
-	// now iterate of every field
-	for i := 0; i < nodeInfoType.NumField(); i++ {
-		// found field with same name for Conf and Info
-		confField := configVal.Elem().FieldByName(nodeInfoType.Field(i).Name)
-		if confField.IsValid() {
-			if nodeInfoVal.Field(i).Type() == reflect.TypeOf(Entry{}) {
-				if confField.Type().Kind() == reflect.String {
-					newValue := (confField.Addr().Interface()).(*string)
-					entryVal := nodeInfoVal.Field(i).Interface().(Entry)
-					*newValue = getter(&entryVal)
-				} else if confField.Type() == reflect.TypeOf([]string{}) {
-					newValue := (confField.Addr().Interface()).(*[]string)
-					entryVal := nodeInfoVal.Field(i).Interface().(Entry)
-					*newValue = getterSlice(&entryVal)
-				}
-			} else if nodeInfoVal.Field(i).Type() == reflect.TypeOf(map[string]*Entry{}) {
-				entryMap := nodeInfoVal.Field(i).Interface().(map[string]*Entry)
-				confMap := confField.Interface().(map[string]string)
+	sourceValue := reflect.ValueOf(source)
+	targetType := reflect.TypeOf(target)
+	targetValue := reflect.ValueOf(target)
+	if targetValue.Elem().Kind() == reflect.Struct && sourceValue.Elem().Kind() == reflect.Struct {
+		for i := 0; i < targetType.Elem().NumField(); i++ {
+			sourceValueMatched := sourceValue.Elem().FieldByName(targetType.Elem().Field(i).Name)
+			if sourceValueMatched.IsValid() {
+				if sourceValueMatched.Type() == reflect.TypeOf(Entry{}) {
+					// get the fields which are part of the struct
+					switch targetValue.Elem().Field(i).Type() {
+					case reflect.TypeOf(""):
+						newValue := (targetValue.Elem().Field(i).Addr().Interface()).(*string)
+						source := sourceValueMatched.Interface().(Entry)
+						*newValue = getter(&source)
+					case reflect.TypeOf([]string{}):
+						newValue := (targetValue.Elem().Field(i).Addr().Interface()).(*[]string)
+						source := sourceValueMatched.Interface().(Entry)
+						*newValue = getterSlice(&source)
+					default:
+						panic(fmt.Errorf("can't convert an Entry to %s", targetValue.Elem().Field(i).Type()))
+					}
+				} else if sourceValueMatched.Kind() == reflect.Ptr {
+					// if we get a pointer, initialize if empty and then have a recursive call
+					if targetValue.Elem().Field(i).IsZero() {
+						targetValue.Elem().Field(i).Set(reflect.New(targetType.Elem().Field(i).Type.Elem()))
+					}
+					recursiveGetter(sourceValueMatched.Interface(), targetValue.Elem().Field(i).Interface(), getter, getterSlice)
+				} else if sourceValueMatched.Type().Kind() == reflect.Map {
+					if targetValue.Elem().Field(i).IsZero() {
+						targetValue.Elem().Field(i).Set(reflect.MakeMap(targetType.Elem().Field(i).Type))
+					}
+					sourceIter := sourceValueMatched.MapRange()
+					if sourceValueMatched.Type() == reflect.TypeOf(map[string]*Entry{}) {
+						// go over a simple map with strings
+						for sourceIter.Next() {
+							if !targetValue.Elem().Field(i).MapIndex(sourceIter.Key()).IsValid() {
+								str := getter((sourceIter.Value().Interface()).(*Entry))
+								targetValue.Elem().Field(i).SetMapIndex(sourceIter.Key(), reflect.ValueOf(str))
+							}
+						}
+					} else {
+						// now the complicated map which contains pointers to objects
+						for sourceIter.Next() {
+							if !targetValue.Elem().Field(i).MapIndex(sourceIter.Key()).IsValid() {
+								newPtr := reflect.New(targetType.Elem().Field(i).Type.Elem().Elem())
+								targetValue.Elem().Field(i).SetMapIndex(sourceIter.Key(), newPtr)
+							}
+							recursiveGetter(sourceIter.Value().Interface(), targetValue.Elem().Field(i).MapIndex(sourceIter.Key()).Interface(), getter, getterSlice)
 
-				if len(confMap) > len(entryMap) {
-					for confKey := range confMap {
-						foundKey := false
-						for entrKey := range entryMap {
-							if confKey == entrKey {
-								foundKey = true
-							}
-						}
-						if !foundKey {
-							delete(confMap, confKey)
-						}
-					}
-				}
-				for key, val := range entryMap {
-					confMap[key] = getter(val)
-				}
-			} else if nodeInfoVal.Field(i).Type().Kind() == reflect.Ptr && !nodeInfoVal.Field(i).IsNil() {
-				// initialize the nested NodeConf structs, but only if these will be set
-				if confField.Addr().Elem().IsZero() {
-					switch confField.Addr().Elem().Type() {
-					case reflect.TypeOf((*KernelConf)(nil)):
-						var newConf KernelConf
-						newConfPtr := (confField.Addr().Elem().Addr().Interface()).(**KernelConf)
-						*newConfPtr = &newConf
-					case reflect.TypeOf((*IpmiConf)(nil)):
-						var newConf IpmiConf
-						newConfPtr := (confField.Addr().Elem().Addr().Interface()).(**IpmiConf)
-						*newConfPtr = &newConf
-					}
-				}
-				nestedInfoType := reflect.TypeOf(nodeInfoVal.Field(i).Interface())
-				nestedInfoVal := reflect.ValueOf(nodeInfoVal.Field(i).Interface())
-				nestedConfVal := reflect.ValueOf(confField.Interface())
-				for j := 0; j < nestedInfoType.Elem().NumField(); j++ {
-					nestedVal := nestedConfVal.Elem().FieldByName(nestedInfoType.Elem().Field(j).Name)
-					if nestedInfoVal.Elem().Field(j).Type() == reflect.TypeOf(Entry{}) {
-						if nestedVal.Type().Kind() == reflect.String {
-							newValue := (nestedVal.Addr().Interface()).(*string)
-							entryVal := nestedInfoVal.Elem().Field(j).Interface().(Entry)
-							*newValue = getter(&entryVal)
-						} else if nestedVal.Type() == reflect.TypeOf([]string{}) {
-							newValue := (nestedVal.Addr().Interface()).(*[]string)
-							entryVal := nestedInfoVal.Elem().Field(j).Interface().(Entry)
-							*newValue = getterSlice(&entryVal)
-
-						}
-					} else if nestedInfoVal.Elem().Field(j).Type() == reflect.TypeOf(map[string]*Entry{}) {
-						if nestedVal.IsNil() {
-							mapPtr := nestedVal.Addr().Interface().(*map[string]string)
-							*mapPtr = make(map[string]string)
-						}
-						entryMap := nestedInfoVal.Elem().Field(j).Interface().(map[string]*Entry)
-						confMap := nestedVal.Interface().(map[string]string)
-						if len(confMap) > len(entryMap) {
-							for confKey := range confMap {
-								foundKey := false
-								for entrKey := range entryMap {
-									if confKey == entrKey {
-										foundKey = true
-									}
-								}
-								if !foundKey {
-									delete(confMap, confKey)
-								}
-							}
-						}
-						for key, val := range entryMap {
-							confMap[key] = getter(val)
-						}
-					}
-				}
-
-			} else if nodeInfoVal.Field(i).Type() == reflect.TypeOf(map[string]*NetDevEntry{}) {
-				if confField.IsNil() {
-					netMapPtr := confField.Addr().Interface().(*map[string](*NetDevs))
-					*netMapPtr = make(map[string](*NetDevs))
-				}
-				nestedMap := nodeInfoVal.Field(i).Interface().(map[string]*NetDevEntry)
-				netMap := confField.Interface().(map[string](*NetDevs))
-				// check if a network was deleted
-				if len(netMap) > len(nestedMap) {
-					for netMapKey := range netMap {
-						foundKey := false
-						for nestedMapKey := range nestedMap {
-							if netMapKey == nestedMapKey {
-								foundKey = true
-							}
-						}
-						if !foundKey {
-							delete(netMap, netMapKey)
-						}
-					}
-				}
-				for netName, netVal := range nestedMap {
-					netValsType := reflect.ValueOf(netVal)
-					if _, ok := netMap[netName]; !ok {
-						netMap[netName] = new(NetDevs)
-					}
-					netConfType := reflect.TypeOf(*netMap[netName])
-					netConfVal := reflect.ValueOf(netMap[netName])
-					for j := 0; j < netConfType.NumField(); j++ {
-						netVal := netValsType.Elem().FieldByName(netConfType.Field(j).Name)
-						if netVal.IsValid() {
-							if netVal.Type() == reflect.TypeOf(Entry{}) {
-								newVal := netConfVal.Elem().Field(j).Addr().Interface().((*string))
-								*newVal = getter((netVal.Addr().Interface()).(*Entry))
-							} else if netVal.Type() == reflect.TypeOf(map[string]*Entry{}) {
-								entryMap := netVal.Interface().(map[string](*Entry))
-								confMap := netConfVal.Elem().Field(j).Interface().(map[string]string)
-								if confMap == nil {
-									confMapPtr := netConfVal.Elem().Field(j).Addr().Interface().(*map[string]string)
-									*confMapPtr = make(map[string]string)
-								}
-								if len(confMap) > len(entryMap) {
-									for confMapKey := range confMap {
-										foundKey := false
-										for entryMapKey := range entryMap {
-											if confMapKey == entryMapKey {
-												foundKey = true
-											}
-										}
-										if !foundKey {
-											delete(netConfVal.Elem().Field(j).Interface().(map[string]string), confMapKey)
-										}
-									}
-								}
-								for key, val := range entryMap {
-									netConfVal.Elem().Field(j).Interface().(map[string]string)[key] = getter(val)
-								}
-							}
 						}
 					}
 				}
@@ -204,17 +104,17 @@ func (node *NodeInfo) SetFrom(n *NodeConf) {
 	setSliceWrap := func(entr *Entry, val []string, nameArg string) {
 		entr.SetSlice(val)
 	}
-	node.setterFrom(n, "", setWrap, setSliceWrap)
+	recursiveSetter(n, node, "", setWrap, setSliceWrap)
 }
 
 /*
 Populates all fields of NodeInfo with SetAlt from the
 values of NodeConf. The string profileName is used to
-destermine from which source/NodeInfo the entry came
+determine from which source/NodeInfo the entry came
 from.
 */
 func (node *NodeInfo) SetAltFrom(n *NodeConf, profileName string) {
-	node.setterFrom(n, profileName, (*Entry).SetAlt, (*Entry).SetAltSlice)
+	recursiveSetter(n, node, profileName, (*Entry).SetAlt, (*Entry).SetAltSlice)
 }
 
 /*
@@ -228,120 +128,95 @@ func (node *NodeInfo) SetDefFrom(n *NodeConf) {
 	setSliceWrap := func(entr *Entry, val []string, nameArg string) {
 		entr.SetDefaultSlice(val)
 	}
-	node.setterFrom(n, "", setWrap, setSliceWrap)
+	recursiveSetter(n, node, "", setWrap, setSliceWrap)
+}
+
+func SetDefFrom(source, target interface{}) {
+	setWrap := func(entr *Entry, val string, nameArg string) {
+		entr.SetDefault(val)
+	}
+	setSliceWrap := func(entr *Entry, val []string, nameArg string) {
+		entr.SetDefaultSlice(val)
+	}
+	recursiveSetter(source, target, "", setWrap, setSliceWrap)
+
 }
 
 /*
 Abstract function which populates a NodeInfo from a NodeConf via
-setter functionns.
+setter functions. Panics if other type than string, []string *ptr is used in NodeConf.
 */
-func (node *NodeInfo) setterFrom(n *NodeConf, nameArg string,
-	setter func(*Entry, string, string),
+func recursiveSetter(source, target interface{}, nameArg string, setter func(*Entry, string, string),
 	setterSlice func(*Entry, []string, string)) {
-	// get the full memory, taking the shortcut and init Ipmi and Kernel directly
-	if node.Kernel == nil {
-		node.Kernel = new(KernelEntry)
-	}
-	if node.Ipmi == nil {
-		node.Ipmi = new(IpmiEntry)
-	}
-	// also n could be nil
-	if n == nil {
-		myn := NewConf()
-		n = &myn
-	}
-	nodeInfoVal := reflect.ValueOf(node)
-	nodeInfoType := reflect.TypeOf(node)
-	nodeConfVal := reflect.ValueOf(n)
-	// now iterate of every field
-	for i := 0; i < nodeInfoType.Elem().NumField(); i++ {
-		valField := nodeConfVal.Elem().FieldByName(nodeInfoType.Elem().Field(i).Name)
-		if valField.IsValid() {
-			// found field with same name for Conf and Info
-			if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(Entry{}) {
-				if valField.Type().Kind() == reflect.String {
-					setter(nodeInfoVal.Elem().Field(i).Addr().Interface().(*Entry), valField.String(), nameArg)
-				} else if valField.Type() == reflect.TypeOf([]string{}) {
-					setterSlice(nodeInfoVal.Elem().Field(i).Addr().Interface().(*Entry), valField.Interface().([]string), nameArg)
-				}
-			} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr && !valField.IsZero() {
-				nestedInfoType := reflect.TypeOf(nodeInfoVal.Elem().Field(i).Interface())
-				nestedInfoVal := reflect.ValueOf(nodeInfoVal.Elem().Field(i).Interface())
-				nestedConfVal := reflect.ValueOf(valField.Interface())
-				for j := 0; j < nestedInfoType.Elem().NumField(); j++ {
-					nestedVal := nestedConfVal.Elem().FieldByName(nestedInfoType.Elem().Field(j).Name)
-					if nestedVal.IsValid() {
-						if nestedInfoVal.Elem().Field(j).Type() == reflect.TypeOf(Entry{}) {
-							setter(nestedInfoVal.Elem().Field(j).Addr().Interface().(*Entry), nestedVal.String(), nameArg)
-						} else if nestedInfoVal.Elem().Field(j).Type() == reflect.TypeOf(map[string](*Entry){}) {
-							confMap := nestedVal.Interface().(map[string]string)
-							if nestedInfoVal.Elem().Field(j).IsNil() {
-								ptr := nestedInfoVal.Elem().Field(j).Addr().Interface().(*map[string](*Entry))
-								*ptr = make(map[string]*Entry)
-							}
-							tagMap := nestedInfoVal.Elem().Field(j).Interface().(map[string](*Entry))
-							for key, val := range confMap {
-								if entr, ok := tagMap[key]; ok {
-									setter(entr, val, nameArg)
-								} else {
-									entr := new(Entry)
-									tagMap[key] = entr
-									setter(entr, val, nameArg)
+	sourceValue := reflect.ValueOf(source)
+	targetType := reflect.TypeOf(target)
+	targetValue := reflect.ValueOf(target)
+	if targetValue.Elem().Kind() == reflect.Struct && sourceValue.Elem().Kind() == reflect.Struct {
+		for i := 0; i < targetType.Elem().NumField(); i++ {
+			sourceValueMatched := sourceValue.Elem().FieldByName(targetType.Elem().Field(i).Name)
+			if sourceValueMatched.IsValid() {
+				if targetValue.Elem().Field(i).Type() == reflect.TypeOf(Entry{}) {
+					// get the fields which are part of the struct
+					switch sourceValueMatched.Type() {
+					case reflect.TypeOf(""):
+						setter(targetValue.Elem().Field(i).Addr().Interface().(*Entry), sourceValueMatched.String(), nameArg)
+					case reflect.TypeOf([]string{}):
+						setterSlice(targetValue.Elem().Field(i).Addr().Interface().(*Entry), sourceValueMatched.Interface().([]string), nameArg)
+					default:
+						panic(fmt.Errorf("can't convert an Entry to %s", targetValue.Elem().Field(i).Type()))
+					}
+				} else if sourceValueMatched.Kind() == reflect.Ptr {
+					// if we get a pointer, initialize if empty and then have a recursive call
+					if targetValue.Elem().Field(i).IsZero() {
+						targetValue.Elem().Field(i).Set(reflect.New(targetType.Elem().Field(i).Type.Elem()))
+					}
+					recursiveSetter(sourceValueMatched.Interface(), targetValue.Elem().Field(i).Interface(), nameArg, setter, setterSlice)
+				} else if sourceValueMatched.Type().Kind() == reflect.Map {
+					if targetValue.Elem().Field(i).IsZero() {
+						targetValue.Elem().Field(i).Set(reflect.MakeMap(targetType.Elem().Field(i).Type))
+					}
+					// delete a ap element which is only in the target
+					if targetValue.Elem().Field(i).Len() > 0 && targetValue.Elem().Field(i).Len() < 0 {
+						sourceIter := sourceValueMatched.MapRange()
+						targetIter := targetValue.Elem().Field(i).MapRange()
+						for targetIter.Next() {
+							sameKey := false
+							for sourceIter.Next() {
+								if sourceIter.Key() == targetIter.Key() {
+									sameKey = true
 								}
+							}
+							if !sameKey {
+								targetValue.Elem().Field(i).SetMapIndex(targetIter.Key(), reflect.Value{})
 							}
 						}
 					}
-				}
-			} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string](*Entry)(nil)) {
-				confMap := valField.Interface().(map[string]string)
-				for key, val := range confMap {
-					tagMap := nodeInfoVal.Elem().Field(i).Interface().(map[string](*Entry))
-					if nodeInfoVal.Elem().Field(i).IsNil() {
-						tagMap = make(map[string]*Entry)
-					}
-					if entr, ok := tagMap[key]; ok {
-						setter(entr, val, nameArg)
-					} else {
-						entr := new(Entry)
-						tagMap[key] = entr
-						setter(entr, val, nameArg)
-					}
-				}
-			} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string](*NetDevEntry)(nil)) {
-				netValMap := valField.Interface().(map[string](*NetDevs))
-				for netName, netVals := range netValMap {
-					netValsType := reflect.ValueOf(netVals)
-					netMap := nodeInfoVal.Elem().Field(i).Interface().(map[string](*NetDevEntry))
-					if nodeInfoVal.Elem().Field(i).IsNil() {
-						netMap = make(map[string]*NetDevEntry)
-					}
-					if _, ok := netMap[netName]; !ok {
-						var newNet NetDevEntry
-						newNet.Tags = make(map[string]*Entry)
-						netMap[netName] = &newNet
-					}
-					netInfoType := reflect.TypeOf(*netMap[netName])
-					netInfoVal := reflect.ValueOf(netMap[netName])
-					for j := 0; j < netInfoType.NumField(); j++ {
-						netVal := netValsType.Elem().FieldByName(netInfoType.Field(j).Name)
-						if netVal.IsValid() {
-							if netVal.Type().Kind() == reflect.String {
-								setter(netInfoVal.Elem().Field(j).Addr().Interface().((*Entry)), netVal.String(), nameArg)
-							} else if netVal.Type() == reflect.TypeOf(map[string]string{}) {
-								for key, val := range (netVal.Interface()).(map[string]string) {
-									//netTagMap := netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))
-									if _, ok := netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))[key]; !ok {
-										netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))[key] = new(Entry)
-									}
-									setter(netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))[key], val, nameArg)
-								}
+					sourceIter := sourceValueMatched.MapRange()
+					if sourceValueMatched.Type().Elem() == reflect.TypeOf("") {
+						// go over a simple map with strings
+						for sourceIter.Next() {
+							if !targetValue.Elem().Field(i).MapIndex(sourceIter.Key()).IsValid() {
+								newEntr := new(Entry)
+								setter(newEntr, sourceIter.Value().String(), nameArg)
+								targetValue.Elem().Field(i).SetMapIndex(sourceIter.Key(), reflect.ValueOf(newEntr))
 							}
+						}
+					} else {
+						// now the complicated map which contains pointers to objects
+						for sourceIter.Next() {
+							if !targetValue.Elem().Field(i).MapIndex(sourceIter.Key()).IsValid() {
+								newPtr := reflect.New(targetType.Elem().Field(i).Type.Elem().Elem())
+								targetValue.Elem().Field(i).SetMapIndex(sourceIter.Key(), newPtr)
+							}
+							recursiveSetter(sourceIter.Value().Interface(), targetValue.Elem().Field(i).MapIndex(sourceIter.Key()).Interface(), nameArg, setter, setterSlice)
+
 						}
 					}
 				}
 			}
 		}
 	}
+
 }
 
 /*
@@ -350,8 +225,11 @@ or *KernelConf, these pointer will set to nil. This will remove something like
 ipmi: {} from nodes.conf
 */
 func (info *NodeConf) Flatten() {
-	confType := reflect.TypeOf(info)
-	confVal := reflect.ValueOf(info)
+	recursiveFlatten(info)
+}
+func recursiveFlatten(strct interface{}) {
+	confType := reflect.TypeOf(strct)
+	confVal := reflect.ValueOf(strct)
 	for j := 0; j < confType.Elem().NumField(); j++ {
 		if confVal.Elem().Field(j).Type().Kind() == reflect.Ptr && !confVal.Elem().Field(j).IsNil() {
 			// iterate now over the ptr fields
@@ -371,149 +249,54 @@ func (info *NodeConf) Flatten() {
 				}
 			}
 			if setToNil {
-				switch confType.Elem().Field(j).Type {
-				case reflect.TypeOf((*IpmiConf)(nil)):
-					ptr := confVal.Elem().Field(j).Addr().Interface().(**IpmiConf)
-					*ptr = (*IpmiConf)(nil)
-				case reflect.TypeOf((*KernelConf)(nil)):
-					ptr := confVal.Elem().Field(j).Addr().Interface().(**KernelConf)
-					*ptr = (*KernelConf)(nil)
-				}
+				confVal.Elem().Field(j).Set(reflect.Zero(confVal.Elem().Field(j).Type()))
 			}
 		}
 	}
 }
 
 /*
-Populates all fields of NetDevEntry with Set from the
-values of NetDevs.
-Actually not used, just for completeness.
+Create a string slice, where every element represents a yaml entry, used for node/profile edit
+in order to get a summary of all available elements
 */
-func (netDev *NetDevEntry) SetFrom(netYaml *NetDevs) {
-	setWrap := func(entr *Entry, val string, nameArg string) {
-		entr.Set(val)
-	}
-	setSliceWrap := func(entr *Entry, val []string, nameArg string) {
-		entr.SetSlice(val)
-	}
-	netDev.setterFrom(netYaml, "", setWrap, setSliceWrap)
-}
-
-/*
-Populates all fields of NetDevEntry with SetAlt from the
-values of NetDevs. The string profileName is used to
-destermine from which source/NodeInfo the entry came
-from.
-Actually not used, just for completeness.
-*/
-func (netDev *NetDevEntry) SetAltFrom(netYaml *NetDevs, profileName string) {
-	netDev.setterFrom(netYaml, profileName, (*Entry).SetAlt, (*Entry).SetAltSlice)
-}
-
-/*
-Populates all fields of NodeInfo with SetDefault from the
-values of NodeConf.
-*/
-func (netDev *NetDevEntry) SetDefFrom(netYaml *NetDevs) {
-	setWrap := func(entr *Entry, val string, nameArg string) {
-		entr.SetDefault(val)
-	}
-	setSliceWrap := func(entr *Entry, val []string, nameArg string) {
-		entr.SetDefaultSlice(val)
-	}
-	netDev.setterFrom(netYaml, "", setWrap, setSliceWrap)
-}
-
-/*
-Abstract function for setting a NetDevEntry from a NetDevs
-*/
-func (netDev *NetDevEntry) setterFrom(netYaml *NetDevs, nameArg string,
-	setter func(*Entry, string, string),
-	setterSlice func(*Entry, []string, string)) {
-	// check if netYaml is empty
-	if netYaml == nil {
-		netYaml = new(NetDevs)
-	}
-	netValues := reflect.ValueOf(netDev)
-	netInfoType := reflect.TypeOf(*netYaml)
-	netInfoVal := reflect.ValueOf(*netYaml)
-	for j := 0; j < netInfoType.NumField(); j++ {
-		netVal := netValues.Elem().FieldByName(netInfoType.Field(j).Name)
-		if netVal.IsValid() {
-			if netInfoVal.Field(j).Type().Kind() == reflect.String {
-				setter(netVal.Addr().Interface().((*Entry)), netInfoVal.Field(j).String(), nameArg)
-			} else if netVal.Type() == reflect.TypeOf(map[string]string{}) {
-				// danger zone following code is not tested
-				for key, val := range (netVal.Interface()).(map[string]string) {
-					//netTagMap := netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))
-					if _, ok := netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))[key]; !ok {
-						netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))[key] = new(Entry)
-					}
-					setter(netInfoVal.Elem().Field(j).Interface().((map[string](*Entry)))[key], val, nameArg)
-				}
-			}
-		}
-	}
-}
-
-/*
-Create a string slice, where every element represents a yaml entry
-*/
-func (nodeConf *NodeConf) UnmarshalConf(excludeList []string) (lines []string) {
-	nodeInfoType := reflect.TypeOf(nodeConf)
-	nodeInfoVal := reflect.ValueOf(nodeConf)
+func UnmarshalConf(obj interface{}, excludeList []string) (lines []string) {
+	objType := reflect.TypeOf(obj)
 	// now iterate of every field
-	for i := 0; i < nodeInfoVal.Elem().NumField(); i++ {
-		if nodeInfoType.Elem().Field(i).Tag.Get("lopt") != "" {
-			if ymlStr, ok := getYamlString(nodeInfoType.Elem().Field(i), excludeList); ok {
+	for i := 0; i < objType.NumField(); i++ {
+		if objType.Field(i).Tag.Get("comment") != "" {
+			if ymlStr, ok := getYamlString(objType.Field(i), excludeList); ok {
 				lines = append(lines, ymlStr...)
 			}
-		} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr {
-			nestType := reflect.TypeOf(nodeInfoVal.Elem().Field(i).Interface())
-			if ymlStr, ok := getYamlString(nodeInfoType.Elem().Field(i), excludeList); ok {
-				lines = append(lines, ymlStr...)
+		}
+		if objType.Field(i).Type.Kind() == reflect.Ptr && objType.Field(i).Tag.Get("yaml") != "" {
+			typeLine := objType.Field(i).Tag.Get("yaml")
+			if len(strings.Split(typeLine, ",")) > 1 {
+				typeLine = strings.Split(typeLine, ",")[0] + ":"
 			}
-			for j := 0; j < nestType.Elem().NumField(); j++ {
-				if nestType.Elem().Field(j).Tag.Get("lopt") != "" &&
-					!util.InSlice(excludeList, nestType.Elem().Field(j).Tag.Get("lopt")) {
-					if ymlStr, ok := getYamlString(nestType.Elem().Field(j), excludeList); ok {
-						for _, str := range ymlStr {
-							lines = append(lines, "  "+str)
-						}
-					}
-				}
+			lines = append(lines, typeLine)
+			nestedLine := UnmarshalConf(reflect.New(objType.Field(i).Type.Elem()).Elem().Interface(), excludeList)
+			for _, ln := range nestedLine {
+				lines = append(lines, "  "+ln)
 			}
-		} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string]*NetDevs(nil)) {
-			netMap := nodeInfoVal.Elem().Field(i).Interface().(map[string]*NetDevs)
-			// add a default network so that it can hold values
-			key := "default"
-			if len(netMap) == 0 {
-				netMap[key] = new(NetDevs)
-			} else {
-				for keyIt := range netMap {
-					key = keyIt
-					break
-				}
+		} else if objType.Field(i).Type.Kind() == reflect.Map && objType.Field(i).Type.Elem().Kind() == reflect.Ptr {
+			typeLine := objType.Field(i).Tag.Get("yaml")
+			if len(strings.Split(typeLine, ",")) > 1 {
+				typeLine = strings.Split(typeLine, ",")[0] + ":"
 			}
-			if ymlStr, ok := getYamlString(nodeInfoType.Elem().Field(i), excludeList); ok {
-				lines = append(lines, ymlStr[0]+":", "  "+key+":")
-				netType := reflect.TypeOf(netMap[key])
-				for j := 0; j < netType.Elem().NumField(); j++ {
-					if ymlStr, ok := getYamlString(netType.Elem().Field(j), excludeList); ok {
-						for _, str := range ymlStr {
-							lines = append(lines, "  "+str)
-						}
-					}
-				} // lines
-			} // this
-		} //not
-	} //do
+			lines = append(lines, typeLine, "  element:")
+			nestedLine := UnmarshalConf(reflect.New(objType.Field(i).Type.Elem().Elem()).Elem().Interface(), excludeList)
+			for _, ln := range nestedLine {
+				lines = append(lines, "    "+ln)
+			}
+		}
+	}
 	return lines
 }
 
 /*
 Get the string of the yaml tag
 */
+
 func getYamlString(myType reflect.StructField, excludeList []string) ([]string, bool) {
 	ymlStr := myType.Tag.Get("yaml")
 	if len(strings.Split(ymlStr, ",")) > 1 {
@@ -521,11 +304,15 @@ func getYamlString(myType reflect.StructField, excludeList []string) ([]string, 
 	}
 	if util.InSlice(excludeList, ymlStr) {
 		return []string{""}, false
-	} else if myType.Tag.Get("lopt") == "" && myType.Type.Kind() == reflect.String {
+	} else if myType.Tag.Get("comment") == "" && myType.Type.Kind() == reflect.String {
 		return []string{""}, false
 	}
 	if myType.Type.Kind() == reflect.String {
-		ymlStr += ": string"
+		fieldType := myType.Tag.Get("type")
+		if fieldType == "" {
+			fieldType = "string"
+		}
+		ymlStr += ": " + fieldType
 		return []string{ymlStr}, true
 	} else if myType.Type == reflect.TypeOf([]string{}) {
 		return []string{ymlStr + ":", "  - string"}, true
@@ -548,7 +335,6 @@ func (nodeConf *NodeConf) SetLopt(lopt string, value string) (found bool) {
 	nodeInfoVal := reflect.ValueOf(nodeConf)
 	// try to find the normal fields, networks come later
 	for i := 0; i < nodeInfoVal.Elem().NumField(); i++ {
-		//fmt.Println(nodeInfoType.Elem().Field(i).Tag.Get("lopt"), lopt)
 		if nodeInfoType.Elem().Field(i).Tag.Get("lopt") == lopt {
 			if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.String {
 				wwlog.Verbose("Found lopt %s mapping to %s, setting to %s\n",

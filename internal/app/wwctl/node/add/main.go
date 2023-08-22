@@ -1,10 +1,14 @@
 package add
 
 import (
+	"fmt"
+	"strings"
+
 	"gopkg.in/yaml.v2"
 
 	apinode "github.com/hpcng/warewulf/internal/pkg/api/node"
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 )
@@ -22,17 +26,36 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 				return err
 			}
 		}
-		// remove the default network as all network values are assigned
+		// remove the UNDEF network as all network values are assigned
 		// to this network
-		if _, ok := vars.nodeConf.NetDevs["default"]; ok && vars.netName != "" {
-			netDev := *vars.nodeConf.NetDevs["default"]
+		if !node.ObjectIsEmpty(vars.nodeConf.NetDevs["UNDEF"]) {
+			netDev := *vars.nodeConf.NetDevs["UNDEF"]
 			vars.nodeConf.NetDevs[vars.netName] = &netDev
-			delete(vars.nodeConf.NetDevs, "default")
-		} else {
-			if vars.nodeConf.NetDevs["default"].Empty() {
-				delete(vars.nodeConf.NetDevs, "default")
-			}
 		}
+		delete(vars.nodeConf.NetDevs, "UNDEF")
+		if vars.fsName != "" {
+			if !strings.HasPrefix(vars.fsName, "/dev") {
+				if vars.fsName == vars.partName {
+					vars.fsName = "/dev/disk/by-partlabel/" + vars.partName
+				} else {
+					return fmt.Errorf("filesystems need to have a underlying blockdev")
+				}
+			}
+			fs := *vars.nodeConf.FileSystems["UNDEF"]
+			vars.nodeConf.FileSystems[vars.fsName] = &fs
+		}
+		delete(vars.nodeConf.FileSystems, "UNDEF")
+		if vars.diskName != "" && vars.partName != "" {
+			prt := *vars.nodeConf.Disks["UNDEF"].Partitions["UNDEF"]
+			vars.nodeConf.Disks["UNDEF"].Partitions[vars.partName] = &prt
+			delete(vars.nodeConf.Disks["UNDEF"].Partitions, "UNDEF")
+			dsk := *vars.nodeConf.Disks["UNDEF"]
+			vars.nodeConf.Disks[vars.diskName] = &dsk
+		}
+		if (vars.diskName != "") != (vars.partName != "") {
+			return fmt.Errorf("partition and disk must be specified")
+		}
+		delete(vars.nodeConf.Disks, "UNDEF")
 		buffer, err := yaml.Marshal(vars.nodeConf)
 		if err != nil {
 			wwlog.Error("Can't marshall nodeInfo", err)

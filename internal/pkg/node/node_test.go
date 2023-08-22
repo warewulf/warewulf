@@ -38,3 +38,44 @@ nodes:
 	)
 	assert.NoError(t, err)
 }
+
+
+func TestNodeDisk(t *testing.T) {
+	node_config := `WW_INTERNAL: 43
+nodes:
+  n1:
+    disks:
+      /dev/vda:
+        wipe_table: "true"
+        partitions:
+          scratch:
+            should_exist: "true"
+    filesystems:
+      /dev/disk/by-partlabel/scratch:
+        format: btrfs
+        path: /scratch
+        wipe_filesystem: "true"`
+
+	config, parse_error := Parse([]byte(node_config))
+	assert.Empty(t, parse_error)
+
+	nodeInfos, info_error := config.FindAllNodes()
+	assert.Empty(t, info_error)
+	assert.Len(t, nodeInfos, 1)
+
+	node := nodeInfos[0]
+	assert.Len(t, node.Disks, 1)
+	assert.Len(t, node.FileSystems, 1)
+
+	disk := node.Disks["/dev/vda"]
+	assert.True(t, disk.WipeTable.GetB())
+	assert.Len(t, disk.Partitions, 1)
+
+	partition := disk.Partitions["scratch"]
+	assert.True(t, partition.ShouldExist.GetB())
+
+	filesystem := node.FileSystems["/dev/disk/by-partlabel/scratch"]
+	assert.Equal(t, "btrfs", filesystem.Format.Get())
+	assert.Equal(t, "/scratch", filesystem.Path.Get())
+	assert.True(t, filesystem.WipeFileSystem.GetB())
+}

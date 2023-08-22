@@ -16,8 +16,9 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			args = strings.FieldsFunc(args[0], func(r rune) bool { return r == ',' })
 		}
 		req := wwapiv1.GetProfileList{
-			ShowAll:  vars.showAll,
-			Profiles: args,
+			ShowAll:     vars.showAll,
+			ShowFullAll: vars.showFullAll,
+			Profiles:    args,
 		}
 		profileInfo, err := apiprofile.ProfileList(&req)
 		if err != nil {

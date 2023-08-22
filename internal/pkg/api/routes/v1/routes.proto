@@ -118,6 +118,7 @@ message GetNodeList {
 		Network = 2;
 		Long = 3;
 		All = 4;
+		FullAll = 5;
 	}
 	ListType type = 7;
 	repeated string Nodes = 8;
@@ -131,7 +132,8 @@ message NodeList {
 // Request a profile list view
 message GetProfileList {
 	bool ShowAll = 1;
-	repeated string Profiles = 2;
+	bool ShowFullAll = 2;
+	repeated string Profiles = 3;
 }
 // Get the formated output as string
 message ProfileList {
@@ -169,13 +171,26 @@ message NodeDeleteParameter {
 // by Warewulf.
 message NodeSetParameter {
 	string nodeConfYaml = 1;
-	string container = 2;
-    string netdevDelete = 14;
-	bool allNodes = 27;
-	bool force = 31;
-	repeated string nodeNames = 39;
+    string netdevDelete = 2;
+	string diskDelete = 3;
+	string partitionDelete = 4;
+	string filesystemDelete = 5;
+	bool allNodes = 6;
+	bool force = 7;
+	repeated string nodeNames = 8;
 }
-
+// ProfileSetParameter contains all fields for updating aspects of profiles managed. Basically a copy of NodeSetParameters
+// by Warewulf.
+message ProfileSetParameter {
+	string nodeConfYaml = 1;
+    string netdevDelete = 2;
+	string diskDelete = 3;
+	string partitionDelete = 4;
+	string filesystemDelete = 5;
+	bool allProfiles = 6;
+	bool force = 7;
+	repeated string profileNames = 8;
+}
 // NodeStatus contains information about the imaging status per node.
 message NodeStatus {
 	string nodeName = 1;	// Name (Id) of the node.
