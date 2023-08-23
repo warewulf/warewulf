@@ -16,8 +16,8 @@ import (
 
 	"github.com/coreos/go-systemd/daemon"
 	"github.com/google/uuid"
-	"github.com/hpcng/warewulf/internal/pkg/pidfile"
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/pidfile"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 	"github.com/talos-systems/go-smbios/smbios"
@@ -31,14 +31,16 @@ var (
 		RunE:         CobraRunE,
 		SilenceUsage: true,
 	}
-	DebugFlag bool
-	PIDFile   string
-	Webclient *http.Client
+	DebugFlag       bool
+	PIDFile         string
+	Webclient       *http.Client
+	WarewulfConfArg string
 )
 
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&DebugFlag, "debug", "d", false, "Run with debugging messages enabled.")
 	rootCmd.PersistentFlags().StringVarP(&PIDFile, "pidfile", "p", "/var/run/wwclient.pid", "PIDFile to use")
+	rootCmd.PersistentFlags().StringVar(&WarewulfConfArg, "warewulfconf", "", "Set the warewulf configuration file")
 
 }
 
@@ -48,9 +50,18 @@ func GetRootCommand() *cobra.Command {
 	return rootCmd
 }
 
-func CobraRunE(cmd *cobra.Command, args []string) error {
+func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	conf := warewulfconf.Get()
-
+	if WarewulfConfArg != "" {
+		err = conf.Read(WarewulfConfArg)
+	} else if os.Getenv("WAREWULFCONF") != "" {
+		err = conf.Read(os.Getenv("WAREWULFCONF"))
+	} else {
+		err = conf.Read(warewulfconf.ConfigFile)
+	}
+	if err != nil {
+		return
+	}
 	pid, err := pidfile.Write(PIDFile)
 	if err != nil && pid == -1 {
 		wwlog.Warn("%v. starting new wwclient", err)

@@ -91,6 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   file is create and will executed after the `ignition-disks-ww4.service` has finished.
   Entries in `/etc/fstab` for every file system are created with the `noauto` option.
 
+- wwclient has now a commandline switch for the location of warewulf.conf
 ## [4.4.0] 2023-01-18
 
 ### Added
