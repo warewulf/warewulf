@@ -1,8 +1,11 @@
+.PHONY: all
+all: build
+	
 include Variables.mk
 include Tools.mk
 
-.PHONY: all
-all: wwctl wwclient man_pages wwapid wwapic wwapird etc/defaults.conf etc/bash_completion.d/wwctl
+.PHONY: build
+build: wwctl wwclient man_pages wwapid wwapic wwapird etc/defaults.conf etc/bash_completion.d/wwctl
 
 vendor:
 ifndef OFFLINE_BUILD
