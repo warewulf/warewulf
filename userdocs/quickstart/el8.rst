@@ -9,6 +9,7 @@ Install Warewulf and dependencies
 
    sudo dnf groupinstall "Development Tools"
    sudo dnf install epel-release
+   sudo dnf config-manager --set-enabled powertools
    sudo dnf install golang tftp-server dhcp-server nfs-utils gpgme-devel libassuan-devel
 
    git clone https://github.com/hpcng/warewulf.git
