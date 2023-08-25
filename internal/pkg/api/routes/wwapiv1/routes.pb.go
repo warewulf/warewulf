@@ -251,6 +251,16 @@ func (x *ContainerDeleteParameter) GetContainerNames() []string {
 	return nil
 }
 
+type ContainerCopyParameter struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ContainerSource string `protobuf:"bytes,1,rep,name=ContainerSource,proto3" json:"ContainerSource,omitempty"`
+	ContainerDestination string `protobuf:"bytes,1,rep,name=ContainerDestination,proto3" json:"ContainerDestination,omitempty"`
+}
+
+
 // ContainerImportParameter has all input for importing a container.
 type ContainerImportParameter struct {
 	state         protoimpl.MessageState

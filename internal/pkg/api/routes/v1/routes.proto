@@ -32,6 +32,13 @@ message ContainerDeleteParameter {
 	repeated string containerNames = 1;
 }
 
+// ContainerCopyParameter contains 2 inputs : first one for the source container name and second one for the duplicated container name.
+message ContainerCopyParameter {
+	repeated string containerSourceName = 1;
+	repeated string containerDestName = 1;
+
+}
+
 // ContainerImportParameter has all input for importing a container.
 message ContainerImportParameter{
 	string source = 1; // container source uri
