@@ -9,14 +9,14 @@ build: lint test vet all
 .PHONY: setup_tools
 setup_tools: $(GO_TOOLS_BIN) $(GOLANGCI_LINT) $(PROTOC_GEN_GO) $(PROTOC_GEN_GO_GRPC)
 
-$(GO_TOOLS_BIN):
+$(GO_TOOLS_BIN):	
 	GOBIN="$(PWD)/$(TOOLS_BIN)" go install -mod=vendor $(GO_TOOLS)
 
 $(GOLANGCI_LINT):
 	curl -qq -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(TOOLS_BIN) $(GOLANGCI_LINT_VERSION)
 
 $(PROTOC):
-	cd $(PWD)/$(TOOLS_DIR) && curl -LO $(PROTOC_URL) && unzip protoc-24.0-linux-aarch_64.zip
+	cd $(PWD)/$(TOOLS_DIR) && curl -LO $(PROTOC_URL) && unzip protoc-24.0-linux-$(ARCHITECTURE_CPU).zip
 
 $(PROTOC_GEN_GRPC_GATEWAY):
 	curl -L $(PROTOC_GEN_GRPC_GATEWAY_URL) -o $(PROTOC_GEN_GRPC_GATEWAY)

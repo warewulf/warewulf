@@ -158,21 +158,14 @@ func (s *apiServer) ContainerBuild(ctx context.Context, request *wwapiv1.Contain
 }
 
 // ContainerCopy duplicates a container.
-func (s *apiServer) ContainerCopy(ctx context.Context, request *wwapiv1.ContainerCopyParameter) (response *wwapiv1.ContainerListResponse, err error) {
+func (s *apiServer) ContainerCopy(ctx context.Context, request *wwapiv1.ContainerCopyParameter) (response *emptypb.Empty, err error) {
 
 	// Parameter checks.
 	if request == nil {
 		return response, status.Errorf(codes.InvalidArgument, "nil request")
 	}
 
-	if request.ContainerSource == "" {
-		return response, status.Errorf(codes.InvalidArgument, "nil request.ContainerSource")
-	}
-
-	if request.ContainerDestination == "" {
-		return response, status.Errorf(codes.InvalidArgument, "nil request.ContainerDest")
-	}
-
+	err = container.ContainerCopy(request)
 	return
 }
 
