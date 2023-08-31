@@ -5,7 +5,10 @@ include Variables.mk
 include Tools.mk
 
 .PHONY: build
-build: wwctl wwclient man_pages wwapid wwapic wwapird etc/defaults.conf etc/bash_completion.d/wwctl
+build: wwctl wwclient wwapid wwapic wwapird etc/defaults.conf etc/bash_completion.d/wwctl
+
+.PHONY: docs
+docs: man_pages reference
 
 vendor:
 ifndef OFFLINE_BUILD
@@ -81,7 +84,7 @@ test-cover: $(config)
 	go tool cover -html=coverage/cover.out -o=coverage/cover.html
 
 .PHONY: install
-install: all
+install: build docs
 	install -d -m 0755 $(DESTDIR)$(BINDIR)
 	install -d -m 0755 $(DESTDIR)$(WWCHROOTDIR)
 	install -d -m 0755 $(DESTDIR)$(WWPROVISIONDIR)
