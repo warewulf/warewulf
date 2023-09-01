@@ -83,8 +83,6 @@ CONFIG := $(shell pwd)
 # helper functions
 godeps=$(shell go list -deps -f '{{if not .Standard}}{{ $$dep := . }}{{range .GoFiles}}{{$$dep.Dir}}/{{.}} {{end}}{{end}}' $(1) | sed "s%${PWD}/%%g")
 
-ARCHITECTURE_CPU=$(shell lscpu | grep 'Architecture' | cut -d':' -f2 | xargs)
-
 # use GOPROXY for older git clients and speed up downloads
 GOPROXY ?= https://proxy.golang.org
 export GOPROXY

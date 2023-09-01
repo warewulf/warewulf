@@ -30,8 +30,8 @@ $(GO_TOOLS_BIN):
 $(GOLANGCI_LINT):
 	curl -qq -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(TOOLS_BIN) $(GOLANGCI_LINT_VERSION)
 
-$(PROTOC):
-	cd $(PWD)/$(TOOLS_DIR) && curl -LO $(PROTOC_URL) && unzip protoc-24.0-linux-$(ARCHITECTURE_CPU).zip
+$(PROTOC): $(TOOLS_DIR)
+	cd $(TOOLS_DIR) && curl -LO $(PROTOC_URL) && unzip -o $(notdir $(PROTOC_URL))
 
 $(PROTOC_GEN_GRPC_GATEWAY):
 	curl -L $(PROTOC_GEN_GRPC_GATEWAY_URL) -o $(PROTOC_GEN_GRPC_GATEWAY)
