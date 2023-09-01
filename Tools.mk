@@ -47,4 +47,5 @@ $(PROTOC_GEN_GO_GRPC):
 	GOBIN="$(PWD)/$(TOOLS_BIN)" go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 
 .PHONY: cleantools
+cleantools:
 	rm -rf $(TOOLS_DIR)
