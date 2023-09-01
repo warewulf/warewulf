@@ -168,6 +168,10 @@ internal/pkg/api/routes/wwapiv1/%.go: $(PROTOC) $(PROTOC_GEN_GRPC_GATEWAY) $(PRO
 		--grpc-gateway_out=. \
 		routes.proto
 
+.PHONY: cleanproto
+cleanproto:
+	rm -f $(proto)
+
 .PHONY: cleanconfig
 cleanconfig:
 	rm -f $(config)
