@@ -152,13 +152,20 @@ reference: wwctl
 latexpdf: reference
 	make -C userdocs latexpdf
 
+proto = internal/pkg/api/routes/wwapiv1/routes.pb.go \
+	internal/pkg/api/routes/wwapiv1/routes.pb.gw.go \
+	internal/pkg/api/routes/wwapiv1/routes_grpc.pb.go
 .PHONY: proto
-proto: $(PROTOC) $(PROTOC_GEN_GRPC_GATEWAY) $(PROTOC_GEN_GO) $(PROTOC_GEN_GO_GRPC)
-	PATH=$(TOOLS_BIN):$(PATH) $(PROTOC) -I /usr/include -I internal/pkg/api/routes/v1 -I=. \
-		--grpc-gateway_out=. \
+proto: $(proto)
+
+routes_proto = internal/pkg/api/routes/v1/routes.proto
+internal/pkg/api/routes/wwapiv1/%.go: $(PROTOC) $(PROTOC_GEN_GRPC_GATEWAY) $(PROTOC_GEN_GO) $(PROTOC_GEN_GO_GRPC) $(routes_proto)
+	PATH=$(TOOLS_BIN):$(PATH) $(PROTOC) \
+		-I /usr/include -I $(shell dirname $(routes_proto)) -I=. \
 		--grpc-gateway_opt logtostderr=true \
 		--go_out=. \
 		--go-grpc_out=. \
+		--grpc-gateway_out=. \
 		routes.proto
 
 .PHONY: cleanconfig
