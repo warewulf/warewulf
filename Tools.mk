@@ -3,11 +3,13 @@ TOOLS_BIN := $(TOOLS_DIR)/bin
 
 GO_TOOLS_BIN := $(addprefix $(TOOLS_BIN)/, $(notdir $(GO_TOOLS)))
 GO_TOOLS_VENDOR := $(addprefix vendor/, $(GO_TOOLS))
+
 GOLANGCI_LINT := $(TOOLS_BIN)/golangci-lint
 GOLANGCI_LINT_VERSION := v1.53.2
+
+PROTOC := $(TOOLS_BIN)/protoc
 PROTOC_GEN_GO := $(TOOLS_BIN)/protoc-gen-go
 PROTOC_GEN_GO_GRPC := $(TOOLS_BIN)/protoc-gen-go-grpc
-PROTOC := $(TOOLS_BIN)/protoc
 PROTOC_GEN_GRPC_GATEWAY := $(TOOLS_BIN)/protoc-gen-grpc-gateway
 
 ifeq ($(ARCH),aarch64)
@@ -32,6 +34,7 @@ $(GOLANGCI_LINT):
 
 $(PROTOC): $(TOOLS_DIR)
 	cd $(TOOLS_DIR) && curl -LO $(PROTOC_URL) && unzip -o $(notdir $(PROTOC_URL))
+	touch --no-create $(PROTOC) # by default the timestamp is preserved from the archive
 
 $(PROTOC_GEN_GRPC_GATEWAY):
 	curl -L $(PROTOC_GEN_GRPC_GATEWAY_URL) -o $(PROTOC_GEN_GRPC_GATEWAY)
