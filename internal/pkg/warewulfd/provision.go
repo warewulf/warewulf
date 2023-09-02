@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"path"
 	"strconv"
+	"strings"
 	"text/template"
 
 	"github.com/hpcng/warewulf/internal/pkg/container"
@@ -29,6 +30,13 @@ type iPxeTemplate struct {
 	KernelOverride string
 }
 
+var status_stages = map[string]string{
+	"ipxe":    "IPXE",
+	"kernel":  "KERNEL",
+	"kmods":   "KMODS_OVERLAY",
+	"system":  "SYSTEM_OVERLAY",
+	"runtime": "RUNTIME_OVERLAY"}
+
 func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 	conf := warewulfconf.Get()
 
@@ -49,17 +57,8 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	status_stages := map[string]string{
-		"ipxe":    "IPXE",
-		"kernel":  "KERNEL",
-		"kmods":   "KMODS_OVERLAY",
-		"system":  "SYSTEM_OVERLAY",
-		"runtime": "RUNTIME_OVERLAY"}
-
 	status_stage := status_stages[rinfo.stage]
-	var stage_overlays []string
-	var stage_file string = ""
-	var img_context string = "legacy" /* Default to old image name behavior */
+	var stage_file string
 
 	// TODO: when module version is upgraded to go1.18, should be 'any' type
 	var tmpl_data interface{}
@@ -127,33 +126,20 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			wwlog.Warn("No container set for node %s", node.Id.Get())
 		}
 
-	} else if rinfo.stage == "system" {
-		if len(node.SystemOverlay.GetSlice()) != 0 {
-			stage_overlays = node.SystemOverlay.GetSlice()
-			img_context = rinfo.stage
+	} else if rinfo.stage == "system" || rinfo.stage == "runtime" {
+		var context string
+		var request_overlays []string
+
+		if len(rinfo.overlay) > 0 {
+			request_overlays = strings.Split(rinfo.overlay, ",")
 		} else {
-			wwlog.Warn("No system overlay set for node %s", node.Id.Get())
+			context = rinfo.stage
 		}
-
-	} else if rinfo.stage == "runtime" {
-		if rinfo.overlay != "" {
-			stage_overlays = []string{rinfo.overlay}
-                        img_context = "legacy"
-		} else if len(node.RuntimeOverlay.GetSlice()) != 0 {
-			stage_overlays = node.RuntimeOverlay.GetSlice()
-                        img_context = rinfo.stage
-		} else {
-			wwlog.Warn("No runtime overlay set for node %s", node.Id.Get())
-		}
-
-	}
-
-	if len(stage_overlays) > 0 {
 		stage_file, err = getOverlayFile(
 			node.Id.Get(),
-			stage_overlays,
-			conf.Warewulf.AutobuildOverlays,
-			img_context )
+			context,
+			request_overlays,
+			conf.Warewulf.AutobuildOverlays)
 
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)

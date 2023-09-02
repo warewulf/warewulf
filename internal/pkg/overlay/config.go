@@ -28,29 +28,32 @@ func OverlaySourceDir(overlayName string) string {
 	return overlaypath
 }
 
-/*
-Returns the overlay name of the image for a given node
-*/
-func OverlayImage(nodeName string, overlayName []string, img_context ...string) string {
+// OverlayImage returns the full path to an overlay image based on the
+// context and the overlays contained in it.
+//
+// If a context is provided, the image file name is based on that
+// context name, in the form __{CONTEXT}__.
+//
+// If the context is empty ("") the image file name is a concatenated
+// list of the contained overlays joined by "-".
+//
+// If the context is empty and no overlays are specified, the empty
+// string is returned.
+func OverlayImage(nodeName string, context string, overlayNames []string) string {
 	var name string
-	var context string
-
-	/* Check optional context argument. If missing, default to legacy. */
-	if len(img_context) == 0 {
-		context = "legacy"
+	if context != "" {
+		if len(overlayNames) > 0 {
+			wwlog.Warn("context(%v) and overlays(%v) specified: prioritizing context(%v)",
+				context, overlayNames, context)
+		}
+		name = "__" + strings.ToUpper(context) + "__.img"
+	} else if len(overlayNames) > 0 {
+		name = strings.Join(overlayNames, "-")+".img"
 	} else {
-		context = img_context[0]
+		wwlog.Warn("unable to generate overlay image path: no context or overlays specified")
+		return ""
 	}
 
 	conf := warewulfconf.Get()
-
-	switch context {
-	case "legacy":
-		name = strings.Join(overlayName, "-")+".img"
-	default:
-		wwlog.Warn("Context %s passed to OverlayImage(), using %s to build image name.", context, "__" + strings.ToUpper(context) + "__")
-		name = "__" + strings.ToUpper(context) + "__.img"
-	}
-
 	return path.Join(conf.Paths.WWProvisiondir, "overlays/", nodeName, name)
 }
