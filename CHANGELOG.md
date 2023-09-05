@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - New documentation for the hostlist syntax. #611
 - New documentation for development environment (Vagrant)
-- Ability to duplicate an image with `wwctl container cp` or the API
+- Ability to duplicate an image with `wwctl container copy` or the API
 - New documentation for container duplication procedure
 
 ### Fixed

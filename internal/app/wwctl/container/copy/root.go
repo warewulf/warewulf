@@ -8,7 +8,8 @@ import (
 var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:                   "cp CONTAINER NEW_NAME",
+		Use:                   "copy CONTAINER NEW_NAME",
+		Aliases:			   []string{"cp"},
 		Short:                 "Copy an existing container",
 		Long:                  "This command will duplicate an imported container image.",
 		RunE:                  CobraRunE,
