@@ -76,6 +76,7 @@ Node status
 ========================
 During the whole provisioning process of your nodes, you can check their status
 through the following command :
+
 .. code-block:: console
 
    # wwctl node status
@@ -85,6 +86,7 @@ through the following command :
 
 
 For each node, there is 4 different stages :
+
 * **IPXE** 
 * **KERNEL**
 * **SYSTEM_OVERLAY**

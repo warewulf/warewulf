@@ -11,7 +11,6 @@ require (
 	github.com/creasty/defaults v1.7.0
 	github.com/fatih/color v1.15.0
 	github.com/golang/glog v1.0.0
-	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.2
 	github.com/manifoldco/promptui v0.9.0
@@ -56,6 +55,7 @@ require (
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect

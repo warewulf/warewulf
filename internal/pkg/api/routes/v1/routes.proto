@@ -32,6 +32,13 @@ message ContainerDeleteParameter {
 	repeated string containerNames = 1;
 }
 
+// ContainerCopyParameter contains 2 inputs : first one for the source container name and second one for the duplicated container name.
+message ContainerCopyParameter {
+	string containerSource = 1;
+	string containerDestination = 2;
+
+}
+
 // ContainerImportParameter has all input for importing a container.
 message ContainerImportParameter{
 	string source = 1; // container source uri
@@ -239,6 +246,13 @@ service WWApi {
 		};
 	}
 
+
+	rpc ContainerCopy(ContainerCopyParameter) returns (google.protobuf.Empty) {
+		option (google.api.http) = {
+			post: "/v1/containercopy"
+			body: "*"
+		};
+	}
 	// ContainerImport imports a container to Warewulf.
 	rpc ContainerImport(ContainerImportParameter) returns (ContainerListResponse) {
 		option(google.api.http) = {

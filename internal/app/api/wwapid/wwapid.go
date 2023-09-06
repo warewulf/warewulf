@@ -15,8 +15,8 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/api/container"
 	apinode "github.com/hpcng/warewulf/internal/pkg/api/node"
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	"github.com/hpcng/warewulf/internal/pkg/version"
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/version"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
@@ -154,6 +154,18 @@ func (s *apiServer) ContainerBuild(ctx context.Context, request *wwapiv1.Contain
 			}
 		}
 	}
+	return
+}
+
+// ContainerCopy duplicates a container.
+func (s *apiServer) ContainerCopy(ctx context.Context, request *wwapiv1.ContainerCopyParameter) (response *emptypb.Empty, err error) {
+
+	// Parameter checks.
+	if request == nil {
+		return response, status.Errorf(codes.InvalidArgument, "nil request")
+	}
+
+	err = container.ContainerCopy(request)
 	return
 }
 
