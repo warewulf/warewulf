@@ -166,7 +166,7 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.SetFrom(node)
 		// only now the netdevs start to exist so that default values can be set
 		for _, netdev := range n.NetDevs {
-			netdev.SetDefFrom(defConfNet)
+			SetDefFrom(defConfNet, netdev)
 		}
 		// backward compatibility
 		n.Ipmi.Ipaddr.Set(node.IpmiIpaddr)

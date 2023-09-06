@@ -59,6 +59,8 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 	status_stage := status_stages[rinfo.stage]
 	var stage_overlays []string
 	var stage_file string = ""
+	var img_context string = "legacy" /* Default to old image name behavior */
+
 	// TODO: when module version is upgraded to go1.18, should be 'any' type
 	var tmpl_data interface{}
 
@@ -128,6 +130,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 	} else if rinfo.stage == "system" {
 		if len(node.SystemOverlay.GetSlice()) != 0 {
 			stage_overlays = node.SystemOverlay.GetSlice()
+			img_context = rinfo.stage
 		} else {
 			wwlog.Warn("No system overlay set for node %s", node.Id.Get())
 		}
@@ -135,8 +138,10 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 	} else if rinfo.stage == "runtime" {
 		if rinfo.overlay != "" {
 			stage_overlays = []string{rinfo.overlay}
+                        img_context = "legacy"
 		} else if len(node.RuntimeOverlay.GetSlice()) != 0 {
 			stage_overlays = node.RuntimeOverlay.GetSlice()
+                        img_context = rinfo.stage
 		} else {
 			wwlog.Warn("No runtime overlay set for node %s", node.Id.Get())
 		}
@@ -147,7 +152,8 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		stage_file, err = getOverlayFile(
 			node.Id.Get(),
 			stage_overlays,
-			conf.Warewulf.AutobuildOverlays)
+			conf.Warewulf.AutobuildOverlays,
+			img_context )
 
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)

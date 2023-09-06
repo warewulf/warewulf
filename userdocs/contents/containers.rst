@@ -349,3 +349,13 @@ issues in most circumstances:
   If you are still getting "Not enough memory" or "No space left on
   device" errors, try disabling any "memory hole" features or updating
   your system BIOS or firmware.
+
+Duplicating a container
+============================
+It is possible to duplicate an installed image by using :
+
+.. code-block:: console
+
+  # wwctl container copy CONTAINER_NAME DUPLICATED_CONTAINER_NAME
+
+This kind of duplication can be useful if you are looking for canary tests.

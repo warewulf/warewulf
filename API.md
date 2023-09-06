@@ -19,6 +19,7 @@ wwctl container delete
 wwctl container import
 wwctl container list
 wwctl container show
+wwctl container copy
 
 Some notes on the files:
 

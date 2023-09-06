@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hpcng/warewulf/internal/pkg/node"
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/stretchr/testify/assert"
 )
@@ -26,9 +26,7 @@ func Test_Add(t *testing.T) {
 			stdout:  "",
 			outDb: `WW_INTERNAL: 43
 nodeprofiles:
-  p01:
-    network devices:
-      default: {}
+  p01: {}
 nodes: {}
 `,
 		},

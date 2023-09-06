@@ -17,46 +17,48 @@ must be called, as the commandline parser returns e.g. netip.IP objects which mu
 back to strings.
 */
 func (nodeConf *NodeConf) CreateFlags(baseCmd *cobra.Command, excludeList []string) (converters []func() error) {
-	nodeInfoType := reflect.TypeOf(nodeConf)
-	nodeInfoVal := reflect.ValueOf(nodeConf)
+	/*
+		nodeInfoType := reflect.TypeOf(nodeConf)
+		nodeInfoVal := reflect.ValueOf(nodeConf)
+	*/
+	return RecursiveCreateFlags(nodeConf, baseCmd, excludeList)
+}
+
+func RecursiveCreateFlags(obj interface{}, baseCmd *cobra.Command, excludeList []string) (converters []func() error) {
 	// now iterate of every field
+	nodeInfoType := reflect.TypeOf(obj)
+	nodeInfoVal := reflect.ValueOf(obj)
 	for i := 0; i < nodeInfoVal.Elem().NumField(); i++ {
 		if nodeInfoType.Elem().Field(i).Tag.Get("comment") != "" &&
 			!util.InSlice(excludeList, nodeInfoType.Elem().Field(i).Tag.Get("lopt")) {
 			field := nodeInfoVal.Elem().Field(i)
 			converters = append(converters, createFlags(baseCmd, excludeList, nodeInfoType.Elem().Field(i), &field)...)
 		} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr {
-			nestType := reflect.TypeOf(nodeInfoVal.Elem().Field(i).Interface())
-			nestVal := reflect.ValueOf(nodeInfoVal.Elem().Field(i).Interface())
-			for j := 0; j < nestType.Elem().NumField(); j++ {
-				field := nestVal.Elem().Field(j)
-				converters = append(converters, createFlags(baseCmd, excludeList, nestType.Elem().Field(j), &field)...)
-			}
-		} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string]*NetDevs(nil)) {
-			netMap := nodeInfoVal.Elem().Field(i).Interface().(map[string]*NetDevs)
-			// add a default network so that it can hold values
-			key := "default"
-			if len(netMap) == 0 {
-				netMap[key] = new(NetDevs)
-			} else {
-				for keyIt := range netMap {
-					key = keyIt
-					break
+			newConv := RecursiveCreateFlags(nodeInfoVal.Elem().Field(i).Interface(), baseCmd, excludeList)
+			converters = append(converters, newConv...)
+
+		} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Map &&
+			nodeInfoType.Elem().Field(i).Type != reflect.TypeOf(map[string]string{}) {
+			// add a map with key UNDEF so that it can hold values N.B. UNDEF can never be added through command line
+			key := reflect.ValueOf("UNDEF")
+			if nodeInfoVal.Elem().Field(i).Len() == 0 {
+				if nodeInfoVal.Elem().Field(i).IsNil() {
+					nodeInfoVal.Elem().Field(i).Set(reflect.MakeMap(nodeInfoType.Elem().Field(i).Type))
 				}
+				newPtr := reflect.New(nodeInfoType.Elem().Field(i).Type.Elem().Elem())
+				nodeInfoVal.Elem().Field(i).SetMapIndex(key, newPtr)
+			} else {
+				key = nodeInfoVal.Elem().Field(i).MapKeys()[0]
 			}
-			netType := reflect.TypeOf(netMap[key])
-			netVal := reflect.ValueOf(netMap[key])
-			for j := 0; j < netType.Elem().NumField(); j++ {
-				field := netVal.Elem().Field(j)
-				converters = append(converters, createFlags(baseCmd, excludeList, netType.Elem().Field(j), &field)...)
-			}
+			newConv := RecursiveCreateFlags(nodeInfoVal.Elem().Field(i).MapIndex(key).Interface(), baseCmd, excludeList)
+			converters = append(converters, newConv...)
 		}
 	}
 	return converters
 }
 
 /*
-Helper function to create the different PerisitantFlags() for different types.
+Helper function to create the different PersistentFlags() for different types.
 */
 func createFlags(baseCmd *cobra.Command, excludeList []string,
 	myType reflect.StructField, myVal *reflect.Value) (converters []func() error) {

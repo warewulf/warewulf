@@ -11,7 +11,7 @@ if test -f "/warewulf/config"; then
 else
     echo "ERROR: Warewulf configuration file not found... rebooting in 1 minute"
     sleep 60
-    /sbin/reboot
+    echo b > /proc/sysrq-trigger || /sbin/reboot
 fi
 
 echo "Warewulf v4 is now booting: $WWHOSTNAME"
@@ -53,4 +53,4 @@ fi
 echo
 echo "There was a problem with the provisioning process, rebooting in 1 minute..."
 sleep 60
-/sbin/reboot
+echo b > /proc/sysrq-trigger || /sbin/reboot

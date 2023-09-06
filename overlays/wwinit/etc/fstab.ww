@@ -7,8 +7,17 @@ devpts /dev/pts devpts gid=5,mode=620 0 0
 tmpfs /run/shm tmpfs defaults 0 0
 sysfs /sys sysfs defaults 0 0
 proc /proc proc defaults 0 0
+{{- if .FileSystems }}
+# mounts for local file systems created with ignition in nodes.conf
+# all with noauto as mounts happens with systemd units
+{{- range $fsdevice,$fs := .FileSystems }}
+{{ $fsdevice }} {{ $fs.Path }} {{ $fs.Format }}
+{{- if $fs.MountOptions }} noauto{{range $index,$opt := $fs.MountOptions }},{{ $opt }}{{ end }} 0 0
+{{- else }} noauto,defaults 0 0
+{{- end }}{{ end }}{{ end }}
 {{- $IP:=.Ipaddr }}
 {{- if .Nfs.Enabled }}
+# nfs mounts provided in warewulf.conf
 {{- range .Nfs.ExportsExtended }}
 {{- if .Mount }}
 {{ $IP }}:{{ .Path }} {{ .Path }} nfs {{ .MountOptions }} 0 0

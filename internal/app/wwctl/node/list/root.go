@@ -6,10 +6,11 @@ import (
 )
 
 type variables struct {
-	showNet  bool
-	showIpmi bool
-	showAll  bool
-	showLong bool
+	showNet     bool
+	showIpmi    bool
+	showAll     bool
+	showLong    bool
+	showFullAll bool
 }
 
 func GetCommand() *cobra.Command {
@@ -39,6 +40,7 @@ func GetCommand() *cobra.Command {
 	baseCmd.PersistentFlags().BoolVarP(&vars.showNet, "net", "n", false, "Show node network configurations")
 	baseCmd.PersistentFlags().BoolVarP(&vars.showIpmi, "ipmi", "i", false, "Show node IPMI configurations")
 	baseCmd.PersistentFlags().BoolVarP(&vars.showAll, "all", "a", false, "Show all node configurations")
+	baseCmd.PersistentFlags().BoolVarP(&vars.showFullAll, "fullall", "A", false, "Show all node configurations inclusive empty entries")
 	baseCmd.PersistentFlags().BoolVarP(&vars.showLong, "long", "l", false, "Show long or wide format")
 
 	return baseCmd

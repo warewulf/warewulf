@@ -4,11 +4,19 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
+
+type sortByName []NodeInfo
+
+func (a sortByName) Len() int           { return len(a) }
+func (a sortByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a sortByName) Less(i, j int) bool { return a[i].Id.Print() < a[j].Id.Print() }
 
 func GetUnsetVerbs() []string {
 	return []string{"UNSET", "DELETE", "UNDEF", "undef", "--", "nil", "0.0.0.0"}
@@ -43,6 +51,7 @@ func FilterByName(set []NodeInfo, searchList []string) []NodeInfo {
 		ret = set
 	}
 
+	sort.Sort(sortByName(ret))
 	return ret
 }
 
@@ -58,7 +67,6 @@ func FilterMapByName(inputMap map[string]*NodeConf, searchList []string) (retMap
 					retMap[name] = nConf
 				}
 			}
-
 		}
 	}
 	return retMap
@@ -156,7 +164,6 @@ func (ent *Entry) SetDefault(val string) {
 		return
 	}
 	ent.def = []string{val}
-
 }
 
 /*
@@ -167,7 +174,6 @@ func (ent *Entry) SetDefaultSlice(val []string) {
 		return
 	}
 	ent.def = val
-
 }
 
 /*
@@ -276,6 +282,37 @@ func (ent *Entry) GotReal() bool {
 	return len(ent.value) != 0
 }
 
+/*
+Get a pointer to the value
+*/
+func (ent *Entry) GetPointer() *string {
+	ret := ent.Get()
+	return &ret
+}
+
+/*
+Try to get a int of a value, 0 if value can't be parsed!
+*/
+func (ent *Entry) GetInt() int {
+	var ret int
+	if len(ent.value) != 0 {
+		ret, _ = strconv.Atoi(ent.value[0])
+	} else if len(ent.altvalue) != 0 {
+		ret, _ = strconv.Atoi(ent.altvalue[0])
+	} else if len(ent.def) != 0 {
+		ret, _ = strconv.Atoi(ent.def[0])
+	}
+	return ret
+}
+
+/*
+Ptr to int
+*/
+func (ent *Entry) GetIntPtr() *int {
+	ret := ent.GetInt()
+	return &ret
+}
+
 /**********
  *
  * Misc
@@ -328,7 +365,7 @@ per profile. Else -- is returned.
 func (ent *Entry) Source() string {
 	if len(ent.value) != 0 && len(ent.altvalue) != 0 {
 		return "SUPERSEDED"
-		//return fmt.Sprintf("[%s]", ent.from)
+		// return fmt.Sprintf("[%s]", ent.from)
 	} else if ent.from == "" {
 		return "--"
 	}
@@ -375,11 +412,6 @@ func NewInfo() (nodeInfo NodeInfo) {
 	return nodeInfo
 }
 
-func NewNetDevEntry() (netdev NetDevEntry) {
-	netdev.Tags = make(map[string]*Entry)
-	return
-}
-
 /*
 Get a entry by its name
 */
@@ -399,12 +431,15 @@ func GetByName(node interface{}, name string) (string, error) {
 /*
 Check if the Netdev is empty, so has no values set
 */
-func (dev *NetDevs) Empty() bool {
-	if dev == nil {
+func ObjectIsEmpty(obj interface{}) bool {
+	if obj == nil {
 		return true
 	}
-	varType := reflect.TypeOf(*dev)
-	varVal := reflect.ValueOf(*dev)
+	varType := reflect.TypeOf(obj)
+	varVal := reflect.ValueOf(obj)
+	if varType.Kind() == reflect.Ptr && !varVal.IsNil() {
+		return ObjectIsEmpty(varVal.Elem().Interface())
+	}
 	if varVal.IsZero() {
 		return true
 	}
@@ -416,6 +451,10 @@ func (dev *NetDevs) Empty() bool {
 			}
 		} else if varType.Field(i).Type == reflect.TypeOf(map[string]string{}) {
 			if len(varVal.Field(i).Interface().(map[string]string)) != 0 {
+				return false
+			}
+		} else if varType.Field(i).Type.Kind() == reflect.Ptr {
+			if !ObjectIsEmpty(varVal.Field(i).Interface()) {
 				return false
 			}
 		}

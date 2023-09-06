@@ -37,7 +37,7 @@ func Build(name string, buildForce bool) error {
 	}
 
 	err := util.BuildFsImage(
-		"VNFS container " + name,
+		"VNFS container "+name,
 		rootfsPath,
 		imagePath,
 		[]string{"*"},
