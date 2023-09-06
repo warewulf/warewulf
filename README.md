@@ -8,7 +8,7 @@
 * [Documentation](https://warewulf.org/docs)
 * [Download / Releases](http://github.com/hpcng/warewulf/releases)
 * [Slack](http://hpcng.slack.com/#warewulf)
-* [Support](http://www.ciq.co/warewulf)
+* [Support](https://ciq.com/products/warewulf)
 
 ## About Warewulf
 

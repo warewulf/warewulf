@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/hpcng/warewulf/internal/pkg/node"
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
@@ -37,13 +37,15 @@ type TemplateStruct struct {
 	node.NodeConf
 	// backward compatiblity
 	Container string
+	ThisNode  *node.NodeInfo
 }
 
 /*
 Initialize an TemplateStruct with the given node.NodeInfo
 */
-func InitStruct(nodeInfo node.NodeInfo) TemplateStruct {
+func InitStruct(nodeInfo *node.NodeInfo) TemplateStruct {
 	var tstruct TemplateStruct
+	tstruct.ThisNode = nodeInfo
 	controller := warewulfconf.Get()
 	nodeDB, err := node.New()
 	if err != nil {
@@ -55,7 +57,7 @@ func InitStruct(nodeInfo node.NodeInfo) TemplateStruct {
 		wwlog.Error("%s", err)
 		os.Exit(1)
 	}
-	// init some convininence vars
+	// init some convenience vars
 	tstruct.Id = nodeInfo.Id.Get()
 	tstruct.Hostname = nodeInfo.Id.Get()
 	// Backwards compatibility for templates using "Keys"
@@ -81,17 +83,17 @@ func InitStruct(nodeInfo node.NodeInfo) TemplateStruct {
 	tstruct.BuildTime = dt.Format("01-02-2006 15:04:05 MST")
 	tstruct.BuildTimeUnix = strconv.FormatInt(dt.Unix(), 10)
 	tstruct.NodeConf.Tags = map[string]string{}
-	tstruct.NodeConf.GetFrom(nodeInfo)
+	tstruct.NodeConf.GetFrom(*nodeInfo)
 	// FIXME: Set ipCIDR address at this point, will fail with
 	// invalid ipv4 addr
-	for _, network := range tstruct.NetDevs {
+	for _, network := range tstruct.NodeConf.NetDevs {
 		ipCIDR := net.IPNet{
 			IP:   net.ParseIP(network.Ipaddr),
 			Mask: net.IPMask(net.ParseIP(network.Netmask))}
 		network.IpCIDR = ipCIDR.String()
 	}
 	// backward compatibilty
-	tstruct.Container = tstruct.ContainerName
+	tstruct.Container = tstruct.NodeConf.ContainerName
 
 	return tstruct
 

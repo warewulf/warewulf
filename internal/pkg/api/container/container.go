@@ -18,6 +18,31 @@ import (
 	"github.com/pkg/errors"
 )
 
+func ContainerCopy(cbp *wwapiv1.ContainerCopyParameter) (err error) {
+	if cbp == nil {
+		return fmt.Errorf("ContainerCopyParameter is nil")
+	}
+
+	if !container.DoesSourceExist(cbp.ContainerSource) {
+		return fmt.Errorf("Container %s does not exists.", cbp.ContainerSource)
+	}
+
+	if !container.ValidName(cbp.ContainerDestination) {
+		return fmt.Errorf("Container name contains illegal characters : %s", cbp.ContainerDestination)
+	}
+
+	if container.DoesSourceExist(cbp.ContainerDestination) {
+		return fmt.Errorf("An other container with the name %s already exists", cbp.ContainerDestination)
+	}
+
+	err = container.Duplicate(cbp.ContainerSource, cbp.ContainerDestination)
+	if err != nil {
+		return fmt.Errorf("could not duplicate image: %s", err.Error())
+	}
+
+	return fmt.Errorf("Container %s has been succesfully duplicated as %s", cbp.ContainerSource, cbp.ContainerDestination)
+}
+
 func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 	if cbp == nil {
 		return fmt.Errorf("ContainerBuildParameter is nil")
@@ -203,11 +228,14 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		return
 	}
 
-	err = container.SyncUids(cip.Name, !cip.SyncUser)
-	if err != nil && !cip.SyncUser {
+	SyncUserShowOnly := !cip.SyncUser
+	err = container.SyncUids(cip.Name, SyncUserShowOnly)
+	if err != nil {
 		err = fmt.Errorf("error in user sync, fix error and run 'syncuser' manually: %s", err)
 		wwlog.Error(err.Error())
-		return
+		if cip.SyncUser {
+			return
+		}
 	}
 
 	wwlog.Info("Building container: %s", cip.Name)

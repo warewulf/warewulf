@@ -35,20 +35,22 @@ type NodeConf struct {
 	IpmiInterface string `yaml:"ipmi interface,omitempty"`
 	IpmiWrite     string `yaml:"ipmi write,omitempty"`
 	// Deprecated end
-	RuntimeOverlay []string            `yaml:"runtime overlay,omitempty" lopt:"runtime" sopt:"R" comment:"Set the runtime overlay"`
-	SystemOverlay  []string            `yaml:"system overlay,omitempty" lopt:"wwinit" sopt:"O" comment:"Set the system overlay"`
-	Kernel         *KernelConf         `yaml:"kernel,omitempty"`
-	Ipmi           *IpmiConf           `yaml:"ipmi,omitempty"`
-	Init           string              `yaml:"init,omitempty" lopt:"init" sopt:"i" comment:"Define the init process to boot the container"`
-	Root           string              `yaml:"root,omitempty" lopt:"root" comment:"Define the rootfs" `
-	AssetKey       string              `yaml:"asset key,omitempty" lopt:"asset" comment:"Set the node's Asset tag (key)"`
-	Discoverable   string              `yaml:"discoverable,omitempty" lopt:"discoverable" sopt:"e" comment:"Make discoverable in given network (true/false)" type:"bool"`
-	Profiles       []string            `yaml:"profiles,omitempty" lopt:"profile" sopt:"P" comment:"Set the node's profile members (comma separated)"`
-	NetDevs        map[string]*NetDevs `yaml:"network devices,omitempty"`
-	Tags           map[string]string   `yaml:"tags,omitempty" lopt:"tagadd" comment:"base key"`
-	TagsDel        []string            `yaml:"tagsdel,omitempty" lopt:"tagdel" comment:"remove this tags"` // should not go to disk only to wire
-	Keys           map[string]string   `yaml:"keys,omitempty"`                                             // Reverse compatibility
-	PrimaryNetDev  string              `yaml:"primary network,omitempty" lopt:"primarynet" sopt:"p" comment:"Set the primary network interface"`
+	RuntimeOverlay []string               `yaml:"runtime overlay,omitempty" lopt:"runtime" sopt:"R" comment:"Set the runtime overlay"`
+	SystemOverlay  []string               `yaml:"system overlay,omitempty" lopt:"wwinit" sopt:"O" comment:"Set the system overlay"`
+	Kernel         *KernelConf            `yaml:"kernel,omitempty"`
+	Ipmi           *IpmiConf              `yaml:"ipmi,omitempty"`
+	Init           string                 `yaml:"init,omitempty" lopt:"init" sopt:"i" comment:"Define the init process to boot the container"`
+	Root           string                 `yaml:"root,omitempty" lopt:"root" comment:"Define the rootfs" `
+	AssetKey       string                 `yaml:"asset key,omitempty" lopt:"asset" comment:"Set the node's Asset tag (key)"`
+	Discoverable   string                 `yaml:"discoverable,omitempty" lopt:"discoverable" sopt:"e" comment:"Make discoverable in given network (true/false)" type:"bool"`
+	Profiles       []string               `yaml:"profiles,omitempty" lopt:"profile" sopt:"P" comment:"Set the node's profile members (comma separated)"`
+	NetDevs        map[string]*NetDevs    `yaml:"network devices,omitempty"`
+	Tags           map[string]string      `yaml:"tags,omitempty" lopt:"tagadd" comment:"base key"`
+	TagsDel        []string               `yaml:"tagsdel,omitempty" lopt:"tagdel" comment:"remove this tags"` // should not go to disk only to wire
+	Keys           map[string]string      `yaml:"keys,omitempty"`                                             // Reverse compatibility
+	PrimaryNetDev  string                 `yaml:"primary network,omitempty" lopt:"primarynet" sopt:"p" comment:"Set the primary network interface"`
+	Disks          map[string]*Disk       `yaml:"disks,omitempty"`
+	FileSystems    map[string]*FileSystem `yaml:"filesystems,omitempty"`
 }
 
 type IpmiConf struct {
@@ -85,6 +87,42 @@ type NetDevs struct {
 	Default string            `yaml:"default,omitempty"` /* backward compatibility */
 	Tags    map[string]string `yaml:"tags,omitempty" lopt:"nettagadd" comment:"network tags"`
 	TagsDel []string          `yaml:"tagsdel,omitempty" lopt:"nettagdel" comment:"delete network tags"` // should not go to disk only to wire
+}
+
+/*
+Holds the disks of a node
+*/
+type Disk struct {
+	WipeTable  string                `yaml:"wipe_table,omitempty" type:"bool" lopt:"diskwipe" comment:"whether or not the partition tables shall be wiped"`
+	Partitions map[string]*Partition `yaml:"partitions,omitempty"`
+}
+
+/*
+partition definition, the label must be uniq so its used as the key in the
+Partitions map
+*/
+type Partition struct {
+	Number             string `yaml:"number,omitempty" lopt:"partnumber" comment:"set the partition number, if not set next free slot is used"`
+	SizeMiB            string `yaml:"size_mib,omitempty" lopt:"partsize" comment:"set the size of the partition, if not set maximal possible size is used"`
+	StartMiB           string `yaml:"start_mib,omitempty" comment:"the start of the partition"`
+	TypeGuid           string `yaml:"type_guid,omitempty" comment:"Linux filesystem data will be used if empty"`
+	Guid               string `yaml:"guid,omitempty" comment:"the GPT unique partition GUID"`
+	WipePartitionEntry string `yaml:"wipe_partition_entry,omitempty" comment:"if true, Ignition will clobber an existing partition if it does not match the config" type:"bool"`
+	ShouldExist        string `yaml:"should_exist,omitempty" lopt:"partcreate" comment:"create partition if not exist" type:"bool"`
+	Resize             string `yaml:"resize,omitempty" comment:" whether or not the existing partition should be resize" type:"bool"`
+}
+
+/*
+Definition of a filesystem. The device is uniq so its used as key
+*/
+type FileSystem struct {
+	Format         string   `yaml:"format,omitempty" lopt:"fsformat" comment:"format of the file system"`
+	Path           string   `yaml:"path,omitempty" lopt:"fspath" comment:"the mount point of the file system"`
+	WipeFileSystem string   `yaml:"wipe_filesystem,omitempty" lopt:"fswipe" comment:"wipe file system at boot" type:"bool"`
+	Label          string   `yaml:"label,omitempty" comment:"the label of the filesystem"`
+	Uuid           string   `yaml:"uuid,omitempty" comment:"the uuid of the filesystem"`
+	Options        []string `yaml:"options,omitempty" comment:"any additional options to be passed to the format-specific mkfs utility"`
+	MountOptions   []string `yaml:"mount_options,omitempty" comment:"any special options to be passed to the mount command"`
 }
 
 /******
@@ -126,6 +164,8 @@ type NodeInfo struct {
 	PrimaryNetDev  Entry
 	NetDevs        map[string]*NetDevEntry
 	Tags           map[string]*Entry
+	Disks          map[string]*DiskEntry
+	FileSystems    map[string]*FileSystemEntry
 }
 
 type IpmiEntry struct {
@@ -161,17 +201,32 @@ type NetDevEntry struct {
 	Tags    map[string]*Entry
 }
 
+type DiskEntry struct {
+	WipeTable  Entry
+	Partitions map[string]*PartitionEntry
+}
+
+type PartitionEntry struct {
+	Number             Entry
+	SizeMiB            Entry
+	StartMiB           Entry
+	TypeGuid           Entry
+	Guid               Entry
+	WipePartitionEntry Entry
+	ShouldExist        Entry
+	Resize             Entry
+}
+
+type FileSystemEntry struct {
+	Format         Entry
+	Path           Entry
+	WipeFileSystem Entry
+	Label          Entry
+	Uuid           Entry
+	Options        Entry
+	MountOptions   Entry
+}
+
 // string which is printed if no value is set
 const NoValue = "--"
 
-/*
-Has no real purpose as only New() needs it
-func init() {
-	// Check that nodes.conf is found
-	if !util.IsFile(ConfigFile) {
-		wwlog.Warn("Missing node configuration file")
-		// just return silently, as init is also called for bash_completion
-		return
-	}
-}
-*/

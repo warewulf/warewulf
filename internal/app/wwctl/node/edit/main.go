@@ -13,7 +13,9 @@ import (
 	apiutil "github.com/hpcng/warewulf/internal/pkg/api/util"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
@@ -43,8 +45,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Error("Could not create temp file:%s \n", err)
 	}
 	defer os.Remove(file.Name())
-	nodeConf := node.NewConf()
-	yamlTemplate := nodeConf.UnmarshalConf([]string{"tagsdel", "default", "profiles"})
+	yamlTemplate := node.UnmarshalConf(node.NodeConf{}, []string{"tagsdel", "default", "profiles"})
 	for {
 		_ = file.Truncate(0)
 		_, _ = file.Seek(0, 0)
@@ -129,6 +130,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		} else {
 			break
 		}
+	}
+
+	err = warewulfd.DaemonReload()
+	if err != nil {
+		return errors.Wrap(err, "failed to reload warewulf daemon")
 	}
 
 	return nil
