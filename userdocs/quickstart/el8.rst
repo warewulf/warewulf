@@ -9,10 +9,27 @@ Install Warewulf and dependencies
 
    sudo dnf groupinstall "Development Tools"
    sudo dnf install epel-release
+   sudo dnf config-manager --set-enabled powertools
    sudo dnf install golang tftp-server dhcp-server nfs-utils gpgme-devel libassuan-devel
 
    git clone https://github.com/hpcng/warewulf.git
    cd warewulf
+   make clean Defaults.mk \
+    PREFIX=/usr \
+    BINDIR=/usr/bin \
+    SYSCONFDIR=/etc \
+    DATADIR=/usr/share \
+    LOCALSTATEDIR=/var/lib \
+    SHAREDSTATEDIR=/var/lib \
+    MANDIR=/usr/share/man \
+    INFODIR=/usr/share/info \
+    DOCDIR=/usr/share/doc \
+    SRVDIR=/var/lib \
+    TFTPDIR=/var/lib/tftpboot \
+    SYSTEMDDIR=/usr/lib/systemd/system \
+    BASHCOMPDIR=/etc/bash_completion.d/ \
+    FIREWALLDDIR=/usr/lib/firewalld/services \
+    WWCLIENTDIR=/warewulf
    make all
    sudo make install
 

@@ -48,14 +48,22 @@ func ListSources() ([]string, error) {
 	return ret, nil
 }
 
-func ValidSource(name string) bool {
-	fullPath := RootFsDir(name)
+func DoesContainerExists(name string) bool {
+	fullPath := ImageFile(name)
+	return util.IsFile(fullPath)
+}
 
+func DoesSourceExist(name string) bool {
+	fullPath := RootFsDir(name)
+	return util.IsDir(fullPath)
+}
+
+func ValidSource(name string) bool {
 	if !ValidName(name) {
 		return false
 	}
 
-	if !util.IsDir(fullPath) {
+	if !DoesSourceExist(name) {
 		wwlog.Verbose("Location is not a VNFS source directory: %s", name)
 		return false
 	}
@@ -71,6 +79,23 @@ func DeleteSource(name string) error {
 
 	wwlog.Verbose("Removing path: %s", fullPath)
 	return os.RemoveAll(fullPath)
+}
+
+func Duplicate(name string, destination string) error {
+	fullPathImageSource := RootFsDir(name)
+
+	wwlog.Info("Copying sources...")
+	err := ImportDirectory(fullPathImageSource, destination)
+
+	if err != nil {
+		return err
+	}
+	wwlog.Info("Building container: %s", destination)
+	err = Build(destination, true)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 /*

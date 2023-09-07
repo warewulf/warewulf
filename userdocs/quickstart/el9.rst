@@ -10,11 +10,11 @@ Install Warewulf and dependencies
    sudo dnf groupinstall "Development Tools"
    sudo dnf install epel-release
    sudo dnf config-manager --set-enabled crb
-   sudo dnf install golang tftp-server dhcp-server nfs-utils gpgpme-devel libassuan-devel
+   sudo dnf install golang tftp-server dhcp-server nfs-utils gpgme-devel libassuan-devel
 
    git clone https://github.com/hpcng/warewulf.git
    cd warewulf
-   make genconfig \
+   make clean Defaults.mk \
     PREFIX=/usr \
     BINDIR=/usr/bin \
     SYSCONFDIR=/etc \

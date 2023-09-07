@@ -23,6 +23,7 @@ Welcome to the Warewulf User Guide!
    Warewulf Overlays <contents/overlays>
    Node Provisioning <contents/provisioning>
    IPMI <contents/ipmi>
+   Disk Management <contents/disks>
    Security <contents/security>
    Templating <contents/templating>
 
@@ -32,6 +33,7 @@ Welcome to the Warewulf User Guide!
 
    EL7 (CentOS and RHEL) <quickstart/el7>
    EL8 (Rocky Linux and RHEL) <quickstart/el8>
+   EL9 (Rocky Linux and RHEL) <quickstart/el9>
    openSUSE Leap and SLES 15 <quickstart/suse15>
 
 .. toctree::
@@ -41,6 +43,7 @@ Welcome to the Warewulf User Guide!
    Contributing <contributing/contributing>
    Debugging <contributing/debugging>
    Documentation <contributing/documentation>
+   Development Environment (Vagrant) <contributing/development-environment-vagrant>
    Development Environment (KVM) <contributing/development-environment-kvm>
    Development Environment (VirtualBox) <contributing/development-environment-vbox>
    Glossary <contents/glossary>

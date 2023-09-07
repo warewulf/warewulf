@@ -2,7 +2,6 @@ package imprt
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -13,7 +12,7 @@ import (
 )
 
 func Test_List(t *testing.T) {
-	tmpdir, err := ioutil.TempDir(os.TempDir(), "warewulf")
+	tmpdir, err := os.MkdirTemp(os.TempDir(), "warewulf")
 	if err != nil {
 		t.Errorf("Could not create temp folder: %v", err)
 		t.FailNow()
@@ -34,7 +33,7 @@ func Test_List(t *testing.T) {
 		t.FailNow()
 	}
 
-	file, err := ioutil.TempFile(tmpdir, "file")
+	file, err := os.CreateTemp(tmpdir, "file")
 	if err != nil {
 		t.Errorf("Could not create tempfile")
 		t.FailNow()
