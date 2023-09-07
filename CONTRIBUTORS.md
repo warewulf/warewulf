@@ -27,3 +27,4 @@
 * Jeffrey Frey @jtfrey 
 * Xu Yang(Jason Yang) <jasonyangshadow@gmail.com> @JasonYangShadow
 * Arnaud LECOMTE <contact@arnaud-lcm.com>
+* Matt Jolly <Matt.Jolly@footclan.ninja>
