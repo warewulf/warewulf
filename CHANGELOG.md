@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add EL9 Quickstart guide to index.rst
 - Container file gids are now updated properly during syncuser. #840
 - Fix build for API.
+- Add error handling to `wwctl`'s dynamic IP configuration attempt.
 
 ### Changed
 
