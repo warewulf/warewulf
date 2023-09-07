@@ -119,10 +119,7 @@ func (conf *RootConf) SetDynamicDefaults() (err error) {
 
 		if conf.Ipaddr == "" {
 			wwlog.Verbose("Configuration has no valid network, going to dynamic values")
-			conn, err := net.Dial("udp", "8.8.8.8:80")
-			if err != nil {
-				return errors.Wrap(err, "Couldn't establish a connection to remote")
-			}
+			conn, _ := net.Dial("udp", "8.8.8.8:80")
 			defer conn.Close()
 			ipaddr = conn.LocalAddr().(*net.UDPAddr).IP
 			mask = ipaddr.DefaultMask()
