@@ -26,4 +26,5 @@
 * Brian Phan <bphan@ciq.com>
 * Jeffrey Frey @jtfrey 
 * Xu Yang(Jason Yang) <jasonyangshadow@gmail.com> @JasonYangShadow
+* Matt Jolly <Kangie@footclan.ninja> @Kangie
 * Arnaud LECOMTE <contact@arnaud-lcm.com>

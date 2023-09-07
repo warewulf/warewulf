@@ -6,7 +6,6 @@
 // DHCP, TFTP and NFS services that Warewulf manages.
 package config
 
-
 import (
 	"fmt"
 	"net"
@@ -20,9 +19,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-
 var cachedConf RootConf
-
 
 // RootConf is the main Warewulf configuration structure. It stores
 // some information about the Warewulf server locally, and has
@@ -43,13 +40,12 @@ type RootConf struct {
 	MountsContainer []*MountEntry `yaml:"container mounts" default:"[{\"source\": \"/etc/resolv.conf\", \"dest\": \"/etc/resolv.conf\"}]"`
 	Paths           *BuildConfig  `yaml:"paths"`
 
-	fromFile        bool
+	fromFile bool
 }
-
 
 // New caches and returns a new [RootConf] initialized with empty
 // values, clearing replacing any previously cached value.
-func New() (*RootConf) {
+func New() *RootConf {
 	cachedConf = RootConf{}
 	cachedConf.fromFile = false
 	cachedConf.Warewulf = new(WarewulfConf)
@@ -63,10 +59,9 @@ func New() (*RootConf) {
 	return &cachedConf
 }
 
-
 // Get returns a previously cached [RootConf] if it exists, or returns
 // a new RootConf.
-func Get() (*RootConf) {
+func Get() *RootConf {
 	// NOTE: This function can be called before any log level is set
 	//       so using wwlog.Verbose or wwlog.Debug won't work
 	if reflect.ValueOf(cachedConf).IsZero() {
@@ -75,10 +70,9 @@ func Get() (*RootConf) {
 	return &cachedConf
 }
 
-
 // Read populates [RootConf] with the values from a configuration
 // file.
-func (conf *RootConf) Read(confFileName string) (error) {
+func (conf *RootConf) Read(confFileName string) error {
 	wwlog.Debug("Reading warewulf.conf from: %s", confFileName)
 	if data, err := os.ReadFile(confFileName); err != nil {
 		return err
@@ -90,9 +84,8 @@ func (conf *RootConf) Read(confFileName string) (error) {
 	}
 }
 
-
 // Parse populates [RootConf] with the values from a yaml document.
-func (conf *RootConf) Parse(data []byte) (error) {
+func (conf *RootConf) Parse(data []byte) error {
 	// ipxe binaries are merged not overwritten, store defaults separate
 	defIpxe := make(map[string]string)
 	for k, v := range conf.TFTP.IpxeBinaries {
@@ -108,7 +101,6 @@ func (conf *RootConf) Parse(data []byte) (error) {
 	return nil
 }
 
-
 // SetDynamicDefaults populates [RootConf] with plausible defaults for
 // the runtime environment.
 func (conf *RootConf) SetDynamicDefaults() (err error) {
@@ -119,12 +111,16 @@ func (conf *RootConf) SetDynamicDefaults() (err error) {
 
 		if conf.Ipaddr == "" {
 			wwlog.Verbose("Configuration has no valid network, going to dynamic values")
-			conn, _ := net.Dial("udp", "8.8.8.8:80")
-			defer conn.Close()
-			ipaddr = conn.LocalAddr().(*net.UDPAddr).IP
-			mask = ipaddr.DefaultMask()
-			sz, _ := mask.Size()
-			conf.Ipaddr = ipaddr.String() + fmt.Sprintf("/%d", sz)
+			conn, err := net.Dial("udp", "8.8.8.8:80")
+			if err == nil {
+				defer conn.Close()
+				ipaddr = conn.LocalAddr().(*net.UDPAddr).IP
+				mask = ipaddr.DefaultMask()
+				sz, _ := mask.Size()
+				conf.Ipaddr = ipaddr.String() + fmt.Sprintf("/%d", sz)
+			} else {
+				conf.Ipaddr = "192.168.1.1/24"
+			}
 		}
 		_, network, err = net.ParseCIDR(conf.Ipaddr)
 		if err == nil {
@@ -174,7 +170,6 @@ func (conf *RootConf) SetDynamicDefaults() (err error) {
 	}
 	return
 }
-
 
 // InitializedFromFile returns true if [RootConf] memory was read from
 // a file, or false otherwise.
