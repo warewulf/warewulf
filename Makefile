@@ -1,35 +1,14 @@
-include Variables.mk
-
 .PHONY: all
-all: config vendor wwctl wwclient man_pages wwapid wwapic wwapird etc/defaults.conf etc/bash_completion.d/wwctl
+all: build
+
+include Variables.mk
+include Tools.mk
 
 .PHONY: build
-build: lint test vet all
+build: wwctl wwclient wwapid wwapic wwapird etc/defaults.conf etc/bash_completion.d/wwctl
 
-.PHONY: setup_tools
-setup_tools: $(GO_TOOLS_BIN) $(GOLANGCI_LINT) $(PROTOC_GEN_GO) $(PROTOC_GEN_GO_GRPC)
-
-$(GO_TOOLS_BIN):	
-	GOBIN="$(PWD)/$(TOOLS_BIN)" go install -mod=vendor $(GO_TOOLS)
-
-$(GOLANGCI_LINT):
-	curl -qq -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(TOOLS_BIN) $(GOLANGCI_LINT_VERSION)
-
-$(PROTOC):
-	cd $(PWD)/$(TOOLS_DIR) && curl -LO $(PROTOC_URL) && unzip protoc-24.0-linux-$(ARCHITECTURE_CPU).zip
-
-$(PROTOC_GEN_GRPC_GATEWAY):
-	curl -L $(PROTOC_GEN_GRPC_GATEWAY_URL) -o $(PROTOC_GEN_GRPC_GATEWAY)
-	chmod +x $(PROTOC_GEN_GRPC_GATEWAY)
-
-$(PROTOC_GEN_GO):
-	GOBIN="$(PWD)/$(TOOLS_BIN)" go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
-
-$(PROTOC_GEN_GO_GRPC):
-	GOBIN="$(PWD)/$(TOOLS_BIN)" go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
-
-.PHONY: setup
-setup: vendor $(TOOLS_DIR) setup_tools
+.PHONY: docs
+docs: man_pages reference
 
 vendor:
 ifndef OFFLINE_BUILD
@@ -37,37 +16,65 @@ ifndef OFFLINE_BUILD
 	go mod vendor
 endif
 
-$(TOOLS_DIR):
-	mkdir -p $@
-
-.PHONY: config
-config: etc/wwapic.conf \
+config = etc/wwapic.conf \
 	etc/wwapid.conf \
 	etc/wwapird.conf \
 	include/systemd/warewulfd.service \
 	internal/pkg/config/buildconfig.go \
 	warewulf.spec
-
-etc/defaults.conf: wwctl
-	./wwctl --emptyconf genconfig defaults >etc/defaults.conf
+.PHONY: config
+config: $(config)
 
 %: %.in
 	sed -ne "$(foreach V,$(VARLIST),s,@$V@,$(strip $($V)),g;)p" $@.in >$@
 
+wwctl: $(config) vendor $(call godeps,cmd/wwctl/main.go)
+	GOOS=linux go build -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o wwctl cmd/wwctl/main.go
+
+wwclient: $(config) vendor $(call godeps,cmd/wwclient/main.go)
+	CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags "-extldflags -static" -o wwclient cmd/wwclient/main.go
+
+update_configuration: $(config) vendor $(call godeps,cmd/update_configuration/update_configuration.go)
+	go build -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'" \
+	    -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o update_configuration cmd/update_configuration/update_configuration.go
+
+wwapid: $(config) vendor $(call godeps,internal/app/api/wwapid/wwapid.go)
+	go build -o ./wwapid internal/app/api/wwapid/wwapid.go
+
+wwapic: $(config) vendor $(call godeps,internal/app/api/wwapic/wwapic.go)
+	go build -o ./wwapic  internal/app/api/wwapic/wwapic.go
+
+wwapird: $(config) vendor $(call godeps,internal/app/api/wwapird/wwapird.go)
+	go build -o ./wwapird internal/app/api/wwapird/wwapird.go
+
+.PHONY: man_pages
+man_pages: wwctl $(wildcard docs/man/man5/*.5)
+	mkdir -p docs/man/man1
+	./wwctl --emptyconf genconfig man docs/man/man1
+	gzip --force docs/man/man1/*.1
+	gzip --force --keep docs/man/man5/*.5
+
+etc/defaults.conf: wwctl
+	./wwctl --emptyconf genconfig defaults >etc/defaults.conf
+
+etc/bash_completion.d/wwctl: wwctl
+	mkdir -p etc/bash_completion.d/
+	./wwctl --emptyconf genconfig completions >etc/bash_completion.d/wwctl
+
 .PHONY: lint
-lint: setup_tools
+lint: $(config) $(GOLANGCI_LINT)
 	$(GOLANGCI_LINT) run --build-tags "$(WW_GO_BUILD_TAGS)" --skip-dirs internal/pkg/staticfiles ./...
 
 .PHONY: vet
-vet: config
+vet: $(config)
 	go vet ./...
 
 .PHONY: test
-test: config
+test: $(config)
 	go test ./...
 
 .PHONY: test-cover
-test-cover: config
+test-cover: $(config)
 	rm -rf coverage
 	mkdir coverage
 	go list -f '{{if gt (len .TestGoFiles) 0}}"go test -covermode count -coverprofile {{.Name}}.coverprofile -coverpkg ./... {{.ImportPath}}"{{end}}' ./... | xargs -I {} bash -c {}
@@ -77,7 +84,7 @@ test-cover: config
 	go tool cover -html=coverage/cover.out -o=coverage/cover.html
 
 .PHONY: install
-install: all
+install: build docs
 	install -d -m 0755 $(DESTDIR)$(BINDIR)
 	install -d -m 0755 $(DESTDIR)$(WWCHROOTDIR)
 	install -d -m 0755 $(DESTDIR)$(WWPROVISIONDIR)
@@ -123,44 +130,14 @@ install: all
 	install -m 0644 staticfiles/x86_64.efi $(DESTDIR)$(WWDATADIR)/ipxe
 	install -m 0644 staticfiles/x86_64.kpxe $(DESTDIR)$(WWDATADIR)/ipxe
 
-etc/bash_completion.d/wwctl: wwctl
-	mkdir -p etc/bash_completion.d/
-	./wwctl --emptyconf genconfig completions >etc/bash_completion.d/wwctl
-
 .PHONY: init
 init:
 	systemctl daemon-reload
 	cp -r tftpboot/* $(WWTFTPDIR)/ipxe/
 	restorecon -r $(WWTFTPDIR)
 
-wwctl: config vendor $(call godeps,cmd/wwctl/main.go)
-	GOOS=linux go build -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o wwctl cmd/wwctl/main.go
-
-wwclient: config vendor $(call godeps,cmd/wwclient/main.go)
-	CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags "-extldflags -static" -o wwclient cmd/wwclient/main.go
-
-.PHONY: man_pages
-man_pages: wwctl $(wildcard docs/man/man5/*.5)
-	mkdir -p docs/man/man1
-	./wwctl --emptyconf genconfig man docs/man/man1
-	gzip --force docs/man/man1/*.1
-	gzip --force --keep docs/man/man5/*.5
-
-update_configuration: vendor $(call godeps,cmd/update_configuration/update_configuration.go)
-	go build -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'" \
-	    -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o update_configuration cmd/update_configuration/update_configuration.go
-
-wwapid: $(call godeps,internal/app/api/wwapid/wwapid.go)
-	go build -o ./wwapid internal/app/api/wwapid/wwapid.go
-
-wwapic: $(call godeps,internal/app/api/wwapic/wwapic.go)
-	go build -o ./wwapic  internal/app/api/wwapic/wwapic.go
-
-wwapird: $(call godeps,internal/app/api/wwapird/wwapird.go)
-	go build -o ./wwapird internal/app/api/wwapird/wwapird.go
-
 .PHONY: dist
-dist: vendor config
+dist: vendor
 	rm -rf .dist/ $(WAREWULF)-$(VERSION).tar.gz
 	mkdir -p .dist/$(WAREWULF)-$(VERSION)
 	rsync -a --exclude=".*" --exclude "*~" * .dist/$(WAREWULF)-$(VERSION)/
@@ -175,34 +152,64 @@ reference: wwctl
 latexpdf: reference
 	make -C userdocs latexpdf
 
+proto = internal/pkg/api/routes/wwapiv1/routes.pb.go \
+	internal/pkg/api/routes/wwapiv1/routes.pb.gw.go \
+	internal/pkg/api/routes/wwapiv1/routes_grpc.pb.go
 .PHONY: proto
-proto: $(PROTOC) $(PROTOC_GEN_GRPC_GATEWAY) $(PROTOC_GEN_GO) $(PROTOC_GEN_GO_GRPC)
-	PATH=$(TOOLS_BIN):$(PATH) $(PROTOC) -I /usr/include -I internal/pkg/api/routes/v1 -I=. \
-		--grpc-gateway_out=. \
+proto: $(proto)
+
+routes_proto = internal/pkg/api/routes/v1/routes.proto
+internal/pkg/api/routes/wwapiv1/%.go: $(PROTOC) $(PROTOC_GEN_GRPC_GATEWAY) $(PROTOC_GEN_GO) $(PROTOC_GEN_GO_GRPC) $(routes_proto)
+	PATH=$(TOOLS_BIN):$(PATH) $(PROTOC) \
+		-I /usr/include -I $(shell dirname $(routes_proto)) -I=. \
 		--grpc-gateway_opt logtostderr=true \
 		--go_out=. \
 		--go-grpc_out=. \
+		--grpc-gateway_out=. \
 		routes.proto
 
-.PHONY: contclean
-contclean:
-	rm -f Defaults.mk
-	rm -f $(WAREWULF)-$(VERSION).tar.gz
-	rm -f wwapi{c,d,rd} etc/wwapi{c,d,rd}.conf
-	rm -f include/systemd/warewulfd.service
-	rm -f internal/pkg/config/buildconfig.go
-	rm -f update_configuration
-	rm -f warewulf.spec
-	rm -f wwclient
-	rm -f wwctl
-	rm -rf $(TOOLS_DIR)
-	rm -rf .dist/
+.PHONY: cleanproto
+cleanproto:
+	rm -f $(proto)
+
+.PHONY: cleanconfig
+cleanconfig:
+	rm -f $(config)
 	rm -rf etc/bash_completion.d/
-	rm -rf userdocs/_*
-	rm -rf userdocs/reference/*
 	rm -rf etc/defaults.conf
+
+.PHONY: cleantest
+cleantest:
 	rm -rf *.coverprofile
 
-.PHONY: clean
-clean: contclean
+.PHONY: cleandist
+cleandist:
+	rm -f $(WAREWULF)-$(VERSION).tar.gz
+	rm -rf .dist/
+
+.PHONY: cleanmake
+cleanmake:
+	rm -f Defaults.mk
+
+.PHONY: cleanbin
+cleanbin:
+	rm -f wwapi{c,d,rd}
+	rm -f wwclient
+	rm -f wwctl
+	rm -f update_configuration
+
+.PHONY: cleandocs
+cleandocs:
+	rm -rf userdocs/_*
+	rm -rf userdocs/reference/*
+	rm -rf docs/man/man1
+	rm -rf docs/man/man5/*.gz
+
+.PHONY: cleanvendor
+cleanvendor:
+ifndef OFFLINE_BUILD
 	rm -rf vendor
+endif
+
+.PHONY: clean
+clean: cleanconfig cleantest cleandist cleantools cleanmake cleanbin cleandocs cleanvendor

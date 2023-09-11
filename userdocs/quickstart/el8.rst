@@ -14,7 +14,7 @@ Install Warewulf and dependencies
 
    git clone https://github.com/hpcng/warewulf.git
    cd warewulf
-   make clean Defaults.mk \
+   make clean defaults \
     PREFIX=/usr \
     BINDIR=/usr/bin \
     SYSCONFDIR=/etc \

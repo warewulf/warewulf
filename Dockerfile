@@ -7,9 +7,11 @@ RUN zypper  -n install --no-recommends git go1.18 libgpgme-devel &&\
 COPY . /warewulf-src
 
 RUN cd /warewulf-src &&\
-  make contclean Defaults.mk \
+  make clean \
+    OFFLINE_BUILD=1 &&\
+  make defaults \
     PREFIX=/usr \
-    BINDIRa=/usr/bin \
+    BINDIR=/usr/bin \
     SYSCONFDIR=/etc \
     DATADIR=/usr/share \
     LOCALSTATEDIR=/var/lib \
