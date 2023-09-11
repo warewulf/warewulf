@@ -47,13 +47,13 @@ func BuildAllOverlays(nodes []node.NodeInfo) error {
 
 		sysOverlays := n.SystemOverlay.GetSlice()
 		wwlog.Info("Building system overlays for %s: [%s]", n.Id.Get(), strings.Join(sysOverlays, ", "))
-		err := BuildOverlay(n, sysOverlays, "system")
+		err := BuildOverlay(n, "system", sysOverlays)
 		if err != nil {
 			return errors.Wrapf(err, "could not build system overlays %v for node %s", sysOverlays, n.Id.Get())
 		}
 		runOverlays := n.RuntimeOverlay.GetSlice()
 		wwlog.Info("Building runtime overlays for %s: [%s]", n.Id.Get(), strings.Join(runOverlays, ", "))
-		err = BuildOverlay(n, runOverlays, "runtime")
+		err = BuildOverlay(n, "runtime", runOverlays)
 		if err != nil {
 			return errors.Wrapf(err, "could not build runtime overlays %v for node %s", runOverlays, n.Id.Get())
 		}
@@ -67,11 +67,11 @@ func BuildAllOverlays(nodes []node.NodeInfo) error {
 func BuildSpecificOverlays(nodes []node.NodeInfo, overlayNames []string) error {
 	for _, n := range nodes {
 		wwlog.Info("Building overlay for %s: %v", n.Id.Get(), overlayNames)
-                for _, overlayName := range overlayNames {
-                        err := BuildOverlay(n, []string{overlayName})
-		        if err != nil {
-			      return errors.Wrapf(err, "could not build overlay %s for node %s", overlayName, n.Id.Get())
-                        }
+		for _, overlayName := range overlayNames {
+			err := BuildOverlay(n, "", []string{overlayName})
+			if err != nil {
+				return errors.Wrapf(err, "could not build overlay %s for node %s", overlayName, n.Id.Get())
+			}
 		}
 
 	}
@@ -140,18 +140,10 @@ func OverlayInit(overlayName string) error {
 /*
 Build the given overlays for a node and create a Image for them
 */
-func BuildOverlay(nodeInfo node.NodeInfo, overlayNames []string, img_context ...string) error {
-	var context string
-	/* Check optional context argument. If missing, default to legacy. */
-	if len(img_context) == 0 {
-		context = "legacy"
-	} else {
-		context = img_context[0]
-	}
-
+func BuildOverlay(nodeInfo node.NodeInfo, context string, overlayNames []string) error {
 	// create the dir where the overlay images will reside
 	name := fmt.Sprintf("overlay %s/%v", nodeInfo.Id.Get(), overlayNames)
-	overlayImage := OverlayImage(nodeInfo.Id.Get(), overlayNames, context)
+	overlayImage := OverlayImage(nodeInfo.Id.Get(), context, overlayNames)
 	overlayImageDir := path.Dir(overlayImage)
 
 	err := os.MkdirAll(overlayImageDir, 0755)
