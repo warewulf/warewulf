@@ -87,7 +87,7 @@ func parseReq(req *http.Request) (parserInfo, error) {
 	}
 	if ret.hwaddr == "" {
 		ret.hwaddr = ArpFind(ret.ipaddr)
-		wwlog.Verbose("node mac encoded, arp cache got %s for %s", ret.hwaddr, ret.ipaddr)
+		wwlog.Verbose("node mac not encoded, arp cache got %s for %s", ret.hwaddr, ret.ipaddr)
 		if ret.hwaddr == "" {
 			return ret, errors.New("no hwaddr encoded in GET")
 		}

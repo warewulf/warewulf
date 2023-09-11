@@ -30,8 +30,8 @@ func grubNames() []string {
 find a grub.efi in the used container
 */
 func GrubFind(container string) string {
-	wwlog.Debug("Finding grub")
 	container_path := RootFsDir(container)
+	wwlog.Debug("Finding grub under paths: %s", container_path)
 	if container_path == "" {
 		return ""
 	}

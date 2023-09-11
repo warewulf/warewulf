@@ -73,12 +73,21 @@ func getOverlayFile(
 	return
 }
 
+var arpFile string
+
+func init() {
+	arpFile = "/proc/net/arp"
+}
+
+func SetArpFile(newName string) {
+	arpFile = newName
+}
+
 /*
 returns the mac address if it has an entry in the arp cache
 */
-
 func ArpFind(ip string) (mac string) {
-	arpCache, err := os.Open("/proc/net/arp")
+	arpCache, err := os.Open(arpFile)
 	if err != nil {
 		return
 	}
