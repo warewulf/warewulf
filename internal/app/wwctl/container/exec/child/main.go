@@ -38,41 +38,30 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	mountPts = append(container.InitMountPnts(binds), mountPts...)
 	// check for valid mount points
 	lowerObjects := checkMountPoints(containerName, mountPts)
-	if len(lowerObjects) != 0 {
-		if tempDir == "" {
-			tempDir, err = os.MkdirTemp(os.TempDir(), "overlay")
-			if err != nil {
-				wwlog.Warn("couldn't create temp dir for overlay", err)
-				lowerObjects = []string{}
-				tempDir = ""
-			}
+	overlayDir := conf.Paths.WWChrootdir + "/overlays"
+	// need to create a overlay, where the lower layer contains
+	// the missing mount points
+	wwlog.Verbose("for ephermal mount use tempdir %s", overlayDir)
+	// ignore errors as we are doomed if a tmp dir couldn't be written
+	_ = os.MkdirAll(path.Join(overlayDir, "work"), os.ModePerm)
+	_ = os.MkdirAll(path.Join(overlayDir, "lower"), os.ModePerm)
+	_ = os.MkdirAll(path.Join(overlayDir, "nodeoverlay"), os.ModePerm)
+	for _, obj := range lowerObjects {
+		newFile := ""
+		if !strings.HasSuffix(obj, "/") {
+			newFile = filepath.Base(obj)
+			obj = filepath.Dir(obj)
 		}
-		// need to create a overlay, where the lower layer contains
-		// the missing mount points
-		if tempDir != "" {
-			wwlog.Verbose("for ephermal mount use tempdir %s", tempDir)
-			// ignore errors as we are doomed if a tmp dir couldn't be written
-			_ = os.Mkdir(path.Join(tempDir, "work"), os.ModePerm)
-			_ = os.Mkdir(path.Join(tempDir, "lower"), os.ModePerm)
-			_ = os.Mkdir(path.Join(tempDir, "nodeoverlay"), os.ModePerm)
-			for _, obj := range lowerObjects {
-				newFile := ""
-				if !strings.HasSuffix(obj, "/") {
-					newFile = filepath.Base(obj)
-					obj = filepath.Dir(obj)
-				}
-				err = os.MkdirAll(filepath.Join(tempDir, "lower", obj), os.ModePerm)
-				if err != nil {
-					wwlog.Warn("couldn't create directory for mounts: %s", err)
-				}
-				if newFile != "" {
-					desc, err := os.Create(filepath.Join(tempDir, "lower", obj, newFile))
-					if err != nil {
-						wwlog.Warn("couldn't create directory for mounts: %s", err)
-					}
-					defer desc.Close()
-				}
+		err = os.MkdirAll(filepath.Join(overlayDir, "lower", obj), os.ModePerm)
+		if err != nil {
+			wwlog.Warn("couldn't create directory for mounts: %s", err)
+		}
+		if newFile != "" {
+			desc, err := os.Create(filepath.Join(overlayDir, "lower", obj, newFile))
+			if err != nil {
+				wwlog.Warn("couldn't create directory for mounts: %s", err)
 			}
+			defer desc.Close()
 		}
 	}
 	containerPath := container.RootFsDir(containerName)
@@ -83,7 +72,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	ps1Str := fmt.Sprintf("[%s] Warewulf> ", containerName)
 	if len(lowerObjects) != 0 && nodename == "" {
 		options := fmt.Sprintf("lowerdir=%s,upperdir=%s,workdir=%s",
-			path.Join(tempDir, "lower"), containerPath, path.Join(tempDir, "work"))
+			path.Join(overlayDir, "lower"), containerPath, path.Join(overlayDir, "work"))
 		wwlog.Debug("overlay options: %s", options)
 		err = syscall.Mount("overlay", containerPath, "overlay", 0, options)
 		if err != nil {
@@ -108,13 +97,13 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		}
 		overlays := nodes[0].SystemOverlay.GetSlice()
 		overlays = append(overlays, nodes[0].RuntimeOverlay.GetSlice()...)
-		err = overlay.BuildOverlayIndir(nodes[0], overlays, path.Join(tempDir, "nodeoverlay"))
+		err = overlay.BuildOverlayIndir(nodes[0], overlays, path.Join(overlayDir, "nodeoverlay"))
 		if err != nil {
 			wwlog.Error("Could not build overlay: %s", err)
 			os.Exit(1)
 		}
 		options := fmt.Sprintf("lowerdir=%s:%s:%s",
-			path.Join(tempDir, "lower"), containerPath, path.Join(tempDir, "nodeoverlay"))
+			path.Join(overlayDir, "lower"), containerPath, path.Join(overlayDir, "nodeoverlay"))
 		wwlog.Debug("overlay options: %s", options)
 		err = syscall.Mount("overlay", containerPath, "overlay", 0, options)
 		if err != nil {
