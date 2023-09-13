@@ -46,3 +46,12 @@ func (config *NodeYaml) FindByIpaddr(ipaddr string) (NodeInfo, error) {
 
 	return ret, errors.New("No nodes found with IP Addr: " + ipaddr)
 }
+
+// Return just the node list as string slice
+func (config *NodeYaml) NodeList() []string {
+	ret := make([]string, len(config.Nodes))
+	for key := range config.Nodes {
+		ret = append(ret, key)
+	}
+	return ret
+}
