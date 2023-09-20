@@ -1,7 +1,6 @@
 package warewulfd
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 
@@ -44,16 +43,15 @@ func sendFile(
 }
 
 func getOverlayFile(
-	nodeId string,
+	n node.NodeInfo,
 	context string,
 	stage_overlays []string,
 	autobuild bool) (stage_file string, err error) {
 
-	stage_file = overlay.OverlayImage(nodeId, context, stage_overlays)
+	stage_file = overlay.OverlayImage(n.Id.Get(), context, stage_overlays)
 	err = nil
-
 	build := !util.IsFile(stage_file)
-
+	wwlog.Verbose("stage file: %s", stage_file)
 	if !build && autobuild {
 		build = util.PathIsNewer(stage_file, nodepkg.ConfigFile)
 
@@ -63,22 +61,10 @@ func getOverlayFile(
 	}
 
 	if build {
-		nodeDB, errNested := node.New()
-		if err != nil {
-			return stage_file, errNested
-		}
-		myNode, errNested := nodeDB.FindAllNodes()
-		if err != nil {
-			return stage_file, errNested
-		}
-		myNode = node.FilterByName(myNode, []string{nodeId})
-		if len(myNode) != 1 {
-			return stage_file, fmt.Errorf("couldn't find node %s", nodeId)
-		}
-		err = overlay.BuildOverlay(myNode[0], context, stage_overlays)
+		err = overlay.BuildOverlay(n, context, stage_overlays)
 		if err != nil {
 			wwlog.Error("Failed to build overlay: %s, %s, %s\n%s",
-				nodeId, stage_overlays, stage_file, err)
+				n.Id.Get(), stage_overlays, stage_file, err)
 		}
 	}
 

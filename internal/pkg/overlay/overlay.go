@@ -19,6 +19,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+var (
+	ErrDoesNotExist = errors.New("overlay does not exist")
+)
+
 /*
 Build all overlays (runtime and generic) for a node
 */
@@ -187,11 +191,7 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 		wwlog.Debug("Starting to build overlay %s\nChanging directory to OverlayDir: %s", overlayName, overlaySourceDir)
 		err := os.Chdir(overlaySourceDir)
 		if err != nil {
-			return errors.Wrap(err, "could not change directory to overlay dir")
-		}
-		wwlog.Debug("Checking to see if overlay directory exists: %s", overlaySourceDir)
-		if !util.IsDir(overlaySourceDir) {
-			return errors.New("overlay does not exist: " + overlayName)
+			return errors.Wrapf(ErrDoesNotExist, " name: %s", overlayName)
 		}
 
 		wwlog.Verbose("Walking the overlay structure: %s", overlaySourceDir)
