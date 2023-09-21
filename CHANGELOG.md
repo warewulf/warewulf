@@ -94,6 +94,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `wwctl overlay edit` uses a temporary file and checks mtime.
 - Changed the bash completions for the `wwctl overlay` commands so that the files of the
   overlays are expanded
+- Node overlays are now named based on their overlay "context" (i.e., "system"
+  or "runtime") rather than a concatenated list of individual overlays. This
+  removes a limit on the number of overlays that could be included in a node or
+  profile. #852, #876, #883, #896, #903
 
 ## [4.4.0] 2023-01-18
 
