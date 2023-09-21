@@ -20,19 +20,20 @@ var buildOverlayTests = []struct {
 	overlays    []string
 	image       string
 	contents    []string
+	hasFiles    bool
 }{
-	{"empty", "", "", nil, "", nil},
-	{"empty node", "node1", "", nil, "", nil},
-	{"empty context", "", "system", nil, "", nil},
-	{"empty overlay", "", "", []string{"o1"}, "o1.img", []string{"o1.txt"}},
-	{"single overlay", "node1", "", []string{"o1"}, "node1/o1.img", []string{"o1.txt"}},
-	{"multiple overlays", "node1", "", []string{"o1", "o2"}, "node1/o1-o2.img", []string{"o1.txt", "o2.txt"}},
-	{"empty system overlay", "node1", "system", nil, "", nil},
-	{"empty runtime overlay", "node1", "runtime", nil, "", nil},
-	{"single system overlay", "node1", "system", []string{"o1"}, "node1/__SYSTEM__.img", []string{"o1.txt"}},
-	{"single runtime overlay", "node1", "runtime", []string{"o1"}, "node1/__RUNTIME__.img", []string{"o1.txt"}},
-	{"two system overlays", "node1", "system", []string{"o1", "o2"}, "node1/__SYSTEM__.img", []string{"o1.txt", "o2.txt"}},
-	{"two runtime overlays", "node1", "runtime", []string{"o1", "o2"}, "node1/__RUNTIME__.img", []string{"o1.txt", "o2.txt"}},
+	{"empty", "", "", nil, "", nil, false},
+	{"empty node", "node1", "", nil, "", nil, false},
+	{"empty context", "", "system", nil, "", nil, false},
+	{"empty overlay", "", "", []string{"o1"}, "o1.img", []string{"o1.txt"}, true},
+	{"single overlay", "node1", "", []string{"o1"}, "node1/o1.img", []string{"o1.txt"}, true},
+	{"multiple overlays", "node1", "", []string{"o1", "o2"}, "node1/o1-o2.img", []string{"o1.txt", "o2.txt"}, true},
+	{"empty system overlay", "node1", "system", nil, "", nil, false},
+	{"empty runtime overlay", "node1", "runtime", nil, "", nil, false},
+	{"single system overlay", "node1", "system", []string{"o1"}, "node1/__SYSTEM__.img", []string{"o1.txt"}, true},
+	{"single runtime overlay", "node1", "runtime", []string{"o1"}, "node1/__RUNTIME__.img", []string{"o1.txt"}, true},
+	{"two system overlays", "node1", "system", []string{"o1", "o2"}, "node1/__SYSTEM__.img", []string{"o1.txt", "o2.txt"}, true},
+	{"two runtime overlays", "node1", "runtime", []string{"o1", "o2"}, "node1/__RUNTIME__.img", []string{"o1.txt", "o2.txt"}, true},
 }
 
 func Test_BuildOverlay(t *testing.T) {
@@ -65,7 +66,7 @@ func Test_BuildOverlay(t *testing.T) {
 			conf.Paths.WWProvisiondir = provisionDir
 
 			err := BuildOverlay(nodeInfo, tt.context, tt.overlays)
-			if len(tt.image) > 0 {
+			if tt.hasFiles {
 				image := path.Join(provisionDir, "overlays", tt.image)
 				assert.FileExists(t, image)
 				assert.NoError(t, err)
@@ -75,7 +76,6 @@ func Test_BuildOverlay(t *testing.T) {
 				sort.Strings(files)
 				assert.Equal(t, tt.contents, files)
 			} else {
-				assert.Error(t, err)
 				dirName := path.Join(provisionDir, "overlays", tt.nodeName)
 				isEmpty := dirIsEmpty(t, dirName)
 				assert.True(t, isEmpty, "%v should be empty, but isn't", dirName)
@@ -90,22 +90,23 @@ var buildAllOverlaysTests = []struct {
 	systemOverlays  []string
 	runtimeOverlays []string
 	succeed         bool
+	createdOverlays []string
 }{
-	{"no nodes", nil, nil, nil, true},
-	{"single empty node", []string{"node1"}, nil, nil, false},
-	{"two empty node", []string{"node1", "node2"}, nil, nil, false},
+	{"no nodes", nil, nil, nil, true, nil},
+	{"single empty node", []string{"node1"}, nil, nil, true, nil},
+	{"two empty node", []string{"node1", "node2"}, nil, nil, true, nil},
 	{"single node with system overlay", []string{"node1"},
-		[]string{"o1"}, nil, false},
+		[]string{"o1"}, nil, true, []string{"__SYSTEM__.img.gz"}},
 	{"two nodes with system overlays", []string{"node1", "node2"},
-		[]string{"o1", "o1,o2"}, nil, false},
+		[]string{"o1", "o1,o2"}, nil, true, []string{"__SYSTEM__.img.gz"}},
 	{"single node with runtime overlay", []string{"node1"},
-		nil, []string{"o1"}, false},
+		nil, []string{"o1"}, true, []string{"__RUNTIME__.img.gz"}},
 	{"two nodes with runtime overlays", []string{"node1", "node2"},
-		nil, []string{"o1", "o1,o2"}, false},
-	{"stingle node with full overlays", []string{"node1"},
-		[]string{"o1"}, []string{"o2"}, true},
+		nil, []string{"o1", "o1,o2"}, true, []string{"__RUNTIME__.img.gz"}},
+	{"single node with full overlays", []string{"node1"},
+		[]string{"o1"}, []string{"o2"}, true, []string{"__RUNTIME__.img.gz", "__SYSTEM__.img.gz"}},
 	{"two nodes with full overlays", []string{"node1", "node2"},
-		[]string{"o1", "o1,o2"}, []string{"o2", "o2"}, true},
+		[]string{"o1", "o1,o2"}, []string{"o2", "o2"}, true, []string{"__RUNTIME__.img.gz", "__SYSTEM__.img.gz"}},
 }
 
 func Test_BuildAllOverlays(t *testing.T) {
@@ -142,8 +143,9 @@ func Test_BuildAllOverlays(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				for _, nodeName := range tt.nodes {
-					assert.FileExists(t, path.Join(provisionDir, "overlays", nodeName, "__SYSTEM__.img"))
-					assert.FileExists(t, path.Join(provisionDir, "overlays", nodeName, "__RUNTIME__.img"))
+					for _, file := range tt.createdOverlays {
+						assert.FileExists(t, path.Join(provisionDir, "overlays", nodeName, file))
+					}
 				}
 			}
 		})

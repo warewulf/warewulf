@@ -125,6 +125,9 @@ func OverlayInit(overlayName string) error {
 Build the given overlays for a node and create a Image for them
 */
 func BuildOverlay(nodeInfo node.NodeInfo, context string, overlayNames []string) error {
+	if len(overlayNames) == 0 {
+		return nil
+	}
 	// create the dir where the overlay images will reside
 	name := fmt.Sprintf("overlay %s/%v", nodeInfo.Id.Get(), overlayNames)
 	overlayImage := OverlayImage(nodeInfo.Id.Get(), context, overlayNames)
@@ -171,7 +174,7 @@ exists it will be created.
 */
 func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir string) error {
 	if len(overlayNames) == 0 {
-		return errors.New("At least one valid overlay is needed to build for a node")
+		return nil
 	}
 	if !util.IsDir(outputDir) {
 		return errors.Errorf("output must a be a directory: %s", outputDir)
@@ -188,10 +191,10 @@ func BuildOverlayIndir(nodeInfo node.NodeInfo, overlayNames []string, outputDir 
 	for _, overlayName := range overlayNames {
 		wwlog.Verbose("Building overlay %s for node %s in %s", overlayName, nodeInfo.Id.Get(), outputDir)
 		overlaySourceDir := OverlaySourceDir(overlayName)
-		wwlog.Debug("Starting to build overlay %s\nChanging directory to OverlayDir: %s", overlayName, overlaySourceDir)
+		wwlog.Debug("Changing directory to OverlayDir: %s", overlaySourceDir)
 		err := os.Chdir(overlaySourceDir)
 		if err != nil {
-			return errors.Wrapf(ErrDoesNotExist, " name: %s", overlayName)
+			return errors.Wrapf(ErrDoesNotExist, "directory: %s name: %s", overlaySourceDir, overlayName)
 		}
 
 		wwlog.Verbose("Walking the overlay structure: %s", overlaySourceDir)
