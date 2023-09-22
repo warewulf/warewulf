@@ -1,6 +1,7 @@
 package mkdir
 
 import (
+	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/spf13/cobra"
 )
 
@@ -12,6 +13,18 @@ var (
 		Long:                  "This command creates a new directory within the Warewulf OVERLAY_NAME.",
 		RunE:                  CobraRunE,
 		Args:                  cobra.MinimumNArgs(2),
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) == 0 {
+				list, _ := overlay.FindOverlays()
+				return list, cobra.ShellCompDirectiveNoFileComp
+			} else if len(args) == 1 {
+				ret, err := overlay.OverlayGetFiles(args[0])
+				if err == nil {
+					return ret, cobra.ShellCompDirectiveNoFileComp
+				}
+			}
+			return []string{""}, cobra.ShellCompDirectiveNoFileComp
+		},
 	}
 	PermMode int32
 )

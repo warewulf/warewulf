@@ -1,6 +1,7 @@
 package show
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -25,6 +26,8 @@ var (
 				ret, err := overlay.OverlayGetFiles(args[0])
 				if err == nil {
 					return ret, cobra.ShellCompDirectiveNoFileComp
+				} else {
+					return []string{fmt.Sprint(err)}, cobra.ShellCompDirectiveFilterDirs
 				}
 			}
 			return []string{""}, cobra.ShellCompDirectiveNoFileComp

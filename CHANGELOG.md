@@ -92,7 +92,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Entries in `/etc/fstab` for every file system are created with the `noauto` option.
 - wwclient has now a commandline switch for the location of warewulf.conf
 - `wwctl overlay edit` uses a temporary file and checks mtime.
-- Changed the bash completions for the `wwctl overlay` commands so that the files of the
+- Changed the bash completions all the `wwctl overlay` commands so that the files of the
   overlays are expanded
 
 ## [4.4.0] 2023-01-18
