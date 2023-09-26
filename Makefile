@@ -102,7 +102,8 @@ install: build docs
 	install -d -m 0755 $(DESTDIR)$(WWDOCDIR)
 	install -d -m 0755 $(DESTDIR)$(FIREWALLDDIR)
 	install -d -m 0755 $(DESTDIR)$(SYSTEMDDIR)
-	install -d -m 0755 $(DESTDIR)$(WWDATADIR)/ipxe
+	install -d -m 0755 $(DESTDIR)$(IPXESOURCE)
+	install -d -m 0755 $(DESTDIR)$(DATADIR)/warewulf
 	test -f $(DESTDIR)$(WWCONFIGDIR)/warewulf.conf || install -m 0644 etc/warewulf.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(WWCONFIGDIR)/nodes.conf || install -m 0644 etc/nodes.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapic.conf || install -m 0644 etc/wwapic.conf $(DESTDIR)$(WWCONFIGDIR)
