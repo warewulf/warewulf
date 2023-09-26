@@ -27,7 +27,7 @@ func TFTP() error {
 			continue
 		}
 		copyCheck[f] = true
-		err = util.SafeCopyFile(path.Join(controller.Paths.Datadir, f), path.Join(tftpdir, path.Base(f)))
+		err = util.SafeCopyFile(path.Join(controller.Paths.Ipxesource, f), path.Join(tftpdir, path.Base(f)))
 		if err != nil {
 			wwlog.Warn("ipxe binary could not be copied, booting may not work: %s", err)
 		}
