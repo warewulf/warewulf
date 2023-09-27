@@ -113,8 +113,8 @@ func (db syncDB) checkConflicts() error {
 		for nameInHost, hostIds := range db {
 			if hostIds.HostID == containerIds.ContainerID {
 				errorMsg := fmt.Sprintf("id(%v) collision: host(%s) container(%s)", containerIds.ContainerID, nameInHost, nameInContainer)
-				wwlog.Error(errorMsg)
-				wwlog.Error("add %s to host to resolve conflict", nameInContainer)
+				wwlog.Warn(errorMsg)
+				wwlog.Warn("add %s to host to resolve conflict", nameInContainer)
 				return errors.New(errorMsg)
 			}
 		}
