@@ -421,7 +421,7 @@ func SliceAddUniqueElement(array []string, add string) []string {
 }
 
 /*
-Appends a string slice to another slice. Guarantess that the elements are uniq.
+Appends a string slice to another slice. Guarantees that the elements are uniq.
 */
 func SliceAppendUniq(array []string, add []string) []string {
 	ret := array
