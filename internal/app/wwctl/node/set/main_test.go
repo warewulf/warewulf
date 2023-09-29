@@ -2,9 +2,12 @@ package set
 
 import (
 	"bytes"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
@@ -409,7 +412,39 @@ nodes:
     tags:
       nodetag1: nodevalue1
 `},
+		{name: "single node set comma in comment",
+			args:    []string{"n01", "--comment", "This is a , comment"},
+			wantErr: false,
+			stdout:  "",
+			inDB: `WW_INTERNAL: 43
+nodes:
+  n01:
+    comment: old comment
+`,
+			outDb: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes:
+  n01:
+    comment: This is a , comment
+    profiles:
+    - default
+`},
 	}
+
+	conf_yml := `WW_INTERNAL: 0`
+	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
+	assert.NoError(t, warewulfConfErr)
+	defer os.Remove(tempWarewulfConf.Name())
+	_, warewulfConfErr = tempWarewulfConf.Write([]byte(conf_yml))
+	assert.NoError(t, warewulfConfErr)
+	assert.NoError(t, tempWarewulfConf.Sync())
+	assert.NoError(t, warewulfconf.New().Read(tempWarewulfConf.Name()))
+
+	tempNodeConf, nodesConfErr := os.CreateTemp("", "nodes.conf-")
+	assert.NoError(t, nodesConfErr)
+	defer os.Remove(tempNodeConf.Name())
+	node.ConfigFile = tempNodeConf.Name()
+	warewulfd.SetNoDaemon()
 	for _, tt := range tests {
 		run_test(t, tt)
 	}

@@ -17,10 +17,6 @@ must be called, as the commandline parser returns e.g. netip.IP objects which mu
 back to strings.
 */
 func (nodeConf *NodeConf) CreateFlags(baseCmd *cobra.Command, excludeList []string) (converters []func() error) {
-	/*
-		nodeInfoType := reflect.TypeOf(nodeConf)
-		nodeInfoVal := reflect.ValueOf(nodeConf)
-	*/
 	return RecursiveCreateFlags(nodeConf, baseCmd, excludeList)
 }
 
