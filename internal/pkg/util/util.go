@@ -289,6 +289,7 @@ func FindFilterFiles(
 	includeDirs := []string{}
 	ignoreDirs := []string{}
 	err = filepath.Walk(".", func(location string, info os.FileInfo, err error) error {
+		wwlog.Debug(location)
 		if err != nil {
 			return err
 		}
@@ -344,6 +345,8 @@ func FindFilterFiles(
 				ofiles = append(ofiles, location)
 				if info.IsDir() {
 					includeDirs = append(includeDirs, file)
+				} else {
+					wwlog.Debug("No matched (%d): %s", i, file)
 				}
 				return nil
 			}
@@ -690,17 +693,7 @@ func BuildFsImage(
 	if err != nil {
 		return errors.Wrapf(err, "Failed to create image directory for %s: %s", name, imagePath)
 	}
-
 	wwlog.Debug("Created image directory for %s: %s", name, imagePath)
-
-	// TODO: why is this done if the container must already exist?
-	err = os.MkdirAll(path.Dir(rootfsPath), 0755)
-	if err != nil {
-		return errors.Wrapf(err, "Failed to create fs directory for %s: %s", name, rootfsPath)
-	}
-
-	wwlog.Debug("Created fs directory for %s: %s", name, rootfsPath)
-
 	cwd, err := os.Getwd()
 	if err != nil {
 		return err
@@ -713,7 +706,7 @@ func BuildFsImage(
 	if err != nil {
 		return errors.Wrapf(err, "Failed chdir to fs directory for %s: %s", name, rootfsPath)
 	}
-
+	wwlog.Verbose("changed to: %s", rootfsPath)
 	files, err := FindFilterFiles(
 		".",
 		include,

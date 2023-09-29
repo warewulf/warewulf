@@ -117,7 +117,7 @@ kernel version. A name for this kernel and were to find has also to be
 supplied
 */
 func Build(kernelVersion, kernelName, root string) error {
-	kernelDrivers := path.Join(root, "/lib/modules/", kernelVersion)
+	kernelDrivers := []string{path.Join("lib/modules/", kernelVersion, "*"), "lib/firmware/*"}
 	kernelDestination := KernelImage(kernelName)
 	driversDestination := KmodsImage(kernelName)
 	versionDestination := KernelVersionFile(kernelName)
@@ -155,10 +155,6 @@ func Build(kernelVersion, kernelName, root string) error {
 		wwlog.Info("Found kernel at: %s", kernelSource)
 	}
 
-	if !util.IsDir(kernelDrivers) {
-		return errors.New("Could not locate kernel drivers")
-	}
-
 	wwlog.Verbose("Setting up Kernel")
 	if _, err := os.Stat(kernelSource); err == nil {
 		kernel, err := os.Open(kernelSource)
@@ -192,27 +188,23 @@ func Build(kernelVersion, kernelName, root string) error {
 
 	}
 
-	if _, err := os.Stat(kernelDrivers); err == nil {
-		name := kernelName + " drivers"
-		wwlog.Verbose("Creating image for %s: %s", name, root)
+	name := kernelName + " drivers"
+	wwlog.Verbose("Creating image for %s: %s", name, root)
 
-		err = util.BuildFsImage(
-			name,
-			root,
-			driversDestination,
-			[]string{
-				"." + kernelDrivers,
-				"./lib/firmware"},
-			[]string{},
-			// ignore cross-device files
-			true,
-			"newc",
-			// dereference symbolic links
-			"-L")
+	err = util.BuildFsImage(
+		name,
+		root,
+		driversDestination,
+		kernelDrivers,
+		[]string{},
+		// ignore cross-device files
+		true,
+		"newc",
+		// dereference symbolic links
+		"-L")
 
-		if err != nil {
-			return err
-		}
+	if err != nil {
+		return err
 	}
 
 	wwlog.Verbose("Creating version file")
