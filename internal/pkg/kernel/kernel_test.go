@@ -28,11 +28,19 @@ func Test_BuildKernel(t *testing.T) {
 	defer os.RemoveAll(srvDir)
 	conf := warewulfconf.Get()
 	conf.Paths.WWProvisiondir = srvDir
-	kernelDir, err := os.MkdirTemp(os.TempDir(), "ww-test-kernelImage-*")
+	kernelDir, err := os.MkdirTemp(os.TempDir(), "ww-test-kernel-*")
 	assert.NoError(t, err)
 	defer os.RemoveAll(kernelDir)
 	{
 		err = os.MkdirAll(path.Join(kernelDir, "boot"), 0755)
+		assert.NoError(t, err)
+		err = os.MkdirAll(path.Join(kernelDir, "lib/modules/old-kernel"), 0755)
+		assert.NoError(t, err)
+		_, err = os.Create(path.Join(kernelDir, "lib/modules/old-kernel/old-module"))
+		assert.NoError(t, err)
+		err = os.MkdirAll(path.Join(kernelDir, "lib/firmware"), 0755)
+		assert.NoError(t, err)
+		_, err = os.Create(path.Join(kernelDir, "lib/firmware/test-firmware"))
 		assert.NoError(t, err)
 		for _, tt := range kernelBuildTests {
 			_, err = os.Create(path.Join(kernelDir, "boot", tt.kernelFileName))
@@ -41,9 +49,7 @@ func Test_BuildKernel(t *testing.T) {
 			assert.NoError(t, err)
 			_, err = os.Create(path.Join(kernelDir, "lib/modules", tt.kernelVersion, "test-module"))
 			assert.NoError(t, err)
-			err = os.MkdirAll(path.Join(kernelDir, "lib/firmware"), 0755)
-			assert.NoError(t, err)
-			_, err = os.Create(path.Join(kernelDir, "lib/firmware/test-firmware"))
+			err = os.Symlink(path.Join(kernelDir, "lib/modules/old-kernel/old-module"), path.Join(kernelDir, "lib/modules", tt.kernelVersion, "symlink-module"))
 			assert.NoError(t, err)
 		}
 	}
@@ -57,7 +63,7 @@ func Test_BuildKernel(t *testing.T) {
 				assert.FileExists(t, path.Join(srvDir, "kernel", tt.kernelName, "kmods.img"))
 				files, err := util.CpioFiles(path.Join(srvDir, "kernel", tt.kernelName, "kmods.img"))
 				assert.NoError(t, err)
-				assert.Equal(t, files, []string{"lib/firmware/test-firmware", "lib/modules/1.2.3.4/test-module"})
+				assert.Equal(t, files, []string{"lib/firmware/test-firmware", "lib/modules/1.2.3.4/symlink-module", "lib/modules/1.2.3.4/test-module"})
 			} else {
 				assert.Error(t, err)
 			}
