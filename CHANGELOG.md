@@ -98,6 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   or "runtime") rather than a concatenated list of individual overlays. This
   removes a limit on the number of overlays that could be included in a node or
   profile. #852, #876, #883, #896, #903
+- make sure that warewulfd has the permission 0755 at creation time
 
 ## [4.4.0] 2023-01-18
 

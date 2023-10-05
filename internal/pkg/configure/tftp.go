@@ -5,21 +5,22 @@ import (
 	"os"
 	"path"
 
-	"github.com/hpcng/warewulf/internal/pkg/util"
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"golang.org/x/sys/unix"
 )
 
 func TFTP() error {
 	controller := warewulfconf.Get()
 	var tftpdir string = path.Join(controller.Paths.Tftpdir, "warewulf")
-
+	oldMask := unix.Umask(0)
 	err := os.MkdirAll(tftpdir, 0755)
 	if err != nil {
 		wwlog.Error("%s", err)
 		return err
 	}
-
+	_ = unix.Umask(oldMask)
 	fmt.Printf("Writing PXE files to: %s\n", tftpdir)
 	copyCheck := make(map[string]bool)
 	for _, f := range controller.TFTP.IpxeBinaries {
