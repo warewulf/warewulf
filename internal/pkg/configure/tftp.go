@@ -8,16 +8,18 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
+	"golang.org/x/sys/unix"
 )
 
 func TFTP() (err error) {
 	controller := warewulfconf.Get()
 	var tftpdir string = path.Join(controller.TFTP.TftpRoot, "warewulf")
-
+	oldMask := unix.Umask(0)
 	err = os.MkdirAll(tftpdir, 0755)
 	if err != nil {
 		return
 	}
+	_ = unix.Umask(oldMask)
 
 	if controller.Warewulf.GrubBoot {
 		err := warewulfd.CopyShimGrub()
