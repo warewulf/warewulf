@@ -22,11 +22,6 @@ echo "IPMI IP address: $WWIPMI_IPADDR"
 echo "IPMI netmask: $WWIPMI_NETMASK"
 echo "IPMI gateway: $WWIPMI_GATEWAY"
 echo "IPMI username: $WWIPMI_USER"
-if test -n "$WWIPMI_PASSWORD"; then
-    echo "IPMI password is defined"
-else
-    echo "IPMI password is undefined"
-fi
 
 modprobe ipmi_si
 modprobe ipmi_ssif
@@ -58,17 +53,24 @@ if [ "$PREV_IP" != "$WWIPMI_IPADDR" -o "$PREV_NETMASK" != "$WWIPMI_NETMASK" -o "
 fi
 
 # User
-if [ "$WWIPMI_USER" != "" ]; then
-    PREV_USER=$(ipmitool user list | grep "^2 " | awk '{ print $2; }')
-    TEST_PASSWORD=$(ipmitool user test 2 20 $WWIPMI_PASSWORD)
-    if [ "$WWIPMI_USER" != "$PREV_USER" -o "$TEST_PASSWORD" != "Success" ]; then
-        ipmitool user set name 2 $WWIPMI_USER
-        ipmitool user set password 2 $WWIPMI_PASSWORD
-        sleep 1
-        ipmitool user priv 2 4 1
-        ipmitool user enable 2
+if test -n "$WWIPMI_PASSWORD"; then
+    echo "IPMI password is defined"
+    if [ "$WWIPMI_USER" != "" ]; then
+        PREV_USER=$(ipmitool user list | grep "^2 " | awk '{ print $2; }')
+        TEST_PASSWORD=$(ipmitool user test 2 20 $WWIPMI_PASSWORD)
+        if [ "$WWIPMI_USER" != "$PREV_USER" -o "$TEST_PASSWORD" != "Success" ]; then
+            ipmitool user set name 2 $WWIPMI_USER
+            ipmitool user set password 2 $WWIPMI_PASSWORD
+            sleep 1
+            ipmitool user priv 2 4 1
+            ipmitool user enable 2
+        fi
     fi
+else
+    echo "IPMI password is undefined"
+    exit
 fi
+
 
 # Authentication
 #ipmitool lan set 1 auth user md5,password

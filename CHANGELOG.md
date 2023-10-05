@@ -98,7 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   or "runtime") rather than a concatenated list of individual overlays. This
   removes a limit on the number of overlays that could be included in a node or
   profile. #852, #876, #883, #896, #903
-
+- Don't update IPMI if password isn't set #638
 ## [4.4.0] 2023-01-18
 
 ### Added
