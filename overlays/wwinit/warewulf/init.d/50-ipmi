@@ -4,7 +4,7 @@
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
-if [ "$WWIPMI_WRITE" == "false" ]; then
+if [ "$WWIPMI_WRITE" != "true" ]; then
     echo "No write to IMPI configured"
     exit
 fi
