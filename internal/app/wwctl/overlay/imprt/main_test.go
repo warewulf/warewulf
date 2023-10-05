@@ -13,37 +13,24 @@ import (
 
 func Test_List(t *testing.T) {
 	tmpdir, err := os.MkdirTemp(os.TempDir(), "warewulf")
-	if err != nil {
-		t.Errorf("Could not create temp folder: %v", err)
-		t.FailNow()
-	}
+	assert.NoError(t, err)
 	defer os.RemoveAll(tmpdir)
 
 	overlayDir := fmt.Sprintf("%s/overlay", tmpdir)
 	err = os.MkdirAll(overlayDir, 0o755)
-	if err != nil {
-		t.Errorf("Could not create target folder: %s, err: %v", overlayDir, err)
-		t.FailNow()
-	}
-
+	assert.NoError(t, err)
 	importDir := fmt.Sprintf("%s/test", overlayDir)
 	err = os.MkdirAll(importDir, 0o755)
-	if err != nil {
-		t.Errorf("Could not create target folder: %s, err: %v", importDir, err)
-		t.FailNow()
-	}
+	assert.NoError(t, err)
+	importDir2 := fmt.Sprintf("%s/test2", overlayDir)
+	err = os.MkdirAll(importDir2, 0o755)
+	assert.NoError(t, err)
 
 	file, err := os.CreateTemp(tmpdir, "file")
-	if err != nil {
-		t.Errorf("Could not create tempfile")
-		t.FailNow()
-	}
+	assert.NoError(t, err)
 	file.Close()
 	err = os.Chmod(file.Name(), 0o755)
-	if err != nil {
-		t.Errorf("Could not change the file %s mode: %v", file.Name(), err)
-		t.FailNow()
-	}
+	assert.NoError(t, err)
 
 	inDb := `WW_INTERNAL: 43
 nodeprofiles:
@@ -70,7 +57,7 @@ WW_INTERNAL: 0
 		baseCmd.SetErr(nil)
 		err = baseCmd.Execute()
 		if err == nil {
-			t.Errorf("Should recieve error when running command")
+			t.Errorf("Should receive error when running command")
 			t.FailNow()
 		}
 		if _, err = os.Stat(importDir + file.Name()); err == nil {
@@ -90,5 +77,14 @@ WW_INTERNAL: 0
 			t.Errorf("Target file %s should exist", importDir+file.Name())
 			t.FailNow()
 		}
+	})
+	t.Run("wwctl overlay import test with changed permissions", func(t *testing.T) {
+		baseCmd := GetCommand()
+		baseCmd.SetArgs([]string{"--mode", "644", "-n", "test", file.Name()})
+		baseCmd.SetOut(nil)
+		baseCmd.SetErr(nil)
+		err = baseCmd.Execute()
+		assert.NoError(t, err)
+		assert.FileExists(t, importDir2+file.Name())
 	})
 }
