@@ -258,3 +258,13 @@ func Test_differ(t *testing.T) {
 	assert.False(t, entry.match())
 	assert.True(t, entry.differ())
 }
+
+func Test_malformed_passwd(t *testing.T) {
+	hostInput := `"testuser1:x:1001:1001::/home/testuser:/bin/bash"
+	asdf`
+	hostFileName := writeTempFile(t, hostInput)
+	defer os.Remove(hostFileName)
+	db := make(syncDB)
+	err := db.readFromHost(hostFileName)
+	assert.NoError(t, err)
+}
