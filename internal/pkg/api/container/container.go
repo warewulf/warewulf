@@ -330,9 +330,7 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 		}
 		var modTime uint64
 		imageStat, err := os.Stat(container.ImageFile(source))
-		if err != nil {
-			wwlog.Error("%s\n", err)
-		} else {
+		if err == nil {
 			modTime = uint64(imageStat.ModTime().Unix())
 		}
 		size, err := util.DirSize(container.SourceDir(source))
@@ -340,15 +338,11 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 			wwlog.Error("%s\n", err)
 		}
 		imgSize, err := os.Stat(container.ImageFile(source))
-		if err != nil {
-			wwlog.Error("%s\n", err)
-		} else {
+		if err == nil {
 			size += imgSize.Size()
 		}
 		imgSize, err = os.Stat(container.ImageFile(source) + ".gz")
-		if err != nil {
-			wwlog.Error("%s\n", err)
-		} else {
+		if err == nil {
 			size += imgSize.Size()
 		}
 
