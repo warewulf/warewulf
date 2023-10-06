@@ -10,6 +10,7 @@ build: wwctl wwclient wwapid wwapic wwapird etc/defaults.conf etc/bash_completio
 .PHONY: docs
 docs: man_pages reference
 
+.PHONY: vendor
 vendor:
 	go mod tidy -v
 	go mod vendor
