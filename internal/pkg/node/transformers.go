@@ -72,8 +72,12 @@ func recursiveGetter(
 						// go over a simple map with strings
 						for sourceIter.Next() {
 							if !targetValue.Elem().Field(i).MapIndex(sourceIter.Key()).IsValid() {
-								str := getter((sourceIter.Value().Interface()).(*Entry))
-								targetValue.Elem().Field(i).SetMapIndex(sourceIter.Key(), reflect.ValueOf(str))
+								// Only write entries for which have real values. This matters for
+								// tags, as empty map elements can be created without this check
+								if ((sourceIter.Value().Interface()).(*Entry)).GotReal() {
+									str := getter((sourceIter.Value().Interface()).(*Entry))
+									targetValue.Elem().Field(i).SetMapIndex(sourceIter.Key(), reflect.ValueOf(str))
+								}
 							}
 						}
 					} else {
@@ -175,7 +179,7 @@ func recursiveSetter(source, target interface{}, nameArg string, setter func(*En
 					if targetValue.Elem().Field(i).IsZero() {
 						targetValue.Elem().Field(i).Set(reflect.MakeMap(targetType.Elem().Field(i).Type))
 					}
-					// delete a ap element which is only in the target
+					// delete a map element which is only in the target
 					if targetValue.Elem().Field(i).Len() > 0 && targetValue.Elem().Field(i).Len() < 0 {
 						sourceIter := sourceValueMatched.MapRange()
 						targetIter := targetValue.Elem().Field(i).MapRange()
