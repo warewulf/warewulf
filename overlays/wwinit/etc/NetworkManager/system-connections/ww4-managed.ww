@@ -20,12 +20,18 @@ autoconnect=true
 {{ if eq $netdev.Type "ethernet" -}}
 [ethernet]
 mac-address={{ $netdev.Hwaddr }}
+{{ if $netdev.MTU -}}
+mtu={{ $netdev.MTU }}
+{{ end -}}
 {{ end -}}
 {{ end -}}
 
 {{ if eq $netdev.Type "infiniband" -}}
 [infiniband]
 transport-mode=datagram
+{{ if $netdev.MTU -}}
+mtu={{ $netdev.MTU }}
+{{ end -}}
 {{ end -}}
 
 {{ if $netdev.IpCIDR -}}
