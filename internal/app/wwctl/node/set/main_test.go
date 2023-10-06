@@ -295,6 +295,30 @@ nodes:
         format: btrfs
         path: /var
 `},
+		{name: "single node set mtu",
+			args:    []string{"--mtu", "1234", "--netname=mynet", "n01"},
+			wantErr: false,
+			stdout:  "",
+			inDB: `WW_INTERNAL: 43
+nodeprofiles:
+  default:
+    comment: testit
+nodes:
+  n01:
+    profiles:
+    - default`,
+			outDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default:
+    comment: testit
+nodes:
+  n01:
+    profiles:
+    - default
+    network devices:
+      mynet:
+        mtu: "1234"
+`},
 	}
 	conf_yml := `WW_INTERNAL: 0`
 	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")

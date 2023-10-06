@@ -69,7 +69,7 @@ func createFlags(baseCmd *cobra.Command, excludeList []string,
 			case "uint":
 				converters = append(converters, func() error {
 					if !util.InSlice(GetUnsetVerbs(), *ptr) && *ptr != "" {
-						_, err := strconv.ParseUint(myType.Tag.Get(*ptr), 10, 32)
+						_, err := strconv.ParseUint(*ptr, 10, 32)
 						if err != nil {
 							return err
 						}
