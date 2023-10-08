@@ -12,8 +12,11 @@ docs: man_pages reference
 
 .PHONY: vendor
 vendor:
-	go mod tidy -v
 	go mod vendor
+
+.PHONY: tidy
+tidy:
+	go mod tidy
 
 config = etc/wwapic.conf \
 	etc/wwapid.conf \
