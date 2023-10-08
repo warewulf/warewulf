@@ -68,7 +68,7 @@ man_pages: wwctl $(wildcard docs/man/man5/*.5)
 	mkdir -p docs/man/man1
 	./wwctl --emptyconf genconfig man docs/man/man1
 	gzip --force docs/man/man1/*.1
-	gzip --force --keep docs/man/man5/*.5
+	for manpage in docs/man/man5/*.5; do gzip <$${manpage} >$${manpage}.gz; done
 
 etc/defaults.conf: wwctl
 	./wwctl --emptyconf genconfig defaults >etc/defaults.conf
