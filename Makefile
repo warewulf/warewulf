@@ -10,7 +10,6 @@ build: wwctl wwclient wwapid wwapic wwapird etc/defaults.conf etc/bash_completio
 .PHONY: docs
 docs: man_pages reference
 
-.PHONY: vendor
 vendor:
 	go mod vendor
 
@@ -42,6 +41,8 @@ dist: vendor
 lint: $(GOLANGCI_LINT)
 
 $(protofiles): $(PROTOC) $(PROTOC_GEN_GRPC_GATEWAY) $(PROTOC_GEN_GO) $(PROTOC_GEN_GO_GRPC)
+
+clean: cleanvendor
 endif
 
 wwctl: $(config) $(call godeps,cmd/wwctl/main.go)
@@ -223,9 +224,7 @@ cleandocs:
 
 .PHONY: cleanvendor
 cleanvendor:
-ifndef OFFLINE_BUILD
 	rm -rf vendor
-endif
 
 .PHONY: clean
-clean: cleanconfig cleantest cleandist cleantools cleanmake cleanbin cleandocs cleanvendor
+clean: cleanconfig cleantest cleandist cleantools cleanmake cleanbin cleandocs
