@@ -238,24 +238,46 @@ func (ent *Entry) GetB() bool {
 	}
 }
 
+// returns all negated elemets which are marked with ! as prefix
+// from a list
+func negList(list []string) (ret []string) {
+	for _, tok := range list {
+		if strings.HasPrefix(tok, "~") {
+			ret = append(ret, tok[1:])
+		}
+	}
+	return
+}
+
+// clean a list from negated tokens
+func cleanList(list []string) (ret []string) {
+	neg := negList(list)
+	for _, listTok := range list {
+		notNegate := true
+		for _, negTok := range neg {
+			if listTok == negTok || listTok == "~"+negTok {
+				notNegate = false
+			}
+		}
+		if notNegate {
+			ret = append(ret, listTok)
+		}
+	}
+	return ret
+}
+
 /*
-Returns a string slice created from a comma seperated list of the value.
+Returns a string slice created from a comma separated list of the value.
 */
 func (ent *Entry) GetSlice() []string {
-	var retval []string
-	if len(ent.value) != 0 {
-		retval = ent.value
-	}
-	if len(ent.altvalue) != 0 {
-		retval = append(retval, ent.altvalue...)
-	}
+	retval := append(ent.value, ent.altvalue...)
 	if len(retval) != 0 {
-		return retval
+		return cleanList(retval)
 	}
 	if len(ent.def) != 0 {
 		return ent.def
 	}
-	return retval
+	return []string{}
 }
 
 /*
@@ -328,11 +350,13 @@ alternative is presend. Default value is in '()'. If
 nothing is defined '--' is returned.
 */
 func (ent *Entry) Print() (ret string) {
-	if len(ent.value) != 0 {
-		ret = strings.Join(ent.value, ",")
-	}
-	if len(ent.altvalue) != 0 {
-		ret = strings.Join(append(ent.value, ent.altvalue...), ",")
+	if len(ent.value) != 0 || len(ent.altvalue) != 0 {
+		combList := append(ent.value, ent.altvalue...)
+		ret = strings.Join(cleanList(combList), ",")
+		if len(negList(combList)) > 0 {
+			ret += " ~{" + strings.Join(negList(combList), ",") + "}"
+		}
+
 	}
 	if ret != "" {
 		return ret
