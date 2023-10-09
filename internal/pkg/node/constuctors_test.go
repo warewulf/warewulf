@@ -138,3 +138,60 @@ func Test_FindDiscoverableNode(t *testing.T) {
 		})
 	}
 }
+
+func Test_Profile_Overlay_Merge(t *testing.T) {
+	nodesconf := `
+nodeprofiles:
+  profile1:
+    runtime overlay:
+      - p1o1
+      - p1o2
+  profile2:
+    runtime overlay:
+      - p2o1
+      - p2o2
+nodes:
+  node1:
+    profiles:
+      - profile1
+  node2:
+    profiles:
+      - profile1
+      - profile2
+  node3:
+    runtime overlay:
+      - n1o1
+      - n1o2
+    profiles:
+      - profile1
+  node4:
+    runtime overlay:
+      - n1o1
+      - n1o2
+    profiles:
+      - profile1
+      - profile2
+`
+	assert := assert.New(t)
+	var ymlSrc NodeYaml
+	err := yaml.Unmarshal([]byte(nodesconf), &ymlSrc)
+	assert.NoError(err)
+	nodes, err := ymlSrc.FindAllNodes()
+	assert.NoError(err)
+	nodemap := make(map[string]*NodeInfo)
+	for i := range nodes {
+		nodemap[nodes[i].Id.Get()] = &nodes[i]
+	}
+	assert.Contains(nodemap, "node1")
+	assert.ElementsMatch(nodemap["node1"].RuntimeOverlay.GetSlice(), []string{"p1o1", "p1o2"})
+	assert.Equal(nodemap["node1"].RuntimeOverlay.Print(), "p1o1,p1o2")
+	assert.Contains(nodemap, "node2")
+	assert.ElementsMatch(nodemap["node2"].RuntimeOverlay.GetSlice(), []string{"p1o1", "p1o2", "p2o1", "p2o2"})
+	assert.Equal(nodemap["node2"].RuntimeOverlay.Print(), "p1o1,p1o2,p2o1,p2o2")
+	assert.Contains(nodemap, "node3")
+	assert.ElementsMatch(nodemap["node3"].RuntimeOverlay.GetSlice(), []string{"p1o1", "p1o2", "n1o1", "n1o2"})
+	assert.Equal(nodemap["node3"].RuntimeOverlay.Print(), "n1o1,n1o2,p1o1,p1o2")
+	assert.Contains(nodemap, "node4")
+	assert.ElementsMatch(nodemap["node4"].RuntimeOverlay.GetSlice(), []string{"p1o1", "p1o2", "p2o1", "p2o2", "n1o1", "n1o2"})
+	assert.Equal(nodemap["node4"].RuntimeOverlay.Print(), "n1o1,n1o2,p1o1,p1o2,p2o1,p2o2")
+}

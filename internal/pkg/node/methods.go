@@ -152,8 +152,8 @@ func (ent *Entry) SetAltSlice(val []string, from string) {
 	if len(val) == 0 {
 		return
 	}
-	ent.altvalue = val
-	ent.from = from
+	ent.altvalue = append(ent.altvalue, val...)
+	ent.from = ent.from + "," + from
 }
 
 /*
@@ -200,7 +200,7 @@ func (ent *Entry) SliceRemoveElement(val string) {
 *
 *********/
 /*
-Gets the the entry of the value in folowing order
+Gets the the entry of the value in following order
 * node value if set
 * profile value if set
 * default value if set
@@ -244,10 +244,13 @@ Returns a string slice created from a comma seperated list of the value.
 func (ent *Entry) GetSlice() []string {
 	var retval []string
 	if len(ent.value) != 0 {
-		return ent.value
+		retval = ent.value
 	}
 	if len(ent.altvalue) != 0 {
-		return ent.altvalue
+		retval = append(retval, ent.altvalue...)
+	}
+	if len(retval) != 0 {
+		return retval
 	}
 	if len(ent.def) != 0 {
 		return ent.def
@@ -324,12 +327,15 @@ Returns the value of Entry if it was defined set or
 alternative is presend. Default value is in '()'. If
 nothing is defined '--' is returned.
 */
-func (ent *Entry) Print() string {
+func (ent *Entry) Print() (ret string) {
 	if len(ent.value) != 0 {
-		return strings.Join(ent.value, ",")
+		ret = strings.Join(ent.value, ",")
 	}
 	if len(ent.altvalue) != 0 {
-		return strings.Join(ent.altvalue, ",")
+		ret = strings.Join(append(ent.value, ent.altvalue...), ",")
+	}
+	if ret != "" {
+		return ret
 	}
 	if len(ent.def) != 0 {
 		return "(" + strings.Join(ent.def, ",") + ")"

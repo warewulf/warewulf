@@ -134,6 +134,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   warewulf.grubboot: true in warewulf.conf. For unknown nodes, grub.efi 
   and shim.efi are extracted from the Warewulf host. If the booted node 
   has a container these binaries are extracted from the container image.
+- overlays from different profiles for one node are now merged #885
 
 ## [4.4.0] 2023-01-18
 
