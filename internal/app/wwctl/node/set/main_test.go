@@ -5,22 +5,78 @@ import (
 	"os"
 	"testing"
 
-	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
-	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
+	"github.com/hpcng/warewulf/internal/pkg/ww4test"
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_Add(t *testing.T) {
-	tests := []struct {
-		name    string
-		args    []string
-		wantErr bool
-		stdout  string
-		chkout  bool
-		outDb   string
-		inDB    string
-	}{
+type test_description struct {
+	name    string
+	args    []string
+	wantErr bool
+	stdout  string
+	outDb   string
+	inDB    string
+}
+
+func run_test(t *testing.T, test test_description) {
+	//wwlog.SetLogLevel(wwlog.DEBUG)
+	var env ww4test.WarewulfTestEnv
+	env.NodesConf = test.inDB
+	env.New(t)
+	defer os.RemoveAll(env.BaseDir)
+	warewulfd.SetNoDaemon()
+	name := test.name
+	if name == "" {
+		name = t.Name()
+	}
+	t.Run(name, func(t *testing.T) {
+		baseCmd := GetCommand()
+		test.args = append(test.args, "--yes")
+		baseCmd.SetArgs(test.args)
+		buf := new(bytes.Buffer)
+		baseCmd.SetOut(buf)
+		baseCmd.SetErr(buf)
+		err := baseCmd.Execute()
+		if test.wantErr {
+			assert.Error(t, err)
+		} else {
+			assert.NoError(t, err)
+			assert.Equal(t, buf.String(), test.stdout)
+			content, err := os.ReadFile(env.NodesConfFile)
+			assert.NoError(t, err)
+			assert.Equal(t, test.outDb, string(content))
+		}
+	})
+}
+
+func Test_Single_Node_Change_Profile(t *testing.T) {
+	test := test_description{
+		args:    []string{"--profile=foo", "n01"},
+		wantErr: false,
+		stdout:  "",
+		inDB: `WW_INTERNAL: 43
+nodeprofiles:
+  default:
+    comment: testit
+nodes:
+  n01:
+    profiles:
+    - default`,
+		outDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default:
+    comment: testit
+nodes:
+  n01:
+    profiles:
+    - foo
+`}
+	run_test(t, test)
+}
+
+func Test_Multiple_Add_Tests(t *testing.T) {
+	tests := []test_description{
 		{name: "single node change profile",
 			args:    []string{"--profile=foo", "n01"},
 			wantErr: false,
@@ -296,53 +352,7 @@ nodes:
         path: /var
 `},
 	}
-	conf_yml := `WW_INTERNAL: 0`
-	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
-	assert.NoError(t, warewulfConfErr)
-	defer os.Remove(tempWarewulfConf.Name())
-	_, warewulfConfErr = tempWarewulfConf.Write([]byte(conf_yml))
-	assert.NoError(t, warewulfConfErr)
-	assert.NoError(t, tempWarewulfConf.Sync())
-	assert.NoError(t, warewulfconf.New().Read(tempWarewulfConf.Name()))
-
-	tempNodeConf, nodesConfErr := os.CreateTemp("", "nodes.conf-")
-	assert.NoError(t, nodesConfErr)
-	defer os.Remove(tempNodeConf.Name())
-	node.ConfigFile = tempNodeConf.Name()
-	warewulfd.SetNoDaemon()
 	for _, tt := range tests {
-		var err error
-		_, err = tempNodeConf.Seek(0, 0)
-		assert.NoError(t, err)
-		assert.NoError(t, tempNodeConf.Truncate(0))
-		_, err = tempNodeConf.Write([]byte(tt.inDB))
-		assert.NoError(t, err)
-		assert.NoError(t, tempNodeConf.Sync())
-		t.Logf("Running test: %s\n", tt.name)
-		t.Run(tt.name, func(t *testing.T) {
-			baseCmd := GetCommand()
-			tt.args = append(tt.args, "--yes")
-			baseCmd.SetArgs(tt.args)
-			buf := new(bytes.Buffer)
-			baseCmd.SetOut(buf)
-			baseCmd.SetErr(buf)
-			err = baseCmd.Execute()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Got unwanted error: %s", err)
-				t.FailNow()
-			}
-			config, configErr := node.New()
-			assert.NoError(t, configErr)
-			dumpBytes, _ := config.Dump()
-			dump := string(dumpBytes)
-			if dump != tt.outDb {
-				t.Errorf("DB dump is wrong, got:'%s'\nwant:'%s'", dump, tt.outDb)
-				t.FailNow()
-			}
-			if tt.chkout && buf.String() != tt.stdout {
-				t.Errorf("Got wrong output, got:'%s'\nwant:'%s'", buf.String(), tt.stdout)
-				t.FailNow()
-			}
-		})
+		run_test(t, tt)
 	}
 }
