@@ -30,3 +30,4 @@ userdocs/_*
 userdocs/reference/*
 /warewulf-?.?.?/
 *.coverprofile
+LICENSE_DEPENDENCIES.csv
