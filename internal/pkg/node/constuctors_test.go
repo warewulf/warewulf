@@ -2,7 +2,7 @@ package node
 
 import (
 	"testing"
-
+	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 )
 
@@ -41,6 +41,7 @@ nodes:
 	_ = yaml.Unmarshal([]byte(data), &ret)
 	return ret
 }
+
 func Test_Primary_Network(t *testing.T) {
 	c := newConstructorPrimaryNetworkTest()
 	nodes, _ := c.FindAllNodes()
@@ -104,4 +105,37 @@ func Test_Primary_Network(t *testing.T) {
 			t.Errorf("primary flag isn't set for net1")
 		}
 	})
+}
+
+
+var findDiscoverableNodeTests = []struct{
+	description string
+	discoverable_nodes []string
+	discovered_node string
+	discovered_interface string
+	succeed bool
+}{
+	{"no discoverable nodes", []string{}, "", "", false},
+	{"all nodes discoverable", []string{"test_node1", "test_node2", "test_node3", "test_node4"}, "test_node1", "net0", true},
+	{"discover primary", []string{"test_node2"}, "test_node2", "net1", true},
+	{"discovery without primary", []string{"test_node3"}, "test_node3", "net0", true},
+}
+
+func Test_FindDiscoverableNode(t *testing.T) {
+	for _, tt := range findDiscoverableNodeTests {
+		t.Run(tt.description, func(t *testing.T) {
+			config := newConstructorPrimaryNetworkTest()
+			for _, node := range tt.discoverable_nodes {
+				config.Nodes[node].Discoverable = "true"
+			}
+			discovered_node, discovered_interface, err := config.FindDiscoverableNode()
+			if !tt.succeed {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.discovered_node, discovered_node.Id.Get())
+				assert.Equal(t, tt.discovered_interface, discovered_interface)
+			}
+		})
+	}
 }
