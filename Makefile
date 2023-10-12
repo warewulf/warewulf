@@ -29,22 +29,6 @@ config: $(config)
 %: %.in
 	sed -ne "$(foreach V,$(VARLIST),s,@$V@,$(strip $($V)),g;)p" $@.in >$@
 
-ifndef OFFLINE_BUILD
-wwctl: vendor
-wwclient: vendor
-update_configuration: vendor
-wwapid: vendor
-wwapic: vendor
-wwapird: vendor
-dist: vendor
-
-lint: $(GOLANGCI_LINT)
-
-$(protofiles): $(PROTOC) $(PROTOC_GEN_GRPC_GATEWAY) $(PROTOC_GEN_GO) $(PROTOC_GEN_GO_GRPC)
-
-clean: cleanvendor
-endif
-
 wwctl: $(config) $(call godeps,cmd/wwctl/main.go)
 	GOOS=linux go build -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o wwctl cmd/wwctl/main.go
 
@@ -172,7 +156,6 @@ protofiles = internal/pkg/api/routes/wwapiv1/routes.pb.go \
 	internal/pkg/api/routes/wwapiv1/routes.pb.gw.go \
 	internal/pkg/api/routes/wwapiv1/routes_grpc.pb.go
 .PHONY: proto
-
 proto: $(protofiles)
 
 routes_proto = internal/pkg/api/routes/v1/routes.proto
@@ -228,3 +211,19 @@ cleanvendor:
 
 .PHONY: clean
 clean: cleanconfig cleantest cleandist cleantools cleanmake cleanbin cleandocs
+
+ifndef OFFLINE_BUILD
+wwctl: vendor
+wwclient: vendor
+update_configuration: vendor
+wwapid: vendor
+wwapic: vendor
+wwapird: vendor
+dist: vendor
+
+lint: $(GOLANGCI_LINT)
+
+$(protofiles): $(PROTOC) $(PROTOC_GEN_GRPC_GATEWAY) $(PROTOC_GEN_GO) $(PROTOC_GEN_GO_GRPC)
+
+clean: cleanvendor
+endif
