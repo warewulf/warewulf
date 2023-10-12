@@ -8,7 +8,6 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
@@ -33,12 +32,6 @@ func ProfileSet(set *wwapiv1.ProfileSetParameter) (err error) {
 		return
 	}
 	dbError := apinode.DbSave(&nodeDB)
-	if util.InSlice(set.ProfileNames, "default") {
-		err = warewulfd.CopyShimGrub()
-		if err != nil {
-			wwlog.Warn("shim/grub couldn't be copied: %s", err)
-		}
-	}
 	return dbError
 }
 

@@ -1,25 +1,51 @@
 echo "================================================================================"
-echo "Warewulf v4 now booting with grub"
+echo "Warewulf v4 now http booting grub: {{.Fqdn}} ({{.Hwaddr}})"
+echo "================================================================================"
 echo
-uri="(http,{{.Ipaddr}}:9873)/provision/${net_default_mac}?assetkey="
+echo "Warewulf Controller: {{.Ipaddr}}"
+echo 
+sleep 1
+smbios --type1 --get-string 8 --set assetkey
+uri="(http,{{.Ipaddr}}:{{.Port}})/provision/${net_default_mac}?assetkey=${assetkey}"
 kernel="${uri}&stage=kernel"
 container="${uri}&stage=container&compress=gz"
 system="${uri}&stage=system&compress=gz"
-echo "Warewulf Controller: {{.Ipaddr}}"
-echo "Trying to load a kernel... "
-linux $kernel wwid="${net_default_mac}" "{{.KernelArgs}}"
-if [ x$? = x0 ] ; then
-echo "Loading initrd..."
-initrd $container $system
-echo "Booting..."
-boot
-else
-echo "MESSAGE: This node is unconfigured. Please have your system administrator add a"
-echo "         configuration for this node with HW address: ${net_default_mac}"
-echo ""
-echo "Rebooting in 1 minute..."
-sleep 60
-reboot
-fi
-
-
+runtime="${uri}&stage=runtime&compress=gz"
+set default=ww4
+set timeout=5
+menuentry "Network boot node: {{.Id}}" --id ww4 {
+    {{if .KernelOverride }}
+    echo "Kernel:                {{.KernelOverride}}"
+    {{else}}
+    echo "Kernel:                {{.ContainerName}} (container default)"
+    {{end}}
+    echo "KernelArgs:            {{.KernelArgs}}"
+    linux $kernel wwid=${net_default_mac} {{.KernelArgs}}
+    if [ x$? = x0 ] ; then
+        echo "Loading Container:     {{.ContainerName}}"
+        initrd $container $system $runtime
+        boot
+    else    
+        echo "MESSAGE: This node seems to be unconfigured. Please have your system administrator add a"
+        echo "         configuration for this node with HW address: ${net_default_mac}"
+        echo ""
+        echo "Rebooting in 1 minute..."
+        sleep 60
+        reboot
+    fi
+}
+menuentry "Chainload specific configfile" {
+    conf="(http,{{.Ipaddr}}:{{.Port}})/efiboot/grub.cfg"
+    configfile $conf
+}
+menuentry "UEFI Firmware Settings" --id "uefi-firmware" {
+    fwsetup
+}
+menuentry "System restart" {
+    echo "System rebooting..."
+    reboot
+}
+menuentry "System shutdown" {
+    echo "System shutting down..."
+    halt
+}

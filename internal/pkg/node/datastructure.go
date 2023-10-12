@@ -52,7 +52,6 @@ type NodeConf struct {
 	PrimaryNetDev  string                 `yaml:"primary network,omitempty" lopt:"primarynet" sopt:"p" comment:"Set the primary network interface"`
 	Disks          map[string]*Disk       `yaml:"disks,omitempty"`
 	FileSystems    map[string]*FileSystem `yaml:"filesystems,omitempty"`
-	BootMethod     string                 `yaml:"boot method,omitempty" lopt:"bootmethod" comment:" boot method, can be grub or ipxe"`
 }
 
 type IpmiConf struct {
@@ -166,7 +165,6 @@ type NodeInfo struct {
 	Ipmi           *IpmiEntry
 	Profiles       Entry
 	PrimaryNetDev  Entry
-	BootMethod     Entry
 	NetDevs        map[string]*NetDevEntry
 	Tags           map[string]*Entry
 	Disks          map[string]*DiskEntry

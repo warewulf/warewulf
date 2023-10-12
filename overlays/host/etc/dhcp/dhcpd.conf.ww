@@ -24,12 +24,12 @@ option PXE.mtftp-delay code 5 = unsigned integer 8;
 
 option architecture-type   code 93  = unsigned integer 16;
 
-{{- if eq $.ProfileMap.default.BootMethod.Get "grub" }}
+{{- if $.Warewulf.GrubBoot }}
 if substring (option vendor-class-identifier, 0, 9) = "PXEClient" {
   next-server {{ $.Ipaddr }};
   filename "warewulf/shim.efi";
 } elsif substring (option vendor-class-identifier, 0, 10) = "HTTPClient" {
-  filename "http://{{$.Ipaddr}}:{{$.Warewulf.Port}}/grub/shim.efi";
+  filename "http://{{$.Ipaddr}}:{{$.Warewulf.Port}}/efiboot/shim.efi";
 }
 {{- else }}
 if exists user-class and option user-class = "iPXE" {

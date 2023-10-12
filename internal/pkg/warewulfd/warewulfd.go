@@ -65,7 +65,6 @@ func RunServer() error {
 		wwlog.Error("Could not prepopulate node status DB: %s", err)
 	}
 
-	err = CopyShimGrub()
 	if err != nil {
 		wwlog.Warn("couldn't copy default shim: %s", err)
 	}

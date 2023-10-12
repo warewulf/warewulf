@@ -25,7 +25,7 @@ func shimNames() []string {
 }
 
 /*
-find the path of the shim binary
+find the path of the shim binary in container
 */
 func ShimFind(container string) string {
 	container_path := RootFsDir(container)
@@ -33,11 +33,18 @@ func ShimFind(container string) string {
 	if container_path == "" {
 		return ""
 	}
+	return ShimFindPath(container_path)
+}
+
+/*
+find the path of the shim binary in container
+*/
+func ShimFindPath(shimpath string) string {
 	for _, shimdir := range shimDirs() {
 		wwlog.Debug("Checking shim directory: %s", shimdir)
 		for _, shimname := range shimNames() {
 			wwlog.Debug("Checking for shim name: %s", shimname)
-			shimPaths, _ := filepath.Glob(path.Join(container_path, shimdir, shimname))
+			shimPaths, _ := filepath.Glob(path.Join(shimpath, shimdir, shimname))
 			for _, shimPath := range shimPaths {
 				wwlog.Debug("Checking for shim path: %s", shimPath)
 				// Only succeeds if shimPath exists and, if a

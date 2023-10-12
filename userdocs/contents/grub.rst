@@ -7,13 +7,9 @@ can be used with the advantage that secure boot can be used. That means
 that only the signed kernel of a distribution can be booted. This can
 be a huge security benefit for some scenarios.
 
-In order to enable the grub bootm the field `boot method` has
-to be set to `grub` at least for the `default` profile in `nodes.conf`. 
-This can also be done with the command
-
-.. code-block:: console
-
-  # wwctl profile set default --bootmethod grub
+In order to enable the grub boot method it has to ne enabled in `warewulf.conf`.
+Nodes which are not known to warewulf will then booted with the shim/grub from
+the host on which warewulf is installed.
 
 
 Boot process
@@ -43,8 +39,8 @@ of one Distribution, which means that every Distribution needs a separate
 the containers.
 
 For the case when the node is unknown to warewulf or
-can't be identified during the `tFTP`` boot phase, the binaries are 
-extracted from the container defined in the `default` profile.
+can't be identified during the `tFTP`` boot phase, the shim/grub binaries of
+the host in which warewulf is running will be used.
 
 PXE/tFTP boot
 -------------
@@ -68,8 +64,8 @@ The standard network boot process with `grub` and `iPXE` has following steps
       bios->shim [lhead=cluster1,label="filename=shim.efi"];
       subgraph cluster1{
         label="Grub boot"
-        shim[shape=record label="{shim.efi|extracted from container of default profile}"];
-        grub[shape=record label="{grubx64.efi | name hardcoded in shim.efi|extracted from container of default profile}"]
+        shim[shape=record label="{shim.efi|from ww4 host}"];
+        grub[shape=record label="{grubx64.efi | name hardcoded in shim.efi|from ww4 host}"]
         shim->grub[label="tFTP"];
         grubcfg[shape=record label="{grub.cfg|static under tFTP root}"];
         grub->grubcfg[label="tFTP"];
@@ -80,7 +76,7 @@ The standard network boot process with `grub` and `iPXE` has following steps
   }
 
 As the tFTP server is independent of warewulf, the `shim` and `grub` EFI binaries
-for the tFTP server are copied from the container defined in the `default` profile.
+for the tFTP server are copied from the host on which warewulf is running.
 This means that for secure boot the distributor e.g. SUSE of the container in
 the `default` profile must match the distributor of the container which then
 also must be signed by the SUSE key.

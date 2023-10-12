@@ -35,11 +35,15 @@ func GrubFind(container string) string {
 	if container_path == "" {
 		return ""
 	}
+	return GrubFindPath(container_path)
+}
+
+func GrubFindPath(grub_path string) string {
 	for _, grubdir := range grubDirs() {
 		wwlog.Debug("Checking grub directory: %s", grubdir)
 		for _, grubname := range grubNames() {
 			wwlog.Debug("Checking for grub name: %s", grubname)
-			grubPaths, _ := filepath.Glob(path.Join(container_path, grubdir, grubname))
+			grubPaths, _ := filepath.Glob(path.Join(grub_path, grubdir, grubname))
 			for _, grubpath := range grubPaths {
 				wwlog.Debug("Checking for grub path: %s", grubpath)
 				// Only succeeds if grubpath exists and, if a

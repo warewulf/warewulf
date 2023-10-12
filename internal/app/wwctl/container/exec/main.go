@@ -12,9 +12,7 @@ import (
 	"time"
 
 	"github.com/hpcng/warewulf/internal/pkg/container"
-	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 )
@@ -135,16 +133,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Error("Could not build container %s: %s", containerName, err)
 		os.Exit(1)
 	}
-	nodeDB, err := node.New()
-	if err != nil {
-		wwlog.Warn("couldn't open node database, so can't update shim/grub if this container is used in default profile: %s", err)
-	} else {
-		profileMap, _ := nodeDB.MapAllProfiles()
-		if _, ok := profileMap["default"]; ok && profileMap["default"].ContainerName.Get() == containerName {
-			return warewulfd.CopyShimGrub()
-		}
-	}
-
 	return nil
 }
 func SetBinds(myBinds []string) {
