@@ -1,4 +1,4 @@
-name: "Chagelog Enforcer"
+name: "Changelog Enforcer"
 on:
   pull_request:
     # The specific activity types are listed here to include "labeled" and "unlabeled"
