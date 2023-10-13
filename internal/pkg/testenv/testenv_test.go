@@ -1,7 +1,6 @@
-package ww4test
+package testenv
 
 import (
-	"os"
 	"testing"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -9,8 +8,8 @@ import (
 )
 
 func Test_Basic(t *testing.T) {
-	Env.New(t)
-	defer os.RemoveAll(Env.BaseDir)
+	env := New(t)
+	defer env.RemoveAll(t)
 	nodedb, err := node.New()
 	assert.NoError(t, err)
 	nodes, err := nodedb.FindAllNodes()
@@ -19,15 +18,15 @@ func Test_Basic(t *testing.T) {
 }
 
 func Test_two_nodes(t *testing.T) {
-	Env.NodesConf = `WW_INTERNAL: 43
+	env := New(t)
+	env.WriteFile(t, "etc/warewulf/nodes.conf", `WW_INTERNAL: 43
 nodeprofiles:
   default: {}
 nodes:
   node1: {}
   node2: {}
-`
-	Env.New(t)
-	defer os.RemoveAll(Env.BaseDir)
+`)
+	defer env.RemoveAll(t)
 	nodedb, err := node.New()
 	assert.NoError(t, err)
 	nodes, err := nodedb.FindAllNodes()

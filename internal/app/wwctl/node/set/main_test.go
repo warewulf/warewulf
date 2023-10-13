@@ -2,11 +2,10 @@ package set
 
 import (
 	"bytes"
-	"os"
 	"testing"
 
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
-	"github.com/hpcng/warewulf/internal/pkg/ww4test"
+	"github.com/hpcng/warewulf/internal/pkg/testenv"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,16 +14,15 @@ type test_description struct {
 	args    []string
 	wantErr bool
 	stdout  string
-	outDb   string
 	inDB    string
+	outDb   string
 }
 
 func run_test(t *testing.T, test test_description) {
-	//wwlog.SetLogLevel(wwlog.DEBUG)
-	var env ww4test.WarewulfTestEnv
-	env.NodesConf = test.inDB
-	env.New(t)
-	defer os.RemoveAll(env.BaseDir)
+	env := testenv.New(t)
+	defer env.RemoveAll(t)
+
+	env.WriteFile(t, "etc/warewulf/nodes.conf", test.inDB)
 	warewulfd.SetNoDaemon()
 	name := test.name
 	if name == "" {
@@ -43,9 +41,8 @@ func run_test(t *testing.T, test test_description) {
 		} else {
 			assert.NoError(t, err)
 			assert.Equal(t, buf.String(), test.stdout)
-			content, err := os.ReadFile(env.NodesConfFile)
-			assert.NoError(t, err)
-			assert.Equal(t, test.outDb, string(content))
+			content := env.ReadFile(t, "etc/warewulf/nodes.conf")
+			assert.Equal(t, test.outDb, content)
 		}
 	})
 }
