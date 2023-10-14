@@ -100,6 +100,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   profile. #852, #876, #883, #896, #903
 - During node discovery, prefer the primary network interface, if defined. #775
 - added general test framework which creates temporary directories on the fly
+- only write IPMI if write is true
+
 ## [4.4.0] 2023-01-18
 
 ### Added
