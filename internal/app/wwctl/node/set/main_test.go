@@ -372,6 +372,43 @@ nodes:
       mynet:
         mtu: "1234"
 `},
+		{name: "single node set ipmitag",
+			args:    []string{"--tagadd", "nodetag1=nodevalue1", "n01"},
+			wantErr: false,
+			stdout:  "",
+			inDB: `WW_INTERNAL: 43
+nodeprofiles:
+  p1:
+    comment: testit 1
+    tags:
+      p1tag1: p1val1
+  p2:
+    comment: testit 1
+    tags:
+      p2tag2: p1val2
+nodes:
+  n01:
+    profiles:
+    - p1
+    - p2`,
+			outDb: `WW_INTERNAL: 43
+nodeprofiles:
+  p1:
+    comment: testit 1
+    tags:
+      p1tag1: p1val1
+  p2:
+    comment: testit 1
+    tags:
+      p2tag2: p1val2
+nodes:
+  n01:
+    profiles:
+    - p1
+    - p2
+    tags:
+      nodetag1: nodevalue1
+`},
 	}
 	for _, tt := range tests {
 		run_test(t, tt)

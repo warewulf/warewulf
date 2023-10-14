@@ -41,6 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix build for API.
 - Bindd mounts for `wwctl exec` are now on the same fs
 - Fixed the ability to set MTU with wwctl #947
+- Fixed a bug where profile tags were erroneously overridden by empty node
+  values. #884
 
 ### Changed
 
