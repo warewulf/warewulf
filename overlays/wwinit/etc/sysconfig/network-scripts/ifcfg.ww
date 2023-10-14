@@ -11,6 +11,9 @@
 TYPE={{ $netdev.Type }}
 DEVICE={{ $netdev.Device }}
 NAME={{ $devname }}
+{{ if $netdev.MTU -}}
+MTU={{ $netdev.MTU }}
+{{ end -}}
 BOOTPROTO=static
 DEVTIMEOUT=10
 IPADDR={{ $netdev.Ipaddr }}

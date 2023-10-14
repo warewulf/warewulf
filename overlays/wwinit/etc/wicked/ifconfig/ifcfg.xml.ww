@@ -15,6 +15,9 @@ Source: {{ $source }}
   {{ if $netdev.Type -}}
   <link-type>{{ $netdev.Type }}</link-type>
   {{ end -}}
+  {{ if $netdev.MTU -}}
+  <mtu>{{ $netdev.MTU }}</mtu>
+  {{ end -}}
   <control>
     <mode>boot</mode>
   </control>
