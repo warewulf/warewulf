@@ -348,6 +348,30 @@ nodes:
         format: btrfs
         path: /var
 `},
+		{name: "single node set mtu",
+			args:    []string{"--mtu", "1234", "--netname=mynet", "n01"},
+			wantErr: false,
+			stdout:  "",
+			inDB: `WW_INTERNAL: 43
+nodeprofiles:
+  default:
+    comment: testit
+nodes:
+  n01:
+    profiles:
+    - default`,
+			outDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default:
+    comment: testit
+nodes:
+  n01:
+    profiles:
+    - default
+    network devices:
+      mynet:
+        mtu: "1234"
+`},
 	}
 	for _, tt := range tests {
 		run_test(t, tt)
