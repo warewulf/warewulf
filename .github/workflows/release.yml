@@ -1,0 +1,125 @@
+---
+name: release
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  dist:
+    name: Checkout code and build warewulf.spec and dist
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set DIST
+        run: |
+          echo "DIST=warewulf-${GITHUB_REF#refs/tags/v}.tar.gz" >> $GITHUB_ENV
+
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Build spec and dist
+        run: |
+          make warewulf.spec dist
+
+      - name: Upload warewulf.spec
+        uses: actions/upload-artifact@v3
+        with:
+          name: warewulf.spec
+          path: warewulf.spec
+
+      - name: Upload DIST
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.DIST }}
+          path: ${{ env.DIST }}
+
+      - name: Attach DIST to release
+        uses: xresloader/upload-to-github-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          release_id: ${{ github.event.release.id }}
+          file: ${{ env.DIST }}
+
+  rpm:
+    name: Build RPMs
+    needs: dist
+    runs-on: ubuntu-latest
+    container:
+      image: rockylinux/rockylinux:9
+      options: --privileged
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: rocky+epel-8-x86_64
+            arch: x86_64
+            dist: el8
+          - target: rocky+epel-9-x86_64
+            arch: x86_64
+            dist: el9
+          - target: centos+epel-7-x86_64
+            arch: x86_64
+            dist: el7
+          - target: opensuse-leap-15.5-x86_64
+            arch: x86_64
+            dist: suse.lp155
+
+    steps:
+      - name: Install EPEL
+        run: dnf -y install epel-release
+
+      - name: Install mock and rpm-build
+        run: |
+          dnf -y install mock rpm-build
+          echo "config_opts['print_main_output'] = True" >>/etc/mock/site-defaults.cfg
+
+      - name: Download spec
+        uses: actions/download-artifact@v3
+        with:
+          name: warewulf.spec
+
+      - name: Set the expected version
+        run: |
+          echo "EXPECTED_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      - name: Download dist
+        uses: actions/download-artifact@v3
+        with:
+          name: warewulf-${{ env.EXPECTED_VERSION }}.tar.gz
+
+      - name: Set RPM and SRPM
+        run: |
+          VERSION=$(rpm -q --qf "%{VERSION}\n" --specfile warewulf.spec)
+          GENERIC_RELEASE=$(rpm -q --qf "%{RELEASE}\n" --specfile warewulf.spec | cut -d. -f1-2)
+          RPM=warewulf-${VERSION}-${GENERIC_RELEASE}.${{ matrix.dist }}.${{ matrix.arch }}.rpm
+          SRPM=warewulf-${VERSION}-${GENERIC_RELEASE}.${{ matrix.dist }}.src.rpm
+          echo "RPM=${RPM}" >> $GITHUB_ENV
+          echo "SRPM=${SRPM}" >> $GITHUB_ENV
+
+      - name: Build RPMs and run tests
+        run: |
+          mock -r ${{ matrix.target }} --rebuild --spec=warewulf.spec --sources=.
+          mock -r ${{ matrix.target }} --chroot -- make -C /builddir/build/BUILD/warewulf-${{ env.EXPECTED_VERSION }} test
+
+      - name: Upload RPM
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.RPM }}
+          path: /var/lib/mock/${{ matrix.target }}/result/${{ env.RPM }}
+
+      - name: Upload SRPM
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.SRPM }}
+          path: /var/lib/mock/${{ matrix.target }}/result/${{ env.SRPM }}
+
+      - name: Attach RPM and SRPM to release
+        uses: xresloader/upload-to-github-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          release_id: ${{ github.event.release.id }}
+          file: "/var/lib/mock/${{ matrix.target }}/result/${{ env.RPM }};/var/lib/mock/${{ matrix.target }}/result/${{ env.SRPM }}"

@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ability to duplicate an image with `wwctl container copy` or the API
 - New documentation for container duplication procedure
 - Configure network device MTU in nework configuration scripts. #807
+- OpenSUSE Leap build rebased to 15.5 (15.3 is EOL)
+- New build for Rocky Linux 9
 
 ### Fixed
 - Fix hard CPU architecture on proto's installation in the Makefile

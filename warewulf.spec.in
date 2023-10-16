@@ -17,7 +17,6 @@ Release: @RELEASE@%{?dist}
 License: BSD-3-Clause
 URL:     https://github.com/hpcng/warewulf
 Source:  https://github.com/hpcng/warewulf/releases/download/v%{version}/warewulf-%{version}.tar.gz
-%{?with_offline:Source2: vendor.tgz}
 
 ExclusiveOS: linux
 
@@ -69,8 +68,7 @@ system for large clusters of bare metal and/or virtual systems.
 
 
 %build
-%{?with_offline:OFFLINE_BUILD=1}
-# Install to sharedstatedir by redirecting LOCALSTATEDIR
+export OFFLINE_BUILD=1
 make defaults \
     PREFIX=%{_prefix} \
     BINDIR=%{_bindir} \
@@ -91,6 +89,7 @@ make
 
 
 %install
+export OFFLINE_BUILD=1
 export NO_BRP_STALE_LINK_ERROR=yes
 make install \
     DESTDIR=%{buildroot}

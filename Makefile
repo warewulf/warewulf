@@ -10,10 +10,12 @@ build: wwctl wwclient wwapid wwapic wwapird etc/defaults.conf etc/bash_completio
 .PHONY: docs
 docs: man_pages reference
 
-.PHONY: vendor
 vendor:
-	go mod tidy -v
 	go mod vendor
+
+.PHONY: tidy
+tidy:
+	go mod tidy
 
 config = etc/wwapic.conf \
 	etc/wwapid.conf \
@@ -26,20 +28,6 @@ config: $(config)
 
 %: %.in
 	sed -ne "$(foreach V,$(VARLIST),s,@$V@,$(strip $($V)),g;)p" $@.in >$@
-
-ifndef OFFLINE_BUILD
-wwctl: vendor
-wwclient: vendor
-update_configuration: vendor
-wwapid: vendor
-wwapic: vendor
-wwapird: vendor
-dist: vendor
-
-lint: $(GOLANGCI_LINT)
-
-$(protofiles): $(PROTOC) $(PROTOC_GEN_GRPC_GATEWAY) $(PROTOC_GEN_GO) $(PROTOC_GEN_GO_GRPC)
-endif
 
 wwctl: $(config) $(call godeps,cmd/wwctl/main.go)
 	GOOS=linux go build -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o wwctl cmd/wwctl/main.go
@@ -65,7 +53,7 @@ man_pages: wwctl $(wildcard docs/man/man5/*.5)
 	mkdir -p docs/man/man1
 	./wwctl --emptyconf genconfig man docs/man/man1
 	gzip --force docs/man/man1/*.1
-	gzip --force --keep docs/man/man5/*.5
+	for manpage in docs/man/man5/*.5; do gzip <$${manpage} >$${manpage}.gz; done
 
 etc/defaults.conf: wwctl
 	./wwctl --emptyconf genconfig defaults >etc/defaults.conf
@@ -168,7 +156,6 @@ protofiles = internal/pkg/api/routes/wwapiv1/routes.pb.go \
 	internal/pkg/api/routes/wwapiv1/routes.pb.gw.go \
 	internal/pkg/api/routes/wwapiv1/routes_grpc.pb.go
 .PHONY: proto
-
 proto: $(protofiles)
 
 routes_proto = internal/pkg/api/routes/v1/routes.proto
@@ -220,9 +207,23 @@ cleandocs:
 
 .PHONY: cleanvendor
 cleanvendor:
-ifndef OFFLINE_BUILD
 	rm -rf vendor
-endif
 
 .PHONY: clean
-clean: cleanconfig cleantest cleandist cleantools cleanmake cleanbin cleandocs cleanvendor
+clean: cleanconfig cleantest cleandist cleantools cleanmake cleanbin cleandocs
+
+ifndef OFFLINE_BUILD
+wwctl: vendor
+wwclient: vendor
+update_configuration: vendor
+wwapid: vendor
+wwapic: vendor
+wwapird: vendor
+dist: vendor
+
+lint: $(GOLANGCI_LINT)
+
+$(protofiles): $(PROTOC) $(PROTOC_GEN_GRPC_GATEWAY) $(PROTOC_GEN_GO) $(PROTOC_GEN_GO_GRPC)
+
+clean: cleanvendor
+endif

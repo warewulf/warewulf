@@ -81,7 +81,7 @@ WWCLIENTDIR ?= /warewulf
 CONFIG := $(shell pwd)
 
 # helper functions
-godeps=$(shell go list -deps -f '{{if not .Standard}}{{ $$dep := . }}{{range .GoFiles}}{{$$dep.Dir}}/{{.}} {{end}}{{end}}' $(1) | sed "s%${PWD}/%%g")
+godeps=$(shell go list -mod vendor -deps -f '{{if not .Standard}}{{ $$dep := . }}{{range .GoFiles}}{{$$dep.Dir}}/{{.}} {{end}}{{end}}' $(1) | sed "s%${PWD}/%%g")
 
 # use GOPROXY for older git clients and speed up downloads
 GOPROXY ?= https://proxy.golang.org
