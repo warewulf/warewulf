@@ -45,7 +45,7 @@ func Test_BuildKernel(t *testing.T) {
 		for _, tt := range kernelBuildTests {
 			_, err = os.Create(path.Join(kernelDir, "boot", tt.kernelFileName))
 			assert.NoError(t, err)
-			err = os.MkdirAll(path.Join(kernelDir, "lib/modules", tt.kernelVersion), 0755)
+			err = os.MkdirAll(path.Join(kernelDir, "lib/modules", tt.kernelVersion, "/nested"), 0755)
 			assert.NoError(t, err)
 			_, err = os.Create(path.Join(kernelDir, "lib/modules", tt.kernelVersion, "test-module"))
 			assert.NoError(t, err)
@@ -63,7 +63,7 @@ func Test_BuildKernel(t *testing.T) {
 				assert.FileExists(t, path.Join(srvDir, "kernel", tt.kernelName, "kmods.img"))
 				files, err := util.CpioFiles(path.Join(srvDir, "kernel", tt.kernelName, "kmods.img"))
 				assert.NoError(t, err)
-				assert.Equal(t, files, []string{"lib/firmware/test-firmware", "lib/modules/1.2.3.4/symlink-module", "lib/modules/1.2.3.4/test-module"})
+				assert.ElementsMatch(t, files, []string{"lib/firmware/test-firmware", "lib/modules/1.2.3.4/symlink-module", "lib/modules/1.2.3.4/test-module", "lib/modules/1.2.3.4/nested"})
 			} else {
 				assert.Error(t, err)
 			}

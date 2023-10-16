@@ -117,7 +117,11 @@ kernel version. A name for this kernel and were to find has also to be
 supplied
 */
 func Build(kernelVersion, kernelName, root string) error {
-	kernelDrivers := []string{path.Join("lib/modules/", kernelVersion, "*"), "lib/firmware/*"}
+	kernelDrivers := []string{path.Join("lib/modules/",
+		kernelVersion, "*"),
+		"lib/firmware/*",
+		"lib/modprobe.d",
+		"lib/modules-load.d"}
 	kernelDestination := KernelImage(kernelName)
 	driversDestination := KmodsImage(kernelName)
 	versionDestination := KernelVersionFile(kernelName)

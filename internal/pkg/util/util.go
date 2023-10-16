@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	"io/fs"
 	"math/rand"
 	"net"
 	"os"
@@ -248,15 +249,17 @@ func FindFiles(path string) []string {
 	return ret
 }
 
-// ******************************************************************************
+/*
+Finds all files under a given directory with tar like include and ignore patterns.
+/foo/*
+will match /foo/baar/ and /foo/baar/sibling
+*/
 func FindFilterFiles(
 	path string,
-	include []string,
-	ignore []string,
+	includePattern []string,
+	ignorePattern []string,
 	ignore_xdev bool) (ofiles []string, err error) {
-
-	wwlog.Debug("Finding files: %s", path)
-
+	wwlog.Debug("Finding files: %s include: %s ignore: %s", path, includePattern, ignorePattern)
 	cwd, err := os.Getwd()
 	if err != nil {
 		return ofiles, err
@@ -268,13 +271,16 @@ func FindFilterFiles(
 	if err != nil {
 		return ofiles, errors.Wrapf(err, "Failed to change path: %s", path)
 	}
-
-	for i := range ignore {
-		ignore[i] = strings.TrimLeft(ignore[i], "/")
-		ignore[i] = strings.TrimPrefix(ignore[i], "./")
-		wwlog.Debug("Ignore pattern (%d): %s", i, ignore[i])
+	// expand our include list as fspath.Match with /foo/* would catch /foo/baar but
+	// not /foo/baar/sibling
+	var globedInclude []string
+	for _, include := range includePattern {
+		globed, err := filepath.Glob(include)
+		if err != nil {
+			return ofiles, err
+		}
+		globedInclude = append(globedInclude, globed...)
 	}
-
 	if ignore_xdev {
 		wwlog.Debug("Ignoring cross-device (xdev) files")
 	}
@@ -285,75 +291,47 @@ func FindFilterFiles(
 	}
 
 	dev := path_stat.Sys().(*syscall.Stat_t).Dev
-
-	includeDirs := []string{}
-	ignoreDirs := []string{}
-	err = filepath.Walk(".", func(location string, info os.FileInfo, err error) error {
-		wwlog.Debug(location)
-		if err != nil {
-			return err
+	for _, inc := range globedInclude {
+		wwlog.Debug("inc %s", inc)
+		stat, err := os.Stat(inc)
+		if os.IsNotExist(err) {
+			// there may be broken softlinks
+			continue
+		} else if err != nil {
+			return ofiles, err
 		}
-
-		if location == "." {
-			return nil
-		}
-
-		var file string
-		if info.IsDir() {
-			file = location + "/"
+		if stat.IsDir() {
+			// get the rest of dir
+			err = filepath.WalkDir(inc, func(location string, info fs.DirEntry, err error) error {
+				if err != nil {
+					return err
+				}
+				if location == "." {
+					return nil
+				}
+				fsInfo, err := info.Info()
+				if err != nil {
+					return err
+				}
+				if ignore_xdev && fsInfo.Sys().(*syscall.Stat_t).Dev != dev {
+					wwlog.Debug("Ignored (cross-device): %s", location)
+					return nil
+				}
+				for _, ignored_pat := range ignorePattern {
+					if ignored, _ := filepath.Match(ignored_pat, location); ignored {
+						return filepath.SkipDir
+					}
+				}
+				ofiles = append(ofiles, location)
+				return nil
+			})
+			if err != nil {
+				return ofiles, err
+			}
 		} else {
-			file = location
+			ofiles = append(ofiles, inc)
 		}
-
-		if ignore_xdev && info.Sys().(*syscall.Stat_t).Dev != dev {
-			wwlog.Debug("Ignored (cross-device): %s", file)
-			return nil
-		}
-
-		for _, ignoreDir := range ignoreDirs {
-			if strings.HasPrefix(location, ignoreDir) {
-				wwlog.Debug("Ignored (dir): %s", file)
-				return nil
-			}
-		}
-		for i, pattern := range ignore {
-			m, err := filepath.Match(pattern, location)
-			if err != nil {
-				return err
-			} else if m {
-				wwlog.Debug("Ignored (%d): %s", i, file)
-				if info.IsDir() {
-					ignoreDirs = append(ignoreDirs, file)
-				}
-				return nil
-			}
-		}
-
-		for _, includeDir := range includeDirs {
-			if strings.HasPrefix(location, includeDir) {
-				wwlog.Debug("Included (dir): %s", file)
-				ofiles = append(ofiles, location)
-				return nil
-			}
-		}
-		for i, pattern := range include {
-			m, err := filepath.Match(pattern, location)
-			if err != nil {
-				return err
-			} else if m {
-				wwlog.Debug("Included (%d): %s", i, file)
-				ofiles = append(ofiles, location)
-				if info.IsDir() {
-					includeDirs = append(includeDirs, file)
-				} else {
-					wwlog.Debug("No matched (%d): %s", i, file)
-				}
-				return nil
-			}
-		}
-
-		return nil
-	})
+	}
 
 	return ofiles, err
 }
