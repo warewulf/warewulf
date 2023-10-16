@@ -68,5 +68,5 @@ jobs:
           cp -r userdocs/_build/html ~/warewulf-web/static/docs/${GITHUB_REF##*/}
           cd ~/warewulf-web
           git add static/docs/${GITHUB_REF##*/}
-          git commit -m "Update ${GITHUB_REF##*/} docs"
+          git commit --allow-empty -m "Update ${GITHUB_REF##*/} docs"
           git push
