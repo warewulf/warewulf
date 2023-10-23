@@ -1,9 +1,9 @@
 package node
 
 import (
-	"testing"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
+	"testing"
 )
 
 func newConstructorPrimaryNetworkTest() NodeYaml {
@@ -107,13 +107,12 @@ func Test_Primary_Network(t *testing.T) {
 	})
 }
 
-
-var findDiscoverableNodeTests = []struct{
-	description string
-	discoverable_nodes []string
-	discovered_node string
+var findDiscoverableNodeTests = []struct {
+	description          string
+	discoverable_nodes   []string
+	discovered_node      string
 	discovered_interface string
-	succeed bool
+	succeed              bool
 }{
 	{"no discoverable nodes", []string{}, "", "", false},
 	{"all nodes discoverable", []string{"test_node1", "test_node2", "test_node3", "test_node4"}, "test_node1", "net0", true},

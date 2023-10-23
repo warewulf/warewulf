@@ -1,18 +1,18 @@
 package warewulfd
 
 import (
-	"testing"
-	"github.com/stretchr/testify/assert"
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
-var getOverlayFileTests = []struct{
+var getOverlayFileTests = []struct {
 	description string
-	node string
-	context string
-	overlays []string
-	result string
-	succeed bool
+	node        string
+	context     string
+	overlays    []string
+	result      string
+	succeed     bool
 }{
 	{"empty", "", "", nil, "", true},
 	{"empty node", "node1", "", nil, "", true},

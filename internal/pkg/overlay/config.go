@@ -5,8 +5,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
 func OverlaySourceTopDir() string {
@@ -48,7 +48,7 @@ func OverlayImage(nodeName string, context string, overlayNames []string) string
 		}
 		name = "__" + strings.ToUpper(context) + "__.img"
 	} else if len(overlayNames) > 0 {
-		name = strings.Join(overlayNames, "-")+".img"
+		name = strings.Join(overlayNames, "-") + ".img"
 	} else {
 		wwlog.Warn("unable to generate overlay image path: no context or overlays specified")
 		return ""

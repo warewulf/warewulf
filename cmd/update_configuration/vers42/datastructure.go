@@ -4,7 +4,7 @@ package vers42
  * YAML data representations
  ******/
 
-//type nodeYaml struct {
+// type nodeYaml struct {
 type NodeYaml struct { // <-Needs to be exported
 	NodeProfiles map[string]*NodeConf
 	Nodes        map[string]*NodeConf

@@ -7,11 +7,11 @@ import (
 var (
 	powerCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:   "console [OPTIONS] NODENAME",
-		Short: "Connect to IPMI console",
-		Long:  "Start a new IPMI console for NODENAME.",
-		Args:  cobra.MinimumNArgs(1),
-		RunE:  CobraRunE,
+		Use:                   "console [OPTIONS] NODENAME",
+		Short:                 "Connect to IPMI console",
+		Long:                  "Start a new IPMI console for NODENAME.",
+		Args:                  cobra.MinimumNArgs(1),
+		RunE:                  CobraRunE,
 	}
 )
 

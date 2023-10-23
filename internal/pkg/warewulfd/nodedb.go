@@ -79,7 +79,6 @@ func getNodeOrSetDiscoverable(hwaddr string) (node.NodeInfo, error) {
 	// to ensure the condition on which the node is updated is still satisfied
 	// after the DB is read back in.
 
-
 	n, err := getNode(hwaddr)
 	if err == nil {
 		return n, nil

@@ -1,6 +1,5 @@
 package config
 
-
 // DHCPConf represents the configuration for the DHCP service that
 // Warewulf will configure.
 type DHCPConf struct {

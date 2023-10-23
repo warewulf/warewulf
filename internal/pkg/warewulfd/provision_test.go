@@ -1,24 +1,23 @@
 package warewulfd
 
 import (
+	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path"
 	"testing"
-	"github.com/stretchr/testify/assert"
 
-	"github.com/hpcng/warewulf/internal/pkg/node"
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/node"
 )
 
-
-var provisionSendTests = []struct{
+var provisionSendTests = []struct {
 	description string
-	url string
-	body string
-	status int
+	url         string
+	body        string
+	status      int
 }{
 	{"system overlay", "/overlay-system/00:00:00:ff:ff:ff", "system overlay", 200},
 	{"runtime overlay", "/overlay-runtime/00:00:00:ff:ff:ff", "runtime overlay", 200},
@@ -30,12 +29,15 @@ func Test_ProvisionSend(t *testing.T) {
 	file, err := os.CreateTemp(os.TempDir(), "ww-test-nodes.conf-*")
 	assert.NoError(t, err)
 	defer file.Close()
-	{ _, err := file.WriteString(`WW_INTERNAL: 43
+	{
+		_, err := file.WriteString(`WW_INTERNAL: 43
 nodes:
   n1:
     network devices:
       default:
-        hwaddr: 00:00:00:ff:ff:ff`); assert.NoError(t, err) }
+        hwaddr: 00:00:00:ff:ff:ff`)
+		assert.NoError(t, err)
+	}
 	assert.NoError(t, file.Sync())
 	node.ConfigFile = file.Name()
 	dbErr := LoadNodeDB()

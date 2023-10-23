@@ -1,25 +1,25 @@
 package overlay
 
 import (
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/sassoftware/go-rpmutils/cpio"
+	"github.com/stretchr/testify/assert"
 	"io"
 	"os"
 	"path"
-	"strings"
 	"sort"
+	"strings"
 	"testing"
-	"github.com/stretchr/testify/assert"
-	"github.com/sassoftware/go-rpmutils/cpio"
-	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
-	"github.com/hpcng/warewulf/internal/pkg/node"
 )
 
-var buildOverlayTests = []struct{
+var buildOverlayTests = []struct {
 	description string
-	nodeName string
-	context string
-	overlays []string
-	image string
-	contents []string
+	nodeName    string
+	context     string
+	overlays    []string
+	image       string
+	contents    []string
 }{
 	{"empty", "", "", nil, "", nil},
 	{"empty node", "node1", "", nil, "", nil},
@@ -42,9 +42,15 @@ func Test_BuildOverlay(t *testing.T) {
 	defer os.RemoveAll(overlayDir)
 	conf.Paths.WWOverlaydir = overlayDir
 	assert.NoError(t, os.Mkdir(path.Join(overlayDir, "o1"), 0700))
-	{ _, err := os.Create(path.Join(overlayDir, "o1", "o1.txt")); assert.NoError(t, err) }
+	{
+		_, err := os.Create(path.Join(overlayDir, "o1", "o1.txt"))
+		assert.NoError(t, err)
+	}
 	assert.NoError(t, os.Mkdir(path.Join(overlayDir, "o2"), 0700))
-	{ _, err := os.Create(path.Join(overlayDir, "o2", "o2.txt")); assert.NoError(t, err) }
+	{
+		_, err := os.Create(path.Join(overlayDir, "o2", "o2.txt"))
+		assert.NoError(t, err)
+	}
 
 	for _, tt := range buildOverlayTests {
 		assert.True(t, (tt.image != "" && tt.contents != nil) || (tt.image == "" && tt.contents == nil),
@@ -78,12 +84,12 @@ func Test_BuildOverlay(t *testing.T) {
 	}
 }
 
-var buildAllOverlaysTests = []struct{
-	description string
-	nodes []string
-	systemOverlays []string
+var buildAllOverlaysTests = []struct {
+	description     string
+	nodes           []string
+	systemOverlays  []string
 	runtimeOverlays []string
-	succeed bool
+	succeed         bool
 }{
 	{"no nodes", nil, nil, nil, true},
 	{"single empty node", []string{"node1"}, nil, nil, false},
@@ -101,7 +107,6 @@ var buildAllOverlaysTests = []struct{
 	{"two nodes with full overlays", []string{"node1", "node2"},
 		[]string{"o1", "o1,o2"}, []string{"o2", "o2"}, true},
 }
-
 
 func Test_BuildAllOverlays(t *testing.T) {
 	conf := warewulfconf.Get()
@@ -145,12 +150,12 @@ func Test_BuildAllOverlays(t *testing.T) {
 	}
 }
 
-var buildSpecificOverlaysTests = []struct{
+var buildSpecificOverlaysTests = []struct {
 	description string
-	nodes []string
-	overlays string
-	images []string
-	succeed bool
+	nodes       []string
+	overlays    string
+	images      []string
+	succeed     bool
 }{
 	{"no nodes", nil, "", nil, true},
 	{"single empty node", []string{"node1"}, "", nil, false},
@@ -164,7 +169,6 @@ var buildSpecificOverlaysTests = []struct{
 	{"two nodes with multi overlays", []string{"node1", "node2"}, "o1,o2",
 		[]string{"node1/o1.img", "node1/o2.img", "node2/o1.img", "node2/o2.img"}, true},
 }
-
 
 func Test_BuildSpecificOverlays(t *testing.T) {
 	conf := warewulfconf.Get()
@@ -220,13 +224,17 @@ func dirIsEmpty(t *testing.T, name string) bool {
 
 func cpioFiles(t *testing.T, name string) (files []string) {
 	f, openErr := os.Open(name)
-	if openErr != nil { return }
+	if openErr != nil {
+		return
+	}
 	defer f.Close()
 
 	reader := cpio.NewReader(f)
 	for {
 		header, err := reader.Next()
-		if err != nil { return }
+		if err != nil {
+			return
+		}
 		files = append(files, header.Filename())
 	}
 }

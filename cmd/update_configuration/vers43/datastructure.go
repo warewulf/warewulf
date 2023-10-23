@@ -4,7 +4,7 @@ package vers43
  * YAML data representations
  ******/
 
-//type nodeYaml struct {
+// type nodeYaml struct {
 type NodeYaml struct { // <- needs to be exported
 	WWInternal   int `yaml:"WW_INTERNAL"`
 	NodeProfiles map[string]*NodeConf

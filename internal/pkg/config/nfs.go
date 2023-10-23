@@ -1,10 +1,8 @@
 package config
 
-
 import (
 	"github.com/creasty/defaults"
 )
-
 
 // NFSConf represents the NFS configuration that will be used by
 // Warewulf to generate exports on the server and mounts on compute
@@ -15,7 +13,6 @@ type NFSConf struct {
 	SystemdName     string           `yaml:"systemd name" default:"nfsd"`
 }
 
-
 // An NFSExportConf reprents a single NFS export / mount.
 type NFSExportConf struct {
 	Path          string `yaml:"path" default:"/dev/null"`
@@ -23,7 +20,6 @@ type NFSExportConf struct {
 	MountOptions  string `default:"defaults" yaml:"mount options"`
 	Mount         bool   `default:"true" yaml:"mount"`
 }
-
 
 // Implements the Unmarshal interface for NFSConf to set default
 // values.
