@@ -20,7 +20,7 @@ to the tftp directory
 func CopyShimGrub() (err error) {
 	conf := warewulfconf.Get()
 	wwlog.Debug("copy shim and grub binaries from host")
-	shimPath := container.ShimFindPath("/")
+	shimPath := container.ShimFind("")
 	if shimPath == "" {
 		return fmt.Errorf("no shim found on the host os")
 	}
@@ -29,7 +29,7 @@ func CopyShimGrub() (err error) {
 		return err
 	}
 	_ = os.Chmod(path.Join(conf.Paths.Tftpdir, "warewulf", "shim.efi"), 0o755)
-	grubPath := container.GrubFindPath("/")
+	grubPath := container.GrubFind("")
 	if grubPath == "" {
 		return fmt.Errorf("no grub found on host os")
 	}

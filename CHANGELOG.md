@@ -133,6 +133,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the host running warewulf. If node has container it will get these binaries from the
   container image.
 
+- Added support for booting nodes with grub. Enable this behavior using 
+  warewulf.grubboot: true in warewulf.conf. For unknown nodes, grub.efi 
+  and shim.efi are extracted from the Warewulf host. If the booted node 
+  has a container these binaries are extracted from the container image.
 ## [4.4.0] 2023-01-18
 
 ### Added

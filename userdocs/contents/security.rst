@@ -55,7 +55,7 @@ when a user lands on a compute node, there is generally nothing
 stopping them from spoofing a provision request and downloading the
 provisioned raw materials for inspection.
 
-In Warewulf there are ways to secure the provisioning process:
+In Warewulf there are ways multiple to secure the provisioning process:
 
 #. The provisioning connections and transfers are not secure due to
    not being able to manage a secure root of trust through a PXE

@@ -16,8 +16,10 @@ import (
 // TODO: https://github.com/danderson/netboot/blob/master/pixiecore/dhcp.go
 // TODO: https://github.com/pin/tftp
 /*
-wrapper type for the server mux as him requests http://efiboot//grub.efi which is filtered out by http to `301 Moved Permanently` which
-which shim.fi can't handle. So filter out `//` before they hit http
+wrapper type for the server mux as shim requests http://efiboot//grub.efi
+which is filtered out by http to `301 Moved Permanently` what
+shim.efi can't handle. So filter out `//` before they hit go/http.
+Makes go/http more to behave like apache
 */
 type slashFix struct {
 	mux http.Handler

@@ -24,13 +24,6 @@ func ProfileSet(set *wwapiv1.ProfileSetParameter) (err error) {
 	if err != nil {
 		return errors.Wrap(err, "Could not open database")
 	}
-
-	var pConf node.NodeConf
-	err = yaml.Unmarshal([]byte(set.NodeConfYaml), &pConf)
-	if err != nil {
-		wwlog.Error(fmt.Sprintf("%v", err.Error()))
-		return
-	}
 	dbError := apinode.DbSave(&nodeDB)
 	return dbError
 }

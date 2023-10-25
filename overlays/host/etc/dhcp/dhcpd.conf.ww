@@ -27,7 +27,13 @@ option architecture-type   code 93  = unsigned integer 16;
 {{- if $.Warewulf.GrubBoot }}
 if substring (option vendor-class-identifier, 0, 9) = "PXEClient" {
   next-server {{ $.Ipaddr }};
-  filename "warewulf/shim.efi";
+  if substring (option vendor-class-identifier, 15, 5) = "00000" {
+    # pure BIOS clients will get iPXE configuration
+    filename "http://{{$.Ipaddr}}:{{$.Warewulf.Port}}/ipxe/${mac:hexhyp}";
+  } else {
+    # EFI clients will get shim and grub instead
+    filename "warewulf/shim.efi";
+  }
 } elsif substring (option vendor-class-identifier, 0, 10) = "HTTPClient" {
   filename "http://{{$.Ipaddr}}:{{$.Warewulf.Port}}/efiboot/shim.efi";
 }

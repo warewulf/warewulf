@@ -34,7 +34,6 @@ type TemplateStruct struct {
 	Tftp          warewulfconf.TFTPConf
 	Paths         warewulfconf.BuildConfig
 	AllNodes      []node.NodeInfo
-	ProfileMap    map[string]*node.NodeInfo
 	node.NodeConf
 	// backward compatiblity
 	Container string
@@ -55,10 +54,6 @@ func InitStruct(nodeInfo *node.NodeInfo) TemplateStruct {
 	tstruct.AllNodes, err = nodeDB.FindAllNodes()
 	if err != nil {
 		wwlog.Warn("couldn't get all nodes: %s", err)
-	}
-	tstruct.ProfileMap, err = nodeDB.MapAllProfiles()
-	if err != nil {
-		wwlog.Warn("couldn't get all profiles: %s", err)
 	}
 	// init some convenience vars
 	tstruct.Id = nodeInfo.Id.Get()

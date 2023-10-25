@@ -1,13 +1,13 @@
-===========
-Use of Grub
-===========
+===============
+Boot Management
+===============
 
 Instead of the iPXE starter a combination of `shim and GRUB <https://www.suse.com/c/uefi-secure-boot-details/>`_
 can be used with the advantage that secure boot can be used. That means 
 that only the signed kernel of a distribution can be booted. This can
 be a huge security benefit for some scenarios.
 
-In order to enable the grub boot method it has to ne enabled in `warewulf.conf`.
+In order to enable the grub boot method it has to be enabled in `warewulf.conf`.
 Nodes which are not known to warewulf will then booted with the shim/grub from
 the host on which warewulf is installed.
 
