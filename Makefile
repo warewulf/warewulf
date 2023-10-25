@@ -142,7 +142,7 @@ init:
 	restorecon -r $(WWTFTPDIR)
 
 .PHONY: dist
-dist:
+dist: clean
 	rm -rf .dist/ $(WAREWULF)-$(VERSION).tar.gz
 	mkdir -p .dist/$(WAREWULF)-$(VERSION)
 	rsync -a --exclude=".*" --exclude "*~" * .dist/$(WAREWULF)-$(VERSION)/
