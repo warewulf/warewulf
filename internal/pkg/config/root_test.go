@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
 func TestDefaultRootConf(t *testing.T) {
 	conf := New()
 
@@ -58,7 +57,6 @@ func TestDefaultRootConf(t *testing.T) {
 	assert.NotEmpty(t, conf.Paths.WWClientdir)
 }
 
-
 func TestInitializedFromFile(t *testing.T) {
 	example_warewulf_conf := "WW_INTERNAL: 43"
 	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
@@ -73,7 +71,6 @@ func TestInitializedFromFile(t *testing.T) {
 	assert.NoError(t, conf.Read(tempWarewulfConf.Name()))
 	assert.True(t, conf.InitializedFromFile())
 }
-
 
 func TestExampleRootConf(t *testing.T) {
 	example_warewulf_conf := `WW_INTERNAL: 43
@@ -156,7 +153,6 @@ container mounts:
 	assert.Equal(t, "/etc/resolv.conf", conf.MountsContainer[0].Dest)
 	assert.True(t, conf.MountsContainer[0].ReadOnly)
 }
-
 
 func TestCache(t *testing.T) {
 	confOrig := New()

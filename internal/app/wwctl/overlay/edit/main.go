@@ -13,7 +13,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-
 const initialTemplate = `# This is a Warewulf Template file.
 #
 # This file (suffix '.ww') will be automatically rewritten without the suffix
@@ -34,7 +33,6 @@ const initialTemplate = `# This is a Warewulf Template file.
 # Time:   {{.BuildTime}}
 # Source: {{.BuildSource}}
 `
-
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	overlayName := args[0]

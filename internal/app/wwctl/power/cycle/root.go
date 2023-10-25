@@ -7,10 +7,10 @@ import (
 var (
 	powerCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:   "cycle [OPTIONS] [PATTERN ...]",
-		Short: "Power cycle the given node(s)",
-		Long:  "This command cycles power for a set of nodes specified by PATTERN.",
-		RunE:  CobraRunE,
+		Use:                   "cycle [OPTIONS] [PATTERN ...]",
+		Short:                 "Power cycle the given node(s)",
+		Long:                  "This command cycles power for a set of nodes specified by PATTERN.",
+		RunE:                  CobraRunE,
 	}
 )
 

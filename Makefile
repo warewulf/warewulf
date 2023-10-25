@@ -17,6 +17,10 @@ vendor:
 tidy:
 	go mod tidy
 
+.PHONY: fmt
+fmt:
+	go fmt ./...
+
 config = etc/wwapic.conf \
 	etc/wwapid.conf \
 	etc/wwapird.conf \

@@ -1,16 +1,16 @@
 package overlay
 
 import (
-	"testing"
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
+	"testing"
 )
 
-var overlayImageTests = []struct{
+var overlayImageTests = []struct {
 	description string
-	node string
-	context string
-	overlays []string
-	image string
+	node        string
+	context     string
+	overlays    []string
+	image       string
 }{
 	{"all empty", "", "", nil, ""},
 	{"empty with named context", "", "system", nil, "p/overlays/__SYSTEM__.img"},
@@ -30,7 +30,7 @@ func Test_OverlayImage(t *testing.T) {
 	for _, tt := range overlayImageTests {
 		t.Run(tt.description, func(t *testing.T) {
 			out := OverlayImage(tt.node, tt.context, tt.overlays)
-			if  tt.image != out {
+			if tt.image != out {
 				t.Errorf("got %q, want %q", out, tt.image)
 			}
 		})

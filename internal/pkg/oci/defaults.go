@@ -8,6 +8,6 @@ import (
 var defaultCachePath = filepath.Join(warewulfconf.Get().Warewulf.DataStore, "/container-cache/oci/")
 
 const (
-	blobPrefix       = "blobs"
-	rootfsPrefix     = "rootfs"
+	blobPrefix   = "blobs"
+	rootfsPrefix = "rootfs"
 )

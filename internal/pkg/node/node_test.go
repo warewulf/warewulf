@@ -3,8 +3,8 @@ package node
 import (
 	"testing"
 
-	"gopkg.in/yaml.v2"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/yaml.v2"
 )
 
 func TestNodeUpdate(t *testing.T) {
@@ -31,14 +31,13 @@ nodes:
 
 	err = nodeYaml.NodeUpdate(
 		NodeInfo{
-			Id: Entry {
+			Id: Entry{
 				value: []string{"n0000"},
 			},
 		},
 	)
 	assert.NoError(t, err)
 }
-
 
 func TestNodeDisk(t *testing.T) {
 	node_config := `WW_INTERNAL: 43

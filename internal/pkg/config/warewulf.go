@@ -1,6 +1,5 @@
 package config
 
-
 // WarewulfConf adds additional Warewulf-specific configuration to
 // BaseConf.
 type WarewulfConf struct {

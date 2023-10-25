@@ -1,9 +1,9 @@
 package overlay
 
 import (
-	"testing"
-	"github.com/stretchr/testify/assert"
 	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func Test_createIgnitionJson(t *testing.T) {

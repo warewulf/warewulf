@@ -79,7 +79,7 @@ func New(t *testing.T) (env *TestEnv) {
 		conf.Paths.WWChrootdir,
 		conf.Paths.WWProvisiondir,
 		conf.Paths.WWClientdir,
-	}{
+	} {
 		env.MkdirAll(t, confPath)
 	}
 
