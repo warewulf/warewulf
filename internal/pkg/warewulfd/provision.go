@@ -2,6 +2,7 @@ package warewulfd
 
 import (
 	"bytes"
+	"errors"
 	"net/http"
 	"path"
 	"strconv"
@@ -11,6 +12,7 @@ import (
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/kernel"
+	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
@@ -135,13 +137,19 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		} else {
 			context = rinfo.stage
 		}
+
 		stage_file, err = getOverlayFile(
-			node.Id.Get(),
+			node,
 			context,
 			request_overlays,
 			conf.Warewulf.AutobuildOverlays)
 
 		if err != nil {
+			if errors.Is(err, overlay.ErrDoesNotExist) {
+				w.WriteHeader(http.StatusNotFound)
+				wwlog.ErrorExc(err, "")
+				return
+			}
 			w.WriteHeader(http.StatusInternalServerError)
 			wwlog.ErrorExc(err, "")
 			return
