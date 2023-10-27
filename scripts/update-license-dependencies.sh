@@ -3,7 +3,7 @@
 set -e
 set -u
 
-go install github.com/google/go-licenses@v1.0.0
+go install github.com/google/go-licenses@v1.6.0
 
 if [ -d "vendor" ]; then
     echo "Please remove vendor directory before running this script"
