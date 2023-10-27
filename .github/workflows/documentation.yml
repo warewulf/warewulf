@@ -6,6 +6,8 @@ on:
     branches:
       - main
       - development
+    paths:
+      - 'userdocs/**'
   pull_request:
     branches:
       - main
