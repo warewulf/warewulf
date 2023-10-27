@@ -6,12 +6,14 @@ on:
     branches:
       - main
       - development
+      - v4.*.x
     paths:
       - 'userdocs/**'
   pull_request:
     branches:
       - main
       - development
+      - v4.*.x
     paths:
       - 'userdocs/**'
 
