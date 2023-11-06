@@ -74,8 +74,11 @@ func recursiveGetter(
 							if !targetValue.Elem().Field(i).MapIndex(sourceIter.Key()).IsValid() {
 								// Only write entries for which have real values. This matters for
 								// tags, as empty map elements can be created without this check
-								if ((sourceIter.Value().Interface()).(*Entry)).GotReal() {
-									str := getter((sourceIter.Value().Interface()).(*Entry))
+								// The alternative was following check:
+								// if ((sourceIter.Value().Interface()).(*Entry)).GotReal() {
+								//  but this one failed for tags in templates
+								str := getter((sourceIter.Value().Interface()).(*Entry))
+								if str != "" {
 									targetValue.Elem().Field(i).SetMapIndex(sourceIter.Key(), reflect.ValueOf(str))
 								}
 							}
