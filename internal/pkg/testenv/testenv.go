@@ -119,6 +119,18 @@ func (env *TestEnv) WriteFile(t *testing.T, fileName string, content string) {
 	assert.NoError(t, err)
 }
 
+// WriteFileAbs uses an absloute path in opposite to WriteFile
+func (env *TestEnv) WriteFileAbs(t *testing.T, fileName string, content string) {
+	dirName := filepath.Dir(fileName)
+	err := os.MkdirAll(dirName, 0755)
+	assert.NoError(t, err)
+	f, err := os.Create(fileName)
+	assert.NoError(t, err)
+	defer f.Close()
+	_, err = f.WriteString(content)
+	assert.NoError(t, err)
+}
+
 // ReadFile returns the content of fileName as converted to a
 // string.
 //
