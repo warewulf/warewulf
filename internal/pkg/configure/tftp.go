@@ -1,7 +1,6 @@
 package configure
 
 import (
-	"fmt"
 	"os"
 	"path"
 
@@ -20,7 +19,7 @@ func TFTP() error {
 		return err
 	}
 
-	fmt.Printf("Writing PXE files to: %s\n", tftpdir)
+	wwlog.Info("Writing PXE files to: %s\n", tftpdir)
 	copyCheck := make(map[string]bool)
 	for _, f := range controller.TFTP.IpxeBinaries {
 		if copyCheck[f] {
@@ -38,7 +37,7 @@ func TFTP() error {
 		os.Exit(0)
 	}
 
-	fmt.Printf("Enabling and restarting the TFTP services\n")
+	wwlog.Info("Enabling and restarting the TFTP services\n")
 	err = util.SystemdStart(controller.TFTP.SystemdName)
 	if err != nil {
 		wwlog.Error("%s", err)

@@ -17,6 +17,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/version"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
@@ -109,14 +110,14 @@ func insecureMode() {
 	result, err := reader.ReadString('\n')
 
 	if err != nil {
-		fmt.Printf("Fatal error: %v\n", err)
+		wwlog.Error("Fatal error: %v\n", err)
 	}
 
 	if !(result == "y\n") {
 		os.Exit(1)
 	}
 
-	fmt.Printf("wwapid running IN INSECURE MODE\n")
+	wwlog.SecWarn("wwapid running IN INSECURE MODE\n")
 }
 
 // Api implementation.

@@ -80,7 +80,7 @@ func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 			if err != nil {
 				return errors.Wrap(err, "failed to persist nodedb")
 			}
-			fmt.Printf("Set default profile to container: %s\n", containers[0])
+			wwlog.Info("Set default profile to container: %s\n", containers[0])
 		}
 	}
 	return
@@ -122,7 +122,7 @@ ARG_LOOP:
 		if err != nil {
 			wwlog.Error("Could not remove source: %s", containerName)
 		} else {
-			fmt.Printf("Container has been deleted: %s\n", containerName)
+			wwlog.Info("Container has been deleted: %s\n", containerName)
 		}
 	}
 
@@ -138,7 +138,7 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 
 	if cip.Name == "" {
 		name := path.Base(cip.Source)
-		fmt.Printf("Setting VNFS name: %s\n", name)
+		wwlog.Info("Setting VNFS name: %s\n", name)
 		cip.Name = name
 	}
 	if !container.ValidName(cip.Name) {
@@ -152,14 +152,14 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 
 	if util.IsDir(fullPath) {
 		if cip.Force {
-			fmt.Printf("Overwriting existing VNFS\n")
+			wwlog.Info("Overwriting existing VNFS\n")
 			err = os.RemoveAll(fullPath)
 			if err != nil {
 				wwlog.Error("%s", err)
 				return
 			}
 		} else if cip.Update {
-			fmt.Printf("Updating existing VNFS\n")
+			wwlog.Info("Updating existing VNFS\n")
 		} else {
 			err = fmt.Errorf("VNFS Name exists, specify --force, --update, or choose a different name: %s", cip.Name)
 			wwlog.Error("%s", err)
@@ -192,7 +192,7 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		return
 	}
 
-	fmt.Printf("Building container: %s\n", cip.Name)
+	wwlog.Info("Building container: %s\n", cip.Name)
 	err = container.Build(cip.Name, true)
 	if err != nil {
 		wwlog.Error("Could not build container %s: %s", cip.Name, err)
@@ -230,7 +230,7 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 			return
 		}
 
-		fmt.Printf("Set default profile to container: %s\n", cip.Name)
+		wwlog.Info("Set default profile to container: %s\n", cip.Name)
 		err = warewulfd.DaemonReload()
 		if err != nil {
 			err = errors.Wrap(err, "failed to reload warewulf daemon")

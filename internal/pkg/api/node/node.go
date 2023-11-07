@@ -178,7 +178,7 @@ func NodeDeleteParameterCheck(ndp *wwapiv1.NodeDeleteParameter, console bool) (n
 	}
 
 	if len(nodeList) == 0 {
-		fmt.Printf("No nodes found\n")
+		wwlog.Info("No nodes found\n")
 	}
 	return
 }
@@ -207,7 +207,7 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 	if set == nil {
 		err = fmt.Errorf("node set parameter is nil")
 		if console {
-			fmt.Printf("%v\n", err)
+			wwlog.Info("%v\n", err)
 			return
 		}
 	}
@@ -215,7 +215,7 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 	if set.NodeNames == nil {
 		err = fmt.Errorf("node set parameter: NodeNames is nil")
 		if console {
-			fmt.Printf("%v\n", err)
+			wwlog.Info("%v\n", err)
 			return
 		}
 	}
@@ -236,7 +236,7 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 
 	if set.AllNodes || (len(set.NodeNames) == 0 && len(nodes) > 0) {
 		if console {
-			fmt.Printf("\n*** WARNING: This command will modify all nodes! ***\n\n")
+			wwlog.Info("\n*** WARNING: This command will modify all nodes! ***\n\n")
 		}
 	} else {
 		nodes = node.FilterByName(nodes, set.NodeNames)
@@ -244,7 +244,7 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 
 	if len(nodes) == 0 {
 		if console {
-			fmt.Printf("No nodes found\n")
+			wwlog.Info("No nodes found\n")
 		}
 		return
 	}

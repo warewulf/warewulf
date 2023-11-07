@@ -1,7 +1,6 @@
 package imprt
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/hpcng/warewulf/internal/pkg/container"
@@ -54,7 +53,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Error("Failed building kernel: %s", err)
 		os.Exit(1)
 	} else {
-		fmt.Printf("%s: %s\n", kernelName, output)
+		wwlog.Info("%s: %s\n", kernelName, output)
 	}
 
 	if SetDefault {
@@ -81,7 +80,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return errors.Wrap(err, "failed to persist nodedb")
 		}
-		fmt.Printf("Set default kernel version to: %s\n", args[0])
+		wwlog.Info("Set default kernel version to: %s\n", args[0])
 		err = warewulfd.DaemonReload()
 		if err != nil {
 			return errors.Wrap(err, "failed to reload warewulf daemon")

@@ -1,7 +1,6 @@
 package list
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/hpcng/warewulf/internal/pkg/kernel"
@@ -26,9 +25,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		nodemap[n.Kernel.Override.Get()]++
 	}
 
-	fmt.Printf("%-35s %-25s %-6s\n", "KERNEL NAME", "KERNEL VERSION", "NODES")
+	wwlog.Info("%-35s %-25s %-6s\n", "KERNEL NAME", "KERNEL VERSION", "NODES")
 	for _, k := range kernels {
-		fmt.Printf("%-35s %-25s %6d\n", k, kernel.GetKernelVersion(k), nodemap[k])
+		wwlog.Info("%-35s %-25s %6d\n", k, kernel.GetKernelVersion(k), nodemap[k])
 	}
 
 	return nil

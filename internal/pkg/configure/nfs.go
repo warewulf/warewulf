@@ -1,8 +1,6 @@
 package configure
 
 import (
-	"fmt"
-
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
@@ -27,7 +25,7 @@ func NFS() error {
 		} else {
 			wwlog.Info("host overlays are disabled, did not modify exports")
 		}
-		fmt.Printf("Enabling and restarting the NFS services\n")
+		wwlog.Info("Enabling and restarting the NFS services")
 		if controller.NFS.SystemdName == "" {
 			err := util.SystemdStart("nfs-server")
 			if err != nil {

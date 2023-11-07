@@ -46,8 +46,8 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			}
 		}
 
-		fmt.Printf("%-20s %-20s %-25s %-10s\n", "NODENAME", "STAGE", "SENT", "LASTSEEN (s)")
-		fmt.Printf("%s\n", strings.Repeat("=", 80))
+		wwlog.Info("%-20s %-20s %-25s %-10s\n", "NODENAME", "STAGE", "SENT", "LASTSEEN (s)")
+		wwlog.Info("%s\n", strings.Repeat("=", 80))
 
 		wwlog.Verbose("Building sort index")
 		var statuses []*wwapiv1.NodeStatus
@@ -106,7 +106,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 				} else if rightnow-o.Lastseen >= int64(controller.Warewulf.UpdateInterval+5) {
 					color.Yellow("%-20s %-20s %-25s %-10d\n", o.NodeName, o.Stage, o.Sent, rightnow-o.Lastseen)
 				} else {
-					fmt.Printf("%-20s %-20s %-25s %-10d\n", o.NodeName, o.Stage, o.Sent, rightnow-o.Lastseen)
+					wwlog.Info("%-20s %-20s %-25s %-10d\n", o.NodeName, o.Stage, o.Sent, rightnow-o.Lastseen)
 				}
 			} else {
 				color.HiBlack("%-20s %-20s %-25s %-10s\n", o.NodeName, "--", "--", "--")
@@ -122,7 +122,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 
 		if SetWatch {
 			if elipsis {
-				fmt.Printf("... ")
+				wwlog.Info("... ")
 			}
 			time.Sleep(time.Duration(SetUpdate) * time.Millisecond)
 		} else {

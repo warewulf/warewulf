@@ -2,7 +2,6 @@ package apiprofile
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -85,12 +84,12 @@ func ProfileDeleteParameterCheck(ndp *wwapiv1.NodeDeleteParameter, console bool)
 		}
 
 		if !match {
-			fmt.Fprintf(os.Stderr, "ERROR: No match for node: %s\n", r)
+			wwlog.Error("No match for node: %s\n", r)
 		}
 	}
 
 	if len(profileList) == 0 {
-		fmt.Printf("No s found\n")
+		wwlog.Info("No s found")
 	}
 	return
 }

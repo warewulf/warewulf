@@ -1,7 +1,6 @@
 package delete
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/hpcng/warewulf/internal/pkg/kernel"
@@ -33,7 +32,7 @@ ARG_LOOP:
 		if err != nil {
 			wwlog.Error("Could not delete kernel: %s", arg)
 		} else {
-			fmt.Printf("Kernel has been deleted: %s\n", arg)
+			wwlog.Info("Kernel has been deleted: %s\n", arg)
 		}
 	}
 

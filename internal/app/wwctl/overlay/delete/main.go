@@ -1,7 +1,6 @@
 package delete
 
 import (
-	"fmt"
 	"os"
 	"path"
 
@@ -49,7 +48,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				return errors.Wrap(err, "failed deleting overlay")
 			}
 		}
-		fmt.Printf("Deleted overlay: %s\n", args[0])
+		wwlog.Info("Deleted overlay: %s\n", args[0])
 
 	} else {
 		removePath := path.Join(overlayPath, fileName)

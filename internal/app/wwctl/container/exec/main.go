@@ -46,7 +46,7 @@ func runContainedCmd(args []string) error {
 	c.Stderr = os.Stderr
 
 	if err := c.Run(); err != nil {
-		fmt.Printf("Command exited non-zero, not rebuilding/updating VNFS image\n")
+		wwlog.Info("Command exited non-zero, not rebuilding/updating VNFS image\n")
 		// defer is not called before os.Exit(0)
 		err = os.RemoveAll(tempDir)
 		if err != nil {
@@ -127,7 +127,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	fmt.Printf("Rebuilding container...\n")
+	wwlog.Info("Rebuilding container...\n")
 	err = container.Build(containerName, false)
 	if err != nil {
 		wwlog.Error("Could not build container %s: %s", containerName, err)

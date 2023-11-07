@@ -2,7 +2,6 @@ package list
 
 import (
 	"bytes"
-	"io"
 	"os"
 	"strings"
 	"testing"
@@ -10,6 +9,7 @@ import (
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -155,28 +155,10 @@ nodes:
 			buf := new(bytes.Buffer)
 			baseCmd.SetOut(buf)
 			baseCmd.SetErr(buf)
-			old := os.Stdout // keep backup of the real stdout
-			r, w, _ := os.Pipe()
-			os.Stdout = w
+			wwlog.SetLogWriter(buf)
 			err = baseCmd.Execute()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Got unwanted error: %s", err)
-				t.FailNow()
-			}
-			outC := make(chan string)
-			go func() {
-				var buf bytes.Buffer
-				_, _ = io.Copy(&buf, r)
-				outC <- buf.String()
-			}()
-			// back to normal state
-			w.Close()
-			os.Stdout = old // restoring the real stdout
-			out := <-outC
-			if strings.ReplaceAll(out, " ", "") != strings.ReplaceAll(tt.stdout, " ", "") {
-				t.Errorf("Got wrong output, got:\n'%s'\nwant:\n'%s'", out, tt.stdout)
-				t.FailNow()
-			}
+			assert.NoError(t, err)
+			assert.Equal(t, strings.ReplaceAll(buf.String(), " ", ""), strings.ReplaceAll(tt.stdout, " ", ""), "Got wrong output")
 		})
 	}
 }

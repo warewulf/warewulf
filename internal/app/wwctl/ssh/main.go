@@ -64,7 +64,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		batchpool.Submit(func() {
 
 			if DryRun {
-				fmt.Printf("%s: %s %s\n", nodename, SshPath, strings.Join(command, " "))
+				wwlog.Info("%s: %s %s\n", nodename, SshPath, strings.Join(command, " "))
 			} else {
 
 				wwlog.Debug("Sending command to node '%s': %s", nodename, command)
@@ -77,7 +77,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 				scan_stdout := bufio.NewScanner(&stdout)
 				for scan_stdout.Scan() {
-					fmt.Printf("%s: %s\n", nodename, scan_stdout.Text())
+					wwlog.Info("%s: %s\n", nodename, scan_stdout.Text())
 				}
 
 				scan_stderr := bufio.NewScanner(&stderr)

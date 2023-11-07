@@ -1,7 +1,6 @@
 package configure
 
 import (
-	"fmt"
 	"os"
 	"path"
 
@@ -13,7 +12,7 @@ import (
 
 func SSH() error {
 	if os.Getuid() == 0 {
-		fmt.Printf("Updating system keys\n")
+		wwlog.Info("Updating system keys")
 		conf := warewulfconf.Get()
 		wwkeydir := path.Join(conf.Paths.Sysconfdir, "warewulf/keys") + "/"
 
@@ -26,7 +25,7 @@ func SSH() error {
 		for _, k := range [4]string{"rsa", "dsa", "ecdsa", "ed25519"} {
 			keytype := "ssh_host_" + k + "_key"
 			if !util.IsFile(path.Join(wwkeydir, keytype)) {
-				fmt.Printf("Setting up key: %s\n", keytype)
+				wwlog.Info("Setting up key: %s\n", keytype)
 				wwlog.Debug("Creating new %s key", keytype)
 				err = util.ExecInteractive("ssh-keygen", "-q", "-t", k, "-f", path.Join(wwkeydir, keytype), "-C", "", "-N", "")
 				if err != nil {
@@ -34,11 +33,11 @@ func SSH() error {
 					return errors.Wrap(err, "failed to exec ssh-keygen command")
 				}
 			} else {
-				fmt.Printf("Skipping, key already exists: %s\n", keytype)
+				wwlog.Info("Skipping, key already exists: %s", keytype)
 			}
 		}
 	} else {
-		fmt.Printf("Updating user's keys\n")
+		wwlog.Info("Updating user's keys")
 	}
 
 	homeDir, err := os.UserHomeDir()
@@ -52,7 +51,7 @@ func SSH() error {
 	rsaPub := path.Join(homeDir, "/.ssh/id_rsa.pub")
 
 	if !util.IsFile(authorizedKeys) {
-		fmt.Printf("Setting up: %s\n", authorizedKeys)
+		wwlog.Info("Setting up: %s", authorizedKeys)
 		err = util.ExecInteractive("ssh-keygen", "-q", "-t", "rsa", "-f", rsaPriv, "-C", "", "-N", "")
 		if err != nil {
 			return errors.Wrap(err, "failed to exec ssh-keygen command")
@@ -62,7 +61,7 @@ func SSH() error {
 			return errors.Wrap(err, "failed to copy keys")
 		}
 	} else {
-		fmt.Printf("Skipping, authorized_keys already exists: %s\n", authorizedKeys)
+		wwlog.Info("Skipping, authorized_keys already exists: %s", authorizedKeys)
 	}
 
 	return nil

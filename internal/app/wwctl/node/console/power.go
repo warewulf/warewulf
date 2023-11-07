@@ -1,7 +1,6 @@
 package console
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
@@ -37,7 +36,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(nodes) == 0 {
-		fmt.Printf("No nodes found\n")
+		wwlog.Info("No nodes found\n")
 		os.Exit(1)
 	}
 

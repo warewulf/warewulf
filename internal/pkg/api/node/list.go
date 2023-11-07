@@ -52,7 +52,8 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 							n.NetDevs[name].Device.Print()))
 				}
 			} else {
-				fmt.Printf("%s:=:%s:=:%s:=:%s:=:%s:=:%s", n.Id.Print(), "--", "--", "--", "--", "--")
+				nodeList.Output = append(nodeList.Output,
+					fmt.Sprintf("%s:=:%s:=:%s:=:%s:=:%s:=:%s", n.Id.Print(), "--", "--", "--", "--", "--"))
 			}
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_Ipmi {

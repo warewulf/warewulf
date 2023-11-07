@@ -1,7 +1,6 @@
 package configure
 
 import (
-	"fmt"
 	"os"
 
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
@@ -41,7 +40,7 @@ func DHCP() (err error) {
 	} else {
 		wwlog.Info("host overlays are disabled, did not modify/create dhcpd configuration")
 	}
-	fmt.Printf("Enabling and restarting the DHCP services\n")
+	wwlog.Info("Enabling and restarting the DHCP services")
 	err = util.SystemdStart(controller.DHCP.SystemdName)
 	if err != nil {
 		return errors.Wrap(err, "failed to start")

@@ -1,8 +1,7 @@
 package imprt
 
 import (
-	"fmt"
-
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 )
 
@@ -29,7 +28,7 @@ func GetCommand() *cobra.Command {
 }
 
 func Usage() {
-	fmt.Println(`The csv file must be structured in following way:
+	wwlog.Info(`The csv file must be structured in following way:
 node,option1,option2,net.netname1.netopt
 node01,value1,value2,net.netname1,netvalue`)
 }

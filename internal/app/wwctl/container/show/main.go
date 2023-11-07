@@ -1,10 +1,9 @@
 package show
 
 import (
-	"fmt"
-
 	"github.com/hpcng/warewulf/internal/pkg/api/container"
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 
 	"github.com/spf13/cobra"
 )
@@ -22,17 +21,17 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	if !ShowAll {
-		fmt.Printf("%s\n", r.Rootfs)
+		wwlog.Info("%s\n", r.Rootfs)
 	} else {
 		kernelVersion := r.KernelVersion
 		if kernelVersion == "" {
 			kernelVersion = "not found"
 		}
-		fmt.Printf("Name: %s\n", r.Name)
-		fmt.Printf("KernelVersion: %s\n", kernelVersion)
-		fmt.Printf("Rootfs: %s\n", r.Rootfs)
-		fmt.Printf("Nr nodes: %d\n", len(r.Nodes))
-		fmt.Printf("Nodes: %s\n", r.Nodes)
+		wwlog.Info("Name: %s\n", r.Name)
+		wwlog.Info("KernelVersion: %s\n", kernelVersion)
+		wwlog.Info("Rootfs: %s\n", r.Rootfs)
+		wwlog.Info("Nr nodes: %d\n", len(r.Nodes))
+		wwlog.Info("Nodes: %s\n", r.Nodes)
 	}
 	return
 }

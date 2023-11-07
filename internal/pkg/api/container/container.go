@@ -103,7 +103,7 @@ func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 			if err != nil {
 				return errors.Wrap(err, "failed to persist nodedb")
 			}
-			fmt.Printf("Set default profile to container: %s\n", containers[0])
+			wwlog.Info("Set default profile to container: %s\n", containers[0])
 		}
 	}
 	return
@@ -149,7 +149,7 @@ ARG_LOOP:
 			wwlog.Error("Could not remove image files %s", containerName)
 		}
 
-		fmt.Printf("Container has been deleted: %s\n", containerName)
+		wwlog.Info("Container has been deleted: %s\n", containerName)
 	}
 
 	return

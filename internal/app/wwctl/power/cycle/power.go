@@ -1,7 +1,6 @@
 package powercycle
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/hpcng/warewulf/internal/pkg/batch"
@@ -36,7 +35,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(nodes) == 0 {
-		fmt.Printf("No nodes found\n")
+		wwlog.Info("No nodes found\n")
 		os.Exit(1)
 	}
 
@@ -90,7 +89,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			continue
 		}
 
-		fmt.Printf("%s: %s\n", result.NodeName, out)
+		wwlog.Info("%s: %s\n", result.NodeName, out)
 
 	}
 

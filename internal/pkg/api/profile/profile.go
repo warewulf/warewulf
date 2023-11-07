@@ -35,7 +35,7 @@ func ProfileSetParameterCheck(set *wwapiv1.ProfileSetParameter, console bool) (n
 	if set == nil {
 		err = fmt.Errorf("profile set parameter is nil")
 		if console {
-			fmt.Printf("%v\n", err)
+			wwlog.Info("%v\n", err)
 			return
 		}
 	}
@@ -43,7 +43,7 @@ func ProfileSetParameterCheck(set *wwapiv1.ProfileSetParameter, console bool) (n
 	if set.ProfileNames == nil {
 		err = fmt.Errorf("profile set parameter: ProfileNames is nil")
 		if console {
-			fmt.Printf("%v\n", err)
+			wwlog.Info("%v\n", err)
 			return
 		}
 	}
@@ -64,13 +64,13 @@ func ProfileSetParameterCheck(set *wwapiv1.ProfileSetParameter, console bool) (n
 
 	if set.AllProfiles || (len(set.ProfileNames) == 0) {
 		if console {
-			fmt.Printf("\n*** WARNING: This command will modify all profiles! ***\n\n")
+			wwlog.Info("\n*** WARNING: This command will modify all profiles! ***\n")
 		}
 	}
 
 	if len(profiles) == 0 {
 		if console {
-			fmt.Printf("No profiles found\n")
+			wwlog.Info("No profiles found")
 		}
 		return
 	}

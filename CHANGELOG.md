@@ -108,6 +108,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - added general test framework which creates temporary directories on the fly
 - only write IPMI if write is true
 - Don't show an error if image files for containers can't be found. #933
+- use wwlog.Info instead of fmt.Printf for output
 
 ## [4.4.0] 2023-01-18
 
