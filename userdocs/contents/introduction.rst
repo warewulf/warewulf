@@ -63,7 +63,7 @@ Features
 
 * **Agnostic**: From the Linux distribution of choice to the
   underlying hardware, Warewulf is agnostic and standards
-  compliant. From ARM to x86, Atos to Dell, Debian, SuSE, Rocky,
+  compliant. From ARM to x86, Atos to Dell, Debian, SUSE, Rocky,
   CentOS, and RHEL, Warewulf can do it all.
 
 * **Secure**: Warewulf is the only stateless provisioning system that
