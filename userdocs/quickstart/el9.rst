@@ -151,7 +151,7 @@ the ``default`` node profile:
 
 .. code-block:: bash
 
-   sudo wwctl profile set --yes --container rocky-8 "default"
+   sudo wwctl profile set --yes --container rocky-9 "default"
 
 Next we set some default networking configurations for the first
 ethernet device. On modern Linux distributions, the name of the device
