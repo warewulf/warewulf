@@ -37,7 +37,7 @@ demonstrates).
    NAT. Warewulf can operate in this configuration but it extends
    beyond the scope of this documentation.
 
-Many clusters have more then one private network. This is common for
+Many clusters have more than one private network. This is common for
 performance critical HPC clusters that implement a high speed and low
 latency network like InfiniBand. In this case, this network is used
 for high speed data transfers for inter-process communication between
