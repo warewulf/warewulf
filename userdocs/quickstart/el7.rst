@@ -38,27 +38,41 @@ address of your cluster's private network interface:
 
 .. code-block:: yaml
 
-   ipaddr: 192.168.200.1
-   netmask: 255.255.255.0
-   warewulf:
-     port: 9873
-     secure: false
-     update interval: 60
-   dhcp:
-     enabled: true
-     range start: 192.168.200.10
-     range end: 192.168.200.99
-     template: default
-     systemd name: dhcpd
-   tftp:
-     enabled: true
-     tftproot: /var/lib/tftpboot
-     systemd name: tftp
-   nfs:
-     systemd name: nfs-server
-     exports:
-       - /home
-       - /var/warewulf
+    WW_INTERNAL: 43
+    ipaddr: 192.168.200.1
+    netmask: 255.255.255.0
+    network: 192.168.200.0
+    warewulf:
+      port: 9873
+      secure: false
+      update interval: 60
+      autobuild overlays: true
+      host overlay: true
+      syslog: false
+    dhcp:
+      enabled: true
+      range start: 192.168.200.50
+      range end: 192.168.200.99
+      systemd name: dhcpd
+    tftp:
+      enabled: true
+      systemd name: tftp
+    nfs:
+      enabled: true
+      export paths:
+      - path: /home
+        export options: rw,sync
+        mount options: defaults
+        mount: true
+      - path: /opt
+        export options: ro,sync,no_root_squash
+        mount options: defaults
+        mount: false
+      systemd name: nfs-server
+    container mounts:
+      - source: /etc/resolv.conf
+        dest: /etc/resolv.conf
+        readonly: true
 
 .. note::
 
@@ -125,7 +139,7 @@ configuration, we can set them in the default profile as follows:
 
 .. code-block:: bash
 
-   sudo wwctl profile set -y default --netname default --netmask 255.255.255.0 --gateway 192.168.200.1
+   sudo wwctl profile set -y default --netdev eth0 --netmask 255.255.255.0 --gateway 192.168.200.1
    sudo wwctl profile list
 
 Add a node
@@ -145,7 +159,7 @@ configurations.
 
 .. code-block:: bash
 
-   sudo wwctl node add n0000.cluster --netname default -I 192.168.200.100 --discoverable
+   sudo wwctl node add n0000.cluster --ipaddr 192.168.200.100 --discoverable true
    sudo wwctl node list -a n0000
 
 Turn on your compute node and watch it boot!

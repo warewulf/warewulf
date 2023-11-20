@@ -57,27 +57,41 @@ address of your cluster's private network interface:
 
 .. code-block:: yaml
 
-   ipaddr: 192.168.200.1
-   netmask: 255.255.255.0
-   warewulf:
-     port: 9873
-     secure: false
-     update interval: 60
-   dhcp:
-     enabled: true
-     range start: 192.168.200.10
-     range end: 192.168.200.99
-     template: default
-     systemd name: dhcpd
-   tftp:
-     enabled: true
-     tftproot: /var/lib/tftpboot
-     systemd name: tftp
-   nfs:
-     systemd name: nfs-server
-     exports:
-       - /home
-       - /var/warewulf
+    WW_INTERNAL: 43
+    ipaddr: 192.168.200.1
+    netmask: 255.255.255.0
+    network: 192.168.200.0
+    warewulf:
+      port: 9873
+      secure: false
+      update interval: 60
+      autobuild overlays: true
+      host overlay: true
+      syslog: false
+    dhcp:
+      enabled: true
+      range start: 192.168.200.50
+      range end: 192.168.200.99
+      systemd name: dhcpd
+    tftp:
+      enabled: true
+      systemd name: tftp
+    nfs:
+      enabled: true
+      export paths:
+      - path: /home
+        export options: rw,sync
+        mount options: defaults
+        mount: true
+      - path: /opt
+        export options: ro,sync,no_root_squash
+        mount options: defaults
+        mount: false
+      systemd name: nfs-server
+    container mounts:
+      - source: /etc/resolv.conf
+        dest: /etc/resolv.conf
+        readonly: true
 
 .. note::
 
@@ -137,7 +151,7 @@ the ``default`` node profile:
 
 .. code-block:: bash
 
-   sudo wwctl profile set --yes --container rocky-8 "default"
+   sudo wwctl profile set --yes --container rocky-9 "default"
 
 Next we set some default networking configurations for the first
 ethernet device. On modern Linux distributions, the name of the device
