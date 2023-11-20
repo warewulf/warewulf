@@ -139,7 +139,7 @@ configuration, we can set them in the default profile as follows:
 
 .. code-block:: bash
 
-   sudo wwctl profile set -y default --netname default --netmask 255.255.255.0 --gateway 192.168.200.1
+   sudo wwctl profile set -y default --netdev eth0 --netmask 255.255.255.0 --gateway 192.168.200.1
    sudo wwctl profile list
 
 Add a node
@@ -159,7 +159,7 @@ configurations.
 
 .. code-block:: bash
 
-   sudo wwctl node add n0000.cluster --netname default -I 192.168.200.100 --discoverable
+   sudo wwctl node add n0000.cluster --ipaddr 192.168.200.100 --discoverable true
    sudo wwctl node list -a n0000
 
 Turn on your compute node and watch it boot!

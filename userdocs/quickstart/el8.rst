@@ -187,7 +187,7 @@ configurations.
 
 .. code-block:: bash
 
-   sudo wwctl node add n0000.cluster --ipaddr 192.168.200.100 --discoverable
+   sudo wwctl node add n0000.cluster --ipaddr 192.168.200.100 --discoverable true
 
 At this point you can view the basic configuration of this node by
 typing the following:

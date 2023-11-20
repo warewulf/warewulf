@@ -164,7 +164,7 @@ configurations.
 
 .. code-block:: bash
 
-   sudo wwctl node add n0000.cluster --netdev eth0 -I 192.168.200.100 --discoverable
+   sudo wwctl node add n0000.cluster --netdev eth0 --ipaddr 192.168.200.100 --discoverable true
    sudo wwctl node list -a n0000.cluster
 
 Warewulf Overlays
