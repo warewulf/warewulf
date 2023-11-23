@@ -90,7 +90,6 @@ make defaults \
     BASHCOMPDIR=/etc/bash_completion.d/ \
     FIREWALLDDIR=/usr/lib/firewalld/services \
     WWCLIENTDIR=/warewulf
-make
 
 
 %install
@@ -131,6 +130,7 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %dir %{_sharedstatedir}/warewulf
 %{_sharedstatedir}/warewulf/chroots
 %{_sharedstatedir}/warewulf/overlays
+%{_sharedstatedir}/warewulf/provision
 
 %attr(-, root, root) %{_bindir}/wwctl
 %attr(-, root, root) %{_bindir}/wwapi*
