@@ -23,6 +23,8 @@ thereof, in binary and source code form.
 - [Kurtzer, Greg](gmk@ciq.com) (CIQ)
 - [Siadal, Jeremy](jeremy.c.siadal@intel.com) (Intel)
 
+TSC chair: Jonathon Anderson
+
 ## Pull requests
 
 - All commits must be "Signed-off" (i.e., by using `git commit -s`),
