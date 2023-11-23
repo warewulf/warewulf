@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -140,7 +139,7 @@ func (p *puller) Pull(ctx context.Context, uri, dst string) (err error) {
 	}
 
 	// defaults to $TMPDIR or /tmp
-	tmpDir, err := ioutil.TempDir(p.tmpDirPath, "oci-bundle-")
+	tmpDir, err := os.MkdirTemp(p.tmpDirPath, "oci-bundle-")
 	if err != nil {
 		return err
 	}

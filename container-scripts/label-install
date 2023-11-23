@@ -1,0 +1,82 @@
+#!/bin/sh -eu
+
+# This is the install script for warewulf when run in a privileged
+# container.
+
+cd /
+PATH="/usr/bin:/usr/sbin"
+CONTAINER=warewulf
+BINSCRIPT=${CONTAINER}-container-manage.sh
+WWCTL=wwctl
+OVERLAYDIR=/var/lib/warewulf/overlays
+CHROOTDIR=/var/lib/warewulf/chroots
+CONTAINERDIR=/var/lib/warewulf/container
+WAREWULFCONF=/etc/warewulf
+BASHCOMPLETION=/usr/share/bash_completion/completions/w*
+AUTHKEYDIR=/root/.ssh
+
+echo "LABEL INSTALL"
+# ensure all scripts will be present on the host 
+copy_to_usr_local_bin() {
+SCRIPT=$1
+BASEDIR=`dirname $SCRIPT`
+mkdir -p $BASEDIR
+if [ ! -e /host/usr/local/bin/${SCRIPT} ]; then
+        echo "copy /container/${SCRIPT} in /host/usr/local/bin/"
+        rsync -u /container/${SCRIPT} /host/usr/local/bin/${SCRIPT}
+        chmod 755 /host/usr/local/bin/${SCRIPT}
+else
+        echo "/host/usr/local/bin/${SCRIPT} already exist, will not update it"
+fi
+}
+
+copy_to_etc() {
+CONF=$1
+BASEDIR=`dirname $CONF`
+mkdir -p $BASEDIR
+if [ ! -e /host/etc/${CONF} ]; then
+	echo "copy /container/${CONF} in /host/etc/"
+	rsync -u /container/${CONF} /host/etc/${CONF}
+else
+	echo "/host/etc/${CONF} already exist, will not update it"
+fi
+}
+sync_dir() {
+  DIR=$1
+  test -e /host/${DIR} || mkdir -pv /host/${DIR}
+  test -e /host/${DIR} && (rsync -au --ignore-existing ${DIR} `dirname /host/${DIR}`; echo "updating $DIR") 
+}
+
+# For podman, cp a systemd unit for starting on boot
+if [ ! -e /host/etc/systemd/system/${CONTAINER}.service ]; then
+	mkdir -p /host/etc/systemd/system/
+	rsync -u /container/${CONTAINER}.service /host/etc/systemd/system/${CONTAINER}.service
+else
+	echo "/host/etc/systemd/system/${CONTAINER}.service already exist"
+fi
+
+# create the dirs
+mkdir -p /host/etc/warewulf
+mkdir -p /host/var/lib/warewulf
+
+copy_to_usr_local_bin ${WWCTL}
+copy_to_usr_local_bin ${BINSCRIPT}
+
+# now sync hosts and overlays
+sync_dir $OVERLAYDIR
+sync_dir $CHROOTDIR
+sync_dir $WAREWULFCONF
+
+# bash completion
+if [ ! -e /host/etc/bash_completion.d/warewulf ] ; then 
+  mkdir -p /host/etc/bash_completion.d
+  cp $BASHCOMPLETION /host/etc/bash_completion.d/
+fi
+
+# containerdir
+mkdir -p /host/$CONTAINERDIR
+
+# authorized keys
+mkdir -p /root/.ssh/
+echo "Copy authorized keys to container"
+test -e /host/${AUTHKEYDIR}/*pub && cp -v /host/${AUTHKEYDIR}/*pub  ${AUTHKEYDIR} || echo "no public keys found"

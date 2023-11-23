@@ -8,10 +8,10 @@ import (
 var (
 	powerCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:   "status [OPTIONS] [PATTERN ...]",
-		Short: "Show power status for the given node(s)",
-		Long:  "This command displays the power status of a set of nodes specified by PATTERN.",
-		RunE:  CobraRunE,
+		Use:                   "status [OPTIONS] [PATTERN ...]",
+		Short:                 "Show power status for the given node(s)",
+		Long:                  "This command displays the power status of a set of nodes specified by PATTERN.",
+		RunE:                  CobraRunE,
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp

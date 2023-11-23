@@ -1,15 +1,16 @@
 package apinode
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/hpcng/warewulf/pkg/hostlist"
 	"github.com/pkg/errors"
@@ -29,7 +30,10 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 	if err != nil {
 		return errors.Wrap(err, "failed to open node database")
 	}
-
+	dbHash := nodeDB.Hash()
+	if hex.EncodeToString(dbHash[:]) != nap.Hash && !nap.Force {
+		return fmt.Errorf("got wrong hash, not modifying node database")
+	}
 	node_args := hostlist.Expand(nap.NodeNames)
 	var nodeConf node.NodeConf
 	err = yaml.Unmarshal([]byte(nap.NodeConfYaml), &nodeConf)
@@ -50,6 +54,12 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 			// only key
 		}
 		// setting node from the received yaml
+		err = nodeConf.Check()
+		if err != nil {
+			err = fmt.Errorf("error on check of node %s: %s", n.Id.Get(), err)
+			return
+
+		}
 		n.SetFrom(&nodeConf)
 		if netName != "" && nodeConf.NetDevs[netName].Ipaddr != "" {
 			// if more nodes are added increment IPv4 address
@@ -95,6 +105,10 @@ func NodeDelete(ndp *wwapiv1.NodeDeleteParameter) (err error) {
 		wwlog.Error("Failed to open node database: %s", err)
 		return
 	}
+	dbHash := nodeDB.Hash()
+	if hex.EncodeToString(dbHash[:]) != ndp.Hash && !ndp.Force {
+		return fmt.Errorf("got wrong hash, not modifying node database")
+	}
 
 	for _, n := range nodeList {
 		err := nodeDB.DelNode(n.Id.Get())
@@ -131,6 +145,13 @@ func NodeDeleteParameterCheck(ndp *wwapiv1.NodeDeleteParameter, console bool) (n
 	nodeDB, err := node.New()
 	if err != nil {
 		wwlog.Error("Failed to open node database: %s", err)
+		return
+	}
+	dbHash := nodeDB.Hash()
+	if hex.EncodeToString(dbHash[:]) != ndp.Hash && !ndp.Force {
+		wwlog.Debug("got hash: %s", ndp.Hash)
+		wwlog.Debug("actual hash: %s", hex.EncodeToString(dbHash[:]))
+		err = fmt.Errorf("got wrong hash, not modifying node database")
 		return
 	}
 
@@ -236,6 +257,12 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 			wwlog.Error(fmt.Sprintf("%v", err.Error()))
 			return
 		}
+		err = nodeConf.Check()
+		if err != nil {
+			err = fmt.Errorf("error on check of node %s: %s", n.Id.Get(), err)
+			return
+
+		}
 		n.SetFrom(&nodeConf)
 		if set.NetdevDelete != "" {
 			if _, ok := n.NetDevs[set.NetdevDelete]; !ok {
@@ -243,15 +270,51 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 				wwlog.Error(fmt.Sprintf("%v", err.Error()))
 				return
 			}
-
 			wwlog.Verbose("Node: %s, Deleting network device: %s", n.Id.Get(), set.NetdevDelete)
 			delete(n.NetDevs, set.NetdevDelete)
 		}
+		if set.PartitionDelete != "" {
+			deletedPart := false
+			for diskname, disk := range n.Disks {
+				if _, ok := disk.Partitions[set.PartitionDelete]; ok {
+					wwlog.Verbose("Node: %s, on disk %, deleting partition: %s", n.Id.Get(), diskname, set.PartitionDelete)
+					deletedPart = true
+					delete(disk.Partitions, set.PartitionDelete)
+				}
+				if !deletedPart {
+					wwlog.Error(fmt.Sprintf("%v", err.Error()))
+					err = fmt.Errorf("partition doesn't exist: %s", set.PartitionDelete)
+					return
+				}
+			}
+		}
+		if set.DiskDelete != "" {
+			if _, ok := n.Disks[set.DiskDelete]; !ok {
+				err = fmt.Errorf("disk doesn't exist: %s", set.DiskDelete)
+				wwlog.Error(fmt.Sprintf("%v", err.Error()))
+				return
+			}
+			wwlog.Verbose("Node: %s, deleting disk: %s", n.Id.Get(), set.DiskDelete)
+			delete(n.Disks, set.DiskDelete)
+		}
+		if set.FilesystemDelete != "" {
+			if _, ok := n.FileSystems[set.FilesystemDelete]; !ok {
+				err = fmt.Errorf("filesystem doesn't exist: %s", set.FilesystemDelete)
+				wwlog.Error(fmt.Sprintf("%v", err.Error()))
+				return
+			}
+			wwlog.Verbose("Node: %s, deleting filesystem: %s", n.Id.Get(), set.FilesystemDelete)
+			delete(n.FileSystems, set.FilesystemDelete)
+		}
 		for _, key := range nodeConf.TagsDel {
+			wwlog.Debug("deleting tag %s", key)
 			delete(n.Tags, key)
 		}
-		for _, key := range nodeConf.Ipmi.TagsDel {
-			delete(n.Ipmi.Tags, key)
+		if nodeConf.Ipmi != nil {
+			for _, key := range nodeConf.Ipmi.TagsDel {
+				wwlog.Debug("deleting Ipmi tag %s", key)
+				delete(n.Ipmi.Tags, key)
+			}
 		}
 		for net := range nodeConf.NetDevs {
 			for _, key := range nodeConf.NetDevs[net].TagsDel {
@@ -290,11 +353,7 @@ func NodeStatus(nodeNames []string) (nodeStatusResponse *wwapiv1.NodeStatusRespo
 		Nodes map[string]*nodeStatusInternal `json:"nodes"`
 	}
 
-	controller, err := warewulfconf.New()
-	if err != nil {
-		wwlog.Error("%s", err)
-		return
-	}
+	controller := warewulfconf.Get()
 
 	if controller.Ipaddr == "" {
 		err = fmt.Errorf("the Warewulf Server IP Address is not properly configured")

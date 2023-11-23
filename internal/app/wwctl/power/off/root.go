@@ -8,10 +8,10 @@ import (
 var (
 	powerCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:   "off [OPTIONS] [PATTERN ...]",
-		Short: "Power off the given node(s)",
-		Long:  "This command will shutdown power to a set of nodes specified by PATTERN.",
-		RunE:  CobraRunE,
+		Use:                   "off [OPTIONS] [PATTERN ...]",
+		Short:                 "Power off the given node(s)",
+		Long:                  "This command will shutdown power to a set of nodes specified by PATTERN.",
+		RunE:                  CobraRunE,
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp

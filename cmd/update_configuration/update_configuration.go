@@ -3,13 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"reflect"
 
 	"github.com/hpcng/warewulf/cmd/update_configuration/vers42"
 	"github.com/hpcng/warewulf/cmd/update_configuration/vers43"
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"gopkg.in/yaml.v2"
 )
@@ -44,7 +42,7 @@ func saveConf(conf interface{}) {
 			os.Exit(1)
 		}
 		myprintf("writing configuration file %s as type %s\n", confFile, reflect.TypeOf(conf))
-		err = ioutil.WriteFile(confFile, out, info.Mode())
+		err = os.WriteFile(confFile, out, info.Mode())
 		if err != nil {
 			myprintf("Could not write file: %s\n", err)
 			os.Exit(1)
@@ -126,7 +124,7 @@ func main() {
 	var endVers int
 	var startVers int
 	flag.StringVar(&confFile, "f", "", "Config file for update")
-	flag.IntVar(&endVers, "e", buildconfig.WWVer, "Final version of configuration file")
+	flag.IntVar(&endVers, "e", 0, "Final version of configuration file")
 	flag.IntVar(&startVers, "s", 0, "Start version  of configuration file, 0  is for autodetection")
 	flag.BoolVar(&nowrite, "n", false, "Do not write, just print new conf to terminal")
 	flag.BoolVar(&quiet, "q", false, "Do not print what the program is doing")
@@ -136,7 +134,7 @@ func main() {
 		os.Exit(1)
 	}
 	myprintf("Opening node configuration file: %s\n", confFile)
-	data, err := ioutil.ReadFile(confFile)
+	data, err := os.ReadFile(confFile)
 	if err != nil {
 		myprintf("Could open file %v\n", err)
 		os.Exit(1)

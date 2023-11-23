@@ -3,6 +3,7 @@ package imprt
 import (
 	"os"
 	"path"
+	"path/filepath"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
@@ -40,6 +41,23 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if util.IsFile(path.Join(overlaySource, dest)) {
 		wwlog.Error("A file with that name already exists in the overlay %s\n:", overlayName)
 		os.Exit(1)
+	}
+
+	if CreateDirs {
+		parent := filepath.Dir(path.Join(overlaySource, dest))
+		if _, err := os.Stat(parent); os.IsNotExist(err) {
+			wwlog.Debug("Create dir: %s", parent)
+			srcInfo, err := os.Stat(source)
+			if err != nil {
+				wwlog.Error("Could not retrieve the stat for file: %s", err)
+				return err
+			}
+			err = os.MkdirAll(parent, srcInfo.Mode())
+			if err != nil {
+				wwlog.Error("Could not create parent dif: %s: %v", parent, err)
+				return err
+			}
+		}
 	}
 
 	err := util.CopyFile(source, path.Join(overlaySource, dest))

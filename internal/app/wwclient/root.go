@@ -3,7 +3,6 @@ package wwclient
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -17,9 +16,8 @@ import (
 
 	"github.com/coreos/go-systemd/daemon"
 	"github.com/google/uuid"
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/pidfile"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
 	"github.com/talos-systems/go-smbios/smbios"
@@ -33,14 +31,16 @@ var (
 		RunE:         CobraRunE,
 		SilenceUsage: true,
 	}
-	DebugFlag bool
-	PIDFile   string
-	Webclient *http.Client
+	DebugFlag       bool
+	PIDFile         string
+	Webclient       *http.Client
+	WarewulfConfArg string
 )
 
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&DebugFlag, "debug", "d", false, "Run with debugging messages enabled.")
 	rootCmd.PersistentFlags().StringVarP(&PIDFile, "pidfile", "p", "/var/run/wwclient.pid", "PIDFile to use")
+	rootCmd.PersistentFlags().StringVar(&WarewulfConfArg, "warewulfconf", "", "Set the warewulf configuration file")
 
 }
 
@@ -50,12 +50,18 @@ func GetRootCommand() *cobra.Command {
 	return rootCmd
 }
 
-func CobraRunE(cmd *cobra.Command, args []string) error {
-	conf, err := warewulfconf.New()
-	if err != nil {
-		return err
+func CobraRunE(cmd *cobra.Command, args []string) (err error) {
+	conf := warewulfconf.Get()
+	if WarewulfConfArg != "" {
+		err = conf.Read(WarewulfConfArg)
+	} else if os.Getenv("WAREWULFCONF") != "" {
+		err = conf.Read(os.Getenv("WAREWULFCONF"))
+	} else {
+		err = conf.Read(warewulfconf.ConfigFile)
 	}
-
+	if err != nil {
+		return
+	}
 	pid, err := pidfile.Write(PIDFile)
 	if err != nil && pid == -1 {
 		wwlog.Warn("%v. starting new wwclient", err)
@@ -63,7 +69,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		return errors.New("found pidfile " + PIDFile + " not starting")
 	}
 
-	if os.Args[0] == path.Join(buildconfig.WWCLIENTDIR(), "wwclient") {
+	if os.Args[0] == path.Join(conf.Paths.WWClientdir, "wwclient") {
 		err := os.Chdir("/")
 		if err != nil {
 			wwlog.Error("failed to change dir: %s", err)
@@ -75,7 +81,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	} else {
 		fmt.Printf("Called via: %s\n", os.Args[0])
 		fmt.Printf("Runtime overlay is being put in '/warewulf/wwclient-test' rather than '/'\n")
-		fmt.Printf("For full functionality call with: %s\n", path.Join(buildconfig.WWCLIENTDIR(), "wwclient"))
+		fmt.Printf("For full functionality call with: %s\n", path.Join(conf.Paths.WWClientdir, "wwclient"))
 		err := os.MkdirAll("/warewulf/wwclient-test", 0755)
 		if err != nil {
 			wwlog.Error("failed to create dir: %s", err)
@@ -122,7 +128,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	x := smbiosDump.SystemEnclosure()
 	tag := strings.ReplaceAll(x.AssetTagNumber(), " ", "_")
 
-	cmdline, err := ioutil.ReadFile("/proc/cmdline")
+	cmdline, err := os.ReadFile("/proc/cmdline")
 	if err != nil {
 		wwlog.Error("Could not read from /proc/cmdline: %s", err)
 		os.Exit(1)

@@ -5,9 +5,9 @@ import "github.com/spf13/cobra"
 var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:   "reload [OPTIONS]",
-		Short: "Reload the Warewulf server configuration",
-		RunE:  CobraRunE,
+		Use:                   "reload [OPTIONS]",
+		Short:                 "Reload the Warewulf server configuration",
+		RunE:                  CobraRunE,
 	}
 )
 

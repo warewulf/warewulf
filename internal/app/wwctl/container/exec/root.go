@@ -27,12 +27,16 @@ var (
 	}
 	SyncUser bool
 	binds    []string
+	tempDir  string
+	nodeName string
 )
 
 func init() {
 	baseCmd.AddCommand(child.GetCommand())
 	baseCmd.PersistentFlags().StringArrayVarP(&binds, "bind", "b", []string{}, "Bind a local path into the container (must exist)")
 	baseCmd.PersistentFlags().BoolVar(&SyncUser, "syncuser", false, "Synchronize UIDs/GIDs from host to container")
+	baseCmd.PersistentFlags().StringVar(&tempDir, "tempdir", "", "Use tempdir for constructing the overlay fs (only used if mount points don't exist in container)")
+	baseCmd.PersistentFlags().StringVarP(&nodeName, "node", "n", "", "Create a read only view of the container for the given node")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

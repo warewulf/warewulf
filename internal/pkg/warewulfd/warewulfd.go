@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 )
@@ -58,10 +58,7 @@ func RunServer() error {
 	http.HandleFunc("/overlay-runtime/", ProvisionSend)
 	http.HandleFunc("/status", StatusSend)
 
-	conf, err := warewulfconf.New()
-	if err != nil {
-		return errors.Wrap(err, "could not get Warewulf configuration")
-	}
+	conf := warewulfconf.Get()
 
 	daemonPort := conf.Warewulf.Port
 	wwlog.Serv("Starting HTTPD REST service on port %d", daemonPort)

@@ -29,10 +29,10 @@ var (
 			return node_names, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
-	BuildHost   bool
-	BuildNodes  bool
+	BuildHost    bool
+	BuildNodes   bool
 	OverlayNames []string
-	OverlayDir  string
+	OverlayDir   string
 )
 
 func init() {
