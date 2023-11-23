@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New build for Rocky Linux 9
 
 ### Fixed
+- Enable spec file to work with Fedora
 - Fix hard CPU architecture on proto's installation in the Makefile
 - More aggressive `make clean`.
 - Replace deprecated `io.utils` functions with new `os` functions.
