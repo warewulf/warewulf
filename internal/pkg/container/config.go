@@ -3,11 +3,12 @@ package container
 import (
 	"path"
 
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 )
 
 func SourceParentDir() string {
-	return buildconfig.WWCHROOTDIR()
+	conf := warewulfconf.Get()
+	return conf.Paths.WWChrootdir
 }
 
 func SourceDir(name string) string {
@@ -19,7 +20,8 @@ func RootFsDir(name string) string {
 }
 
 func ImageParentDir() string {
-	return path.Join(buildconfig.WWPROVISIONDIR(), "container/")
+	conf := warewulfconf.Get()
+	return path.Join(conf.Paths.WWProvisiondir, "container/")
 }
 
 func ImageFile(name string) string {

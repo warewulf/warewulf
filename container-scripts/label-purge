@@ -1,0 +1,34 @@
+#!/bin/bash
+OVERLAYDIR=/var/lib/warewulf/overlays
+CHROOTDIR=/var/lib/warewulf/chroots
+OCIDIR=/var/lib/warewulf/oci
+CONTAINERDIR=/var/lib/warewulf/container
+WAREWULFCONF=/etc/warewulf
+BASEDIR=/var/lib/warewulf
+cat >&2 << EOF
+WARNING:
+Purging all warewulf configurations, containers aka node images and overlays
+Wating for 10s, press any key to abort
+EOF
+
+count=0
+while true ; do
+    if read -t 0; then # Input ready
+        read -n 1 char
+        echo "Aborting purge"
+        exit 0
+    else # No input
+        echo -n '.'
+        sleep 1
+        count=$(( $count + 1))
+        if [ $count -eq 10 ] ; then
+          echo
+          break
+        fi
+    fi
+done
+echo "PURGING"
+/container/label-uninstall
+rm -rv /host/$WAREWULFCONF /host/$OVERLAYDIR /host/$CHROOTDIR /host/$CONTAINERDIR /host/$OCIDIR
+rmdir /host/$BASEDIR
+

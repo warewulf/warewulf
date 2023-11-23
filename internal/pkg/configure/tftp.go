@@ -5,43 +5,41 @@ import (
 	"os"
 	"path"
 
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
-var tftpdir string = path.Join(buildconfig.TFTPDIR(), "warewulf")
-
 func TFTP() error {
-	controller, err := warewulfconf.New()
-	if err != nil {
-		wwlog.Error("%s", err)
-		return err
-	}
+	controller := warewulfconf.Get()
+	var tftpdir string = path.Join(controller.Paths.Tftpdir, "warewulf")
 
-	err = os.MkdirAll(tftpdir, 0755)
+	err := os.MkdirAll(tftpdir, 0755)
 	if err != nil {
 		wwlog.Error("%s", err)
 		return err
 	}
 
 	fmt.Printf("Writing PXE files to: %s\n", tftpdir)
-	for _, f := range [4]string{"x86_64.efi", "x86_64.kpxe", "arm64.efi"} {
-		err = util.SafeCopyFile(path.Join(buildconfig.DATADIR(), "warewulf", "ipxe", f), path.Join(tftpdir, f))
+	copyCheck := make(map[string]bool)
+	for _, f := range controller.TFTP.IpxeBinaries {
+		if copyCheck[f] {
+			continue
+		}
+		copyCheck[f] = true
+		err = util.SafeCopyFile(path.Join(controller.Paths.Datadir, f), path.Join(tftpdir, path.Base(f)))
 		if err != nil {
-			wwlog.Error("%s", err)
-			return err
+			wwlog.Warn("ipxe binary could not be copied, booting may not work: %s", err)
 		}
 	}
 
-	if !controller.Tftp.Enabled {
+	if !controller.TFTP.Enabled {
 		wwlog.Info("Warewulf does not auto start TFTP services due to disable by warewulf.conf")
 		os.Exit(0)
 	}
-	
+
 	fmt.Printf("Enabling and restarting the TFTP services\n")
-	err = util.SystemdStart(controller.Tftp.SystemdName)
+	err = util.SystemdStart(controller.TFTP.SystemdName)
 	if err != nil {
 		wwlog.Error("%s", err)
 		return err

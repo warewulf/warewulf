@@ -10,6 +10,11 @@
 
 %global wwgroup warewulf
 
+%if 0%{?fedora}
+%define _build_id_links none
+%endif
+
+
 Name: warewulf
 Summary: A provisioning system for large clusters of bare metal and/or virtual systems
 Version: @VERSION@
@@ -17,7 +22,6 @@ Release: @RELEASE@%{?dist}
 License: BSD-3-Clause
 URL:     https://github.com/hpcng/warewulf
 Source:  https://github.com/hpcng/warewulf/releases/download/v%{version}/warewulf-%{version}.tar.gz
-%{?with_offline:Source2: vendor.tgz}
 
 ExclusiveOS: linux
 
@@ -48,7 +52,7 @@ Requires: tftp-server
 Requires: nfs-utils
 %endif
 
-%if 0%{?rhel} >= 8 || 0%{?suse_version}
+%if 0%{?rhel} >= 8 || 0%{?suse_version} || 0%{?fedora}
 Requires: dhcp-server
 %else
 # rhel < 8
@@ -69,9 +73,8 @@ system for large clusters of bare metal and/or virtual systems.
 
 
 %build
-%{?with_offline:OFFLINE_BUILD=1}
-# Install to sharedstatedir by redirecting LOCALSTATEDIR
-make genconfig \
+export OFFLINE_BUILD=1
+make defaults \
     PREFIX=%{_prefix} \
     BINDIR=%{_bindir} \
     SYSCONFDIR=%{_sysconfdir} \
@@ -91,8 +94,10 @@ make
 
 
 %install
+export OFFLINE_BUILD=1
 export NO_BRP_STALE_LINK_ERROR=yes
-make install DESTDIR=%{buildroot}
+make install \
+    DESTDIR=%{buildroot}
 
 
 %pre
@@ -116,14 +121,16 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %files
 %defattr(-, root, %{wwgroup})
 %dir %{_sysconfdir}/warewulf
-%config(noreplace) %{_sysconfdir}/warewulf/*
+%config(noreplace) %{_sysconfdir}/warewulf/warewulf.conf
+%config(noreplace) %{_sysconfdir}/warewulf/wwapi*.conf
+%config(noreplace) %{_sysconfdir}/warewulf/examples
+%config(noreplace) %{_sysconfdir}/warewulf/ipxe
 %config(noreplace) %attr(0640,-,-) %{_sysconfdir}/warewulf/nodes.conf
-%{_sysconfdir}/bash_completion.d/warewulf
+%{_sysconfdir}/bash_completion.d/wwctl
 
 %dir %{_sharedstatedir}/warewulf
 %{_sharedstatedir}/warewulf/chroots
 %{_sharedstatedir}/warewulf/overlays
-%{srvdir}/warewulf
 
 %attr(-, root, root) %{_bindir}/wwctl
 %attr(-, root, root) %{_bindir}/wwapi*
@@ -162,10 +169,10 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 - Update license string
 - Make shared store relocatable
 
-* Fri Sep 24 2021 Michael L. Young <myoung@ciq.co> - 4.2.0-1
+* Fri Sep 24 2021 Michael L. Young <myoung@ciq.com> - 4.2.0-1
 - Update spec file to use systemd macros
 - Use macros to refer to system paths
 - Update syntax
 
-* Tue Jan 26 2021 14:46:24 JST Brian Clemens <bclemens@ctrliq.com> - 4.0.0
+* Tue Jan 26 2021 14:46:24 JST Brian Clemens <bclemens@ciq.com> - 4.0.0
 - Initial release

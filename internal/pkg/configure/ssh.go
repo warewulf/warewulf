@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
@@ -14,10 +14,10 @@ import (
 func SSH() error {
 	if os.Getuid() == 0 {
 		fmt.Printf("Updating system keys\n")
+		conf := warewulfconf.Get()
+		wwkeydir := path.Join(conf.Paths.Sysconfdir, "warewulf/keys") + "/"
 
-		wwkeydir := path.Join(buildconfig.SYSCONFDIR(), "warewulf/keys") + "/"
-
-		err := os.MkdirAll(path.Join(buildconfig.SYSCONFDIR(), "warewulf/keys"), 0755)
+		err := os.MkdirAll(path.Join(conf.Paths.Sysconfdir, "warewulf/keys"), 0755)
 		if err != nil {
 			wwlog.Error("Could not create base directory: %s", err)
 			os.Exit(1)

@@ -1,0 +1,87 @@
+---
+name: check
+
+on:
+  push:
+    branches:
+      - main
+      - development
+    paths-ignore:
+      - 'docs/**'
+  pull_request:
+    branches:
+      - main
+      - development
+    paths-ignore:
+      - 'docs/**'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.18', '1.19', '1.20']
+    steps:
+      - name: Checkout Warewulf
+        uses: actions/checkout@v3
+      - uses: ./.github/actions/prepare
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Check Warewulf code with golang linter (golang ${{ matrix.go-version }})
+        run: make lint
+
+  vet:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.18', '1.19', '1.20']
+    steps:
+      - name: Checkout Warewulf
+        uses: actions/checkout@v3
+      - uses: ./.github/actions/prepare
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Vet Warewulf code (golang ${{ matrix.go-version }})
+        run: make vet
+
+  fmt:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.18', '1.19', '1.20']
+    steps:
+      - name: Checkout Warewulf
+        uses: actions/checkout@v3
+      - uses: ./.github/actions/prepare
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Check Warewulf code for formatting (golang ${{ matrix.go-version }})
+        run: test "$(make -s fmt | wc -l)" == 0
+
+  testsuite:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.18', '1.19', '1.20']
+    steps:
+      - name: Checkout Warewulf
+        uses: actions/checkout@v3
+      - uses: ./.github/actions/prepare
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Run the test suite (golang ${{ matrix.go-version }})
+        run: make test
+
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.18', '1.19', '1.20']
+    steps:
+      - name: Checkout Warewulf
+        uses: actions/checkout@v3
+      - uses: ./.github/actions/prepare
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Build Warewulf (golang ${{ matrix.go-version }})
+        run: make all

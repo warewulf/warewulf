@@ -4,7 +4,6 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -12,7 +11,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
@@ -29,7 +28,8 @@ var (
 )
 
 func KernelImageTopDir() string {
-	return path.Join(buildconfig.WWPROVISIONDIR(), "kernel")
+	conf := warewulfconf.Get()
+	return path.Join(conf.Paths.WWProvisiondir, "kernel")
 }
 
 func KernelImage(kernelName string) string {
@@ -51,7 +51,7 @@ func GetKernelVersion(kernelName string) string {
 		wwlog.Error("Kernel Name is not defined")
 		return ""
 	}
-	kernelVersion, err := ioutil.ReadFile(KernelVersionFile(kernelName))
+	kernelVersion, err := os.ReadFile(KernelVersionFile(kernelName))
 	if err != nil {
 		return ""
 	}
@@ -96,7 +96,7 @@ func ListKernels() ([]string, error) {
 
 	wwlog.Debug("Searching for Kernel image directories: %s", KernelImageTopDir())
 
-	kernels, err := ioutil.ReadDir(KernelImageTopDir())
+	kernels, err := os.ReadDir(KernelImageTopDir())
 	if err != nil {
 		return ret, err
 	}
@@ -198,7 +198,7 @@ func Build(kernelVersion, kernelName, root string) (string, error) {
 			driversDestination,
 			[]string{
 				"." + kernelDriversRelative,
-				"./lib/firmware" },
+				"./lib/firmware"},
 			[]string{},
 			// ignore cross-device files
 			true,

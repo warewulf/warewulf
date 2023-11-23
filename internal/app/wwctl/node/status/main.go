@@ -2,7 +2,6 @@ package nodestatus
 
 import (
 	"fmt"
-	"os"
 	"sort"
 	"strings"
 	"time"
@@ -10,7 +9,7 @@ import (
 	"github.com/fatih/color"
 	apinode "github.com/hpcng/warewulf/internal/pkg/api/node"
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfconf"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/hpcng/warewulf/pkg/hostlist"
 	"github.com/spf13/cobra"
@@ -19,15 +18,11 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 
-	controller, err := warewulfconf.New()
-	if err != nil {
-		wwlog.Error("%s", err)
-		os.Exit(1)
-	}
+	controller := warewulfconf.Get()
 
 	if controller.Ipaddr == "" {
-		wwlog.Error("The Warewulf Server IP Address is not properly configured")
-		os.Exit(1)
+		return fmt.Errorf("warewulf Server IP Address is not properly configured")
+
 	}
 
 	for {

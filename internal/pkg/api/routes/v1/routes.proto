@@ -10,6 +10,12 @@ package wwapi.v1;
 import "google/protobuf/empty.proto";
 import "google/api/annotations.proto";
 
+// Information about the database
+
+message NodeDBHash {
+	string hash = 1;
+}
+
 // Container
 
 // ContainerBuildParameter contains input for building zero or more containers.
@@ -24,6 +30,13 @@ message ContainerBuildParameter {
 // management.
 message ContainerDeleteParameter {
 	repeated string containerNames = 1;
+}
+
+// ContainerCopyParameter contains 2 inputs : first one for the source container name and second one for the duplicated container name.
+message ContainerCopyParameter {
+	string containerSource = 1;
+	string containerDestination = 2;
+
 }
 
 // ContainerImportParameter has all input for importing a container.
@@ -112,19 +125,35 @@ message GetNodeList {
 		Network = 2;
 		Long = 3;
 		All = 4;
+		FullAll = 5;
 	}
 	ListType type = 7;
 	repeated string Nodes = 8;
 }
 
+// Get the formated output as string
 message NodeList {
 	repeated string Output = 1;
 }
 
+// Request a profile list view
+message GetProfileList {
+	bool ShowAll = 1;
+	bool ShowFullAll = 2;
+	repeated string Profiles = 3;
+}
+// Get the formated output as string
+message ProfileList {
+	repeated string Output = 1;
+}
+
 // NodeAddParameter contains all input for adding a node to be managed by
-// Warewulf.
+// Warewulf. Only adds nodes if the hash matches the actual hash of the 
+// configuration.
 message NodeAddParameter {
 	string nodeConfYaml = 1;
+	bool force = 2;
+	string hash = 3;
 	repeated string nodeNames = 10;
 }
 
@@ -132,26 +161,43 @@ message NodeAddParameter {
 // to nodes.conf (is resused for profile edit)
 message NodeYaml {
 	string nodeConfMapYaml = 1;
+	string hash = 2;
 }
 
 // NodeDeleteParameter contains input for removing nodes from Warewulf
-// management.
+// management. If the given hash differs with the actual hash of the 
+// configuration, no node is deleted. The force option allows the deletion
+// of nodes with a correct hash.
 message NodeDeleteParameter {
 	bool force = 1;
 	repeated string nodeNames = 2;
+	string hash = 3;
 }
 
 // NodeSetParameter contains all fields for updating aspects of nodes managed
 // by Warewulf.
 message NodeSetParameter {
 	string nodeConfYaml = 1;
-	string container = 2;
-    string netdevDelete = 14;
-	bool allNodes = 27;
-	bool force = 31;
-	repeated string nodeNames = 39;
+    string netdevDelete = 2;
+	string diskDelete = 3;
+	string partitionDelete = 4;
+	string filesystemDelete = 5;
+	bool allNodes = 6;
+	bool force = 7;
+	repeated string nodeNames = 8;
 }
-
+// ProfileSetParameter contains all fields for updating aspects of profiles managed. Basically a copy of NodeSetParameters
+// by Warewulf.
+message ProfileSetParameter {
+	string nodeConfYaml = 1;
+    string netdevDelete = 2;
+	string diskDelete = 3;
+	string partitionDelete = 4;
+	string filesystemDelete = 5;
+	bool allProfiles = 6;
+	bool force = 7;
+	repeated string profileNames = 8;
+}
 // NodeStatus contains information about the imaging status per node.
 message NodeStatus {
 	string nodeName = 1;	// Name (Id) of the node.
@@ -200,6 +246,13 @@ service WWApi {
 		};
 	}
 
+
+	rpc ContainerCopy(ContainerCopyParameter) returns (google.protobuf.Empty) {
+		option (google.api.http) = {
+			post: "/v1/containercopy"
+			body: "*"
+		};
+	}
 	// ContainerImport imports a container to Warewulf.
 	rpc ContainerImport(ContainerImportParameter) returns (ContainerListResponse) {
 		option(google.api.http) = {

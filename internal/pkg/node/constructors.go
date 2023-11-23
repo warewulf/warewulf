@@ -2,19 +2,22 @@ package node
 
 import (
 	"errors"
-	"io/ioutil"
+	"fmt"
+	"os"
 	"path"
 	"sort"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 
 	"gopkg.in/yaml.v2"
 )
 
-var ConfigFile string
-var DefaultConfig string
+var (
+	ConfigFile    string
+	DefaultConfig string
+)
 
 // used as fallback if DefaultConfig can't be read
 var FallBackConf = `---
@@ -34,34 +37,66 @@ defaultnode:
     dummy:
       device: eth0
       type: ethernet
-      netmask: 255.255.255.0`
+      netmask: 255.255.255.0
+      onboot: true`
 
 func init() {
+	conf := warewulfconf.Get()
 	if ConfigFile == "" {
-		ConfigFile = path.Join(buildconfig.SYSCONFDIR(), "warewulf/nodes.conf")
+		ConfigFile = path.Join(conf.Paths.Sysconfdir, "warewulf/nodes.conf")
 	}
 	if DefaultConfig == "" {
-		DefaultConfig = path.Join(buildconfig.SYSCONFDIR(), "warewulf/defaults.conf")
+		DefaultConfig = path.Join(conf.Paths.Datadir, "warewulf/defaults.conf")
 	}
 }
 
+/*
+Creates a new nodeDb object from the on-disk configuration
+*/
 func New() (NodeYaml, error) {
-	var ret NodeYaml
-
 	wwlog.Verbose("Opening node configuration file: %s", ConfigFile)
-	data, err := ioutil.ReadFile(ConfigFile)
+	data, err := os.ReadFile(ConfigFile)
 	if err != nil {
-		return ret, err
+		return NodeYaml{}, err
 	}
+	return Parse(data)
+}
 
+// Parse constructs a new nodeDb object from an input YAML
+// document. Passes any errors return from yaml.Unmarshal. Returns an
+// error if any parsed value is not of a valid type for the given
+// parameter.
+func Parse(data []byte) (NodeYaml, error) {
+	var ret NodeYaml
+	var err error
 	wwlog.Debug("Unmarshaling the node configuration")
 	err = yaml.Unmarshal(data, &ret)
 	if err != nil {
 		return ret, err
 	}
+	wwlog.Debug("Checking nodes for types")
+	if ret.Nodes == nil {
+		ret.Nodes = map[string]*NodeConf{}
+	}
+	for nodeName, node := range ret.Nodes {
+		err = node.Check()
+		if err != nil {
+			wwlog.Warn("node: %s parsing error: %s", nodeName, err)
+			return ret, err
+		}
+	}
+	if ret.NodeProfiles == nil {
+		ret.NodeProfiles = map[string]*NodeConf{}
+	}
+	for profileName, profile := range ret.NodeProfiles {
+		err = profile.Check()
+		if err != nil {
+			wwlog.Warn("node: %s parsing error: %s", profileName, err)
+			return ret, err
+		}
+	}
 
 	wwlog.Debug("Returning node object")
-
 	return ret, nil
 }
 
@@ -72,23 +107,18 @@ for every node
 */
 func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 	var ret []NodeInfo
-	/*
-		wwconfig, err := warewulfconf.New()
-		if err != nil {
-			return ret, err
-		}
-	*/
 	var defConf map[string]*NodeConf
-	wwlog.Verbose("Opening defaults from file %s\n", DefaultConfig)
-	defData, err := ioutil.ReadFile(DefaultConfig)
+	wwlog.Verbose("Opening defaults from file failed %s\n", DefaultConfig)
+	defData, err := os.ReadFile(DefaultConfig)
 	if err != nil {
 		wwlog.Verbose("Couldn't read DefaultConfig :%s\n", err)
+		wwlog.Verbose("Using building defaults")
+		defData = []byte(FallBackConf)
 	}
 	wwlog.Debug("Unmarshalling default config\n")
 	err = yaml.Unmarshal(defData, &defConf)
 	if err != nil {
 		wwlog.Verbose("Couldn't unmarshall defaults from file :%s\n", err)
-		wwlog.Verbose("Using building defaults")
 		err = yaml.Unmarshal([]byte(FallBackConf), &defConf)
 		if err != nil {
 			wwlog.Warn("Could not get any defaults")
@@ -129,17 +159,14 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			node.Tags[keyname] = key
 			delete(node.Keys, keyname)
 		}
+		err = node.Check()
+		if err != nil {
+			return nil, fmt.Errorf("node: %s check error: %s", nodename, err)
+		}
 		n.SetFrom(node)
 		// only now the netdevs start to exist so that default values can be set
 		for _, netdev := range n.NetDevs {
-			netdev.SetDefFrom(defConfNet)
-		}
-		// set default/primary network is just one network exist
-		if len(n.NetDevs) == 1 {
-			// only way to get the key
-			for key := range node.NetDevs {
-				n.NetDevs[key].Primary.SetB(true)
-			}
+			SetDefFrom(defConfNet, netdev)
 		}
 		// backward compatibility
 		n.Ipmi.Ipaddr.Set(node.IpmiIpaddr)
@@ -177,6 +204,20 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 			// can't call setFrom() as we have to use SetAlt instead of Set for an Entry
 			wwlog.Verbose("Merging profile into node: %s <- %s", nodename, profileName)
 			n.SetAltFrom(config.NodeProfiles[profileName], profileName)
+		}
+		// set default/primary network is just one network exist
+		if len(n.NetDevs) >= 1 && !n.PrimaryNetDev.Defined() {
+			tmpNets := make([]string, 0, len(n.NetDevs))
+			for key := range node.NetDevs {
+				tmpNets = append(tmpNets, key)
+			}
+			sort.Strings(tmpNets)
+			// if a value is present in profile or node, default is not visible
+			wwlog.Debug("%s setting primary network device: %s", n.Id.Get(), tmpNets[0])
+			n.PrimaryNetDev.SetDefault(tmpNets[0])
+		}
+		if dev, ok := n.NetDevs[n.PrimaryNetDev.Get()]; ok {
+			dev.Primary.SetDefaultB(true)
 		}
 		ret = append(ret, n)
 	}
@@ -268,6 +309,14 @@ func (config *NodeYaml) ListAllProfiles() []string {
 	return ret
 }
 
+/*
+FindDiscoverableNode returns the first discoverable node and an
+interface to associate with the discovered interface. If the node has
+a primary interface, it is returned; otherwise, the first interface
+without a hardware address is returned.
+
+If no unconfigured nodes are found, an error is returned.
+*/
 func (config *NodeYaml) FindDiscoverableNode() (NodeInfo, string, error) {
 	var ret NodeInfo
 
@@ -276,6 +325,9 @@ func (config *NodeYaml) FindDiscoverableNode() (NodeInfo, string, error) {
 	for _, node := range nodes {
 		if !node.Discoverable.GetB() {
 			continue
+		}
+		if _, ok := node.NetDevs[node.PrimaryNetDev.Get()]; ok {
+			return node, node.PrimaryNetDev.Get(), nil
 		}
 		for netdev, dev := range node.NetDevs {
 			if !dev.Hwaddr.Defined() {

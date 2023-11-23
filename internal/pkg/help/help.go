@@ -26,6 +26,7 @@ Additional help topics:{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
 Use "{{.CommandPath}} COMMAND --help" for more information about a COMMAND.
 {{end}}
 `
+
 // End UsageTemplate
 
 // HelpTemplate replaces the default help template from cobra

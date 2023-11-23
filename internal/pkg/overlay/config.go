@@ -5,11 +5,13 @@ import (
 	"path"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
 func OverlaySourceTopDir() string {
-	return buildconfig.WWOVERLAYDIR()
+	conf := warewulfconf.Get()
+	return conf.Paths.WWOverlaydir
 }
 
 /*
@@ -26,9 +28,32 @@ func OverlaySourceDir(overlayName string) string {
 	return overlaypath
 }
 
-/*
-Returns the overlay name of the image for a given node
-*/
-func OverlayImage(nodeName string, overlayName []string) string {
-	return path.Join(buildconfig.WWPROVISIONDIR(), "overlays/", nodeName, strings.Join(overlayName, "-")+".img")
+// OverlayImage returns the full path to an overlay image based on the
+// context and the overlays contained in it.
+//
+// If a context is provided, the image file name is based on that
+// context name, in the form __{CONTEXT}__.
+//
+// If the context is empty ("") the image file name is a concatenated
+// list of the contained overlays joined by "-".
+//
+// If the context is empty and no overlays are specified, the empty
+// string is returned.
+func OverlayImage(nodeName string, context string, overlayNames []string) string {
+	var name string
+	if context != "" {
+		if len(overlayNames) > 0 {
+			wwlog.Warn("context(%v) and overlays(%v) specified: prioritizing context(%v)",
+				context, overlayNames, context)
+		}
+		name = "__" + strings.ToUpper(context) + "__.img"
+	} else if len(overlayNames) > 0 {
+		name = strings.Join(overlayNames, "-") + ".img"
+	} else {
+		wwlog.Warn("unable to generate overlay image path: no context or overlays specified")
+		return ""
+	}
+
+	conf := warewulfconf.Get()
+	return path.Join(conf.Paths.WWProvisiondir, "overlays/", nodeName, name)
 }

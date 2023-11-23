@@ -2,6 +2,7 @@ package container
 
 import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/build"
+	"github.com/hpcng/warewulf/internal/app/wwctl/container/copy"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/delete"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/exec"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container/imprt"
@@ -33,6 +34,7 @@ func init() {
 	baseCmd.AddCommand(delete.GetCommand())
 	baseCmd.AddCommand(show.GetCommand())
 	baseCmd.AddCommand(syncuser.GetCommand())
+	baseCmd.AddCommand(copy.GetCommand())
 
 }
 

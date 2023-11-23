@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -17,8 +18,32 @@ import (
 	"github.com/pkg/errors"
 )
 
-func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
+func ContainerCopy(cbp *wwapiv1.ContainerCopyParameter) (err error) {
+	if cbp == nil {
+		return fmt.Errorf("ContainerCopyParameter is nil")
+	}
 
+	if !container.DoesSourceExist(cbp.ContainerSource) {
+		return fmt.Errorf("Container %s does not exists.", cbp.ContainerSource)
+	}
+
+	if !container.ValidName(cbp.ContainerDestination) {
+		return fmt.Errorf("Container name contains illegal characters : %s", cbp.ContainerDestination)
+	}
+
+	if container.DoesSourceExist(cbp.ContainerDestination) {
+		return fmt.Errorf("An other container with the name %s already exists", cbp.ContainerDestination)
+	}
+
+	err = container.Duplicate(cbp.ContainerSource, cbp.ContainerDestination)
+	if err != nil {
+		return fmt.Errorf("could not duplicate image: %s", err.Error())
+	}
+
+	return fmt.Errorf("Container %s has been succesfully duplicated as %s", cbp.ContainerSource, cbp.ContainerDestination)
+}
+
+func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 	if cbp == nil {
 		return fmt.Errorf("ContainerBuildParameter is nil")
 	}
@@ -60,7 +85,7 @@ func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 				return
 			}
 
-			//TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
+			// TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
 			profiles, _ := nodeDB.FindAllProfiles()
 			for _, profile := range profiles {
 				wwlog.Debug("Looking for profile default: %s", profile.Id.Get())
@@ -85,7 +110,6 @@ func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 }
 
 func ContainerDelete(cdp *wwapiv1.ContainerDeleteParameter) (err error) {
-
 	if cdp == nil {
 		return fmt.Errorf("ContainerDeleteParameter is nil")
 	}
@@ -132,7 +156,6 @@ ARG_LOOP:
 }
 
 func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName string, err error) {
-
 	if cip == nil {
 		err = fmt.Errorf("NodeAddParameter is nil")
 		return
@@ -176,6 +199,14 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 			// TODO: mhink - return was missing here. Was that deliberate?
 		}
 
+		if util.IsFile(cip.Source) && !filepath.IsAbs(cip.Source) {
+			cip.Source, err = filepath.Abs(cip.Source)
+			if err != nil {
+				err = fmt.Errorf("when resolving absolute path of %s, err: %v", cip.Source, err)
+				wwlog.Error(err.Error())
+				return
+			}
+		}
 		err = container.ImportDocker(cip.Source, cip.Name, sCtx)
 		if err != nil {
 			err = fmt.Errorf("could not import image: %s", err.Error())
@@ -197,17 +228,14 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		return
 	}
 
-	wwlog.Info("Updating the container's /etc/resolv.conf")
-	err = util.CopyFile("/etc/resolv.conf", path.Join(container.RootFsDir(cip.Name), "/etc/resolv.conf"))
+	SyncUserShowOnly := !cip.SyncUser
+	err = container.SyncUids(cip.Name, SyncUserShowOnly)
 	if err != nil {
-		wwlog.Warn("Could not copy /etc/resolv.conf into container: %s", err)
-	}
-
-	err = container.SyncUids(cip.Name, !cip.SyncUser)
-	if err != nil && !cip.SyncUser {
 		err = fmt.Errorf("error in user sync, fix error and run 'syncuser' manually: %s", err)
 		wwlog.Error(err.Error())
-		return
+		if cip.SyncUser {
+			return
+		}
 	}
 
 	wwlog.Info("Building container: %s", cip.Name)
@@ -227,7 +255,7 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 			return
 		}
 
-		//TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
+		// TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
 		profiles, _ := nodeDB.FindAllProfiles()
 		for _, profile := range profiles {
 			wwlog.Debug("Looking for profile default: %s", profile.Id.Get())
@@ -302,9 +330,7 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 		}
 		var modTime uint64
 		imageStat, err := os.Stat(container.ImageFile(source))
-		if err != nil {
-			wwlog.Error("%s\n", err)
-		} else {
+		if err == nil {
 			modTime = uint64(imageStat.ModTime().Unix())
 		}
 		size, err := util.DirSize(container.SourceDir(source))
@@ -312,15 +338,11 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 			wwlog.Error("%s\n", err)
 		}
 		imgSize, err := os.Stat(container.ImageFile(source))
-		if err != nil {
-			wwlog.Error("%s\n", err)
-		} else {
+		if err == nil {
 			size += imgSize.Size()
 		}
 		imgSize, err = os.Stat(container.ImageFile(source) + ".gz")
-		if err != nil {
-			wwlog.Error("%s\n", err)
-		} else {
+		if err == nil {
 			size += imgSize.Size()
 		}
 
@@ -338,16 +360,18 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 }
 
 func ContainerShow(csp *wwapiv1.ContainerShowParameter) (response *wwapiv1.ContainerShowResponse, err error) {
-
 	containerName := csp.ContainerName
 
 	if !container.ValidName(containerName) {
-		err = fmt.Errorf("%s is not a valid container", containerName)
+		err = fmt.Errorf("%s is not a valid container name", containerName)
 		return
 	}
 
 	rootFsDir := container.RootFsDir(containerName)
-
+	if !util.IsDir(rootFsDir) {
+		err = fmt.Errorf("%s is not a valid container", containerName)
+		return
+	}
 	kernelVersion := container.KernelVersion(containerName)
 
 	nodeDB, err := node.New()

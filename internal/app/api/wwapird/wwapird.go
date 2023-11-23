@@ -4,11 +4,11 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"os"
 
 	"flag"
 	"fmt"
 	"log"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/golang/glog"
@@ -18,10 +18,10 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/hpcng/warewulf/internal/pkg/api/apiconfig"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 
 	gw "github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
 	"path"
 )
 
@@ -29,8 +29,9 @@ func run() error {
 
 	log.Println("test0")
 
+	conf := warewulfconf.Get()
 	// Read the config file.
-	config, err := apiconfig.NewClientServer(path.Join(buildconfig.SYSCONFDIR(), "warewulf/wwapird.conf"))
+	config, err := apiconfig.NewClientServer(path.Join(conf.Paths.Sysconfdir, "warewulf/wwapird.conf"))
 	if err != nil {
 		glog.Fatalf("Failed to read config file, err: %v", err)
 	}
@@ -56,7 +57,7 @@ func run() error {
 
 		// Load the CA cert.
 		var cacert []byte
-		cacert, err = ioutil.ReadFile(config.ClientTlsConfig.CaCert)
+		cacert, err = os.ReadFile(config.ClientTlsConfig.CaCert)
 		if err != nil {
 			log.Fatalf("Failed to load cacert. err: %s\n", err)
 		}

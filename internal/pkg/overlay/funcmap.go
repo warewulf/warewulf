@@ -2,28 +2,30 @@ package overlay
 
 import (
 	"bufio"
-	"io/ioutil"
+	"encoding/json"
+	"fmt"
 	"os"
 	"path"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/container"
+	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
 /*
 Reads a file file from the host fs. If the file has nor '/' prefix
-the path is relative to SYSCONFDIR.
-Templates in the file are no evaluated.
+the path is relative to Paths.SysconfdirTemplates in the file are no evaluated.
 */
 func templateFileInclude(inc string) string {
+	conf := warewulfconf.Get()
 	if !strings.HasPrefix(inc, "/") {
-		inc = path.Join(buildconfig.SYSCONFDIR(), "warewulf", inc)
+		inc = path.Join(conf.Paths.Sysconfdir, "warewulf", inc)
 	}
 	wwlog.Debug("Including file into template: %s", inc)
-	content, err := ioutil.ReadFile(inc)
+	content, err := os.ReadFile(inc)
 	if err != nil {
 		wwlog.Verbose("Could not include file into template: %s", err)
 	}
@@ -36,8 +38,9 @@ is the file to read, the second the abort string
 Templates in the file are no evaluated.
 */
 func templateFileBlock(inc string, abortStr string) (string, error) {
+	conf := warewulfconf.Get()
 	if !strings.HasPrefix(inc, "/") {
-		inc = path.Join(buildconfig.SYSCONFDIR(), "warewulf", inc)
+		inc = path.Join(conf.Paths.Sysconfdir, "warewulf", inc)
 	}
 	wwlog.Debug("Including file block into template: %s", inc)
 	readFile, err := os.Open(inc)
@@ -93,10 +96,27 @@ func templateContainerFileInclude(containername string, filepath string) string 
 		return ""
 	}
 
-	content, err := ioutil.ReadFile(path.Join(containerDir, filepath))
+	content, err := os.ReadFile(path.Join(containerDir, filepath))
 
 	if err != nil {
 		wwlog.Error("Template include failed: %s", err)
 	}
 	return strings.TrimSuffix(string(content), "\n")
+}
+
+func createIgnitionJson(node *node.NodeInfo) string {
+	conf, rep, err := node.GetConfig()
+	if len(conf.Storage.Disks) == 0 && len(conf.Storage.Filesystems) == 0 {
+		wwlog.Debug("no disks or filesystems present, don't create a json object")
+		return ""
+	}
+	if err != nil {
+		wwlog.Error("disk, filesystem configuration has following error: ", fmt.Sprint(err))
+		return fmt.Sprint(err)
+	}
+	if rep != "" {
+		wwlog.Warn("%s storage configuration has following non fatal problems: %s", node.Id, rep)
+	}
+	tmpYaml, _ := json.Marshal(&conf)
+	return string(tmpYaml)
 }

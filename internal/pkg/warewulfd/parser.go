@@ -49,19 +49,19 @@ func parseReq(req *http.Request) (parserInfo, error) {
 
 	if len(req.URL.Query()["stage"]) > 0 {
 		ret.stage = req.URL.Query()["stage"][0]
-	}else{
+	} else {
 
 		if stage == "ipxe" || stage == "provision" {
 			ret.stage = "ipxe"
-		}else if stage == "kernel" {
+		} else if stage == "kernel" {
 			ret.stage = "kernel"
-		}else if stage == "kmods" {
+		} else if stage == "kmods" {
 			ret.stage = "kmods"
-		}else if stage == "container" {
+		} else if stage == "container" {
 			ret.stage = "container"
-		}else if stage == "overlay-system" {
+		} else if stage == "overlay-system" {
 			ret.stage = "system"
-		}else if stage == "overlay-runtime" {
+		} else if stage == "overlay-runtime" {
 			ret.stage = "runtime"
 		}
 	}

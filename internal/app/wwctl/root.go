@@ -1,8 +1,11 @@
 package wwctl
 
 import (
+	"os"
+
 	"github.com/hpcng/warewulf/internal/app/wwctl/configure"
 	"github.com/hpcng/warewulf/internal/app/wwctl/container"
+	"github.com/hpcng/warewulf/internal/app/wwctl/genconf"
 	"github.com/hpcng/warewulf/internal/app/wwctl/kernel"
 	"github.com/hpcng/warewulf/internal/app/wwctl/node"
 	"github.com/hpcng/warewulf/internal/app/wwctl/overlay"
@@ -11,12 +14,10 @@ import (
 	"github.com/hpcng/warewulf/internal/app/wwctl/server"
 	"github.com/hpcng/warewulf/internal/app/wwctl/ssh"
 	"github.com/hpcng/warewulf/internal/app/wwctl/version"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/help"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
-	"github.com/spf13/cobra/doc"
-
-	"io"
 )
 
 var (
@@ -29,17 +30,23 @@ var (
 		SilenceUsage:          true,
 		SilenceErrors:         true,
 	}
-	verboseArg bool
-	DebugFlag  bool
+	verboseArg      bool
+	DebugFlag       bool
+	LogLevel        int
+	WarewulfConfArg string
+	AllowEmptyConf  bool
 )
 
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verboseArg, "verbose", "v", false, "Run with increased verbosity.")
 	rootCmd.PersistentFlags().BoolVarP(&DebugFlag, "debug", "d", false, "Run with debugging messages enabled.")
-
+	rootCmd.PersistentFlags().IntVar(&LogLevel, "loglevel", wwlog.INFO, "Set log level to given string")
+	_ = rootCmd.PersistentFlags().MarkHidden("loglevel")
+	rootCmd.PersistentFlags().StringVar(&WarewulfConfArg, "warewulfconf", "", "Set the warewulf configuration file")
+	rootCmd.PersistentFlags().BoolVar(&AllowEmptyConf, "emptyconf", false, "Allow empty configuration")
+	_ = rootCmd.PersistentFlags().MarkHidden("emptyconf")
 	rootCmd.SetUsageTemplate(help.UsageTemplate)
 	rootCmd.SetHelpTemplate(help.HelpTemplate)
-
 	rootCmd.AddCommand(overlay.GetCommand())
 	rootCmd.AddCommand(container.GetCommand())
 	rootCmd.AddCommand(node.GetCommand())
@@ -50,6 +57,7 @@ func init() {
 	rootCmd.AddCommand(server.GetCommand())
 	rootCmd.AddCommand(version.GetCommand())
 	rootCmd.AddCommand(ssh.GetCommand())
+	rootCmd.AddCommand(genconf.GetCommand())
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
@@ -57,7 +65,7 @@ func GetRootCommand() *cobra.Command {
 	return rootCmd
 }
 
-func rootPersistentPreRunE(cmd *cobra.Command, args []string) error {
+func rootPersistentPreRunE(cmd *cobra.Command, args []string) (err error) {
 	if DebugFlag {
 		wwlog.SetLogLevel(wwlog.DEBUG)
 	} else if verboseArg {
@@ -65,21 +73,22 @@ func rootPersistentPreRunE(cmd *cobra.Command, args []string) error {
 	} else {
 		wwlog.SetLogLevel(wwlog.INFO)
 	}
-	return nil
-}
-
-// External functions not used by the wwctl command line
-
-// Generate Bash completion file
-func GenBashCompletion(w io.Writer) error {
-	return rootCmd.GenBashCompletion(w)
-}
-
-// Generate man pages
-func GenManTree(fileName string) error {
-	header := &doc.GenManHeader{
-		Title:   "WWCTL",
-		Section: "1",
+	if LogLevel != wwlog.INFO {
+		wwlog.SetLogLevel(LogLevel)
 	}
-	return doc.GenManTree(rootCmd, header, fileName)
+	conf := warewulfconf.Get()
+	if !AllowEmptyConf && !conf.InitializedFromFile() {
+		if WarewulfConfArg != "" {
+			err = conf.Read(WarewulfConfArg)
+		} else if os.Getenv("WAREWULFCONF") != "" {
+			err = conf.Read(os.Getenv("WAREWULFCONF"))
+		} else {
+			err = conf.Read(warewulfconf.ConfigFile)
+		}
+	}
+	if err != nil {
+		return
+	}
+	err = conf.SetDynamicDefaults()
+	return
 }

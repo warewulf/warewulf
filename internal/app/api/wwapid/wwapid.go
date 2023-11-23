@@ -6,7 +6,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -16,7 +15,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/api/container"
 	apinode "github.com/hpcng/warewulf/internal/pkg/api/node"
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	"github.com/hpcng/warewulf/internal/pkg/buildconfig"
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/version"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -35,8 +34,9 @@ var apiVersion string
 func main() {
 	log.Println("Server running")
 
+	conf := warewulfconf.Get()
 	// Read the config file.
-	config, err := apiconfig.NewServer(path.Join(buildconfig.SYSCONFDIR(), "warewulf/wwapid.conf"))
+	config, err := apiconfig.NewServer(path.Join(conf.Paths.Sysconfdir, "warewulf/wwapid.conf"))
 	if err != nil {
 		log.Fatalf("err: %v", err)
 	}
@@ -60,7 +60,7 @@ func main() {
 
 		// Load the CA cert.
 		var cacert []byte
-		cacert, err = ioutil.ReadFile(config.TlsConfig.CaCert)
+		cacert, err = os.ReadFile(config.TlsConfig.CaCert)
 		if err != nil {
 			log.Fatalf("Failed to load cacert. err: %s\n", err)
 		}
@@ -154,6 +154,18 @@ func (s *apiServer) ContainerBuild(ctx context.Context, request *wwapiv1.Contain
 			}
 		}
 	}
+	return
+}
+
+// ContainerCopy duplicates a container.
+func (s *apiServer) ContainerCopy(ctx context.Context, request *wwapiv1.ContainerCopyParameter) (response *emptypb.Empty, err error) {
+
+	// Parameter checks.
+	if request == nil {
+		return response, status.Errorf(codes.InvalidArgument, "nil request")
+	}
+
+	err = container.ContainerCopy(request)
 	return
 }
 

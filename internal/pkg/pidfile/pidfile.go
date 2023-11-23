@@ -5,7 +5,6 @@ package pidfile
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -47,11 +46,11 @@ func WriteControl(filename string, pid int, overwrite bool) (int, error) {
 	}
 
 	// We're clear to (over)write the file
-	return pid, ioutil.WriteFile(filename, []byte(fmt.Sprintf("%d\n", pid)), 0644)
+	return pid, os.WriteFile(filename, []byte(fmt.Sprintf("%d\n", pid)), 0644)
 }
 
 func pidfileContents(filename string) (int, error) {
-	contents, err := ioutil.ReadFile(filename)
+	contents, err := os.ReadFile(filename)
 	if err != nil {
 		return 0, err
 	}

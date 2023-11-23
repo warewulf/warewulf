@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/hpcng/warewulf/internal/pkg/node"
 	nodepkg "github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
@@ -34,7 +35,7 @@ func sendFile(
 		req,
 		filename,
 		stat.ModTime(),
-		fd )
+		fd)
 
 	wwlog.Send("%15s: %s", sendto, filename)
 
@@ -42,15 +43,15 @@ func sendFile(
 }
 
 func getOverlayFile(
-	nodeId string,
+	n node.NodeInfo,
+	context string,
 	stage_overlays []string,
-	autobuild bool ) (stage_file string, err error) {
+	autobuild bool) (stage_file string, err error) {
 
-	stage_file = overlay.OverlayImage(nodeId, stage_overlays)
+	stage_file = overlay.OverlayImage(n.Id.Get(), context, stage_overlays)
 	err = nil
-
 	build := !util.IsFile(stage_file)
-
+	wwlog.Verbose("stage file: %s", stage_file)
 	if !build && autobuild {
 		build = util.PathIsNewer(stage_file, nodepkg.ConfigFile)
 
@@ -60,21 +61,10 @@ func getOverlayFile(
 	}
 
 	if build {
-		wwlog.Serv("BUILD %15s, overlays %v", nodeId, stage_overlays)
-
-		args := []string{"overlay", "build"}
-
-		for _, overlayname := range stage_overlays {
-			args = append(args, "-O", overlayname)
-		}
-
-		args = append(args, nodeId)
-
-		out, err := util.RunWWCTL(args...)
-
+		err = overlay.BuildOverlay(n, context, stage_overlays)
 		if err != nil {
 			wwlog.Error("Failed to build overlay: %s, %s, %s\n%s",
-				nodeId, stage_overlays, stage_file, string(out))
+				n.Id.Get(), stage_overlays, stage_file, err)
 		}
 	}
 

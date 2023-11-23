@@ -1,0 +1,12 @@
+[Unit]
+Description=Warewulf container configuration
+After=local-fs.target
+Before=warewulfd.service
+Before=dhcpd
+
+[Service]
+Type=oneshot
+ExecStart=/container/config-warewulf
+
+[Install]
+WantedBy=multi-user.target

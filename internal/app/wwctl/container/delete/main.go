@@ -14,7 +14,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		ContainerNames: args,
 	}
 	if !SetYes {
-		yes := util.ConfirmationPrompt(fmt.Sprintf("Are you sure you want to container %s", args))
+		yes := util.ConfirmationPrompt(fmt.Sprintf("Are you sure you want to delete container %s", args))
 		if !yes {
 			return
 		}

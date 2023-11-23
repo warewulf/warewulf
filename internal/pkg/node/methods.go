@@ -4,11 +4,23 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
+
+type sortByName []NodeInfo
+
+func (a sortByName) Len() int           { return len(a) }
+func (a sortByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a sortByName) Less(i, j int) bool { return a[i].Id.Print() < a[j].Id.Print() }
+
+func GetUnsetVerbs() []string {
+	return []string{"UNSET", "DELETE", "UNDEF", "undef", "--", "nil", "0.0.0.0"}
+}
 
 /**********
  *
@@ -39,6 +51,7 @@ func FilterByName(set []NodeInfo, searchList []string) []NodeInfo {
 		ret = set
 	}
 
+	sort.Sort(sortByName(ret))
 	return ret
 }
 
@@ -54,7 +67,6 @@ func FilterMapByName(inputMap map[string]*NodeConf, searchList []string) (retMap
 					retMap[name] = nConf
 				}
 			}
-
 		}
 	}
 	return retMap
@@ -77,7 +89,7 @@ func (ent *Entry) Set(val string) {
 		return
 	}
 
-	if val == "UNDEF" || val == "DELETE" || val == "UNSET" || val == "--" || val == "nil" {
+	if util.InSlice(GetUnsetVerbs(), val) {
 		wwlog.Debug("Removing value for %v", *ent)
 		ent.value = []string{""}
 	} else {
@@ -102,7 +114,7 @@ func (ent *Entry) SetSlice(val []string) {
 	} else if len(val) == 1 && val[0] == "" { // check also for an "empty" slice
 		return
 	}
-	if val[0] == "UNDEF" || val[0] == "DELETE" || val[0] == "UNSET" || val[0] == "--" {
+	if util.InSlice(GetUnsetVerbs(), val[0]) {
 		ent.value = []string{}
 	} else {
 		ent.value = val
@@ -152,7 +164,6 @@ func (ent *Entry) SetDefault(val string) {
 		return
 	}
 	ent.def = []string{val}
-
 }
 
 /*
@@ -163,7 +174,17 @@ func (ent *Entry) SetDefaultSlice(val []string) {
 		return
 	}
 	ent.def = val
+}
 
+/*
+Set default etry as bool
+*/
+func (ent *Entry) SetDefaultB(val bool) {
+	if val {
+		ent.def = []string{"true"}
+	} else {
+		ent.def = []string{"false"}
+	}
 }
 
 /*
@@ -261,6 +282,37 @@ func (ent *Entry) GotReal() bool {
 	return len(ent.value) != 0
 }
 
+/*
+Get a pointer to the value
+*/
+func (ent *Entry) GetPointer() *string {
+	ret := ent.Get()
+	return &ret
+}
+
+/*
+Try to get a int of a value, 0 if value can't be parsed!
+*/
+func (ent *Entry) GetInt() int {
+	var ret int
+	if len(ent.value) != 0 {
+		ret, _ = strconv.Atoi(ent.value[0])
+	} else if len(ent.altvalue) != 0 {
+		ret, _ = strconv.Atoi(ent.altvalue[0])
+	} else if len(ent.def) != 0 {
+		ret, _ = strconv.Atoi(ent.def[0])
+	}
+	return ret
+}
+
+/*
+Ptr to int
+*/
+func (ent *Entry) GetIntPtr() *int {
+	ret := ent.GetInt()
+	return &ret
+}
+
 /**********
  *
  * Misc
@@ -313,7 +365,7 @@ per profile. Else -- is returned.
 func (ent *Entry) Source() string {
 	if len(ent.value) != 0 && len(ent.altvalue) != 0 {
 		return "SUPERSEDED"
-		//return fmt.Sprintf("[%s]", ent.from)
+		// return fmt.Sprintf("[%s]", ent.from)
 	} else if ent.from == "" {
 		return "--"
 	}
@@ -341,8 +393,10 @@ Create an empty node NodeConf
 */
 func NewConf() (nodeconf NodeConf) {
 	nodeconf.Ipmi = new(IpmiConf)
+	nodeconf.Ipmi.Tags = map[string]string{}
 	nodeconf.Kernel = new(KernelConf)
 	nodeconf.NetDevs = make(map[string]*NetDevs)
+	nodeconf.Tags = map[string]string{}
 	return nodeconf
 }
 
@@ -351,8 +405,10 @@ Create an empty node NodeInfo
 */
 func NewInfo() (nodeInfo NodeInfo) {
 	nodeInfo.Ipmi = new(IpmiEntry)
+	nodeInfo.Ipmi.Tags = map[string]*Entry{}
 	nodeInfo.Kernel = new(KernelEntry)
 	nodeInfo.NetDevs = make(map[string]*NetDevEntry)
+	nodeInfo.Tags = make(map[string]*Entry)
 	return nodeInfo
 }
 
@@ -370,4 +426,38 @@ func GetByName(node interface{}, name string) (string, error) {
 	}
 	myEntry := entryField.Interface().(Entry)
 	return myEntry.Get(), nil
+}
+
+/*
+Check if the Netdev is empty, so has no values set
+*/
+func ObjectIsEmpty(obj interface{}) bool {
+	if obj == nil {
+		return true
+	}
+	varType := reflect.TypeOf(obj)
+	varVal := reflect.ValueOf(obj)
+	if varType.Kind() == reflect.Ptr && !varVal.IsNil() {
+		return ObjectIsEmpty(varVal.Elem().Interface())
+	}
+	if varVal.IsZero() {
+		return true
+	}
+	for i := 0; i < varType.NumField(); i++ {
+		if varType.Field(i).Type.Kind() == reflect.String && !varVal.Field(i).IsZero() {
+			val := varVal.Field(i).Interface().(string)
+			if val != "" {
+				return false
+			}
+		} else if varType.Field(i).Type == reflect.TypeOf(map[string]string{}) {
+			if len(varVal.Field(i).Interface().(map[string]string)) != 0 {
+				return false
+			}
+		} else if varType.Field(i).Type.Kind() == reflect.Ptr {
+			if !ObjectIsEmpty(varVal.Field(i).Interface()) {
+				return false
+			}
+		}
+	}
+	return true
 }

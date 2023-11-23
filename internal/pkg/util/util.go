@@ -24,12 +24,16 @@ import (
 
 // reserve some number of cpus for system/warwulfd usage
 var processLimitedReserve int = 4
+
 // maximum number of concurrent spawned processes
-var processLimitedMax = MaxInt(1, runtime.NumCPU() - processLimitedReserve)
+var processLimitedMax = MaxInt(1, runtime.NumCPU()-processLimitedReserve)
+
 // Channel used as semaphore to specififed processLimitedMax
 var processLimitedChan = make(chan int, processLimitedMax)
+
 // Current number of processes started + queued
 var processLimitedNum int32 = 0
+
 // Counter over total history of started processes
 var processLimitedCounter uint32 = 0
 
@@ -53,7 +57,7 @@ func ProcessLimitedStatus() (running int32, queued int32) {
 	return
 }
 
-func MaxInt( a int, b int ) int {
+func MaxInt(a int, b int) int {
 	if a > b {
 		return a
 	}
@@ -65,7 +69,7 @@ func FirstError(errs ...error) (err error) {
 	for _, e := range errs {
 		if err == nil {
 			err = e
-		}else if e != nil {
+		} else if e != nil {
 			wwlog.ErrorExc(e, "Unhandled error")
 		}
 	}
@@ -207,7 +211,7 @@ func ValidateOrDie(message string, pattern string, expr string) {
 	}
 }
 
-//******************************************************************************
+// ******************************************************************************
 func FindFiles(path string) []string {
 	var ret []string
 
@@ -244,7 +248,7 @@ func FindFiles(path string) []string {
 	return ret
 }
 
-//******************************************************************************
+// ******************************************************************************
 func FindFilterFiles(
 	path string,
 	include []string,
@@ -265,7 +269,7 @@ func FindFilterFiles(
 		return ofiles, errors.Wrapf(err, "Failed to change path: %s", path)
 	}
 
-	for i := range(ignore) {
+	for i := range ignore {
 		ignore[i] = strings.TrimLeft(ignore[i], "/")
 		ignore[i] = strings.TrimPrefix(ignore[i], "./")
 		wwlog.Debug("Ignore pattern (%d): %s", i, ignore[i])
@@ -281,7 +285,6 @@ func FindFilterFiles(
 	}
 
 	dev := path_stat.Sys().(*syscall.Stat_t).Dev
-
 
 	includeDirs := []string{}
 	ignoreDirs := []string{}
@@ -306,13 +309,13 @@ func FindFilterFiles(
 			return nil
 		}
 
-		for _, ignoreDir := range(ignoreDirs) {
+		for _, ignoreDir := range ignoreDirs {
 			if strings.HasPrefix(location, ignoreDir) {
 				wwlog.Debug("Ignored (dir): %s", file)
 				return nil
 			}
 		}
-		for i, pattern := range(ignore) {
+		for i, pattern := range ignore {
 			m, err := filepath.Match(pattern, location)
 			if err != nil {
 				return err
@@ -325,14 +328,14 @@ func FindFilterFiles(
 			}
 		}
 
-		for _, includeDir := range(includeDirs) {
+		for _, includeDir := range includeDirs {
 			if strings.HasPrefix(location, includeDir) {
 				wwlog.Debug("Included (dir): %s", file)
 				ofiles = append(ofiles, location)
 				return nil
 			}
 		}
-		for i, pattern := range(include) {
+		for i, pattern := range include {
 			m, err := filepath.Match(pattern, location)
 			if err != nil {
 				return err
@@ -352,7 +355,7 @@ func FindFilterFiles(
 	return ofiles, err
 }
 
-//******************************************************************************
+// ******************************************************************************
 func ExecInteractive(command string, a ...string) error {
 	wwlog.Debug("ExecInteractive(%s, %s)", command, a)
 	c := exec.Command(command, a...)
@@ -538,20 +541,22 @@ func AppendLines(fileName string, lines []string) error {
 	return nil
 }
 
-/*******************************************************************************
+/*
+******************************************************************************
+
 	Create an archive using cpio
 */
 func CpioCreate(
 	ifiles []string,
 	ofile string,
 	format string,
-	cpio_args ...string ) (err error) {
+	cpio_args ...string) (err error) {
 
 	args := []string{
 		"--quiet",
 		"--create",
 		"-H", format,
-		"--file=" + ofile }
+		"--file=" + ofile}
 
 	args = append(args, cpio_args...)
 
@@ -574,14 +579,16 @@ func CpioCreate(
 		wwlog.Debug(string(out))
 	}
 
-	return FirstError(err, <- err_in)
+	return FirstError(err, <-err_in)
 }
 
-/*******************************************************************************
+/*
+******************************************************************************
+
 	Compress a file using gzip or pigz
 */
 func FileGz(
-	file string ) (err error) {
+	file string) (err error) {
 
 	file_gz := file + ".gz"
 
@@ -608,41 +615,41 @@ func FileGz(
 	proc := exec.Command(
 		compressor,
 		"--keep",
-	 	file )
+		file)
 
 	out, err := proc.CombinedOutput()
 	if len(out) > 0 {
 		outStr := string(out[:])
 		if err != nil && strings.HasSuffix(compressor, "gzip") && strings.Contains(outStr, "unrecognized option") {
-			var		gzippedFile *os.File
-			var     gzipStderr io.ReadCloser
-            
+			var gzippedFile *os.File
+			var gzipStderr io.ReadCloser
+
 			/* Older version of gzip, try it another way: */
 			wwlog.Verbose("%s does not recognize the --keep flag, trying redirected stdout", compressor)
-			
+
 			/* Open the output file for writing: */
 			gzippedFile, err = os.Create(file_gz)
 			if err != nil {
 				return errors.Wrapf(err, "Unable to open compressed image file for writing: %s", file_gz)
 			}
-			
+
 			/* We'll execute gzip with output to stdout and attach stdout to the compressed file we just
 			   created:
-			 */
+			*/
 			proc = exec.Command(
 				compressor,
 				"--stdout",
-				file )
+				file)
 			proc.Stdout = gzippedFile
 			gzipStderr, err = proc.StderrPipe()
 			if err != nil {
 				return errors.Wrapf(err, "Unable to open stderr pipe for compression program: %s", compressor)
 			}
-			
+
 			/* Execute the command: */
 			err = proc.Start()
 			if err != nil {
-                _ = proc.Wait()
+				_ = proc.Wait()
 				gzippedFile.Close()
 				os.Remove(file_gz)
 				err = errors.Wrapf(err, "Unable to successfully execute compression program: %s", compressor)
@@ -664,7 +671,9 @@ func FileGz(
 	return err
 }
 
-/*******************************************************************************
+/*
+******************************************************************************
+
 	Create an archive using cpio
 */
 func BuildFsImage(
@@ -675,7 +684,7 @@ func BuildFsImage(
 	ignore []string,
 	ignore_xdev bool,
 	format string,
-	cpio_args ...string ) (err error) {
+	cpio_args ...string) (err error) {
 
 	err = os.MkdirAll(path.Dir(imagePath), 0755)
 	if err != nil {
@@ -709,16 +718,16 @@ func BuildFsImage(
 		".",
 		include,
 		ignore,
-		ignore_xdev )
+		ignore_xdev)
 	if err != nil {
 		return errors.Wrapf(err, "Failed discovering files for %s: %s", name, rootfsPath)
 	}
 
 	err = CpioCreate(
 		files,
-	 	imagePath,
+		imagePath,
 		format,
- 		cpio_args...)
+		cpio_args...)
 	if err != nil {
 		return errors.Wrapf(err, "Failed creating image for %s: %s", name, imagePath)
 	}
@@ -727,15 +736,17 @@ func BuildFsImage(
 
 	err = FileGz(imagePath)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to compress image for %s: %s", name, imagePath + ".gz")
+		return errors.Wrapf(err, "Failed to compress image for %s: %s", name, imagePath+".gz")
 	}
 
-	wwlog.Info("Compressed image for %s: %s", name, imagePath + ".gz")
+	wwlog.Info("Compressed image for %s: %s", name, imagePath+".gz")
 
 	return nil
 }
 
-/*******************************************************************************
+/*
+******************************************************************************
+
 	Runs wwctl command
 */
 func RunWWCTL(args ...string) (out []byte, err error) {
@@ -744,7 +755,7 @@ func RunWWCTL(args ...string) (out []byte, err error) {
 	running, queued := ProcessLimitedStatus()
 
 	wwlog.Verbose("Starting wwctl process %d (%d running, %d queued): %v",
-		index, running, queued, args )
+		index, running, queued, args)
 
 	proc := exec.Command("wwctl", args...)
 
@@ -786,4 +797,22 @@ func ByteToString(b int64) string {
 		exp++
 	}
 	return fmt.Sprintf("%.1f %ciB", float64(b)/float64(div), "KMGTPE"[exp])
+}
+
+/*
+Check if the w-bit of a file/dir. unix.Access(file,unix.W_OK) will
+not show this.
+*/
+func IsWriteAble(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+
+	// Check if the user bit is enabled in file permission
+	if info.Mode().Perm()&(1<<(uint(7))) == 0 {
+		wwlog.Debug("Write permission bit is not set for: %s", path)
+		return false
+	}
+	return true
 }
