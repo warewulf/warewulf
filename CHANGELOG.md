@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New build for Rocky Linux 9
 
 ### Fixed
+- Move provision directory to `/var/lib/warewulf/provision` (fixes rpm dumping
+  built node overlays into the overlay directory.)
 - Enable spec file to work with Fedora
 - Fix hard CPU architecture on proto's installation in the Makefile
 - More aggressive `make clean`.
