@@ -10,6 +10,11 @@
 
 %global wwgroup warewulf
 
+%if 0%{?fedora}
+%define _build_id_links none
+%endif
+
+
 Name: warewulf
 Summary: A provisioning system for large clusters of bare metal and/or virtual systems
 Version: @VERSION@
@@ -47,7 +52,7 @@ Requires: tftp-server
 Requires: nfs-utils
 %endif
 
-%if 0%{?rhel} >= 8 || 0%{?suse_version}
+%if 0%{?rhel} >= 8 || 0%{?suse_version} || 0%{?fedora}
 Requires: dhcp-server
 %else
 # rhel < 8
