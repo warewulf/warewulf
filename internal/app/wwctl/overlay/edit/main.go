@@ -24,7 +24,7 @@ const initialTemplate = `# This is a Warewulf Template file.
 # Network Config = {{.NetDevs.eth0.Ipaddr}}, {{.NetDevs.eth0.Hwaddr}}, etc.
 #
 # Go to the documentation pages for more information:
-# https://warewulf.org/docs/development/contents/overlays.html
+# https://warewulf.org/docs/main/contents/overlays.html
 #
 # Keep the following for better reference:
 # ---
