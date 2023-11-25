@@ -68,7 +68,7 @@ etc/bash_completion.d/wwctl: wwctl
 
 .PHONY: lint
 lint: $(config)
-	$(GOLANGCI_LINT) run --build-tags "$(WW_GO_BUILD_TAGS)" --skip-dirs internal/pkg/staticfiles ./...
+	$(GOLANGCI_LINT) run --build-tags "$(WW_GO_BUILD_TAGS)" --skip-dirs internal/pkg/staticfiles --timeout=5m ./...
 
 .PHONY: vet
 vet: $(config)
