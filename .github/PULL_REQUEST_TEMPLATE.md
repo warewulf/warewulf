@@ -13,8 +13,8 @@ fixing or enhancing.
 ## Before submitting a PR, make sure you have done the following:
 
 - [ ] Signed off on all commits (e.g., using `git commit --signoff`) in agreement to the [DCO](DCO.txt)
-- [ ] Read the [documentation for contributing to Warewulf](https://warewulf.org/docs/development/contributing/contributing.html)
-- [ ] Added changes to the [CHANGELOG](https://github.com/hpcng/warewulf/blob/development/CHANGELOG.md) if necessary
-- [ ] Updated [userdocs](https://github.com/hpcng/warewulf/tree/development/userdocs) if necessary
-- [ ] Based this PR against the appropriate branch (typically [development](https://github.com/hpcng/warewulf/tree/development/userdocs))
-- [ ] Added myself as a contributor to the [Contributors File](https://github.com/hpcng/warewulf/blob/development/CONTRIBUTORS.md)
+- [ ] Read the [documentation for contributing to Warewulf](https://warewulf.org/docs/main/contributing/contributing.html)
+- [ ] Added changes to the [CHANGELOG](https://github.com/hpcng/warewulf/blob/main/CHANGELOG.md) if necessary
+- [ ] Updated [userdocs](https://github.com/hpcng/warewulf/tree/main/userdocs) if necessary
+- [ ] Based this PR against the appropriate branch (typically [main](https://github.com/hpcng/warewulf/tree/main/userdocs))
+- [ ] Added myself as a contributor to the [Contributors File](https://github.com/hpcng/warewulf/blob/main/CONTRIBUTORS.md)

@@ -9,7 +9,7 @@
 project = 'Warewulf User Guide'
 copyright = '2023, Warewulf Project Contributors'
 author = 'Warewulf Project Contributors'
-release = 'development'
+release = 'main'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -39,7 +39,7 @@ html_context = {
     'display_github': True,
     'github_user': 'hpcng',
     'github_repo': 'warewulf',
-    'github_version': 'development',
+    'github_version': 'main',
     'conf_py_path': '/userdocs/',
 }
 
