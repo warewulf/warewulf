@@ -112,6 +112,8 @@ install: build docs
 	for f in etc/examples/*.ww; do install -m 0644 $$f $(DESTDIR)$(WWCONFIGDIR)/examples/; done
 	for f in etc/ipxe/*.ipxe; do install -m 0644 $$f $(DESTDIR)$(WWCONFIGDIR)/ipxe/; done
 	(cd overlays && find * -type f -exec install -D -m 0644 {} $(DESTDIR)$(WWOVERLAYDIR)/{} \;)
+	(cd overlays && find * -type d -exec mkdir -pv $(DESTDIR)$(WWOVERLAYDIR)/{} \;)
+	(cd overlays && find * -type l -exec cp -av {} $(DESTDIR)$(WWOVERLAYDIR)/{} \;)
 	chmod 0755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/init
 	chmod 0755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/$(WWCLIENTDIR)/wwinit
 	chmod 0600 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/etc/ssh/ssh*
