@@ -5,7 +5,6 @@ import (
 	"path"
 	"testing"
 
-	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/stretchr/testify/assert"
 
@@ -15,8 +14,7 @@ import (
 
 func Test_Overlay_List(t *testing.T) {
 	env := testenv.New(t)
-	wwconf := warewulfconf.Get()
-	env.WriteFileAbs(t, path.Join(wwconf.Paths.WWOverlaydir, "testoverlay/email.ww"), `
+	env.WriteFile(t, path.Join(testenv.WWOverlaydir, "testoverlay/email.ww"), `
 {{ if .Tags.email }}eMail: {{ .Tags.email }}{{else}} noMail{{- end }}
 `)
 	defer env.RemoveAll(t)

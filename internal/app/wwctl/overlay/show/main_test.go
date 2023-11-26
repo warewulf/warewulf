@@ -5,7 +5,6 @@ import (
 	"path"
 	"testing"
 
-	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/stretchr/testify/assert"
 
@@ -21,7 +20,6 @@ var (
 
 func Test_Overlay_List(t *testing.T) {
 	env := testenv.New(t)
-	wwconf := warewulfconf.Get()
 	env.WriteFile(t, "etc/warewulf/nodes.conf",
 		`WW_INTERNAL: 43
 nodeprofiles:
@@ -39,7 +37,7 @@ nodes:
       - empty
 `)
 
-	env.WriteFileAbs(t, path.Join(wwconf.Paths.WWOverlaydir, "testoverlay/email.ww"), overlayCont)
+	env.WriteFile(t, path.Join(testenv.WWOverlaydir, "testoverlay/email.ww"), overlayCont)
 	defer env.RemoveAll(t)
 	warewulfd.SetNoDaemon()
 	t.Run("overlay show raw", func(t *testing.T) {
