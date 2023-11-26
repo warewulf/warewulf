@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 )
 
@@ -57,6 +58,9 @@ nodes:
       ipaddr: 1.1.1.1
       tags:
         foo: foo ipmi node3
+  test_node4:
+    profiles:
+    - profile2
   `
 	var ret NodeYaml
 	_ = yaml.Unmarshal([]byte(data), &ret)
@@ -69,6 +73,7 @@ func Test_nodeYaml_SetFrom(t *testing.T) {
 	test_node2 := NewInfo()
 	test_node3 := NewInfo()
 	test_node4 := NewInfo()
+	test_empty := NewInfo()
 	for _, n := range nodes {
 		if n.Id.Get() == "test_node1" {
 			test_node1 = n
@@ -78,6 +83,9 @@ func Test_nodeYaml_SetFrom(t *testing.T) {
 		}
 		if n.Id.Get() == "test_node3" {
 			test_node3 = n
+		}
+		if n.Id.Get() == "test_node4" {
+			test_node4 = n
 		}
 	}
 	getByNametests := []struct {
@@ -202,15 +210,11 @@ func Test_nodeYaml_SetFrom(t *testing.T) {
 	})
 	t.Run("Get() tag foo from node, tag present in profile", func(t *testing.T) {
 		value := test_node3.Tags["foo"].Get()
-		if value != "foo node3" {
-			t.Errorf("Get() returned wrong tag for foo: %s", value)
-		}
+		assert.Equal(t, "foo node3", value, "wrong value for tag")
 	})
 	t.Run("Get() tag foobaar from node", func(t *testing.T) {
 		value := test_node3.Tags["foobaar"].Get()
-		if value != "foobaar node3" {
-			t.Errorf("Get() returned wrong tag for foo: %s", value)
-		}
+		assert.Equal(t, "foobaar node3", value, "wrong value for tag")
 	})
 	t.Run("Get() ipmitag foo from profile, node does not have this tag", func(t *testing.T) {
 		value := test_node3.Ipmi.Tags["foo"].Get()
@@ -218,10 +222,14 @@ func Test_nodeYaml_SetFrom(t *testing.T) {
 			t.Errorf("Get() returned wrong tag for foo: %s", value)
 		}
 	})
+	t.Run("Get() tag foo from profile, node does not have this tag", func(t *testing.T) {
+		value := test_node4.Tags["foo"].Get()
+		assert.Equal(t, "foo profile2", value, "wrong value for tag")
+	})
 	t.Run("Set() comment foo for empty node", func(t *testing.T) {
-		test_node4.Comment.Set("foo")
+		test_empty.Comment.Set("foo")
 		nodeConf := NewConf()
-		nodeConf.GetFrom(test_node4)
+		nodeConf.GetFrom(test_empty)
 		ymlByte, _ := yaml.Marshal(nodeConf)
 		wanted := `comment: foo
 kernel: {}
@@ -232,8 +240,8 @@ ipmi: {}
 		}
 		// have to remove the comment for further tests, as vscode
 		// can test single functions
-		test_node4.Comment.Set("UNDEF")
-		nodeConf.GetFrom(test_node4)
+		test_empty.Comment.Set("UNDEF")
+		nodeConf.GetFrom(test_empty)
 		nodeConf.Flatten()
 		ymlByte, _ = yaml.Marshal(nodeConf)
 		wanted = `{}
@@ -244,9 +252,9 @@ ipmi: {}
 	})
 
 	t.Run("Set() ipmiuser foo for flattened empty node", func(t *testing.T) {
-		test_node4.Ipmi.UserName.Set("foo")
+		test_empty.Ipmi.UserName.Set("foo")
 		nodeConf := NewConf()
-		nodeConf.GetFrom(test_node4)
+		nodeConf.GetFrom(test_empty)
 		nodeConf.Flatten()
 		ymlByte, _ := yaml.Marshal(nodeConf)
 		wanted := `ipmi:
@@ -255,9 +263,9 @@ ipmi: {}
 		if !(wanted == string(ymlByte)) {
 			t.Errorf("Got wrong yml, wanted:\n'%s'\nGot:\n'%s'", wanted, string(ymlByte))
 		}
-		test_node4.Ipmi.Tags["foo"] = &Entry{}
-		test_node4.Ipmi.Tags["foo"].Set("baar")
-		nodeConf.GetFrom(test_node4)
+		test_empty.Ipmi.Tags["foo"] = &Entry{}
+		test_empty.Ipmi.Tags["foo"].Set("baar")
+		nodeConf.GetFrom(test_empty)
 		nodeConf.Flatten()
 		ymlByte, _ = yaml.Marshal(nodeConf)
 		wanted = `ipmi:
@@ -268,13 +276,13 @@ ipmi: {}
 		if !(wanted == string(ymlByte)) {
 			t.Errorf("Got wrong yml, wanted:\n'%s'\nGot:\n'%s'", wanted, string(ymlByte))
 		}
-		test_node4.Ipmi.UserName.Set("UNSET")
-		delete(test_node4.Ipmi.Tags, "foo")
+		test_empty.Ipmi.UserName.Set("UNSET")
+		delete(test_empty.Ipmi.Tags, "foo")
 	})
 	t.Run("Set() kernelargs foo for flattened empty node", func(t *testing.T) {
-		test_node4.Kernel.Args.Set("foo")
+		test_empty.Kernel.Args.Set("foo")
 		nodeConf := NewConf()
-		nodeConf.GetFrom(test_node4)
+		nodeConf.GetFrom(test_empty)
 		nodeConf.Flatten()
 		ymlByte, _ := yaml.Marshal(nodeConf)
 		wanted := `kernel:
@@ -283,13 +291,13 @@ ipmi: {}
 		if !(wanted == string(ymlByte)) {
 			t.Errorf("Got wrong yml, wanted:\n'%s'\nGot:\n'%s'", wanted, string(ymlByte))
 		}
-		test_node4.Kernel.Args.Set("--")
+		test_empty.Kernel.Args.Set("--")
 	})
 	t.Run("Set() tag foo to bar for flattened empty node", func(t *testing.T) {
-		test_node4.Tags["foo"] = &Entry{}
-		test_node4.Tags["foo"].Set("baar")
+		test_empty.Tags["foo"] = &Entry{}
+		test_empty.Tags["foo"].Set("baar")
 		nodeConf := NewConf()
-		nodeConf.GetFrom(test_node4)
+		nodeConf.GetFrom(test_empty)
 		nodeConf.Flatten()
 		ymlByte, _ := yaml.Marshal(nodeConf)
 		wanted := `tags:
@@ -298,9 +306,9 @@ ipmi: {}
 		if !(wanted == string(ymlByte)) {
 			t.Errorf("Got wrong yml, wanted:\n'%s'\nGot:\n'%s'", wanted, string(ymlByte))
 		}
-		delete(test_node4.Tags, "foo")
+		delete(test_empty.Tags, "foo")
 		nodeConf = NewConf()
-		nodeConf.GetFrom(test_node4)
+		nodeConf.GetFrom(test_empty)
 		nodeConf.Flatten()
 		ymlByte, _ = yaml.Marshal(nodeConf)
 		wanted = `{}
@@ -311,10 +319,10 @@ ipmi: {}
 
 	})
 	t.Run("Set() netdev foo with device name baar for flattened empty node", func(t *testing.T) {
-		test_node4.NetDevs["foo"] = new(NetDevEntry)
-		test_node4.NetDevs["foo"].Device.Set("baar")
+		test_empty.NetDevs["foo"] = new(NetDevEntry)
+		test_empty.NetDevs["foo"].Device.Set("baar")
 		nodeConf := NewConf()
-		nodeConf.GetFrom(test_node4)
+		nodeConf.GetFrom(test_empty)
 		nodeConf.Flatten()
 		ymlByte, _ := yaml.Marshal(nodeConf)
 		wanted := `network devices:
@@ -324,10 +332,10 @@ ipmi: {}
 		if !(wanted == string(ymlByte)) {
 			t.Errorf("Got wrong yml, wanted:\n'%s'\nGot:\n'%s'", wanted, string(ymlByte))
 		}
-		test_node4.NetDevs["foo"].Tags = make(map[string]*Entry)
-		test_node4.NetDevs["foo"].Tags["netfoo"] = new(Entry)
-		test_node4.NetDevs["foo"].Tags["netfoo"].Set("netbaar")
-		nodeConf.GetFrom(test_node4)
+		test_empty.NetDevs["foo"].Tags = make(map[string]*Entry)
+		test_empty.NetDevs["foo"].Tags["netfoo"] = new(Entry)
+		test_empty.NetDevs["foo"].Tags["netfoo"].Set("netbaar")
+		nodeConf.GetFrom(test_empty)
 		nodeConf.Flatten()
 		wanted = `network devices:
   foo:
@@ -340,9 +348,9 @@ ipmi: {}
 			t.Errorf("Couldn't set nettag: '%s' got: '%s'", wanted, string(ymlByte))
 		}
 
-		delete(test_node4.NetDevs, "foo")
+		delete(test_empty.NetDevs, "foo")
 		nodeConf = NewConf()
-		nodeConf.GetFrom(test_node4)
+		nodeConf.GetFrom(test_empty)
 		nodeConf.Flatten()
 		ymlByte, _ = yaml.Marshal(nodeConf)
 		wanted = `{}

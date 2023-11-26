@@ -3,7 +3,6 @@ package show
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -43,7 +42,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			os.Exit(1)
 		}
 
-		fmt.Print(string(f))
+		wwlog.Info(string(f))
 	} else {
 		if !util.IsFile(overlayFile) {
 			wwlog.Debug("%s is not a file", overlayFile)
@@ -105,7 +104,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Info("backupFile: %v\nwriteFile: %v", backupFile, writeFile)
 			wwlog.Info("Filename: %s\n", destFileName)
 		}
-		fmt.Print(outBuffer.String())
+		wwlog.Info(outBuffer.String())
 	}
 	return nil
 }

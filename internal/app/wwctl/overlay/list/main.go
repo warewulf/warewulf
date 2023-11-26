@@ -1,7 +1,6 @@
 package list
 
 import (
-	"fmt"
 	"os"
 	"syscall"
 
@@ -26,9 +25,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if ListLong {
-		fmt.Printf("%-10s %5s %-5s %-18s %s\n", "PERM MODE", "UID", "GID", "SYSTEM-OVERLAY", "FILE PATH")
+		wwlog.Info("%-10s %5s %-5s %-18s %s\n", "PERM MODE", "UID", "GID", "SYSTEM-OVERLAY", "FILE PATH")
 	} else {
-		fmt.Printf("%-30s %-12s\n", "OVERLAY NAME", "FILES/DIRS")
+		wwlog.Info("%-30s %-12s\n", "OVERLAY NAME", "FILES/DIRS")
 	}
 
 	for o := range overlays {
@@ -51,19 +50,19 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 					sys := s.Sys()
 
-					fmt.Printf("%v %5d %-5d %-18s /%s\n", perms, sys.(*syscall.Stat_t).Uid, sys.(*syscall.Stat_t).Gid, overlays[o], files[file])
+					wwlog.Info("%v %5d %-5d %-18s /%s\n", perms, sys.(*syscall.Stat_t).Uid, sys.(*syscall.Stat_t).Gid, overlays[o], files[file])
 				}
 			} else if ListContents {
 				var fileCount int
 				for file := range files {
-					fmt.Printf("%-30s /%-12s\n", name, files[file])
+					wwlog.Info("%-30s /%-12s\n", name, files[file])
 					fileCount++
 				}
 				if fileCount == 0 {
-					fmt.Printf("%-30s %-12d\n", name, 0)
+					wwlog.Info("%-30s %-12d\n", name, 0)
 				}
 			} else {
-				fmt.Printf("%-30s %-12d\n", name, len(files))
+				wwlog.Info("%-30s %-12d\n", name, len(files))
 			}
 
 		} else {

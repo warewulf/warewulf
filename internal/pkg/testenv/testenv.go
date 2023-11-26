@@ -29,6 +29,19 @@ type TestEnv struct {
 	BaseDir string
 }
 
+const Sysconfdir = "etc"
+const Bindir = "bin"
+const Datadir = "share"
+const Localstatedir = "var/local"
+const Srvdir = "srv"
+const Tftpdir = "srv/tftp"
+const Firewallddir = "usr/lib/firewalld/services"
+const Systemddir = "usr/lib/systemd/system"
+const WWOverlaydir = "var/local/warewulf/overlays"
+const WWChrootdir = "var/local/warewulf/chroots"
+const WWProvisiondir = "srv/warewulf"
+const WWClientdir = "warewulf"
+
 // New creates a test environment in a temporary directory and configures
 // Warewulf to use it.
 //
@@ -44,27 +57,27 @@ func New(t *testing.T) (env *TestEnv) {
 	assert.NoError(t, err)
 	env.BaseDir = tmpDir
 
-	env.WriteFile(t, "etc/warewulf/nodes.conf", initNodesConf)
-	env.WriteFile(t, "etc/warewulf/warewulf.conf", initWarewulfConf)
-	env.WriteFile(t, "share/warewulf/defaults.conf", initDefaultsConf)
+	env.WriteFile(t, path.Join(Sysconfdir, "warewulf/nodes.conf"), initNodesConf)
+	env.WriteFile(t, path.Join(Sysconfdir, "warewulf/warewulf.conf"), initWarewulfConf)
+	env.WriteFile(t, path.Join(Datadir, "warewulf/defaults.conf"), initDefaultsConf)
 
 	// re-read warewulf.conf
 	conf := config.New()
-	err = conf.Read(env.GetPath("etc/warewulf/warewulf.conf"))
+	err = conf.Read(env.GetPath(path.Join(Sysconfdir, "warewulf/warewulf.conf")))
 	assert.NoError(t, err)
 
-	conf.Paths.Sysconfdir = env.GetPath("etc")
-	conf.Paths.Bindir = env.GetPath("bin")
-	conf.Paths.Datadir = env.GetPath("share")
-	conf.Paths.Localstatedir = env.GetPath("var/local")
-	conf.Paths.Srvdir = env.GetPath("srv")
-	conf.Paths.Tftpdir = env.GetPath("srv/tftp")
-	conf.Paths.Firewallddir = env.GetPath("usr/lib/firewalld/services")
-	conf.Paths.Systemddir = env.GetPath("usr/lib/systemd/system")
-	conf.Paths.WWOverlaydir = env.GetPath(path.Join(conf.Paths.Localstatedir, "warewulfoverlays"))
-	conf.Paths.WWChrootdir = env.GetPath(path.Join(conf.Paths.Localstatedir, "warewulf/chroots"))
-	conf.Paths.WWProvisiondir = env.GetPath(path.Join(conf.Paths.Srvdir, "warewulf"))
-	conf.Paths.WWClientdir = env.GetPath("warewulf")
+	conf.Paths.Sysconfdir = env.GetPath(Sysconfdir)
+	conf.Paths.Bindir = env.GetPath(Bindir)
+	conf.Paths.Datadir = env.GetPath(Datadir)
+	conf.Paths.Localstatedir = env.GetPath(Localstatedir)
+	conf.Paths.Srvdir = env.GetPath(Srvdir)
+	conf.Paths.Tftpdir = env.GetPath(Tftpdir)
+	conf.Paths.Firewallddir = env.GetPath(Firewallddir)
+	conf.Paths.Systemddir = env.GetPath(Systemddir)
+	conf.Paths.WWOverlaydir = env.GetPath(WWOverlaydir)
+	conf.Paths.WWChrootdir = env.GetPath(WWChrootdir)
+	conf.Paths.WWProvisiondir = env.GetPath(WWProvisiondir)
+	conf.Paths.WWClientdir = env.GetPath(WWClientdir)
 
 	for _, confPath := range []string{
 		conf.Paths.Sysconfdir,
@@ -84,7 +97,7 @@ func New(t *testing.T) (env *TestEnv) {
 	}
 
 	// node.init() has already run, so set the config path again
-	node.ConfigFile = env.GetPath("etc/warewulf/nodes.conf")
+	node.ConfigFile = env.GetPath(path.Join(Sysconfdir, "warewulf/nodes.conf"))
 
 	return
 }
