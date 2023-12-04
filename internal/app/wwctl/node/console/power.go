@@ -56,6 +56,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			Password:  node.Ipmi.Password.Get(),
 			AuthType:  "MD5",
 			Interface: node.Ipmi.Interface.Get(),
+			EscapeChar: node.Ipmi.EscapeChar.Get(),
 		}
 
 		err := ipmiCmd.Console()

@@ -263,6 +263,7 @@ func (config *NodeYaml) FindAllProfiles() ([]NodeInfo, error) {
 		p.Ipmi.Password.Set(profile.IpmiPassword)
 		p.Ipmi.Interface.Set(profile.IpmiInterface)
 		p.Ipmi.Write.Set(profile.IpmiWrite)
+		p.Ipmi.EscapeChar.Set(profile.IpmiEscapeChar)
 		p.Kernel.Args.Set(profile.KernelArgs)
 		p.Kernel.Override.Set(profile.KernelOverride)
 		p.Kernel.Override.Set(profile.KernelVersion)

@@ -64,7 +64,8 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 					n.Ipmi.Ipaddr.Print(),
 					n.Ipmi.Port.Print(),
 					n.Ipmi.UserName.Print(),
-					n.Ipmi.Interface.Print()))
+					n.Ipmi.Interface.Print(),
+					n.Ipmi.EscapeChar.Print()))
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_Long {
 		nodeList.Output = append(nodeList.Output,

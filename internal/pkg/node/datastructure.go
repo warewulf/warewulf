@@ -54,16 +54,17 @@ type NodeConf struct {
 }
 
 type IpmiConf struct {
-	UserName  string            `yaml:"username,omitempty" lopt:"ipmiuser" comment:"Set the IPMI username"`
-	Password  string            `yaml:"password,omitempty" lopt:"ipmipass" comment:"Set the IPMI password"`
-	Ipaddr    string            `yaml:"ipaddr,omitempty" lopt:"ipmiaddr" comment:"Set the IPMI IP address" type:"IP"`
-	Netmask   string            `yaml:"netmask,omitempty" lopt:"ipminetmask" comment:"Set the IPMI netmask" type:"IP"`
-	Port      string            `yaml:"port,omitempty" lopt:"ipmiport" comment:"Set the IPMI port"`
-	Gateway   string            `yaml:"gateway,omitempty" lopt:"ipmigateway" comment:"Set the IPMI gateway" type:"IP"`
-	Interface string            `yaml:"interface,omitempty" lopt:"ipmiinterface" comment:"Set the node's IPMI interface (defaults: 'lan')"`
-	Write     string            `yaml:"write,omitempty" lopt:"ipmiwrite" comment:"Enable the write of impi configuration (true/false)" type:"bool"`
-	Tags      map[string]string `yaml:"tags,omitempty" lopt:"ipmitagadd" comment:"add ipmitags"`
-	TagsDel   []string          `yaml:"tagsdel,omitempty" lopt:"ipmitagdel" comment:"remove ipmitags"` // should not go to disk only to wire
+	UserName   string            `yaml:"username,omitempty" lopt:"ipmiuser" comment:"Set the IPMI username"`
+	Password   string            `yaml:"password,omitempty" lopt:"ipmipass" comment:"Set the IPMI password"`
+	Ipaddr     string            `yaml:"ipaddr,omitempty" lopt:"ipmiaddr" comment:"Set the IPMI IP address" type:"IP"`
+	Netmask    string            `yaml:"netmask,omitempty" lopt:"ipminetmask" comment:"Set the IPMI netmask" type:"IP"`
+	Port       string            `yaml:"port,omitempty" lopt:"ipmiport" comment:"Set the IPMI port"`
+	Gateway    string            `yaml:"gateway,omitempty" lopt:"ipmigateway" comment:"Set the IPMI gateway" type:"IP"`
+	Interface  string            `yaml:"interface,omitempty" lopt:"ipmiinterface" comment:"Set the node's IPMI interface (defaults: 'lan')"`
+	EscapeChar string           `yaml:"escapechar,omitempty" lopt:"ipmiescapechar" comment:"Set the IPMI escape character (defaults: '~')"`
+	Write      string            `yaml:"write,omitempty" lopt:"ipmiwrite" comment:"Enable the write of impi configuration (true/false)" type:"bool"`
+	Tags       map[string]string `yaml:"tags,omitempty" lopt:"ipmitagadd" comment:"add ipmitags"`
+	TagsDel    []string          `yaml:"tagsdel,omitempty" lopt:"ipmitagdel" comment:"remove ipmitags"` // should not go to disk only to wire
 }
 type KernelConf struct {
 	Version  string `yaml:"version,omitempty"`
@@ -169,15 +170,16 @@ type NodeInfo struct {
 }
 
 type IpmiEntry struct {
-	Ipaddr    Entry
-	Netmask   Entry
-	Port      Entry
-	Gateway   Entry
-	UserName  Entry
-	Password  Entry
-	Interface Entry
-	Write     Entry
-	Tags      map[string]*Entry
+	Ipaddr     Entry
+	Netmask    Entry
+	Port       Entry
+	Gateway    Entry
+	UserName   Entry
+	Password   Entry
+	Interface  Entry
+	EscapeChar Entry
+	Write      Entry
+	Tags       map[string]*Entry
 }
 
 type KernelEntry struct {
