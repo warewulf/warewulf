@@ -176,6 +176,7 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		n.Ipmi.UserName.Set(node.IpmiUserName)
 		n.Ipmi.Password.Set(node.IpmiPassword)
 		n.Ipmi.Interface.Set(node.IpmiInterface)
+		n.Ipmi.EscapeChar.Set(node.Ipmi.EscapeChar)
 		n.Ipmi.Write.Set(node.IpmiWrite)
 		n.Kernel.Args.Set(node.KernelArgs)
 		n.Kernel.Override.Set(node.KernelOverride)

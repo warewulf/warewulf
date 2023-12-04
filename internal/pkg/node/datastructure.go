@@ -26,14 +26,15 @@ type NodeConf struct {
 	KernelOverride string `yaml:"kernel override,omitempty"`
 	KernelArgs     string `yaml:"kernel args,omitempty"`
 	// Ipmi settings herer are deprecated and here for backward compatibility
-	IpmiUserName  string `yaml:"ipmi username,omitempty"`
-	IpmiPassword  string `yaml:"ipmi password,omitempty"`
-	IpmiIpaddr    string `yaml:"ipmi ipaddr,omitempty"`
-	IpmiNetmask   string `yaml:"ipmi netmask,omitempty"`
-	IpmiPort      string `yaml:"ipmi port,omitempty"`
-	IpmiGateway   string `yaml:"ipmi gateway,omitempty"`
-	IpmiInterface string `yaml:"ipmi interface,omitempty"`
-	IpmiWrite     string `yaml:"ipmi write,omitempty"`
+	IpmiUserName   string `yaml:"ipmi username,omitempty"`
+	IpmiPassword   string `yaml:"ipmi password,omitempty"`
+	IpmiIpaddr     string `yaml:"ipmi ipaddr,omitempty"`
+	IpmiNetmask    string `yaml:"ipmi netmask,omitempty"`
+	IpmiPort       string `yaml:"ipmi port,omitempty"`
+	IpmiGateway    string `yaml:"ipmi gateway,omitempty"`
+	IpmiInterface  string `yaml:"ipmi interface,omitempty"`
+	IpmiEscapeChar string `yaml:"ipmi escapechar,omitempty"`
+	IpmiWrite      string `yaml:"ipmi write,omitempty"`
 	// Deprecated end
 	RuntimeOverlay []string               `yaml:"runtime overlay,omitempty" lopt:"runtime" sopt:"R" comment:"Set the runtime overlay"`
 	SystemOverlay  []string               `yaml:"system overlay,omitempty" lopt:"wwinit" sopt:"O" comment:"Set the system overlay"`
