@@ -60,7 +60,7 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 			fmt.Sprintf("%s:=:%s:=:%s:=:%s:=:%s", "NODE NAME", "IPMI IPADDR", "IPMI PORT", "IPMI USERNAME", "IPMI INTERFACE"))
 		for _, n := range node.FilterByName(nodes, nodeGet.Nodes) {
 			nodeList.Output = append(nodeList.Output,
-			fmt.Sprintf("%s:=:%s:=:%s:=:%s:=:%s:=%s", n.Id.Print(),
+			fmt.Sprintf("%s:=:%s:=:%s:=:%s:=:%s:=:%s", n.Id.Print(),
 					n.Ipmi.Ipaddr.Print(),
 					n.Ipmi.Port.Print(),
 					n.Ipmi.UserName.Print(),
