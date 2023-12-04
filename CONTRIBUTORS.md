@@ -29,3 +29,4 @@
 * Matt Jolly <Kangie@footclan.ninja> @Kangie
 * Arnaud LECOMTE <contact@arnaud-lcm.com>
 * Ryan Novosielski <novosirj@rutgers.edu>
+* Andreas Skau <andreas@scheen.no> @buzh

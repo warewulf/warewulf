@@ -44,6 +44,8 @@ profile set`` or ``wwctl node set``.
 +--------------------+---------+------+--------------------+---------------+
 | ``--ipmiwrite``    | true    | true | true or false      | false         |
 +--------------------+---------+------+--------------------+---------------+
+| ``--ipmiescapechar | true    | true | single character   | ~             |
++--------------------+---------+------+--------------------+---------------+
 
 
 Reviewing Settings
@@ -113,6 +115,7 @@ Node View
   n001                 ipmipass           --           --
   n001                 ipmiinterface      --           --
   n001                 ipmiwrite          --           --
+  n001                 ipmiescapechar     --           --
   n001                 profile            --           default
   n001                 default:type       --           (ethernet)
   n001                 default:onboot     --           --
