@@ -12,14 +12,15 @@ type IPMIResult struct {
 }
 
 type IPMI struct {
-	NodeName  string
-	HostName  string
-	Port      string
-	User      string
-	Password  string
-	AuthType  string
-	Interface string
-	result    IPMIResult
+	NodeName   string
+	HostName   string
+	Port       string
+	User       string
+	Password   string
+	AuthType   string
+	Interface  string
+	EscapeChar string
+	result     IPMIResult
 }
 
 func (ipmi *IPMI) Result() (string, error) {
@@ -36,7 +37,10 @@ func (ipmi *IPMI) Command(ipmiArgs []string) ([]byte, error) {
 	if ipmi.Port == "" {
 		ipmi.Port = "623"
 	}
-	args = append(args, "-I", ipmi.Interface, "-H", ipmi.HostName, "-p", ipmi.Port, "-U", ipmi.User, "-P", ipmi.Password)
+	if ipmi.EscapeChar == "" {
+		ipmi.EscapeChar = "~"
+	}
+	args = append(args, "-I", ipmi.Interface, "-H", ipmi.HostName, "-p", ipmi.Port, "-U", ipmi.User, "-P", ipmi.Password, "-e", ipmi.EscapeChar)
 	args = append(args, ipmiArgs...)
 	ipmiCmd := exec.Command("ipmitool", args...)
 	return ipmiCmd.CombinedOutput()
@@ -52,7 +56,10 @@ func (ipmi *IPMI) InteractiveCommand(ipmiArgs []string) error {
 	if ipmi.Port == "" {
 		ipmi.Port = "623"
 	}
-	args = append(args, "-I", ipmi.Interface, "-H", ipmi.HostName, "-p", ipmi.Port, "-U", ipmi.User, "-P", ipmi.Password)
+	if ipmi.EscapeChar == "" {
+		ipmi.EscapeChar = "~"
+	}
+	args = append(args, "-I", ipmi.Interface, "-H", ipmi.HostName, "-p", ipmi.Port, "-U", ipmi.User, "-P", ipmi.Password, "-e", ipmi.EscapeChar)
 	args = append(args, ipmiArgs...)
 	ipmiCmd := exec.Command("ipmitool", args...)
 	ipmiCmd.Stdout = os.Stdout
