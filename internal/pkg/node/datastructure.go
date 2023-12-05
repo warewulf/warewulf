@@ -174,16 +174,17 @@ type NodeInfo struct {
 }
 
 type IpmiEntry struct {
-	Ipaddr     Entry
-	Netmask    Entry
-	Port       Entry
-	Gateway    Entry
-	UserName   Entry
-	Password   Entry
-	Interface  Entry
-	EscapeChar Entry
-	Write      Entry
-	Tags       map[string]*Entry
+	Ipaddr      Entry
+	Netmask     Entry
+	Port        Entry
+	Gateway     Entry
+	UserName    Entry
+	Password    Entry
+	Interface   Entry
+	EscapeChar  Entry
+	Write       Entry
+	BmcTemplate Entry
+	Tags        map[string]*Entry
 }
 
 type KernelEntry struct {
