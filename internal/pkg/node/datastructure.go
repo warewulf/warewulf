@@ -64,6 +64,7 @@ type IpmiConf struct {
 	Interface  string            `yaml:"interface,omitempty" lopt:"ipmiinterface" comment:"Set the node's IPMI interface (defaults: 'lan')" json:"interface,omitempty"`
 	EscapeChar string            `yaml:"escapechar,omitempty" lopt:"ipmiescapechar" comment:"Set the IPMI escape character (defaults: '~')" json:"escapechar,omitempty"`
 	Write      string            `yaml:"write,omitempty" lopt:"ipmiwrite" comment:"Enable the write of impi configuration (true/false)" type:"bool" json:"write,omitempty"`
+	BmcTemplate string            `yaml:"template,omitempty" lopt:"ipmitemplate" comment:"template used for ipmi command"`
 	Tags       map[string]string `yaml:"tags,omitempty" lopt:"ipmitagadd" comment:"add ipmitags" json:"tags,omitempty"`
 	TagsDel    []string          `yaml:"tagsdel,omitempty" lopt:"ipmitagdel" comment:"remove ipmitags" json:"tagsdel,omitempty"` // should not go to disk only to wire
 }

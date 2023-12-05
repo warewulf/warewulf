@@ -41,28 +41,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	for _, node := range nodes {
-
-		if node.Ipmi.Ipaddr.Get() == "" {
-			wwlog.Error("%s: No IPMI IP address", node.Id.Get())
+	for _, n := range nodes {
+		if n.Ipmi.Ipaddr.Get() == "" {
+			wwlog.Error("%s: No IPMI IP address", n.Id.Get())
 			continue
 		}
-
-		ipmiCmd := power.IPMI{
-			NodeName:   node.Id.Get(),
-			HostName:   node.Ipmi.Ipaddr.Get(),
-			Port:       node.Ipmi.Port.Get(),
-			User:       node.Ipmi.UserName.Get(),
-			Password:   node.Ipmi.Password.Get(),
-			AuthType:   "MD5",
-			Interface:  node.Ipmi.Interface.Get(),
-			EscapeChar: node.Ipmi.EscapeChar.Get(),
-		}
-
+		var conf node.NodeConf
+		conf.GetFrom(n)
+		ipmiCmd := power.IPMI{IpmiConf: *conf.Ipmi}
 		err := ipmiCmd.Console()
-
 		if err != nil {
-			wwlog.Error("%s: Console problem", node.Id.Get())
+			wwlog.Error("%s: Console problem", n.Id.Get())
 			returnErr = err
 			continue
 		}
