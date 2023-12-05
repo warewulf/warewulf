@@ -1,0 +1,19 @@
+{{/* used command to access the ipmi interface of the nodes */}}
+{{- $escapechar := "~" }}
+{{- $port := "623" }}
+{{- $interface := "lan" }}
+{{- $args := "" }}
+{{- if .EscapeChar }} $escapechar = .EscapeChar {{ end }}
+{{- if .Port }} {{ $port = .Port }} {{ end }}
+{{- if .Interface }} {{ $interface = .Interface }} {{ end }}
+{{- if eq .Cmd "PowerOn" }} {{ $args = "chassis power on" }} {{ end }}
+{{- if eq .Cmd "PowerOff" }} {{ $args = "chassis power off" }} {{ end }}
+{{- if eq .Cmd "PowerCycle" }} {{ $args = "chassis power cycle" }} {{ end }}
+{{- if eq .Cmd "PowerReset" }} {{ $args = "chassis power reset" }} {{ end }}
+{{- if eq .Cmd "PowerSoft" }} {{ $args = "chassis power soft" }} {{ end }}
+{{- if eq .Cmd "PowerStatus" }} {{ $args = "chassis power status" }} {{ end }}
+{{- if eq .Cmd "SDRList" }} {{ $args = "sdr list" }} {{ end }}
+{{- if eq .Cmd "SensorList" }} {{ $args = "sensor list" }} {{ end }}
+{{- if eq .Cmd "Console" }} {{ $args = "sol activate" }} {{ end }}
+{{- $cmd := printf "ipmitool -I %s -H %s -p %s -U %s -P %s -e %s %s" $interface .Ipaddr $port .UserName .Password  $escapechar $args }}
+{{ $cmd }} 

@@ -1,9 +1,17 @@
 package power
 
 import (
+	"bytes"
+	"fmt"
+	"html/template"
 	"os"
 	"os/exec"
+	"path"
+	"regexp"
 	"strings"
+
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
 )
@@ -15,109 +23,114 @@ type IPMIResult struct {
 
 type IPMI struct {
 	node.IpmiConf
-	result IPMIResult
+	ShowOnly bool
+	Cmd      string
+	result   IPMIResult
 }
 
 func (ipmi *IPMI) Result() (string, error) {
 	return ipmi.result.out, ipmi.result.err
 }
 
-func (ipmi *IPMI) Command(ipmiArgs []string) ([]byte, error) {
+func (ipmi *IPMI) getStr() (cmdStr string, err error) {
+	if ipmi.BmcTemplate == "" {
+		ipmi.BmcTemplate = "ipmitool.tmpl"
+	}
+	conf := warewulfconf.Get()
+	fbuf, err := os.ReadFile(path.Join(conf.Paths.Datadir, "bmc", ipmi.BmcTemplate))
+	if err != nil {
+		return "", fmt.Errorf("couldn't find the template which defines the ipmi/redfish command: %s", err)
+	}
+	cmdTmpl, err := template.New("bmc command").Parse(string(fbuf))
+	if err != nil {
+		return "", err
+	}
+	var tbuffer bytes.Buffer
+	err = cmdTmpl.Execute(&tbuffer, *ipmi)
+	if err != nil {
+		return "", err
+	}
+	rg := regexp.MustCompile(`(\r\n?|\n){2,}`)
+	cmdStr = rg.ReplaceAllString(tbuffer.String(), " ")
+	wwlog.Debug("bmc string is: %s", strings.TrimSpace(cmdStr))
+	return strings.TrimSpace(cmdStr), nil
 
-	var args []string
+}
 
-	if ipmi.Interface == "" {
-		ipmi.Interface = "lan"
+func (ipmi *IPMI) Command() ([]byte, error) {
+	cmdStr, err := ipmi.getStr()
+	if err != nil {
+		return []byte{}, err
 	}
-	if ipmi.Port == "" {
-		ipmi.Port = "623"
+	if ipmi.ShowOnly {
+		return []byte(cmdStr), nil
 	}
-	if ipmi.EscapeChar == "" {
-		ipmi.EscapeChar = "~"
-	}
-	args = append(args, "-I", ipmi.Interface, "-H", ipmi.Ipaddr, "-p", ipmi.Port, "-U", ipmi.UserName, "-P", ipmi.Password, "-e", ipmi.EscapeChar)
-	args = append(args, ipmiArgs...)
-	ipmiCmd := exec.Command("ipmitool", args...)
+	ipmiCmd := exec.Command(cmdStr)
 	return ipmiCmd.CombinedOutput()
 }
 
-func (ipmi *IPMI) InteractiveCommand(ipmiArgs []string) error {
-
-	var args []string
-
-	if ipmi.Interface == "" {
-		ipmi.Interface = "lan"
+func (ipmi *IPMI) InteractiveCommand() (err error) {
+	cmdStr, err := ipmi.getStr()
+	if err != nil {
+		return err
 	}
-	if ipmi.Port == "" {
-		ipmi.Port = "623"
-	}
-	if ipmi.EscapeChar == "" {
-		ipmi.EscapeChar = "~"
-	}
-	args = append(args, "-I", ipmi.Interface, "-H", ipmi.Ipaddr, "-p", ipmi.Port, "-U", ipmi.UserName, "-P", ipmi.Password, "-e", ipmi.EscapeChar)
-	args = append(args, ipmiArgs...)
-	ipmiCmd := exec.Command("ipmitool", args...)
+	ipmiCmd := exec.Command(cmdStr)
 	ipmiCmd.Stdout = os.Stdout
 	ipmiCmd.Stdin = os.Stdin
 	ipmiCmd.Stderr = os.Stderr
 	return ipmiCmd.Run()
 }
 
-func (ipmi *IPMI) IPMIInteractiveCommand(args ...string) error {
-	return ipmi.InteractiveCommand(args)
+func (ipmi *IPMI) IPMIInteractiveCommand(cmd string) error {
+	ipmi.Cmd = cmd
+	return ipmi.InteractiveCommand()
 }
 
-func (ipmi *IPMI) IPMICommand(args ...string) (string, error) {
-	ipmiOut, err := ipmi.Command(args)
+func (ipmi *IPMI) IPMICommand(cmd string) (string, error) {
+	ipmi.Cmd = cmd
+	ipmiOut, err := ipmi.Command()
 	ipmi.result.out = strings.TrimSpace(string(ipmiOut))
 	ipmi.result.err = err
 	return ipmi.result.out, ipmi.result.err
 
 }
 
-//func (ipmi IPMI) PowerOn() (string, error) {
-//
-//	var args []string
-//
-//	args = append(args, "chassis", "power", "on")
-//	ipmiOut, err := ipmi.Command(args)
-//	ipmi.result.out = string(ipmiOut)
-//	ipmi.result.err = err
-//	return ipmi.result.out, ipmi.result.err
-//}
+/*
+Just define meta commands here, implementation is in the template
+*/
 
 func (ipmi *IPMI) PowerOn() (string, error) {
-	return ipmi.IPMICommand("chassis", "power", "on")
+	return ipmi.IPMICommand("PowerOn")
 }
 
 func (ipmi *IPMI) PowerOff() (string, error) {
-	return ipmi.IPMICommand("chassis", "power", "off")
+	return ipmi.IPMICommand("PowerOff")
 }
 
 func (ipmi *IPMI) PowerCycle() (string, error) {
-	return ipmi.IPMICommand("chassis", "power", "cycle")
+	return ipmi.IPMICommand("PowerCycle")
 }
 
 func (ipmi *IPMI) PowerReset() (string, error) {
-	return ipmi.IPMICommand("chassis", "power", "reset")
+	return ipmi.IPMICommand("PowerReset")
 }
 
 func (ipmi *IPMI) PowerSoft() (string, error) {
-	return ipmi.IPMICommand("chassis", "power", "soft")
+	return ipmi.IPMICommand("PowerSoft")
 }
 
 func (ipmi *IPMI) PowerStatus() (string, error) {
-	return ipmi.IPMICommand("chassis", "power", "status")
+	return ipmi.IPMICommand("PowerStatus")
 }
 
 func (ipmi *IPMI) SDRList() (string, error) {
-	return ipmi.IPMICommand("sdr", "list")
+	return ipmi.IPMICommand("SDRList")
 }
 
 func (ipmi *IPMI) SensorList() (string, error) {
-	return ipmi.IPMICommand("sensor", "list")
+	return ipmi.IPMICommand("SensorList")
 }
 
 func (ipmi *IPMI) Console() error {
-	return ipmi.IPMIInteractiveCommand("sol", "activate")
+	return ipmi.IPMIInteractiveCommand("Console")
 }
