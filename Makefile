@@ -107,6 +107,7 @@ install: build docs
 	install -d -m 0755 $(DESTDIR)$(IPXESOURCE)
 	install -d -m 0755 $(DESTDIR)$(DATADIR)/warewulf
 	# wwctl genconfig to get the compiled in paths to warewulf.conf
+	install -d -m 0755 $(DESTDIR)$(WWDATADIR)/bmc
 	test -f $(DESTDIR)$(WWCONFIGDIR)/warewulf.conf || ./wwctl --warewulfconf etc/warewulf.conf genconfig warewulfconf print> $(DESTDIR)$(WWCONFIGDIR)/warewulf.conf
 	test -f $(DESTDIR)$(WWCONFIGDIR)/nodes.conf || install -m 0644 etc/nodes.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapic.conf || install -m 0644 etc/wwapic.conf $(DESTDIR)$(WWCONFIGDIR)
@@ -115,6 +116,7 @@ install: build docs
 	test -f $(DESTDIR)$(DATADIR)/warewulf/defaults.conf || install -m 0644 etc/defaults.conf $(DESTDIR)$(DATADIR)/warewulf/defaults.conf
 	for f in etc/examples/*.ww; do install -m 0644 $$f $(DESTDIR)$(WWCONFIGDIR)/examples/; done
 	for f in etc/ipxe/*.ipxe; do install -m 0644 $$f $(DESTDIR)$(WWCONFIGDIR)/ipxe/; done
+	for f lib/warewulf/bmc; do install -m 0644 $$f $(DESTDIR)$(WWDATADIR)/bmc; done
 	install -m 0644 etc/grub/grub.cfg.ww $(DESTDIR)$(WWCONFIGDIR)/grub/grub.cfg.ww
 	install -m 0644 etc/grub/chainload.ww $(DESTDIR)$(WWOVERLAYDIR)/host/rootfs$(TFTPDIR)/warewulf/grub.cfg.ww
 	(cd overlays && find * -type f -exec install -D -m 0644 {} $(DESTDIR)$(WWOVERLAYDIR)/{} \;)
