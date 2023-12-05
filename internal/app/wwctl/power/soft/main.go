@@ -12,8 +12,10 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-func CobraRunE(cmd *cobra.Command, args []string) error {
-	var returnErr error = nil
+func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err error) {
+	return func(cmd *cobra.Command, args []string) error {
+
+		var returnErr error = nil
 
 	nodeDB, err := node.New()
 	if err != nil {
@@ -37,11 +39,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("no nodes found")
 	}
 
-	batchpool := batch.New(50)
-	jobcount := len(nodes)
-	results := make(chan power.IPMI, jobcount)
+		batchpool := batch.New(50)
+		jobcount := len(nodes)
+		results := make(chan power.IPMI, jobcount)
 
-	for _, n := range nodes {
+		for _, n := range nodes {
 
 		if node.Ipmi.Ipaddr.IsUnspecified() {
 			wwlog.Error("%s: No IPMI IP address", node.Id())
@@ -56,25 +58,26 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			results <- ipmiCmd
 		})
 
-	}
-
-	batchpool.Run()
-
-	close(results)
-
-	for result := range results {
-
-		out, err := result.Result()
-
-		if err != nil {
-			wwlog.Error("%s: %s", result.Ipaddr, out)
-			returnErr = err
-			continue
 		}
 
-		fmt.Printf("%s: %s\n", result.Ipaddr, out)
+		batchpool.Run()
 
+		close(results)
+
+		for result := range results {
+
+			out, err := result.Result()
+
+			if err != nil {
+				wwlog.Error("%s: %s", result.Ipaddr, out)
+				returnErr = err
+				continue
+			}
+
+			wwlog.Info("%s: %s\n", result.Ipaddr, out)
+
+		}
+
+		return returnErr
 	}
-
-	return returnErr
 }

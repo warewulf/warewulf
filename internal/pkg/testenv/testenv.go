@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/util"
 )
 
 const initWarewulfConf = `WW_INTERNAL: 0`
@@ -93,9 +95,15 @@ func New(t *testing.T) (env *TestEnv) {
 		conf.Paths.WWChrootdir,
 		conf.Paths.WWProvisiondir,
 	} {
-		env.MkdirAll(t, confPath)
+		env.MkdirAllAbs(t, confPath)
 	}
-
+	// copy templates
+	_, b, _, _ := runtime.Caller(0)
+	basepath := filepath.Dir(b)
+	env.MkdirAllAbs(t, path.Join(conf.Warewulf.DataStore, "warewulf/bmc"))
+	assert.DirExists(t, path.Join(conf.Warewulf.DataStore, "warewulf/bmc"))
+	err = util.CopyFile(path.Join(basepath, "../../../lib/warewulf/bmc/ipmitool.tmpl"), path.Join(conf.Warewulf.DataStore, "warewulf/bmc/ipmitool.tmpl"))
+	assert.NoError(t, err)
 	// node.init() has already run, so set the config path again
 	node.ConfigFile = env.GetPath(path.Join(Sysconfdir, "warewulf/nodes.conf"))
 
@@ -110,10 +118,16 @@ func (env *TestEnv) GetPath(fileName string) string {
 
 // MkdirAll creates dirName and any intermediate directories relative
 // to the test environment.
-//
 // Asserts no errors occur.
 func (env *TestEnv) MkdirAll(t *testing.T, dirName string) {
 	err := os.MkdirAll(env.GetPath(dirName), 0755)
+	assert.NoError(t, err)
+}
+
+// MkdirAllAbs creates absolute dirName and any intermediate directories
+// Asserts no errors occur.
+func (env *TestEnv) MkdirAllAbs(t *testing.T, dirName string) {
+	err := os.MkdirAll(dirName, 0755)
 	assert.NoError(t, err)
 }
 

@@ -2,19 +2,36 @@ package cycle
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 )
 
-var (
-	powerCmd = &cobra.Command{
+type variables struct {
+	Showcmd bool
+}
+
+// GetRootCommand returns the root cobra.Command for the application.
+func GetCommand() *cobra.Command {
+	vars := variables{}
+	powerCmd := &cobra.Command{
 		DisableFlagsInUseLine: true,
 		Use:                   "cycle [OPTIONS] [PATTERN ...]",
 		Short:                 "Power cycle the given node(s)",
 		Long:                  "This command cycles power for a set of nodes specified by PATTERN.",
-		RunE:                  CobraRunE,
-	}
-)
+		RunE:                  CobraRunE(&vars),
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) != 0 {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
 
-// GetRootCommand returns the root cobra.Command for the application.
-func GetCommand() *cobra.Command {
+			nodeDB, _ := node.New()
+			nodes, _ := nodeDB.FindAllNodes()
+			var node_names []string
+			for _, node := range nodes {
+				node_names = append(node_names, node.Id.Get())
+			}
+			return node_names, cobra.ShellCompDirectiveNoFileComp
+		},
+	}
+	powerCmd.PersistentFlags().BoolVarP(&vars.Showcmd, "show", "s", false, "only show command which will be executed")
 	return powerCmd
 }
