@@ -4,6 +4,8 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/hpcng/warewulf/internal/pkg/node"
 )
 
 type IPMIResult struct {
@@ -12,15 +14,8 @@ type IPMIResult struct {
 }
 
 type IPMI struct {
-	NodeName   string
-	HostName   string
-	Port       string
-	User       string
-	Password   string
-	AuthType   string
-	Interface  string
-	EscapeChar string
-	result     IPMIResult
+	node.IpmiConf
+	result IPMIResult
 }
 
 func (ipmi *IPMI) Result() (string, error) {
@@ -40,7 +35,7 @@ func (ipmi *IPMI) Command(ipmiArgs []string) ([]byte, error) {
 	if ipmi.EscapeChar == "" {
 		ipmi.EscapeChar = "~"
 	}
-	args = append(args, "-I", ipmi.Interface, "-H", ipmi.HostName, "-p", ipmi.Port, "-U", ipmi.User, "-P", ipmi.Password, "-e", ipmi.EscapeChar)
+	args = append(args, "-I", ipmi.Interface, "-H", ipmi.Ipaddr, "-p", ipmi.Port, "-U", ipmi.UserName, "-P", ipmi.Password, "-e", ipmi.EscapeChar)
 	args = append(args, ipmiArgs...)
 	ipmiCmd := exec.Command("ipmitool", args...)
 	return ipmiCmd.CombinedOutput()
@@ -59,7 +54,7 @@ func (ipmi *IPMI) InteractiveCommand(ipmiArgs []string) error {
 	if ipmi.EscapeChar == "" {
 		ipmi.EscapeChar = "~"
 	}
-	args = append(args, "-I", ipmi.Interface, "-H", ipmi.HostName, "-p", ipmi.Port, "-U", ipmi.User, "-P", ipmi.Password, "-e", ipmi.EscapeChar)
+	args = append(args, "-I", ipmi.Interface, "-H", ipmi.Ipaddr, "-p", ipmi.Port, "-U", ipmi.UserName, "-P", ipmi.Password, "-e", ipmi.EscapeChar)
 	args = append(args, ipmiArgs...)
 	ipmiCmd := exec.Command("ipmitool", args...)
 	ipmiCmd.Stdout = os.Stdout

@@ -47,24 +47,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Error("%s: No IPMI IP address", node.Id())
 			continue
 		}
-		var ipmiInterface = "lan"
-		if node.Ipmi.Interface != "" {
-			ipmiInterface = node.Ipmi.Interface
-		}
-		var ipmiPort = "623"
-		if node.Ipmi.Port != "" {
-			ipmiPort = node.Ipmi.Port
-		}
-		ipmiCmd := power.IPMI{
-			NodeName:  node.Id(),
-			HostName:  node.Ipmi.Ipaddr.String(),
-			Port:      ipmiPort,
-			User:      node.Ipmi.UserName,
-			Password:  node.Ipmi.Password,
-			Interface: ipmiInterface,
-			AuthType:  "MD5",
-		}
-
+		var conf node.NodeConf
+		conf.GetFrom(n)
+		ipmiCmd := power.IPMI{IpmiConf: *conf.Ipmi}
 		batchpool.Submit(func() {
 			//nolint:errcheck
 			ipmiCmd.PowerOn()
@@ -82,12 +67,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		out, err := result.Result()
 
 		if err != nil {
-			wwlog.Error("%s: %s", result.NodeName, out)
+			wwlog.Error("%s: %s", result.Ipaddr, out)
 			returnErr = err
 			continue
 		}
 
-		fmt.Printf("%s: %s\n", result.NodeName, out)
+		fmt.Printf("%s: %s\n", result.Ipaddr, out)
 
 	}
 
