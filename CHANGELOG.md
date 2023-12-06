@@ -166,6 +166,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 - `wwctl container list` only lists names by default. (`--long` shows all attributes.) #1117
+- use templating mechanism for power commands
 
 ## v4.5.5, 2024-07-05
 
