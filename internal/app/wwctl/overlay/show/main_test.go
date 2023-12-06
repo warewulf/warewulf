@@ -1,14 +1,13 @@
 package show
 
 import (
-	"bytes"
 	"path"
 	"testing"
 
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/hpcng/warewulf/internal/pkg/testenv"
+	"github.com/hpcng/warewulf/internal/pkg/testutil"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 )
 
@@ -43,45 +42,41 @@ nodes:
 	t.Run("overlay show raw", func(t *testing.T) {
 		baseCmd.SetArgs([]string{"testoverlay", "email.ww"})
 		baseCmd := GetCommand()
-		buf := new(bytes.Buffer)
-		baseCmd.SetOut(buf)
-		baseCmd.SetErr(buf)
-		wwlog.SetLogWriter(buf)
-		err := baseCmd.Execute()
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), overlayCont)
+		out, err := testutil.CaptureOutput(t, func() {
+			err := baseCmd.Execute()
+			assert.NoError(t, err)
+		})
+		assert.Contains(t, out, overlayCont)
+		assert.Empty(t, err)
 	})
 	t.Run("overlay show rendered node tag", func(t *testing.T) {
 		baseCmd.SetArgs([]string{"-r", "node1", "testoverlay", "email.ww"})
 		baseCmd := GetCommand()
-		buf := new(bytes.Buffer)
-		baseCmd.SetOut(buf)
-		baseCmd.SetErr(buf)
-		wwlog.SetLogWriter(buf)
-		err := baseCmd.Execute()
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "admin@node1")
+		out, err := testutil.CaptureOutput(t, func() {
+			err := baseCmd.Execute()
+			assert.NoError(t, err)
+		})
+		assert.Contains(t, out, "admin@node1")
+		assert.Empty(t, err)
 	})
 	t.Run("overlay show rendered profile tag", func(t *testing.T) {
 		baseCmd.SetArgs([]string{"-r", "node2", "testoverlay", "email.ww"})
 		baseCmd := GetCommand()
-		buf := new(bytes.Buffer)
-		baseCmd.SetOut(buf)
-		baseCmd.SetErr(buf)
-		wwlog.SetLogWriter(buf)
-		err := baseCmd.Execute()
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "admin@localhost")
+		out, err := testutil.CaptureOutput(t, func() {
+			err := baseCmd.Execute()
+			assert.NoError(t, err)
+		})
+		assert.Contains(t, out, "admin@localhost")
+		assert.Empty(t, err)
 	})
 	t.Run("overlay show no tag", func(t *testing.T) {
 		baseCmd.SetArgs([]string{"-r", "node3", "testoverlay", "email.ww"})
 		baseCmd := GetCommand()
-		buf := new(bytes.Buffer)
-		baseCmd.SetOut(buf)
-		baseCmd.SetErr(buf)
-		wwlog.SetLogWriter(buf)
-		err := baseCmd.Execute()
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "noMail")
+		out, err := testutil.CaptureOutput(t, func() {
+			err := baseCmd.Execute()
+			assert.NoError(t, err)
+		})
+		assert.Contains(t, out, "noMail")
+		assert.Empty(t, err)
 	})
 }
