@@ -52,6 +52,7 @@ var (
 	levelNames                = []string{"NOTSET"}
 	logLevel                  = INFO
 	logErr       io.Writer    = os.Stderr
+	logOut       io.Writer    = os.Stdout
 	logFormatter LogFormatter = DefaultFormatter
 )
 
@@ -153,11 +154,30 @@ func GetLogLevel() int {
 Set the log output writer
 By default they are set to output writer
 */
-func SetLogWriter(err io.Writer) {
-	logErr = err
+func SetLogWriter(newOut io.Writer) {
+	logErr = newOut
+	logOut = newOut
 }
 
-func GetLogWriter() io.Writer {
+/*
+Set the log ofr info only
+*/
+func SetLogWriterInfo(newOut io.Writer) {
+	logOut = newOut
+}
+
+/*
+Set the log ofr info only
+*/
+func SetLogWriterErr(newOut io.Writer) {
+	logOut = newOut
+}
+
+func GetLogWriterInfo() io.Writer {
+	return logOut
+}
+
+func GetLogWriterErr() io.Writer {
 	return logErr
 }
 
@@ -196,8 +216,12 @@ func LogCaller(level int, skip int, err error, message string, a ...interface{})
 		}
 
 		message = logFormatter(logLevel, &rec)
+		if level == INFO || level == RECV || level == SEND {
+			fmt.Fprint(logOut, message)
+		} else {
+			fmt.Fprint(logErr, message)
 
-		fmt.Fprint(logErr, message)
+		}
 	}
 }
 
