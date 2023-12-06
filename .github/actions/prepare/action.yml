@@ -2,6 +2,7 @@ name: 'Prepare Warewulf'
 description: 'Prepare environment and Warewulf source code for testing and building'
 inputs:
   go-version:
+    description: "go version"
     required: true
 
 runs:

@@ -1,0 +1,110 @@
+name: 'Build RPMs'
+description: 'Build warewulf rpms'
+
+inputs:
+  dist:
+    description: "distro dist"
+    required: true
+  arch:
+    description: "distro arch"
+    required: true
+  target:
+    description: "distro target"
+    required: true
+  token:
+    description: "Github token"
+    required: true
+  version:
+    description: "Version value"
+    required: true
+  event-id:
+    description: "Github event id"
+    required: true
+  nightly:
+    description: "Whether it is nightly release"
+    default: 'false'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install EPEL
+      run: dnf -y install epel-release
+      shell: bash
+
+    - name: Install mock and rpm-build
+      run: |
+        dnf -y install mock rpm-build
+        echo "config_opts['print_main_output'] = True" >>/etc/mock/site-defaults.cfg
+      shell: bash
+
+    - name: Download spec
+      uses: actions/download-artifact@v3
+      with:
+        name: warewulf.spec
+
+    - name: Set the expected version
+      run: |
+          echo "EXPECTED_VERSION=${{ inputs.version }}" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Download dist
+      uses: actions/download-artifact@v3
+      with:
+        name: warewulf-${{ env.EXPECTED_VERSION }}.tar.gz
+
+    - name: Set RPM and SRPM
+      run: |
+        VERSION=$(rpm -q --qf "%{VERSION}\n" --specfile warewulf.spec)
+        GENERIC_RELEASE=$(rpm -q --qf "%{RELEASE}\n" --specfile warewulf.spec | cut -d. -f1-2)
+        RPM=warewulf-${VERSION}-${GENERIC_RELEASE}.${{ inputs.dist }}.${{ inputs.arch }}.rpm
+        SRPM=warewulf-${VERSION}-${GENERIC_RELEASE}.${{ inputs.dist }}.src.rpm
+        echo "RPM=${RPM}" >> $GITHUB_ENV
+        echo "SRPM=${SRPM}" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Build RPMs and run tests
+      run: |
+        mock -r ${{ inputs.target }} --rebuild --spec=warewulf.spec --sources=.
+        mock -r ${{ inputs.target }} --chroot -- make -C /builddir/build/BUILD/warewulf-${{ env.EXPECTED_VERSION }} test
+      shell: bash
+
+    # we need to rename the RPMs and SRPMs to overwrite for nightly release
+    - name: Rename the built RPMs for nightly build
+      if: inputs.nightly == 'true'
+      run: |
+        VERSION=$(rpm -q --qf "%{VERSION}\n" --specfile warewulf.spec)
+        GENERIC_RELEASE=$(rpm -q --qf "%{RELEASE}\n" --specfile warewulf.spec | cut -d. -f1-2)
+        RPM=warewulf-${VERSION}-${GENERIC_RELEASE}.${{ inputs.dist }}.${{ inputs.arch }}.rpm
+        SRPM=warewulf-${VERSION}-${GENERIC_RELEASE}.${{ inputs.dist }}.src.rpm
+
+        RNAME_RPM=warewulf-${VERSION}.${{ inputs.dist }}.${{ inputs.arch }}.rpm
+        RNAME_SRPM=warewulf-${VERSION}.${{ inputs.dist }}.src.rpm
+
+        mv /var/lib/mock/${{ inputs.target }}/result/${RPM} /var/lib/mock/${{ inputs.target }}/result/${RNAME_RPM}
+        mv /var/lib/mock/${{ inputs.target }}/result/${SRPM} /var/lib/mock/${{ inputs.target }}/result/${RNAME_SRPM}
+
+        echo "RPM=${RNAME_RPM}" >> $GITHUB_ENV
+        echo "SRPM=${RNAME_SRPM}" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Upload RPM
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.RPM }}
+        path: /var/lib/mock/${{ inputs.target }}/result/${{ env.RPM }}
+
+    - name: Upload SRPM
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.SRPM }}
+        path: /var/lib/mock/${{ inputs.target }}/result/${{ env.SRPM }}
+
+    - name: Attach RPM and SRPM to release
+      uses: xresloader/upload-to-github-release@v1
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      with:
+        release_id: ${{ inputs.event-id }}
+        file: "/var/lib/mock/${{ inputs.target }}/result/${{ env.RPM }};/var/lib/mock/${{ inputs.target }}/result/${{ env.SRPM }}"
+        update_latest_release: true
+        overwrite: true
