@@ -1,0 +1,68 @@
+---
+name: nightly
+
+on:
+  #push:
+  schedule:
+    - cron:  '05 00 * * *'
+
+jobs:
+    generate:
+        name: Generate spec, dist and collect commits info 
+        runs-on: ubuntu-latest
+        outputs: 
+          should-continue: ${{ steps.generate.outputs.should-continue }}
+          version: ${{ steps.generate.outputs.version }}
+          release-id: ${{ steps.generate.outputs.release-id }}
+        permissions: write-all # might not be used for realy deployment
+        steps:
+          - name: Checkout Code
+            uses: actions/checkout@v3
+          - uses: ./.github/actions/generate
+            name: generate warewulf spec, dist and collect commits info
+            id: generate
+            with:
+              nightly: 'true'
+              token: ${{ secrets.GITHUB_TOKEN }}
+              event-id: ${{ github.event.release.id }}
+
+    publish:
+        name: Build and publish releases
+        runs-on: ubuntu-latest
+        needs: generate
+        if: needs.generate.outputs.should-continue == 'true'
+        container:
+          image: rockylinux/rockylinux:9
+          options: --privileged
+        strategy:
+          fail-fast: false
+          matrix:
+            include:
+              - target: rocky+epel-8-x86_64
+                arch: x86_64
+                dist: el8
+              - target: rocky+epel-9-x86_64
+                arch: x86_64
+                dist: el9
+              - target: centos+epel-7-x86_64
+                arch: x86_64
+                dist: el7
+              - target: opensuse-leap-15.5-x86_64
+                arch: x86_64
+                dist: suse.lp155
+        permissions: write-all # might not be used for realy deployment
+
+        steps:
+          - name: Checkout Code
+            uses: actions/checkout@v3
+          - uses: ./.github/actions/rpm
+            name: build rpms
+            id: rpm
+            with:
+              dist: ${{ matrix.dist }}
+              arch: ${{ matrix.arch }}
+              target: ${{ matrix.target }}
+              token: ${{ secrets.GITHUB_TOKEN }}
+              version: ${{ needs.generate.outputs.version }}
+              event-id: ${{ needs.generate.outputs.release-id }}
+              nightly: 'true'

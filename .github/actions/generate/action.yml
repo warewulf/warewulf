@@ -1,0 +1,139 @@
+name: 'Generate warewulf metadata'
+description: 'Generate warewulf.spec and dist, collect commits info'
+
+inputs:
+  nightly:
+    description: "Whether it is nightly release"
+    required: true
+    default: 'false'
+  token:
+    description: "Github token"
+    required: true
+  event-id:
+    description: "Github event id"
+    required: true
+
+outputs:
+  should-continue:
+    description: "Whether other jobs should continue"
+    value: ${{ steps.should-continue.outputs.continue }}
+  version:
+    description: "Version value"
+    value: ${{ steps.dist.outputs.version }}
+  release-id:
+    description: "First stage release id"
+    value: ${{ steps.release.outputs.id }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Extract current branch tag
+      run: |
+        echo "TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Extract last 24 hours commits info
+      id: commits
+      run: |
+        echo "raw=`git reflog ${{ env.TAG }} --since="24 hours ago"`" >> $GITHUB_OUTPUT
+        echo "commits=`git log ${{ env.TAG }} --pretty --since="24 hours ago"  | jq --raw-input . | jq --slurp . | jq -c .`" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Whether should continue
+      id: should-continue
+      run: |
+        if [[ "${{ steps.commits.outputs.raw }}" ]]; then
+          echo "continue=true" >> $GITHUB_OUTPUT
+        else
+          echo "continue=false" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
+
+    - name: Build spec and dist
+      if: inputs.nightly == 'false' || inputs.nightly == 'true' && steps.should-continue.outputs.continue == 'true'
+      run: |
+        make warewulf.spec dist
+      shell: bash
+
+    - name: Set DIST
+      if: inputs.nightly == 'false' || inputs.nightly == 'true' && steps.should-continue.outputs.continue == 'true'
+      id: dist
+      run: |
+        dist="warewulf-${{ env.TAG }}.tar.gz"
+
+        if [[ ! -f "$dist" ]];then 
+          for f in warewulf-*.tar.gz; do 
+            if [[ -e "$f" ]]; then
+              dist="$f"
+              break
+            fi
+          done
+        fi
+        echo "DIST=$dist" >> $GITHUB_ENV
+
+        version=`echo $dist | sed 's/warewulf-//' | sed 's/\.tar\.gz//'`
+        echo "version=$version" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Upload warewulf.spec
+      if: inputs.nightly == 'false' || inputs.nightly == 'true' && steps.should-continue.outputs.continue == 'true'
+      uses: actions/upload-artifact@v3
+      with:
+        name: warewulf.spec
+        path: warewulf.spec
+
+    - name: Upload DIST
+      if: inputs.nightly == 'false' || inputs.nightly == 'true' && steps.should-continue.outputs.continue == 'true'
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.DIST }}
+        path: ${{ env.DIST }}
+
+    - name: Normal dist release
+      uses: xresloader/upload-to-github-release@v1
+      if: inputs.nightly == 'false'
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      with:
+        release_id: ${{ inputs.event-id }}
+        file: ${{ env.DIST }}
+
+    - name: Write nightly release content
+      if: inputs.nightly == 'true' && steps.should-continue.outputs.continue == 'true'
+      run: |
+        cat << EOF >> nightly.release.note
+        THIS IS A NIGHTLY RELEASE
+        
+        This release contains latest commits, which is feature unstable version
+
+        ${{ steps.commits.outputs.raw }}
+
+        ${{ steps.commits.outputs.commits }}
+        EOF
+      shell: bash
+
+    - name: Nightly dist release
+      uses: xresloader/upload-to-github-release@v1
+      if: inputs.nightly == 'true' && steps.should-continue.outputs.continue == 'true'
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      with:
+        release_id: ${{ inputs.event-id }}
+        file: ${{ env.DIST }}
+        tag_name: "nightly"
+        prerelease: true
+        draft: false
+        default_release_name: "warewulf nightly release"
+        update_latest_release: true
+        overwrite: true
+
+    - name: Update nightly release content
+      if: inputs.nightly == 'true' && steps.should-continue.outputs.continue == 'true'
+      uses: tubone24/update_release@v1.3.1
+      id: release
+      env: 
+        GITHUB_TOKEN: ${{ inputs.token }}
+        TAG_NAME: "nightly"
+      with:
+        body_path: nightly.release.note
+
