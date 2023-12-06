@@ -49,13 +49,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		ipmiCmd := power.IPMI{
-			NodeName:  node.Id.Get(),
-			HostName:  node.Ipmi.Ipaddr.Get(),
-			Port:      node.Ipmi.Port.Get(),
-			User:      node.Ipmi.UserName.Get(),
-			Password:  node.Ipmi.Password.Get(),
-			AuthType:  "MD5",
-			Interface: node.Ipmi.Interface.Get(),
+			NodeName:   node.Id.Get(),
+			HostName:   node.Ipmi.Ipaddr.Get(),
+			Port:       node.Ipmi.Port.Get(),
+			User:       node.Ipmi.UserName.Get(),
+			Password:   node.Ipmi.Password.Get(),
+			AuthType:   "MD5",
+			Interface:  node.Ipmi.Interface.Get(),
 			EscapeChar: node.Ipmi.EscapeChar.Get(),
 		}
 
