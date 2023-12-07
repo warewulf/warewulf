@@ -147,7 +147,7 @@ init:
 dist:
 	rm -rf .dist/ $(WAREWULF)-$(VERSION).tar.gz
 	mkdir -p .dist/$(WAREWULF)-$(VERSION)
-	rsync -a --exclude=".*" --exclude "*~" * .dist/$(WAREWULF)-$(VERSION)/
+	rsync -a --exclude=".github"  --exclude=".vscode" --exclude "*~" * .dist/$(WAREWULF)-$(VERSION)/
 	cd .dist; tar -czf ../$(WAREWULF)-$(VERSION).tar.gz $(WAREWULF)-$(VERSION)
 	rm -rf .dist
 
