@@ -18,6 +18,8 @@ jobs:
         steps:
           - name: Checkout Code
             uses: actions/checkout@v3
+            with:
+              ref: 'main'
           - uses: ./.github/actions/generate
             name: generate warewulf spec, dist and collect commits info
             id: generate
@@ -55,6 +57,8 @@ jobs:
         steps:
           - name: Checkout Code
             uses: actions/checkout@v3
+            with:
+              ref: 'main'
           - uses: ./.github/actions/rpm
             name: build rpms
             id: rpm

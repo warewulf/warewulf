@@ -104,7 +104,7 @@ runs:
         cat << EOF >> nightly.release.note
         THIS IS A NIGHTLY RELEASE
         
-        This release contains latest commits, which is feature unstable version
+        This release contains latest commits, which is a feature unstable version
 
         ${{ steps.commits.outputs.raw }}
 
@@ -124,7 +124,6 @@ runs:
         prerelease: true
         draft: false
         default_release_name: "warewulf nightly release"
-        update_latest_release: true
         overwrite: true
 
     - name: Update nightly release content
