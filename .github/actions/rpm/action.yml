@@ -20,9 +20,6 @@ inputs:
   event-id:
     description: "Github event id"
     required: true
-  nightly:
-    description: "Whether it is nightly release"
-    default: 'false'
 
 runs:
   using: "composite"
@@ -68,25 +65,6 @@ runs:
         mock -r ${{ inputs.target }} --chroot -- make -C /builddir/build/BUILD/warewulf-${{ env.EXPECTED_VERSION }} test
       shell: bash
 
-    # we need to rename the RPMs and SRPMs to overwrite for nightly release
-    - name: Rename the built RPMs for nightly build
-      if: inputs.nightly == 'true'
-      run: |
-        VERSION=$(rpm -q --qf "%{VERSION}\n" --specfile warewulf.spec)
-        GENERIC_RELEASE=$(rpm -q --qf "%{RELEASE}\n" --specfile warewulf.spec | cut -d. -f1-2)
-        RPM=warewulf-${VERSION}-${GENERIC_RELEASE}.${{ inputs.dist }}.${{ inputs.arch }}.rpm
-        SRPM=warewulf-${VERSION}-${GENERIC_RELEASE}.${{ inputs.dist }}.src.rpm
-
-        RNAME_RPM=warewulf-${VERSION}.${{ inputs.dist }}.${{ inputs.arch }}.rpm
-        RNAME_SRPM=warewulf-${VERSION}.${{ inputs.dist }}.src.rpm
-
-        mv /var/lib/mock/${{ inputs.target }}/result/${RPM} /var/lib/mock/${{ inputs.target }}/result/${RNAME_RPM}
-        mv /var/lib/mock/${{ inputs.target }}/result/${SRPM} /var/lib/mock/${{ inputs.target }}/result/${RNAME_SRPM}
-
-        echo "RPM=${RNAME_RPM}" >> $GITHUB_ENV
-        echo "SRPM=${RNAME_SRPM}" >> $GITHUB_ENV
-      shell: bash
-
     - name: Upload RPM
       uses: actions/upload-artifact@v3
       with:
@@ -106,4 +84,3 @@ runs:
       with:
         release_id: ${{ inputs.event-id }}
         file: "/var/lib/mock/${{ inputs.target }}/result/${{ env.RPM }};/var/lib/mock/${{ inputs.target }}/result/${{ env.SRPM }}"
-        overwrite: true

@@ -69,4 +69,3 @@ jobs:
               token: ${{ secrets.GITHUB_TOKEN }}
               version: ${{ needs.generate.outputs.version }}
               event-id: ${{ needs.generate.outputs.release-id }}
-              nightly: 'true'
