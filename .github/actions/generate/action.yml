@@ -106,8 +106,10 @@ runs:
         
         This release contains latest commits, which is a feature unstable version
 
+        Reflog:
         ${{ steps.commits.outputs.raw }}
 
+        Commits:
         ${{ steps.commits.outputs.commits }}
         EOF
       shell: bash
@@ -119,12 +121,12 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
       with:
         release_id: ${{ inputs.event-id }}
+        delete_file: "warewulf-*.tar.gz;warewulf-*.rpm"
         file: ${{ env.DIST }}
         tag_name: "nightly"
         prerelease: true
         draft: false
         default_release_name: "warewulf nightly release"
-        overwrite: true
 
     - name: Update nightly release content
       if: inputs.nightly == 'true' && steps.should-continue.outputs.continue == 'true'
