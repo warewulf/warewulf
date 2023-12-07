@@ -39,9 +39,11 @@ BuildRequires: go >= 1.16
 BuildRequires: firewall-macros
 BuildRequires: firewalld
 BuildRequires: tftp
+BuildRequires: yq
 Requires: tftp
 Requires: nfs-kernel-server
 Requires: firewalld
+Requires: ipxe-bootimgs
 %else
 # Assume Red Hat/Fedora build
 BuildRequires: system-release
@@ -102,6 +104,15 @@ make install \
 
 %pre
 getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
+# use ipxe images from the distribution
+%if 0%{?suse_version} || 0%{?sle_version}
+yq e '
+  .tftp.ipxe."00:00" = "ipxe/undionly.kpxe" |
+  .tftp.ipxe."00:07" = "ipxe/ipxe-x86_64.efi" |
+  .tftp.ipxe."00:09" = "ipxe/ipxe-x86_64.efi" |
+  .tftp.ipxe."00:0B" = "ipxe/snp-arm64.efi" ' \
+  -i %{buildroot}%{_sysconfdir}/warewulf/warewulf.conf
+%endif
 
 
 %post
