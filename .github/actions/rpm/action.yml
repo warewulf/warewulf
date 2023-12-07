@@ -106,5 +106,4 @@ runs:
       with:
         release_id: ${{ inputs.event-id }}
         file: "/var/lib/mock/${{ inputs.target }}/result/${{ env.RPM }};/var/lib/mock/${{ inputs.target }}/result/${{ env.SRPM }}"
-        update_latest_release: true
         overwrite: true

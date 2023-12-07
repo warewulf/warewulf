@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Configure network device MTU in nework configuration scripts. #807
 - OpenSUSE Leap build rebased to 15.5 (15.3 is EOL)
 - New build for Rocky Linux 9
-- Add nightly release support
+- Add nightly release support. #969
 
 ### Fixed
 - Make Variables.mk consistent with spec file w.r.t. WWPROVISIONDIR, e.g.
