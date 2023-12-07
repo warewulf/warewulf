@@ -10,10 +10,9 @@ import (
 	"regexp"
 	"strings"
 
-	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-
-	"github.com/hpcng/warewulf/internal/pkg/node"
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 type IPMIResult struct {
@@ -33,11 +32,13 @@ func (ipmi *IPMI) Result() (string, error) {
 }
 
 func (ipmi *IPMI) getStr() (cmdStr string, err error) {
-	if ipmi.BmcTemplate == "" {
-		ipmi.BmcTemplate = "ipmitool.tmpl"
-	}
 	conf := warewulfconf.Get()
-	fbuf, err := os.ReadFile(path.Join(conf.Paths.Datadir, "bmc", ipmi.BmcTemplate))
+	if ipmi.BmcTemplate == "" {
+		ipmi.BmcTemplate = path.Join(conf.Warewulf.DataStore, "warewulf/bmc/ipmitool.tmpl")
+	} else if !strings.HasPrefix(ipmi.BmcTemplate, "/") {
+		ipmi.BmcTemplate = path.Join(conf.Warewulf.DataStore, "warewulf/bmc", ipmi.BmcTemplate)
+	}
+	fbuf, err := os.ReadFile(ipmi.BmcTemplate)
 	if err != nil {
 		return "", fmt.Errorf("couldn't find the template which defines the ipmi/redfish command: %s", err)
 	}

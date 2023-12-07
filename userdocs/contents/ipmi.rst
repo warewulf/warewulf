@@ -4,7 +4,9 @@ IPMI
 
 It is possible to control the power or connect a console to your nodes
 being managed by Warewulf by connecting to the BMC through the use of
-IPMI. We will discuss how to set this up below.
+`ipmitool`. Other methods can also configured, but require additional 
+configuration.
+We will discuss how to set this up below.
 
 IPMI Settings
 =============
@@ -15,8 +17,8 @@ individual node would be the IP address.
 
 The settings are only written to the IPMI interface if ``--ipmiwrite``
 is set to `true`. The write process happens at every boot of the node
-through the script ``/warewulf/init.d/50-ipmi`` in the wwinit
-overlay.
+through the script ``/warewulf/init.d/50-ipmi`` in the **system**
+overlay and are done with `ipmitool`. 
 
 If an individual node has different settings, you can set the IPMI
 settings for that specific node, overriding the default settings.
@@ -25,27 +27,29 @@ Here is a table outlining the fields on a Profile and Node which is
 the same as the parameter that can be used when running ``wwctl
 profile set`` or ``wwctl node set``.
 
-+----------------------+---------+------+--------------------+---------------+
-| Parameter            | Profile | Node | Valid Values       | Default Value |
-+======================+=========+======+====================+===============+
-| ``--ipmiaddr``       | false   | true |                    |               |
-+----------------------+---------+------+--------------------+---------------+
-| ``--ipminetmask``    | true    | true |                    |               |
-+----------------------+---------+------+--------------------+---------------+
-| ``--ipmiport``       | true    | true |                    | 623           |
-+----------------------+---------+------+--------------------+---------------+
-| ``--ipmigateway``    | true    | true |                    |               |
-+----------------------+---------+------+--------------------+---------------+
-| ``--ipmiuser``       | true    | true |                    |               |
-+----------------------+---------+------+--------------------+---------------+
-| ``--ipmipass``       | true    | true |                    |               |
-+----------------------+---------+------+--------------------+---------------+
-| ``--ipmiinterface``  | true    | true | 'lan' or 'lanplus' | lan           |
-+----------------------+---------+------+--------------------+---------------+
-| ``--ipmiwrite``      | true    | true | true or false      | false         |
-+----------------------+---------+------+--------------------+---------------+
-| ``--ipmiescapechar`` | true    | true | single character   | ~             |
-+----------------------+---------+------+--------------------+---------------+
++---------------------+---------+------+--------------------+---------------+
+| Parameter           | Profile | Node | Valid Values       | Default Value |
++=====================+=========+======+====================+===============+
+| ``--ipmiaddr``      | false   | true |                    |               |
++---------------------+---------+------+--------------------+---------------+
+| ``--ipminetmask``   | true    | true |                    |               |
++---------------------+---------+------+--------------------+---------------+
+| ``--ipmiport``      | true    | true |                    | 623           |
++---------------------+---------+------+--------------------+---------------+
+| ``--ipmigateway``   | true    | true |                    |               |
++---------------------+---------+------+--------------------+---------------+
+| ``--ipmiuser``      | true    | true |                    |               |
++---------------------+---------+------+--------------------+---------------+
+| ``--ipmipass``      | true    | true |                    |               |
++---------------------+---------+------+--------------------+---------------+
+| ``--ipmiinterface`` | true    | true | 'lan' or 'lanplus' | lan           |
++---------------------+---------+------+--------------------+---------------+
+| ``--ipmiwrite``     | true    | true | true or false      | false         |
++---------------------+---------+------+--------------------+---------------+
+| ``--ipmiescapechar``| true    | true | single character   | ~             |
++---------------------+---------+------+--------------------+---------------+
+| ``--ipmitemplate``  | true    | true | path to template   |               |
++---------------------+---------+------+--------------------+---------------+
 
 
 Reviewing Settings
@@ -181,3 +185,76 @@ connect a console to the node.
 .. code-block:: console
 
    # wwctl node console n001
+
+
+Ipmi template
+=============
+
+As warewulf doesn't manage the ipmi/bmc interfaces directly, but calls ``ipmitool``
+this managed with a template which defines the behavior. For ``ipmitool`` following
+template is used 
+
+.. code-block:: golang
+    {{/* used command to access the ipmi interface of the nodes */}}
+    {{- $escapechar := "~" }}
+    {{- $port := "623" }}
+    {{- $interface := "lan" }}
+    {{- $args := "" }}
+    {{- if .EscapeChar }} $escapechar = .EscapeChar {{ end }}
+    {{- if .Port }} {{ $port = .Port }} {{ end }}
+    {{- if .Interface }} {{ $interface = .Interface }} {{ end }}
+    {{- if eq .Cmd "PowerOn" }} {{ $args = "chassis power on" }} {{ end }}
+    {{- if eq .Cmd "PowerOff" }} {{ $args = "chassis power off" }} {{ end }}
+    {{- if eq .Cmd "PowerCycle" }} {{ $args = "chassis power cycle" }} {{ end }}
+    {{- if eq .Cmd "PowerReset" }} {{ $args = "chassis power reset" }} {{ end }}
+    {{- if eq .Cmd "PowerSoft" }} {{ $args = "chassis power soft" }} {{ end }}
+    {{- if eq .Cmd "PowerStatus" }} {{ $args = "chassis power status" }} {{ end }}
+    {{- if eq .Cmd "SDRList" }} {{ $args = "sdr list" }} {{ end }}
+    {{- if eq .Cmd "SensorList" }} {{ $args = "sensor list" }} {{ end }}
+    {{- if eq .Cmd "Console" }} {{ $args = "sol activate" }} {{ end }}
+    {{- $cmd := printf "ipmitool -I %s -H %s -p %s -U %s -P %s -e %s %s" $interface .Ipaddr $port .UserName .Password  $escapechar $args }}
+    {{ $cmd }}
+
+In order to use another template, its filename must be specified for a node or profile via the 
+``--ipmitemplate`` switch and the template must placed under ``/usr/lib/warewulf/bmc`` or to the
+path which is was defined as ``datadir`` in ``warwulf.conf`` or during compile time.
+All IPMI specific variables are accessible in the template which are the following
+
+| Parameter           | Template variable  |
++=====================+====================+
+| ``--ipmiaddr``      | ``.Ipaddr``        |
++---------------------+--------------------+
+| ``--ipminetmask``   | ``.Netmask``       |  
++---------------------+--------------------+
+| ``--ipmiport``      | ``.Port``          |
++---------------------+--------------------+
+| ``--ipmigateway``   | ``.Gateway``       |
++---------------------+--------------------+
+| ``--ipmiuser``      | ``.UserName``      |
++---------------------+--------------------+
+| ``--ipmipass``      | ``.Password``      |
++---------------------+--------------------+
+| ``--ipmiinterface`` | ``.Interface``     |
++---------------------+--------------------+
+| ``--ipmiwrite``     | ``.Write``         |
++---------------------+--------------------+
+| ``--ipmiescapechar``| ``.EscapeChar``    |
++---------------------+--------------------+
+| ``--ipmitemplate``  | ``.BmcTemplate``   |
++---------------------+--------------------+
+
+Additional the ``.Args`` variable is accessible which can have following 
+values:
+* `PowerOn`
+* `PowerOff`
+* `PowerCycle`
+* `PowerReset`
+* `PowerSoft`
+* `PowerStatus`
+* `SDRList`
+* `SensorList`
+* `Console`
+which are the calls done by `wwctl power` commands.
+
+Also the script  ``/warewulf/init.d/50-ipmi`` in the **system**
+overlay may need an update. There the variables must have the prefix ``.Ipmi``
