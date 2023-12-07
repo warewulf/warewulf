@@ -2,7 +2,7 @@
 name: nightly
 
 on:
-  #push:
+  workflow_dispatch:
   schedule:
     - cron:  '05 00 * * *'
 
