@@ -64,7 +64,7 @@ type IpmiConf struct {
 	EscapeChar  string            `yaml:"escapechar,omitempty" lopt:"ipmiescapechar" comment:"Set the IPMI escape character (defaults: '~')"`
 	Write       string            `yaml:"write,omitempty" lopt:"ipmiwrite" comment:"Enable the write of impi configuration (true/false)" type:"bool"`
 	Tags        map[string]string `yaml:"tags,omitempty" lopt:"ipmitagadd" comment:"add ipmitags"`
-	BmcTemplate string            `yaml:"template,omitempty" lopt:"impitemplate" comment:"template used for ipmi command"`
+	BmcTemplate string            `yaml:"template,omitempty" lopt:"ipmitemplate" comment:"template used for ipmi command"`
 	TagsDel     []string          `yaml:"tagsdel,omitempty" lopt:"ipmitagdel" comment:"remove ipmitags"` // should not go to disk only to wire
 }
 type KernelConf struct {
