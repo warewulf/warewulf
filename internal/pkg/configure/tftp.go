@@ -23,11 +23,14 @@ func TFTP() error {
 	fmt.Printf("Writing PXE files to: %s\n", tftpdir)
 	copyCheck := make(map[string]bool)
 	for _, f := range controller.TFTP.IpxeBinaries {
+		if !path.IsAbs(f) {
+			f = path.Join(controller.Paths.Ipxesource, f)
+		}
 		if copyCheck[f] {
 			continue
 		}
 		copyCheck[f] = true
-		err = util.SafeCopyFile(path.Join(controller.Paths.Ipxesource, f), path.Join(tftpdir, path.Base(f)))
+		err = util.SafeCopyFile(f, path.Join(tftpdir, path.Base(f)))
 		if err != nil {
 			wwlog.Warn("ipxe binary could not be copied, booting may not work: %s", err)
 		}

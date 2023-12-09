@@ -1,7 +1,7 @@
 -include Defaults.mk
 
 # Linux distro (try and set to /etc/os-release ID)
-OS_REL := $(shell sed -n "s/^ID\w*\s*=\s*['"\""]\(.*\)['"\""]/\1/p" /etc/os-release)
+OS_REL := $(shell sed -n "s/^ID\s*=\s*['"\""]\(.*\)['"\""]/\1/p" /etc/os-release)
 OS ?= $(OS_REL)
 
 ARCH_REL := $(shell uname -p)
@@ -26,16 +26,14 @@ else
   RELEASE ?= 1
 endif
 
-# Always default to GNU autotools default paths if PREFIX has been redefined
-ifdef PREFIX
-  USE_LSB_PATHS := false
-endif
-
 # Use LSB-compliant paths if OS is known
 ifneq ($(OS),)
   USE_LSB_PATHS := true
-  PREFIX="/usr"
-  SYSCONFDIR="/etc"
+endif
+
+# Always default to GNU autotools default paths if PREFIX has been redefined
+ifdef PREFIX
+  USE_LSB_PATHS := false
 endif
 
 # System directory paths
@@ -82,8 +80,7 @@ WWCLIENTDIR ?= /warewulf
 
 CONFIG := $(shell pwd)
 
-# Get iPXE binaries from warewulf
-IPXESOURCE ?= $(DATADIR)/$(WAREWULF)/ipxe
+IPXESOURCE ?= $(PREFIX)/share/ipxe
 
 # helper functions
 godeps=$(shell go list -mod vendor -deps -f '{{if not .Standard}}{{ $$dep := . }}{{range .GoFiles}}{{$$dep.Dir}}/{{.}} {{end}}{{end}}' $(1) | sed "s%${PWD}/%%g")

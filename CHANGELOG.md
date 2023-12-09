@@ -118,6 +118,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Introduced IPXESOURCE environment variable which allows to specify the path to iPXE 
   binaries not provided by warewulf
 - use distrubtion ipxe binaries in the rpm
+- Allow absolute iPXE paths in warewulf.conf
 
 ## [4.4.0] 2023-01-18
 
