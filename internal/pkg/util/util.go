@@ -177,7 +177,7 @@ func IsFile(path string) bool {
 		return false
 	}
 
-	if stat, err := os.Stat(path); err == nil && !stat.IsDir() {
+	if stat, err := os.Lstat(path); err == nil && !stat.IsDir() {
 		return true
 	}
 	return false
