@@ -65,6 +65,7 @@ func InitStruct(nodeInfo *node.NodeInfo) TemplateStruct {
 	tstruct.Nfs = *controller.NFS
 	tstruct.Dhcp = *controller.DHCP
 	tstruct.Tftp = *controller.TFTP
+	tstruct.Paths = *controller.Paths
 	tstruct.Warewulf = *controller.Warewulf
 	tstruct.Ipaddr = controller.Ipaddr
 	tstruct.Ipaddr6 = controller.Ipaddr6
