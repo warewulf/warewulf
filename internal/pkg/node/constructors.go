@@ -40,7 +40,10 @@ defaultnode:
       netmask: 255.255.255.0
       onboot: true`
 
-func init() {
+/*
+Creates a new nodeDb object from the on-disk configuration
+*/
+func New() (NodeYaml, error) {
 	conf := warewulfconf.Get()
 	if ConfigFile == "" {
 		ConfigFile = path.Join(conf.Paths.Sysconfdir, "warewulf/nodes.conf")
@@ -48,12 +51,6 @@ func init() {
 	if DefaultConfig == "" {
 		DefaultConfig = path.Join(conf.Paths.Datadir, "warewulf/defaults.conf")
 	}
-}
-
-/*
-Creates a new nodeDb object from the on-disk configuration
-*/
-func New() (NodeYaml, error) {
 	wwlog.Verbose("Opening node configuration file: %s", ConfigFile)
 	data, err := os.ReadFile(ConfigFile)
 	if err != nil {
