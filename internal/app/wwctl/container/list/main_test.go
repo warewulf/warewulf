@@ -27,7 +27,7 @@ func Test_List(t *testing.T) {
 			name:   "container list test",
 			args:   []string{},
 			stdout: `test            1      kernel`,
-			inDb: `WW_INTERNAL: 43
+			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   default: {}
 nodes:

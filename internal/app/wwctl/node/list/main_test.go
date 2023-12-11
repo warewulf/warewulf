@@ -28,7 +28,7 @@ func Test_List(t *testing.T) {
 			stdout: `  NODE NAME  PROFILES  NETWORK
   n01        default
 `,
-			inDb: `WW_INTERNAL: 43
+			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   default: {}
 nodes:
@@ -45,7 +45,7 @@ nodes:
   n01        default
   n02        default
 `,
-			inDb: `WW_INTERNAL: 43
+			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   default: {}
 nodes:
@@ -65,7 +65,7 @@ nodes:
   n01        default
   n02        default
 `,
-			inDb: `WW_INTERNAL: 43
+			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   default: {}
 nodes:
@@ -85,7 +85,7 @@ nodes:
   n01        default
   n03        default
 `,
-			inDb: `WW_INTERNAL: 43
+			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   default: {}
 nodes:
@@ -113,7 +113,7 @@ nodes:
 			stdout: `  NODE NAME  PROFILES  NETWORK
   n01        default
 `,
-			inDb: `WW_INTERNAL: 43
+			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   default: {}
 nodes:

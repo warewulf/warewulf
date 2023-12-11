@@ -9,7 +9,7 @@ import (
 
 func TestNodeUpdate(t *testing.T) {
 	var nodeConfig = `
-WW_INTERNAL: 43
+WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: This profile is automatically included for each node
@@ -40,7 +40,7 @@ nodes:
 }
 
 func TestNodeDisk(t *testing.T) {
-	node_config := `WW_INTERNAL: 43
+	node_config := `WW_INTERNAL: 45
 nodes:
   n1:
     disks:

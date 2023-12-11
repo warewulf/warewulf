@@ -24,7 +24,7 @@ func Test_Add(t *testing.T) {
 			args:    []string{"--yes", "p01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles:
   p01: {}
 nodes: {}
@@ -35,7 +35,7 @@ nodes: {}
 			args:    []string{"--yes", "--netname", "primary", "--netdev", "eno3", "p02"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles:
   p02:
     network devices:
@@ -55,7 +55,7 @@ nodes: {}
 	assert.NoError(t, tempWarewulfConf.Sync())
 	warewulfconf.ConfigFile = tempWarewulfConf.Name()
 
-	nodes_yml := `WW_INTERNAL: 43`
+	nodes_yml := `WW_INTERNAL: 45`
 	tempNodeConf, nodesConfErr := os.CreateTemp("", "nodes.conf-")
 	assert.NoError(t, nodesConfErr)
 	defer os.Remove(tempNodeConf.Name())

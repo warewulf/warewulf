@@ -17,8 +17,8 @@ import (
 )
 
 const initWarewulfConf = `WW_INTERNAL: 0`
-const initDefaultsConf = `WW_INTERNAL: 43`
-const initNodesConf = `WW_INTERNAL: 43
+const initDefaultsConf = `WW_INTERNAL: 45`
+const initNodesConf = `WW_INTERNAL: 45
 nodeprofiles:
   default: {}
 nodes:

@@ -57,7 +57,7 @@ func TestDefaultRootConf(t *testing.T) {
 }
 
 func TestInitializedFromFile(t *testing.T) {
-	example_warewulf_conf := "WW_INTERNAL: 43"
+	example_warewulf_conf := "WW_INTERNAL: 45"
 	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
 	assert.NoError(t, warewulfConfErr)
 	defer os.Remove(tempWarewulfConf.Name())
@@ -72,7 +72,7 @@ func TestInitializedFromFile(t *testing.T) {
 }
 
 func TestExampleRootConf(t *testing.T) {
-	example_warewulf_conf := `WW_INTERNAL: 43
+	example_warewulf_conf := `WW_INTERNAL: 45
 ipaddr: 192.168.200.1
 netmask: 255.255.255.0
 network: 192.168.200.0

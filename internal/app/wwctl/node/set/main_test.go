@@ -55,7 +55,7 @@ func Test_Single_Node_Change_Profile(t *testing.T) {
 		args:    []string{"--profile=foo", "n01"},
 		wantErr: false,
 		stdout:  "",
-		inDB: `WW_INTERNAL: 43
+		inDB: `WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: testit
@@ -63,7 +63,7 @@ nodes:
   n01:
     profiles:
     - default`,
-		outDb: `WW_INTERNAL: 43
+		outDb: `WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: testit
@@ -81,7 +81,7 @@ func Test_Multiple_Add_Tests(t *testing.T) {
 			args:    []string{"--profile=foo", "n01"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 43
+			inDB: `WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: testit
@@ -89,7 +89,7 @@ nodes:
   n01:
     profiles:
     - default`,
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: testit
@@ -102,7 +102,7 @@ nodes:
 			args:    []string{"--profile=foo", "n0[1-2]"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 43
+			inDB: `WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: testit
@@ -113,7 +113,7 @@ nodes:
   n02:
     profiles:
     - default`,
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: testit
@@ -129,7 +129,7 @@ nodes:
 			args:    []string{"--ipmitagadd", "foo=baar", "n01"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 43
+			inDB: `WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: testit
@@ -137,7 +137,7 @@ nodes:
   n01:
     profiles:
     - default`,
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: testit
@@ -153,7 +153,7 @@ nodes:
 			args:    []string{"--tagdel", "tag1", "n01"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 43
+			inDB: `WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: testit
@@ -164,7 +164,7 @@ nodes:
     tags:
       tag1: value1
       tag2: value2`,
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: testit
@@ -179,7 +179,7 @@ nodes:
 			args:    []string{"--fsname=var", "--fspath=/var", "--fsformat=btrfs", "--partname=var", "--diskname=/dev/vda", "n01"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 43
+			inDB: `WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: testit
@@ -188,7 +188,7 @@ nodes:
     profiles:
     - default
 `,
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: testit
@@ -209,7 +209,7 @@ nodes:
 			args:    []string{"--fsdel=var", "n01"},
 			wantErr: true,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 43
+			inDB: `WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: testit
@@ -227,7 +227,7 @@ nodes:
         format: btrfs
         path: /var
 `,
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: testit
@@ -248,7 +248,7 @@ nodes:
 			args:    []string{"--fsdel=/dev/disk/by-partlabel/var", "n01"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 43
+			inDB: `WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: testit
@@ -266,7 +266,7 @@ nodes:
         format: btrfs
         path: /var
 `,
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: testit
@@ -283,7 +283,7 @@ nodes:
 			args:    []string{"--partdel=var", "n01"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 43
+			inDB: `WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: testit
@@ -301,7 +301,7 @@ nodes:
         format: btrfs
         path: /var
 `,
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: testit
@@ -320,7 +320,7 @@ nodes:
 			args:    []string{"--diskdel=/dev/vda", "n01"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 43
+			inDB: `WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: testit
@@ -338,7 +338,7 @@ nodes:
         format: btrfs
         path: /var
 `,
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: testit
@@ -355,7 +355,7 @@ nodes:
 			args:    []string{"--mtu", "1234", "--netname=mynet", "n01"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 43
+			inDB: `WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: testit
@@ -363,7 +363,7 @@ nodes:
   n01:
     profiles:
     - default`,
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: testit
@@ -379,7 +379,7 @@ nodes:
 			args:    []string{"--tagadd", "nodetag1=nodevalue1", "n01"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 43
+			inDB: `WW_INTERNAL: 45
 nodeprofiles:
   p1:
     comment: testit 1
@@ -394,7 +394,7 @@ nodes:
     profiles:
     - p1
     - p2`,
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles:
   p1:
     comment: testit 1

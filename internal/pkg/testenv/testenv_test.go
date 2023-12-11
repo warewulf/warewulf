@@ -19,7 +19,7 @@ func Test_Basic(t *testing.T) {
 
 func Test_two_nodes(t *testing.T) {
 	env := New(t)
-	env.WriteFile(t, "etc/warewulf/nodes.conf", `WW_INTERNAL: 43
+	env.WriteFile(t, "etc/warewulf/nodes.conf", `WW_INTERNAL: 45
 nodeprofiles:
   default: {}
 nodes:

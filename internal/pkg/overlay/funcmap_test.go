@@ -7,7 +7,7 @@ import (
 )
 
 func Test_createIgnitionJson(t *testing.T) {
-	node_config := `WW_INTERNAL: 43
+	node_config := `WW_INTERNAL: 45
 nodes:
   n1:
     disks:
