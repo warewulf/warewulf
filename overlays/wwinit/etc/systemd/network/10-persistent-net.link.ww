@@ -3,6 +3,8 @@
 # Time:   {{.BuildTime}}
 # Source: {{.BuildSource}}
 {{range $devname, $netdev := .NetDevs}}
+{{- $filename := print "10-persistent-net.link-" $devname }}
+{{- file $filename }}
 {{- if $netdev.Hwaddr }}
 [Match]
 MACAddress={{$netdev.Hwaddr}}
