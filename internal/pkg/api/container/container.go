@@ -240,12 +240,14 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		}
 	}
 
-	wwlog.Info("Building container: %s", cip.Name)
-	err = container.Build(cip.Name, true)
-	if err != nil {
-		err = fmt.Errorf("could not build container %s: %s", cip.Name, err.Error())
-		wwlog.Error(err.Error())
-		return
+	if cip.Build {
+		wwlog.Info("Building container: %s", cip.Name)
+		err = container.Build(cip.Name, true)
+		if err != nil {
+			err = fmt.Errorf("could not build container %s: %s", cip.Name, err.Error())
+			wwlog.Error(err.Error())
+			return
+		}
 	}
 
 	if cip.Default {
