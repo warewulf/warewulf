@@ -3,7 +3,7 @@
 # Time:   {{.BuildTime}}
 # Source: {{.BuildSource}}
 {{range $devname, $netdev := .NetDevs}}
-{{- $filename := print "10-persistent-net.link-" $devname }}
+{{- $filename := print "10-persistent-net-" $devname ".link"}}
 {{- file $filename }}
 {{- if $netdev.Hwaddr }}
 [Match]
