@@ -12,7 +12,8 @@ import (
 
 type nodeDB struct {
 	lock     sync.RWMutex
-	NodeInfo map[string]node.NodeInfo
+	NodeInfo map[string]node.NodeConf
+	yml      node.NodeYaml
 }
 
 var (
@@ -25,55 +26,62 @@ func LoadNodeDB() error {
 	return loadNodeDB()
 }
 
-func loadNodeDB() error {
-	TmpMap := make(map[string]node.NodeInfo)
+func loadNodeDB() (err error) {
+	TmpMap := make(map[string]node.NodeConf)
 
-	DB, err := node.New()
+	db.yml, err = node.New()
 	if err != nil {
-		return err
+		return
 	}
 
-	nodes, err := DB.FindAllNodes()
+	nodes, err := db.yml.FindAllNodes()
 	if err != nil {
 		return err
 	}
 
 	for _, n := range nodes {
+		if n.Discoverable {
+			continue
+		}
 		for _, netdev := range n.NetDevs {
-			hwaddr := strings.ToLower(netdev.Hwaddr.Get())
+			hwaddr := strings.ToLower(netdev.Hwaddr)
 			TmpMap[hwaddr] = n
 		}
 	}
 
 	db.NodeInfo = TmpMap
-
 	return nil
 }
 
-func GetNode(val string) (node.NodeInfo, error) {
+func GetNode(val string) (node node.NodeConf, err error) {
 	db.lock.RLock()
 	defer db.lock.RUnlock()
 	return getNode(val)
 }
 
-func getNode(val string) (node.NodeInfo, error) {
+func getNode(val string) (node node.NodeConf, err error) {
 
 	if _, ok := db.NodeInfo[val]; ok {
 
 		return db.NodeInfo[val], nil
 	}
 
-	var empty node.NodeInfo
-	return empty, errors.New("No node found")
+	return node, errors.New("No node found")
 }
 
-func GetNodeOrSetDiscoverable(hwaddr string) (node.NodeInfo, error) {
+func GetNodeOrSetDiscoverable(hwaddr string) (node.NodeConf, error) {
 	db.lock.Lock()
 	defer db.lock.Unlock()
 	return getNodeOrSetDiscoverable(hwaddr)
 }
 
-func getNodeOrSetDiscoverable(hwaddr string) (node.NodeInfo, error) {
+func PersistDb() error {
+	db.lock.Lock()
+	defer db.lock.Unlock()
+	return db.yml.Persist()
+}
+
+func getNodeOrSetDiscoverable(hwaddr string) (node.NodeConf, error) {
 	// NOTE: since discoverable nodes will write an updated DB to file and then
 	// reload, it is not enough to lock individual reads from the DB
 	// to ensure the condition on which the node is updated is still satisfied
@@ -89,30 +97,23 @@ func getNodeOrSetDiscoverable(hwaddr string) (node.NodeInfo, error) {
 
 	wwlog.WarnExc(err, "%s (node not configured)", hwaddr)
 
-	config, err := node.New()
-	if err != nil {
-		return n, errors.Wrapf(err, "%s (failed to read node configuration file)", hwaddr)
-	}
-
-	_n, netdev, err := config.FindDiscoverableNode()
+	nodeId, netdev, err := db.yml.FindDiscoverableNode()
 	if err != nil {
 		// NOTE: this is taken as there is no discoverable node, so return the
 		// empty one
 		return n, nil
 	}
-
-	_n.NetDevs[netdev].Hwaddr.Set(hwaddr)
-	_n.Discoverable.SetB(false)
-
-	// NOTE: errors here should return the empty node if the state cannot
-	// be saved and re-loaded, since subsequent requests will be made on invalid
-	// assumption that the database is up to date.
-	err = config.NodeUpdate(_n)
+	discoverdNode, err := getNode(nodeId)
 	if err != nil {
-		return n, errors.Wrapf(err, "%s (failed to set node configuration)", hwaddr)
+		return n, err
 	}
+	// update data on disk and in memory
+	discoverdNode.NetDevs[netdev].Hwaddr = hwaddr
+	db.yml.Nodes[discoverdNode.Id()].NetDevs[netdev].Hwaddr = hwaddr
+	discoverdNode.Discoverable = false
+	db.yml.Nodes[discoverdNode.Id()].Discoverable = false
 
-	err = config.Persist()
+	err = PersistDb()
 	if err != nil {
 		return n, errors.Wrapf(err, "%s (failed to persist node configuration)", hwaddr)
 	}
@@ -129,5 +130,5 @@ func getNodeOrSetDiscoverable(hwaddr string) (node.NodeInfo, error) {
 	wwlog.Serv("%s (node automatically configured)", hwaddr)
 
 	// return the discovered node
-	return _n, nil
+	return discoverdNode, nil
 }
