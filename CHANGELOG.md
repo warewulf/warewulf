@@ -51,6 +51,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed a bug where profile tags were erroneously overridden by empty node
   values. #884
 - Fixed bug where tags from profiles weren't rendered #967
+- Fixed a bug when using `wwctl container import --force` to replace an existing container
+  will generate an error #474
 
 ### Changed
 
