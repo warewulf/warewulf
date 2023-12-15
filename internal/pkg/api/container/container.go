@@ -21,15 +21,15 @@ import (
 
 func ContainerCopy(cbp *wwapiv1.ContainerCopyParameter) (err error) {
 	if cbp == nil {
-		return fmt.Errorf("ContainerCopyParameter is nil")
+		return fmt.Errorf("containerCopyParameter is nil")
 	}
 
 	if !container.DoesSourceExist(cbp.ContainerSource) {
-		return fmt.Errorf("Container %s does not exists.", cbp.ContainerSource)
+		return fmt.Errorf("container %s does not exists.", cbp.ContainerSource)
 	}
 
 	if !container.ValidName(cbp.ContainerDestination) {
-		return fmt.Errorf("Container name contains illegal characters : %s", cbp.ContainerDestination)
+		return fmt.Errorf("container name contains illegal characters : %s", cbp.ContainerDestination)
 	}
 
 	if container.DoesSourceExist(cbp.ContainerDestination) {
@@ -92,14 +92,10 @@ func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 			// TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
 			profiles, _ := nodeDB.FindAllProfiles()
 			for _, profile := range profiles {
-				wwlog.Debug("Looking for profile default: %s", profile.Id.Get())
-				if profile.Id.Get() == "default" {
+				wwlog.Debug("Looking for profile default: %s", profile.Id())
+				if profile.Id() == "default" {
 					wwlog.Debug("Found profile default, setting container name to: %s", containers[0])
-					profile.ContainerName.Set(containers[0])
-					err := nodeDB.ProfileUpdate(profile)
-					if err != nil {
-						return errors.Wrap(err, "failed to update node profile")
-					}
+					profile.ContainerName = containers[0]
 				}
 			}
 			// TODO: Need a wrapper and flock around this. Sometimes we restart warewulfd and sometimes we don't.
@@ -133,7 +129,7 @@ ARG_LOOP:
 		//_, arg := range args {
 		containerName := cdp.ContainerNames[i]
 		for _, n := range nodes {
-			if n.ContainerName.Get() == containerName {
+			if n.ContainerName == containerName {
 				wwlog.Error("Container is configured for nodes, skipping: %s", containerName)
 				continue ARG_LOOP
 			}
@@ -253,15 +249,10 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		// TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
 		profiles, _ := nodeDB.FindAllProfiles()
 		for _, profile := range profiles {
-			wwlog.Debug("Looking for profile default: %s", profile.Id.Get())
-			if profile.Id.Get() == "default" {
+			wwlog.Debug("Looking for profile default: %s", profile.Id())
+			if profile.Id() == "default" {
 				wwlog.Debug("Found profile default, setting container name to: %s", cip.Name)
-				profile.ContainerName.Set(cip.Name)
-				err = nodeDB.ProfileUpdate(profile)
-				if err != nil {
-					err = errors.Wrap(err, "failed to update profile")
-					return
-				}
+				profile.ContainerName = cip.Name
 			}
 		}
 		// TODO: We need this in a function with a flock around it.
@@ -306,7 +297,7 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 
 	nodemap := make(map[string]int)
 	for _, n := range nodes {
-		nodemap[n.ContainerName.Get()]++
+		nodemap[n.ContainerName]++
 	}
 
 	for _, source := range sources {
@@ -383,8 +374,8 @@ func ContainerShow(csp *wwapiv1.ContainerShowParameter) (response *wwapiv1.Conta
 
 	var nodeList []string
 	for _, n := range nodes {
-		if n.ContainerName.Get() == containerName {
-			nodeList = append(nodeList, n.Id.Get())
+		if n.ContainerName == containerName {
+			nodeList = append(nodeList, n.Id())
 		}
 	}
 
@@ -429,11 +420,13 @@ func ContainerRename(crp *wwapiv1.ContainerRenameParameter) (err error) {
 		return err
 	}
 	for _, node := range nodes {
-		if node.ContainerName.Get() == crp.ContainerName {
-			node.ContainerName.Set(crp.TargetName)
-			if err := nodeDB.NodeUpdate(node); err != nil {
-				return err
-			}
+		if node.ContainerName == crp.ContainerName {
+			node.ContainerName = crp.TargetName
+			/*
+				if err := nodeDB.NodeUpdate(node); err != nil {
+					return err
+				}
+			*/
 		}
 	}
 
@@ -442,11 +435,13 @@ func ContainerRename(crp *wwapiv1.ContainerRenameParameter) (err error) {
 		return err
 	}
 	for _, profile := range profiles {
-		if profile.ContainerName.Get() == crp.ContainerName {
-			profile.ContainerName.Set(crp.TargetName)
-			if err := nodeDB.ProfileUpdate(profile); err != nil {
-				return err
-			}
+		if profile.ContainerName == crp.ContainerName {
+			profile.ContainerName = crp.TargetName
+			/*
+				if err := nodeDB.ProfileUpdate(profile); err != nil {
+					return err
+				}
+			*/
 		}
 	}
 
