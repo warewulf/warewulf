@@ -8,6 +8,7 @@ import (
 	apinode "github.com/warewulf/warewulf/internal/pkg/api/node"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/api/util"
+	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v2"
@@ -15,39 +16,33 @@ import (
 
 func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err error) {
 	return func(cmd *cobra.Command, args []string) error {
-		// run converters for different types
-		for _, c := range vars.converters {
-			if err := c(); err != nil {
-				return err
-			}
-		}
 		// remove the default network as the all network values are assigned
 		// to this network
 		if !node.ObjectIsEmpty(vars.nodeConf.NetDevs["UNDEF"]) {
 			netDev := *vars.nodeConf.NetDevs["UNDEF"]
-			vars.nodeConf.NetDevs[vars.netName] = &netDev
+			vars.nodeConf.NetDevs[vars.nodeAdd.Net] = &netDev
 		}
 		delete(vars.nodeConf.NetDevs, "UNDEF")
-		if vars.fsName != "" {
-			if !strings.HasPrefix(vars.fsName, "/dev") {
-				if vars.fsName == vars.partName {
-					vars.fsName = "/dev/disk/by-partlabel/" + vars.partName
+		if vars.nodeAdd.FsName != "" {
+			if !strings.HasPrefix(vars.nodeAdd.FsName, "/dev") {
+				if vars.nodeAdd.FsName == vars.nodeAdd.PartName {
+					vars.nodeAdd.FsName = "/dev/disk/by-partlabel/" + vars.nodeAdd.PartName
 				} else {
 					return fmt.Errorf("filesystems need to have a underlying blockdev")
 				}
 			}
 			fs := *vars.nodeConf.FileSystems["UNDEF"]
-			vars.nodeConf.FileSystems[vars.fsName] = &fs
+			vars.nodeConf.FileSystems[vars.nodeAdd.FsName] = &fs
 		}
 		delete(vars.nodeConf.FileSystems, "UNDEF")
-		if vars.diskName != "" && vars.partName != "" {
+		if vars.nodeAdd.DiskName != "" && vars.nodeAdd.PartName != "" {
 			prt := *vars.nodeConf.Disks["UNDEF"].Partitions["UNDEF"]
-			vars.nodeConf.Disks["UNDEF"].Partitions[vars.partName] = &prt
+			vars.nodeConf.Disks["UNDEF"].Partitions[vars.nodeAdd.PartName] = &prt
 			delete(vars.nodeConf.Disks["UNDEF"].Partitions, "UNDEF")
 			dsk := *vars.nodeConf.Disks["UNDEF"]
-			vars.nodeConf.Disks[vars.diskName] = &dsk
+			vars.nodeConf.Disks[vars.nodeAdd.DiskName] = &dsk
 		}
-		if (vars.diskName != "") != (vars.partName != "") {
+		if (vars.nodeAdd.DiskName != "") != (vars.nodeAdd.PartName != "") {
 			return fmt.Errorf("partition and disk must be specified")
 		}
 		delete(vars.nodeConf.Disks, "UNDEF")
@@ -56,23 +51,30 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			return fmt.Errorf("can not marshall nodeInfo: %s", err)
 		}
 		wwlog.Debug("sending following values: %s", string(buffer))
-		set := wwapiv1.NodeSetParameter{
-			NodeConfYaml: string(buffer[:]),
+		args = hostlist.Expand(args)
+		set := wwapiv1.ConfSetParameter{
+			NodeConfYaml: string(buffer),
 
-			NetdevDelete:     vars.setNetDevDel,
-			PartitionDelete:  vars.setPartDel,
-			DiskDelete:       vars.setDiskDel,
-			FilesystemDelete: vars.setFsDel,
-			AllNodes:         vars.setNodeAll,
+			NetdevDelete:     vars.nodeDel.NetDel,
+			PartitionDelete:  vars.nodeDel.PartDel,
+			DiskDelete:       vars.nodeDel.DiskDel,
+			FilesystemDelete: vars.nodeDel.FsDel,
+			TagAdd:           vars.nodeAdd.TagsAdd,
+			TagDel:           vars.nodeDel.TagsDel,
+			NetTagAdd:        vars.nodeAdd.NetTagsAdd,
+			NetTagDel:        vars.nodeDel.NetTagsDel,
+			IpmiTagAdd:       vars.nodeAdd.IpmiTagsAdd,
+			IpmiTagDel:       vars.nodeDel.IpmiTagsDel,
+			AllConfs:         vars.setNodeAll,
 			Force:            vars.setForce,
-			NodeNames:        args,
+			ConfList:         args,
 		}
 
 		if !vars.setYes {
 			var nodeCount uint
 			// The checks run twice in the prompt case.
 			// Avoiding putting in a blocking prompt in an API.
-			_, nodeCount, err = apinode.NodeSetParameterCheck(&set, false)
+			_, nodeCount, err = apinode.NodeSetParameterCheck(&set)
 			if err != nil {
 				return nil
 			}

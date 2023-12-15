@@ -15,7 +15,7 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 && !OptDetect {
-		wwlog.Error("the '--detect' flag is needed, if no kernel version is suppiled")
+		wwlog.Error("the '--detect' flag is needed, if no kernel version is supplied")
 		os.Exit(1)
 	}
 	if OptDetect && (OptRoot == "" || OptContainer == "") {
@@ -66,14 +66,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		//TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
 		profiles, _ := nodeDB.FindAllProfiles()
 		for _, profile := range profiles {
-			wwlog.Debug("Looking for profile default: %s", profile.Id.Get())
-			if profile.Id.Get() == "default" {
+			wwlog.Debug("Looking for profile default: %s", profile.Id())
+			if profile.Id() == "default" {
 				wwlog.Debug("Found profile default, setting kernel version to: %s", args[0])
-				profile.Kernel.Override.Set(args[0])
-				err := nodeDB.ProfileUpdate(profile)
-				if err != nil {
-					return errors.Wrap(err, "failed to update node profile")
-				}
+				profile.Kernel.Override = args[0]
 			}
 		}
 		err = nodeDB.Persist()

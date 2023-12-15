@@ -11,24 +11,17 @@ import (
 )
 
 type variables struct {
-	setNetDevDel string
-	setDiskDel   string
-	setPartDel   string
-	setFsDel     string
-	netName      string
-	partName     string
-	diskName     string
-	fsName       string
-	setNodeAll   bool
-	setYes       bool
-	setForce     bool
-	nodeConf     node.NodeConf
-	converters   []func() error
+	setNodeAll bool
+	setYes     bool
+	setForce   bool
+	nodeConf   node.NodeConf
+	nodeDel    node.NodeConfDel
+	nodeAdd    node.NodeConfAdd
 }
 
 func GetCommand() *cobra.Command {
 	vars := variables{}
-	vars.nodeConf = node.NewConf()
+	vars.nodeConf = node.NewNode("")
 	baseCmd := &cobra.Command{
 		DisableFlagsInUseLine: true,
 		Use:                   "set [OPTIONS] PATTERN",
@@ -43,25 +36,15 @@ func GetCommand() *cobra.Command {
 			}
 
 			nodeDB, _ := node.New()
-			nodes, _ := nodeDB.FindAllNodes()
-			var node_names []string
-			for _, node := range nodes {
-				node_names = append(node_names, node.Id.Get())
-			}
-			return node_names, cobra.ShellCompDirectiveNoFileComp
+			nodes := nodeDB.ListAllNodes()
+			return nodes, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
 
-	vars.converters = vars.nodeConf.CreateFlags(baseCmd, []string{})
-	baseCmd.PersistentFlags().StringVarP(&vars.setNetDevDel, "netdel", "D", "", "Delete the node's network device")
-	baseCmd.PersistentFlags().StringVar(&vars.netName, "netname", "default", "Set network name for network options")
+	vars.nodeConf.CreateFlags(baseCmd)
+	vars.nodeAdd.CreateAddFlags(baseCmd)
+	vars.nodeDel.CreateDelFlags(baseCmd)
 	baseCmd.PersistentFlags().BoolVarP(&vars.setNodeAll, "all", "a", false, "Set all nodes")
-	baseCmd.PersistentFlags().StringVar(&vars.fsName, "fsname", "", "set the file system name which must match a partition name")
-	baseCmd.PersistentFlags().StringVar(&vars.partName, "partname", "", "set the partition name so it can be used by a file system")
-	baseCmd.PersistentFlags().StringVar(&vars.diskName, "diskname", "", "set disk device name for the partition")
-	baseCmd.PersistentFlags().StringVar(&vars.setDiskDel, "diskdel", "", "delete the disk from the configuration")
-	baseCmd.PersistentFlags().StringVar(&vars.setPartDel, "partdel", "", "delete the partition from the configuration")
-	baseCmd.PersistentFlags().StringVar(&vars.setFsDel, "fsdel", "", "delete the partition from the configuration")
 	baseCmd.PersistentFlags().BoolVarP(&vars.setYes, "yes", "y", false, "Set 'yes' to all questions asked")
 	baseCmd.PersistentFlags().BoolVarP(&vars.setForce, "force", "f", false, "Force configuration (even on error)")
 	// register the command line completions
@@ -94,7 +77,7 @@ func GetCommand() *cobra.Command {
 		nodeDB, _ := node.New()
 		profiles, _ := nodeDB.FindAllProfiles()
 		for _, profile := range profiles {
-			list = append(list, profile.Id.Get())
+			list = append(list, profile.Id())
 		}
 		return list, cobra.ShellCompDirectiveNoFileComp
 	}); err != nil {

@@ -23,7 +23,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	nodemap := make(map[string]int)
 
 	for _, n := range nodes {
-		nodemap[n.Kernel.Override.Get()]++
+		nodemap[n.Kernel.Override]++
 	}
 
 	fmt.Printf("%-35s %-25s %-6s\n", "KERNEL NAME", "KERNEL VERSION", "NODES")

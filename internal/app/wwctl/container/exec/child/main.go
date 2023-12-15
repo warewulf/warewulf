@@ -106,8 +106,8 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		if len(nodes) != 1 {
 			return fmt.Errorf("no single node idendified with %s", nodename)
 		}
-		overlays := nodes[0].SystemOverlay.GetSlice()
-		overlays = append(overlays, nodes[0].RuntimeOverlay.GetSlice()...)
+		overlays := nodes[0].SystemOverlay
+		overlays = append(overlays, nodes[0].RuntimeOverlay...)
 		err = overlay.BuildOverlayIndir(nodes[0], overlays, path.Join(runDir, "nodeoverlay"))
 		if err != nil {
 			return fmt.Errorf("could not build overlay: %s", err)
