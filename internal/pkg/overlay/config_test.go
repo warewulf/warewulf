@@ -1,8 +1,9 @@
 package overlay
 
 import (
-	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"testing"
+
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 )
 
 var overlayImageTests = []struct {
