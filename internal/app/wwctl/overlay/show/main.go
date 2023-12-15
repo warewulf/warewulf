@@ -48,7 +48,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Output("%s", string(f))
 	} else {
 		if !util.IsFile(overlayFile) {
-			wwlog.Debug("%s is not a file", overlayFile)
+			err := errors.New("Not a file")
+			wwlog.Error("%s: %s:%s", err, overlayName, fileName)
+			return err
 			err := errors.New("Not a file")
 			wwlog.Error("%s: %s:%s", err, overlayName, fileName)
 			return err
@@ -56,33 +58,23 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if filepath.Ext(overlayFile) != ".ww" {
 			wwlog.Warn("%s lacks the '.ww' suffix, will not be rendered in an overlay", fileName)
 		}
-
 		nodeDB, err := node.New()
 		if err != nil {
-			wwlog.Error("Could not open node configuration: %s", err)
 			return err
 		}
-		nodes, err := nodeDB.FindAllNodes()
+		nodeConf, err := nodeDB.GetNode(NodeName)
+		if err == node.ErrNotFound {
+			hostName, err := os.Hostname()
+			if err != nil {
+				wwlog.Error("Could not get host name: %s", err)
+			}
+			nodeConf = node.NewNode(hostName)
+			nodeConf.ClusterName = hostName
+		}
+		tstruct, err := overlay.InitStruct(nodeConf)
 		if err != nil {
-			wwlog.Error("Could not get node list: %s", err)
 			return err
 		}
-		filteredNodes := node.FilterByName(nodes, []string{NodeName})
-		if hostName, err := os.Hostname(); err != nil {
-			wwlog.Error("Could not get host name: %s", err)
-		} else if len(filteredNodes) == 0 && (NodeName == "host" || NodeName == hostName) {
-			// rendering the host template
-			hostNodeInfo := new(node.NodeInfo)
-			hostNodeInfo.Id.Set(hostName)
-			hostNodeInfo.ClusterName.Set(hostName)
-			filteredNodes = append(filteredNodes, *hostNodeInfo)
-		} else if len(filteredNodes) != 1 {
-			err := errors.New("Not a single node")
-			wwlog.Error("%s: %v", err, NodeName)
-			return err
-		}
-
-		tstruct := overlay.InitStruct(&filteredNodes[0])
 		tstruct.BuildSource = overlayFile
 		buffer, backupFile, writeFile, err := overlay.RenderTemplateFile(overlayFile, tstruct)
 		if err != nil {
