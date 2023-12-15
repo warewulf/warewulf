@@ -20,12 +20,8 @@ var (
 			}
 
 			nodeDB, _ := node.New()
-			nodes, _ := nodeDB.FindAllNodes()
-			var node_names []string
-			for _, node := range nodes {
-				node_names = append(node_names, node.Id.Get())
-			}
-			return node_names, cobra.ShellCompDirectiveNoFileComp
+			nodes := nodeDB.ListAllNodes()
+			return nodes, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
 	SetYes   bool
