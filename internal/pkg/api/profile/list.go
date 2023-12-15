@@ -18,18 +18,15 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 	profileList.Output = []string{}
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("Could not open node configuration: %s", err)
 		return
 	}
-
 	profiles, err := nodeDB.FindAllProfiles()
 	if err != nil {
-		wwlog.Error("Could not find all profiles: %s", err)
 		return
 	}
 	profiles = node.FilterByName(profiles, ShowOpt.Profiles)
 	sort.Slice(profiles, func(i, j int) bool {
-		return profiles[i].Id.Get() < profiles[j].Id.Get()
+		return profiles[i].Id() < profiles[j].Id()
 	})
 	if ShowOpt.ShowAll || ShowOpt.ShowFullAll {
 		for _, p := range profiles {

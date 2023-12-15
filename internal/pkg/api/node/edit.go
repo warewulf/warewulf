@@ -39,7 +39,7 @@ func FilteredNodes(nodeList *wwapiv1.NodeList) *wwapiv1.NodeYaml {
 		os.Exit(1)
 	}
 	nodeMap := nodeDB.Nodes
-	nodeMap = node.FilterMapByName(nodeMap, nodeList.Output)
+	nodeMap = node.FilterNodesByName(nodeMap, nodeList.Output)
 	buffer, _ := yaml.Marshal(nodeMap)
 	retVal := wwapiv1.NodeYaml{
 		NodeConfMapYaml: string(buffer),
