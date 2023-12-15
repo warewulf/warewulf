@@ -39,7 +39,7 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 			}
 			sort.Strings(netNames)
 			nodeList.Output = append(nodeList.Output,
-				fmt.Sprintf("%s:=:%s:=:%s", n.Id.Print(), n.Profiles.Print(), strings.Join(netNames, ", ")))
+				fmt.Sprintf("%s:=:%s:=:%s", n.Id(), n.Profiles, strings.Join(netNames, ", ")))
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_Network {
 		nodeList.Output = append(nodeList.Output,
@@ -48,14 +48,15 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 			if len(n.NetDevs) > 0 {
 				for name := range n.NetDevs {
 					nodeList.Output = append(nodeList.Output,
-						fmt.Sprintf("%s:=:%s:=:%s:=:%s:=:%s:=:%s", n.Id.Print(), name,
-							n.NetDevs[name].Hwaddr.Print(),
-							n.NetDevs[name].Ipaddr.Print(),
-							n.NetDevs[name].Gateway.Print(),
-							n.NetDevs[name].Device.Print()))
+						fmt.Sprintf("%s:=:%s:=:%s:=:%s:=:%s:=:%s", n.Id(), name,
+							n.NetDevs[name].Hwaddr,
+							n.NetDevs[name].Ipaddr,
+							n.NetDevs[name].Gateway,
+							n.NetDevs[name].Device))
 				}
 			} else {
-				fmt.Printf("%s:=:%s:=:%s:=:%s:=:%s:=:%s", n.Id.Print(), "--", "--", "--", "--", "--")
+				nodeList.Output = append(nodeList.Output,
+					fmt.Sprintf("%s:=:%s:=:%s:=:%s:=:%s:=:%s", n.Id(), "--", "--", "--", "--", "--"))
 			}
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_Ipmi {
@@ -63,61 +64,41 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 			fmt.Sprintf("%s:=:%s:=:%s:=:%s:=:%s", "NODE NAME", "IPMI IPADDR", "IPMI PORT", "IPMI USERNAME", "IPMI INTERFACE"))
 		for _, n := range node.FilterByName(nodes, nodeGet.Nodes) {
 			nodeList.Output = append(nodeList.Output,
-				fmt.Sprintf("%s:=:%s:=:%s:=:%s:=:%s:=:%s", n.Id.Print(),
-					n.Ipmi.Ipaddr.Print(),
-					n.Ipmi.Port.Print(),
-					n.Ipmi.UserName.Print(),
-					n.Ipmi.Interface.Print(),
-					n.Ipmi.EscapeChar.Print()))
+				fmt.Sprintf("%s:=:%s:=:%s:=:%s:=:%s:=:%s", n.Id(),
+					n.Ipmi.Ipaddr,
+					n.Ipmi.Port,
+					n.Ipmi.UserName,
+					n.Ipmi.Interface,
+					n.Ipmi.EscapeChar))
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_Long {
 		nodeList.Output = append(nodeList.Output,
 			fmt.Sprintf("%s:=:%s:=:%s:=:%s", "NODE NAME", "KERNEL OVERRIDE", "CONTAINER", "OVERLAYS (S/R)"))
 		for _, n := range node.FilterByName(nodes, nodeGet.Nodes) {
 			nodeList.Output = append(nodeList.Output,
-				fmt.Sprintf("%s:=:%s:=:%s:=:%s", n.Id.Print(),
-					n.Kernel.Override.Print(),
-					n.ContainerName.Print(),
-					n.SystemOverlay.Print()+"/"+n.RuntimeOverlay.Print()))
+				fmt.Sprintf("%s:=:%s:=:%s:=:%s", n.Id(),
+					n.Kernel.Override,
+					n.ContainerName,
+					strings.Join(n.SystemOverlay, ",")+"/"+strings.Join(n.RuntimeOverlay, ",")))
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_All || nodeGet.Type == wwapiv1.GetNodeList_FullAll {
 		for _, n := range node.FilterByName(nodes, nodeGet.Nodes) {
 			nodeList.Output = append(nodeList.Output,
 				fmt.Sprintf("%s:=:%s:=:%s:=:%s", "NODE", "FIELD", "PROFILE", "VALUE"))
-			fields := n.GetFields(wwapiv1.GetNodeList_FullAll == nodeGet.Type)
+			fields := nodeDB.GetFields(n, nodeGet.Type == wwapiv1.GetNodeList_All)
 			for _, f := range fields {
 				nodeList.Output = append(nodeList.Output,
-					fmt.Sprintf("%s:=:%s:=:%s:=:%s", n.Id.Print(), f.Field, f.Source, f.Value))
+					fmt.Sprintf("%s:=:%s:=:%s:=:%s", n.Id(), f.Field, f.Source, f.Value))
 			}
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_YAML || nodeGet.Type == wwapiv1.GetNodeList_JSON {
-		nodeResp := node.NodeYaml{
-			NodeProfiles: make(map[string]*node.NodeConf),
-			Nodes:        make(map[string]*node.NodeConf),
-		}
-
 		filterNodes := node.FilterByName(nodes, nodeGet.Nodes)
-		for _, nodeInfo := range filterNodes {
-			myNode := node.NewConf()
-			myNode.GetFrom(nodeInfo)
-			myNode.Flatten()
-			nodeResp.Nodes[nodeInfo.Id.Get()] = &myNode
-		}
-
-		profiles, _ := nodeDB.FindAllProfiles()
-		for _, profileInfo := range profiles {
-			myProfile := node.NewConf()
-			myProfile.GetFrom(profileInfo)
-			myProfile.Flatten()
-			nodeResp.NodeProfiles[profileInfo.Id.Get()] = &myProfile
-		}
-
 		var buf []byte
 		if nodeGet.Type == wwapiv1.GetNodeList_JSON {
-			buf, _ = json.MarshalIndent(nodeResp, "", "  ")
+			buf, _ = json.MarshalIndent(filterNodes, "", "  ")
 		}
 		if nodeGet.Type == wwapiv1.GetNodeList_YAML {
-			buf, _ = yaml.Marshal(nodeResp)
+			buf, _ = yaml.Marshal(filterNodes)
 		}
 		nodeList.Output = append(nodeList.Output, string(buf))
 
