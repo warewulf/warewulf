@@ -237,6 +237,14 @@ Official v4.5.0 release.
 
 ## 4.5.0rc1, 2024-02-08
 
+### Refactoring
+
+- removed NodeInfo completely. node.FindAllNodes() will now give back 
+  the list of nodes with its merged in profiles. Also there is now a
+  node.GetNode(id) command which will give back a node with its merged
+  in profiles. Changes to this structures will not be reflected to the 
+  database, but must nodeYaml.Nodes or nodeYaml.NodeProfiles
+
 ### Added
 
 - Start building packages for Rocky Linux 9. #951

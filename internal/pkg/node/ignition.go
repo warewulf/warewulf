@@ -3,6 +3,7 @@ package node
 import (
 	"fmt"
 	"sort"
+	"strconv"
 
 	types_3_4 "github.com/coreos/ignition/v2/config/v3_2/types"
 	"github.com/coreos/vcontext/path"
@@ -12,37 +13,37 @@ import (
 /*
 Create a ignition struct class for ignition
 */
-func (node *NodeInfo) GetStorage() (stor types_3_4.Storage, err error, rep string) {
+func (node *NodeConf) GetStorage() (stor types_3_4.Storage, err error, rep string) {
 	var fileSystems []types_3_4.Filesystem
 	for fsdevice, fs := range node.FileSystems {
 		var mountOptions []types_3_4.MountOption
-		for _, opt := range fs.MountOptions.GetSlice() {
+		for _, opt := range fs.MountOptions {
 			mountOptions = append(mountOptions, types_3_4.MountOption(opt))
 		}
 		var fsOption []types_3_4.FilesystemOption
-		for _, opt := range fs.Options.GetSlice() {
+		for _, opt := range fs.Options {
 			fsOption = append(fsOption, types_3_4.FilesystemOption(opt))
 		}
-		wipe := fs.WipeFileSystem.GetB()
+		wipe := fs.WipeFileSystem
 		myFs := types_3_4.Filesystem{
 			Device:         fsdevice,
-			Path:           fs.Path.GetPointer(),
+			Path:           &fs.Path,
 			WipeFilesystem: &wipe,
 		}
-		if fs.Format.Get() != "" {
-			myFs.Format = fs.Format.GetPointer()
+		if fs.Format != "" {
+			myFs.Format = &fs.Format
 		}
-		if fs.Label.Get() != "" {
-			myFs.Label = fs.Label.GetPointer()
+		if fs.Label != "" {
+			myFs.Label = &fs.Label
 		}
-		if fs.MountOptions.Get() != "" {
+		if fs.MountOptions != "" {
 			myFs.MountOptions = mountOptions
 		}
-		if fs.Options.Get() != "" {
+		if len(fs.Options) != 0 {
 			myFs.Options = fsOption
 		}
-		if fs.Options.Get() != "" {
-			myFs.UUID = fs.Uuid.GetPointer()
+		if fs.Uuid != "" {
+			myFs.UUID = &fs.Uuid
 		}
 		wwlog.Debug("created file system struct: %v", myFs)
 		fileSystems = append(fileSystems, myFs)
@@ -51,30 +52,47 @@ func (node *NodeInfo) GetStorage() (stor types_3_4.Storage, err error, rep strin
 	for diskDev, disk := range node.Disks {
 		var partitions []types_3_4.Partition
 		for partlabel, part := range disk.Partitions {
-			resize := part.Resize.GetB()
-			shouldExist := part.ShouldExist.GetB()
-			wipe := part.WipePartitionEntry.GetB()
+			resize := part.Resize
+			shouldExist := part.ShouldExist
+			wipe := part.WipePartitionEntry
 			label := partlabel
+			var number int
+			if part.Number != "" {
+				number, err = strconv.Atoi(part.Number)
+				if err != nil {
+					return
+				}
+			}
 			myPart := types_3_4.Partition{
 				Label:              &label,
-				Number:             part.Number.GetInt(),
+				Number:             number,
 				ShouldExist:        &shouldExist,
 				WipePartitionEntry: &wipe,
 			}
-			if part.Guid.Get() != "" {
-				myPart.GUID = part.Guid.GetPointer()
+			if part.Guid != "" {
+				myPart.GUID = &part.Guid
 			}
-			if part.Resize.Get() != "" {
+			if part.Resize {
 				myPart.Resize = &resize
 			}
-			if part.SizeMiB.Get() != "" {
-				myPart.SizeMiB = part.SizeMiB.GetIntPtr()
+			if part.SizeMiB != "" {
+				var size int
+				size, err = strconv.Atoi(part.SizeMiB)
+				if err != nil {
+					return
+				}
+				myPart.SizeMiB = &size
 			}
-			if part.StartMiB.Get() != "" {
-				myPart.StartMiB = part.StartMiB.GetIntPtr()
+			if part.StartMiB != "" {
+				var start int
+				start, err = strconv.Atoi(part.SizeMiB)
+				if err != nil {
+					return
+				}
+				myPart.StartMiB = &start
 			}
-			if part.TypeGuid.Get() != "" {
-				myPart.TypeGUID = part.TypeGuid.GetPointer()
+			if part.TypeGuid != "" {
+				myPart.TypeGUID = &part.TypeGuid
 			}
 			partitions = append(partitions, myPart)
 		}
@@ -90,7 +108,7 @@ func (node *NodeInfo) GetStorage() (stor types_3_4.Storage, err error, rep strin
 			}
 			return partitions[i].Number < partitions[j].Number
 		})
-		wipe := disk.WipeTable.GetB()
+		wipe := disk.WipeTable
 		disks = append(disks, types_3_4.Disk{
 			Device:     diskDev,
 			Partitions: partitions,
@@ -120,7 +138,7 @@ type SimpleIgnitionConfig struct {
 /*
 Get a simple config which can be marshalled to json
 */
-func (node *NodeInfo) GetConfig() (conf SimpleIgnitionConfig, rep string, err error) {
+func (node *NodeConf) GetConfig() (conf SimpleIgnitionConfig, rep string, err error) {
 	conf.Storage, err, rep = node.GetStorage()
 	conf.Ignition.Version = "3.1.0"
 	return

@@ -104,7 +104,9 @@ func templateContainerFileInclude(containername string, filepath string) string 
 	return strings.TrimSuffix(string(content), "\n")
 }
 
-func createIgnitionJson(node *node.NodeInfo) string {
+// don't return an error as we use this function for template evaluation,
+// so error will turn up there as the return string
+func createIgnitionJson(node *node.NodeConf) string {
 	conf, rep, err := node.GetConfig()
 	if len(conf.Storage.Disks) == 0 && len(conf.Storage.Filesystems) == 0 {
 		wwlog.Debug("no disks or filesystems present, don't create a json object")
