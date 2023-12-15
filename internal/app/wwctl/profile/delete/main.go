@@ -29,21 +29,19 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Error("Could not load all profiles: %s", err)
 		os.Exit(1)
 	}
-
 	for _, r := range args {
 		for _, p := range profiles {
-			if p.Id.Get() == r {
+			if p.Id() == r {
 				nodes, err := nodeDB.FindAllNodes()
 				if err != nil {
 					wwlog.Error("Could not load all nodes: %s", err)
 					os.Exit(1)
 				}
 				for _, n := range nodes {
-					for _, np := range n.Profiles.GetSlice() {
+					for i, np := range n.Profiles {
 						if np == r {
-							wwlog.Verbose("Removing profile from node %s: %s", n.Id.Get(), r)
-							n.Profiles.SliceRemoveElement(r)
-							err := nodeDB.NodeUpdate(n)
+							wwlog.Verbose("Removing profile from node %s: %s", n.Id(), r)
+							n.Profiles = append(n.Profiles[:i], n.Profiles[i+1:]...)
 							if err != nil {
 								return errors.Wrap(err, "failed to update node")
 							}
@@ -57,7 +55,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	for _, r := range args {
 		var found bool
 		for _, p := range profiles {
-			if p.Id.Get() == r {
+			if p.Id() == r {
 				count++
 				found = true
 				err := nodeDB.DelProfile(r)
@@ -68,13 +66,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		if !found {
-			fmt.Fprintf(os.Stderr, "Profile not found: %s\n", r)
+			wwlog.Warn("Profile not found: %s", r)
+			return nil
 		}
 	}
 
 	if count == 0 {
-		fmt.Fprintf(os.Stderr, "No profiles found\n")
-		os.Exit(1)
+		wwlog.Warn("No profiles found")
+		return nil
 	}
 
 	if SetYes {
@@ -83,10 +82,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			return errors.Wrap(err, "failed to persist nodedb")
 		}
 	} else {
-		q := fmt.Sprintf("Are you sure you want to delete %d profile(s)", count)
-
 		prompt := promptui.Prompt{
-			Label:     q,
+			Label:     fmt.Sprintf("Are you sure you want to delete %d profile(s)", count),
 			IsConfirm: true,
 		}
 

@@ -18,7 +18,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	if !SetYes {
-		var nodeList []node.NodeInfo
+		var nodeList []node.NodeConf
 		// The checks run twice in the prompt case.
 		// Avoiding putting in a blocking prompt in an API.
 		nodeList, err = apiNode.NodeDeleteParameterCheck(&ndp, false)

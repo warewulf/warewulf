@@ -21,7 +21,7 @@ var (
 			nodes, _ := nodeDB.FindAllNodes()
 			var node_names []string
 			for _, node := range nodes {
-				node_names = append(node_names, node.Id.Get())
+				node_names = append(node_names, node.Id())
 			}
 			return node_names, cobra.ShellCompDirectiveNoFileComp
 		},

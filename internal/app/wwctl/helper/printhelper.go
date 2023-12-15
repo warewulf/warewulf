@@ -1,9 +1,8 @@
 package helper
 
 import (
-	"os"
-
 	"github.com/olekukonko/tablewriter"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 type PrintHelper struct {
@@ -11,7 +10,7 @@ type PrintHelper struct {
 }
 
 func NewPrintHelper(header []string) *PrintHelper {
-	tb := tablewriter.NewWriter(os.Stdout)
+	tb := tablewriter.NewWriter(wwlog.GetLogWriterInfo())
 	tb.SetHeader(header)
 	tb.SetAutoWrapText(false)
 	tb.SetHeaderAlignment(tablewriter.ALIGN_LEFT)

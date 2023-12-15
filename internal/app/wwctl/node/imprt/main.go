@@ -73,10 +73,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				if importMap[line[0]] == nil {
 					importMap[line[0]] = new(node.NodeConf)
 				}
-				ok := importMap[line[0]].SetLopt(records[0][j], line[j])
-				if !(ok) {
-					wwlog.Debug("Could not import %s\n", line[j])
-				}
+				// ok := importMap[line[0]].SetLopt(records[0][j], line[j])
+				// if !(ok) {
+				// wwlog.Debug("Could not import %s\n", line[j])
+				// }
 			}
 		}
 		yes := apiutil.ConfirmationPrompt(fmt.Sprintf("Are you sure you want to import %d nodes", len(importMap)))

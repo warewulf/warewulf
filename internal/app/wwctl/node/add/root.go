@@ -12,18 +12,17 @@ import (
 
 // Holds the variables which are needed in CobraRunE
 type variables struct {
-	netName    string
-	fsName     string
-	partName   string
-	diskName   string
-	nodeConf   node.NodeConf
-	converters []func() error
+	netName  string
+	fsName   string
+	partName string
+	diskName string
+	nodeConf node.NodeConf
 }
 
 // Returns the newly created command
 func GetCommand() *cobra.Command {
 	vars := variables{}
-	vars.nodeConf = node.NewConf()
+	vars.nodeConf = node.NewNode("")
 	baseCmd := &cobra.Command{
 		DisableFlagsInUseLine: true,
 		Use:                   "add [OPTIONS] NODENAME",
@@ -33,7 +32,7 @@ func GetCommand() *cobra.Command {
 		RunE:                  CobraRunE(&vars),
 		Args:                  cobra.MinimumNArgs(1),
 	}
-	vars.converters = vars.nodeConf.CreateFlags(baseCmd, []string{"tagdel", "nettagdel", "ipmitagdel"})
+	vars.nodeConf.CreateFlags(baseCmd)
 	baseCmd.PersistentFlags().StringVar(&vars.netName, "netname", "default", "Set network name for network options")
 	baseCmd.PersistentFlags().StringVar(&vars.fsName, "fsname", "", "set the file system name which must match a partition name")
 	baseCmd.PersistentFlags().StringVar(&vars.partName, "partname", "", "set the partition name so it can be used by a file system")
@@ -68,7 +67,7 @@ func GetCommand() *cobra.Command {
 		nodeDB, _ := node.New()
 		profiles, _ := nodeDB.FindAllProfiles()
 		for _, profile := range profiles {
-			list = append(list, profile.Id.Get())
+			list = append(list, profile.Id())
 		}
 		return list, cobra.ShellCompDirectiveNoFileComp
 	}); err != nil {
