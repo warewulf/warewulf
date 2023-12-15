@@ -39,7 +39,7 @@ func FilteredProfiles(profileList *wwapiv1.NodeList) *wwapiv1.NodeYaml {
 		os.Exit(1)
 	}
 	profileMap := nodeDB.NodeProfiles
-	profileMap = node.FilterMapByName(profileMap, profileList.Output)
+	profileMap = node.FilterProfilesByName(profileMap, profileList.Output)
 	buffer, _ := yaml.Marshal(profileMap)
 	retVal := wwapiv1.NodeYaml{
 		NodeConfMapYaml: string(buffer),
@@ -59,7 +59,7 @@ func ProfileAddFromYaml(nodeList *wwapiv1.NodeAddParameter) (err error) {
 		return fmt.Errorf("got wrong hash, not modifying profile database")
 	}
 
-	profileMap := make(map[string]*node.NodeConf)
+	profileMap := make(map[string]*node.ProfileConf)
 	err = yaml.Unmarshal([]byte(nodeList.NodeConfYaml), profileMap)
 	if err != nil {
 		return errors.Wrap(err, "Could not unmarshall Yaml: %s\n")
