@@ -233,7 +233,7 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/square/go-jose/blob/v2.5.1/LICENSE>
 
-## gopkg.in/yaml.v2
+## gopkg.in/yaml.v3
 
 **License:** Apache-2.0
 
