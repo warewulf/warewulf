@@ -18,9 +18,6 @@ Structure of which goes to disk
 */
 type NodeYaml struct {
 	WWInternal   int `yaml:"WW_INTERNAL,omitempty" json:"WW_INTERNAL,omitempty"`
-	NodeProfiles map[string]*ProfileConf
-	Nodes        map[string]*NodeConf
-	WWInternal   int `yaml:"WW_INTERNAL"`
 	nodeProfiles map[string]*ProfileConf
 	nodes        map[string]*NodeConf
 }
@@ -32,7 +29,7 @@ type NodeConf struct {
 	id    string
 	valid bool // Is set true, if called by the constructor
 	// exported values
-	Discoverable bool              `yaml:"discoverable,omitempty" lopt:"discoverable" sopt:"e" comment:"Make discoverable in given network (true/false)"`
+	Discoverable wwtype.WWbool     `yaml:"discoverable,omitempty" lopt:"discoverable" sopt:"e" comment:"Make discoverable in given network (true/false)"`
 	AssetKey     string            `yaml:"asset key,omitempty" lopt:"asset" comment:"Set the node's Asset tag (key)"`
 	Profiles     []string          `yaml:"profiles,omitempty" lopt:"profile" sopt:"P" comment:"Set the node's profile members (comma separated)"`
 	ProfileConf  `yaml:"-,inline"` // include all values set in the profile, but inline them in yaml output if these are part of NodeConf

@@ -49,7 +49,7 @@ nodes: {}
 	for _, tt := range tests {
 		env := testenv.New(t)
 		env.WriteFile(t, "etc/warewulf/nodes.conf",
-			`WW_INTERNAL: 43`)
+			`WW_INTERNAL: 45`)
 		var err error
 		t.Run(tt.name, func(t *testing.T) {
 			baseCmd := GetCommand()
@@ -66,7 +66,7 @@ nodes: {}
 			config, configErr := node.New()
 			assert.NoError(t, configErr)
 			dumpBytes, _ := config.Dump()
-			assert.Equal(t, tt.outDb, string(dumpBytes))
+			assert.YAMLEq(t, tt.outDb, string(dumpBytes))
 		})
 	}
 }
