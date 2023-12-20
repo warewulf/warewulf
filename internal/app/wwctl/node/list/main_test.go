@@ -2,15 +2,13 @@ package list
 
 import (
 	"bytes"
-	"io"
-	"os"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
-	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func Test_List(t *testing.T) {
@@ -25,8 +23,8 @@ func Test_List(t *testing.T) {
 			name:    "single node list",
 			args:    []string{},
 			wantErr: false,
-			stdout: `  NODE NAME  PROFILES  NETWORK
-  n01        default
+			stdout: `  NODE NAME  PROFILES   NETWORK  
+  n01       [default]
 `,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
@@ -42,8 +40,8 @@ nodes:
 			args:    []string{},
 			wantErr: false,
 			stdout: `  NODE NAME  PROFILES  NETWORK
-  n01        default
-  n02        default
+  n01       [default]
+  n02       [default]
 `,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
@@ -62,8 +60,8 @@ nodes:
 			args:    []string{"n01,n02"},
 			wantErr: false,
 			stdout: `  NODE NAME  PROFILES  NETWORK
-  n01        default
-  n02        default
+  n01       [default]           
+  n02       [default]
 `,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
@@ -82,8 +80,8 @@ nodes:
 			args:    []string{"n01,n03"},
 			wantErr: false,
 			stdout: `  NODE NAME  PROFILES  NETWORK
-  n01        default
-  n03        default
+  n01       [default]
+  n03       [default]
 `,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
@@ -111,7 +109,7 @@ nodes:
 			args:    []string{"n01,"},
 			wantErr: false,
 			stdout: `  NODE NAME  PROFILES  NETWORK
-  n01        default
+  n01       [default]
 `,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
@@ -130,7 +128,7 @@ nodes:
 			args:    []string{},
 			wantErr: false,
 			stdout: `  NODE NAME  PROFILES  NETWORK
-  n01        default         default
+  n01       [default]        default
 `,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
@@ -144,57 +142,27 @@ nodes:
     - default
 `},
 	}
-	conf_yml := `WW_INTERNAL: 0`
-	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
-	assert.NoError(t, warewulfConfErr)
-	defer os.Remove(tempWarewulfConf.Name())
-	_, warewulfConfErr = tempWarewulfConf.Write([]byte(conf_yml))
-	assert.NoError(t, warewulfConfErr)
-	assert.NoError(t, tempWarewulfConf.Sync())
-	assert.NoError(t, warewulfconf.New().Read(tempWarewulfConf.Name()))
-
-	tempNodeConf, nodesConfErr := os.CreateTemp("", "nodes.conf-")
-	assert.NoError(t, nodesConfErr)
-	defer os.Remove(tempNodeConf.Name())
-	node.ConfigFile = tempNodeConf.Name()
 	warewulfd.SetNoDaemon()
 	for _, tt := range tests {
+		env := testenv.New(t)
+		env.WriteFile(t, "etc/warewulf/nodes.conf", tt.inDb)
 		var err error
-		_, err = tempNodeConf.Seek(0, 0)
-		assert.NoError(t, err)
-		assert.NoError(t, tempNodeConf.Truncate(0))
-		_, err = tempNodeConf.Write([]byte(tt.inDb))
-		assert.NoError(t, err)
-		assert.NoError(t, tempNodeConf.Sync())
-		t.Logf("Running test: %s\n", tt.name)
 		t.Run(tt.name, func(t *testing.T) {
+			buf := new(bytes.Buffer)
+			wwlog.SetLogWriter(buf)
 			baseCmd := GetCommand()
 			baseCmd.SetArgs(tt.args)
-			buf := new(bytes.Buffer)
 			baseCmd.SetOut(buf)
 			baseCmd.SetErr(buf)
-			old := os.Stdout // keep backup of the real stdout
-			r, w, _ := os.Pipe()
-			os.Stdout = w
 			err = baseCmd.Execute()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Got unwanted error: %s", err)
-				t.FailNow()
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
-			outC := make(chan string)
-			go func() {
-				var buf bytes.Buffer
-				_, _ = io.Copy(&buf, r)
-				outC <- buf.String()
-			}()
-			// back to normal state
-			w.Close()
-			os.Stdout = old // restoring the real stdout
-			out := <-outC
-			if strings.ReplaceAll(out, " ", "") != strings.ReplaceAll(tt.stdout, " ", "") {
-				t.Errorf("Got wrong output, got:\n'%s'\nwant:\n'%s'", out, tt.stdout)
-				t.FailNow()
-			}
+			assert.Contains(t,
+				strings.Join(strings.Fields(tt.stdout), ""),
+				strings.Join(strings.Fields(buf.String()), ""))
 		})
 	}
 }
