@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/wwtype"
 )
 
 /*
@@ -60,7 +61,7 @@ func (nodeConf *NodeConf) Check() (err error) {
 }
 
 func checker(value string, valType string) (niceValue string, err error) {
-	if valType == "" || value == "" || util.InSlice(GetUnsetVerbs(), value) {
+	if valType == "" || value == "" || util.InSlice(wwtype.GetUnsetVerbs(), value) {
 		return "", nil
 	}
 	//wwlog.Debug("checker: %s is %s", value, valType)
