@@ -1,6 +1,12 @@
 package node
 
-import "net"
+import (
+	"net"
+
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
+	"github.com/warewulf/warewulf/internal/pkg/wwtype"
+	"gopkg.in/yaml.v3"
+)
 
 const undef string = "UNDEF"
 
@@ -14,14 +20,18 @@ type NodeYaml struct {
 	WWInternal   int `yaml:"WW_INTERNAL,omitempty" json:"WW_INTERNAL,omitempty"`
 	NodeProfiles map[string]*ProfileConf
 	Nodes        map[string]*NodeConf
+	WWInternal   int `yaml:"WW_INTERNAL"`
+	nodeProfiles map[string]*ProfileConf
+	nodes        map[string]*NodeConf
 }
 
 /*
 NodeConf is the datastructure describing a node and a profile which in disk format.
 */
 type NodeConf struct {
-	id           string
-	valid        bool              // Is set true, if called by the constructor
+	id    string
+	valid bool // Is set true, if called by the constructor
+	// exported values
 	Discoverable bool              `yaml:"discoverable,omitempty" lopt:"discoverable" sopt:"e" comment:"Make discoverable in given network (true/false)"`
 	AssetKey     string            `yaml:"asset key,omitempty" lopt:"asset" comment:"Set the node's Asset tag (key)"`
 	Profiles     []string          `yaml:"profiles,omitempty" lopt:"profile" sopt:"P" comment:"Set the node's profile members (comma separated)"`
@@ -32,6 +42,7 @@ type NodeConf struct {
 Holds the data which can be set for profiles and nodes.
 */
 type ProfileConf struct {
+	id string
 	// exported values
 	Comment        string                 `yaml:"comment,omitempty" lopt:"comment" comment:"Set arbitrary string comment"`
 	ClusterName    string                 `yaml:"cluster name,omitempty" lopt:"cluster" sopt:"c" comment:"Set cluster group"`
@@ -59,9 +70,10 @@ type IpmiConf struct {
 	Port       string            `yaml:"port,omitempty" lopt:"ipmiport" comment:"Set the IPMI port"`
 	Interface  string            `yaml:"interface,omitempty" lopt:"ipmiinterface" comment:"Set the node's IPMI interface (defaults: 'lan')"`
 	EscapeChar string            `yaml:"escapechar,omitempty" lopt:"ipmiescapechar" comment:"Set the IPMI escape character (defaults: '~')"`
-	Write      bool              `yaml:"write,omitempty" lopt:"ipmiwrite" comment:"Enable the write of impi configuration (true/false)"`
+	Write      wwtype.WWbool     `yaml:"write,omitempty" lopt:"ipmiwrite" comment:"Enable the write of impi configuration (true/false)"`
 	Tags       map[string]string `yaml:"tags,omitempty"`
 }
+
 type KernelConf struct {
 	Version  string `yaml:"version,omitempty" json:"version,omitempty"`
 	Override string `yaml:"override,omitempty" lopt:"kerneloverride" sopt:"K" comment:"Set kernel override version" json:"override,omitempty"`
@@ -117,4 +129,53 @@ type FileSystem struct {
 	Uuid           string   `yaml:"uuid,omitempty" comment:"the uuid of the filesystem"`
 	Options        []string `yaml:"options,omitempty" comment:"any additional options to be passed to the format-specific mkfs utility"`
 	MountOptions   string   `yaml:"mount_options,omitempty" comment:"any special options to be passed to the mount command"`
+}
+
+/*
+interface so that nodes and profiles which aren't exported will
+be marshaled
+*/
+type ExportedYml struct {
+	WWInternal   int                     `yaml:"WW_INTERNAL"`
+	NodeProfiles map[string]*ProfileConf `yaml:"nodeprofiles"`
+	Nodes        map[string]*NodeConf    `yaml:"nodes"`
+}
+
+/*
+Marshall Exported stuff, not NodeYaml directly
+*/
+func (yml *NodeYaml) MarshalYAML() (interface{}, error) {
+	wwlog.Debug("marshall yml")
+	var exp ExportedYml
+	exp.WWInternal = yml.WWInternal
+	exp.Nodes = yml.nodes
+	exp.NodeProfiles = yml.nodeProfiles
+	node := yaml.Node{}
+	err := node.Encode(exp)
+	if err != nil {
+		return node, err
+	}
+	return node, err
+}
+
+/*
+Unmarshal to intermediate format
+*/
+func (yml *NodeYaml) UnmarshalYAML(
+	unmarshal func(interface{}) (err error),
+) (err error) {
+	wwlog.Debug("UnmarshalYAML called")
+	var exp ExportedYml
+	err = unmarshal(&exp)
+	if err != nil {
+		return
+	}
+	yml.WWInternal = exp.WWInternal
+	yml.nodes = exp.Nodes
+	yml.nodeProfiles = exp.NodeProfiles
+	return nil
+}
+
+func (yml NodeYaml) IsZero() bool {
+	return true
 }

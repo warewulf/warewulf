@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/pkg/wwtype"
 )
 
 type NodeConfDel struct {
@@ -70,6 +71,8 @@ func recursiveCreateFlags(obj interface{}, baseCmd *cobra.Command) {
 			}
 			recursiveCreateFlags(nodeInfoVal.Elem().Field(i).MapIndex(key).Interface(), baseCmd)
 		} else if nodeInfoType.Elem().Field(i).Anonymous {
+			recursiveCreateFlags(nodeInfoVal.Elem().Field(i).Addr().Interface(), baseCmd)
+		} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Struct {
 			recursiveCreateFlags(nodeInfoVal.Elem().Field(i).Addr().Interface(), baseCmd)
 		}
 	}
@@ -181,6 +184,20 @@ func createFlags(baseCmd *cobra.Command,
 					myType.Tag.Get("lopt"),
 					net.IPMask{}, // empty default!
 					myType.Tag.Get("comment"))
+			}
+		} else if myType.Type == reflect.TypeOf(wwtype.WWbool{}) {
+			ptr := myVal.Addr().Interface().(*wwtype.WWbool)
+			if myType.Tag.Get("sopt") != "" {
+				baseCmd.PersistentFlags().VarP(ptr,
+					myType.Tag.Get("lopt"),
+					myType.Tag.Get("sopt"),
+					myType.Tag.Get("comment"))
+				baseCmd.Flag(myType.Tag.Get("lopt")).NoOptDefVal = "true"
+			} else {
+				baseCmd.PersistentFlags().Var(ptr,
+					myType.Tag.Get("lopt"),
+					myType.Tag.Get("comment"))
+				baseCmd.Flag(myType.Tag.Get("lopt")).NoOptDefVal = "true"
 			}
 		}
 	}
