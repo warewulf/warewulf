@@ -3,6 +3,8 @@ package node
 import (
 	"testing"
 
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 )
 
@@ -13,26 +15,25 @@ nodeprofiles:
     comment: This profile is automatically included for each node
 nodes:
   test_node:
+    primary network: net0
     comment: Node Comment
     profiles:
     - default
     network devices:
       net0:
-        default: true
         hwaddr: 00:00:00:00:12:34
         ipaddr: 1.2.3.4
         device: eth0
       net1:
-        default: false
         hwaddr: ab:cd:ef:00:12:34
         ipaddr: 1.2.3.4
         device: eth1
       net2:
-        default: false
         hwaddr: aB:Cd:eF:12:34:56
         ipaddr: 1.2.3.4
         device: eth2
   test_node_IPv6:
+    primary network: net1
     profiles:
     - default
     network devices:
@@ -49,7 +50,8 @@ nodes:
 }
 
 func Test_nodeYaml_FindByHwaddr(t *testing.T) {
-	c, _ := NewUtilTestNode()
+	c, err := NewUtilTestNode()
+	assert.NoError(t, err)
 	//type fields struct {
 	//	NodeProfiles map[string]*NodeConf
 	//	Nodes        map[string]*NodeConf
@@ -82,7 +84,7 @@ func Test_nodeYaml_FindByHwaddr(t *testing.T) {
 				t.Errorf("FindByHwaddr() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !(got.Id.Get() == tt.want) {
+			if !(got.id == tt.want) {
 				t.Errorf("FindByHwaddr() got = %v, want %v", got, tt.want)
 			}
 		})
@@ -90,7 +92,9 @@ func Test_nodeYaml_FindByHwaddr(t *testing.T) {
 }
 
 func Test_nodeYaml_FindByIpaddr(t *testing.T) {
-	c, _ := NewUtilTestNode()
+	wwlog.SetLogLevel(wwlog.DEBUG)
+	c, err := NewUtilTestNode()
+	assert.NoError(t, err)
 	type args struct {
 		ipaddr string
 	}
@@ -119,7 +123,7 @@ func Test_nodeYaml_FindByIpaddr(t *testing.T) {
 				t.Errorf("FindByIpaddr() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !(got.Id.Get() == tt.want) {
+			if !(got.id == tt.want) {
 				t.Errorf("FindByHwaddr() got = %v, want %v", got, tt.want)
 			}
 		})

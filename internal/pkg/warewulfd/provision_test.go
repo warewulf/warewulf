@@ -37,14 +37,9 @@ var provisionSendTests = []struct {
 }
 
 func Test_ProvisionSend(t *testing.T) {
-	conf_file, err := os.CreateTemp(os.TempDir(), "ww-test-nodes.conf-*")
-	assert.NoError(t, err)
-	defer conf_file.Close()
-	{
-		_, err := conf_file.WriteString(`WW_INTERNAL: 45
-nodeprofiles:
-  default:
-    container name: suse
+	env := testenv.New(t)
+	// wwlog.SetLogLevel(wwlog.DEBUG)
+	env.WriteFile(t, "etc/warewulf/nodes.conf", `
 nodes:
   n1:
     network devices:
@@ -63,11 +58,6 @@ nodes:
     ipxe template: test
     kernel:
       override: 1.1.1`)
-		assert.NoError(t, err)
-	}
-	assert.NoError(t, conf_file.Sync())
-	node.ConfigFile = conf_file.Name()
-
 	// create a  arp file as for grub we look up the ip address through the arp cache
 	arp_file, err := os.CreateTemp(os.TempDir(), "ww-arp")
 	assert.NoError(t, err)
@@ -116,16 +106,17 @@ nodes:
 	dbErr := LoadNodeDB()
 	assert.NoError(t, dbErr)
 
-	provisionDir, provisionDirErr := os.MkdirTemp(os.TempDir(), "ww-test-provision-*")
-	assert.NoError(t, provisionDirErr)
-	defer os.RemoveAll(provisionDir)
-	conf.Paths.WWProvisiondir = provisionDir
+	conf := warewulfconf.Get()
 	conf.Warewulf.Secure = false
 	wwlog.SetLogLevel(wwlog.DEBUG)
 	assert.NoError(t, os.MkdirAll(path.Join(provisionDir, "overlays", "n1"), 0700))
 	assert.NoError(t, os.WriteFile(path.Join(provisionDir, "overlays", "n1", "__SYSTEM__.img"), []byte("system overlay"), 0600))
 	assert.NoError(t, os.WriteFile(path.Join(provisionDir, "overlays", "n1", "__RUNTIME__.img"), []byte("runtime overlay"), 0600))
 	assert.NoError(t, os.WriteFile(path.Join(provisionDir, "overlays", "n1", "o1.img"), []byte("specific overlay"), 0600))
+	assert.NoError(t, os.MkdirAll(path.Join(conf.Paths.WWProvisiondir, "overlays", "n1"), 0700))
+	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.WWProvisiondir, "overlays", "n1", "__SYSTEM__.img"), []byte("system overlay"), 0600))
+	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.WWProvisiondir, "overlays", "n1", "__RUNTIME__.img"), []byte("runtime overlay"), 0600))
+	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.WWProvisiondir, "overlays", "n1", "o1.img"), []byte("specific overlay"), 0600))
 
 	for _, tt := range provisionSendTests {
 		t.Run(tt.description, func(t *testing.T) {
