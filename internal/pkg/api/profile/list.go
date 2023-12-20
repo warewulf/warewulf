@@ -28,11 +28,11 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 	sort.Slice(profiles, func(i, j int) bool {
 		return profiles[i].Id() < profiles[j].Id()
 	})
-	if ShowOpt.ShowAll || ShowOpt.ShowFullAll {
+	if ShowOpt.ShowAll {
 		for _, p := range profiles {
 			profileList.Output = append(profileList.Output,
 				fmt.Sprintf("%s:=:%s:=:%s", "PROFILE", "FIELD", "VALUE"))
-			fields := p.GetFields(ShowOpt.ShowFullAll)
+			fields := p.GetFields(ShowOpt.ShowAll)
 			for _, f := range fields {
 				profileList.Output = append(profileList.Output,
 					fmt.Sprintf("%s:=:%s:=:%s", p.Id.Print(), f.Field, f.Value))

@@ -137,7 +137,6 @@ message GetNodeList {
 		Network = 2;
 		Long = 3;
 		All = 4;
-		FullAll = 5;
 		YAML = 6;
 		JSON = 7;
 	}
@@ -153,7 +152,6 @@ message NodeList {
 // Request a profile list view
 message GetProfileList {
 	bool ShowAll = 1;
-	bool ShowFullAll = 2;
 	bool ShowYaml = 3;
 	bool ShowJson = 4;
 	repeated string Profiles = 5;

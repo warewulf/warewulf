@@ -33,7 +33,6 @@ const (
 	GetNodeList_Network GetNodeList_ListType = 2
 	GetNodeList_Long    GetNodeList_ListType = 3
 	GetNodeList_All     GetNodeList_ListType = 4
-	GetNodeList_FullAll GetNodeList_ListType = 5
 	GetNodeList_YAML    GetNodeList_ListType = 6
 	GetNodeList_JSON    GetNodeList_ListType = 7
 )
@@ -46,7 +45,6 @@ var (
 		2: "Network",
 		3: "Long",
 		4: "All",
-		5: "FullAll",
 		6: "YAML",
 		7: "JSON",
 	}
@@ -56,7 +54,6 @@ var (
 		"Network": 2,
 		"Long":    3,
 		"All":     4,
-		"FullAll": 5,
 		"YAML":    6,
 		"JSON":    7,
 	}
@@ -1224,11 +1221,10 @@ type GetProfileList struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ShowAll     bool     `protobuf:"varint,1,opt,name=ShowAll,proto3" json:"ShowAll,omitempty"`
-	ShowFullAll bool     `protobuf:"varint,2,opt,name=ShowFullAll,proto3" json:"ShowFullAll,omitempty"`
-	ShowYaml    bool     `protobuf:"varint,3,opt,name=ShowYaml,proto3" json:"ShowYaml,omitempty"`
-	ShowJson    bool     `protobuf:"varint,4,opt,name=ShowJson,proto3" json:"ShowJson,omitempty"`
-	Profiles    []string `protobuf:"bytes,5,rep,name=Profiles,proto3" json:"Profiles,omitempty"`
+	ShowAll  bool     `protobuf:"varint,1,opt,name=ShowAll,proto3" json:"ShowAll,omitempty"`
+	ShowYaml bool     `protobuf:"varint,3,opt,name=ShowYaml,proto3" json:"ShowYaml,omitempty"`
+	ShowJson bool     `protobuf:"varint,4,opt,name=ShowJson,proto3" json:"ShowJson,omitempty"`
+	Profiles []string `protobuf:"bytes,5,rep,name=Profiles,proto3" json:"Profiles,omitempty"`
 }
 
 func (x *GetProfileList) Reset() {
@@ -1266,13 +1262,6 @@ func (*GetProfileList) Descriptor() ([]byte, []int) {
 func (x *GetProfileList) GetShowAll() bool {
 	if x != nil {
 		return x.ShowAll
-	}
-	return false
-}
-
-func (x *GetProfileList) GetShowFullAll() bool {
-	if x != nil {
-		return x.ShowFullAll
 	}
 	return false
 }

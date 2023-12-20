@@ -81,7 +81,7 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 					n.ContainerName,
 					strings.Join(n.SystemOverlay, ",")+"/"+strings.Join(n.RuntimeOverlay, ",")))
 		}
-	} else if nodeGet.Type == wwapiv1.GetNodeList_All || nodeGet.Type == wwapiv1.GetNodeList_FullAll {
+	} else if nodeGet.Type == wwapiv1.GetNodeList_All {
 		for _, n := range node.FilterByName(nodes, nodeGet.Nodes) {
 			nodeList.Output = append(nodeList.Output,
 				fmt.Sprintf("%s:=:%s:=:%s:=:%s", "NODE", "FIELD", "PROFILE", "VALUE"))

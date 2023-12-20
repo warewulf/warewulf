@@ -36,6 +36,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Updated IgnitionJson to sort filesystems. #1433
 - `wwctl node set` requires mandatory pattern input. #502
 
+### Removed
+
+- `wwctl node list --fullall` has been removed
+- `wwctl profile list --fullall` has been removed
+
 ### Fixed
 
 - Update links on contributing page to point to warewulf repo.
