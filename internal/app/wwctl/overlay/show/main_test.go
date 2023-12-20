@@ -2,6 +2,7 @@ package show
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path"
 	"testing"
@@ -35,7 +36,9 @@ nodes:
   node1:
     tags:
       email: admin@node1
-  node2: {}
+  node2:
+    profiles:
+      - default
   node3:
     profiles:
       - empty
@@ -45,6 +48,7 @@ nodes:
 	env.WriteFile(t, path.Join(testenv.WWOverlaydir, "testoverlay/overlay.ww"), overlayOverlay)
 	defer env.RemoveAll(t)
 	warewulfd.SetNoDaemon()
+	//wwlog.SetLogLevel(wwlog.DEBUG)
 	t.Run("overlay show raw", func(t *testing.T) {
 		baseCmd.SetArgs([]string{"testoverlay", "email.ww"})
 		baseCmd := GetCommand()
@@ -136,6 +140,7 @@ nodes:
 		t.Fatal(err)
 	}
 	t.Run("overlay render host template using 'host' value", func(t *testing.T) {
+		fmt.Printf("foo\n")
 		baseCmd.SetArgs([]string{"-r", "host", "testoverlay", "template.ww"})
 		baseCmd := GetCommand()
 		buf := new(bytes.Buffer)
