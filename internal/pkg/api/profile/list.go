@@ -21,7 +21,7 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 	if err != nil {
 		return
 	}
-	profiles = node.FilterByName(profiles, ShowOpt.Profiles)
+	//profiles = node.FilterByName(profiles, ShowOpt.Profiles)
 	sort.Slice(profiles, func(i, j int) bool {
 		return profiles[i].Id() < profiles[j].Id()
 	})
@@ -29,7 +29,7 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 		for _, p := range profiles {
 			profileList.Output = append(profileList.Output,
 				fmt.Sprintf("%s=%s=%s=%s", "PROFILE", "FIELD", "PROFILE", "VALUE"))
-			fields := nodeDB.GetFields(p, ShowOpt.ShowFullAll)
+			fields := nodeDB.GetFieldsProfile(p, ShowOpt.ShowFullAll)
 			for _, f := range fields {
 				profileList.Output = append(profileList.Output,
 					fmt.Sprintf("%s=%s=%s=%s", p.Id(), f.Field, f.Source, f.Value))
