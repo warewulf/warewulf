@@ -25,7 +25,6 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 		if !node.ObjectIsEmpty(vars.nodeConf.NetDevs["UNDEF"]) {
 			netDev := *vars.nodeConf.NetDevs["UNDEF"]
 			vars.nodeConf.NetDevs[vars.netName] = &netDev
-			fmt.Println("not empty")
 		}
 		delete(vars.nodeConf.NetDevs, "UNDEF")
 		if vars.fsName != "" {

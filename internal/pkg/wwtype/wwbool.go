@@ -1,86 +1,64 @@
 package wwtype
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/warewulf/warewulf/internal/pkg/util"
 )
 
+// Simple string which can be converted to bool. Backend storage
+// is string for better merging
+type WWbool string
+
 /*
-Type for holding a simple bool, but which can be set via the UNSET parameter
+Transform the underlying string value to bool
 */
-type WWbool struct {
-	bool         // the actual value
-	isset   bool // only true if set through yaml or set, so that false can go to disk
-	delnext bool // delete after next iteraion
-}
-
-// Yaml marshaler, calls this to find out, if going to disk
-func (b WWbool) IsZero() bool {
-	return !b.isset
-}
-
-func (b *WWbool) String() string {
-	return strconv.FormatBool(b.bool)
-}
-
-func (b *WWbool) Set(str string) error {
+func (val WWbool) Bool() bool {
+	str := string(val)
 	if util.InSlice(GetUnsetVerbs(), str) {
-		b.bool = false
-		b.isset = true
-		b.delnext = true
+		return false
+	}
+	if strings.ToLower(str) == "yes" {
+		return true
+	}
+	if strings.ToLower(str) == "no" {
+		return false
+	}
+	bval, _ := strconv.ParseBool(str)
+	return bval
+}
+
+/*
+Set the string, only accept bool values like true, false, but also UNDEF
+*/
+func (val *WWbool) Set(str string) error {
+	if util.InSlice(GetUnsetVerbs(), str) {
+		// run the unset verb trough, will be filtered out later
+		*val = WWbool(str)
 		return nil
 	}
-
-	if strings.ToLower(str) == "yes" || str == "" {
-		b.bool = true
-		b.isset = true
+	if strings.ToLower(str) == "yes" {
+		*val = WWbool("true")
 		return nil
 	}
 	if strings.ToLower(str) == "no" {
-		b.bool = false
-		b.isset = true
+		*val = WWbool("false")
 		return nil
 	}
-	var err error
-	b.bool, err = strconv.ParseBool(str)
+	bval, err := strconv.ParseBool(str)
 	if err == nil {
-		b.isset = true
-	}
-	return err
-}
-
-func (b *WWbool) Type() string {
-	return "WWbool"
-}
-
-func (b WWbool) MarshalBinary() (buf []byte, err error) {
-	strconv.AppendBool(buf, b.bool)
-	return buf, nil
-}
-
-func (b *WWbool) UnmarshalBinary(data []byte) (err error) {
-	b.bool, err = strconv.ParseBool(string(data))
-	return err
-}
-func (b WWbool) MarshalText() (buf []byte, err error) {
-	if b.bool {
-		buf = append(buf, "true"...)
-	} else if !b.delnext {
-		buf = append(buf, "false"...)
-	} else {
-		buf = append(buf, "delete"...)
-	}
-	return buf, nil
-}
-
-func (b *WWbool) UnmarshalText(data []byte) (err error) {
-	if strings.EqualFold(string(data), "delete") {
-		b.isset = false
-		b.bool = false
+		*val = WWbool(strconv.FormatBool(bval))
 		return nil
 	}
-	b.isset = true
-	return b.Set(string(data))
+	return fmt.Errorf("value for WWbool can't be set from %s", str)
+}
+
+func (val WWbool) String() string {
+	return string(val)
+}
+
+func (b WWbool) Type() string {
+	return "WWbool"
 }

@@ -3,9 +3,9 @@ package node
 import (
 	"testing"
 
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v2"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
+	"gopkg.in/yaml.v3"
 )
 
 func NewUtilTestNode() (NodeYaml, error) {
