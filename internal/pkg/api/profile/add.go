@@ -3,11 +3,11 @@ package apiprofile
 import (
 	"fmt"
 
-	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
+	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/util"
+	"gopkg.in/yaml.v3"
 )
 
 /*
