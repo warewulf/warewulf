@@ -18,9 +18,10 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 	return func(cmd *cobra.Command, args []string) error {
 		// remove the default network as the all network values are assigned
 		// to this network
-		if !node.ObjectIsEmpty(vars.nodeConf.NetDevs["UNDEF"]) {
+		if !node.ObjectIsEmpty(vars.nodeConf.NetDevs["UNDEF"]) || len(vars.nodeAdd.NetTagsAdd) > 0 {
 			netDev := *vars.nodeConf.NetDevs["UNDEF"]
 			vars.nodeConf.NetDevs[vars.nodeAdd.Net] = &netDev
+			vars.nodeConf.NetDevs[vars.nodeAdd.Net].Tags = vars.nodeAdd.NetTagsAdd
 		}
 		delete(vars.nodeConf.NetDevs, "UNDEF")
 		if vars.nodeAdd.FsName != "" {

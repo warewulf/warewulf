@@ -1,6 +1,8 @@
 package node
 
 import (
+	"bytes"
+	"encoding/gob"
 	"net"
 	"reflect"
 	"regexp"
@@ -8,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/wwtype"
 )
 
 type sortByName []NodeConf
@@ -15,9 +18,6 @@ type sortByName []NodeConf
 func (a sortByName) Len() int           { return len(a) }
 func (a sortByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a sortByName) Less(i, j int) bool { return a[i].id < a[j].id }
-func GetUnsetVerbs() []string {
-	return []string{"UNSET", "DELETE", "UNDEF", "undef", "--", "nil", "0.0.0.0"}
-}
 
 /**********
  *
@@ -95,6 +95,15 @@ func NewNode(id string) (nodeconf NodeConf) {
 	return nodeconf
 }
 
+func EmptyNode() (nodeconf NodeConf) {
+	nodeconf.Ipmi = new(IpmiConf)
+	nodeconf.Ipmi.Tags = map[string]string{}
+	nodeconf.Kernel = new(KernelConf)
+	nodeconf.NetDevs = make(map[string]*NetDevs)
+	nodeconf.Tags = map[string]string{}
+	return nodeconf
+}
+
 /*
 Creates a ProfileConf but doesn't add it to the database.
 */
@@ -136,6 +145,7 @@ func recursiveFlatten(strct interface{}) {
 			nestedType := reflect.TypeOf(confVal.Elem().Field(j).Interface())
 			nestedVal := reflect.ValueOf(confVal.Elem().Field(j).Interface())
 			for i := 0; i < nestedType.Elem().NumField(); i++ {
+				// wwlog.Debug("checking %s", nestedType.Elem().Field(i).Type.String())
 				if nestedType.Elem().Field(i).Type.Kind() == reflect.String &&
 					nestedVal.Elem().Field(i).Interface().(string) != "" &&
 					nestedVal.Elem().Field(i).Interface().(string) != undef {
@@ -149,6 +159,11 @@ func recursiveFlatten(strct interface{}) {
 				} else if nestedType.Elem().Field(i).Type == reflect.TypeOf(net.IP{}) {
 					val := nestedVal.Elem().Field(i).Interface().(net.IP)
 					if len(val) != 0 && !val.IsUnspecified() {
+						setToNil = false
+					}
+				} else if nestedType.Elem().Field(i).Type == reflect.TypeOf(wwtype.WWbool{}) {
+					val := nestedVal.Elem().Field(i).Interface().(wwtype.WWbool)
+					if !val.IsZero() {
 						setToNil = false
 					}
 				}
@@ -239,9 +254,16 @@ Getters for unexported fields
 */
 
 /*
-Returns the id of the node/profile
+Returns the id of the node
 */
 func (node *NodeConf) Id() string {
+	return node.id
+}
+
+/*
+Returns the id of the profile
+*/
+func (node *ProfileConf) Id() string {
 	return node.id
 }
 
@@ -257,4 +279,67 @@ Check if the netdev is the primary one
 */
 func (dev *NetDevs) Primary() bool {
 	return dev.primary
+}
+
+// returns all negated elements which are marked with ! as prefix
+// from a list
+func negList(list []string) (ret []string) {
+	for _, tok := range list {
+		if strings.HasPrefix(tok, "~") {
+			ret = append(ret, tok[1:])
+		}
+	}
+	return
+}
+
+// clean a list from negated tokens
+func cleanList(list []string) (ret []string) {
+	neg := negList(list)
+	for _, listTok := range list {
+		notNegate := true
+		for _, negTok := range neg {
+			if listTok == negTok || listTok == "~"+negTok {
+				notNegate = false
+			}
+		}
+		if notNegate {
+			ret = append(ret, listTok)
+		}
+	}
+	return ret
+}
+
+// Clone (deep copy) a node via gob
+func (src *NodeConf) Clone() (dst NodeConf, err error) {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	dec := gob.NewDecoder(&buf)
+	err = enc.Encode(src)
+	if err != nil {
+		return
+	}
+	err = dec.Decode(&dst)
+	if err != nil {
+		return
+	}
+	dst.id = src.id
+	dst.valid = src.valid
+	return
+}
+
+// Clone (deep copy) a node via gob
+func (src ProfileConf) Clone() (dst ProfileConf, err error) {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	dec := gob.NewDecoder(&buf)
+	err = enc.Encode(src)
+	if err != nil {
+		return
+	}
+	err = dec.Decode(&dst)
+	if err != nil {
+		return
+	}
+	dst.id = src.id
+	return
 }
