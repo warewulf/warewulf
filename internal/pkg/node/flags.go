@@ -83,8 +83,9 @@ Helper function to create the different PersistentFlags() for different types.
 */
 func createFlags(baseCmd *cobra.Command,
 	myType reflect.StructField, myVal *reflect.Value) {
+	var wwbool wwtype.WWbool
 	if myType.Tag.Get("lopt") != "" {
-		if myType.Type.Kind() == reflect.String {
+		if myType.Type == reflect.TypeOf("") {
 			ptr := myVal.Addr().Interface().(*string)
 			if myType.Tag.Get("sopt") != "" {
 				baseCmd.PersistentFlags().StringVarP(ptr,
@@ -142,21 +143,6 @@ func createFlags(baseCmd *cobra.Command,
 					false, // empty default!
 					myType.Tag.Get("comment"))
 			}
-
-		} else if myType.Type == reflect.TypeOf(true) {
-			ptr := myVal.Addr().Interface().(*bool)
-			if myType.Tag.Get("sopt") != "" {
-				baseCmd.PersistentFlags().BoolVarP(ptr,
-					myType.Tag.Get("lopt"),
-					myType.Tag.Get("sopt"),
-					false, // empty default!
-					myType.Tag.Get("comment"))
-			} else {
-				baseCmd.PersistentFlags().BoolVar(ptr,
-					myType.Tag.Get("lopt"),
-					false, // empty default!
-					myType.Tag.Get("comment"))
-			}
 		} else if myType.Type == reflect.TypeOf(net.IP{}) {
 			ptr := myVal.Addr().Interface().(*net.IP)
 			if myType.Tag.Get("sopt") != "" {
@@ -185,7 +171,7 @@ func createFlags(baseCmd *cobra.Command,
 					net.IPMask{}, // empty default!
 					myType.Tag.Get("comment"))
 			}
-		} else if myType.Type == reflect.TypeOf(wwtype.WWbool{}) {
+		} else if myType.Type == reflect.TypeOf(wwbool) {
 			ptr := myVal.Addr().Interface().(*wwtype.WWbool)
 			if myType.Tag.Get("sopt") != "" {
 				baseCmd.PersistentFlags().VarP(ptr,

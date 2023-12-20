@@ -3,6 +3,8 @@ package apiprofile
 import (
 	"fmt"
 
+	"dario.cat/mergo"
+
 	"github.com/pkg/errors"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/node"
@@ -65,10 +67,17 @@ func ProfileSetParameterCheck(set *wwapiv1.ConfSetParameter) (nodeDB node.NodeYa
 				wwlog.Warn("invalid profile: %s", profileId)
 				continue
 			}
-			err = yaml.Unmarshal([]byte(set.NodeConfYaml), profilePtr)
+			newProfile := node.EmptyProfile()
+			err = yaml.Unmarshal([]byte(set.NodeConfYaml), &newProfile)
 			if err != nil {
 				return
 			}
+			// merge in
+			err = mergo.Merge(profilePtr, &newProfile, mergo.WithOverride)
+			if err != nil {
+				return
+			}
+
 			if set.NetdevDelete != "" {
 				if _, ok := profilePtr.NetDevs[set.NetdevDelete]; !ok {
 					err = fmt.Errorf("network device name doesn't exist: %s", set.NetdevDelete)
