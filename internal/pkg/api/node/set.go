@@ -3,13 +3,13 @@ package apinode
 import (
 	"fmt"
 
-	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"gopkg.in/yaml.v2"
-
-	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
+	"dario.cat/mergo"
+	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
+	"gopkg.in/yaml.v3"
 )
 
 // NodeSet is the wwapiv1 implmentation for updating node fields.
@@ -47,7 +47,7 @@ func NodeSetParameterCheck(set *wwapiv1.ConfSetParameter) (nodeDB node.NodeYaml,
 		return
 	}
 	if set.ConfList == nil {
-		err = fmt.Errorf("node nodes to set!")
+		err = fmt.Errorf("node nodes to set")
 		return
 	}
 	confs := nodeDB.ListAllNodes()
@@ -57,33 +57,39 @@ func NodeSetParameterCheck(set *wwapiv1.ConfSetParameter) (nodeDB node.NodeYaml,
 	} else if len(confs) == 0 {
 		wwlog.Warn("no nodes/profiles found")
 		return
-	} else {
-		confs = set.ConfList
 	}
-	//var confobject node.NodeConf
-	for _, p := range set.ConfList {
-		if util.InSlice(set.ConfList, p) {
-			wwlog.Verbose("evaluating profile: %s", p)
-			if _, ok := nodeDB.Nodes[p]; !ok {
+	for _, nId := range set.ConfList {
+		if util.InSlice(set.ConfList, nId) {
+			wwlog.Debug("evaluating node: %s", nId)
+			var nodePtr *node.NodeConf
+			nodePtr, err = nodeDB.GetNodeOnlyPtr(nId)
+			if err != nil {
+				wwlog.Warn("invalid node: %s", nId)
 				continue
 			}
-			err = yaml.Unmarshal([]byte(set.NodeConfYaml), nodeDB.Nodes[p])
+			newConf := node.EmptyNode()
+			err = yaml.Unmarshal([]byte(set.NodeConfYaml), &newConf)
+			if err != nil {
+				return
+			}
+			// merge in
+			err = mergo.Merge(nodePtr, &newConf, mergo.WithOverride)
 			if err != nil {
 				return
 			}
 			if set.NetdevDelete != "" {
-				if _, ok := nodeDB.Nodes[p].NetDevs[set.NetdevDelete]; !ok {
+				if _, ok := nodePtr.NetDevs[set.NetdevDelete]; !ok {
 					err = fmt.Errorf("network device name doesn't exist: %s", set.NetdevDelete)
 					wwlog.Error(fmt.Sprintf("%v", err.Error()))
 					return
 				}
-				wwlog.Verbose("Profile: %s, Deleting network device: %s", p, set.NetdevDelete)
-				delete(nodeDB.Nodes[p].NetDevs, set.NetdevDelete)
+				wwlog.Verbose("Profile: %s, Deleting network device: %s", nId, set.NetdevDelete)
+				delete(nodePtr.NetDevs, set.NetdevDelete)
 			}
 			if set.PartitionDelete != "" {
-				for diskname, disk := range nodeDB.Nodes[p].Disks {
+				for diskname, disk := range nodePtr.Disks {
 					if _, ok := disk.Partitions[set.PartitionDelete]; ok {
-						wwlog.Verbose("Node: %s, on disk %, deleting partition: %s", p, diskname, set.PartitionDelete)
+						wwlog.Verbose("Node: %s, on disk %, deleting partition: %s", nId, diskname, set.PartitionDelete)
 						delete(disk.Partitions, set.PartitionDelete)
 					} else {
 						return nodeDB, count, fmt.Errorf("partition doesn't exist: %s", set.PartitionDelete)
@@ -92,45 +98,45 @@ func NodeSetParameterCheck(set *wwapiv1.ConfSetParameter) (nodeDB node.NodeYaml,
 				}
 			}
 			if set.DiskDelete != "" {
-				if _, ok := nodeDB.Nodes[p].Disks[set.DiskDelete]; ok {
-					wwlog.Verbose("Node: %s, deleting disk: %s", p, set.DiskDelete)
-					delete(nodeDB.Nodes[p].Disks, set.DiskDelete)
+				if _, ok := nodePtr.Disks[set.DiskDelete]; ok {
+					wwlog.Verbose("Node: %s, deleting disk: %s", nId, set.DiskDelete)
+					delete(nodePtr.Disks, set.DiskDelete)
 				} else {
 					return nodeDB, count, fmt.Errorf("disk doesn't exist: %s", set.DiskDelete)
 				}
 			}
 			if set.FilesystemDelete != "" {
-				if _, ok := nodeDB.Nodes[p].FileSystems[set.FilesystemDelete]; ok {
-					wwlog.Verbose("Node: %s, deleting filesystem: %s", p, set.FilesystemDelete)
-					delete(nodeDB.Nodes[p].FileSystems, set.FilesystemDelete)
+				if _, ok := nodePtr.FileSystems[set.FilesystemDelete]; ok {
+					wwlog.Verbose("Node: %s, deleting filesystem: %s", nId, set.FilesystemDelete)
+					delete(nodePtr.FileSystems, set.FilesystemDelete)
 				} else {
 					return nodeDB, count, fmt.Errorf("disk doesn't exist: %s", set.FilesystemDelete)
 				}
 			}
 			for _, key := range set.TagDel {
-				delete(nodeDB.Nodes[p].Tags, key)
+				delete(nodePtr.Tags, key)
 			}
 			for key, val := range set.TagAdd {
-				if nodeDB.Nodes[p].Tags == nil {
-					nodeDB.Nodes[p].Tags = make(map[string]string)
+				if nodePtr.Tags == nil {
+					nodePtr.Tags = make(map[string]string)
 				}
-				nodeDB.Nodes[p].Tags[key] = val
+				nodePtr.Tags[key] = val
 			}
 			for key, val := range set.IpmiTagAdd {
-				if nodeDB.Nodes[p].Ipmi.Tags == nil {
-					nodeDB.Nodes[p].Ipmi.Tags = make(map[string]string)
+				if nodePtr.Ipmi.Tags == nil {
+					nodePtr.Ipmi.Tags = make(map[string]string)
 				}
-				nodeDB.Nodes[p].Ipmi.Tags[key] = val
+				nodePtr.Ipmi.Tags[key] = val
 			}
 			for _, key := range set.IpmiTagDel {
-				delete(nodeDB.Nodes[p].Ipmi.Tags, key)
+				delete(nodePtr.Ipmi.Tags, key)
 			}
-			if _, ok := nodeDB.Nodes[p].NetDevs[set.Netdev]; ok {
+			if _, ok := nodePtr.NetDevs[set.Netdev]; ok {
 				for _, key := range set.NetTagDel {
-					delete(nodeDB.Nodes[p].NetDevs[set.Netdev].Tags, key)
+					delete(nodePtr.NetDevs[set.Netdev].Tags, key)
 				}
 				for key, val := range set.TagAdd {
-					nodeDB.Nodes[p].NetDevs[set.Netdev].Tags[key] = val
+					nodePtr.NetDevs[set.Netdev].Tags[key] = val
 				}
 			}
 			count++

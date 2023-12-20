@@ -21,8 +21,10 @@ func ProfileDelete(ndp *wwapiv1.NodeDeleteParameter) (err error) {
 		return fmt.Errorf("got wrong hash, not modifying profile database")
 	}
 	for _, p := range profileList {
-		delete(nodeDB.NodeProfiles, p)
-		wwlog.Verbose("Deleting profile: %s", p)
+		err = nodeDB.DelProfile(p)
+		if err != nil {
+			return
+		}
 	}
 
 	err = nodeDB.Persist()
