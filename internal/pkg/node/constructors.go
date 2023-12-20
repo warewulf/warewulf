@@ -1,9 +1,10 @@
 package node
 
 import (
+	"bytes"
+	"encoding/gob"
 	"os"
 	"path"
-	"reflect"
 	"sort"
 
 	"dario.cat/mergo"
@@ -58,15 +59,28 @@ func Parse(data []byte) (nodeList NodeYaml, err error) {
 Get a node with its merged in nodes
 */
 func (config *NodeYaml) GetNode(id string) (node NodeConf, err error) {
-
 	if _, ok := config.nodes[id]; !ok {
 		return node, ErrNotFound
 	}
-	node = *config.nodes[id]
+	node = EmptyNode()
+	// create a deep copy of the node, as otherwise pointers
+	// and not their contents is merged
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	dec := gob.NewDecoder(&buf)
+	err = enc.Encode(config.nodes[id])
+	if err != nil {
+		return node, err
+	}
+	err = dec.Decode(&node)
+	if err != nil {
+		return node, err
+	}
 	for _, p := range cleanList(config.nodes[id].Profiles) {
 		includedProfile, err := config.GetProfile(p)
 		if err != nil {
-			return node, err
+			wwlog.Warn("profile not found: %s", p)
+			continue
 		}
 		err = mergo.Merge(&node.ProfileConf, includedProfile, mergo.WithAppendSlice)
 		if err != nil {
@@ -76,9 +90,6 @@ func (config *NodeYaml) GetNode(id string) (node NodeConf, err error) {
 	// err = mergo.Merge(&node, config.nodes[id], mergo.WithOverride, mergo.WithoutDereference)
 	// err = mergo.Merge(&node, config.nodes[id], mergo.WithOverride)
 	// err = mergo.Merge(&node, config.nodes[id])
-	if err != nil {
-		return node, err
-	}
 	/*
 		node = EmptyNode()
 			var buf bytes.Buffer
@@ -266,7 +277,7 @@ func (config *NodeYaml) ListAllProfiles() []string {
 
 /*
 FindDiscoverableNode returns the first discoverable node and an
-interface to associate with the discovered interface. If the node has
+interface to associate with the discovered interface. If the nodUNDEFe has
 a primary interface, it is returned; otherwise, the first interface
 without a hardware address is returned.
 
@@ -277,7 +288,7 @@ func (config *NodeYaml) FindDiscoverableNode() (NodeConf, string, error) {
 	nodes, _ := config.FindAllNodes()
 
 	for _, node := range nodes {
-		if !node.Discoverable {
+		if !(node.Discoverable.Bool()) {
 			continue
 		}
 		if _, ok := node.NetDevs[node.PrimaryNetDev]; ok {
@@ -291,31 +302,4 @@ func (config *NodeYaml) FindDiscoverableNode() (NodeConf, string, error) {
 	}
 
 	return EmptyNode(), "", ErrNoUnconfigured
-}
-func appendStringSlices(src, dst any) {
-	//srcType := reflect.TypeOf(src)
-	srcVal := reflect.ValueOf(src)
-	dstType := reflect.TypeOf(dst)
-	dstVal := reflect.ValueOf(dst)
-	for i := 0; i < dstType.Elem().NumField(); i++ {
-		// wwlog.Debug("dstType.Name: %s", dstType.Elem().Field(i).Name)
-		srcValField := srcVal.Elem().FieldByName(dstType.Elem().Field(i).Name)
-		if !srcValField.IsZero() {
-			if srcValField.Type() == reflect.TypeOf([]string{}) {
-				// wwlog.Debug("dstType.Name: %s", dstType.Elem().Field(i).Name)
-				if srcValField.Len() > 0 {
-					// wwlog.Debug("srcValField.Len(): %d", srcValField.Len())
-					for _, elem := range srcValField.Interface().([]string) {
-						dstVal.Elem().Field(i).Set(reflect.Append(dstVal.Elem().Field(i), reflect.ValueOf(elem)))
-						wwlog.Debug("elem: %s", elem)
-					}
-					lst := dstVal.Elem().Field(i).Addr().Interface().(*[]string)
-					*lst = cleanList(*lst)
-				}
-
-			}
-		} else if srcValField.Type().Kind() == reflect.Ptr {
-			appendStringSlices(srcValField, dstVal.Elem().Field(i).Interface())
-		}
-	}
 }

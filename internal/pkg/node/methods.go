@@ -1,8 +1,6 @@
 package node
 
 import (
-	"bytes"
-	"encoding/gob"
 	"net"
 	"reflect"
 	"regexp"
@@ -10,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/warewulf/warewulf/internal/pkg/util"
-	"github.com/warewulf/warewulf/internal/pkg/wwtype"
 )
 
 type sortByName []NodeConf
@@ -134,51 +131,92 @@ func (info *ProfileConf) Flatten() {
 	recursiveFlatten(info)
 }
 
-// abstract flatten
-func recursiveFlatten(strct interface{}) {
-	confType := reflect.TypeOf(strct)
-	confVal := reflect.ValueOf(strct)
-	for j := 0; j < confType.Elem().NumField(); j++ {
-		if confVal.Elem().Field(j).Type().Kind() == reflect.Ptr && !confVal.Elem().Field(j).IsNil() {
-			// iterate now over the ptr fields
-			setToNil := true
-			nestedType := reflect.TypeOf(confVal.Elem().Field(j).Interface())
-			nestedVal := reflect.ValueOf(confVal.Elem().Field(j).Interface())
-			for i := 0; i < nestedType.Elem().NumField(); i++ {
-				// wwlog.Debug("checking %s", nestedType.Elem().Field(i).Type.String())
-				if nestedType.Elem().Field(i).Type.Kind() == reflect.String &&
-					nestedVal.Elem().Field(i).Interface().(string) != "" &&
-					nestedVal.Elem().Field(i).Interface().(string) != undef {
-					setToNil = false
-				} else if nestedType.Elem().Field(i).Type == reflect.TypeOf([]string{}) &&
-					len(nestedVal.Elem().Field(i).Interface().([]string)) != 0 {
-					setToNil = false
-				} else if nestedType.Elem().Field(i).Type == reflect.TypeOf(map[string]string{}) &&
-					len(nestedVal.Elem().Field(i).Interface().(map[string]string)) != 0 {
-					setToNil = false
-				} else if nestedType.Elem().Field(i).Type == reflect.TypeOf(net.IP{}) {
-					val := nestedVal.Elem().Field(i).Interface().(net.IP)
-					if len(val) != 0 && !val.IsUnspecified() {
-						setToNil = false
-					}
-				} else if nestedType.Elem().Field(i).Type == reflect.TypeOf(wwtype.WWbool{}) {
-					val := nestedVal.Elem().Field(i).Interface().(wwtype.WWbool)
-					if !val.IsZero() {
-						setToNil = false
-					}
-				}
-			}
-			if setToNil {
-				confVal.Elem().Field(j).Set(reflect.Zero(confVal.Elem().Field(j).Type()))
-			}
-		} else if confType.Elem().Field(j).Anonymous {
-			recursiveFlatten(confVal.Elem().Field(j).Addr().Interface())
-		} else if confType.Elem().Field(j).IsExported() && confType.Elem().Field(j).Type.Kind() == reflect.String {
-			if confVal.Elem().Field(j).Interface().(string) == undef {
-				confVal.Elem().Field(j).SetString("")
+func recursiveFlatten(obj interface{}) (hasContent bool) {
+	valObj := reflect.ValueOf(obj)
+	typeObj := reflect.TypeOf(obj)
+	hasContent = false
+	if valObj.IsNil() {
+		return
+	}
+	for i := 0; i < typeObj.Elem().NumField(); i++ {
+		if valObj.Elem().Field(i).IsValid() {
+			if !typeObj.Elem().Field(i).IsExported() {
+				continue
 			}
 		}
+		switch typeObj.Elem().Field(i).Type.Kind() {
+		case reflect.Map:
+			mapIter := valObj.Elem().Field(i).MapRange()
+			for mapIter.Next() {
+				if mapIter.Value().Kind() == reflect.String {
+					if mapIter.Value().String() != "" {
+						// fmt.Println("map")
+						hasContent = true
+					}
+				} else {
+					ret := recursiveFlatten(mapIter.Value().Interface())
+					hasContent = ret || hasContent
+				}
+			}
+
+		case reflect.Ptr:
+			if valObj.Elem().Field(i).Addr().IsValid() {
+				ret := recursiveFlatten((valObj.Elem().Field(i).Interface()))
+				if !ret {
+					valObj.Elem().Field(i).Set(reflect.Zero(valObj.Elem().Field(i).Type()))
+				}
+				hasContent = ret || hasContent
+
+			}
+		case reflect.Struct:
+			ret := recursiveFlatten((valObj.Elem().Field(i).Addr().Interface()))
+			hasContent = ret || hasContent
+		case reflect.Slice:
+			if typeObj.Elem().Field(i).Type == reflect.TypeOf([]string{}) {
+				del := false
+				for _, elem := range (valObj.Elem().Field(i).Interface()).([]string) {
+					if strings.EqualFold(elem, undef) {
+						del = true
+					}
+				}
+				if del {
+					valObj.Elem().Field(i).SetLen(0)
+				}
+			}
+			if valObj.Elem().Field(i).Len() > 0 {
+				hasContent = true
+			}
+		case reflect.String:
+			if strings.EqualFold(valObj.Elem().Field(i).String(), undef) {
+				valObj.Elem().Field(i).SetString("")
+			}
+			if valObj.Elem().Field(i).String() != "" {
+				hasContent = true
+			}
+		case reflect.Bool:
+			val := valObj.Elem().Field(i).Interface().(bool)
+			hasContent = hasContent || val
+		default:
+			switch valObj.Elem().Field(i).Type() {
+			case reflect.TypeOf(net.IP{}):
+				val := valObj.Elem().Field(i).Interface().(net.IP)
+				if len(val) != 0 && !val.IsUnspecified() {
+					hasContent = true
+				}
+			case reflect.TypeOf(net.IPMask{}):
+				val := valObj.Elem().Field(i).Interface().(net.IPMask)
+				if len(val) != 0 {
+					// fmt.Println("Mask")
+					hasContent = true
+				}
+			default:
+			}
+		}
+		if !hasContent {
+			valObj.Elem().Field(i).Set(reflect.Zero(valObj.Elem().Field(i).Type()))
+		}
 	}
+	return
 }
 
 /*
@@ -307,39 +345,4 @@ func cleanList(list []string) (ret []string) {
 		}
 	}
 	return ret
-}
-
-// Clone (deep copy) a node via gob
-func (src *NodeConf) Clone() (dst NodeConf, err error) {
-	var buf bytes.Buffer
-	enc := gob.NewEncoder(&buf)
-	dec := gob.NewDecoder(&buf)
-	err = enc.Encode(src)
-	if err != nil {
-		return
-	}
-	err = dec.Decode(&dst)
-	if err != nil {
-		return
-	}
-	dst.id = src.id
-	dst.valid = src.valid
-	return
-}
-
-// Clone (deep copy) a node via gob
-func (src ProfileConf) Clone() (dst ProfileConf, err error) {
-	var buf bytes.Buffer
-	enc := gob.NewEncoder(&buf)
-	dec := gob.NewDecoder(&buf)
-	err = enc.Encode(src)
-	if err != nil {
-		return
-	}
-	err = dec.Decode(&dst)
-	if err != nil {
-		return
-	}
-	dst.id = src.id
-	return
 }

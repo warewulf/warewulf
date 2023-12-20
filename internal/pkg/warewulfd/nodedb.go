@@ -41,7 +41,7 @@ func loadNodeDB() (err error) {
 	}
 
 	for _, n := range nodes {
-		if n.Discoverable {
+		if n.Discoverable.Bool() {
 			continue
 		}
 		for _, netdev := range n.NetDevs {
@@ -68,7 +68,7 @@ func GetNodeOrSetDiscoverable(hwaddr string) (node.NodeConf, error) {
 	}
 
 	// If we failed to find a node, let's see if we can add one...
-	wwlog.Warn("(node not configured)", hwaddr)
+	wwlog.Warn("node not configured: %s", hwaddr)
 
 	node, netdev, err := db.yml.FindDiscoverableNode()
 	if err != nil {
@@ -77,11 +77,12 @@ func GetNodeOrSetDiscoverable(hwaddr string) (node.NodeConf, error) {
 		return node, err
 	}
 	// update node
-	nodeChanges, _ := db.yml.GetNodeOnly(nId) // ignore error as nodeId is in db
+	wwlog.Debug("discoverd node: %s netdev: %s", node.Id(), netdev)
+	nodeChanges, _ := db.yml.GetNodeOnly(node.Id()) // ignore error as nodeId is in db
 	wwlog.Debug("node: %v", nodeChanges)
 	nodeChanges.NetDevs[netdev].Hwaddr = hwaddr
-	nodeChanges.Discoverable = false
-	err = db.yml.SetNode(nId, nodeChanges)
+	nodeChanges.Discoverable = "UNDEF"
+	err = db.yml.SetNode(node.Id(), nodeChanges)
 	if err != nil {
 		return node, err
 	}
@@ -97,8 +98,8 @@ func GetNodeOrSetDiscoverable(hwaddr string) (node.NodeConf, error) {
 	// be done automatically when attempting to serve an overlay that
 	// hasn't been built (without blocking the database).
 
-	wwlog.Serv("%s (node %s automatically configured)", hwaddr, nId)
+	wwlog.Serv("%s (node %s automatically configured)", hwaddr, node.Id())
 
 	// return the discovered node
-	return db.yml.GetNode(nId)
+	return db.yml.GetNode(node.Id())
 }
