@@ -19,10 +19,19 @@ Get all the info out of NodeConf. If emptyFields is set true, all fields are sho
 func (nodeYml *NodeYaml) GetFields(node NodeConf, emptyFields bool) (output []NodeFields) {
 	fieldMap := make(map[string]NodeFields)
 	for _, p := range node.Profiles {
-		if profile, ok := nodeYml.NodeProfiles[p]; ok {
+		if profile, ok := nodeYml.nodeProfiles[p]; ok {
 			recursiveFields(profile, emptyFields, "", fieldMap, p)
 		}
 	}
+	recursiveFields(node, emptyFields, "", fieldMap, "")
+	return output
+}
+
+/*
+Get all the info out of ProfileConf. If emptyFields is set true, all fields are shown not only the ones with effective values
+*/
+func (nodeYml *NodeYaml) GetFieldsProfile(node ProfileConf, emptyFields bool) (output []NodeFields) {
+	fieldMap := make(map[string]NodeFields)
 	recursiveFields(node, emptyFields, "", fieldMap, "")
 	return output
 }

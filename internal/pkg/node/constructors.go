@@ -5,12 +5,13 @@ import (
 	"encoding/gob"
 	"os"
 	"path"
+	"reflect"
 	"sort"
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 var (
@@ -37,40 +38,20 @@ func New() (NodeYaml, error) {
 // document. Passes any errors return from yaml.Unmarshal. Returns an
 // error if any parsed value is not of a valid type for the given
 // parameter.
-func Parse(data []byte) (NodeYaml, error) {
-	var nodeList NodeYaml
-	var err error
+func Parse(data []byte) (nodeList NodeYaml, err error) {
 	wwlog.Debug("Unmarshaling the node configuration")
 	err = yaml.Unmarshal(data, &nodeList)
 	if err != nil {
 		return nodeList, err
 	}
 	wwlog.Debug("Checking profiles for types")
-	if nodeList.Nodes == nil {
-		nodeList.Nodes = map[string]*NodeConf{}
+	if nodeList.nodes == nil {
+		nodeList.nodes = map[string]*NodeConf{}
 	}
-	/*
-		for nodeName, node := range nodeList.Nodes {
-			err = node.Check()
-			if err != nil {
-				wwlog.Warn("node: %s parsing error: %s", nodeName, err)
-				return nodeList, err
-			}
-		}
-	*/
-	if nodeList.NodeProfiles == nil {
-		nodeList.NodeProfiles = map[string]*ProfileConf{}
+	if nodeList.nodeProfiles == nil {
+		nodeList.nodeProfiles = map[string]*ProfileConf{}
 	}
-	/*
-		for profileName, profile := range nodeList.NodeProfiles {
-			err = profile.Check()
-			if err != nil {
-				wwlog.Warn("node: %s parsing error: %s", profileName, err)
-				return nodeList, err
-			}
-		}
-	*/
-	wwlog.Debug("Returning node object")
+	wwlog.Debug("returning node object")
 	return nodeList, nil
 }
 
@@ -78,15 +59,16 @@ func Parse(data []byte) (NodeYaml, error) {
 Get a node with its merged in profiles
 */
 func (config *NodeYaml) GetNode(id string) (node NodeConf, err error) {
-	if _, ok := config.Nodes[id]; !ok {
+	if _, ok := config.nodes[id]; !ok {
 		return node, ErrNotFound
 	}
-	wwlog.Debug("constructing node: %s", id)
-	for _, p := range config.Nodes[id].Profiles {
+	node = EmptyNode()
+	for _, p := range config.nodes[id].Profiles {
 		var buf bytes.Buffer
 		enc := gob.NewEncoder(&buf)
 		dec := gob.NewDecoder(&buf)
 		includedProfile, err := config.GetProfile(p)
+		appendStringSlices(&node, &includedProfile)
 		if err != nil {
 			return node, err
 		}
@@ -98,15 +80,18 @@ func (config *NodeYaml) GetNode(id string) (node NodeConf, err error) {
 		if err != nil {
 			return node, err
 		}
+		wwlog.Debug("merged in profile: %s", p)
 	}
-	var buf bytes.Buffer
-	enc := gob.NewEncoder(&buf)
-	dec := gob.NewDecoder(&buf)
-	err = enc.Encode(config.Nodes[id])
+	var bufNode bytes.Buffer
+	encNode := gob.NewEncoder(&bufNode)
+	decNode := gob.NewDecoder(&bufNode)
+	appendStringSlices(&node, &config.nodes[id].ProfileConf)
+
+	err = encNode.Encode(config.nodes[id])
 	if err != nil {
 		return node, err
 	}
-	err = dec.Decode(&node)
+	err = decNode.Decode(&node)
 	if err != nil {
 		return node, err
 	}
@@ -127,31 +112,54 @@ func (config *NodeYaml) GetNode(id string) (node NodeConf, err error) {
 			node.PrimaryNetDev = keys[0]
 		}
 	}
+	wwlog.Debug("constructed node: %s", id)
 	return
 }
 
 /*
-Get the profile with all the profiles merged in
+Return the node with the id string without the merged in profiles, return ErrMotFound
+otherwise
 */
-func (config *NodeYaml) GetProfile(id string) (profile NodeConf, err error) {
-	if _, ok := config.NodeProfiles[id]; !ok {
-		return profile, ErrNotFound
+func (config *NodeYaml) GetNodeOnly(id string) (node NodeConf, err error) {
+	node = EmptyNode()
+	if found, ok := config.nodes[id]; ok {
+		return *found, nil
 	}
-	var buf bytes.Buffer
-	enc := gob.NewEncoder(&buf)
-	dec := gob.NewDecoder(&buf)
-	// finally merge in the real profile
-	err = enc.Encode(config.NodeProfiles[id])
-	if err != nil {
-		return profile, err
+	return node, ErrNotFound
+}
+
+/*
+Return pointer to the  node with the id string without the merged in profiles, return ErrMotFound
+otherwise
+*/
+func (config *NodeYaml) GetNodeOnlyPtr(id string) (*NodeConf, error) {
+	node := EmptyNode()
+	if found, ok := config.nodes[id]; ok {
+		return found, nil
 	}
-	err = dec.Decode(&profile)
-	if err != nil {
-		return profile, err
+	return &node, ErrNotFound
+}
+
+/*
+Get the profile with id, return ErrNotFound otherwise
+*/
+func (config *NodeYaml) GetProfile(id string) (profile ProfileConf, err error) {
+	if found, ok := config.nodeProfiles[id]; ok {
+		found.id = id
+		return *found, nil
 	}
-	// finally set no exported values
-	profile.id = id
-	return
+	return profile, ErrNotFound
+}
+
+/*
+Get the profile with id, return ErrNotFound otherwise
+*/
+func (config *NodeYaml) GetProfilePtr(id string) (profile *ProfileConf, err error) {
+	if found, ok := config.nodeProfiles[id]; ok {
+		found.id = id
+		return found, nil
+	}
+	return profile, ErrNotFound
 }
 
 /*
@@ -160,7 +168,7 @@ the profiles with the given profiles.
 */
 func (config *NodeYaml) FindAllNodes(profiles ...string) (nodeList []NodeConf, err error) {
 	if len(profiles) == 0 {
-		for n := range config.Nodes {
+		for n := range config.nodes {
 			profiles = append(profiles, n)
 		}
 	}
@@ -186,11 +194,11 @@ func (config *NodeYaml) FindAllNodes(profiles ...string) (nodeList []NodeConf, e
 }
 
 /*
-Return all profiles as NodeInfo
+Return all profiles as ProfileConf
 */
-func (config *NodeYaml) FindAllProfiles(profiles ...string) (profileList []NodeConf, err error) {
+func (config *NodeYaml) FindAllProfiles(profiles ...string) (profileList []ProfileConf, err error) {
 	if len(profiles) == 0 {
-		for n := range config.NodeProfiles {
+		for n := range config.nodeProfiles {
 			profiles = append(profiles, n)
 		}
 	}
@@ -220,8 +228,8 @@ func (config *NodeYaml) FindAllProfiles(profiles ...string) (profileList []NodeC
 Return the names of all available nodes
 */
 func (config *NodeYaml) ListAllNodes() []string {
-	nodeList := make([]string, len(config.Nodes))
-	for name := range config.Nodes {
+	nodeList := make([]string, len(config.nodes))
+	for name := range config.nodes {
 		nodeList = append(nodeList, name)
 	}
 	return nodeList
@@ -232,7 +240,7 @@ Return the names of all available profiles
 */
 func (config *NodeYaml) ListAllProfiles() []string {
 	var nodeList []string
-	for name := range config.NodeProfiles {
+	for name := range config.nodeProfiles {
 		nodeList = append(nodeList, name)
 	}
 	return nodeList
@@ -246,7 +254,7 @@ without a hardware address is returned.
 
 If no unconfigured node is found, an error is returned.
 */
-func (config *NodeYaml) FindDiscoverableNode() (string, string, error) {
+func (config *NodeYaml) FindDiscoverableNode() (NodeConf, string, error) {
 
 	nodes, _ := config.FindAllNodes()
 
@@ -255,14 +263,41 @@ func (config *NodeYaml) FindDiscoverableNode() (string, string, error) {
 			continue
 		}
 		if _, ok := node.NetDevs[node.PrimaryNetDev]; ok {
-			return node.Id(), node.PrimaryNetDev, nil
+			return node, node.PrimaryNetDev, nil
 		}
 		for netdev, dev := range node.NetDevs {
 			if dev.Hwaddr != "" {
-				return node.Id(), netdev, nil
+				return node, netdev, nil
 			}
 		}
 	}
 
-	return "", "", ErrNoUnconfigured
+	return EmptyNode(), "", ErrNoUnconfigured
+}
+func appendStringSlices(src, dst any) {
+	//srcType := reflect.TypeOf(src)
+	srcVal := reflect.ValueOf(src)
+	dstType := reflect.TypeOf(dst)
+	dstVal := reflect.ValueOf(dst)
+	for i := 0; i < dstType.Elem().NumField(); i++ {
+		// wwlog.Debug("dstType.Name: %s", dstType.Elem().Field(i).Name)
+		srcValField := srcVal.Elem().FieldByName(dstType.Elem().Field(i).Name)
+		if !srcValField.IsZero() {
+			if srcValField.Type() == reflect.TypeOf([]string{}) {
+				// wwlog.Debug("dstType.Name: %s", dstType.Elem().Field(i).Name)
+				if srcValField.Len() > 0 {
+					// wwlog.Debug("srcValField.Len(): %d", srcValField.Len())
+					for _, elem := range srcValField.Interface().([]string) {
+						dstVal.Elem().Field(i).Set(reflect.Append(dstVal.Elem().Field(i), reflect.ValueOf(elem)))
+						wwlog.Debug("elem: %s", elem)
+					}
+					lst := dstVal.Elem().Field(i).Addr().Interface().(*[]string)
+					*lst = cleanList(*lst)
+				}
+
+			}
+		} else if srcValField.Type().Kind() == reflect.Ptr {
+			appendStringSlices(srcValField, dstVal.Elem().Field(i).Interface())
+		}
+	}
 }
