@@ -3,9 +3,9 @@ package node
 import (
 	"testing"
 
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v2"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
+	"gopkg.in/yaml.v3"
 )
 
 func newConstructorPrimaryNetworkTest() NodeYaml {
@@ -45,7 +45,7 @@ nodes:
 }
 
 func Test_Primary_Network(t *testing.T) {
-	wwlog.SetLogLevel(wwlog.DEBUG)
+	//wwlog.SetLogLevel(wwlog.DEBUG)
 	c := newConstructorPrimaryNetworkTest()
 	test_node1, err := c.GetNode("test_node1")
 	assert.NoError(t, err)
@@ -112,14 +112,14 @@ func Test_FindDiscoverableNode(t *testing.T) {
 		t.Run(tt.description, func(t *testing.T) {
 			config := newConstructorPrimaryNetworkTest()
 			for _, node := range tt.discoverable_nodes {
-				config.Nodes[node].Discoverable = true
+				config.nodes[node].Discoverable = true
 			}
 			discovered_node, discovered_interface, err := config.FindDiscoverableNode()
 			if !tt.succeed {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, tt.discovered_node, discovered_node)
+				assert.Equal(t, tt.discovered_node, discovered_node.Id())
 				assert.Equal(t, tt.discovered_interface, discovered_interface)
 			}
 		})
@@ -147,8 +147,8 @@ nodes:
       - profile2
   node3:
     runtime overlay:
-      - n1o1
-      - n1o2
+      - n3o1
+      - n3o2
     profiles:
       - profile1
   node4:
@@ -170,27 +170,28 @@ nodes:
 	var ymlSrc NodeYaml
 	err := yaml.Unmarshal([]byte(nodesconf), &ymlSrc)
 	assert.NoError(err)
+	wwlog.SetLogLevel(wwlog.DEBUG)
 	nodes, err := ymlSrc.FindAllNodes()
 	assert.NoError(err)
-	nodemap := make(map[string]*NodeInfo)
+	nodemap := make(map[string]*NodeConf)
 	for i := range nodes {
-		nodemap[nodes[i].Id.Get()] = &nodes[i]
+		nodemap[nodes[i].Id()] = &nodes[i]
 	}
 	assert.Contains(nodemap, "node1")
-	assert.ElementsMatch(nodemap["node1"].RuntimeOverlay.GetSlice(), []string{"p1o1", "p1o2"})
-	assert.Equal(nodemap["node1"].RuntimeOverlay.Print(), "p1o1,p1o2")
+	assert.ElementsMatch(nodemap["node1"].RuntimeOverlay, []string{"p1o1", "p1o2"})
+	// assert.Equal(nodemap["node1"].RuntimeOverlay.Print(), "p1o1,p1o2")
 	assert.Contains(nodemap, "node2")
-	assert.ElementsMatch(nodemap["node2"].RuntimeOverlay.GetSlice(), []string{"p1o1", "p1o2", "p2o1", "p2o2"})
-	assert.Equal(nodemap["node2"].RuntimeOverlay.Print(), "p1o1,p1o2,p2o1,p2o2")
+	assert.ElementsMatch(nodemap["node2"].RuntimeOverlay, []string{"p1o1", "p1o2", "p2o1", "p2o2"})
+	// assert.Equal(nodemap["node2"].RuntimeOverlay.Print(), "p1o1,p1o2,p2o1,p2o2")
 	assert.Contains(nodemap, "node3")
-	assert.ElementsMatch(nodemap["node3"].RuntimeOverlay.GetSlice(), []string{"p1o1", "p1o2", "n1o1", "n1o2"})
-	assert.Equal(nodemap["node3"].RuntimeOverlay.Print(), "n1o1,n1o2,p1o1,p1o2")
+	assert.ElementsMatch(nodemap["node3"].RuntimeOverlay, []string{"p1o1", "p1o2", "n3o1", "n3o2"})
+	// assert.Equal(nodemap["node3"].RuntimeOverlay.Print(), "n1o1,n1o2,p1o1,p1o2")
 	assert.Contains(nodemap, "node4")
-	assert.ElementsMatch(nodemap["node4"].RuntimeOverlay.GetSlice(), []string{"p1o1", "p1o2", "p2o1", "p2o2", "n1o1", "n1o2"})
-	assert.Equal(nodemap["node4"].RuntimeOverlay.Print(), "n1o1,n1o2,p1o1,p1o2,p2o1,p2o2")
+	assert.ElementsMatch(nodemap["node4"].RuntimeOverlay, []string{"p1o1", "p1o2", "p2o1", "p2o2", "n1o1", "n1o2"})
+	// assert.Equal(nodemap["node4"].RuntimeOverlay.Print(), "n1o1,n1o2,p1o1,p1o2,p2o1,p2o2")
 	assert.Contains(nodemap, "node5")
-	assert.ElementsMatch(nodemap["node5"].RuntimeOverlay.GetSlice(), []string{"p1o1", "p2o1", "p2o2", "n1o1"})
-	assert.Equal(nodemap["node5"].RuntimeOverlay.Print(), "n1o1,p1o1,p2o1,p2o2 ~{p1o2}")
+	assert.ElementsMatch(nodemap["node5"].RuntimeOverlay, []string{"p1o1", "p2o1", "p2o2", "n1o1"})
+	// assert.Equal(nodemap["node5"].RuntimeOverlay.Print(), "n1o1,p1o1,p2o1,p2o2 ~{p1o2}")
 }
 
 func Test_negated_list(t *testing.T) {
