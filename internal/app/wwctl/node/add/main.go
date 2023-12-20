@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 
 	"github.com/spf13/cobra"
 	apinode "github.com/warewulf/warewulf/internal/pkg/api/node"

@@ -7,7 +7,7 @@ import (
 	apiprofile "github.com/warewulf/warewulf/internal/pkg/api/profile"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
