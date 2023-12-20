@@ -2,8 +2,6 @@ package rename
 
 import (
 	"bytes"
-	"io"
-	"os"
 	"path"
 	"testing"
 
@@ -11,6 +9,7 @@ import (
 	containerList "github.com/warewulf/warewulf/internal/app/wwctl/container/list"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func Test_Rename(t *testing.T) {
@@ -42,22 +41,14 @@ func Test_Rename(t *testing.T) {
 
 func verifyContainerListOutput(t *testing.T, content string) {
 	baseCmd := containerList.GetCommand()
-	baseCmd.SetOut(nil)
-	baseCmd.SetErr(nil)
-	stdoutR, stdoutW, _ := os.Pipe()
-	os.Stdout = stdoutW
+	buf := new(bytes.Buffer)
+	baseCmd.SetOut(buf)
+	baseCmd.SetErr(buf)
+	wwlog.SetLogWriterErr(buf)
+	wwlog.SetLogWriterInfo(buf)
 	err := baseCmd.Execute()
 	assert.NoError(t, err)
 
-	stdoutC := make(chan string)
-	go func() {
-		var buf bytes.Buffer
-		_, _ = io.Copy(&buf, stdoutR)
-		stdoutC <- buf.String()
-	}()
-	stdoutW.Close()
-
-	stdout := <-stdoutC
-	assert.NotEmpty(t, stdout, "output should not be empty")
-	assert.Contains(t, stdout, content)
+	assert.NotEmpty(t, buf.String(), "output should not be empty")
+	assert.Contains(t, buf.String(), content)
 }

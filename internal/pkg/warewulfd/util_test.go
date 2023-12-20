@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/node"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
+	"github.com/warewulf/warewulf/internal/pkg/testenv"
 )
 
 var getOverlayFileTests = []struct {
@@ -37,7 +37,7 @@ var getOverlayFileTests = []struct {
 		node:        "",
 		context:     "",
 		overlays:    []string{"o1", "o2"},
-		result:      "overlays/o1-o2.img",
+		result:      "overlays/node1/o1-o2.img",
 	},
 	{
 		description: "system overlay for a node points to the node's system overlay image",
@@ -77,29 +77,26 @@ var getOverlayFileTests = []struct {
 }
 
 func Test_getOverlayFile(t *testing.T) {
-	wwlog.SetLogLevel(wwlog.DEBUG)
+	env := testenv.New(t)
+	env.WriteFile(t, "etc/warewulf/nodes.conf", `
+nodes:
+  node1: {} `)
 	conf := warewulfconf.Get()
-	overlayPDir, overlayPDirErr := os.MkdirTemp(os.TempDir(), "ww-test-overlay-*")
-	assert.NoError(t, overlayPDirErr)
-	conf.Paths.WWProvisiondir = overlayPDir
-	overlayDir, overlayDirErr := os.MkdirTemp(os.TempDir(), "ww-test-provision-*")
-	assert.NoError(t, overlayDirErr)
-	conf.Paths.WWOverlaydir = overlayDir
-	defer os.RemoveAll(overlayDir)
-	assert.NoError(t, os.MkdirAll(path.Join(overlayDir, "o1"), 0700))
-	assert.NoError(t, os.WriteFile(path.Join(overlayDir, "o1", "test_file_o1"), []byte("test file"), 0600))
-	assert.NoError(t, os.MkdirAll(path.Join(overlayDir, "o2"), 0700))
-
+	assert.NoError(t, os.MkdirAll(path.Join(conf.Paths.WWOverlaydir, "o1"), 0700))
+	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.WWOverlaydir, "o1", "test_file_o1"), []byte("test file"), 0600))
+	assert.NoError(t, os.MkdirAll(path.Join(conf.Paths.WWOverlaydir, "o2"), 0700))
+	nodeDB, err := node.New()
+	assert.NoError(t, err)
 	for _, tt := range getOverlayFileTests {
 		t.Run(tt.description, func(t *testing.T) {
-			var nodeInfo node.NodeInfo
-			nodeInfo.Id.Set(tt.node)
-			nodeInfo.RuntimeOverlay.SetSlice(tt.overlays)
-			nodeInfo.SystemOverlay.SetSlice(tt.overlays)
+			nodeInfo, err := nodeDB.GetNode("node1")
+			assert.NoError(t, err)
+			nodeInfo.RuntimeOverlay = tt.overlays
+			nodeInfo.SystemOverlay = tt.overlays
 			result, err := getOverlayFile(nodeInfo, tt.context, tt.overlays, false)
 			assert.NoError(t, err)
 			if tt.result != "" {
-				tt.result = path.Join(overlayPDir, tt.result)
+				tt.result = path.Join(conf.Paths.WWProvisiondir, tt.result)
 			}
 			assert.Equal(t, tt.result, result)
 		})

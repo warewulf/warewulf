@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func Test_createIgnitionJson(t *testing.T) {
@@ -13,15 +14,15 @@ nodes:
   n1:
     disks:
       /dev/vda:
-        wipe_table: "true"
+        wipe_table: true
         partitions:
           scratch:
-            should_exist: "true"
+            should_exist: true
     filesystems:
       /dev/disk/by-partlabel/scratch:
         format: btrfs
         path: /scratch
-        wipe_filesystem: "true"`
+        wipe_filesystem: true`
 
 	expected_json := `{
   "ignition": {
@@ -51,7 +52,7 @@ nodes:
     ]
   }
 }`
-
+	wwlog.SetLogLevel(wwlog.DEBUG)
 	config, parse_error := node.Parse([]byte(node_config))
 	assert.Empty(t, parse_error)
 

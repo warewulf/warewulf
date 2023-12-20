@@ -27,8 +27,6 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			req.Type = wwapiv1.GetNodeList_Network
 		} else if vars.showLong {
 			req.Type = wwapiv1.GetNodeList_Long
-		} else if vars.showFullAll {
-			req.Type = wwapiv1.GetNodeList_FullAll
 		} else if vars.showYaml {
 			req.Type = wwapiv1.GetNodeList_YAML
 		} else if vars.showJson {
