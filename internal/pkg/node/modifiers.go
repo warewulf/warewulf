@@ -112,12 +112,12 @@ func (config *NodeYaml) Persist() error {
 	out, dumpErr := config.Dump()
 	if dumpErr != nil {
 		wwlog.Error("%s", dumpErr)
-		os.Exit(1)
+		return dumpErr
 	}
 	file, err := os.OpenFile(ConfigFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
 		wwlog.Error("%s", err)
-		os.Exit(1)
+		return err
 	}
 	defer file.Close()
 	_, err = file.WriteString(string(out))
