@@ -9,7 +9,7 @@ import (
 	"github.com/warewulf/warewulf/cmd/update_configuration/vers42"
 	"github.com/warewulf/warewulf/cmd/update_configuration/vers43"
 	"github.com/warewulf/warewulf/internal/pkg/util"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 var nowrite bool
