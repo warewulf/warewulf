@@ -12,7 +12,7 @@ import (
 
 type nodeDB struct {
 	lock     sync.RWMutex
-	NodeInfo map[string]node.NodeConf
+	NodeInfo map[string]string
 	yml      node.NodeYaml
 }
 
@@ -21,13 +21,14 @@ var (
 )
 
 func LoadNodeDB() error {
+
 	db.lock.Lock()
 	defer db.lock.Unlock()
 	return loadNodeDB()
 }
 
 func loadNodeDB() (err error) {
-	TmpMap := make(map[string]node.NodeConf)
+	TmpMap := make(map[string]string)
 
 	db.yml, err = node.New()
 	if err != nil {
@@ -45,7 +46,7 @@ func loadNodeDB() (err error) {
 		}
 		for _, netdev := range n.NetDevs {
 			hwaddr := strings.ToLower(netdev.Hwaddr)
-			TmpMap[hwaddr] = n
+			TmpMap[hwaddr] = n.Id()
 		}
 	}
 
@@ -53,82 +54,51 @@ func loadNodeDB() (err error) {
 	return nil
 }
 
-func GetNode(val string) (node node.NodeConf, err error) {
+func GetNodeOrSetDiscoverable(hwaddr string) (node.NodeConf, error) {
 	db.lock.RLock()
 	defer db.lock.RUnlock()
-	return getNode(val)
-}
-
-func getNode(val string) (node node.NodeConf, err error) {
-
-	if _, ok := db.NodeInfo[val]; ok {
-
-		return db.NodeInfo[val], nil
-	}
-
-	return node, errors.New("No node found")
-}
-
-func GetNodeOrSetDiscoverable(hwaddr string) (node.NodeConf, error) {
-	db.lock.Lock()
-	defer db.lock.Unlock()
-	return getNodeOrSetDiscoverable(hwaddr)
-}
-
-func PersistDb() error {
-	db.lock.Lock()
-	defer db.lock.Unlock()
-	return db.yml.Persist()
-}
-
-func getNodeOrSetDiscoverable(hwaddr string) (node.NodeConf, error) {
 	// NOTE: since discoverable nodes will write an updated DB to file and then
 	// reload, it is not enough to lock individual reads from the DB
 	// to ensure the condition on which the node is updated is still satisfied
 	// after the DB is read back in.
 
-	n, err := getNode(hwaddr)
-	if err == nil {
-		return n, nil
+	nId, ok := db.NodeInfo[hwaddr]
+	if ok {
+		return db.yml.GetNode(nId)
 	}
 
 	// If we failed to find a node, let's see if we can add one...
-	var netdev string
+	wwlog.Warn("(node not configured)", hwaddr)
 
-	wwlog.WarnExc(err, "%s (node not configured)", hwaddr)
-
-	nodeId, netdev, err := db.yml.FindDiscoverableNode()
+	node, netdev, err := db.yml.FindDiscoverableNode()
 	if err != nil {
 		// NOTE: this is taken as there is no discoverable node, so return the
 		// empty one
-		return n, nil
+		return node, err
 	}
-	discoverdNode, err := getNode(nodeId)
+	// update node
+	nodeChanges, _ := db.yml.GetNodeOnly(nId) // ignore error as nodeId is in db
+	wwlog.Debug("node: %v", nodeChanges)
+	nodeChanges.NetDevs[netdev].Hwaddr = hwaddr
+	nodeChanges.Discoverable = false
+	err = db.yml.SetNode(nId, nodeChanges)
 	if err != nil {
-		return n, err
+		return node, err
 	}
-	// update data on disk and in memory
-	discoverdNode.NetDevs[netdev].Hwaddr = hwaddr
-	db.yml.Nodes[discoverdNode.Id()].NetDevs[netdev].Hwaddr = hwaddr
-	discoverdNode.Discoverable = false
-	db.yml.Nodes[discoverdNode.Id()].Discoverable = false
-
-	err = PersistDb()
+	err = db.yml.Persist()
 	if err != nil {
-		return n, errors.Wrapf(err, "%s (failed to persist node configuration)", hwaddr)
+		return node, errors.Wrapf(err, "%s (failed to persist node configuration)", hwaddr)
 	}
-
 	err = loadNodeDB()
 	if err != nil {
-		return n, errors.Wrapf(err, "%s (failed to reload configuration)", hwaddr)
+		return node, errors.Wrapf(err, "%s (failed to reload configuration)", hwaddr)
 	}
-
 	// NOTE: previously all overlays were built here, but that will also
 	// be done automatically when attempting to serve an overlay that
 	// hasn't been built (without blocking the database).
 
-	wwlog.Serv("%s (node automatically configured)", hwaddr)
+	wwlog.Serv("%s (node %s automatically configured)", hwaddr, nId)
 
 	// return the discovered node
-	return discoverdNode, nil
+	return db.yml.GetNode(nId)
 }
