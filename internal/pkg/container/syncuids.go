@@ -113,8 +113,8 @@ func (db syncDB) checkConflicts() error {
 		for nameInHost, hostIds := range db {
 			if hostIds.HostID == containerIds.ContainerID {
 				errorMsg := fmt.Sprintf("id(%v) collision: host(%s) container(%s)", containerIds.ContainerID, nameInHost, nameInContainer)
-				wwlog.Error(errorMsg)
-				wwlog.Error("add %s to host to resolve conflict", nameInContainer)
+				wwlog.Warn(errorMsg)
+				wwlog.Warn("add %s to host to resolve conflict", nameInContainer)
 				return errors.New(errorMsg)
 			}
 		}
@@ -167,7 +167,10 @@ func (db syncDB) read(fileName string, fromContainer bool) error {
 		for fileScanner.Scan() {
 			line := fileScanner.Text()
 			fields := strings.Split(line, ":")
-
+			if len(fields) != 7 {
+				wwlog.Debug("malformed line in passwd: %s", line)
+				continue
+			}
 			name := fields[0]
 			if name == "" {
 				continue

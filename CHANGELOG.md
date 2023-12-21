@@ -51,6 +51,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed a bug where profile tags were erroneously overridden by empty node
   values. #884
 - Fixed bug where tags from profiles weren't rendered #967
+- Fixed a bug when using `wwctl container import --force` to replace an existing container
+  will generate an error #474
 
 ### Changed
 
@@ -119,6 +121,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   binaries not provided by warewulf
 - use distrubtion ipxe binaries in the rpm
 - Allow absolute iPXE paths in warewulf.conf
+- Support importing containers with symlinked `/bin/sh` #797
+- Don't panic on malformed passwd #527
 
 ## [4.4.0] 2023-01-18
 

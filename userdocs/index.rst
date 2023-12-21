@@ -35,6 +35,8 @@ Welcome to the Warewulf User Guide!
    EL8 (Rocky Linux and RHEL) <quickstart/el8>
    EL9 (Rocky Linux and RHEL) <quickstart/el9>
    openSUSE Leap and SLES 15 <quickstart/suse15>
+   Debian 12 <quickstart/debian12>
+
 
 .. toctree::
    :maxdepth: 2

@@ -175,21 +175,23 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 	containerName = cip.Name
 	fullPath := container.SourceDir(cip.Name)
 
+	// container already exists and should be removed first
+	if util.IsDir(fullPath) && cip.Force {
+		wwlog.Info("Overwriting existing VNFS")
+		err = os.RemoveAll(fullPath)
+		if err != nil {
+			wwlog.ErrorExc(err, "")
+			return
+		}
+	}
+
 	if util.IsDir(fullPath) {
-		if cip.Force {
-			wwlog.Info("Overwriting existing VNFS")
-			err = os.RemoveAll(fullPath)
-			if err != nil {
-				wwlog.ErrorExc(err, "")
-				return
-			}
-		} else if cip.Update {
-			wwlog.Info("Updating existing VNFS")
-		} else {
+		if !cip.Update {
 			err = fmt.Errorf("VNFS Name exists, specify --force, --update, or choose a different name: %s", cip.Name)
 			wwlog.Error(err.Error())
 			return
 		}
+		wwlog.Info("Updating existing VNFS")
 	} else if strings.HasPrefix(cip.Source, "docker://") || strings.HasPrefix(cip.Source, "docker-daemon://") ||
 		strings.HasPrefix(cip.Source, "file://") || util.IsFile(cip.Source) {
 		var sCtx *types.SystemContext
@@ -238,12 +240,14 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		}
 	}
 
-	wwlog.Info("Building container: %s", cip.Name)
-	err = container.Build(cip.Name, true)
-	if err != nil {
-		err = fmt.Errorf("could not build container %s: %s", cip.Name, err.Error())
-		wwlog.Error(err.Error())
-		return
+	if cip.Build {
+		wwlog.Info("Building container: %s", cip.Name)
+		err = container.Build(cip.Name, true)
+		if err != nil {
+			err = fmt.Errorf("could not build container %s: %s", cip.Name, err.Error())
+			wwlog.Error(err.Error())
+			return
+		}
 	}
 
 	if cip.Default {

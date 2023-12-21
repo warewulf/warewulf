@@ -1,6 +1,9 @@
 package imprt
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/spf13/cobra"
+)
 
 var (
 	baseCmd = &cobra.Command{
@@ -19,6 +22,11 @@ Imported containers are used to create bootable VNFS images.`,
 		Example: "wwctl container import docker://ghcr.io/hpcng/warewulf-rockylinux:8 rockylinux-8",
 		RunE:    CobraRunE,
 		Args:    cobra.MinimumNArgs(1),
+		PreRun: func(cmd *cobra.Command, args []string) {
+			if SetForce && SetUpdate {
+				wwlog.Warn("Both --force and --update flags are set, will ignore --update flag")
+			}
+		},
 	}
 	SetForce   bool
 	SetUpdate  bool
