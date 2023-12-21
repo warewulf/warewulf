@@ -8,8 +8,8 @@ ARCH=x86_64
 PCBIOS=bin-${ARCH}-pcbios/undionly.kpxe
 EFI=bin-${ARCH}-efi/ipxe.efi
 
-PCBIOS_output=`pwd`/staticfiles/${ARCH}.kpxe
-EFI_output=`pwd`/staticfiles/${ARCH}.efi
+PCBIOS_output=${ARCH}.kpxe
+EFI_output=${ARCH}.efi
 
 SYSBIOS="/usr/share/ipxe/undionly.kpxe"
 SYSEFI="/usr/share/ipxe/ipxe-${ARCH}.efi"

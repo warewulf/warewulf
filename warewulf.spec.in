@@ -39,9 +39,11 @@ BuildRequires: go >= 1.16
 BuildRequires: firewall-macros
 BuildRequires: firewalld
 BuildRequires: tftp
+BuildRequires: yq
 Requires: tftp
 Requires: nfs-kernel-server
 Requires: firewalld
+Requires: ipxe-bootimgs
 %else
 # Assume Red Hat/Fedora build
 BuildRequires: system-release
@@ -50,6 +52,8 @@ BuildRequires: golang >= 1.16
 BuildRequires: firewalld-filesystem
 Requires: tftp-server
 Requires: nfs-utils
+Requires: ipxe-bootimgs-x86
+Requires: ipxe-bootimgs-aarch64
 %endif
 
 %if 0%{?rhel} >= 8 || 0%{?suse_version} || 0%{?fedora}
@@ -89,7 +93,8 @@ make defaults \
     SYSTEMDDIR=%{_unitdir} \
     BASHCOMPDIR=/etc/bash_completion.d/ \
     FIREWALLDDIR=/usr/lib/firewalld/services \
-    WWCLIENTDIR=/warewulf
+    WWCLIENTDIR=/warewulf \
+    IPXESOURCE=/usr/share/ipxe
 make
 
 
@@ -102,6 +107,15 @@ make install \
 
 %pre
 getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
+# use ipxe images from the distribution
+%if 0%{?suse_version} || 0%{?sle_version}
+yq e '
+  .tftp.ipxe."00:00" = "undionly.kpxe" |
+  .tftp.ipxe."00:07" = "ipxe-x86_64.efi" |
+  .tftp.ipxe."00:09" = "ipxe-x86_64.efi" |
+  .tftp.ipxe."00:0B" = "snp-arm64.efi" ' \
+  -i %{buildroot}%{_sysconfdir}/warewulf/warewulf.conf
+%endif
 
 
 %post

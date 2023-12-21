@@ -68,7 +68,7 @@ etc/bash_completion.d/wwctl: wwctl
 
 .PHONY: lint
 lint: $(config)
-	$(GOLANGCI_LINT) run --build-tags "$(WW_GO_BUILD_TAGS)" --skip-dirs internal/pkg/staticfiles --timeout=5m ./...
+	$(GOLANGCI_LINT) run --build-tags "$(WW_GO_BUILD_TAGS)" --timeout=5m ./...
 
 .PHONY: vet
 vet: $(config)
@@ -102,7 +102,8 @@ install: build docs
 	install -d -m 0755 $(DESTDIR)$(WWDOCDIR)
 	install -d -m 0755 $(DESTDIR)$(FIREWALLDDIR)
 	install -d -m 0755 $(DESTDIR)$(SYSTEMDDIR)
-	install -d -m 0755 $(DESTDIR)$(WWDATADIR)/ipxe
+	install -d -m 0755 $(DESTDIR)$(IPXESOURCE)
+	install -d -m 0755 $(DESTDIR)$(DATADIR)/warewulf
 	test -f $(DESTDIR)$(WWCONFIGDIR)/warewulf.conf || install -m 0644 etc/warewulf.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(WWCONFIGDIR)/nodes.conf || install -m 0644 etc/nodes.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapic.conf || install -m 0644 etc/wwapic.conf $(DESTDIR)$(WWCONFIGDIR)
@@ -132,10 +133,6 @@ install: build docs
 	install -m 0644 etc/bash_completion.d/wwctl $(DESTDIR)$(BASHCOMPDIR)/wwctl
 	for f in docs/man/man1/*.1.gz; do install -m 0644 $$f $(DESTDIR)$(MANDIR)/man1/; done
 	for f in docs/man/man5/*.5.gz; do install -m 0644 $$f $(DESTDIR)$(MANDIR)/man5/; done
-	install -m 0644 staticfiles/README-ipxe.md $(DESTDIR)$(WWDATADIR)/ipxe
-	install -m 0644 staticfiles/arm64.efi $(DESTDIR)$(WWDATADIR)/ipxe
-	install -m 0644 staticfiles/x86_64.efi $(DESTDIR)$(WWDATADIR)/ipxe
-	install -m 0644 staticfiles/x86_64.kpxe $(DESTDIR)$(WWDATADIR)/ipxe
 
 .PHONY: init
 init:
@@ -147,7 +144,7 @@ init:
 dist:
 	rm -rf .dist/ $(WAREWULF)-$(VERSION).tar.gz
 	mkdir -p .dist/$(WAREWULF)-$(VERSION)
-	rsync -a --exclude=".*" --exclude "*~" * .dist/$(WAREWULF)-$(VERSION)/
+	rsync -a --exclude=".github"  --exclude=".vscode" --exclude "*~" * .dist/$(WAREWULF)-$(VERSION)/
 	cd .dist; tar -czf ../$(WAREWULF)-$(VERSION).tar.gz $(WAREWULF)-$(VERSION)
 	rm -rf .dist
 

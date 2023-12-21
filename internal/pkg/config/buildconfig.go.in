@@ -7,6 +7,7 @@ type BuildConfig struct {
 	Sysconfdir     string `default:"@SYSCONFDIR@"`
 	Datadir        string `default:"@DATADIR@"`
 	Localstatedir  string `default:"@LOCALSTATEDIR@"`
+	Ipxesource     string `default:"@IPXESOURCE@"`
 	Srvdir         string `default:"@SRVDIR@"`
 	Tftpdir        string `default:"@TFTPDIR@"`
 	Firewallddir   string `default:"@FIREWALLDDIR@"`
