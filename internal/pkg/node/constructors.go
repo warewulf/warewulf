@@ -35,7 +35,6 @@ defaultnode:
   - default
   network devices:
     dummy:
-      device: eth0
       type: ethernet
       netmask: 255.255.255.0
       onboot: true`
