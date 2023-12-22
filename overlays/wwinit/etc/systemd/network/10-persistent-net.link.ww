@@ -5,14 +5,10 @@
 {{range $devname, $netdev := .NetDevs}}
 {{- $filename := print "10-persistent-net-" $devname ".link"}}
 {{- file $filename }}
-{{- if $netdev.Hwaddr }}
+{{- if and $netdev.Hwaddr $netdev.Device }}
 [Match]
 MACAddress={{$netdev.Hwaddr}}
 [Link]
-{{ if $netdev.Device -}}
 Name={{ $netdev.Device }}
-{{ else -}}
-Name={{ $devname }}
-{{ end -}}
 {{ end -}}
 {{end}}
