@@ -53,6 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed bug where tags from profiles weren't rendered #967
 - Fixed a bug when using `wwctl container import --force` to replace an existing container
   will generate an error #474
+- Create `/etc/systemd/network/10-persistent-net-<netdev>.link` file per network device
 
 ### Changed
 
