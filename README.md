@@ -68,14 +68,38 @@ no matter how big or small or customized it needs to be.
 ## iPXE
 
 Warewulf uses iPXE for network boot. Typically iPXE is provided by the
-operating system; but the iPXE binaries can be rebuilt with the
-`ipxe-update.sh` script. This script accepts command-line arguments
-that are passed to the underlying `make` process. e.g.,
+operating system; but the iPXE binaries can be built with
+`scripts/build-ipxe.sh`. This script accepts command-line arguments that are
+passed to the underlying `make` process. e.g.,
 
 ```bash
+
 echo "#!ipxe
 echo Tagging with vlan 1000
 vcreate --tag 1000 net0 autoboot || shell" >vlan-1000.ipxe
 
-sh ipxe-update.sh EMBED=$(readlink -f vlan-1000.ipxe)
+sh scripts/build-ipxe.sh EMBED=$(readlink -f vlan-1000.ipxe)
+```
+
+By default, `build-ipxe.sh` will attempt to write iPXE builds to
+`/usr/local/share/ipxe/`. This path can be specified using the `DESTDIR`
+environment variable. Other supported environment variables include
+`IPXE_BRANCH` and `TARGETS`.
+
+```bash
+
+IPXE_BRANCH=master TARGETS=bin-arm64-efi/snponly.efi DESTDIR=. sh scripts/build-ipxe.sh
+```
+
+Update `warewulf.conf` to use locally-built iPXE.
+
+```
+tftp:
+  enabled: true
+  systemd name: tftp
+  ipxe:
+    00:09: /usr/local/share/ipxe/bin-x86_64-efi-snponly.efi
+    00:00: /usr/local/share/ipxe/bin-x86_64-pcbios-undionly.kpxe
+    00:0B: /usr/local/share/ipxe/bin-arm64-efi-snponly.efi
+    00:07: /usr/local/share/ipxe/bin-x86_64-efi-snponly.efi
 ```
