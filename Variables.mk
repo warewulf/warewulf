@@ -83,7 +83,7 @@ CONFIG := $(shell pwd)
 IPXESOURCE ?= $(PREFIX)/share/ipxe
 
 # helper functions
-godeps=$(shell go list -mod vendor -deps -f '{{if not .Standard}}{{ $$dep := . }}{{range .GoFiles}}{{$$dep.Dir}}/{{.}} {{end}}{{end}}' $(1) | sed "s%${PWD}/%%g")
+godeps=$(shell 2>/dev/null go list -mod vendor -deps -f '{{if not .Standard}}{{ $$dep := . }}{{range .GoFiles}}{{$$dep.Dir}}/{{.}} {{end}}{{end}}' $(1) | sed "s%${PWD}/%%g")
 
 # use GOPROXY for older git clients and speed up downloads
 GOPROXY ?= https://proxy.golang.org
