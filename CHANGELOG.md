@@ -124,6 +124,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allow absolute iPXE paths in warewulf.conf
 - Support importing containers with symlinked `/bin/sh` #797
 - Don't panic on malformed passwd #527
+- Update iPXE building script
 
 ## [4.4.0] 2023-01-18
 
