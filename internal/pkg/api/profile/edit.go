@@ -32,7 +32,7 @@ func FindAllProfileConfs() *wwapiv1.NodeYaml {
 /*
 Returns filtered list of nodes
 */
-func FilteredProfiles(profileList *wwapiv1.NodeList) *wwapiv1.NodeYaml {
+func FilteredProfiles(profileList *wwapiv1.ProfileList) *wwapiv1.NodeYaml {
 	nodeDB, err := node.New()
 	if err != nil {
 		wwlog.Error("Could not open nodeDB: %s\n", err)

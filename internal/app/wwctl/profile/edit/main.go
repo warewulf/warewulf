@@ -33,7 +33,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 {
 		args = append(args, ".*")
 	}
-	filterList := wwapiv1.NodeList{
+	filterList := wwapiv1.ProfileList{
 		Output: args,
 	}
 	profileListMsg := apiprofile.FilteredProfiles(&filterList)

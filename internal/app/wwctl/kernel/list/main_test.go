@@ -5,9 +5,7 @@ import (
 	"io"
 	"os"
 	"testing"
-	"time"
 
-	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
@@ -25,9 +23,9 @@ func Test_List(t *testing.T) {
 		mockFunc func()
 	}{
 		{
-			name:   "container list test",
+			name:   "kernel list test",
 			args:   []string{},
-			stdout: `test            1      kernel`,
+			stdout: "  KERNEL NAME  KERNEL VERSION  NODES  \n  test_kernel                  0      \n",
 			inDb: `WW_INTERNAL: 43
 nodeprofiles:
   default: {}
@@ -37,15 +35,8 @@ nodes:
     - default
 `,
 			mockFunc: func() {
-				containerList = func() (containerInfo []*wwapiv1.ContainerInfo, err error) {
-					containerInfo = append(containerInfo, &wwapiv1.ContainerInfo{
-						Name:          "test",
-						NodeCount:     1,
-						KernelVersion: "kernel",
-						CreateDate:    uint64(time.Unix(0, 0).Unix()),
-						ModDate:       uint64(time.Unix(0, 0).Unix()),
-						Size:          uint64(1),
-					})
+				kernelList = func() (kernels []string, err error) {
+					kernels = []string{"test_kernel"}
 					return
 				}
 			},
@@ -83,7 +74,7 @@ WW_INTERNAL: 0
 			wwlog.SetLogWriter(buf)
 			err := baseCmd.Execute()
 			assert.NoError(t, err)
-			assert.Contains(t, buf.String(), "containers:\n    - kernelVersion: kernel\n      name: test\n      nodeCount: 1\n      size: \"1\"\n")
+			assert.Contains(t, buf.String(), "kernels:\n    - kernelName: test_kernel\n      nodes: \"0\"\n")
 		})
 
 		t.Run(tt.name+" with output json", func(t *testing.T) {
@@ -97,7 +88,7 @@ WW_INTERNAL: 0
 			wwlog.SetLogWriter(buf)
 			err := baseCmd.Execute()
 			assert.NoError(t, err)
-			assert.Contains(t, buf.String(), "{\"containers\":[{\"name\":\"test\",\"nodeCount\":1,\"kernelVersion\":\"kernel\",\"size\":1}]}\n")
+			assert.Contains(t, buf.String(), "{\"kernels\":[{\"kernel_name\":\"test_kernel\",\"nodes\":\"0\"}]}\n")
 		})
 
 		t.Run(tt.name+" with output csv", func(t *testing.T) {
@@ -108,7 +99,7 @@ WW_INTERNAL: 0
 			args := tt.args
 			baseCmd.SetArgs(append(args, "-o", "csv"))
 			assert.NoError(t, err)
-			verifyOutput(t, baseCmd, "CONTAINER NAME,NODES,KERNEL VERSION,CREATION TIME,MODIFICATION TIME,SIZE\ntest,1,kernel,01 Jan 70 00:00 UTC,01 Jan 70 00:00 UTC,1 B\n")
+			verifyOutput(t, baseCmd, "KERNEL NAME,KERNEL VERSION,NODES\ntest_kernel,,0\n")
 		})
 
 		t.Run(tt.name+" with output text", func(t *testing.T) {
@@ -119,7 +110,7 @@ WW_INTERNAL: 0
 			args := tt.args
 			baseCmd.SetArgs(append(args, "-o", "text"))
 			assert.NoError(t, err)
-			verifyOutput(t, baseCmd, "  CONTAINER NAME  NODES  KERNEL VERSION  CREATION TIME        MODIFICATION TIME    SIZE  \n  test            1      kernel          01 Jan 70 00:00 UTC  01 Jan 70 00:00 UTC  1 B   \n")
+			verifyOutput(t, baseCmd, "  KERNEL NAME  KERNEL VERSION  NODES  \n  test_kernel                  0      \n")
 		})
 	}
 }

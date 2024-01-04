@@ -1,9 +1,15 @@
 package list
 
 import (
+	"encoding/csv"
+	"encoding/json"
 	"os"
-	"syscall"
+	"strings"
 
+	"github.com/bufbuild/protoyaml-go"
+	"github.com/hpcng/warewulf/internal/app/wwctl/helper"
+	apioverlay "github.com/hpcng/warewulf/internal/pkg/api/overlay"
+	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
@@ -11,64 +17,75 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func CobraRunE(cmd *cobra.Command, args []string) error {
-	var overlays []string
+func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		param := &wwapiv1.OverlayListParameter{}
 
-	if len(args) > 0 {
-		overlays = args
-	} else {
-		var err error
-		overlays, err = overlay.FindOverlays()
-		if err != nil {
-			return errors.Wrap(err, "could not obtain list of overlays from system")
+		if len(args) > 0 {
+			param.Overlays = args
+		} else {
+			var err error
+			overlays, err := overlay.FindOverlays()
+			if err != nil {
+				return errors.Wrap(err, "could not obtain list of overlays from system")
+			}
+			param.Overlays = overlays
 		}
-	}
 
-	if ListLong {
-		wwlog.Info("%-10s %5s %-5s %-18s %s\n", "PERM MODE", "UID", "GID", "SYSTEM-OVERLAY", "FILE PATH")
-	} else {
-		wwlog.Info("%-30s %-12s\n", "OVERLAY NAME", "FILES/DIRS")
-	}
+		if vars.listLong {
+			param.Type = wwapiv1.OverlayListParameter_TYPE_LONG
+		} else if vars.listContents {
+			param.Type = wwapiv1.OverlayListParameter_TYPE_CONTENT
+		}
 
-	for o := range overlays {
-		name := overlays[o]
-		path := overlay.OverlaySourceDir(name)
+		var headers []string
+		if vars.listLong {
+			headers = []string{"PERM MODE", "UID", "GID", "SYSTEM-OVERLAY", "FILE PATH"}
+		} else {
+			headers = []string{"OVERLAY NAME", "FILES/DIRS"}
+		}
 
-		if util.IsDir(path) {
-			files := util.FindFiles(path)
+		overlays, err := apioverlay.OverlayList(param)
+		if err != nil {
+			return err
+		}
 
-			wwlog.Debug("Iterating overlay path: %s", path)
-			if ListLong {
-				for file := range files {
-					s, err := os.Stat(files[file])
-					if err != nil {
-						continue
-					}
-
-					fileMode := s.Mode()
-					perms := fileMode & os.ModePerm
-
-					sys := s.Sys()
-
-					wwlog.Info("%v %5d %-5d %-18s /%s\n", perms, sys.(*syscall.Stat_t).Uid, sys.(*syscall.Stat_t).Gid, overlays[o], files[file])
-				}
-			} else if ListContents {
-				var fileCount int
-				for file := range files {
-					wwlog.Info("%-30s /%-12s\n", name, files[file])
-					fileCount++
-				}
-				if fileCount == 0 {
-					wwlog.Info("%-30s %-12d\n", name, 0)
-				}
-			} else {
-				wwlog.Info("%-30s %-12d\n", name, len(files))
+		if strings.EqualFold(strings.TrimSpace(vars.output), "yaml") {
+			yamlBytes, err := protoyaml.Marshal(overlays)
+			if err != nil {
+				return err
 			}
 
-		} else {
-			wwlog.Error("system/%s (path not found:%s)", overlays[o], path)
-		}
-	}
+			wwlog.Info(string(yamlBytes))
+		} else if strings.EqualFold(strings.TrimSpace(vars.output), "json") {
+			jsonBytes, err := json.Marshal(overlays)
+			if err != nil {
+				return err
+			}
 
-	return nil
+			wwlog.Info(string(jsonBytes))
+		} else if strings.EqualFold(strings.TrimSpace(vars.output), "csv") {
+
+			csvWriter := csv.NewWriter(os.Stdout)
+			defer csvWriter.Flush()
+			if err := csvWriter.Write(headers); err != nil {
+				return err
+			}
+			for _, val := range overlays.Overlays {
+				values := util.GetProtoMessageValues(val)
+				if err := csvWriter.Write(values); err != nil {
+					return err
+				}
+			}
+		} else {
+			ph := helper.NewPrintHelper(headers)
+			for _, val := range overlays.Overlays {
+				values := util.GetProtoMessageValues(val)
+				ph.Append(values)
+			}
+			ph.Render()
+		}
+
+		return nil
+	}
 }

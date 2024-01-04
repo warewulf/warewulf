@@ -21,6 +21,7 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
+	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 // reserve some number of cpus for system/warwulfd usage
@@ -79,7 +80,6 @@ func FirstError(errs ...error) (err error) {
 }
 
 func DirModTime(path string) (time.Time, error) {
-
 	var lastTime time.Time
 	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -123,7 +123,7 @@ func PathIsNewer(source string, compare string) bool {
 }
 
 func RandomString(n int) string {
-	var letter = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+	letter := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
 	b := make([]rune, n)
 	for i := range b {
@@ -256,10 +256,12 @@ will match /foo/baar/ and /foo/baar/sibling
 */
 func FindFilterFiles(
 	path string,
-	includePattern []string,
-	ignorePattern []string,
-	ignore_xdev bool) (ofiles []string, err error) {
-	wwlog.Debug("Finding files: %s include: %s ignore: %s", path, includePattern, ignorePattern)
+	include []string,
+	ignore []string,
+	ignore_xdev bool,
+) (ofiles []string, err error) {
+	wwlog.Debug("Finding files: %s", path)
+
 	cwd, err := os.Getwd()
 	if err != nil {
 		return ofiles, err
@@ -386,7 +388,7 @@ func SliceAddUniqueElement(array []string, add string) []string {
 	var ret []string
 	var found bool
 
-	//Linear time, appends
+	// Linear time, appends
 	for _, r := range array {
 		ret = append(ret, r)
 		if r == add {
@@ -507,7 +509,7 @@ Appending the lines to the given file
 */
 func AppendLines(fileName string, lines []string) error {
 	wwlog.Verbose("appending %v lines to %s", len(lines), fileName)
-	file, err := os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
 		return errors.Wrapf(err, "Can't open file: %s", fileName)
 	}
@@ -531,13 +533,14 @@ func CpioCreate(
 	ifiles []string,
 	ofile string,
 	format string,
-	cpio_args ...string) (err error) {
-
+	cpio_args ...string,
+) (err error) {
 	args := []string{
 		"--quiet",
 		"--create",
 		"-H", format,
-		"--file=" + ofile}
+		"--file=" + ofile,
+	}
 
 	args = append(args, cpio_args...)
 
@@ -569,13 +572,12 @@ func CpioCreate(
 	Compress a file using gzip or pigz
 */
 func FileGz(
-	file string) (err error) {
-
+	file string,
+) (err error) {
 	file_gz := file + ".gz"
 
 	if IsFile(file_gz) {
 		err := os.Remove(file_gz)
-
 		if err != nil {
 			return errors.Wrapf(err, "Could not remove existing file: %s", file_gz)
 		}
@@ -665,13 +667,22 @@ func BuildFsImage(
 	ignore []string,
 	ignore_xdev bool,
 	format string,
-	cpio_args ...string) (err error) {
-
-	err = os.MkdirAll(path.Dir(imagePath), 0755)
+	cpio_args ...string,
+) (err error) {
+	err = os.MkdirAll(path.Dir(imagePath), 0o755)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to create image directory for %s: %s", name, imagePath)
 	}
 	wwlog.Debug("Created image directory for %s: %s", name, imagePath)
+
+	// TODO: why is this done if the container must already exist?
+	err = os.MkdirAll(path.Dir(rootfsPath), 0o755)
+	if err != nil {
+		return errors.Wrapf(err, "Failed to create fs directory for %s: %s", name, rootfsPath)
+	}
+
+	wwlog.Debug("Created fs directory for %s: %s", name, rootfsPath)
+
 	cwd, err := os.Getwd()
 	if err != nil {
 		return err
@@ -786,4 +797,47 @@ func IsWriteAble(path string) bool {
 		return false
 	}
 	return true
+}
+
+/*
+Check if output argument value is valid or not
+*/
+var output = []string{"text", "json", "yaml", "csv"}
+
+func ValidOutput(arg string) error {
+	valid := false
+	for _, o := range output {
+		if strings.EqualFold(strings.TrimSpace(arg), o) {
+			valid = true
+			break
+		}
+	}
+
+	if !valid {
+		return fmt.Errorf("output value should be one of `text | json | yaml | csv`")
+	}
+	return nil
+}
+
+/*
+Return field values of a given proto message
+*/
+func GetProtoMessageValues(message protoreflect.ProtoMessage) []string {
+	var values []string
+	ref := message.ProtoReflect()
+	desc := ref.Descriptor()
+	l := desc.Oneofs().Len()
+	for i := 0; i < l; i++ {
+		if t := ref.WhichOneof(desc.Oneofs().Get(i)); t != nil {
+			fields := t.Message().Fields()
+			for j := 0; j < fields.Len(); j++ {
+				message.ProtoReflect().Range(func(fd protoreflect.FieldDescriptor, v protoreflect.Value) bool {
+					w := v.Message().Get(fd.Message().Fields().Get(j))
+					values = append(values, w.String())
+					return false
+				})
+			}
+		}
+	}
+	return values
 }

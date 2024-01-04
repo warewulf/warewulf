@@ -2,16 +2,25 @@ package list
 
 import (
 	"github.com/hpcng/warewulf/internal/pkg/overlay"
+	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/spf13/cobra"
 )
 
-var (
-	baseCmd = &cobra.Command{
+type variables struct {
+	listContents bool
+	listLong     bool
+	output       string
+}
+
+// GetRootCommand returns the root cobra.Command for the application.
+func GetCommand() *cobra.Command {
+	vars := variables{}
+	baseCmd := &cobra.Command{
 		DisableFlagsInUseLine: true,
 		Use:                   "list [OPTIONS] OVERLAY_NAME",
 		Short:                 "List Warewulf Overlays and files",
 		Long:                  "This command displays information about all Warewulf overlays or the specified\nOVERLAY_NAME. It also supports listing overlay content information.",
-		RunE:                  CobraRunE,
+		RunE:                  CobraRunE(&vars),
 		Args:                  cobra.MinimumNArgs(0),
 		Aliases:               []string{"ls"},
 		ValidArgs:             []string{"system", "runtime"},
@@ -22,18 +31,13 @@ var (
 			list, _ := overlay.FindOverlays()
 			return list, cobra.ShellCompDirectiveNoFileComp
 		},
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			return util.ValidOutput(vars.output)
+		},
 	}
-	ListContents bool
-	ListLong     bool
-)
 
-func init() {
-	baseCmd.PersistentFlags().BoolVarP(&ListContents, "all", "a", false, "List the contents of overlays")
-	baseCmd.PersistentFlags().BoolVarP(&ListLong, "long", "l", false, "List 'long' of all overlay contents")
-
-}
-
-// GetRootCommand returns the root cobra.Command for the application.
-func GetCommand() *cobra.Command {
+	baseCmd.PersistentFlags().BoolVarP(&vars.listContents, "all", "a", false, "List the contents of overlays")
+	baseCmd.PersistentFlags().BoolVarP(&vars.listLong, "long", "l", false, "List 'long' of all overlay contents")
+	baseCmd.PersistentFlags().StringVarP(&vars.output, "output", "o", "text", "output format `json | text | yaml | csv`")
 	return baseCmd
 }

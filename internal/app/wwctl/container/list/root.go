@@ -1,8 +1,13 @@
 package list
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/spf13/cobra"
+)
 
-type variables struct{}
+type variables struct {
+	output string
+}
 
 // GetRootCommand returns the root cobra.Command for the application.
 func GetCommand() *cobra.Command {
@@ -14,6 +19,11 @@ func GetCommand() *cobra.Command {
 		Long:                  "This command will show you the containers that are imported into Warewulf.",
 		RunE:                  CobraRunE(&vars),
 		Aliases:               []string{"ls"},
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			return util.ValidOutput(vars.output)
+		},
 	}
+
+	baseCmd.PersistentFlags().StringVarP(&vars.output, "output", "o", "text", "output format `json | text | yaml | csv`")
 	return baseCmd
 }

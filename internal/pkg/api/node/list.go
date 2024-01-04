@@ -1,7 +1,6 @@
 package apinode
 
 import (
-	"fmt"
 	"sort"
 	"strings"
 
@@ -14,79 +13,114 @@ import (
 NodeList lists all to none of the nodes managed by Warewulf. Returns
 a formated string slice, with each line as separate string
 */
-func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err error) {
+func NodeList(nodeGet *wwapiv1.GetNodeList) (*wwapiv1.NodeListViewResponse, error) {
 	// nil is okay for nodeNames
 	nodeDB, err := node.New()
 	if err != nil {
-		return
+		return nil, err
 	}
 	nodes, err := nodeDB.FindAllNodes()
 	if err != nil {
-		return
+		return nil, err
 	}
 	nodeGet.Nodes = hostlist.Expand(nodeGet.Nodes)
 	sort.Strings(nodeGet.Nodes)
+
+	var entries []*wwapiv1.NodeListEntry
 	if nodeGet.Type == wwapiv1.GetNodeList_Simple {
-		nodeList.Output = append(nodeList.Output,
-			fmt.Sprintf("%s:=:%s:=:%s", "NODE NAME", "PROFILES", "NETWORK"))
 		for _, n := range node.FilterByName(nodes, nodeGet.Nodes) {
 			var netNames []string
 			for k := range n.NetDevs {
 				netNames = append(netNames, k)
 			}
 			sort.Strings(netNames)
-			nodeList.Output = append(nodeList.Output,
-				fmt.Sprintf("%s:=:%s:=:%s", n.Id.Print(), n.Profiles.Print(), strings.Join(netNames, ", ")))
+			entries = append(entries, &wwapiv1.NodeListEntry{
+				NodeEntry: &wwapiv1.NodeListEntry_NodeSimple{
+					NodeSimple: &wwapiv1.NodeListSimple{
+						NodeName: n.Id.Print(),
+						Profiles: n.Profiles.Print(),
+						Network:  strings.Join(netNames, ", "),
+					},
+				},
+			})
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_Network {
-		nodeList.Output = append(nodeList.Output,
-			fmt.Sprintf("%s:=:%s:=:%s:=:%s:=:%s:=:%s", "NODE NAME", "NAME", "HWADDR", "IPADDR", "GATEWAY", "DEVICE"))
 		for _, n := range node.FilterByName(nodes, nodeGet.Nodes) {
 			if len(n.NetDevs) > 0 {
 				for name := range n.NetDevs {
-					nodeList.Output = append(nodeList.Output,
-						fmt.Sprintf("%s:=:%s:=:%s:=:%s:=:%s:=:%s", n.Id.Print(), name,
-							n.NetDevs[name].Hwaddr.Print(),
-							n.NetDevs[name].Ipaddr.Print(),
-							n.NetDevs[name].Gateway.Print(),
-							n.NetDevs[name].Device.Print()))
+					entries = append(entries, &wwapiv1.NodeListEntry{
+						NodeEntry: &wwapiv1.NodeListEntry_NodeNetwork{
+							NodeNetwork: &wwapiv1.NodeListNetwork{
+								NodeName: n.Id.Print(),
+								Name:     name,
+								Hwaddr:   n.NetDevs[name].Hwaddr.Print(),
+								Ipaddr:   n.NetDevs[name].Ipaddr.Print(),
+								Gateway:  n.NetDevs[name].Gateway.Print(),
+								Device:   n.NetDevs[name].Device.Print(),
+							},
+						},
+					})
 				}
 			} else {
-				fmt.Printf("%s:=:%s:=:%s:=:%s:=:%s:=:%s", n.Id.Print(), "--", "--", "--", "--", "--")
+				entries = append(entries, &wwapiv1.NodeListEntry{
+					NodeEntry: &wwapiv1.NodeListEntry_NodeNetwork{
+						NodeNetwork: &wwapiv1.NodeListNetwork{
+							NodeName: n.Id.Print(),
+							Name:     "--",
+							Hwaddr:   "--",
+							Ipaddr:   "--",
+							Gateway:  "--",
+							Device:   "--",
+						},
+					},
+				})
 			}
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_Ipmi {
-		nodeList.Output = append(nodeList.Output,
-			fmt.Sprintf("%s:=:%s:=:%s:=:%s:=:%s", "NODE NAME", "IPMI IPADDR", "IPMI PORT", "IPMI USERNAME", "IPMI INTERFACE"))
 		for _, n := range node.FilterByName(nodes, nodeGet.Nodes) {
-			nodeList.Output = append(nodeList.Output,
-				fmt.Sprintf("%s:=:%s:=:%s:=:%s:=:%s:=:%s", n.Id.Print(),
-					n.Ipmi.Ipaddr.Print(),
-					n.Ipmi.Port.Print(),
-					n.Ipmi.UserName.Print(),
-					n.Ipmi.Interface.Print(),
-					n.Ipmi.EscapeChar.Print()))
+			entries = append(entries, &wwapiv1.NodeListEntry{
+				NodeEntry: &wwapiv1.NodeListEntry_NodeIpmi{
+					NodeIpmi: &wwapiv1.NodeListIpmi{
+						NodeName:       n.Id.Print(),
+						IpmiIpAddr:     n.Ipmi.Ipaddr.Print(),
+						IpmiPort:       n.Ipmi.Port.Print(),
+						IpmiUserName:   n.Ipmi.UserName.Print(),
+						IpmiInterface:  n.Ipmi.Interface.Print(),
+						IpmiEscapeChar: n.Ipmi.EscapeChar.Print(),
+					},
+				},
+			})
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_Long {
-		nodeList.Output = append(nodeList.Output,
-			fmt.Sprintf("%s:=:%s:=:%s:=:%s", "NODE NAME", "KERNEL OVERRIDE", "CONTAINER", "OVERLAYS (S/R)"))
 		for _, n := range node.FilterByName(nodes, nodeGet.Nodes) {
-			nodeList.Output = append(nodeList.Output,
-				fmt.Sprintf("%s:=:%s:=:%s:=:%s", n.Id.Print(),
-					n.Kernel.Override.Print(),
-					n.ContainerName.Print(),
-					n.SystemOverlay.Print()+"/"+n.RuntimeOverlay.Print()))
+			entries = append(entries, &wwapiv1.NodeListEntry{
+				NodeEntry: &wwapiv1.NodeListEntry_NodeLong{
+					NodeLong: &wwapiv1.NodeListLong{
+						NodeName:              n.Id.Print(),
+						KernelOverride:        n.Kernel.Override.Print(),
+						Container:             n.ContainerName.Print(),
+						OverlaysSystemRuntime: n.SystemOverlay.Print() + "/" + n.RuntimeOverlay.Print(),
+					},
+				},
+			})
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_All || nodeGet.Type == wwapiv1.GetNodeList_FullAll {
 		for _, n := range node.FilterByName(nodes, nodeGet.Nodes) {
-			nodeList.Output = append(nodeList.Output,
-				fmt.Sprintf("%s:=:%s:=:%s:=:%s", "NODE", "FIELD", "PROFILE", "VALUE"))
 			fields := n.GetFields(wwapiv1.GetNodeList_FullAll == nodeGet.Type)
 			for _, f := range fields {
-				nodeList.Output = append(nodeList.Output,
-					fmt.Sprintf("%s:=:%s:=:%s:=:%s", n.Id.Print(), f.Field, f.Source, f.Value))
+				entries = append(entries, &wwapiv1.NodeListEntry{
+					NodeEntry: &wwapiv1.NodeListEntry_NodeFull{
+						NodeFull: &wwapiv1.NodeListFull{
+							NodeName: n.Id.Print(),
+							Field:    f.Field,
+							Profile:  f.Source,
+							Value:    f.Value,
+						},
+					},
+				})
 			}
 		}
 	}
-	return
+
+	return &wwapiv1.NodeListViewResponse{Nodes: entries}, nil
 }

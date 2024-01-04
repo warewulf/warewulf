@@ -10,6 +10,8 @@ import (
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
+	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -148,35 +150,120 @@ nodes:
 		_, err = tempNodeConf.Write([]byte(tt.inDb))
 		assert.NoError(t, err)
 		assert.NoError(t, tempNodeConf.Sync())
-		t.Logf("Running test: %s\n", tt.name)
+
 		t.Run(tt.name, func(t *testing.T) {
 			baseCmd := GetCommand()
 			baseCmd.SetArgs(tt.args)
+			verifyOutput(t, baseCmd, tt.stdout)
+		})
+
+		t.Run(tt.name+" output to yaml format", func(t *testing.T) {
+			baseCmd := GetCommand()
+			args := []string{"-o", "yaml"}
+			baseCmd.SetArgs(append(args, tt.args...))
 			buf := new(bytes.Buffer)
 			baseCmd.SetOut(buf)
 			baseCmd.SetErr(buf)
-			old := os.Stdout // keep backup of the real stdout
-			r, w, _ := os.Pipe()
-			os.Stdout = w
-			err = baseCmd.Execute()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Got unwanted error: %s", err)
-				t.FailNow()
-			}
-			outC := make(chan string)
-			go func() {
-				var buf bytes.Buffer
-				_, _ = io.Copy(&buf, r)
-				outC <- buf.String()
-			}()
-			// back to normal state
-			w.Close()
-			os.Stdout = old // restoring the real stdout
-			out := <-outC
-			if strings.ReplaceAll(out, " ", "") != strings.ReplaceAll(tt.stdout, " ", "") {
-				t.Errorf("Got wrong output, got:\n'%s'\nwant:\n'%s'", out, tt.stdout)
-				t.FailNow()
-			}
+			wwlog.SetLogWriter(buf)
+			err := baseCmd.Execute()
+			assert.NoError(t, err)
+			assert.Contains(t, buf.String(), "nodes:\n- nodeentry:\n    nodesimple:\n      nodename: n01\n      profiles: default\n      network: \"\"\n")
+		})
+
+		t.Run(tt.name+" output to json format", func(t *testing.T) {
+			baseCmd := GetCommand()
+			args := []string{"-o", "json"}
+			baseCmd.SetArgs(append(args, tt.args...))
+			buf := new(bytes.Buffer)
+			baseCmd.SetOut(buf)
+			baseCmd.SetErr(buf)
+			wwlog.SetLogWriter(buf)
+			err := baseCmd.Execute()
+			assert.NoError(t, err)
+			assert.Contains(t, buf.String(), "{\"nodes\":[{\"NodeEntry\":{\"NodeSimple\":{\"node_name\":\"n01\",\"profiles\":\"default\"}}")
+		})
+
+		t.Run(tt.name+" output to csv format", func(t *testing.T) {
+			baseCmd := GetCommand()
+			args := []string{"-o", "csv"}
+			baseCmd.SetArgs(append(args, tt.args...))
+			baseCmd.SetOut(nil)
+			baseCmd.SetErr(nil)
+			verifyOutput(t, baseCmd, "NODENAME,PROFILES,NETWORK\nn01,default,\n")
+		})
+
+		t.Run(tt.name+" output to text format", func(t *testing.T) {
+			baseCmd := GetCommand()
+			args := []string{"-o", "text"}
+			baseCmd.SetArgs(append(args, tt.args...))
+			baseCmd.SetOut(nil)
+			baseCmd.SetErr(nil)
+			verifyOutput(t, baseCmd, "NODENAMEPROFILESNETWORK\nn01default\n")
+		})
+
+		// test with other flags, only needing to test the headers
+		t.Run(tt.name+" output to csv format (all view)", func(t *testing.T) {
+			baseCmd := GetCommand()
+			args := []string{"-a", "-o", "csv"}
+			baseCmd.SetArgs(append(args, tt.args...))
+			baseCmd.SetOut(nil)
+			baseCmd.SetErr(nil)
+			verifyOutput(t, baseCmd, "NODE,FIELD,PROFILE,VALUE\n")
+		})
+
+		t.Run(tt.name+" output to csv format (full all view)", func(t *testing.T) {
+			baseCmd := GetCommand()
+			args := []string{"-A", "-o", "csv"}
+			baseCmd.SetArgs(append(args, tt.args...))
+			baseCmd.SetOut(nil)
+			baseCmd.SetErr(nil)
+			verifyOutput(t, baseCmd, "NODE,FIELD,PROFILE,VALUE\n")
+		})
+
+		t.Run(tt.name+" output to csv format (ipmi view)", func(t *testing.T) {
+			baseCmd := GetCommand()
+			args := []string{"-i", "-o", "csv"}
+			baseCmd.SetArgs(append(args, tt.args...))
+			baseCmd.SetOut(nil)
+			baseCmd.SetErr(nil)
+			verifyOutput(t, baseCmd, "NODENAME,IPMIIPADDR,IPMIPORT,IPMIUSERNAME,IPMIINTERFACE,IPMIESCAPECHAR\n")
+		})
+
+		t.Run(tt.name+" output to csv format (long view)", func(t *testing.T) {
+			baseCmd := GetCommand()
+			args := []string{"-l", "-o", "csv"}
+			baseCmd.SetArgs(append(args, tt.args...))
+			baseCmd.SetOut(nil)
+			baseCmd.SetErr(nil)
+			verifyOutput(t, baseCmd, "NODENAME,KERNELOVERRIDE,CONTAINER,OVERLAYS(S/R)\n")
+		})
+
+		t.Run(tt.name+" output to csv format (network view)", func(t *testing.T) {
+			baseCmd := GetCommand()
+			args := []string{"-n", "-o", "csv"}
+			baseCmd.SetArgs(append(args, tt.args...))
+			baseCmd.SetOut(nil)
+			baseCmd.SetErr(nil)
+			verifyOutput(t, baseCmd, "NODENAME,NAME,HWADDR,IPADDR,GATEWAY,DEVICE\n")
 		})
 	}
+}
+
+func verifyOutput(t *testing.T, baseCmd *cobra.Command, content string) {
+	stdoutR, stdoutW, _ := os.Pipe()
+	os.Stdout = stdoutW
+	err := baseCmd.Execute()
+	assert.NoError(t, err)
+
+	stdoutC := make(chan string)
+	go func() {
+		var buf bytes.Buffer
+		_, _ = io.Copy(&buf, stdoutR)
+		stdoutC <- buf.String()
+	}()
+	stdoutW.Close()
+
+	stdout := <-stdoutC
+	assert.NotEmpty(t, stdout, "output should not be empty")
+	assert.Contains(t, strings.ReplaceAll(stdout, " ", ""), strings.ReplaceAll(content, " ", ""))
 }

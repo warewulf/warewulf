@@ -2,6 +2,7 @@ package list
 
 import (
 	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -11,6 +12,7 @@ type variables struct {
 	showAll     bool
 	showLong    bool
 	showFullAll bool
+	output      string
 }
 
 func GetCommand() *cobra.Command {
@@ -36,12 +38,16 @@ func GetCommand() *cobra.Command {
 			}
 			return node_names, cobra.ShellCompDirectiveNoFileComp
 		},
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			return util.ValidOutput(vars.output)
+		},
 	}
 	baseCmd.PersistentFlags().BoolVarP(&vars.showNet, "net", "n", false, "Show node network configurations")
 	baseCmd.PersistentFlags().BoolVarP(&vars.showIpmi, "ipmi", "i", false, "Show node IPMI configurations")
 	baseCmd.PersistentFlags().BoolVarP(&vars.showAll, "all", "a", false, "Show all node configurations")
 	baseCmd.PersistentFlags().BoolVarP(&vars.showFullAll, "fullall", "A", false, "Show all node configurations inclusive empty entries")
 	baseCmd.PersistentFlags().BoolVarP(&vars.showLong, "long", "l", false, "Show long or wide format")
+	baseCmd.PersistentFlags().StringVarP(&vars.output, "output", "o", "text", "output format `json | text | yaml | csv`")
 
 	return baseCmd
 }
