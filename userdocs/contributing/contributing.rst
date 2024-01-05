@@ -18,9 +18,11 @@ include Warewulf for you!
 Warewulf on Slack
 -----------------
 
-Many of our users come to Slack for quick help with an issue. You can
-find us at `HPCng
-<https://join.slack.com/t/hpcng/shared_invite/zt-k9atb2dj-rnlPjSh5Os3Ks6vlDEOyAA>`_.
+Many members of the Warewulf community, including developers, communicate via Slack.
+It's a great place to get help with an issue or talk about how you're using Warewulf.
+
+`Join the Warewulf Slack Workspace!
+<https://join.slack.com/t/warewulf/shared_invite/zt-27moxdo1x-f1ztmeUU5OgmVtdwJVH9Xg>`_
 
 Raise an Issue
 ==============
