@@ -64,7 +64,7 @@ jobs:
       - name: Update website repo
         if: github.event_name != 'pull_request'
         run: |
-          git clone git@github.com:hpcng/warewulf-web.git ~/warewulf-web
+          git clone git@github.com:warewulf/warewulf.org.git ~/warewulf-web
           mkdir -p ~/warewulf-web/static/docs
           rm -rf ~/warewulf-web/static/docs/${GITHUB_REF##*/}
           cp -r userdocs/_build/html ~/warewulf-web/static/docs/${GITHUB_REF##*/}
