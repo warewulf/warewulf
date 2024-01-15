@@ -13,10 +13,19 @@ type BuildConfig struct {
 	WWOverlaydir   string `default:"@WWOVERLAYDIR@"`
 	WWChrootdir    string `default:"@WWCHROOTDIR@"`
 	WWProvisiondir string `default:"@WWPROVISIONDIR@"`
-	Version        string `default:"@VERSION@"`
-	Release        string `default:"@RELEASE@"`
 	WWClientdir    string `default:"@WWCLIENTDIR@"`
+	version        string `default:"@VERSION@"`
+	release        string `default:"@RELEASE@"`
 }
+
+func (conf BuildConfig) Version() string {
+	return conf.version
+}
+
+func (conf BuildConfig) Release() string {
+	return conf.release
+}
+
 type TFTPConf struct {
 	Enabled     bool   `yaml:"enabled" default:"true"`
 	TftpRoot    string `yaml:"tftproot" default:"@TFTPDIR@"`
@@ -24,6 +33,7 @@ type TFTPConf struct {
 
 	IpxeBinaries map[string]string `yaml:"ipxe" default:"{\"00:09\": \"ipxe-snponly-x86_64.efi\",\"00:00\": \"undionly.kpxe\",\"00:0B\": \"arm64-efi/snponly.efi\",\"00:07\":  \"ipxe-snponly-x86_64.efi\"}"`
 }
+
 // WarewulfConf adds additional Warewulf-specific configuration to
 // BaseConf.
 type WarewulfConf struct {
