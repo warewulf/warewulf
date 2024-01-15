@@ -43,10 +43,9 @@ func TestDefaultRootConf(t *testing.T) {
 
 	assert.NotEmpty(t, conf.Paths.Bindir)
 	assert.NotEmpty(t, conf.Paths.Sysconfdir)
-	assert.NotEmpty(t, conf.Paths.Datadir)
+	assert.NotEmpty(t, conf.Warewulf.DataStore)
 	assert.NotEmpty(t, conf.Paths.Localstatedir)
 	assert.NotEmpty(t, conf.Paths.Srvdir)
-	assert.NotEmpty(t, conf.Paths.Tftpdir)
 	assert.NotEmpty(t, conf.Paths.Firewallddir)
 	assert.NotEmpty(t, conf.Paths.Systemddir)
 	assert.NotEmpty(t, conf.Paths.WWOverlaydir)

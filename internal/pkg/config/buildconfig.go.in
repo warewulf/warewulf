@@ -5,11 +5,9 @@ var ConfigFile = "@SYSCONFDIR@/warewulf/warewulf.conf"
 type BuildConfig struct {
 	Bindir         string `default:"@BINDIR@"`
 	Sysconfdir     string `default:"@SYSCONFDIR@"`
-	Datadir        string `default:"@DATADIR@"`
 	Localstatedir  string `default:"@LOCALSTATEDIR@"`
 	Ipxesource     string `default:"@IPXESOURCE@"`
 	Srvdir         string `default:"@SRVDIR@"`
-	Tftpdir        string `default:"@TFTPDIR@"`
 	Firewallddir   string `default:"@FIREWALLDDIR@"`
 	Systemddir     string `default:"@SYSTEMDDIR@"`
 	WWOverlaydir   string `default:"@WWOVERLAYDIR@"`
@@ -18,4 +16,23 @@ type BuildConfig struct {
 	Version        string `default:"@VERSION@"`
 	Release        string `default:"@RELEASE@"`
 	WWClientdir    string `default:"@WWCLIENTDIR@"`
+}
+type TFTPConf struct {
+	Enabled     bool   `yaml:"enabled" default:"true"`
+	TftpRoot    string `yaml:"tftproot" default:"@TFTPDIR@"`
+	SystemdName string `yaml:"systemd name" default:"tftp"`
+
+	IpxeBinaries map[string]string `yaml:"ipxe" default:"{\"00:09\": \"ipxe-snponly-x86_64.efi\",\"00:00\": \"undionly.kpxe\",\"00:0B\": \"arm64-efi/snponly.efi\",\"00:07\":  \"ipxe-snponly-x86_64.efi\"}"`
+}
+// WarewulfConf adds additional Warewulf-specific configuration to
+// BaseConf.
+type WarewulfConf struct {
+	Port              int    `yaml:"port" default:"9983"`
+	Secure            bool   `yaml:"secure" default:"true"`
+	UpdateInterval    int    `yaml:"update interval" default:"60"`
+	AutobuildOverlays bool   `yaml:"autobuild overlays" default:"true"`
+	EnableHostOverlay bool   `yaml:"host overlay" default:"true"`
+	Syslog            bool   `yaml:"syslog" default:"false"`
+	DataStore         string `yaml:"datastore" default:"@DATADIR@"`
+	GrubBoot          bool   `yaml:"grubboot" default:"false"`
 }

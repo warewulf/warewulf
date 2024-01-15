@@ -49,7 +49,7 @@ func New() (NodeYaml, error) {
 		ConfigFile = path.Join(conf.Paths.Sysconfdir, "warewulf/nodes.conf")
 	}
 	if DefaultConfig == "" {
-		DefaultConfig = path.Join(conf.Paths.Datadir, "warewulf/defaults.conf")
+		DefaultConfig = path.Join(conf.Warewulf.DataStore, "warewulf/defaults.conf")
 	}
 	wwlog.Verbose("Opening node configuration file: %s", ConfigFile)
 	data, err := os.ReadFile(ConfigFile)
