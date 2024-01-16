@@ -36,9 +36,11 @@ var (
 	ERROR       = SetLevelName(40, "ERROR")
 	SECWARN     = SetLevelName(31, "SECWARN")
 	WARN        = SetLevelName(30, "WARN")
+	ERROUT      = SetLevelName(29, "ERROUT")
 	SEND        = SetLevelName(27, "SEND")
 	RECV        = SetLevelName(26, "RECV")
 	SERV        = SetLevelName(25, "SERV")
+	OUT         = SetLevelName(22, "OUT")
 	SECINFO     = SetLevelName(21, "SECINFO")
 	INFO        = SetLevelName(20, "INFO")
 	SECVERBOSE  = SetLevelName(16, "SECVERBOSE")
@@ -52,6 +54,7 @@ var (
 	levelNames                = []string{"NOTSET"}
 	logLevel                  = INFO
 	logErr       io.Writer    = os.Stderr
+	logOut       io.Writer    = os.Stdout
 	logFormatter LogFormatter = DefaultFormatter
 )
 
@@ -153,11 +156,30 @@ func GetLogLevel() int {
 Set the log output writer
 By default they are set to output writer
 */
-func SetLogWriter(err io.Writer) {
-	logErr = err
+func SetLogWriter(newOut io.Writer) {
+	logErr = newOut
+	logOut = newOut
 }
 
-func GetLogWriter() io.Writer {
+/*
+Set the log ofr info only
+*/
+func SetLogWriterInfo(newOut io.Writer) {
+	logOut = newOut
+}
+
+/*
+Set the log ofr info only
+*/
+func SetLogWriterErr(newOut io.Writer) {
+	logOut = newOut
+}
+
+func GetLogWriterInfo() io.Writer {
+	return logOut
+}
+
+func GetLogWriterErr() io.Writer {
 	return logErr
 }
 
@@ -196,8 +218,12 @@ func LogCaller(level int, skip int, err error, message string, a ...interface{})
 		}
 
 		message = logFormatter(logLevel, &rec)
+		if level == INFO || level == RECV || level == SEND || level == OUT {
+			fmt.Fprint(logOut, message)
+		} else {
+			fmt.Fprint(logErr, message)
 
-		fmt.Fprint(logErr, message)
+		}
 	}
 }
 
@@ -249,6 +275,10 @@ func Info(message string, a ...interface{}) {
 	LogCaller(INFO, 1, nil, message, a...)
 }
 
+func Output(message string, a ...interface{}) {
+	LogCaller(OUT, 1, nil, message, a...)
+}
+
 func InfoExc(err error, message string, a ...interface{}) {
 	LogCaller(INFO, 1, err, message, a...)
 }
@@ -279,6 +309,10 @@ func WarnExc(err error, message string, a ...interface{}) {
 
 func SecWarn(message string, a ...interface{}) {
 	LogCaller(SECWARN, 1, nil, message, a...)
+}
+
+func ErrOut(message string, a ...interface{}) {
+	LogCaller(ERROUT, 1, nil, message, a...)
 }
 
 func Error(message string, a ...interface{}) {

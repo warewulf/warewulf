@@ -125,6 +125,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support importing containers with symlinked `/bin/sh` #797
 - Don't panic on malformed passwd #527
 - Update iPXE building script
+- Send Info, Recv, Send, and Out messages to stdout; and others to stderr
 
 ## [4.4.0] 2023-01-18
 
