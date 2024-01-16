@@ -56,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   will generate an error #474
 - Create `/etc/systemd/network/10-persistent-net-<netdev>.link` file per network device
 - Fix the issue that the same tag added in `node set` is ignored. #967
+- Change too-verbose warning message level from `Warn` to `Debug`. #1025
 
 ### Changed
 
