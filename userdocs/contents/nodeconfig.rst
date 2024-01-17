@@ -242,6 +242,24 @@ To configure a bonded (link aggreagtion) network interface the following command
 Note: the netnames of the member interterfaces need to match the "netname" of the bonded interface until the first "_" (in the example bond0)
 
 
+Additional networks
+-------------------
+
+Additional networks for the node can also be configured.
+You will have provide all the necessary network information.
+
+.. code-block:: shell
+
+   wwctl node set \
+     --netdev ib0 \
+     --hwaddr aa:bb:cc:dd:ee:ff \
+     --ipaddr 10.0.20.1 \
+     --netmask 255.255.252.0 \
+     --netname iband \
+     --type infiniband \
+     n001
+
+
 Node Discovery
 --------------
 

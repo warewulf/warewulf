@@ -151,6 +151,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Check if commas are allowes in node/profile set
 - Removed paths.tftpdir and paths.datadir
 - Updated WW_INTERNAL to 45 for upcoming 4.5.x release
+- Added documentation about of how to configure warewulf with 
+  multiple networks
 
 ## [4.4.0] 2023-01-18
 
