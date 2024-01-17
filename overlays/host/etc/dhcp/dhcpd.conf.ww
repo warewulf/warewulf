@@ -54,9 +54,11 @@ subnet {{$.Network}} netmask {{$.Netmask}} {
     range {{$.Dhcp.RangeStart}} {{$.Dhcp.RangeEnd}};
     next-server {{.Ipaddr}};
 }
+
+{{- if eq .Dhcp.Template "static" }}
 {{- range $nodes := $.AllNodes}}
 {{- range $netname, $netdevs := $nodes.NetDevs}}
-host {{$nodes.Id.Get}}-{{$netdevs.Device.Get}} 
+host {{$nodes.Id.Get}}-{{$netname}}
 {
     {{- if $netdevs.Primary.GetB}}
     {{- if $netdevs.Hwaddr.Defined}}
@@ -70,6 +72,7 @@ host {{$nodes.Id.Get}}-{{$netdevs.Device.Get}}
 }
 {{end -}}{{/* range NetDevs */}}
 {{end -}}{{/* range AllNodes */}}
+{{end -}}{{/* if static */}}
 
 {{- else}}
 {{abort}}
