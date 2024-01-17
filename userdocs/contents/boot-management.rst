@@ -110,7 +110,7 @@ booted by GRUB.
   [leap15.5] Warewulf> zypper install grub2 shim
 
   # wwctl container shell rocky9
-  [rocky9] Warewulf> dnf install shim-x64.x86_64 grub2-pc.x86_64
+  [rocky9] Warewulf> dnf install shim-x64.x86_64 grub2-efi-x64.x86_64
 
 These packages must also be installed on the Warewulf server host to enable
 node discovery using GRUB.
