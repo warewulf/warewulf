@@ -8,6 +8,12 @@ that only the signed kernel of a distribution can be booted. This can
 be a huge security benefit for some scenarios.
 
 In order to enable the grub boot method it has to be enabled in `warewulf.conf`.
+
+.. code-block: yaml
+
+   warewulf:
+     grubboot: true
+
 Nodes which are not known to warewulf will then booted with the shim/grub from
 the host on which warewulf is installed.
 
