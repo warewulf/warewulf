@@ -153,7 +153,11 @@ func (ent *Entry) SetAltSlice(val []string, from string) {
 		return
 	}
 	ent.altvalue = append(ent.altvalue, val...)
-	ent.from = ent.from + "," + from
+	if ent.from == "" {
+		ent.from = from
+	} else {
+		ent.from = ent.from + "," + from
+	}
 }
 
 /*
