@@ -49,12 +49,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	} else if OptDetect && (OptContainer != "") {
 		kernelName = OptContainer
 	}
-	output, err := kernel.Build(kernelVersion, kernelName, OptRoot)
+	err = kernel.Build(kernelVersion, kernelName, OptRoot)
 	if err != nil {
 		wwlog.Error("Failed building kernel: %s", err)
 		os.Exit(1)
 	} else {
-		fmt.Printf("%s: %s\n", kernelName, output)
+		fmt.Printf("%s: %s\n", kernelName, "Finished kernel build")
 	}
 
 	if SetDefault {

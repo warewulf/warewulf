@@ -1,15 +1,17 @@
 package overlay
 
 import (
-	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
-	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/sassoftware/go-rpmutils/cpio"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"os"
 	"path"
 	"sort"
 	"testing"
+
+	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/hpcng/warewulf/internal/pkg/util"
 )
 
 var buildOverlayTests = []struct {
@@ -161,9 +163,9 @@ func Test_BuildOverlay(t *testing.T) {
 			if tt.image != "" {
 				image := path.Join(provisionDir, "overlays", tt.image)
 				assert.FileExists(t, image)
-
 				sort.Strings(tt.contents)
-				files := cpioFiles(t, image)
+				files, err := util.CpioFiles(image)
+				assert.NoError(t, err)
 				sort.Strings(files)
 				assert.Equal(t, tt.contents, files)
 			} else {
@@ -400,21 +402,4 @@ func dirIsEmpty(t *testing.T, name string) bool {
 	}
 	t.Log(dirnames)
 	return false
-}
-
-func cpioFiles(t *testing.T, name string) (files []string) {
-	f, openErr := os.Open(name)
-	if openErr != nil {
-		return
-	}
-	defer f.Close()
-
-	reader := cpio.NewReader(f)
-	for {
-		header, err := reader.Next()
-		if err != nil {
-			return
-		}
-		files = append(files, header.Filename())
-	}
 }
