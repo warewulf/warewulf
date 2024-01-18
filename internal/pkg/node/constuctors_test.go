@@ -138,3 +138,84 @@ func Test_FindDiscoverableNode(t *testing.T) {
 		})
 	}
 }
+
+func Test_Profile_Overlay_Merge(t *testing.T) {
+	nodesconf := `
+nodeprofiles:
+  profile1:
+    runtime overlay:
+      - p1o1
+      - p1o2
+  profile2:
+    runtime overlay:
+      - p2o1
+      - p2o2
+nodes:
+  node1:
+    profiles:
+      - profile1
+  node2:
+    profiles:
+      - profile1
+      - profile2
+  node3:
+    runtime overlay:
+      - n1o1
+      - n1o2
+    profiles:
+      - profile1
+  node4:
+    runtime overlay:
+      - n1o1
+      - n1o2
+    profiles:
+      - profile1
+      - profile2
+  node5:
+    runtime overlay:
+      - n1o1
+      - ~p1o2
+    profiles:
+      - profile1
+      - profile2
+`
+	assert := assert.New(t)
+	var ymlSrc NodeYaml
+	err := yaml.Unmarshal([]byte(nodesconf), &ymlSrc)
+	assert.NoError(err)
+	nodes, err := ymlSrc.FindAllNodes()
+	assert.NoError(err)
+	nodemap := make(map[string]*NodeInfo)
+	for i := range nodes {
+		nodemap[nodes[i].Id.Get()] = &nodes[i]
+	}
+	assert.Contains(nodemap, "node1")
+	assert.ElementsMatch(nodemap["node1"].RuntimeOverlay.GetSlice(), []string{"p1o1", "p1o2"})
+	assert.Equal(nodemap["node1"].RuntimeOverlay.Print(), "p1o1,p1o2")
+	assert.Contains(nodemap, "node2")
+	assert.ElementsMatch(nodemap["node2"].RuntimeOverlay.GetSlice(), []string{"p1o1", "p1o2", "p2o1", "p2o2"})
+	assert.Equal(nodemap["node2"].RuntimeOverlay.Print(), "p1o1,p1o2,p2o1,p2o2")
+	assert.Contains(nodemap, "node3")
+	assert.ElementsMatch(nodemap["node3"].RuntimeOverlay.GetSlice(), []string{"p1o1", "p1o2", "n1o1", "n1o2"})
+	assert.Equal(nodemap["node3"].RuntimeOverlay.Print(), "n1o1,n1o2,p1o1,p1o2")
+	assert.Contains(nodemap, "node4")
+	assert.ElementsMatch(nodemap["node4"].RuntimeOverlay.GetSlice(), []string{"p1o1", "p1o2", "p2o1", "p2o2", "n1o1", "n1o2"})
+	assert.Equal(nodemap["node4"].RuntimeOverlay.Print(), "n1o1,n1o2,p1o1,p1o2,p2o1,p2o2")
+	assert.Contains(nodemap, "node5")
+	assert.ElementsMatch(nodemap["node5"].RuntimeOverlay.GetSlice(), []string{"p1o1", "p2o1", "p2o2", "n1o1"})
+	assert.Equal(nodemap["node5"].RuntimeOverlay.Print(), "n1o1,p1o1,p2o1,p2o2 ~{p1o2}")
+}
+
+func Test_negated_list(t *testing.T) {
+	assert := assert.New(t)
+	list := []string{"tok1", "tok2"}
+	list2 := []string{"tok1", "tok2", "~tok3"}
+	list3 := []string{"tok1", "tok2", "~tok3", "~tok3"}
+	list4 := []string{"tok1", "tok2", "~tok3", "~tok4"}
+	list5 := []string{"tok1", "tok3", "~tok3", "tok2"}
+	assert.Equal([]string{"tok3"}, negList(list2))
+	assert.Equal(list, cleanList(list2))
+	assert.Equal(list, cleanList(list3))
+	assert.Equal(list, cleanList(list4))
+	assert.Equal(list, cleanList(list5))
+}
