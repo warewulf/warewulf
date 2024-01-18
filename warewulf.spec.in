@@ -139,6 +139,7 @@ yq e '
 %config(noreplace) %{_sysconfdir}/warewulf/wwapi*.conf
 %config(noreplace) %{_sysconfdir}/warewulf/examples
 %config(noreplace) %{_sysconfdir}/warewulf/ipxe
+%config(noreplace) %{_sysconfdir}/warewulf/grub
 %config(noreplace) %attr(0640,-,-) %{_sysconfdir}/warewulf/nodes.conf
 %{_sysconfdir}/bash_completion.d/wwctl
 

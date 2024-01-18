@@ -1,8 +1,10 @@
 package warewulfd
 
 import (
+	"bufio"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	nodepkg "github.com/hpcng/warewulf/internal/pkg/node"
@@ -38,7 +40,7 @@ func sendFile(
 		fd)
 
 	wwlog.Send("%15s: %s", sendto, filename)
-
+	req.Body.Close()
 	return nil
 }
 
@@ -68,5 +70,36 @@ func getOverlayFile(
 		}
 	}
 
+	return
+}
+
+var arpFile string
+
+func init() {
+	arpFile = "/proc/net/arp"
+}
+
+func SetArpFile(newName string) {
+	arpFile = newName
+}
+
+/*
+returns the mac address if it has an entry in the arp cache
+*/
+func ArpFind(ip string) (mac string) {
+	arpCache, err := os.Open(arpFile)
+	if err != nil {
+		return
+	}
+	defer arpCache.Close()
+
+	scanner := bufio.NewScanner(arpCache)
+	scanner.Scan()
+	for scanner.Scan() {
+		fields := strings.Fields(scanner.Text())
+		if strings.EqualFold(fields[0], ip) {
+			return fields[3]
+		}
+	}
 	return
 }

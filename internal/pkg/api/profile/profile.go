@@ -24,7 +24,8 @@ func ProfileSet(set *wwapiv1.ProfileSetParameter) (err error) {
 	if err != nil {
 		return errors.Wrap(err, "Could not open database")
 	}
-	return apinode.DbSave(&nodeDB)
+	dbError := apinode.DbSave(&nodeDB)
+	return dbError
 }
 
 // ProfileSetParameterCheck does error checking on ProfileSetParameter.

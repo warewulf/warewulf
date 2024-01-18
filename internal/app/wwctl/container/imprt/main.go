@@ -1,7 +1,7 @@
 package imprt
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/api/container"
+	apicontainer "github.com/hpcng/warewulf/internal/pkg/api/container"
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/spf13/cobra"
 )
@@ -23,6 +23,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		Default:  SetDefault,
 		SyncUser: SyncUser,
 	}
-	_, err = container.ContainerImport(cip)
+
+	_, err = apicontainer.ContainerImport(cip)
 	return
 }

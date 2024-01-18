@@ -3,6 +3,7 @@ package warewulfd
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"net/http"
 	"path"
 	"strconv"
@@ -17,7 +18,7 @@ import (
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 )
 
-type iPxeTemplate struct {
+type templateVars struct {
 	Message        string
 	WaitTime       string
 	Hostname       string
@@ -32,20 +33,13 @@ type iPxeTemplate struct {
 	KernelOverride string
 }
 
-var status_stages = map[string]string{
-	"ipxe":    "IPXE",
-	"kernel":  "KERNEL",
-	"kmods":   "KMODS_OVERLAY",
-	"system":  "SYSTEM_OVERLAY",
-	"runtime": "RUNTIME_OVERLAY"}
-
 func ProvisionSend(w http.ResponseWriter, req *http.Request) {
+	wwlog.Debug("Requested URL: %s", req.URL.String())
 	conf := warewulfconf.Get()
-
 	rinfo, err := parseReq(req)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		wwlog.ErrorExc(err, "")
+		wwlog.ErrorExc(err, "Bad status")
 		return
 	}
 
@@ -58,6 +52,14 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 	}
+
+	status_stages := map[string]string{
+		"efiboot": "EFI",
+		"ipxe":    "IPXE",
+		"kernel":  "KERNEL",
+		"kmods":   "KMODS_OVERLAY",
+		"system":  "SYSTEM_OVERLAY",
+		"runtime": "RUNTIME_OVERLAY"}
 
 	status_stage := status_stages[rinfo.stage]
 	var stage_file string
@@ -83,13 +85,13 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		wwlog.Error("%s (unknown/unconfigured node)", rinfo.hwaddr)
 		if rinfo.stage == "ipxe" {
 			stage_file = path.Join(conf.Paths.Sysconfdir, "/warewulf/ipxe/unconfigured.ipxe")
-			tmpl_data = iPxeTemplate{
+			tmpl_data = templateVars{
 				Hwaddr: rinfo.hwaddr}
 		}
 
 	} else if rinfo.stage == "ipxe" {
 		stage_file = path.Join(conf.Paths.Sysconfdir, "warewulf/ipxe/"+node.Ipxe.Get()+".ipxe")
-		tmpl_data = iPxeTemplate{
+		tmpl_data = templateVars{
 			Id:             node.Id.Get(),
 			Cluster:        node.ClusterName.Get(),
 			Fqdn:           node.Id.Get(),
@@ -100,7 +102,6 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			ContainerName:  node.ContainerName.Get(),
 			KernelArgs:     node.Kernel.Args.Get(),
 			KernelOverride: node.Kernel.Override.Get()}
-
 	} else if rinfo.stage == "kernel" {
 		if node.Kernel.Override.Defined() {
 			stage_file = kernel.KernelImage(node.Kernel.Override.Get())
@@ -137,7 +138,6 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		} else {
 			context = rinfo.stage
 		}
-
 		stage_file, err = getOverlayFile(
 			node,
 			context,
@@ -153,6 +153,64 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			wwlog.ErrorExc(err, "")
 			return
+		}
+	} else if rinfo.stage == "efiboot" {
+		wwlog.Debug("requested method: %s", req.Method)
+		containerName := node.ContainerName.Get()
+		switch rinfo.efifile {
+		case "shim.efi":
+			stage_file = container.ShimFind(containerName)
+			if stage_file == "" {
+				wwlog.ErrorExc(fmt.Errorf("could't find shim.efi"), containerName)
+				w.WriteHeader(http.StatusNotFound)
+				return
+			}
+		case "grub.efi", "grub-tpm.efi", "grubx64.efi", "grubia32.efi", "grubaa64.efi", "grubarm.efi":
+			stage_file = container.GrubFind(containerName)
+			if stage_file == "" {
+				wwlog.ErrorExc(fmt.Errorf("could't find grub.efi"), containerName)
+				w.WriteHeader(http.StatusNotFound)
+				return
+			}
+		case "grub.cfg":
+			stage_file = path.Join(conf.Paths.Sysconfdir, "warewulf/grub/grub.cfg.ww")
+			tmpl_data = templateVars{
+				Id:             node.Id.Get(),
+				Cluster:        node.ClusterName.Get(),
+				Fqdn:           node.Id.Get(),
+				Ipaddr:         conf.Ipaddr,
+				Port:           strconv.Itoa(conf.Warewulf.Port),
+				Hostname:       node.Id.Get(),
+				Hwaddr:         rinfo.hwaddr,
+				ContainerName:  node.ContainerName.Get(),
+				KernelArgs:     node.Kernel.Args.Get(),
+				KernelOverride: node.Kernel.Override.Get()}
+			if stage_file == "" {
+				wwlog.ErrorExc(fmt.Errorf("could't find grub.cfg template"), containerName)
+				w.WriteHeader(http.StatusNotFound)
+				return
+			}
+		default:
+			wwlog.ErrorExc(fmt.Errorf("could't find efiboot file: %s", rinfo.efifile), "")
+		}
+	} else if rinfo.stage == "shim" {
+		if node.ContainerName.Defined() {
+			stage_file = container.ShimFind(node.ContainerName.Get())
+
+			if stage_file == "" {
+				wwlog.Error("No kernel found for container %s", node.ContainerName.Get())
+			}
+		} else {
+			wwlog.Warn("No container set for this %s", node.Id.Get())
+		}
+	} else if rinfo.stage == "grub" {
+		if node.ContainerName.Defined() {
+			stage_file = container.GrubFind(node.ContainerName.Get())
+			if stage_file == "" {
+				wwlog.Error("No grub found for container %s", node.ContainerName.Get())
+			}
+		} else {
+			wwlog.Warn("No conainer set for node %s", node.Id.Get())
 		}
 	}
 

@@ -126,6 +126,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Don't panic on malformed passwd #527
 - Update iPXE building script
 - Send Info, Recv, Send, and Out messages to stdout; and others to stderr
+- grub in combination can now be set as boot method with `warewulf.grubboot: true` in 
+  `warewulf.conf`. For unknown nodes `grub.efi` and `shim.efi` will be extracted from
+  the host running warewulf. If node has container it will get these binaries from the
+  container image.
+- Added support for booting nodes with grub. Enable this behavior using 
+  warewulf.grubboot: true in warewulf.conf. For unknown nodes, grub.efi 
+  and shim.efi are extracted from the Warewulf host. If the booted node 
+  has a container these binaries are extracted from the container image.
 
 ## [4.4.0] 2023-01-18
 

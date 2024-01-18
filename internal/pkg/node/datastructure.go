@@ -154,6 +154,7 @@ type NodeInfo struct {
 	ClusterName    Entry
 	ContainerName  Entry
 	Ipxe           Entry
+	Grub           Entry
 	RuntimeOverlay Entry
 	SystemOverlay  Entry
 	Root           Entry

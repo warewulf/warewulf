@@ -133,7 +133,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Error("Could not build container %s: %s", containerName, err)
 		os.Exit(1)
 	}
-
 	return nil
 }
 func SetBinds(myBinds []string) {
