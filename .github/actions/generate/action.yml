@@ -61,8 +61,8 @@ runs:
       run: |
         dist="warewulf-${{ env.TAG }}.tar.gz"
 
-        if [[ ! -f "$dist" ]];then 
-          for f in warewulf-*.tar.gz; do 
+        if [[ ! -f "$dist" ]];then
+          for f in warewulf-*.tar.gz; do
             if [[ -e "$f" ]]; then
               dist="$f"
               break
@@ -103,7 +103,7 @@ runs:
       run: |
         cat << EOF >> nightly.release.note
         THIS IS A NIGHTLY RELEASE
-        
+
         This release contains latest commits, which is a feature unstable version
 
         Reflog:
@@ -132,7 +132,7 @@ runs:
       if: inputs.nightly == 'true' && steps.should-continue.outputs.continue == 'true'
       uses: tubone24/update_release@v1.3.1
       id: release
-      env: 
+      env:
         GITHUB_TOKEN: ${{ inputs.token }}
         TAG_NAME: "nightly"
       with:

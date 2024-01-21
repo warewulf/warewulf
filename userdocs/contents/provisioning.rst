@@ -82,12 +82,12 @@ through the following command :
    # wwctl node status
    NODENAME             STAGE                SENT                      LASTSEEN (s)
    ================================================================================
-   c001                 RUNTIME_OVERLAY      generic.img.gz            16        
+   c001                 RUNTIME_OVERLAY      generic.img.gz            16
 
 
 For each node, there is 4 different stages :
 
-* **IPXE** 
+* **IPXE**
 * **KERNEL**
 * **SYSTEM_OVERLAY**
 * **RUNTIME_OVERLAY**

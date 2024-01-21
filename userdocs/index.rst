@@ -54,7 +54,7 @@ Welcome to the Warewulf User Guide!
 .. toctree::
    :maxdepth: 2
    :caption: Reference
-   :glob: 
+   :glob:
 
    reference/*
 

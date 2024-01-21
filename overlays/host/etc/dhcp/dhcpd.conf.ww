@@ -44,7 +44,7 @@ if exists user-class and option user-class = "iPXE" {
 {{range $type,$name := $.Tftp.IpxeBinaries }}
     if option architecture-type = {{ $type }} {
         filename "/warewulf/{{ basename $name }}";
-    } 
+    }
 {{- end }}{{/* range IpxeBinaries */}}
 }
 {{- end }}{{/* BootMethod */}}

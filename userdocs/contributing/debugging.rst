@@ -16,7 +16,7 @@ vet`` on the full codebase.
 .. code-block:: console
 
    $ make vet
-   
+
 
 Running the full test suite
 ===========================

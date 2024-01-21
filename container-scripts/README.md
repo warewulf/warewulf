@@ -11,7 +11,7 @@ Additionally the `warewulf-container-manage.sh` script is included to manage the
 
 ## Prepare the host system
 
-It is heavlily advised that the host has a static ipv4 address. To configure this on ALP 
+It is heavlily advised that the host has a static ipv4 address. To configure this on ALP
 you can use `nmcli` with the following command:
 ```
 nmcli connection modify "$(nmcli -t device | awk -F: '/ethernet/{print$4;exit}')" \
@@ -39,7 +39,7 @@ Now the cluster can be managed with the `wwctl` command.
 
 ## Remove the Container
 
-The container itself can be remove with the '''label uninstall''' which will remove the container and its scripts from the host. 
+The container itself can be remove with the '''label uninstall''' which will remove the container and its scripts from the host.
 ```
 # podman container runlabel uninstall registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/warewlf:latest
 ```

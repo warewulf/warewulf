@@ -77,9 +77,9 @@ In Warewulf there are ways multiple to secure the provisioning process:
    provision and communicate with requests from that system matching
    that asset tag.
 
-#. When the nodes are booted via `shim` and `grub` Secure Boot can be 
-   enabled. This means that the nodes only boot the kernel which is 
-   provided by the distributor and also custom complied modules can't 
+#. When the nodes are booted via `shim` and `grub` Secure Boot can be
+   enabled. This means that the nodes only boot the kernel which is
+   provided by the distributor and also custom complied modules can't
    be loaded.
 
 Summary
