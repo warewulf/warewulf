@@ -61,13 +61,13 @@ TSC chair: Jonathon Anderson
   explain why the dependency is required. Any new dependency should be
   added to `LICENSE_DEPENDENCIES.md` by running
   `scripts/update-license-dependencies.sh`.
-  
+
 ## Documentation
 
 - The [README](README.md) is a place to document critical information
   for new users of Warewulf. It should typically not change, but in
   the case where a change is necessary a PR may update it.
-  
+
 - The [CHANGELOG](CHANGELOG.md) documents **functional** differences
   between versions of Warewulf, and should **not** read like a commit
   log.

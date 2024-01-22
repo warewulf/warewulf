@@ -132,9 +132,9 @@ Vagrantfile
                 netmask: "255.255.255.0",
                 libvirt__network_name: "pxe",
                 libvirt__dhcp_enabled: false
-            
+
             head.vm.synced_folder ".", "/vagrant", type: "nfs", nfs_version: 4, nfs_udp: false
-            
+
             head.vm.provider :libvirt do |libvirt|
                 libvirt.cpu_mode = "host-passthrough"
                 libvirt.memory = '8192'
@@ -176,12 +176,12 @@ Vagrantfile
                     WWCLIENTDIR=/warewulf
                 make all
                 make install
-                
+
                 systemctl disable --now firewalld
 
                 sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
             SHELL
-            
+
             head.vm.provision "reload"
 
             head.vm.provision "shell", inline: <<-SHELL
@@ -238,7 +238,7 @@ Vagrantfile
                 node.vm.hostname = "n000#{i}"
                 node.vm.network "private_network",
                 libvirt__network_name: "pxe"
-                
+
                 node.vm.provider :libvirt do |compute|
                     compute.cpu_mode = 'host-passthrough'
                     compute.memory = '8192'

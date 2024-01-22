@@ -106,7 +106,7 @@ booted by GRUB.
 
 .. code-block:: console
 
-  # wwctl container shell leap15.5 
+  # wwctl container shell leap15.5
   [leap15.5] Warewulf> zypper install grub2 shim
 
   # wwctl container shell rocky9

@@ -1,5 +1,5 @@
 =====================================
-Debian 12 Quickstart 
+Debian 12 Quickstart
 =====================================
 
 
@@ -13,8 +13,8 @@ Install the basic services
 
 .. note::
 
-   If you get an error message concerning *isc-dhcp-server.service* you 
-   probably need to configure the network intarface that isc-dhcp-server 
+   If you get an error message concerning *isc-dhcp-server.service* you
+   probably need to configure the network intarface that isc-dhcp-server
    will listen to. Run ``sudo dpkg-reconfigure isc-dhcp-server`` and enter
    the name of your cluster's private network interface (e.g. enp2s0). After that, you might also need to run ``sudo systemctl enable isc-dhcp-server``.
 
@@ -25,9 +25,9 @@ Install Warewulf and dependencies
 
 
 .. code-block:: bash
- 
+
    sudo apt install build-essential curl unzip
-  
+
    sudo apt install git golang libnfs-utils libgpgme-dev libassuan-dev
 
 
@@ -94,7 +94,7 @@ address of your cluster's private network interface:
 		export options: ro,sync,no_root_squash
 		mount options: defaults
 		mount: false
-	  systemd name: nfs-server  
+	  systemd name: nfs-server
 
 .. note::
 
@@ -155,7 +155,7 @@ the ``default`` node profile:
 .. code-block:: bash
 
    sudo wwctl profile set --yes --container debian-12.0 "default"
-   
+
 
 Next we set some default networking configurations for the first
 ethernet device. On modern Linux distributions, the name of the device
@@ -200,7 +200,7 @@ typing the following:
 
    sudo wwctl node list -a n0000.cluster
 
-To make node changes effective, it is a good practice to update warewulf 
+To make node changes effective, it is a good practice to update warewulf
 overlays with the following command:
 
 .. code-block:: bash

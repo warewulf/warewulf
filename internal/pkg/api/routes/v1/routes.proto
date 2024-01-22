@@ -148,7 +148,7 @@ message ProfileList {
 }
 
 // NodeAddParameter contains all input for adding a node to be managed by
-// Warewulf. Only adds nodes if the hash matches the actual hash of the 
+// Warewulf. Only adds nodes if the hash matches the actual hash of the
 // configuration.
 message NodeAddParameter {
 	string nodeConfYaml = 1;
@@ -165,7 +165,7 @@ message NodeYaml {
 }
 
 // NodeDeleteParameter contains input for removing nodes from Warewulf
-// management. If the given hash differs with the actual hash of the 
+// management. If the given hash differs with the actual hash of the
 // configuration, no node is deleted. The force option allows the deletion
 // of nodes with a correct hash.
 message NodeDeleteParameter {

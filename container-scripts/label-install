@@ -16,7 +16,7 @@ BASHCOMPLETION=/usr/share/bash_completion/completions/w*
 AUTHKEYDIR=/root/.ssh
 
 echo "LABEL INSTALL"
-# ensure all scripts will be present on the host 
+# ensure all scripts will be present on the host
 copy_to_usr_local_bin() {
 SCRIPT=$1
 BASEDIR=`dirname $SCRIPT`
@@ -44,7 +44,7 @@ fi
 sync_dir() {
   DIR=$1
   test -e /host/${DIR} || mkdir -pv /host/${DIR}
-  test -e /host/${DIR} && (rsync -au --ignore-existing ${DIR} `dirname /host/${DIR}`; echo "updating $DIR") 
+  test -e /host/${DIR} && (rsync -au --ignore-existing ${DIR} `dirname /host/${DIR}`; echo "updating $DIR")
 }
 
 # For podman, cp a systemd unit for starting on boot
@@ -68,7 +68,7 @@ sync_dir $CHROOTDIR
 sync_dir $WAREWULFCONF
 
 # bash completion
-if [ ! -e /host/etc/bash_completion.d/warewulf ] ; then 
+if [ ! -e /host/etc/bash_completion.d/warewulf ] ; then
   mkdir -p /host/etc/bash_completion.d
   cp $BASHCOMPLETION /host/etc/bash_completion.d/
 fi

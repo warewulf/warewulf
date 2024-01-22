@@ -8,9 +8,9 @@ on:
 
 jobs:
     generate:
-        name: Generate spec, dist and collect commits info 
+        name: Generate spec, dist and collect commits info
         runs-on: ubuntu-latest
-        outputs: 
+        outputs:
           should-continue: ${{ steps.generate.outputs.should-continue }}
           version: ${{ steps.generate.outputs.version }}
           release-id: ${{ steps.generate.outputs.release-id }}

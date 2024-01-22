@@ -14,7 +14,7 @@ RestartSec=1s
 TimeoutStopSec=70
 #Environment=WAREWULF_IMAGE_PATH=registry.opensuse.org/suse/alp/workloads/tumbleweed_containerfiles/suse/alp/workloads/warewulf:latest
 Environment=WAREWULF_IMAGE_PATH=warewulf:latest
-ExecStartPre=-/usr/bin/podman container runlabel --name warewulf install  ${WAREWULF_IMAGE_PATH} 
+ExecStartPre=-/usr/bin/podman container runlabel --name warewulf install  ${WAREWULF_IMAGE_PATH}
 ExecStart=/usr/bin/podman container runlabel --name warewulf run ${WAREWULF_IMAGE_PATH}
 ExecStop=/usr/bin/podman container stop warewulf
 ExecStopPost=/usr/bin/podman container rm warewulf

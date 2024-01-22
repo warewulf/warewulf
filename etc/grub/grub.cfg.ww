@@ -3,7 +3,7 @@ echo "Warewulf v4 now http booting grub: {{.Fqdn}} ({{.Hwaddr}})"
 echo "================================================================================"
 echo
 echo "Warewulf Controller: {{.Ipaddr}}"
-echo 
+echo
 sleep 1
 smbios --type1 --get-string 8 --set assetkey
 uri="(http,{{.Ipaddr}}:{{.Port}})/provision/${net_default_mac}?assetkey=${assetkey}"
@@ -25,7 +25,7 @@ menuentry "Network boot node: {{.Id}}" --id ww4 {
         echo "Loading Container:     {{.ContainerName}}"
         initrd $container $system $runtime
         boot
-    else    
+    else
         echo "MESSAGE: This node seems to be unconfigured. Please have your system administrator add a"
         echo "         configuration for this node with HW address: ${net_default_mac}"
         echo ""

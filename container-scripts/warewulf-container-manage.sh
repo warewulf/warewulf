@@ -54,7 +54,7 @@ DEBUG:
 run
     podman run container '${CONTAINER_NAME}'
 
-bash 
+bash
     go with /bin/bash command inside '${CONTAINER_NAME}'
 
 logs

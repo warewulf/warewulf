@@ -7,9 +7,9 @@ The examples directory contains some useful examples for day to day cluster admn
 Genders
 =======
 
-The file `genders.ww` can be placed as `/etc/genders.ww` which will create a genders database which containts all nodes with their profile as key. Also for every user defined 'key' the 'tah' will be added. 
+The file `genders.ww` can be placed as `/etc/genders.ww` which will create a genders database which containts all nodes with their profile as key. Also for every user defined 'key' the 'tah' will be added.
 
-.. Note: 
+.. Note:
 
 A arbitrary tag with a key can be added to a node with
 

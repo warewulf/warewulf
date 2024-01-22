@@ -1,7 +1,7 @@
 FROM opensuse/tumbleweed:latest as builder
 
 RUN zypper  -n install --no-recommends git go1.18 libgpgme-devel &&\
-  zypper -n install -t pattern devel_basis 
+  zypper -n install -t pattern devel_basis
 
 # now build the warewulf
 COPY . /warewulf-src
@@ -25,7 +25,7 @@ RUN cd /warewulf-src &&\
     BASHCOMPDIR=/etc/warewulf/bash_completion.d/ \
     FIREWALLDDIR=/usr/lib/firewalld/services \
     WWCLIENTDIR=/warewulf &&\
-  make lint &&\ 
+  make lint &&\
   make &&\
   make install
 
@@ -40,7 +40,7 @@ COPY --from=builder /var/lib/warewulf /var/lib/warewulf
 COPY --from=builder /usr/share/warewulf /usr/share/warewulf
 COPY --from=builder /usr/lib/systemd/system/warewulfd.service /container-scripts/warewulfd.service
 COPY --from=builder /etc/warewulf /etc/warewulf
-COPY --from=builder /warewulf-src/container-scripts /container-scripts 
+COPY --from=builder /warewulf-src/container-scripts /container-scripts
 
 RUN zypper  -n install \
   cpio \
@@ -59,7 +59,7 @@ RUN zypper  -n install \
   zypper clean -a && \
   systemctl enable dhcpd && \
   systemctl enable tftp.socket &&\
-  export DHCPDCONF=/etc/sysconfig/dhcpd; test -e $DHCPDCONF && \ 
+  export DHCPDCONF=/etc/sysconfig/dhcpd; test -e $DHCPDCONF && \
 	sed -i 's/^DHCPD_INTERFACE=""/DHCPD_INTERFACE="ANY"/' $DHCPDCONF && \
 	sed -i 's/^DHCPD_RUN_CHROOTED="yes"/DHCPD_RUN_CHROOTED="no"/' $DHCPDCONF && \
   WW4CONF=/etc/warewulf/warewulf.conf; test -e $WW4CONF && \

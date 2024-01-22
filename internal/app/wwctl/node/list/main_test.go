@@ -25,8 +25,8 @@ func Test_List(t *testing.T) {
 			name:    "single node list",
 			args:    []string{},
 			wantErr: false,
-			stdout: `  NODE NAME  PROFILES  NETWORK  
-  n01        default            
+			stdout: `  NODE NAME  PROFILES  NETWORK
+  n01        default
 `,
 			inDb: `WW_INTERNAL: 43
 nodeprofiles:
@@ -42,7 +42,7 @@ nodes:
 			args:    []string{},
 			wantErr: false,
 			stdout: `  NODE NAME  PROFILES  NETWORK
-  n01        default            
+  n01        default
   n02        default
 `,
 			inDb: `WW_INTERNAL: 43
@@ -62,7 +62,7 @@ nodes:
 			args:    []string{"n01,n02"},
 			wantErr: false,
 			stdout: `  NODE NAME  PROFILES  NETWORK
-  n01        default            
+  n01        default
   n02        default
 `,
 			inDb: `WW_INTERNAL: 43
@@ -82,7 +82,7 @@ nodes:
 			args:    []string{"n01,n03"},
 			wantErr: false,
 			stdout: `  NODE NAME  PROFILES  NETWORK
-  n01        default            
+  n01        default
   n03        default
 `,
 			inDb: `WW_INTERNAL: 43
@@ -111,7 +111,7 @@ nodes:
 			args:    []string{"n01,"},
 			wantErr: false,
 			stdout: `  NODE NAME  PROFILES  NETWORK
-  n01        default            
+  n01        default
 `,
 			inDb: `WW_INTERNAL: 43
 nodeprofiles:

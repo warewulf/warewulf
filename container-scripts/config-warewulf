@@ -26,7 +26,7 @@ network_address() {
 }
 echo "-- WW4 CONFIGURAION $* --"
 
-# Make sure that a ip address was defined for out network so that 
+# Make sure that a ip address was defined for out network so that
 # we can configure dhcpd correctly
 IP4CIDR=`ip addr | awk '/scope global/ {print $2;exit}'`
 IP4=${IP4CIDR%/*}
@@ -55,9 +55,9 @@ WW4CONF=/etc/warewulf/warewulf.conf
 if [ -e $WW4CONF ] ; then
   test -n $IP4 && sed -i 's/^ipaddr: EMPTY/ipaddr: '$IP4'/' $WW4CONF
   test -n $IP4MASK && sed -i 's/^netmask: EMPTY/netmask: '$IP4MASK'/' $WW4CONF
-  test -n $IP4NET && sed -i 's/^network: EMPTY/network: '$IP4NET'/' $WW4CONF 
-  test -n $DYNSTART && sed -i 's/^  range start: EMPTY/  range start: '$DYNSTART'/' $WW4CONF 
-  test -n $DYNEND && sed -i 's/^  range end: EMPTY/  range end: '$DYNEND'/' $WW4CONF 
+  test -n $IP4NET && sed -i 's/^network: EMPTY/network: '$IP4NET'/' $WW4CONF
+  test -n $DYNSTART && sed -i 's/^  range start: EMPTY/  range start: '$DYNSTART'/' $WW4CONF
+  test -n $DYNEND && sed -i 's/^  range end: EMPTY/  range end: '$DYNEND'/' $WW4CONF
   cat << EOF
 ipaddr: $IP4
 netmask: $IP4MASK
