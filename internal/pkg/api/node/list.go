@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/ghodss/yaml"
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/pkg/hostlist"
@@ -87,6 +88,18 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 					fmt.Sprintf("%s:=:%s:=:%s:=:%s", n.Id.Print(), f.Field, f.Source, f.Value))
 			}
 		}
+	} else if nodeGet.Type == wwapiv1.GetNodeList_Yaml {
+		filteredNodes := node.FilterByName(nodes, nodeGet.Nodes)
+		nodeMap := make(map[string]node.NodeInfo)
+		for _, nInfo := range filteredNodes {
+			nodeMap[nInfo.Id.Get()] = nInfo
+		}
+		buf, err := yaml.Marshal(nodeMap)
+		if err != nil {
+			return nodeList, err
+		}
+		nodeList.Output = append(nodeList.Output, string(buf))
+
 	}
 	return
 }

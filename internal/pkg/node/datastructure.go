@@ -1,5 +1,9 @@
 package node
 
+import (
+	"strings"
+)
+
 /******
  * YAML data representations
  ******/
@@ -233,3 +237,21 @@ type FileSystemEntry struct {
 
 // string which is printed if no value is set
 const NoValue = "--"
+
+func (e Entry) MarshalText() (buf []byte, err error) {
+	if len(e.value) != 0 {
+		buf = append(buf, []byte(printHelper(e.value))...)
+		return buf, nil
+	} else if len(e.altvalue) != 0 {
+		buf = append(buf, []byte(printHelper(e.altvalue))...)
+		return buf, nil
+	}
+	return buf, nil
+}
+
+func printHelper(in []string) string {
+	if len(in) == 1 {
+		return in[0]
+	}
+	return strings.Join(in, "-")
+}

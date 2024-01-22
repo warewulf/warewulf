@@ -126,9 +126,12 @@ message GetNodeList {
 		Long = 3;
 		All = 4;
 		FullAll = 5;
+		Yaml = 6;
+		Json = 7;
+		Csv = 8;
 	}
-	ListType type = 7;
-	repeated string Nodes = 8;
+	ListType type = 20;
+	repeated string Nodes = 21;
 }
 
 // Get the formated output as string
