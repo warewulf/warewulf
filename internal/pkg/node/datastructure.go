@@ -2,6 +2,8 @@ package node
 
 import (
 	"strings"
+
+	"github.com/ghodss/yaml"
 )
 
 /******
@@ -239,12 +241,24 @@ type FileSystemEntry struct {
 const NoValue = "--"
 
 func (e Entry) MarshalText() (buf []byte, err error) {
+	helper := struct {
+		Value  string
+		Source string
+	}{}
+
+	helper.Value = printHelper(e.def)
+	helper.Source = "default-value"
+	if len(e.altvalue) != 0 {
+		helper.Value = printHelper(e.altvalue)
+		helper.Source = e.from
+	}
 	if len(e.value) != 0 {
-		buf = append(buf, []byte(printHelper(e.value))...)
-		return buf, nil
-	} else if len(e.altvalue) != 0 {
-		buf = append(buf, []byte(printHelper(e.altvalue))...)
-		return buf, nil
+		helper.Value = printHelper(e.value)
+		helper.Source = "explicit"
+	}
+	ret, _ := yaml.Marshal(helper)
+	if len(helper.Value) != 0 {
+		buf = append(buf, ret...)
 	}
 	return buf, nil
 }
