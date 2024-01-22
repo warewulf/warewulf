@@ -83,7 +83,7 @@ WW_INTERNAL: 0
 			wwlog.SetLogWriter(buf)
 			err := baseCmd.Execute()
 			assert.NoError(t, err)
-			assert.Contains(t, buf.String(), "containers:\n    - kernelVersion: kernel\n      name: test\n      nodeCount: 1\n      size: \"1\"\n")
+			assert.Contains(t, buf.String(), "Containers:\n  test:\n  - Nodes: 1\n    KernelVersion: kernel\n    CreationTime: 0\n    ModificationTime: 0\n    Size: 1\n")
 		})
 
 		t.Run(tt.name+" with output json", func(t *testing.T) {
@@ -97,7 +97,7 @@ WW_INTERNAL: 0
 			wwlog.SetLogWriter(buf)
 			err := baseCmd.Execute()
 			assert.NoError(t, err)
-			assert.Contains(t, buf.String(), "{\"containers\":[{\"name\":\"test\",\"nodeCount\":1,\"kernelVersion\":\"kernel\",\"size\":1}]}\n")
+			assert.Contains(t, buf.String(), "{\"Containers\":{\"test\":[{\"Nodes\":1,\"KernelVersion\":\"kernel\",\"CreationTime\":0,\"ModificationTime\":0,\"Size\":1}]}}\n")
 		})
 
 		t.Run(tt.name+" with output csv", func(t *testing.T) {

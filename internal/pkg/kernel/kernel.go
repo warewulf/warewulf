@@ -8,6 +8,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"strconv"
 
 	"github.com/pkg/errors"
 
@@ -258,4 +259,27 @@ func FindKernelVersion(root string) (string, error) {
 	}
 	return "", fmt.Errorf("could not find kernel version")
 
+}
+
+type KernelListEntry interface {
+	GetHeader() []string
+	GetValue() []string
+}
+
+type KernelListResponse struct {
+	Entries []KernelListEntry `yaml:"Kernels" json:"Kernels"`
+}
+
+type KernelListSimpleEntry struct {
+	KernelName    string `yaml:"KernelName" json:"KernelName"`
+	KernelVersion string `yaml:"KernelVersion" json:"KernelVersion"`
+	Nodes         int    `yaml:"Nodes" json:"Nodes"`
+}
+
+func (k *KernelListSimpleEntry) GetHeader() []string {
+	return []string{"KERNEL NAME", "KERNEL VERSION", "NODES"}
+}
+
+func (k *KernelListSimpleEntry) GetValue() []string {
+	return []string{k.KernelName, k.KernelVersion, strconv.Itoa(k.Nodes)}
 }

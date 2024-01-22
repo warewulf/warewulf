@@ -114,94 +114,178 @@ nodes:
 			baseCmd.SetArgs(tt.args)
 			verifyOutput(t, baseCmd, tt.stdout)
 		})
+	}
+}
 
-		// verify the output format in different views
-		t.Run(tt.name+" output to yaml format", func(t *testing.T) {
-			baseCmd := GetCommand()
-			args := []string{"-o", "yaml"}
-			baseCmd.SetArgs(append(args, tt.args...))
-			buf := new(bytes.Buffer)
-			baseCmd.SetOut(buf)
-			baseCmd.SetErr(buf)
-			wwlog.SetLogWriter(buf)
-			err := baseCmd.Execute()
-			assert.NoError(t, err)
-			assert.Contains(t, buf.String(), "profiles:\n    - profileSimple:\n        comment: --\n        profileName")
-		})
+func Test_List_Multiple_Format(t *testing.T) {
+	const (
+		YAML = iota
+		JSON
+		CSV
+		TEXT
+	)
 
-		t.Run(tt.name+" output to json format", func(t *testing.T) {
-			baseCmd := GetCommand()
-			args := []string{"-o", "json"}
-			baseCmd.SetArgs(append(args, tt.args...))
-			buf := new(bytes.Buffer)
-			baseCmd.SetOut(buf)
-			baseCmd.SetErr(buf)
-			wwlog.SetLogWriter(buf)
-			err := baseCmd.Execute()
-			assert.NoError(t, err)
-			assert.Contains(t, buf.String(), "{\"profiles\":[{\"ProfileEntry\":{\"ProfileSimple\":{\"profile_name\":\"")
-		})
+	tests := []struct {
+		name       string
+		args       []string
+		outputType int
+		output     string
+		inDb       string
+	}{
+		{
+			name:       "single profile list yaml output",
+			args:       []string{"-o", "yaml"},
+			outputType: YAML,
+			output:     "Profiles:\n  default:\n  - Comment/Description: --\n",
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+`,
+		},
+		{
+			name:       "single profile list json output",
+			args:       []string{"-o", "json"},
+			outputType: JSON,
+			output:     "{\"Profiles\":{\"default\":[{\"Comment/Description\":\"--\"}]}}\n",
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+`,
+		},
+		{
+			name:       "single profile list csv output",
+			args:       []string{"-o", "csv"},
+			outputType: CSV,
+			output:     "ROFILENAME,COMMENT/DESCRIPTION\ndefault,--",
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+`,
+		},
+		{
+			name:       "single profile list text output",
+			args:       []string{"-o", "text"},
+			outputType: TEXT,
+			output:     "PROFILENAMECOMMENT/DESCRIPTION\ndefault--",
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+`,
+		},
+		{
+			name:       "single profile list yaml output (full view)",
+			args:       []string{"-a", "-o", "yaml"},
+			outputType: YAML,
+			output:     "Profiles:\n  default:\n  - Field: Id\n    Profile: --\n    Value: default\n",
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+`,
+		},
+		{
+			name:       "single profile list json output (full view)",
+			args:       []string{"-a", "-o", "json"},
+			outputType: JSON,
+			output:     "{\"Profiles\":{\"default\":[{\"Field\":\"Id\",\"Profile\":\"--\",\"Value\":\"default\"}]}}\n",
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+`,
+		},
+		{
+			name:       "single profile list csv output (full view)",
+			args:       []string{"-a", "-o", "csv"},
+			outputType: CSV,
+			output:     "PROFILE,FIELD,PROFILE,VALUE\ndefault,Id,--,default",
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+`,
+		},
+		{
+			name:       "single profile list text output (full view)",
+			args:       []string{"-a", "-o", "text"},
+			outputType: TEXT,
+			output:     "PROFILEFIELDPROFILEVALUE\ndefaultId--default",
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+`,
+		},
+	}
 
-		t.Run(tt.name+" output to csv format", func(t *testing.T) {
-			baseCmd := GetCommand()
-			args := []string{"-o", "csv"}
-			baseCmd.SetArgs(append(args, tt.args...))
-			baseCmd.SetOut(nil)
-			baseCmd.SetErr(nil)
-			verifyOutput(t, baseCmd, "PROFILENAME,COMMENT/DESCRIPTION\n")
-		})
+	conf_yml := `WW_INTERNAL: 0`
+	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
+	assert.NoError(t, warewulfConfErr)
+	defer os.Remove(tempWarewulfConf.Name())
+	_, warewulfConfErr = tempWarewulfConf.Write([]byte(conf_yml))
+	assert.NoError(t, warewulfConfErr)
+	assert.NoError(t, tempWarewulfConf.Sync())
+	assert.NoError(t, warewulfconf.New().Read(tempWarewulfConf.Name()))
 
-		t.Run(tt.name+" output to text format", func(t *testing.T) {
-			baseCmd := GetCommand()
-			args := []string{"-o", "text"}
-			baseCmd.SetArgs(append(args, tt.args...))
-			baseCmd.SetOut(nil)
-			baseCmd.SetErr(nil)
-			verifyOutput(t, baseCmd, tt.stdout)
-		})
+	tempNodeConf, nodesConfErr := os.CreateTemp("", "nodes.conf-")
+	assert.NoError(t, nodesConfErr)
+	defer os.Remove(tempNodeConf.Name())
+	node.ConfigFile = tempNodeConf.Name()
+	warewulfd.SetNoDaemon()
+	for _, tt := range tests {
+		var err error
+		_, err = tempNodeConf.Seek(0, 0)
+		assert.NoError(t, err)
+		assert.NoError(t, tempNodeConf.Truncate(0))
+		_, err = tempNodeConf.Write([]byte(tt.inDb))
+		assert.NoError(t, err)
+		assert.NoError(t, tempNodeConf.Sync())
 
-		t.Run(tt.name+" output to yaml format (full view)", func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			baseCmd := GetCommand()
-			args := []string{"-a", "-o", "yaml"}
-			baseCmd.SetArgs(append(args, tt.args...))
-			buf := new(bytes.Buffer)
-			baseCmd.SetOut(buf)
-			baseCmd.SetErr(buf)
-			wwlog.SetLogWriter(buf)
-			err := baseCmd.Execute()
-			assert.NoError(t, err)
-			assert.Contains(t, buf.String(), "profiles:\n    - profileFull:\n        field: Id\n        profileName")
-		})
+			baseCmd.SetArgs(tt.args)
 
-		t.Run(tt.name+" output to json format (full view)", func(t *testing.T) {
-			baseCmd := GetCommand()
-			args := []string{"-a", "-o", "json"}
-			baseCmd.SetArgs(append(args, tt.args...))
-			buf := new(bytes.Buffer)
-			baseCmd.SetOut(buf)
-			baseCmd.SetErr(buf)
-			wwlog.SetLogWriter(buf)
-			err := baseCmd.Execute()
-			assert.NoError(t, err)
-			assert.Contains(t, buf.String(), "{\"profiles\":[{\"ProfileEntry\":{\"ProfileFull\":{\"profile_name\"")
-		})
-
-		t.Run(tt.name+" output to csv format (full view)", func(t *testing.T) {
-			baseCmd := GetCommand()
-			args := []string{"-a", "-o", "csv"}
-			baseCmd.SetArgs(append(args, tt.args...))
-			baseCmd.SetOut(nil)
-			baseCmd.SetErr(nil)
-			verifyOutput(t, baseCmd, "PROFILE,FIELD,PROFILE,VALUE\n")
-		})
-
-		t.Run(tt.name+" output to text format (full view)", func(t *testing.T) {
-			baseCmd := GetCommand()
-			args := []string{"-a", "-o", "text"}
-			baseCmd.SetArgs(append(args, tt.args...))
-			baseCmd.SetOut(nil)
-			baseCmd.SetErr(nil)
-			verifyOutput(t, baseCmd, "PROFILEFIELDPROFILEVALUE\n")
+			if tt.outputType == YAML || tt.outputType == JSON {
+				buf := new(bytes.Buffer)
+				baseCmd.SetOut(buf)
+				baseCmd.SetErr(buf)
+				wwlog.SetLogWriter(buf)
+				err := baseCmd.Execute()
+				assert.NoError(t, err)
+				assert.Contains(t, buf.String(), tt.output)
+			} else {
+				baseCmd.SetOut(nil)
+				baseCmd.SetErr(nil)
+				verifyOutput(t, baseCmd, tt.output)
+			}
 		})
 	}
 }

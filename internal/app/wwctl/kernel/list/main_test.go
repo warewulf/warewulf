@@ -74,7 +74,7 @@ WW_INTERNAL: 0
 			wwlog.SetLogWriter(buf)
 			err := baseCmd.Execute()
 			assert.NoError(t, err)
-			assert.Contains(t, buf.String(), "kernels:\n    - kernelName: test_kernel\n      nodes: \"0\"\n")
+			assert.Contains(t, buf.String(), "Kernels:\n- KernelName: test_kernel\n  KernelVersion: \"\"\n  Nodes: 0\n")
 		})
 
 		t.Run(tt.name+" with output json", func(t *testing.T) {
@@ -88,7 +88,7 @@ WW_INTERNAL: 0
 			wwlog.SetLogWriter(buf)
 			err := baseCmd.Execute()
 			assert.NoError(t, err)
-			assert.Contains(t, buf.String(), "{\"kernels\":[{\"kernel_name\":\"test_kernel\",\"nodes\":\"0\"}]}\n")
+			assert.Contains(t, buf.String(), "{\"Kernels\":[{\"KernelName\":\"test_kernel\",\"KernelVersion\":\"\",\"Nodes\":0}]}\n")
 		})
 
 		t.Run(tt.name+" with output csv", func(t *testing.T) {

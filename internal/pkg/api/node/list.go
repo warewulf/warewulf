@@ -9,11 +9,7 @@ import (
 	"github.com/hpcng/warewulf/pkg/hostlist"
 )
 
-/*
-NodeList lists all to none of the nodes managed by Warewulf. Returns
-a formated string slice, with each line as separate string
-*/
-func NodeList(nodeGet *wwapiv1.GetNodeList) (*wwapiv1.NodeListViewResponse, error) {
+func NodeList(nodeGet *wwapiv1.GetNodeList) (*node.NodeListResponse, error) {
 	// nil is okay for nodeNames
 	nodeDB, err := node.New()
 	if err != nil {
@@ -26,7 +22,10 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (*wwapiv1.NodeListViewResponse, erro
 	nodeGet.Nodes = hostlist.Expand(nodeGet.Nodes)
 	sort.Strings(nodeGet.Nodes)
 
-	var entries []*wwapiv1.NodeListEntry
+	resp := &node.NodeListResponse{
+		Nodes: make(map[string][]node.NodeListEntry),
+	}
+
 	if nodeGet.Type == wwapiv1.GetNodeList_Simple {
 		for _, n := range node.FilterByName(nodes, nodeGet.Nodes) {
 			var netNames []string
@@ -34,93 +33,94 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (*wwapiv1.NodeListViewResponse, erro
 				netNames = append(netNames, k)
 			}
 			sort.Strings(netNames)
-			entries = append(entries, &wwapiv1.NodeListEntry{
-				NodeEntry: &wwapiv1.NodeListEntry_NodeSimple{
-					NodeSimple: &wwapiv1.NodeListSimple{
-						NodeName: n.Id.Print(),
-						Profiles: n.Profiles.Print(),
-						Network:  strings.Join(netNames, ", "),
-					},
-				},
+
+			var entries []node.NodeListEntry
+			entries = append(entries, &node.NodeListSimpleEntry{
+				Profile: n.Profiles.Print(),
+				Network: strings.Join(netNames, ", "),
 			})
+
+			if vals, ok := resp.Nodes[n.Id.Print()]; ok {
+				entries = append(entries, vals...)
+			}
+			resp.Nodes[n.Id.Print()] = entries
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_Network {
 		for _, n := range node.FilterByName(nodes, nodeGet.Nodes) {
+			var entries []node.NodeListEntry
 			if len(n.NetDevs) > 0 {
 				for name := range n.NetDevs {
-					entries = append(entries, &wwapiv1.NodeListEntry{
-						NodeEntry: &wwapiv1.NodeListEntry_NodeNetwork{
-							NodeNetwork: &wwapiv1.NodeListNetwork{
-								NodeName: n.Id.Print(),
-								Name:     name,
-								Hwaddr:   n.NetDevs[name].Hwaddr.Print(),
-								Ipaddr:   n.NetDevs[name].Ipaddr.Print(),
-								Gateway:  n.NetDevs[name].Gateway.Print(),
-								Device:   n.NetDevs[name].Device.Print(),
-							},
-						},
+					entries = append(entries, &node.NodeListNetworkEntry{
+						Name:    name,
+						HwAddr:  n.NetDevs[name].Hwaddr.Print(),
+						IpAddr:  n.NetDevs[name].Ipaddr.Print(),
+						Gateway: n.NetDevs[name].Gateway.Print(),
+						Device:  n.NetDevs[name].Device.Print(),
 					})
 				}
 			} else {
-				entries = append(entries, &wwapiv1.NodeListEntry{
-					NodeEntry: &wwapiv1.NodeListEntry_NodeNetwork{
-						NodeNetwork: &wwapiv1.NodeListNetwork{
-							NodeName: n.Id.Print(),
-							Name:     "--",
-							Hwaddr:   "--",
-							Ipaddr:   "--",
-							Gateway:  "--",
-							Device:   "--",
-						},
-					},
+				entries = append(entries, &node.NodeListNetworkEntry{
+					Name:    "--",
+					HwAddr:  "--",
+					IpAddr:  "--",
+					Gateway: "--",
+					Device:  "--",
 				})
 			}
+
+			if vals, ok := resp.Nodes[n.Id.Print()]; ok {
+				entries = append(entries, vals...)
+			}
+			resp.Nodes[n.Id.Print()] = entries
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_Ipmi {
 		for _, n := range node.FilterByName(nodes, nodeGet.Nodes) {
-			entries = append(entries, &wwapiv1.NodeListEntry{
-				NodeEntry: &wwapiv1.NodeListEntry_NodeIpmi{
-					NodeIpmi: &wwapiv1.NodeListIpmi{
-						NodeName:       n.Id.Print(),
-						IpmiIpAddr:     n.Ipmi.Ipaddr.Print(),
-						IpmiPort:       n.Ipmi.Port.Print(),
-						IpmiUserName:   n.Ipmi.UserName.Print(),
-						IpmiInterface:  n.Ipmi.Interface.Print(),
-						IpmiEscapeChar: n.Ipmi.EscapeChar.Print(),
-					},
-				},
+			var entries []node.NodeListEntry
+			entries = append(entries, &node.NodeListIpmiEntry{
+				IpmiAddr:       n.Ipmi.Ipaddr.Print(),
+				IpmiPort:       n.Ipmi.Port.Print(),
+				IpmiUser:       n.Ipmi.UserName.Print(),
+				IpmiInterface:  n.Ipmi.Interface.Print(),
+				IpmiEscapeChar: n.Ipmi.EscapeChar.Print(),
 			})
+
+			if vals, ok := resp.Nodes[n.Id.Print()]; ok {
+				entries = append(entries, vals...)
+			}
+			resp.Nodes[n.Id.Print()] = entries
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_Long {
 		for _, n := range node.FilterByName(nodes, nodeGet.Nodes) {
-			entries = append(entries, &wwapiv1.NodeListEntry{
-				NodeEntry: &wwapiv1.NodeListEntry_NodeLong{
-					NodeLong: &wwapiv1.NodeListLong{
-						NodeName:              n.Id.Print(),
-						KernelOverride:        n.Kernel.Override.Print(),
-						Container:             n.ContainerName.Print(),
-						OverlaysSystemRuntime: n.SystemOverlay.Print() + "/" + n.RuntimeOverlay.Print(),
-					},
-				},
+			var entries []node.NodeListEntry
+			entries = append(entries, &node.NodeListLongEntry{
+				KernelOverride: n.Kernel.Override.Print(),
+				Container:      n.ContainerName.Print(),
+				Overlays:       n.SystemOverlay.Print() + "/" + n.RuntimeOverlay.Print(),
 			})
+
+			if vals, ok := resp.Nodes[n.Id.Print()]; ok {
+				entries = append(entries, vals...)
+			}
+			resp.Nodes[n.Id.Print()] = entries
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_All || nodeGet.Type == wwapiv1.GetNodeList_FullAll {
 		for _, n := range node.FilterByName(nodes, nodeGet.Nodes) {
+			var entries []node.NodeListEntry
 			fields := n.GetFields(wwapiv1.GetNodeList_FullAll == nodeGet.Type)
 			for _, f := range fields {
-				entries = append(entries, &wwapiv1.NodeListEntry{
-					NodeEntry: &wwapiv1.NodeListEntry_NodeFull{
-						NodeFull: &wwapiv1.NodeListFull{
-							NodeName: n.Id.Print(),
-							Field:    f.Field,
-							Profile:  f.Source,
-							Value:    f.Value,
-						},
-					},
+				entries = append(entries, &node.NodeListAllEntry{
+					Field:   f.Field,
+					Profile: f.Source,
+					Value:   f.Value,
 				})
 			}
+
+			if vals, ok := resp.Nodes[n.Id.Print()]; ok {
+				entries = append(entries, vals...)
+			}
+			resp.Nodes[n.Id.Print()] = entries
 		}
 	}
 
-	return &wwapiv1.NodeListViewResponse{Nodes: entries}, nil
+	return resp, nil
 }

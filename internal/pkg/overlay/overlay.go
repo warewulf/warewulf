@@ -19,9 +19,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-var (
-	ErrDoesNotExist = errors.New("overlay does not exist")
-)
+var ErrDoesNotExist = errors.New("overlay does not exist")
 
 /*
 Build all overlays (runtime and generic) for a node
@@ -76,7 +74,7 @@ func BuildHostOverlay() error {
 	if err != nil {
 		return errors.Wrap(err, "could not build host overlay ")
 	}
-	if !(stats.Mode() == os.FileMode(0750|os.ModeDir) || stats.Mode() == os.FileMode(0700|os.ModeDir)) {
+	if !(stats.Mode() == os.FileMode(0o750|os.ModeDir) || stats.Mode() == os.FileMode(0o700|os.ModeDir)) {
 		wwlog.SecWarn("Permissions of host overlay dir %s are %s (750 is considered as secure)", hostdir, stats.Mode())
 	}
 	return BuildOverlayIndir(host, []string{"host"}, "/")
@@ -116,7 +114,7 @@ func OverlayInit(overlayName string) error {
 		return errors.New("Overlay already exists: " + overlayName)
 	}
 
-	err := os.MkdirAll(path, 0755)
+	err := os.MkdirAll(path, 0o755)
 
 	return err
 }
@@ -133,7 +131,7 @@ func BuildOverlay(nodeInfo node.NodeInfo, context string, overlayNames []string)
 	overlayImage := OverlayImage(nodeInfo.Id.Get(), context, overlayNames)
 	overlayImageDir := path.Dir(overlayImage)
 
-	err := os.MkdirAll(overlayImageDir, 0755)
+	err := os.MkdirAll(overlayImageDir, 0o755)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to create directory for %s: %s", name, overlayImageDir)
 	}
@@ -327,7 +325,6 @@ func CarefulWriteBuffer(destFile string, buffer bytes.Buffer, backupFile bool, p
 				return errors.Wrapf(err, "Failed to create backup: %s -> %s.wwbackup", destFile, destFile)
 			}
 		}
-
 	}
 	w, err := os.OpenFile(destFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, perm)
 	if err != nil {
@@ -347,7 +344,8 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (
 	buffer bytes.Buffer,
 	backupFile bool,
 	writeFile bool,
-	err error) {
+	err error,
+) {
 	backupFile = true
 	writeFile = true
 	tmpl, err := template.New(path.Base(fileName)).Option("missingkey=default").Funcs(template.FuncMap{
@@ -431,4 +429,40 @@ func OverlayGetFiles(name string) (files []string, err error) {
 		return nil
 	})
 	return
+}
+
+type OverlayListEntry interface {
+	GetHeader() []string
+	GetValue() []string
+}
+
+type OverlayListResponse struct {
+	Overlays map[string][]OverlayListEntry `yaml:"Overlays" json:"Overlays"`
+}
+
+type OverlayListSimpleEntry struct {
+	FilesDirs string `yaml:"Files/Dirs" json:"Files/Dirs"`
+}
+
+func (o *OverlayListSimpleEntry) GetHeader() []string {
+	return []string{"OVERLAY NAME", "FILES/DIRS"}
+}
+
+func (o *OverlayListSimpleEntry) GetValue() []string {
+	return []string{o.FilesDirs}
+}
+
+type OverlayListLongEntry struct {
+	PermMode string `yaml:"PermMode" json:"PermMode"`
+	UID      string `yaml:"UID" json:"UID"`
+	GID      string `yaml:"GID" json:"GID"`
+	FilePath string `yaml:"FilePath" json:"FilePath"`
+}
+
+func (o *OverlayListLongEntry) GetHeader() []string {
+	return []string{"SYSTEM-OVERLAY", "PERM MODE", "UID", "GID", "FILE PATH"}
+}
+
+func (o *OverlayListLongEntry) GetValue() []string {
+	return []string{o.PermMode, o.UID, o.GID, o.FilePath}
 }

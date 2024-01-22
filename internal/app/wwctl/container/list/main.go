@@ -4,17 +4,14 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"os"
-	"strconv"
 	"strings"
-	"time"
 
-	"github.com/bufbuild/protoyaml-go"
 	"github.com/hpcng/warewulf/internal/app/wwctl/helper"
 	"github.com/hpcng/warewulf/internal/pkg/api/container"
-	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	"github.com/hpcng/warewulf/internal/pkg/util"
+	pkg_container "github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 )
 
 var containerList = container.ContainerList
@@ -27,64 +24,80 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			return
 		}
 
-		containerListResponse := &wwapiv1.ContainerListResponse{
-			Containers: containerInfo,
+		resp := &pkg_container.ContainerListResponse{
+			Containers: make(map[string][]pkg_container.ContainerListEntry),
 		}
 
-		headers := []string{"CONTAINER NAME", "NODES", "KERNEL VERSION", "CREATION TIME", "MODIFICATION TIME", "SIZE"}
+		if len(containerInfo) > 0 {
+			for _, container := range containerInfo {
+				var entries []pkg_container.ContainerListEntry
+				entries = append(entries, &pkg_container.ContainerListSimpleEntry{
+					Nodes:            container.NodeCount,
+					KernelVersion:    container.KernelVersion,
+					CreationTime:     container.CreateDate,
+					ModificationTime: container.ModDate,
+					Size:             container.Size,
+				})
 
-		if strings.EqualFold(strings.TrimSpace(vars.output), "yaml") {
-			yamlBytes, err := protoyaml.Marshal(containerListResponse)
-			if err != nil {
-				return err
-			}
-
-			wwlog.Info(string(yamlBytes))
-		} else if strings.EqualFold(strings.TrimSpace(vars.output), "json") {
-			jsonBytes, err := json.Marshal(containerListResponse)
-			if err != nil {
-				return err
-			}
-
-			wwlog.Info(string(jsonBytes))
-		} else if strings.EqualFold(strings.TrimSpace(vars.output), "csv") {
-			csvWriter := csv.NewWriter(os.Stdout)
-			defer csvWriter.Flush()
-			if err := csvWriter.Write(headers); err != nil {
-				return err
-			}
-			for i := 0; i < len(containerInfo); i++ {
-				createTime := time.Unix(int64(containerInfo[i].CreateDate), 0)
-				modTime := time.Unix(int64(containerInfo[i].ModDate), 0)
-				row := []string{
-					containerInfo[i].Name,
-					strconv.FormatUint(uint64(containerInfo[i].NodeCount), 10),
-					containerInfo[i].KernelVersion,
-					createTime.Format(time.RFC822),
-					modTime.Format(time.RFC822),
-					util.ByteToString(int64(containerInfo[i].Size)),
+				if vals, ok := resp.Containers[container.Name]; ok {
+					entries = append(entries, vals...)
 				}
+				resp.Containers[container.Name] = entries
+			}
 
-				if err := csvWriter.Write(row); err != nil {
+			if strings.EqualFold(strings.TrimSpace(vars.output), "yaml") {
+				yamlBytes, err := yaml.Marshal(resp)
+				if err != nil {
 					return err
 				}
+
+				wwlog.Info(string(yamlBytes))
+			} else if strings.EqualFold(strings.TrimSpace(vars.output), "json") {
+				jsonBytes, err := json.Marshal(resp)
+				if err != nil {
+					return err
+				}
+
+				wwlog.Info(string(jsonBytes))
+			} else if strings.EqualFold(strings.TrimSpace(vars.output), "csv") {
+				csvWriter := csv.NewWriter(os.Stdout)
+				defer csvWriter.Flush()
+
+				headerWrite := false
+				for key, vals := range resp.Containers {
+					if !headerWrite {
+						if err := csvWriter.Write(vals[0].GetHeader()); err != nil {
+							return err
+						}
+						headerWrite = true
+					}
+
+					for _, val := range vals {
+						columns := []string{key}
+						columns = append(columns, val.GetValue()...)
+						if err := csvWriter.Write(columns); err != nil {
+							return err
+						}
+					}
+				}
+			} else {
+				var ph *helper.PrintHelper
+				headerWrite := false
+				for key, vals := range resp.Containers {
+					if !headerWrite {
+						ph = helper.NewPrintHelper(vals[0].GetHeader())
+					}
+					headerWrite = true
+					for _, val := range vals {
+						columns := []string{key}
+						columns = append(columns, val.GetValue()...)
+						ph.Append(columns)
+					}
+				}
+				ph.Render()
 			}
-		} else {
-			ph := helper.NewPrintHelper(headers)
-			for i := 0; i < len(containerInfo); i++ {
-				createTime := time.Unix(int64(containerInfo[i].CreateDate), 0)
-				modTime := time.Unix(int64(containerInfo[i].ModDate), 0)
-				ph.Append([]string{
-					containerInfo[i].Name,
-					strconv.FormatUint(uint64(containerInfo[i].NodeCount), 10),
-					containerInfo[i].KernelVersion,
-					createTime.Format(time.RFC822),
-					modTime.Format(time.RFC822),
-					util.ByteToString(int64(containerInfo[i].Size)),
-				})
-			}
-			ph.Render()
 		}
+
 		return
 	}
 }

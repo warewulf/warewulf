@@ -156,95 +156,192 @@ nodes:
 			baseCmd.SetArgs(tt.args)
 			verifyOutput(t, baseCmd, tt.stdout)
 		})
+	}
+}
 
-		t.Run(tt.name+" output to yaml format", func(t *testing.T) {
-			baseCmd := GetCommand()
-			args := []string{"-o", "yaml"}
-			baseCmd.SetArgs(append(args, tt.args...))
-			buf := new(bytes.Buffer)
-			baseCmd.SetOut(buf)
-			baseCmd.SetErr(buf)
-			wwlog.SetLogWriter(buf)
-			err := baseCmd.Execute()
-			assert.NoError(t, err)
-			assert.Contains(t, buf.String(), "nodes:\n- nodeentry:\n    nodesimple:\n      nodename: n01\n      profiles: default\n      network: \"\"\n")
-		})
+func Test_List_Multiple_Format(t *testing.T) {
+	const (
+		YAML = iota
+		JSON
+		CSV
+		TEXT
+	)
 
-		t.Run(tt.name+" output to json format", func(t *testing.T) {
-			baseCmd := GetCommand()
-			args := []string{"-o", "json"}
-			baseCmd.SetArgs(append(args, tt.args...))
-			buf := new(bytes.Buffer)
-			baseCmd.SetOut(buf)
-			baseCmd.SetErr(buf)
-			wwlog.SetLogWriter(buf)
-			err := baseCmd.Execute()
-			assert.NoError(t, err)
-			assert.Contains(t, buf.String(), "{\"nodes\":[{\"NodeEntry\":{\"NodeSimple\":{\"node_name\":\"n01\",\"profiles\":\"default\"}}")
-		})
+	tests := []struct {
+		name       string
+		args       []string
+		outputType int
+		output     string
+		inDb       string
+	}{
+		{
+			name:       "single node list yaml output",
+			args:       []string{"-o", "yaml"},
+			outputType: YAML,
+			output:     "Nodes:\n  n01:\n  - Profiles: default\n    Network: \"\"\n",
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+`,
+		},
+		{
+			name:       "single node list json output",
+			args:       []string{"-o", "json"},
+			outputType: JSON,
+			output:     "{\"Nodes\":{\"n01\":[{\"Profiles\":\"default\",\"Network\":\"\"}]}}\n",
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+`,
+		},
+		{
+			name:       "single node list csv output",
+			args:       []string{"-o", "csv"},
+			outputType: CSV,
+			output:     "NODENAME,PROFILES,NETWORK\nn01,default,\n",
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+`,
+		},
+		{
+			name:       "single node list text output",
+			args:       []string{"-o", "text"},
+			outputType: TEXT,
+			output:     "NODENAMEPROFILESNETWORK\nn01default\n",
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+`,
+		},
+		{
+			name:       "single node list csv output (all view)",
+			args:       []string{"-a", "-o", "csv"},
+			outputType: CSV,
+			output:     "NODE,FIELD,PROFILE,VALUE\nn01,Id,--,n01\nn01,Ipxe,--,(default)\nn01,RuntimeOverlay,--,(generic)\nn01,SystemOverlay,--,(wwinit)\nn01,Root,--,(initramfs)\nn01,Init,--,(/sbin/init)\nn01,KernelArgs,--,(quietcrashkernel=novga=791net.naming-scheme=v238)\nn01,Profiles,--,default\n",
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+`,
+		},
+		{
+			name:       "single node list csv output (full all view)",
+			args:       []string{"-A", "-o", "csv"},
+			outputType: CSV,
+			output:     "NODE,FIELD,PROFILE,VALUE\nn01,Id,--,n01\nn01,Comment,--,--\nn01,ClusterName,--,--\nn01,ContainerName,--,--\nn01,Ipxe,--,(default)\nn01,Grub,--,--\nn01,RuntimeOverlay,--,(generic)\nn01,SystemOverlay,--,(wwinit)\nn01,Root,--,(initramfs)\nn01,Discoverable,--,--\nn01,Init,--,(/sbin/init)\nn01,AssetKey,--,--\nn01,KernelOverride,--,--\nn01,KernelArgs,--,(quietcrashkernel=novga=791net.naming-scheme=v238)\nn01,IpmiIpaddr,--,--\nn01,IpmiNetmask,--,--\nn01,IpmiPort,--,--\nn01,IpmiGateway,--,--\nn01,IpmiUserName,--,--\nn01,IpmiPassword,--,--\nn01,IpmiInterface,--,--\nn01,IpmiEscapeChar,--,--\nn01,IpmiWrite,--,--\nn01,IpmiTags[],,\nn01,Profiles,--,default\nn01,PrimaryNetDev,--,--\nn01,NetDevs[],,\nn01,Tags[],,\nn01,Disks[],,\nn01,FileSystems[],,\n",
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+`,
+		},
+		{
+			name:       "single node list csv output (ipmi view)",
+			args:       []string{"-i", "-o", "csv"},
+			outputType: CSV,
+			output:     "NODENAME,IPMIIPADDR,IPMIPORT,IPMIUSERNAME,IPMIINTERFACE,IPMIESCAPECHAR\nn01,--,--,--,--,--\n",
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+`,
+		},
+		{
+			name:       "single node list csv output (long view)",
+			args:       []string{"-l", "-o", "csv"},
+			outputType: CSV,
+			output:     "NODENAME,KERNELOVERRIDE,CONTAINER,OVERLAYS(S/R)\nn01,--,--,(wwinit)/(generic)\n",
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+`,
+		},
+		{
+			name:       "single node list csv output (network view)",
+			args:       []string{"-n", "-o", "csv"},
+			outputType: CSV,
+			output:     "NODENAME,NAME,HWADDR,IPADDR,GATEWAY,DEVICE\nn01,--,--,--,--,--\n",
+			inDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+`,
+		},
+	}
 
-		t.Run(tt.name+" output to csv format", func(t *testing.T) {
-			baseCmd := GetCommand()
-			args := []string{"-o", "csv"}
-			baseCmd.SetArgs(append(args, tt.args...))
-			baseCmd.SetOut(nil)
-			baseCmd.SetErr(nil)
-			verifyOutput(t, baseCmd, "NODENAME,PROFILES,NETWORK\nn01,default,\n")
-		})
+	conf_yml := `WW_INTERNAL: 0`
+	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
+	assert.NoError(t, warewulfConfErr)
+	defer os.Remove(tempWarewulfConf.Name())
+	_, warewulfConfErr = tempWarewulfConf.Write([]byte(conf_yml))
+	assert.NoError(t, warewulfConfErr)
+	assert.NoError(t, tempWarewulfConf.Sync())
+	assert.NoError(t, warewulfconf.New().Read(tempWarewulfConf.Name()))
 
-		t.Run(tt.name+" output to text format", func(t *testing.T) {
-			baseCmd := GetCommand()
-			args := []string{"-o", "text"}
-			baseCmd.SetArgs(append(args, tt.args...))
-			baseCmd.SetOut(nil)
-			baseCmd.SetErr(nil)
-			verifyOutput(t, baseCmd, "NODENAMEPROFILESNETWORK\nn01default\n")
-		})
+	tempNodeConf, nodesConfErr := os.CreateTemp("", "nodes.conf-")
+	assert.NoError(t, nodesConfErr)
+	defer os.Remove(tempNodeConf.Name())
+	node.ConfigFile = tempNodeConf.Name()
+	warewulfd.SetNoDaemon()
+	for _, tt := range tests {
+		var err error
+		_, err = tempNodeConf.Seek(0, 0)
+		assert.NoError(t, err)
+		assert.NoError(t, tempNodeConf.Truncate(0))
+		_, err = tempNodeConf.Write([]byte(tt.inDb))
+		assert.NoError(t, err)
+		assert.NoError(t, tempNodeConf.Sync())
 
-		// test with other flags, only needing to test the headers
-		t.Run(tt.name+" output to csv format (all view)", func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			baseCmd := GetCommand()
-			args := []string{"-a", "-o", "csv"}
-			baseCmd.SetArgs(append(args, tt.args...))
-			baseCmd.SetOut(nil)
-			baseCmd.SetErr(nil)
-			verifyOutput(t, baseCmd, "NODE,FIELD,PROFILE,VALUE\n")
-		})
+			baseCmd.SetArgs(tt.args)
 
-		t.Run(tt.name+" output to csv format (full all view)", func(t *testing.T) {
-			baseCmd := GetCommand()
-			args := []string{"-A", "-o", "csv"}
-			baseCmd.SetArgs(append(args, tt.args...))
-			baseCmd.SetOut(nil)
-			baseCmd.SetErr(nil)
-			verifyOutput(t, baseCmd, "NODE,FIELD,PROFILE,VALUE\n")
-		})
-
-		t.Run(tt.name+" output to csv format (ipmi view)", func(t *testing.T) {
-			baseCmd := GetCommand()
-			args := []string{"-i", "-o", "csv"}
-			baseCmd.SetArgs(append(args, tt.args...))
-			baseCmd.SetOut(nil)
-			baseCmd.SetErr(nil)
-			verifyOutput(t, baseCmd, "NODENAME,IPMIIPADDR,IPMIPORT,IPMIUSERNAME,IPMIINTERFACE,IPMIESCAPECHAR\n")
-		})
-
-		t.Run(tt.name+" output to csv format (long view)", func(t *testing.T) {
-			baseCmd := GetCommand()
-			args := []string{"-l", "-o", "csv"}
-			baseCmd.SetArgs(append(args, tt.args...))
-			baseCmd.SetOut(nil)
-			baseCmd.SetErr(nil)
-			verifyOutput(t, baseCmd, "NODENAME,KERNELOVERRIDE,CONTAINER,OVERLAYS(S/R)\n")
-		})
-
-		t.Run(tt.name+" output to csv format (network view)", func(t *testing.T) {
-			baseCmd := GetCommand()
-			args := []string{"-n", "-o", "csv"}
-			baseCmd.SetArgs(append(args, tt.args...))
-			baseCmd.SetOut(nil)
-			baseCmd.SetErr(nil)
-			verifyOutput(t, baseCmd, "NODENAME,NAME,HWADDR,IPADDR,GATEWAY,DEVICE\n")
+			if tt.outputType == YAML || tt.outputType == JSON {
+				buf := new(bytes.Buffer)
+				baseCmd.SetOut(buf)
+				baseCmd.SetErr(buf)
+				wwlog.SetLogWriter(buf)
+				err := baseCmd.Execute()
+				assert.NoError(t, err)
+				assert.Contains(t, buf.String(), tt.output)
+			} else {
+				baseCmd.SetOut(nil)
+				baseCmd.SetErr(nil)
+				verifyOutput(t, baseCmd, tt.output)
+			}
 		})
 	}
 }

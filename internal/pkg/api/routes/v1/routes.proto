@@ -136,59 +136,6 @@ message NodeList {
 	repeated string Output = 1;
 }
 
-// NodeList* messages are different node list views
-message NodeListSimple {
-	string node_name = 1;
-	string profiles = 2;
-	string network = 3;
-}
-
-message NodeListNetwork {
-	string node_name = 1;
-	string name = 2;
-	string hwaddr = 3;
-	string ipaddr = 4;
-	string gateway = 5;
-	string device = 6;
-}
-
-message NodeListIpmi {
-	string node_name = 1;
-	string ipmi_ip_addr = 2;
-	string ipmi_port = 3;
-	string ipmi_user_name = 4;
-	string ipmi_interface = 5;
-	string ipmi_escape_char = 6;
-}
-
-message NodeListLong {
-	string node_name = 1;
-	string kernel_override = 2;
-	string container = 3;
-	string overlays_system_runtime = 4;
-}
-
-message NodeListFull {
-	string node_name = 1;
-	string field = 2;
-	string profile = 3;
-	string value = 4;
-}
-
-message NodeListEntry {
-	oneof node_entry {
-		NodeListSimple node_simple = 1;
-		NodeListNetwork node_network = 2;
-		NodeListIpmi node_ipmi = 3;
-		NodeListLong node_long = 4;
-		NodeListFull node_full = 5;
-	}
-}
-
-message NodeListViewResponse {
-	repeated NodeListEntry nodes = 1;
-}
-
 // Request a profile list view
 message GetProfileList {
 	bool ShowAll = 1;
@@ -198,31 +145,6 @@ message GetProfileList {
 // Get the formated output as string
 message ProfileList {
 	repeated string Output = 1;
-}
-
-// ProfileListFull returns a full profile list view
-message ProfileListFull {
-	string profile_name = 1;
-	string field = 2;
-	string source = 3;
-	string value = 4;
-}
-
-// ProfileListSimple returns a simple profile list view
-message ProfileListSimple {
-	string profile_name = 1;
-	string comment = 2;
-}
-
-message ProfileListEntry {
-	oneof profile_entry {
-		ProfileListFull profile_full = 1;
-		ProfileListSimple profile_simple = 2;
-	}
-}
-
-message ProfileListResponse {
-	repeated ProfileListEntry profiles = 1;
 }
 
 // NodeAddParameter contains all input for adding a node to be managed by
@@ -290,6 +212,17 @@ message NodeStatusResponse {
 	repeated NodeStatus nodeStatus = 1;
 }
 
+// Overlay List 
+message OverlayListParameter {
+	enum ListType {
+		TYPE_UNSPECIFIED = 0;
+		TYPE_LONG = 1;
+		TYPE_CONTENT = 2;	
+	}
+	repeated string overlays = 1;
+	ListType type = 2;
+}
+
 // Version
 
 // VersionReponse contains versions of the software.
@@ -302,53 +235,6 @@ message VersionResponse {
 // Check if config is writeable
 message CanWriteConfig {
 	bool canWriteConfig = 1;
-}
-
-// Kernel info
-message KernelInfo {
-	string kernel_name = 1;
-	string kernel_version = 2;
-	string nodes = 3;
-}
-
-// Kernel List info
-message KernelListResponse {
-	repeated KernelInfo kernels = 1;
-}
-
-// Overlay List 
-message OverlayListParameter {
-	enum ListType {
-		TYPE_UNSPECIFIED = 0;
-		TYPE_LONG = 1;
-		TYPE_CONTENT = 2;	
-	}
-	repeated string overlays = 1;
-	ListType type = 2;
-}
-
-message OverlayListSimple {
-	string overlay_name = 1;
-	string files_dirs = 2;
-}
-
-message OverlayListLong {
-	string perm_mode = 1;
-	string uid = 2;
-	string gid = 3;
-	string system_overlay = 4;
-	string file_path = 5;
-}
-
-message OverlayListResponseEntry {
-	oneof overlay_entry {
-		OverlayListSimple overlay_simple = 1;
-		OverlayListLong overlay_long = 2;
-	}
-}
-
-message OverlayListResponse {
-	repeated OverlayListResponseEntry overlays = 1;
 }
 
 // WWApi defines the wwapid service web interface.

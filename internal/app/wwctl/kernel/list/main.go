@@ -4,16 +4,14 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"os"
-	"strconv"
 	"strings"
 
-	"github.com/bufbuild/protoyaml-go"
 	"github.com/hpcng/warewulf/internal/app/wwctl/helper"
-	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/hpcng/warewulf/internal/pkg/kernel"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 )
 
 var kernelList = kernel.ListKernels
@@ -34,52 +32,50 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 			nodemap[n.Kernel.Override.Get()]++
 		}
 
-		headers := []string{"KERNEL NAME", "KERNEL VERSION", "NODES"}
-		var kernelInfos []*wwapiv1.KernelInfo
+		var kernelResp kernel.KernelListResponse
 		for _, k := range kernels {
-			kernelInfos = append(kernelInfos, &wwapiv1.KernelInfo{
+			kernelResp.Entries = append(kernelResp.Entries, &kernel.KernelListSimpleEntry{
 				KernelName:    k,
 				KernelVersion: kernel.GetKernelVersion(k),
-				Nodes:         strconv.Itoa(nodemap[k]),
+				Nodes:         nodemap[k],
 			})
 		}
 
-		if strings.EqualFold(strings.TrimSpace(vars.output), "yaml") {
-			yamlBytes, err := protoyaml.Marshal(&wwapiv1.KernelListResponse{
-				Kernels: kernelInfos,
-			})
-			if err != nil {
-				return err
-			}
-
-			wwlog.Info(string(yamlBytes))
-		} else if strings.EqualFold(strings.TrimSpace(vars.output), "json") {
-			jsonBytes, err := json.Marshal(&wwapiv1.KernelListResponse{
-				Kernels: kernelInfos,
-			})
-			if err != nil {
-				return err
-			}
-
-			wwlog.Info(string(jsonBytes))
-		} else if strings.EqualFold(strings.TrimSpace(vars.output), "csv") {
-			csvWriter := csv.NewWriter(os.Stdout)
-			defer csvWriter.Flush()
-			if err := csvWriter.Write(headers); err != nil {
-				return err
-			}
-			for _, val := range kernelInfos {
-				if err := csvWriter.Write([]string{val.KernelName, val.KernelVersion, val.Nodes}); err != nil {
+		if len(kernelResp.Entries) > 0 {
+			if strings.EqualFold(strings.TrimSpace(vars.output), "yaml") {
+				yamlBytes, err := yaml.Marshal(kernelResp)
+				if err != nil {
 					return err
 				}
+
+				wwlog.Info(string(yamlBytes))
+			} else if strings.EqualFold(strings.TrimSpace(vars.output), "json") {
+				jsonBytes, err := json.Marshal(kernelResp)
+				if err != nil {
+					return err
+				}
+
+				wwlog.Info(string(jsonBytes))
+			} else if strings.EqualFold(strings.TrimSpace(vars.output), "csv") {
+				csvWriter := csv.NewWriter(os.Stdout)
+				defer csvWriter.Flush()
+				if err := csvWriter.Write(kernelResp.Entries[0].GetHeader()); err != nil {
+					return err
+				}
+				for _, val := range kernelResp.Entries {
+					if err := csvWriter.Write(val.GetValue()); err != nil {
+						return err
+					}
+				}
+			} else {
+				ph := helper.NewPrintHelper(kernelResp.Entries[0].GetHeader())
+				for _, val := range kernelResp.Entries {
+					ph.Append(val.GetValue())
+				}
+				ph.Render()
 			}
-		} else {
-			ph := helper.NewPrintHelper(headers)
-			for _, val := range kernelInfos {
-				ph.Append([]string{val.KernelName, val.KernelVersion, val.Nodes})
-			}
-			ph.Render()
 		}
+
 		return nil
 	}
 }

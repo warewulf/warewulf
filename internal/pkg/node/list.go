@@ -71,9 +71,91 @@ func recursiveFields(obj interface{}, emptyFields bool, prefix string) (output [
 				})
 			}
 		} else if typeObj.Elem().Field(i).Type.Kind() == reflect.Ptr {
-			nestedOut := recursiveFields(valObj.Elem().Field(i).Interface(), emptyFields, prefix+typeObj.Elem().Field(i).Name+".")
+			nestedOut := recursiveFields(valObj.Elem().Field(i).Interface(), emptyFields, prefix+typeObj.Elem().Field(i).Name)
 			output = append(output, nestedOut...)
 		}
 	}
 	return
+}
+
+type NodeListEntry interface {
+	GetHeader() []string
+	GetValue() []string
+}
+
+type NodeListResponse struct {
+	Nodes map[string][]NodeListEntry `yaml:"Nodes" json:"Nodes"`
+}
+
+type NodeListSimpleEntry struct {
+	Profile string `yaml:"Profiles" json:"Profiles"`
+	Network string `yaml:"Network" json:"Network"`
+}
+
+func (n *NodeListSimpleEntry) GetHeader() []string {
+	return []string{"NODE NAME", "PROFILES", "NETWORK"}
+}
+
+func (n *NodeListSimpleEntry) GetValue() []string {
+	return []string{n.Profile, n.Network}
+}
+
+type NodeListAllEntry struct {
+	Field   string `yaml:"Field" json:"Field"`
+	Profile string `yaml:"Profile" json:"Profile"`
+	Value   string `yaml:"Value" json:"Value"`
+}
+
+func (n *NodeListAllEntry) GetHeader() []string {
+	return []string{"NODE", "FIELD", "PROFILE", "VALUE"}
+}
+
+func (n *NodeListAllEntry) GetValue() []string {
+	return []string{n.Field, n.Profile, n.Value}
+}
+
+type NodeListIpmiEntry struct {
+	IpmiAddr       string `yaml:"IpmiAddr" json:"IpmiAddr"`
+	IpmiPort       string `yaml:"IpmiPort" json:"IpmiPort"`
+	IpmiUser       string `yaml:"IpmiUser" json:"IpmiUser"`
+	IpmiInterface  string `yaml:"IpmiInterface" json:"IpmiInterface"`
+	IpmiEscapeChar string `yaml:"IpmiEscapeChar" json:"IpmiEscapeChar"`
+}
+
+func (n *NodeListIpmiEntry) GetHeader() []string {
+	return []string{"NODE NAME", "IPMI IPADDR", "IPMI PORT", "IPMI USERNAME", "IPMI INTERFACE", "IPMI ESCAPE CHAR"}
+}
+
+func (n *NodeListIpmiEntry) GetValue() []string {
+	return []string{n.IpmiAddr, n.IpmiPort, n.IpmiUser, n.IpmiInterface, n.IpmiEscapeChar}
+}
+
+type NodeListNetworkEntry struct {
+	Name    string `yaml:"Name" json:"Name"`
+	HwAddr  string `yaml:"HwAddr" json:"HwAddr"`
+	IpAddr  string `yaml:"IpAddr" json:"IpAddr"`
+	Gateway string `yaml:"Gateway" json:"Gateway"`
+	Device  string `yaml:"Device" json:"Device"`
+}
+
+func (n *NodeListNetworkEntry) GetHeader() []string {
+	return []string{"NODE NAME", "NAME", "HWADDR", "IPADDR", "GATEWAY", "DEVICE"}
+}
+
+func (n *NodeListNetworkEntry) GetValue() []string {
+	return []string{n.Name, n.HwAddr, n.IpAddr, n.Gateway, n.Device}
+}
+
+type NodeListLongEntry struct {
+	KernelOverride string `yaml:"KernelOverride" json:"KernelOverride"`
+	Container      string `yaml:"Container" json:"Container"`
+	Overlays       string `yaml:"Overlays (S/R)" json:"Overlays (S/R)"`
+}
+
+func (n *NodeListLongEntry) GetHeader() []string {
+	return []string{"NODE NAME", "KERNEL OVERRIDE", "CONTAINER", "OVERLAYS (S/R)"}
+}
+
+func (n *NodeListLongEntry) GetValue() []string {
+	return []string{n.KernelOverride, n.Container, n.Overlays}
 }

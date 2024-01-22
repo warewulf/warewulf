@@ -45,8 +45,8 @@ func Test_Overlay_List(t *testing.T) {
 		wwlog.SetLogWriter(buf)
 		err := baseCmd.Execute()
 		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "overlays:\n")
-		assert.Contains(t, buf.String(), "filesDirs: email.ww\n")
+		assert.Contains(t, buf.String(), "Overlays:\n")
+		assert.Contains(t, buf.String(), "Files/Dirs: email.ww\n")
 	})
 
 	t.Run("overlay list all with output json", func(t *testing.T) {
@@ -58,7 +58,7 @@ func Test_Overlay_List(t *testing.T) {
 		wwlog.SetLogWriter(buf)
 		err := baseCmd.Execute()
 		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "{\"overlays\":[{\"OverlayEntry\":{\"OverlaySimple\":{\"overlay_name\":\"testoverlay\",\"files_dirs\":\"email.ww\"}}}]}\n")
+		assert.Contains(t, buf.String(), "{\"Overlays\":{\"testoverlay\":[{\"Files/Dirs\":\"email.ww\"}]}}\n")
 	})
 
 	t.Run("overlay list all with output csv", func(t *testing.T) {
