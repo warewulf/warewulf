@@ -140,6 +140,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overlays from different profiles for one node are now merged, overlays can be
   excluded with ~ prefix and in listings are listed as !{excluded_profile} #885
 - modules are now correctly included
+- move hostlist into internal alongside other warewulf code #804
 
 ## [4.4.0] 2023-01-18
 

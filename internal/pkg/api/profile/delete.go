@@ -5,10 +5,10 @@ import (
 	"os"
 
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/hpcng/warewulf/internal/pkg/hostlist"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"github.com/hpcng/warewulf/pkg/hostlist"
 	"github.com/pkg/errors"
 )
 

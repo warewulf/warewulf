@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/hpcng/warewulf/internal/pkg/hostlist"
 	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/pkg/hostlist"
 )
 
 /*
