@@ -352,6 +352,18 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (
 	err error) {
 	backupFile = true
 	writeFile = true
+	// parse the overlay name out of the absolute path
+	overlayPath, _ := filepath.Rel(OverlaySourceTopDir(), fileName)
+	withoutRootfs, err := filepath.Rel("rootfs", overlayPath)
+	if err != nil {
+		overlayPath = withoutRootfs
+	}
+	overlayPathElem := strings.Split(overlayPath, "/")
+	if len(overlayPathElem) > 1 {
+		data.Overlay = overlayPathElem[0]
+	} else {
+		data.Overlay = ""
+	}
 
 	// Build our FuncMap
 	funcMap := template.FuncMap{
