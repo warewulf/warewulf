@@ -8,7 +8,7 @@ import (
 var baseCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	Use:                   "rename CONTAINER NEW_NAME",
-	Aliases:               []string{"rn"},
+	Aliases:               []string{"mv"},
 	Short:                 "Rename an existing container",
 	Long:                  "This command will rename an existing container.",
 	RunE:                  CobraRunE,
