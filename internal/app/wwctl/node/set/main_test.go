@@ -414,3 +414,69 @@ nodes:
 		run_test(t, tt)
 	}
 }
+
+func Test_Node_Add(t *testing.T) {
+	tests := []test_description{
+		{
+			args:    []string{"--tagadd=email=node", "n01"},
+			wantErr: false,
+			stdout:  "",
+			inDB: `WW_INTERNAL: 43
+nodeprofiles:
+  default:
+    comment: testit
+    tags:
+      email: profile
+nodes:
+  n01:
+    profiles:
+    - default`,
+			outDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default:
+    comment: testit
+    tags:
+      email: profile
+nodes:
+  n01:
+    profiles:
+    - default
+    tags:
+      email: node
+`},
+		{
+			args:    []string{"--tagadd=newtag=newval", "n01"},
+			wantErr: false,
+			stdout:  "",
+			inDB: `WW_INTERNAL: 43
+nodeprofiles:
+  default:
+    comment: testit
+    tags:
+      email: profile
+nodes:
+  n01:
+    profiles:
+    - default
+    tags:
+      email: node`,
+			outDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default:
+    comment: testit
+    tags:
+      email: profile
+nodes:
+  n01:
+    profiles:
+    - default
+    tags:
+      email: node
+      newtag: newval
+`},
+	}
+
+	for _, tt := range tests {
+		run_test(t, tt)
+	}
+}
