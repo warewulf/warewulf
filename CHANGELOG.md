@@ -119,6 +119,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- {{ .Overlay }} contains the overlay name in which the template is located, otherwise
+  its values is "UNDEF" which should not happen when accessing through wwctl
+  
 ## [4.4.0] 2023-01-18
 
 ### Added
