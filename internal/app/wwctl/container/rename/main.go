@@ -11,8 +11,8 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
-	if len(args) > 2 {
-		wwlog.Warn("rename only requires 2 arguments but you provided %d arguments. Hence, they will be ignored.", len(args))
+	if len(args) != 2 {
+		return fmt.Errorf("rename requires 2 arguments: %d provided", len(args))
 	}
 
 	crp := &wwapiv1.ContainerRenameParameter{
