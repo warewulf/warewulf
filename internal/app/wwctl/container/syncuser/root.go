@@ -25,10 +25,12 @@ uid/gid collision is detected. File ownerships are also changed.`,
 		Args: cobra.MinimumNArgs(1),
 	}
 	write bool
+	build bool
 )
 
 func init() {
 	baseCmd.PersistentFlags().BoolVar(&write, "write", false, "Synchronize uis/gids and write files in container")
+	baseCmd.PersistentFlags().BoolVar(&build, "build", false, "Build container after syncuser is completed")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
