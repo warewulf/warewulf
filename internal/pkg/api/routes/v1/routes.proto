@@ -84,6 +84,13 @@ message ContainerSyncUserParameter {
 	string containerName = 1;
 }
 
+// ContainerRenameParameter is the input for ContainerRename
+message ContainerRenameParameter {
+	string containerName = 1;
+	string targetName = 2;
+	bool build = 3;
+}
+
 // Nodes
 
 // NodeNames is an array of node ids.
@@ -272,6 +279,14 @@ service WWApi {
 	rpc ContainerShow(ContainerShowParameter) returns (ContainerShowResponse) {
 		option (google.api.http) = {
 			get: "/v1/containershow"
+		};
+	}
+
+	// ContainerRename renames the container
+	rpc ContainerRename(ContainerRenameParameter) returns (google.protobuf.Empty) {
+		option (google.api.http) = {
+			post: "/v1/containerrename"
+			body: "*"
 		};
 	}
 
