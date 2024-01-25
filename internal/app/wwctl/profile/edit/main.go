@@ -116,7 +116,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				err = apiprofile.ProfileDelete(&wwapiv1.NodeDeleteParameter{NodeNames: pList, Force: true})
 
 				if err != nil {
-					wwlog.Verbose("Problem deleting nodes before modification %s")
+					wwlog.Verbose("Problem deleting nodes before modification %s", err)
 				}
 				buffer, _ = yaml.Marshal(modifiedProfileMap)
 				newHash := apinode.Hash()

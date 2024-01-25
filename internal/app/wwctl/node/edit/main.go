@@ -116,8 +116,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			if yes {
 				err = apinode.NodeDelete(&wwapiv1.NodeDeleteParameter{NodeNames: nodeList, Force: true})
 				if err != nil {
-					wwlog.Error("Problem deleting nodes before modification: %s", err)
-					return err
+					wwlog.Verbose("Problem deleting nodes before modification %s", err)
 				}
 				buffer, _ = yaml.Marshal(modifiedNodeMap)
 				newHash := apinode.Hash()
