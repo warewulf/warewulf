@@ -9,10 +9,10 @@ import (
 
 	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/hpcng/warewulf/internal/pkg/hostlist"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"github.com/hpcng/warewulf/pkg/hostlist"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 

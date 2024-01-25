@@ -5,10 +5,10 @@ import (
 	"os"
 
 	"github.com/hpcng/warewulf/internal/pkg/batch"
+	"github.com/hpcng/warewulf/internal/pkg/hostlist"
 	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/hpcng/warewulf/internal/pkg/power"
 	"github.com/hpcng/warewulf/internal/pkg/wwlog"
-	"github.com/hpcng/warewulf/pkg/hostlist"
 	"github.com/spf13/cobra"
 )
 
