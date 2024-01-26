@@ -1,0 +1,41 @@
+#!ipxe
+
+echo
+echo ================================================================================
+echo Warewulf v4 now booting: {{.Fqdn}} ({{.Hwaddr}}) from local disk.
+echo
+echo
+
+# Behavior depends on EFI vs Legacy.
+iseq ${platform} efi && goto efi || goto legacy
+
+:efi
+echo "Booting from local disk in EFI mode requires"
+echo "that the Boot options be set so that booting"
+echo "from disk is the next item after network boot"
+echo "in the boot order."
+sleep 10s
+exit 1
+goto end
+
+:legacy
+echo "Scanning for a local boot device."
+:drivex80
+sanboot --no-describe --drive 0x80 || goto drivex81
+:drivex81
+sanboot --no-describe --drive 0x81 || goto drivex82
+:drivex82
+sanboot --no-describe --drive 0x82 || goto drivex83
+:drivex83
+sanboot --no-describe --drive 0x83 || goto drivex84
+:drivex84
+sanboot --no-describe --drive 0x84 || goto failsafe
+
+failsafe:
+echo "Falling through to Legacy BIOS Boot order."
+sleep 10
+exit 1
+
+:end
+echo "This should never be reached."
+
