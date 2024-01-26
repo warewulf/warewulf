@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [4.5.0] 2024-02-08
 
 ### Added
 
@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add container rename command. #583
 - Add container build flags and warn message after container sync. #509
 - Add DNS fields to network configuration overlays. #922
+- Added support for booting nodes with grub. Enable this behavior using
+  warewulf.grubboot: true in warewulf.conf. For unknown nodes, grub.efi
+  and shim.efi are extracted from the Warewulf host. If the booted node
+  has a container these binaries are extracted from the container image.
 
 ### Fixed
 - Make Variables.mk consistent with spec file w.r.t. WWPROVISIONDIR, e.g.
@@ -82,6 +86,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `warwulfconf print` which will print the used `warewulf.conf`. If there is no valid
      `warewulf.conf` a valid configuration is provided, prefilled with default values
      and an IP configuration derived from the network configuration of the host
+- Added support for file systems, partitions and disks. Values for these objects can
+  be set with `wwctl profile/node set/add`. The format of this objects is inspired by
+  butane/ignition, but where butane/ignition uses lists for holding disks, partitions
+  and file systems, warewulf uses maps instead. For disks the map key is the underlying
+  block device, for partitions its the partition label and for file systems its the path
+  to the partitions (e.g. `/dev/disk/by-partlabel/scratch`).
+  Not all available options of butane/ignition are exposed to the commandline, but are
+  available via `wwctl node/profile edit`.
+
+### Changed
+
+- The primary hostname and warewulf server fqdn are now the canonical name in
+  `/etc/hosts`
+- Refactored `profile add` command to make it alike `node add`. #658 #659
+- The ifcfg ONBOOT parameter is no longer statically `true`, so unconfigured
+  interfaces may not be enabled by default. (#644)
+- Write log messages to stderr rather than stdout. #768
 - All paths can now be configured in `warewulf.conf`, check the paths section of of
    `wwctl --emptyconf genconfig warewulfconf print` for the available paths.
 - Added experimental dnsmasq support.
@@ -96,14 +117,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Specify primary network device per-node rather than per-netdev
 - refactored output `wwctl node/profile list` so that `-a` will only show all the
   set values and `-A` will show all fields included the ones without a set value
-- Added support for file systems, partitions and disks. Values for these objects can
-  be set with `wwctl profile/node set/add`. The format of this objects is inspired by
-  butane/ignition, but where butane/ignition uses lists for holding disks, partitions
-  and file systems, warewulf uses maps instead. For disks the map key is the underlying
-  block device, for partitions its the partition label and for file systems its the path
-  to the partitions (e.g. `/dev/disk/by-partlabel/scratch`).
-  Not all available options of butane/ignition are exposed to the commandline, but are
-  available via `wwctl node/profile edit`.
 - Added the template function `{{ createIgnitionJson }}` which will create a json object
   compatible with ignition.
 - Container images need ignition and sgdisk installed in order to the disk management.
@@ -140,10 +153,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `warewulf.conf`. For unknown nodes `grub.efi` and `shim.efi` will be extracted from
   the host running warewulf. If node has container it will get these binaries from the
   container image.
-- Added support for booting nodes with grub. Enable this behavior using
-  warewulf.grubboot: true in warewulf.conf. For unknown nodes, grub.efi
-  and shim.efi are extracted from the Warewulf host. If the booted node
-  has a container these binaries are extracted from the container image.
 - overlays from different profiles for one node are now merged, overlays can be
   excluded with ~ prefix and in listings are listed as !{excluded_profile} #885
 - modules are now correctly included
