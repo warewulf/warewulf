@@ -11,8 +11,7 @@ import (
 Return the version of wwctl
 */
 func GetVersion() string {
-	conf := warewulfconf.Get()
-	return fmt.Sprintf("%s-%s", conf.Paths.Version(), conf.Paths.Release())
+	return fmt.Sprintf("%s-%s", warewulfconf.Version, warewulfconf.Release)
 }
 
 /*

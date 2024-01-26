@@ -51,8 +51,6 @@ func TestDefaultRootConf(t *testing.T) {
 	assert.NotEmpty(t, conf.Paths.WWOverlaydir)
 	assert.NotEmpty(t, conf.Paths.WWChrootdir)
 	assert.NotEmpty(t, conf.Paths.WWProvisiondir)
-	assert.NotEmpty(t, conf.Paths.Version)
-	assert.NotEmpty(t, conf.Paths.Release)
 	assert.NotEmpty(t, conf.Paths.WWClientdir)
 }
 

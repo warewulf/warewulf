@@ -11,8 +11,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+
 	"github.com/stretchr/testify/assert"
-	"github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 )
 
@@ -62,7 +63,7 @@ func New(t *testing.T) (env *TestEnv) {
 	env.WriteFile(t, path.Join(Datadir, "warewulf/defaults.conf"), initDefaultsConf)
 
 	// re-read warewulf.conf
-	conf := config.New()
+	conf := warewulfconf.New()
 	err = conf.Read(env.GetPath(path.Join(Sysconfdir, "warewulf/warewulf.conf")))
 	assert.NoError(t, err)
 

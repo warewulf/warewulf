@@ -14,7 +14,7 @@ Warewulf (4.4.0):
 
 .. code-block:: yaml
 
-   WW_INTERNAL: 43
+   WW_INTERNAL: 45
    ipaddr: 10.0.0.1
    netmask: 255.255.252.0
    network: 10.0.0.0
