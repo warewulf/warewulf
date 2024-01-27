@@ -7,12 +7,12 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	apinode "github.com/hpcng/warewulf/internal/pkg/api/node"
-	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
-	"github.com/hpcng/warewulf/internal/pkg/hostlist"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
+	apinode "github.com/warewulf/warewulf/internal/pkg/api/node"
+	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/hostlist"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"golang.org/x/term"
 )
 

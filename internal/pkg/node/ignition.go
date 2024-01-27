@@ -6,7 +6,7 @@ import (
 
 	types_3_4 "github.com/coreos/ignition/v2/config/v3_2/types"
 	"github.com/coreos/vcontext/path"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 /*

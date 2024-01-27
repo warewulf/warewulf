@@ -12,7 +12,7 @@ Install Warewulf and dependencies
    sudo dnf config-manager --set-enabled crb
    sudo dnf install golang tftp-server dhcp-server nfs-utils gpgme-devel libassuan-devel
 
-   git clone https://github.com/hpcng/warewulf.git
+   git clone https://github.com/warewulf/warewulf.git
    cd warewulf
    make clean defaults \
     PREFIX=/usr \
@@ -136,7 +136,7 @@ default running kernel from the controller node and set both in the
 
 .. code-block:: bash
 
-   sudo wwctl container import docker://ghcr.io/hpcng/warewulf-rockylinux:9 rocky-9
+   sudo wwctl container import docker://ghcr.io/warewulf/warewulf-rockylinux:9 rocky-9
 
 
 Set up the default node profile

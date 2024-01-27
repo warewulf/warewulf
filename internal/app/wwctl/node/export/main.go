@@ -3,9 +3,9 @@ package export
 import (
 	"fmt"
 
-	apinode "github.com/hpcng/warewulf/internal/pkg/api/node"
-	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/spf13/cobra"
+	apinode "github.com/warewulf/warewulf/internal/pkg/api/node"
+	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {

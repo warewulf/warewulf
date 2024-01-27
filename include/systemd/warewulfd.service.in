@@ -1,6 +1,6 @@
 [Unit]
 Description=Warewulf cluster management daemon
-Documentation=https://warewulf.hpcng.org/
+Documentation=https://warewulf.org/
 After=network-online.target
 AssertFileIsExecutable=@BINDIR@/wwctl
 

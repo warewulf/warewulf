@@ -1,8 +1,8 @@
 package copy
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/pkg/container"
 )
 
 var (

@@ -8,9 +8,9 @@ import (
 	"strings"
 	"syscall"
 
-	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 // TODO: https://github.com/danderson/netboot/blob/master/pixiecore/dhcp.go

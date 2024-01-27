@@ -1,8 +1,8 @@
 package delete
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/kernel"
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/pkg/kernel"
 )
 
 var (

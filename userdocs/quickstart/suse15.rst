@@ -14,7 +14,7 @@ Install Warewulf and dependencies
    sudo systemctl stop firewalld
    sudo systemctl disable firewalld
 
-   git clone https://github.com/hpcng/warewulf.git
+   git clone https://github.com/warewulf/warewulf.git
    cd warewulf
    PREFIX=/usr SYSCONFDIR=/etc TFTPDIR=/srv/tftproot LOCALSTATEDIR=/var/lib make clean defaults
    make all

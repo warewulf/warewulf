@@ -3,10 +3,10 @@ package list
 import (
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/app/wwctl/helper"
-	apinode "github.com/hpcng/warewulf/internal/pkg/api/node"
-	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/app/wwctl/helper"
+	apinode "github.com/warewulf/warewulf/internal/pkg/api/node"
+	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 )
 
 func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err error) {

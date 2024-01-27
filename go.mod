@@ -1,4 +1,4 @@
-module github.com/hpcng/warewulf
+module github.com/warewulf/warewulf
 
 go 1.17
 

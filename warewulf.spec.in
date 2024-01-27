@@ -20,8 +20,8 @@ Summary: A provisioning system for large clusters of bare metal and/or virtual s
 Version: @VERSION@
 Release: @RELEASE@%{?dist}
 License: BSD-3-Clause
-URL:     https://github.com/hpcng/warewulf
-Source:  https://github.com/hpcng/warewulf/releases/download/v%{version}/warewulf-%{version}.tar.gz
+URL:     https://github.com/warewulf/warewulf
+Source:  https://github.com/warewulf/warewulf/releases/download/v%{version}/warewulf-%{version}.tar.gz
 
 ExclusiveOS: linux
 

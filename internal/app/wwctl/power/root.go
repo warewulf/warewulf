@@ -1,13 +1,13 @@
 package power
 
 import (
-	powercycle "github.com/hpcng/warewulf/internal/app/wwctl/power/cycle"
-	poweroff "github.com/hpcng/warewulf/internal/app/wwctl/power/off"
-	poweron "github.com/hpcng/warewulf/internal/app/wwctl/power/on"
-	powerreset "github.com/hpcng/warewulf/internal/app/wwctl/power/reset"
-	powersoft "github.com/hpcng/warewulf/internal/app/wwctl/power/soft"
-	powerstatus "github.com/hpcng/warewulf/internal/app/wwctl/power/status"
 	"github.com/spf13/cobra"
+	powercycle "github.com/warewulf/warewulf/internal/app/wwctl/power/cycle"
+	poweroff "github.com/warewulf/warewulf/internal/app/wwctl/power/off"
+	poweron "github.com/warewulf/warewulf/internal/app/wwctl/power/on"
+	powerreset "github.com/warewulf/warewulf/internal/app/wwctl/power/reset"
+	powersoft "github.com/warewulf/warewulf/internal/app/wwctl/power/soft"
+	powerstatus "github.com/warewulf/warewulf/internal/app/wwctl/power/status"
 )
 
 var (

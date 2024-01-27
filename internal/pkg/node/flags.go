@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/util"
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/pkg/util"
 )
 
 /*

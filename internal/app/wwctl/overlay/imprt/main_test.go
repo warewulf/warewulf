@@ -5,10 +5,10 @@ import (
 	"os"
 	"testing"
 
-	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
-	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/stretchr/testify/assert"
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
 
 func Test_List(t *testing.T) {

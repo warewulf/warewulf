@@ -48,7 +48,7 @@ Here is an example of importing from Docker Hub.
 
 .. code-block:: console
 
-   # wwctl container import docker://ghcr.io/hpcng/warewulf-rockylinux:8 rocky-8
+   # wwctl container import docker://ghcr.io/warewulf/warewulf-rockylinux:8 rocky-8
    Getting image source signatures
    Copying blob d7f16ed6f451 done
    Copying config da2ca70704 done
@@ -122,7 +122,7 @@ directly.
 
 .. code-block:: console
 
-   $ apptainer build --sandbox ./rockylinux-8/ docker://ghcr.io/hpcng/warewulf-rockylinux:8
+   $ apptainer build --sandbox ./rockylinux-8/ docker://ghcr.io/warewulf/warewulf-rockylinux:8
    $ sudo wwctl container import ./rockylinux-8/ rockylinux-8
 
 Syncuser
@@ -283,8 +283,8 @@ Apptainer, a container platform for HPC and performance intensive
 applications, can also be used to create node containers for
 Warewulf. There are several Apptainer container recipes in the
 ``containers/Apptainer/`` directory and can be found on GitHub at
-`https://github.com/hpcng/warewulf/tree/main/containers/Apptainer
-<https://github.com/hpcng/warewulf/tree/main/containers/Apptainer>`_.
+`https://github.com/warewulf/warewulf/tree/main/containers/Apptainer
+<https://github.com/warewulf/warewulf/tree/main/containers/Apptainer>`_.
 
 You can use these as starting points and adding any additional steps
 you want in the ``%post`` section of the recipe file. Once you've done

@@ -3,8 +3,8 @@ package print
 import (
 	"fmt"
 
-	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
 	"github.com/spf13/cobra"
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"gopkg.in/yaml.v2"
 )
 

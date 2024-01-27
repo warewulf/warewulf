@@ -58,4 +58,4 @@ Please note that the '''label purge''' inherits the label '''label uninstall'''.
 
 ## More Info
 
-* [Warewulf](https://github.com/hpcng/warewulf)
+* [Warewulf](https://github.com/warewulf/warewulf)

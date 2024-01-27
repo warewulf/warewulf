@@ -33,7 +33,7 @@ Install Warewulf and dependencies
 
    mkdir ~/git
    cd ~/git
-   git clone https://github.com/hpcng/warewulf.git
+   git clone https://github.com/warewulf/warewulf.git
    cd warewulf
    git checkout main # or switch to a tag like 'v4.4.0'
    make all && sudo make install
@@ -139,7 +139,7 @@ default running kernel from the controller node and set both in the
 
 .. code-block:: bash
 
-   wwctl container import docker://ghcr.io/hpcng/warewulf-debian:12.0 debian-12.0
+   wwctl container import docker://ghcr.io/warewulf/warewulf-debian:12.0 debian-12.0
 
 
 Set up the default node profile

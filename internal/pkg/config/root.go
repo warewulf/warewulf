@@ -15,7 +15,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/creasty/defaults"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v2"
 )
 

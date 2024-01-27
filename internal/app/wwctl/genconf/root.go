@@ -1,12 +1,12 @@
 package genconf
 
 import (
-	"github.com/hpcng/warewulf/internal/app/wwctl/genconf/completions"
-	"github.com/hpcng/warewulf/internal/app/wwctl/genconf/dfaults"
-	"github.com/hpcng/warewulf/internal/app/wwctl/genconf/man"
-	"github.com/hpcng/warewulf/internal/app/wwctl/genconf/reference"
-	"github.com/hpcng/warewulf/internal/app/wwctl/genconf/warewulfconf"
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/app/wwctl/genconf/completions"
+	"github.com/warewulf/warewulf/internal/app/wwctl/genconf/dfaults"
+	"github.com/warewulf/warewulf/internal/app/wwctl/genconf/man"
+	"github.com/warewulf/warewulf/internal/app/wwctl/genconf/reference"
+	"github.com/warewulf/warewulf/internal/app/wwctl/genconf/warewulfconf"
 )
 
 var (

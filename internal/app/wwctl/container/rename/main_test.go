@@ -7,10 +7,10 @@ import (
 	"path"
 	"testing"
 
-	containerList "github.com/hpcng/warewulf/internal/app/wwctl/container/list"
-	"github.com/hpcng/warewulf/internal/pkg/testenv"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/stretchr/testify/assert"
+	containerList "github.com/warewulf/warewulf/internal/app/wwctl/container/list"
+	"github.com/warewulf/warewulf/internal/pkg/testenv"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
 
 func Test_Rename(t *testing.T) {

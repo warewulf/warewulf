@@ -17,10 +17,10 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/hpcng/warewulf/internal/pkg/api/apiconfig"
-	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/api/apiconfig"
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 
-	gw "github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
+	gw "github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 
 	"path"
 )

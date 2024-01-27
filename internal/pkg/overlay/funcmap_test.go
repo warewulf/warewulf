@@ -1,8 +1,8 @@
 package overlay
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/stretchr/testify/assert"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 	"testing"
 )
 

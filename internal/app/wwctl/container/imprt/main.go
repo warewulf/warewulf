@@ -1,9 +1,9 @@
 package imprt
 
 import (
-	apicontainer "github.com/hpcng/warewulf/internal/pkg/api/container"
-	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/spf13/cobra"
+	apicontainer "github.com/warewulf/warewulf/internal/pkg/api/container"
+	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {

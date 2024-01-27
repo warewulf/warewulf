@@ -1,8 +1,8 @@
 package powerstatus
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 )
 
 var (

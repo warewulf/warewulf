@@ -8,16 +8,16 @@ import (
 	"strings"
 
 	"github.com/containers/image/v5/types"
-	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	"github.com/hpcng/warewulf/internal/pkg/container"
-	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
+	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/warewulf/warewulf/internal/pkg/container"
+	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-// TODO: SynchUser is not NYI in the API: See https://github.com/hpcng/warewulf/blob/main/internal/app/wwctl/container/syncuser/main.go
+// TODO: SynchUser is not NYI in the API: See https://github.com/warewulf/warewulf/blob/main/internal/app/wwctl/container/syncuser/main.go
 
 func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 

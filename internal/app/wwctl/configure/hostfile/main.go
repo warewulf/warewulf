@@ -1,8 +1,8 @@
 package hostfile
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/configure"
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/pkg/configure"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {

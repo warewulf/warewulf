@@ -9,7 +9,7 @@ Install Warewulf and dependencies
 
    sudo yum install -y golang tftp-server dhcp nfs-utils
 
-   git clone https://github.com/hpcng/warewulf.git
+   git clone https://github.com/warewulf/warewulf.git
    cd warewulf
    make all
    sudo make install
@@ -117,7 +117,7 @@ default running kernel from the controller node and set both in the
 
 .. code-block:: bash
 
-   sudo wwctl container import docker://ghcr.io/hpcng/warewulf-centos:7 centos-7 --setdefault
+   sudo wwctl container import docker://ghcr.io/warewulf/warewulf-centos:7 centos-7 --setdefault
    sudo wwctl kernel import $(uname -r) --setdefault
 
 Set up the default node profile

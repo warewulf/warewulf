@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
-	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/stretchr/testify/assert"
+	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
 
 func Test_List(t *testing.T) {

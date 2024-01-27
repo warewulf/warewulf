@@ -3,9 +3,9 @@ package delete
 import (
 	"fmt"
 
-	"github.com/hpcng/warewulf/internal/pkg/api/container"
-	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	apiutil "github.com/hpcng/warewulf/internal/pkg/api/util"
+	"github.com/warewulf/warewulf/internal/pkg/api/container"
+	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	apiutil "github.com/warewulf/warewulf/internal/pkg/api/util"
 
 	"github.com/spf13/cobra"
 )

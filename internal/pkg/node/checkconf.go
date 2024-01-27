@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/util"
 )
 
 /*

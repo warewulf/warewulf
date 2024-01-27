@@ -1,10 +1,10 @@
 package kernel
 
 import (
-	"github.com/hpcng/warewulf/internal/app/wwctl/kernel/delete"
-	"github.com/hpcng/warewulf/internal/app/wwctl/kernel/imprt"
-	"github.com/hpcng/warewulf/internal/app/wwctl/kernel/list"
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/app/wwctl/kernel/delete"
+	"github.com/warewulf/warewulf/internal/app/wwctl/kernel/imprt"
+	"github.com/warewulf/warewulf/internal/app/wwctl/kernel/list"
 )
 
 var (

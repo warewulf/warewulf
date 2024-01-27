@@ -3,11 +3,11 @@ package delete
 import (
 	"fmt"
 
-	apiNode "github.com/hpcng/warewulf/internal/pkg/api/node"
-	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	"github.com/hpcng/warewulf/internal/pkg/api/util"
-	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/spf13/cobra"
+	apiNode "github.com/warewulf/warewulf/internal/pkg/api/node"
+	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/warewulf/warewulf/internal/pkg/api/util"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
