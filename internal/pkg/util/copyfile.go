@@ -6,7 +6,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func CopyFile(src string, dst string) error {

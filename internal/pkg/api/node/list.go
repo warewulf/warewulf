@@ -5,9 +5,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	"github.com/hpcng/warewulf/internal/pkg/hostlist"
-	"github.com/hpcng/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/warewulf/warewulf/internal/pkg/hostlist"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 )
 
 /*

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hpcng/warewulf/internal/app/wwclient"
+	"github.com/warewulf/warewulf/internal/app/wwclient"
 )
 
 func main() {

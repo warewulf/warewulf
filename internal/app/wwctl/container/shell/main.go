@@ -7,10 +7,10 @@ import (
 	"os"
 	"path"
 
-	cntexec "github.com/hpcng/warewulf/internal/app/wwctl/container/exec"
-	"github.com/hpcng/warewulf/internal/pkg/container"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
+	cntexec "github.com/warewulf/warewulf/internal/app/wwctl/container/exec"
+	"github.com/warewulf/warewulf/internal/pkg/container"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {

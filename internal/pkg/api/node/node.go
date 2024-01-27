@@ -7,16 +7,16 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
-	"github.com/hpcng/warewulf/internal/pkg/hostlist"
-	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
+	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/hostlist"
+	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v2"
 
-	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
 
 // NodeAdd adds nodes for management by Warewulf.

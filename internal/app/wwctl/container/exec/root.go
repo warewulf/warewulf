@@ -1,9 +1,9 @@
 package exec
 
 import (
-	"github.com/hpcng/warewulf/internal/app/wwctl/container/exec/child"
-	"github.com/hpcng/warewulf/internal/pkg/container"
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/app/wwctl/container/exec/child"
+	"github.com/warewulf/warewulf/internal/pkg/container"
 )
 
 var (

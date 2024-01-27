@@ -3,10 +3,10 @@ package apinode
 import (
 	"os"
 
-	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
+	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v2"
 )
 

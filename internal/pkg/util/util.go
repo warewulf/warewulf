@@ -19,8 +19,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 // reserve some number of cpus for system/warwulfd usage

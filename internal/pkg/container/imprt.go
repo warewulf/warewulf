@@ -9,9 +9,9 @@ import (
 	"github.com/containers/storage/drivers/copy"
 	"github.com/pkg/errors"
 
-	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
-	"github.com/hpcng/warewulf/internal/pkg/oci"
-	"github.com/hpcng/warewulf/internal/pkg/util"
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/oci"
+	"github.com/warewulf/warewulf/internal/pkg/util"
 )
 
 func ImportDocker(uri string, name string, sCtx *types.SystemContext) error {

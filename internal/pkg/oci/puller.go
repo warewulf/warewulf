@@ -16,10 +16,10 @@ import (
 	"github.com/containers/image/v5/oci/layout"
 	"github.com/containers/image/v5/signature"
 	"github.com/containers/image/v5/types"
-	"github.com/hpcng/warewulf/internal/pkg/util"
 	imgSpecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/opencontainers/umoci"
 	"github.com/opencontainers/umoci/oci/layer"
+	"github.com/warewulf/warewulf/internal/pkg/util"
 )
 
 type pullerOpt func(*puller) error

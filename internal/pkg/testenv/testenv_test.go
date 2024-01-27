@@ -3,8 +3,8 @@ package testenv
 import (
 	"testing"
 
-	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/stretchr/testify/assert"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 )
 
 func Test_Basic(t *testing.T) {

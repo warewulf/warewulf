@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/hpcng/warewulf/internal/pkg/batch"
+	"github.com/warewulf/warewulf/internal/pkg/batch"
 )
 
 func exampleJob(name string, id int) string {

@@ -8,8 +8,8 @@ import (
 	"sort"
 	"strings"
 
-	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 
 	"gopkg.in/yaml.v2"
 )

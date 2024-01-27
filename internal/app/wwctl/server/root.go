@@ -1,12 +1,12 @@
 package server
 
 import (
-	"github.com/hpcng/warewulf/internal/app/wwctl/server/reload"
-	"github.com/hpcng/warewulf/internal/app/wwctl/server/restart"
-	"github.com/hpcng/warewulf/internal/app/wwctl/server/start"
-	"github.com/hpcng/warewulf/internal/app/wwctl/server/status"
-	"github.com/hpcng/warewulf/internal/app/wwctl/server/stop"
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/app/wwctl/server/reload"
+	"github.com/warewulf/warewulf/internal/app/wwctl/server/restart"
+	"github.com/warewulf/warewulf/internal/app/wwctl/server/start"
+	"github.com/warewulf/warewulf/internal/app/wwctl/server/status"
+	"github.com/warewulf/warewulf/internal/app/wwctl/server/stop"
 )
 
 var (

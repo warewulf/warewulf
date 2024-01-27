@@ -3,9 +3,9 @@ package version
 import (
 	"fmt"
 
-	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	"github.com/hpcng/warewulf/internal/pkg/version"
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/warewulf/warewulf/internal/pkg/version"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {

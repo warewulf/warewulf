@@ -1,10 +1,10 @@
 package start
 
 import (
-	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {

@@ -1,9 +1,9 @@
 package build
 
 import (
-	"github.com/hpcng/warewulf/internal/pkg/api/container"
-	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/pkg/api/container"
+	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {

@@ -1,12 +1,12 @@
 package configure
 
 import (
-	"github.com/hpcng/warewulf/internal/app/wwctl/configure/dhcp"
-	"github.com/hpcng/warewulf/internal/app/wwctl/configure/hostfile"
-	"github.com/hpcng/warewulf/internal/app/wwctl/configure/nfs"
-	"github.com/hpcng/warewulf/internal/app/wwctl/configure/ssh"
-	"github.com/hpcng/warewulf/internal/app/wwctl/configure/tftp"
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/app/wwctl/configure/dhcp"
+	"github.com/warewulf/warewulf/internal/app/wwctl/configure/hostfile"
+	"github.com/warewulf/warewulf/internal/app/wwctl/configure/nfs"
+	"github.com/warewulf/warewulf/internal/app/wwctl/configure/ssh"
+	"github.com/warewulf/warewulf/internal/app/wwctl/configure/tftp"
 )
 
 var (

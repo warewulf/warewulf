@@ -3,8 +3,8 @@ package version
 import (
 	"fmt"
 
-	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 )
 
 /*

@@ -5,14 +5,14 @@ import (
 	"os"
 	"strings"
 
-	apiprofile "github.com/hpcng/warewulf/internal/pkg/api/profile"
-	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	apiprofile "github.com/warewulf/warewulf/internal/pkg/api/profile"
+	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v2"
 
-	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	"github.com/hpcng/warewulf/internal/pkg/api/util"
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/warewulf/warewulf/internal/pkg/api/util"
 )
 
 func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err error) {

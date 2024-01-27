@@ -4,7 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v2"
 )
 

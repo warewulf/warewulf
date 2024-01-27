@@ -5,7 +5,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func shimDirs() []string {

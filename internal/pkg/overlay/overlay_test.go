@@ -7,11 +7,11 @@ import (
 	"sort"
 	"testing"
 
-	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
-	"github.com/hpcng/warewulf/internal/pkg/node"
 	"github.com/stretchr/testify/assert"
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 
-	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/util"
 )
 
 var buildOverlayTests = []struct {

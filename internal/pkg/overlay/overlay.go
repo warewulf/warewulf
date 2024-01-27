@@ -13,10 +13,10 @@ import (
 	"syscall"
 	"text/template"
 
-	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
+	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 var (

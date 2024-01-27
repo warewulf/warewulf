@@ -7,12 +7,12 @@ import (
 	"io"
 	"os"
 
-	apinode "github.com/hpcng/warewulf/internal/pkg/api/node"
-	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	apiutil "github.com/hpcng/warewulf/internal/pkg/api/util"
-	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
+	apinode "github.com/warewulf/warewulf/internal/pkg/api/node"
+	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	apiutil "github.com/warewulf/warewulf/internal/pkg/api/util"
+	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v2"
 )
 

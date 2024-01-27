@@ -6,9 +6,9 @@ import (
 	"os"
 	"reflect"
 
-	"github.com/hpcng/warewulf/cmd/update_configuration/vers42"
-	"github.com/hpcng/warewulf/cmd/update_configuration/vers43"
-	"github.com/hpcng/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/cmd/update_configuration/vers42"
+	"github.com/warewulf/warewulf/cmd/update_configuration/vers43"
+	"github.com/warewulf/warewulf/internal/pkg/util"
 	"gopkg.in/yaml.v2"
 )
 

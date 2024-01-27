@@ -14,7 +14,7 @@ fixing or enhancing.
 
 - [ ] Signed off on all commits (e.g., using `git commit --signoff`) in agreement to the [DCO](DCO.txt)
 - [ ] Read the [documentation for contributing to Warewulf](https://warewulf.org/docs/main/contributing/contributing.html)
-- [ ] Added changes to the [CHANGELOG](https://github.com/hpcng/warewulf/blob/main/CHANGELOG.md) if necessary
-- [ ] Updated [userdocs](https://github.com/hpcng/warewulf/tree/main/userdocs) if necessary
-- [ ] Based this PR against the appropriate branch (typically [main](https://github.com/hpcng/warewulf/tree/main/userdocs))
-- [ ] Added myself as a contributor to the [Contributors File](https://github.com/hpcng/warewulf/blob/main/CONTRIBUTORS.md)
+- [ ] Added changes to the [CHANGELOG](https://github.com/warewulf/warewulf/blob/main/CHANGELOG.md) if necessary
+- [ ] Updated [userdocs](https://github.com/warewulf/warewulf/tree/main/userdocs) if necessary
+- [ ] Based this PR against the appropriate branch (typically [main](https://github.com/warewulf/warewulf/tree/main/userdocs))
+- [ ] Added myself as a contributor to the [Contributors File](https://github.com/warewulf/warewulf/blob/main/CONTRIBUTORS.md)

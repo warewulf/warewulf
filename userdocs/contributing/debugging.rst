@@ -65,10 +65,10 @@ specifically the ``Test_GetAllNodeInfoDefaults`` test.
 
 .. code-block:: console
 
-   $ dlv test github.com/hpcng/warewulf/internal/pkg/node -- -test.v -test.run Test_GetAllNodeInfoDefaults
+   $ dlv test github.com/warewulf/warewulf/internal/pkg/node -- -test.v -test.run Test_GetAllNodeInfoDefaults
    Type 'help' for list of commands.
    (dlv) break node.Test_GetAllNodeInfoDefaults
-   Breakpoint 1 set at 0x26c0d0 for github.com/hpcng/warewulf/internal/pkg/node.Test_GetAllNodeInfoDefaults() ./internal/pkg/node/nodeyaml_test.go:51
+   Breakpoint 1 set at 0x26c0d0 for github.com/warewulf/warewulf/internal/pkg/node.Test_GetAllNodeInfoDefaults() ./internal/pkg/node/nodeyaml_test.go:51
 
 Setting a breakpoint at ``node.Test_GetAllNodeInfoDefaults`` pauses
 execution once the test starts, and allows us to ``continue`` through
@@ -78,7 +78,7 @@ all the setup prior to that point.
 
    (dlv) continue
    === RUN   Test_GetAllNodeInfoDefaults
-   > github.com/hpcng/warewulf/internal/pkg/node.Test_GetAllNodeInfoDefaults() ./internal/pkg/node/nodeyaml_test.go:51 (hits goroutine(35):1 total:1) (PC: 0x26c0d0)
+   > github.com/warewulf/warewulf/internal/pkg/node.Test_GetAllNodeInfoDefaults() ./internal/pkg/node/nodeyaml_test.go:51 (hits goroutine(35):1 total:1) (PC: 0x26c0d0)
        46:		assert.Contains(t, nodeYaml.Nodes, "test_node")
        47:		assert.Equal(t, "A single node", nodeYaml.Nodes["test_node"].Comment)
        48:	}
@@ -125,18 +125,18 @@ Example
 
 .. code-block:: console
 
-   $ ~/go/bin/dlv test github.com/hpcng/warewulf/internal/pkg/node -- -test.v -test.run Test_GetAllNodeInfoDefaults
+   $ ~/go/bin/dlv test github.com/warewulf/warewulf/internal/pkg/node -- -test.v -test.run Test_GetAllNodeInfoDefaults
    Type 'help' for list of commands.
 
    (dlv) break node.Test_GetAllNodeInfoDefaults
-   Breakpoint 1 set at 0x26c0d0 for github.com/hpcng/warewulf/internal/pkg/node.Test_GetAllNodeInfoDefaults() ./internal/pkg/node/nodeyaml_test.go:51
+   Breakpoint 1 set at 0x26c0d0 for github.com/warewulf/warewulf/internal/pkg/node.Test_GetAllNodeInfoDefaults() ./internal/pkg/node/nodeyaml_test.go:51
 
    (dlv) break nodeinfo.go:417
-   Breakpoint 2 set at 0x267f18 for github.com/hpcng/warewulf/internal/pkg/node.NewNodeInfo() ./internal/pkg/node/nodeinfo.go:417
+   Breakpoint 2 set at 0x267f18 for github.com/warewulf/warewulf/internal/pkg/node.NewNodeInfo() ./internal/pkg/node/nodeinfo.go:417
 
    (dlv) continue
    === RUN   Test_GetAllNodeInfoDefaults
-   > github.com/hpcng/warewulf/internal/pkg/node.Test_GetAllNodeInfoDefaults() ./internal/pkg/node/nodeyaml_test.go:51 (hits goroutine(19):1 total:1) (PC: 0x26c0d0)
+   > github.com/warewulf/warewulf/internal/pkg/node.Test_GetAllNodeInfoDefaults() ./internal/pkg/node/nodeyaml_test.go:51 (hits goroutine(19):1 total:1) (PC: 0x26c0d0)
    46:		assert.Contains(t, nodeYaml.Nodes, "test_node")
    47:		assert.Equal(t, "A single node", nodeYaml.Nodes["test_node"].Comment)
    48:	}
@@ -151,7 +151,7 @@ Example
 
    (dlv) continue
    WARN   : Error reading UNDEF/warewulf/defaults.conf: open UNDEF/warewulf/defaults.conf: no such file or directory
-   > github.com/hpcng/warewulf/internal/pkg/node.NewNodeInfo() ./internal/pkg/node/nodeinfo.go:417 (hits goroutine(19):1 total:1) (PC: 0x267f18)
+   > github.com/warewulf/warewulf/internal/pkg/node.NewNodeInfo() ./internal/pkg/node/nodeinfo.go:417 (hits goroutine(19):1 total:1) (PC: 0x267f18)
    412:			defaultNodeConf.NetDevs = nil
    413:			nodeInfo.SetDefFrom(defaultNodeConf)
    414:		}
@@ -165,7 +165,7 @@ Example
    422:			} else {
 
    (dlv) next
-   > github.com/hpcng/warewulf/internal/pkg/node.NewNodeInfo() ./internal/pkg/node/nodeinfo.go:420 (PC: 0x267f24)
+   > github.com/warewulf/warewulf/internal/pkg/node.NewNodeInfo() ./internal/pkg/node/nodeinfo.go:420 (PC: 0x267f24)
    415:	
    416:		// Load normal attributes
    417:		if nodeConf != nil {
@@ -179,7 +179,7 @@ Example
    425:	
 
    (dlv) next
-   > github.com/hpcng/warewulf/internal/pkg/node.NewNodeInfo() ./internal/pkg/node/nodeinfo.go:421 (PC: 0x267f3c)
+   > github.com/warewulf/warewulf/internal/pkg/node.NewNodeInfo() ./internal/pkg/node/nodeinfo.go:421 (PC: 0x267f3c)
    416:		// Load normal attributes
    417:		if nodeConf != nil {
    418:			// If no profiles are included, automatically include the
@@ -193,7 +193,7 @@ Example
    426:			nodeInfo.SetFrom(nodeConf)
 
    (dlv) next
-   > github.com/hpcng/warewulf/internal/pkg/node.NewNodeInfo() ./internal/pkg/node/nodeinfo.go:426 (PC: 0x267fec)
+   > github.com/warewulf/warewulf/internal/pkg/node.NewNodeInfo() ./internal/pkg/node/nodeinfo.go:426 (PC: 0x267fec)
    421:				nodeInfo.Profiles.SetSlice([]string{"default"})
    422:			} else {
    423:				nodeInfo.Profiles.SetSlice(nodeConf.Profiles)
@@ -207,7 +207,7 @@ Example
    431:			for _, netdev := range nodeInfo.NetDevs {
 
    (dlv) next
-   > github.com/hpcng/warewulf/internal/pkg/node.NewNodeInfo() ./internal/pkg/node/nodeinfo.go:430 (PC: 0x268000)
+   > github.com/warewulf/warewulf/internal/pkg/node.NewNodeInfo() ./internal/pkg/node/nodeinfo.go:430 (PC: 0x268000)
    425:	
    426:			nodeInfo.SetFrom(nodeConf)
    427:		}
@@ -221,90 +221,90 @@ Example
    435:	
 
    (dlv) print nodeInfo
-   github.com/hpcng/warewulf/internal/pkg/node.NodeInfo {
-   Id: github.com/hpcng/warewulf/internal/pkg/node.Entry {
+   github.com/warewulf/warewulf/internal/pkg/node.NodeInfo {
+   Id: github.com/warewulf/warewulf/internal/pkg/node.Entry {
    value: []string len: 1, cap: 1, [
    "test_node",
    ],
    altvalue: []string len: 0, cap: 0, nil,
    from: "",
    def: []string len: 0, cap: 0, nil,},
-   Comment: github.com/hpcng/warewulf/internal/pkg/node.Entry {
+   Comment: github.com/warewulf/warewulf/internal/pkg/node.Entry {
    value: []string len: 0, cap: 0, nil,
    altvalue: []string len: 0, cap: 0, nil,
    from: "",
    def: []string len: 0, cap: 0, nil,},
-   ClusterName: github.com/hpcng/warewulf/internal/pkg/node.Entry {
+   ClusterName: github.com/warewulf/warewulf/internal/pkg/node.Entry {
    value: []string len: 0, cap: 0, nil,
    altvalue: []string len: 0, cap: 0, nil,
    from: "",
    def: []string len: 0, cap: 0, nil,},
-   ContainerName: github.com/hpcng/warewulf/internal/pkg/node.Entry {
+   ContainerName: github.com/warewulf/warewulf/internal/pkg/node.Entry {
    value: []string len: 0, cap: 0, nil,
    altvalue: []string len: 0, cap: 0, nil,
    from: "",
    def: []string len: 0, cap: 0, nil,},
-   Ipxe: github.com/hpcng/warewulf/internal/pkg/node.Entry {
+   Ipxe: github.com/warewulf/warewulf/internal/pkg/node.Entry {
    value: []string len: 0, cap: 0, nil,
    altvalue: []string len: 0, cap: 0, nil,
    from: "",
    def: []string len: 1, cap: 1, ["default"],},
-   RuntimeOverlay: github.com/hpcng/warewulf/internal/pkg/node.Entry {
+   RuntimeOverlay: github.com/warewulf/warewulf/internal/pkg/node.Entry {
    value: []string len: 0, cap: 0, nil,
    altvalue: []string len: 0, cap: 0, nil,
    from: "",
    def: []string len: 1, cap: 1, ["generic"],},
-   SystemOverlay: github.com/hpcng/warewulf/internal/pkg/node.Entry {
+   SystemOverlay: github.com/warewulf/warewulf/internal/pkg/node.Entry {
    value: []string len: 0, cap: 0, nil,
    altvalue: []string len: 0, cap: 0, nil,
    from: "",
    def: []string len: 1, cap: 1, ["wwinit"],},
-   Root: github.com/hpcng/warewulf/internal/pkg/node.Entry {
+   Root: github.com/warewulf/warewulf/internal/pkg/node.Entry {
    value: []string len: 0, cap: 0, nil,
    altvalue: []string len: 0, cap: 0, nil,
    from: "",
    def: []string len: 1, cap: 1, [
    "initramfs",
    ],},
-   Discoverable: github.com/hpcng/warewulf/internal/pkg/node.Entry {
+   Discoverable: github.com/warewulf/warewulf/internal/pkg/node.Entry {
    value: []string len: 0, cap: 0, nil,
    altvalue: []string len: 0, cap: 0, nil,
    from: "",
    def: []string len: 0, cap: 0, nil,},
-   Init: github.com/hpcng/warewulf/internal/pkg/node.Entry {
+   Init: github.com/warewulf/warewulf/internal/pkg/node.Entry {
    value: []string len: 0, cap: 0, nil,
    altvalue: []string len: 0, cap: 0, nil,
    from: "",
    def: []string len: 1, cap: 1, [
    "/sbin/init",
    ],},
-   AssetKey: github.com/hpcng/warewulf/internal/pkg/node.Entry {
+   AssetKey: github.com/warewulf/warewulf/internal/pkg/node.Entry {
    value: []string len: 0, cap: 0, nil,
    altvalue: []string len: 0, cap: 0, nil,
    from: "",
    def: []string len: 0, cap: 0, nil,},
-   Kernel: *github.com/hpcng/warewulf/internal/pkg/node.KernelEntry {
-   Override: (*"github.com/hpcng/warewulf/internal/pkg/node.Entry")(0x4000158370),
-   Args: (*"github.com/hpcng/warewulf/internal/pkg/node.Entry")(0x40001583c8),},
-   Ipmi: *github.com/hpcng/warewulf/internal/pkg/node.IpmiEntry {
-   Ipaddr: (*"github.com/hpcng/warewulf/internal/pkg/node.Entry")(0x40001b6600),
-   Netmask: (*"github.com/hpcng/warewulf/internal/pkg/node.Entry")(0x40001b6658),
-   Port: (*"github.com/hpcng/warewulf/internal/pkg/node.Entry")(0x40001b66b0),
-   Gateway: (*"github.com/hpcng/warewulf/internal/pkg/node.Entry")(0x40001b6708),
-   UserName: (*"github.com/hpcng/warewulf/internal/pkg/node.Entry")(0x40001b6760),
-   Password: (*"github.com/hpcng/warewulf/internal/pkg/node.Entry")(0x40001b67b8),
-   Interface: (*"github.com/hpcng/warewulf/internal/pkg/node.Entry")(0x40001b6810),
-   Write: (*"github.com/hpcng/warewulf/internal/pkg/node.Entry")(0x40001b6868),
-   Tags: map[string]*github.com/hpcng/warewulf/internal/pkg/node.Entry [],},
-   Profiles: github.com/hpcng/warewulf/internal/pkg/node.Entry {
+   Kernel: *github.com/warewulf/warewulf/internal/pkg/node.KernelEntry {
+   Override: (*"github.com/warewulf/warewulf/internal/pkg/node.Entry")(0x4000158370),
+   Args: (*"github.com/warewulf/warewulf/internal/pkg/node.Entry")(0x40001583c8),},
+   Ipmi: *github.com/warewulf/warewulf/internal/pkg/node.IpmiEntry {
+   Ipaddr: (*"github.com/warewulf/warewulf/internal/pkg/node.Entry")(0x40001b6600),
+   Netmask: (*"github.com/warewulf/warewulf/internal/pkg/node.Entry")(0x40001b6658),
+   Port: (*"github.com/warewulf/warewulf/internal/pkg/node.Entry")(0x40001b66b0),
+   Gateway: (*"github.com/warewulf/warewulf/internal/pkg/node.Entry")(0x40001b6708),
+   UserName: (*"github.com/warewulf/warewulf/internal/pkg/node.Entry")(0x40001b6760),
+   Password: (*"github.com/warewulf/warewulf/internal/pkg/node.Entry")(0x40001b67b8),
+   Interface: (*"github.com/warewulf/warewulf/internal/pkg/node.Entry")(0x40001b6810),
+   Write: (*"github.com/warewulf/warewulf/internal/pkg/node.Entry")(0x40001b6868),
+   Tags: map[string]*github.com/warewulf/warewulf/internal/pkg/node.Entry [],},
+   Profiles: github.com/warewulf/warewulf/internal/pkg/node.Entry {
    value: []string len: 1, cap: 1, ["default"],
    altvalue: []string len: 0, cap: 0, nil,
    from: "",
    def: []string len: 1, cap: 1, ["default"],},
-   PrimaryNetDev: github.com/hpcng/warewulf/internal/pkg/node.Entry {
+   PrimaryNetDev: github.com/warewulf/warewulf/internal/pkg/node.Entry {
    value: []string len: 0, cap: 0, nil,
    altvalue: []string len: 0, cap: 0, nil,
    from: "",
    def: []string len: 0, cap: 0, nil,},
-   NetDevs: map[string]*github.com/hpcng/warewulf/internal/pkg/node.NetDevEntry [],
-   Tags: map[string]*github.com/hpcng/warewulf/internal/pkg/node.Entry [],}
+   NetDevs: map[string]*github.com/warewulf/warewulf/internal/pkg/node.NetDevEntry [],
+   Tags: map[string]*github.com/warewulf/warewulf/internal/pkg/node.Entry [],}

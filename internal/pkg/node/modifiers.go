@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 /****

@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 var (

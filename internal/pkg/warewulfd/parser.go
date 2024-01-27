@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 type parserInfo struct {

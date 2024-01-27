@@ -6,7 +6,7 @@ own license terms. These dependencies are managed via the project
 our official source tarballs.
 
 A full build or package of Warewulf uses all dependencies listed
-below. If you `import "github.com/hpcng/warewulf"` into your own
+below. If you `import "github.com/warewulf/warewulf"` into your own
 project then you may use a subset of them.
 
 The dependencies and their licenses are as follows:

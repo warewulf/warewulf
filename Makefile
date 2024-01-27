@@ -40,7 +40,7 @@ wwclient: $(config) $(call godeps,cmd/wwclient/main.go)
 	CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags "-extldflags -static" -o wwclient cmd/wwclient/main.go
 
 update_configuration: $(config) $(call godeps,cmd/update_configuration/update_configuration.go)
-	go build -X 'github.com/hpcng/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'" \
+	go build -X 'github.com/warewulf/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'" \
 	    -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o update_configuration cmd/update_configuration/update_configuration.go
 
 wwapid: $(config) $(call godeps,internal/app/api/wwapid/wwapid.go)

@@ -4,11 +4,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/hpcng/warewulf/internal/app/wwctl/helper"
-	"github.com/hpcng/warewulf/internal/pkg/api/container"
-	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/app/wwctl/helper"
+	"github.com/warewulf/warewulf/internal/pkg/api/container"
+	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 var containerList = container.ContainerList

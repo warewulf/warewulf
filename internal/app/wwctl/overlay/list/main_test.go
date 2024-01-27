@@ -5,11 +5,11 @@ import (
 	"path"
 	"testing"
 
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/stretchr/testify/assert"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 
-	"github.com/hpcng/warewulf/internal/pkg/testenv"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/testenv"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
 
 func Test_Overlay_List(t *testing.T) {

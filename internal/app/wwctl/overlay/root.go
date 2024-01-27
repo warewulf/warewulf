@@ -1,17 +1,17 @@
 package overlay
 
 import (
-	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/build"
-	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/chmod"
-	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/chown"
-	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/create"
-	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/delete"
-	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/edit"
-	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/imprt"
-	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/list"
-	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/mkdir"
-	"github.com/hpcng/warewulf/internal/app/wwctl/overlay/show"
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/build"
+	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/chmod"
+	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/chown"
+	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/create"
+	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/delete"
+	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/edit"
+	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/imprt"
+	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/list"
+	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/mkdir"
+	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/show"
 )
 
 var (

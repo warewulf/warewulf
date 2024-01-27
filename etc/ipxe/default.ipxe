@@ -23,7 +23,7 @@ kernel --name kernel ${uri_base}&stage=kernel       || goto reboot
 # in 32-Bit mode).
 # -> Use the old initrd method with a compressed image to save as much RAM as possible
 # in this early boot stage.
-# See <https://github.com/hpcng/warewulf/issues/222> for more details.
+# See <https://github.com/warewulf/warewulf/issues/222> for more details.
 iseq ${platform} efi && goto efi || goto noefi
 
 :efi

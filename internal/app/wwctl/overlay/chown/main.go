@@ -5,9 +5,9 @@ import (
 	"path"
 	"strconv"
 
-	"github.com/hpcng/warewulf/internal/pkg/overlay"
-	"github.com/hpcng/warewulf/internal/pkg/util"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
+	"github.com/warewulf/warewulf/internal/pkg/overlay"
+	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 
 	"github.com/spf13/cobra"
 )

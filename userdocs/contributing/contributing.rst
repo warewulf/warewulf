@@ -28,11 +28,7 @@ Raise an Issue
 ==============
 
 For general bugs/issues, you can open an issue `at the GitHub repo
-<https://github.com/hpcng/warewulf/issues/new>`_. However, if you find
-a security related issue/problem, please email HPCng directly at
-`security@hpcng.org <mailto:security@hpcng.org>`_. More information
-about the HPCng security policies and procedures can be found `here
-<https://hpcng.org/security-policy>`_.
+<https://github.com/warewulf/warewulf/issues/new>`_.
 
 Contribute to the code
 ======================
@@ -43,16 +39,16 @@ that you fork the main repo, create a new branch to make changes, and
 submit a pull request (PR) to the master branch.
 
 Check out our official `CONTRIBUTING.md
-<https://github.com/hpcng/warewulf/blob/master/CONTRIBUTING.md>`_
+<https://github.com/warewulf/warewulf/blob/master/CONTRIBUTING.md>`_
 document, which also includes a `code of conduct
-<https://github.com/hpcng/warewulf/blob/master/CONTRIBUTING.md#code-of-conduct>`_.
+<https://github.com/warewulf/warewulf/blob/master/CONTRIBUTING.md#code-of-conduct>`_.
 
 
 Step 1. Fork the repo
 ---------------------
 
 To contribute to Warewulf, you should obtain a GitHub account and fork
-the `Warewulf <https://github.com/hpcng/warewulf>`_ repository. Once
+the `Warewulf <https://github.com/warewulf/warewulf>`_ repository. Once
 forked, clone your fork of the repo to your computer. (Obviously, you
 should replace ``your-username`` with your GitHub username.)
 
@@ -150,7 +146,7 @@ need to update a branch, you will need to follow the next steps:
 .. code-block:: bash
 
    # add a new remote named "upstream"
-   git remote add upstream https://github.com/hpcng/warewulf.git
+   git remote add upstream https://github.com/warewulf/warewulf.git
    # or another branch to be updated
    git checkout master
    git pull upstream master

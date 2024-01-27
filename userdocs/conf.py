@@ -37,7 +37,7 @@ html_theme_options = {
 
 html_context = {
     'display_github': True,
-    'github_user': 'hpcng',
+    'github_user': 'warewulf',
     'github_repo': 'warewulf',
     'github_version': 'main',
     'conf_py_path': '/userdocs/',

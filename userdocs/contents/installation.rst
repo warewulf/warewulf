@@ -10,21 +10,21 @@ Binary RPMs
 
 The Warewulf project builds binary RPMs as part of its CI/CD
 process. You can obtain them from the `GitHub releases
-<https://github.com/hpcng/warewulf/releases>`_ page.
+<https://github.com/warewulf/warewulf/releases>`_ page.
 
 Rocky Linux 8
 -------------
 
 .. code-block:: console
 
-   # dnf install https://github.com/hpcng/warewulf/releases/download/v4.4.0/warewulf-4.4.0-1.git_afcdb21.el8.x86_64.rpm
+   # dnf install https://github.com/warewulf/warewulf/releases/download/v4.4.0/warewulf-4.4.0-1.git_afcdb21.el8.x86_64.rpm
 
 openSuse Leap
 -------------
 
 .. code-block:: console
 
-   # zypper install https://github.com/hpcng/warewulf/releases/download/v4.4.0/warewulf-4.4.0-1.git_afcdb21.suse.lp153.x86_64.rpm
+   # zypper install https://github.com/warewulf/warewulf/releases/download/v4.4.0/warewulf-4.4.0-1.git_afcdb21.suse.lp153.x86_64.rpm
 
 Compiled Source code
 ====================
@@ -52,7 +52,7 @@ Release Tarball
 When the Warewulf project releases stable versions, they are available
 via source form here:
 
-`https://github.com/hpcng/warewulf/tags <https://github.com/hpcng/warewulf/tags/>`_
+`https://github.com/warewulf/warewulf/tags <https://github.com/warewulf/warewulf/tags/>`_
 
 Select the version you wish to install and download the tarball to any
 location on the server, then follow these directions making the
@@ -90,7 +90,7 @@ site, the GitHub releases page, or from a Git tag.
 
    mkdir ~/git
    cd ~/git
-   git clone https://github.com/hpcng/warewulf.git
+   git clone https://github.com/warewulf/warewulf.git
    cd warewulf
    git checkout main # or switch to a tag like '4.2.0'
    make all && sudo make install

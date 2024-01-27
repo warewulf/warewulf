@@ -1,7 +1,7 @@
 package overlay
 
 import (
-	warewulfconf "github.com/hpcng/warewulf/internal/pkg/config"
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"testing"
 )
 

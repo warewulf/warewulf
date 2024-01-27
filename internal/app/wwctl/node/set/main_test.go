@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/hpcng/warewulf/internal/pkg/testenv"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/stretchr/testify/assert"
+	"github.com/warewulf/warewulf/internal/pkg/testenv"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
 
 type test_description struct {

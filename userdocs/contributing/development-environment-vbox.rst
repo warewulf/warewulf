@@ -67,7 +67,7 @@ I have VirtualBox running on my desktop.
    sudo yum install nfs-utils
 
    # Install Warewulf and dependencies
-   git clone https://github.com/hpcng/warewulf.git
+   git clone https://github.com/warewulf/warewulf.git
    cd warewulf
 
    make all
@@ -117,7 +117,7 @@ I have VirtualBox running on my desktop.
    sudo wwctl configure ssh  --persist # Build the basic ssh keys to be included by the default system overlay
 
    # Pull and build the VNFS container and kernel
-   sudo wwctl container import docker://ghcr.io/hpcng/warewulf-centos:7 centos-7 --setdefault
+   sudo wwctl container import docker://ghcr.io/warewulf/warewulf-centos:7 centos-7 --setdefault
    sudo wwctl kernel import build $(uname -r) --setdefault
 
    # Set up the default node profile

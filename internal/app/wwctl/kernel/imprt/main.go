@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hpcng/warewulf/internal/pkg/container"
-	"github.com/hpcng/warewulf/internal/pkg/kernel"
-	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/pkg/container"
+	"github.com/warewulf/warewulf/internal/pkg/kernel"
+	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {

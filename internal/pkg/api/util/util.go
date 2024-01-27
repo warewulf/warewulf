@@ -3,10 +3,10 @@ package util
 import (
 	"syscall"
 
-	"github.com/hpcng/warewulf/internal/pkg/api/routes/wwapiv1"
-	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/manifoldco/promptui"
+	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 // ConfirmationPrompt prompt is a blocking confirmation prompt.

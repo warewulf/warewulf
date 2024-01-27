@@ -17,7 +17,7 @@ on:
 
 jobs:
   publish:
-    if: ${{ github.repository_owner == 'hpcng' }}
+    if: ${{ github.repository_owner == 'warewulf' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

@@ -3,9 +3,9 @@ package apinode
 import (
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/node"
-	"github.com/hpcng/warewulf/internal/pkg/warewulfd"
 	"github.com/pkg/errors"
+	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
 
 // nodeDbSave persists the nodeDB to disk and restarts warewulfd.

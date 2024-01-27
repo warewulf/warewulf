@@ -1,6 +1,6 @@
 [Unit]
 Description=Ignition warewulf (disks)
-Documentation=https://hpcng.github.io/warewulf
+Documentation=https://warewulf.org/
 ConditionPathExists=/warewulf/ignition.json
 ConditionPathExists=/usr/lib/dracut/modules.d/30ignition/ignition
 DefaultDependencies=false

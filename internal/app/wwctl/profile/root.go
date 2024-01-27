@@ -1,12 +1,12 @@
 package profile
 
 import (
-	"github.com/hpcng/warewulf/internal/app/wwctl/profile/add"
-	"github.com/hpcng/warewulf/internal/app/wwctl/profile/delete"
-	"github.com/hpcng/warewulf/internal/app/wwctl/profile/edit"
-	"github.com/hpcng/warewulf/internal/app/wwctl/profile/list"
-	"github.com/hpcng/warewulf/internal/app/wwctl/profile/set"
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/app/wwctl/profile/add"
+	"github.com/warewulf/warewulf/internal/app/wwctl/profile/delete"
+	"github.com/warewulf/warewulf/internal/app/wwctl/profile/edit"
+	"github.com/warewulf/warewulf/internal/app/wwctl/profile/list"
+	"github.com/warewulf/warewulf/internal/app/wwctl/profile/set"
 )
 
 var (

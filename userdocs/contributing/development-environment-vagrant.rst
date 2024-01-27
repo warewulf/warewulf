@@ -155,7 +155,7 @@ Vagrantfile
                 dnf install -y golang tftp-server dhcp-server nfs-utils gpgme-devel libassuan-devel
 
                 cd /tmp
-                git clone https://github.com/hpcng/warewulf.git
+                git clone https://github.com/warewulf/warewulf.git
                 cd warewulf
                 git checkout v4.4.0
                 make clean defaults \
@@ -224,7 +224,7 @@ Vagrantfile
 
                 wwctl configure --all
 
-                wwctl container import docker://ghcr.io/hpcng/warewulf-rockylinux:9 rocky-9
+                wwctl container import docker://ghcr.io/warewulf/warewulf-rockylinux:9 rocky-9
                 wwctl profile set --yes --container rocky-9 "default"
                 wwctl profile set --yes --netdev eth1 --netmask 255.255.255.0 --gateway 192.168.200.254 "default"
 
