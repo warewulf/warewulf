@@ -7,7 +7,7 @@ Description=mount ww4 disks
 # make sure that the disks are available
 Requires=ignition-ww4-disks.service
 After=ignition-ww4-disks.service
-Prequisite=ignition-ww4-disks.service
+Requisite=ignition-ww4-disks.service
 # Get the mounts
 {{- range $fsdevice,$fs := .FileSystems }}
 {{- $prefix := $fsdevice }}{{ $suffix := "mount" }}
