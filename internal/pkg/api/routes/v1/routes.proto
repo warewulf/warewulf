@@ -48,6 +48,9 @@ message ContainerImportParameter{
 	bool build = 5;
 	bool default = 6;
 	bool syncUser = 7;
+	bool ociNoHttps = 8;
+	string ociUsername = 9;
+	string ociPassword = 10;
 }
 
 // ContainerInfo has data on each container. This is emitted in the
