@@ -9,6 +9,7 @@ package config
 import (
 	"fmt"
 	"net"
+	"net/netip"
 	"os"
 	"reflect"
 
@@ -107,22 +108,30 @@ func (conf *RootConf) SetDynamicDefaults() (err error) {
 	if conf.Ipaddr == "" || conf.Netmask == "" || conf.Network == "" {
 		var mask net.IPMask
 		var network *net.IPNet
-		var ipaddr net.IP
+		var ip net.IP
+		cidr := conf.Ipaddr
 
 		if conf.Ipaddr == "" {
 			wwlog.Verbose("Configuration has no valid network, going to dynamic values")
 			conn, err := net.Dial("udp", "8.8.8.8:80")
 			if err == nil {
 				defer conn.Close()
-				ipaddr = conn.LocalAddr().(*net.UDPAddr).IP
+				ipaddr := conn.LocalAddr().(*net.UDPAddr).IP
 				mask = ipaddr.DefaultMask()
 				sz, _ := mask.Size()
-				conf.Ipaddr = ipaddr.String() + fmt.Sprintf("/%d", sz)
+				cidr = ipaddr.String() + fmt.Sprintf("/%d", sz)
 			} else {
-				conf.Ipaddr = "192.168.1.1/24"
+				cidr = "192.168.1.1/24"
 			}
+		} else if addr, err := netip.ParseAddr(conf.Ipaddr); err == nil {
+			// if the ipaddr does not have mask appended, update it with default generated mask
+			ipaddr := net.IP(addr.AsSlice())
+			sz, _ := ipaddr.DefaultMask().Size()
+			cidr = fmt.Sprintf("%s/%d", conf.Ipaddr, sz)
+			// otherwise, the following code will handle the ipaddr format: invalid or xxx.xxx.xxx.xxx/xx
 		}
-		_, network, err = net.ParseCIDR(conf.Ipaddr)
+
+		ip, network, err = net.ParseCIDR(cidr)
 		if err == nil {
 			mask = network.Mask
 		} else {
@@ -136,6 +145,8 @@ func (conf *RootConf) SetDynamicDefaults() (err error) {
 			conf.Network = network.IP.String()
 			wwlog.Verbose("Network is not configured in warewulf.conf, using %s", conf.Network)
 		}
+		// always update the ipaddr to valid ip
+		conf.Ipaddr = ip.String()
 	}
 	if conf.DHCP.RangeStart == "" && conf.DHCP.RangeEnd == "" {
 		start := net.ParseIP(conf.Network).To4()
