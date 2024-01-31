@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"syscall"
 
 	"github.com/manifoldco/promptui"
@@ -28,14 +29,22 @@ func ConfirmationPrompt(label string) (yes bool) {
 /*
 Simple check if the config can be written in case wwctl isn't run as root
 */
-func CanWriteConfig() (canwrite *wwapiv1.CanWriteConfig) {
+func CanWriteConfig() (canwrite *wwapiv1.CanWriteConfig, err error) {
 	canwrite = new(wwapiv1.CanWriteConfig)
-	err := syscall.Access(node.ConfigFile, syscall.O_RDWR)
+	// node is not initialized yet
+	if node.ConfigFile == "" {
+		_, err := node.New()
+		if err != nil {
+			canwrite.CanWriteConfig = false
+			return canwrite, fmt.Errorf("unable to initialize the node %w", err)
+		}
+	}
+	err = syscall.Access(node.ConfigFile, syscall.O_RDWR)
 	if err != nil {
 		wwlog.Warn("Couldn't open %s:%s", node.ConfigFile, err)
 		canwrite.CanWriteConfig = false
 	} else {
 		canwrite.CanWriteConfig = true
 	}
-	return canwrite
+	return canwrite, err
 }
