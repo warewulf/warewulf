@@ -23,6 +23,7 @@ var (
 			for _, node := range nodes {
 				node_names = append(node_names, node.Id.Get())
 			}
+
 			return node_names, cobra.ShellCompDirectiveNoFileComp
 		},
 	}

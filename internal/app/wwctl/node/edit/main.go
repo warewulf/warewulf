@@ -21,7 +21,11 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	canWrite := apiutil.CanWriteConfig()
+	canWrite, err := apiutil.CanWriteConfig()
+	if err != nil {
+		wwlog.Error("While checking whether can write config, err: %w", err)
+		os.Exit(1)
+	}
 	if !canWrite.CanWriteConfig {
 		wwlog.Error("Can't write to config exiting")
 		os.Exit(1)
@@ -112,8 +116,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			if yes {
 				err = apinode.NodeDelete(&wwapiv1.NodeDeleteParameter{NodeNames: nodeList, Force: true})
 				if err != nil {
-					wwlog.Error("Problem deleting nodes before modification: %s", err)
-					return err
+					wwlog.Verbose("Problem deleting nodes before modification %s", err)
 				}
 				buffer, _ = yaml.Marshal(modifiedNodeMap)
 				newHash := apinode.Hash()
