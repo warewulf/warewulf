@@ -14,6 +14,10 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/util"
 )
 
+/*
+Import a container from the given URI as the given name. Also a
+SystemContext has to be provided.
+*/
 func ImportDocker(uri string, name string, sCtx *types.SystemContext) error {
 	OciBlobCacheDir := warewulfconf.Get().Warewulf.DataStore + "/oci"
 
@@ -54,7 +58,6 @@ func ImportDocker(uri string, name string, sCtx *types.SystemContext) error {
 
 func ImportDirectory(uri string, name string) error {
 	fullPath := RootFsDir(name)
-
 	err := os.MkdirAll(fullPath, 0755)
 	if err != nil {
 		return err
@@ -70,6 +73,32 @@ func ImportDirectory(uri string, name string) error {
 
 	err = copy.DirCopy(uri, fullPath, copy.Content, true)
 	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ReimportContainer(inspectData oci.InspectOutput, name string, sCtx *types.SystemContext) (err error) {
+	OciBlobCacheDir := warewulfconf.Get().Warewulf.DataStore + "/oci"
+	err = os.MkdirAll(OciBlobCacheDir, 0755)
+	if err != nil {
+		return err
+	}
+	fullPath := SourceDir(name)
+	err = os.MkdirAll(fullPath, 0755)
+	if err != nil {
+		return
+	}
+	p, err := oci.NewPuller(
+		oci.OptSetBlobCachePath(OciBlobCacheDir),
+		oci.OptSetSystemContext(sCtx),
+	)
+	if err != nil {
+		return err
+	}
+
+	if err := p.PullFromCache(context.Background(), inspectData, fullPath); err != nil {
 		return err
 	}
 

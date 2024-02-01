@@ -118,22 +118,11 @@ func (p *puller) Pull(ctx context.Context, uri, dst string) (err error) {
 	if err != nil {
 		return fmt.Errorf("unable to parse uri: %v", err)
 	}
-
-	cacheRef, err := layout.ParseReference(p.blobCachePath + ":" + p.id)
-	if err != nil {
-		return fmt.Errorf("unable to generate local oci reference: %v", err)
-	}
-
-	// Create a wide open oci image signature policy
-	policy := &signature.Policy{Default: []signature.PolicyRequirement{signature.NewPRInsecureAcceptAnything()}}
-	policyCtx, err := signature.NewPolicyContext(policy)
-	if err != nil {
-		return fmt.Errorf("unable to create policy context: %v", err)
-	}
 	srcImage, err := srcRef.NewImage(ctx, nil)
 	if err != nil {
-		wwlog.ErrOut("Unable to create the image source, no manifest will be created: %s", err)
+		wwlog.ErrOut("unable to create the image source, no manifest will be created: %s", err)
 	} else {
+
 		imgInspect, err := srcImage.Inspect(ctx)
 		if err != nil {
 			wwlog.ErrOut("Unable to get source manifest: %s", err)
@@ -167,12 +156,28 @@ func (p *puller) Pull(ctx context.Context, uri, dst string) (err error) {
 			outputData.Name = dockerRef.Name()
 		}
 		b, _ := json.MarshalIndent(outputData, "", "    ")
-		err = os.WriteFile(path.Join(dst, "src/inspect_src.json"), b, 0644)
+		err = os.WriteFile(path.Join(dst, "src/inspect.json"), b, 0644)
 		if err != nil {
 			wwlog.ErrOut("problems when writing manifest of source: %s", err)
 		}
 	}
 	srcImage.Close()
+
+	if err != nil {
+		wwlog.ErrOut("failed to write inspect data: %s", err)
+	}
+	cacheRef, err := layout.ParseReference(p.blobCachePath + ":" + p.id)
+	if err != nil {
+		return fmt.Errorf("unable to generate local oci reference: %v", err)
+	}
+
+	// Create a wide open oci image signature policy
+	policy := &signature.Policy{Default: []signature.PolicyRequirement{signature.NewPRInsecureAcceptAnything()}}
+	policyCtx, err := signature.NewPolicyContext(policy)
+	if err != nil {
+		return fmt.Errorf("unable to create policy context: %v", err)
+	}
+
 	// copy to cache location
 	_, err = copy.Image(ctx, policyCtx, cacheRef, srcRef, &copy.Options{
 		ReportWriter:     os.Stdout,
@@ -182,7 +187,13 @@ func (p *puller) Pull(ctx context.Context, uri, dst string) (err error) {
 	if err != nil {
 		return err
 	}
+	return p.pullFromCache(ctx, policyCtx, cacheRef, dst)
+}
 
+/*
+private helper function to pull out the container from the cache
+*/
+func (p *puller) pullFromCache(ctx context.Context, policyCtx *signature.PolicyContext, cacheRef types.ImageReference, dst string) (err error) {
 	// defaults to $TMPDIR or /tmp
 	tmpDir, err := os.MkdirTemp(p.tmpDirPath, "oci-bundle-")
 	if err != nil {
@@ -206,6 +217,7 @@ func (p *puller) Pull(ctx context.Context, uri, dst string) (err error) {
 	if err != nil {
 		return err
 	}
+	defer tmp.Close()
 
 	manifestBytes, _, err := tmp.GetManifest(ctx, nil)
 	if err != nil {
@@ -228,4 +240,29 @@ func (p *puller) Pull(ctx context.Context, uri, dst string) (err error) {
 	}
 
 	return nil
+}
+
+func (p *puller) PullFromCache(ctx context.Context, inspectData InspectOutput, dst string) (err error) {
+	// Create a wide open oci image signature policy
+	policy := &signature.Policy{Default: []signature.PolicyRequirement{signature.NewPRInsecureAcceptAnything()}}
+	policyCtx, err := signature.NewPolicyContext(policy)
+	if err != nil {
+		return err
+	}
+	cacheRef, err := layout.ParseReference(p.blobCachePath + ":" + inspectData.Digest.String())
+	if err != nil {
+		return fmt.Errorf("unable to generate local oci reference: %v", err)
+	}
+	err = os.MkdirAll(path.Join(dst, "src"), 0755)
+	if err != nil {
+		wwlog.ErrOut("problems creating manifest src dir: %s", err)
+	}
+	b, _ := json.MarshalIndent(inspectData, "", "    ")
+	err = os.WriteFile(path.Join(dst, "src/inspect.json"), b, 0644)
+	if err != nil {
+		wwlog.ErrOut("failed to write inspect data: %s", err)
+	}
+
+	return p.pullFromCache(ctx, policyCtx, cacheRef, dst)
+
 }
