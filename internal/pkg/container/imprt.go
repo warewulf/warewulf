@@ -26,7 +26,7 @@ func ImportDocker(uri string, name string, sCtx *types.SystemContext) error {
 		return errors.New("VNFS name contains illegal characters: " + name)
 	}
 
-	fullPath := RootFsDir(name)
+	fullPath := SourceDir(name)
 
 	err = os.MkdirAll(fullPath, 0755)
 	if err != nil {
