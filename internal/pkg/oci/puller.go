@@ -48,11 +48,19 @@ func OptSetSystemContext(s *types.SystemContext) pullerOpt {
 	}
 }
 
+func OptSetPolicyContext(pCtx *signature.PolicyContext) pullerOpt {
+	return func(p *puller) error {
+		p.policyCtx = pCtx
+		return nil
+	}
+}
+
 type puller struct {
 	id            string
 	blobCachePath string
 	tmpDirPath    string
 	sysCtx        *types.SystemContext
+	policyCtx     *signature.PolicyContext
 }
 
 func NewPuller(opts ...pullerOpt) (*puller, error) {
@@ -171,15 +179,8 @@ func (p *puller) Pull(ctx context.Context, uri, dst string) (err error) {
 		return fmt.Errorf("unable to generate local oci reference: %v", err)
 	}
 
-	// Create a wide open oci image signature policy
-	policy := &signature.Policy{Default: []signature.PolicyRequirement{signature.NewPRInsecureAcceptAnything()}}
-	policyCtx, err := signature.NewPolicyContext(policy)
-	if err != nil {
-		return fmt.Errorf("unable to create policy context: %v", err)
-	}
-
 	// copy to cache location
-	_, err = copy.Image(ctx, policyCtx, cacheRef, srcRef, &copy.Options{
+	_, err = copy.Image(ctx, p.policyCtx, cacheRef, srcRef, &copy.Options{
 		ReportWriter:     os.Stdout,
 		SourceCtx:        p.sysCtx,
 		RemoveSignatures: false,
@@ -187,13 +188,13 @@ func (p *puller) Pull(ctx context.Context, uri, dst string) (err error) {
 	if err != nil {
 		return err
 	}
-	return p.pullFromCache(ctx, policyCtx, cacheRef, dst)
+	return p.pullFromCache(ctx, cacheRef, dst)
 }
 
 /*
 private helper function to pull out the container from the cache
 */
-func (p *puller) pullFromCache(ctx context.Context, policyCtx *signature.PolicyContext, cacheRef types.ImageReference, dst string) (err error) {
+func (p *puller) pullFromCache(ctx context.Context, cacheRef types.ImageReference, dst string) (err error) {
 	// defaults to $TMPDIR or /tmp
 	tmpDir, err := os.MkdirTemp(p.tmpDirPath, "oci-bundle-")
 	if err != nil {
@@ -208,7 +209,7 @@ func (p *puller) pullFromCache(ctx context.Context, policyCtx *signature.PolicyC
 	}
 
 	// copy to temporary location
-	_, err = copy.Image(ctx, policyCtx, tmpRef, cacheRef, &copy.Options{})
+	_, err = copy.Image(ctx, p.policyCtx, tmpRef, cacheRef, &copy.Options{})
 	if err != nil {
 		return err
 	}
@@ -243,12 +244,6 @@ func (p *puller) pullFromCache(ctx context.Context, policyCtx *signature.PolicyC
 }
 
 func (p *puller) PullFromCache(ctx context.Context, inspectData InspectOutput, dst string) (err error) {
-	// Create a wide open oci image signature policy
-	policy := &signature.Policy{Default: []signature.PolicyRequirement{signature.NewPRInsecureAcceptAnything()}}
-	policyCtx, err := signature.NewPolicyContext(policy)
-	if err != nil {
-		return err
-	}
 	cacheRef, err := layout.ParseReference(p.blobCachePath + ":" + inspectData.Digest.String())
 	if err != nil {
 		return fmt.Errorf("unable to generate local oci reference: %v", err)
@@ -263,6 +258,6 @@ func (p *puller) PullFromCache(ctx context.Context, inspectData InspectOutput, d
 		wwlog.ErrOut("failed to write inspect data: %s", err)
 	}
 
-	return p.pullFromCache(ctx, policyCtx, cacheRef, dst)
+	return p.pullFromCache(ctx, cacheRef, dst)
 
 }

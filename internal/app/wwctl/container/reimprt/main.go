@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/containers/image/v5/signature"
 	"github.com/containers/image/v5/types"
 	"github.com/spf13/cobra"
 	apicontainer "github.com/warewulf/warewulf/internal/pkg/api/container"
@@ -53,7 +54,14 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 				wwlog.ErrorExc(err, "")
 				return
 			}
-			err = container.ReimportContainer(inspectSrc, args[1], sCtx)
+			var pCtx *signature.PolicyContext
+			pCtx, err = apicontainer.GetPolicyContext()
+			if err != nil {
+				_ = container.DeleteSource(args[1])
+				return err
+			}
+
+			err = container.ReimportContainer(inspectSrc, args[1], sCtx, pCtx)
 			if err != nil {
 				return err
 			}

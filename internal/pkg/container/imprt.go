@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/containers/image/v5/signature"
 	"github.com/containers/image/v5/types"
 	"github.com/containers/storage/drivers/copy"
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ import (
 Import a container from the given URI as the given name. Also a
 SystemContext has to be provided.
 */
-func ImportDocker(uri string, name string, sCtx *types.SystemContext) error {
+func ImportDocker(uri string, name string, sCtx *types.SystemContext, pCtx *signature.PolicyContext) error {
 	OciBlobCacheDir := warewulfconf.Get().Warewulf.DataStore + "/oci"
 
 	err := os.MkdirAll(OciBlobCacheDir, 0755)
@@ -36,10 +37,10 @@ func ImportDocker(uri string, name string, sCtx *types.SystemContext) error {
 	if err != nil {
 		return err
 	}
-
 	p, err := oci.NewPuller(
 		oci.OptSetBlobCachePath(OciBlobCacheDir),
 		oci.OptSetSystemContext(sCtx),
+		oci.OptSetPolicyContext(pCtx),
 	)
 	if err != nil {
 		return err
@@ -79,7 +80,7 @@ func ImportDirectory(uri string, name string) error {
 	return nil
 }
 
-func ReimportContainer(inspectData oci.InspectOutput, name string, sCtx *types.SystemContext) (err error) {
+func ReimportContainer(inspectData oci.InspectOutput, name string, sCtx *types.SystemContext, pCtx *signature.PolicyContext) (err error) {
 	OciBlobCacheDir := warewulfconf.Get().Warewulf.DataStore + "/oci"
 	err = os.MkdirAll(OciBlobCacheDir, 0755)
 	if err != nil {
@@ -93,6 +94,7 @@ func ReimportContainer(inspectData oci.InspectOutput, name string, sCtx *types.S
 	p, err := oci.NewPuller(
 		oci.OptSetBlobCachePath(OciBlobCacheDir),
 		oci.OptSetSystemContext(sCtx),
+		oci.OptSetPolicyContext(pCtx),
 	)
 	if err != nil {
 		return err

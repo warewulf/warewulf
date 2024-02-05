@@ -8,6 +8,9 @@ import (
 	"strconv"
 	"strings"
 
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+
+	"github.com/containers/image/v5/signature"
 	"github.com/containers/image/v5/types"
 	"github.com/pkg/errors"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
@@ -194,13 +197,6 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		wwlog.Info("Updating existing VNFS")
 	} else if strings.HasPrefix(cip.Source, "docker://") || strings.HasPrefix(cip.Source, "docker-daemon://") ||
 		strings.HasPrefix(cip.Source, "file://") || util.IsFile(cip.Source) {
-		var sCtx *types.SystemContext
-		sCtx, err = GetSystemContext(cip.OciNoHttps, cip.OciUsername, cip.OciPassword)
-		if err != nil {
-			wwlog.ErrorExc(err, "")
-			return
-		}
-
 		if util.IsFile(cip.Source) && !filepath.IsAbs(cip.Source) {
 			cip.Source, err = filepath.Abs(cip.Source)
 			if err != nil {
@@ -209,7 +205,19 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 				return
 			}
 		}
-		err = container.ImportDocker(cip.Source, cip.Name, sCtx)
+		var sCtx *types.SystemContext
+		sCtx, err = GetSystemContext(cip.OciNoHttps, cip.OciUsername, cip.OciPassword)
+		if err != nil {
+			_ = container.DeleteSource(cip.Name)
+			return "", err
+		}
+		var pCtx *signature.PolicyContext
+		pCtx, err = GetPolicyContext()
+		if err != nil {
+			_ = container.DeleteSource(cip.Name)
+			return "", err
+		}
+		err = container.ImportDocker(cip.Source, cip.Name, sCtx, pCtx)
 		if err != nil {
 			err = fmt.Errorf("could not import image: %s", err.Error())
 			wwlog.Error(err.Error())
@@ -510,4 +518,27 @@ func GetSystemContext(noHttps bool, username string, password string) (sCtx *typ
 	}
 
 	return sCtx, nil
+}
+
+/*
+Create a policy context by reading SYSCONFDIR/warewulf/policy.json or
+a wide open policy if file doesn't exits
+*/
+func GetPolicyContext() (policyCtx *signature.PolicyContext, err error) {
+	conf := warewulfconf.Get()
+	var policy *signature.Policy
+	policyFile := path.Join(conf.Paths.Sysconfdir, "warewulf/policy.json")
+	if util.IsFile(policyFile) {
+		wwlog.Debug("using security policy: %s", policyFile)
+		policy, err = signature.NewPolicyFromFile(policyFile)
+		if err != nil {
+			return
+		}
+	} else {
+		wwlog.Debug("using wide open oci image signature policy")
+		// Create a wide open oci image signature policy
+		policy = &signature.Policy{Default: []signature.PolicyRequirement{signature.NewPRInsecureAcceptAnything()}}
+	}
+	policyCtx, err = signature.NewPolicyContext(policy)
+	return
 }
