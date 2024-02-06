@@ -11,6 +11,8 @@ import (
 	"syscall"
 	"time"
 
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/container"
 	"github.com/warewulf/warewulf/internal/pkg/util"
@@ -34,9 +36,10 @@ func runContainedCmd(args []string) error {
 			}
 		}()
 	}
+	conf := warewulfconf.Get()
 	logStr := fmt.Sprint(wwlog.GetLogLevel())
 	wwlog.Verbose("Running contained command: %s", args[1:])
-	c := exec.Command("/proc/self/exe", append([]string{"--loglevel", logStr, "--tempdir", tempDir, "container", "exec", "__child"}, args...)...)
+	c := exec.Command("/proc/self/exe", append([]string{"--warewulfconf", conf.GetWarewulfConf(), "--loglevel", logStr, "--tempdir", tempDir, "container", "exec", "__child"}, args...)...)
 
 	c.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,

@@ -67,6 +67,7 @@ func TestInitializedFromFile(t *testing.T) {
 	assert.False(t, conf.InitializedFromFile())
 	assert.NoError(t, conf.Read(tempWarewulfConf.Name()))
 	assert.True(t, conf.InitializedFromFile())
+	assert.Equal(t, conf.GetWarewulfConf(), tempWarewulfConf.Name())
 }
 
 func TestExampleRootConf(t *testing.T) {
