@@ -21,6 +21,8 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
+const exitEval = `$(VALU="$?" ; if [ $VALU == 0 ]; then echo write; else echo discard; fi)`
+
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	if os.Getpid() != 1 {
 		wwlog.Error("PID is not 1: %d", os.Getpid())
@@ -34,11 +36,13 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		os.Exit(1)
 	}
 	conf := warewulfconf.Get()
+	if overlayDir == "" {
+		overlayDir = path.Join(conf.Paths.WWChrootdir, "overlays")
+	}
 	mountPts := conf.MountsContainer
 	mountPts = append(container.InitMountPnts(binds), mountPts...)
 	// check for valid mount points
 	lowerObjects := checkMountPoints(containerName, mountPts)
-	overlayDir := conf.Paths.WWChrootdir + "/overlays"
 	// need to create a overlay, where the lower layer contains
 	// the missing mount points
 	wwlog.Verbose("for ephermal mount use tempdir %s", overlayDir)
@@ -46,6 +50,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	_ = os.MkdirAll(path.Join(overlayDir, "work"), os.ModePerm)
 	_ = os.MkdirAll(path.Join(overlayDir, "lower"), os.ModePerm)
 	_ = os.MkdirAll(path.Join(overlayDir, "nodeoverlay"), os.ModePerm)
+	// handle all lower object, have some extra logic if the object is a file
 	for _, obj := range lowerObjects {
 		newFile := ""
 		if !strings.HasSuffix(obj, "/") {
@@ -65,11 +70,12 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 	containerPath := container.RootFsDir(containerName)
+	// running in a private PID space, so also make / private, so that nothing gets out from here
 	err = syscall.Mount("", "/", "", syscall.MS_PRIVATE|syscall.MS_REC, "")
 	if err != nil {
 		return errors.Wrap(err, "failed to mount")
 	}
-	ps1Str := fmt.Sprintf("[%s] Warewulf> ", containerName)
+	ps1Str := fmt.Sprintf("[%s|%s] Warewulf> ", exitEval, containerName)
 	if len(lowerObjects) != 0 && nodename == "" {
 		options := fmt.Sprintf("lowerdir=%s,upperdir=%s,workdir=%s",
 			path.Join(overlayDir, "lower"), containerPath, path.Join(overlayDir, "work"))

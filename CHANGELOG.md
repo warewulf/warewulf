@@ -59,6 +59,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix the issue that warewulf.conf parse does not support CIDR format. #1130
 - Reduce the number of times syncuser walks the container file system. #1209
 - Create ssh key also when calling `wwctl configure --all` #1250
+- Remove the temporary overlay dir. #1180
 
 ### Security
 

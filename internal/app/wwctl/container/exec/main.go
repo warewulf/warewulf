@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/container"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -20,15 +21,15 @@ import (
 /*
 fork off a process with a new PID space
 */
-func runContainedCmd(args []string) error {
-	var err error
-	if tempDir == "" {
-		tempDir, err = os.MkdirTemp(os.TempDir(), "overlay")
+func runContainedCmd(args []string) (err error) {
+	if overlayDir == "" {
+		conf := warewulfconf.Get()
+		overlayDir, err = os.MkdirTemp(conf.Paths.WWChrootdir, "overlays-")
 		if err != nil {
 			wwlog.Warn("couldn't create temp dir for overlay", err)
 		}
 		defer func() {
-			err = os.RemoveAll(tempDir)
+			err = os.RemoveAll(overlayDir)
 			if err != nil {
 				wwlog.Warn("Couldn't remove temp dir for ephermal mounts:", err)
 			}
@@ -36,7 +37,7 @@ func runContainedCmd(args []string) error {
 	}
 	logStr := fmt.Sprint(wwlog.GetLogLevel())
 	wwlog.Verbose("Running contained command: %s", args[1:])
-	c := exec.Command("/proc/self/exe", append([]string{"--loglevel", logStr, "--tempdir", tempDir, "container", "exec", "__child"}, args...)...)
+	c := exec.Command("/proc/self/exe", append([]string{"--loglevel", logStr, "--overlaydir", overlayDir, "container", "exec", "__child"}, args...)...)
 
 	c.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,
@@ -45,16 +46,7 @@ func runContainedCmd(args []string) error {
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
 
-	if err := c.Run(); err != nil {
-		fmt.Printf("Command exited non-zero, not rebuilding/updating VNFS image\n")
-		// defer is not called before os.Exit(0)
-		err = os.RemoveAll(tempDir)
-		if err != nil {
-			wwlog.Warn("Couldn't remove temp dir for ephermal mounts:", err)
-		}
-		os.Exit(0)
-	}
-	return nil
+	return c.Run()
 }
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
