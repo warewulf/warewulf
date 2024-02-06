@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- ability to create bonded network interfaces
 - ipxe script to boot node from local disk.
 - Option to change the `ipmitool` escape character
 - New documentation for the hostlist syntax. #611
