@@ -4,15 +4,18 @@
 package exec
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"syscall"
 	"time"
 
-	"github.com/spf13/cobra"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+
+	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/container"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -22,22 +25,21 @@ import (
 fork off a process with a new PID space
 */
 func runContainedCmd(args []string) (err error) {
-	if overlayDir == "" {
-		conf := warewulfconf.Get()
-		overlayDir, err = os.MkdirTemp(conf.Paths.WWChrootdir, "overlays-")
-		if err != nil {
-			wwlog.Warn("couldn't create temp dir for overlay", err)
-		}
-		defer func() {
-			err = os.RemoveAll(overlayDir)
-			if err != nil {
-				wwlog.Warn("Couldn't remove temp dir for ephermal mounts:", err)
-			}
-		}()
+	conf := warewulfconf.Get()
+	if matches, _ := filepath.Glob(path.Join(conf.Paths.WWChrootdir, args[0], args[0]) + "-run-*"); len(matches) > 0 {
+		return fmt.Errorf("found lock directories for container: %v", matches)
 	}
+	overlayDir, err = os.MkdirTemp(path.Join(conf.Paths.WWChrootdir, args[0]), args[0]+"-run-")
+	if err != nil {
+		wwlog.Warn("couldn't create temp dir for overlay", err)
+	}
+	defer func() {
+		err = errors.Join(os.RemoveAll(overlayDir), err)
+	}()
+
 	logStr := fmt.Sprint(wwlog.GetLogLevel())
 	wwlog.Verbose("Running contained command: %s", args[1:])
-	c := exec.Command("/proc/self/exe", append([]string{"--loglevel", logStr, "--overlaydir", overlayDir, "container", "exec", "__child"}, args...)...)
+	c := exec.Command("/proc/self/exe", append([]string{"--warewulfconf", conf.GetWarewulfConf(), "--loglevel", logStr, "--overlaydir", overlayDir, "container", "exec", "__child"}, args...)...)
 
 	c.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,

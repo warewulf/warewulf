@@ -21,7 +21,7 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-const exitEval = `$(VALU="$?" ; if [ $VALU == 0 ]; then echo write; else echo discard; fi)`
+const exitEval = `$(VALU="$?" ; if [ $VALU == 0 ]; then echo create new image; else echo no new image; fi)`
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	if os.Getpid() != 1 {
