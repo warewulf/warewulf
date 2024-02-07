@@ -230,6 +230,18 @@ container, kernel, and network:
   # wwctl node list -a n001 | grep cluster
   n001                 cluster            --           cluster01
 
+
+To configure a bonded (link aggreagtion) network interface the following commands can be used:
+
+.. code-block:: console
+
+  # wwctl node set --netname=bond0_member_1 --netdev=eth2 --type=bond-slave n001
+  # wwctl node set --netname=bond0_member_2 --netdev=eth3 --type=bond-slave n001
+  # wwctl node set --netname=bond0 --netdev=bond0 --onboot=true --type=bond --ipaddr 10.0.3.1 --netmask=255.255.255.0 --mtu=9000 n001
+
+Note: the netnames of the member interterfaces need to match the "netname" of the bonded interface until the first "_" (in the example bond0)
+
+
 Node Discovery
 --------------
 
