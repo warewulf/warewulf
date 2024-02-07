@@ -29,8 +29,6 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		os.Exit(1)
 	}
 
-	containerName := args[0]
-
 	if !container.ValidSource(containerName) {
 		wwlog.Error("Unknown Warewulf container: %s", containerName)
 		os.Exit(1)
@@ -76,7 +74,9 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		return errors.Wrap(err, "failed to mount")
 	}
 	ps1Str := fmt.Sprintf("[%s|%s] Warewulf> ", exitEval, containerName)
-	if len(lowerObjects) != 0 && nodename == "" {
+	msgStr := `Image is rebuilt, depending on the exit status of the last called program.
+Type "true" or "false" to enforce or abort image rebuilt.`
+	if len(lowerObjects) != 0 && nodename == "" && !ro {
 		options := fmt.Sprintf("lowerdir=%s,upperdir=%s,workdir=%s",
 			path.Join(overlayDir, "lower"), containerPath, path.Join(overlayDir, "work"))
 		wwlog.Debug("overlay options: %s", options)
@@ -87,23 +87,15 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	} else if nodename != "" {
 		nodeDB, err := node.New()
 		if err != nil {
-			wwlog.Error("Could not open node configuration: %s", err)
-			os.Exit(1)
+			return err
 		}
-
-		nodes, err := nodeDB.FindAllNodes()
+		node, err := nodeDB.FindById(nodename)
 		if err != nil {
-			wwlog.Error("Could not get node list: %s", err)
-			os.Exit(1)
+			return err
 		}
-		nodes = node.FilterByName(nodes, []string{nodename})
-		if len(nodes) != 1 {
-			wwlog.Error("No single node idendified with %s", nodename)
-			os.Exit(1)
-		}
-		overlays := nodes[0].SystemOverlay.GetSlice()
-		overlays = append(overlays, nodes[0].RuntimeOverlay.GetSlice()...)
-		err = overlay.BuildOverlayIndir(nodes[0], overlays, path.Join(overlayDir, "nodeoverlay"))
+		overlays := node.SystemOverlay.GetSlice()
+		overlays = append(overlays, node.RuntimeOverlay.GetSlice()...)
+		err = overlay.BuildOverlayIndir(node, overlays, path.Join(overlayDir, "nodeoverlay"))
 		if err != nil {
 			wwlog.Error("Could not build overlay: %s", err)
 			os.Exit(1)
@@ -117,20 +109,22 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			os.Exit(1)
 		}
 		ps1Str = fmt.Sprintf("[%s|ro|%s] Warewulf> ", containerName, nodename)
-	}
-	if !util.IsWriteAble(containerPath) && nodename == "" {
-		wwlog.Verbose("mounting %s ro", containerPath)
-		ps1Str = fmt.Sprintf("[%s|ro] Warewulf> ", containerName)
-		err = syscall.Mount(containerPath, containerPath, "", syscall.MS_BIND, "")
+	} else if ro && nodename == "" {
+		// if !util.IsWriteAble(containerPath) && nodename == "" {
+		_ = os.MkdirAll(path.Join(overlayDir, "changes"), os.ModePerm)
+		ps1Str = fmt.Sprintf("[%s|%s] Warewulf> ", exitEval, containerName)
+		options := fmt.Sprintf("nfs_export=off,lowerdir=%s,upperdir=%s,workdir=%s",
+			path.Join(overlayDir, "lower")+":"+containerPath,
+			path.Join(overlayDir, "changes"), path.Join(overlayDir, "work"))
+		wwlog.Debug("overlay options: %s", options)
+		err = syscall.Mount("overlay", containerPath, "overlay", 0, options)
 		if err != nil {
-			return errors.Wrap(err, "failed to prepare bind mount")
+			return errors.Wrap(err, "failed to prepare mount")
 		}
-		err = syscall.Mount(containerPath, containerPath, "", syscall.MS_REMOUNT|syscall.MS_RDONLY|syscall.MS_BIND, "")
-		if err != nil {
-			return errors.Wrap(err, "failed to remount ro")
-		}
+		msgStr = `Changes are written back to container and image is rebuilt
+depending on exit status of last called program.
+Type "true" or "false" to enforce or abort image rebuilt.`
 	}
-
 	err = syscall.Mount("/dev", path.Join(containerPath, "/dev"), "", syscall.MS_BIND, "")
 	if err != nil {
 		return errors.Wrap(err, "failed to mount /dev")
@@ -151,7 +145,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			wwlog.Verbose("mounted from host to container: %s:%s", mntPnt.Source, mntPnt.Dest)
 		}
 	}
-
+	fmt.Println(msgStr)
 	err = syscall.Chroot(containerPath)
 	if err != nil {
 		return errors.Wrap(err, "failed to chroot")
@@ -171,11 +165,12 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	os.Setenv("PATH", "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin")
 	os.Setenv("HISTFILE", "/dev/null")
 
-	_ = syscall.Exec(args[1], args[1:], os.Environ())
+	err = syscall.Exec(args[0], args, os.Environ())
+	wwlog.Debug("Exec ended with: %v", err)
+	return err
 	/*
 		Exec replaces the actual program, so nothing to do here afterwards
 	*/
-	return nil
 }
 
 /*

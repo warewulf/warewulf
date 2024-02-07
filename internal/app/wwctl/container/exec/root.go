@@ -35,7 +35,7 @@ func init() {
 	baseCmd.AddCommand(child.GetCommand())
 	baseCmd.PersistentFlags().StringArrayVarP(&binds, "bind", "b", []string{}, "Bind a local path into the container (must exist)")
 	baseCmd.PersistentFlags().BoolVar(&SyncUser, "syncuser", false, "Synchronize UIDs/GIDs from host to container")
-	baseCmd.PersistentFlags().StringVar(&overlayDir, "overlaydir", "", "Use tempdir for constructing the overlay fs (only used if mount points don't exist in container)")
+	baseCmd.PersistentFlags().StringVar(&overlayDir, "overlaydir", "", "Use tempdir for constructing the overlay fs")
 	baseCmd.PersistentFlags().StringVarP(&nodeName, "node", "n", "", "Create a read only view of the container for the given node")
 }
 

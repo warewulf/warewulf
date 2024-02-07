@@ -53,6 +53,17 @@ func (config *NodeYaml) FindByIpaddr(ipaddr string) (NodeInfo, error) {
 	return ret, errors.New("No nodes found with IP Addr: " + ipaddr)
 }
 
+// return a single nodd identified by given id, returns error otherwise
+func (config *NodeYaml) FindById(id string) (NodeInfo, error) {
+	nodes, _ := config.FindAllNodes()
+	for _, node := range nodes {
+		if strings.EqualFold(node.Id.Get(), id) {
+			return node, nil
+		}
+	}
+	return NodeInfo{}, errors.New("no nodes found with id: " + id)
+}
+
 // Return just the node list as string slice
 func (config *NodeYaml) NodeList() []string {
 	ret := make([]string, len(config.Nodes))
