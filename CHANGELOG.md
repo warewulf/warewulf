@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- ability to create bonded network interfaces
 - ipxe script to boot node from local disk.
 - Option to change the `ipmitool` escape character
 - New documentation for the hostlist syntax. #611
@@ -144,6 +145,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   excluded with ~ prefix and in listings are listed as !{excluded_profile} #885
 - modules are now correctly included
 - move hostlist into internal alongside other warewulf code #804
+- uniform shebang usage in scripts of init.d folder #821
+- Check if commas are allowes in node/profile set
 
 ## [4.4.0] 2023-01-18
 
