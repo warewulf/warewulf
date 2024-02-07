@@ -4,16 +4,33 @@
 # Source  {{.BuildSource}}
 {{ nobackup }}
 # select the x86 hosts which will get the iXPE binary
+dhcp-match=set:bios,option:client-arch,0   #legacy boot
 dhcp-match=set:x86PC,option:client-arch, 7 #EFI x86-64
 dhcp-match=set:x86PC,option:client-arch, 6 #EFI x86-64
 dhcp-match=set:x86PC,option:client-arch, 9 #EFI x86-64
-{{ with (index $.Tftp.IpxeBinaries "00:07" ) }}dhcp-boot=tag:x86PC,"/warewulf/{{ index $.Tftp.IpxeBinaries "00:07"  }}"{{ end }}
-dhcp-no-override
-# iPXE binary will get the following configuration file
+dhcp-match=set:aarch64,option:client-arch, 11 #EFI aarch64
+dhcp-match=set:iPXE,77,"iPXE"
 dhcp-userclass=set:iPXE,iPXE
+dhcp-vendorclass=set:efi-http,HTTPClient:Arch:00016
+dhcp-option-force=tag:efi-http,60,HTTPClient
+# for http boot always use shim/grub
+dhcp-boot=tag:efi-http,"http://{{$.Ipaddr}}:{{$.Warewulf.Port}}/efiboot/shim.efi"
+# iPXE binary will get the following configuration file
 dhcp-boot=tag:iPXE,"http://{{$.Ipaddr}}:{{$.Warewulf.Port}}/ipxe/${mac:hexhyp}"
+{{- if $.Warewulf.GrubBoot }}
+dhcp-boot=tag:x86PC,"warewulf/shim.efi"
+{{- else }}
+{{- with (index $.Tftp.IpxeBinaries "00:07" ) }}
+dhcp-boot=tag:x86PC,"/warewulf/{{ index $.Tftp.IpxeBinaries "00:07" }}"
+{{- end }}
+{{- with (index $.Tftp.IpxeBinaries "00:0B" ) }}
+dhcp-boot=tag:aarch64,"/warewulf/{{ index $.Tftp.IpxeBinaries "00:0B" }}"
+{{- end }}
+{{- end }}
+dhcp-no-override
 {{- if $.Tftp.Enabled }}
 # also act as tftp server
+enable-tftp
 tftp-root={{ $.Tftp.TftpRoot }}
 {{- end }}
 # define the the range
@@ -24,7 +41,7 @@ dhcp-range={{$.Dhcp.RangeStart}},{{$.Dhcp.RangeEnd}},{{$.Netmask}},6h
 {{- if $netdev.Ipaddr.Defined}}                {{/* if we have an ip address on this network device */}}
 {{- if $netdev.Hwaddr.Defined }}
 dhcp-host={{$netdev.Hwaddr.Get}},set:warewulf,{{$node.Id.Get}},{{$netdev.Ipaddr.Get}},infinite
-{{- end}} {{/* end if Hwaddr */}}
-{{- end}} {{/* end if ip */}}
-{{- end}} {{/* end for each network device */}}
-{{- end}} {{/* end for each node */}}
+{{- end}}{{/* end if Hwaddr */}}
+{{- end}}{{/* end if ip */}}
+{{- end}}{{/* end for each network device */}}
+{{- end}}{{/* end for each node */}}
