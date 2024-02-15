@@ -154,6 +154,7 @@ yq e '
 %attr(-, root, root) %{_mandir}/man1/wwctl*
 %attr(-, root, root) %{_mandir}/man5/*.5*
 %attr(-, root, root) %{_datadir}/warewulf
+%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/rootfs
 
 %dir %{_docdir}/warewulf
 %license %{_docdir}/warewulf/LICENSE.md
