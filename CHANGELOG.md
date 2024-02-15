@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New build for Rocky Linux 9
 - Add nightly release support. #969
 - Add container rename command. #583
+- Add container build flags and warn message after container sync. #509
 
 ### Fixed
 - Make Variables.mk consistent with spec file w.r.t. WWPROVISIONDIR, e.g.
