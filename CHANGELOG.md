@@ -153,6 +153,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated WW_INTERNAL to 45 for upcoming 4.5.x release
 - Added documentation about of how to configure warewulf with 
   multiple networks
+- Added installation instructions for using dnsmasq
 
 ## [4.4.0] 2023-01-18
 
