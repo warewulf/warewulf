@@ -9,8 +9,9 @@ Binary RPMs
 ===========
 
 The Warewulf project builds binary RPMs as part of its CI/CD
-process. You can obtain them from the `GitHub releases
-<https://github.com/warewulf/warewulf/releases>`_ page.
+process. You can obtain them from the `GitHub releases`_ page.
+
+.. _GitHub releases: https://github.com/warewulf/warewulf/releases
 
 Rocky Linux 8
 -------------
@@ -50,8 +51,7 @@ Release Tarball
 ---------------
 
 The Warewulf project releases source distributions alongside its
-binary RPMs. You can obtain them from the `GitHub releases
-<https://github.com/hpcng/warewulf/releases>`_ page.
+binary RPMs. You can obtain them from the `GitHub releases`_ page.
 
 Select the version you wish to install and download the tarball to any
 location on the server, then follow these directions making the
