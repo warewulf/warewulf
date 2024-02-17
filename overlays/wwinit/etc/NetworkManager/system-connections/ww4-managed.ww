@@ -65,6 +65,16 @@ address={{ $netdev.IpCIDR }}
 gateway={{ $netdev.Gateway }}
 {{ end -}}
 method=manual
+{{- $dns := "" }}
+{{range $tk, $tv := $netdev.Tags -}}
+{{ $prefix := slice $tk 0 3 -}}
+{{ if eq $prefix "DNS" -}}
+{{ $dns = print $dns $tv ";" -}}
+{{ end -}}
+{{ end -}}
+{{ if ne $dns "" -}}
+dns={{$dns}}
+{{ end -}}
 {{ end -}}
 
 {{/* always autoconfigure ipv6 */}}
