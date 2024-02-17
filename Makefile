@@ -106,7 +106,8 @@ install: build docs
 	install -d -m 0755 $(DESTDIR)$(SYSTEMDDIR)
 	install -d -m 0755 $(DESTDIR)$(IPXESOURCE)
 	install -d -m 0755 $(DESTDIR)$(DATADIR)/warewulf
-	test -f $(DESTDIR)$(WWCONFIGDIR)/warewulf.conf || install -m 0644 etc/warewulf.conf $(DESTDIR)$(WWCONFIGDIR)
+	# wwctl genconfig to get the compiled in paths to warewulf.conf
+	test -f $(DESTDIR)$(WWCONFIGDIR)/warewulf.conf || ./wwctl --warewulfconf etc/warewulf.conf genconfig warewulfconf print> $(DESTDIR)$(WWCONFIGDIR)/warewulf.conf
 	test -f $(DESTDIR)$(WWCONFIGDIR)/nodes.conf || install -m 0644 etc/nodes.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapic.conf || install -m 0644 etc/wwapic.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapid.conf || install -m 0644 etc/wwapid.conf $(DESTDIR)$(WWCONFIGDIR)

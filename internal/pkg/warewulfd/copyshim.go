@@ -24,22 +24,22 @@ func CopyShimGrub() (err error) {
 	if shimPath == "" {
 		return fmt.Errorf("no shim found on the host os")
 	}
-	err = util.CopyFile(shimPath, path.Join(conf.Paths.Tftpdir, "warewulf", "shim.efi"))
+	err = util.CopyFile(shimPath, path.Join(conf.TFTP.TftpRoot, "warewulf", "shim.efi"))
 	if err != nil {
 		return err
 	}
-	_ = os.Chmod(path.Join(conf.Paths.Tftpdir, "warewulf", "shim.efi"), 0o755)
+	_ = os.Chmod(path.Join(conf.TFTP.TftpRoot, "warewulf", "shim.efi"), 0o755)
 	grubPath := container.GrubFind("")
 	if grubPath == "" {
 		return fmt.Errorf("no grub found on host os")
 	}
-	err = util.CopyFile(grubPath, path.Join(conf.Paths.Tftpdir, "warewulf", "grub.efi"))
+	err = util.CopyFile(grubPath, path.Join(conf.TFTP.TftpRoot, "warewulf", "grub.efi"))
 	if err != nil {
 		return err
 	}
-	_ = os.Chmod(path.Join(conf.Paths.Tftpdir, "warewulf", "grub.efi"), 0o755)
-	err = util.CopyFile(grubPath, path.Join(conf.Paths.Tftpdir, "warewulf", "grubx64.efi"))
-	_ = os.Chmod(path.Join(conf.Paths.Tftpdir, "warewulf", "grubx64.efi"), 0o755)
+	_ = os.Chmod(path.Join(conf.TFTP.TftpRoot, "warewulf", "grub.efi"), 0o755)
+	err = util.CopyFile(grubPath, path.Join(conf.TFTP.TftpRoot, "warewulf", "grubx64.efi"))
+	_ = os.Chmod(path.Join(conf.TFTP.TftpRoot, "warewulf", "grubx64.efi"), 0o755)
 
 	return
 }

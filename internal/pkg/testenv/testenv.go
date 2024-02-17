@@ -68,10 +68,10 @@ func New(t *testing.T) (env *TestEnv) {
 
 	conf.Paths.Sysconfdir = env.GetPath(Sysconfdir)
 	conf.Paths.Bindir = env.GetPath(Bindir)
-	conf.Paths.Datadir = env.GetPath(Datadir)
+	conf.Warewulf.DataStore = env.GetPath(Datadir)
 	conf.Paths.Localstatedir = env.GetPath(Localstatedir)
 	conf.Paths.Srvdir = env.GetPath(Srvdir)
-	conf.Paths.Tftpdir = env.GetPath(Tftpdir)
+	conf.TFTP.TftpRoot = env.GetPath(Tftpdir)
 	conf.Paths.Firewallddir = env.GetPath(Firewallddir)
 	conf.Paths.Systemddir = env.GetPath(Systemddir)
 	conf.Paths.WWOverlaydir = env.GetPath(WWOverlaydir)
@@ -82,10 +82,10 @@ func New(t *testing.T) (env *TestEnv) {
 	for _, confPath := range []string{
 		conf.Paths.Sysconfdir,
 		conf.Paths.Bindir,
-		conf.Paths.Datadir,
+		conf.Warewulf.DataStore,
 		conf.Paths.Localstatedir,
 		conf.Paths.Srvdir,
-		conf.Paths.Tftpdir,
+		conf.TFTP.TftpRoot,
 		conf.Paths.Firewallddir,
 		conf.Paths.Systemddir,
 		conf.Paths.WWOverlaydir,
