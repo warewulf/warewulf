@@ -145,7 +145,12 @@ yq e '
 
 %dir %{_sharedstatedir}/warewulf
 %{_sharedstatedir}/warewulf/chroots
-%{_sharedstatedir}/warewulf/overlays
+%dir %{_sharedstatedir}/warewulf/overlays
+%dir %{_sharedstatedir}/warewulf/overlays/debug
+%dir %{_sharedstatedir}/warewulf/overlays/generic
+%dir %{_sharedstatedir}/warewulf/overlays/host
+%dir %{_sharedstatedir}/warewulf/overlays/wwinit
+%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/*/rootfs
 
 %attr(-, root, root) %{_bindir}/wwctl
 %attr(-, root, root) %{_bindir}/wwapi*
