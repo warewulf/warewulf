@@ -62,10 +62,9 @@ occur:
        a unified root file system
     #. Warewulf bootstraps the initialization of cluster node's
        operating system
-        #. File System (re)configuration
-        #. SELinux
-        #. ``wwclient`` is called as a background daemon and sleeps
-           until network is ready
+       #. File System (re)configuration
+       #. SELinux
+       #. ``wwclient`` is called as a background daemon and sleeps until network is ready
     #. The Warewulf bootstrap execs the container's ``/sbin/init``
 #. Container:
     #. The container now boots exactly as any operating system would

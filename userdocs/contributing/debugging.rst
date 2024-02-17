@@ -120,8 +120,8 @@ Read about other commands available within delve using the ``help``
 command.
 
 
-Example
--------
+Example debugging session
+-------------------------
 
 .. code-block:: console
 

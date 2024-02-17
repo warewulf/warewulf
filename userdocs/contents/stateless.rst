@@ -43,8 +43,8 @@ available when Warewulf was created and while these tools absolutely
 helped, there was even more optimization to be had. Stateless
 computing.
 
-Stateless Provisioning
-======================
+Why Stateless Provisioning
+==========================
 
 The next step past automated installs is to just skip the installation
 completely; boot directly into the runtime operating system without

@@ -59,7 +59,7 @@ Turn off default network dhcp on server master1
 Build and install Warewulf on wwdev
 ===================================
 
-.. code-block:: bash
+.. code-block::
 
    ssh wwdev
 
