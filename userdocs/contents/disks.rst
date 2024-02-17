@@ -110,4 +110,4 @@ If the partition creation didn't work as expected you have a few options to inve
 
   after each iteration on the node directly until you find the settings you need.
   (Make sure to unmount all partitions if ``ignition`` was partially successful.)
-- Sometimes you need to add ``should_exist: "true"`` for the swap partiton as well.
+- Sometimes you need to add ``should_exist: "true"`` for the swap partition as well.
