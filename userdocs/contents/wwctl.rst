@@ -6,7 +6,7 @@ Warewulf's command-line interface is based primarily around the
 ``wwctl`` command. This command has sub-commands for each major
 component of Warewulf's functionality.
 
-* ``configure`` configures external services that Warewulf depends on
+* ``configure`` configures system services that Warewulf depends on
 * ``container`` configures containers (node images)
 * ``kernel`` configures override kernels
 * ``node`` manages nodes in the cluster

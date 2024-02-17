@@ -14,9 +14,9 @@ of scale became apparent. Of course in HPC, there are many scalability
 factors which needed to be overcome as we continued to scale up
 clusters. Pretty early on was the "administrative scaling" which is
 the factor that full time systems administrators could only maintain
-so many servers. While homogenous configurations were able to help
+so many servers. While homogeneous configurations were able to help
 that, we still had the problem that every installed server became a
-point of administration, version creep, and debugging. The larger the
+point of administration, version drift, and debugging. The larger the
 cluster, the harder this problem was to solve.
 
 Warewulf was created to help with exactly this.
@@ -40,8 +40,7 @@ management of these systems completely changed the paradigm.
 
 There were several cluster provision and management toolkits already
 available when Warewulf was created and while these tools absolutely
-helped, there was even more optimization to be had. Stateless
-computing.
+helped, there was even more optimization to be had.
 
 Why Stateless Provisioning
 ==========================
@@ -55,8 +54,8 @@ This is Warewulf.
 Stateless provisioning is realizing you never have to install another
 compute node. Think of it like booting a LiveOS or LiveISO on nodes
 over the network. This means that no node individually is a point of
-system administration, but rather the entire cluster, inclusively is
-administrated as a single unit.
+system administration, but rather the entire cluster is administrated
+as a single unit.
 
 If all cluster nodes are booting the same OS image (or set of OS
 images), then any individual nodes that have problems is
