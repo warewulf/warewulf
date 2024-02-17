@@ -14,17 +14,13 @@ type BuildConfig struct {
 	WWChrootdir    string `default:"@WWCHROOTDIR@"`
 	WWProvisiondir string `default:"@WWPROVISIONDIR@"`
 	WWClientdir    string `default:"@WWCLIENTDIR@"`
-	version        string `default:"@VERSION@"`
-	release        string `default:"@RELEASE@"`
 }
 
-func (conf BuildConfig) Version() string {
-	return conf.version
-}
+const Version = "@VERSION@"
+const Release = "@RELEASE@"
 
-func (conf BuildConfig) Release() string {
-	return conf.release
-}
+// must be set .in file so that its available for tests
+const Confversion = "45"
 
 type TFTPConf struct {
 	Enabled     bool   `yaml:"enabled" default:"true"`
