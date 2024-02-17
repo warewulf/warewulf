@@ -36,7 +36,7 @@ I have VirtualBox running on my desktop.
 
 3. Build and install Warewulf on wwdev
 
-.. code-block:: console
+.. code-block::
 
    # Login to wwdev VM and install @development group and go language
 

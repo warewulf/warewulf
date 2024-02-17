@@ -1,20 +1,22 @@
-=============================
+=================================
 Development Environment (Vagrant)
-=============================
+=================================
 
 Create Rocky Linux 9 virtual machine for Warewulf testbed using Vagrant
 
+
 Host system requirements
-=====================
+========================
 
 #. CPU supports H/W virtualization.
 #. KVM kernel module available and loaded.
 
 
 CPU H/W Virtualization support
---------------------------------
+------------------------------
 
-Check CPU virtualization capability using following command. If your system has Intel CPU, you will see :code:`Intel VT` here, and if your system has AMD CPU, you will see :code:`AMD-V` here.
+Check CPU virtualization capability using following command.
+If your system has Intel CPU, you will see :code:`Intel VT` here, and if your system has AMD CPU, you will see :code:`AMD-V` here.
 
 .. code-block:: bash
 
@@ -23,9 +25,8 @@ Check CPU virtualization capability using following command. If your system has 
    Virtualization type:             full
 
 
-
 KVM kernel module
----------------------
+-----------------
 
 .. code-block:: bash
 
@@ -36,10 +37,10 @@ KVM kernel module
 
 
 Setup development environment on Rocky Linux 9
-==============================================================
+==============================================
 
 Install QEMU, libvirt
------------------------
+---------------------
 
 .. code-block:: bash
 
@@ -54,8 +55,9 @@ Install QEMU, libvirt
     # Add user to libvirt group
     sudo usermod -aG libvirt rocky
 
+
 Install Cockpit (Optional)
------------------
+--------------------------
 
 .. code-block:: bash
 
@@ -65,8 +67,9 @@ Install Cockpit (Optional)
     # Enable and start cockpit (http://localhost:9090)
     sudo systemctl enable --now cockpit.socket
 
+
 Install Vagrant, vagrant-libvirt plug-in and vagrant-reload plug-in
----------------------------------------------------------------------
+-------------------------------------------------------------------
 
 .. code-block:: bash
 
@@ -82,10 +85,10 @@ Install Vagrant, vagrant-libvirt plug-in and vagrant-reload plug-in
 
 
 Vagrant box and Vagrantfile for Warewulf sandbox
-===================================================
+================================================
 
 Create Rocky Linux 9.2 vagrant box
-------------------------------------
+----------------------------------
 
 .. code-block:: bash
 
@@ -109,8 +112,9 @@ Create Rocky Linux 9.2 vagrant box
 
     vagrant box add box-metadata.json
 
+
 Vagrantfile
-------------
+-----------
 
 .. code-block:: bash
 
@@ -251,8 +255,9 @@ Vagrantfile
     end
     EOF
 
+
 Spin up head node
-===================
+=================
 
 .. code-block:: bash
 
@@ -260,9 +265,7 @@ Spin up head node
 
 
 Spin up compute nodes
-=======================
-
-
+=====================
 
 .. code-block:: bash
 
@@ -271,4 +274,3 @@ Spin up compute nodes
     # Wait until n0001 becomes ready
 
     vagrant up n0002
-

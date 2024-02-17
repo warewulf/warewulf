@@ -7,14 +7,14 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Warewulf User Guide'
-copyright = '2023, Warewulf Project Contributors'
+copyright = '2024, Warewulf Project Contributors'
 author = 'Warewulf Project Contributors'
 release = 'main'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx.ext.autosectionlabel','sphinx.ext.graphviz']
+extensions = ['sphinx.ext.graphviz']
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']

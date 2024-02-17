@@ -1,4 +1,4 @@
-===============
+/Exa===============
 Disk Management
 ===============
 
@@ -61,8 +61,8 @@ required by the enabled `ww4-disks.target`. Entries in `/etc/fstab`
 are created with the `no_auto` option so that file systems can be
 easily mounted.
 
-Example
-=======
+Example disk configuration
+==========================
 
 The following command will create a `/scratch` file system on the node
 `n01`

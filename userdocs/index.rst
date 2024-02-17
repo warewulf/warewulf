@@ -27,12 +27,12 @@ Welcome to the Warewulf User Guide!
    Disk Management <contents/disks>
    Security <contents/security>
    Templating <contents/templating>
+   dnsmasq <contents/dnsmasq>
 
 .. toctree::
    :maxdepth: 2
    :caption: Quickstart
 
-   EL7 (CentOS and RHEL) <quickstart/el7>
    EL8 (Rocky Linux and RHEL) <quickstart/el8>
    EL9 (Rocky Linux and RHEL) <quickstart/el9>
    openSUSE Leap and SLES 15 <quickstart/suse15>
