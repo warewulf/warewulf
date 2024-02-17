@@ -24,7 +24,7 @@ func Test_Add(t *testing.T) {
 			args:    []string{"n01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles: {}
 nodes:
   n01:
@@ -35,7 +35,7 @@ nodes:
 			args:    []string{"--profile=foo", "n01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles: {}
 nodes:
   n01:
@@ -46,7 +46,7 @@ nodes:
 			args:    []string{"--discoverable=true", "n01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles: {}
 nodes:
   n01:
@@ -58,7 +58,7 @@ nodes:
 			args:    []string{"--discoverable=yes", "n01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles: {}
 nodes:
   n01:
@@ -71,7 +71,7 @@ nodes:
 			wantErr: true,
 			stdout:  "",
 			chkout:  false,
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles: {}
 nodes: {}
 `},
@@ -79,7 +79,7 @@ nodes: {}
 			args:    []string{"--discoverable=false", "n01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles: {}
 nodes:
   n01:
@@ -91,7 +91,7 @@ nodes:
 			args:    []string{"--kernelargs=foo", "n01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles: {}
 nodes:
   n01:
@@ -104,7 +104,7 @@ nodes:
 			args:    []string{"n01", "n02"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles: {}
 nodes:
   n01:
@@ -118,7 +118,7 @@ nodes:
 			args:    []string{"--ipaddr6=fdaa::1", "n01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles: {}
 nodes:
   n01:
@@ -132,7 +132,7 @@ nodes:
 			args:    []string{"--ipaddr=10.0.0.1", "n01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles: {}
 nodes:
   n01:
@@ -147,7 +147,7 @@ nodes:
 			wantErr: true,
 			stdout:  "",
 			chkout:  false,
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles: {}
 nodes: {}
 `},
@@ -155,7 +155,7 @@ nodes: {}
 			args:    []string{"--ipaddr=10.10.0.1", "n[01-02,03]"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles: {}
 nodes:
   n01:
@@ -181,7 +181,7 @@ nodes:
 			args:    []string{"--ipaddr=10.10.0.1", "--netname=foo", "n[01-03]"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles: {}
 nodes:
   n01:
@@ -207,7 +207,7 @@ nodes:
 			args:    []string{"--ipaddr=10.10.0.1", "--netname=foo", "--ipmiaddr=10.20.0.1", "n[01-03]"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles: {}
 nodes:
   n01:
@@ -239,7 +239,7 @@ nodes:
 			args:    []string{"--fsname=/dev/vda1", "--fspath=/var", "n01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles: {}
 nodes:
   n01:
@@ -253,7 +253,7 @@ nodes:
 			args:    []string{"--fsname=dev/vda1", "--fspath=/var", "n01"},
 			wantErr: true,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles: {}
 nodes: {}
 `},
@@ -261,7 +261,7 @@ nodes: {}
 			args:    []string{"--fsname=var", "--fspath=/var", "--partname=var", "--diskname=/dev/vda", "n01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles: {}
 nodes:
   n01:
@@ -279,7 +279,7 @@ nodes:
 			args:    []string{"--fsname=var", "--fspath=/var", "--fsformat=btrfs", "--partname=var", "--diskname=/dev/vda", "n01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 43
+			outDb: `WW_INTERNAL: 45
 nodeprofiles: {}
 nodes:
   n01:
@@ -304,7 +304,7 @@ nodes:
 	assert.NoError(t, tempWarewulfConf.Sync())
 	assert.NoError(t, warewulfconf.New().Read(tempWarewulfConf.Name()))
 
-	nodes_yml := `WW_INTERNAL: 43`
+	nodes_yml := `WW_INTERNAL: 45`
 	tempNodeConf, nodesConfErr := os.CreateTemp("", "nodes.conf-")
 	assert.NoError(t, nodesConfErr)
 	defer os.Remove(tempNodeConf.Name())

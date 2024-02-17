@@ -45,7 +45,7 @@ func Test_List(t *testing.T) {
 		t.FailNow()
 	}
 
-	inDb := `WW_INTERNAL: 43
+	inDb := `WW_INTERNAL: 45
 nodeprofiles:
   default: {}
 nodes: {}

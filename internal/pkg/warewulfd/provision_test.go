@@ -37,7 +37,7 @@ func Test_ProvisionSend(t *testing.T) {
 	assert.NoError(t, err)
 	defer conf_file.Close()
 	{
-		_, err := conf_file.WriteString(`WW_INTERNAL: 43
+		_, err := conf_file.WriteString(`WW_INTERNAL: 45
 nodeprofiles:
   default:
     container name: suse

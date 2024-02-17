@@ -21,7 +21,7 @@ var (
 func Test_Overlay_List(t *testing.T) {
 	env := testenv.New(t)
 	env.WriteFile(t, "etc/warewulf/nodes.conf",
-		`WW_INTERNAL: 43
+		`WW_INTERNAL: 45
 nodeprofiles:
   default:
     tags:

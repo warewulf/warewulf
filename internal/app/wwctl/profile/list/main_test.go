@@ -25,7 +25,7 @@ func Test_List(t *testing.T) {
 			args: []string{},
 			stdout: `PROFILE NAME  COMMENT/DESCRIPTION
   default       --`,
-			inDb: `WW_INTERNAL: 43
+			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   default: {}
 nodes:
@@ -40,7 +40,7 @@ nodes:
 			stdout: `PROFILE NAME  COMMENT/DESCRIPTION
   default       --
   test          --`,
-			inDb: `WW_INTERNAL: 43
+			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   default: {}
   test: {}
@@ -55,7 +55,7 @@ nodes:
 			args: []string{"test,"},
 			stdout: `PROFILE NAME  COMMENT/DESCRIPTION
   test          --`,
-			inDb: `WW_INTERNAL: 43
+			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   default: {}
   test: {}
@@ -71,7 +71,7 @@ nodes:
 			stdout: `PROFILE NAME  COMMENT/DESCRIPTION
   default       --
   test          --`,
-			inDb: `WW_INTERNAL: 43
+			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   default: {}
   test: {}
