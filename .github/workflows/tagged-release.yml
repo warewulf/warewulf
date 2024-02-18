@@ -1,10 +1,10 @@
 ---
-name: release
+name: tagged-release
 
 on:
-  release:
-    types:
-      - published
+  push:
+    tags:
+      - 'v*.*.*'
 
 jobs:
   dist:
@@ -17,31 +17,28 @@ jobs:
           echo "DIST=warewulf-${GITHUB_REF#refs/tags/v}.tar.gz" >> $GITHUB_ENV
 
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Build spec and dist
         run: |
           make warewulf.spec dist
 
-      - name: Upload warewulf.spec
-        uses: actions/upload-artifact@v3
+      - name: Upload spec and dist
+        uses: actions/upload-artifact@v4
         with:
-          name: warewulf.spec
-          path: warewulf.spec
+          name: spec-and-dist
+          path: |
+            warewulf.spec
+            ${{ env.DIST }}
 
-      - name: Upload DIST
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ env.DIST }}
-          path: ${{ env.DIST }}
-
-      - name: Attach DIST to release
+      - name: Attach dist to release
         uses: xresloader/upload-to-github-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          release_id: ${{ github.event.release.id }}
           file: ${{ env.DIST }}
+          tags: true
+          draft: true
 
   rpm:
     name: Build RPMs
@@ -68,34 +65,25 @@ jobs:
             dist: suse.lp155
 
     steps:
-      - name: Install EPEL
-        run: dnf -y install epel-release
-
-      - name: Install mock and rpm-build
+      - name: Prepare mock and rpm-build
         run: |
+          dnf -y install epel-release
           dnf -y install mock rpm-build
           echo "config_opts['print_main_output'] = True" >>/etc/mock/site-defaults.cfg
 
-      - name: Download spec
-        uses: actions/download-artifact@v3
+      - name: Download dist and spec
+        uses: actions/download-artifact@v4
         with:
-          name: warewulf.spec
+          name: spec-and-dist
 
-      - name: Set the expected version
-        run: |
-          echo "EXPECTED_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
-
-      - name: Download dist
-        uses: actions/download-artifact@v3
-        with:
-          name: warewulf-${{ env.EXPECTED_VERSION }}.tar.gz
-
-      - name: Set RPM and SRPM
+      - name: Configure the environment
         run: |
           VERSION=$(rpm -q --qf "%{VERSION}\n" --specfile warewulf.spec)
-          GENERIC_RELEASE=$(rpm -q --qf "%{RELEASE}\n" --specfile warewulf.spec | cut -d. -f1-2)
+          GENERIC_RELEASE=$(rpm -q --qf "%{RELEASE}\n" --specfile warewulf.spec | sed 's/\.[^.]*$//')
           RPM=warewulf-${VERSION}-${GENERIC_RELEASE}.${{ matrix.dist }}.${{ matrix.arch }}.rpm
           SRPM=warewulf-${VERSION}-${GENERIC_RELEASE}.${{ matrix.dist }}.src.rpm
+
+          echo "EXPECTED_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
           echo "RPM=${RPM}" >> $GITHUB_ENV
           echo "SRPM=${SRPM}" >> $GITHUB_ENV
 
@@ -104,22 +92,11 @@ jobs:
           mock -r ${{ matrix.target }} --rebuild --spec=warewulf.spec --sources=.
           mock -r ${{ matrix.target }} --chroot -- make -C /builddir/build/BUILD/warewulf-${{ env.EXPECTED_VERSION }} test
 
-      - name: Upload RPM
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ env.RPM }}
-          path: /var/lib/mock/${{ matrix.target }}/result/${{ env.RPM }}
-
-      - name: Upload SRPM
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ env.SRPM }}
-          path: /var/lib/mock/${{ matrix.target }}/result/${{ env.SRPM }}
-
       - name: Attach RPM and SRPM to release
         uses: xresloader/upload-to-github-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          release_id: ${{ github.event.release.id }}
           file: "/var/lib/mock/${{ matrix.target }}/result/${{ env.RPM }};/var/lib/mock/${{ matrix.target }}/result/${{ env.SRPM }}"
+          tags: true
+          draft: true

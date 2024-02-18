@@ -13,18 +13,17 @@ VARLIST := OS
 # Project Information
 VARLIST += WAREWULF VERSION RELEASE
 WAREWULF ?= warewulf
-VERSION ?= 4.5.0-rc1
+VERSION ?= 4.5.0rc1
+RELEASE_INCREMENT ?= 1
 
-GIT_TAG := $(shell test -e .git && git log -1 --format="%h")
-
-ifdef GIT_TAG
-  ifdef $(filter $(OS),ubuntu debian)
-    RELEASE ?= 1.git_$(subst -,+,$(GIT_TAG))
-  else
-    RELEASE ?= 1.git_$(subst -,_,$(GIT_TAG))
-  endif
+GIT_HASH := $(shell test -e .git && git log -1 --format="%h")
+GIT_TAG := $(shell test -e .git && git describe --tags | head -n1)
+ifeq ($(GIT_TAG),v$(VERSION))
+  RELEASE ?= $(RELEASE_INCREMENT)
+else ifdef GIT_HASH
+    RELEASE ?= $(RELEASE_INCREMENT).git_$(GIT_HASH)
 else
-  RELEASE ?= 1
+  RELEASE ?= $(RELEASE_INCREMENT)
 endif
 
 # Use LSB-compliant paths if OS is known

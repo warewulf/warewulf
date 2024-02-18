@@ -17,7 +17,7 @@ jobs:
         permissions: write-all # might not be used for realy deployment
         steps:
           - name: Checkout Code
-            uses: actions/checkout@v3
+            uses: actions/checkout@v4
             with:
               ref: 'main'
           - uses: ./.github/actions/generate
@@ -56,7 +56,7 @@ jobs:
 
         steps:
           - name: Checkout Code
-            uses: actions/checkout@v3
+            uses: actions/checkout@v4
             with:
               ref: 'main'
           - uses: ./.github/actions/rpm
