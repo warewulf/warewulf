@@ -14,6 +14,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Locally defined `tr` has been dropped, templates updated to use Sprig replace.
+- Prevent Networkmanager from trying to optain IP address via DHCP
+  on unused/unmanaged network interfaces.
+- ability to create bonded network interfaces
+- ipxe script to boot node from local disk.
+- Option to change the `ipmitool` escape character
+- New documentation for the hostlist syntax. #611
+- New documentation for development environment (Vagrant)
+- Ability to duplicate an image with `wwctl container copy` or the API
+- New documentation for container duplication procedure
+- Configure network device MTU in nework configuration scripts. #807
+- OpenSUSE Leap build rebased to 15.5 (15.3 is EOL)
+- New build for Rocky Linux 9
+- Add nightly release support. #969
+- Add container rename command. #583
+- Add container build flags and warn message after container sync. #509
+- Add DNS fields to network configuration overlays. #922
+- Added support for booting nodes with grub. Enable this behavior using
+  warewulf.grubboot: true in warewulf.conf. For unknown nodes, grub.efi
+  and shim.efi are extracted from the Warewulf host. If the booted node
+  has a container these binaries are extracted from the container image.
 
 ### Fixed
 
