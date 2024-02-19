@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   has a container these binaries are extracted from the container image.
 
 ### Fixed
+- Make mounting of local patitions into sub-directories work
 - Make Variables.mk consistent with spec file w.r.t. WWPROVISIONDIR, e.g.
   instead of basing in `/srv`, handle it the same as chroots and overlays.
 - Enable spec file to work with Fedora
