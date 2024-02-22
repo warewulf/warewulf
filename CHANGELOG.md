@@ -70,6 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optionally detect network and netmask from CIDR IP address. #1016
 - Fix startup of wwclient on systemd hosts #1066
 - Change ownership of overlays to root:root #1086
+- Fix panic when node has no profile but network does #1094
 
 ### Changed
 

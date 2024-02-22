@@ -205,7 +205,7 @@ func (config *NodeYaml) FindAllNodes() ([]NodeInfo, error) {
 		// set default/primary network is just one network exist
 		if len(n.NetDevs) >= 1 && !n.PrimaryNetDev.Defined() {
 			tmpNets := make([]string, 0, len(n.NetDevs))
-			for key := range node.NetDevs {
+			for key := range n.NetDevs {
 				tmpNets = append(tmpNets, key)
 			}
 			sort.Strings(tmpNets)

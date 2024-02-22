@@ -125,6 +125,24 @@ nodes:
    - default
 `,
 		},
+		{
+			name:    "node list profile with network",
+			args:    []string{},
+			wantErr: false,
+			stdout: `  NODE NAME  PROFILES  NETWORK
+  n01        default         default
+`,
+			inDb: `WW_INTERNAL: 45
+nodeprofiles:
+  default:
+    network devices:
+      default:
+        device: eth0
+nodes:
+  n01:
+    profiles:
+    - default
+`},
 	}
 	conf_yml := `WW_INTERNAL: 0`
 	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
