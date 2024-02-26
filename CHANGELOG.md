@@ -285,6 +285,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   changed. #495, #637
 - `wwctl power` commands no longer separates node output with
   additional whitespace. #514
+- dhcpd configs are now always static
 
 ### Fixed
 

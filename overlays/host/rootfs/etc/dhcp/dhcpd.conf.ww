@@ -55,7 +55,6 @@ subnet {{$.Network}} netmask {{$.Netmask}} {
     next-server {{.Ipaddr}};
 }
 
-{{- if eq .Dhcp.Template "static" }}
 {{- range $nodes := $.AllNodes}}
 {{- range $netname, $netdevs := $nodes.NetDevs}}
 host {{$nodes.Id.Get}}-{{$netname}}
@@ -72,7 +71,6 @@ host {{$nodes.Id.Get}}-{{$netname}}
 }
 {{end -}}{{/* range NetDevs */}}
 {{end -}}{{/* range AllNodes */}}
-{{end -}}{{/* if static */}}
 
 {{- else}}
 {{abort}}
