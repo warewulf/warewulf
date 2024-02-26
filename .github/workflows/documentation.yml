@@ -32,6 +32,10 @@ jobs:
         run: |
           sudo apt-get install -f -y texlive-latex-extra latexmk
 
+      - name: Install graphviz
+        run: |
+          sudo apt-get install -f -y graphviz
+
       - name: Setup Python
         uses: actions/setup-python@v1
 
