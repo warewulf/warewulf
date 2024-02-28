@@ -11,15 +11,15 @@ Requisite=ignition-ww4-disks.service
 # Get the mounts
 {{- range $fsdevice,$fs := .FileSystems }}
 {{- $prefix := $fsdevice }}
-{{- $prefix = tr $fsdevice "-" "\\x2d" }}
-{{- $prefix = tr $prefix "/" "-" }}
+{{- $prefix = replace "-" "\\x2d" $fsdevice }}
+{{- $prefix = replace "/" "-" $prefix }}
 {{- $prefix = slice $prefix 1 }}{{ $suffix := "mount" }}
 {{- if eq $fs.Format "swap"}}
-{{- $prefix = tr $fsdevice "/dev/disk/by-partlabel/" "dev-disk-by\\x2dpartlabel-"}}{{ $suffix = "swap"}}
+{{- $prefix = replace "/dev/disk/by-partlabel/" "dev-disk-by\\x2dpartlabel-"}}{{ $fsdevice $suffix = "swap"}}
 {{- else }}
 {{- if ne $fs.Path "" }}
-{{- $prefix = tr $fs.Path "-" "\\x2d" }}
-{{- $prefix = tr $prefix "/" "-" }}
+{{- $prefix = replace "-" "\\x2d" $fs.Path }}
+{{- $prefix = replace "/" "-" $prefix }}
 {{- $prefix = slice $prefix 1 }}
 {{- end }}
 {{- end }}
