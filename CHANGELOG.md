@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.5.x]
+
+### Added
+
+- Add the ability to boot nodes with `wwid=[interface]`, which replaces
+  `interface` with the interface MAC address
+
 ## [4.5.0] 2024-02-08
 
 ### Added
