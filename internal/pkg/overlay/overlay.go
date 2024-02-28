@@ -355,9 +355,6 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (
 
 	// Build our FuncMap
 	funcMap := template.FuncMap{
-		"tr": func(source, old, new string) string {
-			return strings.Replace(source, old, new, -1)
-		},
 		"Include":      templateFileInclude,
 		"IncludeFrom":  templateContainerFileInclude,
 		"IncludeBlock": templateFileBlock,
