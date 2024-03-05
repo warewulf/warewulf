@@ -26,9 +26,9 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 		}
 
 		if len(profileInfo.Output) > 0 {
-			ph := helper.NewPrintHelper(strings.Split(profileInfo.Output[0], "="))
+			ph := helper.NewPrintHelper(strings.Split(profileInfo.Output[0], ":=:"))
 			for _, val := range profileInfo.Output[1:] {
-				ph.Append(strings.Split(val, "="))
+				ph.Append(strings.Split(val, ":=:"))
 			}
 			ph.Render()
 		}
