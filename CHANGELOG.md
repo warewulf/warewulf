@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Systems with no SMBIOS (Raspberry Pi) will create a UUID from
   `/sys/firmware/devicetree/base/serial-number`
+- Fix `wwctl profile list -a` format when kernerargs are set
 
 ## [4.5.0] 2024-02-08
 
