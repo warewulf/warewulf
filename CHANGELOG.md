@@ -5,169 +5,104 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.5.0] 2024-02-08
+## [4.5.0] (unreleased)
+
+## [4.5.0rc2] 2024-02-21
+
+### Fixed
+
+- Fix mounting local partitions into sub-directories with Ignition. #1073
+- Fix a panic in `wwctl node set` when modifying a network device that is only defined in a profile. #1094
+
+## [4.5.0rc1] 2024-02-08
 
 ### Added
 
-- ability to create bonded network interfaces
-- ipxe script to boot node from local disk.
-- Option to change the `ipmitool` escape character
-- New documentation for the hostlist syntax. #611
-- New documentation for development environment (Vagrant)
-- Ability to duplicate an image with `wwctl container copy` or the API
-- New documentation for container duplication procedure
-- Configure network device MTU in nework configuration scripts. #807
-- OpenSUSE Leap build rebased to 15.5 (15.3 is EOL)
-- New build for Rocky Linux 9
-- Add nightly release support. #969
-- Add container rename command. #583
-- Add container build flags and warn message after container sync. #509
-- Add DNS fields to network configuration overlays. #922
-- Added support for booting nodes with grub. Enable this behavior using
-  warewulf.grubboot: true in warewulf.conf. For unknown nodes, grub.efi
-  and shim.efi are extracted from the Warewulf host. If the booted node
-  has a container these binaries are extracted from the container image.
+- Start building packages for Rocky Linux 9. #951
+- Start building nightly GitHub releases. #969
+- Support building on Fedora. #988
+- New command `wwctl container copy` to duplicate a container image. #130
+- New command `wwctl container rename` to rename a container image. #583
+- New command `wwctl genconf` generates shell completions, initial configuration files, and documentation. #721
+- New flag `wwctl container syncuser --build` automatically (re)builds a container image after syncuser. #509
+- New flag `wwctl overlay import --parents` automatically creates intermediate parent directories. #481, #608
+- New flag `wwctl <node|profile> list --fullall` shows all attributes, including those which do not have a set value. #786
+- New option `wwctl <node|profile> set --ipmiescapechar` changes the `ipmitool` escape character. #999
+- New option `wwclient --warewulfconf` specifies the location of `warewulf.conf`.
+- New configuration option `warewulf.conf:paths` to override compiled-in paths. #721, #960, #1037
+- Support configuring full paths to iPXE binaries in `warewulf.conf:tftp:ipxe`. #784
+- Use `DNS` network tags to configure DNS resolution in network configuration overlays. #922
+- Support a command-separated list of nodes or profiles in `wwctl <node|profile> list`. #739
+- Support specifying `warewulf.conf:ipaddr` in CIDR format, optionally inferring netmask and network. #1016
+- Support bonded network interfaces with NetworkManager using new network device types `bond` and `bond-slave`. #1071
+- Support tab completion for overlay files in `wwctl overlay`. #813
+- New `localdisk.ipxe` script to boot from local disk. #1058
+- New example template to create genders database for use with clush, pdsh, and others. #825
+- Document the "hostlist" syntax used by `wwctl`. #611
+- Document using Vagrant as a development environment. #855
+- Document quickstart for Enterprise Linux 9. #849
+- Document configuring nodes with multiple networks. #1043
+- (preview) Added support for initializing file systems, partitions and disks with Ignition. #786
+- (preview) Added support for dnsmasq as a tftp and dhcp provider. #727, #1041
+- (preview) Support booting nodes with GNU GRUB as an alternative to iPXE. #859
 
 ### Fixed
-- Make mounting of local patitions into sub-directories work
-- Make Variables.mk consistent with spec file w.r.t. WWPROVISIONDIR, e.g.
-  instead of basing in `/srv`, handle it the same as chroots and overlays.
-- Enable spec file to work with Fedora
-- Fix hard CPU architecture on proto's installation in the Makefile
-- More aggressive `make clean`.
-- Replace deprecated `io.utils` functions with new `os` functions.
-- The correct header is now displayed when `-al` flags are specified to overlay
-  list.
-- Added a missing `.ww` extension to the `70-ww4-netname.rules` template in the
-  wwinit overlay.
-- Restrict access to `/warewulf/config` to root only. (#728, #742)
-- KERNEL VERSION column is too short. #690
-- Add support for resolving absolute path automatically. #493
-- The network device "OnBoot" parameter correctly configures the ONBOOT ifcfg
-  parameter. (#644)
-- Add support for listing profile/node via comma-separated values. #739
-- Sort the node list returned entries by name.
-- 'wwctl node edit' inconsistent state with warewulfd.  #691
-- Add `--parents` option to `overlay import` subcommand to create necessary
-  parent folder.  #608
-- Fix kernelargs are not printing properly in node list output. #828
-- Fix build configuration on Quickstart guide #847
-- Add Quickstart guide for EL9
-- Add EL9 Quickstart guide to index.rst
-- Container file gids are now updated properly during syncuser. #840
-- Fix build for API.
-- Bindd mounts for `wwctl exec` are now on the same fs
-- Fixed the ability to set MTU with wwctl #947
-- Fixed a bug where profile tags were erroneously overridden by empty node
-  values. #884
-- Fixed bug where tags from profiles weren't rendered #967
-- Fixed a bug when using `wwctl container import --force` to replace an existing container
-  will generate an error #474
-- Create `/etc/systemd/network/10-persistent-net-<netdev>.link` file per network device
-- Fix the issue that the same tag added in `node set` is ignored. #967
-- Change too-verbose warning message level from `Warn` to `Debug`. #1025
-- Fixed a bug where error occurs when editing node. #1024
-- Optionally detect network and netmask from CIDR IP address. #1016
-- Fix startup of wwclient on systemd hosts #1066
-- Change ownership of overlays to root:root #1086
-- Fix panic when node has no profile but network does #1094
+
+- Fix configuration of network device MTU in nework configuration overlays. #807
+- Separate provisioned overlays from overlay sources. #972
+- Display the correct header for `wwctl overlay list --all --long`. #485
+- Add a missing `.ww` extension to the `70-ww4-netname.rules` template in the wwinit overlay. #724
+- Restrict access to `/warewulf/config` to root only. #728
+- Prevent column overflow in `wwctl <subcommand> list` with dynamic tabular output. #690
+- Support relative path to a container image archive in `wwctl container import`. #493
+- Correctly configure `ONBOOT` in `wwinit:etc/sysconfig/network-scripts/ifcfg.ww`. #644
+- Fix multiple bugs in `wwctl node edit`. #691, #902, #1024
+- Fix formatting of kernel arguments in `wwctl <node|profile> list`. #828
+- Properly update container file GIDs during syncuser. #840
+- Fix the ability to build the Warewulf API with `make`. #854
+- Fix the ability to set MTU with `wwctl`. #947
+- Fix multiple bugs in the handling of node and profile tags. #884, #967
+- Fix an error when using `wwctl container import --force` to replace an existing container. #474
+- Fix configuration of network device names. #926
+- Fix a bug that prevented `wwclient` from starting on systemd hosts. #1066
+- Set default ownership of built-in overlay files to `root:root`. #1078
+- Fix a SIGSEGV error when building Warewulf on a host without network access. #907
+- Use `sysrq-trigger` to reboot during wwinit, as `reboot` may require systemd, which is not yet running. #871
+- Only write IPMI configuration if `ipmiwrite` is explicitly set to true. #823
+- Don't show an error during `wwctl container list` if images are missing. #933
+- Fix a bug preventing containers with symlinked `/bin/sh` from being imported. #797
+- Fix a bug that caused syncuser to panic if `/etc/passwd` was malformed. #527
+- Fix inclusion of kernel modules for imported kernels. #836
+- Fix a bug that caused `wwctl overlay show` to write to stderr. #1000
+- Correct "shebang" lines in `wwinit:warewulf/init.d` scripts. #821
 
 ### Changed
 
-- The primary hostname and warewulf server fqdn are now the canonical name in
-  `/etc/hosts`
-- Refactored `profile add` command to make it alike `node add`. #658 #659
-- The ifcfg ONBOOT parameter is no longer statically `true`, so unconfigured
-  interfaces may not be enabled by default. (#644)
-- Write log messages to stderr rather than stdout. #768
-- new subcommand `wwctl genconf` is available with following subcommands:
-  * `completions` which will create the files used for bash-completion. Also
-     fish an zsh completions can be generated
-  * `defaults` which will generate a valid `defaults.conf`
-  * `man` which will generate the man pages in the specified directory
-  * `reference` which will generate a reference documentation for the wwctl commands
-  * `warwulfconf print` which will print the used `warewulf.conf`. If there is no valid
-     `warewulf.conf` a valid configuration is provided, prefilled with default values
-     and an IP configuration derived from the network configuration of the host
-- Added support for file systems, partitions and disks. Values for these objects can
-  be set with `wwctl profile/node set/add`. The format of this objects is inspired by
-  butane/ignition, but where butane/ignition uses lists for holding disks, partitions
-  and file systems, warewulf uses maps instead. For disks the map key is the underlying
-  block device, for partitions its the partition label and for file systems its the path
-  to the partitions (e.g. `/dev/disk/by-partlabel/scratch`).
-  Not all available options of butane/ignition are exposed to the commandline, but are
-  available via `wwctl node/profile edit`.
+- Rebase OpenSUSE Leap build to 15.5. #951
+- Update default `Makefile` provision directory to match RPM specfile. #972
+- Replace deprecated `io.utils` functions with new `os` functions. #883
+- Sort node and profiles by name in `wwctl <node|profile> list`. #816
+- Use the mountpoint file system for `wwctl exec` bind mounts. #897
+- Reduce a warning message during `overlay build` from `Warn` to `Debug`. #1025
+- Use the primary interface hostname and the Warewulf server FQDN as the canonical name in `/etc/hosts`. #693
+- Refactor `wwctl profile add` to behave more like `wwctl node add`. #658 #659
+- Write `wwctl` error messages to stderr rather than stdout. #758
+- `wwctl` now validates IP and MAC address format.
+- Refactor `Makefile` for clarity and reliability. #890
+- Move primary network interface definition to `PrimaryNetDev` on the node. #682
+- `wwctl <node|profile> list --all` now only shows attributes that have a set value. #786
+- Name system and runtime overlay images as `__SYSTEM__` and `__RUNTIME__` by default. #852, #876, #896
+- Always prefer a node's primary network interface during node discovery. #775
+- Stop bundling iPXE with Warewulf and use iPXE from the host distribution. #784
+- Update and simplify the iPXE build script, now at `scripts/build-ipxe.sh`. #1026
+- Merge overlays from multiple profiles on a single node, and exclude overlays with a `~` prefix. #885
+- Move `hostlist` package into `internal` directory alongside other Warewulf packages. #804
+- Move built-in overlay files to a transparent `rootfs` directory. #1086
+- Update quickstart guides. #847, #848
 
-### Changed
+## [4.4.1]
 
-- The primary hostname and warewulf server fqdn are now the canonical name in
-  `/etc/hosts`
-- Refactored `profile add` command to make it alike `node add`. #658 #659
-- The ifcfg ONBOOT parameter is no longer statically `true`, so unconfigured
-  interfaces may not be enabled by default. (#644)
-- Write log messages to stderr rather than stdout. #768
-- All paths can now be configured in `warewulf.conf`, check the paths section of of
-   `wwctl --emptyconf genconfig warewulfconf print` for the available paths.
-- Added experimental dnsmasq support.
-- fix SIGSEV when build host has no network #907
-- Check for formal correct IP and MAC addresses for command line options and
-  when reading in the configurations
-- Added template to create genders database
-- Write log messages to stderr rather than stdout. #768
-- Updates to Makefile for clarity, notably removing genconfig and replacing
-  test-it with test. #890
-- realy reboot also without systemd
-- Specify primary network device per-node rather than per-netdev
-- refactored output `wwctl node/profile list` so that `-a` will only show all the
-  set values and `-A` will show all fields included the ones without a set value
-- Added the template function `{{ createIgnitionJson }}` which will create a json object
-  compatible with ignition.
-- Container images need ignition and sgdisk installed in order to the disk management.
-- Added boootup services based on ignition which will manage the disks, partitions and file
-  systems. The services are systemd services as sgdisk needs systemd in order to work
-  correctly. All service use the existence of `/warewulf/ignition.json` as perquisite so
-  that they can be place in the `wwinit` overlay and will only become active if disk management
-  is configured for this node. The service `ignition-disks-ww4.service` will partition and
-  format and create the file systems on the disks. For every a file system a systemd mount unit
-  file is create and will executed after the `ignition-disks-ww4.service` has finished.
-  Entries in `/etc/fstab` for every file system are created with the `noauto` option.
-- wwclient has now a commandline switch for the location of warewulf.conf
-- `wwctl overlay edit` uses a temporary file and checks mtime.
-- Changed the bash completions for the `wwctl overlay` commands so that the files of the
-  overlays are expanded
-- Node overlays are now named based on their overlay "context" (i.e., "system"
-  or "runtime") rather than a concatenated list of individual overlays. This
-  removes a limit on the number of overlays that could be included in a node or
-  profile. #852, #876, #883, #896, #903
-- During node discovery, prefer the primary network interface, if defined. #775
-- added general test framework which creates temporary directories on the fly
-- only write IPMI if write is true
-- Don't show an error if image files for containers can't be found. #933
-- Make configured paths available in overlays as `.Path` #960
-- Introduced IPXESOURCE environment variable which allows to specify the path to iPXE
-  binaries not provided by warewulf
-- use distrubtion ipxe binaries in the rpm
-- Allow absolute iPXE paths in warewulf.conf
-- Support importing containers with symlinked `/bin/sh` #797
-- Don't panic on malformed passwd #527
-- Update iPXE building script
-- Send Info, Recv, Send, and Out messages to stdout; and others to stderr
-- grub in combination can now be set as boot method with `warewulf.grubboot: true` in
-  `warewulf.conf`. For unknown nodes `grub.efi` and `shim.efi` will be extracted from
-  the host running warewulf. If node has container it will get these binaries from the
-  container image.
-- overlays from different profiles for one node are now merged, overlays can be
-  excluded with ~ prefix and in listings are listed as !{excluded_profile} #885
-- modules are now correctly included
-- move hostlist into internal alongside other warewulf code #804
-- uniform shebang usage in scripts of init.d folder #821
-- Check if commas are allowes in node/profile set
-- Removed paths.tftpdir and paths.datadir
-- Updated WW_INTERNAL to 45 for upcoming 4.5.x release
-- Added documentation about of how to configure warewulf with 
-  multiple networks
-- Added installation instructions for using dnsmasq
-- Move built-in overlays to a rootfs directory #1086
+### Fixed
 
 ## [4.4.0] 2023-01-18
 
@@ -305,7 +240,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minor typographical fixes. #528, #519
 
 ## [4.3.0] 2022-06-25
+
 ### Added
+
 - All configurations files for the host (/etc/exports, /etc/dhcpd.conf, /etc/hosts) are now
   populated from the (OVERLAYDIR/host/etc/{exports|dhcpd|hosts}.ww . Also other configuration
   files like prometheus.yml.ww or slurm.conf.ww which depend on the cluster nodes can be
@@ -328,7 +265,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - uids and gids of a container can now get synced at import time, so that at least users with the
   same name have the same uid. This is not necessarily needed for warewulf, but services like
   munge.
+
 ### Changed
+
 - Provision interface is not tied to 'eth0' any more. The provision interface must be have the
   'primary' flag now. The file `nodes.conf' must be changed accordingly.
 - the provisioning network is now called primary and not default
@@ -339,9 +278,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - host overlays can globaly disbaled, but are enabled per default
 - `wwctl overlay build -H` will only build the overlays which are assigned to the nodes
 
-
 ## [4.1.0] - 2021-07-29
+
 ### Added
+
 - Support for ARM nodes
 - firewalld service file for warewulfd
 - `-y` option to skip "Are you sure" queries
@@ -354,6 +294,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Systemd service file
 
 ### Changed
+
 - `wwctl node list` output beautification
 - Log timestamps are more precise
 - PID file and log files are now in `/var/run` and `/var/log`, respectively
@@ -366,10 +307,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Only open `/etc/hosts` when writing
 
 ### Removed
+
 - `wwctl configure` `--persist` flags have been removed. `configure` commands persist changes by default unless `--show` is used
 - In-repository documentation: has been moved to it's own repository
 
 ### Fixed
+
 - Importing containers from directory
 - Debug log verbosity option takes precedence over verbose option
 - `wwctl node list -n` output is formatted corectly
