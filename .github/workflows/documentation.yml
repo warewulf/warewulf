@@ -2,6 +2,7 @@
 name: publish_docs
 
 on:
+  repository_dispatch: {}
   push:
     branches:
       - main
