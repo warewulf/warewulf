@@ -2,7 +2,7 @@
 name: publish_docs
 
 on:
-  repository_dispatch: {}
+  workflow_dispatch: {}
   push:
     branches:
       - main
