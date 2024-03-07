@@ -168,6 +168,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   multiple networks
 - Added installation instructions for using dnsmasq
 - Move built-in overlays to a rootfs directory #1086
+- use templating mechanism for power commands
 
 ## [4.4.0] 2023-01-18
 
