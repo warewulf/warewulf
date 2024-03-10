@@ -13,7 +13,7 @@ VARLIST := OS
 # Project Information
 VARLIST += WAREWULF VERSION RELEASE
 WAREWULF ?= warewulf
-VERSION ?= 4.5.x
+VERSION ?= 4.5.0
 RELEASE_INCREMENT ?= 1
 
 GIT_HASH := $(shell test -e .git && git log -1 --format="%h")
