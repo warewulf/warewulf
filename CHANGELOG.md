@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Official v4.5.0 release.
 - Publish v4.5.x documentation separately from `main`. #919
+- Fix `Requires: ipxe-botimgs` for building an Enterprise Linux 7 RPM. #1126
+- Update quickstart for Enterprise Linux. #394, #401, #977
 
 ## [4.5.0rc2] 2024-02-21
 
