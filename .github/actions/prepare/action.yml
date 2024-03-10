@@ -8,6 +8,10 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Update apt
+      run: sudo apt update
+      shell: bash
+
     - name: Install gpgme (dependency)
       run: sudo apt-get install libgpgme-dev
       shell: bash
