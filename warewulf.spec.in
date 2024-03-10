@@ -52,8 +52,12 @@ BuildRequires: golang >= 1.16
 BuildRequires: firewalld-filesystem
 Requires: tftp-server
 Requires: nfs-utils
+%if 0%{?rhel} < 8
+Requires: ipxe-bootimgs
+%else
 Requires: ipxe-bootimgs-x86
 Requires: ipxe-bootimgs-aarch64
+%endif
 %endif
 
 %if 0%{?rhel} >= 8 || 0%{?suse_version} || 0%{?fedora}
