@@ -165,6 +165,16 @@ yq e '
 
 
 %changelog
+* Sat Mar 9 2024 Jonathon Anderson <janderson@ciq.com> - 4.5.0-1
+- Update source to github.com/warewulf
+- Fix ownership of overlay files
+- Add packaging for new grub support
+- Add dependencies on distribution ipxe packages
+- Fix offline builds
+- Accommodate new Makefile behavior
+- Designate config files in /etc/warewulf/ as "noreplace"
+- Updated path to shell completions
+
 * Mon Oct 17 2022 Jeremy Siadal <jeremy.c.siadal@intel.com> - 4.4.0-1
 - Add offline build support -- prepping for bcond
 - Add more BuildRequires for new golang vendor modules
