@@ -118,15 +118,26 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			ExpectContinueTimeout: 1 * time.Second,
 		},
 	}
-	smbiosDump, err := smbios.New()
-	if err != nil {
-		wwlog.Error("Could not get SMBIOS info: %s", err)
-		os.Exit(1)
+	var localUUID uuid.UUID
+	var tag string
+	smbiosDump, smbiosErr := smbios.New()
+	if smbiosErr == nil {
+		sysinfoDump := smbiosDump.SystemInformation()
+		localUUID, _ = sysinfoDump.UUID()
+		x := smbiosDump.SystemEnclosure()
+		tag = strings.ReplaceAll(x.AssetTagNumber(), " ", "_")
+	} else {
+		// Raspberry Pi serial and DUID locations
+		// /sys/firmware/devicetree/base/serial-number
+		// /sys/firmware/devicetree/base/chosen/rpi-duid
+		piSerial, err := os.ReadFile("/sys/firmware/devicetree/base/serial-number")
+		if err != nil {
+			wwlog.Error("Could not get SMBIOS info: %s", smbiosErr)
+			os.Exit(1)
+		}
+		localUUID = uuid.NewSHA1(uuid.NameSpaceURL, []byte("http://raspberrypi.com/serial-number/"+string(piSerial)))
+		tag = "Unknown"
 	}
-	sysinfoDump := smbiosDump.SystemInformation()
-	localUUID, _ := sysinfoDump.UUID()
-	x := smbiosDump.SystemEnclosure()
-	tag := strings.ReplaceAll(x.AssetTagNumber(), " ", "_")
 
 	cmdline, err := os.ReadFile("/proc/cmdline")
 	if err != nil {
