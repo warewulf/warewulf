@@ -44,13 +44,9 @@ func sendFile(
 	return nil
 }
 
-func getOverlayFile(
-	n node.NodeInfo,
-	context string,
-	stage_overlays []string,
-	autobuild bool) (stage_file string, err error) {
+func getOverlayFile(n node.NodeConf, context string, stage_overlays []string, autobuild bool) (stage_file string, err error) {
 
-	stage_file = overlay.OverlayImage(n.Id.Get(), context, stage_overlays)
+	stage_file = overlay.OverlayImage(n.Id(), context, stage_overlays)
 	err = nil
 	build := !util.IsFile(stage_file)
 	wwlog.Verbose("stage file: %s", stage_file)
@@ -66,7 +62,7 @@ func getOverlayFile(
 		err = overlay.BuildOverlay(n, context, stage_overlays)
 		if err != nil {
 			wwlog.Error("Failed to build overlay: %s, %s, %s\n%s",
-				n.Id.Get(), stage_overlays, stage_file, err)
+				n.Id(), stage_overlays, stage_file, err)
 		}
 	}
 

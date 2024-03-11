@@ -21,10 +21,11 @@ func Hostfile() error {
 		os.Exit(1)
 	}
 
-	nodeInfo := node.NewInfo()
 	hostname, _ := os.Hostname()
-	nodeInfo.Id.Set(hostname)
-	tstruct := overlay.InitStruct(&nodeInfo)
+	tstruct, err := overlay.InitStruct(node.NewNode(hostname))
+	if err != nil {
+		return err
+	}
 	buffer, backupFile, writeFile, err := overlay.RenderTemplateFile(
 		hostTemplate,
 		tstruct)

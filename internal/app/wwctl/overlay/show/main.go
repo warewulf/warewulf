@@ -55,20 +55,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 		nodeDB, err := node.New()
 		if err != nil {
-			wwlog.Error("Could not open node configuration: %s", err)
-			os.Exit(1)
+			return err
 		}
-		nodes, err := nodeDB.FindAllNodes()
+		nodeConf, err := nodeDB.GetNode(NodeName)
+		if err == node.ErrNotFound {
+			nodeConf = node.NewNode(NodeName)
+
+		}
+		tstruct, err := overlay.InitStruct(nodeConf)
 		if err != nil {
-			wwlog.Error("Could not get node list: %s", err)
-			os.Exit(1)
+			return err
 		}
-		filteredNodes := node.FilterByName(nodes, []string{NodeName})
-		if len(filteredNodes) != 1 {
-			wwlog.Error("%v does not identify a single node", NodeName)
-			os.Exit(1)
-		}
-		tstruct := overlay.InitStruct(&filteredNodes[0])
 		tstruct.BuildSource = overlayFile
 		buffer, backupFile, writeFile, err := overlay.RenderTemplateFile(overlayFile, tstruct)
 		if err != nil {

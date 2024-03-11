@@ -31,7 +31,9 @@ nodes:
   node1:
     tags:
       email: admin@node1
-  node2: {}
+  node2:
+    profiles:
+      - default
   node3:
     profiles:
       - empty
@@ -40,6 +42,7 @@ nodes:
 	env.WriteFile(t, path.Join(testenv.WWOverlaydir, "testoverlay/email.ww"), overlayCont)
 	defer env.RemoveAll(t)
 	warewulfd.SetNoDaemon()
+	//wwlog.SetLogLevel(wwlog.DEBUG)
 	t.Run("overlay show raw", func(t *testing.T) {
 		baseCmd.SetArgs([]string{"testoverlay", "email.ww"})
 		baseCmd := GetCommand()

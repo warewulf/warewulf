@@ -10,6 +10,7 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 type test_description struct {
@@ -24,7 +25,7 @@ type test_description struct {
 func run_test(t *testing.T, test test_description) {
 	env := testenv.New(t)
 	defer env.RemoveAll(t)
-
+	wwlog.SetLogLevel(wwlog.DEBUG)
 	env.WriteFile(t, "etc/warewulf/nodes.conf", test.inDB)
 	warewulfd.SetNoDaemon()
 	name := test.name
@@ -45,7 +46,7 @@ func run_test(t *testing.T, test test_description) {
 			assert.NoError(t, err)
 			assert.Equal(t, buf.String(), test.stdout)
 			content := env.ReadFile(t, "etc/warewulf/nodes.conf")
-			assert.Equal(t, test.outDb, content)
+			assert.YAMLEq(t, test.outDb, content)
 		}
 	})
 }
@@ -75,7 +76,136 @@ nodes:
 	run_test(t, test)
 }
 
-func Test_Multiple_Add_Tests(t *testing.T) {
+func Test_Node_Unset(t *testing.T) {
+	test := test_description{
+		args:    []string{"--comment=UNDEF", "n01"},
+		wantErr: false,
+		stdout:  "",
+		inDB: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes:
+  n01:
+    comment: foo
+    profiles:
+    - default`,
+		outDb: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes:
+  n01:
+    profiles:
+    - default
+`}
+	run_test(t, test)
+}
+
+func Test_Set_Ipmi_Write_Explicit(t *testing.T) {
+	test := test_description{
+		args:    []string{"--ipmiwrite", "true", "n01"},
+		wantErr: false,
+		stdout:  "",
+		inDB: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes:
+  n01: {}
+`,
+		outDb: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes:
+  n01:
+    ipmi: 
+      write: "true"
+`}
+	run_test(t, test)
+}
+func Test_Set_Ipmi_Write_Implicit(t *testing.T) {
+	test := test_description{
+		args:    []string{"--ipmiwrite", "n01"},
+		wantErr: false,
+		stdout:  "",
+		inDB: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes:
+  n01: {}
+`,
+		outDb: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes:
+  n01:
+    ipmi: 
+      write: "true"
+`}
+	run_test(t, test)
+}
+
+func Test_Unset_Ipmi_Write(t *testing.T) {
+	test := test_description{
+		args:    []string{"--ipmiwrite=UNDEF", "n01"},
+		wantErr: false,
+		stdout:  "",
+		inDB: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes:
+  n01:
+    ipmi: 
+      write: "true"
+`,
+		outDb: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes:
+  n01: {}
+`}
+	run_test(t, test)
+}
+func Test_Unset_Ipmi_Write_False(t *testing.T) {
+	test := test_description{
+		args:    []string{"--ipmiwrite=UNDEF", "n01"},
+		wantErr: false,
+		stdout:  "",
+		inDB: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes:
+  n01:
+    ipmi: 
+      write: "false"
+`,
+		outDb: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes:
+  n01: {}
+`}
+	run_test(t, test)
+}
+func Test_Ipmi_Hidden_False(t *testing.T) {
+	test := test_description{
+		args:    []string{"--ipmiwrite=false", "n01"},
+		wantErr: false,
+		stdout:  "",
+		inDB: `WW_INTERNAL: 43
+nodeprofiles:
+  default:
+    ipmi: 
+      write: "true"
+nodes:
+  n01:
+    profiles:
+    - default
+`,
+		outDb: `WW_INTERNAL: 43
+nodeprofiles:
+  default:
+    ipmi:
+      write: "true"
+nodes:
+  n01:
+    profiles:
+    - default
+    ipmi:
+      write: "false"
+`}
+	run_test(t, test)
+}
+
+func Test_Multiple_Set_Tests(t *testing.T) {
 	tests := []test_description{
 		{name: "single node change profile",
 			args:    []string{"--profile=foo", "n01"},
@@ -143,11 +273,11 @@ nodeprofiles:
     comment: testit
 nodes:
   n01:
+    profiles:
+    - default
     ipmi:
       tags:
         foo: baar
-    profiles:
-    - default
 `},
 		{name: "single node delete tag",
 			args:    []string{"--tagdel", "tag1", "n01"},
@@ -206,7 +336,7 @@ nodes:
         path: /var
 `},
 		{name: "single delete not existing fs",
-			args:    []string{"--fsdel=var", "n01"},
+			args:    []string{"--fsdel=foo", "n01"},
 			wantErr: true,
 			stdout:  "",
 			inDB: `WW_INTERNAL: 45
@@ -426,8 +556,6 @@ nodeprofiles: {}
 nodes:
   n01:
     comment: This is a , comment
-    profiles:
-    - default
 `},
 	}
 

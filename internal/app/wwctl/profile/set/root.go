@@ -23,12 +23,11 @@ type variables struct {
 	diskName     string
 	fsName       string
 	profileConf  node.NodeConf
-	converters   []func() error
 }
 
 func GetCommand() *cobra.Command {
 	vars := variables{}
-	vars.profileConf = node.NewConf()
+	vars.profileConf = node.NewNode("")
 
 	baseCmd := &cobra.Command{
 		Use:   "set [OPTIONS] [PROFILE ...]",
@@ -43,17 +42,11 @@ func GetCommand() *cobra.Command {
 			}
 
 			nodeDB, _ := node.New()
-			profiles, _ := nodeDB.FindAllProfiles()
-			var p_names []string
-			for _, profile := range profiles {
-				p_names = append(p_names, profile.Id.Get())
-			}
-			return p_names, cobra.ShellCompDirectiveNoFileComp
+			profiles := nodeDB.ListAllProfiles()
+			return profiles, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
-	vars.profileConf = node.NewConf()
-	vars.converters = vars.profileConf.CreateFlags(baseCmd,
-		[]string{"ipaddr", "ipaddr6", "ipmiaddr", "profile"})
+	vars.profileConf.CreateFlags(baseCmd)
 	baseCmd.PersistentFlags().StringVar(&vars.netName, "netname", "default", "Set network name for network options")
 	baseCmd.PersistentFlags().StringVarP(&vars.setNetDevDel, "netdel", "D", "", "Delete the node's network device")
 	baseCmd.PersistentFlags().BoolVarP(&vars.setNodeAll, "all", "a", false, "Set all nodes")
