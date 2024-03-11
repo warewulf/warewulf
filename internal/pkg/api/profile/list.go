@@ -32,20 +32,20 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 	if ShowOpt.ShowAll || ShowOpt.ShowFullAll {
 		for _, p := range profiles {
 			profileList.Output = append(profileList.Output,
-				fmt.Sprintf("%s=%s=%s=%s", "PROFILE", "FIELD", "PROFILE", "VALUE"))
+				fmt.Sprintf("%s:=:%s:=:%s", "PROFILE", "FIELD", "VALUE"))
 			fields := p.GetFields(ShowOpt.ShowFullAll)
 			for _, f := range fields {
 				profileList.Output = append(profileList.Output,
-					fmt.Sprintf("%s=%s=%s=%s", p.Id.Print(), f.Field, f.Source, f.Value))
+					fmt.Sprintf("%s:=:%s:=:%s", p.Id.Print(), f.Field, f.Value))
 			}
 		}
 	} else {
 		profileList.Output = append(profileList.Output,
-			fmt.Sprintf("%s=%s", "PROFILE NAME", "COMMENT/DESCRIPTION"))
+			fmt.Sprintf("%s:=:%s", "PROFILE NAME", "COMMENT/DESCRIPTION"))
 
 		for _, profile := range profiles {
 			profileList.Output = append(profileList.Output,
-				fmt.Sprintf("%s=%s", profile.Id.Print(), profile.Comment.Print()))
+				fmt.Sprintf("%s:=:%s", profile.Id.Print(), profile.Comment.Print()))
 		}
 	}
 	return
