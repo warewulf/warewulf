@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [4.5.0]
+## [4.5.x]
+
+### Added
+
+- Added https://github.com/Masterminds/sprig functions to templates #1030
+
+### Changed
+
+- Locally defined `tr` has been dropped, templates updated to use Sprig replace.
+
+### Fixed
+
+- Systems with no SMBIOS (Raspberry Pi) will create a UUID from
+  `/sys/firmware/devicetree/base/serial-number`
+- Fix `wwctl profile list -a` format when kernerargs are set
+
+## [4.5.0] 2024-02-08
 
 - Official v4.5.0 release.
 - Publish v4.5.x documentation separately from `main`. #919
