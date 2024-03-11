@@ -53,7 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fix configuration of network device MTU in nework configuration overlays. #807
+- Fix configuration of network device MTU in network configuration overlays. #807
 - Separate provisioned overlays from overlay sources. #972
 - Display the correct header for `wwctl overlay list --all --long`. #485
 - Add a missing `.ww` extension to the `70-ww4-netname.rules` template in the wwinit overlay. #724
