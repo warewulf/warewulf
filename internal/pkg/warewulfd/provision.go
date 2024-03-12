@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"net/http"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"text/template"
 
+	"github.com/Masterminds/sprig/v3"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/container"
 	"github.com/warewulf/warewulf/internal/pkg/kernel"
@@ -226,7 +228,11 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 				return
 			}
 
-			tmpl, err := template.ParseFiles(stage_file)
+			// Create a template with the Sprig functions.
+			tmpl := template.New(filepath.Base(stage_file)).Funcs(sprig.TxtFuncMap())
+
+			// Parse the template.
+			parsedTmpl, err := tmpl.ParseFiles(stage_file)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				wwlog.ErrorExc(err, "")
@@ -236,7 +242,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			// template engine writes file to buffer in case rendering fails
 			var buf bytes.Buffer
 
-			err = tmpl.Execute(&buf, tmpl_data)
+			err = parsedTmpl.Execute(&buf, tmpl_data)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				wwlog.ErrorExc(err, "")

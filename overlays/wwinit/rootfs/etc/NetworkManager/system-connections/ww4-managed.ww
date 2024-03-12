@@ -14,8 +14,8 @@ interface-name={{ $netdev.Device }}
 {{ if $netdev.Type -}}
 {{ if eq $netdev.Type "bond-slave" -}}
 slave-type=bond
-{{- $conn := split $connection_id "_" }}
-{{- $master := index $conn 0 }}
+{{- $conn := split "_" $connection_id }}
+{{- $master := $conn._0 }}
 master={{ $master }}
 type=ethernet
 {{ else }}

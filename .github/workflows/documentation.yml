@@ -2,16 +2,17 @@
 name: publish_docs
 
 on:
+  workflow_dispatch: {}
   push:
     branches:
       - main
-      - v4.*.x
+      - 'v4.*.x'
     paths:
       - 'userdocs/**'
   pull_request:
     branches:
       - main
-      - v4.*.x
+      - 'v4.*.x'
     paths:
       - 'userdocs/**'
 
