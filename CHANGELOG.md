@@ -10,25 +10,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+## [4.5.x] (unreleased)
+
+### Added
+
+- Add the ability to boot nodes with `wwid=[interface]`, which replaces
+  `interface` with the interface MAC address
 - Added https://github.com/Masterminds/sprig functions to templates #1030
 
 ### Changed
 
 - Locally defined `tr` has been dropped, templates updated to use Sprig replace.
-- Updated the glossary #819
+- Updated the glossary. #819
 
 ### Fixed
 
 - Systems with no SMBIOS (Raspberry Pi) will create a UUID from
   `/sys/firmware/devicetree/base/serial-number`
 - Fix `wwctl profile list -a` format when kernerargs are set
+- Fix a rendering bug in the documentation for GRUB boot support. #1132
 
 ## [4.5.0] 2024-02-08
 
-- Official v4.5.0 release.
+Official v4.5.0 release.
+
+### Added
+
 - Publish v4.5.x documentation separately from `main`. #919
-- Fix `Requires: ipxe-botimgs` for building an Enterprise Linux 7 RPM. #1126
 - Update quickstart for Enterprise Linux. #394, #401, #977
+
+### Fixed
+
+- Fix `Requires: ipxe-botimgs` for building an Enterprise Linux 7 RPM. #1126
 
 ## [4.5.0rc2] 2024-02-21
 

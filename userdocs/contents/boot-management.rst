@@ -64,7 +64,7 @@ scenarios.
 
 In order to enable the grub boot method it has to be enabled in `warewulf.conf`.
 
-.. code-block: yaml
+.. code-block:: yaml
 
    warewulf:
      grubboot: true
