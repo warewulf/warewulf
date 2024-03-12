@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Prevent Networkmanager from trying to optain IP address via DHCP
+  on unused/unmanaged network interfaces.
 - Systems with no SMBIOS (Raspberry Pi) will create a UUID from
   `/sys/firmware/devicetree/base/serial-number`
 - Fix `wwctl profile list -a` format when kernerargs are set
