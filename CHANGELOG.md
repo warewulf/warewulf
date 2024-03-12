@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.5.x]
 
+### Changed
+
+- Updated the glossary #819
+
 ### Fixed
 
 - Fix `wwctl profile list -a` format when kernerargs are set
