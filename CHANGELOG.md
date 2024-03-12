@@ -11,11 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add the ability to boot nodes with `wwid=[interface]`, which replaces
   `interface` with the interface MAC address
-
-## [4.5.0] 2024-02-08
-
-### Added
-
 - Added https://github.com/Masterminds/sprig functions to templates #1030
 
 ### Changed
@@ -33,10 +28,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.5.0] 2024-02-08
 
-- Official v4.5.0 release.
+Official v4.5.0 release.
+
+### Added
+
 - Publish v4.5.x documentation separately from `main`. #919
-- Fix `Requires: ipxe-botimgs` for building an Enterprise Linux 7 RPM. #1126
 - Update quickstart for Enterprise Linux. #394, #401, #977
+
+### Fixed
+
+- Fix `Requires: ipxe-botimgs` for building an Enterprise Linux 7 RPM. #1126
 
 ## [4.5.0rc2] 2024-02-21
 
