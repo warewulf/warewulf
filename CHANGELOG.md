@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add the ability to boot nodes with `wwid=[interface]`, which replaces
+  `interface` with the interface MAC address
+
+## [4.5.0] 2024-02-08
+
+### Added
+
 - Added https://github.com/Masterminds/sprig functions to templates #1030
 
 ### Changed
