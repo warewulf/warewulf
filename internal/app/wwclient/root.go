@@ -156,7 +156,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 
 	// Dereference wwid from [interface] for cases that cannot have /proc/cmdline set by bootloader
 	if string(wwid[0]) == "[" {
-		iface := wwid[1:len(wwid)-1]
+		iface := wwid[1 : len(wwid)-1]
 		wwid_tmp, err := os.ReadFile(fmt.Sprintf("/sys/class/net/%s/address", iface))
 		if err != nil {
 			wwlog.Error("'wwid' cannot be dereferenced from /sys/class/net", iface)
@@ -165,7 +165,6 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		wwid = strings.TrimSuffix(string(wwid_tmp), "\n")
 		wwlog.Info("Dereferencing wwid from [%s] to %s", iface, wwid)
 	}
-
 
 	duration := 300
 	if conf.Warewulf.UpdateInterval > 0 {
