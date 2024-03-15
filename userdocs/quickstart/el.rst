@@ -49,6 +49,7 @@ to the default zone, and reload.
 
    systemctl restart firewalld
    firewall-cmd --permanent --add-service=warewulf
+   firewall-cmd --permanent --add-service=dhcp
    firewall-cmd --permanent --add-service=nfs
    firewall-cmd --permanent --add-service=tftp
    firewall-cmd --reload
