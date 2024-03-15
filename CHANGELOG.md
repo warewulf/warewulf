@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Locally defined `tr` has been dropped, templates updated to use Sprig replace.
 - Updated the glossary. #819
+- Update quickstarts to configure firewalld for dhcp. #1133
 
 ### Fixed
 
