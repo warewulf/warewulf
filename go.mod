@@ -1,6 +1,6 @@
 module github.com/warewulf/warewulf
 
-go 1.17
+go 1.19
 
 require (
 	github.com/containers/image/v5 v5.7.0
