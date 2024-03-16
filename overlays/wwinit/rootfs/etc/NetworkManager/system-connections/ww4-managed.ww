@@ -67,7 +67,7 @@ gateway={{ $netdev.Gateway }}
 method=manual
 {{- $dns := "" }}
 {{range $tk, $tv := $netdev.Tags -}}
-{{ $prefix := slice $tk 0 3 -}}
+{{ $prefix := substr 0 3 $tk -}}
 {{ if eq $prefix "DNS" -}}
 {{ $dns = print $dns $tv ";" -}}
 {{ end -}}
