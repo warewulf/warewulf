@@ -10,7 +10,7 @@ warewulf.conf
 =============
 
 The Warewulf configuration exists as follows in the current version of
-Warewulf (4.4.0):
+Warewulf (4.5.0):
 
 .. code-block:: yaml
 
@@ -117,6 +117,29 @@ explained as follows:
 * ``container mounts``: These paths are mounted into the container
   during ``container exec`` or ``container shell``, typically to allow
   them to operate in the host environment prior to deployment.
+
+Paths
+-----
+
+*New in Warewulf v4.5.0*
+
+Default paths to containers, overlays, and other Warewulf components
+may be overridden using ``warewulf.conf:paths``.
+
+.. code-block:: yaml
+
+   paths:
+     bindir: /usr/bin
+     sysconfdir: /etc
+     localstatedir: /var/lib
+     ipxesource: /usr/share/ipxe
+     srvdir: /var/lib
+     firewallddir: /usr/lib/firewalld/services
+     systemddir: /usr/lib/systemd/system
+     wwoverlaydir: /var/lib/warewulf/overlays
+     wwchrootdir: /var/lib/warewulf/chroots
+     wwprovisiondir: /var/lib/warewulf/provision
+     wwclientdir: /warewulf
 
 nodes.conf
 ==========
