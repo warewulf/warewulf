@@ -11,6 +11,7 @@ var (
 		Use:                   "delete [OPTIONS] KERNEL [...]",
 		Short:                 "Delete imported kernels",
 		Long:                  "This command will delete KERNEL versions that have been imported into Warewulf.",
+		Aliases:               []string{"rm", "del", "remove"},
 		RunE:                  CobraRunE,
 		Args:                  cobra.MinimumNArgs(1),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

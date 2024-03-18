@@ -13,6 +13,7 @@ var (
 		Use:                   "import [OPTIONS] KERNEL",
 		Short:                 "Import Kernel version into Warewulf",
 		Long:                  "This will import a boot KERNEL version from the control node into Warewulf",
+		Aliases:               []string{"pull"},
 		RunE:                  CobraRunE,
 		Args:                  cobra.MinimumNArgs(0),
 	}

@@ -11,6 +11,7 @@ var (
 		Use:                   "shell [OPTIONS] CONTAINER",
 		Short:                 "Run a shell inside of a Warewulf container",
 		Long:                  "Run a interactive shell inside of a warewulf CONTAINER.\n",
+		Aliases:               []string{"chroot"},
 		RunE:                  CobraRunE,
 		Args:                  cobra.MinimumNArgs(1),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

@@ -33,6 +33,7 @@ func GetCommand() *cobra.Command {
 		Use:                   "add PROFILE",
 		Short:                 "Add a new node profile",
 		Long:                  "This command adds a new named PROFILE.",
+		Aliases:               []string{"new", "create"},
 		RunE:                  CobraRunE(&vars),
 		Args:                  cobra.ExactArgs(1),
 	}

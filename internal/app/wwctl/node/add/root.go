@@ -29,6 +29,7 @@ func GetCommand() *cobra.Command {
 		Use:                   "add [OPTIONS] NODENAME",
 		Short:                 "Add new node to Warewulf",
 		Long:                  "This command will add a new node named NODENAME to Warewulf.",
+		Aliases:               []string{"new", "create"},
 		RunE:                  CobraRunE(&vars),
 		Args:                  cobra.MinimumNArgs(1),
 	}
