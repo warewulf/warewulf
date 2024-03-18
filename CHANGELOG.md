@@ -58,6 +58,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `wwctl node list --fullall` has been removed
 - `wwctl profile list --fullall` has been removed
 - Remove `wwctl server <start,stop,status,restart,reload>` #508
+- Updated the glossary. #819
+- Upgrade the golang version to 1.19.
+- Always build container on import what was default on 4.4.x
+- Removed `--setdefault` for container build, as this should be done with
+  profile set
 
 ### Fixed
 
