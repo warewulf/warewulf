@@ -38,7 +38,7 @@ IPV6_FAILURE_FATAL=no
 IPV6ADDR="{{ $netdev.Ipaddr6 }}"
 {{ end -}}
 {{range $tk, $tv := $netdev.Tags -}}
-{{ $prefix := slice $tk 0 3 -}}
+{{ $prefix := substr 0 3 $tk -}}
 {{ if eq $prefix "DNS" -}}
 {{ $tk }}={{ $tv }}
 {{ end -}}

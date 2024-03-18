@@ -13,14 +13,14 @@ Requisite=ignition-ww4-disks.service
 {{- $prefix := $fsdevice }}
 {{- $prefix = replace "-" "\\x2d" $fsdevice }}
 {{- $prefix = replace "/" "-" $prefix }}
-{{- $prefix = slice $prefix 1 }}{{ $suffix := "mount" }}
+{{- $prefix = substr 1 -1 $prefix }}{{ $suffix := "mount" }}
 {{- if eq $fs.Format "swap"}}
 {{- $prefix = replace "/dev/disk/by-partlabel/" "dev-disk-by\\x2dpartlabel-" $fsdevice }}{{ $suffix = "swap"}}
 {{- else }}
 {{- if ne $fs.Path "" }}
 {{- $prefix = replace "-" "\\x2d" $fs.Path }}
 {{- $prefix = replace "/" "-" $prefix }}
-{{- $prefix = slice $prefix 1 }}
+{{- $prefix = substr 1 -1 $prefix }}
 {{- end }}
 {{- end }}
 Wants={{ print $prefix "." $suffix }}
