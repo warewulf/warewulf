@@ -10,7 +10,7 @@ import (
 
 func shimDirs() []string {
 	return []string{
-		`/usr/share/efi/x86_64/`,
+		`/usr/share/efi/*/`,
 		`/usr/lib64/efi/`,
 		`/boot/efi/EFI/*/`,
 	}

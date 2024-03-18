@@ -17,8 +17,9 @@ import (
 )
 
 var (
-	kernelSearchPaths = []string{
+	KernelSearchPaths = []string{
 		// This is a printf format where the %s will be the kernel version
+		"/boot/Image-%s", // this is the aarch64 for SUSE, vmlinux which is also present won't boot
 		"/boot/vmlinuz-linux%.s",
 		"/boot/vmlinuz-%s",
 		"/boot/vmlinuz-%s.gz",
@@ -143,7 +144,7 @@ func Build(kernelVersion, kernelName, root string) error {
 		return fmt.Errorf("failed to create version dest: %s", err)
 	}
 
-	for _, searchPath := range kernelSearchPaths {
+	for _, searchPath := range KernelSearchPaths {
 		testPath := fmt.Sprintf(path.Join(root, searchPath), kernelVersion)
 		wwlog.Verbose("Looking for kernel at: %s", testPath)
 		if util.IsFile(testPath) {
@@ -236,7 +237,7 @@ func DeleteKernel(name string) error {
 }
 
 func FindKernelVersion(root string) (string, error) {
-	for _, searchPath := range kernelSearchPaths {
+	for _, searchPath := range KernelSearchPaths {
 		testPattern := fmt.Sprintf(path.Join(root, searchPath), `*`)
 		wwlog.Verbose("Looking for kernel version with pattern at: %s", testPattern)
 		potentialKernel, _ := filepath.Glob(testPattern)
