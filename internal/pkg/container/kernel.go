@@ -1,25 +1,14 @@
 package container
 
 import (
+	"fmt"
 	"path"
 	"path/filepath"
 	"sort"
 	"strings"
 
+	"github.com/warewulf/warewulf/internal/pkg/kernel"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
-)
-
-var (
-	kernelNames = []string{
-		`vmlinux`,
-		`vmlinuz`,
-		`vmlinux-*`,
-		`vmlinuz-*`,
-		`vmlinuz.gz`}
-
-	kernelDirs = []string{
-		`/lib/modules/*/`,
-		`/boot/`}
 )
 
 func KernelFind(container string) string {
@@ -29,32 +18,31 @@ func KernelFind(container string) string {
 		return ""
 	}
 
-	for _, kdir := range kernelDirs {
-		wwlog.Debug("Checking kernel directory: %s", kdir)
-		for _, kname := range kernelNames {
-			wwlog.Debug("Checking for kernel name: %s", kname)
-			kernelPaths, err := filepath.Glob(path.Join(container_path, kdir, kname))
-			if err != nil {
-				return ""
-			}
+	for _, searchPath := range kernel.KernelSearchPaths {
+		testPath := fmt.Sprintf(path.Join(container_path, searchPath), "*")
+		wwlog.Debug("Checking for kernel name: %s", testPath)
 
-			if len(kernelPaths) == 0 {
-				continue
-			}
+		kernelPaths, err := filepath.Glob(testPath)
+		if err != nil {
+			return ""
+		}
 
-			sort.Slice(kernelPaths, func(i, j int) bool {
-				return kernelPaths[i] > kernelPaths[j]
-			})
+		if len(kernelPaths) == 0 {
+			continue
+		}
 
-			for _, kernelPath := range kernelPaths {
-				wwlog.Debug("Checking for kernel path: %s", kernelPath)
-				// Only succeeds if kernelPath exists and, if a
-				// symlink, links to a path that also exists
-				kernelPath, err = filepath.EvalSymlinks(kernelPath)
-				if err == nil {
-					wwlog.Debug("found kernel: %s", kernelPath)
-					return kernelPath
-				}
+		sort.Slice(kernelPaths, func(i, j int) bool {
+			return kernelPaths[i] > kernelPaths[j]
+		})
+
+		for _, kernelPath := range kernelPaths {
+			wwlog.Debug("Checking for kernel path: %s", kernelPath)
+			// Only succeeds if kernelPath exists and, if a
+			// symlink, links to a path that also exists
+			kernelPath, err = filepath.EvalSymlinks(kernelPath)
+			if err == nil {
+				wwlog.Debug("found kernel: %s", kernelPath)
+				return kernelPath
 			}
 		}
 	}
