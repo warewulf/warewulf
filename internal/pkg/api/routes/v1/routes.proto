@@ -133,9 +133,11 @@ message GetNodeList {
 		Long = 3;
 		All = 4;
 		FullAll = 5;
+		YAML = 6;
+		JSON = 7;
 	}
-	ListType type = 7;
-	repeated string Nodes = 8;
+	ListType type = 8;
+	repeated string Nodes = 9;
 }
 
 // Get the formated output as string
@@ -147,7 +149,9 @@ message NodeList {
 message GetProfileList {
 	bool ShowAll = 1;
 	bool ShowFullAll = 2;
-	repeated string Profiles = 3;
+	bool ShowYaml = 3;
+	bool ShowJson = 4;
+	repeated string Profiles = 5;
 }
 // Get the formated output as string
 message ProfileList {

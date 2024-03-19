@@ -1,12 +1,14 @@
 package apiprofile
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
+	"gopkg.in/yaml.v2"
 )
 
 /*
@@ -39,6 +41,22 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 					fmt.Sprintf("%s:=:%s:=:%s", p.Id.Print(), f.Field, f.Value))
 			}
 		}
+	} else if ShowOpt.ShowYaml {
+		profileMap := make(map[string]node.NodeInfo)
+		for _, profile := range profiles {
+			profileMap[profile.Id.Get()] = profile
+		}
+
+		buf, _ := yaml.Marshal(profileMap)
+		profileList.Output = append(profileList.Output, string(buf))
+	} else if ShowOpt.ShowJson {
+		profileMap := make(map[string]node.NodeInfo)
+		for _, profile := range profiles {
+			profileMap[profile.Id.Get()] = profile
+		}
+
+		buf, _ := json.MarshalIndent(profileMap, "", "  ")
+		profileList.Output = append(profileList.Output, string(buf))
 	} else {
 		profileList.Output = append(profileList.Output,
 			fmt.Sprintf("%s:=:%s", "PROFILE NAME", "COMMENT/DESCRIPTION"))

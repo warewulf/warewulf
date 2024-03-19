@@ -11,6 +11,8 @@ type variables struct {
 	showAll     bool
 	showLong    bool
 	showFullAll bool
+	showYaml    bool
+	showJson    bool
 }
 
 func GetCommand() *cobra.Command {
@@ -42,6 +44,8 @@ func GetCommand() *cobra.Command {
 	baseCmd.PersistentFlags().BoolVarP(&vars.showAll, "all", "a", false, "Show all node configurations")
 	baseCmd.PersistentFlags().BoolVarP(&vars.showFullAll, "fullall", "A", false, "Show all node configurations inclusive empty entries")
 	baseCmd.PersistentFlags().BoolVarP(&vars.showLong, "long", "l", false, "Show long or wide format")
+	baseCmd.PersistentFlags().BoolVarP(&vars.showYaml, "yaml", "y", false, "Show yaml format")
+	baseCmd.PersistentFlags().BoolVarP(&vars.showJson, "json", "j", false, "Show json format")
 
 	return baseCmd
 }

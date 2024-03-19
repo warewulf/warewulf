@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add the ability to boot nodes with `wwid=[interface]`, which replaces
   `interface` with the interface MAC address
 - Added https://github.com/Masterminds/sprig functions to templates #1030
+- Add multiple output formats (yaml & json) support. #447
 
 ### Changed
 

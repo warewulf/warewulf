@@ -7,6 +7,7 @@ import (
 	"github.com/warewulf/warewulf/internal/app/wwctl/helper"
 	apinode "github.com/warewulf/warewulf/internal/pkg/api/node"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err error) {
@@ -28,14 +29,23 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			req.Type = wwapiv1.GetNodeList_Long
 		} else if vars.showFullAll {
 			req.Type = wwapiv1.GetNodeList_FullAll
+		} else if vars.showYaml {
+			req.Type = wwapiv1.GetNodeList_YAML
+		} else if vars.showJson {
+			req.Type = wwapiv1.GetNodeList_JSON
 		}
 		nodeInfo, err := apinode.NodeList(&req)
+
 		if len(nodeInfo.Output) > 0 {
-			ph := helper.NewPrintHelper(strings.Split(nodeInfo.Output[0], ":=:"))
-			for _, val := range nodeInfo.Output[1:] {
-				ph.Append(strings.Split(val, ":=:"))
+			if req.Type == wwapiv1.GetNodeList_YAML || req.Type == wwapiv1.GetNodeList_JSON {
+				wwlog.Info(nodeInfo.Output[0])
+			} else {
+				ph := helper.NewPrintHelper(strings.Split(nodeInfo.Output[0], ":=:"))
+				for _, val := range nodeInfo.Output[1:] {
+					ph.Append(strings.Split(val, ":=:"))
+				}
+				ph.Render()
 			}
-			ph.Render()
 		}
 		return
 	}
