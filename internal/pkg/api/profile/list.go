@@ -55,7 +55,7 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 			profileMap[profile.Id.Get()] = profile
 		}
 
-		buf, _ := json.Marshal(profileMap)
+		buf, _ := json.MarshalIndent(profileMap, "", "  ")
 		profileList.Output = append(profileList.Output, string(buf))
 	} else {
 		profileList.Output = append(profileList.Output,

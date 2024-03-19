@@ -114,7 +114,7 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 
 		var buf []byte
 		if nodeGet.Type == wwapiv1.GetNodeList_JSON {
-			buf, _ = json.Marshal(nodeResp)
+			buf, _ = json.MarshalIndent(nodeResp, "", "  ")
 		}
 		if nodeGet.Type == wwapiv1.GetNodeList_YAML {
 			buf, _ = yaml.Marshal(nodeResp)
