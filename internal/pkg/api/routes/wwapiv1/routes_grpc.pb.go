@@ -8,10 +8,10 @@ package wwapiv1
 
 import (
 	context "context"
+	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -26,21 +26,21 @@ type WWApiClient interface {
 	// ContainerBuild builds zero or more containers.
 	ContainerBuild(ctx context.Context, in *ContainerBuildParameter, opts ...grpc.CallOption) (*ContainerListResponse, error)
 	// ContainerDelete removes one or more container from Warewulf management.
-	ContainerDelete(ctx context.Context, in *ContainerDeleteParameter, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	ContainerCopy(ctx context.Context, in *ContainerCopyParameter, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ContainerDelete(ctx context.Context, in *ContainerDeleteParameter, opts ...grpc.CallOption) (*empty.Empty, error)
+	ContainerCopy(ctx context.Context, in *ContainerCopyParameter, opts ...grpc.CallOption) (*empty.Empty, error)
 	// ContainerImport imports a container to Warewulf.
 	ContainerImport(ctx context.Context, in *ContainerImportParameter, opts ...grpc.CallOption) (*ContainerListResponse, error)
 	// ContainerList lists ContainerInfo for each container.
-	ContainerList(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ContainerListResponse, error)
+	ContainerList(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*ContainerListResponse, error)
 	// ContainerShow lists ContainerShow for each container.
 	ContainerShow(ctx context.Context, in *ContainerShowParameter, opts ...grpc.CallOption) (*ContainerShowResponse, error)
 	// ContainerRename renames the container
-	ContainerRename(ctx context.Context, in *ContainerRenameParameter, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ContainerRename(ctx context.Context, in *ContainerRenameParameter, opts ...grpc.CallOption) (*empty.Empty, error)
 	// NodeAdd adds one or more nodes for management by Warewulf and returns
 	// the added nodes. Node fields may be shimmed in per profiles.
 	NodeAdd(ctx context.Context, in *NodeAddParameter, opts ...grpc.CallOption) (*NodeListResponse, error)
 	// NodeDelete removes one or more nodes from Warewulf management.
-	NodeDelete(ctx context.Context, in *NodeDeleteParameter, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	NodeDelete(ctx context.Context, in *NodeDeleteParameter, opts ...grpc.CallOption) (*empty.Empty, error)
 	// NodeList lists some or all nodes managed by Warewulf.
 	NodeList(ctx context.Context, in *NodeNames, opts ...grpc.CallOption) (*NodeListResponse, error)
 	// NodeSet updates node fields for one or more nodes.
@@ -50,7 +50,7 @@ type WWApiClient interface {
 	NodeStatus(ctx context.Context, in *NodeNames, opts ...grpc.CallOption) (*NodeStatusResponse, error)
 	// Version returns the wwapi version, the api prefix, and the Warewulf
 	// version. This is also useful for testing if the service is up.
-	Version(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*VersionResponse, error)
+	Version(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*VersionResponse, error)
 }
 
 type wWApiClient struct {
@@ -70,8 +70,8 @@ func (c *wWApiClient) ContainerBuild(ctx context.Context, in *ContainerBuildPara
 	return out, nil
 }
 
-func (c *wWApiClient) ContainerDelete(ctx context.Context, in *ContainerDeleteParameter, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *wWApiClient) ContainerDelete(ctx context.Context, in *ContainerDeleteParameter, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/wwapi.v1.WWApi/ContainerDelete", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -79,8 +79,8 @@ func (c *wWApiClient) ContainerDelete(ctx context.Context, in *ContainerDeletePa
 	return out, nil
 }
 
-func (c *wWApiClient) ContainerCopy(ctx context.Context, in *ContainerCopyParameter, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *wWApiClient) ContainerCopy(ctx context.Context, in *ContainerCopyParameter, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/wwapi.v1.WWApi/ContainerCopy", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -97,7 +97,7 @@ func (c *wWApiClient) ContainerImport(ctx context.Context, in *ContainerImportPa
 	return out, nil
 }
 
-func (c *wWApiClient) ContainerList(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ContainerListResponse, error) {
+func (c *wWApiClient) ContainerList(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*ContainerListResponse, error) {
 	out := new(ContainerListResponse)
 	err := c.cc.Invoke(ctx, "/wwapi.v1.WWApi/ContainerList", in, out, opts...)
 	if err != nil {
@@ -115,8 +115,8 @@ func (c *wWApiClient) ContainerShow(ctx context.Context, in *ContainerShowParame
 	return out, nil
 }
 
-func (c *wWApiClient) ContainerRename(ctx context.Context, in *ContainerRenameParameter, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *wWApiClient) ContainerRename(ctx context.Context, in *ContainerRenameParameter, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/wwapi.v1.WWApi/ContainerRename", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -133,8 +133,8 @@ func (c *wWApiClient) NodeAdd(ctx context.Context, in *NodeAddParameter, opts ..
 	return out, nil
 }
 
-func (c *wWApiClient) NodeDelete(ctx context.Context, in *NodeDeleteParameter, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *wWApiClient) NodeDelete(ctx context.Context, in *NodeDeleteParameter, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/wwapi.v1.WWApi/NodeDelete", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -169,7 +169,7 @@ func (c *wWApiClient) NodeStatus(ctx context.Context, in *NodeNames, opts ...grp
 	return out, nil
 }
 
-func (c *wWApiClient) Version(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*VersionResponse, error) {
+func (c *wWApiClient) Version(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*VersionResponse, error) {
 	out := new(VersionResponse)
 	err := c.cc.Invoke(ctx, "/wwapi.v1.WWApi/Version", in, out, opts...)
 	if err != nil {
@@ -185,21 +185,21 @@ type WWApiServer interface {
 	// ContainerBuild builds zero or more containers.
 	ContainerBuild(context.Context, *ContainerBuildParameter) (*ContainerListResponse, error)
 	// ContainerDelete removes one or more container from Warewulf management.
-	ContainerDelete(context.Context, *ContainerDeleteParameter) (*emptypb.Empty, error)
-	ContainerCopy(context.Context, *ContainerCopyParameter) (*emptypb.Empty, error)
+	ContainerDelete(context.Context, *ContainerDeleteParameter) (*empty.Empty, error)
+	ContainerCopy(context.Context, *ContainerCopyParameter) (*empty.Empty, error)
 	// ContainerImport imports a container to Warewulf.
 	ContainerImport(context.Context, *ContainerImportParameter) (*ContainerListResponse, error)
 	// ContainerList lists ContainerInfo for each container.
-	ContainerList(context.Context, *emptypb.Empty) (*ContainerListResponse, error)
+	ContainerList(context.Context, *empty.Empty) (*ContainerListResponse, error)
 	// ContainerShow lists ContainerShow for each container.
 	ContainerShow(context.Context, *ContainerShowParameter) (*ContainerShowResponse, error)
 	// ContainerRename renames the container
-	ContainerRename(context.Context, *ContainerRenameParameter) (*emptypb.Empty, error)
+	ContainerRename(context.Context, *ContainerRenameParameter) (*empty.Empty, error)
 	// NodeAdd adds one or more nodes for management by Warewulf and returns
 	// the added nodes. Node fields may be shimmed in per profiles.
 	NodeAdd(context.Context, *NodeAddParameter) (*NodeListResponse, error)
 	// NodeDelete removes one or more nodes from Warewulf management.
-	NodeDelete(context.Context, *NodeDeleteParameter) (*emptypb.Empty, error)
+	NodeDelete(context.Context, *NodeDeleteParameter) (*empty.Empty, error)
 	// NodeList lists some or all nodes managed by Warewulf.
 	NodeList(context.Context, *NodeNames) (*NodeListResponse, error)
 	// NodeSet updates node fields for one or more nodes.
@@ -209,7 +209,7 @@ type WWApiServer interface {
 	NodeStatus(context.Context, *NodeNames) (*NodeStatusResponse, error)
 	// Version returns the wwapi version, the api prefix, and the Warewulf
 	// version. This is also useful for testing if the service is up.
-	Version(context.Context, *emptypb.Empty) (*VersionResponse, error)
+	Version(context.Context, *empty.Empty) (*VersionResponse, error)
 	mustEmbedUnimplementedWWApiServer()
 }
 
@@ -220,28 +220,28 @@ type UnimplementedWWApiServer struct {
 func (UnimplementedWWApiServer) ContainerBuild(context.Context, *ContainerBuildParameter) (*ContainerListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ContainerBuild not implemented")
 }
-func (UnimplementedWWApiServer) ContainerDelete(context.Context, *ContainerDeleteParameter) (*emptypb.Empty, error) {
+func (UnimplementedWWApiServer) ContainerDelete(context.Context, *ContainerDeleteParameter) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ContainerDelete not implemented")
 }
-func (UnimplementedWWApiServer) ContainerCopy(context.Context, *ContainerCopyParameter) (*emptypb.Empty, error) {
+func (UnimplementedWWApiServer) ContainerCopy(context.Context, *ContainerCopyParameter) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ContainerCopy not implemented")
 }
 func (UnimplementedWWApiServer) ContainerImport(context.Context, *ContainerImportParameter) (*ContainerListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ContainerImport not implemented")
 }
-func (UnimplementedWWApiServer) ContainerList(context.Context, *emptypb.Empty) (*ContainerListResponse, error) {
+func (UnimplementedWWApiServer) ContainerList(context.Context, *empty.Empty) (*ContainerListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ContainerList not implemented")
 }
 func (UnimplementedWWApiServer) ContainerShow(context.Context, *ContainerShowParameter) (*ContainerShowResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ContainerShow not implemented")
 }
-func (UnimplementedWWApiServer) ContainerRename(context.Context, *ContainerRenameParameter) (*emptypb.Empty, error) {
+func (UnimplementedWWApiServer) ContainerRename(context.Context, *ContainerRenameParameter) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ContainerRename not implemented")
 }
 func (UnimplementedWWApiServer) NodeAdd(context.Context, *NodeAddParameter) (*NodeListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NodeAdd not implemented")
 }
-func (UnimplementedWWApiServer) NodeDelete(context.Context, *NodeDeleteParameter) (*emptypb.Empty, error) {
+func (UnimplementedWWApiServer) NodeDelete(context.Context, *NodeDeleteParameter) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NodeDelete not implemented")
 }
 func (UnimplementedWWApiServer) NodeList(context.Context, *NodeNames) (*NodeListResponse, error) {
@@ -253,7 +253,7 @@ func (UnimplementedWWApiServer) NodeSet(context.Context, *NodeSetParameter) (*No
 func (UnimplementedWWApiServer) NodeStatus(context.Context, *NodeNames) (*NodeStatusResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NodeStatus not implemented")
 }
-func (UnimplementedWWApiServer) Version(context.Context, *emptypb.Empty) (*VersionResponse, error) {
+func (UnimplementedWWApiServer) Version(context.Context, *empty.Empty) (*VersionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Version not implemented")
 }
 func (UnimplementedWWApiServer) mustEmbedUnimplementedWWApiServer() {}
@@ -342,7 +342,7 @@ func _WWApi_ContainerImport_Handler(srv interface{}, ctx context.Context, dec fu
 }
 
 func _WWApi_ContainerList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(empty.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -354,7 +354,7 @@ func _WWApi_ContainerList_Handler(srv interface{}, ctx context.Context, dec func
 		FullMethod: "/wwapi.v1.WWApi/ContainerList",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WWApiServer).ContainerList(ctx, req.(*emptypb.Empty))
+		return srv.(WWApiServer).ContainerList(ctx, req.(*empty.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -486,7 +486,7 @@ func _WWApi_NodeStatus_Handler(srv interface{}, ctx context.Context, dec func(in
 }
 
 func _WWApi_Version_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(empty.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -498,7 +498,7 @@ func _WWApi_Version_Handler(srv interface{}, ctx context.Context, dec func(inter
 		FullMethod: "/wwapi.v1.WWApi/Version",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WWApiServer).Version(ctx, req.(*emptypb.Empty))
+		return srv.(WWApiServer).Version(ctx, req.(*empty.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
