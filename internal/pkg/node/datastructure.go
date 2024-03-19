@@ -7,7 +7,7 @@ package node
 Structure of which goes to disk
 */
 type NodeYaml struct {
-	WWInternal   int `yaml:"WW_INTERNAL"`
+	WWInternal   int `yaml:"WW_INTERNAL,omitempty" json:"WW_INTERNAL,omitempty"`
 	NodeProfiles map[string]*NodeConf
 	Nodes        map[string]*NodeConf
 }
@@ -16,61 +16,61 @@ type NodeYaml struct {
 NodeConf is the datastructure describing a node and a profile which in disk format.
 */
 type NodeConf struct {
-	Comment       string `yaml:"comment,omitempty" lopt:"comment" comment:"Set arbitrary string comment"`
-	ClusterName   string `yaml:"cluster name,omitempty" lopt:"cluster" sopt:"c" comment:"Set cluster group"`
-	ContainerName string `yaml:"container name,omitempty" lopt:"container" sopt:"C" comment:"Set container name"`
-	Ipxe          string `yaml:"ipxe template,omitempty" lopt:"ipxe" comment:"Set the iPXE template name"`
+	Comment       string `yaml:"comment,omitempty" lopt:"comment" comment:"Set arbitrary string comment" json:"comment,omitempty"`
+	ClusterName   string `yaml:"cluster name,omitempty" lopt:"cluster" sopt:"c" comment:"Set cluster group" json:"cluster name,omitempty"`
+	ContainerName string `yaml:"container name,omitempty" lopt:"container" sopt:"C" comment:"Set container name" json:"container name,omitempty"`
+	Ipxe          string `yaml:"ipxe template,omitempty" lopt:"ipxe" comment:"Set the iPXE template name" json:"ipxe template,omitempty"`
 	// Deprecated start
 	// Kernel settings here are deprecated and here for backward compatibility
-	KernelVersion  string `yaml:"kernel version,omitempty"`
-	KernelOverride string `yaml:"kernel override,omitempty"`
-	KernelArgs     string `yaml:"kernel args,omitempty"`
+	KernelVersion  string `yaml:"kernel version,omitempty" json:"kernel version,omitempty"`
+	KernelOverride string `yaml:"kernel override,omitempty" json:"kernel override,omitempty"`
+	KernelArgs     string `yaml:"kernel args,omitempty" json:"kernel args,omitempty"`
 	// Ipmi settings herer are deprecated and here for backward compatibility
-	IpmiUserName   string `yaml:"ipmi username,omitempty"`
-	IpmiPassword   string `yaml:"ipmi password,omitempty"`
-	IpmiIpaddr     string `yaml:"ipmi ipaddr,omitempty"`
-	IpmiNetmask    string `yaml:"ipmi netmask,omitempty"`
-	IpmiPort       string `yaml:"ipmi port,omitempty"`
-	IpmiGateway    string `yaml:"ipmi gateway,omitempty"`
-	IpmiInterface  string `yaml:"ipmi interface,omitempty"`
-	IpmiEscapeChar string `yaml:"ipmi escapechar,omitempty"`
-	IpmiWrite      string `yaml:"ipmi write,omitempty"`
+	IpmiUserName   string `yaml:"ipmi username,omitempty" json:"ipmi username,omitempty"`
+	IpmiPassword   string `yaml:"ipmi password,omitempty" json:"ipmi password,omitempty"`
+	IpmiIpaddr     string `yaml:"ipmi ipaddr,omitempty" json:"ipmi ipaddr,omitempty"`
+	IpmiNetmask    string `yaml:"ipmi netmask,omitempty" json:"ipmi netmask,omitempty"`
+	IpmiPort       string `yaml:"ipmi port,omitempty" json:"ipmi port,omitempty"`
+	IpmiGateway    string `yaml:"ipmi gateway,omitempty" json:"ipmi gateway,omitempty"`
+	IpmiInterface  string `yaml:"ipmi interface,omitempty" json:"ipmi interface,omitempty"`
+	IpmiEscapeChar string `yaml:"ipmi escapechar,omitempty" json:"ipmi escapechar,omitempty"`
+	IpmiWrite      string `yaml:"ipmi write,omitempty" json:"ipmi write,omitempty"`
 	// Deprecated end
-	RuntimeOverlay []string               `yaml:"runtime overlay,omitempty" lopt:"runtime" sopt:"R" comment:"Set the runtime overlay"`
-	SystemOverlay  []string               `yaml:"system overlay,omitempty" lopt:"wwinit" sopt:"O" comment:"Set the system overlay"`
-	Kernel         *KernelConf            `yaml:"kernel,omitempty"`
-	Ipmi           *IpmiConf              `yaml:"ipmi,omitempty"`
-	Init           string                 `yaml:"init,omitempty" lopt:"init" sopt:"i" comment:"Define the init process to boot the container"`
-	Root           string                 `yaml:"root,omitempty" lopt:"root" comment:"Define the rootfs" `
-	AssetKey       string                 `yaml:"asset key,omitempty" lopt:"asset" comment:"Set the node's Asset tag (key)"`
-	Discoverable   string                 `yaml:"discoverable,omitempty" lopt:"discoverable" sopt:"e" comment:"Make discoverable in given network (true/false)" type:"bool"`
-	Profiles       []string               `yaml:"profiles,omitempty" lopt:"profile" sopt:"P" comment:"Set the node's profile members (comma separated)"`
-	NetDevs        map[string]*NetDevs    `yaml:"network devices,omitempty"`
-	Tags           map[string]string      `yaml:"tags,omitempty" lopt:"tagadd" comment:"base key"`
-	TagsDel        []string               `yaml:"tagsdel,omitempty" lopt:"tagdel" comment:"remove this tags"` // should not go to disk only to wire
-	Keys           map[string]string      `yaml:"keys,omitempty"`                                             // Reverse compatibility
-	PrimaryNetDev  string                 `yaml:"primary network,omitempty" lopt:"primarynet" sopt:"p" comment:"Set the primary network interface"`
-	Disks          map[string]*Disk       `yaml:"disks,omitempty"`
-	FileSystems    map[string]*FileSystem `yaml:"filesystems,omitempty"`
+	RuntimeOverlay []string               `yaml:"runtime overlay,omitempty" lopt:"runtime" sopt:"R" comment:"Set the runtime overlay" json:"runtime overlay,omitempty"`
+	SystemOverlay  []string               `yaml:"system overlay,omitempty" lopt:"wwinit" sopt:"O" comment:"Set the system overlay" json:"system overlay,omitempty"`
+	Kernel         *KernelConf            `yaml:"kernel,omitempty" json:"kernel,omitempty"`
+	Ipmi           *IpmiConf              `yaml:"ipmi,omitempty" json:"ipmi,omitempty"`
+	Init           string                 `yaml:"init,omitempty" lopt:"init" sopt:"i" comment:"Define the init process to boot the container" json:"init,omitempty"`
+	Root           string                 `yaml:"root,omitempty" lopt:"root" comment:"Define the rootfs" json:"root,omitempty"`
+	AssetKey       string                 `yaml:"asset key,omitempty" lopt:"asset" comment:"Set the node's Asset tag (key)" json:"asset key,omitempty"`
+	Discoverable   string                 `yaml:"discoverable,omitempty" lopt:"discoverable" sopt:"e" comment:"Make discoverable in given network  (true/false)" type:"bool" json:"discoverable,omitempty"`
+	Profiles       []string               `yaml:"profiles,omitempty" lopt:"profile" sopt:"P" comment:"Set the node's profile members (comma separated)" json:"profiles,omitempty"`
+	NetDevs        map[string]*NetDevs    `yaml:"network devices,omitempty" json:"network devices,omitempty"`
+	Tags           map[string]string      `yaml:"tags,omitempty" lopt:"tagadd" comment:"base key" json:"tags,omitempty"`
+	TagsDel        []string               `yaml:"tagsdel,omitempty" lopt:"tagdel" comment:"remove this tags" json:"tagsdel,omitempty"` // should not go to disk only to wire
+	Keys           map[string]string      `yaml:"keys,omitempty" json:"keys,omitempty"`                                                // Reverse compatibility
+	PrimaryNetDev  string                 `yaml:"primary network,omitempty" lopt:"primarynet" sopt:"p" comment:"Set the primary network interface" json:"primary network,omitempty"`
+	Disks          map[string]*Disk       `yaml:"disks,omitempty" json:"disks,omitempty"`
+	FileSystems    map[string]*FileSystem `yaml:"filesystems,omitempty" json:"filesystems,omitempty"`
 }
 
 type IpmiConf struct {
-	UserName   string            `yaml:"username,omitempty" lopt:"ipmiuser" comment:"Set the IPMI username"`
-	Password   string            `yaml:"password,omitempty" lopt:"ipmipass" comment:"Set the IPMI password"`
-	Ipaddr     string            `yaml:"ipaddr,omitempty" lopt:"ipmiaddr" comment:"Set the IPMI IP address" type:"IP"`
-	Netmask    string            `yaml:"netmask,omitempty" lopt:"ipminetmask" comment:"Set the IPMI netmask" type:"IP"`
-	Port       string            `yaml:"port,omitempty" lopt:"ipmiport" comment:"Set the IPMI port"`
-	Gateway    string            `yaml:"gateway,omitempty" lopt:"ipmigateway" comment:"Set the IPMI gateway" type:"IP"`
-	Interface  string            `yaml:"interface,omitempty" lopt:"ipmiinterface" comment:"Set the node's IPMI interface (defaults: 'lan')"`
-	EscapeChar string            `yaml:"escapechar,omitempty" lopt:"ipmiescapechar" comment:"Set the IPMI escape character (defaults: '~')"`
-	Write      string            `yaml:"write,omitempty" lopt:"ipmiwrite" comment:"Enable the write of impi configuration (true/false)" type:"bool"`
-	Tags       map[string]string `yaml:"tags,omitempty" lopt:"ipmitagadd" comment:"add ipmitags"`
-	TagsDel    []string          `yaml:"tagsdel,omitempty" lopt:"ipmitagdel" comment:"remove ipmitags"` // should not go to disk only to wire
+	UserName   string            `yaml:"username,omitempty" lopt:"ipmiuser" comment:"Set the IPMI username" json:"username,omitempty"`
+	Password   string            `yaml:"password,omitempty" lopt:"ipmipass" comment:"Set the IPMI password" json:"password,omitempty"`
+	Ipaddr     string            `yaml:"ipaddr,omitempty" lopt:"ipmiaddr" comment:"Set the IPMI IP address" type:"IP" json:"ipaddr,omitempty"`
+	Netmask    string            `yaml:"netmask,omitempty" lopt:"ipminetmask" comment:"Set the IPMI netmask" type:"IP" json:"netmask,omitempty"`
+	Port       string            `yaml:"port,omitempty" lopt:"ipmiport" comment:"Set the IPMI port" json:"port,omitempty"`
+	Gateway    string            `yaml:"gateway,omitempty" lopt:"ipmigateway" comment:"Set the IPMI gateway" type:"IP" json:"gateway,omitempty"`
+	Interface  string            `yaml:"interface,omitempty" lopt:"ipmiinterface" comment:"Set the node's IPMI interface (defaults: 'lan')" json:"interface,omitempty"`
+	EscapeChar string            `yaml:"escapechar,omitempty" lopt:"ipmiescapechar" comment:"Set the IPMI escape character (defaults: '~')" json:"escapechar,omitempty"`
+	Write      string            `yaml:"write,omitempty" lopt:"ipmiwrite" comment:"Enable the write of impi configuration (true/false)" type:"bool" json:"write,omitempty"`
+	Tags       map[string]string `yaml:"tags,omitempty" lopt:"ipmitagadd" comment:"add ipmitags" json:"tags,omitempty"`
+	TagsDel    []string          `yaml:"tagsdel,omitempty" lopt:"ipmitagdel" comment:"remove ipmitags" json:"tagsdel,omitempty"` // should not go to disk only to wire
 }
 type KernelConf struct {
-	Version  string `yaml:"version,omitempty"`
-	Override string `yaml:"override,omitempty" lopt:"kerneloverride" sopt:"K" comment:"Set kernel override version"`
-	Args     string `yaml:"args,omitempty" lopt:"kernelargs" sopt:"A" comment:"Set Kernel argument"`
+	Version  string `yaml:"version,omitempty" json:"version,omitempty"`
+	Override string `yaml:"override,omitempty" lopt:"kerneloverride" sopt:"K" comment:"Set kernel override version" json:"override,omitempty"`
+	Args     string `yaml:"args,omitempty" lopt:"kernelargs" sopt:"A" comment:"Set Kernel argument" json:"args,omitempty"`
 }
 
 type NetDevs struct {
@@ -233,3 +233,8 @@ type FileSystemEntry struct {
 
 // string which is printed if no value is set
 const NoValue = "--"
+
+func (e Entry) MarshalText() (buf []byte, err error) {
+	buf = append(buf, []byte(e.Get())...)
+	return buf, nil
+}

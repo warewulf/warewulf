@@ -1,6 +1,7 @@
 package apinode
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
@@ -8,6 +9,7 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 	"github.com/warewulf/warewulf/internal/pkg/node"
+	"gopkg.in/yaml.v2"
 )
 
 /*
@@ -26,6 +28,7 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 	}
 	nodeGet.Nodes = hostlist.Expand(nodeGet.Nodes)
 	sort.Strings(nodeGet.Nodes)
+
 	if nodeGet.Type == wwapiv1.GetNodeList_Simple {
 		nodeList.Output = append(nodeList.Output,
 			fmt.Sprintf("%s:=:%s:=:%s", "NODE NAME", "PROFILES", "NETWORK"))
@@ -87,6 +90,37 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 					fmt.Sprintf("%s:=:%s:=:%s:=:%s", n.Id.Print(), f.Field, f.Source, f.Value))
 			}
 		}
+	} else if nodeGet.Type == wwapiv1.GetNodeList_YAML || nodeGet.Type == wwapiv1.GetNodeList_JSON {
+		nodeResp := node.NodeYaml{
+			NodeProfiles: make(map[string]*node.NodeConf),
+			Nodes:        make(map[string]*node.NodeConf),
+		}
+
+		filterNodes := node.FilterByName(nodes, nodeGet.Nodes)
+		for _, nodeInfo := range filterNodes {
+			myNode := node.NewConf()
+			myNode.GetFrom(nodeInfo)
+			myNode.Flatten()
+			nodeResp.Nodes[nodeInfo.Id.Get()] = &myNode
+		}
+
+		profiles, _ := nodeDB.FindAllProfiles()
+		for _, profileInfo := range profiles {
+			myProfile := node.NewConf()
+			myProfile.GetFrom(profileInfo)
+			myProfile.Flatten()
+			nodeResp.NodeProfiles[profileInfo.Id.Get()] = &myProfile
+		}
+
+		var buf []byte
+		if nodeGet.Type == wwapiv1.GetNodeList_JSON {
+			buf, _ = json.Marshal(nodeResp)
+		}
+		if nodeGet.Type == wwapiv1.GetNodeList_YAML {
+			buf, _ = yaml.Marshal(nodeResp)
+		}
+		nodeList.Output = append(nodeList.Output, string(buf))
+
 	}
 	return
 }
