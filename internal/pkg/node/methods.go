@@ -114,6 +114,7 @@ func (ent *Entry) SetSlice(val []string) {
 	} else if len(val) == 1 && val[0] == "" { // check also for an "empty" slice
 		return
 	}
+	ent.isSlice = true
 	if util.InSlice(GetUnsetVerbs(), val[0]) {
 		ent.value = []string{}
 	} else {
@@ -152,6 +153,7 @@ func (ent *Entry) SetAltSlice(val []string, from string) {
 	if len(val) == 0 {
 		return
 	}
+	ent.isSlice = true
 	ent.altvalue = append(ent.altvalue, val...)
 	if ent.from == "" {
 		ent.from = from
@@ -177,11 +179,12 @@ func (ent *Entry) SetDefaultSlice(val []string) {
 	if len(val) == 0 {
 		return
 	}
+	ent.isSlice = true
 	ent.def = val
 }
 
 /*
-Set default etry as bool
+Set default entry as bool
 */
 func (ent *Entry) SetDefaultB(val bool) {
 	if val {
@@ -347,26 +350,40 @@ func (ent *Entry) GetIntPtr() *int {
  * Misc
  *
  *********/
-
 /*
-Returns the value of Entry if it was defined set or
-alternative is presend. Default value is in '()'. If
-nothing is defined '--' is returned.
+Gets the the entry of the value in following order
+* node value if set
+* profile value if set
+* default value if set
 */
-func (ent *Entry) Print() (ret string) {
-	if len(ent.value) != 0 || len(ent.altvalue) != 0 {
-		combList := append(ent.value, ent.altvalue...)
-		ret = strings.Join(cleanList(combList), ",")
-		if len(negList(combList)) > 0 {
-			ret += " ~{" + strings.Join(negList(combList), ",") + "}"
+func (ent *Entry) Print() string {
+	if !ent.isSlice {
+		if len(ent.value) != 0 {
+			return ent.value[0]
+		}
+		if len(ent.altvalue) != 0 {
+			return ent.altvalue[0]
+		}
+		if len(ent.def) != 0 {
+			return "(" + ent.def[0] + ")"
+		}
+	} else {
+		var ret string
+		if len(ent.value) != 0 || len(ent.altvalue) != 0 {
+			combList := append(ent.value, ent.altvalue...)
+			ret = strings.Join(cleanList(combList), ",")
+			if len(negList(combList)) > 0 {
+				ret += " ~{" + strings.Join(negList(combList), ",") + "}"
+			}
+
+		}
+		if ret != "" {
+			return ret
+		}
+		if len(ent.def) != 0 {
+			return "(" + strings.Join(ent.def, ",") + ")"
 		}
 
-	}
-	if ret != "" {
-		return ret
-	}
-	if len(ent.def) != 0 {
-		return "(" + strings.Join(ent.def, ",") + ")"
 	}
 	return "--"
 }

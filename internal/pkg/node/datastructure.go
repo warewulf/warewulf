@@ -140,6 +140,7 @@ type Entry struct {
 	altvalue []string
 	from     string
 	def      []string
+	isSlice  bool
 }
 
 /*

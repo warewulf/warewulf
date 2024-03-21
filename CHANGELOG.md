@@ -275,6 +275,7 @@ Official v4.5.0 release.
   defined. #468
 - The wwinit overlay now configures the network device type. #465
 - Minor typographical fixes. #528, #519
+- wwctl [profile|node] list -a handles now slices correclty
 
 ## [4.3.0] 2022-06-25
 
