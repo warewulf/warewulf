@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/container"
+	"github.com/warewulf/warewulf/internal/pkg/kernel"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
@@ -272,7 +273,7 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 		}
 
 		wwlog.Debug("Finding kernel version for: %s", source)
-		kernelVersion := container.KernelVersion(source)
+		_, kernelVersion, _ := kernel.FindKernel(container.RootFsDir(source))
 
 		containerInfo = append(containerInfo, &wwapiv1.ContainerInfo{
 			Name:          source,
