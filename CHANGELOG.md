@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `interface` with the interface MAC address
 - Added https://github.com/Masterminds/sprig functions to templates #1030
 - Add multiple output formats (yaml & json) support. #447
+- More aliases for many wwctl commands
 
 ### Changed
 

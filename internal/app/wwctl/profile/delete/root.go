@@ -11,6 +11,7 @@ var (
 		Use:                   "delete [OPTIONS] PROFILE",
 		Short:                 "Delete a node profile",
 		Long:                  "This command deletes the node PROFILE. You may use a pattern for PROFILE.",
+		Aliases:               []string{"remove", "rm", "del"},
 		RunE:                  CobraRunE,
 		Args:                  cobra.MinimumNArgs(1),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

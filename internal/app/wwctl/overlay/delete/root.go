@@ -13,7 +13,7 @@ var (
 		Long:                  "This command will delete FILEs within OVERLAY_NAME or the entire OVERLAY_NAME if no\nfiles are listed. Use with caution!",
 		RunE:                  CobraRunE,
 		Args:                  cobra.RangeArgs(1, 2),
-		Aliases:               []string{"rm", "del"},
+		Aliases:               []string{"rm", "remove", "del"},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp

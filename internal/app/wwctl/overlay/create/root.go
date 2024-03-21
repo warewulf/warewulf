@@ -9,6 +9,7 @@ var (
 		DisableFlagsInUseLine: true,
 		Use:                   "create [OPTIONS] OVERLAY_NAME",
 		Short:                 "Initialize a new Overlay",
+		Aliases:               []string{"new", "add"},
 		Long:                  "This command creates a new empty overlay with the given OVERLAY_NAME.",
 		RunE:                  CobraRunE,
 		Args:                  cobra.ExactArgs(1),

@@ -13,7 +13,7 @@ var (
 		Long:                  "This command will remove NODE(s) from the Warewulf node configuration.",
 		Args:                  cobra.MinimumNArgs(1),
 		RunE:                  CobraRunE,
-		Aliases:               []string{"rm", "del"},
+		Aliases:               []string{"rm", "del", "remove"},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp

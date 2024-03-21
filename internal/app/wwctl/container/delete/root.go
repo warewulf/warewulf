@@ -9,6 +9,7 @@ var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
 		Use:                   "delete [OPTIONS] CONTAINER [...]",
+		Aliases:               []string{"rm", "remove", "del"},
 		Short:                 "Delete an imported container",
 		Long:                  "This command will delete CONTAINERs that have been imported into Warewulf.",
 		RunE:                  CobraRunE,

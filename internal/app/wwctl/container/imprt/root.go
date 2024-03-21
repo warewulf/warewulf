@@ -10,6 +10,7 @@ var (
 		DisableFlagsInUseLine: true,
 		Use:                   "import [OPTIONS] SOURCE [NAME]",
 		Short:                 "Import a container into Warewulf",
+		Aliases:               []string{"pull"},
 		Long: `This command will pull and import a container into Warewulf from SOURCE,
 optionally renaming it to NAME. The SOURCE must be in a supported URI format. Formats
 are:
