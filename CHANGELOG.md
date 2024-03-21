@@ -13,16 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `interface` with the interface MAC address
 - Added https://github.com/Masterminds/sprig functions to templates #1030
 - Add multiple output formats (yaml & json) support. #447
-- More aliases for many wwctl commands
+- Additional aliases for many wwctl commands. #1144
 
 ### Changed
 
 - Locally defined `tr` has been dropped, templates updated to use Sprig replace.
 - Updated the glossary. #819
 - Upgrade the golang version to 1.19.
-- Always build container on import what was default on 4.4.x
-- Removed `--setdefault` for container build, as this should be done with
-  profile set
+- Build container by default during `wwctl container import`. #1143
+- Removed `wwctl container build --setdefault`. #1143
 
 ### Fixed
 
