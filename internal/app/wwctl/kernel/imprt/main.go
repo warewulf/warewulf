@@ -37,10 +37,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if len(args) > 0 {
 		kernelVersion = args[0]
 	} else {
-		kernelVersion, err = kernel.FindKernelVersion(OptRoot)
+		_, kernelVersion, err = kernel.FindKernel(OptRoot)
 		if err != nil {
-			wwlog.Error("could not detect kernel under %s", OptRoot)
-			os.Exit(1)
+			return err
 		}
 	}
 	kernelName := kernelVersion
