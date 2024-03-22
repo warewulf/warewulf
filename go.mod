@@ -16,7 +16,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.2
 	github.com/manifoldco/promptui v0.9.0
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/opencontainers/image-spec v1.0.2-0.20190823105129-775207bd45b6
+	github.com/opencontainers/image-spec v1.1.0
 	github.com/opencontainers/umoci v0.4.6
 	github.com/pkg/errors v0.9.1
 	github.com/sassoftware/go-rpmutils v0.2.0
