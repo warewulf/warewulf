@@ -64,10 +64,19 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			os.Exit(1)
 		}
 		filteredNodes := node.FilterByName(nodes, []string{NodeName})
-		if len(filteredNodes) != 1 {
+		if hostName, err := os.Hostname(); err != nil {
+			wwlog.Error("Could not get host name: %s", err)
+		} else if len(filteredNodes) == 0 && (NodeName == "host" || NodeName == hostName) {
+			// rendering the host template
+			hostNodeInfo := new(node.NodeInfo)
+			hostNodeInfo.Id.Set(hostName)
+			hostNodeInfo.ClusterName.Set(hostName)
+			filteredNodes = append(filteredNodes, *hostNodeInfo)
+		} else if len(filteredNodes) != 1 {
 			wwlog.Error("%v does not identify a single node", NodeName)
 			os.Exit(1)
 		}
+
 		tstruct := overlay.InitStruct(&filteredNodes[0])
 		tstruct.BuildSource = overlayFile
 		buffer, backupFile, writeFile, err := overlay.RenderTemplateFile(overlayFile, tstruct)
