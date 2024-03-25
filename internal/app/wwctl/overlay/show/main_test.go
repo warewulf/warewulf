@@ -2,6 +2,7 @@ package show
 
 import (
 	"bytes"
+	"os"
 	"path"
 	"testing"
 
@@ -83,5 +84,71 @@ nodes:
 		err := baseCmd.Execute()
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "noMail")
+	})
+}
+
+func TestShowServerTemplate(t *testing.T) {
+	const template = `
+	Id: {{.Id}}
+	ClusterName: {{.ClusterName}}
+	BuildHost: {{.BuildHost}}
+	`
+
+	env := testenv.New(t)
+	env.WriteFile(t, "etc/warewulf/nodes.conf",
+		`WW_INTERNAL: 45
+nodeprofiles:
+  default:
+    tags:
+      email: admin@localhost
+  empty: {}
+nodes:
+  node1:
+    tags:
+      email: admin@node1
+  node2: {}
+  node3:
+    profiles:
+      - empty
+`)
+
+	env.WriteFile(t, path.Join(testenv.WWOverlaydir, "testoverlay/template.ww"), template)
+	defer env.RemoveAll(t)
+	warewulfd.SetNoDaemon()
+
+	host, err := os.Hostname()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Run("overlay render host template using 'host' value", func(t *testing.T) {
+		baseCmd.SetArgs([]string{"-r", "host", "testoverlay", "template.ww"})
+		baseCmd := GetCommand()
+		buf := new(bytes.Buffer)
+		baseCmd.SetOut(buf)
+		baseCmd.SetErr(buf)
+		wwlog.SetLogWriter(buf)
+		err := baseCmd.Execute()
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "Id: "+host)
+		assert.Contains(t, buf.String(), "ClusterName: "+host)
+		assert.Contains(t, buf.String(), "BuildHost: "+host)
+	})
+
+	t.Run("overlay render host template using host domain value", func(t *testing.T) {
+		host, err := os.Hostname()
+		if err != nil {
+			t.Fatal(err)
+		}
+		baseCmd.SetArgs([]string{"-r", host, "testoverlay", "template.ww"})
+		baseCmd := GetCommand()
+		buf := new(bytes.Buffer)
+		baseCmd.SetOut(buf)
+		baseCmd.SetErr(buf)
+		wwlog.SetLogWriter(buf)
+		err = baseCmd.Execute()
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "Id: "+host)
+		assert.Contains(t, buf.String(), "ClusterName: "+host)
+		assert.Contains(t, buf.String(), "BuildHost: "+host)
 	})
 }
