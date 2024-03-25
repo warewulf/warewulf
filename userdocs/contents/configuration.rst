@@ -129,17 +129,27 @@ may be overridden using ``warewulf.conf:paths``.
 .. code-block:: yaml
 
    paths:
-     bindir: /usr/bin
      sysconfdir: /etc
      localstatedir: /var/lib
      ipxesource: /usr/share/ipxe
-     srvdir: /var/lib
-     firewallddir: /usr/lib/firewalld/services
-     systemddir: /usr/lib/systemd/system
      wwoverlaydir: /var/lib/warewulf/overlays
      wwchrootdir: /var/lib/warewulf/chroots
      wwprovisiondir: /var/lib/warewulf/provision
      wwclientdir: /warewulf
+
+* ``sysconfdir``: The parent directory for the ``warewulf`` configuration directory,
+  which stores ``warewulf.conf`` and ``nodes.conf``.
+
+* ``ipxesource``: Where to get iPXE binaries.
+  These files are copied to ``warewulf.conf:tftp:tftproot`` by ``wwctl configure``.
+
+* ``wwoverlaydir``: The source for Warewulf overlays.
+
+* ``wwchrootdir``: The source for Warewulf containers.
+
+* ``wwprovisiondir``: Where to store built overlays, built containers, and imported kernels.
+
+* ``wwclientdir``: Where the Warewulf client looks for its configuration on a provisioned node.
 
 nodes.conf
 ==========
