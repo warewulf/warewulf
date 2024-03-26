@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.5.x]
 
+### Added
+
+- Document warewulf.conf:paths. #635
+
 ### Changed
 
 - Updated the glossary #819

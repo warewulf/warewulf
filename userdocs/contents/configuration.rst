@@ -10,7 +10,7 @@ warewulf.conf
 =============
 
 The Warewulf configuration exists as follows in the current version of
-Warewulf (4.4.0):
+Warewulf (4.5.0):
 
 .. code-block:: yaml
 
@@ -117,6 +117,39 @@ explained as follows:
 * ``container mounts``: These paths are mounted into the container
   during ``container exec`` or ``container shell``, typically to allow
   them to operate in the host environment prior to deployment.
+
+Paths
+-----
+
+*New in Warewulf v4.5.0*
+
+Default paths to containers, overlays, and other Warewulf components
+may be overridden using ``warewulf.conf:paths``.
+
+.. code-block:: yaml
+
+   paths:
+     sysconfdir: /etc
+     localstatedir: /var/lib
+     ipxesource: /usr/share/ipxe
+     wwoverlaydir: /var/lib/warewulf/overlays
+     wwchrootdir: /var/lib/warewulf/chroots
+     wwprovisiondir: /var/lib/warewulf/provision
+     wwclientdir: /warewulf
+
+* ``sysconfdir``: The parent directory for the ``warewulf`` configuration directory,
+  which stores ``warewulf.conf`` and ``nodes.conf``.
+
+* ``ipxesource``: Where to get iPXE binaries.
+  These files are copied to ``warewulf.conf:tftp:tftproot`` by ``wwctl configure``.
+
+* ``wwoverlaydir``: The source for Warewulf overlays.
+
+* ``wwchrootdir``: The source for Warewulf containers.
+
+* ``wwprovisiondir``: Where to store built overlays, built containers, and imported kernels.
+
+* ``wwclientdir``: Where the Warewulf client looks for its configuration on a provisioned node.
 
 nodes.conf
 ==========
