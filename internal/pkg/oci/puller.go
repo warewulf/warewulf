@@ -55,6 +55,10 @@ func OptSetPolicyContext(pCtx *signature.PolicyContext) pullerOpt {
 	}
 }
 
+func (p *puller) SetId(id string) {
+	p.id = id
+}
+
 type puller struct {
 	id            string
 	blobCachePath string
@@ -130,7 +134,6 @@ func (p *puller) Pull(ctx context.Context, uri, dst string) (err error) {
 	if err != nil {
 		wwlog.ErrOut("unable to create the image source, no manifest will be created: %s", err)
 	} else {
-
 		imgInspect, err := srcImage.Inspect(ctx)
 		if err != nil {
 			wwlog.ErrOut("Unable to get source manifest: %s", err)
@@ -151,7 +154,6 @@ func (p *puller) Pull(ctx context.Context, uri, dst string) (err error) {
 			Architecture:  imgInspect.Architecture,
 			Os:            imgInspect.Os,
 			Layers:        imgInspect.Layers,
-			LayersData:    imgInspect.LayersData,
 			Env:           imgInspect.Env,
 		}
 		srcManifest, _, err := srcImage.Manifest(ctx)
@@ -234,8 +236,9 @@ func (p *puller) pullFromCache(ctx context.Context, cacheRef types.ImageReferenc
 		return fmt.Errorf("unable to open oci layout: %v", err)
 	}
 
-	var mo layer.MapOptions
-	err = layer.UnpackRootfs(ctx, eng, path.Join(dst, "rootfs"), manifest, &mo, nil, imgSpecs.Descriptor{})
+	// var mo layer.UnpackOptions
+	// err = layer.UnpackRootfs(ctx, eng, path.Join(dst, "rootfs"), manifest, &mo, nil, imgSpecs.Descriptor{})
+	err = layer.UnpackRootfs(ctx, eng, path.Join(dst, "rootfs"), manifest, &layer.UnpackOptions{})
 	if err != nil {
 		return fmt.Errorf("unable to unpack rootfs: %v", err)
 	}
@@ -261,3 +264,13 @@ func (p *puller) PullFromCache(ctx context.Context, inspectData InspectOutput, d
 	return p.pullFromCache(ctx, cacheRef, dst)
 
 }
+
+/*
+func TestCode() error {
+	img, err := crane.Pull("nginx")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+*/

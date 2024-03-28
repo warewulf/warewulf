@@ -4,6 +4,7 @@
 package exec
 
 import (
+	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
@@ -74,13 +75,13 @@ func runContainedCmd(containerName string, args []string) (err error) {
 	if err != nil {
 		return err
 	}
-	wwlog.Output("Starting to write differences")
 	if _, err = os.Stat(path.Join(overlayDir, "changes")); err == os.ErrNotExist {
 		return nil
 	}
 	if !ro {
 		return nil
 	}
+	wwlog.Output("Starting to write differences")
 	rdHash, err := archive.TarWithOptions(path.Join(overlayDir, "changes"), &archive.TarOptions{
 		Compression: archive.Uncompressed})
 	hasher := sha256.New()
@@ -92,7 +93,8 @@ func runContainedCmd(containerName string, args []string) (err error) {
 	if err != nil {
 		return errors.Join(err, errors.New("couldn't create hash of changes"))
 	}
-	file, err := os.Create(path.Join(conf.Paths.WWChrootdir, hex.EncodeToString(hasher.Sum(nil))+".tar"))
+
+	file, err := os.Create(path.Join(warewulfconf.Get().Warewulf.DataStore+"/oci/blobs/sha256/", hex.EncodeToString(hasher.Sum(nil))))
 	if err != nil {
 		return errors.Join(err, errors.New("couldn't open output file"))
 	}
@@ -100,14 +102,16 @@ func runContainedCmd(containerName string, args []string) (err error) {
 
 	// Copy the data from reader to file, ignore error as we dealt above with it
 	rd, _ := archive.TarWithOptions(path.Join(overlayDir, "changes"), &archive.TarOptions{
-		Compression: archive.Uncompressed})
+		Compression: archive.Gzip})
 	_, err = io.Copy(file, rd)
 	if err != nil {
 		return errors.Join(err, errors.New("could't write output"))
 	}
 	wwlog.Debug("writing back layer: %s -> %s", file.Name(), container.RootFsDir(containerName))
 	_, _ = file.Seek(0, 0)
-	err = layer.UnpackLayer(container.RootFsDir(containerName), file, &layer.MapOptions{})
+	// we have to uncompress now
+	gzR, _ := gzip.NewReader(file)
+	err = layer.UnpackLayer(container.RootFsDir(containerName), gzR, &layer.UnpackOptions{})
 	if err != nil {
 		return errors.Join(err, errors.New("couldn't write back layer"))
 	}

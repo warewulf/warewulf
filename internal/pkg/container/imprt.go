@@ -45,11 +45,12 @@ func ImportDocker(uri string, name string, sCtx *types.SystemContext, pCtx *sign
 	if err != nil {
 		return err
 	}
-
-	if _, err := p.GenerateID(context.Background(), uri); err != nil {
-		return err
-	}
-
+	/*
+		if _, err := p.GenerateID(context.Background(), uri); err != nil {
+			return err
+		}
+	*/
+	p.SetId(name)
 	if err := p.Pull(context.Background(), uri, fullPath); err != nil {
 		return err
 	}

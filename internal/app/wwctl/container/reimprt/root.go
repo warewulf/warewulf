@@ -31,7 +31,7 @@ func GetCommand() *cobra.Command {
 			return list, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
-	baseCmd.PersistentFlags().BoolVarP(&vars.fromCache, "fromcache", "c", false, "Reimport the cotnainer from the cache, fail if blobs aren't in the cache")
+	baseCmd.PersistentFlags().BoolVarP(&vars.fromCache, "fromcache", "c", false, "Reimport the container from the cache, fail if blobs aren't in the cache")
 	baseCmd.PersistentFlags().BoolVar(&vars.syncUser, "syncuser", false, "Synchronize UIDs/GIDs from host to container")
 	baseCmd.PersistentFlags().BoolVarP(&vars.setBuild, "build", "b", false, "Build container when after pulling")
 	baseCmd.PersistentFlags().BoolVar(&vars.ociNoHttps, "ocinohttps", false, "Ignore wrong TLS certificates, superseedes env WAREWULF_OCI_NOHTTPS")

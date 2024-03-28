@@ -3,7 +3,6 @@ package oci
 import (
 	"time"
 
-	"github.com/containers/image/v5/types"
 	"github.com/opencontainers/go-digest"
 )
 
@@ -20,6 +19,5 @@ type InspectOutput struct {
 	Architecture  string
 	Os            string
 	Layers        []string
-	LayersData    []types.ImageInspectLayer
 	Env           []string
 }
