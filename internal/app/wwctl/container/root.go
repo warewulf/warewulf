@@ -3,11 +3,13 @@ package container
 import (
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/app/wwctl/container/build"
+	ocicache "github.com/warewulf/warewulf/internal/app/wwctl/container/cache"
 	"github.com/warewulf/warewulf/internal/app/wwctl/container/copy"
 	"github.com/warewulf/warewulf/internal/app/wwctl/container/delete"
 	"github.com/warewulf/warewulf/internal/app/wwctl/container/exec"
 	"github.com/warewulf/warewulf/internal/app/wwctl/container/imprt"
 	"github.com/warewulf/warewulf/internal/app/wwctl/container/list"
+	"github.com/warewulf/warewulf/internal/app/wwctl/container/reimprt"
 	"github.com/warewulf/warewulf/internal/app/wwctl/container/rename"
 	"github.com/warewulf/warewulf/internal/app/wwctl/container/shell"
 	"github.com/warewulf/warewulf/internal/app/wwctl/container/show"
@@ -34,7 +36,9 @@ func init() {
 	baseCmd.AddCommand(show.GetCommand())
 	baseCmd.AddCommand(syncuser.GetCommand())
 	baseCmd.AddCommand(copy.GetCommand())
+	baseCmd.AddCommand(reimprt.GetCommand())
 	baseCmd.AddCommand(rename.GetCommand())
+	baseCmd.AddCommand(ocicache.GetCommand())
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

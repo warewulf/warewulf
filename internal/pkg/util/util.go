@@ -785,5 +785,6 @@ func IsWriteAble(path string) bool {
 		wwlog.Debug("Write permission bit is not set for: %s", path)
 		return false
 	}
+	wwlog.Debug("Write permission bit is set for: %s", path)
 	return true
 }

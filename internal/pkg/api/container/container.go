@@ -8,6 +8,9 @@ import (
 	"strconv"
 	"strings"
 
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+
+	"github.com/containers/image/v5/signature"
 	"github.com/containers/image/v5/types"
 	"github.com/pkg/errors"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
@@ -194,13 +197,6 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		wwlog.Info("Updating existing VNFS")
 	} else if strings.HasPrefix(cip.Source, "docker://") || strings.HasPrefix(cip.Source, "docker-daemon://") ||
 		strings.HasPrefix(cip.Source, "file://") || util.IsFile(cip.Source) {
-		var sCtx *types.SystemContext
-		sCtx, err = getSystemContext()
-		if err != nil {
-			wwlog.ErrorExc(err, "")
-			// TODO: mhink - return was missing here. Was that deliberate?
-		}
-
 		if util.IsFile(cip.Source) && !filepath.IsAbs(cip.Source) {
 			cip.Source, err = filepath.Abs(cip.Source)
 			if err != nil {
@@ -209,7 +205,19 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 				return
 			}
 		}
-		err = container.ImportDocker(cip.Source, cip.Name, sCtx)
+		var sCtx *types.SystemContext
+		sCtx, err = GetSystemContext(cip.OciNoHttps, cip.OciUsername, cip.OciPassword)
+		if err != nil {
+			_ = container.DeleteSource(cip.Name)
+			return "", err
+		}
+		var pCtx *signature.PolicyContext
+		pCtx, err = GetPolicyContext()
+		if err != nil {
+			_ = container.DeleteSource(cip.Name)
+			return "", err
+		}
+		err = container.ImportDocker(cip.Source, cip.Name, sCtx, pCtx)
 		if err != nil {
 			err = fmt.Errorf("could not import image: %s", err.Error())
 			wwlog.Error(err.Error())
@@ -472,54 +480,65 @@ func ContainerRename(crp *wwapiv1.ContainerRenameParameter) (err error) {
 	return warewulfd.DaemonReload()
 }
 
-// Private helpers
+// create the system context and reading out environment variables
+func GetSystemContext(noHttps bool, username string, password string) (sCtx *types.SystemContext, err error) {
+	sCtx = &types.SystemContext{}
+	// only check env if noHttps wasn't set
+	if !noHttps {
+		val, ok := os.LookupEnv("WAREWULF_OCI_NOHTTPS")
+		if ok {
 
-func setOCICredentials(sCtx *types.SystemContext) error {
-	username, userSet := os.LookupEnv("WAREWULF_OCI_USERNAME")
-	password, passSet := os.LookupEnv("WAREWULF_OCI_PASSWORD")
-	if userSet || passSet {
-		if userSet && passSet {
+			noHttps, err = strconv.ParseBool(val)
+			if err != nil {
+				return nil, fmt.Errorf("while parsing insecure http option: %v", err)
+			}
+
+		}
+		// only set this if we want to disable, otherwise leave as undefined
+		if noHttps {
+			sCtx.DockerInsecureSkipTLSVerify = types.NewOptionalBool(true)
+		}
+		sCtx.OCIInsecureSkipTLSVerify = noHttps
+	}
+	if username != "" {
+		username, _ = os.LookupEnv("WAREWULF_OCI_USERNAME")
+	}
+	if password != "" {
+		password, _ = os.LookupEnv("WAREWULF_OCI_PASSWORD")
+	}
+	if username != "" || password != "" {
+		if username != "" && password != "" {
 			sCtx.DockerAuthConfig = &types.DockerAuthConfig{
 				Username: username,
 				Password: password,
 			}
 		} else {
-			return fmt.Errorf("oci username and password env vars must be specified together")
+			return nil, fmt.Errorf("oci username and password env vars must be specified together")
 		}
-	}
-	return nil
-}
-
-func setNoHTTPSOpts(sCtx *types.SystemContext) error {
-	val, ok := os.LookupEnv("WAREWULF_OCI_NOHTTPS")
-	if !ok {
-		return nil
-	}
-
-	noHTTPS, err := strconv.ParseBool(val)
-	if err != nil {
-		return fmt.Errorf("while parsing insecure http option: %v", err)
-	}
-
-	// only set this if we want to disable, otherwise leave as undefined
-	if noHTTPS {
-		sCtx.DockerInsecureSkipTLSVerify = types.NewOptionalBool(true)
-	}
-	sCtx.OCIInsecureSkipTLSVerify = noHTTPS
-
-	return nil
-}
-
-func getSystemContext() (sCtx *types.SystemContext, err error) {
-	sCtx = &types.SystemContext{}
-
-	if err := setOCICredentials(sCtx); err != nil {
-		return nil, err
-	}
-
-	if err := setNoHTTPSOpts(sCtx); err != nil {
-		return nil, err
 	}
 
 	return sCtx, nil
+}
+
+/*
+Create a policy context by reading SYSCONFDIR/warewulf/policy.json or
+a wide open policy if file doesn't exits
+*/
+func GetPolicyContext() (policyCtx *signature.PolicyContext, err error) {
+	conf := warewulfconf.Get()
+	var policy *signature.Policy
+	policyFile := path.Join(conf.Paths.Sysconfdir, "warewulf/policy.json")
+	if util.IsFile(policyFile) {
+		wwlog.Debug("using security policy: %s", policyFile)
+		policy, err = signature.NewPolicyFromFile(policyFile)
+		if err != nil {
+			return
+		}
+	} else {
+		wwlog.Debug("using wide open oci image signature policy")
+		// Create a wide open oci image signature policy
+		policy = &signature.Policy{Default: []signature.PolicyRequirement{signature.NewPRInsecureAcceptAnything()}}
+	}
+	policyCtx, err = signature.NewPolicyContext(policy)
+	return
 }
