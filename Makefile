@@ -150,6 +150,7 @@ dist:
 	rm -rf .dist/ $(WAREWULF)-$(VERSION).tar.gz
 	mkdir -p .dist/$(WAREWULF)-$(VERSION)
 	rsync -a --exclude=".github"  --exclude=".vscode" --exclude "*~" * .dist/$(WAREWULF)-$(VERSION)/
+	scripts/get-version.sh >.dist/$(WAREWULF)-$(VERSION)/VERSION
 	cd .dist; tar -czf ../$(WAREWULF)-$(VERSION).tar.gz $(WAREWULF)-$(VERSION)
 	rm -rf .dist
 
