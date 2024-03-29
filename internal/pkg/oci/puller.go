@@ -177,8 +177,8 @@ func (p *puller) Pull(ctx context.Context, uri, dst string) (err error) {
 		return fmt.Errorf("unable to open oci layout: %v", err)
 	}
 
-	var mo layer.MapOptions
-	err = layer.UnpackRootfs(ctx, eng, dst, manifest, &mo, nil, imgSpecs.Descriptor{})
+	var uo layer.UnpackOptions
+	err = layer.UnpackRootfs(ctx, eng, dst, manifest, &uo)
 	if err != nil {
 		return fmt.Errorf("unable to unpack rootfs: %v", err)
 	}
