@@ -108,10 +108,6 @@ export NO_BRP_STALE_LINK_ERROR=yes
 make install \
     DESTDIR=%{buildroot}
 
-
-%pre
-getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
-# use ipxe images from the distribution
 %if 0%{?suse_version} || 0%{?sle_version}
 yq e '
   .tftp.ipxe."00:00" = "undionly.kpxe" |
@@ -120,6 +116,10 @@ yq e '
   .tftp.ipxe."00:0B" = "snp-arm64.efi" ' \
   -i %{buildroot}%{_sysconfdir}/warewulf/warewulf.conf
 %endif
+
+%pre
+getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
+# use ipxe images from the distribution
 
 
 %post
