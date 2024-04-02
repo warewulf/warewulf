@@ -16,7 +16,7 @@ var (
 	binds         []string
 	nodename      string
 	overlayDir    string
-	ro            bool
+	recordChanges bool
 	containerName string
 )
 
@@ -25,7 +25,7 @@ func init() {
 	baseCmd.Flags().StringArrayVarP(&binds, "bind", "b", []string{}, "bind points")
 	baseCmd.Flags().StringVar(&overlayDir, "overlaydir", "", "overlayDir")
 	_ = baseCmd.MarkFlagRequired("overlaydir")
-	baseCmd.Flags().BoolVar(&ro, "readonly", false, "readonly")
+	baseCmd.Flags().BoolVar(&recordChanges, "readonly", false, "readonly")
 	_ = baseCmd.MarkFlagRequired("readonly")
 	baseCmd.Flags().StringVar(&containerName, "containername", "", "containername")
 	_ = baseCmd.MarkFlagRequired("containername")

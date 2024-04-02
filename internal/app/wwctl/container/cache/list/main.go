@@ -2,7 +2,12 @@ package cachelist
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
+	"github.com/containers/image/v5/oci/layout"
+	"github.com/containers/image/v5/types"
+	imgSpecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/opencontainers/umoci"
 	"github.com/spf13/cobra"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
@@ -11,28 +16,6 @@ import (
 
 func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err error) {
 	return func(cmd *cobra.Command, args []string) (err error) {
-		/*
-			containerInfo, err := containerList()
-			if err != nil {
-				wwlog.Error("%s", err)
-				return
-			}
-
-			ph := helper.NewPrintHelper([]string{"CONTAINER NAME", "NODES", "KERNEL VERSION", "CREATION TIME", "MODIFICATION TIME", "SIZE"})
-			for i := 0; i < len(containerInfo); i++ {
-				createTime := time.Unix(int64(containerInfo[i].CreateDate), 0)
-				modTime := time.Unix(int64(containerInfo[i].ModDate), 0)
-				ph.Append([]string{
-					containerInfo[i].Name,
-					strconv.FormatUint(uint64(containerInfo[i].NodeCount), 10),
-					containerInfo[i].KernelVersion,
-					createTime.Format(time.RFC822),
-					modTime.Format(time.RFC822),
-					util.ByteToString(int64(containerInfo[i].Size)),
-				})
-			}
-			ph.Render()
-		*/
 		eng, err := umoci.OpenLayout(warewulfconf.Get().Warewulf.DataStore + "/oci")
 		ctx := context.Background()
 		ctx, cancel := context.WithCancel(ctx)
@@ -43,7 +26,37 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 				return err
 			}
 			for _, ref := range refs {
-				wwlog.Output("ref: %v\n", ref)
+				wwlog.Info("reference: %v\n", ref)
+				refImg, err := layout.ParseReference(warewulfconf.Get().Warewulf.DataStore + "/oci:" + ref)
+				if err != nil {
+					return err
+				}
+				if vars.showManifest {
+					img, err := refImg.NewImageSource(ctx, &types.SystemContext{})
+					if err != nil {
+						return err
+					}
+					manifestTmp, _, err := img.GetManifest(ctx, nil)
+					if err != nil {
+						return err
+					}
+					var manifest imgSpecs.Manifest
+					if err := json.Unmarshal(manifestTmp, &manifest); err != nil {
+						return fmt.Errorf("unable to unmarshall manifest json: %v", err)
+					}
+					tmpOut, _ := json.MarshalIndent(manifest, "", "  ")
+					wwlog.Info("manifest: %s", tmpOut)
+				}
+				/*
+					if vars.showDigest {
+						img, err := refImg.NewImageSource(ctx, &types.SystemContext{})
+						if err != nil {
+							return err
+						}
+
+						ref.
+					}
+				*/
 			}
 		} else {
 			blobs, err := eng.ListBlobs(ctx)
@@ -51,7 +64,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 				return err
 			}
 			for _, blob := range blobs {
-				wwlog.Output(string(blob))
+				wwlog.Info(string(blob))
 			}
 		}
 

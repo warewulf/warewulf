@@ -14,7 +14,6 @@ import (
 	"github.com/containers/image/v5/docker"
 	dockerarchive "github.com/containers/image/v5/docker/archive"
 	"github.com/containers/image/v5/docker/daemon"
-	"github.com/containers/image/v5/manifest"
 	"github.com/containers/image/v5/oci/layout"
 	"github.com/containers/image/v5/signature"
 	"github.com/containers/image/v5/types"
@@ -22,7 +21,6 @@ import (
 	"github.com/opencontainers/umoci"
 	"github.com/opencontainers/umoci/oci/layer"
 	"github.com/warewulf/warewulf/internal/pkg/util"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 type pullerOpt func(*puller) error
@@ -55,14 +53,25 @@ func OptSetPolicyContext(pCtx *signature.PolicyContext) pullerOpt {
 	}
 }
 
-func (p *puller) SetId(id string) {
-	p.id = id
+func OptSetId(id string) pullerOpt {
+	return func(p *puller) error {
+		p.id = id
+		return nil
+	}
+}
+
+func OptSetRecordChanges(change bool) pullerOpt {
+	return func(p *puller) error {
+		p.recordChanges = change
+		return nil
+	}
 }
 
 type puller struct {
 	id            string
 	blobCachePath string
 	tmpDirPath    string
+	recordChanges bool
 	sysCtx        *types.SystemContext
 	policyCtx     *signature.PolicyContext
 }
@@ -130,52 +139,53 @@ func (p *puller) Pull(ctx context.Context, uri, dst string) (err error) {
 	if err != nil {
 		return fmt.Errorf("unable to parse uri: %v", err)
 	}
-	srcImage, err := srcRef.NewImage(ctx, nil)
-	if err != nil {
-		wwlog.ErrOut("unable to create the image source, no manifest will be created: %s", err)
-	} else {
-		imgInspect, err := srcImage.Inspect(ctx)
+	/*
+		srcImage, err := srcRef.NewImage(ctx, nil)
 		if err != nil {
-			wwlog.ErrOut("Unable to get source manifest: %s", err)
-		}
-		// store the manifest of the source
-		err = os.MkdirAll(path.Join(dst, "src"), 0755)
-		if err != nil {
-			wwlog.ErrOut("problems creating manifest src dir: %s", err)
-		}
-		outputData := InspectOutput{
-			Name: "", // Set below if DockerReference() is known
-			Tag:  imgInspect.Tag,
-			// Digest is set below.
-			RepoTags:      []string{}, // Possibly overridden for docker.Transport.
-			Created:       imgInspect.Created,
-			DockerVersion: imgInspect.DockerVersion,
-			Labels:        imgInspect.Labels,
-			Architecture:  imgInspect.Architecture,
-			Os:            imgInspect.Os,
-			Layers:        imgInspect.Layers,
-			Env:           imgInspect.Env,
-		}
-		srcManifest, _, err := srcImage.Manifest(ctx)
-		if err != nil {
-			wwlog.ErrOut("couldn't get manifest of source: %s", err)
+			wwlog.ErrOut("unable to create the image source, no manifest will be created: %s", err)
 		} else {
-			outputData.Digest, _ = manifest.Digest(srcManifest)
+			imgInspect, err := srcImage.Inspect(ctx)
+			if err != nil {
+				wwlog.ErrOut("Unable to get source manifest: %s", err)
+			}
+			// store the manifest of the source
+			err = os.MkdirAll(path.Join(dst, "src"), 0755)
+			if err != nil {
+				wwlog.ErrOut("problems creating manifest src dir: %s", err)
+			}
+			outputData := InspectOutput{
+				Name: "", // Set below if DockerReference() is known
+				Tag:  imgInspect.Tag,
+				// Digest is set below.
+				RepoTags:      []string{}, // Possibly overridden for docker.Transport.
+				Created:       imgInspect.Created,
+				DockerVersion: imgInspect.DockerVersion,
+				Labels:        imgInspect.Labels,
+				Architecture:  imgInspect.Architecture,
+				Os:            imgInspect.Os,
+				Layers:        imgInspect.Layers,
+				Env:           imgInspect.Env,
+			}
+			srcManifest, _, err := srcImage.Manifest(ctx)
+			if err != nil {
+				wwlog.ErrOut("couldn't get manifest of source: %s", err)
+			} else {
+				outputData.Digest, _ = manifest.Digest(srcManifest)
+			}
+			if dockerRef := srcImage.Reference().DockerReference(); dockerRef != nil {
+				outputData.Name = dockerRef.Name()
+			}
+			b, _ := json.MarshalIndent(outputData, "", "    ")
+			err = os.WriteFile(path.Join(dst, "src/inspect.json"), b, 0644)
+			if err != nil {
+				wwlog.ErrOut("problems when writing manifest of source: %s", err)
+			}
 		}
-		if dockerRef := srcImage.Reference().DockerReference(); dockerRef != nil {
-			outputData.Name = dockerRef.Name()
-		}
-		b, _ := json.MarshalIndent(outputData, "", "    ")
-		err = os.WriteFile(path.Join(dst, "src/inspect.json"), b, 0644)
+		srcImage.Close()
 		if err != nil {
-			wwlog.ErrOut("problems when writing manifest of source: %s", err)
+			wwlog.ErrOut("failed to write inspect data: %s", err)
 		}
-	}
-	srcImage.Close()
-
-	if err != nil {
-		wwlog.ErrOut("failed to write inspect data: %s", err)
-	}
+	*/
 	cacheRef, err := layout.ParseReference(p.blobCachePath + ":" + p.id)
 	if err != nil {
 		return fmt.Errorf("unable to generate local oci reference: %v", err)
@@ -190,13 +200,29 @@ func (p *puller) Pull(ctx context.Context, uri, dst string) (err error) {
 	if err != nil {
 		return err
 	}
-	return p.pullFromCache(ctx, cacheRef, dst)
+	// generate second reference with a suffix so we can repull the original image
+	if p.recordChanges {
+		cacheContRef, err := layout.ParseReference(p.blobCachePath + ":" + p.id + CacheContainerSuffix)
+		if err != nil {
+			return fmt.Errorf("unable to generate local oci reference: %v", err)
+		}
+		_, err = copy.Image(ctx, p.policyCtx, cacheContRef, cacheRef, &copy.Options{
+			ReportWriter:     os.Stdout,
+			SourceCtx:        p.sysCtx,
+			RemoveSignatures: false,
+		})
+		if err != nil {
+			return err
+		}
+
+	}
+	return p.PullFromCache(ctx, cacheRef, dst)
 }
 
 /*
-private helper function to pull out the container from the cache
+Pulls the container out from the cache to the given destination
 */
-func (p *puller) pullFromCache(ctx context.Context, cacheRef types.ImageReference, dst string) (err error) {
+func (p *puller) PullFromCache(ctx context.Context, cacheRef types.ImageReference, dst string) (err error) {
 	// defaults to $TMPDIR or /tmp
 	tmpDir, err := os.MkdirTemp(p.tmpDirPath, "oci-bundle-")
 	if err != nil {
@@ -245,32 +271,3 @@ func (p *puller) pullFromCache(ctx context.Context, cacheRef types.ImageReferenc
 
 	return nil
 }
-
-func (p *puller) PullFromCache(ctx context.Context, inspectData InspectOutput, dst string) (err error) {
-	cacheRef, err := layout.ParseReference(p.blobCachePath + ":" + inspectData.Digest.String())
-	if err != nil {
-		return fmt.Errorf("unable to generate local oci reference: %v", err)
-	}
-	err = os.MkdirAll(path.Join(dst, "src"), 0755)
-	if err != nil {
-		wwlog.ErrOut("problems creating manifest src dir: %s", err)
-	}
-	b, _ := json.MarshalIndent(inspectData, "", "    ")
-	err = os.WriteFile(path.Join(dst, "src/inspect.json"), b, 0644)
-	if err != nil {
-		wwlog.ErrOut("failed to write inspect data: %s", err)
-	}
-
-	return p.pullFromCache(ctx, cacheRef, dst)
-
-}
-
-/*
-func TestCode() error {
-	img, err := crane.Pull("nginx")
-	if err != nil {
-		return err
-	}
-	return nil
-}
-*/

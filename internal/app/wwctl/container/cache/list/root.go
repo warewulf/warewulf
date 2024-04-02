@@ -3,7 +3,9 @@ package cachelist
 import "github.com/spf13/cobra"
 
 type variables struct {
-	allblobs bool
+	allblobs     bool
+	showManifest bool
+	showDigest   bool
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
@@ -18,5 +20,7 @@ func GetCommand() *cobra.Command {
 		Aliases:               []string{"ls"},
 	}
 	baseCmd.Flags().BoolVarP(&vars.allblobs, "allblobs", "a", false, "list all blobs")
+	baseCmd.Flags().BoolVarP(&vars.showManifest, "fullmanifest", "m", false, "show also manifests")
+	baseCmd.Flags().BoolVarP(&vars.showDigest, "digest", "f", false, "show also digest")
 	return baseCmd
 }

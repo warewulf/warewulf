@@ -151,8 +151,11 @@ ARG_LOOP:
 		if err != nil {
 			wwlog.Error("Could not remove image files %s", containerName)
 		}
-
-		fmt.Printf("Container has been deleted: %s\n", containerName)
+		err = container.DeleteCache(containerName)
+		if err != nil {
+			wwlog.Error("Could not remove cache files %s", containerName)
+		}
+		wwlog.Info("Container has been deleted: %s\n", containerName)
 	}
 
 	return
@@ -217,7 +220,7 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 			_ = container.DeleteSource(cip.Name)
 			return "", err
 		}
-		err = container.ImportDocker(cip.Source, cip.Name, sCtx, pCtx)
+		err = container.ImportDocker(cip.Source, cip.Name, cip.RecordChanges, sCtx, pCtx)
 		if err != nil {
 			err = fmt.Errorf("could not import image: %s", err.Error())
 			wwlog.Error(err.Error())

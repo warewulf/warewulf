@@ -6,27 +6,31 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 )
 
-func CobraRunE(cmd *cobra.Command, args []string) (err error) {
+func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err error) {
 
-	// Shim in a name if none given.
-	name := ""
-	if len(args) == 2 {
-		name = args[1]
+	return func(cmd *cobra.Command, args []string) (err error) {
+
+		// Shim in a name if none given.
+		name := ""
+		if len(args) == 2 {
+			name = args[1]
+		}
+
+		cip := &wwapiv1.ContainerImportParameter{
+			Source:        args[0],
+			Name:          name,
+			Force:         vars.SetForce,
+			Update:        vars.SetUpdate,
+			Build:         vars.SetBuild,
+			Default:       vars.SetDefault,
+			SyncUser:      vars.SyncUser,
+			OciNoHttps:    vars.OciNoHttps,
+			OciUsername:   vars.OciUsername,
+			OciPassword:   vars.OciPassword,
+			RecordChanges: vars.recordChanges,
+		}
+
+		_, err = apicontainer.ContainerImport(cip)
+		return
 	}
-
-	cip := &wwapiv1.ContainerImportParameter{
-		Source:      args[0],
-		Name:        name,
-		Force:       SetForce,
-		Update:      SetUpdate,
-		Build:       SetBuild,
-		Default:     SetDefault,
-		SyncUser:    SyncUser,
-		OciNoHttps:  OciNoHttps,
-		OciUsername: OciUsername,
-		OciPassword: OciPassword,
-	}
-
-	_, err = apicontainer.ContainerImport(cip)
-	return
 }

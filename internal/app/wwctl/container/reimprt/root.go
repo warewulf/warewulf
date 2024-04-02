@@ -6,12 +6,13 @@ import (
 )
 
 type variables struct {
-	fromCache   bool
-	syncUser    bool
-	setBuild    bool
-	ociNoHttps  bool
-	ociUsername string
-	ociPassword string
+	fromCache     bool
+	syncUser      bool
+	setBuild      bool
+	ociNoHttps    bool
+	ociUsername   string
+	ociPassword   string
+	recordChanges bool
 }
 
 func GetCommand() *cobra.Command {
@@ -37,5 +38,6 @@ func GetCommand() *cobra.Command {
 	baseCmd.PersistentFlags().BoolVar(&vars.ociNoHttps, "ocinohttps", false, "Ignore wrong TLS certificates, superseedes env WAREWULF_OCI_NOHTTPS")
 	baseCmd.PersistentFlags().StringVar(&vars.ociUsername, "ociusername", "", "Set username for the access to the registry, superseedes env WAREWULF_OCI_USERNAME")
 	baseCmd.PersistentFlags().StringVar(&vars.ociPassword, "ocipasswd", "", "Set password for the access to the registry, superseedes env WAREWULF_OCI_PASSWORD")
+	baseCmd.PersistentFlags().BoolVarP(&vars.recordChanges, "record", "r", false, "Record the changes a separate layers")
 	return baseCmd
 }

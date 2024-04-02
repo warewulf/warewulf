@@ -76,7 +76,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	ps1Str := fmt.Sprintf("[%s|%s] Warewulf> ", exitEval, containerName)
 	msgStr := `Image is rebuilt, depending on the exit status of the last called program.
 Type "true" or "false" to enforce or abort image rebuilt.`
-	if len(lowerObjects) != 0 && nodename == "" && !ro {
+	if len(lowerObjects) != 0 && nodename == "" && !recordChanges {
 		options := fmt.Sprintf("lowerdir=%s,upperdir=%s,workdir=%s",
 			path.Join(overlayDir, "lower"), containerPath, path.Join(overlayDir, "work"))
 		wwlog.Debug("overlay options: %s", options)
@@ -109,7 +109,7 @@ Type "true" or "false" to enforce or abort image rebuilt.`
 			os.Exit(1)
 		}
 		ps1Str = fmt.Sprintf("[%s|ro|%s] Warewulf> ", containerName, nodename)
-	} else if ro && nodename == "" {
+	} else if recordChanges && nodename == "" {
 		// if !util.IsWriteAble(containerPath) && nodename == "" {
 		_ = os.MkdirAll(path.Join(overlayDir, "changes"), os.ModePerm)
 		ps1Str = fmt.Sprintf("[%s|%s] Warewulf> ", exitEval, containerName)

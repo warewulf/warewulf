@@ -1,10 +1,15 @@
 package container
 
 import (
+	"context"
 	"os"
+	"strings"
 
+	"github.com/opencontainers/umoci"
 	"github.com/pkg/errors"
 
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/oci"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -76,7 +81,6 @@ Delete the chroot of a container
 */
 func DeleteSource(name string) error {
 	fullPath := SourceDir(name)
-
 	wwlog.Verbose("Removing path: %s", fullPath)
 	return os.RemoveAll(fullPath)
 }
@@ -117,4 +121,40 @@ func DeleteImage(name string) error {
 		return nil
 	}
 	return errors.Errorf("Image %s of container %s doesn't exist\n", imageFile, name)
+}
+
+/*
+Delete the files from the cache dor the given container
+*/
+func DeleteCache(name string) (err error) {
+	eng, err := umoci.OpenLayout(warewulfconf.Get().Warewulf.DataStore + "/oci")
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	lstRef, err := eng.ListReferences(ctx)
+	if err != nil {
+		wwlog.Warn("couldn't open cache reference: %s", err)
+		return err
+	}
+	runGb := false
+	for _, ref := range lstRef {
+		if strings.EqualFold(ref, name) {
+			err = eng.DeleteReference(ctx, name)
+			if err != nil {
+				return err
+			}
+			runGb = true
+		} else if strings.EqualFold(ref, name+oci.CacheContainerSuffix) {
+			err = eng.DeleteReference(ctx, name+oci.CacheContainerSuffix)
+			if err != nil {
+				return err
+			}
+			runGb = true
+		}
+	}
+	if runGb {
+		err = eng.GC(ctx)
+	}
+
+	return
 }
