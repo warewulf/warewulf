@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix `wwctl profile list -a` format when kernerargs are set
+- Don't attempt to rebuild protocol buffers in offline mode. #1155
 
 ## [4.5.0]
 
