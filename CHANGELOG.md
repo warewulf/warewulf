@@ -35,6 +35,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `/sys/firmware/devicetree/base/serial-number`
 - Fix `wwctl profile list -a` format when kernerargs are set
 - Fix a rendering bug in the documentation for GRUB boot support. #1132
+- Replace slice in templates with sprig substr. #1093
+- Don't attempt to rebuild protocol buffers in offline mode. #1155
+- Fix Suse package by moving yq command to `%install` section. #1169
 
 ## [4.5.0] 2024-02-08
 
