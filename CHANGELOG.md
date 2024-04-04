@@ -28,6 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated the glossary. #819
 - Upgrade the golang version to 1.19.
 - Upgrade the golang version to 1.20.
+- Bump github.com/opencontainers/image-spec to 1.1.0
+- Bump github.com/containers/storage to 1.53.0
+- Bump google.golang.org/grpc 1.62.1
+- Bump google.golang.org/protobuf to 1.33.0
+- Bump github.com/containers/image/v5 to 5.30.0
+- Bump github.com/opencontainers/umoci to 0.4.7
 
 ### Fixed
 
