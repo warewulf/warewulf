@@ -5,11 +5,13 @@ on:
   push:
     branches:
       - main
+      - 'v4.*.x'
     paths-ignore:
       - 'docs/**'
   pull_request:
     branches:
       - main
+      - 'v4.*.x'
     paths-ignore:
       - 'docs/**'
 
