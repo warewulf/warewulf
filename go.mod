@@ -16,7 +16,7 @@ require (
 	github.com/manifoldco/promptui v0.9.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/opencontainers/image-spec v1.0.2-0.20190823105129-775207bd45b6
-	github.com/opencontainers/umoci v0.4.6
+	github.com/opencontainers/umoci v0.4.7
 	github.com/pkg/errors v0.9.1
 	github.com/sassoftware/go-rpmutils v0.2.0
 	github.com/spf13/cobra v1.6.1
@@ -31,6 +31,7 @@ require (
 )
 
 require (
+	github.com/AdamKorcz/go-fuzz-headers v0.0.0-20210312213058-32f4d319f0d2 // indirect
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/Microsoft/go-winio v0.4.17-0.20210211115548-6eac466e5fa3 // indirect
 	github.com/VividCortex/ewma v1.1.1 // indirect

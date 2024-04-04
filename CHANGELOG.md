@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated the glossary #819
 - Upgrade the golang version to 1.20.
+- Bump github.com/opencontainers/umoci to 0.4.7
 
 ### Fixed
 
