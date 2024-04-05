@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump google.golang.org/protobuf to 1.33.0
 - Bump github.com/containers/image/v5 to 5.30.0
 - Bump github.com/opencontainers/umoci to 0.4.7
+- Bump github.com/docker/docker to 25.0.5+incompatible
 
 ### Fixed
 
