@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bump github.com/docker/docker to 25.0.5+incompatible
 - Bump github.com/go-jose/go-jose/v3 to 3.0.3
 - Bump gopkg.in/go-jose/go-jose.v2 to 2.6.3
+- Bump github.com/opencontainers/runc to 1.1.12
 
 ### Fixed
 
