@@ -13,18 +13,8 @@ VARLIST := OS
 # Project Information
 VARLIST += WAREWULF VERSION RELEASE
 WAREWULF ?= warewulf
-VERSION ?= 4.5.x
-RELEASE_INCREMENT ?= 1
-
-GIT_HASH := $(shell test -e .git && git log -1 --format="%h")
-GIT_TAG := $(shell test -e .git && git describe --tags | head -n1)
-ifeq ($(GIT_TAG),v$(VERSION))
-  RELEASE ?= $(RELEASE_INCREMENT)
-else ifdef GIT_HASH
-    RELEASE ?= $(RELEASE_INCREMENT).git_$(GIT_HASH)
-else
-  RELEASE ?= $(RELEASE_INCREMENT)
-endif
+VERSION ?= $(shell scripts/rpm-version.sh $$(scripts/get-version.sh))
+RELEASE ?= $(shell scripts/rpm-release.sh $$(scripts/get-version.sh))
 
 # Use LSB-compliant paths if OS is known
 ifneq ($(OS),)
