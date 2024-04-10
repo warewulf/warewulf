@@ -36,7 +36,7 @@ Defined Overlays
 System or wwinit overlay
 ------------------------
 
-This overlay contains all the nesscesary scripts to provision a
+This overlay contains all the necessary scripts to provision a
 Warewulf node. It is available before the ``systemd`` or other init is
 called and contains all configurations which are needed to bring up
 the compute node. It is not updated during run time. Besides the
