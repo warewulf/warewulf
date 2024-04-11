@@ -16,5 +16,4 @@ depends() {
 install() {
     inst_hook cmdline 30 "$moddir/parse-root.sh"
     inst_hook mount 30 "$moddir/load-root.sh"
-    inst_hook pre-pivot 99 "$moddir/fix-selinux.sh"
 }

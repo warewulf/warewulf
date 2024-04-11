@@ -1,5 +1,5 @@
 #!/bin/sh
-# root=cpio+http://<server>/path/to/cpio
+# root=wwinit
 
 [ -z "$root" ] && root=$(getarg root=)
 
