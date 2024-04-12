@@ -249,87 +249,74 @@ func FindFiles(path string) []string {
 	return ret
 }
 
-/*
-Finds all files under a given directory with tar like include and ignore patterns.
-/foo/*
-will match /foo/baar/ and /foo/baar/sibling
-*/
+// FindFilterFiles returns the names of all files under root_path that
+// are identified by includePatterns that are not ignored by
+// ignorePatterns or (if ignore_xdev is true) by being on a different
+// device than root_path.
+//
+// If a pattern in includePatterns identifies a directory, all of the
+// files under that directory are considered for inclusion.
+//
+// If a pattern in ignorePatterns identifies a directory, all files in
+// the directory are ignored.
 func FindFilterFiles(
-	path string,
-	includePattern []string,
-	ignorePattern []string,
+	root_path string,
+	includePatterns []string,
+	ignorePatterns []string,
 	ignore_xdev bool) (ofiles []string, err error) {
-	wwlog.Debug("Finding files: %s include: %s ignore: %s", path, includePattern, ignorePattern)
-	cwd, err := os.Getwd()
+	wwlog.Debug("Finding files: %s include: %s ignore: %s", root_path, includePatterns, ignorePatterns)
+
+	root_stat, err := os.Stat(root_path)
 	if err != nil {
 		return ofiles, err
 	}
-	defer func() {
-		err = FirstError(err, os.Chdir(cwd))
-	}()
-	err = os.Chdir(path)
-	if err != nil {
-		return ofiles, errors.Wrapf(err, "Failed to change path: %s", path)
-	}
-	// expand our include list as fspath.Match with /foo/* would catch /foo/baar but
-	// not /foo/baar/sibling
-	var globedInclude []string
-	for _, include := range includePattern {
-		globed, err := filepath.Glob(include)
+	root_dev := root_stat.Sys().(*syscall.Stat_t).Dev
+
+	for _, includePattern := range includePatterns {
+		includePattern = filepath.Join(root_path, strings.Trim(includePattern, "/"))
+		includePaths, err := filepath.Glob(includePattern)
 		if err != nil {
-			return ofiles, err
-		}
-		globedInclude = append(globedInclude, globed...)
-	}
-	if ignore_xdev {
-		wwlog.Debug("Ignoring cross-device (xdev) files")
-	}
-
-	path_stat, err := os.Stat(".")
-	if err != nil {
-		return ofiles, err
-	}
-
-	dev := path_stat.Sys().(*syscall.Stat_t).Dev
-	for _, inc := range globedInclude {
-		wwlog.Debug("inc %s", inc)
-		stat, err := os.Stat(inc)
-		if os.IsNotExist(err) {
-			// there may be broken softlinks
+			wwlog.Warn("skipping include pattern: %s: %w", includePattern, err)
 			continue
-		} else if err != nil {
-			return ofiles, err
 		}
-		if stat.IsDir() {
-			// get the rest of dir
-			err = filepath.WalkDir(inc, func(location string, info fs.DirEntry, err error) error {
+		for _, includePath := range includePaths {
+			err = filepath.WalkDir(includePath, func(path string, d fs.DirEntry, err error) error {
+				if err != nil {
+					return nil
+				}
+
+				relpath, err := filepath.Rel(root_path, path)
 				if err != nil {
 					return err
 				}
-				if location == "." {
-					return nil
-				}
-				fsInfo, err := info.Info()
-				if err != nil {
-					return err
-				}
-				if ignore_xdev && fsInfo.Sys().(*syscall.Stat_t).Dev != dev {
-					wwlog.Debug("Ignored (cross-device): %s", location)
-					return nil
-				}
-				for _, ignored_pat := range ignorePattern {
-					if ignored, _ := filepath.Match(ignored_pat, location); ignored {
-						return filepath.SkipDir
+
+				for _, ignorePattern := range ignorePatterns {
+					ignorePattern = strings.Trim(ignorePattern, "/")
+					match, err := filepath.Match(ignorePattern, relpath)
+					if err != nil {
+						continue
+					}
+					if match {
+						if d.IsDir() {
+							return fs.SkipDir
+						} else {
+							return nil
+						}
 					}
 				}
-				ofiles = append(ofiles, location)
+
+				fsInfo, err := d.Info()
+				if err != nil {
+					return err
+				}
+				if ignore_xdev && fsInfo.Sys().(*syscall.Stat_t).Dev != root_dev {
+					wwlog.Debug("Ignored (cross-device): %s", relpath)
+					return fs.SkipDir
+				}
+
+				ofiles = append(ofiles, relpath)
 				return nil
 			})
-			if err != nil {
-				return ofiles, err
-			}
-		} else {
-			ofiles = append(ofiles, inc)
 		}
 	}
 
