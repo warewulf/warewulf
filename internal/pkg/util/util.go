@@ -266,6 +266,7 @@ func FindFilterFiles(
 	ignore_xdev bool) (ofiles []string, err error) {
 	wwlog.Debug("Finding files: %s include: %s ignore: %s", root_path, includePatterns, ignorePatterns)
 
+	// record the root_dev device for ignore_xdev
 	root_stat, err := os.Stat(root_path)
 	if err != nil {
 		return ofiles, err
@@ -273,6 +274,7 @@ func FindFilterFiles(
 	root_dev := root_stat.Sys().(*syscall.Stat_t).Dev
 
 	for _, includePattern := range includePatterns {
+		wwlog.Debug("considering include pattern: %s", includePattern)
 		includePattern = filepath.Join(root_path, strings.Trim(includePattern, "/"))
 		includePaths, err := filepath.Glob(includePattern)
 		if err != nil {
@@ -280,8 +282,10 @@ func FindFilterFiles(
 			continue
 		}
 		for _, includePath := range includePaths {
+			wwlog.Debug("considering include path: %s", includePath)
 			err = filepath.WalkDir(includePath, func(path string, d fs.DirEntry, err error) error {
 				if err != nil {
+					wwlog.Warn("skipping %s: %w", path, err)
 					return nil
 				}
 
@@ -291,15 +295,18 @@ func FindFilterFiles(
 				}
 
 				for _, ignorePattern := range ignorePatterns {
-					ignorePattern = strings.Trim(ignorePattern, "/")
-					match, err := filepath.Match(ignorePattern, relpath)
+					wwlog.Debug("considering ignore pattern: %s", ignorePattern)
+					match, err := filepath.Match(strings.Trim(ignorePattern, "/"), relpath)
 					if err != nil {
+						wwlog.Warn("skipping ignore pattern: %s: %s", ignorePattern, err)
 						continue
 					}
 					if match {
 						if d.IsDir() {
+							wwlog.Debug("ignoring directory: %s", path)
 							return fs.SkipDir
 						} else {
+							wwlog.Debug("ignoring file: %s", path)
 							return nil
 						}
 					}
@@ -307,10 +314,11 @@ func FindFilterFiles(
 
 				fsInfo, err := d.Info()
 				if err != nil {
+					wwlog.Warn("skipping %s: %w", path, err)
 					return err
 				}
 				if ignore_xdev && fsInfo.Sys().(*syscall.Stat_t).Dev != root_dev {
-					wwlog.Debug("Ignored (cross-device): %s", relpath)
+					wwlog.Debug("ignoring for xdev: %s (skipping directory)", path)
 					return fs.SkipDir
 				}
 
