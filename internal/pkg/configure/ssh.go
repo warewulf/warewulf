@@ -11,7 +11,11 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-func SSH() error {
+/*
+Create password less ssh keys in the home of the user who its
+calling this function. (root in our case)
+*/
+func SSH(keyTypes ...string) error {
 	if os.Getuid() == 0 {
 		fmt.Printf("Updating system keys\n")
 		conf := warewulfconf.Get()
@@ -23,7 +27,7 @@ func SSH() error {
 			os.Exit(1)
 		}
 
-		for _, k := range [4]string{"rsa", "dsa", "ecdsa", "ed25519"} {
+		for _, k := range keyTypes {
 			keytype := "ssh_host_" + k + "_key"
 			if !util.IsFile(path.Join(wwkeydir, keytype)) {
 				fmt.Printf("Setting up key: %s\n", keytype)

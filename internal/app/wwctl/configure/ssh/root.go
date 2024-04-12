@@ -12,6 +12,7 @@ var (
 			"keys.",
 		RunE: CobraRunE,
 	}
+	keyTypes []string
 )
 
 func init() {
@@ -19,5 +20,6 @@ func init() {
 
 // GetRootCommand returns the root cobra.Command for the application.
 func GetCommand() *cobra.Command {
+	baseCmd.PersistentFlags().StringArrayVarP(&keyTypes, "keytypes", "t", []string{"rsa", "dsa", "ecdsa", "ed25519"}, "ssh key types to be created")
 	return baseCmd
 }
