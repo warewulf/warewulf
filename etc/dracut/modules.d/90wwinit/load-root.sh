@@ -12,6 +12,6 @@ do
     if [ -n "${archive}" ]
     then
         info "Loading ${archive}"
-        curl -L "${archive}" | gzip -d | cpio -im --directory="${NEWROOT}"
+        curl --silent -L "${archive}" | gzip -d | cpio -im --directory="${NEWROOT}"
     fi
 done

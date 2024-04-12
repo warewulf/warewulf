@@ -14,6 +14,7 @@ depends() {
 }
 
 install() {
+    inst_multiple cpio curl
     inst_hook cmdline 30 "$moddir/parse-root.sh"
-    inst_hook mount 30 "$moddir/load-root.sh"
+    inst_hook pre-mount 30 "$moddir/load-root.sh"
 }
