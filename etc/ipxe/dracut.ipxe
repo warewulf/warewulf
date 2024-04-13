@@ -1,0 +1,7 @@
+#!ipxe
+
+set uri http://{{.Ipaddr}}:{{.Port}}/provision/{{.Hwaddr}}?assetkey=${asset}&uuid=${uuid}
+
+kernel --name kernel ${uri}&stage=kernel
+initrd --name initramfs tftp://192.168.3.11/warewulf/initramfs.img
+boot kernel initrd=initramfs rd.neednet=1 net.ifnames=0 root=wwinit wwinit.image=${uri}&stage=container&compress=gz wwinit.system=${uri}&stage=system&compress=gz wwinit.runtime=${uri}&stage=runtime&compress=gz debug wwid={{.Hwaddr}} {{.KernelArgs}} init=/init
