@@ -2,6 +2,7 @@ package container
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/pkg/errors"
 
@@ -102,19 +103,37 @@ func Duplicate(name string, destination string) error {
 Delete the image of a container
 */
 func DeleteImage(name string) error {
-	imageFile := ImageFile(name)
-	if util.IsFile(imageFile) {
-		wwlog.Verbose("removing %s for container %s", imageFile, name)
-		errImg := os.Remove(imageFile)
-		wwlog.Verbose("removing %s for container %s", imageFile+".gz", name)
-		errGz := os.Remove(imageFile + ".gz")
-		if errImg != nil {
-			return errors.Errorf("Problems delete %s for container %s: %s\n", imageFile, name, errImg)
-		}
-		if errGz != nil {
-			return errors.Errorf("Problems delete %s for container %s: %s\n", imageFile+".gz", name, errGz)
-		}
-		return nil
+	images_to_delete := []string{
+		ImageFile(name),
+		ImageFile(name)+".gz",
+		ImageFile(name+"-cont"),
+		ImageFile(name+"-cont")+".gz",
 	}
-	return errors.Errorf("Image %s of container %s doesn't exist\n", imageFile, name)
+	for _, imageFile := range images_to_delete {
+		if util.IsFile(imageFile) {
+			wwlog.Verbose("removing %s for container %s", imageFile, name)
+			err := os.Remove(imageFile)
+			if err != nil {
+				return errors.Errorf("Problem deleting %s for container %s: %s", imageFile, name, err)
+			}
+		}
+	}
+	return nil
+}
+
+const Includes = "etc/warewulf/includes"
+const Excludes = "etc/warewulf/excludes"
+const Split = "etc/warewulf/split"
+
+func PatternFile(name string, src string) string {
+	return filepath.Join(RootFsDir(name), src)
+}
+
+func GetPatterns(name string, src string) ([]string, error) {
+	path := PatternFile(name, src)
+	if util.IsFile(path) {
+		return util.ReadFile(path)
+	} else {
+		return []string{}, nil
+	}
 }
