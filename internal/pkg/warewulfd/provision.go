@@ -15,6 +15,7 @@ import (
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/container"
 	"github.com/warewulf/warewulf/internal/pkg/kernel"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -33,6 +34,7 @@ type templateVars struct {
 	Port           string
 	KernelArgs     string
 	KernelOverride string
+	NetDevs        map[string]*node.NetDevs
 }
 
 func ProvisionSend(w http.ResponseWriter, req *http.Request) {
@@ -93,6 +95,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 
 	} else if rinfo.stage == "ipxe" {
 		stage_file = path.Join(conf.Paths.Sysconfdir, "warewulf/ipxe/"+node.Ipxe.Get()+".ipxe")
+		tstruct := overlay.InitStruct(&node)
 		tmpl_data = templateVars{
 			Id:             node.Id.Get(),
 			Cluster:        node.ClusterName.Get(),
@@ -103,7 +106,8 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			Hwaddr:         rinfo.hwaddr,
 			ContainerName:  node.ContainerName.Get(),
 			KernelArgs:     node.Kernel.Args.Get(),
-			KernelOverride: node.Kernel.Override.Get()}
+			KernelOverride: node.Kernel.Override.Get(),
+			NetDevs:        tstruct.NetDevs}
 	} else if rinfo.stage == "kernel" {
 		if node.Kernel.Override.Defined() {
 			stage_file = kernel.KernelImage(node.Kernel.Override.Get())

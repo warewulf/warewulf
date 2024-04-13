@@ -4,4 +4,4 @@ set uri http://{{.Ipaddr}}:{{.Port}}/provision/{{.Hwaddr}}?assetkey=${asset}&uui
 
 kernel --name kernel ${uri}&stage=kernel
 initrd --name initramfs tftp://192.168.3.11/warewulf/initramfs.img
-boot kernel initrd=initramfs rd.neednet=1 net.ifnames=0 root=wwinit wwinit.image=${uri}&stage=container&compress=gz wwinit.system=${uri}&stage=system&compress=gz wwinit.runtime=${uri}&stage=runtime&compress=gz debug wwid={{.Hwaddr}} {{.KernelArgs}} init=/init
+boot kernel initrd=initramfs rd.neednet=1 {{ range $devname, $netdev := .NetDevs }}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} {{end}}{{end}} root=wwinit wwinit.image=${uri}&stage=container&compress=gz wwinit.system=${uri}&stage=system&compress=gz wwinit.runtime=${uri}&stage=runtime&compress=gz debug wwid={{.Hwaddr}} {{.KernelArgs}} init=/init
