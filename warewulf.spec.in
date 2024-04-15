@@ -76,8 +76,12 @@ system for large clusters of bare metal and/or virtual systems.
 
 %package dracut
 Summary: dracut module for loading a Warewulf container image
+
 Requires: dracut
+%if 0%{?suse_version}
+%else
 Requires: dracut-network
+%endif
 
 %description dracut
 Warewulf is a stateless and diskless container operating system provisioning
