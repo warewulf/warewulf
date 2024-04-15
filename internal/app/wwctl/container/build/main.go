@@ -70,7 +70,7 @@ func runInitramfsBuild(cmd *cobra.Command, cbp *wwapiv1.ContainerBuildParameter)
 			cexec.SetBinds([]string{fmt.Sprintf("%s:%s", dracutHostDir, dracutContainerDir)})
 		}
 
-		err = cexec.CobraRunE(cmd, []string{c, "/usr/bin/dracut --no-hostonly --force --verbose --kver " + kver + " /boot/initramfs-" + kver + ".img"})
+		err = cexec.CobraRunE(cmd, []string{c, "/usr/bin/dracut --no-hostonly --force --verbose --add wwinit --kver " + kver + " /boot/initramfs-" + kver + ".img"})
 		if err != nil {
 			return
 		}

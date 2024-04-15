@@ -8,11 +8,6 @@ check() {
     return 255
 }
 
-depends() {
-    echo network
-    return 0
-}
-
 install() {
     inst_multiple cpio curl
     inst_hook cmdline 30 "$moddir/parse-root.sh"
