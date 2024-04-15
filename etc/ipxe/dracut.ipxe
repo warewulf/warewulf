@@ -1,7 +1,46 @@
 #!ipxe
 
-set uri http://{{.Ipaddr}}:{{.Port}}/provision/{{.Hwaddr}}?assetkey=${asset}&uuid=${uuid}
+echo
+echo ================================================================================
+echo Warewulf v4 now booting via dracut: {{.Fqdn}} ({{.Hwaddr}})
+echo
+echo Container:     {{.ContainerName}}
+{{if .KernelOverride }}
+echo Kernel:        {{.KernelOverride}}
+{{else}}
+echo Kernel:        {{.ContainerName}} (container default)
+{{end}}
+echo KernelArgs:    {{.KernelArgs}}
+echo
 
-kernel --name kernel ${uri}&stage=kernel
-initrd --name initramfs ${uri}&stage=initramfs
-boot kernel initrd=initramfs rd.neednet=1 {{ range $devname, $netdev := .NetDevs }}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} {{end}}{{end}} root=wwinit wwinit.image=${uri}&stage=container&compress=gz wwinit.system=${uri}&stage=system&compress=gz wwinit.runtime=${uri}&stage=runtime&compress=gz debug wwid={{.Hwaddr}} {{.KernelArgs}} init=/init
+set uri http://{{.Ipaddr}}:{{.Port}}/provision/{{.Hwaddr}}?assetkey=${asset}&uuid=${uuid}
+echo Warewulf Controller: {{.Ipaddr}}
+
+echo Downloading Kernel Image:
+kernel --name kernel ${uri}&stage=kernel || goto reboot
+
+{{if ne .KernelOverride ""}}
+echo Downloading Kernel Modules:
+imgextract --name kmods ${uri}&stage=kmods&compress=gz || initrd --name kmods ${uri}&stage=kmods || goto reboot
+set kernel_mods initrd=kmods
+{{end}}
+
+echo Downloading initramfs
+initrd --name initramfs ${uri}&stage=initramfs || goto reboot
+
+set dracut_net rd.neednet=1 {{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} {{end}}{{end}}
+set dracut_wwinit root=wwinit wwinit.image=${uri}&stage=container&compress=gz wwinit.system=${uri}&stage=system&compress=gz wwinit.runtime=${uri}&stage=runtime&compress=gz init=/init
+
+echo Booting initramfs
+#echo Network KernelArgs: ${dracut_net}
+#echo Dracut wwinit KernelArgs: ${dracut_wwinit}
+#sleep 15
+boot kernel initrd=initramfs ${kernel_mods} ${dracut_net} ${dracut_wwinit} wwid={{.Hwaddr}} {{.KernelArgs}}
+
+
+:reboot
+echo
+echo There was an error, rebooting in 15s...
+echo
+sleep 15
+reboot
