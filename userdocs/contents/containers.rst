@@ -134,7 +134,7 @@ mismatch, the import command will print out a warning.  By setting the
 ``--syncuser`` flag you advise Warewulf to try to syncronize the users
 from the host to the container, which means that ``/etc/passwd`` and
 ``/etc/group`` of the imported container are updated and all the files
-belonning to these UIDs and GIDs will also be updated.
+belonging to these UIDs and GIDs will also be updated.
 
 A check if the users of the host and container matches can be
 triggered with the ``syncuser`` command.
