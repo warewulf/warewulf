@@ -2,6 +2,8 @@ package build
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 	cexec "github.com/warewulf/warewulf/internal/app/wwctl/container/exec"
@@ -28,12 +30,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 }
 
 func runInitramfsBuild(cmd *cobra.Command, cbp *wwapiv1.ContainerBuildParameter) (err error) {
-	// binding the installed dracut modules
-	dracutModules := fmt.Sprintf("%s/warewulf/dracut/modules.d/90wwinit", config.Get().Paths.Sysconfdir)
-	if util.IsDir(dracutModules) {
-		cexec.SetBinds([]string{fmt.Sprintf("%s:/usr/lib/dracut/modules.d/90wwinit", dracutModules)})
-	}
-
 	if cbp == nil {
 		return fmt.Errorf("ContainerBuildParameter is nill")
 	}
@@ -49,6 +45,12 @@ func runInitramfsBuild(cmd *cobra.Command, cbp *wwapiv1.ContainerBuildParameter)
 		return
 	}
 
+	var (
+		dracutModulesPath  = "/dracut/modules.d/90wwinit"
+		dracutContainerDir = filepath.Join("/usr/lib", dracutModulesPath)
+		dracutHostDir      = filepath.Join(config.Get().Paths.Sysconfdir, "warewulf", dracutModulesPath)
+	)
+
 	for _, c := range containers {
 		// kernel version, we need to set container kernel version as by default, it'll build against
 		// host kernel version, which usually does not exist inside container
@@ -57,6 +59,15 @@ func runInitramfsBuild(cmd *cobra.Command, cbp *wwapiv1.ContainerBuildParameter)
 		kver, err = kernel.FindKernelVersion(rootfsDir)
 		if err != nil {
 			return fmt.Errorf("failed to locate container kernel version: %s", err)
+		}
+
+		// binding the installed dracut modules
+		if util.IsDir(dracutHostDir) {
+			// create container mnt target
+			if err := os.MkdirAll(filepath.Join(rootfsDir, dracutContainerDir), 0o755); err != nil {
+				return fmt.Errorf("failed to create container's dracut target folder: %s, err: %s", filepath.Join(rootfsDir, dracutContainerDir), err)
+			}
+			cexec.SetBinds([]string{fmt.Sprintf("%s:%s", dracutHostDir, dracutContainerDir)})
 		}
 
 		err = cexec.CobraRunE(cmd, []string{c, "/usr/bin/dracut --no-hostonly --force --verbose --kver " + kver + " /boot/initramfs-" + kver + ".img"})
