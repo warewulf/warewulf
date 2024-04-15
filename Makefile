@@ -138,6 +138,8 @@ install: build docs
 	install -m 0644 etc/bash_completion.d/wwctl $(DESTDIR)$(BASHCOMPDIR)/wwctl
 	for f in docs/man/man1/*.1.gz; do install -m 0644 $$f $(DESTDIR)$(MANDIR)/man1/; done
 	for f in docs/man/man5/*.5.gz; do install -m 0644 $$f $(DESTDIR)$(MANDIR)/man5/; done
+	install -pd -m 0755 $(DESTDIR)$(DRACUTMODDIR)/90wwinit
+	install -m 0644 dracut/modules.d/90wwinit/*.sh $(DESTDIR)$(DRACUTMODDIR)/90wwinit
 
 .PHONY: init
 init:
