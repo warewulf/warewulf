@@ -165,6 +165,14 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	os.Setenv("PATH", "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin")
 	os.Setenv("HISTFILE", "/dev/null")
 
+	// small patch to run complex command with flags inside chroot
+	if args[1] != "" && len(strings.Fields(args[1])) > 1 {
+		exeArgs := strings.Fields(args[1])
+		wwlog.Verbose("exec %s with args %v", exeArgs[0], exeArgs[1:])
+		_ = syscall.Exec(exeArgs[0], exeArgs[1:], os.Environ())
+		return nil
+	}
+
 	_ = syscall.Exec(args[1], args[1:], os.Environ())
 	/*
 		Exec replaces the actual program, so nothing to do here afterwards
