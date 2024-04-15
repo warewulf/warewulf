@@ -7,6 +7,7 @@ import (
 	cexec "github.com/warewulf/warewulf/internal/app/wwctl/container/exec"
 	"github.com/warewulf/warewulf/internal/pkg/api/container"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/warewulf/warewulf/internal/pkg/config"
 	pkgcontianer "github.com/warewulf/warewulf/internal/pkg/container"
 	"github.com/warewulf/warewulf/internal/pkg/kernel"
 	"github.com/warewulf/warewulf/internal/pkg/util"
@@ -27,8 +28,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 }
 
 func runInitramfsBuild(cmd *cobra.Command, cbp *wwapiv1.ContainerBuildParameter) (err error) {
-	// TODO here we need to bind dracut.module file
-	// cexec.SetBinds()
+	// binding the installed dracut modules
+	dracutModules := fmt.Sprintf("%s/warewulf/dracut/modules.d/90wwinit", config.Get().Paths.Sysconfdir)
+	if util.IsDir(dracutModules) {
+		cexec.SetBinds([]string{fmt.Sprintf("%s:/usr/lib/dracut/modules.d/90wwinit", dracutModules)})
+	}
+
 	if cbp == nil {
 		return fmt.Errorf("ContainerBuildParameter is nill")
 	}
@@ -54,7 +59,7 @@ func runInitramfsBuild(cmd *cobra.Command, cbp *wwapiv1.ContainerBuildParameter)
 			return fmt.Errorf("failed to locate container kernel version: %s", err)
 		}
 
-		err = cexec.CobraRunE(cmd, []string{c, "/usr/bin/dracut --no-hostonly --force --verbose --kver " + kver})
+		err = cexec.CobraRunE(cmd, []string{c, "/usr/bin/dracut --no-hostonly --force --verbose --kver " + kver + " /boot/initramfs-" + kver + ".img"})
 		if err != nil {
 			return
 		}

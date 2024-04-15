@@ -98,6 +98,7 @@ install: build docs
 	install -d -m 0755 $(DESTDIR)$(WWCONFIGDIR)/examples
 	install -d -m 0755 $(DESTDIR)$(WWCONFIGDIR)/ipxe
 	install -d -m 0755 $(DESTDIR)$(WWCONFIGDIR)/grub
+	install -d -m 0755 $(DESTDIR)$(WWCONFIGDIR)/dracut/modules.d/90wwinit
 	install -d -m 0755 $(DESTDIR)$(BASHCOMPDIR)
 	install -d -m 0755 $(DESTDIR)$(MANDIR)/man1
 	install -d -m 0755 $(DESTDIR)$(MANDIR)/man5
@@ -106,6 +107,8 @@ install: build docs
 	install -d -m 0755 $(DESTDIR)$(SYSTEMDDIR)
 	install -d -m 0755 $(DESTDIR)$(IPXESOURCE)
 	install -d -m 0755 $(DESTDIR)$(DATADIR)/warewulf
+	# install dracut build script
+	for f in etc/dracut/modules.d/90wwinit/*.sh; do install -m 0644 $$f $(DESTDIR)$(WWCONFIGDIR)/dracut/modules.d/90wwinit/; done
 	# wwctl genconfig to get the compiled in paths to warewulf.conf
 	test -f $(DESTDIR)$(WWCONFIGDIR)/warewulf.conf || ./wwctl --warewulfconf etc/warewulf.conf genconfig warewulfconf print> $(DESTDIR)$(WWCONFIGDIR)/warewulf.conf
 	test -f $(DESTDIR)$(WWCONFIGDIR)/nodes.conf || install -m 0644 etc/nodes.conf $(DESTDIR)$(WWCONFIGDIR)
