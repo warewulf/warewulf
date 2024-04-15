@@ -5,6 +5,9 @@ Boot Management
 Warewulf uses iPXE to for network boot by default. As a tech preview, support
 for GRUB is also available, which adds support for secure boot.
 
+Also as a tech preview, Warewulf may also use iPXE to boot a dracut
+initramfs as an initial stage before loading the container image.
+
 Booting with iPXE
 =================
 
@@ -28,6 +31,54 @@ Booting with iPXE
       kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from node container"];
       ipxe_cfg->kernel[ltail=cluster0,label="http"];
   }
+
+Booting with dracut
+-------------------
+
+Some systems, typically due to limitations in their BIOS or EFI
+firmware, are unable to load container image of a certain size
+directly with a traditional bootloader, either iPXE or GRUB. As a
+workaround for such systems, Warewulf can be configured to load a
+dracut initramfs from the container and to use that initramfs to load
+the full container image.
+
+Warewulf provides a dracut module to configure the dracut initramfs to
+load the container image. This module is available in the
+``warewulf-dracut`` subpackage, which must be installed in the
+container image.
+
+With the ``warewulf-dracut`` package installed, you can build an
+initramfs inside the container.
+
+.. code-block:: shell
+
+   dnf -y install warewulf-dracut
+   dracut --force --no-hostonly --add wwinit --kver $(ls /lib/modules | head -n1)
+
+Set the node's iPXE template to ``dracut`` to direct iPXE to fetch the
+node's initramfs image and boot with dracut semantics, rather than
+booting the node image directly.
+
+.. note::
+
+   Warewulf iPXE templates are located at ``/etc/warewulf/ipxe/`` when
+   Warewulf is installed via official packages. You can learn more
+   about how dracut booting works by inspecting its iPXE template at
+   ``/etc/warewulf/ipxe/dracut.ipxe``.
+
+.. code-block:: shell
+
+   wwctl node set wwnode1 --ipxe dracut
+
+.. note::
+
+   The iPXE template may be set at the node or profile level.
+
+During boot, ``warewulfd`` will detect and dynamically serve an
+initramfs from a node's container image in much the same way that it
+can serve a kernel from a container image. This image is loaded by
+iPXE, and iPXE directs dracut to fetch the node's container image
+during boot.
 
 Booting with GRUB
 =================
