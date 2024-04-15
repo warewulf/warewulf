@@ -28,7 +28,7 @@ func init() {
 	baseCmd.AddCommand(nfs.GetCommand())
 	baseCmd.AddCommand(hostfile.GetCommand())
 
-	baseCmd.PersistentFlags().BoolVarP(&allFunctions, "all", "a", false, "Configure all services")
+	baseCmd.Flags().BoolVarP(&allFunctions, "all", "a", false, "Configure all services")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
