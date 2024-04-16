@@ -73,6 +73,8 @@ func parseReq(req *http.Request) (parserInfo, error) {
 			ret.stage = "runtime"
 		} else if stage == "efiboot" {
 			ret.stage = "efiboot"
+		} else if stage == "initramfs" {
+			ret.stage = "initramfs"
 		}
 	}
 
