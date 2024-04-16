@@ -38,6 +38,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - Add examples for building overlays in parallel to documentation
+- Add `stage=initramfs` to warewulfd provision to serve initramfs from container image. #1115
 
 ### Changed
 

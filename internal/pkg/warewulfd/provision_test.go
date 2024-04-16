@@ -30,6 +30,7 @@ var provisionSendTests = []struct {
 	{"find shim", "/efiboot/shim.efi", "", 404, "10.10.10.11:9873"},
 	{"find grub", "/efiboot/grub.efi", "", 200, "10.10.10.10:9873"},
 	{"find grub", "/efiboot/grub.efi", "", 404, "10.10.10.11:9873"},
+	{"find initramfs", "/provision/00:00:00:ff:ff:ff?stage=initramfs", "", 200, "10.10.10.10:9873"},
 }
 
 func Test_ProvisionSend(t *testing.T) {
@@ -82,6 +83,11 @@ nodes:
 	assert.NoError(t, os.MkdirAll(path.Join(containerDir, "suse/rootfs/usr/share/efi/x86_64/"), 0700))
 	{
 		_, err := os.Create(path.Join(containerDir, "suse/rootfs/usr/share/efi/x86_64/", "grub.efi"))
+		assert.NoError(t, err)
+	}
+	assert.NoError(t, os.MkdirAll(path.Join(containerDir, "suse/rootfs/boot"), 0700))
+	{
+		_, err := os.Create(path.Join(containerDir, "suse/rootfs/boot", "initramfs-.img"))
 		assert.NoError(t, err)
 	}
 

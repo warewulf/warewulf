@@ -56,12 +56,13 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 	}
 
 	status_stages := map[string]string{
-		"efiboot": "EFI",
-		"ipxe":    "IPXE",
-		"kernel":  "KERNEL",
-		"kmods":   "KMODS_OVERLAY",
-		"system":  "SYSTEM_OVERLAY",
-		"runtime": "RUNTIME_OVERLAY"}
+		"efiboot":   "EFI",
+		"ipxe":      "IPXE",
+		"kernel":    "KERNEL",
+		"kmods":     "KMODS_OVERLAY",
+		"system":    "SYSTEM_OVERLAY",
+		"runtime":   "RUNTIME_OVERLAY",
+		"initramfs": "INITRAMFS"}
 
 	status_stage := status_stages[rinfo.stage]
 	var stage_file string
@@ -212,6 +213,19 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			}
 		} else {
 			wwlog.Warn("No conainer set for node %s", node.Id.Get())
+		}
+	} else if rinfo.stage == "initramfs" {
+		if node.ContainerName.Defined() {
+			_, kver, err := kernel.FindKernel(container.RootFsDir(node.ContainerName.Get()))
+			if err != nil {
+				wwlog.Error("No kernel found for initramfs for container %s: %s", node.ContainerName.Get(), err)
+			}
+			stage_file, err = container.InitramfsBootPath(node.ContainerName.Get(), kver)
+			if err != nil {
+				wwlog.Error("No initramfs found for container %s: %s", node.ContainerName.Get(), err)
+			}
+		} else {
+			wwlog.Warn("No container set for node %s", node.Id.Get())
 		}
 	}
 
