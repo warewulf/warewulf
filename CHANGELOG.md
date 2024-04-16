@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add support to render template using `host` or `$(uname -n)` as the value of `overlay show --render`. #623
 - Add `stage=initramfs` to warewulfd provision to serve initramfs from container image. #1115
 - Add `warewulf-dracut` package to support building Warewulf-compatible initramfs images with dracut. #1115
+- Add iPXE template `dracut.ipxe` to boot a dracut initramfs. #1115
+- Add `.NetDevs` variable to iPXE templates, similar to overlay templates. #1115
 
 ### Changed
 
@@ -26,6 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Bump google.golang.org/protobuf to 1.33.0
 - Bump github.com/containers/image/v5 to 5.30.0
 - Bump github.com/docker/docker to 25.0.5+incompatible
+- wwinit now configures NetworkManager to not retain configurations from dracut. #1115
 
 ### Fixed
 
