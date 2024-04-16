@@ -80,6 +80,12 @@ can serve a kernel from a container image. This image is loaded by
 iPXE, and iPXE directs dracut to fetch the node's container image
 during boot.
 
+The wwinit module provisions to tmpfs. By default, tmpfs is permitted
+to use up to 50% of physical memory. This size limit may be adjustd
+using the kernel argument `wwinit.tmpfs.size`. (This parameter is
+passed to the `size` option during tmpfs mount. See ``tmpfs(5)`` for
+more details.)
+
 Booting with GRUB
 =================
 
