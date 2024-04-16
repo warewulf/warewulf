@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - More aliases for many wwctl commands
 - Add support to render template using `host` or `$(uname -n)` as the value of `overlay show --render`. #623
 - Add `stage=initramfs` to warewulfd provision to serve initramfs from container image. #1115
+- Add `warewulf-dracut` package to support building Warewulf-compatible initramfs images with dracut. #1115
 
 ### Changed
 
