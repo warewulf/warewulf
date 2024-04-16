@@ -10,6 +10,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add a bootstrap stage to allow a two stage node boot process. #1115
+## [4.6.x] (unreleased)
+
+### Added
+
+- Add iPXE template `dracut.ipxe` to boot a dracut initramfs. #1115
+- Add `stage=initramfs` to warewulfd provision to serve initramfs from container image. #1115
+- Add `warewulf-dracut` package to support building Warewulf-compatible initramfs images with dracut. #1115
+- Add `.NetDevs` variable to iPXE templates, similar to overlay templates. #1115
+
+### Changed
+
+- wwinit now configures NetworkManager to not retain configurations from dracut. #1115
 
 ## [4.5.x] (unreleased)
 

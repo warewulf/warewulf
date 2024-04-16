@@ -1,13 +1,9 @@
 #!/bin/bash
 
-image=$(getarg wwinit.image)
-system_overlay=$(getarg wwinit.system)
-runtime_overlay=$(getarg wwinit.runtime)
-
 info "Mounting tmpfs at $NEWROOT"
-mount -t tmpfs tmpfs "$NEWROOT"
+mount -t tmpfs ${wwinit_tmpfs_size_option} tmpfs "$NEWROOT"
 
-for archive in "${image}" "${system_overlay}" "${runtime_overlay}"
+for archive in "${wwinit_image}" "${wwinit_kmods}" "${wwinit_system}" "${wwinit_runtime}"
 do
     if [ -n "${archive}" ]
     then

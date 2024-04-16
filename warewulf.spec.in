@@ -14,7 +14,6 @@
 %define _build_id_links none
 %endif
 
-
 Name: warewulf
 Summary: A provisioning system for large clusters of bare metal and/or virtual systems
 Version: @VERSION@
@@ -75,6 +74,23 @@ BuildRequires: libassuan-devel gpgme-devel
 Warewulf is a stateless and diskless container operating system provisioning
 system for large clusters of bare metal and/or virtual systems.
 
+%package dracut
+Summary: dracut module for loading a Warewulf container image
+BuildArch: noarch
+
+Requires: dracut
+%if 0%{?suse_version}
+%else
+Requires: dracut-network
+%endif
+
+%description dracut
+Warewulf is a stateless and diskless container operating system provisioning
+system for large clusters of bare metal and/or virtual systems.
+
+This subpackage contains a dracut module that can be used to generate
+an initramfs that can fetch and boot a Warewulf container image from a
+Warewulf server.
 
 %prep
 %setup -q -n %{name}-%{version} -b0 %if %{?with_offline:-a2}
@@ -98,7 +114,8 @@ make defaults \
     BASHCOMPDIR=/etc/bash_completion.d/ \
     FIREWALLDDIR=/usr/lib/firewalld/services \
     WWCLIENTDIR=/warewulf \
-    IPXESOURCE=/usr/share/ipxe
+    IPXESOURCE=/usr/share/ipxe \
+    DRACUTMODDIR=/usr/lib/dracut/modules.d
 make
 
 
@@ -166,6 +183,11 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 
 %dir %{_docdir}/warewulf
 %license %{_docdir}/warewulf/LICENSE.md
+
+
+%files dracut
+%defattr(-, root, %{wwgroup})
+%{_prefix}/lib/dracut/modules.d/90wwinit/*.sh
 
 
 %changelog
