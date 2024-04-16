@@ -29,7 +29,7 @@ echo Downloading initramfs
 initrd --name initramfs ${uri}&stage=initramfs || goto reboot
 
 set dracut_net rd.neednet=1 {{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} {{end}}{{end}}
-set dracut_wwinit root=wwinit wwinit.image=${uri}&stage=container&compress=gz wwinit.system=${uri}&stage=system&compress=gz wwinit.runtime=${uri}&stage=runtime&compress=gz init=/init
+set dracut_wwinit root=wwinit wwinit.image=${uri}&stage=container&compress=gz wwinit.system=${uri}&stage=system&compress=gz wwinit.runtime=${uri}&stage=runtime&compress=gz {{if ne .KernelOverride ""}}wwinit.kmods=${uri}&stage=kmods&compress=gz{{end}} init=/init
 
 echo Booting initramfs
 #echo Network KernelArgs: ${dracut_net}
