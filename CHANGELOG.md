@@ -40,11 +40,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add examples for building overlays in parallel to documentation
 - Add `stage=initramfs` to warewulfd provision to serve initramfs from container image. #1115
 - Add `warewulf-dracut` package to support building Warewulf-compatible initramfs images with dracut. #1115
+- Add iPXE template `dracut.ipxe` to boot a dracut initramfs. #1115
+- Add `.NetDevs` variable to iPXE templates, similar to overlay templates. #1115
 
 ### Changed
 
 - Replace reference to docusaurus with Sphinx
 - `wwctl container import` now only runs syncuser if explicitly requested. #1212
+- wwinit now configures NetworkManager to not retain configurations from dracut. #1115
 
 ### Fixed
 
