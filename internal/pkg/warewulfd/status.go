@@ -3,6 +3,7 @@ package warewulfd
 import (
 	"encoding/json"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -22,13 +23,18 @@ type NodeStatus struct {
 	Lastseen int64  `json:"last seen"`
 }
 
-var statusDB allStatus
+var (
+	statusDB allStatus
+	dbLock   = sync.RWMutex{}
+)
 
 func init() {
 	statusDB.Nodes = make(map[string]*NodeStatus)
 }
 
 func LoadNodeStatus() error {
+	dbLock.Lock()
+	defer dbLock.Unlock()
 	var newDB allStatus
 	newDB.Nodes = make(map[string]*NodeStatus)
 
@@ -56,26 +62,31 @@ func LoadNodeStatus() error {
 }
 
 func updateStatus(nodeID, stage, sent, ipaddr string) {
+	dbLock.Lock()
+	defer dbLock.Unlock()
 	rightnow := time.Now().Unix()
 
 	wwlog.Debug("Updating node status data: %s", nodeID)
 
-	var n NodeStatus
-	n.NodeName = nodeID
-	n.Stage = stage
-	n.Lastseen = rightnow
-	n.Sent = sent
-	n.Ipaddr = ipaddr
+	n := NodeStatus{
+		NodeName: nodeID,
+		Stage:    stage,
+		Lastseen: rightnow,
+		Sent:     sent,
+		Ipaddr:   ipaddr,
+	}
 	statusDB.Nodes[nodeID] = &n
 }
 
 func statusJSON() ([]byte, error) {
+	dbLock.RLock()
+	defer dbLock.RUnlock()
 
 	wwlog.Debug("Request for node status data...")
 
 	ret, err := json.MarshalIndent(statusDB, "", "  ")
 	if err != nil {
-		return ret, errors.Wrap(err, "could not marshal JSON data from sstatus structure")
+		return ret, errors.Wrap(err, "could not marshal JSON data from status structure")
 	}
 
 	return ret, nil
