@@ -58,6 +58,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Don't attempt to rebuild protocol buffers in offline mode. #1155
 - Fix Suse package by moving yq command to `%install` section. #1169
 - Fix a rendering bug in the documentation for GRUB boot support. #1132
+- Fix a locking issue with concurrent read/writes for node status. #1174
 
 ## 4.5.0, 2024-02-08
 
