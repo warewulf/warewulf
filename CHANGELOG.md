@@ -2,10 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [4.5.x]
+## Unreleased
+
+### Added
+
+- Add the ability to boot nodes with `wwid=[interface]`, which replaces
+  `interface` with the interface MAC address
+- Added https://github.com/Masterminds/sprig functions to templates #1030
+- Add multiple output formats (yaml & json) support. #447
+- More aliases for many wwctl commands
+- Add support to render template using `host` or `$(uname -n)` as the value of `overlay show --render`. #623
+
+### Changed
+
+- Locally defined `tr` has been dropped, templates updated to use Sprig replace.
+- Bump github.com/opencontainers/image-spec to 1.1.0
+- Bump github.com/containers/storage to 1.53.0
+- Bump google.golang.org/grpc 1.62.1
+- Bump google.golang.org/protobuf to 1.33.0
+- Bump github.com/containers/image/v5 to 5.30.0
+- Bump github.com/docker/docker to 25.0.5+incompatible
+
+### Fixed
+
+- Prevent Networkmanager from trying to optain IP address via DHCP
+  on unused/unmanaged network interfaces.
+- Systems with no SMBIOS (Raspberry Pi) will create a UUID from
+  `/sys/firmware/devicetree/base/serial-number`
+- Replace slice in templates with sprig substr. #1093
+
+## v4.5.1, unreleased
 
 ### Added
 
@@ -13,7 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Updated the glossary #819
+- Update the glossary. #819
 - Upgrade the golang version to 1.20.
 - Bump github.com/opencontainers/umoci to 0.4.7
 - Bump github.com/containers/image/v5 to 5.30.0
@@ -25,25 +53,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fix `wwctl profile list -a` format when kernerargs are set
+- Fix `wwctl profile list -a` format when kernerargs are set.
 - Don't attempt to rebuild protocol buffers in offline mode. #1155
 - Fix Suse package by moving yq command to `%install` section. #1169
+- Fix a rendering bug in the documentation for GRUB boot support. #1132
 
-## [4.5.0]
+## 4.5.0, 2024-02-08
 
-- Official v4.5.0 release.
+Official v4.5.0 release.
+
+### Added
+
 - Publish v4.5.x documentation separately from `main`. #919
-- Fix `Requires: ipxe-botimgs` for building an Enterprise Linux 7 RPM. #1126
 - Update quickstart for Enterprise Linux. #394, #401, #977
 
-## [4.5.0rc2] 2024-02-21
+### Fixed
+
+- Fix `Requires: ipxe-bootimgs` for building an Enterprise Linux 7 RPM. #1126
+
+## 4.5.0rc2, 2024-02-21
 
 ### Fixed
 
 - Fix mounting local partitions into sub-directories with Ignition. #1073
 - Fix a panic in `wwctl node set` when modifying a network device that is only defined in a profile. #1094
 
-## [4.5.0rc1] 2024-02-08
+## 4.5.0rc1, 2024-02-08
 
 ### Added
 
@@ -77,17 +112,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fix configuration of network device MTU in nework configuration overlays. #807
+- Fix configuration of network device MTU in network configuration overlays. #807
 - Separate provisioned overlays from overlay sources. #972
 - Display the correct header for `wwctl overlay list --all --long`. #485
-- Add a missing `.ww` extension to the `70-ww4-netname.rules` template in the wwinit overlay. #724
-- Restrict access to `/warewulf/config` to root only. #728
 - Prevent column overflow in `wwctl <subcommand> list` with dynamic tabular output. #690
 - Support relative path to a container image archive in `wwctl container import`. #493
 - Correctly configure `ONBOOT` in `wwinit:etc/sysconfig/network-scripts/ifcfg.ww`. #644
 - Fix multiple bugs in `wwctl node edit`. #691, #902, #1024
 - Fix formatting of kernel arguments in `wwctl <node|profile> list`. #828
-- Properly update container file GIDs during syncuser. #840
 - Fix the ability to build the Warewulf API with `make`. #854
 - Fix the ability to set MTU with `wwctl`. #947
 - Fix multiple bugs in the handling of node and profile tags. #884, #967
@@ -129,11 +161,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Move built-in overlay files to a transparent `rootfs` directory. #1086
 - Update quickstart guides. #847, #848
 
-## [4.4.1]
+## 4.4.1, 2023-05-07-05
 
 ### Fixed
 
-## [4.4.0] 2023-01-18
+- Properly update container file GIDs during syncuser. #840
+- Add a missing `.ww` extension to the `70-ww4-netname.rules` template in the wwinit overlay. #724
+- Restrict access to `/warewulf/config` to root only. #728
+
+## 4.4.0, 2023-01-18
 
 ### Added
 
@@ -151,7 +187,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Kernel version is shown correctly for symlink'd kernels #640
 - Changing a profile always adds an empty default interface. #661
 
-## [4.4.0rc3] 2022-12-23
+## 4.4.0rc3, 2022-12-23
 
 ### Added
 
@@ -178,7 +214,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Directories within overlays no longer lose group/other write permissions #584
 
-## [4.4.0rc2] 2022-12-09
+## 4.4.0rc2, 2022-12-09
 
 ### Added
 
@@ -201,7 +237,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   for a node which has tags set. #568
 - Minor typographical fixes. #569
 
-## [4.4.0rc1] 2022-10-27
+## 4.4.0rc1, 2022-10-27
 
 ### Added
 
@@ -268,7 +304,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The wwinit overlay now configures the network device type. #465
 - Minor typographical fixes. #528, #519
 
-## [4.3.0] 2022-06-25
+## 4.3.0, 2022-06-25
 
 ### Added
 
@@ -307,7 +343,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - host overlays can globaly disbaled, but are enabled per default
 - `wwctl overlay build -H` will only build the overlays which are assigned to the nodes
 
-## [4.1.0] - 2021-07-29
+## 4.1.0, 2021-07-29
 
 ### Added
 
