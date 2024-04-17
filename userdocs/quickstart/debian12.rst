@@ -50,6 +50,7 @@ to the default zone, and reload.
 
    sudo systemctl restart firewalld
    sudo firewall-cmd --permanent --add-service warewulf
+   sudo firewall-cmd --permanent --add-service dhcp
    sudo firewall-cmd --permanent --add-service nfs
    sudo firewall-cmd --permanent --add-service tftp
    sudo firewall-cmd --reload
