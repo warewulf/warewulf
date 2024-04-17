@@ -51,6 +51,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Bump github.com/opencontainers/runc to 1.1.12
 - Dynamically calculate version and release from Git. #1162
 - Update quickstarts to configure firewalld for dhcp. #1133
+- Omit building the API on EL7. #1171
 
 ### Fixed
 
