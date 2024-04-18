@@ -15,7 +15,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          fetch-tags: true
+          fetch-depth: 0
 
       - name: Build spec and dist
         run: |
