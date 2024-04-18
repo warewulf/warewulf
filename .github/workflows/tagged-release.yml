@@ -12,10 +12,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set DIST
-        run: |
-          echo "DIST=warewulf-${GITHUB_REF#refs/tags/v}.tar.gz" >> $GITHUB_ENV
-
       - name: Checkout Code
         uses: actions/checkout@v4
 
@@ -29,16 +25,16 @@ jobs:
           name: spec-and-dist
           path: |
             warewulf.spec
-            ${{ env.DIST }}
+            warewulf-*.tar.gz
 
       - name: Attach dist to release
         uses: xresloader/upload-to-github-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          file: ${{ env.DIST }}
+          delete_file: "warewulf-*.tar.gz;warewulf-*.rpm"
+          file: warewulf-*.tar.gz
           tags: true
-          draft: true
 
   rpm:
     name: Build RPMs
@@ -57,9 +53,6 @@ jobs:
           - target: rocky+epel-9-x86_64
             arch: x86_64
             dist: el9
-          - target: centos+epel-7-x86_64
-            arch: x86_64
-            dist: el7
           - target: opensuse-leap-15.5-x86_64
             arch: x86_64
             dist: suse.lp155
@@ -76,27 +69,15 @@ jobs:
         with:
           name: spec-and-dist
 
-      - name: Configure the environment
-        run: |
-          VERSION=$(rpm -q --qf "%{VERSION}\n" --specfile warewulf.spec)
-          GENERIC_RELEASE=$(rpm -q --qf "%{RELEASE}\n" --specfile warewulf.spec | sed 's/\.[^.]*$//')
-          RPM=warewulf-${VERSION}-${GENERIC_RELEASE}.${{ matrix.dist }}.${{ matrix.arch }}.rpm
-          SRPM=warewulf-${VERSION}-${GENERIC_RELEASE}.${{ matrix.dist }}.src.rpm
-
-          echo "EXPECTED_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
-          echo "RPM=${RPM}" >> $GITHUB_ENV
-          echo "SRPM=${SRPM}" >> $GITHUB_ENV
-
       - name: Build RPMs and run tests
         run: |
-          mock -r ${{ matrix.target }} --rebuild --spec=warewulf.spec --sources=.
-          mock -r ${{ matrix.target }} --chroot -- make -C /builddir/build/BUILD/warewulf-${{ env.EXPECTED_VERSION }} test
+          mock -r ${{ matrix.target }} --rebuild --spec=warewulf.spec --sources=. \
+          && mock -r ${{ matrix.target }} --chroot -- bash -c "make -C /builddir/build/BUILD/warewulf-*/ test"
 
       - name: Attach RPM and SRPM to release
         uses: xresloader/upload-to-github-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          file: "/var/lib/mock/${{ matrix.target }}/result/${{ env.RPM }};/var/lib/mock/${{ matrix.target }}/result/${{ env.SRPM }}"
+          file: "/var/lib/mock/${{ matrix.target }}/result/warewulf-*.rpm"
           tags: true
-          draft: true
