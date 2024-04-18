@@ -48,6 +48,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Replace reference to docusaurus with Sphinx
 - `wwctl container import` now only runs syncuser if explicitly requested. #1212
 - wwinit now configures NetworkManager to not retain configurations from dracut. #1115
+- Improved detection of SELinux capable root fs #1093
 
 ### Fixed
 
