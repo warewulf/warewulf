@@ -14,8 +14,11 @@ import (
 )
 
 var (
-	overlayCont = `
+	overlayEmail = `
 {{ if .Tags.email }}eMail: {{ .Tags.email }}{{else}} noMail{{- end }}
+`
+	overlayOverlay = `
+overlay name {{ .Overlay }}
 `
 )
 
@@ -38,7 +41,8 @@ nodes:
       - empty
 `)
 
-	env.WriteFile(t, path.Join(testenv.WWOverlaydir, "testoverlay/email.ww"), overlayCont)
+	env.WriteFile(t, path.Join(testenv.WWOverlaydir, "testoverlay/email.ww"), overlayEmail)
+	env.WriteFile(t, path.Join(testenv.WWOverlaydir, "testoverlay/overlay.ww"), overlayOverlay)
 	defer env.RemoveAll(t)
 	warewulfd.SetNoDaemon()
 	t.Run("overlay show raw", func(t *testing.T) {
@@ -50,7 +54,7 @@ nodes:
 		wwlog.SetLogWriter(buf)
 		err := baseCmd.Execute()
 		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), overlayCont)
+		assert.Contains(t, buf.String(), overlayEmail)
 	})
 	t.Run("overlay show rendered node tag", func(t *testing.T) {
 		baseCmd.SetArgs([]string{"-r", "node1", "testoverlay", "email.ww"})
@@ -84,6 +88,17 @@ nodes:
 		err := baseCmd.Execute()
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "noMail")
+	})
+	t.Run("overlay shows overlay", func(t *testing.T) {
+		baseCmd.SetArgs([]string{"-r", "node1", "testoverlay", "overlay.ww"})
+		baseCmd := GetCommand()
+		buf := new(bytes.Buffer)
+		baseCmd.SetOut(buf)
+		baseCmd.SetErr(buf)
+		wwlog.SetLogWriter(buf)
+		err := baseCmd.Execute()
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "testoverlay")
 	})
 }
 

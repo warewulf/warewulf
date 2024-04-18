@@ -27,6 +27,7 @@ type TemplateStruct struct {
 	Netmask       string
 	Network       string
 	NetworkCIDR   string
+	Overlay       string
 	Ipv6          bool
 	Dhcp          warewulfconf.DHCPConf
 	Nfs           warewulfconf.NFSConf
