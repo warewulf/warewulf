@@ -5,7 +5,10 @@ include Variables.mk
 include Tools.mk
 
 .PHONY: build
-build: wwctl wwclient wwapid wwapic wwapird etc/defaults.conf etc/bash_completion.d/wwctl
+build: wwctl wwclient etc/defaults.conf etc/bash_completion.d/wwctl
+
+.PHONY: api
+api: wwapid wwapic wwapird
 
 .PHONY: docs
 docs: man_pages reference
@@ -21,14 +24,17 @@ tidy:
 fmt:
 	go fmt ./...
 
-config = etc/wwapic.conf \
-	etc/wwapid.conf \
-	etc/wwapird.conf \
-	include/systemd/warewulfd.service \
+config = include/systemd/warewulfd.service \
 	internal/pkg/config/buildconfig.go \
 	warewulf.spec
 .PHONY: config
 config: $(config)
+
+apiconfig = etc/wwapic.conf \
+	etc/wwapid.conf \
+	etc/wwapird.conf
+.PHONY: apiconfig
+apiconfig: $(apiconfig)
 
 %: %.in
 	sed -ne "$(foreach V,$(VARLIST),s,@$V@,$(strip $($V)),g;)p" $@.in >$@
@@ -43,13 +49,13 @@ update_configuration: $(config) $(call godeps,cmd/update_configuration/update_co
 	go build -X 'github.com/warewulf/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'" \
 	    -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o update_configuration cmd/update_configuration/update_configuration.go
 
-wwapid: $(config) $(call godeps,internal/app/api/wwapid/wwapid.go)
+wwapid: $(config) $(apiconfig) $(call godeps,internal/app/api/wwapid/wwapid.go)
 	go build -o ./wwapid internal/app/api/wwapid/wwapid.go
 
-wwapic: $(config) $(call godeps,internal/app/api/wwapic/wwapic.go)
+wwapic: $(config) $(apiconfig) $(call godeps,internal/app/api/wwapic/wwapic.go)
 	go build -o ./wwapic  internal/app/api/wwapic/wwapic.go
 
-wwapird: $(config) $(call godeps,internal/app/api/wwapird/wwapird.go)
+wwapird: $(config) $(apiconfig) $(call godeps,internal/app/api/wwapird/wwapird.go)
 	go build -o ./wwapird internal/app/api/wwapird/wwapird.go
 
 .PHONY: man_pages
@@ -109,9 +115,6 @@ install: build docs
 	# wwctl genconfig to get the compiled in paths to warewulf.conf
 	test -f $(DESTDIR)$(WWCONFIGDIR)/warewulf.conf || ./wwctl --warewulfconf etc/warewulf.conf genconfig warewulfconf print> $(DESTDIR)$(WWCONFIGDIR)/warewulf.conf
 	test -f $(DESTDIR)$(WWCONFIGDIR)/nodes.conf || install -m 0644 etc/nodes.conf $(DESTDIR)$(WWCONFIGDIR)
-	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapic.conf || install -m 0644 etc/wwapic.conf $(DESTDIR)$(WWCONFIGDIR)
-	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapid.conf || install -m 0644 etc/wwapid.conf $(DESTDIR)$(WWCONFIGDIR)
-	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapird.conf || install -m 0644 etc/wwapird.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(DATADIR)/warewulf/defaults.conf || install -m 0644 etc/defaults.conf $(DESTDIR)$(DATADIR)/warewulf/defaults.conf
 	for f in etc/examples/*.ww; do install -m 0644 $$f $(DESTDIR)$(WWCONFIGDIR)/examples/; done
 	for f in etc/ipxe/*.ipxe; do install -m 0644 $$f $(DESTDIR)$(WWCONFIGDIR)/ipxe/; done
@@ -129,15 +132,21 @@ install: build docs
 	chmod 0750 $(DESTDIR)$(WWOVERLAYDIR)/host/rootfs
 	install -m 0755 wwctl $(DESTDIR)$(BINDIR)
 	install -m 0755 wwclient $(DESTDIR)$(WWOVERLAYDIR)/wwinit/rootfs/$(WWCLIENTDIR)/wwclient
-	install -m 0755 wwapic $(DESTDIR)$(BINDIR)
-	install -m 0755 wwapid $(DESTDIR)$(BINDIR)
-	install -m 0755 wwapird $(DESTDIR)$(BINDIR)
 	install -m 0644 include/firewalld/warewulf.xml $(DESTDIR)$(FIREWALLDDIR)
 	install -m 0644 include/systemd/warewulfd.service $(DESTDIR)$(SYSTEMDDIR)
 	install -m 0644 LICENSE.md $(DESTDIR)$(WWDOCDIR)
 	install -m 0644 etc/bash_completion.d/wwctl $(DESTDIR)$(BASHCOMPDIR)/wwctl
 	for f in docs/man/man1/*.1.gz; do install -m 0644 $$f $(DESTDIR)$(MANDIR)/man1/; done
 	for f in docs/man/man5/*.5.gz; do install -m 0644 $$f $(DESTDIR)$(MANDIR)/man5/; done
+
+.PHONY: installapi
+installapi:
+	install -m 0755 wwapic $(DESTDIR)$(BINDIR)
+	install -m 0755 wwapid $(DESTDIR)$(BINDIR)
+	install -m 0755 wwapird $(DESTDIR)$(BINDIR)
+	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapic.conf || install -m 0644 etc/wwapic.conf $(DESTDIR)$(WWCONFIGDIR)
+	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapid.conf || install -m 0644 etc/wwapid.conf $(DESTDIR)$(WWCONFIGDIR)
+	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapird.conf || install -m 0644 etc/wwapird.conf $(DESTDIR)$(WWCONFIGDIR)
 
 .PHONY: init
 init:

@@ -1,5 +1,10 @@
 %global debug_package %{nil}
 
+%global api 1
+%if 0%{?rhel} && 0%{?rhel} <= 7
+%global api 0
+%endif
+
 %if 0%{?suse_version}
 %global tftpdir /srv/tftpboot
 %else
@@ -69,7 +74,9 @@ Requires: dhcp
 
 BuildRequires: git
 BuildRequires: make
+%if %{api}
 BuildRequires: libassuan-devel gpgme-devel
+%endif
 
 %description
 Warewulf is a stateless and diskless container operating system provisioning
@@ -100,6 +107,9 @@ make defaults \
     WWCLIENTDIR=/warewulf \
     IPXESOURCE=/usr/share/ipxe
 make
+%if %{api}
+make api
+%endif
 
 
 %install
@@ -107,6 +117,10 @@ export OFFLINE_BUILD=1
 export NO_BRP_STALE_LINK_ERROR=yes
 make install \
     DESTDIR=%{buildroot}
+%if %{api}
+make installapi \
+    DESTDIR=%{buildroot}
+%endif
 
 %if 0%{?suse_version} || 0%{?sle_version}
 yq e '
@@ -140,7 +154,6 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %defattr(-, root, %{wwgroup})
 %dir %{_sysconfdir}/warewulf
 %config(noreplace) %{_sysconfdir}/warewulf/warewulf.conf
-%config(noreplace) %{_sysconfdir}/warewulf/wwapi*.conf
 %config(noreplace) %{_sysconfdir}/warewulf/examples
 %config(noreplace) %{_sysconfdir}/warewulf/ipxe
 %config(noreplace) %{_sysconfdir}/warewulf/grub
@@ -157,7 +170,6 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/*/rootfs
 
 %attr(-, root, root) %{_bindir}/wwctl
-%attr(-, root, root) %{_bindir}/wwapi*
 %attr(-, root, root) %{_prefix}/lib/firewalld/services/warewulf.xml
 %attr(-, root, root) %{_unitdir}/warewulfd.service
 %attr(-, root, root) %{_mandir}/man1/wwctl*
@@ -167,8 +179,16 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %dir %{_docdir}/warewulf
 %license %{_docdir}/warewulf/LICENSE.md
 
+%if %{api}
+%attr(-, root, root) %{_bindir}/wwapi*
+%config(noreplace) %{_sysconfdir}/warewulf/wwapi*.conf
+%endif
+
 
 %changelog
+* Wed Apr 17 2024 Jonathon Anderson <janderson@ciq.com>
+- Don't build the API on EL7
+
 * Sat Mar 9 2024 Jonathon Anderson <janderson@ciq.com> - 4.5.0-1
 - Update source to github.com/warewulf
 - Fix ownership of overlay files
