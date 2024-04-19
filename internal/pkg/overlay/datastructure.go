@@ -31,6 +31,7 @@ type TemplateStruct struct {
 	Ipv6          bool
 	Dhcp          warewulfconf.DHCPConf
 	Nfs           warewulfconf.NFSConf
+	Ssh           warewulfconf.SSHConf
 	Warewulf      warewulfconf.WarewulfConf
 	Tftp          warewulfconf.TFTPConf
 	Paths         warewulfconf.BuildConfig
@@ -60,6 +61,7 @@ func InitStruct(nodeInfo *node.NodeInfo) TemplateStruct {
 	tstruct.Id = nodeInfo.Id.Get()
 	tstruct.Hostname = nodeInfo.Id.Get()
 	tstruct.Nfs = *controller.NFS
+	tstruct.Ssh = *controller.SSH
 	tstruct.Dhcp = *controller.DHCP
 	tstruct.Tftp = *controller.TFTP
 	tstruct.Paths = *controller.Paths
