@@ -35,8 +35,8 @@ runs:
     - name: Extract last 24 hours commits info
       id: commits
       run: |
-        echo "raw=`git reflog ${{ env.TAG }} --since="24 hours ago"`" >> $GITHUB_OUTPUT
-        echo "commits=`git log ${{ env.TAG }} --pretty --since="24 hours ago"  | jq --raw-input . | jq --slurp . | jq -c .`" >> $GITHUB_OUTPUT
+        echo "raw=`git reflog origin/${{ env.TAG }} --since="24 hours ago"`" >> $GITHUB_OUTPUT
+        echo "commits=`git log origin/${{ env.TAG }} --pretty --since="24 hours ago"  | jq --raw-input . | jq --slurp . | jq -c .`" >> $GITHUB_OUTPUT
       shell: bash
 
     - name: Whether should continue
