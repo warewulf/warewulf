@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/container"
+	"github.com/warewulf/warewulf/internal/pkg/kernel"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
@@ -324,7 +325,7 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 		}
 
 		wwlog.Debug("Finding kernel version for: %s", source)
-		kernelVersion := container.KernelVersion(source)
+		_, kernelVersion, _ := kernel.FindKernel(container.RootFsDir(source))
 		var creationTime uint64
 		sourceStat, err := os.Stat(container.SourceDir(source))
 		if err != nil {
@@ -376,7 +377,7 @@ func ContainerShow(csp *wwapiv1.ContainerShowParameter) (response *wwapiv1.Conta
 		err = fmt.Errorf("%s is not a valid container", containerName)
 		return
 	}
-	kernelVersion := container.KernelVersion(containerName)
+	_, kernelVersion, _ := kernel.FindKernel(container.RootFsDir(containerName))
 
 	nodeDB, err := node.New()
 	if err != nil {

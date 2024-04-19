@@ -61,6 +61,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix Suse package by moving yq command to `%install` section. #1169
 - Fix a rendering bug in the documentation for GRUB boot support. #1132
 - Fix a locking issue with concurrent read/writes for node status. #1174
+- Fix shim and grub detection for aarch64. #1145
 
 ## 4.5.0, 2024-02-08
 
