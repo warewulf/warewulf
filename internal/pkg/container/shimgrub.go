@@ -10,7 +10,7 @@ import (
 
 func shimDirs() []string {
 	return []string{
-		`/usr/share/efi/x86_64/`,
+		`/usr/share/efi/*/`,
 		`/usr/lib64/efi/`,
 		`/boot/efi/EFI/*/`,
 	}
@@ -53,7 +53,7 @@ func ShimFind(container string) string {
 	} else {
 		container_path = "/"
 	}
-	wwlog.Debug("Finding grub under paths: %s", container_path)
+	wwlog.Debug("Finding shim under paths: %s", container_path)
 	return BootLoaderFindPath(container_path, shimNames, shimDirs)
 }
 
@@ -76,10 +76,13 @@ find the path of the shim binary in container
 */
 func BootLoaderFindPath(cpath string, names func() []string, paths func() []string) string {
 	for _, bdir := range paths() {
-		wwlog.Debug("Checking shim directory: %s", bdir)
+		wwlog.Debug("Checking directory: %s", bdir)
 		for _, bname := range names() {
-			wwlog.Debug("Checking for bootloader name: %s", bname)
-			shimPaths, _ := filepath.Glob(path.Join(cpath, bdir, bname))
+			wwlog.Debug("Checking for bootloader name: %s", path.Join(cpath, bdir, bname))
+			shimPaths, err := filepath.Glob(path.Join(cpath, bdir, bname))
+			if err != nil {
+				wwlog.Debug("Got error when globing %s: %s", path.Join(cpath, bdir, bname), err)
+			}
 			for _, shimPath := range shimPaths {
 				wwlog.Debug("Checking for bootloader path: %s", shimPath)
 				// Only succeeds if shimPath exists and, if a

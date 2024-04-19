@@ -108,10 +108,9 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		if node.Kernel.Override.Defined() {
 			stage_file = kernel.KernelImage(node.Kernel.Override.Get())
 		} else if node.ContainerName.Defined() {
-			stage_file = container.KernelFind(node.ContainerName.Get())
-
-			if stage_file == "" {
-				wwlog.Error("No kernel found for container %s", node.ContainerName.Get())
+			stage_file, _, err = kernel.FindKernel(container.RootFsDir(node.ContainerName.Get()))
+			if err != nil {
+				wwlog.Error("No kernel found for container %s: %s", node.ContainerName.Get(), err)
 			}
 		} else {
 			wwlog.Warn("No kernel version set for node %s", node.Id.Get())

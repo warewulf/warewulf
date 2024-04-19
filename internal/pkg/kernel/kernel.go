@@ -8,6 +8,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -19,12 +20,18 @@ import (
 var (
 	kernelSearchPaths = []string{
 		// This is a printf format where the %s will be the kernel version
+		"/boot/Image-%s", // this is the aarch64 for SUSE, vmlinux which is also present won't boot
 		"/boot/vmlinuz-linux%.s",
 		"/boot/vmlinuz-%s",
 		"/boot/vmlinuz-%s.gz",
 		"/lib/modules/%s/vmlinuz",
 		"/lib/modules/%s/vmlinuz.gz",
 	}
+	kernelDrivers = []string{
+		"lib/modules/%s/*",
+		"lib/firmware/*",
+		"lib/modprobe.d",
+		"lib/modules-load.d"}
 )
 
 func KernelImageTopDir() string {
@@ -117,15 +124,9 @@ kernel version. A name for this kernel and were to find has also to be
 supplied
 */
 func Build(kernelVersion, kernelName, root string) error {
-	kernelDrivers := []string{path.Join("lib/modules/",
-		kernelVersion, "*"),
-		"lib/firmware/*",
-		"lib/modprobe.d",
-		"lib/modules-load.d"}
 	kernelDestination := KernelImage(kernelName)
 	driversDestination := KmodsImage(kernelName)
 	versionDestination := KernelVersionFile(kernelName)
-	var kernelSource string
 
 	// Create the destination paths just in case it doesn't exist
 	err := os.MkdirAll(path.Dir(kernelDestination), 0755)
@@ -143,18 +144,11 @@ func Build(kernelVersion, kernelName, root string) error {
 		return fmt.Errorf("failed to create version dest: %s", err)
 	}
 
-	for _, searchPath := range kernelSearchPaths {
-		testPath := fmt.Sprintf(path.Join(root, searchPath), kernelVersion)
-		wwlog.Verbose("Looking for kernel at: %s", testPath)
-		if util.IsFile(testPath) {
-			kernelSource = testPath
-			break
-		}
-	}
-
-	if kernelSource == "" {
-		wwlog.Error("Could not locate kernel image")
-		return errors.New("could not locate kernel image")
+	kernelSource, kernelVersFound, err := FindKernel(root)
+	if err != nil {
+		return err
+	} else if kernelVersFound != kernelVersion {
+		return fmt.Errorf("requested %s and found kernel version %s differ", kernelVersion, kernelVersFound)
 	} else {
 		wwlog.Info("Found kernel at: %s", kernelSource)
 	}
@@ -193,13 +187,21 @@ func Build(kernelVersion, kernelName, root string) error {
 	}
 
 	name := kernelName + " drivers"
+	var kernelDriversSpecific []string
+	for _, kPath := range kernelDrivers {
+		if strings.Contains(kPath, "%s") {
+			kernelDriversSpecific = append(kernelDriversSpecific, fmt.Sprintf(kPath, kernelVersion))
+		} else {
+			kernelDriversSpecific = append(kernelDriversSpecific, kPath)
+		}
+	}
+	wwlog.Debug("kernelDriversSpecific: %v", kernelDriversSpecific)
 	wwlog.Verbose("Creating image for %s: %s", name, root)
-
 	err = util.BuildFsImage(
 		name,
 		root,
 		driversDestination,
-		kernelDrivers,
+		kernelDriversSpecific,
 		[]string{},
 		// ignore cross-device files
 		true,
@@ -235,27 +237,32 @@ func DeleteKernel(name string) error {
 	return os.RemoveAll(fullPath)
 }
 
-func FindKernelVersion(root string) (string, error) {
+/*
+Searches for kernel under a given path. First return result is the
+full path, second the version and an error if the kernel couldn't be found.
+*/
+func FindKernel(root string) (kPath string, version string, err error) {
+	wwlog.Debug("root: %s", root)
 	for _, searchPath := range kernelSearchPaths {
 		testPattern := fmt.Sprintf(path.Join(root, searchPath), `*`)
-		wwlog.Verbose("Looking for kernel version with pattern at: %s", testPattern)
+		wwlog.Debug("Looking for kernel version with pattern at: %s", testPattern)
 		potentialKernel, _ := filepath.Glob(testPattern)
 		if len(potentialKernel) == 0 {
 			continue
 		}
 		for _, foundKernel := range potentialKernel {
-			wwlog.Verbose("Parsing out kernel version for %s", foundKernel)
+			wwlog.Debug("Parsing out kernel version for %s", foundKernel)
 			re := regexp.MustCompile(fmt.Sprintf(path.Join(root, searchPath), `([\w\d-\.]*)`))
 			version := re.FindAllStringSubmatch(foundKernel, -1)
 			if version == nil {
-				return "", fmt.Errorf("could not parse kernel version")
+				return foundKernel, "", fmt.Errorf("could not parse kernel version")
 			}
-			wwlog.Verbose("found kernel version %s", version)
-			return version[0][1], nil
+			wwlog.Verbose("found kernel version %s", strings.TrimSuffix(version[0][1], ".gz"))
+			return foundKernel, strings.TrimSuffix(version[0][1], ".gz"), nil
 
 		}
 
 	}
-	return "", fmt.Errorf("could not find kernel version")
+	return "", "", fmt.Errorf("could not find kernel version")
 
 }
