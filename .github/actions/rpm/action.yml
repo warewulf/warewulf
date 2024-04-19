@@ -52,7 +52,7 @@ runs:
     - name: Set RPM and SRPM
       run: |
         VERSION=$(rpm -q --qf "%{VERSION}\n" --specfile warewulf.spec)
-        GENERIC_RELEASE=$(rpm -q --qf "%{RELEASE}\n" --specfile warewulf.spec | cut -d. -f1-2)
+        GENERIC_RELEASE=$(rpm -q --qf "%{RELEASE}\n" --specfile warewulf.spec | cut -d. -f1)
         RPM=warewulf-${VERSION}-${GENERIC_RELEASE}.${{ inputs.dist }}.${{ inputs.arch }}.rpm
         SRPM=warewulf-${VERSION}-${GENERIC_RELEASE}.${{ inputs.dist }}.src.rpm
         echo "RPM=${RPM}" >> $GITHUB_ENV

@@ -14,7 +14,7 @@ jobs:
           should-continue: ${{ steps.generate.outputs.should-continue }}
           version: ${{ steps.generate.outputs.version }}
           release-id: ${{ steps.generate.outputs.release-id }}
-        permissions: write-all # might not be used for realy deployment
+        permissions: write-all
         steps:
           - name: Checkout Code
             uses: actions/checkout@v4
@@ -52,7 +52,7 @@ jobs:
               - target: opensuse-leap-15.5-x86_64
                 arch: x86_64
                 dist: suse.lp155
-        permissions: write-all # might not be used for realy deployment
+        permissions: write-all 
 
         steps:
           - name: Checkout Code
