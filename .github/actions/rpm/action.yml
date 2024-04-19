@@ -52,11 +52,13 @@ runs:
     - name: Set RPM and SRPM
       run: |
         VERSION=$(rpm -q --qf "%{VERSION}\n" --specfile warewulf.spec)
-        GENERIC_RELEASE=$(rpm -q --qf "%{RELEASE}\n" --specfile warewulf.spec | cut -d. -f1-2)
+        GENERIC_RELEASE=$(rpm -q --qf "%{RELEASE}\n" --specfile warewulf.spec | cut -d. -f1)
         RPM=warewulf-${VERSION}-${GENERIC_RELEASE}.${{ inputs.dist }}.${{ inputs.arch }}.rpm
         SRPM=warewulf-${VERSION}-${GENERIC_RELEASE}.${{ inputs.dist }}.src.rpm
+        DRACUT=wareful-dracut-${VERSION}-${GENERIC_RELEASE}.${{ inputs.dist }}.noarch.rpm
         echo "RPM=${RPM}" >> $GITHUB_ENV
         echo "SRPM=${SRPM}" >> $GITHUB_ENV
+        echo "DRACUT=${DRACUT}" >> $GITHUB_ENV
       shell: bash
 
     - name: Build RPMs and run tests
@@ -77,10 +79,18 @@ runs:
         name: ${{ env.SRPM }}
         path: /var/lib/mock/${{ inputs.target }}/result/${{ env.SRPM }}
 
-    - name: Attach RPM and SRPM to release
+    - name: Upload dracut RPM
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.DRACUT }}
+        path: /var/lib/mock/${{ inputs.target }}/result/${{ env.DRACUT }}
+        if-no-files-found: 'ignore'
+
+    - name: Attach all files to release
       uses: xresloader/upload-to-github-release@v1
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
       with:
         release_id: ${{ inputs.event-id }}
-        file: "/var/lib/mock/${{ inputs.target }}/result/${{ env.RPM }};/var/lib/mock/${{ inputs.target }}/result/${{ env.SRPM }}"
+        file: " warewulf-${{ env.EXPECTED_VERSION }}.tar.gz;/var/lib/mock/${{ inputs.target }}/result/${{ env.RPM }};/var/lib/mock/${{ inputs.target }}/result/${{ env.SRPM }};/var/lib/mock/${{ inputs.target }}/result/${{ env.DRACUT }}"
+        overwrite: true
