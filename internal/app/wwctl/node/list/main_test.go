@@ -143,6 +143,199 @@ nodes:
     profiles:
     - default
 `},
+		{
+			name:    "node list profile with comment",
+			args:    []string{"-a"},
+			wantErr: false,
+			stdout: `NODE  FIELD           PROFILE  VALUE                                         
+              n01   Id              --       n01                                                  
+              n01   Comment         default  profilecomment                                       
+              n01   Ipxe            --       (default)                                            
+              n01   RuntimeOverlay  --       (generic)                                            
+              n01   SystemOverlay   --       (wwinit)                                             
+              n01   Root            --       (initramfs)                                          
+              n01   Init            --       (/sbin/init)                                         
+              n01   Kernel.Args     --       (quiet crashkernel=no vga=791 net.naming-scheme=v238)
+              n01   Profiles        --       default
+`,
+			inDb: `WW_INTERNAL: 45
+nodeprofiles:
+  default:
+    comment: profilecomment
+nodes:
+  n01:
+    profiles:
+    - default
+`},
+		{
+			name:    "node list profile with comment superseded",
+			args:    []string{"-a"},
+			wantErr: false,
+			stdout: `NODE  FIELD           PROFILE  VALUE                                         
+              n01   Id              --       n01                                                  
+              n01   Comment         SUPERSEDED  nodecomment                                       
+              n01   Ipxe            --       (default)                                            
+              n01   RuntimeOverlay  --       (generic)                                            
+              n01   SystemOverlay   --       (wwinit)                                             
+              n01   Root            --       (initramfs)                                          
+              n01   Init            --       (/sbin/init)                                         
+              n01   Kernel.Args     --       (quiet crashkernel=no vga=791 net.naming-scheme=v238)
+              n01   Profiles        --       default
+`,
+			inDb: `WW_INTERNAL: 45
+nodeprofiles:
+  default:
+    comment: profilecomment
+nodes:
+  n01:
+    comment: nodecomment
+    profiles:
+    - default
+`},
+		{
+			name:    "node list profile with ipmi user",
+			args:    []string{"-i"},
+			wantErr: false,
+			stdout: `NODENAME IPMIIPADDR IPMIPORT IPMIUSERNAME IPMIINTERFACE
+n01 -- -- admin -- --
+`,
+			inDb: `WW_INTERNAL: 45
+nodeprofiles:
+  default:
+    ipmi:
+      username: admin
+nodes:
+  n01:
+    profiles:
+    - default
+`},
+		{
+			name:    "node list profile with ipmi user superseded",
+			args:    []string{"-i"},
+			wantErr: false,
+			stdout: `NODENAME IPMIIPADDR IPMIPORT IPMIUSERNAME IPMIINTERFACE
+n01 -- -- user -- --
+`,
+			inDb: `WW_INTERNAL: 45
+nodeprofiles:
+  default:
+    ipmi:
+      username: admin
+nodes:
+  n01:
+    ipmi:
+      username: user
+    profiles:
+    - default
+`},
+		{
+			inDb: `WW_INTERNAL: 45
+nodeprofiles:
+  p1: {}
+  p2: {}
+nodes:
+  n01:
+    profiles:
+    - p1
+    - p2
+`,
+			name:    "multiple profiles list",
+			args:    []string{},
+			wantErr: false,
+			stdout: `  NODE NAME  PROFILES  NETWORK
+n01        p1,p2
+`},
+		{
+			inDb: `WW_INTERNAL: 45
+nodeprofiles:
+  p1: {}
+  p2: {}
+nodes:
+  n01:
+    profiles:
+    - p1
+    - p2
+`,
+			name:    "multiple profiles list all",
+			args:    []string{"-a"},
+			wantErr: false,
+			stdout: `NODE  FIELD           PROFILE VALUE
+n01   Id              --       n01
+n01   Ipxe            --       (default)
+n01   RuntimeOverlay  --       (generic)
+n01   SystemOverlay   --       (wwinit) 
+n01   Root            --       (initramfs)
+n01   Init            --       (/sbin/init)
+n01   Kernel.Args     --       (quiet crashkernel=no vga=791 net.naming-scheme=v238)  
+n01   Profiles        --       p1,p2
+`},
+		{
+			inDb: `WW_INTERNAL: 45
+nodeprofiles:
+  p1:
+    runtime overlay:
+    - rop1
+    - rop2
+nodes:
+  n01:
+    profiles:
+    - p1
+`,
+			name:    "multiple overlays list",
+			args:    []string{"-l"},
+			wantErr: false,
+			stdout: `NODE NAME  KERNEL OVERRIDE  CONTAINER  OVERLAYS (S/R)
+n01        --               --         (wwinit)/rop1,rop2
+`},
+		{
+			inDb: `WW_INTERNAL: 45
+nodeprofiles:
+  p1:
+    runtime overlay:
+    - rop1
+    - rop2
+nodes:
+  n01:
+    profiles:
+    - p1
+    runtime overlay:
+    - nop1
+    - ~rop1
+`,
+			name:    "multiple overlays list",
+			args:    []string{"-l"},
+			wantErr: false,
+			stdout: `NODE NAME  KERNEL OVERRIDE  CONTAINER  OVERLAYS (S/R)
+n01        --               --         (wwinit)/nop1,rop2 ~{rop1}
+`},
+		{
+			inDb: `WW_INTERNAL: 45
+nodeprofiles:
+  p1:
+    runtime overlay:
+    - rop1
+    - rop2
+nodes:
+  n01:
+    profiles:
+    - p1
+    runtime overlay:
+    - nop1
+    - ~rop1
+`,
+			name:    "multiple overlays list all",
+			args:    []string{"-a"},
+			wantErr: false,
+			stdout: `NODE  FIELD           PROFILE     VALUE
+n01   Id              --        n01        
+n01   Ipxe            --          (default)
+n01   RuntimeOverlay  SUPERSEDED  nop1,rop2~{rop1}
+n01   SystemOverlay   --          (wwinit)  
+n01   Root            --          (initramfs)
+n01   Init            --          (/sbin/init)
+n01   Kernel.Args     --          (quiet crashkernel=no vga=791 net.naming-scheme=v238)  
+n01   Profiles        --          p1
+`},
 	}
 	conf_yml := `WW_INTERNAL: 0`
 	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
