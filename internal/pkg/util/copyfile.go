@@ -3,8 +3,6 @@ package util
 import (
 	"io"
 	"os"
-	"path"
-	"path/filepath"
 
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -60,47 +58,3 @@ func SafeCopyFile(src string, dst string) error {
 	}
 	return err
 }
-
-func CopyFiles(source string, dest string) error {
-	err := filepath.Walk(source, func(location string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if info.IsDir() {
-			wwlog.Debug("Creating directory: %s", location)
-			info, err := os.Stat(source)
-			if err != nil {
-				return err
-			}
-
-			err = os.MkdirAll(path.Join(dest, location), info.Mode())
-			if err != nil {
-				return err
-			}
-			err = CopyUIDGID(source, dest)
-			if err != nil {
-				return err
-			}
-
-		} else {
-			wwlog.Debug("Writing file: %s", location)
-
-			err := CopyFile(location, path.Join(dest, location))
-			if err != nil {
-				return err
-			}
-
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-//TODO: func CopyRecursive ...
