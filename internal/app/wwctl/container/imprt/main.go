@@ -2,8 +2,8 @@ package imprt
 
 import (
 	"github.com/spf13/cobra"
-	apicontainer "github.com/warewulf/warewulf/internal/pkg/api/container"
-	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/warewulf/warewulf/internal/pkg/container"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
@@ -14,7 +14,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		name = args[1]
 	}
 
-	cip := &wwapiv1.ContainerImportParameter{
+	err = container.Import(&container.ImportParameter{
 		Source:   args[0],
 		Name:     name,
 		Force:    SetForce,
@@ -22,8 +22,21 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		Build:    SetBuild,
 		Default:  SetDefault,
 		SyncUser: SyncUser,
+	})
+
+	if err != nil {
+		return
 	}
 
-	_, err = apicontainer.ContainerImport(cip)
+	// we need to reload the daemon to reflect profile container changes
+	if SetDefault {
+		err = warewulfd.DaemonStatus()
+		if err != nil {
+			// warewulfd is not running, skip
+			return nil
+		}
+		return warewulfd.DaemonReload()
+	}
+
 	return
 }

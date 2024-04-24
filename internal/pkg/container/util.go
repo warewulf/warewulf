@@ -1,10 +1,12 @@
 package container
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/pkg/errors"
 
+	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -81,23 +83,6 @@ func DeleteSource(name string) error {
 	return os.RemoveAll(fullPath)
 }
 
-func Duplicate(name string, destination string) error {
-	fullPathImageSource := RootFsDir(name)
-
-	wwlog.Info("Copying sources...")
-	err := ImportDirectory(fullPathImageSource, destination)
-
-	if err != nil {
-		return err
-	}
-	wwlog.Info("Building container: %s", destination)
-	err = Build(destination, true)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 /*
 Delete the image of a container
 */
@@ -117,4 +102,29 @@ func DeleteImage(name string) error {
 		return nil
 	}
 	return errors.Errorf("Image %s of container %s doesn't exist\n", imageFile, name)
+}
+
+func SetProfileDefaultContainer(name string) error {
+	nodeDB, err := node.New()
+	if err != nil {
+		return fmt.Errorf("failed to create new node, err: %s", err)
+	}
+
+	profiles, err := nodeDB.MapAllProfiles()
+	if err != nil {
+		return fmt.Errorf("failed to map all profiles, err: %s", err)
+	}
+
+	defaultProfile := profiles["default"]
+	if defaultProfile == nil {
+		return fmt.Errorf("failed to get the 'default' profile")
+	}
+
+	defaultProfile.ContainerName.Set(name)
+	err = nodeDB.ProfileUpdate(*defaultProfile)
+	if err != nil {
+		return errors.Wrap(err, "failed to update default profile")
+	}
+
+	return nodeDB.Persist()
 }

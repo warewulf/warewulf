@@ -188,8 +188,7 @@ func (s *apiServer) ContainerDelete(ctx context.Context, request *wwapiv1.Contai
 func (s *apiServer) ContainerImport(ctx context.Context, request *wwapiv1.ContainerImportParameter) (response *wwapiv1.ContainerListResponse, err error) {
 
 	// Import the container.
-	var containerName string
-	containerName, err = container.ContainerImport(request)
+	err = container.ContainerImport(request)
 	if err != nil {
 		return
 	}
@@ -204,7 +203,7 @@ func (s *apiServer) ContainerImport(ctx context.Context, request *wwapiv1.Contai
 	// Container name may have been shimmed in during import,
 	// which is why ContainerImport returns it.
 	for i := 0; i < len(containers); i++ {
-		if containerName == containers[i].Name {
+		if request.Name == containers[i].Name {
 			response = &wwapiv1.ContainerListResponse{
 				Containers: []*wwapiv1.ContainerInfo{containers[i]},
 			}

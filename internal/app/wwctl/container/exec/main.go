@@ -128,7 +128,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Printf("Rebuilding container...\n")
-	err = container.Build(containerName, false)
+	err = container.Build(&container.BuildParameter{
+		Names: []string{containerName},
+		Force: false,
+	})
 	if err != nil {
 		wwlog.Error("Could not build container %s: %s", containerName, err)
 		os.Exit(1)
