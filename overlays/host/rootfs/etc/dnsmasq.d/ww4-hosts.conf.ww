@@ -15,8 +15,6 @@ dhcp-vendorclass=set:efi-http,HTTPClient:Arch:00016
 dhcp-option-force=tag:efi-http,60,HTTPClient
 # for http boot always use shim/grub
 dhcp-boot=tag:efi-http,"http://{{$.Ipaddr}}:{{$.Warewulf.Port}}/efiboot/shim.efi"
-# iPXE binary will get the following configuration file
-dhcp-boot=tag:iPXE,"http://{{$.Ipaddr}}:{{$.Warewulf.Port}}/ipxe/${mac:hexhyp}"
 {{- if $.Warewulf.GrubBoot }}
 dhcp-boot=tag:x86PC,"warewulf/shim.efi"
 {{- else }}
@@ -27,6 +25,8 @@ dhcp-boot=tag:x86PC,"/warewulf/{{ index $.Tftp.IpxeBinaries "00:07" }}"
 dhcp-boot=tag:aarch64,"/warewulf/{{ index $.Tftp.IpxeBinaries "00:0B" }}"
 {{- end }}
 {{- end }}
+# iPXE binary will get the following configuration file
+dhcp-boot=tag:iPXE,"http://{{$.Ipaddr}}:{{$.Warewulf.Port}}/ipxe/${mac:hexhyp}"
 dhcp-no-override
 {{- if $.Tftp.Enabled }}
 # also act as tftp server
