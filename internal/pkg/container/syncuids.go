@@ -166,8 +166,8 @@ func (db syncDB) read(fileName string, fromContainer bool) error {
 		for fileScanner.Scan() {
 			line := fileScanner.Text()
 			fields := strings.Split(line, ":")
-			if len(fields) != 7 {
-				wwlog.Debug("malformed line in passwd: %s", line)
+			if len(fields) != 7 && len(fields) != 4 {
+				wwlog.Debug("malformed line in passwd/group: %s", line)
 				continue
 			}
 			name := fields[0]
