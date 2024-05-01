@@ -33,6 +33,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `/sys/firmware/devicetree/base/serial-number`
 - Replace slice in templates with sprig substr. #1093
 
+## v4.5.2, unreleased
+
+### Fixed
+
+- Fix nightly release build failure issue. #1195
+
 ## v4.5.1, 2024-04-30
 
 ### Added
