@@ -10,7 +10,7 @@ warewulf.conf
 =============
 
 The Warewulf configuration exists as follows in the current version of
-Warewulf (4.5.0):
+Warewulf (4.5.1):
 
 .. code-block:: yaml
 
