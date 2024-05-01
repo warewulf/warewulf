@@ -38,6 +38,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 - Fix nightly release build failure issue. #1195
+- Reorder dnsmasq config to put iPXE last. #1146
 
 ## v4.5.1, 2024-04-30
 
