@@ -48,9 +48,6 @@ func SyncUids(containerName string, showOnly bool) error {
 	if err := passwdSync.checkConflicts(); err != nil {
 		return err
 	}
-	if err := passwdSync.findUserFiles(containerPath); err != nil {
-		return err
-	}
 
 	groupSync := make(syncDB)
 	if err := groupSync.readFromHost(groupPath); err != nil {
@@ -60,9 +57,6 @@ func SyncUids(containerName string, showOnly bool) error {
 		return err
 	}
 	if err := groupSync.checkConflicts(); err != nil {
-		return err
-	}
-	if err := groupSync.findGroupFiles(containerPath); err != nil {
 		return err
 	}
 
@@ -76,13 +70,18 @@ func SyncUids(containerName string, showOnly bool) error {
 			wwlog.Info("uid/gid already synced")
 		}
 	} else {
+		if err := passwdSync.findUserFiles(containerPath); err != nil {
+			return err
+		}
+		if err := groupSync.findGroupFiles(containerPath); err != nil {
+			return err
+		}
 		if err := passwdSync.chownUserFiles(); err != nil {
 			return err
 		}
 		if err := groupSync.chownGroupFiles(); err != nil {
 			return err
 		}
-
 		if err := passwdSync.update(containerPasswdPath, passwdPath); err != nil {
 			return err
 		}
@@ -329,9 +328,6 @@ func (db syncDB) needsSync() bool {
 			wwlog.Debug("sync required: %s is %v in host and %v in container", name, ids.HostID, ids.ContainerID)
 			return true
 		}
-		if len(ids.ContainerFiles) > 0 {
-			wwlog.Debug("sync required: %v files to update for %s", len(ids.ContainerFiles), name)
-		}
 	}
 	return false
 }
@@ -391,6 +387,7 @@ func (info *syncInfo) findFiles(containerPath string, byGid bool) error {
 	var containerFiles []string
 	if info.inHost() && !info.match() {
 		if err := filepath.Walk(containerPath, func(filePath string, fileInfo fs.FileInfo, err error) error {
+			wwlog.Debug("findFiles: %s", filePath)
 			if stat, ok := fileInfo.Sys().(*syscall.Stat_t); ok {
 				var id int
 				if byGid {
