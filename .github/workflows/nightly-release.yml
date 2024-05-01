@@ -14,17 +14,16 @@ jobs:
           should-continue: ${{ steps.generate.outputs.should-continue }}
           version: ${{ steps.generate.outputs.version }}
           release-id: ${{ steps.generate.outputs.release-id }}
-        permissions: write-all # might not be used for realy deployment
+        permissions: write-all
         steps:
           - name: Checkout Code
             uses: actions/checkout@v4
             with:
-              ref: 'main'
+              fetch-depth: 0
           - uses: ./.github/actions/generate
             name: generate warewulf spec, dist and collect commits info
             id: generate
             with:
-              nightly: 'true'
               token: ${{ secrets.GITHUB_TOKEN }}
               event-id: ${{ github.event.release.id }}
 
@@ -46,19 +45,16 @@ jobs:
               - target: rocky+epel-9-x86_64
                 arch: x86_64
                 dist: el9
-              - target: centos+epel-7-x86_64
-                arch: x86_64
-                dist: el7
               - target: opensuse-leap-15.5-x86_64
                 arch: x86_64
                 dist: suse.lp155
-        permissions: write-all # might not be used for realy deployment
+        permissions: write-all
 
         steps:
           - name: Checkout Code
             uses: actions/checkout@v4
             with:
-              ref: 'main'
+              fetch-depth: 0
           - uses: ./.github/actions/rpm
             name: build rpms
             id: rpm
