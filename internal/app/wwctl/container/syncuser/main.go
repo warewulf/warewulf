@@ -16,7 +16,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if !container.ValidName(containerName) {
 		return fmt.Errorf("%s is not a valid container", containerName)
 	}
-	err := container.SyncUids(containerName, !write)
+	err := container.SyncUids(containerName, write)
 	if err != nil {
 		wwlog.Error("Error in synchronize: %s", err)
 		os.Exit(1)
