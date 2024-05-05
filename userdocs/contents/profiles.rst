@@ -103,7 +103,7 @@ Lastly we just need to configure this profile to our node(s):
 
 .. code-block:: console
 
-   # wwctl node set --addprofile test_profile n0000
+   # wwctl node set --profile test_profile n0000
    Are you sure you want to modify 1 nodes(s): y
 
 And you can now verify that the node has both profile configurations:
