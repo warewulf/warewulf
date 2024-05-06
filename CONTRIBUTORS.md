@@ -32,3 +32,5 @@
 * Andreas Skau <andreas@scheen.no> @buzh
 * Dietmar Rieder <dietmar.rieder@i-med.ac.at>
 * Andreas Henkel <henkel@uni-mainz.de>
+* Timothy Middelkoop <tmiddelkoop@internet2.edu>
+* Shane Nehring <snehring@iastate.edu>
