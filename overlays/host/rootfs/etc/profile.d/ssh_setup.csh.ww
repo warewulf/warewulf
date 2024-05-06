@@ -3,12 +3,13 @@
 ## Automatically configure SSH keys for a user on C SHell login
 ## Copy this file to /etc/profile.d along with ssh_setup.sh
 
+{{- if gt (len .Ssh.KeyTypes) 0 }}
+{{ $keyType := index .Ssh.KeyTypes 0 }}
 set _UID=`id -u`
-
 if ( ( $_UID > 500 || $_UID == 0 ) && ( ! -f "$HOME/.ssh/config" && ! -f "$HOME/.ssh/cluster" ) ) then
     echo "Configuring SSH for cluster access"
     install -d -m 700 $HOME/.ssh
-    ssh-keygen -t rsa -f $HOME/.ssh/cluster -N '' -C "Warewulf Cluster key" >& /dev/null
+    ssh-keygen -t {{ $keyType }} -f $HOME/.ssh/cluster -N '' -C "Warewulf Cluster key" >& /dev/null
     cat $HOME/.ssh/cluster.pub >>! $HOME/.ssh/authorized_keys
     chmod 0600 $HOME/.ssh/authorized_keys
 
@@ -20,3 +21,6 @@ if ( ( $_UID > 500 || $_UID == 0 ) && ( ! -f "$HOME/.ssh/config" && ! -f "$HOME/
     echo "   StrictHostKeyChecking=no" >> $HOME/.ssh/config
     chmod 0600 $HOME/.ssh/config
 endif
+{{- else }}
+# No ssh key types configured
+{{- end }}
