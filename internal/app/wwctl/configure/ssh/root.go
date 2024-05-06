@@ -1,6 +1,8 @@
 package ssh
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+)
 
 var (
 	baseCmd = &cobra.Command{
@@ -12,6 +14,7 @@ var (
 			"keys.",
 		RunE: CobraRunE,
 	}
+	keyTypes []string
 )
 
 func init() {
@@ -19,5 +22,6 @@ func init() {
 
 // GetRootCommand returns the root cobra.Command for the application.
 func GetCommand() *cobra.Command {
+	baseCmd.PersistentFlags().StringArrayVarP(&keyTypes, "keytypes", "t", []string{}, "ssh key types to be created")
 	return baseCmd
 }

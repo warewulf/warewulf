@@ -49,6 +49,12 @@ Warewulf (4.5.1):
      - source: /etc/resolv.conf
        dest: /etc/resolv.conf
        readonly: true
+   ssh:
+     key types:
+       - rsa
+       - dsa
+       - ecdsa
+       - ed25519
 
 Generally you can leave this file as is, as long as you set the
 appropriate networking information. Specifically the following
@@ -150,6 +156,25 @@ may be overridden using ``warewulf.conf:paths``.
 * ``wwprovisiondir``: Where to store built overlays, built containers, and imported kernels.
 
 * ``wwclientdir``: Where the Warewulf client looks for its configuration on a provisioned node.
+
+SSH key types
+-------------
+
+*New in Warewulf v4.5.1*
+
+SSH key types to generate during ``wwctl configure ssh`` may be overridden using ``warewulf.conf:ssh:key types``.
+
+.. code-block:: yaml
+
+   ssh:
+     key types:
+       - rsa
+       - dsa
+       - ecdsa
+       - ed25519
+
+Warewulf will generate host keys for each listed key type.
+The first listed key type is used to generate authentication ssh keys.
 
 nodes.conf
 ==========

@@ -108,6 +108,15 @@ data from other structures.
   - Mount: {{ $export.Mount }}
 {{- end }}
 
+### SSH
+
+{{- if gt (len .Ssh.KeyTypes) 0 }}
+- Key types:
+{{- range $index, $keyType :=  .Ssh.KeyTypes }}
+  - {{ $keyType }}
+{{- end }}
+- First key type: {{ index .Ssh.KeyTypes 0 }}
+{{- end }}
 
 ### Warewulf
 

@@ -38,6 +38,7 @@ type RootConf struct {
 	DHCP            *DHCPConf     `yaml:"dhcp"`
 	TFTP            *TFTPConf     `yaml:"tftp"`
 	NFS             *NFSConf      `yaml:"nfs"`
+	SSH             *SSHConf      `yaml:"ssh,omitempty"`
 	MountsContainer []*MountEntry `yaml:"container mounts" default:"[{\"source\": \"/etc/resolv.conf\", \"dest\": \"/etc/resolv.conf\"}]"`
 	Paths           *BuildConfig  `yaml:"paths"`
 
@@ -53,6 +54,7 @@ func New() *RootConf {
 	cachedConf.DHCP = new(DHCPConf)
 	cachedConf.TFTP = new(TFTPConf)
 	cachedConf.NFS = new(NFSConf)
+	cachedConf.SSH = new(SSHConf)
 	cachedConf.Paths = new(BuildConfig)
 	if err := defaults.Set(&cachedConf); err != nil {
 		panic(err)

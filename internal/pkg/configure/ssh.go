@@ -11,7 +11,11 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-func SSH() error {
+/*
+Create password less ssh keys in the home of the user who its
+calling this function. (root in our case)
+*/
+func SSH(keyTypes ...string) error {
 	if os.Getuid() == 0 {
 		fmt.Printf("Updating system keys\n")
 		conf := warewulfconf.Get()
@@ -23,7 +27,7 @@ func SSH() error {
 			os.Exit(1)
 		}
 
-		for _, k := range [4]string{"rsa", "dsa", "ecdsa", "ed25519"} {
+		for _, k := range keyTypes {
 			keytype := "ssh_host_" + k + "_key"
 			if !util.IsFile(path.Join(wwkeydir, keytype)) {
 				fmt.Printf("Setting up key: %s\n", keytype)
@@ -48,21 +52,26 @@ func SSH() error {
 	}
 
 	authorizedKeys := path.Join(homeDir, "/.ssh/authorized_keys")
-	rsaPriv := path.Join(homeDir, "/.ssh/id_rsa")
-	rsaPub := path.Join(homeDir, "/.ssh/id_rsa.pub")
 
 	if !util.IsFile(authorizedKeys) {
-		fmt.Printf("Setting up: %s\n", authorizedKeys)
-		err = util.ExecInteractive("ssh-keygen", "-q", "-t", "rsa", "-f", rsaPriv, "-C", "", "-N", "")
-		if err != nil {
-			return errors.Wrap(err, "failed to exec ssh-keygen command")
-		}
-		err := util.CopyFile(rsaPub, authorizedKeys)
-		if err != nil {
-			return errors.Wrap(err, "failed to copy keys")
+		if len(keyTypes) > 0 {
+			keyType := keyTypes[0]
+			fmt.Printf("Setting up: %s\n", authorizedKeys)
+			privKey := path.Join(homeDir, "/.ssh/id_"+keyType)
+			pubKey := privKey + ".pub"
+			err = util.ExecInteractive("ssh-keygen", "-q", "-t", keyType, "-f", privKey, "-C", "", "-N", "")
+			if err != nil {
+				return errors.Wrap(err, "Failed to exec ssh-keygen command")
+			}
+			err := util.CopyFile(pubKey, authorizedKeys)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("Failed to copy %s to authorized_keys", pubKey))
+			}
+		} else {
+			fmt.Printf("Skipping authorized_keys: no key types configured\n")
 		}
 	} else {
-		fmt.Printf("Skipping, authorized_keys already exists: %s\n", authorizedKeys)
+		fmt.Printf("Skipping authorized_keys: already exists: %s\n", authorizedKeys)
 	}
 
 	return nil

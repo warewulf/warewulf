@@ -11,12 +11,13 @@
 ## Automatically configure SSH keys for a user on login
 ## Copy this file to /etc/profile.d
 
+{{- if gt (len .Ssh.KeyTypes) 0 }}
+{{ $keyType := index .Ssh.KeyTypes 0 }}
 _UID=`id -u`
-
 if [ $_UID -ge 500 -o $_UID -eq 0 ] && [ ! -f "$HOME/.ssh/config" -a ! -f "$HOME/.ssh/cluster" ]; then
     echo "Configuring SSH for cluster access"
     install -d -m 700 $HOME/.ssh
-    ssh-keygen -t rsa -f $HOME/.ssh/cluster -N '' -C "Warewulf Cluster key" > /dev/null 2>&1
+    ssh-keygen -t {{ $keyType }} -f $HOME/.ssh/cluster -N '' -C "Warewulf Cluster key" > /dev/null 2>&1
     cat $HOME/.ssh/cluster.pub >> $HOME/.ssh/authorized_keys
     chmod 0600 $HOME/.ssh/authorized_keys
 
@@ -26,3 +27,6 @@ if [ $_UID -ge 500 -o $_UID -eq 0 ] && [ ! -f "$HOME/.ssh/config" -a ! -f "$HOME
     echo "   StrictHostKeyChecking=no" >> $HOME/.ssh/config
     chmod 0600 $HOME/.ssh/config
 fi
+{{- else }}
+# No ssh key types configured
+{{- end }}
