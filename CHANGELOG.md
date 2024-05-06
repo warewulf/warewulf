@@ -27,7 +27,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
-- --addprofile should be --profile (#1085)
 - Prevent Networkmanager from trying to optain IP address via DHCP
   on unused/unmanaged network interfaces.
 - Systems with no SMBIOS (Raspberry Pi) will create a UUID from
@@ -44,6 +43,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Fix nightly release build failure issue. #1195
 - Reorder dnsmasq config to put iPXE last. #1146
+- Update a reference to `--addprofile` to be `--profile`. #1085
 
 ## v4.5.1, 2024-04-30
 
