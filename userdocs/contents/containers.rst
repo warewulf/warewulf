@@ -125,6 +125,26 @@ directly.
    $ apptainer build --sandbox ./rockylinux-8/ docker://ghcr.io/warewulf/warewulf-rockylinux:8
    $ sudo wwctl container import ./rockylinux-8/ rockylinux-8
 
+HTTP proxies
+------------
+
+You can set ``HTTP_PROXY``, ``HTTPS_PROXY``, and ``NO_PROXY`` (or their
+lower-case versions) to use a proxy during ``wwctl container import``.
+
+.. code-block:: shell
+
+   export HTTPS_PROXY=squid.localdomain
+   wwctl conatiner import docker://ghcr.io/warewulf/warewulf-rockylinux:8
+
+See ProxyFromEnvironment_ For more information.
+
+.. _ProxyFromEnvironment: https://pkg.go.dev/net/http#ProxyFromEnvironment
+
+.. note::
+
+   OCI and ORAS registries typically use HTTPS, so you probably need to set
+   ``HTTPS_PROXY`` or ``https_proxy`` rather than the ``HTTP`` variants.
+
 Syncuser
 ========
 
