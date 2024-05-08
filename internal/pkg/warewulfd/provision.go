@@ -47,7 +47,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 
 	wwlog.Recv("hwaddr: %s, ipaddr: %s, stage: %s", rinfo.hwaddr, req.RemoteAddr, rinfo.stage)
 
-	if rinfo.stage == "runtime" && conf.Warewulf.Secure {
+	if (rinfo.stage == "runtime" || len(rinfo.overlay) > 0) && conf.Warewulf.Secure {
 		if rinfo.remoteport >= 1024 {
 			wwlog.Denied("Non-privileged port: %s", req.RemoteAddr)
 			w.WriteHeader(http.StatusUnauthorized)
