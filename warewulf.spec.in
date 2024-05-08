@@ -23,10 +23,11 @@
 Name: warewulf
 Summary: A provisioning system for large clusters of bare metal and/or virtual systems
 Version: @VERSION@
-Release: @RELEASE@%{?dist}
+Release: 0
 License: BSD-3-Clause
 URL:     https://github.com/warewulf/warewulf
-Source:  https://github.com/warewulf/warewulf/releases/download/v%{version}/warewulf-%{version}.tar.gz
+#!RemoteAsset
+Source:  https://github.com/warewulf/warewulf/releases/download/v@VERSION@/warewulf-@VERSION@.tar.gz
 
 ExclusiveOS: linux
 
@@ -36,6 +37,7 @@ Conflicts: warewulf-cluster
 Conflicts: warewulf-vnfs
 Conflicts: warewulf-provision
 Conflicts: warewulf-ipmi
+Conflicts: warewulf4
 
 %if 0%{?suse_version} || 0%{?sle_version}
 BuildRequires: distribution-release
