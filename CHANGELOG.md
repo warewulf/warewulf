@@ -44,6 +44,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Replace reference to docusaurus with Sphinx
 
+### Fixed
+
+- Fix installation docs to use github.com/warewulf instead of github.com/hpcng. #1219
+
 ### Security
 
 - Bump golang.org/x/net from 0.22.0 to 0.23.0. #1223
