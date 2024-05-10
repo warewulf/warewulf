@@ -56,7 +56,7 @@ func parseReq(req *http.Request) (parserInfo, error) {
        ret.ipaddr6 = strings.TrimSuffix(ipaddrtemp,":")
     }
 	ret.ipaddr = strings.Split(req.RemoteAddr, ":")[0]
-	ret.remoteport, _ = strconv.Atoi(strings.Split(req.RemoteAddr, ":")[1])
+	ret.remoteport, _ = strconv.Atoi(strings.Split(req.RemoteAddr, ":")[len(ipaddr)-1])
 
 	if len(req.URL.Query()["assetkey"]) > 0 {
 		ret.assetkey = req.URL.Query()["assetkey"][0]
