@@ -3,7 +3,7 @@ module github.com/warewulf/warewulf
 go 1.20
 
 require (
-	github.com/containers/image/v5 v5.30.0
+	github.com/containers/image/v5 v5.30.1
 	github.com/containers/storage v1.53.0
 	github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
 	github.com/coreos/ignition/v2 v2.15.0
