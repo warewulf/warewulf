@@ -44,6 +44,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Replace reference to docusaurus with Sphinx
 
+### Security
+
+- Bump golang.org/x/net from 0.22.0 to 0.23.0. #1223
+
 ## v4.5.2, 2024-05-13
 
 ### Added
