@@ -124,7 +124,7 @@ Vagrantfile
     cat << 'EOF' > Vagrantfile
     Vagrant.configure("2") do |config|
         number_of_node = ENV["NODES"] || 2
-        branch = ENV["BRANCH"] || "v4.5.1"
+        branch = ENV["BRANCH"] || "v4.5.2"
 
         config.vm.define :head do |head|
             head.vm.box = "rockylinux/9"
@@ -161,7 +161,7 @@ Vagrantfile
                 cd /tmp
                 git clone https://github.com/warewulf/warewulf.git
                 cd warewulf
-                git checkout v4.5.1
+                git checkout v4.5.2
                 make clean defaults \
                     PREFIX=/usr \
                     BINDIR=/usr/bin \
