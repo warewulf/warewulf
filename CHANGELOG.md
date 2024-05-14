@@ -34,7 +34,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Replace slice in templates with sprig substr. #1093
 - Block unprivileged requests for arbitrary overlays in secure mode.
 
-## v4.5.2, unreleased
+## v4.5.2, 2024-05-13
 
 ### Added
 
