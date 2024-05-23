@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Add examples for building overlays in parallel to documentation
 - Add the ability to boot nodes with `wwid=[interface]`, which replaces
   `interface` with the interface MAC address
 - Added https://github.com/Masterminds/sprig functions to templates #1030
