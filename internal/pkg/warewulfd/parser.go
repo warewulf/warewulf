@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hpcng/warewulf/internal/pkg/wwlog"
 	"github.com/pkg/errors"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -78,7 +77,7 @@ func parseReq(req *http.Request) (parserInfo, error) {
 			ret.stage = "render"
 		}
 	}
-
+	
 	if len(req.URL.Query()["overlay"]) > 0 {
 		ret.overlay = req.URL.Query()["overlay"][0]
 	}
