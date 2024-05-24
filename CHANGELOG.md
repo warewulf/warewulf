@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add multiple output formats (yaml & json) support. #447
 - More aliases for many wwctl commands
 - Add support to render template using `host` or `$(uname -n)` as the value of `overlay show --render`. #623
+- Read environment variables from `/etc/default/warewulfd` #725
 
 ### Changed
 
@@ -27,6 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Bump github.com/docker/docker to 25.0.5+incompatible
 - Update `wwctl server` to always run in the foreground #508
 - Update `wwctl server` to log to stdout rather than a file #503
+- Changed `wwctl server` to use "INFO" for send and receive logs #725
 
 ### Removed
 

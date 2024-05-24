@@ -6,6 +6,7 @@ AssertFileIsExecutable=@BINDIR@/wwctl
 
 [Service]
 Type=exec
+EnvironmentFile=-/etc/default/warewulfd
 User=root
 Group=root
 ExecStart=@BINDIR@/wwctl server
