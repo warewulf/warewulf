@@ -73,9 +73,11 @@ func parseReq(req *http.Request) (parserInfo, error) {
 			ret.stage = "runtime"
 		} else if stage == "efiboot" {
 			ret.stage = "efiboot"
+		} else if stage == "render" {
+			ret.stage = "render"
 		}
 	}
-
+	
 	if len(req.URL.Query()["overlay"]) > 0 {
 		ret.overlay = req.URL.Query()["overlay"][0]
 	}
@@ -96,8 +98,27 @@ func parseReq(req *http.Request) (parserInfo, error) {
 		return ret, errors.New("could not obtain ipaddr from HTTP request")
 	}
 	if ret.remoteport == 0 {
-		return ret, errors.New("could not obtain remote port from HTTP request: " + req.RemoteAddr)
+		return ret, errors.New("couldn't obtain remote port from HTTP request: " + req.RemoteAddr)
 	}
 
+	return ret, nil
+}
+
+type parserInfoRender struct {
+	overlay    string
+	node       string
+	remoteport int
+}
+
+func parseReqRender(req *http.Request) (ret parserInfoRender, err error) {
+	ret.overlay = strings.TrimPrefix(strings.Split(req.URL.Path, "?")[0], "/overlay")
+	if len(req.URL.Query()["node"]) > 0 {
+		ret.node = req.URL.Query()["node"][0]
+	}
+	wwlog.Recv("path: %s node: %s", ret.overlay, ret.node)
+	ret.remoteport, _ = strconv.Atoi(strings.Split(req.RemoteAddr, ":")[1])
+	if ret.remoteport == 0 {
+		return ret, errors.New("couldn't obtain remote port from HTTP request: " + req.RemoteAddr)
+	}
 	return ret, nil
 }

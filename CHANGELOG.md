@@ -34,6 +34,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `/sys/firmware/devicetree/base/serial-number`
 - Replace slice in templates with sprig substr. #1093
 - Block unprivileged requests for arbitrary overlays in secure mode.
+- new subcommand `wwctl genconf` is available with following subcommands:
+  * `completions` which will create the files used for bash-completion. Also
+     fish an zsh completions can be generated
+  * `defaults` which will generate a valid `defaults.conf`
+  * `man` which will generate the man pages in the specified directory
+  * `reference` which will generate a reference documentation for the wwctl commands
+  * `warwulfconf print` which will print the used `warewulf.conf`. If there is no valid
+     `warewulf.conf` a valid configuration is provided, prefilled with default values
+     and an IP configuration derived from the network configuration of the host
+- All paths can now be configured in `warewulf.conf`, check the paths section of of 
+   `wwctl --emptyconf genconfig warewulfconf print` for the available paths.
+- Added experimental dnsmasq support.
+- Check for formal correct IP and MAC addresses for command line options and
+  when reading in the configurations
+- Added the possibility to retrive files and templates from the overlay directory
+  `wwwroot` which has the following syntax http://$MASTER:$IP/overlays/overlay.ww?node=$nodename
 
 ## v4.5.2, 2024-05-13
 
