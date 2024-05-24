@@ -162,6 +162,22 @@ built. Specific overlays can be selected with ``-O`` flag. For
 debugging purposes the templates can be written to a directory given
 via the ``-o`` flag.
 
+On clusters with large numbers of nodes a significant speedup can be achieved
+by building overlays in parallel. Adding parallel overlay building to `wwctl`
+is planned, see issue `#1087 <https://github.com/warewulf/warewulf/issues/1087>`_.
+Until parallel overlay building is implemented, builds can be easily done in 
+parallel with Gnu `parallel` or `xargs`, for example:
+
+.. code-block:: console
+
+  # Gnu parallel
+  wwctl node list | awk '{print $1}' | grep -v "NODE " | parallel -j 12 \
+    wwctl overlay build -N {}
+
+  # xargs
+  wwctl node list | awk '{print $1}' | grep -v "NODE " | xargs -n 1 -P 12 \
+    wwctl overlay build -N
+
 By default Warewulf will build/update and cache overlays as needed
 (configurable in the ``warewulf.conf``).
 
