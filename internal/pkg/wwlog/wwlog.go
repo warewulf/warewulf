@@ -37,8 +37,6 @@ var (
 	SECWARN     = SetLevelName(31, "SECWARN")
 	WARN        = SetLevelName(30, "WARN")
 	ERROUT      = SetLevelName(29, "ERROUT")
-	SEND        = SetLevelName(27, "SEND")
-	RECV        = SetLevelName(26, "RECV")
 	SERV        = SetLevelName(25, "SERV")
 	OUT         = SetLevelName(22, "OUT")
 	SECINFO     = SetLevelName(21, "SECINFO")
@@ -206,7 +204,7 @@ func LogCaller(level int, skip int, err error, message string, a ...interface{})
 		}
 
 		message = logFormatter(logLevel, &rec)
-		if level == INFO || level == RECV || level == SEND || level == OUT {
+		if level == INFO || level == OUT {
 			fmt.Fprint(logOut, message)
 		} else {
 			fmt.Fprint(logErr, message)
@@ -269,14 +267,6 @@ func SecInfo(message string, a ...interface{}) {
 
 func Serv(message string, a ...interface{}) {
 	LogCaller(SERV, 1, nil, message, a...)
-}
-
-func Recv(message string, a ...interface{}) {
-	LogCaller(RECV, 1, nil, message, a...)
-}
-
-func Send(message string, a ...interface{}) {
-	LogCaller(SEND, 1, nil, message, a...)
 }
 
 func Warn(message string, a ...interface{}) {

@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add flag `--build` to `wwctl container copy`. #1378
 - Add `wwctl clean` to remove OCI cache and overlays from deleted nodes
 - Add `wwctl container import --platform`. #1381
+- Read environment variables from `/etc/default/warewulfd` #725
 
 ### Changed
 
@@ -46,6 +47,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Updated various shell scripts for POSIX compatibility. #1464
 - Update `wwctl server` to always run in the foreground #508
 - Update `wwctl server` to log to stdout rather than a file #503
+- Changed `wwctl server` to use "INFO" for send and receive logs #725
 
 
 ### Removed
