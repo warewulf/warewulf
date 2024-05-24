@@ -25,6 +25,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Bump google.golang.org/protobuf to 1.33.0
 - Bump github.com/containers/image/v5 to 5.30.0
 - Bump github.com/docker/docker to 25.0.5+incompatible
+- Update `wwctl server` to always run in the foreground #508
+- Update `wwctl server` to log to stdout rather than a file #503
+
+### Removed
+
+- Remove `wwctl server <start,stop,status,restart,reload>` #508
 
 ### Fixed
 

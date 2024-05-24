@@ -5,15 +5,11 @@ After=network-online.target
 AssertFileIsExecutable=@BINDIR@/wwctl
 
 [Service]
-Type=simple
+Type=exec
 User=root
 Group=root
-
-ExecStart=@BINDIR@/wwctl server start
-ExecReload=@BINDIR@/wwctl server reload
-ExecStop=@BINDIR@/wwctl server stop
-
-PIDFile=/var/run/warewulfd.pid
+ExecStart=@BINDIR@/wwctl server
+ExecReload=/bin/kill -HUP "$MAINPID"
 Restart=always
 
 [Install]

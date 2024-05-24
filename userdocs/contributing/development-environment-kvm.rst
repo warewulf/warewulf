@@ -121,8 +121,6 @@ Build and install Warewulf on wwdev
    sudo wwctl overlay build -a
 
    # Start the Warewulf daemon
-   sudo wwctl ready
-   sudo wwctl server start
-   sudo wwctl server status
+   sudo wwctl server &
 
 Boot your node and watch the bash and the output of the Warewulfd process
