@@ -34,11 +34,6 @@ func (h *slashFix) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func RunServer() error {
-	err := DaemonInitLogging()
-	if err != nil {
-		return errors.Wrap(err, "Failed to initialize logging")
-	}
-
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGHUP)
 
@@ -57,7 +52,7 @@ func RunServer() error {
 		}
 	}()
 
-	err = LoadNodeDB()
+	err := LoadNodeDB()
 	if err != nil {
 		wwlog.Error("Could not load database: %s", err)
 	}
@@ -84,17 +79,6 @@ func RunServer() error {
 	conf := warewulfconf.Get()
 
 	daemonPort := conf.Warewulf.Port
-	/*
-		wwlog.Serv("Starting HTTPD REST service on port %d", daemonPort)
-		s := &http.Server{
-			Addr:         ":" + strconv.Itoa(daemonPort),
-			Handler:      &slashFix{&wwHandler},
-			ReadTimeout:  10 * time.Second,
-			IdleTimeout:  10 * time.Second,
-			WriteTimeout: 10 * time.Second,
-		}
-		err = s.ListenAndServe()
-	*/
 	err = http.ListenAndServe(":"+strconv.Itoa(daemonPort), &slashFix{&wwHandler})
 
 	if err != nil {

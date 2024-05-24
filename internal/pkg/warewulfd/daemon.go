@@ -60,7 +60,7 @@ func DaemonInitLogging() error {
 
 	if conf.Warewulf.Syslog {
 
-		wwlog.Debug("Changingq log output to syslog")
+		wwlog.Debug("Changing log output to syslog")
 
 		logwriter, err := syslog.New(syslog.LOG_NOTICE, "warewulfd")
 		if err != nil {
@@ -165,33 +165,15 @@ func DaemonReload() error {
 	if nodaemon {
 		return nil
 	}
-	if !util.IsFile(WAREWULFD_PIDFILE) {
-		return errors.New("Warewulf server is not running")
-	}
-
-	dat, err := os.ReadFile(WAREWULFD_PIDFILE)
+	cmd := exec.Command("/usr/sbin/service", "warewulfd", "reload")
+	err := cmd.Start()
 	if err != nil {
-		return errors.Wrap(err, "could not read Warewulfd PID file")
+		return errors.Wrap(err, "failed to reload warewulfd")
 	}
-
-	pid, _ := strconv.Atoi(string(dat))
-	process, err := os.FindProcess(pid)
+	err = cmd.Wait()
 	if err != nil {
-		return errors.Wrap(err, "failed to find running PID")
-	} else {
-		err := process.Signal(syscall.Signal(syscall.SIGHUP))
-		if err != nil {
-			return errors.Wrap(err, "failed to send process SIGHUP")
-		}
+		return errors.Wrap(err, "failed to reload warewulfd")
 	}
-
-	logLevel := wwlog.GetLogLevel()
-	if logLevel == wwlog.INFO {
-		os.Setenv("WAREWULFD_LOGLEVEL", strconv.Itoa(wwlog.SERV))
-	} else {
-		os.Setenv("WAREWULFD_LOGLEVEL", strconv.Itoa(logLevel))
-	}
-
 	return nil
 }
 
