@@ -8,6 +8,7 @@ AssertFileIsExecutable=@BINDIR@/wwctl
 Type=simple
 User=root
 Group=root
+LimitNOFILE=524288
 
 ExecStart=@BINDIR@/wwctl server start
 ExecReload=@BINDIR@/wwctl server reload
