@@ -3,20 +3,15 @@ package show
 import (
 	"fmt"
 
-	"github.com/warewulf/warewulf/internal/pkg/api/container"
-	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
-
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/pkg/container"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 
-	csp := &wwapiv1.ContainerShowParameter{
-		ContainerName: args[0],
-	}
-
-	var r *wwapiv1.ContainerShowResponse
-	r, err = container.ContainerShow(csp)
+	r, err := container.Show(&container.ShowParameter{
+		Name: args[0],
+	})
 	if err != nil {
 		return
 	}

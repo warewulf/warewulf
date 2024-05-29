@@ -1,17 +1,25 @@
 package build
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
-	"github.com/warewulf/warewulf/internal/pkg/api/container"
-	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/warewulf/warewulf/internal/pkg/container"
 )
 
-func CobraRunE(cmd *cobra.Command, args []string) error {
-	cbp := &wwapiv1.ContainerBuildParameter{
-		ContainerNames: args,
-		Force:          BuildForce,
-		All:            BuildAll,
-		Default:        SetDefault,
+func CobraRunE(cmd *cobra.Command, args []string) (err error) {
+	var containers []string
+	if BuildAll {
+		containers, err = container.ListSources()
+		if err != nil {
+			return fmt.Errorf("failed to list all containers")
+		}
+	} else {
+		containers = args
 	}
-	return container.ContainerBuild(cbp)
+	return container.Build(&container.BuildParameter{
+		Names:   containers,
+		Force:   BuildForce,
+		Default: SetDefault,
+	})
 }

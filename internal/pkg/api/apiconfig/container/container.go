@@ -30,61 +30,18 @@ func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 
 	if cbp.All {
 		containers, err = container.ListSources()
+		if err != nil {
+			return fmt.Errorf("failed to list all containers")
+		}
 	} else {
 		containers = cbp.ContainerNames
 	}
 
-	if len(containers) == 0 {
-		return
-	}
-
-	for _, c := range containers {
-		if !container.ValidSource(c) {
-			err = fmt.Errorf("VNFS name does not exist: %s", c)
-			wwlog.Error("%s", err)
-			return
-		}
-
-		err = container.Build(c, cbp.Force)
-		if err != nil {
-			wwlog.Error("Could not build container %s: %s", c, err)
-			return
-		}
-	}
-
-	if cbp.Default {
-		if len(containers) != 1 {
-			wwlog.Error("Can only set default for one container")
-		} else {
-			var nodeDB node.NodeYaml
-			nodeDB, err = node.New()
-			if err != nil {
-				wwlog.Error("Could not open node configuration: %s", err)
-				return
-			}
-
-			//TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
-			profiles, _ := nodeDB.FindAllProfiles()
-			for _, profile := range profiles {
-				wwlog.Debug("Looking for profile default: %s", profile.Id.Get())
-				if profile.Id.Get() == "default" {
-					wwlog.Debug("Found profile default, setting container name to: %s", containers[0])
-					profile.ContainerName.Set(containers[0])
-					err := nodeDB.ProfileUpdate(profile)
-					if err != nil {
-						return errors.Wrap(err, "failed to update node profile")
-					}
-				}
-			}
-			// TODO: Need a wrapper and flock around this. Sometimes we restart warewulfd and sometimes we don't.
-			err = nodeDB.Persist()
-			if err != nil {
-				return errors.Wrap(err, "failed to persist nodedb")
-			}
-			fmt.Printf("Set default profile to container: %s\n", containers[0])
-		}
-	}
-	return
+	return container.Build(&container.BuildParameter{
+		Names:   containers,
+		Force:   cbp.Force,
+		Default: cbp.Default,
+	})
 }
 
 func ContainerDelete(cdp *wwapiv1.ContainerDeleteParameter) (err error) {
@@ -194,7 +151,10 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 	}
 
 	fmt.Printf("Building container: %s\n", cip.Name)
-	err = container.Build(cip.Name, true)
+	err = container.Build(&container.BuildParameter{
+		Names: []string{cip.Name},
+		Force: true,
+	})
 	if err != nil {
 		wwlog.Error("Could not build container %s: %s", cip.Name, err)
 		return

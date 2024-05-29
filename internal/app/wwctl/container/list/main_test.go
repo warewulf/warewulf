@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/container"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
@@ -36,8 +36,8 @@ nodes:
     - default
 `,
 			mockFunc: func() {
-				containerList = func() (containerInfo []*wwapiv1.ContainerInfo, err error) {
-					containerInfo = append(containerInfo, &wwapiv1.ContainerInfo{
+				containerList = func() (containerInfo []*container.ListResponse, err error) {
+					containerInfo = append(containerInfo, &container.ListResponse{
 						Name:          "test",
 						NodeCount:     1,
 						KernelVersion: "kernel",
