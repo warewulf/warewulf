@@ -101,6 +101,19 @@ func (conf *RootConf) Parse(data []byte) error {
 	if len(conf.TFTP.IpxeBinaries) == 0 {
 		conf.TFTP.IpxeBinaries = defIpxe
 	}
+
+	// check whether ip addr is CIDR type and configure related fields as required
+	if ip, network, err := net.ParseCIDR(conf.Ipaddr); err == nil {
+		conf.Ipaddr = ip.String()
+		if conf.Network == "" {
+			conf.Network = network.IP.String()
+		}
+		if conf.Netmask == "" {
+			mask := network.Mask
+			conf.Netmask = fmt.Sprintf("%d.%d.%d.%d", mask[0], mask[1], mask[2], mask[3])
+		}
+	}
+
 	return nil
 }
 

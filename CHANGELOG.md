@@ -47,6 +47,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Block unprivileged requests for arbitrary overlays in secure mode. #1215
 - Fix installation docs to use github.com/warewulf instead of github.com/hpcng. #1219
+- Fix the issue that warewulf.conf parse does not support CIDR format. #1130
 
 ### Security
 
