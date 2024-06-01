@@ -87,7 +87,7 @@ tag.
 
 .. code-block:: bash
 
-   git clone https://github.com/hpcng/warewulf.git
+   git clone https://github.com/warewulf/warewulf.git
    cd warewulf
    git checkout development # or switch to a tag like 'v4.5.2'
    make all && sudo make install
