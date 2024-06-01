@@ -13,8 +13,8 @@ suggest an improvement
 `pull request <https://github.com/warewulf/warewulf-web/compare>`_ on
 `our repository <https://github.com/warewulf/warewulf-web>`_.
 
-The current documentation is generated with `Docusaurus
-<https://v2.docusaurus.io/docs/>`_.
+The current documentation is generated with `Sphinx
+<https://www.sphinx-doc.org/>`_.
 
 For more information on using Git and GitHub to create a pull request
 suggesting additions and edits to the docs, see the `section on
