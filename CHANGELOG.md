@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-- Add examples for building overlays in parallel to documentation
 - Add the ability to boot nodes with `wwid=[interface]`, which replaces
   `interface` with the interface MAC address
 - Added https://github.com/Masterminds/sprig functions to templates #1030
@@ -34,6 +33,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `/sys/firmware/devicetree/base/serial-number`
 - Replace slice in templates with sprig substr. #1093
 - Block unprivileged requests for arbitrary overlays in secure mode.
+
+## v4.5.3, unreleased
+
+### Added
+
+- Add examples for building overlays in parallel to documentation
 
 ## v4.5.2, 2024-05-13
 
