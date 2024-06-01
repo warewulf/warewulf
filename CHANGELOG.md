@@ -32,7 +32,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Systems with no SMBIOS (Raspberry Pi) will create a UUID from
   `/sys/firmware/devicetree/base/serial-number`
 - Replace slice in templates with sprig substr. #1093
-- Block unprivileged requests for arbitrary overlays in secure mode.
 
 ## v4.5.3, unreleased
 
@@ -46,6 +45,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- Block unprivileged requests for arbitrary overlays in secure mode. #1215
 - Fix installation docs to use github.com/warewulf instead of github.com/hpcng. #1219
 
 ### Security
