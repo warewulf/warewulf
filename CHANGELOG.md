@@ -42,12 +42,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 - Replace reference to docusaurus with Sphinx
+- `wwctl container import` now only runs syncuser if explicitly requested. #1212
 
 ### Fixed
 
 - Block unprivileged requests for arbitrary overlays in secure mode. #1215
 - Fix installation docs to use github.com/warewulf instead of github.com/hpcng. #1219
 - Fix the issue that warewulf.conf parse does not support CIDR format. #1130
+- Reduce the number of times syncuser walks the container file system. #1209
 
 ### Security
 

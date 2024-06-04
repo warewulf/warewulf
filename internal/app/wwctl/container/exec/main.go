@@ -121,7 +121,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 	wwlog.Debug("group: %v", time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec)))
 	if syncuids && SyncUser {
-		err = container.SyncUids(containerName, true)
+		err = container.SyncUids(containerName, false)
 		if err != nil {
 			wwlog.Error("Error in user sync, fix error and run 'syncuser' manually, but trying to build container: %s", err)
 		}
