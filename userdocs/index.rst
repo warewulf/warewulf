@@ -28,6 +28,7 @@ Welcome to the Warewulf User Guide!
    Security <contents/security>
    Templating <contents/templating>
    dnsmasq <contents/dnsmasq>
+   Troubleshooting <contents/troubleshooting>
 
 .. toctree::
    :maxdepth: 2
