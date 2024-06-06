@@ -13,16 +13,13 @@ var (
 		Args:                  cobra.MinimumNArgs(1),
 		FParseErrWhitelist:    cobra.FParseErrWhitelist{UnknownFlags: true},
 	}
-	binds      []string
-	nodename   string
-	overlayDir string
+	binds    []string
+	nodename string
 )
 
 func init() {
 	baseCmd.Flags().StringVarP(&nodename, "node", "n", "", "create ro overlay for given node")
 	baseCmd.Flags().StringArrayVarP(&binds, "bind", "b", []string{}, "bind points")
-	baseCmd.Flags().StringVar(&overlayDir, "overlaydir", "", "overlayDir")
-
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

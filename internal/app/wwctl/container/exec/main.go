@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"path/filepath"
 	"syscall"
 	"time"
 
@@ -26,20 +25,23 @@ fork off a process with a new PID space
 */
 func runContainedCmd(args []string) (err error) {
 	conf := warewulfconf.Get()
-	if matches, _ := filepath.Glob(path.Join(conf.Paths.WWChrootdir, args[0], args[0]) + "-run-*"); len(matches) > 0 {
-		return fmt.Errorf("found lock directories for container: %v", matches)
-	}
-	overlayDir, err = os.MkdirTemp(path.Join(conf.Paths.WWChrootdir, args[0]), args[0]+"-run-")
-	if err != nil {
-		wwlog.Warn("couldn't create temp dir for overlay", err)
+	containerName := args[0]
+	runDir := container.RunDir(containerName)
+	if err := os.Mkdir(runDir, 0750); err != nil {
+		if _, existerr := os.Stat(runDir); !os.IsNotExist(existerr) {
+			return errors.New("run directory already exists: another container command may already be running")
+		} else {
+			return fmt.Errorf("unable to create run directory: %w", err)
+		}
 	}
 	defer func() {
-		err = errors.Join(os.RemoveAll(overlayDir), err)
+		if err := errors.Join(os.RemoveAll(runDir), err); err != nil {
+			wwlog.Error("error removing run directory: %w", err)
+		}
 	}()
-
 	logStr := fmt.Sprint(wwlog.GetLogLevel())
 	wwlog.Verbose("Running contained command: %s", args[1:])
-	c := exec.Command("/proc/self/exe", append([]string{"--warewulfconf", conf.GetWarewulfConf(), "--loglevel", logStr, "--overlaydir", overlayDir, "container", "exec", "__child"}, args...)...)
+	c := exec.Command("/proc/self/exe", append([]string{"--warewulfconf", conf.GetWarewulfConf(), "--loglevel", logStr, "container", "exec", "__child"}, args...)...)
 
 	c.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,

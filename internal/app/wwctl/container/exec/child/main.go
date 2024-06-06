@@ -21,8 +21,6 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-const exitEval = `$(VALU="$?" ; if [ $VALU == 0 ]; then echo create new image; else echo no new image; fi)`
-
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	if os.Getpid() != 1 {
 		wwlog.Error("PID is not 1: %d", os.Getpid())
@@ -36,8 +34,9 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		os.Exit(1)
 	}
 	conf := warewulfconf.Get()
-	if overlayDir == "" {
-		overlayDir = path.Join(conf.Paths.WWChrootdir, "overlays")
+	runDir := container.RunDir(containerName)
+	if _, err := os.Stat(runDir); os.IsNotExist(err) {
+		return errors.Wrap(err, "container run directory does not exist")
 	}
 	mountPts := conf.MountsContainer
 	mountPts = append(container.InitMountPnts(binds), mountPts...)
@@ -45,11 +44,16 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	lowerObjects := checkMountPoints(containerName, mountPts)
 	// need to create a overlay, where the lower layer contains
 	// the missing mount points
-	wwlog.Verbose("for ephermal mount use tempdir %s", overlayDir)
-	// ignore errors as we are doomed if a tmp dir couldn't be written
-	_ = os.MkdirAll(path.Join(overlayDir, "work"), os.ModePerm)
-	_ = os.MkdirAll(path.Join(overlayDir, "lower"), os.ModePerm)
-	_ = os.MkdirAll(path.Join(overlayDir, "nodeoverlay"), os.ModePerm)
+	wwlog.Verbose("for ephermal mount use tempdir %s", runDir)
+	if err = os.Mkdir(path.Join(runDir, "work"), os.ModePerm); err != nil {
+		return err
+	}
+	if err = os.Mkdir(path.Join(runDir, "lower"), os.ModePerm); err != nil {
+		return err
+	}
+	if err = os.Mkdir(path.Join(runDir, "nodeoverlay"), os.ModePerm); err != nil {
+		return err
+	}
 	// handle all lower object, have some extra logic if the object is a file
 	for _, obj := range lowerObjects {
 		newFile := ""
@@ -57,12 +61,12 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			newFile = filepath.Base(obj)
 			obj = filepath.Dir(obj)
 		}
-		err = os.MkdirAll(filepath.Join(overlayDir, "lower", obj), os.ModePerm)
+		err = os.Mkdir(filepath.Join(runDir, "lower", obj), os.ModePerm)
 		if err != nil {
 			wwlog.Warn("couldn't create directory for mounts: %s", err)
 		}
 		if newFile != "" {
-			desc, err := os.Create(filepath.Join(overlayDir, "lower", obj, newFile))
+			desc, err := os.Create(filepath.Join(runDir, "lower", obj, newFile))
 			if err != nil {
 				wwlog.Warn("couldn't create directory for mounts: %s", err)
 			}
@@ -75,10 +79,10 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	if err != nil {
 		return errors.Wrap(err, "failed to mount")
 	}
-	ps1Str := fmt.Sprintf("[%s|%s] Warewulf> ", exitEval, containerName)
+	ps1Str := fmt.Sprintf("[%s] Warewulf> ", containerName)
 	if len(lowerObjects) != 0 && nodename == "" {
 		options := fmt.Sprintf("lowerdir=%s,upperdir=%s,workdir=%s",
-			path.Join(overlayDir, "lower"), containerPath, path.Join(overlayDir, "work"))
+			path.Join(runDir, "lower"), containerPath, path.Join(runDir, "work"))
 		wwlog.Debug("overlay options: %s", options)
 		err = syscall.Mount("overlay", containerPath, "overlay", 0, options)
 		if err != nil {
@@ -103,13 +107,13 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		}
 		overlays := nodes[0].SystemOverlay.GetSlice()
 		overlays = append(overlays, nodes[0].RuntimeOverlay.GetSlice()...)
-		err = overlay.BuildOverlayIndir(nodes[0], overlays, path.Join(overlayDir, "nodeoverlay"))
+		err = overlay.BuildOverlayIndir(nodes[0], overlays, path.Join(runDir, "nodeoverlay"))
 		if err != nil {
 			wwlog.Error("Could not build overlay: %s", err)
 			os.Exit(1)
 		}
 		options := fmt.Sprintf("lowerdir=%s:%s:%s",
-			path.Join(overlayDir, "lower"), containerPath, path.Join(overlayDir, "nodeoverlay"))
+			path.Join(runDir, "lower"), containerPath, path.Join(runDir, "nodeoverlay"))
 		wwlog.Debug("overlay options: %s", options)
 		err = syscall.Mount("overlay", containerPath, "overlay", 0, options)
 		if err != nil {
@@ -171,11 +175,8 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	os.Setenv("PATH", "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin")
 	os.Setenv("HISTFILE", "/dev/null")
 
-	_ = syscall.Exec(args[1], args[1:], os.Environ())
-	/*
-		Exec replaces the actual program, so nothing to do here afterwards
-	*/
-	return nil
+	wwlog.Debug("Exec: %s %s", args[1], args[1:])
+	return syscall.Exec(args[1], args[1:], os.Environ())
 }
 
 /*
