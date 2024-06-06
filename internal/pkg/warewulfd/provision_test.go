@@ -30,6 +30,8 @@ var provisionSendTests = []struct {
 	{"find shim", "/efiboot/shim.efi", "", 404, "10.10.10.11:9873"},
 	{"find grub", "/efiboot/grub.efi", "", 200, "10.10.10.10:9873"},
 	{"find grub", "/efiboot/grub.efi", "", 404, "10.10.10.11:9873"},
+	{"find initramfs", "/provision/00:00:00:ff:ff:ff?stage=initramfs", "", 200, "10.10.10.10:9873"},
+	{"ipxe test with NetDevs and KernelOverrides", "/provision/00:00:00:00:00:ff?stage=ipxe", "1.1.1 ifname=net:00:00:00:00:00:ff ", 200, "10.10.10.12:9873"},
 }
 
 func Test_ProvisionSend(t *testing.T) {
@@ -50,7 +52,15 @@ nodes:
     network devices:
       default:
         hwaddr: 00:00:00:00:ff:ff
-    container name: none`)
+    container name: none
+  n3:
+    network devices:
+      default:
+        hwaddr: 00:00:00:00:00:ff
+        device: net
+    ipxe template: test
+    kernel:
+      override: 1.1.1`)
 		assert.NoError(t, err)
 	}
 	assert.NoError(t, conf_file.Sync())
@@ -63,7 +73,8 @@ nodes:
 	{
 		_, err := arp_file.WriteString(`IP address       HW type     Flags       HW address            Mask     Device
 10.10.10.10    0x1         0x2         00:00:00:ff:ff:ff     *        dummy
-10.10.10.11    0x1         0x2         00:00:00:00:ff:ff     *        dummy`)
+10.10.10.11    0x1         0x2         00:00:00:00:ff:ff     *        dummy
+10.10.10.12    0x1         0x2         00:00:00:00:00:ff     *        dummy`)
 		assert.NoError(t, err)
 	}
 	assert.NoError(t, arp_file.Sync())
@@ -74,6 +85,12 @@ nodes:
 	assert.NoError(t, imageDirErr)
 	defer os.RemoveAll(containerDir)
 	conf.Paths.WWChrootdir = containerDir
+
+	sysConfDir, sysConfDirErr := os.MkdirTemp(os.TempDir(), "ww-test-sysconf-*")
+	assert.NoError(t, sysConfDirErr)
+	defer os.RemoveAll(sysConfDir)
+	conf.Paths.Sysconfdir = sysConfDir
+
 	assert.NoError(t, os.MkdirAll(path.Join(containerDir, "suse/rootfs/usr/lib64/efi"), 0700))
 	{
 		_, err := os.Create(path.Join(containerDir, "suse/rootfs/usr/lib64/efi", "shim.efi"))
@@ -83,6 +100,15 @@ nodes:
 	{
 		_, err := os.Create(path.Join(containerDir, "suse/rootfs/usr/share/efi/x86_64/", "grub.efi"))
 		assert.NoError(t, err)
+	}
+	assert.NoError(t, os.MkdirAll(path.Join(containerDir, "suse/rootfs/boot"), 0700))
+	{
+		_, err := os.Create(path.Join(containerDir, "suse/rootfs/boot", "initramfs-.img"))
+		assert.NoError(t, err)
+	}
+	assert.NoError(t, os.MkdirAll(path.Join(conf.Paths.Sysconfdir, "warewulf/ipxe"), 0700))
+	{
+		assert.NoError(t, os.WriteFile(path.Join(conf.Paths.Sysconfdir, "warewulf/ipxe", "test.ipxe"), []byte("{{.KernelOverride}}{{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} {{end}}{{end}}"), 0600))
 	}
 
 	dbErr := LoadNodeDB()

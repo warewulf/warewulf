@@ -13,6 +13,7 @@ import (
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/container"
 	"github.com/warewulf/warewulf/internal/pkg/kernel"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -31,6 +32,8 @@ type templateVars struct {
 	Port           string
 	KernelArgs     string
 	KernelOverride string
+	Tags           map[string]string
+	NetDevs        map[string]*node.NetDevs
 }
 
 func ProvisionSend(w http.ResponseWriter, req *http.Request) {
@@ -54,12 +57,13 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 	}
 
 	status_stages := map[string]string{
-		"efiboot": "EFI",
-		"ipxe":    "IPXE",
-		"kernel":  "KERNEL",
-		"kmods":   "KMODS_OVERLAY",
-		"system":  "SYSTEM_OVERLAY",
-		"runtime": "RUNTIME_OVERLAY"}
+		"efiboot":   "EFI",
+		"ipxe":      "IPXE",
+		"kernel":    "KERNEL",
+		"kmods":     "KMODS_OVERLAY",
+		"system":    "SYSTEM_OVERLAY",
+		"runtime":   "RUNTIME_OVERLAY",
+		"initramfs": "INITRAMFS"}
 
 	status_stage := status_stages[rinfo.stage]
 	var stage_file string
@@ -91,6 +95,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 
 	} else if rinfo.stage == "ipxe" {
 		stage_file = path.Join(conf.Paths.Sysconfdir, "warewulf/ipxe/"+node.Ipxe.Get()+".ipxe")
+		tstruct := overlay.InitStruct(&node)
 		tmpl_data = templateVars{
 			Id:             node.Id.Get(),
 			Cluster:        node.ClusterName.Get(),
@@ -101,7 +106,9 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			Hwaddr:         rinfo.hwaddr,
 			ContainerName:  node.ContainerName.Get(),
 			KernelArgs:     node.Kernel.Args.Get(),
-			KernelOverride: node.Kernel.Override.Get()}
+			KernelOverride: node.Kernel.Override.Get(),
+			NetDevs:        tstruct.NetDevs,
+			Tags:           tstruct.Tags}
 	} else if rinfo.stage == "kernel" {
 		if node.Kernel.Override.Defined() {
 			stage_file = kernel.KernelImage(node.Kernel.Override.Get())
@@ -173,6 +180,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			}
 		case "grub.cfg":
 			stage_file = path.Join(conf.Paths.Sysconfdir, "warewulf/grub/grub.cfg.ww")
+			tstruct := overlay.InitStruct(&node)
 			tmpl_data = templateVars{
 				Id:             node.Id.Get(),
 				Cluster:        node.ClusterName.Get(),
@@ -183,7 +191,9 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 				Hwaddr:         rinfo.hwaddr,
 				ContainerName:  node.ContainerName.Get(),
 				KernelArgs:     node.Kernel.Args.Get(),
-				KernelOverride: node.Kernel.Override.Get()}
+				KernelOverride: node.Kernel.Override.Get(),
+				NetDevs:        tstruct.NetDevs,
+				Tags:           tstruct.Tags}
 			if stage_file == "" {
 				wwlog.ErrorExc(fmt.Errorf("could't find grub.cfg template"), containerName)
 				w.WriteHeader(http.StatusNotFound)
@@ -210,6 +220,19 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			}
 		} else {
 			wwlog.Warn("No conainer set for node %s", node.Id.Get())
+		}
+	} else if rinfo.stage == "initramfs" {
+		if node.ContainerName.Defined() {
+			_, kver, err := kernel.FindKernel(container.RootFsDir(node.ContainerName.Get()))
+			if err != nil {
+				wwlog.Error("No kernel found for initramfs for container %s: %s", node.ContainerName.Get(), err)
+			}
+			stage_file, err = container.InitramfsBootPath(node.ContainerName.Get(), kver)
+			if err != nil {
+				wwlog.Error("No initramfs found for container %s: %s", node.ContainerName.Get(), err)
+			}
+		} else {
+			wwlog.Warn("No container set for node %s", node.Id.Get())
 		}
 	}
 
