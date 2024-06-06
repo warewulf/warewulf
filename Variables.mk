@@ -44,10 +44,11 @@ else
 endif
 
 # OS-Specific Service Locations
-VARLIST += TFTPDIR FIREWALLDDIR SYSTEMDDIR BASHCOMPDIR
+VARLIST += TFTPDIR FIREWALLDDIR SYSTEMDDIR BASHCOMPDIR DRACUTMODDIR
 SYSTEMDDIR ?= /usr/lib/systemd/system
 BASHCOMPDIR ?= /etc/bash_completion.d
 FIREWALLDDIR ?= /usr/lib/firewalld/services
+DRACUTMODDIR ?= /usr/lib/dracut/modules.d
 ifeq ($(OS),suse)
   TFTPDIR ?= /srv/tftpboot
 endif
