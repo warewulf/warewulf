@@ -34,6 +34,7 @@ type templateVars struct {
 	Port           string
 	KernelArgs     string
 	KernelOverride string
+	Tags           map[string]string
 	NetDevs        map[string]*node.NetDevs
 }
 
@@ -108,7 +109,8 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			ContainerName:  node.ContainerName.Get(),
 			KernelArgs:     node.Kernel.Args.Get(),
 			KernelOverride: node.Kernel.Override.Get(),
-			NetDevs:        tstruct.NetDevs}
+			NetDevs:        tstruct.NetDevs,
+			Tags:           tstruct.Tags}
 	} else if rinfo.stage == "kernel" {
 		if node.Kernel.Override.Defined() {
 			stage_file = kernel.KernelImage(node.Kernel.Override.Get())
@@ -180,6 +182,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			}
 		case "grub.cfg":
 			stage_file = path.Join(conf.Paths.Sysconfdir, "warewulf/grub/grub.cfg.ww")
+			tstruct := overlay.InitStruct(&node)
 			tmpl_data = templateVars{
 				Id:             node.Id.Get(),
 				Cluster:        node.ClusterName.Get(),
@@ -190,7 +193,9 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 				Hwaddr:         rinfo.hwaddr,
 				ContainerName:  node.ContainerName.Get(),
 				KernelArgs:     node.Kernel.Args.Get(),
-				KernelOverride: node.Kernel.Override.Get()}
+				KernelOverride: node.Kernel.Override.Get(),
+				NetDevs:        tstruct.NetDevs,
+				Tags:           tstruct.Tags}
 			if stage_file == "" {
 				wwlog.ErrorExc(fmt.Errorf("could't find grub.cfg template"), containerName)
 				w.WriteHeader(http.StatusNotFound)

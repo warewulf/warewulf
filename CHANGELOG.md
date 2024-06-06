@@ -41,7 +41,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add `stage=initramfs` to warewulfd provision to serve initramfs from container image. #1115
 - Add `warewulf-dracut` package to support building Warewulf-compatible initramfs images with dracut. #1115
 - Add iPXE template `dracut.ipxe` to boot a dracut initramfs. #1115
-- Add `.NetDevs` variable to iPXE templates, similar to overlay templates. #1115
+- Add dracut menuentry to `grub.cfg.ww` to boot a dracut initramfs. #1115
+- Add `.NetDevs` variable to iPXE and GRUB templates, similar to overlay templates. #1115
+- Add `.Tags` variable to iPXE and GRUB templates, similar to overlay templates. #1115
 
 ### Changed
 

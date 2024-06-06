@@ -74,10 +74,27 @@ booting the node image directly.
 
    The iPXE template may be set at the node or profile level.
 
+Alternatively, to direct GRUB to fetch the node's initramfs image and boot with
+dracut semantics, set a ``GrubMenuEntry`` tag for the node.
+
+.. note::
+
+   Warewulf configures GRUB with a template located at
+   ``/etc/warewulf/grub/grub.cfg.ww``. Inspect the template to learn more about
+   the dracut booting process.
+
+.. code-block:: shell
+
+   wwctl node set wwnode1 --tagadd GrubMenuEntry=dracut
+
+.. note::
+
+   The ``GrubMenuEntry`` variable may be set at the node or profile level.
+
 During boot, ``warewulfd`` will detect and dynamically serve an
 initramfs from a node's container image in much the same way that it
 can serve a kernel from a container image. This image is loaded by
-iPXE, and iPXE directs dracut to fetch the node's container image
+iPXE (or GRUB) which directs dracut to fetch the node's container image
 during boot.
 
 The wwinit module provisions to tmpfs. By default, tmpfs is permitted
@@ -88,7 +105,7 @@ more details.)
 
 .. warning::
 
-   Kernel overrides are not currently supported during dracut initramfs boot.
+   Kernel overrides are not currently fully supported during dracut initramfs boot.
 
 Booting with GRUB
 =================
