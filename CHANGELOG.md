@@ -33,6 +33,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `/sys/firmware/devicetree/base/serial-number`
 - Replace slice in templates with sprig substr. #1093
 
+## v4.5.x, unreleased
+
+### Fixed
+
+- Fix the issue that new files created with wwctl overlay edit have 755 permissions. #1236
+
 ## v4.5.3, unreleased
 
 ### Added
