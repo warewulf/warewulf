@@ -52,9 +52,9 @@ func parseReq(req *http.Request) (parserInfo, error) {
     // IPv6 addresses hextets are split on ":"
     if len(ipaddr) > 2 {
        for i := 0; i < len(ipaddr)-1; i++ {
-            ipaddrtemp += ipaddr[i]+":"
+            ipaddrtemp += ipaddr[i] + ":"
        }
-       ret.ipaddr6 = strings.TrimSuffix(ipaddrtemp,":")
+       ret.ipaddr6 = strings.TrimSuffix(ipaddrtemp, ":")
     }
 	ret.ipaddr = strings.Split(req.RemoteAddr, ":")[0]
 	ret.remoteport, _ = strconv.Atoi(strings.Split(req.RemoteAddr, ":")[len(ipaddr)-1])
