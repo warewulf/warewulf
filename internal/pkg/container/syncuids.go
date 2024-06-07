@@ -25,7 +25,7 @@ const groupPath = "/etc/group"
 // container. Files in the container are updated to match the new
 // numeric id assignments.
 //
-// If showOnly is true, the container is not actually updated, but
+// If write is false, the container is not actually updated, but
 // relevant log entries and output are generated.
 //
 // Any I/O errors are returned unmodified.
@@ -33,7 +33,8 @@ const groupPath = "/etc/group"
 // A conflict arises if the container has an entry with the same id as
 // an entry in the host and the host does not have an entry with the
 // same name. In this case, an error is returned.
-func SyncUids(containerName string, showOnly bool) error {
+func SyncUids(containerName string, write bool) error {
+	wwlog.Debug("SyncUids(containerName=%v, write=%v)", containerName, write)
 	containerPath := RootFsDir(containerName)
 	containerPasswdPath := path.Join(containerPath, passwdPath)
 	containerGroupPath := path.Join(containerPath, groupPath)
@@ -60,22 +61,17 @@ func SyncUids(containerName string, showOnly bool) error {
 		return err
 	}
 
+	if err := passwdSync.findUserFiles(containerPath); err != nil {
+		return err
+	}
+	if err := groupSync.findGroupFiles(containerPath); err != nil {
+		return err
+	}
+
 	passwdSync.log("passwd")
 	groupSync.log("group")
 
-	if showOnly {
-		if passwdSync.needsSync() || groupSync.needsSync() {
-			wwlog.Info("uid/gid not synced: run `wwctl container syncuser --write %s`", containerName)
-		} else {
-			wwlog.Info("uid/gid already synced")
-		}
-	} else {
-		if err := passwdSync.findUserFiles(containerPath); err != nil {
-			return err
-		}
-		if err := groupSync.findGroupFiles(containerPath); err != nil {
-			return err
-		}
+	if write {
 		if err := passwdSync.chownUserFiles(); err != nil {
 			return err
 		}
@@ -89,6 +85,12 @@ func SyncUids(containerName string, showOnly bool) error {
 			return err
 		}
 		wwlog.Info("uid/gid synced for container %s", containerName)
+	} else {
+		if passwdSync.needsSync() || groupSync.needsSync() {
+			wwlog.Info("uid/gid not synced: run `wwctl container syncuser --write %s`", containerName)
+		} else {
+			wwlog.Info("uid/gid already synced")
+		}
 	}
 
 	return nil
@@ -224,16 +226,34 @@ func (db syncDB) readFromContainer(fileName string) error { return db.read(fileN
 // If byGid is true, files with a matching gid are
 // recorded. Otherwise, files with a matching uid are recorded.
 func (db syncDB) findFiles(containerPath string, byGid bool) error {
-	for name, ids := range db {
-		if err := ids.findFiles(containerPath, byGid); err != nil {
-			return err
+	wwlog.Debug("findFiles(containerPath=%v, byGid=%v)", containerPath, byGid)
+	syncIDs := make(map[int]string)
+	for name, info := range db {
+		if info.inHost() && info.inContainer() && !info.match() {
+			wwlog.Debug("syncID[%v] = %v", info.ContainerID, name)
+			syncIDs[info.ContainerID] = name
 		}
-		if len(ids.ContainerFiles) > 0 {
-			wwlog.Debug("files for %s (%v -> %v, gid: %v): %v", name, ids.ContainerID, ids.HostID, byGid, ids.ContainerFiles)
-		}
-		db[name] = ids
 	}
-	return nil
+
+	return filepath.Walk(containerPath, func(filePath string, fileInfo fs.FileInfo, err error) error {
+		if stat, ok := fileInfo.Sys().(*syscall.Stat_t); ok {
+			var id int
+			if byGid {
+				id = int(stat.Gid)
+			} else {
+				id = int(stat.Uid)
+			}
+			if name, ok := syncIDs[id]; ok {
+				info := db[name]
+				wwlog.Debug("findFiles: %s: (%v -> %v, gid: %v)", filePath, info.ContainerID, info.HostID, byGid)
+				info.ContainerFiles = append(info.ContainerFiles, filePath)
+				db[name] = info
+			} else {
+				wwlog.Debug("findFiles: %s", filePath)
+			}
+		}
+		return nil
+	})
 }
 
 // findUserFiles is equivalent to findFiles(containerPath, false)
@@ -376,36 +396,6 @@ func (info *syncInfo) match() bool {
 // the host and the container but with different numerical ids.
 func (info *syncInfo) differ() bool {
 	return info.inContainer() && info.inHost() && info.HostID != info.ContainerID
-}
-
-// findFiles walks containerPath to find files owned by the name
-// represented by info and records them in info.ContainerFiles.
-//
-// If byGid is true, the file's gid is checked; otherwise, the file's
-// uid is checked.
-func (info *syncInfo) findFiles(containerPath string, byGid bool) error {
-	var containerFiles []string
-	if info.inHost() && !info.match() {
-		if err := filepath.Walk(containerPath, func(filePath string, fileInfo fs.FileInfo, err error) error {
-			wwlog.Debug("findFiles: %s", filePath)
-			if stat, ok := fileInfo.Sys().(*syscall.Stat_t); ok {
-				var id int
-				if byGid {
-					id = int(stat.Gid)
-				} else {
-					id = int(stat.Uid)
-				}
-				if id == info.ContainerID {
-					containerFiles = append(containerFiles, filePath)
-				}
-			}
-			return nil
-		}); err != nil {
-			return err
-		}
-	}
-	info.ContainerFiles = containerFiles
-	return nil
 }
 
 // chownFiles updates the files recorded in info.ContainerFiles to use

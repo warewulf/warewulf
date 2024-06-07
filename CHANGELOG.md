@@ -33,9 +33,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Systems with no SMBIOS (Raspberry Pi) will create a UUID from
   `/sys/firmware/devicetree/base/serial-number`
 - Replace slice in templates with sprig substr. #1093
-- Block unprivileged requests for arbitrary overlays in secure mode.
 
-## v4.5.2, unreleased
+## v4.5.3, unreleased
+
+### Added
+
+- Add examples for building overlays in parallel to documentation
+- Add `stage=initramfs` to warewulfd provision to serve initramfs from container image. #1115
+- Add `warewulf-dracut` package to support building Warewulf-compatible initramfs images with dracut. #1115
+- Add iPXE template `dracut.ipxe` to boot a dracut initramfs. #1115
+- Add dracut menuentry to `grub.cfg.ww` to boot a dracut initramfs. #1115
+- Add `.NetDevs` variable to iPXE and GRUB templates, similar to overlay templates. #1115
+- Add `.Tags` variable to iPXE and GRUB templates, similar to overlay templates. #1115
+
+### Changed
+
+- Replace reference to docusaurus with Sphinx
+- `wwctl container import` now only runs syncuser if explicitly requested. #1212
+- wwinit now configures NetworkManager to not retain configurations from dracut. #1115
+- Improved detection of SELinux capable root fs #1093
+- Run `go mod tidy` after `go mod vendor`
+
+### Fixed
+
+- Block unprivileged requests for arbitrary overlays in secure mode. #1215
+- Fix installation docs to use github.com/warewulf instead of github.com/hpcng. #1219
+- Fix the issue that warewulf.conf parse does not support CIDR format. #1130
+- Reduce the number of times syncuser walks the container file system. #1209
+- Create ssh key also when calling `wwctl configure --all` #1250
+
+### Security
+
+- Bump golang.org/x/net from 0.22.0 to 0.23.0. #1223
+
+## v4.5.2, 2024-05-13
 
 ### Added
 
@@ -46,6 +77,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix nightly release build failure issue. #1195
 - Reorder dnsmasq config to put iPXE last. #1146
 - Update a reference to `--addprofile` to be `--profile`. #1085
+- Update a dependency to address CVE-2024-3727. #1221
 
 ## v4.5.1, 2024-04-30
 

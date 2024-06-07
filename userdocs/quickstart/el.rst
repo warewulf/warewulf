@@ -7,11 +7,11 @@ Install Warewulf
 
 The preferred way to install Warewulf on Enterprise Linux is using the
 the RPMs published in `GitHub releases`_. For example, to install the
-v4.5.1 release on Enterprise Linux 9:
+v4.5.2 release on Enterprise Linux 9:
 
 .. code-block:: bash
 
-   dnf install https://github.com/warewulf/warewulf/releases/download/v4.5.1/warewulf-4.5.1-1.el9.x86_64.rpm
+   dnf install https://github.com/warewulf/warewulf/releases/download/v4.5.2/warewulf-4.5.2-1.el9.x86_64.rpm
 
 Packages are available for el7, el8, and el9.
 
