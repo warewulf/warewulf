@@ -49,7 +49,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	overlayFileDir := path.Dir(overlayFile)
 	if CreateDirs {
-		err := os.MkdirAll(overlayFileDir, 0755)
+		err := os.MkdirAll(overlayFileDir, os.FileMode(PermMode))
 		if err != nil {
 			wwlog.Error("Could not create directory: %s", overlayFileDir)
 			os.Exit(1)
@@ -122,7 +122,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	destination, destinationErr := os.OpenFile(overlayFile, os.O_RDWR|os.O_CREATE, os.FileMode(PermMode))
+	destination, destinationErr := os.OpenFile(overlayFile, os.O_RDWR|os.O_CREATE, os.FileMode(0644))
 	if destinationErr != nil {
 		wwlog.Error("Unable to update %s: %s", overlayFile, destinationErr)
 		os.Exit(1)
