@@ -42,14 +42,14 @@ type RootConf struct {
 	MountsContainer []*MountEntry `yaml:"container mounts" default:"[{\"source\": \"/etc/resolv.conf\", \"dest\": \"/etc/resolv.conf\"}]"`
 	Paths           *BuildConfig  `yaml:"paths"`
 
-	fromFile bool
+	warewulfconf string
 }
 
 // New caches and returns a new [RootConf] initialized with empty
 // values, clearing replacing any previously cached value.
 func New() *RootConf {
 	cachedConf = RootConf{}
-	cachedConf.fromFile = false
+	cachedConf.warewulfconf = ""
 	cachedConf.Warewulf = new(WarewulfConf)
 	cachedConf.DHCP = new(DHCPConf)
 	cachedConf.TFTP = new(TFTPConf)
@@ -77,12 +77,12 @@ func Get() *RootConf {
 // file.
 func (conf *RootConf) Read(confFileName string) error {
 	wwlog.Debug("Reading warewulf.conf from: %s", confFileName)
+	conf.warewulfconf = confFileName
 	if data, err := os.ReadFile(confFileName); err != nil {
 		return err
 	} else if err := conf.Parse(data); err != nil {
 		return err
 	} else {
-		conf.fromFile = true
 		return nil
 	}
 }
@@ -200,5 +200,9 @@ func (conf *RootConf) SetDynamicDefaults() (err error) {
 // InitializedFromFile returns true if [RootConf] memory was read from
 // a file, or false otherwise.
 func (conf *RootConf) InitializedFromFile() bool {
-	return conf.fromFile
+	return conf.warewulfconf != ""
+}
+
+func (conf *RootConf) GetWarewulfConf() string {
+	return conf.warewulfconf
 }
