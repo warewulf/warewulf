@@ -4,12 +4,15 @@
 package exec
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path"
 	"syscall"
 	"time"
+
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/container"
@@ -20,23 +23,25 @@ import (
 /*
 fork off a process with a new PID space
 */
-func runContainedCmd(args []string) error {
-	var err error
-	if tempDir == "" {
-		tempDir, err = os.MkdirTemp(os.TempDir(), "overlay")
-		if err != nil {
-			wwlog.Warn("couldn't create temp dir for overlay", err)
+func runContainedCmd(args []string) (err error) {
+	conf := warewulfconf.Get()
+	containerName := args[0]
+	runDir := container.RunDir(containerName)
+	if err := os.Mkdir(runDir, 0750); err != nil {
+		if _, existerr := os.Stat(runDir); !os.IsNotExist(existerr) {
+			return errors.New("run directory already exists: another container command may already be running")
+		} else {
+			return fmt.Errorf("unable to create run directory: %w", err)
 		}
-		defer func() {
-			err = os.RemoveAll(tempDir)
-			if err != nil {
-				wwlog.Warn("Couldn't remove temp dir for ephermal mounts:", err)
-			}
-		}()
 	}
+	defer func() {
+		if err := errors.Join(os.RemoveAll(runDir), err); err != nil {
+			wwlog.Error("error removing run directory: %w", err)
+		}
+	}()
 	logStr := fmt.Sprint(wwlog.GetLogLevel())
 	wwlog.Verbose("Running contained command: %s", args[1:])
-	c := exec.Command("/proc/self/exe", append([]string{"--loglevel", logStr, "--tempdir", tempDir, "container", "exec", "__child"}, args...)...)
+	c := exec.Command("/proc/self/exe", append([]string{"--warewulfconf", conf.GetWarewulfConf(), "--loglevel", logStr, "container", "exec", "__child"}, args...)...)
 
 	c.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,
@@ -45,16 +50,7 @@ func runContainedCmd(args []string) error {
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
 
-	if err := c.Run(); err != nil {
-		fmt.Printf("Command exited non-zero, not rebuilding/updating VNFS image\n")
-		// defer is not called before os.Exit(0)
-		err = os.RemoveAll(tempDir)
-		if err != nil {
-			wwlog.Warn("Couldn't remove temp dir for ephermal mounts:", err)
-		}
-		os.Exit(0)
-	}
-	return nil
+	return c.Run()
 }
 
 func CobraRunE(cmd *cobra.Command, args []string) error {

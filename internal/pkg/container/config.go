@@ -33,6 +33,10 @@ func RootFsDir(name string) string {
 	return path.Join(SourceDir(name), "rootfs")
 }
 
+func RunDir(name string) string {
+	return path.Join(SourceDir(name), "run")
+}
+
 func ImageParentDir() string {
 	conf := warewulfconf.Get()
 	return path.Join(conf.Paths.WWProvisiondir, "container/")
