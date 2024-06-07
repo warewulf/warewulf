@@ -61,11 +61,6 @@ nodes:
     ipxe template: test
     kernel:
       override: 1.1.1`)
-		assert.NoError(t, err)
-	}
-	assert.NoError(t, conf_file.Sync())
-	node.ConfigFile = conf_file.Name()
-
 	// create a  arp file as for grub we look up the ip address through the arp cache
 
 	env.WriteFile(t, "arpcache", `IP address       HW type     Flags       HW address            Mask     Device
