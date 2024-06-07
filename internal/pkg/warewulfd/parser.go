@@ -49,6 +49,7 @@ func parseReq(req *http.Request) (parserInfo, error) {
 	ret.hwaddr = hwaddr
     ipaddrtemp = ""
     ipaddr = strings.Split(req.RemoteAddr, ":")
+    // IPv6 addresses hextets are split on ":"
     if len(ipaddr) > 2 {
        for i := 0; i < len(ipaddr)-1; i++ {
             ipaddrtemp += ipaddr[i]+":"
