@@ -33,7 +33,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `/sys/firmware/devicetree/base/serial-number`
 - Replace slice in templates with sprig substr. #1093
 
-## v4.5.3, unreleased
+## v4.5.3, 2024-06-07
 
 ### Added
 
@@ -60,7 +60,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix the issue that warewulf.conf parse does not support CIDR format. #1130
 - Reduce the number of times syncuser walks the container file system. #1209
 - Create ssh key also when calling `wwctl configure --all` #1250
-- Remove the temporary overlay dir. #1180
 - Remove the temporary overlayfs dir and create them besides rootfs #1180
 
 ### Security
