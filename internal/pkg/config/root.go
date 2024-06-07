@@ -29,10 +29,10 @@ type RootConf struct {
 	WWInternal      int           `yaml:"WW_INTERNAL"`
 	Comment         string        `yaml:"comment,omitempty"`
 	Ipaddr          string        `yaml:"ipaddr"`
-	Ipaddr6         string        `yaml:"Ipaddr6,omitempty"`
+	Ipaddr6         string        `yaml:"ipaddr6,omitempty"`
 	Netmask         string        `yaml:"netmask"`
 	Network         string        `yaml:"network,omitempty"`
-	Ipv6net         string        `yaml:"Ipv6net,omitempty"`
+	Ipv6net         string        `yaml:"ipv6net,omitempty"`
 	Fqdn            string        `yaml:"fqdn,omitempty"`
 	Warewulf        *WarewulfConf `yaml:"warewulf"`
 	DHCP            *DHCPConf     `yaml:"dhcp"`
@@ -185,7 +185,7 @@ func (conf *RootConf) SetDynamicDefaults() (err error) {
 	// check validity of ipv6 net
 	if conf.Ipaddr6 != "" {
         if conf.Ipv6net == "" {
-            wwlog.Error("Ipv6 network has not been set: Ipv6net")
+            wwlog.Error("Ipv6 network has not been set in warewulf.conf: ipv6net")
             return errors.New("Invalid Ipv6 network")
         }
 		_, ipv6net, err := net.ParseCIDR(conf.Ipv6net)
