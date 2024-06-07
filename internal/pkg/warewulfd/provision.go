@@ -97,7 +97,6 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 
 	} else if rinfo.stage == "ipxe" {
 		stage_file = path.Join(conf.Paths.Sysconfdir, "warewulf/ipxe/"+remoteNode.Ipxe+".ipxe")
-		tstruct := overlay.InitStruct(&node)
 		tmpl_data = templateVars{
 			Id:             remoteNode.Id(),
 			Cluster:        remoteNode.ClusterName,
@@ -106,11 +105,11 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			Port:           strconv.Itoa(conf.Warewulf.Port),
 			Hostname:       remoteNode.Id(),
 			Hwaddr:         rinfo.hwaddr,
-			ContainerName:  node.ContainerName,
-			KernelArgs:     node.Kernel.Args,
-			KernelOverride: node.Kernel.Override,
-			NetDevs:        tstruct.NetDevs,
-			Tags:           tstruct.Tags}
+			ContainerName:  remoteNode.ContainerName,
+			KernelArgs:     remoteNode.Kernel.Args,
+			KernelOverride: remoteNode.Kernel.Override,
+			NetDevs:        remoteNode.NetDevs,
+			Tags:           remoteNode.Tags}
 	} else if rinfo.stage == "kernel" {
 		if remoteNode.Kernel.Override != "" {
 			stage_file = kernel.KernelImage(remoteNode.Kernel.Override)
@@ -182,7 +181,6 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			}
 		case "grub.cfg":
 			stage_file = path.Join(conf.Paths.Sysconfdir, "warewulf/grub/grub.cfg.ww")
-			tstruct := overlay.InitStruct(&node)
 			tmpl_data = templateVars{
 				Id:             remoteNode.Id(),
 				Cluster:        remoteNode.ClusterName,
@@ -191,9 +189,9 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 				Port:           strconv.Itoa(conf.Warewulf.Port),
 				Hostname:       remoteNode.Id(),
 				Hwaddr:         rinfo.hwaddr,
-				ContainerName:  node.ContainerName,
-				KernelArgs:     node.Kernel.Args,
-				KernelOverride: node.Kernel.Override}
+				ContainerName:  remoteNode.ContainerName,
+				KernelArgs:     remoteNode.Kernel.Args,
+				KernelOverride: remoteNode.Kernel.Override}
 			if stage_file == "" {
 				wwlog.ErrorExc(fmt.Errorf("could't find grub.cfg template"), containerName)
 				w.WriteHeader(http.StatusNotFound)
@@ -222,17 +220,17 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			wwlog.Warn("No conainer set for node %s", remoteNode.Id())
 		}
 	} else if rinfo.stage == "initramfs" {
-		if node.ContainerName != "" {
-			_, kver, err := kernel.FindKernel(container.RootFsDir(node.ContainerName))
+		if remoteNode.ContainerName != "" {
+			_, kver, err := kernel.FindKernel(container.RootFsDir(remoteNode.ContainerName))
 			if err != nil {
-				wwlog.Error("No kernel found for initramfs for container %s: %s", node.ContainerName, err)
+				wwlog.Error("No kernel found for initramfs for container %s: %s", remoteNode.ContainerName, err)
 			}
-			stage_file, err = container.InitramfsBootPath(node.ContainerName, kver)
+			stage_file, err = container.InitramfsBootPath(remoteNode.ContainerName, kver)
 			if err != nil {
-				wwlog.Error("No initramfs found for container %s: %s", node.ContainerName, err)
+				wwlog.Error("No initramfs found for container %s: %s", remoteNode.ContainerName, err)
 			}
 		} else {
-			wwlog.Warn("No container set for node %s", node.Id())
+			wwlog.Warn("No container set for node %s", remoteNode.Id())
 		}
 	}
 
