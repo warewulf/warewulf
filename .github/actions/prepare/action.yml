@@ -29,7 +29,3 @@ runs:
     - name: Prepare vendor directory
       run: make vendor
       shell: bash
-
-    - name: Run go mod tidy
-      run: make tidy
-      shell: bash
