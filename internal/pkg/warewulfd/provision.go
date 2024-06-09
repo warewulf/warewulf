@@ -48,7 +48,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	wwlog.Recv("hwaddr: %s, ipaddr: %s, stage: %s", rinfo.hwaddr, req.RemoteAddr, rinfo.stage)
+	wwlog.Info("request from hwaddr:%s ipaddr:%s | stage:%s", rinfo.hwaddr, req.RemoteAddr, rinfo.stage)
 
 	if (rinfo.stage == "runtime" || len(rinfo.overlay) > 0) && conf.Warewulf.Secure {
 		if rinfo.remoteport >= 1024 {
@@ -278,7 +278,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 				wwlog.ErrorExc(err, "")
 			}
 
-			wwlog.Send("%15s: %s", node.Id.Get(), stage_file)
+			wwlog.Info("send %s -> %s", stage_file, node.Id.Get())
 
 		} else {
 			if rinfo.compress == "gz" {

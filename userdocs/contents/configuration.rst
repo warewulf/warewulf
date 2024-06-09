@@ -114,8 +114,7 @@ explained as follows:
   services.)
 
 * ``warewulf:syslog``: This determines whether Warewulf server logs go
-  to syslog or are written directly to a log file. (e.g.,
-  ``/var/log/warewulfd.log``)
+  to syslog.
 
 * ``nfs:export paths``: Warewulf can automatically set up these NFS
   exports.

@@ -127,20 +127,6 @@ func Test_Log(t *testing.T) {
 			exactMatch:  true,
 		},
 		{
-			name:        "Recv",
-			msgTypeFunc: Recv,
-			message:     "Recv",
-			expect:      "RECV   : Recv\n",
-			exactMatch:  true,
-		},
-		{
-			name:        "Send",
-			msgTypeFunc: Send,
-			message:     "Send",
-			expect:      "SEND   : Send\n",
-			exactMatch:  true,
-		},
-		{
 			name:        "Warn",
 			msgTypeFunc: Warn,
 			message:     "Warn",
