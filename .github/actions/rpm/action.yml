@@ -51,8 +51,8 @@ runs:
 
     - name: Set RPM and SRPM
       run: |
-        VERSION=$(rpm -q --qf "%{VERSION}\n" --specfile warewulf.spec)
-        GENERIC_RELEASE=$(rpm -q --qf "%{RELEASE}\n" --specfile warewulf.spec | cut -d. -f1)
+        VERSION=$(rpm -q --qf "%{VERSION}\n" --specfile warewulf.spec | head -1)
+        GENERIC_RELEASE=$(rpm -q --qf "%{RELEASE}\n" --specfile warewulf.spec | cut -d. -f1 | head -1)
         RPM=warewulf-${VERSION}-${GENERIC_RELEASE}.${{ inputs.dist }}.${{ inputs.arch }}.rpm
         SRPM=warewulf-${VERSION}-${GENERIC_RELEASE}.${{ inputs.dist }}.src.rpm
         DRACUT=wareful-dracut-${VERSION}-${GENERIC_RELEASE}.${{ inputs.dist }}.noarch.rpm
