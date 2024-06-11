@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Bump google.golang.org/protobuf to 1.33.0
 - Bump github.com/containers/image/v5 to 5.30.0
 - Bump github.com/docker/docker to 25.0.5+incompatible
+- Bump github.com/grpc-ecosystem/grpc-gateway/v2 from 2.18.0 to 2.19.1 #1165
 
 ### Fixed
 
