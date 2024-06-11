@@ -1,6 +1,8 @@
 module github.com/warewulf/warewulf
 
-go 1.20
+go 1.21
+
+toolchain go1.21.13
 
 require (
 	dario.cat/mergo v1.0.0
@@ -21,7 +23,7 @@ require (
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/opencontainers/umoci v0.4.7
 	github.com/pkg/errors v0.9.1
-	github.com/sassoftware/go-rpmutils v0.2.0
+	github.com/sassoftware/go-rpmutils v0.4.0
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.9.0
 	github.com/talos-systems/go-smbios v0.1.1
@@ -85,7 +87,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.17.7 // indirect
+	github.com/klauspost/compress v1.17.8 // indirect
 	github.com/klauspost/pgzip v1.2.6 // indirect
 	github.com/letsencrypt/boulder v0.0.0-20230907030200-6d76a0f91e1e // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
@@ -122,7 +124,7 @@ require (
 	github.com/stefanberger/go-pkcs11uri v0.0.0-20201008174630-78d3cae3a980 // indirect
 	github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635 // indirect
 	github.com/titanous/rocacheck v0.0.0-20171023193734-afe73141d399 // indirect
-	github.com/ulikunitz/xz v0.5.11 // indirect
+	github.com/ulikunitz/xz v0.5.12 // indirect
 	github.com/urfave/cli v1.22.14 // indirect
 	github.com/vbatts/go-mtree v0.5.0 // indirect
 	github.com/vbatts/tar-split v0.11.5 // indirect
