@@ -32,12 +32,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Systems with no SMBIOS (Raspberry Pi) will create a UUID from
   `/sys/firmware/devicetree/base/serial-number`
 - Replace slice in templates with sprig substr. #1093
+- Fix an invalid format issue for the GitHub nightly build action. #1258
 
-## v4.5.4, unreleased
+## v4.5.4, 2024-06-12
 
 ### Fixed
 
-- Fixed a regression that caused an error when passing flag arguments to container exec and shell. #1250
+- Fix a regression that caused an error when passing flags to `wwctl container exec` and `wwctl container shell`. #1250
 
 ## v4.5.3, 2024-06-07
 
