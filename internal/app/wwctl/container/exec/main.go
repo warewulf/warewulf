@@ -20,12 +20,25 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-/*
-fork off a process with a new PID space
-*/
-func runContainedCmd(args []string) (err error) {
+func runChildCmd(cmd *cobra.Command, args []string) error {
+	child := exec.Command("/proc/self/exe", args...)
+	child.SysProcAttr = &syscall.SysProcAttr{
+		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,
+	}
+	child.Stdin = cmd.InOrStdin()
+	child.Stdout = cmd.OutOrStdout()
+	child.Stderr = cmd.ErrOrStderr()
+	return child.Run()
+}
+
+var childCommandFunc = runChildCmd
+
+// Fork a child process with a new PID space
+func runContainedCmd(cmd *cobra.Command, containerName string, args []string) (err error) {
+	wwlog.Debug("runContainedCmd:args: %v", args)
+
 	conf := warewulfconf.Get()
-	containerName := args[0]
+
 	runDir := container.RunDir(containerName)
 	if err := os.Mkdir(runDir, 0750); err != nil {
 		if _, existerr := os.Stat(runDir); !os.IsNotExist(existerr) {
@@ -35,88 +48,81 @@ func runContainedCmd(args []string) (err error) {
 		}
 	}
 	defer func() {
-		if err := errors.Join(os.RemoveAll(runDir), err); err != nil {
+		if err := os.RemoveAll(runDir); err != nil {
 			wwlog.Error("error removing run directory: %w", err)
 		}
 	}()
+
 	logStr := fmt.Sprint(wwlog.GetLogLevel())
-	wwlog.Verbose("Running contained command: %s", args[1:])
-	c := exec.Command("/proc/self/exe", append([]string{"--warewulfconf", conf.GetWarewulfConf(), "--loglevel", logStr, "container", "exec", "__child"}, args...)...)
 
-	c.SysProcAttr = &syscall.SysProcAttr{
-		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,
+	childArgs := []string{"--warewulfconf", conf.GetWarewulfConf(), "--loglevel", logStr, "container", "exec", "__child"}
+	childArgs = append(childArgs, containerName)
+	for _, b := range binds {
+		childArgs = append(childArgs, "--bind", b)
 	}
-	c.Stdin = os.Stdin
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
-
-	return c.Run()
+	if nodeName != "" {
+		childArgs = append(childArgs, "--node", nodeName)
+	}
+	childArgs = append(childArgs, args...)
+	wwlog.Verbose("Running contained command: %s", childArgs)
+	return childCommandFunc(cmd, childArgs)
 }
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
+	wwlog.Debug("CobraRunE:args: %v", args)
 
 	containerName := args[0]
-	os.Setenv("WW_CONTAINER_SHELL", containerName)
-
-	var allargs []string
-
+	wwlog.Debug("CobraRunE:containerName: %v", containerName)
 	if !container.ValidSource(containerName) {
 		wwlog.Error("Unknown Warewulf container: %s", containerName)
 		os.Exit(1)
 	}
+	os.Setenv("WW_CONTAINER_SHELL", containerName)
 
-	for _, b := range binds {
-		allargs = append(allargs, "--bind", b)
-	}
-	if nodeName != "" {
-		allargs = append(allargs, "--node", nodeName)
-	}
-	allargs = append(allargs, args...)
 	containerPath := container.RootFsDir(containerName)
 
-	fileStat, _ := os.Stat(path.Join(containerPath, "/etc/passwd"))
-	unixStat := fileStat.Sys().(*syscall.Stat_t)
-	passwdTime := time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))
-	fileStat, _ = os.Stat(path.Join(containerPath, "/etc/group"))
-	unixStat = fileStat.Sys().(*syscall.Stat_t)
-	groupTime := time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))
-	wwlog.Debug("passwd: %v", passwdTime)
-	wwlog.Debug("group: %v", groupTime)
+	beforePasswdTime := getTime(path.Join(containerPath, "/etc/passwd"))
+	wwlog.Debug("passwdTime: %v", beforePasswdTime)
+	beforeGroupTime := getTime(path.Join(containerPath, "/etc/group"))
+	wwlog.Debug("groupTime: %v", beforeGroupTime)
 
-	err := runContainedCmd(allargs)
+	err := runContainedCmd(cmd, containerName, args[1:])
 	if err != nil {
 		wwlog.Error("Failed executing container command: %s", err)
 		os.Exit(1)
 	}
 
-	if util.IsFile(path.Join(container.RootFsDir(allargs[0]), "/etc/warewulf/container_exit.sh")) {
+	if util.IsFile(path.Join(containerPath, "/etc/warewulf/container_exit.sh")) {
 		wwlog.Verbose("Found clean script: /etc/warewulf/container_exit.sh")
-		err = runContainedCmd([]string{allargs[0], "/bin/sh", "/etc/warewulf/container_exit.sh"})
+		err = runContainedCmd(cmd, containerName, []string{"/bin/sh", "/etc/warewulf/container_exit.sh"})
 		if err != nil {
 			wwlog.Error("Failed executing exit script: %s", err)
 			os.Exit(1)
 		}
 	}
-	fileStat, _ = os.Stat(path.Join(containerPath, "/etc/passwd"))
-	unixStat = fileStat.Sys().(*syscall.Stat_t)
-	syncuids := false
-	if passwdTime.Before(time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))) {
-		if !SyncUser {
-			wwlog.Warn("/etc/passwd has been modified, maybe you want to run syncuser")
+
+	userdbChanged := false
+	if !beforePasswdTime.IsZero() {
+		afterPasswdTime := getTime(path.Join(containerPath, "/etc/passwd"))
+		wwlog.Debug("passwdTime: %v", afterPasswdTime)
+		if beforePasswdTime.Before(afterPasswdTime) {
+			if !SyncUser {
+				wwlog.Warn("/etc/passwd has been modified, maybe you want to run syncuser")
+			}
+			userdbChanged = true
 		}
-		syncuids = true
 	}
-	wwlog.Debug("passwd: %v", time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec)))
-	fileStat, _ = os.Stat(path.Join(containerPath, "/etc/group"))
-	unixStat = fileStat.Sys().(*syscall.Stat_t)
-	if groupTime.Before(time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))) {
-		if !SyncUser {
-			wwlog.Warn("/etc/group has been modified, maybe you want to run syncuser")
+	if !beforeGroupTime.IsZero() {
+		afterGroupTime := getTime(path.Join(containerPath, "/etc/group"))
+		wwlog.Debug("groupTime: %v", afterGroupTime)
+		if beforeGroupTime.Before(afterGroupTime) {
+			if !SyncUser {
+				wwlog.Warn("/etc/group has been modified, maybe you want to run syncuser")
+			}
+			userdbChanged = true
 		}
-		syncuids = true
 	}
-	wwlog.Debug("group: %v", time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec)))
-	if syncuids && SyncUser {
+	if userdbChanged && SyncUser {
 		err = container.SyncUids(containerName, false)
 		if err != nil {
 			wwlog.Error("Error in user sync, fix error and run 'syncuser' manually, but trying to build container: %s", err)
@@ -131,6 +137,16 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 	return nil
 }
+
+func getTime(path string) time.Time {
+	if fileStat, err := os.Stat(path); err != nil {
+		return time.Time{}
+	} else {
+		unixStat := fileStat.Sys().(*syscall.Stat_t)
+		return time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))
+	}
+}
+
 func SetBinds(myBinds []string) {
 	binds = append(binds, myBinds...)
 }
