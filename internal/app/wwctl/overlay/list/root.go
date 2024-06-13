@@ -14,7 +14,6 @@ var (
 		RunE:                  CobraRunE,
 		Args:                  cobra.MinimumNArgs(0),
 		Aliases:               []string{"ls"},
-		ValidArgs:             []string{"system", "runtime"},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp
