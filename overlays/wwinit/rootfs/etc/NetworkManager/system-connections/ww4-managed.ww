@@ -8,6 +8,8 @@
 # Host:   {{ $host }}
 # Time:   {{ $time }}
 # Source: {{ $source }}
+
+# Connection
 [connection]
 id={{ $connection_id }}
 interface-name={{ $netdev.Device }}
@@ -18,12 +20,14 @@ slave-type=bond
 {{- $master := $conn._0 }}
 master={{ $master }}
 type=ethernet
-{{ else }}
+{{ else -}}
 type={{ $netdev.Type }}
 autoconnect=true
 {{ end -}}
+{{ "" }}
 {{ end -}}
 
+# Ethernet
 {{ if $netdev.Hwaddr -}}
 {{ if eq $netdev.Type "ethernet" -}}
 [ethernet]
@@ -32,32 +36,45 @@ mac-address={{ $netdev.Hwaddr }}
 mtu={{ $netdev.MTU }}
 {{ end -}}
 {{ end -}}
+{{ "" }}
 {{ end -}}
 
-# bond
+# Bond
 {{ if eq $netdev.Type "bond" -}}
 [ethernet]
 {{ if $netdev.MTU -}}
 mtu={{ $netdev.MTU }}
 {{ end -}}
-
+{{ "" }}
 [bond]
 downdelay=0
 miimon=100
 mode=802.3ad
 xmit_hash_policy=layer2+3
 updelay=0
-
+{{ "" }}
 {{ end -}}
 
+# Infiniband
 {{ if eq $netdev.Type "infiniband" -}}
 [infiniband]
 transport-mode=datagram
 {{ if $netdev.MTU -}}
 mtu={{ $netdev.MTU }}
 {{ end -}}
+{{ "" }}
 {{ end -}}
 
+# VLAN
+{{ if eq $netdev.Type "vlan" -}}
+[vlan]
+interface-name={{ $netdev.Device }}
+parent={{ $netdev.Tags.parent_device }}
+id={{ $netdev.Tags.vlan_id }}
+{{ "" }}
+{{ end -}}
+
+# IPv4
 {{ if and ($netdev.IpCIDR) (ne $netdev.Type "bond-slave") -}}
 [ipv4]
 address={{ $netdev.IpCIDR }}
@@ -67,16 +84,21 @@ gateway={{ $netdev.Gateway }}
 method=manual
 {{- $dns := "" }}
 {{range $tk, $tv := $netdev.Tags -}}
-{{ $prefix := substr 0 3 $tk -}}
+{{ $prefix := slice $tk 0 3 -}}
 {{ if eq $prefix "DNS" -}}
 {{ $dns = print $dns $tv ";" -}}
 {{ end -}}
 {{ end -}}
-{{ if ne $dns "" -}}
-dns={{$dns}}
+{{ if ne $dns "" }}dns={{$dns}}{{ end -}}
 {{ end -}}
+{{range $tk, $tv := $netdev.Tags -}}
+{{ if ge (len $tk) 5 -}}
+{{ $prefix := slice $tk 0 5 -}}
+{{ if eq $prefix "route" }}{{$tk}}={{$tv}}{{ end }}
 {{ end -}}
+{{ end }}
 
+# IPv6
 {{/* always autoconfigure ipv6 */}}
 [ipv6]
 addr-gen-mode=stable-privacy
