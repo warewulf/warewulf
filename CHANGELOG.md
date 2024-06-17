@@ -34,6 +34,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Replace slice in templates with sprig substr. #1093
 - Fix an invalid format issue for the GitHub nightly build action. #1258
 
+## v4.5.5, unreleased
+
+### Fixed
+
+- Support leading and trailing slashes in `/etc/warewulf/excludes`. #1266
+
 ## v4.5.4, 2024-06-12
 
 ### Fixed

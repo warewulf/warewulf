@@ -260,6 +260,10 @@ func FindFilterFiles(
 	ignorePattern []string,
 	ignore_xdev bool) (ofiles []string, err error) {
 	wwlog.Debug("Finding files: %s include: %s ignore: %s", path, includePattern, ignorePattern)
+	// preprocess patterns to remove leading (and trailing) /, as we are handling relative paths
+	for i, pattern := range ignorePattern {
+		ignorePattern[i] = strings.Trim(pattern, "/")
+	}
 	cwd, err := os.Getwd()
 	if err != nil {
 		return ofiles, err
@@ -319,6 +323,7 @@ func FindFilterFiles(
 				}
 				for _, ignored_pat := range ignorePattern {
 					if ignored, _ := filepath.Match(ignored_pat, location); ignored {
+						wwlog.Debug("Ignored %s due to pattern %s", location, ignored_pat)
 						return filepath.SkipDir
 					}
 				}
