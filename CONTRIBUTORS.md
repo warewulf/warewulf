@@ -34,3 +34,4 @@
 * Andreas Henkel <henkel@uni-mainz.de>
 * Timothy Middelkoop <tmiddelkoop@internet2.edu>
 * Shane Nehring <snehring@iastate.edu>
+* Tobias Ribizel <mail@ribizel.de>
