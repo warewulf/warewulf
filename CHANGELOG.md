@@ -46,6 +46,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Added option for wwclient port number. #1349
 
+### Fixed
+
+- Fix dracut booting with secure mode. #1261
+
 ### Changed
 
 - Added a link to an example SELinux-enabled node image in documentation. #1305
