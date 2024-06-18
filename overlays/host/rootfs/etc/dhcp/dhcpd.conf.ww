@@ -39,7 +39,7 @@ if substring (option vendor-class-identifier, 0, 9) = "PXEClient" {
 }
 {{- else }}
 if exists user-class and option user-class = "iPXE" {
-    filename "http://{{$.Ipaddr}}:{{$.Warewulf.Port}}/ipxe/${mac:hexhyp}";
+    filename "http://{{$.Ipaddr}}:{{$.Warewulf.Port}}/ipxe/${mac:hexhyp}?assetkey=${asset}&uuid=${uuid}"";
 } else {
 {{range $type,$name := $.Tftp.IpxeBinaries }}
     if option architecture-type = {{ $type }} {
