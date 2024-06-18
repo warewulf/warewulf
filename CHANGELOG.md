@@ -56,6 +56,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 - Explicitly ignore compat-style NIS lines in passwd/group during syncuser. #1286
+- Accept `+` within kernel version. #1268
 
 ## v4.5.4, 2024-06-12
 
