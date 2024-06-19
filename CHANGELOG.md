@@ -39,6 +39,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 - Support leading and trailing slashes in `/etc/warewulf/excludes`. #1266
+- Fix a regression in overlay autobuild. #1216
 
 ## v4.5.4, 2024-06-12
 
