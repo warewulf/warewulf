@@ -175,6 +175,7 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %config(noreplace) %{_sysconfdir}/warewulf/examples
 %config(noreplace) %{_sysconfdir}/warewulf/ipxe
 %config(noreplace) %{_sysconfdir}/warewulf/grub
+%config(noreplace) %{_sysconfdir}/logrotate.d/warewulf.conf
 %config(noreplace) %attr(0640,-,-) %{_sysconfdir}/warewulf/nodes.conf
 %{_sysconfdir}/bash_completion.d/wwctl
 
