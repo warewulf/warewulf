@@ -122,7 +122,7 @@ You can check the result with ``wwctl node list``.
   deliverynet  SystemOverlay                     --       (wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition)
   deliverynet  Root                              --       (initramfs)
   deliverynet  Init                              --       (/sbin/init)
-  deliverynet  Kernel.Args                       --       (quiet crashkernel=no vga=791 net.naming-scheme=v238)
+  deliverynet  Kernel.Args                       --       (quiet crashkernel=no net.ifnames=1)
   deliverynet  Profiles                          --       default
   deliverynet  PrimaryNetDev                     --       (deliver1)
   deliverynet  NetDevs[deliver2].Type            --       (ethernet)
