@@ -1,3 +1,4 @@
+{{ if .ContainerName }}
 echo "================================================================================"
 echo "Warewulf v4 now http booting grub: {{.Fqdn}} ({{.Hwaddr}})"
 echo "================================================================================"
@@ -6,16 +7,13 @@ echo "Warewulf Controller: {{.Ipaddr}}"
 echo
 sleep 1
 smbios --type1 --get-string 8 --set assetkey
-
 uri="(http,{{.Ipaddr}}:{{.Port}})/provision/${net_default_mac}?assetkey=${assetkey}"
 kernel="${uri}&stage=kernel"
 container="${uri}&stage=container&compress=gz"
 system="${uri}&stage=system&compress=gz"
 runtime="${uri}&stage=runtime&compress=gz"
-
-set default={{ or .Tags.GrubMenuEntry "ww4" }}
+set default=ww4
 set timeout=5
-
 menuentry "Network boot node: {{.Id}}" --id ww4 {
     {{if .KernelOverride }}
     echo "Kernel:                {{.KernelOverride}}"
@@ -37,55 +35,27 @@ menuentry "Network boot node: {{.Id}}" --id ww4 {
         reboot
     fi
 }
-
-menuentry "Network boot node with dracut: {{.Id}}" --id dracut {
-    initramfs="${uri}&stage=initramfs"
-
-    uri="http://{{.Ipaddr}}:{{.Port}}/provision/${net_default_mac}?assetkey=${assetkey}"
-    container="${uri}&stage=container&compress=gz"
-    system="${uri}&stage=system&compress=gz"
-    runtime="${uri}&stage=runtime&compress=gz"
-
-    {{if .KernelOverride }}
-    echo "Kernel:                {{.KernelOverride}}"
-    {{else}}
-    echo "Kernel:                {{.ContainerName}} (container default)"
-    {{end}}
-    echo "KernelArgs:            {{.KernelArgs}}"
-
-    net_args="rd.neednet=1 {{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} {{end}}{{end}}"
-    wwinit_args="root=wwinit wwinit.container=${container} wwinit.system=${system} wwinit.runtime=${runtime} init=/init"
-    linux $kernel wwid=${net_default_mac} {{.KernelArgs}} $net_args $wwinit_args
-
-    if [ x$? = x0 ] ; then
-        echo "Loading Container:     {{.ContainerName}}"
-        initrd $initramfs
-        boot
-    else
-        echo "MESSAGE: This node seems to be unconfigured. Please have your system administrator add a"
-        echo "         configuration for this node with HW address: ${net_default_mac}"
-        echo ""
-        echo "Rebooting in 1 minute..."
-        sleep 60
-        reboot
-    fi
-}
-
 menuentry "Chainload specific configfile" {
     conf="(http,{{.Ipaddr}}:{{.Port}})/efiboot/grub.cfg"
     configfile $conf
 }
-
 menuentry "UEFI Firmware Settings" --id "uefi-firmware" {
     fwsetup
 }
-
 menuentry "System restart" {
     echo "System rebooting..."
     reboot
 }
-
 menuentry "System shutdown" {
     echo "System shutting down..."
     halt
 }
+{{ else }}
+echo "================================================================================"
+echo " Warewulf v4:"
+echo " No node image/container defined for this node ({{.Fqdn}})."
+echo " Rebooting in 30s."
+echo "================================================================================"
+sleep 30
+reboot
+{{ end }}
