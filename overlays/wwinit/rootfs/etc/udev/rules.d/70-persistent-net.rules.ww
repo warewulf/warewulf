@@ -4,6 +4,11 @@
 # Source: {{.BuildSource}}
 {{range $devname, $netdev := .NetDevs}}
 {{- if $netdev.Hwaddr }}
+{{- if eq $netdev.Type "infiniband" }}
+SUBSYSTEM=="net", ACTION=="add", ATTR{address}=="?*{{ $netdev.Hwaddr }}", NAME="{{ $netdev.Device }}"
+{{- else }}
 SUBSYSTEM=="net", ACTION=="add", ATTR{address}=="{{ $netdev.Hwaddr }}", NAME="{{ $netdev.Device }}"
 {{ end -}}
 {{ end -}}
+{{ end }}
+# end of generated file

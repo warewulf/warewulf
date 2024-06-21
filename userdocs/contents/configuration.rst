@@ -217,7 +217,7 @@ compiled into Warewulf at build-time:
     system overlay:
     - wwinit
     kernel:
-      args: quiet crashkernel=no vga=791 net.naming-scheme=v238
+      args: quiet crashkernel=no net.ifnames=1
     init: /sbin/init
     root: initramfs
     ipxe template: default
