@@ -252,7 +252,7 @@ func FindKernel(root string) (kPath string, version string, err error) {
 		}
 		for _, foundKernel := range potentialKernel {
 			wwlog.Debug("Parsing out kernel version for %s", foundKernel)
-			re := regexp.MustCompile(fmt.Sprintf(path.Join(root, searchPath), `([\w\d-\.]*)`))
+			re := regexp.MustCompile(fmt.Sprintf(path.Join(root, searchPath), `([\w\d-\.+]*)`))
 			version := re.FindAllStringSubmatch(foundKernel, -1)
 			if version == nil {
 				return foundKernel, "", fmt.Errorf("could not parse kernel version")
