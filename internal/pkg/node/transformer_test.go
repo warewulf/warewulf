@@ -138,7 +138,7 @@ func Test_nodeYaml_SetFrom(t *testing.T) {
 	})
 	t.Run("Get() default kernel args", func(t *testing.T) {
 		value := test_node1.Kernel.Args.Get()
-		if value != "quiet crashkernel=no vga=791 net.naming-scheme=v238" {
+		if value != "quiet crashkernel=no net.ifnames=1" {
 			t.Errorf("Get() returned wrong kernel args: %s", value)
 		}
 	})
