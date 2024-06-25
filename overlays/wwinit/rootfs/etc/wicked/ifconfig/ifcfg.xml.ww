@@ -13,7 +13,15 @@ Source: {{ $source }}
 <interface origin="static generated warewulf config">
   <name>{{$netdev.Device}}</name>
   {{ if $netdev.Type -}}
+  {{ if eq $netdev.Type "vlan" -}}
+  <vlan>
+    <device> {{ $netdev.Tags.parent_device }} </device>
+    <tag> {{ $netdev.Tags.vlan_id }} </tag>
+    <protocol>ieee802-1Q</protocol>
+  </vlan>
+  {{ else -}}
   <link-type>{{ $netdev.Type }}</link-type>
+  {{ end -}}
   {{ end -}}
   {{ if $netdev.MTU -}}
   <mtu>{{ $netdev.MTU }}</mtu>
