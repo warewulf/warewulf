@@ -1,8 +1,14 @@
 package list
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+)
 
-type variables struct{}
+type variables struct {
+	full   bool
+	size   bool
+	kernel bool
+}
 
 // GetRootCommand returns the root cobra.Command for the application.
 func GetCommand() *cobra.Command {
@@ -15,5 +21,9 @@ func GetCommand() *cobra.Command {
 		RunE:                  CobraRunE(&vars),
 		Aliases:               []string{"ls"},
 	}
+	baseCmd.PersistentFlags().BoolVarP(&vars.full, "full", "f", false, "show all")
+	baseCmd.PersistentFlags().BoolVarP(&vars.kernel, "kernel", "k", false, "show kernel version")
+	baseCmd.PersistentFlags().BoolVarP(&vars.size, "size", "s", false, "show size information")
+
 	return baseCmd
 }
