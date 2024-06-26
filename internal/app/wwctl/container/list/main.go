@@ -6,35 +6,83 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/app/wwctl/helper"
-	"github.com/warewulf/warewulf/internal/pkg/api/container"
+	apicontainer "github.com/warewulf/warewulf/internal/pkg/api/container"
+	"github.com/warewulf/warewulf/internal/pkg/container"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-var containerList = container.ContainerList
+var containerList = apicontainer.ContainerList
 
 func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err error) {
 	return func(cmd *cobra.Command, args []string) (err error) {
-		containerInfo, err := containerList()
-		if err != nil {
-			wwlog.Error("%s", err)
-			return
-		}
+		if vars.size || vars.full || vars.kernel {
+			containerInfo, err := containerList()
+			if err != nil {
+				wwlog.Error("%s", err)
+				return err
+			}
+			if vars.full {
+				ph := helper.NewPrintHelper([]string{"CONTAINER NAME", "NODES", "KERNEL VERSION", "CREATION TIME", "MODIFICATION TIME", "SIZE"})
+				for i := 0; i < len(containerInfo); i++ {
+					createTime := time.Unix(int64(containerInfo[i].CreateDate), 0)
+					modTime := time.Unix(int64(containerInfo[i].ModDate), 0)
+					sz := util.ByteToString(int64(containerInfo[i].ImgSize))
+					if vars.compressed {
+						sz = util.ByteToString(int64(containerInfo[i].ImgSizeComp))
+					}
+					if vars.chroot {
+						sz = util.ByteToString(int64(containerInfo[i].Size))
+					}
+					ph.Append([]string{
+						containerInfo[i].Name,
+						strconv.FormatUint(uint64(containerInfo[i].NodeCount), 10),
+						containerInfo[i].KernelVersion,
+						createTime.Format(time.RFC822),
+						modTime.Format(time.RFC822),
+						sz,
+					})
+				}
+				ph.Render()
+			} else if vars.kernel {
+				ph := helper.NewPrintHelper([]string{"CONTAINER NAME", "NODES", "KERNEL VERSION"})
+				for i := 0; i < len(containerInfo); i++ {
+					ph.Append([]string{
+						containerInfo[i].Name,
+						strconv.FormatUint(uint64(containerInfo[i].NodeCount), 10),
+						containerInfo[i].KernelVersion,
+					})
+				}
+				ph.Render()
 
-		ph := helper.NewPrintHelper([]string{"CONTAINER NAME", "NODES", "KERNEL VERSION", "CREATION TIME", "MODIFICATION TIME", "SIZE"})
-		for i := 0; i < len(containerInfo); i++ {
-			createTime := time.Unix(int64(containerInfo[i].CreateDate), 0)
-			modTime := time.Unix(int64(containerInfo[i].ModDate), 0)
-			ph.Append([]string{
-				containerInfo[i].Name,
-				strconv.FormatUint(uint64(containerInfo[i].NodeCount), 10),
-				containerInfo[i].KernelVersion,
-				createTime.Format(time.RFC822),
-				modTime.Format(time.RFC822),
-				util.ByteToString(int64(containerInfo[i].Size)),
-			})
+			} else if vars.size {
+				ph := helper.NewPrintHelper([]string{"CONTAINER NAME", "NODES", "SIZE"})
+				for i := 0; i < len(containerInfo); i++ {
+					sz := util.ByteToString(int64(containerInfo[i].ImgSize))
+					if vars.compressed {
+						sz = util.ByteToString(int64(containerInfo[i].ImgSizeComp))
+					}
+					if vars.chroot {
+						sz = util.ByteToString(int64(containerInfo[i].Size))
+					}
+
+					ph.Append([]string{
+						containerInfo[i].Name,
+						strconv.FormatUint(uint64(containerInfo[i].NodeCount), 10),
+						sz,
+					})
+				}
+				ph.Render()
+
+			}
+		} else {
+			ph := helper.NewPrintHelper([]string{"CONTAINER NAME"})
+			list, _ := container.ListSources()
+			for _, cont := range list {
+				ph.Append([]string{cont})
+			}
+			ph.Render()
 		}
-		ph.Render()
 		return
 	}
 }
