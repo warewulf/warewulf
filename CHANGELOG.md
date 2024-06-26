@@ -14,6 +14,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add multiple output formats (yaml & json) support. #447
 - More aliases for many wwctl commands
 - Add support to render template using `host` or `$(uname -n)` as the value of `overlay show --render`. #623
+- Container list has now options for full, kernel and size listing. Without any
+  arguments only available containers are listed. Size is no more fine granular
+  showing also size of the image, chroot and compressed image
 
 ### Changed
 
