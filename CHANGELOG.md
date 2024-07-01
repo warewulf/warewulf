@@ -41,6 +41,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix wwclient not reading asset-tag. #1110
 - Fix iPXE script not including asset-tag #1110
 
+## v4.5.6, unreleased
+
+### Fixed
+
+- Capture "broken" symlinks during container buildA. #1267
+
 ## v4.5.4, 2024-06-12
 
 ### Fixed
