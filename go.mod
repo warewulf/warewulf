@@ -13,7 +13,7 @@ require (
 	github.com/fatih/color v1.17.0
 	github.com/golang/glog v1.2.0
 	github.com/google/uuid v1.6.0
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0
 	github.com/manifoldco/promptui v0.9.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/opencontainers/image-spec v1.1.0
@@ -24,8 +24,8 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/talos-systems/go-smbios v0.1.1
 	golang.org/x/term v0.20.0
-	google.golang.org/genproto/googleapis/api v0.0.0-20240506185236-b8a5c65736ae
-	google.golang.org/grpc v1.63.2
+	google.golang.org/genproto/googleapis/api v0.0.0-20240513163218-0867130af1f8
+	google.golang.org/grpc v1.64.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.3.0
 	google.golang.org/protobuf v1.34.1
 	gopkg.in/yaml.v2 v2.4.0
