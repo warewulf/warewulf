@@ -17,7 +17,7 @@ import (
 
 	"github.com/creasty/defaults"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 var cachedConf RootConf
