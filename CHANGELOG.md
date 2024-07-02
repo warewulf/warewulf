@@ -46,6 +46,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix a regression in overlay autobuild. #1216
 - Fix wwclient not reading asset-tag. #1110
 - Fix dhcp not passing asset tag or uuid to iPXE. #1110
+- Restored previous static dhcp behavior. #1263
 
 ## v4.5.6, unreleased
 
