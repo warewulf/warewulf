@@ -51,8 +51,10 @@ if exists user-class and option user-class = "iPXE" {
 
 subnet {{$.Network}} netmask {{$.Netmask}} {
     max-lease-time 120;
+{{- if ne .Dhcp.Template "static" }}
     range {{$.Dhcp.RangeStart}} {{$.Dhcp.RangeEnd}};
     next-server {{.Ipaddr}};
+{{- end }}
 }
 
 {{- if eq .Dhcp.Template "static" }}
@@ -60,20 +62,19 @@ subnet {{$.Network}} netmask {{$.Netmask}} {
 {{- range $netname, $netdevs := $nodes.NetDevs}}
 host {{$nodes.Id.Get}}-{{$netname}}
 {
-    {{- if $netdevs.Primary.GetB}}
     {{- if $netdevs.Hwaddr.Defined}}
     hardware ethernet {{$netdevs.Hwaddr.Get}};
     {{- end }}
     {{- if $netdevs.Ipaddr.Defined}}
     fixed-address {{$netdevs.Ipaddr.Get}};
     {{- end }}
+    {{- if $netdevs.Primary.GetB}}
     option host-name "{{$nodes.Id.Get}}";
     {{- end }}
 }
 {{end -}}{{/* range NetDevs */}}
 {{end -}}{{/* range AllNodes */}}
 {{end -}}{{/* if static */}}
-
 {{- else}}
 {{abort}}
 {{- end}}{{/* dhcp enabled */}}
