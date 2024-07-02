@@ -176,13 +176,15 @@ func (db syncDB) read(fileName string, fromContainer bool) error {
 			if name == "" {
 				continue
 			}
-
+			// ignore ldap/nis/sssd line
+			if fields[0] == "+" {
+				continue
+			}
 			id, err := strconv.Atoi(fields[2])
 			if err != nil {
 				wwlog.Warn("Ignoring line %s (parse error)", line)
 				continue
 			}
-
 			entry, ok := db[name]
 			if !ok {
 				entry = syncInfo{HostID: -1, ContainerID: -1}
