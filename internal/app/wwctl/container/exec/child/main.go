@@ -139,6 +139,10 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	if err != nil {
 		return errors.Wrap(err, "failed to mount /dev")
 	}
+	err = syscall.Mount("/sys", path.Join(containerPath, "/sys"), "", syscall.MS_BIND, "")
+	if err != nil {
+		return errors.Wrap(err, "failed to mount /sys")
+	}
 
 	for _, mntPnt := range mountPts {
 		err = syscall.Mount(mntPnt.Source, path.Join(containerPath, mntPnt.Dest), "", syscall.MS_BIND, "")
