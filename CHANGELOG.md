@@ -50,6 +50,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Capture "broken" symlinks during container build. #1267
 - Fix the issue that removing lines during wwctl overlay edit didn't work. #1235
 - Fix the issue that new files created with wwctl overlay edit have 755 permissions. #1236
+- Mount `/sys` and `/run` during `wwctl container exec`. #1287
 
 ## v4.5.4, 2024-06-12
 
