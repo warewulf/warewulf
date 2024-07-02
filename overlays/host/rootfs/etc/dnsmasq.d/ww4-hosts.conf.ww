@@ -26,7 +26,7 @@ dhcp-boot=tag:aarch64,"/warewulf/{{ index $.Tftp.IpxeBinaries "00:0B" }}"
 {{- end }}
 {{- end }}
 # iPXE binary will get the following configuration file
-dhcp-boot=tag:iPXE,"http://{{$.Ipaddr}}:{{$.Warewulf.Port}}/ipxe/${mac:hexhyp}"
+dhcp-boot=tag:iPXE,"http://{{$.Ipaddr}}:{{$.Warewulf.Port}}/ipxe/${mac:hexhyp}?assetkey=${asset}&uuid=${uuid}"
 dhcp-no-override
 {{- if $.Tftp.Enabled }}
 # also act as tftp server

@@ -40,6 +40,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Support leading and trailing slashes in `/etc/warewulf/excludes`. #1266
 - Fix a regression in overlay autobuild. #1216
+- Fix wwclient not reading asset-tag. #1110
+- Fix dhcp not passing asset tag or uuid to iPXE. #1110
 
 ## v4.5.4, 2024-06-12
 

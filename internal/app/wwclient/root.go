@@ -127,6 +127,15 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	localUUID, _ := sysinfoDump.UUID()
 	x := smbiosDump.SystemEnclosure()
 	tag := strings.ReplaceAll(x.AssetTagNumber(), " ", "_")
+	if tag == "Unknown" {
+		dmiOut, err := exec.Command("dmidecode", "-s", "chassis-asset-tag").Output()
+		if err == nil {
+			chassisAssetTag := strings.TrimSpace(string(dmiOut))
+			if chassisAssetTag != "" {
+				tag = chassisAssetTag
+			}
+		}
+	}
 
 	cmdline, err := os.ReadFile("/proc/cmdline")
 	if err != nil {
