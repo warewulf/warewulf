@@ -177,7 +177,8 @@ func (db syncDB) read(fileName string, fromContainer bool) error {
 				continue
 			}
 			// ignore ldap/nis/sssd line
-			if fields[0] == "+" {
+			if strings.HasPrefix(fields[0], "+") || strings.HasPrefix(fields[0], "-") {
+				wwlog.Verbose("Ignoring line %s (unhandled compat-style NIS reference)", line)
 				continue
 			}
 			id, err := strconv.Atoi(fields[2])
