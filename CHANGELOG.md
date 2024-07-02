@@ -45,18 +45,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 - Support leading and trailing slashes in `/etc/warewulf/excludes`. #1266
+- Fix a regression in overlay autobuild. #1216
 
 ## v4.5.4, 2024-06-12
 
 ### Fixed
 
 - Fix a regression that caused an error when passing flags to `wwctl container exec` and `wwctl container shell`. #1250
-
-## v4.5.x, unreleased
-
-### Fixed
-
-- Fix the issue that system/runtime overlays are not auto-rebuilt. #1216
 
 ## v4.5.3, 2024-06-07
 
