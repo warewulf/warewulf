@@ -91,18 +91,15 @@ Here are the environmental variables that can be used.
    WAREWULF_OCI_PASSWORD
    WAREWULF_OCI_NOHTTPS
 
-Here is an example:
-
+They can be overwritten with ``--nohttps``, ``--username`` and ``--passwd``.
 .. code-block:: console
 
-   # export WAREWULF_OCI_USERNAME=privateuser
-   # export WAREWULF_OCI_PASSWORD=super-secret-password-or-token
-   # wwctl import docker://ghcr.io/privatereg/rocky:8
+   # wwctl import --username tux --passwd supersecret docker://ghcr.io/privatereg/rocky:8
 
 The above is just an example. Consideration should be done before
 doing it this way if you are in a security sensitive environment or
-shared environments. You would not want these showing up in bash
-history or logs.
+shared environments as this command line wil show up in the process 
+table.
 
 Local Files
 -----------
