@@ -297,11 +297,8 @@ func FindFilterFiles(
 	dev := path_stat.Sys().(*syscall.Stat_t).Dev
 	for _, inc := range globedInclude {
 		wwlog.Debug("inc %s", inc)
-		stat, err := os.Stat(inc)
-		if os.IsNotExist(err) {
-			// there may be broken softlinks
-			continue
-		} else if err != nil {
+		stat, err := os.Lstat(inc)
+		if err != nil {
 			return ofiles, err
 		}
 		if stat.IsDir() {

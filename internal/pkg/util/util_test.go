@@ -7,6 +7,7 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -33,14 +34,16 @@ func Test_FindFilterFiles(t *testing.T) {
 	TryCreatePath(t, dir, "bin")
 	TryCreatePath(t, dir, "lib")
 
-	files, err := FindFilterFiles(dir, []string{"boot", "usr", "bin"}, []string{"/b*/", "/usr/local"}, true)
+	assert.NoError(t, os.Symlink("/path/to/target", filepath.Join(dir, "symlink")))
+
+	files, err := FindFilterFiles(dir, []string{"boot", "usr", "bin", "symlink"}, []string{"/b*/", "/usr/local"}, true)
 
 	if err != nil {
 		t.Errorf("FindFilerFiles failed: %v", err)
 		t.FailNow()
 	}
 
-	expected := []string{"usr", "usr/bin", "usr/usr", "usr/usr/local"}
+	expected := []string{"usr", "usr/bin", "usr/usr", "usr/usr/local", "symlink"}
 	sort.Strings(expected)
 	sort.Strings(files)
 	if !reflect.DeepEqual(files, expected) {

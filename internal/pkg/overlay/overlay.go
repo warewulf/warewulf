@@ -127,9 +127,10 @@ func OverlayInit(overlayName string) error {
 Build the given overlays for a node and create a Image for them
 */
 func BuildOverlay(nodeInfo node.NodeInfo, context string, overlayNames []string) error {
-	if len(overlayNames) == 0 {
+	if len(overlayNames) == 0 && context == "" {
 		return nil
 	}
+
 	// create the dir where the overlay images will reside
 	name := fmt.Sprintf("overlay %s/%v", nodeInfo.Id.Get(), overlayNames)
 	overlayImage := OverlayImage(nodeInfo.Id.Get(), context, overlayNames)

@@ -41,7 +41,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `/sys/firmware/devicetree/base/serial-number`
 - Replace slice in templates with sprig substr. #1093
 - Fix an invalid format issue for the GitHub nightly build action. #1258
-- Fix broken `/etc/warewulf/excludes` handling #1266
+
+## v4.5.5, unreleased
+
+### Fixed
+
+- Support leading and trailing slashes in `/etc/warewulf/excludes`. #1266
+- Fix a regression in overlay autobuild. #1216
+- Fix wwclient not reading asset-tag. #1110
+- Fix dhcp not passing asset tag or uuid to iPXE. #1110
+- Restored previous static dhcp behavior. #1263
+- Capture "broken" symlinks during container build. #1267
 
 ## v4.5.4, 2024-06-12
 

@@ -40,11 +40,11 @@ var buildOverlayTests = []struct {
 		contents:    nil,
 	},
 	{
-		description: "if only context is specified then no overlay image is generated",
+		description: "if only context is specified then context named image is generated",
 		nodeName:    "",
 		context:     "system",
 		overlays:    nil,
-		image:       "",
+		image:       "__SYSTEM__.img",
 		contents:    nil,
 	},
 	{
@@ -80,19 +80,19 @@ var buildOverlayTests = []struct {
 		contents:    []string{"o1.txt", "o2.txt"},
 	},
 	{
-		description: "if no node system overlays are specified, then no overlay image is generated",
+		description: "if no node system overlays are specified, then context pointed overlay is generated",
 		nodeName:    "node1",
 		context:     "system",
 		overlays:    nil,
-		image:       "",
+		image:       "node1/__SYSTEM__.img",
 		contents:    nil,
 	},
 	{
-		description: "if no node runtime overlays are specified, then no overlay image is generated",
+		description: "if no node runtime overlays are specified, then context pointed overlay is generated",
 		nodeName:    "node1",
 		context:     "runtime",
 		overlays:    nil,
-		image:       "",
+		image:       "node1/__RUNTIME__.img",
 		contents:    nil,
 	},
 	{
@@ -147,9 +147,6 @@ func Test_BuildOverlay(t *testing.T) {
 	}
 
 	for _, tt := range buildOverlayTests {
-		assert.True(t, (tt.image != "" && tt.contents != nil) || (tt.image == "" && tt.contents == nil),
-			"image and contents must eiher be populated or empty together")
-
 		nodeInfo := node.NodeInfo{}
 		nodeInfo.Id.Set(tt.nodeName)
 		t.Run(tt.description, func(t *testing.T) {
@@ -196,18 +193,18 @@ var buildAllOverlaysTests = []struct {
 		createdOverlays: nil,
 	},
 	{
-		description:     "a node with no overlays creates no overlays",
+		description:     "a node with no overlays creates default system/runtime overlays",
 		nodes:           []string{"node1"},
-		systemOverlays:  nil,
-		runtimeOverlays: nil,
-		createdOverlays: nil,
+		systemOverlays:  [][]string{{"o1"}},
+		runtimeOverlays: [][]string{{"o1"}},
+		createdOverlays: []string{"node1/__SYSTEM__.img.gz", "node1/__RUNTIME__.img.gz"},
 	},
 	{
-		description:     "multiple nodes with no overlays creates no overlays",
+		description:     "multiple nodes with no overlays creates default system/runtime overlays",
 		nodes:           []string{"node1", "node2"},
-		systemOverlays:  nil,
-		runtimeOverlays: nil,
-		createdOverlays: nil,
+		systemOverlays:  [][]string{{"o1"}, {"o2"}},
+		runtimeOverlays: [][]string{{"o1"}, {"o2"}},
+		createdOverlays: []string{"node1/__SYSTEM__.img.gz", "node1/__RUNTIME__.img.gz", "node2/__SYSTEM__.img.gz", "node2/__RUNTIME__.img.gz"},
 	},
 	{
 		description:     "a system overlay for a node generates a system overlay for that node",
