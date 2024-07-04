@@ -105,13 +105,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		os.Exit(1)
 	}
 
-	tempFileReader, tempFileErr := os.Open(tempFile.Name())
-	if tempFileErr != nil {
-		wwlog.Error("Unable to open %s: %s", tempFile.Name(), tempFileErr)
-		os.Exit(1)
-	}
-	defer tempFileReader.Close()
-
 	if fileInfo, err := os.Stat(tempFile.Name()); err != nil {
 		wwlog.Error("Unable to stat %s: %s", tempFile.Name(), err)
 		os.Exit(1)
@@ -122,16 +115,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	destination, destinationErr := os.OpenFile(overlayFile, os.O_RDWR|os.O_CREATE, os.FileMode(PermMode))
-	if destinationErr != nil {
-		wwlog.Error("Unable to update %s: %s", overlayFile, destinationErr)
-		os.Exit(1)
-	}
-	defer destination.Close()
-
-	wwlog.Debug("Copy %s to %s", tempFileReader.Name(), destination.Name())
-	if _, copyErr := io.Copy(destination, tempFileReader); copyErr != nil {
-		wwlog.Error("Unable to update %s: %s", destination.Name(), copyErr)
+	err := os.Rename(tempFile.Name(), overlayFile)
+	if err != nil {
+		wwlog.Error("Unable to update %s: %s", overlayFile, err)
 		os.Exit(1)
 	}
 
