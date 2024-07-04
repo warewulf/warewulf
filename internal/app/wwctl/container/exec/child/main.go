@@ -135,11 +135,6 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
-	err = syscall.Mount("/dev", path.Join(containerPath, "/dev"), "", syscall.MS_BIND, "")
-	if err != nil {
-		return errors.Wrap(err, "failed to mount /dev")
-	}
-
 	for _, mntPnt := range mountPts {
 		err = syscall.Mount(mntPnt.Source, path.Join(containerPath, mntPnt.Dest), "", syscall.MS_BIND, "")
 		if err != nil {
@@ -166,9 +161,17 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		return errors.Wrap(err, "failed to chdir")
 	}
 
-	err = syscall.Mount("/proc", "/proc", "proc", 0, "")
-	if err != nil {
-		return errors.Wrap(err, "failed to mount proc")
+	if err := syscall.Mount("devtmpfs", "/dev", "devtmpfs", 0, ""); err != nil {
+		return errors.Wrap(err, "failed to mount /dev")
+	}
+	if err := syscall.Mount("sysfs", "/sys", "sysfs", 0, ""); err != nil {
+		return errors.Wrap(err, "failed to mount /sys")
+	}
+	if err := syscall.Mount("proc", "/proc", "proc", 0, ""); err != nil {
+		return errors.Wrap(err, "failed to mount /proc")
+	}
+	if err := syscall.Mount("tmpfs", "/run", "tmpfs", 0, ""); err != nil {
+		return errors.Wrap(err, "failed to mount /run")
 	}
 
 	os.Setenv("PS1", ps1Str)
