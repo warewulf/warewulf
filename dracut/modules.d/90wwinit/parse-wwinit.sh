@@ -7,12 +7,12 @@ if [ "${root}" = "wwinit" ]
 then
     info "root=${root}"
     wwinit_uri="$(getarg wwinit.uri)"
-    export wwinit_container="${wwinit_uri}container&compress=gz"; info "wwinit.container=${wwinit_container}"
-    export wwinit_system="${wwinit_uri}system&compress=gz"; info "wwinit.system=${wwinit_system}"
-    export wwinit_runtime="${wwinit_uri}runtime&compress=gz"; info "wwinit.runtime=${wwinit_runtime}"
+    export wwinit_container="${wwinit_uri}container&compress=gz"; info "wwinit_container=${wwinit_container}"
+    export wwinit_system="${wwinit_uri}system&compress=gz"; info "wwinit_system=${wwinit_system}"
+    export wwinit_runtime="${wwinit_uri}runtime&compress=gz"; info "wwinit_runtime=${wwinit_runtime}"
     if [ -n "$(getarg wwinit.KernelOverride)" ]
     then
-        export wwinit_kmods="${wwinit_uri}kmods&compress=gz"; info "wwinit.kmods=${wwinit_kmods}"
+        export wwinit_kmods="${wwinit_uri}kmods&compress=gz"; info "wwinit_kmods=${wwinit_kmods}"
     fi
 
     wwinit_tmpfs_size=$(getarg wwinit.tmpfs.size=)
