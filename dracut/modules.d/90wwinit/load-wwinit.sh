@@ -8,8 +8,13 @@ do
     if [ -n "${archive}" ]
     then
         info "Loading ${archive}"
-	#Load only runtime overlays from a static privledge port
-        [[ "$archive" == *"runtime"* ]] && localport="--local-port 986" || localport=""
-        (curl --silent $localport -L "${archive}" | gzip -d | cpio -im --directory="${NEWROOT}") || die "Unable to load ${archive}"
+        # Load runtime overlay from a static privledged port.
+        # Others use default settings.
+        localport=""
+        if [[ "$archive" == *"runtime"* ]]
+        then
+            localport="--local-port 1-1023"
+        fi
+        (curl --silent ${localport} -L "${archive}" | gzip -d | cpio -im --directory="${NEWROOT}") || die "Unable to load ${archive}"
     fi
 done
