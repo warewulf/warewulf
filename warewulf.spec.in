@@ -78,6 +78,8 @@ BuildRequires: make
 BuildRequires: libassuan-devel gpgme-devel
 %endif
 
+Recommends: logrotate
+
 %description
 Warewulf is a stateless and diskless container operating system provisioning
 system for large clusters of bare metal and/or virtual systems.
@@ -169,18 +171,22 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 
 
 %files
+%dir %{_sysconfdir}/bash_completion.d
+%dir %{_sysconfdir}/logrotate.d
+
 %defattr(-, root, %{wwgroup})
 %dir %{_sysconfdir}/warewulf
 %config(noreplace) %{_sysconfdir}/warewulf/warewulf.conf
 %config(noreplace) %{_sysconfdir}/warewulf/examples
 %config(noreplace) %{_sysconfdir}/warewulf/ipxe
 %config(noreplace) %{_sysconfdir}/warewulf/grub
-%config(noreplace) %{_sysconfdir}/logrotate.d/warewulf.conf
+%config(noreplace) %{_sysconfdir}/logrotate.d/warewulfd.conf
 %config(noreplace) %attr(0640,-,-) %{_sysconfdir}/warewulf/nodes.conf
+
 %{_sysconfdir}/bash_completion.d/wwctl
 
 %dir %{_sharedstatedir}/warewulf
-%{_sharedstatedir}/warewulf/chroots
+%dir %{_sharedstatedir}/warewulf/chroots
 %dir %{_sharedstatedir}/warewulf/overlays
 %dir %{_sharedstatedir}/warewulf/overlays/debug
 %dir %{_sharedstatedir}/warewulf/overlays/generic

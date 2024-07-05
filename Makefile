@@ -109,6 +109,7 @@ install: build docs
 	install -d -m 0755 $(DESTDIR)$(MANDIR)/man5
 	install -d -m 0755 $(DESTDIR)$(WWDOCDIR)
 	install -d -m 0755 $(DESTDIR)$(FIREWALLDDIR)
+	install -d -m 0755 $(DESTDIR)$(LOGROTATEDIR)
 	install -d -m 0755 $(DESTDIR)$(SYSTEMDDIR)
 	install -d -m 0755 $(DESTDIR)$(IPXESOURCE)
 	install -d -m 0755 $(DESTDIR)$(DATADIR)/warewulf
@@ -120,7 +121,7 @@ install: build docs
 	for f in etc/ipxe/*.ipxe; do install -m 0644 $$f $(DESTDIR)$(WWCONFIGDIR)/ipxe/; done
 	install -m 0644 etc/grub/grub.cfg.ww $(DESTDIR)$(WWCONFIGDIR)/grub/grub.cfg.ww
 	install -m 0644 etc/grub/chainload.ww $(DESTDIR)$(WWOVERLAYDIR)/host/rootfs$(TFTPDIR)/warewulf/grub.cfg.ww
-	install -m 0644 etc/logrotate.d/logrotate.conf $(DESTDIR)$(WWCONFIGDIR)/logrotate.d/logrotate.conf
+	install -m 0644 etc/logrotate.d/warewulfd.conf $(DESTDIR)$(LOGROTATEDIR)/warewulfd.conf
 	(cd overlays && find * -type f -exec install -D -m 0644 {} $(DESTDIR)$(WWOVERLAYDIR)/{} \;)
 	(cd overlays && find * -type d -exec mkdir -pv $(DESTDIR)$(WWOVERLAYDIR)/{} \;)
 	(cd overlays && find * -type l -exec cp -av {} $(DESTDIR)$(WWOVERLAYDIR)/{} \;)
