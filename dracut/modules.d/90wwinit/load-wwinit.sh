@@ -11,7 +11,7 @@ do
         # Load runtime overlay from a static privledged port.
         # Others use default settings.
         localport=""
-        if [[ "$archive" == *"runtime"* ]]
+        if [[ "${archive}" == "${wwinit_runtime}" ]]
         then
             localport="--local-port 1-1023"
         fi
