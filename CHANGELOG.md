@@ -47,6 +47,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix the issue that removing lines during wwctl overlay edit didn't work. #1235
 - Fix the issue that new files created with wwctl overlay edit have 755 permissions. #1236
 - Mount `/sys` and `/run` during `wwctl container exec`. #1287
+- Fix tab-completion for `wwctl overlay list`. #1260
 
 ### Changed
 
