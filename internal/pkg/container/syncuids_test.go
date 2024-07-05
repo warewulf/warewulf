@@ -1,10 +1,12 @@
 package container
 
 import (
+	"bytes"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func writeTempFile(t *testing.T, input string) string {
@@ -266,5 +268,20 @@ func Test_malformed_passwd(t *testing.T) {
 	defer os.Remove(hostFileName)
 	db := make(syncDB)
 	err := db.readFromHost(hostFileName)
+	assert.NoError(t, err)
+}
+
+func Test_network_passwd(t *testing.T) {
+	buf := new(bytes.Buffer)
+	wwlog.SetLogWriter(buf)
+	hostInput := `testuser1:x:1001:1001::/home/testuser:/bin/bash
++::::::
+-::::::`
+	hostFileName := writeTempFile(t, hostInput)
+	defer os.Remove(hostFileName)
+	db := make(syncDB)
+	err := db.readFromHost(hostFileName)
+	assert.NotContains(t, buf.String(), "parse error")
+	assert.Contains(t, buf.String(), "Ignoring line")
 	assert.NoError(t, err)
 }
