@@ -184,10 +184,10 @@ func (conf *RootConf) SetDynamicDefaults() (err error) {
 	}
 	// check validity of ipv6 net
 	if conf.Ipaddr6 != "" {
-        if conf.Ipv6net == "" {
-            wwlog.Error("Ipv6 network has not been set in warewulf.conf: ipv6net")
-            return errors.New("Invalid Ipv6 network")
-        }
+		if conf.Ipv6net == "" {
+			wwlog.Error("Ipv6 network has not been set in warewulf.conf: ipv6net")
+			return errors.New("Invalid Ipv6 network")
+		}
 		_, ipv6net, err := net.ParseCIDR(conf.Ipv6net)
 		if err != nil {
 			wwlog.Error("Invalid Ipv6 address specified, must be CIDR notation: %s", conf.Ipv6net)

@@ -31,7 +31,7 @@ type templateVars struct {
 	ContainerName  string
 	Hwaddr         string
 	Ipaddr         string
-    Ipaddr6        string
+	Ipaddr6        string
 	Port           string
 	KernelArgs     string
 	KernelOverride string
@@ -104,7 +104,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			Cluster:        node.ClusterName.Get(),
 			Fqdn:           node.Id.Get(),
 			Ipaddr:         conf.Ipaddr,
-            Ipaddr6:        conf.Ipaddr6,
+			Ipaddr6:        conf.Ipaddr6,
 			Port:           strconv.Itoa(conf.Warewulf.Port),
 			Hostname:       node.Id.Get(),
 			Hwaddr:         rinfo.hwaddr,
@@ -190,7 +190,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 				Cluster:        node.ClusterName.Get(),
 				Fqdn:           node.Id.Get(),
 				Ipaddr:         conf.Ipaddr,
-                Ipaddr6:        conf.Ipaddr6,
+				Ipaddr6:        conf.Ipaddr6,
 				Port:           strconv.Itoa(conf.Warewulf.Port),
 				Hostname:       node.Id.Get(),
 				Hwaddr:         rinfo.hwaddr,
