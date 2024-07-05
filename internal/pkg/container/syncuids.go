@@ -176,13 +176,16 @@ func (db syncDB) read(fileName string, fromContainer bool) error {
 			if name == "" {
 				continue
 			}
-
+			// ignore ldap/nis/sssd line
+			if strings.HasPrefix(fields[0], "+") || strings.HasPrefix(fields[0], "-") {
+				wwlog.Verbose("Ignoring line %s (unhandled compat-style NIS reference)", line)
+				continue
+			}
 			id, err := strconv.Atoi(fields[2])
 			if err != nil {
 				wwlog.Warn("Ignoring line %s (parse error)", line)
 				continue
 			}
-
 			entry, ok := db[name]
 			if !ok {
 				entry = syncInfo{HostID: -1, ContainerID: -1}

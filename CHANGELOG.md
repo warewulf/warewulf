@@ -47,6 +47,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix the issue that removing lines during wwctl overlay edit didn't work. #1235
 - Fix the issue that new files created with wwctl overlay edit have 755 permissions. #1236
 
+### Changed
+
+- Explicitly ignore compat-style NIS lines in passwd/group during syncuser. #1286
+
 ## v4.5.4, 2024-06-12
 
 ### Fixed
