@@ -9,23 +9,30 @@ branch.
      `%Y-%m-%d` format, following existing convention in the log.
    - Do any final clean-up. (e.g., removing redundancy, adding issue
      or PR numbers).
-   - Cherry-pick this to a release branch if necessary. (i.e., when
-     not doing a new major release)
-2. Create a signed tag for the release of the format v4.MINOR.PATCH,
+2. Update `userdocs` implicit references to the latest version.
+   - `contents/installation.rst`
+   - `contributing/development-environment-vagrant.rst`
+   - `quickstart/debian12.rst`
+   - `quickstart/el.rst`
+ references that imply the latest release to refer to the
+   new version.
+3. Cherry-pick updates from 1 and 2 above to a release branch if necessary.
+   (i.e., when not doing a new major release)
+4. Create a signed tag for the release of the format v4.MINOR.PATCH,
    following the format specified in <MAINTAINING.md>. (e.g., `git tag
    --sign v4.5.3; git push origin v4.5.3`)
-3. Monitor the release action associated with the pushed tag at
+5. Monitor the release action associated with the pushed tag at
    https://github.com/warewulf/warewulf/actions, and verify the
    generated draft release contains the expected artifacts. This
    includes the source tarball and RPMs for Suse and Rocky Linux.
-4. Update the release notes for the release, summarizing and expanding
+6. Update the release notes for the release, summarizing and expanding
    on the relevant contents from <CHANGELOG.md>.
-5. Confirm the correct values for the pre-release and latest release
+7. Confirm the correct values for the pre-release and latest release
    flags.
-6. Publish the release.
-8. Announce the release as a [post][1] to warewulf.org/news, linking
+8. Publish the release.
+9. Announce the release as a [post][1] to warewulf.org/news, linking
    to the GitHub release.
-9. Announce the release on the Warewulf Slack, linking to the
-   warewulf.org/news post.
+10. Announce the release on the Warewulf Slack, linking to the
+    warewulf.org/news post.
 
 [1]: https://github.com/warewulf/warewulf.org/tree/main/src/posts
