@@ -6,7 +6,7 @@
 if [ "${root}" = "wwinit" ]
 then
     info "root=${root}"
-    export wwinit_uri="http://$(getarg wwinit.uri)/provision/$(getarg wwid)?assetkey=$(dmidecode -s chassis-asset-tag)&uuid=$(dmidecode -s system-uuid)&stage="
+    wwinit_uri="$(getarg wwinit.uri)"
     export wwinit_container="${wwinit_uri}container&compress=gz"; info "wwinit.container=${wwinit_container}"
     export wwinit_system="${wwinit_uri}system&compress=gz"; info "wwinit.system=${wwinit_system}"
     export wwinit_runtime="${wwinit_uri}runtime&compress=gz"; info "wwinit.runtime=${wwinit_runtime}"

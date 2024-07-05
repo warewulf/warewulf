@@ -95,7 +95,6 @@ Requires: dracut-network
 %endif
 Requires: curl
 Requires: cpio
-Requires: dmidecode
 
 %description dracut
 Warewulf is a stateless and diskless container operating system provisioning
@@ -221,7 +220,7 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 
 %changelog
 * Tue Jun 18 2024 Josh Burks <jeburks2@asu.edu>
-- Add curl, cpio, dmidecode as requires for warewulf-dracut
+- Add curl, cpio as requires for warewulf-dracut
 
 * Thu Apr 18 2024 Jonathon Anderson <janderson@ciq.com>
 - New warewulf-dracut subpackage
