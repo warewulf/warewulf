@@ -1,5 +1,5 @@
 #!ipxe
-
+{{ if .ContainerName }}
 echo
 echo ================================================================================
 echo Warewulf v4 now booting via dracut: {{.Fqdn}} ({{.Hwaddr}})
@@ -44,3 +44,12 @@ echo There was an error, rebooting in 15s...
 echo
 sleep 15
 reboot
+{{ else }}
+echo ================================================================================
+echo  Warewulf v4:
+echo  No node image/container defined for this node ({{.Fqdn}}).
+echo  Rebooting in 30s.
+echo ================================================================================
+sleep 30
+reboot
+{{ end }}
