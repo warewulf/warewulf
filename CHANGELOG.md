@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `/sys/firmware/devicetree/base/serial-number`
 - Replace slice in templates with sprig substr. #1093
 - Fix an invalid format issue for the GitHub nightly build action. #1258
+- Automatic building of system and runtime overlays weren't working as #1249 just fixed the build, but the overlays were empty
 
 ## v4.5.5, 2024-07-05
 

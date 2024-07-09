@@ -145,6 +145,12 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			request_overlays = strings.Split(rinfo.overlay, ",")
 		} else {
 			context = rinfo.stage
+			switch context {
+			case "system":
+				request_overlays = node.SystemOverlay.GetSlice()
+			case "runtime":
+				request_overlays = node.RuntimeOverlay.GetSlice()
+			}
 		}
 		stage_file, err = getOverlayFile(
 			node,
