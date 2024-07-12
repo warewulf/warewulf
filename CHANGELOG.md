@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add support for static routes to NetworkManager, wicked, ifcfg, debian.network_interfaces overlays. #1257
 - Add `wwctl upgrade <config|nodes>`. #230, #517
 - Better handling of InfiniBand udev net naming. #1227
+- Add possibility to define a softlink target with an overlay template
 
 ### Changed
 
