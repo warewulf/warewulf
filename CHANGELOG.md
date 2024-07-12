@@ -29,6 +29,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Document "known issues."
 - Add `wwctl <node|profile> <add|set> --kernelversion` to specify the desired kernel version or path. #1556
 - Add `wwctl container kernels` to list discovered kernels from containers. #1556
+- Add possibility to define a softlink target with an overlay template
 
 ### Changed
 

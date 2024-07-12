@@ -212,6 +212,17 @@ A given string can be split into substrings.
   {{ $y := (split $x ":") -}}
   {{ range $y }} {{.}} {{ end }}
 
+softlink
+^^^^^^^^
+
+Will create a soft link to the given string for the template.
+
+ImportLink
+^^^^^^^^^^
+
+Tries to evaluate the soft link on the host running `wwctl`/`warewulfd` and
+then create the soft link to it.
+
 
 Node specific files
 -------------------
