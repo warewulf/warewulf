@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
@@ -119,4 +120,13 @@ func createIgnitionJson(node *node.NodeInfo) string {
 	}
 	tmpYaml, _ := json.Marshal(&conf)
 	return string(tmpYaml)
+}
+
+func importSoftlink(lnk string) string {
+	path, err := filepath.EvalSymlinks(lnk)
+	if err != nil {
+		return "abort"
+	}
+	wwlog.Debug("importing softlink pointing to: %s", path)
+	return fmt.Sprintf("{{ /* softlink \"%s\" */ }}", path)
 }
