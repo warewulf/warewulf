@@ -98,7 +98,7 @@ explained as follows:
   When ``true``, ``wwclient`` uses TCP port 987.
 
   Changing this option requires rebuilding node overlays and rebooting
-  compute nodes, to configure them to use a privileged port.
+  compute nodes to configure them to use a privileged port.
 
 * ``warewulf:update interval``: This defines the frequency (in
   seconds) with which the Warewulf client on the compute node fetches
@@ -205,29 +205,7 @@ a "runtime overlay" specified, the respective value from
 ``defaultnode`` is used. If a network device does not specify a
 "device," the device value of the ``dummy`` device is used.
 
-If ``defaults.conf`` does not exist, the following values are used as
-compiled into Warewulf at build-time:
-
-.. code-block:: yaml
-
-  --
-  defaultnode:
-    runtime overlay:
-    - generic
-    system overlay:
-    - wwinit
-    kernel:
-      args: quiet crashkernel=no vga=791 net.naming-scheme=v238
-    init: /sbin/init
-    root: initramfs
-    ipxe template: default
-    profiles:
-    - default
-    network devices:
-      dummy:
-        device: eth0
-        type: ethernet
-        netmask: 255.255.255.0
+If ``defaults.conf`` does not exist, compiled-in defaults are used.
 
 There should never be a need to change this file: all site-local
 parameters should be specified using either nodes or profiles.

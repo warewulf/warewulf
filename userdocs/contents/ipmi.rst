@@ -15,7 +15,7 @@ individual node would be the IP address.
 
 The settings are only written to the IPMI interface if ``--ipmiwrite``
 is set to `true`. The write process happens at every boot of the node
-through the script ``/warewulf/init.d/50-ipmi`` in the **system**
+through the script ``/warewulf/init.d/50-ipmi`` in the wwinit
 overlay.
 
 If an individual node has different settings, you can set the IPMI
@@ -99,8 +99,8 @@ Node View
   n001                 cluster            --           --
   n001                 container          default      sle-micro-5.3
   n001                 ipxe               --           (default)
-  n001                 runtime            --           (generic)
-  n001                 wwinit             --           (wwinit)
+  n001                 runtime            --           (hosts,ssh.authorized_keys,syncuser)
+  n001                 wwinit             --           (wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition)
   n001                 root               --           (initramfs)
   n001                 discoverable       --           --
   n001                 init               --           (/sbin/init)

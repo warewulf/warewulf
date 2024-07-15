@@ -23,9 +23,24 @@ var (
 var FallBackConf = `---
 defaultnode:
   runtime overlay:
-  - generic
+  - hosts
+  - ssh.authorized_keys
+  - syncuser
   system overlay:
   - wwinit
+  - wwclient
+  - fstab
+  - hostname
+  - ssh.host_keys
+  - issue
+  - resolv
+  - udev.netname
+  - systemd.netname
+  - ifcfg
+  - NetworkManager
+  - debian.interfaces
+  - wicked
+  - ignition
   kernel:
     args: quiet crashkernel=no vga=791 net.naming-scheme=v238
   init: /sbin/init

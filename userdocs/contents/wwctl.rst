@@ -12,7 +12,7 @@ component of Warewulf's functionality.
 * ``node`` manages nodes in the cluster
 * ``profiles`` defines configuration which can be applied to multiple
   nodes
-* ``overlays`` manages nodes
+* ``overlays`` manages overlays
 * ``power`` turns nodes on and off
 * ``ssh`` provides basic parallel ssh functionality
 

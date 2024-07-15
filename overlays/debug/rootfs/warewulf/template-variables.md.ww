@@ -4,12 +4,10 @@ This Warewulf template serves as a complete example of the variables
 available to Warewulf templates. It may also be rendered against a
 node to debug its apparent configuration.
 
-```sh
-wwctl overlay show --render $nodename debug /warewulf/template-variables.md.ww
-```
+    wwctl overlay show --render $nodename debug /warewulf/template-variables.md.ww
 
 The template data structure is defined in
-`internal/pkg/overlay/datastructure.go`, though it also references
+internal/pkg/overlay/datastructure.go, though it also references
 data from other structures.
 
 
