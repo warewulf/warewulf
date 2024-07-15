@@ -26,7 +26,7 @@ var (
 )
 
 /*
-Build all overlays (runtime and generic) for a node
+Build all overlays for a node
 */
 func BuildAllOverlays(nodes []node.NodeInfo) error {
 	for _, n := range nodes {

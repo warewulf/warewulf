@@ -100,6 +100,7 @@ install: build docs
 	install -d -m 0755 $(DESTDIR)$(WWCHROOTDIR)
 	install -d -m 0755 $(DESTDIR)$(WWPROVISIONDIR)
 	install -d -m 0755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/rootfs/$(WWCLIENTDIR)
+	install -d -m 0755 $(DESTDIR)$(WWOVERLAYDIR)/wwclient/rootfs/$(WWCLIENTDIR)
 	install -d -m 0755 $(DESTDIR)$(WWOVERLAYDIR)/host/rootfs/$(TFTPDIR)/warewulf/
 	install -d -m 0755 $(DESTDIR)$(WWCONFIGDIR)/examples
 	install -d -m 0755 $(DESTDIR)$(WWCONFIGDIR)/ipxe
@@ -127,10 +128,10 @@ install: build docs
 	(cd overlays && find * -type l -exec cp -av {} $(DESTDIR)$(WWOVERLAYDIR)/{} \;)
 	chmod 0755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/rootfs/init
 	chmod 0755 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/rootfs/$(WWCLIENTDIR)/wwinit
-	chmod 0600 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/rootfs/etc/ssh/ssh*
-	chmod 0600 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/rootfs/etc/NetworkManager/system-connections/ww4-managed.ww
-	chmod 0644 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/rootfs/etc/ssh/ssh*.pub.ww
-	chmod 0600 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/rootfs/warewulf/config.ww
+	chmod 0600 $(DESTDIR)$(WWOVERLAYDIR)/wwinit/rootfs/$(WWCLIENTDIR)/config.ww
+	chmod 0600 $(DESTDIR)$(WWOVERLAYDIR)/ssh.host_keys/rootfs/etc/ssh/ssh*
+	chmod 0644 $(DESTDIR)$(WWOVERLAYDIR)/ssh.host_keys/rootfs/etc/ssh/ssh*.pub.ww
+	chmod 0600 $(DESTDIR)$(WWOVERLAYDIR)/NetworkManager/rootfs/etc/NetworkManager/system-connections/ww4-managed.ww
 	chmod 0750 $(DESTDIR)$(WWOVERLAYDIR)/host/rootfs
 	install -m 0755 wwctl $(DESTDIR)$(BINDIR)
 	install -m 0755 wwclient $(DESTDIR)$(WWOVERLAYDIR)/wwinit/rootfs/$(WWCLIENTDIR)/wwclient

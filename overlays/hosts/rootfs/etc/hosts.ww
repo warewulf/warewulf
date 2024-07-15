@@ -1,0 +1,14 @@
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+# Warewulf Server
+{{$.Ipaddr}} {{$.BuildHost}} warewulf
+
+{{- range $node := $.AllNodes }}
+# Entry for {{$node.Id.Get}}
+{{- range $devname, $netdev := $node.NetDevs }}
+{{- if $netdev.Ipaddr.Defined }}
+{{$netdev.Ipaddr.Get}} {{if $netdev.Primary.GetB}}{{$node.Id.Get}}{{end}} {{$node.Id.Get}}-{{$devname}} {{if $netdev.Device.Defined}}{{$node.Id.Get}}-{{$netdev.Device.Get}}{{end}}
+{{- end }}
+{{- end }}
+{{- end }}

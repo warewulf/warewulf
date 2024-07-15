@@ -87,8 +87,8 @@ You can also see the node's full attribute list by specifying the
   n001                 cluster            --           --
   n001                 container          default      sle-micro-5.3
   n001                 ipxe               --           (default)
-  n001                 runtime            --           (generic)
-  n001                 wwinit             --           (wwinit)
+  n001                 runtime            --           (hosts,ssh.authorized_keys,syncuser)
+  n001                 wwinit             --           (wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition)
   n001                 root               --           (initramfs)
   n001                 discoverable       --           --
   n001                 init               --           (/sbin/init)
@@ -193,8 +193,8 @@ container, kernel, and network:
   n001                 cluster            --           --
   n001                 container          default      sle-micro-5.3
   n001                 ipxe               --           (default)
-  n001                 runtime            --           (generic)
-  n001                 wwinit             --           (wwinit)
+  n001                 runtime            --           (hosts,ssh.authorized_keys,syncuser)
+  n001                 wwinit             --           (wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition)
   n001                 root               --           (initramfs)
   n001                 discoverable       --           --
   n001                 init               --           (/sbin/init)

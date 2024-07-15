@@ -2,7 +2,7 @@
 Warewulf Overlays
 =================
 
-So at this point, we have discussed how Warewulf is designed to
+At this point we have discussed how Warewulf is designed to
 scalably provision and manage thousands of cluster nodes by utilizing
 identical stateless boot images. And there-in lies a problem to
 solve. If these boot images are completely identical, then how do we
@@ -19,57 +19,114 @@ through the provisioning process. A node or profile can configure an
 overlay in two different ways:
 
 * An overlay can be configured to run during boot as part of the
-  ``wwinit`` process. These overlays are called **system overlay** or
-  **wwinit overlays**.
+  ``wwinit`` process. These overlays are called **system overlays**.
 * An overlay can be configured to run periodically while the system is
-  running. These overlays are called **runtime overlays** or **generic
-  overlays**.
+  running. These overlays are called **runtime overlays**.
 
 The default profile has both a **wwinit** and a **runtime** overlay
 configured.
 
 Overlays are compiled for each compute node individually.
 
-Defined Overlays
-================
+Provided overlays
+=================
 
-System or wwinit overlay
-------------------------
+These overlays are provided as part of Warewulf.
 
-This overlay contains all the necessary scripts to provision a
-Warewulf node. It is available before the ``systemd`` or other init is
-called and contains all configurations which are needed to bring up
-the compute node. It is not updated during run time. Besides the
-network configurations for
+wwinit
+------
 
-* wicked
-* NetworkManager
-* EL legacy network scripts
+The **wwinit** overlay performs initial configuration of the Warewulf node.
+Its `wwinit` script runs before ``systemd`` or other init is called and
+contains all configurations which are needed to boot.
 
-it also contains udev rules, which will set the interface names
-based on the hardware addresses configured for the node. 
-Before the ``systemd`` init is called, the overlay loops through the scripts in
-``/wwinit/warwulf/init.d/*`` which will setup
+In particular:
 
-* Ipmi
-* wwclient
-* selinux
+- Configure the loopback interface
+- Configure the BMC based on the node's configuration
+- Update PAM configuration to allow missing shadow entries
+- Relabel the file system for SELinux
 
-Runtime Overlay or generic Overlay
-----------------------------------
+Other overlays may place additional scripts in ``/warewulf/init.d/`` to affect
+node configuration in this pre-boot environment.
 
-The runtime overlay is updated by the ``wwclient`` service on a
-regular basis (by default, once per minute). In the standard
-configuration it includes updates for ``/etc/passwd``, ``/etc/group``
-and ``/etc/hosts``. Additionally the ``authorized_keys`` file of the
-root user is updated.  It is recommended to use this overlay for
-dynamic configuration files like ``slurm.conf``.  Once the system is
-provisioned and booted, the ``wwclient`` program (which is provisioned
-as part of the ``wwinit`` system overlay) will continuously update the
-node with updates in the runtime overlay.
+wwclient
+--------
 
-Host Overlay
-------------
+All configured overlays are provisioned initially along with the node image
+itself; but **wwclient** periodically fetches and applies the runtime overlay
+to allow configuration of some settings without a reboot.
+
+Network interfaces
+------------------
+
+Warewulf ships with support for many different network interface configuration
+systems. All of these are applied by default; but the list may be trimmed to
+the desired system.
+
+- ifcfg
+- NetworkManager
+- debian.interfaces
+- wicked
+
+Warewulf also configures both systemd and udev with the intended names of
+configured network interfaces, typically based on a known MAC address.
+
+- systemd.netname
+- udev.netname
+
+Basics
+------
+
+The **hostname** overlay sets the hostname based on the configured Warewulf
+node name.
+
+The **hosts** overlay configures ``/etc/hosts`` to include all Warewulf nodes.
+
+The **issue** overlay configures a standard Warewulf status message for display
+during login.
+
+The **resolv** overlay configures ``/etc/resolv.conf`` based on the value of
+"DNS" nettags. (In most situations this should be unnecessary, as the network
+interface configuration should handle this dynamically.)
+
+fstab
+-----
+
+The **fstab** overlay configures ``/etc/fstab`` to mount NFS shares defined in
+``/etc/warewulf.conf`` and file systems created by Ignition.
+
+ssh
+---
+
+Two SSH overlays configure host keys (one set for all node in the cluster) and
+``authorized_keys`` for the root account.
+
+- ssh.authorized_keys
+- ssh.host_keys
+
+syncuser
+--------
+
+The **syncuser** overlay updates ``/etc/passwd`` and ``/etc/group`` to include
+all users on both the Warewulf server and from the container image. To function
+properly, ``wwctl container syncuser`` must have also been run on the container
+image to synchronize its user and group IDs with those of the server.
+
+ignition
+--------
+
+The **ignition** overlay defines partitions and file systems on local disks.
+
+debug
+-----
+
+The **debug** overlay is not intended to be used in configuration, but can be
+used as an example and applied with ``wwctl overlay show --render <nodename>
+debug /warewulf/template-variables.md.ww``.
+
+host
+----
 
 Configuration files used for the configuration of the Warewulf host /
 server are stored in the **host** overlay. Unlike other overlays, it
@@ -91,25 +148,25 @@ The following services get configuration files via the host overlay:
 Combining Overlays
 ==================
 
-When changing the overlays, it is recommended not to change them, but
-to add the changed files to a new overlay and combine them in the
+We recommended not changing the provided overlays. Rather,
+add the changed files to a new overlay and combine them in the
 configuration. This is possible as the configuration fields for the
-**wwinit** and **runtime** overlays are lists and can contain several
+system and runtime overlays are lists and can contain several
 overlays.  As an example for this, we will overwrite the
-``/etc/issue`` file from the **wwinit** overlay.  For this we will
-create a new overlay called welcome and import the file ``/etc/issue``
+``/etc/issue`` file from the "issue" overlay.  For this we will
+create a new overlay called "welcome" and import the file ``/etc/issue``
 from the host to it. This overlay is then combined with the existing
-**wwinit** overlay.
+overlays.
 
 .. code-block:: console
 
   # wwctl overlay create welcome
   # wwctl overlay mkdir welcome /etc
   # wwctl overlay import welcome /etc/issue
-  # wwctl profile set default --wwinit=wwinit,welcome
+  # wwctl profile set default --wwinit=wwinit,wwclient,welcome
   ? Are you sure you want to modify 1 profile(s)? [y/N] y
   # wwctl profile list default -a |grep welcome
-  default              SystemOverlay      wwinit,welcome
+  default              SystemOverlay      wwinit,wwclient,welcome
 
 Templates
 =========
@@ -143,7 +200,7 @@ permissions, etc.
 
 ..
   note::
-  There is no possibility to delete files with an overlay!
+  It is not possible to delete files with an overlay.
 
 Build
 -----

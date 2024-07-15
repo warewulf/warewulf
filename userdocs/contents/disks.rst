@@ -57,7 +57,7 @@ Ignition Implementation
 =======================
 
 The ignition implementation uses systemd services, as the underlying ``sgdisk`` command relies on dbus notifications.
-All necessary services are distributed by the ``wwinit`` overlay and depends on the existence of the file ``/warewulf/ignition.json``.
+All necessary services are distributed by the ``ignition`` overlay and depends on the existence of the file ``/warewulf/ignition.json``.
 This file is created by the template function ``{{ createIgnitionJson }}`` only if the configuration contains necessary specifications for disks, partitions, and file systems.
 If the file ``/warewulf/ignition.json`` exists, the service ``ignition-disks-ww4.service`` calls the ignition binary which takes creates partitions and file systems.
 A systemd ``.mount`` unit is created for each configured file system, which also creates the necessary mount points in the root file system.
