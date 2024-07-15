@@ -39,6 +39,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Replace slice in templates with sprig substr. #1093
 - Fix an invalid format issue for the GitHub nightly build action. #1258
 
+## v4.5.7, unreleased
+
+### Changed
+
+- Added a link to an example SELinux-enabled node image in documentation. #1305
+
 ## v4.5.6, unreleased
 
 ### Fixed
