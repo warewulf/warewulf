@@ -198,6 +198,7 @@ nodes:
   node1:
     profiles:
     - empty
+    container name: rockylinux-9
     network devices:
       default:
         device: wwnet0
@@ -424,7 +425,7 @@ nfs:
 const wwinit_config string = `backupFile: true
 writeFile: true
 Filename: warewulf/config
-WWCONTAINER=
+WWCONTAINER=rockylinux-9
 WWHOSTNAME=node1
 WWROOT=initramfs
 WWINIT=/sbin/init
