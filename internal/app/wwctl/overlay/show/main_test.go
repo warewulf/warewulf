@@ -225,10 +225,58 @@ nodes:
 `)
 	env.ImportFile(t, "var/lib/warewulf/overlays/ifcfg/rootfs/etc/sysconfig/network-scripts/ifcfg.ww", "../../../../../overlays/ifcfg/rootfs/etc/sysconfig/network-scripts/ifcfg.ww")
 	env.ImportFile(t, "var/lib/warewulf/overlays/ifcfg/rootfs/etc/sysconfig/network.ww", "../../../../../overlays/ifcfg/rootfs/etc/sysconfig/network.ww")
+
 	env.ImportFile(t, "var/lib/warewulf/overlays/wwinit/rootfs/etc/warewulf/warewulf.conf.ww", "../../../../../overlays/wwinit/rootfs/etc/warewulf/warewulf.conf.ww")
 	env.ImportFile(t, "var/lib/warewulf/overlays/wwinit/rootfs/warewulf/config.ww", "../../../../../overlays/wwinit/rootfs/warewulf/config.ww")
 	env.ImportFile(t, "var/lib/warewulf/overlays/wwinit/rootfs/warewulf/init.d/80-wwclient.ww", "../../../../../overlays/wwinit/rootfs/warewulf/init.d/80-wwclient.ww")
+
 	// env.ImportFile(t, "var/lib/warewulf/overlays/ssh_authorized_keys/rootfs/root/.ssh/authorized_keys.ww", "../../../../../overlays/ssh_authorized_keys/rootfs/root/.ssh/authorized_keys.ww")
+
+	// env.ImportFile(t, "var/lib/warewulf/overlays/syncuser/rootfs/etc/passwd.ww", "../../../../../overlays/syncuser/rootfs/etc/passwd.ww")
+	// env.ImportFile(t, "var/lib/warewulf/overlays/syncuser/rootfs/etc/group.ww", "../../../../../overlays/syncuser/rootfs/etc/group.ww")
+	// env.WriteFile(t, "var/lib/warewulf/chroots/rockylinux-9/rootfs/etc/passwd", `root:x:0:0:root:/root:/bin/bash`)
+	// env.WriteFile(t, "var/lib/warewulf/chroots/rockylinux-9/rootfs/etc/group", `root:x:0:`)
+
+	// env.ImportFile(t, "var/lib/warewulf/overlays/hosts/rootfs/etc/hosts.ww", "../../../../../overlays/hosts/rootfs/etc/hosts.ww")
+
+	// env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_dsa_key.pub.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_dsa_key.pub.ww")
+	// env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_dsa_key.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_dsa_key.ww")
+	// env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ecdsa_key.pub.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ecdsa_key.pub.ww")
+	// env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ecdsa_key.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ecdsa_key.ww")
+	// env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ed25519_key.pub.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ed25519_key.pub.ww")
+	// env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ed25519_key.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ed25519_key.ww")
+	// env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_rsa_key.pub.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_rsa_key.pub.ww")
+	// env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_rsa_key.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_rsa_key.ww")
+	// env.ImportFile(t, "var/lib/warewulf/overlays/NetworkManager/rootfs/etc/NetworkManager/conf.d/ww4-unmanaged.ww", "../../../../../overlays/NetworkManager/rootfs/etc/NetworkManager/conf.d/ww4-unmanaged.ww")
+	// env.ImportFile(t, "var/lib/warewulf/overlays/NetworkManager/rootfs/etc/NetworkManager/system-connections/ww4-managed.ww", "../../../../../overlays/NetworkManager/rootfs/etc/NetworkManager/system-connections/ww4-managed.ww")
+	// env.ImportFile(t, "var/lib/warewulf/overlays/fstab/rootfs/etc/fstab.ww", "../../../../../overlays/fstab/rootfs/etc/fstab.ww")
+
+	// env.ImportFile(t, "var/lib/warewulf/overlays/hostname/rootfs/etc/hostname.ww", "../../../../../overlays/hostname/rootfs/etc/hostname.ww")
+
+	// env.ImportFile(t, "var/lib/warewulf/overlays/issue/rootfs/etc/issue.ww", "../../../../../overlays/issue/rootfs/etc/issue.ww")
+
+	// env.ImportFile(t, "var/lib/warewulf/overlays/resolv/rootfs/etc/resolv.conf.ww", "../../../../../overlays/resolv/rootfs/etc/resolv.conf.ww")
+
+	// env.ImportFile(t, "var/lib/warewulf/overlays/wicked/rootfs/etc/wicked/ifconfig/ifcfg.xml.ww", "../../../../../overlays/wicked/rootfs/etc/wicked/ifconfig/ifcfg.xml.ww")
+
+	// env.ImportFile(t, "var/lib/warewulf/overlays/debian.interfaces/rootfs/etc/network/interfaces.d/default.ww", "../../../../../overlays/debian.interfaces/rootfs/etc/network/interfaces.d/default.ww")
+
+	// env.ImportFile(t, "var/lib/warewulf/overlays/udev/rootfs/etc/udev/rules.d/70-ww4-netname.rules.ww", "../../../../../overlays/udev/rootfs/etc/udev/rules.d/70-ww4-netname.rules.ww")
+
+	// env.ImportFile(t, "var/lib/warewulf/overlays/systemd.network/rootfs/etc/systemd/network/10-persistent-net.link.ww", "../../../../../overlays/systemd.network/rootfs/etc/systemd/network/10-persistent-net.link.ww")
+
+	// env.ImportFile(t, "var/lib/warewulf/overlays/debug/rootfs/warewulf/template-variables.md.ww", "../../../../../overlays/debug/rootfs/warewulf/template-variables.md.ww")
+
+	// env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/dhcp/dhcpd.conf.ww", "../../../../../overlays/host/rootfs/etc/dhcp/dhcpd.conf.ww")
+	// env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/dnsmasq.d/ww4-hosts.conf.ww", "../../../../../overlays/host/rootfs/etc/dnsmasq.d/ww4-hosts.conf.ww")
+	// env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/exports.ww", "../../../../../overlays/host/rootfs/etc/exports.ww")
+	// env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/hosts.ww", "../../../../../overlays/host/rootfs/etc/hosts.ww")
+	// env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/profile.d/ssh_setup.csh.ww", "../../../../../overlays/host/rootfs/etc/profile.d/ssh_setup.csh.ww")
+	// env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/profile.d/ssh_setup.sh.ww", "../../../../../overlays/host/rootfs/etc/profile.d/ssh_setup.sh.ww")
+
+	// env.ImportFile(t, "var/lib/warewulf/overlays/ignition/rootfs/etc/systemd/system/ww4-disks.target.ww", "../../../../../overlays/ignition/rootfs/etc/systemd/system/ww4-disks.target.ww")
+	// env.ImportFile(t, "var/lib/warewulf/overlays/ignition/rootfs/etc/systemd/system/ww4-mounts.ww", "../../../../../overlays/ignition/rootfs/etc/systemd/system/ww4-mounts.ww")
+	// env.ImportFile(t, "var/lib/warewulf/overlays/ignition/rootfs/etc/warewulf/ignition.json.ww", "../../../../../overlays/ignition/rootfs/etc/warewulf/ignition.json.ww")
 
 	tests := []struct {
 		name string
@@ -265,6 +313,16 @@ nodes:
 		// 	args: []string{"--render", "node1", "ssh_authorized_keys", "root/.ssh/authorized_keys.ww"},
 		// 	log:  ssh_authorized_keys,
 		// },
+		// {
+		// 	name: "syncuser:passwd.ww",
+		// 	args: []string{"--render", "node1", "syncuser", "etc/passwd.ww"},
+		// 	log:  syncuser_passwd,
+		// },
+		// {
+		// 	name: "syncuser:group.ww",
+		// 	args: []string{"--render", "node1", "syncuser", "etc/group.ww"},
+		// 	log:  syncuser_group,
+		// },
 	}
 
 	for _, tt := range tests {
@@ -297,52 +355,6 @@ func cleanHeader(input string) (output string) {
 	output = source.ReplaceAllString(output, "/ww4test-REMOVED/")
 	return output
 }
-
-// overlays/syncuser/rootfs/etc/group.ww
-// overlays/syncuser/rootfs/etc/passwd.ww
-
-// overlays/hosts/rootfs/etc/hosts.ww
-
-// overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_dsa_key.pub.ww
-// overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_dsa_key.ww
-// overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ecdsa_key.pub.ww
-// overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ecdsa_key.ww
-// overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ed25519_key.pub.ww
-// overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ed25519_key.ww
-// overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_rsa_key.pub.ww
-// overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_rsa_key.ww
-
-// overlays/NetworkManager/rootfs/etc/NetworkManager/conf.d/ww4-unmanaged.ww
-// overlays/NetworkManager/rootfs/etc/NetworkManager/system-connections/ww4-managed.ww
-
-// overlays/fstab/rootfs/etc/fstab.ww
-
-// overlays/hostname/rootfs/etc/hostname.ww
-
-// overlays/issue/rootfs/etc/issue.ww
-
-// overlays/resolv/rootfs/etc/resolv.conf.ww
-
-// overlays/wicked/rootfs/etc/wicked/ifconfig/ifcfg.xml.ww
-
-// overlays/debian.interfaces/rootfs/etc/network/interfaces.d/default.ww
-
-// overlays/udev/rootfs/etc/udev/rules.d/70-ww4-netname.rules.ww
-
-// overlays/systemd.network/rootfs/etc/systemd/network/10-persistent-net.link.ww
-
-// overlays/debug/rootfs/warewulf/template-variables.md.ww
-
-// overlays/host/rootfs/etc/dhcp/dhcpd.conf.ww
-// overlays/host/rootfs/etc/dnsmasq.d/ww4-hosts.conf.ww
-// overlays/host/rootfs/etc/exports.ww
-// overlays/host/rootfs/etc/hosts.ww
-// overlays/host/rootfs/etc/profile.d/ssh_setup.csh.ww
-// overlays/host/rootfs/etc/profile.d/ssh_setup.sh.ww
-
-// overlays/ignition/rootfs/etc/systemd/system/ww4-disks.target.ww
-// overlays/ignition/rootfs/etc/systemd/system/ww4-mounts.ww
-// overlays/ignition/rootfs/etc/warewulf/ignition.json.ww
 
 const ifcfg string = `backupFile: true
 writeFile: true
@@ -456,5 +468,19 @@ nohup /tmp/ww4test-REMOVED/warewulf/wwclient >/var/log/wwclient.log 2>&1 </dev/n
 // const ssh_authorized_keys string = `backupFile: true
 // writeFile: true
 // Filename: root/.ssh/authorized_keys
+//
+// `
 
+// const syncuser_passwd string = `backupFile: true
+// writeFile: true
+// Filename: etc/passwd
+// # Uncomment the following line to enable passwordless root login
+// # root::0:0:root:/root:/bin/bash
+// root:x:0:0:root:/root:/bin/bash
+// `
+
+// const syncuser_group string = `backupFile: true
+// writeFile: true
+// Filename: etc/group
+// root:x:0:
 // `
