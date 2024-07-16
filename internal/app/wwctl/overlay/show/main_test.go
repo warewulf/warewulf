@@ -227,6 +227,7 @@ nodes:
 	env.ImportFile(t, "var/lib/warewulf/overlays/wwinit/rootfs/etc/warewulf/warewulf.conf.ww", "../../../../../overlays/wwinit/rootfs/etc/warewulf/warewulf.conf.ww")
 	env.ImportFile(t, "var/lib/warewulf/overlays/wwinit/rootfs/warewulf/config.ww", "../../../../../overlays/wwinit/rootfs/warewulf/config.ww")
 	env.ImportFile(t, "var/lib/warewulf/overlays/wwinit/rootfs/warewulf/init.d/80-wwclient.ww", "../../../../../overlays/wwinit/rootfs/warewulf/init.d/80-wwclient.ww")
+	// env.ImportFile(t, "var/lib/warewulf/overlays/ssh_authorized_keys/rootfs/root/.ssh/authorized_keys.ww", "../../../../../overlays/ssh_authorized_keys/rootfs/root/.ssh/authorized_keys.ww")
 
 	tests := []struct {
 		name string
@@ -258,6 +259,11 @@ nodes:
 			args: []string{"--render", "node1", "wwinit", "warewulf/init.d/80-wwclient.ww"},
 			log:  wwinit_wwclient,
 		},
+		// {
+		// 	name: "ssh_authorized_keys:authorized_keys.ww",
+		// 	args: []string{"--render", "node1", "ssh_authorized_keys", "root/.ssh/authorized_keys.ww"},
+		// 	log:  ssh_authorized_keys,
+		// },
 	}
 
 	for _, tt := range tests {
@@ -291,10 +297,11 @@ func cleanHeader(input string) (output string) {
 	return output
 }
 
-// overlays/ssh_authorized_keys/rootfs/root/.ssh/authorized_keys.ww
 // overlays/syncuser/rootfs/etc/group.ww
 // overlays/syncuser/rootfs/etc/passwd.ww
+
 // overlays/hosts/rootfs/etc/hosts.ww
+
 // overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_dsa_key.pub.ww
 // overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_dsa_key.ww
 // overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ecdsa_key.pub.ww
@@ -303,19 +310,26 @@ func cleanHeader(input string) (output string) {
 // overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ed25519_key.ww
 // overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_rsa_key.pub.ww
 // overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_rsa_key.ww
+
 // overlays/NetworkManager/rootfs/etc/NetworkManager/conf.d/ww4-unmanaged.ww
 // overlays/NetworkManager/rootfs/etc/NetworkManager/system-connections/ww4-managed.ww
+
 // overlays/fstab/rootfs/etc/fstab.ww
+
 // overlays/hostname/rootfs/etc/hostname.ww
+
 // overlays/issue/rootfs/etc/issue.ww
+
 // overlays/resolv/rootfs/etc/resolv.conf.ww
+
 // overlays/wicked/rootfs/etc/wicked/ifconfig/ifcfg.xml.ww
+
 // overlays/debian.interfaces/rootfs/etc/network/interfaces.d/default.ww
+
 // overlays/udev/rootfs/etc/udev/rules.d/70-ww4-netname.rules.ww
+
 // overlays/systemd.network/rootfs/etc/systemd/network/10-persistent-net.link.ww
-// overlays/ignition/rootfs/etc/systemd/system/ww4-disks.target.ww
-// overlays/ignition/rootfs/etc/systemd/system/ww4-mounts.ww
-// overlays/ignition/rootfs/etc/warewulf/ignition.json.ww
+
 // overlays/debug/rootfs/warewulf/template-variables.md.ww
 
 // overlays/host/rootfs/etc/dhcp/dhcpd.conf.ww
@@ -324,6 +338,10 @@ func cleanHeader(input string) (output string) {
 // overlays/host/rootfs/etc/hosts.ww
 // overlays/host/rootfs/etc/profile.d/ssh_setup.csh.ww
 // overlays/host/rootfs/etc/profile.d/ssh_setup.sh.ww
+
+// overlays/ignition/rootfs/etc/systemd/system/ww4-disks.target.ww
+// overlays/ignition/rootfs/etc/systemd/system/ww4-mounts.ww
+// overlays/ignition/rootfs/etc/warewulf/ignition.json.ww
 
 const ifcfg string = `backupFile: true
 writeFile: true
@@ -433,3 +451,9 @@ test -e /usr/lib/systemd/systemd && exit 0
 echo "Starting wwclient"
 nohup /tmp/ww4test-REMOVED/warewulf/wwclient >/var/log/wwclient.log 2>&1 </dev/null &
 `
+
+// const ssh_authorized_keys string = `backupFile: true
+// writeFile: true
+// Filename: root/.ssh/authorized_keys
+
+// `
