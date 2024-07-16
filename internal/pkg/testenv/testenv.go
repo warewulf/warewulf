@@ -133,6 +133,15 @@ func (env *TestEnv) WriteFile(t *testing.T, fileName string, content string) {
 	assert.NoError(t, err)
 }
 
+// ImportFile writes the contents of inputFileName to fileName,
+// creating any necessary intermediate directories relative to the
+// test environment.
+func (env *TestEnv) ImportFile(t *testing.T, fileName string, inputFileName string) {
+	buffer, err := os.ReadFile(inputFileName)
+	assert.NoError(t, err)
+	env.WriteFile(t, fileName, string(buffer))
+}
+
 // ReadFile returns the content of fileName as converted to a
 // string.
 //
