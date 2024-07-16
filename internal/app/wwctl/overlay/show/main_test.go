@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 
+	"github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
@@ -190,6 +191,7 @@ tftp:
   enabled: false
 nfs:
   enabled: false`)
+	assert.NoError(t, config.Get().Read(env.GetPath("etc/warewulf/warewulf.conf")))
 	env.WriteFile(t, "etc/warewulf/nodes.conf",
 		`WW_INTERNAL: 45
 nodeprofiles:
@@ -222,6 +224,16 @@ nodes:
       netmask: 255.255.255.0
       gateway: 192.168.4.1
       write: "true"
+  node2:
+    profiles:
+    - empty
+    network devices:
+      default:
+        device: wwnet0
+        hwaddr: e6:92:39:49:7b:04
+        ipaddr: 192.168.3.23
+        netmask: 255.255.255.0
+        gateway: 192.168.3.1
 `)
 	env.ImportFile(t, "var/lib/warewulf/overlays/ifcfg/rootfs/etc/sysconfig/network-scripts/ifcfg.ww", "../../../../../overlays/ifcfg/rootfs/etc/sysconfig/network-scripts/ifcfg.ww")
 	env.ImportFile(t, "var/lib/warewulf/overlays/ifcfg/rootfs/etc/sysconfig/network.ww", "../../../../../overlays/ifcfg/rootfs/etc/sysconfig/network.ww")
@@ -237,7 +249,7 @@ nodes:
 	// env.WriteFile(t, "var/lib/warewulf/chroots/rockylinux-9/rootfs/etc/passwd", `root:x:0:0:root:/root:/bin/bash`)
 	// env.WriteFile(t, "var/lib/warewulf/chroots/rockylinux-9/rootfs/etc/group", `root:x:0:`)
 
-	// env.ImportFile(t, "var/lib/warewulf/overlays/hosts/rootfs/etc/hosts.ww", "../../../../../overlays/hosts/rootfs/etc/hosts.ww")
+	env.ImportFile(t, "var/lib/warewulf/overlays/hosts/rootfs/etc/hosts.ww", "../../../../../overlays/hosts/rootfs/etc/hosts.ww")
 
 	// env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_dsa_key.pub.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_dsa_key.pub.ww")
 	// env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_dsa_key.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_dsa_key.ww")
@@ -323,6 +335,11 @@ nodes:
 		// 	args: []string{"--render", "node1", "syncuser", "etc/group.ww"},
 		// 	log:  syncuser_group,
 		// },
+		{
+			name: "hosts:hosts.ww",
+			args: []string{"--render", "node1", "hosts", "etc/hosts.ww"},
+			log:  hosts,
+		},
 	}
 
 	for _, tt := range tests {
@@ -339,20 +356,23 @@ nodes:
 			assert.NoError(t, err)
 			assert.Empty(t, stdout.String())
 			assert.Empty(t, stderr.String())
-			assert.Equal(t, tt.log, cleanHeader(logbuf.String()))
+			assert.Equal(t, tt.log, removeHostInfo(logbuf.String()))
 		})
 	}
 }
 
-func cleanHeader(input string) (output string) {
+func removeHostInfo(input string) (output string) {
 	host := regexp.MustCompile(`# Host:.*`)
 	time := regexp.MustCompile(`# Time:.*`)
 	source := regexp.MustCompile(`/ww4test-[0-9]*/`)
+	hostname_, _ := os.Hostname()
+	hostname := regexp.MustCompile(`(?m) ` + hostname_ + ` warewulf$`)
 
 	output = input
 	output = host.ReplaceAllString(output, "# Host:   REMOVED")
 	output = time.ReplaceAllString(output, "# Time:   REMOVED")
 	output = source.ReplaceAllString(output, "/ww4test-REMOVED/")
+	output = hostname.ReplaceAllString(output, " REMOVED warewulf")
 	return output
 }
 
@@ -484,3 +504,18 @@ nohup /tmp/ww4test-REMOVED/warewulf/wwclient >/var/log/wwclient.log 2>&1 </dev/n
 // Filename: etc/group
 // root:x:0:
 // `
+
+const hosts string = `backupFile: true
+writeFile: true
+Filename: etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+# Warewulf Server
+192.168.0.1 REMOVED warewulf
+# Entry for node1
+192.168.3.21 node1 node1-default node1-wwnet0
+192.168.3.22  node1-secondary node1-wwnet1
+# Entry for node2
+192.168.3.23 node2 node2-default node2-wwnet0
+`
