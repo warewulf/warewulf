@@ -53,7 +53,6 @@ data from other structures.
   - Device: {{ $netdev.Device }}
   - Hwaddr: {{ $netdev.Hwaddr }}
   - Ipaddr: {{ $netdev.Ipaddr }}
-  - IpCIDR: {{ $netdev.IpCIDR }}
   - Ipaddr6: {{ $netdev.Ipaddr6 }}
   - Prefix: {{ $netdev.Prefix }}
   - Netmask: {{ $netdev.Netmask }}
@@ -167,7 +166,6 @@ data from other structures.
     - Hwaddr: {{ $netdev.Hwaddr.Get }}
     - Ipaddr: {{ $netdev.Ipaddr.Get }}
     - Ipaddr6: {{ $netdev.Ipaddr6.Get }}
-    - IpCIDR: {{ $netdev.IpCIDR.Get }}
     - Prefix: {{ $netdev.Prefix.Get }}
     - Netmask: {{ $netdev.Netmask.Get }}
     - Gateway: {{ $netdev.Gateway.Get }}
