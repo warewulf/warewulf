@@ -52,9 +52,9 @@ mtu={{ $netdev.MTU }}
 {{ end -}}
 {{ end -}}
 
-{{ if and ($netdev.Ipaddr) (ne $netdev.Type "bond-slave") -}}
+{{ if and ($netdev.IpCIDR) (ne $netdev.Type "bond-slave") -}}
 [ipv4]
-address={{ $netdev.Ipaddr }}
+address={{ $netdev.IpCIDR }}
 {{ if $netdev.Gateway -}}
 gateway={{ $netdev.Gateway }}
 {{ end -}}

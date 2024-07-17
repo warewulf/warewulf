@@ -71,7 +71,8 @@ func ObjectIsEmpty(obj interface{}) bool {
 				return false
 			}
 		} else if varType.Field(i).Type == reflect.TypeOf(map[string]string{}) {
-			if len(varVal.Field(i).Interface().(map[string]string)) != 0 {
+			if varVal.Field(i).Len() != 0 {
+				// if len(varVal.Field(i).Interface().(map[string]string)) != 0 {
 				return false
 			}
 		} else if varType.Field(i).Type.Kind() == reflect.Ptr {
@@ -83,13 +84,7 @@ func ObjectIsEmpty(obj interface{}) bool {
 			if len(val) != 0 && !val.IsUnspecified() {
 				return false
 			}
-		} else if varType.Field(i).Type == reflect.TypeOf(net.IPMask{}) {
-			o, b := varVal.Field(i).Interface().(net.IPMask).Size()
-			if o == 0 && b == 0 {
-				return false
-			}
 		}
-
 	}
 	return true
 }

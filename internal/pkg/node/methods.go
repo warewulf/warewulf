@@ -150,7 +150,6 @@ func recursiveFlatten(obj interface{}) (hasContent bool) {
 			for mapIter.Next() {
 				if mapIter.Value().Kind() == reflect.String {
 					if mapIter.Value().String() != "" {
-						// fmt.Println("map")
 						hasContent = true
 					}
 				} else {
@@ -201,12 +200,6 @@ func recursiveFlatten(obj interface{}) (hasContent bool) {
 			case reflect.TypeOf(net.IP{}):
 				val := valObj.Elem().Field(i).Interface().(net.IP)
 				if len(val) != 0 && !val.IsUnspecified() {
-					hasContent = true
-				}
-			case reflect.TypeOf(net.IPMask{}):
-				val := valObj.Elem().Field(i).Interface().(net.IPMask)
-				if len(val) != 0 {
-					// fmt.Println("Mask")
 					hasContent = true
 				}
 			default:
@@ -345,4 +338,19 @@ func cleanList(list []string) (ret []string) {
 		}
 	}
 	return ret
+}
+
+/*
+Return the ipv4 address and mask in CIDR format. Aimed for the use in
+templates.
+*/
+func (netdev *NetDevs) IpCIDR() string {
+	if netdev.Ipaddr.IsUnspecified() || netdev.Netmask.IsUnspecified() {
+		return ""
+	}
+	ipCIDR := net.IPNet{
+		IP:   netdev.Ipaddr,
+		Mask: net.IPMask(netdev.Netmask),
+	}
+	return ipCIDR.String()
 }
