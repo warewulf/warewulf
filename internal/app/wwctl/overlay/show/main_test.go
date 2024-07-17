@@ -282,7 +282,7 @@ nodes:
 
 	env.ImportFile(t, "var/lib/warewulf/overlays/fstab/rootfs/etc/fstab.ww", "../../../../../overlays/fstab/rootfs/etc/fstab.ww")
 
-	// env.ImportFile(t, "var/lib/warewulf/overlays/hostname/rootfs/etc/hostname.ww", "../../../../../overlays/hostname/rootfs/etc/hostname.ww")
+	env.ImportFile(t, "var/lib/warewulf/overlays/hostname/rootfs/etc/hostname.ww", "../../../../../overlays/hostname/rootfs/etc/hostname.ww")
 
 	// env.ImportFile(t, "var/lib/warewulf/overlays/issue/rootfs/etc/issue.ww", "../../../../../overlays/issue/rootfs/etc/issue.ww")
 
@@ -416,6 +416,11 @@ nodes:
 			name: "fstab",
 			args: []string{"--render", "node1", "fstab", "etc/fstab.ww"},
 			log:  fstab,
+		},
+		{
+			name: "hostname",
+			args: []string{"--render", "node1", "hostname", "etc/hostname.ww"},
+			log:  hostname,
 		},
 	}
 
@@ -735,4 +740,10 @@ sysfs /sys sysfs defaults 0 0
 proc /proc proc defaults 0 0
 # nfs mounts provided in warewulf.conf
 192.168.0.1:/home /home nfs defaults 0 0
+`
+
+const hostname string = `backupFile: true
+writeFile: true
+Filename: etc/hostname
+node1
 `
