@@ -29,7 +29,7 @@ Source: {{ $source }}
   </ipv4>
   <ipv4:static>
     <address>
-      <local>{{$netdev.Ipaddr}}/{{$netdev.Ipmask}}</local>
+      <local>{{$netdev.IpCIDR}}</local>
     </address>
 {{ if $netdev.Gateway -}}
     <route>
