@@ -284,7 +284,7 @@ nodes:
 
 	env.ImportFile(t, "var/lib/warewulf/overlays/hostname/rootfs/etc/hostname.ww", "../../../../../overlays/hostname/rootfs/etc/hostname.ww")
 
-	// env.ImportFile(t, "var/lib/warewulf/overlays/issue/rootfs/etc/issue.ww", "../../../../../overlays/issue/rootfs/etc/issue.ww")
+	env.ImportFile(t, "var/lib/warewulf/overlays/issue/rootfs/etc/issue.ww", "../../../../../overlays/issue/rootfs/etc/issue.ww")
 
 	// env.ImportFile(t, "var/lib/warewulf/overlays/resolv/rootfs/etc/resolv.conf.ww", "../../../../../overlays/resolv/rootfs/etc/resolv.conf.ww")
 
@@ -421,6 +421,11 @@ nodes:
 			name: "hostname",
 			args: []string{"--render", "node1", "hostname", "etc/hostname.ww"},
 			log:  hostname,
+		},
+		{
+			name: "hostname",
+			args: []string{"--render", "node1", "issue", "etc/issue.ww"},
+			log:  issue,
 		},
 	}
 
@@ -746,4 +751,20 @@ const hostname string = `backupFile: true
 writeFile: true
 Filename: etc/hostname
 node1
+`
+
+const issue string = `backupFile: true
+writeFile: true
+Filename: etc/issue
+Warewulf Node:      node1
+Container:          rockylinux-9
+Kernelargs:         quiet crashkernel=no vga=791 net.naming-scheme=v238
+
+Network:
+    default: wwnet0
+    default: 192.168.3.21/24
+    default: e6:92:39:49:7b:03
+    secondary: wwnet1
+    secondary: 192.168.3.22/24
+    secondary: 9a:77:29:73:14:f1
 `
