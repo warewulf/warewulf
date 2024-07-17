@@ -251,14 +251,23 @@ nodes:
 
 	env.ImportFile(t, "var/lib/warewulf/overlays/hosts/rootfs/etc/hosts.ww", "../../../../../overlays/hosts/rootfs/etc/hosts.ww")
 
-	// env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_dsa_key.pub.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_dsa_key.pub.ww")
-	// env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_dsa_key.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_dsa_key.ww")
-	// env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ecdsa_key.pub.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ecdsa_key.pub.ww")
-	// env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ecdsa_key.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ecdsa_key.ww")
-	// env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ed25519_key.pub.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ed25519_key.pub.ww")
-	// env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ed25519_key.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ed25519_key.ww")
-	// env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_rsa_key.pub.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_rsa_key.pub.ww")
-	// env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_rsa_key.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_rsa_key.ww")
+	env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_dsa_key.pub.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_dsa_key.pub.ww")
+	env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_dsa_key.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_dsa_key.ww")
+	env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ecdsa_key.pub.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ecdsa_key.pub.ww")
+	env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ecdsa_key.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ecdsa_key.ww")
+	env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ed25519_key.pub.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ed25519_key.pub.ww")
+	env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ed25519_key.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_ed25519_key.ww")
+	env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_rsa_key.pub.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_rsa_key.pub.ww")
+	env.ImportFile(t, "var/lib/warewulf/overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_rsa_key.ww", "../../../../../overlays/ssh_host_keys/rootfs/etc/ssh/ssh_host_rsa_key.ww")
+	env.WriteFile(t, "etc/warewulf/keys/ssh_host_dsa_key.pub", `dsa pubkey sentinel`)
+	env.WriteFile(t, "etc/warewulf/keys/ssh_host_dsa_key", `dsa key sentinel`)
+	env.WriteFile(t, "etc/warewulf/keys/ssh_host_ecdsa_key.pub", `ecdsa pubkey sentinel`)
+	env.WriteFile(t, "etc/warewulf/keys/ssh_host_ecdsa_key", `ecdsa key sentinel`)
+	env.WriteFile(t, "etc/warewulf/keys/ssh_host_ed25519_key.pub", `ed25519 pubkey sentinel`)
+	env.WriteFile(t, "etc/warewulf/keys/ssh_host_ed25519_key", `ed25519 key sentinel`)
+	env.WriteFile(t, "etc/warewulf/keys/ssh_host_rsa_key.pub", `rsa pubkey sentinel`)
+	env.WriteFile(t, "etc/warewulf/keys/ssh_host_rsa_key", `rsa key sentinel`)
+
 	// env.ImportFile(t, "var/lib/warewulf/overlays/NetworkManager/rootfs/etc/NetworkManager/conf.d/ww4-unmanaged.ww", "../../../../../overlays/NetworkManager/rootfs/etc/NetworkManager/conf.d/ww4-unmanaged.ww")
 	// env.ImportFile(t, "var/lib/warewulf/overlays/NetworkManager/rootfs/etc/NetworkManager/system-connections/ww4-managed.ww", "../../../../../overlays/NetworkManager/rootfs/etc/NetworkManager/system-connections/ww4-managed.ww")
 	// env.ImportFile(t, "var/lib/warewulf/overlays/fstab/rootfs/etc/fstab.ww", "../../../../../overlays/fstab/rootfs/etc/fstab.ww")
@@ -290,6 +299,9 @@ nodes:
 	// env.ImportFile(t, "var/lib/warewulf/overlays/ignition/rootfs/etc/systemd/system/ww4-mounts.ww", "../../../../../overlays/ignition/rootfs/etc/systemd/system/ww4-mounts.ww")
 	// env.ImportFile(t, "var/lib/warewulf/overlays/ignition/rootfs/etc/warewulf/ignition.json.ww", "../../../../../overlays/ignition/rootfs/etc/warewulf/ignition.json.ww")
 
+	// Some overlay templates can't be relably tested because they
+	// depend on build host files. Such tests are provided as
+	// examples but are left commented-out.
 	tests := []struct {
 		name string
 		args []string
@@ -339,6 +351,46 @@ nodes:
 			name: "hosts:hosts.ww",
 			args: []string{"--render", "node1", "hosts", "etc/hosts.ww"},
 			log:  hosts,
+		},
+		{
+			name: "ssh_host_keys:dsa pub",
+			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_dsa_key.pub.ww"},
+			log:  ssh_host_dsa_key_pub,
+		},
+		{
+			name: "ssh_host_keys:dsa",
+			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_dsa_key.ww"},
+			log:  ssh_host_dsa_key,
+		},
+		{
+			name: "ssh_host_keys:ecdsa pub",
+			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_ecdsa_key.pub.ww"},
+			log:  ssh_host_ecdsa_key_pub,
+		},
+		{
+			name: "ssh_host_keys:ecdsa",
+			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_ecdsa_key.ww"},
+			log:  ssh_host_ecdsa_key,
+		},
+		{
+			name: "ssh_host_keys:rsa pub",
+			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_rsa_key.pub.ww"},
+			log:  ssh_host_rsa_key_pub,
+		},
+		{
+			name: "ssh_host_keys:dsa",
+			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_rsa_key.ww"},
+			log:  ssh_host_rsa_key,
+		},
+		{
+			name: "ssh_host_keys:ed25519 pub",
+			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_ed25519_key.pub.ww"},
+			log:  ssh_host_ed25519_key_pub,
+		},
+		{
+			name: "ssh_host_keys:ed25519",
+			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_ed25519_key.ww"},
+			log:  ssh_host_ed25519_key,
 		},
 	}
 
@@ -518,4 +570,52 @@ Filename: etc/hosts
 192.168.3.22  node1-secondary node1-wwnet1
 # Entry for node2
 192.168.3.23 node2 node2-default node2-wwnet0
+`
+
+const ssh_host_dsa_key_pub string = `backupFile: true
+writeFile: true
+Filename: etc/ssh/ssh_host_dsa_key.pub
+dsa pubkey sentinel
+`
+
+const ssh_host_dsa_key string = `backupFile: true
+writeFile: true
+Filename: etc/ssh/ssh_host_dsa_key
+dsa key sentinel
+`
+
+const ssh_host_ecdsa_key_pub string = `backupFile: true
+writeFile: true
+Filename: etc/ssh/ssh_host_ecdsa_key.pub
+ecdsa pubkey sentinel
+`
+
+const ssh_host_ecdsa_key string = `backupFile: true
+writeFile: true
+Filename: etc/ssh/ssh_host_ecdsa_key
+ecdsa key sentinel
+`
+
+const ssh_host_ed25519_key_pub string = `backupFile: true
+writeFile: true
+Filename: etc/ssh/ssh_host_ed25519_key.pub
+ed25519 pubkey sentinel
+`
+
+const ssh_host_ed25519_key string = `backupFile: true
+writeFile: true
+Filename: etc/ssh/ssh_host_ed25519_key
+ed25519 key sentinel
+`
+
+const ssh_host_rsa_key_pub string = `backupFile: true
+writeFile: true
+Filename: etc/ssh/ssh_host_rsa_key.pub
+rsa pubkey sentinel
+`
+
+const ssh_host_rsa_key string = `backupFile: true
+writeFile: true
+Filename: etc/ssh/ssh_host_rsa_key
+rsa key sentinel
 `
