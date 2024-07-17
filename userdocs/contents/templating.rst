@@ -110,7 +110,7 @@ The following template will create a file called
     </ipv4>
     <ipv4:static>
       <address>
-        <local>{{$netdev.IpCIDR}}</local>
+        <local>{{$netdev.Ipaddr}}/{{$netdev.Ipmask}}</local>
       </address>
   {{ if $netdev.Gateway -}}
       <route>
@@ -177,13 +177,13 @@ string is "# Do not edit after this line"
   {{$.Ipaddr}} warewulf {{$.BuildHost}}
 
   {{- range $node := $.AllNodes}}                  {{/* for each node */}}
-  # Entry for {{$node.Id.Get}}
+  # Entry for {{$node.Id}}
   {{- range $devname, $netdev := $node.NetDevs}} {{/* for each network device on the node */}}
-  {{- if $netdev.Ipaddr.Defined}}                {{/* if we have an ip address on this network device */}}
+  {{- if $netdev.Ipaddr}}                {{/* if we have an ip address on this network device */}}
   {{- /* emit the node name as hostname if this is the primary */}}
-  {{$netdev.Ipaddr.Get}} {{$node.Id.Get}}-{{$devname}}
-  {{- if $netdev.Device.Defined}} {{$node.Id.Get}}-{{$netdev.Device.Get}}{{end}}
-  {{- if $netdev.Primary.GetB}} {{$node.Id.Get}}{{end}}
+  {{$netdev.Ipaddr}} {{$node.Id}}-{{$devname}}
+  {{- if $netdev.Device}} {{$node.Id()}}-{{$netdev.Device}}{{end}}
+  {{- if $netdev.Primary}} {{$node.Id()}}{{end}}
   {{- end}} {{/* end if ip */}}
   {{- end}} {{/* end for each network device */}}
   {{- end}} {{/* end for each node */}}

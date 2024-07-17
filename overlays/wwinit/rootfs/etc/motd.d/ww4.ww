@@ -1,0 +1,3 @@
+warewulf Node:      {{.Id}}
+Container:          {{.ContainerName}}
+Kernelargs:         {{.Kernel.Args}}

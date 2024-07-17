@@ -35,9 +35,9 @@ dhcp-range={{$.Dhcp.RangeStart}},{{$.Dhcp.RangeEnd}},{{$.Netmask}},6h
 {{/* Add all the known hosts */}}
 {{- range $node := $.AllNodes}}                  {{/* for each node */}}
 {{- range $devname, $netdev := $node.NetDevs}} {{/* for each network device on the node */}}
-{{- if $netdev.Ipaddr.Defined}}                {{/* if we have an ip address on this network device */}}
-{{- if $netdev.Hwaddr.Defined }}
-dhcp-host={{$netdev.Hwaddr.Get}},set:warewulf,{{$node.Id.Get}},{{$netdev.Ipaddr.Get}},infinite
+{{- if $netdev.Ipaddr}}                {{/* if we have an ip address on this network device */}}
+{{- if $netdev.Hwaddr }}
+dhcp-host={{$netdev.Hwaddr}},set:warewulf,{{$node.Id}},{{$netdev.Ipaddr}},infinite
 {{- end}}{{/* end if Hwaddr */}}
 {{- end}}{{/* end if ip */}}
 {{- end}}{{/* end for each network device */}}
