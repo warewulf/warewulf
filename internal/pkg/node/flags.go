@@ -157,20 +157,6 @@ func createFlags(baseCmd *cobra.Command,
 					net.IP{}, // empty default!
 					myType.Tag.Get("comment"))
 			}
-		} else if myType.Type == reflect.TypeOf(net.IPMask{}) {
-			ptr := myVal.Addr().Interface().(*net.IPMask)
-			if myType.Tag.Get("sopt") != "" {
-				baseCmd.PersistentFlags().IPMaskVarP(ptr,
-					myType.Tag.Get("lopt"),
-					myType.Tag.Get("sopt"),
-					net.IPMask{}, // empty default!
-					myType.Tag.Get("comment"))
-			} else {
-				baseCmd.PersistentFlags().IPMaskVar(ptr,
-					myType.Tag.Get("lopt"),
-					net.IPMask{}, // empty default!
-					myType.Tag.Get("comment"))
-			}
 		} else if myType.Type == reflect.TypeOf(wwbool) {
 			ptr := myVal.Addr().Interface().(*wwtype.WWbool)
 			if myType.Tag.Get("sopt") != "" {

@@ -96,7 +96,15 @@ func (fieldMap fieldMap) recursiveFields(obj interface{}, prefix string, source 
 			case reflect.Map:
 				mapIter := valObj.Elem().Field(i).MapRange()
 				for mapIter.Next() {
-					fieldMap.recursiveFields(mapIter.Value().Interface(), prefix+typeObj.Elem().Field(i).Name+"["+mapIter.Key().String()+"].", source)
+					if mapIter.Value().Kind() == reflect.String {
+						fieldMap[prefix+typeObj.Elem().Field(i).Name+"["+mapIter.Key().String()+"]"] = &NodeFields{
+							Field:  prefix + typeObj.Elem().Field(i).Name + "[" + mapIter.Key().String() + "]",
+							Source: source,
+							Value:  mapIter.Value().String(),
+						}
+					} else {
+						fieldMap.recursiveFields(mapIter.Value().Interface(), prefix+typeObj.Elem().Field(i).Name+"["+mapIter.Key().String()+"].", source)
+					}
 				}
 				if valObj.Elem().Field(i).Len() == 0 {
 					fieldMap[prefix+typeObj.Elem().Field(i).Name] = &NodeFields{
@@ -120,18 +128,26 @@ func (fieldMap fieldMap) recursiveFields(obj interface{}, prefix string, source 
 				switch typeObj.Elem().Field(i).Type {
 				case reflect.TypeOf([]string{}):
 					vals := (valObj.Elem().Field(i).Interface()).([]string)
+					src_str := source
+					if oldVal, ok := fieldMap[prefix+typeObj.Elem().Field(i).Name]; ok {
+						if oldVal.Value != "" {
+							if len(vals) > 0 {
+								src_str = oldVal.Source + "+"
+							} else {
+								src_str = oldVal.Source
+							}
+							vals = append(vals, oldVal.Value)
+						} else {
+							src_str = oldVal.Source
+						}
+					}
 					fieldMap[prefix+typeObj.Elem().Field(i).Name] = &NodeFields{
 						Field:  prefix + typeObj.Elem().Field(i).Name,
-						Source: source,
+						Source: src_str,
 						Value:  strings.Join(vals, ","),
 					}
 				case reflect.TypeOf(net.IP{}):
 					val := (valObj.Elem().Field(i).Interface()).(net.IP)
-					if val != nil {
-						fieldMap[prefix+typeObj.Elem().Field(i).Name].Set(source, val.String())
-					}
-				case reflect.TypeOf(net.IPMask{}):
-					val := (valObj.Elem().Field(i).Interface()).(net.IPMask)
 					if val != nil {
 						fieldMap[prefix+typeObj.Elem().Field(i).Name].Set(source, val.String())
 					}
@@ -144,9 +160,7 @@ func (fieldMap fieldMap) recursiveFields(obj interface{}, prefix string, source 
 					fieldMap[prefix+typeObj.Elem().Field(i).Name].Set(source, valObj.Elem().Field(i).String())
 				}
 
-			} /*else if typeObj.Elem().Field(i).Type.Kind() == reflect.Ptr {
-				fieldMap.recursiveFields(valObj.Elem().Field(i).Interface(), emptyFields, prefix+typeObj.Elem().Field(i).Name+".", source)
-			}*/
+			}
 		}
 	}
 }
