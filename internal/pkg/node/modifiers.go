@@ -81,7 +81,7 @@ func (config *NodeYaml) SetProfile(profileId string, vals ProfileConf) error {
 Add a node with the given ID and return a pointer to it
 */
 func (config *NodeYaml) AddProfile(profileId string) (*ProfileConf, error) {
-	profile := NewProfile(profileId)
+	profile := EmptyProfile()
 	wwlog.Verbose("adding new profile: %s", profileId)
 	if _, ok := config.nodeProfiles[profileId]; ok {
 		return nil, errors.New("profile already exists: " + profileId)
