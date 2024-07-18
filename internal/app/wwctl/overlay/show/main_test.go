@@ -302,40 +302,40 @@ nodes:
 	// depend on build host files. Such tests are provided as
 	// examples but are left commented-out.
 	tests := []struct {
-		name string
+		name         string
 		warewulfconf string
-		args []string
-		log  string
+		args         []string
+		log          string
 	}{
 		{
-			name: "ifcfg:ifcfg.ww",
+			name:         "ifcfg:ifcfg.ww",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "ifcfg", "etc/sysconfig/network-scripts/ifcfg.ww"},
-			log:  ifcfg,
+			args:         []string{"--render", "node1", "ifcfg", "etc/sysconfig/network-scripts/ifcfg.ww"},
+			log:          ifcfg,
 		},
 		{
-			name: "ifcfg:network.ww",
+			name:         "ifcfg:network.ww",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "ifcfg", "etc/sysconfig/network.ww"},
-			log:  ifcfg_network,
+			args:         []string{"--render", "node1", "ifcfg", "etc/sysconfig/network.ww"},
+			log:          ifcfg_network,
 		},
 		{
-			name: "wwinit:warewulf.conf.ww",
+			name:         "wwinit:warewulf.conf.ww",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "wwinit", "etc/warewulf/warewulf.conf.ww"},
-			log:  wwinit_warewulf_conf,
+			args:         []string{"--render", "node1", "wwinit", "etc/warewulf/warewulf.conf.ww"},
+			log:          wwinit_warewulf_conf,
 		},
 		{
-			name: "wwinit:config.ww",
+			name:         "wwinit:config.ww",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "wwinit", "warewulf/config.ww"},
-			log:  wwinit_config,
+			args:         []string{"--render", "node1", "wwinit", "warewulf/config.ww"},
+			log:          wwinit_config,
 		},
 		{
-			name: "wwinit:wwclient.ww",
+			name:         "wwinit:wwclient.ww",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "wwinit", "warewulf/init.d/80-wwclient.ww"},
-			log:  wwinit_wwclient,
+			args:         []string{"--render", "node1", "wwinit", "warewulf/init.d/80-wwclient.ww"},
+			log:          wwinit_wwclient,
 		},
 		// {
 		// 	name: "ssh_authorized_keys:authorized_keys.ww",
@@ -356,184 +356,184 @@ nodes:
 		// 	log:  syncuser_group,
 		// },
 		{
-			name: "/etc/hosts",
+			name:         "/etc/hosts",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "hosts", "etc/hosts.ww"},
-			log:  hosts,
+			args:         []string{"--render", "node1", "hosts", "etc/hosts.ww"},
+			log:          hosts,
 		},
 		{
-			name: "ssh_host_keys:dsa pub",
+			name:         "ssh_host_keys:dsa pub",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_dsa_key.pub.ww"},
-			log:  ssh_host_dsa_key_pub,
+			args:         []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_dsa_key.pub.ww"},
+			log:          ssh_host_dsa_key_pub,
 		},
 		{
-			name: "ssh_host_keys:dsa",
+			name:         "ssh_host_keys:dsa",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_dsa_key.ww"},
-			log:  ssh_host_dsa_key,
+			args:         []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_dsa_key.ww"},
+			log:          ssh_host_dsa_key,
 		},
 		{
-			name: "ssh_host_keys:ecdsa pub",
+			name:         "ssh_host_keys:ecdsa pub",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_ecdsa_key.pub.ww"},
-			log:  ssh_host_ecdsa_key_pub,
+			args:         []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_ecdsa_key.pub.ww"},
+			log:          ssh_host_ecdsa_key_pub,
 		},
 		{
-			name: "ssh_host_keys:ecdsa",
+			name:         "ssh_host_keys:ecdsa",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_ecdsa_key.ww"},
-			log:  ssh_host_ecdsa_key,
+			args:         []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_ecdsa_key.ww"},
+			log:          ssh_host_ecdsa_key,
 		},
 		{
-			name: "ssh_host_keys:rsa pub",
+			name:         "ssh_host_keys:rsa pub",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_rsa_key.pub.ww"},
-			log:  ssh_host_rsa_key_pub,
+			args:         []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_rsa_key.pub.ww"},
+			log:          ssh_host_rsa_key_pub,
 		},
 		{
-			name: "ssh_host_keys:dsa",
+			name:         "ssh_host_keys:dsa",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_rsa_key.ww"},
-			log:  ssh_host_rsa_key,
+			args:         []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_rsa_key.ww"},
+			log:          ssh_host_rsa_key,
 		},
 		{
-			name: "ssh_host_keys:ed25519 pub",
+			name:         "ssh_host_keys:ed25519 pub",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_ed25519_key.pub.ww"},
-			log:  ssh_host_ed25519_key_pub,
+			args:         []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_ed25519_key.pub.ww"},
+			log:          ssh_host_ed25519_key_pub,
 		},
 		{
-			name: "ssh_host_keys:ed25519",
+			name:         "ssh_host_keys:ed25519",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_ed25519_key.ww"},
-			log:  ssh_host_ed25519_key,
+			args:         []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_ed25519_key.ww"},
+			log:          ssh_host_ed25519_key,
 		},
 		{
-			name: "NetworkManager:ww4-unmanaged.ww",
+			name:         "NetworkManager:ww4-unmanaged.ww",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "NetworkManager", "etc/NetworkManager/conf.d/ww4-unmanaged.ww"},
-			log:  networkmanager_unmanaged,
+			args:         []string{"--render", "node1", "NetworkManager", "etc/NetworkManager/conf.d/ww4-unmanaged.ww"},
+			log:          networkmanager_unmanaged,
 		},
 		{
-			name: "NetworkManager:ww4-managed.ww",
+			name:         "NetworkManager:ww4-managed.ww",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "NetworkManager", "etc/NetworkManager/system-connections/ww4-managed.ww"},
-			log:  networkmanager_managed,
+			args:         []string{"--render", "node1", "NetworkManager", "etc/NetworkManager/system-connections/ww4-managed.ww"},
+			log:          networkmanager_managed,
 		},
 		{
-			name: "/etc/fstab",
+			name:         "/etc/fstab",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "fstab", "etc/fstab.ww"},
-			log:  fstab,
+			args:         []string{"--render", "node1", "fstab", "etc/fstab.ww"},
+			log:          fstab,
 		},
 		{
-			name: "/etc/hostname",
+			name:         "/etc/hostname",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "hostname", "etc/hostname.ww"},
-			log:  hostname,
+			args:         []string{"--render", "node1", "hostname", "etc/hostname.ww"},
+			log:          hostname,
 		},
 		{
-			name: "/etc/issue",
+			name:         "/etc/issue",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "issue", "etc/issue.ww"},
-			log:  issue,
+			args:         []string{"--render", "node1", "issue", "etc/issue.ww"},
+			log:          issue,
 		},
 		{
-			name: "/etc/resolv.conf",
+			name:         "/etc/resolv.conf",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "resolv", "etc/resolv.conf.ww"},
-			log:  resolv_conf,
+			args:         []string{"--render", "node1", "resolv", "etc/resolv.conf.ww"},
+			log:          resolv_conf,
 		},
 		{
-			name: "wicked",
+			name:         "wicked",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "wicked", "etc/wicked/ifconfig/ifcfg.xml.ww"},
-			log:  wicked,
+			args:         []string{"--render", "node1", "wicked", "etc/wicked/ifconfig/ifcfg.xml.ww"},
+			log:          wicked,
 		},
 		{
-			name: "debian interfaces",
+			name:         "debian interfaces",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "debian.interfaces", "etc/network/interfaces.d/default.ww"},
-			log:  debian_interfaces,
+			args:         []string{"--render", "node1", "debian.interfaces", "etc/network/interfaces.d/default.ww"},
+			log:          debian_interfaces,
 		},
 		{
-			name: "udev netnames",
+			name:         "udev netnames",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "udev", "etc/udev/rules.d/70-ww4-netname.rules.ww"},
-			log:  udev_netnames,
+			args:         []string{"--render", "node1", "udev", "etc/udev/rules.d/70-ww4-netname.rules.ww"},
+			log:          udev_netnames,
 		},
 		{
-			name: "systemd network links",
+			name:         "systemd network links",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "systemd.network", "etc/systemd/network/10-persistent-net.link.ww"},
-			log:  systemd_network_links,
+			args:         []string{"--render", "node1", "systemd.network", "etc/systemd/network/10-persistent-net.link.ww"},
+			log:          systemd_network_links,
 		},
 		{
-			name: "debug",
+			name:         "debug",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "debug", "warewulf/template-variables.md.ww"},
-			log:  debug,
+			args:         []string{"--render", "node1", "debug", "warewulf/template-variables.md.ww"},
+			log:          debug,
 		},
 		{
-			name: "host:dhcp",
+			name:         "host:dhcp",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "host", "host", "etc/dhcp/dhcpd.conf.ww"},
-			log:  host_dhcp,
+			args:         []string{"--render", "host", "host", "etc/dhcp/dhcpd.conf.ww"},
+			log:          host_dhcp,
 		},
 		{
-			name: "host:dhcp(static)",
+			name:         "host:dhcp(static)",
 			warewulfconf: warewulfconf_static_dhcp,
-			args: []string{"--render", "host", "host", "etc/dhcp/dhcpd.conf.ww"},
-			log:  host_dhcp_static,
+			args:         []string{"--render", "host", "host", "etc/dhcp/dhcpd.conf.ww"},
+			log:          host_dhcp_static,
 		},
 		{
-			name: "host:dnsmasq",
+			name:         "host:dnsmasq",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "host", "host", "etc/dnsmasq.d/ww4-hosts.conf.ww"},
-			log:  host_dnsmasq,
+			args:         []string{"--render", "host", "host", "etc/dnsmasq.d/ww4-hosts.conf.ww"},
+			log:          host_dnsmasq,
 		},
 		{
-			name: "host:/etc/exports",
+			name:         "host:/etc/exports",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "host", "host", "etc/exports.ww"},
-			log:  host_exports,
+			args:         []string{"--render", "host", "host", "etc/exports.ww"},
+			log:          host_exports,
 		},
 		{
-			name: "host:/etc/hosts",
+			name:         "host:/etc/hosts",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "host", "host", "etc/hosts.ww"},
-			log:  host_hosts,
+			args:         []string{"--render", "host", "host", "etc/hosts.ww"},
+			log:          host_hosts,
 		},
 		{
-			name: "host:ssh_setup.csh",
+			name:         "host:ssh_setup.csh",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "host", "host", "etc/profile.d/ssh_setup.csh.ww"},
-			log:  host_ssh_setup_csh,
+			args:         []string{"--render", "host", "host", "etc/profile.d/ssh_setup.csh.ww"},
+			log:          host_ssh_setup_csh,
 		},
 		{
-			name: "host:ssh_setup.sh",
+			name:         "host:ssh_setup.sh",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "host", "host", "etc/profile.d/ssh_setup.sh.ww"},
-			log:  host_ssh_setup_sh,
+			args:         []string{"--render", "host", "host", "etc/profile.d/ssh_setup.sh.ww"},
+			log:          host_ssh_setup_sh,
 		},
 		{
-			name: "ignition:ww4-disks.target",
+			name:         "ignition:ww4-disks.target",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "ignition", "etc/systemd/system/ww4-disks.target.ww"},
-			log:  ignition_disks,
+			args:         []string{"--render", "node1", "ignition", "etc/systemd/system/ww4-disks.target.ww"},
+			log:          ignition_disks,
 		},
 		{
-			name: "ignition:ww4-mounts",
+			name:         "ignition:ww4-mounts",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "ignition", "etc/systemd/system/ww4-mounts.ww"},
-			log:  ignition_mounts,
+			args:         []string{"--render", "node1", "ignition", "etc/systemd/system/ww4-mounts.ww"},
+			log:          ignition_mounts,
 		},
 		{
-			name: "ignition:ignition.json",
+			name:         "ignition:ignition.json",
 			warewulfconf: warewulfconf,
-			args: []string{"--render", "node1", "ignition", "etc/warewulf/ignition.json.ww"},
-			log:  ignition_json,
+			args:         []string{"--render", "node1", "ignition", "etc/warewulf/ignition.json.ww"},
+			log:          ignition_json,
 		},
 	}
 
@@ -1111,12 +1111,12 @@ This Warewulf template serves as a complete example of the variables
 available to Warewulf templates. It may also be rendered against a
 node to debug its apparent configuration.
 
-`+"```"+`sh
+` + "```" + `sh
 wwctl overlay show --render $nodename debug /warewulf/template-variables.md.ww
-`+"```"+`
+` + "```" + `
 
 The template data structure is defined in
-`+"`internal/pkg/overlay/datastructure.go`"+`, though it also references
+` + "`internal/pkg/overlay/datastructure.go`" + `, though it also references
 data from other structures.
 
 
@@ -1523,7 +1523,6 @@ Filename: etc/exports
 
 `
 
-
 const host_hosts string = `backupFile: true
 writeFile: true
 Filename: etc/hosts
@@ -1552,7 +1551,7 @@ Filename: etc/profile.d/ssh_setup.csh
 ## Automatically configure SSH keys for a user on C SHell login
 ## Copy this file to /etc/profile.d along with ssh_setup.sh
 
-`+"set _UID=`id -u`"+`
+` + "set _UID=`id -u`" + `
 if ( ( $_UID > 500 || $_UID == 0 ) && ( ! -f "$HOME/.ssh/config" && ! -f "$HOME/.ssh/cluster" ) ) then
     echo "Configuring SSH for cluster access"
     install -d -m 700 $HOME/.ssh
@@ -1586,7 +1585,7 @@ Filename: etc/profile.d/ssh_setup.sh
 ## Automatically configure SSH keys for a user on login
 ## Copy this file to /etc/profile.d
 
-`+"_UID=`id -u`"+`
+` + "_UID=`id -u`" + `
 if [ $_UID -ge 500 -o $_UID -eq 0 ] && [ ! -f "$HOME/.ssh/config" -a ! -f "$HOME/.ssh/cluster" ]; then
     echo "Configuring SSH for cluster access"
     install -d -m 700 $HOME/.ssh
@@ -1594,7 +1593,7 @@ if [ $_UID -ge 500 -o $_UID -eq 0 ] && [ ! -f "$HOME/.ssh/config" -a ! -f "$HOME
     cat $HOME/.ssh/cluster.pub >> $HOME/.ssh/authorized_keys
     chmod 0600 $HOME/.ssh/authorized_keys
 
-    echo "# Added by Warewulf  `+"`date +%!Y(MISSING)-%!m(MISSING)-%!d(MISSING) 2>/dev/null`"+`" >> $HOME/.ssh/config
+    echo "# Added by Warewulf  ` + "`date +%!Y(MISSING)-%!m(MISSING)-%!d(MISSING) 2>/dev/null`" + `" >> $HOME/.ssh/config
     echo "Host *" >> $HOME/.ssh/config
     echo "   IdentityFile ~/.ssh/cluster" >> $HOME/.ssh/config
     echo "   StrictHostKeyChecking=no" >> $HOME/.ssh/config
