@@ -919,6 +919,10 @@ devpts /dev/pts devpts gid=5,mode=620 0 0
 tmpfs /run/shm tmpfs defaults 0 0
 sysfs /sys sysfs defaults 0 0
 proc /proc proc defaults 0 0
+# mounts for local file systems created with ignition in nodes.conf
+# all with noauto as mounts happens with systemd units
+/dev/disk/by-partlabel/scratch /scratch btrfs noauto,defaults 0 0
+/dev/disk/by-partlabel/swap swap swap noauto,defaults 0 0
 # nfs mounts provided in warewulf.conf
 192.168.0.1:/home /home nfs defaults 0 0
 `
@@ -1616,7 +1620,8 @@ After=ignition-ww4-disks.service
 Requisite=ignition-ww4-disks.service
 # Get the mounts
 Wants=scratch.mount
-Wants=dev-disk-by\x2dpartlabel-swap.swap`
+Wants=dev-disk-by\x2dpartlabel-swap.swap
+`
 
 const ignition_mounts string = `backupFile: true
 writeFile: true
