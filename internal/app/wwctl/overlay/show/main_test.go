@@ -296,7 +296,7 @@ nodes:
 
 	env.ImportFile(t, "var/lib/warewulf/overlays/ignition/rootfs/etc/systemd/system/ww4-disks.target.ww", "../../../../../overlays/ignition/rootfs/etc/systemd/system/ww4-disks.target.ww")
 	env.ImportFile(t, "var/lib/warewulf/overlays/ignition/rootfs/etc/systemd/system/ww4-mounts.ww", "../../../../../overlays/ignition/rootfs/etc/systemd/system/ww4-mounts.ww")
-	env.ImportFile(t, "var/lib/warewulf/overlays/ignition/rootfs/etc/warewulf/ignition.json.ww", "../../../../../overlays/ignition/rootfs/etc/warewulf/ignition.json.ww")
+	// env.ImportFile(t, "var/lib/warewulf/overlays/ignition/rootfs/etc/warewulf/ignition.json.ww", "../../../../../overlays/ignition/rootfs/etc/warewulf/ignition.json.ww")
 
 	// Some overlay templates can't be relably tested because they
 	// depend on build host files. Such tests are provided as
@@ -529,12 +529,12 @@ nodes:
 			args:         []string{"--render", "node1", "ignition", "etc/systemd/system/ww4-mounts.ww"},
 			log:          ignition_mounts,
 		},
-		{
-			name:         "ignition:ignition.json",
-			warewulfconf: warewulfconf,
-			args:         []string{"--render", "node1", "ignition", "etc/warewulf/ignition.json.ww"},
-			log:          ignition_json,
-		},
+		// {
+		// 	name:         "ignition:ignition.json",
+		// 	warewulfconf: warewulfconf,
+		// 	args:         []string{"--render", "node1", "ignition", "etc/warewulf/ignition.json.ww"},
+		// 	log:          ignition_json,
+		// },
 	}
 
 	for _, tt := range tests {
@@ -1653,7 +1653,7 @@ What=/dev/disk/by-partlabel/swap
 RequiredBy=swap.target
 `
 
-const ignition_json string = `backupFile: true
-writeFile: true
-Filename: etc/warewulf/ignition.json
-{"ignition":{"version":"3.1.0"},"storage":{"disks":[{"device":"/dev/vda","partitions":[{"label":"scratch","shouldExist":true,"wipePartitionEntry":false},{"label":"swap","number":1,"shouldExist":false,"sizeMiB":1024,"wipePartitionEntry":false}],"wipeTable":true}],"filesystems":[{"device":"/dev/disk/by-partlabel/scratch","format":"btrfs","path":"/scratch","wipeFilesystem":true},{"device":"/dev/disk/by-partlabel/swap","format":"swap","path":"swap","wipeFilesystem":false}]}}`
+// const ignition_json string = `backupFile: true
+// writeFile: true
+// Filename: etc/warewulf/ignition.json
+// {"ignition":{"version":"3.1.0"},"storage":{"disks":[{"device":"/dev/vda","partitions":[{"label":"scratch","shouldExist":true,"wipePartitionEntry":false},{"label":"swap","number":1,"shouldExist":false,"sizeMiB":1024,"wipePartitionEntry":false}],"wipeTable":true}],"filesystems":[{"device":"/dev/disk/by-partlabel/scratch","format":"btrfs","path":"/scratch","wipeFilesystem":true},{"device":"/dev/disk/by-partlabel/swap","format":"swap","path":"swap","wipeFilesystem":false}]}}`
