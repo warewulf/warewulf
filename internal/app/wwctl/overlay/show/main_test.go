@@ -173,34 +173,6 @@ nodes:
 func Test_RenderTemplates(t *testing.T) {
 	env := testenv.New(t)
 	defer env.RemoveAll(t)
-	env.WriteFile(t, "etc/warewulf/warewulf.conf",
-		`WW_INTERNAL: 43
-ipaddr: 192.168.0.1/24
-netmask: 255.255.255.0
-network: 192.168.0.0
-warewulf:
-  port: 9873
-  secure: false
-  update interval: 60
-  autobuild overlays: true
-  host overlay: true
-  syslog: true
-dhcp:
-  enabled: false
-tftp:
-  enabled: false
-nfs:
-  enabled: true
-  export paths:
-  - path: /home
-    export options: rw,sync
-    mount options: defaults
-    mount: true
-  - path: /opt
-    export options: ro,sync,no_root_squash
-    mount options: defaults
-    mount: false`)
-	assert.NoError(t, config.Get().Read(env.GetPath("etc/warewulf/warewulf.conf")))
 	env.WriteFile(t, "etc/warewulf/nodes.conf",
 		`WW_INTERNAL: 45
 nodeprofiles:
@@ -298,12 +270,12 @@ nodes:
 
 	env.ImportFile(t, "var/lib/warewulf/overlays/debug/rootfs/warewulf/template-variables.md.ww", "../../../../../overlays/debug/rootfs/warewulf/template-variables.md.ww")
 
-	// env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/dhcp/dhcpd.conf.ww", "../../../../../overlays/host/rootfs/etc/dhcp/dhcpd.conf.ww")
-	// env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/dnsmasq.d/ww4-hosts.conf.ww", "../../../../../overlays/host/rootfs/etc/dnsmasq.d/ww4-hosts.conf.ww")
-	// env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/exports.ww", "../../../../../overlays/host/rootfs/etc/exports.ww")
-	// env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/hosts.ww", "../../../../../overlays/host/rootfs/etc/hosts.ww")
-	// env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/profile.d/ssh_setup.csh.ww", "../../../../../overlays/host/rootfs/etc/profile.d/ssh_setup.csh.ww")
-	// env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/profile.d/ssh_setup.sh.ww", "../../../../../overlays/host/rootfs/etc/profile.d/ssh_setup.sh.ww")
+	env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/dhcp/dhcpd.conf.ww", "../../../../../overlays/host/rootfs/etc/dhcp/dhcpd.conf.ww")
+	env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/dnsmasq.d/ww4-hosts.conf.ww", "../../../../../overlays/host/rootfs/etc/dnsmasq.d/ww4-hosts.conf.ww")
+	env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/exports.ww", "../../../../../overlays/host/rootfs/etc/exports.ww")
+	env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/hosts.ww", "../../../../../overlays/host/rootfs/etc/hosts.ww")
+	env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/profile.d/ssh_setup.csh.ww", "../../../../../overlays/host/rootfs/etc/profile.d/ssh_setup.csh.ww")
+	env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/profile.d/ssh_setup.sh.ww", "../../../../../overlays/host/rootfs/etc/profile.d/ssh_setup.sh.ww")
 
 	// env.ImportFile(t, "var/lib/warewulf/overlays/ignition/rootfs/etc/systemd/system/ww4-disks.target.ww", "../../../../../overlays/ignition/rootfs/etc/systemd/system/ww4-disks.target.ww")
 	// env.ImportFile(t, "var/lib/warewulf/overlays/ignition/rootfs/etc/systemd/system/ww4-mounts.ww", "../../../../../overlays/ignition/rootfs/etc/systemd/system/ww4-mounts.ww")
@@ -314,153 +286,227 @@ nodes:
 	// examples but are left commented-out.
 	tests := []struct {
 		name string
+		warewulfconf string
 		args []string
 		log  string
 	}{
 		{
 			name: "ifcfg:ifcfg.ww",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "ifcfg", "etc/sysconfig/network-scripts/ifcfg.ww"},
 			log:  ifcfg,
 		},
 		{
 			name: "ifcfg:network.ww",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "ifcfg", "etc/sysconfig/network.ww"},
 			log:  ifcfg_network,
 		},
 		{
 			name: "wwinit:warewulf.conf.ww",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "wwinit", "etc/warewulf/warewulf.conf.ww"},
 			log:  wwinit_warewulf_conf,
 		},
 		{
 			name: "wwinit:config.ww",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "wwinit", "warewulf/config.ww"},
 			log:  wwinit_config,
 		},
 		{
 			name: "wwinit:wwclient.ww",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "wwinit", "warewulf/init.d/80-wwclient.ww"},
 			log:  wwinit_wwclient,
 		},
 		// {
 		// 	name: "ssh_authorized_keys:authorized_keys.ww",
+		//	warewulfconf: warewulfconf,
 		// 	args: []string{"--render", "node1", "ssh_authorized_keys", "root/.ssh/authorized_keys.ww"},
 		// 	log:  ssh_authorized_keys,
 		// },
 		// {
 		// 	name: "syncuser:passwd.ww",
+		//	warewulfconf: warewulfconf,
 		// 	args: []string{"--render", "node1", "syncuser", "etc/passwd.ww"},
 		// 	log:  syncuser_passwd,
 		// },
 		// {
 		// 	name: "syncuser:group.ww",
+		//	warewulfconf: warewulfconf,
 		// 	args: []string{"--render", "node1", "syncuser", "etc/group.ww"},
 		// 	log:  syncuser_group,
 		// },
 		{
 			name: "/etc/hosts",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "hosts", "etc/hosts.ww"},
 			log:  hosts,
 		},
 		{
 			name: "ssh_host_keys:dsa pub",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_dsa_key.pub.ww"},
 			log:  ssh_host_dsa_key_pub,
 		},
 		{
 			name: "ssh_host_keys:dsa",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_dsa_key.ww"},
 			log:  ssh_host_dsa_key,
 		},
 		{
 			name: "ssh_host_keys:ecdsa pub",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_ecdsa_key.pub.ww"},
 			log:  ssh_host_ecdsa_key_pub,
 		},
 		{
 			name: "ssh_host_keys:ecdsa",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_ecdsa_key.ww"},
 			log:  ssh_host_ecdsa_key,
 		},
 		{
 			name: "ssh_host_keys:rsa pub",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_rsa_key.pub.ww"},
 			log:  ssh_host_rsa_key_pub,
 		},
 		{
 			name: "ssh_host_keys:dsa",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_rsa_key.ww"},
 			log:  ssh_host_rsa_key,
 		},
 		{
 			name: "ssh_host_keys:ed25519 pub",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_ed25519_key.pub.ww"},
 			log:  ssh_host_ed25519_key_pub,
 		},
 		{
 			name: "ssh_host_keys:ed25519",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "ssh_host_keys", "etc/ssh/ssh_host_ed25519_key.ww"},
 			log:  ssh_host_ed25519_key,
 		},
 		{
 			name: "NetworkManager:ww4-unmanaged.ww",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "NetworkManager", "etc/NetworkManager/conf.d/ww4-unmanaged.ww"},
 			log:  networkmanager_unmanaged,
 		},
 		{
 			name: "NetworkManager:ww4-managed.ww",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "NetworkManager", "etc/NetworkManager/system-connections/ww4-managed.ww"},
 			log:  networkmanager_managed,
 		},
 		{
 			name: "/etc/fstab",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "fstab", "etc/fstab.ww"},
 			log:  fstab,
 		},
 		{
 			name: "/etc/hostname",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "hostname", "etc/hostname.ww"},
 			log:  hostname,
 		},
 		{
 			name: "/etc/issue",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "issue", "etc/issue.ww"},
 			log:  issue,
 		},
 		{
 			name: "/etc/resolv.conf",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "resolv", "etc/resolv.conf.ww"},
 			log:  resolv_conf,
 		},
 		{
 			name: "wicked",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "wicked", "etc/wicked/ifconfig/ifcfg.xml.ww"},
 			log:  wicked,
 		},
 		{
 			name: "debian interfaces",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "debian.interfaces", "etc/network/interfaces.d/default.ww"},
 			log:  debian_interfaces,
 		},
 		{
 			name: "udev netnames",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "udev", "etc/udev/rules.d/70-ww4-netname.rules.ww"},
 			log:  udev_netnames,
 		},
 		{
 			name: "systemd network links",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "systemd.network", "etc/systemd/network/10-persistent-net.link.ww"},
 			log:  systemd_network_links,
 		},
 		{
 			name: "debug",
+			warewulfconf: warewulfconf,
 			args: []string{"--render", "node1", "debug", "warewulf/template-variables.md.ww"},
 			log:  debug,
+		},
+		{
+			name: "host:dhcp",
+			warewulfconf: warewulfconf,
+			args: []string{"--render", "host", "host", "etc/dhcp/dhcpd.conf.ww"},
+			log:  host_dhcp,
+		},
+		{
+			name: "host:dhcp(static)",
+			warewulfconf: warewulfconf_static_dhcp,
+			args: []string{"--render", "host", "host", "etc/dhcp/dhcpd.conf.ww"},
+			log:  host_dhcp_static,
+		},
+		{
+			name: "host:dnsmasq",
+			warewulfconf: warewulfconf,
+			args: []string{"--render", "host", "host", "etc/dnsmasq.d/ww4-hosts.conf.ww"},
+			log:  host_dnsmasq,
+		},
+		{
+			name: "host:/etc/exports",
+			warewulfconf: warewulfconf,
+			args: []string{"--render", "host", "host", "etc/exports.ww"},
+			log:  host_exports,
+		},
+		{
+			name: "host:/etc/hosts",
+			warewulfconf: warewulfconf,
+			args: []string{"--render", "host", "host", "etc/hosts.ww"},
+			log:  host_hosts,
+		},
+		{
+			name: "host:ssh_setup.csh",
+			warewulfconf: warewulfconf,
+			args: []string{"--render", "host", "host", "etc/profile.d/ssh_setup.csh.ww"},
+			log:  host_ssh_setup_csh,
+		},
+		{
+			name: "host:ssh_setup.sh",
+			warewulfconf: warewulfconf,
+			args: []string{"--render", "host", "host", "etc/profile.d/ssh_setup.sh.ww"},
+			log:  host_ssh_setup_sh,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			env.WriteFile(t, "etc/warewulf/warewulf.conf", tt.warewulfconf)
+			assert.NoError(t, config.Get().Read(env.GetPath("etc/warewulf/warewulf.conf")))
+
 			cmd := GetCommand()
 			cmd.SetArgs(tt.args)
 			stdout := bytes.NewBufferString("")
@@ -498,6 +544,63 @@ func removeHostInfo(input string) (output string) {
 	output = buildHostList.ReplaceAllString(output, "- BuildHost: REMOVED")
 	return output
 }
+
+const warewulfconf string = `WW_INTERNAL: 43
+ipaddr: 192.168.0.1/24
+netmask: 255.255.255.0
+network: 192.168.0.0
+warewulf:
+  port: 9873
+  secure: false
+  update interval: 60
+  autobuild overlays: true
+  host overlay: true
+  syslog: true
+dhcp:
+  enabled: true
+  range start: 192.168.0.100
+  range end: 192.168.0.199
+tftp:
+  enabled: false
+nfs:
+  enabled: true
+  export paths:
+  - path: /home
+    export options: rw,sync
+    mount options: defaults
+    mount: true
+  - path: /opt
+    export options: ro,sync,no_root_squash
+    mount options: defaults
+    mount: false`
+
+const warewulfconf_static_dhcp string = `WW_INTERNAL: 43
+ipaddr: 192.168.0.1/24
+netmask: 255.255.255.0
+network: 192.168.0.0
+warewulf:
+  port: 9873
+  secure: false
+  update interval: 60
+  autobuild overlays: true
+  host overlay: true
+  syslog: true
+dhcp:
+  enabled: true
+  template: static
+tftp:
+  enabled: false
+nfs:
+  enabled: true
+  export paths:
+  - path: /home
+    export options: rw,sync
+    mount options: defaults
+    mount: true
+  - path: /opt
+    export options: ro,sync,no_root_squash
+    mount options: defaults
+    mount: false`
 
 const ifcfg string = `backupFile: true
 writeFile: true
@@ -570,7 +673,9 @@ warewulf:
   host overlay: true
   syslog: true
 dhcp:
-  enabled: false
+  enabled: true
+  range start: 192.168.0.100
+  range end: 192.168.0.199
 tftp:
   enabled: false
 nfs:
@@ -1070,10 +1175,10 @@ data from other structures.
 
 ### DHCP
 
-- Dhcp.Enabled: false
+- Dhcp.Enabled: true
 - Dhcp.Template: default
-- Dhcp.RangeStart: 
-- Dhcp.RangeEnd: 
+- Dhcp.RangeStart: 192.168.0.100
+- Dhcp.RangeEnd: 192.168.0.199
 - Dhcp.SystemdName: dhcpd
 
 
@@ -1210,4 +1315,254 @@ data from other structures.
     - Primary: true
     - Tags: 
 
+`
+
+const host_dhcp string = `backupFile: true
+writeFile: true
+Filename: etc/dhcp/dhcpd.conf
+# This file is autogenerated by warewulf
+# Host:   REMOVED
+# Time:   REMOVED
+# Source: /tmp/ww4test-REMOVED/var/lib/warewulf/overlays/host/rootfs/etc/dhcp/dhcpd.conf.ww
+
+allow booting;
+allow bootp;
+ddns-update-style interim;
+authoritative;
+
+option space ipxe;
+
+# Tell iPXE to not wait for ProxyDHCP requests to speed up boot.
+option ipxe.no-pxedhcp code 176 = unsigned integer 8;
+option ipxe.no-pxedhcp 1;
+
+option space PXE;
+option PXE.mtftp-ip    code 1 = ip-address;
+option PXE.mtftp-cport code 2 = unsigned integer 16;
+option PXE.mtftp-sport code 3 = unsigned integer 16;
+option PXE.mtftp-tmout code 4 = unsigned integer 8;
+option PXE.mtftp-delay code 5 = unsigned integer 8;
+
+option architecture-type   code 93  = unsigned integer 16;
+if exists user-class and option user-class = "iPXE" {
+    filename "http://192.168.0.1:9873/ipxe/${mac:hexhyp}?assetkey=${asset}&uuid=${uuid}";
+} else {
+
+    if option architecture-type = 00:00 {
+        filename "/warewulf/undionly.kpxe";
+    }
+    if option architecture-type = 00:07 {
+        filename "/warewulf/ipxe-snponly-x86_64.efi";
+    }
+    if option architecture-type = 00:09 {
+        filename "/warewulf/ipxe-snponly-x86_64.efi";
+    }
+    if option architecture-type = 00:0B {
+        filename "/warewulf/snponly.efi";
+    }
+}
+
+subnet 192.168.0.0 netmask 255.255.255.0 {
+    max-lease-time 120;
+    range 192.168.0.100 192.168.0.199;
+    next-server 192.168.0.1;
+}
+`
+
+const host_dhcp_static string = `backupFile: true
+writeFile: true
+Filename: etc/dhcp/dhcpd.conf
+# This file is autogenerated by warewulf
+# Host:   REMOVED
+# Time:   REMOVED
+# Source: /tmp/ww4test-REMOVED/var/lib/warewulf/overlays/host/rootfs/etc/dhcp/dhcpd.conf.ww
+
+allow booting;
+allow bootp;
+ddns-update-style interim;
+authoritative;
+
+option space ipxe;
+
+# Tell iPXE to not wait for ProxyDHCP requests to speed up boot.
+option ipxe.no-pxedhcp code 176 = unsigned integer 8;
+option ipxe.no-pxedhcp 1;
+
+option space PXE;
+option PXE.mtftp-ip    code 1 = ip-address;
+option PXE.mtftp-cport code 2 = unsigned integer 16;
+option PXE.mtftp-sport code 3 = unsigned integer 16;
+option PXE.mtftp-tmout code 4 = unsigned integer 8;
+option PXE.mtftp-delay code 5 = unsigned integer 8;
+
+option architecture-type   code 93  = unsigned integer 16;
+if exists user-class and option user-class = "iPXE" {
+    filename "http://192.168.0.1:9873/ipxe/${mac:hexhyp}?assetkey=${asset}&uuid=${uuid}";
+} else {
+
+    if option architecture-type = 00:00 {
+        filename "/warewulf/undionly.kpxe";
+    }
+    if option architecture-type = 00:07 {
+        filename "/warewulf/ipxe-snponly-x86_64.efi";
+    }
+    if option architecture-type = 00:09 {
+        filename "/warewulf/ipxe-snponly-x86_64.efi";
+    }
+    if option architecture-type = 00:0B {
+        filename "/warewulf/snponly.efi";
+    }
+}
+
+subnet 192.168.0.0 netmask 255.255.255.0 {
+    max-lease-time 120;
+}
+host node1-default
+{
+    hardware ethernet e6:92:39:49:7b:03;
+    fixed-address 192.168.3.21;
+    option host-name "node1";
+}
+
+host node1-secondary
+{
+    hardware ethernet 9a:77:29:73:14:f1;
+    fixed-address 192.168.3.22;
+}
+
+
+host node2-default
+{
+    hardware ethernet e6:92:39:49:7b:04;
+    fixed-address 192.168.3.23;
+    option host-name "node2";
+}
+
+
+
+`
+
+const host_dnsmasq string = `backupFile: false
+writeFile: true
+Filename: etc/dnsmasq.d/ww4-hosts.conf
+# This file was autgenerated by warewulf
+# Host:   REMOVED
+# Time:   REMOVED
+# Source  /tmp/ww4test-REMOVED/var/lib/warewulf/overlays/host/rootfs/etc/dnsmasq.d/ww4-hosts.conf.ww
+
+# select the x86 hosts which will get the iXPE binary
+dhcp-match=set:bios,option:client-arch,0   #legacy boot
+dhcp-match=set:x86PC,option:client-arch, 7 #EFI x86-64
+dhcp-match=set:x86PC,option:client-arch, 6 #EFI x86-64
+dhcp-match=set:x86PC,option:client-arch, 9 #EFI x86-64
+dhcp-match=set:aarch64,option:client-arch, 11 #EFI aarch64
+dhcp-match=set:iPXE,77,"iPXE"
+dhcp-userclass=set:iPXE,iPXE
+dhcp-vendorclass=set:efi-http,HTTPClient:Arch:00016
+dhcp-option-force=tag:efi-http,60,HTTPClient
+# for http boot always use shim/grub
+dhcp-boot=tag:efi-http,"http://192.168.0.1:9873/efiboot/shim.efi"
+dhcp-boot=tag:x86PC,"/warewulf/ipxe-snponly-x86_64.efi"
+dhcp-boot=tag:aarch64,"/warewulf/arm64-efi/snponly.efi"
+# iPXE binary will get the following configuration file
+dhcp-boot=tag:iPXE,"http://192.168.0.1:9873/ipxe/${mac:hexhyp}?assetkey=${asset}&uuid=${uuid}"
+dhcp-no-override
+# define the the range
+dhcp-range=192.168.0.100,192.168.0.199,255.255.255.0,6h
+                                   
+dhcp-host=e6:92:39:49:7b:03,set:warewulf,node1,192.168.3.21,infinite                 
+dhcp-host=9a:77:29:73:14:f1,set:warewulf,node1,192.168.3.22,infinite                                   
+dhcp-host=e6:92:39:49:7b:04,set:warewulf,node2,192.168.3.23,infinite
+`
+
+const host_exports string = `backupFile: true
+writeFile: true
+Filename: etc/exports
+
+# This file is autogenerated by warewulf
+# Host:   REMOVED
+# Time:   REMOVED
+# Source: /tmp/ww4test-REMOVED/var/lib/warewulf/overlays/host/rootfs/etc/exports.ww
+/home 192.168.0.0/255.255.255.0(rw,sync)
+/opt 192.168.0.0/255.255.255.0(ro,sync,no_root_squash)
+
+`
+
+
+const host_hosts string = `backupFile: true
+writeFile: true
+Filename: etc/hosts
+testing
+# Do not edit after this line
+# This block is autogenerated by warewulf
+# Host:   REMOVED
+# Time:   REMOVED
+# Source: /tmp/ww4test-REMOVED/var/lib/warewulf/overlays/host/rootfs/etc/hosts.ww
+
+
+# Warewulf Server
+192.168.0.1 rocky warewulf                  
+# Entry for node1                 
+192.168.3.21 node1 node1-default node1-wwnet0                 
+192.168.3.22  node1-secondary node1-wwnet1                  
+# Entry for node2                 
+192.168.3.23 node2 node2-default node2-wwnet0
+`
+
+const host_ssh_setup_csh = `backupFile: true
+writeFile: true
+Filename: etc/profile.d/ssh_setup.csh
+#!/bin/csh
+
+## Automatically configure SSH keys for a user on C SHell login
+## Copy this file to /etc/profile.d along with ssh_setup.sh
+
+`+"set _UID=`id -u`"+`
+if ( ( $_UID > 500 || $_UID == 0 ) && ( ! -f "$HOME/.ssh/config" && ! -f "$HOME/.ssh/cluster" ) ) then
+    echo "Configuring SSH for cluster access"
+    install -d -m 700 $HOME/.ssh
+    ssh-keygen -t rsa -f $HOME/.ssh/cluster -N '' -C "Warewulf Cluster key" >& /dev/null
+    cat $HOME/.ssh/cluster.pub >>! $HOME/.ssh/authorized_keys
+    chmod 0600 $HOME/.ssh/authorized_keys
+
+    touch $HOME/.ssh/config
+    echo -n "# Added by Warewulf " >>! $HOME/.ssh/config
+    (date +%!Y(MISSING)-%!m(MISSING)-%!d(MISSING) >> $HOME/.ssh/config) >& /dev/null
+    echo "Host *" >> $HOME/.ssh/config
+    echo "   IdentityFile ~/.ssh/cluster" >> $HOME/.ssh/config
+    echo "   StrictHostKeyChecking=no" >> $HOME/.ssh/config
+    chmod 0600 $HOME/.ssh/config
+endif
+`
+
+const host_ssh_setup_sh = `backupFile: true
+writeFile: true
+Filename: etc/profile.d/ssh_setup.sh
+#!/bin/sh
+##
+## Copyright (c) 2001-2003 Gregory M. Kurtzer
+##
+## Copyright (c) 2003-2012, The Regents of the University of California,
+## through Lawrence Berkeley National Laboratory (subject to receipt of any
+## required approvals from the U.S. Dept. of Energy).  All rights reserved.
+##
+## Copied from https://github.com/warewulf/warewulf3/blob/master/cluster/bin/cluster-env
+
+## Automatically configure SSH keys for a user on login
+## Copy this file to /etc/profile.d
+
+`+"_UID=`id -u`"+`
+if [ $_UID -ge 500 -o $_UID -eq 0 ] && [ ! -f "$HOME/.ssh/config" -a ! -f "$HOME/.ssh/cluster" ]; then
+    echo "Configuring SSH for cluster access"
+    install -d -m 700 $HOME/.ssh
+    ssh-keygen -t rsa -f $HOME/.ssh/cluster -N '' -C "Warewulf Cluster key" > /dev/null 2>&1
+    cat $HOME/.ssh/cluster.pub >> $HOME/.ssh/authorized_keys
+    chmod 0600 $HOME/.ssh/authorized_keys
+
+    echo "# Added by Warewulf  `+"`date +%!Y(MISSING)-%!m(MISSING)-%!d(MISSING) 2>/dev/null`"+`" >> $HOME/.ssh/config
+    echo "Host *" >> $HOME/.ssh/config
+    echo "   IdentityFile ~/.ssh/cluster" >> $HOME/.ssh/config
+    echo "   StrictHostKeyChecking=no" >> $HOME/.ssh/config
+    chmod 0600 $HOME/.ssh/config
+fi
 `
