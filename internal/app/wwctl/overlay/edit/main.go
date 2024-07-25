@@ -115,10 +115,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	// try renaming the tempfile to overlayfile first
 	err := os.Rename(tempFile.Name(), overlayFile)
 	if err != nil {
-		wwlog.Error("Unable to update %s: %s", overlayFile, err)
-		os.Exit(1)
+		// if it fails, which probably means that they exists on different partitions
+		// fallback to data copy
+		wwlog.Debug("Unable to rename temp file: %s to overlay file: %s, try copying the data", tempFile.Name(), overlayFile)
+		cerr := util.CopyFile(tempFile.Name(), overlayFile)
+		if cerr != nil {
+			wwlog.Error("Unable to copy data from temp file: %s to target file: %s, err: %s", tempFile.Name(), overlayFile, err)
+			os.Exit(1)
+		}
 	}
 
 	return nil
