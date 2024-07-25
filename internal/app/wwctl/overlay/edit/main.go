@@ -124,7 +124,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		cerr := util.CopyFile(tempFile.Name(), overlayFile)
 		if cerr != nil {
 			wwlog.Error("Unable to copy data from temp file: %s to target file: %s, err: %s", tempFile.Name(), overlayFile, err)
-			os.Exit(1)
+			return cerr
 		}
 	}
 
