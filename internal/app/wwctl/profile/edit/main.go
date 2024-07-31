@@ -1,10 +1,10 @@
 package edit
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 
@@ -44,44 +44,70 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	profileMap := make(map[string]*node.NodeConf)
 	// got proper yaml back
 	_ = yaml.Unmarshal([]byte(profileListMsg.NodeConfMapYaml), profileMap)
-	file, err := os.CreateTemp(os.TempDir(), "ww4ProfileEdit*.yaml")
+	yamlTemplate := node.UnmarshalConf(node.NodeConf{}, []string{"tagsdel"})
+
+	// use memory file
+	file, err := os.CreateTemp("/dev/shm", "ww4ProfileEdit*.yaml")
 	if err != nil {
 		wwlog.Error("Could not create temp file:%s \n", err)
 	}
-	defer os.Remove(file.Name())
-	yamlTemplate := node.UnmarshalConf(node.NodeConf{}, []string{"tagsdel"})
-	for {
-		_ = file.Truncate(0)
-		_, _ = file.Seek(0, 0)
-		if !NoHeader {
-			_, _ = file.WriteString("#profilename:\n#  " + strings.Join(yamlTemplate, "\n#  ") + "\n")
+	defer func() {
+		if file != nil {
+			file.Close()
 		}
-		_, _ = file.WriteString(profileListMsg.NodeConfMapYaml)
-		_, _ = file.Seek(0, 0)
-		hasher := sha256.New()
-		if _, err := io.Copy(hasher, file); err != nil {
-			wwlog.Error("Problems getting checksum of file %s\n", err)
+		os.Remove(file.Name())
+	}()
+
+	hasher := sha256.New()
+	var buffer bytes.Buffer
+	mp := &util.MMap{}
+
+	for {
+		// reset everything
+		buffer.Reset()
+		hasher.Reset()
+
+		if !NoHeader {
+			_, _ = buffer.WriteString("#profilename:\n#  " + strings.Join(yamlTemplate, "\n#  ") + "\n")
+		}
+		_, _ = buffer.WriteString(profileListMsg.NodeConfMapYaml)
+		_, err = hasher.Write(buffer.Bytes())
+		if err != nil {
+			return fmt.Errorf("unable to write data into hasher, err: %s", err)
 		}
 		sum1 := hex.EncodeToString(hasher.Sum(nil))
+
+		// mmap memory data into file
+		d, err := mp.MapToFile(buffer.Bytes(), file)
+		if err != nil {
+			return fmt.Errorf("unable to mmap data to the file, err: %s", err)
+		}
+		// data is useless here, we will map file to new data later
+		_ = mp.Unmap(d)
+
 		err = util.ExecInteractive(editor, file.Name())
 		if err != nil {
-			wwlog.Error("Editor process existed with non-zero\n")
-			os.Exit(1)
+			return fmt.Errorf("%s editor process exits with err: %s", editor, err)
 		}
-		_, _ = file.Seek(0, 0)
+
+		// after edit, do remap to memory
+		data, err := mp.MapFromFile(file)
+		if err != nil {
+			return fmt.Errorf("failed to mmap data from file, err: %s", err)
+		}
+
+		// reset hasher for new calculation
 		hasher.Reset()
-		if _, err := io.Copy(hasher, file); err != nil {
-			wwlog.Error("Problems getting checksum of file %s\n", err)
-		}
+		hasher.Write(data)
 		sum2 := hex.EncodeToString(hasher.Sum(nil))
 		wwlog.Debug("Hashes are before %s and after %s\n", sum1, sum2)
 		if sum1 != sum2 {
 			wwlog.Debug("Profiles were modified")
 			modifiedProfileMap := make(map[string]*node.NodeConf)
-			_, _ = file.Seek(0, 0)
 			// ignore error as only may occurs under strange circumstances
-			buffer, _ := io.ReadAll(file)
-			err = yaml.Unmarshal(buffer, modifiedProfileMap)
+			err = yaml.Unmarshal(data, modifiedProfileMap)
+			// after data unmarshed, we do not need the mmap data anymore
+			_ = mp.Unmap(data)
 			if err != nil {
 				yes := apiutil.ConfirmationPrompt(fmt.Sprintf("Got following error on parsing: %s, Retry", err))
 				if yes {
@@ -90,6 +116,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					break
 				}
 			}
+
 			var checkErrors []error
 			for nodeName, node := range modifiedProfileMap {
 				err = node.Check()
@@ -114,14 +141,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			yes := apiutil.ConfirmationPrompt(fmt.Sprintf("Are you sure you want to modify %d nodes", len(modifiedProfileMap)))
 			if yes {
 				err = apiprofile.ProfileDelete(&wwapiv1.NodeDeleteParameter{NodeNames: pList, Force: true})
-
 				if err != nil {
 					wwlog.Verbose("Problem deleting nodes before modification %s", err)
 				}
-				buffer, _ = yaml.Marshal(modifiedProfileMap)
+				mdata, _ := yaml.Marshal(modifiedProfileMap)
 				newHash := apinode.Hash()
 				err = apiprofile.ProfileAddFromYaml(&wwapiv1.NodeAddParameter{
-					NodeConfYaml: string(buffer),
+					NodeConfYaml: string(mdata),
 					Hash:         newHash.Hash,
 				})
 				if err != nil {
@@ -131,6 +157,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				break
 			}
 		} else {
+			// as the hash value is not changed
+			_ = mp.Unmap(data)
 			break
 		}
 	}
