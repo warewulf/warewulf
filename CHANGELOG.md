@@ -28,6 +28,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Bump github.com/spf13/cobra from 1.7.0 to 1.8.0 #1166
 - Bump github.com/fatih/color from 1.15.0 to 1.17.0 #1224
 - Bump github.com/coreos/ignition/v2 from 2.15.0 to 2.19.0 #1239
+- Removed enforcing of net.naming-scheme=v238 vga=791 and renamed 70-ww4-netname.rules.ww
+  to 70-persistent-net.rules.ww. New kernel command line is net.ifnames=1 which
+  makes SUSE based systems behave in the same way as EL systems
+- issue.ww tries to display the real ip addresses not the configured ones
 
 ### Fixed
 

@@ -157,7 +157,7 @@ nodes:
               n01   SystemOverlay   --       (wwinit)                                             
               n01   Root            --       (initramfs)                                          
               n01   Init            --       (/sbin/init)                                         
-              n01   Kernel.Args     --       (quiet crashkernel=no vga=791 net.naming-scheme=v238)
+              n01   Kernel.Args     --       (quiet crashkernel=no net.ifnames=1)
               n01   Profiles        --       default
 `,
 			inDb: `WW_INTERNAL: 45
@@ -181,7 +181,7 @@ nodes:
               n01   SystemOverlay   --       (wwinit)                                             
               n01   Root            --       (initramfs)                                          
               n01   Init            --       (/sbin/init)                                         
-              n01   Kernel.Args     --       (quiet crashkernel=no vga=791 net.naming-scheme=v238)
+              n01   Kernel.Args     --       (quiet crashkernel=no net.ifnames=1)
               n01   Profiles        --       default
 `,
 			inDb: `WW_INTERNAL: 45
@@ -268,7 +268,7 @@ n01   RuntimeOverlay  --       (generic)
 n01   SystemOverlay   --       (wwinit) 
 n01   Root            --       (initramfs)
 n01   Init            --       (/sbin/init)
-n01   Kernel.Args     --       (quiet crashkernel=no vga=791 net.naming-scheme=v238)  
+n01   Kernel.Args     --       (quiet crashkernel=no net.ifnames=1)  
 n01   Profiles        --       p1,p2
 `},
 		{
@@ -335,7 +335,7 @@ n01   RuntimeOverlay  SUPERSEDED  nop1,rop2~{rop1}
 n01   SystemOverlay   --          (wwinit)  
 n01   Root            --          (initramfs)
 n01   Init            --          (/sbin/init)
-n01   Kernel.Args     --          (quiet crashkernel=no vga=791 net.naming-scheme=v238)  
+n01   Kernel.Args     --          (quiet crashkernel=no net.ifnames=1)  
 n01   Profiles        --          p1
 `},
 	}
@@ -382,7 +382,7 @@ func TestListMultipleFormats(t *testing.T) {
 		{
 			name:   "single node list yaml output",
 			args:   []string{"-y"},
-			output: []string{"n01:\n  AssetKey: \"\"\n  ClusterName: \"\"\n  Comment: \"\"\n  ContainerName: \"\"\n  Discoverable: \"\"\n  Disks: {}\n  FileSystems: {}\n  Grub: \"\"\n  Id: |\n    Source: explicit\n    Value: n01\n  Init: |\n    Source: default-value\n    Value: /sbin/init\n  Ipmi:\n    EscapeChar: \"\"\n    Gateway: \"\"\n    Interface: \"\"\n    Ipaddr: \"\"\n    Netmask: \"\"\n    Password: \"\"\n    Port: \"\"\n    Tags: null\n    UserName: \"\"\n    Write: \"\"\n  Ipxe: |\n    Source: default-value\n    Value: default\n  Kernel:\n    Args: |\n      Source: default-value\n      Value: quiet crashkernel=no vga=791 net.naming-scheme=v238\n    Override: \"\"\n  NetDevs: {}\n  PrimaryNetDev: \"\"\n  Profiles: |\n    Source: explicit\n    Value: default\n  Root: |\n    Source: default-value\n    Value: initramfs\n  RuntimeOverlay: |\n    Source: default-value\n    Value: generic\n  SystemOverlay: |\n    Source: default-value\n    Value: wwinit\n  Tags: {}\n"},
+			output: []string{"n01:\n  AssetKey: \"\"\n  ClusterName: \"\"\n  Comment: \"\"\n  ContainerName: \"\"\n  Discoverable: \"\"\n  Disks: {}\n  FileSystems: {}\n  Grub: \"\"\n  Id: |\n    Source: explicit\n    Value: n01\n  Init: |\n    Source: default-value\n    Value: /sbin/init\n  Ipmi:\n    EscapeChar: \"\"\n    Gateway: \"\"\n    Interface: \"\"\n    Ipaddr: \"\"\n    Netmask: \"\"\n    Password: \"\"\n    Port: \"\"\n    Tags: null\n    UserName: \"\"\n    Write: \"\"\n  Ipxe: |\n    Source: default-value\n    Value: default\n  Kernel:\n    Args: |\n      Source: default-value\n      Value: quiet crashkernel=no net.ifnames=1\n    Override: \"\"\n  NetDevs: {}\n  PrimaryNetDev: \"\"\n  Profiles: |\n    Source: explicit\n    Value: default\n  Root: |\n    Source: default-value\n    Value: initramfs\n  RuntimeOverlay: |\n    Source: default-value\n    Value: generic\n  SystemOverlay: |\n    Source: default-value\n    Value: wwinit\n  Tags: {}\n"},
 			inDb: `WW_INTERNAL: 43
 nodeprofiles:
   default: {}
@@ -395,7 +395,7 @@ nodes:
 		{
 			name:   "single node list json output",
 			args:   []string{"-j"},
-			output: []string{"{\"n01\":{\"Id\":\"Source: explicit\\nValue: n01\\n\",\"Comment\":\"\",\"ClusterName\":\"\",\"ContainerName\":\"\",\"Ipxe\":\"Source: default-value\\nValue: default\\n\",\"Grub\":\"\",\"RuntimeOverlay\":\"Source: default-value\\nValue: generic\\n\",\"SystemOverlay\":\"Source: default-value\\nValue: wwinit\\n\",\"Root\":\"Source: default-value\\nValue: initramfs\\n\",\"Discoverable\":\"\",\"Init\":\"Source: default-value\\nValue: /sbin/init\\n\",\"AssetKey\":\"\",\"Kernel\":{\"Override\":\"\",\"Args\":\"Source: default-value\\nValue: quiet crashkernel=no vga=791 net.naming-scheme=v238\\n\"},\"Ipmi\":{\"Ipaddr\":\"\",\"Netmask\":\"\",\"Port\":\"\",\"Gateway\":\"\",\"UserName\":\"\",\"Password\":\"\",\"Interface\":\"\",\"EscapeChar\":\"\",\"Write\":\"\",\"Tags\":null},\"Profiles\":\"Source: explicit\\nValue: default\\n\",\"PrimaryNetDev\":\"\",\"NetDevs\":{},\"Tags\":{},\"Disks\":{},\"FileSystems\":{}}}\n"},
+			output: []string{"{\"n01\":{\"Id\":\"Source: explicit\\nValue: n01\\n\",\"Comment\":\"\",\"ClusterName\":\"\",\"ContainerName\":\"\",\"Ipxe\":\"Source: default-value\\nValue: default\\n\",\"Grub\":\"\",\"RuntimeOverlay\":\"Source: default-value\\nValue: generic\\n\",\"SystemOverlay\":\"Source: default-value\\nValue: wwinit\\n\",\"Root\":\"Source: default-value\\nValue: initramfs\\n\",\"Discoverable\":\"\",\"Init\":\"Source: default-value\\nValue: /sbin/init\\n\",\"AssetKey\":\"\",\"Kernel\":{\"Override\":\"\",\"Args\":\"Source: default-value\\nValue: quiet crashkernel=no net.ifnames=1\\n\"},\"Ipmi\":{\"Ipaddr\":\"\",\"Netmask\":\"\",\"Port\":\"\",\"Gateway\":\"\",\"UserName\":\"\",\"Password\":\"\",\"Interface\":\"\",\"EscapeChar\":\"\",\"Write\":\"\",\"Tags\":null},\"Profiles\":\"Source: explicit\\nValue: default\\n\",\"PrimaryNetDev\":\"\",\"NetDevs\":{},\"Tags\":{},\"Disks\":{},\"FileSystems\":{}}}\n"},
 			inDb: `WW_INTERNAL: 43
 nodeprofiles:
   default: {}
