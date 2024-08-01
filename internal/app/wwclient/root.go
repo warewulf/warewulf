@@ -133,7 +133,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		if tag == "Unknown" {
 			dmiOut, err := exec.Command("dmidecode", "-s", "chassis-asset-tag").Output()
 			if err == nil {
-				chassisAssetTag := url.QueryEscape(strings.TrimSpace(string(dmiOut)))
+				chassisAssetTag := strings.TrimSpace(string(dmiOut))
 				if chassisAssetTag != "" {
 					tag = chassisAssetTag
 				}
@@ -221,9 +221,19 @@ func updateSystem(ipaddr string, port int, wwid string, tag string, localUUID uu
 	counter := 0
 	for {
 		var err error
-		getString := fmt.Sprintf("http://%s:%d/provision/%s?assetkey=%s&uuid=%s&stage=runtime&compress=gz", ipaddr, port, wwid, tag, localUUID)
-		wwlog.Debug("Making request: %s", getString)
-		resp, err = Webclient.Get(getString)
+		values := &url.Values{}
+		values.Set("assetkey", tag)
+		values.Set("uuid", localUUID.String())
+		values.Set("stage", "runtime")
+		values.Set("compress", "gz")
+		getURL := &url.URL{
+			Scheme:   "http",
+			Host:     fmt.Sprintf("%s:%d", ipaddr, port),
+			Path:     fmt.Sprintf("provision/%s", wwid),
+			RawQuery: values.Encode(),
+		}
+		wwlog.Debug("Making request: %s", getURL)
+		resp, err = Webclient.Get(getURL.String())
 		if err == nil {
 			break
 		} else {
