@@ -46,7 +46,7 @@ Each partition is identified by its label.
 The partition number can be omitted, but specifying it is recommended as ``ignition`` may fail without it.
 Partition sizes should also be set (specified in MiB), except of the last partition:
 if no size is given, the maximum available size is used.
-Each partition has the switches ``should_exist`` and ``wipe_partition_entry`` which control the partition creation process.
+Each partition has the switches ``should_exist`` and ``wipe_partition_entry`` which control the partition creation process. When omitting a partition number the `wipe_partition_entry` should be true, as this allows ignition to replace the existing partition.
 
 File systems are identified by their underlying block device, preferably using the ``/dev/by-partlabel`` format.
 Except for a ``swap`` partition, an absolute path for the mount point must be specified for each file system.
@@ -73,8 +73,8 @@ The following command will create a ``/scratch`` file system on the node ``n01``
 
    wwctl node set n01 \
      --diskname /dev/vda --diskwipe \
-     --partname scratch --partcreate \
-     --fsname scratch --fsformat btrfs --fspath /scratch --fswipe
+     --partname scratch --partcreate --partnumber 1 \
+     --fsname scratch --fsformat btrfs --fspath /scratch
 
 As this is a single file system, the partition number can be omitted.
 
@@ -84,11 +84,28 @@ A swap partition with 1Gig can be added with
 
    wwctl node set n01 \
      --diskname /dev/vda \
-     --partname swap --partsize=1024 --partnumber 1 \
+     --partname swap --partsize=1024 --partnumber 2 \
      --fsname swap --fsformat swap --fspath swap
 
 which has the partition number ``1`` so that it will be added before the
 ``/scratch`` partition.
+
+Wiping disks
+============
+
+Unless you specify the `--fswipe` flag for a filesystem, `ignition` will try to
+reuse existing file systems. For empty disks this means that the desired configuration
+is created and the filesystems are mounted; and so the `--fswipe` can be omitted so
+data is on the disk isn't wiped.
+If there are pre-existing partitions and filesystem on the disk, omitting the `--fswipe` may lead to the outcome that no filesystems are created and mounted.
+In that case you should:
+* wipe the existing data with the means of tools like `wipefs` or `dd` [#]
+* set the `--fswipe` flag and remove it after one reboot, if you want to keep
+existing data on the disk.
+
+.. [#] With `wipefs` you have to remove the filesystem *and* parition information. E.g. use `wipefs -fa /dev/vda*` to remove all filesystem information and partition information.
+
+See also [ignition documentation](https://coreos.github.io/ignition/operator-notes/#filesystem-reuse-semantics) for additional information.
 
 Troubleshooting
 ===============
