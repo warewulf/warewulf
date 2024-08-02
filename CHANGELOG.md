@@ -46,12 +46,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Show more information during `wwctl container <shell|exec>` about when and if the container image will be rebuilt. #1302
 - Command-line completion for `wwctl overlay <edit|delete|chmod|chown>`. #1298
 - Display an error during boot if no container is defined. #1295
+- `wwctl conatiner list --kernel` shows the kernel detected for each container. #1283
+- `wwctl container list --size` shows the uncompressed size of each container. `--compressed` shows the compressed size, and `--chroot` shows the size of the container source on the server. #954, #1117
 
 ### Fixed
 
 - Ensure autobuilt overlays include contextual overlay contents. #1296
 - Fix the failure when updating overlay files existing on different partitions. #1312
 - Escape asset tag for `wwclient` query strings when pulling runtime overlays. #1310
+
+### Changed
+
+- `wwctl container list` only lists names by default. (`--long` shows all attributes.) #1117
 
 ## v4.5.5, 2024-07-05
 
