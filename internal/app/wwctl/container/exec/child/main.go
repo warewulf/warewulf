@@ -22,9 +22,9 @@ import (
 )
 
 const exitEval = `$(VALU="$?" ; if [ $VALU == 0 ]; then echo write; else echo discard; fi)`
-const msgStr = `Changes are written back to container and image is rebuilt
-depending on exit status of last called program.
-Type "true" or "false" to enforce or abort image rebuilt.`
+const msgStr = `Container image is rebuilt depending on the exit status of the last command.
+
+Run "true" or "false" to enforce or abort image rebuild.`
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	if os.Getpid() != 1 {
@@ -84,7 +84,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	if err != nil {
 		return errors.Wrap(err, "failed to mount")
 	}
-	ps1Str := fmt.Sprintf("[%s|%s] Warewulf> ", exitEval, containerName)
+	ps1Str := fmt.Sprintf("[%s|%s] Warewulf> ", containerName, exitEval)
 	wwlog.Info(msgStr)
 	if len(lowerObjects) != 0 && nodename == "" {
 		options := fmt.Sprintf("lowerdir=%s,upperdir=%s,workdir=%s",
