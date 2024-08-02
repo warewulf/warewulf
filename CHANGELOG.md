@@ -40,6 +40,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Ensure autobuilt overlays include contextual overlay contents. #1296
 - Fix the failure when updating overlay files existing on different partitions. #1312
+- Escape asset tag for `wwclient` query strings when pulling runtime overlays. #1310
 
 ## v4.5.5, 2024-07-05
 
