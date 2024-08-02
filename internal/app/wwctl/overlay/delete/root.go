@@ -15,11 +15,16 @@ var (
 		Args:                  cobra.RangeArgs(1, 2),
 		Aliases:               []string{"rm", "del"},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			if len(args) != 0 {
-				return nil, cobra.ShellCompDirectiveNoFileComp
+			if len(args) == 0 {
+				list, _ := overlay.FindOverlays()
+				return list, cobra.ShellCompDirectiveNoFileComp
+			} else if len(args) == 1 {
+				ret, err := overlay.OverlayGetFiles(args[0])
+				if err == nil {
+					return ret, cobra.ShellCompDirectiveNoFileComp
+				}
 			}
-			list, _ := overlay.FindOverlays()
-			return list, cobra.ShellCompDirectiveNoFileComp
+			return []string{""}, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
 	Force   bool
