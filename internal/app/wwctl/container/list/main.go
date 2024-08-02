@@ -16,7 +16,8 @@ var containerList = apicontainer.ContainerList
 
 func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err error) {
 	return func(cmd *cobra.Command, args []string) (err error) {
-		if vars.size || vars.full || vars.kernel {
+		showSize := vars.size || vars.chroot || vars.compressed
+		if showSize || vars.full || vars.kernel {
 			containerInfo, err := containerList()
 			if err != nil {
 				wwlog.Error("%s", err)
@@ -55,7 +56,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 				}
 				ph.Render()
 
-			} else if vars.size {
+			} else if showSize {
 				ph := helper.NewPrintHelper([]string{"CONTAINER NAME", "NODES", "SIZE"})
 				for i := 0; i < len(containerInfo); i++ {
 					sz := util.ByteToString(int64(containerInfo[i].ImgSize))
