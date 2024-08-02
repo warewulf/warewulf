@@ -43,6 +43,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Display an error during boot if no container is defined. #1295
 - `wwctl conatiner list --kernel` shows the kernel detected for each container. #1283
 - `wwctl container list --size` shows the uncompressed size of each container. `--compressed` shows the compressed size, and `--chroot` shows the size of the container source on the server. #954, #1117
+- Add a logrotate config for `warewulfd.log`. #1311
 
 ### Fixed
 
