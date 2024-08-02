@@ -31,7 +31,6 @@ defaultnode:
   init: /sbin/init
   root: initramfs
   ipxe template: default
-  boot method: ipxe
   profiles:
   - default
   network devices:
