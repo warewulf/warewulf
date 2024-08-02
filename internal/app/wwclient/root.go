@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -132,7 +133,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		if tag == "Unknown" {
 			dmiOut, err := exec.Command("dmidecode", "-s", "chassis-asset-tag").Output()
 			if err == nil {
-				chassisAssetTag := strings.TrimSpace(string(dmiOut))
+				chassisAssetTag := url.QueryEscape(strings.TrimSpace(string(dmiOut)))
 				if chassisAssetTag != "" {
 					tag = chassisAssetTag
 				}
