@@ -5,14 +5,15 @@
 echo "================================================================================"
 echo "Warewulf v4 now iXPE booting with grub"
 echo "================================================================================"
+smbios --type 3 --get-string 8 --set assetkey
 set timeout=2
 # Must chainload in order to get kernel args for specific node
 menuentry "Load specific configfile" {
-    conf="(http,{{.Ipaddr}}:{{.Warewulf.Port}})/efiboot/grub.cfg"
+    conf="(http,{{.Ipaddr}}:{{.Warewulf.Port}})/efiboot/grub.cfg?assetkey=${assetkey}"
     configfile $conf
 }
 menuentry "Chainload shim of container" {
-    shim="(http,{{.Ipaddr}}:{{.Warewulf.Port}})/efiboot/shim.efi"
+    shim="(http,{{.Ipaddr}}:{{.Warewulf.Port}})/efiboot/shim.efi?assetkey=${assetkey}"
     chainloader ${shim}
 }
 menuentry "UEFI Firmware Settings" --id "uefi-firmware" {
