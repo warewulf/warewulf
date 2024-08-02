@@ -1,3 +1,4 @@
+{{ if .ContainerName }}
 echo "================================================================================"
 echo "Warewulf v4 now http booting grub: {{.Fqdn}} ({{.Hwaddr}})"
 echo "================================================================================"
@@ -89,3 +90,12 @@ menuentry "System shutdown" {
     echo "System shutting down..."
     halt
 }
+{{ else }}
+echo "================================================================================"
+echo " Warewulf v4:"
+echo " No node image/container defined for this node ({{.Fqdn}})."
+echo " Rebooting in 30s."
+echo "================================================================================"
+sleep 30
+reboot
+{{ end }}
