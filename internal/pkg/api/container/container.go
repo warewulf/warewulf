@@ -341,15 +341,14 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 		if err != nil {
 			wwlog.Error("%s\n", err)
 		}
-		imgSize, err := os.Stat(container.ImageFile(source))
-		if err == nil {
-			size += imgSize.Size()
+		imgF, err := os.Stat(container.ImageFile(source))
+		if err != nil {
+			wwlog.Error("%s\n", err)
 		}
-		imgSize, err = os.Stat(container.ImageFile(source) + ".gz")
-		if err == nil {
-			size += imgSize.Size()
+		imgFC, err := os.Stat(container.ImageFile(source) + ".gz")
+		if err != nil {
+			wwlog.Error("%s\n", err)
 		}
-
 		containerInfo = append(containerInfo, &wwapiv1.ContainerInfo{
 			Name:          source,
 			NodeCount:     uint32(nodemap[source]),
@@ -357,6 +356,8 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 			CreateDate:    creationTime,
 			ModDate:       modTime,
 			Size:          uint64(size),
+			ImgSize:       uint64(imgF.Size()),
+			ImgSizeComp:   uint64(imgFC.Size()),
 		})
 
 	}
