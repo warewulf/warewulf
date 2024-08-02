@@ -44,6 +44,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - Show more information during `wwctl container <shell|exec>` about when and if the container image will be rebuilt. #1302
+- Command-line completion for `wwctl overlay <edit|delete|chmod|chown>`. #1298
 
 ### Fixed
 
