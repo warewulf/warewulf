@@ -21,6 +21,11 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
+const exitEval = `$(VALU="$?" ; if [ $VALU == 0 ]; then echo write; else echo discard; fi)`
+const msgStr = `Container image is rebuilt depending on the exit status of the last command.
+
+Run "true" or "false" to enforce or abort image rebuild.`
+
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	if os.Getpid() != 1 {
 		wwlog.Error("PID is not 1: %d", os.Getpid())
@@ -79,7 +84,8 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	if err != nil {
 		return errors.Wrap(err, "failed to mount")
 	}
-	ps1Str := fmt.Sprintf("[%s] Warewulf> ", containerName)
+	ps1Str := fmt.Sprintf("[%s|%s] Warewulf> ", containerName, exitEval)
+	wwlog.Info(msgStr)
 	if len(lowerObjects) != 0 && nodename == "" {
 		options := fmt.Sprintf("lowerdir=%s,upperdir=%s,workdir=%s",
 			path.Join(runDir, "lower"), containerPath, path.Join(runDir, "work"))
