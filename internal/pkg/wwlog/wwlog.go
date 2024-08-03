@@ -117,7 +117,7 @@ func DefaultFormatter(logLevel int, rec *LogRecord) string {
 		}
 	}
 
-	if rec.Level == INFO && logLevel == INFO {
+	if (rec.Level == INFO || rec.Level == OUT) && logLevel == INFO {
 		// NOTE: this is a bit strange, but for user-friendliness it makes sense
 		// to not pollute the messages unless something bad happens (by default).
 		// if logLevel > INFO, then level == INFO messages should not be printed anyway,
