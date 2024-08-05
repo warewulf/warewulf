@@ -42,10 +42,13 @@ do have to make some configuration changes.
    for the provisioning file system. That change is made like: ``$
    sudo wwctl profile set --root tmpfs default``.
 
-#. That is all you have to do to ensure that Warewulf will probably
+#. That is all you have to do to ensure that Warewulf will
    support SELinux. Once that is done, you just need to enable SELinux
    in ``/etc/sysconfig/selinux`` and install the appropriate profiles
-   into the container.
+   into the container. `An example`_ of such a container is in the
+   warewulf-node-images repository.
+
+.. _An example: https://github.com/warewulf/warewulf-node-images/tree/main/examples/rockylinux-9-selinux
 
 Provisioning Security
 =====================
