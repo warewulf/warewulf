@@ -243,7 +243,7 @@ func updateSystem(ipaddr string, port int, wwid string, tag string, localUUID uu
 		return
 	}
 	log.Printf("Updating system\n")
-	command := exec.Command("/bin/sh", "-c", "gzip -dc | cpio -iu")
+	command := exec.Command("/bin/sh", "-c", "gzip -dc | cpio -i")
 	command.Stdin = resp.Body
 	err := command.Run()
 	if err != nil {
