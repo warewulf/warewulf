@@ -9,13 +9,12 @@ branch.
      `%Y-%m-%d` format, following existing convention in the log.
    - Do any final clean-up. (e.g., removing redundancy, adding issue
      or PR numbers).
-2. Update `userdocs` implicit references to the latest version.
+2. Update `userdocs` references that imply the latest release to refer
+   to the new version.
    - `contents/installation.rst`
    - `contributing/development-environment-vagrant.rst`
    - `quickstart/debian12.rst`
    - `quickstart/el.rst`
- references that imply the latest release to refer to the
-   new version.
 3. Cherry-pick updates from 1 and 2 above to a release branch if necessary.
    (i.e., when not doing a new major release)
 4. Create a signed tag for the release of the format v4.MINOR.PATCH,
