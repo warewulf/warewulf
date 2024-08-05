@@ -45,7 +45,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Added a link to an example SELinux-enabled node image in documentation. #1305
 
-## v4.5.6, unreleased
+## v4.5.6, 2024-08-05
 
 ### Added
 
