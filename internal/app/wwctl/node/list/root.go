@@ -6,13 +6,12 @@ import (
 )
 
 type variables struct {
-	showNet     bool
-	showIpmi    bool
-	showAll     bool
-	showLong    bool
-	showFullAll bool
-	showYaml    bool
-	showJson    bool
+	showNet  bool
+	showIpmi bool
+	showAll  bool
+	showLong bool
+	showYaml bool
+	showJson bool
 }
 
 func GetCommand() *cobra.Command {
@@ -34,7 +33,7 @@ func GetCommand() *cobra.Command {
 			nodes, _ := nodeDB.FindAllNodes()
 			var node_names []string
 			for _, node := range nodes {
-				node_names = append(node_names, node.Id.Get())
+				node_names = append(node_names, node.Id())
 			}
 			return node_names, cobra.ShellCompDirectiveNoFileComp
 		},
@@ -42,7 +41,6 @@ func GetCommand() *cobra.Command {
 	baseCmd.PersistentFlags().BoolVarP(&vars.showNet, "net", "n", false, "Show node network configurations")
 	baseCmd.PersistentFlags().BoolVarP(&vars.showIpmi, "ipmi", "i", false, "Show node IPMI configurations")
 	baseCmd.PersistentFlags().BoolVarP(&vars.showAll, "all", "a", false, "Show all node configurations")
-	baseCmd.PersistentFlags().BoolVarP(&vars.showFullAll, "fullall", "A", false, "Show all node configurations inclusive empty entries")
 	baseCmd.PersistentFlags().BoolVarP(&vars.showLong, "long", "l", false, "Show long or wide format")
 	baseCmd.PersistentFlags().BoolVarP(&vars.showYaml, "yaml", "y", false, "Show yaml format")
 	baseCmd.PersistentFlags().BoolVarP(&vars.showJson, "json", "j", false, "Show json format")

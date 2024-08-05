@@ -23,7 +23,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 ARG_LOOP:
 	for _, arg := range args {
 		for _, n := range nodes {
-			if n.Kernel.Override.Get() == arg {
+			if n.Kernel.Override == arg {
 				wwlog.Error("Kernel is configured for nodes, skipping: %s", arg)
 				continue ARG_LOOP
 			}
