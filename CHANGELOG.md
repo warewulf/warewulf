@@ -44,6 +44,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 - Added a link to an example SELinux-enabled node image in documentation. #1305
+- Added `--syncuser` flag to `shell` sub-command to enhance the user syncing function. #1344
 
 ## v4.5.6, 2024-08-05
 

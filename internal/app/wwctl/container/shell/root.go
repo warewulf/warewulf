@@ -25,11 +25,13 @@ var (
 	}
 	binds    []string
 	nodeName string
+	syncUser bool
 )
 
 func init() {
 	baseCmd.PersistentFlags().StringArrayVarP(&binds, "bind", "b", []string{}, "Bind a local path into the container (must exist)")
 	baseCmd.PersistentFlags().StringVarP(&nodeName, "node", "n", "", "Create a read only view of the container for the given node")
+	baseCmd.PersistentFlags().BoolVar(&syncUser, "syncuser", false, "Synchronize UIDs/GIDs from host to container")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
