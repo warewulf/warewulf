@@ -43,6 +43,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## v4.5.8, unreleased
 
+### Added
+
+- Added `--syncuser` flag to `wwctl container shell`. #1358
+
 ### Changed
 
 - Interleave tmpfs across all available NUMA nodes. #1347, #1348
