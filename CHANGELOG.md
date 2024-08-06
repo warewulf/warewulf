@@ -61,6 +61,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Ensure autobuilt overlays include contextual overlay contents. #1296
 - Fix the failure when updating overlay files existing on different partitions. #1312
 - Escape asset tag for `wwclient` query strings when pulling runtime overlays. #1310
+- Fix dracut booting with secure mode. #1261
 
 ### Changed
 
@@ -79,6 +80,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix the issue that removing lines during wwctl overlay edit didn't work. #1235
 - Fix the issue that new files created with wwctl overlay edit have 755 permissions. #1236
 - Fix tab-completion for `wwctl overlay list`. #1260
+- Mount `/sys` and `/run` during `wwctl container exec`. #1287
 
 ### Changed
 
