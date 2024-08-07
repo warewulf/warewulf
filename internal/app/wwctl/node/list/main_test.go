@@ -338,6 +338,32 @@ n01   Init            --          (/sbin/init)
 n01   Kernel.Args     --          (quiet crashkernel=no vga=791 net.naming-scheme=v238)  
 n01   Profiles        --          p1
 `},
+		{
+			inDb: `WW_INTERNAL: 45
+nodeprofiles:
+  p1:
+    system overlay:
+    - profileinit
+nodes:
+  n01:
+    profiles:
+    - p1
+    system overlay:
+    - nodeinit
+`,
+			name:    "prefer profile system overlay over node overlay",
+			args:    []string{"-a"},
+			wantErr: false,
+			stdout: `NODE  FIELD           PROFILE     VALUE
+n01   Id              --        n01        
+n01   Ipxe            --          (default)
+n01   RuntimeOverlay  --          (generic)
+n01   SystemOverlay   SUPERSEDED  profileinit, nodeinit  
+n01   Root            --          (initramfs)
+n01   Init            --          (/sbin/init)
+n01   Kernel.Args     --          (quiet crashkernel=no vga=791 net.naming-scheme=v238)  
+n01   Profiles        --          p1
+`},
 	}
 
 	conf_yml := `WW_INTERNAL: 0`
