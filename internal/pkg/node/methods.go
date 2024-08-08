@@ -287,6 +287,17 @@ func (ent *Entry) GetSlice() []string {
 	return []string{}
 }
 
+func (ent *Entry) GetSlicePreferAlt() []string {
+	retval := append(ent.altvalue, ent.value...)
+	if len(retval) != 0 {
+		return cleanList(retval)
+	}
+	if len(ent.def) != 0 {
+		return ent.def
+	}
+	return []string{}
+}
+
 /*
 Get the real value, not the alternative of default one.
 */
@@ -371,6 +382,43 @@ func (ent *Entry) Print() string {
 		var ret string
 		if len(ent.value) != 0 || len(ent.altvalue) != 0 {
 			combList := append(ent.value, ent.altvalue...)
+			ret = strings.Join(cleanList(combList), ",")
+			if len(negList(combList)) > 0 {
+				ret += " ~{" + strings.Join(negList(combList), ",") + "}"
+			}
+
+		}
+		if ret != "" {
+			return ret
+		}
+		if len(ent.def) != 0 {
+			return "(" + strings.Join(ent.def, ",") + ")"
+		}
+
+	}
+	return "--"
+}
+
+/* Gets the the entry of the value in following order
+* profile value if set
+* node value if set
+* default value if set
+ */
+func (ent *Entry) PrintPreferAlt() string {
+	if !ent.isSlice {
+		if len(ent.altvalue) != 0 {
+			return ent.altvalue[0]
+		}
+		if len(ent.value) != 0 {
+			return ent.value[0]
+		}
+		if len(ent.def) != 0 {
+			return "(" + ent.def[0] + ")"
+		}
+	} else {
+		var ret string
+		if len(ent.value) != 0 || len(ent.altvalue) != 0 {
+			combList := append(ent.altvalue, ent.value...)
 			ret = strings.Join(cleanList(combList), ",")
 			if len(negList(combList)) > 0 {
 				ret += " ~{" + strings.Join(negList(combList), ",") + "}"
