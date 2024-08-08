@@ -23,8 +23,7 @@ func SSH(keyTypes ...string) error {
 
 		err := os.MkdirAll(path.Join(conf.Paths.Sysconfdir, "warewulf/keys"), 0755)
 		if err != nil {
-			wwlog.Error("Could not create base directory: %s", err)
-			os.Exit(1)
+			return fmt.Errorf("could not create base directory: %s", err)
 		}
 
 		for _, k := range keyTypes {
@@ -47,8 +46,7 @@ func SSH(keyTypes ...string) error {
 
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		wwlog.Error("Could not obtain the user's home directory: %s", err)
-		os.Exit(1)
+		return fmt.Errorf("could not obtain the user's home directory: %s", err)
 	}
 
 	authorizedKeys := path.Join(homeDir, "/.ssh/authorized_keys")
