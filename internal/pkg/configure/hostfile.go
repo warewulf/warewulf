@@ -1,6 +1,7 @@
 package configure
 
 import (
+	"fmt"
 	"os"
 	"path"
 
@@ -8,17 +9,15 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/util"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 /*
 Creates '/etc/hosts' from the host template.
 */
-func Hostfile() error {
+func Hostfile() (err error) {
 	hostTemplate := path.Join(overlay.OverlaySourceDir("host"), "/etc/hosts.ww")
 	if !(util.IsFile(hostTemplate)) {
-		wwlog.Error("'the overlay template '/etc/hosts.ww' does not exists in 'host' overlay")
-		os.Exit(1)
+		return fmt.Errorf("'the overlay template '/etc/hosts.ww' does not exists in 'host' overlay")
 	}
 
 	nodeInfo := node.NewInfo()
@@ -29,13 +28,11 @@ func Hostfile() error {
 		hostTemplate,
 		tstruct)
 	if err != nil {
-		wwlog.Error("%s", err)
-		os.Exit(1)
+		return
 	}
 	info, err := os.Stat(hostTemplate)
 	if err != nil {
-		wwlog.Error("%s", err)
-		os.Exit(1)
+		return
 	}
 
 	if writeFile {
@@ -44,5 +41,5 @@ func Hostfile() error {
 			return errors.Wrap(err, "could not write file from template")
 		}
 	}
-	return nil
+	return
 }
