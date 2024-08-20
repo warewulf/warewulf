@@ -213,6 +213,21 @@ when using the exec command. This works as follows:
    location, as it is almost always present and empty in every Linux
    distribution (as prescribed by the LSB file hierarchy standard).
 
+Files which should always be present in a container image like ``resolv.conf``
+can be specified in ``warewulf.conf`` with following container_exit
+
+.. code-block:: yaml
+   container mounts:
+   - source: /etc/resolv.conf
+     dest: /etc/resolv.conf
+     readonly: true
+
+.. note::
+   Instead of the ``readonly`` setting you can set ``cow``, which 
+   has the effect, that the source file is copied to the container
+   and removed if it was modified. This useful for file used for
+   registrations.
+
 When the command completes, if anything within the container changed,
 the container will be rebuilt into a bootable static object
 automatically.

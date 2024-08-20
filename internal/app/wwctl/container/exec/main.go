@@ -54,7 +54,6 @@ func runContainedCmd(cmd *cobra.Command, containerName string, args []string) (e
 	}()
 
 	logStr := fmt.Sprint(wwlog.GetLogLevel())
-
 	childArgs := []string{"--warewulfconf", conf.GetWarewulfConf(), "--loglevel", logStr, "container", "exec", "__child"}
 	childArgs = append(childArgs, containerName)
 	for _, b := range binds {
@@ -64,8 +63,40 @@ func runContainedCmd(cmd *cobra.Command, containerName string, args []string) (e
 		childArgs = append(childArgs, "--node", nodeName)
 	}
 	childArgs = append(childArgs, args...)
+	// copy the files into the container at this stage, es in __child the
+	// command syscall.Exec which replaces the __child process with the
+	// exec command in the container. All the mounts, have to be done in
+	// __child so that the used mounts don't propagate outside on the host
+	// (see the CLONE attributes), but as for the cow copy option we need
+	// to see if a file was modified after it was copied into the container
+	// so do this here.
+	// At first read out conf, the parse commandline, as copy files has the
+	// same synatx as mount points
+	mountPts := conf.MountsContainer
+	mountPts = append(container.InitMountPnts(binds), mountPts...)
+	filesToCpy := getCopyFiles(containerName, mountPts)
+	for i, cpyFile := range filesToCpy {
+		if err = util.CopyFile(cpyFile.Src, path.Join(container.RootFsDir(containerName), cpyFile.FileName)); err != nil {
+			return fmt.Errorf("couldn't copy files into container: %w", err)
+		}
+		// we can ignore error as the file was copied
+		stat, _ := os.Stat(path.Join(container.RootFsDir(containerName), cpyFile.FileName))
+		filesToCpy[i].ModTime = stat.ModTime()
+	}
 	wwlog.Verbose("Running contained command: %s", childArgs)
-	return childCommandFunc(cmd, childArgs)
+	retVal := childCommandFunc(cmd, childArgs)
+	for _, cpyFile := range filesToCpy {
+		if modStat, err := os.Stat(path.Join(container.RootFsDir(containerName), cpyFile.FileName)); err != nil {
+			wwlog.Info("copied file was removed: %s", err)
+		} else {
+			if modStat.ModTime() == cpyFile.ModTime {
+				if err := os.Remove(path.Join(container.RootFsDir(containerName), cpyFile.FileName)); err != nil {
+					wwlog.Warn("couldn't remove copied file: %s", err)
+				}
+			}
+		}
+	}
+	return retVal
 }
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
@@ -153,4 +184,41 @@ func SetBinds(myBinds []string) {
 
 func SetNode(myNode string) {
 	nodeName = myNode
+}
+
+// file name and last modification time so we can remove the file if it wasn't modified
+type cowFile struct {
+	FileName string
+	Src      string
+	ModTime  time.Time
+	Cow      bool
+}
+
+/*
+Check the objects we want to copy in, instead of mounting
+*/
+func getCopyFiles(containerNamer string, binds []*warewulfconf.MountEntry) (copyObjects []cowFile) {
+	for _, bind := range binds {
+		if !bind.Cow || bind.ReadOnly {
+			continue
+		}
+		if _, err := os.Stat(path.Join(container.RootFsDir(containerNamer), path.Dir(bind.Dest))); err != nil {
+			wwlog.Warn("destination directory doesn't exist: %s", err)
+			continue
+		}
+		if _, err := os.Stat(path.Join(container.RootFsDir(containerNamer), bind.Dest)); err == nil {
+			wwlog.Verbose("file exists in container: %s", bind.Dest)
+			continue
+		}
+		if _, err := os.Stat(bind.Source); err != nil {
+			wwlog.Warn("source doesn't exist: %s", err)
+			continue
+		}
+		copyObjects = append(copyObjects, cowFile{
+			FileName: bind.Dest,
+			Src:      bind.Source,
+			Cow:      bind.Cow,
+		})
+	}
+	return
 }

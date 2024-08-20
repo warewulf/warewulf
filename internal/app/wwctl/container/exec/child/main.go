@@ -92,7 +92,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		wwlog.Debug("overlay options: %s", options)
 		err = syscall.Mount("overlay", containerPath, "overlay", 0, options)
 		if err != nil {
-			wwlog.Warn(fmt.Sprintf("Couldn't create overlay for ephermal mount points: %s", err))
+			wwlog.Warn("Couldn't create overlay for ephermal mount points: %s", err)
 		}
 	} else if nodename != "" {
 		nodeDB, err := node.New()
@@ -142,6 +142,10 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	for _, mntPnt := range mountPts {
+		if mntPnt.Cow {
+			continue
+		}
+		wwlog.Debug("bind mounting: %s -> %s", mntPnt.Source, path.Join(containerPath, mntPnt.Dest))
 		err = syscall.Mount(mntPnt.Source, path.Join(containerPath, mntPnt.Dest), "", syscall.MS_BIND, "")
 		if err != nil {
 			wwlog.Warn("Couldn't mount %s to %s: %s", mntPnt.Source, mntPnt.Dest, err)
@@ -195,6 +199,9 @@ the invalid mount points. Directories always have '/' as suffix
 func checkMountPoints(containerName string, binds []*warewulfconf.MountEntry) (overlayObjects []string) {
 	overlayObjects = []string{}
 	for _, b := range binds {
+		if b.Cow {
+			continue
+		}
 		_, err := os.Stat(b.Source)
 		if err != nil {
 			wwlog.Debug("Couldn't stat %s create no mount point in container", b.Source)

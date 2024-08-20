@@ -28,7 +28,11 @@ var (
 )
 
 func init() {
-	baseCmd.PersistentFlags().StringArrayVarP(&binds, "bind", "b", []string{}, "Bind a local path into the container (must exist)")
+	baseCmd.PersistentFlags().StringArrayVarP(&binds, "bind", "b", []string{}, `Bind a local path which must exist into the container. Syntax is
+source[:destination[:{ro|cow}]] If destination is not set, 
+it will the same path as source.The additional parameter is 
+ro for read only and cow, which means the file is copied into 
+the container and removed if not modified.`)
 	baseCmd.PersistentFlags().StringVarP(&nodeName, "node", "n", "", "Create a read only view of the container for the given node")
 }
 
