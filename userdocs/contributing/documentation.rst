@@ -9,9 +9,9 @@ reason for this: we want to share the love so nobody feels left out!
 
 You can contribute to the documentation by `raising an issue to
 suggest an improvement
-<https://github.com/warewulf/warewulf-web/issues/new>`_ or by sending a
-`pull request <https://github.com/warewulf/warewulf-web/compare>`_ on
-`our repository <https://github.com/warewulf/warewulf-web>`_.
+<https://github.com/warewulf/warewulf/issues/new>`_ or by sending a
+`pull request <https://github.com/warewulf/warewulf/compare>`_ on
+`our repository <https://github.com/warewulf/warewulf>`_.
 
 The current documentation is generated with `Sphinx
 <https://www.sphinx-doc.org/>`_.

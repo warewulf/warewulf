@@ -32,6 +32,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- Update links on contributing page to point to warewulf repo.
 - Prevent Networkmanager from trying to optain IP address via DHCP
   on unused/unmanaged network interfaces.
 - Systems with no SMBIOS (Raspberry Pi) will create a UUID from
