@@ -161,7 +161,7 @@ initramfs inside the container.
 .. code-block:: shell
 
    dnf -y install warewulf-dracut
-   dracut --force --no-hostonly --add wwinit --kver $(ls /lib/modules | head -n1)
+   dracut --force --no-hostonly --add wwinit --regenerate-all
 
 Set the node's iPXE template to ``dracut`` to direct iPXE to fetch the
 node's initramfs image and boot with dracut semantics, rather than
