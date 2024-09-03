@@ -169,7 +169,7 @@ func AddProfile(nsp *wwapiv1.ProfileSetParameter) error {
 	}
 
 	if util.InSlice(nodeDB.ListAllProfiles(), nsp.ProfileNames[0]) {
-		return errors.New(fmt.Sprintf("profile with name %s allready exists", nsp.ProfileNames[0]))
+		return errors.New(fmt.Sprintf("profile with name %s already exists", nsp.ProfileNames[0]))
 	}
 
 	var nodeConf node.NodeConf
