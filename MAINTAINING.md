@@ -1,5 +1,27 @@
 # Maintaining
 
+## Technical Steering Committee
+
+(in alphabetical order by surname)
+
+- [Anderson, Jonathon](janderson@ciq.com) (CIQ)
+- [Goll, Christian](cgoll@suse.de) (SUSE)
+- [Hanks, John](griznog@gmail.com) (Chan Zuckerburg Biohub)
+- [Kurtzer, Greg](gmk@ciq.com) (CIQ)
+- [Siadal, Jeremy](jeremy.c.siadal@intel.com) (Intel)
+
+TSC chair: Jonathon Anderson (November 2023)
+
+The Warewulf technical steering committee (TSC) leads roadmapping,
+development, and release publication for the Warewulf project. It
+meets twice monthly at a Warewulf steering committee meeting convened
+by the TSC chair.
+
+New TSC members may be nominated by an existing member of the TSC, and
+may be admitted by consensus vote by the existing TSC members.
+
+The TSC chair is selected by the TSC once per year in November.
+
 ## Roadmapping
 
 - The project roadmap is formally defined by GitHub milestones

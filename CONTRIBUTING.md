@@ -13,18 +13,6 @@ prepare derivative works, incorporate into other computer software,
 distribute, and sublicense such enhancements or derivative works
 thereof, in binary and source code form.
 
-## Technical Steering Committee
-
-(in alphabetical order by surname)
-
-- [Anderson, Jonathon](janderson@ciq.com) (CIQ)
-- [Goll, Christian](cgoll@suse.de) (SUSE)
-- [Hanks, John](griznog@gmail.com) (Chan Zuckerburg Biohub)
-- [Kurtzer, Greg](gmk@ciq.com) (CIQ)
-- [Siadal, Jeremy](jeremy.c.siadal@intel.com) (Intel)
-
-TSC chair: Jonathon Anderson
-
 ## Pull requests
 
 - All commits must be "Signed-off" (i.e., by using `git commit -s`),
