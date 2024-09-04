@@ -19,7 +19,7 @@ func DHCP() (err error) {
 	controller := warewulfconf.Get()
 
 	if !controller.DHCP.Enabled {
-		wwlog.Warn("This system is not configured as a Warewulf DHCP controller, need to manually run `wwctl configure dhcp` later")
+		wwlog.Warn("This system is not configured as a Warewulf DHCP controller")
 		return
 	}
 

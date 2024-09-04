@@ -42,7 +42,7 @@ func TFTP() (err error) {
 		}
 	}
 	if !controller.TFTP.Enabled {
-		wwlog.Warn("Warewulf does not auto start TFTP services due to disable by warewulf.conf, need to manually run `wwctl configure tftp` later")
+		wwlog.Warn("Warewulf does not auto start TFTP services due to disable by warewulf.conf")
 		return nil
 	}
 
