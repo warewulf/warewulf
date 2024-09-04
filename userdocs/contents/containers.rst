@@ -91,10 +91,10 @@ Here are the environmental variables that can be used.
    WAREWULF_OCI_PASSWORD
    WAREWULF_OCI_NOHTTPS
 
-They can be overwritten with ``--nohttps``, ``--username`` and ``--passwd``.
+They can be overwritten with ``--nohttps``, ``--username`` and ``--password``.
 .. code-block:: console
 
-   # wwctl import --username tux --passwd supersecret docker://ghcr.io/privatereg/rocky:8
+   # wwctl import --username tux --password supersecret docker://ghcr.io/privatereg/rocky:8
 
 The above is just an example. Consideration should be done before
 doing it this way if you are in a security sensitive environment or

@@ -47,7 +47,9 @@ func init() {
 	baseCmd.PersistentFlags().BoolVar(&SyncUser, "syncuser", false, "Synchronize UIDs/GIDs from host to container")
 	baseCmd.PersistentFlags().BoolVar(&OciNoHttps, "nohttps", false, "Ignore wrong TLS certificates, superseedes env WAREWULF_OCI_NOHTTPS")
 	baseCmd.PersistentFlags().StringVar(&OciUsername, "username", "", "Set username for the access to the registry, superseedes env WAREWULF_OCI_USERNAME")
+	baseCmd.PersistentFlags().StringVar(&OciPassword, "password", "", "Set password for the access to the registry, superseedes env WAREWULF_OCI_PASSWORD")
 	baseCmd.PersistentFlags().StringVar(&OciPassword, "passwd", "", "Set password for the access to the registry, superseedes env WAREWULF_OCI_PASSWORD")
+	_ = baseCmd.PersistentFlags().MarkHidden("passwd")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
