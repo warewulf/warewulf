@@ -379,3 +379,32 @@ It is possible to duplicate an installed image by using :
   # wwctl container copy CONTAINER_NAME DUPLICATED_CONTAINER_NAME
 
 This kind of duplication can be useful if you are looking for canary tests.
+
+Multi-arch container management
+============================
+It is possible to build, edit, and provision containers of different 
+architectures (i.e. aarch64) from an x86_64 host by using QEMU. Simply 
+run the appropriate command below based on your container management tools.
+
+.. code-block:: console
+
+   # sudo docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+   # sudo podman run --rm --privileged multiarch/qemu-user-static --reset -p yes
+   # sudo singularity run docker://multiarch/qemu-user-static --reset -p yes
+
+Then, ``wwctl container exec`` will work regardless of the architecture of the container.
+For more information about QEMU, see their `GitHub <https://github.com/multiarch/qemu-user-static>`_
+
+To use wwclient on a booted container using a different architecture, 
+wwclient must be compiled for the specific architecture. This requires GOLang build
+tools 1.21 or newer. Below is an example for building wwclient for arm64:
+
+.. code-block:: console
+
+   # git clone https://github.com/warewulf/warewulf
+   # cd warewulf
+   # GOARCH=arm64 PREFIX=/ make wwclient
+   # mkdir -p /var/lib/warewulf/overlays/wwclient_arm64/rootfs/warewulf
+   # cp wwclient /var/lib/warewulf/overlays/wwclient_arm64/rootfs/warewulf
+
+Then, apply the new "wwclient_arm64" system overlay to your arm64 node/profile
