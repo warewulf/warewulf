@@ -2,7 +2,6 @@ package configure
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/pkg/errors"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
@@ -20,18 +19,16 @@ func DHCP() (err error) {
 	controller := warewulfconf.Get()
 
 	if !controller.DHCP.Enabled {
-		wwlog.Info("This system is not configured as a Warewulf DHCP controller")
-		os.Exit(1)
+		wwlog.Warn("This system is not configured as a Warewulf DHCP controller")
+		return
 	}
 
 	if controller.DHCP.RangeStart == "" {
-		wwlog.Error("Configuration is not defined: `dhcpd range start`")
-		os.Exit(1)
+		return fmt.Errorf("configuration is not defined: `dhcpd range start`")
 	}
 
 	if controller.DHCP.RangeEnd == "" {
-		wwlog.Error("Configuration is not defined: `dhcpd range end`")
-		os.Exit(1)
+		return fmt.Errorf("configuration is not defined: `dhcpd range end`")
 	}
 	if controller.Warewulf.EnableHostOverlay {
 		err = overlay.BuildHostOverlay()

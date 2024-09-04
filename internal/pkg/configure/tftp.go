@@ -10,14 +10,13 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-func TFTP() error {
+func TFTP() (err error) {
 	controller := warewulfconf.Get()
 	var tftpdir string = path.Join(controller.TFTP.TftpRoot, "warewulf")
 
-	err := os.MkdirAll(tftpdir, 0755)
+	err = os.MkdirAll(tftpdir, 0755)
 	if err != nil {
-		wwlog.Error("%s", err)
-		return err
+		return
 	}
 
 	if controller.Warewulf.GrubBoot {
@@ -43,15 +42,14 @@ func TFTP() error {
 		}
 	}
 	if !controller.TFTP.Enabled {
-		wwlog.Info("Warewulf does not auto start TFTP services due to disable by warewulf.conf")
-		os.Exit(0)
+		wwlog.Warn("Warewulf does not auto start TFTP services due to disable by warewulf.conf")
+		return nil
 	}
 
 	wwlog.Info("Enabling and restarting the TFTP services")
 	err = util.SystemdStart(controller.TFTP.SystemdName)
 	if err != nil {
-		wwlog.Error("%s", err)
-		return err
+		return
 	}
 
 	return nil

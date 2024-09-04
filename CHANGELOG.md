@@ -48,6 +48,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 - Added a link to an example SELinux-enabled node image in documentation. #1305
+- Refine error handling for `wwctl configure`. #1273
 
 ## v4.5.6, 2024-08-05
 
