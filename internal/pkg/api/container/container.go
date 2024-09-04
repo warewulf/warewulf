@@ -196,10 +196,10 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 	} else if strings.HasPrefix(cip.Source, "docker://") || strings.HasPrefix(cip.Source, "docker-daemon://") ||
 		strings.HasPrefix(cip.Source, "file://") || util.IsFile(cip.Source) {
 		var sCtx *types.SystemContext
-		sCtx, err = getSystemContext()
+		sCtx, err = getSystemContext(cip.OciNoHttps, cip.OciUsername, cip.OciPassword)
 		if err != nil {
 			wwlog.ErrorExc(err, "")
-			// TODO: mhink - return was missing here. Was that deliberate?
+			return
 		}
 
 		if util.IsFile(cip.Source) && !filepath.IsAbs(cip.Source) {
@@ -473,53 +473,41 @@ func ContainerRename(crp *wwapiv1.ContainerRenameParameter) (err error) {
 	return warewulfd.DaemonReload()
 }
 
-// Private helpers
+// create the system context and reading out environment variables
+func getSystemContext(noHttps bool, username string, password string) (sCtx *types.SystemContext, err error) {
+	sCtx = &types.SystemContext{}
+	// only check env if noHttps wasn't set
+	if !noHttps {
+		val, ok := os.LookupEnv("WAREWULF_OCI_NOHTTPS")
+		if ok {
 
-func setOCICredentials(sCtx *types.SystemContext) error {
-	username, userSet := os.LookupEnv("WAREWULF_OCI_USERNAME")
-	password, passSet := os.LookupEnv("WAREWULF_OCI_PASSWORD")
-	if userSet || passSet {
-		if userSet && passSet {
+			noHttps, err = strconv.ParseBool(val)
+			if err != nil {
+				return nil, fmt.Errorf("while parsing insecure http option: %v", err)
+			}
+
+		}
+		// only set this if we want to disable, otherwise leave as undefined
+		if noHttps {
+			sCtx.DockerInsecureSkipTLSVerify = types.NewOptionalBool(true)
+		}
+		sCtx.OCIInsecureSkipTLSVerify = noHttps
+	}
+	if username == "" {
+		username, _ = os.LookupEnv("WAREWULF_OCI_USERNAME")
+	}
+	if password == "" {
+		password, _ = os.LookupEnv("WAREWULF_OCI_PASSWORD")
+	}
+	if username != "" || password != "" {
+		if username != "" && password != "" {
 			sCtx.DockerAuthConfig = &types.DockerAuthConfig{
 				Username: username,
 				Password: password,
 			}
 		} else {
-			return fmt.Errorf("oci username and password env vars must be specified together")
+			return nil, fmt.Errorf("oci username and password env vars must be specified together")
 		}
-	}
-	return nil
-}
-
-func setNoHTTPSOpts(sCtx *types.SystemContext) error {
-	val, ok := os.LookupEnv("WAREWULF_OCI_NOHTTPS")
-	if !ok {
-		return nil
-	}
-
-	noHTTPS, err := strconv.ParseBool(val)
-	if err != nil {
-		return fmt.Errorf("while parsing insecure http option: %v", err)
-	}
-
-	// only set this if we want to disable, otherwise leave as undefined
-	if noHTTPS {
-		sCtx.DockerInsecureSkipTLSVerify = types.NewOptionalBool(true)
-	}
-	sCtx.OCIInsecureSkipTLSVerify = noHTTPS
-
-	return nil
-}
-
-func getSystemContext() (sCtx *types.SystemContext, err error) {
-	sCtx = &types.SystemContext{}
-
-	if err := setOCICredentials(sCtx); err != nil {
-		return nil, err
-	}
-
-	if err := setNoHTTPSOpts(sCtx); err != nil {
-		return nil, err
 	}
 
 	return sCtx, nil
