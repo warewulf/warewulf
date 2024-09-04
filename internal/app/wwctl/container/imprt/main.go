@@ -15,13 +15,16 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	cip := &wwapiv1.ContainerImportParameter{
-		Source:   args[0],
-		Name:     name,
-		Force:    SetForce,
-		Update:   SetUpdate,
-		Build:    SetBuild,
-		Default:  SetDefault,
-		SyncUser: SyncUser,
+		Source:      args[0],
+		Name:        name,
+		Force:       SetForce,
+		Update:      SetUpdate,
+		Build:       SetBuild,
+		Default:     SetDefault,
+		SyncUser:    SyncUser,
+		OciNoHttps:  OciNoHttps,
+		OciUsername: OciUsername,
+		OciPassword: OciPassword,
 	}
 
 	_, err = apicontainer.ContainerImport(cip)

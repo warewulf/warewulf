@@ -28,11 +28,14 @@ Imported containers are used to create bootable VNFS images.`,
 			}
 		},
 	}
-	SetForce   bool
-	SetUpdate  bool
-	SetBuild   bool
-	SetDefault bool
-	SyncUser   bool
+	SetForce    bool
+	SetUpdate   bool
+	SetBuild    bool
+	SetDefault  bool
+	SyncUser    bool
+	OciNoHttps  bool
+	OciUsername string
+	OciPassword string
 )
 
 func init() {
@@ -41,6 +44,11 @@ func init() {
 	baseCmd.PersistentFlags().BoolVarP(&SetBuild, "build", "b", false, "Build container when after pulling")
 	baseCmd.PersistentFlags().BoolVar(&SetDefault, "setdefault", false, "Set this container for the default profile")
 	baseCmd.PersistentFlags().BoolVar(&SyncUser, "syncuser", false, "Synchronize UIDs/GIDs from host to container")
+	baseCmd.PersistentFlags().BoolVar(&OciNoHttps, "nohttps", false, "Ignore wrong TLS certificates, superseedes env WAREWULF_OCI_NOHTTPS")
+	baseCmd.PersistentFlags().StringVar(&OciUsername, "username", "", "Set username for the access to the registry, superseedes env WAREWULF_OCI_USERNAME")
+	baseCmd.PersistentFlags().StringVar(&OciPassword, "password", "", "Set password for the access to the registry, superseedes env WAREWULF_OCI_PASSWORD")
+	baseCmd.PersistentFlags().StringVar(&OciPassword, "passwd", "", "Set password for the access to the registry, superseedes env WAREWULF_OCI_PASSWORD")
+	_ = baseCmd.PersistentFlags().MarkHidden("passwd")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
