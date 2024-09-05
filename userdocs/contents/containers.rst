@@ -214,7 +214,7 @@ when using the exec command. This works as follows:
    distribution (as prescribed by the LSB file hierarchy standard).
 
 Files which should always be present in a container image like ``resolv.conf``
-can be specified in ``warewulf.conf`` with following container_exit
+can be specified in ``warewulf.conf``:
 
 .. code-block:: yaml
    container mounts:
@@ -223,10 +223,9 @@ can be specified in ``warewulf.conf`` with following container_exit
      readonly: true
 
 .. note::
-   Instead of the ``readonly`` setting you can set ``cow``, which 
-   has the effect, that the source file is copied to the container
-   and removed if it was modified. This useful for file used for
-   registrations.
+   Instead of ``readonly: true`` you can set ``cow: true``. This causes the
+   source file to be copied to the container and removed if it was not
+   modified. This can be useful for files used for registrations.
 
 When the command completes, if anything within the container changed,
 the container will be rebuilt into a bootable static object
