@@ -113,7 +113,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Info("backupFile: %v\nwriteFile: %v", backupFile, writeFile)
 			wwlog.Info("Filename: %s\n", destFileName)
 		}
-		wwlog.Info(outBuffer.String())
+		wwlog.Info("%s", outBuffer.String())
 	}
 	return nil
 }
