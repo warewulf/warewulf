@@ -32,19 +32,11 @@ func recursiveFields(obj interface{}, emptyFields bool, prefix string) (output [
 		if typeObj.Elem().Field(i).Type == reflect.TypeOf(Entry{}) {
 			myField := valObj.Elem().Field(i).Interface().(Entry)
 			if emptyFields || myField.Get() != "" {
-				if typeObj.Elem().Field(i).Name == "SystemOverlay" {
-					output = append(output, NodeFields{
-						Field:  prefix + typeObj.Elem().Field(i).Name,
-						Source: myField.Source(),
-						Value:  myField.PrintPreferAlt(),
-					})
-				} else {
-					output = append(output, NodeFields{
-						Field:  prefix + typeObj.Elem().Field(i).Name,
-						Source: myField.Source(),
-						Value:  myField.Print(),
-					})
-				}
+				output = append(output, NodeFields{
+					Field:  prefix + typeObj.Elem().Field(i).Name,
+					Source: myField.Source(),
+					Value:  myField.Print(),
+				})
 			}
 		} else if typeObj.Elem().Field(i).Type == reflect.TypeOf(map[string]*Entry{}) {
 			for key, val := range valObj.Elem().Field(i).Interface().(map[string]*Entry) {

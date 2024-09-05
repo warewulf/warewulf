@@ -191,19 +191,19 @@ nodes:
 	}
 	assert.Contains(nodemap, "node1")
 	assert.ElementsMatch(nodemap["node1"].RuntimeOverlay.GetSlice(), []string{"p1o1", "p1o2"})
-	assert.Equal(nodemap["node1"].RuntimeOverlay.Print(), "p1o1,p1o2")
+	assert.Equal("p1o1,p1o2", nodemap["node1"].RuntimeOverlay.Print())
 	assert.Contains(nodemap, "node2")
 	assert.ElementsMatch(nodemap["node2"].RuntimeOverlay.GetSlice(), []string{"p1o1", "p1o2", "p2o1", "p2o2"})
-	assert.Equal(nodemap["node2"].RuntimeOverlay.Print(), "p1o1,p1o2,p2o1,p2o2")
+	assert.Equal("p1o1,p1o2,p2o1,p2o2", nodemap["node2"].RuntimeOverlay.Print())
 	assert.Contains(nodemap, "node3")
 	assert.ElementsMatch(nodemap["node3"].RuntimeOverlay.GetSlice(), []string{"p1o1", "p1o2", "n1o1", "n1o2"})
-	assert.Equal(nodemap["node3"].RuntimeOverlay.Print(), "n1o1,n1o2,p1o1,p1o2")
+	assert.Equal("p1o1,p1o2,n1o1,n1o2", nodemap["node3"].RuntimeOverlay.Print())
 	assert.Contains(nodemap, "node4")
 	assert.ElementsMatch(nodemap["node4"].RuntimeOverlay.GetSlice(), []string{"p1o1", "p1o2", "p2o1", "p2o2", "n1o1", "n1o2"})
-	assert.Equal(nodemap["node4"].RuntimeOverlay.Print(), "n1o1,n1o2,p1o1,p1o2,p2o1,p2o2")
+	assert.Equal("p1o1,p1o2,p2o1,p2o2,n1o1,n1o2", nodemap["node4"].RuntimeOverlay.Print())
 	assert.Contains(nodemap, "node5")
 	assert.ElementsMatch(nodemap["node5"].RuntimeOverlay.GetSlice(), []string{"p1o1", "p2o1", "p2o2", "n1o1"})
-	assert.Equal(nodemap["node5"].RuntimeOverlay.Print(), "n1o1,p1o1,p2o1,p2o2 ~{p1o2}")
+	assert.Equal("p1o1,p2o1,p2o2,n1o1 ~{p1o2}", nodemap["node5"].RuntimeOverlay.Print())
 }
 
 func Test_negated_list(t *testing.T) {

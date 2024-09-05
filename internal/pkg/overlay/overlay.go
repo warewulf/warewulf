@@ -31,7 +31,7 @@ Build all overlays (runtime and generic) for a node
 func BuildAllOverlays(nodes []node.NodeInfo) error {
 	for _, n := range nodes {
 
-		sysOverlays := n.SystemOverlay.GetSlicePreferAlt()
+		sysOverlays := n.SystemOverlay.GetSlice()
 		wwlog.Info("Building system overlays for %s: [%s]", n.Id.Get(), strings.Join(sysOverlays, ", "))
 		err := BuildOverlay(n, "system", sysOverlays)
 		if err != nil {
