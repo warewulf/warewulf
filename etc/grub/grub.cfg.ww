@@ -42,7 +42,7 @@ menuentry "Network boot node: {{.Id}}" --id ww4 {
 menuentry "Network boot node with dracut: {{.Id}}" --id dracut {
     initramfs="${uri}&stage=initramfs"
 
-    wwinit_uri="http://{{.Ipaddr}}:{{.Port}}/provision/${net_default_mac}?assetkey=${assetkey}"
+    wwinit_uri="http://{{.Ipaddr}}:{{.Port}}/provision/${net_default_mac}"
 
     {{if .KernelOverride }}
     echo "Kernel:                {{.KernelOverride}}"
