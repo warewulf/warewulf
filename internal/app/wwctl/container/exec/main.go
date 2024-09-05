@@ -72,28 +72,18 @@ func runContainedCmd(cmd *cobra.Command, containerName string, args []string) (e
 	// so do this here.
 	// At first read out conf, the parse commandline, as copy files has the
 	// same synatx as mount points
-	mountPts := conf.MountsContainer
-	mountPts = append(container.InitMountPnts(binds), mountPts...)
-	filesToCpy := getCopyFiles(containerName, mountPts)
-	for i, cpyFile := range filesToCpy {
-		if err = util.CopyFile(cpyFile.Src, path.Join(container.RootFsDir(containerName), cpyFile.FileName)); err != nil {
-			return fmt.Errorf("couldn't copy files into container: %w", err)
+	mountPts := append(container.InitMountPnts(binds), conf.MountsContainer...)
+	filesToCpy := getCopyFiles(mountPts)
+	for _, cpyFile := range filesToCpy {
+		if err := (cpyFile).copyToContainer(containerName); err != nil {
+			wwlog.Warn("couldn't copy file: %s", err)
 		}
-		// we can ignore error as the file was copied
-		stat, _ := os.Stat(path.Join(container.RootFsDir(containerName), cpyFile.FileName))
-		filesToCpy[i].ModTime = stat.ModTime()
 	}
 	wwlog.Verbose("Running contained command: %s", childArgs)
 	retVal := childCommandFunc(cmd, childArgs)
 	for _, cpyFile := range filesToCpy {
-		if modStat, err := os.Stat(path.Join(container.RootFsDir(containerName), cpyFile.FileName)); err != nil {
-			wwlog.Info("copied file was removed: %s", err)
-		} else {
-			if modStat.ModTime() == cpyFile.ModTime {
-				if err := os.Remove(path.Join(container.RootFsDir(containerName), cpyFile.FileName)); err != nil {
-					wwlog.Warn("couldn't remove copied file: %s", err)
-				}
-			}
+		if err := cpyFile.removeFromContainer(containerName); err != nil {
+			wwlog.Warn("couldn't remove file: %s", err)
 		}
 	}
 	return retVal
@@ -188,37 +178,53 @@ func SetNode(myNode string) {
 
 // file name and last modification time so we can remove the file if it wasn't modified
 type cowFile struct {
-	FileName string
-	Src      string
-	ModTime  time.Time
-	Cow      bool
+	fileName string
+	src      string
+	modTime  time.Time
+}
+
+func (this *cowFile) copyToContainer(containerName string) error {
+	containerDest := path.Join(container.RootFsDir(containerName), this.fileName)
+	if _, err := os.Stat(path.Dir(containerDest)); err != nil {
+		return fmt.Errorf("destination directory doesn't exist: %s", err)
+	} else if _, err := os.Stat(containerDest); err == nil {
+		return fmt.Errorf("file already exists in container: %s", this.fileName)
+	} else if _, err := os.Stat(this.src); err != nil {
+		return fmt.Errorf("source doesn't exist: %s", err)
+	} else if err := util.CopyFile(this.src, containerDest); err != nil {
+		return fmt.Errorf("couldn't copy files into container: %w", err)
+	} else {
+		// we can ignore error as the file was copied
+		stat, _ := os.Stat(containerDest)
+		this.modTime = stat.ModTime()
+		return nil
+	}
+}
+
+func (this *cowFile) removeFromContainer(containerName string) error {
+	containerDest := path.Join(container.RootFsDir(containerName), this.fileName)
+	if this.modTime.IsZero() {
+		return fmt.Errorf("not previously copied: %s", this.fileName)
+	} else if destStat, err := os.Stat(containerDest); err != nil {
+		return fmt.Errorf("no longer present: %s", err)
+	} else if destStat.ModTime() == this.modTime {
+		return os.Remove(containerDest)
+	} else {
+		return fmt.Errorf("modified since copy: %s", this.fileName)
+	}
 }
 
 /*
 Check the objects we want to copy in, instead of mounting
 */
-func getCopyFiles(containerNamer string, binds []*warewulfconf.MountEntry) (copyObjects []cowFile) {
+func getCopyFiles(binds []*warewulfconf.MountEntry) (copyObjects []*cowFile) {
 	for _, bind := range binds {
-		if !bind.Cow || bind.ReadOnly {
-			continue
+		if bind.Cow {
+			copyObjects = append(copyObjects, &cowFile{
+				fileName: bind.Dest,
+				src:      bind.Source,
+			})
 		}
-		if _, err := os.Stat(path.Join(container.RootFsDir(containerNamer), path.Dir(bind.Dest))); err != nil {
-			wwlog.Warn("destination directory doesn't exist: %s", err)
-			continue
-		}
-		if _, err := os.Stat(path.Join(container.RootFsDir(containerNamer), bind.Dest)); err == nil {
-			wwlog.Verbose("file exists in container: %s", bind.Dest)
-			continue
-		}
-		if _, err := os.Stat(bind.Source); err != nil {
-			wwlog.Warn("source doesn't exist: %s", err)
-			continue
-		}
-		copyObjects = append(copyObjects, cowFile{
-			FileName: bind.Dest,
-			Src:      bind.Source,
-			Cow:      bind.Cow,
-		})
 	}
 	return
 }
