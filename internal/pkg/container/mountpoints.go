@@ -21,19 +21,19 @@ func InitMountPnts(binds []string) (mounts []*warewulfconf.MountEntry) {
 			dest = bind[1]
 		}
 		readonly := false
-		cow := false
+		copy_ := false
 		if len(bind) >= 3 {
 			if bind[2] == "ro" {
 				readonly = true
-			} else if bind[2] == "cow" {
-				cow = true
+			} else if bind[2] == "copy" {
+				copy_ = true
 			}
 		}
 		mntPnt := warewulfconf.MountEntry{
 			Source:   bind[0],
 			Dest:     dest,
 			ReadOnly: readonly,
-			Cow:      cow,
+			Copy:     copy_,
 		}
 		mounts = append(mounts, &mntPnt)
 	}

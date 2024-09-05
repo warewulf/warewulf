@@ -142,7 +142,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	for _, mntPnt := range mountPts {
-		if mntPnt.Cow {
+		if mntPnt.Copy {
 			continue
 		}
 		wwlog.Debug("bind mounting: %s -> %s", mntPnt.Source, path.Join(containerPath, mntPnt.Dest))
@@ -199,7 +199,7 @@ the invalid mount points. Directories always have '/' as suffix
 func checkMountPoints(containerName string, binds []*warewulfconf.MountEntry) (overlayObjects []string) {
 	overlayObjects = []string{}
 	for _, b := range binds {
-		if b.Cow {
+		if b.Copy {
 			continue
 		}
 		_, err := os.Stat(b.Source)

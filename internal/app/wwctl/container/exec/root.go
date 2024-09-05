@@ -32,9 +32,9 @@ var (
 
 func init() {
 	baseCmd.AddCommand(child.GetCommand())
-	baseCmd.PersistentFlags().StringArrayVarP(&binds, "bind", "b", []string{}, `source[:destination[:{ro|cow}]]
+	baseCmd.PersistentFlags().StringArrayVarP(&binds, "bind", "b", []string{}, `source[:destination[:{ro|copy}]]
 Bind a local path which must exist into the container. If destination is not
-set, uses the same path as source. "ro" binds read-only. "cow" temporarily
+set, uses the same path as source. "ro" binds read-only. "copy" temporarily
 copies the file into the container.`)
 	baseCmd.PersistentFlags().BoolVar(&SyncUser, "syncuser", false, "Synchronize UIDs/GIDs from host to container")
 	baseCmd.PersistentFlags().StringVarP(&nodeName, "node", "n", "", "Create a read only view of the container for the given node")

@@ -223,7 +223,7 @@ can be specified in ``warewulf.conf``:
      readonly: true
 
 .. note::
-   Instead of ``readonly: true`` you can set ``cow: true``. This causes the
+   Instead of ``readonly: true`` you can set ``copy: true``. This causes the
    source file to be copied to the container and removed if it was not
    modified. This can be useful for files used for registrations.
 

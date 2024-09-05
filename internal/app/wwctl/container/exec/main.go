@@ -67,7 +67,7 @@ func runContainedCmd(cmd *cobra.Command, containerName string, args []string) (e
 	// command syscall.Exec which replaces the __child process with the
 	// exec command in the container. All the mounts, have to be done in
 	// __child so that the used mounts don't propagate outside on the host
-	// (see the CLONE attributes), but as for the cow copy option we need
+	// (see the CLONE attributes), but as for the copy option we need
 	// to see if a file was modified after it was copied into the container
 	// so do this here.
 	// At first read out conf, the parse commandline, as copy files has the
@@ -177,13 +177,13 @@ func SetNode(myNode string) {
 }
 
 // file name and last modification time so we can remove the file if it wasn't modified
-type cowFile struct {
+type copyFile struct {
 	fileName string
 	src      string
 	modTime  time.Time
 }
 
-func (this *cowFile) copyToContainer(containerName string) error {
+func (this *copyFile) copyToContainer(containerName string) error {
 	containerDest := path.Join(container.RootFsDir(containerName), this.fileName)
 	if _, err := os.Stat(path.Dir(containerDest)); err != nil {
 		return fmt.Errorf("destination directory doesn't exist: %s", err)
@@ -201,7 +201,7 @@ func (this *cowFile) copyToContainer(containerName string) error {
 	}
 }
 
-func (this *cowFile) removeFromContainer(containerName string) error {
+func (this *copyFile) removeFromContainer(containerName string) error {
 	containerDest := path.Join(container.RootFsDir(containerName), this.fileName)
 	if this.modTime.IsZero() {
 		return fmt.Errorf("not previously copied: %s", this.fileName)
@@ -217,10 +217,10 @@ func (this *cowFile) removeFromContainer(containerName string) error {
 /*
 Check the objects we want to copy in, instead of mounting
 */
-func getCopyFiles(binds []*warewulfconf.MountEntry) (copyObjects []*cowFile) {
+func getCopyFiles(binds []*warewulfconf.MountEntry) (copyObjects []*copyFile) {
 	for _, bind := range binds {
-		if bind.Cow {
-			copyObjects = append(copyObjects, &cowFile{
+		if bind.Copy {
+			copyObjects = append(copyObjects, &copyFile{
 				fileName: bind.Dest,
 				src:      bind.Source,
 			})
