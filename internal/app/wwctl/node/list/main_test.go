@@ -306,7 +306,7 @@ nodes:
 			args:    []string{"-l"},
 			wantErr: false,
 			stdout: `NODE NAME  KERNEL OVERRIDE  CONTAINER  OVERLAYS (S/R)
-n01        --               --         (wwinit)/nop1,rop2 ~{rop1}
+n01        --               --         (wwinit)/rop2,nop1 ~{rop1}
 `},
 		{
 			inDb: `WW_INTERNAL: 45
@@ -329,7 +329,7 @@ nodes:
 			stdout: `NODE  FIELD           PROFILE     VALUE
 n01   Id              --        n01        
 n01   Ipxe            --          (default)
-n01   RuntimeOverlay  SUPERSEDED  nop1,rop2~{rop1}
+n01   RuntimeOverlay  SUPERSEDED  rop2,nop1~{rop1}
 n01   SystemOverlay   --          (wwinit)  
 n01   Root            --          (initramfs)
 n01   Init            --          (/sbin/init)
