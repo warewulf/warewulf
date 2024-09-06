@@ -51,6 +51,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 - Fixed application of node overlays such that they override overlapping files from profile overlays. #1259
+- Prevent overlays from being improperly used as format strings during `wwctl overlay show --render`. #1363
 
 ## v4.5.6, 2024-08-05
 
