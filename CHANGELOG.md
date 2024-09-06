@@ -52,6 +52,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Refine error handling for `wwctl configure`. #1273
 - Updated dracut guidance for building initramfs. #1369
 
+### Fixed
+
+- Fixed application of node overlays such that they override overlapping files from profile overlays. #1259
+
 ## v4.5.6, 2024-08-05
 
 ### Added

@@ -277,7 +277,7 @@ func cleanList(list []string) (ret []string) {
 Returns a string slice created from a comma separated list of the value.
 */
 func (ent *Entry) GetSlice() []string {
-	retval := append(ent.value, ent.altvalue...)
+	retval := append(ent.altvalue, ent.value...)
 	if len(retval) != 0 {
 		return cleanList(retval)
 	}
@@ -370,7 +370,7 @@ func (ent *Entry) Print() string {
 	} else {
 		var ret string
 		if len(ent.value) != 0 || len(ent.altvalue) != 0 {
-			combList := append(ent.value, ent.altvalue...)
+			combList := append(ent.altvalue, ent.value...)
 			ret = strings.Join(cleanList(combList), ",")
 			if len(negList(combList)) > 0 {
 				ret += " ~{" + strings.Join(negList(combList), ",") + "}"
