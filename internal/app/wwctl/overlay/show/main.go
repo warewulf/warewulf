@@ -45,7 +45,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			return err
 		}
 
-		wwlog.Output(string(f))
+		wwlog.Output("%s", string(f))
 	} else {
 		if !util.IsFile(overlayFile) {
 			wwlog.Debug("%s is not a file", overlayFile)
@@ -106,7 +106,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 						wwlog.Info("writeFile: %v", writeFile)
 						wwlog.Info("Filename: %s", destFileName)
 					}
-					wwlog.Output(outBuffer.String())
+					wwlog.Output("%s", outBuffer.String())
 					outBuffer.Reset()
 				}
 				destFileName = filenameFromTemplate[0][1]
