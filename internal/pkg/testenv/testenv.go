@@ -41,7 +41,6 @@ const Systemddir = "usr/lib/systemd/system"
 const WWOverlaydir = "var/lib/warewulf/overlays"
 const WWChrootdir = "var/lib/warewulf/chroots"
 const WWProvisiondir = "srv/warewulf"
-const WWClientdir = "warewulf"
 
 // New creates a test environment in a temporary directory and configures
 // Warewulf to use it.
@@ -52,6 +51,18 @@ const WWClientdir = "warewulf"
 //
 // Asserts no errors occur.
 func New(t *testing.T) (env *TestEnv) {
+	return NewWithConf(t, `WW_INTERNAL: 0`)
+}
+
+// New creates a test environment in a temporary directory and configures
+// and uses the string wwconf as warewulf.conf
+//
+// Caller is responsible to delete env.BaseDir by calling
+// env.RemoveAll. Note that this does not restore Warewulf to its
+// previous state.
+//
+// Asserts no errors occur.
+func NewWithConf(t *testing.T, wwconf string) (env *TestEnv) {
 	env = new(TestEnv)
 
 	tmpDir, err := os.MkdirTemp(os.TempDir(), "ww4test-*")
@@ -59,7 +70,7 @@ func New(t *testing.T) (env *TestEnv) {
 	env.BaseDir = tmpDir
 
 	env.WriteFile(t, path.Join(Sysconfdir, "warewulf/nodes.conf"), initNodesConf)
-	env.WriteFile(t, path.Join(Sysconfdir, "warewulf/warewulf.conf"), initWarewulfConf)
+	env.WriteFile(t, path.Join(Sysconfdir, "warewulf/warewulf.conf"), wwconf)
 	env.WriteFile(t, path.Join(Datadir, "warewulf/defaults.conf"), initDefaultsConf)
 
 	// re-read warewulf.conf
@@ -78,8 +89,7 @@ func New(t *testing.T) (env *TestEnv) {
 	conf.Paths.WWOverlaydir = env.GetPath(WWOverlaydir)
 	conf.Paths.WWChrootdir = env.GetPath(WWChrootdir)
 	conf.Paths.WWProvisiondir = env.GetPath(WWProvisiondir)
-	conf.Paths.WWClientdir = env.GetPath(WWClientdir)
-
+	conf.Paths.WWClientdir = "/warewulf"
 	for _, confPath := range []string{
 		conf.Paths.Sysconfdir,
 		conf.Paths.Bindir,
@@ -150,4 +160,13 @@ func (env *TestEnv) ReadFile(t *testing.T, fileName string) string {
 func (env *TestEnv) RemoveAll(t *testing.T) {
 	err := os.RemoveAll(env.BaseDir)
 	assert.NoError(t, err)
+}
+
+// ImportFile writes the contents of inputFileName to fileName,
+// creating any necessary intermediate directories relative to the
+// test environment.
+func (env *TestEnv) ImportFile(t *testing.T, fileName string, inputFileName string) {
+	buffer, err := os.ReadFile(inputFileName)
+	assert.NoError(t, err)
+	env.WriteFile(t, fileName, string(buffer))
 }
