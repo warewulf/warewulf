@@ -46,6 +46,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Added option for wwclient port number. #1349
 - Additional helper directions during syncuser conflict. #1359
+- Add `:cow` suffix to `wwctl container exec --bind` to temporarily copy files into the node image. #1365
+- Add `:copy` suffix to `wwctl container exec --bind` to temporarily copy files into the node image. #1365
 
 ### Changed
 
