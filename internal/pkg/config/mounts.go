@@ -7,4 +7,5 @@ type MountEntry struct {
 	Dest     string `yaml:"dest,omitempty"`
 	ReadOnly bool   `yaml:"readonly,omitempty"`
 	Options  string `yaml:"options,omitempty"` // ignored at the moment
+	Copy     bool   `yaml:"copy,omitempty"`    // temporarily copy the file into the container
 }
