@@ -42,10 +42,7 @@ menuentry "Network boot node: {{.Id}}" --id ww4 {
 menuentry "Network boot node with dracut: {{.Id}}" --id dracut {
     initramfs="${uri}&stage=initramfs"
 
-    uri="http://{{.Ipaddr}}:{{.Port}}/provision/${net_default_mac}?assetkey=${assetkey}"
-    container="${uri}&stage=container&compress=gz"
-    system="${uri}&stage=system&compress=gz"
-    runtime="${uri}&stage=runtime&compress=gz"
+    wwinit_uri="http://{{.Ipaddr}}:{{.Port}}/provision/${net_default_mac}"
 
     {{if .KernelOverride }}
     echo "Kernel:                {{.KernelOverride}}"
@@ -55,7 +52,7 @@ menuentry "Network boot node with dracut: {{.Id}}" --id dracut {
     echo "KernelArgs:            {{.KernelArgs}}"
 
     net_args="rd.neednet=1 {{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} {{end}}{{end}}"
-    wwinit_args="root=wwinit wwinit.container=${container} wwinit.system=${system} wwinit.runtime=${runtime} init=/init"
+    wwinit_args="root=wwinit wwinit.uri=${wwinit_uri}"
     linux $kernel wwid=${net_default_mac} {{.KernelArgs}} $net_args $wwinit_args
 
     if [ x$? = x0 ] ; then

@@ -49,6 +49,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add `:cow` suffix to `wwctl container exec --bind` to temporarily copy files into the node image. #1365
 - Add `:copy` suffix to `wwctl container exec --bind` to temporarily copy files into the node image. #1365
 
+### Fixed
+
+- Fix dracut booting with secure mode. #1261
+
 ### Changed
 
 - Added a link to an example SELinux-enabled node image in documentation. #1305
