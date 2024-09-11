@@ -12,87 +12,78 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-func CobraRunE(cmd *cobra.Command, args []string) error {
-	var returnErr error = nil
+func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err error) {
+	return func(cmd *cobra.Command, args []string) error {
 
-	nodeDB, err := node.New()
-	if err != nil {
-		wwlog.Error("Could not open node configuration: %s", err)
-		os.Exit(1)
-	}
+		var returnErr error = nil
 
-	nodes, err := nodeDB.FindAllNodes()
-	if err != nil {
-		wwlog.Error("Cloud not get nodeList: %s", err)
-		os.Exit(1)
-	}
-
-	if len(args) > 0 {
-		nodes = node.FilterByName(nodes, hostlist.Expand(args))
-	} else {
-		//nolint:errcheck
-		cmd.Usage()
-		os.Exit(1)
-	}
-
-	if len(nodes) == 0 {
-		fmt.Printf("No nodes found\n")
-		os.Exit(1)
-	}
-
-	batchpool := batch.New(50)
-	jobcount := len(nodes)
-	results := make(chan power.IPMI, jobcount)
-
-	for _, node := range nodes {
-
-		if node.Ipmi.Ipaddr.Get() == "" {
-			wwlog.Error("%s: No IPMI IP address", node.Id.Get())
-			continue
-		}
-		var ipmiInterface = "lan"
-		if node.Ipmi.Interface.Get() != "" {
-			ipmiInterface = node.Ipmi.Interface.Get()
-		}
-		var ipmiPort = "623"
-		if node.Ipmi.Port.Get() != "" {
-			ipmiPort = node.Ipmi.Port.Get()
-		}
-		ipmiCmd := power.IPMI{
-			NodeName:  node.Id.Get(),
-			HostName:  node.Ipmi.Ipaddr.Get(),
-			Port:      ipmiPort,
-			User:      node.Ipmi.UserName.Get(),
-			Password:  node.Ipmi.Password.Get(),
-			Interface: ipmiInterface,
-			AuthType:  "MD5",
-		}
-
-		batchpool.Submit(func() {
-			//nolint:errcheck
-			ipmiCmd.PowerSoft()
-			results <- ipmiCmd
-		})
-
-	}
-
-	batchpool.Run()
-
-	close(results)
-
-	for result := range results {
-
-		out, err := result.Result()
-
+		nodeDB, err := node.New()
 		if err != nil {
-			wwlog.Error("%s: %s", result.NodeName, out)
-			returnErr = err
-			continue
+			wwlog.Error("Could not open node configuration: %s", err)
+			os.Exit(1)
 		}
 
-		fmt.Printf("%s: %s\n", result.NodeName, out)
+		nodes, err := nodeDB.FindAllNodes()
+		if err != nil {
+			wwlog.Error("Cloud not get nodeList: %s", err)
+			os.Exit(1)
+		}
 
+		if len(args) > 0 {
+			nodes = node.FilterByName(nodes, hostlist.Expand(args))
+		} else {
+			//nolint:errcheck
+			cmd.Usage()
+			os.Exit(1)
+		}
+
+		if len(nodes) == 0 {
+			fmt.Printf("No nodes found\n")
+			os.Exit(1)
+		}
+
+		batchpool := batch.New(50)
+		jobcount := len(nodes)
+		results := make(chan power.IPMI, jobcount)
+
+		for _, n := range nodes {
+
+			if n.Ipmi.Ipaddr.Get() == "" {
+				wwlog.Error("%s: No IPMI IP address", n.Id.Get())
+				continue
+			}
+			var conf node.NodeConf
+			conf.GetFrom(n)
+			ipmiCmd := power.IPMI{
+				IpmiConf: *conf.Ipmi,
+				ShowOnly: vars.Showcmd,
+			}
+			batchpool.Submit(func() {
+				//nolint:errcheck
+				ipmiCmd.PowerSoft()
+				results <- ipmiCmd
+			})
+
+		}
+
+		batchpool.Run()
+
+		close(results)
+
+		for result := range results {
+
+			out, err := result.Result()
+
+			if err != nil {
+				wwlog.Error("%s: %s", result.Ipaddr, out)
+				returnErr = err
+				continue
+			}
+
+			wwlog.Info("%s: %s\n", result.Ipaddr, out)
+
+		}
+
+		return returnErr
 	}
-
-	return returnErr
 }

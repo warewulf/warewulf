@@ -5,12 +5,18 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/node"
 )
 
-var (
-	powerCmd = &cobra.Command{
+type variables struct {
+	Showcmd bool
+}
+
+// GetRootCommand returns the root cobra.Command for the application.
+func GetCommand() *cobra.Command {
+	vars := variables{}
+	powerCmd := &cobra.Command{
 		Use:   "on [OPTIONS] [PATTERN ...]",
 		Short: "Power on the given node(s)",
 		Long:  "This command will power on a set of nodes specified by PATTERN.",
-		RunE:  CobraRunE,
+		RunE:  CobraRunE(&vars),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp
@@ -25,9 +31,7 @@ var (
 			return node_names, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
-)
+	powerCmd.PersistentFlags().BoolVarP(&vars.Showcmd, "show", "s", false, "only show command which will be executed")
 
-// GetRootCommand returns the root cobra.Command for the application.
-func GetCommand() *cobra.Command {
 	return powerCmd
 }

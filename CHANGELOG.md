@@ -85,6 +85,75 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 - `wwctl container list` only lists names by default. (`--long` shows all attributes.) #1117
+- The primary hostname and warewulf server fqdn are now the canonical name in
+  `/etc/hosts`
+- Refactored `profile add` command to make it alike `node add`. #658 #659
+- The ifcfg ONBOOT parameter is no longer statically `true`, so unconfigured
+  interfaces may not be enabled by default. (#644)
+- Write log messages to stderr rather than stdout. #768
+- All paths can now be configured in `warewulf.conf`, check the paths section of of
+   `wwctl --emptyconf genconfig warewulfconf print` for the available paths.
+- Added experimental dnsmasq support.
+- fix SIGSEV when build host has no network #907
+- Check for formal correct IP and MAC addresses for command line options and
+  when reading in the configurations
+- Added template to create genders database
+- Write log messages to stderr rather than stdout. #768
+- Updates to Makefile for clarity, notably removing genconfig and replacing
+  test-it with test. #890
+- realy reboot also without systemd
+- Specify primary network device per-node rather than per-netdev
+- refactored output `wwctl node/profile list` so that `-a` will only show all the
+  set values and `-A` will show all fields included the ones without a set value
+- Added the template function `{{ createIgnitionJson }}` which will create a json object
+  compatible with ignition.
+- Container images need ignition and sgdisk installed in order to the disk management.
+- Added boootup services based on ignition which will manage the disks, partitions and file
+  systems. The services are systemd services as sgdisk needs systemd in order to work
+  correctly. All service use the existence of `/warewulf/ignition.json` as perquisite so
+  that they can be place in the `wwinit` overlay and will only become active if disk management
+  is configured for this node. The service `ignition-disks-ww4.service` will partition and
+  format and create the file systems on the disks. For every a file system a systemd mount unit
+  file is create and will executed after the `ignition-disks-ww4.service` has finished.
+  Entries in `/etc/fstab` for every file system are created with the `noauto` option.
+- wwclient has now a commandline switch for the location of warewulf.conf
+- `wwctl overlay edit` uses a temporary file and checks mtime.
+- Changed the bash completions for the `wwctl overlay` commands so that the files of the
+  overlays are expanded
+- Node overlays are now named based on their overlay "context" (i.e., "system"
+  or "runtime") rather than a concatenated list of individual overlays. This
+  removes a limit on the number of overlays that could be included in a node or
+  profile. #852, #876, #883, #896, #903
+- During node discovery, prefer the primary network interface, if defined. #775
+- added general test framework which creates temporary directories on the fly
+- only write IPMI if write is true
+- Don't show an error if image files for containers can't be found. #933
+- Make configured paths available in overlays as `.Path` #960
+- Introduced IPXESOURCE environment variable which allows to specify the path to iPXE
+  binaries not provided by warewulf
+- use distrubtion ipxe binaries in the rpm
+- Allow absolute iPXE paths in warewulf.conf
+- Support importing containers with symlinked `/bin/sh` #797
+- Don't panic on malformed passwd #527
+- Update iPXE building script
+- Send Info, Recv, Send, and Out messages to stdout; and others to stderr
+- grub in combination can now be set as boot method with `warewulf.grubboot: true` in
+  `warewulf.conf`. For unknown nodes `grub.efi` and `shim.efi` will be extracted from
+  the host running warewulf. If node has container it will get these binaries from the
+  container image.
+- overlays from different profiles for one node are now merged, overlays can be
+  excluded with ~ prefix and in listings are listed as !{excluded_profile} #885
+- modules are now correctly included
+- move hostlist into internal alongside other warewulf code #804
+- uniform shebang usage in scripts of init.d folder #821
+- Check if commas are allowes in node/profile set
+- Removed paths.tftpdir and paths.datadir
+- Updated WW_INTERNAL to 45 for upcoming 4.5.x release
+- Added documentation about of how to configure warewulf with 
+  multiple networks
+- Added installation instructions for using dnsmasq
+- Move built-in overlays to a rootfs directory #1086
+- use templating mechanism for power commands
 
 ## v4.5.5, 2024-07-05
 
