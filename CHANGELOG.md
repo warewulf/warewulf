@@ -40,7 +40,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Replace slice in templates with sprig substr. #1093
 - Fix an invalid format issue for the GitHub nightly build action. #1258
 
-## v4.5.7, unreleased
+## v4.5.7, 2024-09-11
 
 ### Added
 
@@ -48,10 +48,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Additional helper directions during syncuser conflict. #1359
 - Add `:cow` suffix to `wwctl container exec --bind` to temporarily copy files into the node image. #1365
 - Add `:copy` suffix to `wwctl container exec --bind` to temporarily copy files into the node image. #1365
-
-### Fixed
-
-- Fix dracut booting with secure mode. #1261
 
 ### Changed
 
@@ -63,6 +59,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Fixed application of node overlays such that they override overlapping files from profile overlays. #1259
 - Prevent overlays from being improperly used as format strings during `wwctl overlay show --render`. #1363
+- Fix dracut booting with secure mode. #1261
 
 ## v4.5.6, 2024-08-05
 
