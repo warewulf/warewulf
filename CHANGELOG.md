@@ -36,6 +36,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Replace slice in templates with sprig substr. #1093
 - Fix an invalid format issue for the GitHub nightly build action. #1258
 
+## v4.5.8, unreleased
+
+### Fixed
+
+- Return an error indicating that name should not contain colon when importing contianers. #1371
+
 ## v4.5.7, 2024-09-11
 
 ### Added

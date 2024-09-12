@@ -83,7 +83,10 @@ func getReference(uri string) (types.ImageReference, error) {
 	case "docker-daemon":
 		return daemon.ParseReference(strings.TrimPrefix(s[1], "//"))
 	case "file":
-		return dockerarchive.ParseReference(strings.TrimPrefix(s[1], "/"))
+		if strings.Contains(s[1], ":") {
+			return nil, fmt.Errorf("%s should not contain colon", strings.TrimPrefix(s[1], "//"))
+		}
+		return dockerarchive.ParseReference(strings.TrimPrefix(s[1], "//"))
 	default:
 		return nil, fmt.Errorf("unknown uri scheme: %q", uri)
 	}
