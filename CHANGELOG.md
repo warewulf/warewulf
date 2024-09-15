@@ -50,6 +50,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 - Interleave tmpfs across all available NUMA nodes. #1347, #1348
+- Syncuser watches for changes in mtime rather than ctime. #1358
 
 ### Fixed
 
