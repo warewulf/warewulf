@@ -124,10 +124,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// getting syncuser from cmd, e.g., shell comamnd will call exec command and passing --syncuser
-	if syncUserFlag, err := cmd.Flags().GetBool("syncuser"); err == nil {
-		SyncUser = SyncUser || syncUserFlag
-	}
 	userdbChanged := false
 	if !beforePasswdTime.IsZero() {
 		afterPasswdTime := getTime(path.Join(containerPath, "/etc/passwd"))
