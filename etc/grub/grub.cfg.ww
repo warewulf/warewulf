@@ -6,7 +6,7 @@ echo
 echo "Warewulf Controller: {{.Ipaddr}}"
 echo
 sleep 1
-smbios --type1 --get-string 8 --set assetkey
+smbios --type 3 --get-string 8 --set assetkey
 
 uri="(http,{{.Ipaddr}}:{{.Port}})/provision/${net_default_mac}?assetkey=${assetkey}"
 kernel="${uri}&stage=kernel"
@@ -70,7 +70,7 @@ menuentry "Network boot node with dracut: {{.Id}}" --id dracut {
 }
 
 menuentry "Chainload specific configfile" {
-    conf="(http,{{.Ipaddr}}:{{.Port}})/efiboot/grub.cfg"
+    conf="(http,{{.Ipaddr}}:{{.Port}})/efiboot/grub.cfg?assetkey=${assetkey}"
     configfile $conf
 }
 
