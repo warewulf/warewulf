@@ -10,6 +10,7 @@ type variables struct {
 	kernel     bool
 	chroot     bool
 	compressed bool
+	utc        bool
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
@@ -28,6 +29,6 @@ func GetCommand() *cobra.Command {
 	baseCmd.PersistentFlags().BoolVarP(&vars.size, "size", "s", false, "show size information")
 	baseCmd.PersistentFlags().BoolVarP(&vars.chroot, "chroot", "c", false, "show size of chroot")
 	baseCmd.PersistentFlags().BoolVar(&vars.compressed, "compressed", false, "show size of the compressed image")
-
+	baseCmd.PersistentFlags().BoolVarP(&vars.utc, "utc", "u", false, "use UTC for time output")
 	return baseCmd
 }

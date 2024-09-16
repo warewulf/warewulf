@@ -318,6 +318,7 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 		_, kernelVersion, _ := kernel.FindKernel(container.RootFsDir(source))
 		var creationTime uint64
 		sourceStat, err := os.Stat(container.SourceDir(source))
+		wwlog.Debug("Checking creation time for: %s,%v", container.SourceDir(source), sourceStat.ModTime())
 		if err != nil {
 			wwlog.Error("%s\n", err)
 		} else {
@@ -332,13 +333,13 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 		if err != nil {
 			wwlog.Error("%s\n", err)
 		}
-		imgF, err := os.Stat(container.ImageFile(source))
-		if err != nil {
-			wwlog.Error("%s\n", err)
+		imgSize := 0
+		if imgF, err := os.Stat(container.ImageFile(source)); err == nil {
+			imgSize = int(imgF.Size())
 		}
-		imgFC, err := os.Stat(container.ImageFile(source) + ".gz")
-		if err != nil {
-			wwlog.Error("%s\n", err)
+		imgCSize := 0
+		if imgFC, err := os.Stat(container.ImageFile(source) + ".gz"); err == nil {
+			imgCSize = int(imgFC.Size())
 		}
 		containerInfo = append(containerInfo, &wwapiv1.ContainerInfo{
 			Name:          source,
@@ -347,8 +348,8 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 			CreateDate:    creationTime,
 			ModDate:       modTime,
 			Size:          uint64(size),
-			ImgSize:       uint64(imgF.Size()),
-			ImgSizeComp:   uint64(imgFC.Size()),
+			ImgSize:       uint64(imgSize),
+			ImgSizeComp:   uint64(imgCSize),
 		})
 
 	}
