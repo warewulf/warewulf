@@ -46,9 +46,9 @@ network configurations for
 * NetworkManager
 * EL legacy network scripts
 
-it also contains udev rules, which will set the interface name of the
-first network device to ``eth0``.  Before the ``systemd`` init is
-called, the overlay loops through the scripts in
+it also contains udev rules, which will set the interface names
+based on the hardware addresses configured for the node. 
+Before the ``systemd`` init is called, the overlay loops through the scripts in
 ``/wwinit/warwulf/init.d/*`` which will setup
 
 * Ipmi
