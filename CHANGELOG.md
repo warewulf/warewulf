@@ -33,8 +33,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   on unused/unmanaged network interfaces.
 - Systems with no SMBIOS (Raspberry Pi) will create a UUID from
   `/sys/firmware/devicetree/base/serial-number`
-- Grub chainload and main configs correctly extract smbios asset key
-  for node authentication
 - Replace slice in templates with sprig substr. #1093
 - Fix an invalid format issue for the GitHub nightly build action. #1258
 
@@ -43,6 +41,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 - Return an error during `wwctl container import` if archive filename includes a colon. #1371
+- Correctly extract smbios asset key during Grub boot. #1291
 
 ## v4.5.7, 2024-09-11
 
