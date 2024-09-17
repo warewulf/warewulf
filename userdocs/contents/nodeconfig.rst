@@ -227,10 +227,11 @@ container, kernel, and network:
   # wwctl node list -a n001 | grep cluster
   n001                 cluster            --           cluster01
 
-Note: Due to the way network interface names are assigned by the Linux kernel and overwritten by udev
-and systemd in the default warewulf configuration, the use of `eth0/1/...` as interface names can lead to issues.
-We recommend the use of the original predictable names assigned to the interfaces (`eno1, ...`),
-as otherwise an interface may remain unconfigured if its name conflicts with the name of an already existing interface during boot.
+.. note::
+  Due to the way network interface names are assigned by the Linux kernel and overwritten by udev
+  and systemd in the default warewulf configuration, the use of `eth0/1/...` as interface names can lead to issues.
+  We recommend the use of the original predictable names assigned to the interfaces (`eno1, ...`),
+  as otherwise an interface may remain unconfigured if its name conflicts with the name of an already existing interface during boot.
 
 To configure a bonded (link aggregation) network interface the following commands can be used:
 
