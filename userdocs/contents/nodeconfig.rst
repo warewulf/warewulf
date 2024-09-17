@@ -178,7 +178,7 @@ provide the network information as follows:
 
 .. code-block:: console
 
-  # wwctl node set --netdev eth0 --hwaddr 11:22:33:44:55:66 --ipaddr 10.0.2.1 --netmask 255.255.252.0 n001
+  # wwctl node set --netdev eno1 --hwaddr 11:22:33:44:55:66 --ipaddr 10.0.2.1 --netmask 255.255.252.0 n001
    Are you sure you want to modify 1 nodes(s): y
 
 You can now see that the node contains configuration attributes for
@@ -212,7 +212,7 @@ container, kernel, and network:
   n001                 profile            --           default
   n001                 default:type       --           (ethernet)
   n001                 default:onboot     --           --
-  n001                 default:netdev     --           eth0
+  n001                 default:netdev     --           eno1
   n001                 default:hwaddr     --           11:22:33:44:55:66
   n001                 default:ipaddr     --           10.0.2.1
   n001                 default:ipaddr6    --           --
@@ -227,8 +227,13 @@ container, kernel, and network:
   # wwctl node list -a n001 | grep cluster
   n001                 cluster            --           cluster01
 
+.. note::
+  Due to the way network interface names are assigned by the Linux kernel and overwritten by udev
+  and systemd in the default warewulf configuration, the use of `eth0/1/...` as interface names can lead to issues.
+  We recommend the use of the original predictable names assigned to the interfaces (`eno1, ...`),
+  as otherwise an interface may remain unconfigured if its name conflicts with the name of an already existing interface during boot.
 
-To configure a bonded (link aggreagtion) network interface the following commands can be used:
+To configure a bonded (link aggregation) network interface the following commands can be used:
 
 .. code-block:: console
 
