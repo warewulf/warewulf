@@ -38,6 +38,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## v4.5.8, unreleased
 
+### Changed
+
+- Interleave tmpfs across all available NUMA nodes. #1347, #1348
+
 ### Fixed
 
 - Return an error during `wwctl container import` if archive filename includes a colon. #1371
