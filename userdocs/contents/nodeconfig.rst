@@ -261,6 +261,24 @@ You will have provide all the necessary network information.
      --type infiniband \
      n001
 
+VLAN
+----
+
+You can set the type also to `vlan`. This settings needs the two
+additional network tags `vlan_id` and `parent_device` and is only 
+supported for wicked and NetworkManager.
+
+.. code-block:: shell
+
+   wwctl node set \
+     --netdev vlan42 \
+     --ipaddr 10.0.42.1 \
+     --netmask 255.255.252.0 \
+     --netname iband \
+     --type vlan \
+     --nettagadd "vlan_id=42,parent_device=eth0" \
+     n001
+
 
 Node Discovery
 --------------
