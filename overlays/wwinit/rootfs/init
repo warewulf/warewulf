@@ -39,7 +39,7 @@ elif test "$WWROOT" = "tmpfs"; then
     else
         echo "Setting up tmpfs root file system"
         mkdir /newroot
-        mount wwroot /newroot -t tmpfs
+        mount wwroot /newroot -t tmpfs -o mpol=interleave
         echo "Moving RAMFS to TMPFS"
         tar -cf - --exclude ./proc --exclude ./sys --exclude ./dev --exclude ./newroot . | tar -xf - -C /newroot
         mkdir /newroot/proc /newroot/dev /newroot/sys /newroot/run 2>/dev/null
