@@ -38,4 +38,3 @@
 * Tobias Poschwatta <poschwatta@zib.de>
 * Josh Burks <jeburks2@asu.edu>
 * Elmar Pruesse <pruessee@njhealth.org> @epruesse
-* Adam Michel <elfurbe@furbism.com> [@elfurbe](https://github.com/elfurbe)
