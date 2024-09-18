@@ -20,7 +20,7 @@ master={{ $master }}
 type=ethernet
 {{ else }}
 type={{ $netdev.Type }}
-autoconnect=true
+autoconnect={{ $netdev.OnBoot }}
 {{ end -}}
 {{ end -}}
 
