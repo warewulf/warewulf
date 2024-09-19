@@ -21,28 +21,22 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	if !container.DoesSourceExist(cdp.ContainerSource) {
-		wwlog.Error("Container's source doesn't exists: %s", cdp.ContainerSource)
-		return
+		return fmt.Errorf("container's source doesn't exists: %s", cdp.ContainerSource)
 	}
 
 	if !container.ValidName(cdp.ContainerDestination) {
-		wwlog.Error("Container name contains illegal characters : %s", cdp.ContainerDestination)
-		return
+		return fmt.Errorf("container name contains illegal characters : %s", cdp.ContainerDestination)
 	}
 
 	if container.DoesSourceExist(cdp.ContainerDestination) {
-		wwlog.Error("An other container with name: %s already exists in sources.", cdp.ContainerDestination)
-		return
+		return fmt.Errorf("an other container with name: %s already exists in sources", cdp.ContainerDestination)
 	}
 
 	err = container.Duplicate(cdp.ContainerSource, cdp.ContainerDestination)
 	if err != nil {
-		err = fmt.Errorf("could not duplicate image: %s", err.Error())
-		wwlog.Error(err.Error())
-		return
+		return fmt.Errorf("could not duplicate image: %s", err.Error())
 	}
 
 	wwlog.Info("Container %s successfully duplicated as %s", cdp.ContainerSource, cdp.ContainerDestination)
 	return
-
 }
