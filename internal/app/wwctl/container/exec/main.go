@@ -4,7 +4,6 @@
 package exec
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -42,7 +41,7 @@ func runContainedCmd(cmd *cobra.Command, containerName string, args []string) (e
 	runDir := container.RunDir(containerName)
 	if err := os.Mkdir(runDir, 0750); err != nil {
 		if _, existerr := os.Stat(runDir); !os.IsNotExist(existerr) {
-			return errors.New("run directory already exists: another container command may already be running")
+			return fmt.Errorf("run directory already exists: another container command may already be running (otherwise, remove %s)", runDir)
 		} else {
 			return fmt.Errorf("unable to create run directory: %w", err)
 		}

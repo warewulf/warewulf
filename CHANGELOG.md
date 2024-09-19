@@ -57,6 +57,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - make sure that warewulfd has the permission 0755 at creation time #674
 - Fix "onboot" behavior for NetworkManager, Debian networking, and Suse wicked. #1278
 
+### Added
+
+- Additional help test when container.RunDir already exists. #1389
+
 ## v4.5.7, 2024-09-11
 
 ### Added
