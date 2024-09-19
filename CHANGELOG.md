@@ -53,6 +53,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Correctly extract smbios asset key during Grub boot. #1291
 - Refactor of `wwinit/init` to more properly address rootfs options. #1098
 
+### Added
+
+- Additional help test when container.RunDir already exists. #1389
+
 ## v4.5.7, 2024-09-11
 
 ### Added
