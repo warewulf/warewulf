@@ -41,6 +41,13 @@ func ContainerCopy(cbp *wwapiv1.ContainerCopyParameter) (err error) {
 		return fmt.Errorf("could not duplicate image: %s", err.Error())
 	}
 
+	if cbp.Build {
+		err = container.Build(cbp.ContainerDestination, true)
+		if err != nil {
+			return err
+		}
+	}
+
 	return fmt.Errorf("Container %s has been succesfully duplicated as %s", cbp.ContainerSource, cbp.ContainerDestination)
 }
 

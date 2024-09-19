@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - More aliases for many wwctl commands
 - Add support to render template using `host` or `$(uname -n)` as the value of `overlay show --render`. #623
 - Added command line parameters for credentials of a container registry
+- Add flag `--build` to `wwctl container copy`. #1378
 
 ### Changed
 
@@ -29,6 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Bump github.com/spf13/cobra from 1.7.0 to 1.8.0 #1166
 - Bump github.com/fatih/color from 1.15.0 to 1.17.0 #1224
 - Bump github.com/coreos/ignition/v2 from 2.15.0 to 2.19.0 #1239
+- Disable building containers by default when calling `wwctl container copy`. #1378
 
 ### Fixed
 

@@ -36,7 +36,7 @@ message ContainerDeleteParameter {
 message ContainerCopyParameter {
 	string containerSource = 1;
 	string containerDestination = 2;
-
+	bool build = 3;
 }
 
 // ContainerImportParameter has all input for importing a container.

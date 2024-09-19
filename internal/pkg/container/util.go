@@ -90,11 +90,7 @@ func Duplicate(name string, destination string) error {
 	if err != nil {
 		return err
 	}
-	wwlog.Info("Building container: %s", destination)
-	err = Build(destination, true)
-	if err != nil {
-		return err
-	}
+
 	return nil
 }
 

@@ -10,6 +10,7 @@ import (
 )
 
 func Build(name string, buildForce bool) error {
+	wwlog.Info("Building container: %s", name)
 
 	rootfsPath := RootFsDir(name)
 	imagePath := ImageFile(name)
