@@ -47,6 +47,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Return an error during `wwctl container import` if archive filename includes a colon. #1371
 - Correctly extract smbios asset key during Grub boot. #1291
 - Refactor of `wwinit/init` to more properly address rootfs options. #1098
+- Fix autodetected kernel sorting issue. #1332
 
 ## v4.5.7, 2024-09-11
 
