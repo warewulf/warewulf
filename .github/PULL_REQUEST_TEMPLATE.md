@@ -7,14 +7,15 @@ fixing or enhancing.
 
 ## This fixes or addresses the following GitHub issues:
 
- - Fixes #
+- Fixes #
 
 
-## Before submitting a PR, make sure you have done the following:
+## Reviewer  checklist
 
-- [ ] Signed off on all commits (e.g., using `git commit --signoff`) in agreement to the [DCO](DCO.txt)
-- [ ] Read the [documentation for contributing to Warewulf](https://warewulf.org/docs/main/contributing/contributing.html)
-- [ ] Added changes to the [CHANGELOG](https://github.com/warewulf/warewulf/blob/main/CHANGELOG.md) if necessary
-- [ ] Updated [userdocs](https://github.com/warewulf/warewulf/tree/main/userdocs) if necessary
-- [ ] Based this PR against the appropriate branch (typically [main](https://github.com/warewulf/warewulf/tree/main/userdocs))
-- [ ] Added myself as a contributor to the [Contributors File](https://github.com/warewulf/warewulf/blob/main/CONTRIBUTORS.md)
+The reviewer checks the following items before merging the PR.
+
+- [ ] The PR is based on the appropriate branch (typically [main](https://github.com/warewulf/warewulf/tree/main/userdocs))
+- [ ] All commits are "Signed off" (e.g., using `git commit --signoff`) in agreement to the [DCO](DCO.txt)
+- [ ] The [CHANGELOG](https://github.com/warewulf/warewulf/blob/main/CHANGELOG.md) has been updated, if necessary, and under the correct release heading
+- [ ] The [userdocs](https://github.com/warewulf/warewulf/tree/main/userdocs) have been updated, if necessary
+- [ ] The submitter is listed in the [contributors file](https://github.com/warewulf/warewulf/blob/main/CONTRIBUTORS.md)
