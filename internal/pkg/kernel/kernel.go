@@ -8,10 +8,12 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/pkg/errors"
 
+	"github.com/hashicorp/go-version"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -21,7 +23,7 @@ var (
 	kernelSearchPaths = []string{
 		// This is a printf format where the %s will be the kernel version
 		"/boot/Image-%s", // this is the aarch64 for SUSE, vmlinux which is also present won't boot
-		"/boot/vmlinuz-linux%.s",
+		"/boot/vmlinuz-linux%s",
 		"/boot/vmlinuz-%s",
 		"/boot/vmlinuz-%s.gz",
 		"/lib/modules/%s/vmlinuz",
@@ -32,6 +34,8 @@ var (
 		"lib/firmware/*",
 		"lib/modprobe.d",
 		"lib/modules-load.d"}
+	// kenrel naming convention <base kernel version>-<ABI number>.<upload number>-<flavour>
+	kernelVersionRegex = `(\d+\.\d+\.\d+)-((\d+\.*){1,})`
 )
 
 func KernelImageTopDir() string {
@@ -241,7 +245,48 @@ func DeleteKernel(name string) error {
 Searches for kernel under a given path. First return result is the
 full path, second the version and an error if the kernel couldn't be found.
 */
-func FindKernel(root string) (kPath string, version string, err error) {
+type kernel struct {
+	version string
+	path    string
+}
+
+func filter(val string, filters []func(string) (string, error)) (string, error) {
+	for _, ft := range filters {
+		newVal, err := ft(val)
+		if err != nil {
+			return val, err
+		}
+		val = newVal
+	}
+	return val, nil
+}
+
+func nonDebugKernel(val string) (string, error) {
+	if strings.HasSuffix(val, "+debug") {
+		return val, fmt.Errorf("%s is debug kernel, skipped", val)
+	}
+	return val, nil
+}
+
+func nonSemaVer(val string) (string, error) {
+	// need to extract version info
+	verRegx := regexp.MustCompile(kernelVersionRegex)
+	verRe := verRegx.FindAllStringSubmatch(val, -1)
+	// only if at the least the following pattern is matched <xx.xx.xx>-<xx[.xx.xx]>
+	if len(verRe) > 0 && len(verRe[0]) > 2 {
+		// verRe[0][1] -> <xx.xx.xx>
+		// verRe[0][2] -> <xx[.xx.xx]>
+		verStr := strings.TrimSuffix(fmt.Sprintf("%s-%s", verRe[0][1], verRe[0][2]), ".")
+		_, err := version.NewVersion(verStr)
+		if err != nil {
+			return val, fmt.Errorf("semantic incompatible version detected, version string: %s, err: %s", verStr, err)
+		}
+		return verStr, nil
+	}
+	return val, fmt.Errorf("unable to extract version info from %s", val)
+}
+
+func FindKernel(root string) (string, string, error) {
 	wwlog.Debug("root: %s", root)
 	for _, searchPath := range kernelSearchPaths {
 		testPattern := fmt.Sprintf(path.Join(root, searchPath), `*`)
@@ -250,18 +295,38 @@ func FindKernel(root string) (kPath string, version string, err error) {
 		if len(potentialKernel) == 0 {
 			continue
 		}
+
+		verMap := make(map[*version.Version]*kernel, len(potentialKernel))
 		for _, foundKernel := range potentialKernel {
 			wwlog.Debug("Parsing out kernel version for %s", foundKernel)
 			re := regexp.MustCompile(fmt.Sprintf(path.Join(root, searchPath), `([\w\d-\.+]*)`))
-			version := re.FindAllStringSubmatch(foundKernel, -1)
-			if version == nil {
-				return foundKernel, "", fmt.Errorf("could not parse kernel version")
+			kernelVer := re.FindAllStringSubmatch(foundKernel, -1)
+			if kernelVer == nil {
+				break
 			}
-			wwlog.Verbose("found kernel version %s", strings.TrimSuffix(version[0][1], ".gz"))
-			return foundKernel, strings.TrimSuffix(version[0][1], ".gz"), nil
+			// kernelVerStr is like 5.14.0-427.18.1.el9_4.x86_64
+			kernelVerStr := strings.TrimSuffix(kernelVer[0][1], ".gz")
 
+			newVal, err := filter(kernelVerStr, []func(string) (string, error){nonDebugKernel, nonSemaVer})
+			if err != nil {
+				wwlog.Verbose("While filtering kernel version for %s, having error: %s", kernelVerStr, err)
+				continue
+			}
+			ver, _ := version.NewVersion(newVal)
+			verMap[ver] = &kernel{
+				version: kernelVerStr,
+				path:    foundKernel,
+			}
 		}
 
+		if len(verMap) > 0 {
+			var keys []*version.Version
+			for k := range verMap {
+				keys = append(keys, k)
+			}
+			sort.Sort(sort.Reverse(version.Collection(keys)))
+			return verMap[keys[0]].path, verMap[keys[0]].version, nil
+		}
 	}
 	return "", "", fmt.Errorf("could not find kernel version")
 
