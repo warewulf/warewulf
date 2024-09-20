@@ -18,6 +18,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	cdp := &wwapiv1.ContainerCopyParameter{
 		ContainerSource:      args[0],
 		ContainerDestination: args[1],
+		Build:                Build,
 	}
 
 	if !container.DoesSourceExist(cdp.ContainerSource) {
@@ -35,6 +36,13 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	err = container.Duplicate(cdp.ContainerSource, cdp.ContainerDestination)
 	if err != nil {
 		return fmt.Errorf("could not duplicate image: %s", err.Error())
+	}
+
+	if cdp.Build {
+		err = container.Build(cdp.ContainerDestination, true)
+		if err != nil {
+			return err
+		}
 	}
 
 	wwlog.Info("Container %s successfully duplicated as %s", cdp.ContainerSource, cdp.ContainerDestination)

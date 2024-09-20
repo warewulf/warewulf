@@ -22,10 +22,12 @@ var (
 			return list, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
+	Build bool
 )
 
 func init() {
 	// Nothing to do here
+	baseCmd.PersistentFlags().BoolVarP(&Build, "build", "b", false, "Build container after copy")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
