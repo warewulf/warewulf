@@ -6,7 +6,7 @@
 # Edit at your own risk! DANGER DANGER.
 
 
-if [ -f "/warewulf/config" ]; then
+if test -f "/warewulf/config"; then
     . /warewulf/config
 else
     echo "ERROR: Warewulf configuration file not found... rebooting in 1 minute"
@@ -14,7 +14,7 @@ else
     echo b > /proc/sysrq-trigger || /sbin/reboot
 fi
 
-echo "Warewulf v4 is now booting: ${WWHOSTNAME}"
+echo "Warewulf v4 is now booting: $WWHOSTNAME"
 echo
 
 echo "Mounting up kernel file systems"
@@ -26,38 +26,31 @@ mount -t tmpfs tmpfs /run
 
 chmod 755 /warewulf/wwinit
 
-echo -n "Checking Rootfs type..."
+echo "Checking Rootfs type"
 ROOTFSTYPE=`stat -f -c "%T" /`
-echo "${ROOTFSTYPE}"
 
-
-if [ -n "${WWROOT}" ] && [ "${WWROOT}" != "${ROOTFSTYPE}" ]; then
-    echo "Requested rootfs type does not match current rootfs type. Pivoting to new rootfs..."
-    if [ "${WWROOT}" == "ramfs" ] || [ "${WWROOT}" == "tmpfs" ]; then
-        mkdir /newroot
-        mount wwroot /newroot -t ${WWROOT} -o mpol=interleave
-        tar cf - --exclude ./proc --exclude ./sys --exclude ./dev --exclude ./run --exclude ./newroot . | tar xf - -C /newroot
-        mkdir /newroot/proc /newroot/dev /newroot/sys /newroot/run 2>/dev/null
-        echo "Switching to new rootfs and invoking /warewulf/wwinit..."
-        exec /sbin/switch_root /newroot /warewulf/wwinit
-    elif [ "${WWROOT}" == "initramfs" ]; then
-        echo ">>> Deprecated option \"initramfs\" chosen."
-        echo ">>> The 'initramfs' can be either a ramfs or a tmpfs natively, depending on kernel configuration."
-        echo ">>> If you wish to use whatever this kernel chooses by default, remove the 'root' setting from your nodes/profiles."
-        echo "Invoking /warewulf/wwinit..."
-        exec /warewulf/wwinit
+if test "$WWROOT" = "initramfs"; then
+    echo "Provisioned to default initramfs file system: $ROOTFSTYPE"
+    echo "Calling WW Init"
+    exec /warewulf/wwinit
+elif test "$WWROOT" = "tmpfs"; then
+    if test "$ROOTFSTYPE" = "tmpfs"; then
+        echo "ERROR: Switching the root file system requires the kernel argument: 'rootfstype=ramfs'"
     else
-        echo "Unrecognized rootfs type requested: ${WWROOT}"
-        echo "Rebooting in 1 minute..."
-        sleep 60
-        /sbin/reboot -f
+        echo "Setting up tmpfs root file system"
+        mkdir /newroot
+        mount wwroot /newroot -t tmpfs -o mpol=interleave
+        echo "Moving RAMFS to TMPFS"
+        tar -cf - --exclude ./proc --exclude ./sys --exclude ./dev --exclude ./newroot . | tar -xf - -C /newroot
+        mkdir /newroot/proc /newroot/dev /newroot/sys /newroot/run 2>/dev/null
+        echo "Calling switch_root and invoking WW Init"
+        exec /sbin/switch_root /newroot /warewulf/wwinit
     fi
 else
-    echo "Invoking /warewulf/wwinit..."
-    exec /warewulf/wwinit
+    echo "ERROR: Unknown Warewulf Root file system: $WWROOT"
 fi
 
 echo
-echo "There was a problem with the initial provisioning process, rebooting in 1 minute..."
+echo "There was a problem with the provisioning process, rebooting in 1 minute..."
 sleep 60
-echo b > /proc/sysrq-trigger || /sbin/reboot -f
+echo b > /proc/sysrq-trigger || /sbin/reboot
