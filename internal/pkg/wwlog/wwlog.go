@@ -43,6 +43,7 @@ var (
 	OUT         = SetLevelName(22, "OUT")
 	SECINFO     = SetLevelName(21, "SECINFO")
 	INFO        = SetLevelName(20, "INFO")
+	INFOERR     = SetLevelName(23, "INFOERR")
 	SECVERBOSE  = SetLevelName(16, "SECVERBOSE")
 	VERBOSE     = SetLevelName(15, "VERBOSE")
 	SECDEBUG    = SetLevelName(11, "SECDEBUG")
@@ -117,7 +118,7 @@ func DefaultFormatter(logLevel int, rec *LogRecord) string {
 		}
 	}
 
-	if (rec.Level == INFO || rec.Level == OUT) && logLevel == INFO {
+	if (rec.Level == INFO || rec.Level == OUT || rec.Level == INFOERR) && logLevel == INFO {
 		// NOTE: this is a bit strange, but for user-friendliness it makes sense
 		// to not pollute the messages unless something bad happens (by default).
 		// if logLevel > INFO, then level == INFO messages should not be printed anyway,
@@ -253,6 +254,10 @@ func SecVerbose(message string, a ...interface{}) {
 
 func Info(message string, a ...interface{}) {
 	LogCaller(INFO, 1, nil, message, a...)
+}
+
+func InfoErr(message string, a ...interface{}) {
+	LogCaller(INFOERR, 1, nil, message, a...)
 }
 
 func Output(message string, a ...interface{}) {

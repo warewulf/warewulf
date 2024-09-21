@@ -18,6 +18,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added command line parameters for credentials of a container registry
 - Add flag `--build` to `wwctl container copy`. #1378
 - Add `wwctl clean` to remove OCI cache and overlays from deleted nodes
+- Add an InfoErr loglevel for sending INFO level logs to stderr instead of stdout
+- Use new InfoErr loglevel to send INFO output from `wwctl overlay show -r ...`
+  to stderr making it simpler to capture rendered template files.
 
 ### Changed
 
