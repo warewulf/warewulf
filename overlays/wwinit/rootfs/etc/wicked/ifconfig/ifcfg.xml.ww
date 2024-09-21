@@ -1,7 +1,7 @@
 {{- $host := .BuildHost }}
 {{- $time := .BuildTime }}
 {{- $source := .BuildSource }}
-{{range $devname, $netdev := .NetDevs -}}
+{{range $devname, $netdev := .ThisNode.NetDevs -}}
 {{- $filename := print "ifcfg-" $devname ".xml" }}
 {{- file $filename }}
 <!--
@@ -11,15 +11,15 @@ Time:   {{ $time }}
 Source: {{ $source }}
 -->
 <interface origin="static generated warewulf config">
-  <name>{{$netdev.Device}}</name>
-  {{ if $netdev.Type -}}
-  <link-type>{{ $netdev.Type }}</link-type>
+  <name>{{$netdev.Device.Get}}</name>
+  {{ if $netdev.Type.Get -}}
+  <link-type>{{ $netdev.Type.Get }}</link-type>
   {{ end -}}
-  {{ if $netdev.MTU -}}
-  <mtu>{{ $netdev.MTU }}</mtu>
+  {{ if $netdev.MTU.Get -}}
+  <mtu>{{ $netdev.MTU.Get }}</mtu>
   {{ end -}}
   <control>
-    <mode>boot</mode>
+    <mode>{{ if $netdev.OnBoot.GetB -}}boot{{ else }}manual{{end}}</mode>
   </control>
   <firewall/>
   <link/>
@@ -29,12 +29,12 @@ Source: {{ $source }}
   </ipv4>
   <ipv4:static>
     <address>
-      <local>{{$netdev.IpCIDR}}</local>
+      <local>{{$netdev.IpCIDR.Get}}</local>
     </address>
-{{ if $netdev.Gateway -}}
+{{ if $netdev.Gateway.Get -}}
     <route>
       <nexthop>
-        <gateway>{{$netdev.Gateway}}</gateway>
+        <gateway>{{$netdev.Gateway.Get}}</gateway>
       </nexthop>
     </route>
 {{ end -}}
@@ -44,10 +44,10 @@ Source: {{ $source }}
     <privacy>prefer-public</privacy>
     <accept-redirects>false</accept-redirects>
   </ipv6>
-{{ if $netdev.Ipaddr6 -}}
+{{ if $netdev.Ipaddr6.Get -}}
   <ipv6:static>
     <address>
-      <local>{{ $netdev.Ipaddr6 }}</local>
+      <local>{{ $netdev.Ipaddr6.Get }}</local>
     </address>
   </ipv6:static>
 {{ end -}}
