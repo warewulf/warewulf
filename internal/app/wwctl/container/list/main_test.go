@@ -27,7 +27,7 @@ func Test_List_Args(t *testing.T) {
 `,
 			fail: false,
 		},
-		{args: []string{"-ul"},
+		{args: []string{"-l"},
 			output: `  CONTAINER NAME  NODES  KERNEL VERSION  CREATION TIME        MODIFICATION TIME    SIZE
   test            0                      02 Jan 00 03:04 UTC  01 Jan 70 00:00 UTC  0 B
 `,

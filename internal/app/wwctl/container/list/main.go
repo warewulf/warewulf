@@ -27,10 +27,6 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 				for i := 0; i < len(containerInfo); i++ {
 					createTime := time.Unix(int64(containerInfo[i].CreateDate), 0)
 					modTime := time.Unix(int64(containerInfo[i].ModDate), 0)
-					if vars.utc {
-						createTime = createTime.UTC()
-						modTime = modTime.UTC()
-					}
 					sz := util.ByteToString(int64(containerInfo[i].ImgSize))
 					if vars.compressed {
 						sz = util.ByteToString(int64(containerInfo[i].ImgSizeComp))
