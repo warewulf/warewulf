@@ -22,11 +22,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Error("Unknown Warewulf container: %s", containerName)
 		os.Exit(1)
 	}
-	/*
-		for _, b := range binds {
-			allargs = append(allargs, "--bind", b)
-		}
-	*/
 	shellName := os.Getenv("SHELL")
 	if !container.ValidSource(containerName) {
 		wwlog.Error("Unknown Warewulf container: %s", containerName)
@@ -49,5 +44,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	wwlog.Debug("Calling exec with args: %s", allargs)
 	cntexec.SetBinds(binds)
 	cntexec.SetNode(nodeName)
+	cntexec.SyncUser = syncUser
 	return cntexec.CobraRunE(cmd, allargs)
 }
