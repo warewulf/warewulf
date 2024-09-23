@@ -166,7 +166,7 @@ func getTime(path string) time.Time {
 		return time.Time{}
 	} else {
 		unixStat := fileStat.Sys().(*syscall.Stat_t)
-		return time.Unix(int64(unixStat.Ctim.Sec), int64(unixStat.Ctim.Nsec))
+		return time.Unix(int64(unixStat.Mtim.Sec), int64(unixStat.Mtim.Nsec))
 	}
 }
 
