@@ -90,10 +90,10 @@ nfs:
 const wwinit_config string = `backupFile: true
 writeFile: true
 Filename: warewulf/config
-WWCONTAINER=rockylinux-9
+WWCONTAINER=
 WWHOSTNAME=node1
-WWROOT=initramfs
-WWINIT=/sbin/init
+WWROOT=
+WWINIT=
 WWIPMI_IPADDR="192.168.4.21"
 WWIPMI_NETMASK="255.255.255.0"
 WWIPMI_GATEWAY="192.168.4.1"

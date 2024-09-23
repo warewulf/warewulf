@@ -106,7 +106,7 @@ func Test_hostOverlay(t *testing.T) {
 			} else {
 				log = logbuf.String()
 			}
-			assert.Equal(t, strings.Replace(tt.log, "%HOSTNAME%", hostname, -1), log)
+			assert.Equal(t, strings.Replace(log, hostname, "%HOSTNAME%", -1), tt.log)
 		})
 	}
 }
@@ -293,10 +293,10 @@ Filename: etc/hosts
 
 # Warewulf Server
 192.168.0.1 %HOSTNAME% warewulf
-# Entry for node1
-192.168.3.21 node1 node1-default node1-wwnet0
-192.168.3.22  node1-secondary node1-wwnet1
-# Entry for node2
+# Entry for node1 
+192.168.3.21 node1 node1-default node1-wwnet0 
+192.168.3.22 node1-secondary node1-wwnet1
+# Entry for node2 
 192.168.3.23 node2 node2-default node2-wwnet0
 `
 

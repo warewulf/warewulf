@@ -14,7 +14,7 @@ import (
 )
 
 func Test_debugOverlay(t *testing.T) {
-	variableData := regexp.MustCompile(`(?m)(BuildTime|BuildTimeUnix|BuildSource|DataStore):.*$`)
+	variableData := regexp.MustCompile(`(?m)(BuildHost|BuildTime|BuildTimeUnix|BuildSource|DataStore):.*$`)
 	hostname, _ := os.Hostname()
 
 	env := testenv.New(t)
@@ -76,21 +76,19 @@ data from other structures.
 - Comment: 
 - ClusterName: 
 - ContainerName: rockylinux-9
-- Ipxe: default
-- RuntimeOverlay: hosts,ssh.authorized_keys,syncuser
-- SystemOverlay: wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition
-- Init: /sbin/init
-- Root: initramfs
+- Ipxe: 
+- RuntimeOverlay: 
+- SystemOverlay: 
+- Init: 
+- Root: 
 - AssetKey: 
 - Discoverable: 
 - Profiles: empty
 - Tags: 
-- TagsDel: 
-- Keys: 
 - Kernel:
   - Version: 
   - Override: 
-  - Args: quiet crashkernel=no vga=791 net.naming-scheme=v238
+  - Args: 
 - Ipmi:
   - UserName: user
   - Password: password
@@ -101,44 +99,37 @@ data from other structures.
   - Interface: 
   - Write: true
   - Tags: 
-  - TagsDel: 
 - NetDevs[default]:
   - Type: ethernet
-  - OnBoot: true
+  - OnBoot: false
   - Device: wwnet0
   - Hwaddr: e6:92:39:49:7b:03
   - Ipaddr: 192.168.3.21
-  - IpCIDR: 192.168.3.21/24
-  - Ipaddr6: 
-  - Prefix: 
+  - Ipaddr6: <nil>
+  - Prefix: <nil>
   - Netmask: 255.255.255.0
   - Gateway: 192.168.3.1
   - MTU: 
-  - Primary: true
-  - Default: 
+  - Primary: false
   - Tags: 
-  - TagsDel: 
 - NetDevs[secondary]:
   - Type: ethernet
-  - OnBoot: true
+  - OnBoot: false
   - Device: wwnet1
   - Hwaddr: 9a:77:29:73:14:f1
   - Ipaddr: 192.168.3.22
-  - IpCIDR: 192.168.3.22/24
-  - Ipaddr6: 
-  - Prefix: 
+  - Ipaddr6: <nil>
+  - Prefix: <nil>
   - Netmask: 255.255.255.0
   - Gateway: 192.168.3.1
   - MTU: 
-  - Primary: 
-  - Default: 
+  - Primary: false
   - Tags: DNS1=8.8.8.8 DNS2=8.8.4.4 
-  - TagsDel: 
 
 
 ## Build variables
 
-- BuildHost: %HOSTNAME%
+- BuildHost: REMOVED_BY_TEST
 - BuildTime: REMOVED_BY_TEST
 - BuildTimeUnix: REMOVED_BY_TEST
 - BuildSource: REMOVED_BY_TEST
@@ -151,7 +142,7 @@ data from other structures.
 - Ipaddr6: 
 - Netmask: 
 - Network: 
-- NetworkCIDR: <nil>
+- NetworkCIDR: 
 - Ipv6: false
 
 
@@ -197,18 +188,18 @@ data from other structures.
   - Comment: 
   - ClusterName: 
   - ContainerName: rockylinux-9
-  - Ipxe: default
-  - RuntimeOverlay: hosts
-  - SystemOverlay: wwinit
-  - Root: initramfs
+  - Ipxe: 
+  - RuntimeOverlay: []
+  - SystemOverlay: []
+  - Root: 
   - Discoverable: 
-  - Init: /sbin/init
+  - Init: 
   - AssetKey: 
-  - Profiles: empty
+  - Profiles: [empty]
   - Tags: 
   - Kernel
     - Override: 
-    - Args: quiet crashkernel=no vga=791 net.naming-scheme=v238
+    - Args: 
   - Ipmi:
     - Ipaddr: 192.168.4.21
     - Netmask: 255.255.255.0
@@ -221,13 +212,12 @@ data from other structures.
     - Tags: 
   - NetDevs[default]:
     - Type: ethernet
-    - OnBoot: true
+    - OnBoot: false
     - Device: wwnet0
     - Hwaddr: e6:92:39:49:7b:03
     - Ipaddr: 192.168.3.21
-    - Ipaddr6: 
-    - IpCIDR: 
-    - Prefix: 
+    - Ipaddr6: <nil>
+    - Prefix: <nil>
     - Netmask: 255.255.255.0
     - Gateway: 192.168.3.1
     - MTU: 
@@ -235,54 +225,52 @@ data from other structures.
     - Tags: 
   - NetDevs[secondary]:
     - Type: ethernet
-    - OnBoot: true
+    - OnBoot: false
     - Device: wwnet1
     - Hwaddr: 9a:77:29:73:14:f1
     - Ipaddr: 192.168.3.22
-    - Ipaddr6: 
-    - IpCIDR: 
-    - Prefix: 
+    - Ipaddr6: <nil>
+    - Prefix: <nil>
     - Netmask: 255.255.255.0
     - Gateway: 192.168.3.1
     - MTU: 
-    - Primary: 
+    - Primary: false
     - Tags: DNS1=8.8.8.8 DNS2=8.8.4.4 
 - AllNodes[1]:
   - Id: node2
   - Comment: 
   - ClusterName: 
   - ContainerName: 
-  - Ipxe: default
-  - RuntimeOverlay: hosts
-  - SystemOverlay: wwinit
-  - Root: initramfs
+  - Ipxe: 
+  - RuntimeOverlay: []
+  - SystemOverlay: []
+  - Root: 
   - Discoverable: 
-  - Init: /sbin/init
+  - Init: 
   - AssetKey: 
-  - Profiles: empty
+  - Profiles: [empty]
   - Tags: 
   - Kernel
     - Override: 
-    - Args: quiet crashkernel=no vga=791 net.naming-scheme=v238
+    - Args: 
   - Ipmi:
-    - Ipaddr: 
-    - Netmask: 
+    - Ipaddr: <nil>
+    - Netmask: <nil>
     - Port: 
-    - Gateway: 
+    - Gateway: <nil>
     - UserName: 
     - Password: 
     - Interface: 
     - Write: 
     - Tags: 
   - NetDevs[default]:
-    - Type: ethernet
-    - OnBoot: true
+    - Type: 
+    - OnBoot: false
     - Device: wwnet0
     - Hwaddr: e6:92:39:49:7b:04
     - Ipaddr: 192.168.3.23
-    - Ipaddr6: 
-    - IpCIDR: 
-    - Prefix: 
+    - Ipaddr6: <nil>
+    - Prefix: <nil>
     - Netmask: 255.255.255.0
     - Gateway: 192.168.3.1
     - MTU: 

@@ -151,15 +151,8 @@ nodes:
 			args:    []string{"-a"},
 			wantErr: false,
 			stdout: `NODE  FIELD           PROFILE  VALUE
-n01   Id              --       n01
 n01   Comment         default  profilecomment
-n01   Ipxe            --       (default)
-n01   RuntimeOverlay  --       (hosts,ssh.authorized_keys,syncuser)
-n01   SystemOverlay   --       (wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition)
-n01   Root            --       (initramfs)
-n01   Init            --       (/sbin/init)
-n01   Kernel.Args     --       (quiet crashkernel=no vga=791 net.naming-scheme=v238)
-n01   Profiles        --       default
+n01   Profiles                 default
 `,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
@@ -175,15 +168,8 @@ nodes:
 			args:    []string{"-a"},
 			wantErr: false,
 			stdout: `NODE  FIELD           PROFILE     VALUE
-n01   Id              --          n01
 n01   Comment         SUPERSEDED  nodecomment
-n01   Ipxe            --          (default)
-n01   RuntimeOverlay  --          (hosts,ssh.authorized_keys,syncuser)
-n01   SystemOverlay   --          (wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition)
-n01   Root            --          (initramfs)
-n01   Init            --          (/sbin/init)
-n01   Kernel.Args     --          (quiet crashkernel=no vga=791 net.naming-scheme=v238)
-n01   Profiles        --          default
+n01   Profiles                    default
 `,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
@@ -263,14 +249,7 @@ nodes:
 			args:    []string{"-a"},
 			wantErr: false,
 			stdout: `NODE  FIELD           PROFILE  VALUE
-n01   Id              --       n01
-n01   Ipxe            --       (default)
-n01   RuntimeOverlay  --       (hosts,ssh.authorized_keys,syncuser)
-n01   SystemOverlay   --       (wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition)
-n01   Root            --       (initramfs)
-n01   Init            --       (/sbin/init)
-n01   Kernel.Args     --       (quiet crashkernel=no vga=791 net.naming-scheme=v238)
-n01   Profiles        --       p1,p2
+n01   Profiles                 p1,p2
 `},
 		{
 			inDb: `WW_INTERNAL: 45
@@ -288,7 +267,7 @@ nodes:
 			args:    []string{"-l"},
 			wantErr: false,
 			stdout: `NODE NAME  KERNEL OVERRIDE  CONTAINER  OVERLAYS (S/R)
-n01        --               --         (wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition)/rop1,rop2
+n01                                                         /rop1,rop2
 `},
 		{
 			inDb: `WW_INTERNAL: 45
@@ -311,7 +290,7 @@ nodes:
 			args:    []string{"-l"},
 			wantErr: false,
 			stdout: `NODE NAME  KERNEL OVERRIDE  CONTAINER  OVERLAYS (S/R)
-n01                                /nop1,~rop1,rop1,rop2
+n01                                sop1/nop1,~rop1,rop1,rop2
 `},
 		{
 			inDb: `WW_INTERNAL: 45
@@ -354,14 +333,8 @@ nodes:
 			args:    []string{"-a"},
 			wantErr: false,
 			stdout: `NODE  FIELD           PROFILE     VALUE
-n01   Id              --          n01
-n01   Ipxe            --          (default)
-n01   RuntimeOverlay  --          (hosts,ssh.authorized_keys,syncuser)
-n01   SystemOverlay   SUPERSEDED  profileinit,nodeinit
-n01   Root            --          (initramfs)
-n01   Init            --          (/sbin/init)
-n01   Kernel.Args     --          (quiet crashkernel=no vga=791 net.naming-scheme=v238)
-n01   Profiles        --          p1
+n01   Profiles                    p1
+n01   RuntimeOverlay               p1+nop1,rop1,rop2
 `},
 	}
 
