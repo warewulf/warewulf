@@ -1,17 +1,20 @@
 package helper
 
 import (
-	"os"
+	"regexp"
+	"strings"
 
 	"github.com/olekukonko/tablewriter"
 )
 
 type PrintHelper struct {
 	*tablewriter.Table
+	sb *strings.Builder
 }
 
-func NewPrintHelper(header []string) *PrintHelper {
-	tb := tablewriter.NewWriter(os.Stdout)
+func New(header []string) *PrintHelper {
+	sb := &strings.Builder{}
+	tb := tablewriter.NewWriter(sb)
 	tb.SetHeader(header)
 	tb.SetAutoWrapText(false)
 	tb.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
@@ -23,5 +26,11 @@ func NewPrintHelper(header []string) *PrintHelper {
 	tb.SetBorder(false)
 	return &PrintHelper{
 		Table: tb,
+		sb:    sb,
 	}
+}
+
+func (p *PrintHelper) String() string {
+	exp := regexp.MustCompile("(?m) *$")
+	return string(exp.ReplaceAll([]byte(p.sb.String()), []byte("")))
 }

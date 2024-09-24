@@ -222,11 +222,12 @@ nodes:
 }
 
 func verifyOutput(t *testing.T, baseCmd *cobra.Command, content string) {
-	baseCmd.SetOut(nil)
-	baseCmd.SetErr(nil)
 	stdoutR, stdoutW, _ := os.Pipe()
 	oriout := os.Stdout
 	os.Stdout = stdoutW
+	wwlog.SetLogWriter(os.Stdout)
+	baseCmd.SetOut(os.Stdout)
+	baseCmd.SetErr(os.Stdout)
 	err := baseCmd.Execute()
 	assert.NoError(t, err)
 
