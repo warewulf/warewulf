@@ -2,7 +2,6 @@ package syncuser
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	container_build "github.com/warewulf/warewulf/internal/pkg/api/container"
@@ -18,8 +17,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 	err := container.SyncUids(containerName, write)
 	if err != nil {
-		wwlog.Error("Error in synchronize: %s", err)
-		os.Exit(1)
+		return fmt.Errorf("error in synchronize: %s", err)
 	}
 
 	if write && !build {
@@ -35,8 +33,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 		err := container_build.ContainerBuild(cbp)
 		if err != nil {
-			wwlog.Error("Error during container build: %s", err)
-			os.Exit(1)
+			return fmt.Errorf("error during container build: %s", err)
 		}
 	}
 

@@ -4,6 +4,7 @@
 package shell
 
 import (
+	"fmt"
 	"os"
 	"path"
 
@@ -19,13 +20,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	var allargs []string
 
 	if !container.ValidSource(containerName) {
-		wwlog.Error("Unknown Warewulf container: %s", containerName)
-		os.Exit(1)
+		return fmt.Errorf("unknown Warewulf container: %s", containerName)
 	}
 	shellName := os.Getenv("SHELL")
 	if !container.ValidSource(containerName) {
-		wwlog.Error("Unknown Warewulf container: %s", containerName)
-		os.Exit(1)
+		return fmt.Errorf("unknown Warewulf container: %s", containerName)
 	}
 	var shells []string
 	if shellName == "" {

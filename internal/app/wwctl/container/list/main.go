@@ -9,7 +9,6 @@ import (
 	apicontainer "github.com/warewulf/warewulf/internal/pkg/api/container"
 	"github.com/warewulf/warewulf/internal/pkg/container"
 	"github.com/warewulf/warewulf/internal/pkg/util"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 var containerList = apicontainer.ContainerList
@@ -20,7 +19,6 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 		if showSize || vars.full || vars.kernel {
 			containerInfo, err := containerList()
 			if err != nil {
-				wwlog.Error("%s", err)
 				return err
 			}
 			if vars.full {

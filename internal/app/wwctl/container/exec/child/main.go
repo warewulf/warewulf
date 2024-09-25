@@ -28,15 +28,13 @@ Run "true" or "false" to enforce or abort image rebuild.`
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	if os.Getpid() != 1 {
-		wwlog.Error("PID is not 1: %d", os.Getpid())
-		os.Exit(1)
+		return fmt.Errorf("PID is not 1: %d", os.Getpid())
 	}
 
 	containerName := args[0]
 
 	if !container.ValidSource(containerName) {
-		wwlog.Error("Unknown Warewulf container: %s", containerName)
-		os.Exit(1)
+		return fmt.Errorf("unknown Warewulf container: %s", containerName)
 	}
 	conf := warewulfconf.Get()
 	runDir := container.RunDir(containerName)
@@ -97,34 +95,29 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	} else if nodename != "" {
 		nodeDB, err := node.New()
 		if err != nil {
-			wwlog.Error("Could not open node configuration: %s", err)
-			os.Exit(1)
+			return fmt.Errorf("could not open node configuration: %s", err)
 		}
 
 		nodes, err := nodeDB.FindAllNodes()
 		if err != nil {
-			wwlog.Error("Could not get node list: %s", err)
-			os.Exit(1)
+			return fmt.Errorf("could not get node list: %s", err)
 		}
 		nodes = node.FilterByName(nodes, []string{nodename})
 		if len(nodes) != 1 {
-			wwlog.Error("No single node idendified with %s", nodename)
-			os.Exit(1)
+			return fmt.Errorf("no single node idendified with %s", nodename)
 		}
 		overlays := nodes[0].SystemOverlay.GetSlice()
 		overlays = append(overlays, nodes[0].RuntimeOverlay.GetSlice()...)
 		err = overlay.BuildOverlayIndir(nodes[0], overlays, path.Join(runDir, "nodeoverlay"))
 		if err != nil {
-			wwlog.Error("Could not build overlay: %s", err)
-			os.Exit(1)
+			return fmt.Errorf("could not build overlay: %s", err)
 		}
 		options := fmt.Sprintf("lowerdir=%s:%s:%s",
 			path.Join(runDir, "lower"), containerPath, path.Join(runDir, "nodeoverlay"))
 		wwlog.Debug("overlay options: %s", options)
 		err = syscall.Mount("overlay", containerPath, "overlay", 0, options)
 		if err != nil {
-			wwlog.Warn(fmt.Sprintf("Couldn't create overlay for node render overlay: %s", err))
-			os.Exit(1)
+			return fmt.Errorf("Couldn't create overlay for node render overlay: %s", err)
 		}
 		ps1Str = fmt.Sprintf("[%s|ro|%s] Warewulf> ", containerName, nodename)
 	}

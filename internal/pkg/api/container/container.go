@@ -70,27 +70,23 @@ func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 
 	for _, c := range containers {
 		if !container.ValidSource(c) {
-			err = fmt.Errorf("VNFS name does not exist: %s", c)
-			wwlog.Error("%s", err)
-			return
+			return fmt.Errorf("VNFS name does not exist: %s", c)
 		}
 
 		err = container.Build(c, cbp.Force)
 		if err != nil {
-			wwlog.Error("Could not build container %s: %s", c, err)
-			return
+			return fmt.Errorf("could not build container %s: %s", c, err)
 		}
 	}
 
 	if cbp.Default {
 		if len(containers) != 1 {
-			wwlog.Error("Can only set default for one container")
+			return fmt.Errorf("can only set default for one container")
 		} else {
 			var nodeDB node.NodeYaml
 			nodeDB, err = node.New()
 			if err != nil {
-				wwlog.Error("Could not open node configuration: %s", err)
-				return
+				return fmt.Errorf("could not open node configuration: %s", err)
 			}
 
 			// TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
@@ -124,8 +120,7 @@ func ContainerDelete(cdp *wwapiv1.ContainerDeleteParameter) (err error) {
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("Could not open nodeDB: %s", err)
-		return
+		return fmt.Errorf("could not open nodeDB: %s", err)
 	}
 
 	nodes, err := nodeDB.FindAllNodes()
@@ -176,7 +171,6 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 	}
 	if !container.ValidName(cip.Name) {
 		err = fmt.Errorf("VNFS name contains illegal characters: %s", cip.Name)
-		wwlog.Error(err.Error())
 		return
 	}
 
@@ -188,7 +182,6 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		wwlog.Info("Overwriting existing VNFS")
 		err = os.RemoveAll(fullPath)
 		if err != nil {
-			wwlog.ErrorExc(err, "")
 			return
 		}
 	}
@@ -196,7 +189,6 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 	if util.IsDir(fullPath) {
 		if !cip.Update {
 			err = fmt.Errorf("VNFS Name exists, specify --force, --update, or choose a different name: %s", cip.Name)
-			wwlog.Error(err.Error())
 			return
 		}
 		wwlog.Info("Updating existing VNFS")
@@ -205,7 +197,6 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		var sCtx *types.SystemContext
 		sCtx, err = getSystemContext(cip.OciNoHttps, cip.OciUsername, cip.OciPassword)
 		if err != nil {
-			wwlog.ErrorExc(err, "")
 			return
 		}
 
@@ -213,14 +204,12 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 			cip.Source, err = filepath.Abs(cip.Source)
 			if err != nil {
 				err = fmt.Errorf("when resolving absolute path of %s, err: %v", cip.Source, err)
-				wwlog.Error(err.Error())
 				return
 			}
 		}
 		err = container.ImportDocker(cip.Source, cip.Name, sCtx)
 		if err != nil {
 			err = fmt.Errorf("could not import image: %s", err.Error())
-			wwlog.Error(err.Error())
 			_ = container.DeleteSource(cip.Name)
 			return
 		}
@@ -228,13 +217,11 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		err = container.ImportDirectory(cip.Source, cip.Name)
 		if err != nil {
 			err = fmt.Errorf("could not import image: %s", err.Error())
-			wwlog.Error(err.Error())
 			_ = container.DeleteSource(cip.Name)
 			return
 		}
 	} else {
 		err = fmt.Errorf("invalid dir or uri: %s", cip.Source)
-		wwlog.Error(err.Error())
 		return
 	}
 
@@ -242,7 +229,6 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		err = container.SyncUids(cip.Name, true)
 		if err != nil {
 			err = fmt.Errorf("error in user sync, fix error and run 'syncuser' manually: %s", err)
-			wwlog.Error(err.Error())
 			return
 		}
 	}
@@ -252,7 +238,6 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		err = container.Build(cip.Name, true)
 		if err != nil {
 			err = fmt.Errorf("could not build container %s: %s", cip.Name, err.Error())
-			wwlog.Error(err.Error())
 			return
 		}
 	}
@@ -262,7 +247,6 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		nodeDB, err = node.New()
 		if err != nil {
 			err = fmt.Errorf("could not open node configuration: %s", err.Error())
-			wwlog.Error(err.Error())
 			return
 		}
 
