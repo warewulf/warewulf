@@ -1,6 +1,7 @@
 {{- $host := .BuildHost }}
 {{- $time := .BuildTime }}
 {{- $source := .BuildSource }}
+{{ $NetDevs := .NetDevs -}}{{/* FIX: 1413 */ -}}
 {{range $devname, $netdev := .ThisNode.NetDevs -}}
 {{- $filename := print "ifcfg-" $devname ".xml" }}
 {{- file $filename }}
@@ -29,7 +30,7 @@ Source: {{ $source }}
   </ipv4>
   <ipv4:static>
     <address>
-      <local>{{$netdev.IpCIDR.Get}}</local>
+      <local>{{ (index $NetDevs $devname).IpCIDR }}</local>
     </address>
 {{ if $netdev.Gateway.Get -}}
     <route>
