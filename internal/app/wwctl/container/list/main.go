@@ -44,7 +44,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 					})
 				}
 				ph.Render()
-				wwlog.Info(ph.String())
+				wwlog.Info("%s", ph.String())
 			} else if vars.kernel {
 				ph := helper.New([]string{"CONTAINER NAME", "NODES", "KERNEL VERSION"})
 				for i := 0; i < len(containerInfo); i++ {
@@ -55,7 +55,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 					})
 				}
 				ph.Render()
-				wwlog.Info(ph.String())
+				wwlog.Info("%s", ph.String())
 			} else if showSize {
 				ph := helper.New([]string{"CONTAINER NAME", "NODES", "SIZE"})
 				for i := 0; i < len(containerInfo); i++ {
@@ -74,7 +74,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 					})
 				}
 				ph.Render()
-				wwlog.Info(ph.String())
+				wwlog.Info("%s", ph.String())
 			}
 		} else {
 			ph := helper.New([]string{"CONTAINER NAME"})
@@ -83,7 +83,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 				ph.Append([]string{cont})
 			}
 			ph.Render()
-			wwlog.Info(ph.String())
+			wwlog.Info("%s", ph.String())
 		}
 		return
 	}

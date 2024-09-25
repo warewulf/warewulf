@@ -37,7 +37,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 					ph.Append(strings.Split(val, ":=:"))
 				}
 				ph.Render()
-				wwlog.Info(ph.String())
+				wwlog.Info("%s", ph.String())
 			}
 		}
 		return
