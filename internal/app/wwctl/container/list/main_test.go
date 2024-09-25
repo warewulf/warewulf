@@ -13,6 +13,7 @@ import (
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func Test_List(t *testing.T) {
@@ -67,10 +68,11 @@ WW_INTERNAL: 0
 			tt.mockFunc()
 			baseCmd := GetCommand()
 			baseCmd.SetArgs(tt.args)
-			baseCmd.SetOut(nil)
-			baseCmd.SetErr(nil)
 			stdoutR, stdoutW, _ := os.Pipe()
 			os.Stdout = stdoutW
+			wwlog.SetLogWriter(os.Stdout)
+			baseCmd.SetOut(os.Stdout)
+			baseCmd.SetErr(os.Stdout)
 			err = baseCmd.Execute()
 			if err != nil {
 				t.Errorf("Received error when running command, err: %v", err)

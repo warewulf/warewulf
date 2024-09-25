@@ -11,6 +11,7 @@ import (
 	containerList "github.com/warewulf/warewulf/internal/app/wwctl/container/list"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func Test_Rename(t *testing.T) {
@@ -27,8 +28,8 @@ func Test_Rename(t *testing.T) {
 	// then rename it
 	t.Run("container rename", func(t *testing.T) {
 		baseCmd := GetCommand()
-		baseCmd.SetOut(nil)
-		baseCmd.SetErr(nil)
+		baseCmd.SetOut(os.Stdout)
+		baseCmd.SetErr(os.Stdout)
 		baseCmd.SetArgs([]string{"test-container", "test-container-rename"})
 		err := baseCmd.Execute()
 		assert.NoError(t, err)
@@ -42,10 +43,11 @@ func Test_Rename(t *testing.T) {
 
 func verifyContainerListOutput(t *testing.T, content string) {
 	baseCmd := containerList.GetCommand()
-	baseCmd.SetOut(nil)
-	baseCmd.SetErr(nil)
 	stdoutR, stdoutW, _ := os.Pipe()
 	os.Stdout = stdoutW
+	baseCmd.SetOut(os.Stdout)
+	baseCmd.SetErr(os.Stdout)
+	wwlog.SetLogWriter(os.Stdout)
 	err := baseCmd.Execute()
 	assert.NoError(t, err)
 

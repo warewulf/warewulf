@@ -9,6 +9,7 @@ import (
 	apicontainer "github.com/warewulf/warewulf/internal/pkg/api/container"
 	"github.com/warewulf/warewulf/internal/pkg/container"
 	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 var containerList = apicontainer.ContainerList
@@ -22,7 +23,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 				return err
 			}
 			if vars.full {
-				ph := helper.NewPrintHelper([]string{"CONTAINER NAME", "NODES", "KERNEL VERSION", "CREATION TIME", "MODIFICATION TIME", "SIZE"})
+				ph := helper.New([]string{"CONTAINER NAME", "NODES", "KERNEL VERSION", "CREATION TIME", "MODIFICATION TIME", "SIZE"})
 				for i := 0; i < len(containerInfo); i++ {
 					createTime := time.Unix(int64(containerInfo[i].CreateDate), 0)
 					modTime := time.Unix(int64(containerInfo[i].ModDate), 0)
@@ -43,8 +44,9 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 					})
 				}
 				ph.Render()
+				wwlog.Info("%s", ph.String())
 			} else if vars.kernel {
-				ph := helper.NewPrintHelper([]string{"CONTAINER NAME", "NODES", "KERNEL VERSION"})
+				ph := helper.New([]string{"CONTAINER NAME", "NODES", "KERNEL VERSION"})
 				for i := 0; i < len(containerInfo); i++ {
 					ph.Append([]string{
 						containerInfo[i].Name,
@@ -53,9 +55,9 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 					})
 				}
 				ph.Render()
-
+				wwlog.Info("%s", ph.String())
 			} else if showSize {
-				ph := helper.NewPrintHelper([]string{"CONTAINER NAME", "NODES", "SIZE"})
+				ph := helper.New([]string{"CONTAINER NAME", "NODES", "SIZE"})
 				for i := 0; i < len(containerInfo); i++ {
 					sz := util.ByteToString(int64(containerInfo[i].ImgSize))
 					if vars.compressed {
@@ -72,15 +74,16 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 					})
 				}
 				ph.Render()
-
+				wwlog.Info("%s", ph.String())
 			}
 		} else {
-			ph := helper.NewPrintHelper([]string{"CONTAINER NAME"})
+			ph := helper.New([]string{"CONTAINER NAME"})
 			list, _ := container.ListSources()
 			for _, cont := range list {
 				ph.Append([]string{cont})
 			}
 			ph.Render()
+			wwlog.Info("%s", ph.String())
 		}
 		return
 	}

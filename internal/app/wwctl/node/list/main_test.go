@@ -17,16 +17,14 @@ import (
 
 func Test_List(t *testing.T) {
 	tests := []struct {
-		name    string
-		args    []string
-		wantErr bool
-		stdout  string
-		inDb    string
+		name   string
+		args   []string
+		stdout string
+		inDb   string
 	}{
 		{
-			name:    "single node list",
-			args:    []string{},
-			wantErr: false,
+			name: "single node list",
+			args: []string{},
 			stdout: `NODE NAME  PROFILES  NETWORK
 n01        default
 `,
@@ -40,29 +38,8 @@ nodes:
 `,
 		},
 		{
-			name:    "multiple nodes list",
-			args:    []string{},
-			wantErr: false,
-			stdout: `NODE NAME  PROFILES  NETWORK
-n01        default
-n02        default
-`,
-			inDb: `WW_INTERNAL: 45
-nodeprofiles:
-  default: {}
-nodes:
-  n01:
-    profiles:
-    - default
-  n02:
-   profiles:
-   - default
-`,
-		},
-		{
-			name:    "node list returns multiple nodes",
-			args:    []string{"n01,n02"},
-			wantErr: false,
+			name: "multiple nodes list",
+			args: []string{},
 			stdout: `NODE NAME  PROFILES  NETWORK
 n01        default
 n02        default
@@ -80,9 +57,27 @@ nodes:
 `,
 		},
 		{
-			name:    "node list returns multiple nodes (case 2)",
-			args:    []string{"n01,n03"},
-			wantErr: false,
+			name: "node list returns multiple nodes",
+			args: []string{"n01,n02"},
+			stdout: `NODE NAME  PROFILES  NETWORK
+n01        default
+n02        default
+`,
+			inDb: `WW_INTERNAL: 45
+nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+  n02:
+   profiles:
+   - default
+`,
+		},
+		{
+			name: "node list returns multiple nodes (case 2)",
+			args: []string{"n01,n03"},
 			stdout: `NODE NAME  PROFILES  NETWORK
 n01        default
 n03        default
@@ -109,9 +104,8 @@ nodes:
 `,
 		},
 		{
-			name:    "node list returns one node",
-			args:    []string{"n01,"},
-			wantErr: false,
+			name: "node list returns one node",
+			args: []string{"n01,"},
 			stdout: `NODE NAME  PROFILES  NETWORK
 n01        default
 `,
@@ -128,9 +122,8 @@ nodes:
 `,
 		},
 		{
-			name:    "node list profile with network",
-			args:    []string{},
-			wantErr: false,
+			name: "node list profile with network",
+			args: []string{},
 			stdout: `NODE NAME  PROFILES  NETWORK
 n01        default   default
 `,
@@ -146,9 +139,8 @@ nodes:
     - default
 `},
 		{
-			name:    "node list profile with comment",
-			args:    []string{"-a"},
-			wantErr: false,
+			name: "node list profile with comment",
+			args: []string{"-a"},
 			stdout: `NODE  FIELD           PROFILE  VALUE
 n01   Id              --       n01
 n01   Comment         default  profilecomment
@@ -170,9 +162,8 @@ nodes:
     - default
 `},
 		{
-			name:    "node list profile with comment superseded",
-			args:    []string{"-a"},
-			wantErr: false,
+			name: "node list profile with comment superseded",
+			args: []string{"-a"},
 			stdout: `NODE  FIELD           PROFILE     VALUE
 n01   Id              --          n01
 n01   Comment         SUPERSEDED  nodecomment
@@ -195,9 +186,8 @@ nodes:
     - default
 `},
 		{
-			name:    "node list profile with ipmi user",
-			args:    []string{"-i"},
-			wantErr: false,
+			name: "node list profile with ipmi user",
+			args: []string{"-i"},
 			stdout: `NODE NAME  IPMI IPADDR  IPMI PORT  IPMI USERNAME  IPMI INTERFACE
 n01        --           --         admin          --              --
 `,
@@ -212,9 +202,8 @@ nodes:
     - default
 `},
 		{
-			name:    "node list profile with ipmi user superseded",
-			args:    []string{"-i"},
-			wantErr: false,
+			name: "node list profile with ipmi user superseded",
+			args: []string{"-i"},
 			stdout: `NODE NAME  IPMI IPADDR  IPMI PORT  IPMI USERNAME  IPMI INTERFACE
 n01        --           --         user           --              --
 `,
@@ -241,9 +230,8 @@ nodes:
     - p1
     - p2
 `,
-			name:    "multiple profiles list",
-			args:    []string{},
-			wantErr: false,
+			name: "multiple profiles list",
+			args: []string{},
 			stdout: `NODE NAME  PROFILES  NETWORK
 n01        p1,p2
 `},
@@ -258,9 +246,8 @@ nodes:
     - p1
     - p2
 `,
-			name:    "multiple profiles list all",
-			args:    []string{"-a"},
-			wantErr: false,
+			name: "multiple profiles list all",
+			args: []string{"-a"},
 			stdout: `NODE  FIELD           PROFILE  VALUE
 n01   Id              --       n01
 n01   Ipxe            --       (default)
@@ -283,9 +270,8 @@ nodes:
     profiles:
     - p1
 `,
-			name:    "multiple overlays list",
-			args:    []string{"-l"},
-			wantErr: false,
+			name: "multiple overlays list",
+			args: []string{"-l"},
 			stdout: `NODE NAME  KERNEL OVERRIDE  CONTAINER  OVERLAYS (S/R)
 n01        --               --         (wwinit)/rop1,rop2
 `},
@@ -304,9 +290,8 @@ nodes:
     - nop1
     - ~rop1
 `,
-			name:    "multiple overlays list",
-			args:    []string{"-l"},
-			wantErr: false,
+			name: "multiple overlays list",
+			args: []string{"-l"},
 			stdout: `NODE NAME  KERNEL OVERRIDE  CONTAINER  OVERLAYS (S/R)
 n01        --               --         (wwinit)/rop2,nop1 ~{rop1}
 `},
@@ -325,9 +310,8 @@ nodes:
     - nop1
     - ~rop1
 `,
-			name:    "multiple overlays list all",
-			args:    []string{"-a"},
-			wantErr: false,
+			name: "multiple overlays list all",
+			args: []string{"-a"},
 			stdout: `NODE  FIELD           PROFILE     VALUE
 n01   Id              --          n01
 n01   Ipxe            --          (default)
@@ -351,9 +335,8 @@ nodes:
     system overlay:
     - nodeinit
 `,
-			name:    "prefer profile system overlay over node overlay",
-			args:    []string{"-a"},
-			wantErr: false,
+			name: "prefer profile system overlay over node overlay",
+			args: []string{"-a"},
 			stdout: `NODE  FIELD           PROFILE     VALUE
 n01   Id              --          n01
 n01   Ipxe            --          (default)
@@ -508,6 +491,9 @@ nodes:
 func verifyOutput(t *testing.T, baseCmd *cobra.Command, content string) {
 	stdoutR, stdoutW, _ := os.Pipe()
 	os.Stdout = stdoutW
+	wwlog.SetLogWriter(os.Stdout)
+	baseCmd.SetOut(os.Stdout)
+	baseCmd.SetErr(os.Stdout)
 	err := baseCmd.Execute()
 	assert.NoError(t, err)
 

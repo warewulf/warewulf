@@ -32,11 +32,12 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			if vars.showYaml || vars.showJson {
 				wwlog.Info(profileInfo.Output[0])
 			} else {
-				ph := helper.NewPrintHelper(strings.Split(profileInfo.Output[0], ":=:"))
+				ph := helper.New(strings.Split(profileInfo.Output[0], ":=:"))
 				for _, val := range profileInfo.Output[1:] {
 					ph.Append(strings.Split(val, ":=:"))
 				}
 				ph.Render()
+				wwlog.Info("%s", ph.String())
 			}
 		}
 		return

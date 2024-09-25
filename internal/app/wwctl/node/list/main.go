@@ -40,11 +40,12 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			if req.Type == wwapiv1.GetNodeList_YAML || req.Type == wwapiv1.GetNodeList_JSON {
 				wwlog.Info(nodeInfo.Output[0])
 			} else {
-				ph := helper.NewPrintHelper(strings.Split(nodeInfo.Output[0], ":=:"))
+				ph := helper.New(strings.Split(nodeInfo.Output[0], ":=:"))
 				for _, val := range nodeInfo.Output[1:] {
 					ph.Append(strings.Split(val, ":=:"))
 				}
 				ph.Render()
+				wwlog.Info("%s", ph.String())
 			}
 		}
 		return
