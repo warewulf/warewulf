@@ -97,8 +97,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	containerName := args[0]
 	wwlog.Debug("CobraRunE:containerName: %v", containerName)
 	if !container.ValidSource(containerName) {
-		wwlog.Error("Unknown Warewulf container: %s", containerName)
-		os.Exit(1)
+		return fmt.Errorf("unknown Warewulf container: %s", containerName)
 	}
 	os.Setenv("WW_CONTAINER_SHELL", containerName)
 
@@ -111,16 +110,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	err := runContainedCmd(cmd, containerName, args[1:])
 	if err != nil {
-		wwlog.Error("Failed executing container command: %s", err)
-		os.Exit(1)
+		return fmt.Errorf("failed executing container command: %s", err)
 	}
 
 	if util.IsFile(path.Join(containerPath, "/etc/warewulf/container_exit.sh")) {
 		wwlog.Verbose("Found clean script: /etc/warewulf/container_exit.sh")
 		err = runContainedCmd(cmd, containerName, []string{"/bin/sh", "/etc/warewulf/container_exit.sh"})
 		if err != nil {
-			wwlog.Error("Failed executing exit script: %s", err)
-			os.Exit(1)
+			return fmt.Errorf("failed executing exit script: %s", err)
 		}
 	}
 
@@ -155,8 +152,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	fmt.Printf("Rebuilding container...\n")
 	err = container.Build(containerName, false)
 	if err != nil {
-		wwlog.Error("Could not build container %s: %s", containerName, err)
-		os.Exit(1)
+		return fmt.Errorf("could not build container %s: %s", containerName, err)
 	}
 	return nil
 }

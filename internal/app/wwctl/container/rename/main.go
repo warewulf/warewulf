@@ -30,8 +30,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	if !container.ValidName(crp.TargetName) {
-		wwlog.Error("Container name contains illegal characters : %s", crp.TargetName)
-		return
+		return fmt.Errorf("container name contains illegal characters : %s", crp.TargetName)
 	}
 
 	err = api.ContainerRename(crp)
