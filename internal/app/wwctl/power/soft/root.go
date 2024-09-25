@@ -10,7 +10,7 @@ var (
 		DisableFlagsInUseLine: true,
 		Use:                   "soft",
 		Short:                 "Gracefully shuts down the given node(s)",
-		Long:                  "This command uses the operationg system to shut down the set of nodes specified by PATTERN.",
+		Long:                  "This command uses the operating system to shut down the set of nodes specified by PATTERN.",
 		RunE:                  CobraRunE,
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
