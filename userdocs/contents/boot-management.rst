@@ -32,6 +32,167 @@ Booting with iPXE
       ipxe_cfg->kernel[ltail=cluster0,label="http"];
   }
 
+Starting in v4.5.0, Warewulf no longer includes an iPXE binary. In stead, by
+default Warewulf uses the iPXE that comes with the host OS.
+
+Unfortunately, we’ve encountered a few instances where bugs in the OS-provided
+iPXE that sometimes make booting a full OS image as an "initrd" unreliable.
+
+:ref:`Building iPXE locally`, using a more recent "version" of the iPXE source
+code, can alleviate some of these issues.
+
+Another alternative is :ref:`booting with dracut`, which uses the Linux kernel
+to load the full OS image, avoiding the issue entirely.
+
+.. _Building iPXE locally:
+
+Building iPXE locally
+---------------------
+
+By default (as of v4.5.0) Warewulf packages use iPXE from the host operating system rather than bundling iPXE binaries with Warewulf.
+However, sometimes the specific build included in the host OS has bugs or missing features, and a local build of iPXE is necessary.
+
+The Warewulf project provides a `build-ipxe.sh`_ script to simplify the process of building iPXE locally.
+
+.. _build-ipxe.sh: https://github.com/warewulf/warewulf/blob/main/scripts/build-ipxe.sh
+
+.. code-block:: console
+
+   # curl -LO https://raw.githubusercontent.com/warewulf/warewulf/main/scripts/build-ipxe.sh
+   # bash build-ipxe.sh -h
+   Usage: build-ipxe.sh
+            [-h] (help)
+   TARGETS: bin-x86_64-pcbios/undionly.kpxe bin-x86_64-efi/snponly.efi bin-arm64-efi/snponly.efi
+   IPXE_BRANCH: master
+   DESTDIR: /usr/local/share/ipxe
+
+Running build-ipxe.sh
+^^^^^^^^^^^^^^^^^^^^^
+
+The script, by default, builds iPXE for x86_64 BIOS, x86_64 EFI, and arm64 EFI from the master branch on the iPXE project GitHub and stores the resultant builds in ``/usr/local/share/ipxe/``.
+(These parameters can be adjusted by setting ``TARGETS``, ``IPXE_BRANCH``, and ``DESTDIR`` environment variables, with the current values shown in the ``-h`` output for reference.)
+
+.. code-block:: console
+
+   # mkdir -p /usr/local/share/ipxe
+   # bash build-ipxe.sh
+   [...]
+   # ls -1 /usr/local/share/ipxe/
+   bin-arm64-efi-snponly.efi
+   bin-x86_64-efi-snponly.efi
+   bin-x86_64-pcbios-undionly.kpxe
+
+.. note::
+
+   Building for aarch64 requires the package ``aarch64-linux-gnu-gcc``.
+
+Build options
+^^^^^^^^^^^^^
+
+By default, ``build-ipxe.sh`` enables support for `ZLIB`_ and `GZIP`_ images, as well as commands for managing `VLANs`_ and the `framebuffer console`_.
+The x86_64 build also enables support for the `serial console`_.
+
+.. _ZLIB: https://ipxe.org/buildcfg/image_zlib
+
+.. _GZIP: https://ipxe.org/buildcfg/image_gzip
+
+.. _VLANs: https://ipxe.org/buildcfg/vlan_cmd
+
+.. _framebuffer console: https://ipxe.org/buildcfg/console_framebuffer
+
+.. _serial console: https://ipxe.org/buildcfg/console_serial
+
+Additional `build options`_ can be configured by editing the ``build-ipxe.sh`` script.
+For example, the x86_64 build is configured in the ``configure_x86_64`` function.
+
+.. _build options: https://ipxe.org/buildcfg
+
+.. code-block:: bash
+
+   function configure_x86_64 {
+     sed -i.bak \
+         -e 's,//\(#define.*CONSOLE_SERIAL.*\),\1,' \
+         -e 's,//\(#define.*CONSOLE_FRAMEBUFFER.*\),\1,' \
+         config/console.h
+     sed -i.bak \
+         -e 's,//\(#define.*IMAGE_ZLIB.*\),\1,' \
+         -e 's,//\(#define.*IMAGE_GZIP.*\),\1,' \
+         -e 's,//\(#define.*VLAN_CMD.*\),\1,' \
+         config/general.h
+   }
+
+For example, the ``imgextract`` command can be `explicitly enabled`_.
+
+.. _explicitly enabled: https://ipxe.org/buildcfg/image_archive_cmd
+
+.. code-block:: bash
+
+   function configure_x86_64 {
+     sed -i.bak \
+         -e 's,//\(#define.*CONSOLE_SERIAL.*\),\1,' \
+         -e 's,//\(#define.*CONSOLE_FRAMEBUFFER.*\),\1,' \
+         config/console.h
+     sed -i.bak \
+         -e 's,//\(#define.*IMAGE_ZLIB.*\),\1,' \
+         -e 's,//\(#define.*IMAGE_GZIP.*\),\1,' \
+         -e 's,//\(#define.*VLAN_CMD.*\),\1,' \
+         -e 's,//\(#define.*IMAGE_ARCHIVE_CMD.*\),\1,' \
+         config/general.h
+   }
+
+.. note::
+
+   ``IMG_ARCHIVE_CMD`` is already enabled by default in the iPXE master branch, but only takes effect when at least one archive image format is configured.
+   This is the case in the default state of ``build-ipxe.sh``, which enables support for ZLIB and GZIP archive image formats.
+
+Configuring Warewulf (≥ v4.5.0)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In Warewulf v4.5.0, Warewulf can be configured to use these files using the ``tftp.ipxe`` and ``paths.ipxesource`` configuration parameters in ``warewulf.conf``.
+
+.. code-block:: yaml
+
+   # warewulf.conf
+   tftp:
+     ipxe:
+       "00:00": bin-x86_64-pcbios-undionly.kpxe
+       "00:07": bin-x86_64-efi-snponly.efi
+       "00:09": bin-x86_64-efi-snponly.efi
+       "00:0B": bin-arm64-efi-snponly.efi
+   paths:
+     ipxesource: /usr/local/share/ipxe
+
+Restart ``warewulfd`` following the change to ``warewulf.conf``.
+Then remove any previously-provisioned files from ``/var/lib/tftpboot/warewulf/`` and use ``wwctl configure tftp`` and ``wwctl configure dhcp`` to re-provision the TFTP files and update the DHCP configuration.
+
+.. code-block:: console
+
+   # sudo systemctl restart warewulfd
+   # rm /var/lib/tftpboot/warewulf/*
+   # wwctl configure tftp
+   Writing PXE files to: /var/lib/tftpboot/warewulf
+   Enabling and restarting the TFTP services
+   # wwctl configure dhcp
+   Building overlay for wwctl1: host
+   Enabling and restarting the DHCP services
+
+Configuring Warewulf (< v4.5.0)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Prior to v4.5.0, Warewulf packages included bundled builds of iPXE and did not provide a mechanism for configuring which iPXE to use.
+To use a custom iPXE before v4.5.0, replace the bundled builds included with Warewulf.
+After that, remove any previously-provisioned files from ``/var/lib/tftpboot/warewulf/`` and use ``wwctl configure tftp`` to re-provision the TFTP files.
+
+.. code-block:: console
+
+   # cp /usr/local/share/ipxe/bin-arm64-efi-snponly.efi /usr/share/warewulf/ipxe/arm64.efi
+   # cp /usr/local/share/ipxe/bin-x86_64-efi-snponly.efi /usr/share/warewulf/ipxe/x86_64.efi
+   # cp /usr/local/share/ipxe/bin-x86_64-pcbios-undionly.kpxe /usr/share/warewulf/ipxe/x86_64.kpxe
+   # rm /var/lib/tftpboot/warewulf/*
+   # wwctl configure tftp
+   Writing PXE files to: /var/lib/tftpboot/warewulf
+   Enabling and restarting the TFTP services
+
 Booting with GRUB
 =================
 
@@ -139,6 +300,8 @@ is the following:
 
 Warewulf delivers the initial `shim.efi` and `grub.efi` via http as taken
 directly from the node's assigned container.
+
+.. _booting with dracut:
 
 Booting with dracut
 ===================
