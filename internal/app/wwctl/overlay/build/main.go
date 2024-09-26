@@ -18,14 +18,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	controller := warewulfconf.Get()
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("Could not open node configuration: %s", err)
-		os.Exit(1)
+		return fmt.Errorf("could not open node configuration: %s", err)
 	}
 
 	nodes, err := nodeDB.FindAllNodes()
 	if err != nil {
-		wwlog.Error("Could not get node list: %s", err)
-		os.Exit(1)
+		return fmt.Errorf("could not get node list: %s", err)
 	}
 
 	if len(args) > 0 {
@@ -33,7 +31,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		nodes = node.FilterByName(nodes, args)
 
 		if len(nodes) < len(args) {
-			return errors.New("Failed to find nodes")
+			return errors.New("failed to find nodes")
 		}
 	}
 
@@ -50,12 +48,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if len(OverlayNames) == 0 {
 			// TODO: should this behave the same as OverlayDir == "", and build default
 			// set to overlays?
-			return errors.New("Must specify overlay(s) to build")
+			return errors.New("must specify overlay(s) to build")
 		}
 
 		if len(args) > 0 {
 			if len(nodes) != 1 {
-				return errors.New("Must specify one node to build overlay")
+				return errors.New("must specify one node to build overlay")
 			}
 
 			for _, node := range nodes {
@@ -90,7 +88,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		if err != nil {
-			return fmt.Errorf("Some overlays failed to be generated: %s", err)
+			return fmt.Errorf("some overlays failed to be generated: %s", err)
 		}
 	}
 	return nil

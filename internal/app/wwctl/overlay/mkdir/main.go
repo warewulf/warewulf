@@ -1,6 +1,7 @@
 package mkdir
 
 import (
+	"fmt"
 	"os"
 	"path"
 
@@ -19,8 +20,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	overlaySourceDir = overlay.OverlaySourceDir(overlayName)
 
 	if !util.IsDir(overlaySourceDir) {
-		wwlog.Error("Overlay does not exist: %s", overlayName)
-		os.Exit(1)
+		return fmt.Errorf("overlay does not exist: %s", overlayName)
 	}
 
 	overlayDir := path.Join(overlaySourceDir, dirName)
@@ -29,8 +29,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	err := os.MkdirAll(overlayDir, os.FileMode(PermMode))
 	if err != nil {
-		wwlog.Error("Could not create directory: %s", path.Dir(overlayDir))
-		os.Exit(1)
+		return fmt.Errorf("could not create directory: %s", path.Dir(overlayDir))
 	}
 
 	return nil
