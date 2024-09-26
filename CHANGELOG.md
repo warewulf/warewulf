@@ -41,6 +41,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - Added `--syncuser` flag to `wwctl container shell`. #1358
+- Added a troubleshooting guide. #1234
 
 ### Changed
 
