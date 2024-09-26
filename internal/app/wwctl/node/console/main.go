@@ -16,14 +16,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("Could not open node configuration: %s", err)
-		os.Exit(1)
+		return fmt.Errorf("could not open node configuration: %s", err)
 	}
 
 	nodes, err := nodeDB.FindAllNodes()
 	if err != nil {
-		wwlog.Error("Could not get node list: %s", err)
-		os.Exit(1)
+		return fmt.Errorf("could not get node list: %s", err)
 	}
 
 	args = hostlist.Expand(args)
@@ -37,8 +35,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(nodes) == 0 {
-		fmt.Printf("No nodes found\n")
-		os.Exit(1)
+		return fmt.Errorf("no nodes found")
 	}
 
 	for _, node := range nodes {

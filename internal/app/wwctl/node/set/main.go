@@ -2,7 +2,6 @@ package set
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -54,8 +53,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 		delete(vars.nodeConf.Disks, "UNDEF")
 		buffer, err := yaml.Marshal(vars.nodeConf)
 		if err != nil {
-			wwlog.Error("Can't marshall nodeInfo", err)
-			os.Exit(1)
+			return fmt.Errorf("can not marshall nodeInfo: %s", err)
 		}
 		wwlog.Debug("sending following values: %s", string(buffer))
 		set := wwapiv1.NodeSetParameter{
