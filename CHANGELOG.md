@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Add an InfoErr loglevel for sending INFO level logs to stderr instead of stdout
+- Use new InfoErr loglevel to send INFO output from `wwctl overlay show -r ...`
+  to stderr making it simpler to capture rendered template files.
 - Add the ability to boot nodes with `wwid=[interface]`, which replaces
   `interface` with the interface MAC address
 - Added https://github.com/Masterminds/sprig functions to templates #1030
