@@ -102,8 +102,7 @@ func NodeDelete(ndp *wwapiv1.NodeDeleteParameter) (err error) {
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("Failed to open node database: %s", err)
-		return
+		return fmt.Errorf("failed to open node database: %s", err)
 	}
 	dbHash := nodeDB.Hash()
 	if hex.EncodeToString(dbHash[:]) != ndp.Hash && !ndp.Force {
@@ -138,27 +137,23 @@ func NodeDelete(ndp *wwapiv1.NodeDeleteParameter) (err error) {
 func NodeDeleteParameterCheck(ndp *wwapiv1.NodeDeleteParameter, console bool) (nodeList []node.NodeInfo, err error) {
 
 	if ndp == nil {
-		err = fmt.Errorf("NodeDeleteParameter is nil")
-		return
+		return nodeList, fmt.Errorf("NodeDeleteParameter is nil")
 	}
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("Failed to open node database: %s", err)
-		return
+		return nodeList, fmt.Errorf("failed to open node database: %s", err)
 	}
 	dbHash := nodeDB.Hash()
 	if hex.EncodeToString(dbHash[:]) != ndp.Hash && !ndp.Force {
 		wwlog.Debug("got hash: %s", ndp.Hash)
 		wwlog.Debug("actual hash: %s", hex.EncodeToString(dbHash[:]))
-		err = fmt.Errorf("got wrong hash, not modifying node database")
-		return
+		return nodeList, fmt.Errorf("got wrong hash, not modifying node database")
 	}
 
 	nodes, err := nodeDB.FindAllNodes()
 	if err != nil {
-		wwlog.Error("Could not get node list: %s", err)
-		return
+		return nodeList, fmt.Errorf("could not get node list: %s", err)
 	}
 
 	node_args := hostlist.Expand(ndp.NodeNames)
@@ -173,12 +168,12 @@ func NodeDeleteParameterCheck(ndp *wwapiv1.NodeDeleteParameter, console bool) (n
 		}
 
 		if !match {
-			fmt.Fprintf(os.Stderr, "ERROR: No match for node: %s\n", r)
+			wwlog.Error("ERROR: No match for node: %s\n", r)
 		}
 	}
 
 	if len(nodeList) == 0 {
-		fmt.Printf("No nodes found\n")
+		wwlog.Info("No nodes found")
 	}
 	return
 }

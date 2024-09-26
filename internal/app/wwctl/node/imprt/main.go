@@ -19,16 +19,14 @@ import (
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	file, err := os.Open(args[0])
 	if err != nil {
-		wwlog.Error("Could not open file:%s \n", err)
-		os.Exit(1)
+		return fmt.Errorf("could not open file: %s", err)
 	}
 	defer file.Close()
 
 	importMap := make(map[string]*node.NodeConf)
 	buffer, err := io.ReadAll(file)
 	if err != nil {
-		wwlog.Error("Could not read:%s\n", err)
-		os.Exit(1)
+		return fmt.Errorf("could not read: %s", err)
 	}
 	if !ImportCVS {
 		err = yaml.Unmarshal(buffer, importMap)
@@ -37,24 +35,21 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			if yes {
 				err = apinode.NodeAddFromYaml(&wwapiv1.NodeYaml{NodeConfMapYaml: string(buffer)})
 				if err != nil {
-					wwlog.Error("Got following problem when writing back yaml: %s", err)
-					os.Exit(1)
+					return fmt.Errorf("got following problem when writing back yaml: %s", err)
 				}
 			}
 		} else {
-			wwlog.Error("Could not parse import file")
+			return fmt.Errorf("could not parse import file: %s", err)
 		}
 	} else {
 		// reading from buffer is a bit overshot
 		csvReader := csv.NewReader(bytes.NewReader(buffer))
 		records, err := csvReader.ReadAll()
 		if err != nil {
-			wwlog.Error("Could not parse %s: %s\n", args[0], err)
-			os.Exit(1)
+			return fmt.Errorf("could not parse %s: %s", args[0], err)
 		}
 		if len(records) < 1 || len(records[0]) < 1 {
-			wwlog.Error("Did not find any data in %s\n", args[0])
-			os.Exit(1)
+			return fmt.Errorf("did not find any data in %s", args[0])
 		}
 		if !(records[0][0] == "node" || records[0][0] == "nodename") {
 			Usage()
@@ -63,8 +58,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		argsLen := len(records[0])
 		for i, line := range records[1:] {
 			if len(line) != argsLen {
-				wwlog.Error("Wrong number of fields in lube %u\n", i+1)
-				os.Exit(1)
+				return fmt.Errorf("wrong number of fields in lube %d", i+1)
 			}
 			for j := range line {
 				if j == 0 {
@@ -84,12 +78,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			// create second buffer an marshall nodeMap to it
 			buffer, err = yaml.Marshal(importMap)
 			if err != nil {
-				wwlog.Error("Got following problem when creating yaml: %s", err)
+				return fmt.Errorf("got following problem when creating yaml: %s", err)
 			}
 			err = apinode.NodeAddFromYaml(&wwapiv1.NodeYaml{NodeConfMapYaml: string(buffer)})
 			if err != nil {
-				wwlog.Error("Got following problem when writing back yaml: %s", err)
-				os.Exit(1)
+				return fmt.Errorf("got following problem when writing back yaml: %s", err)
 			}
 		}
 	}

@@ -1,11 +1,10 @@
 package export
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	apinode "github.com/warewulf/warewulf/internal/pkg/api/node"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
@@ -21,6 +20,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		// got proper yaml back
 		_ = yaml.Unmarshal([]byte(nodeListMsg.NodeConfMapYaml), nodeMap)
 	*/
-	fmt.Println(nodeListMsg.NodeConfMapYaml)
+	wwlog.Info(nodeListMsg.NodeConfMapYaml)
 	return nil
 }
