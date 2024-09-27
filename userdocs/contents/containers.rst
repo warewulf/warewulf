@@ -232,12 +232,14 @@ Files which should always be present in a container image like ``resolv.conf``
 can be specified in ``warewulf.conf``:
 
 .. code-block:: yaml
+
    container mounts:
    - source: /etc/resolv.conf
      dest: /etc/resolv.conf
      readonly: true
 
 .. note::
+
    Instead of ``readonly: true`` you can set ``copy: true``. This causes the
    source file to be copied to the container and removed if it was not
    modified. This can be useful for files used for registrations.
@@ -399,7 +401,7 @@ issues in most circumstances:
 Duplicating a container
 =======================
 
-It is possible to duplicate an installed image by using :
+It is possible to duplicate an installed image by using:
 
 .. code-block:: console
 

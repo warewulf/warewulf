@@ -99,7 +99,7 @@ is created and the filesystems are mounted; and so the `--fswipe` can be omitted
 data is on the disk isn't wiped.
 If there are pre-existing partitions and filesystem on the disk, omitting the `--fswipe` may lead to the outcome that no filesystems are created and mounted.
 In that case you should:
-* wipe the existing data with the means of tools like `wipefs` or `dd` [#]
+* wipe the existing data with the means of tools like `wipefs` or `dd` [#]_
 * set the `--fswipe` flag and remove it after one reboot, if you want to keep
 existing data on the disk.
 
