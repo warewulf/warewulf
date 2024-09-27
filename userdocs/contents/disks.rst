@@ -26,6 +26,11 @@ Rocky Linux
 
    dnf install ignition gdisk
 
+.. note::
+
+   Packages for Ignition are not currently available for Rocky Linux 8,
+   but it is available for Rocky Linux 9 as part of "appstream."
+
 openSuse Leap
 -------------
 
