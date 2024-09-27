@@ -45,6 +45,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added documentation about `rootfstype=ramfs` for SELinux support. #1001
 - Added workaround documentation for importing containers with sockets. #892
 - Added documentation for building iPXE locally. #1114
+- Documented that ignition is not available for Rocky Linux 8. #1373, #1272
 
 ### Changed
 
