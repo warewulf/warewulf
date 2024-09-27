@@ -122,6 +122,21 @@ directly.
    $ apptainer build --sandbox ./rockylinux-8/ docker://ghcr.io/warewulf/warewulf-rockylinux:8
    $ sudo wwctl container import ./rockylinux-8/ rockylinux-8
 
+.. note::
+
+   If a source directory includes persistent sockets, these sockets may cause the import operation to fail.
+
+   .. code-block:: console
+
+      Copying sources...
+      ERROR  : could not import image: lchown ./rockylinux-8/run/user/0/gnupg/d.kg8ijih5tq41ixoeag4p1qup/S.gpg-agent: no such file or directory
+
+   To resolve this, remove the sockets from the source directory.
+
+   .. code-block:: bash
+
+      find ./rockylinux-8/ -type s -delete
+
 HTTP proxies
 ------------
 
@@ -382,7 +397,8 @@ issues in most circumstances:
   your system BIOS or firmware.
 
 Duplicating a container
-============================
+=======================
+
 It is possible to duplicate an installed image by using :
 
 .. code-block:: console
@@ -391,8 +407,24 @@ It is possible to duplicate an installed image by using :
 
 This kind of duplication can be useful if you are looking for canary tests.
 
+.. note::
+
+   If a source container includes persistent sockets, these sockets may cause the copy operation to fail.
+
+   .. code-block:: console
+
+      Copying sources...
+      ERROR  : could not duplicate image: lchown /var/lib/warewulf/chroots/rocky-8/rootfs/run/user/0/gnupg/d.kg8ijih5tq41ixoeag4p1qup/S.gpg-agent: no such file or directory
+
+   To resolve this, remove the sockets from the source container.
+
+   .. code-block:: bash
+
+      find $(wwctl container show rocky-8) -type s -delete
+
 Multi-arch container management
-============================
+===============================
+
 It is possible to build, edit, and provision containers of different 
 architectures (i.e. aarch64) from an x86_64 host by using QEMU. Simply 
 run the appropriate command below based on your container management tools.
