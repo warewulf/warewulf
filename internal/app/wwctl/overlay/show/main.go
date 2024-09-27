@@ -3,6 +3,7 @@ package show
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"os"
 	"path"
 	"path/filepath"
@@ -24,30 +25,33 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	overlaySourceDir = overlay.OverlaySourceDir(overlayName)
 
 	if !util.IsDir(overlaySourceDir) {
-		wwlog.Error("Overlay does not exist: %s", overlayName)
-		os.Exit(1)
+		err := errors.New("Overlay does not exist")
+		wwlog.Error("%s: %s", err, overlayName)
+		return err
 	}
 
 	overlayFile := path.Join(overlaySourceDir, fileName)
 
 	if !util.IsFile(overlayFile) {
-		wwlog.Error("File does not exist within overlay: %s:%s", overlayName, fileName)
-		os.Exit(1)
+		err := errors.New("File does not exist within overlay")
+		wwlog.Error("%s: %s:%s", err, overlayName, fileName)
+		return err
 	}
 
 	if NodeName == "" {
 		f, err := os.ReadFile(overlayFile)
 		if err != nil {
 			wwlog.Error("Could not read file: %s", err)
-			os.Exit(1)
+			return err
 		}
 
-		wwlog.Info(string(f))
+		wwlog.Output("%s", string(f))
 	} else {
 		if !util.IsFile(overlayFile) {
 			wwlog.Debug("%s is not a file", overlayFile)
-			wwlog.Error("%s:%s is not a file", overlayName, fileName)
-			os.Exit(1)
+			err := errors.New("Not a file")
+			wwlog.Error("%s: %s:%s", err, overlayName, fileName)
+			return err
 		}
 		if filepath.Ext(overlayFile) != ".ww" {
 			wwlog.Warn("%s lacks the '.ww' suffix, will not be rendered in an overlay", fileName)
@@ -56,12 +60,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		nodeDB, err := node.New()
 		if err != nil {
 			wwlog.Error("Could not open node configuration: %s", err)
-			os.Exit(1)
+			return err
 		}
 		nodes, err := nodeDB.FindAllNodes()
 		if err != nil {
 			wwlog.Error("Could not get node list: %s", err)
-			os.Exit(1)
+			return err
 		}
 		filteredNodes := node.FilterByName(nodes, []string{NodeName})
 		if hostName, err := os.Hostname(); err != nil {
@@ -73,8 +77,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			hostNodeInfo.ClusterName.Set(hostName)
 			filteredNodes = append(filteredNodes, *hostNodeInfo)
 		} else if len(filteredNodes) != 1 {
-			wwlog.Error("%v does not identify a single node", NodeName)
-			os.Exit(1)
+			err := errors.New("Not a single node")
+			wwlog.Error("%s: %v", err, NodeName)
+			return err
 		}
 
 		tstruct := overlay.InitStruct(&filteredNodes[0])
@@ -97,10 +102,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				wwlog.Debug("Found multifile comment, new filename %s", filenameFromTemplate[0][1])
 				if foundFileComment {
 					if !Quiet {
-						wwlog.Info("backupFile: %v\nwriteFile: %v", backupFile, writeFile)
-						wwlog.Info("Filename: %s\n", destFileName)
+						wwlog.Info("backupFile: %v", backupFile)
+						wwlog.Info("writeFile: %v", writeFile)
+						wwlog.Info("Filename: %s", destFileName)
 					}
-					wwlog.Info("%s", outBuffer.String())
+					wwlog.Output("%s", outBuffer.String())
 					outBuffer.Reset()
 				}
 				destFileName = filenameFromTemplate[0][1]
@@ -110,10 +116,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 		}
 		if !Quiet {
-			wwlog.Info("backupFile: %v\nwriteFile: %v", backupFile, writeFile)
-			wwlog.Info("Filename: %s\n", destFileName)
+			wwlog.Info("backupFile: %v", backupFile)
+			wwlog.Info("writeFile: %v", writeFile)
+			wwlog.Info("Filename: %s", destFileName)
 		}
-		wwlog.Info("%s", outBuffer.String())
+		wwlog.Output("%s", outBuffer.String())
 	}
 	return nil
 }

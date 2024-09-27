@@ -98,8 +98,8 @@ Build and install Warewulf on wwdev
    # Configure system service automatically
    sudo wwctl configure dhcp # Create the default dhcpd.conf file and start/enable service
    sudo wwctl configure tftp # Install the base tftp/PXE boot files and start/enable service
-   sudo wwctl configure nfs  # Configure the exports and create an fstab in the default system overlay
-   sudo wwctl configure ssh  # Build the basic ssh keys to be included by the default system overlay
+   sudo wwctl configure nfs  # Configure NFS exports
+   sudo wwctl configure ssh  # Build the basic ssh keys to be included by the ssh overlays
 
    # Pull and build the VNFS container and kernel
    sudo wwctl container import docker://ghcr.io/warewulf/warewulf-centos:7 centos-7 --setdefault

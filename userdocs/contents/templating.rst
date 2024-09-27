@@ -8,7 +8,7 @@ on demand.
 
 In Warewulf, you can find templates both for the provisioning services
 (e.g. ``/etc/warewulf/ipxe/``, ``/etc/warewulf/dhcp/``, and
-``/etc/warewulf/hosts.tmpl``) as well as within the runtime and system
+``/etc/warewulf/hosts.tmpl``) as well as within many of the provided
 overlays.
 
 (more documentation coming soon)

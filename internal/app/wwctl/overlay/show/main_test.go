@@ -7,10 +7,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
-
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 var (
@@ -24,6 +23,35 @@ overlay name {{ .Overlay }}
 
 func Test_Overlay_List(t *testing.T) {
 	env := testenv.New(t)
+	env.WriteFile(t, "etc/warewulf/warewulf.conf", `WW_INTERNAL: 43
+ipaddr: 192.168.0.1/24
+netmask: 255.255.255.0
+network: 192.168.0.0
+warewulf:
+  port: 9873
+  secure: false
+  update interval: 60
+  autobuild overlays: true
+  host overlay: true
+  syslog: true
+dhcp:
+  enabled: true
+  range start: 192.168.0.100
+  range end: 192.168.0.199
+tftp:
+  enabled: false
+nfs:
+  enabled: true
+  export paths:
+  - path: /home
+    export options: rw,sync
+    mount options: defaults
+    mount: true
+  - path: /opt
+    export options: ro,sync,no_root_squash
+    mount options: defaults
+    mount: false`)
+
 	env.WriteFile(t, "etc/warewulf/nodes.conf",
 		`WW_INTERNAL: 45
 nodeprofiles:

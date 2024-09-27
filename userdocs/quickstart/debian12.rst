@@ -201,7 +201,7 @@ typing the following:
 
    sudo wwctl node list -a n0000.cluster
 
-To make node changes effective, it is a good practice to update warewulf
+To make node changes effective, it is a good practice to update Warewulf
 overlays with the following command:
 
 .. code-block:: bash

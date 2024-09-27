@@ -177,7 +177,7 @@ called. This enables us to prepopulate node configurations with
 content that is node specific like networking and service
 configurations.
 
-Runtime overlays are provisioned after the node has booted and
+Runtime overlays are re-applied
 periodically during the normal runtime of the node. Because these
 overlays are provisioned at periodic intervals, they are very useful
 for content that changes, like users and groups.

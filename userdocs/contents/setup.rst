@@ -118,8 +118,8 @@ You can check the result with ``wwctl node list``.
   deliverynet  Comment                           default  This profile is automatically included for each node
   deliverynet  ContainerName                     default  leap15.5
   deliverynet  Ipxe                              --       (default)
-  deliverynet  RuntimeOverlay                    --       (generic)
-  deliverynet  SystemOverlay                     --       (wwinit)
+  deliverynet  RuntimeOverlay                    --       (hosts,ssh.authorized_keys,syncuser)
+  deliverynet  SystemOverlay                     --       (wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition)
   deliverynet  Root                              --       (initramfs)
   deliverynet  Init                              --       (/sbin/init)
   deliverynet  Kernel.Args                       --       (quiet crashkernel=no vga=791 net.naming-scheme=v238)

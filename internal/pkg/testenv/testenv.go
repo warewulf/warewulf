@@ -42,7 +42,6 @@ const Systemddir = "usr/lib/systemd/system"
 const WWOverlaydir = "var/lib/warewulf/overlays"
 const WWChrootdir = "var/lib/warewulf/chroots"
 const WWProvisiondir = "srv/warewulf"
-const WWClientdir = "warewulf"
 
 // New creates a test environment in a temporary directory and configures
 // Warewulf to use it.
@@ -79,7 +78,7 @@ func New(t *testing.T) (env *TestEnv) {
 	conf.Paths.WWOverlaydir = env.GetPath(WWOverlaydir)
 	conf.Paths.WWChrootdir = env.GetPath(WWChrootdir)
 	conf.Paths.WWProvisiondir = env.GetPath(WWProvisiondir)
-	conf.Paths.WWClientdir = env.GetPath(WWClientdir)
+	conf.Paths.WWClientdir = "/warewulf"
 
 	for _, confPath := range []string{
 		conf.Paths.Sysconfdir,
@@ -93,7 +92,6 @@ func New(t *testing.T) (env *TestEnv) {
 		conf.Paths.WWOverlaydir,
 		conf.Paths.WWChrootdir,
 		conf.Paths.WWProvisiondir,
-		conf.Paths.WWClientdir,
 	} {
 		env.MkdirAll(t, confPath)
 	}
@@ -136,6 +134,15 @@ func (env *TestEnv) WriteFile(t *testing.T, fileName string, content string) {
 		time.Date(2006, time.February, 1, 3, 4, 5, 0, time.UTC),
 		time.Date(2006, time.February, 1, 3, 4, 5, 0, time.UTC))
 	assert.NoError(t, err)
+}
+
+// ImportFile writes the contents of inputFileName to fileName,
+// creating any necessary intermediate directories relative to the
+// test environment.
+func (env *TestEnv) ImportFile(t *testing.T, fileName string, inputFileName string) {
+	buffer, err := os.ReadFile(inputFileName)
+	assert.NoError(t, err)
+	env.WriteFile(t, fileName, string(buffer))
 }
 
 // ReadFile returns the content of fileName as converted to a

@@ -113,8 +113,8 @@ I have VirtualBox running on my desktop.
    # Configure system service automatically
    sudo wwctl configure dhcp --persist # Create the default dhcpd.conf file and start/enable service
    sudo wwctl configure tftp --persist # Install the base tftp/PXE boot files and start/enable service
-   sudo wwctl configure nfs  --persist # Configure the exports and create an fstab in the default system overlay
-   sudo wwctl configure ssh  --persist # Build the basic ssh keys to be included by the default system overlay
+   sudo wwctl configure nfs  --persist # Configure the NFS exports
+   sudo wwctl configure ssh  --persist # Build the basic ssh keys to be included by the SSH overlay
 
    # Pull and build the VNFS container and kernel
    sudo wwctl container import docker://ghcr.io/warewulf/warewulf-centos:7 centos-7 --setdefault
