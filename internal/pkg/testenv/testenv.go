@@ -10,6 +10,7 @@ import (
 	"path"
 	"path/filepath"
 	"testing"
+	"time"
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 
@@ -130,6 +131,10 @@ func (env *TestEnv) WriteFile(t *testing.T, fileName string, content string) {
 	assert.NoError(t, err)
 	defer f.Close()
 	_, err = f.WriteString(content)
+	assert.NoError(t, err)
+	err = os.Chtimes(env.GetPath(fileName),
+		time.Date(2006, time.February, 1, 3, 4, 5, 0, time.UTC),
+		time.Date(2006, time.February, 1, 3, 4, 5, 0, time.UTC))
 	assert.NoError(t, err)
 }
 
