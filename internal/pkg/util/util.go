@@ -543,9 +543,6 @@ func CpioCreate(
 
 	args = append(args, cpio_args...)
 
-	oldMask := syscall.Umask(007)
-	defer syscall.Umask(oldMask)
-
 	proc := exec.Command("cpio", args...)
 
 	stdin, err := proc.StdinPipe()
