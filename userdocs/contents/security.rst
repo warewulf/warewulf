@@ -28,25 +28,24 @@ SELinux
 The Warewulf server itself was developed with SELinux enabled in
 "targeted" and "enforcing" mode and with the firewall active.
 
-Additionally, the provisioning process fully supports SELinux by
-default. In previous versions you had to enable a switch to support
-SELinux, but in Warewulf v4 and above, it is always enabled, but you
-do have to make some configuration changes.
+The provisioning process also fully supports booting SELinux-enabled
+containers, though nodes must be configured to use tmpfs for init. ("ramfs"
+(often used by default) does not support extended file attributes.)
 
-#. The first thing to do is to change the provision "Root" option. By
-   default this is ``initramfs`` which means, take whatever file
-   system the kernel hands us. By default this is a ``ramfs`` type
-   file system (however this may not always be the case) and this
-   format does not support extended file attributes which are required
-   for SELinux. Instead you must configure Warewulf to use ``tmpfs``
-   for the provisioning file system. That change is made like: ``$
-   sudo wwctl profile set --root tmpfs default``.
+.. code-block:: bash
 
-#. That is all you have to do to ensure that Warewulf will
-   support SELinux. Once that is done, you just need to enable SELinux
-   in ``/etc/sysconfig/selinux`` and install the appropriate profiles
-   into the container. `An example`_ of such a container is in the
-   warewulf-node-images repository.
+   wwctl profile set default --root tmpfs
+
+.. note::
+
+   Versions of Warewulf prior to v4.5.8 also required a kernel argument
+   "rootfstype=ramfs" in order for wwinit to copy the node image to tmpfs; but
+   this is no longer required.
+
+Once that is done, you just need to enable SELinux in
+``/etc/sysconfig/selinux`` and install the appropriate profiles into the
+container. `An example`_ of such a container is available in the
+warewulf-node-images repository.
 
 .. _An example: https://github.com/warewulf/warewulf-node-images/tree/main/examples/rockylinux-9-selinux
 
