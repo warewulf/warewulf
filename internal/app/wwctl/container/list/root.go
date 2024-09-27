@@ -28,6 +28,5 @@ func GetCommand() *cobra.Command {
 	baseCmd.PersistentFlags().BoolVarP(&vars.size, "size", "s", false, "show size information")
 	baseCmd.PersistentFlags().BoolVarP(&vars.chroot, "chroot", "c", false, "show size of chroot")
 	baseCmd.PersistentFlags().BoolVar(&vars.compressed, "compressed", false, "show size of the compressed image")
-
 	return baseCmd
 }

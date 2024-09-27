@@ -82,13 +82,13 @@ vet: $(config)
 
 .PHONY: test
 test: $(config)
-	go test ./...
+	TZ=UTC go test ./...
 
 .PHONY: test-cover
 test-cover: $(config)
 	rm -rf coverage
 	mkdir coverage
-	go list -f '{{if gt (len .TestGoFiles) 0}}"go test -covermode count -coverprofile {{.Name}}.coverprofile -coverpkg ./... {{.ImportPath}}"{{end}}' ./... | xargs -I {} bash -c {}
+	go list -f '{{if gt (len .TestGoFiles) 0}}"TZ=UTC go test -covermode count -coverprofile {{.Name}}.coverprofile -coverpkg ./... {{.ImportPath}}"{{end}}' ./... | xargs -I {} bash -c {}
 	echo "mode: count" >coverage/cover.out
 	grep -h -v "^mode:" *.coverprofile >>"coverage/cover.out"
 	rm *.coverprofile
