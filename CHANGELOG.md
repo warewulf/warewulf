@@ -56,6 +56,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added `--syncuser` flag to `wwctl container shell`. #1358
 - Added a troubleshooting guide. #1234
 - Added documentation about `rootfstype=ramfs` for SELinux support. #1001
+- Added workaround documentation for importing containers with sockets. #892
 
 ### Changed
 
