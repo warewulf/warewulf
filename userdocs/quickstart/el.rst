@@ -13,10 +13,7 @@ v4.5.7 release on Enterprise Linux 9:
 
    dnf install https://github.com/warewulf/warewulf/releases/download/v4.5.7/warewulf-4.5.7-1.el9.x86_64.rpm
 
-Packages are available for el7, el8, and el9.
-
-.. note::
-   CentOS 7 (and el7 in general) uses ``yum``, and does not provide ``dnf``.
+Packages are available for el8 and el9.
 
 .. _GitHub releases: https://github.com/warewulf/warewulf/releases
 
@@ -35,9 +32,6 @@ If you prefer, you can also install Warewulf from source.
    cd warewulf
    make
    make install
-
-.. note::
-   CentOS 7 (and el7 in general) only provides a single ``ipxe-bootimgs`` package.
 
 Configure firewalld
 ===================
@@ -163,10 +157,11 @@ default running kernel from the controller node and set both in the
 
 .. code-block:: bash
 
-   wwctl container import docker://ghcr.io/warewulf/warewulf-rockylinux:9 rockylinux-9 --setdefault
+   wwctl container import docker://ghcr.io/warewulf/warewulf-rockylinux:9 rockylinux-9 --build
+   wwctl profile set default --container rockylinux-9
 
-Configure a default node profile
-================================
+Configure the default node profile
+==================================
 
 In this example, all nodes share the netmask and gateway
 configuration, so we can set them in the default profile.
@@ -194,5 +189,25 @@ overlapping names, distinguish them using dot notation.
 
 The full node configuration comes from both cascading profiles and
 node configurations which always supersede profile configurations.
+
+Build overlays
+==============
+
+The default configuration should cause node overlays to be built automatically
+when they are required; but you can build them explicitly, just to be sure.
+
+.. warning::
+
+   Overlay autobuild has been broken at various times prior to v4.5.6; so it's
+   a reasonable practice to rebuild overlays manually after changes to the
+   cluster.
+
+.. code-block:: bash
+
+   # you can also supply an `n1` argument to build for the specific node
+   wwctl overlay build
+
+Boot
+====
 
 Turn on your compute node and watch it boot!
