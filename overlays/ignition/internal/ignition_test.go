@@ -2,8 +2,6 @@ package ignition
 
 import (
 	"bytes"
-	"encoding/json"
-	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -61,10 +59,7 @@ func Test_ignitionOverlay(t *testing.T) {
 			assert.Empty(t, stdout.String())
 			assert.Empty(t, stderr.String())
 			if tt.json {
-				var expected, actual interface{}
-				assert.NoError(t, json.Unmarshal([]byte(tt.log), &expected))
-				assert.NoError(t, json.Unmarshal(logbuf.Bytes(), &actual))
-				assert.True(t, reflect.DeepEqual(expected, actual), "expected: %v\nactual  : %v", expected, actual)
+				assert.JSONEq(t, tt.log, logbuf.String())
 			} else {
 				assert.Equal(t, tt.log, logbuf.String())
 			}
@@ -116,5 +111,44 @@ What=/dev/disk/by-partlabel/swap
 RequiredBy=swap.target
 `
 
-const ignition_json string = `{"ignition":{"version":"3.1.0"},"storage":{"disks":[{"device":"/dev/vda","partitions":[{"label":"scratch","shouldExist":true,"wipePartitionEntry":false},{"label":"swap","number":1,"shouldExist":false,"sizeMiB":1024,"wipePartitionEntry":false}],"wipeTable":true}],"filesystems":[{"device":"/dev/disk/by-partlabel/scratch","format":"btrfs","path":"/scratch","wipeFilesystem":true},{"device":"/dev/disk/by-partlabel/swap","format":"swap","path":"swap","wipeFilesystem":false}]}}
-`
+const ignition_json string = `{
+  "ignition": {
+    "version": "3.1.0"
+  },
+  "storage": {
+    "disks": [
+      {
+        "device": "/dev/vda",
+        "partitions": [
+          {
+            "label": "scratch",
+            "shouldExist": true,
+            "wipePartitionEntry": false
+          },
+          {
+            "label": "swap",
+            "number": 1,
+            "shouldExist": false,
+            "sizeMiB": 1024,
+            "wipePartitionEntry": false
+          }
+        ],
+        "wipeTable": true
+      }
+    ],
+    "filesystems": [
+      {
+        "device": "/dev/disk/by-partlabel/scratch",
+        "format": "btrfs",
+        "path": "/scratch",
+        "wipeFilesystem": true
+      },
+      {
+        "device": "/dev/disk/by-partlabel/swap",
+        "format": "swap",
+        "path": "swap",
+        "wipeFilesystem": false
+      }
+    ]
+  }
+}`
