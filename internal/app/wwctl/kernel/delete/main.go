@@ -2,7 +2,6 @@ package delete
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/kernel"
@@ -14,8 +13,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("Could not open nodeDB: %s", err)
-		os.Exit(1)
+		return fmt.Errorf("could not open nodeDB: %s", err)
 	}
 
 	nodes, _ := nodeDB.FindAllNodes()
