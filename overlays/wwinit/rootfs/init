@@ -47,7 +47,7 @@ else
 fi
 
 echo
-echo "ERROR: There was a problem with the initial provisioning process.
+echo "ERROR: There was a problem with the initial provisioning process."
 echo "Rebooting in 1 minute..."
 sleep 60
 echo b > /proc/sysrq-trigger || /sbin/reboot -f
