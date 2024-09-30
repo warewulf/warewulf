@@ -31,11 +31,11 @@ func GetCommand() *cobra.Command {
 	vars.nodeConf = node.NewConf()
 	baseCmd := &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:                   "set [OPTIONS] PATTERN [PATTERN ...]",
+		Use:                   "set [OPTIONS] PATTERN",
 		Short:                 "Configure node properties",
 		Long:                  "This command sets configuration properties for nodes matching PATTERN.\n\nNote: use the string 'UNSET' to remove a configuration",
 		Aliases:               []string{"modify"},
-		Args:                  cobra.MinimumNArgs(0),
+		Args:                  cobra.MinimumNArgs(1), // require pattern as a mandatory arg
 		RunE:                  CobraRunE(&vars),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
