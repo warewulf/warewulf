@@ -48,6 +48,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix excessive line spacing issue when listing nodes. #1241
 - Return non-zero exit code on node sub-commands #1421
 - Fix panic when getting a long container list before building the container. #1391
+- Return non-zero exit code on profile sub-commands #1435
 
 ## v4.5.8, unreleased
 

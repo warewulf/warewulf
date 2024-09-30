@@ -2,7 +2,6 @@ package delete
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/manifoldco/promptui"
 	"github.com/pkg/errors"
@@ -20,14 +19,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("Failed to open node database: %s", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to open node database: %s", err)
 	}
 
 	profiles, err := nodeDB.FindAllProfiles()
 	if err != nil {
-		wwlog.Error("Could not load all profiles: %s", err)
-		os.Exit(1)
+		return fmt.Errorf("could not load all profiles: %s", err)
 	}
 
 	for _, r := range args {
@@ -35,8 +32,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			if p.Id.Get() == r {
 				nodes, err := nodeDB.FindAllNodes()
 				if err != nil {
-					wwlog.Error("Could not load all nodes: %s", err)
-					os.Exit(1)
+					return fmt.Errorf("could not load all nodes: %s", err)
 				}
 				for _, n := range nodes {
 					for _, np := range n.Profiles.GetSlice() {
@@ -68,13 +64,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		if !found {
-			fmt.Fprintf(os.Stderr, "Profile not found: %s\n", r)
+			wwlog.Error("Profile not found: %s", r)
 		}
 	}
 
 	if count == 0 {
-		fmt.Fprintf(os.Stderr, "No profiles found\n")
-		os.Exit(1)
+		return fmt.Errorf("no profiles found")
 	}
 
 	if SetYes {
