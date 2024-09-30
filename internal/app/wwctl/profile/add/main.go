@@ -2,12 +2,10 @@ package add
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	apiprofile "github.com/warewulf/warewulf/internal/pkg/api/profile"
 	"github.com/warewulf/warewulf/internal/pkg/node"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v2"
 
 	"github.com/spf13/cobra"
@@ -63,8 +61,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 
 		buffer, err := yaml.Marshal(vars.profileConf)
 		if err != nil {
-			wwlog.Error("Cant marshall nodeInfo", err)
-			os.Exit(1)
+			return fmt.Errorf("can not marshall nodeInfo")
 		}
 		set := wwapiv1.ProfileSetParameter{
 			NodeConfYaml: string(buffer[:]),

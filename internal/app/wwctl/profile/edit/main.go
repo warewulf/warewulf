@@ -23,12 +23,10 @@ import (
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	canWrite, err := apiutil.CanWriteConfig()
 	if err != nil {
-		wwlog.Error("While checking whether can write config, err: %w", err)
-		os.Exit(1)
+		return fmt.Errorf("while checking whether can write config, err: %s", err)
 	}
 	if !canWrite.CanWriteConfig {
-		wwlog.Error("Can't write to config exiting")
-		os.Exit(1)
+		return fmt.Errorf("can not write to config exiting")
 	}
 	editor := os.Getenv("EDITOR")
 	if editor == "" {
@@ -65,8 +63,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		sum1 := hex.EncodeToString(hasher.Sum(nil))
 		err = util.ExecInteractive(editor, file.Name())
 		if err != nil {
-			wwlog.Error("Editor process existed with non-zero\n")
-			os.Exit(1)
+			return fmt.Errorf("editor process existed with non-zero: %s", err)
 		}
 		_, _ = file.Seek(0, 0)
 		hasher.Reset()
@@ -125,8 +122,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					Hash:         newHash.Hash,
 				})
 				if err != nil {
-					wwlog.Error("Got following problem when writing back yaml: %s", err)
-					os.Exit(1)
+					return fmt.Errorf("got following problem when writing back yaml: %s", err)
 				}
 				break
 			}
