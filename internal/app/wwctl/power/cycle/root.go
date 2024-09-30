@@ -1,4 +1,4 @@
-package powercycle
+package cycle
 
 import (
 	"github.com/spf13/cobra"

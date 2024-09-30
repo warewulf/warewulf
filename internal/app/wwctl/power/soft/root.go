@@ -1,4 +1,4 @@
-package powersoft
+package soft
 
 import (
 	"github.com/spf13/cobra"

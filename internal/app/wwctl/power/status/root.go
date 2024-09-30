@@ -1,4 +1,4 @@
-package powerstatus
+package status
 
 import (
 	"github.com/spf13/cobra"

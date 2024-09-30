@@ -1,4 +1,4 @@
-package powerreset
+package cycle
 
 import (
 	"fmt"
@@ -17,14 +17,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("Could not open node configuration: %s", err)
-		os.Exit(1)
+		return fmt.Errorf("could not open node configuration: %s", err)
 	}
 
 	nodes, err := nodeDB.FindAllNodes()
 	if err != nil {
-		wwlog.Error("Cloud not get nodeList: %s", err)
-		os.Exit(1)
+		return fmt.Errorf("could not get node list: %s", err)
 	}
 
 	if len(args) > 0 {
@@ -36,8 +34,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if len(nodes) == 0 {
-		fmt.Printf("No nodes found\n")
-		os.Exit(1)
+		return fmt.Errorf("no nodes found")
 	}
 
 	batchpool := batch.New(50)
@@ -70,7 +67,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 		batchpool.Submit(func() {
 			//nolint:errcheck
-			ipmiCmd.PowerReset()
+			ipmiCmd.PowerCycle()
 			results <- ipmiCmd
 		})
 
