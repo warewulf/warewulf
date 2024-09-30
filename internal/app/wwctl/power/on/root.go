@@ -1,4 +1,4 @@
-package poweron
+package on
 
 import (
 	"github.com/spf13/cobra"

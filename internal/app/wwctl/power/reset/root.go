@@ -1,4 +1,4 @@
-package powerreset
+package reset
 
 import (
 	"github.com/spf13/cobra"
