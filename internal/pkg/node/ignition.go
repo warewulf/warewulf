@@ -47,6 +47,9 @@ func (node *NodeInfo) GetStorage() (stor types_3_4.Storage, err error, rep strin
 		wwlog.Debug("created file system struct: %v", myFs)
 		fileSystems = append(fileSystems, myFs)
 	}
+	sort.SliceStable(fileSystems, func(i int, j int) bool {
+		return fileSystems[i].Device < fileSystems[j].Device
+	})
 	var disks []types_3_4.Disk
 	for diskDev, disk := range node.Disks {
 		var partitions []types_3_4.Partition
