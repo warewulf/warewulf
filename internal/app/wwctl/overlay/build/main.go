@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"syscall"
 
 	"github.com/spf13/cobra"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
@@ -83,6 +84,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if BuildNodes || (!BuildHost && !BuildNodes) {
+		oldMask := syscall.Umask(007)
+		defer syscall.Umask(oldMask)
+
 		if len(OverlayNames) > 0 {
 			err = overlay.BuildSpecificOverlays(nodes, OverlayNames)
 		} else {

@@ -136,7 +136,7 @@ func BuildOverlay(nodeInfo node.NodeInfo, context string, overlayNames []string)
 	overlayImage := OverlayImage(nodeInfo.Id.Get(), context, overlayNames)
 	overlayImageDir := path.Dir(overlayImage)
 
-	err := os.MkdirAll(overlayImageDir, 0755)
+	err := os.MkdirAll(overlayImageDir, 0750)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to create directory for %s: %s", name, overlayImageDir)
 	}
