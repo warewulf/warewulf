@@ -18,14 +18,14 @@ Rocky Linux 8
 
 .. code-block:: console
 
-   # dnf install https://github.com/warewulf/warewulf/releases/download/v4.5.7/warewulf-4.5.7-1.el8.x86_64.rpm
+   # dnf install https://github.com/warewulf/warewulf/releases/download/v4.5.8/warewulf-4.5.8-1.el8.x86_64.rpm
 
 openSuse Leap
 -------------
 
 .. code-block:: console
 
-   # zypper install https://github.com/warewulf/warewulf/releases/download/v4.5.7/warewulf-4.5.7-1.suse.lp155.x86_64.rpm
+   # zypper install https://github.com/warewulf/warewulf/releases/download/v4.5.8/warewulf-4.5.8-1.suse.lp155.x86_64.rpm
 
 Compiled Source code
 ====================
@@ -59,9 +59,9 @@ appropriate substitutions:
 
 .. code-block:: bash
 
-   curl -LO https://github.com/warewulf/warewulf/releases/download/v4.5.7/warewulf-4.5.7.tar.gz
-   tar -xf warewulf-4.5.7.tar.gz
-   cd warewulf-4.5.7
+   curl -LO https://github.com/warewulf/warewulf/releases/download/v4.5.8/warewulf-4.5.8.tar.gz
+   tar -xf warewulf-4.5.8.tar.gz
+   cd warewulf-4.5.8
    make all && sudo make install
 
 Git
@@ -71,15 +71,12 @@ Warewulf is developed in GitHub, a source code management platform
 that allows collaborative development and revision control. From the
 Git repository, you can download different versions of the project
 either from tags or branches. By default, when you go to the GitHub
-page, you will find the default branch entitled ``development``. The
-``development`` branch is where most of the active development occurs,
+page, you will find the default branch entitled ``main``. The
+``main`` branch is where most of the active development occurs,
 so if you want to obtain the latest and greatest version of Warewulf,
 this is where to go. But be forewarned, using a snapshot from
-``development`` is not guaranteed to be stable or generally supported
+``main`` is not guaranteed to be stable or generally supported
 for production.
-
-Alternatively, the ``main`` branch is more stable and is used as a
-staging area for pending releases.
 
 If you are building for production, it is best to download a release
 tarball from the main site, the GitHub releases page, or from a Git
@@ -89,7 +86,7 @@ tag.
 
    git clone https://github.com/warewulf/warewulf.git
    cd warewulf
-   git checkout development # or switch to a tag like 'v4.5.7'
+   git checkout main # or switch to a tag like 'v4.5.8'
    make all && sudo make install
 
 Runtime Dependencies

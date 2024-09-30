@@ -36,7 +36,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Replace slice in templates with sprig substr. #1093
 - Fix an invalid format issue for the GitHub nightly build action. #1258
 
-## v4.5.8, unreleased
+## v4.5.8, 2024-10-01
 
 ### Added
 
@@ -46,6 +46,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added workaround documentation for importing containers with sockets. #892
 - Added documentation for building iPXE locally. #1114
 - Documented that ignition is not available for Rocky Linux 8. #1373, #1272
+- Additional help text when container `RunDir` already exists. #1389
 
 ### Changed
 
@@ -55,18 +56,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
-- Return an error during `wwctl container import` if archive filename includes a colon. #1371
-- Correctly extract smbios asset key during Grub boot. #1291
+- Return an error during `wwctl container import` if the archive filename includes a colon. #1371
+- Correctly extract smbios asset key during GRUB boot. #1291
 - Refactor of `wwinit/init` to more properly address rootfs options. #1098
-- Fix autodetected kernel sorting issue. #1332
-- Avoid panic on container import #1244
-- make sure that warewulfd has the permission 0755 at creation time #674
+- Fix autodetected kernel sorting and filtering. #1332
+- Avoid a panic during container import. #1244
+- Make sure that tftp files have unmasked permissions at creation time. #674
 - Fix "onboot" behavior for NetworkManager, Debian networking, and Suse wicked. #1278
 - Clarified missing steps in Enterprise Linux quickstart. #1179
 
-### Added
-
-- Additional help test when container.RunDir already exists. #1389
 
 ## v4.5.7, 2024-09-11
 
