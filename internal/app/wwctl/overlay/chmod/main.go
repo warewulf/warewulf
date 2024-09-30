@@ -1,6 +1,7 @@
 package chmod
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"strconv"
@@ -8,7 +9,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/util"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
@@ -19,28 +19,24 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	permissionMode, err := strconv.ParseUint(args[2], 8, 32)
 	if err != nil {
-		wwlog.Error("Could not convert requested mode: %s", err)
-		os.Exit(1)
+		return fmt.Errorf("could not convert requested mode: %s", err)
 	}
 
 	overlaySourceDir = overlay.OverlaySourceDir(overlayName)
 
 	if !util.IsDir(overlaySourceDir) {
-		wwlog.Error("Overlay does not exist: %s", overlayName)
-		os.Exit(1)
+		return fmt.Errorf("overlay does not exist: %s", overlayName)
 	}
 
 	overlayFile := path.Join(overlaySourceDir, fileName)
 
 	if !util.IsFile(overlayFile) && !util.IsDir(overlayFile) {
-		wwlog.Error("File does not exist within overlay: %s:%s", overlayName, fileName)
-		os.Exit(1)
+		return fmt.Errorf("file does not exist within overlay: %s:%s", overlayName, fileName)
 	}
 
 	err = os.Chmod(overlayFile, os.FileMode(permissionMode))
 	if err != nil {
-		wwlog.Error("Could not set permission: %s", err)
-		os.Exit(1)
+		return fmt.Errorf("could not set permission: %s", err)
 	}
 
 	return nil

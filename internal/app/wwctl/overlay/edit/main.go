@@ -1,6 +1,7 @@
 package edit
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path"
@@ -40,8 +41,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	overlaySourceDir := overlay.OverlaySourceDir(overlayName)
 	if !util.IsDir(overlaySourceDir) {
-		wwlog.Error("Overlay does not exist: %s", overlayName)
-		os.Exit(1)
+		return fmt.Errorf("overlay does not exist: %s", overlayName)
 	}
 
 	overlayFile := path.Join(overlaySourceDir, fileName)
@@ -51,20 +51,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if CreateDirs {
 		err := os.MkdirAll(overlayFileDir, 0755)
 		if err != nil {
-			wwlog.Error("Could not create directory: %s", overlayFileDir)
-			os.Exit(1)
+			return fmt.Errorf("could not create directory: %s", overlayFileDir)
 		}
 	} else {
 		if !util.IsDir(overlayFileDir) {
-			wwlog.Error("%s does not exist. Use '--parents' option to create automatically.", overlayFileDir)
-			os.Exit(1)
+			return fmt.Errorf("%s does not exist. Use '--parents' option to create automatically", overlayFileDir)
 		}
 	}
 
 	tempFile, tempFileErr := os.CreateTemp("", "ww-overlay-edit-")
 	if tempFileErr != nil {
-		wwlog.Error("Unable to create temporary file for editing: %s", tempFileErr)
-		os.Exit(1)
+		return fmt.Errorf("unable to create temporary file for editing: %s", tempFileErr)
 	}
 	defer os.Remove(tempFile.Name())
 	wwlog.Debug("Using temporary file %s", tempFile.Name())
@@ -72,26 +69,22 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if util.IsFile(overlayFile) {
 		originalFile, openErr := os.Open(overlayFile)
 		if openErr != nil {
-			wwlog.Error("Unable to open %s: %s", overlayFile, openErr)
-			os.Exit(1)
+			return fmt.Errorf("unable to open %s: %s", overlayFile, openErr)
 		}
 		if _, err := io.Copy(tempFile, originalFile); err != nil {
-			wwlog.Error("Unable to copy %s to %s for editing: %s", originalFile.Name(), tempFile.Name(), err)
-			os.Exit(1)
+			return fmt.Errorf("unable to copy %s to %s for editing: %s", originalFile.Name(), tempFile.Name(), err)
 		}
 		originalFile.Close()
 	} else if filepath.Ext(overlayFile) == ".ww" {
 		if _, err := tempFile.Write([]byte(initialTemplate)); err != nil {
-			wwlog.Error("Unable to write to %s: %s", tempFile.Name(), err)
-			os.Exit(1)
+			return fmt.Errorf("unable to write to %s: %s", tempFile.Name(), err)
 		}
 	}
 	tempFile.Close()
 
 	var startTime time.Time
 	if fileInfo, err := os.Stat(tempFile.Name()); err != nil {
-		wwlog.Error("Unable to stat %s: %s", tempFile.Name(), err)
-		os.Exit(1)
+		return fmt.Errorf("unable to stat %s: %s", tempFile.Name(), err)
 	} else {
 		startTime = fileInfo.ModTime()
 	}
@@ -101,13 +94,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		editor = "/bin/vi"
 	}
 	if editorErr := util.ExecInteractive(editor, tempFile.Name()); editorErr != nil {
-		wwlog.Error("Editor process exited with an error: %s", editorErr)
-		os.Exit(1)
+		return fmt.Errorf("editor process exited with an error: %s", editorErr)
 	}
 
 	if fileInfo, err := os.Stat(tempFile.Name()); err != nil {
-		wwlog.Error("Unable to stat %s: %s", tempFile.Name(), err)
-		os.Exit(1)
+		return fmt.Errorf("unable to stat %s: %s", tempFile.Name(), err)
 	} else {
 		if startTime == fileInfo.ModTime() {
 			wwlog.Debug("No change detected. Not updating overlay.")
@@ -123,8 +114,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Debug("Unable to rename temp file: %s to overlay file: %s, try copying the data", tempFile.Name(), overlayFile)
 		cerr := util.CopyFile(tempFile.Name(), overlayFile)
 		if cerr != nil {
-			wwlog.Error("Unable to copy data from temp file: %s to target file: %s, err: %s", tempFile.Name(), overlayFile, err)
-			return cerr
+			return fmt.Errorf("unable to copy data from temp file: %s to target file: %s, err: %s", tempFile.Name(), overlayFile, err)
 		}
 	}
 
