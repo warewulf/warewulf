@@ -51,6 +51,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Interleave tmpfs across all available NUMA nodes. #1347, #1348
 - Syncuser watches for changes in mtime rather than ctime. #1358
+- Change the default permissions for provisioned overlay images to `0750` (dirs) and `0660` (files). #1388
 
 ### Fixed
 
