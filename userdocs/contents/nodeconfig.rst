@@ -289,3 +289,18 @@ And to unset this configuration attribute:
 
    # wwctl node list -a n001 | grep Cluster
    n001                Cluster            --           --
+
+Important Considerations When Editing nodes.conf and warewulf.conf
+=================================================================
+
+When ``nodes.conf`` is edited, ``warewulfd`` does not know that the container profile has been changed. Therefore the new changes to ``nodes.conf`` are not taken into account until ``warewulfd`` is restarted.
+
+Once you restart ``warewulfd``, the ``nodes.conf`` file is then successfully reloaded.
+
+This also goes for ``warewulf.conf`` as well - any changes made also require ``warewulfd`` to be restarted.
+
+The restart should be done using the following ``systemd`` command:
+
+.. code-block:: console
+
+  # systemctl restart warewulfd
