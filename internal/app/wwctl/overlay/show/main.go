@@ -25,34 +25,27 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	overlaySourceDir = overlay.OverlaySourceDir(overlayName)
 
 	if !util.IsDir(overlaySourceDir) {
-		err := errors.New("Overlay does not exist")
-		wwlog.Error("%s: %s", err, overlayName)
+		err := errors.New("overlay does not exist")
 		return err
 	}
 
 	overlayFile := path.Join(overlaySourceDir, fileName)
 
 	if !util.IsFile(overlayFile) {
-		err := errors.New("File does not exist within overlay")
-		wwlog.Error("%s: %s:%s", err, overlayName, fileName)
+		err := errors.New("file does not exist within overlay")
 		return err
 	}
 
 	if NodeName == "" {
 		f, err := os.ReadFile(overlayFile)
 		if err != nil {
-			wwlog.Error("Could not read file: %s", err)
 			return err
 		}
 
 		wwlog.Output("%s", string(f))
 	} else {
 		if !util.IsFile(overlayFile) {
-			err := errors.New("Not a file")
-			wwlog.Error("%s: %s:%s", err, overlayName, fileName)
-			return err
-			err := errors.New("Not a file")
-			wwlog.Error("%s: %s:%s", err, overlayName, fileName)
+			err := errors.New("not a file")
 			return err
 		}
 		if filepath.Ext(overlayFile) != ".ww" {

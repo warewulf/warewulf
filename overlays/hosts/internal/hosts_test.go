@@ -49,7 +49,7 @@ func Test_hostsOverlay(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Empty(t, stdout.String())
 			assert.Empty(t, stderr.String())
-			assert.Equal(t, strings.Replace(tt.log, "%HOSTNAME%", hostname, -1), logbuf.String())
+			assert.Equal(t, tt.log, strings.Replace(logbuf.String(), hostname, "%HOSTNAME%", -1))
 		})
 	}
 }

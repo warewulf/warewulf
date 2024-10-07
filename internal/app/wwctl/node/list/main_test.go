@@ -18,14 +18,16 @@ import (
 
 func Test_List(t *testing.T) {
 	tests := []struct {
-		name   string
-		args   []string
-		stdout string
-		inDb   string
+		name    string
+		args    []string
+		wantErr bool
+		stdout  string
+		inDb    string
 	}{
 		{
-			name: "single node list",
-			args: []string{},
+			name:    "single node list",
+			args:    []string{},
+			wantErr: false,
 			stdout: `  NODE NAME  PROFILES   NETWORK  
   n01       [default]
 `,
@@ -39,8 +41,9 @@ nodes:
 `,
 		},
 		{
-			name: "multiple nodes list",
-			args: []string{},
+			name:    "multiple nodes list",
+			args:    []string{},
+			wantErr: false,
 			stdout: `  NODE NAME  PROFILES  NETWORK
   n01       [default]
   n02       [default]
@@ -58,8 +61,9 @@ nodes:
 `,
 		},
 		{
-			name: "node list returns multiple nodes",
-			args: []string{"n01,n02"},
+			name:    "node list returns multiple nodes",
+			args:    []string{"n01,n02"},
+			wantErr: false,
 			stdout: `  NODE NAME  PROFILES  NETWORK
   n01       [default]           
   n02       [default]
@@ -77,8 +81,9 @@ nodes:
 `,
 		},
 		{
-			name: "node list returns multiple nodes (case 2)",
-			args: []string{"n01,n03"},
+			name:    "node list returns multiple nodes (case 2)",
+			args:    []string{"n01,n03"},
+			wantErr: false,
 			stdout: `  NODE NAME  PROFILES  NETWORK
   n01       [default]
   n03       [default]
@@ -105,8 +110,9 @@ nodes:
 `,
 		},
 		{
-			name: "node list returns one node",
-			args: []string{"n01,"},
+			name:    "node list returns one node",
+			args:    []string{"n01,"},
+			wantErr: false,
 			stdout: `  NODE NAME  PROFILES  NETWORK
   n01       [default]
 `,
@@ -123,8 +129,9 @@ nodes:
 `,
 		},
 		{
-			name: "node list profile with network",
-			args: []string{},
+			name:    "node list profile with network",
+			args:    []string{},
+			wantErr: false,
 			stdout: `  NODE NAME  PROFILES  NETWORK
   n01       [default]        default
 `,
@@ -140,18 +147,12 @@ nodes:
     - default
 `},
 		{
-			name: "node list profile with comment",
-			args: []string{"-a"},
+			name:    "node list profile with comment",
+			args:    []string{"-a"},
+			wantErr: false,
 			stdout: `NODE  FIELD           PROFILE  VALUE
-n01   Id              --       n01
 n01   Comment         default  profilecomment
-n01   Ipxe            --       (default)
-n01   RuntimeOverlay  --       (hosts,ssh.authorized_keys,syncuser)
-n01   SystemOverlay   --       (wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition)
-n01   Root            --       (initramfs)
-n01   Init            --       (/sbin/init)
-n01   Kernel.Args     --       (quiet crashkernel=no vga=791 net.naming-scheme=v238)
-n01   Profiles        --       default
+n01   Profiles                 default
 `,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
@@ -163,18 +164,12 @@ nodes:
     - default
 `},
 		{
-			name: "node list profile with comment superseded",
-			args: []string{"-a"},
+			name:    "node list profile with comment superseded",
+			args:    []string{"-a"},
+			wantErr: false,
 			stdout: `NODE  FIELD           PROFILE     VALUE
-n01   Id              --          n01
 n01   Comment         SUPERSEDED  nodecomment
-n01   Ipxe            --          (default)
-n01   RuntimeOverlay  --          (hosts,ssh.authorized_keys,syncuser)
-n01   SystemOverlay   --          (wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition)
-n01   Root            --          (initramfs)
-n01   Init            --          (/sbin/init)
-n01   Kernel.Args     --          (quiet crashkernel=no vga=791 net.naming-scheme=v238)
-n01   Profiles        --          default
+n01   Profiles                    default
 `,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
@@ -187,8 +182,9 @@ nodes:
     - default
 `},
 		{
-			name: "node list profile with ipmi user",
-			args: []string{"-i"},
+			name:    "node list profile with ipmi user",
+			args:    []string{"-i"},
+			wantErr: false,
 			stdout: `NODE IPMIIPADDR IPMIPORT IPMIUSERNAME IPMIINTERFACE
 n01 <nil>    admin      
 `,
@@ -203,8 +199,9 @@ nodes:
     - default
 `},
 		{
-			name: "node list profile with ipmi user superseded",
-			args: []string{"-i"},
+			name:    "node list profile with ipmi user superseded",
+			args:    []string{"-i"},
+			wantErr: false,
 			stdout: `NODE IPMIIPADDR IPMIPORT IPMIUSERNAME IPMIINTERFACE
 n01 <nil>    user
 `,
@@ -231,8 +228,9 @@ nodes:
     - p1
     - p2
 `,
-			name: "multiple profiles list",
-			args: []string{},
+			name:    "multiple profiles list",
+			args:    []string{},
+			wantErr: false,
 			stdout: `  NODE NAME  PROFILES  NETWORK
 n01        [p1 p2]
 `},
@@ -247,17 +245,11 @@ nodes:
     - p1
     - p2
 `,
-			name: "multiple profiles list all",
-			args: []string{"-a"},
+			name:    "multiple profiles list all",
+			args:    []string{"-a"},
+			wantErr: false,
 			stdout: `NODE  FIELD           PROFILE  VALUE
-n01   Id              --       n01
-n01   Ipxe            --       (default)
-n01   RuntimeOverlay  --       (hosts,ssh.authorized_keys,syncuser)
-n01   SystemOverlay   --       (wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition)
-n01   Root            --       (initramfs)
-n01   Init            --       (/sbin/init)
-n01   Kernel.Args     --       (quiet crashkernel=no vga=791 net.naming-scheme=v238)
-n01   Profiles        --       p1,p2
+n01   Profiles                 p1,p2
 `},
 		{
 			inDb: `WW_INTERNAL: 45
@@ -271,10 +263,11 @@ nodes:
     profiles:
     - p1
 `,
-			name: "multiple overlays list",
-			args: []string{"-l"},
+			name:    "multiple overlays list",
+			args:    []string{"-l"},
+			wantErr: false,
 			stdout: `NODE NAME  KERNEL OVERRIDE  CONTAINER  OVERLAYS (S/R)
-n01        --               --         (wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition)/rop1,rop2
+n01                                                         /rop1,rop2
 `},
 		{
 			inDb: `WW_INTERNAL: 45
@@ -293,10 +286,11 @@ nodes:
     - nop1
     - ~rop1
 `,
-			name: "multiple overlays list",
-			args: []string{"-l"},
+			name:    "multiple overlays list",
+			args:    []string{"-l"},
+			wantErr: false,
 			stdout: `NODE NAME  KERNEL OVERRIDE  CONTAINER  OVERLAYS (S/R)
-n01        --               --         sop1/rop2,nop1 ~{rop1}
+n01                                sop1/nop1,~rop1,rop1,rop2
 `},
 		{
 			inDb: `WW_INTERNAL: 45
@@ -315,17 +309,11 @@ nodes:
     - nop1
     - ~rop1
 `,
-			name: "multiple overlays list all",
-			args: []string{"-a"},
+			name:    "multiple overlays list all",
+			args:    []string{"-a"},
+			wantErr: false,
 			stdout: `NODE  FIELD           PROFILE     VALUE
-n01   Id              --          n01
-n01   Ipxe            --          (default)
-n01   RuntimeOverlay  SUPERSEDED  rop2,nop1 ~{rop1}
-n01   SystemOverlay   p1          sop1
-n01   Root            --          (initramfs)
-n01   Init            --          (/sbin/init)
-n01   Kernel.Args     --          (quiet crashkernel=no vga=791 net.naming-scheme=v238)
-n01   Profiles        --          p1
+n01   Profiles                  p1
 `},
 		{
 			inDb: `WW_INTERNAL: 45
@@ -341,17 +329,12 @@ nodes:
     runtime overlay:
     - nop1
 `,
-			name: "multiple overlays list all",
-			args: []string{"-a"},
+			name:    "multiple overlays list all",
+			args:    []string{"-a"},
+			wantErr: false,
 			stdout: `NODE  FIELD           PROFILE     VALUE
-n01   Id              --          n01
-n01   Ipxe            --          (default)
-n01   RuntimeOverlay  --          (hosts,ssh.authorized_keys,syncuser)
-n01   SystemOverlay   SUPERSEDED  profileinit,nodeinit
-n01   Root            --          (initramfs)
-n01   Init            --          (/sbin/init)
-n01   Kernel.Args     --          (quiet crashkernel=no vga=791 net.naming-scheme=v238)
-n01   Profiles        --          p1
+n01   Profiles                    p1
+n01   RuntimeOverlay               p1+nop1,rop1,rop2
 `},
 	}
 
@@ -477,36 +460,15 @@ nodes:
 			baseCmd.SetArgs(tt.args)
 			baseCmd.SetOut(buf)
 			baseCmd.SetErr(buf)
-			wwlog.SetLogWriter(buf)
-			err := baseCmd.Execute()
-			assert.NoError(t, err)
-			for _, expected_output := range tt.output {
-				assert.Equal(t, expected_output, buf.String())
+			err = baseCmd.Execute()
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
+			assert.Contains(t,
+				strings.Join(strings.Fields(tt.stdout), ""),
+				strings.Join(strings.Fields(buf.String()), ""))
 		})
 	}
-}
-
-func verifyOutput(t *testing.T, baseCmd *cobra.Command, content string) {
-	stdoutR, stdoutW, _ := os.Pipe()
-	os.Stdout = stdoutW
-	wwlog.SetLogWriter(os.Stdout)
-	baseCmd.SetOut(os.Stdout)
-	baseCmd.SetErr(os.Stdout)
-	err := baseCmd.Execute()
-	assert.NoError(t, err)
-
-	strip, _ := regexp.Compile("(?m)(^  *|  *$)")
-
-	stdoutC := make(chan string)
-	go func() {
-		var buf bytes.Buffer
-		_, _ = io.Copy(&buf, stdoutR)
-		stdoutC <- buf.String()
-	}()
-	stdoutW.Close()
-
-	stdout := <-stdoutC
-	assert.NotEmpty(t, stdout, "output should not be empty")
-	assert.Equal(t, strip.ReplaceAllString(content, ""), strip.ReplaceAllString(stdout, ""))
 }

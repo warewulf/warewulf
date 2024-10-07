@@ -7,7 +7,6 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/hostlist"
@@ -20,12 +19,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	controller := warewulfconf.Get()
 	nodeDB, err := node.New()
 	if err != nil {
-		return errors.Wrap(err, "couldn't open node configuration")
+		return fmt.Errorf("couldn't open node configuration: %s", err)
 	}
 
 	db, err := nodeDB.FindAllNodes()
 	if err != nil {
-		return errors.Wrap(err, "could not get node list")
+		return fmt.Errorf("could not get node list: %s", err)
 	}
 
 	if len(args) > 0 {

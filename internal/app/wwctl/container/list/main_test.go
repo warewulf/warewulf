@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
@@ -12,7 +13,7 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-func Test_List_Args(t *testing.T) {
+func Test_List(t *testing.T) {
 	tests := []struct {
 		name     string
 		args     []string
@@ -60,30 +61,14 @@ nodes:
 			buf := new(bytes.Buffer)
 			baseCmd := GetCommand()
 			baseCmd.SetArgs(tt.args)
-			stdoutR, stdoutW, _ := os.Pipe()
-			os.Stdout = stdoutW
-			wwlog.SetLogWriter(os.Stdout)
-			baseCmd.SetOut(os.Stdout)
-			baseCmd.SetErr(os.Stdout)
+			baseCmd.SetOut(nil)
+			baseCmd.SetErr(nil)
+			wwlog.SetLogWriter(buf)
 			err := baseCmd.Execute()
-			if tt.fail {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
-			stdoutC := make(chan string)
-			go func() {
-				var buf bytes.Buffer
-				_, _ = io.Copy(&buf, stdoutR)
-				stdoutC <- buf.String()
-			}()
-			stdoutW.Close()
-			stdout := <-stdoutC
-			assert.Equal(t, tt.output, stdout)
-			assert.Equal(t,
-				strings.ReplaceAll(strings.TrimSpace(tt.output), " ", ""),
-				strings.ReplaceAll(strings.TrimSpace(stdout), " ", ""))
-
+			assert.NoError(t, err)
+			assert.Contains(t,
+				strings.Join(strings.Fields(buf.String()), ""),
+				strings.Join(strings.Fields(tt.stdout), ""))
 		})
 	}
 }

@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 type PrintHelper struct {
