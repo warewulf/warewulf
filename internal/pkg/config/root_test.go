@@ -10,7 +10,7 @@ import (
 func TestDefaultRootConf(t *testing.T) {
 	conf := New()
 
-	assert.Equal(t, 9983, conf.Warewulf.Port)
+	assert.Equal(t, 9873, conf.Warewulf.Port)
 	assert.True(t, conf.Warewulf.Secure)
 	assert.Equal(t, 60, conf.Warewulf.UpdateInterval)
 	assert.True(t, conf.Warewulf.AutobuildOverlays)
@@ -155,8 +155,8 @@ func TestCache(t *testing.T) {
 	confOrig := New()
 	confCached := Get()
 
-	assert.Equal(t, 9983, confOrig.Warewulf.Port)
-	assert.Equal(t, 9983, confCached.Warewulf.Port)
+	assert.Equal(t, 9873, confOrig.Warewulf.Port)
+	assert.Equal(t, 9873, confCached.Warewulf.Port)
 
 	confOrig.Warewulf.Port = 9999
 	assert.Equal(t, 9999, confCached.Warewulf.Port)
