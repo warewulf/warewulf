@@ -12,7 +12,6 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	apiutil "github.com/warewulf/warewulf/internal/pkg/api/util"
 	"github.com/warewulf/warewulf/internal/pkg/node"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v3"
 )
 

@@ -83,10 +83,8 @@ data from other structures.
 - Root: initramfs
 - AssetKey: 
 - Discoverable: 
-- Profiles: empty
+- Profiles: default
 - Tags: 
-- TagsDel: 
-- Keys: 
 - Kernel:
   - Version: 
   - Override: 
@@ -101,39 +99,32 @@ data from other structures.
   - Interface: 
   - Write: true
   - Tags: 
-  - TagsDel: 
 - NetDevs[default]:
-  - Type: ethernet
-  - OnBoot: true
+  - Type: 
+  - Manual: false
   - Device: wwnet0
   - Hwaddr: e6:92:39:49:7b:03
   - Ipaddr: 192.168.3.21
-  - IpCIDR: 192.168.3.21/24
-  - Ipaddr6: 
-  - Prefix: 
+  - Ipaddr6: <nil>
+  - Prefix: <nil>
   - Netmask: 255.255.255.0
   - Gateway: 192.168.3.1
   - MTU: 
-  - Primary: true
-  - Default: 
+  - Primary: false
   - Tags: 
-  - TagsDel: 
 - NetDevs[secondary]:
-  - Type: ethernet
-  - OnBoot: true
+  - Type: 
+  - Manual: false
   - Device: wwnet1
   - Hwaddr: 9a:77:29:73:14:f1
   - Ipaddr: 192.168.3.22
-  - IpCIDR: 192.168.3.22/24
-  - Ipaddr6: 
-  - Prefix: 
+  - Ipaddr6: <nil>
+  - Prefix: <nil>
   - Netmask: 255.255.255.0
   - Gateway: 192.168.3.1
   - MTU: 
-  - Primary: 
-  - Default: 
+  - Primary: false
   - Tags: DNS1=8.8.8.8 DNS2=8.8.4.4 
-  - TagsDel: 
 
 
 ## Build variables
@@ -151,7 +142,7 @@ data from other structures.
 - Ipaddr6: 
 - Netmask: 
 - Network: 
-- NetworkCIDR: <nil>
+- NetworkCIDR: 
 - Ipv6: false
 
 
@@ -198,13 +189,13 @@ data from other structures.
   - ClusterName: 
   - ContainerName: rockylinux-9
   - Ipxe: default
-  - RuntimeOverlay: hosts
-  - SystemOverlay: wwinit
+  - RuntimeOverlay: [hosts ssh.authorized_keys syncuser]
+  - SystemOverlay: [wwinit wwclient fstab hostname ssh.host_keys issue resolv udev.netname systemd.netname ifcfg NetworkManager debian.interfaces wicked ignition]
   - Root: initramfs
   - Discoverable: 
   - Init: /sbin/init
   - AssetKey: 
-  - Profiles: empty
+  - Profiles: [default]
   - Tags: 
   - Kernel
     - Override: 
@@ -220,32 +211,32 @@ data from other structures.
     - Write: true
     - Tags: 
   - NetDevs[default]:
-    - Type: ethernet
-    - OnBoot: true
+    - Type: 
+    - Manual: false
     - Device: wwnet0
     - Hwaddr: e6:92:39:49:7b:03
     - Ipaddr: 192.168.3.21
-    - Ipaddr6: 
-    - IpCIDR: 
-    - Prefix: 
+    - IpCIDR: 192.168.3.21/24
+    - Ipaddr6: <nil>
+    - Prefix: <nil>
     - Netmask: 255.255.255.0
     - Gateway: 192.168.3.1
     - MTU: 
     - Primary: true
     - Tags: 
   - NetDevs[secondary]:
-    - Type: ethernet
-    - OnBoot: true
+    - Type: 
+    - Manual: false
     - Device: wwnet1
     - Hwaddr: 9a:77:29:73:14:f1
     - Ipaddr: 192.168.3.22
-    - Ipaddr6: 
-    - IpCIDR: 
-    - Prefix: 
+    - IpCIDR: 192.168.3.22/24
+    - Ipaddr6: <nil>
+    - Prefix: <nil>
     - Netmask: 255.255.255.0
     - Gateway: 192.168.3.1
     - MTU: 
-    - Primary: 
+    - Primary: false
     - Tags: DNS1=8.8.8.8 DNS2=8.8.4.4 
 - AllNodes[1]:
   - Id: node2
@@ -253,36 +244,36 @@ data from other structures.
   - ClusterName: 
   - ContainerName: 
   - Ipxe: default
-  - RuntimeOverlay: hosts
-  - SystemOverlay: wwinit
+  - RuntimeOverlay: [hosts ssh.authorized_keys syncuser]
+  - SystemOverlay: [wwinit wwclient fstab hostname ssh.host_keys issue resolv udev.netname systemd.netname ifcfg NetworkManager debian.interfaces wicked ignition]
   - Root: initramfs
   - Discoverable: 
   - Init: /sbin/init
   - AssetKey: 
-  - Profiles: empty
+  - Profiles: [default]
   - Tags: 
   - Kernel
     - Override: 
     - Args: quiet crashkernel=no vga=791 net.naming-scheme=v238
   - Ipmi:
-    - Ipaddr: 
-    - Netmask: 
+    - Ipaddr: <nil>
+    - Netmask: <nil>
     - Port: 
-    - Gateway: 
+    - Gateway: <nil>
     - UserName: 
     - Password: 
     - Interface: 
     - Write: 
     - Tags: 
   - NetDevs[default]:
-    - Type: ethernet
-    - OnBoot: true
+    - Type: 
+    - Manual: false
     - Device: wwnet0
     - Hwaddr: e6:92:39:49:7b:04
     - Ipaddr: 192.168.3.23
-    - Ipaddr6: 
-    - IpCIDR: 
-    - Prefix: 
+    - IpCIDR: 192.168.3.23/24
+    - Ipaddr6: <nil>
+    - Prefix: <nil>
     - Netmask: 255.255.255.0
     - Gateway: 192.168.3.1
     - MTU: 

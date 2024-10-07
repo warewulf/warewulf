@@ -2,6 +2,7 @@ package rename
 
 import (
 	"bytes"
+	"os"
 	"path"
 	"testing"
 
@@ -9,7 +10,6 @@ import (
 	containerList "github.com/warewulf/warewulf/internal/app/wwctl/container/list"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 

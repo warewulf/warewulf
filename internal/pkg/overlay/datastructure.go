@@ -72,6 +72,7 @@ func InitStruct(nodeData node.NodeConf) (TemplateStruct, error) {
 	// init some convenience vars
 	tstruct.Id = nodeData.Id()
 	tstruct.Hostname = nodeData.Id()
+	tstruct.Container = nodeData.ContainerName
 	// Backwards compatibility for templates using "Keys"
 	tstruct.AllNodes = allNodes
 	dt := time.Now()

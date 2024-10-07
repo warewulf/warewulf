@@ -5,21 +5,18 @@
 [connection]
 id={{ $connection_id }}
 interface-name={{ $netdev.Device }}
-{{ if $netdev.Type -}}
 {{ if eq $netdev.Type "bond-slave" -}}
 slave-type=bond
 {{- $conn := split "_" $connection_id }}
 {{- $master := $conn._0 }}
 master={{ $master }}
 type=ethernet
-{{ else }}
-type={{ $netdev.Type }}
-autoconnect={{ $netdev.OnBoot }}
+{{ else -}}
+type={{if $netdev.Type}}{{ $netdev.Type }}{{ else }}ethernet{{end}}
+autoconnect={{ if $netdev.Manual }}false{{else}}true{{end}}
 {{ end -}}
-{{ end -}}
-
 {{ if $netdev.Hwaddr -}}
-{{ if eq $netdev.Type "ethernet" -}}
+{{ if or (eq $netdev.Type "ethernet") (not $netdev.Type ) -}}
 [ethernet]
 mac-address={{ $netdev.Hwaddr }}
 {{ if $netdev.MTU -}}
@@ -34,14 +31,12 @@ mtu={{ $netdev.MTU }}
 {{ if $netdev.MTU -}}
 mtu={{ $netdev.MTU }}
 {{ end -}}
-
 [bond]
 downdelay=0
 miimon=100
 mode=802.3ad
 xmit_hash_policy=layer2+3
 updelay=0
-
 {{ end -}}
 
 {{ if eq $netdev.Type "infiniband" -}}
