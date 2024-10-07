@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Added documentation on ensuring `systemctl restart warewulfd` is ran when editing `nodes.conf` or `warewulf.conf`
 - Add the ability to boot nodes with `wwid=[interface]`, which replaces
   `interface` with the interface MAC address
 - Added https://github.com/Masterminds/sprig functions to templates #1030

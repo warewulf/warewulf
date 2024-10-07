@@ -196,6 +196,13 @@ command.
    time you attempt to run ``wwctl``, this file will be generated if
    it does not exist already.
 
+.. note::
+   
+   When ``nodes.conf`` is edited directly, ``warewulfd`` does not know that the container profile has been changed. Therefore the changes to ``nodes.conf`` are not taken into account by ``warewulfd`` until it is restarted.
+   Once you restart ``warewulfd``, the ``nodes.conf`` file is then successfully reloaded.
+   This also goes for ``warewulf.conf`` as well - any changes made also require ``warewulfd`` to be restarted.
+   The restart should be done using the following command: ``systemctl restart warewulfd``
+
 defaults.conf
 =============
 
