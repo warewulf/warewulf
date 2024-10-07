@@ -52,6 +52,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Return non-zero exit code on node sub-commands #1421
 - Fix panic when getting a long container list before building the container. #1391
 - Return non-zero exit code on power sub-commands #1439
+- Update default `warewulfd` port to match shipped configuration.
 
 ## v4.5.8, 2024-10-01
 
