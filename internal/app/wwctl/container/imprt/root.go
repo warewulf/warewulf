@@ -37,6 +37,7 @@ Imported containers are used to create bootable VNFS images.`,
 	OciNoHttps  bool
 	OciUsername string
 	OciPassword string
+	Platform    string
 )
 
 func init() {
@@ -50,6 +51,9 @@ func init() {
 	baseCmd.PersistentFlags().StringVar(&OciPassword, "password", "", "Set password for the access to the registry, superseedes env WAREWULF_OCI_PASSWORD")
 	baseCmd.PersistentFlags().StringVar(&OciPassword, "passwd", "", "Set password for the access to the registry, superseedes env WAREWULF_OCI_PASSWORD")
 	_ = baseCmd.PersistentFlags().MarkHidden("passwd")
+	baseCmd.PersistentFlags().StringVar(&Platform, "platform", "", "Set other hardware platform e.g. amd64 or arm64, superseedes env WAREWULF_OCI_PLATFORM")
+	baseCmd.PersistentFlags().StringVar(&Platform, "arch", "", "Set other hardware platform, superseedes env WAREWULF_OCI_PLATFORM")
+	_ = baseCmd.PersistentFlags().MarkHidden("arch")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
