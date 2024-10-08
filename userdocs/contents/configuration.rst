@@ -178,7 +178,7 @@ The first listed key type is used to generate authentication ssh keys.
 nodes.conf
 ==========
 
-The ``nodes.conf`` file is the primary database file for all compute
+The ``nodes.conf`` file is the primary registry for all compute
 nodes. It is a flat text YAML configuration file that is managed by
 the ``wwctl`` command, but some sites manage the compute nodes and
 infrastructure via configuration management. This file being flat text
