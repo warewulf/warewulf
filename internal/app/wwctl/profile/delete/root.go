@@ -19,12 +19,7 @@ var (
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
 			nodeDB, _ := node.New()
-			profiles, _ := nodeDB.FindAllProfiles()
-			var p_names []string
-			for _, profile := range profiles {
-				p_names = append(p_names, profile.Id.Get())
-			}
-			return p_names, cobra.ShellCompDirectiveNoFileComp
+			return nodeDB.ListAllProfiles(), cobra.ShellCompDirectiveNoFileComp
 		},
 	}
 	SetYes bool

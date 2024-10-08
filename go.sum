@@ -1,5 +1,6 @@
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 dario.cat/mergo v1.0.0 h1:AGCNq9Evsj31mOgNPcLyXc+4PNABt905YmuqPYYpBWk=
+dario.cat/mergo v1.0.0/go.mod h1:uNxQE+84aUszobStD9th8a29P2fMDhsBdgRYvZOxGmk=
 github.com/AdamKorcz/go-fuzz-headers v0.0.0-20210312213058-32f4d319f0d2 h1:dIxAd7URQa+ovSiQURY3UJu8Q7A2dG7QKTlxOlvDZHI=
 github.com/AdamKorcz/go-fuzz-headers v0.0.0-20210312213058-32f4d319f0d2/go.mod h1:VPevheIvXETHZT/ddjwarP3POR5p/cnH9Hy5yoFnQjc=
 github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 h1:UQHMgLO+TxOElx5B5HZ4hJQsoJ/PvUvKRhJHDQXO8P8=

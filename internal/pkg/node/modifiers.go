@@ -1,127 +1,110 @@
 package node
 
 import (
+	"bytes"
+	"encoding/gob"
 	"os"
 
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-/****
- *
- * NODE MODIFIERS
- *
-****/
-
-func (config *NodeYaml) AddNode(nodeID string) (NodeInfo, error) {
-	var node NodeConf
-	var n NodeInfo
-
+/*
+Add a node with the given ID and return a pointer to it
+*/
+func (config *NodeYaml) AddNode(nodeID string) (*NodeConf, error) {
+	newNode := NewNode(nodeID)
 	wwlog.Verbose("Adding new node: %s", nodeID)
-
-	if _, ok := config.Nodes[nodeID]; ok {
-		return n, errors.New("Nodename already exists: " + nodeID)
+	if _, ok := config.nodes[nodeID]; ok {
+		return nil, errors.New("nodename already exists: " + nodeID)
+	} else {
+		config.nodes[nodeID] = &newNode
 	}
-
-	config.Nodes[nodeID] = &node
-	config.Nodes[nodeID].Profiles = []string{"default"}
-	config.Nodes[nodeID].NetDevs = make(map[string]*NetDevs)
-	n.Id.Set(nodeID)
-	n.Profiles.SetSlice([]string{"default"})
-	n.NetDevs = make(map[string]*NetDevEntry)
-	n.Ipmi = new(IpmiEntry)
-	n.Kernel = new(KernelEntry)
-
-	return n, nil
+	return &newNode, nil
 }
 
+/*
+delete node with the given id
+*/
 func (config *NodeYaml) DelNode(nodeID string) error {
-	if _, ok := config.Nodes[nodeID]; !ok {
-		return errors.New("Nodename does not exist: " + nodeID)
+	if _, ok := config.nodes[nodeID]; !ok {
+		return errors.New("nodename does not exist: " + nodeID)
 	}
 
 	wwlog.Verbose("Deleting node: %s", nodeID)
-	delete(config.Nodes, nodeID)
+	delete(config.nodes, nodeID)
 
 	return nil
 }
 
 /*
-update the node in the database
+set node for the node with id the values of vals
 */
-func (config *NodeYaml) NodeUpdate(node NodeInfo) error {
-	nodeID := node.Id.Get()
-	wwlog.Debug("updating node %s: %v", nodeID, node)
-	if _, ok := config.Nodes[nodeID]; !ok {
-		return errors.New("Nodename does not exist: " + nodeID)
+func (config *NodeYaml) SetNode(nodeID string, vals NodeConf) error {
+	node, ok := config.nodes[nodeID]
+	if !ok {
+		return ErrNotFound
 	}
-	// maps may have deleted elements which will not be updated
-	// so we delete the node and call GetRealFrom on an empty NodeConv
-	delete(config.Nodes, nodeID)
-	config.Nodes[nodeID] = new(NodeConf)
-	config.Nodes[nodeID].GetRealFrom(node)
-	return nil
-}
-
-/****
- *
- * PROFILE MODIFIERS
- *
-****/
-
-func (config *NodeYaml) AddProfile(profileID string) (NodeInfo, error) {
-	var node NodeConf
-	var n NodeInfo
-
-	wwlog.Verbose("Adding new profile: %s", profileID)
-
-	if _, ok := config.NodeProfiles[profileID]; ok {
-		return n, errors.New("Profile name already exists: " + profileID)
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	dec := gob.NewDecoder(&buf)
+	err := enc.Encode(vals)
+	if err != nil {
+		return err
 	}
-
-	config.NodeProfiles[profileID] = &node
-	config.NodeProfiles[profileID].NetDevs = make(map[string]*NetDevs)
-	n.Id.Set(profileID)
-	n.NetDevs = make(map[string]*NetDevEntry)
-
-	return n, nil
-}
-
-func (config *NodeYaml) DelProfile(profileID string) error {
-	if _, ok := config.NodeProfiles[profileID]; !ok {
-		return errors.New("Profile does not exist: " + profileID)
-	}
-
-	wwlog.Verbose("Deleting profile: %s", profileID)
-	delete(config.NodeProfiles, profileID)
-
-	return nil
+	err = dec.Decode(node)
+	return err
 }
 
 /*
-Update the the config for the given profile so that it can unmarshalled.
+set profile for the node with id the values of vals
 */
-func (config *NodeYaml) ProfileUpdate(profile NodeInfo) error {
-	profileID := profile.Id.Get()
-
-	if _, ok := config.NodeProfiles[profileID]; !ok {
-		return errors.New("Profile name does not exist: " + profileID)
+func (config *NodeYaml) SetProfile(profileId string, vals ProfileConf) error {
+	profile, ok := config.nodeProfiles[profileId]
+	if !ok {
+		return ErrNotFound
 	}
-	// maps may have deleted elements which will not be updated
-	// so we delete the profile and call GetRealFrom on an empty NodeConv
-	delete(config.NodeProfiles, profileID)
-	config.NodeProfiles[profileID] = new(NodeConf)
-	config.NodeProfiles[profileID].GetRealFrom(profile)
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	dec := gob.NewDecoder(&buf)
+	err := enc.Encode(vals)
+	if err != nil {
+		return err
+	}
+	err = dec.Decode(profile)
+	return err
+}
+
+/*
+Add a node with the given ID and return a pointer to it
+*/
+func (config *NodeYaml) AddProfile(profileId string) (*ProfileConf, error) {
+	profile := EmptyProfile()
+	wwlog.Verbose("adding new profile: %s", profileId)
+	if _, ok := config.nodeProfiles[profileId]; ok {
+		return nil, errors.New("profile already exists: " + profileId)
+	} else {
+		config.nodeProfiles[profileId] = &profile
+	}
+	return &profile, nil
+}
+
+/*
+delete node with the given id
+*/
+func (config *NodeYaml) DelProfile(nodeID string) error {
+	if _, ok := config.nodes[nodeID]; !ok {
+		return errors.New("profile does not exist: " + nodeID)
+	}
+
+	wwlog.Verbose("deleting profile: %s", nodeID)
+	delete(config.nodes, nodeID)
+
 	return nil
 }
 
-/****
- *
- * PERSISTENCE
- *
-****/
 /*
 Write the the NodeYaml to disk.
 */
@@ -129,30 +112,38 @@ func (config *NodeYaml) Persist() error {
 	out, dumpErr := config.Dump()
 	if dumpErr != nil {
 		wwlog.Error("%s", dumpErr)
-		os.Exit(1)
+		return dumpErr
 	}
 	file, err := os.OpenFile(ConfigFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
 		wwlog.Error("%s", err)
-		os.Exit(1)
+		return err
 	}
 	defer file.Close()
 	_, err = file.WriteString(string(out))
 	if err != nil {
 		return err
 	}
+	wwlog.Debug("persisted: %s", ConfigFile)
 	return nil
 }
 
-// Dump returns a YAML document representing the nodeDb
-// instance. Passes through any errors generated by yaml.Marshal.
+/*
+Dump returns a YAML document representing the nodeDb
+instance. Passes through any errors generated by yaml.Marshal.
+*/
 func (config *NodeYaml) Dump() ([]byte, error) {
 	// flatten out profiles and nodes
-	for _, val := range config.NodeProfiles {
+	for _, val := range config.nodeProfiles {
 		val.Flatten()
 	}
-	for _, val := range config.Nodes {
+	for _, val := range config.nodes {
 		val.Flatten()
 	}
-	return yaml.Marshal(config)
+	var buf bytes.Buffer
+	// Run through encoder
+	yamlEncoder := yaml.NewEncoder(&buf)
+	yamlEncoder.SetIndent(2)
+	err := yamlEncoder.Encode(config)
+	return buf.Bytes(), err //yaml.Marshal(config)
 }

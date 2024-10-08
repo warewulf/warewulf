@@ -106,7 +106,7 @@ func Test_hostOverlay(t *testing.T) {
 			} else {
 				log = logbuf.String()
 			}
-			assert.Equal(t, strings.Replace(tt.log, "%HOSTNAME%", hostname, -1), log)
+			assert.Equal(t, strings.Replace(log, hostname, "%HOSTNAME%", -1), tt.log)
 		})
 	}
 }

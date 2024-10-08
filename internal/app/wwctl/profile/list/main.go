@@ -27,7 +27,6 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 		if err != nil {
 			return
 		}
-
 		if len(profileInfo.Output) > 0 {
 			if vars.showYaml || vars.showJson {
 				wwlog.Info(profileInfo.Output[0])

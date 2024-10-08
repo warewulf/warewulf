@@ -5,10 +5,10 @@
 {{$.Ipaddr}} {{$.BuildHost}} warewulf
 
 {{- range $node := $.AllNodes }}
-# Entry for {{$node.Id.Get}}
+# Entry for {{$node.Id}}
 {{- range $devname, $netdev := $node.NetDevs }}
-{{- if $netdev.Ipaddr.Defined }}
-{{$netdev.Ipaddr.Get}} {{if $netdev.Primary.GetB}}{{$node.Id.Get}}{{end}} {{$node.Id.Get}}-{{$devname}} {{if $netdev.Device.Defined}}{{$node.Id.Get}}-{{$netdev.Device.Get}}{{end}}
+{{- if $netdev.Ipaddr}}
+{{$netdev.Ipaddr}} {{if $netdev.Primary}}{{$node.Id}}{{end}} {{$node.Id}}-{{$devname}} {{if $netdev.Device}}{{$node.Id}}-{{$netdev.Device}}{{end}}
 {{- end }}
 {{- end }}
 {{- end }}

@@ -147,8 +147,7 @@ func Test_BuildOverlay(t *testing.T) {
 	}
 
 	for _, tt := range buildOverlayTests {
-		nodeInfo := node.NodeInfo{}
-		nodeInfo.Id.Set(tt.nodeName)
+		nodeInfo := node.NewNode(tt.nodeName)
 		t.Run(tt.description, func(t *testing.T) {
 			provisionDir, provisionDirErr := os.MkdirTemp(os.TempDir(), "ww-test-provision-*")
 			assert.NoError(t, provisionDirErr)
@@ -266,15 +265,14 @@ func Test_BuildAllOverlays(t *testing.T) {
 			defer os.RemoveAll(provisionDir)
 			conf.Paths.WWProvisiondir = provisionDir
 
-			var nodes []node.NodeInfo
+			var nodes []node.NodeConf
 			for i, nodeName := range tt.nodes {
-				nodeInfo := node.NodeInfo{}
-				nodeInfo.Id.Set(nodeName)
+				nodeInfo := node.NewNode(nodeName)
 				if tt.systemOverlays != nil {
-					nodeInfo.SystemOverlay.SetSlice(tt.systemOverlays[i])
+					nodeInfo.SystemOverlay = tt.systemOverlays[i]
 				}
 				if tt.runtimeOverlays != nil {
-					nodeInfo.RuntimeOverlay.SetSlice(tt.runtimeOverlays[i])
+					nodeInfo.RuntimeOverlay = tt.runtimeOverlays[i]
 				}
 				nodes = append(nodes, nodeInfo)
 			}
@@ -365,10 +363,9 @@ func Test_BuildSpecificOverlays(t *testing.T) {
 			defer os.RemoveAll(provisionDir)
 			conf.Paths.WWProvisiondir = provisionDir
 
-			var nodes []node.NodeInfo
+			var nodes []node.NodeConf
 			for _, nodeName := range tt.nodes {
-				nodeInfo := node.NodeInfo{}
-				nodeInfo.Id.Set(nodeName)
+				nodeInfo := node.NewNode(nodeName)
 				nodes = append(nodes, nodeInfo)
 			}
 			err := BuildSpecificOverlays(nodes, tt.overlays)

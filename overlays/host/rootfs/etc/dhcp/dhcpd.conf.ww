@@ -57,16 +57,16 @@ subnet {{$.Network}} netmask {{$.Netmask}} {
 {{- if eq .Dhcp.Template "static" }}
 {{- range $nodes := $.AllNodes}}
 {{- range $netname, $netdevs := $nodes.NetDevs}}
-host {{$nodes.Id.Get}}-{{$netname}}
+host {{$nodes.Id}}-{{$netname}}
 {
-    {{- if $netdevs.Hwaddr.Defined}}
-    hardware ethernet {{$netdevs.Hwaddr.Get}};
+    {{- if $netdevs.Hwaddr}}
+    hardware ethernet {{$netdevs.Hwaddr}};
     {{- end }}
-    {{- if $netdevs.Ipaddr.Defined}}
-    fixed-address {{$netdevs.Ipaddr.Get}};
+    {{- if $netdevs.Ipaddr}}
+    fixed-address {{$netdevs.Ipaddr}};
     {{- end }}
-    {{- if $netdevs.Primary.GetB}}
-    option host-name "{{$nodes.Id.Get}}";
+    {{- if $netdevs.Primary}}
+    option host-name "{{$nodes.Id}}";
     {{- end }}
 }
 {{end -}}{{/* range NetDevs */}}
