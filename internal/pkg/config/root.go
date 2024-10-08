@@ -41,7 +41,7 @@ type RootConf struct {
 	SSH             *SSHConf      `yaml:"ssh,omitempty"`
 	MountsContainer []*MountEntry `yaml:"container mounts" default:"[{\"source\": \"/etc/resolv.conf\", \"dest\": \"/etc/resolv.conf\"}]"`
 	Paths           *BuildConfig  `yaml:"paths"`
-	WWClient        *WWClientConf `yaml:"wwclient"`
+	WWClient        *WWClientConf `yaml:"wwclient,omitempty"`
 
 	warewulfconf string
 }
