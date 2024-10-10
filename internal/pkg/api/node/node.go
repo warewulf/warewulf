@@ -158,19 +158,7 @@ func NodeDeleteParameterCheck(ndp *wwapiv1.NodeDeleteParameter, console bool) (n
 
 	node_args := hostlist.Expand(ndp.NodeNames)
 
-	for _, r := range node_args {
-		var match bool
-		for _, n := range nodes {
-			if n.Id.Get() == r {
-				nodeList = append(nodeList, n)
-				match = true
-			}
-		}
-
-		if !match {
-			wwlog.Error("ERROR: No match for node: %s\n", r)
-		}
-	}
+	nodeList = node.FilterByName(nodes, node_args)
 
 	if len(nodeList) == 0 {
 		wwlog.Info("No nodes found")
