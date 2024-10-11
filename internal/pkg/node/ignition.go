@@ -1,7 +1,7 @@
 package node
 
 import (
-	"fmt"
+	"errors"
 	"sort"
 
 	types_3_4 "github.com/coreos/ignition/v2/config/v3_2/types"
@@ -106,7 +106,7 @@ func (node *NodeInfo) GetStorage() (stor types_3_4.Storage, err error, rep strin
 	}
 	report := stor.Validate(path.ContextPath{})
 	if report.IsFatal() {
-		err = fmt.Errorf(report.String())
+		err = errors.New(report.String())
 	}
 	rep = report.String()
 	return
