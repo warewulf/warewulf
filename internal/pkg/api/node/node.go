@@ -234,7 +234,8 @@ func NodeSetParameterCheck(set *wwapiv1.NodeSetParameter, console bool) (nodeDB 
 			fmt.Printf("\n*** WARNING: This command will modify all nodes! ***\n\n")
 		}
 	} else {
-		nodes = node.FilterByName(nodes, set.NodeNames)
+		expandNodes := hostlist.Expand(set.NodeNames)
+		nodes = node.FilterByName(nodes, expandNodes)
 	}
 
 	if len(nodes) == 0 {
