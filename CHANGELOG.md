@@ -35,6 +35,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Split wwinit and generic overlays into discrete functionality. #987
 - Updated IgnitionJson to sort filesystems. #1433
 - `wwctl node set` requires mandatory pattern input. #502
+- Fix asset tag support to allow unauthenticated iPXE script download #1455
 
 ### Fixed
 

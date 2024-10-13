@@ -80,7 +80,8 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if node.AssetKey.Defined() && node.AssetKey.Get() != rinfo.assetkey {
+	// iPXE doesn't have access to the asset key yet
+	if rinfo.stage != "ipxe" && node.AssetKey.Defined() && node.AssetKey.Get() != rinfo.assetkey {
 		w.WriteHeader(http.StatusUnauthorized)
 		wwlog.Denied("Incorrect asset key for node: %s", node.Id.Get())
 		updateStatus(node.Id.Get(), status_stage, "BAD_ASSET", rinfo.ipaddr)
