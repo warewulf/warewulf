@@ -35,6 +35,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Split wwinit and generic overlays into discrete functionality. #987
 - Updated IgnitionJson to sort filesystems. #1433
 - `wwctl node set` requires mandatory pattern input. #502
+- Remove NodeInfo (in-memory-only) data structure, consolidating onto NodeConf. #916
+- Replace `defaults.conf` with settings on the default profile. #917
+
 
 ### Removed
 
@@ -266,14 +269,6 @@ Official v4.5.0 release.
 - Fix a panic in `wwctl node set` when modifying a network device that is only defined in a profile. #1094
 
 ## 4.5.0rc1, 2024-02-08
-
-### Refactoring
-
-- removed NodeInfo completely. node.FindAllNodes() will now give back 
-  the list of nodes with its merged in profiles. Also there is now a
-  node.GetNode(id) command which will give back a node with its merged
-  in profiles. Changes to this structures will not be reflected to the 
-  database, but must nodeYaml.Nodes or nodeYaml.NodeProfiles
 
 ### Added
 
