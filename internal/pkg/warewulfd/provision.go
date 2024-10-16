@@ -191,7 +191,9 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 				Hwaddr:         rinfo.hwaddr,
 				ContainerName:  remoteNode.ContainerName,
 				KernelArgs:     remoteNode.Kernel.Args,
-				KernelOverride: remoteNode.Kernel.Override}
+				KernelOverride: remoteNode.Kernel.Override,
+				NetDevs:        remoteNode.NetDevs,
+				Tags:           remoteNode.Tags}
 			if stage_file == "" {
 				wwlog.ErrorExc(fmt.Errorf("could't find grub.cfg template"), containerName)
 				w.WriteHeader(http.StatusNotFound)
