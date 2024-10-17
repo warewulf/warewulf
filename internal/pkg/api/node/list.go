@@ -43,7 +43,7 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_Network {
 		nodeList.Output = append(nodeList.Output,
-			fmt.Sprintf("%s:=:%s:=:%s:=:%s:=:%s:=:%s", "NODE", "NETWORK	", "HWADDR", "IPADDR", "GATEWAY", "DEVICE"))
+			fmt.Sprintf("%s:=:%s:=:%s:=:%s:=:%s:=:%s", "NODE", "NETWORK", "HWADDR", "IPADDR", "GATEWAY", "DEVICE"))
 		for _, n := range node.FilterByName(nodes, nodeGet.Nodes) {
 			if len(n.NetDevs) > 0 {
 				for name := range n.NetDevs {
