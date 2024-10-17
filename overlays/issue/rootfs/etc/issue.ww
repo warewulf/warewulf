@@ -6,9 +6,9 @@ Kernelargs:         {{.Kernel.Args}}
 Network:
 {{- range $devname, $netdev := .NetDevs}}
     {{$devname}}: {{$netdev.Device}}
-    {{$devname}}: \4{{ print "{" }}{{$netdev.Device}}{{ print "}" }}
+    {{$devname}}: \4{{ print "{" }}{{$netdev.Device}}{{ print "}" }} (configured: {{$netdev.Ipaddr}})
 {{- if $netdev.Ipaddr6 }}
-    {{$devname}}: \6{{ print "{" }}{{$netdev.Device}}{{ print "}" }}
+    {{$devname}}: \6{{ print "{" }}{{$netdev.Device}}{{ print "}" }} (configured: {{$netdev.Ipaddr6}})
 {{- end }}
 {{- if $netdev.Hwaddr }}
     {{$devname}}: {{$netdev.Hwaddr}}
