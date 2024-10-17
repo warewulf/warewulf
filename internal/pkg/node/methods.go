@@ -92,6 +92,12 @@ func NewNode(id string) (nodeconf NodeConf) {
 	return nodeconf
 }
 
+func NewProfile(id string) (profileconf ProfileConf) {
+	profileconf = EmptyProfile()
+	profileconf.id = id
+	return profileconf
+}
+
 func EmptyNode() (nodeconf NodeConf) {
 	nodeconf.Ipmi = new(IpmiConf)
 	nodeconf.Ipmi.Tags = map[string]string{}

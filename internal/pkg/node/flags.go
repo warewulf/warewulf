@@ -35,6 +35,10 @@ func (nodeConf *NodeConf) CreateFlags(baseCmd *cobra.Command) {
 	recursiveCreateFlags(nodeConf, baseCmd)
 }
 
+func (profileConf *ProfileConf) CreateFlags(baseCmd *cobra.Command) {
+	recursiveCreateFlags(profileConf, baseCmd)
+}
+
 func (del *NodeConfDel) CreateDelFlags(baseCmd *cobra.Command) {
 	recursiveCreateFlags(del, baseCmd)
 

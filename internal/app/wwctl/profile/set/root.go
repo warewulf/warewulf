@@ -21,14 +21,14 @@ type variables struct {
 	partName     string
 	diskName     string
 	fsName       string
-	profileConf  node.NodeConf
+	profileConf  node.ProfileConf
 	profileDel   node.NodeConfDel
 	profileAdd   node.NodeConfAdd
 }
 
 func GetCommand() *cobra.Command {
 	vars := variables{}
-	vars.profileConf = node.NewNode("")
+	vars.profileConf = node.NewProfile("")
 
 	baseCmd := &cobra.Command{
 		Use:   "set [OPTIONS] [PROFILE ...]",

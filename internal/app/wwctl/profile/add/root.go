@@ -12,7 +12,7 @@ import (
 
 type variables struct {
 	netName      string
-	profileConf  node.NodeConf
+	profileConf  node.ProfileConf
 	SetNetDevDel string
 	SetNodeAll   bool
 	SetYes       bool
@@ -25,7 +25,7 @@ type variables struct {
 // GetRootCommand returns the root cobra.Command for the application.
 func GetCommand() *cobra.Command {
 	vars := variables{}
-	vars.profileConf = node.NewNode("")
+	vars.profileConf = node.NewProfile("")
 	baseCmd := &cobra.Command{
 		DisableFlagsInUseLine: true,
 		Use:                   "add PROFILE",
