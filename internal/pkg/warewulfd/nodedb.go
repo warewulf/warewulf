@@ -50,12 +50,6 @@ func loadNodeDB() error {
 	return nil
 }
 
-func GetNode(val string) (node.NodeInfo, error) {
-	db.lock.RLock()
-	defer db.lock.RUnlock()
-	return getNode(val)
-}
-
 func getNode(val string) (node.NodeInfo, error) {
 
 	if _, ok := db.NodeInfo[val]; ok {

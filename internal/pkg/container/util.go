@@ -48,11 +48,6 @@ func ListSources() ([]string, error) {
 	return ret, nil
 }
 
-func DoesContainerExists(name string) bool {
-	fullPath := ImageFile(name)
-	return util.IsFile(fullPath)
-}
-
 func DoesSourceExist(name string) bool {
 	fullPath := RootFsDir(name)
 	return util.IsDir(fullPath)

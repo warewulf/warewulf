@@ -31,13 +31,6 @@ func OptSetBlobCachePath(path string) pullerOpt {
 	}
 }
 
-func OptSetTmpDirPath(path string) pullerOpt {
-	return func(p *puller) error {
-		p.tmpDirPath = path
-		return nil
-	}
-}
-
 func OptSetSystemContext(s *types.SystemContext) pullerOpt {
 	return func(p *puller) error {
 		p.sysCtx = s
