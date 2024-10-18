@@ -101,7 +101,7 @@ data from other structures.
   - Tags: 
 - NetDevs[default]:
   - Type: 
-  - Manual: false
+  - OnBoot: true
   - Device: wwnet0
   - Hwaddr: e6:92:39:49:7b:03
   - Ipaddr: 192.168.3.21
@@ -114,7 +114,7 @@ data from other structures.
   - Tags: 
 - NetDevs[secondary]:
   - Type: 
-  - Manual: false
+  - OnBoot: true
   - Device: wwnet1
   - Hwaddr: 9a:77:29:73:14:f1
   - Ipaddr: 192.168.3.22
@@ -212,7 +212,7 @@ data from other structures.
     - Tags: 
   - NetDevs[default]:
     - Type: 
-    - Manual: false
+    - OnBoot: true
     - Device: wwnet0
     - Hwaddr: e6:92:39:49:7b:03
     - Ipaddr: 192.168.3.21
@@ -226,7 +226,7 @@ data from other structures.
     - Tags: 
   - NetDevs[secondary]:
     - Type: 
-    - Manual: false
+    - OnBoot: true
     - Device: wwnet1
     - Hwaddr: 9a:77:29:73:14:f1
     - Ipaddr: 192.168.3.22
@@ -267,7 +267,7 @@ data from other structures.
     - Tags: 
   - NetDevs[default]:
     - Type: 
-    - Manual: false
+    - OnBoot: true
     - Device: wwnet0
     - Hwaddr: e6:92:39:49:7b:04
     - Ipaddr: 192.168.3.23

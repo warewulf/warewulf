@@ -79,7 +79,7 @@ type KernelConf struct {
 
 type NetDevs struct {
 	Type    string            `yaml:"type,omitempty" lopt:"type" sopt:"T" comment:"Set device type of given network"`
-	Manual  bool              `yaml:"manual,omitempty" lopt:"manual" comment:"Enable/disable network device (true/false)"`
+	OnBoot  *bool             `yaml:"onboot,omitempty" lopt:"onboot" comment:"Enable/disable network device (true/false)"`
 	Device  string            `yaml:"device,omitempty" lopt:"netdev" sopt:"N" comment:"Set the device for given network"`
 	Hwaddr  string            `yaml:"hwaddr,omitempty" lopt:"hwaddr" sopt:"H" comment:"Set the device's HW address for given network" type:"MAC"`
 	Ipaddr  net.IP            `yaml:"ipaddr,omitempty" comment:"IPv4 address in given network" sopt:"I" lopt:"ipaddr" type:"IP"`

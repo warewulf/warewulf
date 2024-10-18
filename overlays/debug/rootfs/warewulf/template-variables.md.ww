@@ -44,7 +44,7 @@ data from other structures.
 {{- range $index, $netdev := .NetDevs }}
 - NetDevs[{{ $index }}]:
   - Type: {{ $netdev.Type }}
-  - Manual: {{ $netdev.Manual }}
+  - OnBoot: {{ $netdev.OnBoot }}
   - Device: {{ $netdev.Device }}
   - Hwaddr: {{ $netdev.Hwaddr }}
   - Ipaddr: {{ $netdev.Ipaddr }}
@@ -154,7 +154,7 @@ data from other structures.
 {{- range $index, $netdev := $node.NetDevs }}
   - NetDevs[{{ $index }}]:
     - Type: {{ $netdev.Type }}
-    - Manual: {{ $netdev.Manual }}
+    - OnBoot: {{ $netdev.OnBoot }}
     - Device: {{ $netdev.Device }}
     - Hwaddr: {{ $netdev.Hwaddr }}
     - Ipaddr: {{ $netdev.Ipaddr }}

@@ -22,9 +22,7 @@ GATEWAY={{ $netdev.Gateway }}
 {{ if $netdev.Hwaddr -}}
 HWADDR={{ $netdev.Hwaddr }}
 {{ end -}}
-{{ if $netdev.Manual -}}
-ONBOOT=false
-{{ else -}}
+{{ if or $netdev.OnBoot (eq $netdev.OnBoot nil) -}}
 ONBOOT=true
 {{ end -}}
 IPV6INIT=yes
