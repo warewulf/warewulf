@@ -83,40 +83,6 @@ func FilterProfileListByName(set []ProfileConf, searchList []string) []ProfileCo
 }
 
 /*
-Filter a given map of NodeConf against given regular expression.
-*/
-func FilterNodeMapByName(inputMap map[string]*NodeConf, searchList []string) (retMap map[string]*NodeConf) {
-	retMap = map[string]*NodeConf{}
-	if len(searchList) > 0 {
-		for _, search := range searchList {
-			for name, nConf := range inputMap {
-				if match, _ := regexp.MatchString("^"+search+"$", name); match {
-					retMap[name] = nConf
-				}
-			}
-		}
-	}
-	return retMap
-}
-
-/*
-Filter a given map of ProfileConf against given regular expression.
-*/
-func FilterProfileMapByName(inputMap map[string]*ProfileConf, searchList []string) (retMap map[string]*ProfileConf) {
-	retMap = map[string]*ProfileConf{}
-	if len(searchList) > 0 {
-		for _, search := range searchList {
-			for name, nConf := range inputMap {
-				if match, _ := regexp.MatchString("^"+search+"$", name); match {
-					retMap[name] = nConf
-				}
-			}
-		}
-	}
-	return retMap
-}
-
-/*
 Creates an NodeConf with the given id. Doesn't add it to the database
 */
 func NewNode(id string) (nodeconf NodeConf) {

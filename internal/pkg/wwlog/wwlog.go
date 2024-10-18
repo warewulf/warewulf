@@ -175,14 +175,6 @@ func SetLogWriterErr(newOut io.Writer) {
 	logOut = newOut
 }
 
-func GetLogWriterInfo() io.Writer {
-	return logOut
-}
-
-func GetLogWriterErr() io.Writer {
-	return logErr
-}
-
 /*
 Set the log record formatter
 By default this is set to DefaultFormatter
@@ -190,10 +182,6 @@ By default this is set to DefaultFormatter
 func SetLogFormatter(formatter LogFormatter) {
 	logFormatter = formatter
 	Debug("Set log formatter: %s", runtime.FuncForPC(reflect.ValueOf(formatter).Pointer()).Name())
-}
-
-func GetLogFormatter() LogFormatter {
-	return logFormatter
 }
 
 /*
@@ -225,14 +213,6 @@ func LogCaller(level int, skip int, err error, message string, a ...interface{})
 
 		}
 	}
-}
-
-func Println(level int, message string) {
-	LogCaller(level, 1, nil, message)
-}
-
-func Printf(level int, message string, a ...interface{}) {
-	LogCaller(level, 1, nil, message, a...)
 }
 
 /*
@@ -309,10 +289,6 @@ func WarnExc(err error, message string, a ...interface{}) {
 
 func SecWarn(message string, a ...interface{}) {
 	LogCaller(SECWARN, 1, nil, message, a...)
-}
-
-func ErrOut(message string, a ...interface{}) {
-	LogCaller(ERROUT, 1, nil, message, a...)
 }
 
 func Error(message string, a ...interface{}) {

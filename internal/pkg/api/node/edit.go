@@ -11,25 +11,6 @@ import (
 )
 
 /*
-Returns the nodes as a yaml string
-*/
-func FindAllNodeConfs() *wwapiv1.NodeYaml {
-	nodeDB, err := node.New()
-	if err != nil {
-		wwlog.Error("Could not open nodeDB: %s\n", err)
-		os.Exit(1)
-	}
-	nodeMap, _ := nodeDB.FindAllNodes()
-	// ignore err as nodeDB should always be correct
-	buffer, _ := yaml.Marshal(nodeMap)
-	retVal := wwapiv1.NodeYaml{
-		NodeConfMapYaml: string(buffer),
-		Hash:            nodeDB.StringHash(),
-	}
-	return &retVal
-}
-
-/*
 Returns filtered list of nodes
 */
 func FilteredNodes(nodeList *wwapiv1.NodeList) *wwapiv1.NodeYaml {
