@@ -7,6 +7,8 @@ GO_TOOLS_VENDOR := $(addprefix vendor/, $(GO_TOOLS))
 GOLANGCI_LINT := $(TOOLS_BIN)/golangci-lint
 GOLANGCI_LINT_VERSION := v1.56.2
 
+GOLANG_DEADCODE := $(TOOLS_BIN)/deadcode
+
 PROTOC := $(TOOLS_BIN)/protoc
 PROTOC_GEN_GO := $(TOOLS_BIN)/protoc-gen-go
 PROTOC_GEN_GO_GRPC := $(TOOLS_BIN)/protoc-gen-go-grpc
@@ -31,6 +33,9 @@ $(GO_TOOLS_BIN):
 
 $(GOLANGCI_LINT):
 	curl -qq -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(TOOLS_BIN) $(GOLANGCI_LINT_VERSION)
+
+$(GOLANG_DEADCODE):
+	GOBIN="$(PWD)/$(TOOLS_BIN)" go install golang.org/x/tools/cmd/deadcode@v0.24.0
 
 $(PROTOC): $(TOOLS_DIR)
 	cd $(TOOLS_DIR) && curl -LO $(PROTOC_URL) && unzip -o $(notdir $(PROTOC_URL))
