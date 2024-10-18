@@ -10,11 +10,17 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/util"
 )
 
-type sortByName []NodeConf
+type nodeList []NodeConf
 
-func (a sortByName) Len() int           { return len(a) }
-func (a sortByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a sortByName) Less(i, j int) bool { return a[i].id < a[j].id }
+func (a nodeList) Len() int           { return len(a) }
+func (a nodeList) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a nodeList) Less(i, j int) bool { return a[i].id < a[j].id }
+
+type profileList []ProfileConf
+
+func (a profileList) Len() int           { return len(a) }
+func (a profileList) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a profileList) Less(i, j int) bool { return a[i].id < a[j].id }
 
 /**********
  *
@@ -26,7 +32,7 @@ func (a sortByName) Less(i, j int) bool { return a[i].id < a[j].id }
 Filter a given slice of NodeConf against a given
 regular expression
 */
-func FilterByName(set []NodeConf, searchList []string) []NodeConf {
+func FilterNodeListByName(set []NodeConf, searchList []string) []NodeConf {
 	var ret []NodeConf
 	unique := make(map[string]NodeConf)
 
@@ -45,14 +51,41 @@ func FilterByName(set []NodeConf, searchList []string) []NodeConf {
 		ret = set
 	}
 
-	sort.Sort(sortByName(ret))
+	sort.Sort(nodeList(ret))
+	return ret
+}
+
+/*
+Filter a given slice of ProfileConf against a given
+regular expression
+*/
+func FilterProfileListByName(set []ProfileConf, searchList []string) []ProfileConf {
+	var ret []ProfileConf
+	unique := make(map[string]ProfileConf)
+
+	if len(searchList) > 0 {
+		for _, search := range searchList {
+			for _, entry := range set {
+				if match, _ := regexp.MatchString("^"+search+"$", entry.id); match {
+					unique[entry.id] = entry
+				}
+			}
+		}
+		for _, n := range unique {
+			ret = append(ret, n)
+		}
+	} else {
+		ret = set
+	}
+
+	sort.Sort(profileList(ret))
 	return ret
 }
 
 /*
 Filter a given map of NodeConf against given regular expression.
 */
-func FilterNodesByName(inputMap map[string]*NodeConf, searchList []string) (retMap map[string]*NodeConf) {
+func FilterNodeMapByName(inputMap map[string]*NodeConf, searchList []string) (retMap map[string]*NodeConf) {
 	retMap = map[string]*NodeConf{}
 	if len(searchList) > 0 {
 		for _, search := range searchList {
@@ -67,9 +100,9 @@ func FilterNodesByName(inputMap map[string]*NodeConf, searchList []string) (retM
 }
 
 /*
-Filter a given map of NodeConf against given regular expression.
+Filter a given map of ProfileConf against given regular expression.
 */
-func FilterProfilesByName(inputMap map[string]*ProfileConf, searchList []string) (retMap map[string]*ProfileConf) {
+func FilterProfileMapByName(inputMap map[string]*ProfileConf, searchList []string) (retMap map[string]*ProfileConf) {
 	retMap = map[string]*ProfileConf{}
 	if len(searchList) > 0 {
 		for _, search := range searchList {

@@ -364,7 +364,6 @@ n01   RuntimeOverlay               p1+nop1,rop1,rop2
 		t.Run(tt.name, func(t *testing.T) {
 			baseCmd := GetCommand()
 			baseCmd.SetArgs(tt.args)
-			//verifyOutput(t, baseCmd, tt.stdout)
 			buf := new(bytes.Buffer)
 			wwlog.SetLogWriter(buf)
 			wwlog.SetLogWriterErr(buf)

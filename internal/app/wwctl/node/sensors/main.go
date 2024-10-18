@@ -28,7 +28,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	args = hostlist.Expand(args)
 
 	if len(args) > 0 {
-		nodes = node.FilterByName(nodes, args)
+		nodes = node.FilterNodeListByName(nodes, args)
 	} else {
 		//nolint:errcheck
 		cmd.Usage()

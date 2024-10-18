@@ -60,7 +60,6 @@ nodes:
 }
 
 func Test_Primary_Network(t *testing.T) {
-	//wwlog.SetLogLevel(wwlog.DEBUG)
 	c := newConstructorPrimaryNetworkTest(t)
 	test_node1, err := c.GetNode("test_node1")
 	assert.NoError(t, err)

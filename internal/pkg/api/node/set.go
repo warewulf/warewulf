@@ -41,7 +41,6 @@ func NodeSetParameterCheck(set *wwapiv1.ConfSetParameter) (nodeDB node.NodeYaml,
 		wwlog.Error("Could not open configuration: %s", err)
 		return
 	}
-	//func AbstractSetParameterCheck(set *wwapiv1.ConfSetParameter, confMap map[string]*node.NodeConf, confs []string) (count uint, err error) {
 	if set == nil {
 		err = fmt.Errorf("node set parameter is nil")
 		return

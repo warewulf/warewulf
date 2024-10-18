@@ -102,7 +102,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		if err != nil {
 			return fmt.Errorf("could not get node list: %s", err)
 		}
-		nodes = node.FilterByName(nodes, []string{nodename})
+		nodes = node.FilterNodeListByName(nodes, []string{nodename})
 		if len(nodes) != 1 {
 			return fmt.Errorf("no single node idendified with %s", nodename)
 		}

@@ -29,7 +29,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	if len(args) > 0 {
 		args = hostlist.Expand(args)
-		db = node.FilterByName(db, args)
+		db = node.FilterNodeListByName(db, args)
 
 		if len(db) < len(args) {
 			return errors.New("failed to find nodes")

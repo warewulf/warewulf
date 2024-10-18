@@ -72,7 +72,6 @@ func ObjectIsEmpty(obj interface{}) bool {
 			}
 		} else if varType.Field(i).Type == reflect.TypeOf(map[string]string{}) {
 			if varVal.Field(i).Len() != 0 {
-				// if len(varVal.Field(i).Interface().(map[string]string)) != 0 {
 				return false
 			}
 		} else if varType.Field(i).Type.Kind() == reflect.Ptr {

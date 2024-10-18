@@ -23,7 +23,7 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 	if err != nil {
 		return
 	}
-	//profiles = node.FilterByName(profiles, ShowOpt.Profiles)
+	profiles = node.FilterProfileListByName(profiles, ShowOpt.Profiles)
 	sort.Slice(profiles, func(i, j int) bool {
 		return profiles[i].Id() < profiles[j].Id()
 	})

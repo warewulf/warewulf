@@ -37,7 +37,6 @@ func NodeDelete(ndp *wwapiv1.NodeDeleteParameter) (err error) {
 		if err != nil {
 			wwlog.Error("%s", err)
 		} else {
-			//count++
 			wwlog.Verbose("Deleting node: %s\n", n.Id())
 		}
 	}

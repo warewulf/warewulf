@@ -87,43 +87,6 @@ func (config *NodeYaml) GetNode(id string) (node NodeConf, err error) {
 			return node, err
 		}
 	}
-	// err = mergo.Merge(&node, config.nodes[id], mergo.WithOverride, mergo.WithoutDereference)
-	// err = mergo.Merge(&node, config.nodes[id], mergo.WithOverride)
-	// err = mergo.Merge(&node, config.nodes[id])
-	/*
-		node = EmptyNode()
-			var buf bytes.Buffer
-			enc := gob.NewEncoder(&buf)
-			dec := gob.NewDecoder(&buf)
-			includedProfile, err := config.GetProfile(p)
-			appendStringSlices(&node, &includedProfile)
-			if err != nil {
-				return node, err
-			}
-			err = enc.Encode(includedProfile)
-			if err != nil {
-				return node, err
-			}
-			err = dec.Decode(&node)
-			if err != nil {
-				return node, err
-			}
-			wwlog.Debug("merged in profile: %s", p)
-		}
-		var bufNode bytes.Buffer
-		encNode := gob.NewEncoder(&bufNode)
-		decNode := gob.NewDecoder(&bufNode)
-		appendStringSlices(&node, &config.nodes[id].ProfileConf)
-
-		err = encNode.Encode(config.nodes[id])
-		if err != nil {
-			return node, err
-		}
-		err = decNode.Decode(&node)
-		if err != nil {
-			return node, err
-		}
-	*/
 	// finally set no exported values
 	node.id = id
 	node.valid = true

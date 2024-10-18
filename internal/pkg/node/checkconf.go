@@ -29,7 +29,6 @@ func (profileConf *ProfileConf) Check() (err error) {
 func check(infoType reflect.Type, infoVal reflect.Value) (err error) {
 	// now iterate of every field
 	for i := 0; i < infoVal.Elem().NumField(); i++ {
-		//wwlog.Debug("checking field: %s type: %s", infoType.Elem().Field(i).Name, infoVal.Elem().Field(i).Type())
 		if infoType.Elem().Field(i).Type.Kind() == reflect.String {
 			newFmt, err := checker(infoVal.Elem().Field(i).Interface().(string), infoType.Elem().Field(i).Tag.Get("type"))
 			if err != nil {
@@ -42,7 +41,6 @@ func check(infoType reflect.Type, infoVal reflect.Value) (err error) {
 			nestVal := reflect.ValueOf(infoVal.Elem().Field(i).Interface())
 			for j := 0; j < nestType.Elem().NumField(); j++ {
 				if nestType.Elem().Field(j).Type.Kind() == reflect.String {
-					//wwlog.Debug("checking field: %s type: %s", nestType.Elem().Field(j).Name, nestType.Elem().Field(j).Tag.Get("type"))
 					newFmt, err := checker(nestVal.Elem().Field(j).Interface().(string), nestType.Elem().Field(j).Tag.Get("type"))
 					if err != nil {
 						return fmt.Errorf("field: %s value:%s err: %s", nestType.Elem().Field(j).Name, nestVal.Elem().Field(j).String(), err)
@@ -74,7 +72,6 @@ func checker(value string, valType string) (niceValue string, err error) {
 	if valType == "" || value == "" || util.InSlice(wwtype.GetUnsetVerbs(), value) {
 		return "", nil
 	}
-	//wwlog.Debug("checker: %s is %s", value, valType)
 	switch valType {
 	case "":
 		return "", nil

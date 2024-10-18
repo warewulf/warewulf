@@ -296,7 +296,6 @@ nodes:
         path: /var
 `},
 	}
-	// wwlog.SetLogLevel(wwlog.DEBUG)
 	warewulfd.SetNoDaemon()
 	for _, tt := range tests {
 		env := testenv.New(t)

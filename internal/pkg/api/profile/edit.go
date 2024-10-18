@@ -38,9 +38,9 @@ func FilteredProfiles(profileList *wwapiv1.NodeList) *wwapiv1.NodeYaml {
 		wwlog.Error("Could not open nodeDB: %s\n", err)
 		os.Exit(1)
 	}
-	profileMap, _ := nodeDB.FindAllProfiles()
-	//profileMap = node.FilterProfilesByName(profileMap, profileList.Output)
-	buffer, _ := yaml.Marshal(profileMap)
+	profiles, _ := nodeDB.FindAllProfiles()
+	profiles = node.FilterProfileListByName(profiles, profileList.Output)
+	buffer, _ := yaml.Marshal(profiles)
 	retVal := wwapiv1.NodeYaml{
 		NodeConfMapYaml: string(buffer),
 	}
