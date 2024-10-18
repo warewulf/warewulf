@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/wwtype"
 )
 
 /*
@@ -16,22 +17,30 @@ Checks if for NodeConf all values can be parsed according to their type.
 func (nodeConf *NodeConf) Check() (err error) {
 	nodeInfoType := reflect.TypeOf(nodeConf)
 	nodeInfoVal := reflect.ValueOf(nodeConf)
+	return check(nodeInfoType, nodeInfoVal)
+}
+
+func (profileConf *ProfileConf) Check() (err error) {
+	profileInfoType := reflect.TypeOf(profileConf)
+	profileInfoVal := reflect.ValueOf(profileConf)
+	return check(profileInfoType, profileInfoVal)
+}
+
+func check(infoType reflect.Type, infoVal reflect.Value) (err error) {
 	// now iterate of every field
-	for i := 0; i < nodeInfoVal.Elem().NumField(); i++ {
-		//wwlog.Debug("checking field: %s type: %s", nodeInfoType.Elem().Field(i).Name, nodeInfoVal.Elem().Field(i).Type())
-		if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.String {
-			newFmt, err := checker(nodeInfoVal.Elem().Field(i).Interface().(string), nodeInfoType.Elem().Field(i).Tag.Get("type"))
+	for i := 0; i < infoVal.Elem().NumField(); i++ {
+		if infoType.Elem().Field(i).Type.Kind() == reflect.String {
+			newFmt, err := checker(infoVal.Elem().Field(i).Interface().(string), infoType.Elem().Field(i).Tag.Get("type"))
 			if err != nil {
-				return fmt.Errorf("field: %s value:%s err: %s", nodeInfoType.Elem().Field(i).Name, nodeInfoVal.Elem().Field(i).String(), err)
+				return fmt.Errorf("field: %s value:%s err: %s", infoType.Elem().Field(i).Name, infoVal.Elem().Field(i).String(), err)
 			} else if newFmt != "" {
-				nodeInfoVal.Elem().Field(i).SetString(newFmt)
+				infoVal.Elem().Field(i).SetString(newFmt)
 			}
-		} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr && !nodeInfoVal.Elem().Field(i).IsNil() {
-			nestType := reflect.TypeOf(nodeInfoVal.Elem().Field(i).Interface())
-			nestVal := reflect.ValueOf(nodeInfoVal.Elem().Field(i).Interface())
+		} else if infoType.Elem().Field(i).Type.Kind() == reflect.Ptr && !infoVal.Elem().Field(i).IsNil() {
+			nestType := reflect.TypeOf(infoVal.Elem().Field(i).Interface())
+			nestVal := reflect.ValueOf(infoVal.Elem().Field(i).Interface())
 			for j := 0; j < nestType.Elem().NumField(); j++ {
 				if nestType.Elem().Field(j).Type.Kind() == reflect.String {
-					//wwlog.Debug("checking field: %s type: %s", nestType.Elem().Field(j).Name, nestType.Elem().Field(j).Tag.Get("type"))
 					newFmt, err := checker(nestVal.Elem().Field(j).Interface().(string), nestType.Elem().Field(j).Tag.Get("type"))
 					if err != nil {
 						return fmt.Errorf("field: %s value:%s err: %s", nestType.Elem().Field(j).Name, nestVal.Elem().Field(j).String(), err)
@@ -40,8 +49,8 @@ func (nodeConf *NodeConf) Check() (err error) {
 					}
 				}
 			}
-		} else if nodeInfoType.Elem().Field(i).Type == reflect.TypeOf(map[string]*NetDevs(nil)) {
-			netMap := nodeInfoVal.Elem().Field(i).Interface().(map[string]*NetDevs)
+		} else if infoType.Elem().Field(i).Type == reflect.TypeOf(map[string]*NetDevs(nil)) {
+			netMap := infoVal.Elem().Field(i).Interface().(map[string]*NetDevs)
 			for _, val := range netMap {
 				netType := reflect.TypeOf(val)
 				netVal := reflect.ValueOf(val)
@@ -60,10 +69,9 @@ func (nodeConf *NodeConf) Check() (err error) {
 }
 
 func checker(value string, valType string) (niceValue string, err error) {
-	if valType == "" || value == "" || util.InSlice(GetUnsetVerbs(), value) {
+	if valType == "" || value == "" || util.InSlice(wwtype.GetUnsetVerbs(), value) {
 		return "", nil
 	}
-	//wwlog.Debug("checker: %s is %s", value, valType)
 	switch valType {
 	case "":
 		return "", nil

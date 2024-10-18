@@ -35,6 +35,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Split wwinit and generic overlays into discrete functionality. #987
 - Updated IgnitionJson to sort filesystems. #1433
 - `wwctl node set` requires mandatory pattern input. #502
+- Remove NodeInfo (in-memory-only) data structure, consolidating onto NodeConf. #916
+- Replace `defaults.conf` with settings on the default profile. #917
+
+
+### Removed
+
+- `wwctl node list --fullall` has been removed
+- `wwctl profile list --fullall` has been removed
 
 ### Fixed
 

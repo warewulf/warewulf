@@ -63,7 +63,9 @@ nodes:
   node1:
     tags:
       email: admin@node1
-  node2: {}
+  node2:
+    profiles:
+      - default
   node3:
     profiles:
       - empty

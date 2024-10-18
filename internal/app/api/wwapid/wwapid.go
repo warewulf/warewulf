@@ -293,14 +293,14 @@ func (s *apiServer) NodeList(ctx context.Context, request *wwapiv1.NodeNames) (r
 }
 
 // NodeSet updates fields for zero or more nodes and returns the updated nodes.
-func (s *apiServer) NodeSet(ctx context.Context, request *wwapiv1.NodeSetParameter) (response *wwapiv1.NodeListResponse, err error) {
+func (s *apiServer) NodeSet(ctx context.Context, request *wwapiv1.ConfSetParameter) (response *wwapiv1.NodeListResponse, err error) {
 
 	// Parameter checks.
 	if request == nil {
 		return response, status.Errorf(codes.InvalidArgument, "nil request")
 	}
 
-	if request.NodeNames == nil {
+	if request.ConfList == nil {
 		return response, status.Errorf(codes.InvalidArgument, "nil request.NodeNames")
 	}
 
@@ -311,7 +311,7 @@ func (s *apiServer) NodeSet(ctx context.Context, request *wwapiv1.NodeSetParamet
 	}
 
 	// Return the updated nodes as per REST.
-	return s.nodeListInternal(request.NodeNames)
+	return s.nodeListInternal(request.ConfList)
 }
 
 func (s *apiServer) NodeStatus(ctx context.Context, request *wwapiv1.NodeNames) (response *wwapiv1.NodeStatusResponse, err error) {

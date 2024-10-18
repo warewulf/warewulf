@@ -27,7 +27,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	args = hostlist.Expand(args)
 
 	if len(args) > 0 {
-		nodes = node.FilterByName(nodes, args)
+		nodes = node.FilterNodeListByName(nodes, args)
 	} else {
 		//nolint:errcheck
 		cmd.Usage()
@@ -40,26 +40,26 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	for _, node := range nodes {
 
-		if node.Ipmi.Ipaddr.Get() == "" {
-			wwlog.Error("%s: No IPMI IP address", node.Id.Get())
+		if node.Ipmi.Ipaddr.IsUnspecified() {
+			wwlog.Error("%s: No IPMI IP address", node.Id())
 			continue
 		}
 
 		ipmiCmd := power.IPMI{
-			NodeName:   node.Id.Get(),
-			HostName:   node.Ipmi.Ipaddr.Get(),
-			Port:       node.Ipmi.Port.Get(),
-			User:       node.Ipmi.UserName.Get(),
-			Password:   node.Ipmi.Password.Get(),
+			NodeName:   node.Id(),
+			HostName:   node.Ipmi.Ipaddr.String(),
+			Port:       node.Ipmi.Port,
+			User:       node.Ipmi.UserName,
+			Password:   node.Ipmi.Password,
 			AuthType:   "MD5",
-			Interface:  node.Ipmi.Interface.Get(),
-			EscapeChar: node.Ipmi.EscapeChar.Get(),
+			Interface:  node.Ipmi.Interface,
+			EscapeChar: node.Ipmi.EscapeChar,
 		}
 
 		err := ipmiCmd.Console()
 
 		if err != nil {
-			wwlog.Error("%s: Console problem", node.Id.Get())
+			wwlog.Error("%s: Console problem", node.Id())
 			returnErr = err
 			continue
 		}

@@ -7,7 +7,6 @@ import (
 
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/node"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v2"
 )
 
@@ -18,41 +17,38 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 	profileList.Output = []string{}
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("Could not open node configuration: %s", err)
 		return
 	}
-
 	profiles, err := nodeDB.FindAllProfiles()
 	if err != nil {
-		wwlog.Error("Could not find all profiles: %s", err)
 		return
 	}
-	profiles = node.FilterByName(profiles, ShowOpt.Profiles)
+	profiles = node.FilterProfileListByName(profiles, ShowOpt.Profiles)
 	sort.Slice(profiles, func(i, j int) bool {
-		return profiles[i].Id.Get() < profiles[j].Id.Get()
+		return profiles[i].Id() < profiles[j].Id()
 	})
-	if ShowOpt.ShowAll || ShowOpt.ShowFullAll {
+	if ShowOpt.ShowAll {
 		for _, p := range profiles {
 			profileList.Output = append(profileList.Output,
 				fmt.Sprintf("%s:=:%s:=:%s", "PROFILE", "FIELD", "VALUE"))
-			fields := p.GetFields(ShowOpt.ShowFullAll)
+			fields := nodeDB.GetFieldsProfile(p)
 			for _, f := range fields {
 				profileList.Output = append(profileList.Output,
-					fmt.Sprintf("%s:=:%s:=:%s", p.Id.Print(), f.Field, f.Value))
+					fmt.Sprintf("%s:=:%s:=:%s", p.Id(), f.Field, f.Value))
 			}
 		}
 	} else if ShowOpt.ShowYaml {
-		profileMap := make(map[string]node.NodeInfo)
+		profileMap := make(map[string]node.ProfileConf)
 		for _, profile := range profiles {
-			profileMap[profile.Id.Get()] = profile
+			profileMap[profile.Id()] = profile
 		}
 
 		buf, _ := yaml.Marshal(profileMap)
 		profileList.Output = append(profileList.Output, string(buf))
 	} else if ShowOpt.ShowJson {
-		profileMap := make(map[string]node.NodeInfo)
+		profileMap := make(map[string]node.ProfileConf)
 		for _, profile := range profiles {
-			profileMap[profile.Id.Get()] = profile
+			profileMap[profile.Id()] = profile
 		}
 
 		buf, _ := json.MarshalIndent(profileMap, "", "  ")
@@ -63,7 +59,7 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 
 		for _, profile := range profiles {
 			profileList.Output = append(profileList.Output,
-				fmt.Sprintf("%s:=:%s", profile.Id.Print(), profile.Comment.Print()))
+				fmt.Sprintf("%s:=:%s", profile.Id(), profile.Comment))
 		}
 	}
 	return

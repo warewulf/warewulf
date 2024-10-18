@@ -20,7 +20,7 @@ var (
 			profiles, _ := nodeDB.FindAllProfiles()
 			var p_names []string
 			for _, profile := range profiles {
-				p_names = append(p_names, profile.Id.Get())
+				p_names = append(p_names, profile.Id())
 			}
 			return p_names, cobra.ShellCompDirectiveNoFileComp
 		},

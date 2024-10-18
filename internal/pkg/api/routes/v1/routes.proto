@@ -137,7 +137,6 @@ message GetNodeList {
 		Network = 2;
 		Long = 3;
 		All = 4;
-		FullAll = 5;
 		YAML = 6;
 		JSON = 7;
 	}
@@ -153,7 +152,6 @@ message NodeList {
 // Request a profile list view
 message GetProfileList {
 	bool ShowAll = 1;
-	bool ShowFullAll = 2;
 	bool ShowYaml = 3;
 	bool ShowJson = 4;
 	repeated string Profiles = 5;
@@ -192,28 +190,25 @@ message NodeDeleteParameter {
 
 // NodeSetParameter contains all fields for updating aspects of nodes managed
 // by Warewulf.
-message NodeSetParameter {
+message ConfSetParameter {
 	string nodeConfYaml = 1;
     string netdevDelete = 2;
 	string diskDelete = 3;
 	string partitionDelete = 4;
 	string filesystemDelete = 5;
-	bool allNodes = 6;
+	bool allConfs = 6;
 	bool force = 7;
-	repeated string nodeNames = 8;
+	repeated string confList = 8;
+	map<string, string> tagAdd = 9;
+	map<string, string> netTagAdd = 10;
+	map<string, string> ipmiTagAdd = 11;
+	repeated string tagDel = 12;
+	repeated string netTagDel = 13;
+	repeated string ipmiTagDel = 14;
+	string netdev = 15;
+
 }
-// ProfileSetParameter contains all fields for updating aspects of profiles managed. Basically a copy of NodeSetParameters
-// by Warewulf.
-message ProfileSetParameter {
-	string nodeConfYaml = 1;
-    string netdevDelete = 2;
-	string diskDelete = 3;
-	string partitionDelete = 4;
-	string filesystemDelete = 5;
-	bool allProfiles = 6;
-	bool force = 7;
-	repeated string profileNames = 8;
-}
+
 // NodeStatus contains information about the imaging status per node.
 message NodeStatus {
 	string nodeName = 1;	// Name (Id) of the node.
@@ -325,7 +320,7 @@ service WWApi {
 	}
 
 	// NodeSet updates node fields for one or more nodes.
-	rpc NodeSet(NodeSetParameter) returns (NodeListResponse) {
+	rpc NodeSet(ConfSetParameter) returns (NodeListResponse) {
 		option (google.api.http) = {
 			post: "/v1/nodeset" // TODO: This should be a patch. Had trouble getting patch to work at all.
 			body: "*"

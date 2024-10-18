@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"io"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -26,7 +25,7 @@ func Test_List(t *testing.T) {
 			name: "profile list test",
 			args: []string{},
 			stdout: `PROFILE NAME  COMMENT/DESCRIPTION
-  default       --`,
+  default`,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   default: {}
@@ -40,8 +39,8 @@ nodes:
 			name: "profile list returns multiple profiles",
 			args: []string{"default,test"},
 			stdout: `PROFILE NAME  COMMENT/DESCRIPTION
-  default       --
-  test          --`,
+  default
+  test`,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   default: {}
@@ -53,10 +52,10 @@ nodes:
 `,
 		},
 		{
-			name: "profile list returns one profiles",
+			name: "profile list returns one profile",
 			args: []string{"test,"},
 			stdout: `PROFILE NAME  COMMENT/DESCRIPTION
-  test          --`,
+  test`,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   default: {}
@@ -71,8 +70,8 @@ nodes:
 			name: "profile list returns all profiles",
 			args: []string{","},
 			stdout: `PROFILE NAME  COMMENT/DESCRIPTION
-  default       --
-  test          --`,
+  default
+  test`,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   default: {}
@@ -241,8 +240,6 @@ func verifyOutput(t *testing.T, baseCmd *cobra.Command, content string) {
 	os.Stdout = oriout
 
 	stdout := <-stdoutC
-	stdout = strings.ReplaceAll(strings.TrimSpace(stdout), " ", "")
-	assert.NotEmpty(t, stdout, "output should not be empty")
-	content = strings.ReplaceAll(strings.TrimSpace(content), " ", "")
-	assert.Contains(t, stdout, strings.ReplaceAll(strings.TrimSpace(content), " ", ""))
+	assert.NotEmpty(t, stdout)
+	assert.Contains(t, stdout, content)
 }

@@ -56,9 +56,9 @@ Kernelargs:         quiet crashkernel=no vga=791 net.naming-scheme=v238
 
 Network:
     default: wwnet0
-    default: 192.168.3.21/24
+    default: \4{wwnet0} (configured: 192.168.3.21)
     default: e6:92:39:49:7b:03
     secondary: wwnet1
-    secondary: 192.168.3.22/24
+    secondary: \4{wwnet1} (configured: 192.168.3.22)
     secondary: 9a:77:29:73:14:f1
 `

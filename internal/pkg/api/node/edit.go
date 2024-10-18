@@ -7,7 +7,7 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 /*
@@ -19,7 +19,7 @@ func FindAllNodeConfs() *wwapiv1.NodeYaml {
 		wwlog.Error("Could not open nodeDB: %s\n", err)
 		os.Exit(1)
 	}
-	nodeMap := nodeDB.Nodes
+	nodeMap, _ := nodeDB.FindAllNodes()
 	// ignore err as nodeDB should always be correct
 	buffer, _ := yaml.Marshal(nodeMap)
 	retVal := wwapiv1.NodeYaml{
@@ -38,8 +38,8 @@ func FilteredNodes(nodeList *wwapiv1.NodeList) *wwapiv1.NodeYaml {
 		wwlog.Error("Could not open nodeDB: %s\n", err)
 		os.Exit(1)
 	}
-	nodeMap := nodeDB.Nodes
-	nodeMap = node.FilterMapByName(nodeMap, nodeList.Output)
+	nodeMap, _ := nodeDB.FindAllNodes()
+	nodeMap = node.FilterNodeListByName(nodeMap, nodeList.Output)
 	buffer, _ := yaml.Marshal(nodeMap)
 	retVal := wwapiv1.NodeYaml{
 		NodeConfMapYaml: string(buffer),
@@ -59,14 +59,13 @@ func NodeAddFromYaml(nodeList *wwapiv1.NodeYaml) (err error) {
 	nodeMap := make(map[string]*node.NodeConf)
 	err = yaml.Unmarshal([]byte(nodeList.NodeConfMapYaml), nodeMap)
 	if err != nil {
-		return errors.Wrap(err, "Could not unmarshall Yaml: %s\n")
+		return errors.Wrap(err, "Could not unmarshal Yaml: %s\n")
 	}
 	for nodeName, node := range nodeMap {
-		err = node.Check()
+		err = nodeDB.SetNode(nodeName, *node)
 		if err != nil {
-			return errors.Errorf("error on node %s: %s", nodeName, err)
+			return errors.Wrap(err, "couldn't set node")
 		}
-		nodeDB.Nodes[nodeName] = node
 	}
 	err = nodeDB.Persist()
 	if err != nil {

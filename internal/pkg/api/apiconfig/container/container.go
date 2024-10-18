@@ -66,14 +66,10 @@ func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 			//TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
 			profiles, _ := nodeDB.FindAllProfiles()
 			for _, profile := range profiles {
-				wwlog.Debug("Looking for profile default: %s", profile.Id.Get())
-				if profile.Id.Get() == "default" {
+				wwlog.Debug("Looking for profile default: %s", profile.Id())
+				if profile.Id() == "default" {
 					wwlog.Debug("Found profile default, setting container name to: %s", containers[0])
-					profile.ContainerName.Set(containers[0])
-					err := nodeDB.ProfileUpdate(profile)
-					if err != nil {
-						return errors.Wrap(err, "failed to update node profile")
-					}
+					profile.ContainerName = containers[0]
 				}
 			}
 			// TODO: Need a wrapper and flock around this. Sometimes we restart warewulfd and sometimes we don't.
@@ -81,7 +77,11 @@ func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 			if err != nil {
 				return errors.Wrap(err, "failed to persist nodedb")
 			}
-			fmt.Printf("Set default profile to container: %s\n", containers[0])
+			err = warewulfd.DaemonReload()
+			if err != nil {
+				return errors.Wrap(err, "failed to reload warewulfd")
+			}
+			wwlog.Info("Set default profile to container: %s", containers[0])
 		}
 	}
 	return
@@ -109,7 +109,7 @@ ARG_LOOP:
 		//_, arg := range args {
 		containerName := cdp.ContainerNames[i]
 		for _, n := range nodes {
-			if n.ContainerName.Get() == containerName {
+			if n.ContainerName == containerName {
 				wwlog.Error("Container is configured for nodes, skipping: %s", containerName)
 				continue ARG_LOOP
 			}
@@ -211,15 +211,10 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		//TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
 		profiles, _ := nodeDB.FindAllProfiles()
 		for _, profile := range profiles {
-			wwlog.Debug("Looking for profile default: %s", profile.Id.Get())
-			if profile.Id.Get() == "default" {
+			wwlog.Debug("Looking for profile default: %s", profile.Id())
+			if profile.Id() == "default" {
 				wwlog.Debug("Found profile default, setting container name to: %s", cip.Name)
-				profile.ContainerName.Set(cip.Name)
-				err = nodeDB.ProfileUpdate(profile)
-				if err != nil {
-					err = errors.Wrap(err, "failed to update profile")
-					return
-				}
+				profile.ContainerName = cip.Name
 			}
 		}
 		// TODO: We need this in a function with a flock around it.
@@ -264,7 +259,7 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 
 	nodemap := make(map[string]int)
 	for _, n := range nodes {
-		nodemap[n.ContainerName.Get()]++
+		nodemap[n.ContainerName]++
 	}
 
 	for _, source := range sources {
@@ -307,9 +302,9 @@ func ContainerShow(csp *wwapiv1.ContainerShowParameter) (response *wwapiv1.Conta
 
 	var nodeList []string
 	for _, n := range nodes {
-		if n.ContainerName.Get() == containerName {
+		if n.ContainerName == containerName {
 
-			nodeList = append(nodeList, n.Id.Get())
+			nodeList = append(nodeList, n.Id())
 		}
 	}
 

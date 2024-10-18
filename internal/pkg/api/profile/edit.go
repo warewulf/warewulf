@@ -8,7 +8,7 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 /*
@@ -20,7 +20,7 @@ func FindAllProfileConfs() *wwapiv1.NodeYaml {
 		wwlog.Error("Could not open nodeDB: %s\n", err)
 		os.Exit(1)
 	}
-	profileMap := nodeDB.NodeProfiles
+	profileMap, _ := nodeDB.FindAllProfiles()
 	// ignore err as nodeDB should always be correct
 	buffer, _ := yaml.Marshal(profileMap)
 	retVal := wwapiv1.NodeYaml{
@@ -38,9 +38,9 @@ func FilteredProfiles(profileList *wwapiv1.NodeList) *wwapiv1.NodeYaml {
 		wwlog.Error("Could not open nodeDB: %s\n", err)
 		os.Exit(1)
 	}
-	profileMap := nodeDB.NodeProfiles
-	profileMap = node.FilterMapByName(profileMap, profileList.Output)
-	buffer, _ := yaml.Marshal(profileMap)
+	profiles, _ := nodeDB.FindAllProfiles()
+	profiles = node.FilterProfileListByName(profiles, profileList.Output)
+	buffer, _ := yaml.Marshal(profiles)
 	retVal := wwapiv1.NodeYaml{
 		NodeConfMapYaml: string(buffer),
 	}
@@ -59,13 +59,16 @@ func ProfileAddFromYaml(nodeList *wwapiv1.NodeAddParameter) (err error) {
 		return fmt.Errorf("got wrong hash, not modifying profile database")
 	}
 
-	profileMap := make(map[string]*node.NodeConf)
+	profileMap := make(map[string]*node.ProfileConf)
 	err = yaml.Unmarshal([]byte(nodeList.NodeConfYaml), profileMap)
 	if err != nil {
 		return errors.Wrap(err, "Could not unmarshall Yaml: %s\n")
 	}
 	for profileName, profile := range profileMap {
-		nodeDB.NodeProfiles[profileName] = profile
+		err = nodeDB.SetProfile(profileName, *profile)
+		if err != nil {
+			return errors.Wrap(err, "couldn't set profile")
+		}
 	}
 	err = nodeDB.Persist()
 	if err != nil {

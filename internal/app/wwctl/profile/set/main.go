@@ -11,7 +11,7 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/api/util"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err error) {
@@ -19,9 +19,10 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 
 		// remove the default network as the all network values are assigned
 		// to this network
-		if !node.ObjectIsEmpty(vars.profileConf.NetDevs["UNDEF"]) {
+		if !node.ObjectIsEmpty(vars.profileConf.NetDevs["UNDEF"]) || len(vars.profileAdd.NetTagsAdd) > 0 {
 			netDev := *vars.profileConf.NetDevs["UNDEF"]
-			vars.profileConf.NetDevs[vars.netName] = &netDev
+			vars.profileConf.NetDevs[vars.profileAdd.Net] = &netDev
+			vars.profileConf.NetDevs[vars.profileAdd.Net].Tags = vars.profileAdd.NetTagsAdd
 		}
 		delete(vars.profileConf.NetDevs, "UNDEF")
 		if vars.fsName != "" {
@@ -53,22 +54,29 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			os.Exit(1)
 		}
 		wwlog.Debug("sending following values: %s", string(buffer))
-		set := wwapiv1.ProfileSetParameter{
+		set := wwapiv1.ConfSetParameter{
 			NodeConfYaml:     string(buffer[:]),
 			NetdevDelete:     vars.setNetDevDel,
 			PartitionDelete:  vars.setPartDel,
 			DiskDelete:       vars.setDiskDel,
 			FilesystemDelete: vars.setFsDel,
-			AllProfiles:      vars.setNodeAll,
-			Force:            vars.setForce,
-			ProfileNames:     args,
+			TagAdd:           vars.profileAdd.TagsAdd,
+			TagDel:           vars.profileDel.TagsDel,
+			NetTagAdd:        vars.profileAdd.NetTagsAdd,
+			NetTagDel:        vars.profileDel.NetTagsDel,
+			IpmiTagAdd:       vars.profileAdd.IpmiTagsAdd,
+			IpmiTagDel:       vars.profileDel.IpmiTagsDel,
+
+			AllConfs: vars.setNodeAll,
+			Force:    vars.setForce,
+			ConfList: args,
 		}
 
 		if !vars.setYes {
 			var profileCount uint
 			// The checks run twice in the prompt case.
 			// Avoiding putting in a blocking prompt in an API.
-			_, profileCount, err = apiprofile.ProfileSetParameterCheck(&set, false)
+			_, profileCount, err = apiprofile.ProfileSetParameterCheck(&set)
 			if err != nil {
 				return err
 			}

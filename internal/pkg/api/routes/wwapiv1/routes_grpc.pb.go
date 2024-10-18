@@ -44,7 +44,7 @@ type WWApiClient interface {
 	// NodeList lists some or all nodes managed by Warewulf.
 	NodeList(ctx context.Context, in *NodeNames, opts ...grpc.CallOption) (*NodeListResponse, error)
 	// NodeSet updates node fields for one or more nodes.
-	NodeSet(ctx context.Context, in *NodeSetParameter, opts ...grpc.CallOption) (*NodeListResponse, error)
+	NodeSet(ctx context.Context, in *ConfSetParameter, opts ...grpc.CallOption) (*NodeListResponse, error)
 	// NodeStatus returns the imaging state for nodes.
 	// This requires warewulfd.
 	NodeStatus(ctx context.Context, in *NodeNames, opts ...grpc.CallOption) (*NodeStatusResponse, error)
@@ -151,7 +151,7 @@ func (c *wWApiClient) NodeList(ctx context.Context, in *NodeNames, opts ...grpc.
 	return out, nil
 }
 
-func (c *wWApiClient) NodeSet(ctx context.Context, in *NodeSetParameter, opts ...grpc.CallOption) (*NodeListResponse, error) {
+func (c *wWApiClient) NodeSet(ctx context.Context, in *ConfSetParameter, opts ...grpc.CallOption) (*NodeListResponse, error) {
 	out := new(NodeListResponse)
 	err := c.cc.Invoke(ctx, "/wwapi.v1.WWApi/NodeSet", in, out, opts...)
 	if err != nil {
@@ -203,7 +203,7 @@ type WWApiServer interface {
 	// NodeList lists some or all nodes managed by Warewulf.
 	NodeList(context.Context, *NodeNames) (*NodeListResponse, error)
 	// NodeSet updates node fields for one or more nodes.
-	NodeSet(context.Context, *NodeSetParameter) (*NodeListResponse, error)
+	NodeSet(context.Context, *ConfSetParameter) (*NodeListResponse, error)
 	// NodeStatus returns the imaging state for nodes.
 	// This requires warewulfd.
 	NodeStatus(context.Context, *NodeNames) (*NodeStatusResponse, error)
@@ -247,7 +247,7 @@ func (UnimplementedWWApiServer) NodeDelete(context.Context, *NodeDeleteParameter
 func (UnimplementedWWApiServer) NodeList(context.Context, *NodeNames) (*NodeListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NodeList not implemented")
 }
-func (UnimplementedWWApiServer) NodeSet(context.Context, *NodeSetParameter) (*NodeListResponse, error) {
+func (UnimplementedWWApiServer) NodeSet(context.Context, *ConfSetParameter) (*NodeListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NodeSet not implemented")
 }
 func (UnimplementedWWApiServer) NodeStatus(context.Context, *NodeNames) (*NodeStatusResponse, error) {
@@ -450,7 +450,7 @@ func _WWApi_NodeList_Handler(srv interface{}, ctx context.Context, dec func(inte
 }
 
 func _WWApi_NodeSet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NodeSetParameter)
+	in := new(ConfSetParameter)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -462,7 +462,7 @@ func _WWApi_NodeSet_Handler(srv interface{}, ctx context.Context, dec func(inter
 		FullMethod: "/wwapi.v1.WWApi/NodeSet",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WWApiServer).NodeSet(ctx, req.(*NodeSetParameter))
+		return srv.(WWApiServer).NodeSet(ctx, req.(*ConfSetParameter))
 	}
 	return interceptor(ctx, in, info, handler)
 }

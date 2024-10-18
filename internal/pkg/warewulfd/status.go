@@ -49,11 +49,11 @@ func LoadNodeStatus() error {
 	}
 
 	for _, n := range nodes {
-		if _, ok := statusDB.Nodes[n.Id.Get()]; !ok {
-			newDB.Nodes[n.Id.Get()] = &NodeStatus{}
-			newDB.Nodes[n.Id.Get()].NodeName = n.Id.Get()
+		if _, ok := statusDB.Nodes[n.Id()]; !ok {
+			newDB.Nodes[n.Id()] = &NodeStatus{}
+			newDB.Nodes[n.Id()].NodeName = n.Id()
 		} else {
-			newDB.Nodes[n.Id.Get()] = statusDB.Nodes[n.Id.Get()]
+			newDB.Nodes[n.Id()] = statusDB.Nodes[n.Id()]
 		}
 	}
 

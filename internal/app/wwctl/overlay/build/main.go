@@ -19,22 +19,20 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	controller := warewulfconf.Get()
 	nodeDB, err := node.New()
 	if err != nil {
-		wwlog.Error("Could not open node configuration: %s", err)
-		os.Exit(1)
+		return fmt.Errorf("couldn't open node configuration: %s", err)
 	}
 
-	nodes, err := nodeDB.FindAllNodes()
+	db, err := nodeDB.FindAllNodes()
 	if err != nil {
-		wwlog.Error("Could not get node list: %s", err)
-		os.Exit(1)
+		return fmt.Errorf("could not get node list: %s", err)
 	}
 
 	if len(args) > 0 {
 		args = hostlist.Expand(args)
-		nodes = node.FilterByName(nodes, args)
+		db = node.FilterNodeListByName(db, args)
 
-		if len(nodes) < len(args) {
-			return errors.New("Failed to find nodes")
+		if len(db) < len(args) {
+			return errors.New("failed to find nodes")
 		}
 	}
 
@@ -51,26 +49,23 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if len(OverlayNames) == 0 {
 			// TODO: should this behave the same as OverlayDir == "", and build default
 			// set to overlays?
-			return errors.New("Must specify overlay(s) to build")
+			return errors.New("must specify overlay(s) to build")
 		}
 
 		if len(args) > 0 {
-			if len(nodes) != 1 {
-				return errors.New("Must specify one node to build overlay")
+			if len(db) != 1 {
+				return errors.New("nust specify one node to build overlay")
 			}
 
-			for _, node := range nodes {
+			for _, node := range db {
 				return overlay.BuildOverlayIndir(node, OverlayNames, OverlayDir)
 			}
 		} else {
 			// TODO this seems different than what is set in BuildHostOverlay
-			var host node.NodeInfo
-			var idEntry node.Entry
 			hostname, _ := os.Hostname()
-			wwlog.Info("Building overlay for host: %s", hostname)
-			idEntry.Set(hostname)
-			host.Id = idEntry
-			return overlay.BuildOverlayIndir(host, OverlayNames, OverlayDir)
+			node := node.NewNode(hostname)
+			wwlog.Info("building overlay for host: %s", hostname)
+			return overlay.BuildOverlayIndir(node, OverlayNames, OverlayDir)
 
 		}
 
@@ -88,9 +83,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		defer syscall.Umask(oldMask)
 
 		if len(OverlayNames) > 0 {
-			err = overlay.BuildSpecificOverlays(nodes, OverlayNames)
+			err = overlay.BuildSpecificOverlays(db, OverlayNames)
 		} else {
-			err = overlay.BuildAllOverlays(nodes)
+			err = overlay.BuildAllOverlays(db)
 		}
 
 		if err != nil {

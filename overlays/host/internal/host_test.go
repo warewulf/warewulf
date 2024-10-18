@@ -268,9 +268,8 @@ dhcp-boot=tag:iPXE,"http://192.168.0.1:9873/ipxe/${mac:hexhyp}?assetkey=${asset}
 dhcp-no-override
 # define the the range
 dhcp-range=192.168.0.100,192.168.0.199,255.255.255.0,6h
-                                   
-dhcp-host=e6:92:39:49:7b:03,set:warewulf,node1,192.168.3.21,infinite                 
-dhcp-host=9a:77:29:73:14:f1,set:warewulf,node1,192.168.3.22,infinite                                   
+dhcp-host=e6:92:39:49:7b:03,set:warewulf,node1,192.168.3.21,infinite
+dhcp-host=9a:77:29:73:14:f1,set:warewulf,node1,192.168.3.22,infinite
 dhcp-host=e6:92:39:49:7b:04,set:warewulf,node2,192.168.3.23,infinite
 `
 

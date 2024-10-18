@@ -365,7 +365,7 @@ func local_request_WWApi_NodeList_0(ctx context.Context, marshaler runtime.Marsh
 }
 
 func request_WWApi_NodeSet_0(ctx context.Context, marshaler runtime.Marshaler, client WWApiClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq NodeSetParameter
+	var protoReq ConfSetParameter
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -382,7 +382,7 @@ func request_WWApi_NodeSet_0(ctx context.Context, marshaler runtime.Marshaler, c
 }
 
 func local_request_WWApi_NodeSet_0(ctx context.Context, marshaler runtime.Marshaler, server WWApiServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq NodeSetParameter
+	var protoReq ConfSetParameter
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)

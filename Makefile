@@ -5,7 +5,7 @@ include Variables.mk
 include Tools.mk
 
 .PHONY: build
-build: wwctl wwclient etc/defaults.conf etc/bash_completion.d/wwctl
+build: wwctl wwclient etc/bash_completion.d/wwctl
 
 .PHONY: api
 api: wwapid wwapic wwapird
@@ -65,9 +65,6 @@ man_pages: wwctl $(wildcard docs/man/man5/*.5)
 	gzip --force docs/man/man1/*.1
 	for manpage in docs/man/man5/*.5; do gzip <$${manpage} >$${manpage}.gz; done
 
-etc/defaults.conf: wwctl
-	./wwctl --emptyconf genconfig defaults >etc/defaults.conf
-
 etc/bash_completion.d/wwctl: wwctl
 	mkdir -p etc/bash_completion.d/
 	./wwctl --emptyconf genconfig completions >etc/bash_completion.d/wwctl
@@ -117,7 +114,6 @@ install: build docs
 	# wwctl genconfig to get the compiled in paths to warewulf.conf
 	test -f $(DESTDIR)$(WWCONFIGDIR)/warewulf.conf || ./wwctl --warewulfconf etc/warewulf.conf genconfig warewulfconf print> $(DESTDIR)$(WWCONFIGDIR)/warewulf.conf
 	test -f $(DESTDIR)$(WWCONFIGDIR)/nodes.conf || install -m 0644 etc/nodes.conf $(DESTDIR)$(WWCONFIGDIR)
-	test -f $(DESTDIR)$(DATADIR)/warewulf/defaults.conf || install -m 0644 etc/defaults.conf $(DESTDIR)$(DATADIR)/warewulf/defaults.conf
 	for f in etc/examples/*.ww; do install -m 0644 $$f $(DESTDIR)$(WWCONFIGDIR)/examples/; done
 	for f in etc/ipxe/*.ipxe; do install -m 0644 $$f $(DESTDIR)$(WWCONFIGDIR)/ipxe/; done
 	install -m 0644 etc/grub/grub.cfg.ww $(DESTDIR)$(WWCONFIGDIR)/grub/grub.cfg.ww
@@ -180,7 +176,6 @@ latexpdf: reference
 cleanconfig:
 	rm -f $(config)
 	rm -rf etc/bash_completion.d/
-	rm -rf etc/defaults.conf
 
 .PHONY: cleantest
 cleantest:

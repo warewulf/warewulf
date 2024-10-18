@@ -27,8 +27,6 @@ data from other structures.
 - Discoverable: {{ .Discoverable }}
 - Profiles: {{ range $index, $value := .Profiles }}{{ if $index }},{{ end }}{{ $value }}{{ end }}
 - Tags: {{ range $key, $value := .Tags }}{{ $key }}={{ $value }} {{ end }}
-- TagsDel: {{ range $key, $value := .TagsDel }}{{ $key }}={{ $value }} {{ end }}
-- Keys: {{ range $key, $value := .Keys }}{{ $key }}={{ $value }} {{ end }}
 - Kernel:
   - Version: {{ .Kernel.Version }}
   - Override: {{ .Kernel.Override }}
@@ -43,7 +41,6 @@ data from other structures.
   - Interface: {{ .Ipmi.Interface }}
   - Write: {{ .Ipmi.Write }}
   - Tags: {{ range $key, $value := .Ipmi.Tags }}{{ $key }}={{ $value }} {{ end }}
-  - TagsDel: {{ range $key, $value := .Ipmi.TagsDel }}{{ $key }}={{ $value }} {{ end }}
 {{- range $index, $netdev := .NetDevs }}
 - NetDevs[{{ $index }}]:
   - Type: {{ $netdev.Type }}
@@ -51,16 +48,13 @@ data from other structures.
   - Device: {{ $netdev.Device }}
   - Hwaddr: {{ $netdev.Hwaddr }}
   - Ipaddr: {{ $netdev.Ipaddr }}
-  - IpCIDR: {{ $netdev.IpCIDR }}
   - Ipaddr6: {{ $netdev.Ipaddr6 }}
   - Prefix: {{ $netdev.Prefix }}
   - Netmask: {{ $netdev.Netmask }}
   - Gateway: {{ $netdev.Gateway }}
   - MTU: {{ $netdev.MTU }}
   - Primary: {{ $netdev.Primary }}
-  - Default: {{ $netdev.Default }}
   - Tags: {{ range $key, $value := $netdev.Tags }}{{ $key }}={{ $value }} {{ end }}
-  - TagsDel: {{ range $key, $value := $netdev.TagsDel }}{{ $key }}={{ $value }} {{ end }}
 {{- end }}
 
 
@@ -131,46 +125,46 @@ data from other structures.
 
 {{ range $index, $node := .AllNodes -}}
 - AllNodes[{{ $index }}]:
-  - Id: {{ $node.Id.Get }}
-  - Comment: {{ $node.Comment.Get }}
-  - ClusterName: {{ $node.ClusterName.Get }}
-  - ContainerName: {{ $node.ContainerName.Get }}
-  - Ipxe: {{ $node.Ipxe.Get }}
-  - RuntimeOverlay: {{ $node.RuntimeOverlay.Get }}
-  - SystemOverlay: {{ $node.SystemOverlay.Get }}
-  - Root: {{ $node.Root.Get }}
-  - Discoverable: {{ $node.Discoverable.Get }}
-  - Init: {{ $node.Init.Get }}
-  - AssetKey: {{ $node.AssetKey.Get }}
-  - Profiles: {{ $node.Profiles.Get }}
-  - Tags: {{ range $key, $value := $node.Tags }}{{ $key }}={{ $value.Get }} {{ end }}
+  - Id: {{ $node.Id }}
+  - Comment: {{ $node.Comment }}
+  - ClusterName: {{ $node.ClusterName }}
+  - ContainerName: {{ $node.ContainerName }}
+  - Ipxe: {{ $node.Ipxe }}
+  - RuntimeOverlay: {{ $node.RuntimeOverlay }}
+  - SystemOverlay: {{ $node.SystemOverlay }}
+  - Root: {{ $node.Root }}
+  - Discoverable: {{ $node.Discoverable }}
+  - Init: {{ $node.Init }}
+  - AssetKey: {{ $node.AssetKey }}
+  - Profiles: {{ $node.Profiles }}
+  - Tags: {{ range $key, $value := $node.Tags }}{{ $key }}={{ $value }} {{ end }}
   - Kernel
-    - Override: {{ $node.Kernel.Override.Get }}
-    - Args: {{ $node.Kernel.Args.Get }}
+    - Override: {{ $node.Kernel.Override }}
+    - Args: {{ $node.Kernel.Args }}
   - Ipmi:
-    - Ipaddr: {{ $node.Ipmi.Ipaddr.Get }}
-    - Netmask: {{ $node.Ipmi.Netmask.Get }}
-    - Port: {{ $node.Ipmi.Port.Get }}
-    - Gateway: {{ $node.Ipmi.Gateway.Get }}
-    - UserName: {{ $node.Ipmi.UserName.Get }}
-    - Password: {{ $node.Ipmi.Password.Get }}
-    - Interface: {{ $node.Ipmi.Interface.Get }}
-    - Write: {{ $node.Ipmi.Write.Get }}
-    - Tags: {{ range $key, $value := $node.Ipmi.Tags }}{{ $key }}={{ $value.Get }} {{ end }}
+    - Ipaddr: {{ $node.Ipmi.Ipaddr }}
+    - Netmask: {{ $node.Ipmi.Netmask }}
+    - Port: {{ $node.Ipmi.Port }}
+    - Gateway: {{ $node.Ipmi.Gateway }}
+    - UserName: {{ $node.Ipmi.UserName }}
+    - Password: {{ $node.Ipmi.Password }}
+    - Interface: {{ $node.Ipmi.Interface }}
+    - Write: {{ $node.Ipmi.Write }}
+    - Tags: {{ range $key, $value := $node.Ipmi.Tags }}{{ $key }}={{ $value }} {{ end }}
 {{- range $index, $netdev := $node.NetDevs }}
   - NetDevs[{{ $index }}]:
-    - Type: {{ $netdev.Type.Get }}
-    - OnBoot: {{ $netdev.OnBoot.Get }}
-    - Device: {{ $netdev.Device.Get }}
-    - Hwaddr: {{ $netdev.Hwaddr.Get }}
-    - Ipaddr: {{ $netdev.Ipaddr.Get }}
-    - Ipaddr6: {{ $netdev.Ipaddr6.Get }}
-    - IpCIDR: {{ $netdev.IpCIDR.Get }}
-    - Prefix: {{ $netdev.Prefix.Get }}
-    - Netmask: {{ $netdev.Netmask.Get }}
-    - Gateway: {{ $netdev.Gateway.Get }}
-    - MTU: {{ $netdev.MTU.Get }}
-    - Primary: {{ $netdev.Primary.Get }}
-    - Tags: {{ range $key, $value := $netdev.Tags }}{{ $key }}={{ $value.Get }} {{ end }}
+    - Type: {{ $netdev.Type }}
+    - OnBoot: {{ $netdev.OnBoot }}
+    - Device: {{ $netdev.Device }}
+    - Hwaddr: {{ $netdev.Hwaddr }}
+    - Ipaddr: {{ $netdev.Ipaddr }}
+    - IpCIDR: {{ $netdev.IpCIDR }}
+    - Ipaddr6: {{ $netdev.Ipaddr6 }}
+    - Prefix: {{ $netdev.Prefix }}
+    - Netmask: {{ $netdev.Netmask }}
+    - Gateway: {{ $netdev.Gateway }}
+    - MTU: {{ $netdev.MTU }}
+    - Primary: {{ $netdev.Primary }}
+    - Tags: {{ range $key, $value := $netdev.Tags }}{{ $key }}={{ $value }} {{ end }}
 {{- end }}
 {{ end }}

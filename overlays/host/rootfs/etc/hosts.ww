@@ -5,12 +5,12 @@
 # Warewulf Server
 {{$.Ipaddr}} {{$.BuildHost}} warewulf
 
-{{- range $node := $.AllNodes }}{{/* for each node */}}
-# Entry for {{ $node.Id.Get }}
-{{- range $devname, $netdev := $node.NetDevs }}{{/* for each network device on the node */}}
-{{- if $netdev.Ipaddr.Defined }}{{/* if we have an ip address on this network device */}}
+{{- range $node := $.AllNodes}}{{/* for each node */}}
+# Entry for {{$node.Id}}
+{{- range $devname, $netdev := $node.NetDevs}}{{/* for each network device on the node */}}
+{{- if $netdev.Ipaddr}}{{/* if we have an ip address on this network device */}}
 {{- /* emit the node name as hostname if this is the primary */}}
-{{$netdev.Ipaddr.Get}} {{if $netdev.Primary.GetB}}{{$node.Id.Get}}{{end}} {{$node.Id.Get}}-{{$devname}} {{if $netdev.Device.Defined}}{{$node.Id.Get}}-{{$netdev.Device.Get}}{{end}}
+{{$netdev.Ipaddr}} {{if $netdev.Primary}}{{$node.Id}}{{end}} {{$node.Id}}-{{$devname}} {{if $netdev.Device}}{{$node.Id}}-{{$netdev.Device}}{{end}}
 {{- end }}{{/* if ip */}}
 {{- end }}{{/* for each network device */}}
 {{- end }}{{/* for each node */}}

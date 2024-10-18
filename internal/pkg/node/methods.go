@@ -1,26 +1,26 @@
 package node
 
 import (
-	"fmt"
+	"net"
 	"reflect"
 	"regexp"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/warewulf/warewulf/internal/pkg/util"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-type sortByName []NodeInfo
+type nodeList []NodeConf
 
-func (a sortByName) Len() int           { return len(a) }
-func (a sortByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a sortByName) Less(i, j int) bool { return a[i].Id.Print() < a[j].Id.Print() }
+func (a nodeList) Len() int           { return len(a) }
+func (a nodeList) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a nodeList) Less(i, j int) bool { return a[i].id < a[j].id }
 
-func GetUnsetVerbs() []string {
-	return []string{"UNSET", "DELETE", "UNDEF", "undef", "--", "nil", "0.0.0.0"}
-}
+type profileList []ProfileConf
+
+func (a profileList) Len() int           { return len(a) }
+func (a profileList) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a profileList) Less(i, j int) bool { return a[i].id < a[j].id }
 
 /**********
  *
@@ -29,18 +29,18 @@ func GetUnsetVerbs() []string {
  *********/
 
 /*
-Filter a given slice of NodeInfo against a given
+Filter a given slice of NodeConf against a given
 regular expression
 */
-func FilterByName(set []NodeInfo, searchList []string) []NodeInfo {
-	var ret []NodeInfo
-	unique := make(map[string]NodeInfo)
+func FilterNodeListByName(set []NodeConf, searchList []string) []NodeConf {
+	var ret []NodeConf
+	unique := make(map[string]NodeConf)
 
 	if len(searchList) > 0 {
 		for _, search := range searchList {
 			for _, entry := range set {
-				if match, _ := regexp.MatchString("^"+search+"$", entry.Id.Get()); match {
-					unique[entry.Id.Get()] = entry
+				if match, _ := regexp.MatchString("^"+search+"$", entry.id); match {
+					unique[entry.id] = entry
 				}
 			}
 		}
@@ -51,14 +51,41 @@ func FilterByName(set []NodeInfo, searchList []string) []NodeInfo {
 		ret = set
 	}
 
-	sort.Sort(sortByName(ret))
+	sort.Sort(nodeList(ret))
+	return ret
+}
+
+/*
+Filter a given slice of ProfileConf against a given
+regular expression
+*/
+func FilterProfileListByName(set []ProfileConf, searchList []string) []ProfileConf {
+	var ret []ProfileConf
+	unique := make(map[string]ProfileConf)
+
+	if len(searchList) > 0 {
+		for _, search := range searchList {
+			for _, entry := range set {
+				if match, _ := regexp.MatchString("^"+search+"$", entry.id); match {
+					unique[entry.id] = entry
+				}
+			}
+		}
+		for _, n := range unique {
+			ret = append(ret, n)
+		}
+	} else {
+		ret = set
+	}
+
+	sort.Sort(profileList(ret))
 	return ret
 }
 
 /*
 Filter a given map of NodeConf against given regular expression.
 */
-func FilterMapByName(inputMap map[string]*NodeConf, searchList []string) (retMap map[string]*NodeConf) {
+func FilterNodeMapByName(inputMap map[string]*NodeConf, searchList []string) (retMap map[string]*NodeConf) {
 	retMap = map[string]*NodeConf{}
 	if len(searchList) > 0 {
 		for _, search := range searchList {
@@ -72,180 +99,263 @@ func FilterMapByName(inputMap map[string]*NodeConf, searchList []string) (retMap
 	return retMap
 }
 
-/**********
- *
- * Sets
- *
- *********/
+/*
+Filter a given map of ProfileConf against given regular expression.
+*/
+func FilterProfileMapByName(inputMap map[string]*ProfileConf, searchList []string) (retMap map[string]*ProfileConf) {
+	retMap = map[string]*ProfileConf{}
+	if len(searchList) > 0 {
+		for _, search := range searchList {
+			for name, nConf := range inputMap {
+				if match, _ := regexp.MatchString("^"+search+"$", name); match {
+					retMap[name] = nConf
+				}
+			}
+		}
+	}
+	return retMap
+}
 
 /*
-Set value. If argument is 'UNDEF', 'DELETE',
-'UNSET" or '--' the value is removed.
-N.B. the '--' might never ever happen as '--'
-is parsed out by cobra
+Creates an NodeConf with the given id. Doesn't add it to the database
 */
-func (ent *Entry) Set(val string) {
-	if val == "" {
+func NewNode(id string) (nodeconf NodeConf) {
+	nodeconf = EmptyNode()
+	nodeconf.id = id
+	return nodeconf
+}
+
+func NewProfile(id string) (profileconf ProfileConf) {
+	profileconf = EmptyProfile()
+	profileconf.id = id
+	return profileconf
+}
+
+func EmptyNode() (nodeconf NodeConf) {
+	nodeconf.Ipmi = new(IpmiConf)
+	nodeconf.Ipmi.Tags = map[string]string{}
+	nodeconf.Kernel = new(KernelConf)
+	nodeconf.NetDevs = make(map[string]*NetDevs)
+	nodeconf.Tags = map[string]string{}
+	return nodeconf
+}
+
+/*
+Creates a ProfileConf but doesn't add it to the database.
+*/
+func EmptyProfile() (profileconf ProfileConf) {
+	profileconf.Ipmi = new(IpmiConf)
+	profileconf.Ipmi.Tags = map[string]string{}
+	profileconf.Kernel = new(KernelConf)
+	profileconf.NetDevs = make(map[string]*NetDevs)
+	profileconf.Tags = map[string]string{}
+	return profileconf
+}
+
+/*
+Flattens out a NodeConf, which means if there are no explicit values in *IpmiConf
+or *KernelConf, these pointer will set to nil. This will remove something like
+ipmi: {} from nodes.conf
+*/
+func (info *NodeConf) Flatten() {
+	recursiveFlatten(info)
+}
+
+/*
+Flattens out a ProfileConf, which means if there are no explicit values in *IpmiConf
+or *KernelConf, these pointer will set to nil. This will remove something like
+ipmi: {} from nodes.conf
+*/
+func (info *ProfileConf) Flatten() {
+	recursiveFlatten(info)
+}
+
+func recursiveFlatten(obj interface{}) (hasContent bool) {
+	valObj := reflect.ValueOf(obj)
+	typeObj := reflect.TypeOf(obj)
+	hasContent = false
+	if valObj.IsNil() {
 		return
 	}
+	for i := 0; i < typeObj.Elem().NumField(); i++ {
+		if valObj.Elem().Field(i).IsValid() {
+			if !typeObj.Elem().Field(i).IsExported() {
+				continue
+			}
+		}
+		switch typeObj.Elem().Field(i).Type.Kind() {
+		case reflect.Map:
+			mapIter := valObj.Elem().Field(i).MapRange()
+			for mapIter.Next() {
+				if mapIter.Value().Kind() == reflect.String {
+					if mapIter.Value().String() != "" {
+						hasContent = true
+					}
+				} else {
+					ret := recursiveFlatten(mapIter.Value().Interface())
+					hasContent = ret || hasContent
+				}
+			}
 
-	if util.InSlice(GetUnsetVerbs(), val) {
-		wwlog.Debug("Removing value for %v", *ent)
-		ent.value = []string{""}
-	} else {
-		ent.value = []string{val}
+		case reflect.Ptr:
+			if valObj.Elem().Field(i).Addr().IsValid() {
+				ret := recursiveFlatten((valObj.Elem().Field(i).Interface()))
+				if !ret {
+					valObj.Elem().Field(i).Set(reflect.Zero(valObj.Elem().Field(i).Type()))
+				}
+				hasContent = ret || hasContent
+
+			}
+		case reflect.Struct:
+			ret := recursiveFlatten((valObj.Elem().Field(i).Addr().Interface()))
+			hasContent = ret || hasContent
+		case reflect.Slice:
+			if typeObj.Elem().Field(i).Type == reflect.TypeOf([]string{}) {
+				del := false
+				for _, elem := range (valObj.Elem().Field(i).Interface()).([]string) {
+					if strings.EqualFold(elem, undef) {
+						del = true
+					}
+				}
+				if del {
+					valObj.Elem().Field(i).SetLen(0)
+				}
+			}
+			if valObj.Elem().Field(i).Len() > 0 {
+				hasContent = true
+			}
+		case reflect.String:
+			if strings.EqualFold(valObj.Elem().Field(i).String(), undef) {
+				valObj.Elem().Field(i).SetString("")
+			}
+			if valObj.Elem().Field(i).String() != "" {
+				hasContent = true
+			}
+		case reflect.Bool:
+			val := valObj.Elem().Field(i).Interface().(bool)
+			hasContent = hasContent || val
+		default:
+			switch valObj.Elem().Field(i).Type() {
+			case reflect.TypeOf(net.IP{}):
+				val := valObj.Elem().Field(i).Interface().(net.IP)
+				if len(val) != 0 && !val.IsUnspecified() {
+					hasContent = true
+				}
+			default:
+			}
+		}
+		if !hasContent {
+			valObj.Elem().Field(i).Set(reflect.Zero(valObj.Elem().Field(i).Type()))
+		}
 	}
+	return
 }
 
 /*
-Set bool
+Create a string slice, where every element represents a yaml entry, used for node/profile edit
+in order to get a summary of all available elements
 */
-func (ent *Entry) SetB(val bool) {
-	if val {
-		ent.value = []string{"true"}
-	} else {
-		ent.value = []string{"false"}
+func UnmarshalConf(obj interface{}, excludeList []string) (lines []string) {
+	objType := reflect.TypeOf(obj)
+	// now iterate of every field
+	for i := 0; i < objType.NumField(); i++ {
+		field := objType.Field(i)
+		if field.Tag.Get("comment") != "" {
+			if ymlStr, ok := getYamlString(field, excludeList); ok {
+				lines = append(lines, ymlStr...)
+			}
+		}
+		if field.Type.Kind() == reflect.Ptr && field.Tag.Get("yaml") != "" {
+			typeLine := field.Tag.Get("yaml")
+			if len(strings.Split(typeLine, ",")) > 1 {
+				typeLine = strings.Split(typeLine, ",")[0] + ":"
+			}
+			lines = append(lines, typeLine)
+			nestedLine := UnmarshalConf(reflect.New(field.Type.Elem()).Elem().Interface(), excludeList)
+			for _, ln := range nestedLine {
+				lines = append(lines, "  "+ln)
+			}
+		} else if field.Type.Kind() == reflect.Map && field.Type.Elem().Kind() == reflect.Ptr {
+			typeLine := field.Tag.Get("yaml")
+			if len(strings.Split(typeLine, ",")) > 1 {
+				typeLine = strings.Split(typeLine, ",")[0] + ":"
+			}
+			lines = append(lines, typeLine, "  element:")
+			nestedLine := UnmarshalConf(reflect.New(field.Type.Elem().Elem()).Elem().Interface(), excludeList)
+			for _, ln := range nestedLine {
+				lines = append(lines, "    "+ln)
+			}
+		} else if field.Type.Kind() == reflect.Struct && field.Anonymous {
+			nestedLine := UnmarshalConf(reflect.New(field.Type).Elem().Interface(), excludeList)
+			lines = append(lines, nestedLine...)
+		}
 	}
-}
-
-func (ent *Entry) SetSlice(val []string) {
-	if len(val) == 0 {
-		return
-	} else if len(val) == 1 && val[0] == "" { // check also for an "empty" slice
-		return
-	}
-	ent.isSlice = true
-	if util.InSlice(GetUnsetVerbs(), val[0]) {
-		ent.value = []string{}
-	} else {
-		ent.value = val
-	}
+	return lines
 }
 
 /*
-Set alternative value
+Get the string of the yaml tag
 */
-func (ent *Entry) SetAlt(val string, from string) {
-	if val == "" {
-		return
+func getYamlString(myType reflect.StructField, excludeList []string) ([]string, bool) {
+	ymlStr := myType.Tag.Get("yaml")
+	if len(strings.Split(ymlStr, ",")) > 1 {
+		ymlStr = strings.Split(ymlStr, ",")[0]
 	}
-	ent.altvalue = []string{val}
-	ent.from = from
+	if util.InSlice(excludeList, ymlStr) {
+		return []string{""}, false
+	} else if myType.Tag.Get("comment") == "" && myType.Type.Kind() == reflect.String {
+		return []string{""}, false
+	}
+	if myType.Type.Kind() == reflect.String {
+		fieldType := myType.Tag.Get("type")
+		if fieldType == "" {
+			fieldType = "string"
+		}
+		ymlStr += ": " + fieldType
+		return []string{ymlStr}, true
+	} else if myType.Type == reflect.TypeOf([]string{}) {
+		return []string{ymlStr + ":", "  - string"}, true
+	} else if myType.Type == reflect.TypeOf(map[string]string{}) {
+		return []string{ymlStr + ":", "  key: value"}, true
+	} else if myType.Type.Kind() == reflect.Ptr {
+		return []string{ymlStr + ":"}, true
+	}
+	return []string{ymlStr}, true
 }
 
 /*
-Sets alternative bool
+Getters for unexported fields
 */
-func (ent *Entry) SetAltB(val bool, from string) {
-	if val {
-		ent.altvalue = []string{"true"}
-		ent.from = from
-	} else {
-		ent.altvalue = []string{"false"}
-		ent.from = from
-	}
+
+/*
+Returns the id of the node
+*/
+func (node *NodeConf) Id() string {
+	return node.id
 }
 
 /*
-Sets alternative slice
+Returns the id of the profile
 */
-func (ent *Entry) SetAltSlice(val []string, from string) {
-	if len(val) == 0 {
-		return
-	}
-	ent.isSlice = true
-	ent.altvalue = append(ent.altvalue, val...)
-	if ent.from == "" {
-		ent.from = from
-	} else {
-		ent.from = ent.from + "," + from
-	}
+func (node *ProfileConf) Id() string {
+	return node.id
 }
 
 /*
-Sets the default value of an entry.
+Returns if the node is a valid in the database
 */
-func (ent *Entry) SetDefault(val string) {
-	if val == "" {
-		return
-	}
-	ent.def = []string{val}
+func (node *NodeConf) Valid() bool {
+	return node.valid
 }
 
 /*
-Set the default entry as slice
+Check if the netdev is the primary one
 */
-func (ent *Entry) SetDefaultSlice(val []string) {
-	if len(val) == 0 {
-		return
-	}
-	ent.isSlice = true
-	ent.def = val
+func (dev *NetDevs) Primary() bool {
+	return dev.primary
 }
 
-/*
-Set default entry as bool
-*/
-func (ent *Entry) SetDefaultB(val bool) {
-	if val {
-		ent.def = []string{"true"}
-	} else {
-		ent.def = []string{"false"}
-	}
-}
-
-/*
-Remove a element from a slice
-*/
-func (ent *Entry) SliceRemoveElement(val string) {
-	util.SliceRemoveElement(ent.value, val)
-}
-
-/**********
-*
-* Gets
-*
-*********/
-/*
-Gets the the entry of the value in following order
-* node value if set
-* profile value if set
-* default value if set
-*/
-func (ent *Entry) Get() string {
-	if len(ent.value) != 0 {
-		return ent.value[0]
-	}
-	if len(ent.altvalue) != 0 {
-		return ent.altvalue[0]
-	}
-	if len(ent.def) != 0 {
-		return ent.def[0]
-	}
-	return ""
-}
-
-/*
-Get the bool value of an entry.
-*/
-func (ent *Entry) GetB() bool {
-	if len(ent.value) > 0 {
-		return !(strings.ToLower(ent.value[0]) == "false" ||
-			strings.ToLower(ent.value[0]) == "no" ||
-			ent.value[0] == "0")
-	} else if len(ent.altvalue) > 0 {
-		return !(strings.ToLower(ent.altvalue[0]) == "false" ||
-			strings.ToLower(ent.altvalue[0]) == "no" ||
-			ent.altvalue[0] == "0")
-	} else {
-		return !(len(ent.def) == 0 ||
-			strings.ToLower(ent.def[0]) == "false" ||
-			strings.ToLower(ent.def[0]) == "no" ||
-			ent.def[0] == "0")
-	}
-}
-
-// returns all negated elemets which are marked with ! as prefix
+// returns all negated elements which are marked with ! as prefix
 // from a list
 func negList(list []string) (ret []string) {
 	for _, tok := range list {
@@ -274,241 +384,16 @@ func cleanList(list []string) (ret []string) {
 }
 
 /*
-Returns a string slice created from a comma separated list of the value.
+Return the ipv4 address and mask in CIDR format. Aimed for the use in
+templates.
 */
-func (ent *Entry) GetSlice() []string {
-	retval := append(ent.altvalue, ent.value...)
-	if len(retval) != 0 {
-		return cleanList(retval)
-	}
-	if len(ent.def) != 0 {
-		return ent.def
-	}
-	return []string{}
-}
-
-/*
-Get the real value, not the alternative of default one.
-*/
-func (ent *Entry) GetReal() string {
-	if len(ent.value) == 0 {
+func (netdev *NetDevs) IpCIDR() string {
+	if netdev.Ipaddr.IsUnspecified() || netdev.Netmask.IsUnspecified() {
 		return ""
 	}
-	return ent.value[0]
-}
-
-/*
-Get the real value, not the alternative of default one.
-*/
-func (ent *Entry) GetRealSlice() []string {
-	if len(ent.value) == 0 {
-		return []string{}
+	ipCIDR := net.IPNet{
+		IP:   netdev.Ipaddr,
+		Mask: net.IPMask(netdev.Netmask),
 	}
-	return ent.value
-}
-
-/*
-true if the entry has set a real value, else false.
-*/
-func (ent *Entry) GotReal() bool {
-	return len(ent.value) != 0
-}
-
-/*
-Get a pointer to the value
-*/
-func (ent *Entry) GetPointer() *string {
-	ret := ent.Get()
-	return &ret
-}
-
-/*
-Try to get a int of a value, 0 if value can't be parsed!
-*/
-func (ent *Entry) GetInt() int {
-	var ret int
-	if len(ent.value) != 0 {
-		ret, _ = strconv.Atoi(ent.value[0])
-	} else if len(ent.altvalue) != 0 {
-		ret, _ = strconv.Atoi(ent.altvalue[0])
-	} else if len(ent.def) != 0 {
-		ret, _ = strconv.Atoi(ent.def[0])
-	}
-	return ret
-}
-
-/*
-Ptr to int
-*/
-func (ent *Entry) GetIntPtr() *int {
-	ret := ent.GetInt()
-	return &ret
-}
-
-/**********
- *
- * Misc
- *
- *********/
-/*
-Gets the the entry of the value in following order
-* node value if set
-* profile value if set
-* default value if set
-*/
-func (ent *Entry) Print() string {
-	if !ent.isSlice {
-		if len(ent.value) != 0 {
-			return ent.value[0]
-		}
-		if len(ent.altvalue) != 0 {
-			return ent.altvalue[0]
-		}
-		if len(ent.def) != 0 {
-			return "(" + ent.def[0] + ")"
-		}
-	} else {
-		var ret string
-		if len(ent.value) != 0 || len(ent.altvalue) != 0 {
-			combList := append(ent.altvalue, ent.value...)
-			ret = strings.Join(cleanList(combList), ",")
-			if len(negList(combList)) > 0 {
-				ret += " ~{" + strings.Join(negList(combList), ",") + "}"
-			}
-
-		}
-		if ret != "" {
-			return ret
-		}
-		if len(ent.def) != 0 {
-			return "(" + strings.Join(ent.def, ",") + ")"
-		}
-
-	}
-	return "--"
-}
-
-/*
-Was used for combined stringSlice
-
-func (ent *Entry) PrintComb() string {
-	if ent.value != "" && ent.altvalue != "" {
-		return "[" + ent.value + "," + ent.altvalue + "]"
-	}
-	return ent.Print()
-}
-*/
-
-/*
-same as GetB()
-*/
-func (ent *Entry) PrintB() string {
-	if len(ent.value) != 0 || len(ent.altvalue) != 0 {
-		return fmt.Sprintf("%t", ent.GetB())
-	}
-	return fmt.Sprintf("(%t)", ent.GetB())
-}
-
-/*
-Returns SUPERSEDED if value was set per node or
-per profile. Else -- is returned.
-*/
-func (ent *Entry) Source() string {
-	if len(ent.value) != 0 && len(ent.altvalue) != 0 {
-		return "SUPERSEDED"
-		// return fmt.Sprintf("[%s]", ent.from)
-	} else if ent.from == "" {
-		return "--"
-	}
-	return ent.from
-}
-
-/*
-Check if value was defined.
-*/
-func (ent *Entry) Defined() bool {
-	if len(ent.value) != 0 {
-		return true
-	}
-	if len(ent.altvalue) != 0 {
-		return true
-	}
-	if len(ent.def) != 0 {
-		return true
-	}
-	return false
-}
-
-/*
-Create an empty node NodeConf
-*/
-func NewConf() (nodeconf NodeConf) {
-	nodeconf.Ipmi = new(IpmiConf)
-	nodeconf.Ipmi.Tags = map[string]string{}
-	nodeconf.Kernel = new(KernelConf)
-	nodeconf.NetDevs = make(map[string]*NetDevs)
-	nodeconf.Tags = map[string]string{}
-	return nodeconf
-}
-
-/*
-Create an empty node NodeInfo
-*/
-func NewInfo() (nodeInfo NodeInfo) {
-	nodeInfo.Ipmi = new(IpmiEntry)
-	nodeInfo.Ipmi.Tags = map[string]*Entry{}
-	nodeInfo.Kernel = new(KernelEntry)
-	nodeInfo.NetDevs = make(map[string]*NetDevEntry)
-	nodeInfo.Tags = make(map[string]*Entry)
-	return nodeInfo
-}
-
-/*
-Get a entry by its name
-*/
-func GetByName(node interface{}, name string) (string, error) {
-	valEntry := reflect.ValueOf(node)
-	entryField := valEntry.Elem().FieldByName(name)
-	if entryField == (reflect.Value{}) {
-		return "", fmt.Errorf("couldn't find field with name: %s", name)
-	}
-	if entryField.Type() != reflect.TypeOf(Entry{}) {
-		return "", fmt.Errorf("field %s is not of type node.Entry", name)
-	}
-	myEntry := entryField.Interface().(Entry)
-	return myEntry.Get(), nil
-}
-
-/*
-Check if the Netdev is empty, so has no values set
-*/
-func ObjectIsEmpty(obj interface{}) bool {
-	if obj == nil {
-		return true
-	}
-	varType := reflect.TypeOf(obj)
-	varVal := reflect.ValueOf(obj)
-	if varType.Kind() == reflect.Ptr && !varVal.IsNil() {
-		return ObjectIsEmpty(varVal.Elem().Interface())
-	}
-	if varVal.IsZero() {
-		return true
-	}
-	for i := 0; i < varType.NumField(); i++ {
-		if varType.Field(i).Type.Kind() == reflect.String && !varVal.Field(i).IsZero() {
-			val := varVal.Field(i).Interface().(string)
-			if val != "" {
-				return false
-			}
-		} else if varType.Field(i).Type == reflect.TypeOf(map[string]string{}) {
-			if len(varVal.Field(i).Interface().(map[string]string)) != 0 {
-				return false
-			}
-		} else if varType.Field(i).Type.Kind() == reflect.Ptr {
-			if !ObjectIsEmpty(varVal.Field(i).Interface()) {
-				return false
-			}
-		}
-	}
-	return true
+	return ipCIDR.String()
 }

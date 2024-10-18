@@ -12,7 +12,7 @@ import (
 
 type variables struct {
 	netName      string
-	profileConf  node.NodeConf
+	profileConf  node.ProfileConf
 	SetNetDevDel string
 	SetNodeAll   bool
 	SetYes       bool
@@ -20,14 +20,12 @@ type variables struct {
 	fsName       string
 	partName     string
 	diskName     string
-	ProfileConf  node.NodeConf
-	Converters   []func() error
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
 func GetCommand() *cobra.Command {
 	vars := variables{}
-	vars.profileConf = node.NewConf()
+	vars.profileConf = node.NewProfile("")
 	baseCmd := &cobra.Command{
 		DisableFlagsInUseLine: true,
 		Use:                   "add PROFILE",
@@ -37,8 +35,7 @@ func GetCommand() *cobra.Command {
 		RunE:                  CobraRunE(&vars),
 		Args:                  cobra.ExactArgs(1),
 	}
-	vars.Converters = vars.profileConf.CreateFlags(baseCmd,
-		[]string{"ipaddr", "ipaddr6", "ipmiaddr", "profile"})
+	vars.profileConf.CreateFlags(baseCmd)
 	baseCmd.PersistentFlags().StringVar(&vars.netName, "netname", "", "Set network name for network options")
 	baseCmd.PersistentFlags().StringVar(&vars.fsName, "fsname", "", "set the file system name which must match a partition name")
 	baseCmd.PersistentFlags().StringVar(&vars.partName, "partname", "", "set the partition name so it can be used by a file system")

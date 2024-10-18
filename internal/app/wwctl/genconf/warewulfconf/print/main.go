@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {

@@ -2,7 +2,6 @@ package rename
 
 import (
 	"bytes"
-	"io"
 	"os"
 	"path"
 	"testing"
@@ -43,23 +42,14 @@ func Test_Rename(t *testing.T) {
 
 func verifyContainerListOutput(t *testing.T, content string) {
 	baseCmd := containerList.GetCommand()
-	stdoutR, stdoutW, _ := os.Pipe()
-	os.Stdout = stdoutW
-	baseCmd.SetOut(os.Stdout)
-	baseCmd.SetErr(os.Stdout)
-	wwlog.SetLogWriter(os.Stdout)
+	buf := new(bytes.Buffer)
+	baseCmd.SetOut(buf)
+	baseCmd.SetErr(buf)
+	wwlog.SetLogWriterErr(buf)
+	wwlog.SetLogWriterInfo(buf)
 	err := baseCmd.Execute()
 	assert.NoError(t, err)
 
-	stdoutC := make(chan string)
-	go func() {
-		var buf bytes.Buffer
-		_, _ = io.Copy(&buf, stdoutR)
-		stdoutC <- buf.String()
-	}()
-	stdoutW.Close()
-
-	stdout := <-stdoutC
-	assert.NotEmpty(t, stdout, "output should not be empty")
-	assert.Contains(t, stdout, content)
+	assert.NotEmpty(t, buf.String(), "output should not be empty")
+	assert.Contains(t, buf.String(), content)
 }
