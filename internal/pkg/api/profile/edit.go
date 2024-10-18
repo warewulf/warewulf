@@ -12,24 +12,6 @@ import (
 )
 
 /*
-Returns the nodes as a yaml string
-*/
-func FindAllProfileConfs() *wwapiv1.NodeYaml {
-	nodeDB, err := node.New()
-	if err != nil {
-		wwlog.Error("Could not open nodeDB: %s\n", err)
-		os.Exit(1)
-	}
-	profileMap, _ := nodeDB.FindAllProfiles()
-	// ignore err as nodeDB should always be correct
-	buffer, _ := yaml.Marshal(profileMap)
-	retVal := wwapiv1.NodeYaml{
-		NodeConfMapYaml: string(buffer),
-	}
-	return &retVal
-}
-
-/*
 Returns filtered list of nodes
 */
 func FilteredProfiles(profileList *wwapiv1.NodeList) *wwapiv1.NodeYaml {

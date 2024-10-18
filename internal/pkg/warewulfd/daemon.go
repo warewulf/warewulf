@@ -35,11 +35,6 @@ func SetNoDaemon() {
 	nodaemon = true
 }
 
-// run with daemon
-func SetDaemon() {
-	nodaemon = false
-}
-
 func DaemonFormatter(logLevel int, rec *wwlog.LogRecord) string {
 	return "[" + rec.Time.Format(time.UnixDate) + "] " + wwlog.DefaultFormatter(logLevel, rec)
 }
