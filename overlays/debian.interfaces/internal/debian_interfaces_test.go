@@ -57,7 +57,7 @@ iface wwnet0 inet static
   address 192.168.3.21
   netmask 255.255.255.0
   gateway 192.168.3.1
-  mtu 
+  mtu 1500
 backupFile: true
 writeFile: true
 Filename: secondary
@@ -68,6 +68,6 @@ iface wwnet1 inet static
   address 192.168.3.22
   netmask 255.255.255.0
   gateway 192.168.3.1
-  mtu 
+  mtu 9000
   up ifmetric wwnet1 30
 `

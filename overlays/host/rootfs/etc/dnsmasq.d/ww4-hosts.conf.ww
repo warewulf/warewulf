@@ -32,13 +32,10 @@ tftp-root={{ $.Tftp.TftpRoot }}
 {{- end }}
 # define the the range
 dhcp-range={{$.Dhcp.RangeStart}},{{$.Dhcp.RangeEnd}},{{$.Netmask}},6h
-{{/* Add all the known hosts */}}
-{{- range $node := $.AllNodes}}                  {{/* for each node */}}
-{{- range $devname, $netdev := $node.NetDevs}} {{/* for each network device on the node */}}
-{{- if $netdev.Ipaddr}}                {{/* if we have an ip address on this network device */}}
-{{- if $netdev.Hwaddr }}
+{{ range $node := $.AllNodes -}}
+{{ range $devname, $netdev := $node.NetDevs -}}
+{{ if and $netdev.Ipaddr $netdev.Hwaddr -}}
 dhcp-host={{$netdev.Hwaddr}},set:warewulf,{{$node.Id}},{{$netdev.Ipaddr}},infinite
-{{- end}}{{/* end if Hwaddr */}}
-{{- end}}{{/* end if ip */}}
-{{- end}}{{/* end for each network device */}}
-{{- end}}{{/* end for each node */}}
+{{- end }}
+{{ end -}}
+{{ end -}}
