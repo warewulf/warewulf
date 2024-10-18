@@ -28,7 +28,7 @@ func Test_List(t *testing.T) {
 			name:    "single node list",
 			args:    []string{},
 			wantErr: false,
-			stdout: `  NODE NAME  PROFILES   NETWORK  
+			stdout: `  NODE NAME  PROFILES   NETWORK
   n01       [default]
 `,
 			inDb: `WW_INTERNAL: 45
@@ -65,7 +65,7 @@ nodes:
 			args:    []string{"n01,n02"},
 			wantErr: false,
 			stdout: `  NODE NAME  PROFILES  NETWORK
-  n01       [default]           
+  n01       [default]
   n02       [default]
 `,
 			inDb: `WW_INTERNAL: 45
@@ -186,7 +186,7 @@ nodes:
 			args:    []string{"-i"},
 			wantErr: false,
 			stdout: `NODE IPMIIPADDR IPMIPORT IPMIUSERNAME IPMIINTERFACE
-n01 <nil>    admin      
+n01 <nil>    admin
 `,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
