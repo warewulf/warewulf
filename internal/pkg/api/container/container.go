@@ -422,11 +422,6 @@ func ContainerRename(crp *wwapiv1.ContainerRenameParameter) (err error) {
 	for _, node := range nodes {
 		if node.ContainerName == crp.ContainerName {
 			node.ContainerName = crp.TargetName
-			/*
-				if err := nodeDB.NodeUpdate(node); err != nil {
-					return err
-				}
-			*/
 		}
 	}
 
@@ -437,11 +432,6 @@ func ContainerRename(crp *wwapiv1.ContainerRenameParameter) (err error) {
 	for _, profile := range profiles {
 		if profile.ContainerName == crp.ContainerName {
 			profile.ContainerName = crp.TargetName
-			/*
-				if err := nodeDB.ProfileUpdate(profile); err != nil {
-					return err
-				}
-			*/
 		}
 	}
 
