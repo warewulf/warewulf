@@ -71,7 +71,6 @@ Filename: warewulf-default.conf
 [connection]
 id=default
 interface-name=wwnet0
-
 type=ethernet
 autoconnect=true
 [ethernet]
@@ -93,7 +92,6 @@ Filename: warewulf-secondary.conf
 [connection]
 id=secondary
 interface-name=wwnet1
-
 type=ethernet
 autoconnect=true
 [ethernet]

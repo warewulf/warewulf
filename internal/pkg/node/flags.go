@@ -1,37 +1,64 @@
 package node
 
 import (
-	"fmt"
 	"net"
 	"reflect"
-	"strconv"
-	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/wwtype"
 )
 
-/*
-Create cmd line flags from the NodeConf fields. Returns a []func() where every function
-must be called, as the commandline parser returns e.g. netip.IP objects which must be parsedf
-back to strings.
-*/
-func (nodeConf *NodeConf) CreateFlags(baseCmd *cobra.Command, excludeList []string) (converters []func() error) {
-	return RecursiveCreateFlags(nodeConf, baseCmd, excludeList)
+type NodeConfDel struct {
+	TagsDel     []string `lopt:"tagdel" comment:"add tags"`
+	IpmiTagsDel []string `lopt:"ipmitagdel" comment:"delete ipmi tags"`
+	NetTagsDel  []string `lopt:"nettagdel" comment:"delete network tags"`
+	NetDel      string   `lopt:"netdel" comment:"network to delete"`
+	DiskDel     string   `lopt:"diskdel" comment:"delete the disk from the configuration"`
+	PartDel     string   `lopt:"partdel" comment:"delete the partition from the configuration"`
+	FsDel       string   `lopt:"fsdel" comment:"delete the fs from the configuration"`
+}
+type NodeConfAdd struct {
+	TagsAdd     map[string]string `lopt:"tagadd" comment:"add tags"`
+	IpmiTagsAdd map[string]string `lopt:"ipmitagadd" comment:"add ipmi tags"`
+	NetTagsAdd  map[string]string `lopt:"nettagadd" comment:"add network tags"`
+	Net         string            `lopt:"netname" comment:"network which is modified"`
+	DiskName    string            `lopt:"diskname" comment:"set diskdevice name"`
+	PartName    string            `lopt:"partname" comment:"set the partition name so it can be used by a file system"`
+	FsName      string            `lopt:"fsname" comment:"set the file system name which must match a partition name"`
 }
 
-func RecursiveCreateFlags(obj interface{}, baseCmd *cobra.Command, excludeList []string) (converters []func() error) {
+/*
+Create cmd line flags from the NodeConf fields. Returns a []func() where every function must be called, as the command line parser returns e.g. netip.IP objects which must be parsed
+back to strings.
+*/
+func (nodeConf *NodeConf) CreateFlags(baseCmd *cobra.Command) {
+	recursiveCreateFlags(nodeConf, baseCmd)
+}
+
+func (profileConf *ProfileConf) CreateFlags(baseCmd *cobra.Command) {
+	recursiveCreateFlags(profileConf, baseCmd)
+}
+
+func (del *NodeConfDel) CreateDelFlags(baseCmd *cobra.Command) {
+	recursiveCreateFlags(del, baseCmd)
+
+}
+func (add *NodeConfAdd) CreateAddFlags(baseCmd *cobra.Command) {
+	recursiveCreateFlags(add, baseCmd)
+
+}
+
+func recursiveCreateFlags(obj interface{}, baseCmd *cobra.Command) {
 	// now iterate of every field
 	nodeInfoType := reflect.TypeOf(obj)
 	nodeInfoVal := reflect.ValueOf(obj)
 	for i := 0; i < nodeInfoVal.Elem().NumField(); i++ {
-		if nodeInfoType.Elem().Field(i).Tag.Get("comment") != "" &&
-			!util.InSlice(excludeList, nodeInfoType.Elem().Field(i).Tag.Get("lopt")) {
+		if nodeInfoType.Elem().Field(i).Tag.Get("comment") != "" {
 			field := nodeInfoVal.Elem().Field(i)
-			converters = append(converters, createFlags(baseCmd, excludeList, nodeInfoType.Elem().Field(i), &field)...)
+			createFlags(baseCmd, nodeInfoType.Elem().Field(i), &field)
+
 		} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Ptr {
-			newConv := RecursiveCreateFlags(nodeInfoVal.Elem().Field(i).Interface(), baseCmd, excludeList)
-			converters = append(converters, newConv...)
+			recursiveCreateFlags(nodeInfoVal.Elem().Field(i).Interface(), baseCmd)
 
 		} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Map &&
 			nodeInfoType.Elem().Field(i).Type != reflect.TypeOf(map[string]string{}) {
@@ -46,174 +73,49 @@ func RecursiveCreateFlags(obj interface{}, baseCmd *cobra.Command, excludeList [
 			} else {
 				key = nodeInfoVal.Elem().Field(i).MapKeys()[0]
 			}
-			newConv := RecursiveCreateFlags(nodeInfoVal.Elem().Field(i).MapIndex(key).Interface(), baseCmd, excludeList)
-			converters = append(converters, newConv...)
+			recursiveCreateFlags(nodeInfoVal.Elem().Field(i).MapIndex(key).Interface(), baseCmd)
+		} else if nodeInfoType.Elem().Field(i).Anonymous {
+			recursiveCreateFlags(nodeInfoVal.Elem().Field(i).Addr().Interface(), baseCmd)
+		} else if nodeInfoType.Elem().Field(i).Type.Kind() == reflect.Struct {
+			recursiveCreateFlags(nodeInfoVal.Elem().Field(i).Addr().Interface(), baseCmd)
 		}
 	}
-	return converters
 }
 
 /*
 Helper function to create the different PersistentFlags() for different types.
 */
-func createFlags(baseCmd *cobra.Command, excludeList []string,
-	myType reflect.StructField, myVal *reflect.Value) (converters []func() error) {
+func createFlags(baseCmd *cobra.Command,
+	myType reflect.StructField, myVal *reflect.Value) {
+	var wwbool wwtype.WWbool
 	if myType.Tag.Get("lopt") != "" {
-		if myType.Type.Kind() == reflect.String {
+		if myType.Type == reflect.TypeOf("") {
 			ptr := myVal.Addr().Interface().(*string)
-			switch myType.Tag.Get("type") {
-			case "uint":
-				converters = append(converters, func() error {
-					if !util.InSlice(GetUnsetVerbs(), *ptr) && *ptr != "" {
-						_, err := strconv.ParseUint(*ptr, 10, 32)
-						if err != nil {
-							return err
-						}
-					}
-					return nil
-				})
-				if myType.Tag.Get("sopt") != "" {
-					baseCmd.PersistentFlags().StringVarP(ptr,
-						myType.Tag.Get("lopt"),
-						myType.Tag.Get("sopt"),
-						myType.Tag.Get("default"),
-						myType.Tag.Get("comment"))
-				} else {
-					baseCmd.PersistentFlags().StringVar(ptr,
-						myType.Tag.Get("lopt"),
-						myType.Tag.Get("default"),
-						myType.Tag.Get("comment"))
-				}
-			case "bool":
-				/*
-					Can't use the bool var from pflag as we need the UNSET verbs to be passwd correctly
-				*/
-				converters = append(converters, func() error {
-					if !util.InSlice(GetUnsetVerbs(), *ptr) && *ptr != "" {
-						if strings.ToLower(*ptr) == "yes" {
-							*ptr = "true"
-							return nil
-						}
-						if strings.ToLower(*ptr) == "no" {
-							*ptr = "false"
-							return nil
-						}
-						val, err := strconv.ParseBool(*ptr)
-						if err != nil {
-							return fmt.Errorf("commandline option %s needs to be bool", myType.Tag.Get("lopt"))
-						}
-						*ptr = strconv.FormatBool(val)
-					}
-					return nil
-				})
-				if myType.Tag.Get("sopt") != "" {
-					baseCmd.PersistentFlags().StringVarP(ptr,
-						myType.Tag.Get("lopt"),
-						myType.Tag.Get("sopt"),
-						"",
-						myType.Tag.Get("comment"))
-				} else {
-					baseCmd.PersistentFlags().StringVar(ptr,
-						myType.Tag.Get("lopt"),
-						"",
-						myType.Tag.Get("comment"))
-				}
-				baseCmd.PersistentFlags().Lookup(myType.Tag.Get("lopt")).NoOptDefVal = "true"
-			case "IP":
-				converters = append(converters, func() error {
-					if !util.InSlice(GetUnsetVerbs(), *ptr) && *ptr != "" {
-						ipval := net.ParseIP(*ptr)
-						if ipval == nil {
-							return fmt.Errorf("commandline option %s needs to be an IP address", myType.Tag.Get("lopt"))
-						}
-						*ptr = ipval.String()
-					}
-					return nil
-				})
-				if myType.Tag.Get("sopt") != "" {
-					baseCmd.PersistentFlags().StringVarP(ptr,
-						myType.Tag.Get("lopt"),
-						myType.Tag.Get("sopt"),
-						myType.Tag.Get("default"),
-						myType.Tag.Get("comment"))
-				} else {
-					baseCmd.PersistentFlags().StringVar(ptr,
-						myType.Tag.Get("lopt"),
-						myType.Tag.Get("default"),
-						myType.Tag.Get("comment"))
-				}
-			case "IPMask":
-				defaultConv := net.ParseIP(myType.Tag.Get("default")).DefaultMask()
-				var valueRaw net.IPMask
-				converters = append(converters, func() error {
-					if valueRaw != nil {
-						*ptr = valueRaw.String()
-						return nil
-					} else {
-						return fmt.Errorf("could not parse %s to IP", valueRaw.String())
-					}
-				})
-				if myType.Tag.Get("sopt") != "" {
-					baseCmd.PersistentFlags().IPMaskVarP(&valueRaw,
-						myType.Tag.Get("lopt"),
-						myType.Tag.Get("sopt"),
-						defaultConv,
-						myType.Tag.Get("comment"))
-				} else {
-					baseCmd.PersistentFlags().IPMaskVar(&valueRaw,
-						myType.Tag.Get("lopt"),
-						defaultConv,
-						myType.Tag.Get("comment"))
-				}
-			case "MAC":
-				converters = append(converters, func() error {
-					if !util.InSlice(GetUnsetVerbs(), *ptr) && *ptr != "" {
-						myMac, err := net.ParseMAC(*ptr)
-						if err != nil {
-							return err
-						}
-						*ptr = myMac.String()
-					}
-					return nil
-				})
-				if myType.Tag.Get("sopt") != "" {
-					baseCmd.PersistentFlags().StringVarP(ptr,
-						myType.Tag.Get("lopt"),
-						myType.Tag.Get("sopt"),
-						"",
-						myType.Tag.Get("comment"))
-				} else {
-					baseCmd.PersistentFlags().StringVar(ptr,
-						myType.Tag.Get("lopt"),
-						"",
-						myType.Tag.Get("comment"))
-				}
-			default:
-				if myType.Tag.Get("sopt") != "" {
-					baseCmd.PersistentFlags().StringVarP(ptr,
-						myType.Tag.Get("lopt"),
-						myType.Tag.Get("sopt"),
-						myType.Tag.Get("default"),
-						myType.Tag.Get("comment"))
-				} else {
-					baseCmd.PersistentFlags().StringVar(ptr,
-						myType.Tag.Get("lopt"),
-						myType.Tag.Get("default"),
-						myType.Tag.Get("comment"))
-				}
+			if myType.Tag.Get("sopt") != "" {
+				baseCmd.PersistentFlags().StringVarP(ptr,
+					myType.Tag.Get("lopt"),
+					myType.Tag.Get("sopt"),
+					myType.Tag.Get("default"),
+					myType.Tag.Get("comment"))
+			} else {
+				baseCmd.PersistentFlags().StringVar(ptr,
+					myType.Tag.Get("lopt"),
+					myType.Tag.Get("default"),
+					myType.Tag.Get("comment"))
 			}
+
 		} else if myType.Type == reflect.TypeOf([]string{}) {
 			ptr := myVal.Addr().Interface().(*[]string)
 			if myType.Tag.Get("sopt") != "" {
 				baseCmd.PersistentFlags().StringSliceVarP(ptr,
 					myType.Tag.Get("lopt"),
 					myType.Tag.Get("sopt"),
-					[]string{myType.Tag.Get("default")},
+					[]string{},
 					myType.Tag.Get("comment"))
-			} else if !util.InSlice(excludeList, myType.Tag.Get("lopt")) {
+			} else {
 				baseCmd.PersistentFlags().StringSliceVar(ptr,
 					myType.Tag.Get("lopt"),
-					[]string{myType.Tag.Get("default")},
+					[]string{},
 					myType.Tag.Get("comment"))
 
 			}
@@ -225,14 +127,54 @@ func createFlags(baseCmd *cobra.Command, excludeList []string,
 					myType.Tag.Get("sopt"),
 					map[string]string{}, // empty default!
 					myType.Tag.Get("comment"))
-			} else if !util.InSlice(excludeList, myType.Tag.Get("lopt")) {
+			} else {
 				baseCmd.PersistentFlags().StringToStringVar(ptr,
 					myType.Tag.Get("lopt"),
 					map[string]string{}, // empty default!
 					myType.Tag.Get("comment"))
-
+			}
+		} else if myType.Type == reflect.TypeOf(true) {
+			ptr := myVal.Addr().Interface().(*bool)
+			if myType.Tag.Get("sopt") != "" {
+				baseCmd.PersistentFlags().BoolVarP(ptr,
+					myType.Tag.Get("lopt"),
+					myType.Tag.Get("sopt"),
+					false, // empty default!
+					myType.Tag.Get("comment"))
+			} else {
+				baseCmd.PersistentFlags().BoolVar(ptr,
+					myType.Tag.Get("lopt"),
+					false, // empty default!
+					myType.Tag.Get("comment"))
+			}
+		} else if myType.Type == reflect.TypeOf(net.IP{}) {
+			ptr := myVal.Addr().Interface().(*net.IP)
+			if myType.Tag.Get("sopt") != "" {
+				baseCmd.PersistentFlags().IPVarP(ptr,
+					myType.Tag.Get("lopt"),
+					myType.Tag.Get("sopt"),
+					net.IP{}, // empty default!
+					myType.Tag.Get("comment"))
+			} else {
+				baseCmd.PersistentFlags().IPVar(ptr,
+					myType.Tag.Get("lopt"),
+					net.IP{}, // empty default!
+					myType.Tag.Get("comment"))
+			}
+		} else if myType.Type == reflect.TypeOf(wwbool) {
+			ptr := myVal.Addr().Interface().(*wwtype.WWbool)
+			if myType.Tag.Get("sopt") != "" {
+				baseCmd.PersistentFlags().VarP(ptr,
+					myType.Tag.Get("lopt"),
+					myType.Tag.Get("sopt"),
+					myType.Tag.Get("comment"))
+				baseCmd.Flag(myType.Tag.Get("lopt")).NoOptDefVal = "true"
+			} else {
+				baseCmd.PersistentFlags().Var(ptr,
+					myType.Tag.Get("lopt"),
+					myType.Tag.Get("comment"))
+				baseCmd.Flag(myType.Tag.Get("lopt")).NoOptDefVal = "true"
 			}
 		}
 	}
-	return converters
 }

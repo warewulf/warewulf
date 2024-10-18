@@ -19,7 +19,6 @@ import (
 )
 
 const initWarewulfConf = `WW_INTERNAL: 0`
-const initDefaultsConf = `WW_INTERNAL: 45`
 const initNodesConf = `WW_INTERNAL: 45
 nodeprofiles:
   default: {}
@@ -60,7 +59,6 @@ func New(t *testing.T) (env *TestEnv) {
 
 	env.WriteFile(t, path.Join(Sysconfdir, "warewulf/nodes.conf"), initNodesConf)
 	env.WriteFile(t, path.Join(Sysconfdir, "warewulf/warewulf.conf"), initWarewulfConf)
-	env.WriteFile(t, path.Join(Datadir, "warewulf/defaults.conf"), initDefaultsConf)
 
 	// re-read warewulf.conf
 	conf := warewulfconf.New()
