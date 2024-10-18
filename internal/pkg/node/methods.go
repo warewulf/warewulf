@@ -226,31 +226,35 @@ func UnmarshalConf(obj interface{}, excludeList []string) (lines []string) {
 	objType := reflect.TypeOf(obj)
 	// now iterate of every field
 	for i := 0; i < objType.NumField(); i++ {
-		if objType.Field(i).Tag.Get("comment") != "" {
-			if ymlStr, ok := getYamlString(objType.Field(i), excludeList); ok {
+		field := objType.Field(i)
+		if field.Tag.Get("comment") != "" {
+			if ymlStr, ok := getYamlString(field, excludeList); ok {
 				lines = append(lines, ymlStr...)
 			}
 		}
-		if objType.Field(i).Type.Kind() == reflect.Ptr && objType.Field(i).Tag.Get("yaml") != "" {
-			typeLine := objType.Field(i).Tag.Get("yaml")
+		if field.Type.Kind() == reflect.Ptr && field.Tag.Get("yaml") != "" {
+			typeLine := field.Tag.Get("yaml")
 			if len(strings.Split(typeLine, ",")) > 1 {
 				typeLine = strings.Split(typeLine, ",")[0] + ":"
 			}
 			lines = append(lines, typeLine)
-			nestedLine := UnmarshalConf(reflect.New(objType.Field(i).Type.Elem()).Elem().Interface(), excludeList)
+			nestedLine := UnmarshalConf(reflect.New(field.Type.Elem()).Elem().Interface(), excludeList)
 			for _, ln := range nestedLine {
 				lines = append(lines, "  "+ln)
 			}
-		} else if objType.Field(i).Type.Kind() == reflect.Map && objType.Field(i).Type.Elem().Kind() == reflect.Ptr {
-			typeLine := objType.Field(i).Tag.Get("yaml")
+		} else if field.Type.Kind() == reflect.Map && field.Type.Elem().Kind() == reflect.Ptr {
+			typeLine := field.Tag.Get("yaml")
 			if len(strings.Split(typeLine, ",")) > 1 {
 				typeLine = strings.Split(typeLine, ",")[0] + ":"
 			}
 			lines = append(lines, typeLine, "  element:")
-			nestedLine := UnmarshalConf(reflect.New(objType.Field(i).Type.Elem().Elem()).Elem().Interface(), excludeList)
+			nestedLine := UnmarshalConf(reflect.New(field.Type.Elem().Elem()).Elem().Interface(), excludeList)
 			for _, ln := range nestedLine {
 				lines = append(lines, "    "+ln)
 			}
+		} else if field.Type.Kind() == reflect.Struct && field.Anonymous {
+			nestedLine := UnmarshalConf(reflect.New(field.Type).Elem().Interface(), excludeList)
+			lines = append(lines, nestedLine...)
 		}
 	}
 	return lines

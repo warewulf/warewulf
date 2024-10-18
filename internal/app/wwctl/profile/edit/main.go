@@ -49,11 +49,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Error("Could not create temp file:%s \n", err)
 	}
 	defer os.Remove(file.Name())
-	yamlTemplate := node.UnmarshalConf(node.ProfileConf{}, []string{"tagsdel"})
 	for {
 		_ = file.Truncate(0)
 		_, _ = file.Seek(0, 0)
 		if !NoHeader {
+			yamlTemplate := node.UnmarshalConf(node.ProfileConf{}, []string{"tagsdel"})
 			_, _ = file.WriteString("#profilename:\n#  " + strings.Join(yamlTemplate, "\n#  ") + "\n")
 		}
 		_, _ = file.WriteString(profileListMsg.NodeConfMapYaml)
