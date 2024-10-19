@@ -73,6 +73,10 @@ etc/bash_completion.d/wwctl: wwctl
 lint: $(config)
 	$(GOLANGCI_LINT) run --build-tags "$(WW_GO_BUILD_TAGS)" --timeout=5m ./...
 
+.PHONY: deadcode
+deadcode: $(config)
+	$(GOLANG_DEADCODE) -test ./...
+
 .PHONY: vet
 vet: $(config)
 	go vet ./...
@@ -221,6 +225,7 @@ wwapird: vendor
 dist: vendor
 
 lint: $(GOLANGCI_LINT)
+deadcode: $(GOLANG_DEADCODE)
 
 protofiles = internal/pkg/api/routes/wwapiv1/routes.pb.go \
 	internal/pkg/api/routes/wwapiv1/routes.pb.gw.go \

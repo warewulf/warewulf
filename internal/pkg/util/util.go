@@ -2,69 +2,22 @@ package util
 
 import (
 	"bufio"
-	"crypto/sha256"
 	"fmt"
 	"io"
 	"io/fs"
-	"math/rand"
 	"net"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
-	"sync/atomic"
 	"syscall"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
-
-// reserve some number of cpus for system/warwulfd usage
-var processLimitedReserve int = 4
-
-// maximum number of concurrent spawned processes
-var processLimitedMax = MaxInt(1, runtime.NumCPU()-processLimitedReserve)
-
-// Channel used as semaphore to specififed processLimitedMax
-var processLimitedChan = make(chan int, processLimitedMax)
-
-// Current number of processes started + queued
-var processLimitedNum int32 = 0
-
-// Counter over total history of started processes
-var processLimitedCounter uint32 = 0
-
-func ProcessLimitedEnter() (index uint32) {
-	atomic.AddInt32(&processLimitedNum, 1)
-	index = atomic.AddUint32(&processLimitedCounter, 1)
-	// NOTE: blocks when channel is full (i.e. processLimitedMax)
-	// until a process exists and takes one out of channel
-	processLimitedChan <- 1
-	return
-}
-
-func ProcessLimitedExit() {
-	<-processLimitedChan
-	atomic.AddInt32(&processLimitedNum, -1)
-}
-
-func ProcessLimitedStatus() (running int32, queued int32) {
-	running = int32(len(processLimitedChan))
-	queued = processLimitedNum - running
-	return
-}
-
-func MaxInt(a int, b int) int {
-	if a > b {
-		return a
-	}
-
-	return b
-}
 
 func FirstError(errs ...error) (err error) {
 	for _, e := range errs {
@@ -122,16 +75,6 @@ func PathIsNewer(source string, compare string) bool {
 	return time1.Before(time2)
 }
 
-func RandomString(n int) string {
-	var letter = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
-
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letter[rand.Intn(len(letter))]
-	}
-	return string(b)
-}
-
 /*
 Checks if given string is in slice. I yes returns true, false otherwise.
 */
@@ -139,21 +82,6 @@ func InSlice(slice []string, match string) bool {
 	for _, val := range slice {
 		if val == match {
 			return true
-		}
-	}
-	return false
-}
-
-/*
-Checks if one or more elements of a slice A are a part of slice B. Returns true
-as soon as one element matches.\
-*/
-func SliceInSlice(A []string, B []string) bool {
-	for _, a := range A {
-		for _, b := range B {
-			if a == b {
-				return true
-			}
 		}
 	}
 	return false
@@ -203,13 +131,6 @@ func ValidString(pattern string, expr string) bool {
 		return true
 	}
 	return false
-}
-
-func ValidateOrDie(message string, pattern string, expr string) {
-	if ValidString(pattern, expr) {
-		wwlog.Error("%s does not validate: '%s'", message, pattern)
-		os.Exit(1)
-	}
 }
 
 // ******************************************************************************
@@ -349,71 +270,6 @@ func ExecInteractive(command string, a ...string) error {
 	return err
 }
 
-func ShaSumFile(file string) (string, error) {
-	var ret string
-
-	f, err := os.Open(file)
-	if err != nil {
-		return ret, nil
-	}
-	defer f.Close()
-
-	h := sha256.New()
-	if _, err := io.Copy(h, f); err != nil {
-		return ret, err
-	}
-
-	return fmt.Sprintf("%x", h.Sum(nil)), nil
-}
-
-func SliceRemoveElement(array []string, remove string) []string {
-	var ret []string
-
-	// Linear time, maintains order
-	for _, r := range array {
-		if r != remove {
-			ret = append(ret, r)
-		} else {
-			wwlog.Debug("Removing slice from array: %s", remove)
-		}
-	}
-
-	return ret
-}
-
-/*
-Adds a string, to string slice if the given string is not present in the slice.
-*/
-func SliceAddUniqueElement(array []string, add string) []string {
-	var ret []string
-	var found bool
-
-	//Linear time, appends
-	for _, r := range array {
-		ret = append(ret, r)
-		if r == add {
-			found = true
-		}
-	}
-
-	if !found {
-		ret = append(ret, add)
-	}
-
-	return ret
-}
-
-/*
-Appends a string slice to another slice. Guarantees that the elements are uniq.
-*/
-func SliceAppendUniq(array []string, add []string) []string {
-	ret := array
-	for _, r := range add {
-		ret = SliceAddUniqueElement(ret, r)
-	}
-	return ret
-}
-
 func SystemdStart(systemdName string) error {
 	startCmd := fmt.Sprintf("systemctl restart %s", systemdName)
 	enableCmd := fmt.Sprintf("systemctl enable %s", systemdName)
@@ -447,48 +303,6 @@ func CopyUIDGID(source string, dest string) error {
 	wwlog.Debug("Chown %d:%d '%s'", UID, GID, dest)
 	err = os.Chown(dest, UID, GID)
 	return err
-}
-
-func SplitEscaped(input, delim, escape string) []string {
-	var ret []string
-	str := ""
-	for i := 1; i < len(input); i++ {
-		str += string(input[i-1])
-		if string(input[i]) == delim && string(input[i-1]) != escape {
-			i++
-			ret = append(ret, str)
-			str = ""
-		}
-		if string(input[i]) == escape {
-			i++
-		}
-
-	}
-	str += string(input[len(input)-1])
-	ret = append(ret, str)
-
-	return (ret)
-}
-
-func SplitValidPaths(input, delim string) []string {
-	var ret []string
-	str := ""
-	for i := 1; i < len(input); i++ {
-		str += string(input[i-1])
-		if (string(input[i]) == delim && string(input[i-1]) != "\\") && (IsDir(str) || IsFile(str)) {
-			i++
-			ret = append(ret, str)
-			str = ""
-		}
-		if string(input[i]) == "\\" {
-			i++
-		}
-
-	}
-	str += string(input[len(input)-1])
-	ret = append(ret, str)
-
-	return (ret)
 }
 
 func IncrementIPv4(start net.IP, inc uint) net.IP {
@@ -714,28 +528,6 @@ func BuildFsImage(
 	wwlog.Info("Compressed image for %s: %s", name, imagePath+".gz")
 
 	return nil
-}
-
-/*
-******************************************************************************
-
-	Runs wwctl command
-*/
-func RunWWCTL(args ...string) (out []byte, err error) {
-	index := ProcessLimitedEnter()
-	defer ProcessLimitedExit()
-	running, queued := ProcessLimitedStatus()
-
-	wwlog.Verbose("Starting wwctl process %d (%d running, %d queued): %v",
-		index, running, queued, args)
-
-	proc := exec.Command("wwctl", args...)
-
-	out, err = proc.CombinedOutput()
-
-	wwlog.Verbose("Finished wwctl process %d", index)
-
-	return out, err
 }
 
 /*
