@@ -62,6 +62,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Return non-zero exit code on power sub-commands #1439
 - Fix issue that pattern matching broken on `node set` #964
 - Fix issue that domain globs not supported during wwctl node delete. #1449
+- Fix issue that NetworkManager marks managed interfaces "unmanaged" if they do
+  not have a device specified. #1154
 
 ## v4.5.8, 2024-10-01
 

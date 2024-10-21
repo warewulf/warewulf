@@ -5,4 +5,4 @@
 plugins=keyfile
 
 [keyfile]
-unmanaged-devices={{ range $connection_id, $netdev := .NetDevs }}except:interface-name:{{- $netdev.Device -}},{{ end }}
+unmanaged-devices={{ range $connection_id, $netdev := .NetDevs }}{{ if $netdev.Hwaddr }}except:mac:{{- $netdev.Hwaddr -}},{{ end }}{{ end }}
