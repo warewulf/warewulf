@@ -25,6 +25,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Bump google.golang.org/protobuf to 1.33.0
 - Bump github.com/containers/image/v5 to 5.30.0
 - Bump github.com/docker/docker to 25.0.5+incompatible
+- Bump github.com/grpc-ecosystem/grpc-gateway/v2 from 2.18.0 to 2.19.1 #1165
+- Bump github.com/spf13/cobra from 1.7.0 to 1.8.0 #1166
+- Bump github.com/fatih/color from 1.15.0 to 1.17.0 #1224
+- Bump github.com/coreos/ignition/v2 from 2.15.0 to 2.19.0 #1239
+- Disable building containers by default when calling `wwctl container copy`. #1378
+- Split wwinit and generic overlays into discrete functionality. #987
+- Updated IgnitionJson to sort filesystems. #1433
+- `wwctl node set` requires mandatory pattern input. #502
+- Remove NodeInfo (in-memory-only) data structure, consolidating onto NodeConf. #916
+- Replace `defaults.conf` with settings on the default profile. #917
+- Make OCIBlobCache a seperate path and point it to `/var/cache`
+
+
+### Removed
+
+- `wwctl node list --fullall` has been removed
+- `wwctl profile list --fullall` has been removed
 
 ### Fixed
 
