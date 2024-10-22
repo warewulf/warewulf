@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `wwctl node set` requires mandatory pattern input. #502
 - Remove NodeInfo (in-memory-only) data structure, consolidating onto NodeConf. #916
 - Replace `defaults.conf` with settings on the default profile. #917
+- Switched from yaml.v2 to yaml.v3 #1462
 
 
 ### Removed
