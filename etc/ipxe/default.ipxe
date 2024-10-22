@@ -58,7 +58,7 @@ echo Downloading System Overlay:
 initrd --name system ${uri_base}&stage=system           || goto reboot
 
 echo Downloading Runtime Overlay:
-initrd --name runtime ${uri_base}&stage=runtime         || goto reboot
+initrd --name runtime ${uri_base}&stage=runtime         || echo Failed to download overlay runtime, but will continue...
 
 {{if ne .KernelOverride "" -}}
 echo Downloading Kernel Modules:
@@ -79,7 +79,7 @@ echo Downloading System Overlay:
 initrd --name system ${uri_base}&stage=system&compress=gz       || goto reboot
 
 echo Downloading Runtime Overlay:
-initrd --name runtime ${uri_base}&stage=runtime&compress=gz     || goto reboot
+initrd --name runtime ${uri_base}&stage=runtime&compress=gz     || echo Failed to download overlay runtime.gz, but will continue...
 
 {{if ne .KernelOverride "" -}}
 echo Downloading Kernel Modules:
