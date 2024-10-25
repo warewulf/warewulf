@@ -18,27 +18,27 @@ Structure of which goes to disk
 */
 type NodeYaml struct {
 	WWInternal   int `yaml:"WW_INTERNAL,omitempty" json:"WW_INTERNAL,omitempty"`
-	nodeProfiles map[string]*ProfileConf
-	nodes        map[string]*NodeConf
+	nodeProfiles map[string]*Profile
+	nodes        map[string]*Node
 }
 
 /*
-NodeConf is the datastructure describing a node and a profile which in disk format.
+Node is the datastructure describing a node and a profile which in disk format.
 */
-type NodeConf struct {
+type Node struct {
 	id    string
 	valid bool // Is set true, if called by the constructor
 	// exported values
 	Discoverable wwtype.WWbool     `yaml:"discoverable,omitempty" lopt:"discoverable" sopt:"e" comment:"Make discoverable in given network (true/false)"`
 	AssetKey     string            `yaml:"asset key,omitempty" lopt:"asset" comment:"Set the node's Asset tag (key)"`
 	Profiles     []string          `yaml:"profiles,omitempty" lopt:"profile" sopt:"P" comment:"Set the node's profile members (comma separated)"`
-	ProfileConf  `yaml:"-,inline"` // include all values set in the profile, but inline them in yaml output if these are part of NodeConf
+	Profile      `yaml:"-,inline"` // include all values set in the profile, but inline them in yaml output if these are part of Node
 }
 
 /*
 Holds the data which can be set for profiles and nodes.
 */
-type ProfileConf struct {
+type Profile struct {
 	id string
 	// exported values
 	Comment        string                 `yaml:"comment,omitempty" lopt:"comment" comment:"Set arbitrary string comment"`
@@ -51,7 +51,7 @@ type ProfileConf struct {
 	Ipmi           *IpmiConf              `yaml:"ipmi,omitempty"`
 	Init           string                 `yaml:"init,omitempty" lopt:"init" sopt:"i" comment:"Define the init process to boot the container"`
 	Root           string                 `yaml:"root,omitempty" lopt:"root" comment:"Define the rootfs" `
-	NetDevs        map[string]*NetDevs    `yaml:"network devices,omitempty"`
+	NetDevs        map[string]*NetDev     `yaml:"network devices,omitempty"`
 	Tags           map[string]string      `yaml:"tags,omitempty"`
 	PrimaryNetDev  string                 `yaml:"primary network,omitempty" lopt:"primarynet" sopt:"p" comment:"Set the primary network interface"`
 	Disks          map[string]*Disk       `yaml:"disks,omitempty"`
@@ -78,7 +78,7 @@ type KernelConf struct {
 	Args     string `yaml:"args,omitempty" lopt:"kernelargs" sopt:"A" comment:"Set Kernel argument" json:"args,omitempty"`
 }
 
-type NetDevs struct {
+type NetDev struct {
 	Type    string            `yaml:"type,omitempty" lopt:"type" sopt:"T" comment:"Set device type of given network"`
 	OnBoot  *bool             `yaml:"onboot,omitempty" lopt:"onboot" comment:"Enable/disable network device (true/false)"`
 	Device  string            `yaml:"device,omitempty" lopt:"netdev" sopt:"N" comment:"Set the device for given network"`
@@ -134,9 +134,9 @@ interface so that nodes and profiles which aren't exported will
 be marshaled
 */
 type ExportedYml struct {
-	WWInternal   int                     `yaml:"WW_INTERNAL"`
-	NodeProfiles map[string]*ProfileConf `yaml:"nodeprofiles"`
-	Nodes        map[string]*NodeConf    `yaml:"nodes"`
+	WWInternal   int                 `yaml:"WW_INTERNAL"`
+	NodeProfiles map[string]*Profile `yaml:"nodeprofiles"`
+	Nodes        map[string]*Node    `yaml:"nodes"`
 }
 
 /*

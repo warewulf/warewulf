@@ -28,7 +28,7 @@ var (
 /*
 Build all overlays for a node
 */
-func BuildAllOverlays(nodes []node.NodeConf) error {
+func BuildAllOverlays(nodes []node.Node) error {
 	for _, n := range nodes {
 
 		sysOverlays := n.SystemOverlay
@@ -50,7 +50,7 @@ func BuildAllOverlays(nodes []node.NodeConf) error {
 
 // TODO: Add an Overlay Delete for both sourcedir and image
 
-func BuildSpecificOverlays(nodes []node.NodeConf, overlayNames []string) error {
+func BuildSpecificOverlays(nodes []node.Node, overlayNames []string) error {
 	for _, n := range nodes {
 		wwlog.Info("Building overlay for %s: %v", n, overlayNames)
 		for _, overlayName := range overlayNames {
@@ -123,7 +123,7 @@ func OverlayInit(overlayName string) error {
 /*
 Build the given overlays for a node and create a Image for them
 */
-func BuildOverlay(nodeConf node.NodeConf, context string, overlayNames []string) error {
+func BuildOverlay(nodeConf node.Node, context string, overlayNames []string) error {
 	if len(overlayNames) == 0 && context == "" {
 		return nil
 	}
@@ -172,7 +172,7 @@ func BuildOverlay(nodeConf node.NodeConf, context string, overlayNames []string)
 Build the given overlays for a node in the given directory. If the given does not
 exists it will be created.
 */
-func BuildOverlayIndir(nodeData node.NodeConf, overlayNames []string, outputDir string) error {
+func BuildOverlayIndir(nodeData node.Node, overlayNames []string, outputDir string) error {
 	if len(overlayNames) == 0 {
 		return nil
 	}

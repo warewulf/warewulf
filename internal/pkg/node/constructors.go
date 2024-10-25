@@ -46,10 +46,10 @@ func Parse(data []byte) (nodeList NodeYaml, err error) {
 	}
 	wwlog.Debug("Checking nodes for types")
 	if nodeList.nodes == nil {
-		nodeList.nodes = map[string]*NodeConf{}
+		nodeList.nodes = map[string]*Node{}
 	}
 	if nodeList.nodeProfiles == nil {
-		nodeList.nodeProfiles = map[string]*ProfileConf{}
+		nodeList.nodeProfiles = map[string]*Profile{}
 	}
 	wwlog.Debug("returning node object")
 	return nodeList, nil
@@ -58,7 +58,7 @@ func Parse(data []byte) (nodeList NodeYaml, err error) {
 /*
 Get a node with its merged in nodes
 */
-func (config *NodeYaml) GetNode(id string) (node NodeConf, err error) {
+func (config *NodeYaml) GetNode(id string) (node Node, err error) {
 	if _, ok := config.nodes[id]; !ok {
 		return node, ErrNotFound
 	}
@@ -82,7 +82,7 @@ func (config *NodeYaml) GetNode(id string) (node NodeConf, err error) {
 			wwlog.Warn("profile not found: %s", p)
 			continue
 		}
-		err = mergo.Merge(&node.ProfileConf, includedProfile, mergo.WithAppendSlice)
+		err = mergo.Merge(&node.Profile, includedProfile, mergo.WithAppendSlice)
 		if err != nil {
 			return node, err
 		}
@@ -112,7 +112,7 @@ func (config *NodeYaml) GetNode(id string) (node NodeConf, err error) {
 Return the node with the id string without the merged in nodes, return ErrNotFound
 otherwise
 */
-func (config *NodeYaml) GetNodeOnly(id string) (node NodeConf, err error) {
+func (config *NodeYaml) GetNodeOnly(id string) (node Node, err error) {
 	node = EmptyNode()
 	if found, ok := config.nodes[id]; ok {
 		return *found, nil
@@ -124,7 +124,7 @@ func (config *NodeYaml) GetNodeOnly(id string) (node NodeConf, err error) {
 Return pointer to the  node with the id string without the merged in nodes, return ErrMotFound
 otherwise
 */
-func (config *NodeYaml) GetNodeOnlyPtr(id string) (*NodeConf, error) {
+func (config *NodeYaml) GetNodeOnlyPtr(id string) (*Node, error) {
 	node := EmptyNode()
 	if found, ok := config.nodes[id]; ok {
 		return found, nil
@@ -135,7 +135,7 @@ func (config *NodeYaml) GetNodeOnlyPtr(id string) (*NodeConf, error) {
 /*
 Get the profile with id, return ErrNotFound otherwise
 */
-func (config *NodeYaml) GetProfile(id string) (profile ProfileConf, err error) {
+func (config *NodeYaml) GetProfile(id string) (profile Profile, err error) {
 	if found, ok := config.nodeProfiles[id]; ok {
 		found.id = id
 		return *found, nil
@@ -146,7 +146,7 @@ func (config *NodeYaml) GetProfile(id string) (profile ProfileConf, err error) {
 /*
 Get the profile with id, return ErrNotFound otherwise
 */
-func (config *NodeYaml) GetProfilePtr(id string) (profile *ProfileConf, err error) {
+func (config *NodeYaml) GetProfilePtr(id string) (profile *Profile, err error) {
 	if found, ok := config.nodeProfiles[id]; ok {
 		found.id = id
 		return found, nil
@@ -158,7 +158,7 @@ func (config *NodeYaml) GetProfilePtr(id string) (profile *ProfileConf, err erro
 Get the nodes from the loaded configuration. This function also merges
 the nodes with the given nodes.
 */
-func (config *NodeYaml) FindAllNodes(nodes ...string) (nodeList []NodeConf, err error) {
+func (config *NodeYaml) FindAllNodes(nodes ...string) (nodeList []Node, err error) {
 	if len(nodes) == 0 {
 		for n := range config.nodes {
 			nodes = append(nodes, n)
@@ -188,7 +188,7 @@ func (config *NodeYaml) FindAllNodes(nodes ...string) (nodeList []NodeConf, err 
 /*
 Return all nodes as ProfileConf
 */
-func (config *NodeYaml) FindAllProfiles(nodes ...string) (profileList []ProfileConf, err error) {
+func (config *NodeYaml) FindAllProfiles(nodes ...string) (profileList []Profile, err error) {
 	if len(nodes) == 0 {
 		for n := range config.nodeProfiles {
 			nodes = append(nodes, n)
@@ -246,7 +246,7 @@ without a hardware address is returned.
 
 If no unconfigured node is found, an error is returned.
 */
-func (config *NodeYaml) FindDiscoverableNode() (NodeConf, string, error) {
+func (config *NodeYaml) FindDiscoverableNode() (Node, string, error) {
 
 	nodes, _ := config.FindAllNodes()
 

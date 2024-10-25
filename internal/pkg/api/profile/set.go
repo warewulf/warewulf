@@ -60,7 +60,7 @@ func ProfileSetParameterCheck(set *wwapiv1.ConfSetParameter) (nodeDB node.NodeYa
 	for _, profileId := range set.ConfList {
 		if util.InSlice(set.ConfList, profileId) {
 			wwlog.Verbose("evaluating profile: %s", profileId)
-			var profilePtr *node.ProfileConf
+			var profilePtr *node.Profile
 			profilePtr, err = nodeDB.GetProfilePtr(profileId)
 			if err != nil {
 				wwlog.Warn("invalid profile: %s", profileId)

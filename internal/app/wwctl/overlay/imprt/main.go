@@ -72,7 +72,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("could not get node list: %s", err)
 		}
 
-		var updateNodes []node.NodeConf
+		var updateNodes []node.Node
 
 		for _, node := range nodes {
 			if util.InSlice(node.SystemOverlay, overlayName) {

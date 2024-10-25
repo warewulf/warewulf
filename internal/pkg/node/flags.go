@@ -31,11 +31,11 @@ type NodeConfAdd struct {
 Create cmd line flags from the NodeConf fields. Returns a []func() where every function must be called, as the command line parser returns e.g. netip.IP objects which must be parsed
 back to strings.
 */
-func (nodeConf *NodeConf) CreateFlags(baseCmd *cobra.Command) {
+func (nodeConf *Node) CreateFlags(baseCmd *cobra.Command) {
 	recursiveCreateFlags(nodeConf, baseCmd)
 }
 
-func (profileConf *ProfileConf) CreateFlags(baseCmd *cobra.Command) {
+func (profileConf *Profile) CreateFlags(baseCmd *cobra.Command) {
 	recursiveCreateFlags(profileConf, baseCmd)
 }
 

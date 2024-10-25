@@ -199,7 +199,7 @@ nodes:
 	wwlog.SetLogLevel(wwlog.DEBUG)
 	nodes, err := ymlSrc.FindAllNodes()
 	assert.NoError(err)
-	nodemap := make(map[string]*NodeConf)
+	nodemap := make(map[string]*Node)
 	for i := range nodes {
 		nodemap[nodes[i].Id()] = &nodes[i]
 	}

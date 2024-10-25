@@ -6,8 +6,8 @@ import (
 )
 
 func Test_Empty(t *testing.T) {
-	var netdev NetDevs
-	var netdevPtr *NetDevs
+	var netdev NetDev
+	var netdevPtr *NetDev
 
 	t.Run("test for empty", func(t *testing.T) {
 		if ObjectIsEmpty(netdev) != true {

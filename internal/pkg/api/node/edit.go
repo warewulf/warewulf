@@ -37,7 +37,7 @@ func NodeAddFromYaml(nodeList *wwapiv1.NodeYaml) (err error) {
 	if err != nil {
 		return fmt.Errorf("could not open NodeDB: %w", err)
 	}
-	nodeMap := make(map[string]*node.NodeConf)
+	nodeMap := make(map[string]*node.Node)
 	err = yaml.Unmarshal([]byte(nodeList.NodeConfMapYaml), nodeMap)
 	if err != nil {
 		return fmt.Errorf("could not unmarshal Yaml: %w", err)

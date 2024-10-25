@@ -12,7 +12,7 @@ import (
 
 // Holds the variables which are needed in CobraRunE
 type variables struct {
-	nodeConf node.NodeConf
+	nodeConf node.Node
 	nodeAdd  node.NodeConfAdd
 }
 

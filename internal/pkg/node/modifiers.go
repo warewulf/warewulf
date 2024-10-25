@@ -14,7 +14,7 @@ import (
 /*
 Add a node with the given ID and return a pointer to it
 */
-func (config *NodeYaml) AddNode(nodeID string) (*NodeConf, error) {
+func (config *NodeYaml) AddNode(nodeID string) (*Node, error) {
 	newNode := NewNode(nodeID)
 	wwlog.Verbose("Adding new node: %s", nodeID)
 	if _, ok := config.nodes[nodeID]; ok {
@@ -42,7 +42,7 @@ func (config *NodeYaml) DelNode(nodeID string) error {
 /*
 set node for the node with id the values of vals
 */
-func (config *NodeYaml) SetNode(nodeID string, vals NodeConf) error {
+func (config *NodeYaml) SetNode(nodeID string, vals Node) error {
 	node, ok := config.nodes[nodeID]
 	if !ok {
 		return ErrNotFound
@@ -61,7 +61,7 @@ func (config *NodeYaml) SetNode(nodeID string, vals NodeConf) error {
 /*
 set profile for the node with id the values of vals
 */
-func (config *NodeYaml) SetProfile(profileId string, vals ProfileConf) error {
+func (config *NodeYaml) SetProfile(profileId string, vals Profile) error {
 	profile, ok := config.nodeProfiles[profileId]
 	if !ok {
 		return ErrNotFound
@@ -80,7 +80,7 @@ func (config *NodeYaml) SetProfile(profileId string, vals ProfileConf) error {
 /*
 Add a node with the given ID and return a pointer to it
 */
-func (config *NodeYaml) AddProfile(profileId string) (*ProfileConf, error) {
+func (config *NodeYaml) AddProfile(profileId string) (*Profile, error) {
 	profile := EmptyProfile()
 	wwlog.Verbose("adding new profile: %s", profileId)
 	if _, ok := config.nodeProfiles[profileId]; ok {

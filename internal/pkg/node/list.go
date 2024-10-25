@@ -41,7 +41,7 @@ type fieldMap map[string]*NodeFields
 /*
 Get all the info out of NodeConf. If emptyFields is set true, all fields are shown not only the ones with effective values
 */
-func (nodeYml *NodeYaml) GetFields(node NodeConf) (output []NodeFields) {
+func (nodeYml *NodeYaml) GetFields(node Node) (output []NodeFields) {
 	nodeMap := make(fieldMap)
 	for _, p := range node.Profiles {
 		if profile, ok := nodeYml.nodeProfiles[p]; ok {
@@ -64,7 +64,7 @@ func (nodeYml *NodeYaml) GetFields(node NodeConf) (output []NodeFields) {
 /*
 Get all the info out of ProfileConf. If emptyFields is set true, all fields are shown not only the ones with effective values
 */
-func (nodeYml *NodeYaml) GetFieldsProfile(profile ProfileConf) (output []NodeFields) {
+func (nodeYml *NodeYaml) GetFieldsProfile(profile Profile) (output []NodeFields) {
 	profileMap := make(fieldMap)
 	profileMap.importFields(&profile, "", "")
 	for _, elem := range profileMap {

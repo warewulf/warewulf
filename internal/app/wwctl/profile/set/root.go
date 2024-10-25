@@ -21,7 +21,7 @@ type variables struct {
 	partName     string
 	diskName     string
 	fsName       string
-	profileConf  node.ProfileConf
+	profileConf  node.Profile
 	profileDel   node.NodeConfDel
 	profileAdd   node.NodeConfAdd
 }

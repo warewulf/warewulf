@@ -35,7 +35,7 @@ type templateVars struct {
 	KernelArgs     string
 	KernelOverride string
 	Tags           map[string]string
-	NetDevs        map[string]*node.NetDevs
+	NetDevs        map[string]*node.NetDev
 }
 
 func ProvisionSend(w http.ResponseWriter, req *http.Request) {

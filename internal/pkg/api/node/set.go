@@ -60,7 +60,7 @@ func NodeSetParameterCheck(set *wwapiv1.ConfSetParameter) (nodeDB node.NodeYaml,
 	for _, nId := range set.ConfList {
 		if util.InSlice(set.ConfList, nId) {
 			wwlog.Debug("evaluating node: %s", nId)
-			var nodePtr *node.NodeConf
+			var nodePtr *node.Node
 			nodePtr, err = nodeDB.GetNodeOnlyPtr(nId)
 			if err != nil {
 				wwlog.Warn("invalid node: %s", nId)

@@ -496,6 +496,7 @@ nodes:
       "Interface": "",
       "EscapeChar": "",
       "Write": "",
+      "Template": "",
       "Tags": {}
     },
     "Init": "",
@@ -545,6 +546,7 @@ nodes:
       "Interface": "",
       "EscapeChar": "",
       "Write": "",
+      "Template": "",
       "Tags": {}
     },
     "Init": "",
@@ -578,6 +580,7 @@ nodes:
       "Interface": "",
       "EscapeChar": "",
       "Write": "",
+      "Template": "",
       "Tags": {}
     },
     "Init": "",
