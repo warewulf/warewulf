@@ -41,7 +41,7 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 		if err != nil {
 			return errors.Wrap(err, "Failed to decode nodeConf")
 		}
-		wwlog.Info("Added node: %s:", a)
+		wwlog.Info("Added node: %s", a)
 		for _, dev := range n.NetDevs {
 			if !ipv4.IsUnspecified() && ipv4 != nil {
 				// if more nodes are added increment IPv4 address
