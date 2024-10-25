@@ -1,5 +1,9 @@
 package config
 
+import (
+	"path"
+)
+
 var ConfigFile = "@SYSCONFDIR@/warewulf/warewulf.conf"
 
 type BuildConfig struct {
@@ -42,4 +46,12 @@ type WarewulfConf struct {
 	Syslog            bool   `yaml:"syslog" default:"false"`
 	DataStore         string `yaml:"datastore" default:"@DATADIR@"`
 	GrubBoot          bool   `yaml:"grubboot" default:"false"`
+}
+
+func (paths BuildConfig) OciBlobCachedir() string {
+	return path.Join(paths.Cachedir, "warewulf")
+}
+
+func (paths BuildConfig) OverlayProvisiondir() string {
+	return path.Join(paths.WWProvisiondir, "overlays")
 }

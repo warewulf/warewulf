@@ -4,8 +4,6 @@ import (
 	"os"
 	"path"
 
-	_ "golang.org/x/exp/slices"
-
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
@@ -15,19 +13,20 @@ import (
 /*
 Cleans up the OCI cache and remains of deleted nodes
 */
-func Clean() (err error) {
+func CleanOciBlobCacheDir() error {
 	warewulfconf := warewulfconf.Get()
-	wwlog.Verbose("removing oci cache dir: %s", path.Join(warewulfconf.Paths.Cachedir+"/warewulf"))
-	err = os.RemoveAll(path.Join(warewulfconf.Paths.Cachedir + "/warewulf"))
-	if err != nil {
-		return err
-	}
+	wwlog.Verbose("removing oci cache dir: %s", warewulfconf.Paths.OciBlobCachedir())
+	return os.RemoveAll(warewulfconf.Paths.OciBlobCachedir())
+}
+
+func CleanOverlays() error {
+	warewulfconf := warewulfconf.Get()
 	nodeDB, err := node.New()
 	if err != nil {
 		return err
 	}
 	nodes := nodeDB.ListAllNodes()
-	dirList, err := os.ReadDir(path.Join(warewulfconf.Paths.WWProvisiondir, "overlays/"))
+	dirList, err := os.ReadDir(warewulfconf.Paths.OverlayProvisiondir())
 	if err != nil {
 		return err
 	}
@@ -37,11 +36,11 @@ func Clean() (err error) {
 		}
 		if !util.InSlice(nodes, item.Name()) {
 			wwlog.Verbose("removing overlays of delete node: %s", item.Name())
-			err = os.RemoveAll(path.Join(warewulfconf.Paths.WWProvisiondir, "overlays/", item.Name()))
+			err = os.RemoveAll(path.Join(warewulfconf.Paths.OverlayProvisiondir(), item.Name()))
 			if err != nil {
 				return err
 			}
 		}
 	}
-	return
+	return nil
 }
