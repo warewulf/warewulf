@@ -84,7 +84,7 @@ The script, by default, builds iPXE for x86_64 BIOS, x86_64 EFI, and arm64 EFI f
 
 .. note::
 
-   Building for aarch64 requires the package ``aarch64-linux-gnu-gcc``.
+   Building for aarch64 requires the package ``gcc-aarch64-linux-gnu``.
 
 Build options
 ^^^^^^^^^^^^^
