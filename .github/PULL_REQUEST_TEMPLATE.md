@@ -19,3 +19,4 @@ The reviewer checks the following items before merging the PR.
 - [ ] The [CHANGELOG](https://github.com/warewulf/warewulf/blob/main/CHANGELOG.md) has been updated, if necessary, and under the correct release heading
 - [ ] The [userdocs](https://github.com/warewulf/warewulf/tree/main/userdocs) have been updated, if necessary
 - [ ] The submitter is listed in the [contributors file](https://github.com/warewulf/warewulf/blob/main/CONTRIBUTORS.md)
+- [ ] The test suite has been updated, if necessary
