@@ -212,8 +212,8 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %dir %{_sharedstatedir}/warewulf/overlays/wwinit
 %dir %{_sharedstatedir}/warewulf/overlays/wwclient
 %attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/*/rootfs
-%attr(700, root, root) %{_sharedstatedir}/warewulf/overlays/generic/rootfs/root
-%attr(700, root, root) %{_sharedstatedir}/warewulf/overlays/generic/rootfs/root/.ssh
+%attr(700, root, root) %{_sharedstatedir}/warewulf/overlays/ssh.authorized_keys/rootfs/root
+%attr(700, root, root) %{_sharedstatedir}/warewulf/overlays/ssh.authorized_keys/rootfs/root/.ssh
 
 %attr(-, root, root) %{_bindir}/wwctl
 %attr(-, root, root) %{_prefix}/lib/firewalld/services/warewulf.xml
