@@ -2,7 +2,6 @@ package imprt
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -15,20 +14,17 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 && !OptDetect {
-		wwlog.Error("the '--detect' flag is needed, if no kernel version is supplied")
-		os.Exit(1)
+		return fmt.Errorf("the '--detect' flag is needed, if no kernel version is suppiled")
 	}
 	if OptDetect && (OptRoot == "" || OptContainer == "") {
-		wwlog.Error("the '--detect flag needs the '--container' or '--root' flag")
-		os.Exit(1)
+		return fmt.Errorf("the '--detect flag needs the '--container' or '--root' flag")
 	}
 	// Checking if container flag was set, then overwriting OptRoot
 	if OptContainer != "" {
 		if container.ValidSource(OptContainer) {
 			OptRoot = container.RootFsDir(OptContainer)
 		} else {
-			wwlog.Error(" %s is not a valid container", OptContainer)
-			os.Exit(1)
+			return fmt.Errorf(" %s is not a valid container", OptContainer)
 		}
 	}
 
@@ -50,8 +46,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 	err = kernel.Build(kernelVersion, kernelName, OptRoot)
 	if err != nil {
-		wwlog.Error("Failed building kernel: %s", err)
-		os.Exit(1)
+		return fmt.Errorf("failed building kernel: %s", err)
 	} else {
 		fmt.Printf("%s: %s\n", kernelName, "Finished kernel build")
 	}
@@ -60,8 +55,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 		nodeDB, err := node.New()
 		if err != nil {
-			wwlog.Error("Could not open node configuration: %s", err)
-			os.Exit(1)
+			return fmt.Errorf("could not open node configuration: %s", err)
 		}
 		//TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
 		profiles, _ := nodeDB.FindAllProfiles()

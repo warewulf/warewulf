@@ -66,6 +66,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix issue that pattern matching broken on `node set` #964
 - Fix issue that domain globs not supported during wwctl node delete. #1449
 - Fix overlay permissions in /root/ and /root/.ssh/. #1452
+- Return non-zero exit code on container sub-commands #1437
 
 ## v4.5.8, 2024-10-01
 

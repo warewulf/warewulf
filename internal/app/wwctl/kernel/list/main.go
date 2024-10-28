@@ -2,20 +2,17 @@ package list
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/kernel"
 	"github.com/warewulf/warewulf/internal/pkg/node"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	kernels, err := kernel.ListKernels()
 	if err != nil {
-		wwlog.Error("%s", err)
-		os.Exit(1)
+		return err
 	}
 
 	nconfig, _ := node.New()
