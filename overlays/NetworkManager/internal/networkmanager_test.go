@@ -98,7 +98,7 @@ Filename: warewulf-unmanaged.conf
 plugins=keyfile
 
 [keyfile]
-unmanaged-devices=except:mac:9a:77:29:73:14:f1,
+unmanaged-devices=except:interface-name:wwnet0,except:mac:9a:77:29:73:14:f1,except:interface-name:wwnet1,
 `
 
 const networkmanager_unmanaged string = `backupFile: true
@@ -109,7 +109,7 @@ Filename: warewulf-unmanaged.conf
 plugins=keyfile
 
 [keyfile]
-unmanaged-devices=except:mac:e6:92:39:49:7b:03,except:mac:9a:77:29:73:14:f1,
+unmanaged-devices=except:mac:e6:92:39:49:7b:03,except:interface-name:wwnet0,except:mac:9a:77:29:73:14:f1,except:interface-name:wwnet1,
 `
 
 const networkmanager_managed string = `backupFile: true
