@@ -103,10 +103,10 @@ nodes:
 	assert.NoError(t, dbErr)
 
 	conf.Warewulf.Secure = false
-	assert.NoError(t, os.MkdirAll(path.Join(conf.Paths.WWProvisiondir, "overlays", "n1"), 0700))
-	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.WWProvisiondir, "overlays", "n1", "__SYSTEM__.img"), []byte("system overlay"), 0600))
-	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.WWProvisiondir, "overlays", "n1", "__RUNTIME__.img"), []byte("runtime overlay"), 0600))
-	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.WWProvisiondir, "overlays", "n1", "o1.img"), []byte("specific overlay"), 0600))
+	assert.NoError(t, os.MkdirAll(path.Join(conf.Paths.OverlayProvisiondir(), "n1"), 0700))
+	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.OverlayProvisiondir(), "n1", "__SYSTEM__.img"), []byte("system overlay"), 0600))
+	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.OverlayProvisiondir(), "n1", "__RUNTIME__.img"), []byte("runtime overlay"), 0600))
+	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.OverlayProvisiondir(), "n1", "o1.img"), []byte("specific overlay"), 0600))
 
 	wwlog.SetLogLevel(wwlog.DEBUG)
 	for _, tt := range provisionSendTests {

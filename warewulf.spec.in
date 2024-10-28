@@ -128,7 +128,8 @@ make defaults \
     FIREWALLDDIR=/usr/lib/firewalld/services \
     WWCLIENTDIR=/warewulf \
     IPXESOURCE=/usr/share/ipxe \
-    DRACUTMODDIR=/usr/lib/dracut/modules.d
+    DRACUTMODDIR=/usr/lib/dracut/modules.d \
+    CACHEDIR=%{_localstatedir}/cache
 make
 %if %{api}
 make api

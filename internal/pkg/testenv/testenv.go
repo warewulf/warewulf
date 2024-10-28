@@ -41,6 +41,7 @@ const Systemddir = "usr/lib/systemd/system"
 const WWOverlaydir = "var/lib/warewulf/overlays"
 const WWChrootdir = "var/lib/warewulf/chroots"
 const WWProvisiondir = "srv/warewulf"
+const Cachedir = "var/cache"
 
 // New creates a test environment in a temporary directory and configures
 // Warewulf to use it.
@@ -76,6 +77,7 @@ func New(t *testing.T) (env *TestEnv) {
 	conf.Paths.WWOverlaydir = env.GetPath(WWOverlaydir)
 	conf.Paths.WWChrootdir = env.GetPath(WWChrootdir)
 	conf.Paths.WWProvisiondir = env.GetPath(WWProvisiondir)
+	conf.Paths.Cachedir = env.GetPath(Cachedir)
 	conf.Paths.WWClientdir = "/warewulf"
 
 	for _, confPath := range []string{

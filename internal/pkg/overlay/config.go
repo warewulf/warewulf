@@ -55,5 +55,5 @@ func OverlayImage(nodeName string, context string, overlayNames []string) string
 	}
 
 	conf := warewulfconf.Get()
-	return path.Join(conf.Paths.WWProvisiondir, "overlays/", nodeName, name)
+	return path.Join(conf.Paths.OverlayProvisiondir(), nodeName, name)
 }

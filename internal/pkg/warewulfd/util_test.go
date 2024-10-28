@@ -37,42 +37,42 @@ var getOverlayFileTests = []struct {
 		node:        "",
 		context:     "",
 		overlays:    []string{"o1", "o2"},
-		result:      "overlays/node1/o1-o2.img",
+		result:      "node1/o1-o2.img",
 	},
 	{
 		description: "system overlay for a node points to the node's system overlay image",
 		node:        "node1",
 		context:     "system",
 		overlays:    []string{"o1"},
-		result:      "overlays/node1/__SYSTEM__.img",
+		result:      "node1/__SYSTEM__.img",
 	},
 	{
 		description: "runtime overlay for a node points to the node's runtime overlay image",
 		node:        "node1",
 		context:     "runtime",
 		overlays:    nil,
-		result:      "overlays/node1/__RUNTIME__.img",
+		result:      "node1/__RUNTIME__.img",
 	},
 	{
 		description: "a specific overlay for a node points to that specific overlay image for that node",
 		node:        "node1",
 		context:     "",
 		overlays:    []string{"o1"},
-		result:      "overlays/node1/o1.img",
+		result:      "node1/o1.img",
 	},
 	{
 		description: "a specific set of overlays for a node points to a combined overlay image for that node",
 		node:        "node1",
 		context:     "",
 		overlays:    []string{"o1", "o2"},
-		result:      "overlays/node1/o1-o2.img",
+		result:      "node1/o1-o2.img",
 	},
 	{
 		description: "a specific set of overlays for a node while also specifying a context points to the contextual overlay image for that node",
 		node:        "node1",
 		context:     "system",
 		overlays:    []string{"o1", "o2"},
-		result:      "overlays/node1/__SYSTEM__.img",
+		result:      "node1/__SYSTEM__.img",
 	},
 }
 
@@ -96,7 +96,7 @@ nodes:
 			result, err := getOverlayFile(nodeInfo, tt.context, tt.overlays, false)
 			assert.NoError(t, err)
 			if tt.result != "" {
-				tt.result = path.Join(conf.Paths.WWProvisiondir, tt.result)
+				tt.result = path.Join(conf.Paths.OverlayProvisiondir(), tt.result)
 			}
 			assert.Equal(t, tt.result, result)
 		})
