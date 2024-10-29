@@ -69,6 +69,17 @@ Here is an example of importing from Docker Hub.
     <https://hub.docker.com/u/warewulf>`_ are not limited and thus
     they boot as you would expect.
 
+Platform
+--------
+
+By default,
+Warewulf will try to import a container of the same platform
+(e.g., amd64, arm64)
+as the local system.
+To specify the platform to import,
+either specify `WAREWULF_OCI_PLATFORM`
+or use the argument `--platform` during import.
+
 Private Registry
 ----------------
 
