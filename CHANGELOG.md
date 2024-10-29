@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added command line parameters for credentials of a container registry
 - Add flag `--build` to `wwctl container copy`. #1378
 - Add `wwctl clean` to remove OCI cache and overlays from deleted nodes
+- Add `wwctl container import --platform`. #1381
 
 ### Changed
 

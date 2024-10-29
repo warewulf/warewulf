@@ -191,7 +191,7 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 	} else if strings.HasPrefix(cip.Source, "docker://") || strings.HasPrefix(cip.Source, "docker-daemon://") ||
 		strings.HasPrefix(cip.Source, "file://") || util.IsFile(cip.Source) {
 		var sCtx *types.SystemContext
-		sCtx, err = getSystemContext(cip.OciNoHttps, cip.OciUsername, cip.OciPassword)
+		sCtx, err = getSystemContext(cip.OciNoHttps, cip.OciUsername, cip.OciPassword, cip.Platform)
 		if err != nil {
 			return
 		}
@@ -451,7 +451,7 @@ func ContainerRename(crp *wwapiv1.ContainerRenameParameter) (err error) {
 }
 
 // create the system context and reading out environment variables
-func getSystemContext(noHttps bool, username string, password string) (sCtx *types.SystemContext, err error) {
+func getSystemContext(noHttps bool, username string, password string, platform string) (sCtx *types.SystemContext, err error) {
 	sCtx = &types.SystemContext{}
 	// only check env if noHttps wasn't set
 	if !noHttps {
@@ -486,6 +486,11 @@ func getSystemContext(noHttps bool, username string, password string) (sCtx *typ
 			return nil, fmt.Errorf("oci username and password env vars must be specified together")
 		}
 	}
-
+	if platform == "" {
+		platform, _ = os.LookupEnv("WAREWULF_OCI_PLATFORM")
+	}
+	if platform != "" {
+		sCtx.ArchitectureChoice = platform
+	}
 	return sCtx, nil
 }

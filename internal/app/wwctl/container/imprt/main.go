@@ -25,6 +25,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		OciNoHttps:  OciNoHttps,
 		OciUsername: OciUsername,
 		OciPassword: OciPassword,
+		Platform:    Platform,
 	}
 
 	_, err = apicontainer.ContainerImport(cip)
