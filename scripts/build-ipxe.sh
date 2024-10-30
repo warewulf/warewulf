@@ -3,13 +3,17 @@
 set -e
 
 TARGETS=${TARGETS:-"bin-x86_64-pcbios/undionly.kpxe bin-x86_64-efi/snponly.efi bin-arm64-efi/snponly.efi"}
+TARGS="bin-x86_64-pcbios/undionly.kpxe
+bin-x86_64-efi/snponly.efi
+bin-arm64-efi/snponly.efi"
+
 IPXE_BRANCH=${IPXE_BRANCH:-master}
 DESTDIR=${DESTDIR:-/usr/local/share/ipxe}
 
 CPUS=$(grep 'processor.*:' /proc/cpuinfo | wc -l)
 
 
-function usage {
+usage() {
   echo "Usage: $(basename $0)
         [-h] (help)
 
@@ -20,7 +24,7 @@ DESTDIR: ${DESTDIR}"
 }
 
 
-function main {
+main() {
   local DESTDIR=$(readlink -f ${DESTDIR})
 
   while getopts 'h' c
@@ -39,8 +43,7 @@ function main {
 
   cd ipxe/src
 
-  for target in ${TARGETS}
-  do
+while read -r target; do
     if $(echo "$target" | grep -q "\-arm64-")
     then
       if ! which aarch64-linux-gnu-gcc >/dev/null 2>&1
@@ -57,13 +60,17 @@ function main {
     destname=$(echo $target | tr / -)
     make -j $CPUS CROSS="${CROSS}" $target "$@" && cp -v $target ${DESTDIR}/${destname}
     restore_config
-  done
+
+done <<EOF
+$TARGS
+EOF
 }
 
 
-function configure_arm64 {
+configure_arm64() {
   # CONSOLE_SERIAL causes build failure for aarch64, so omitting here
   # https://github.com/ipxe/ipxe/issues/658
+  ls -l config >> /root/args
   sed -i.bak \
       -e 's,//\(#define.*CONSOLE_FRAMEBUFFER.*\),\1,' \
       config/console.h
@@ -76,7 +83,8 @@ function configure_arm64 {
 }
 
 
-function configure_x86_64 {
+configure_x86_64() {
+  ls -l config >> /root/args
   sed -i.bak \
       -e 's,//\(#define.*CONSOLE_SERIAL.*\),\1,' \
       -e 's,//\(#define.*CONSOLE_FRAMEBUFFER.*\),\1,' \
@@ -90,9 +98,9 @@ function configure_x86_64 {
 }
 
 
-function restore_config {
-  cp config/console.h{.bak,}
-  cp config/general.h{.bak,}
+restore_config() {
+  cp config/console.h.bak config/console.h
+  cp config/general.h.bak config/general.h
 }
 
 

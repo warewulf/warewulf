@@ -28,10 +28,10 @@ echo
 
 chmod 755 /warewulf/wwinit
 
-if [ -z "${WWROOT}" -o "${WWROOT}" == "initramfs" ]; then
+if [ -z "${WWROOT}" -o "${WWROOT}" = "initramfs" ]; then
     echo "Retaining initramfs and invoking /warewulf/wwinit..."
     exec /warewulf/wwinit
-elif [ "${WWROOT}" == "ramfs" -o "${WWROOT}" == "tmpfs" ]; then
+elif [ "${WWROOT}" = "ramfs" -o "${WWROOT}" = "tmpfs" ]; then
     echo "Setting up new ${WWROOT} rootfs..."
     mkdir /newroot
     mount wwroot /newroot -t ${WWROOT} -o mpol=interleave # mpol ignored for ramfs

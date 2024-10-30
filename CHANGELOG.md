@@ -42,6 +42,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Replace `defaults.conf` with settings on the default profile. #917
 - Switched from yaml.v2 to yaml.v3 #1462
 - Make OCIBlobCache a seperate path and point it to `/var/cache` #1459
+- Updated various shell scripts for POSIX compatibility. #1464
 
 
 ### Removed
