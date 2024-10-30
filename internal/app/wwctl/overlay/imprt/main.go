@@ -1,6 +1,7 @@
 package imprt
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -30,8 +31,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	overlaySource = overlay.OverlaySourceDir(overlayName)
 
 	if !util.IsDir(overlaySource) {
-		wwlog.Error("Overlay does not exist: %s", overlayName)
-		os.Exit(1)
+		return fmt.Errorf("overlay does not exist: %s", overlayName)
 	}
 
 	if util.IsDir(path.Join(overlaySource, dest)) {
@@ -39,8 +39,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if util.IsFile(path.Join(overlaySource, dest)) {
-		wwlog.Error("A file with that name already exists in the overlay %s\n:", overlayName)
-		os.Exit(1)
+		return fmt.Errorf("a file with that name already exists in the overlay: %s", overlayName)
 	}
 
 	if CreateDirs {
@@ -49,13 +48,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Debug("Create dir: %s", parent)
 			srcInfo, err := os.Stat(source)
 			if err != nil {
-				wwlog.Error("Could not retrieve the stat for file: %s", err)
-				return err
+				return fmt.Errorf("could not retrieve the stat for file: %s", err)
 			}
 			err = os.MkdirAll(parent, srcInfo.Mode())
 			if err != nil {
-				wwlog.Error("Could not create parent dif: %s: %v", parent, err)
-				return err
+				return fmt.Errorf("could not create parent dif: %s: %v", parent, err)
 			}
 		}
 	}
@@ -68,14 +65,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if !NoOverlayUpdate {
 		n, err := node.New()
 		if err != nil {
-			wwlog.Error("Could not open node configuration: %s", err)
-			os.Exit(1)
+			return fmt.Errorf("could not open node configuration: %s", err)
 		}
 
 		nodes, err := n.FindAllNodes()
 		if err != nil {
-			wwlog.Error("Could not get node list: %s", err)
-			os.Exit(1)
+			return fmt.Errorf("could not get node list: %s", err)
 		}
 
 		var updateNodes []node.NodeConf

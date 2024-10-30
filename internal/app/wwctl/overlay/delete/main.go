@@ -25,13 +25,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	overlayPath = overlay.OverlaySourceDir(overlayName)
 
 	if overlayPath == "" {
-		wwlog.Error("Overlay name did not resolve: '%s'", overlayName)
-		os.Exit(1)
+		return fmt.Errorf("overlay name did not resolve: '%s'", overlayName)
 	}
 
 	if !util.IsDir(overlayPath) {
-		wwlog.Error("Overlay does not exist: %s", overlayName)
-		os.Exit(1)
+		return fmt.Errorf("overlay does not exist: %s", overlayName)
 	}
 
 	if fileName == "" {
@@ -49,29 +47,24 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				return errors.Wrap(err, "failed deleting overlay")
 			}
 		}
-		fmt.Printf("Deleted overlay: %s\n", args[0])
+		wwlog.Info("Deleted overlay: %s\n", args[0])
 
 	} else {
 		removePath := path.Join(overlayPath, fileName)
 
 		if !util.IsDir(removePath) && !util.IsFile(removePath) {
-			wwlog.Error("Path to remove doesn't exist in overlay: %s", removePath)
-			os.Exit(1)
+			return fmt.Errorf("path to remove doesn't exist in overlay: %s", removePath)
 		}
 
 		if Force {
 			err := os.RemoveAll(removePath)
 			if err != nil {
-				wwlog.Error("Failed deleting file from overlay: %s:%s", overlayName, overlayPath)
-				wwlog.Error("%s", err)
-				os.Exit(1)
+				return fmt.Errorf("failed deleting file from overlay: %s:%s", overlayName, overlayPath)
 			}
 		} else {
 			err := os.Remove(removePath)
 			if err != nil {
-				wwlog.Error("Failed deleting overlay: %s:%s", overlayName, overlayPath)
-				wwlog.Error("%s", err)
-				os.Exit(1)
+				return fmt.Errorf("failed deleting overlay: %s:%s", overlayName, overlayPath)
 			}
 		}
 
