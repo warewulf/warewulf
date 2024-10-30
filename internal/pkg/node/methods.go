@@ -231,7 +231,7 @@ func UnmarshalConf(obj interface{}, excludeList []string) (lines []string) {
 				lines = append(lines, ymlStr...)
 			}
 		}
-		if field.Type.Kind() == reflect.Ptr && field.Tag.Get("yaml") != "" {
+		if field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Struct && field.Tag.Get("yaml") != "" {
 			typeLine := field.Tag.Get("yaml")
 			if len(strings.Split(typeLine, ",")) > 1 {
 				typeLine = strings.Split(typeLine, ",")[0] + ":"

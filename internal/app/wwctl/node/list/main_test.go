@@ -29,7 +29,7 @@ func Test_List(t *testing.T) {
 			args:    []string{},
 			wantErr: false,
 			stdout: `  NODE NAME  PROFILES   NETWORK
-  n01       [default]
+  n01        [default]
 `,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
@@ -44,9 +44,9 @@ nodes:
 			name:    "multiple nodes list",
 			args:    []string{},
 			wantErr: false,
-			stdout: `  NODE NAME  PROFILES  NETWORK
-  n01       [default]
-  n02       [default]
+			stdout: `  NODE NAME  PROFILES   NETWORK
+  n01        [default]
+  n02        [default]
 `,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
@@ -64,9 +64,9 @@ nodes:
 			name:    "node list returns multiple nodes",
 			args:    []string{"n01,n02"},
 			wantErr: false,
-			stdout: `  NODE NAME  PROFILES  NETWORK
-  n01       [default]
-  n02       [default]
+			stdout: `  NODE NAME  PROFILES   NETWORK
+  n01        [default]
+  n02        [default]
 `,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
@@ -84,9 +84,9 @@ nodes:
 			name:    "node list returns multiple nodes (case 2)",
 			args:    []string{"n01,n03"},
 			wantErr: false,
-			stdout: `  NODE NAME  PROFILES  NETWORK
-  n01       [default]
-  n03       [default]
+			stdout: `  NODE NAME  PROFILES   NETWORK
+  n01        [default]
+  n03        [default]
 `,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
@@ -113,8 +113,8 @@ nodes:
 			name:    "node list returns one node",
 			args:    []string{"n01,"},
 			wantErr: false,
-			stdout: `  NODE NAME  PROFILES  NETWORK
-  n01       [default]
+			stdout: `  NODE NAME  PROFILES   NETWORK
+  n01        [default]
 `,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
@@ -132,8 +132,8 @@ nodes:
 			name:    "node list profile with network",
 			args:    []string{},
 			wantErr: false,
-			stdout: `  NODE NAME  PROFILES  NETWORK
-  n01       [default]        default
+			stdout: `  NODE NAME  PROFILES   NETWORK
+  n01        [default]  default
 `,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
@@ -150,9 +150,9 @@ nodes:
 			name:    "node list profile with comment",
 			args:    []string{"-a"},
 			wantErr: false,
-			stdout: `NODE  FIELD           PROFILE  VALUE
-n01   Comment         default  profilecomment
-n01   Profiles                 default
+			stdout: `  NODE  FIELD     PROFILE  VALUE
+  n01   Comment   default  profilecomment
+  n01   Profiles           default
 `,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
@@ -167,9 +167,9 @@ nodes:
 			name:    "node list profile with comment superseded",
 			args:    []string{"-a"},
 			wantErr: false,
-			stdout: `NODE  FIELD           PROFILE     VALUE
-n01   Comment         SUPERSEDED  nodecomment
-n01   Profiles                    default
+			stdout: `  NODE  FIELD     PROFILE     VALUE
+  n01   Comment   SUPERSEDED  nodecomment
+  n01   Profiles              default
 `,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
@@ -185,8 +185,8 @@ nodes:
 			name:    "node list profile with ipmi user",
 			args:    []string{"-i"},
 			wantErr: false,
-			stdout: `NODE IPMIIPADDR IPMIPORT IPMIUSERNAME IPMIINTERFACE
-n01 <nil>    admin
+			stdout: `  NODE  IPMI IPADDR  IPMI PORT  IPMI USERNAME  IPMI INTERFACE
+  n01   <nil>                   admin
 `,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
@@ -202,8 +202,8 @@ nodes:
 			name:    "node list profile with ipmi user superseded",
 			args:    []string{"-i"},
 			wantErr: false,
-			stdout: `NODE IPMIIPADDR IPMIPORT IPMIUSERNAME IPMIINTERFACE
-n01 <nil>    user
+			stdout: `  NODE  IPMI IPADDR  IPMI PORT  IPMI USERNAME  IPMI INTERFACE
+  n01   <nil>                   user
 `,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
@@ -218,23 +218,12 @@ nodes:
     - default
 `},
 		{
-			inDb: `WW_INTERNAL: 45
-nodeprofiles:
-  p1: {}
-  p2: {}
-nodes:
-  n01:
-    profiles:
-    - p1
-    - p2
-`,
 			name:    "multiple profiles list",
 			args:    []string{},
 			wantErr: false,
 			stdout: `  NODE NAME  PROFILES  NETWORK
-n01        [p1 p2]
-`},
-		{
+  n01        [p1 p2]
+`,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   p1: {}
@@ -244,14 +233,31 @@ nodes:
     profiles:
     - p1
     - p2
-`,
+`},
+		{
 			name:    "multiple profiles list all",
 			args:    []string{"-a"},
 			wantErr: false,
-			stdout: `NODE  FIELD           PROFILE  VALUE
-n01   Profiles                 p1,p2
+			stdout: `  NODE  FIELD     PROFILE  VALUE
+  n01   Profiles           p1,p2
+`,
+			inDb: `WW_INTERNAL: 45
+nodeprofiles:
+  p1: {}
+  p2: {}
+nodes:
+  n01:
+    profiles:
+    - p1
+    - p2
 `},
 		{
+			name:    "multiple overlays list long with negation",
+			args:    []string{"-l"},
+			wantErr: false,
+			stdout: `  NODE NAME  KERNEL OVERRIDE  CONTAINER  OVERLAYS (S/R)
+  n01                                    /rop1,rop2
+`,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   p1:
@@ -262,14 +268,14 @@ nodes:
   n01:
     profiles:
     - p1
-`,
-			name:    "multiple overlays list",
-			args:    []string{"-l"},
-			wantErr: false,
-			stdout: `NODE NAME  KERNEL OVERRIDE  CONTAINER  OVERLAYS (S/R)
-n01                                                         /rop1,rop2
 `},
 		{
+			name:    "multiple overlays list long",
+			args:    []string{"-l"},
+			wantErr: false,
+			stdout: `  NODE NAME  KERNEL OVERRIDE  CONTAINER  OVERLAYS (S/R)
+  n01                                    sop1/nop1,~rop1,rop1,rop2
+`,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   p1:
@@ -285,14 +291,16 @@ nodes:
     runtime overlay:
     - nop1
     - ~rop1
-`,
-			name:    "multiple overlays list",
-			args:    []string{"-l"},
-			wantErr: false,
-			stdout: `NODE NAME  KERNEL OVERRIDE  CONTAINER  OVERLAYS (S/R)
-n01                                sop1/nop1,~rop1,rop1,rop2
 `},
 		{
+			name:    "multiple overlays list all with negation",
+			args:    []string{"-a"},
+			wantErr: false,
+			stdout: `  NODE  FIELD           PROFILE  VALUE
+  n01   Profiles                 p1
+  n01   RuntimeOverlay  p1+      nop1,~rop1,rop1,rop2
+  n01   SystemOverlay   p1       sop1
+`,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   p1:
@@ -308,14 +316,15 @@ nodes:
     runtime overlay:
     - nop1
     - ~rop1
-`,
+`},
+		{
 			name:    "multiple overlays list all",
 			args:    []string{"-a"},
 			wantErr: false,
-			stdout: `NODE  FIELD           PROFILE     VALUE
-n01   Profiles                  p1
-`},
-		{
+			stdout: `  NODE  FIELD           PROFILE  VALUE
+  n01   Profiles                 p1
+  n01   RuntimeOverlay  p1+      nop1,rop1,rop2
+`,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   p1:
@@ -328,13 +337,32 @@ nodes:
     - p1
     runtime overlay:
     - nop1
-`,
-			name:    "multiple overlays list all",
+`},
+		{
+			name:    "network onboot",
 			args:    []string{"-a"},
 			wantErr: false,
-			stdout: `NODE  FIELD           PROFILE     VALUE
-n01   Profiles                    p1
-n01   RuntimeOverlay               p1+nop1,rop1,rop2
+			stdout: `  NODE  FIELD                    PROFILE  VALUE
+  n1    NetDevs[default].OnBoot           true
+`,
+			inDb: `WW_INTERNAL: 45
+nodes:
+  n1:
+    network devices:
+      default:
+        onboot: true
+`},
+		{
+			name:    "empty network device",
+			args:    []string{"-a"},
+			wantErr: false,
+			stdout: `  NODE  FIELD  PROFILE  VALUE
+`,
+			inDb: `WW_INTERNAL: 46
+nodes:
+  wwnode1:
+    network devices:
+      default: {}
 `},
 	}
 
@@ -371,8 +399,7 @@ n01   RuntimeOverlay               p1+nop1,rop1,rop2
 			err := baseCmd.Execute()
 			assert.NoError(t, err)
 			assert.NotEmpty(t, buf, "output should not be empty")
-			assert.Contains(t, strings.ReplaceAll(buf.String(), " ", ""),
-				strings.ReplaceAll(tt.stdout, " ", ""))
+			assert.Equal(t, tt.stdout, buf.String())
 
 		})
 	}
