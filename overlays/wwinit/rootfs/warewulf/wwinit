@@ -5,21 +5,13 @@ echo "Hello from WWINIT"
 . /warewulf/config
 
 myPATH=/warewulf/init.d
-while read -r NAME; do
-#        if [ -x $myPATH/$NAME ]
-#        then
-               echo "Launching: $NAME"
-               sh "$myPATH/$NAME"
-
-#        fi
-done <<EOF
-# `ls $myPATH/*.sh`
-`ls $myPATH/`
-EOF
+ls -1 $myPATH/ | while read -r NAME; do
+    echo "Launching: $NAME"
+    sh "$myPATH/$NAME"
+done
 
 echo "Calling $WWINIT..."
 echo
 
 sleep 2
 exec $WWINIT
-
