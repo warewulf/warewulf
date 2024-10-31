@@ -1,7 +1,7 @@
 package node
 
 import (
-	"fmt"
+	"errors"
 	"sort"
 	"strconv"
 
@@ -124,7 +124,7 @@ func (node *NodeConf) GetStorage() (stor types_3_4.Storage, err error, rep strin
 	}
 	report := stor.Validate(path.ContextPath{})
 	if report.IsFatal() {
-		err = fmt.Errorf(report.String())
+		err = errors.New(report.String())
 	}
 	rep = report.String()
 	return
