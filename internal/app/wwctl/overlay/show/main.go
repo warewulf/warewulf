@@ -3,7 +3,7 @@ package show
 import (
 	"bufio"
 	"bytes"
-	"errors"
+	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -25,15 +25,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	overlaySourceDir = overlay.OverlaySourceDir(overlayName)
 
 	if !util.IsDir(overlaySourceDir) {
-		err := errors.New("overlay does not exist")
-		return err
+		return fmt.Errorf("overlay dir: %s does not exist", overlaySourceDir)
 	}
 
 	overlayFile := path.Join(overlaySourceDir, fileName)
 
 	if !util.IsFile(overlayFile) {
-		err := errors.New("file does not exist within overlay")
-		return err
+		return fmt.Errorf("file: %s does not exist within overlay", overlayFile)
 	}
 
 	if NodeName == "" {
@@ -45,8 +43,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Output("%s", string(f))
 	} else {
 		if !util.IsFile(overlayFile) {
-			err := errors.New("not a file")
-			return err
+			return fmt.Errorf("%s is not a file", overlayFile)
 		}
 		if filepath.Ext(overlayFile) != ".ww" {
 			wwlog.Warn("%s lacks the '.ww' suffix, will not be rendered in an overlay", fileName)
@@ -59,7 +56,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if err == node.ErrNotFound {
 			hostName, err := os.Hostname()
 			if err != nil {
-				wwlog.Error("Could not get host name: %s", err)
+				return fmt.Errorf("could not get host name: %s", err)
 			}
 			nodeConf = node.NewNode(hostName)
 			nodeConf.ClusterName = hostName

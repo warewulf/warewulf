@@ -72,6 +72,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Return non-zero exit code on profile sub-commands #1435
 - Fix issue that NetworkManager marks managed interfaces "unmanaged" if they do
   not have a device specified. #1154
+- Return non-zero exit code on overlay sub-commands #1423
 
 ## v4.5.8, 2024-10-01
 

@@ -19,7 +19,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	controller := warewulfconf.Get()
 	nodeDB, err := node.New()
 	if err != nil {
-		return fmt.Errorf("couldn't open node configuration: %s", err)
+		return fmt.Errorf("could not open node configuration: %s", err)
 	}
 
 	db, err := nodeDB.FindAllNodes()
@@ -89,7 +89,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		if err != nil {
-			return fmt.Errorf("Some overlays failed to be generated: %s", err)
+			return fmt.Errorf("some overlays failed to be generated: %s", err)
 		}
 	}
 	return nil

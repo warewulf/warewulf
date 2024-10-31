@@ -1,13 +1,13 @@
 package chown
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"strconv"
 
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/util"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 
 	"github.com/spf13/cobra"
 )
@@ -23,15 +23,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	uid, err = strconv.Atoi(args[2])
 	if err != nil {
-		wwlog.Error("UID is not an integer: %s", args[2])
-		os.Exit(1)
+		return fmt.Errorf("UID is not an integer: %s", args[2])
 	}
 
 	if len(args) > 3 {
 		gid, err = strconv.Atoi(args[3])
 		if err != nil {
-			wwlog.Error("GID is not an integer: %s", args[3])
-			os.Exit(1)
+			return fmt.Errorf("GID is not an integer: %s", args[3])
 		}
 	} else {
 		gid = -1
@@ -40,21 +38,18 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	overlaySourceDir = overlay.OverlaySourceDir(overlayName)
 
 	if !util.IsDir(overlaySourceDir) {
-		wwlog.Error("Overlay does not exist: %s", overlayName)
-		os.Exit(1)
+		return fmt.Errorf("overlay does not exist: %s", overlayName)
 	}
 
 	overlayFile := path.Join(overlaySourceDir, fileName)
 
 	if !util.IsFile(overlayFile) && !util.IsDir(overlayFile) {
-		wwlog.Error("File does not exist within overlay: %s:%s", overlayName, fileName)
-		os.Exit(1)
+		return fmt.Errorf("file does not exist within overlay: %s:%s", overlayName, fileName)
 	}
 
 	err = os.Chown(overlayFile, uid, gid)
 	if err != nil {
-		wwlog.Error("Could not set ownership: %s", err)
-		os.Exit(1)
+		return fmt.Errorf("could not set ownership: %s", err)
 	}
 
 	return nil
