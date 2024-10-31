@@ -9,7 +9,7 @@ DESTDIR=${DESTDIR:-/usr/local/share/ipxe}
 CPUS=$(grep 'processor.*:' /proc/cpuinfo | wc -l)
 
 
-function usage {
+usage() {
   echo "Usage: $(basename $0)
         [-h] (help)
 
@@ -20,7 +20,7 @@ DESTDIR: ${DESTDIR}"
 }
 
 
-function main {
+main() {
   local DESTDIR=$(readlink -f ${DESTDIR})
 
   while getopts 'h' c
@@ -39,7 +39,7 @@ function main {
 
   cd ipxe/src
 
-  for target in ${TARGETS}
+  echo $TARGETS | sed 's/  */\n/g' | while read -r target
   do
     if $(echo "$target" | grep -q "\-arm64-")
     then
@@ -61,7 +61,7 @@ function main {
 }
 
 
-function configure_arm64 {
+configure_arm64() {
   # CONSOLE_SERIAL causes build failure for aarch64, so omitting here
   # https://github.com/ipxe/ipxe/issues/658
   sed -i.bak \
@@ -76,7 +76,7 @@ function configure_arm64 {
 }
 
 
-function configure_x86_64 {
+configure_x86_64() {
   sed -i.bak \
       -e 's,//\(#define.*CONSOLE_SERIAL.*\),\1,' \
       -e 's,//\(#define.*CONSOLE_FRAMEBUFFER.*\),\1,' \
@@ -90,9 +90,9 @@ function configure_x86_64 {
 }
 
 
-function restore_config {
-  cp config/console.h{.bak,}
-  cp config/general.h{.bak,}
+restore_config() {
+  cp config/console.h.bak config/console.h
+  cp config/general.h.bak config/general.h
 }
 
 

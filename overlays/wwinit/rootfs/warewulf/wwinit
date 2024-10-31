@@ -4,10 +4,10 @@ echo "Hello from WWINIT"
 
 . /warewulf/config
 
-for i in /warewulf/init.d/*; do
-    NAME=`basename $i`
+myPATH=/warewulf/init.d
+ls -1 $myPATH/ | while read -r NAME; do
     echo "Launching: $NAME"
-    sh "$i"
+    sh "$myPATH/$NAME"
 done
 
 echo "Calling $WWINIT..."
