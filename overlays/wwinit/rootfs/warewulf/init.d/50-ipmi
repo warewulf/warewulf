@@ -5,86 +5,83 @@
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
 if [ "$WWIPMI_WRITE" != "true" ]; then
-    echo "No write to IMPI configured"
+    echo "IPMI write not configured: skipping"
     exit
 fi
 
-if [ -z "$WWIPMI_IPADDR" ]; then
-    echo "No IPMI IP address supplied, skipping IPMI configuration"
+modprobe ipmi_si ipmi_ssif ipmi_devintf ipmi_msghandler || (
+    echo "unable to load IPMI kernel modules: skipping IPMI configuration"
     exit
-fi
-if [ -z "$WWIPMI_NETMASK" ]; then
-    echo "No IPMI netmask supplied, skipping IPMI configuration"
-    exit
-fi
-
-echo "IPMI IP address: $WWIPMI_IPADDR"
-echo "IPMI netmask: $WWIPMI_NETMASK"
-echo "IPMI gateway: $WWIPMI_GATEWAY"
-echo "IPMI username: $WWIPMI_USER"
-
-modprobe ipmi_si
-modprobe ipmi_ssif
-modprobe ipmi_devintf
-modprobe ipmi_msghandler
+)
 
 if [ ! -e /dev/ipmi0 ]; then
     sleep 1
-    ipmi_dev=$(grep ipmidev /proc/devices | awk '{ print $1; }')
-    mknod -m 0666 /dev/ipmi0 c $ipmi_dev 0
-    ls -la /dev/ipmi0
+    ipmi_dev=$(grep ipmidev /proc/devices | awk '{ print $1 }')
+    mknod -m 0666 /dev/ipmi0 c "$ipmi_dev" 0
 fi
 
-x=$(ipmitool lan print 1)
-PREV_IP=$(echo "$x" | grep "^IP Address   " | awk '{ print $4; }')
-PREV_NETMASK=$(echo "$x" | grep "^Subnet Mask" | awk '{ print $4; }')
-PREV_GATEWAY=$(echo "$x" | grep "^Default Gateway IP" | awk '{ print $5; }')
-echo PREV_IP is $PREV_IP
-echo PREV_NETMASK is $PREV_NETMASK
-echo PREV_GATEWAY is $PREV_GATEWAY
-
-# Network
-if [ "$PREV_IP" != "$WWIPMI_IPADDR" -o "$PREV_NETMASK" != "$WWIPMI_NETMASK" -o "$PREV_GATEWAY" != "$WWIPMI_GATEWAY" ]; then
-    ipmitool lan set 1 access on
-    ipmitool lan set 1 ipsrc static
-    ipmitool lan set 1 ipaddr $WWIPMI_IPADDR
-    ipmitool lan set 1 netmask $WWIPMI_NETMASK
-    ipmitool lan set 1 defgw ipaddr $WWIPMI_GATEWAY
-fi
-
-# User
-if test -n "$WWIPMI_PASSWORD"; then
-    echo "IPMI password is defined"
-    if [ "$WWIPMI_USER" != "" ]; then
-        PREV_USER=$(ipmitool user list | grep "^2 " | awk '{ print $2; }')
-        TEST_PASSWORD=$(ipmitool user test 2 20 $WWIPMI_PASSWORD)
-        if [ "$WWIPMI_USER" != "$PREV_USER" -o "$TEST_PASSWORD" != "Success" ]; then
-            ipmitool user set name 2 $WWIPMI_USER
-            ipmitool user set password 2 $WWIPMI_PASSWORD
-            sleep 1
-            ipmitool user priv 2 4 1
-            ipmitool user enable 2
-        fi
-    fi
-else
-    echo "IPMI password is undefined"
+command -v ipmitool >/dev/null 2>&1 || (
+    echo "ipmitool is not available: skipping IPMI configuration"
     exit
+)
+
+lan_info="$(ipmitool lan print 1)"
+
+if [ -n "$WWIPMI_IPADDR" ]; then
+    prev_ip=$(echo "$lan_info" | grep "^IP Address *:" | awk -F': ' '{ print $2 }')
+    if [ "$prev_ip" != "$WWIPMI_IPADDR" ]; then
+        echo "IPMI IP address: $prev_ip -> $WWIPMI_IPADDR"
+        ipmitool lan set 1 ipsrc static
+        ipmitool lan set 1 ipaddr "$WWIPMI_IPADDR"
+        ipmitool lan set 1 access on
+    else
+        echo "IPMI IP address: $WWIPMI_IPADDR"
+    fi
 fi
 
+if [ -n "$WWIPMI_NETMASK" ]; then
+    prev_netmask=$(echo "$lan_info" | grep "^Subnet Mask *:" | awk -F': ' '{ print $2 }')
+    if [ "$prev_netmask" != "$WWIPMI_NETMASK" ]; then
+        echo "IPMI netmask: $prev_netmask -> $WWIPMI_NETMASK"
+        ipmitool lan set 1 netmask $WWIPMI_NETMASK
+    else
+        echo "IPMI netmask: $WWIPMI_NETMASK"
+    fi
+fi
 
-# Authentication
-#ipmitool lan set 1 auth user md5,password
-#ipmitool lan set 1 auth operator md5,password
-#ipmitool lan set 1 auth admin md5,password
-#ipmitool user enable 1
-#ipmitool user priv 1 4 1
+if [ -n "$WWIPMI_GATEWAY" ]; then
+    prev_gateway=$(echo "$lan_info" | grep "^Default Gateway IP *:" | awk -F': ' '{ print $2 }')
+    if [ "$prev_gateway" != "$WWIPMI_GATEWAY" ]; then
+        echo "IPMI gateway: $prev_gateway -> $WWIPMI_GATEWAY"
+        ipmitool lan set 1 defgw ipaddr "$WWIPMI_GATEWAY"
+    else
+        echo "IPMI gateway: $WWIPMI_GATEWAY"
+    fi
+fi
 
-# Authentication (allow None)
-#ipmitool lan set 1 auth user none,md5,password
-#ipmitool lan set 1 auth operator none,md5,password
-#ipmitool lan set 1 auth admin none,md5,password
-#ipmitool user enable 1
-#ipmitool user priv 1 4 1
+if [ -n "$WWIPMI_USER" ]; then
+    prev_user=$(ipmitool -c user list 1 | awk -F, '{ if ($1 == 2) { print $2; exit } }')
+    if [ "$prev_user" != "$WWIPMI_USER" ]; then
+        ipmitool user set name 2 "$WWIPMI_USER"
+        ipmitool user priv 2 4 1
+        ipmitool user enable 2
+        echo "IPMI username: $prev_user -> $WWIPMI_USER"
+    else
+        echo "IPMI username: $WWIPMI_USER"
+    fi
+fi
+
+if [ -n "$WWIPMI_PASSWORD" ]; then
+    ipmitool user test 2 20 "$WWIPMI_PASSWORD" >/dev/null || ipmitool user test 2 16 "$WWIPMI_PASSWORD" >/dev/null
+    if [ $? -ne 0 ]; then
+        ipmitool user set password 2 "$WWIPMI_PASSWORD"
+        ipmitool user priv 2 4 1
+        ipmitool user enable 2
+        echo "IPMI password: [updated]"
+    else
+        echo "IPMI password: [unchanged]"
+    fi
+fi
 
 # Serial Over LAN
 ipmitool channel setaccess 1 2 link=on ipmi=on callin=on privilege=4
@@ -96,4 +93,3 @@ ipmitool sol set enabled true 1 1
 speed=38.4  # 19.2 38.4 115.2
 ipmitool sol set non-volatile-bit-rate $speed 1
 ipmitool sol set volatile-bit-rate $speed 1
-
