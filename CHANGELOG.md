@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add `wwctl clean` to remove OCI cache and overlays from deleted nodes
 - Add `wwctl container import --platform`. #1381
 - Read environment variables from `/etc/default/warewulfd` #725
+- Add support for VLANs to NetworkManager, wicked, ifcfg, debian.network_interfaces overlays. #1257
+- Add support for static routes to NetworkManager, wicked, ifcfg, debian.network_interfaces overlays. #1257
 
 ### Changed
 

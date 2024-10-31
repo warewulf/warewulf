@@ -1,0 +1,13 @@
+nodes:
+  node1:
+    primary network: untagged
+    network devices:
+      untagged:
+        device: eth0
+      tagged:
+        type: vlan
+        device: eth0.902
+        tags:
+          vlan_id: 902
+          parent_device: eth0
+          route1: "192.168.1.0/24,192.168.2.254"
