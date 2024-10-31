@@ -223,7 +223,7 @@ Vagrantfile
       systemd name: nfs-server
     CONF
 
-                sed -i 's@ExecStart=/usr/bin/wwctl server start@ExecStart=/usr/bin/wwctl server start -d -v@' /usr/lib/systemd/system/warewulfd.service
+                sed -i 's@ExecStart=/usr/bin/wwctl server@ExecStart=/usr/bin/wwctl server -d -v@' /usr/lib/systemd/system/warewulfd.service
                 systemctl enable --now warewulfd
 
                 wwctl configure --all

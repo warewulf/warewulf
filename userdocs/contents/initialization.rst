@@ -48,22 +48,3 @@ systemd service:
 .. code-block:: console
 
    # systemctl enable --now warewulfd
-
-You can also check and control the Warewulf service using the ``wwctl``
-command line program as follows:
-
-.. code-block:: console
-
-   # wwctl server status
-
-.. note::
-
-   If the Warewulf service is running via systemd, restarting
-   stopping, and starting it from the ``wwctl`` command may result in
-   unexpected results.
-
-Logs
-----
-
-The Warewulf server logs are by default written to
-``/var/log/warewulfd.log``.

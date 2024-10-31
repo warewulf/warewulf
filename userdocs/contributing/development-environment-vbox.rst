@@ -137,9 +137,7 @@ I have VirtualBox running on my desktop.
    sudo wwctl overlay build -a
 
    # Start the Warewulf daemon
-   sudo wwctl ready
-   sudo wwctl server start
-   sudo wwctl server status
+   sudo wwctl server &
 
 4. Create a new guest VM instance inside the VirtualBox to be the
    Warewulf client/compute node. Under the system configuration make

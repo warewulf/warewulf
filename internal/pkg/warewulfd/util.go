@@ -39,7 +39,7 @@ func sendFile(
 		stat.ModTime(),
 		fd)
 
-	wwlog.Send("%15s: %s", sendto, filename)
+	wwlog.Info("send %s -> %s", filename, sendto)
 	req.Body.Close()
 	return nil
 }
