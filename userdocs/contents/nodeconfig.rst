@@ -264,9 +264,15 @@ You will have provide all the necessary network information.
 VLAN
 ----
 
-You can set the type also to `vlan`. This settings needs the two
-additional network tags `vlan_id` and `parent_device` and is only 
-supported for wicked and NetworkManager.
+You can set the type also to ``vlan``.
+
+Some network configuration systems use the network device name
+(e.g., of the form ``eno1.100``)
+to configure VLANs.
+Other network systems need additional network tags:
+
+- ``vlan_id``: configures the VLAN ID of the interface
+- ``parent_device``: configures which physical interface to use
 
 .. code-block:: shell
 
@@ -279,6 +285,16 @@ supported for wicked and NetworkManager.
      --nettagadd "vlan_id=42,parent_device=eth0" \
      n001
 
+Static Routes
+-------------
+
+The included Warewulf network overlays support the configuration of static routes
+using a network tag of the form ``route<N>=<dest>,<gateway>``.
+
+.. code-block:: shell
+
+   wwctl node set n001 \
+     --nettagadd "route1=192.168.2.0/24,192.168.1.254"
 
 Node Discovery
 --------------
