@@ -36,6 +36,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Bump github.com/coreos/ignition/v2 from 2.15.0 to 2.19.0 #1239
 - Bump github.com/sassoftware/go-rpmutils from 0.2.0 to 0.4.0 #1217
 - Bump github.com/containers/storage from 1.53.0 to 1.55.0 #1316
+- Bump github.com/spf13/cobra from 1.8.0 to 1.8.1 #1481
 - Disable building containers by default when calling `wwctl container copy`. #1378
 - Split wwinit and generic overlays into discrete functionality. #987
 - Updated IgnitionJson to sort filesystems. #1433
