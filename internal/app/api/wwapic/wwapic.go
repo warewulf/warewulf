@@ -69,7 +69,7 @@ func main() {
 		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
 
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%v", config.ApiConfig.Server, config.ApiConfig.Port), opts...)
+	conn, err := grpc.NewClient(fmt.Sprintf("%s:%v", config.ApiConfig.Server, config.ApiConfig.Port), opts...)
 	if err != nil {
 		log.Fatalln(err)
 	}
