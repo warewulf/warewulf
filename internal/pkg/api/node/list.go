@@ -39,7 +39,7 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 			}
 			sort.Strings(netNames)
 			nodeList.Output = append(nodeList.Output,
-				fmt.Sprintf("%s:=:%s:=:%s", n.Id(), n.Profiles, strings.Join(netNames, ", ")))
+				fmt.Sprintf("%s:=:%s:=:%s", n.Id(), n.ProfileConf.Profiles, strings.Join(netNames, ", ")))
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_Network {
 		nodeList.Output = append(nodeList.Output,
