@@ -89,14 +89,11 @@ initrd --name kmods ${uri_base}&stage=kmods&compress=gz         || goto reboot
 
 :imoktogo
 
-echo Booting in 3s...
 {{if ne .KernelOverride "" -}}
 echo boot kernel initrd=container initrd=kmods initrd=system initrd=runtime wwid={{.Hwaddr}} {{.KernelArgs}}
-sleep 3
 boot kernel initrd=container initrd=kmods initrd=system initrd=runtime wwid={{.Hwaddr}} {{.KernelArgs}} ||  goto reboot
 {{- else -}}
 echo boot kernel initrd=container initrd=system initrd=runtime wwid={{.Hwaddr}} {{.KernelArgs}}
-sleep 3
 boot kernel initrd=container initrd=system initrd=runtime wwid={{.Hwaddr}} {{.KernelArgs}} ||  goto reboot
 {{- end}}
 
