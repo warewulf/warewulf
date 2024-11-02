@@ -7,6 +7,7 @@ import (
 	"path"
 	"sort"
 	"fmt"
+	"strings"
 
 	"dario.cat/mergo"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
@@ -63,7 +64,10 @@ func (config *NodeYaml) GetNode(id string) (node NodeConf, err error) {
 	if _, ok := config.nodes[id]; !ok {
 		return node, ErrNotFound
 	}
+
+	// Initialize the working copy of the node.
 	node = EmptyNode()
+
 	// create a deep copy of the node, as otherwise pointers
 	// and not their contents is merged
 	var buf bytes.Buffer
@@ -90,22 +94,37 @@ func (config *NodeYaml) GetNode(id string) (node NodeConf, err error) {
 		allProfiles = append(allProfiles, profiles...)
 	}
 
-	// Remove duplicates and sort the profiles alphanumerically
+	// Remove duplicates and sort the profiles alphanumerically to guarantee the merge order.
 	uniqueProfiles := removeDuplicates(allProfiles)
 	sort.Strings(uniqueProfiles)
 
-	// Merge profiles into the node configuration
+	// Dump the sorted, unique list when debugging.
+	wwlog.Debug("Profile list: %s", strings.Join(uniqueProfiles, ","))
+
+	// Merge profiles into the empty NodeConf. We merge with
+	// mergo.WithOverride as each additional profile should override the
+	// previous profile, giving us a deterministic profile merge.
+	mergedProfiles := ProfileConf{}
 	for _, p := range uniqueProfiles {
 		includedProfile, err := config.GetProfile(p)
 		if err != nil {
 			wwlog.Warn("profile not found: %s", p)
 			continue
 		}
-		err = mergo.Merge(&node.ProfileConf, includedProfile, mergo.WithAppendSlice)
+		err = mergo.Merge(&mergedProfiles, includedProfile, mergo.WithOverride, mergo.WithAppendSlice)
 		if err != nil {
 			return node, err
 		}
 	}
+
+	// Merge the merged profiles into node.ProfileConf, without overwriting node's own values
+	err = mergo.Merge(&node.ProfileConf, mergedProfiles, mergo.WithAppendSlice)
+	if err != nil {
+		return node, err
+	}
+
+	// Set the node's Profiles field to the unique sorted profile list so `node list` will show the merging order.
+	node.ProfileConf.Profiles = uniqueProfiles
 
 	// Set unexported node fields
 	node.id = id
