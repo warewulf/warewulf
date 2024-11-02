@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"sort"
+	"fmt"
 
 	"dario.cat/mergo"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
@@ -76,7 +77,25 @@ func (config *NodeYaml) GetNode(id string) (node NodeConf, err error) {
 	if err != nil {
 		return node, err
 	}
+
+	// Collect all profiles, including nested ones, before building the node config
+	visitedProfiles := make(map[string]bool)
+	var allProfiles []string
 	for _, p := range cleanList(config.nodes[id].Profiles) {
+		profiles, err := config.collectProfiles(p, visitedProfiles)
+		if err != nil {
+			wwlog.Warn("error collecting profiles for %s: %v", p, err)
+			continue
+		}
+		allProfiles = append(allProfiles, profiles...)
+	}
+
+	// Remove duplicates and sort the profiles alphanumerically
+	uniqueProfiles := removeDuplicates(allProfiles)
+	sort.Strings(uniqueProfiles)
+
+	// Merge profiles into the node configuration
+	for _, p := range uniqueProfiles {
 		includedProfile, err := config.GetProfile(p)
 		if err != nil {
 			wwlog.Warn("profile not found: %s", p)
@@ -87,7 +106,8 @@ func (config *NodeYaml) GetNode(id string) (node NodeConf, err error) {
 			return node, err
 		}
 	}
-	// finally set no exported values
+
+	// Set unexported node fields
 	node.id = id
 	node.valid = true
 	if netdev, ok := node.NetDevs[node.PrimaryNetDev]; ok {
@@ -106,6 +126,42 @@ func (config *NodeYaml) GetNode(id string) (node NodeConf, err error) {
 	}
 	wwlog.Debug("constructed node: %s", id)
 	return
+}
+
+// collectProfiles recursively collects all profiles for a given profile ID
+func (config *NodeYaml) collectProfiles(profileID string, visited map[string]bool) ([]string, error) {
+	if visited[profileID] {
+		return nil, fmt.Errorf("cycle detected with profile: %s", profileID)
+	}
+	visited[profileID] = true
+
+	profiles := []string{profileID}
+	profile, err := config.GetProfile(profileID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, p := range cleanList(profile.Profiles) {
+		nestedProfiles, err := config.collectProfiles(p, visited)
+		if err != nil {
+			return nil, err
+		}
+		profiles = append(profiles, nestedProfiles...)
+	}
+	return profiles, nil
+}
+
+// removeDuplicates removes duplicate entries from a slice of strings
+func removeDuplicates(slice []string) []string {
+	seen := make(map[string]struct{})
+	result := []string{}
+	for _, item := range slice {
+		if _, ok := seen[item]; !ok {
+			seen[item] = struct{}{}
+			result = append(result, item)
+		}
+	}
+	return result
 }
 
 /*
