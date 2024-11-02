@@ -31,7 +31,6 @@ type NodeConf struct {
 	// exported values
 	Discoverable wwtype.WWbool     `yaml:"discoverable,omitempty" lopt:"discoverable" sopt:"e" comment:"Make discoverable in given network (true/false)"`
 	AssetKey     string            `yaml:"asset key,omitempty" lopt:"asset" comment:"Set the node's Asset tag (key)"`
-	Profiles     []string          `yaml:"profiles,omitempty" lopt:"profile" sopt:"P" comment:"Set the node's profile members (comma separated)"`
 	ProfileConf  `yaml:"-,inline"` // include all values set in the profile, but inline them in yaml output if these are part of NodeConf
 }
 
@@ -52,6 +51,7 @@ type ProfileConf struct {
 	Init           string                 `yaml:"init,omitempty" lopt:"init" sopt:"i" comment:"Define the init process to boot the container"`
 	Root           string                 `yaml:"root,omitempty" lopt:"root" comment:"Define the rootfs" `
 	NetDevs        map[string]*NetDevs    `yaml:"network devices,omitempty"`
+	Profiles       []string               `yaml:"profiles,omitempty" lopt:"profile" sopt:"P" comment:"Set the node's profile members (comma separated)"`
 	Tags           map[string]string      `yaml:"tags,omitempty"`
 	PrimaryNetDev  string                 `yaml:"primary network,omitempty" lopt:"primarynet" sopt:"p" comment:"Set the primary network interface"`
 	Disks          map[string]*Disk       `yaml:"disks,omitempty"`
