@@ -1,9 +1,6 @@
 %global debug_package %{nil}
 
-%global api 1
-%if 0%{?rhel} && 0%{?rhel} <= 7
 %global api 0
-%endif
 
 %if 0%{?suse_version}
 %global tftpdir /srv/tftpboot

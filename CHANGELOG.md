@@ -52,7 +52,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Update `wwctl server` to log to stdout rather than a file #503
 - Changed `wwctl server` to use "INFO" for send and receive logs #725
 - Remove a 3-second sleep during iPXE boot. #1500
-
+- Don't package the API in RPM packages by default. #1493
 
 ### Removed
 
