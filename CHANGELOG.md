@@ -61,6 +61,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- Remove references to `generic` overlay from spec file.
 - Update links on contributing page to point to warewulf repo.
 - Prevent Networkmanager from trying to optain IP address via DHCP
   on unused/unmanaged network interfaces.
