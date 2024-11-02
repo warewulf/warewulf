@@ -172,7 +172,3 @@ func (yml *NodeYaml) UnmarshalYAML(
 	yml.nodeProfiles = exp.NodeProfiles
 	return nil
 }
-
-func (yml NodeYaml) IsZero() bool {
-	return true
-}
