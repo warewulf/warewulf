@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDefaultRootConf(t *testing.T) {
+func TestDefaultWarewulfYaml(t *testing.T) {
 	conf := New()
 
 	assert.Equal(t, 9873, conf.Warewulf.Port)
@@ -69,7 +69,7 @@ func TestInitializedFromFile(t *testing.T) {
 	assert.Equal(t, conf.GetWarewulfConf(), tempWarewulfConf.Name())
 }
 
-func TestExampleRootConf(t *testing.T) {
+func TestExampleWarewulfYaml(t *testing.T) {
 	example_warewulf_conf := `
 ipaddr: 192.168.200.1
 netmask: 255.255.255.0

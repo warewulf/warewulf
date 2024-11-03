@@ -1,6 +1,6 @@
 package upgrade
 
-type RootConf struct {
+type WarewulfYaml struct {
 	WWInternal      int           `yaml:"WW_INTERNAL"`
 	Comment         string        `yaml:"comment,omitempty"`
 	Ipaddr          string        `yaml:"ipaddr"`

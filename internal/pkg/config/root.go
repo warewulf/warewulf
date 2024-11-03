@@ -20,12 +20,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var cachedConf RootConf
+var cachedConf WarewulfYaml
 
-// RootConf is the main Warewulf configuration structure. It stores
+// WarewulfYaml is the main Warewulf configuration structure. It stores
 // some information about the Warewulf server locally, and has
 // [WarewulfConf], [DHCPConf], [TFTPConf], and [NFSConf] sub-sections.
-type RootConf struct {
+type WarewulfYaml struct {
 	Comment         string        `yaml:"comment,omitempty"`
 	Ipaddr          string        `yaml:"ipaddr"`
 	Ipaddr6         string        `yaml:"ipaddr6,omitempty"`
@@ -45,10 +45,10 @@ type RootConf struct {
 	warewulfconf string
 }
 
-// New caches and returns a new [RootConf] initialized with empty
+// New caches and returns a new [WarewulfYaml] initialized with empty
 // values, clearing replacing any previously cached value.
-func New() *RootConf {
-	cachedConf = RootConf{}
+func New() *WarewulfYaml {
+	cachedConf = WarewulfYaml{}
 	cachedConf.warewulfconf = ""
 	cachedConf.Warewulf = new(WarewulfConf)
 	cachedConf.DHCP = new(DHCPConf)
@@ -62,9 +62,9 @@ func New() *RootConf {
 	return &cachedConf
 }
 
-// Get returns a previously cached [RootConf] if it exists, or returns
-// a new RootConf.
-func Get() *RootConf {
+// Get returns a previously cached [WarewulfYaml] if it exists, or returns
+// a new WarewulfYaml.
+func Get() *WarewulfYaml {
 	// NOTE: This function can be called before any log level is set
 	//       so using wwlog.Verbose or wwlog.Debug won't work
 	if reflect.ValueOf(cachedConf).IsZero() {
@@ -73,9 +73,9 @@ func Get() *RootConf {
 	return &cachedConf
 }
 
-// Read populates [RootConf] with the values from a configuration
+// Read populates [WarewulfYaml] with the values from a configuration
 // file.
-func (conf *RootConf) Read(confFileName string) error {
+func (conf *WarewulfYaml) Read(confFileName string) error {
 	wwlog.Debug("Reading warewulf.conf from: %s", confFileName)
 	conf.warewulfconf = confFileName
 	if data, err := os.ReadFile(confFileName); err != nil {
@@ -87,8 +87,8 @@ func (conf *RootConf) Read(confFileName string) error {
 	}
 }
 
-// Parse populates [RootConf] with the values from a yaml document.
-func (conf *RootConf) Parse(data []byte) error {
+// Parse populates [WarewulfYaml] with the values from a yaml document.
+func (conf *WarewulfYaml) Parse(data []byte) error {
 	// ipxe binaries are merged not overwritten, store defaults separate
 	defIpxe := make(map[string]string)
 	for k, v := range conf.TFTP.IpxeBinaries {
@@ -117,9 +117,9 @@ func (conf *RootConf) Parse(data []byte) error {
 	return nil
 }
 
-// SetDynamicDefaults populates [RootConf] with plausible defaults for
+// SetDynamicDefaults populates [WarewulfYaml] with plausible defaults for
 // the runtime environment.
-func (conf *RootConf) SetDynamicDefaults() (err error) {
+func (conf *WarewulfYaml) SetDynamicDefaults() (err error) {
 	if conf.Ipaddr == "" || conf.Netmask == "" || conf.Network == "" {
 		var mask net.IPMask
 		var network *net.IPNet
@@ -197,12 +197,12 @@ func (conf *RootConf) SetDynamicDefaults() (err error) {
 	return
 }
 
-// InitializedFromFile returns true if [RootConf] memory was read from
+// InitializedFromFile returns true if [WarewulfYaml] memory was read from
 // a file, or false otherwise.
-func (conf *RootConf) InitializedFromFile() bool {
+func (conf *WarewulfYaml) InitializedFromFile() bool {
 	return conf.warewulfconf != ""
 }
 
-func (conf *RootConf) GetWarewulfConf() string {
+func (conf *WarewulfYaml) GetWarewulfConf() string {
 	return conf.warewulfconf
 }
