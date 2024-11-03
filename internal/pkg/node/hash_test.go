@@ -10,7 +10,6 @@ import (
 
 func TestHash(t *testing.T) {
 	nodeConfYml1 := `
-WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: This profile is automatically included for each node
@@ -33,7 +32,6 @@ nodes:
         ipaddr: 10.0.10.2
 `
 	nodeConfYml2 := `
-WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: This profile is automatically included for each node
@@ -56,7 +54,6 @@ nodes:
         ipaddr: 10.0.10.1
 `
 	nodeConfYml3 := `
-WW_INTERNAL: 45
 nodeprofiles:
   default:
     comment: This profile is automatically included for each node

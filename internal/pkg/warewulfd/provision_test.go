@@ -37,8 +37,7 @@ var provisionSendTests = []struct {
 func Test_ProvisionSend(t *testing.T) {
 	env := testenv.New(t)
 
-	env.WriteFile(t, "etc/warewulf/nodes.conf", `WW_INTERNAL: 45
-nodeprofiles:
+	env.WriteFile(t, "etc/warewulf/nodes.conf", `nodeprofiles:
   default:
     container name: suse
 nodes:

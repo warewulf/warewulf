@@ -57,7 +57,6 @@ func Test_wwinitOverlay(t *testing.T) {
 const wwinit_warewulf_conf string = `backupFile: true
 writeFile: true
 Filename: etc/warewulf/warewulf.conf
-WW_INTERNAL: 43
 ipaddr: 192.168.0.1/24
 netmask: 255.255.255.0
 network: 192.168.0.0

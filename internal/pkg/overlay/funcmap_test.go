@@ -9,8 +9,7 @@ import (
 )
 
 func Test_createIgnitionJson(t *testing.T) {
-	node_config := `WW_INTERNAL: 45
-nodes:
+	node_config := `nodes:
   n1:
     disks:
       /dev/vda:

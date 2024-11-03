@@ -26,7 +26,6 @@ var cachedConf RootConf
 // some information about the Warewulf server locally, and has
 // [WarewulfConf], [DHCPConf], [TFTPConf], and [NFSConf] sub-sections.
 type RootConf struct {
-	WWInternal      int           `yaml:"WW_INTERNAL"`
 	Comment         string        `yaml:"comment,omitempty"`
 	Ipaddr          string        `yaml:"ipaddr"`
 	Ipaddr6         string        `yaml:"ipaddr6,omitempty"`

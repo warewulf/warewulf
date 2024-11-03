@@ -33,8 +33,7 @@ NODE NAME  PROFILES   NETWORK
 ---------  --------   -------
 n01        [default]  --
 `,
-			inDb: `WW_INTERNAL: 45
-nodeprofiles:
+			inDb: `nodeprofiles:
   default: {}
 nodes:
   n01:
@@ -52,8 +51,7 @@ NODE NAME  PROFILES   NETWORK
 n01        [default]  --
 n02        [default]  --
 `,
-			inDb: `WW_INTERNAL: 45
-nodeprofiles:
+			inDb: `nodeprofiles:
   default: {}
 nodes:
   n01:
@@ -74,8 +72,7 @@ NODE NAME  PROFILES   NETWORK
 n01        [default]  --
 n02        [default]  --
 `,
-			inDb: `WW_INTERNAL: 45
-nodeprofiles:
+			inDb: `nodeprofiles:
   default: {}
 nodes:
   n01:
@@ -96,8 +93,7 @@ NODE NAME  PROFILES   NETWORK
 n01        [default]  --
 n03        [default]  --
 `,
-			inDb: `WW_INTERNAL: 45
-nodeprofiles:
+			inDb: `nodeprofiles:
   default: {}
 nodes:
   n01:
@@ -126,8 +122,7 @@ NODE NAME  PROFILES   NETWORK
 ---------  --------   -------
 n01        [default]  --
 `,
-			inDb: `WW_INTERNAL: 45
-nodeprofiles:
+			inDb: `nodeprofiles:
   default: {}
 nodes:
   n01:
@@ -147,8 +142,7 @@ NODE NAME  PROFILES   NETWORK
 ---------  --------   -------
 n01        [default]  default
 `,
-			inDb: `WW_INTERNAL: 45
-nodeprofiles:
+			inDb: `nodeprofiles:
   default:
     network devices:
       default:
@@ -168,8 +162,7 @@ NODE  FIELD     PROFILE  VALUE
 n01   Comment   default  profilecomment
 n01   Profiles  --       default
 `,
-			inDb: `WW_INTERNAL: 45
-nodeprofiles:
+			inDb: `nodeprofiles:
   default:
     comment: profilecomment
 nodes:
@@ -187,8 +180,7 @@ NODE  FIELD     PROFILE     VALUE
 n01   Comment   SUPERSEDED  nodecomment
 n01   Profiles  --          default
 `,
-			inDb: `WW_INTERNAL: 45
-nodeprofiles:
+			inDb: `nodeprofiles:
   default:
     comment: profilecomment
 nodes:
@@ -206,8 +198,7 @@ NODE  IPMI IPADDR  IPMI PORT  IPMI USERNAME  IPMI INTERFACE
 ----  -----------  ---------  -------------  --------------
 n01   <nil>        --         admin          --
 `,
-			inDb: `WW_INTERNAL: 45
-nodeprofiles:
+			inDb: `nodeprofiles:
   default:
     ipmi:
       username: admin
@@ -225,8 +216,7 @@ NODE  IPMI IPADDR  IPMI PORT  IPMI USERNAME  IPMI INTERFACE
 ----  -----------  ---------  -------------  --------------
 n01   <nil>        --         user           --
 `,
-			inDb: `WW_INTERNAL: 45
-nodeprofiles:
+			inDb: `nodeprofiles:
   default:
     ipmi:
       username: admin
@@ -246,8 +236,7 @@ NODE NAME  PROFILES  NETWORK
 ---------  --------  -------
 n01        [p1 p2]   --
 `,
-			inDb: `WW_INTERNAL: 45
-nodeprofiles:
+			inDb: `nodeprofiles:
   p1: {}
   p2: {}
 nodes:
@@ -265,8 +254,7 @@ NODE  FIELD     PROFILE  VALUE
 ----  -----     -------  -----
 n01   Profiles  --       p1,p2
 `,
-			inDb: `WW_INTERNAL: 45
-nodeprofiles:
+			inDb: `nodeprofiles:
   p1: {}
   p2: {}
 nodes:
@@ -284,8 +272,7 @@ NODE NAME  KERNEL OVERRIDE  CONTAINER  OVERLAYS (S/R)
 ---------  ---------------  ---------  --------------
 n01        --               --         /rop1,rop2
 `,
-			inDb: `WW_INTERNAL: 45
-nodeprofiles:
+			inDb: `nodeprofiles:
   p1:
     runtime overlay:
     - rop1
@@ -304,8 +291,7 @@ NODE NAME  KERNEL OVERRIDE  CONTAINER  OVERLAYS (S/R)
 ---------  ---------------  ---------  --------------
 n01        --               --         sop1/nop1,~rop1,rop1,rop2
 `,
-			inDb: `WW_INTERNAL: 45
-nodeprofiles:
+			inDb: `nodeprofiles:
   p1:
     system overlay:
     - sop1
@@ -331,8 +317,7 @@ n01   Profiles        --       p1
 n01   RuntimeOverlay  p1+      nop1,~rop1,rop1,rop2
 n01   SystemOverlay   p1       sop1
 `,
-			inDb: `WW_INTERNAL: 45
-nodeprofiles:
+			inDb: `nodeprofiles:
   p1:
     system overlay:
     - sop1
@@ -357,8 +342,7 @@ NODE  FIELD           PROFILE  VALUE
 n01   Profiles        --       p1
 n01   RuntimeOverlay  p1+      nop1,rop1,rop2
 `,
-			inDb: `WW_INTERNAL: 45
-nodeprofiles:
+			inDb: `nodeprofiles:
   p1:
     runtime overlay:
     - rop1
@@ -379,8 +363,7 @@ NODE  FIELD                    PROFILE  VALUE
 ----  -----                    -------  -----
 n1    NetDevs[default].OnBoot  --       true
 `,
-			inDb: `WW_INTERNAL: 45
-nodes:
+			inDb: `nodes:
   n1:
     network devices:
       default:
@@ -394,15 +377,14 @@ nodes:
 NODE  FIELD  PROFILE  VALUE
 ----  -----  -------  -----
 `,
-			inDb: `WW_INTERNAL: 46
-nodes:
+			inDb: `nodes:
   wwnode1:
     network devices:
       default: {}
 `},
 	}
 
-	conf_yml := `WW_INTERNAL: 0`
+	conf_yml := ``
 	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
 	assert.NoError(t, warewulfConfErr)
 	defer os.Remove(tempWarewulfConf.Name())
@@ -459,7 +441,7 @@ func TestListMultipleFormats(t *testing.T) {
   kernel: {}
   ipmi: {}
 `,
-			inDb: `WW_INTERNAL: 43
+			inDb: `
 nodeprofiles:
   default: {}
 nodes:
@@ -509,7 +491,7 @@ nodes:
   }
 ]
 `,
-			inDb: `WW_INTERNAL: 43
+			inDb: `
 nodeprofiles:
   default: {}
 nodes:
@@ -593,7 +575,7 @@ nodes:
   }
 ]
 `,
-			inDb: `WW_INTERNAL: 43
+			inDb: `
 nodeprofiles:
   default: {}
 nodes:
@@ -618,7 +600,7 @@ nodes:
   kernel: {}
   ipmi: {}
 `,
-			inDb: `WW_INTERNAL: 43
+			inDb: `
 nodeprofiles:
   default: {}
 nodes:

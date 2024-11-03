@@ -56,16 +56,14 @@ func Test_Single_Node_Change_Profile(t *testing.T) {
 		args:    []string{"--profile=foo", "n01"},
 		wantErr: false,
 		stdout:  "",
-		inDB: `WW_INTERNAL: 45
-nodeprofiles:
+		inDB: `nodeprofiles:
   default:
     comment: testit
 nodes:
   n01:
     profiles:
     - default`,
-		outDb: `WW_INTERNAL: 45
-nodeprofiles:
+		outDb: `nodeprofiles:
   default:
     comment: testit
 nodes:
@@ -81,15 +79,13 @@ func Test_Node_Unset(t *testing.T) {
 		args:    []string{"--comment=UNDEF", "n01"},
 		wantErr: false,
 		stdout:  "",
-		inDB: `WW_INTERNAL: 43
-nodeprofiles: {}
+		inDB: `nodeprofiles: {}
 nodes:
   n01:
     comment: foo
     profiles:
     - default`,
-		outDb: `WW_INTERNAL: 43
-nodeprofiles: {}
+		outDb: `nodeprofiles: {}
 nodes:
   n01:
     profiles:
@@ -103,13 +99,11 @@ func Test_Set_Ipmi_Write_Explicit(t *testing.T) {
 		args:    []string{"--ipmiwrite", "true", "n01"},
 		wantErr: false,
 		stdout:  "",
-		inDB: `WW_INTERNAL: 43
-nodeprofiles: {}
+		inDB: `nodeprofiles: {}
 nodes:
   n01: {}
 `,
-		outDb: `WW_INTERNAL: 43
-nodeprofiles: {}
+		outDb: `nodeprofiles: {}
 nodes:
   n01:
     ipmi:
@@ -122,13 +116,11 @@ func Test_Set_Ipmi_Write_Implicit(t *testing.T) {
 		args:    []string{"--ipmiwrite", "n01"},
 		wantErr: false,
 		stdout:  "",
-		inDB: `WW_INTERNAL: 43
-nodeprofiles: {}
+		inDB: `nodeprofiles: {}
 nodes:
   n01: {}
 `,
-		outDb: `WW_INTERNAL: 43
-nodeprofiles: {}
+		outDb: `nodeprofiles: {}
 nodes:
   n01:
     ipmi:
@@ -142,15 +134,13 @@ func Test_Unset_Ipmi_Write(t *testing.T) {
 		args:    []string{"--ipmiwrite=UNDEF", "n01"},
 		wantErr: false,
 		stdout:  "",
-		inDB: `WW_INTERNAL: 43
-nodeprofiles: {}
+		inDB: `nodeprofiles: {}
 nodes:
   n01:
     ipmi:
       write: "true"
 `,
-		outDb: `WW_INTERNAL: 43
-nodeprofiles: {}
+		outDb: `nodeprofiles: {}
 nodes:
   n01: {}
 `}
@@ -161,15 +151,13 @@ func Test_Unset_Ipmi_Write_False(t *testing.T) {
 		args:    []string{"--ipmiwrite=UNDEF", "n01"},
 		wantErr: false,
 		stdout:  "",
-		inDB: `WW_INTERNAL: 43
-nodeprofiles: {}
+		inDB: `nodeprofiles: {}
 nodes:
   n01:
     ipmi:
       write: "false"
 `,
-		outDb: `WW_INTERNAL: 43
-nodeprofiles: {}
+		outDb: `nodeprofiles: {}
 nodes:
   n01: {}
 `}
@@ -180,8 +168,7 @@ func Test_Ipmi_Hidden_False(t *testing.T) {
 		args:    []string{"--ipmiwrite=false", "n01"},
 		wantErr: false,
 		stdout:  "",
-		inDB: `WW_INTERNAL: 43
-nodeprofiles:
+		inDB: `nodeprofiles:
   default:
     ipmi:
       write: "true"
@@ -190,8 +177,7 @@ nodes:
     profiles:
     - default
 `,
-		outDb: `WW_INTERNAL: 43
-nodeprofiles:
+		outDb: `nodeprofiles:
   default:
     ipmi:
       write: "true"
@@ -211,16 +197,14 @@ func Test_Multiple_Set_Tests(t *testing.T) {
 			args:    []string{"--profile=foo", "n01"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 45
-nodeprofiles:
+			inDB: `nodeprofiles:
   default:
     comment: testit
 nodes:
   n01:
     profiles:
     - default`,
-			outDb: `WW_INTERNAL: 45
-nodeprofiles:
+			outDb: `nodeprofiles:
   default:
     comment: testit
 nodes:
@@ -232,8 +216,7 @@ nodes:
 			args:    []string{"--profile=foo", "n0[1-2]"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 45
-nodeprofiles:
+			inDB: `nodeprofiles:
   default:
     comment: testit
 nodes:
@@ -243,8 +226,7 @@ nodes:
   n02:
     profiles:
     - default`,
-			outDb: `WW_INTERNAL: 45
-nodeprofiles:
+			outDb: `nodeprofiles:
   default:
     comment: testit
 nodes:
@@ -259,16 +241,14 @@ nodes:
 			args:    []string{"--ipmitagadd", "foo=baar", "n01"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 45
-nodeprofiles:
+			inDB: `nodeprofiles:
   default:
     comment: testit
 nodes:
   n01:
     profiles:
     - default`,
-			outDb: `WW_INTERNAL: 45
-nodeprofiles:
+			outDb: `nodeprofiles:
   default:
     comment: testit
 nodes:
@@ -283,8 +263,7 @@ nodes:
 			args:    []string{"--tagdel", "tag1", "n01"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 45
-nodeprofiles:
+			inDB: `nodeprofiles:
   default:
     comment: testit
 nodes:
@@ -294,8 +273,7 @@ nodes:
     tags:
       tag1: value1
       tag2: value2`,
-			outDb: `WW_INTERNAL: 45
-nodeprofiles:
+			outDb: `nodeprofiles:
   default:
     comment: testit
 nodes:
@@ -309,8 +287,7 @@ nodes:
 			args:    []string{"--fsname=var", "--fspath=/var", "--fsformat=btrfs", "--partname=var", "--partnumber=1", "--diskname=/dev/vda", "n01"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 45
-nodeprofiles:
+			inDB: `nodeprofiles:
   default:
     comment: testit
 nodes:
@@ -318,8 +295,7 @@ nodes:
     profiles:
     - default
 `,
-			outDb: `WW_INTERNAL: 45
-nodeprofiles:
+			outDb: `nodeprofiles:
   default:
     comment: testit
 nodes:
@@ -340,8 +316,7 @@ nodes:
 			args:    []string{"--fsdel=foo", "n01"},
 			wantErr: true,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 45
-nodeprofiles:
+			inDB: `nodeprofiles:
   default:
     comment: testit
 nodes:
@@ -359,8 +334,7 @@ nodes:
         format: btrfs
         path: /var
 `,
-			outDb: `WW_INTERNAL: 45
-nodeprofiles:
+			outDb: `nodeprofiles:
   default:
     comment: testit
 nodes:
@@ -381,8 +355,7 @@ nodes:
 			args:    []string{"--fsdel=/dev/disk/by-partlabel/var", "n01"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 45
-nodeprofiles:
+			inDB: `nodeprofiles:
   default:
     comment: testit
 nodes:
@@ -400,8 +373,7 @@ nodes:
         format: btrfs
         path: /var
 `,
-			outDb: `WW_INTERNAL: 45
-nodeprofiles:
+			outDb: `nodeprofiles:
   default:
     comment: testit
 nodes:
@@ -418,8 +390,7 @@ nodes:
 			args:    []string{"--partdel=var", "n01"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 45
-nodeprofiles:
+			inDB: `nodeprofiles:
   default:
     comment: testit
 nodes:
@@ -437,8 +408,7 @@ nodes:
         format: btrfs
         path: /var
 `,
-			outDb: `WW_INTERNAL: 45
-nodeprofiles:
+			outDb: `nodeprofiles:
   default:
     comment: testit
 nodes:
@@ -454,8 +424,7 @@ nodes:
 			args:    []string{"--diskdel=/dev/vda", "n01"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 45
-nodeprofiles:
+			inDB: `nodeprofiles:
   default:
     comment: testit
 nodes:
@@ -472,8 +441,7 @@ nodes:
         format: btrfs
         path: /var
 `,
-			outDb: `WW_INTERNAL: 45
-nodeprofiles:
+			outDb: `nodeprofiles:
   default:
     comment: testit
 nodes:
@@ -489,16 +457,14 @@ nodes:
 			args:    []string{"--mtu", "1234", "--netname=mynet", "n01"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 45
-nodeprofiles:
+			inDB: `nodeprofiles:
   default:
     comment: testit
 nodes:
   n01:
     profiles:
     - default`,
-			outDb: `WW_INTERNAL: 45
-nodeprofiles:
+			outDb: `nodeprofiles:
   default:
     comment: testit
 nodes:
@@ -513,8 +479,7 @@ nodes:
 			args:    []string{"--tagadd", "nodetag1=nodevalue1", "n01"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 45
-nodeprofiles:
+			inDB: `nodeprofiles:
   p1:
     comment: testit 1
     tags:
@@ -528,8 +493,7 @@ nodes:
     profiles:
     - p1
     - p2`,
-			outDb: `WW_INTERNAL: 45
-nodeprofiles:
+			outDb: `nodeprofiles:
   p1:
     comment: testit 1
     tags:
@@ -550,20 +514,18 @@ nodes:
 			args:    []string{"n01", "--comment", "This is a , comment"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 43
-nodes:
+			inDB: `nodes:
   n01:
     comment: old comment
 `,
-			outDb: `WW_INTERNAL: 43
-nodeprofiles: {}
+			outDb: `nodeprofiles: {}
 nodes:
   n01:
     comment: This is a , comment
 `},
 	}
 
-	conf_yml := `WW_INTERNAL: 0`
+	conf_yml := ``
 	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
 	assert.NoError(t, warewulfConfErr)
 	defer os.Remove(tempWarewulfConf.Name())
@@ -588,8 +550,7 @@ func Test_Node_Add(t *testing.T) {
 			args:    []string{"--tagadd=email=node", "n01"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 43
-nodeprofiles:
+			inDB: `nodeprofiles:
   default:
     comment: testit
     tags:
@@ -598,8 +559,7 @@ nodes:
   n01:
     profiles:
     - default`,
-			outDb: `WW_INTERNAL: 43
-nodeprofiles:
+			outDb: `nodeprofiles:
   default:
     comment: testit
     tags:
@@ -615,8 +575,7 @@ nodes:
 			args:    []string{"--tagadd=newtag=newval", "n01"},
 			wantErr: false,
 			stdout:  "",
-			inDB: `WW_INTERNAL: 43
-nodeprofiles:
+			inDB: `nodeprofiles:
   default:
     comment: testit
     tags:
@@ -627,8 +586,7 @@ nodes:
     - default
     tags:
       email: node`,
-			outDb: `WW_INTERNAL: 43
-nodeprofiles:
+			outDb: `nodeprofiles:
   default:
     comment: testit
     tags:

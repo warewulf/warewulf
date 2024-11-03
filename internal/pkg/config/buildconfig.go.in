@@ -24,9 +24,6 @@ type BuildConfig struct {
 const Version = "@VERSION@"
 const Release = "@RELEASE@"
 
-// must be set .in file so that its available for tests
-const Confversion = "45"
-
 type TFTPConf struct {
 	Enabled     bool   `yaml:"enabled" default:"true"`
 	TftpRoot    string `yaml:"tftproot" default:"@TFTPDIR@"`

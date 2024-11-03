@@ -18,9 +18,8 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/node"
 )
 
-const initWarewulfConf = `WW_INTERNAL: 0`
-const initNodesConf = `WW_INTERNAL: 45
-nodeprofiles:
+const initWarewulfConf = ``
+const initNodesConf = `nodeprofiles:
   default: {}
 nodes:
   node1: {}

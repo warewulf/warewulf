@@ -17,7 +17,6 @@ const undef string = "UNDEF"
 Structure of which goes to disk
 */
 type NodeYaml struct {
-	WWInternal   int `yaml:"WW_INTERNAL,omitempty" json:"WW_INTERNAL,omitempty"`
 	nodeProfiles map[string]*Profile
 	nodes        map[string]*Node
 }
@@ -134,7 +133,6 @@ interface so that nodes and profiles which aren't exported will
 be marshaled
 */
 type ExportedYml struct {
-	WWInternal   int                 `yaml:"WW_INTERNAL"`
 	NodeProfiles map[string]*Profile `yaml:"nodeprofiles"`
 	Nodes        map[string]*Node    `yaml:"nodes"`
 }
@@ -145,7 +143,6 @@ Marshall Exported stuff, not NodeYaml directly
 func (yml *NodeYaml) MarshalYAML() (interface{}, error) {
 	wwlog.Debug("marshall yml")
 	var exp ExportedYml
-	exp.WWInternal = yml.WWInternal
 	exp.Nodes = yml.nodes
 	exp.NodeProfiles = yml.nodeProfiles
 	node := yaml.Node{}
@@ -168,7 +165,6 @@ func (yml *NodeYaml) UnmarshalYAML(
 	if err != nil {
 		return
 	}
-	yml.WWInternal = exp.WWInternal
 	yml.nodes = exp.Nodes
 	yml.nodeProfiles = exp.NodeProfiles
 	return nil

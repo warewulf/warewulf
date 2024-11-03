@@ -29,7 +29,7 @@ CONTAINER NAME  NODES  KERNEL VERSION  CREATION TIME        MODIFICATION TIME   
 --------------  -----  --------------  -------------        -----------------    ----
 test            1      kernel          01 Jan 70 00:00 UTC  01 Jan 70 00:00 UTC  0 B
 `,
-			inDb: `WW_INTERNAL: 43
+			inDb: `
 nodeprofiles:
   default: {}
 nodes:

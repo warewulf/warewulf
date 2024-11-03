@@ -89,7 +89,7 @@ func rootPersistentPreRunE(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 	if err != nil {
-		wwlog.Error("version: %s relase: %s WW_INTERNAL: %s", warewulfconf.Version, warewulfconf.Release, warewulfconf.Confversion)
+		wwlog.Error("version: %s relase: %s", warewulfconf.Version, warewulfconf.Release)
 		return
 	}
 	err = conf.SetDynamicDefaults()
