@@ -12,7 +12,7 @@ import (
 type nodeDB struct {
 	lock     sync.RWMutex
 	NodeInfo map[string]string
-	yml      node.NodeYaml
+	yml      node.NodesYaml
 }
 
 var (

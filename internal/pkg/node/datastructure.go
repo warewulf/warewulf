@@ -14,7 +14,7 @@ const undef string = "UNDEF"
 /*
 Structure of which goes to disk
 */
-type NodeYaml struct {
+type NodesYaml struct {
 	NodeProfiles map[string]*Profile
 	Nodes        map[string]*Node
 }

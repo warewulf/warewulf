@@ -82,7 +82,7 @@ func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 		if len(containers) != 1 {
 			return fmt.Errorf("can only set default for one container")
 		} else {
-			var nodeDB node.NodeYaml
+			var nodeDB node.NodesYaml
 			nodeDB, err = node.New()
 			if err != nil {
 				return fmt.Errorf("could not open node configuration: %s", err)
@@ -238,7 +238,7 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 	}
 
 	if cip.Default {
-		var nodeDB node.NodeYaml
+		var nodeDB node.NodesYaml
 		nodeDB, err = node.New()
 		if err != nil {
 			err = fmt.Errorf("could not open node configuration: %s", err.Error())

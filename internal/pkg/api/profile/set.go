@@ -35,7 +35,7 @@ func ProfileSet(set *wwapiv1.ConfSetParameter) (err error) {
 NodeSetParameterCheck does error checking and returns a modified
 NodeYml which than can be persisted
 */
-func ProfileSetParameterCheck(set *wwapiv1.ConfSetParameter) (nodeDB node.NodeYaml, count uint, err error) {
+func ProfileSetParameterCheck(set *wwapiv1.ConfSetParameter) (nodeDB node.NodesYaml, count uint, err error) {
 	nodeDB, err = node.New()
 	if err != nil {
 		wwlog.Error("Could not open configuration: %s", err)

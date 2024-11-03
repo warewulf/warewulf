@@ -10,7 +10,7 @@ import (
 /*
 Gets a node by its hardware(mac) address
 */
-func (config *NodeYaml) FindByHwaddr(hwa string) (Node, error) {
+func (config *NodesYaml) FindByHwaddr(hwa string) (Node, error) {
 	if _, err := net.ParseMAC(hwa); err != nil {
 		return Node{}, errors.New("invalid hardware address: " + hwa)
 	}
@@ -29,7 +29,7 @@ func (config *NodeYaml) FindByHwaddr(hwa string) (Node, error) {
 /*
 Find a node by its ip address
 */
-func (config *NodeYaml) FindByIpaddr(ipaddr string) (Node, error) {
+func (config *NodesYaml) FindByIpaddr(ipaddr string) (Node, error) {
 	addr := net.ParseIP(ipaddr)
 	if addr == nil {
 		return Node{}, errors.New("invalid IP:" + ipaddr)

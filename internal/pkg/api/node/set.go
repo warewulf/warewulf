@@ -17,7 +17,7 @@ func NodeSet(set *wwapiv1.ConfSetParameter) (err error) {
 	if set == nil {
 		return fmt.Errorf("NodeSetParameter is nil")
 	}
-	var nodeDB node.NodeYaml
+	var nodeDB node.NodesYaml
 	nodeDB, _, err = NodeSetParameterCheck(set)
 	if err != nil {
 		return err
@@ -35,7 +35,7 @@ func NodeSet(set *wwapiv1.ConfSetParameter) (err error) {
 NodeSetParameterCheck does error checking and returns a modified
 NodeYml which than can be persisted
 */
-func NodeSetParameterCheck(set *wwapiv1.ConfSetParameter) (nodeDB node.NodeYaml, count uint, err error) {
+func NodeSetParameterCheck(set *wwapiv1.ConfSetParameter) (nodeDB node.NodesYaml, count uint, err error) {
 	nodeDB, err = node.New()
 	if err != nil {
 		wwlog.Error("Could not open configuration: %s", err)
