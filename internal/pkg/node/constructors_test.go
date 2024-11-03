@@ -138,7 +138,7 @@ func Test_FindDiscoverableNode(t *testing.T) {
 		t.Run(tt.description, func(t *testing.T) {
 			config := newConstructorPrimaryNetworkTest(t)
 			for _, node := range tt.discoverable_nodes {
-				config.nodes[node].Discoverable = "true"
+				config.Nodes[node].Discoverable = "true"
 			}
 			discovered_node, discovered_interface, err := config.FindDiscoverableNode()
 			if !tt.succeed {

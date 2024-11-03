@@ -13,10 +13,10 @@ Calculate the hash of NodeYaml in an orderder fashion
 */
 func (config *NodeYaml) Hash() [32]byte {
 	// flatten out profiles and nodes
-	for _, val := range config.nodeProfiles {
+	for _, val := range config.NodeProfiles {
 		val.Flatten()
 	}
-	for _, val := range config.nodes {
+	for _, val := range config.Nodes {
 		val.Flatten()
 	}
 	data, err := yaml.Marshal(config)

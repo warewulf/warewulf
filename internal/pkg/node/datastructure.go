@@ -3,9 +3,7 @@ package node
 import (
 	"net"
 
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"github.com/warewulf/warewulf/internal/pkg/wwtype"
-	"gopkg.in/yaml.v3"
 )
 
 const undef string = "UNDEF"
@@ -17,8 +15,8 @@ const undef string = "UNDEF"
 Structure of which goes to disk
 */
 type NodeYaml struct {
-	nodeProfiles map[string]*Profile
-	nodes        map[string]*Node
+	NodeProfiles map[string]*Profile
+	Nodes        map[string]*Node
 }
 
 /*
@@ -126,46 +124,4 @@ type FileSystem struct {
 	Uuid           string   `yaml:"uuid,omitempty" comment:"the uuid of the filesystem"`
 	Options        []string `yaml:"options,omitempty" comment:"any additional options to be passed to the format-specific mkfs utility"`
 	MountOptions   string   `yaml:"mount_options,omitempty" comment:"any special options to be passed to the mount command"`
-}
-
-/*
-interface so that nodes and profiles which aren't exported will
-be marshaled
-*/
-type ExportedYml struct {
-	NodeProfiles map[string]*Profile `yaml:"nodeprofiles"`
-	Nodes        map[string]*Node    `yaml:"nodes"`
-}
-
-/*
-Marshall Exported stuff, not NodeYaml directly
-*/
-func (yml *NodeYaml) MarshalYAML() (interface{}, error) {
-	wwlog.Debug("marshall yml")
-	var exp ExportedYml
-	exp.Nodes = yml.nodes
-	exp.NodeProfiles = yml.nodeProfiles
-	node := yaml.Node{}
-	err := node.Encode(exp)
-	if err != nil {
-		return node, err
-	}
-	return node, err
-}
-
-/*
-Unmarshal to intermediate format
-*/
-func (yml *NodeYaml) UnmarshalYAML(
-	unmarshal func(interface{}) (err error),
-) (err error) {
-	wwlog.Debug("UnmarshalYAML called")
-	var exp ExportedYml
-	err = unmarshal(&exp)
-	if err != nil {
-		return
-	}
-	yml.nodes = exp.Nodes
-	yml.nodeProfiles = exp.NodeProfiles
-	return nil
 }

@@ -44,7 +44,7 @@ Get all the info out of NodeConf. If emptyFields is set true, all fields are sho
 func (nodeYml *NodeYaml) GetFields(node Node) (output []NodeFields) {
 	nodeMap := make(fieldMap)
 	for _, p := range node.Profiles {
-		if profile, ok := nodeYml.nodeProfiles[p]; ok {
+		if profile, ok := nodeYml.NodeProfiles[p]; ok {
 			nodeMap.importFields(profile, "", p)
 		}
 	}
