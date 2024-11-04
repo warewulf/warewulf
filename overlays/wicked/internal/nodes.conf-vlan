@@ -3,8 +3,10 @@ nodes:
     primary network: untagged
     network devices:
       untagged:
+        onboot: true
         device: eth0
       tagged:
+        onboot: true
         type: vlan
         device: eth0.902
         tags:
