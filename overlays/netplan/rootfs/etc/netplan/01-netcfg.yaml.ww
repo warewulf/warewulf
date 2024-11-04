@@ -8,16 +8,17 @@
 # Host:   {{ $host }}
 # Time:   {{ $time }}
 # Source: {{ $source }}
-{{ if $netdev.OnBoot -}}
+{{ if $netdev.OnBoot.GetB -}}
 {{ end -}}
 network:
   version: 2
   renderer: networkd
   ethernets:
-	{{$netdev.Device}}:
+	{{$netdev.Device.Get}}:
   	addresses:
-    	- {{$netdev.Ipaddr}}/{{$netdev.Netmask}}
-	{{ if $netdev.MTU -}}
-	mtu: {{$netdev.MTU}}
-	{{- end}}
+    	- {{$netdev.Ipaddr.Get}}/{{$netdev.Netmask.Get}}
+#  	routes:
+#    	- to: 10.10.10.0/{{$netdev.Netmask.Get}}
+#      	via: {{$netdev.Gateway.Get}}
 {{- end}}
+
