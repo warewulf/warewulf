@@ -9,10 +9,10 @@ network:
   version: 2
   renderer: networkd
   ethernets:
-	{{$netdev.Device}}:
+	{{$netdev.Device.Get}}:
   	addresses:
-    	- {{$netdev.Ipaddr}}/{{$netdev.Netmask}}
-	{{ if $netdev.MTU -}}
-	mtu: {{$netdev.MTU}}
+    	- {{$netdev.Ipaddr.Get}}/{{$netdev.Netmask.Get}}
+	{{ if $netdev.MTU.Get -}}
+	mtu: {{$netdev.MTU.Get}}
 	{{- end}}
 {{- end}}
