@@ -55,10 +55,10 @@ network:
   version: 2
   renderer: networkd
   ethernets:
-      wwnet0:
-          addresses:
-              - 192.168.3.21/255.255.255.0
-          mtu: 1500
+	wwnet0:
+  	addresses:
+    	- 192.168.3.21/255.255.255.0
+	mtu: 1500 
 backupFile: true
 writeFile: true
 Filename: secondary
@@ -67,8 +67,7 @@ network:
   version: 2
   renderer: networkd
   ethernets:
-      wwnet1:
-          addresses:
-              - 192.168.3.22/255.255.255.0
-          mtu: 9000
-`
+        wwnet0:
+        addresses:
+        - 192.168.3.22/255.255.255.0
+        mtu: 9000
