@@ -1,7 +1,7 @@
 package upgrade
 
 type WarewulfYaml struct {
-	WWInternal      int           `yaml:"WW_INTERNAL"`
+	WWInternal      string        `yaml:"WW_INTERNAL"`
 	Comment         string        `yaml:"comment,omitempty"`
 	Ipaddr          string        `yaml:"ipaddr"`
 	Ipaddr6         string        `yaml:"ipaddr6,omitempty"`

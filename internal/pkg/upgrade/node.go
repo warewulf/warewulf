@@ -1,29 +1,192 @@
 package upgrade
 
 import (
+	"net"
+	"strconv"
+	"strings"
+
 	"gopkg.in/yaml.v3"
+
+	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-func Parse(data []byte) (nodeYaml NodeYaml, err error) {
-	if err = yaml.Unmarshal(data, &nodeYaml); err != nil {
-		return nodeYaml, err
-	}
-	if nodeYaml.Nodes == nil {
-		nodeYaml.Nodes = map[string]*Node{}
-	}
-	if nodeYaml.NodeProfiles == nil {
-		nodeYaml.NodeProfiles = map[string]*Profile{}
-	}
-	return nodeYaml, nil
+func logIgnore(name string, value interface{}, reason string) {
+	wwlog.Warn("ignore: %s: %v (%s)", name, value, reason)
 }
 
-type NodeYaml struct {
+func Parse(data []byte) (nodesYaml *NodesYaml, err error) {
+	nodesYaml = new(NodesYaml)
+	if err = yaml.Unmarshal(data, nodesYaml); err != nil {
+		return nodesYaml, err
+	}
+	return nodesYaml, nil
+}
+
+type NodesYaml struct {
+	WWInternal   string `yaml:"WW_INTERNAL"`
 	NodeProfiles map[string]*Profile
 	Nodes        map[string]*Node
 }
 
+func (this *NodesYaml) Upgrade() (upgraded *node.NodesYaml) {
+	upgraded = new(node.NodesYaml)
+	upgraded.NodeProfiles = make(map[string]*node.Profile)
+	upgraded.Nodes = make(map[string]*node.Node)
+	if this.WWInternal != "" {
+		logIgnore("WW_INTERNAL", this.WWInternal, "obsolete")
+	}
+	if this.NodeProfiles != nil {
+		for name, profile := range this.NodeProfiles {
+			upgraded.NodeProfiles[name] = profile.Upgrade()
+		}
+	}
+	if this.Nodes != nil {
+		for name, node := range this.Nodes {
+			upgraded.Nodes[name] = node.Upgrade()
+		}
+	}
+	return upgraded
+}
+
 type Node struct {
 	Profile `yaml:"-,inline"`
+}
+
+func (this *Node) Upgrade() (upgraded *node.Node) {
+	upgraded = new(node.Node)
+	upgraded.Tags = make(map[string]string)
+	upgraded.Disks = make(map[string]*node.Disk)
+	upgraded.FileSystems = make(map[string]*node.FileSystem)
+	upgraded.Ipmi = new(node.IpmiConf)
+	upgraded.Kernel = new(node.KernelConf)
+	upgraded.NetDevs = make(map[string]*node.NetDev)
+	upgraded.AssetKey = this.AssetKey
+	upgraded.ClusterName = this.ClusterName
+	upgraded.Comment = this.Comment
+	upgraded.ContainerName = this.ContainerName
+	if this.Disabled != "" {
+		logIgnore("Disabled", this.Disabled, "obsolete")
+	}
+	if this.Discoverable != "" {
+		upgraded.Discoverable.Set(this.Discoverable)
+	}
+	if this.Disks != nil {
+		for name, disk := range this.Disks {
+			upgraded.Disks[name] = disk.Upgrade()
+		}
+	}
+	if this.FileSystems != nil {
+		for name, fileSystem := range this.FileSystems {
+			upgraded.FileSystems[name] = fileSystem.Upgrade()
+		}
+	}
+	upgraded.Init = this.Init
+	if this.Ipmi != nil {
+		upgraded.Ipmi = this.Ipmi.Upgrade()
+	} else {
+		upgraded.Ipmi = new(node.IpmiConf)
+	}
+	if upgraded.Ipmi.EscapeChar == "" {
+		upgraded.Ipmi.EscapeChar = this.IpmiEscapeChar
+	}
+	if upgraded.Ipmi.Gateway.Equal(net.IP{}) {
+		upgraded.Ipmi.Gateway = net.ParseIP(this.IpmiGateway)
+	}
+	if upgraded.Ipmi.Interface == "" {
+		upgraded.Ipmi.Interface = this.IpmiInterface
+	}
+	if upgraded.Ipmi.Ipaddr.Equal(net.IP{}) {
+		upgraded.Ipmi.Ipaddr = net.ParseIP(this.IpmiIpaddr)
+	}
+	if upgraded.Ipmi.Netmask.Equal(net.IP{}) {
+		upgraded.Ipmi.Netmask = net.ParseIP(this.IpmiNetmask)
+	}
+	if upgraded.Ipmi.Password == "" {
+		upgraded.Ipmi.Password = this.IpmiPassword
+	}
+	if upgraded.Ipmi.Port == "" {
+		upgraded.Ipmi.Port = this.IpmiPort
+	}
+	if upgraded.Ipmi.UserName == "" {
+		upgraded.Ipmi.UserName = this.IpmiUserName
+	}
+	if upgraded.Ipmi.Write == "" {
+		upgraded.Ipmi.Write.Set(this.IpmiWrite)
+	}
+	upgraded.Ipxe = this.Ipxe
+	if this.Kernel != nil {
+		upgraded.Kernel = this.Kernel.Upgrade()
+	} else {
+		upgraded.Kernel = new(node.KernelConf)
+	}
+	if upgraded.Kernel.Args == "" {
+		upgraded.Kernel.Args = this.KernelArgs
+	}
+	if upgraded.Kernel.Override == "" {
+		upgraded.Kernel.Override = this.KernelOverride
+	}
+	if upgraded.Kernel.Version == "" {
+		upgraded.Kernel.Version = this.KernelVersion
+	}
+	if this.Keys != nil {
+		for key, value := range this.Keys {
+			upgraded.Tags[key] = value
+		}
+	}
+	if this.NetDevs != nil {
+		for name, netDev := range this.NetDevs {
+			upgraded.NetDevs[name] = netDev.Upgrade()
+		}
+	}
+	if this.PrimaryNetDev != "" {
+		upgraded.PrimaryNetDev = this.PrimaryNetDev
+	} else {
+		for name, netDev := range this.NetDevs {
+			if b, _ := strconv.ParseBool(netDev.Primary); b {
+				upgraded.PrimaryNetDev = name
+				break
+			} else if b, _ := strconv.ParseBool(netDev.Default); b {
+				upgraded.PrimaryNetDev = name
+				break
+			}
+		}
+	}
+	upgraded.Profiles = append(upgraded.Profiles, this.Profiles...)
+	upgraded.Root = this.Root
+	if this.RuntimeOverlay != nil {
+		switch overlay := this.RuntimeOverlay.(type) {
+		case string:
+			upgraded.RuntimeOverlay = append(upgraded.RuntimeOverlay, strings.Split(overlay, ",")...)
+		case []interface{}:
+			for _, each := range overlay {
+				upgraded.RuntimeOverlay = append(upgraded.RuntimeOverlay, each.(string))
+			}
+		default:
+			wwlog.Error("unparsable RuntimeOverlay: %v", overlay)
+		}
+	}
+	if this.SystemOverlay != nil {
+		switch overlay := this.SystemOverlay.(type) {
+		case string:
+			upgraded.SystemOverlay = append(upgraded.SystemOverlay, strings.Split(overlay, ",")...)
+		case []interface{}:
+			for _, each := range overlay {
+				upgraded.SystemOverlay = append(upgraded.SystemOverlay, each.(string))
+			}
+		default:
+			wwlog.Error("unparsable SystemOverlay: %v", overlay)
+		}
+	}
+	if this.Tags != nil {
+		for key, value := range this.Tags {
+			upgraded.Tags[key] = value
+		}
+	}
+	for _, tag := range this.TagsDel {
+		delete(upgraded.Tags, tag)
+	}
+	return
 }
 
 type Profile struct {
@@ -56,10 +219,150 @@ type Profile struct {
 	PrimaryNetDev  string                 `yaml:"primary network,omitempty"`
 	Profiles       []string               `yaml:"profiles,omitempty"`
 	Root           string                 `yaml:"root,omitempty"`
-	RuntimeOverlay []string               `yaml:"runtime overlay,omitempty"`
-	SystemOverlay  []string               `yaml:"system overlay,omitempty"`
+	RuntimeOverlay interface{}            `yaml:"runtime overlay,omitempty"`
+	SystemOverlay  interface{}            `yaml:"system overlay,omitempty"`
 	Tags           map[string]string      `yaml:"tags,omitempty"`
 	TagsDel        []string               `yaml:"tagsdel,omitempty"`
+}
+
+func (this *Profile) Upgrade() (upgraded *node.Profile) {
+	upgraded = new(node.Profile)
+	upgraded.Tags = make(map[string]string)
+	upgraded.Disks = make(map[string]*node.Disk)
+	upgraded.FileSystems = make(map[string]*node.FileSystem)
+	upgraded.Kernel = new(node.KernelConf)
+	upgraded.NetDevs = make(map[string]*node.NetDev)
+	if this.AssetKey != "" {
+		logIgnore("AssetKey", this.AssetKey, "invalid for profiles")
+	}
+	upgraded.ClusterName = this.ClusterName
+	upgraded.Comment = this.Comment
+	upgraded.ContainerName = this.ContainerName
+	if this.Disabled != "" {
+		logIgnore("Disabled", this.Disabled, "obsolete")
+	}
+	if this.Discoverable != "" {
+		logIgnore("Discoverable", this.Discoverable, "invalid for profiles")
+	}
+	if this.Disks != nil {
+		for name, disk := range this.Disks {
+			upgraded.Disks[name] = disk.Upgrade()
+		}
+	}
+	if this.FileSystems != nil {
+		for name, fileSystem := range this.FileSystems {
+			upgraded.FileSystems[name] = fileSystem.Upgrade()
+		}
+	}
+	upgraded.Init = this.Init
+	upgraded.Ipmi = new(node.IpmiConf)
+	if this.Ipmi != nil {
+		upgraded.Ipmi = this.Ipmi.Upgrade()
+	} else {
+		upgraded.Ipmi = new(node.IpmiConf)
+	}
+	if upgraded.Ipmi.EscapeChar == "" {
+		upgraded.Ipmi.EscapeChar = this.IpmiEscapeChar
+	}
+	if upgraded.Ipmi.Gateway.Equal(net.IP{}) {
+		upgraded.Ipmi.Gateway = net.ParseIP(this.IpmiGateway)
+	}
+	if upgraded.Ipmi.Interface == "" {
+		upgraded.Ipmi.Interface = this.IpmiInterface
+	}
+	if upgraded.Ipmi.Ipaddr.Equal(net.IP{}) {
+		upgraded.Ipmi.Ipaddr = net.ParseIP(this.IpmiIpaddr)
+	}
+	if upgraded.Ipmi.Netmask.Equal(net.IP{}) {
+		upgraded.Ipmi.Netmask = net.ParseIP(this.IpmiNetmask)
+	}
+	if upgraded.Ipmi.Password == "" {
+		upgraded.Ipmi.Password = this.IpmiPassword
+	}
+	if upgraded.Ipmi.Port == "" {
+		upgraded.Ipmi.Port = this.IpmiPort
+	}
+	if upgraded.Ipmi.UserName == "" {
+		upgraded.Ipmi.UserName = this.IpmiUserName
+	}
+	if upgraded.Ipmi.Write == "" {
+		upgraded.Ipmi.Write.Set(this.IpmiWrite)
+	}
+	upgraded.Ipxe = this.Ipxe
+	if this.Kernel != nil {
+		upgraded.Kernel = this.Kernel.Upgrade()
+	} else {
+		upgraded.Kernel = new(node.KernelConf)
+	}
+	if upgraded.Kernel.Args == "" {
+		upgraded.Kernel.Args = this.KernelArgs
+	}
+	if upgraded.Kernel.Override == "" {
+		upgraded.Kernel.Override = this.KernelOverride
+	}
+	if upgraded.Kernel.Version == "" {
+		upgraded.Kernel.Version = this.KernelVersion
+	}
+	if this.Keys != nil {
+		for key, value := range this.Keys {
+			upgraded.Tags[key] = value
+		}
+	}
+	if this.NetDevs != nil {
+		for name, netDev := range this.NetDevs {
+			upgraded.NetDevs[name] = netDev.Upgrade()
+		}
+	}
+	if this.PrimaryNetDev != "" {
+		upgraded.PrimaryNetDev = this.PrimaryNetDev
+	} else {
+		for name, netDev := range this.NetDevs {
+			if b, _ := strconv.ParseBool(netDev.Primary); b {
+				upgraded.PrimaryNetDev = name
+				break
+			} else if b, _ := strconv.ParseBool(netDev.Default); b {
+				upgraded.PrimaryNetDev = name
+				break
+			}
+		}
+	}
+	if this.Profiles != nil {
+		logIgnore("Profiles", this.Profiles, "invalid for profiles")
+	}
+	upgraded.Root = this.Root
+	if this.RuntimeOverlay != nil {
+		switch overlay := this.RuntimeOverlay.(type) {
+		case string:
+			upgraded.RuntimeOverlay = append(upgraded.RuntimeOverlay, strings.Split(overlay, ",")...)
+		case []interface{}:
+			for _, each := range overlay {
+				upgraded.RuntimeOverlay = append(upgraded.RuntimeOverlay, each.(string))
+			}
+		default:
+			wwlog.Error("unparsable RuntimeOverlay: %v", overlay)
+		}
+	}
+	if this.SystemOverlay != nil {
+		switch overlay := this.SystemOverlay.(type) {
+		case string:
+			upgraded.SystemOverlay = append(upgraded.SystemOverlay, strings.Split(overlay, ",")...)
+		case []interface{}:
+			for _, each := range overlay {
+				upgraded.SystemOverlay = append(upgraded.SystemOverlay, each.(string))
+			}
+		default:
+			wwlog.Error("unparsable SystemOverlay: %v", overlay)
+		}
+	}
+	if this.Tags != nil {
+		for key, value := range this.Tags {
+			upgraded.Tags[key] = value
+		}
+	}
+	for _, tag := range this.TagsDel {
+		delete(upgraded.Tags, tag)
+	}
+	return
 }
 
 type IpmiConf struct {
@@ -76,10 +379,41 @@ type IpmiConf struct {
 	Write      string            `yaml:"write,omitempty"`
 }
 
+func (this *IpmiConf) Upgrade() (upgraded *node.IpmiConf) {
+	upgraded = new(node.IpmiConf)
+	upgraded.Tags = make(map[string]string)
+	upgraded.EscapeChar = this.EscapeChar
+	upgraded.Gateway = net.ParseIP(this.Gateway)
+	upgraded.Interface = this.Interface
+	upgraded.Ipaddr = net.ParseIP(this.Ipaddr)
+	upgraded.Netmask = net.ParseIP(this.Netmask)
+	upgraded.Password = this.Password
+	upgraded.Port = this.Port
+	if this.Tags != nil {
+		for key, value := range this.Tags {
+			upgraded.Tags[key] = value
+		}
+	}
+	for _, tag := range this.TagsDel {
+		delete(upgraded.Tags, tag)
+	}
+	upgraded.UserName = this.UserName
+	upgraded.Write.Set(this.Write)
+	return
+}
+
 type KernelConf struct {
 	Args     string `yaml:"args,omitempty"`
 	Override string `yaml:"override,omitempty"`
 	Version  string `yaml:"version,omitempty"`
+}
+
+func (this *KernelConf) Upgrade() (upgraded *node.KernelConf) {
+	upgraded = new(node.KernelConf)
+	upgraded.Args = this.Args
+	upgraded.Override = this.Override
+	upgraded.Version = this.Version
+	return
 }
 
 type NetDev struct {
@@ -100,9 +434,58 @@ type NetDev struct {
 	Type    string            `yaml:"type,omitempty"`
 }
 
+func (this *NetDev) Upgrade() (upgraded *node.NetDev) {
+	upgraded = new(node.NetDev)
+	upgraded.Tags = make(map[string]string)
+	upgraded.Device = this.Device
+	upgraded.Gateway = net.ParseIP(this.Gateway)
+	upgraded.Hwaddr = this.Hwaddr
+	upgraded.Ipaddr = net.ParseIP(this.Ipaddr)
+	upgraded.Ipaddr6 = net.ParseIP(this.Ipaddr6)
+	upgraded.MTU = this.MTU
+	upgraded.Netmask = net.ParseIP(this.Netmask)
+	if this.IpCIDR != "" {
+		cidrIP, cidrIPNet, err := net.ParseCIDR(this.IpCIDR)
+		if err != nil {
+			wwlog.Error("%v is not a valid CIDR address: %w", this.IpCIDR, err)
+		} else {
+			if upgraded.Ipaddr == nil {
+				upgraded.Ipaddr = cidrIP
+			}
+			if upgraded.Netmask == nil {
+				upgraded.Netmask = net.IP(cidrIPNet.Mask)
+			}
+		}
+	}
+	upgraded.OnBoot.Set(this.OnBoot)
+	upgraded.Prefix = net.ParseIP(this.Prefix)
+	if this.Tags != nil {
+		for key, value := range this.Tags {
+			upgraded.Tags[key] = value
+		}
+	}
+	for _, tag := range this.TagsDel {
+		delete(upgraded.Tags, tag)
+	}
+	upgraded.Type = this.Type
+	return
+}
+
 type Disk struct {
 	Partitions map[string]*Partition `yaml:"partitions,omitempty"`
 	WipeTable  string                `yaml:"wipe_table,omitempty"`
+}
+
+func (this *Disk) Upgrade() (upgraded *node.Disk) {
+	upgraded = new(node.Disk)
+	upgraded.Partitions = make(map[string]*node.Partition)
+	if this.Partitions != nil {
+		for name, partition := range this.Partitions {
+			upgraded.Partitions[name] = partition.Upgrade()
+		}
+	}
+	upgraded.WipeTable, _ = strconv.ParseBool(this.WipeTable)
+	return
 }
 
 type Partition struct {
@@ -116,13 +499,49 @@ type Partition struct {
 	WipePartitionEntry string `yaml:"wipe_partition_entry,omitempty"`
 }
 
+func (this *Partition) Upgrade() (upgraded *node.Partition) {
+	upgraded = new(node.Partition)
+	upgraded.Guid = this.Guid
+	upgraded.Number = this.Number
+	upgraded.Resize, _ = strconv.ParseBool(this.Resize)
+	upgraded.ShouldExist, _ = strconv.ParseBool(this.ShouldExist)
+	upgraded.SizeMiB = this.SizeMiB
+	upgraded.StartMiB = this.StartMiB
+	upgraded.TypeGuid = this.TypeGuid
+	upgraded.WipePartitionEntry, _ = strconv.ParseBool(this.WipePartitionEntry)
+	return
+}
+
 type FileSystem struct {
-	Format       string `yaml:"format,omitempty"`
-	Label        string `yaml:"label,omitempty"`
-	MountOptions string `yaml:"mount_options,omitempty"`
-	//MountOptions   []string `yaml:"mount_options,omitempty"`
-	Options        []string `yaml:"options,omitempty"`
-	Path           string   `yaml:"path,omitempty"`
-	Uuid           string   `yaml:"uuid,omitempty"`
-	WipeFileSystem string   `yaml:"wipe_filesystem,omitempty"`
+	Format         string      `yaml:"format,omitempty"`
+	Label          string      `yaml:"label,omitempty"`
+	MountOptions   interface{} `yaml:"mount_options,omitempty"`
+	Options        []string    `yaml:"options,omitempty"`
+	Path           string      `yaml:"path,omitempty"`
+	Uuid           string      `yaml:"uuid,omitempty"`
+	WipeFileSystem string      `yaml:"wipe_filesystem,omitempty"`
+}
+
+func (this *FileSystem) Upgrade() (upgraded *node.FileSystem) {
+	upgraded = new(node.FileSystem)
+	upgraded.Options = make([]string, 0)
+	upgraded.Format = this.Format
+	upgraded.Label = this.Label
+	switch mountOptions := this.MountOptions.(type) {
+	case string:
+		upgraded.MountOptions = mountOptions
+	case []interface{}:
+		mountOptionsStrings := make([]string, 0)
+		for _, option := range mountOptions {
+			mountOptionsStrings = append(mountOptionsStrings, option.(string))
+		}
+		upgraded.MountOptions = strings.Join(mountOptionsStrings, " ")
+	default:
+		wwlog.Error("unparsable MountOptions: %v", mountOptions)
+	}
+	upgraded.Options = append(upgraded.Options, this.Options...)
+	upgraded.Path = this.Path
+	upgraded.Uuid = this.Uuid
+	upgraded.WipeFileSystem, _ = strconv.ParseBool(this.WipeFileSystem)
+	return
 }

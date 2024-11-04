@@ -1,0 +1,502 @@
+package upgrade
+
+import (
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+var nodesYamlUpgradeTests = []struct {
+	name         string
+	legacyYaml   string
+	upgradedYaml string
+}{
+	{
+		name: "captured vers42 example",
+		legacyYaml: `
+nodeprofiles:
+  default:
+    comment: This profile is automatically included for each node
+    runtime overlay: "generic"
+    discoverable: false
+  leap:
+    comment: openSUSE leap
+    kernel version: 5.14.21
+    ipmi netmask: "255.255.255.0"
+    keys:
+      foo: baar
+    network devices:
+      lan1:
+        gateway: 1.1.1.1
+nodes:
+  node01:
+    system overlay: "nodeoverlay"
+    discoverable: true
+    network devices:
+      eth0:
+        ipaddr: 1.2.3.4
+        default: true
+`,
+		upgradedYaml: `
+nodeprofiles:
+  default:
+    comment: This profile is automatically included for each node
+    runtime overlay:
+      - generic
+  leap:
+    comment: openSUSE leap
+    kernel:
+      version: 5.14.21
+    ipmi:
+      netmask: 255.255.255.0
+    network devices:
+      lan1:
+        gateway: 1.1.1.1
+    tags:
+      foo: baar
+nodes:
+  node01:
+    discoverable: "true"
+    system overlay:
+      - nodeoverlay
+    network devices:
+      eth0:
+        ipaddr: 1.2.3.4
+    primary network: eth0
+`,
+	},
+	{
+		name: "captured vers43 example",
+		legacyYaml: `
+WW_INTERNAL: 45
+nodeprofiles:
+  default:
+    comment: This profile is automatically included for each node
+    runtime overlay:
+    - generic
+    discoverable: "false"
+  leap:
+    comment: openSUSE leap
+    kernel:
+      override: 5.14.21
+    ipmi:
+      netmask: 255.255.255.0
+    discoverable: "false"
+    network devices:
+      lan1:
+        device: lan1
+        gateway: 1.1.1.1
+        default: "false"
+    keys:
+      foo: baar
+nodes:
+  node01:
+    system overlay:
+    - nodeoverlay
+    discoverable: "true"
+    network devices:
+      eth0:
+        device: eth0
+        ipaddr: 1.2.3.4
+        default: "true"
+`,
+		upgradedYaml: `
+nodeprofiles:
+  default:
+    comment: This profile is automatically included for each node
+    runtime overlay:
+      - generic
+  leap:
+    comment: openSUSE leap
+    kernel:
+      override: 5.14.21
+    ipmi:
+      netmask: 255.255.255.0
+    network devices:
+      lan1:
+        device: lan1
+        gateway: 1.1.1.1
+    tags:
+      foo: baar
+nodes:
+  node01:
+    discoverable: "true"
+    system overlay:
+      - nodeoverlay
+    network devices:
+      eth0:
+        device: eth0
+        ipaddr: 1.2.3.4
+    primary network: eth0
+`,
+	},
+	{
+		name:       "remove WW_INTERNAL",
+		legacyYaml: `WW_INTERNAL: 45`,
+		upgradedYaml: `
+nodeprofiles: {}
+nodes: {}
+`,
+	},
+	{
+		name: "disabled is obsolete",
+		legacyYaml: `
+nodes:
+  n1:
+    disabled: true
+nodeprofiles:
+  default:
+    disabled: true
+`,
+		upgradedYaml: `
+nodeprofiles:
+  default: {}
+nodes:
+  n1: {}
+`,
+	},
+	{
+		name: "inline IPMI settings",
+		legacyYaml: `
+nodes:
+  n1:
+    ipmi escapechar: "~"
+    ipmi gateway: 192.168.0.1
+    ipmi interface: lanplus
+    ipmi ipaddr: 192.168.0.100
+    ipmi netmask: 255.255.255.0
+    ipmi password: password
+    ipmi port: 623
+    ipmi username: admin
+    ipmi write: true
+nodeprofiles:
+  default:
+    ipmi escapechar: "~"
+    ipmi gateway: 192.168.0.1
+    ipmi interface: lanplus
+    ipmi ipaddr: 192.168.0.100
+    ipmi netmask: 255.255.255.0
+    ipmi password: password
+    ipmi port: 623
+    ipmi username: admin
+    ipmi write: true
+`,
+		upgradedYaml: `
+nodeprofiles:
+  default:
+    ipmi:
+      username: admin
+      password: password
+      ipaddr: 192.168.0.100
+      gateway: 192.168.0.1
+      netmask: 255.255.255.0
+      port: "623"
+      interface: lanplus
+      escapechar: "~"
+      write: "true"
+nodes:
+  n1:
+    ipmi:
+      username: admin
+      password: password
+      ipaddr: 192.168.0.100
+      gateway: 192.168.0.1
+      netmask: 255.255.255.0
+      port: "623"
+      interface: lanplus
+      escapechar: "~"
+      write: "true"
+`,
+	},
+	{
+		name: "inline Kernel settings",
+		legacyYaml: `
+nodeprofiles:
+  default:
+    kernel args: quiet
+    kernel override: rockylinux-9
+    kernel version: 2.6
+nodes:
+  n1:
+    kernel args: quiet
+    kernel override: rockylinux-9
+    kernel version: 2.6
+`,
+		upgradedYaml: `
+nodeprofiles:
+  default:
+    kernel:
+      version: "2.6"
+      override: rockylinux-9
+      args: quiet
+nodes:
+  n1:
+    kernel:
+      version: "2.6"
+      override: rockylinux-9
+      args: quiet
+`,
+	},
+	{
+		name: "keys and tags",
+		legacyYaml: `
+nodeprofiles:
+  default:
+    keys:
+      key1: val1
+      key2: val2
+    tags:
+      key2: valB
+      key3: valC
+      key4: valD
+    tagsdel:
+      - key4
+    network devices:
+      default:
+        tags:
+          key2: valB
+          key3: valC
+          key4: valD
+        tagsdel:
+          - key4
+    ipmi:
+      tags:
+        key2: valB
+        key3: valC
+        key4: valD
+      tagsdel:
+        - key4
+nodes:
+  n1:
+    keys:
+      key1: val1
+      key2: val2
+    tags:
+      key2: valB
+      key3: valC
+      key4: valD
+    tagsdel:
+      - key4
+    network devices:
+      default:
+        tags:
+          key2: valB
+          key3: valC
+          key4: valD
+        tagsdel:
+          - key4
+    ipmi:
+      tags:
+        key2: valB
+        key3: valC
+        key4: valD
+      tagsdel:
+        - key4
+`,
+		upgradedYaml: `
+nodeprofiles:
+  default:
+    ipmi:
+      tags:
+        key2: valB
+        key3: valC
+    network devices:
+      default:
+        tags:
+          key2: valB
+          key3: valC
+    tags:
+      key1: val1
+      key2: valB
+      key3: valC
+nodes:
+  n1:
+    ipmi:
+      tags:
+        key2: valB
+        key3: valC
+    network devices:
+      default:
+        tags:
+          key2: valB
+          key3: valC
+    tags:
+      key1: val1
+      key2: valB
+      key3: valC
+`,
+	},
+	{
+		name: "primary network",
+		legacyYaml: `
+nodes:
+  n1:
+    network devices:
+      eth0: {}
+      eth1:
+        default: true
+  n2:
+    network devices:
+      eth0:
+        primary: true
+      eth1: {}
+  n3:
+    network devices:
+      eth0:
+        primary: true
+      eth1: {}
+    primary network: eth1
+nodeprofiles:
+  p1:
+    network devices:
+      eth0: {}
+      eth1:
+        default: true
+  p2:
+    network devices:
+      eth0:
+        primary: true
+      eth1: {}
+  p3:
+    network devices:
+      eth0:
+        primary: true
+      eth1: {}
+    primary network: eth1
+`,
+		upgradedYaml: `
+nodeprofiles:
+  p1:
+    primary network: eth1
+  p2:
+    primary network: eth0
+  p3:
+    primary network: eth1
+nodes:
+  n1:
+    primary network: eth1
+  n2:
+    primary network: eth0
+  n3:
+    primary network: eth1
+`,
+	},
+	{
+		name: "overlays",
+		legacyYaml: `
+nodes:
+  n1:
+    runtime overlay:
+    - r1
+    - r2
+    system overlay:
+    - s1
+    - s2
+  n2:
+    runtime overlay: r1,r2
+    system overlay: s1,s2
+nodeprofiles:
+  p1:
+    runtime overlay:
+    - r1
+    - r2
+    system overlay:
+    - s1
+    - s2
+  p2:
+    runtime overlay: r1,r2
+    system overlay: s1,s2
+`,
+		upgradedYaml: `
+nodeprofiles:
+  p1:
+    runtime overlay:
+      - r1
+      - r2
+    system overlay:
+      - s1
+      - s2
+  p2:
+    runtime overlay:
+      - r1
+      - r2
+    system overlay:
+      - s1
+      - s2
+nodes:
+  n1:
+    runtime overlay:
+      - r1
+      - r2
+    system overlay:
+      - s1
+      - s2
+  n2:
+    runtime overlay:
+      - r1
+      - r2
+    system overlay:
+      - s1
+      - s2
+`,
+	},
+	{
+		name: "disk example",
+		legacyYaml: `
+nodes:
+  n1:
+    disks:
+      /dev/vda:
+        wipe_table: true
+        partitions:
+          scratch:
+            number: "1"
+            should_exist: true
+          swap:
+            number: "2"
+            size_mib: "1024"
+    filesystems:
+      /dev/disk/by-partlabel/scratch:
+        format: btrfs
+        path: /scratch
+      /dev/disk/by-partlabel/swap:
+        format: swap
+        path: swap
+`,
+		upgradedYaml: `
+nodeprofiles: {}
+nodes:
+  n1:
+    disks:
+      /dev/vda:
+        wipe_table: true
+        partitions:
+          scratch:
+            number: "1"
+            should_exist: true
+          swap:
+            number: "2"
+            size_mib: "1024"
+    filesystems:
+      /dev/disk/by-partlabel/scratch:
+        format: btrfs
+        path: /scratch
+      /dev/disk/by-partlabel/swap:
+        format: swap
+        path: swap
+`,
+	},
+}
+
+func Test_UpgradeNodesYaml(t *testing.T) {
+	for _, tt := range nodesYamlUpgradeTests {
+		t.Run(tt.name, func(t *testing.T) {
+			legacy, err := Parse([]byte(tt.legacyYaml))
+			assert.NoError(t, err)
+			upgraded := legacy.Upgrade()
+			upgradedYaml, err := upgraded.Dump()
+			assert.Equal(t, strings.TrimSpace(tt.upgradedYaml), strings.TrimSpace(string(upgradedYaml)))
+		})
+	}
+}
