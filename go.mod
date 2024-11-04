@@ -12,7 +12,7 @@ require (
 	github.com/coreos/vcontext v0.0.0-20230201181013-d72178a18687
 	github.com/creasty/defaults v1.7.0
 	github.com/fatih/color v1.17.0
-	github.com/golang/glog v1.2.0
+	github.com/golang/glog v1.2.2
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/hashicorp/go-version v1.7.0
