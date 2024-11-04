@@ -18,6 +18,6 @@ network:
   	addresses:
     	- {{$netdev.Ipaddr}}/{{$netdev.Netmask}}
 	{{ if $netdev.MTU -}}
-	mtu: {{$netdev.Mtu}}
+	mtu: {{$netdev.MTU}}
 	{{- end}}
 {{- end}}
