@@ -8,6 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -29,21 +30,64 @@ type NodesYaml struct {
 	Nodes        map[string]*Node
 }
 
-func (this *NodesYaml) Upgrade() (upgraded *node.NodesYaml) {
+func (this *NodesYaml) Upgrade(addDefaults bool) (upgraded *node.NodesYaml) {
 	upgraded = new(node.NodesYaml)
 	upgraded.NodeProfiles = make(map[string]*node.Profile)
 	upgraded.Nodes = make(map[string]*node.Node)
 	if this.WWInternal != "" {
 		logIgnore("WW_INTERNAL", this.WWInternal, "obsolete")
 	}
-	if this.NodeProfiles != nil {
-		for name, profile := range this.NodeProfiles {
-			upgraded.NodeProfiles[name] = profile.Upgrade()
+	for name, profile := range this.NodeProfiles {
+		upgraded.NodeProfiles[name] = profile.Upgrade(addDefaults)
+	}
+	for name, node := range this.Nodes {
+		upgraded.Nodes[name] = node.Upgrade(addDefaults)
+		if addDefaults && !util.InSlice(upgraded.Nodes[name].Profiles, "default") {
+			wwlog.Warn("node %s does not include the default profile: verify default settings manually", name)
 		}
 	}
-	if this.Nodes != nil {
-		for name, node := range this.Nodes {
-			upgraded.Nodes[name] = node.Upgrade()
+	if addDefaults {
+		if _, ok := upgraded.NodeProfiles["default"]; !ok {
+			upgraded.NodeProfiles["default"] = new(node.Profile)
+			upgraded.NodeProfiles["default"].Kernel = new(node.KernelConf)
+		}
+		defaultProfile := upgraded.NodeProfiles["default"]
+		if len(defaultProfile.SystemOverlay) == 0 {
+			defaultProfile.SystemOverlay = append(
+				defaultProfile.SystemOverlay,
+				"wwinit",
+				"wwclient",
+				"fstab",
+				"hostname",
+				"ssh.host_keys",
+				"issue",
+				"resolv",
+				"udev.netname",
+				"systemd.netname",
+				"ifcfg",
+				"NetworkManager",
+				"debian.interfaces",
+				"wicked",
+				"ignition")
+		}
+		if len(defaultProfile.RuntimeOverlay) == 0 {
+			defaultProfile.RuntimeOverlay = append(
+				defaultProfile.RuntimeOverlay,
+				"hosts",
+				"ssh.authorized_keys",
+				"syncuser")
+		}
+		if defaultProfile.Kernel.Args == "" {
+			defaultProfile.Kernel.Args = "quiet crashkernel=no vga=791 net.naming-scheme=v238"
+		}
+		if defaultProfile.Init == "" {
+			defaultProfile.Init = "/sbin/init"
+		}
+		if defaultProfile.Root == "" {
+			defaultProfile.Root = "initramfs"
+		}
+		if defaultProfile.Ipxe == "" {
+			defaultProfile.Ipxe = "default"
 		}
 	}
 	return upgraded
@@ -53,7 +97,7 @@ type Node struct {
 	Profile `yaml:"-,inline"`
 }
 
-func (this *Node) Upgrade() (upgraded *node.Node) {
+func (this *Node) Upgrade(addDefaults bool) (upgraded *node.Node) {
 	upgraded = new(node.Node)
 	upgraded.Tags = make(map[string]string)
 	upgraded.Disks = make(map[string]*node.Disk)
@@ -136,7 +180,7 @@ func (this *Node) Upgrade() (upgraded *node.Node) {
 	}
 	if this.NetDevs != nil {
 		for name, netDev := range this.NetDevs {
-			upgraded.NetDevs[name] = netDev.Upgrade()
+			upgraded.NetDevs[name] = netDev.Upgrade(addDefaults)
 		}
 	}
 	if this.PrimaryNetDev != "" {
@@ -153,6 +197,11 @@ func (this *Node) Upgrade() (upgraded *node.Node) {
 		}
 	}
 	upgraded.Profiles = append(upgraded.Profiles, this.Profiles...)
+	if addDefaults {
+		if len(upgraded.Profiles) == 0 {
+			upgraded.Profiles = append(upgraded.Profiles, "default")
+		}
+	}
 	upgraded.Root = this.Root
 	if this.RuntimeOverlay != nil {
 		switch overlay := this.RuntimeOverlay.(type) {
@@ -225,7 +274,7 @@ type Profile struct {
 	TagsDel        []string               `yaml:"tagsdel,omitempty"`
 }
 
-func (this *Profile) Upgrade() (upgraded *node.Profile) {
+func (this *Profile) Upgrade(addDefaults bool) (upgraded *node.Profile) {
 	upgraded = new(node.Profile)
 	upgraded.Tags = make(map[string]string)
 	upgraded.Disks = make(map[string]*node.Disk)
@@ -310,7 +359,7 @@ func (this *Profile) Upgrade() (upgraded *node.Profile) {
 	}
 	if this.NetDevs != nil {
 		for name, netDev := range this.NetDevs {
-			upgraded.NetDevs[name] = netDev.Upgrade()
+			upgraded.NetDevs[name] = netDev.Upgrade(addDefaults)
 		}
 	}
 	if this.PrimaryNetDev != "" {
@@ -434,7 +483,7 @@ type NetDev struct {
 	Type    string            `yaml:"type,omitempty"`
 }
 
-func (this *NetDev) Upgrade() (upgraded *node.NetDev) {
+func (this *NetDev) Upgrade(addDefaults bool) (upgraded *node.NetDev) {
 	upgraded = new(node.NetDev)
 	upgraded.Tags = make(map[string]string)
 	upgraded.Device = this.Device
@@ -468,6 +517,14 @@ func (this *NetDev) Upgrade() (upgraded *node.NetDev) {
 		delete(upgraded.Tags, tag)
 	}
 	upgraded.Type = this.Type
+	if addDefaults {
+		if upgraded.Type == "" {
+			upgraded.Type = "ethernet"
+		}
+		if upgraded.Netmask == nil {
+			upgraded.Netmask = net.ParseIP("255.255.255.0")
+		}
+	}
 	return
 }
 
@@ -527,17 +584,19 @@ func (this *FileSystem) Upgrade() (upgraded *node.FileSystem) {
 	upgraded.Options = make([]string, 0)
 	upgraded.Format = this.Format
 	upgraded.Label = this.Label
-	switch mountOptions := this.MountOptions.(type) {
-	case string:
-		upgraded.MountOptions = mountOptions
-	case []interface{}:
-		mountOptionsStrings := make([]string, 0)
-		for _, option := range mountOptions {
-			mountOptionsStrings = append(mountOptionsStrings, option.(string))
+	if this.MountOptions != nil {
+		switch mountOptions := this.MountOptions.(type) {
+		case string:
+			upgraded.MountOptions = mountOptions
+		case []interface{}:
+			mountOptionsStrings := make([]string, 0)
+			for _, option := range mountOptions {
+				mountOptionsStrings = append(mountOptionsStrings, option.(string))
+			}
+			upgraded.MountOptions = strings.Join(mountOptionsStrings, " ")
+		default:
+			wwlog.Error("unparsable MountOptions: %v", mountOptions)
 		}
-		upgraded.MountOptions = strings.Join(mountOptionsStrings, " ")
-	default:
-		wwlog.Error("unparsable MountOptions: %v", mountOptions)
 	}
 	upgraded.Options = append(upgraded.Options, this.Options...)
 	upgraded.Path = this.Path

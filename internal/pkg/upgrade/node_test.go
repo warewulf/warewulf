@@ -9,11 +9,13 @@ import (
 
 var nodesYamlUpgradeTests = []struct {
 	name         string
+	addDefaults  bool
 	legacyYaml   string
 	upgradedYaml string
 }{
 	{
-		name: "captured vers42 example",
+		name:        "captured vers42 example",
+		addDefaults: false,
 		legacyYaml: `
 nodeprofiles:
   default:
@@ -67,7 +69,8 @@ nodes:
 `,
 	},
 	{
-		name: "captured vers43 example",
+		name:        "captured vers43 example",
+		addDefaults: false,
 		legacyYaml: `
 WW_INTERNAL: 45
 nodeprofiles:
@@ -132,15 +135,17 @@ nodes:
 `,
 	},
 	{
-		name:       "remove WW_INTERNAL",
-		legacyYaml: `WW_INTERNAL: 45`,
+		name:        "remove WW_INTERNAL",
+		addDefaults: false,
+		legacyYaml:  `WW_INTERNAL: 45`,
 		upgradedYaml: `
 nodeprofiles: {}
 nodes: {}
 `,
 	},
 	{
-		name: "disabled is obsolete",
+		name:        "disabled is obsolete",
+		addDefaults: false,
 		legacyYaml: `
 nodes:
   n1:
@@ -157,7 +162,8 @@ nodes:
 `,
 	},
 	{
-		name: "inline IPMI settings",
+		name:        "inline IPMI settings",
+		addDefaults: false,
 		legacyYaml: `
 nodes:
   n1:
@@ -210,7 +216,8 @@ nodes:
 `,
 	},
 	{
-		name: "inline Kernel settings",
+		name:        "inline Kernel settings",
+		addDefaults: false,
 		legacyYaml: `
 nodeprofiles:
   default:
@@ -239,7 +246,8 @@ nodes:
 `,
 	},
 	{
-		name: "keys and tags",
+		name:        "keys and tags",
+		addDefaults: false,
 		legacyYaml: `
 nodeprofiles:
   default:
@@ -328,7 +336,8 @@ nodes:
 `,
 	},
 	{
-		name: "primary network",
+		name:        "primary network",
+		addDefaults: false,
 		legacyYaml: `
 nodes:
   n1:
@@ -383,7 +392,8 @@ nodes:
 `,
 	},
 	{
-		name: "overlays",
+		name:        "overlays",
+		addDefaults: false,
 		legacyYaml: `
 nodes:
   n1:
@@ -442,7 +452,8 @@ nodes:
 `,
 	},
 	{
-		name: "disk example",
+		name:        "disk example",
+		addDefaults: false,
 		legacyYaml: `
 nodes:
   n1:
@@ -487,6 +498,116 @@ nodes:
         path: swap
 `,
 	},
+	{
+		name:        "add defaults",
+		addDefaults: true,
+		legacyYaml: `
+nodes:
+  n1:
+    network devices:
+      default:
+        ipaddr: 192.168.0.100
+`,
+		upgradedYaml: `
+nodeprofiles:
+  default:
+    ipxe template: default
+    runtime overlay:
+      - hosts
+      - ssh.authorized_keys
+      - syncuser
+    system overlay:
+      - wwinit
+      - wwclient
+      - fstab
+      - hostname
+      - ssh.host_keys
+      - issue
+      - resolv
+      - udev.netname
+      - systemd.netname
+      - ifcfg
+      - NetworkManager
+      - debian.interfaces
+      - wicked
+      - ignition
+    kernel:
+      args: quiet crashkernel=no vga=791 net.naming-scheme=v238
+    init: /sbin/init
+    root: initramfs
+nodes:
+  n1:
+    profiles:
+      - default
+    network devices:
+      default:
+        type: ethernet
+        ipaddr: 192.168.0.100
+        netmask: 255.255.255.0
+`,
+	},
+	{
+		name:        "add defaults conflicts",
+		addDefaults: true,
+		legacyYaml: `
+nodeprofiles:
+  default:
+    system overlay:
+      - wwinit
+      - wwclient
+      - fstab
+      - hostname
+      - ssh.host_keys
+      - issue
+      - resolv
+      - udev.netname
+      - systemd.netname
+      - NetworkManager
+  custom: {}
+nodes:
+  n1:
+    profiles:
+      - custom
+    network devices:
+      default:
+        ipaddr: 10.0.0.100
+        netmask: 255.255.0.0
+`,
+		upgradedYaml: `
+nodeprofiles:
+  custom: {}
+  default:
+    ipxe template: default
+    runtime overlay:
+      - hosts
+      - ssh.authorized_keys
+      - syncuser
+    system overlay:
+      - wwinit
+      - wwclient
+      - fstab
+      - hostname
+      - ssh.host_keys
+      - issue
+      - resolv
+      - udev.netname
+      - systemd.netname
+      - NetworkManager
+    kernel:
+      args: quiet crashkernel=no vga=791 net.naming-scheme=v238
+    init: /sbin/init
+    root: initramfs
+nodes:
+  n1:
+    profiles:
+      - custom
+    network devices:
+      default:
+        type: ethernet
+        ipaddr: 10.0.0.100
+        netmask: 255.255.0.0
+`,
+	},
 }
 
 func Test_UpgradeNodesYaml(t *testing.T) {
@@ -494,7 +615,7 @@ func Test_UpgradeNodesYaml(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			legacy, err := Parse([]byte(tt.legacyYaml))
 			assert.NoError(t, err)
-			upgraded := legacy.Upgrade()
+			upgraded := legacy.Upgrade(tt.addDefaults)
 			upgradedYaml, err := upgraded.Dump()
 			assert.Equal(t, strings.TrimSpace(tt.upgradedYaml), strings.TrimSpace(string(upgradedYaml)))
 		})
