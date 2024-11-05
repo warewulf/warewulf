@@ -109,12 +109,19 @@ func (config *NodesYaml) DelProfile(nodeID string) error {
 Write the the NodeYaml to disk.
 */
 func (config *NodesYaml) Persist() error {
+	return config.PersistToFile(ConfigFile)
+}
+
+func (config *NodesYaml) PersistToFile(configFile string) error {
+	if configFile == "" {
+		configFile = ConfigFile
+	}
 	out, dumpErr := config.Dump()
 	if dumpErr != nil {
 		wwlog.Error("%s", dumpErr)
 		return dumpErr
 	}
-	file, err := os.OpenFile(ConfigFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
+	file, err := os.OpenFile(configFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
 		wwlog.Error("%s", err)
 		return err
@@ -124,7 +131,7 @@ func (config *NodesYaml) Persist() error {
 	if err != nil {
 		return err
 	}
-	wwlog.Debug("persisted: %s", ConfigFile)
+	wwlog.Debug("persisted: %s", configFile)
 	return nil
 }
 

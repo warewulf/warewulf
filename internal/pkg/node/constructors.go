@@ -18,14 +18,17 @@ var (
 	ConfigFile string
 )
 
-/*
-Creates a new nodeDb object from the on-disk configuration
-*/
-func New() (NodesYaml, error) {
+func init() {
 	conf := warewulfconf.Get()
 	if ConfigFile == "" {
 		ConfigFile = path.Join(conf.Paths.Sysconfdir, "warewulf/nodes.conf")
 	}
+}
+
+/*
+Creates a new nodeDb object from the on-disk configuration
+*/
+func New() (NodesYaml, error) {
 	wwlog.Verbose("Opening node configuration file: %s", ConfigFile)
 	data, err := os.ReadFile(ConfigFile)
 	if err != nil {
