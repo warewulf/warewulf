@@ -1,6 +1,7 @@
 package upgrade
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -43,8 +44,17 @@ func UpgradeNodesConf(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	upgraded := legacy.Upgrade(addDefaults, replaceOverlays)
-	if err := util.CopyFile(outputPath, outputPath+"-old"); err != nil {
-		return err
+	if outputPath == "-" {
+		upgradedYaml, err := upgraded.Dump()
+		if err != nil {
+			return err
+		}
+		fmt.Print(string(upgradedYaml))
+		return nil
+	} else {
+		if err := util.CopyFile(outputPath, outputPath+"-old"); err != nil {
+			return err
+		}
+		return upgraded.PersistToFile(outputPath)
 	}
-	return upgraded.PersistToFile(outputPath)
 }
