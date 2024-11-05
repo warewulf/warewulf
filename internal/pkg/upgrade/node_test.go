@@ -616,7 +616,7 @@ func Test_UpgradeNodesYaml(t *testing.T) {
 			legacy, err := Parse([]byte(tt.legacyYaml))
 			assert.NoError(t, err)
 			upgraded := legacy.Upgrade(tt.addDefaults)
-			upgradedYaml, err := upgraded.Dump()
+			upgradedYaml, _ := upgraded.Dump()
 			assert.Equal(t, strings.TrimSpace(tt.upgradedYaml), strings.TrimSpace(string(upgradedYaml)))
 		})
 	}

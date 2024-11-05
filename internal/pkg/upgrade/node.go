@@ -16,6 +16,12 @@ func logIgnore(name string, value interface{}, reason string) {
 	wwlog.Warn("ignore: %s: %v (%s)", name, value, reason)
 }
 
+func warnError(err error) {
+	if err != nil {
+		wwlog.Warn("%w", err)
+	}
+}
+
 func Parse(data []byte) (nodesYaml *NodesYaml, err error) {
 	nodesYaml = new(NodesYaml)
 	if err = yaml.Unmarshal(data, nodesYaml); err != nil {
@@ -113,7 +119,7 @@ func (this *Node) Upgrade(addDefaults bool) (upgraded *node.Node) {
 		logIgnore("Disabled", this.Disabled, "obsolete")
 	}
 	if this.Discoverable != "" {
-		upgraded.Discoverable.Set(this.Discoverable)
+		warnError(upgraded.Discoverable.Set(this.Discoverable))
 	}
 	if this.Disks != nil {
 		for name, disk := range this.Disks {
@@ -156,7 +162,7 @@ func (this *Node) Upgrade(addDefaults bool) (upgraded *node.Node) {
 		upgraded.Ipmi.UserName = this.IpmiUserName
 	}
 	if upgraded.Ipmi.Write == "" {
-		upgraded.Ipmi.Write.Set(this.IpmiWrite)
+		warnError(upgraded.Ipmi.Write.Set(this.IpmiWrite))
 	}
 	upgraded.Ipxe = this.Ipxe
 	if this.Kernel != nil {
@@ -335,7 +341,7 @@ func (this *Profile) Upgrade(addDefaults bool) (upgraded *node.Profile) {
 		upgraded.Ipmi.UserName = this.IpmiUserName
 	}
 	if upgraded.Ipmi.Write == "" {
-		upgraded.Ipmi.Write.Set(this.IpmiWrite)
+		warnError(upgraded.Ipmi.Write.Set(this.IpmiWrite))
 	}
 	upgraded.Ipxe = this.Ipxe
 	if this.Kernel != nil {
@@ -447,7 +453,7 @@ func (this *IpmiConf) Upgrade() (upgraded *node.IpmiConf) {
 		delete(upgraded.Tags, tag)
 	}
 	upgraded.UserName = this.UserName
-	upgraded.Write.Set(this.Write)
+	warnError(upgraded.Write.Set(this.Write))
 	return
 }
 
@@ -506,7 +512,7 @@ func (this *NetDev) Upgrade(addDefaults bool) (upgraded *node.NetDev) {
 			}
 		}
 	}
-	upgraded.OnBoot.Set(this.OnBoot)
+	warnError(upgraded.OnBoot.Set(this.OnBoot))
 	upgraded.Prefix = net.ParseIP(this.Prefix)
 	if this.Tags != nil {
 		for key, value := range this.Tags {
