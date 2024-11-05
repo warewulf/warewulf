@@ -26,23 +26,23 @@ const Release = "@RELEASE@"
 
 type TFTPConf struct {
 	Enabled     bool   `yaml:"enabled" default:"true"`
-	TftpRoot    string `yaml:"tftproot" default:"@TFTPDIR@"`
-	SystemdName string `yaml:"systemd name" default:"tftp"`
+	TftpRoot    string `yaml:"tftproot,omitempty" default:"@TFTPDIR@"`
+	SystemdName string `yaml:"systemd name,omitempty" default:"tftp"`
 
-	IpxeBinaries map[string]string `yaml:"ipxe" default:"{\"00:09\": \"ipxe-snponly-x86_64.efi\",\"00:00\": \"undionly.kpxe\",\"00:0B\": \"arm64-efi/snponly.efi\",\"00:07\":  \"ipxe-snponly-x86_64.efi\"}"`
+	IpxeBinaries map[string]string `yaml:"ipxe,omitempty" default:"{\"00:09\": \"ipxe-snponly-x86_64.efi\",\"00:00\": \"undionly.kpxe\",\"00:0B\": \"arm64-efi/snponly.efi\",\"00:07\":  \"ipxe-snponly-x86_64.efi\"}"`
 }
 
 // WarewulfConf adds additional Warewulf-specific configuration to
 // BaseConf.
 type WarewulfConf struct {
-	Port              int    `yaml:"port" default:"9873"`
+	Port              int    `yaml:"port,omitempty" default:"9873"`
 	Secure            bool   `yaml:"secure" default:"true"`
-	UpdateInterval    int    `yaml:"update interval" default:"60"`
-	AutobuildOverlays bool   `yaml:"autobuild overlays" default:"true"`
+	UpdateInterval    int    `yaml:"update interval,omitempty" default:"60"`
+	AutobuildOverlays bool   `yaml:"autobuild overlays,omitempty" default:"true"`
 	EnableHostOverlay bool   `yaml:"host overlay" default:"true"`
-	Syslog            bool   `yaml:"syslog" default:"false"`
-	DataStore         string `yaml:"datastore" default:"@DATADIR@"`
-	GrubBoot          bool   `yaml:"grubboot" default:"false"`
+	Syslog            bool   `yaml:"syslog,omitempty" default:"false"`
+	DataStore         string `yaml:"datastore,omitempty" default:"@DATADIR@"`
+	GrubBoot          bool   `yaml:"grubboot,omitempty" default:"false"`
 }
 
 func (paths BuildConfig) OciBlobCachedir() string {

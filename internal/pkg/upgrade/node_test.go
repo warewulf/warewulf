@@ -689,7 +689,7 @@ nodes:
 func Test_UpgradeNodesYaml(t *testing.T) {
 	for _, tt := range nodesYamlUpgradeTests {
 		t.Run(tt.name, func(t *testing.T) {
-			legacy, err := Parse([]byte(tt.legacyYaml))
+			legacy, err := ParseNodes([]byte(tt.legacyYaml))
 			assert.NoError(t, err)
 			upgraded := legacy.Upgrade(tt.addDefaults, tt.replaceOverlays)
 			upgradedYaml, err := upgraded.Dump()

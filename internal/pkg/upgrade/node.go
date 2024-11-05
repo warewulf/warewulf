@@ -35,33 +35,7 @@ var genericSplitOverlays = []string{
 	"syncuser",
 }
 
-func indexOf[T comparable](slice []T, item T) int {
-	for i, v := range slice {
-		if v == item {
-			return i
-		}
-	}
-	return -1
-}
-
-func replaceSliceElement[T any](original []T, index int, replacement []T) []T {
-	if index < 0 || index >= len(original) {
-		return original
-	}
-	return append(original[:index], append(replacement, original[index+1:]...)...)
-}
-
-func logIgnore(name string, value interface{}, reason string) {
-	wwlog.Warn("ignore: %s: %v (%s)", name, value, reason)
-}
-
-func warnError(err error) {
-	if err != nil {
-		wwlog.Warn("%s", err)
-	}
-}
-
-func Parse(data []byte) (nodesYaml *NodesYaml, err error) {
+func ParseNodes(data []byte) (nodesYaml *NodesYaml, err error) {
 	nodesYaml = new(NodesYaml)
 	if err = yaml.Unmarshal(data, nodesYaml); err != nil {
 		return nodesYaml, err

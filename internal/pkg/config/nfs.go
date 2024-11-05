@@ -9,16 +9,16 @@ import (
 // nodes.
 type NFSConf struct {
 	Enabled         bool             `yaml:"enabled" default:"true"`
-	ExportsExtended []*NFSExportConf `yaml:"export paths" default:"[]"`
-	SystemdName     string           `yaml:"systemd name" default:"nfsd"`
+	ExportsExtended []*NFSExportConf `yaml:"export paths,omitempty" default:"[]"`
+	SystemdName     string           `yaml:"systemd name,omitempty" default:"nfsd"`
 }
 
 // An NFSExportConf reprents a single NFS export / mount.
 type NFSExportConf struct {
 	Path          string `yaml:"path" default:"/dev/null"`
-	ExportOptions string `default:"rw,sync,no_subtree_check" yaml:"export options"`
-	MountOptions  string `default:"defaults" yaml:"mount options"`
-	Mount         bool   `default:"true" yaml:"mount"`
+	ExportOptions string `yaml:"export options,omitempty" default:"rw,sync,no_subtree_check"`
+	MountOptions  string `yaml:"mount options,omitempty" default:"defaults"`
+	Mount         bool   `yaml:"mount" default:"true"`
 }
 
 // Implements the Unmarshal interface for NFSConf to set default

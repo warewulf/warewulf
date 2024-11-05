@@ -7,6 +7,7 @@
 package config
 
 import (
+	"bytes"
 	"fmt"
 	"net"
 	"net/netip"
@@ -27,19 +28,19 @@ var cachedConf WarewulfYaml
 // [WarewulfConf], [DHCPConf], [TFTPConf], and [NFSConf] sub-sections.
 type WarewulfYaml struct {
 	Comment         string        `yaml:"comment,omitempty"`
-	Ipaddr          string        `yaml:"ipaddr"`
+	Ipaddr          string        `yaml:"ipaddr,omitempty"`
 	Ipaddr6         string        `yaml:"ipaddr6,omitempty"`
-	Netmask         string        `yaml:"netmask"`
+	Netmask         string        `yaml:"netmask,omitempty"`
 	Network         string        `yaml:"network,omitempty"`
 	Ipv6net         string        `yaml:"ipv6net,omitempty"`
 	Fqdn            string        `yaml:"fqdn,omitempty"`
-	Warewulf        *WarewulfConf `yaml:"warewulf"`
-	DHCP            *DHCPConf     `yaml:"dhcp"`
-	TFTP            *TFTPConf     `yaml:"tftp"`
-	NFS             *NFSConf      `yaml:"nfs"`
+	Warewulf        *WarewulfConf `yaml:"warewulf,omitempty"`
+	DHCP            *DHCPConf     `yaml:"dhcp,omitempty"`
+	TFTP            *TFTPConf     `yaml:"tftp,omitempty"`
+	NFS             *NFSConf      `yaml:"nfs,omitempty"`
 	SSH             *SSHConf      `yaml:"ssh,omitempty"`
-	MountsContainer []*MountEntry `yaml:"container mounts" default:"[{\"source\": \"/etc/resolv.conf\", \"dest\": \"/etc/resolv.conf\"}]"`
-	Paths           *BuildConfig  `yaml:"paths"`
+	MountsContainer []*MountEntry `yaml:"container mounts,omitempty" default:"[{\"source\": \"/etc/resolv.conf\", \"dest\": \"/etc/resolv.conf\"}]"`
+	Paths           *BuildConfig  `yaml:"paths,omitempty"`
 	WWClient        *WWClientConf `yaml:"wwclient,omitempty"`
 
 	warewulfconf string
@@ -205,4 +206,32 @@ func (conf *WarewulfYaml) InitializedFromFile() bool {
 
 func (conf *WarewulfYaml) GetWarewulfConf() string {
 	return conf.warewulfconf
+}
+
+func (config *WarewulfYaml) Dump() ([]byte, error) {
+	var buf bytes.Buffer
+	yamlEncoder := yaml.NewEncoder(&buf)
+	yamlEncoder.SetIndent(2)
+	err := yamlEncoder.Encode(config)
+	return buf.Bytes(), err
+}
+
+func (config *WarewulfYaml) PersistToFile(configFile string) error {
+	out, dumpErr := config.Dump()
+	if dumpErr != nil {
+		wwlog.Error("%s", dumpErr)
+		return dumpErr
+	}
+	file, err := os.OpenFile(configFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
+	if err != nil {
+		wwlog.Error("%s", err)
+		return err
+	}
+	defer file.Close()
+	_, err = file.WriteString(string(out))
+	if err != nil {
+		return err
+	}
+	wwlog.Debug("persisted: %s", configFile)
+	return nil
 }
