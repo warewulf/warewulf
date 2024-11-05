@@ -107,7 +107,7 @@ Partitions map
 */
 type Partition struct {
 	Number             string `yaml:"number,omitempty" lopt:"partnumber" comment:"set the partition number, if not set next free slot is used" type:"uint"`
-	SizeMiB            string `yaml:"size_mib,omitempty" lopt:"partsize " comment:"set the size of the partition, if not set maximal possible size is used"  type:"uint"`
+	SizeMiB            string `yaml:"size_mib,omitempty" lopt:"partsize" comment:"set the size of the partition, if not set maximal possible size is used"  type:"uint"`
 	StartMiB           string `yaml:"start_mib,omitempty" comment:"the start of the partition" type:"uint"`
 	TypeGuid           string `yaml:"type_guid,omitempty" comment:"Linux filesystem data will be used if empty"`
 	Guid               string `yaml:"guid,omitempty" comment:"the GPT unique partition GUID"`
