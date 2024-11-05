@@ -20,13 +20,15 @@ supported by the current version.`,
 		RunE: UpgradeNodesConf,
 	}
 
-	addDefaults bool
-	inputPath   string
-	outputPath  string
+	addDefaults     bool
+	replaceOverlays bool
+	inputPath       string
+	outputPath      string
 )
 
 func init() {
 	Command.Flags().BoolVar(&addDefaults, "add-defaults", false, "Configure a default profile and set default node values")
+	Command.Flags().BoolVar(&replaceOverlays, "replace-overlays", false, "Replace 'wwinit' and 'generic' overlays with their split replacements")
 	Command.Flags().StringVarP(&inputPath, "input-path", "i", node.ConfigFile, "Path to a legacy nodes.conf")
 	Command.Flags().StringVarP(&outputPath, "output-path", "o", node.ConfigFile, "Path to write the upgraded nodes.conf to")
 }
@@ -40,7 +42,7 @@ func UpgradeNodesConf(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	upgraded := legacy.Upgrade(addDefaults)
+	upgraded := legacy.Upgrade(addDefaults, replaceOverlays)
 	if err := util.CopyFile(outputPath, outputPath+"-old"); err != nil {
 		return err
 	}

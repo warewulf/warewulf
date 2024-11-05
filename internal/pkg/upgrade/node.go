@@ -12,6 +12,45 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
+var wwinitSplitOverlays = []string{
+	"wwinit",
+	"wwclient",
+	"fstab",
+	"hostname",
+	"ssh.host_keys",
+	"issue",
+	"resolv",
+	"udev.netname",
+	"systemd.netname",
+	"ifcfg",
+	"NetworkManager",
+	"debian.interfaces",
+	"wicked",
+	"ignition",
+}
+
+var genericSplitOverlays = []string{
+	"hosts",
+	"ssh.authorized_keys",
+	"syncuser",
+}
+
+func indexOf[T comparable](slice []T, item T) int {
+	for i, v := range slice {
+		if v == item {
+			return i
+		}
+	}
+	return -1
+}
+
+func replaceSliceElement[T any](original []T, index int, replacement []T) []T {
+	if index < 0 || index >= len(original) {
+		return original
+	}
+	return append(original[:index], append(replacement, original[index+1:]...)...)
+}
+
 func logIgnore(name string, value interface{}, reason string) {
 	wwlog.Warn("ignore: %s: %v (%s)", name, value, reason)
 }
@@ -36,7 +75,7 @@ type NodesYaml struct {
 	Nodes        map[string]*Node
 }
 
-func (this *NodesYaml) Upgrade(addDefaults bool) (upgraded *node.NodesYaml) {
+func (this *NodesYaml) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *node.NodesYaml) {
 	upgraded = new(node.NodesYaml)
 	upgraded.NodeProfiles = make(map[string]*node.Profile)
 	upgraded.Nodes = make(map[string]*node.Node)
@@ -44,10 +83,10 @@ func (this *NodesYaml) Upgrade(addDefaults bool) (upgraded *node.NodesYaml) {
 		logIgnore("WW_INTERNAL", this.WWInternal, "obsolete")
 	}
 	for name, profile := range this.NodeProfiles {
-		upgraded.NodeProfiles[name] = profile.Upgrade(addDefaults)
+		upgraded.NodeProfiles[name] = profile.Upgrade(addDefaults, replaceOverlays)
 	}
 	for name, node := range this.Nodes {
-		upgraded.Nodes[name] = node.Upgrade(addDefaults)
+		upgraded.Nodes[name] = node.Upgrade(addDefaults, replaceOverlays)
 		if addDefaults && !util.InSlice(upgraded.Nodes[name].Profiles, "default") {
 			wwlog.Warn("node %s does not include the default profile: verify default settings manually", name)
 		}
@@ -60,28 +99,11 @@ func (this *NodesYaml) Upgrade(addDefaults bool) (upgraded *node.NodesYaml) {
 		defaultProfile := upgraded.NodeProfiles["default"]
 		if len(defaultProfile.SystemOverlay) == 0 {
 			defaultProfile.SystemOverlay = append(
-				defaultProfile.SystemOverlay,
-				"wwinit",
-				"wwclient",
-				"fstab",
-				"hostname",
-				"ssh.host_keys",
-				"issue",
-				"resolv",
-				"udev.netname",
-				"systemd.netname",
-				"ifcfg",
-				"NetworkManager",
-				"debian.interfaces",
-				"wicked",
-				"ignition")
+				defaultProfile.SystemOverlay, wwinitSplitOverlays...)
 		}
 		if len(defaultProfile.RuntimeOverlay) == 0 {
 			defaultProfile.RuntimeOverlay = append(
-				defaultProfile.RuntimeOverlay,
-				"hosts",
-				"ssh.authorized_keys",
-				"syncuser")
+				defaultProfile.RuntimeOverlay, genericSplitOverlays...)
 		}
 		if defaultProfile.Kernel.Args == "" {
 			defaultProfile.Kernel.Args = "quiet crashkernel=no vga=791 net.naming-scheme=v238"
@@ -103,7 +125,7 @@ type Node struct {
 	Profile `yaml:"-,inline"`
 }
 
-func (this *Node) Upgrade(addDefaults bool) (upgraded *node.Node) {
+func (this *Node) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *node.Node) {
 	upgraded = new(node.Node)
 	upgraded.Tags = make(map[string]string)
 	upgraded.Disks = make(map[string]*node.Disk)
@@ -233,6 +255,20 @@ func (this *Node) Upgrade(addDefaults bool) (upgraded *node.Node) {
 			wwlog.Error("unparsable SystemOverlay: %v", overlay)
 		}
 	}
+	if replaceOverlays {
+		if indexOf(upgraded.SystemOverlay, "wwinit") != -1 {
+			upgraded.SystemOverlay = replaceSliceElement(
+				upgraded.SystemOverlay,
+				indexOf(upgraded.SystemOverlay, "wwinit"),
+				wwinitSplitOverlays)
+		}
+		if indexOf(upgraded.RuntimeOverlay, "generic") != -1 {
+			upgraded.RuntimeOverlay = replaceSliceElement(
+				upgraded.RuntimeOverlay,
+				indexOf(upgraded.RuntimeOverlay, "generic"),
+				genericSplitOverlays)
+		}
+	}
 	if this.Tags != nil {
 		for key, value := range this.Tags {
 			upgraded.Tags[key] = value
@@ -280,7 +316,7 @@ type Profile struct {
 	TagsDel        []string               `yaml:"tagsdel,omitempty"`
 }
 
-func (this *Profile) Upgrade(addDefaults bool) (upgraded *node.Profile) {
+func (this *Profile) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *node.Profile) {
 	upgraded = new(node.Profile)
 	upgraded.Tags = make(map[string]string)
 	upgraded.Disks = make(map[string]*node.Disk)
@@ -407,6 +443,20 @@ func (this *Profile) Upgrade(addDefaults bool) (upgraded *node.Profile) {
 			}
 		default:
 			wwlog.Error("unparsable SystemOverlay: %v", overlay)
+		}
+	}
+	if replaceOverlays {
+		if indexOf(upgraded.SystemOverlay, "wwinit") != -1 {
+			upgraded.SystemOverlay = replaceSliceElement(
+				upgraded.SystemOverlay,
+				indexOf(upgraded.SystemOverlay, "wwinit"),
+				wwinitSplitOverlays)
+		}
+		if indexOf(upgraded.RuntimeOverlay, "generic") != -1 {
+			upgraded.RuntimeOverlay = replaceSliceElement(
+				upgraded.RuntimeOverlay,
+				indexOf(upgraded.RuntimeOverlay, "generic"),
+				genericSplitOverlays)
 		}
 	}
 	if this.Tags != nil {

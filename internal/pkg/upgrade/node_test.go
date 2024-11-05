@@ -8,14 +8,16 @@ import (
 )
 
 var nodesYamlUpgradeTests = []struct {
-	name         string
-	addDefaults  bool
-	legacyYaml   string
-	upgradedYaml string
+	name            string
+	addDefaults     bool
+	replaceOverlays bool
+	legacyYaml      string
+	upgradedYaml    string
 }{
 	{
-		name:        "captured vers42 example",
-		addDefaults: false,
+		name:            "captured vers42 example",
+		addDefaults:     false,
+		replaceOverlays: false,
 		legacyYaml: `
 nodeprofiles:
   default:
@@ -69,8 +71,9 @@ nodes:
 `,
 	},
 	{
-		name:        "captured vers43 example",
-		addDefaults: false,
+		name:            "captured vers43 example",
+		addDefaults:     false,
+		replaceOverlays: false,
 		legacyYaml: `
 WW_INTERNAL: 45
 nodeprofiles:
@@ -135,17 +138,19 @@ nodes:
 `,
 	},
 	{
-		name:        "remove WW_INTERNAL",
-		addDefaults: false,
-		legacyYaml:  `WW_INTERNAL: 45`,
+		name:            "remove WW_INTERNAL",
+		addDefaults:     false,
+		replaceOverlays: false,
+		legacyYaml:      `WW_INTERNAL: 45`,
 		upgradedYaml: `
 nodeprofiles: {}
 nodes: {}
 `,
 	},
 	{
-		name:        "disabled is obsolete",
-		addDefaults: false,
+		name:            "disabled is obsolete",
+		addDefaults:     false,
+		replaceOverlays: false,
 		legacyYaml: `
 nodes:
   n1:
@@ -162,8 +167,9 @@ nodes:
 `,
 	},
 	{
-		name:        "inline IPMI settings",
-		addDefaults: false,
+		name:            "inline IPMI settings",
+		addDefaults:     false,
+		replaceOverlays: false,
 		legacyYaml: `
 nodes:
   n1:
@@ -216,8 +222,9 @@ nodes:
 `,
 	},
 	{
-		name:        "inline Kernel settings",
-		addDefaults: false,
+		name:            "inline Kernel settings",
+		addDefaults:     false,
+		replaceOverlays: false,
 		legacyYaml: `
 nodeprofiles:
   default:
@@ -246,8 +253,9 @@ nodes:
 `,
 	},
 	{
-		name:        "keys and tags",
-		addDefaults: false,
+		name:            "keys and tags",
+		addDefaults:     false,
+		replaceOverlays: false,
 		legacyYaml: `
 nodeprofiles:
   default:
@@ -336,8 +344,9 @@ nodes:
 `,
 	},
 	{
-		name:        "primary network",
-		addDefaults: false,
+		name:            "primary network",
+		addDefaults:     false,
+		replaceOverlays: false,
 		legacyYaml: `
 nodes:
   n1:
@@ -392,8 +401,9 @@ nodes:
 `,
 	},
 	{
-		name:        "overlays",
-		addDefaults: false,
+		name:            "overlays",
+		addDefaults:     false,
+		replaceOverlays: false,
 		legacyYaml: `
 nodes:
   n1:
@@ -452,8 +462,9 @@ nodes:
 `,
 	},
 	{
-		name:        "disk example",
-		addDefaults: false,
+		name:            "disk example",
+		addDefaults:     false,
+		replaceOverlays: false,
 		legacyYaml: `
 nodes:
   n1:
@@ -499,8 +510,9 @@ nodes:
 `,
 	},
 	{
-		name:        "add defaults",
-		addDefaults: true,
+		name:            "add defaults",
+		addDefaults:     true,
+		replaceOverlays: false,
 		legacyYaml: `
 nodes:
   n1:
@@ -547,8 +559,9 @@ nodes:
 `,
 	},
 	{
-		name:        "add defaults conflicts",
-		addDefaults: true,
+		name:            "add defaults conflicts",
+		addDefaults:     true,
+		replaceOverlays: false,
 		legacyYaml: `
 nodeprofiles:
   default:
@@ -608,6 +621,69 @@ nodes:
         netmask: 255.255.0.0
 `,
 	},
+	{
+		name:            "add defaults conflicts",
+		addDefaults:     false,
+		replaceOverlays: true,
+		legacyYaml: `
+nodeprofiles:
+  default:
+    runtime overlay:
+      - generic
+    system overlay:
+      - wwinit
+nodes:
+  n1:
+    runtime overlay:
+      - generic
+    system overlay:
+      - wwinit
+`,
+		upgradedYaml: `
+nodeprofiles:
+  default:
+    runtime overlay:
+      - hosts
+      - ssh.authorized_keys
+      - syncuser
+    system overlay:
+      - wwinit
+      - wwclient
+      - fstab
+      - hostname
+      - ssh.host_keys
+      - issue
+      - resolv
+      - udev.netname
+      - systemd.netname
+      - ifcfg
+      - NetworkManager
+      - debian.interfaces
+      - wicked
+      - ignition
+nodes:
+  n1:
+    runtime overlay:
+      - hosts
+      - ssh.authorized_keys
+      - syncuser
+    system overlay:
+      - wwinit
+      - wwclient
+      - fstab
+      - hostname
+      - ssh.host_keys
+      - issue
+      - resolv
+      - udev.netname
+      - systemd.netname
+      - ifcfg
+      - NetworkManager
+      - debian.interfaces
+      - wicked
+      - ignition
+`,
+	},
 }
 
 func Test_UpgradeNodesYaml(t *testing.T) {
@@ -615,7 +691,7 @@ func Test_UpgradeNodesYaml(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			legacy, err := Parse([]byte(tt.legacyYaml))
 			assert.NoError(t, err)
-			upgraded := legacy.Upgrade(tt.addDefaults)
+			upgraded := legacy.Upgrade(tt.addDefaults, tt.replaceOverlays)
 			upgradedYaml, err := upgraded.Dump()
 			assert.NoError(t, err)
 			assert.Equal(t, strings.TrimSpace(tt.upgradedYaml), strings.TrimSpace(string(upgradedYaml)))
