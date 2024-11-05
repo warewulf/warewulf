@@ -18,7 +18,7 @@ func logIgnore(name string, value interface{}, reason string) {
 
 func warnError(err error) {
 	if err != nil {
-		wwlog.Warn("%w", err)
+		wwlog.Warn("%s", err)
 	}
 }
 
@@ -161,7 +161,7 @@ func (this *Node) Upgrade(addDefaults bool) (upgraded *node.Node) {
 	if upgraded.Ipmi.UserName == "" {
 		upgraded.Ipmi.UserName = this.IpmiUserName
 	}
-	if upgraded.Ipmi.Write == "" {
+	if upgraded.Ipmi.Write == "" && this.IpmiWrite != "" {
 		warnError(upgraded.Ipmi.Write.Set(this.IpmiWrite))
 	}
 	upgraded.Ipxe = this.Ipxe
@@ -340,7 +340,7 @@ func (this *Profile) Upgrade(addDefaults bool) (upgraded *node.Profile) {
 	if upgraded.Ipmi.UserName == "" {
 		upgraded.Ipmi.UserName = this.IpmiUserName
 	}
-	if upgraded.Ipmi.Write == "" {
+	if upgraded.Ipmi.Write == "" && this.IpmiWrite != "" {
 		warnError(upgraded.Ipmi.Write.Set(this.IpmiWrite))
 	}
 	upgraded.Ipxe = this.Ipxe
@@ -453,7 +453,9 @@ func (this *IpmiConf) Upgrade() (upgraded *node.IpmiConf) {
 		delete(upgraded.Tags, tag)
 	}
 	upgraded.UserName = this.UserName
-	warnError(upgraded.Write.Set(this.Write))
+	if this.Write != "" {
+		warnError(upgraded.Write.Set(this.Write))
+	}
 	return
 }
 
@@ -512,7 +514,9 @@ func (this *NetDev) Upgrade(addDefaults bool) (upgraded *node.NetDev) {
 			}
 		}
 	}
-	warnError(upgraded.OnBoot.Set(this.OnBoot))
+	if this.OnBoot != "" {
+		warnError(upgraded.OnBoot.Set(this.OnBoot))
+	}
 	upgraded.Prefix = net.ParseIP(this.Prefix)
 	if this.Tags != nil {
 		for key, value := range this.Tags {
