@@ -1,7 +1,6 @@
 package warewulfd
 
 import (
-	"fmt"
 	"log/syslog"
 	"os"
 	"os/exec"
@@ -12,7 +11,6 @@ import (
 	"github.com/pkg/errors"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/util"
-	"github.com/warewulf/warewulf/internal/pkg/version"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -77,60 +75,6 @@ func DaemonInitLogging() error {
 	return nil
 }
 
-func DaemonStart() error {
-	if nodaemon {
-		return nil
-	}
-
-	if os.Getenv("WAREWULFD_BACKGROUND") == "1" {
-		err := RunServer()
-		if err != nil {
-			return errors.Wrap(err, "failed to run server")
-		}
-
-	} else {
-		if util.IsFile(WAREWULFD_PIDFILE) {
-			return errors.New("process is already running")
-		}
-
-		os.Setenv("WAREWULFD_BACKGROUND", "1")
-
-		logLevel := wwlog.GetLogLevel()
-		if logLevel == wwlog.INFO {
-			os.Setenv("WAREWULFD_LOGLEVEL", strconv.Itoa(wwlog.SERV))
-		} else {
-			os.Setenv("WAREWULFD_LOGLEVEL", strconv.Itoa(logLevel))
-		}
-
-		f, err := os.OpenFile(WAREWULFD_LOGFILE, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0o644)
-		if err != nil {
-			return err
-		}
-
-		p, err := os.OpenFile(WAREWULFD_PIDFILE, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
-		if err != nil {
-			return err
-		}
-		defer p.Close()
-
-		cmd := exec.Command(os.Args[0], "server", "start")
-		cmd.Stdout = f
-		cmd.Stderr = f
-		err = cmd.Start()
-		if err != nil {
-			return errors.Wrap(err, "failed to start command")
-		}
-		pid := cmd.Process.Pid
-
-		fmt.Fprintf(p, "%d", pid)
-
-		wwlog.Serv("Started Warewulf (%s) server at PID: %d", version.GetVersion(), pid)
-
-	}
-
-	return nil
-}
-
 func DaemonStatus() error {
 	if nodaemon {
 		return nil
@@ -174,35 +118,5 @@ func DaemonReload() error {
 	if err != nil {
 		return errors.Wrap(err, "failed to reload warewulfd")
 	}
-	return nil
-}
-
-func DaemonStop() error {
-	if !util.IsFile(WAREWULFD_PIDFILE) {
-		wwlog.Warn("Warewulf daemon process not running")
-		return nil
-	}
-
-	dat, err := os.ReadFile(WAREWULFD_PIDFILE)
-	if err != nil {
-		return err
-	}
-
-	_ = os.Remove(WAREWULFD_PIDFILE)
-
-	pid, _ := strconv.Atoi(string(dat))
-	process, err := os.FindProcess(pid)
-
-	if err != nil {
-		return errors.Wrap(err, "failed to find running PID")
-	} else {
-		err := process.Signal(syscall.Signal(15))
-		if err != nil {
-			return errors.Wrap(err, "failed to send process SIGTERM")
-		} else {
-			wwlog.Serv("Terminated Warewulf server at PID: %d", pid)
-		}
-	}
-
 	return nil
 }
