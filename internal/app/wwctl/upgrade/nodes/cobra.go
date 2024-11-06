@@ -32,6 +32,12 @@ func init() {
 	Command.Flags().BoolVar(&replaceOverlays, "replace-overlays", false, "Replace 'wwinit' and 'generic' overlays with their split replacements")
 	Command.Flags().StringVarP(&inputPath, "input-path", "i", node.ConfigFile, "Path to a legacy nodes.conf")
 	Command.Flags().StringVarP(&outputPath, "output-path", "o", node.ConfigFile, "Path to write the upgraded nodes.conf to")
+	if err := Command.MarkFlagRequired("add-defaults"); err != nil {
+		panic(err)
+	}
+	if err := Command.MarkFlagRequired("replace-overlays"); err != nil {
+		panic(err)
+	}
 }
 
 func UpgradeNodesConf(cmd *cobra.Command, args []string) error {
