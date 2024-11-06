@@ -61,6 +61,7 @@ func runContainedCmd(cmd *cobra.Command, containerName string, args []string) (e
 	if nodeName != "" {
 		childArgs = append(childArgs, "--node", nodeName)
 	}
+	childArgs = append(childArgs, "--")
 	childArgs = append(childArgs, args...)
 	// copy the files into the container at this stage, es in __child the
 	// command syscall.Exec which replaces the __child process with the
