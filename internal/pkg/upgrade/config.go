@@ -75,30 +75,30 @@ func (this *WarewulfYaml) Upgrade() (upgraded *config.WarewulfYaml) {
 
 type WarewulfConf struct {
 	Port              int    `yaml:"port"`
-	Secure            bool   `yaml:"secure"`
+	Secure            *bool  `yaml:"secure"`
 	UpdateInterval    int    `yaml:"update interval"`
-	AutobuildOverlays bool   `yaml:"autobuild overlays"`
-	EnableHostOverlay bool   `yaml:"host overlay"`
-	Syslog            bool   `yaml:"syslog"`
+	AutobuildOverlays *bool  `yaml:"autobuild overlays"`
+	EnableHostOverlay *bool  `yaml:"host overlay"`
+	Syslog            *bool  `yaml:"syslog"`
 	DataStore         string `yaml:"datastore"`
-	GrubBoot          bool   `yaml:"grubboot"`
+	GrubBoot          *bool  `yaml:"grubboot"`
 }
 
 func (this *WarewulfConf) Upgrade() (upgraded *config.WarewulfConf) {
 	upgraded = new(config.WarewulfConf)
 	upgraded.Port = this.Port
-	upgraded.Secure = this.Secure
+	upgraded.SecureP = this.Secure
 	upgraded.UpdateInterval = this.UpdateInterval
-	upgraded.AutobuildOverlays = this.AutobuildOverlays
-	upgraded.EnableHostOverlay = this.EnableHostOverlay
-	upgraded.Syslog = this.Syslog
+	upgraded.AutobuildOverlaysP = this.AutobuildOverlays
+	upgraded.EnableHostOverlayP = this.EnableHostOverlay
+	upgraded.SyslogP = this.Syslog
 	upgraded.DataStore = this.DataStore
-	upgraded.GrubBoot = this.GrubBoot
+	upgraded.GrubBootP = this.GrubBoot
 	return upgraded
 }
 
 type DHCPConf struct {
-	Enabled     bool   `yaml:"enabled"`
+	Enabled     *bool  `yaml:"enabled"`
 	Template    string `yaml:"template"`
 	RangeStart  string `yaml:"range start"`
 	RangeEnd    string `yaml:"range end"`
@@ -107,7 +107,7 @@ type DHCPConf struct {
 
 func (this *DHCPConf) Upgrade() (upgraded *config.DHCPConf) {
 	upgraded = new(config.DHCPConf)
-	upgraded.Enabled = this.Enabled
+	upgraded.EnabledP = this.Enabled
 	upgraded.Template = this.Template
 	upgraded.RangeStart = this.RangeStart
 	upgraded.RangeEnd = this.RangeEnd
@@ -116,7 +116,7 @@ func (this *DHCPConf) Upgrade() (upgraded *config.DHCPConf) {
 }
 
 type TFTPConf struct {
-	Enabled      bool              `yaml:"enabled"`
+	Enabled      *bool             `yaml:"enabled"`
 	TftpRoot     string            `yaml:"tftproot"`
 	SystemdName  string            `yaml:"systemd name"`
 	IpxeBinaries map[string]string `yaml:"ipxe"`
@@ -124,7 +124,7 @@ type TFTPConf struct {
 
 func (this *TFTPConf) Upgrade() (upgraded *config.TFTPConf) {
 	upgraded = new(config.TFTPConf)
-	upgraded.Enabled = this.Enabled
+	upgraded.EnabledP = this.Enabled
 	upgraded.TftpRoot = this.TftpRoot
 	upgraded.SystemdName = this.SystemdName
 	upgraded.IpxeBinaries = make(map[string]string)
@@ -135,15 +135,21 @@ func (this *TFTPConf) Upgrade() (upgraded *config.TFTPConf) {
 }
 
 type NFSConf struct {
-	Enabled         bool             `yaml:"enabled"`
+	Enabled         *bool            `yaml:"enabled"`
+	Exports         []string         `yaml:"exports"`
 	ExportsExtended []*NFSExportConf `yaml:"export paths"`
 	SystemdName     string           `yaml:"systemd name"`
 }
 
 func (this *NFSConf) Upgrade() (upgraded *config.NFSConf) {
 	upgraded = new(config.NFSConf)
-	upgraded.Enabled = this.Enabled
+	upgraded.EnabledP = this.Enabled
 	upgraded.ExportsExtended = make([]*config.NFSExportConf, 0)
+	for _, export := range this.Exports {
+		extendedExport := new(config.NFSExportConf)
+		extendedExport.Path = export
+		upgraded.ExportsExtended = append(upgraded.ExportsExtended, extendedExport)
+	}
 	for _, export := range this.ExportsExtended {
 		upgraded.ExportsExtended = append(upgraded.ExportsExtended, export.Upgrade())
 	}
@@ -155,7 +161,7 @@ type NFSExportConf struct {
 	Path          string `yaml:"path"`
 	ExportOptions string `yaml:"export options"`
 	MountOptions  string `yaml:"mount options"`
-	Mount         bool   `yaml:"mount"`
+	Mount         *bool  `yaml:"mount"`
 }
 
 func (this *NFSExportConf) Upgrade() (upgraded *config.NFSExportConf) {
@@ -163,7 +169,7 @@ func (this *NFSExportConf) Upgrade() (upgraded *config.NFSExportConf) {
 	upgraded.Path = this.Path
 	upgraded.ExportOptions = this.ExportOptions
 	upgraded.MountOptions = this.MountOptions
-	upgraded.Mount = this.Mount
+	upgraded.MountP = this.Mount
 	return upgraded
 }
 
@@ -180,18 +186,18 @@ func (this *SSHConf) Upgrade() (upgraded *config.SSHConf) {
 type MountEntry struct {
 	Source   string `yaml:"source"`
 	Dest     string `yaml:"dest"`
-	ReadOnly bool   `yaml:"readonly"`
+	ReadOnly *bool  `yaml:"readonly"`
 	Options  string `yaml:"options"`
-	Copy     bool   `yaml:"copy"`
+	Copy     *bool  `yaml:"copy"`
 }
 
 func (this *MountEntry) Upgrade() (upgraded *config.MountEntry) {
 	upgraded = new(config.MountEntry)
 	upgraded.Source = this.Source
 	upgraded.Dest = this.Dest
-	upgraded.ReadOnly = this.ReadOnly
+	upgraded.ReadOnlyP = this.ReadOnly
 	upgraded.Options = this.Options
-	upgraded.Copy = this.Copy
+	upgraded.CopyP = this.Copy
 	return upgraded
 }
 

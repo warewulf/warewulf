@@ -49,7 +49,6 @@ warewulf:
   port: 9873
   secure: true
   update interval: 60
-  host overlay: false
 dhcp:
   enabled: true
   template: default
@@ -61,7 +60,9 @@ tftp:
   tftproot: /var/lib/tftpboot
   systemd name: tftp
 nfs:
-  enabled: false
+  export paths:
+    - path: /home
+    - path: /var/warewulf
   systemd name: nfs-server
 `,
 	},
@@ -97,7 +98,6 @@ warewulf:
   port: 9873
   secure: true
   update interval: 60
-  host overlay: false
 dhcp:
   enabled: true
   template: default
@@ -109,7 +109,9 @@ tftp:
   tftproot: /var/lib/tftpboot
   systemd name: tftp
 nfs:
-  enabled: false
+  export paths:
+    - path: /home
+    - path: /var/warewulf
   systemd name: nfs-server
 `,
 	},
@@ -148,7 +150,7 @@ warewulf:
   secure: true
   update interval: 60
   autobuild overlays: true
-  host overlay: false
+  syslog: false
 dhcp:
   enabled: true
   template: default
@@ -160,7 +162,9 @@ tftp:
   tftproot: /var/lib/tftpboot
   systemd name: tftp
 nfs:
-  enabled: false
+  export paths:
+    - path: /home
+    - path: /var/warewulf
   systemd name: nfs-server
 `,
 	},
@@ -212,6 +216,7 @@ warewulf:
   update interval: 60
   autobuild overlays: true
   host overlay: true
+  syslog: false
 dhcp:
   enabled: true
   template: default
@@ -280,6 +285,7 @@ warewulf:
   update interval: 60
   autobuild overlays: true
   host overlay: true
+  syslog: false
 dhcp:
   enabled: true
   range start: 192.168.200.50
@@ -362,6 +368,7 @@ warewulf:
   update interval: 60
   autobuild overlays: true
   host overlay: true
+  syslog: false
 dhcp:
   enabled: true
   range start: 10.0.1.1

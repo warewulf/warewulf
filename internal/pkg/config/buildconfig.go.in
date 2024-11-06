@@ -2,6 +2,8 @@ package config
 
 import (
 	"path"
+
+	"github.com/warewulf/warewulf/internal/pkg/util"
 )
 
 var ConfigFile = "@SYSCONFDIR@/warewulf/warewulf.conf"
@@ -25,24 +27,48 @@ const Version = "@VERSION@"
 const Release = "@RELEASE@"
 
 type TFTPConf struct {
-	Enabled     bool   `yaml:"enabled" default:"true"`
+	EnabledP    *bool  `yaml:"enabled" default:"true"`
 	TftpRoot    string `yaml:"tftproot,omitempty" default:"@TFTPDIR@"`
 	SystemdName string `yaml:"systemd name,omitempty" default:"tftp"`
 
 	IpxeBinaries map[string]string `yaml:"ipxe,omitempty" default:"{\"00:09\": \"ipxe-snponly-x86_64.efi\",\"00:00\": \"undionly.kpxe\",\"00:0B\": \"arm64-efi/snponly.efi\",\"00:07\":  \"ipxe-snponly-x86_64.efi\"}"`
 }
 
+func (this TFTPConf) Enabled() bool {
+	return util.BoolP(this.EnabledP)
+}
+
 // WarewulfConf adds additional Warewulf-specific configuration to
 // BaseConf.
 type WarewulfConf struct {
-	Port              int    `yaml:"port,omitempty" default:"9873"`
-	Secure            bool   `yaml:"secure" default:"true"`
-	UpdateInterval    int    `yaml:"update interval,omitempty" default:"60"`
-	AutobuildOverlays bool   `yaml:"autobuild overlays,omitempty" default:"true"`
-	EnableHostOverlay bool   `yaml:"host overlay" default:"true"`
-	Syslog            bool   `yaml:"syslog,omitempty" default:"false"`
-	DataStore         string `yaml:"datastore,omitempty" default:"@DATADIR@"`
-	GrubBoot          bool   `yaml:"grubboot,omitempty" default:"false"`
+	Port               int    `yaml:"port,omitempty" default:"9873"`
+	SecureP            *bool  `yaml:"secure,omitempty" default:"true"`
+	UpdateInterval     int    `yaml:"update interval,omitempty" default:"60"`
+	AutobuildOverlaysP *bool  `yaml:"autobuild overlays,omitempty" default:"true"`
+	EnableHostOverlayP *bool  `yaml:"host overlay,omitempty" default:"true"`
+	SyslogP            *bool  `yaml:"syslog,omitempty" default:"false"`
+	DataStore          string `yaml:"datastore,omitempty" default:"@DATADIR@"`
+	GrubBootP          *bool  `yaml:"grubboot,omitempty" default:"false"`
+}
+
+func (this WarewulfConf) Secure() bool {
+	return util.BoolP(this.SecureP)
+}
+
+func (this WarewulfConf) AutobuildOverlays() bool {
+	return util.BoolP(this.AutobuildOverlaysP)
+}
+
+func (this WarewulfConf) EnableHostOverlay() bool {
+	return util.BoolP(this.EnableHostOverlayP)
+}
+
+func (this WarewulfConf) Syslog() bool {
+	return util.BoolP(this.SyslogP)
+}
+
+func (this WarewulfConf) GrubBoot() bool {
+	return util.BoolP(this.GrubBootP)
 }
 
 func (paths BuildConfig) OciBlobCachedir() string {

@@ -11,19 +11,19 @@ func TestDefaultWarewulfYaml(t *testing.T) {
 	conf := New()
 
 	assert.Equal(t, 9873, conf.Warewulf.Port)
-	assert.True(t, conf.Warewulf.Secure)
+	assert.True(t, conf.Warewulf.Secure())
 	assert.Equal(t, 60, conf.Warewulf.UpdateInterval)
-	assert.True(t, conf.Warewulf.AutobuildOverlays)
-	assert.True(t, conf.Warewulf.EnableHostOverlay)
-	assert.False(t, conf.Warewulf.Syslog)
+	assert.True(t, conf.Warewulf.AutobuildOverlays())
+	assert.True(t, conf.Warewulf.EnableHostOverlay())
+	assert.False(t, conf.Warewulf.Syslog())
 
-	assert.True(t, conf.DHCP.Enabled)
+	assert.True(t, conf.DHCP.Enabled())
 	assert.Equal(t, "default", conf.DHCP.Template)
 	assert.Empty(t, conf.DHCP.RangeStart)
 	assert.Empty(t, conf.DHCP.RangeEnd)
 	assert.Equal(t, "dhcpd", conf.DHCP.SystemdName)
 
-	assert.True(t, conf.TFTP.Enabled)
+	assert.True(t, conf.TFTP.Enabled())
 	assert.NotEmpty(t, conf.TFTP.TftpRoot)
 	assert.Equal(t, "tftp", conf.TFTP.SystemdName)
 	assert.NotEmpty(t, conf.TFTP.IpxeBinaries["00:00"])
@@ -31,13 +31,13 @@ func TestDefaultWarewulfYaml(t *testing.T) {
 	assert.NotEmpty(t, conf.TFTP.IpxeBinaries["00:09"])
 	assert.NotEmpty(t, conf.TFTP.IpxeBinaries["00:0B"])
 
-	assert.True(t, conf.NFS.Enabled)
+	assert.True(t, conf.NFS.Enabled())
 	assert.Empty(t, conf.NFS.ExportsExtended)
 	assert.Equal(t, "nfsd", conf.NFS.SystemdName)
 
 	assert.Equal(t, "/etc/resolv.conf", conf.MountsContainer[0].Source)
 	assert.Equal(t, "/etc/resolv.conf", conf.MountsContainer[0].Dest)
-	assert.False(t, conf.MountsContainer[0].ReadOnly)
+	assert.False(t, conf.MountsContainer[0].ReadOnly())
 	assert.Empty(t, conf.MountsContainer[0].Options)
 
 	assert.NotEmpty(t, conf.Paths.Bindir)
@@ -121,34 +121,34 @@ container mounts:
 	assert.Equal(t, "192.168.200.0", conf.Network)
 
 	assert.Equal(t, 9873, conf.Warewulf.Port)
-	assert.False(t, conf.Warewulf.Secure)
+	assert.False(t, conf.Warewulf.Secure())
 	assert.Equal(t, 60, conf.Warewulf.UpdateInterval)
-	assert.True(t, conf.Warewulf.AutobuildOverlays)
-	assert.True(t, conf.Warewulf.EnableHostOverlay)
-	assert.False(t, conf.Warewulf.Syslog)
+	assert.True(t, conf.Warewulf.AutobuildOverlays())
+	assert.True(t, conf.Warewulf.EnableHostOverlay())
+	assert.False(t, conf.Warewulf.Syslog())
 
-	assert.True(t, conf.DHCP.Enabled)
+	assert.True(t, conf.DHCP.Enabled())
 	assert.Equal(t, "192.168.200.50", conf.DHCP.RangeStart)
 	assert.Equal(t, "192.168.200.99", conf.DHCP.RangeEnd)
 	assert.Equal(t, "dhcpd", conf.DHCP.SystemdName)
 
-	assert.True(t, conf.TFTP.Enabled)
+	assert.True(t, conf.TFTP.Enabled())
 	assert.Equal(t, "tftp", conf.TFTP.SystemdName)
 
-	assert.True(t, conf.NFS.Enabled)
+	assert.True(t, conf.NFS.Enabled())
 	assert.Equal(t, "/home", conf.NFS.ExportsExtended[0].Path)
 	assert.Equal(t, "rw,sync", conf.NFS.ExportsExtended[0].ExportOptions)
 	assert.Equal(t, "defaults", conf.NFS.ExportsExtended[0].MountOptions)
-	assert.True(t, conf.NFS.ExportsExtended[0].Mount)
+	assert.True(t, conf.NFS.ExportsExtended[0].Mount())
 	assert.Equal(t, "/opt", conf.NFS.ExportsExtended[1].Path)
 	assert.Equal(t, "ro,sync,no_root_squash", conf.NFS.ExportsExtended[1].ExportOptions)
 	assert.Equal(t, "defaults", conf.NFS.ExportsExtended[1].MountOptions)
-	assert.False(t, conf.NFS.ExportsExtended[1].Mount)
+	assert.False(t, conf.NFS.ExportsExtended[1].Mount())
 	assert.Equal(t, "nfs-server", conf.NFS.SystemdName)
 
 	assert.Equal(t, "/etc/resolv.conf", conf.MountsContainer[0].Source)
 	assert.Equal(t, "/etc/resolv.conf", conf.MountsContainer[0].Dest)
-	assert.True(t, conf.MountsContainer[0].ReadOnly)
+	assert.True(t, conf.MountsContainer[0].ReadOnly())
 }
 
 func TestCache(t *testing.T) {

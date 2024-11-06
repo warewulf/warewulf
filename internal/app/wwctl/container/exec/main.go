@@ -229,7 +229,7 @@ Check the objects we want to copy in, instead of mounting
 */
 func getCopyFiles(binds []*warewulfconf.MountEntry) (copyObjects []*copyFile) {
 	for _, bind := range binds {
-		if bind.Copy {
+		if bind.Copy() {
 			copyObjects = append(copyObjects, &copyFile{
 				fileName: bind.Dest,
 				src:      bind.Source,

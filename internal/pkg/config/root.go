@@ -114,7 +114,6 @@ func (conf *WarewulfYaml) Parse(data []byte) error {
 			conf.Netmask = fmt.Sprintf("%d.%d.%d.%d", mask[0], mask[1], mask[2], mask[3])
 		}
 	}
-
 	return nil
 }
 

@@ -17,7 +17,7 @@ func DHCP() (err error) {
 
 	controller := warewulfconf.Get()
 
-	if !controller.DHCP.Enabled {
+	if !controller.DHCP.Enabled() {
 		wwlog.Warn("This system is not configured as a Warewulf DHCP controller")
 		return
 	}
@@ -29,7 +29,7 @@ func DHCP() (err error) {
 	if controller.DHCP.RangeEnd == "" {
 		return fmt.Errorf("configuration is not defined: `dhcpd range end`")
 	}
-	if controller.Warewulf.EnableHostOverlay {
+	if controller.Warewulf.EnableHostOverlay() {
 		err = overlay.BuildHostOverlay()
 		if err != nil {
 			wwlog.Warn("host overlay could not be built: %s", err)

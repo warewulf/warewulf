@@ -71,7 +71,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	}
 
-	if BuildHost && controller.Warewulf.EnableHostOverlay {
+	if BuildHost && controller.Warewulf.EnableHostOverlay() {
 		err := overlay.BuildHostOverlay()
 		if err != nil {
 			return fmt.Errorf("host overlay could not be built: %s", err)
