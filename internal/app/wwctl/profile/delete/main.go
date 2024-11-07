@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/manifoldco/promptui"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
@@ -39,7 +38,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 							wwlog.Verbose("Removing profile from node %s: %s", n.Id(), r)
 							n.Profiles = append(n.Profiles[:i], n.Profiles[i+1:]...)
 							if err != nil {
-								return errors.Wrap(err, "failed to update node")
+								return fmt.Errorf("failed to update node: %w", err)
 							}
 						}
 					}
@@ -73,7 +72,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if SetYes {
 		err := nodeDB.Persist()
 		if err != nil {
-			return errors.Wrap(err, "failed to persist nodedb")
+			return fmt.Errorf("failed to persist nodedb: %w", err)
 		}
 	} else {
 		prompt := promptui.Prompt{
@@ -86,7 +85,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if result == "y" || result == "yes" {
 			err := nodeDB.Persist()
 			if err != nil {
-				return errors.Wrap(err, "failed to persist nodedb")
+				return fmt.Errorf("failed to persist nodedb: %w", err)
 			}
 		}
 	}

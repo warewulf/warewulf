@@ -57,6 +57,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Don't package the API in RPM packages by default. #1493
 - Update default `warewulfd` port to match shipped configuration. #1448
 - Replace `olekukonko/tablewriter` with `cheynewallace/tabby`. #1497, #1498
+- replaced deprecated errors.Wrapf with fmr.Errorf. #1534
 
 ### Removed
 

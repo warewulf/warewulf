@@ -35,13 +35,13 @@ func BuildAllOverlays(nodes []node.NodeConf) error {
 		wwlog.Info("Building system overlays for %s: [%s]", n.Id(), strings.Join(sysOverlays, ", "))
 		err := BuildOverlay(n, "system", sysOverlays)
 		if err != nil {
-			return errors.Wrapf(err, "could not build system overlays %v for node %s", sysOverlays, n.Id())
+			return fmt.Errorf("could not build system overlays %v for node %s: %w", sysOverlays, n.Id(), err)
 		}
 		runOverlays := n.RuntimeOverlay
 		wwlog.Info("Building runtime overlays for %s: [%s]", n.Id(), strings.Join(runOverlays, ", "))
 		err = BuildOverlay(n, "runtime", runOverlays)
 		if err != nil {
-			return errors.Wrapf(err, "could not build runtime overlays %v for node %s", runOverlays, n.Id())
+			return fmt.Errorf("could not build runtime overlays %v for node %s: %w", runOverlays, n.Id(), err)
 		}
 
 	}
@@ -56,7 +56,7 @@ func BuildSpecificOverlays(nodes []node.NodeConf, overlayNames []string) error {
 		for _, overlayName := range overlayNames {
 			err := BuildOverlay(n, "", []string{overlayName})
 			if err != nil {
-				return errors.Wrapf(err, "could not build overlay %s for node %s", overlayName, n.Id())
+				return fmt.Errorf("could not build overlay %s for node %s: %w", overlayName, n.Id(), err)
 			}
 		}
 	}
@@ -73,7 +73,7 @@ func BuildHostOverlay() error {
 	hostdir := OverlaySourceDir("host")
 	stats, err := os.Stat(hostdir)
 	if err != nil {
-		return errors.Wrap(err, "could not build host overlay ")
+		return fmt.Errorf("could not build host overlay: %w ", err)
 	}
 	if !(stats.Mode() == os.FileMode(0750|os.ModeDir) || stats.Mode() == os.FileMode(0700|os.ModeDir)) {
 		wwlog.SecWarn("Permissions of host overlay dir %s are %s (750 is considered as secure)", hostdir, stats.Mode())
@@ -90,7 +90,7 @@ func FindOverlays() ([]string, error) {
 
 	files, err := os.ReadDir(OverlaySourceTopDir())
 	if err != nil {
-		return ret, errors.Wrap(err, "could not get list of overlays")
+		return ret, fmt.Errorf("could not get list of overlays: %w", err)
 	}
 
 	for _, file := range files {
@@ -135,14 +135,14 @@ func BuildOverlay(nodeConf node.NodeConf, context string, overlayNames []string)
 
 	err := os.MkdirAll(overlayImageDir, 0750)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to create directory for %s: %s", name, overlayImageDir)
+		return fmt.Errorf("failed to create directory for %s: %s: %w", name, overlayImageDir, err)
 	}
 
 	wwlog.Debug("Created directory for %s: %s", name, overlayImageDir)
 
 	buildDir, err := os.MkdirTemp(os.TempDir(), ".wwctl-overlay-")
 	if err != nil {
-		return errors.Wrapf(err, "Failed to create temporary directory for %s", name)
+		return fmt.Errorf("failed to create temporary directory for %s: %w", name, err)
 	}
 	defer os.RemoveAll(buildDir)
 
@@ -150,7 +150,7 @@ func BuildOverlay(nodeConf node.NodeConf, context string, overlayNames []string)
 
 	err = BuildOverlayIndir(nodeConf, overlayNames, buildDir)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to generate files for %s", name)
+		return fmt.Errorf("failed to generate files for %s: %w", name, err)
 	}
 
 	wwlog.Debug("Generated files for %s", name)
@@ -194,13 +194,13 @@ func BuildOverlayIndir(nodeData node.NodeConf, overlayNames []string, outputDir 
 		wwlog.Debug("Changing directory to OverlayDir: %s", overlaySourceDir)
 		err := os.Chdir(overlaySourceDir)
 		if err != nil {
-			return errors.Wrapf(ErrDoesNotExist, "directory: %s name: %s", overlaySourceDir, overlayName)
+			return fmt.Errorf("directory: %s name: %s err: %w", overlaySourceDir, overlayName, ErrDoesNotExist)
 		}
 
 		wwlog.Verbose("Walking the overlay structure: %s", overlaySourceDir)
 		err = filepath.Walk(".", func(location string, info os.FileInfo, err error) error {
 			if err != nil {
-				return errors.Wrap(err, "error for "+location)
+				return fmt.Errorf("error for %s: %w", location, err)
 			}
 
 			wwlog.Debug("Found overlay file: %s", location)
@@ -210,11 +210,11 @@ func BuildOverlayIndir(nodeData node.NodeConf, overlayNames []string, outputDir 
 
 				err = os.MkdirAll(path.Join(outputDir, location), info.Mode())
 				if err != nil {
-					return errors.Wrap(err, "could not create directory within overlay")
+					return fmt.Errorf("could not create directory within overlay: %w", err)
 				}
 				err = util.CopyUIDGID(location, path.Join(outputDir, location))
 				if err != nil {
-					return errors.Wrap(err, "failed setting permissions on overlay directory")
+					return fmt.Errorf("failed setting permissions on overlay directory: %w", err)
 				}
 
 				wwlog.Debug("Created directory in overlay: %s", location)
@@ -222,7 +222,7 @@ func BuildOverlayIndir(nodeData node.NodeConf, overlayNames []string, outputDir 
 			} else if filepath.Ext(location) == ".ww" {
 				tstruct, err := InitStruct(nodeData)
 				if err != nil {
-					return errors.Wrap(err, fmt.Sprintf("failed to initial data for %s", nodeData.Id()))
+					return fmt.Errorf("failed to initial data for %s: %w", nodeData.Id(), err)
 				}
 				tstruct.BuildSource = path.Join(overlaySourceDir, location)
 				wwlog.Verbose("Evaluating overlay template file: %s", location)
@@ -230,7 +230,7 @@ func BuildOverlayIndir(nodeData node.NodeConf, overlayNames []string, outputDir 
 
 				buffer, backupFile, writeFile, err := RenderTemplateFile(location, tstruct)
 				if err != nil {
-					return errors.Wrap(err, fmt.Sprintf("Failed to render template %s", location))
+					return fmt.Errorf("failed to render template %s: %w", location, err)
 				}
 				if writeFile {
 					destFileName := destFile
@@ -249,11 +249,11 @@ func BuildOverlayIndir(nodeData node.NodeConf, overlayNames []string, outputDir 
 								err = CarefulWriteBuffer(path.Join(outputDir, destFileName),
 									fileBuffer, backupFile, info.Mode())
 								if err != nil {
-									return errors.Wrap(err, "could not write file from template")
+									return fmt.Errorf("could not write file from template: %w", err)
 								}
 								err = util.CopyUIDGID(location, path.Join(outputDir, destFileName))
 								if err != nil {
-									return errors.Wrap(err, "failed setting permissions on template output file")
+									return fmt.Errorf("failed setting permissions on template output file: %w", err)
 								}
 								fileBuffer.Reset()
 							}
@@ -265,11 +265,11 @@ func BuildOverlayIndir(nodeData node.NodeConf, overlayNames []string, outputDir 
 					}
 					err = CarefulWriteBuffer(path.Join(outputDir, destFileName), fileBuffer, backupFile, info.Mode())
 					if err != nil {
-						return errors.Wrap(err, "could not write file from template")
+						return fmt.Errorf("could not write file from template: %w", err)
 					}
 					err = util.CopyUIDGID(location, path.Join(outputDir, destFileName))
 					if err != nil {
-						return errors.Wrap(err, "failed setting permissions on template output file")
+						return fmt.Errorf("failed setting permissions on template output file: %w", err)
 					}
 
 					wwlog.Debug("Wrote template file into overlay: %s", destFile)
@@ -304,14 +304,14 @@ func BuildOverlayIndir(nodeData node.NodeConf, overlayNames []string, outputDir 
 				if err == nil {
 					wwlog.Debug("Copied file into overlay: %s", location)
 				} else {
-					return errors.Wrap(err, "could not copy file into overlay")
+					return fmt.Errorf("could not copy file into overlay: %w", err)
 				}
 			}
 
 			return nil
 		})
 		if err != nil {
-			return errors.Wrap(err, "failed to build overlay working directory")
+			return fmt.Errorf("failed to build overlay working directory: %w", err)
 		}
 	}
 
@@ -327,14 +327,14 @@ func CarefulWriteBuffer(destFile string, buffer bytes.Buffer, backupFile bool, p
 		if !util.IsFile(destFile+".wwbackup") && util.IsFile(destFile) {
 			err := util.CopyFile(destFile, destFile+".wwbackup")
 			if err != nil {
-				return errors.Wrapf(err, "Failed to create backup: %s -> %s.wwbackup", destFile, destFile)
+				return fmt.Errorf("failed to create backup: %s -> %s.wwbackup %w", destFile, destFile, err)
 			}
 		}
 
 	}
 	w, err := os.OpenFile(destFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, perm)
 	if err != nil {
-		return errors.Wrap(err, "could not open new file for template")
+		return fmt.Errorf("could not open new file for template %w", err)
 	}
 	defer w.Close()
 	_, err = buffer.WriteTo(w)
@@ -403,13 +403,13 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (
 	// Create the template with the merged FuncMap
 	tmpl, err := template.New(path.Base(fileName)).Option("missingkey=default").Funcs(funcMap).ParseGlob(fileName)
 	if err != nil {
-		err = errors.Wrap(err, "could not parse template "+fileName)
+		err = fmt.Errorf("could not parse template %s: %w", fileName, err)
 		return
 	}
 
 	err = tmpl.Execute(&buffer, data)
 	if err != nil {
-		err = errors.Wrap(err, "could not execute template")
+		err = fmt.Errorf("could not execute template: %w", err)
 		return
 	}
 	return

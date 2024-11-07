@@ -3,7 +3,6 @@ package configure
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/util"
@@ -31,12 +30,12 @@ func NFS() error {
 		if controller.NFS.SystemdName == "" {
 			err := util.SystemdStart("nfs-server")
 			if err != nil {
-				return errors.Wrap(err, "failed to start nfs-server")
+				return fmt.Errorf("failed to start nfs-server: %w", err)
 			}
 		} else {
 			err := util.SystemdStart(controller.NFS.SystemdName)
 			if err != nil {
-				return errors.Wrap(err, "failed to start")
+				return fmt.Errorf("failed to start: %w", err)
 			}
 		}
 	}

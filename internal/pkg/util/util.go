@@ -15,7 +15,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -194,7 +193,7 @@ func FindFilterFiles(
 	}()
 	err = os.Chdir(path)
 	if err != nil {
-		return ofiles, errors.Wrapf(err, "Failed to change path: %s", path)
+		return ofiles, fmt.Errorf("failed to change path: %s: %w", path, err)
 	}
 	// expand our include list as fspath.Match with /foo/* would catch /foo/baar but
 	// not /foo/baar/sibling
@@ -277,11 +276,11 @@ func SystemdStart(systemdName string) error {
 	wwlog.Debug("Setting up Systemd service: %s", systemdName)
 	err := ExecInteractive("/bin/sh", "-c", startCmd)
 	if err != nil {
-		return errors.Wrap(err, "failed to run start cmd")
+		return fmt.Errorf("failed to run start cmd: %w", err)
 	}
 	err = ExecInteractive("/bin/sh", "-c", enableCmd)
 	if err != nil {
-		return errors.Wrap(err, "failed to run enable cmd")
+		return fmt.Errorf("failed to run enable cmd: %w", err)
 	}
 
 	return nil
@@ -324,13 +323,13 @@ func AppendLines(fileName string, lines []string) error {
 	wwlog.Verbose("appending %v lines to %s", len(lines), fileName)
 	file, err := os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		return errors.Wrapf(err, "Can't open file: %s", fileName)
+		return fmt.Errorf("can't open file: %s: %w", fileName, err)
 	}
 	defer file.Close()
 	for _, line := range lines {
 		wwlog.Debug("Appending '%s' to %s", line, fileName)
 		if _, err := file.WriteString(fmt.Sprintf("%s\n", line)); err != nil {
-			return errors.Wrapf(err, "Can't write to file: %s", fileName)
+			return fmt.Errorf("can't write to file: %s: %w", fileName, err)
 		}
 
 	}
@@ -392,7 +391,7 @@ func FileGz(
 		err := os.Remove(file_gz)
 
 		if err != nil {
-			return errors.Wrapf(err, "Could not remove existing file: %s", file_gz)
+			return fmt.Errorf("could not remove existing file: %s: %w", file_gz, err)
 		}
 	}
 
@@ -402,7 +401,7 @@ func FileGz(
 		compressor, err = exec.LookPath("gzip")
 		if err != nil {
 			wwlog.Verbose("Could not locate GZIP")
-			return errors.Wrapf(err, "No compressor program for image file: %s", file_gz)
+			return fmt.Errorf("no compressor program for image file: %s: %w", file_gz, err)
 		}
 	}
 
@@ -426,7 +425,7 @@ func FileGz(
 			/* Open the output file for writing: */
 			gzippedFile, err = os.Create(file_gz)
 			if err != nil {
-				return errors.Wrapf(err, "Unable to open compressed image file for writing: %s", file_gz)
+				return fmt.Errorf("unable to open compressed image file for writing: %s: %w", file_gz, err)
 			}
 
 			/* We'll execute gzip with output to stdout and attach stdout to the compressed file we just
@@ -439,7 +438,7 @@ func FileGz(
 			proc.Stdout = gzippedFile
 			gzipStderr, err = proc.StderrPipe()
 			if err != nil {
-				return errors.Wrapf(err, "Unable to open stderr pipe for compression program: %s", compressor)
+				return fmt.Errorf("unable to open stderr pipe for compression program: %s: %w", compressor, err)
 			}
 
 			/* Execute the command: */
@@ -448,13 +447,13 @@ func FileGz(
 				_ = proc.Wait()
 				gzippedFile.Close()
 				os.Remove(file_gz)
-				err = errors.Wrapf(err, "Unable to successfully execute compression program: %s", compressor)
+				err = fmt.Errorf("unable to successfully execute compression program: %s: %w", compressor, err)
 			} else {
 				err = proc.Wait()
 				gzippedFile.Close()
 				if err != nil {
 					os.Remove(file_gz)
-					err = errors.Wrapf(err, "Unable to successfully create compressed image file: %s", file_gz)
+					err = fmt.Errorf("unable to successfully create compressed image file: %s: %w", file_gz, err)
 				} else {
 					wwlog.Verbose("Successfully compressed image file: %s", file_gz)
 				}
@@ -484,7 +483,7 @@ func BuildFsImage(
 
 	err = os.MkdirAll(path.Dir(imagePath), 0755)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to create image directory for %s: %s", name, imagePath)
+		return fmt.Errorf("failed to create image directory for %s: %s: %w", name, imagePath, err)
 	}
 	wwlog.Debug("Created image directory for %s: %s", name, imagePath)
 	cwd, err := os.Getwd()
@@ -497,7 +496,7 @@ func BuildFsImage(
 
 	err = os.Chdir(rootfsPath)
 	if err != nil {
-		return errors.Wrapf(err, "Failed chdir to fs directory for %s: %s", name, rootfsPath)
+		return fmt.Errorf("failed chdir to fs directory for %s: %s: %w", name, rootfsPath, err)
 	}
 	wwlog.Verbose("changed to: %s", rootfsPath)
 	files, err := FindFilterFiles(
@@ -506,7 +505,7 @@ func BuildFsImage(
 		ignore,
 		ignore_xdev)
 	if err != nil {
-		return errors.Wrapf(err, "Failed discovering files for %s: %s", name, rootfsPath)
+		return fmt.Errorf("failed discovering files for %s: %s: %w", name, rootfsPath, err)
 	}
 
 	err = CpioCreate(
@@ -515,14 +514,14 @@ func BuildFsImage(
 		format,
 		cpio_args...)
 	if err != nil {
-		return errors.Wrapf(err, "Failed creating image for %s: %s", name, imagePath)
+		return fmt.Errorf("failed creating image for %s: %s: %w", name, imagePath, err)
 	}
 
 	wwlog.Info("Created image for %s: %s", name, imagePath)
 
 	err = FileGz(imagePath)
 	if err != nil {
-		return errors.Wrapf(err, "Failed to compress image for %s: %s", name, imagePath+".gz")
+		return fmt.Errorf("failed to compress image for %s: %s: %w", name, imagePath+".gz", err)
 	}
 
 	wwlog.Info("Compressed image for %s: %s", name, imagePath+".gz")

@@ -2,11 +2,11 @@ package warewulfd
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"sync"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -86,7 +86,7 @@ func statusJSON() ([]byte, error) {
 
 	ret, err := json.MarshalIndent(statusDB, "", "  ")
 	if err != nil {
-		return ret, errors.Wrap(err, "could not marshal JSON data from status structure")
+		return ret, fmt.Errorf("could not marshal JSON data from status structure: %w", err)
 	}
 
 	return ret, nil

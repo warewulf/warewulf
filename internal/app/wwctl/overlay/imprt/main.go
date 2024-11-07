@@ -6,7 +6,6 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
@@ -59,7 +58,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	err := util.CopyFile(source, path.Join(overlaySource, dest))
 	if err != nil {
-		return errors.Wrap(err, "could not copy file into overlay")
+		return fmt.Errorf("could not copy file into overlay: %w", err)
 	}
 
 	if !NoOverlayUpdate {

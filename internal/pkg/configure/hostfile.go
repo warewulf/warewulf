@@ -5,7 +5,6 @@ import (
 	"os"
 	"path"
 
-	"github.com/pkg/errors"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/util"
@@ -39,7 +38,7 @@ func Hostfile() (err error) {
 	if writeFile {
 		err = overlay.CarefulWriteBuffer("/etc/hosts", buffer, backupFile, info.Mode())
 		if err != nil {
-			return errors.Wrap(err, "could not write file from template")
+			return fmt.Errorf("could not write file from template: %w", err)
 		}
 	}
 	return

@@ -151,7 +151,7 @@ func (conf *RootConf) SetDynamicDefaults() (err error) {
 		if err == nil {
 			mask = network.Mask
 		} else {
-			return errors.Wrap(err, "Couldn't parse IP address")
+			return fmt.Errorf("Couldn't parse IP address: %w", err)
 		}
 		if conf.Netmask == "" {
 			conf.Netmask = fmt.Sprintf("%d.%d.%d.%d", mask[0], mask[1], mask[2], mask[3])
