@@ -38,7 +38,7 @@ type TFTPConf struct {
 // WarewulfConf adds additional Warewulf-specific configuration to
 // BaseConf.
 type WarewulfConf struct {
-	Port              int    `yaml:"port" default:"9983"`
+	Port              int    `yaml:"port" default:"9873"`
 	Secure            bool   `yaml:"secure" default:"true"`
 	UpdateInterval    int    `yaml:"update interval" default:"60"`
 	AutobuildOverlays bool   `yaml:"autobuild overlays" default:"true"`
