@@ -11,15 +11,12 @@ import (
 )
 
 type variables struct {
-	netName      string
 	profileConf  node.ProfileConf
+	nodeAdd      node.NodeConfAdd
 	SetNetDevDel string
 	SetNodeAll   bool
 	SetYes       bool
 	SetForce     bool
-	fsName       string
-	partName     string
-	diskName     string
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
@@ -36,10 +33,7 @@ func GetCommand() *cobra.Command {
 		Args:                  cobra.ExactArgs(1),
 	}
 	vars.profileConf.CreateFlags(baseCmd)
-	baseCmd.PersistentFlags().StringVar(&vars.netName, "netname", "", "Set network name for network options")
-	baseCmd.PersistentFlags().StringVar(&vars.fsName, "fsname", "", "set the file system name which must match a partition name")
-	baseCmd.PersistentFlags().StringVar(&vars.partName, "partname", "", "set the partition name so it can be used by a file system")
-	baseCmd.PersistentFlags().StringVar(&vars.diskName, "diskname", "", "set disk device name for the partition")
+	vars.nodeAdd.CreateAddFlags(baseCmd)
 	// register the command line completions
 	if err := baseCmd.RegisterFlagCompletionFunc("container", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		list, _ := container.ListSources()
