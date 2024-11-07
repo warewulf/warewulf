@@ -28,9 +28,9 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 		return profiles[i].Id() < profiles[j].Id()
 	})
 	if ShowOpt.ShowAll {
+		profileList.Output = append(profileList.Output,
+			fmt.Sprintf("%s:=:%s:=:%s", "PROFILE", "FIELD", "VALUE"))
 		for _, p := range profiles {
-			profileList.Output = append(profileList.Output,
-				fmt.Sprintf("%s:=:%s:=:%s", "PROFILE", "FIELD", "VALUE"))
 			fields := nodeDB.GetFieldsProfile(p)
 			for _, f := range fields {
 				profileList.Output = append(profileList.Output,
