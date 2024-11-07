@@ -5,6 +5,7 @@ go 1.21
 require (
 	dario.cat/mergo v1.0.0
 	github.com/Masterminds/sprig/v3 v3.2.3
+	github.com/cheynewallace/tabby v1.1.1
 	github.com/containers/image/v5 v5.30.1
 	github.com/containers/storage v1.55.0
 	github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
@@ -17,7 +18,6 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/hashicorp/go-version v1.7.0
 	github.com/manifoldco/promptui v0.9.0
-	github.com/olekukonko/tablewriter v0.0.5
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/opencontainers/umoci v0.4.7
 	github.com/pkg/errors v0.9.1
@@ -91,7 +91,7 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-runewidth v0.0.15 // indirect
+	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/mattn/go-sqlite3 v1.14.22 // indirect
 	github.com/miekg/pkcs11 v1.1.1 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect

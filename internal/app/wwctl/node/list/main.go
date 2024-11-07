@@ -4,7 +4,8 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/warewulf/warewulf/internal/app/wwctl/helper"
+
+	"github.com/warewulf/warewulf/internal/app/wwctl/table"
 	apinode "github.com/warewulf/warewulf/internal/pkg/api/node"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -38,12 +39,12 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			if req.Type == wwapiv1.GetNodeList_YAML || req.Type == wwapiv1.GetNodeList_JSON {
 				wwlog.Info(nodeInfo.Output[0])
 			} else {
-				ph := helper.New(strings.Split(nodeInfo.Output[0], ":=:"))
+				t := table.New(cmd.OutOrStdout())
+				t.AddHeader(table.Prep(strings.Split(nodeInfo.Output[0], ":=:"))...)
 				for _, val := range nodeInfo.Output[1:] {
-					ph.Append(strings.Split(val, ":=:"))
+					t.AddLine(table.Prep(strings.Split(val, ":=:"))...)
 				}
-				ph.Render()
-				wwlog.Info("%s", ph.String())
+				t.Print()
 			}
 		}
 		return

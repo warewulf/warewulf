@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"io"
 	"os"
+	"strings"
 	"testing"
 
-	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/node"
@@ -24,8 +24,11 @@ func Test_List(t *testing.T) {
 		{
 			name: "profile list test",
 			args: []string{},
-			stdout: `PROFILE NAME  COMMENT/DESCRIPTION
-  default`,
+			stdout: `
+PROFILE NAME  COMMENT/DESCRIPTION
+------------  -------------------
+default       --
+`,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   default: {}
@@ -38,9 +41,12 @@ nodes:
 		{
 			name: "profile list returns multiple profiles",
 			args: []string{"default,test"},
-			stdout: `PROFILE NAME  COMMENT/DESCRIPTION
-  default
-  test`,
+			stdout: `
+PROFILE NAME  COMMENT/DESCRIPTION
+------------  -------------------
+default       --
+test          --
+`,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   default: {}
@@ -54,8 +60,11 @@ nodes:
 		{
 			name: "profile list returns one profile",
 			args: []string{"test,"},
-			stdout: `PROFILE NAME  COMMENT/DESCRIPTION
-  test`,
+			stdout: `
+PROFILE NAME  COMMENT/DESCRIPTION
+------------  -------------------
+test          --
+`,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   default: {}
@@ -69,9 +78,12 @@ nodes:
 		{
 			name: "profile list returns all profiles",
 			args: []string{","},
-			stdout: `PROFILE NAME  COMMENT/DESCRIPTION
-  default
-  test`,
+			stdout: `
+PROFILE NAME  COMMENT/DESCRIPTION
+------------  -------------------
+default       --
+test          --
+`,
 			inDb: `WW_INTERNAL: 45
 nodeprofiles:
   default: {}
@@ -111,7 +123,26 @@ nodes:
 		t.Run(tt.name, func(t *testing.T) {
 			baseCmd := GetCommand()
 			baseCmd.SetArgs(tt.args)
-			verifyOutput(t, baseCmd, tt.stdout)
+			stdoutR, stdoutW, _ := os.Pipe()
+			oriout := os.Stdout
+			os.Stdout = stdoutW
+			wwlog.SetLogWriter(os.Stdout)
+			baseCmd.SetOut(os.Stdout)
+			baseCmd.SetErr(os.Stdout)
+			err := baseCmd.Execute()
+			assert.NoError(t, err)
+
+			stdoutC := make(chan string)
+			go func() {
+				var buf bytes.Buffer
+				_, _ = io.Copy(&buf, stdoutR)
+				stdoutC <- buf.String()
+			}()
+			stdoutW.Close()
+			os.Stdout = oriout
+
+			stdout := <-stdoutC
+			assert.Equal(t, strings.TrimSpace(tt.stdout), strings.TrimSpace(stdout))
 		})
 	}
 }
@@ -218,28 +249,4 @@ nodes:
 			}
 		})
 	}
-}
-
-func verifyOutput(t *testing.T, baseCmd *cobra.Command, content string) {
-	stdoutR, stdoutW, _ := os.Pipe()
-	oriout := os.Stdout
-	os.Stdout = stdoutW
-	wwlog.SetLogWriter(os.Stdout)
-	baseCmd.SetOut(os.Stdout)
-	baseCmd.SetErr(os.Stdout)
-	err := baseCmd.Execute()
-	assert.NoError(t, err)
-
-	stdoutC := make(chan string)
-	go func() {
-		var buf bytes.Buffer
-		_, _ = io.Copy(&buf, stdoutR)
-		stdoutC <- buf.String()
-	}()
-	stdoutW.Close()
-	os.Stdout = oriout
-
-	stdout := <-stdoutC
-	assert.NotEmpty(t, stdout)
-	assert.Contains(t, stdout, content)
 }

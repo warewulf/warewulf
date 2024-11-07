@@ -56,6 +56,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Remove a 3-second sleep during iPXE boot. #1500
 - Don't package the API in RPM packages by default. #1493
 - Update default `warewulfd` port to match shipped configuration. #1448
+- Replace `olekukonko/tablewriter` with `cheynewallace/tabby`. #1497, #1498
 
 ### Removed
 
