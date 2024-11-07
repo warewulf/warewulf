@@ -13,23 +13,25 @@ import (
 func Test_wickedOverlay(t *testing.T) {
 	env := testenv.New(t)
 	defer env.RemoveAll(t)
-	env.ImportFile(t, "etc/warewulf/nodes.conf", "nodes.conf")
 	env.ImportFile(t, "var/lib/warewulf/overlays/debian.interfaces/rootfs/etc/network/interfaces.d/default.ww", "../rootfs/etc/network/interfaces.d/default.ww")
 
 	tests := []struct {
-		name string
-		args []string
-		log  string
+		name       string
+		nodes_conf string
+		args       []string
+		log        string
 	}{
 		{
-			name: "debian.interfaces",
-			args: []string{"--render", "node1", "debian.interfaces", "etc/network/interfaces.d/default.ww"},
-			log:  debian_interfaces,
+			name:       "debian.interfaces",
+			nodes_conf: "nodes.conf",
+			args:       []string{"--render", "node1", "debian.interfaces", "etc/network/interfaces.d/default.ww"},
+			log:        debian_interfaces,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			env.ImportFile(t, "etc/warewulf/nodes.conf", tt.nodes_conf)
 			cmd := show.GetCommand()
 			cmd.SetArgs(tt.args)
 			stdout := bytes.NewBufferString("")
@@ -69,5 +71,5 @@ iface wwnet1 inet static
   netmask 255.255.255.0
   gateway 192.168.3.1
   mtu 9000
-  up ifmetric wwnet1 30
+  up ip route add 192.168.1.0/24 via 192.168.3.254 dev wwnet1
 `
