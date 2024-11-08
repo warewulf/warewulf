@@ -31,7 +31,10 @@ smbios --type 3 --get-string 8 --set assetkey
 uri="(http,{{.Ipaddr}}:{{.Port}})/provision/${net_default_mac}?assetkey=${assetkey}"
 kernel="${uri}&stage=kernel"
 
-set default={{ or .Tags.GrubMenuEntry "single-stage" }}
+{{- $defentry := "singlestage" }}
+{{- if eq .Root "persistent"}}{{ $defentry = "dracut" }}{{ end }}
+{{- if .Tags.GrubMenuEntry }}{{ $defentry = .Tags.GrubMenuEntry }}{{ end }}
+set default={{ $defentry}}
 set timeout=2
 
 menuentry "Single-stage boot" --id single-stage {
@@ -58,8 +61,6 @@ menuentry "Single-stage boot" --id single-stage {
         echo "!! Unable to load kernel."
         echo "!! Rebooting in 15s..."
         echo "!!"
-        sleep 15
-        reboot
     fi
 
     echo "Downloading images..."
@@ -73,8 +74,6 @@ menuentry "Single-stage boot" --id single-stage {
         echo "!! Unable to load images."
         echo "!! Rebooting in 15s..."
         echo "!!"
-        sleep 15
-        reboot
     fi
 
     echo "Booting..."
@@ -105,8 +104,6 @@ menuentry "Single-stage boot (no compression)" --id single-stage-nocompress {
         echo "!! Unable to load kernel."
         echo "!! Rebooting in 15s..."
         echo "!!"
-        sleep 15
-        reboot
     fi
 
     echo "Downloading images..."
@@ -120,15 +117,13 @@ menuentry "Single-stage boot (no compression)" --id single-stage-nocompress {
         echo "!! Unable to load images."
         echo "!! Rebooting in 15s..."
         echo "!!"
-        sleep 15
-        reboot
     fi
 
     echo "Booting..."
     boot
 }
 
-menuentry "Two stage boot with dracut" --id dracut {
+menuentry "Two stage boot with dracut {{ if eq .Root "persistent"}}(persistent){{ end }}" --id dracut {
     echo "Warewulf Server:"
     echo "* Ipaddr: {{.Ipaddr}}"
     echo "* Port: {{.Port}}"
@@ -148,19 +143,24 @@ menuentry "Two stage boot with dracut" --id dracut {
 
     wwinit_uri="http://{{.Ipaddr}}:{{.Port}}/provision/${net_default_mac}"
     net_args="rd.neednet=1 {{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} {{end}}{{end}}"
-    wwinit_args="root=wwinit wwinit.uri=${wwinit_uri} init=/init"
+    {{- if eq .Root "persistent"}}
+    ignition_args="wwinit.ignition=http://{{.Ipaddr}}:{{.Port}}/overlay-file/persistent wwinit.imagename={{ .ImageName }} wwinit.id={{ .Id }} wwinit.ip={{ .Ipaddr }}"
+    root="persistent"
+    echo "* Persistent install"
+    {{- else }}
+    root="wwinit"
+    {{- end }}
+    wwinit_args="root=$root wwinit.uri=${wwinit_uri} init=/init"
 
     echo
     echo "Downloading kernel image..."
-    linux $kernel wwid=${net_default_mac} {{.KernelArgs}} $net_args $wwinit_args
+    linux $kernel wwid=${net_default_mac} {{.KernelArgs}} $net_args $wwinit_args $ignition_args
     if [ $? != 0 ]
     then
         echo "!!"
         echo "!! Unable to load kernel."
         echo "!! Rebooting in 15s..."
         echo "!!"
-        sleep 15
-        reboot
     fi
 
     echo "Downloading initramfs..."
@@ -171,8 +171,6 @@ menuentry "Two stage boot with dracut" --id dracut {
         echo "!! Unable to load initramfs."
         echo "!! Rebooting in 15s..."
         echo "!!"
-        sleep 15
-        reboot
     fi
 
     echo "Booting..."
