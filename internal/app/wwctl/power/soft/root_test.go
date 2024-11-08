@@ -28,6 +28,7 @@ nodes:
     - default
     ipmi:
       ipaddr: 10.10.10.10`)
+	env.ImportFile(t, "share/warewulf/bmc/ipmitool.tmpl", "../../../../../lib/warewulf/bmc/ipmitool.tmpl")
 
 	tests := map[string]struct {
 		args     []string
