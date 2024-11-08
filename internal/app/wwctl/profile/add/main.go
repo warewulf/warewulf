@@ -18,29 +18,29 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 		// to this network
 		if !node.ObjectIsEmpty(vars.profileConf.NetDevs["UNDEF"]) {
 			netDev := *vars.profileConf.NetDevs["UNDEF"]
-			vars.profileConf.NetDevs[vars.netName] = &netDev
+			vars.profileConf.NetDevs[vars.nodeAdd.Net] = &netDev
 		}
 		delete(vars.profileConf.NetDevs, "UNDEF")
-		if vars.fsName != "" {
-			if !strings.HasPrefix(vars.fsName, "/dev") {
-				if vars.fsName == vars.partName {
-					vars.fsName = "/dev/disk/by-partlabel/" + vars.partName
+		if vars.nodeAdd.FsName != "" {
+			if !strings.HasPrefix(vars.nodeAdd.FsName, "/dev") {
+				if vars.nodeAdd.FsName == vars.nodeAdd.PartName {
+					vars.nodeAdd.FsName = "/dev/disk/by-partlabel/" + vars.nodeAdd.PartName
 				} else {
 					return fmt.Errorf("filesystems need to have a underlying blockdev")
 				}
 			}
 			fs := *vars.profileConf.FileSystems["UNDEF"]
-			vars.profileConf.FileSystems[vars.fsName] = &fs
+			vars.profileConf.FileSystems[vars.nodeAdd.FsName] = &fs
 		}
 		delete(vars.profileConf.FileSystems, "UNDEF")
-		if vars.diskName != "" && vars.partName != "" {
+		if vars.nodeAdd.DiskName != "" && vars.nodeAdd.PartName != "" {
 			prt := *vars.profileConf.Disks["UNDEF"].Partitions["UNDEF"]
-			vars.profileConf.Disks["UNDEF"].Partitions[vars.partName] = &prt
+			vars.profileConf.Disks["UNDEF"].Partitions[vars.nodeAdd.PartName] = &prt
 			delete(vars.profileConf.Disks["UNDEF"].Partitions, "UNDEF")
 			dsk := *vars.profileConf.Disks["UNDEF"]
-			vars.profileConf.Disks[vars.diskName] = &dsk
+			vars.profileConf.Disks[vars.nodeAdd.DiskName] = &dsk
 		}
-		if (vars.diskName != "") != (vars.partName != "") {
+		if (vars.nodeAdd.DiskName != "") != (vars.nodeAdd.PartName != "") {
 			return fmt.Errorf("partition and disk must be specified")
 		}
 		delete(vars.profileConf.Disks, "UNDEF")
