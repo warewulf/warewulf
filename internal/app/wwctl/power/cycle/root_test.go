@@ -19,6 +19,7 @@ func Test_PowerCycle(t *testing.T) {
 nodeprofiles:
   default:
     ipmi:
+      template: ipmitool.tmpl
       username: admin
       password: admin
 nodes:

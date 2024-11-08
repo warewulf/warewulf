@@ -19,6 +19,7 @@ func Test_Power_Status(t *testing.T) {
 nodeprofiles:
   default:
     ipmi:
+      template: ipmitool.tmpl
       username: admin
       password: admin
 nodes:
