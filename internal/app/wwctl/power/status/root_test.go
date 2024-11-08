@@ -12,9 +12,9 @@ import (
 )
 
 func Test_Power_Status(t *testing.T) {
+	warewulfd.SetNoDaemon()
 	env := testenv.New(t)
 	defer env.RemoveAll(t)
-
 	env.WriteFile(t, "etc/warewulf/nodes.conf", `WW_INTERNAL: 43
 nodeprofiles:
   default:
@@ -27,16 +27,28 @@ nodes:
     - default
     ipmi:
       ipaddr: 10.10.10.10`)
-	warewulfd.SetNoDaemon()
-	t.Run("ipmitool status test", func(t *testing.T) {
-		baseCmd := GetCommand()
-		buf := new(bytes.Buffer)
-		baseCmd.SetOut(buf)
-		baseCmd.SetErr(buf)
-		wwlog.SetLogWriter(buf)
-		baseCmd.SetArgs([]string{"--show", "n01"})
-		err := baseCmd.Execute()
-		assert.NoError(t, err)
-		assert.Equal(t, "10.10.10.10: ipmitool -I lan -H 10.10.10.10 -p 623 -U admin -P admin -e ~ chassis power status", strings.TrimSpace(buf.String()))
-	})
+
+	tests := map[string]struct {
+		args     []string
+		expected string
+	}{
+		"sensors": {
+			args:     []string{"--show", "n01"},
+			expected: "10.10.10.10: ipmitool -I lan -H 10.10.10.10 -p 623 -U admin -P admin -e ~ chassis power status",
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			baseCmd := GetCommand()
+			buf := new(bytes.Buffer)
+			baseCmd.SetOut(buf)
+			baseCmd.SetErr(buf)
+			wwlog.SetLogWriter(buf)
+			baseCmd.SetArgs(tt.args)
+			err := baseCmd.Execute()
+			assert.NoError(t, err)
+			assert.Equal(t, strings.TrimSpace(tt.expected), strings.TrimSpace(buf.String()))
+		})
+	}
 }

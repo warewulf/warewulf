@@ -3,6 +3,7 @@ package sensors
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/batch"
@@ -75,12 +76,16 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			out, err := result.Result()
 
 			if err != nil {
-				wwlog.Error("%s: %s", result.Ipaddr, out)
+				for _, line := range strings.Split(out, "\n") {
+					wwlog.Error("%s: %s", result.Ipaddr, line)
+				}
 				returnErr = err
 				continue
 			}
 
-			wwlog.Info("%s:\n%s\n", result.Ipaddr, out)
+			for _, line := range strings.Split(out, "\n") {
+				wwlog.Info("%s: %s", result.Ipaddr, line)
+			}
 		}
 
 		return returnErr
