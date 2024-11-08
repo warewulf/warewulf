@@ -37,7 +37,7 @@ echo Downloading System Overlay:
 imgextract --name system ${uri_base}&stage=system&compress=gz       || goto reboot
 
 echo Downloading Runtime Overlay:
-imgextract --name runtime ${uri_base}&stage=runtime&compress=gz     || goto reboot
+imgextract --name runtime ${uri_base}&stage=runtime&compress=gz     || echo Failed downloading runtime overlay.
 
 {{if ne .KernelOverride "" -}}
 echo Downloading Kernel Modules:
