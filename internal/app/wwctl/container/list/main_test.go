@@ -24,8 +24,11 @@ func Test_List(t *testing.T) {
 		{
 			name: "container list test",
 			args: []string{"-l"},
-			stdout: `  CONTAINER NAME  NODES  KERNEL VERSION  CREATION TIME        MODIFICATION TIME    SIZE
- test            1      kernel`,
+			stdout: `
+CONTAINER NAME  NODES  KERNEL VERSION  CREATION TIME        MODIFICATION TIME    SIZE
+--------------  -----  --------------  -------------        -----------------    ----
+test            1      kernel          01 Jan 70 00:00 UTC  01 Jan 70 00:00 UTC  0 B
+`,
 			inDb: `WW_INTERNAL: 43
 nodeprofiles:
   default: {}
@@ -61,14 +64,12 @@ nodes:
 			buf := new(bytes.Buffer)
 			baseCmd := GetCommand()
 			baseCmd.SetArgs(tt.args)
-			baseCmd.SetOut(nil)
-			baseCmd.SetErr(nil)
+			baseCmd.SetOut(buf)
+			baseCmd.SetErr(buf)
 			wwlog.SetLogWriter(buf)
 			err := baseCmd.Execute()
 			assert.NoError(t, err)
-			assert.Contains(t,
-				strings.Join(strings.Fields(buf.String()), ""),
-				strings.Join(strings.Fields(tt.stdout), ""))
+			assert.Equal(t, strings.TrimSpace(tt.stdout), strings.TrimSpace(buf.String()))
 		})
 	}
 }

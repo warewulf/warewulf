@@ -64,12 +64,12 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 			fmt.Sprintf("%s:=:%s:=:%s:=:%s:=:%s", "NODE", "IPMI IPADDR", "IPMI PORT", "IPMI USERNAME", "IPMI INTERFACE"))
 		for _, n := range node.FilterNodeListByName(nodes, nodeGet.Nodes) {
 			nodeList.Output = append(nodeList.Output,
-				fmt.Sprintf("%s:=:%s:=:%s:=:%s:=:%s:=:%s", n.Id(),
+				fmt.Sprintf("%s:=:%s:=:%s:=:%s:=:%s",
+					n.Id(),
 					n.Ipmi.Ipaddr.String(),
 					n.Ipmi.Port,
 					n.Ipmi.UserName,
-					n.Ipmi.Interface,
-					n.Ipmi.EscapeChar))
+					n.Ipmi.Interface))
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_Long {
 		nodeList.Output = append(nodeList.Output,
@@ -82,9 +82,9 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 					strings.Join(n.SystemOverlay, ",")+"/"+strings.Join(n.RuntimeOverlay, ",")))
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_All {
+		nodeList.Output = append(nodeList.Output,
+			fmt.Sprintf("%s:=:%s:=:%s:=:%s", "NODE", "FIELD", "PROFILE", "VALUE"))
 		for _, n := range node.FilterNodeListByName(nodes, nodeGet.Nodes) {
-			nodeList.Output = append(nodeList.Output,
-				fmt.Sprintf("%s:=:%s:=:%s:=:%s", "NODE", "FIELD", "PROFILE", "VALUE"))
 			fields := nodeDB.GetFields(n)
 			for _, f := range fields {
 				nodeList.Output = append(nodeList.Output,
