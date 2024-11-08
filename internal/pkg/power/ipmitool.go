@@ -33,12 +33,12 @@ func (ipmi *IPMI) Result() (string, error) {
 
 func (ipmi *IPMI) getStr() (cmdStr string, err error) {
 	conf := warewulfconf.Get()
-	if ipmi.BmcTemplate == "" {
-		ipmi.BmcTemplate = path.Join(conf.Warewulf.DataStore, "warewulf/bmc/ipmitool.tmpl")
-	} else if !strings.HasPrefix(ipmi.BmcTemplate, "/") {
-		ipmi.BmcTemplate = path.Join(conf.Warewulf.DataStore, "warewulf/bmc", ipmi.BmcTemplate)
+	if ipmi.Template == "" {
+		ipmi.Template = path.Join(conf.Warewulf.DataStore, "warewulf/bmc/ipmitool.tmpl")
+	} else if !strings.HasPrefix(ipmi.Template, "/") {
+		ipmi.Template = path.Join(conf.Warewulf.DataStore, "warewulf/bmc", ipmi.Template)
 	}
-	fbuf, err := os.ReadFile(ipmi.BmcTemplate)
+	fbuf, err := os.ReadFile(ipmi.Template)
 	if err != nil {
 		return "", fmt.Errorf("couldn't find the template which defines the ipmi/redfish command: %s", err)
 	}

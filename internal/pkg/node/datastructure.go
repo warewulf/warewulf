@@ -59,17 +59,17 @@ type ProfileConf struct {
 }
 
 type IpmiConf struct {
-	UserName    string            `yaml:"username,omitempty" lopt:"ipmiuser" comment:"Set the IPMI username"`
-	Password    string            `yaml:"password,omitempty" lopt:"ipmipass" comment:"Set the IPMI password"`
-	Ipaddr      net.IP            `yaml:"ipaddr,omitempty" lopt:"ipmiaddr" comment:"Set the IPMI IP address" type:"IP"`
-	Gateway     net.IP            `yaml:"gateway,omitempty" lopt:"ipmigateway" comment:"Set the IPMI gateway" type:"IP"`
-	Netmask     net.IP            `yaml:"netmask,omitempty" lopt:"ipminetmask" comment:"Set the IPMI netmask" type:"IP"`
-	Port        string            `yaml:"port,omitempty" lopt:"ipmiport" comment:"Set the IPMI port"`
-	Interface   string            `yaml:"interface,omitempty" lopt:"ipmiinterface" comment:"Set the node's IPMI interface (defaults: 'lan')"`
-	EscapeChar  string            `yaml:"escapechar,omitempty" lopt:"ipmiescapechar" comment:"Set the IPMI escape character (defaults: '~')"`
-	Write       wwtype.WWbool     `yaml:"write,omitempty" lopt:"ipmiwrite" comment:"Enable the write of impi configuration (true/false)"`
-	BmcTemplate string            `yaml:"template,omitempty" lopt:"ipmitemplate" comment:"template used for ipmi command"`
-	Tags        map[string]string `yaml:"tags,omitempty"`
+	UserName   string            `yaml:"username,omitempty" lopt:"ipmiuser" comment:"Set the IPMI username"`
+	Password   string            `yaml:"password,omitempty" lopt:"ipmipass" comment:"Set the IPMI password"`
+	Ipaddr     net.IP            `yaml:"ipaddr,omitempty" lopt:"ipmiaddr" comment:"Set the IPMI IP address" type:"IP"`
+	Gateway    net.IP            `yaml:"gateway,omitempty" lopt:"ipmigateway" comment:"Set the IPMI gateway" type:"IP"`
+	Netmask    net.IP            `yaml:"netmask,omitempty" lopt:"ipminetmask" comment:"Set the IPMI netmask" type:"IP"`
+	Port       string            `yaml:"port,omitempty" lopt:"ipmiport" comment:"Set the IPMI port"`
+	Interface  string            `yaml:"interface,omitempty" lopt:"ipmiinterface" comment:"Set the node's IPMI interface (defaults: 'lan')"`
+	EscapeChar string            `yaml:"escapechar,omitempty" lopt:"ipmiescapechar" comment:"Set the IPMI escape character (defaults: '~')"`
+	Write      wwtype.WWbool     `yaml:"write,omitempty" lopt:"ipmiwrite" comment:"Enable the write of impi configuration (true/false)"`
+	Template   string            `yaml:"template,omitempty" lopt:"ipmitemplate" comment:"template used for ipmi command"`
+	Tags       map[string]string `yaml:"tags,omitempty"`
 }
 
 type KernelConf struct {

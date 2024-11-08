@@ -240,7 +240,7 @@ All IPMI specific variables are accessible in the template which are the followi
 +---------------------+--------------------+
 | ``--ipmiescapechar``| ``.EscapeChar``    |
 +---------------------+--------------------+
-| ``--ipmitemplate``  | ``.BmcTemplate``   |
+| ``--ipmitemplate``  | ``.Template``      |
 +---------------------+--------------------+
 
 Additional the ``.Args`` variable is accessible which can have following 
