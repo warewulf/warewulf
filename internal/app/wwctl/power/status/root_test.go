@@ -1,4 +1,4 @@
-package powerstatus
+package status
 
 import (
 	"bytes"

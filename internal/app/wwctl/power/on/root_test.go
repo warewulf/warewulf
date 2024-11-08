@@ -1,4 +1,4 @@
-package poweron
+package on
 
 import (
 	"bytes"

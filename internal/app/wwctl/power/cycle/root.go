@@ -7,6 +7,7 @@ import (
 
 type variables struct {
 	Showcmd bool
+	Fanout  int
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
@@ -27,11 +28,12 @@ func GetCommand() *cobra.Command {
 			nodes, _ := nodeDB.FindAllNodes()
 			var node_names []string
 			for _, node := range nodes {
-				node_names = append(node_names, node.Id.Get())
+				node_names = append(node_names, node.Id())
 			}
 			return node_names, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
 	powerCmd.PersistentFlags().BoolVarP(&vars.Showcmd, "show", "s", false, "only show command which will be executed")
+	powerCmd.PersistentFlags().IntVar(&vars.Fanout, "fanout", 50, "how many command should be executed in parallel")
 	return powerCmd
 }

@@ -44,9 +44,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Error("%s: No IPMI IP address", node.Id())
 			continue
 		}
-		var conf node.NodeConf
-		conf.GetFrom(n)
-		ipmiCmd := power.IPMI{IpmiConf: *conf.Ipmi}
+		ipmiCmd := power.IPMI{IpmiConf: *node.Ipmi}
 		err := ipmiCmd.Console()
 		if err != nil {
 			wwlog.Error("%s: Console problem", node.Id())

@@ -1,4 +1,4 @@
-package powersoft
+package soft
 
 import (
 	"bytes"

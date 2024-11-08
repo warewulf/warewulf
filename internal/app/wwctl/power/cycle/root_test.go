@@ -1,4 +1,4 @@
-package powercycle
+package cycle
 
 import (
 	"bytes"

@@ -1,4 +1,4 @@
-package reset
+package sensors
 
 import (
 	"bytes"
@@ -37,6 +37,6 @@ nodes:
 		baseCmd.SetArgs([]string{"--show", "n01"})
 		err := baseCmd.Execute()
 		assert.NoError(t, err)
-		assert.Equal(t, "10.10.10.10: ipmitool -I lan -H 10.10.10.10 -p 623 -U admin -P admin -e ~ chassis power reset", strings.TrimSpace(buf.String()))
+		assert.Equal(t, "10.10.10.10:\nipmitool -I lan -H 10.10.10.10 -p 623 -U admin -P admin -e ~ sdr list", strings.TrimSpace(buf.String()))
 	})
 }

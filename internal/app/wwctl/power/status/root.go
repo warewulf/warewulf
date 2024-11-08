@@ -7,6 +7,7 @@ import (
 
 type variables struct {
 	Showcmd bool
+	Fanout  int
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
@@ -33,5 +34,6 @@ func GetCommand() *cobra.Command {
 		},
 	}
 	powerCmd.PersistentFlags().BoolVarP(&vars.Showcmd, "show", "s", false, "only show command which will be executed")
+	powerCmd.PersistentFlags().IntVar(&vars.Fanout, "fanout", 50, "how many command should be executed in parallel")
 	return powerCmd
 }

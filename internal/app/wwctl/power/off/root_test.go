@@ -1,4 +1,4 @@
-package poweroff
+package off
 
 import (
 	"bytes"
