@@ -93,6 +93,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Simplify passing of arguments to commands through `wwctl container exec`. #253
 - Don't update IPMI if password isn't set. #638
 - Fix issue that `--nettagdel` does not work properly. #1503
+- Fix test for dhcp static configuration #1536 #1537
 
 ## v4.5.8, 2024-10-01
 
