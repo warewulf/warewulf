@@ -39,12 +39,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if Force {
 			err := os.RemoveAll(overlayPath)
 			if err != nil {
-				return errors.Wrap(err, "failed deleting overlay")
+				return fmt.Errorf("failed deleting overlay: %w", err)
 			}
 		} else {
 			err := os.Remove(overlayPath)
 			if err != nil {
-				return errors.Wrap(err, "failed deleting overlay")
+				return fmt.Errorf("failed deleting overlay: %w", err)
 			}
 		}
 		wwlog.Info("Deleted overlay: %s\n", args[0])

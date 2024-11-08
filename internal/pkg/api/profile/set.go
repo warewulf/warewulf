@@ -5,7 +5,6 @@ import (
 
 	"dario.cat/mergo"
 
-	"github.com/pkg/errors"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
@@ -21,7 +20,7 @@ func ProfileSet(set *wwapiv1.ConfSetParameter) (err error) {
 	}
 	nodeDB, _, err := ProfileSetParameterCheck(set)
 	if err != nil {
-		return errors.Wrap(err, "profile set parameters are wrong")
+		return fmt.Errorf("profile set parameters are wrong: %w", err)
 	}
 	if err = nodeDB.Persist(); err != nil {
 		return err

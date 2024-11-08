@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/pkg/errors"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 	"github.com/warewulf/warewulf/internal/pkg/node"
@@ -24,7 +23,7 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 
 	nodeDB, err := node.New()
 	if err != nil {
-		return errors.Wrap(err, "failed to open node database")
+		return fmt.Errorf("failed to open node database: %w", err)
 	}
 	dbHash := nodeDB.Hash()
 	if hex.EncodeToString(dbHash[:]) != nap.Hash && !nap.Force {
@@ -35,11 +34,11 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 	for _, a := range node_args {
 		n, err := nodeDB.AddNode(a)
 		if err != nil {
-			return errors.Wrap(err, "failed to add node")
+			return fmt.Errorf("failed to add node: %w", err)
 		}
 		err = yaml.Unmarshal([]byte(nap.NodeConfYaml), &n)
 		if err != nil {
-			return errors.Wrap(err, "Failed to decode nodeConf")
+			return fmt.Errorf("Failed to decode nodeConf: %w", err)
 		}
 		wwlog.Info("Added node: %s", a)
 		for _, dev := range n.NetDevs {
@@ -66,12 +65,12 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 
 	err = nodeDB.Persist()
 	if err != nil {
-		return errors.Wrap(err, "failed to persist new node")
+		return fmt.Errorf("failed to persist new node: %w", err)
 	}
 
 	err = warewulfd.DaemonReload()
 	if err != nil {
-		return errors.Wrap(err, "failed to reload warewulf daemon")
+		return fmt.Errorf("failed to reload warewulf daemon: %w", err)
 	}
 	return
 }

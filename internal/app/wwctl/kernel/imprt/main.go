@@ -3,7 +3,6 @@ package imprt
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/container"
 	"github.com/warewulf/warewulf/internal/pkg/kernel"
@@ -68,12 +67,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 		err = nodeDB.Persist()
 		if err != nil {
-			return errors.Wrap(err, "failed to persist nodedb")
+			return fmt.Errorf("failed to persist nodedb: %w", err)
 		}
 		fmt.Printf("Set default kernel version to: %s\n", args[0])
 		err = warewulfd.DaemonReload()
 		if err != nil {
-			return errors.Wrap(err, "failed to reload warewulf daemon")
+			return fmt.Errorf("failed to reload warewulf daemon: %w", err)
 		}
 	}
 

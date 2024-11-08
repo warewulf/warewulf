@@ -1,10 +1,9 @@
 package warewulfd
 
 import (
+	"fmt"
 	"strings"
 	"sync"
-
-	"github.com/pkg/errors"
 
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -88,11 +87,11 @@ func GetNodeOrSetDiscoverable(hwaddr string) (node.NodeConf, error) {
 	}
 	err = db.yml.Persist()
 	if err != nil {
-		return node, errors.Wrapf(err, "%s (failed to persist node configuration)", hwaddr)
+		return node, fmt.Errorf("%s (failed to persist node configuration) %w", hwaddr, err)
 	}
 	err = loadNodeDB()
 	if err != nil {
-		return node, errors.Wrapf(err, "%s (failed to reload configuration)", hwaddr)
+		return node, fmt.Errorf("%s (failed to reload configuration) %w", hwaddr, err)
 	}
 	// NOTE: previously all overlays were built here, but that will also
 	// be done automatically when attempting to serve an overlay that

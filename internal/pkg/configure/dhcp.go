@@ -3,7 +3,6 @@ package configure
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/util"
@@ -41,7 +40,7 @@ func DHCP() (err error) {
 	fmt.Printf("Enabling and restarting the DHCP services\n")
 	err = util.SystemdStart(controller.DHCP.SystemdName)
 	if err != nil {
-		return errors.Wrap(err, "failed to start")
+		return fmt.Errorf("failed to start: %w", err)
 	}
 
 	return

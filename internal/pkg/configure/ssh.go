@@ -5,7 +5,6 @@ import (
 	"os"
 	"path"
 
-	"github.com/pkg/errors"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -34,7 +33,7 @@ func SSH(keyTypes ...string) error {
 				err = util.ExecInteractive("ssh-keygen", "-q", "-t", k, "-f", path.Join(wwkeydir, keytype), "-C", "", "-N", "")
 				if err != nil {
 					wwlog.Error("Failed to exec ssh-keygen: %s", err)
-					return errors.Wrap(err, "failed to exec ssh-keygen command")
+					return fmt.Errorf("failed to exec ssh-keygen command: %w", err)
 				}
 			} else {
 				fmt.Printf("Skipping, key already exists: %s\n", keytype)
@@ -59,11 +58,11 @@ func SSH(keyTypes ...string) error {
 			pubKey := privKey + ".pub"
 			err = util.ExecInteractive("ssh-keygen", "-q", "-t", keyType, "-f", privKey, "-C", "", "-N", "")
 			if err != nil {
-				return errors.Wrap(err, "Failed to exec ssh-keygen command")
+				return fmt.Errorf("failed to exec ssh-keygen command: %w", err)
 			}
 			err := util.CopyFile(pubKey, authorizedKeys)
 			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("Failed to copy %s to authorized_keys", pubKey))
+				return fmt.Errorf("failed to copy %s to authorized_keys: %w", pubKey, err)
 			}
 		} else {
 			fmt.Printf("Skipping authorized_keys: no key types configured\n")

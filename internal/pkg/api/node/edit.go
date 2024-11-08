@@ -1,9 +1,9 @@
 package apinode
 
 import (
+	"fmt"
 	"os"
 
-	"github.com/pkg/errors"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -35,22 +35,22 @@ Add nodes from yaml
 func NodeAddFromYaml(nodeList *wwapiv1.NodeYaml) (err error) {
 	nodeDB, err := node.New()
 	if err != nil {
-		return errors.Wrap(err, "Could not open NodeDB: %s\n")
+		return fmt.Errorf("could not open NodeDB: %w", err)
 	}
 	nodeMap := make(map[string]*node.NodeConf)
 	err = yaml.Unmarshal([]byte(nodeList.NodeConfMapYaml), nodeMap)
 	if err != nil {
-		return errors.Wrap(err, "Could not unmarshal Yaml: %s\n")
+		return fmt.Errorf("could not unmarshal Yaml: %w", err)
 	}
 	for nodeName, node := range nodeMap {
 		err = nodeDB.SetNode(nodeName, *node)
 		if err != nil {
-			return errors.Wrap(err, "couldn't set node")
+			return fmt.Errorf("couldn't set node: %w", err)
 		}
 	}
 	err = nodeDB.Persist()
 	if err != nil {
-		return errors.Wrap(err, "failed to persist nodedb")
+		return fmt.Errorf("failed to persist nodedb: %w", err)
 	}
 	return nil
 }

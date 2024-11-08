@@ -1,6 +1,7 @@
 package warewulfd
 
 import (
+	"fmt"
 	"log/syslog"
 	"os"
 	"os/exec"
@@ -62,7 +63,7 @@ func DaemonInitLogging() error {
 
 		logwriter, err := syslog.New(syslog.LOG_NOTICE, "warewulfd")
 		if err != nil {
-			return errors.Wrap(err, "Could not create syslog writer")
+			return fmt.Errorf("Could not create syslog writer: %w", err)
 		}
 
 		wwlog.SetLogFormatter(wwlog.DefaultFormatter)
@@ -86,17 +87,17 @@ func DaemonStatus() error {
 
 	dat, err := os.ReadFile(WAREWULFD_PIDFILE)
 	if err != nil {
-		return errors.Wrap(err, "could not read Warewulfd PID file")
+		return fmt.Errorf("could not read Warewulfd PID file: %w", err)
 	}
 
 	pid, _ := strconv.Atoi(string(dat))
 	process, err := os.FindProcess(pid)
 	if err != nil {
-		return errors.Wrap(err, "failed to find running PID")
+		return fmt.Errorf("failed to find running PID: %w", err)
 	} else {
 		err := process.Signal(syscall.Signal(0))
 		if err != nil {
-			return errors.Wrap(err, "failed to send process SIGCONT")
+			return fmt.Errorf("failed to send process SIGCONT: %w", err)
 		} else {
 			wwlog.Serv("Warewulf server is running at PID: %d", pid)
 		}
@@ -112,11 +113,11 @@ func DaemonReload() error {
 	cmd := exec.Command("/usr/sbin/service", "warewulfd", "reload")
 	err := cmd.Start()
 	if err != nil {
-		return errors.Wrap(err, "failed to reload warewulfd")
+		return fmt.Errorf("failed to reload warewulfd: %w", err)
 	}
 	err = cmd.Wait()
 	if err != nil {
-		return errors.Wrap(err, "failed to reload warewulfd")
+		return fmt.Errorf("failed to reload warewulfd: %w", err)
 	}
 	return nil
 }

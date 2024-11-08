@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pkg/errors"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 	"github.com/warewulf/warewulf/internal/pkg/node"
@@ -43,12 +42,12 @@ func NodeDelete(ndp *wwapiv1.NodeDeleteParameter) (err error) {
 
 	err = nodeDB.Persist()
 	if err != nil {
-		return errors.Wrap(err, "failed to persist nodedb")
+		return fmt.Errorf("failed to persist nodedb: %w", err)
 	}
 
 	err = warewulfd.DaemonReload()
 	if err != nil {
-		return errors.Wrap(err, "failed to reload warewulf daemon")
+		return fmt.Errorf("failed to reload warewulf daemon: %w", err)
 	}
 	return
 }

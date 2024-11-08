@@ -8,7 +8,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	apinode "github.com/warewulf/warewulf/internal/pkg/api/node"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
@@ -133,7 +132,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	err = warewulfd.DaemonReload()
 	if err != nil {
-		return errors.Wrap(err, "failed to reload warewulf daemon")
+		return fmt.Errorf("failed to reload warewulf daemon: %w", err)
 	}
 
 	return nil

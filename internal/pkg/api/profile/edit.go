@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pkg/errors"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -35,7 +34,7 @@ Add profiles from yaml
 func ProfileAddFromYaml(nodeList *wwapiv1.NodeAddParameter) (err error) {
 	nodeDB, err := node.New()
 	if err != nil {
-		return errors.Wrap(err, "Could not open NodeDB: %s\n")
+		return fmt.Errorf("couldn't open NodeDB: %w", err)
 	}
 	if nodeDB.StringHash() != nodeList.Hash && !nodeList.Force {
 		return fmt.Errorf("got wrong hash, not modifying profile database")
@@ -44,17 +43,17 @@ func ProfileAddFromYaml(nodeList *wwapiv1.NodeAddParameter) (err error) {
 	profileMap := make(map[string]*node.ProfileConf)
 	err = yaml.Unmarshal([]byte(nodeList.NodeConfYaml), profileMap)
 	if err != nil {
-		return errors.Wrap(err, "Could not unmarshall Yaml: %s\n")
+		return fmt.Errorf("couldn't unmarshall Yaml: %w", err)
 	}
 	for profileName, profile := range profileMap {
 		err = nodeDB.SetProfile(profileName, *profile)
 		if err != nil {
-			return errors.Wrap(err, "couldn't set profile")
+			return fmt.Errorf("couldn't set profile: %w", err)
 		}
 	}
 	err = nodeDB.Persist()
 	if err != nil {
-		return errors.Wrap(err, "failed to persist nodedb")
+		return fmt.Errorf("failed to persist nodedb: %w", err)
 	}
 	return nil
 }

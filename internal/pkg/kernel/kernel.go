@@ -135,12 +135,12 @@ func Build(kernelVersion, kernelName, root string) error {
 	// Create the destination paths just in case it doesn't exist
 	err := os.MkdirAll(path.Dir(kernelDestination), 0755)
 	if err != nil {
-		return errors.Wrap(err, "failed to create kernel dest")
+		return fmt.Errorf("failed to create kernel dest: %w", err)
 	}
 
 	err = os.MkdirAll(path.Dir(driversDestination), 0755)
 	if err != nil {
-		return errors.Wrap(err, "failed to create driver dest")
+		return fmt.Errorf("failed to create driver dest: %w", err)
 	}
 
 	err = os.MkdirAll(path.Dir(versionDestination), 0755)
@@ -161,7 +161,7 @@ func Build(kernelVersion, kernelName, root string) error {
 	if _, err := os.Stat(kernelSource); err == nil {
 		kernel, err := os.Open(kernelSource)
 		if err != nil {
-			return errors.Wrap(err, "could not open kernel")
+			return fmt.Errorf("could not open kernel: %w", err)
 		}
 		defer kernel.Close()
 
@@ -171,20 +171,20 @@ func Build(kernelVersion, kernelName, root string) error {
 
 			writer, err := os.Create(kernelDestination)
 			if err != nil {
-				return errors.Wrap(err, "could not decompress kernel")
+				return fmt.Errorf("could not decompress kernel: %w", err)
 			}
 			defer writer.Close()
 
 			_, err = io.Copy(writer, gzipreader)
 			if err != nil {
-				return errors.Wrap(err, "could not write decompressed kernel")
+				return fmt.Errorf("could not write decompressed kernel: %w", err)
 			}
 
 		} else {
 
 			err := util.CopyFile(kernelSource, kernelDestination)
 			if err != nil {
-				return errors.Wrap(err, "could not copy kernel")
+				return fmt.Errorf("could not copy kernel: %w", err)
 			}
 		}
 
@@ -220,16 +220,16 @@ func Build(kernelVersion, kernelName, root string) error {
 	wwlog.Verbose("Creating version file")
 	file, err := os.Create(versionDestination)
 	if err != nil {
-		return errors.Wrap(err, "Failed to create version file")
+		return fmt.Errorf("Failed to create version file: %w", err)
 	}
 	defer file.Close()
 	_, err = io.WriteString(file, kernelVersion)
 	if err != nil {
-		return errors.Wrap(err, "Could not write kernel version")
+		return fmt.Errorf("Could not write kernel version: %w", err)
 	}
 	err = file.Sync()
 	if err != nil {
-		return errors.Wrap(err, "Could not sync kernel version")
+		return fmt.Errorf("Could not sync kernel version: %w", err)
 	}
 	return nil
 }
