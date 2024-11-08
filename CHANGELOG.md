@@ -63,6 +63,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - make sure that warewulfd has the permission 0755 at creation time #674
 - Fix "onboot" behavior for NetworkManager, Debian networking, and Suse wicked. #1278
 - Clarified missing steps in Enterprise Linux quickstart. #1179
+- Fix dhcpd.conf static template to include next-server and dhcp-range #1536
 
 ### Added
 
