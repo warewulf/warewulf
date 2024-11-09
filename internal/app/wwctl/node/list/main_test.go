@@ -443,7 +443,6 @@ nodes:
 }
 
 func TestListMultipleFormats(t *testing.T) {
-	t.Skip("temporally skip this test")
 	tests := []struct {
 		name    string
 		args    []string
@@ -452,9 +451,14 @@ func TestListMultipleFormats(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:   "single node list yaml output",
-			args:   []string{"-y"},
-			stdout: "n01:\n  AssetKey: \"\"\n  ClusterName: \"\"\n  Comment: \"\"\n  ContainerName: \"\"\n  Discoverable: \"\"\n  Disks: {}\n  FileSystems: {}\n  Grub: \"\"\n  Id: |\n    Source: explicit\n    Value: n01\n  Init: |\n    Source: default-value\n    Value: /sbin/init\n  Ipmi:\n    EscapeChar: \"\"\n    Gateway: \"\"\n    Interface: \"\"\n    Ipaddr: \"\"\n    Netmask: \"\"\n    Password: \"\"\n    Port: \"\"\n    Tags: null\n    UserName: \"\"\n    Write: \"\"\n  Ipxe: |\n    Source: default-value\n    Value: default\n  Kernel:\n    Args: |\n      Source: default-value\n      Value: quiet crashkernel=no vga=791 net.naming-scheme=v238\n    Override: \"\"\n  NetDevs: {}\n  PrimaryNetDev: \"\"\n  Profiles: |\n    Source: explicit\n    Value: default\n  Root: |\n    Source: default-value\n    Value: initramfs\n  RuntimeOverlay: |\n    Source: default-value\n    Value: generic\n  SystemOverlay: |\n    Source: default-value\n    Value: wwinit\n  Tags: {}\n",
+			name: "single node list yaml output",
+			args: []string{"-y"},
+			stdout: `
+- profiles:
+    - default
+  kernel: {}
+  ipmi: {}
+`,
 			inDb: `WW_INTERNAL: 43
 nodeprofiles:
   default: {}
@@ -465,9 +469,45 @@ nodes:
 `,
 		},
 		{
-			name:   "single node list json output",
-			args:   []string{"-j"},
-			stdout: "{\"n01\":{\"Id\":\"Source: explicit\\nValue: n01\\n\",\"Comment\":\"\",\"ClusterName\":\"\",\"ContainerName\":\"\",\"Ipxe\":\"Source: default-value\\nValue: default\\n\",\"Grub\":\"\",\"RuntimeOverlay\":\"Source: default-value\\nValue: generic\\n\",\"SystemOverlay\":\"Source: default-value\\nValue: wwinit\\n\",\"Root\":\"Source: default-value\\nValue: initramfs\\n\",\"Discoverable\":\"\",\"Init\":\"Source: default-value\\nValue: /sbin/init\\n\",\"AssetKey\":\"\",\"Kernel\":{\"Override\":\"\",\"Args\":\"Source: default-value\\nValue: quiet crashkernel=no vga=791 net.naming-scheme=v238\\n\"},\"Ipmi\":{\"Ipaddr\":\"\",\"Netmask\":\"\",\"Port\":\"\",\"Gateway\":\"\",\"UserName\":\"\",\"Password\":\"\",\"Interface\":\"\",\"EscapeChar\":\"\",\"Write\":\"\",\"Tags\":null},\"Profiles\":\"Source: explicit\\nValue: default\\n\",\"PrimaryNetDev\":\"\",\"NetDevs\":{},\"Tags\":{},\"Disks\":{},\"FileSystems\":{}}}\n",
+			name: "single node list json output",
+			args: []string{"-j"},
+			stdout: `
+[
+  {
+    "Discoverable": "",
+    "AssetKey": "",
+    "Profiles": [
+      "default"
+    ],
+    "Comment": "",
+    "ClusterName": "",
+    "ContainerName": "",
+    "Ipxe": "",
+    "RuntimeOverlay": null,
+    "SystemOverlay": null,
+    "Kernel": {},
+    "Ipmi": {
+      "UserName": "",
+      "Password": "",
+      "Ipaddr": "",
+      "Gateway": "",
+      "Netmask": "",
+      "Port": "",
+      "Interface": "",
+      "EscapeChar": "",
+      "Write": "",
+      "Tags": {}
+    },
+    "Init": "",
+    "Root": "",
+    "NetDevs": {},
+    "Tags": {},
+    "PrimaryNetDev": "",
+    "Disks": null,
+    "FileSystems": null
+  }
+]
+`,
 			inDb: `WW_INTERNAL: 43
 nodeprofiles:
   default: {}
@@ -478,9 +518,78 @@ nodes:
 `,
 		},
 		{
-			name:   "multiple nodes list json output",
-			args:   []string{"-j"},
-			stdout: "n01  n02",
+			name: "multiple nodes list json output",
+			args: []string{"-j"},
+			stdout: `
+[
+  {
+    "Discoverable": "",
+    "AssetKey": "",
+    "Profiles": [
+      "default"
+    ],
+    "Comment": "",
+    "ClusterName": "",
+    "ContainerName": "",
+    "Ipxe": "",
+    "RuntimeOverlay": null,
+    "SystemOverlay": null,
+    "Kernel": {},
+    "Ipmi": {
+      "UserName": "",
+      "Password": "",
+      "Ipaddr": "",
+      "Gateway": "",
+      "Netmask": "",
+      "Port": "",
+      "Interface": "",
+      "EscapeChar": "",
+      "Write": "",
+      "Tags": {}
+    },
+    "Init": "",
+    "Root": "",
+    "NetDevs": {},
+    "Tags": {},
+    "PrimaryNetDev": "",
+    "Disks": null,
+    "FileSystems": null
+  },
+  {
+    "Discoverable": "",
+    "AssetKey": "",
+    "Profiles": [
+      "default"
+    ],
+    "Comment": "",
+    "ClusterName": "",
+    "ContainerName": "",
+    "Ipxe": "",
+    "RuntimeOverlay": null,
+    "SystemOverlay": null,
+    "Kernel": {},
+    "Ipmi": {
+      "UserName": "",
+      "Password": "",
+      "Ipaddr": "",
+      "Gateway": "",
+      "Netmask": "",
+      "Port": "",
+      "Interface": "",
+      "EscapeChar": "",
+      "Write": "",
+      "Tags": {}
+    },
+    "Init": "",
+    "Root": "",
+    "NetDevs": {},
+    "Tags": {},
+    "PrimaryNetDev": "",
+    "Disks": null,
+    "FileSystems": null
+  }
+]
+`,
 			inDb: `WW_INTERNAL: 43
 nodeprofiles:
   default: {}
@@ -494,9 +603,18 @@ nodes:
 `,
 		},
 		{
-			name:   "multiple nodes list yaml output",
-			args:   []string{"-y"},
-			stdout: "n01: n02:",
+			name: "multiple nodes list yaml output",
+			args: []string{"-y"},
+			stdout: `
+- profiles:
+    - default
+  kernel: {}
+  ipmi: {}
+- profiles:
+    - default
+  kernel: {}
+  ipmi: {}
+`,
 			inDb: `WW_INTERNAL: 43
 nodeprofiles:
   default: {}
@@ -529,7 +647,7 @@ nodes:
 			} else {
 				assert.NoError(t, err)
 			}
-			assert.Equal(t, strings.TrimSpace(buf.String()), strings.TrimSpace(tt.stdout))
+			assert.Equal(t, strings.TrimSpace(tt.stdout), strings.TrimSpace(buf.String()))
 		})
 	}
 }

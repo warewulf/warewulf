@@ -148,17 +148,16 @@ nodes:
 }
 
 func TestListMultipleFormats(t *testing.T) {
-	t.Skip("temporally skip this test")
 	tests := []struct {
 		name   string
 		args   []string
-		output []string
+		output string
 		inDb   string
 	}{
 		{
 			name:   "single profile list yaml output",
 			args:   []string{"-y"},
-			output: []string{"default:\n  AssetKey: \"\"\n  ClusterName: \"\"\n  Comment: \"\"\n  ContainerName: \"\"\n  Discoverable: \"\"\n  Disks: {}\n  FileSystems: {}\n  Grub: \"\"\n  Id: |\n    Source: explicit\n    Value: default\n  Init: \"\"\n  Ipmi:\n    EscapeChar: \"\"\n    Gateway: \"\"\n    Interface: \"\"\n    Ipaddr: \"\"\n    Netmask: \"\"\n    Password: \"\"\n    Port: \"\"\n    Tags: null\n    UserName: \"\"\n    Write: \"\"\n  Ipxe: \"\"\n  Kernel:\n    Args: \"\"\n    Override: \"\"\n  NetDevs: {}\n  PrimaryNetDev: \"\"\n  Profiles: \"\"\n  Root: \"\"\n  RuntimeOverlay: \"\"\n  SystemOverlay: \"\"\n  Tags: {}\n"},
+			output: `default: {}`,
 			inDb: `WW_INTERNAL: 43
 nodeprofiles:
   default: {}
@@ -169,9 +168,29 @@ nodes:
 `,
 		},
 		{
-			name:   "single profile list json output",
-			args:   []string{"-j"},
-			output: []string{"{\"default\":{\"Id\":\"Source: explicit\\nValue: default\\n\",\"Comment\":\"\",\"ClusterName\":\"\",\"ContainerName\":\"\",\"Ipxe\":\"\",\"Grub\":\"\",\"RuntimeOverlay\":\"\",\"SystemOverlay\":\"\",\"Root\":\"\",\"Discoverable\":\"\",\"Init\":\"\",\"AssetKey\":\"\",\"Kernel\":{\"Override\":\"\",\"Args\":\"\"},\"Ipmi\":{\"Ipaddr\":\"\",\"Netmask\":\"\",\"Port\":\"\",\"Gateway\":\"\",\"UserName\":\"\",\"Password\":\"\",\"Interface\":\"\",\"EscapeChar\":\"\",\"Write\":\"\",\"Tags\":null},\"Profiles\":\"\",\"PrimaryNetDev\":\"\",\"NetDevs\":{},\"Tags\":{},\"Disks\":{},\"FileSystems\":{}}}\n"},
+			name: "single profile list json output",
+			args: []string{"-j"},
+			output: `
+{
+  "default": {
+    "Comment": "",
+    "ClusterName": "",
+    "ContainerName": "",
+    "Ipxe": "",
+    "RuntimeOverlay": null,
+    "SystemOverlay": null,
+    "Kernel": null,
+    "Ipmi": null,
+    "Init": "",
+    "Root": "",
+    "NetDevs": null,
+    "Tags": null,
+    "PrimaryNetDev": "",
+    "Disks": null,
+    "FileSystems": null
+  }
+}
+`,
 			inDb: `WW_INTERNAL: 43
 nodeprofiles:
   default: {}
@@ -182,9 +201,12 @@ nodes:
 `,
 		},
 		{
-			name:   "multiple profiles list yaml output",
-			args:   []string{"-y"},
-			output: []string{"default", "test"},
+			name: "multiple profiles list yaml output",
+			args: []string{"-y"},
+			output: `
+default: {}
+test: {}
+`,
 			inDb: `WW_INTERNAL: 43
 nodeprofiles:
   default: {}
@@ -196,9 +218,46 @@ nodes:
 `,
 		},
 		{
-			name:   "multiple profiles list json output",
-			args:   []string{"-j"},
-			output: []string{"default", "test"},
+			name: "multiple profiles list json output",
+			args: []string{"-j"},
+			output: `
+{
+  "default": {
+    "Comment": "",
+    "ClusterName": "",
+    "ContainerName": "",
+    "Ipxe": "",
+    "RuntimeOverlay": null,
+    "SystemOverlay": null,
+    "Kernel": null,
+    "Ipmi": null,
+    "Init": "",
+    "Root": "",
+    "NetDevs": null,
+    "Tags": null,
+    "PrimaryNetDev": "",
+    "Disks": null,
+    "FileSystems": null
+  },
+  "test": {
+    "Comment": "",
+    "ClusterName": "",
+    "ContainerName": "",
+    "Ipxe": "",
+    "RuntimeOverlay": null,
+    "SystemOverlay": null,
+    "Kernel": null,
+    "Ipmi": null,
+    "Init": "",
+    "Root": "",
+    "NetDevs": null,
+    "Tags": null,
+    "PrimaryNetDev": "",
+    "Disks": null,
+    "FileSystems": null
+  }
+}
+`,
 			inDb: `WW_INTERNAL: 43
 nodeprofiles:
   default: {}
@@ -244,9 +303,7 @@ nodes:
 			wwlog.SetLogWriter(buf)
 			err := baseCmd.Execute()
 			assert.NoError(t, err)
-			for _, output := range tt.output {
-				assert.Contains(t, buf.String(), output)
-			}
+			assert.Equal(t, strings.TrimSpace(tt.output), strings.TrimSpace(buf.String()))
 		})
 	}
 }
