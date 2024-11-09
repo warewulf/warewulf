@@ -202,20 +202,6 @@ command.
    This also goes for ``warewulf.conf`` as well - any changes made also require ``warewulfd`` to be restarted.
    The restart should be done using the following command: ``systemctl restart warewulfd``
 
-defaults.conf
-=============
-
-The ``defaults.conf`` file configures default values used when none
-are specified in ``nodes.conf``. For example: if a node does not have
-a "runtime overlay" specified, the respective value from
-``defaultnode`` is used. If a network device does not specify a
-"device," the device value of the ``dummy`` device is used.
-
-If ``defaults.conf`` does not exist, compiled-in defaults are used.
-
-There should never be a need to change this file: all site-local
-parameters should be specified using either nodes or profiles.
-
 Directories
 ===========
 
