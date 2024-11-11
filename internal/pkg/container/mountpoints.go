@@ -30,10 +30,10 @@ func InitMountPnts(binds []string) (mounts []*warewulfconf.MountEntry) {
 			}
 		}
 		mntPnt := warewulfconf.MountEntry{
-			Source:   bind[0],
-			Dest:     dest,
-			ReadOnly: readonly,
-			Copy:     copy_,
+			Source:    bind[0],
+			Dest:      dest,
+			ReadOnlyP: &readonly,
+			CopyP:     &copy_,
 		}
 		mounts = append(mounts, &mntPnt)
 	}

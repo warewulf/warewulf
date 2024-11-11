@@ -35,17 +35,17 @@ type TemplateStruct struct {
 	Warewulf      warewulfconf.WarewulfConf
 	Tftp          warewulfconf.TFTPConf
 	Paths         warewulfconf.BuildConfig
-	AllNodes      []node.NodeConf
-	node.NodeConf
+	AllNodes      []node.Node
+	node.Node
 	// backward compatiblity
 	Container string
-	ThisNode  *node.NodeConf
+	ThisNode  *node.Node
 }
 
 /*
 Initialize an TemplateStruct with the given node.NodeInfo
 */
-func InitStruct(nodeData node.NodeConf) (TemplateStruct, error) {
+func InitStruct(nodeData node.Node) (TemplateStruct, error) {
 	var tstruct TemplateStruct
 	hostname, _ := os.Hostname()
 	tstruct.BuildHost = hostname
@@ -78,7 +78,7 @@ func InitStruct(nodeData node.NodeConf) (TemplateStruct, error) {
 	dt := time.Now()
 	tstruct.BuildTime = dt.Format("01-02-2006 15:04:05 MST")
 	tstruct.BuildTimeUnix = strconv.FormatInt(dt.Unix(), 10)
-	tstruct.NodeConf.Tags = map[string]string{}
+	tstruct.Node.Tags = map[string]string{}
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 	dec := gob.NewDecoder(&buf)

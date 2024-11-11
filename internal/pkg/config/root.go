@@ -7,6 +7,7 @@
 package config
 
 import (
+	"bytes"
 	"fmt"
 	"net"
 	"net/netip"
@@ -20,36 +21,35 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var cachedConf RootConf
+var cachedConf WarewulfYaml
 
-// RootConf is the main Warewulf configuration structure. It stores
+// WarewulfYaml is the main Warewulf configuration structure. It stores
 // some information about the Warewulf server locally, and has
 // [WarewulfConf], [DHCPConf], [TFTPConf], and [NFSConf] sub-sections.
-type RootConf struct {
-	WWInternal      int           `yaml:"WW_INTERNAL"`
+type WarewulfYaml struct {
 	Comment         string        `yaml:"comment,omitempty"`
-	Ipaddr          string        `yaml:"ipaddr"`
+	Ipaddr          string        `yaml:"ipaddr,omitempty"`
 	Ipaddr6         string        `yaml:"ipaddr6,omitempty"`
-	Netmask         string        `yaml:"netmask"`
+	Netmask         string        `yaml:"netmask,omitempty"`
 	Network         string        `yaml:"network,omitempty"`
 	Ipv6net         string        `yaml:"ipv6net,omitempty"`
 	Fqdn            string        `yaml:"fqdn,omitempty"`
-	Warewulf        *WarewulfConf `yaml:"warewulf"`
-	DHCP            *DHCPConf     `yaml:"dhcp"`
-	TFTP            *TFTPConf     `yaml:"tftp"`
-	NFS             *NFSConf      `yaml:"nfs"`
+	Warewulf        *WarewulfConf `yaml:"warewulf,omitempty"`
+	DHCP            *DHCPConf     `yaml:"dhcp,omitempty"`
+	TFTP            *TFTPConf     `yaml:"tftp,omitempty"`
+	NFS             *NFSConf      `yaml:"nfs,omitempty"`
 	SSH             *SSHConf      `yaml:"ssh,omitempty"`
-	MountsContainer []*MountEntry `yaml:"container mounts" default:"[{\"source\": \"/etc/resolv.conf\", \"dest\": \"/etc/resolv.conf\"}]"`
-	Paths           *BuildConfig  `yaml:"paths"`
+	MountsContainer []*MountEntry `yaml:"container mounts,omitempty" default:"[{\"source\": \"/etc/resolv.conf\", \"dest\": \"/etc/resolv.conf\"}]"`
+	Paths           *BuildConfig  `yaml:"paths,omitempty"`
 	WWClient        *WWClientConf `yaml:"wwclient,omitempty"`
 
 	warewulfconf string
 }
 
-// New caches and returns a new [RootConf] initialized with empty
+// New caches and returns a new [WarewulfYaml] initialized with empty
 // values, clearing replacing any previously cached value.
-func New() *RootConf {
-	cachedConf = RootConf{}
+func New() *WarewulfYaml {
+	cachedConf = WarewulfYaml{}
 	cachedConf.warewulfconf = ""
 	cachedConf.Warewulf = new(WarewulfConf)
 	cachedConf.DHCP = new(DHCPConf)
@@ -63,9 +63,9 @@ func New() *RootConf {
 	return &cachedConf
 }
 
-// Get returns a previously cached [RootConf] if it exists, or returns
-// a new RootConf.
-func Get() *RootConf {
+// Get returns a previously cached [WarewulfYaml] if it exists, or returns
+// a new WarewulfYaml.
+func Get() *WarewulfYaml {
 	// NOTE: This function can be called before any log level is set
 	//       so using wwlog.Verbose or wwlog.Debug won't work
 	if reflect.ValueOf(cachedConf).IsZero() {
@@ -74,9 +74,9 @@ func Get() *RootConf {
 	return &cachedConf
 }
 
-// Read populates [RootConf] with the values from a configuration
+// Read populates [WarewulfYaml] with the values from a configuration
 // file.
-func (conf *RootConf) Read(confFileName string) error {
+func (conf *WarewulfYaml) Read(confFileName string) error {
 	wwlog.Debug("Reading warewulf.conf from: %s", confFileName)
 	conf.warewulfconf = confFileName
 	if data, err := os.ReadFile(confFileName); err != nil {
@@ -88,8 +88,8 @@ func (conf *RootConf) Read(confFileName string) error {
 	}
 }
 
-// Parse populates [RootConf] with the values from a yaml document.
-func (conf *RootConf) Parse(data []byte) error {
+// Parse populates [WarewulfYaml] with the values from a yaml document.
+func (conf *WarewulfYaml) Parse(data []byte) error {
 	// ipxe binaries are merged not overwritten, store defaults separate
 	defIpxe := make(map[string]string)
 	for k, v := range conf.TFTP.IpxeBinaries {
@@ -114,13 +114,12 @@ func (conf *RootConf) Parse(data []byte) error {
 			conf.Netmask = fmt.Sprintf("%d.%d.%d.%d", mask[0], mask[1], mask[2], mask[3])
 		}
 	}
-
 	return nil
 }
 
-// SetDynamicDefaults populates [RootConf] with plausible defaults for
+// SetDynamicDefaults populates [WarewulfYaml] with plausible defaults for
 // the runtime environment.
-func (conf *RootConf) SetDynamicDefaults() (err error) {
+func (conf *WarewulfYaml) SetDynamicDefaults() (err error) {
 	if conf.Ipaddr == "" || conf.Netmask == "" || conf.Network == "" {
 		var mask net.IPMask
 		var network *net.IPNet
@@ -198,12 +197,40 @@ func (conf *RootConf) SetDynamicDefaults() (err error) {
 	return
 }
 
-// InitializedFromFile returns true if [RootConf] memory was read from
+// InitializedFromFile returns true if [WarewulfYaml] memory was read from
 // a file, or false otherwise.
-func (conf *RootConf) InitializedFromFile() bool {
+func (conf *WarewulfYaml) InitializedFromFile() bool {
 	return conf.warewulfconf != ""
 }
 
-func (conf *RootConf) GetWarewulfConf() string {
+func (conf *WarewulfYaml) GetWarewulfConf() string {
 	return conf.warewulfconf
+}
+
+func (config *WarewulfYaml) Dump() ([]byte, error) {
+	var buf bytes.Buffer
+	yamlEncoder := yaml.NewEncoder(&buf)
+	yamlEncoder.SetIndent(2)
+	err := yamlEncoder.Encode(config)
+	return buf.Bytes(), err
+}
+
+func (config *WarewulfYaml) PersistToFile(configFile string) error {
+	out, dumpErr := config.Dump()
+	if dumpErr != nil {
+		wwlog.Error("%s", dumpErr)
+		return dumpErr
+	}
+	file, err := os.OpenFile(configFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
+	if err != nil {
+		wwlog.Error("%s", err)
+		return err
+	}
+	defer file.Close()
+	_, err = file.WriteString(string(out))
+	if err != nil {
+		return err
+	}
+	wwlog.Debug("persisted: %s", configFile)
+	return nil
 }

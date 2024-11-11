@@ -15,6 +15,7 @@ import (
 	"github.com/warewulf/warewulf/internal/app/wwctl/profile"
 	"github.com/warewulf/warewulf/internal/app/wwctl/server"
 	"github.com/warewulf/warewulf/internal/app/wwctl/ssh"
+	"github.com/warewulf/warewulf/internal/app/wwctl/upgrade"
 	"github.com/warewulf/warewulf/internal/app/wwctl/version"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/help"
@@ -60,6 +61,7 @@ func init() {
 	rootCmd.AddCommand(ssh.GetCommand())
 	rootCmd.AddCommand(genconf.GetCommand())
 	rootCmd.AddCommand(clean.GetCommand())
+	rootCmd.AddCommand(upgrade.Command)
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
@@ -89,7 +91,7 @@ func rootPersistentPreRunE(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 	if err != nil {
-		wwlog.Error("version: %s relase: %s WW_INTERNAL: %s", warewulfconf.Version, warewulfconf.Release, warewulfconf.Confversion)
+		wwlog.Error("version: %s relase: %s", warewulfconf.Version, warewulfconf.Release)
 		return
 	}
 	err = conf.SetDynamicDefaults()

@@ -10,13 +10,13 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/util"
 )
 
-type nodeList []NodeConf
+type nodeList []Node
 
 func (a nodeList) Len() int           { return len(a) }
 func (a nodeList) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a nodeList) Less(i, j int) bool { return a[i].id < a[j].id }
 
-type profileList []ProfileConf
+type profileList []Profile
 
 func (a profileList) Len() int           { return len(a) }
 func (a profileList) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
@@ -32,9 +32,9 @@ func (a profileList) Less(i, j int) bool { return a[i].id < a[j].id }
 Filter a given slice of NodeConf against a given
 regular expression
 */
-func FilterNodeListByName(set []NodeConf, searchList []string) []NodeConf {
-	var ret []NodeConf
-	unique := make(map[string]NodeConf)
+func FilterNodeListByName(set []Node, searchList []string) []Node {
+	var ret []Node
+	unique := make(map[string]Node)
 
 	if len(searchList) > 0 {
 		for _, search := range searchList {
@@ -59,9 +59,9 @@ func FilterNodeListByName(set []NodeConf, searchList []string) []NodeConf {
 Filter a given slice of ProfileConf against a given
 regular expression
 */
-func FilterProfileListByName(set []ProfileConf, searchList []string) []ProfileConf {
-	var ret []ProfileConf
-	unique := make(map[string]ProfileConf)
+func FilterProfileListByName(set []Profile, searchList []string) []Profile {
+	var ret []Profile
+	unique := make(map[string]Profile)
 
 	if len(searchList) > 0 {
 		for _, search := range searchList {
@@ -85,23 +85,23 @@ func FilterProfileListByName(set []ProfileConf, searchList []string) []ProfileCo
 /*
 Creates an NodeConf with the given id. Doesn't add it to the database
 */
-func NewNode(id string) (nodeconf NodeConf) {
+func NewNode(id string) (nodeconf Node) {
 	nodeconf = EmptyNode()
 	nodeconf.id = id
 	return nodeconf
 }
 
-func NewProfile(id string) (profileconf ProfileConf) {
+func NewProfile(id string) (profileconf Profile) {
 	profileconf = EmptyProfile()
 	profileconf.id = id
 	return profileconf
 }
 
-func EmptyNode() (nodeconf NodeConf) {
+func EmptyNode() (nodeconf Node) {
 	nodeconf.Ipmi = new(IpmiConf)
 	nodeconf.Ipmi.Tags = map[string]string{}
 	nodeconf.Kernel = new(KernelConf)
-	nodeconf.NetDevs = make(map[string]*NetDevs)
+	nodeconf.NetDevs = make(map[string]*NetDev)
 	nodeconf.Tags = map[string]string{}
 	return nodeconf
 }
@@ -109,11 +109,11 @@ func EmptyNode() (nodeconf NodeConf) {
 /*
 Creates a ProfileConf but doesn't add it to the database.
 */
-func EmptyProfile() (profileconf ProfileConf) {
+func EmptyProfile() (profileconf Profile) {
 	profileconf.Ipmi = new(IpmiConf)
 	profileconf.Ipmi.Tags = map[string]string{}
 	profileconf.Kernel = new(KernelConf)
-	profileconf.NetDevs = make(map[string]*NetDevs)
+	profileconf.NetDevs = make(map[string]*NetDev)
 	profileconf.Tags = map[string]string{}
 	return profileconf
 }
@@ -123,7 +123,7 @@ Flattens out a NodeConf, which means if there are no explicit values in *IpmiCon
 or *KernelConf, these pointer will set to nil. This will remove something like
 ipmi: {} from nodes.conf
 */
-func (info *NodeConf) Flatten() {
+func (info *Node) Flatten() {
 	recursiveFlatten(info)
 }
 
@@ -132,7 +132,7 @@ Flattens out a ProfileConf, which means if there are no explicit values in *Ipmi
 or *KernelConf, these pointer will set to nil. This will remove something like
 ipmi: {} from nodes.conf
 */
-func (info *ProfileConf) Flatten() {
+func (info *Profile) Flatten() {
 	recursiveFlatten(info)
 }
 
@@ -296,28 +296,28 @@ Getters for unexported fields
 /*
 Returns the id of the node
 */
-func (node *NodeConf) Id() string {
+func (node *Node) Id() string {
 	return node.id
 }
 
 /*
 Returns the id of the profile
 */
-func (node *ProfileConf) Id() string {
+func (node *Profile) Id() string {
 	return node.id
 }
 
 /*
 Returns if the node is a valid in the database
 */
-func (node *NodeConf) Valid() bool {
+func (node *Node) Valid() bool {
 	return node.valid
 }
 
 /*
 Check if the netdev is the primary one
 */
-func (dev *NetDevs) Primary() bool {
+func (dev *NetDev) Primary() bool {
 	return dev.primary
 }
 
@@ -353,7 +353,7 @@ func cleanList(list []string) (ret []string) {
 Return the ipv4 address and mask in CIDR format. Aimed for the use in
 templates.
 */
-func (netdev *NetDevs) IpCIDR() string {
+func (netdev *NetDev) IpCIDR() string {
 	if netdev.Ipaddr.IsUnspecified() || netdev.Netmask.IsUnspecified() {
 		return ""
 	}

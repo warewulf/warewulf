@@ -15,7 +15,7 @@ import (
 // NodeDelete adds nodes for management by Warewulf.
 func NodeDelete(ndp *wwapiv1.NodeDeleteParameter) (err error) {
 
-	var nodeList []node.NodeConf
+	var nodeList []node.Node
 	nodeList, err = NodeDeleteParameterCheck(ndp, false)
 	if err != nil {
 		return
@@ -55,7 +55,7 @@ func NodeDelete(ndp *wwapiv1.NodeDeleteParameter) (err error) {
 // NodeDeleteParameterCheck does error checking on NodeDeleteParameter.
 // Output to the console if console is true.
 // Returns the nodes to delete.
-func NodeDeleteParameterCheck(ndp *wwapiv1.NodeDeleteParameter, console bool) (nodeList []node.NodeConf, err error) {
+func NodeDeleteParameterCheck(ndp *wwapiv1.NodeDeleteParameter, console bool) (nodeList []node.Node, err error) {
 
 	if ndp == nil {
 		err = fmt.Errorf("NodeDeleteParameter is nil")

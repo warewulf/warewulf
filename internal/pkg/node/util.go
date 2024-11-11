@@ -10,9 +10,9 @@ import (
 /*
 Gets a node by its hardware(mac) address
 */
-func (config *NodeYaml) FindByHwaddr(hwa string) (NodeConf, error) {
+func (config *NodesYaml) FindByHwaddr(hwa string) (Node, error) {
 	if _, err := net.ParseMAC(hwa); err != nil {
-		return NodeConf{}, errors.New("invalid hardware address: " + hwa)
+		return Node{}, errors.New("invalid hardware address: " + hwa)
 	}
 	nodeList, _ := config.FindAllNodes()
 	for _, node := range nodeList {
@@ -23,20 +23,20 @@ func (config *NodeYaml) FindByHwaddr(hwa string) (NodeConf, error) {
 		}
 	}
 
-	return NodeConf{}, ErrNotFound
+	return Node{}, ErrNotFound
 }
 
 /*
 Find a node by its ip address
 */
-func (config *NodeYaml) FindByIpaddr(ipaddr string) (NodeConf, error) {
+func (config *NodesYaml) FindByIpaddr(ipaddr string) (Node, error) {
 	addr := net.ParseIP(ipaddr)
 	if addr == nil {
-		return NodeConf{}, errors.New("invalid IP:" + ipaddr)
+		return Node{}, errors.New("invalid IP:" + ipaddr)
 	}
 	nodeList, err := config.FindAllNodes()
 	if err != nil {
-		return NodeConf{}, err
+		return Node{}, err
 	}
 	for _, node := range nodeList {
 		for _, dev := range node.NetDevs {
@@ -46,7 +46,7 @@ func (config *NodeYaml) FindByIpaddr(ipaddr string) (NodeConf, error) {
 		}
 	}
 
-	return NodeConf{}, ErrNotFound
+	return Node{}, ErrNotFound
 }
 
 /*

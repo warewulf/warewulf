@@ -54,13 +54,11 @@ func Test_Set_Netdev(t *testing.T) {
 		args:    []string{"--netname=default", "--netdev=eth0", "default"},
 		wantErr: false,
 		stdout:  "",
-		inDB: `WW_INTERNAL: 45
-nodeprofiles:
+		inDB: `nodeprofiles:
   default: {}
 nodes: {}
 `,
-		outDb: `WW_INTERNAL: 45
-nodeprofiles:
+		outDb: `nodeprofiles:
   default:
     network devices:
       default:
@@ -74,13 +72,11 @@ func Test_Set_Netdev_and_Mask(t *testing.T) {
 		args:    []string{"--netname=default", "--netdev=eth0", "-M=255.255.255.0", "default"},
 		wantErr: false,
 		stdout:  "",
-		inDB: `WW_INTERNAL: 45
-nodeprofiles:
+		inDB: `nodeprofiles:
   default: {}
 nodes: {}
 `,
-		outDb: `WW_INTERNAL: 45
-nodeprofiles:
+		outDb: `nodeprofiles:
   default:
     network devices:
       default:
@@ -96,16 +92,14 @@ func Test_Set_Mask_Existing_NetDev(t *testing.T) {
 		args:    []string{"--netname=default", "-M=255.255.255.0", "default"},
 		wantErr: false,
 		stdout:  "",
-		inDB: `WW_INTERNAL: 45
-nodeprofiles:
+		inDB: `nodeprofiles:
   default:
     network devices:
       default:
         device: eth0
 nodes: {}
 `,
-		outDb: `WW_INTERNAL: 45
-nodeprofiles:
+		outDb: `nodeprofiles:
   default:
     network devices:
       default:

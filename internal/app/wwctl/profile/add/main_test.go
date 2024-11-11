@@ -20,22 +20,20 @@ func Test_Add(t *testing.T) {
 	}{
 		{
 			name:    "single profile add",
-			args:    []string{"--yes", "p01"},
+			args:    []string{"p01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 45
-nodeprofiles:
+			outDb: `nodeprofiles:
   p01: {}
 nodes: {}
 `,
 		},
 		{
 			name:    "single profile add with netname and netdev",
-			args:    []string{"--yes", "--netname", "primary", "--netdev", "eno3", "p02"},
+			args:    []string{"--netname", "primary", "--netdev", "eno3", "p02"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 45
-nodeprofiles:
+			outDb: `nodeprofiles:
   p02:
     network devices:
       primary:
@@ -48,8 +46,7 @@ nodes: {}
 	warewulfd.SetNoDaemon()
 	for _, tt := range tests {
 		env := testenv.New(t)
-		env.WriteFile(t, "etc/warewulf/nodes.conf",
-			`WW_INTERNAL: 45`)
+		env.WriteFile(t, "etc/warewulf/nodes.conf", ``)
 		var err error
 		t.Run(tt.name, func(t *testing.T) {
 			baseCmd := GetCommand()

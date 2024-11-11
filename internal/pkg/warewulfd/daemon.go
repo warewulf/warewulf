@@ -57,7 +57,7 @@ func DaemonInitLogging() error {
 
 	conf := warewulfconf.Get()
 
-	if conf.Warewulf.Syslog {
+	if conf.Warewulf.Syslog() {
 
 		wwlog.Debug("Changing log output to syslog")
 

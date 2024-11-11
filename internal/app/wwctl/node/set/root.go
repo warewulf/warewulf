@@ -14,7 +14,7 @@ type variables struct {
 	setNodeAll bool
 	setYes     bool
 	setForce   bool
-	nodeConf   node.NodeConf
+	nodeConf   node.Node
 	nodeDel    node.NodeConfDel
 	nodeAdd    node.NodeConfAdd
 }

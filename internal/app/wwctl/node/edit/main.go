@@ -38,7 +38,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		Output: args,
 	}
 	nodeListMsg := apinode.FilteredNodes(&filterList)
-	nodeMap := make(map[string]*node.NodeConf)
+	nodeMap := make(map[string]*node.Node)
 	// got proper yaml back
 	_ = yaml.Unmarshal([]byte(nodeListMsg.NodeConfMapYaml), nodeMap)
 	file, err := os.CreateTemp(os.TempDir(), "ww4NodeEdit*.yaml")
@@ -50,7 +50,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		_ = file.Truncate(0)
 		_, _ = file.Seek(0, 0)
 		if !NoHeader {
-			yamlTemplate := node.UnmarshalConf(node.NodeConf{}, []string{"tagsdel"})
+			yamlTemplate := node.UnmarshalConf(node.Node{}, []string{"tagsdel"})
 			_, _ = file.WriteString("#nodename:\n#  " + strings.Join(yamlTemplate, "\n#  ") + "\n")
 		}
 		_, _ = file.WriteString(nodeListMsg.NodeConfMapYaml)
@@ -73,7 +73,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Debug("Hashes are before %s and after %s\n", sum1, sum2)
 		if sum1 != sum2 {
 			wwlog.Debug("Nodes were modified")
-			modifiedNodeMap := make(map[string]*node.NodeConf)
+			modifiedNodeMap := make(map[string]*node.Node)
 			_, _ = file.Seek(0, 0)
 			// ignore error as only may occurs under strange circumstances
 			buffer, _ := io.ReadAll(file)

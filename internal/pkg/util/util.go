@@ -18,6 +18,10 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
+func BoolP(p *bool) bool {
+	return p != nil && *p
+}
+
 func FirstError(errs ...error) (err error) {
 	for _, e := range errs {
 		if err == nil {

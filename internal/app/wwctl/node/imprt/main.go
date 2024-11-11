@@ -22,7 +22,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 	defer file.Close()
 
-	importMap := make(map[string]*node.NodeConf)
+	importMap := make(map[string]*node.Node)
 	buffer, err := io.ReadAll(file)
 	if err != nil {
 		return fmt.Errorf("could not read: %s", err)
@@ -64,7 +64,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					continue
 				}
 				if importMap[line[0]] == nil {
-					importMap[line[0]] = new(node.NodeConf)
+					importMap[line[0]] = new(node.Node)
 				}
 			}
 		}

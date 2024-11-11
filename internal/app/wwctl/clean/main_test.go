@@ -12,8 +12,7 @@ func Test_Clean(t *testing.T) {
 	wwlog.SetLogLevel(wwlog.DEBUG)
 	env := testenv.New(t)
 	env.WriteFile(t, "etc/warewulf/nodes.conf",
-		`WW_INTERNAL: 45
-nodeprofiles: {}
+		`nodeprofiles: {}
 nodes:
   node1: {}
 `)

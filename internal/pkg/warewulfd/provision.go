@@ -35,7 +35,7 @@ type templateVars struct {
 	KernelArgs     string
 	KernelOverride string
 	Tags           map[string]string
-	NetDevs        map[string]*node.NetDevs
+	NetDevs        map[string]*node.NetDev
 }
 
 func ProvisionSend(w http.ResponseWriter, req *http.Request) {
@@ -50,7 +50,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 
 	wwlog.Info("request from hwaddr:%s ipaddr:%s | stage:%s", rinfo.hwaddr, req.RemoteAddr, rinfo.stage)
 
-	if (rinfo.stage == "runtime" || len(rinfo.overlay) > 0) && conf.Warewulf.Secure {
+	if (rinfo.stage == "runtime" || len(rinfo.overlay) > 0) && conf.Warewulf.Secure() {
 		if rinfo.remoteport >= 1024 {
 			wwlog.Denied("Non-privileged port: %s", req.RemoteAddr)
 			w.WriteHeader(http.StatusUnauthorized)
@@ -149,7 +149,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			remoteNode,
 			context,
 			request_overlays,
-			conf.Warewulf.AutobuildOverlays)
+			conf.Warewulf.AutobuildOverlays())
 
 		if err != nil {
 			if errors.Is(err, overlay.ErrDoesNotExist) {

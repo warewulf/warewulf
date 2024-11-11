@@ -3,9 +3,7 @@ package node
 import (
 	"net"
 
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"github.com/warewulf/warewulf/internal/pkg/wwtype"
-	"gopkg.in/yaml.v3"
 )
 
 const undef string = "UNDEF"
@@ -16,29 +14,28 @@ const undef string = "UNDEF"
 /*
 Structure of which goes to disk
 */
-type NodeYaml struct {
-	WWInternal   int `yaml:"WW_INTERNAL,omitempty" json:"WW_INTERNAL,omitempty"`
-	nodeProfiles map[string]*ProfileConf
-	nodes        map[string]*NodeConf
+type NodesYaml struct {
+	NodeProfiles map[string]*Profile
+	Nodes        map[string]*Node
 }
 
 /*
-NodeConf is the datastructure describing a node and a profile which in disk format.
+Node is the datastructure describing a node and a profile which in disk format.
 */
-type NodeConf struct {
+type Node struct {
 	id    string
 	valid bool // Is set true, if called by the constructor
 	// exported values
 	Discoverable wwtype.WWbool     `yaml:"discoverable,omitempty" lopt:"discoverable" sopt:"e" comment:"Make discoverable in given network (true/false)"`
 	AssetKey     string            `yaml:"asset key,omitempty" lopt:"asset" comment:"Set the node's Asset tag (key)"`
 	Profiles     []string          `yaml:"profiles,omitempty" lopt:"profile" sopt:"P" comment:"Set the node's profile members (comma separated)"`
-	ProfileConf  `yaml:"-,inline"` // include all values set in the profile, but inline them in yaml output if these are part of NodeConf
+	Profile      `yaml:"-,inline"` // include all values set in the profile, but inline them in yaml output if these are part of Node
 }
 
 /*
 Holds the data which can be set for profiles and nodes.
 */
-type ProfileConf struct {
+type Profile struct {
 	id string
 	// exported values
 	Comment        string                 `yaml:"comment,omitempty" lopt:"comment" comment:"Set arbitrary string comment"`
@@ -51,7 +48,7 @@ type ProfileConf struct {
 	Ipmi           *IpmiConf              `yaml:"ipmi,omitempty"`
 	Init           string                 `yaml:"init,omitempty" lopt:"init" sopt:"i" comment:"Define the init process to boot the container"`
 	Root           string                 `yaml:"root,omitempty" lopt:"root" comment:"Define the rootfs" `
-	NetDevs        map[string]*NetDevs    `yaml:"network devices,omitempty"`
+	NetDevs        map[string]*NetDev     `yaml:"network devices,omitempty"`
 	Tags           map[string]string      `yaml:"tags,omitempty"`
 	PrimaryNetDev  string                 `yaml:"primary network,omitempty" lopt:"primarynet" sopt:"p" comment:"Set the primary network interface"`
 	Disks          map[string]*Disk       `yaml:"disks,omitempty"`
@@ -78,9 +75,9 @@ type KernelConf struct {
 	Args     string `yaml:"args,omitempty" lopt:"kernelargs" sopt:"A" comment:"Set Kernel argument" json:"args,omitempty"`
 }
 
-type NetDevs struct {
+type NetDev struct {
 	Type    string            `yaml:"type,omitempty" lopt:"type" sopt:"T" comment:"Set device type of given network"`
-	OnBoot  *bool             `yaml:"onboot,omitempty" lopt:"onboot" comment:"Enable/disable network device (true/false)"`
+	OnBoot  wwtype.WWbool     `yaml:"onboot,omitempty" lopt:"onboot" comment:"Enable/disable network device (true/false)"`
 	Device  string            `yaml:"device,omitempty" lopt:"netdev" sopt:"N" comment:"Set the device for given network"`
 	Hwaddr  string            `yaml:"hwaddr,omitempty" lopt:"hwaddr" sopt:"H" comment:"Set the device's HW address for given network" type:"MAC"`
 	Ipaddr  net.IP            `yaml:"ipaddr,omitempty" comment:"IPv4 address in given network" sopt:"I" lopt:"ipaddr" type:"IP"`
@@ -107,7 +104,7 @@ Partitions map
 */
 type Partition struct {
 	Number             string `yaml:"number,omitempty" lopt:"partnumber" comment:"set the partition number, if not set next free slot is used" type:"uint"`
-	SizeMiB            string `yaml:"size_mib,omitempty" lopt:"partsize " comment:"set the size of the partition, if not set maximal possible size is used"  type:"uint"`
+	SizeMiB            string `yaml:"size_mib,omitempty" lopt:"partsize" comment:"set the size of the partition, if not set maximal possible size is used"  type:"uint"`
 	StartMiB           string `yaml:"start_mib,omitempty" comment:"the start of the partition" type:"uint"`
 	TypeGuid           string `yaml:"type_guid,omitempty" comment:"Linux filesystem data will be used if empty"`
 	Guid               string `yaml:"guid,omitempty" comment:"the GPT unique partition GUID"`
@@ -127,49 +124,4 @@ type FileSystem struct {
 	Uuid           string   `yaml:"uuid,omitempty" comment:"the uuid of the filesystem"`
 	Options        []string `yaml:"options,omitempty" comment:"any additional options to be passed to the format-specific mkfs utility"`
 	MountOptions   string   `yaml:"mount_options,omitempty" comment:"any special options to be passed to the mount command"`
-}
-
-/*
-interface so that nodes and profiles which aren't exported will
-be marshaled
-*/
-type ExportedYml struct {
-	WWInternal   int                     `yaml:"WW_INTERNAL"`
-	NodeProfiles map[string]*ProfileConf `yaml:"nodeprofiles"`
-	Nodes        map[string]*NodeConf    `yaml:"nodes"`
-}
-
-/*
-Marshall Exported stuff, not NodeYaml directly
-*/
-func (yml *NodeYaml) MarshalYAML() (interface{}, error) {
-	wwlog.Debug("marshall yml")
-	var exp ExportedYml
-	exp.WWInternal = yml.WWInternal
-	exp.Nodes = yml.nodes
-	exp.NodeProfiles = yml.nodeProfiles
-	node := yaml.Node{}
-	err := node.Encode(exp)
-	if err != nil {
-		return node, err
-	}
-	return node, err
-}
-
-/*
-Unmarshal to intermediate format
-*/
-func (yml *NodeYaml) UnmarshalYAML(
-	unmarshal func(interface{}) (err error),
-) (err error) {
-	wwlog.Debug("UnmarshalYAML called")
-	var exp ExportedYml
-	err = unmarshal(&exp)
-	if err != nil {
-		return
-	}
-	yml.WWInternal = exp.WWInternal
-	yml.nodes = exp.Nodes
-	yml.nodeProfiles = exp.NodeProfiles
-	return nil
 }

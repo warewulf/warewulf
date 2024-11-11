@@ -38,7 +38,7 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 			}
 		}
 	} else if ShowOpt.ShowYaml {
-		profileMap := make(map[string]node.ProfileConf)
+		profileMap := make(map[string]node.Profile)
 		for _, profile := range profiles {
 			profileMap[profile.Id()] = profile
 		}
@@ -46,7 +46,7 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 		buf, _ := yaml.Marshal(profileMap)
 		profileList.Output = append(profileList.Output, string(buf))
 	} else if ShowOpt.ShowJson {
-		profileMap := make(map[string]node.ProfileConf)
+		profileMap := make(map[string]node.Profile)
 		for _, profile := range profiles {
 			profileMap[profile.Id()] = profile
 		}

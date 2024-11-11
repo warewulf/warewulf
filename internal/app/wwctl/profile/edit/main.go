@@ -39,7 +39,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		Output: args,
 	}
 	profileListMsg := apiprofile.FilteredProfiles(&filterList)
-	profileMap := make(map[string]*node.ProfileConf)
+	profileMap := make(map[string]*node.Profile)
 	// got proper yaml back
 	_ = yaml.Unmarshal([]byte(profileListMsg.NodeConfMapYaml), profileMap)
 	file, err := os.CreateTemp(os.TempDir(), "ww4ProfileEdit*.yaml")
@@ -51,7 +51,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		_ = file.Truncate(0)
 		_, _ = file.Seek(0, 0)
 		if !NoHeader {
-			yamlTemplate := node.UnmarshalConf(node.ProfileConf{}, []string{"tagsdel"})
+			yamlTemplate := node.UnmarshalConf(node.Profile{}, []string{"tagsdel"})
 			_, _ = file.WriteString("#profilename:\n#  " + strings.Join(yamlTemplate, "\n#  ") + "\n")
 		}
 		_, _ = file.WriteString(profileListMsg.NodeConfMapYaml)
@@ -74,7 +74,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Debug("Hashes are before %s and after %s\n", sum1, sum2)
 		if sum1 != sum2 {
 			wwlog.Debug("Profiles were modified")
-			modifiedProfileMap := make(map[string]*node.ProfileConf)
+			modifiedProfileMap := make(map[string]*node.Profile)
 			_, _ = file.Seek(0, 0)
 			// ignore error as only may occurs under strange circumstances
 			buffer, _ := io.ReadAll(file)

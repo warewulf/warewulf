@@ -12,7 +12,7 @@ import (
 type nodeDB struct {
 	lock     sync.RWMutex
 	NodeInfo map[string]string
-	yml      node.NodeYaml
+	yml      node.NodesYaml
 }
 
 var (
@@ -53,7 +53,7 @@ func loadNodeDB() (err error) {
 	return nil
 }
 
-func GetNodeOrSetDiscoverable(hwaddr string) (node.NodeConf, error) {
+func GetNodeOrSetDiscoverable(hwaddr string) (node.Node, error) {
 	db.lock.RLock()
 	defer db.lock.RUnlock()
 	// NOTE: since discoverable nodes will write an updated DB to file and then

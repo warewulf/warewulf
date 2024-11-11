@@ -14,7 +14,7 @@ master={{ $master }}
 type=ethernet
 {{- else }}
 type={{if $netdev.Type}}{{ $netdev.Type }}{{ else }}ethernet{{end}}
-{{- if or $netdev.OnBoot (eq $netdev.OnBoot nil) }}
+{{- if $netdev.OnBoot }}
 autoconnect=true
 {{- end }}
 {{- end }}

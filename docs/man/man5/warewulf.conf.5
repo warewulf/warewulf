@@ -17,12 +17,6 @@ warewulf.conf is defined using YAML document markup syntax.
 The configuration parameters available include:
 
 .TP
-\fBWW_INTERNAL\fP
-Specifies the version of the configuration file format. The current
-version is 43.
-.IP
-
-.TP
 \fBipaddr\fP
 This is the control node's networking interface connecting to the
 cluster's private network. This configuration must match the host's
@@ -279,7 +273,6 @@ A sample configuration file for a typical deployment, with all
 dependent services enabled.
 
 .EX
-WW_INTERNAL: 45
 ipaddr: 10.0.0.1
 network: 10.0.0.0
 netmask: 255.255.0.0

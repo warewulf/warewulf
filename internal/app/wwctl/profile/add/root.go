@@ -11,12 +11,8 @@ import (
 )
 
 type variables struct {
-	profileConf  node.ProfileConf
-	nodeAdd      node.NodeConfAdd
-	SetNetDevDel string
-	SetNodeAll   bool
-	SetYes       bool
-	SetForce     bool
+	profileConf node.Profile
+	nodeAdd     node.NodeConfAdd
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
@@ -59,6 +55,5 @@ func GetCommand() *cobra.Command {
 	}); err != nil {
 		log.Println(err)
 	}
-	baseCmd.PersistentFlags().BoolVarP(&vars.SetYes, "yes", "y", false, "Set 'yes' to all questions asked")
 	return baseCmd
 }

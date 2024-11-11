@@ -29,7 +29,7 @@ PROFILE NAME  COMMENT/DESCRIPTION
 ------------  -------------------
 default       --
 `,
-			inDb: `WW_INTERNAL: 45
+			inDb: `
 nodeprofiles:
   default: {}
 nodes:
@@ -47,7 +47,7 @@ PROFILE NAME  COMMENT/DESCRIPTION
 default       --
 test          --
 `,
-			inDb: `WW_INTERNAL: 45
+			inDb: `
 nodeprofiles:
   default: {}
   test: {}
@@ -65,7 +65,7 @@ PROFILE NAME  COMMENT/DESCRIPTION
 ------------  -------------------
 test          --
 `,
-			inDb: `WW_INTERNAL: 45
+			inDb: `
 nodeprofiles:
   default: {}
   test: {}
@@ -84,7 +84,7 @@ PROFILE NAME  COMMENT/DESCRIPTION
 default       --
 test          --
 `,
-			inDb: `WW_INTERNAL: 45
+			inDb: `
 nodeprofiles:
   default: {}
   test: {}
@@ -96,7 +96,7 @@ nodes:
 		},
 	}
 
-	conf_yml := `WW_INTERNAL: 0`
+	conf_yml := ``
 	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
 	assert.NoError(t, warewulfConfErr)
 	defer os.Remove(tempWarewulfConf.Name())
@@ -158,7 +158,7 @@ func TestListMultipleFormats(t *testing.T) {
 			name:   "single profile list yaml output",
 			args:   []string{"-y"},
 			output: `default: {}`,
-			inDb: `WW_INTERNAL: 43
+			inDb: `
 nodeprofiles:
   default: {}
 nodes:
@@ -191,7 +191,7 @@ nodes:
   }
 }
 `,
-			inDb: `WW_INTERNAL: 43
+			inDb: `
 nodeprofiles:
   default: {}
 nodes:
@@ -207,7 +207,7 @@ nodes:
 default: {}
 test: {}
 `,
-			inDb: `WW_INTERNAL: 43
+			inDb: `
 nodeprofiles:
   default: {}
   test: {}
@@ -258,7 +258,7 @@ nodes:
   }
 }
 `,
-			inDb: `WW_INTERNAL: 43
+			inDb: `
 nodeprofiles:
   default: {}
   test: {}
@@ -270,7 +270,7 @@ nodes:
 		},
 	}
 
-	conf_yml := `WW_INTERNAL: 0`
+	conf_yml := ``
 	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
 	assert.NoError(t, warewulfConfErr)
 	defer os.Remove(tempWarewulfConf.Name())

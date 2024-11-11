@@ -40,7 +40,7 @@ func ProfileAddFromYaml(nodeList *wwapiv1.NodeAddParameter) (err error) {
 		return fmt.Errorf("got wrong hash, not modifying profile database")
 	}
 
-	profileMap := make(map[string]*node.ProfileConf)
+	profileMap := make(map[string]*node.Profile)
 	err = yaml.Unmarshal([]byte(nodeList.NodeConfYaml), profileMap)
 	if err != nil {
 		return fmt.Errorf("couldn't unmarshall Yaml: %w", err)

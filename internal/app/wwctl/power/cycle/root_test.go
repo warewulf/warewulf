@@ -15,7 +15,7 @@ func Test_PowerCycle(t *testing.T) {
 	warewulfd.SetNoDaemon()
 	env := testenv.New(t)
 	defer env.RemoveAll(t)
-	env.WriteFile(t, "etc/warewulf/nodes.conf", `WW_INTERNAL: 43
+	env.WriteFile(t, "etc/warewulf/nodes.conf", `
 nodeprofiles:
   default:
     ipmi:
