@@ -206,13 +206,11 @@ func Test_Add_NetTags(t *testing.T) {
 		args:    []string{"--nettagadd=dns=1.1.1.1", "n01"},
 		wantErr: false,
 		stdout:  "",
-		inDB: `WW_INTERNAL: 43
-nodeprofiles: {}
+		inDB: `nodeprofiles: {}
 nodes:
   n01: {}
 `,
-		outDb: `WW_INTERNAL: 43
-nodeprofiles: {}
+		outDb: `nodeprofiles: {}
 nodes:
   n01:
     network devices:
@@ -229,8 +227,7 @@ func Test_Del_NetTags(t *testing.T) {
 		args:    []string{"--netname=default", "--nettagdel=dns1,dns2", "n01"},
 		wantErr: false,
 		stdout:  "",
-		inDB: `WW_INTERNAL: 43
-nodeprofiles: {}
+		inDB: `nodeprofiles: {}
 nodes:
   n01:
     network devices:
@@ -239,8 +236,7 @@ nodes:
           dns1: 1.1.1.1
           dns2: 2.2.2.2
 `,
-		outDb: `WW_INTERNAL: 43
-nodeprofiles: {}
+		outDb: `nodeprofiles: {}
 nodes:
   n01: {}
 `,
