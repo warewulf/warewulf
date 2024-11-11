@@ -72,7 +72,8 @@ nodes:
   n01:
     profiles:
     - foo
-`}
+`,
+	}
 	run_test(t, test)
 }
 
@@ -94,7 +95,8 @@ nodes:
   n01:
     profiles:
     - default
-`}
+`,
+	}
 	run_test(t, test)
 }
 
@@ -114,9 +116,11 @@ nodes:
   n01:
     ipmi:
       write: "true"
-`}
+`,
+	}
 	run_test(t, test)
 }
+
 func Test_Set_Ipmi_Write_Implicit(t *testing.T) {
 	test := test_description{
 		args:    []string{"--ipmiwrite", "n01"},
@@ -133,7 +137,8 @@ nodes:
   n01:
     ipmi:
       write: "true"
-`}
+`,
+	}
 	run_test(t, test)
 }
 
@@ -153,9 +158,11 @@ nodes:
 nodeprofiles: {}
 nodes:
   n01: {}
-`}
+`,
+	}
 	run_test(t, test)
 }
+
 func Test_Unset_Ipmi_Write_False(t *testing.T) {
 	test := test_description{
 		args:    []string{"--ipmiwrite=UNDEF", "n01"},
@@ -172,9 +179,11 @@ nodes:
 nodeprofiles: {}
 nodes:
   n01: {}
-`}
+`,
+	}
 	run_test(t, test)
 }
+
 func Test_Ipmi_Hidden_False(t *testing.T) {
 	test := test_description{
 		args:    []string{"--ipmiwrite=false", "n01"},
@@ -201,13 +210,62 @@ nodes:
     - default
     ipmi:
       write: "false"
-`}
+`,
+	}
+	run_test(t, test)
+}
+
+func Test_Add_NetTags(t *testing.T) {
+	test := test_description{
+		args:    []string{"--nettagadd=dns=1.1.1.1", "n01"},
+		wantErr: false,
+		stdout:  "",
+		inDB: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes:
+  n01: {}
+`,
+		outDb: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes:
+  n01:
+    network devices:
+      default:
+        tags:
+          dns: 1.1.1.1
+`,
+	}
+	run_test(t, test)
+}
+
+func Test_Del_NetTags(t *testing.T) {
+	test := test_description{
+		args:    []string{"--netname=default", "--nettagdel=dns1,dns2", "n01"},
+		wantErr: false,
+		stdout:  "",
+		inDB: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes:
+  n01:
+    network devices:
+      default:
+        tags:
+          dns1: 1.1.1.1
+          dns2: 2.2.2.2
+`,
+		outDb: `WW_INTERNAL: 43
+nodeprofiles: {}
+nodes:
+  n01: {}
+`,
+	}
 	run_test(t, test)
 }
 
 func Test_Multiple_Set_Tests(t *testing.T) {
 	tests := []test_description{
-		{name: "single node change profile",
+		{
+			name:    "single node change profile",
 			args:    []string{"--profile=foo", "n01"},
 			wantErr: false,
 			stdout:  "",
@@ -227,8 +285,10 @@ nodes:
   n01:
     profiles:
     - foo
-`},
-		{name: "multiple nodes change profile",
+`,
+		},
+		{
+			name:    "multiple nodes change profile",
 			args:    []string{"--profile=foo", "n0[1-2]"},
 			wantErr: false,
 			stdout:  "",
@@ -254,8 +314,10 @@ nodes:
   n02:
     profiles:
     - foo
-`},
-		{name: "single node set ipmitag",
+`,
+		},
+		{
+			name:    "single node set ipmitag",
 			args:    []string{"--ipmitagadd", "foo=baar", "n01"},
 			wantErr: false,
 			stdout:  "",
@@ -278,8 +340,10 @@ nodes:
     ipmi:
       tags:
         foo: baar
-`},
-		{name: "single node delete tag",
+`,
+		},
+		{
+			name:    "single node delete tag",
 			args:    []string{"--tagdel", "tag1", "n01"},
 			wantErr: false,
 			stdout:  "",
@@ -304,8 +368,10 @@ nodes:
     - default
     tags:
       tag2: value2
-`},
-		{name: "single node set fs,part and disk",
+`,
+		},
+		{
+			name:    "single node set fs,part and disk",
 			args:    []string{"--fsname=var", "--fspath=/var", "--fsformat=btrfs", "--partname=var", "--partnumber=1", "--diskname=/dev/vda", "n01"},
 			wantErr: false,
 			stdout:  "",
@@ -335,8 +401,10 @@ nodes:
       /dev/disk/by-partlabel/var:
         format: btrfs
         path: /var
-`},
-		{name: "single delete not existing fs",
+`,
+		},
+		{
+			name:    "single delete not existing fs",
 			args:    []string{"--fsdel=foo", "n01"},
 			wantErr: true,
 			stdout:  "",
@@ -376,8 +444,10 @@ nodes:
       /dev/disk/by-partlabel/var:
         format: btrfs
         path: /var
-`},
-		{name: "single node delete existing fs",
+`,
+		},
+		{
+			name:    "single node delete existing fs",
 			args:    []string{"--fsdel=/dev/disk/by-partlabel/var", "n01"},
 			wantErr: false,
 			stdout:  "",
@@ -413,8 +483,10 @@ nodes:
         partitions:
           var:
             number: "1"
-`},
-		{name: "single node delete existing partition",
+`,
+		},
+		{
+			name:    "single node delete existing partition",
 			args:    []string{"--partdel=var", "n01"},
 			wantErr: false,
 			stdout:  "",
@@ -449,8 +521,10 @@ nodes:
       /dev/disk/by-partlabel/var:
         format: btrfs
         path: /var
-`},
-		{name: "single node delete existing disk",
+`,
+		},
+		{
+			name:    "single node delete existing disk",
 			args:    []string{"--diskdel=/dev/vda", "n01"},
 			wantErr: false,
 			stdout:  "",
@@ -484,8 +558,10 @@ nodes:
       /dev/disk/by-partlabel/var:
         format: btrfs
         path: /var
-`},
-		{name: "single node set mtu",
+`,
+		},
+		{
+			name:    "single node set mtu",
 			args:    []string{"--mtu", "1234", "--netname=mynet", "n01"},
 			wantErr: false,
 			stdout:  "",
@@ -508,8 +584,10 @@ nodes:
     network devices:
       mynet:
         mtu: "1234"
-`},
-		{name: "single node set ipmitag",
+`,
+		},
+		{
+			name:    "single node set ipmitag",
 			args:    []string{"--tagadd", "nodetag1=nodevalue1", "n01"},
 			wantErr: false,
 			stdout:  "",
@@ -545,8 +623,10 @@ nodes:
     - p2
     tags:
       nodetag1: nodevalue1
-`},
-		{name: "single node set comma in comment",
+`,
+		},
+		{
+			name:    "single node set comma in comment",
 			args:    []string{"n01", "--comment", "This is a , comment"},
 			wantErr: false,
 			stdout:  "",
@@ -560,7 +640,8 @@ nodeprofiles: {}
 nodes:
   n01:
     comment: This is a , comment
-`},
+`,
+		},
 	}
 
 	conf_yml := `WW_INTERNAL: 0`
@@ -610,7 +691,8 @@ nodes:
     - default
     tags:
       email: node
-`},
+`,
+		},
 		{
 			args:    []string{"--tagadd=newtag=newval", "n01"},
 			wantErr: false,
@@ -640,7 +722,8 @@ nodes:
     tags:
       email: node
       newtag: newval
-`},
+`,
+		},
 	}
 
 	for _, tt := range tests {
