@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"os"
 	"strings"
-
 	"testing"
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
@@ -157,7 +156,8 @@ nodes:
   n01:
     profiles:
     - default
-`},
+`,
+		},
 		{
 			name:    "node list profile with comment",
 			args:    []string{"-a"},
@@ -176,7 +176,8 @@ nodes:
   n01:
     profiles:
     - default
-`},
+`,
+		},
 		{
 			name:    "node list profile with comment superseded",
 			args:    []string{"-a"},
@@ -196,7 +197,8 @@ nodes:
     comment: nodecomment
     profiles:
     - default
-`},
+`,
+		},
 		{
 			name:    "node list profile with ipmi user",
 			args:    []string{"-i"},
@@ -215,7 +217,8 @@ nodes:
   n01:
     profiles:
     - default
-`},
+`,
+		},
 		{
 			name:    "node list profile with ipmi user superseded",
 			args:    []string{"-i"},
@@ -236,7 +239,8 @@ nodes:
       username: user
     profiles:
     - default
-`},
+`,
+		},
 		{
 			name:    "multiple profiles list",
 			args:    []string{},
@@ -255,7 +259,8 @@ nodes:
     profiles:
     - p1
     - p2
-`},
+`,
+		},
 		{
 			name:    "multiple profiles list all",
 			args:    []string{"-a"},
@@ -274,7 +279,8 @@ nodes:
     profiles:
     - p1
     - p2
-`},
+`,
+		},
 		{
 			name:    "multiple overlays list long with negation",
 			args:    []string{"-l"},
@@ -294,7 +300,8 @@ nodes:
   n01:
     profiles:
     - p1
-`},
+`,
+		},
 		{
 			name:    "multiple overlays list long",
 			args:    []string{"-l"},
@@ -319,7 +326,8 @@ nodes:
     runtime overlay:
     - nop1
     - ~rop1
-`},
+`,
+		},
 		{
 			name:    "multiple overlays list all with negation",
 			args:    []string{"-a"},
@@ -346,7 +354,8 @@ nodes:
     runtime overlay:
     - nop1
     - ~rop1
-`},
+`,
+		},
 		{
 			name:    "multiple overlays list all",
 			args:    []string{"-a"},
@@ -369,7 +378,8 @@ nodes:
     - p1
     runtime overlay:
     - nop1
-`},
+`,
+		},
 		{
 			name:    "network onboot",
 			args:    []string{"-a"},
@@ -385,7 +395,8 @@ nodes:
     network devices:
       default:
         onboot: true
-`},
+`,
+		},
 		{
 			name:    "empty network device",
 			args:    []string{"-a"},
@@ -399,7 +410,8 @@ nodes:
   wwnode1:
     network devices:
       default: {}
-`},
+`,
+		},
 	}
 
 	conf_yml := `WW_INTERNAL: 0`
@@ -437,7 +449,6 @@ nodes:
 			err := baseCmd.Execute()
 			assert.NoError(t, err)
 			assert.Equal(t, strings.TrimSpace(tt.stdout), strings.TrimSpace(buf.String()))
-
 		})
 	}
 }
@@ -496,6 +507,7 @@ nodes:
       "Interface": "",
       "EscapeChar": "",
       "Write": "",
+      "Template": "",
       "Tags": {}
     },
     "Init": "",
@@ -545,6 +557,7 @@ nodes:
       "Interface": "",
       "EscapeChar": "",
       "Write": "",
+      "Template": "",
       "Tags": {}
     },
     "Init": "",
@@ -578,6 +591,7 @@ nodes:
       "Interface": "",
       "EscapeChar": "",
       "Write": "",
+      "Template": "",
       "Tags": {}
     },
     "Init": "",
