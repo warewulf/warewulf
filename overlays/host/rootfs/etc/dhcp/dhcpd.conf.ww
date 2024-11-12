@@ -51,10 +51,8 @@ if exists user-class and option user-class = "iPXE" {
 
 subnet {{$.Network}} netmask {{$.Netmask}} {
     max-lease-time 120;
-{{- if ne .Dhcp.Template "static" }}
     range {{$.Dhcp.RangeStart}} {{$.Dhcp.RangeEnd}};
     next-server {{.Ipaddr}};
-{{- end }}
 }
 
 {{- if eq .Dhcp.Template "static" }}
