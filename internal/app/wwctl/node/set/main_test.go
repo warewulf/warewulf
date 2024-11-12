@@ -345,6 +345,50 @@ nodes:
 `,
 		},
 		{
+			name:    "single node add tag",
+			args:    []string{"--tagadd", "tag1=foobaar", "n01"},
+			wantErr: false,
+			stdout:  "",
+			inDB: `nodeprofiles:
+  default: {}
+nodes:
+  n01: {}
+`,
+			outDb: `nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    tags:
+      tag1: foobaar
+`,
+		},
+		{
+			name:    "single node add tag with netdev",
+			args:    []string{"--tagadd", "tag1=foobaar", "n01"},
+			wantErr: false,
+			stdout:  "",
+			inDB: `nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    network devices:
+      default:
+        ipaddr: 172.16.130.101
+
+`,
+			outDb: `nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    tags:
+      tag1: foobaar
+    network devices:
+      default:
+        ipaddr: 172.16.130.101
+`,
+		},
+
+		{
 			name:    "single node set fs,part and disk",
 			args:    []string{"--fsname=var", "--fspath=/var", "--fsformat=btrfs", "--partname=var", "--partnumber=1", "--diskname=/dev/vda", "n01"},
 			wantErr: false,
