@@ -93,6 +93,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Simplify passing of arguments to commands through `wwctl container exec`. #253
 - Don't update IPMI if password isn't set. #638
 - Fix issue that `--nettagdel` does not work properly. #1503
+- Fix test for dhcp static configuration #1536 #1537
 
 ## v4.5.8, 2024-10-01
 
@@ -122,6 +123,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Make sure that tftp files have unmasked permissions at creation time. #674
 - Fix "onboot" behavior for NetworkManager, Debian networking, and Suse wicked. #1278
 - Clarified missing steps in Enterprise Linux quickstart. #1179
+- Fix dhcpd.conf static template to include next-server and dhcp-range #1536
 
 
 ## v4.5.7, 2024-09-11

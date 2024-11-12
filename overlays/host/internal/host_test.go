@@ -218,6 +218,8 @@ if exists user-class and option user-class = "iPXE" {
 
 subnet 192.168.0.0 netmask 255.255.255.0 {
     max-lease-time 120;
+    range 192.168.0.100 192.168.0.199;
+    next-server 192.168.0.1;
 }
 host node1-default
 {
