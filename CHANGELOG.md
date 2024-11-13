@@ -65,6 +65,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - replaced deprecated errors.Wrapf with fmr.Errorf. #1534
 - Rename udev net naming file to 70-persistent-net.rules. #1227
 - Manage warewulfd template data as a pointer. #1548
+- Added test for sending grub.cfg.ww. #1548
 
 ### Removed
 
