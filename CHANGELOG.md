@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add support for static routes to NetworkManager, wicked, ifcfg, debian.network_interfaces overlays. #1257
 - Add `wwctl upgrade <config|nodes>`. #230, #517
 - Better handling of InfiniBand udev net naming. #1227
+- use templating mechanism for power commands. #1004
 
 ### Changed
 
@@ -171,8 +172,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Refactor URL handling in wwclient to consistently escape arguments.
 
-## v4.5.6, unreleased
-
 ### Fixed
 
 - Ensure autobuilt overlays include contextual overlay contents. #1296
@@ -182,7 +181,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 - `wwctl container list` only lists names by default. (`--long` shows all attributes.) #1117
-- use templating mechanism for power commands
 
 ## v4.5.5, 2024-07-05
 
