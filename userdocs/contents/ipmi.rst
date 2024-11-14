@@ -110,7 +110,7 @@ Node View
   n001                 init               --           (/sbin/init)
   n001                 asset              --           --
   n001                 kerneloverride     --           tw
-  n001                 kernelargs         --           (quiet crashkernel=no vga=791 net.naming-scheme=v238)
+  n001                 kernelargs         --           (quiet crashkernel=no net.ifnames=1)
   n001                 ipmiaddr           --           --
   n001                 ipminetmask        --           --
   n001                 ipmiport           --           --
