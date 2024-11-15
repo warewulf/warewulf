@@ -134,7 +134,7 @@ func NodeSetParameterCheck(set *wwapiv1.ConfSetParameter) (nodeDB node.NodesYaml
 				for _, key := range set.NetTagDel {
 					delete(nodePtr.NetDevs[set.Netdev].Tags, key)
 				}
-				for key, val := range set.TagAdd {
+				for key, val := range set.NetTagAdd {
 					nodePtr.NetDevs[set.Netdev].Tags[key] = val
 				}
 			}

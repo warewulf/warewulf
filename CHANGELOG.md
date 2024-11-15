@@ -132,6 +132,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix "onboot" behavior for NetworkManager, Debian networking, and Suse wicked. #1278
 - Clarified missing steps in Enterprise Linux quickstart. #1179
 - Fix dhcpd.conf static template to include next-server and dhcp-range #1536
+- Fix panic when adding tag with existing netdev #1546
 
 
 ## v4.5.7, 2024-09-11
