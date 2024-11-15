@@ -1,1 +1,1 @@
-{{ ImportLink "/etc/localtime" }}
+{{ if .Tags.localtime }}{{ printf "%s/%s" "/usr/share/zoneinfo" .Tags.localtime | softlink }}{{ else }}{{ ImportLink "/etc/localtime" }}{{ end }}
