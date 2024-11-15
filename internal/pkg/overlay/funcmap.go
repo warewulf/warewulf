@@ -125,10 +125,14 @@ func createIgnitionJson(node *node.Node) string {
 }
 
 func importSoftlink(lnk string) string {
-	path, err := filepath.EvalSymlinks(lnk)
+	target, err := filepath.EvalSymlinks(lnk)
 	if err != nil {
 		return "abort"
 	}
-	wwlog.Debug("importing softlink pointing to: %s", path)
-	return fmt.Sprintf("{{ /* softlink \"%s\" */ }}", path)
+	wwlog.Debug("importing softlink pointing to: %s", target)
+	return softlink(target)
+}
+
+func softlink(target string) string {
+	return fmt.Sprintf("{{ /* softlink \"%s\" */ }}", target)
 }
