@@ -157,7 +157,7 @@ lower-case versions) to use a proxy during ``wwctl container import``.
 .. code-block:: shell
 
    export HTTPS_PROXY=squid.localdomain
-   wwctl conatiner import docker://ghcr.io/warewulf/warewulf-rockylinux:8
+   wwctl container import docker://ghcr.io/warewulf/warewulf-rockylinux:8
 
 See ProxyFromEnvironment_ For more information.
 
