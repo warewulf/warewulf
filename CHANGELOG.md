@@ -45,6 +45,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Bump golang.org/x/term from 0.20.0 to 0.25.0 #1476
 - Bump github.com/grpc-ecosystem/grpc-gateway/v2 from 2.19.1 to 2.23.0 #1513
 - Bump github.com/containers/image/v5 from 5.30.1 to 5.32.2 #1366
+- Bump github.com/fatih/color from 1.17.0 to 1.18.0 #1523
 - Disable building containers by default when calling `wwctl container copy`. #1378
 - Split wwinit and generic overlays into discrete functionality. #987
 - Updated IgnitionJson to sort filesystems. #1433
