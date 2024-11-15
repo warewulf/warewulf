@@ -215,13 +215,18 @@ A given string can be split into substrings.
 softlink
 ^^^^^^^^
 
-Will create a soft link to the given string for the template.
+Creates a soft link to the given string for the template.
 
 ImportLink
 ^^^^^^^^^^
 
-Tries to evaluate the soft link on the host running `wwctl`/`warewulfd` and
-then create the soft link to it.
+Evaluates the soft link on the Warewulf server and
+then create the soft link to it in the overlay.
+
+readlink
+^^^^^^^^
+
+Evaluates the soft link on the Warewulf server and returns the target.
 
 
 Node specific files
