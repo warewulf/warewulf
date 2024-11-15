@@ -238,13 +238,18 @@ func BuildOverlayIndir(nodeData node.Node, overlayNames []string, outputDir stri
 					// search for magic file name comment
 					fileScanner := bufio.NewScanner(bytes.NewReader(buffer.Bytes()))
 					fileScanner.Split(ScanLines)
-					reg := regexp.MustCompile(`.*{{\s*/\*\s*file\s*["'](.*)["']\s*\*/\s*}}.*`)
+					regFile := regexp.MustCompile(`.*{{\s*/\*\s*file\s*["'](.*)["']\s*\*/\s*}}.*`)
+					regLink := regexp.MustCompile(`.*{{\s*/\*\s*softlink\s*["'](.*)["']\s*\*/\s*}}.*`)
 					foundFileComment := false
 					for fileScanner.Scan() {
 						line := fileScanner.Text()
-						filenameFromTemplate := reg.FindAllStringSubmatch(line, -1)
-						if len(filenameFromTemplate) != 0 {
-							wwlog.Debug("Found multiple comment, new filename %s", filenameFromTemplate[0][1])
+						filenameFromTemplate := regFile.FindAllStringSubmatch(line, -1)
+						softlinkFromTemplate := regLink.FindAllStringSubmatch(line, -1)
+						if len(softlinkFromTemplate) != 0 {
+							wwlog.Debug("Creating soft link %s -> %s", destFileName, softlinkFromTemplate[0][1])
+							return os.Symlink(softlinkFromTemplate[0][1], path.Join(outputDir, destFileName))
+						} else if len(filenameFromTemplate) != 0 {
+							wwlog.Debug("Writing file %s", filenameFromTemplate[0][1])
 							if foundFileComment {
 								err = CarefulWriteBuffer(path.Join(outputDir, destFileName),
 									fileBuffer, backupFile, info.Mode())
@@ -371,10 +376,13 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (
 		"Include":      templateFileInclude,
 		"IncludeFrom":  templateContainerFileInclude,
 		"IncludeBlock": templateFileBlock,
+		"ImportLink":   importSoftlink,
 		"basename":     path.Base,
 		"inc":          func(i int) int { return i + 1 },
 		"dec":          func(i int) int { return i - 1 },
 		"file":         func(str string) string { return fmt.Sprintf("{{ /* file \"%s\" */ }}", str) },
+		"softlink":     softlink,
+		"readlink":     filepath.EvalSymlinks,
 		"IgnitionJson": func() string {
 			str := createIgnitionJson(data.ThisNode)
 			if str != "" {
