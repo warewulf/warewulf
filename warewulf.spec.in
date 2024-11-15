@@ -212,6 +212,7 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/wicked/rootfs/*
 %attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/wwclient/rootfs/*
 %attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/wwinit/rootfs/*
+%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/localtime/rootfs/*
 
 %attr(-, root, root) %{_bindir}/wwctl
 %attr(-, root, root) %{_prefix}/lib/firewalld/services/warewulf.xml
