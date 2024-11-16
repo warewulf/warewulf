@@ -6,8 +6,8 @@ var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
 		Use:                   "list [OPTIONS]",
-		Short:                 "List imported Kernel images",
-		Long:                  "This command will list the kernels that have been imported into Warewulf.",
+		Short:                 "List available kernels",
+		Long:                  "This command lists the kernels that are available in the imported containers.",
 		RunE:                  CobraRunE,
 		Args:                  cobra.ExactArgs(0),
 		Aliases:               []string{"ls"},

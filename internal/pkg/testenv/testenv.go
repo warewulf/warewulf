@@ -144,6 +144,12 @@ func (env *TestEnv) ImportFile(t *testing.T, fileName string, inputFileName stri
 	env.WriteFile(t, fileName, string(buffer))
 }
 
+// CreateFile creates an empty file to fileName, creating any necessary intermediate directories
+// relative to the test environment.
+func (env *TestEnv) CreateFile(t *testing.T, fileName string) {
+	env.WriteFile(t, fileName, "")
+}
+
 // ReadFile returns the content of fileName as converted to a
 // string.
 //

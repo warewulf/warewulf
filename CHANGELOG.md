@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Better handling of InfiniBand udev net naming. #1227
 - use templating mechanism for power commands. #1004
 - Document "known issues."
+- Add `wwctl <node|profile> <add|set> --kernelversion` to specify the desired kernel version. #1556
 
 ### Changed
 
@@ -72,6 +73,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Bump github.com/Masterminds/sprig/v3 from 3.2.3 to 3.3.0 #1553
 - Bump github.com/golang/glog from 1.2.0 to 1.2.3 #1527
 - Bump github.com/opencontainers/runc from 1.1.12 to 1.1.14
+- Repurpose Kernel.Override to specify the path to the desired kernel within the container. #1556
+- Repurpose `wwctl kernel list` to list discovered kernels from containers. #1556
 
 ### Removed
 
@@ -80,6 +83,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Remove `wwctl server <start,stop,status,restart,reload>` #508
 - Remove `wwctl overlay build --host` #1419
 - Remove `wwctl overlay build --nodes` #1419
+- Remove `wwctl kernel <import|delete>` #1556
 
 ### Fixed
 

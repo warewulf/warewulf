@@ -305,7 +305,11 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 		}
 
 		wwlog.Debug("Finding kernel version for: %s", source)
-		_, kernelVersion, _ := kernel.FindKernel(container.RootFsDir(source))
+		kernel := kernel.FindKernels(source).Preferred()
+		kernelVersion := ""
+		if kernel != nil {
+			kernelVersion = kernel.Version()
+		}
 		var creationTime uint64
 		sourceStat, err := os.Stat(container.SourceDir(source))
 		wwlog.Debug("Checking creation time for: %s,%v", container.SourceDir(source), sourceStat.ModTime())
@@ -359,7 +363,11 @@ func ContainerShow(csp *wwapiv1.ContainerShowParameter) (response *wwapiv1.Conta
 		err = fmt.Errorf("%s is not a valid container", containerName)
 		return
 	}
-	_, kernelVersion, _ := kernel.FindKernel(container.RootFsDir(containerName))
+	kernel := kernel.FindKernels(containerName).Preferred()
+	kernelVersion := ""
+	if kernel != nil {
+		kernelVersion = kernel.Version()
+	}
 
 	nodeDB, err := node.New()
 	if err != nil {

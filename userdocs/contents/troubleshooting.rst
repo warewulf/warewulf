@@ -24,7 +24,7 @@ and substitute your cluster node's MAC addres in place of 00:00:00:00:00:00.)
    imgextract --name container ${uri}?stage=container&compress=gz
    imgextract --name system ${uri}?stage=system&compress=gz
    imgextract --name runtime ${uri}?stage=runtime&compress=gz
-   boot kernel initrd=container initrd=kmods initrd=system initrd=runtime
+   boot kernel initrd=container initrd=system initrd=runtime
 
 - The ``uri`` variable points to ``warewulfd`` for future reference.
   This includes the cluster node's MAC address so that Warewulf knows what container and overlays to provide.
@@ -48,7 +48,7 @@ To do so, substitute the ``boot`` command above.
 
 .. code-block::
 
-   boot kernel initrd=container initrd=kmods initrd=system initrd=runtime rdinit=/bin/sh
+   boot kernel initrd=container initrd=system initrd=runtime rdinit=/bin/sh
 
 .. note::
 

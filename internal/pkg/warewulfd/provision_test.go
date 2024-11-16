@@ -37,6 +37,7 @@ var provisionSendTests = []struct {
 
 func Test_ProvisionSend(t *testing.T) {
 	env := testenv.New(t)
+	defer env.RemoveAll(t)
 
 	env.WriteFile(t, "etc/warewulf/nodes.conf", `nodeprofiles:
   default:
@@ -63,51 +64,28 @@ nodes:
     ipxe template: test
     kernel:
       override: 1.1.1`)
-	// create a  arp file as for grub we look up the ip address through the arp cache
 
-	env.WriteFile(t, "arpcache", `IP address       HW type     Flags       HW address            Mask     Device
+	// create a  arp file as for grub we look up the ip address through the arp cache
+	env.WriteFile(t, "/var/tmp/arpcache", `IP address       HW type     Flags       HW address            Mask     Device
 10.10.10.10    0x1         0x2         00:00:00:ff:ff:ff     *        dummy
 10.10.10.11    0x1         0x2         00:00:00:00:ff:ff     *        dummy
 10.10.10.12    0x1         0x2         00:00:00:00:00:ff     *        dummy`)
-	SetArpFile(path.Join(env.BaseDir, "arpcache"))
-	conf := warewulfconf.Get()
-	containerDir, imageDirErr := os.MkdirTemp(os.TempDir(), "ww-test-container-*")
-	assert.NoError(t, imageDirErr)
-	defer os.RemoveAll(containerDir)
-	conf.Paths.WWChrootdir = containerDir
-
-	sysConfDir, sysConfDirErr := os.MkdirTemp(os.TempDir(), "ww-test-sysconf-*")
-	assert.NoError(t, sysConfDirErr)
-	defer os.RemoveAll(sysConfDir)
-	conf.Paths.Sysconfdir = sysConfDir
-
-	assert.NoError(t, os.MkdirAll(path.Join(containerDir, "suse/rootfs/usr/lib64/efi"), 0700))
-	{
-		_, err := os.Create(path.Join(containerDir, "suse/rootfs/usr/lib64/efi", "shim.efi"))
-		assert.NoError(t, err)
-	}
-	assert.NoError(t, os.MkdirAll(path.Join(containerDir, "suse/rootfs/usr/share/efi/x86_64/"), 0700))
-	{
-		_, err := os.Create(path.Join(containerDir, "suse/rootfs/usr/share/efi/x86_64/", "grub.efi"))
-		assert.NoError(t, err)
-	}
-	assert.NoError(t, os.MkdirAll(path.Join(containerDir, "suse/rootfs/boot"), 0700))
-	{
-		_, err := os.Create(path.Join(containerDir, "suse/rootfs/boot", "initramfs-.img"))
-		assert.NoError(t, err)
-	}
-	assert.NoError(t, os.MkdirAll(path.Join(conf.Paths.Sysconfdir, "warewulf/ipxe"), 0700))
-	{
-		assert.NoError(t, os.WriteFile(path.Join(conf.Paths.Sysconfdir, "warewulf/ipxe", "test.ipxe"), []byte("{{.KernelOverride}}{{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} {{end}}{{end}}"), 0600))
-	}
-	assert.NoError(t, os.MkdirAll(path.Join(conf.Paths.Sysconfdir, "warewulf/grub"), 0700))
-	{
-		assert.NoError(t, os.WriteFile(path.Join(conf.Paths.Sysconfdir, "warewulf/grub", "grub.cfg.ww"), []byte("{{ .Tags.GrubMenuEntry }}"), 0600))
-	}
+	prevArpFile := arpFile
+	arpFile = env.GetPath("/var/tmp/arpcache")
+	defer func() {
+		arpFile = prevArpFile
+	}()
+	env.CreateFile(t, "/var/lib/warewulf/chroots/suse/rootfs/boot/vmlinuz-1.1.0")
+	env.CreateFile(t, "/var/lib/warewulf/chroots/suse/rootfs/usr/lib64/efi/shim.efi")
+	env.CreateFile(t, "/var/lib/warewulf/chroots/suse/rootfs/usr/share/efi/x86_64/grub.efi")
+	env.CreateFile(t, "/var/lib/warewulf/chroots/suse/rootfs/boot/initramfs-1.1.0.img")
+	env.WriteFile(t, "/etc/warewulf/ipxe/test.ipxe", "{{.KernelOverride}}{{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} {{end}}{{end}}")
+	env.WriteFile(t, "/etc/warewulf/grub/grub.cfg.ww", "{{ .Tags.GrubMenuEntry }}")
 
 	dbErr := LoadNodeDB()
 	assert.NoError(t, dbErr)
 
+	conf := warewulfconf.Get()
 	secureFalse := false
 	conf.Warewulf.SecureP = &secureFalse
 	assert.NoError(t, os.MkdirAll(path.Join(conf.Paths.OverlayProvisiondir(), "n1"), 0700))
