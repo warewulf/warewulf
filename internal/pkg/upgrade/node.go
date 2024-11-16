@@ -7,6 +7,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
+	"github.com/warewulf/warewulf/internal/pkg/kernel"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -162,7 +163,7 @@ func (this *Node) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *nod
 	}
 	upgraded.Ipxe = this.Ipxe
 	if this.Kernel != nil {
-		upgraded.Kernel = this.Kernel.Upgrade()
+		upgraded.Kernel = this.Kernel.Upgrade(this.ContainerName)
 	} else {
 		upgraded.Kernel = new(node.KernelConf)
 	}
@@ -355,7 +356,7 @@ func (this *Profile) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *
 	}
 	upgraded.Ipxe = this.Ipxe
 	if this.Kernel != nil {
-		upgraded.Kernel = this.Kernel.Upgrade()
+		upgraded.Kernel = this.Kernel.Upgrade(this.ContainerName)
 	} else {
 		upgraded.Kernel = new(node.KernelConf)
 	}
@@ -489,10 +490,31 @@ type KernelConf struct {
 	Version  string `yaml:"version,omitempty"`
 }
 
-func (this *KernelConf) Upgrade() (upgraded *node.KernelConf) {
+func (this *KernelConf) Upgrade(containerName string) (upgraded *node.KernelConf) {
 	upgraded = new(node.KernelConf)
 	upgraded.Args = this.Args
-	upgraded.Override = this.Override
+	kernels := kernel.FindKernels(containerName)
+	wwlog.Debug("referencing kernels: %v (containerName: %v)", kernels, containerName)
+	if this.Override != "" {
+		if version := util.ParseVersion(legacyKernelVersion(this.Override)); version != nil {
+			for _, kernel_ := range kernels {
+				wwlog.Debug("checking if kernel '%v' version '%v' from container '%v' matches override '%v'", kernel_, kernel_.Version(), containerName, this.Override)
+				if kernel_.Version() == version.String() {
+					upgraded.Override = kernel_.Path
+					wwlog.Info("kernel override %v -> %v (container %v)", this.Override, upgraded.Override, containerName)
+				}
+			}
+		} else if util.IsFile((&kernel.Kernel{ContainerName: containerName, Path: this.Override}).FullPath()) {
+			upgraded.Override = this.Override
+		}
+		if upgraded.Override == "" {
+			containerDisplay := "unknown"
+			if containerName != "" {
+				containerDisplay = containerName
+			}
+			wwlog.Warn("unable to resolve kernel override %v (container %v)", this.Override, containerDisplay)
+		}
+	}
 	upgraded.Version = this.Version
 	return
 }

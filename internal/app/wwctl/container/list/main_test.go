@@ -56,6 +56,7 @@ nodes:
 	warewulfd.SetNoDaemon()
 	for _, tt := range tests {
 		env := testenv.New(t)
+		defer env.RemoveAll(t)
 		env.WriteFile(t, "etc/warewulf/nodes.conf", tt.inDb)
 
 		t.Logf("Running test: %s\n", tt.name)

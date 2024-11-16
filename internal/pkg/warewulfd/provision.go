@@ -48,6 +48,8 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	wwlog.Debug("stage: %s", rinfo.stage)
+
 	wwlog.Info("request from hwaddr:%s ipaddr:%s | stage:%s", rinfo.hwaddr, req.RemoteAddr, rinfo.stage)
 
 	if (rinfo.stage == "runtime" || len(rinfo.overlay) > 0) && conf.Warewulf.Secure() {
@@ -62,7 +64,6 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		"efiboot":   "EFI",
 		"ipxe":      "IPXE",
 		"kernel":    "KERNEL",
-		"kmods":     "KMODS_OVERLAY",
 		"system":    "SYSTEM_OVERLAY",
 		"runtime":   "RUNTIME_OVERLAY",
 		"initramfs": "INITRAMFS"}
@@ -111,22 +112,14 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			NetDevs:        remoteNode.NetDevs,
 			Tags:           remoteNode.Tags}
 	} else if rinfo.stage == "kernel" {
-		if remoteNode.Kernel.Override != "" {
-			stage_file = kernel.KernelImage(remoteNode.Kernel.Override)
-		} else if remoteNode.ContainerName != "" {
-			stage_file, _, err = kernel.FindKernel(container.RootFsDir(remoteNode.ContainerName))
-			if err != nil {
-				wwlog.Error("No kernel found for container %s: %s", remoteNode.ContainerName, err)
+		kernel_ := kernel.FromNode(&remoteNode)
+		if kernel_ == nil {
+			wwlog.Error("No kernel found for node %s", remoteNode.Id())
+		} else {
+			stage_file = kernel_.FullPath()
+			if stage_file == "" {
+				wwlog.Error("No kernel path found for node %s", remoteNode.Id())
 			}
-		} else {
-			wwlog.Warn("No kernel version set for node %s", remoteNode.Id())
-		}
-
-	} else if rinfo.stage == "kmods" {
-		if remoteNode.Kernel.Override != "" {
-			stage_file = kernel.KmodsImage(remoteNode.Kernel.Override)
-		} else {
-			wwlog.Warn("No kernel override modules set for node %s", remoteNode.Id())
 		}
 
 	} else if rinfo.stage == "container" {
@@ -168,14 +161,14 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		case "shim.efi":
 			stage_file = container.ShimFind(containerName)
 			if stage_file == "" {
-				wwlog.ErrorExc(fmt.Errorf("could't find shim.efi"), containerName)
+				wwlog.Error("couldn't find shim.efi for %s", containerName)
 				w.WriteHeader(http.StatusNotFound)
 				return
 			}
 		case "grub.efi", "grub-tpm.efi", "grubx64.efi", "grubia32.efi", "grubaa64.efi", "grubarm.efi":
 			stage_file = container.GrubFind(containerName)
 			if stage_file == "" {
-				wwlog.ErrorExc(fmt.Errorf("could't find grub.efi"), containerName)
+				wwlog.Error("could't find grub*.efi for %s", containerName)
 				w.WriteHeader(http.StatusNotFound)
 				return
 			}
@@ -195,7 +188,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 				NetDevs:        remoteNode.NetDevs,
 				Tags:           remoteNode.Tags}
 			if stage_file == "" {
-				wwlog.ErrorExc(fmt.Errorf("could't find grub.cfg template"), containerName)
+				wwlog.Error("could't find grub.cfg template for %s", containerName)
 				w.WriteHeader(http.StatusNotFound)
 				return
 			}
@@ -222,17 +215,22 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			wwlog.Warn("No conainer set for node %s", remoteNode.Id())
 		}
 	} else if rinfo.stage == "initramfs" {
-		if remoteNode.ContainerName != "" {
-			_, kver, err := kernel.FindKernel(container.RootFsDir(remoteNode.ContainerName))
-			if err != nil {
-				wwlog.Error("No kernel found for initramfs for container %s: %s", remoteNode.ContainerName, err)
+		kver := remoteNode.Kernel.Version
+		if kver == "" || remoteNode.Kernel.Override != "" {
+			kernel_ := kernel.FromNode(&remoteNode)
+			if kernel_ != nil {
+				kver = kernel_.Version()
 			}
-			stage_file, err = container.InitramfsBootPath(remoteNode.ContainerName, kver)
-			if err != nil {
-				wwlog.Error("No initramfs found for container %s: %s", remoteNode.ContainerName, err)
+		}
+		if kver != "" {
+			initramfs := container.FindInitramfs(remoteNode.ContainerName, kver)
+			if initramfs == nil {
+				wwlog.Error("No initramfs found for kernel %s in container %s", kver, remoteNode.ContainerName)
+			} else {
+				stage_file = initramfs.FullPath()
 			}
 		} else {
-			wwlog.Warn("No container set for node %s", remoteNode.Id())
+			wwlog.Error("No initramfs found: unable to determine kernel version for node %s", remoteNode.Id())
 		}
 	}
 
