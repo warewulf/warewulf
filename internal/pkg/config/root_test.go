@@ -25,6 +25,10 @@ warewulf:
 nfs:
   enabled: true
   systemd name: nfsd
+rsync:
+  conf: /etc/rsyncd.conf
+  enabled: true
+  systemd name: rsyncd
 dhcp:
   enabled: true
   systemd name: dhcpd
@@ -66,6 +70,10 @@ warewulf:
 nfs:
   enabled: true
   systemd name: nfsd
+rsync:
+  conf: /etc/rsyncd.conf
+  enabled: true
+  systemd name: rsyncd
 dhcp:
   enabled: true
   systemd name: dhcpd
@@ -109,6 +117,10 @@ warewulf:
 nfs:
   enabled: true
   systemd name: nfsd
+rsync:
+  conf: /etc/rsyncd.conf
+  enabled: true
+  systemd name: rsyncd
 dhcp:
   enabled: true
   systemd name: dhcpd
@@ -149,6 +161,10 @@ warewulf:
 nfs:
   enabled: true
   systemd name: nfsd
+rsync:
+  conf: /etc/rsyncd.conf
+  enabled: true
+  systemd name: rsyncd
 dhcp:
   enabled: true
   systemd name: dhcpd
@@ -190,6 +206,10 @@ warewulf:
 nfs:
   enabled: true
   systemd name: nfsd
+rsync:
+  conf: /etc/rsyncd.conf
+  enabled: true
+  systemd name: rsyncd
 dhcp:
   enabled: true
   systemd name: dhcpd
@@ -240,6 +260,10 @@ nfs:
   - path: /opt
     export options: ro,sync,no_root_squash
   systemd name: nfs-server
+rsync:
+  conf: /etc/rsyncd.conf
+  enabled: true
+  systemd name: rsyncd
 image mounts:
   - source: /etc/resolv.conf
     dest: /etc/resolv.conf
@@ -264,6 +288,10 @@ nfs:
     export options: rw,sync
   - path: /opt
     export options: ro,sync,no_root_squash
+rsync:
+  conf: /etc/rsyncd.conf
+  enabled: true
+  systemd name: rsyncd
 dhcp:
   enabled: true
   systemd name: dhcpd

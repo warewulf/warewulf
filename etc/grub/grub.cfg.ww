@@ -120,7 +120,7 @@ menuentry "Single-stage boot (no compression)" --id single-stage-nocompress {
     boot
 }
 
-menuentry "Two stage boot with dracut" --id dracut {
+menuentry "Two stage boot with dracut {{ if eq .Root "persistent"}}(persistent){{ end }}" --id dracut {
     echo "Warewulf Server:"
     echo "* Ipaddr: {{.Ipaddr}}"
     echo "* Port: {{.Port}}"
@@ -140,31 +140,34 @@ menuentry "Two stage boot with dracut" --id dracut {
 
     wwinit_uri="http://{{.Ipaddr}}:{{.Port}}/provision/${net_default_mac}"
     net_args="rd.neednet=1 {{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} {{end}}{{end}}"
-    wwinit_args="root=wwinit wwinit.uri=${wwinit_uri} init=/init"
+    {{- if eq .Root "persistent"}}
+    echo "* Persistent install"
+    ignition_args="wwinit.ignition=http://{{.Ipaddr}}:{{.Port}}/overlay-file/persistent wwinit.imagename={{ .ImageName }} wwinit.id={{ .Id }} wwinit.ip={{ .Ipaddr }}"
+    root="persistent"
+    {{- else }}
+    root="wwinit"
+    {{- end }}
+    wwinit_args="rd.shell=true root=${root} wwinit.uri=${wwinit_uri} init=/init"
 
-    echo
-    echo "Downloading kernel image..."
-    linux $kernel wwid=${net_default_mac} {{.KernelArgs}} $net_args $wwinit_args
-    if [ $? != 0 ]
-    then
-        echo "!!"
-        echo "!! Unable to load kernel."
-        echo "!! Rebooting in 15s..."
-        echo "!!"
+    linux $kernel wwid=${net_default_mac} {{.KernelArgs}} $net_args $wwinit_args $ignition_args
+
+    if [ x$? = x0 ] ; then
+        echo "Loading Image:         {{.ImageName}}"
+        initrd $initramfs
+        boot
+    else
+        echo "MESSAGE: This node seems to be unconfigured. Please have your system administrator add a"
+        echo "         configuration for this node with HW address: ${net_default_mac}"
+        echo ""
+        echo "Rebooting in 1 minute..."
+        sleep 60
+        reboot
     fi
+}
 
-    echo "Downloading initramfs..."
-    initrd $initramfs
-    if [ $? != 0 ]
-    then
-        echo "!!"
-        echo "!! Unable to load initramfs."
-        echo "!! Rebooting in 15s..."
-        echo "!!"
-    fi
-
-    echo "Booting..."
-    boot
+menuentry "Chainload specific configfile" {
+    conf="(http,{{.Ipaddr}}:{{.Port}})/efiboot/grub.cfg?assetkey=${assetkey}"
+    configfile $conf
 }
 
 menuentry "UEFI Firmware Settings" --id "uefi-firmware" {
