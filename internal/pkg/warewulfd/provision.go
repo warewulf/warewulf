@@ -35,7 +35,7 @@ type templateVars struct {
 	Port          string
 	KernelArgs    string
 	KernelVersion string
-	Root           string
+	Root          string
 	Tags          map[string]string
 	NetDevs       map[string]*node.NetDev
 }
@@ -201,7 +201,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 				Ipxe:          remoteNode.Ipxe,
 				KernelArgs:    kernelArgs,
 				KernelVersion: kernelVersion,
-				Root:           remoteNode.Root,
+				Root:          remoteNode.Root,
 				NetDevs:       remoteNode.NetDevs,
 				Tags:          remoteNode.Tags}
 			if stage_file == "" {

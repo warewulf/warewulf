@@ -92,6 +92,29 @@ func parseReq(req *http.Request) (parserInfo, error) {
 			return ret, errors.New("no hwaddr encoded in GET")
 		}
 	}
+
+	return ret, nil
+}
+
+type parserInfoRender struct {
+	overlay    string
+	node       string
+	ipaddr     string
+	remoteport int
+}
+
+func parseReqRender(req *http.Request) (ret parserInfoRender, err error) {
+	ret.overlay = strings.TrimPrefix(strings.Split(req.URL.Path, "?")[0], "/overlay")
+	if len(req.URL.Query()["node"]) > 0 {
+		ret.node = req.URL.Query()["node"][0]
+	}
+	wwlog.Info("recv: path: %s node: %s", ret.overlay, ret.node)
+	ipaddr, remoteport, _ := net.SplitHostPort(req.RemoteAddr)
+	ret.ipaddr = ipaddr
+	ret.remoteport, _ = strconv.Atoi(remoteport)
+	if ret.remoteport == 0 {
+		return ret, fmt.Errorf("couldn't obtain remote port from HTTP request: %v port: %s", req.RemoteAddr, remoteport)
+	}
 	if ret.ipaddr == "" {
 		return ret, errors.New("could not obtain ipaddr from HTTP request")
 	}
