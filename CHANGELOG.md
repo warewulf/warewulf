@@ -39,6 +39,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add Dev Container support #1653
 - Add man pages and command reference to userdocs. #1488
 - Document building images from scratch with Apptainer. #1485
+- Add `wwct configure rsync` and the template `rsyncd.conf.ww`
+- Make dracut aware of `root==perisitent` which will install the node image to the parition `rootfs`
 
 ### Changed
 
