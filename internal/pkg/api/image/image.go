@@ -8,6 +8,9 @@ import (
 	"strconv"
 	"strings"
 
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/configure"
+
 	"github.com/containers/image/v5/types"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/image"
@@ -46,7 +49,14 @@ func ImageCopy(cbp *wwapiv1.ImageCopyParameter) (err error) {
 			return err
 		}
 	}
-
+	controller := warewulfconf.Get()
+	if controller.RSYNC.Enabled() {
+		err = configure.RSYNC()
+		if err != nil {
+			err = fmt.Errorf("couldn't update rsync configuration: %w", err)
+			return
+		}
+	}
 	return fmt.Errorf("image %s has been succesfully duplicated as %s", cbp.ImageSource, cbp.ImageDestination)
 }
 
@@ -121,7 +131,14 @@ ARG_LOOP:
 
 		fmt.Printf("Image has been deleted: %s\n", imageName)
 	}
-
+	controller := warewulfconf.Get()
+	if controller.RSYNC.Enabled() {
+		err = configure.RSYNC()
+		if err != nil {
+			err = fmt.Errorf("couldn't update rsync configuration: %w", err)
+			return
+		}
+	}
 	return
 }
 
@@ -205,6 +222,14 @@ func ImageImport(cip *wwapiv1.ImageImportParameter) (imageName string, err error
 		err = image.Build(cip.Name, true)
 		if err != nil {
 			err = fmt.Errorf("could not build image %s: %s", cip.Name, err.Error())
+			return
+		}
+	}
+	controller := warewulfconf.Get()
+	if controller.RSYNC.Enabled() {
+		err = configure.RSYNC()
+		if err != nil {
+			err = fmt.Errorf("couldn't update rsync configuration: %w", err)
 			return
 		}
 	}
