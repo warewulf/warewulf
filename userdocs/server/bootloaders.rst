@@ -337,10 +337,21 @@ must be installed in the image.
 With the ``warewulf-dracut`` package installed in the image, you can then build
 an initramfs inside the image.
 
+EL installation
+---------------
 .. code-block:: shell
 
    wwctl image exec rockylinux-9 --build=false -- /usr/bin/dnf -y install https://github.com/warewulf/warewulf/releases/download/v4.6.1/warewulf-dracut-4.6.1-1.el9.noarch.rpm
    wwctl image exec rockylinux-9 -- /usr/bin/dracut --force --no-hostonly --add wwinit --regenerate-all
+
+
+SUSE installation
+-----------------
+.. code-block:: shell
+
+   zypper -y install warewulf-dracut
+   dracut --force --no-hostonly --add wwinit --regenerate-all
+
 
 .. note::
 
@@ -391,3 +402,43 @@ The wwinit module provisions to tmpfs. By default, tmpfs is permitted to use up
 to 50% of physical memory. This size limit may be adjusted using the kernel
 argument `wwinit.tmpfs.size`. (This parameter is passed to the `size` option
 during tmpfs mount. See ``tmpfs(5)`` for more details.)
+
+Persistent installation
+========================
+With the `dracut` installation enabled warewulf can also install 
+the node image to a harddrive. On the first boot of the node the
+compressed node image is simply dumped onto the configured partition.
+
+
+.. warning::
+   warewulf doesn't install the bootloader to the disk and add UEFI 
+   entries. In order to boot the node network booting is required and 
+   at every boot the kernel and the initrd is transfered over the network.
+
+Configuration
+-------------
+
+The node image will be installed to the partition called `rootfs`. You 
+can add add a rootfs with e.g. following command 
+
+.. code-block:: shell
+
+   wwctl node set n01 \
+     --diskname /dev/vda --diskwipe \
+     --partname rootfs --partcreate --partnumber 1 \
+     --fsname rootfs --fsformat ext4 --fspath /rootfs
+
+Now the node boot method has to be set to persitent with following command
+
+.. code-block:: shell
+
+   wwctl node set n01 --root persistent
+
+and the node rebooted. 
+ 
+.. note::
+
+   If the boot mode is perisiten the configured partion labeled `rootfs` will
+   be mounted as `/`. With any other boot method mount point confiured (here `/roofs`)
+   will be used.
+
