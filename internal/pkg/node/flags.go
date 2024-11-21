@@ -53,6 +53,9 @@ func recursiveCreateFlags(obj interface{}, baseCmd *cobra.Command) {
 	nodeInfoType := reflect.TypeOf(obj)
 	nodeInfoVal := reflect.ValueOf(obj)
 	for i := 0; i < nodeInfoVal.Elem().NumField(); i++ {
+		if !nodeInfoType.Elem().Field(i).IsExported() {
+			continue
+		}
 		if nodeInfoType.Elem().Field(i).Tag.Get("comment") != "" {
 			field := nodeInfoVal.Elem().Field(i)
 			createFlags(baseCmd, nodeInfoType.Elem().Field(i), &field)

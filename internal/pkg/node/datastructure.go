@@ -17,6 +17,7 @@ Structure of which goes to disk
 type NodesYaml struct {
 	NodeProfiles map[string]*Profile
 	Nodes        map[string]*Node
+	Resource     map[string]*RemoteRes `yaml:"resource,omitempty"`
 }
 
 /*
@@ -53,6 +54,8 @@ type Profile struct {
 	PrimaryNetDev  string                 `yaml:"primary network,omitempty" lopt:"primarynet" sopt:"p" comment:"Set the primary network interface"`
 	Disks          map[string]*Disk       `yaml:"disks,omitempty"`
 	FileSystems    map[string]*FileSystem `yaml:"filesystems,omitempty"`
+	resource       map[string]*RemoteRes  `yaml:"omitempty"`
+	Resources      []string               `yaml:"resources,omitempty" lopt:"resources" comment:"Set the resources available to the node or profile"`
 }
 
 type IpmiConf struct {
@@ -124,3 +127,14 @@ type FileSystem struct {
 	Options        []string `yaml:"options,omitempty" comment:"any additional options to be passed to the format-specific mkfs utility"`
 	MountOptions   string   `yaml:"mount_options,omitempty" comment:"any special options to be passed to the mount command"`
 }
+
+/*
+Definition of any remote. Can be a nfs share or other FS types
+*/
+
+type RemoteRes map[string]string
+
+// always return so that the resource isn't marshalled
+// func (res RemoteRes) IsZero() bool {
+// 	return true
+// }

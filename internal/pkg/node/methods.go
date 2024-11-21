@@ -103,6 +103,7 @@ func EmptyNode() (nodeconf Node) {
 	nodeconf.Ipmi.Tags = map[string]string{}
 	nodeconf.Kernel = new(KernelConf)
 	nodeconf.NetDevs = make(map[string]*NetDev)
+	nodeconf.resource = make(map[string]*RemoteRes)
 	nodeconf.Tags = map[string]string{}
 	return nodeconf
 }
