@@ -25,11 +25,17 @@ overlay in two different ways:
 
 The default profile has both a **wwinit** and a **runtime** overlay
 configured.
+Warewulf distinguishes between **distribution** shipped with warewulf
+and **site** overlays which are created by the end user. A **site** takes
+always precedence over a **distribution** overlay with the sane name.
+Any modification of a **distribution** overlay with ``wwctl`` will create
+a **site** overlay with the same name.
+The **site** overlays are place normally under ``/etc/warewulf/overlays``.
 
 Overlays are compiled for each compute node individually.
 
-Provided overlays
-=================
+Provided distribution overlays
+==============================
 
 These overlays are provided as part of Warewulf.
 
@@ -222,7 +228,7 @@ via the ``-o`` flag.
 On clusters with large numbers of nodes a significant speedup can be achieved
 by building overlays in parallel. Adding parallel overlay building to `wwctl`
 is planned, see issue `#1087 <https://github.com/warewulf/warewulf/issues/1087>`_.
-Until parallel overlay building is implemented, builds can be easily done in 
+Until parallel overlay building is implemented, builds can be easily done in
 parallel with Gnu `parallel` or `xargs`, for example:
 
 .. code-block:: console
