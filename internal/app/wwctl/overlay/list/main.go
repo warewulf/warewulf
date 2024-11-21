@@ -25,14 +25,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if ListLong {
-		wwlog.Info("%-10s %5s %-5s %-18s %s\n", "PERM MODE", "UID", "GID", "SYSTEM-OVERLAY", "FILE PATH")
+		wwlog.Info("%-10s %5s %-5s %-18s %s\n", "PERM MODE", "UID", "GID", "SYSTEM-OVERLAY", "FILE PATH", "SITE")
 	} else {
-		wwlog.Info("%-30s %-12s\n", "OVERLAY NAME", "FILES/DIRS")
+		wwlog.Info("%-30s %-12s-%12s\n", "OVERLAY NAME", "FILES/DIRS", "SITE")
 	}
 
 	for o := range overlays {
 		name := overlays[o]
-		path := overlay.OverlaySourceDir(name)
+		path, isSite := overlay.OverlaySourceDir(name)
 
 		if util.IsDir(path) {
 			files := util.FindFiles(path)
@@ -50,7 +50,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 					sys := s.Sys()
 
-					wwlog.Info("%v %5d %-5d %-18s /%s\n", perms, sys.(*syscall.Stat_t).Uid, sys.(*syscall.Stat_t).Gid, overlays[o], files[file])
+					wwlog.Info("%v %5d %-5d %-18s /%s\n", perms, sys.(*syscall.Stat_t).Uid, sys.(*syscall.Stat_t).Gid, overlays[o], files[file], isSite)
 				}
 			} else if ListContents {
 				var fileCount int
@@ -62,7 +62,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					wwlog.Info("%-30s %-12d\n", name, 0)
 				}
 			} else {
-				wwlog.Info("%-30s %-12d\n", name, len(files))
+				wwlog.Info("%-30s %-12d\n", name, len(files), isSite)
 			}
 
 		} else {

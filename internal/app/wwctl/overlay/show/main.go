@@ -22,7 +22,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	overlayName := args[0]
 	fileName := args[1]
-	overlaySourceDir = overlay.OverlaySourceDir(overlayName)
+	overlaySourceDir, _ = overlay.OverlaySourceDir(overlayName)
 
 	if !util.IsDir(overlaySourceDir) {
 		return fmt.Errorf("overlay dir: %s does not exist", overlaySourceDir)
@@ -66,6 +66,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			return err
 		}
 		tstruct.BuildSource = overlayFile
+		tstruct.Overlay = overlayName
 		buffer, backupFile, writeFile, err := overlay.RenderTemplateFile(overlayFile, tstruct)
 		if err != nil {
 			return err

@@ -14,6 +14,7 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 
 	"github.com/pkg/errors"
 	"github.com/warewulf/warewulf/internal/pkg/node"
@@ -70,7 +71,7 @@ func BuildHostOverlay() error {
 	hostname, _ := os.Hostname()
 	hostData := node.NewNode(hostname)
 	wwlog.Info("Building overlay for %s: host", hostname)
-	hostdir := OverlaySourceDir("host")
+	hostdir, _ := OverlaySourceDir("host")
 	stats, err := os.Stat(hostdir)
 	if err != nil {
 		return fmt.Errorf("could not build host overlay: %w ", err)
@@ -84,38 +85,40 @@ func BuildHostOverlay() error {
 /*
 Get all overlays present in warewulf
 */
-func FindOverlays() ([]string, error) {
-	var ret []string
+func FindOverlays() (overlayList []string, err error) {
 	dotfilecheck, _ := regexp.Compile(`^\..*`)
-
-	files, err := os.ReadDir(OverlaySourceTopDir())
+	controller := warewulfconf.Get()
+	files, err := os.ReadDir(controller.Paths.WWOverlaydir)
 	if err != nil {
-		return ret, fmt.Errorf("could not get list of overlays: %w", err)
+		return overlayList, fmt.Errorf("could not get list of distribution overlays: %w", err)
 	}
-
+	sitefiles, err := os.ReadDir(path.Join(controller.Paths.Sysconfdir, "overlays"))
+	if err == nil { // we don't care if there are no site overlays
+		files = append(files, sitefiles...)
+	}
 	for _, file := range files {
 		wwlog.Debug("Evaluating overlay source: %s", file.Name())
 		isdotfile := dotfilecheck.MatchString(file.Name())
 
 		if (file.IsDir()) && !(isdotfile) {
-			ret = append(ret, file.Name())
+			overlayList = append(overlayList, file.Name())
 		}
 	}
 
-	return ret, nil
+	return overlayList, nil
 }
 
 /*
 Creates an empty overlay
 */
 func OverlayInit(overlayName string) error {
-	path := OverlaySourceDir(overlayName)
-
-	if util.IsDir(path) {
-		return errors.New("Overlay already exists: " + overlayName)
+	controller := warewulfconf.Get()
+	overlayPath := path.Join(controller.Paths.Sysconfdir, "overlays", overlayName)
+	if util.IsDir(overlayPath) {
+		return fmt.Errorf("overlay already exists: %s", overlayName)
 	}
 
-	err := os.MkdirAll(path, 0755)
+	err := os.MkdirAll(path.Join(overlayPath, "rootfs"), 0755)
 
 	return err
 }
@@ -190,7 +193,7 @@ func BuildOverlayIndir(nodeData node.Node, overlayNames []string, outputDir stri
 	wwlog.Verbose("Processing node/overlay: %s/%s", nodeData.Id(), strings.Join(overlayNames, "-"))
 	for _, overlayName := range overlayNames {
 		wwlog.Verbose("Building overlay %s for node %s in %s", overlayName, nodeData.Id(), outputDir)
-		overlaySourceDir := OverlaySourceDir(overlayName)
+		overlaySourceDir, _ := OverlaySourceDir(overlayName)
 		wwlog.Debug("Changing directory to OverlayDir: %s", overlaySourceDir)
 		err := os.Chdir(overlaySourceDir)
 		if err != nil {
@@ -358,19 +361,6 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (
 	err error) {
 	backupFile = true
 	writeFile = true
-	// parse the overlay name out of the absolute path
-	overlayPath, _ := filepath.Rel(OverlaySourceTopDir(), fileName)
-	withoutRootfs, err := filepath.Rel("rootfs", overlayPath)
-	if err != nil {
-		overlayPath = withoutRootfs
-	}
-	overlayPathElem := strings.Split(overlayPath, "/")
-	if len(overlayPathElem) > 1 {
-		data.Overlay = overlayPathElem[0]
-	} else {
-		data.Overlay = ""
-	}
-
 	// Build our FuncMap
 	funcMap := template.FuncMap{
 		"Include":      templateFileInclude,
@@ -442,7 +432,7 @@ func ScanLines(data []byte, atEOF bool) (advance int, token []byte, err error) {
 
 // Get all the files as a string slice for a given overlay
 func OverlayGetFiles(name string) (files []string, err error) {
-	baseDir := OverlaySourceDir(name)
+	baseDir, _ := OverlaySourceDir(name)
 	if !util.IsDir(baseDir) {
 		err = fmt.Errorf("overlay %s doesn't exist", name)
 		return
