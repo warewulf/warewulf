@@ -11,13 +11,16 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-func CobraRunE(cmd *cobra.Command, args []string) error {
+func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	var overlaySourceDir string
 
 	overlayName := args[0]
 	dirName := args[1]
-
-	overlaySourceDir = overlay.OverlaySourceDir(overlayName)
+	err = overlay.CreateSiteOverlay(overlayName)
+	if err != nil {
+		return err
+	}
+	overlaySourceDir, _ = overlay.OverlaySourceDir(overlayName)
 
 	if !util.IsDir(overlaySourceDir) {
 		return fmt.Errorf("overlay does not exist: %s", overlayName)
@@ -27,7 +30,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	wwlog.Debug("Will create directory in overlay: %s:%s", overlayName, dirName)
 
-	err := os.MkdirAll(overlayDir, os.FileMode(PermMode))
+	err = os.MkdirAll(overlayDir, os.FileMode(PermMode))
 	if err != nil {
 		return fmt.Errorf("could not create directory: %s", path.Dir(overlayDir))
 	}
