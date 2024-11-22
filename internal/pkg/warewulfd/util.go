@@ -4,10 +4,11 @@ import (
 	"bufio"
 	"net/http"
 	"os"
+	"path"
 	"strings"
 
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/node"
-	nodepkg "github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -51,7 +52,8 @@ func getOverlayFile(n node.Node, context string, stage_overlays []string, autobu
 	build := !util.IsFile(stage_file)
 	wwlog.Verbose("stage file: %s", stage_file)
 	if !build && autobuild {
-		build = util.PathIsNewer(stage_file, nodepkg.ConfigFile)
+		controller := warewulfconf.Get()
+		build = util.PathIsNewer(stage_file, path.Join(controller.Paths.Sysconfdir, "warewulf/nodes.conf"))
 
 		for _, overlayname := range stage_overlays {
 			build = build || util.PathIsNewer(stage_file, overlay.OverlaySourceDir(overlayname))

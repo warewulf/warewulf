@@ -15,7 +15,6 @@ import (
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/warewulf/warewulf/internal/pkg/node"
 )
 
 const initWarewulfConf = ``
@@ -96,7 +95,7 @@ func New(t *testing.T) (env *TestEnv) {
 	}
 
 	// node.init() has already run, so set the config path again
-	node.ConfigFile = env.GetPath(path.Join(Sysconfdir, "warewulf/nodes.conf"))
+	// node.ConfigFile = env.GetPath(path.Join(Sysconfdir, "warewulf/nodes.conf"))
 
 	return
 }
