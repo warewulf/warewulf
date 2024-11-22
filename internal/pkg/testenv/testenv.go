@@ -94,9 +94,6 @@ func New(t *testing.T) (env *TestEnv) {
 		env.MkdirAll(t, confPath)
 	}
 
-	// node.init() has already run, so set the config path again
-	// node.ConfigFile = env.GetPath(path.Join(Sysconfdir, "warewulf/nodes.conf"))
-
 	return
 }
 

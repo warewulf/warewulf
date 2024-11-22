@@ -2,12 +2,9 @@ package set
 
 import (
 	"bytes"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
-	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -645,20 +642,6 @@ nodes:
 `,
 		},
 	}
-
-	conf_yml := ``
-	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
-	assert.NoError(t, warewulfConfErr)
-	defer os.Remove(tempWarewulfConf.Name())
-	_, warewulfConfErr = tempWarewulfConf.Write([]byte(conf_yml))
-	assert.NoError(t, warewulfConfErr)
-	assert.NoError(t, tempWarewulfConf.Sync())
-	assert.NoError(t, warewulfconf.New().Read(tempWarewulfConf.Name()))
-
-	tempNodeConf, nodesConfErr := os.CreateTemp("", "nodes.conf-")
-	assert.NoError(t, nodesConfErr)
-	defer os.Remove(tempNodeConf.Name())
-	node.ConfigFile = tempNodeConf.Name()
 	warewulfd.SetNoDaemon()
 	for _, tt := range tests {
 		run_test(t, tt)

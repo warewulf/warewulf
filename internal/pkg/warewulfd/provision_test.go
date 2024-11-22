@@ -4,15 +4,12 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"os"
-	"path"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 var provisionSendTests = []struct {
@@ -38,7 +35,6 @@ var provisionSendTests = []struct {
 func Test_ProvisionSend(t *testing.T) {
 	env := testenv.New(t)
 	defer env.RemoveAll(t)
-
 	env.WriteFile(t, "etc/warewulf/nodes.conf", `nodeprofiles:
   default:
     container name: suse
@@ -81,19 +77,16 @@ nodes:
 	env.CreateFile(t, "/var/lib/warewulf/chroots/suse/rootfs/boot/initramfs-1.1.0.img")
 	env.WriteFile(t, "/etc/warewulf/ipxe/test.ipxe", "{{.KernelVersion}}{{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} {{end}}{{end}}")
 	env.WriteFile(t, "/etc/warewulf/grub/grub.cfg.ww", "{{ .Tags.GrubMenuEntry }}")
+	env.WriteFile(t, "/srv/warewulf/overlays/n1/__SYSTEM__.img", "system overlay")
+	env.WriteFile(t, "/srv/warewulf/overlays/n1/__RUNTIME__.img", "runtime overlay")
+	env.WriteFile(t, "/srv/warewulf/overlays/n1/o1.img", "specific overlay")
 
-	dbErr := LoadNodeDB()
-	assert.NoError(t, dbErr)
+	assert.NoError(t, LoadNodeDB())
 
 	conf := warewulfconf.Get()
 	secureFalse := false
 	conf.Warewulf.SecureP = &secureFalse
-	assert.NoError(t, os.MkdirAll(path.Join(conf.Paths.OverlayProvisiondir(), "n1"), 0700))
-	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.OverlayProvisiondir(), "n1", "__SYSTEM__.img"), []byte("system overlay"), 0600))
-	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.OverlayProvisiondir(), "n1", "__RUNTIME__.img"), []byte("runtime overlay"), 0600))
-	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.OverlayProvisiondir(), "n1", "o1.img"), []byte("specific overlay"), 0600))
 
-	wwlog.SetLogLevel(wwlog.DEBUG)
 	for _, tt := range provisionSendTests {
 		t.Run(tt.description, func(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, tt.url, nil)
