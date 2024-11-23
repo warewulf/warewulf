@@ -34,6 +34,7 @@ type templateVars struct {
 	Port           string
 	KernelArgs     string
 	KernelOverride string
+	Root           string
 	Tags           map[string]string
 	NetDevs        map[string]*node.NetDev
 }
@@ -108,6 +109,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			ContainerName:  remoteNode.ContainerName,
 			KernelArgs:     remoteNode.Kernel.Args,
 			KernelOverride: remoteNode.Kernel.Override,
+			Root:           remoteNode.Root,
 			NetDevs:        remoteNode.NetDevs,
 			Tags:           remoteNode.Tags}
 	} else if rinfo.stage == "kernel" {
@@ -192,6 +194,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 				ContainerName:  remoteNode.ContainerName,
 				KernelArgs:     remoteNode.Kernel.Args,
 				KernelOverride: remoteNode.Kernel.Override,
+				Root:           remoteNode.Root,
 				NetDevs:        remoteNode.NetDevs,
 				Tags:           remoteNode.Tags}
 			if stage_file == "" {

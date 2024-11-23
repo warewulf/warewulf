@@ -8,6 +8,9 @@ import (
 	"strconv"
 	"strings"
 
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/configure"
+
 	"github.com/containers/image/v5/types"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/container"
@@ -46,7 +49,14 @@ func ContainerCopy(cbp *wwapiv1.ContainerCopyParameter) (err error) {
 			return err
 		}
 	}
-
+	controller := warewulfconf.Get()
+	if controller.RSYNC.Enabled() {
+		err = configure.RSYNC()
+		if err != nil {
+			err = fmt.Errorf("couldn't update rsync configuration: %w", err)
+			return
+		}
+	}
 	return fmt.Errorf("Container %s has been succesfully duplicated as %s", cbp.ContainerSource, cbp.ContainerDestination)
 }
 
@@ -149,7 +159,14 @@ ARG_LOOP:
 
 		fmt.Printf("Container has been deleted: %s\n", containerName)
 	}
-
+	controller := warewulfconf.Get()
+	if controller.RSYNC.Enabled() {
+		err = configure.RSYNC()
+		if err != nil {
+			err = fmt.Errorf("couldn't update rsync configuration: %w", err)
+			return
+		}
+	}
 	return
 }
 
@@ -236,6 +253,14 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 			return
 		}
 	}
+	controller := warewulfconf.Get()
+	if controller.RSYNC.Enabled() {
+		err = configure.RSYNC()
+		if err != nil {
+			err = fmt.Errorf("couldn't update rsync configuration: %w", err)
+			return
+		}
+	}
 
 	if cip.Default {
 		var nodeDB node.NodesYaml
@@ -254,6 +279,7 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 				profile.ContainerName = cip.Name
 			}
 		}
+
 		// TODO: We need this in a function with a flock around it.
 		// Also need to understand if the daemon restart is only to
 		// reload the config or if there is something more.
