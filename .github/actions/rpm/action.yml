@@ -35,7 +35,7 @@ runs:
       shell: bash
 
     - name: Download spec
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: warewulf.spec
 
@@ -45,7 +45,7 @@ runs:
       shell: bash
 
     - name: Download dist
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: warewulf-${{ env.EXPECTED_VERSION }}.tar.gz
 
@@ -68,19 +68,19 @@ runs:
       shell: bash
 
     - name: Upload RPM
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.RPM }}
         path: /var/lib/mock/${{ inputs.target }}/result/${{ env.RPM }}
 
     - name: Upload SRPM
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.SRPM }}
         path: /var/lib/mock/${{ inputs.target }}/result/${{ env.SRPM }}
 
     - name: Upload dracut RPM
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.DRACUT }}
         path: /var/lib/mock/${{ inputs.target }}/result/${{ env.DRACUT }}

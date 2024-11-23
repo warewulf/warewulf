@@ -71,8 +71,9 @@ Requires: dhcp
 
 BuildRequires: git
 BuildRequires: make
+BuildRequires: gpgme-devel
 %if %{api}
-BuildRequires: libassuan-devel gpgme-devel
+BuildRequires: libassuan-devel
 %endif
 
 Recommends: logrotate
