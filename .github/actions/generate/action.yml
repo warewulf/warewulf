@@ -74,14 +74,14 @@ runs:
 
     - name: Upload warewulf.spec
       if: steps.should-continue.outputs.continue == 'true'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: warewulf.spec
         path: warewulf.spec
 
     - name: Upload DIST
       if: steps.should-continue.outputs.continue == 'true'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.DIST }}
         path: ${{ env.DIST }}
