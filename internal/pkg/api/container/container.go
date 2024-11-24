@@ -398,7 +398,7 @@ func ContainerRename(crp *wwapiv1.ContainerRenameParameter) (err error) {
 
 	err = container.DeleteImage(crp.ContainerName)
 	if err != nil {
-		wwlog.Warn("Could not remove image files for %s: %w", crp.ContainerName, err)
+		wwlog.Warn("Could not remove image files for %s: %s", crp.ContainerName, err)
 	}
 
 	if crp.Build {
