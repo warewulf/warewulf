@@ -28,9 +28,9 @@ func Test_List(t *testing.T) {
 			args:    []string{},
 			wantErr: false,
 			stdout: `
-NODE NAME  PROFILES   NETWORK
----------  --------   -------
-n01        [default]  --
+NODE NAME  PROFILES  NETWORK
+---------  --------  -------
+n01        default   --
 `,
 			inDb: `nodeprofiles:
   default: {}
@@ -45,10 +45,10 @@ nodes:
 			args:    []string{},
 			wantErr: false,
 			stdout: `
-NODE NAME  PROFILES   NETWORK
----------  --------   -------
-n01        [default]  --
-n02        [default]  --
+NODE NAME  PROFILES  NETWORK
+---------  --------  -------
+n01        default   --
+n02        default   --
 `,
 			inDb: `nodeprofiles:
   default: {}
@@ -66,10 +66,10 @@ nodes:
 			args:    []string{"n01,n02"},
 			wantErr: false,
 			stdout: `
-NODE NAME  PROFILES   NETWORK
----------  --------   -------
-n01        [default]  --
-n02        [default]  --
+NODE NAME  PROFILES  NETWORK
+---------  --------  -------
+n01        default   --
+n02        default   --
 `,
 			inDb: `nodeprofiles:
   default: {}
@@ -87,10 +87,10 @@ nodes:
 			args:    []string{"n01,n03"},
 			wantErr: false,
 			stdout: `
-NODE NAME  PROFILES   NETWORK
----------  --------   -------
-n01        [default]  --
-n03        [default]  --
+NODE NAME  PROFILES  NETWORK
+---------  --------  -------
+n01        default   --
+n03        default   --
 `,
 			inDb: `nodeprofiles:
   default: {}
@@ -117,9 +117,9 @@ nodes:
 			args:    []string{"n01,"},
 			wantErr: false,
 			stdout: `
-NODE NAME  PROFILES   NETWORK
----------  --------   -------
-n01        [default]  --
+NODE NAME  PROFILES  NETWORK
+---------  --------  -------
+n01        default   --
 `,
 			inDb: `nodeprofiles:
   default: {}
@@ -137,9 +137,9 @@ nodes:
 			args:    []string{},
 			wantErr: false,
 			stdout: `
-NODE NAME  PROFILES   NETWORK
----------  --------   -------
-n01        [default]  default
+NODE NAME  PROFILES  NETWORK
+---------  --------  -------
+n01        default   default
 `,
 			inDb: `nodeprofiles:
   default:
@@ -238,7 +238,7 @@ nodes:
 			stdout: `
 NODE NAME  PROFILES  NETWORK
 ---------  --------  -------
-n01        [p1 p2]   --
+n01        p1,p2     --
 `,
 			inDb: `nodeprofiles:
   p1: {}
