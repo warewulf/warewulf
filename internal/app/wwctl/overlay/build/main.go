@@ -3,20 +3,16 @@ package build
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 	"syscall"
 
 	"github.com/spf13/cobra"
-	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	controller := warewulfconf.Get()
 	nodeDB, err := node.New()
 	if err != nil {
 		return fmt.Errorf("could not open node configuration: %s", err)
@@ -54,43 +50,29 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 		if len(args) > 0 {
 			if len(db) != 1 {
-				return errors.New("nust specify one node to build overlay")
+				return errors.New("must specify one node to build overlay")
 			}
 
 			for _, node := range db {
 				return overlay.BuildOverlayIndir(node, OverlayNames, OverlayDir)
 			}
 		} else {
-			// TODO this seems different than what is set in BuildHostOverlay
-			hostname, _ := os.Hostname()
-			node := node.NewNode(hostname)
-			wwlog.Info("building overlay for host: %s", hostname)
-			return overlay.BuildOverlayIndir(node, OverlayNames, OverlayDir)
-
+			return errors.New("must specify a node to build overlay")
 		}
 
 	}
 
-	if BuildHost && controller.Warewulf.EnableHostOverlay() {
-		err := overlay.BuildHostOverlay()
-		if err != nil {
-			return fmt.Errorf("host overlay could not be built: %s", err)
-		}
+	oldMask := syscall.Umask(007)
+	defer syscall.Umask(oldMask)
+
+	if len(OverlayNames) > 0 {
+		err = overlay.BuildSpecificOverlays(db, OverlayNames)
+	} else {
+		err = overlay.BuildAllOverlays(db)
 	}
 
-	if BuildNodes || (!BuildHost && !BuildNodes) {
-		oldMask := syscall.Umask(007)
-		defer syscall.Umask(oldMask)
-
-		if len(OverlayNames) > 0 {
-			err = overlay.BuildSpecificOverlays(db, OverlayNames)
-		} else {
-			err = overlay.BuildAllOverlays(db)
-		}
-
-		if err != nil {
-			return fmt.Errorf("some overlays failed to be generated: %s", err)
-		}
+	if err != nil {
+		return fmt.Errorf("some overlays failed to be generated: %s", err)
 	}
 	return nil
 }

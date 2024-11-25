@@ -73,6 +73,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `wwctl node list --fullall` has been removed
 - `wwctl profile list --fullall` has been removed
 - Remove `wwctl server <start,stop,status,restart,reload>` #508
+- Remove `wwctl overlay build --host` #1419
+- Remove `wwctl overlay build --nodes` #1419
 
 ### Fixed
 
