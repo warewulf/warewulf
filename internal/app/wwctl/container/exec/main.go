@@ -48,7 +48,7 @@ func runContainedCmd(cmd *cobra.Command, containerName string, args []string) (e
 	}
 	defer func() {
 		if err := os.RemoveAll(runDir); err != nil {
-			wwlog.Error("error removing run directory: %w", err)
+			wwlog.Error("error removing run directory: %s", err)
 		}
 	}()
 

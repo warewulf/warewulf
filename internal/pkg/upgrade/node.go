@@ -528,7 +528,7 @@ func (this *NetDev) Upgrade(addDefaults bool) (upgraded *node.NetDev) {
 	if this.IpCIDR != "" {
 		cidrIP, cidrIPNet, err := net.ParseCIDR(this.IpCIDR)
 		if err != nil {
-			wwlog.Error("%v is not a valid CIDR address: %w", this.IpCIDR, err)
+			wwlog.Error("%v is not a valid CIDR address: %s", this.IpCIDR, err)
 		} else {
 			if upgraded.Ipaddr == nil {
 				upgraded.Ipaddr = cidrIP
