@@ -17,7 +17,7 @@ Structure of which goes to disk
 type NodesYaml struct {
 	NodeProfiles map[string]*Profile
 	Nodes        map[string]*Node
-	Resource     map[string]*RemoteRes `yaml:"resource,omitempty"`
+	Resource     map[string]RemoteRes `yaml:"resource,omitempty"`
 }
 
 /*
@@ -54,8 +54,7 @@ type Profile struct {
 	PrimaryNetDev  string                 `yaml:"primary network,omitempty" lopt:"primarynet" sopt:"p" comment:"Set the primary network interface"`
 	Disks          map[string]*Disk       `yaml:"disks,omitempty"`
 	FileSystems    map[string]*FileSystem `yaml:"filesystems,omitempty"`
-	resource       map[string]*RemoteRes  `yaml:"omitempty"`
-	Resources      []string               `yaml:"resources,omitempty" lopt:"resources" comment:"Set the resources available to the node or profile"`
+	ResourceList   []string               `yaml:"resource_list,omitempty" lopt:"resources" comment:"Set the resources available to the node or profile"`
 }
 
 type IpmiConf struct {

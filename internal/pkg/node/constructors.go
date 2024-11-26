@@ -229,7 +229,7 @@ get the given resource
 */
 func (config *NodesYaml) GetResource(id string) (res RemoteRes, err error) {
 	if found, ok := config.Resource[id]; ok {
-		return *found, nil
+		return found, nil
 	}
 	return res, ErrNotFound
 }

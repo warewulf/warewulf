@@ -16,9 +16,9 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 		}
 		if ok := nodeYml.Resource[args[0]] != nil; ok {
 			if nodeYml.Resource == nil {
-				nodeYml.Resource = make(map[string]*node.RemoteRes)
+				nodeYml.Resource = make(map[string]node.RemoteRes)
 			}
-			res := *nodeYml.Resource[args[0]]
+			res := nodeYml.Resource[args[0]]
 			for key, val := range vars.tags {
 				res[key] = val
 			}
