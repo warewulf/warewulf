@@ -1,6 +1,6 @@
 FROM opensuse/tumbleweed:latest as builder
 
-RUN zypper  -n install --no-recommends git go1.18 libgpgme-devel &&\
+RUN zypper  -n install --no-recommends git go1.21 libgpgme-devel unzip &&\
   zypper -n install -t pattern devel_basis
 
 # now build the warewulf
@@ -77,7 +77,7 @@ RUN zypper  -n install \
   container-scripts/config-warewulf \
   /container &&\
   mkdir -p /usr/share/bash_completion/completions/ &&\
-  cp /etc/warewulf/bash_completion.d/warewulf /usr/share/bash_completion/completions/warewulf &&\
+  cp /etc/warewulf/bash_completion.d/* /usr/share/bash_completion/completions/ &&\
   mv -v container-scripts/ww4-config.service /etc/systemd/system/ &&\
   mv -v container-scripts/warewulfd.service /etc/systemd/system/ &&\
   systemctl enable ww4-config &&\

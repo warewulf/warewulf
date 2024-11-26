@@ -2,7 +2,7 @@ module github.com/warewulf/warewulf
 
 go 1.21.0
 
-toolchain go1.22.5
+toolchain go1.23.3
 
 require (
 	dario.cat/mergo v1.0.0
