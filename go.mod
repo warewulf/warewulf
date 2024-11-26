@@ -5,7 +5,7 @@ go 1.21.0
 toolchain go1.23.3
 
 require (
-	dario.cat/mergo v1.0.0
+	dario.cat/mergo v1.0.1
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/cheynewallace/tabby v1.1.1
 	github.com/containers/image/v5 v5.32.2
