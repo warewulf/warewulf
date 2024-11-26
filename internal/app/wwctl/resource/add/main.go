@@ -18,13 +18,13 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			return fmt.Errorf("resource %s already exists", args[0])
 		}
 		if nodeYml.Resource == nil {
-			nodeYml.Resource = make(map[string]*node.RemoteRes)
+			nodeYml.Resource = make(map[string]node.RemoteRes)
 		}
 		res := node.RemoteRes{}
 		for key, val := range vars.tags {
 			res[key] = val
 		}
-		nodeYml.Resource[args[0]] = &res
+		nodeYml.Resource[args[0]] = res
 		err = nodeYml.Persist()
 		return err
 	}
