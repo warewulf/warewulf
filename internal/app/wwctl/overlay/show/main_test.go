@@ -71,6 +71,8 @@ nodes:
 
 	env.WriteFile(t, path.Join(testenv.WWOverlaydir, "testoverlay/email.ww"), overlayEmail)
 	env.WriteFile(t, path.Join(testenv.WWOverlaydir, "testoverlay/overlay.ww"), overlayOverlay)
+	env.WriteFile(t, path.Join(testenv.WWOverlaydir, "dist/foo.ww"), "foo")
+	env.WriteFile(t, path.Join(testenv.Sysconfdir, "overlays/dist/foo.ww"), "foobaar")
 	defer env.RemoveAll(t)
 	warewulfd.SetNoDaemon()
 	t.Run("overlay show raw", func(t *testing.T) {
@@ -127,6 +129,17 @@ nodes:
 		err := baseCmd.Execute()
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "testoverlay")
+	})
+	t.Run("site overlays precede", func(t *testing.T) {
+		baseCmd.SetArgs([]string{"-r", "node1", "dist", "foo.ww"})
+		baseCmd := GetCommand()
+		buf := new(bytes.Buffer)
+		baseCmd.SetOut(buf)
+		baseCmd.SetErr(buf)
+		wwlog.SetLogWriter(buf)
+		err := baseCmd.Execute()
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "foobaar")
 	})
 }
 
