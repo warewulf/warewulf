@@ -14,23 +14,13 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var (
-	ConfigFile string
-)
-
-func init() {
-	conf := warewulfconf.Get()
-	if ConfigFile == "" {
-		ConfigFile = path.Join(conf.Paths.Sysconfdir, "warewulf/nodes.conf")
-	}
-}
-
 /*
 Creates a new nodeDb object from the on-disk configuration
 */
 func New() (NodesYaml, error) {
-	wwlog.Verbose("Opening node configuration file: %s", ConfigFile)
-	data, err := os.ReadFile(ConfigFile)
+	controller := warewulfconf.Get()
+	wwlog.Verbose("Opening node configuration file: %s", path.Join(controller.Paths.Sysconfdir, "warewulf/nodes.conf"))
+	data, err := os.ReadFile(path.Join(controller.Paths.Sysconfdir, "warewulf/nodes.conf"))
 	if err != nil {
 		return NodesYaml{}, err
 	}
@@ -242,6 +232,18 @@ func (config *NodesYaml) ListAllProfiles() []string {
 }
 
 /*
+Return the names of all available remote resources
+*/
+func (config *NodesYaml) ListAllResources() []string {
+	var resList []string
+	for name := range config.Resource {
+		resList = append(resList, name)
+	}
+	sort.Strings(resList)
+	return resList
+}
+
+/*
 FindDiscoverableNode returns the first discoverable node and an
 interface to associate with the discovered interface. If the nodUNDEFe has
 a primary interface, it is returned; otherwise, the first interface
@@ -268,4 +270,14 @@ func (config *NodesYaml) FindDiscoverableNode() (Node, string, error) {
 	}
 
 	return EmptyNode(), "", ErrNoUnconfigured
+}
+
+/*
+get the given resource
+*/
+func (config *NodesYaml) GetResource(id string) (res RemoteRes, err error) {
+	if found, ok := config.Resource[id]; ok {
+		return found, nil
+	}
+	return res, ErrNotFound
 }
