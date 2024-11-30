@@ -2,6 +2,7 @@ package node
 
 import (
 	"testing"
+	"fmt"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
