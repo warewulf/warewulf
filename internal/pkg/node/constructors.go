@@ -6,6 +6,10 @@ import (
 	"os"
 	"path"
 	"sort"
+<<<<<<< HEAD
+=======
+	"fmt"
+>>>>>>> ee84bc5e (Enable/handle nested profiles.)
 	"strings"
 
 	"dario.cat/mergo"
@@ -83,7 +87,11 @@ func (config *NodesYaml) GetNode(id string) (node Node, err error) {
 	// Collect all profiles, including nested ones, before building the node config
 	visitedProfiles := make(map[string]bool)
 	var allProfiles []string
+<<<<<<< HEAD
 	for _, p := range config.Nodes[id].Profiles {
+=======
+	for _, p := range cleanList(config.Nodes[id].Profiles) {
+>>>>>>> ee84bc5e (Enable/handle nested profiles.)
 		profiles, err := config.collectProfiles(p, visitedProfiles)
 		if err != nil {
 			wwlog.Warn("error collecting profiles for %s: %v", p, err)
@@ -163,7 +171,6 @@ func (config *NodesYaml) collectProfiles(profileID string, visited map[string]bo
 	}
 	// Mark this profile as visited.
 	visited[profileID] = true
-
 	profile, err := config.GetProfile(profileID)
 	if err != nil {
 		return nil, err
