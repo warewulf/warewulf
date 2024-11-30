@@ -229,3 +229,74 @@ func Test_negated_list(t *testing.T) {
 	assert.Equal(list, cleanList(list4))
 	assert.Equal(list, cleanList(list5))
 }
+
+func Test_Nested_Profile_Merge(t *testing.T) {
+	nodesconf := `
+nodeprofiles:
+  1profile:
+    comment: "1profile, included by role-compute, includes 2profile."
+    profiles:
+      - 2profile
+    tags:
+      1_tag_1: "set by 1profile"
+      1_tag_2: "set by 1profile"
+      1_tag_3: "set by 1profile"
+  2profile:
+    comment: "2profile, included by 1profile, includes 3profile"
+    profiles:
+      - 3profile
+    tags:
+      1_tag_2: "set by 2profile"
+      2_tag_1: "set by 2profile"
+      2_tag_2: "set by 2profile"
+  3profile:
+    comment: "3profile, included by 2profile"
+    tags:
+      1_tag_3: "set by 3profile"
+      2_tag_2: "set by 3profile"
+      3_tag_1: "set by 3profile"
+      3_tag_2: "set by 3profile"
+  network-clusternet:
+    comment: "Define clusternet network."
+    network devices:
+      clusternet:
+        device: clusternet
+        tags:
+          network: 100.64.0.0
+          netmask: 255.255.240.0
+          prefix: /20
+          gateway: 100.64.0.1
+          mtu: 1500
+  role-compute:
+    comment: "Role profile for compute nodes."
+    profiles:
+      - 1profile
+      - network-clusternet
+nodes:
+  node0001:
+    network devices:
+      clusternet:
+        hwaddr: ca:fe:00:00:00:01
+    profiles:
+      - role-compute
+    tags:
+      3_tag_2: "set by node"
+`
+	assert := assert.New(t)
+	var ymlSrc NodesYaml
+	err := yaml.Unmarshal([]byte(nodesconf), &ymlSrc)
+	assert.NoError(err)
+	wwlog.SetLogLevel(wwlog.DEBUG)
+	nodes, err := ymlSrc.FindAllNodes()
+	assert.NoError(err)
+	nodemap := make(map[string]*Node)
+	for i := range nodes {
+		nodemap[nodes[i].Id()] = &nodes[i]
+	}
+	assert.Contains(nodemap, "node0001")
+	assert.ElementsMatch([]string{"role-compute", "2profile", "3profile", "1profile", "network-clusternet"}, nodemap["node0001"].Profiles)
+	assert.Equal("set by 1profile", nodemap["node0001"].Tags["1_tag_1"])
+	assert.Equal("set by 2profile", nodemap["node0001"].Tags["2_tag_1"])
+	assert.Equal("set by 3profile", nodemap["node0001"].Tags["2_tag_2"])
+	assert.Equal("set by node", nodemap["node0001"].Tags["3_tag_2"])
+}

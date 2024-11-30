@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"sort"
+	"strings"
 
 	"dario.cat/mergo"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
@@ -79,16 +80,57 @@ func (config *NodesYaml) GetNode(id string) (node Node, err error) {
 	if err != nil {
 		return node, err
 	}
+	// Collect all profiles, including nested ones, before building the node config
+	visitedProfiles := make(map[string]bool)
+	var allProfiles []string
 	for _, p := range cleanList(config.Nodes[id].Profiles) {
+		profiles, err := config.collectProfiles(p, visitedProfiles)
+		if err != nil {
+			wwlog.Warn("error collecting profiles for %s: %v", p, err)
+			continue
+		}
+		allProfiles = append(allProfiles, profiles...)
+	}
+
+	// Remove duplicates and sort the profiles alphanumerically
+	uniqueProfiles := removeDuplicates(allProfiles)
+	sort.Strings(uniqueProfiles)
+	wwlog.Debug(strings.Join(uniqueProfiles, ","))
+
+	// Merge profiles into a single Profile
+	baseProfile := EmptyNode()
+	for _, p := range uniqueProfiles {
+		wwlog.Debug("Merging profile: %s", p)
 		includedProfile, err := config.GetProfile(p)
 		if err != nil {
 			wwlog.Warn("profile not found: %s", p)
 			continue
 		}
-		err = mergo.Merge(&node.Profile, includedProfile, mergo.WithAppendSlice)
+		err = mergo.Merge(&baseProfile.Profile, includedProfile, mergo.WithOverride, mergo.WithAppendSlice)
 		if err != nil {
 			return node, err
 		}
+		wwlog.Debug("Merged %s:\n", includedProfile)
+		for tag, value := range baseProfile.Profile.Tags {
+			wwlog.Debug("Tag: %s, Value: %s\n", tag, value)
+		}
+	}
+	// Merge the node.Profile into the baseProfile.Profile, this lets the node have the last say in values.
+	err = mergo.Merge(&baseProfile.Profile, node.Profile, mergo.WithOverride, mergo.WithAppendSlice)
+	if err != nil {
+		return node, err
+	}
+	// And we end by writing that combined profile into the node as the pristine merged profile.
+	err = mergo.Merge(&node.Profile, baseProfile.Profile, mergo.WithOverride, mergo.WithAppendSlice)
+	if err != nil {
+		return node, err
+	}
+	// That last merge will have duplicated any profiles in the node config, clean that up.
+	// This is probably a sign that slice handling above is too naive.
+	node.Profiles = uniqueProfiles
+	wwlog.Debug("node.Profile.Tags[] after merging:\n")
+	for tag, value := range node.Profile.Tags {
+		wwlog.Debug("Tag: %s, Value: %s\n", tag, value)
 	}
 	// finally set no exported values
 	node.id = id
@@ -109,6 +151,44 @@ func (config *NodesYaml) GetNode(id string) (node Node, err error) {
 	}
 	wwlog.Debug("constructed node: %s", id)
 	return
+}
+
+// collectProfiles recursively collects all profiles for a given profile ID
+func (config *NodesYaml) collectProfiles(profileID string, visited map[string]bool) ([]string, error) {
+	profiles := []string{profileID}
+	// If we've already seen this profile, just return it without descending recursively.
+	// Duplicates will be cleaned up later.
+	if visited[profileID] {
+		return profiles, nil
+	}
+	// Mark this profile as visited.
+	visited[profileID] = true
+	profile, err := config.GetProfile(profileID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, p := range profile.Profiles {
+		nestedProfiles, err := config.collectProfiles(p, visited)
+		if err != nil {
+			return nil, err
+		}
+		profiles = append(profiles, nestedProfiles...)
+	}
+	return profiles, nil
+}
+
+// removeDuplicates removes duplicate entries from a slice of strings
+func removeDuplicates(slice []string) []string {
+	seen := make(map[string]struct{})
+	result := []string{}
+	for _, item := range slice {
+		if _, ok := seen[item]; !ok {
+			seen[item] = struct{}{}
+			result = append(result, item)
+		}
+	}
+	return result
 }
 
 /*
