@@ -121,7 +121,7 @@ Cascading/Nested Profiles
 ==================
 
 Profiles can contain profiles, which will be included into the node config
-recusrively. WHen a node has more than one profile assigned, or profiles
+recursively. When a node has more than one profile assigned, or profiles
 include profiles, Warewulf uses the following algorithm to merge them:
 
 1. Starting with the profile(s) listed in the node config, build a list of all
@@ -140,15 +140,15 @@ For example, say you have a node that includes the profile ``role-compute``.
 The ``role-compute`` profile includes ``network`` and ``slurmd``, with each of
 those defining configurations specific to those services. The resulting profile
 list will be ``network, role-compute, slurmd`` and they will be merged in that
-order. 
+order.
 
 While the sorted profile list merging guarantees the order and makes the
 outcome deterministic when multiple profiles define the same settings, it's
 recommended to organize profiles in such a way that no two profiles define the
-same settings. This is also a good practive for overlays, e.g. never have two
+same settings. This is also a good practice for overlays, e.g. never have two
 overlays control or generate the same files. Although it's not an error to do this
-in either case, it greatly reduces confusion when the resulting node config has
-an unexpected value.
+in either case, it greatly reduces confusion when the resulting node config or
+overlay produced files have an unexpected value or outcome.
 
 In the previous example, we set a single node to have two profile
 configurations. We can also overwrite configurations as follows:
