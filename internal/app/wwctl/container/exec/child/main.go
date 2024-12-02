@@ -120,7 +120,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		}
 		ps1Str = fmt.Sprintf("[%s|ro|%s] Warewulf> ", containerName, nodename)
 	}
-	if !util.IsWriteAble(containerPath) && nodename == "" {
+	if !container.IsWriteAble(containerName) && nodename == "" {
 		wwlog.Verbose("mounting %s ro", containerPath)
 		ps1Str = fmt.Sprintf("[%s|ro] Warewulf> ", containerName)
 		err = syscall.Mount(containerPath, containerPath, "", syscall.MS_BIND, "")

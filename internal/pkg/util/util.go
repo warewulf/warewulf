@@ -565,21 +565,3 @@ func ByteToString(b int64) string {
 	}
 	return fmt.Sprintf("%.1f %ciB", float64(b)/float64(div), "KMGTPE"[exp])
 }
-
-/*
-Check if the w-bit of a file/dir. unix.Access(file,unix.W_OK) will
-not show this.
-*/
-func IsWriteAble(path string) bool {
-	info, err := os.Stat(path)
-	if err != nil {
-		return false
-	}
-
-	// Check if the user bit is enabled in file permission
-	if info.Mode().Perm()&(1<<(uint(7))) == 0 {
-		wwlog.Debug("Write permission bit is not set for: %s", path)
-		return false
-	}
-	return true
-}

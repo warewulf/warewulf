@@ -464,3 +464,14 @@ tools 1.21 or newer. Below is an example for building wwclient for arm64:
    # cp wwclient /var/lib/warewulf/overlays/wwclient_arm64/rootfs/warewulf
 
 Then, apply the new "wwclient_arm64" system overlay to your arm64 node/profile
+
+Read-only containers
+====================
+
+A container may be marked "read-only" by creating a ``readonly`` file in its
+source directory, typically next to ``rootfs``.
+
+.. note::
+
+   Read-only containers are a preview feature primarily meant to enable future
+   support for container subscriptions and updates.
