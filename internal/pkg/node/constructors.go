@@ -7,9 +7,12 @@ import (
 	"path"
 	"sort"
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 	"fmt"
 >>>>>>> ee84bc5e (Enable/handle nested profiles.)
+=======
+>>>>>>> 9a06d8ab (cleanlList not needed for profiles. Cycles are not errors.)
 	"strings"
 
 	"dario.cat/mergo"
@@ -88,10 +91,14 @@ func (config *NodesYaml) GetNode(id string) (node Node, err error) {
 	visitedProfiles := make(map[string]bool)
 	var allProfiles []string
 <<<<<<< HEAD
+<<<<<<< HEAD
 	for _, p := range config.Nodes[id].Profiles {
 =======
 	for _, p := range cleanList(config.Nodes[id].Profiles) {
 >>>>>>> ee84bc5e (Enable/handle nested profiles.)
+=======
+	for _, p := range config.Nodes[id].Profiles {
+>>>>>>> 9a06d8ab (cleanlList not needed for profiles. Cycles are not errors.)
 		profiles, err := config.collectProfiles(p, visitedProfiles)
 		if err != nil {
 			wwlog.Warn("error collecting profiles for %s: %v", p, err)
