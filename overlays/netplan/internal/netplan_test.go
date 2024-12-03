@@ -23,7 +23,7 @@ func Test_netplanOverlay(t *testing.T) {
 	}{
 		{
 			name: "netplan",
-			args: []string{"--render", "node1", "netplan", "etc/netplan/01-netcfg.yaml"},
+			args: []string{"--render", "node1", "netplan", "etc/netplan/01-netcfg.yaml.ww"},
 			log:  netplan,
 		},
 	}
