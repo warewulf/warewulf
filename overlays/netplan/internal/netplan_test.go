@@ -14,7 +14,7 @@ func Test_netplanOverlay(t *testing.T) {
 	env := testenv.New(t)
 	defer env.RemoveAll(t)
 	env.ImportFile(t, "etc/warewulf/nodes.conf", "nodes.conf")
-	env.ImportFile(t, "var/lib/warewulf/overlays/netplan/rootfs/etc/netplan/01-netcfg.yaml.ww", "../rootfs/etc/netplan/01-netcfg.yaml.ww")
+	env.ImportFile(t, "var/lib/warewulf/overlays/netplan/rootfs/etc/netplan/01-netcfg.yaml.ww", "../rootfs/etc/netplan/01-netcfg.yaml")
 
 	tests := []struct {
 		name string
@@ -23,7 +23,7 @@ func Test_netplanOverlay(t *testing.T) {
 	}{
 		{
 			name: "netplan",
-			args: []string{"--render", "node1", "netplan", "etc/netplan/01-netcfg.yaml.ww"},
+			args: []string{"--render", "node1", "netplan", "etc/netplan/01-netcfg.yaml"},
 			log:  netplan,
 		},
 	}
