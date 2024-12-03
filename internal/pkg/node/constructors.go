@@ -6,7 +6,6 @@ import (
 	"os"
 	"path"
 	"sort"
-	"fmt"
 	"strings"
 
 	"dario.cat/mergo"
@@ -84,7 +83,7 @@ func (config *NodesYaml) GetNode(id string) (node Node, err error) {
 	// Collect all profiles, including nested ones, before building the node config
 	visitedProfiles := make(map[string]bool)
 	var allProfiles []string
-	for _, p := range cleanList(config.Nodes[id].Profiles) {
+	for _, p := range config.Nodes[id].Profiles {
 		profiles, err := config.collectProfiles(p, visitedProfiles)
 		if err != nil {
 			wwlog.Warn("error collecting profiles for %s: %v", p, err)
@@ -156,18 +155,21 @@ func (config *NodesYaml) GetNode(id string) (node Node, err error) {
 
 // collectProfiles recursively collects all profiles for a given profile ID
 func (config *NodesYaml) collectProfiles(profileID string, visited map[string]bool) ([]string, error) {
+	profiles := []string{profileID}
+	// If we've already seen this profile, just return it without descending recursively.
+	// Duplicates will be cleaned up later.
 	if visited[profileID] {
-		return nil, fmt.Errorf("cycle detected with profile: %s", profileID)
+		return profiles, nil
 	}
+	// Mark this profile as visited.
 	visited[profileID] = true
 
-	profiles := []string{profileID}
 	profile, err := config.GetProfile(profileID)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, p := range cleanList(profile.Profiles) {
+	for _, p := range profile.Profiles {
 		nestedProfiles, err := config.collectProfiles(p, visited)
 		if err != nil {
 			return nil, err
