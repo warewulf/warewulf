@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add `wwctl upgrade <config|nodes>`. #230, #517
 - Better handling of InfiniBand udev net naming. #1227
 - use templating mechanism for power commands. #1004
+- Document "known issues."
 
 ### Changed
 
