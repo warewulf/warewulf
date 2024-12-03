@@ -2,7 +2,6 @@ package node
 
 import (
 	"testing"
-	"fmt"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -295,9 +294,9 @@ nodes:
 		nodemap[nodes[i].Id()] = &nodes[i]
 	}
 	assert.Contains(nodemap, "node0001")
-	assert.ElementsMatch(nodemap["node0001"].Profiles, []string{"role-compute", "2profile", "3profile", "1profile", "network-clusternet"})
-	assert.Equal(nodemap["node0001"].Tags["1_tag_1"], "set by 1profile")
-	assert.Equal(nodemap["node0001"].Tags["2_tag_1"], "set by 2profile")
-	assert.Equal(nodemap["node0001"].Tags["2_tag_2"], "set by 3profile")
-	assert.Equal(nodemap["node0001"].Tags["3_tag_2"], "set by node")
+	assert.ElementsMatch([]string{"role-compute", "2profile", "3profile", "1profile", "network-clusternet"}, nodemap["node0001"].Profiles)
+	assert.Equal("set by 1profile", nodemap["node0001"].Tags["1_tag_1"])
+	assert.Equal("set by 2profile", nodemap["node0001"].Tags["2_tag_1"])
+	assert.Equal("set by 3profile", nodemap["node0001"].Tags["2_tag_2"])
+	assert.Equal("set by node", nodemap["node0001"].Tags["3_tag_2"])
 }
