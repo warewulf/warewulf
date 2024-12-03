@@ -2,8 +2,6 @@ module github.com/warewulf/warewulf
 
 go 1.21.0
 
-toolchain go1.23.3
-
 require (
 	dario.cat/mergo v1.0.0
 	github.com/Masterminds/sprig/v3 v3.2.3
