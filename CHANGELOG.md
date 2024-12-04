@@ -70,6 +70,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Use a sentinel file to determine container readonly state. #1447
 - Bump github.com/Masterminds/sprig/v3 from 3.2.3 to 3.3.0 #1553
 - Bump github.com/golang/glog from 1.2.0 to 1.2.3 #1527
+- Bump github.com/opencontainers/runc from 1.1.12 to 1.1.14
 
 ### Removed
 
