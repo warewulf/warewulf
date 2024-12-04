@@ -59,9 +59,6 @@ func GetCommand() *cobra.Command {
 	}); err != nil {
 		log.Println(err)
 	}
-	if err := baseCmd.RegisterFlagCompletionFunc("kerneloverride", completions.ProfileKernelOverride); err != nil {
-		log.Println(err)
-	}
 	if err := baseCmd.RegisterFlagCompletionFunc("kernelversion", completions.ProfileKernelVersion); err != nil {
 		log.Println(err)
 	}

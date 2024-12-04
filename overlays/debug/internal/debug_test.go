@@ -87,7 +87,6 @@ data from other structures.
 - Tags: 
 - Kernel:
   - Version: 
-  - Override: 
   - Args: quiet crashkernel=no vga=791 net.naming-scheme=v238
 - Ipmi:
   - UserName: user
@@ -198,7 +197,7 @@ data from other structures.
   - Profiles: [default]
   - Tags: 
   - Kernel
-    - Override: 
+    - Version: 
     - Args: quiet crashkernel=no vga=791 net.naming-scheme=v238
   - Ipmi:
     - Ipaddr: 192.168.4.21
@@ -253,7 +252,7 @@ data from other structures.
   - Profiles: [default]
   - Tags: 
   - Kernel
-    - Override: 
+    - Version: 
     - Args: quiet crashkernel=no vga=791 net.naming-scheme=v238
   - Ipmi:
     - Ipaddr: <nil>

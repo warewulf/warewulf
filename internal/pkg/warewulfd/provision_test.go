@@ -31,7 +31,7 @@ var provisionSendTests = []struct {
 	{"find grub", "/efiboot/grub.efi", "", 200, "10.10.10.10:9873"},
 	{"find grub", "/efiboot/grub.efi", "", 404, "10.10.10.11:9873"},
 	{"find initramfs", "/provision/00:00:00:ff:ff:ff?stage=initramfs", "", 200, "10.10.10.10:9873"},
-	{"ipxe test with NetDevs and KernelOverrides", "/provision/00:00:00:00:00:ff?stage=ipxe", "1.1.1 ifname=net:00:00:00:00:00:ff ", 200, "10.10.10.12:9873"},
+	{"ipxe test with NetDevs and KernelVersion", "/provision/00:00:00:00:00:ff?stage=ipxe", "1.1.1 ifname=net:00:00:00:00:00:ff ", 200, "10.10.10.12:9873"},
 	{"find grub.cfg", "/efiboot/grub.cfg", "dracut", 200, "10.10.10.11:9873"},
 }
 
@@ -63,7 +63,7 @@ nodes:
         device: net
     ipxe template: test
     kernel:
-      override: 1.1.1`)
+      version: 1.1.1`)
 
 	// create a  arp file as for grub we look up the ip address through the arp cache
 	env.WriteFile(t, "/var/tmp/arpcache", `IP address       HW type     Flags       HW address            Mask     Device
@@ -79,7 +79,7 @@ nodes:
 	env.CreateFile(t, "/var/lib/warewulf/chroots/suse/rootfs/usr/lib64/efi/shim.efi")
 	env.CreateFile(t, "/var/lib/warewulf/chroots/suse/rootfs/usr/share/efi/x86_64/grub.efi")
 	env.CreateFile(t, "/var/lib/warewulf/chroots/suse/rootfs/boot/initramfs-1.1.0.img")
-	env.WriteFile(t, "/etc/warewulf/ipxe/test.ipxe", "{{.KernelOverride}}{{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} {{end}}{{end}}")
+	env.WriteFile(t, "/etc/warewulf/ipxe/test.ipxe", "{{.KernelVersion}}{{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} {{end}}{{end}}")
 	env.WriteFile(t, "/etc/warewulf/grub/grub.cfg.ww", "{{ .Tags.GrubMenuEntry }}")
 
 	dbErr := LoadNodeDB()

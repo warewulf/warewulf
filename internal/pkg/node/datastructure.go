@@ -70,9 +70,8 @@ type IpmiConf struct {
 }
 
 type KernelConf struct {
-	Version  string `yaml:"version,omitempty" lopt:"kernelversion" comment:"Set kernel version" json:"version,omitempty"`
-	Override string `yaml:"override,omitempty" lopt:"kerneloverride" sopt:"K" comment:"Set kernel override path" json:"override,omitempty"`
-	Args     string `yaml:"args,omitempty" lopt:"kernelargs" sopt:"A" comment:"Set kernel arguments" json:"args,omitempty"`
+	Version string `yaml:"version,omitempty" lopt:"kernelversion" comment:"Set kernel version" json:"version,omitempty"`
+	Args    string `yaml:"args,omitempty" lopt:"kernelargs" sopt:"A" comment:"Set kernel arguments" json:"args,omitempty"`
 }
 
 type NetDev struct {

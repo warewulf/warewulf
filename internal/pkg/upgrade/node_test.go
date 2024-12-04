@@ -244,13 +244,11 @@ nodeprofiles:
   default:
     kernel:
       version: "2.6"
-      override: rockylinux-9
       args: quiet
 nodes:
   n1:
     kernel:
       version: "2.6"
-      override: rockylinux-9
       args: quiet
 `,
 	},
@@ -711,12 +709,12 @@ nodeprofiles:
   default:
     container name: mycontainer
     kernel:
-      override: /boot/vmlinuz-1.2.3
+      version: /boot/vmlinuz-1.2.3
 nodes:
   n1:
     container name: mycontainer
     kernel:
-      override: /boot/vmlinuz-1.2.3
+      version: /boot/vmlinuz-1.2.3
 `,
 	},
 	{
@@ -744,12 +742,12 @@ nodeprofiles:
   default:
     container name: mycontainer
     kernel:
-      override: /boot/vmlinuz-1.2.3
+      version: /boot/vmlinuz-1.2.3
 nodes:
   n1:
     container name: mycontainer
     kernel:
-      override: /boot/vmlinuz-1.2.3
+      version: /boot/vmlinuz-1.2.3
 `,
 	},
 }

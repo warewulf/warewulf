@@ -111,9 +111,9 @@ func Test_FindKernel(t *testing.T) {
 
 func Test_FromNode(t *testing.T) {
 	tests := map[string]struct {
-		files    []string
-		override string
-		path     string
+		files   []string
+		version string
+		path    string
 	}{
 		"default": {
 			files: []string{
@@ -121,22 +121,31 @@ func Test_FromNode(t *testing.T) {
 				"/boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64",
 				"/boot/vmlinuz-4.14.0-427.18.1.el8_4.x86_64",
 			},
-			override: "",
-			path:     "/boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64",
+			version: "",
+			path:    "/boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64",
 		},
-		"override": {
+		"path": {
 			files: []string{
 				"/boot/vmlinuz-5.14.0-427.18.1.el9_4.x86_64",
 				"/boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64",
 				"/boot/vmlinuz-4.14.0-427.18.1.el8_4.x86_64",
 			},
-			override: "/boot/vmlinuz-4.14.0-427.18.1.el8_4.x86_64",
-			path:     "/boot/vmlinuz-4.14.0-427.18.1.el8_4.x86_64",
+			version: "/boot/vmlinuz-4.14.0-427.18.1.el8_4.x86_64",
+			path:    "/boot/vmlinuz-4.14.0-427.18.1.el8_4.x86_64",
+		},
+		"version": {
+			files: []string{
+				"/boot/vmlinuz-5.14.0-427.18.1.el9_4.x86_64",
+				"/boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64",
+				"/boot/vmlinuz-4.14.0-427.18.1.el8_4.x86_64",
+			},
+			version: "4.14.0-427.18.1",
+			path:    "/boot/vmlinuz-4.14.0-427.18.1.el8_4.x86_64",
 		},
 		"none": {
-			files:    []string{},
-			override: "",
-			path:     "",
+			files:   []string{},
+			version: "",
+			path:    "",
 		},
 	}
 	for name, tt := range tests {
@@ -149,7 +158,7 @@ func Test_FromNode(t *testing.T) {
 			}
 			node := node.EmptyNode()
 			node.ContainerName = "testcontainer"
-			node.Kernel.Override = tt.override
+			node.Kernel.Version = tt.version
 			kernel := FromNode(&node)
 			if tt.path == "" {
 				assert.Nil(t, kernel)
