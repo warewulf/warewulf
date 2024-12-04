@@ -76,6 +76,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Repurpose Kernel.Override to specify the path to the desired kernel within the container. #1556
 - Merge Kernel.Override into Kernel.Version to specify the desired kernel version or path. #1556
 - Repurpose `wwctl kernel list` to list discovered kernels from containers. #1556
+- Provide detected kernel version to overlay templates. #1556
 
 ### Removed
 
