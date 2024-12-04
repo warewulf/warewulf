@@ -75,10 +75,13 @@ func FromNode(node *node.Node) *Kernel {
 	wwlog.Debug("FromNode(%v)", node)
 	if node.ContainerName == "" {
 		return nil
-	} else if node.Kernel.Override != "" {
-		return &Kernel{ContainerName: node.ContainerName, Path: filepath.Join("/", node.Kernel.Override)}
 	} else if node.Kernel.Version != "" {
-		return FindKernels(node.ContainerName).Version(node.Kernel.Version)
+		kernel := &Kernel{ContainerName: node.ContainerName, Path: filepath.Join("/", node.Kernel.Version)}
+		if util.IsFile(kernel.FullPath()) {
+			return kernel
+		} else {
+			return FindKernels(node.ContainerName).Version(node.Kernel.Version)
+		}
 	} else {
 		return FindKernels(node.ContainerName).Preferred()
 	}

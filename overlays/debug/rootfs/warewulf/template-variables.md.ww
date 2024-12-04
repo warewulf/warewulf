@@ -29,7 +29,6 @@ data from other structures.
 - Tags: {{ range $key, $value := .Tags }}{{ $key }}={{ $value }} {{ end }}
 - Kernel:
   - Version: {{ .Kernel.Version }}
-  - Override: {{ .Kernel.Override }}
   - Args: {{ .Kernel.Args }}
 - Ipmi:
   - UserName: {{ .Ipmi.UserName }}
@@ -139,7 +138,7 @@ data from other structures.
   - Profiles: {{ $node.Profiles }}
   - Tags: {{ range $key, $value := $node.Tags }}{{ $key }}={{ $value }} {{ end }}
   - Kernel
-    - Override: {{ $node.Kernel.Override }}
+    - Version: {{ $node.Kernel.Version }}
     - Args: {{ $node.Kernel.Args }}
   - Ipmi:
     - Ipaddr: {{ $node.Ipmi.Ipaddr }}

@@ -5,8 +5,8 @@ echo ===========================================================================
 echo Warewulf v4 now booting via dracut: {{.Fqdn}} ({{.Hwaddr}})
 echo
 echo Container:     {{.ContainerName}}
-{{if .KernelOverride }}
-echo Kernel:        {{.KernelOverride}}
+{{if .KernelVersion }}
+echo Kernel:        {{.KernelVersion}}
 {{else}}
 echo Kernel:        {{.ContainerName}} (container default)
 {{end}}

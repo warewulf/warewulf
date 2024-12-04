@@ -22,20 +22,13 @@ You can see what kernels are available in imported containers by using the
    rocky-9.3            /lib/modules/5.14.0-362.13.1.el9_3.aarch64/vmlinuz  5.14.0-362.13.1  true       0
    rockylinux-9-custom  /lib/modules/5.14.0-427.40.1.el9_4.aarch64/vmlinuz  5.14.0-427.40.1  true       0
 
-Kernel Version and Override
-===========================
+Kernel Version
+==============
 
 If a container includes multiple kernels, the desired kernel may be selected by
-specifying the desired version or an explicit override.
-
-``--kernelversion`` specifies the desired kernel version.
+specifying the desired version or an explicit path.
 
 .. code-block:: console
 
    # wwctl node set n1 --kernelversion=4.18.0-372.13.1
-
-``--kerneloverride`` specifies the full path to the desired kernel.
-
-.. code-block:: console
-
-   # wwctl node set n1 --kerneloverride=/boot/vmlinuz-4.18.0-372.13.1.el8_6.x86_64
+   # wwctl node set n1 --kernelversion=/boot/vmlinuz-4.18.0-372.13.1.el8_6.x86_64

@@ -274,9 +274,9 @@ nodes:
 			args:    []string{"-l"},
 			wantErr: false,
 			stdout: `
-NODE NAME  KERNEL OVERRIDE  CONTAINER  OVERLAYS (S/R)
----------  ---------------  ---------  --------------
-n01        --               --         /rop1,rop2
+NODE NAME  KERNEL VERSION  CONTAINER  OVERLAYS (S/R)
+---------  --------------  ---------  --------------
+n01        --              --         /rop1,rop2
 `,
 			inDb: `nodeprofiles:
   p1:
@@ -294,9 +294,9 @@ nodes:
 			args:    []string{"-l"},
 			wantErr: false,
 			stdout: `
-NODE NAME  KERNEL OVERRIDE  CONTAINER  OVERLAYS (S/R)
----------  ---------------  ---------  --------------
-n01        --               --         sop1/nop1,~rop1,rop1,rop2
+NODE NAME  KERNEL VERSION  CONTAINER  OVERLAYS (S/R)
+---------  --------------  ---------  --------------
+n01        --              --         sop1/nop1,~rop1,rop1,rop2
 `,
 			inDb: `nodeprofiles:
   p1:
