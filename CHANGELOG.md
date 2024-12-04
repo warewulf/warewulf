@@ -74,6 +74,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Bump github.com/golang/glog from 1.2.0 to 1.2.3 #1527
 - Merge Kernel.Override into Kernel.Version to specify the desired kernel version or path. #1556
 - Repurpose `wwctl kernel list` to list discovered kernels from containers. #1556
+- Provide detected kernel version to overlay templates. #1556
 
 ### Removed
 
