@@ -7,6 +7,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 
+	"github.com/warewulf/warewulf/internal/pkg/kernel"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -162,18 +163,14 @@ func (this *Node) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *nod
 	}
 	upgraded.Ipxe = this.Ipxe
 	if this.Kernel != nil {
-		upgraded.Kernel = this.Kernel.Upgrade()
+		upgraded.Kernel = this.Kernel.Upgrade(this.ContainerName)
 	} else {
-		upgraded.Kernel = new(node.KernelConf)
-	}
-	if upgraded.Kernel.Args == "" {
-		upgraded.Kernel.Args = this.KernelArgs
-	}
-	if upgraded.Kernel.Override == "" {
-		upgraded.Kernel.Override = this.KernelOverride
-	}
-	if upgraded.Kernel.Version == "" {
-		upgraded.Kernel.Version = this.KernelVersion
+		inlineKernel := &KernelConf{
+			Args:     this.KernelArgs,
+			Version:  this.KernelVersion,
+			Override: this.KernelOverride,
+		}
+		upgraded.Kernel = inlineKernel.Upgrade(this.ContainerName)
 	}
 	if this.Keys != nil {
 		for key, value := range this.Keys {
@@ -355,18 +352,14 @@ func (this *Profile) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *
 	}
 	upgraded.Ipxe = this.Ipxe
 	if this.Kernel != nil {
-		upgraded.Kernel = this.Kernel.Upgrade()
+		upgraded.Kernel = this.Kernel.Upgrade(this.ContainerName)
 	} else {
-		upgraded.Kernel = new(node.KernelConf)
-	}
-	if upgraded.Kernel.Args == "" {
-		upgraded.Kernel.Args = this.KernelArgs
-	}
-	if upgraded.Kernel.Override == "" {
-		upgraded.Kernel.Override = this.KernelOverride
-	}
-	if upgraded.Kernel.Version == "" {
-		upgraded.Kernel.Version = this.KernelVersion
+		inlineKernel := &KernelConf{
+			Args:     this.KernelArgs,
+			Version:  this.KernelVersion,
+			Override: this.KernelOverride,
+		}
+		upgraded.Kernel = inlineKernel.Upgrade(this.ContainerName)
 	}
 	if this.Keys != nil {
 		for key, value := range this.Keys {
@@ -489,11 +482,34 @@ type KernelConf struct {
 	Version  string `yaml:"version,omitempty"`
 }
 
-func (this *KernelConf) Upgrade() (upgraded *node.KernelConf) {
+func (this *KernelConf) Upgrade(containerName string) (upgraded *node.KernelConf) {
 	upgraded = new(node.KernelConf)
 	upgraded.Args = this.Args
-	upgraded.Override = this.Override
-	upgraded.Version = this.Version
+	kernels := kernel.FindKernels(containerName)
+	wwlog.Debug("referencing kernels: %v (containerName: %v)", kernels, containerName)
+	if this.Override != "" {
+		if version := util.ParseVersion(legacyKernelVersion(this.Override)); version != nil {
+			for _, kernel_ := range kernels {
+				wwlog.Debug("checking if kernel '%v' version '%v' from container '%v' matches override '%v'", kernel_, kernel_.Version(), containerName, this.Override)
+				if kernel_.Version() == version.String() {
+					upgraded.Version = kernel_.Path
+					wwlog.Info("kernel override %v -> version %v (container %v)", this.Override, upgraded.Version, containerName)
+				}
+			}
+		} else if util.IsFile((&kernel.Kernel{ContainerName: containerName, Path: this.Override}).FullPath()) {
+			upgraded.Version = this.Override
+		}
+		if upgraded.Version == "" {
+			containerDisplay := "unknown"
+			if containerName != "" {
+				containerDisplay = containerName
+			}
+			wwlog.Warn("unable to resolve kernel override %v (container %v)", this.Override, containerDisplay)
+		}
+	}
+	if upgraded.Version == "" {
+		upgraded.Version = this.Version
+	}
 	return
 }
 

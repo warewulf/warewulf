@@ -5,12 +5,16 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/warewulf/warewulf/internal/pkg/testenv"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 var nodesYamlUpgradeTests = []struct {
 	name            string
 	addDefaults     bool
 	replaceOverlays bool
+	files           map[string]string
 	legacyYaml      string
 	upgradedYaml    string
 }{
@@ -115,8 +119,6 @@ nodeprofiles:
       - generic
   leap:
     comment: openSUSE leap
-    kernel:
-      override: 5.14.21
     ipmi:
       netmask: 255.255.255.0
     network devices:
@@ -242,13 +244,11 @@ nodeprofiles:
   default:
     kernel:
       version: "2.6"
-      override: rockylinux-9
       args: quiet
 nodes:
   n1:
     kernel:
       version: "2.6"
-      override: rockylinux-9
       args: quiet
 `,
 	},
@@ -684,11 +684,85 @@ nodes:
       - ignition
 `,
 	},
+	{
+		name:            "Kernel.Override (legacy)",
+		addDefaults:     false,
+		replaceOverlays: false,
+		files: map[string]string{
+			"/srv/warewulf/kernel/mykernel/version":                           "1.2.3",
+			"/var/lib/warewulf/chroots/mycontainer/rootfs/boot/vmlinuz-1.2.3": "",
+		},
+		legacyYaml: `
+nodeprofiles:
+  default:
+    container name: mycontainer
+    kernel:
+      override: mykernel
+nodes:
+  n1:
+    container name: mycontainer
+    kernel:
+      override: mykernel
+`,
+		upgradedYaml: `
+nodeprofiles:
+  default:
+    container name: mycontainer
+    kernel:
+      version: /boot/vmlinuz-1.2.3
+nodes:
+  n1:
+    container name: mycontainer
+    kernel:
+      version: /boot/vmlinuz-1.2.3
+`,
+	},
+	{
+		name:            "Kernel.Override (upgraded)",
+		addDefaults:     false,
+		replaceOverlays: false,
+		files: map[string]string{
+			"/srv/warewulf/kernel/mykernel/version":                           "1.2.3",
+			"/var/lib/warewulf/chroots/mycontainer/rootfs/boot/vmlinuz-1.2.3": "",
+		},
+		legacyYaml: `
+nodeprofiles:
+  default:
+    container name: mycontainer
+    kernel:
+      override: /boot/vmlinuz-1.2.3
+nodes:
+  n1:
+    container name: mycontainer
+    kernel:
+      override: /boot/vmlinuz-1.2.3
+`,
+		upgradedYaml: `
+nodeprofiles:
+  default:
+    container name: mycontainer
+    kernel:
+      version: /boot/vmlinuz-1.2.3
+nodes:
+  n1:
+    container name: mycontainer
+    kernel:
+      version: /boot/vmlinuz-1.2.3
+`,
+	},
 }
 
 func Test_UpgradeNodesYaml(t *testing.T) {
+	wwlog.SetLogLevel(wwlog.DEBUG)
 	for _, tt := range nodesYamlUpgradeTests {
 		t.Run(tt.name, func(t *testing.T) {
+			env := testenv.New(t)
+			defer env.RemoveAll(t)
+			if tt.files != nil {
+				for fileName, content := range tt.files {
+					env.WriteFile(t, fileName, content)
+				}
+			}
 			legacy, err := ParseNodes([]byte(tt.legacyYaml))
 			assert.NoError(t, err)
 			upgraded := legacy.Upgrade(tt.addDefaults, tt.replaceOverlays)

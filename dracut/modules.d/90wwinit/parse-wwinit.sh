@@ -12,10 +12,6 @@ then
     export wwinit_container="${wwinit_uri}&stage=container&compress=gz"; info "wwinit_container=${wwinit_container}"
     export wwinit_system="${wwinit_uri}&stage=system&compress=gz"; info "wwinit_system=${wwinit_system}"
     export wwinit_runtime="${wwinit_uri}&stage=runtime&compress=gz"; info "wwinit_runtime=${wwinit_runtime}"
-    if [ -n "$(getarg wwinit.KernelOverride)" ]
-    then
-        export wwinit_kmods="${wwinit_uri}&stage=kmods&compress=gz"; info "wwinit_kmods=${wwinit_kmods}"
-    fi
 
     wwinit_tmpfs_size=$(getarg wwinit.tmpfs.size=)
     if [ -n "$wwinit_tmpfs_size" ]

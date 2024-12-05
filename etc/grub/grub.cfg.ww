@@ -18,8 +18,8 @@ set default={{ or .Tags.GrubMenuEntry "ww4" }}
 set timeout=5
 
 menuentry "Network boot node: {{.Id}}" --id ww4 {
-    {{if .KernelOverride }}
-    echo "Kernel:                {{.KernelOverride}}"
+    {{if .KernelVersion }}
+    echo "Kernel:                {{.KernelVersion}}"
     {{else}}
     echo "Kernel:                {{.ContainerName}} (container default)"
     {{end}}
@@ -44,8 +44,8 @@ menuentry "Network boot node with dracut: {{.Id}}" --id dracut {
 
     wwinit_uri="http://{{.Ipaddr}}:{{.Port}}/provision/${net_default_mac}"
 
-    {{if .KernelOverride }}
-    echo "Kernel:                {{.KernelOverride}}"
+    {{if .KernelVersion }}
+    echo "Kernel:                {{.KernelVersion}}"
     {{else}}
     echo "Kernel:                {{.ContainerName}} (container default)"
     {{end}}
