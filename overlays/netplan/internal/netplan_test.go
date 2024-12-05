@@ -57,7 +57,7 @@ network:
   ethernets:
      wwnet0:
         addresses:
-           - 192.168.3.21/255.255.255.0
+           - 192.168.3.21/24
         mtu: 1500 
 backupFile: true
 writeFile: true
@@ -69,6 +69,6 @@ network:
   ethernets:
      wwnet1:
         addresses:
-           - 192.168.3.22/255.255.255.0
+           - 192.168.3.22/24
         mtu: 9000
 `
