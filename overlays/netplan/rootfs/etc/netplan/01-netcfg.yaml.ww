@@ -10,3 +10,4 @@ network:
            - {{$netdev.IpCIDR}}
         mtu: {{$netdev.MTU}}
 {{- end}}
+
