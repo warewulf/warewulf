@@ -1,4 +1,4 @@
-package list
+package kernels
 
 import (
 	"bytes"
@@ -47,6 +47,32 @@ Container   Kernel                                                   Version    
 container1  /boot/vmlinuz-4.14.0-427.18.1.el8_4.x86_64               4.14.0-427.18.1  false      0
 container1  /boot/vmlinuz-5.14.0-427.18.1.el9_4.x86_64               5.14.0-427.18.1  false      0
 container1  /boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64               5.14.0-427.24.1  true       0
+container2  /boot/vmlinuz-0-rescue-eb46964329b146e39518c625feab3ea0  --               false      0
+container2  /boot/vmlinuz-5.14.0-284.30.1.el9_2.aarch64              5.14.0-284.30.1  false      0
+container2  /boot/vmlinuz-5.14.0-362.24.1.el9_3.aarch64              5.14.0-362.24.1  false      0
+container2  /boot/vmlinuz-5.14.0-427.31.1.el9_4.aarch64              5.14.0-427.31.1  true       0
+container2  /boot/vmlinuz-5.14.0-427.31.1.el9_4.aarch64+debug        5.14.0-427.31.1  false      0
+`,
+		},
+		"single container": {
+			files: map[string][]string{
+				"container1": []string{
+					"/boot/vmlinuz-5.14.0-427.18.1.el9_4.x86_64",
+					"/boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64",
+					"/boot/vmlinuz-4.14.0-427.18.1.el8_4.x86_64",
+				},
+				"container2": []string{
+					"/boot/vmlinuz-0-rescue-eb46964329b146e39518c625feab3ea0",
+					"/boot/vmlinuz-5.14.0-362.24.1.el9_3.aarch64",
+					"/boot/vmlinuz-5.14.0-427.31.1.el9_4.aarch64+debug",
+					"/boot/vmlinuz-5.14.0-284.30.1.el9_2.aarch64",
+					"/boot/vmlinuz-5.14.0-427.31.1.el9_4.aarch64",
+				},
+			},
+			args: []string{"container2"},
+			stdout: `
+Container   Kernel                                                   Version          Preferred  Nodes
+---------   ------                                                   -------          ---------  -----
 container2  /boot/vmlinuz-0-rescue-eb46964329b146e39518c625feab3ea0  --               false      0
 container2  /boot/vmlinuz-5.14.0-284.30.1.el9_2.aarch64              5.14.0-284.30.1  false      0
 container2  /boot/vmlinuz-5.14.0-362.24.1.el9_3.aarch64              5.14.0-362.24.1  false      0

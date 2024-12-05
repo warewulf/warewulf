@@ -3,6 +3,7 @@ package completions
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/warewulf/warewulf/internal/pkg/container"
 	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 	"github.com/warewulf/warewulf/internal/pkg/kernel"
 	"github.com/warewulf/warewulf/internal/pkg/node"
@@ -45,4 +46,9 @@ func ProfileKernelVersion(cmd *cobra.Command, args []string, toComplete string) 
 		}
 	}
 	return kernelVersions, cobra.ShellCompDirectiveNoFileComp
+}
+
+func Containers(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	sources, _ := container.ListSources()
+	return sources, cobra.ShellCompDirectiveNoFileComp
 }

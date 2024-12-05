@@ -8,11 +8,11 @@ provisions the kernel automatically for any node configured to use that
 container image.
 
 You can see what kernels are available in imported containers by using the
-``wwctl container list`` command:
+``wwctl container kernels`` command:
 
 .. code-block:: console
 
-   # wwctl kernel list
+   # wwctl container kernels
    Container            Kernel                                              Version          Preferred  Nodes
    ---------            ------                                              -------          ---------  -----
    newroot-test         /boot/vmlinuz-5.14.0-427.37.1.el9_4.aarch64         5.14.0-427.37.1  true       0
