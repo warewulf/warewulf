@@ -305,7 +305,7 @@ func ContainerList() (containerInfo []*wwapiv1.ContainerInfo, err error) {
 		}
 
 		wwlog.Debug("Finding kernel version for: %s", source)
-		kernel := kernel.FindKernels(source).Preferred()
+		kernel := kernel.FindKernels(source).Default()
 		kernelVersion := ""
 		if kernel != nil {
 			kernelVersion = kernel.Version()
@@ -363,7 +363,7 @@ func ContainerShow(csp *wwapiv1.ContainerShowParameter) (response *wwapiv1.Conta
 		err = fmt.Errorf("%s is not a valid container", containerName)
 		return
 	}
-	kernel := kernel.FindKernels(containerName).Preferred()
+	kernel := kernel.FindKernels(containerName).Default()
 	kernelVersion := ""
 	if kernel != nil {
 		kernelVersion = kernel.Version()

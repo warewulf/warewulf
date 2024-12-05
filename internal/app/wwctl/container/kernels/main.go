@@ -40,18 +40,18 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	t := table.New(cmd.OutOrStdout())
-	t.AddHeader("Container", "Kernel", "Version", "Preferred", "Nodes")
+	t.AddHeader("Container", "Kernel", "Version", "Default", "Nodes")
 	for _, source := range sources {
 		containerKernels := kernel.FindKernels(source)
-		preferredKernel := containerKernels.Preferred()
+		defaultKernel := containerKernels.Default()
 		for _, kernel_ := range containerKernels {
-			preferred := preferredKernel != nil && preferredKernel == kernel_
-			preferredStr := strconv.FormatBool(preferred)
+			isDefault := defaultKernel != nil && defaultKernel == kernel_
+			defaultStr := strconv.FormatBool(isDefault)
 			nodeCount := kernelNodes[*kernel_]
-			if preferred {
+			if isDefault {
 				nodeCount = nodeCount + kernelNodes[kernel.Kernel{ContainerName: source, Path: ""}]
 			}
-			t.AddLine(table.Prep([]string{source, kernel_.Path, kernel_.Version(), preferredStr, strconv.Itoa(nodeCount)})...)
+			t.AddLine(table.Prep([]string{source, kernel_.Path, kernel_.Version(), defaultStr, strconv.Itoa(nodeCount)})...)
 		}
 	}
 	t.Print()
