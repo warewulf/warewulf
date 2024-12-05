@@ -2,6 +2,7 @@ package container
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/pkg/errors"
 
@@ -108,4 +109,8 @@ func DeleteImage(name string) error {
 		return nil
 	}
 	return errors.Errorf("Image %s of container %s doesn't exist\n", imageFile, name)
+}
+
+func IsWriteAble(name string) bool {
+	return !util.IsFile(filepath.Join(SourceDir(name), "readonly"))
 }

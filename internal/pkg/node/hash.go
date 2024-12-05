@@ -11,12 +11,12 @@ import (
 /*
 Calculate the hash of NodeYaml in an orderder fashion
 */
-func (config *NodeYaml) Hash() [32]byte {
+func (config *NodesYaml) Hash() [32]byte {
 	// flatten out profiles and nodes
-	for _, val := range config.nodeProfiles {
+	for _, val := range config.NodeProfiles {
 		val.Flatten()
 	}
-	for _, val := range config.nodes {
+	for _, val := range config.Nodes {
 		val.Flatten()
 	}
 	data, err := yaml.Marshal(config)
@@ -29,7 +29,7 @@ func (config *NodeYaml) Hash() [32]byte {
 /*
 Return the hash as string
 */
-func (config *NodeYaml) StringHash() string {
+func (config *NodesYaml) StringHash() string {
 	buffer := config.Hash()
 	return hex.EncodeToString(buffer[:])
 }

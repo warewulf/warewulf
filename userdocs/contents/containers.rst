@@ -157,7 +157,7 @@ lower-case versions) to use a proxy during ``wwctl container import``.
 .. code-block:: shell
 
    export HTTPS_PROXY=squid.localdomain
-   wwctl conatiner import docker://ghcr.io/warewulf/warewulf-rockylinux:8
+   wwctl container import docker://ghcr.io/warewulf/warewulf-rockylinux:8
 
 See ProxyFromEnvironment_ For more information.
 
@@ -464,3 +464,14 @@ tools 1.21 or newer. Below is an example for building wwclient for arm64:
    # cp wwclient /var/lib/warewulf/overlays/wwclient_arm64/rootfs/warewulf
 
 Then, apply the new "wwclient_arm64" system overlay to your arm64 node/profile
+
+Read-only containers
+====================
+
+A container may be marked "read-only" by creating a ``readonly`` file in its
+source directory, typically next to ``rootfs``.
+
+.. note::
+
+   Read-only containers are a preview feature primarily meant to enable future
+   support for container subscriptions and updates.

@@ -45,14 +45,11 @@ func Test_List(t *testing.T) {
 		t.FailNow()
 	}
 
-	inDb := `WW_INTERNAL: 45
-nodeprofiles:
+	inDb := `nodeprofiles:
   default: {}
 nodes: {}
 `
-	conf_yml := `
-WW_INTERNAL: 0
-    `
+	conf_yml := ``
 
 	conf := warewulfconf.New()
 	err = conf.Parse([]byte(conf_yml))

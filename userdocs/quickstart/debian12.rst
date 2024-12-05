@@ -65,7 +65,6 @@ address of your cluster's private network interface:
 
 .. code-block:: yaml
 
-	WW_INTERNAL: 45
 	ipaddr: 192.168.200.1
 	netmask: 255.255.255.0
 	network: 192.168.200.0

@@ -3,12 +3,12 @@ package list
 import (
 	"strings"
 
-	"github.com/warewulf/warewulf/internal/app/wwctl/helper"
-	apiprofile "github.com/warewulf/warewulf/internal/pkg/api/profile"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
-
 	"github.com/spf13/cobra"
+
+	"github.com/warewulf/warewulf/internal/app/wwctl/table"
+	apiprofile "github.com/warewulf/warewulf/internal/pkg/api/profile"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err error) {
@@ -30,12 +30,12 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			if vars.showYaml || vars.showJson {
 				wwlog.Info(profileInfo.Output[0])
 			} else {
-				ph := helper.New(strings.Split(profileInfo.Output[0], ":=:"))
+				t := table.New(cmd.OutOrStdout())
+				t.AddHeader(table.Prep(strings.Split(profileInfo.Output[0], ":=:"))...)
 				for _, val := range profileInfo.Output[1:] {
-					ph.Append(strings.Split(val, ":=:"))
+					t.AddLine(table.Prep(strings.Split(val, ":=:"))...)
 				}
-				ph.Render()
-				wwlog.Info("%s", ph.String())
+				t.Print()
 			}
 		}
 		return

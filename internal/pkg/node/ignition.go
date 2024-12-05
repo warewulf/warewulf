@@ -13,7 +13,7 @@ import (
 /*
 Create a ignition struct class for ignition
 */
-func (node *NodeConf) GetStorage() (stor types_3_4.Storage, err error, rep string) {
+func (node *Node) GetStorage() (stor types_3_4.Storage, err error, rep string) {
 	var fileSystems []types_3_4.Filesystem
 	for fsdevice, fs := range node.FileSystems {
 		var mountOptions []types_3_4.MountOption
@@ -141,7 +141,7 @@ type SimpleIgnitionConfig struct {
 /*
 Get a simple config which can be marshalled to json
 */
-func (node *NodeConf) GetConfig() (conf SimpleIgnitionConfig, rep string, err error) {
+func (node *Node) GetConfig() (conf SimpleIgnitionConfig, rep string, err error) {
 	conf.Storage, err, rep = node.GetStorage()
 	conf.Ignition.Version = "3.1.0"
 	return

@@ -14,13 +14,13 @@ import (
 /*
 Checks if for NodeConf all values can be parsed according to their type.
 */
-func (nodeConf *NodeConf) Check() (err error) {
+func (nodeConf *Node) Check() (err error) {
 	nodeInfoType := reflect.TypeOf(nodeConf)
 	nodeInfoVal := reflect.ValueOf(nodeConf)
 	return check(nodeInfoType, nodeInfoVal)
 }
 
-func (profileConf *ProfileConf) Check() (err error) {
+func (profileConf *Profile) Check() (err error) {
 	profileInfoType := reflect.TypeOf(profileConf)
 	profileInfoVal := reflect.ValueOf(profileConf)
 	return check(profileInfoType, profileInfoVal)
@@ -49,8 +49,8 @@ func check(infoType reflect.Type, infoVal reflect.Value) (err error) {
 					}
 				}
 			}
-		} else if infoType.Elem().Field(i).Type == reflect.TypeOf(map[string]*NetDevs(nil)) {
-			netMap := infoVal.Elem().Field(i).Interface().(map[string]*NetDevs)
+		} else if infoType.Elem().Field(i).Type == reflect.TypeOf(map[string]*NetDev(nil)) {
+			netMap := infoVal.Elem().Field(i).Interface().(map[string]*NetDev)
 			for _, val := range netMap {
 				netType := reflect.TypeOf(val)
 				netVal := reflect.ValueOf(val)

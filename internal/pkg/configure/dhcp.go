@@ -3,7 +3,6 @@ package configure
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/util"
@@ -18,7 +17,7 @@ func DHCP() (err error) {
 
 	controller := warewulfconf.Get()
 
-	if !controller.DHCP.Enabled {
+	if !controller.DHCP.Enabled() {
 		wwlog.Warn("This system is not configured as a Warewulf DHCP controller")
 		return
 	}
@@ -30,7 +29,7 @@ func DHCP() (err error) {
 	if controller.DHCP.RangeEnd == "" {
 		return fmt.Errorf("configuration is not defined: `dhcpd range end`")
 	}
-	if controller.Warewulf.EnableHostOverlay {
+	if controller.Warewulf.EnableHostOverlay() {
 		err = overlay.BuildHostOverlay()
 		if err != nil {
 			wwlog.Warn("host overlay could not be built: %s", err)
@@ -41,7 +40,7 @@ func DHCP() (err error) {
 	fmt.Printf("Enabling and restarting the DHCP services\n")
 	err = util.SystemdStart(controller.DHCP.SystemdName)
 	if err != nil {
-		return errors.Wrap(err, "failed to start")
+		return fmt.Errorf("failed to start: %w", err)
 	}
 
 	return

@@ -11,7 +11,6 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/container"
@@ -39,7 +38,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	conf := warewulfconf.Get()
 	runDir := container.RunDir(containerName)
 	if _, err := os.Stat(runDir); os.IsNotExist(err) {
-		return errors.Wrap(err, "container run directory does not exist")
+		return fmt.Errorf("container run directory does not exist: %w", err)
 	}
 	mountPts := conf.MountsContainer
 	mountPts = append(container.InitMountPnts(binds), mountPts...)
@@ -80,7 +79,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	// running in a private PID space, so also make / private, so that nothing gets out from here
 	err = syscall.Mount("", "/", "", syscall.MS_PRIVATE|syscall.MS_REC, "")
 	if err != nil {
-		return errors.Wrap(err, "failed to mount")
+		return fmt.Errorf("failed to mount: %w", err)
 	}
 	ps1Str := fmt.Sprintf("[%s|%s] Warewulf> ", containerName, exitEval)
 	wwlog.Info(msgStr)
@@ -121,28 +120,28 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		}
 		ps1Str = fmt.Sprintf("[%s|ro|%s] Warewulf> ", containerName, nodename)
 	}
-	if !util.IsWriteAble(containerPath) && nodename == "" {
+	if !container.IsWriteAble(containerName) && nodename == "" {
 		wwlog.Verbose("mounting %s ro", containerPath)
 		ps1Str = fmt.Sprintf("[%s|ro] Warewulf> ", containerName)
 		err = syscall.Mount(containerPath, containerPath, "", syscall.MS_BIND, "")
 		if err != nil {
-			return errors.Wrap(err, "failed to prepare bind mount")
+			return fmt.Errorf("failed to prepare bind mount: %w", err)
 		}
 		err = syscall.Mount(containerPath, containerPath, "", syscall.MS_REMOUNT|syscall.MS_RDONLY|syscall.MS_BIND, "")
 		if err != nil {
-			return errors.Wrap(err, "failed to remount ro")
+			return fmt.Errorf("failed to remount ro: %w", err)
 		}
 	}
 
 	for _, mntPnt := range mountPts {
-		if mntPnt.Copy {
+		if mntPnt.Copy() {
 			continue
 		}
 		wwlog.Debug("bind mounting: %s -> %s", mntPnt.Source, path.Join(containerPath, mntPnt.Dest))
 		err = syscall.Mount(mntPnt.Source, path.Join(containerPath, mntPnt.Dest), "", syscall.MS_BIND, "")
 		if err != nil {
 			wwlog.Warn("Couldn't mount %s to %s: %s", mntPnt.Source, mntPnt.Dest, err)
-		} else if mntPnt.ReadOnly {
+		} else if mntPnt.ReadOnly() {
 			err = syscall.Mount(mntPnt.Source, path.Join(containerPath, mntPnt.Dest), "", syscall.MS_REMOUNT|syscall.MS_RDONLY|syscall.MS_BIND, "")
 			if err != nil {
 				wwlog.Warn("failed to following mount readonly: %s", mntPnt.Source)
@@ -156,25 +155,25 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 
 	err = syscall.Chroot(containerPath)
 	if err != nil {
-		return errors.Wrap(err, "failed to chroot")
+		return fmt.Errorf("failed to chroot: %w", err)
 	}
 
 	err = os.Chdir("/")
 	if err != nil {
-		return errors.Wrap(err, "failed to chdir")
+		return fmt.Errorf("failed to chdir: %w", err)
 	}
 
 	if err := syscall.Mount("devtmpfs", "/dev", "devtmpfs", 0, ""); err != nil {
-		return errors.Wrap(err, "failed to mount /dev")
+		return fmt.Errorf("failed to mount /dev: %w", err)
 	}
 	if err := syscall.Mount("sysfs", "/sys", "sysfs", 0, ""); err != nil {
-		return errors.Wrap(err, "failed to mount /sys")
+		return fmt.Errorf("failed to mount /sys: %w", err)
 	}
 	if err := syscall.Mount("proc", "/proc", "proc", 0, ""); err != nil {
-		return errors.Wrap(err, "failed to mount /proc")
+		return fmt.Errorf("failed to mount /proc: %w", err)
 	}
 	if err := syscall.Mount("tmpfs", "/run", "tmpfs", 0, ""); err != nil {
-		return errors.Wrap(err, "failed to mount /run")
+		return fmt.Errorf("failed to mount /run: %w", err)
 	}
 
 	os.Setenv("PS1", ps1Str)
@@ -192,7 +191,7 @@ the invalid mount points. Directories always have '/' as suffix
 func checkMountPoints(containerName string, binds []*warewulfconf.MountEntry) (overlayObjects []string) {
 	overlayObjects = []string{}
 	for _, b := range binds {
-		if b.Copy {
+		if b.Copy() {
 			continue
 		}
 		_, err := os.Stat(b.Source)

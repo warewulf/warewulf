@@ -172,7 +172,7 @@ data from other structures.
 
 ### Warewulf
 
-- Port: 9983
+- Port: 9873
 - Secure: true
 - UpdateInterval: 60
 - AutobuildOverlays: true

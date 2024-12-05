@@ -32,13 +32,13 @@ var provisionSendTests = []struct {
 	{"find grub", "/efiboot/grub.efi", "", 404, "10.10.10.11:9873"},
 	{"find initramfs", "/provision/00:00:00:ff:ff:ff?stage=initramfs", "", 200, "10.10.10.10:9873"},
 	{"ipxe test with NetDevs and KernelOverrides", "/provision/00:00:00:00:00:ff?stage=ipxe", "1.1.1 ifname=net:00:00:00:00:00:ff ", 200, "10.10.10.12:9873"},
+	{"find grub.cfg", "/efiboot/grub.cfg", "dracut", 200, "10.10.10.11:9873"},
 }
 
 func Test_ProvisionSend(t *testing.T) {
 	env := testenv.New(t)
 
-	env.WriteFile(t, "etc/warewulf/nodes.conf", `WW_INTERNAL: 45
-nodeprofiles:
+	env.WriteFile(t, "etc/warewulf/nodes.conf", `nodeprofiles:
   default:
     container name: suse
 nodes:
@@ -53,6 +53,8 @@ nodes:
       default:
         hwaddr: 00:00:00:00:ff:ff
     container name: none
+    tags:
+      GrubMenuEntry: dracut
   n3:
     network devices:
       default:
@@ -98,11 +100,16 @@ nodes:
 	{
 		assert.NoError(t, os.WriteFile(path.Join(conf.Paths.Sysconfdir, "warewulf/ipxe", "test.ipxe"), []byte("{{.KernelOverride}}{{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} {{end}}{{end}}"), 0600))
 	}
+	assert.NoError(t, os.MkdirAll(path.Join(conf.Paths.Sysconfdir, "warewulf/grub"), 0700))
+	{
+		assert.NoError(t, os.WriteFile(path.Join(conf.Paths.Sysconfdir, "warewulf/grub", "grub.cfg.ww"), []byte("{{ .Tags.GrubMenuEntry }}"), 0600))
+	}
 
 	dbErr := LoadNodeDB()
 	assert.NoError(t, dbErr)
 
-	conf.Warewulf.Secure = false
+	secureFalse := false
+	conf.Warewulf.SecureP = &secureFalse
 	assert.NoError(t, os.MkdirAll(path.Join(conf.Paths.OverlayProvisiondir(), "n1"), 0700))
 	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.OverlayProvisiondir(), "n1", "__SYSTEM__.img"), []byte("system overlay"), 0600))
 	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.OverlayProvisiondir(), "n1", "__RUNTIME__.img"), []byte("runtime overlay"), 0600))

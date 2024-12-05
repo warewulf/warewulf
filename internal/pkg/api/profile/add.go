@@ -19,7 +19,7 @@ func ProfileAdd(nsp *wwapiv1.NodeAddParameter) error {
 	}
 	nodeDB, err := node.New()
 	if err != nil {
-		return errors.Wrap(err, "Could not open database")
+		return fmt.Errorf("Could not open database: %w", err)
 	}
 	for _, p := range nsp.NodeNames {
 		if util.InSlice(nodeDB.ListAllProfiles(), p) {
@@ -31,12 +31,12 @@ func ProfileAdd(nsp *wwapiv1.NodeAddParameter) error {
 		}
 		err = yaml.Unmarshal([]byte(nsp.NodeConfYaml), &pNew)
 		if err != nil {
-			return errors.Wrap(err, "failed to add profile")
+			return fmt.Errorf("failed to add profile: %w", err)
 		}
 	}
 	err = nodeDB.Persist()
 	if err != nil {
-		return errors.Wrap(err, "failed to persist new profile")
+		return fmt.Errorf("failed to persist new profile: %w", err)
 	}
 	return nil
 }

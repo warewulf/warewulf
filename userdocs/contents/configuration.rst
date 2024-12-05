@@ -14,7 +14,6 @@ Warewulf (4.5.2):
 
 .. code-block:: yaml
 
-   WW_INTERNAL: 45
    ipaddr: 10.0.0.1
    netmask: 255.255.252.0
    network: 10.0.0.0
@@ -178,7 +177,7 @@ The first listed key type is used to generate authentication ssh keys.
 nodes.conf
 ==========
 
-The ``nodes.conf`` file is the primary database file for all compute
+The ``nodes.conf`` file is the primary registry for all compute
 nodes. It is a flat text YAML configuration file that is managed by
 the ``wwctl`` command, but some sites manage the compute nodes and
 infrastructure via configuration management. This file being flat text
@@ -202,19 +201,25 @@ command.
    This also goes for ``warewulf.conf`` as well - any changes made also require ``warewulfd`` to be restarted.
    The restart should be done using the following command: ``systemctl restart warewulfd``
 
-defaults.conf
-=============
+Upgrades
+========
 
-The ``defaults.conf`` file configures default values used when none
-are specified in ``nodes.conf``. For example: if a node does not have
-a "runtime overlay" specified, the respective value from
-``defaultnode`` is used. If a network device does not specify a
-"device," the device value of the ``dummy`` device is used.
+New versions of Warewulf might introduce changes to ``warewulf.conf`` and ``nodes.conf``.
+The ``wwctl upgrade`` command can help ease the transition between versions.
 
-If ``defaults.conf`` does not exist, compiled-in defaults are used.
+.. note::
 
-There should never be a need to change this file: all site-local
-parameters should be specified using either nodes or profiles.
+   ``wwctl upgrade`` will back up any files before it changes them (to ``<name>-old``)
+   but it is good practice to back up your configuration manually.
+
+.. code-block:: console
+
+   # wwctl upgrade config
+   # wwctl upgrade nodes --add-defaults --replace-overlays
+
+Both upgrade commands support specifying ``--output-path=-``
+to print the upgraded configuration file to standard out
+for inspection before replacing the configuration files.
 
 Directories
 ===========

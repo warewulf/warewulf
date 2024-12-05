@@ -5,7 +5,6 @@ import (
 
 	"dario.cat/mergo"
 
-	"github.com/pkg/errors"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
@@ -21,7 +20,7 @@ func ProfileSet(set *wwapiv1.ConfSetParameter) (err error) {
 	}
 	nodeDB, _, err := ProfileSetParameterCheck(set)
 	if err != nil {
-		return errors.Wrap(err, "profile set parameters are wrong")
+		return fmt.Errorf("profile set parameters are wrong: %w", err)
 	}
 	if err = nodeDB.Persist(); err != nil {
 		return err
@@ -36,7 +35,7 @@ func ProfileSet(set *wwapiv1.ConfSetParameter) (err error) {
 NodeSetParameterCheck does error checking and returns a modified
 NodeYml which than can be persisted
 */
-func ProfileSetParameterCheck(set *wwapiv1.ConfSetParameter) (nodeDB node.NodeYaml, count uint, err error) {
+func ProfileSetParameterCheck(set *wwapiv1.ConfSetParameter) (nodeDB node.NodesYaml, count uint, err error) {
 	nodeDB, err = node.New()
 	if err != nil {
 		wwlog.Error("Could not open configuration: %s", err)
@@ -61,7 +60,7 @@ func ProfileSetParameterCheck(set *wwapiv1.ConfSetParameter) (nodeDB node.NodeYa
 	for _, profileId := range set.ConfList {
 		if util.InSlice(set.ConfList, profileId) {
 			wwlog.Verbose("evaluating profile: %s", profileId)
-			var profilePtr *node.ProfileConf
+			var profilePtr *node.Profile
 			profilePtr, err = nodeDB.GetProfilePtr(profileId)
 			if err != nil {
 				wwlog.Warn("invalid profile: %s", profileId)

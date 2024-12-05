@@ -110,7 +110,9 @@ existing data on the disk.
 
 .. [#] With `wipefs` you have to remove the filesystem *and* parition information. E.g. use `wipefs -fa /dev/vda*` to remove all filesystem information and partition information.
 
-See also [ignition documentation](https://coreos.github.io/ignition/operator-notes/#filesystem-reuse-semantics) for additional information.
+See also `ignition documentation`_ for additional information.
+
+.. _ignition documentation: https://coreos.github.io/ignition/operator-notes/#filesystem-reuse-semantics
 
 Troubleshooting
 ===============

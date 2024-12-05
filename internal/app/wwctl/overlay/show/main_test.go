@@ -23,8 +23,7 @@ overlay name {{ .Overlay }}
 
 func Test_Overlay_List(t *testing.T) {
 	env := testenv.New(t)
-	env.WriteFile(t, "etc/warewulf/warewulf.conf", `WW_INTERNAL: 43
-ipaddr: 192.168.0.1/24
+	env.WriteFile(t, "etc/warewulf/warewulf.conf", `ipaddr: 192.168.0.1/24
 netmask: 255.255.255.0
 network: 192.168.0.0
 warewulf:
@@ -53,8 +52,7 @@ nfs:
     mount: false`)
 
 	env.WriteFile(t, "etc/warewulf/nodes.conf",
-		`WW_INTERNAL: 45
-nodeprofiles:
+		`nodeprofiles:
   default:
     tags:
       email: admin@localhost
@@ -141,8 +139,7 @@ func TestShowServerTemplate(t *testing.T) {
 
 	env := testenv.New(t)
 	env.WriteFile(t, "etc/warewulf/nodes.conf",
-		`WW_INTERNAL: 45
-nodeprofiles:
+		`nodeprofiles:
   default:
     tags:
       email: admin@localhost

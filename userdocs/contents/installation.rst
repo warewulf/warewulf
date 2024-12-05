@@ -27,6 +27,43 @@ openSuse Leap
 
    # zypper install https://github.com/warewulf/warewulf/releases/download/v4.5.8/warewulf-4.5.8-1.suse.lp155.x86_64.rpm
 
+Container images
+================
+
+Warewulf is prepared to be built inside and packaged into a Linux container.
+This can be especially useful for testing and development or just replace classic package installation.
+It is also possible to only use the container for building and the install it in the host system afterwards.
+For that look at the INSTALL, UNINSTALL and PURGE labels inside the `Dockerfile`_
+
+.. _Dockerfile: https://github.com/warewulf/warewulf/blob/main/Dockerfile
+
+Docker
+------
+
+.. code-block:: console
+
+   # docker build -t warewulf .
+   # docker run -d --replace --name warewulf-test --privileged --net=host -v /:/host -v /etc/warewulf:/etc/warewulf -v /var/lib/warewulf/:/var/lib/warewulf/ -e NAME=warewulf-test -e IMAGE=warewulf warewulf
+
+Systemd-nspawn
+--------------
+
+Since Warewulf runs multiple services inside one single container it uses systemd as init system.
+Since a full privileged Docker container running a systemd can cause some side effects,
+it might be a better option to use `systemd-nspawn`_ in some cases which was explicitly made to run
+containers with a full init system.
+
+.. _systemd-nspawn: https://www.freedesktop.org/software/systemd/man/latest/systemd-nspawn.html
+
+.. code-block:: console
+
+   # docker build -t warewulf .
+   # mkdir warewulf-nspawn
+   # docker export "$(docker create --name warewulf-test warewulf true)" | tar -x -C warewulf-nspawn
+   # systemd-nspawn -D warewulf-nspawn/ passwd
+   # systemd-nspawn -D warewulf-nspawn/ --boot
+
+
 Compiled Source code
 ====================
 
