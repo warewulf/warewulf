@@ -96,7 +96,7 @@ func Test_FindKernel(t *testing.T) {
 
 			kernels := FindKernels("testcontainer")
 			assert.Equal(t, len(tt.files), len(kernels))
-			kernel := kernels.Preferred()
+			kernel := kernels.Default()
 			if tt.version == "" && tt.path == "" {
 				assert.Nil(t, kernel)
 			} else {

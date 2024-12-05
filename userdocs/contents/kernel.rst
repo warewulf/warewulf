@@ -13,14 +13,14 @@ You can see what kernels are available in imported containers by using the
 .. code-block:: console
 
    # wwctl container kernels
-   Container            Kernel                                              Version          Preferred  Nodes
-   ---------            ------                                              -------          ---------  -----
-   newroot-test         /boot/vmlinuz-5.14.0-427.37.1.el9_4.aarch64         5.14.0-427.37.1  true       0
-   newroot-test         /lib/modules/5.14.0-427.37.1.el9_4.aarch64/vmlinuz  5.14.0-427.37.1  false      0
-   rocky-8              /boot/vmlinuz-4.18.0-372.13.1.el8_6.x86_64          4.18.0-372.13.1  true       2
-   rocky-8              /lib/modules/4.18.0-372.13.1.el8_6.x86_64/vmlinuz   4.18.0-372.13.1  false      0
-   rocky-9.3            /lib/modules/5.14.0-362.13.1.el9_3.aarch64/vmlinuz  5.14.0-362.13.1  true       0
-   rockylinux-9-custom  /lib/modules/5.14.0-427.40.1.el9_4.aarch64/vmlinuz  5.14.0-427.40.1  true       0
+   Container            Kernel                                              Version          Default  Nodes
+   ---------            ------                                              -------          -------  -----
+   newroot-test         /boot/vmlinuz-5.14.0-427.37.1.el9_4.aarch64         5.14.0-427.37.1  true     0
+   newroot-test         /lib/modules/5.14.0-427.37.1.el9_4.aarch64/vmlinuz  5.14.0-427.37.1  false    0
+   rocky-8              /boot/vmlinuz-4.18.0-372.13.1.el8_6.x86_64          4.18.0-372.13.1  true     2
+   rocky-8              /lib/modules/4.18.0-372.13.1.el8_6.x86_64/vmlinuz   4.18.0-372.13.1  false    0
+   rocky-9.3            /lib/modules/5.14.0-362.13.1.el9_3.aarch64/vmlinuz  5.14.0-362.13.1  true     0
+   rockylinux-9-custom  /lib/modules/5.14.0-427.40.1.el9_4.aarch64/vmlinuz  5.14.0-427.40.1  true     0
 
 Kernel Version
 ==============

@@ -44,7 +44,7 @@ func (k collection) Sort() {
 	sort.Sort(k)
 }
 
-func (k collection) Preferred() *Kernel {
+func (k collection) Default() *Kernel {
 	nk := append(collection{}, k...)
 	sort.Sort(sort.Reverse(nk))
 	for _, kernel := range nk {
@@ -83,7 +83,7 @@ func FromNode(node *node.Node) *Kernel {
 			return FindKernels(node.ContainerName).Version(node.Kernel.Version)
 		}
 	} else {
-		return FindKernels(node.ContainerName).Preferred()
+		return FindKernels(node.ContainerName).Default()
 	}
 }
 
