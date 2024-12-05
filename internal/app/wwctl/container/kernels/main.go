@@ -1,4 +1,4 @@
-package list
+package kernels
 
 import (
 	"strconv"
@@ -28,9 +28,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	sources, err := container.ListSources()
-	if err != nil {
-		return err
+	var sources []string
+	if len(args) == 0 {
+		if sources_, err := container.ListSources(); err == nil {
+			sources = sources_
+		} else {
+			return err
+		}
+	} else {
+		sources = args
 	}
 
 	t := table.New(cmd.OutOrStdout())

@@ -1,21 +1,22 @@
-package list
+package kernels
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
+)
 
 var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:                   "list [OPTIONS]",
-		Short:                 "List available kernels",
+		Use:                   "kernels [OPTIONS]",
+		Short:                 "List available container kernels",
 		Long:                  "This command lists the kernels that are available in the imported containers.",
 		RunE:                  CobraRunE,
-		Args:                  cobra.ExactArgs(0),
-		Aliases:               []string{"ls"},
+		Aliases:               []string{"kernel"},
+		ValidArgsFunction:     completions.Containers,
 	}
 )
-
-func init() {
-}
 
 // GetRootCommand returns the root cobra.Command for the application.
 func GetCommand() *cobra.Command {

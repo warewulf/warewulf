@@ -7,6 +7,7 @@ import (
 	"github.com/warewulf/warewulf/internal/app/wwctl/container/delete"
 	"github.com/warewulf/warewulf/internal/app/wwctl/container/exec"
 	"github.com/warewulf/warewulf/internal/app/wwctl/container/imprt"
+	"github.com/warewulf/warewulf/internal/app/wwctl/container/kernels"
 	"github.com/warewulf/warewulf/internal/app/wwctl/container/list"
 	"github.com/warewulf/warewulf/internal/app/wwctl/container/rename"
 	"github.com/warewulf/warewulf/internal/app/wwctl/container/shell"
@@ -35,6 +36,7 @@ func init() {
 	baseCmd.AddCommand(syncuser.GetCommand())
 	baseCmd.AddCommand(copy.GetCommand())
 	baseCmd.AddCommand(rename.GetCommand())
+	baseCmd.AddCommand(kernels.GetCommand())
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
