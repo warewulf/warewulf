@@ -1,7 +1,8 @@
 package server
 
 import (
-	"github.com/pkg/errors"
+	"fmt"
+
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
@@ -21,7 +22,7 @@ func GetCommand() *cobra.Command {
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	if err := warewulfd.DaemonInitLogging(); err != nil {
-		return errors.Wrap(err, "failed to configure logging")
+		return fmt.Errorf("failed to configure logging: %w", err)
 	}
-	return errors.Wrap(warewulfd.RunServer(), "failed to start Warewulf server")
+	return fmt.Errorf("failed to start Warewulf server: %w", warewulfd.RunServer())
 }

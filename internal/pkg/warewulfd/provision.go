@@ -35,7 +35,7 @@ type templateVars struct {
 	KernelArgs     string
 	KernelOverride string
 	Tags           map[string]string
-	NetDevs        map[string]*node.NetDevs
+	NetDevs        map[string]*node.NetDev
 }
 
 func ProvisionSend(w http.ResponseWriter, req *http.Request) {
@@ -50,7 +50,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 
 	wwlog.Info("request from hwaddr:%s ipaddr:%s | stage:%s", rinfo.hwaddr, req.RemoteAddr, rinfo.stage)
 
-	if (rinfo.stage == "runtime" || len(rinfo.overlay) > 0) && conf.Warewulf.Secure {
+	if (rinfo.stage == "runtime" || len(rinfo.overlay) > 0) && conf.Warewulf.Secure() {
 		if rinfo.remoteport >= 1024 {
 			wwlog.Denied("Non-privileged port: %s", req.RemoteAddr)
 			w.WriteHeader(http.StatusUnauthorized)
@@ -71,7 +71,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 	var stage_file string
 
 	// TODO: when module version is upgraded to go1.18, should be 'any' type
-	var tmpl_data interface{}
+	var tmpl_data *templateVars
 
 	remoteNode, err := GetNodeOrSetDiscoverable(rinfo.hwaddr)
 	if err != nil && err != node.ErrNoUnconfigured {
@@ -91,13 +91,13 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		wwlog.Error("%s (unknown/unconfigured node)", rinfo.hwaddr)
 		if rinfo.stage == "ipxe" {
 			stage_file = path.Join(conf.Paths.Sysconfdir, "/warewulf/ipxe/unconfigured.ipxe")
-			tmpl_data = templateVars{
+			tmpl_data = &templateVars{
 				Hwaddr: rinfo.hwaddr}
 		}
 
 	} else if rinfo.stage == "ipxe" {
 		stage_file = path.Join(conf.Paths.Sysconfdir, "warewulf/ipxe/"+remoteNode.Ipxe+".ipxe")
-		tmpl_data = templateVars{
+		tmpl_data = &templateVars{
 			Id:             remoteNode.Id(),
 			Cluster:        remoteNode.ClusterName,
 			Fqdn:           remoteNode.Id(),
@@ -149,7 +149,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			remoteNode,
 			context,
 			request_overlays,
-			conf.Warewulf.AutobuildOverlays)
+			conf.Warewulf.AutobuildOverlays())
 
 		if err != nil {
 			if errors.Is(err, overlay.ErrDoesNotExist) {
@@ -181,7 +181,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			}
 		case "grub.cfg":
 			stage_file = path.Join(conf.Paths.Sysconfdir, "warewulf/grub/grub.cfg.ww")
-			tmpl_data = templateVars{
+			tmpl_data = &templateVars{
 				Id:             remoteNode.Id(),
 				Cluster:        remoteNode.ClusterName,
 				Fqdn:           remoteNode.Id(),

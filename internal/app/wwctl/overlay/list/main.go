@@ -1,10 +1,10 @@
 package list
 
 import (
+	"fmt"
 	"os"
 	"syscall"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/util"
@@ -20,7 +20,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		var err error
 		overlays, err = overlay.FindOverlays()
 		if err != nil {
-			return errors.Wrap(err, "could not obtain list of overlays from system")
+			return fmt.Errorf("could not obtain list of overlays from system: %w", err)
 		}
 	}
 

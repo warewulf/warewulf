@@ -1,6 +1,7 @@
 package warewulfd
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -8,7 +9,6 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/pkg/errors"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -82,7 +82,7 @@ func RunServer() error {
 	err = http.ListenAndServe(":"+strconv.Itoa(daemonPort), &slashFix{&wwHandler})
 
 	if err != nil {
-		return errors.Wrap(err, "Could not start listening service")
+		return fmt.Errorf("could not start listening service: %w", err)
 	}
 
 	return nil

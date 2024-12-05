@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"io"
 	"os"
+	"strings"
 	"testing"
 
-	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/node"
@@ -24,9 +24,12 @@ func Test_List(t *testing.T) {
 		{
 			name: "profile list test",
 			args: []string{},
-			stdout: `PROFILE NAME  COMMENT/DESCRIPTION
-  default`,
-			inDb: `WW_INTERNAL: 45
+			stdout: `
+PROFILE NAME  COMMENT/DESCRIPTION
+------------  -------------------
+default       --
+`,
+			inDb: `
 nodeprofiles:
   default: {}
 nodes:
@@ -38,10 +41,13 @@ nodes:
 		{
 			name: "profile list returns multiple profiles",
 			args: []string{"default,test"},
-			stdout: `PROFILE NAME  COMMENT/DESCRIPTION
-  default
-  test`,
-			inDb: `WW_INTERNAL: 45
+			stdout: `
+PROFILE NAME  COMMENT/DESCRIPTION
+------------  -------------------
+default       --
+test          --
+`,
+			inDb: `
 nodeprofiles:
   default: {}
   test: {}
@@ -54,9 +60,12 @@ nodes:
 		{
 			name: "profile list returns one profile",
 			args: []string{"test,"},
-			stdout: `PROFILE NAME  COMMENT/DESCRIPTION
-  test`,
-			inDb: `WW_INTERNAL: 45
+			stdout: `
+PROFILE NAME  COMMENT/DESCRIPTION
+------------  -------------------
+test          --
+`,
+			inDb: `
 nodeprofiles:
   default: {}
   test: {}
@@ -69,10 +78,13 @@ nodes:
 		{
 			name: "profile list returns all profiles",
 			args: []string{","},
-			stdout: `PROFILE NAME  COMMENT/DESCRIPTION
-  default
-  test`,
-			inDb: `WW_INTERNAL: 45
+			stdout: `
+PROFILE NAME  COMMENT/DESCRIPTION
+------------  -------------------
+default       --
+test          --
+`,
+			inDb: `
 nodeprofiles:
   default: {}
   test: {}
@@ -84,7 +96,7 @@ nodes:
 		},
 	}
 
-	conf_yml := `WW_INTERNAL: 0`
+	conf_yml := ``
 	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
 	assert.NoError(t, warewulfConfErr)
 	defer os.Remove(tempWarewulfConf.Name())
@@ -111,24 +123,42 @@ nodes:
 		t.Run(tt.name, func(t *testing.T) {
 			baseCmd := GetCommand()
 			baseCmd.SetArgs(tt.args)
-			verifyOutput(t, baseCmd, tt.stdout)
+			stdoutR, stdoutW, _ := os.Pipe()
+			oriout := os.Stdout
+			os.Stdout = stdoutW
+			wwlog.SetLogWriter(os.Stdout)
+			baseCmd.SetOut(os.Stdout)
+			baseCmd.SetErr(os.Stdout)
+			err := baseCmd.Execute()
+			assert.NoError(t, err)
+
+			stdoutC := make(chan string)
+			go func() {
+				var buf bytes.Buffer
+				_, _ = io.Copy(&buf, stdoutR)
+				stdoutC <- buf.String()
+			}()
+			stdoutW.Close()
+			os.Stdout = oriout
+
+			stdout := <-stdoutC
+			assert.Equal(t, strings.TrimSpace(tt.stdout), strings.TrimSpace(stdout))
 		})
 	}
 }
 
 func TestListMultipleFormats(t *testing.T) {
-	t.Skip("temporally skip this test")
 	tests := []struct {
 		name   string
 		args   []string
-		output []string
+		output string
 		inDb   string
 	}{
 		{
 			name:   "single profile list yaml output",
 			args:   []string{"-y"},
-			output: []string{"default:\n  AssetKey: \"\"\n  ClusterName: \"\"\n  Comment: \"\"\n  ContainerName: \"\"\n  Discoverable: \"\"\n  Disks: {}\n  FileSystems: {}\n  Grub: \"\"\n  Id: |\n    Source: explicit\n    Value: default\n  Init: \"\"\n  Ipmi:\n    EscapeChar: \"\"\n    Gateway: \"\"\n    Interface: \"\"\n    Ipaddr: \"\"\n    Netmask: \"\"\n    Password: \"\"\n    Port: \"\"\n    Tags: null\n    UserName: \"\"\n    Write: \"\"\n  Ipxe: \"\"\n  Kernel:\n    Args: \"\"\n    Override: \"\"\n  NetDevs: {}\n  PrimaryNetDev: \"\"\n  Profiles: \"\"\n  Root: \"\"\n  RuntimeOverlay: \"\"\n  SystemOverlay: \"\"\n  Tags: {}\n"},
-			inDb: `WW_INTERNAL: 43
+			output: `default: {}`,
+			inDb: `
 nodeprofiles:
   default: {}
 nodes:
@@ -138,10 +168,30 @@ nodes:
 `,
 		},
 		{
-			name:   "single profile list json output",
-			args:   []string{"-j"},
-			output: []string{"{\"default\":{\"Id\":\"Source: explicit\\nValue: default\\n\",\"Comment\":\"\",\"ClusterName\":\"\",\"ContainerName\":\"\",\"Ipxe\":\"\",\"Grub\":\"\",\"RuntimeOverlay\":\"\",\"SystemOverlay\":\"\",\"Root\":\"\",\"Discoverable\":\"\",\"Init\":\"\",\"AssetKey\":\"\",\"Kernel\":{\"Override\":\"\",\"Args\":\"\"},\"Ipmi\":{\"Ipaddr\":\"\",\"Netmask\":\"\",\"Port\":\"\",\"Gateway\":\"\",\"UserName\":\"\",\"Password\":\"\",\"Interface\":\"\",\"EscapeChar\":\"\",\"Write\":\"\",\"Tags\":null},\"Profiles\":\"\",\"PrimaryNetDev\":\"\",\"NetDevs\":{},\"Tags\":{},\"Disks\":{},\"FileSystems\":{}}}\n"},
-			inDb: `WW_INTERNAL: 43
+			name: "single profile list json output",
+			args: []string{"-j"},
+			output: `
+{
+  "default": {
+    "Comment": "",
+    "ClusterName": "",
+    "ContainerName": "",
+    "Ipxe": "",
+    "RuntimeOverlay": null,
+    "SystemOverlay": null,
+    "Kernel": null,
+    "Ipmi": null,
+    "Init": "",
+    "Root": "",
+    "NetDevs": null,
+    "Tags": null,
+    "PrimaryNetDev": "",
+    "Disks": null,
+    "FileSystems": null
+  }
+}
+`,
+			inDb: `
 nodeprofiles:
   default: {}
 nodes:
@@ -151,10 +201,13 @@ nodes:
 `,
 		},
 		{
-			name:   "multiple profiles list yaml output",
-			args:   []string{"-y"},
-			output: []string{"default", "test"},
-			inDb: `WW_INTERNAL: 43
+			name: "multiple profiles list yaml output",
+			args: []string{"-y"},
+			output: `
+default: {}
+test: {}
+`,
+			inDb: `
 nodeprofiles:
   default: {}
   test: {}
@@ -165,10 +218,47 @@ nodes:
 `,
 		},
 		{
-			name:   "multiple profiles list json output",
-			args:   []string{"-j"},
-			output: []string{"default", "test"},
-			inDb: `WW_INTERNAL: 43
+			name: "multiple profiles list json output",
+			args: []string{"-j"},
+			output: `
+{
+  "default": {
+    "Comment": "",
+    "ClusterName": "",
+    "ContainerName": "",
+    "Ipxe": "",
+    "RuntimeOverlay": null,
+    "SystemOverlay": null,
+    "Kernel": null,
+    "Ipmi": null,
+    "Init": "",
+    "Root": "",
+    "NetDevs": null,
+    "Tags": null,
+    "PrimaryNetDev": "",
+    "Disks": null,
+    "FileSystems": null
+  },
+  "test": {
+    "Comment": "",
+    "ClusterName": "",
+    "ContainerName": "",
+    "Ipxe": "",
+    "RuntimeOverlay": null,
+    "SystemOverlay": null,
+    "Kernel": null,
+    "Ipmi": null,
+    "Init": "",
+    "Root": "",
+    "NetDevs": null,
+    "Tags": null,
+    "PrimaryNetDev": "",
+    "Disks": null,
+    "FileSystems": null
+  }
+}
+`,
+			inDb: `
 nodeprofiles:
   default: {}
   test: {}
@@ -180,7 +270,7 @@ nodes:
 		},
 	}
 
-	conf_yml := `WW_INTERNAL: 0`
+	conf_yml := ``
 	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
 	assert.NoError(t, warewulfConfErr)
 	defer os.Remove(tempWarewulfConf.Name())
@@ -213,33 +303,7 @@ nodes:
 			wwlog.SetLogWriter(buf)
 			err := baseCmd.Execute()
 			assert.NoError(t, err)
-			for _, output := range tt.output {
-				assert.Contains(t, buf.String(), output)
-			}
+			assert.Equal(t, strings.TrimSpace(tt.output), strings.TrimSpace(buf.String()))
 		})
 	}
-}
-
-func verifyOutput(t *testing.T, baseCmd *cobra.Command, content string) {
-	stdoutR, stdoutW, _ := os.Pipe()
-	oriout := os.Stdout
-	os.Stdout = stdoutW
-	wwlog.SetLogWriter(os.Stdout)
-	baseCmd.SetOut(os.Stdout)
-	baseCmd.SetErr(os.Stdout)
-	err := baseCmd.Execute()
-	assert.NoError(t, err)
-
-	stdoutC := make(chan string)
-	go func() {
-		var buf bytes.Buffer
-		_, _ = io.Copy(&buf, stdoutR)
-		stdoutC <- buf.String()
-	}()
-	stdoutW.Close()
-	os.Stdout = oriout
-
-	stdout := <-stdoutC
-	assert.NotEmpty(t, stdout)
-	assert.Contains(t, stdout, content)
 }

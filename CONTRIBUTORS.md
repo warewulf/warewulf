@@ -42,4 +42,5 @@
 * Brandon Biggs <brandonsbiggs@gmail.com>
 * Howard Van Der Wal <howard.a.vanderwal@protonmail.com> [@metalllinux](https://github.com/metalllinux)
 * Nicholas Porter <nap23@unm.edu>
-* Ian Kaufman [iankgt40](https://github.com/iankgt40)
+* Ian Kaufman [@iankgt40](https://github.com/iankgt40)
+* Daniele Colombo [@dacolombo](https://github.com/dacolombo)

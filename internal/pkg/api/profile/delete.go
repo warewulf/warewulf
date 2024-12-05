@@ -3,7 +3,6 @@ package apiprofile
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 	"github.com/warewulf/warewulf/internal/pkg/node"
@@ -29,11 +28,11 @@ func ProfileDelete(ndp *wwapiv1.NodeDeleteParameter) (err error) {
 
 	err = nodeDB.Persist()
 	if err != nil {
-		return errors.Wrap(err, "failed to persist nodedb")
+		return fmt.Errorf("failed to persist nodedb: %w", err)
 	}
 	err = warewulfd.DaemonReload()
 	if err != nil {
-		return errors.Wrap(err, "failed to reload warewulf daemon")
+		return fmt.Errorf("failed to reload warewulf daemon: %w", err)
 	}
 	return
 }
@@ -41,7 +40,7 @@ func ProfileDelete(ndp *wwapiv1.NodeDeleteParameter) (err error) {
 // ProfileDeleteParameterCheck does error checking on ProfileDeleteParameter.
 // Output to the console if console is true.
 // Returns the profiles to delete.
-func ProfileDeleteParameterCheck(ndp *wwapiv1.NodeDeleteParameter, console bool) (nodeDB node.NodeYaml, profileList []string, err error) {
+func ProfileDeleteParameterCheck(ndp *wwapiv1.NodeDeleteParameter, console bool) (nodeDB node.NodesYaml, profileList []string, err error) {
 
 	if ndp == nil {
 		err = fmt.Errorf("profileDeleteParameter is nil")

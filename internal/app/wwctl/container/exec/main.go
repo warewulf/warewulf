@@ -48,7 +48,7 @@ func runContainedCmd(cmd *cobra.Command, containerName string, args []string) (e
 	}
 	defer func() {
 		if err := os.RemoveAll(runDir); err != nil {
-			wwlog.Error("error removing run directory: %w", err)
+			wwlog.Error("error removing run directory: %s", err)
 		}
 	}()
 
@@ -61,6 +61,7 @@ func runContainedCmd(cmd *cobra.Command, containerName string, args []string) (e
 	if nodeName != "" {
 		childArgs = append(childArgs, "--node", nodeName)
 	}
+	childArgs = append(childArgs, "--")
 	childArgs = append(childArgs, args...)
 	// copy the files into the container at this stage, es in __child the
 	// command syscall.Exec which replaces the __child process with the
@@ -228,7 +229,7 @@ Check the objects we want to copy in, instead of mounting
 */
 func getCopyFiles(binds []*warewulfconf.MountEntry) (copyObjects []*copyFile) {
 	for _, bind := range binds {
-		if bind.Copy {
+		if bind.Copy() {
 			copyObjects = append(copyObjects, &copyFile{
 				fileName: bind.Dest,
 				src:      bind.Source,

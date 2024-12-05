@@ -21,6 +21,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add `wwctl clean` to remove OCI cache and overlays from deleted nodes
 - Add `wwctl container import --platform`. #1381
 - Read environment variables from `/etc/default/warewulfd` #725
+- Add support for VLANs to NetworkManager, wicked, ifcfg, debian.network_interfaces overlays. #1257
+- Add support for static routes to NetworkManager, wicked, ifcfg, debian.network_interfaces overlays. #1257
+- Add `wwctl upgrade <config|nodes>`. #230, #517
+- Better handling of InfiniBand udev net naming. #1227
+- use templating mechanism for power commands. #1004
+- Document "known issues."
 
 ### Changed
 
@@ -37,6 +43,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Bump github.com/coreos/ignition/v2 from 2.15.0 to 2.19.0 #1239
 - Bump github.com/sassoftware/go-rpmutils from 0.2.0 to 0.4.0 #1217
 - Bump github.com/containers/storage from 1.53.0 to 1.55.0 #1316
+- Bump github.com/spf13/cobra from 1.8.0 to 1.8.1 #1481
+- Bump google.golang.org/protobuf from 1.34.1 to 1.35.1 #1480
+- Bump golang.org/x/term from 0.20.0 to 0.25.0 #1476
+- Bump github.com/grpc-ecosystem/grpc-gateway/v2 from 2.19.1 to 2.23.0 #1513
+- Bump github.com/containers/image/v5 from 5.30.1 to 5.32.2 #1366
+- Bump github.com/fatih/color from 1.17.0 to 1.18.0 #1523
 - Disable building containers by default when calling `wwctl container copy`. #1378
 - Split wwinit and generic overlays into discrete functionality. #987
 - Updated IgnitionJson to sort filesystems. #1433
@@ -49,13 +61,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Update `wwctl server` to always run in the foreground #508
 - Update `wwctl server` to log to stdout rather than a file #503
 - Changed `wwctl server` to use "INFO" for send and receive logs #725
-
+- Remove a 3-second sleep during iPXE boot. #1500
+- Don't package the API in RPM packages by default. #1493
+- Update default `warewulfd` port to match shipped configuration. #1448
+- Replace `olekukonko/tablewriter` with `cheynewallace/tabby`. #1497, #1498
+- replaced deprecated errors.Wrapf with fmr.Errorf. #1534
+- Rename udev net naming file to 70-persistent-net.rules. #1227
+- Manage warewulfd template data as a pointer. #1548
+- Added test for sending grub.cfg.ww. #1548
+- Use a sentinel file to determine container readonly state. #1447
+- Bump github.com/Masterminds/sprig/v3 from 3.2.3 to 3.3.0 #1553
+- Bump github.com/golang/glog from 1.2.0 to 1.2.3 #1527
 
 ### Removed
 
 - `wwctl node list --fullall` has been removed
 - `wwctl profile list --fullall` has been removed
 - Remove `wwctl server <start,stop,status,restart,reload>` #508
+- Remove `wwctl overlay build --host` #1419
+- Remove `wwctl overlay build --nodes` #1419
 
 ### Fixed
 
@@ -81,6 +105,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix issue that NetworkManager marks managed interfaces "unmanaged" if they do
   not have a device specified. #1154
 - Return non-zero exit code on overlay sub-commands #1423
+- Simplify passing of arguments to commands through `wwctl container exec`. #253
+- Don't update IPMI if password isn't set. #638
+- Fix issue that `--nettagdel` does not work properly. #1503
+- Fix test for dhcp static configuration #1536 #1537
+- Fix issue that initrd fails at downloading runtime overlay with permission denied error,
+  when warewulf secure option in warewulf.conf is enabled. #806
+- Allow iPXE to continue booting without runtime overlay. #806
+- Format errors in logs as strings. #1563
+- Fix display of profiles during node list. #1496
 
 ## v4.5.8, 2024-10-01
 
@@ -110,6 +143,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Make sure that tftp files have unmasked permissions at creation time. #674
 - Fix "onboot" behavior for NetworkManager, Debian networking, and Suse wicked. #1278
 - Clarified missing steps in Enterprise Linux quickstart. #1179
+- Fix dhcpd.conf static template to include next-server and dhcp-range #1536
+- Fix panic when adding tag with existing netdev #1546
 
 
 ## v4.5.7, 2024-09-11
@@ -145,8 +180,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 - Refactor URL handling in wwclient to consistently escape arguments.
-
-## v4.5.6, unreleased
 
 ### Fixed
 

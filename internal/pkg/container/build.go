@@ -1,6 +1,7 @@
 package container
 
 import (
+	"fmt"
 	"path"
 
 	"github.com/pkg/errors"
@@ -33,7 +34,7 @@ func Build(name string, buildForce bool) error {
 		var err error
 		ignore, err = util.ReadFile(excludes_file)
 		if err != nil {
-			return errors.Wrapf(err, "Failed creating directory: %s", imagePath)
+			return fmt.Errorf("Failed creating directory: %s: %w", imagePath, err)
 		}
 	}
 

@@ -8,7 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func newConstructorPrimaryNetworkTest(t *testing.T) NodeYaml {
+func newConstructorPrimaryNetworkTest(t *testing.T) NodesYaml {
 	var data = `
 nodeprofiles:
   default:
@@ -53,7 +53,7 @@ nodes:
       override:
         device: ib1
   `
-	var ret NodeYaml
+	var ret NodesYaml
 	err := yaml.Unmarshal([]byte(data), &ret)
 	assert.NoError(t, err)
 	return ret
@@ -138,7 +138,7 @@ func Test_FindDiscoverableNode(t *testing.T) {
 		t.Run(tt.description, func(t *testing.T) {
 			config := newConstructorPrimaryNetworkTest(t)
 			for _, node := range tt.discoverable_nodes {
-				config.nodes[node].Discoverable = "true"
+				config.Nodes[node].Discoverable = "true"
 			}
 			discovered_node, discovered_interface, err := config.FindDiscoverableNode()
 			if !tt.succeed {
@@ -193,13 +193,13 @@ nodes:
       - profile2
 `
 	assert := assert.New(t)
-	var ymlSrc NodeYaml
+	var ymlSrc NodesYaml
 	err := yaml.Unmarshal([]byte(nodesconf), &ymlSrc)
 	assert.NoError(err)
 	wwlog.SetLogLevel(wwlog.DEBUG)
 	nodes, err := ymlSrc.FindAllNodes()
 	assert.NoError(err)
-	nodemap := make(map[string]*NodeConf)
+	nodemap := make(map[string]*Node)
 	for i := range nodes {
 		nodemap[nodes[i].Id()] = &nodes[i]
 	}

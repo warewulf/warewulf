@@ -23,8 +23,7 @@ func Test_Add(t *testing.T) {
 			args:    []string{"n01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 45
-nodeprofiles: {}
+			outDb: `nodeprofiles: {}
 nodes:
   n01:
     profiles:
@@ -34,8 +33,7 @@ nodes:
 			args:    []string{"--profile=foo", "n01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 45
-nodeprofiles: {}
+			outDb: `nodeprofiles: {}
 nodes:
   n01:
     profiles:
@@ -45,8 +43,7 @@ nodes:
 			args:    []string{"--discoverable=true", "n01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 45
-nodeprofiles: {}
+			outDb: `nodeprofiles: {}
 nodes:
   n01:
     discoverable: "true"
@@ -57,8 +54,7 @@ nodes:
 			args:    []string{"--discoverable", "n01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 45
-nodeprofiles: {}
+			outDb: `nodeprofiles: {}
 nodes:
   n01:
     discoverable: "true"
@@ -70,16 +66,14 @@ nodes:
 			wantErr: true,
 			stdout:  "",
 			chkout:  false,
-			outDb: `WW_INTERNAL: 45
-nodeprofiles: {}
+			outDb: `nodeprofiles: {}
 nodes: {}
 `},
 		{name: "single node add, discoverable false",
 			args:    []string{"--discoverable=false", "n01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 45
-nodeprofiles: {}
+			outDb: `nodeprofiles: {}
 nodes:
   n01:
     discoverable: "false"
@@ -90,8 +84,7 @@ nodes:
 			args:    []string{"--kernelargs=foo", "n01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 45
-nodeprofiles: {}
+			outDb: `nodeprofiles: {}
 nodes:
   n01:
     kernel:
@@ -103,8 +96,7 @@ nodes:
 			args:    []string{"n01", "n02"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 45
-nodeprofiles: {}
+			outDb: `nodeprofiles: {}
 nodes:
   n01:
     profiles:
@@ -117,8 +109,7 @@ nodes:
 			args:    []string{"--ipaddr6=fdaa::1", "n01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 45
-nodeprofiles: {}
+			outDb: `nodeprofiles: {}
 nodes:
   n01:
     profiles:
@@ -131,8 +122,7 @@ nodes:
 			args:    []string{"--ipaddr=10.0.0.1", "n01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 45
-nodeprofiles: {}
+			outDb: `nodeprofiles: {}
 nodes:
   n01:
     profiles:
@@ -146,16 +136,14 @@ nodes:
 			wantErr: true,
 			stdout:  "",
 			chkout:  false,
-			outDb: `WW_INTERNAL: 45
-nodeprofiles: {}
+			outDb: `nodeprofiles: {}
 nodes: {}
 `},
 		{name: "three nodes with ipaddr",
 			args:    []string{"--ipaddr=10.10.0.1", "n[01-02,03]"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 45
-nodeprofiles: {}
+			outDb: `nodeprofiles: {}
 nodes:
   n01:
     profiles:
@@ -180,8 +168,7 @@ nodes:
 			args:    []string{"--ipaddr=10.10.0.1", "--netname=foo", "n[01-03]"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 45
-nodeprofiles: {}
+			outDb: `nodeprofiles: {}
 nodes:
   n01:
     profiles:
@@ -206,8 +193,7 @@ nodes:
 			args:    []string{"--ipaddr=10.10.0.1", "--netname=foo", "--ipmiaddr=10.20.0.1", "n[01-03]"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 45
-nodeprofiles: {}
+			outDb: `nodeprofiles: {}
 nodes:
   n01:
     ipmi:
@@ -238,8 +224,7 @@ nodes:
 			args:    []string{"--fsname=/dev/vda1", "--fspath=/var", "n01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 45
-nodeprofiles: {}
+			outDb: `nodeprofiles: {}
 nodes:
   n01:
     profiles:
@@ -252,16 +237,14 @@ nodes:
 			args:    []string{"--fsname=dev/vda1", "--fspath=/var", "n01"},
 			wantErr: true,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 45
-nodeprofiles: {}
+			outDb: `nodeprofiles: {}
 nodes: {}
 `},
 		{name: "one node with filesystem and partition ",
 			args:    []string{"--fsname=var", "--fspath=/var", "--partname=var", "--diskname=/dev/vda", "--partnumber=1", "n01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 45
-nodeprofiles: {}
+			outDb: `nodeprofiles: {}
 nodes:
   n01:
     profiles:
@@ -279,8 +262,7 @@ nodes:
 			args:    []string{"--fsname=var", "--fspath=/var", "--fsformat=btrfs", "--partname=var", "--diskname=/dev/vda", "--partnumber=1", "n01"},
 			wantErr: false,
 			stdout:  "",
-			outDb: `WW_INTERNAL: 45
-nodeprofiles: {}
+			outDb: `nodeprofiles: {}
 nodes:
   n01:
     profiles:
@@ -299,8 +281,7 @@ nodes:
 	warewulfd.SetNoDaemon()
 	for _, tt := range tests {
 		env := testenv.New(t)
-		env.WriteFile(t, "etc/warewulf/nodes.conf",
-			`WW_INTERNAL: 45`)
+		env.WriteFile(t, "etc/warewulf/nodes.conf", ``)
 		var err error
 		t.Run(tt.name, func(t *testing.T) {
 			baseCmd := GetCommand()

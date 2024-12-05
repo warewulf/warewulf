@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/containers/image/v5/types"
-	"github.com/pkg/errors"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/container"
 	"github.com/warewulf/warewulf/internal/pkg/kernel"
@@ -83,7 +82,7 @@ func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 		if len(containers) != 1 {
 			return fmt.Errorf("can only set default for one container")
 		} else {
-			var nodeDB node.NodeYaml
+			var nodeDB node.NodesYaml
 			nodeDB, err = node.New()
 			if err != nil {
 				return fmt.Errorf("could not open node configuration: %s", err)
@@ -101,7 +100,7 @@ func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 			// TODO: Need a wrapper and flock around this. Sometimes we restart warewulfd and sometimes we don't.
 			err = nodeDB.Persist()
 			if err != nil {
-				return errors.Wrap(err, "failed to persist nodedb")
+				return fmt.Errorf("failed to persist nodedb: %w", err)
 			}
 			fmt.Printf("Set default profile to container: %s\n", containers[0])
 		}
@@ -239,7 +238,7 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 	}
 
 	if cip.Default {
-		var nodeDB node.NodeYaml
+		var nodeDB node.NodesYaml
 		nodeDB, err = node.New()
 		if err != nil {
 			err = fmt.Errorf("could not open node configuration: %s", err.Error())
@@ -260,14 +259,14 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		// reload the config or if there is something more.
 		err = nodeDB.Persist()
 		if err != nil {
-			err = errors.Wrap(err, "failed to persist nodedb")
+			err = fmt.Errorf("failed to persist nodedb: %w", err)
 			return
 		}
 
 		wwlog.Info("Set default profile to container: %s", cip.Name)
 		err = warewulfd.DaemonReload()
 		if err != nil {
-			err = errors.Wrap(err, "failed to reload warewulf daemon")
+			err = fmt.Errorf("failed to reload warewulf daemon: %w", err)
 			return
 		}
 	}
@@ -399,7 +398,7 @@ func ContainerRename(crp *wwapiv1.ContainerRenameParameter) (err error) {
 
 	err = container.DeleteImage(crp.ContainerName)
 	if err != nil {
-		wwlog.Warn("Could not remove image files for %s: %w", crp.ContainerName, err)
+		wwlog.Warn("Could not remove image files for %s: %s", crp.ContainerName, err)
 	}
 
 	if crp.Build {

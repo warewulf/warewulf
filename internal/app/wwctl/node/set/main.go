@@ -66,6 +66,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			NetTagDel:        vars.nodeDel.NetTagsDel,
 			IpmiTagAdd:       vars.nodeAdd.IpmiTagsAdd,
 			IpmiTagDel:       vars.nodeDel.IpmiTagsDel,
+			Netdev:           vars.nodeAdd.Net,
 			AllConfs:         vars.setNodeAll,
 			Force:            vars.setForce,
 			ConfList:         args,

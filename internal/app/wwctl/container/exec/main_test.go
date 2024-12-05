@@ -40,27 +40,27 @@ func Test_Exec(t *testing.T) {
 		{
 			name:   "plain test",
 			args:   []string{"test", "/bin/true"},
-			stdout: `--loglevel 20 container exec __child test /bin/true`,
+			stdout: `--loglevel 20 container exec __child test -- /bin/true`,
 		},
 		{
 			name:   "test with --bind",
 			args:   []string{"test", "--bind", "/tmp", "/bin/true"},
-			stdout: `--loglevel 20 container exec __child test --bind /tmp /bin/true`,
+			stdout: `--loglevel 20 container exec __child test --bind /tmp -- /bin/true`,
 		},
 		{
 			name:   "test with --node",
 			args:   []string{"test", "--node", "node1", "/bin/true"},
-			stdout: `--loglevel 20 container exec __child test --node node1 /bin/true`,
+			stdout: `--loglevel 20 container exec __child test --node node1 -- /bin/true`,
 		},
 		{
 			name:   "test with --node and --bind",
 			args:   []string{"test", "--bind", "/tmp", "--node", "node1", "/bin/true"},
-			stdout: `--loglevel 20 container exec __child test --bind /tmp --node node1 /bin/true`,
+			stdout: `--loglevel 20 container exec __child test --bind /tmp --node node1 -- /bin/true`,
 		},
 		{
 			name:   "test with complex command",
 			args:   []string{"test", "/bin/bash", "echo 'hello'"},
-			stdout: `--loglevel 20 container exec __child test /bin/bash echo 'hello'`,
+			stdout: `--loglevel 20 container exec __child test -- /bin/bash echo 'hello'`,
 		},
 	}
 

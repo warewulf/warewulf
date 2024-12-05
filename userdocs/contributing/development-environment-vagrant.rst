@@ -190,7 +190,6 @@ Vagrantfile
 
             head.vm.provision "shell", inline: <<-SHELL
                 cat << 'CONF' | sudo tee /etc/warewulf/warewulf.conf
-    WW_INTERNAL: 45
     ipaddr: 192.168.200.254
     netmask: 255.255.255.0
     network: 192.168.200.0

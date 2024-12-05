@@ -5,17 +5,18 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/warewulf/warewulf/internal/app/wwctl/helper"
+
+	"github.com/warewulf/warewulf/internal/app/wwctl/table"
 	apicontainer "github.com/warewulf/warewulf/internal/pkg/api/container"
 	"github.com/warewulf/warewulf/internal/pkg/container"
 	"github.com/warewulf/warewulf/internal/pkg/util"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 var containerList = apicontainer.ContainerList
 
 func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err error) {
 	return func(cmd *cobra.Command, args []string) (err error) {
+		t := table.New(cmd.OutOrStdout())
 		showSize := vars.size || vars.chroot || vars.compressed
 		if showSize || vars.full || vars.kernel {
 			containerInfo, err := containerList()
@@ -23,7 +24,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 				return err
 			}
 			if vars.full {
-				ph := helper.New([]string{"CONTAINER NAME", "NODES", "KERNEL VERSION", "CREATION TIME", "MODIFICATION TIME", "SIZE"})
+				t.AddHeader("CONTAINER NAME", "NODES", "KERNEL VERSION", "CREATION TIME", "MODIFICATION TIME", "SIZE")
 				for i := 0; i < len(containerInfo); i++ {
 					createTime := time.Unix(int64(containerInfo[i].CreateDate), 0)
 					modTime := time.Unix(int64(containerInfo[i].ModDate), 0)
@@ -34,30 +35,26 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 					if vars.chroot {
 						sz = util.ByteToString(int64(containerInfo[i].Size))
 					}
-					ph.Append([]string{
+					t.AddLine(
 						containerInfo[i].Name,
 						strconv.FormatUint(uint64(containerInfo[i].NodeCount), 10),
 						containerInfo[i].KernelVersion,
 						createTime.Format(time.RFC822),
 						modTime.Format(time.RFC822),
 						sz,
-					})
+					)
 				}
-				ph.Render()
-				wwlog.Info("%s", ph.String())
 			} else if vars.kernel {
-				ph := helper.New([]string{"CONTAINER NAME", "NODES", "KERNEL VERSION"})
+				t.AddHeader("CONTAINER NAME", "NODES", "KERNEL VERSION")
 				for i := 0; i < len(containerInfo); i++ {
-					ph.Append([]string{
+					t.AddLine(
 						containerInfo[i].Name,
 						strconv.FormatUint(uint64(containerInfo[i].NodeCount), 10),
 						containerInfo[i].KernelVersion,
-					})
+					)
 				}
-				ph.Render()
-				wwlog.Info("%s", ph.String())
 			} else if showSize {
-				ph := helper.New([]string{"CONTAINER NAME", "NODES", "SIZE"})
+				t.AddHeader("CONTAINER NAME", "NODES", "SIZE")
 				for i := 0; i < len(containerInfo); i++ {
 					sz := util.ByteToString(int64(containerInfo[i].ImgSize))
 					if vars.compressed {
@@ -67,24 +64,21 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 						sz = util.ByteToString(int64(containerInfo[i].Size))
 					}
 
-					ph.Append([]string{
+					t.AddLine(
 						containerInfo[i].Name,
 						strconv.FormatUint(uint64(containerInfo[i].NodeCount), 10),
 						sz,
-					})
+					)
 				}
-				ph.Render()
-				wwlog.Info("%s", ph.String())
 			}
 		} else {
-			ph := helper.New([]string{"CONTAINER NAME"})
+			t.AddHeader("CONTAINER NAME")
 			list, _ := container.ListSources()
 			for _, cont := range list {
-				ph.Append([]string{cont})
+				t.AddLine(cont)
 			}
-			ph.Render()
-			wwlog.Info("%s", ph.String())
 		}
+		t.Print()
 		return
 	}
 }

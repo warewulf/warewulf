@@ -21,7 +21,7 @@ type NodeConfAdd struct {
 	TagsAdd     map[string]string `lopt:"tagadd" comment:"add tags"`
 	IpmiTagsAdd map[string]string `lopt:"ipmitagadd" comment:"add ipmi tags"`
 	NetTagsAdd  map[string]string `lopt:"nettagadd" comment:"add network tags"`
-	Net         string            `lopt:"netname" comment:"network which is modified"`
+	Net         string            `lopt:"netname" comment:"network which is modified" default:"default"`
 	DiskName    string            `lopt:"diskname" comment:"set diskdevice name"`
 	PartName    string            `lopt:"partname" comment:"set the partition name so it can be used by a file system"`
 	FsName      string            `lopt:"fsname" comment:"set the file system name which must match a partition name"`
@@ -31,11 +31,11 @@ type NodeConfAdd struct {
 Create cmd line flags from the NodeConf fields. Returns a []func() where every function must be called, as the command line parser returns e.g. netip.IP objects which must be parsed
 back to strings.
 */
-func (nodeConf *NodeConf) CreateFlags(baseCmd *cobra.Command) {
+func (nodeConf *Node) CreateFlags(baseCmd *cobra.Command) {
 	recursiveCreateFlags(nodeConf, baseCmd)
 }
 
-func (profileConf *ProfileConf) CreateFlags(baseCmd *cobra.Command) {
+func (profileConf *Profile) CreateFlags(baseCmd *cobra.Command) {
 	recursiveCreateFlags(profileConf, baseCmd)
 }
 

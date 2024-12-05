@@ -21,7 +21,7 @@ func TFTP() (err error) {
 		return
 	}
 
-	if controller.Warewulf.GrubBoot {
+	if controller.Warewulf.GrubBoot() {
 		err := warewulfd.CopyShimGrub()
 		if err != nil {
 			wwlog.Warn("error when copying shim/grub binaries: %s", err)
@@ -43,7 +43,7 @@ func TFTP() (err error) {
 			}
 		}
 	}
-	if !controller.TFTP.Enabled {
+	if !controller.TFTP.Enabled() {
 		wwlog.Warn("Warewulf does not auto start TFTP services due to disable by warewulf.conf")
 		return nil
 	}
