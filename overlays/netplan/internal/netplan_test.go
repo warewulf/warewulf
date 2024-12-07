@@ -58,7 +58,7 @@ network:
      wwnet0:
         addresses:
            - 192.168.3.21/24
-        mtu: 1500 
+        mtu: 1500
 backupFile: true
 writeFile: true
 Filename: 01-netcfg.yaml
