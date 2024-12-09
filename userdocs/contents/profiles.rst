@@ -117,8 +117,38 @@ And you can now verify that the node has both profile configurations:
    n0000                Cluster            test_profile cluster01
    n0000                Profiles           --           default,test_profile
 
-Cascading Profiles
+Cascading/Nested Profiles
 ==================
+
+Profiles can contain profiles, which will be included into the node config
+recursively. When a node has more than one profile assigned, or profiles
+include profiles, Warewulf uses the following algorithm to merge them:
+
+1. Starting with the profile(s) listed in the node config, build a list of all
+   profiles, including nested profiles recursively.
+#. Remove duplicates from the profile list.
+#. Sort the profile list alphanumerically.
+#. Merge the profiles in the sorted order.
+#. Merge the node config last into the merged profile structure.
+
+As profiles and the node config are merged, lists get new items appended and
+previously defined items are overwritten with new values if the next profile or
+node config redefines them. Scalars are also added if not defined and
+overwritten if previously defined.
+
+For example, say you have a node that includes the profile ``role-compute``.
+The ``role-compute`` profile includes ``network`` and ``slurmd``, with each of
+those defining configurations specific to those services. The resulting profile
+list will be ``network, role-compute, slurmd`` and they will be merged in that
+order.
+
+While the sorted profile list merging guarantees the order and makes the
+outcome deterministic when multiple profiles define the same settings, it's
+recommended to organize profiles in such a way that no two profiles define the
+same settings. This is also a good practice for overlays, e.g. never have two
+overlays control or generate the same files. Although it's not an error to do this
+in either case, it greatly reduces confusion when the resulting node config or
+overlay produced files have an unexpected value or outcome.
 
 In the previous example, we set a single node to have two profile
 configurations. We can also overwrite configurations as follows:
