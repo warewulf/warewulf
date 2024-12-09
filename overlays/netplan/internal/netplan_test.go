@@ -1,4 +1,4 @@
-package netplan 
+package netplan
 
 import (
 	"bytes"
