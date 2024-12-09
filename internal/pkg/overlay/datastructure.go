@@ -8,6 +8,7 @@ import (
 	"time"
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/kernel"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 )
 
@@ -55,6 +56,14 @@ func InitStruct(nodeData node.Node) (TemplateStruct, error) {
 		return tstruct, err
 	}
 	tstruct.ThisNode = &nodeData
+	if tstruct.ThisNode.Kernel == nil {
+		tstruct.ThisNode.Kernel = new(node.KernelConf)
+	}
+	if tstruct.ThisNode.Kernel.Version == "" {
+		if kernel_ := kernel.FromNode(tstruct.ThisNode); kernel_ != nil {
+			tstruct.ThisNode.Kernel.Version = kernel_.Version()
+		}
+	}
 	tstruct.Nfs = *controller.NFS
 	tstruct.Ssh = *controller.SSH
 	tstruct.Dhcp = *controller.DHCP

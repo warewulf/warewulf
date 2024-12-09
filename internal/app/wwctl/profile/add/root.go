@@ -4,8 +4,8 @@ import (
 	"log"
 
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 	"github.com/warewulf/warewulf/internal/pkg/container"
-	"github.com/warewulf/warewulf/internal/pkg/kernel"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
 )
@@ -37,10 +37,7 @@ func GetCommand() *cobra.Command {
 	}); err != nil {
 		log.Println(err)
 	}
-	if err := baseCmd.RegisterFlagCompletionFunc("kerneloverride", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		list, _ := kernel.ListKernels()
-		return list, cobra.ShellCompDirectiveNoFileComp
-	}); err != nil {
+	if err := baseCmd.RegisterFlagCompletionFunc("kernelversion", completions.ProfileKernelVersion); err != nil {
 		log.Println(err)
 	}
 	if err := baseCmd.RegisterFlagCompletionFunc("runtime", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

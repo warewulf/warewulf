@@ -79,10 +79,6 @@ func init() {
 	arpFile = "/proc/net/arp"
 }
 
-func SetArpFile(newName string) {
-	arpFile = newName
-}
-
 /*
 returns the mac address if it has an entry in the arp cache
 */

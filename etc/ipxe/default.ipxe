@@ -5,8 +5,8 @@ echo ===========================================================================
 echo Warewulf v4 now booting: {{.Fqdn}} ({{.Hwaddr}})
 echo
 echo Container:     {{.ContainerName}}
-{{if .KernelOverride }}
-echo Kernel:        {{.KernelOverride}}
+{{if .KernelVersion }}
+echo Kernel:        {{.KernelVersion}}
 {{else}}
 echo Kernel:        {{.ContainerName}} (container default)
 {{end}}
@@ -39,11 +39,6 @@ imgextract --name system ${uri_base}&stage=system&compress=gz       || goto rebo
 echo Downloading Runtime Overlay:
 imgextract --name runtime ${uri_base}&stage=runtime&compress=gz     && set runtime_initrd initrd=runtime || echo Failed downloading runtime overlay.
 
-{{if ne .KernelOverride "" -}}
-echo Downloading Kernel Modules:
-imgextract --name kmods ${uri_base}&stage=kmods&compress=gz         || goto reboot
-{{- end}}
-
 goto imoktogo
 
 :nocompress
@@ -59,11 +54,6 @@ initrd --name system ${uri_base}&stage=system           || goto reboot
 
 echo Downloading Runtime Overlay:
 initrd --name runtime ${uri_base}&stage=runtime         && set runtime_initrd initrd=runtime || echo Failed downloading runtime overlay.
-
-{{if ne .KernelOverride "" -}}
-echo Downloading Kernel Modules:
-initrd --name kmods ${uri_base}&stage=kmods             || goto reboot
-{{- end}}
 
 goto imoktogo
 
@@ -81,21 +71,11 @@ initrd --name system ${uri_base}&stage=system&compress=gz       || goto reboot
 echo Downloading Runtime Overlay:
 initrd --name runtime ${uri_base}&stage=runtime&compress=gz     && set runtime_initrd initrd=runtime || echo Failed downloading runtime overlay.
 
-{{if ne .KernelOverride "" -}}
-echo Downloading Kernel Modules:
-initrd --name kmods ${uri_base}&stage=kmods&compress=gz         || goto reboot
-{{- end}}
-
 
 :imoktogo
 
-{{if ne .KernelOverride "" -}}
-echo boot kernel initrd=container initrd=kmods initrd=system ${runtime_initrd} wwid={{.Hwaddr}} {{.KernelArgs}}
-boot kernel initrd=container initrd=kmods initrd=system ${runtime_initrd} wwid={{.Hwaddr}} {{.KernelArgs}} ||  goto reboot
-{{- else -}}
 echo boot kernel initrd=container initrd=system ${runtime_initrd} wwid={{.Hwaddr}} {{.KernelArgs}}
 boot kernel initrd=container initrd=system ${runtime_initrd} wwid={{.Hwaddr}} {{.KernelArgs}} ||  goto reboot
-{{- end}}
 
 :reboot
 echo

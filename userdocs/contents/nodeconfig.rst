@@ -149,27 +149,6 @@ And you can check that the container name is set for ``n001``:
    # wwctl node list -a  n001 | grep Container
    n0000                Container          --           rocky-8
 
-Configuring the Node's Kernel
------------------------------
-
-While the recommended method for assigning a kernel in v4.3 and beyond
-is to include it in the container / node image, a kernel can still be
-specified as an override at the node or profile.  To illustrate this,
-we import the most recent kernel from a openSUSE Tumbleweed release.
-
-.. code-block:: console
-
-  # wwctl container import docker://registry.opensuse.org/science/warewulf/tumbleweed/containerfile/kernel:latest tw
-  # wwctl kernel import -DC tw
-  # wwctl kernel list
-  KERNEL NAME                         KERNEL VERSION            NODES
-  tw                                  6.1.10-1-default               0
-  # wwctl node set --kerneloverride tw n001
-  Are you sure you want to modify 1 nodes(s): y
-
-  # wwctl node list -a n001 | grep kerneloverride
-  n001                 kerneloverride     --           tw
-
 Configuring the Node's Network
 ------------------------------
 
