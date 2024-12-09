@@ -7,7 +7,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/cheynewallace/tabby v1.1.1
 	github.com/containers/image/v5 v5.32.2
-	github.com/containers/storage v1.55.0
+	github.com/containers/storage v1.55.2
 	github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
 	github.com/coreos/ignition/v2 v2.19.0
 	github.com/coreos/vcontext v0.0.0-20230201181013-d72178a18687

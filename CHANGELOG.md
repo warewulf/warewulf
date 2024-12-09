@@ -33,7 +33,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Locally defined `tr` has been dropped, templates updated to use Sprig replace.
 - Bump github.com/opencontainers/image-spec to 1.1.0
-- Bump github.com/containers/storage to 1.53.0
 - Bump google.golang.org/grpc 1.62.1
 - Bump google.golang.org/protobuf to 1.33.0
 - Bump github.com/containers/image/v5 to 5.30.0
@@ -43,7 +42,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Bump github.com/fatih/color from 1.15.0 to 1.17.0 #1224
 - Bump github.com/coreos/ignition/v2 from 2.15.0 to 2.19.0 #1239
 - Bump github.com/sassoftware/go-rpmutils from 0.2.0 to 0.4.0 #1217
-- Bump github.com/containers/storage from 1.53.0 to 1.55.0 #1316
 - Bump github.com/spf13/cobra from 1.8.0 to 1.8.1 #1481
 - Bump google.golang.org/protobuf from 1.34.1 to 1.35.1 #1480
 - Bump golang.org/x/term from 0.20.0 to 0.25.0 #1476
@@ -77,6 +75,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Repurpose Kernel.Override to specify the path to the desired kernel within the container. #1556
 - Merge Kernel.Override into Kernel.Version to specify the desired kernel version or path. #1556
 - Provide detected kernel version to overlay templates. #1556
+- Bump github.com/containers/storage from 1.53.0 to 1.55.2 #1316, #892
 
 ### Removed
 
