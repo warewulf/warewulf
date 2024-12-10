@@ -505,3 +505,7 @@ func OverlayGetFiles(name string) (files []string, err error) {
 	})
 	return
 }
+
+func Exists(name string) bool {
+	return util.IsDir(OverlaySourceDir(name))
+}
