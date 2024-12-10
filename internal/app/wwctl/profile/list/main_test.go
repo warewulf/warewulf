@@ -172,23 +172,7 @@ nodes:
 			args: []string{"-j"},
 			output: `
 {
-  "default": {
-    "Comment": "",
-    "ClusterName": "",
-    "ContainerName": "",
-    "Ipxe": "",
-    "RuntimeOverlay": null,
-    "SystemOverlay": null,
-    "Kernel": null,
-    "Ipmi": null,
-    "Init": "",
-    "Root": "",
-    "NetDevs": null,
-    "Tags": null,
-    "PrimaryNetDev": "",
-    "Disks": null,
-    "FileSystems": null
-  }
+  "default": {}
 }
 `,
 			inDb: `
@@ -222,40 +206,8 @@ nodes:
 			args: []string{"-j"},
 			output: `
 {
-  "default": {
-    "Comment": "",
-    "ClusterName": "",
-    "ContainerName": "",
-    "Ipxe": "",
-    "RuntimeOverlay": null,
-    "SystemOverlay": null,
-    "Kernel": null,
-    "Ipmi": null,
-    "Init": "",
-    "Root": "",
-    "NetDevs": null,
-    "Tags": null,
-    "PrimaryNetDev": "",
-    "Disks": null,
-    "FileSystems": null
-  },
-  "test": {
-    "Comment": "",
-    "ClusterName": "",
-    "ContainerName": "",
-    "Ipxe": "",
-    "RuntimeOverlay": null,
-    "SystemOverlay": null,
-    "Kernel": null,
-    "Ipmi": null,
-    "Init": "",
-    "Root": "",
-    "NetDevs": null,
-    "Tags": null,
-    "PrimaryNetDev": "",
-    "Disks": null,
-    "FileSystems": null
-  }
+  "default": {},
+  "test": {}
 }
 `,
 			inDb: `
