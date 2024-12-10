@@ -467,38 +467,11 @@ nodes:
 			stdout: `
 [
   {
-    "Discoverable": "",
-    "AssetKey": "",
-    "Profiles": [
+    "profiles": [
       "default"
     ],
-    "Comment": "",
-    "ClusterName": "",
-    "ContainerName": "",
-    "Ipxe": "",
-    "RuntimeOverlay": null,
-    "SystemOverlay": null,
-    "Kernel": {},
-    "Ipmi": {
-      "UserName": "",
-      "Password": "",
-      "Ipaddr": "",
-      "Gateway": "",
-      "Netmask": "",
-      "Port": "",
-      "Interface": "",
-      "EscapeChar": "",
-      "Write": "",
-      "Template": "",
-      "Tags": {}
-    },
-    "Init": "",
-    "Root": "",
-    "NetDevs": {},
-    "Tags": {},
-    "PrimaryNetDev": "",
-    "Disks": null,
-    "FileSystems": null
+    "kernel": {},
+    "ipmi": {}
   }
 ]
 `,
@@ -517,72 +490,18 @@ nodes:
 			stdout: `
 [
   {
-    "Discoverable": "",
-    "AssetKey": "",
-    "Profiles": [
+    "profiles": [
       "default"
     ],
-    "Comment": "",
-    "ClusterName": "",
-    "ContainerName": "",
-    "Ipxe": "",
-    "RuntimeOverlay": null,
-    "SystemOverlay": null,
-    "Kernel": {},
-    "Ipmi": {
-      "UserName": "",
-      "Password": "",
-      "Ipaddr": "",
-      "Gateway": "",
-      "Netmask": "",
-      "Port": "",
-      "Interface": "",
-      "EscapeChar": "",
-      "Write": "",
-      "Template": "",
-      "Tags": {}
-    },
-    "Init": "",
-    "Root": "",
-    "NetDevs": {},
-    "Tags": {},
-    "PrimaryNetDev": "",
-    "Disks": null,
-    "FileSystems": null
+    "kernel": {},
+    "ipmi": {}
   },
   {
-    "Discoverable": "",
-    "AssetKey": "",
-    "Profiles": [
+    "profiles": [
       "default"
     ],
-    "Comment": "",
-    "ClusterName": "",
-    "ContainerName": "",
-    "Ipxe": "",
-    "RuntimeOverlay": null,
-    "SystemOverlay": null,
-    "Kernel": {},
-    "Ipmi": {
-      "UserName": "",
-      "Password": "",
-      "Ipaddr": "",
-      "Gateway": "",
-      "Netmask": "",
-      "Port": "",
-      "Interface": "",
-      "EscapeChar": "",
-      "Write": "",
-      "Template": "",
-      "Tags": {}
-    },
-    "Init": "",
-    "Root": "",
-    "NetDevs": {},
-    "Tags": {},
-    "PrimaryNetDev": "",
-    "Disks": null,
-    "FileSystems": null
+    "kernel": {},
+    "ipmi": {}
   }
 ]
 `,

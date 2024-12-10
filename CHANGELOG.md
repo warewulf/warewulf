@@ -29,6 +29,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Document "known issues."
 - Add `wwctl <node|profile> <add|set> --kernelversion` to specify the desired kernel version or path. #1556
 - Add `wwctl container kernels` to list discovered kernels from containers. #1556
+- Add a new OpenAPI v3 REST API to warewulfd at /api. #1588
 
 ### Changed
 
@@ -77,6 +78,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Merge Kernel.Override into Kernel.Version to specify the desired kernel version or path. #1556
 - Provide detected kernel version to overlay templates. #1556
 - Bump github.com/containers/storage from 1.53.0 to 1.55.2 #1316, #892
+- JSON output omits empty values. #1588
 
 ### Removed
 
