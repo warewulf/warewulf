@@ -192,6 +192,7 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %dir %{_sharedstatedir}/warewulf/overlays
 %dir %{_sharedstatedir}/warewulf/overlays/*
 %dir %{_sharedstatedir}/warewulf/overlays/*/rootfs
+%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/netplan/rootfs/*
 %attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/NetworkManager/rootfs/*
 %attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/debian.interfaces/rootfs/*
 %attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/debug/rootfs/*
