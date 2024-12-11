@@ -29,6 +29,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Document "known issues."
 - Add `wwctl <node|profile> <add|set> --kernelversion` to specify the desired kernel version or path. #1556
 - Add `wwctl container kernels` to list discovered kernels from containers. #1556
+- introduce site overlays:    
+  * site overlays are place in sysconfdir/overlays and take precedence over distribution overlays with the same name.
+  * every `wwctl overlay` command changing overlays will createan site overlay. distribution overlays can't be deleted or modified with wwctl.
 
 ### Changed
 
