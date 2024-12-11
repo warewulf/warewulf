@@ -202,6 +202,7 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/ifcfg/rootfs/*
 %attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/ignition/rootfs/*
 %attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/issue/rootfs/*
+%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/netplan/rootfs/*
 %attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/resolv/rootfs/*
 %attr(700, root, root) %{_sharedstatedir}/warewulf/overlays/ssh.authorized_keys/rootfs/*
 %attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/ssh.host_keys/rootfs/*
