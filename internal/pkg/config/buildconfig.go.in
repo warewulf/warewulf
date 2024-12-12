@@ -71,6 +71,10 @@ func (this WarewulfConf) GrubBoot() bool {
 	return util.BoolP(this.GrubBootP)
 }
 
+func (paths BuildConfig) NodesConf() string {
+	return path.Join(paths.Sysconfdir, "warewulf", "nodes.conf")
+}
+
 func (paths BuildConfig) OciBlobCachedir() string {
 	return path.Join(paths.Cachedir, "warewulf")
 }

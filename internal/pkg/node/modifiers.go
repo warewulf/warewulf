@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -109,12 +110,12 @@ func (config *NodesYaml) DelProfile(nodeID string) error {
 Write the the NodeYaml to disk.
 */
 func (config *NodesYaml) Persist() error {
-	return config.PersistToFile(ConfigFile)
+	return config.PersistToFile(warewulfconf.Get().Paths.NodesConf())
 }
 
 func (config *NodesYaml) PersistToFile(configFile string) error {
 	if configFile == "" {
-		configFile = ConfigFile
+		configFile = warewulfconf.Get().Paths.NodesConf()
 	}
 	out, dumpErr := config.Dump()
 	if dumpErr != nil {

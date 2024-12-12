@@ -14,9 +14,6 @@ var (
 	}
 )
 
-func init() {
-}
-
 func GetCommand() *cobra.Command {
 	return baseCmd
 }

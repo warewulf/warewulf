@@ -26,7 +26,6 @@ var (
 )
 
 func init() {
-	// Nothing to do here
 	baseCmd.PersistentFlags().BoolVarP(&Build, "build", "b", false, "Build container after copy")
 }
 
