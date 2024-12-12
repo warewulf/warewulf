@@ -10,7 +10,7 @@ warewulf.conf
 =============
 
 The Warewulf configuration exists as follows in the current version of
-Warewulf (4.5.2):
+Warewulf (4.5.8):
 
 .. code-block:: yaml
 
@@ -227,3 +227,44 @@ Directories
 The ``/etc/warewulf/ipxe/`` directory contains *text/templates* that
 are used by the Warewulf configuration process to configure the
 ``ipxe`` service.
+
+FirewallD
+=========
+
+When using ``firewalld`` with Warewulf, the following services are required to be added for successful node interconnectivity:
+
+.. code-block:: console
+
+   firewall-cmd --permanent --add-service=warewulf
+   firewall-cmd --permanent --add-service=dhcp
+   firewall-cmd --permanent --add-service=nfs
+   firewall-cmd --permanent --add-service=tftp
+
+Make sure the ``--reload`` command is ran afterwards:
+
+.. code-block:: console
+
+   firewall-cmd --reload
+
+nftables
+========
+
+When deploying ``nftables`` with Warewulf, ensure that TCP port ``9873`` for HTTP requests is available, else you will not be able to add new nodes to the cluster.
+
+This can be done with the ``nft add rule`` command:
+
+.. code-block:: console
+
+   nft add rule inet filter input tcp dport 9873 accept
+
+Save the changes to your ``nftables.conf`` file:
+
+.. code-block:: console
+
+   nft list ruleset > /etc/nftables.conf
+
+Restart the ``nftables`` service:
+
+.. code-block:: console
+
+   systemctl restart nftables
