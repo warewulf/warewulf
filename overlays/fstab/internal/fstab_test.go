@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/show"
 	"github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -14,7 +15,7 @@ import (
 func Test_fstabOverlay(t *testing.T) {
 	env := testenv.New(t)
 	defer env.RemoveAll(t)
-	env.ImportFile(t, "etc/warewulf/nodes.conf", "nodes.conf")
+	env.ImportFile(t, node.GetNodesConf("etc"), "nodes.conf")
 	env.ImportFile(t, "etc/warewulf/warewulf.conf", "warewulf.conf")
 	assert.NoError(t, config.Get().Read(env.GetPath("etc/warewulf/warewulf.conf")))
 	env.ImportFile(t, "var/lib/warewulf/overlays/fstab/rootfs/etc/fstab.ww", "../rootfs/etc/fstab.ww")

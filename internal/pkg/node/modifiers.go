@@ -6,9 +6,8 @@ import (
 	"os"
 
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v3"
-
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
+	"gopkg.in/yaml.v3"
 )
 
 /*
@@ -109,12 +108,12 @@ func (config *NodesYaml) DelProfile(nodeID string) error {
 Write the the NodeYaml to disk.
 */
 func (config *NodesYaml) Persist() error {
-	return config.PersistToFile(ConfigFile)
+	return config.PersistToFile(GetNodesConf())
 }
 
 func (config *NodesYaml) PersistToFile(configFile string) error {
 	if configFile == "" {
-		configFile = ConfigFile
+		return errors.New("PersistToFile: configuration can't be empty")
 	}
 	out, dumpErr := config.Dump()
 	if dumpErr != nil {

@@ -87,6 +87,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Remove `wwctl overlay build --nodes` #1419
 - Remove `wwctl kernel` #1556
 - Remove `wwctl <node|profile> <add|set> --kerneloverride` #1556
+- Removed the nodeDB.Configfile initialization from init
 
 ### Fixed
 

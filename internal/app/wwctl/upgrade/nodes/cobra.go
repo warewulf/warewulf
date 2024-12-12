@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	libupgrade "github.com/warewulf/warewulf/internal/pkg/upgrade"
 	"github.com/warewulf/warewulf/internal/pkg/util"
@@ -30,8 +29,8 @@ supported by the current version.`,
 func init() {
 	Command.Flags().BoolVar(&addDefaults, "add-defaults", false, "Configure a default profile and set default node values")
 	Command.Flags().BoolVar(&replaceOverlays, "replace-overlays", false, "Replace 'wwinit' and 'generic' overlays with their split replacements")
-	Command.Flags().StringVarP(&inputPath, "input-path", "i", node.ConfigFile, "Path to a legacy nodes.conf")
-	Command.Flags().StringVarP(&outputPath, "output-path", "o", node.ConfigFile, "Path to write the upgraded nodes.conf to")
+	Command.Flags().StringVarP(&inputPath, "input-path", "i", node.GetNodesConf(), "Path to a legacy nodes.conf")
+	Command.Flags().StringVarP(&outputPath, "output-path", "o", node.GetNodesConf(), "Path to write the upgraded nodes.conf to")
 	if err := Command.MarkFlagRequired("add-defaults"); err != nil {
 		panic(err)
 	}

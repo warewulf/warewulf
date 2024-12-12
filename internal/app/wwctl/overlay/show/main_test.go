@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -51,7 +52,7 @@ nfs:
     mount options: defaults
     mount: false`)
 
-	env.WriteFile(t, "etc/warewulf/nodes.conf",
+	env.WriteFile(t, node.GetNodesConf("etc"),
 		`nodeprofiles:
   default:
     tags:
@@ -138,7 +139,7 @@ func TestShowServerTemplate(t *testing.T) {
 	`
 
 	env := testenv.New(t)
-	env.WriteFile(t, "etc/warewulf/nodes.conf",
+	env.WriteFile(t, node.GetNodesConf("etc"),
 		`nodeprofiles:
   default:
     tags:

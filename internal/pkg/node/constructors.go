@@ -14,23 +14,29 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var (
-	ConfigFile string
-)
+const NodesConfPath = "warewulf/nodes.conf"
 
-func init() {
-	conf := warewulfconf.Get()
-	if ConfigFile == "" {
-		ConfigFile = path.Join(conf.Paths.Sysconfdir, "warewulf/nodes.conf")
+/*
+Get the actual path of nodes.conf, with the possibility to prefix
+*/
+func GetNodesConf(prefix ...string) string {
+	var myPath []string
+	if len(prefix) == 0 {
+		controller := warewulfconf.Get()
+		myPath = append(myPath, controller.Paths.Sysconfdir)
+	} else {
+		myPath = append(myPath, prefix...)
 	}
+	myPath = append(myPath, NodesConfPath)
+	return path.Join(myPath...)
 }
 
 /*
 Creates a new nodeDb object from the on-disk configuration
 */
 func New() (NodesYaml, error) {
-	wwlog.Verbose("Opening node configuration file: %s", ConfigFile)
-	data, err := os.ReadFile(ConfigFile)
+	wwlog.Verbose("Opening node configuration file: %s", GetNodesConf())
+	data, err := os.ReadFile(GetNodesConf())
 	if err != nil {
 		return NodesYaml{}, err
 	}

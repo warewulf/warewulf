@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/show"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -15,7 +16,7 @@ func Test_syncuserOverlay(t *testing.T) {
 
 	env := testenv.New(t)
 	defer env.RemoveAll(t)
-	env.ImportFile(t, "etc/warewulf/nodes.conf", "nodes.conf")
+	env.ImportFile(t, node.GetNodesConf("etc"), "nodes.conf")
 	env.ImportFile(t, "var/lib/warewulf/overlays/syncuser/rootfs/etc/passwd.ww", "../../../../../overlays/syncuser/rootfs/etc/passwd.ww")
 	env.ImportFile(t, "var/lib/warewulf/overlays/syncuser/rootfs/etc/group.ww", "../../../../../overlays/syncuser/rootfs/etc/group.ww")
 	env.WriteFile(t, "var/lib/warewulf/chroots/rockylinux-9/rootfs/etc/passwd", `root:x:0:0:root:/root:/bin/bash`)

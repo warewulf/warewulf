@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/show"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -31,7 +32,7 @@ func Test_wickedOverlay(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			env.ImportFile(t, "etc/warewulf/nodes.conf", tt.nodes_conf)
+			env.ImportFile(t, node.GetNodesConf("etc"), tt.nodes_conf)
 			cmd := show.GetCommand()
 			cmd.SetArgs(tt.args)
 			stdout := bytes.NewBufferString("")
