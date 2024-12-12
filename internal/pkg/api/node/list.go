@@ -9,6 +9,7 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v3"
 )
 
@@ -85,10 +86,14 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 		nodeList.Output = append(nodeList.Output,
 			fmt.Sprintf("%s:=:%s:=:%s:=:%s", "NODE", "FIELD", "PROFILE", "VALUE"))
 		for _, n := range node.FilterNodeListByName(nodes, nodeGet.Nodes) {
-			fields := nodeDB.GetFields(n)
-			for _, f := range fields {
-				nodeList.Output = append(nodeList.Output,
-					fmt.Sprintf("%s:=:%s:=:%s:=:%s", n.Id(), f.Field, f.Source, f.Value))
+			if _, fields, err := nodeDB.MergeNode(n.Id()); err != nil {
+				wwlog.Error("unable to merge node %v: %v", n.Id(), err)
+				continue
+			} else {
+				for _, f := range fields.List(n) {
+					nodeList.Output = append(nodeList.Output,
+						fmt.Sprintf("%s:=:%s:=:%s:=:%s", n.Id(), f.Field, f.Source, f.Value))
+				}
 			}
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_YAML || nodeGet.Type == wwapiv1.GetNodeList_JSON {

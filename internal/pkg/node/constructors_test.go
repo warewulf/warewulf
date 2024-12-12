@@ -111,12 +111,12 @@ func Test_Primary_Network(t *testing.T) {
 		}
 	})
 	t.Run("defined in profile", func(t *testing.T) {
-		assert.Equal(t, test_node5.NetDevs["override"].Device, "ib0")
-		assert.Equal(t, test_node5.NetDevs["override"].Type, "profile")
+		assert.Equal(t, "ib0", test_node5.NetDevs["override"].Device)
+		assert.Equal(t, "profile", test_node5.NetDevs["override"].Type)
 	})
 	t.Run("redefined in profile", func(t *testing.T) {
-		assert.Equal(t, test_node6.NetDevs["override"].Device, "ib1")
-		assert.Equal(t, test_node6.NetDevs["override"].Type, "profile")
+		assert.Equal(t, "ib1", test_node6.NetDevs["override"].Device)
+		assert.Equal(t, "profile", test_node6.NetDevs["override"].Type)
 	})
 }
 
