@@ -4,10 +4,8 @@ import (
 	"bytes"
 	"encoding/gob"
 	"os"
-	"path"
 
 	"github.com/pkg/errors"
-	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v3"
 )
@@ -110,8 +108,7 @@ func (config *NodesYaml) DelProfile(nodeID string) error {
 Write the the NodeYaml to disk.
 */
 func (config *NodesYaml) Persist() error {
-	controller := warewulfconf.Get()
-	return config.PersistToFile(path.Join(controller.Paths.Sysconfdir, "warewulf/nodes.conf"))
+	return config.PersistToFile(GetNodesConf())
 }
 
 func (config *NodesYaml) PersistToFile(configFile string) error {

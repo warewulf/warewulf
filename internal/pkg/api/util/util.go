@@ -1,12 +1,11 @@
 package util
 
 import (
-	"path"
 	"syscall"
 
 	"github.com/manifoldco/promptui"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
-	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -32,8 +31,7 @@ Simple check if the config can be written in case wwctl isn't run as root
 func CanWriteConfig() (canwrite *wwapiv1.CanWriteConfig, err error) {
 	canwrite = new(wwapiv1.CanWriteConfig)
 	// node is not initialized yet
-	controller := warewulfconf.Get()
-	err = syscall.Access(path.Join(controller.Paths.Sysconfdir, "warewulf/nodes.conf"), syscall.O_RDWR)
+	err = syscall.Access(node.GetNodesConf(), syscall.O_RDWR)
 	if err != nil {
 		wwlog.Warn("Couldn't open: %w", err)
 		canwrite.CanWriteConfig = false

@@ -3,10 +3,9 @@ package nodes
 import (
 	"fmt"
 	"os"
-	"path"
 
 	"github.com/spf13/cobra"
-	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 	libupgrade "github.com/warewulf/warewulf/internal/pkg/upgrade"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 )
@@ -28,11 +27,10 @@ supported by the current version.`,
 )
 
 func init() {
-	controller := warewulfconf.Get()
 	Command.Flags().BoolVar(&addDefaults, "add-defaults", false, "Configure a default profile and set default node values")
 	Command.Flags().BoolVar(&replaceOverlays, "replace-overlays", false, "Replace 'wwinit' and 'generic' overlays with their split replacements")
-	Command.Flags().StringVarP(&inputPath, "input-path", "i", path.Join(controller.Paths.Sysconfdir, "warewulf/nodes.conf"), "Path to a legacy nodes.conf")
-	Command.Flags().StringVarP(&outputPath, "output-path", "o", path.Join(controller.Paths.Sysconfdir, "warewulf/nodes.conf"), "Path to write the upgraded nodes.conf to")
+	Command.Flags().StringVarP(&inputPath, "input-path", "i", node.GetNodesConf(), "Path to a legacy nodes.conf")
+	Command.Flags().StringVarP(&outputPath, "output-path", "o", node.GetNodesConf(), "Path to write the upgraded nodes.conf to")
 	if err := Command.MarkFlagRequired("add-defaults"); err != nil {
 		panic(err)
 	}
