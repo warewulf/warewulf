@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 )
 
@@ -35,7 +36,7 @@ var provisionSendTests = []struct {
 func Test_ProvisionSend(t *testing.T) {
 	env := testenv.New(t)
 	defer env.RemoveAll(t)
-	env.WriteFile(t, "etc/warewulf/nodes.conf", `nodeprofiles:
+	env.WriteFile(t, node.GetNodesConf("etc"), `nodeprofiles:
   default:
     container name: suse
 nodes:

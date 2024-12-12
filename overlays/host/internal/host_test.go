@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/show"
 	"github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -17,7 +18,7 @@ func Test_hostOverlay(t *testing.T) {
 	hostname, _ := os.Hostname()
 	env := testenv.New(t)
 	defer env.RemoveAll(t)
-	env.ImportFile(t, "etc/warewulf/nodes.conf", "nodes.conf")
+	env.ImportFile(t, node.GetNodesConf("etc"), "nodes.conf")
 	env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/dhcp/dhcpd.conf.ww", "../rootfs/etc/dhcp/dhcpd.conf.ww")
 	env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/dnsmasq.d/ww4-hosts.conf.ww", "../rootfs/etc/dnsmasq.d/ww4-hosts.conf.ww")
 	env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/exports.ww", "../rootfs/etc/exports.ww")

@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -57,7 +58,7 @@ nodes:
 	for _, tt := range tests {
 		env := testenv.New(t)
 		defer env.RemoveAll(t)
-		env.WriteFile(t, "etc/warewulf/nodes.conf", tt.inDb)
+		env.WriteFile(t, node.GetNodesConf("etc"), tt.inDb)
 
 		t.Logf("Running test: %s\n", tt.name)
 		t.Run(tt.name, func(t *testing.T) {

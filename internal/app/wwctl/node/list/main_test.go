@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -395,7 +396,7 @@ NODE  FIELD  PROFILE  VALUE
 	defer env.RemoveAll(t)
 	warewulfd.SetNoDaemon()
 	for _, tt := range tests {
-		env.WriteFile(t, "etc/warewulf/nodes.conf", tt.inDb)
+		env.WriteFile(t, node.GetNodesConf("etc"), tt.inDb)
 		t.Run(tt.name, func(t *testing.T) {
 			baseCmd := GetCommand()
 			baseCmd.SetArgs(tt.args)
@@ -605,7 +606,7 @@ nodes:
 	warewulfd.SetNoDaemon()
 	for _, tt := range tests {
 		env := testenv.New(t)
-		env.WriteFile(t, "etc/warewulf/nodes.conf", tt.inDb)
+		env.WriteFile(t, node.GetNodesConf("etc"), tt.inDb)
 		var err error
 		t.Run(tt.name, func(t *testing.T) {
 			buf := new(bytes.Buffer)

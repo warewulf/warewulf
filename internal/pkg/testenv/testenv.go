@@ -12,9 +12,9 @@ import (
 	"testing"
 	"time"
 
-	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
-
 	"github.com/stretchr/testify/assert"
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 )
 
 const initWarewulfConf = ``
@@ -56,7 +56,7 @@ func New(t *testing.T) (env *TestEnv) {
 	assert.NoError(t, err)
 	env.BaseDir = tmpDir
 
-	env.WriteFile(t, path.Join(Sysconfdir, "warewulf/nodes.conf"), initNodesConf)
+	env.WriteFile(t, node.GetNodesConf(Sysconfdir), initNodesConf)
 	env.WriteFile(t, path.Join(Sysconfdir, "warewulf/warewulf.conf"), initWarewulfConf)
 
 	// re-read warewulf.conf
