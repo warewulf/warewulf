@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 type nodeList []Node
@@ -312,6 +313,23 @@ Returns if the node is a valid in the database
 */
 func (node *Node) Valid() bool {
 	return node.valid
+}
+
+func (node *Node) updatePrimaryNetDev() {
+	if netdev, ok := node.NetDevs[node.PrimaryNetDev]; ok {
+		netdev.primary = true
+	} else {
+		keys := make([]string, 0)
+		for k := range node.NetDevs {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		if len(keys) > 0 {
+			wwlog.Debug("%s: no primary defined, sanitizing to: %s", node.id, keys[0])
+			node.NetDevs[keys[0]].primary = true
+			node.PrimaryNetDev = keys[0]
+		}
+	}
 }
 
 /*
