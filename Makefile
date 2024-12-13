@@ -7,9 +7,6 @@ include Tools.mk
 .PHONY: build
 build: wwctl wwclient etc/bash_completion.d/wwctl
 
-.PHONY: api
-api: wwapid wwapic wwapird
-
 .PHONY: docs
 docs: man_pages reference
 
@@ -30,12 +27,6 @@ config = include/systemd/warewulfd.service \
 .PHONY: config
 config: $(config)
 
-apiconfig = etc/wwapic.conf \
-	etc/wwapid.conf \
-	etc/wwapird.conf
-.PHONY: apiconfig
-apiconfig: $(apiconfig)
-
 %: %.in
 	sed -ne "$(foreach V,$(VARLIST),s,@$V@,$(strip $($V)),g;)p" $@.in >$@
 
@@ -48,15 +39,6 @@ wwclient: $(config) $(call godeps,cmd/wwclient/main.go)
 update_configuration: $(config) $(call godeps,cmd/update_configuration/update_configuration.go)
 	go build -X 'github.com/warewulf/warewulf/internal/pkg/node.ConfigFile=./etc/nodes.conf'" \
 	    -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o update_configuration cmd/update_configuration/update_configuration.go
-
-wwapid: $(config) $(apiconfig) $(call godeps,internal/app/api/wwapid/wwapid.go)
-	go build -o ./wwapid internal/app/api/wwapid/wwapid.go
-
-wwapic: $(config) $(apiconfig) $(call godeps,internal/app/api/wwapic/wwapic.go)
-	go build -o ./wwapic  internal/app/api/wwapic/wwapic.go
-
-wwapird: $(config) $(apiconfig) $(call godeps,internal/app/api/wwapird/wwapird.go)
-	go build -o ./wwapird internal/app/api/wwapird/wwapird.go
 
 .PHONY: man_pages
 man_pages: wwctl $(wildcard docs/man/man5/*.5)
@@ -146,15 +128,6 @@ install: build docs
 	install -pd -m 0755 $(DESTDIR)$(DRACUTMODDIR)/90wwinit
 	install -m 0644 dracut/modules.d/90wwinit/*.sh $(DESTDIR)$(DRACUTMODDIR)/90wwinit
 
-.PHONY: installapi
-installapi:
-	install -m 0755 wwapic $(DESTDIR)$(BINDIR)
-	install -m 0755 wwapid $(DESTDIR)$(BINDIR)
-	install -m 0755 wwapird $(DESTDIR)$(BINDIR)
-	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapic.conf || install -m 0644 etc/wwapic.conf $(DESTDIR)$(WWCONFIGDIR)
-	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapid.conf || install -m 0644 etc/wwapid.conf $(DESTDIR)$(WWCONFIGDIR)
-	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapird.conf || install -m 0644 etc/wwapird.conf $(DESTDIR)$(WWCONFIGDIR)
-
 .PHONY: init
 init:
 	systemctl daemon-reload
@@ -198,7 +171,6 @@ cleanmake:
 
 .PHONY: cleanbin
 cleanbin:
-	rm -f wwapi{c,d,rd}
 	rm -f wwclient
 	rm -f wwctl
 	rm -f update_configuration
@@ -221,9 +193,6 @@ ifndef OFFLINE_BUILD
 wwctl: vendor
 wwclient: vendor
 update_configuration: vendor
-wwapid: vendor
-wwapic: vendor
-wwapird: vendor
 dist: vendor
 
 lint: $(GOLANGCI_LINT)
