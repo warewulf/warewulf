@@ -10,6 +10,9 @@ customizations. For example, a few hundred nodes that are running a
 particular container or kernel, and another group of nodes that are
 running a different kernel or container.
 
+Profiles may, themselves, reference other profiles, supporting complex
+mixtures of profile configuration and negation.
+
 Any node configuration attributes can be applied to a profile, but
 there are always going to be some node configurations which must be
 specific to a node, like a network HW/MAC address or an IP address.
@@ -173,6 +176,13 @@ as can be seen here:
    n0000                Comment            SUPERSEDED   This value takes precedent
    n0000                Cluster            test_profile cluster01
    n0000                Profiles           --           default,test_profile
+
+Negating Profiles
+=================
+
+Profiles may also be negated by later profiles. For example, ``p2,~p1``
+adds the profile ``p2`` to a node and removes a previously-applied ``p1``
+profile from a node.
 
 How To Use Profiles Effectively
 ===============================

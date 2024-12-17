@@ -525,6 +525,8 @@ nodes:
   n01:
     profiles:
     - default
+    disks:
+      /dev/vda: {}
     filesystems:
       /dev/disk/by-partlabel/var:
         format: btrfs

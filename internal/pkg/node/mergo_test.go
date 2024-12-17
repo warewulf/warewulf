@@ -8,6 +8,188 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 )
 
+func Test_getNodeProfiles(t *testing.T) {
+	var tests = map[string]struct {
+		nodesConf string
+		node      string
+		profiles  []string
+	}{
+		"no profiles": {
+			nodesConf: `
+nodes:
+  n1: {}`,
+			node:     "n1",
+			profiles: nil,
+		},
+
+		"one profile": {
+			nodesConf: `
+nodes:
+  n1:
+    profiles:
+    - p1`,
+			node:     "n1",
+			profiles: []string{"p1"},
+		},
+		"two profiles": {
+			nodesConf: `
+nodes:
+  n1:
+    profiles:
+    - p1
+    - p2`,
+			node:     "n1",
+			profiles: []string{"p1", "p2"},
+		},
+		"negated profiles": {
+			nodesConf: `
+nodes:
+  n1:
+    profiles:
+    - p1
+    - p2
+nodeprofiles:
+  p2:
+    profiles:
+    - "~p1"`,
+			node:     "n1",
+			profiles: []string{"p2"},
+		},
+		"negated missing profile": {
+			nodesConf: `
+nodes:
+  n1:
+    profiles:
+    - p1
+    - p2
+nodeprofiles:
+  p2:
+    profiles:
+    - "~p3"`,
+			node:     "n1",
+			profiles: []string{"p1", "p2"},
+		},
+		"single nested profile": {
+			nodesConf: `
+nodes:
+  n1:
+    profiles:
+    - p1
+nodeprofiles:
+  p1:
+    profiles:
+    - p2`,
+			node:     "n1",
+			profiles: []string{"p1", "p2"},
+		},
+		"double nested profile": {
+			nodesConf: `
+nodes:
+  n1:
+    profiles:
+    - p1
+nodeprofiles:
+  p1:
+    profiles:
+    - p2
+  p2:
+    profiles:
+    - p3`,
+			node:     "n1",
+			profiles: []string{"p1", "p2", "p3"},
+		},
+		"negated nested profile": {
+			nodesConf: `
+nodes:
+  n1:
+    profiles:
+    - p1
+nodeprofiles:
+  p1:
+    profiles:
+    - p2
+  p2:
+    profiles:
+    - "~p2"
+    - p3`,
+			node:     "n1",
+			profiles: []string{"p1", "p3"},
+		},
+		"cicular nested profile": {
+			nodesConf: `
+nodes:
+  n1:
+    profiles:
+    - p1
+nodeprofiles:
+  p1:
+    profiles:
+    - p2
+  p2:
+    profiles:
+    - p3
+  p3:
+    profiles:
+    - p1`,
+			node:     "n1",
+			profiles: []string{"p1", "p2", "p3"},
+		},
+		"cicular nested profile negation": {
+			nodesConf: `
+nodes:
+  n1:
+    profiles:
+    - p1
+nodeprofiles:
+  p1:
+    profiles:
+    - p2
+  p2:
+    profiles:
+    - "~p1"
+    - p3
+  p3:
+    profiles:
+    - p1`,
+			node:     "n1",
+			profiles: []string{"p2", "p3", "p1"},
+		},
+		"repeated nested profile": {
+			nodesConf: `
+nodes:
+  n1:
+    profiles:
+    - pa1
+    - pb1
+nodeprofiles:
+  pa1:
+    profiles:
+    - pa2
+  pb1:
+    profiles:
+    - "~pa2"
+    - pb2
+  pb2:
+    profiles:
+    - pa2`,
+			node:     "n1",
+			profiles: []string{"pa1", "pb1", "pb2", "pa2"},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			env := testenv.New(t)
+			defer env.RemoveAll(t)
+			env.WriteFile(t, "/etc/warewulf/nodes.conf", tt.nodesConf)
+
+			registry, regErr := New()
+			assert.NoError(t, regErr)
+			assert.Equal(t, tt.profiles, registry.getNodeProfiles(tt.node))
+		})
+	}
+}
+
 func Test_MergeNode(t *testing.T) {
 	var tests = map[string]struct {
 		nodesConf string
@@ -388,6 +570,49 @@ nodeprofiles:
 			field:  "SystemOverlay",
 			source: "p1,p2,n1",
 			value:  "po1,po2,po3,po4,no1,no2",
+		},
+		"node profiles": {
+			nodesConf: `
+nodes:
+  n1:
+    profiles:
+    - p1
+    - p2`,
+			node:   "n1",
+			field:  "Profiles",
+			source: "",
+			value:  "p1,p2",
+		},
+		"nested profiles": {
+			nodesConf: `
+nodes:
+  n1:
+    profiles:
+    - p1
+nodeprofiles:
+  p1:
+    profiles:
+    - p2`,
+			node:   "n1",
+			field:  "Profiles",
+			source: "",
+			value:  "p1",
+		},
+		"negated profiles": {
+			nodesConf: `
+nodes:
+  n1:
+    profiles:
+    - p1
+    - p2
+nodeprofiles:
+  p2:
+    profiles:
+    - "~p1"`,
+			node:   "n1",
+			field:  "Profiles",
+			source: "",
+			value:  "p1,p2",
 		},
 		"node netdev tag": {
 			nodesConf: `
