@@ -10,7 +10,6 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 type test_description struct {
@@ -25,7 +24,6 @@ type test_description struct {
 func run_test(t *testing.T, test test_description) {
 	env := testenv.New(t)
 	defer env.RemoveAll(t)
-	wwlog.SetLogLevel(wwlog.DEBUG)
 	env.WriteFile(t, "etc/warewulf/nodes.conf", test.inDB)
 	warewulfd.SetNoDaemon()
 	name := test.name
