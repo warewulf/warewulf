@@ -158,6 +158,7 @@ func Test_listFields(t *testing.T) {
 				},
 			},
 			fields: []string{
+				"Profiles",
 				"Comment",
 				"ClusterName",
 				"ContainerName",

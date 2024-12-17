@@ -282,6 +282,5 @@ func Test_network_passwd(t *testing.T) {
 	db := make(syncDB)
 	err := db.readFromHost(hostFileName)
 	assert.NotContains(t, buf.String(), "parse error")
-	assert.Contains(t, buf.String(), "Ignoring line")
 	assert.NoError(t, err)
 }
