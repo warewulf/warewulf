@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 var nodesYamlUpgradeTests = []struct {
@@ -753,7 +752,6 @@ nodes:
 }
 
 func Test_UpgradeNodesYaml(t *testing.T) {
-	wwlog.SetLogLevel(wwlog.DEBUG)
 	for _, tt := range nodesYamlUpgradeTests {
 		t.Run(tt.name, func(t *testing.T) {
 			env := testenv.New(t)
