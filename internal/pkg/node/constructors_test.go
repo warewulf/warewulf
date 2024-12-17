@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v3"
 )
 
@@ -196,7 +195,6 @@ nodes:
 	var ymlSrc NodesYaml
 	err := yaml.Unmarshal([]byte(nodesconf), &ymlSrc)
 	assert.NoError(err)
-	wwlog.SetLogLevel(wwlog.DEBUG)
 	nodes, err := ymlSrc.FindAllNodes()
 	assert.NoError(err)
 	nodemap := make(map[string]*Node)

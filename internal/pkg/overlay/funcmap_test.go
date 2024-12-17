@@ -5,7 +5,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/node"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func Test_createIgnitionJson(t *testing.T) {
@@ -51,7 +50,6 @@ func Test_createIgnitionJson(t *testing.T) {
     ]
   }
 }`
-	wwlog.SetLogLevel(wwlog.DEBUG)
 	config, parse_error := node.Parse([]byte(node_config))
 	assert.Empty(t, parse_error)
 
