@@ -154,6 +154,7 @@ nodes:
 			output: `
 {
   "default": {
+    "Profiles": null,
     "Comment": "",
     "ClusterName": "",
     "ContainerName": "",
@@ -204,6 +205,7 @@ nodes:
 			output: `
 {
   "default": {
+    "Profiles": null,
     "Comment": "",
     "ClusterName": "",
     "ContainerName": "",
@@ -221,6 +223,7 @@ nodes:
     "FileSystems": null
   },
   "test": {
+    "Profiles": null,
     "Comment": "",
     "ClusterName": "",
     "ContainerName": "",
