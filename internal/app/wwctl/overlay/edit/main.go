@@ -35,32 +35,17 @@ const initialTemplate = `# This is a Warewulf Template file.
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	overlayName := args[0]
 	fileName := args[1]
-	createdSite := false
+
 	overlay_ := overlay.GetOverlay(overlayName)
-	if !overlay_.IsSiteOverlay() {
-		overlay_, err = overlay_.CloneSiteOverlay()
-		if err != nil {
-			return err
-		}
-		createdSite = true
-	}
 	if !overlay_.Exists() {
 		return fmt.Errorf("overlay does not exist: %s", overlayName)
 	}
 
 	overlayFile := overlay_.File(fileName)
 	wwlog.Debug("Will edit overlay file: %s", overlayFile)
-
 	overlayFileDir := path.Dir(overlayFile)
-	if CreateDirs {
-		err := os.MkdirAll(overlayFileDir, 0755)
-		if err != nil {
-			return fmt.Errorf("could not create directory: %s", overlayFileDir)
-		}
-	} else {
-		if !util.IsDir(overlayFileDir) {
-			return fmt.Errorf("%s does not exist. Use '--parents' option to create automatically", overlayFileDir)
-		}
+	if !(util.IsDir(overlayFileDir) || CreateDirs) {
+		return fmt.Errorf("%s does not exist. Use '--parents' option to create automatically", overlayFileDir)
 	}
 
 	tempFile, tempFileErr := os.CreateTemp("", "ww-overlay-edit-")
@@ -106,10 +91,23 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	} else {
 		if startTime == fileInfo.ModTime() {
 			wwlog.Debug("No change detected. Not updating overlay.")
-			if createdSite {
-				os.Remove(overlay_.Path())
-			}
 			return nil
+		}
+	}
+
+	if !overlay_.IsSiteOverlay() {
+		overlay_, err = overlay_.CloneSiteOverlay()
+		if err != nil {
+			return err
+		}
+	}
+	// re-generate because overlay_ may have changed
+	overlayFile = overlay_.File(fileName)
+	overlayFileDir = path.Dir(overlayFile)
+
+	if CreateDirs {
+		if err := os.MkdirAll(overlayFileDir, 0755); err != nil {
+			return fmt.Errorf("could not create directory: %s", overlayFileDir)
 		}
 	}
 
