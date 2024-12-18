@@ -34,8 +34,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	} else {
 		gid = -1
 	}
-
-	overlaySourceDir = overlay.OverlaySourceDir(overlayName)
+	err = overlay.CreateSiteOverlay(overlayName)
+	if err != nil {
+		return err
+	}
+	overlaySourceDir, _ = overlay.OverlaySourceDir(overlayName)
 
 	if !util.IsDir(overlaySourceDir) {
 		return fmt.Errorf("overlay does not exist: %s", overlayName)

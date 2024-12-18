@@ -32,6 +32,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add possibility to define a softlink target with an overlay template
 - Support defining a symlink with an overlay template. #1303
 - New "localtime" overlay to define the system time zone. #1303
+- introduce site overlays:
+  * site overlays are place in sysconfdir/overlays and take precedence over distribution overlays with the same name.
+  * every `wwctl overlay` command changing overlays will createan site overlay. distribution overlays can't be deleted or modified with wwctl.
 
 ### Changed
 

@@ -1,31 +1,40 @@
 package overlay
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"strings"
 
+	"github.com/containers/storage/drivers/copy"
+
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-func OverlaySourceTopDir() string {
-	conf := warewulfconf.Get()
-	return conf.Paths.WWOverlaydir
-}
-
 /*
-Return the path for the base of the overlay, strips rootfs
+Return the path for the base of the overlay, adds rootfs
 prefix in the overlay dir if this it exists
 */
-func OverlaySourceDir(overlayName string) string {
+func OverlaySourceDir(overlayName string) (overlaypath string, isSite bool) {
+	controller := warewulfconf.Get()
 	/* Assume using old style overlay dir without rootfs */
-	var overlaypath = path.Join(OverlaySourceTopDir(), overlayName)
+	overlaypath = path.Join(controller.Paths.Sysconfdir, "overlays", overlayName)
 	if _, err := os.Stat(path.Join(overlaypath, "rootfs")); err == nil {
 		/* rootfs exists, use it. */
 		overlaypath = path.Join(overlaypath, "rootfs")
 	}
-	return overlaypath
+	if _, err := os.Stat(overlaypath); err == nil {
+		return overlaypath, true
+	}
+	overlaypath = path.Join(controller.Paths.WWOverlaydir, overlayName)
+	if _, err := os.Stat(path.Join(overlaypath, "rootfs")); err == nil {
+		/* rootfs exists, use it. */
+		overlaypath = path.Join(overlaypath, "rootfs")
+	}
+	wwlog.Debug("found overlay %s in path: %s", overlayName, overlaypath)
+	return overlaypath, false
 }
 
 // OverlayImage returns the full path to an overlay image based on the
@@ -56,4 +65,25 @@ func OverlayImage(nodeName string, context string, overlayNames []string) string
 
 	conf := warewulfconf.Get()
 	return path.Join(conf.Paths.OverlayProvisiondir(), nodeName, name)
+}
+
+type OverlayDoesNotExist struct {
+	Name string
+}
+
+func (e *OverlayDoesNotExist) Error() string {
+	return fmt.Sprintf("overlay %s does not exist", e.Name)
+}
+
+// Creates a site overlay from an existing overlay and give back
+// OverlayDoesNotExist error if distribution overlay doesn't exsist
+func CreateSiteOverlay(name string) (err error) {
+	controller := warewulfconf.Get()
+	distroPath := path.Join(controller.Paths.WWOverlaydir, name)
+	sitePath := path.Join(controller.Paths.Sysconfdir, "overlays", name)
+	if !util.IsDir(distroPath) {
+		return &OverlayDoesNotExist{Name: name}
+	}
+	err = copy.DirCopy(distroPath, sitePath, copy.Content, true)
+	return err
 }
