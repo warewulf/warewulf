@@ -283,7 +283,7 @@ func BuildOverlayIndir(nodeData node.Node, overlayNames []string, outputDir stri
 				wwlog.Debug("Created directory in overlay: %s", location)
 
 			} else if filepath.Ext(location) == ".ww" {
-				tstruct, err := InitStruct(nodeData)
+				tstruct, err := InitStruct(overlayName, nodeData)
 				if err != nil {
 					return fmt.Errorf("failed to initial data for %s: %w", nodeData.Id(), err)
 				}

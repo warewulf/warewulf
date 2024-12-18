@@ -57,12 +57,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			nodeConf = node.NewNode(hostName)
 			nodeConf.ClusterName = hostName
 		}
-		tstruct, err := overlay.InitStruct(nodeConf)
+		tstruct, err := overlay.InitStruct(overlayName, nodeConf)
 		if err != nil {
 			return err
 		}
 		tstruct.BuildSource = overlayFile
-		tstruct.Overlay = overlayName
 		buffer, backupFile, writeFile, err := overlay.RenderTemplateFile(overlayFile, tstruct)
 		if err != nil {
 			return err

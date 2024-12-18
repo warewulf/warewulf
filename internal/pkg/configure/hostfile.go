@@ -21,7 +21,7 @@ func Hostfile() (err error) {
 	}
 
 	hostname, _ := os.Hostname()
-	tstruct, err := overlay.InitStruct(node.NewNode(hostname))
+	tstruct, err := overlay.InitStruct(overlay_.Name(), node.NewNode(hostname))
 	if err != nil {
 		return err
 	}
