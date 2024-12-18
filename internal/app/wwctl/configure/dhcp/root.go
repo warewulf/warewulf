@@ -15,9 +15,6 @@ var (
 	}
 )
 
-func init() {
-}
-
 // GetRootCommand returns the root cobra.Command for the application.
 func GetCommand() *cobra.Command {
 	return baseCmd

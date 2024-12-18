@@ -59,7 +59,7 @@ func init() {
 	rootCmd.AddCommand(ssh.GetCommand())
 	rootCmd.AddCommand(genconf.GetCommand())
 	rootCmd.AddCommand(clean.GetCommand())
-	rootCmd.AddCommand(upgrade.Command)
+	rootCmd.AddCommand(upgrade.GetCommand())
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

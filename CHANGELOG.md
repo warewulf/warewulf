@@ -80,6 +80,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Merge Kernel.Override into Kernel.Version to specify the desired kernel version or path. #1556
 - Provide detected kernel version to overlay templates. #1556
 - Bump github.com/containers/storage from 1.53.0 to 1.55.2 #1316, #892
+- Process nodes.conf path dynamically from config. #1595, #1596, #1569
 
 ### Removed
 

@@ -17,9 +17,6 @@ var (
 	keyTypes []string
 )
 
-func init() {
-}
-
 // GetRootCommand returns the root cobra.Command for the application.
 func GetCommand() *cobra.Command {
 	baseCmd.PersistentFlags().StringArrayVarP(&keyTypes, "keytypes", "t", []string{}, "ssh key types to be created")

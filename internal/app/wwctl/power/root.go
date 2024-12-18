@@ -20,8 +20,6 @@ var (
 )
 
 func init() {
-	//	baseCmd.PersistentFlags().BoolVarP(&test, "test", "t", false, "Testing.")
-
 	baseCmd.AddCommand(powercycle.GetCommand())
 	baseCmd.AddCommand(poweroff.GetCommand())
 	baseCmd.AddCommand(poweron.GetCommand())
