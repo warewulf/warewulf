@@ -2,40 +2,43 @@
 Warewulf Overlays
 =================
 
-At this point we have discussed how Warewulf is designed to
-scalably provision and manage thousands of cluster nodes by utilizing
-identical stateless boot images. And there-in lies a problem to
-solve. If these boot images are completely identical, then how do we
-configure things like hostnames? IP addresses? Or any other node
-specific custom configurations?
+Warewulf is designed to scalably provision and manage thousands of cluster nodes by utilizing
+identical stateless boot images. But if these boot images are completely identical, then how do we
+configure things like hostnames? IP addresses? Or any other node-specific configurations?
 
-While some of this can be managed by services like DHCP, and other
-bits by configuration management, which can absolutely be done with
-Warewulf and many people choose to do, these are heavy-weight
-solutions to a simple problem to solve.
+Some of configuration can be managed by services like DHCP. You can also use traditional
+configuration management on a provisioned Warewulf cluster node. But these are heavy-weight
+solutions to a simple problem.
 
-Warewulf solves this with overlays and uses overlays in different ways
-through the provisioning process. A node or profile can configure an
-overlay in two different ways:
+Warewulf addresses cluster node configuration with its **overlay** system. Overlays are collections
+of files and templates that are rendered and built per-node and then applied over the container
+image during the provisioning process.
 
-* An overlay can be configured to run during boot as part of the
-  ``wwinit`` process. These overlays are called **system overlays**.
-* An overlay can be configured to run periodically while the system is
-  running. These overlays are called **runtime overlays**.
+System and runtime overlays
+===========================
 
-The default profile has both a **wwinit** and a **runtime** overlay
-configured.
-Warewulf distinguishes between **distribution** shipped with warewulf
-and **site** overlays which are created by the end user. A **site** takes
-always precedence over a **distribution** overlay with the sane name.
-Any modification of a **distribution** overlay with ``wwctl`` will create
-a **site** overlay with the same name.
-The **site** overlays are place normally under ``/etc/warewulf/overlays``.
+A node or profile can configure an overlay in two different ways:
 
-Overlays are compiled for each compute node individually.
+* An overlay can be configured to apply only during boot as part of the ``wwinit`` process. These
+  overlays are called **system overlays**.
+* An overlay can be configured to also apply periodically while the system is running. These overlays
+  are called **runtime overlays**.
+
+Distribution and site overlays
+==============================
+
+Warewulf also distinguishes between **distribution** overlays, which are included with Warewulf, and
+**site** overlays, which are created or added locally. A site overlay always takes precedence over a
+distribution overlay with the same name.  Any modification of a distribution overlay with ``wwctl``
+actually makes changes to an automatically-generated **site** overlay cloned from the distribution
+overlay.
+
+Site overlays are often stored at ``/var/lib/warewulf/overlays/``. Distribution overlays are often
+stored at ``/usr/share/warewulf/overlays/``. But these paths are dependent on compilation,
+distribution, packaging, and configuration settings.
 
 Provided distribution overlays
-==============================
+------------------------------
 
 These overlays are provided as part of Warewulf.
 
@@ -151,18 +154,14 @@ The following services get configuration files via the host overlay:
   ``exports.ww``
 * the dhcpd service is configured with ``dhcpd.conf.ww``
 
-Combining Overlays
-==================
+Combining and overriding overlays
+=================================
 
-We recommended not changing the provided overlays. Rather,
-add the changed files to a new overlay and combine them in the
-configuration. This is possible as the configuration fields for the
-system and runtime overlays are lists and can contain several
-overlays.  As an example for this, we will overwrite the
-``/etc/issue`` file from the "issue" overlay.  For this we will
-create a new overlay called "welcome" and import the file ``/etc/issue``
-from the host to it. This overlay is then combined with the existing
-overlays.
+Multiple overlays can be applied to a single node, and overlays from multiple profiles are appended
+together. The configuration fields for the system and runtime overlays are lists and can contain
+several overlays. As an example for this, we will overwrite the ``/etc/issue`` file from the "issue"
+overlay. For this we will create a new overlay called "welcome" and import the file ``/etc/issue``
+from the host to it. This overlay is then combined with the existing overlays.
 
 .. code-block:: console
 
@@ -197,8 +196,8 @@ attributes.
    will be dropped, so ``/etc/hosts.ww`` will end up being
    ``/etc/hosts``.
 
-Using Overlays
-==============
+Managing overlays
+=================
 
 Warewulf includes a command group for manipulating overlays (``wwctl
 overlay``). With this you can add, edit, remove, change ownership,
