@@ -5,7 +5,6 @@ import (
 	"os"
 	"path"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/util"
@@ -13,7 +12,6 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	var overlayPath string
 	var fileName string
 
 	overlayName := args[0]
@@ -22,30 +20,22 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fileName = args[1]
 	}
 
-	overlayPath, isSite := overlay.GetOverlay(overlayName)
-	if !isSite {
+	overlay_ := overlay.GetOverlay(overlayName)
+	if overlay_.IsDistributionOverlay() {
 		return fmt.Errorf("distribution overlay can't deleted")
-
 	}
-	if overlayPath == "" {
-		return fmt.Errorf("overlay name did not resolve: '%s'", overlayName)
-	}
-
-	if !util.IsDir(overlayPath) {
+	if !overlay_.Exists() {
 		return fmt.Errorf("overlay does not exist: %s", overlayName)
 	}
 
 	if fileName == "" {
-		if overlayName == "wwinit" || overlayName == "host" {
-			return errors.New("refusing to delete the Warewulf overlay")
-		}
 		if Force {
-			err := os.RemoveAll(overlayPath)
+			err := os.RemoveAll(overlay_.Path())
 			if err != nil {
 				return fmt.Errorf("failed deleting overlay: %w", err)
 			}
 		} else {
-			err := os.Remove(overlayPath)
+			err := os.Remove(overlay_.Path())
 			if err != nil {
 				return fmt.Errorf("failed deleting overlay: %w", err)
 			}
@@ -53,28 +43,28 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Info("Deleted overlay: %s\n", args[0])
 
 	} else {
-		removePath := path.Join(overlayPath, fileName)
+		removePath := overlay_.File(fileName)
 
-		if !util.IsDir(removePath) && !util.IsFile(removePath) {
+		if !(util.IsDir(removePath) || util.IsFile(removePath)) {
 			return fmt.Errorf("path to remove doesn't exist in overlay: %s", removePath)
 		}
 
 		if Force {
 			err := os.RemoveAll(removePath)
 			if err != nil {
-				return fmt.Errorf("failed deleting file from overlay: %s:%s", overlayName, overlayPath)
+				return fmt.Errorf("failed deleting file from overlay: %s:%s", overlayName, removePath)
 			}
 		} else {
 			err := os.Remove(removePath)
 			if err != nil {
-				return fmt.Errorf("failed deleting overlay: %s:%s", overlayName, overlayPath)
+				return fmt.Errorf("failed deleting overlay: %s:%s", overlayName, removePath)
 			}
 		}
 
 		if Parents {
 			// Cleanup any empty directories left behind...
 			i := path.Dir(removePath)
-			for i != overlayPath {
+			for i != overlay_.Rootfs() {
 				wwlog.Debug("Evaluating directory to remove: %s", i)
 				err := os.Remove(i)
 				if err != nil {

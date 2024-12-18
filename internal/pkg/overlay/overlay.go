@@ -14,9 +14,9 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
-	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
-
 	"github.com/pkg/errors"
+
+	"github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -25,6 +25,82 @@ import (
 var (
 	ErrDoesNotExist = errors.New("overlay does not exist")
 )
+
+// Overlay represents an overlay directory path.
+type Overlay string
+
+// Name returns the base name of the overlay directory.
+//
+// This is derived from the full path of the overlay.
+func (this Overlay) Name() string {
+	return path.Base(this.Path())
+}
+
+// Path returns the string representation of the overlay path.
+//
+// This method allows the Overlay type to be easily converted back to its
+// underlying string representation.
+func (this Overlay) Path() string {
+	return string(this)
+}
+
+// Rootfs returns the path to the root filesystem (rootfs) within the overlay.
+//
+// If the "rootfs" directory exists inside the overlay path, it returns the
+// path to the "rootfs" directory. Otherwise, it checks if the overlay path
+// itself is a directory and returns that. If neither exists, it defaults to
+// returning the "rootfs" path.
+func (this Overlay) Rootfs() string {
+	rootfs := path.Join(this.Path(), "rootfs")
+	if util.IsDir(rootfs) {
+		return rootfs
+	} else if util.IsDir(this.Path()) {
+		return this.Path()
+	} else {
+		return rootfs
+	}
+}
+
+// File constructs a full path to a file within the overlay's root filesystem.
+//
+// Parameters:
+//   - filePath: The relative path of the file within the overlay.
+//
+// Returns:
+//   - The full path to the specified file in the overlay's rootfs.
+func (this Overlay) File(filePath string) string {
+	return path.Join(this.Rootfs(), filePath)
+}
+
+// Exists checks whether the overlay path exists and is a directory.
+//
+// Returns:
+//   - true if the overlay path exists and is a directory; false otherwise.
+func (this Overlay) Exists() bool {
+	return util.IsDir(this.Path())
+}
+
+// IsSiteOverlay determines whether the overlay is a site overlay.
+//
+// A site overlay is identified by its parent directory matching the configured
+// site overlay directory path.
+//
+// Returns:
+//   - true if the overlay is a site overlay; false otherwise.
+func (this Overlay) IsSiteOverlay() bool {
+	return path.Dir(this.Path()) == config.Get().Paths.SiteOverlaydir()
+}
+
+// IsDistributionOverlay determines whether the overlay is a distribution overlay.
+//
+// A distribution overlay is identified by its parent directory matching the configured
+// distribution overlay directory path.
+//
+// Returns:
+//   - true if the overlay is a distribution overlay; false otherwise.
+func (this Overlay) IsDistributionOverlay() bool {
+	return path.Dir(this.Path()) == config.Get().Paths.DistributionOverlaydir()
+}
 
 /*
 Build all overlays for a node
@@ -71,7 +147,7 @@ func BuildHostOverlay() error {
 	hostname, _ := os.Hostname()
 	hostData := node.NewNode(hostname)
 	wwlog.Info("Building overlay for %s: host", hostname)
-	hostdir, _ := GetOverlay("host")
+	hostdir := GetOverlay("host").Rootfs()
 	stats, err := os.Stat(hostdir)
 	if err != nil {
 		return fmt.Errorf("could not build host overlay: %w ", err)
@@ -87,7 +163,7 @@ Get all overlays present in warewulf
 */
 func FindOverlays() (overlayList []string, err error) {
 	dotfilecheck, _ := regexp.Compile(`^\..*`)
-	controller := warewulfconf.Get()
+	controller := config.Get()
 	var files []fs.DirEntry
 	if distfiles, err := os.ReadDir(controller.Paths.DistributionOverlaydir()); err == nil {
 		files = append(files, distfiles...)
@@ -177,7 +253,7 @@ func BuildOverlayIndir(nodeData node.Node, overlayNames []string, outputDir stri
 	wwlog.Verbose("Processing node/overlay: %s/%s", nodeData.Id(), strings.Join(overlayNames, "-"))
 	for _, overlayName := range overlayNames {
 		wwlog.Verbose("Building overlay %s for node %s in %s", overlayName, nodeData.Id(), outputDir)
-		overlaySourceDir, _ := GetOverlay(overlayName)
+		overlaySourceDir := GetOverlay(overlayName).Rootfs()
 		wwlog.Debug("Changing directory to OverlayDir: %s", overlaySourceDir)
 		err := os.Chdir(overlaySourceDir)
 		if err != nil {
@@ -416,7 +492,7 @@ func ScanLines(data []byte, atEOF bool) (advance int, token []byte, err error) {
 
 // Get all the files as a string slice for a given overlay
 func OverlayGetFiles(name string) (files []string, err error) {
-	baseDir, _ := GetOverlay(name)
+	baseDir := GetOverlay(name).Rootfs()
 	if !util.IsDir(baseDir) {
 		err = fmt.Errorf("overlay %s doesn't exist", name)
 		return

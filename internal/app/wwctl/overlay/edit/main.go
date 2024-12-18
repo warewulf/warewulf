@@ -36,19 +36,19 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	overlayName := args[0]
 	fileName := args[1]
 	createdSite := false
-	overlaySourceDir, isSite := overlay.GetOverlay(overlayName)
-	if !isSite {
-		err = overlay.CloneSiteOverlay(overlayName)
+	overlay_ := overlay.GetOverlay(overlayName)
+	if !overlay_.IsSiteOverlay() {
+		overlay_, err = overlay_.CloneSiteOverlay()
 		if err != nil {
 			return err
 		}
 		createdSite = true
 	}
-	if !util.IsDir(overlaySourceDir) {
+	if !overlay_.Exists() {
 		return fmt.Errorf("overlay does not exist: %s", overlayName)
 	}
 
-	overlayFile := path.Join(overlaySourceDir, fileName)
+	overlayFile := overlay_.File(fileName)
 	wwlog.Debug("Will edit overlay file: %s", overlayFile)
 
 	overlayFileDir := path.Dir(overlayFile)
@@ -107,7 +107,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		if startTime == fileInfo.ModTime() {
 			wwlog.Debug("No change detected. Not updating overlay.")
 			if createdSite {
-				os.Remove(overlaySourceDir)
+				os.Remove(overlay_.Path())
 			}
 			return nil
 		}

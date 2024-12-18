@@ -15,7 +15,6 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var dest string
-	var overlaySource string
 
 	overlayName := args[0]
 	source := args[1]
@@ -27,22 +26,22 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	wwlog.Verbose("Copying '%s' into overlay '%s:%s'", source, overlayName, dest)
-	overlaySource, _ = overlay.GetOverlay(overlayName)
+	overlay_ := overlay.GetOverlay(overlayName)
 
-	if !util.IsDir(overlaySource) {
+	if !overlay_.Exists() {
 		return fmt.Errorf("overlay does not exist: %s", overlayName)
 	}
 
-	if util.IsDir(path.Join(overlaySource, dest)) {
+	if util.IsDir(overlay_.File(dest)) {
 		dest = path.Join(dest, path.Base(source))
 	}
 
-	if util.IsFile(path.Join(overlaySource, dest)) {
+	if util.IsFile(overlay_.File(dest)) {
 		return fmt.Errorf("a file with that name already exists in the overlay: %s", overlayName)
 	}
 
 	if CreateDirs {
-		parent := filepath.Dir(path.Join(overlaySource, dest))
+		parent := filepath.Dir(overlay_.File(dest))
 		if _, err := os.Stat(parent); os.IsNotExist(err) {
 			wwlog.Debug("Create dir: %s", parent)
 			srcInfo, err := os.Stat(source)
@@ -56,7 +55,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	err := util.CopyFile(source, path.Join(overlaySource, dest))
+	err := util.CopyFile(source, overlay_.File(dest))
 	if err != nil {
 		return fmt.Errorf("could not copy file into overlay: %w", err)
 	}

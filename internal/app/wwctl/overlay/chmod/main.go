@@ -3,7 +3,6 @@ package chmod
 import (
 	"fmt"
 	"os"
-	"path"
 	"strconv"
 
 	"github.com/spf13/cobra"
@@ -12,8 +11,6 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	var overlaySourceDir string
-
 	overlayName := args[0]
 	fileName := args[1]
 
@@ -21,19 +18,19 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("could not convert requested mode: %s", err)
 	}
-	err = overlay.CloneSiteOverlay(overlayName)
-	if err != nil {
-		return err
+	overlay_ := overlay.GetOverlay(overlayName)
+	if !overlay_.IsSiteOverlay() {
+		overlay_, err = overlay_.CloneSiteOverlay()
+		if err != nil {
+			return err
+		}
 	}
-	overlaySourceDir, _ = overlay.GetOverlay(overlayName)
-
-	if !util.IsDir(overlaySourceDir) {
+	if !overlay_.Exists() {
 		return fmt.Errorf("overlay does not exist: %s", overlayName)
 	}
 
-	overlayFile := path.Join(overlaySourceDir, fileName)
-
-	if !util.IsFile(overlayFile) && !util.IsDir(overlayFile) {
+	overlayFile := overlay_.File(fileName)
+	if !(util.IsFile(overlayFile) || util.IsDir(overlayFile)) {
 		return fmt.Errorf("file does not exist within overlay: %s:%s", overlayName, fileName)
 	}
 
