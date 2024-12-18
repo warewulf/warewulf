@@ -79,11 +79,11 @@ func (paths BuildConfig) OciBlobCachedir() string {
 	return path.Join(paths.Cachedir, "warewulf")
 }
 
-func (paths BuildConfig) SiteOverlaySourcedir() string {
+func (paths BuildConfig) SiteOverlaydir() string {
 	return paths.WWOverlaydir
 }
 
-func (paths BuildConfig) DistributionOverlaySourcedir() string {
+func (paths BuildConfig) DistributionOverlaydir() string {
 	return path.Join(paths.Datadir, "warewulf", "overlays")
 }
 

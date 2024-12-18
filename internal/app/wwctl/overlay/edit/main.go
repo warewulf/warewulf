@@ -36,9 +36,9 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	overlayName := args[0]
 	fileName := args[1]
 	createdSite := false
-	overlaySourceDir, isSite := overlay.OverlaySourceDir(overlayName)
+	overlaySourceDir, isSite := overlay.GetOverlay(overlayName)
 	if !isSite {
-		err = overlay.CreateSiteOverlay(overlayName)
+		err = overlay.CloneSiteOverlay(overlayName)
 		if err != nil {
 			return err
 		}

@@ -71,7 +71,7 @@ func BuildHostOverlay() error {
 	hostname, _ := os.Hostname()
 	hostData := node.NewNode(hostname)
 	wwlog.Info("Building overlay for %s: host", hostname)
-	hostdir, _ := OverlaySourceDir("host")
+	hostdir, _ := GetOverlay("host")
 	stats, err := os.Stat(hostdir)
 	if err != nil {
 		return fmt.Errorf("could not build host overlay: %w ", err)
@@ -89,10 +89,10 @@ func FindOverlays() (overlayList []string, err error) {
 	dotfilecheck, _ := regexp.Compile(`^\..*`)
 	controller := warewulfconf.Get()
 	var files []fs.DirEntry
-	if distfiles, err := os.ReadDir(controller.Paths.DistributionOverlaySourcedir()); err == nil {
+	if distfiles, err := os.ReadDir(controller.Paths.DistributionOverlaydir()); err == nil {
 		files = append(files, distfiles...)
 	}
-	if sitefiles, err := os.ReadDir(path.Join(controller.Paths.SiteOverlaySourcedir())); err == nil {
+	if sitefiles, err := os.ReadDir(path.Join(controller.Paths.SiteOverlaydir())); err == nil {
 		files = append(files, sitefiles...)
 	}
 	for _, file := range files {
@@ -105,21 +105,6 @@ func FindOverlays() (overlayList []string, err error) {
 	}
 
 	return overlayList, nil
-}
-
-/*
-Creates an empty overlay
-*/
-func OverlayInit(overlayName string) error {
-	controller := warewulfconf.Get()
-	overlayPath := path.Join(controller.Paths.Sysconfdir, "overlays", overlayName)
-	if util.IsDir(overlayPath) {
-		return fmt.Errorf("overlay already exists: %s", overlayName)
-	}
-
-	err := os.MkdirAll(path.Join(overlayPath, "rootfs"), 0755)
-
-	return err
 }
 
 /*
@@ -192,7 +177,7 @@ func BuildOverlayIndir(nodeData node.Node, overlayNames []string, outputDir stri
 	wwlog.Verbose("Processing node/overlay: %s/%s", nodeData.Id(), strings.Join(overlayNames, "-"))
 	for _, overlayName := range overlayNames {
 		wwlog.Verbose("Building overlay %s for node %s in %s", overlayName, nodeData.Id(), outputDir)
-		overlaySourceDir, _ := OverlaySourceDir(overlayName)
+		overlaySourceDir, _ := GetOverlay(overlayName)
 		wwlog.Debug("Changing directory to OverlayDir: %s", overlaySourceDir)
 		err := os.Chdir(overlaySourceDir)
 		if err != nil {
@@ -431,7 +416,7 @@ func ScanLines(data []byte, atEOF bool) (advance int, token []byte, err error) {
 
 // Get all the files as a string slice for a given overlay
 func OverlayGetFiles(name string) (files []string, err error) {
-	baseDir, _ := OverlaySourceDir(name)
+	baseDir, _ := GetOverlay(name)
 	if !util.IsDir(baseDir) {
 		err = fmt.Errorf("overlay %s doesn't exist", name)
 		return

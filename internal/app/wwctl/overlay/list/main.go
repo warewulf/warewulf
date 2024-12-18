@@ -32,7 +32,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	for o := range overlays {
 		name := overlays[o]
-		path, isSite := overlay.OverlaySourceDir(name)
+		path, isSite := overlay.GetOverlay(name)
 
 		if util.IsDir(path) {
 			files := util.FindFiles(path)

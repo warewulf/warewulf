@@ -27,7 +27,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	wwlog.Verbose("Copying '%s' into overlay '%s:%s'", source, overlayName, dest)
-	overlaySource, _ = overlay.OverlaySourceDir(overlayName)
+	overlaySource, _ = overlay.GetOverlay(overlayName)
 
 	if !util.IsDir(overlaySource) {
 		return fmt.Errorf("overlay does not exist: %s", overlayName)

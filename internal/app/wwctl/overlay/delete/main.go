@@ -22,7 +22,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fileName = args[1]
 	}
 
-	overlayPath, isSite := overlay.OverlaySourceDir(overlayName)
+	overlayPath, isSite := overlay.GetOverlay(overlayName)
 	if !isSite {
 		return fmt.Errorf("distribution overlay can't deleted")
 

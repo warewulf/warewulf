@@ -22,7 +22,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	overlayName := args[0]
 	fileName := args[1]
-	overlaySourceDir, _ = overlay.OverlaySourceDir(overlayName)
+	overlaySourceDir, _ = overlay.GetOverlay(overlayName)
 
 	if !util.IsDir(overlaySourceDir) {
 		return fmt.Errorf("overlay dir: %s does not exist", overlaySourceDir)

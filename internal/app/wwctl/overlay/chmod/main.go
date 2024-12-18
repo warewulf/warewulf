@@ -21,11 +21,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("could not convert requested mode: %s", err)
 	}
-	err = overlay.CreateSiteOverlay(overlayName)
+	err = overlay.CloneSiteOverlay(overlayName)
 	if err != nil {
 		return err
 	}
-	overlaySourceDir, _ = overlay.OverlaySourceDir(overlayName)
+	overlaySourceDir, _ = overlay.GetOverlay(overlayName)
 
 	if !util.IsDir(overlaySourceDir) {
 		return fmt.Errorf("overlay does not exist: %s", overlayName)
