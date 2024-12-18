@@ -79,13 +79,13 @@ func CreateSiteOverlay(overlayName string) (overlayPath string, err error) {
 
 // Creates a site overlay from an existing distribution overlay.
 //
-// If the distribution overlay doesn't exist, return an OverlayDoesNotExist error.
+// If the distribution overlay doesn't exist, return an error.
 func CloneSiteOverlay(name string) (err error) {
 	controller := warewulfconf.Get()
 	distroPath := path.Join(controller.Paths.DistributionOverlaydir(), name)
 	sitePath := path.Join(controller.Paths.SiteOverlaydir(), name)
 	if !util.IsDir(distroPath) {
-		return &OverlayDoesNotExist{Name: name}
+		return fmt.Errorf("overlay %s does not exist", name)
 	}
 	err = copy.DirCopy(distroPath, sitePath, copy.Content, true)
 	return err
@@ -119,12 +119,4 @@ func OverlayImage(nodeName string, context string, overlayNames []string) string
 
 	conf := warewulfconf.Get()
 	return path.Join(conf.Paths.OverlayProvisiondir(), nodeName, name)
-}
-
-type OverlayDoesNotExist struct {
-	Name string
-}
-
-func (e *OverlayDoesNotExist) Error() string {
-	return fmt.Sprintf("overlay %s does not exist", e.Name)
 }
