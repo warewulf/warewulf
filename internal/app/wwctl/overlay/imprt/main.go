@@ -13,7 +13,7 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-func CobraRunE(cmd *cobra.Command, args []string) error {
+func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	var dest string
 
 	overlayName := args[0]
@@ -27,7 +27,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	wwlog.Verbose("Copying '%s' into overlay '%s:%s'", source, overlayName, dest)
 	overlay_ := overlay.GetOverlay(overlayName)
-
+	if !overlay_.IsSiteOverlay() {
+		overlay_, err = overlay_.CloneSiteOverlay()
+		if err != nil {
+			return err
+		}
+	}
 	if !overlay_.Exists() {
 		return fmt.Errorf("overlay does not exist: %s", overlayName)
 	}
@@ -42,7 +47,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	if CreateDirs {
 		parent := filepath.Dir(overlay_.File(dest))
-		if _, err := os.Stat(parent); os.IsNotExist(err) {
+		if _, err = os.Stat(parent); os.IsNotExist(err) {
 			wwlog.Debug("Create dir: %s", parent)
 			srcInfo, err := os.Stat(source)
 			if err != nil {
@@ -55,7 +60,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	err := util.CopyFile(source, overlay_.File(dest))
+	err = util.CopyFile(source, overlay_.File(dest))
 	if err != nil {
 		return fmt.Errorf("could not copy file into overlay: %w", err)
 	}
