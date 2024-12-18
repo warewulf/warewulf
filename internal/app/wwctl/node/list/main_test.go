@@ -159,8 +159,8 @@ nodes:
 			stdout: `
 NODE  FIELD     PROFILE  VALUE
 ----  -----     -------  -----
-n01   Comment   default  profilecomment
 n01   Profiles  --       default
+n01   Comment   default  profilecomment
 `,
 			inDb: `nodeprofiles:
   default:
@@ -178,8 +178,8 @@ nodes:
 			stdout: `
 NODE  FIELD     PROFILE     VALUE
 ----  -----     -------     -----
-n01   Comment   SUPERSEDED  nodecomment
 n01   Profiles  --          default
+n01   Comment   SUPERSEDED  nodecomment
 `,
 			inDb: `nodeprofiles:
   default:
@@ -296,7 +296,7 @@ nodes:
 			stdout: `
 NODE NAME  KERNEL VERSION  CONTAINER  OVERLAYS (S/R)
 ---------  --------------  ---------  --------------
-n01        --              --         sop1/nop1,~rop1,rop1,rop2
+n01        --              --         sop1/rop1,rop2,nop1,~rop1
 `,
 			inDb: `nodeprofiles:
   p1:
@@ -322,7 +322,7 @@ nodes:
 NODE  FIELD           PROFILE  VALUE
 ----  -----           -------  -----
 n01   Profiles        --       p1
-n01   RuntimeOverlay  p1+      nop1,~rop1,rop1,rop2
+n01   RuntimeOverlay  p1,n01   rop1,rop2,nop1,~rop1
 n01   SystemOverlay   p1       sop1
 `,
 			inDb: `nodeprofiles:
@@ -349,7 +349,7 @@ nodes:
 NODE  FIELD           PROFILE  VALUE
 ----  -----           -------  -----
 n01   Profiles        --       p1
-n01   RuntimeOverlay  p1+      nop1,rop1,rop2
+n01   RuntimeOverlay  p1,n01   rop1,rop2,nop1
 `,
 			inDb: `nodeprofiles:
   p1:
