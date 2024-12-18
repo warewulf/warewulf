@@ -10,6 +10,7 @@ import (
 
 	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/show"
 	"github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -20,7 +21,7 @@ func Test_hostsOverlay(t *testing.T) {
 	defer env.RemoveAll(t)
 	env.ImportFile(t, "etc/warewulf/warewulf.conf", "warewulf.conf")
 	assert.NoError(t, config.Get().Read(env.GetPath("etc/warewulf/warewulf.conf")))
-	env.ImportFile(t, "etc/warewulf/nodes.conf", "nodes.conf")
+	env.ImportFile(t, node.GetNodesConf("etc"), "nodes.conf")
 	env.ImportFile(t, "var/lib/warewulf/overlays/hosts/rootfs/etc/hosts.ww", "../rootfs/etc/hosts.ww")
 
 	tests := []struct {

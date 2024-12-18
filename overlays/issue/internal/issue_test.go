@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/show"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -13,7 +14,7 @@ import (
 func Test_issueOverlay(t *testing.T) {
 	env := testenv.New(t)
 	defer env.RemoveAll(t)
-	env.ImportFile(t, "etc/warewulf/nodes.conf", "nodes.conf")
+	env.ImportFile(t, node.GetNodesConf("etc"), "nodes.conf")
 	env.ImportFile(t, "var/lib/warewulf/overlays/issue/rootfs/etc/issue.ww", "../rootfs/etc/issue.ww")
 
 	tests := []struct {

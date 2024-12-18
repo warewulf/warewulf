@@ -78,7 +78,7 @@ var getOverlayFileTests = []struct {
 
 func Test_getOverlayFile(t *testing.T) {
 	env := testenv.New(t)
-	env.WriteFile(t, "etc/warewulf/nodes.conf", `
+	env.WriteFile(t, node.GetNodesConf("etc"), `
 nodes:
   node1: {} `)
 	conf := warewulfconf.Get()

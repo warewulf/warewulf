@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -11,7 +12,7 @@ import (
 func Test_Clean(t *testing.T) {
 	wwlog.SetLogLevel(wwlog.DEBUG)
 	env := testenv.New(t)
-	env.WriteFile(t, "etc/warewulf/nodes.conf",
+	env.WriteFile(t, node.GetNodesConf("etc"),
 		`nodeprofiles: {}
 nodes:
   node1: {}
