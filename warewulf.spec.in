@@ -189,30 +189,30 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 
 %dir %{_sharedstatedir}/warewulf
 %dir %{_sharedstatedir}/warewulf/chroots
-%dir %{_sharedstatedir}/warewulf/overlays
-%dir %{_sharedstatedir}/warewulf/overlays/*
-%dir %{_sharedstatedir}/warewulf/overlays/*/rootfs
-%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/NetworkManager/rootfs/*
-%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/debian.interfaces/rootfs/*
-%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/debug/rootfs/*
-%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/fstab/rootfs/*
-%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/host/rootfs/*
-%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/hostname/rootfs/*
-%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/hosts/rootfs/*
-%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/ifcfg/rootfs/*
-%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/ignition/rootfs/*
-%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/issue/rootfs/*
-%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/netplan/rootfs/*
-%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/resolv/rootfs/*
-%attr(700, root, root) %{_sharedstatedir}/warewulf/overlays/ssh.authorized_keys/rootfs/*
-%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/ssh.host_keys/rootfs/*
-%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/syncuser/rootfs/*
-%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/systemd.netname/rootfs/*
-%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/udev.netname/rootfs/*
-%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/wicked/rootfs/*
-%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/wwclient/rootfs/*
-%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/wwinit/rootfs/*
-%attr(-, root, root) %{_sharedstatedir}/warewulf/overlays/localtime/rootfs/*
+%dir %{_datadir}/warewulf/overlays
+%dir %{_datadir}/warewulf/overlays/*
+%dir %{_datadir}/warewulf/overlays/*/rootfs
+%attr(-, root, root) %{_datadir}/warewulf/overlays/NetworkManager/rootfs/*
+%attr(-, root, root) %{_datadir}/warewulf/overlays/debian.interfaces/rootfs/*
+%attr(-, root, root) %{_datadir}/warewulf/overlays/debug/rootfs/*
+%attr(-, root, root) %{_datadir}/warewulf/overlays/fstab/rootfs/*
+%attr(-, root, root) %{_datadir}/warewulf/overlays/host/rootfs/*
+%attr(-, root, root) %{_datadir}/warewulf/overlays/hostname/rootfs/*
+%attr(-, root, root) %{_datadir}/warewulf/overlays/hosts/rootfs/*
+%attr(-, root, root) %{_datadir}/warewulf/overlays/ifcfg/rootfs/*
+%attr(-, root, root) %{_datadir}/warewulf/overlays/ignition/rootfs/*
+%attr(-, root, root) %{_datadir}/warewulf/overlays/issue/rootfs/*
+%attr(-, root, root) %{_datadir}/warewulf/overlays/netplan/rootfs/*
+%attr(-, root, root) %{_datadir}/warewulf/overlays/resolv/rootfs/*
+%attr(700, root, root) %{_datadir}/warewulf/overlays/ssh.authorized_keys/rootfs/*
+%attr(-, root, root) %{_datadir}/warewulf/overlays/ssh.host_keys/rootfs/*
+%attr(-, root, root) %{_datadir}/warewulf/overlays/syncuser/rootfs/*
+%attr(-, root, root) %{_datadir}/warewulf/overlays/systemd.netname/rootfs/*
+%attr(-, root, root) %{_datadir}/warewulf/overlays/udev.netname/rootfs/*
+%attr(-, root, root) %{_datadir}/warewulf/overlays/wicked/rootfs/*
+%attr(-, root, root) %{_datadir}/warewulf/overlays/wwclient/rootfs/*
+%attr(-, root, root) %{_datadir}/warewulf/overlays/wwinit/rootfs/*
+%attr(-, root, root) %{_datadir}/warewulf/overlays/localtime/rootfs/*
 
 %attr(-, root, root) %{_bindir}/wwctl
 %attr(-, root, root) %{_prefix}/lib/firewalld/services/warewulf.xml
