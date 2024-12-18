@@ -37,7 +37,7 @@ func (ipmi *IPMI) getStr() (cmdStr string, err error) {
 	}
 	if !strings.HasPrefix(ipmi.Template, "/") {
 		conf := warewulfconf.Get()
-		ipmi.Template = path.Join(conf.Warewulf.DataStore, "warewulf/bmc", ipmi.Template)
+		ipmi.Template = path.Join(conf.Paths.Datadir, "warewulf/bmc", ipmi.Template)
 	}
 	fbuf, err := os.ReadFile(ipmi.Template)
 	if err != nil {

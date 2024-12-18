@@ -88,12 +88,11 @@ Get all overlays present in warewulf
 func FindOverlays() (overlayList []string, err error) {
 	dotfilecheck, _ := regexp.Compile(`^\..*`)
 	controller := warewulfconf.Get()
-	files, err := os.ReadDir(controller.Paths.WWOverlaydir)
-	if err != nil {
-		return overlayList, fmt.Errorf("could not get list of distribution overlays: %w", err)
+	var files []fs.DirEntry
+	if distfiles, err := os.ReadDir(controller.Paths.DistributionOverlaySourcedir()); err == nil {
+		files = append(files, distfiles...)
 	}
-	sitefiles, err := os.ReadDir(path.Join(controller.Paths.Sysconfdir, "overlays"))
-	if err == nil { // we don't care if there are no site overlays
+	if sitefiles, err := os.ReadDir(path.Join(controller.Paths.SiteOverlaySourcedir())); err == nil {
 		files = append(files, sitefiles...)
 	}
 	for _, file := range files {

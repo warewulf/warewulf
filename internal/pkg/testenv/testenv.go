@@ -30,7 +30,7 @@ type TestEnv struct {
 
 const Sysconfdir = "etc"
 const Bindir = "bin"
-const Datadir = "share"
+const Datadir = "usr/share"
 const Localstatedir = "var/local"
 const Srvdir = "srv"
 const Tftpdir = "srv/tftp"
@@ -66,7 +66,7 @@ func New(t *testing.T) (env *TestEnv) {
 
 	conf.Paths.Sysconfdir = env.GetPath(Sysconfdir)
 	conf.Paths.Bindir = env.GetPath(Bindir)
-	conf.Warewulf.DataStore = env.GetPath(Datadir)
+	conf.Paths.Datadir = env.GetPath(Datadir)
 	conf.Paths.Localstatedir = env.GetPath(Localstatedir)
 	conf.Paths.Srvdir = env.GetPath(Srvdir)
 	conf.TFTP.TftpRoot = env.GetPath(Tftpdir)
@@ -81,7 +81,7 @@ func New(t *testing.T) (env *TestEnv) {
 	for _, confPath := range []string{
 		conf.Paths.Sysconfdir,
 		conf.Paths.Bindir,
-		conf.Warewulf.DataStore,
+		conf.Paths.Datadir,
 		conf.Paths.Localstatedir,
 		conf.Paths.Srvdir,
 		conf.TFTP.TftpRoot,

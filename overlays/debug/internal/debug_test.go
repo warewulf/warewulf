@@ -177,7 +177,6 @@ data from other structures.
 - AutobuildOverlays: true
 - EnableHostOverlay: true
 - Syslog: false
-- DataStore: REMOVED_BY_TEST
 
 
 ### Other nodes

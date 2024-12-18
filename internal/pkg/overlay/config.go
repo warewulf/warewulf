@@ -20,7 +20,7 @@ prefix in the overlay dir if this it exists
 func OverlaySourceDir(overlayName string) (overlaypath string, isSite bool) {
 	controller := warewulfconf.Get()
 	/* Assume using old style overlay dir without rootfs */
-	overlaypath = path.Join(controller.Paths.Sysconfdir, "overlays", overlayName)
+	overlaypath = path.Join(controller.Paths.SiteOverlaySourcedir(), overlayName)
 	if _, err := os.Stat(path.Join(overlaypath, "rootfs")); err == nil {
 		/* rootfs exists, use it. */
 		overlaypath = path.Join(overlaypath, "rootfs")
@@ -28,7 +28,7 @@ func OverlaySourceDir(overlayName string) (overlaypath string, isSite bool) {
 	if _, err := os.Stat(overlaypath); err == nil {
 		return overlaypath, true
 	}
-	overlaypath = path.Join(controller.Paths.WWOverlaydir, overlayName)
+	overlaypath = path.Join(controller.Paths.DistributionOverlaySourcedir(), overlayName)
 	if _, err := os.Stat(path.Join(overlaypath, "rootfs")); err == nil {
 		/* rootfs exists, use it. */
 		overlaypath = path.Join(overlaypath, "rootfs")
@@ -79,8 +79,8 @@ func (e *OverlayDoesNotExist) Error() string {
 // OverlayDoesNotExist error if distribution overlay doesn't exsist
 func CreateSiteOverlay(name string) (err error) {
 	controller := warewulfconf.Get()
-	distroPath := path.Join(controller.Paths.WWOverlaydir, name)
-	sitePath := path.Join(controller.Paths.Sysconfdir, "overlays", name)
+	distroPath := path.Join(controller.Paths.DistributionOverlaySourcedir(), name)
+	sitePath := path.Join(controller.Paths.SiteOverlaySourcedir(), name)
 	if !util.IsDir(distroPath) {
 		return &OverlayDoesNotExist{Name: name}
 	}

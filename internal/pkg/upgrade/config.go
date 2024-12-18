@@ -70,6 +70,14 @@ func (this *WarewulfYaml) Upgrade() (upgraded *config.WarewulfYaml) {
 	if this.WWClient != nil {
 		upgraded.WWClient = this.WWClient.Upgrade()
 	}
+	if this.Warewulf != nil && this.Warewulf.DataStore != "" {
+		if upgraded.Paths == nil {
+			upgraded.Paths = new(config.BuildConfig)
+		}
+		if upgraded.Paths.Datadir == "" {
+			upgraded.Paths.Datadir = this.Warewulf.DataStore
+		}
+	}
 	return upgraded
 }
 
@@ -92,7 +100,6 @@ func (this *WarewulfConf) Upgrade() (upgraded *config.WarewulfConf) {
 	upgraded.AutobuildOverlaysP = this.AutobuildOverlays
 	upgraded.EnableHostOverlayP = this.EnableHostOverlay
 	upgraded.SyslogP = this.Syslog
-	upgraded.DataStore = this.DataStore
 	upgraded.GrubBootP = this.GrubBoot
 	return upgraded
 }
@@ -210,6 +217,7 @@ type BuildConfig struct {
 	Srvdir         string
 	Firewallddir   string
 	Systemddir     string
+	Datadir        string
 	WWOverlaydir   string
 	WWChrootdir    string
 	WWProvisiondir string
@@ -225,6 +233,7 @@ func (this *BuildConfig) Upgrade() (upgraded *config.BuildConfig) {
 	upgraded.Ipxesource = this.Ipxesource
 	upgraded.Srvdir = this.Srvdir
 	upgraded.Firewallddir = this.Firewallddir
+	upgraded.Datadir = this.Datadir
 	upgraded.WWOverlaydir = this.WWOverlaydir
 	upgraded.WWChrootdir = this.WWChrootdir
 	upgraded.WWProvisiondir = this.WWProvisiondir

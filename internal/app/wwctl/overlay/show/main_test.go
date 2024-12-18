@@ -69,10 +69,10 @@ nodes:
       - empty
 `)
 
-	env.WriteFile(t, path.Join(testenv.WWOverlaydir, "testoverlay/email.ww"), overlayEmail)
-	env.WriteFile(t, path.Join(testenv.WWOverlaydir, "testoverlay/overlay.ww"), overlayOverlay)
-	env.WriteFile(t, path.Join(testenv.WWOverlaydir, "dist/foo.ww"), "foo")
-	env.WriteFile(t, path.Join(testenv.Sysconfdir, "overlays/dist/foo.ww"), "foobaar")
+	env.WriteFile(t, "usr/share/warewulf/overlays/testoverlay/email.ww", overlayEmail)
+	env.WriteFile(t, "usr/share/warewulf/overlays/testoverlay/overlay.ww", overlayOverlay)
+	env.WriteFile(t, "usr/share/warewulf/overlays/dist/foo.ww", "foo")
+	env.WriteFile(t, "var/lib/warewulf/overlays/dist/foo.ww", "foobaar")
 	defer env.RemoveAll(t)
 	warewulfd.SetNoDaemon()
 	t.Run("overlay show raw", func(t *testing.T) {

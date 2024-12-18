@@ -117,7 +117,6 @@ data from other structures.
 - AutobuildOverlays: {{ .Warewulf.AutobuildOverlays }}
 - EnableHostOverlay: {{ .Warewulf.EnableHostOverlay }}
 - Syslog: {{ .Warewulf.Syslog }}
-- DataStore: {{ .Warewulf.DataStore }}
 
 
 ### Other nodes

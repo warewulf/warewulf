@@ -406,6 +406,106 @@ container mounts:
     readonly: true
 `,
 	},
+	{
+		name: "v4.6.0",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+netmask: 255.255.252.0
+network: 10.0.0.0
+warewulf:
+  port: 9873
+  secure: false
+  update interval: 60
+  autobuild overlays: true
+  host overlay: true
+  syslog: false
+  datastore: /usr/share
+dhcp:
+  enabled: true
+  range start: 10.0.1.1
+  range end: 10.0.1.255
+  systemd name: dhcpd
+tftp:
+  enabled: true
+  systemd name: tftp
+  ipxe:
+    00:0B: arm64-efi/snponly.efi
+    "00:00": undionly.kpxe
+    "00:07": ipxe-snponly-x86_64.efi
+    "00:09": ipxe-snponly-x86_64.efi
+nfs:
+  enabled: true
+  export paths:
+    - path: /home
+      export options: rw,sync
+      mount options: defaults
+      mount: true
+    - path: /opt
+      export options: ro,sync,no_root_squash
+      mount options: defaults
+      mount: false
+  systemd name: nfs-server
+ssh:
+  key types:
+    - rsa
+    - dsa
+    - ecdsa
+    - ed25519
+container mounts:
+  - source: /etc/resolv.conf
+    dest: /etc/resolv.conf
+    readonly: true
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+netmask: 255.255.252.0
+network: 10.0.0.0
+warewulf:
+  port: 9873
+  secure: false
+  update interval: 60
+  autobuild overlays: true
+  host overlay: true
+  syslog: false
+dhcp:
+  enabled: true
+  range start: 10.0.1.1
+  range end: 10.0.1.255
+  systemd name: dhcpd
+tftp:
+  enabled: true
+  systemd name: tftp
+  ipxe:
+    00:0B: arm64-efi/snponly.efi
+    "00:00": undionly.kpxe
+    "00:07": ipxe-snponly-x86_64.efi
+    "00:09": ipxe-snponly-x86_64.efi
+nfs:
+  enabled: true
+  export paths:
+    - path: /home
+      export options: rw,sync
+      mount options: defaults
+      mount: true
+    - path: /opt
+      export options: ro,sync,no_root_squash
+      mount options: defaults
+      mount: false
+  systemd name: nfs-server
+ssh:
+  key types:
+    - rsa
+    - dsa
+    - ecdsa
+    - ed25519
+container mounts:
+  - source: /etc/resolv.conf
+    dest: /etc/resolv.conf
+    readonly: true
+paths:
+  datadir: /usr/share
+`,
+	},
 }
 
 func Test_UpgradeConfig(t *testing.T) {
