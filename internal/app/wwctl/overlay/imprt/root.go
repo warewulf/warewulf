@@ -1,6 +1,8 @@
 package imprt
 
 import (
+	"runtime"
+
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
 )
@@ -24,11 +26,13 @@ var (
 	}
 	NoOverlayUpdate bool
 	CreateDirs      bool
+	Workers         int
 )
 
 func init() {
 	baseCmd.PersistentFlags().BoolVarP(&NoOverlayUpdate, "noupdate", "n", false, "Don't update overlays")
 	baseCmd.PersistentFlags().BoolVarP(&CreateDirs, "parents", "p", false, "Create any necessary parent directories")
+	baseCmd.PersistentFlags().IntVar(&Workers, "workers", runtime.NumCPU(), "The number of parallel workers building overlays")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

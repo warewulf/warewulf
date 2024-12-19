@@ -66,9 +66,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	defer syscall.Umask(oldMask)
 
 	if len(OverlayNames) > 0 {
-		err = overlay.BuildSpecificOverlays(db, OverlayNames)
+		err = overlay.BuildSpecificOverlays(db, OverlayNames, Workers)
 	} else {
-		err = overlay.BuildAllOverlays(db)
+		err = overlay.BuildAllOverlays(db, Workers)
 	}
 
 	if err != nil {

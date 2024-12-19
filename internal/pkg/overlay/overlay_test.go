@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"runtime"
 	"sort"
 	"testing"
 
@@ -522,7 +523,7 @@ func Test_BuildAllOverlays(t *testing.T) {
 				}
 				nodes = append(nodes, nodeInfo)
 			}
-			err := BuildAllOverlays(nodes)
+			err := BuildAllOverlays(nodes, runtime.NumCPU())
 			assert.NoError(t, err)
 			if tt.createdOverlays == nil {
 				dirName := path.Join(provisionDir, "overlays")
@@ -614,7 +615,7 @@ func Test_BuildSpecificOverlays(t *testing.T) {
 				nodeInfo := node.NewNode(nodeName)
 				nodes = append(nodes, nodeInfo)
 			}
-			err := BuildSpecificOverlays(nodes, tt.overlays)
+			err := BuildSpecificOverlays(nodes, tt.overlays, runtime.NumCPU())
 			if !tt.succeed {
 				assert.Error(t, err)
 			} else {

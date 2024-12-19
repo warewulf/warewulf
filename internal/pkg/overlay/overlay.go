@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
@@ -100,40 +101,76 @@ func (this Overlay) IsDistributionOverlay() bool {
 	return path.Dir(this.Path()) == config.Get().Paths.DistributionOverlaydir()
 }
 
-/*
-Build all overlays for a node
-*/
-func BuildAllOverlays(nodes []node.Node) error {
+func BuildAllOverlays(nodes []node.Node, workerCount int) error {
+	nodeChan := make(chan node.Node, len(nodes))
+	errChan := make(chan error, len(nodes)*2)
+
+	var wg sync.WaitGroup
+	worker := func() {
+		for n := range nodeChan {
+			wwlog.Info("Building system overlays for %s: [%s]", n.Id(), strings.Join(n.SystemOverlay, ", "))
+			if err := BuildOverlay(n, "system", n.SystemOverlay); err != nil {
+				errChan <- fmt.Errorf("could not build system overlays %v for node %s: %w", n.SystemOverlay, n.Id(), err)
+			}
+
+			wwlog.Info("Building runtime overlays for %s: [%s]", n.Id(), strings.Join(n.RuntimeOverlay, ", "))
+			if err := BuildOverlay(n, "runtime", n.RuntimeOverlay); err != nil {
+				errChan <- fmt.Errorf("could not build runtime overlays %v for node %s: %w", n.RuntimeOverlay, n.Id(), err)
+			}
+		}
+		wg.Done()
+	}
+
+	for i := 0; i < workerCount; i++ {
+		wg.Add(1)
+		go worker()
+	}
 	for _, n := range nodes {
+		nodeChan <- n
+	}
+	close(nodeChan)
 
-		sysOverlays := n.SystemOverlay
-		wwlog.Info("Building system overlays for %s: [%s]", n.Id(), strings.Join(sysOverlays, ", "))
-		err := BuildOverlay(n, "system", sysOverlays)
-		if err != nil {
-			return fmt.Errorf("could not build system overlays %v for node %s: %w", sysOverlays, n.Id(), err)
-		}
-		runOverlays := n.RuntimeOverlay
-		wwlog.Info("Building runtime overlays for %s: [%s]", n.Id(), strings.Join(runOverlays, ", "))
-		err = BuildOverlay(n, "runtime", runOverlays)
-		if err != nil {
-			return fmt.Errorf("could not build runtime overlays %v for node %s: %w", runOverlays, n.Id(), err)
-		}
+	wg.Wait()
+	close(errChan)
 
+	for err := range errChan {
+		return err
 	}
 	return nil
 }
 
-// TODO: Add an Overlay Delete for both sourcedir and image
+func BuildSpecificOverlays(nodes []node.Node, overlayNames []string, workerCount int) error {
+	nodeChan := make(chan node.Node, len(nodes))
+	errChan := make(chan error, len(nodes))
 
-func BuildSpecificOverlays(nodes []node.Node, overlayNames []string) error {
-	for _, n := range nodes {
-		wwlog.Info("Building overlay for %s: %v", n, overlayNames)
-		for _, overlayName := range overlayNames {
-			err := BuildOverlay(n, "", []string{overlayName})
-			if err != nil {
-				return fmt.Errorf("could not build overlay %s for node %s: %w", overlayName, n.Id(), err)
+	var wg sync.WaitGroup
+	worker := func() {
+		for n := range nodeChan {
+			wwlog.Info("Building overlay for %s: %v", n, overlayNames)
+			for _, overlayName := range overlayNames {
+				err := BuildOverlay(n, "", []string{overlayName})
+				if err != nil {
+					errChan <- fmt.Errorf("could not build overlay %s for node %s: %w", overlayName, n.Id(), err)
+				}
 			}
 		}
+		wg.Done()
+	}
+
+	for i := 0; i < workerCount; i++ {
+		wg.Add(1)
+		go worker()
+	}
+	for _, n := range nodes {
+		nodeChan <- n
+	}
+	close(nodeChan)
+
+	wg.Wait()
+	close(errChan)
+
+	for err := range errChan {
+		return err
 	}
 	return nil
 }
@@ -177,7 +214,6 @@ func FindOverlays() (overlayList []string, err error) {
 			overlayList = append(overlayList, file.Name())
 		}
 	}
-
 	return overlayList, nil
 }
 

@@ -59,9 +59,9 @@ func getOverlayFile(n node.Node, context string, stage_overlays []string, autobu
 
 	if build {
 		if len(stage_overlays) > 0 {
-			err = overlay.BuildSpecificOverlays([]node.Node{n}, stage_overlays)
+			err = overlay.BuildSpecificOverlays([]node.Node{n}, stage_overlays, 1)
 		} else {
-			err = overlay.BuildAllOverlays([]node.Node{n})
+			err = overlay.BuildAllOverlays([]node.Node{n}, 1)
 		}
 		if err != nil {
 			wwlog.Error("Failed to build overlay: %s, %s, %s\n%s",

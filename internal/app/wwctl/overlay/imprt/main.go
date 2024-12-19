@@ -86,7 +86,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			}
 		}
 
-		return overlay.BuildSpecificOverlays(updateNodes, []string{overlayName})
+		return overlay.BuildSpecificOverlays(updateNodes, []string{overlayName}, Workers)
 	}
 
 	return nil
