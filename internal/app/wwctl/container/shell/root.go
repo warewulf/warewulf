@@ -26,6 +26,7 @@ var (
 	binds    []string
 	nodeName string
 	syncUser bool
+	build    bool
 )
 
 func init() {
@@ -35,6 +36,7 @@ set, uses the same path as source. "ro" binds read-only. "copy" temporarily
 copies the file into the container.`)
 	baseCmd.PersistentFlags().StringVarP(&nodeName, "node", "n", "", "Create a read only view of the container for the given node")
 	baseCmd.PersistentFlags().BoolVar(&syncUser, "syncuser", false, "Synchronize UIDs/GIDs from host to container")
+	baseCmd.PersistentFlags().BoolVar(&build, "build", true, "(Re)build the container image automatically")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

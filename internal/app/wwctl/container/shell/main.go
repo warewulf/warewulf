@@ -44,5 +44,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	cntexec.SetBinds(binds)
 	cntexec.SetNode(nodeName)
 	cntexec.SyncUser = syncUser
+	cntexec.Build = build
+	if cntexec.Build {
+		wwlog.Info("Container image build will be skipped if the shell ends with a non-zero exit code.")
+	}
 	return cntexec.CobraRunE(cmd, allargs)
 }
