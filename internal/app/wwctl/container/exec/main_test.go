@@ -2,15 +2,14 @@ package exec
 
 import (
 	"bytes"
+	"os"
 	"os/exec"
 	"testing"
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
-	"github.com/warewulf/warewulf/internal/pkg/testenv"
-	"path"
-	"strings"
 
+	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
 
@@ -25,7 +24,7 @@ func mockChildCmd(cmd *cobra.Command, args []string) error {
 func Test_Exec(t *testing.T) {
 	env := testenv.New(t)
 	defer env.RemoveAll(t)
-	env.MkdirAll(t, path.Join(testenv.WWChrootdir, "test/rootfs"))
+	env.MkdirAll(t, "/var/lib/warewulf/chroots/test/rootfs")
 	childCommandFunc = mockChildCmd
 	defer func() {
 		childCommandFunc = runChildCmd
@@ -36,40 +35,55 @@ func Test_Exec(t *testing.T) {
 		name   string
 		args   []string
 		stdout string
+		build  bool
 	}{
 		{
 			name:   "plain test",
 			args:   []string{"test", "/bin/true"},
 			stdout: `--loglevel 20 container exec __child test -- /bin/true`,
+			build:  true,
 		},
 		{
 			name:   "test with --bind",
 			args:   []string{"test", "--bind", "/tmp", "/bin/true"},
 			stdout: `--loglevel 20 container exec __child test --bind /tmp -- /bin/true`,
+			build:  true,
 		},
 		{
 			name:   "test with --node",
 			args:   []string{"test", "--node", "node1", "/bin/true"},
 			stdout: `--loglevel 20 container exec __child test --node node1 -- /bin/true`,
+			build:  true,
+		},
+		{
+			name:   "test with --build=false",
+			args:   []string{"test", "--build=false", "/bin/true"},
+			stdout: `--loglevel 20 container exec __child test -- /bin/true`,
+			build:  false,
 		},
 		{
 			name:   "test with --node and --bind",
 			args:   []string{"test", "--bind", "/tmp", "--node", "node1", "/bin/true"},
 			stdout: `--loglevel 20 container exec __child test --bind /tmp --node node1 -- /bin/true`,
+			build:  true,
 		},
 		{
 			name:   "test with complex command",
 			args:   []string{"test", "/bin/bash", "echo 'hello'"},
 			stdout: `--loglevel 20 container exec __child test -- /bin/bash echo 'hello'`,
+			build:  true,
 		},
 	}
 
 	for _, tt := range tests {
-		t.Logf("Running test: %s\n", tt.name)
 		t.Run(tt.name, func(t *testing.T) {
 			defer func() {
 				binds = []string{}
 				nodeName = ""
+				Build = true
+				SyncUser = false
+				os.Remove(env.GetPath("/srv/warewulf/container/test.img"))
+				os.Remove(env.GetPath("/srv/warewulf/container/test.img.gz"))
 			}()
 			cmd := GetCommand()
 			cmd.SetArgs(tt.args)
@@ -77,14 +91,15 @@ func Test_Exec(t *testing.T) {
 			err := bytes.NewBufferString("")
 			cmd.SetOut(out)
 			cmd.SetErr(err)
-			if err := cmd.Execute(); err != nil {
-				t.Errorf("Received error when running command, err: %v", err)
-				t.FailNow()
-			}
-			assert.NotEmpty(t, out.String(), "os.stdout should not be empty")
-			if !strings.Contains(out.String(), tt.stdout) {
-				t.Errorf("Got wrong output, got:\n '%s'\n, but want:\n '%s'\n", out.String(), tt.stdout)
-				t.FailNow()
+			assert.NoError(t, cmd.Execute())
+			assert.NotEmpty(t, out.String())
+			assert.Contains(t, out.String(), tt.stdout)
+			if tt.build {
+				assert.FileExists(t, env.GetPath("/srv/warewulf/container/test.img"))
+				assert.FileExists(t, env.GetPath("/srv/warewulf/container/test.img.gz"))
+			} else {
+				assert.NoFileExists(t, env.GetPath("/srv/warewulf/container/test.img"))
+				assert.NoFileExists(t, env.GetPath("/srv/warewulf/container/test.img.gz"))
 			}
 		})
 	}
