@@ -2,8 +2,6 @@ package config
 
 import (
 	"path"
-
-	"github.com/warewulf/warewulf/internal/pkg/util"
 )
 
 var ConfigFile = "@SYSCONFDIR@/warewulf/warewulf.conf"
@@ -36,7 +34,7 @@ type TFTPConf struct {
 }
 
 func (this TFTPConf) Enabled() bool {
-	return util.BoolP(this.EnabledP)
+	return BoolP(this.EnabledP)
 }
 
 // WarewulfConf adds additional Warewulf-specific configuration to
@@ -52,23 +50,23 @@ type WarewulfConf struct {
 }
 
 func (this WarewulfConf) Secure() bool {
-	return util.BoolP(this.SecureP)
+	return BoolP(this.SecureP)
 }
 
 func (this WarewulfConf) AutobuildOverlays() bool {
-	return util.BoolP(this.AutobuildOverlaysP)
+	return BoolP(this.AutobuildOverlaysP)
 }
 
 func (this WarewulfConf) EnableHostOverlay() bool {
-	return util.BoolP(this.EnableHostOverlayP)
+	return BoolP(this.EnableHostOverlayP)
 }
 
 func (this WarewulfConf) Syslog() bool {
-	return util.BoolP(this.SyslogP)
+	return BoolP(this.SyslogP)
 }
 
 func (this WarewulfConf) GrubBoot() bool {
-	return util.BoolP(this.GrubBootP)
+	return BoolP(this.GrubBootP)
 }
 
 func (paths BuildConfig) NodesConf() string {

@@ -18,10 +18,6 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-func BoolP(p *bool) bool {
-	return p != nil && *p
-}
-
 func FirstError(errs ...error) (err error) {
 	for _, e := range errs {
 		if err == nil {
@@ -136,37 +132,40 @@ func ValidString(pattern string, expr string) bool {
 	return false
 }
 
-// ******************************************************************************
 func FindFiles(path string) []string {
 	var ret []string
 
-	wwlog.Debug("Changing directory to FindFiles path: %s", path)
-	err := os.Chdir(path)
-	if err != nil {
-		wwlog.Warn("Could not chdir() to: %s", path)
-		return ret
-	}
+	wwlog.Debug("Finding files in path: %s", path)
 
-	err = filepath.Walk(".", func(location string, info os.FileInfo, err error) error {
+	err := filepath.Walk(path, func(location string, info os.FileInfo, err error) error {
 		if err != nil {
+			wwlog.Warn("Error walking path %s: %v", location, err)
 			return err
 		}
 
-		if location == "." {
+		// Get the relative path from the base directory
+		relPath, relErr := filepath.Rel(path, location)
+		if relErr != nil {
+			wwlog.Warn("Error computing relative path for %s: %v", location, relErr)
+			return relErr
+		}
+
+		if relPath == "." {
 			return nil
 		}
 
-		if IsDir(location) {
-			wwlog.Debug("FindFiles() found directory: %s", location)
-			ret = append(ret, location+"/")
+		if info.IsDir() {
+			wwlog.Debug("FindFiles() found directory: %s", relPath)
+			ret = append(ret, relPath+"/")
 		} else {
-			wwlog.Debug("FindFiles() found file: %s", location)
-			ret = append(ret, location)
+			wwlog.Debug("FindFiles() found file: %s", relPath)
+			ret = append(ret, relPath)
 		}
 
 		return nil
 	})
 	if err != nil {
+		wwlog.Warn("Error during file walk: %v", err)
 		return ret
 	}
 
