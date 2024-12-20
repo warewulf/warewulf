@@ -183,82 +183,100 @@ func FindFilterFiles(
 	ignorePattern []string,
 	ignore_xdev bool) (ofiles []string, err error) {
 	wwlog.Debug("Finding files: %s include: %s ignore: %s", path, includePattern, ignorePattern)
-	// preprocess patterns to remove leading (and trailing) /, as we are handling relative paths
+
+	// Preprocess patterns to remove leading (and trailing) /, as we are handling relative paths
 	for i, pattern := range ignorePattern {
 		ignorePattern[i] = strings.Trim(pattern, "/")
 	}
-	cwd, err := os.Getwd()
+
+	// Convert the base path to an absolute path
+	absPath, err := filepath.Abs(path)
 	if err != nil {
-		return ofiles, err
+		return ofiles, fmt.Errorf("failed to resolve absolute path: %s: %w", path, err)
 	}
-	defer func() {
-		err = FirstError(err, os.Chdir(cwd))
-	}()
-	err = os.Chdir(path)
-	if err != nil {
-		return ofiles, fmt.Errorf("failed to change path: %s: %w", path, err)
-	}
-	// expand our include list as fspath.Match with /foo/* would catch /foo/baar but
-	// not /foo/baar/sibling
+
+	// Expand the include list
 	var globedInclude []string
 	for _, include := range includePattern {
-		globed, err := filepath.Glob(include)
+		globed, err := filepath.Glob(filepath.Join(absPath, include))
 		if err != nil {
-			return ofiles, err
+			return ofiles, fmt.Errorf("failed to glob pattern %s: %w", include, err)
 		}
 		globedInclude = append(globedInclude, globed...)
 	}
+
+	var dev uint64
 	if ignore_xdev {
 		wwlog.Debug("Ignoring cross-device (xdev) files")
+		pathStat, err := os.Stat(absPath)
+		if err != nil {
+			return ofiles, fmt.Errorf("failed to stat base path: %s: %w", absPath, err)
+		}
+		dev = pathStat.Sys().(*syscall.Stat_t).Dev
 	}
 
-	path_stat, err := os.Stat(".")
-	if err != nil {
-		return ofiles, err
-	}
-
-	dev := path_stat.Sys().(*syscall.Stat_t).Dev
 	for _, inc := range globedInclude {
-		wwlog.Debug("inc %s", inc)
+		wwlog.Debug("Processing include pattern: %s", inc)
 		stat, err := os.Lstat(inc)
 		if err != nil {
-			return ofiles, err
+			return ofiles, fmt.Errorf("failed to stat include: %s: %w", inc, err)
 		}
+
 		if stat.IsDir() {
-			// get the rest of dir
+			// Walk the directory
 			err = filepath.WalkDir(inc, func(location string, info fs.DirEntry, err error) error {
 				if err != nil {
 					return err
 				}
-				if location == "." {
+
+				relPath, relErr := filepath.Rel(absPath, location)
+				if relErr != nil {
+					wwlog.Warn("Error computing relative path for %s: %v", location, relErr)
+					return relErr
+				}
+
+				if relPath == "." {
 					return nil
 				}
+
 				fsInfo, err := info.Info()
 				if err != nil {
 					return err
 				}
+
 				if ignore_xdev && fsInfo.Sys().(*syscall.Stat_t).Dev != dev {
 					wwlog.Debug("Ignored (cross-device): %s", location)
 					return nil
 				}
-				for _, ignored_pat := range ignorePattern {
-					if ignored, _ := filepath.Match(ignored_pat, location); ignored {
-						wwlog.Debug("Ignored %s due to pattern %s", location, ignored_pat)
-						return filepath.SkipDir
+
+				for _, ignoredPattern := range ignorePattern {
+					if ignored, _ := filepath.Match(ignoredPattern, relPath); ignored {
+						wwlog.Debug("Ignored %s due to pattern %s", relPath, ignoredPattern)
+						if info.IsDir() {
+							return filepath.SkipDir
+						}
+						return nil
 					}
 				}
-				ofiles = append(ofiles, location)
+
+				ofiles = append(ofiles, relPath)
 				return nil
 			})
 			if err != nil {
-				return ofiles, err
+				return ofiles, fmt.Errorf("error walking directory %s: %w", inc, err)
 			}
 		} else {
-			ofiles = append(ofiles, inc)
+			// Add the file directly
+			relPath, relErr := filepath.Rel(absPath, inc)
+			if relErr != nil {
+				wwlog.Warn("Error computing relative path for %s: %v", inc, relErr)
+				return ofiles, relErr
+			}
+			ofiles = append(ofiles, relPath)
 		}
 	}
 
-	return ofiles, err
+	return ofiles, nil
 }
 
 // ******************************************************************************
