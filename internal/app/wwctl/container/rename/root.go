@@ -25,7 +25,6 @@ var baseCmd = &cobra.Command{
 var SetBuild bool
 
 func init() {
-	// Nothing to do here
 	baseCmd.PersistentFlags().BoolVarP(&SetBuild, "build", "b", false, "Build container after rename")
 }
 

@@ -7,12 +7,17 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/warewulf/warewulf/internal/pkg/config"
-	libupgrade "github.com/warewulf/warewulf/internal/pkg/upgrade"
+	"github.com/warewulf/warewulf/internal/pkg/upgrade"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 )
 
 var (
-	Command = &cobra.Command{
+	inputPath  string
+	outputPath string
+)
+
+func GetCommand() *cobra.Command {
+	command := &cobra.Command{
 		DisableFlagsInUseLine: true,
 		Use:                   "config [OPTIONS]",
 		Short:                 "Upgrade an existing warewulf.conf",
@@ -20,14 +25,9 @@ var (
 supported by the current version.`,
 		RunE: UpgradeNodesConf,
 	}
-
-	inputPath  string
-	outputPath string
-)
-
-func init() {
-	Command.Flags().StringVarP(&inputPath, "input-path", "i", config.ConfigFile, "Path to a legacy warewulf.conf")
-	Command.Flags().StringVarP(&outputPath, "output-path", "o", config.ConfigFile, "Path to write the upgraded warewulf.conf to")
+	command.Flags().StringVarP(&inputPath, "input-path", "i", config.ConfigFile, "Path to a legacy warewulf.conf")
+	command.Flags().StringVarP(&outputPath, "output-path", "o", config.ConfigFile, "Path to write the upgraded warewulf.conf to")
+	return command
 }
 
 func UpgradeNodesConf(cmd *cobra.Command, args []string) error {
@@ -35,7 +35,7 @@ func UpgradeNodesConf(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	legacy, err := libupgrade.ParseConfig(data)
+	legacy, err := upgrade.ParseConfig(data)
 	if err != nil {
 		return err
 	}

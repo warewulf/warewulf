@@ -14,9 +14,6 @@ var (
 	Zsh bool
 )
 
-func init() {
-}
-
 func GetCommand() *cobra.Command {
 	return baseCmd
 }

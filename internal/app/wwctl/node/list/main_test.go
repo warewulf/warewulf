@@ -2,14 +2,11 @@ package list
 
 import (
 	"bytes"
-	"os"
 	"strings"
 	"testing"
 
-	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
-
 	"github.com/stretchr/testify/assert"
-	"github.com/warewulf/warewulf/internal/pkg/node"
+
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -396,30 +393,14 @@ NODE  FIELD  PROFILE  VALUE
 		},
 	}
 
-	conf_yml := ``
-	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
-	assert.NoError(t, warewulfConfErr)
-	defer os.Remove(tempWarewulfConf.Name())
-	_, warewulfConfErr = tempWarewulfConf.Write([]byte(conf_yml))
-	assert.NoError(t, warewulfConfErr)
-	assert.NoError(t, tempWarewulfConf.Sync())
-	assert.NoError(t, warewulfconf.New().Read(tempWarewulfConf.Name()))
-
-	tempNodeConf, nodesConfErr := os.CreateTemp("", "nodes.conf-")
-	assert.NoError(t, nodesConfErr)
-	defer os.Remove(tempNodeConf.Name())
-	node.ConfigFile = tempNodeConf.Name()
 	warewulfd.SetNoDaemon()
-	for _, tt := range tests {
-		var err error
-		_, err = tempNodeConf.Seek(0, 0)
-		assert.NoError(t, err)
-		assert.NoError(t, tempNodeConf.Truncate(0))
-		_, err = tempNodeConf.Write([]byte(tt.inDb))
-		assert.NoError(t, err)
-		assert.NoError(t, tempNodeConf.Sync())
+	env := testenv.New(t)
+	defer env.RemoveAll(t)
 
+	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			env.WriteFile(t, "etc/warewulf/nodes.conf", tt.inDb)
+
 			baseCmd := GetCommand()
 			baseCmd.SetArgs(tt.args)
 			buf := new(bytes.Buffer)
