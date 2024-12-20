@@ -31,7 +31,7 @@ func ProfileList(ShowOpt *wwapiv1.GetProfileList) (profileList wwapiv1.ProfileLi
 		profileList.Output = append(profileList.Output,
 			fmt.Sprintf("%s:=:%s:=:%s", "PROFILE", "FIELD", "VALUE"))
 		for _, p := range profiles {
-			fields := nodeDB.GetFieldsProfile(p)
+			fields := node.GetFieldList(p)
 			for _, f := range fields {
 				profileList.Output = append(profileList.Output,
 					fmt.Sprintf("%s:=:%s:=:%s", p.Id(), f.Field, f.Value))
