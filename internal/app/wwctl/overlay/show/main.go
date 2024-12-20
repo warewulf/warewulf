@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -18,18 +17,15 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	var overlaySourceDir string
-
 	overlayName := args[0]
 	fileName := args[1]
-	overlaySourceDir = overlay.OverlaySourceDir(overlayName)
 
-	if !util.IsDir(overlaySourceDir) {
-		return fmt.Errorf("overlay dir: %s does not exist", overlaySourceDir)
+	overlay_ := overlay.GetOverlay(overlayName)
+	if !overlay_.Exists() {
+		return fmt.Errorf("overlay does not exist: %s", overlayName)
 	}
 
-	overlayFile := path.Join(overlaySourceDir, fileName)
-
+	overlayFile := overlay_.File(fileName)
 	if !util.IsFile(overlayFile) {
 		return fmt.Errorf("file: %s does not exist within overlay", overlayFile)
 	}
@@ -61,7 +57,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			nodeConf = node.NewNode(hostName)
 			nodeConf.ClusterName = hostName
 		}
-		tstruct, err := overlay.InitStruct(nodeConf)
+		tstruct, err := overlay.InitStruct(overlayName, nodeConf)
 		if err != nil {
 			return err
 		}

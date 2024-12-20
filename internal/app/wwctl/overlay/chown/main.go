@@ -3,7 +3,6 @@ package chown
 import (
 	"fmt"
 	"os"
-	"path"
 	"strconv"
 
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
@@ -13,7 +12,6 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	var overlaySourceDir string
 	var uid int
 	var gid int
 	var err error
@@ -35,15 +33,20 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		gid = -1
 	}
 
-	overlaySourceDir = overlay.OverlaySourceDir(overlayName)
-
-	if !util.IsDir(overlaySourceDir) {
+	overlay_ := overlay.GetOverlay(overlayName)
+	if !overlay_.Exists() {
 		return fmt.Errorf("overlay does not exist: %s", overlayName)
 	}
 
-	overlayFile := path.Join(overlaySourceDir, fileName)
+	if !overlay_.IsSiteOverlay() {
+		overlay_, err = overlay_.CloneSiteOverlay()
+		if err != nil {
+			return err
+		}
+	}
 
-	if !util.IsFile(overlayFile) && !util.IsDir(overlayFile) {
+	overlayFile := overlay_.File(fileName)
+	if !(util.IsFile(overlayFile) || util.IsDir(overlayFile)) {
 		return fmt.Errorf("file does not exist within overlay: %s:%s", overlayName, fileName)
 	}
 

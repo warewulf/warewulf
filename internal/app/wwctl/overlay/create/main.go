@@ -6,6 +6,5 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
-	err = overlay.OverlayInit(args[0])
-	return
+	return overlay.GetSiteOverlay(args[0]).Create()
 }

@@ -1,31 +1,74 @@
 package overlay
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"strings"
 
-	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/containers/storage/drivers/copy"
+
+	"github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-func OverlaySourceTopDir() string {
-	conf := warewulfconf.Get()
-	return conf.Paths.WWOverlaydir
+// GetOverlay returns the filesystem path of an overlay identified by its name,
+// along with a boolean indicating whether the returned overlayPath corresponds
+// to a site-specific overlay.
+func GetOverlay(name string) (overlay Overlay) {
+	overlay = GetSiteOverlay(name)
+	if overlay.Exists() {
+		return overlay
+	}
+	overlay = GetDistributionOverlay(name)
+	if overlay.Exists() {
+		return overlay
+	}
+	return GetSiteOverlay(name)
 }
 
-/*
-Return the path for the base of the overlay, strips rootfs
-prefix in the overlay dir if this it exists
-*/
-func OverlaySourceDir(overlayName string) string {
-	/* Assume using old style overlay dir without rootfs */
-	var overlaypath = path.Join(OverlaySourceTopDir(), overlayName)
-	if _, err := os.Stat(path.Join(overlaypath, "rootfs")); err == nil {
-		/* rootfs exists, use it. */
-		overlaypath = path.Join(overlaypath, "rootfs")
+// GetDistributionOverlay returns the filesystem path of a distribution overlay
+// identified by the given name.
+func GetDistributionOverlay(name string) (overlay Overlay) {
+	return getOverlay(config.Get().Paths.DistributionOverlaydir(), name)
+}
+
+// GetSiteOverlay returns the filesystem path of a site-specific overlay
+// identified by the given name.
+func GetSiteOverlay(name string) (overlay Overlay) {
+	return getOverlay(config.Get().Paths.SiteOverlaydir(), name)
+}
+
+// getOverlay constructs an overlay based on the given overlay directory and
+// overlay name. The overlay does not necessarily exist.
+func getOverlay(overlaydir, name string) (overlay Overlay) {
+	return Overlay(path.Join(overlaydir, name))
+}
+
+// Create creates a new overlay directory for the given overlay
+//
+// Returns an error if the overlay already exists or if directory creation fails.
+func (this Overlay) Create() error {
+	if util.IsDir(this.Path()) {
+		return fmt.Errorf("overlay already exists: %s", this)
 	}
-	return overlaypath
+	return os.MkdirAll(this.Rootfs(), 0755)
+}
+
+// Creates a site overlay from an existing distribution overlay.
+//
+// If the distribution overlay doesn't exist, return an error.
+func (this Overlay) CloneSiteOverlay() (siteOverlay Overlay, err error) {
+	siteOverlay = GetSiteOverlay(this.Name())
+	if !util.IsDir(this.Path()) {
+		return siteOverlay, fmt.Errorf("source overlay does not exist: %s", this.Name())
+	}
+	if siteOverlay.Exists() {
+		return siteOverlay, fmt.Errorf("site overlay already exists: %s", siteOverlay.Name())
+	}
+	err = copy.DirCopy(this.Path(), siteOverlay.Path(), copy.Content, true)
+	return siteOverlay, err
 }
 
 // OverlayImage returns the full path to an overlay image based on the
@@ -54,6 +97,5 @@ func OverlayImage(nodeName string, context string, overlayNames []string) string
 		return ""
 	}
 
-	conf := warewulfconf.Get()
-	return path.Join(conf.Paths.OverlayProvisiondir(), nodeName, name)
+	return path.Join(config.Get().Paths.OverlayProvisiondir(), nodeName, name)
 }

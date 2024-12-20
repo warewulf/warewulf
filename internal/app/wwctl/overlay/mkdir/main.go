@@ -3,33 +3,33 @@ package mkdir
 import (
 	"fmt"
 	"os"
-	"path"
 
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
-	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-func CobraRunE(cmd *cobra.Command, args []string) error {
-	var overlaySourceDir string
-
+func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	overlayName := args[0]
 	dirName := args[1]
 
-	overlaySourceDir = overlay.OverlaySourceDir(overlayName)
+	overlay_ := overlay.GetOverlay(overlayName)
+	if !overlay_.IsSiteOverlay() {
+		overlay_, err = overlay_.CloneSiteOverlay()
+		if err != nil {
+			return err
+		}
+	}
 
-	if !util.IsDir(overlaySourceDir) {
+	if !overlay_.Exists() {
 		return fmt.Errorf("overlay does not exist: %s", overlayName)
 	}
 
-	overlayDir := path.Join(overlaySourceDir, dirName)
-
+	overlayDir := overlay_.File(dirName)
 	wwlog.Debug("Will create directory in overlay: %s:%s", overlayName, dirName)
-
-	err := os.MkdirAll(overlayDir, os.FileMode(PermMode))
+	err = os.MkdirAll(overlayDir, os.FileMode(PermMode))
 	if err != nil {
-		return fmt.Errorf("could not create directory: %s", path.Dir(overlayDir))
+		return fmt.Errorf("could not create directory: %s", overlayDir)
 	}
 
 	return nil

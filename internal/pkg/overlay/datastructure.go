@@ -46,8 +46,9 @@ type TemplateStruct struct {
 /*
 Initialize an TemplateStruct with the given node.NodeInfo
 */
-func InitStruct(nodeData node.Node) (TemplateStruct, error) {
+func InitStruct(overlayName string, nodeData node.Node) (TemplateStruct, error) {
 	var tstruct TemplateStruct
+	tstruct.Overlay = overlayName
 	hostname, _ := os.Hostname()
 	tstruct.BuildHost = hostname
 	controller := warewulfconf.Get()

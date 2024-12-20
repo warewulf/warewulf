@@ -9,18 +9,19 @@ import (
 var ConfigFile = "@SYSCONFDIR@/warewulf/warewulf.conf"
 
 type BuildConfig struct {
-	Bindir         string `default:"@BINDIR@"`
-	Sysconfdir     string `default:"@SYSCONFDIR@"`
-	Localstatedir  string `default:"@LOCALSTATEDIR@"`
-	Cachedir       string `default:"@CACHEDIR@"`
-	Ipxesource     string `default:"@IPXESOURCE@"`
-	Srvdir         string `default:"@SRVDIR@"`
-	Firewallddir   string `default:"@FIREWALLDDIR@"`
-	Systemddir     string `default:"@SYSTEMDDIR@"`
-	WWOverlaydir   string `default:"@WWOVERLAYDIR@"`
-	WWChrootdir    string `default:"@WWCHROOTDIR@"`
-	WWProvisiondir string `default:"@WWPROVISIONDIR@"`
-	WWClientdir    string `default:"@WWCLIENTDIR@"`
+	Bindir         string `yaml:"bindir,omitempty" default:"@BINDIR@"`
+	Sysconfdir     string `yaml:"sysconfdir,omitempty" default:"@SYSCONFDIR@"`
+	Localstatedir  string `yaml:"localstatedir,omitempty" default:"@LOCALSTATEDIR@"`
+	Cachedir       string `yaml:"cachedir,omitempty" default:"@CACHEDIR@"`
+	Ipxesource     string `yaml:"ipxesource,omitempty" default:"@IPXESOURCE@"`
+	Srvdir         string `yaml:"srvdir,omitempty" default:"@SRVDIR@"`
+	Firewallddir   string `yaml:"firewallddir,omitempty" default:"@FIREWALLDDIR@"`
+	Systemddir     string `yaml:"systemddir,omitempty" default:"@SYSTEMDDIR@"`
+	Datadir        string `yaml:"datadir,omitempty" default:"@DATADIR@"`
+	WWOverlaydir   string `yaml:"wwoverlaydir,omitempty" default:"@WWOVERLAYDIR@"`
+	WWChrootdir    string `yaml:"wwchrootdir,omitempty" default:"@WWCHROOTDIR@"`
+	WWProvisiondir string `yaml:"wwprovisiondir,omitempty" default:"@WWPROVISIONDIR@"`
+	WWClientdir    string `yaml:"wwclientdir,omitempty" default:"@WWCLIENTDIR@"`
 }
 
 const Version = "@VERSION@"
@@ -41,14 +42,13 @@ func (this TFTPConf) Enabled() bool {
 // WarewulfConf adds additional Warewulf-specific configuration to
 // BaseConf.
 type WarewulfConf struct {
-	Port               int    `yaml:"port,omitempty" default:"9873"`
-	SecureP            *bool  `yaml:"secure,omitempty" default:"true"`
-	UpdateInterval     int    `yaml:"update interval,omitempty" default:"60"`
-	AutobuildOverlaysP *bool  `yaml:"autobuild overlays,omitempty" default:"true"`
-	EnableHostOverlayP *bool  `yaml:"host overlay,omitempty" default:"true"`
-	SyslogP            *bool  `yaml:"syslog,omitempty" default:"false"`
-	DataStore          string `yaml:"datastore,omitempty" default:"@DATADIR@"`
-	GrubBootP          *bool  `yaml:"grubboot,omitempty" default:"false"`
+	Port               int   `yaml:"port,omitempty" default:"9873"`
+	SecureP            *bool `yaml:"secure,omitempty" default:"true"`
+	UpdateInterval     int   `yaml:"update interval,omitempty" default:"60"`
+	AutobuildOverlaysP *bool `yaml:"autobuild overlays,omitempty" default:"true"`
+	EnableHostOverlayP *bool `yaml:"host overlay,omitempty" default:"true"`
+	SyslogP            *bool `yaml:"syslog,omitempty" default:"false"`
+	GrubBootP          *bool `yaml:"grubboot,omitempty" default:"false"`
 }
 
 func (this WarewulfConf) Secure() bool {
@@ -77,6 +77,14 @@ func (paths BuildConfig) NodesConf() string {
 
 func (paths BuildConfig) OciBlobCachedir() string {
 	return path.Join(paths.Cachedir, "warewulf")
+}
+
+func (paths BuildConfig) SiteOverlaydir() string {
+	return paths.WWOverlaydir
+}
+
+func (paths BuildConfig) DistributionOverlaydir() string {
+	return path.Join(paths.Datadir, "warewulf", "overlays")
 }
 
 func (paths BuildConfig) OverlayProvisiondir() string {

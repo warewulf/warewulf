@@ -2,7 +2,6 @@ package list
 
 import (
 	"bytes"
-	"path"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,7 +13,7 @@ import (
 
 func Test_Overlay_List(t *testing.T) {
 	env := testenv.New(t)
-	env.WriteFile(t, path.Join(testenv.WWOverlaydir, "testoverlay/email.ww"), `
+	env.WriteFile(t, "var/lib/warewulf/overlays/testoverlay/email.ww", `
 {{ if .Tags.email }}eMail: {{ .Tags.email }}{{else}} noMail{{- end }}
 `)
 	defer env.RemoveAll(t)

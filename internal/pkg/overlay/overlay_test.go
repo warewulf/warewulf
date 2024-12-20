@@ -10,9 +10,105 @@ import (
 	"github.com/stretchr/testify/assert"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/testenv"
 
 	"github.com/warewulf/warewulf/internal/pkg/util"
 )
+
+func Test_OverlayMethods(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll(t)
+
+	// Setup test data
+	sitedir := "/var/lib/warewulf/overlays/"
+	distdir := "/usr/share/warewulf/overlays/"
+
+	env.WriteFile(t, path.Join(sitedir, "siteonly/rootfs/testfile"), "a site overlay")
+	env.WriteFile(t, path.Join(distdir, "distonly/rootfs/testfile"), "a distribution overlay")
+	env.WriteFile(t, path.Join(sitedir, "legacy/testfile"), "a legacy overlay")
+	env.WriteFile(t, path.Join(sitedir, "both/rootfs/testfile"), "the site version")
+	env.WriteFile(t, path.Join(distdir, "both/rootfs/testfile"), "the distribution version")
+
+	var tests = map[string]struct {
+		name    string
+		path    string
+		rootfs  string
+		file    string
+		content string
+		exists  bool
+		isSite  bool
+		isDist  bool
+	}{
+		"site overlay": {
+			name:    "siteonly",
+			path:    path.Join(sitedir, "siteonly"),
+			rootfs:  path.Join(sitedir, "siteonly/rootfs"),
+			file:    path.Join(sitedir, "siteonly/rootfs/testfile"),
+			content: "a site overlay",
+			exists:  true,
+			isSite:  true,
+			isDist:  false,
+		},
+		"distribution overlay": {
+			name:    "distonly",
+			path:    path.Join(distdir, "distonly"),
+			rootfs:  path.Join(distdir, "distonly/rootfs"),
+			file:    path.Join(distdir, "distonly/rootfs/testfile"),
+			content: "a distribution overlay",
+			exists:  true,
+			isSite:  false,
+			isDist:  true,
+		},
+		"overlapping overlay": {
+			name:    "both",
+			path:    path.Join(sitedir, "both"),
+			rootfs:  path.Join(sitedir, "both/rootfs"),
+			file:    path.Join(sitedir, "both/rootfs/testfile"),
+			content: "the site version",
+			exists:  true,
+			isSite:  true,
+			isDist:  false,
+		},
+		"legacy overlay": {
+			name:    "legacy",
+			path:    path.Join(sitedir, "legacy"),
+			rootfs:  path.Join(sitedir, "legacy"),
+			file:    path.Join(sitedir, "legacy/testfile"),
+			content: "",
+			exists:  true,
+			isSite:  true,
+			isDist:  false,
+		},
+		"missing overlay": {
+			name:    "absent",
+			path:    path.Join(sitedir, "absent"),
+			rootfs:  path.Join(sitedir, "absent/rootfs"),
+			file:    path.Join(sitedir, "absent/rootfs/testfile"),
+			content: "",
+			exists:  false,
+			isSite:  true,
+			isDist:  false,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			overlay := GetOverlay(tt.name)
+			assert.Equal(t, tt.name, overlay.Name())
+			assert.Equal(t, env.GetPath(tt.path), overlay.Path())
+			assert.Equal(t, env.GetPath(tt.rootfs), overlay.Rootfs())
+			assert.Equal(t, env.GetPath(tt.file), overlay.File("testfile"))
+			if tt.content != "" {
+				buffer, err := os.ReadFile(overlay.File("testfile"))
+				assert.NoError(t, err)
+				assert.Equal(t, tt.content, string(buffer))
+			}
+			assert.Equal(t, tt.exists, overlay.Exists())
+			assert.Equal(t, tt.isSite, overlay.IsSiteOverlay())
+			assert.Equal(t, tt.isDist, overlay.IsDistributionOverlay())
+		})
+	}
+}
 
 var buildOverlayTests = []struct {
 	description string
