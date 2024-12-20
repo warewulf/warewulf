@@ -363,6 +363,7 @@ func AppendLines(fileName string, lines []string) error {
 	Create an archive using cpio
 */
 func CpioCreate(
+	rootdir string,
 	ifiles []string,
 	ofile string,
 	format string,
@@ -371,7 +372,8 @@ func CpioCreate(
 	args := []string{
 		"--quiet",
 		"--create",
-		"-H", format,
+		"--directory", rootdir,
+		"--format", format,
 		"--file=" + ofile}
 
 	args = append(args, cpio_args...)
@@ -509,21 +511,9 @@ func BuildFsImage(
 		return fmt.Errorf("failed to create image directory for %s: %s: %w", name, imagePath, err)
 	}
 	wwlog.Debug("Created image directory for %s: %s", name, imagePath)
-	cwd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	defer func() {
-		err = FirstError(err, os.Chdir(cwd))
-	}()
 
-	err = os.Chdir(rootfsPath)
-	if err != nil {
-		return fmt.Errorf("failed chdir to fs directory for %s: %s: %w", name, rootfsPath, err)
-	}
-	wwlog.Verbose("changed to: %s", rootfsPath)
 	files, err := FindFilterFiles(
-		".",
+		rootfsPath,
 		include,
 		ignore,
 		ignore_xdev)
@@ -532,6 +522,7 @@ func BuildFsImage(
 	}
 
 	err = CpioCreate(
+		rootfsPath,
 		files,
 		imagePath,
 		format,
