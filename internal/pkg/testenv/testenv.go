@@ -140,10 +140,20 @@ func (env *TestEnv) ImportFile(t *testing.T, fileName string, inputFileName stri
 	env.WriteFile(t, fileName, string(buffer))
 }
 
-// CreateFile creates an empty file to fileName, creating any necessary intermediate directories
+// CreateFile creates an empty file at fileName, creating any necessary intermediate directories
 // relative to the test environment.
 func (env *TestEnv) CreateFile(t *testing.T, fileName string) {
 	env.WriteFile(t, fileName, "")
+}
+
+// Symlink creates a symlink at fileName to target, creating any necessary intermediate directories
+// relative to the test environment.
+func (env *TestEnv) Symlink(t *testing.T, target string, fileName string) {
+	dirName := filepath.Dir(fileName)
+	env.MkdirAll(t, dirName)
+
+	err := os.Symlink(target, env.GetPath(fileName))
+	assert.NoError(t, err)
 }
 
 // ReadFile returns the content of fileName as converted to a
@@ -154,6 +164,20 @@ func (env *TestEnv) ReadFile(t *testing.T, fileName string) string {
 	buffer, err := os.ReadFile(env.GetPath(fileName))
 	assert.NoError(t, err)
 	return string(buffer)
+}
+
+// ReadDir returns the content of dirName as converted to a
+// slice of strings.
+//
+// Asserts no errors occur.
+func (env *TestEnv) ReadDir(t *testing.T, dirName string) []string {
+	entries, err := os.ReadDir(env.GetPath(dirName))
+	assert.NoError(t, err)
+	var entryStrs []string
+	for _, entry := range entries {
+		entryStrs = append(entryStrs, entry.Name())
+	}
+	return entryStrs
 }
 
 // RemoveAll deletes the temporary directory, and all its contents,
