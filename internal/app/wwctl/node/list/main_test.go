@@ -604,6 +604,29 @@ nodes:
     - default
 `,
 		},
+		{
+			name:    "single node list with network",
+			args:    []string{"-a"},
+			wantErr: false,
+			stdout: `
+NODE  FIELD                    PROFILE  VALUE
+----  -----                    -------  -----
+n01   Profiles                 --       default
+n01   NetDevs[default].Hwaddr  --       aa:bb:cc:dd:ee:ff
+n01   NetDevs[default].Ipaddr  --       1.1.1.1
+`,
+			inDb: `nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+    network devices:
+      default:
+        hwaddr: aa:bb:cc:dd:ee:ff
+        ipaddr: 1.1.1.1
+`,
+		},
 	}
 
 	warewulfd.SetNoDaemon()
