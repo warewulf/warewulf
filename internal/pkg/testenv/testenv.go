@@ -112,6 +112,14 @@ func (env *TestEnv) MkdirAll(t *testing.T, dirName string) {
 	assert.NoError(t, err)
 }
 
+// Chmod changes the mode of fileName in the test environment, which must already exist.
+//
+// Asserts no errors occur.
+func (env *TestEnv) Chmod(t *testing.T, fileName string, mode int) {
+	err := os.Chmod(env.GetPath(fileName), os.FileMode(mode))
+	assert.NoError(t, err)
+}
+
 // WriteFile writes content to fileName, creating any necessary
 // intermediate directories relative to the test environment.
 //

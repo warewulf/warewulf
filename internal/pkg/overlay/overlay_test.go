@@ -13,6 +13,8 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/util"
+
+	"github.com/cavaliergopher/cpio"
 )
 
 func Test_OverlayMethods(t *testing.T) {
@@ -259,6 +261,7 @@ func Test_BuildOverlay(t *testing.T) {
 		overlays    []string
 		image       string
 		contents    []string
+		perms       []int
 		hasFiles    bool
 	}{
 		{
@@ -292,6 +295,7 @@ func Test_BuildOverlay(t *testing.T) {
 			overlays:    []string{"o1"},
 			image:       "o1.img",
 			contents:    []string{"o1.txt"},
+			perms:       []int{0644},
 		},
 		{
 			description: "if multiple overlays are specified without a node, then the combined overlay is built directly in the overlay directory",
@@ -300,6 +304,7 @@ func Test_BuildOverlay(t *testing.T) {
 			overlays:    []string{"o1", "o2"},
 			image:       "o1-o2.img",
 			contents:    []string{"o1.txt", "o2.txt"},
+			perms:       []int{0644, 0644},
 		},
 		{
 			description: "if a single node overlay is specified, then the overlay is built in a node overlay directory",
@@ -308,6 +313,7 @@ func Test_BuildOverlay(t *testing.T) {
 			overlays:    []string{"o1"},
 			image:       "node1/o1.img",
 			contents:    []string{"o1.txt"},
+			perms:       []int{0644},
 		},
 		{
 			description: "if multiple node overlays are specified, then the combined overlay is built in a node overlay directory",
@@ -316,6 +322,7 @@ func Test_BuildOverlay(t *testing.T) {
 			overlays:    []string{"o1", "o2"},
 			image:       "node1/o1-o2.img",
 			contents:    []string{"o1.txt", "o2.txt"},
+			perms:       []int{0644, 0644},
 		},
 		{
 			description: "if no node system overlays are specified, then context pointed overlay is generated",
@@ -340,6 +347,7 @@ func Test_BuildOverlay(t *testing.T) {
 			overlays:    []string{"o1"},
 			image:       "node1/__SYSTEM__.img",
 			contents:    []string{"o1.txt"},
+			perms:       []int{0644},
 		},
 		{
 			description: "if a single node runtime overlay is specified, then a runtime overlay image is generated in a node overlay directory",
@@ -348,6 +356,7 @@ func Test_BuildOverlay(t *testing.T) {
 			overlays:    []string{"o1"},
 			image:       "node1/__RUNTIME__.img",
 			contents:    []string{"o1.txt"},
+			perms:       []int{0644},
 		},
 		{
 			description: "if multiple node system overlays are specified, then a system overlay image is generated with the contents of both overlays",
@@ -356,6 +365,7 @@ func Test_BuildOverlay(t *testing.T) {
 			overlays:    []string{"o1", "o2"},
 			image:       "node1/__SYSTEM__.img",
 			contents:    []string{"o1.txt", "o2.txt"},
+			perms:       []int{0644, 0644},
 		},
 		{
 			description: "if multiple node runtime overlays are specified, then a runtime overlay image is generated with the contents of both overlays",
@@ -364,45 +374,48 @@ func Test_BuildOverlay(t *testing.T) {
 			overlays:    []string{"o1", "o2"},
 			image:       "node1/__RUNTIME__.img",
 			contents:    []string{"o1.txt", "o2.txt"},
+			perms:       []int{0644, 0644},
+		},
+		{
+			description: "validating altered permissions are retained",
+			nodeName:    "node1",
+			context:     "runtime",
+			overlays:    []string{"o3"},
+			image:       "node1/__RUNTIME__.img",
+			contents:    []string{"subdir", "subdir/o3.txt"},
+			perms:       []int{0700, 0600},
 		},
 	}
 
-	conf := warewulfconf.Get()
-	overlayDir, overlayDirErr := os.MkdirTemp(os.TempDir(), "ww-test-overlay-*")
-	assert.NoError(t, overlayDirErr)
-	defer os.RemoveAll(overlayDir)
-	conf.Paths.WWOverlaydir = overlayDir
-	assert.NoError(t, os.Mkdir(path.Join(overlayDir, "o1"), 0700))
-	{
-		_, err := os.Create(path.Join(overlayDir, "o1", "o1.txt"))
-		assert.NoError(t, err)
-	}
-	assert.NoError(t, os.Mkdir(path.Join(overlayDir, "o2"), 0700))
-	{
-		_, err := os.Create(path.Join(overlayDir, "o2", "o2.txt"))
-		assert.NoError(t, err)
-	}
+	env := testenv.New(t)
+	defer env.RemoveAll(t)
+
+	env.CreateFile(t, "var/lib/warewulf/overlays/o1/rootfs/o1.txt")
+	env.CreateFile(t, "var/lib/warewulf/overlays/o2/rootfs/o2.txt")
+	env.CreateFile(t, "var/lib/warewulf/overlays/o3/rootfs/subdir/o3.txt.ww")
+	env.Chmod(t, "var/lib/warewulf/overlays/o3/rootfs/subdir", 0700)
+	env.Chmod(t, "var/lib/warewulf/overlays/o3/rootfs/subdir/o3.txt.ww", 0600)
 
 	for _, tt := range tests {
 		nodeInfo := node.NewNode(tt.nodeName)
 		t.Run(tt.description, func(t *testing.T) {
-			provisionDir, provisionDirErr := os.MkdirTemp(os.TempDir(), "ww-test-provision-*")
-			assert.NoError(t, provisionDirErr)
-			defer os.RemoveAll(provisionDir)
-			conf.Paths.WWProvisiondir = provisionDir
-
 			err := BuildOverlay(nodeInfo, tt.context, tt.overlays)
 			assert.NoError(t, err)
 			if tt.image != "" {
-				image := path.Join(provisionDir, "overlays", tt.image)
+				image := env.GetPath(path.Join("srv/warewulf/overlays", tt.image))
 				assert.FileExists(t, image)
 				sort.Strings(tt.contents)
-				files, err := util.CpioFiles(image)
+				headers, err := readCpio(image)
 				assert.NoError(t, err)
-				sort.Strings(files)
-				assert.Equal(t, tt.contents, files)
+				assert.Equal(t, len(tt.contents), len(headers))
+				for i, file := range tt.contents {
+					assert.Equal(t, file, headers[file].Name)
+					if len(tt.perms) > i {
+						assert.Equal(t, tt.perms[i], int(headers[file].Mode.Perm()))
+					}
+				}
 			} else {
-				dirName := path.Join(provisionDir, "overlays", tt.nodeName)
+				dirName := env.GetPath(path.Join("srv/warewulf/overlays", tt.nodeName))
 				isEmpty := dirIsEmpty(t, dirName)
 				assert.True(t, isEmpty, "%v should be empty, but isn't", dirName)
 			}
@@ -629,4 +642,25 @@ func dirIsEmpty(t *testing.T, name string) bool {
 	}
 	t.Log(dirnames)
 	return false
+}
+
+func readCpio(name string) (headers map[string]*cpio.Header, err error) {
+	f, err := os.Open(name)
+	if err != nil {
+		return headers, err
+	}
+	defer f.Close()
+
+	reader := cpio.NewReader(f)
+	headers = make(map[string]*cpio.Header)
+	for {
+		header, err := reader.Next()
+		if err == io.EOF {
+			return headers, nil
+		}
+		if err != nil {
+			return headers, err
+		}
+		headers[header.Name] = header
+	}
 }

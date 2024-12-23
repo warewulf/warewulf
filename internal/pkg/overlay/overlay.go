@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"syscall"
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
@@ -250,9 +249,6 @@ func BuildOverlayIndir(nodeData node.Node, overlayNames []string, outputDir stri
 	if !util.ValidString(strings.Join(overlayNames, ""), "^[a-zA-Z0-9-._:]+$") {
 		return fmt.Errorf("overlay names contains illegal characters: %v", overlayNames)
 	}
-
-	// Temporarily set umask to 0000, so directories in the overlay retain permissions
-	defer syscall.Umask(syscall.Umask(0))
 
 	wwlog.Verbose("Processing node/overlays: %s/%s", nodeData.Id(), strings.Join(overlayNames, ","))
 	for _, overlayName := range overlayNames {
