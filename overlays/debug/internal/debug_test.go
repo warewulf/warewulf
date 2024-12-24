@@ -18,9 +18,9 @@ func Test_debugOverlay(t *testing.T) {
 	hostname, _ := os.Hostname()
 
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
-	env.ImportFile(t, "etc/warewulf/nodes.conf", "nodes.conf")
-	env.ImportFile(t, "var/lib/warewulf/overlays/debug/rootfs/warewulf/template-variables.md.ww", "../rootfs/warewulf/template-variables.md.ww")
+	defer env.RemoveAll()
+	env.ImportFile("etc/warewulf/nodes.conf", "nodes.conf")
+	env.ImportFile("var/lib/warewulf/overlays/debug/rootfs/warewulf/template-variables.md.ww", "../rootfs/warewulf/template-variables.md.ww")
 
 	tests := []struct {
 		name string

@@ -12,9 +12,9 @@ import (
 
 func Test_networkmanagerOverlay(t *testing.T) {
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
-	env.ImportFile(t, "var/lib/warewulf/overlays/NetworkManager/rootfs/etc/NetworkManager/conf.d/ww4-unmanaged.ww", "../rootfs/etc/NetworkManager/conf.d/ww4-unmanaged.ww")
-	env.ImportFile(t, "var/lib/warewulf/overlays/NetworkManager/rootfs/etc/NetworkManager/system-connections/ww4-managed.ww", "../rootfs/etc/NetworkManager/system-connections/ww4-managed.ww")
+	defer env.RemoveAll()
+	env.ImportFile("var/lib/warewulf/overlays/NetworkManager/rootfs/etc/NetworkManager/conf.d/ww4-unmanaged.ww", "../rootfs/etc/NetworkManager/conf.d/ww4-unmanaged.ww")
+	env.ImportFile("var/lib/warewulf/overlays/NetworkManager/rootfs/etc/NetworkManager/system-connections/ww4-managed.ww", "../rootfs/etc/NetworkManager/system-connections/ww4-managed.ww")
 
 	tests := []struct {
 		name       string
@@ -50,7 +50,7 @@ func Test_networkmanagerOverlay(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			env.ImportFile(t, "etc/warewulf/nodes.conf", tt.nodes_conf)
+			env.ImportFile("etc/warewulf/nodes.conf", tt.nodes_conf)
 			cmd := show.GetCommand()
 			cmd.SetArgs(tt.args)
 			stdout := bytes.NewBufferString("")

@@ -15,8 +15,8 @@ import (
 
 func Test_Rename(t *testing.T) {
 	env := testenv.New(t)
-	env.WriteFile(t, path.Join(testenv.WWChrootdir, "test-container/rootfs/file"), `test`)
-	defer env.RemoveAll(t)
+	env.WriteFile(path.Join(testenv.WWChrootdir, "test-container/rootfs/file"), `test`)
+	defer env.RemoveAll()
 	warewulfd.SetNoDaemon()
 
 	// first we will verify that there is an existing container

@@ -46,7 +46,7 @@ nodes: {}
 	warewulfd.SetNoDaemon()
 	for _, tt := range tests {
 		env := testenv.New(t)
-		env.WriteFile(t, "etc/warewulf/nodes.conf", ``)
+		env.WriteFile("etc/warewulf/nodes.conf", ``)
 		var err error
 		t.Run(tt.name, func(t *testing.T) {
 			baseCmd := GetCommand()

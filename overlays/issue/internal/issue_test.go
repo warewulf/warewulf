@@ -12,9 +12,9 @@ import (
 
 func Test_issueOverlay(t *testing.T) {
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
-	env.ImportFile(t, "etc/warewulf/nodes.conf", "nodes.conf")
-	env.ImportFile(t, "var/lib/warewulf/overlays/issue/rootfs/etc/issue.ww", "../rootfs/etc/issue.ww")
+	defer env.RemoveAll()
+	env.ImportFile("etc/warewulf/nodes.conf", "nodes.conf")
+	env.ImportFile("var/lib/warewulf/overlays/issue/rootfs/etc/issue.ww", "../rootfs/etc/issue.ww")
 
 	tests := []struct {
 		name string

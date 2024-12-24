@@ -23,7 +23,9 @@ overlay name {{ .Overlay }}
 
 func Test_Overlay_List(t *testing.T) {
 	env := testenv.New(t)
-	env.WriteFile(t, "etc/warewulf/warewulf.conf", `ipaddr: 192.168.0.1/24
+	defer env.RemoveAll()
+
+	env.WriteFile("etc/warewulf/warewulf.conf", `ipaddr: 192.168.0.1/24
 netmask: 255.255.255.0
 network: 192.168.0.0
 warewulf:
@@ -51,7 +53,7 @@ nfs:
     mount options: defaults
     mount: false`)
 
-	env.WriteFile(t, "etc/warewulf/nodes.conf",
+	env.WriteFile("etc/warewulf/nodes.conf",
 		`nodeprofiles:
   default:
     tags:
@@ -69,11 +71,11 @@ nodes:
       - empty
 `)
 
-	env.WriteFile(t, "usr/share/warewulf/overlays/testoverlay/email.ww", overlayEmail)
-	env.WriteFile(t, "usr/share/warewulf/overlays/testoverlay/overlay.ww", overlayOverlay)
-	env.WriteFile(t, "usr/share/warewulf/overlays/dist/foo.ww", "foo")
-	env.WriteFile(t, "var/lib/warewulf/overlays/dist/foo.ww", "foobaar")
-	defer env.RemoveAll(t)
+	env.WriteFile("usr/share/warewulf/overlays/testoverlay/email.ww", overlayEmail)
+	env.WriteFile("usr/share/warewulf/overlays/testoverlay/overlay.ww", overlayOverlay)
+	env.WriteFile("usr/share/warewulf/overlays/dist/foo.ww", "foo")
+	env.WriteFile("var/lib/warewulf/overlays/dist/foo.ww", "foobaar")
+
 	warewulfd.SetNoDaemon()
 	t.Run("overlay show raw", func(t *testing.T) {
 		baseCmd.SetArgs([]string{"testoverlay", "email.ww"})
@@ -151,7 +153,7 @@ func TestShowServerTemplate(t *testing.T) {
 	`
 
 	env := testenv.New(t)
-	env.WriteFile(t, "etc/warewulf/nodes.conf",
+	env.WriteFile("etc/warewulf/nodes.conf",
 		`nodeprofiles:
   default:
     tags:
@@ -167,8 +169,8 @@ nodes:
       - empty
 `)
 
-	env.WriteFile(t, path.Join(testenv.WWOverlaydir, "testoverlay/template.ww"), template)
-	defer env.RemoveAll(t)
+	env.WriteFile(path.Join(testenv.WWOverlaydir, "testoverlay/template.ww"), template)
+	defer env.RemoveAll()
 	warewulfd.SetNoDaemon()
 
 	host, err := os.Hostname()

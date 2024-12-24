@@ -14,8 +14,8 @@ import (
 func Test_Sensors(t *testing.T) {
 	warewulfd.SetNoDaemon()
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
-	env.WriteFile(t, "etc/warewulf/nodes.conf", `
+	defer env.RemoveAll()
+	env.WriteFile("etc/warewulf/nodes.conf", `
 nodeprofiles:
   default:
     ipmi:
@@ -28,7 +28,7 @@ nodes:
     - default
     ipmi:
       ipaddr: 10.10.10.10`)
-	env.ImportFile(t, "usr/share/warewulf/bmc/ipmitool.tmpl", "../../../../../lib/warewulf/bmc/ipmitool.tmpl")
+	env.ImportFile("usr/share/warewulf/bmc/ipmitool.tmpl", "../../../../../lib/warewulf/bmc/ipmitool.tmpl")
 
 	tests := map[string]struct {
 		args     []string

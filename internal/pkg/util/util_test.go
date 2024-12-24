@@ -30,10 +30,10 @@ func Test_FindFiles(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			env := testenv.New(t)
-			defer env.RemoveAll(t)
-			env.MkdirAll(t, "/test")
+			defer env.RemoveAll()
+			env.MkdirAll("/test")
 			for _, file_ := range tt.createFiles {
-				env.CreateFile(t, filepath.Join("/test", file_))
+				env.CreateFile(filepath.Join("/test", file_))
 			}
 
 			files := FindFiles(env.GetPath("/test"))
@@ -80,10 +80,10 @@ func Test_FindFilterFiles(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			env := testenv.New(t)
-			defer env.RemoveAll(t)
-			env.MkdirAll(t, "/test")
+			defer env.RemoveAll()
+			env.MkdirAll("/test")
 			for _, file_ := range tt.createFiles {
-				env.CreateFile(t, filepath.Join("/test", file_))
+				env.CreateFile(filepath.Join("/test", file_))
 			}
 
 			files, err := FindFilterFiles(env.GetPath("/test"), tt.include, tt.exclude, true)

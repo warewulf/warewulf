@@ -12,8 +12,8 @@ import (
 
 func Test_wickedOverlay(t *testing.T) {
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
-	env.ImportFile(t, "var/lib/warewulf/overlays/debian.interfaces/rootfs/etc/network/interfaces.d/default.ww", "../rootfs/etc/network/interfaces.d/default.ww")
+	defer env.RemoveAll()
+	env.ImportFile("var/lib/warewulf/overlays/debian.interfaces/rootfs/etc/network/interfaces.d/default.ww", "../rootfs/etc/network/interfaces.d/default.ww")
 
 	tests := []struct {
 		name       string
@@ -31,7 +31,7 @@ func Test_wickedOverlay(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			env.ImportFile(t, "etc/warewulf/nodes.conf", tt.nodes_conf)
+			env.ImportFile("etc/warewulf/nodes.conf", tt.nodes_conf)
 			cmd := show.GetCommand()
 			cmd.SetArgs(tt.args)
 			stdout := bytes.NewBufferString("")

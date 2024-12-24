@@ -12,11 +12,11 @@ import (
 
 func Test_wwinitOverlay(t *testing.T) {
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
-	env.ImportFile(t, "etc/warewulf/warewulf.conf", "warewulf.conf")
-	env.ImportFile(t, "etc/warewulf/nodes.conf", "nodes.conf")
-	env.ImportFile(t, "var/lib/warewulf/overlays/wwinit/rootfs/etc/warewulf/warewulf.conf.ww", "../rootfs/etc/warewulf/warewulf.conf.ww")
-	env.ImportFile(t, "var/lib/warewulf/overlays/wwinit/rootfs/warewulf/config.ww", "../rootfs/warewulf/config.ww")
+	defer env.RemoveAll()
+	env.ImportFile("etc/warewulf/warewulf.conf", "warewulf.conf")
+	env.ImportFile("etc/warewulf/nodes.conf", "nodes.conf")
+	env.ImportFile("var/lib/warewulf/overlays/wwinit/rootfs/etc/warewulf/warewulf.conf.ww", "../rootfs/etc/warewulf/warewulf.conf.ww")
+	env.ImportFile("var/lib/warewulf/overlays/wwinit/rootfs/warewulf/config.ww", "../rootfs/warewulf/config.ww")
 
 	tests := []struct {
 		name string

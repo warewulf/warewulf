@@ -85,11 +85,11 @@ container2  /boot/vmlinuz-5.14.0-427.31.1.el9_4.aarch64+debug        5.14.0-427.
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			env := testenv.New(t)
-			defer env.RemoveAll(t)
+			defer env.RemoveAll()
 			for container, files := range tt.files {
 				rootfs := filepath.Join(filepath.Join("/var/lib/warewulf/chroots", container), "rootfs")
 				for _, file := range files {
-					env.CreateFile(t, filepath.Join(rootfs, file))
+					env.CreateFile(filepath.Join(rootfs, file))
 				}
 			}
 			buf := new(bytes.Buffer)

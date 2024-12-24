@@ -9,14 +9,14 @@ import (
 
 func Test_Clean(t *testing.T) {
 	env := testenv.New(t)
-	env.WriteFile(t, "etc/warewulf/nodes.conf",
+	env.WriteFile("etc/warewulf/nodes.conf",
 		`nodeprofiles: {}
 nodes:
   node1: {}
 `)
-	env.WriteFile(t, "srv/warewulf/overlays/node1/__SYSTEM__.img", "Fake System")
-	env.WriteFile(t, "srv/warewulf/overlays/node2/__SYSTEM__.img", "Fake System")
-	env.WriteFile(t, "var/cache/warewulf/test", "Nothing to see here")
+	env.WriteFile("srv/warewulf/overlays/node1/__SYSTEM__.img", "Fake System")
+	env.WriteFile("srv/warewulf/overlays/node2/__SYSTEM__.img", "Fake System")
+	env.WriteFile("var/cache/warewulf/test", "Nothing to see here")
 	baseCmd := GetCommand()
 	err := baseCmd.Execute()
 	assert.NoError(t, err)

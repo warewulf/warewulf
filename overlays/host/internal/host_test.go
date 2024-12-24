@@ -16,14 +16,14 @@ import (
 func Test_hostOverlay(t *testing.T) {
 	hostname, _ := os.Hostname()
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
-	env.ImportFile(t, "etc/warewulf/nodes.conf", "nodes.conf")
-	env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/dhcp/dhcpd.conf.ww", "../rootfs/etc/dhcp/dhcpd.conf.ww")
-	env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/dnsmasq.d/ww4-hosts.conf.ww", "../rootfs/etc/dnsmasq.d/ww4-hosts.conf.ww")
-	env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/exports.ww", "../rootfs/etc/exports.ww")
-	env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/hosts.ww", "../rootfs/etc/hosts.ww")
-	env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/profile.d/ssh_setup.csh.ww", "../rootfs/etc/profile.d/ssh_setup.csh.ww")
-	env.ImportFile(t, "var/lib/warewulf/overlays/host/rootfs/etc/profile.d/ssh_setup.sh.ww", "../rootfs/etc/profile.d/ssh_setup.sh.ww")
+	defer env.RemoveAll()
+	env.ImportFile("etc/warewulf/nodes.conf", "nodes.conf")
+	env.ImportFile("var/lib/warewulf/overlays/host/rootfs/etc/dhcp/dhcpd.conf.ww", "../rootfs/etc/dhcp/dhcpd.conf.ww")
+	env.ImportFile("var/lib/warewulf/overlays/host/rootfs/etc/dnsmasq.d/ww4-hosts.conf.ww", "../rootfs/etc/dnsmasq.d/ww4-hosts.conf.ww")
+	env.ImportFile("var/lib/warewulf/overlays/host/rootfs/etc/exports.ww", "../rootfs/etc/exports.ww")
+	env.ImportFile("var/lib/warewulf/overlays/host/rootfs/etc/hosts.ww", "../rootfs/etc/hosts.ww")
+	env.ImportFile("var/lib/warewulf/overlays/host/rootfs/etc/profile.d/ssh_setup.csh.ww", "../rootfs/etc/profile.d/ssh_setup.csh.ww")
+	env.ImportFile("var/lib/warewulf/overlays/host/rootfs/etc/profile.d/ssh_setup.sh.ww", "../rootfs/etc/profile.d/ssh_setup.sh.ww")
 
 	tests := []struct {
 		name   string
@@ -85,7 +85,7 @@ func Test_hostOverlay(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.conf != "" {
-				env.ImportFile(t, "etc/warewulf/warewulf.conf", tt.conf)
+				env.ImportFile("etc/warewulf/warewulf.conf", tt.conf)
 				assert.NoError(t, config.Get().Read(env.GetPath("etc/warewulf/warewulf.conf")))
 			}
 			cmd := show.GetCommand()

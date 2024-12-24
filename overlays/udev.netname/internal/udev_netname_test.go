@@ -12,9 +12,9 @@ import (
 
 func Test_udev_netnameOverlay(t *testing.T) {
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
-	env.ImportFile(t, "etc/warewulf/nodes.conf", "nodes.conf")
-	env.ImportFile(t, "var/lib/warewulf/overlays/udev.netname/rootfs/etc/udev/rules.d/70-persistent-net.rules.ww", "../rootfs/etc/udev/rules.d/70-persistent-net.rules.ww")
+	defer env.RemoveAll()
+	env.ImportFile("etc/warewulf/nodes.conf", "nodes.conf")
+	env.ImportFile("var/lib/warewulf/overlays/udev.netname/rootfs/etc/udev/rules.d/70-persistent-net.rules.ww", "../rootfs/etc/udev/rules.d/70-persistent-net.rules.ww")
 
 	tests := []struct {
 		name string

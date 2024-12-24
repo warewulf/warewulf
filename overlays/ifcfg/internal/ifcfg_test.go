@@ -12,10 +12,10 @@ import (
 
 func Test_ifcfgOverlay(t *testing.T) {
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
-	env.ImportFile(t, "var/lib/warewulf/overlays/ifcfg/rootfs/etc/sysconfig/network-scripts/ifcfg.ww", "../rootfs/etc/sysconfig/network-scripts/ifcfg.ww")
-	env.ImportFile(t, "var/lib/warewulf/overlays/ifcfg/rootfs/etc/sysconfig/network-scripts/route.ww", "../rootfs/etc/sysconfig/network-scripts/route.ww")
-	env.ImportFile(t, "var/lib/warewulf/overlays/ifcfg/rootfs/etc/sysconfig/network.ww", "../rootfs/etc/sysconfig/network.ww")
+	defer env.RemoveAll()
+	env.ImportFile("var/lib/warewulf/overlays/ifcfg/rootfs/etc/sysconfig/network-scripts/ifcfg.ww", "../rootfs/etc/sysconfig/network-scripts/ifcfg.ww")
+	env.ImportFile("var/lib/warewulf/overlays/ifcfg/rootfs/etc/sysconfig/network-scripts/route.ww", "../rootfs/etc/sysconfig/network-scripts/route.ww")
+	env.ImportFile("var/lib/warewulf/overlays/ifcfg/rootfs/etc/sysconfig/network.ww", "../rootfs/etc/sysconfig/network.ww")
 
 	tests := []struct {
 		name       string
@@ -51,7 +51,7 @@ func Test_ifcfgOverlay(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			env.ImportFile(t, "etc/warewulf/nodes.conf", tt.nodes_conf)
+			env.ImportFile("etc/warewulf/nodes.conf", tt.nodes_conf)
 			cmd := show.GetCommand()
 			cmd.SetArgs(tt.args)
 			stdout := bytes.NewBufferString("")

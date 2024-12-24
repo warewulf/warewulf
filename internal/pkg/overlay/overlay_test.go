@@ -20,17 +20,17 @@ import (
 
 func Test_OverlayMethods(t *testing.T) {
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
+	defer env.RemoveAll()
 
 	// Setup test data
 	sitedir := "/var/lib/warewulf/overlays/"
 	distdir := "/usr/share/warewulf/overlays/"
 
-	env.WriteFile(t, path.Join(sitedir, "siteonly/rootfs/testfile"), "a site overlay")
-	env.WriteFile(t, path.Join(distdir, "distonly/rootfs/testfile"), "a distribution overlay")
-	env.WriteFile(t, path.Join(sitedir, "legacy/testfile"), "a legacy overlay")
-	env.WriteFile(t, path.Join(sitedir, "both/rootfs/testfile"), "the site version")
-	env.WriteFile(t, path.Join(distdir, "both/rootfs/testfile"), "the distribution version")
+	env.WriteFile(path.Join(sitedir, "siteonly/rootfs/testfile"), "a site overlay")
+	env.WriteFile(path.Join(distdir, "distonly/rootfs/testfile"), "a distribution overlay")
+	env.WriteFile(path.Join(sitedir, "legacy/testfile"), "a legacy overlay")
+	env.WriteFile(path.Join(sitedir, "both/rootfs/testfile"), "the site version")
+	env.WriteFile(path.Join(distdir, "both/rootfs/testfile"), "the distribution version")
 
 	var tests = map[string]struct {
 		name    string
@@ -215,19 +215,19 @@ T3
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			env := testenv.New(t)
-			defer env.RemoveAll(t)
+			defer env.RemoveAll()
 
 			for fileName, content := range tt.overlayFiles {
-				env.WriteFile(t, fileName, content)
+				env.WriteFile(fileName, content)
 			}
 			for _, dirName := range tt.overlayDirs {
-				env.MkdirAll(t, dirName)
+				env.MkdirAll(dirName)
 			}
 			for linkName, target := range tt.overlaySymlinks {
-				env.Symlink(t, target, linkName)
+				env.Symlink(target, linkName)
 			}
 
-			env.MkdirAll(t, tt.outputDir)
+			env.MkdirAll(tt.outputDir)
 
 			assert.NoError(t, BuildOverlayIndir(tt.node, []node.Node{tt.node}, tt.overlays, env.GetPath(tt.outputDir)))
 			dirFiles := tt.outputDirs
@@ -238,9 +238,9 @@ T3
 				dirFiles = append(dirFiles, outputFile)
 			}
 			sort.Strings(dirFiles)
-			assert.Equal(t, dirFiles, env.ReadDir(t, tt.outputDir))
+			assert.Equal(t, dirFiles, env.ReadDir(tt.outputDir))
 			for fileName, content := range tt.outputFiles {
-				assert.Equal(t, content, env.ReadFile(t, path.Join(tt.outputDir, fileName)))
+				assert.Equal(t, content, env.ReadFile(path.Join(tt.outputDir, fileName)))
 			}
 			for _, dirName := range tt.outputDirs {
 				assert.True(t, util.IsDir(env.GetPath(path.Join(tt.outputDir, dirName))), fmt.Sprintf("%s is not a directory", dirName))
@@ -389,13 +389,13 @@ func Test_BuildOverlay(t *testing.T) {
 	}
 
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
+	defer env.RemoveAll()
 
-	env.CreateFile(t, "var/lib/warewulf/overlays/o1/rootfs/o1.txt")
-	env.CreateFile(t, "var/lib/warewulf/overlays/o2/rootfs/o2.txt")
-	env.CreateFile(t, "var/lib/warewulf/overlays/o3/rootfs/subdir/o3.txt.ww")
-	env.Chmod(t, "var/lib/warewulf/overlays/o3/rootfs/subdir", 0700)
-	env.Chmod(t, "var/lib/warewulf/overlays/o3/rootfs/subdir/o3.txt.ww", 0600)
+	env.CreateFile("var/lib/warewulf/overlays/o1/rootfs/o1.txt")
+	env.CreateFile("var/lib/warewulf/overlays/o2/rootfs/o2.txt")
+	env.CreateFile("var/lib/warewulf/overlays/o3/rootfs/subdir/o3.txt.ww")
+	env.Chmod("var/lib/warewulf/overlays/o3/rootfs/subdir", 0700)
+	env.Chmod("var/lib/warewulf/overlays/o3/rootfs/subdir/o3.txt.ww", 0600)
 
 	for _, tt := range tests {
 		nodeInfo := node.NewNode(tt.nodeName)
