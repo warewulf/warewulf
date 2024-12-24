@@ -18,18 +18,21 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("could not open node configuration: %s", err)
 	}
 
-	db, err := nodeDB.FindAllNodes()
+	allNodes, err := nodeDB.FindAllNodes()
 	if err != nil {
 		return fmt.Errorf("could not get node list: %s", err)
 	}
 
+	var filteredNodes []node.Node
 	if len(args) > 0 {
 		args = hostlist.Expand(args)
-		db = node.FilterNodeListByName(db, args)
+		filteredNodes = node.FilterNodeListByName(allNodes, args)
 
-		if len(db) < len(args) {
+		if len(filteredNodes) < len(args) {
 			return errors.New("failed to find nodes")
 		}
+	} else {
+		filteredNodes = allNodes
 	}
 
 	// NOTE: this is to keep backward compatible
@@ -49,26 +52,25 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 
 		if len(args) > 0 {
-			if len(db) != 1 {
+			if len(filteredNodes) != 1 {
 				return errors.New("must specify one node to build overlay")
 			}
 
-			for _, node := range db {
-				return overlay.BuildOverlayIndir(node, OverlayNames, OverlayDir)
+			for _, node := range filteredNodes {
+				return overlay.BuildOverlayIndir(node, allNodes, OverlayNames, OverlayDir)
 			}
 		} else {
 			return errors.New("must specify a node to build overlay")
 		}
-
 	}
 
 	oldMask := syscall.Umask(007)
 	defer syscall.Umask(oldMask)
 
 	if len(OverlayNames) > 0 {
-		err = overlay.BuildSpecificOverlays(db, OverlayNames, Workers)
+		err = overlay.BuildSpecificOverlays(filteredNodes, allNodes, OverlayNames, Workers)
 	} else {
-		err = overlay.BuildAllOverlays(db, Workers)
+		err = overlay.BuildAllOverlays(filteredNodes, allNodes, Workers)
 	}
 
 	if err != nil {

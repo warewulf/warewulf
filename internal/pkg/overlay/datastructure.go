@@ -46,16 +46,12 @@ type TemplateStruct struct {
 /*
 Initialize an TemplateStruct with the given node.NodeInfo
 */
-func InitStruct(overlayName string, nodeData node.Node) (TemplateStruct, error) {
+func InitStruct(overlayName string, nodeData node.Node, allNodes []node.Node) (TemplateStruct, error) {
 	var tstruct TemplateStruct
 	tstruct.Overlay = overlayName
 	hostname, _ := os.Hostname()
 	tstruct.BuildHost = hostname
 	controller := warewulfconf.Get()
-	nodeDB, err := node.New()
-	if err != nil {
-		return tstruct, err
-	}
 	tstruct.ThisNode = &nodeData
 	if tstruct.ThisNode.Kernel == nil {
 		tstruct.ThisNode.Kernel = new(node.KernelConf)
@@ -75,10 +71,6 @@ func InitStruct(overlayName string, nodeData node.Node) (TemplateStruct, error) 
 	tstruct.Ipaddr6 = controller.Ipaddr6
 	tstruct.Netmask = controller.Netmask
 	tstruct.Network = controller.Network
-	allNodes, err := nodeDB.FindAllNodes()
-	if err != nil {
-		return tstruct, err
-	}
 	// init some convenience vars
 	tstruct.Id = nodeData.Id()
 	tstruct.Hostname = nodeData.Id()
@@ -92,14 +84,11 @@ func InitStruct(overlayName string, nodeData node.Node) (TemplateStruct, error) 
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 	dec := gob.NewDecoder(&buf)
-	err = enc.Encode(nodeData)
-	if err != nil {
+	if err := enc.Encode(nodeData); err != nil {
 		return tstruct, err
 	}
-	err = dec.Decode(&tstruct)
-	if err != nil {
+	if err := dec.Decode(&tstruct); err != nil {
 		return tstruct, err
 	}
 	return tstruct, nil
-
 }

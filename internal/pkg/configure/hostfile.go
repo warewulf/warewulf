@@ -20,8 +20,18 @@ func Hostfile() (err error) {
 		return fmt.Errorf("'the overlay template '/etc/hosts.ww' does not exists in 'host' overlay")
 	}
 
+	var allNodes []node.Node
+	if nodeDB, err := node.New(); err != nil {
+		return err
+	} else {
+		allNodes, err = nodeDB.FindAllNodes()
+		if err != nil {
+			return err
+		}
+	}
+
 	hostname, _ := os.Hostname()
-	tstruct, err := overlay.InitStruct(overlay_.Name(), node.NewNode(hostname))
+	tstruct, err := overlay.InitStruct(overlay_.Name(), node.NewNode(hostname), allNodes)
 	if err != nil {
 		return err
 	}

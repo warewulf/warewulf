@@ -101,7 +101,7 @@ func (this Overlay) IsDistributionOverlay() bool {
 	return path.Dir(this.Path()) == config.Get().Paths.DistributionOverlaydir()
 }
 
-func BuildAllOverlays(nodes []node.Node, workerCount int) error {
+func BuildAllOverlays(nodes []node.Node, allNodes []node.Node, workerCount int) error {
 	nodeChan := make(chan node.Node, len(nodes))
 	errChan := make(chan error, len(nodes)*2)
 
@@ -109,12 +109,12 @@ func BuildAllOverlays(nodes []node.Node, workerCount int) error {
 	worker := func() {
 		for n := range nodeChan {
 			wwlog.Info("Building system overlays for %s: [%s]", n.Id(), strings.Join(n.SystemOverlay, ", "))
-			if err := BuildOverlay(n, "system", n.SystemOverlay); err != nil {
+			if err := BuildOverlay(n, allNodes, "system", n.SystemOverlay); err != nil {
 				errChan <- fmt.Errorf("could not build system overlays %v for node %s: %w", n.SystemOverlay, n.Id(), err)
 			}
 
 			wwlog.Info("Building runtime overlays for %s: [%s]", n.Id(), strings.Join(n.RuntimeOverlay, ", "))
-			if err := BuildOverlay(n, "runtime", n.RuntimeOverlay); err != nil {
+			if err := BuildOverlay(n, allNodes, "runtime", n.RuntimeOverlay); err != nil {
 				errChan <- fmt.Errorf("could not build runtime overlays %v for node %s: %w", n.RuntimeOverlay, n.Id(), err)
 			}
 		}
@@ -139,7 +139,7 @@ func BuildAllOverlays(nodes []node.Node, workerCount int) error {
 	return nil
 }
 
-func BuildSpecificOverlays(nodes []node.Node, overlayNames []string, workerCount int) error {
+func BuildSpecificOverlays(nodes []node.Node, allNodes []node.Node, overlayNames []string, workerCount int) error {
 	nodeChan := make(chan node.Node, len(nodes))
 	errChan := make(chan error, len(nodes))
 
@@ -148,7 +148,7 @@ func BuildSpecificOverlays(nodes []node.Node, overlayNames []string, workerCount
 		for n := range nodeChan {
 			wwlog.Info("Building overlay for %s: %v", n, overlayNames)
 			for _, overlayName := range overlayNames {
-				err := BuildOverlay(n, "", []string{overlayName})
+				err := BuildOverlay(n, allNodes, "", []string{overlayName})
 				if err != nil {
 					errChan <- fmt.Errorf("could not build overlay %s for node %s: %w", overlayName, n.Id(), err)
 				}
@@ -190,7 +190,16 @@ func BuildHostOverlay() error {
 	if !(stats.Mode() == os.FileMode(0750|os.ModeDir) || stats.Mode() == os.FileMode(0700|os.ModeDir)) {
 		wwlog.SecWarn("Permissions of host overlay dir %s are %s (750 is considered as secure)", hostdir, stats.Mode())
 	}
-	return BuildOverlayIndir(hostData, []string{"host"}, "/")
+	registry, err := node.New()
+	if err != nil {
+		return err
+	}
+	var allNodes []node.Node
+	allNodes, err = registry.FindAllNodes()
+	if err != nil {
+		return err
+	}
+	return BuildOverlayIndir(hostData, allNodes, []string{"host"}, "/")
 }
 
 /*
@@ -220,7 +229,7 @@ func FindOverlays() (overlayList []string, err error) {
 /*
 Build the given overlays for a node and create a Image for them
 */
-func BuildOverlay(nodeConf node.Node, context string, overlayNames []string) error {
+func BuildOverlay(nodeConf node.Node, allNodes []node.Node, context string, overlayNames []string) error {
 	if len(overlayNames) == 0 && context == "" {
 		return nil
 	}
@@ -245,7 +254,7 @@ func BuildOverlay(nodeConf node.Node, context string, overlayNames []string) err
 
 	wwlog.Debug("Created temporary directory for %s: %s", name, buildDir)
 
-	err = BuildOverlayIndir(nodeConf, overlayNames, buildDir)
+	err = BuildOverlayIndir(nodeConf, allNodes, overlayNames, buildDir)
 	if err != nil {
 		return fmt.Errorf("failed to generate files for %s: %w", name, err)
 	}
@@ -274,7 +283,7 @@ func init() {
 }
 
 // Build the given overlays for a node in the given directory.
-func BuildOverlayIndir(nodeData node.Node, overlayNames []string, outputDir string) error {
+func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []string, outputDir string) error {
 	if len(overlayNames) == 0 {
 		return nil
 	}
@@ -323,7 +332,7 @@ func BuildOverlayIndir(nodeData node.Node, overlayNames []string, outputDir stri
 			} else if filepath.Ext(walkPath) == ".ww" {
 				originalOutputPath := outputPath
 				outputPath := strings.TrimSuffix(outputPath, ".ww")
-				tstruct, err := InitStruct(overlayName, nodeData)
+				tstruct, err := InitStruct(overlayName, nodeData, allNodes)
 				if err != nil {
 					return fmt.Errorf("failed to initial data for %s: %w", nodeData.Id(), err)
 				}

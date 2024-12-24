@@ -97,17 +97,17 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			return fmt.Errorf("could not open node configuration: %s", err)
 		}
 
-		nodes, err := nodeDB.FindAllNodes()
+		allNodes, err := nodeDB.FindAllNodes()
 		if err != nil {
 			return fmt.Errorf("could not get node list: %s", err)
 		}
-		nodes = node.FilterNodeListByName(nodes, []string{nodename})
-		if len(nodes) != 1 {
+		filteredNodes := node.FilterNodeListByName(allNodes, []string{nodename})
+		if len(filteredNodes) != 1 {
 			return fmt.Errorf("no single node idendified with %s", nodename)
 		}
-		overlays := nodes[0].SystemOverlay
-		overlays = append(overlays, nodes[0].RuntimeOverlay...)
-		err = overlay.BuildOverlayIndir(nodes[0], overlays, path.Join(runDir, "nodeoverlay"))
+		overlays := filteredNodes[0].SystemOverlay
+		overlays = append(overlays, filteredNodes[0].RuntimeOverlay...)
+		err = overlay.BuildOverlayIndir(filteredNodes[0], allNodes, overlays, path.Join(runDir, "nodeoverlay"))
 		if err != nil {
 			return fmt.Errorf("could not build overlay: %s", err)
 		}
