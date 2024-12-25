@@ -113,7 +113,7 @@ func (db syncDB) checkConflicts() error {
 
 		for nameInHost, hostIds := range db {
 			if hostIds.HostID == containerIds.ContainerID {
-				wwlog.Warn("syncuser cannot determine what name should be assigned to id number %v: on the local host it is assigned to '%s'; but in the container it is assigned to '%s'. Since the container's name doesn't exist on the local host, it cannot be reassigned to a different id number. To resolve the conflict, add the container's name to the local host and re-run syncuser.", containerIds.ContainerID, nameInHost, nameInContainer)
+				wwlog.Warn("syncuser cannot determine what name should be assigned to id number %v: on the local host it is assigned to '%s'; but in the container it is assigned to '%s'. Since '%s' does not exist on the local host, it cannot be reassigned to a different id number. To resolve the conflict, add '%s' to the local host and re-run syncuser.", containerIds.ContainerID, nameInHost, nameInContainer, nameInContainer, nameInContainer)
 				return errors.New(fmt.Sprintf("id(%v) collision: host(%s) container(%s)", containerIds.ContainerID, nameInHost, nameInContainer))
 			}
 		}

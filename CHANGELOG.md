@@ -84,6 +84,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Split overlays into distribution and site overlays. #831
 - Added note to booting userdoc for removing machine-id. #1609
 - Log cpio errors more prominently. #1615
+- Improved syncuser conflict help text. #1614
 
 ### Removed
 
