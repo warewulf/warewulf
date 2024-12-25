@@ -20,7 +20,6 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		Force:       SetForce,
 		Update:      SetUpdate,
 		Build:       SetBuild,
-		Default:     SetDefault,
 		SyncUser:    SyncUser,
 		OciNoHttps:  OciNoHttps,
 		OciUsername: OciUsername,

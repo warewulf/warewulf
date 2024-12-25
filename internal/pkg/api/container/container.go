@@ -77,34 +77,6 @@ func ContainerBuild(cbp *wwapiv1.ContainerBuildParameter) (err error) {
 			return fmt.Errorf("could not build container %s: %s", c, err)
 		}
 	}
-
-	if cbp.Default {
-		if len(containers) != 1 {
-			return fmt.Errorf("can only set default for one container")
-		} else {
-			var nodeDB node.NodesYaml
-			nodeDB, err = node.New()
-			if err != nil {
-				return fmt.Errorf("could not open node configuration: %s", err)
-			}
-
-			// TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
-			profiles, _ := nodeDB.FindAllProfiles()
-			for _, profile := range profiles {
-				wwlog.Debug("Looking for profile default: %s", profile.Id())
-				if profile.Id() == "default" {
-					wwlog.Debug("Found profile default, setting container name to: %s", containers[0])
-					profile.ContainerName = containers[0]
-				}
-			}
-			// TODO: Need a wrapper and flock around this. Sometimes we restart warewulfd and sometimes we don't.
-			err = nodeDB.Persist()
-			if err != nil {
-				return fmt.Errorf("failed to persist nodedb: %w", err)
-			}
-			fmt.Printf("Set default profile to container: %s\n", containers[0])
-		}
-	}
 	return
 }
 
@@ -233,40 +205,6 @@ func ContainerImport(cip *wwapiv1.ContainerImportParameter) (containerName strin
 		err = container.Build(cip.Name, true)
 		if err != nil {
 			err = fmt.Errorf("could not build container %s: %s", cip.Name, err.Error())
-			return
-		}
-	}
-
-	if cip.Default {
-		var nodeDB node.NodesYaml
-		nodeDB, err = node.New()
-		if err != nil {
-			err = fmt.Errorf("could not open node configuration: %s", err.Error())
-			return
-		}
-
-		// TODO: Don't loop through profiles, instead have a nodeDB function that goes directly to the map
-		profiles, _ := nodeDB.FindAllProfiles()
-		for _, profile := range profiles {
-			wwlog.Debug("Looking for profile default: %s", profile.Id())
-			if profile.Id() == "default" {
-				wwlog.Debug("Found profile default, setting container name to: %s", cip.Name)
-				profile.ContainerName = cip.Name
-			}
-		}
-		// TODO: We need this in a function with a flock around it.
-		// Also need to understand if the daemon restart is only to
-		// reload the config or if there is something more.
-		err = nodeDB.Persist()
-		if err != nil {
-			err = fmt.Errorf("failed to persist nodedb: %w", err)
-			return
-		}
-
-		wwlog.Info("Set default profile to container: %s", cip.Name)
-		err = warewulfd.DaemonReload()
-		if err != nil {
-			err = fmt.Errorf("failed to reload warewulf daemon: %w", err)
 			return
 		}
 	}
