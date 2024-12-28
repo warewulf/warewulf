@@ -1,6 +1,7 @@
 package node
 
 import (
+	"net"
 	"reflect"
 	"strings"
 
@@ -58,10 +59,18 @@ func (config *NodesYaml) appendProfileProfiles(profiles []string, id string) []s
 	return profiles
 }
 
-type InterfaceTransformer struct{}
+type Transformer struct{}
 
-func (t InterfaceTransformer) Transformer(typ reflect.Type) func(dst, src reflect.Value) error {
-	if typ.Kind() == reflect.Interface {
+func (t Transformer) Transformer(typ reflect.Type) func(dst, src reflect.Value) error {
+	if typ == reflect.TypeOf(net.IP{}) {
+		return func(dst, src reflect.Value) error {
+			if !src.IsValid() || !src.CanSet() {
+				return nil
+			}
+			dst.Set(src)
+			return nil
+		}
+	} else if typ.Kind() == reflect.Interface {
 		return func(dst, src reflect.Value) error {
 			if !src.IsValid() || src.IsZero() {
 				return nil
@@ -159,7 +168,7 @@ func (config *NodesYaml) MergeNode(id string) (node Node, fields fieldMap, err e
 //
 // Returns an error if the merging operation fails.
 func merge(dest, src interface{}, fields fieldMap, srcName string, multipleSrcName string) error {
-	if err := mergo.Merge(dest, src, mergo.WithAppendSlice, mergo.WithOverride, mergo.WithTransformers(InterfaceTransformer{})); err != nil {
+	if err := mergo.Merge(dest, src, mergo.WithAppendSlice, mergo.WithOverride, mergo.WithTransformers(Transformer{})); err != nil {
 		return err
 	}
 
@@ -170,7 +179,9 @@ func merge(dest, src interface{}, fields fieldMap, srcName string, multipleSrcNa
 			if prevSource != "" {
 				switch value.Kind() {
 				case reflect.Slice:
-					srcName = strings.Join([]string{prevSource, multipleSrcName}, ",")
+					if value.Type() != reflect.TypeOf(net.IP{}) {
+						srcName = strings.Join([]string{prevSource, multipleSrcName}, ",")
+					}
 				case reflect.Interface:
 					if _, ok := value.Interface().([]interface{}); ok {
 						srcName = strings.Join([]string{prevSource, multipleSrcName}, ",")
