@@ -44,5 +44,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	cntexec.SetBinds(binds)
 	cntexec.SetNode(nodeName)
 	cntexec.SyncUser = syncUser
+	cntexec.Build = build
 	return cntexec.CobraRunE(cmd, allargs)
 }
