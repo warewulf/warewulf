@@ -326,6 +326,12 @@ initramfs inside the container.
    dnf -y install warewulf-dracut
    dracut --force --no-hostonly --add wwinit --regenerate-all
 
+.. note::
+
+   In some systems, such as ``rockylinux:8``, it may be 
+   necessary to remove ``/etc/machine-id`` for dracut to properly generate 
+   the initramfs in the location that Warewulf is expecting.
+
 Set the node's iPXE template to ``dracut`` to direct iPXE to fetch the
 node's initramfs image and boot with dracut semantics, rather than
 booting the node image directly.
