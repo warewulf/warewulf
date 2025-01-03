@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 var nodesYamlUpgradeTests = []struct {
@@ -750,10 +749,29 @@ nodes:
       version: /boot/vmlinuz-1.2.3
 `,
 	},
+	{
+		name:            "Nested profiles",
+		addDefaults:     false,
+		replaceOverlays: false,
+		legacyYaml: `
+nodeprofiles:
+  p1:
+    profiles:
+      - p2
+  p2: {}
+`,
+		upgradedYaml: `
+nodeprofiles:
+  p1:
+    profiles:
+      - p2
+  p2: {}
+nodes: {}
+`,
+	},
 }
 
 func Test_UpgradeNodesYaml(t *testing.T) {
-	wwlog.SetLogLevel(wwlog.DEBUG)
 	for _, tt := range nodesYamlUpgradeTests {
 		t.Run(tt.name, func(t *testing.T) {
 			env := testenv.New(t)

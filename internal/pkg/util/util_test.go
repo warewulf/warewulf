@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func TryCreatePath(t *testing.T, elem ...string) {
@@ -20,7 +19,6 @@ func TryCreatePath(t *testing.T, elem ...string) {
 }
 
 func Test_FindFilterFiles(t *testing.T) {
-	wwlog.SetLogLevel(wwlog.DEBUG)
 	dir, err := os.MkdirTemp(os.TempDir(), "warewulf-test")
 	if err != nil {
 		t.Errorf("Failed creating tmpdir: %v", err)
