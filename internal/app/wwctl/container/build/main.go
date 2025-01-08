@@ -11,7 +11,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		ContainerNames: args,
 		Force:          BuildForce,
 		All:            BuildAll,
-		Default:        SetDefault,
 	}
 	return container.ContainerBuild(cbp)
 }

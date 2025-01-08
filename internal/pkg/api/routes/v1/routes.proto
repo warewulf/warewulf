@@ -23,7 +23,7 @@ message ContainerBuildParameter {
 	repeated string containerNames = 1;
 	bool force = 2;
 	bool all = 3;
-	bool default = 4;
+	// bool default = 4;
 }
 
 // ContainerDeleteParameter contains input for removing containers from Warewulf
@@ -46,7 +46,7 @@ message ContainerImportParameter{
 	bool force = 3;
 	bool update = 4;
 	bool build = 5;
-	bool default = 6;
+	// bool default = 6;
 	bool syncUser = 7;
 	bool ociNoHttps = 8;
 	string ociUsername = 9;

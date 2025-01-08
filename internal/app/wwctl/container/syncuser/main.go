@@ -29,7 +29,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			ContainerNames: []string{containerName},
 			Force:          true,
 			All:            false,
-			Default:        false,
 		}
 		err := container_build.ContainerBuild(cbp)
 		if err != nil {
