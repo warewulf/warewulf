@@ -1,0 +1,21 @@
+{
+  "name": "Warewulf Development",
+  "image": "registry.docker.com/library/rockylinux:9",
+  "remoteUser": "vscode",
+  "onCreateCommand": "sudo dnf install -y dnf-utils && sudo dnf config-manager --set-enabled crb && sudo dnf install -y unzip cpio gpgme-devel python3-sphinx python3-sphinx_rtd_theme",
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {},
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "latest"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "ms-vscode.makefile-tools"
+      ]
+    }
+  }
+}

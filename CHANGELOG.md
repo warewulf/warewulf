@@ -36,6 +36,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Adds `wwctl container <exec|shell> --build=false` to prevent automatically (re)building the container. #1490, #1489
 - Added resources as generic, arbitrary YAML data for nodes and profiles. #1568
 - New `fstab` resource configures mounts in fstab overlay, including NFS mounts. #515
+- Add Dev Container support #1653
 
 ### Changed
 
