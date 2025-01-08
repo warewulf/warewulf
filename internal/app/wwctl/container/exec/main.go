@@ -145,14 +145,16 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if userdbChanged && SyncUser {
 		err = container.SyncUids(containerName, false)
 		if err != nil {
-			wwlog.Error("Error in user sync, fix error and run 'syncuser' manually, but trying to build container: %s", err)
+			wwlog.Error("Error in user sync, fix error and run 'syncuser' manually: %s", err)
 		}
 	}
 
-	fmt.Printf("Rebuilding container...\n")
-	err = container.Build(containerName, false)
-	if err != nil {
-		return fmt.Errorf("could not build container %s: %s", containerName, err)
+	if Build {
+		wwlog.Info("Building container image: %s", containerName)
+		err = container.Build(containerName, false)
+		if err != nil {
+			return fmt.Errorf("could not build container image: %s: %s", containerName, err)
+		}
 	}
 	return nil
 }

@@ -229,7 +229,7 @@ when using the exec command. This works as follows:
 
 .. code-block:: console
 
-   # wwctl container exec --bind /tmp:/mnt rocky-8 /bin/sh
+   # wwctl container shell --bind /tmp:/mnt rocky-8
    [rocky-8] Warewulf>
 
 .. note::
@@ -257,7 +257,7 @@ can be specified in ``warewulf.conf``:
 
 When the command completes, if anything within the container changed,
 the container will be rebuilt into a bootable static object
-automatically.
+automatically. (To skip the automatic container rebuild, specify ``--build=false``.)
 
 If the files ``/etc/passwd`` or ``/etc/group`` were updated, there
 will be an additional check to confirm if the users are in sync as
