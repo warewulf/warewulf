@@ -1,12 +1,9 @@
 package node
 
 import (
-	"bytes"
-	"encoding/gob"
 	"os"
 	"sort"
 
-	"dario.cat/mergo"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 
@@ -51,51 +48,7 @@ func Parse(data []byte) (nodeList NodesYaml, err error) {
 Get a node with its merged in nodes
 */
 func (config *NodesYaml) GetNode(id string) (node Node, err error) {
-	if _, ok := config.Nodes[id]; !ok {
-		return node, ErrNotFound
-	}
-	node = EmptyNode()
-	// create a deep copy of the node, as otherwise pointers
-	// and not their contents is merged
-	var buf bytes.Buffer
-	enc := gob.NewEncoder(&buf)
-	dec := gob.NewDecoder(&buf)
-	err = enc.Encode(config.Nodes[id])
-	if err != nil {
-		return node, err
-	}
-	err = dec.Decode(&node)
-	if err != nil {
-		return node, err
-	}
-	for _, p := range cleanList(config.Nodes[id].Profiles) {
-		includedProfile, err := config.GetProfile(p)
-		if err != nil {
-			wwlog.Warn("profile not found: %s", p)
-			continue
-		}
-		err = mergo.Merge(&node.Profile, includedProfile, mergo.WithAppendSlice)
-		if err != nil {
-			return node, err
-		}
-	}
-	// finally set no exported values
-	node.id = id
-	node.valid = true
-	if netdev, ok := node.NetDevs[node.PrimaryNetDev]; ok {
-		netdev.primary = true
-	} else {
-		keys := make([]string, 0)
-		for k := range node.NetDevs {
-			keys = append(keys, k)
-		}
-		sort.Strings(keys)
-		if len(keys) > 0 {
-			wwlog.Debug("%s: no primary defined, sanitizing to: %s", id, keys[0])
-			node.NetDevs[keys[0]].primary = true
-			node.PrimaryNetDev = keys[0]
-		}
-	}
+	node, _, err = config.MergeNode(id)
 	wwlog.Debug("constructed node: %s", id)
 	return
 }

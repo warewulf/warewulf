@@ -156,8 +156,8 @@ nodes:
 			stdout: `
 NODE  FIELD     PROFILE  VALUE
 ----  -----     -------  -----
-n01   Comment   default  profilecomment
 n01   Profiles  --       default
+n01   Comment   default  profilecomment
 `,
 			inDb: `nodeprofiles:
   default:
@@ -175,8 +175,8 @@ nodes:
 			stdout: `
 NODE  FIELD     PROFILE     VALUE
 ----  -----     -------     -----
-n01   Comment   SUPERSEDED  nodecomment
 n01   Profiles  --          default
+n01   Comment   SUPERSEDED  nodecomment
 `,
 			inDb: `nodeprofiles:
   default:
@@ -293,7 +293,7 @@ nodes:
 			stdout: `
 NODE NAME  KERNEL VERSION  CONTAINER  OVERLAYS (S/R)
 ---------  --------------  ---------  --------------
-n01        --              --         sop1/nop1,~rop1,rop1,rop2
+n01        --              --         sop1/rop1,rop2,nop1,~rop1
 `,
 			inDb: `nodeprofiles:
   p1:
@@ -319,7 +319,7 @@ nodes:
 NODE  FIELD           PROFILE  VALUE
 ----  -----           -------  -----
 n01   Profiles        --       p1
-n01   RuntimeOverlay  p1+      nop1,~rop1,rop1,rop2
+n01   RuntimeOverlay  p1,n01   rop1,rop2,nop1,~rop1
 n01   SystemOverlay   p1       sop1
 `,
 			inDb: `nodeprofiles:
@@ -346,7 +346,7 @@ nodes:
 NODE  FIELD           PROFILE  VALUE
 ----  -----           -------  -----
 n01   Profiles        --       p1
-n01   RuntimeOverlay  p1+      nop1,rop1,rop2
+n01   RuntimeOverlay  p1,n01   rop1,rop2,nop1
 `,
 			inDb: `nodeprofiles:
   p1:
@@ -602,6 +602,29 @@ nodes:
   n02:
     profiles:
     - default
+`,
+		},
+		{
+			name:    "single node list with network",
+			args:    []string{"-a"},
+			wantErr: false,
+			stdout: `
+NODE  FIELD                    PROFILE  VALUE
+----  -----                    -------  -----
+n01   Profiles                 --       default
+n01   NetDevs[default].Hwaddr  --       aa:bb:cc:dd:ee:ff
+n01   NetDevs[default].Ipaddr  --       1.1.1.1
+`,
+			inDb: `nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+    network devices:
+      default:
+        hwaddr: aa:bb:cc:dd:ee:ff
+        ipaddr: 1.1.1.1
 `,
 		},
 	}

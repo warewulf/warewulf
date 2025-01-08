@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v3"
 )
 
@@ -92,7 +91,6 @@ func Test_nodeYaml_FindByHwaddr(t *testing.T) {
 }
 
 func Test_nodeYaml_FindByIpaddr(t *testing.T) {
-	wwlog.SetLogLevel(wwlog.DEBUG)
 	c, err := NewUtilTestNode()
 	assert.NoError(t, err)
 	type args struct {

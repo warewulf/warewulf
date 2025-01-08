@@ -384,8 +384,8 @@ func (this *Profile) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *
 			}
 		}
 	}
-	if this.Profiles != nil {
-		logIgnore("Profiles", this.Profiles, "invalid for profiles")
+	if upgraded.Profiles == nil {
+		upgraded.Profiles = append(upgraded.Profiles, this.Profiles...)
 	}
 	upgraded.Root = this.Root
 	if this.RuntimeOverlay != nil {
