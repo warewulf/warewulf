@@ -1,9 +1,5 @@
 package config
 
-import (
-	"github.com/warewulf/warewulf/internal/pkg/util"
-)
-
 // DHCPConf represents the configuration for the DHCP service that
 // Warewulf will configure.
 type DHCPConf struct {
@@ -15,5 +11,5 @@ type DHCPConf struct {
 }
 
 func (this DHCPConf) Enabled() bool {
-	return util.BoolP(this.EnabledP)
+	return BoolP(this.EnabledP)
 }

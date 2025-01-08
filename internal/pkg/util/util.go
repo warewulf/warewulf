@@ -18,10 +18,6 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-func BoolP(p *bool) bool {
-	return p != nil && *p
-}
-
 func FirstError(errs ...error) (err error) {
 	for _, e := range errs {
 		if err == nil {
@@ -136,37 +132,40 @@ func ValidString(pattern string, expr string) bool {
 	return false
 }
 
-// ******************************************************************************
 func FindFiles(path string) []string {
 	var ret []string
 
-	wwlog.Debug("Changing directory to FindFiles path: %s", path)
-	err := os.Chdir(path)
-	if err != nil {
-		wwlog.Warn("Could not chdir() to: %s", path)
-		return ret
-	}
+	wwlog.Debug("Finding files in path: %s", path)
 
-	err = filepath.Walk(".", func(location string, info os.FileInfo, err error) error {
+	err := filepath.Walk(path, func(location string, info os.FileInfo, err error) error {
 		if err != nil {
+			wwlog.Warn("Error walking path %s: %v", location, err)
 			return err
 		}
 
-		if location == "." {
+		// Get the relative path from the base directory
+		relPath, relErr := filepath.Rel(path, location)
+		if relErr != nil {
+			wwlog.Warn("Error computing relative path for %s: %v", location, relErr)
+			return relErr
+		}
+
+		if relPath == "." {
 			return nil
 		}
 
-		if IsDir(location) {
-			wwlog.Debug("FindFiles() found directory: %s", location)
-			ret = append(ret, location+"/")
+		if info.IsDir() {
+			wwlog.Debug("FindFiles() found directory: %s", relPath)
+			ret = append(ret, relPath+"/")
 		} else {
-			wwlog.Debug("FindFiles() found file: %s", location)
-			ret = append(ret, location)
+			wwlog.Debug("FindFiles() found file: %s", relPath)
+			ret = append(ret, relPath)
 		}
 
 		return nil
 	})
 	if err != nil {
+		wwlog.Warn("Error during file walk: %v", err)
 		return ret
 	}
 
@@ -184,82 +183,100 @@ func FindFilterFiles(
 	ignorePattern []string,
 	ignore_xdev bool) (ofiles []string, err error) {
 	wwlog.Debug("Finding files: %s include: %s ignore: %s", path, includePattern, ignorePattern)
-	// preprocess patterns to remove leading (and trailing) /, as we are handling relative paths
+
+	// Preprocess patterns to remove leading (and trailing) /, as we are handling relative paths
 	for i, pattern := range ignorePattern {
 		ignorePattern[i] = strings.Trim(pattern, "/")
 	}
-	cwd, err := os.Getwd()
+
+	// Convert the base path to an absolute path
+	absPath, err := filepath.Abs(path)
 	if err != nil {
-		return ofiles, err
+		return ofiles, fmt.Errorf("failed to resolve absolute path: %s: %w", path, err)
 	}
-	defer func() {
-		err = FirstError(err, os.Chdir(cwd))
-	}()
-	err = os.Chdir(path)
-	if err != nil {
-		return ofiles, fmt.Errorf("failed to change path: %s: %w", path, err)
-	}
-	// expand our include list as fspath.Match with /foo/* would catch /foo/baar but
-	// not /foo/baar/sibling
+
+	// Expand the include list
 	var globedInclude []string
 	for _, include := range includePattern {
-		globed, err := filepath.Glob(include)
+		globed, err := filepath.Glob(filepath.Join(absPath, include))
 		if err != nil {
-			return ofiles, err
+			return ofiles, fmt.Errorf("failed to glob pattern %s: %w", include, err)
 		}
 		globedInclude = append(globedInclude, globed...)
 	}
+
+	var dev uint64
 	if ignore_xdev {
 		wwlog.Debug("Ignoring cross-device (xdev) files")
+		pathStat, err := os.Stat(absPath)
+		if err != nil {
+			return ofiles, fmt.Errorf("failed to stat base path: %s: %w", absPath, err)
+		}
+		dev = pathStat.Sys().(*syscall.Stat_t).Dev
 	}
 
-	path_stat, err := os.Stat(".")
-	if err != nil {
-		return ofiles, err
-	}
-
-	dev := path_stat.Sys().(*syscall.Stat_t).Dev
 	for _, inc := range globedInclude {
-		wwlog.Debug("inc %s", inc)
+		wwlog.Debug("Processing include pattern: %s", inc)
 		stat, err := os.Lstat(inc)
 		if err != nil {
-			return ofiles, err
+			return ofiles, fmt.Errorf("failed to stat include: %s: %w", inc, err)
 		}
+
 		if stat.IsDir() {
-			// get the rest of dir
+			// Walk the directory
 			err = filepath.WalkDir(inc, func(location string, info fs.DirEntry, err error) error {
 				if err != nil {
 					return err
 				}
-				if location == "." {
+
+				relPath, relErr := filepath.Rel(absPath, location)
+				if relErr != nil {
+					wwlog.Warn("Error computing relative path for %s: %v", location, relErr)
+					return relErr
+				}
+
+				if relPath == "." {
 					return nil
 				}
+
 				fsInfo, err := info.Info()
 				if err != nil {
 					return err
 				}
+
 				if ignore_xdev && fsInfo.Sys().(*syscall.Stat_t).Dev != dev {
 					wwlog.Debug("Ignored (cross-device): %s", location)
 					return nil
 				}
-				for _, ignored_pat := range ignorePattern {
-					if ignored, _ := filepath.Match(ignored_pat, location); ignored {
-						wwlog.Debug("Ignored %s due to pattern %s", location, ignored_pat)
-						return filepath.SkipDir
+
+				for _, ignoredPattern := range ignorePattern {
+					if ignored, _ := filepath.Match(ignoredPattern, relPath); ignored {
+						wwlog.Debug("Ignored %s due to pattern %s", relPath, ignoredPattern)
+						if info.IsDir() {
+							return filepath.SkipDir
+						}
+						return nil
 					}
 				}
-				ofiles = append(ofiles, location)
+
+				ofiles = append(ofiles, relPath)
 				return nil
 			})
 			if err != nil {
-				return ofiles, err
+				return ofiles, fmt.Errorf("error walking directory %s: %w", inc, err)
 			}
 		} else {
-			ofiles = append(ofiles, inc)
+			// Add the file directly
+			relPath, relErr := filepath.Rel(absPath, inc)
+			if relErr != nil {
+				wwlog.Warn("Error computing relative path for %s: %v", inc, relErr)
+				return ofiles, relErr
+			}
+			ofiles = append(ofiles, relPath)
 		}
 	}
 
-	return ofiles, err
+	return ofiles, nil
 }
 
 // ******************************************************************************
@@ -346,6 +363,7 @@ func AppendLines(fileName string, lines []string) error {
 	Create an archive using cpio
 */
 func CpioCreate(
+	rootdir string,
 	ifiles []string,
 	ofile string,
 	format string,
@@ -354,7 +372,8 @@ func CpioCreate(
 	args := []string{
 		"--quiet",
 		"--create",
-		"-H", format,
+		"--directory", rootdir,
+		"--format", format,
 		"--file=" + ofile}
 
 	args = append(args, cpio_args...)
@@ -492,21 +511,9 @@ func BuildFsImage(
 		return fmt.Errorf("failed to create image directory for %s: %s: %w", name, imagePath, err)
 	}
 	wwlog.Debug("Created image directory for %s: %s", name, imagePath)
-	cwd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	defer func() {
-		err = FirstError(err, os.Chdir(cwd))
-	}()
 
-	err = os.Chdir(rootfsPath)
-	if err != nil {
-		return fmt.Errorf("failed chdir to fs directory for %s: %s: %w", name, rootfsPath, err)
-	}
-	wwlog.Verbose("changed to: %s", rootfsPath)
 	files, err := FindFilterFiles(
-		".",
+		rootfsPath,
 		include,
 		ignore,
 		ignore_xdev)
@@ -515,6 +522,7 @@ func BuildFsImage(
 	}
 
 	err = CpioCreate(
+		rootfsPath,
 		files,
 		imagePath,
 		format,

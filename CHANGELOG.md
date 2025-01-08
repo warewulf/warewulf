@@ -45,7 +45,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Bump github.com/spf13/cobra from 1.7.0 to 1.8.0 #1166
 - Bump github.com/fatih/color from 1.15.0 to 1.17.0 #1224
 - Bump github.com/coreos/ignition/v2 from 2.15.0 to 2.19.0 #1239
-- Bump github.com/sassoftware/go-rpmutils from 0.2.0 to 0.4.0 #1217
 - Bump github.com/spf13/cobra from 1.8.0 to 1.8.1 #1481
 - Bump google.golang.org/protobuf from 1.34.1 to 1.35.1 #1480
 - Bump golang.org/x/term from 0.20.0 to 0.25.0 #1476
@@ -85,6 +84,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added note to booting userdoc for removing machine-id. #1609
 - Log cpio errors more prominently. #1615
 - Improved syncuser conflict help text. #1614
+- Parallelized overlay build. #1018
+- Parallelized and optimized overlay build. #1018
 
 ### Removed
 

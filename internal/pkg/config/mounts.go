@@ -1,9 +1,5 @@
 package config
 
-import (
-	"github.com/warewulf/warewulf/internal/pkg/util"
-)
-
 // A MountEntry represents a bind mount that is applied to a container
 // during exec and shell.
 type MountEntry struct {
@@ -15,9 +11,9 @@ type MountEntry struct {
 }
 
 func (this MountEntry) ReadOnly() bool {
-	return util.BoolP(this.ReadOnlyP)
+	return BoolP(this.ReadOnlyP)
 }
 
 func (this MountEntry) Copy() bool {
-	return util.BoolP(this.CopyP)
+	return BoolP(this.CopyP)
 }

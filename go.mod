@@ -5,6 +5,7 @@ go 1.21.0
 require (
 	dario.cat/mergo v1.0.1
 	github.com/Masterminds/sprig/v3 v3.3.0
+	github.com/cavaliergopher/cpio v1.0.1
 	github.com/cheynewallace/tabby v1.1.1
 	github.com/containers/image/v5 v5.32.2
 	github.com/containers/storage v1.55.2
@@ -21,7 +22,6 @@ require (
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/opencontainers/umoci v0.4.7
 	github.com/pkg/errors v0.9.1
-	github.com/sassoftware/go-rpmutils v0.4.0
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
 	github.com/talos-systems/go-smbios v0.1.1
