@@ -13,10 +13,10 @@ import (
 
 func Test_localtimeOverlay(t *testing.T) {
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
-	env.ImportFile(t, "etc/warewulf/nodes.conf", "nodes.conf")
+	defer env.RemoveAll()
+	env.ImportFile("etc/warewulf/nodes.conf", "nodes.conf")
 	assert.NoError(t, config.Get().Read(env.GetPath("etc/warewulf/warewulf.conf")))
-	env.ImportFile(t, "var/lib/warewulf/overlays/localtime/rootfs/etc/localtime.ww", "../rootfs/etc/localtime.ww")
+	env.ImportFile("var/lib/warewulf/overlays/localtime/rootfs/etc/localtime.ww", "../rootfs/etc/localtime.ww")
 
 	tests := []struct {
 		name string

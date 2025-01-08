@@ -65,9 +65,9 @@ func TestFindInitramfs(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			env := testenv.New(t)
-			defer env.RemoveAll(t)
+			defer env.RemoveAll()
 			for _, init := range tt.initramfs {
-				env.CreateFile(t, filepath.Join("/var/lib/warewulf/chroots/image/rootfs", init))
+				env.CreateFile(filepath.Join("/var/lib/warewulf/chroots/image/rootfs", init))
 			}
 
 			initramfs := FindInitramfs("image", tt.ver)

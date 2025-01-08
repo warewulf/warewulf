@@ -14,12 +14,12 @@ func Test_syncuserOverlay(t *testing.T) {
 	t.Skip("syncuser is not yet isolated from the host")
 
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
-	env.ImportFile(t, "etc/warewulf/nodes.conf", "nodes.conf")
-	env.ImportFile(t, "var/lib/warewulf/overlays/syncuser/rootfs/etc/passwd.ww", "../../../../../overlays/syncuser/rootfs/etc/passwd.ww")
-	env.ImportFile(t, "var/lib/warewulf/overlays/syncuser/rootfs/etc/group.ww", "../../../../../overlays/syncuser/rootfs/etc/group.ww")
-	env.WriteFile(t, "var/lib/warewulf/chroots/rockylinux-9/rootfs/etc/passwd", `root:x:0:0:root:/root:/bin/bash`)
-	env.WriteFile(t, "var/lib/warewulf/chroots/rockylinux-9/rootfs/etc/group", `root:x:0:`)
+	defer env.RemoveAll()
+	env.ImportFile("etc/warewulf/nodes.conf", "nodes.conf")
+	env.ImportFile("var/lib/warewulf/overlays/syncuser/rootfs/etc/passwd.ww", "../../../../../overlays/syncuser/rootfs/etc/passwd.ww")
+	env.ImportFile("var/lib/warewulf/overlays/syncuser/rootfs/etc/group.ww", "../../../../../overlays/syncuser/rootfs/etc/group.ww")
+	env.WriteFile("var/lib/warewulf/chroots/rockylinux-9/rootfs/etc/passwd", `root:x:0:0:root:/root:/bin/bash`)
+	env.WriteFile("var/lib/warewulf/chroots/rockylinux-9/rootfs/etc/group", `root:x:0:`)
 
 	tests := []struct {
 		name string

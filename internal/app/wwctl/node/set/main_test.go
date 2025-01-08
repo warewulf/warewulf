@@ -20,8 +20,8 @@ type test_description struct {
 
 func run_test(t *testing.T, test test_description) {
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
-	env.WriteFile(t, "etc/warewulf/nodes.conf", test.inDB)
+	defer env.RemoveAll()
+	env.WriteFile("etc/warewulf/nodes.conf", test.inDB)
 	warewulfd.SetNoDaemon()
 	name := test.name
 	if name == "" {
@@ -40,7 +40,7 @@ func run_test(t *testing.T, test test_description) {
 		} else {
 			assert.NoError(t, err)
 			assert.Equal(t, buf.String(), test.stdout)
-			content := env.ReadFile(t, "etc/warewulf/nodes.conf")
+			content := env.ReadFile("etc/warewulf/nodes.conf")
 			assert.YAMLEq(t, test.outDb, content)
 		}
 	})

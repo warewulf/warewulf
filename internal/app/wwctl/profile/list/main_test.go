@@ -97,11 +97,11 @@ nodes:
 
 	warewulfd.SetNoDaemon()
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
+	defer env.RemoveAll()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			env.WriteFile(t, "etc/warewulf/nodes.conf", tt.inDb)
+			env.WriteFile("etc/warewulf/nodes.conf", tt.inDb)
 			baseCmd := GetCommand()
 			baseCmd.SetArgs(tt.args)
 			stdoutR, stdoutW, _ := os.Pipe()
@@ -256,10 +256,10 @@ nodes:
 
 	warewulfd.SetNoDaemon()
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
+	defer env.RemoveAll()
 
 	for _, tt := range tests {
-		env.WriteFile(t, "etc/warewulf/nodes.conf", tt.inDb)
+		env.WriteFile("etc/warewulf/nodes.conf", tt.inDb)
 
 		t.Run(tt.name, func(t *testing.T) {
 			baseCmd := GetCommand()

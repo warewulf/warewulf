@@ -11,8 +11,8 @@ import (
 
 func Test_Copy(t *testing.T) {
 	env := testenv.New(t)
-	env.WriteFile(t, path.Join(testenv.WWChrootdir, "test-container/rootfs/bin/sh"), `test`)
-	defer env.RemoveAll(t)
+	env.WriteFile(path.Join(testenv.WWChrootdir, "test-container/rootfs/bin/sh"), `test`)
+	defer env.RemoveAll()
 	warewulfd.SetNoDaemon()
 
 	t.Run("container copy without build", func(t *testing.T) {

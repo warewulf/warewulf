@@ -32,14 +32,14 @@ func Test_ImportContainerDir(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			env := testenv.New(t)
-			defer env.RemoveAll(t)
+			defer env.RemoveAll()
 			src := "/tmp/testcontainer"
-			env.CreateFile(t, filepath.Join(src, "/bin/sh"))
+			env.CreateFile(filepath.Join(src, "/bin/sh"))
 			for _, file := range tt.files {
-				env.CreateFile(t, filepath.Join(src, file))
+				env.CreateFile(filepath.Join(src, file))
 			}
 			for _, socket := range tt.sockets {
-				env.MkdirAll(t, filepath.Dir(filepath.Join(src, socket)))
+				env.MkdirAll(filepath.Dir(filepath.Join(src, socket)))
 				assert.NoError(t, unix.Mknod(env.GetPath(filepath.Join(src, socket)), unix.S_IFSOCK|0777, 0))
 			}
 			assert.NoError(t, ImportDirectory(env.GetPath(src), "testcontainer"))

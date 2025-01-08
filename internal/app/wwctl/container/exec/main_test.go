@@ -23,8 +23,8 @@ func mockChildCmd(cmd *cobra.Command, args []string) error {
 
 func Test_Exec(t *testing.T) {
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
-	env.MkdirAll(t, "/var/lib/warewulf/chroots/test/rootfs")
+	defer env.RemoveAll()
+	env.MkdirAll("/var/lib/warewulf/chroots/test/rootfs")
 	childCommandFunc = mockChildCmd
 	defer func() {
 		childCommandFunc = runChildCmd

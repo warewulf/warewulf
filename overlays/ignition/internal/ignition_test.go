@@ -12,11 +12,11 @@ import (
 
 func Test_ignitionOverlay(t *testing.T) {
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
-	env.ImportFile(t, "etc/warewulf/nodes.conf", "nodes.conf")
-	env.ImportFile(t, "var/lib/warewulf/overlays/ignition/rootfs/etc/systemd/system/ww4-disks.target.ww", "../rootfs/etc/systemd/system/ww4-disks.target.ww")
-	env.ImportFile(t, "var/lib/warewulf/overlays/ignition/rootfs/etc/systemd/system/ww4-mounts.ww", "../rootfs/etc/systemd/system/ww4-mounts.ww")
-	env.ImportFile(t, "var/lib/warewulf/overlays/ignition/rootfs/warewulf/ignition.json.ww", "../rootfs/warewulf/ignition.json.ww")
+	defer env.RemoveAll()
+	env.ImportFile("etc/warewulf/nodes.conf", "nodes.conf")
+	env.ImportFile("var/lib/warewulf/overlays/ignition/rootfs/etc/systemd/system/ww4-disks.target.ww", "../rootfs/etc/systemd/system/ww4-disks.target.ww")
+	env.ImportFile("var/lib/warewulf/overlays/ignition/rootfs/etc/systemd/system/ww4-mounts.ww", "../rootfs/etc/systemd/system/ww4-mounts.ww")
+	env.ImportFile("var/lib/warewulf/overlays/ignition/rootfs/warewulf/ignition.json.ww", "../rootfs/warewulf/ignition.json.ww")
 
 	tests := []struct {
 		name string

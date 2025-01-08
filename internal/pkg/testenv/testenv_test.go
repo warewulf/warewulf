@@ -9,7 +9,7 @@ import (
 
 func Test_Basic(t *testing.T) {
 	env := New(t)
-	defer env.RemoveAll(t)
+	defer env.RemoveAll()
 	nodedb, err := node.New()
 	assert.NoError(t, err)
 	nodes, err := nodedb.FindAllNodes()
@@ -19,13 +19,13 @@ func Test_Basic(t *testing.T) {
 
 func Test_two_nodes(t *testing.T) {
 	env := New(t)
-	env.WriteFile(t, "etc/warewulf/nodes.conf", `nodeprofiles:
+	env.WriteFile("etc/warewulf/nodes.conf", `nodeprofiles:
   default: {}
 nodes:
   node1: {}
   node2: {}
 `)
-	defer env.RemoveAll(t)
+	defer env.RemoveAll()
 	nodedb, err := node.New()
 	assert.NoError(t, err)
 	nodes, err := nodedb.FindAllNodes()

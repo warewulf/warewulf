@@ -14,9 +14,9 @@ func Test_ssh_authorized_keysOverlay(t *testing.T) {
 	t.Skip("ssh.authorized_keys is not yet isolated from the host")
 
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
-	env.ImportFile(t, "etc/warewulf/nodes.conf", "nodes.conf")
-	env.ImportFile(t, "var/lib/warewulf/overlays/ssh.authorized_keys/rootfs/root/.ssh/authorized_keys.ww", "../rootfs/root/.ssh/authorized_keys.ww")
+	defer env.RemoveAll()
+	env.ImportFile("etc/warewulf/nodes.conf", "nodes.conf")
+	env.ImportFile("var/lib/warewulf/overlays/ssh.authorized_keys/rootfs/root/.ssh/authorized_keys.ww", "../rootfs/root/.ssh/authorized_keys.ww")
 
 	tests := []struct {
 		name string

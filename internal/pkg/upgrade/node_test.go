@@ -775,10 +775,10 @@ func Test_UpgradeNodesYaml(t *testing.T) {
 	for _, tt := range nodesYamlUpgradeTests {
 		t.Run(tt.name, func(t *testing.T) {
 			env := testenv.New(t)
-			defer env.RemoveAll(t)
+			defer env.RemoveAll()
 			if tt.files != nil {
 				for fileName, content := range tt.files {
-					env.WriteFile(t, fileName, content)
+					env.WriteFile(fileName, content)
 				}
 			}
 			legacy, err := ParseNodes([]byte(tt.legacyYaml))

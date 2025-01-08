@@ -13,11 +13,11 @@ import (
 
 func Test_fstabOverlay(t *testing.T) {
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
-	env.ImportFile(t, "etc/warewulf/nodes.conf", "nodes.conf")
-	env.ImportFile(t, "etc/warewulf/warewulf.conf", "warewulf.conf")
+	defer env.RemoveAll()
+	env.ImportFile("etc/warewulf/nodes.conf", "nodes.conf")
+	env.ImportFile("etc/warewulf/warewulf.conf", "warewulf.conf")
 	assert.NoError(t, config.Get().Read(env.GetPath("etc/warewulf/warewulf.conf")))
-	env.ImportFile(t, "var/lib/warewulf/overlays/fstab/rootfs/etc/fstab.ww", "../rootfs/etc/fstab.ww")
+	env.ImportFile("var/lib/warewulf/overlays/fstab/rootfs/etc/fstab.ww", "../rootfs/etc/fstab.ww")
 
 	tests := []struct {
 		name string

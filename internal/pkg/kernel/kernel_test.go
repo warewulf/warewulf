@@ -88,10 +88,10 @@ func Test_FindKernel(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			env := testenv.New(t)
-			defer env.RemoveAll(t)
+			defer env.RemoveAll()
 			rootfs := "/var/lib/warewulf/chroots/testcontainer/rootfs"
 			for _, file := range tt.files {
-				env.CreateFile(t, filepath.Join(rootfs, file))
+				env.CreateFile(filepath.Join(rootfs, file))
 			}
 
 			kernels := FindKernels("testcontainer")
@@ -151,10 +151,10 @@ func Test_FromNode(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			env := testenv.New(t)
-			defer env.RemoveAll(t)
+			defer env.RemoveAll()
 			rootfs := "/var/lib/warewulf/chroots/testcontainer/rootfs"
 			for _, file := range tt.files {
-				env.CreateFile(t, filepath.Join(rootfs, file))
+				env.CreateFile(filepath.Join(rootfs, file))
 			}
 			node := node.EmptyNode()
 			node.ContainerName = "testcontainer"
@@ -200,11 +200,11 @@ func Test_FindAllKernels(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			env := testenv.New(t)
-			defer env.RemoveAll(t)
+			defer env.RemoveAll()
 			for container, files := range tt.files {
 				rootfs := filepath.Join(filepath.Join("/var/lib/warewulf/chroots", container), "rootfs")
 				for _, file := range files {
-					env.CreateFile(t, filepath.Join(rootfs, file))
+					env.CreateFile(filepath.Join(rootfs, file))
 				}
 			}
 			kernels := FindAllKernels()

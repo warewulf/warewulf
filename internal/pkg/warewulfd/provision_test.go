@@ -36,9 +36,9 @@ var provisionSendTests = []struct {
 
 func Test_ProvisionSend(t *testing.T) {
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
+	defer env.RemoveAll()
 
-	env.WriteFile(t, "etc/warewulf/nodes.conf", `nodeprofiles:
+	env.WriteFile("etc/warewulf/nodes.conf", `nodeprofiles:
   default:
     container name: suse
 nodes:
@@ -65,7 +65,7 @@ nodes:
       version: 1.1.1`)
 
 	// create a  arp file as for grub we look up the ip address through the arp cache
-	env.WriteFile(t, "/var/tmp/arpcache", `IP address       HW type     Flags       HW address            Mask     Device
+	env.WriteFile("/var/tmp/arpcache", `IP address       HW type     Flags       HW address            Mask     Device
 10.10.10.10    0x1         0x2         00:00:00:ff:ff:ff     *        dummy
 10.10.10.11    0x1         0x2         00:00:00:00:ff:ff     *        dummy
 10.10.10.12    0x1         0x2         00:00:00:00:00:ff     *        dummy`)
@@ -74,12 +74,12 @@ nodes:
 	defer func() {
 		arpFile = prevArpFile
 	}()
-	env.CreateFile(t, "/var/lib/warewulf/chroots/suse/rootfs/boot/vmlinuz-1.1.0")
-	env.CreateFile(t, "/var/lib/warewulf/chroots/suse/rootfs/usr/lib64/efi/shim.efi")
-	env.CreateFile(t, "/var/lib/warewulf/chroots/suse/rootfs/usr/share/efi/x86_64/grub.efi")
-	env.CreateFile(t, "/var/lib/warewulf/chroots/suse/rootfs/boot/initramfs-1.1.0.img")
-	env.WriteFile(t, "/etc/warewulf/ipxe/test.ipxe", "{{.KernelVersion}}{{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} {{end}}{{end}}")
-	env.WriteFile(t, "/etc/warewulf/grub/grub.cfg.ww", "{{ .Tags.GrubMenuEntry }}")
+	env.CreateFile("/var/lib/warewulf/chroots/suse/rootfs/boot/vmlinuz-1.1.0")
+	env.CreateFile("/var/lib/warewulf/chroots/suse/rootfs/usr/lib64/efi/shim.efi")
+	env.CreateFile("/var/lib/warewulf/chroots/suse/rootfs/usr/share/efi/x86_64/grub.efi")
+	env.CreateFile("/var/lib/warewulf/chroots/suse/rootfs/boot/initramfs-1.1.0.img")
+	env.WriteFile("/etc/warewulf/ipxe/test.ipxe", "{{.KernelVersion}}{{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} {{end}}{{end}}")
+	env.WriteFile("/etc/warewulf/grub/grub.cfg.ww", "{{ .Tags.GrubMenuEntry }}")
 
 	dbErr := LoadNodeDB()
 	assert.NoError(t, dbErr)

@@ -72,8 +72,8 @@ nodes:
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			env := testenv.New(t)
-			defer env.RemoveAll(t)
-			env.WriteFile(t, "/etc/warewulf/nodes.conf", tt.nodesConf)
+			defer env.RemoveAll()
+			env.WriteFile("/etc/warewulf/nodes.conf", tt.nodesConf)
 
 			registry, regErr := New()
 			assert.NoError(t, regErr)
