@@ -374,8 +374,10 @@ func CpioCreate(
 	}()
 
 	out, err := proc.CombinedOutput()
-	if len(out) > 0 {
-		wwlog.Debug(string(out))
+	if err != nil {
+		wwlog.Error("cpio failed: %s", out)
+	} else if len(out) > 0 {
+		wwlog.Debug("cpio: %s", out)
 	}
 
 	return FirstError(err, <-err_in)
