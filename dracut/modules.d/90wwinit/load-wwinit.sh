@@ -15,6 +15,6 @@ do
         then
             localport="--local-port 1-1023"
         fi
-        (curl --silent ${localport} -L "${archive}" | gzip -d | cpio -im --directory="${NEWROOT}") || die "Unable to load ${archive}"
+        (curl --retry 60 --retry-delay 1 --silent ${localport} -L "${archive}" | gzip -d | cpio -im --directory="${NEWROOT}") || die "Unable to load ${archive}"
     fi
 done
