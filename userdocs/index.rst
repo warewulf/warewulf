@@ -39,7 +39,6 @@ Welcome to the Warewulf User Guide!
    openSUSE Leap and SLES 15 <quickstart/suse15>
    Debian 12 <quickstart/debian12>
 
-
 .. toctree::
    :maxdepth: 2
    :caption: Contributing
@@ -54,8 +53,15 @@ Welcome to the Warewulf User Guide!
    Glossary <contents/glossary>
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Reference
+   :maxdepth: 1
+   :caption: Command Reference
    :glob:
 
    reference/*
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Configuration Reference
+   :glob:
+
+   reference/man5/*
