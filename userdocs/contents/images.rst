@@ -36,6 +36,47 @@ Apptainer is the most utilized image management tool. You can use
 any of these to create and manage the containers to be later imported
 into Warewulf.
 
+Structure
+=========
+
+A Warewulf container is a directory that populates the runtime root file system of a cluster
+node. The container source directory must contain a single ``rootfs`` directory which represents the
+actual root directory for the overlay.
+
+.. code-block:: none
+
+  /var/lib/warewulf/chroots/rockylinux-9
+  └── rootfs
+      ├── afs
+      ├── bin -> usr/bin
+      ├── boot
+      ├── dev
+      ├── etc
+      ├── home
+      ├── lib -> usr/lib
+      ├── lib64 -> usr/lib64
+      ├── media
+      ├── mnt
+      ├── opt
+      ├── proc
+      ├── root
+      ├── run
+      ├── sbin -> usr/sbin
+      ├── srv
+      ├── sys
+      ├── tmp
+      ├── usr
+      └── var
+
+Warewulf containers are built (e.g., with ``wwctl container build``) into compressed images for
+distribution to cluster nodes.
+
+.. code-block:: none
+
+  /var/lib/warewulf/provision/container
+  ├── rockylinux-9.img
+  └── rockylinux-9.img.gz
+
 Importing Images
 ================
 

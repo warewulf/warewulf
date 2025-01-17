@@ -14,6 +14,20 @@ Warewulf addresses cluster node configuration with its **overlay** system. Overl
 of files and templates that are rendered and built per-node and then applied over the image
 image during the provisioning process.
 
+Structure
+=========
+
+An overlay is a directory that is applied to the root of a cluster node's runtime file system. The
+overlay source directory should contain a single ``rootfs`` directory which represents the actual
+root directory for the overlay.
+
+.. code-block:: none
+
+  /usr/share/warewulf/overlays/issue
+  └── rootfs
+      └── etc
+          └── issue.ww
+
 System and runtime overlays
 ===========================
 
@@ -23,6 +37,18 @@ A node or profile can configure an overlay in two different ways:
   overlays are called **system overlays**.
 * An overlay can be configured to also apply periodically while the system is running. These overlays
   are called **runtime overlays**.
+
+Overlays are built (e.g., with ``wwctl overly build``) into compressed overlay images for
+distribution to cluster nodes. These images typically match these two use cases: system and
+runtime. As such, each cluster node typically has two overlay images.
+
+.. code-block:: none
+
+  /var/lib/warewulf/provision/overlays/tn1
+  ├── __RUNTIME__.img
+  ├── __RUNTIME__.img.gz
+  ├── __SYSTEM__.img
+  └── __SYSTEM__.img.gz
 
 Distribution and site overlays
 ==============================
