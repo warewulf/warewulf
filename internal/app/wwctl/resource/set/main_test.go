@@ -26,13 +26,13 @@ func Test_resource_set(t *testing.T) {
 			stdout:  "",
 			inDB: `nodeprofiles: {}
 nodes: {}
-resource:
+resources:
   test:
     foo: baar
 `,
 			outDb: `nodeprofiles: {}
 nodes: {}
-resource:
+resources:
   test:
     foo: test
 `},
@@ -43,17 +43,17 @@ resource:
 			stdout:  "",
 			inDB: `nodeprofiles: {}
 nodes: {}
-resource:
+resources:
   test:
     foo: baar
 `,
 			outDb: ``},
 	}
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
+	defer env.RemoveAll()
 	warewulfd.SetNoDaemon()
 	for _, tt := range tests {
-		env.WriteFile(t, "etc/warewulf/nodes.conf", tt.inDB)
+		env.WriteFile("etc/warewulf/nodes.conf", tt.inDB)
 		t.Run(tt.name, func(t *testing.T) {
 			baseCmd := GetCommand()
 			baseCmd.SetArgs(tt.args)
@@ -65,8 +65,8 @@ resource:
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, buf.String(), tt.stdout)
-				content := env.ReadFile(t, "etc/warewulf/nodes.conf")
+				assert.Equal(t, tt.stdout, buf.String())
+				content := env.ReadFile("etc/warewulf/nodes.conf")
 				assert.YAMLEq(t, tt.outDb, content)
 			}
 		})

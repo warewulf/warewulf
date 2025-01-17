@@ -15,10 +15,10 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			return fmt.Errorf("failed to load node configuration: %s", err)
 		}
 		for _, res := range args {
-			if _, ok := nodeYml.Resource[res]; !ok {
+			if _, ok := nodeYml.Resources[res]; !ok {
 				return fmt.Errorf("resource %s does not exist", res)
 			}
-			delete(nodeYml.Resource, res)
+			delete(nodeYml.Resources, res)
 		}
 		return nodeYml.Persist()
 	}

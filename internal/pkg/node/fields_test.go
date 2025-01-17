@@ -142,6 +142,7 @@ func Test_listFields(t *testing.T) {
 				"NetDevs[default].Tags[nettag]",
 				"Tags[tag]",
 				"PrimaryNetDev",
+				"Resources",
 			},
 		},
 		"profile": {
@@ -192,6 +193,7 @@ func Test_listFields(t *testing.T) {
 				"NetDevs[default].Tags[nettag]",
 				"Tags[tag]",
 				"PrimaryNetDev",
+				"Resources",
 			},
 		},
 	}

@@ -12,9 +12,9 @@ proc /proc proc defaults 0 0
 {{- if $fs.MountOptions }} noauto{{range $index,$opt := $fs.MountOptions }},{{ $opt }}{{ end }} 0 0
 {{- else }} noauto,defaults 0 0
 {{- end }}{{ end }}{{ end }}
-{{- $Resource := .Resource }}{{ $server := .Ipaddr}}{{/* export the needed values */}}
-{{- range $i,$ResName := .ResourceList }}
-{{- if eq (substr 0 3 $ResName) "NFS" }}{{ $nfs := (index $Resource $ResName)}}
+{{- $server := .Ipaddr}}{{/* export the needed values */}}
+{{- range $i,$ResName := .Node.Resources }}
+{{- if eq (substr 0 3 $ResName) "NFS" }}{{ $nfs := (index $.Resources $ResName)}}
 # Resource: {{ $ResName }}
 {{- if not (eq $nfs.server "controller") }}{{ $server = $nfs.server }}{{ end }}
 {{ $server }}:{{ $nfs.epath}} {{ $nfs.mountpoint }} nfs {{ $nfs.moptions }} 0 0

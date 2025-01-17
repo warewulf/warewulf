@@ -188,7 +188,7 @@ Return the names of all available remote resources
 */
 func (config *NodesYaml) ListAllResources() []string {
 	var resList []string
-	for name := range config.Resource {
+	for name := range config.Resources {
 		resList = append(resList, name)
 	}
 	sort.Strings(resList)
@@ -227,8 +227,8 @@ func (config *NodesYaml) FindDiscoverableNode() (Node, string, error) {
 /*
 get the given resource
 */
-func (config *NodesYaml) GetResource(id string) (res RemoteRes, err error) {
-	if found, ok := config.Resource[id]; ok {
+func (config *NodesYaml) GetResource(id string) (res Resource, err error) {
+	if found, ok := config.Resources[id]; ok {
 		return found, nil
 	}
 	return res, ErrNotFound

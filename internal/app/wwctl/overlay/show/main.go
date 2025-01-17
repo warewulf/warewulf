@@ -62,7 +62,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
-		tstruct, err := overlay.InitStruct(overlayName, nodeConf, allNodes)
+		tstruct, err := overlay.InitStruct(overlayName, nodeConf, allNodes, nodeDB.Resources)
 		if err != nil {
 			return err
 		}

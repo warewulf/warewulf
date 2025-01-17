@@ -28,7 +28,7 @@ test2
 `,
 			inDB: `nodeprofiles: {}
 nodes: {}
-resource:
+resources:
   test1: {}
   test2: {}
 `,
@@ -43,17 +43,17 @@ test  foo  baar
 `,
 			inDB: `nodeprofiles: {}
 nodes: {}
-resource:
+resources:
   test:
     foo: baar
 `,
 		},
 	}
 	env := testenv.New(t)
-	defer env.RemoveAll(t)
+	defer env.RemoveAll()
 	warewulfd.SetNoDaemon()
 	for _, tt := range tests {
-		env.WriteFile(t, "etc/warewulf/nodes.conf", tt.inDB)
+		env.WriteFile("etc/warewulf/nodes.conf", tt.inDB)
 		t.Run(tt.name, func(t *testing.T) {
 			baseCmd := GetCommand()
 			baseCmd.SetArgs(tt.args)
@@ -66,7 +66,7 @@ resource:
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, buf.String(), tt.stdout)
+				assert.Equal(t, tt.stdout, buf.String())
 			}
 		})
 

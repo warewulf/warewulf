@@ -170,7 +170,7 @@ nodes:
     "PrimaryNetDev": "",
     "Disks": null,
     "FileSystems": null,
-    "ResourceList": null
+    "Resources": null
   }
 }
 `,
@@ -222,7 +222,7 @@ nodes:
     "PrimaryNetDev": "",
     "Disks": null,
     "FileSystems": null,
-    "ResourceList": null
+    "Resources": null
   },
   "test": {
     "Profiles": null,
@@ -241,7 +241,7 @@ nodes:
     "PrimaryNetDev": "",
     "Disks": null,
     "FileSystems": null,
-    "ResourceList": null
+    "Resources": null
   }
 }
 `,

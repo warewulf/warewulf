@@ -5,7 +5,7 @@ import (
 )
 
 type variables struct {
-	tags     map[string]string
+	tags map[string]string
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

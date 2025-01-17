@@ -14,11 +14,11 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 		if err != nil {
 			return fmt.Errorf("failed to load node configuration: %s", err)
 		}
-		if ok := nodeYml.Resource[args[0]] != nil; ok {
-			if nodeYml.Resource == nil {
-				nodeYml.Resource = make(map[string]node.RemoteRes)
+		if ok := nodeYml.Resources[args[0]] != nil; ok {
+			if nodeYml.Resources == nil {
+				nodeYml.Resources = make(map[string]node.Resource)
 			}
-			res := nodeYml.Resource[args[0]]
+			res := nodeYml.Resources[args[0]]
 			for key, val := range vars.tags {
 				res[key] = val
 			}

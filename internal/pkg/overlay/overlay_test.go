@@ -229,7 +229,7 @@ T3
 
 			env.MkdirAll(tt.outputDir)
 
-			assert.NoError(t, BuildOverlayIndir(tt.node, []node.Node{tt.node}, tt.overlays, env.GetPath(tt.outputDir)))
+			assert.NoError(t, BuildOverlayIndir(tt.node, []node.Node{tt.node}, nil, tt.overlays, env.GetPath(tt.outputDir)))
 			dirFiles := tt.outputDirs
 			for outputFile, _ := range tt.outputFiles {
 				dirFiles = append(dirFiles, outputFile)
@@ -400,7 +400,7 @@ func Test_BuildOverlay(t *testing.T) {
 	for _, tt := range tests {
 		nodeInfo := node.NewNode(tt.nodeName)
 		t.Run(tt.description, func(t *testing.T) {
-			err := BuildOverlay(nodeInfo, []node.Node{nodeInfo}, tt.context, tt.overlays)
+			err := BuildOverlay(nodeInfo, []node.Node{nodeInfo}, nil, tt.context, tt.overlays)
 			assert.NoError(t, err)
 			if tt.image != "" {
 				image := env.GetPath(path.Join("srv/warewulf/overlays", tt.image))
@@ -523,7 +523,7 @@ func Test_BuildAllOverlays(t *testing.T) {
 				}
 				nodes = append(nodes, nodeInfo)
 			}
-			err := BuildAllOverlays(nodes, nodes, runtime.NumCPU())
+			err := BuildAllOverlays(nodes, nodes, nil, runtime.NumCPU())
 			assert.NoError(t, err)
 			if tt.createdOverlays == nil {
 				dirName := path.Join(provisionDir, "overlays")
@@ -615,7 +615,7 @@ func Test_BuildSpecificOverlays(t *testing.T) {
 				nodeInfo := node.NewNode(nodeName)
 				nodes = append(nodes, nodeInfo)
 			}
-			err := BuildSpecificOverlays(nodes, nodes, tt.overlays, runtime.NumCPU())
+			err := BuildSpecificOverlays(nodes, nodes, nil, tt.overlays, runtime.NumCPU())
 			if !tt.succeed {
 				assert.Error(t, err)
 			} else {

@@ -22,7 +22,7 @@ nodes:
     network devices:
       net0:
         device: eth0
-    resource_list:
+    resources:
       - NFSHOME
   test_node2:
     primary network: net1
@@ -53,7 +53,7 @@ nodes:
     network devices:
       override:
         device: ib1
-resource:
+resources:
   NFSHOME:
     mountpoint: /home
 `
@@ -123,8 +123,8 @@ func Test_Primary_Network(t *testing.T) {
 		assert.Equal(t, "profile", test_node6.NetDevs["override"].Type)
 	})
 	t.Run("resource is defined", func(t *testing.T) {
-		assert.Contains(t, test_node1.ResourceList, "NFSHOME")
-		res, err := c.GetResource(test_node1.ResourceList[0])
+		assert.Contains(t, test_node1.Resources, "NFSHOME")
+		res, err := c.GetResource(test_node1.Resources[0])
 		assert.NoError(t, err)
 		assert.Contains(t, res, "mountpoint")
 	})
