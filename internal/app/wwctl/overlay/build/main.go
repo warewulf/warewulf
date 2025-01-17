@@ -57,7 +57,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 
 			for _, node := range filteredNodes {
-				return overlay.BuildOverlayIndir(node, allNodes, nodeDB.Resources, OverlayNames, OverlayDir)
+				return overlay.BuildOverlayIndir(node, allNodes, OverlayNames, OverlayDir)
 			}
 		} else {
 			return errors.New("must specify a node to build overlay")
@@ -68,9 +68,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	defer syscall.Umask(oldMask)
 
 	if len(OverlayNames) > 0 {
-		err = overlay.BuildSpecificOverlays(filteredNodes, allNodes, nodeDB.Resources, OverlayNames, Workers)
+		err = overlay.BuildSpecificOverlays(filteredNodes, allNodes, OverlayNames, Workers)
 	} else {
-		err = overlay.BuildAllOverlays(filteredNodes, allNodes, nodeDB.Resources, Workers)
+		err = overlay.BuildAllOverlays(filteredNodes, allNodes, Workers)
 	}
 
 	if err != nil {

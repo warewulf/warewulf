@@ -12,11 +12,7 @@ proc /proc proc defaults 0 0
 {{- if $fs.MountOptions }} noauto{{range $index,$opt := $fs.MountOptions }},{{ $opt }}{{ end }} 0 0
 {{- else }} noauto,defaults 0 0
 {{- end }}{{ end }}{{ end }}
-{{- $server := .Ipaddr}}{{/* export the needed values */}}
-{{- range $i,$ResName := .Node.Resources }}
-{{- if eq (substr 0 3 $ResName) "NFS" }}{{ $nfs := (index $.Resources $ResName)}}
-# Resource: {{ $ResName }}
-{{- if not (eq $nfs.server "controller") }}{{ $server = $nfs.server }}{{ end }}
-{{ $server }}:{{ $nfs.epath}} {{ $nfs.mountpoint }} nfs {{ $nfs.moptions }} 0 0
-{{- end }}
-{{- end }}
+{{- with $fstab := index .Resources "fstab" }}
+{{- range $entry := $fstab }}
+{{ index $entry "spec" }} {{ index $entry "file" }} {{ default "nfs" (index $entry "vfstype") }} {{ default "defaults" (index $entry "mntops") }} {{ default 0 (index $entry "freq") }} {{ default 0 (index $entry "passno") }}
+{{- end }}{{ end }}

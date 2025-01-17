@@ -184,18 +184,6 @@ func (config *NodesYaml) ListAllProfiles() []string {
 }
 
 /*
-Return the names of all available remote resources
-*/
-func (config *NodesYaml) ListAllResources() []string {
-	var resList []string
-	for name := range config.Resources {
-		resList = append(resList, name)
-	}
-	sort.Strings(resList)
-	return resList
-}
-
-/*
 FindDiscoverableNode returns the first discoverable node and an
 interface to associate with the discovered interface. If the nodUNDEFe has
 a primary interface, it is returned; otherwise, the first interface
@@ -222,14 +210,4 @@ func (config *NodesYaml) FindDiscoverableNode() (Node, string, error) {
 	}
 
 	return EmptyNode(), "", ErrNoUnconfigured
-}
-
-/*
-get the given resource
-*/
-func (config *NodesYaml) GetResource(id string) (res Resource, err error) {
-	if found, ok := config.Resources[id]; ok {
-		return found, nil
-	}
-	return res, ErrNotFound
 }

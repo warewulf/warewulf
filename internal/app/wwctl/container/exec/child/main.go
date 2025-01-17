@@ -103,7 +103,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		}
 		overlays := filteredNodes[0].SystemOverlay
 		overlays = append(overlays, filteredNodes[0].RuntimeOverlay...)
-		err = overlay.BuildOverlayIndir(filteredNodes[0], allNodes, nodeDB.Resources, overlays, path.Join(runDir, "nodeoverlay"))
+		err = overlay.BuildOverlayIndir(filteredNodes[0], allNodes, overlays, path.Join(runDir, "nodeoverlay"))
 		if err != nil {
 			return fmt.Errorf("could not build overlay: %s", err)
 		}

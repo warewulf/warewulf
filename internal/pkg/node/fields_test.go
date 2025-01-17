@@ -103,6 +103,9 @@ func Test_listFields(t *testing.T) {
 							},
 						},
 					},
+					Resources: map[string]Resource{
+						"resource": "resvalue",
+					},
 				},
 			},
 			fields: []string{
@@ -142,7 +145,7 @@ func Test_listFields(t *testing.T) {
 				"NetDevs[default].Tags[nettag]",
 				"Tags[tag]",
 				"PrimaryNetDev",
-				"Resources",
+				"Resources[resource]",
 			},
 		},
 		"profile": {
@@ -156,6 +159,9 @@ func Test_listFields(t *testing.T) {
 							"nettag": "netvalue",
 						},
 					},
+				},
+				Resources: map[string]Resource{
+					"resource": "resvalue",
 				},
 			},
 			fields: []string{
@@ -193,7 +199,7 @@ func Test_listFields(t *testing.T) {
 				"NetDevs[default].Tags[nettag]",
 				"Tags[tag]",
 				"PrimaryNetDev",
-				"Resources",
+				"Resources[resource]",
 			},
 		},
 	}

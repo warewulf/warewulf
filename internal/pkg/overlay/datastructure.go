@@ -37,7 +37,6 @@ type TemplateStruct struct {
 	Tftp          warewulfconf.TFTPConf
 	Paths         warewulfconf.BuildConfig
 	AllNodes      []node.Node
-	Resources     map[string]node.Resource
 	node.Node
 	// backward compatiblity
 	Container string
@@ -47,7 +46,7 @@ type TemplateStruct struct {
 /*
 Initialize an TemplateStruct with the given node.NodeInfo
 */
-func InitStruct(overlayName string, nodeData node.Node, allNodes []node.Node, resources map[string]node.Resource) (TemplateStruct, error) {
+func InitStruct(overlayName string, nodeData node.Node, allNodes []node.Node) (TemplateStruct, error) {
 	var tstruct TemplateStruct
 	tstruct.Overlay = overlayName
 	hostname, _ := os.Hostname()
@@ -82,7 +81,6 @@ func InitStruct(overlayName string, nodeData node.Node, allNodes []node.Node, re
 	tstruct.BuildTime = dt.Format("01-02-2006 15:04:05 MST")
 	tstruct.BuildTimeUnix = strconv.FormatInt(dt.Unix(), 10)
 	// tstruct.Node.Tags = map[string]string{}
-	tstruct.Resources = resources
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 	dec := gob.NewDecoder(&buf)

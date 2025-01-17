@@ -17,13 +17,14 @@ nodeprofiles:
       override:
         device: ib0
         type: profile
+  resources:
+    fstab:
+    - file: /home
 nodes:
   test_node1:
     network devices:
       net0:
         device: eth0
-    resources:
-      - NFSHOME
   test_node2:
     primary network: net1
     network devices:
@@ -53,9 +54,6 @@ nodes:
     network devices:
       override:
         device: ib1
-resources:
-  NFSHOME:
-    mountpoint: /home
 `
 	var ret NodesYaml
 	err := yaml.Unmarshal([]byte(data), &ret)
@@ -121,12 +119,6 @@ func Test_Primary_Network(t *testing.T) {
 	t.Run("redefined in profile", func(t *testing.T) {
 		assert.Equal(t, "ib1", test_node6.NetDevs["override"].Device)
 		assert.Equal(t, "profile", test_node6.NetDevs["override"].Type)
-	})
-	t.Run("resource is defined", func(t *testing.T) {
-		assert.Contains(t, test_node1.Resources, "NFSHOME")
-		res, err := c.GetResource(test_node1.Resources[0])
-		assert.NoError(t, err)
-		assert.Contains(t, res, "mountpoint")
 	})
 }
 
