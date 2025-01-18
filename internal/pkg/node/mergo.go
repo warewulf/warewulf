@@ -156,7 +156,6 @@ func (config *NodesYaml) MergeNode(id string) (node Node, fields fieldMap, err e
 	return node, fields, nil
 }
 
-
 // merge merges the fields of src (a data object) into dst (a pointer) associated with it. Used by
 // MergeNode to provide consistent behavior when merging profiles and nodes.
 //
