@@ -141,7 +141,7 @@ func (config *NodesYaml) MergeNode(id string) (node Node, fields fieldMap, err e
 		}
 	}
 
-	if err = mergo.Merge(&node, originalNode, mergo.WithAppendSlice, mergo.WithOverride); err != nil {
+	if err = mergo.Merge(&node, originalNode, mergo.WithAppendSlice, mergo.WithOverride, mergo.WithTransformers(InterfaceTransformer{})); err != nil {
 		return node, fields, err
 	}
 	for _, fieldName := range listFields(originalNode) {
