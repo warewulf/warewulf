@@ -1,4 +1,4 @@
-WWCONTAINER={{$.Container}}
+WWIMAGE={{$.ImageName}}
 WWHOSTNAME={{$.Id}}
 WWROOT={{$.Root}}
 WWINIT={{$.Init}}

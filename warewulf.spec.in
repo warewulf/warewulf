@@ -79,11 +79,11 @@ BuildRequires: libassuan-devel
 Recommends: logrotate
 
 %description
-Warewulf is a stateless and diskless container operating system provisioning
+Warewulf is a stateless and diskless provisioning
 system for large clusters of bare metal and/or virtual systems.
 
 %package dracut
-Summary: dracut module for loading a Warewulf container image
+Summary: dracut module for loading a Warewulf image
 BuildArch: noarch
 
 Requires: dracut
@@ -96,11 +96,11 @@ Requires: cpio
 Requires: dmidecode
 
 %description dracut
-Warewulf is a stateless and diskless container operating system provisioning
+Warewulf is a stateless and diskless provisioning
 system for large clusters of bare metal and/or virtual systems.
 
 This subpackage contains a dracut module that can be used to generate
-an initramfs that can fetch and boot a Warewulf container image from a
+an initramfs that can fetch and boot a Warewulf node image from a
 Warewulf server.
 
 %prep

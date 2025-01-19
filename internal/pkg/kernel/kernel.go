@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/go-version"
 
-	"github.com/warewulf/warewulf/internal/pkg/container"
+	"github.com/warewulf/warewulf/internal/pkg/image"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -67,29 +67,29 @@ func (k collection) Version(version string) *Kernel {
 }
 
 type Kernel struct {
-	Path          string
-	ContainerName string
+	Path      string
+	ImageName string
 }
 
 func FromNode(node *node.Node) *Kernel {
 	wwlog.Debug("FromNode(%v)", node)
-	if node.ContainerName == "" {
+	if node.ImageName == "" {
 		return nil
 	} else if node.Kernel != nil && node.Kernel.Version != "" {
-		kernel := &Kernel{ContainerName: node.ContainerName, Path: filepath.Join("/", node.Kernel.Version)}
+		kernel := &Kernel{ImageName: node.ImageName, Path: filepath.Join("/", node.Kernel.Version)}
 		if util.IsFile(kernel.FullPath()) {
 			return kernel
 		} else {
-			return FindKernels(node.ContainerName).Version(node.Kernel.Version)
+			return FindKernels(node.ImageName).Version(node.Kernel.Version)
 		}
 	} else {
-		return FindKernels(node.ContainerName).Default()
+		return FindKernels(node.ImageName).Default()
 	}
 }
 
-func FindKernelsFromPattern(containerName string, pattern string) (kernels collection) {
-	wwlog.Debug("FindKernelsFromPattern(%v, %v)", containerName, pattern)
-	root := container.RootFsDir(containerName)
+func FindKernelsFromPattern(imageName string, pattern string) (kernels collection) {
+	wwlog.Debug("FindKernelsFromPattern(%v, %v)", imageName, pattern)
+	root := image.RootFsDir(imageName)
 	fullPaths, err := filepath.Glob(filepath.Join(root, pattern))
 	wwlog.Debug("%v: fullPaths: %v", filepath.Join(root, pattern), fullPaths)
 	if err != nil {
@@ -100,23 +100,23 @@ func FindKernelsFromPattern(containerName string, pattern string) (kernels colle
 		if err != nil {
 			continue
 		} else {
-			kernels = append(kernels, &Kernel{ContainerName: containerName, Path: filepath.Join("/", path)})
+			kernels = append(kernels, &Kernel{ImageName: imageName, Path: filepath.Join("/", path)})
 		}
 	}
 	return kernels
 }
 
-func FindKernels(containerName string) (kernels collection) {
-	wwlog.Debug("FindKernels(%v)", containerName)
+func FindKernels(imageName string) (kernels collection) {
+	wwlog.Debug("FindKernels(%v)", imageName)
 	for _, pattern := range kernelSearchPaths {
-		kernels = append(kernels, FindKernelsFromPattern(containerName, pattern)...)
+		kernels = append(kernels, FindKernelsFromPattern(imageName, pattern)...)
 	}
 	return kernels
 }
 
 func FindAllKernels() (kernels collection) {
 	wwlog.Debug("FindAllKernels()")
-	if sources, err := container.ListSources(); err == nil {
+	if sources, err := image.ListSources(); err == nil {
 		for _, source := range sources {
 			kernels = append(kernels, FindKernels(source)...)
 		}
@@ -148,6 +148,6 @@ func (this *Kernel) IsRescue() bool {
 }
 
 func (this *Kernel) FullPath() string {
-	root := container.RootFsDir(this.ContainerName)
+	root := image.RootFsDir(this.ImageName)
 	return filepath.Join(root, this.Path)
 }

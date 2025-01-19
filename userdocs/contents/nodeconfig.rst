@@ -85,7 +85,7 @@ You can also see the node's full attribute list by specifying the
   n001                 Id                 --           n001
   n001                 comment            default      This profile is automatically included for each node
   n001                 cluster            --           --
-  n001                 container          default      sle-micro-5.3
+  n001                 image              default      sle-micro-5.3
   n001                 ipxe               --           (default)
   n001                 runtime            --           (hosts,ssh.authorized_keys,syncuser)
   n001                 wwinit             --           (wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition)
@@ -124,9 +124,9 @@ You can also see the node's full attribute list by specifying the
 Setting Node Attributes
 =======================
 
-In the above output we can see that there is no kernel or container
+In the above output we can see that there is no kernel or image
 defined for this node. To provision a node, the minimum requirements
-are a kernel and container, and for that node to be useful, we will
+are a kernel and image, and for that node to be useful, we will
 also need to configure the network so the nodes are reachable after
 they boot.
 
@@ -134,20 +134,20 @@ Node configurations are set using the ``wwctl node set`` command. To
 see a list of all configuration attributes, use the command ``wwctl
 node set --help``.
 
-Configuring the Node's Container Image
-======================================
+Configuring the Node's Image
+============================
 
 .. code-block:: console
 
-   # wwctl node set --container rocky-8 n001
+   # wwctl node set --image rocky-8 n001
    Are you sure you want to modify 1 nodes(s): y
 
-And you can check that the container name is set for ``n001``:
+And you can check that the image name is set for ``n001``:
 
 .. code-block:: console
 
-   # wwctl node list -a  n001 | grep Container
-   n0000                Container          --           rocky-8
+   # wwctl node list -a  n001 | grep Image
+   n0000                Image              --           rocky-8
 
 Configuring the Node's Network
 ------------------------------
@@ -161,7 +161,7 @@ provide the network information as follows:
    Are you sure you want to modify 1 nodes(s): y
 
 You can now see that the node contains configuration attributes for
-container, kernel, and network:
+image, kernel, and network:
 
 .. code-block:: console
 
@@ -170,7 +170,7 @@ container, kernel, and network:
   n001                 Id                 --           n001
   n001                 comment            default      This profile is automatically included for each node
   n001                 cluster            --           --
-  n001                 container          default      sle-micro-5.3
+  n001                 image              default      sle-micro-5.3
   n001                 ipxe               --           (default)
   n001                 runtime            --           (hosts,ssh.authorized_keys,syncuser)
   n001                 wwinit             --           (wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition)

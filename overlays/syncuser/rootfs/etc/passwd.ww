@@ -1,4 +1,4 @@
 # Uncomment the following line to enable passwordless root login
 # root::0:0:root:/root:/bin/bash
-{{IncludeFrom $.Container "/etc/passwd"}}
+{{IncludeFrom $.ImageName "/etc/passwd"}}
 {{Include "/etc/passwd"}}

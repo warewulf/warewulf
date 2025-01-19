@@ -1,14 +1,14 @@
 #!ipxe
-{{ if .ContainerName }}
+{{ if .ImageName }}
 echo
 echo ================================================================================
 echo Warewulf v4 now booting: {{.Fqdn}} ({{.Hwaddr}})
 echo
-echo Container:     {{.ContainerName}}
+echo Image:         {{.ImageName}}
 {{if .KernelVersion }}
 echo Kernel:        {{.KernelVersion}}
 {{else}}
-echo Kernel:        {{.ContainerName}} (container default)
+echo Kernel:        {{.ImageName}} (image default)
 {{end}}
 echo KernelArgs:    {{.KernelArgs}}
 echo
@@ -30,8 +30,8 @@ iseq ${platform} efi && goto efi || goto noefi
 
 # try extracting compressed images first
 # NOTE: system overlay tends to be the smallest, so failure here is the cheapest
-echo Downloading Container Image:
-imgextract --name container ${uri_base}&stage=container&compress=gz || goto nocompress
+echo Downloading Image:
+imgextract --name image ${uri_base}&stage=image&compress=gz || goto nocompress
 
 echo Downloading System Overlay:
 imgextract --name system ${uri_base}&stage=system&compress=gz       || goto reboot
@@ -46,8 +46,8 @@ goto imoktogo
 echo
 echo Image extract not supported in this iPXE, using standard initrd mode
 
-echo Downloading Container Image:
-initrd --name container ${uri_base}&stage=container     || goto reboot
+echo Downloading Image:
+initrd --name image ${uri_base}&stage=image     || goto reboot
 
 echo Downloading System Overlay:
 initrd --name system ${uri_base}&stage=system           || goto reboot
@@ -62,8 +62,8 @@ goto imoktogo
 echo
 echo Use legacy initrd mode with compressed images
 
-echo Downloading Container Image:
-initrd --name container ${uri_base}&stage=container&compress=gz || goto reboot
+echo Downloading Image:
+initrd --name image ${uri_base}&stage=image&compress=gz || goto reboot
 
 echo Downloading System Overlay:
 initrd --name system ${uri_base}&stage=system&compress=gz       || goto reboot
@@ -74,8 +74,8 @@ initrd --name runtime ${uri_base}&stage=runtime&compress=gz     && set runtime_i
 
 :imoktogo
 
-echo boot kernel initrd=container initrd=system ${runtime_initrd} wwid={{.Hwaddr}} {{.KernelArgs}}
-boot kernel initrd=container initrd=system ${runtime_initrd} wwid={{.Hwaddr}} {{.KernelArgs}} ||  goto reboot
+echo boot kernel initrd=image initrd=system ${runtime_initrd} wwid={{.Hwaddr}} {{.KernelArgs}}
+boot kernel initrd=image initrd=system ${runtime_initrd} wwid={{.Hwaddr}} {{.KernelArgs}} ||  goto reboot
 
 :reboot
 echo
@@ -86,7 +86,7 @@ reboot
 {{ else }}
 echo ================================================================================
 echo  Warewulf v4:
-echo  No node image/container defined for this node ({{.Fqdn}}).
+echo  No image defined for this node ({{.Fqdn}}).
 echo  Rebooting in 30s.
 echo ================================================================================
 sleep 30

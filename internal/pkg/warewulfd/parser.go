@@ -63,8 +63,8 @@ func parseReq(req *http.Request) (parserInfo, error) {
 			ret.stage = "ipxe"
 		} else if stage == "kernel" {
 			ret.stage = "kernel"
-		} else if stage == "container" {
-			ret.stage = "container"
+		} else if stage == "image" {
+			ret.stage = "image"
 		} else if stage == "overlay-system" {
 			ret.stage = "system"
 		} else if stage == "overlay-runtime" {

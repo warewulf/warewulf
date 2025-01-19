@@ -388,7 +388,7 @@ ssh:
     - dsa
     - ecdsa
     - ed25519
-container mounts:
+image mounts:
   - source: /etc/resolv.conf
     dest: /etc/resolv.conf
     readonly: true
@@ -482,7 +482,7 @@ ssh:
     - dsa
     - ecdsa
     - ed25519
-container mounts:
+image mounts:
   - source: /etc/resolv.conf
     dest: /etc/resolv.conf
     readonly: true

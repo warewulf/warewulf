@@ -74,7 +74,7 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_Long {
 		nodeList.Output = append(nodeList.Output,
-			fmt.Sprintf("%s:=:%s:=:%s:=:%s", "NODE NAME", "KERNEL VERSION", "CONTAINER", "OVERLAYS (S/R)"))
+			fmt.Sprintf("%s:=:%s:=:%s:=:%s", "NODE NAME", "KERNEL VERSION", "IMAGE", "OVERLAYS (S/R)"))
 		for _, n := range node.FilterNodeListByName(nodes, nodeGet.Nodes) {
 			kernelVersion := ""
 			if n.Kernel != nil {
@@ -83,7 +83,7 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 			nodeList.Output = append(nodeList.Output,
 				fmt.Sprintf("%s:=:%s:=:%s:=:%s", n.Id(),
 					kernelVersion,
-					n.ContainerName,
+					n.ImageName,
 					strings.Join(n.SystemOverlay, ",")+"/"+strings.Join(n.RuntimeOverlay, ",")))
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_All {

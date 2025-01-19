@@ -223,8 +223,8 @@ Vagrantfile
 
                 wwctl configure --all
 
-                wwctl container import docker://ghcr.io/warewulf/warewulf-rockylinux:9 rocky-9
-                wwctl profile set --yes --container rocky-9 "default"
+                wwctl image import docker://ghcr.io/warewulf/warewulf-rockylinux:9 rocky-9
+                wwctl profile set --yes --image rocky-9 "default"
                 wwctl profile set --yes --netdev eth1 --netmask 255.255.255.0 --gateway 192.168.200.254 "default"
 
                 wwctl node add n0001.cluster -I 192.168.200.101 --discoverable true

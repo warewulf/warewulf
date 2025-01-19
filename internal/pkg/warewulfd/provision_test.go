@@ -40,7 +40,7 @@ func Test_ProvisionSend(t *testing.T) {
 
 	env.WriteFile("etc/warewulf/nodes.conf", `nodeprofiles:
   default:
-    container name: suse
+    image name: suse
 nodes:
   n1:
     network devices:
@@ -52,7 +52,7 @@ nodes:
     network devices:
       default:
         hwaddr: 00:00:00:00:ff:ff
-    container name: none
+    image name: none
     tags:
       GrubMenuEntry: dracut
   n3:

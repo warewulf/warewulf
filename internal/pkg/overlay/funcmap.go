@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
-	"github.com/warewulf/warewulf/internal/pkg/container"
+	"github.com/warewulf/warewulf/internal/pkg/image"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -73,32 +73,32 @@ func templateFileBlock(inc string, abortStr string) (string, error) {
 }
 
 /*
-Reads a file relative to given container.
+Reads a file relative to given image.
 Templates in the file are no evaluated.
 */
-func templateContainerFileInclude(containername string, filepath string) string {
-	wwlog.Verbose("Including file from Container into template: %s:%s", containername, filepath)
+func templateImageFileInclude(imagename string, filepath string) string {
+	wwlog.Verbose("Including file from Image into template: %s:%s", imagename, filepath)
 
-	if containername == "" {
-		wwlog.Warn("Container is not defined for node: %s", filepath)
+	if imagename == "" {
+		wwlog.Warn("Image is not defined for node: %s", filepath)
 		return ""
 	}
 
-	if !container.ValidSource(containername) {
-		wwlog.Warn("Template requires file(s) from non-existant container: %s:%s", containername, filepath)
+	if !image.ValidSource(imagename) {
+		wwlog.Warn("Template requires file(s) from non-existant image: %s:%s", imagename, filepath)
 		return ""
 	}
 
-	containerDir := container.RootFsDir(containername)
+	imageDir := image.RootFsDir(imagename)
 
-	wwlog.Debug("Including file from container: %s:%s", containerDir, filepath)
+	wwlog.Debug("Including file from image: %s:%s", imageDir, filepath)
 
-	if !util.IsFile(path.Join(containerDir, filepath)) {
-		wwlog.Warn("Requested file from container does not exist: %s:%s", containername, filepath)
+	if !util.IsFile(path.Join(imageDir, filepath)) {
+		wwlog.Warn("Requested file from image does not exist: %s:%s", imagename, filepath)
 		return ""
 	}
 
-	content, err := os.ReadFile(path.Join(containerDir, filepath))
+	content, err := os.ReadFile(path.Join(imageDir, filepath))
 
 	if err != nil {
 		wwlog.Error("Template include failed: %s", err)

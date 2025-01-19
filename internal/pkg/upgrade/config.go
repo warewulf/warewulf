@@ -29,6 +29,7 @@ type WarewulfYaml struct {
 	TFTP            *TFTPConf     `yaml:"tftp"`
 	NFS             *NFSConf      `yaml:"nfs"`
 	SSH             *SSHConf      `yaml:"ssh"`
+	MountsImage     []*MountEntry `yaml:"image mounts"`
 	MountsContainer []*MountEntry `yaml:"container mounts"`
 	Paths           *BuildConfig  `yaml:"paths"`
 	WWClient        *WWClientConf `yaml:"wwclient"`
@@ -61,9 +62,14 @@ func (this *WarewulfYaml) Upgrade() (upgraded *config.WarewulfYaml) {
 	if this.SSH != nil {
 		upgraded.SSH = this.SSH.Upgrade()
 	}
-	upgraded.MountsContainer = make([]*config.MountEntry, 0)
-	for _, mount := range this.MountsContainer {
-		upgraded.MountsContainer = append(upgraded.MountsContainer, mount.Upgrade())
+	upgraded.MountsImage = make([]*config.MountEntry, 0)
+	for _, mount := range this.MountsImage {
+		upgraded.MountsImage = append(upgraded.MountsImage, mount.Upgrade())
+	}
+	if len(upgraded.MountsImage) == 0 {
+		for _, mount := range this.MountsContainer {
+			upgraded.MountsImage = append(upgraded.MountsImage, mount.Upgrade())
+		}
 	}
 	if this.Paths != nil {
 		upgraded.Paths = this.Paths.Upgrade()

@@ -12,7 +12,7 @@ import (
 	"path"
 
 	"github.com/warewulf/warewulf/internal/pkg/api/apiconfig"
-	"github.com/warewulf/warewulf/internal/pkg/api/container"
+	"github.com/warewulf/warewulf/internal/pkg/api/image"
 	apinode "github.com/warewulf/warewulf/internal/pkg/api/node"
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
@@ -121,92 +121,92 @@ func insecureMode() {
 
 // Api implementation.
 
-// ContainerBuild builds one or more containers.
-func (s *apiServer) ContainerBuild(ctx context.Context, request *wwapiv1.ContainerBuildParameter) (response *wwapiv1.ContainerListResponse, err error) {
+// ImageBuild builds one or more images.
+func (s *apiServer) ImageBuild(ctx context.Context, request *wwapiv1.ImageBuildParameter) (response *wwapiv1.ImageListResponse, err error) {
 
 	// Parameter checks.
 	if request == nil {
 		return response, status.Errorf(codes.InvalidArgument, "nil request")
 	}
 
-	if request.ContainerNames == nil {
-		return response, status.Errorf(codes.InvalidArgument, "nil request.ContainerNames")
+	if request.ImageNames == nil {
+		return response, status.Errorf(codes.InvalidArgument, "nil request.ImageNames")
 	}
 
-	// Build the container.
-	err = container.ContainerBuild(request)
+	// Build the image.
+	err = image.ImageBuild(request)
 	if err != nil {
 		return
 	}
 
-	// Return the built containers. (A REST POST returns what is modified.)
-	var containers []*wwapiv1.ContainerInfo
-	containers, err = container.ContainerList()
+	// Return the built images. (A REST POST returns what is modified.)
+	var images []*wwapiv1.ImageInfo
+	images, err = image.ImageList()
 	if err != nil {
 		return
 	}
 
-	response = &wwapiv1.ContainerListResponse{}
-	for i := 0; i < len(containers); i++ {
-		for j := 0; j < len(request.ContainerNames); j++ {
-			if containers[i].Name == request.ContainerNames[j] {
-				response.Containers = append(response.Containers, containers[i])
+	response = &wwapiv1.ImageListResponse{}
+	for i := 0; i < len(images); i++ {
+		for j := 0; j < len(request.ImageNames); j++ {
+			if images[i].Name == request.ImageNames[j] {
+				response.Images = append(response.Images, images[i])
 			}
 		}
 	}
 	return
 }
 
-// ContainerCopy duplicates a container.
-func (s *apiServer) ContainerCopy(ctx context.Context, request *wwapiv1.ContainerCopyParameter) (response *emptypb.Empty, err error) {
+// ImageCopy duplicates an image.
+func (s *apiServer) ImageCopy(ctx context.Context, request *wwapiv1.ImageCopyParameter) (response *emptypb.Empty, err error) {
 
 	// Parameter checks.
 	if request == nil {
 		return response, status.Errorf(codes.InvalidArgument, "nil request")
 	}
 
-	err = container.ContainerCopy(request)
+	err = image.ImageCopy(request)
 	return
 }
 
-// ContainerDelete deletes one or more containers from Warewulf.
-func (s *apiServer) ContainerDelete(ctx context.Context, request *wwapiv1.ContainerDeleteParameter) (response *emptypb.Empty, err error) {
+// ImageDelete deletes one or more images from Warewulf.
+func (s *apiServer) ImageDelete(ctx context.Context, request *wwapiv1.ImageDeleteParameter) (response *emptypb.Empty, err error) {
 
 	// Parameter checks.
 	if request == nil {
 		return response, status.Errorf(codes.InvalidArgument, "nil request")
 	}
 
-	if request.ContainerNames == nil {
-		return response, status.Errorf(codes.InvalidArgument, "nil request.ContainerNames")
+	if request.ImageNames == nil {
+		return response, status.Errorf(codes.InvalidArgument, "nil request.ImageNames")
 	}
 
-	err = container.ContainerDelete(request)
+	err = image.ImageDelete(request)
 	return
 }
 
-func (s *apiServer) ContainerImport(ctx context.Context, request *wwapiv1.ContainerImportParameter) (response *wwapiv1.ContainerListResponse, err error) {
+func (s *apiServer) ImageImport(ctx context.Context, request *wwapiv1.ImageImportParameter) (response *wwapiv1.ImageListResponse, err error) {
 
-	// Import the container.
-	var containerName string
-	containerName, err = container.ContainerImport(request)
+	// Import the image.
+	var imageName string
+	imageName, err = image.ImageImport(request)
 	if err != nil {
 		return
 	}
 
-	// Return the imported container to the client.
-	var containers []*wwapiv1.ContainerInfo
-	containers, err = container.ContainerList()
+	// Return the imported image to the client.
+	var images []*wwapiv1.ImageInfo
+	images, err = image.ImageList()
 	if err != nil {
 		return
 	}
 
-	// Container name may have been shimmed in during import,
-	// which is why ContainerImport returns it.
-	for i := 0; i < len(containers); i++ {
-		if containerName == containers[i].Name {
-			response = &wwapiv1.ContainerListResponse{
-				Containers: []*wwapiv1.ContainerInfo{containers[i]},
+	// Image name may have been shimmed in during import,
+	// which is why ImageImport returns it.
+	for i := 0; i < len(images); i++ {
+		if imageName == images[i].Name {
+			response = &wwapiv1.ImageListResponse{
+				Images: []*wwapiv1.ImageInfo{images[i]},
 			}
 			return
 		}
@@ -214,30 +214,30 @@ func (s *apiServer) ContainerImport(ctx context.Context, request *wwapiv1.Contai
 	return
 }
 
-// ContainerList returns details about containers.
-func (s *apiServer) ContainerList(ctx context.Context, request *emptypb.Empty) (response *wwapiv1.ContainerListResponse, err error) {
+// ImageList returns details about images.
+func (s *apiServer) ImageList(ctx context.Context, request *emptypb.Empty) (response *wwapiv1.ImageListResponse, err error) {
 
-	var containers []*wwapiv1.ContainerInfo
-	containers, err = container.ContainerList()
+	var images []*wwapiv1.ImageInfo
+	images, err = image.ImageList()
 	if err != nil {
 		return
 	}
 
-	response = &wwapiv1.ContainerListResponse{
-		Containers: containers,
+	response = &wwapiv1.ImageListResponse{
+		Images: images,
 	}
 	return
 }
 
-// ContainerShow returns details about containers.
-func (s *apiServer) ContainerShow(ctx context.Context, request *wwapiv1.ContainerShowParameter) (response *wwapiv1.ContainerShowResponse, err error) {
+// ImageShow returns details about images.
+func (s *apiServer) ImageShow(ctx context.Context, request *wwapiv1.ImageShowParameter) (response *wwapiv1.ImageShowResponse, err error) {
 
 	// Parameter checks.
 	if request == nil {
 		return response, status.Errorf(codes.InvalidArgument, "nil request")
 	}
 
-	return container.ContainerShow(request)
+	return image.ImageShow(request)
 }
 
 // NodeAdd adds one or more nodes for management by Warewulf and returns the added nodes.

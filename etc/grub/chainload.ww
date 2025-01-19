@@ -12,7 +12,7 @@ menuentry "Load specific configfile" {
     conf="(http,{{.Ipaddr}}:{{.Warewulf.Port}})/efiboot/grub.cfg?assetkey=${assetkey}"
     configfile $conf
 }
-menuentry "Chainload shim of container" {
+menuentry "Chainload shim from image" {
     shim="(http,{{.Ipaddr}}:{{.Warewulf.Port}})/efiboot/shim.efi?assetkey=${assetkey}"
     chainloader ${shim}
 }

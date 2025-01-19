@@ -39,8 +39,9 @@ type TemplateStruct struct {
 	AllNodes      []node.Node
 	node.Node
 	// backward compatiblity
-	Container string
-	ThisNode  *node.Node
+	Container     string
+	ContainerName string
+	ThisNode      *node.Node
 }
 
 /*
@@ -74,7 +75,8 @@ func InitStruct(overlayName string, nodeData node.Node, allNodes []node.Node) (T
 	// init some convenience vars
 	tstruct.Id = nodeData.Id()
 	tstruct.Hostname = nodeData.Id()
-	tstruct.Container = nodeData.ContainerName
+	tstruct.Container = nodeData.ImageName
+	tstruct.ContainerName = nodeData.ImageName
 	// Backwards compatibility for templates using "Keys"
 	tstruct.AllNodes = allNodes
 	dt := time.Now()

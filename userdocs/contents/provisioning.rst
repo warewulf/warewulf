@@ -56,7 +56,7 @@ occur:
     #. The Warewulf server will generate the iPXE configuration which
        will include directions of what else is necessary to download
        and how to boot.
-    #. The kernel, container image, kernel modules, and overlays
+    #. The kernel, image, kernel modules, and overlays
        are all downloaded over REST HTTP from the Warewulf Server
     #. iPXE executes the kernel and processes the overlays to provide
        a unified root file system
@@ -65,9 +65,9 @@ occur:
        #. File System (re)configuration
        #. SELinux
        #. ``wwclient`` is called as a background daemon and sleeps until network is ready
-    #. The Warewulf bootstrap execs the container's ``/sbin/init``
-#. Container:
-    #. The container now boots exactly as any operating system would
+    #. The Warewulf bootstrap execs the image's ``/sbin/init``
+#. Image:
+    #. The image now boots exactly as any operating system would
        expect
 
 

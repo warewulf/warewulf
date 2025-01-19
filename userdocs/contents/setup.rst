@@ -116,7 +116,7 @@ You can check the result with ``wwctl node list``.
   NODE         FIELD                             PROFILE  VALUE
   deliverynet  Id                                --       deliverynet
   deliverynet  Comment                           default  This profile is automatically included for each node
-  deliverynet  ContainerName                     default  leap15.5
+  deliverynet  ImageName                         default  leap15.5
   deliverynet  Ipxe                              --       (default)
   deliverynet  RuntimeOverlay                    --       (hosts,ssh.authorized_keys,syncuser)
   deliverynet  SystemOverlay                     --       (wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition)

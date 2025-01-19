@@ -75,7 +75,7 @@ data from other structures.
 - Hostname: node1
 - Comment: 
 - ClusterName: 
-- ContainerName: rockylinux-9
+- ImageName: rockylinux-9
 - Ipxe: default
 - RuntimeOverlay: hosts,ssh.authorized_keys,syncuser
 - SystemOverlay: wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition
@@ -187,7 +187,7 @@ data from other structures.
   - Id: node1
   - Comment: 
   - ClusterName: 
-  - ContainerName: rockylinux-9
+  - ImageName: rockylinux-9
   - Ipxe: default
   - RuntimeOverlay: [hosts ssh.authorized_keys syncuser]
   - SystemOverlay: [wwinit wwclient fstab hostname ssh.host_keys issue resolv udev.netname systemd.netname ifcfg NetworkManager debian.interfaces wicked ignition]
@@ -244,7 +244,7 @@ data from other structures.
   - Id: node2
   - Comment: 
   - ClusterName: 
-  - ContainerName: 
+  - ImageName: 
   - Ipxe: default
   - RuntimeOverlay: [hosts ssh.authorized_keys syncuser]
   - SystemOverlay: [wwinit wwclient fstab hostname ssh.host_keys issue resolv udev.netname systemd.netname ifcfg NetworkManager debian.interfaces wicked ignition]

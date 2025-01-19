@@ -11,17 +11,17 @@ curl --cacert /usr/local/etc/warewulf/keys/cacert.pem \
     --cert /usr/local/etc/warewulf/keys/client.pem \
     https://localhost:9871/version
 
-# container list all
-curl http://localhost:9871/v1/container
+# image list all
+curl http://localhost:9871/v1/image
 
-# container import
-curl -d '{"source": "docker://ghcr.io/warewulf/warewulf-rockylinux:8", "name": "rocky-8", "update": true, "default": true}' -H "Content-Type: application/json" -X POST http://localhost:9871/v1/container
+# image import
+curl -d '{"source": "docker://ghcr.io/warewulf/warewulf-rockylinux:8", "name": "rocky-8", "update": true, "default": true}' -H "Content-Type: application/json" -X POST http://localhost:9871/v1/image
 
-# container delete
-curl -X DELETE http://localhost:9871/v1/container?containerNames=rocky-8
+# image delete
+curl -X DELETE http://localhost:9871/v1/image?imageNames=rocky-8
 
-# container build
-curl -d '{"containerNames": ["rocky-8"], "force": true}' -H "Content-Type: application/json" -X POST http://localhost:9871/v1/containerbuild
+# image build
+curl -d '{"imageNames": ["rocky-8"], "force": true}' -H "Content-Type: application/json" -X POST http://localhost:9871/v1/imagebuild
 
 # node list all
 curl http://localhost:9871/v1/node

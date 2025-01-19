@@ -311,6 +311,16 @@ func (node *Profile) Id() string {
 	return node.id
 }
 
+// ContainerName returns the value of the ImageName field for backwards-compatibility.
+func (node *Node) ContainerName() string {
+	return node.ImageName
+}
+
+// ContainerName returns the value of the ImageName field for backwards-compatibility.
+func (profile *Profile) ContainerName() string {
+	return profile.ImageName
+}
+
 /*
 Returns if the node is a valid in the database
 */

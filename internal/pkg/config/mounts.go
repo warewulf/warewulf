@@ -1,13 +1,13 @@
 package config
 
-// A MountEntry represents a bind mount that is applied to a container
+// A MountEntry represents a bind mount that is applied to an image
 // during exec and shell.
 type MountEntry struct {
 	Source    string `yaml:"source"`
 	Dest      string `yaml:"dest,omitempty"`
 	ReadOnlyP *bool  `yaml:"readonly,omitempty"`
 	Options   string `yaml:"options,omitempty"` // ignored at the moment
-	CopyP     *bool  `yaml:"copy,omitempty"`    // temporarily copy the file into the container
+	CopyP     *bool  `yaml:"copy,omitempty"`    // temporarily copy the file into the image
 }
 
 func (this MountEntry) ReadOnly() bool {

@@ -93,7 +93,7 @@ address of your cluster's private network interface.
      - path: /opt
        export options: ro,sync,no_root_squash
      systemd name: nfs-server
-   container mounts:
+   image mounts:
    - source: /etc/resolv.conf
      dest: /etc/resolv.conf
      readonly: true
@@ -143,17 +143,17 @@ configure --all``.
    you may need to run ``restorecon -Rv /var/lib/tftpboot/`` to label
    files written to q`tftpboot``.
 
-Add a base node image container
-===============================
+Add a base node image
+=====================
 
-This will pull a basic node image container from Docker Hub and import the
+This will pull a basic node image from Docker Hub and import the
 default running kernel from the controller node and set both in the
 "default" node profile.
 
 .. code-block:: bash
 
-   wwctl container import docker://ghcr.io/warewulf/warewulf-rockylinux:9 rockylinux-9 --build
-   wwctl profile set default --container rockylinux-9
+   wwctl image import docker://ghcr.io/warewulf/warewulf-rockylinux:9 rockylinux-9 --build
+   wwctl profile set default --image rockylinux-9
 
 Configure the default node profile
 ==================================

@@ -17,7 +17,7 @@ data from other structures.
 - Hostname: {{ .Hostname }}
 - Comment: {{ .Comment }}
 - ClusterName: {{ .ClusterName }}
-- ContainerName: {{ .ContainerName }}
+- ImageName: {{ .ImageName }}
 - Ipxe: {{ .Ipxe }}
 - RuntimeOverlay: {{ range $index, $value := .RuntimeOverlay }}{{ if $index }},{{ end }}{{ $value }}{{ end }}
 - SystemOverlay: {{ range $index, $value := .SystemOverlay }}{{ if $index }},{{ end }}{{ $value }}{{ end }}
@@ -130,7 +130,7 @@ data from other structures.
   - Id: {{ $node.Id }}
   - Comment: {{ $node.Comment }}
   - ClusterName: {{ $node.ClusterName }}
-  - ContainerName: {{ $node.ContainerName }}
+  - ImageName: {{ $node.ImageName }}
   - Ipxe: {{ $node.Ipxe }}
   - RuntimeOverlay: {{ $node.RuntimeOverlay }}
   - SystemOverlay: {{ $node.SystemOverlay }}

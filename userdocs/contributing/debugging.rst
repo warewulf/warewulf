@@ -239,7 +239,7 @@ Example debugging session
    altvalue: []string len: 0, cap: 0, nil,
    from: "",
    def: []string len: 0, cap: 0, nil,},
-   ContainerName: github.com/warewulf/warewulf/internal/pkg/node.Entry {
+   ImageName: github.com/warewulf/warewulf/internal/pkg/node.Entry {
    value: []string len: 0, cap: 0, nil,
    altvalue: []string len: 0, cap: 0, nil,
    from: "",

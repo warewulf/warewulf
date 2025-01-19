@@ -40,7 +40,7 @@ Warewulf (4.5.8):
      - path: /opt
        export options: ro,sync,no_root_squash
      systemd name: nfs-server
-   container mounts:
+   image mounts:
      - source: /etc/resolv.conf
        dest: /etc/resolv.conf
        readonly: true
@@ -114,8 +114,8 @@ explained as follows:
 * ``nfs:export paths``: Warewulf can automatically set up these NFS
   exports.
 
-* ``container mounts``: These paths are mounted into the container
-  during ``container exec`` or ``container shell``, typically to allow
+* ``image mounts``: These paths are mounted into the image
+  during ``image exec`` or ``image shell``, typically to allow
   them to operate in the host environment prior to deployment.
 
 Paths
@@ -123,7 +123,7 @@ Paths
 
 *New in Warewulf v4.5.0*
 
-Default paths to containers, overlays, and other Warewulf components
+Default paths to images, overlays, and other Warewulf components
 may be overridden using ``warewulf.conf:paths``.
 
 .. code-block:: yaml
@@ -145,9 +145,9 @@ may be overridden using ``warewulf.conf:paths``.
 
 * ``wwoverlaydir``: The source for Warewulf overlays.
 
-* ``wwchrootdir``: The source for Warewulf containers.
+* ``wwchrootdir``: The source for Warewulf images.
 
-* ``wwprovisiondir``: Where to store built overlays, built containers, and imported kernels.
+* ``wwprovisiondir``: Where to store built overlays, built images, and imported kernels.
 
 * ``wwclientdir``: Where the Warewulf client looks for its configuration on a provisioned node.
 
@@ -192,7 +192,7 @@ command.
 
 .. note::
    
-   When ``nodes.conf`` is edited directly, ``warewulfd`` does not know that the container profile has been changed. Therefore the changes to ``nodes.conf`` are not taken into account by ``warewulfd`` until it is restarted.
+   When ``nodes.conf`` is edited directly, ``warewulfd`` does not know that the image profile has been changed. Therefore the changes to ``nodes.conf`` are not taken into account by ``warewulfd`` until it is restarted.
    Once you restart ``warewulfd``, the ``nodes.conf`` file is then successfully reloaded.
    This also goes for ``warewulf.conf`` as well - any changes made also require ``warewulfd`` to be restarted.
    The restart should be done using the following command: ``systemctl restart warewulfd``

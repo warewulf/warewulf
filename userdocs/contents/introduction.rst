@@ -28,8 +28,7 @@ administration around virtual node images which are used to provision
 out to the cluster nodes. This means you can have hundreds or
 thousands of cluster nodes all booting and running on the same,
 identical virtual node file system image. As of Warewulf v4, the
-virtual node image is a standard container image which means all
-compute resources within a cluster can be managed using any existing
+virtual node image can be managed using any existing
 container tooling and/or CI pipelines that are being used. This can be
 as simple as DockerHub or your own private GitLab CI infrastructure.
 
@@ -67,8 +66,8 @@ Features
   CentOS, and RHEL, Warewulf can do it all.
 
 * **Secure**: Warewulf is the only stateless provisioning system that
-  will support SELinux out of the box. Just enable your node operating
-  system container to support SELinux, and Warewulf do the rest!
+  will support SELinux out of the box. Just enable your node image to
+  support SELinux, and let Warewulf do the rest!
 
 * **Open Source**: For the last 20 years, Warewulf has remained open
   source and continues to be the golden standard for cluster
