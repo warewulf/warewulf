@@ -14,6 +14,7 @@ Welcome to the Warewulf User Guide!
    Control Server Setup <contents/setup>
    Warewulf Installation <contents/installation>
    Warewulf Configuration <contents/configuration>
+   Upgrading Warewulf <contents/upgrade>
    Controlling Warewulf (wwctl) <contents/wwctl>
    Warewulf Initialization <contents/initialization>
    Image Management <contents/images>
