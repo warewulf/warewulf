@@ -259,6 +259,16 @@ data from other structures.
     - Version: 
     - Args: quiet crashkernel=no vga=791 net.naming-scheme=v238
 
+  - Ipmi:
+    - Ipaddr: <nil>
+    - Netmask: <nil>
+    - Port: 
+    - Gateway: <nil>
+    - UserName: 
+    - Password: 
+    - Interface: 
+    - Write: 
+    - Tags: 
   - NetDevs[default]:
     - Type: 
     - OnBoot: true

@@ -210,6 +210,28 @@ T3
 				"test-link": "/test-target",
 			},
 		},
+		"expansion of nodes": {
+			overlays: []string{"o1"},
+			overlayFiles: map[string]string{
+				"/var/lib/warewulf/overlays/o1/rootfs/node.txt.ww": `
+IPMI user:{{ .Ipmi.UserName}}
+Kernel Version:{{.Kernel.Version}}
+Kernel Args:{{.Kernel.Args}}
+NetDevs:{{.NetDevs}}
+Tags:{{.Tags}}
+`,
+			},
+			outputDir: "/image",
+			outputFiles: map[string]string{
+				"node.txt": `
+IPMI user:
+Kernel Version:
+Kernel Args:
+NetDevs:map[]
+Tags:map[]
+`,
+			},
+		},
 	}
 
 	for name, tt := range tests {
