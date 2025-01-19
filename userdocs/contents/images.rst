@@ -396,44 +396,6 @@ openSUSE Leap image and import it to Warewulf:
   # podman save localhost/leap-ww:latest  -o ~/leap-ww.tar
   # wwctl image import file://root/leap-ww.tar leap-ww
 
-Image Size Considerations
-=========================
-
-Base compute node images start quite small (a few hundred
-megabytes), but can grow quickly as packages and other files are added
-to them. Even these larger images are typically not an issue in modern
-environments; but some architectural limits exist that can impede the
-use of images larger than a few gigabytes. Workarounds exist for these
-issues in most circumstances:
-
-* Systems booting in legacy / BIOS mode, being a 32-bit environment,
-  cannot boot an image that requires more than 4GB to decompress. This
-  means that the compressed image and the decompressed image together
-  must be < 4GB. This is typically reported by the system as "No space
-  left on device (https://ipxe.org/34182006)."
-
-  The best work-around for this limitation is to switch to UEFI. UEFI
-  is 64-bit and should support booting significantly larger images,
-  though sometimes system-specific implementation details have led to
-  artificial limitations on image size.
-
-* The Linux kernel itself can only decompress an image up to 4GB due
-  to the use of 32-bit integers in critical sections of the kernel
-  initrd decompression code.
-
-  The best work-around for this limitation is to use an iPXE with
-  support for `imgextract <https://ipxe.org/cmd/imgextract>`_. This
-  allows iPXE to decompress the image rather than the kernel.
-
-* Some BIOS / firmware retain a "memory hole" feature for legacy
-  devices, e.g., reserving a 1MB block of memory at the 15MB-16MB
-  address range. this feature can interfere with booting stateless
-  node images.
-
-  If you are still getting "Not enough memory" or "No space left on
-  device" errors, try disabling any "memory hole" features or updating
-  your system BIOS or firmware.
-
 Duplicating an image
 ====================
 
