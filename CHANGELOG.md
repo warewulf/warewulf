@@ -141,6 +141,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix display of profiles during node list. #1496
 - Fix internal DelProfile function to correctly operate on profiles rather than nodes. #1622
 - Fix parsing of bool command line variables #1627
+- Fix newline handling in /etc/issue. #1648
 
 ## v4.5.8, 2024-10-01
 
