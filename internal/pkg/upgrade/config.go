@@ -176,7 +176,7 @@ func (this *NFSExportConf) Upgrade() (upgraded *config.NFSExportConf) {
 	upgraded = new(config.NFSExportConf)
 	upgraded.Path = this.Path
 	upgraded.ExportOptions = this.ExportOptions
-	if *(this.Mount) {
+	if this.Mount != nil && *(this.Mount) {
 		wwlog.Warn("Legacy mount configured for NFS export %s: use `wwctl upgrade nodes --with-warewulfconf=<original file>` to port to nodes.conf", this.Path)
 	}
 	return upgraded
