@@ -14,6 +14,7 @@ func Test_getNestedFieldString(t *testing.T) {
 		node      string
 		field     string
 		value     string
+		jsonValue string
 	}{
 		"comment (simple)": {
 			nodesConf: `
@@ -67,6 +68,53 @@ nodes:
 			field: "NetDevs[default].Tags[tag]",
 			value: "n1 netdev tag",
 		},
+		"boolean value (true)": {
+			nodesConf: `
+nodes:
+  n1:
+    discoverable: true`,
+			node:  "n1",
+			field: "Discoverable",
+			value: "true",
+		},
+		"boolean value (false)": {
+			nodesConf: `
+nodes:
+  n1:
+    discoverable: false`,
+			node:  "n1",
+			field: "Discoverable",
+			value: "false",
+		},
+		"fstab resource": {
+			nodesConf: `
+nodes:
+  n1:
+    resources:
+      fstab:
+        - file: /home
+          freq: 0
+          mntops: defaults
+          passno: 0
+          spec: warewulf:/home
+          vfstype: nfs`,
+			node:      "n1",
+			field:     "Resources[fstab]",
+			jsonValue: `[{"file":"/home","freq":0,"mntops":"defaults","passno":0,"spec":"warewulf:/home","vfstype":"nfs"}]`,
+		},
+		"disk partition": {
+			nodesConf: `
+nodes:
+  n1:
+    disks:
+      /dev/vda:
+        partitions:
+          rootfs:
+            resize: false`,
+			node:  "n1",
+			field: "Disks[/dev/vda].Partitions[rootfs].Resize",
+			value: "false",
+		},
 	}
 
 	for name, tt := range tests {
@@ -80,7 +128,12 @@ nodes:
 			node := registry.Nodes[tt.node]
 			value, err := getNestedFieldString(node, tt.field)
 			assert.NoError(t, err)
-			assert.Equal(t, tt.value, value)
+			if tt.value != "" {
+				assert.Equal(t, tt.value, value)
+			}
+			if tt.jsonValue != "" {
+				assert.JSONEq(t, tt.jsonValue, value)
+			}
 		})
 	}
 }

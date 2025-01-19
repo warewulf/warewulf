@@ -1,8 +1,8 @@
 package node
 
 import (
+	"encoding/json"
 	"fmt"
-	"net"
 	"reflect"
 	"regexp"
 	"sort"
@@ -223,33 +223,51 @@ func listReflectedFields(t reflect.Type, v reflect.Value, prefix string) (fields
 	return
 }
 
-// valueStr converts a reflect.Value into a string. For slices, it joins all elements into a comma-separated
-// string. For pointers, it returns an empty string if the pointer is nil. For other kinds, it returns the
-// formatted string representation of the value.
+// valueStr converts a reflect.Value into a string.
 func valueStr(value reflect.Value) (output string) {
 	if !value.IsValid() {
 		return ""
 	}
+
 	if value.Kind() == reflect.Pointer {
 		if value.IsZero() {
 			return ""
 		}
 		value = value.Elem()
 	}
-	if value.Type() == reflect.TypeOf(net.IP{}) {
-		if !value.IsZero() {
-			output = fmt.Sprintf("%s", value)
+
+	switch value.Kind() {
+	case reflect.Ptr, reflect.Interface, reflect.Map, reflect.Slice:
+		if value.IsNil() {
+			return ""
 		}
-	} else if value.Kind() == reflect.Slice {
+	}
+
+	stringerType := reflect.TypeOf((*fmt.Stringer)(nil)).Elem()
+	if value.Type().Implements(stringerType) {
+		return fmt.Sprintf("%s", value)
+	}
+
+	if value.Type() == reflect.TypeOf([]string{}) {
 		var sliceStrs []string
 		for i := 0; i < value.Len(); i++ {
 			sliceStrs = append(sliceStrs, fmt.Sprintf("%v", value.Index(i)))
 		}
-		output = strings.Join(sliceStrs, ",")
-	} else {
-		output = fmt.Sprintf("%s", value)
+		return strings.Join(sliceStrs, ",")
 	}
-	return output
+
+	switch value.Kind() {
+	case reflect.String, reflect.Int:
+		return fmt.Sprintf("%s", value)
+	case reflect.Bool:
+		return fmt.Sprintf("%t", value.Bool())
+	}
+
+	if jsonBytes, err := json.Marshal(value.Interface()); err == nil {
+		return string(jsonBytes)
+	}
+
+	return fmt.Sprintf("%s", value)
 }
 
 // sortValues sorts a slice of reflect.Values. Currently, it only supports sorting string values and
