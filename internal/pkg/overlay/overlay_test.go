@@ -231,10 +231,10 @@ T3
 
 			assert.NoError(t, BuildOverlayIndir(tt.node, []node.Node{tt.node}, tt.overlays, env.GetPath(tt.outputDir)))
 			dirFiles := tt.outputDirs
-			for outputFile, _ := range tt.outputFiles {
+			for outputFile := range tt.outputFiles {
 				dirFiles = append(dirFiles, outputFile)
 			}
-			for outputFile, _ := range tt.outputSymlinks {
+			for outputFile := range tt.outputSymlinks {
 				dirFiles = append(dirFiles, outputFile)
 			}
 			sort.Strings(dirFiles)

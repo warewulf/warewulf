@@ -49,25 +49,25 @@ func getOverlay(overlaydir, name string) (overlay Overlay) {
 // Create creates a new overlay directory for the given overlay
 //
 // Returns an error if the overlay already exists or if directory creation fails.
-func (this Overlay) Create() error {
-	if util.IsDir(this.Path()) {
-		return fmt.Errorf("overlay already exists: %s", this)
+func (overlay Overlay) Create() error {
+	if util.IsDir(overlay.Path()) {
+		return fmt.Errorf("overlay already exists: %s", overlay)
 	}
-	return os.MkdirAll(this.Rootfs(), 0755)
+	return os.MkdirAll(overlay.Rootfs(), 0755)
 }
 
 // Creates a site overlay from an existing distribution overlay.
 //
 // If the distribution overlay doesn't exist, return an error.
-func (this Overlay) CloneSiteOverlay() (siteOverlay Overlay, err error) {
-	siteOverlay = GetSiteOverlay(this.Name())
-	if !util.IsDir(this.Path()) {
-		return siteOverlay, fmt.Errorf("source overlay does not exist: %s", this.Name())
+func (overlay Overlay) CloneSiteOverlay() (siteOverlay Overlay, err error) {
+	siteOverlay = GetSiteOverlay(overlay.Name())
+	if !util.IsDir(overlay.Path()) {
+		return siteOverlay, fmt.Errorf("source overlay does not exist: %s", overlay.Name())
 	}
 	if siteOverlay.Exists() {
 		return siteOverlay, fmt.Errorf("site overlay already exists: %s", siteOverlay.Name())
 	}
-	err = copy.DirCopy(this.Path(), siteOverlay.Path(), copy.Content, true)
+	err = copy.DirCopy(overlay.Path(), siteOverlay.Path(), copy.Content, true)
 	return siteOverlay, err
 }
 

@@ -97,7 +97,7 @@ func Test_listFields(t *testing.T) {
 						"tag": "value",
 					},
 					NetDevs: map[string]*NetDev{
-						"default": &NetDev{
+						"default": {
 							Tags: map[string]string{
 								"nettag": "netvalue",
 							},
@@ -154,7 +154,7 @@ func Test_listFields(t *testing.T) {
 					"tag": "value",
 				},
 				NetDevs: map[string]*NetDev{
-					"default": &NetDev{
+					"default": {
 						Tags: map[string]string{
 							"nettag": "netvalue",
 						},
