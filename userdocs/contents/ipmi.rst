@@ -109,7 +109,6 @@ Node View
   n001                 discoverable       --           --
   n001                 init               --           (/sbin/init)
   n001                 asset              --           --
-  n001                 kerneloverride     --           tw
   n001                 kernelargs         --           (quiet crashkernel=no net.ifnames=1)
   n001                 ipmiaddr           --           --
   n001                 ipminetmask        --           --

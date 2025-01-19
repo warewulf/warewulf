@@ -146,9 +146,8 @@ configure --all``.
 Add a base node image
 =====================
 
-This will pull a basic node image from Docker Hub and import the
-default running kernel from the controller node and set both in the
-"default" node profile.
+This will pull a basic node image from Docker Hub
+and set it for the "default" node profile.
 
 .. code-block:: bash
 

@@ -126,17 +126,16 @@ instructions.
    to run ``$ sudo restorecon -Rv /var/lib/tftpboot/`` if there are
    errors with TFTP still.
 
-Pull and build the image (including the kernel)
-===============================================
+Pull and build the image
+========================
 
-This will pull a basic image from Docker Hub and import the
-default running kernel from the controller node and set both in the
-"default" node profile.
+This will pull a basic image from Docker Hub
+and set it for the "default" node profile.
 
 .. code-block:: bash
 
    wwctl image import docker://ghcr.io/warewulf/warewulf-debian:12.0 debian-12.0
-
+   wwctl profile set default --image=debian-12.0
 
 Set up the default node profile
 ===============================

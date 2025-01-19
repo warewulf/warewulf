@@ -93,7 +93,6 @@ You can also see the node's full attribute list by specifying the
   n001                 discoverable       --           --
   n001                 init               --           (/sbin/init)
   n001                 asset              --           --
-  n001                 kerneloverride     --           --
   n001                 kernelargs         --           (quiet crashkernel=no net.ifnames=1)
   n001                 ipmiaddr           --           --
   n001                 ipminetmask        --           --
@@ -123,12 +122,6 @@ You can also see the node's full attribute list by specifying the
 
 Setting Node Attributes
 =======================
-
-In the above output we can see that there is no kernel or image
-defined for this node. To provision a node, the minimum requirements
-are a kernel and image, and for that node to be useful, we will
-also need to configure the network so the nodes are reachable after
-they boot.
 
 Node configurations are set using the ``wwctl node set`` command. To
 see a list of all configuration attributes, use the command ``wwctl
@@ -161,7 +154,7 @@ provide the network information as follows:
    Are you sure you want to modify 1 nodes(s): y
 
 You can now see that the node contains configuration attributes for
-image, kernel, and network:
+image and network:
 
 .. code-block:: console
 
@@ -178,7 +171,6 @@ image, kernel, and network:
   n001                 discoverable       --           --
   n001                 init               --           (/sbin/init)
   n001                 asset              --           --
-  n001                 kerneloverride     --           tw
   n001                 kernelargs         --           (quiet crashkernel=no net.ifnames=1)
   n001                 ipmiaddr           --           --
   n001                 ipminetmask        --           --

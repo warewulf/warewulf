@@ -56,7 +56,7 @@ occur:
     #. The Warewulf server will generate the iPXE configuration which
        will include directions of what else is necessary to download
        and how to boot.
-    #. The kernel, image, kernel modules, and overlays
+    #. The kernel, image, and overlays
        are all downloaded over REST HTTP from the Warewulf Server
     #. iPXE executes the kernel and processes the overlays to provide
        a unified root file system
@@ -84,7 +84,7 @@ through the following command :
    c001                 RUNTIME_OVERLAY      __RUNTIME__.img.gz        16
 
 
-For each node, there is 4 different stages :
+For each node, there are 4 different stages :
 
 * **IPXE**
 * **KERNEL**

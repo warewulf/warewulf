@@ -101,9 +101,8 @@ Build and install Warewulf on wwdev
    sudo wwctl configure nfs  # Configure NFS exports
    sudo wwctl configure ssh  # Build the basic ssh keys to be included by the ssh overlays
 
-   # Pull and build the image and kernel
+   # Pull and build the image
    sudo wwctl image import docker://ghcr.io/warewulf/warewulf-centos:7 centos-7 --setdefault
-   sudo wwctl kernel import build $(uname -r) --setdefault
 
    # Set up the default node profile
    sudo wwctl profile set default -K $(uname -r) -C centos-7

@@ -147,7 +147,7 @@ may be overridden using ``warewulf.conf:paths``.
 
 * ``wwchrootdir``: The source for Warewulf images.
 
-* ``wwprovisiondir``: Where to store built overlays, built images, and imported kernels.
+* ``wwprovisiondir``: Where to store built overlays and images.
 
 * ``wwclientdir``: Where the Warewulf client looks for its configuration on a provisioned node.
 
