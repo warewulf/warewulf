@@ -28,6 +28,6 @@ func Test_Copy(t *testing.T) {
 		baseCmd.SetArgs([]string{"-b", "test-image", "test-image-copy"})
 		err := baseCmd.Execute()
 		assert.NoError(t, err)
-		assert.FileExists(t, path.Join(env.BaseDir, testenv.WWProvisiondir, "image", "test-image-copy.img"))
+		assert.FileExists(t, path.Join(env.BaseDir, testenv.WWProvisiondir, "images", "test-image-copy.img"))
 	})
 }

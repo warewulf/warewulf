@@ -25,7 +25,7 @@ func RunDir(name string) string {
 
 func ImageParentDir() string {
 	conf := warewulfconf.Get()
-	return path.Join(conf.Paths.WWProvisiondir, "image")
+	return path.Join(conf.Paths.WWProvisiondir, "images")
 }
 
 func ImageFile(name string) string {
