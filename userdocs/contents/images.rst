@@ -32,16 +32,16 @@ Tools
 There are different container managment tools available. Docker is
 probably the most recognizable one in the enterprise. Podman is
 another one that is gaining traction on the RHEL platforms. In HPC,
-Apptainer is the most utilized image management tool. You can use
-any of these to create and manage the containers to be later imported
+Apptainer is the most utilized container management tool. You can use
+any of these to create and manage the images to be later imported
 into Warewulf.
 
 Structure
 =========
 
-A Warewulf container is a directory that populates the runtime root file system of a cluster
-node. The container source directory must contain a single ``rootfs`` directory which represents the
-actual root directory for the overlay.
+A Warewulf image is a directory that populates the runtime root file system of a cluster
+node. The image source directory must contain a single ``rootfs`` directory which represents the
+actual root directory for the image.
 
 .. code-block:: none
 
@@ -68,12 +68,12 @@ actual root directory for the overlay.
       ├── usr
       └── var
 
-Warewulf containers are built (e.g., with ``wwctl container build``) into compressed images for
+Warewulf images are built (e.g., with ``wwctl image build``) into compressed images for
 distribution to cluster nodes.
 
 .. code-block:: none
 
-  /var/lib/warewulf/provision/container
+  /var/lib/warewulf/provision/image
   ├── rockylinux-9.img
   └── rockylinux-9.img.gz
 
