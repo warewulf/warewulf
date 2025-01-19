@@ -35,3 +35,22 @@ To mark a Warewulf image as writeable, use `chmod u+w`.
    # chmod u+w $(wwctl image show rockylinux-9.5)
 
 This behavior is changed in v4.6 to use an explicit ``readonly`` file stored outside of ``rootfs/``.
+
+Image sockets cause build failures
+==================================
+
+If an image source directory includes persistent sockets, these sockets may cause the import operation to fail.
+
+.. code-block:: console
+
+   Copying sources...
+   ERROR  : could not import image: lchown ./rockylinux-8/run/user/0/gnupg/d.kg8ijih5tq41ixoeag4p1qup/S.gpg-agent: no such file or directory
+
+To resolve this, remove the sockets from the source directory.
+
+.. code-block:: bash
+
+   find ./rockylinux-8/ -type s -delete
+
+This issue was fixed in an upstream library and `should be resolved in Warewulf
+v4.6.0. <https://github.com/warewulf/warewulf/issues/892>`_

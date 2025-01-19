@@ -173,21 +173,6 @@ directly.
    $ apptainer build --sandbox ./rockylinux-8/ docker://ghcr.io/warewulf/warewulf-rockylinux:8
    $ sudo wwctl image import ./rockylinux-8/ rockylinux-8
 
-.. note::
-
-   If a source directory includes persistent sockets, these sockets may cause the import operation to fail.
-
-   .. code-block:: console
-
-      Copying sources...
-      ERROR  : could not import image: lchown ./rockylinux-8/run/user/0/gnupg/d.kg8ijih5tq41ixoeag4p1qup/S.gpg-agent: no such file or directory
-
-   To resolve this, remove the sockets from the source directory.
-
-   .. code-block:: bash
-
-      find ./rockylinux-8/ -type s -delete
-
 HTTP proxies
 ------------
 
