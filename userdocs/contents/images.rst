@@ -322,79 +322,60 @@ remove any package repository caches that may have been generated.
 Creating Images From Scratch
 ============================
 
-You can also create images from scratch and import those
-images into Warewulf as previous versions of Warewulf did.
+It is absolutely possible to create an `OCI base image`_ from scratch, but it is
+particularly easy to do with Apptainer.
 
-Building An Image From Your Host
---------------------------------
+.. _OCI base image: https://docs.docker.com/build/building/base-images/
 
-RPM based distributions, as well as Debian variants can all bootstrap
-mini ``chroot()`` directories which can then be used to bootstrap your
-node's image.
+Consider the following file called `warewulf-rockylinux-9.def`:
 
-For example, on an RPM based Linux distribution with YUM or DNF, you
-can do something like the following:
+.. code-block:: singularity
 
-.. code-block:: console
+   Bootstrap: yum
+   MirrorURL: https://download.rockylinux.org/pub/rocky/9/BaseOS/x86_64/os/
+   Include: dnf
 
-   # yum install --installroot /tmp/newroot basesystem bash \
-       chkconfig coreutils e2fsprogs ethtool filesystem findutils \
-       gawk grep initscripts iproute iputils net-tools nfs-utils pam \
-       psmisc rsync sed setup shadow-utils rsyslog tzdata util-linux \
-       words zlib tar less gzip which util-linux openssh-clients \
-       openssh-server dhclient pciutils vim-minimal shadow-utils \
-       strace cronie crontabs cpio wget rocky-release ipmitool yum \
-       NetworkManager
+   %post
+   dnf -y install --allowerasing \
+     NetworkManager \
+     basesystem \
+     bash \
+     curl-minimal \
+     kernel \
+     nfs-utils \
+     openssh-server \
+     systemd
 
-You can do something similar with Debian-based distributions:
+   dnf -y remove \
+     glibc-gconv-extra
+   rm -rf /boot/* /run/*
+   dnf clean all
 
-.. code-block:: console
-
-   # apt-get install debootstrap
-   # debootstrap stable /tmp/newroot http://ftp.us.debian.org/debian
-
-Once you have created and modified your new ``chroot()``, you can
-import it into Warewulf with the following command:
+Warewulf cannot directly import a container image from an Apptainer SIF yet, so
+an Apptainer image must be built as a *sandbox*.
 
 .. code-block:: console
 
-   # wwctl image import /tmp/newroot imagename
+   # apptainer build --sandbox warewulf-rockylinux-9 warewulf-rockylinux-9.def
+   [...]
+   INFO:    Creating sandbox directory...
+   INFO:    Build complete: warewulf-rockylinux-9
 
-Building An Image Using Apptainer
----------------------------------
-
-Apptainer, an image platform for HPC and performance intensive
-applications, can also be used to create node images for
-Warewulf. There are several Apptainer image recipes in the
-``images/Apptainer/`` directory and can be found on GitHub at
-`https://github.com/warewulf/warewulf/tree/main/images/Apptainer
-<https://github.com/warewulf/warewulf/tree/main/images/Apptainer>`_.
-
-You can use these as starting points and adding any additional steps
-you want in the ``%post`` section of the recipe file. Once you've done
-that, installing Apptainer, building an image sandbox and importing
-into Warewulf can be done with the following steps:
+Once a sandbox container image has been built, it can be imported into Warewulf.
 
 .. code-block:: console
 
-   # yum install epel-release
-   # yum install Apptainer
-   # Apptainer build --sandbox /tmp/newroot /path/to/Apptainer/recipe.def
-   # wwctl image import /tmp/newroot imagename
+   # wwctl container import ./warewulf-rockylinux-9 rockylinux-9
 
-Building An Image Using Podman
-------------------------------
+.. note::
 
-You can also build an image using podman via a ``Dockerfile``. For
-this step the image must be exported to a tar archive, which then
-can be imported to Warewulf. The following steps will create an
-openSUSE Leap image and import it to Warewulf:
+   Although warewulf does not currently support importing a SIF directly, a SIF can be converted to
+   a sandbox with Apptainer and then imported into Warewulf.
+    
+   .. code-block:: console
 
-.. code-block:: console
-
-  # podman build -f images/Docker/openSUSE/Imagefile --tag leap-ww
-  # podman save localhost/leap-ww:latest  -o ~/leap-ww.tar
-  # wwctl image import file://root/leap-ww.tar leap-ww
+      # apptainer build --sandbox my-sandbox my-image.sif
+      # wwctl container import ./my-sandbox my-image
 
 Duplicating an image
 ====================
