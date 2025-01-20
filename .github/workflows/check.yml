@@ -72,6 +72,15 @@ jobs:
       - name: Check for dead Warewulf code (golang ${{ matrix.go-version }})
         run: make deadcode
 
+  licenses:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Warewulf
+        uses: actions/checkout@v4
+      - uses: ./.github/actions/prepare
+      - name: Check for out-of-date license information
+        run: make LICENSE_DEPENDENCIES.md && git diff --quiet LICENSE_DEPENDENCIES.md
+
   testsuite:
     runs-on: ubuntu-latest
     strategy:
