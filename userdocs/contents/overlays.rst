@@ -169,9 +169,13 @@ The **ignition** overlay defines partitions and file systems on local disks.
 debug
 -----
 
-The **debug** overlay is not intended to be used in configuration, but can be
-used as an example and applied with ``wwctl overlay show --render <nodename>
-debug /warewulf/template-variables.md.ww``.
+The **debug** overlay is not intended to be used in configuration, but is
+provided as an example. In particular, the provided `tstruct.md.ww` demonstrates
+the use of most available template metadata.
+
+.. code-block:: console
+  
+   # wwctl overlay show --render <nodename> debug tstruct.md.ww
 
 host
 ----
@@ -220,8 +224,9 @@ downloaded for each node will be customized for that node. Templates
 allow you to insert everything from variables, to including files from
 the control node, as well as conditional content and loops.
 
-Warewulf uses the ``text/template`` engine to facilitate implementing
-dynamic content in a simple and standardized manner.
+Warewulf uses the ``text/template`` engine to facilitate implementing dynamic
+content in a simple and standardized manner. This template format is documented
+at https://pkg.go.dev/text/template.
 
 All template files will end with the suffix of ``.ww``. That tells
 Warewulf that when building a file, that it should parse that file as

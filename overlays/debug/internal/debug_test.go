@@ -20,7 +20,7 @@ func Test_debugOverlay(t *testing.T) {
 	env := testenv.New(t)
 	defer env.RemoveAll()
 	env.ImportFile("etc/warewulf/nodes.conf", "nodes.conf")
-	env.ImportFile("var/lib/warewulf/overlays/debug/rootfs/warewulf/template-variables.md.ww", "../rootfs/warewulf/template-variables.md.ww")
+	env.ImportFile("var/lib/warewulf/overlays/debug/rootfs/tstruct.md.ww", "../rootfs/tstruct.md.ww")
 
 	tests := []struct {
 		name string
@@ -29,7 +29,7 @@ func Test_debugOverlay(t *testing.T) {
 	}{
 		{
 			name: "debug",
-			args: []string{"--render", "node1", "debug", "warewulf/template-variables.md.ww"},
+			args: []string{"--render", "node1", "debug", "tstruct.md.ww"},
 			log:  debug,
 		},
 	}
@@ -55,80 +55,20 @@ func Test_debugOverlay(t *testing.T) {
 
 const debug = `backupFile: true
 writeFile: true
-Filename: warewulf/template-variables.md
-# Warewulf template variables
+Filename: tstruct.md
+# Warewulf template struct (tstruct)
 
 This Warewulf template serves as a complete example of the variables
 available to Warewulf templates. It may also be rendered against a
 node to debug its apparent configuration.
 
-    wwctl overlay show --render $nodename debug /warewulf/template-variables.md.ww
+    wwctl overlay show --render $nodename debug tstruct.md.ww
 
 The template data structure is defined in
 internal/pkg/overlay/datastructure.go, though it also references
 data from other structures.
 
-
-## Node
-
-- Id: node1
-- Hostname: node1
-- Comment: 
-- ClusterName: 
-- ImageName: rockylinux-9
-- Ipxe: default
-- RuntimeOverlay: hosts,ssh.authorized_keys,syncuser
-- SystemOverlay: wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition
-- Init: /sbin/init
-- Root: initramfs
-- AssetKey: 
-- Discoverable: 
-- Profiles: default
-- Tags: 
-
-- Kernel:
-  - Version: 
-  - Args: quiet crashkernel=no vga=791 net.naming-scheme=v238
-
-- Ipmi:
-  - UserName: user
-  - Password: password
-  - Ipaddr: 192.168.4.21
-  - Netmask: 255.255.255.0
-  - Port: 
-  - Gateway: 192.168.4.1
-  - Interface: 
-  - Write: true
-  - Tags: 
-- NetDevs[default]:
-  - Type: 
-  - OnBoot: true
-  - Device: wwnet0
-  - Hwaddr: e6:92:39:49:7b:03
-  - Ipaddr: 192.168.3.21
-  - Ipaddr6: <nil>
-  - Prefix: <nil>
-  - Netmask: 255.255.255.0
-  - Gateway: 192.168.3.1
-  - MTU: 
-  - Primary: false
-  - Tags: 
-- NetDevs[secondary]:
-  - Type: 
-  - OnBoot: true
-  - Device: wwnet1
-  - Hwaddr: 9a:77:29:73:14:f1
-  - Ipaddr: 192.168.3.22
-  - Ipaddr6: <nil>
-  - Prefix: <nil>
-  - Netmask: 255.255.255.0
-  - Gateway: 192.168.3.1
-  - MTU: 
-  - Primary: false
-  - Tags: DNS1=8.8.8.8 DNS2=8.8.4.4 
-
-
-## Build variables
+## Build
 
 - BuildHost: %HOSTNAME%
 - BuildTime: REMOVED_BY_TEST
@@ -136,8 +76,16 @@ data from other structures.
 - BuildSource: REMOVED_BY_TEST
 - Overlay: debug
 
+## Warewulf server
 
-## Network
+- Port: 9873
+- Secure: true
+- UpdateInterval: 60
+- AutobuildOverlays: true
+- EnableHostOverlay: true
+- Syslog: false
+
+### Network
 
 - Ipaddr: 
 - Ipaddr6: 
@@ -146,9 +94,6 @@ data from other structures.
 - NetworkCIDR: 
 - Ipv6: false
 
-
-## Services
-
 ### DHCP
 
 - Dhcp.Enabled: true
@@ -156,7 +101,6 @@ data from other structures.
 - Dhcp.RangeStart: 
 - Dhcp.RangeEnd: 
 - Dhcp.SystemdName: dhcpd
-
 
 ### NFS
 
@@ -171,117 +115,91 @@ data from other structures.
   - ed25519
 - First key type: rsa
 
-### Warewulf
+## Node
 
-- Port: 9873
-- Secure: true
-- UpdateInterval: 60
-- AutobuildOverlays: true
-- EnableHostOverlay: true
-- Syslog: false
+The current node may also be accessed as .ThisNode, which provides access to
+node methods in addition to its fields.
 
+- Id: node1
+- Hostname: node1
+- Comment: 
+- ClusterName: 
+- ImageName: rockylinux-9
+- Ipxe: default
+- RuntimeOverlay:
+  - hosts
+  - ssh.authorized_keys
+  - syncuser
+- SystemOverlay:
+  - wwinit
+  - wwclient
+  - fstab
+  - hostname
+  - ssh.host_keys
+  - issue
+  - resolv
+  - udev.netname
+  - systemd.netname
+  - ifcfg
+  - NetworkManager
+  - debian.interfaces
+  - wicked
+  - ignition
+- Init: /sbin/init
+- Root: initramfs
+- AssetKey: 
+- Discoverable: 
+- Profiles:
+  - default
+- Tags:
+- Kernel:
+  - Version: 
+  - Args: quiet crashkernel=no vga=791 net.naming-scheme=v238
+- Ipmi:
+  - UserName: user
+  - Password: password
+  - Ipaddr: 192.168.4.21
+  - Netmask: 255.255.255.0
+  - Port: 
+  - Gateway: 192.168.4.1
+  - Interface: 
+  - Write: true
+  - Tags:
+- NetDevs[default]:
+  - Type: 
+  - OnBoot: true
+  - Device: wwnet0
+  - Hwaddr: e6:92:39:49:7b:03
+  - Ipaddr: 192.168.3.21
+  - Ipaddr6: <nil>
+  - Prefix: <nil>
+  - Netmask: 255.255.255.0
+  - Gateway: 192.168.3.1
+  - MTU: 
+  - Primary: false
+  - Tags:
+- NetDevs[secondary]:
+  - Type: 
+  - OnBoot: true
+  - Device: wwnet1
+  - Hwaddr: 9a:77:29:73:14:f1
+  - Ipaddr: 192.168.3.22
+  - Ipaddr6: <nil>
+  - Prefix: <nil>
+  - Netmask: 255.255.255.0
+  - Gateway: 192.168.3.1
+  - MTU: 
+  - Primary: false
+  - Tags:
+    - DNS1=8.8.8.8
+    - DNS2=8.8.4.4
 
-### Other nodes
+## Other nodes
 
-- AllNodes[0]:
-  - Id: node1
-  - Comment: 
-  - ClusterName: 
-  - ImageName: rockylinux-9
-  - Ipxe: default
-  - RuntimeOverlay: [hosts ssh.authorized_keys syncuser]
-  - SystemOverlay: [wwinit wwclient fstab hostname ssh.host_keys issue resolv udev.netname systemd.netname ifcfg NetworkManager debian.interfaces wicked ignition]
-  - Root: initramfs
-  - Discoverable: 
-  - Init: /sbin/init
-  - AssetKey: 
-  - Profiles: [default]
-  - Tags: 
+All nodes in the registry are available to all templates in the .AllNodes
+field. Each node provides access to all node fields, as shown above.
 
-  - Kernel
-    - Version: 
-    - Args: quiet crashkernel=no vga=791 net.naming-scheme=v238
-
-  - Ipmi:
-    - Ipaddr: 192.168.4.21
-    - Netmask: 255.255.255.0
-    - Port: 
-    - Gateway: 192.168.4.1
-    - UserName: user
-    - Password: password
-    - Interface: 
-    - Write: true
-    - Tags: 
-  - NetDevs[default]:
-    - Type: 
-    - OnBoot: true
-    - Device: wwnet0
-    - Hwaddr: e6:92:39:49:7b:03
-    - Ipaddr: 192.168.3.21
-    - IpCIDR: 192.168.3.21/24
-    - Ipaddr6: <nil>
-    - Prefix: <nil>
-    - Netmask: 255.255.255.0
-    - Gateway: 192.168.3.1
-    - MTU: 
-    - Primary: true
-    - Tags: 
-  - NetDevs[secondary]:
-    - Type: 
-    - OnBoot: true
-    - Device: wwnet1
-    - Hwaddr: 9a:77:29:73:14:f1
-    - Ipaddr: 192.168.3.22
-    - IpCIDR: 192.168.3.22/24
-    - Ipaddr6: <nil>
-    - Prefix: <nil>
-    - Netmask: 255.255.255.0
-    - Gateway: 192.168.3.1
-    - MTU: 
-    - Primary: false
-    - Tags: DNS1=8.8.8.8 DNS2=8.8.4.4 
-- AllNodes[1]:
-  - Id: node2
-  - Comment: 
-  - ClusterName: 
-  - ImageName: 
-  - Ipxe: default
-  - RuntimeOverlay: [hosts ssh.authorized_keys syncuser]
-  - SystemOverlay: [wwinit wwclient fstab hostname ssh.host_keys issue resolv udev.netname systemd.netname ifcfg NetworkManager debian.interfaces wicked ignition]
-  - Root: initramfs
-  - Discoverable: 
-  - Init: /sbin/init
-  - AssetKey: 
-  - Profiles: [default]
-  - Tags: 
-
-  - Kernel
-    - Version: 
-    - Args: quiet crashkernel=no vga=791 net.naming-scheme=v238
-
-  - Ipmi:
-    - Ipaddr: <nil>
-    - Netmask: <nil>
-    - Port: 
-    - Gateway: <nil>
-    - UserName: 
-    - Password: 
-    - Interface: 
-    - Write: 
-    - Tags: 
-  - NetDevs[default]:
-    - Type: 
-    - OnBoot: true
-    - Device: wwnet0
-    - Hwaddr: e6:92:39:49:7b:04
-    - Ipaddr: 192.168.3.23
-    - IpCIDR: 192.168.3.23/24
-    - Ipaddr6: <nil>
-    - Prefix: <nil>
-    - Netmask: 255.255.255.0
-    - Gateway: 192.168.3.1
-    - MTU: 
-    - Primary: true
-    - Tags: 
-
+- AllNodes:
+  - node1
+  - node2
 `
