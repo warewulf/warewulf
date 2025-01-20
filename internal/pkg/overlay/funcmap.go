@@ -16,10 +16,8 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-/*
-Reads a file file from the host fs. If the file has nor '/' prefix
-the path is relative to Paths.SysconfdirTemplates in the file are no evaluated.
-*/
+// Reads a file file from the host fs. If the file has nor '/' prefix the path
+// is relative to Paths.Sysconfdir. Templates in the file are no evaluated.
 func templateFileInclude(inc string) string {
 	conf := warewulfconf.Get()
 	if !strings.HasPrefix(inc, "/") {
@@ -33,11 +31,9 @@ func templateFileInclude(inc string) string {
 	return strings.TrimSuffix(string(content), "\n")
 }
 
-/*
-Reads a file into template the abort string is found in a line. First argument
-is the file to read, the second the abort string
-Templates in the file are no evaluated.
-*/
+// Reads a file into template the abort string is found in a line. First
+// argument is the file to read, the second the abort string. Templates in the
+// file are no evaluated.
 func templateFileBlock(inc string, abortStr string) (string, error) {
 	conf := warewulfconf.Get()
 	if !strings.HasPrefix(inc, "/") {
@@ -72,10 +68,7 @@ func templateFileBlock(inc string, abortStr string) (string, error) {
 
 }
 
-/*
-Reads a file relative to given image.
-Templates in the file are no evaluated.
-*/
+// Reads a file relative to given image. Templates in the file are not evaluated.
 func templateImageFileInclude(imagename string, filepath string) string {
 	wwlog.Verbose("Including file from Image into template: %s:%s", imagename, filepath)
 
@@ -106,8 +99,8 @@ func templateImageFileInclude(imagename string, filepath string) string {
 	return strings.TrimSuffix(string(content), "\n")
 }
 
-// don't return an error as we use this function for template evaluation,
-// so error will turn up there as the return string
+// Don't return an error as we use this function for template evaluation, so
+// error will turn up there as the return string
 func createIgnitionJson(node *node.Node) string {
 	conf, rep, err := node.GetConfig()
 	if len(conf.Storage.Disks) == 0 && len(conf.Storage.Filesystems) == 0 {

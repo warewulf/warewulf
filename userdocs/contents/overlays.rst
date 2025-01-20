@@ -240,6 +240,125 @@ attributes.
    will be dropped, so ``/etc/hosts.ww`` will end up being
    ``/etc/hosts``.
 
+Template functions
+==================
+
+Warewulf templates have access to a number of functions.
+
+In addition to the custom functions below, the `sprig functions`_ are also
+available.
+
+.. _sprig functions: https://masterminds.github.io/sprig/
+
+Include
+-------
+
+Reads content from the given file into the template. If the file does not begin
+with ``/`` it is considered relative to ``Paths.Sysconfdir``.
+
+.. code-block:: plaintext
+
+   {{ Include "/root/.ssh/authorized_keys" }}
+
+IncludeFrom
+-----------
+
+Reads content from the given file from the given image into the template.
+
+.. code-block:: plaintext
+
+   {{ IncludeFrom $.ImageName "/etc/passwd" }}
+
+IncludeBlock
+------------
+
+Reads content from the given file into the template, stopping when the provided
+abort string is found.
+
+.. code-block:: plaintext
+  
+   {{ IncludeBlock "/etc/hosts" "# Do not edit after this line" }}
+
+ImportLink
+----------
+
+Causes the processed template file to becoma a symlink to the same target as the
+referenced symlink.
+
+.. code-block:: plaintext
+
+   {{ ImportLink "/etc/localtime" }}
+
+basename
+--------
+
+Returns the base name of the given path.
+
+.. code-block:: plaintext
+
+   {{- range $type, $name := $.Tftp.IpxeBinaries }}
+    if option architecture-type = {{ $type }} {
+        filename "/warewulf/{{ basename $name }}";
+    }
+   {{- end }}
+
+file
+----
+
+Write the content from the template to the specified file name. May be specified
+more than once in a template to write content to multiple files.
+
+.. code-block:: plaintext
+
+   {{- range $devname, $netdev := .NetDevs }}
+   {{- $filename := print "ifcfg-" $devname ".conf" }}
+   {{- file $filename }}
+   {{/* content here */}}
+   {{- end }}
+
+softlink
+--------
+
+Causes the processed template file to become a symlink to the referenced target.
+
+.. code-block:: plaintext
+  
+   {{ printf "%s/%s" "/usr/share/zoneinfo" .Tags.localtime | softlink }}
+
+readlink
+--------
+
+Equivalent to ``filepath.EvalSymlinks``. Returns the target path of a named
+symlink.
+
+.. code-block:: plaintext
+
+   {{ readlink /etc/localtime }}
+
+IgnitionJson
+------------
+
+Generates JSON suitable for use by Ignition to create 
+
+abort
+-----
+
+Immediately aborts processing the template and does not write a file.
+
+.. code-block::
+  
+   {{ abort }}
+
+nobackup
+--------
+
+   Disables the creation of a backup file when replacing files with the current
+   template.
+
+.. code-block::
+
+   {{ nobackup }}
+
 Managing overlays
 =================
 
