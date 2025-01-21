@@ -312,7 +312,7 @@ more than once in a template to write content to multiple files.
 
    {{- range $devname, $netdev := .NetDevs }}
    {{- $filename := print "ifcfg-" $devname ".conf" }}
-   {{- file $filename }}
+   {{ file $filename }}
    {{/* content here */}}
    {{- end }}
 

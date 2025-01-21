@@ -204,17 +204,6 @@ image and network:
   We recommend the use of the original predictable names assigned to the interfaces (`eno1, ...`),
   as otherwise an interface may remain unconfigured if its name conflicts with the name of an already existing interface during boot.
 
-To configure a bonded (link aggregation) network interface the following commands can be used:
-
-.. code-block:: console
-
-  # wwctl node set --netname=bond0_member_1 --netdev=eth2 --type=bond-slave n001
-  # wwctl node set --netname=bond0_member_2 --netdev=eth3 --type=bond-slave n001
-  # wwctl node set --netname=bond0 --netdev=bond0 --onboot=true --type=bond --ipaddr 10.0.3.1 --netmask=255.255.255.0 --mtu=9000 n001
-
-Note: the netnames of the member interterfaces need to match the "netname" of the bonded interface until the first "_" (in the example bond0)
-
-
 Additional networks
 -------------------
 
@@ -231,6 +220,32 @@ You will have provide all the necessary network information.
      --netname iband \
      --type infiniband \
      n001
+
+Bonding
+-------
+
+Support for bonded / link aggregation network interfaces depends on the network overlay being used.
+
+The ``ifcfg`` and ``NetworkManager`` overlays can configure a network bond like this:
+
+.. code-block:: yaml
+
+   network devices:
+     bond0:
+       type: Bond
+       device: bond0
+       ipaddr: 192.168.3.100
+       netmask: 255.255.255.0
+   en1:
+     device: en1
+     hwaddr: e6:92:39:49:7b:03
+     tags:
+       master: bond0
+   en2:
+     device: en2
+     hwaddr: 9a:77:29:73:14:f1
+     tags:
+       master: bond0
 
 VLAN
 ----
