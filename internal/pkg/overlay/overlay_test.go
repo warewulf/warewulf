@@ -216,7 +216,7 @@ T3
 				"/var/lib/warewulf/overlays/o1/rootfs/node.txt.ww": `
 IPMI user:{{ .Ipmi.UserName}}
 Kernel Version:{{.Kernel.Version}}
-Kernel Args:{{.Kernel.Args}}
+Kernel Args:{{.Kernel.Args | join " "}}
 NetDevs:{{.NetDevs}}
 Tags:{{.Tags}}
 `,

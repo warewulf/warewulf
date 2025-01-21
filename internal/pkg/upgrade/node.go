@@ -81,8 +81,8 @@ func (this *NodesYaml) Upgrade(addDefaults bool, replaceOverlays bool, warewulfc
 			defaultProfile.RuntimeOverlay = append(
 				defaultProfile.RuntimeOverlay, genericSplitOverlays...)
 		}
-		if defaultProfile.Kernel.Args == "" {
-			defaultProfile.Kernel.Args = "quiet crashkernel=no vga=791 net.naming-scheme=v238"
+		if len(defaultProfile.Kernel.Args) < 1 {
+			defaultProfile.Kernel.Args = []string{"quiet", "crashkernel=no", "vga=791", "net.naming-scheme=v238"}
 		}
 		if defaultProfile.Init == "" {
 			defaultProfile.Init = "/sbin/init"
@@ -526,14 +526,23 @@ func (this *IpmiConf) Upgrade() (upgraded *node.IpmiConf) {
 }
 
 type KernelConf struct {
-	Args     string `yaml:"args,omitempty"`
-	Override string `yaml:"override,omitempty"`
-	Version  string `yaml:"version,omitempty"`
+	Args     interface{} `yaml:"args,omitempty"`
+	Override string      `yaml:"override,omitempty"`
+	Version  string      `yaml:"version,omitempty"`
 }
 
 func (this *KernelConf) Upgrade(imageName string) (upgraded *node.KernelConf) {
 	upgraded = new(node.KernelConf)
-	upgraded.Args = this.Args
+	switch args := this.Args.(type) {
+	case []string:
+		upgraded.Args = args
+	case string:
+		if args != "" {
+			upgraded.Args = strings.Fields(args)
+		}
+	default:
+		wwlog.Warn("unable to parse Kernel.Args: %v", this.Args)
+	}
 	kernels := kernel.FindKernels(imageName)
 	wwlog.Debug("referencing kernels: %v (imageName: %v)", kernels, imageName)
 	if this.Override != "" {

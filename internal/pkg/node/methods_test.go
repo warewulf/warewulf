@@ -49,7 +49,7 @@ func Test_Node_Expand_Flatten(t *testing.T) {
 		assert.Equal(t, map[string]string{}, node.Tags)
 		assert.Equal(t, map[string]string{}, node.Ipmi.Tags)
 		assert.Equal(t, "", node.Kernel.Version)
-		assert.Equal(t, "", node.Kernel.Args)
+		assert.Len(t, node.Kernel.Args, 0)
 		assert.Equal(t, map[string]*NetDev{}, node.NetDevs)
 	})
 
@@ -75,7 +75,7 @@ func Test_Profile_Expand_Flatten(t *testing.T) {
 		assert.Equal(t, map[string]string{}, profile.Tags)
 		assert.Equal(t, map[string]string{}, profile.Ipmi.Tags)
 		assert.Equal(t, "", profile.Kernel.Version)
-		assert.Equal(t, "", profile.Kernel.Args)
+		assert.Len(t, profile.Kernel.Args, 0)
 		assert.Equal(t, map[string]*NetDev{}, profile.NetDevs)
 	})
 

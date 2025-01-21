@@ -98,6 +98,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added retries to curl in wwinit dracut module. #1631
 - Added ip= argument to dracut ipxe script. #1630
 - Updated network interface bonding configuration and documentation. #1482, #1280
+- Refactor Kernel arguments as a slice (list) rather than a single string. #1656
 
 ### Removed
 

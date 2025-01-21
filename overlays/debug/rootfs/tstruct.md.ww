@@ -97,7 +97,7 @@ node methods in addition to its fields.
 {{- end }}
 - Kernel:
   - Version: {{ .Kernel.Version }}
-  - Args: {{ .Kernel.Args }}
+  - Args: {{ .Kernel.Args | join " " }}
 - Ipmi:
   - UserName: {{ .Ipmi.UserName }}
   - Password: {{ .Ipmi.Password }}
