@@ -430,8 +430,6 @@ func TestListMultipleFormats(t *testing.T) {
 			stdout: `
 - profiles:
     - default
-  kernel: {}
-  ipmi: {}
 `,
 			inDb: `
 nodeprofiles:
@@ -459,24 +457,12 @@ nodes:
     "Ipxe": "",
     "RuntimeOverlay": null,
     "SystemOverlay": null,
-    "Kernel": {},
-    "Ipmi": {
-      "UserName": "",
-      "Password": "",
-      "Ipaddr": "",
-      "Gateway": "",
-      "Netmask": "",
-      "Port": "",
-      "Interface": "",
-      "EscapeChar": "",
-      "Write": "",
-      "Template": "",
-      "Tags": {}
-    },
+    "Kernel": null,
+    "Ipmi": null,
     "Init": "",
     "Root": "",
-    "NetDevs": {},
-    "Tags": {},
+    "NetDevs": null,
+    "Tags": null,
     "PrimaryNetDev": "",
     "Disks": null,
     "FileSystems": null,
@@ -510,24 +496,12 @@ nodes:
     "Ipxe": "",
     "RuntimeOverlay": null,
     "SystemOverlay": null,
-    "Kernel": {},
-    "Ipmi": {
-      "UserName": "",
-      "Password": "",
-      "Ipaddr": "",
-      "Gateway": "",
-      "Netmask": "",
-      "Port": "",
-      "Interface": "",
-      "EscapeChar": "",
-      "Write": "",
-      "Template": "",
-      "Tags": {}
-    },
+    "Kernel": null,
+    "Ipmi": null,
     "Init": "",
     "Root": "",
-    "NetDevs": {},
-    "Tags": {},
+    "NetDevs": null,
+    "Tags": null,
     "PrimaryNetDev": "",
     "Disks": null,
     "FileSystems": null,
@@ -545,24 +519,12 @@ nodes:
     "Ipxe": "",
     "RuntimeOverlay": null,
     "SystemOverlay": null,
-    "Kernel": {},
-    "Ipmi": {
-      "UserName": "",
-      "Password": "",
-      "Ipaddr": "",
-      "Gateway": "",
-      "Netmask": "",
-      "Port": "",
-      "Interface": "",
-      "EscapeChar": "",
-      "Write": "",
-      "Template": "",
-      "Tags": {}
-    },
+    "Kernel": null,
+    "Ipmi": null,
     "Init": "",
     "Root": "",
-    "NetDevs": {},
-    "Tags": {},
+    "NetDevs": null,
+    "Tags": null,
     "PrimaryNetDev": "",
     "Disks": null,
     "FileSystems": null,
@@ -588,12 +550,8 @@ nodes:
 			stdout: `
 - profiles:
     - default
-  kernel: {}
-  ipmi: {}
 - profiles:
     - default
-  kernel: {}
-  ipmi: {}
 `,
 			inDb: `
 nodeprofiles:

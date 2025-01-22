@@ -1,6 +1,7 @@
 package node
 
 import (
+	"net"
 	"reflect"
 	"strings"
 
@@ -58,10 +59,18 @@ func (config *NodesYaml) appendProfileProfiles(profiles []string, id string) []s
 	return profiles
 }
 
-type InterfaceTransformer struct{}
+type Transformer struct{}
 
-func (t InterfaceTransformer) Transformer(typ reflect.Type) func(dst, src reflect.Value) error {
-	if typ.Kind() == reflect.Interface {
+func (t Transformer) Transformer(typ reflect.Type) func(dst, src reflect.Value) error {
+	if typ == reflect.TypeOf(net.IP{}) {
+		return func(dst, src reflect.Value) error {
+			if !src.IsValid() || !src.CanSet() {
+				return nil
+			}
+			dst.Set(src)
+			return nil
+		}
+	} else if typ.Kind() == reflect.Interface {
 		return func(dst, src reflect.Value) error {
 			if !src.IsValid() || src.IsZero() {
 				return nil
@@ -113,7 +122,7 @@ func (config *NodesYaml) MergeNode(id string) (node Node, fields fieldMap, err e
 		return node, fields, err
 	}
 	originalNode := node
-	node = EmptyNode()
+	node = Node{}
 
 	fields = make(fieldMap)
 
@@ -123,45 +132,14 @@ func (config *NodesYaml) MergeNode(id string) (node Node, fields fieldMap, err e
 			continue
 		} else {
 			profile := deepcopy.Copy(profile)
-			if err = mergo.Merge(&node.Profile, profile, mergo.WithAppendSlice, mergo.WithOverride, mergo.WithTransformers(InterfaceTransformer{})); err != nil {
+			if err = merge(&node.Profile, profile, fields, profileID, profileID); err != nil {
 				return node, fields, err
-			}
-			for _, fieldName := range listFields(profile) {
-				if value, err := getNestedFieldValue(profile, fieldName); err == nil && valueStr(value) != "" {
-					source := profileID
-					prevSource := fields.Source(fieldName)
-					if value.Kind() == reflect.Slice && prevSource != "" {
-						source = strings.Join([]string{prevSource, source}, ",")
-					}
-					if value, err := getNestedFieldString(node, fieldName); err == nil {
-						fields.Set(fieldName, source, value)
-					}
-				}
 			}
 		}
 	}
 
-	if err = mergo.Merge(&node, originalNode, mergo.WithAppendSlice, mergo.WithOverride); err != nil {
+	if err = merge(&node, originalNode, fields, "", id); err != nil {
 		return node, fields, err
-	}
-	for _, fieldName := range listFields(originalNode) {
-		if value, err := getNestedFieldValue(originalNode, fieldName); err == nil && valueStr(value) != "" {
-			source := ""
-			prevSource := fields.Source(fieldName)
-			if prevSource != "" {
-				switch value.Kind() {
-				case reflect.Slice:
-					source = strings.Join([]string{prevSource, id}, ",")
-				case reflect.Interface:
-					if _, ok := value.Interface().([]interface{}); ok {
-						source = strings.Join([]string{prevSource, id}, ",")
-					}
-				}
-			}
-			if value, err := getNestedFieldString(node, fieldName); err == nil {
-				fields.Set(fieldName, source, value)
-			}
-		}
 	}
 
 	node.Profiles = originalNode.Profiles
@@ -176,4 +154,43 @@ func (config *NodesYaml) MergeNode(id string) (node Node, fields fieldMap, err e
 	node.valid = true
 	node.updatePrimaryNetDev()
 	return node, fields, nil
+}
+
+// merge merges the fields of src (a data object) into dst (a pointer) associated with it. Used by
+// MergeNode to provide consistent behavior when merging profiles and nodes.
+//
+// merge further tracks the source of each field in the provided fields.
+//
+// Because the source label behavior differs between multi-valued fields (e.g., slices) and
+// single-valued slices, two source names must be provided: srcName is used for single-valued
+// fields, and multipleSrcName is used for multi-sourced fields.
+//
+// Returns an error if the merging operation fails.
+func merge(dest, src interface{}, fields fieldMap, srcName string, multipleSrcName string) error {
+	if err := mergo.Merge(dest, src, mergo.WithAppendSlice, mergo.WithOverride, mergo.WithTransformers(Transformer{})); err != nil {
+		return err
+	}
+
+	for _, fieldName := range listFields(src) {
+		if value, err := getNestedFieldValue(src, fieldName); err == nil && valueStr(value) != "" {
+			srcName := srcName
+			prevSource := fields.Source(fieldName)
+			if prevSource != "" {
+				switch value.Kind() {
+				case reflect.Slice:
+					if value.Type() != reflect.TypeOf(net.IP{}) {
+						srcName = strings.Join([]string{prevSource, multipleSrcName}, ",")
+					}
+				case reflect.Interface:
+					if _, ok := value.Interface().([]interface{}); ok {
+						srcName = strings.Join([]string{prevSource, multipleSrcName}, ",")
+					}
+				}
+			}
+			if value, err := getNestedFieldString(reflect.ValueOf(dest).Elem().Interface(), fieldName); err == nil {
+				fields.Set(fieldName, srcName, value)
+			}
+		}
+	}
+	return nil
 }
