@@ -53,9 +53,7 @@ func InitStruct(overlayName string, nodeData node.Node, allNodes []node.Node) (T
 	tstruct.BuildHost = hostname
 	controller := warewulfconf.Get()
 	tstruct.ThisNode = &nodeData
-	if tstruct.ThisNode.Kernel == nil {
-		tstruct.ThisNode.Kernel = new(node.KernelConf)
-	}
+	tstruct.ThisNode.Expand()
 	if tstruct.ThisNode.Kernel.Version == "" {
 		if kernel_ := kernel.FromNode(tstruct.ThisNode); kernel_ != nil {
 			tstruct.ThisNode.Kernel.Version = kernel_.Version()
@@ -77,6 +75,9 @@ func InitStruct(overlayName string, nodeData node.Node, allNodes []node.Node) (T
 	tstruct.Container = nodeData.ContainerName
 	// Backwards compatibility for templates using "Keys"
 	tstruct.AllNodes = allNodes
+	for i := range tstruct.AllNodes {
+		tstruct.AllNodes[i].Expand()
+	}
 	dt := time.Now()
 	tstruct.BuildTime = dt.Format("01-02-2006 15:04:05 MST")
 	tstruct.BuildTimeUnix = strconv.FormatInt(dt.Unix(), 10)

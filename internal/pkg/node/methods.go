@@ -99,11 +99,7 @@ func NewProfile(id string) (profileconf Profile) {
 }
 
 func EmptyNode() (nodeconf Node) {
-	nodeconf.Ipmi = new(IpmiConf)
-	nodeconf.Ipmi.Tags = map[string]string{}
-	nodeconf.Kernel = new(KernelConf)
-	nodeconf.NetDevs = make(map[string]*NetDev)
-	nodeconf.Tags = map[string]string{}
+	nodeconf.Expand()
 	return nodeconf
 }
 
@@ -111,12 +107,35 @@ func EmptyNode() (nodeconf Node) {
 Creates a ProfileConf but doesn't add it to the database.
 */
 func EmptyProfile() (profileconf Profile) {
-	profileconf.Ipmi = new(IpmiConf)
-	profileconf.Ipmi.Tags = map[string]string{}
-	profileconf.Kernel = new(KernelConf)
-	profileconf.NetDevs = make(map[string]*NetDev)
-	profileconf.Tags = map[string]string{}
+	profileconf.Expand()
 	return profileconf
+}
+
+func (nodeconf *Node) Expand() {
+	nodeconf.Profile.Expand()
+}
+
+func (profile *Profile) Expand() {
+	if profile.Ipmi == nil {
+		profile.Ipmi = new(IpmiConf)
+	}
+	if profile.Ipmi.Tags == nil {
+		profile.Ipmi.Tags = make(map[string]string)
+	}
+	if profile.Kernel == nil {
+		profile.Kernel = new(KernelConf)
+	}
+	if profile.NetDevs == nil {
+		profile.NetDevs = make(map[string]*NetDev)
+	}
+	for i := range profile.NetDevs {
+		if profile.NetDevs[i].Tags == nil {
+			profile.NetDevs[i].Tags = make(map[string]string)
+		}
+	}
+	if profile.Tags == nil {
+		profile.Tags = make(map[string]string)
+	}
 }
 
 /*
