@@ -97,7 +97,6 @@ func (this *NodesYaml) Upgrade(addDefaults bool, replaceOverlays bool, warewulfc
 	if warewulfconf != nil && warewulfconf.NFS != nil {
 		var fstab []map[string]string
 		for _, export := range warewulfconf.NFS.Exports {
-			fmt.Printf("PORTING EXPORT: %s\n", export)
 			fstab = append(fstab, map[string]string{
 				"spec":    fmt.Sprintf("warewulf:%s", export),
 				"file":    export,
@@ -117,7 +116,6 @@ func (this *NodesYaml) Upgrade(addDefaults bool, replaceOverlays bool, warewulfc
 				fstab = append(fstab, entry)
 			}
 		}
-		fmt.Printf("FSTAB: %+v\n", fstab)
 		if len(fstab) > 0 {
 			if _, ok := upgraded.NodeProfiles["default"]; !ok {
 				upgraded.NodeProfiles["default"] = new(node.Profile)
