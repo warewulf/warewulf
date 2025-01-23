@@ -31,16 +31,16 @@ type Overlay string
 // Name returns the base name of the overlay directory.
 //
 // This is derived from the full path of the overlay.
-func (this Overlay) Name() string {
-	return path.Base(this.Path())
+func (overlay Overlay) Name() string {
+	return path.Base(overlay.Path())
 }
 
 // Path returns the string representation of the overlay path.
 //
 // This method allows the Overlay type to be easily converted back to its
 // underlying string representation.
-func (this Overlay) Path() string {
-	return string(this)
+func (overlay Overlay) Path() string {
+	return string(overlay)
 }
 
 // Rootfs returns the path to the root filesystem (rootfs) within the overlay.
@@ -49,12 +49,12 @@ func (this Overlay) Path() string {
 // path to the "rootfs" directory. Otherwise, it checks if the overlay path
 // itself is a directory and returns that. If neither exists, it defaults to
 // returning the "rootfs" path.
-func (this Overlay) Rootfs() string {
-	rootfs := path.Join(this.Path(), "rootfs")
+func (overlay Overlay) Rootfs() string {
+	rootfs := path.Join(overlay.Path(), "rootfs")
 	if util.IsDir(rootfs) {
 		return rootfs
-	} else if util.IsDir(this.Path()) {
-		return this.Path()
+	} else if util.IsDir(overlay.Path()) {
+		return overlay.Path()
 	} else {
 		return rootfs
 	}
@@ -67,16 +67,16 @@ func (this Overlay) Rootfs() string {
 //
 // Returns:
 //   - The full path to the specified file in the overlay's rootfs.
-func (this Overlay) File(filePath string) string {
-	return path.Join(this.Rootfs(), filePath)
+func (overlay Overlay) File(filePath string) string {
+	return path.Join(overlay.Rootfs(), filePath)
 }
 
 // Exists checks whether the overlay path exists and is a directory.
 //
 // Returns:
 //   - true if the overlay path exists and is a directory; false otherwise.
-func (this Overlay) Exists() bool {
-	return util.IsDir(this.Path())
+func (overlay Overlay) Exists() bool {
+	return util.IsDir(overlay.Path())
 }
 
 // IsSiteOverlay determines whether the overlay is a site overlay.
@@ -86,8 +86,8 @@ func (this Overlay) Exists() bool {
 //
 // Returns:
 //   - true if the overlay is a site overlay; false otherwise.
-func (this Overlay) IsSiteOverlay() bool {
-	return path.Dir(this.Path()) == config.Get().Paths.SiteOverlaydir()
+func (overlay Overlay) IsSiteOverlay() bool {
+	return path.Dir(overlay.Path()) == config.Get().Paths.SiteOverlaydir()
 }
 
 // IsDistributionOverlay determines whether the overlay is a distribution overlay.
@@ -97,8 +97,8 @@ func (this Overlay) IsSiteOverlay() bool {
 //
 // Returns:
 //   - true if the overlay is a distribution overlay; false otherwise.
-func (this Overlay) IsDistributionOverlay() bool {
-	return path.Dir(this.Path()) == config.Get().Paths.DistributionOverlaydir()
+func (overlay Overlay) IsDistributionOverlay() bool {
+	return path.Dir(overlay.Path()) == config.Get().Paths.DistributionOverlaydir()
 }
 
 func BuildAllOverlays(nodes []node.Node, allNodes []node.Node, workerCount int) error {
