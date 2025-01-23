@@ -133,7 +133,6 @@ func (this *NodesYaml) Upgrade(addDefaults bool, replaceOverlays bool, warewulfc
 			} else {
 				upgraded.NodeProfiles["default"].Resources["fstab"] = fstab
 			}
-			fmt.Printf("RECORDED FSTAB: %+v\n", upgraded.NodeProfiles["default"].Resources["fstab"])
 		}
 	}
 	return upgraded
