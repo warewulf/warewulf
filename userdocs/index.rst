@@ -47,6 +47,7 @@ Welcome to the Warewulf User Guide!
    Contributing <contributing/contributing>
    Debugging <contributing/debugging>
    Documentation <contributing/documentation>
+   Development Environment (Dev Container/VSC) <contributing/development-environment-devcontainer>
    Development Environment (Vagrant) <contributing/development-environment-vagrant>
    Development Environment (KVM) <contributing/development-environment-kvm>
    Development Environment (VirtualBox) <contributing/development-environment-vbox>
