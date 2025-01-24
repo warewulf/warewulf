@@ -16,33 +16,33 @@ message NodeDBHash {
 	string hash = 1;
 }
 
-// Container
+// Image
 
-// ContainerBuildParameter contains input for building zero or more containers.
-message ContainerBuildParameter {
-	repeated string containerNames = 1;
+// ImageBuildParameter contains input for building zero or more images.
+message ImageBuildParameter {
+	repeated string imageNames = 1;
 	bool force = 2;
 	bool all = 3;
 	// bool default = 4;
 }
 
-// ContainerDeleteParameter contains input for removing containers from Warewulf
+// ImageDeleteParameter contains input for removing images from Warewulf
 // management.
-message ContainerDeleteParameter {
-	repeated string containerNames = 1;
+message ImageDeleteParameter {
+	repeated string imageNames = 1;
 }
 
-// ContainerCopyParameter contains 2 inputs : first one for the source container name and second one for the duplicated container name.
-message ContainerCopyParameter {
-	string containerSource = 1;
-	string containerDestination = 2;
+// ImageCopyParameter contains 2 inputs : first one for the image source name and second one for the duplicated image name.
+message ImageCopyParameter {
+	string imageSource = 1;
+	string imageDestination = 2;
 	bool build = 3;
 }
 
-// ContainerImportParameter has all input for importing a container.
-message ContainerImportParameter{
-	string source = 1; // container source uri
-	string name = 2; // container name
+// ImageImportParameter has all input for importing an image.
+message ImageImportParameter{
+	string source = 1; // image source uri
+	string name = 2; // image name
 	bool force = 3;
 	bool update = 4;
 	bool build = 5;
@@ -54,9 +54,9 @@ message ContainerImportParameter{
 	string platform = 11;
 }
 
-// ContainerInfo has data on each container. This is emitted in the
-// ContainerListResponse.
-message ContainerInfo {
+// ImageInfo has data on each image. This is emitted in the
+// ImageListResponse.
+message ImageInfo {
 	string name = 1;
 	uint32 nodeCount = 2;
 	string kernelVersion = 3;
@@ -67,32 +67,32 @@ message ContainerInfo {
 	uint64 imgSizeComp = 8;
 }
 
-// ContainerListResponse has all information that ContainerList provides.
-message ContainerListResponse {
-	repeated ContainerInfo containers = 1;
+// ImageListResponse has all information that ImageList provides.
+message ImageListResponse {
+	repeated ImageInfo images = 1;
 }
 
-// ContainerShowParameter is the input for ContainerShow.
-message ContainerShowParameter {
-	string containerName = 1;
+// ImageShowParameter is the input for ImageShow.
+message ImageShowParameter {
+	string imageName = 1;
 }
 
-// ContainerShowResponse has all information emitted on ContainerShow.
-message ContainerShowResponse {
+// ImageShowResponse has all information emitted on ImageShow.
+message ImageShowResponse {
 	string Name = 1;
 	string Rootfs = 2;
 	repeated string Nodes = 3;
 	string KernelVersion = 4;
 }
 
-// ContainerSyncUserParameter is the input for ContainerSyncUser.
-message ContainerSyncUserParameter {
-	string containerName = 1;
+// ImageSyncUserParameter is the input for ImageSyncUser.
+message ImageSyncUserParameter {
+	string imageName = 1;
 }
 
-// ContainerRenameParameter is the input for ContainerRename
-message ContainerRenameParameter {
-	string containerName = 1;
+// ImageRenameParameter is the input for ImageRename
+message ImageRenameParameter {
+	string imageName = 1;
 	string targetName = 2;
 	bool build = 3;
 }
@@ -241,56 +241,56 @@ message CanWriteConfig {
 // WWApi defines the wwapid service web interface.
 service WWApi {
 
-	// Containers
+	// Images
 
-	// ContainerBuild builds zero or more containers.
-	rpc ContainerBuild(ContainerBuildParameter) returns (ContainerListResponse) {
+	// ImageBuild builds zero or more images.
+	rpc ImageBuild(ImageBuildParameter) returns (ImageListResponse) {
 		option (google.api.http) = {
-			post: "/v1/containerbuild"
+			post: "/v1/imagebuild"
 			body: "*"
 		};
 	}
 
-	// ContainerDelete removes one or more container from Warewulf management.
-	rpc ContainerDelete(ContainerDeleteParameter) returns (google.protobuf.Empty) {
+	// ImageDelete removes one or more image from Warewulf management.
+	rpc ImageDelete(ImageDeleteParameter) returns (google.protobuf.Empty) {
 		option (google.api.http) = {
-			delete: "/v1/container"
+			delete: "/v1/image"
 		};
 	}
 
 
-	rpc ContainerCopy(ContainerCopyParameter) returns (google.protobuf.Empty) {
+	rpc ImageCopy(ImageCopyParameter) returns (google.protobuf.Empty) {
 		option (google.api.http) = {
-			post: "/v1/containercopy"
+			post: "/v1/imagecopy"
 			body: "*"
 		};
 	}
-	// ContainerImport imports a container to Warewulf.
-	rpc ContainerImport(ContainerImportParameter) returns (ContainerListResponse) {
+	// ImageImport imports an image to Warewulf.
+	rpc ImageImport(ImageImportParameter) returns (ImageListResponse) {
 		option(google.api.http) = {
-			post: "/v1/container"
+			post: "/v1/image"
 			body: "*"
 		};
 	}
 
-	// ContainerList lists ContainerInfo for each container.
-	rpc ContainerList(google.protobuf.Empty) returns (ContainerListResponse) {
+	// ImageList lists ImageInfo for each image.
+	rpc ImageList(google.protobuf.Empty) returns (ImageListResponse) {
 		option (google.api.http) = {
-			get: "/v1/container"
+			get: "/v1/image"
 		};
 	}
 
-	// ContainerShow lists ContainerShow for each container.
-	rpc ContainerShow(ContainerShowParameter) returns (ContainerShowResponse) {
+	// ImageShow lists ImageShow for each image.
+	rpc ImageShow(ImageShowParameter) returns (ImageShowResponse) {
 		option (google.api.http) = {
-			get: "/v1/containershow"
+			get: "/v1/imageshow"
 		};
 	}
 
-	// ContainerRename renames the container
-	rpc ContainerRename(ContainerRenameParameter) returns (google.protobuf.Empty) {
+	// ImageRename renames the image
+	rpc ImageRename(ImageRenameParameter) returns (google.protobuf.Empty) {
 		option (google.api.http) = {
-			post: "/v1/containerrename"
+			post: "/v1/imagerename"
 			body: "*"
 		};
 	}

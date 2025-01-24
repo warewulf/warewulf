@@ -89,18 +89,18 @@ func Test_FindKernel(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			env := testenv.New(t)
 			defer env.RemoveAll()
-			rootfs := "/var/lib/warewulf/chroots/testcontainer/rootfs"
+			rootfs := "/var/lib/warewulf/chroots/testimage/rootfs"
 			for _, file := range tt.files {
 				env.CreateFile(filepath.Join(rootfs, file))
 			}
 
-			kernels := FindKernels("testcontainer")
+			kernels := FindKernels("testimage")
 			assert.Equal(t, len(tt.files), len(kernels))
 			kernel := kernels.Default()
 			if tt.version == "" && tt.path == "" {
 				assert.Nil(t, kernel)
 			} else {
-				assert.Equal(t, "testcontainer", kernel.ContainerName)
+				assert.Equal(t, "testimage", kernel.ImageName)
 				assert.Equal(t, tt.version, kernel.Version())
 				assert.Equal(t, tt.path, kernel.Path)
 				assert.Equal(t, env.GetPath(filepath.Join(rootfs, tt.path)), kernel.FullPath())
@@ -152,18 +152,18 @@ func Test_FromNode(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			env := testenv.New(t)
 			defer env.RemoveAll()
-			rootfs := "/var/lib/warewulf/chroots/testcontainer/rootfs"
+			rootfs := "/var/lib/warewulf/chroots/testimage/rootfs"
 			for _, file := range tt.files {
 				env.CreateFile(filepath.Join(rootfs, file))
 			}
 			node := node.EmptyNode()
-			node.ContainerName = "testcontainer"
+			node.ImageName = "testimage"
 			node.Kernel.Version = tt.version
 			kernel := FromNode(&node)
 			if tt.path == "" {
 				assert.Nil(t, kernel)
 			} else {
-				assert.Equal(t, "testcontainer", kernel.ContainerName)
+				assert.Equal(t, "testimage", kernel.ImageName)
 				assert.Equal(t, tt.path, kernel.Path)
 			}
 		})
@@ -175,14 +175,14 @@ func Test_FindAllKernels(t *testing.T) {
 		files map[string][]string
 		count int
 	}{
-		"two containers": {
+		"two images": {
 			files: map[string][]string{
-				"container1": []string{
+				"image1": []string{
 					"/boot/vmlinuz-5.14.0-427.18.1.el9_4.x86_64",
 					"/boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64",
 					"/boot/vmlinuz-4.14.0-427.18.1.el8_4.x86_64",
 				},
-				"container2": []string{
+				"image2": []string{
 					"/boot/vmlinuz-0-rescue-eb46964329b146e39518c625feab3ea0",
 					"/boot/vmlinuz-5.14.0-362.24.1.el9_3.aarch64",
 					"/boot/vmlinuz-5.14.0-427.31.1.el9_4.aarch64+debug",
@@ -201,8 +201,8 @@ func Test_FindAllKernels(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			env := testenv.New(t)
 			defer env.RemoveAll()
-			for container, files := range tt.files {
-				rootfs := filepath.Join(filepath.Join("/var/lib/warewulf/chroots", container), "rootfs")
+			for image, files := range tt.files {
+				rootfs := filepath.Join(filepath.Join("/var/lib/warewulf/chroots", image), "rootfs")
 				for _, file := range files {
 					env.CreateFile(filepath.Join(rootfs, file))
 				}
@@ -237,7 +237,7 @@ func Test_IsDebugOrRescue(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			kernel := &Kernel{ContainerName: "", Path: tt.path}
+			kernel := &Kernel{ImageName: "", Path: tt.path}
 			assert.Equal(t, tt.debug, kernel.IsDebug())
 			assert.Equal(t, tt.rescue, kernel.IsRescue())
 		})

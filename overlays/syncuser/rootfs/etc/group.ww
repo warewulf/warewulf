@@ -1,2 +1,2 @@
-{{IncludeFrom $.Container "/etc/group"}}
+{{IncludeFrom $.ImageName "/etc/group"}}
 {{Include "/etc/group"}}

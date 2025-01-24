@@ -688,30 +688,30 @@ nodes:
 		addDefaults:     false,
 		replaceOverlays: false,
 		files: map[string]string{
-			"/srv/warewulf/kernel/mykernel/version":                           "1.2.3",
-			"/var/lib/warewulf/chroots/mycontainer/rootfs/boot/vmlinuz-1.2.3": "",
+			"/srv/warewulf/kernel/mykernel/version":                       "1.2.3",
+			"/var/lib/warewulf/chroots/myimage/rootfs/boot/vmlinuz-1.2.3": "",
 		},
 		legacyYaml: `
 nodeprofiles:
   default:
-    container name: mycontainer
+    container name: myimage
     kernel:
       override: mykernel
 nodes:
   n1:
-    container name: mycontainer
+    container name: myimage
     kernel:
       override: mykernel
 `,
 		upgradedYaml: `
 nodeprofiles:
   default:
-    container name: mycontainer
+    image name: myimage
     kernel:
       version: /boot/vmlinuz-1.2.3
 nodes:
   n1:
-    container name: mycontainer
+    image name: myimage
     kernel:
       version: /boot/vmlinuz-1.2.3
 `,
@@ -721,30 +721,30 @@ nodes:
 		addDefaults:     false,
 		replaceOverlays: false,
 		files: map[string]string{
-			"/srv/warewulf/kernel/mykernel/version":                           "1.2.3",
-			"/var/lib/warewulf/chroots/mycontainer/rootfs/boot/vmlinuz-1.2.3": "",
+			"/srv/warewulf/kernel/mykernel/version":                       "1.2.3",
+			"/var/lib/warewulf/chroots/myimage/rootfs/boot/vmlinuz-1.2.3": "",
 		},
 		legacyYaml: `
 nodeprofiles:
   default:
-    container name: mycontainer
+    container name: myimage
     kernel:
       override: /boot/vmlinuz-1.2.3
 nodes:
   n1:
-    container name: mycontainer
+    container name: myimage
     kernel:
       override: /boot/vmlinuz-1.2.3
 `,
 		upgradedYaml: `
 nodeprofiles:
   default:
-    container name: mycontainer
+    image name: myimage
     kernel:
       version: /boot/vmlinuz-1.2.3
 nodes:
   n1:
-    container name: mycontainer
+    image name: myimage
     kernel:
       version: /boot/vmlinuz-1.2.3
 `,

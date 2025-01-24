@@ -70,7 +70,7 @@ func RunServer() error {
 	wwHandler.HandleFunc("/ipxe/", ProvisionSend)
 	wwHandler.HandleFunc("/efiboot/", ProvisionSend)
 	wwHandler.HandleFunc("/kernel/", ProvisionSend)
-	wwHandler.HandleFunc("/container/", ProvisionSend)
+	wwHandler.HandleFunc("/image/", ProvisionSend)
 	wwHandler.HandleFunc("/overlay-system/", ProvisionSend)
 	wwHandler.HandleFunc("/overlay-runtime/", ProvisionSend)
 	wwHandler.HandleFunc("/status", StatusSend)

@@ -1,5 +1,5 @@
 Warewulf Node:      {{.Id}}
-Container:          {{.Container}}
+Image:              {{.ImageName}}
 {{ if .Kernel.Version }}Kernel:             {{.Kernel.Version}} {{ end -}}
 Kernelargs:         {{.Kernel.Args}}
 

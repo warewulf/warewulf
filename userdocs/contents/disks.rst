@@ -17,7 +17,7 @@ Warewulf can be used, for example, to create ``swap`` partitions or ``/scratch``
 Requirements
 ============
 
-Partition and file system creation requires both ``ignition`` and ``sgdisk`` to be installed in the container image.
+Partition and file system creation requires both ``ignition`` and ``sgdisk`` to be installed in the image.
 
 Rocky Linux
 -----------
@@ -55,7 +55,7 @@ Each partition has the switches ``should_exist`` and ``wipe_partition_entry`` wh
 
 File systems are identified by their underlying block device, preferably using the ``/dev/by-partlabel`` format.
 Except for a ``swap`` partition, an absolute path for the mount point must be specified for each file system.
-Depending on the container used, valid formats are ``btrfs``, ``ext3``, ``ext4``, and ``xfs``.
+Depending on the image used, valid formats are ``btrfs``, ``ext3``, ``ext4``, and ``xfs``.
 Each file system has the switch ``wipe_filesystem`` to control whether an existing file system is wiped.
 
 Ignition Implementation

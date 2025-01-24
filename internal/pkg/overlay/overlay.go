@@ -227,7 +227,7 @@ func FindOverlays() (overlayList []string, err error) {
 }
 
 /*
-Build the given overlays for a node and create a Image for them
+Build the given overlays for a node and create an image for them
 */
 func BuildOverlay(nodeConf node.Node, allNodes []node.Node, context string, overlayNames []string) error {
 	if len(overlayNames) == 0 && context == "" {
@@ -469,7 +469,7 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (
 	// Build our FuncMap
 	funcMap := template.FuncMap{
 		"Include":      templateFileInclude,
-		"IncludeFrom":  templateContainerFileInclude,
+		"IncludeFrom":  templateImageFileInclude,
 		"IncludeBlock": templateFileBlock,
 		"ImportLink":   importSoftlink,
 		"basename":     path.Base,

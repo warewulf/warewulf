@@ -3,18 +3,18 @@ Kernel Management
 =================
 
 Warewulf nodes require a Linux kernel to boot. As of Warewulf v4.6, the kernel
-you wish to use must be present in the relevant container. Warewulf locates and
+you wish to use must be present in the relevant image. Warewulf locates and
 provisions the kernel automatically for any node configured to use that
-container image.
+image.
 
-You can see what kernels are available in imported containers by using the
-``wwctl container kernels`` command:
+You can see what kernels are available in imported images by using the
+``wwctl image kernels`` command:
 
 .. code-block:: console
 
-   # wwctl container kernels
-   Container            Kernel                                              Version          Default  Nodes
-   ---------            ------                                              -------          -------  -----
+   # wwctl image kernels
+   Image                Kernel                                              Version          Default  Nodes
+   -----                ------                                              -------          -------  -----
    newroot-test         /boot/vmlinuz-5.14.0-427.37.1.el9_4.aarch64         5.14.0-427.37.1  true     0
    newroot-test         /lib/modules/5.14.0-427.37.1.el9_4.aarch64/vmlinuz  5.14.0-427.37.1  false    0
    rocky-8              /boot/vmlinuz-4.18.0-372.13.1.el8_6.x86_64          4.18.0-372.13.1  true     2
@@ -25,7 +25,7 @@ You can see what kernels are available in imported containers by using the
 Kernel Version
 ==============
 
-If a container includes multiple kernels, the desired kernel may be selected by
+If an image includes multiple kernels, the desired kernel may be selected by
 specifying the desired version or an explicit path.
 
 .. code-block:: console

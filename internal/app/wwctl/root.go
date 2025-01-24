@@ -6,8 +6,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/app/wwctl/clean"
 	"github.com/warewulf/warewulf/internal/app/wwctl/configure"
-	"github.com/warewulf/warewulf/internal/app/wwctl/container"
 	"github.com/warewulf/warewulf/internal/app/wwctl/genconf"
+	"github.com/warewulf/warewulf/internal/app/wwctl/image"
 	"github.com/warewulf/warewulf/internal/app/wwctl/node"
 	"github.com/warewulf/warewulf/internal/app/wwctl/overlay"
 	"github.com/warewulf/warewulf/internal/app/wwctl/power"
@@ -49,7 +49,7 @@ func init() {
 	rootCmd.SetUsageTemplate(help.UsageTemplate)
 	rootCmd.SetHelpTemplate(help.HelpTemplate)
 	rootCmd.AddCommand(overlay.GetCommand())
-	rootCmd.AddCommand(container.GetCommand())
+	rootCmd.AddCommand(image.GetCommand())
 	rootCmd.AddCommand(node.GetCommand())
 	rootCmd.AddCommand(power.GetCommand())
 	rootCmd.AddCommand(profile.GetCommand())

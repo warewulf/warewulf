@@ -1,4 +1,4 @@
-{{ if .ContainerName }}
+{{ if .ImageName }}
 echo "================================================================================"
 echo "Warewulf v4 now http booting grub: {{.Fqdn}} ({{.Hwaddr}})"
 echo "================================================================================"
@@ -10,7 +10,7 @@ smbios --type 3 --get-string 8 --set assetkey
 
 uri="(http,{{.Ipaddr}}:{{.Port}})/provision/${net_default_mac}?assetkey=${assetkey}"
 kernel="${uri}&stage=kernel"
-container="${uri}&stage=container&compress=gz"
+image="${uri}&stage=image&compress=gz"
 system="${uri}&stage=system&compress=gz"
 runtime="${uri}&stage=runtime&compress=gz"
 
@@ -21,13 +21,13 @@ menuentry "Network boot node: {{.Id}}" --id ww4 {
     {{if .KernelVersion }}
     echo "Kernel:                {{.KernelVersion}}"
     {{else}}
-    echo "Kernel:                {{.ContainerName}} (container default)"
+    echo "Kernel:                {{.ImageName}} (image default)"
     {{end}}
     echo "KernelArgs:            {{.KernelArgs}}"
     linux $kernel wwid=${net_default_mac} {{.KernelArgs}}
     if [ x$? = x0 ] ; then
-        echo "Loading Container:     {{.ContainerName}}"
-        initrd $container $system $runtime
+        echo "Loading Image:         {{.ImageName}}"
+        initrd $image $system $runtime
         boot
     else
         echo "MESSAGE: This node seems to be unconfigured. Please have your system administrator add a"
@@ -47,7 +47,7 @@ menuentry "Network boot node with dracut: {{.Id}}" --id dracut {
     {{if .KernelVersion }}
     echo "Kernel:                {{.KernelVersion}}"
     {{else}}
-    echo "Kernel:                {{.ContainerName}} (container default)"
+    echo "Kernel:                {{.ImageName}} (image default)"
     {{end}}
     echo "KernelArgs:            {{.KernelArgs}}"
 
@@ -56,7 +56,7 @@ menuentry "Network boot node with dracut: {{.Id}}" --id dracut {
     linux $kernel wwid=${net_default_mac} {{.KernelArgs}} $net_args $wwinit_args
 
     if [ x$? = x0 ] ; then
-        echo "Loading Container:     {{.ContainerName}}"
+        echo "Loading Image:         {{.ImageName}}"
         initrd $initramfs
         boot
     else
@@ -90,7 +90,7 @@ menuentry "System shutdown" {
 {{ else }}
 echo "================================================================================"
 echo " Warewulf v4:"
-echo " No node image/container defined for this node ({{.Fqdn}})."
+echo " No node image defined for this node ({{.Fqdn}})."
 echo " Rebooting in 30s."
 echo "================================================================================"
 sleep 30

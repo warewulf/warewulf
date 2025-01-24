@@ -23,19 +23,19 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WWApiClient interface {
-	// ContainerBuild builds zero or more containers.
-	ContainerBuild(ctx context.Context, in *ContainerBuildParameter, opts ...grpc.CallOption) (*ContainerListResponse, error)
-	// ContainerDelete removes one or more container from Warewulf management.
-	ContainerDelete(ctx context.Context, in *ContainerDeleteParameter, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	ContainerCopy(ctx context.Context, in *ContainerCopyParameter, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// ContainerImport imports a container to Warewulf.
-	ContainerImport(ctx context.Context, in *ContainerImportParameter, opts ...grpc.CallOption) (*ContainerListResponse, error)
-	// ContainerList lists ContainerInfo for each container.
-	ContainerList(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ContainerListResponse, error)
-	// ContainerShow lists ContainerShow for each container.
-	ContainerShow(ctx context.Context, in *ContainerShowParameter, opts ...grpc.CallOption) (*ContainerShowResponse, error)
-	// ContainerRename renames the container
-	ContainerRename(ctx context.Context, in *ContainerRenameParameter, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// ImageBuild builds zero or more images.
+	ImageBuild(ctx context.Context, in *ImageBuildParameter, opts ...grpc.CallOption) (*ImageListResponse, error)
+	// ImageDelete removes one or more image from Warewulf management.
+	ImageDelete(ctx context.Context, in *ImageDeleteParameter, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ImageCopy(ctx context.Context, in *ImageCopyParameter, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// ImageImport imports an image to Warewulf.
+	ImageImport(ctx context.Context, in *ImageImportParameter, opts ...grpc.CallOption) (*ImageListResponse, error)
+	// ImageList lists ImageInfo for each image.
+	ImageList(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ImageListResponse, error)
+	// ImageShow lists ImageShow for each image.
+	ImageShow(ctx context.Context, in *ImageShowParameter, opts ...grpc.CallOption) (*ImageShowResponse, error)
+	// ImageRename renames the image
+	ImageRename(ctx context.Context, in *ImageRenameParameter, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// NodeAdd adds one or more nodes for management by Warewulf and returns
 	// the added nodes. Node fields may be shimmed in per profiles.
 	NodeAdd(ctx context.Context, in *NodeAddParameter, opts ...grpc.CallOption) (*NodeListResponse, error)
@@ -61,63 +61,63 @@ func NewWWApiClient(cc grpc.ClientConnInterface) WWApiClient {
 	return &wWApiClient{cc}
 }
 
-func (c *wWApiClient) ContainerBuild(ctx context.Context, in *ContainerBuildParameter, opts ...grpc.CallOption) (*ContainerListResponse, error) {
-	out := new(ContainerListResponse)
-	err := c.cc.Invoke(ctx, "/wwapi.v1.WWApi/ContainerBuild", in, out, opts...)
+func (c *wWApiClient) ImageBuild(ctx context.Context, in *ImageBuildParameter, opts ...grpc.CallOption) (*ImageListResponse, error) {
+	out := new(ImageListResponse)
+	err := c.cc.Invoke(ctx, "/wwapi.v1.WWApi/ImageBuild", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *wWApiClient) ContainerDelete(ctx context.Context, in *ContainerDeleteParameter, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *wWApiClient) ImageDelete(ctx context.Context, in *ImageDeleteParameter, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/wwapi.v1.WWApi/ContainerDelete", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/wwapi.v1.WWApi/ImageDelete", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *wWApiClient) ContainerCopy(ctx context.Context, in *ContainerCopyParameter, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *wWApiClient) ImageCopy(ctx context.Context, in *ImageCopyParameter, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/wwapi.v1.WWApi/ContainerCopy", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/wwapi.v1.WWApi/ImageCopy", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *wWApiClient) ContainerImport(ctx context.Context, in *ContainerImportParameter, opts ...grpc.CallOption) (*ContainerListResponse, error) {
-	out := new(ContainerListResponse)
-	err := c.cc.Invoke(ctx, "/wwapi.v1.WWApi/ContainerImport", in, out, opts...)
+func (c *wWApiClient) ImageImport(ctx context.Context, in *ImageImportParameter, opts ...grpc.CallOption) (*ImageListResponse, error) {
+	out := new(ImageListResponse)
+	err := c.cc.Invoke(ctx, "/wwapi.v1.WWApi/ImageImport", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *wWApiClient) ContainerList(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ContainerListResponse, error) {
-	out := new(ContainerListResponse)
-	err := c.cc.Invoke(ctx, "/wwapi.v1.WWApi/ContainerList", in, out, opts...)
+func (c *wWApiClient) ImageList(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ImageListResponse, error) {
+	out := new(ImageListResponse)
+	err := c.cc.Invoke(ctx, "/wwapi.v1.WWApi/ImageList", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *wWApiClient) ContainerShow(ctx context.Context, in *ContainerShowParameter, opts ...grpc.CallOption) (*ContainerShowResponse, error) {
-	out := new(ContainerShowResponse)
-	err := c.cc.Invoke(ctx, "/wwapi.v1.WWApi/ContainerShow", in, out, opts...)
+func (c *wWApiClient) ImageShow(ctx context.Context, in *ImageShowParameter, opts ...grpc.CallOption) (*ImageShowResponse, error) {
+	out := new(ImageShowResponse)
+	err := c.cc.Invoke(ctx, "/wwapi.v1.WWApi/ImageShow", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *wWApiClient) ContainerRename(ctx context.Context, in *ContainerRenameParameter, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *wWApiClient) ImageRename(ctx context.Context, in *ImageRenameParameter, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/wwapi.v1.WWApi/ContainerRename", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/wwapi.v1.WWApi/ImageRename", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -182,19 +182,19 @@ func (c *wWApiClient) Version(ctx context.Context, in *emptypb.Empty, opts ...gr
 // All implementations must embed UnimplementedWWApiServer
 // for forward compatibility
 type WWApiServer interface {
-	// ContainerBuild builds zero or more containers.
-	ContainerBuild(context.Context, *ContainerBuildParameter) (*ContainerListResponse, error)
-	// ContainerDelete removes one or more container from Warewulf management.
-	ContainerDelete(context.Context, *ContainerDeleteParameter) (*emptypb.Empty, error)
-	ContainerCopy(context.Context, *ContainerCopyParameter) (*emptypb.Empty, error)
-	// ContainerImport imports a container to Warewulf.
-	ContainerImport(context.Context, *ContainerImportParameter) (*ContainerListResponse, error)
-	// ContainerList lists ContainerInfo for each container.
-	ContainerList(context.Context, *emptypb.Empty) (*ContainerListResponse, error)
-	// ContainerShow lists ContainerShow for each container.
-	ContainerShow(context.Context, *ContainerShowParameter) (*ContainerShowResponse, error)
-	// ContainerRename renames the container
-	ContainerRename(context.Context, *ContainerRenameParameter) (*emptypb.Empty, error)
+	// ImageBuild builds zero or more images.
+	ImageBuild(context.Context, *ImageBuildParameter) (*ImageListResponse, error)
+	// ImageDelete removes one or more image from Warewulf management.
+	ImageDelete(context.Context, *ImageDeleteParameter) (*emptypb.Empty, error)
+	ImageCopy(context.Context, *ImageCopyParameter) (*emptypb.Empty, error)
+	// ImageImport imports an image to Warewulf.
+	ImageImport(context.Context, *ImageImportParameter) (*ImageListResponse, error)
+	// ImageList lists ImageInfo for each image.
+	ImageList(context.Context, *emptypb.Empty) (*ImageListResponse, error)
+	// ImageShow lists ImageShow for each image.
+	ImageShow(context.Context, *ImageShowParameter) (*ImageShowResponse, error)
+	// ImageRename renames the image
+	ImageRename(context.Context, *ImageRenameParameter) (*emptypb.Empty, error)
 	// NodeAdd adds one or more nodes for management by Warewulf and returns
 	// the added nodes. Node fields may be shimmed in per profiles.
 	NodeAdd(context.Context, *NodeAddParameter) (*NodeListResponse, error)
@@ -217,26 +217,26 @@ type WWApiServer interface {
 type UnimplementedWWApiServer struct {
 }
 
-func (UnimplementedWWApiServer) ContainerBuild(context.Context, *ContainerBuildParameter) (*ContainerListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ContainerBuild not implemented")
+func (UnimplementedWWApiServer) ImageBuild(context.Context, *ImageBuildParameter) (*ImageListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ImageBuild not implemented")
 }
-func (UnimplementedWWApiServer) ContainerDelete(context.Context, *ContainerDeleteParameter) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ContainerDelete not implemented")
+func (UnimplementedWWApiServer) ImageDelete(context.Context, *ImageDeleteParameter) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ImageDelete not implemented")
 }
-func (UnimplementedWWApiServer) ContainerCopy(context.Context, *ContainerCopyParameter) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ContainerCopy not implemented")
+func (UnimplementedWWApiServer) ImageCopy(context.Context, *ImageCopyParameter) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ImageCopy not implemented")
 }
-func (UnimplementedWWApiServer) ContainerImport(context.Context, *ContainerImportParameter) (*ContainerListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ContainerImport not implemented")
+func (UnimplementedWWApiServer) ImageImport(context.Context, *ImageImportParameter) (*ImageListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ImageImport not implemented")
 }
-func (UnimplementedWWApiServer) ContainerList(context.Context, *emptypb.Empty) (*ContainerListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ContainerList not implemented")
+func (UnimplementedWWApiServer) ImageList(context.Context, *emptypb.Empty) (*ImageListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ImageList not implemented")
 }
-func (UnimplementedWWApiServer) ContainerShow(context.Context, *ContainerShowParameter) (*ContainerShowResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ContainerShow not implemented")
+func (UnimplementedWWApiServer) ImageShow(context.Context, *ImageShowParameter) (*ImageShowResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ImageShow not implemented")
 }
-func (UnimplementedWWApiServer) ContainerRename(context.Context, *ContainerRenameParameter) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ContainerRename not implemented")
+func (UnimplementedWWApiServer) ImageRename(context.Context, *ImageRenameParameter) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ImageRename not implemented")
 }
 func (UnimplementedWWApiServer) NodeAdd(context.Context, *NodeAddParameter) (*NodeListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method NodeAdd not implemented")
@@ -269,128 +269,128 @@ func RegisterWWApiServer(s grpc.ServiceRegistrar, srv WWApiServer) {
 	s.RegisterService(&WWApi_ServiceDesc, srv)
 }
 
-func _WWApi_ContainerBuild_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ContainerBuildParameter)
+func _WWApi_ImageBuild_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ImageBuildParameter)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WWApiServer).ContainerBuild(ctx, in)
+		return srv.(WWApiServer).ImageBuild(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wwapi.v1.WWApi/ContainerBuild",
+		FullMethod: "/wwapi.v1.WWApi/ImageBuild",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WWApiServer).ContainerBuild(ctx, req.(*ContainerBuildParameter))
+		return srv.(WWApiServer).ImageBuild(ctx, req.(*ImageBuildParameter))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _WWApi_ContainerDelete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ContainerDeleteParameter)
+func _WWApi_ImageDelete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ImageDeleteParameter)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WWApiServer).ContainerDelete(ctx, in)
+		return srv.(WWApiServer).ImageDelete(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wwapi.v1.WWApi/ContainerDelete",
+		FullMethod: "/wwapi.v1.WWApi/ImageDelete",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WWApiServer).ContainerDelete(ctx, req.(*ContainerDeleteParameter))
+		return srv.(WWApiServer).ImageDelete(ctx, req.(*ImageDeleteParameter))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _WWApi_ContainerCopy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ContainerCopyParameter)
+func _WWApi_ImageCopy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ImageCopyParameter)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WWApiServer).ContainerCopy(ctx, in)
+		return srv.(WWApiServer).ImageCopy(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wwapi.v1.WWApi/ContainerCopy",
+		FullMethod: "/wwapi.v1.WWApi/ImageCopy",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WWApiServer).ContainerCopy(ctx, req.(*ContainerCopyParameter))
+		return srv.(WWApiServer).ImageCopy(ctx, req.(*ImageCopyParameter))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _WWApi_ContainerImport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ContainerImportParameter)
+func _WWApi_ImageImport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ImageImportParameter)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WWApiServer).ContainerImport(ctx, in)
+		return srv.(WWApiServer).ImageImport(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wwapi.v1.WWApi/ContainerImport",
+		FullMethod: "/wwapi.v1.WWApi/ImageImport",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WWApiServer).ContainerImport(ctx, req.(*ContainerImportParameter))
+		return srv.(WWApiServer).ImageImport(ctx, req.(*ImageImportParameter))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _WWApi_ContainerList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _WWApi_ImageList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WWApiServer).ContainerList(ctx, in)
+		return srv.(WWApiServer).ImageList(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wwapi.v1.WWApi/ContainerList",
+		FullMethod: "/wwapi.v1.WWApi/ImageList",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WWApiServer).ContainerList(ctx, req.(*emptypb.Empty))
+		return srv.(WWApiServer).ImageList(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _WWApi_ContainerShow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ContainerShowParameter)
+func _WWApi_ImageShow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ImageShowParameter)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WWApiServer).ContainerShow(ctx, in)
+		return srv.(WWApiServer).ImageShow(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wwapi.v1.WWApi/ContainerShow",
+		FullMethod: "/wwapi.v1.WWApi/ImageShow",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WWApiServer).ContainerShow(ctx, req.(*ContainerShowParameter))
+		return srv.(WWApiServer).ImageShow(ctx, req.(*ImageShowParameter))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _WWApi_ContainerRename_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ContainerRenameParameter)
+func _WWApi_ImageRename_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ImageRenameParameter)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WWApiServer).ContainerRename(ctx, in)
+		return srv.(WWApiServer).ImageRename(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/wwapi.v1.WWApi/ContainerRename",
+		FullMethod: "/wwapi.v1.WWApi/ImageRename",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WWApiServer).ContainerRename(ctx, req.(*ContainerRenameParameter))
+		return srv.(WWApiServer).ImageRename(ctx, req.(*ImageRenameParameter))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -511,32 +511,32 @@ var WWApi_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*WWApiServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "ContainerBuild",
-			Handler:    _WWApi_ContainerBuild_Handler,
+			MethodName: "ImageBuild",
+			Handler:    _WWApi_ImageBuild_Handler,
 		},
 		{
-			MethodName: "ContainerDelete",
-			Handler:    _WWApi_ContainerDelete_Handler,
+			MethodName: "ImageDelete",
+			Handler:    _WWApi_ImageDelete_Handler,
 		},
 		{
-			MethodName: "ContainerCopy",
-			Handler:    _WWApi_ContainerCopy_Handler,
+			MethodName: "ImageCopy",
+			Handler:    _WWApi_ImageCopy_Handler,
 		},
 		{
-			MethodName: "ContainerImport",
-			Handler:    _WWApi_ContainerImport_Handler,
+			MethodName: "ImageImport",
+			Handler:    _WWApi_ImageImport_Handler,
 		},
 		{
-			MethodName: "ContainerList",
-			Handler:    _WWApi_ContainerList_Handler,
+			MethodName: "ImageList",
+			Handler:    _WWApi_ImageList_Handler,
 		},
 		{
-			MethodName: "ContainerShow",
-			Handler:    _WWApi_ContainerShow_Handler,
+			MethodName: "ImageShow",
+			Handler:    _WWApi_ImageShow_Handler,
 		},
 		{
-			MethodName: "ContainerRename",
-			Handler:    _WWApi_ContainerRename_Handler,
+			MethodName: "ImageRename",
+			Handler:    _WWApi_ImageRename_Handler,
 		},
 		{
 			MethodName: "NodeAdd",

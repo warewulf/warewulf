@@ -51,7 +51,7 @@ const issue string = `backupFile: true
 writeFile: true
 Filename: etc/issue
 Warewulf Node:      node1
-Container:          rockylinux-9
+Image:              rockylinux-9
 Kernelargs:         quiet crashkernel=no vga=791 net.naming-scheme=v238
 
 Network:

@@ -16,7 +16,7 @@ Welcome to the Warewulf User Guide!
    Warewulf Configuration <contents/configuration>
    Controlling Warewulf (wwctl) <contents/wwctl>
    Warewulf Initialization <contents/initialization>
-   Container Management <contents/containers>
+   Image Management <contents/images>
    Kernel Management <contents/kernel>
    Boot Management <contents/boot-management>
    Node Configuration <contents/nodeconfig>

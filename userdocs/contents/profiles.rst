@@ -7,8 +7,8 @@ together. Instead of redundant configurations for each node, you can
 put that into a profile and the nodes will inherit these
 configurations. This is very handy if you have groups of node specific
 customizations. For example, a few hundred nodes that are running a
-particular container or kernel, and another group of nodes that are
-running a different kernel or container.
+particular image or kernel, and another group of nodes that are
+running a different kernel or image.
 
 Profiles may, themselves, reference other profiles, supporting complex
 mixtures of profile configuration and negation.
@@ -42,7 +42,7 @@ And with the ``-a`` flag:
    default              Id                 --       default
    default              Comment            --       This profile is automatically included for each node
    default              Cluster            --       --
-   default              Container          --       --
+   default              Image              --       --
    default              Kernel             --       --
    default              KernelArgs         --       --
    default              Init               --       --
@@ -197,7 +197,7 @@ But if you do wish to use profiles, the best way to use them is to
 manage "fixed" configurations of groups of cluster nodes. For example,
 if you have multiple sub-clusters in your cluster, it might be
 advantageous to have a ``cluster_name`` profile which includes things
-like network configurations, and/or a specific kernel, container, boot
+like network configurations, and/or a specific kernel, image, boot
 arguments, etc.
 
 Node specific information, like HW/MAC addresses and IP addresses

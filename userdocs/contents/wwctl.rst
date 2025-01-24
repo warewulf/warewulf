@@ -7,7 +7,7 @@ Warewulf's command-line interface is based primarily around the
 component of Warewulf's functionality.
 
 * ``configure`` configures system services that Warewulf depends on
-* ``container`` configures containers (node images)
+* ``image`` configures images (node images)
 * ``kernel`` configures override kernels
 * ``node`` manages nodes in the cluster
 * ``profiles`` defines configuration which can be applied to multiple

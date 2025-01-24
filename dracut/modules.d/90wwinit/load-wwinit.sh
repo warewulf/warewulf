@@ -3,7 +3,7 @@
 info "Mounting tmpfs at $NEWROOT"
 mount -t tmpfs -o mpol=interleave ${wwinit_tmpfs_size_option} tmpfs "$NEWROOT"
 
-for archive in "${wwinit_container}" "${wwinit_system}" "${wwinit_runtime}"
+for archive in "${wwinit_image}" "${wwinit_system}" "${wwinit_runtime}"
 do
     if [ -n "${archive}" ]
     then

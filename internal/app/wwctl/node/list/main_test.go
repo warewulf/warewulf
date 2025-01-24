@@ -271,9 +271,9 @@ nodes:
 			args:    []string{"-l"},
 			wantErr: false,
 			stdout: `
-NODE NAME  KERNEL VERSION  CONTAINER  OVERLAYS (S/R)
----------  --------------  ---------  --------------
-n01        --              --         /rop1,rop2
+NODE NAME  KERNEL VERSION  IMAGE  OVERLAYS (S/R)
+---------  --------------  -----  --------------
+n01        --              --     /rop1,rop2
 `,
 			inDb: `nodeprofiles:
   p1:
@@ -291,9 +291,9 @@ nodes:
 			args:    []string{"-l"},
 			wantErr: false,
 			stdout: `
-NODE NAME  KERNEL VERSION  CONTAINER  OVERLAYS (S/R)
----------  --------------  ---------  --------------
-n01        --              --         sop1/rop1,rop2,nop1,~rop1
+NODE NAME  KERNEL VERSION  IMAGE  OVERLAYS (S/R)
+---------  --------------  -----  --------------
+n01        --              --     sop1/rop1,rop2,nop1,~rop1
 `,
 			inDb: `nodeprofiles:
   p1:
@@ -453,7 +453,7 @@ nodes:
     ],
     "Comment": "",
     "ClusterName": "",
-    "ContainerName": "",
+    "ImageName": "",
     "Ipxe": "",
     "RuntimeOverlay": null,
     "SystemOverlay": null,
@@ -492,7 +492,7 @@ nodes:
     ],
     "Comment": "",
     "ClusterName": "",
-    "ContainerName": "",
+    "ImageName": "",
     "Ipxe": "",
     "RuntimeOverlay": null,
     "SystemOverlay": null,
@@ -515,7 +515,7 @@ nodes:
     ],
     "Comment": "",
     "ClusterName": "",
-    "ContainerName": "",
+    "ImageName": "",
     "Ipxe": "",
     "RuntimeOverlay": null,
     "SystemOverlay": null,

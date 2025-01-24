@@ -21,13 +21,13 @@ and substitute your cluster node's MAC addres in place of 00:00:00:00:00:00.)
 
    set uri http://10.0.0.1:9873/provision/00:00:00:00:00:00
    kernel --name kernel ${uri}?stage=kernel
-   imgextract --name container ${uri}?stage=container&compress=gz
+   imgextract --name image ${uri}?stage=image&compress=gz
    imgextract --name system ${uri}?stage=system&compress=gz
    imgextract --name runtime ${uri}?stage=runtime&compress=gz
-   boot kernel initrd=container initrd=system initrd=runtime
+   boot kernel initrd=image initrd=system initrd=runtime
 
 - The ``uri`` variable points to ``warewulfd`` for future reference.
-  This includes the cluster node's MAC address so that Warewulf knows what container and overlays to provide.
+  This includes the cluster node's MAC address so that Warewulf knows what image and overlays to provide.
 
 - The ``kernel`` command fetches a kernel for later booting.
 
@@ -48,7 +48,7 @@ To do so, substitute the ``boot`` command above.
 
 .. code-block::
 
-   boot kernel initrd=container initrd=system initrd=runtime rdinit=/bin/sh
+   boot kernel initrd=image initrd=system initrd=runtime rdinit=/bin/sh
 
 .. note::
 
@@ -73,12 +73,12 @@ and update the port number if you have changed it from the default of 9873.)
 
    uri="(http,10.0.0.1:9873)/provision/${net_default_mac}"
    linux "${uri}?stage=kernel" wwid=${net_default_mac}
-   initrd "${uri}?stage=container&compress=gz" "${uri}?stage=system&compress=gz" "${uri}?stage=runtime&compress=gz"
+   initrd "${uri}?stage=image&compress=gz" "${uri}?stage=system&compress=gz" "${uri}?stage=runtime&compress=gz"
    boot
 
 - The ``uri`` variable points to ``warewulfd`` for future reference.
   ``${net_default_mac}`` provides Warewulf with the MAC address of the booting node,
-  so that Warewulf knows what container and overlays to provide it.
+  so that Warewulf knows what image and overlays to provide it.
 
 - The ``linux`` command tells GRUB what kernel to boot, as provided by ``warewulfd``.
   The ``wwid`` kernel argument helps ``wwclient`` identify the node during runtime.

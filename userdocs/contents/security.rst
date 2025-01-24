@@ -29,7 +29,7 @@ The Warewulf server itself was developed with SELinux enabled in
 "targeted" and "enforcing" mode and with the firewall active.
 
 The provisioning process also fully supports booting SELinux-enabled
-containers, though nodes must be configured to use tmpfs for init. ("ramfs"
+images, though nodes must be configured to use tmpfs for init. ("ramfs"
 (often used by default) does not support extended file attributes.)
 
 .. code-block:: bash
@@ -44,7 +44,7 @@ containers, though nodes must be configured to use tmpfs for init. ("ramfs"
 
 Once that is done, you just need to enable SELinux in
 ``/etc/sysconfig/selinux`` and install the appropriate profiles into the
-container. `An example`_ of such a container is available in the
+image. `An example`_ of such an image is available in the
 warewulf-node-images repository.
 
 .. _An example: https://github.com/warewulf/warewulf-node-images/tree/main/examples/rockylinux-9-selinux

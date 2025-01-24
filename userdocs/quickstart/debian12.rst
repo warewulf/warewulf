@@ -126,16 +126,16 @@ instructions.
    to run ``$ sudo restorecon -Rv /var/lib/tftpboot/`` if there are
    errors with TFTP still.
 
-Pull and build the VNFS container (including the kernel)
-========================================================
+Pull and build the image (including the kernel)
+===============================================
 
-This will pull a basic VNFS container from Docker Hub and import the
+This will pull a basic image from Docker Hub and import the
 default running kernel from the controller node and set both in the
 "default" node profile.
 
 .. code-block:: bash
 
-   wwctl container import docker://ghcr.io/warewulf/warewulf-debian:12.0 debian-12.0
+   wwctl image import docker://ghcr.io/warewulf/warewulf-debian:12.0 debian-12.0
 
 
 Set up the default node profile
@@ -145,12 +145,12 @@ Node configurations can be set via node profiles. Each node by default
 is configured to be part of the ``default`` node profile, so any
 changes you make to that profile will affect all nodes.
 
-The following command will set the container we just imported above to
+The following command will set the image we just imported above to
 the ``default`` node profile:
 
 .. code-block:: bash
 
-   sudo wwctl profile set --yes --container debian-12.0 "default"
+   sudo wwctl profile set --yes --image debian-12.0 "default"
 
 
 Next we set some default networking configurations for the first

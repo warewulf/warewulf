@@ -13,7 +13,7 @@ import (
 
 	"github.com/Masterminds/sprig/v3"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
-	"github.com/warewulf/warewulf/internal/pkg/container"
+	"github.com/warewulf/warewulf/internal/pkg/image"
 	"github.com/warewulf/warewulf/internal/pkg/kernel"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
@@ -28,7 +28,7 @@ type templateVars struct {
 	Fqdn          string
 	Id            string
 	Cluster       string
-	ContainerName string
+	ImageName     string
 	Hwaddr        string
 	Ipaddr        string
 	Port          string
@@ -106,7 +106,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			Port:          strconv.Itoa(conf.Warewulf.Port),
 			Hostname:      remoteNode.Id(),
 			Hwaddr:        rinfo.hwaddr,
-			ContainerName: remoteNode.ContainerName,
+			ImageName:     remoteNode.ImageName,
 			KernelArgs:    remoteNode.Kernel.Args,
 			KernelVersion: remoteNode.Kernel.Version,
 			NetDevs:       remoteNode.NetDevs,
@@ -122,11 +122,11 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			}
 		}
 
-	} else if rinfo.stage == "container" {
-		if remoteNode.ContainerName != "" {
-			stage_file = container.ImageFile(remoteNode.ContainerName)
+	} else if rinfo.stage == "image" {
+		if remoteNode.ImageName != "" {
+			stage_file = image.ImageFile(remoteNode.ImageName)
 		} else {
-			wwlog.Warn("No container set for node %s", remoteNode.Id())
+			wwlog.Warn("No image set for node %s", remoteNode.Id())
 		}
 
 	} else if rinfo.stage == "system" || rinfo.stage == "runtime" {
@@ -156,19 +156,19 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		}
 	} else if rinfo.stage == "efiboot" {
 		wwlog.Debug("requested method: %s", req.Method)
-		containerName := remoteNode.ContainerName
+		imageName := remoteNode.ImageName
 		switch rinfo.efifile {
 		case "shim.efi":
-			stage_file = container.ShimFind(containerName)
+			stage_file = image.ShimFind(imageName)
 			if stage_file == "" {
-				wwlog.Error("couldn't find shim.efi for %s", containerName)
+				wwlog.Error("couldn't find shim.efi for %s", imageName)
 				w.WriteHeader(http.StatusNotFound)
 				return
 			}
 		case "grub.efi", "grub-tpm.efi", "grubx64.efi", "grubia32.efi", "grubaa64.efi", "grubarm.efi":
-			stage_file = container.GrubFind(containerName)
+			stage_file = image.GrubFind(imageName)
 			if stage_file == "" {
-				wwlog.Error("could't find grub*.efi for %s", containerName)
+				wwlog.Error("could't find grub*.efi for %s", imageName)
 				w.WriteHeader(http.StatusNotFound)
 				return
 			}
@@ -188,13 +188,13 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 				Port:          strconv.Itoa(conf.Warewulf.Port),
 				Hostname:      remoteNode.Id(),
 				Hwaddr:        rinfo.hwaddr,
-				ContainerName: remoteNode.ContainerName,
+				ImageName:     remoteNode.ImageName,
 				KernelArgs:    kernelArgs,
 				KernelVersion: kernelVersion,
 				NetDevs:       remoteNode.NetDevs,
 				Tags:          remoteNode.Tags}
 			if stage_file == "" {
-				wwlog.Error("could't find grub.cfg template for %s", containerName)
+				wwlog.Error("could't find grub.cfg template for %s", imageName)
 				w.WriteHeader(http.StatusNotFound)
 				return
 			}
@@ -202,20 +202,20 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			wwlog.ErrorExc(fmt.Errorf("could't find efiboot file: %s", rinfo.efifile), "")
 		}
 	} else if rinfo.stage == "shim" {
-		if remoteNode.ContainerName != "" {
-			stage_file = container.ShimFind(remoteNode.ContainerName)
+		if remoteNode.ImageName != "" {
+			stage_file = image.ShimFind(remoteNode.ImageName)
 
 			if stage_file == "" {
-				wwlog.Error("No kernel found for container %s", remoteNode.ContainerName)
+				wwlog.Error("No kernel found for image %s", remoteNode.ImageName)
 			}
 		} else {
-			wwlog.Warn("No container set for this %s", remoteNode.Id())
+			wwlog.Warn("No image set for this %s", remoteNode.Id())
 		}
 	} else if rinfo.stage == "grub" {
-		if remoteNode.ContainerName != "" {
-			stage_file = container.GrubFind(remoteNode.ContainerName)
+		if remoteNode.ImageName != "" {
+			stage_file = image.GrubFind(remoteNode.ImageName)
 			if stage_file == "" {
-				wwlog.Error("No grub found for container %s", remoteNode.ContainerName)
+				wwlog.Error("No grub found for image %s", remoteNode.ImageName)
 			}
 		} else {
 			wwlog.Warn("No conainer set for node %s", remoteNode.Id())
@@ -223,10 +223,10 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 	} else if rinfo.stage == "initramfs" {
 		if kernel_ := kernel.FromNode(&remoteNode); kernel_ != nil {
 			if kver := kernel_.Version(); kver != "" {
-				if initramfs := container.FindInitramfs(remoteNode.ContainerName, kver); initramfs != nil {
+				if initramfs := image.FindInitramfs(remoteNode.ImageName, kver); initramfs != nil {
 					stage_file = initramfs.FullPath()
 				} else {
-					wwlog.Error("No initramfs found for kernel %s in container %s", kver, remoteNode.ContainerName)
+					wwlog.Error("No initramfs found for kernel %s in image %s", kver, remoteNode.ImageName)
 				}
 			} else {
 				wwlog.Error("No initramfs found: unable to determine kernel version for node %s", remoteNode.Id())

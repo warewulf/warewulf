@@ -39,6 +39,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Renamed "container" to "image" throughout wwctl and overlay templates. #1385
 - Locally defined `tr` has been dropped, templates updated to use Sprig replace.
 - Bump github.com/opencontainers/image-spec to 1.1.0
 - Bump google.golang.org/grpc 1.62.1

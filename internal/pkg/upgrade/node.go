@@ -153,7 +153,10 @@ func (this *Node) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *nod
 	upgraded.AssetKey = this.AssetKey
 	upgraded.ClusterName = this.ClusterName
 	upgraded.Comment = this.Comment
-	upgraded.ContainerName = this.ContainerName
+	upgraded.ImageName = this.ImageName
+	if upgraded.ImageName == "" {
+		upgraded.ImageName = this.ContainerName
+	}
 	if this.Disabled != "" {
 		logIgnore("Disabled", this.Disabled, "obsolete")
 	}
@@ -205,14 +208,14 @@ func (this *Node) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *nod
 	}
 	upgraded.Ipxe = this.Ipxe
 	if this.Kernel != nil {
-		upgraded.Kernel = this.Kernel.Upgrade(this.ContainerName)
+		upgraded.Kernel = this.Kernel.Upgrade(upgraded.ImageName)
 	} else {
 		inlineKernel := &KernelConf{
 			Args:     this.KernelArgs,
 			Version:  this.KernelVersion,
 			Override: this.KernelOverride,
 		}
-		upgraded.Kernel = inlineKernel.Upgrade(this.ContainerName)
+		upgraded.Kernel = inlineKernel.Upgrade(upgraded.ImageName)
 	}
 	if this.Keys != nil {
 		for key, value := range this.Keys {
@@ -297,6 +300,7 @@ type Profile struct {
 	AssetKey       string                 `yaml:"asset key,omitempty"`
 	ClusterName    string                 `yaml:"cluster name,omitempty"`
 	Comment        string                 `yaml:"comment,omitempty"`
+	ImageName      string                 `yaml:"image name,omitempty"`
 	ContainerName  string                 `yaml:"container name,omitempty"`
 	Disabled       string                 `yaml:"disabled,omitempty"`
 	Discoverable   string                 `yaml:"discoverable,omitempty"`
@@ -341,7 +345,10 @@ func (this *Profile) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *
 	}
 	upgraded.ClusterName = this.ClusterName
 	upgraded.Comment = this.Comment
-	upgraded.ContainerName = this.ContainerName
+	upgraded.ImageName = this.ImageName
+	if upgraded.ImageName == "" {
+		upgraded.ImageName = this.ContainerName
+	}
 	if this.Disabled != "" {
 		logIgnore("Disabled", this.Disabled, "obsolete")
 	}
@@ -394,14 +401,14 @@ func (this *Profile) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *
 	}
 	upgraded.Ipxe = this.Ipxe
 	if this.Kernel != nil {
-		upgraded.Kernel = this.Kernel.Upgrade(this.ContainerName)
+		upgraded.Kernel = this.Kernel.Upgrade(upgraded.ImageName)
 	} else {
 		inlineKernel := &KernelConf{
 			Args:     this.KernelArgs,
 			Version:  this.KernelVersion,
 			Override: this.KernelOverride,
 		}
-		upgraded.Kernel = inlineKernel.Upgrade(this.ContainerName)
+		upgraded.Kernel = inlineKernel.Upgrade(upgraded.ImageName)
 	}
 	if this.Keys != nil {
 		for key, value := range this.Keys {
@@ -524,29 +531,29 @@ type KernelConf struct {
 	Version  string `yaml:"version,omitempty"`
 }
 
-func (this *KernelConf) Upgrade(containerName string) (upgraded *node.KernelConf) {
+func (this *KernelConf) Upgrade(imageName string) (upgraded *node.KernelConf) {
 	upgraded = new(node.KernelConf)
 	upgraded.Args = this.Args
-	kernels := kernel.FindKernels(containerName)
-	wwlog.Debug("referencing kernels: %v (containerName: %v)", kernels, containerName)
+	kernels := kernel.FindKernels(imageName)
+	wwlog.Debug("referencing kernels: %v (imageName: %v)", kernels, imageName)
 	if this.Override != "" {
 		if version := util.ParseVersion(legacyKernelVersion(this.Override)); version != nil {
 			for _, kernel_ := range kernels {
-				wwlog.Debug("checking if kernel '%v' version '%v' from container '%v' matches override '%v'", kernel_, kernel_.Version(), containerName, this.Override)
+				wwlog.Debug("checking if kernel '%v' version '%v' from image '%v' matches override '%v'", kernel_, kernel_.Version(), imageName, this.Override)
 				if kernel_.Version() == version.String() {
 					upgraded.Version = kernel_.Path
-					wwlog.Info("kernel override %v -> version %v (container %v)", this.Override, upgraded.Version, containerName)
+					wwlog.Info("kernel override %v -> version %v (image %v)", this.Override, upgraded.Version, imageName)
 				}
 			}
-		} else if util.IsFile((&kernel.Kernel{ContainerName: containerName, Path: this.Override}).FullPath()) {
+		} else if util.IsFile((&kernel.Kernel{ImageName: imageName, Path: this.Override}).FullPath()) {
 			upgraded.Version = this.Override
 		}
 		if upgraded.Version == "" {
-			containerDisplay := "unknown"
-			if containerName != "" {
-				containerDisplay = containerName
+			imageDisplay := "unknown"
+			if imageName != "" {
+				imageDisplay = imageName
 			}
-			wwlog.Warn("unable to resolve kernel override %v (container %v)", this.Override, containerDisplay)
+			wwlog.Warn("unable to resolve kernel override %v (image %v)", this.Override, imageDisplay)
 		}
 	}
 	if upgraded.Version == "" {

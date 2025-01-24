@@ -8,7 +8,7 @@ import (
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 
-	"github.com/warewulf/warewulf/internal/pkg/container"
+	"github.com/warewulf/warewulf/internal/pkg/image"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 )
 
@@ -20,7 +20,7 @@ to the tftp directory
 func CopyShimGrub() (err error) {
 	conf := warewulfconf.Get()
 	wwlog.Debug("copy shim and grub binaries from host")
-	shimPath := container.ShimFind("")
+	shimPath := image.ShimFind("")
 	if shimPath == "" {
 		return fmt.Errorf("no shim found on the host os")
 	}
@@ -29,7 +29,7 @@ func CopyShimGrub() (err error) {
 		return err
 	}
 	_ = os.Chmod(path.Join(conf.TFTP.TftpRoot, "warewulf", "shim.efi"), 0o755)
-	grubPath := container.GrubFind("")
+	grubPath := image.GrubFind("")
 	if grubPath == "" {
 		return fmt.Errorf("no grub found on host os")
 	}

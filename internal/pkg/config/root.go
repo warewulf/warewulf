@@ -27,21 +27,21 @@ var cachedConf WarewulfYaml
 // some information about the Warewulf server locally, and has
 // [WarewulfConf], [DHCPConf], [TFTPConf], and [NFSConf] sub-sections.
 type WarewulfYaml struct {
-	Comment         string        `yaml:"comment,omitempty"`
-	Ipaddr          string        `yaml:"ipaddr,omitempty"`
-	Ipaddr6         string        `yaml:"ipaddr6,omitempty"`
-	Netmask         string        `yaml:"netmask,omitempty"`
-	Network         string        `yaml:"network,omitempty"`
-	Ipv6net         string        `yaml:"ipv6net,omitempty"`
-	Fqdn            string        `yaml:"fqdn,omitempty"`
-	Warewulf        *WarewulfConf `yaml:"warewulf,omitempty"`
-	DHCP            *DHCPConf     `yaml:"dhcp,omitempty"`
-	TFTP            *TFTPConf     `yaml:"tftp,omitempty"`
-	NFS             *NFSConf      `yaml:"nfs,omitempty"`
-	SSH             *SSHConf      `yaml:"ssh,omitempty"`
-	MountsContainer []*MountEntry `yaml:"container mounts,omitempty" default:"[{\"source\": \"/etc/resolv.conf\", \"dest\": \"/etc/resolv.conf\"}]"`
-	Paths           *BuildConfig  `yaml:"paths,omitempty"`
-	WWClient        *WWClientConf `yaml:"wwclient,omitempty"`
+	Comment     string        `yaml:"comment,omitempty"`
+	Ipaddr      string        `yaml:"ipaddr,omitempty"`
+	Ipaddr6     string        `yaml:"ipaddr6,omitempty"`
+	Netmask     string        `yaml:"netmask,omitempty"`
+	Network     string        `yaml:"network,omitempty"`
+	Ipv6net     string        `yaml:"ipv6net,omitempty"`
+	Fqdn        string        `yaml:"fqdn,omitempty"`
+	Warewulf    *WarewulfConf `yaml:"warewulf,omitempty"`
+	DHCP        *DHCPConf     `yaml:"dhcp,omitempty"`
+	TFTP        *TFTPConf     `yaml:"tftp,omitempty"`
+	NFS         *NFSConf      `yaml:"nfs,omitempty"`
+	SSH         *SSHConf      `yaml:"ssh,omitempty"`
+	MountsImage []*MountEntry `yaml:"image mounts,omitempty" default:"[{\"source\": \"/etc/resolv.conf\", \"dest\": \"/etc/resolv.conf\"}]"`
+	Paths       *BuildConfig  `yaml:"paths,omitempty"`
+	WWClient    *WWClientConf `yaml:"wwclient,omitempty"`
 
 	warewulfconf string
 }

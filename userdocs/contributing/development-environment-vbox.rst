@@ -116,8 +116,8 @@ I have VirtualBox running on my desktop.
    sudo wwctl configure nfs  --persist # Configure the NFS exports
    sudo wwctl configure ssh  --persist # Build the basic ssh keys to be included by the SSH overlay
 
-   # Pull and build the VNFS container and kernel
-   sudo wwctl container import docker://ghcr.io/warewulf/warewulf-centos:7 centos-7 --setdefault
+   # Pull and build the image and kernel
+   sudo wwctl image import docker://ghcr.io/warewulf/warewulf-centos:7 centos-7 --setdefault
    sudo wwctl kernel import build $(uname -r) --setdefault
 
    # Set up the default node profile

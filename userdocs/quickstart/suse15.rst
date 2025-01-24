@@ -72,7 +72,7 @@ address of your cluster's private network interface:
       - path: /opt
         export options: ro,sync,no_root_squash
       systemd name: nfs-server
-    container mounts:
+    image mounts:
       - source: /etc/resolv.conf
         dest: /etc/resolv.conf
         readonly: true
@@ -109,16 +109,16 @@ instructions.
 
    sudo wwctl configure --all
 
-Pull and build the VNFS container and kernel
-============================================
+Pull and build the image and kernel
+===================================
 
-This will pull a basic VNFS container from Docker Hub and import the
+This will pull a basic image from Docker Hub and import the
 default running kernel from the controller node and set both in the
 "default" node profile.
 
 .. code-block:: bash
 
-   $ sudo wwctl container import docker://registry.opensuse.org/science/warewulf/leap-15.4/containers/kernel:latest leap15.4 --setdefault
+   $ sudo wwctl image import docker://registry.opensuse.org/science/warewulf/leap-15.4/images/kernel:latest leap15.4 --setdefault
 
 Set up the default node profile
 ===============================

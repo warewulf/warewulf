@@ -55,9 +55,7 @@ many thousands of compute nodes. Generally speaking, operating system
 state introduce a surface for potential discrepancies and version
 creep between nodes and thus Warewulf has always gone with the "single
 system image" approach to clustered operating system management.  This
-means that you can have a single management node "image". For the last
-20 years, we've been calling this a Virtual Node File System (VNFS),
-but in hindsight, this is a container.
+means that you can have a single node "image".
 
 At its core, Warewulf v4 focuses on what has made Warewulf so widely
 loved: simplicity, ultra scalable, lightweight, and an easy to manage

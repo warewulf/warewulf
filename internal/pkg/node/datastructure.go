@@ -40,13 +40,13 @@ type Profile struct {
 	Profiles       []string               `yaml:"profiles,omitempty" lopt:"profile" sopt:"P" comment:"Set the node's profile members (comma separated)"`
 	Comment        string                 `yaml:"comment,omitempty" lopt:"comment" comment:"Set arbitrary string comment"`
 	ClusterName    string                 `yaml:"cluster name,omitempty" lopt:"cluster" sopt:"c" comment:"Set cluster group"`
-	ContainerName  string                 `yaml:"container name,omitempty" lopt:"container" sopt:"C" comment:"Set container name"`
+	ImageName      string                 `yaml:"image name,omitempty" lopt:"image" comment:"Set image name"`
 	Ipxe           string                 `yaml:"ipxe template,omitempty" lopt:"ipxe" comment:"Set the iPXE template name"`
 	RuntimeOverlay []string               `yaml:"runtime overlay,omitempty" lopt:"runtime" sopt:"R" comment:"Set the runtime overlay"`
 	SystemOverlay  []string               `yaml:"system overlay,omitempty" lopt:"wwinit" sopt:"O" comment:"Set the system overlay"`
 	Kernel         *KernelConf            `yaml:"kernel,omitempty"`
 	Ipmi           *IpmiConf              `yaml:"ipmi,omitempty"`
-	Init           string                 `yaml:"init,omitempty" lopt:"init" sopt:"i" comment:"Define the init process to boot the container"`
+	Init           string                 `yaml:"init,omitempty" lopt:"init" sopt:"i" comment:"Define the init process to boot the image"`
 	Root           string                 `yaml:"root,omitempty" lopt:"root" comment:"Define the rootfs" `
 	NetDevs        map[string]*NetDev     `yaml:"network devices,omitempty"`
 	Tags           map[string]string      `yaml:"tags,omitempty"`

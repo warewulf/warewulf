@@ -17,7 +17,7 @@ func Benchmark_Overlay_Build(b *testing.B) {
 		`nodeprofiles:
   default:
     comment: This profile is automatically included for each node
-    container name: rockylinux-9
+    image name: rockylinux-9
     ipxe template: default
     runtime overlay:
       - hosts

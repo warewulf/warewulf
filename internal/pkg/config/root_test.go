@@ -35,10 +35,10 @@ func TestDefaultWarewulfYaml(t *testing.T) {
 	assert.Empty(t, conf.NFS.ExportsExtended)
 	assert.Equal(t, "nfsd", conf.NFS.SystemdName)
 
-	assert.Equal(t, "/etc/resolv.conf", conf.MountsContainer[0].Source)
-	assert.Equal(t, "/etc/resolv.conf", conf.MountsContainer[0].Dest)
-	assert.False(t, conf.MountsContainer[0].ReadOnly())
-	assert.Empty(t, conf.MountsContainer[0].Options)
+	assert.Equal(t, "/etc/resolv.conf", conf.MountsImage[0].Source)
+	assert.Equal(t, "/etc/resolv.conf", conf.MountsImage[0].Dest)
+	assert.False(t, conf.MountsImage[0].ReadOnly())
+	assert.Empty(t, conf.MountsImage[0].Options)
 
 	assert.NotEmpty(t, conf.Paths.Bindir)
 	assert.NotEmpty(t, conf.Paths.Sysconfdir)
@@ -97,7 +97,7 @@ nfs:
   - path: /opt
     export options: ro,sync,no_root_squash
   systemd name: nfs-server
-container mounts:
+image mounts:
   - source: /etc/resolv.conf
     dest: /etc/resolv.conf
     readonly: true`
@@ -138,9 +138,9 @@ container mounts:
 	assert.Equal(t, "ro,sync,no_root_squash", conf.NFS.ExportsExtended[1].ExportOptions)
 	assert.Equal(t, "nfs-server", conf.NFS.SystemdName)
 
-	assert.Equal(t, "/etc/resolv.conf", conf.MountsContainer[0].Source)
-	assert.Equal(t, "/etc/resolv.conf", conf.MountsContainer[0].Dest)
-	assert.True(t, conf.MountsContainer[0].ReadOnly())
+	assert.Equal(t, "/etc/resolv.conf", conf.MountsImage[0].Source)
+	assert.Equal(t, "/etc/resolv.conf", conf.MountsImage[0].Dest)
+	assert.True(t, conf.MountsImage[0].ReadOnly())
 }
 
 func TestCache(t *testing.T) {

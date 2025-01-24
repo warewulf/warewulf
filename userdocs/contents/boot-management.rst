@@ -6,7 +6,7 @@ Warewulf uses iPXE to for network boot by default. As a tech preview, support
 for GRUB is also available, which adds support for secure boot.
 
 Also as a tech preview, Warewulf may also use iPXE to boot a dracut
-initramfs as an initial stage before loading the container image.
+initramfs as an initial stage before loading the image.
 
 Booting with iPXE
 =================
@@ -28,7 +28,7 @@ Booting with iPXE
 
       bios->iPXE [lhead=cluster0,label="iPXE.efi"];
 
-      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from node container"];
+      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from node image"];
       ipxe_cfg->kernel[ltail=cluster0,label="http"];
   }
 
@@ -216,7 +216,7 @@ Warewulf as a technology preview.
         grubcfg[shape=record label="{grub.cfg|static under TFTP root}"];
         grub->grubcfg[label="TFTP"];
       }
-      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from node container"];
+      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from node image"];
       grubcfg->kernel[ltail=cluster1,label="http"];
   }
 
@@ -258,22 +258,22 @@ If secure boot is enabled at every step a signature is checked and the boot
 process fails if this check fails. The shim typically only includes the key for
 a single operating system, which means that each distribution needs separate
 `shim` and `grub` executables. Warewulf extracts these binaries from the
-containers. If the node is unknown to Warewulf or can't be identified during
+images. If the node is unknown to Warewulf or can't be identified during
 the TFTP boot phase, the shim/grub binaries of the host in which Warewulf is
 running are used.
 
 Install shim and efi
 --------------------
 
-`shim.efi` and `grub.efi` must be installed in the container for it to be
+`shim.efi` and `grub.efi` must be installed in the image for it to be
 booted by GRUB.
 
 .. code-block:: console
 
-  # wwctl container shell leap15.5
+  # wwctl image shell leap15.5
   [leap15.5] Warewulf> zypper install grub2 shim
 
-  # wwctl container shell rocky9
+  # wwctl image shell rocky9
   [rocky9] Warewulf> dnf install shim-x64.x86_64 grub2-efi-x64.x86_64
 
 These packages must also be installed on the Warewulf server host to enable
@@ -290,16 +290,16 @@ is the following:
   digraph G{
       node [shape=box];
       efi [shape=record label="{EFI|boots from URI defined in filename}"];
-      shim [shape=record label="{shim.efi|replaces shim.efi with grubx64.efi in URI|extracted from node container}"];
-      grub [shape=record label="{grub.efi|checks for grub.cfg|extracted from node container}"]
-      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from node container"];
+      shim [shape=record label="{shim.efi|replaces shim.efi with grubx64.efi in URI|extracted from node image}"];
+      grub [shape=record label="{grub.efi|checks for grub.cfg|extracted from node image}"]
+      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from node image"];
       efi->shim [label="http"];
       shim->grub [label="http"];
       grub->kernel [label="http"];
     }
 
 Warewulf delivers the initial `shim.efi` and `grub.efi` via http as taken
-directly from the node's assigned container.
+directly from the node's assigned image.
 
 .. _booting with dracut:
 
@@ -307,19 +307,19 @@ Booting with dracut
 ===================
 
 Some systems, typically due to limitations in their BIOS or EFI
-firmware, are unable to load container image of a certain size
+firmware, are unable to load image of a certain size
 directly with a traditional bootloader, either iPXE or GRUB. As a
 workaround for such systems, Warewulf can be configured to load a
-dracut initramfs from the container and to use that initramfs to load
-the full container image.
+dracut initramfs from the image and to use that initramfs to load
+the full image.
 
 Warewulf provides a dracut module to configure the dracut initramfs to
-load the container image. This module is available in the
+load the image. This module is available in the
 ``warewulf-dracut`` subpackage, which must be installed in the
-container image.
+image.
 
 With the ``warewulf-dracut`` package installed, you can build an
-initramfs inside the container.
+initramfs inside the image.
 
 .. code-block:: shell
 
@@ -369,9 +369,9 @@ dracut semantics, set a ``GrubMenuEntry`` tag for the node.
    The ``GrubMenuEntry`` variable may be set at the node or profile level.
 
 During boot, ``warewulfd`` will detect and dynamically serve an
-initramfs from a node's container image in much the same way that it
-can serve a kernel from a container image. This image is loaded by
-iPXE (or GRUB) which directs dracut to fetch the node's container image
+initramfs from a node's image in much the same way that it
+can serve a kernel from an image. This image is loaded by
+iPXE (or GRUB) which directs dracut to fetch the node's image
 during boot.
 
 The wwinit module provisions to tmpfs. By default, tmpfs is permitted

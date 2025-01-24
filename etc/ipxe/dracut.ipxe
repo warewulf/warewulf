@@ -1,14 +1,14 @@
 #!ipxe
-{{ if .ContainerName }}
+{{ if .ImageName }}
 echo
 echo ================================================================================
 echo Warewulf v4 now booting via dracut: {{.Fqdn}} ({{.Hwaddr}})
 echo
-echo Container:     {{.ContainerName}}
+echo Image:         {{.ImageName}}
 {{if .KernelVersion }}
 echo Kernel:        {{.KernelVersion}}
 {{else}}
-echo Kernel:        {{.ContainerName}} (container default)
+echo Kernel:        {{.ImageName}} (image default)
 {{end}}
 echo KernelArgs:    {{.KernelArgs}}
 echo
@@ -39,7 +39,7 @@ reboot
 {{ else }}
 echo ================================================================================
 echo  Warewulf v4:
-echo  No node image/container defined for this node ({{.Fqdn}}).
+echo  No image defined for this node ({{.Fqdn}}).
 echo  Rebooting in 30s.
 echo ================================================================================
 sleep 30

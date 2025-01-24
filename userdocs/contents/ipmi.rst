@@ -69,7 +69,7 @@ Profile View
   default              Id                 --           default
   default              comment            --           This profile is automatically included for each node
   default              cluster            --           --
-  default              container          --           sle-micro-5.3
+  default              image              --           sle-micro-5.3
   default              ipxe               --           --
   default              runtime            --           --
   default              wwinit             --           --
@@ -101,7 +101,7 @@ Node View
   n001                 Id                 --           n001
   n001                 comment            default      This profile is automatically included for each node
   n001                 cluster            --           --
-  n001                 container          default      sle-micro-5.3
+  n001                 image              default      sle-micro-5.3
   n001                 ipxe               --           (default)
   n001                 runtime            --           (hosts,ssh.authorized_keys,syncuser)
   n001                 wwinit             --           (wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition)

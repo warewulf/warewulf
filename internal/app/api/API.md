@@ -14,12 +14,12 @@ wwctl node delete
 wwctl node list
 wwctl node set
 wwctl node status
-wwctl container build
-wwctl container delete
-wwctl container import
-wwctl container list
-wwctl container show
-wwctl container copy
+wwctl image build
+wwctl image delete
+wwctl image import
+wwctl image list
+wwctl image show
+wwctl image copy
 
 Some notes on the files:
 

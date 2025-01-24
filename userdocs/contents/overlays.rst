@@ -11,7 +11,7 @@ configuration management on a provisioned Warewulf cluster node. But these are h
 solutions to a simple problem.
 
 Warewulf addresses cluster node configuration with its **overlay** system. Overlays are collections
-of files and templates that are rendered and built per-node and then applied over the container
+of files and templates that are rendered and built per-node and then applied over the image
 image during the provisioning process.
 
 System and runtime overlays
@@ -131,8 +131,8 @@ syncuser
 --------
 
 The **syncuser** overlay updates ``/etc/passwd`` and ``/etc/group`` to include
-all users on both the Warewulf server and from the container image. To function
-properly, ``wwctl container syncuser`` must have also been run on the container
+all users on both the Warewulf server and from the image. To function
+properly, ``wwctl image syncuser`` must have also been run on the image
 image to synchronize its user and group IDs with those of the server.
 
 ignition

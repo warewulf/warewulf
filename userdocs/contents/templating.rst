@@ -150,11 +150,11 @@ A file from the host can be include with following template
 IncludeFrom
 ^^^^^^^^^^^
 
-With following snippet a file from a given container can be included
+With following snippet a file from a given image can be included
 
 .. code-block::
 
-  {{ IncludeFrom container file }}
+  {{ IncludeFrom image file }}
 
 IncludeBlock
 ^^^^^^^^^^^^

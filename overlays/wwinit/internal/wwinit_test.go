@@ -85,7 +85,7 @@ nfs:
 const wwinit_config string = `backupFile: true
 writeFile: true
 Filename: warewulf/config
-WWCONTAINER=rockylinux-9
+WWIMAGE=rockylinux-9
 WWHOSTNAME=node1
 WWROOT=initramfs
 WWINIT=/sbin/init
