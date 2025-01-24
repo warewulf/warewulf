@@ -194,15 +194,16 @@ nodeprofiles:
 
 func Test_MergeNode(t *testing.T) {
 	var tests = map[string]struct {
-		nodesConf string
-		node      string
-		field     string
-		source    string
-		value     string
-		nodes     []string
-		fields    []string
-		sources   []string
-		values    []string
+		nodesConf  string
+		node       string
+		field      string
+		source     string
+		value      string
+		nodes      []string
+		fields     []string
+		sources    []string
+		values     []string
+		jsonValues []string
 	}{
 		"node comment": {
 			nodesConf: `
@@ -779,10 +780,10 @@ nodes:
           file: /opt
           vfstype: nfs
 `,
-			nodes:   []string{"n1"},
-			fields:  []string{"Resources[fstab]"},
-			sources: []string{"p1,n1"},
-			values:  []string{"[map[file:/home spec:warewulf:/home vfstype:nfs] map[file:/opt spec:warewulf:/opt vfstype:nfs]]"},
+			nodes:      []string{"n1"},
+			fields:     []string{"Resources[fstab]"},
+			sources:    []string{"p1,n1"},
+			jsonValues: []string{`[{"file":"/home","spec":"warewulf:/home","vfstype":"nfs"},{"file":"/opt","spec":"warewulf:/opt","vfstype":"nfs"}]`},
 		},
 	}
 
@@ -817,8 +818,14 @@ nodes:
 				_, fields, _ := registry.MergeNode(tt.nodes[i])
 				value, valueErr := getNestedFieldString(nodes[i], tt.fields[i])
 				assert.NoError(t, valueErr)
-				assert.Equal(t, tt.values[i], value)
-				assert.Equal(t, tt.values[i], fields.Value(tt.fields[i]))
+				if len(tt.values) > i {
+					assert.Equal(t, tt.values[i], value)
+					assert.Equal(t, tt.values[i], fields.Value(tt.fields[i]))
+				}
+				if len(tt.jsonValues) > i {
+					assert.JSONEq(t, tt.jsonValues[i], value)
+					assert.Equal(t, tt.jsonValues[i], fields.Value(tt.fields[i]))
+				}
 				assert.Equal(t, tt.sources[i], fields.Source(tt.fields[i]))
 			}
 		})
