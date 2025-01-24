@@ -1,6 +1,8 @@
 Warewulf Node:      {{.Id}}
 Image:              {{.ImageName}}
-{{ if .Kernel.Version }}Kernel:             {{.Kernel.Version}} {{ end -}}
+{{- if .Kernel.Version }}
+Kernel:             {{.Kernel.Version}}
+{{- end }}
 Kernelargs:         {{.Kernel.Args}}
 
 Network:
