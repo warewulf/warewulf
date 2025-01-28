@@ -66,8 +66,12 @@ etc/bash_completion.d/wwctl: wwctl
 	./wwctl --emptyconf genconfig completions >etc/bash_completion.d/wwctl
 
 .PHONY: lint
-lint: $(config)
+lint: $(config) staticcheck
 	$(GOLANGCI_LINT) run --build-tags "$(WW_GO_BUILD_TAGS)" --timeout=5m ./...
+
+.PHONY: staticcheck
+staticcheck: $(GOLANG_STATICCHECK) $(config)
+	$(GOLANG_STATICCHECK) ./...
 
 .PHONY: deadcode
 deadcode: $(config)
