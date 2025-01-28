@@ -109,7 +109,6 @@ Node View
   n001                 discoverable       --           --
   n001                 init               --           (/sbin/init)
   n001                 asset              --           --
-  n001                 kerneloverride     --           tw
   n001                 kernelargs         --           (quiet crashkernel=no net.ifnames=1)
   n001                 ipmiaddr           --           --
   n001                 ipminetmask        --           --
@@ -194,7 +193,8 @@ As warewulf doesn't manage the ipmi/bmc interfaces directly, but calls ``ipmitoo
 this managed with a template which defines the behavior. For ``ipmitool`` following
 template is used 
 
-.. code-block:: golang
+.. code-block::
+
     {{/* used command to access the ipmi interface of the nodes */}}
     {{- $escapechar := "~" }}
     {{- $port := "623" }}
@@ -220,11 +220,12 @@ In order to use another template, its filename must be specified for a node or p
 path which is was defined as ``datadir`` in ``warwulf.conf`` or during compile time.
 All IPMI specific variables are accessible in the template which are the following
 
++---------------------+--------------------+
 | Parameter           | Template variable  |
 +=====================+====================+
 | ``--ipmiaddr``      | ``.Ipaddr``        |
 +---------------------+--------------------+
-| ``--ipminetmask``   | ``.Netmask``       |  
+| ``--ipminetmask``   | ``.Netmask``       |
 +---------------------+--------------------+
 | ``--ipmiport``      | ``.Port``          |
 +---------------------+--------------------+

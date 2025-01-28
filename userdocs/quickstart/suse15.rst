@@ -109,16 +109,16 @@ instructions.
 
    sudo wwctl configure --all
 
-Pull and build the image and kernel
-===================================
+Pull and build the image
+========================
 
-This will pull a basic image from Docker Hub and import the
-default running kernel from the controller node and set both in the
-"default" node profile.
+This will pull a basic image from Docker Hub
+and set it in the "default" node profile.
 
 .. code-block:: bash
 
-   $ sudo wwctl image import docker://registry.opensuse.org/science/warewulf/leap-15.4/images/kernel:latest leap15.4 --setdefault
+   $ sudo wwctl image import docker://registry.opensuse.org/science/warewulf/leap-15.4/containers/kernel:latest leap15.4
+   $ sudo wwctl profile set default --image leap15.4
 
 Set up the default node profile
 ===============================

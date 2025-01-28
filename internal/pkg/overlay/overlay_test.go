@@ -173,7 +173,7 @@ func Test_BuildOverlayIndir(t *testing.T) {
 			overlays: []string{"o1"},
 			overlayFiles: map[string]string{
 				"/var/lib/warewulf/overlays/o1/rootfs/file.txt.ww": `
-{{- file "t1.txt" }}
+{{ file "t1.txt" }}
 T1
 {{ file "t2.txt" }}
 T2
@@ -183,7 +183,7 @@ T3
 			},
 			outputDir: "/image",
 			outputFiles: map[string]string{
-				"t1.txt": "T1\n",
+				"t1.txt": "\nT1\n",
 				"t2.txt": "T2\n",
 				"t3.txt": "T3\n",
 			},

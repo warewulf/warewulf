@@ -32,9 +32,50 @@ Tools
 There are different container managment tools available. Docker is
 probably the most recognizable one in the enterprise. Podman is
 another one that is gaining traction on the RHEL platforms. In HPC,
-Apptainer is the most utilized image management tool. You can use
-any of these to create and manage the containers to be later imported
+Apptainer is the most utilized container management tool. You can use
+any of these to create and manage the images to be later imported
 into Warewulf.
+
+Structure
+=========
+
+A Warewulf image is a directory that populates the runtime root file system of a cluster
+node. The image source directory must contain a single ``rootfs`` directory which represents the
+actual root directory for the image.
+
+.. code-block:: none
+
+  /var/lib/warewulf/chroots/rockylinux-9
+  └── rootfs
+      ├── afs
+      ├── bin -> usr/bin
+      ├── boot
+      ├── dev
+      ├── etc
+      ├── home
+      ├── lib -> usr/lib
+      ├── lib64 -> usr/lib64
+      ├── media
+      ├── mnt
+      ├── opt
+      ├── proc
+      ├── root
+      ├── run
+      ├── sbin -> usr/sbin
+      ├── srv
+      ├── sys
+      ├── tmp
+      ├── usr
+      └── var
+
+Warewulf images are built (e.g., with ``wwctl image build``) into compressed images for
+distribution to cluster nodes.
+
+.. code-block:: none
+
+  /var/lib/warewulf/provision/image
+  ├── rockylinux-9.img
+  └── rockylinux-9.img.gz
 
 Importing Images
 ================
@@ -131,21 +172,6 @@ directly.
 
    $ apptainer build --sandbox ./rockylinux-8/ docker://ghcr.io/warewulf/warewulf-rockylinux:8
    $ sudo wwctl image import ./rockylinux-8/ rockylinux-8
-
-.. note::
-
-   If a source directory includes persistent sockets, these sockets may cause the import operation to fail.
-
-   .. code-block:: console
-
-      Copying sources...
-      ERROR  : could not import image: lchown ./rockylinux-8/run/user/0/gnupg/d.kg8ijih5tq41ixoeag4p1qup/S.gpg-agent: no such file or directory
-
-   To resolve this, remove the sockets from the source directory.
-
-   .. code-block:: bash
-
-      find ./rockylinux-8/ -type s -delete
 
 HTTP proxies
 ------------
@@ -296,117 +322,60 @@ remove any package repository caches that may have been generated.
 Creating Images From Scratch
 ============================
 
-You can also create images from scratch and import those
-images into Warewulf as previous versions of Warewulf did.
+It is absolutely possible to create an `OCI base image`_ from scratch, but it is
+particularly easy to do with Apptainer.
 
-Building An Image From Your Host
---------------------------------
+.. _OCI base image: https://docs.docker.com/build/building/base-images/
 
-RPM based distributions, as well as Debian variants can all bootstrap
-mini ``chroot()`` directories which can then be used to bootstrap your
-node's image.
+Consider the following file called `warewulf-rockylinux-9.def`:
 
-For example, on an RPM based Linux distribution with YUM or DNF, you
-can do something like the following:
+.. code-block:: singularity
 
-.. code-block:: console
+   Bootstrap: yum
+   MirrorURL: https://download.rockylinux.org/pub/rocky/9/BaseOS/x86_64/os/
+   Include: dnf
 
-   # yum install --installroot /tmp/newroot basesystem bash \
-       chkconfig coreutils e2fsprogs ethtool filesystem findutils \
-       gawk grep initscripts iproute iputils net-tools nfs-utils pam \
-       psmisc rsync sed setup shadow-utils rsyslog tzdata util-linux \
-       words zlib tar less gzip which util-linux openssh-clients \
-       openssh-server dhclient pciutils vim-minimal shadow-utils \
-       strace cronie crontabs cpio wget rocky-release ipmitool yum \
-       NetworkManager
+   %post
+   dnf -y install --allowerasing \
+     NetworkManager \
+     basesystem \
+     bash \
+     curl-minimal \
+     kernel \
+     nfs-utils \
+     openssh-server \
+     systemd
 
-You can do something similar with Debian-based distributions:
+   dnf -y remove \
+     glibc-gconv-extra
+   rm -rf /boot/* /run/*
+   dnf clean all
 
-.. code-block:: console
-
-   # apt-get install debootstrap
-   # debootstrap stable /tmp/newroot http://ftp.us.debian.org/debian
-
-Once you have created and modified your new ``chroot()``, you can
-import it into Warewulf with the following command:
+Warewulf cannot directly import a container image from an Apptainer SIF yet, so
+an Apptainer image must be built as a *sandbox*.
 
 .. code-block:: console
 
-   # wwctl image import /tmp/newroot imagename
+   # apptainer build --sandbox warewulf-rockylinux-9 warewulf-rockylinux-9.def
+   [...]
+   INFO:    Creating sandbox directory...
+   INFO:    Build complete: warewulf-rockylinux-9
 
-Building An Image Using Apptainer
----------------------------------
-
-Apptainer, an image platform for HPC and performance intensive
-applications, can also be used to create node images for
-Warewulf. There are several Apptainer image recipes in the
-``images/Apptainer/`` directory and can be found on GitHub at
-`https://github.com/warewulf/warewulf/tree/main/images/Apptainer
-<https://github.com/warewulf/warewulf/tree/main/images/Apptainer>`_.
-
-You can use these as starting points and adding any additional steps
-you want in the ``%post`` section of the recipe file. Once you've done
-that, installing Apptainer, building an image sandbox and importing
-into Warewulf can be done with the following steps:
+Once a sandbox container image has been built, it can be imported into Warewulf.
 
 .. code-block:: console
 
-   # yum install epel-release
-   # yum install Apptainer
-   # Apptainer build --sandbox /tmp/newroot /path/to/Apptainer/recipe.def
-   # wwctl image import /tmp/newroot imagename
+   # wwctl container import ./warewulf-rockylinux-9 rockylinux-9
 
-Building An Image Using Podman
-------------------------------
+.. note::
 
-You can also build an image using podman via a ``Dockerfile``. For
-this step the image must be exported to a tar archive, which then
-can be imported to Warewulf. The following steps will create an
-openSUSE Leap image and import it to Warewulf:
+   Although warewulf does not currently support importing a SIF directly, a SIF can be converted to
+   a sandbox with Apptainer and then imported into Warewulf.
+    
+   .. code-block:: console
 
-.. code-block:: console
-
-  # podman build -f images/Docker/openSUSE/Imagefile --tag leap-ww
-  # podman save localhost/leap-ww:latest  -o ~/leap-ww.tar
-  # wwctl image import file://root/leap-ww.tar leap-ww
-
-Image Size Considerations
-=========================
-
-Base compute node images start quite small (a few hundred
-megabytes), but can grow quickly as packages and other files are added
-to them. Even these larger images are typically not an issue in modern
-environments; but some architectural limits exist that can impede the
-use of images larger than a few gigabytes. Workarounds exist for these
-issues in most circumstances:
-
-* Systems booting in legacy / BIOS mode, being a 32-bit environment,
-  cannot boot an image that requires more than 4GB to decompress. This
-  means that the compressed image and the decompressed image together
-  must be < 4GB. This is typically reported by the system as "No space
-  left on device (https://ipxe.org/34182006)."
-
-  The best work-around for this limitation is to switch to UEFI. UEFI
-  is 64-bit and should support booting significantly larger images,
-  though sometimes system-specific implementation details have led to
-  artificial limitations on image size.
-
-* The Linux kernel itself can only decompress an image up to 4GB due
-  to the use of 32-bit integers in critical sections of the kernel
-  initrd decompression code.
-
-  The best work-around for this limitation is to use an iPXE with
-  support for `imgextract <https://ipxe.org/cmd/imgextract>`_. This
-  allows iPXE to decompress the image rather than the kernel.
-
-* Some BIOS / firmware retain a "memory hole" feature for legacy
-  devices, e.g., reserving a 1MB block of memory at the 15MB-16MB
-  address range. this feature can interfere with booting stateless
-  node images.
-
-  If you are still getting "Not enough memory" or "No space left on
-  device" errors, try disabling any "memory hole" features or updating
-  your system BIOS or firmware.
+      # apptainer build --sandbox my-sandbox my-image.sif
+      # wwctl container import ./my-sandbox my-image
 
 Duplicating an image
 ====================

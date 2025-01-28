@@ -93,7 +93,6 @@ You can also see the node's full attribute list by specifying the
   n001                 discoverable       --           --
   n001                 init               --           (/sbin/init)
   n001                 asset              --           --
-  n001                 kerneloverride     --           --
   n001                 kernelargs         --           (quiet crashkernel=no net.ifnames=1)
   n001                 ipmiaddr           --           --
   n001                 ipminetmask        --           --
@@ -123,12 +122,6 @@ You can also see the node's full attribute list by specifying the
 
 Setting Node Attributes
 =======================
-
-In the above output we can see that there is no kernel or image
-defined for this node. To provision a node, the minimum requirements
-are a kernel and image, and for that node to be useful, we will
-also need to configure the network so the nodes are reachable after
-they boot.
 
 Node configurations are set using the ``wwctl node set`` command. To
 see a list of all configuration attributes, use the command ``wwctl
@@ -161,7 +154,7 @@ provide the network information as follows:
    Are you sure you want to modify 1 nodes(s): y
 
 You can now see that the node contains configuration attributes for
-image, kernel, and network:
+image and network:
 
 .. code-block:: console
 
@@ -178,7 +171,6 @@ image, kernel, and network:
   n001                 discoverable       --           --
   n001                 init               --           (/sbin/init)
   n001                 asset              --           --
-  n001                 kerneloverride     --           tw
   n001                 kernelargs         --           (quiet crashkernel=no net.ifnames=1)
   n001                 ipmiaddr           --           --
   n001                 ipminetmask        --           --
@@ -212,17 +204,6 @@ image, kernel, and network:
   We recommend the use of the original predictable names assigned to the interfaces (`eno1, ...`),
   as otherwise an interface may remain unconfigured if its name conflicts with the name of an already existing interface during boot.
 
-To configure a bonded (link aggregation) network interface the following commands can be used:
-
-.. code-block:: console
-
-  # wwctl node set --netname=bond0_member_1 --netdev=eth2 --type=bond-slave n001
-  # wwctl node set --netname=bond0_member_2 --netdev=eth3 --type=bond-slave n001
-  # wwctl node set --netname=bond0 --netdev=bond0 --onboot=true --type=bond --ipaddr 10.0.3.1 --netmask=255.255.255.0 --mtu=9000 n001
-
-Note: the netnames of the member interterfaces need to match the "netname" of the bonded interface until the first "_" (in the example bond0)
-
-
 Additional networks
 -------------------
 
@@ -239,6 +220,32 @@ You will have provide all the necessary network information.
      --netname iband \
      --type infiniband \
      n001
+
+Bonding
+-------
+
+Support for bonded / link aggregation network interfaces depends on the network overlay being used.
+
+The ``ifcfg`` and ``NetworkManager`` overlays can configure a network bond like this:
+
+.. code-block:: yaml
+
+   network devices:
+     bond0:
+       type: Bond
+       device: bond0
+       ipaddr: 192.168.3.100
+       netmask: 255.255.255.0
+   en1:
+     device: en1
+     hwaddr: e6:92:39:49:7b:03
+     tags:
+       master: bond0
+   en2:
+     device: en2
+     hwaddr: 9a:77:29:73:14:f1
+     tags:
+       master: bond0
 
 VLAN
 ----

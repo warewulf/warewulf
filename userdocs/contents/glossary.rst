@@ -19,8 +19,7 @@ Controller
 Kernel
     In addition to an image, Warewulf also requires a kernel (typically a Linux kernel) in order to provision a node.
 
-    Kernels may be imported independently into Warewulf, either from the controller or from an image;
-    however, recent versions of Warewulf (after v4.3.0) support automatically provisioning with a kernel detected and extracted from the image itself.
+    Warewulf (after v4.3.0) automatically provisions a kernel detected and extracted from the image itself.
     In most cases, kernels may be installed in the image using normal system packages, and no special consideration is necessary.
 
 Node

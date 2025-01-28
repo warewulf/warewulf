@@ -247,3 +247,8 @@ cleanproto:
 
 clean: cleanvendor
 endif
+
+.PHONY: LICENSE_DEPENDENCIES.md
+LICENSE_DEPENDENCIES.md: $(GOLANG_LICENSES) scripts/update-license-dependencies.sh
+	rm -rf vendor
+	GOLANG_LICENSES=$(GOLANG_LICENSES) scripts/update-license-dependencies.sh

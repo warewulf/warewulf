@@ -14,6 +14,20 @@ Warewulf addresses cluster node configuration with its **overlay** system. Overl
 of files and templates that are rendered and built per-node and then applied over the image
 image during the provisioning process.
 
+Structure
+=========
+
+An overlay is a directory that is applied to the root of a cluster node's runtime file system. The
+overlay source directory should contain a single ``rootfs`` directory which represents the actual
+root directory for the overlay.
+
+.. code-block:: none
+
+  /usr/share/warewulf/overlays/issue
+  └── rootfs
+      └── etc
+          └── issue.ww
+
 System and runtime overlays
 ===========================
 
@@ -23,6 +37,18 @@ A node or profile can configure an overlay in two different ways:
   overlays are called **system overlays**.
 * An overlay can be configured to also apply periodically while the system is running. These overlays
   are called **runtime overlays**.
+
+Overlays are built (e.g., with ``wwctl overly build``) into compressed overlay images for
+distribution to cluster nodes. These images typically match these two use cases: system and
+runtime. As such, each cluster node typically has two overlay images.
+
+.. code-block:: none
+
+  /var/lib/warewulf/provision/overlays/tn1
+  ├── __RUNTIME__.img
+  ├── __RUNTIME__.img.gz
+  ├── __SYSTEM__.img
+  └── __SYSTEM__.img.gz
 
 Distribution and site overlays
 ==============================
@@ -143,9 +169,13 @@ The **ignition** overlay defines partitions and file systems on local disks.
 debug
 -----
 
-The **debug** overlay is not intended to be used in configuration, but can be
-used as an example and applied with ``wwctl overlay show --render <nodename>
-debug /warewulf/template-variables.md.ww``.
+The **debug** overlay is not intended to be used in configuration, but is
+provided as an example. In particular, the provided `tstruct.md.ww` demonstrates
+the use of most available template metadata.
+
+.. code-block:: console
+  
+   # wwctl overlay show --render <nodename> debug tstruct.md.ww
 
 host
 ----
@@ -194,8 +224,9 @@ downloaded for each node will be customized for that node. Templates
 allow you to insert everything from variables, to including files from
 the control node, as well as conditional content and loops.
 
-Warewulf uses the ``text/template`` engine to facilitate implementing
-dynamic content in a simple and standardized manner.
+Warewulf uses the ``text/template`` engine to facilitate implementing dynamic
+content in a simple and standardized manner. This template format is documented
+at https://pkg.go.dev/text/template.
 
 All template files will end with the suffix of ``.ww``. That tells
 Warewulf that when building a file, that it should parse that file as
@@ -208,6 +239,125 @@ attributes.
    When the file is persisted within the built overlay, the ``.ww``
    will be dropped, so ``/etc/hosts.ww`` will end up being
    ``/etc/hosts``.
+
+Template functions
+==================
+
+Warewulf templates have access to a number of functions.
+
+In addition to the custom functions below, the `sprig functions`_ are also
+available.
+
+.. _sprig functions: https://masterminds.github.io/sprig/
+
+Include
+-------
+
+Reads content from the given file into the template. If the file does not begin
+with ``/`` it is considered relative to ``Paths.Sysconfdir``.
+
+.. code-block:: plaintext
+
+   {{ Include "/root/.ssh/authorized_keys" }}
+
+IncludeFrom
+-----------
+
+Reads content from the given file from the given image into the template.
+
+.. code-block:: plaintext
+
+   {{ IncludeFrom $.ImageName "/etc/passwd" }}
+
+IncludeBlock
+------------
+
+Reads content from the given file into the template, stopping when the provided
+abort string is found.
+
+.. code-block:: plaintext
+  
+   {{ IncludeBlock "/etc/hosts" "# Do not edit after this line" }}
+
+ImportLink
+----------
+
+Causes the processed template file to becoma a symlink to the same target as the
+referenced symlink.
+
+.. code-block:: plaintext
+
+   {{ ImportLink "/etc/localtime" }}
+
+basename
+--------
+
+Returns the base name of the given path.
+
+.. code-block:: plaintext
+
+   {{- range $type, $name := $.Tftp.IpxeBinaries }}
+    if option architecture-type = {{ $type }} {
+        filename "/warewulf/{{ basename $name }}";
+    }
+   {{- end }}
+
+file
+----
+
+Write the content from the template to the specified file name. May be specified
+more than once in a template to write content to multiple files.
+
+.. code-block:: plaintext
+
+   {{- range $devname, $netdev := .NetDevs }}
+   {{- $filename := print "ifcfg-" $devname ".conf" }}
+   {{ file $filename }}
+   {{/* content here */}}
+   {{- end }}
+
+softlink
+--------
+
+Causes the processed template file to become a symlink to the referenced target.
+
+.. code-block:: plaintext
+  
+   {{ printf "%s/%s" "/usr/share/zoneinfo" .Tags.localtime | softlink }}
+
+readlink
+--------
+
+Equivalent to ``filepath.EvalSymlinks``. Returns the target path of a named
+symlink.
+
+.. code-block:: plaintext
+
+   {{ readlink /etc/localtime }}
+
+IgnitionJson
+------------
+
+Generates JSON suitable for use by Ignition to create 
+
+abort
+-----
+
+Immediately aborts processing the template and does not write a file.
+
+.. code-block::
+  
+   {{ abort }}
+
+nobackup
+--------
+
+   Disables the creation of a backup file when replacing files with the current
+   template.
+
+.. code-block::
+
+   {{ nobackup }}
 
 Managing overlays
 =================

@@ -3,8 +3,6 @@
 set -e
 set -u
 
-go install github.com/google/go-licenses@v1.6.0
-
 if [ -d "vendor" ]; then
     echo "Please remove vendor directory before running this script"
     exit 255
@@ -22,7 +20,7 @@ exclude="github.com/warewulf/warewulf"
 # Ensure a constant sort order
 export LC_ALL=C
 
-go-licenses csv ./... | grep -v -E "${exclude}" | sort -k3,3 -k1,1 -t, > LICENSE_DEPENDENCIES.csv
+${GOLANG_LICENSES:-go-licenses} csv ./... | grep -v -E "${exclude}" | sort -k3,3 -k1,1 -t, > LICENSE_DEPENDENCIES.csv
 
 # Header for the markdown file
 cat <<-'EOF' >LICENSE_DEPENDENCIES.md

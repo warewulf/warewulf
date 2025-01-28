@@ -37,6 +37,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added resources as generic, arbitrary YAML data for nodes and profiles. #1568
 - New `fstab` resource configures mounts in fstab overlay, including NFS mounts. #515
 - Add Dev Container support #1653
+- Add man pages and command reference to userdocs. #1488
+- Document building images from scratch with Apptainer. #1485
 
 ### Changed
 
@@ -95,6 +97,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added note about dnsmasq interface options in Rocky 9.
 - Added retries to curl in wwinit dracut module. #1631
 - Added ip= argument to dracut ipxe script. #1630
+- Updated network interface bonding configuration and documentation. #1482, #1280
 
 ### Removed
 

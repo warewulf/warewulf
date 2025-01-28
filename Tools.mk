@@ -9,6 +9,8 @@ GOLANGCI_LINT_VERSION := v1.60.1
 
 GOLANG_DEADCODE := $(TOOLS_BIN)/deadcode
 
+GOLANG_LICENSES := $(TOOLS_BIN)/go-licenses
+
 PROTOC := $(TOOLS_BIN)/protoc
 PROTOC_GEN_GO := $(TOOLS_BIN)/protoc-gen-go
 PROTOC_GEN_GO_GRPC := $(TOOLS_BIN)/protoc-gen-go-grpc
@@ -50,6 +52,9 @@ $(PROTOC_GEN_GO):
 
 $(PROTOC_GEN_GO_GRPC):
 	GOBIN="$(PWD)/$(TOOLS_BIN)" go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+
+$(GOLANG_LICENSES):
+	GOBIN="$(PWD)/$(TOOLS_BIN)" go install github.com/google/go-licenses@v1.6.0
 
 .PHONY: cleantools
 cleantools:
