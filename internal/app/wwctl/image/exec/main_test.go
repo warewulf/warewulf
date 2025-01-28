@@ -82,8 +82,8 @@ func Test_Exec(t *testing.T) {
 				nodeName = ""
 				Build = true
 				SyncUser = false
-				os.Remove(env.GetPath("/srv/warewulf/image/test.img"))
-				os.Remove(env.GetPath("/srv/warewulf/image/test.img.gz"))
+				os.Remove(env.GetPath("/srv/warewulf/images/test.img"))
+				os.Remove(env.GetPath("/srv/warewulf/images/test.img.gz"))
 			}()
 			cmd := GetCommand()
 			cmd.SetArgs(tt.args)
@@ -95,11 +95,11 @@ func Test_Exec(t *testing.T) {
 			assert.NotEmpty(t, out.String())
 			assert.Contains(t, out.String(), tt.stdout)
 			if tt.build {
-				assert.FileExists(t, env.GetPath("/srv/warewulf/image/test.img"))
-				assert.FileExists(t, env.GetPath("/srv/warewulf/image/test.img.gz"))
+				assert.FileExists(t, env.GetPath("/srv/warewulf/images/test.img"))
+				assert.FileExists(t, env.GetPath("/srv/warewulf/images/test.img.gz"))
 			} else {
-				assert.NoFileExists(t, env.GetPath("/srv/warewulf/image/test.img"))
-				assert.NoFileExists(t, env.GetPath("/srv/warewulf/image/test.img.gz"))
+				assert.NoFileExists(t, env.GetPath("/srv/warewulf/images/test.img"))
+				assert.NoFileExists(t, env.GetPath("/srv/warewulf/images/test.img.gz"))
 			}
 		})
 	}
