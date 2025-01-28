@@ -100,7 +100,10 @@ nfs:
 image mounts:
   - source: /etc/resolv.conf
     dest: /etc/resolv.conf
-    readonly: true`
+    readonly: true
+rsync:
+  systemd name: rsyncd
+`
 
 	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
 	assert.NoError(t, warewulfConfErr)
