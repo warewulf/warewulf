@@ -3,7 +3,7 @@ Image:              {{.ImageName}}
 {{- if .Kernel.Version }}
 Kernel:             {{.Kernel.Version}}
 {{- end }}
-Kernelargs:         {{.Kernel.Args}}
+Kernelargs:         {{.Kernel.Args | join " "}}
 
 Network:
 {{- range $devname, $netdev := .NetDevs}}

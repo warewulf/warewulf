@@ -30,7 +30,8 @@ nodes:
 nodes:
   n1:
     kernel:
-      args: n1 args`,
+      args:
+      - n1 args`,
 			node:  "n1",
 			field: "Kernel.Args",
 			value: "n1 args",

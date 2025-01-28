@@ -243,12 +243,14 @@ nodeprofiles:
   default:
     kernel:
       version: "2.6"
-      args: quiet
+      args:
+      - quiet
 nodes:
   n1:
     kernel:
       version: "2.6"
-      args: quiet
+      args:
+      - quiet
 `,
 	},
 	{
@@ -543,7 +545,11 @@ nodeprofiles:
       - wicked
       - ignition
     kernel:
-      args: quiet crashkernel=no vga=791 net.naming-scheme=v238
+      args:
+      - quiet
+      - crashkernel=no
+      - vga=791
+      - net.naming-scheme=v238
     init: /sbin/init
     root: initramfs
 nodes:
@@ -606,7 +612,11 @@ nodeprofiles:
       - systemd.netname
       - NetworkManager
     kernel:
-      args: quiet crashkernel=no vga=791 net.naming-scheme=v238
+      args:
+      - quiet
+      - crashkernel=no
+      - vga=791
+      - net.naming-scheme=v238
     init: /sbin/init
     root: initramfs
 nodes:

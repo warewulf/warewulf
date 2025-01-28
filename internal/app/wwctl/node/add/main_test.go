@@ -88,7 +88,8 @@ nodes:
 nodes:
   n01:
     kernel:
-      args: foo
+      args:
+      - foo
     profiles:
     - default
 `},

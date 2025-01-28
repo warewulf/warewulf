@@ -107,7 +107,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			Hostname:      remoteNode.Id(),
 			Hwaddr:        rinfo.hwaddr,
 			ImageName:     remoteNode.ImageName,
-			KernelArgs:    remoteNode.Kernel.Args,
+			KernelArgs:    strings.Join(remoteNode.Kernel.Args, " "),
 			KernelVersion: remoteNode.Kernel.Version,
 			NetDevs:       remoteNode.NetDevs,
 			Tags:          remoteNode.Tags}
@@ -177,7 +177,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			kernelArgs := ""
 			kernelVersion := ""
 			if remoteNode.Kernel != nil {
-				kernelArgs = remoteNode.Kernel.Args
+				kernelArgs = strings.Join(remoteNode.Kernel.Args, " ")
 				kernelVersion = remoteNode.Kernel.Version
 			}
 			tmpl_data = &templateVars{

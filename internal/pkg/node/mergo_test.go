@@ -284,7 +284,8 @@ nodeprofiles:
 nodes:
   n1:
     kernel:
-      args: n1 args`,
+      args:
+      - n1 args`,
 			node:   "n1",
 			field:  "Kernel.Args",
 			source: "",
@@ -299,7 +300,8 @@ nodes:
 nodeprofiles:
   p1:
     kernel:
-      args: p1 args`,
+      args:
+      - p1 args`,
 			node:   "n1",
 			field:  "Kernel.Args",
 			source: "p1",
@@ -315,52 +317,59 @@ nodes:
 nodeprofiles:
   p1:
     kernel:
-      args: p1 args
+      args:
+      -  p1 args
   p2:
     kernel:
-      args: p2 args`,
+      args:
+      -  p2 args`,
 			node:   "n1",
 			field:  "Kernel.Args",
-			source: "p2",
-			value:  "p2 args",
+			source: "p1,p2",
+			value:  "p1 args,p2 args",
 		},
 		"node kernel args supersedes profile kernel args": {
 			nodesConf: `
 nodes:
   n1:
     kernel:
-      args: n1 args
+      args:
+      -  n1 args
     profiles:
     - p1
 nodeprofiles:
   p1:
     kernel:
-      args: p1 args`,
+      args:
+      -  p1 args`,
 			node:   "n1",
 			field:  "Kernel.Args",
-			source: "SUPERSEDED",
-			value:  "n1 args",
+			source: "p1,n1",
+			value:  "p1 args,n1 args",
 		},
 		"node kernel args supersedes multiple profile kernel args": {
 			nodesConf: `
 nodes:
   n1:
     kernel:
-      args: n1 args
+      args:
+      -  n1 args
     profiles:
     - p1
     - p2
 nodeprofiles:
   p1:
     kernel:
-      args: p1 args
+      args:
+      -  p1 args
   p2:
     kernel:
-      args: p2 args`,
+      args:
+      -  p2 args`,
 			node:   "n1",
 			field:  "Kernel.Args",
-			source: "SUPERSEDED",
-			value:  "n1 args",
+			source: "p1,p2,n1",
+			value:  "p1 args,p2 args,n1 args",
 		},
 		"node tag": {
 			nodesConf: `
@@ -971,7 +980,8 @@ nodes:
       - default
     kernel:
       version: v1.0.0
-      args: kernel-args`,
+      args:
+      - kernel-args`,
 			node:   "node1",
 			kernel: nil,
 		},
