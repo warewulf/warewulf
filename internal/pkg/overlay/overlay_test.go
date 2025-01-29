@@ -414,7 +414,9 @@ func Test_BuildOverlay(t *testing.T) {
 	defer env.RemoveAll()
 
 	env.CreateFile("var/lib/warewulf/overlays/o1/rootfs/o1.txt")
+	env.Chmod("var/lib/warewulf/overlays/o1/rootfs/o1.txt", 0644)
 	env.CreateFile("var/lib/warewulf/overlays/o2/rootfs/o2.txt")
+	env.Chmod("var/lib/warewulf/overlays/o2/rootfs/o2.txt", 0644)
 	env.CreateFile("var/lib/warewulf/overlays/o3/rootfs/subdir/o3.txt.ww")
 	env.Chmod("var/lib/warewulf/overlays/o3/rootfs/subdir", 0700)
 	env.Chmod("var/lib/warewulf/overlays/o3/rootfs/subdir/o3.txt.ww", 0600)
