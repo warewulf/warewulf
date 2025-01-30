@@ -5,13 +5,9 @@
 #
 # Edit at your own risk! DANGER DANGER.
 
-echo -n "Mounting kernel file systems:"
-mkdir /proc /dev /sys /run 2>/dev/null
-mount -t proc proc /proc && echo -n " /proc"
-mount -t devtmpfs devtmpfs /dev && echo -n " /dev"
-mount -t sysfs sysfs /sys && echo -n " /sys"
-mount -t tmpfs tmpfs /run && echo -n " /run"
-echo
+mountpoint -q /proc || (mkdir -p /proc && mount -t proc proc /proc && echo "Mounted /proc")
+mountpoint -q /dev || (mkdir -p /dev && mount -t devtmpfs devtmpfs /dev && echo "Mounted /dev")
+mountpoint -q /sys || (mkdir -p /sys && mount -t sysfs sysfs /sys && echo "Mounted /sys")
 
 if [ -f "/warewulf/config" ]; then
     . /warewulf/config
@@ -35,8 +31,8 @@ elif [ "${WWROOT}" = "ramfs" -o "${WWROOT}" = "tmpfs" ]; then
     echo "Setting up new ${WWROOT} rootfs..."
     mkdir /newroot
     mount wwroot /newroot -t ${WWROOT} -o mpol=interleave # mpol ignored for ramfs
-    tar -cf - --exclude ./proc --exclude ./sys --exclude ./dev --exclude ./run --exclude ./newroot . | tar -xf - -C /newroot
-    mkdir /newroot/proc /newroot/dev /newroot/sys /newroot/run 2>/dev/null
+    tar -cf - --exclude ./proc --exclude ./sys --exclude ./dev --exclude --exclude ./newroot . | tar -xf - -C /newroot
+    mkdir /newroot/proc /newroot/dev /newroot/sys 2>/dev/null
     echo "Switching to new rootfs and invoking /warewulf/wwinit..."
     exec /sbin/switch_root /newroot /warewulf/wwinit
 else
