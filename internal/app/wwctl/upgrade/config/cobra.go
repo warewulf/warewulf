@@ -25,12 +25,18 @@ func GetCommand() *cobra.Command {
 supported by the current version.`,
 		RunE: UpgradeNodesConf,
 	}
-	command.Flags().StringVarP(&inputPath, "input-path", "i", config.ConfigFile, "Path to a legacy warewulf.conf")
-	command.Flags().StringVarP(&outputPath, "output-path", "o", config.ConfigFile, "Path to write the upgraded warewulf.conf to")
+	command.Flags().StringVarP(&inputPath, "input-path", "i", "", "Path to a legacy warewulf.conf")
+	command.Flags().StringVarP(&outputPath, "output-path", "o", "", "Path to write the upgraded warewulf.conf to")
 	return command
 }
 
 func UpgradeNodesConf(cmd *cobra.Command, args []string) error {
+	if inputPath == "" {
+		inputPath = config.ConfigFile
+	}
+	if outputPath == "" {
+		outputPath = config.ConfigFile
+	}
 	data, err := os.ReadFile(inputPath)
 	if err != nil {
 		return err
