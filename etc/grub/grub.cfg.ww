@@ -52,7 +52,7 @@ menuentry "Network boot node with dracut: {{.Id}}" --id dracut {
     echo "KernelArgs:            {{.KernelArgs}}"
 
     net_args="rd.neednet=1 {{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} {{end}}{{end}}"
-    wwinit_args="root=wwinit wwinit.uri=${wwinit_uri}"
+    wwinit_args="root=wwinit wwinit.uri=${wwinit_uri} init=/init"
     linux $kernel wwid=${net_default_mac} {{.KernelArgs}} $net_args $wwinit_args
 
     if [ x$? = x0 ] ; then
