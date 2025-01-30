@@ -194,16 +194,18 @@ nodeprofiles:
 
 func Test_MergeNode(t *testing.T) {
 	var tests = map[string]struct {
-		nodesConf  string
-		node       string
-		field      string
-		source     string
-		value      string
-		nodes      []string
-		fields     []string
-		sources    []string
-		values     []string
-		jsonValues []string
+		nodesConf   string
+		node        string
+		field       string
+		source      string
+		value       string
+		fieldValue  string
+		nodes       []string
+		fields      []string
+		sources     []string
+		values      []string
+		fieldValues []string
+		jsonValues  bool
 	}{
 		"node comment": {
 			nodesConf: `
@@ -792,7 +794,24 @@ nodes:
 			nodes:      []string{"n1"},
 			fields:     []string{"Resources[fstab]"},
 			sources:    []string{"p1,n1"},
-			jsonValues: []string{`[{"file":"/home","spec":"warewulf:/home","vfstype":"nfs"},{"file":"/opt","spec":"warewulf:/opt","vfstype":"nfs"}]`},
+			values:     []string{`[{"file":"/home","spec":"warewulf:/home","vfstype":"nfs"},{"file":"/opt","spec":"warewulf:/opt","vfstype":"nfs"}]`},
+			jsonValues: true,
+		},
+		"netmask inheritance": {
+			nodesConf: `
+nodeprofiles:
+  p1:
+    network devices:
+      default:
+        netmask: 255.255.255.0
+nodes:
+  n1:
+    profiles:
+    - p1`,
+			node:   "n1",
+			field:  "NetDevs[default].Netmask",
+			source: "p1",
+			value:  "255.255.255.0",
 		},
 	}
 
@@ -811,31 +830,53 @@ nodes:
 
 				value, valueErr := getNestedFieldString(node, tt.field)
 				assert.NoError(t, valueErr)
-				assert.Equal(t, tt.value, value)
-				assert.Equal(t, tt.value, fields.Value(tt.field))
+
+				ttFieldValue := tt.value
+				if tt.fieldValue != "" {
+					ttFieldValue = tt.fieldValue
+				}
+
+				if tt.jsonValues {
+					assert.JSONEq(t, tt.value, value)
+					assert.JSONEq(t, ttFieldValue, fields.Value(tt.field))
+				} else {
+					assert.Equal(t, tt.value, value)
+					assert.Equal(t, ttFieldValue, fields.Value(tt.field))
+				}
 				assert.Equal(t, tt.source, fields.Source(tt.field))
 			}
 
-			var nodes []Node
 			for i := range tt.nodes {
-				node, _, mergeErr := registry.MergeNode(tt.nodes[i])
+				node, fields, mergeErr := registry.MergeNode(tt.nodes[i])
 				assert.NoError(t, mergeErr)
-				nodes = append(nodes, node)
-			}
 
-			for i := range tt.nodes {
-				_, fields, _ := registry.MergeNode(tt.nodes[i])
-				value, valueErr := getNestedFieldString(nodes[i], tt.fields[i])
-				assert.NoError(t, valueErr)
+				value, valueErr := getNestedFieldString(node, tt.fields[i])
+				if valueErr != nil {
+					value = "UNDEF"
+				}
+
 				if len(tt.values) > i {
-					assert.Equal(t, tt.values[i], value)
-					assert.Equal(t, tt.values[i], fields.Value(tt.fields[i]))
+					if tt.jsonValues {
+						assert.JSONEq(t, tt.values[i], value)
+					} else {
+						assert.Equal(t, tt.values[i], value)
+					}
 				}
-				if len(tt.jsonValues) > i {
-					assert.JSONEq(t, tt.jsonValues[i], value)
-					assert.Equal(t, tt.jsonValues[i], fields.Value(tt.fields[i]))
+
+				if len(tt.fields) > i {
+					ttFieldValues := tt.values
+					if len(tt.fieldValues) > 0 {
+						ttFieldValues = tt.fieldValues
+					}
+					if tt.jsonValues {
+						assert.JSONEq(t, ttFieldValues[i], fields.Value(tt.fields[i]))
+					} else {
+						assert.Equal(t, ttFieldValues[i], fields.Value(tt.fields[i]))
+					}
 				}
-				assert.Equal(t, tt.sources[i], fields.Source(tt.fields[i]))
+				if len(tt.sources) > i {
+					assert.Equal(t, tt.sources[i], fields.Source(tt.fields[i]))
+				}
 			}
 		})
 	}

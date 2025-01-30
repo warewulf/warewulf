@@ -224,7 +224,15 @@ func (this *Node) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *nod
 	}
 	if this.NetDevs != nil {
 		for name, netDev := range this.NetDevs {
-			upgraded.NetDevs[name] = netDev.Upgrade(addDefaults)
+			upgraded.NetDevs[name] = netDev.Upgrade(false)
+			if addDefaults {
+				if upgraded.NetDevs[name].Type == "" {
+					wwlog.Warn("NetDevs[%s].Type not specified: verify default settings manually", name)
+				}
+				if len(upgraded.NetDevs[name].Netmask) == 0 {
+					wwlog.Warn("NetDevs[%s].Netmask not specified: verify default settings manually", name)
+				}
+			}
 		}
 	}
 	if this.PrimaryNetDev != "" {
@@ -630,7 +638,7 @@ func (this *NetDev) Upgrade(addDefaults bool) (upgraded *node.NetDev) {
 			upgraded.Type = "ethernet"
 		}
 		if upgraded.Netmask == nil {
-			upgraded.Netmask = net.ParseIP("255.255.255.0")
+			upgraded.Netmask = net.IP{255, 255, 255, 0}
 		}
 	}
 	return
