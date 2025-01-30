@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed negation for slice field elements during profile/node merge. #1677
 - Show each overlay only once, even when both site and distribution versions exist. #1675
 - Remove a redundant "Building image" log message after image exec. #1694
+- Don't populate NetDevs[].Type or NetDevs[].Netmask during upgrade. #1661
 
 ## v4.6.0rc1, 2025-01-29
 
