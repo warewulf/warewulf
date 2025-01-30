@@ -1,7 +1,6 @@
 package list
 
 import (
-	"fmt"
 	"os"
 	"syscall"
 
@@ -18,11 +17,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if len(args) > 0 {
 		overlays = args
 	} else {
-		var err error
-		overlays, err = overlay.FindOverlays()
-		if err != nil {
-			return fmt.Errorf("could not obtain list of overlays from system: %w", err)
-		}
+		overlays = overlay.FindOverlays()
 	}
 
 	t := table.New(cmd.OutOrStdout())

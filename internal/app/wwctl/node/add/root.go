@@ -44,13 +44,13 @@ func GetCommand() *cobra.Command {
 		log.Println(err)
 	}
 	if err := baseCmd.RegisterFlagCompletionFunc("runtime", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		list, _ := overlay.FindOverlays()
+		list := overlay.FindOverlays()
 		return list, cobra.ShellCompDirectiveNoFileComp
 	}); err != nil {
 		log.Println(err)
 	}
 	if err := baseCmd.RegisterFlagCompletionFunc("wwinit", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		list, _ := overlay.FindOverlays()
+		list := overlay.FindOverlays()
 		return list, cobra.ShellCompDirectiveNoFileComp
 	}); err != nil {
 		log.Println(err)

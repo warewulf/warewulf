@@ -16,7 +16,7 @@ var (
 		Args:                  cobra.ExactArgs(3),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) == 0 {
-				list, _ := overlay.FindOverlays()
+				list := overlay.FindOverlays()
 				return list, cobra.ShellCompDirectiveNoFileComp
 			} else if len(args) == 1 {
 				ret, err := overlay.OverlayGetFiles(args[0])

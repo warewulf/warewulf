@@ -20,7 +20,7 @@ var (
 			if len(args) != 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
-			list, _ := overlay.FindOverlays()
+			list := overlay.FindOverlays()
 			return list, cobra.ShellCompDirectiveNoFileComp
 		},
 	}

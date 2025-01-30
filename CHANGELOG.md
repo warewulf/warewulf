@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Use sh to parse and exec IPMI command. #1663
 - Use configured warewulf.conf path in `wwctl upgrade`. #1658
 - Fixed negation for slice field elements during profile/node merge. #1677
+- Show each overlay only once, even when both site and distribution versions exist. #1675
 
 ## v4.6.0rc1, 2025-01-29
 

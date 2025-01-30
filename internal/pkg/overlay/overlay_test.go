@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"runtime"
 	"sort"
 	"testing"
@@ -17,6 +18,48 @@ import (
 
 	"github.com/cavaliergopher/cpio"
 )
+
+func Test_FindOverlays(t *testing.T) {
+	var tests = map[string]struct {
+		distOverlays []string
+		siteOverlays []string
+		overlayList  []string
+	}{
+		"dist overlays": {
+			distOverlays: []string{"do1", "do2", "do3"},
+			overlayList:  []string{"do1", "do2", "do3"},
+		},
+		"site overlays": {
+			siteOverlays: []string{"so1", "so2", "so3"},
+			overlayList:  []string{"so1", "so2", "so3"},
+		},
+		"both overlays": {
+			distOverlays: []string{"do1", "do2"},
+			siteOverlays: []string{"so3"},
+			overlayList:  []string{"do1", "do2", "so3"},
+		},
+		"shadowed overlay": {
+			distOverlays: []string{"do1", "o1"},
+			siteOverlays: []string{"o1", "so1"},
+			overlayList:  []string{"do1", "o1", "so1"},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			env := testenv.New(t)
+			defer env.RemoveAll()
+			for _, overlay := range tt.distOverlays {
+				env.MkdirAll(filepath.Join("usr/share/warewulf/overlays", overlay))
+			}
+			for _, overlay := range tt.siteOverlays {
+				env.MkdirAll(filepath.Join("var/lib/warewulf/overlays", overlay))
+			}
+			overlayList := FindOverlays()
+			assert.Equal(t, tt.overlayList, overlayList)
+		})
+	}
+}
 
 func Test_OverlayMethods(t *testing.T) {
 	env := testenv.New(t)
