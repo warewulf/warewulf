@@ -82,7 +82,7 @@ nodeprofiles:
     profiles:
     - p2`,
 			node:     "n1",
-			profiles: []string{"p1", "p2"},
+			profiles: []string{"p2", "p1"},
 		},
 		"double nested profile": {
 			nodesConf: `
@@ -98,7 +98,25 @@ nodeprofiles:
     profiles:
     - p3`,
 			node:     "n1",
-			profiles: []string{"p1", "p2", "p3"},
+			profiles: []string{"p3", "p2", "p1"},
+		},
+		"double negated profile": {
+			nodesConf: `
+nodes:
+  n1:
+    profiles:
+    - p1
+    - p2
+    - p3
+nodeprofiles:
+  p2:
+    profiles:
+    - ~p1
+  p3:
+    profiles:
+    - ~p1`,
+			node:     "n1",
+			profiles: []string{"p2", "p3"},
 		},
 		"negated nested profile": {
 			nodesConf: `
@@ -106,18 +124,22 @@ nodes:
   n1:
     profiles:
     - p1
+    - p4
 nodeprofiles:
   p1:
     profiles:
     - p2
   p2:
     profiles:
-    - "~p2"
-    - p3`,
+    - p3
+  p3: {}
+  p4:
+    profiles:
+    - ~p2`,
 			node:     "n1",
-			profiles: []string{"p1", "p3"},
+			profiles: []string{"p3", "p1", "p4"},
 		},
-		"cicular nested profile": {
+		"circular nested profile": {
 			nodesConf: `
 nodes:
   n1:
@@ -134,9 +156,9 @@ nodeprofiles:
     profiles:
     - p1`,
 			node:     "n1",
-			profiles: []string{"p1", "p2", "p3"},
+			profiles: []string{"p3", "p2", "p1"},
 		},
-		"cicular nested profile negation": {
+		"circular nested profile negation": {
 			nodesConf: `
 nodes:
   n1:
@@ -154,7 +176,7 @@ nodeprofiles:
     profiles:
     - p1`,
 			node:     "n1",
-			profiles: []string{"p2", "p3", "p1"},
+			profiles: []string{"p3", "p2"},
 		},
 		"repeated nested profile": {
 			nodesConf: `
@@ -175,7 +197,7 @@ nodeprofiles:
     profiles:
     - pa2`,
 			node:     "n1",
-			profiles: []string{"pa1", "pb1", "pb2", "pa2"},
+			profiles: []string{"pa1", "pb2", "pb1"},
 		},
 	}
 
@@ -280,6 +302,24 @@ nodeprofiles:
 			field:  "Comment",
 			source: "SUPERSEDED",
 			value:  "n1 comment",
+		},
+		"nested profile comments": {
+			nodesConf: `
+nodes:
+  n1:
+    profiles:
+    - p2
+nodeprofiles:
+  p1:
+    comment: p1 comment
+  p2:
+    profiles:
+    - p1
+    comment: p2 comment`,
+			node:   "n1",
+			field:  "Comment",
+			source: "p2",
+			value:  "p2 comment",
 		},
 		"node kernel args": {
 			nodesConf: `
