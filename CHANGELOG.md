@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## v4.6.0, unreleased
 
+### Changed
+
+- `wwctl node list <--yaml|--json>` outputs a map keyed by node name. #1667
+
 ### Fixed
 
 - Fix default nodes.conf to use the new kernel command line list format. #1670

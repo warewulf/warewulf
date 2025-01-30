@@ -428,8 +428,9 @@ func TestListMultipleFormats(t *testing.T) {
 			name: "single node list yaml output",
 			args: []string{"-y"},
 			stdout: `
-- profiles:
-    - default
+n01:
+    profiles:
+        - default
 `,
 			inDb: `
 nodeprofiles:
@@ -444,8 +445,8 @@ nodes:
 			name: "single node list json output",
 			args: []string{"-j"},
 			stdout: `
-[
-  {
+{
+  "n01": {
     "Discoverable": "",
     "AssetKey": "",
     "Profiles": [
@@ -468,7 +469,7 @@ nodes:
     "FileSystems": null,
     "Resources": null
   }
-]
+}
 `,
 			inDb: `
 nodeprofiles:
@@ -483,8 +484,8 @@ nodes:
 			name: "multiple nodes list json output",
 			args: []string{"-j"},
 			stdout: `
-[
-  {
+{
+  "n01": {
     "Discoverable": "",
     "AssetKey": "",
     "Profiles": [
@@ -507,7 +508,7 @@ nodes:
     "FileSystems": null,
     "Resources": null
   },
-  {
+  "n02": {
     "Discoverable": "",
     "AssetKey": "",
     "Profiles": [
@@ -530,7 +531,7 @@ nodes:
     "FileSystems": null,
     "Resources": null
   }
-]
+}
 `,
 			inDb: `
 nodeprofiles:
@@ -548,10 +549,12 @@ nodes:
 			name: "multiple nodes list yaml output",
 			args: []string{"-y"},
 			stdout: `
-- profiles:
-    - default
-- profiles:
-    - default
+n01:
+    profiles:
+        - default
+n02:
+    profiles:
+        - default
 `,
 			inDb: `
 nodeprofiles:
