@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - Document defining kernel args that include commas. #1679
+- Recommend installing ipmitool with Warewulf package. #970
 
 ### Fixed
 
