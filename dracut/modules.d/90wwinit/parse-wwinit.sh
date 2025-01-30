@@ -1,6 +1,22 @@
 #!/bin/sh
 # root=wwinit
 
+urlencode() {
+    local input="$1"
+    local output=""
+    local length=${#input}
+
+    for (( i=0; i<length; i++ )); do
+        c="${input:$i:1}"
+        case "$c" in
+            [a-zA-Z0-9.~_-]) output="$output$c" ;;
+            *) output="$output$(printf '%%%02X' "'$c")" ;;
+        esac
+    done
+
+    echo "$output"
+}
+
 [ -z "$root" ] && root=$(getarg root=)
 
 if [ "${root}" = "wwinit" ]
@@ -8,6 +24,7 @@ then
     info "root=${root}"
     uuid=$(dmidecode -s system-uuid)
     assetkey=$(dmidecode -s chassis-asset-tag | sed -E -e 's/(^ +| +$)//g' -e 's/^(Unknown|Not Specified)$//g' -e 's/ /_/g')
+    assetkey=$(urlencode "${assetkey}")
     wwinit_uri="$(getarg wwinit.uri)?assetkey=${assetkey}&uuid=${uuid}"
     export wwinit_image="${wwinit_uri}&stage=image&compress=gz"; info "wwinit_image=${wwinit_image}"
     export wwinit_system="${wwinit_uri}&stage=system&compress=gz"; info "wwinit_system=${wwinit_system}"
