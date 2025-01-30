@@ -81,8 +81,10 @@ func UpgradeNodesConf(cmd *cobra.Command, args []string) error {
 		fmt.Print(string(upgradedYaml))
 		return nil
 	} else {
-		if err := util.CopyFile(outputPath, outputPath+"-old"); err != nil {
-			return err
+		if util.IsFile(outputPath) {
+			if err := util.CopyFile(outputPath, outputPath+"-old"); err != nil {
+				return err
+			}
 		}
 		return upgraded.PersistToFile(outputPath)
 	}
