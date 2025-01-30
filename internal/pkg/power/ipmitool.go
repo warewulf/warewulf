@@ -67,7 +67,7 @@ func (ipmi *IPMI) Command() ([]byte, error) {
 	if ipmi.ShowOnly {
 		return []byte(cmdStr), nil
 	}
-	ipmiCmd := exec.Command(cmdStr)
+	ipmiCmd := exec.Command("/bin/sh", "-c", cmdStr)
 	return ipmiCmd.CombinedOutput()
 }
 
@@ -76,7 +76,7 @@ func (ipmi *IPMI) InteractiveCommand() (err error) {
 	if err != nil {
 		return err
 	}
-	ipmiCmd := exec.Command(cmdStr)
+	ipmiCmd := exec.Command("/bin/sh", "-c", cmdStr)
 	ipmiCmd.Stdout = os.Stdout
 	ipmiCmd.Stdin = os.Stdin
 	ipmiCmd.Stderr = os.Stderr
