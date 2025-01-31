@@ -21,8 +21,7 @@ Warewulf on Slack
 Many members of the Warewulf community, including developers, communicate via Slack.
 It's a great place to get help with an issue or talk about how you're using Warewulf.
 
-`Join the Warewulf Slack Workspace!
-<https://join.slack.com/t/warewulf/shared_invite/zt-27moxdo1x-f1ztmeUU5OgmVtdwJVH9Xg>`_
+An invite link is available at `https://warewulf.org/help/ <https://warewulf.org/help/>`.
 
 Raise an Issue
 ==============
