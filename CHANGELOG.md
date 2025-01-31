@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## v4.6.0, unreleased
+
+### Fixed
+
+- Fix default nodes.conf to use the new kernel command line list format. #1670
+
 ## v4.6.0rc1, 2025-01-29
 
 ### Added
