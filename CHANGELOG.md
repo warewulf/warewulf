@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 - Fix default nodes.conf to use the new kernel command line list format. #1670
+- Fix `make install` when `sudo` does not set `$PWD`. #1660
 
 ## v4.6.0rc1, 2025-01-29
 
