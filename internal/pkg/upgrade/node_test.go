@@ -558,9 +558,7 @@ nodes:
       - default
     network devices:
       default:
-        type: ethernet
         ipaddr: 192.168.0.100
-        netmask: 255.255.255.0
 `,
 	},
 	{
@@ -589,7 +587,6 @@ nodes:
     network devices:
       default:
         ipaddr: 10.0.0.100
-        netmask: 255.255.0.0
 `,
 		upgradedYaml: `
 nodeprofiles:
@@ -625,13 +622,11 @@ nodes:
       - custom
     network devices:
       default:
-        type: ethernet
         ipaddr: 10.0.0.100
-        netmask: 255.255.0.0
 `,
 	},
 	{
-		name:            "add defaults conflicts",
+		name:            "replace overlays conflicts",
 		addDefaults:     false,
 		replaceOverlays: true,
 		legacyYaml: `

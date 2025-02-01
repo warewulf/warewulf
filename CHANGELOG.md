@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix default nodes.conf to use the new kernel command line list format. #1670
 - Fix `make install` when `sudo` does not set `$PWD`. #1660
 - Use sh to parse and exec IPMI command. #1663
+- Don't populate NetDevs[].Type or NetDevs[].Netmask during upgrade. #1661
 
 ## v4.6.0rc1, 2025-01-29
 
