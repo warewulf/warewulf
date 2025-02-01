@@ -128,7 +128,7 @@ see a list of all configuration attributes, use the command ``wwctl
 node set --help``.
 
 Configuring the Node's Image
-============================
+----------------------------
 
 .. code-block:: console
 
@@ -293,6 +293,18 @@ nodes are sorted lexically, first by cluster, then by ID.)
 
 Once a node has been discovered its "discoverable" flag is
 automatically cleared.
+
+Setting list values
+===================
+
+Some node fields, such as overlays and kernel args, accept a list of values.
+These may be specified as a comma-separated list or as multiple arguments.
+
+To include an explicit comma in the value, enclose the value in inner-quotes.
+
+.. code-block:: console
+
+   # wwctl profile set default --kernelargs 'quiet,crashkernel=no,nosplash' --kernelargs='"console=ttyS0,115200"'
 
 Un-setting Node Attributes
 ==========================
