@@ -50,6 +50,8 @@ Warewulf (4.6.0):
        - dsa
        - ecdsa
        - ed25519
+   wwclient:
+     port: 0
 
 Generally you can leave this file as is, as long as you set the
 appropriate networking information. Specifically the following
@@ -90,10 +92,11 @@ explained as follows:
   privileged port. This prevents non-root users from requesting the
   runtime overlay, which may contain sensitive information.
 
-  When ``true``, ``wwclient`` uses TCP port 987.
+  When ``true``, ``wwclient`` uses TCP port 987 by default. A different port can
+  be specified at `wwclient.port`.
 
-  Changing this option requires rebuilding node overlays and rebooting
-  compute nodes to configure them to use a privileged port.
+  Changing this option requires rebuilding node overlays and rebooting compute
+  nodes to configure them to use a privileged port for `wwclient`.
 
 * ``warewulf:update interval``: This defines the frequency (in
   seconds) with which the Warewulf client on the compute node fetches
