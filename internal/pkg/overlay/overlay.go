@@ -205,25 +205,29 @@ func BuildHostOverlay() error {
 /*
 Get all overlays present in warewulf
 */
-func FindOverlays() (overlayList []string, err error) {
+func FindOverlays() (overlayList []string) {
 	dotfilecheck, _ := regexp.Compile(`^\..*`)
 	controller := config.Get()
 	var files []fs.DirEntry
-	if distfiles, err := os.ReadDir(controller.Paths.DistributionOverlaydir()); err == nil {
+	if distfiles, err := os.ReadDir(controller.Paths.DistributionOverlaydir()); err != nil {
+		wwlog.Warn("error reading overlays from %s: %s", controller.Paths.DistributionOverlaydir(), err)
+	} else {
 		files = append(files, distfiles...)
 	}
-	if sitefiles, err := os.ReadDir(path.Join(controller.Paths.SiteOverlaydir())); err == nil {
+	if sitefiles, err := os.ReadDir(controller.Paths.SiteOverlaydir()); err != nil {
+		wwlog.Warn("error reading overalys from %s: %s", controller.Paths.SiteOverlaydir(), err)
+	} else {
 		files = append(files, sitefiles...)
 	}
 	for _, file := range files {
 		wwlog.Debug("Evaluating overlay source: %s", file.Name())
 		isdotfile := dotfilecheck.MatchString(file.Name())
 
-		if (file.IsDir()) && !(isdotfile) {
+		if file.IsDir() && !isdotfile && !util.InSlice(overlayList, file.Name()) {
 			overlayList = append(overlayList, file.Name())
 		}
 	}
-	return overlayList, nil
+	return overlayList
 }
 
 /*
