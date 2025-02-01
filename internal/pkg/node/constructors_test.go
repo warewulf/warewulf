@@ -214,7 +214,7 @@ nodes:
 	assert.Contains(nodemap, "node4")
 	assert.ElementsMatch(nodemap["node4"].RuntimeOverlay, []string{"p1o1", "p1o2", "p2o1", "p2o2", "n1o1", "n1o2"})
 	assert.Contains(nodemap, "node5")
-	assert.ElementsMatch(nodemap["node5"].RuntimeOverlay, []string{"p1o1", "p1o2", "~p1o2", "p2o1", "p2o2", "n1o1"})
+	assert.ElementsMatch(nodemap["node5"].RuntimeOverlay, []string{"p1o1", "p2o1", "p2o2", "n1o1"})
 }
 
 func Test_negated_list(t *testing.T) {

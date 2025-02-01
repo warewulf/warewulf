@@ -382,6 +382,15 @@ func negList(list []string) (ret []string) {
 	return
 }
 
+func (p *Profile) cleanLists() {
+	p.Profiles = cleanList(p.Profiles)
+	p.SystemOverlay = cleanList(p.SystemOverlay)
+	p.RuntimeOverlay = cleanList(p.RuntimeOverlay)
+	if p.Kernel != nil {
+		p.Kernel.Args = cleanList(p.Kernel.Args)
+	}
+}
+
 // clean a list from negated tokens
 func cleanList(list []string) (ret []string) {
 	neg := negList(list)

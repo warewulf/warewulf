@@ -194,16 +194,18 @@ nodeprofiles:
 
 func Test_MergeNode(t *testing.T) {
 	var tests = map[string]struct {
-		nodesConf  string
-		node       string
-		field      string
-		source     string
-		value      string
-		nodes      []string
-		fields     []string
-		sources    []string
-		values     []string
-		jsonValues []string
+		nodesConf   string
+		node        string
+		field       string
+		source      string
+		value       string
+		fieldValue  string
+		nodes       []string
+		fields      []string
+		sources     []string
+		values      []string
+		fieldValues []string
+		jsonValues  bool
 	}{
 		"node comment": {
 			nodesConf: `
@@ -585,6 +587,9 @@ nodeprofiles:
 		},
 		"node profiles": {
 			nodesConf: `
+nodeprofiles:
+  p1: {}
+  p2: {}
 nodes:
   n1:
     profiles:
@@ -604,7 +609,8 @@ nodes:
 nodeprofiles:
   p1:
     profiles:
-    - p2`,
+    - p2
+  p2: {}`,
 			node:   "n1",
 			field:  "Profiles",
 			source: "",
@@ -792,7 +798,92 @@ nodes:
 			nodes:      []string{"n1"},
 			fields:     []string{"Resources[fstab]"},
 			sources:    []string{"p1,n1"},
-			jsonValues: []string{`[{"file":"/home","spec":"warewulf:/home","vfstype":"nfs"},{"file":"/opt","spec":"warewulf:/opt","vfstype":"nfs"}]`},
+			values:     []string{`[{"file":"/home","spec":"warewulf:/home","vfstype":"nfs"},{"file":"/opt","spec":"warewulf:/opt","vfstype":"nfs"}]`},
+			jsonValues: true,
+		},
+		"node1 gets kernel data from profile": {
+			nodesConf: `
+nodeprofiles:
+  default:
+    kernel:
+      version: v1.0.0
+      args:
+      - arg1
+      - arg2
+nodes:
+  node1:
+    profiles:
+      - default`,
+			nodes:  []string{"node1", "node1"},
+			fields: []string{"Kernel.Version", "Kernel.Args"},
+			values: []string{"v1.0.0", "arg1,arg2"},
+		},
+		"node can negate kernel args from profile": {
+			nodesConf: `
+nodeprofiles:
+  default:
+    kernel:
+      version: v1.0.0
+      args:
+      - arg1
+      - arg2
+nodes:
+  node1:
+    profiles:
+    - default
+    kernel:
+      args:
+      - ~arg2
+      - arg3`,
+			nodes:       []string{"node1", "node1"},
+			fields:      []string{"Kernel.Version", "Kernel.Args"},
+			sources:     []string{"default", "default,node1"},
+			values:      []string{"v1.0.0", "arg1,arg3"},
+			fieldValues: []string{"v1.0.0", "arg1,arg2,~arg2,arg3"},
+		},
+		"node1 doesn't get interference data from node2": {
+			nodesConf: `
+nodeprofiles:
+  default: {}
+nodes:
+  node1: {}
+  node2:
+    profiles:
+      - default
+    kernel:
+      version: v1.0.0
+      args:
+      - kernel-args`,
+			nodes:       []string{"node1", "node1", "node2", "node2"},
+			fields:      []string{"Kernel.Version", "Kernel.Args", "Kernel.Version", "Kernel.Args"},
+			values:      []string{"UNDEF", "UNDEF", "v1.0.0", "kernel-args"},
+			fieldValues: []string{"", "", "v1.0.0", "kernel-args"},
+		},
+		"overlay negation": {
+			nodesConf: `
+nodeprofiles:
+  default:
+    runtime overlay:
+    - ro1
+    - ro2
+    system overlay:
+    - so1
+    - so2
+nodes:
+  n1:
+    profiles:
+    - default
+    runtime overlay:
+    - ~ro1
+    - ro3
+    system overlay:
+    - so4
+    - ~so2`,
+			nodes:       []string{"n1", "n1"},
+			fields:      []string{"RuntimeOverlay", "SystemOverlay"},
+			values:      []string{"ro2,ro3", "so1,so4"},
+			fieldValues: []string{"ro1,ro2,~ro1,ro3", "so1,so2,so4,~so2"},
+			sources:     []string{"default,n1", "default,n1"},
 		},
 	}
 
@@ -811,31 +902,53 @@ nodes:
 
 				value, valueErr := getNestedFieldString(node, tt.field)
 				assert.NoError(t, valueErr)
-				assert.Equal(t, tt.value, value)
-				assert.Equal(t, tt.value, fields.Value(tt.field))
+
+				ttFieldValue := tt.value
+				if tt.fieldValue != "" {
+					ttFieldValue = tt.fieldValue
+				}
+
+				if tt.jsonValues {
+					assert.JSONEq(t, tt.value, value)
+					assert.JSONEq(t, ttFieldValue, fields.Value(tt.field))
+				} else {
+					assert.Equal(t, tt.value, value)
+					assert.Equal(t, ttFieldValue, fields.Value(tt.field))
+				}
 				assert.Equal(t, tt.source, fields.Source(tt.field))
 			}
 
-			var nodes []Node
 			for i := range tt.nodes {
-				node, _, mergeErr := registry.MergeNode(tt.nodes[i])
+				node, fields, mergeErr := registry.MergeNode(tt.nodes[i])
 				assert.NoError(t, mergeErr)
-				nodes = append(nodes, node)
-			}
 
-			for i := range tt.nodes {
-				_, fields, _ := registry.MergeNode(tt.nodes[i])
-				value, valueErr := getNestedFieldString(nodes[i], tt.fields[i])
-				assert.NoError(t, valueErr)
+				value, valueErr := getNestedFieldString(node, tt.fields[i])
+				if valueErr != nil {
+					value = "UNDEF"
+				}
+
 				if len(tt.values) > i {
-					assert.Equal(t, tt.values[i], value)
-					assert.Equal(t, tt.values[i], fields.Value(tt.fields[i]))
+					if tt.jsonValues {
+						assert.JSONEq(t, tt.values[i], value)
+					} else {
+						assert.Equal(t, tt.values[i], value)
+					}
 				}
-				if len(tt.jsonValues) > i {
-					assert.JSONEq(t, tt.jsonValues[i], value)
-					assert.Equal(t, tt.jsonValues[i], fields.Value(tt.fields[i]))
+
+				if len(tt.fields) > i {
+					ttFieldValues := tt.values
+					if len(tt.fieldValues) > 0 {
+						ttFieldValues = tt.fieldValues
+					}
+					if tt.jsonValues {
+						assert.JSONEq(t, ttFieldValues[i], fields.Value(tt.fields[i]))
+					} else {
+						assert.Equal(t, ttFieldValues[i], fields.Value(tt.fields[i]))
+					}
 				}
-				assert.Equal(t, tt.sources[i], fields.Source(tt.fields[i]))
+				if len(tt.sources) > i {
+					assert.Equal(t, tt.sources[i], fields.Source(tt.fields[i]))
+				}
 			}
 		})
 	}
@@ -959,45 +1072,6 @@ nodes:
 			assert.Equal(t, tt.ipaddr, node.NetDevs[tt.netdev].Ipaddr)
 			assert.Equal(t, tt.ipaddrStr, fields.Value(fmt.Sprintf("NetDevs[%s].Ipaddr", tt.netdev)))
 			assert.Equal(t, tt.source, fields.Source(fmt.Sprintf("NetDevs[%s].Ipaddr", tt.netdev)))
-		})
-	}
-}
-
-func Test_MergeNodeKernel(t *testing.T) {
-	var tests = map[string]struct {
-		nodesConf string
-		node      string
-		kernel    *KernelConf
-	}{
-		"interference": {
-			nodesConf: `
-nodeprofiles:
-  default: {}
-nodes:
-  node1: {}
-  test:
-    profiles:
-      - default
-    kernel:
-      version: v1.0.0
-      args:
-      - kernel-args`,
-			node:   "node1",
-			kernel: nil,
-		},
-	}
-
-	for name, tt := range tests {
-		t.Run(name, func(t *testing.T) {
-			env := testenv.New(t)
-			defer env.RemoveAll()
-			env.WriteFile("/etc/warewulf/nodes.conf", tt.nodesConf)
-
-			registry, regErr := New()
-			assert.NoError(t, regErr)
-			node, _, mergeErr := registry.MergeNode(tt.node)
-			assert.NoError(t, mergeErr)
-			assert.Equal(t, tt.kernel, node.Kernel)
 		})
 	}
 }

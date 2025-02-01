@@ -267,7 +267,7 @@ nodes:
 `,
 		},
 		{
-			name:    "multiple overlays list long with negation",
+			name:    "multiple overlays list long",
 			args:    []string{"-l"},
 			wantErr: false,
 			stdout: `
@@ -287,13 +287,13 @@ nodes:
 `,
 		},
 		{
-			name:    "multiple overlays list long",
+			name:    "multiple overlays list long with negation",
 			args:    []string{"-l"},
 			wantErr: false,
 			stdout: `
 NODE NAME  KERNEL VERSION  IMAGE  OVERLAYS (S/R)
 ---------  --------------  -----  --------------
-n01        --              --     sop1/rop1,rop2,nop1,~rop1
+n01        --              --     sop1/rop2,nop1
 `,
 			inDb: `nodeprofiles:
   p1:
