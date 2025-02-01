@@ -101,13 +101,16 @@ func NodeList(nodeGet *wwapiv1.GetNodeList) (nodeList wwapiv1.NodeList, err erro
 			}
 		}
 	} else if nodeGet.Type == wwapiv1.GetNodeList_YAML || nodeGet.Type == wwapiv1.GetNodeList_JSON {
-		filterNodes := node.FilterNodeListByName(nodes, nodeGet.Nodes)
+		nodeMap := make(map[string]node.Node)
+		for _, n := range node.FilterNodeListByName(nodes, nodeGet.Nodes) {
+			nodeMap[n.Id()] = n
+		}
 		var buf []byte
 		if nodeGet.Type == wwapiv1.GetNodeList_JSON {
-			buf, _ = json.MarshalIndent(filterNodes, "", "  ")
+			buf, _ = json.MarshalIndent(nodeMap, "", "  ")
 		}
 		if nodeGet.Type == wwapiv1.GetNodeList_YAML {
-			buf, _ = yaml.Marshal(filterNodes)
+			buf, _ = yaml.Marshal(nodeMap)
 		}
 		nodeList.Output = append(nodeList.Output, string(buf))
 
