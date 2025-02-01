@@ -32,7 +32,7 @@ supported by the current version.`,
 	command.Flags().BoolVar(&replaceOverlays, "replace-overlays", false, "Replace 'wwinit' and 'generic' overlays with their split replacements")
 	command.Flags().StringVarP(&inputPath, "input-path", "i", "", "Path to a legacy nodes.conf")
 	command.Flags().StringVarP(&outputPath, "output-path", "o", "", "Path to write the upgraded nodes.conf to")
-	command.Flags().StringVar(&inputConfPath, "with-warewulfconf", config.ConfigFile, "Path to a legacy warewulf.conf")
+	command.Flags().StringVar(&inputConfPath, "with-warewulfconf", "", "Path to a legacy warewulf.conf")
 	if err := command.MarkFlagRequired("add-defaults"); err != nil {
 		panic(err)
 	}
@@ -50,6 +50,9 @@ func UpgradeNodesConf(cmd *cobra.Command, args []string) error {
 	outputPath := outputPath
 	if outputPath == "" {
 		outputPath = config.Get().Paths.NodesConf()
+	}
+	if inputConfPath == "" {
+		inputConfPath = config.ConfigFile
 	}
 
 	confData, err := os.ReadFile(inputConfPath)

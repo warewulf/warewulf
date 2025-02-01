@@ -78,20 +78,22 @@ func rootPersistentPreRunE(cmd *cobra.Command, args []string) (err error) {
 	if LogLevel != wwlog.INFO {
 		wwlog.SetLogLevel(LogLevel)
 	}
+
+	if WarewulfConfArg != "" {
+		warewulfconf.ConfigFile = WarewulfConfArg
+	} else if os.Getenv("WAREWULFCONF") != "" {
+		warewulfconf.ConfigFile = os.Getenv("WAREWULFCONF")
+	}
+
 	conf := warewulfconf.Get()
 	if !AllowEmptyConf && !conf.InitializedFromFile() {
-		if WarewulfConfArg != "" {
-			err = conf.Read(WarewulfConfArg)
-		} else if os.Getenv("WAREWULFCONF") != "" {
-			err = conf.Read(os.Getenv("WAREWULFCONF"))
-		} else {
-			err = conf.Read(warewulfconf.ConfigFile)
+		if err = conf.Read(warewulfconf.ConfigFile); err != nil {
+			wwlog.Error("error reading config file: %s", err)
+			return
 		}
 	}
-	if err != nil {
-		wwlog.Error("version: %s relase: %s", warewulfconf.Version, warewulfconf.Release)
-		return
+	if err = conf.SetDynamicDefaults(); err != nil {
+		wwlog.Error("error setting default configuration: %s", err)
 	}
-	err = conf.SetDynamicDefaults()
 	return
 }
