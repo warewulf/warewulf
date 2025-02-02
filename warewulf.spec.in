@@ -174,68 +174,66 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 
 
 %files
-%dir %{_sysconfdir}/bash_completion.d
-%dir %{_sysconfdir}/logrotate.d
+%defattr(-, root, root)
 
-%defattr(-, root, %{wwgroup})
 %dir %{_sysconfdir}/warewulf
 %config(noreplace) %{_sysconfdir}/warewulf/warewulf.conf
+%config(noreplace) %attr(0640,-,%{wwgroup}) %{_sysconfdir}/warewulf/nodes.conf
 %config(noreplace) %{_sysconfdir}/warewulf/examples
 %config(noreplace) %{_sysconfdir}/warewulf/ipxe
 %config(noreplace) %{_sysconfdir}/warewulf/grub
-%config(noreplace) %{_sysconfdir}/logrotate.d/warewulfd.conf
-%config(noreplace) %attr(0640,-,-) %{_sysconfdir}/warewulf/nodes.conf
-
-%{_sysconfdir}/bash_completion.d/wwctl
+%{_sysconfdir}/bash_completion.d
+%config(noreplace) %{_sysconfdir}/logrotate.d
 
 %dir %{_sharedstatedir}/warewulf
 %dir %{_sharedstatedir}/warewulf/chroots
 %dir %{_sharedstatedir}/warewulf/overlays
+
+%dir %{_datadir}/warewulf
+%{_datadir}/warewulf/bmc
 %dir %{_datadir}/warewulf/overlays
 %dir %{_datadir}/warewulf/overlays/*
 %dir %{_datadir}/warewulf/overlays/*/rootfs
-%attr(-, root, root) %{_datadir}/warewulf/overlays/NetworkManager/rootfs/*
-%attr(-, root, root) %{_datadir}/warewulf/overlays/debian.interfaces/rootfs/*
-%attr(-, root, root) %{_datadir}/warewulf/overlays/debug/rootfs/*
-%attr(-, root, root) %{_datadir}/warewulf/overlays/fstab/rootfs/*
-%attr(-, root, root) %{_datadir}/warewulf/overlays/host/rootfs/*
-%attr(-, root, root) %{_datadir}/warewulf/overlays/hostname/rootfs/*
-%attr(-, root, root) %{_datadir}/warewulf/overlays/hosts/rootfs/*
-%attr(-, root, root) %{_datadir}/warewulf/overlays/ifcfg/rootfs/*
-%attr(-, root, root) %{_datadir}/warewulf/overlays/ignition/rootfs/*
-%attr(-, root, root) %{_datadir}/warewulf/overlays/issue/rootfs/*
-%attr(-, root, root) %{_datadir}/warewulf/overlays/netplan/rootfs/*
-%attr(-, root, root) %{_datadir}/warewulf/overlays/resolv/rootfs/*
-%attr(700, root, root) %{_datadir}/warewulf/overlays/ssh.authorized_keys/rootfs/*
-%attr(-, root, root) %{_datadir}/warewulf/overlays/ssh.host_keys/rootfs/*
-%attr(-, root, root) %{_datadir}/warewulf/overlays/syncuser/rootfs/*
-%attr(-, root, root) %{_datadir}/warewulf/overlays/systemd.netname/rootfs/*
-%attr(-, root, root) %{_datadir}/warewulf/overlays/udev.netname/rootfs/*
-%attr(-, root, root) %{_datadir}/warewulf/overlays/wicked/rootfs/*
-%attr(-, root, root) %{_datadir}/warewulf/overlays/wwclient/rootfs/*
-%attr(-, root, root) %{_datadir}/warewulf/overlays/wwinit/rootfs/*
-%attr(-, root, root) %{_datadir}/warewulf/overlays/localtime/rootfs/*
+%{_datadir}/warewulf/overlays/NetworkManager/rootfs/*
+%{_datadir}/warewulf/overlays/debian.interfaces/rootfs/*
+%{_datadir}/warewulf/overlays/debug/rootfs/*
+%{_datadir}/warewulf/overlays/fstab/rootfs/*
+%{_datadir}/warewulf/overlays/host/rootfs/*
+%{_datadir}/warewulf/overlays/hostname/rootfs/*
+%{_datadir}/warewulf/overlays/hosts/rootfs/*
+%{_datadir}/warewulf/overlays/ifcfg/rootfs/*
+%{_datadir}/warewulf/overlays/ignition/rootfs/*
+%{_datadir}/warewulf/overlays/issue/rootfs/*
+%{_datadir}/warewulf/overlays/netplan/rootfs/*
+%{_datadir}/warewulf/overlays/resolv/rootfs/*
+%attr(700, -, -) %{_datadir}/warewulf/overlays/ssh.authorized_keys/rootfs/*
+%{_datadir}/warewulf/overlays/ssh.host_keys/rootfs/*
+%{_datadir}/warewulf/overlays/syncuser/rootfs/*
+%{_datadir}/warewulf/overlays/systemd.netname/rootfs/*
+%{_datadir}/warewulf/overlays/udev.netname/rootfs/*
+%{_datadir}/warewulf/overlays/wicked/rootfs/*
+%{_datadir}/warewulf/overlays/wwclient/rootfs/*
+%{_datadir}/warewulf/overlays/wwinit/rootfs/*
+%{_datadir}/warewulf/overlays/localtime/rootfs/*
 
-%attr(-, root, root) %{_bindir}/wwctl
-%attr(-, root, root) %{_prefix}/lib/firewalld/services/warewulf.xml
-%attr(-, root, root) %{_unitdir}/warewulfd.service
-%attr(-, root, root) %{_mandir}/man1/wwctl*
-%attr(-, root, root) %{_mandir}/man5/*.5*
-%attr(-, root, root) %{_datadir}/warewulf
+%{_bindir}/wwctl
+%{_prefix}/lib/firewalld/services/warewulf.xml
+%{_unitdir}/warewulfd.service
+%{_mandir}/man1/wwctl*
+%{_mandir}/man5/*.5*
 
 %dir %{_docdir}/warewulf
 %license %{_docdir}/warewulf/LICENSE.md
 
 %if %{api}
-%attr(-, root, root) %{_bindir}/wwapi*
+%{_bindir}/wwapi*
 %config(noreplace) %{_sysconfdir}/warewulf/wwapi*.conf
 %endif
 
 
 %files dracut
 %defattr(-, root, root)
-%dir %{_prefix}/lib/dracut/modules.d/90wwinit
-%{_prefix}/lib/dracut/modules.d/90wwinit/*.sh
+%{_prefix}/lib/dracut/modules.d/90wwinit
 
 
 %changelog
