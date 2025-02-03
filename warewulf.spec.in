@@ -77,6 +77,7 @@ BuildRequires: libassuan-devel
 %endif
 
 Recommends: logrotate
+Recommends: ipmitool
 
 %description
 Warewulf is a stateless and diskless provisioning
@@ -237,6 +238,9 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 
 
 %changelog
+* Sat Feb 1 2025 Jonathon Anderson <janderson@ciq.com>
+- Add Recommends: ipmitool
+
 * Thu Sep 12 2024 Jonathon Anderson <janderson@ciq.com>
 - Split overlays into separate directories
 
