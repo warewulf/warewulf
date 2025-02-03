@@ -8,55 +8,62 @@ import (
 	"dario.cat/mergo"
 	"github.com/mohae/deepcopy"
 
-	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-// getNodeProfiles retrieves a list of profile IDs associated with a specific node ID.
-// It retrives nested profiles and ensures the list is cleaned of duplicates
-// and negations (denoted with a '~' prefix).
+// getNodeProfiles returns a deduplicated list of profile identifiers associated with the given node.
+// It expands nested profiles from the node's profile list and then cleans the result by removing
+// duplicate entries and any profiles prefixed with '~' (which denote negated profiles).
+//
+// If the specified node is not found in the configuration, the function returns an empty slice.
 //
 // Parameters:
-// - id: The identifier of the node whose profiles are to be retrieved.
+//
+//	id - the identifier of the node whose profiles are to be retrieved.
 //
 // Returns:
-// - A slice of profile IDs associated with the given node ID.
+//
+//	A slice of profile IDs associated with the given node, with nested profiles expanded and cleaned.
 func (config *NodesYaml) getNodeProfiles(id string) (profiles []string) {
-	if node, ok := config.Nodes[id]; ok {
-		for _, profileID := range node.Profiles {
-			profiles = cleanList(append(profiles, profileID))
-			if !strings.HasPrefix(profileID, "~") {
-				profiles = config.appendProfileProfiles(profiles, profileID)
-			}
-		}
-	}
-	return cleanList(profiles)
-}
+	visited := make(map[string]bool)
 
-// appendProfileProfiles recursively appends profile IDs associated with a given profile ID
-// to the provided list of profile IDs. It recursively processes nested profiles and ensures
-// the list is cleaned of duplicates and negations (denoted with a '~' prefix).
-//
-// Profiles are only added if they do not already exist in the list.
-//
-// Parameters:
-// - profiles: A slice of strings representing the current list of profiles by ID.
-// - id: The identifier of the profile whose associated profiles are to be appended.
-//
-// Returns:
-//   - A slice of strings containing the updated list of profile IDs.
-func (config *NodesYaml) appendProfileProfiles(profiles []string, id string) []string {
-	if profile, ok := config.NodeProfiles[id]; ok {
-		for _, subID := range profile.Profiles {
-			if !util.InSlice(profiles, subID) {
-				profiles = cleanList(append(profiles, subID))
-				if !strings.HasPrefix(subID, "~") {
-					profiles = config.appendProfileProfiles(profiles, subID)
-				}
-			}
-		}
+	if node, ok := config.Nodes[id]; ok {
+		profiles = cleanList(config.getProfilesProfiles(node.Profiles, visited))
 	}
 	return profiles
+}
+
+// getProfilesProfiles recursively expands a list of profile identifiers by processing their nested profiles.
+// For each profile ID in the input slice:
+//   - If the profile ID begins with '~', it is treated as a negation and appended directly to the output.
+//   - If the profile ID has already been processed (as tracked by the visited map), it is skipped to prevent duplication and infinite recursion.
+//   - Otherwise, the profile ID is marked as visited. If a corresponding profile exists in the configuration's NodeProfiles,
+//     its nested profiles are recursively processed and appended to the output before appending the profile ID itself.
+//
+// Parameters:
+//
+//	input   - A slice of profile IDs to be expanded.
+//	visited - A map tracking profile IDs that have already been processed to avoid duplicates and cycles.
+//
+// Returns:
+//
+//	A slice of profile IDs that includes the original and all recursively expanded nested profiles.
+func (config *NodesYaml) getProfilesProfiles(input []string, visited map[string]bool) (output []string) {
+	for _, id := range input {
+		if strings.HasPrefix(id, "~") {
+			output = append(output, id)
+			continue
+		} else if visited[id] {
+			continue
+		} else {
+			visited[id] = true
+			if profile, ok := config.NodeProfiles[id]; ok {
+				output = append(output, config.getProfilesProfiles(profile.Profiles, visited)...)
+			}
+			output = append(output, id)
+		}
+	}
+	return output
 }
 
 type Transformer struct{}
