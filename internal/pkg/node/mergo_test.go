@@ -885,6 +885,22 @@ nodes:
 			fieldValues: []string{"ro1,ro2,~ro1,ro3", "so1,so2,so4,~so2"},
 			sources:     []string{"default,n1", "default,n1"},
 		},
+		"netmask inheritance": {
+			nodesConf: `
+nodeprofiles:
+  p1:
+    network devices:
+      default:
+        netmask: 255.255.255.0
+nodes:
+  n1:
+    profiles:
+    - p1`,
+			node:   "n1",
+			field:  "NetDevs[default].Netmask",
+			source: "p1",
+			value:  "255.255.255.0",
+		},
 	}
 
 	for name, tt := range tests {
