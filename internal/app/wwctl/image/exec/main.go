@@ -154,7 +154,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if Build {
-		wwlog.Info("Building image: %s", imageName)
 		err = image.Build(imageName, false)
 		if err != nil {
 			return fmt.Errorf("could not build image: %s: %s", imageName, err)
