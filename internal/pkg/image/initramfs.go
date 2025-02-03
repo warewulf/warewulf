@@ -66,7 +66,6 @@ func FindInitramfsFromPattern(imageName string, version string, pattern string) 
 			continue
 		} else {
 			initramfs := &Initramfs{Path: filepath.Join("/", path), imageName: imageName}
-			wwlog.Info("%v", initramfs)
 			if strings.HasPrefix(initramfs.Version(), version) {
 				return initramfs
 			}

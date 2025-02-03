@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Document defining kernel args that include commas. #1679
 - Recommend installing ipmitool with Warewulf package. #970
+
 ### Changed
 
 - `wwctl node list <--yaml|--json>` outputs a map keyed by node name. #1667
@@ -31,6 +32,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Prefer parent profile values over child profile values. #1672
 - Don't attempt to back-up an output file that doesn't exist during upgrade. #1671
 - Specify init=/init when booting with Grub+dracut. #1573
+- Fix a warewulfd panic when no kernel fields are specified. #1689
 
 ## v4.6.0rc1, 2025-01-29
 

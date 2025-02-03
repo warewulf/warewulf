@@ -98,6 +98,12 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 
 	} else if rinfo.stage == "ipxe" {
 		stage_file = path.Join(conf.Paths.Sysconfdir, "warewulf/ipxe/"+remoteNode.Ipxe+".ipxe")
+		kernelArgs := ""
+		kernelVersion := ""
+		if remoteNode.Kernel != nil {
+			kernelArgs = strings.Join(remoteNode.Kernel.Args, " ")
+			kernelVersion = remoteNode.Kernel.Version
+		}
 		tmpl_data = &templateVars{
 			Id:            remoteNode.Id(),
 			Cluster:       remoteNode.ClusterName,
@@ -107,8 +113,8 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			Hostname:      remoteNode.Id(),
 			Hwaddr:        rinfo.hwaddr,
 			ImageName:     remoteNode.ImageName,
-			KernelArgs:    strings.Join(remoteNode.Kernel.Args, " "),
-			KernelVersion: remoteNode.Kernel.Version,
+			KernelArgs:    kernelArgs,
+			KernelVersion: kernelVersion,
 			NetDevs:       remoteNode.NetDevs,
 			Tags:          remoteNode.Tags}
 	} else if rinfo.stage == "kernel" {
