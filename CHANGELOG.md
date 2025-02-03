@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Document defining kernel args that include commas. #1679
 - Recommend installing ipmitool with Warewulf package. #970
+### Changed
+
+- `wwctl node list <--yaml|--json>` outputs a map keyed by node name. #1667
 
 ### Fixed
 
