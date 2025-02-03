@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Don't populate NetDevs[].Type or NetDevs[].Netmask during upgrade. #1661
 - Prefer parent profile values over child profile values. #1672
 - Don't attempt to back-up an output file that doesn't exist during upgrade. #1671
+- Specify init=/init when booting with Grub+dracut. #1573
 
 ## v4.6.0rc1, 2025-01-29
 
