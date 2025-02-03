@@ -14,9 +14,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 - `wwctl node list <--yaml|--json>` outputs a map keyed by node name. #1667
-
-### Changes
-
 - Don't mount /run during wwinit. #1566
 
 ### Fixed
@@ -33,6 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Don't attempt to back-up an output file that doesn't exist during upgrade. #1671
 - Specify init=/init when booting with Grub+dracut. #1573
 - Fix a warewulfd panic when no kernel fields are specified. #1689
+- Create site overlay directory. #1690
 
 ## v4.6.0rc1, 2025-01-29
 
