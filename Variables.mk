@@ -1,7 +1,7 @@
 -include Defaults.mk
 
 # Linux distro (try and set to /etc/os-release ID)
-OS_REL := $(shell sed -n "s/^ID\s*=\s*['"\""]\(.*\)['"\""]/\1/p" /etc/os-release)
+OS_REL := $(shell sh -c '. /etc/os-release; echo $ID')
 OS ?= $(OS_REL)
 
 ARCH_REL := $(shell uname -p)
