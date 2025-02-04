@@ -19,8 +19,10 @@ func Test_debugOverlay(t *testing.T) {
 
 	env := testenv.New(t)
 	defer env.RemoveAll()
+	env.ImportFile("etc/warewulf/warewulf.conf", "warewulf.conf")
 	env.ImportFile("etc/warewulf/nodes.conf", "nodes.conf")
 	env.ImportFile("var/lib/warewulf/overlays/debug/rootfs/tstruct.md.ww", "../rootfs/tstruct.md.ww")
+	env.Configure()
 
 	tests := []struct {
 		name string
@@ -86,11 +88,12 @@ data from other structures.
 
 ### Network
 
-- Ipaddr: 
+- Ipaddr: 192.168.0.1
+- IpCIDR: 192.168.0.1/24
 - Ipaddr6: 
-- Netmask: 
-- Network: 
-- NetworkCIDR: 
+- Netmask: 255.255.255.0
+- Network: 192.168.0.0
+- NetworkCIDR: 192.168.0.0/24
 - Ipv6: false
 
 ### DHCP

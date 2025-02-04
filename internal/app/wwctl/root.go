@@ -92,8 +92,5 @@ func rootPersistentPreRunE(cmd *cobra.Command, args []string) (err error) {
 			return
 		}
 	}
-	if err = conf.SetDynamicDefaults(); err != nil {
-		wwlog.Error("error setting default configuration: %s", err)
-	}
 	return
 }

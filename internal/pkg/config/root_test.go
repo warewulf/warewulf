@@ -7,69 +7,289 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDefaultWarewulfYaml(t *testing.T) {
-	conf := New()
-
-	assert.Equal(t, 9873, conf.Warewulf.Port)
-	assert.True(t, conf.Warewulf.Secure())
-	assert.Equal(t, 60, conf.Warewulf.UpdateInterval)
-	assert.True(t, conf.Warewulf.AutobuildOverlays())
-	assert.True(t, conf.Warewulf.EnableHostOverlay())
-
-	assert.True(t, conf.DHCP.Enabled())
-	assert.Equal(t, "default", conf.DHCP.Template)
-	assert.Empty(t, conf.DHCP.RangeStart)
-	assert.Empty(t, conf.DHCP.RangeEnd)
-	assert.Equal(t, "dhcpd", conf.DHCP.SystemdName)
-
-	assert.True(t, conf.TFTP.Enabled())
-	assert.NotEmpty(t, conf.TFTP.TftpRoot)
-	assert.Equal(t, "tftp", conf.TFTP.SystemdName)
-	assert.NotEmpty(t, conf.TFTP.IpxeBinaries["00:00"])
-	assert.NotEmpty(t, conf.TFTP.IpxeBinaries["00:07"])
-	assert.NotEmpty(t, conf.TFTP.IpxeBinaries["00:09"])
-	assert.NotEmpty(t, conf.TFTP.IpxeBinaries["00:0B"])
-
-	assert.True(t, conf.NFS.Enabled())
-	assert.Empty(t, conf.NFS.ExportsExtended)
-	assert.Equal(t, "nfsd", conf.NFS.SystemdName)
-
-	assert.Equal(t, "/etc/resolv.conf", conf.MountsImage[0].Source)
-	assert.Equal(t, "/etc/resolv.conf", conf.MountsImage[0].Dest)
-	assert.False(t, conf.MountsImage[0].ReadOnly())
-	assert.Empty(t, conf.MountsImage[0].Options)
-
-	assert.NotEmpty(t, conf.Paths.Bindir)
-	assert.NotEmpty(t, conf.Paths.Sysconfdir)
-	assert.NotEmpty(t, conf.Paths.Localstatedir)
-	assert.NotEmpty(t, conf.Paths.Srvdir)
-	assert.NotEmpty(t, conf.Paths.Firewallddir)
-	assert.NotEmpty(t, conf.Paths.Systemddir)
-	assert.NotEmpty(t, conf.Paths.WWOverlaydir)
-	assert.NotEmpty(t, conf.Paths.WWChrootdir)
-	assert.NotEmpty(t, conf.Paths.WWProvisiondir)
-	assert.NotEmpty(t, conf.Paths.WWClientdir)
-	assert.NotEmpty(t, conf.Paths.Cachedir)
-}
-
-func TestInitializedFromFile(t *testing.T) {
-	example_warewulf_conf := ""
-	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
-	assert.NoError(t, warewulfConfErr)
-	defer os.Remove(tempWarewulfConf.Name())
-	_, warewulfConfErr = tempWarewulfConf.Write([]byte(example_warewulf_conf))
-	assert.NoError(t, warewulfConfErr)
-	assert.NoError(t, tempWarewulfConf.Sync())
-
-	conf := New()
-	assert.False(t, conf.InitializedFromFile())
-	assert.NoError(t, conf.Read(tempWarewulfConf.Name()))
-	assert.True(t, conf.InitializedFromFile())
-	assert.Equal(t, conf.GetWarewulfConf(), tempWarewulfConf.Name())
-}
-
-func TestExampleWarewulfYaml(t *testing.T) {
-	example_warewulf_conf := `
+func TestParse(t *testing.T) {
+	tests := map[string]struct {
+		input  string
+		result string
+	}{
+		"default": {
+			input: ``,
+			result: `
+warewulf:
+  autobuild overlays: true
+  grubboot: false
+  host overlay: true
+  port: 9873
+  secure: true
+  update interval: 60
+nfs:
+  enabled: true
+  systemd name: nfsd
+dhcp:
+  enabled: true
+  systemd name: dhcpd
+  template: default
+image mounts:
+- dest: /etc/resolv.conf
+  source: /etc/resolv.conf
+paths:
+  bindir: /usr/local/bin
+  cachedir: /var/local/cache
+  datadir: /usr/local/share
+  firewallddir: /usr/lib/firewalld/services
+  ipxesource: /usr/local/share/ipxe
+  localstatedir: /var/local
+  srvdir: /srv
+  sysconfdir: /usr/local/etc
+  systemddir: /usr/lib/systemd/system
+  wwchrootdir: /var/local/warewulf/chroots
+  wwclientdir: /warewulf
+  wwoverlaydir: /var/local/warewulf/overlays
+  wwprovisiondir: /var/local/warewulf/provision
+ssh:
+  key types:
+  - ed25519
+  - ecdsa
+  - rsa
+  - dsa
+tftp:
+  enabled: true
+  ipxe:
+    "00:00": undionly.kpxe
+    "00:07": ipxe-snponly-x86_64.efi
+    "00:09": ipxe-snponly-x86_64.efi
+    "00:0B": arm64-efi/snponly.efi
+  systemd name: tftp
+  tftproot: /var/lib/tftpboot
+`,
+		},
+		"cidr": {
+			input: `
+ipaddr: 192.168.0.1/24
+`,
+			result: `
+ipaddr: 192.168.0.1
+network: 192.168.0.0
+netmask: 255.255.255.0
+warewulf:
+  autobuild overlays: true
+  grubboot: false
+  host overlay: true
+  port: 9873
+  secure: true
+  update interval: 60
+nfs:
+  enabled: true
+  systemd name: nfsd
+dhcp:
+  enabled: true
+  systemd name: dhcpd
+  template: default
+image mounts:
+- dest: /etc/resolv.conf
+  source: /etc/resolv.conf
+paths:
+  bindir: /usr/local/bin
+  cachedir: /var/local/cache
+  datadir: /usr/local/share
+  firewallddir: /usr/lib/firewalld/services
+  ipxesource: /usr/local/share/ipxe
+  localstatedir: /var/local
+  srvdir: /srv
+  sysconfdir: /usr/local/etc
+  systemddir: /usr/lib/systemd/system
+  wwchrootdir: /var/local/warewulf/chroots
+  wwclientdir: /warewulf
+  wwoverlaydir: /var/local/warewulf/overlays
+  wwprovisiondir: /var/local/warewulf/provision
+ssh:
+  key types:
+  - ed25519
+  - ecdsa
+  - rsa
+  - dsa
+tftp:
+  enabled: true
+  ipxe:
+    "00:00": undionly.kpxe
+    "00:07": ipxe-snponly-x86_64.efi
+    "00:09": ipxe-snponly-x86_64.efi
+    "00:0B": arm64-efi/snponly.efi
+  systemd name: tftp
+  tftproot: /var/lib/tftpboot
+`,
+		},
+		"cidr with conflicts": {
+			input: `
+ipaddr: 192.168.1.1/24
+network: 192.168.0.0
+netmask: 255.255.0.0
+`,
+			result: `
+ipaddr: 192.168.1.1
+network: 192.168.0.0
+netmask: 255.255.0.0
+warewulf:
+  autobuild overlays: true
+  grubboot: false
+  host overlay: true
+  port: 9873
+  secure: true
+  update interval: 60
+nfs:
+  enabled: true
+  systemd name: nfsd
+dhcp:
+  enabled: true
+  systemd name: dhcpd
+  template: default
+image mounts:
+- dest: /etc/resolv.conf
+  source: /etc/resolv.conf
+paths:
+  bindir: /usr/local/bin
+  cachedir: /var/local/cache
+  datadir: /usr/local/share
+  firewallddir: /usr/lib/firewalld/services
+  ipxesource: /usr/local/share/ipxe
+  localstatedir: /var/local
+  srvdir: /srv
+  sysconfdir: /usr/local/etc
+  systemddir: /usr/lib/systemd/system
+  wwchrootdir: /var/local/warewulf/chroots
+  wwclientdir: /warewulf
+  wwoverlaydir: /var/local/warewulf/overlays
+  wwprovisiondir: /var/local/warewulf/provision
+ssh:
+  key types:
+  - ed25519
+  - ecdsa
+  - rsa
+  - dsa
+tftp:
+  enabled: true
+  ipxe:
+    "00:00": undionly.kpxe
+    "00:07": ipxe-snponly-x86_64.efi
+    "00:09": ipxe-snponly-x86_64.efi
+    "00:0B": arm64-efi/snponly.efi
+  systemd name: tftp
+  tftproot: /var/lib/tftpboot
+`,
+		},
+		"ipv6 cidr": {
+			input: `
+ipaddr6: "2001:db8::1/64"
+`,
+			result: `
+ipaddr6: "2001:db8::1/64"
+ipv6net: "2001:db8::"
+warewulf:
+  autobuild overlays: true
+  grubboot: false
+  host overlay: true
+  port: 9873
+  secure: true
+  update interval: 60
+nfs:
+  enabled: true
+  systemd name: nfsd
+dhcp:
+  enabled: true
+  systemd name: dhcpd
+  template: default
+image mounts:
+- dest: /etc/resolv.conf
+  source: /etc/resolv.conf
+paths:
+  bindir: /usr/local/bin
+  cachedir: /var/local/cache
+  datadir: /usr/local/share
+  firewallddir: /usr/lib/firewalld/services
+  ipxesource: /usr/local/share/ipxe
+  localstatedir: /var/local
+  srvdir: /srv
+  sysconfdir: /usr/local/etc
+  systemddir: /usr/lib/systemd/system
+  wwchrootdir: /var/local/warewulf/chroots
+  wwclientdir: /warewulf
+  wwoverlaydir: /var/local/warewulf/overlays
+  wwprovisiondir: /var/local/warewulf/provision
+ssh:
+  key types:
+  - ed25519
+  - ecdsa
+  - rsa
+  - dsa
+tftp:
+  enabled: true
+  ipxe:
+    "00:00": undionly.kpxe
+    "00:07": ipxe-snponly-x86_64.efi
+    "00:09": ipxe-snponly-x86_64.efi
+    "00:0B": arm64-efi/snponly.efi
+  systemd name: tftp
+  tftproot: /var/lib/tftpboot
+`,
+		},
+		"ipv6 cidr conflict": {
+			input: `
+ipaddr6: "2001:db8:1::1/64"
+ipv6net: "2001:db8:2::"
+`,
+			result: `
+ipaddr6: "2001:db8:1::1/64"
+ipv6net: "2001:db8:2::"
+warewulf:
+  autobuild overlays: true
+  grubboot: false
+  host overlay: true
+  port: 9873
+  secure: true
+  update interval: 60
+nfs:
+  enabled: true
+  systemd name: nfsd
+dhcp:
+  enabled: true
+  systemd name: dhcpd
+  template: default
+image mounts:
+- dest: /etc/resolv.conf
+  source: /etc/resolv.conf
+paths:
+  bindir: /usr/local/bin
+  cachedir: /var/local/cache
+  datadir: /usr/local/share
+  firewallddir: /usr/lib/firewalld/services
+  ipxesource: /usr/local/share/ipxe
+  localstatedir: /var/local
+  srvdir: /srv
+  sysconfdir: /usr/local/etc
+  systemddir: /usr/lib/systemd/system
+  wwchrootdir: /var/local/warewulf/chroots
+  wwclientdir: /warewulf
+  wwoverlaydir: /var/local/warewulf/overlays
+  wwprovisiondir: /var/local/warewulf/provision
+ssh:
+  key types:
+  - ed25519
+  - ecdsa
+  - rsa
+  - dsa
+tftp:
+  enabled: true
+  ipxe:
+    "00:00": undionly.kpxe
+    "00:07": ipxe-snponly-x86_64.efi
+    "00:09": ipxe-snponly-x86_64.efi
+    "00:0B": arm64-efi/snponly.efi
+  systemd name: tftp
+  tftproot: /var/lib/tftpboot
+`,
+		},
+		"example": {
+			input: `
 ipaddr: 192.168.200.1
 netmask: 255.255.255.0
 network: 192.168.200.0
@@ -98,8 +318,84 @@ nfs:
 image mounts:
   - source: /etc/resolv.conf
     dest: /etc/resolv.conf
-    readonly: true`
+    readonly: true
+`,
+			result: `
+ipaddr: 192.168.200.1
+netmask: 255.255.255.0
+network: 192.168.200.0
+warewulf:
+  autobuild overlays: true
+  grubboot: false
+  host overlay: true
+  port: 9873
+  secure: false
+  update interval: 60
+nfs:
+  enabled: true
+  systemd name: nfs-server
+  export paths:
+  - path: /home
+    export options: rw,sync
+  - path: /opt
+    export options: ro,sync,no_root_squash
+dhcp:
+  enabled: true
+  systemd name: dhcpd
+  template: default
+  range end: 192.168.200.99
+  range start: 192.168.200.50
+image mounts:
+- dest: /etc/resolv.conf
+  readonly: true
+  source: /etc/resolv.conf
+paths:
+  bindir: /usr/local/bin
+  cachedir: /var/local/cache
+  datadir: /usr/local/share
+  firewallddir: /usr/lib/firewalld/services
+  ipxesource: /usr/local/share/ipxe
+  localstatedir: /var/local
+  srvdir: /srv
+  sysconfdir: /usr/local/etc
+  systemddir: /usr/lib/systemd/system
+  wwchrootdir: /var/local/warewulf/chroots
+  wwclientdir: /warewulf
+  wwoverlaydir: /var/local/warewulf/overlays
+  wwprovisiondir: /var/local/warewulf/provision
+ssh:
+  key types:
+  - ed25519
+  - ecdsa
+  - rsa
+  - dsa
+tftp:
+  enabled: true
+  ipxe:
+    "00:00": undionly.kpxe
+    "00:07": ipxe-snponly-x86_64.efi
+    "00:09": ipxe-snponly-x86_64.efi
+    "00:0B": arm64-efi/snponly.efi
+  systemd name: tftp
+  tftproot: /var/lib/tftpboot
+`,
+		},
+	}
 
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			conf := New()
+			err := conf.Parse([]byte(tt.input))
+			assert.NoError(t, err)
+			result, err := conf.Dump()
+			assert.NoError(t, err)
+			assert.YAMLEq(t, tt.result, string(result))
+		})
+	}
+}
+
+func TestInitializedFromFile(t *testing.T) {
+	example_warewulf_conf := ""
 	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
 	assert.NoError(t, warewulfConfErr)
 	defer os.Remove(tempWarewulfConf.Name())
@@ -108,36 +404,10 @@ image mounts:
 	assert.NoError(t, tempWarewulfConf.Sync())
 
 	conf := New()
+	assert.False(t, conf.InitializedFromFile())
 	assert.NoError(t, conf.Read(tempWarewulfConf.Name()))
-
-	assert.Equal(t, "192.168.200.1", conf.Ipaddr)
-	assert.Equal(t, "255.255.255.0", conf.Netmask)
-	assert.Equal(t, "192.168.200.0", conf.Network)
-
-	assert.Equal(t, 9873, conf.Warewulf.Port)
-	assert.False(t, conf.Warewulf.Secure())
-	assert.Equal(t, 60, conf.Warewulf.UpdateInterval)
-	assert.True(t, conf.Warewulf.AutobuildOverlays())
-	assert.True(t, conf.Warewulf.EnableHostOverlay())
-
-	assert.True(t, conf.DHCP.Enabled())
-	assert.Equal(t, "192.168.200.50", conf.DHCP.RangeStart)
-	assert.Equal(t, "192.168.200.99", conf.DHCP.RangeEnd)
-	assert.Equal(t, "dhcpd", conf.DHCP.SystemdName)
-
-	assert.True(t, conf.TFTP.Enabled())
-	assert.Equal(t, "tftp", conf.TFTP.SystemdName)
-
-	assert.True(t, conf.NFS.Enabled())
-	assert.Equal(t, "/home", conf.NFS.ExportsExtended[0].Path)
-	assert.Equal(t, "rw,sync", conf.NFS.ExportsExtended[0].ExportOptions)
-	assert.Equal(t, "/opt", conf.NFS.ExportsExtended[1].Path)
-	assert.Equal(t, "ro,sync,no_root_squash", conf.NFS.ExportsExtended[1].ExportOptions)
-	assert.Equal(t, "nfs-server", conf.NFS.SystemdName)
-
-	assert.Equal(t, "/etc/resolv.conf", conf.MountsImage[0].Source)
-	assert.Equal(t, "/etc/resolv.conf", conf.MountsImage[0].Dest)
-	assert.True(t, conf.MountsImage[0].ReadOnly())
+	assert.True(t, conf.InitializedFromFile())
+	assert.Equal(t, conf.GetWarewulfConf(), tempWarewulfConf.Name())
 }
 
 func TestCache(t *testing.T) {
@@ -153,4 +423,100 @@ func TestCache(t *testing.T) {
 
 	New()
 	assert.NotEqual(t, 9999, Get().Warewulf.Port)
+}
+
+func TestIpCIDR(t *testing.T) {
+	tests := map[string]struct {
+		ipaddr  string
+		netmask string
+		cidr    string
+	}{
+		"blank": {
+			ipaddr:  "",
+			netmask: "",
+			cidr:    "",
+		},
+		"ip only": {
+			ipaddr:  "192.168.0.1",
+			netmask: "",
+			cidr:    "",
+		},
+		"netmask only": {
+			ipaddr:  "",
+			netmask: "255.255.255.0",
+			cidr:    "",
+		},
+		"full": {
+			ipaddr:  "192.168.0.1",
+			netmask: "255.255.255.0",
+			cidr:    "192.168.0.1/24",
+		},
+		"invalid ip": {
+			ipaddr:  "asdf",
+			netmask: "255.255.255.0",
+			cidr:    "",
+		},
+		"invalid netmask": {
+			ipaddr:  "192.168.0.1",
+			netmask: "asdf",
+			cidr:    "",
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			conf := New()
+			conf.Ipaddr = tt.ipaddr
+			conf.Netmask = tt.netmask
+			assert.Equal(t, tt.cidr, conf.IpCIDR())
+		})
+	}
+}
+
+func TestNetworkCIDR(t *testing.T) {
+	tests := map[string]struct {
+		network string
+		netmask string
+		cidr    string
+	}{
+		"blank": {
+			network: "",
+			netmask: "",
+			cidr:    "",
+		},
+		"network only": {
+			network: "192.168.0.0",
+			netmask: "",
+			cidr:    "",
+		},
+		"netmask only": {
+			network: "",
+			netmask: "255.255.255.0",
+			cidr:    "",
+		},
+		"full": {
+			network: "192.168.0.0",
+			netmask: "255.255.255.0",
+			cidr:    "192.168.0.0/24",
+		},
+		"invalid network": {
+			network: "asdf",
+			netmask: "255.255.255.0",
+			cidr:    "",
+		},
+		"invalid netmask": {
+			network: "192.168.0.0",
+			netmask: "asdf",
+			cidr:    "",
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			conf := New()
+			conf.Network = tt.network
+			conf.Netmask = tt.netmask
+			assert.Equal(t, tt.cidr, conf.NetworkCIDR())
+		})
+	}
 }

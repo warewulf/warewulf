@@ -10,11 +10,8 @@ import (
 	"bytes"
 	"fmt"
 	"net"
-	"net/netip"
 	"os"
 	"reflect"
-
-	"github.com/pkg/errors"
 
 	"github.com/creasty/defaults"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -103,98 +100,55 @@ func (conf *WarewulfYaml) Parse(data []byte) error {
 		conf.TFTP.IpxeBinaries = defIpxe
 	}
 
-	// check whether ip addr is CIDR type and configure related fields as required
 	if ip, network, err := net.ParseCIDR(conf.Ipaddr); err == nil {
 		conf.Ipaddr = ip.String()
 		if conf.Network == "" {
 			conf.Network = network.IP.String()
 		}
 		if conf.Netmask == "" {
-			mask := network.Mask
-			conf.Netmask = fmt.Sprintf("%d.%d.%d.%d", mask[0], mask[1], mask[2], mask[3])
+			conf.Netmask = net.IP(network.Mask).String()
 		}
 	}
+
+	if conf.Ipaddr6 != "" {
+		if _, network, err := net.ParseCIDR(conf.Ipaddr6); err == nil {
+			if conf.Ipv6net == "" {
+				conf.Ipv6net = network.IP.String()
+			}
+		} else {
+			return fmt.Errorf("invalid ipv6 address: must use CIDR notation: %s", conf.Ipaddr6)
+		}
+	}
+
 	return nil
 }
 
-// SetDynamicDefaults populates [WarewulfYaml] with plausible defaults for
-// the runtime environment.
-func (conf *WarewulfYaml) SetDynamicDefaults() (err error) {
-	if conf.Ipaddr == "" || conf.Netmask == "" || conf.Network == "" {
-		var mask net.IPMask
-		var network *net.IPNet
-		var ip net.IP
-		cidr := conf.Ipaddr
-
-		if conf.Ipaddr == "" {
-			wwlog.Verbose("Configuration has no valid network, going to dynamic values")
-			conn, err := net.Dial("udp", "8.8.8.8:80")
-			if err == nil {
-				defer conn.Close()
-				ipaddr := conn.LocalAddr().(*net.UDPAddr).IP
-				mask = ipaddr.DefaultMask()
-				sz, _ := mask.Size()
-				cidr = ipaddr.String() + fmt.Sprintf("/%d", sz)
-			} else {
-				cidr = "192.168.1.1/24"
-			}
-		} else if addr, err := netip.ParseAddr(conf.Ipaddr); err == nil {
-			// if the ipaddr does not have mask appended, update it with default generated mask
-			ipaddr := net.IP(addr.AsSlice())
-			sz, _ := ipaddr.DefaultMask().Size()
-			cidr = fmt.Sprintf("%s/%d", conf.Ipaddr, sz)
-			// otherwise, the following code will handle the ipaddr format: invalid or xxx.xxx.xxx.xxx/xx
-		}
-
-		ip, network, err = net.ParseCIDR(cidr)
-		if err == nil {
-			mask = network.Mask
-		} else {
-			return fmt.Errorf("Couldn't parse IP address: %w", err)
-		}
-		if conf.Netmask == "" {
-			conf.Netmask = fmt.Sprintf("%d.%d.%d.%d", mask[0], mask[1], mask[2], mask[3])
-			wwlog.Verbose("Netmask address is not configured in warewulf.conf, using %s", conf.Netmask)
-		}
-		if conf.Network == "" {
-			conf.Network = network.IP.String()
-			wwlog.Verbose("Network is not configured in warewulf.conf, using %s", conf.Network)
-		}
-		// always update the ipaddr to valid ip
-		conf.Ipaddr = ip.String()
+func (config *WarewulfYaml) NetworkCIDR() string {
+	if config.Network == "" || config.Netmask == "" {
+		return ""
 	}
-	if conf.DHCP.RangeStart == "" && conf.DHCP.RangeEnd == "" {
-		start := net.ParseIP(conf.Network).To4()
-		start[3] += 1
-		if start.Equal(net.ParseIP(conf.Ipaddr)) {
-			start[3] += 1
-		}
-		conf.DHCP.RangeStart = start.String()
-		wwlog.Verbose("dhpd start is not configured in warewulf.conf, using %s", conf.DHCP.RangeStart)
-		sz, _ := net.IPMask(net.ParseIP(conf.Netmask).To4()).Size()
-		range_end := (1 << (32 - sz)) / 8
-		if range_end > 127 {
-			range_end = 127
-		}
-		end := net.ParseIP(conf.Network).To4()
-		end[3] += byte(range_end)
-		conf.DHCP.RangeEnd = end.String()
-		wwlog.Verbose("dhpd end is not configured in warewulf.conf, using %s", conf.DHCP.RangeEnd)
+	cidr := net.IPNet{
+		IP:   net.ParseIP(config.Network),
+		Mask: net.IPMask(net.ParseIP(config.Netmask)),
+	}
+	if cidr.IP == nil || cidr.Mask == nil {
+		return ""
+	}
+	return cidr.String()
+}
 
+func (config *WarewulfYaml) IpCIDR() string {
+	if config.Ipaddr == "" || config.Netmask == "" {
+		return ""
 	}
-	// check validity of ipv6 net
-	if conf.Ipaddr6 != "" {
-		_, ipv6net, err := net.ParseCIDR(conf.Ipaddr6)
-		if err != nil {
-			wwlog.Error("Invalid ipv6 address specified, mut be CIDR notation: %s", conf.Ipaddr6)
-			return errors.New("invalid ipv6 network")
-		}
-		if msize, _ := ipv6net.Mask.Size(); msize > 64 {
-			wwlog.Error("ipv6 mask size must be smaller than 64")
-			return errors.New("invalid ipv6 network size")
-		}
+	cidr := net.IPNet{
+		IP:   net.ParseIP(config.Ipaddr),
+		Mask: net.IPMask(net.ParseIP(config.Netmask)),
 	}
-	return
+	if cidr.IP == nil || cidr.Mask == nil {
+		return ""
+	}
+	return cidr.String()
 }
 
 // InitializedFromFile returns true if [WarewulfYaml] memory was read from
