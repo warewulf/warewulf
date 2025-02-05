@@ -95,6 +95,7 @@ test-cover: $(config)
 install: build docs
 	install -d -m 0755 $(DESTDIR)$(BINDIR)
 	install -d -m 0755 $(DESTDIR)$(WWCHROOTDIR)
+	install -d -m 0755 $(DESTDIR)$(WWOVERLAYDIR)
 	install -d -m 0755 $(DESTDIR)$(WWPROVISIONDIR)
 	install -d -m 0755 $(DESTDIR)$(DATADIR)/warewulf/overlays/wwinit/rootfs/$(WWCLIENTDIR)
 	install -d -m 0755 $(DESTDIR)$(DATADIR)/warewulf/overlays/wwclient/rootfs/$(WWCLIENTDIR)
