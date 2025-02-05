@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - `wwctl node list <--yaml|--json>` outputs a map keyed by node name. #1667
 - Don't mount /run during wwinit. #1566
+- Simpler permissions in official RPM packages. #1696
 
 ### Fixed
 

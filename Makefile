@@ -95,6 +95,7 @@ test-cover: $(config)
 install: build docs
 	install -d -m 0755 $(DESTDIR)$(BINDIR)
 	install -d -m 0755 $(DESTDIR)$(WWCHROOTDIR)
+	install -d -m 0755 $(DESTDIR)$(WWOVERLAYDIR)
 	install -d -m 0755 $(DESTDIR)$(WWPROVISIONDIR)
 	install -d -m 0755 $(DESTDIR)$(DATADIR)/warewulf/overlays/wwinit/rootfs/$(WWCLIENTDIR)
 	install -d -m 0755 $(DESTDIR)$(DATADIR)/warewulf/overlays/wwclient/rootfs/$(WWCLIENTDIR)
@@ -158,13 +159,14 @@ init:
 	restorecon -r $(WWTFTPDIR)
 
 .PHONY: dist
-dist:
-	rm -rf .dist/ $(WAREWULF)-$(VERSION).tar.gz
+dist: $(config)
+	rm -rf .dist/
 	mkdir -p .dist/$(WAREWULF)-$(VERSION)
-	rsync -a --exclude=".github"  --exclude=".vscode" --exclude "*~" --exclude $(WAREWULF)-*.tar.gz * .dist/$(WAREWULF)-$(VERSION)/
+	tar -c --files-from <(git ls-files) | tar -C .dist/$(WAREWULF)-$(VERSION) -x
+	cp -a vendor/ $(config) .dist/$(WAREWULF)-$(VERSION)
 	scripts/get-version.sh >.dist/$(WAREWULF)-$(VERSION)/VERSION
-	cd .dist; tar -czf ../$(WAREWULF)-$(VERSION).tar.gz $(WAREWULF)-$(VERSION)
-	rm -rf .dist
+	tar -C .dist -czf $(WAREWULF)-$(VERSION).tar.gz $(WAREWULF)-$(VERSION)
+	rm -rf .dist/
 
 .PHONY: reference
 reference: wwctl
