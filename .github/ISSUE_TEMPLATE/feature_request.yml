@@ -1,7 +1,6 @@
 name: "\U0001F38A Feature request"
 type: Feature
 description: Suggest adding a feature
-labels: [enhancement]
 body:
   - type: textarea
     id: summary
