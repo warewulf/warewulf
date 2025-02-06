@@ -36,18 +36,10 @@ func GetCommand() *cobra.Command {
 		Short: "Configure node profile properties",
 		Long: "This command sets configuration properties for the node PROFILE(s).\n\n" +
 			"Note: use the string 'UNSET' to remove a configuration",
-		Aliases: []string{"modify"},
-		Args:    cobra.MinimumNArgs(0),
-		RunE:    CobraRunE(&vars),
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			if len(args) != 0 {
-				return nil, cobra.ShellCompDirectiveNoFileComp
-			}
-
-			nodeDB, _ := node.New()
-			profiles := nodeDB.ListAllProfiles()
-			return profiles, cobra.ShellCompDirectiveNoFileComp
-		},
+		Aliases:           []string{"modify"},
+		Args:              cobra.MinimumNArgs(0),
+		RunE:              CobraRunE(&vars),
+		ValidArgsFunction: completions.Profiles,
 	}
 	vars.profileConf.CreateFlags(baseCmd)
 	vars.profileDel.CreateDelFlags(baseCmd)

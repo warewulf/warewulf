@@ -52,3 +52,11 @@ func Images(cmd *cobra.Command, args []string, toComplete string) ([]string, cob
 	sources, _ := image.ListSources()
 	return sources, cobra.ShellCompDirectiveNoFileComp
 }
+
+func Profiles(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if len(args) != 0 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+	registry, _ := node.New()
+	return registry.ListAllProfiles(), cobra.ShellCompDirectiveNoFileComp
+}
