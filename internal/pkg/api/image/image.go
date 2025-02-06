@@ -261,10 +261,6 @@ func ImageList() (imageInfo []*wwapiv1.ImageInfo, err error) {
 		if err == nil {
 			modTime = uint64(imageStat.ModTime().Unix())
 		}
-		size, err := util.DirSize(image.SourceDir(source))
-		if err != nil {
-			wwlog.Error("%s\n", err)
-		}
 		imgSize := 0
 		if imgF, err := os.Stat(image.ImageFile(source)); err == nil {
 			imgSize = int(imgF.Size())
@@ -279,7 +275,6 @@ func ImageList() (imageInfo []*wwapiv1.ImageInfo, err error) {
 			KernelVersion: kernelVersion,
 			CreateDate:    creationTime,
 			ModDate:       modTime,
-			Size:          uint64(size),
 			ImgSize:       uint64(imgSize),
 			ImgSizeComp:   uint64(imgCSize),
 		})

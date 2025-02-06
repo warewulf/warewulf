@@ -10,6 +10,7 @@ import (
 	apiimage "github.com/warewulf/warewulf/internal/pkg/api/image"
 	"github.com/warewulf/warewulf/internal/pkg/image"
 	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 var imageList = apiimage.ImageList
@@ -33,7 +34,12 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 						sz = util.ByteToString(int64(imageInfo[i].ImgSizeComp))
 					}
 					if vars.chroot {
-						sz = util.ByteToString(int64(imageInfo[i].Size))
+						size, err := util.DirSize(image.SourceDir(imageInfo[i].Name))
+						if err != nil {
+							wwlog.Error("%s", err)
+							size = int64(0)
+						}
+						sz = util.ByteToString(int64(size))
 					}
 					t.AddLine(
 						imageInfo[i].Name,
@@ -61,7 +67,12 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 						sz = util.ByteToString(int64(imageInfo[i].ImgSizeComp))
 					}
 					if vars.chroot {
-						sz = util.ByteToString(int64(imageInfo[i].Size))
+						size, err := util.DirSize(image.SourceDir(imageInfo[i].Name))
+						if err != nil {
+							wwlog.Error("%s", err)
+							size = int64(0)
+						}
+						sz = util.ByteToString(size)
 					}
 
 					t.AddLine(
