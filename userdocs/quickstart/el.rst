@@ -67,7 +67,6 @@ address of your cluster's private network interface.
      update interval: 60
      autobuild overlays: true
      host overlay: true
-     syslog: false
      datastore: /usr/share
      grubboot: false
    dhcp:

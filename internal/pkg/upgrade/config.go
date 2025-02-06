@@ -106,7 +106,9 @@ func (this *WarewulfConf) Upgrade() (upgraded *config.WarewulfConf) {
 	upgraded.UpdateInterval = this.UpdateInterval
 	upgraded.AutobuildOverlaysP = this.AutobuildOverlays
 	upgraded.EnableHostOverlayP = this.EnableHostOverlay
-	upgraded.SyslogP = this.Syslog
+	if this.Syslog != nil {
+		wwlog.Warn("syslog configuration ignored: all logs now go to stdout/stderr")
+	}
 	upgraded.GrubBootP = this.GrubBoot
 	return upgraded
 }

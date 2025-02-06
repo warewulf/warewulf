@@ -23,7 +23,6 @@ Warewulf (4.6.0):
      update interval: 60
      autobuild overlays: true
      host overlay: true
-     syslog: false
    dhcp:
      enabled: true
      range start: 10.0.1.1
@@ -110,9 +109,6 @@ explained as follows:
   ``host`` overlay is applied to the Warewulf server during
   configuration. (The host overlay is used to configure the dependent
   services.)
-
-* ``warewulf:syslog``: This determines whether Warewulf server logs go
-  to syslog.
 
 * ``nfs:export paths``: Warewulf can automatically set up these NFS
   exports.

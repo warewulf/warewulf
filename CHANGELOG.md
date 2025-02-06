@@ -34,6 +34,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix a warewulfd panic when no kernel fields are specified. #1689
 - Create site overlay directory. #1690
 
+### Removed
+
+- Remove `warewulf.conf:syslog`. #1606
+
 ## v4.6.0rc1, 2025-01-29
 
 ### Added

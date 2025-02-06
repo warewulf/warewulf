@@ -2,7 +2,6 @@ package warewulfd
 
 import (
 	"fmt"
-	"log/syslog"
 	"os"
 	"os/exec"
 	"strconv"
@@ -10,7 +9,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -53,22 +51,6 @@ func DaemonInitLogging() error {
 		}
 	} else {
 		wwlog.SetLogLevel(wwlog.INFO)
-	}
-
-	conf := warewulfconf.Get()
-
-	if conf.Warewulf.Syslog() {
-
-		wwlog.Debug("Changing log output to syslog")
-
-		logwriter, err := syslog.New(syslog.LOG_NOTICE, "warewulfd")
-		if err != nil {
-			return fmt.Errorf("Could not create syslog writer: %w", err)
-		}
-
-		wwlog.SetLogFormatter(wwlog.DefaultFormatter)
-		wwlog.SetLogWriter(logwriter)
-
 	}
 
 	loginit = true

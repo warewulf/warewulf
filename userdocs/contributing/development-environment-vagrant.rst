@@ -199,7 +199,6 @@ Vagrantfile
       update interval: 60
       autobuild overlays: true
       host overlay: true
-      syslog: false
     dhcp:
       enabled: true
       range start: 192.168.200.50

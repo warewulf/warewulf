@@ -83,7 +83,6 @@ data from other structures.
 - UpdateInterval: 60
 - AutobuildOverlays: true
 - EnableHostOverlay: true
-- Syslog: false
 
 ### Network
 
