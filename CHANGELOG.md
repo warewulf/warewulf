@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add OPTIONS argument for `warewulfd.service`. #1707
 - Document `warewulf.conf:dhcp.template`. #1701
 - New template field `IpCIDR`. #1700
+- `wwctl configure` persists auto-detected server network settings to `warewulf.conf`. #1700
 
 ### Changed
 

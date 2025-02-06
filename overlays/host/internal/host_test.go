@@ -86,7 +86,7 @@ func Test_hostOverlay(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.conf != "" {
 				env.ImportFile("etc/warewulf/warewulf.conf", tt.conf)
-				assert.NoError(t, config.Get().Read(env.GetPath("etc/warewulf/warewulf.conf")))
+				assert.NoError(t, config.Get().Read(env.GetPath("etc/warewulf/warewulf.conf"), false))
 			}
 			cmd := show.GetCommand()
 			cmd.SetArgs(tt.args)

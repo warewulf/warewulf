@@ -15,7 +15,7 @@ func Test_localtimeOverlay(t *testing.T) {
 	env := testenv.New(t)
 	defer env.RemoveAll()
 	env.ImportFile("etc/warewulf/nodes.conf", "nodes.conf")
-	assert.NoError(t, config.Get().Read(env.GetPath("etc/warewulf/warewulf.conf")))
+	assert.NoError(t, config.Get().Read(env.GetPath("etc/warewulf/warewulf.conf"), false))
 	env.ImportFile("var/lib/warewulf/overlays/localtime/rootfs/etc/localtime.ww", "../rootfs/etc/localtime.ww")
 
 	tests := []struct {

@@ -385,7 +385,7 @@ tftp:
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			conf := New()
-			err := conf.Parse([]byte(tt.input))
+			err := conf.Parse([]byte(tt.input), false)
 			assert.NoError(t, err)
 			result, err := conf.Dump()
 			assert.NoError(t, err)
@@ -405,7 +405,7 @@ func TestInitializedFromFile(t *testing.T) {
 
 	conf := New()
 	assert.False(t, conf.InitializedFromFile())
-	assert.NoError(t, conf.Read(tempWarewulfConf.Name()))
+	assert.NoError(t, conf.Read(tempWarewulfConf.Name(), false))
 	assert.True(t, conf.InitializedFromFile())
 	assert.Equal(t, conf.GetWarewulfConf(), tempWarewulfConf.Name())
 }

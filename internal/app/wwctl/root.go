@@ -87,7 +87,7 @@ func rootPersistentPreRunE(cmd *cobra.Command, args []string) (err error) {
 
 	conf := warewulfconf.Get()
 	if !AllowEmptyConf && !conf.InitializedFromFile() {
-		if err = conf.Read(warewulfconf.ConfigFile); err != nil {
+		if err = conf.Read(warewulfconf.ConfigFile, true); err != nil {
 			wwlog.Error("error reading config file: %s", err)
 			return
 		}

@@ -41,6 +41,7 @@ type WarewulfYaml struct {
 	WWClient    *WWClientConf `yaml:"wwclient,omitempty"`
 
 	warewulfconf string
+	autodetected bool
 }
 
 // New caches and returns a new [WarewulfYaml] initialized with empty
@@ -73,12 +74,12 @@ func Get() *WarewulfYaml {
 
 // Read populates [WarewulfYaml] with the values from a configuration
 // file.
-func (conf *WarewulfYaml) Read(confFileName string) error {
+func (conf *WarewulfYaml) Read(confFileName string, autodetect bool) error {
 	wwlog.Debug("Reading warewulf.conf from: %s", confFileName)
 	conf.warewulfconf = confFileName
 	if data, err := os.ReadFile(confFileName); err != nil {
 		return err
-	} else if err := conf.Parse(data); err != nil {
+	} else if err := conf.Parse(data, autodetect); err != nil {
 		return err
 	} else {
 		return nil
@@ -86,7 +87,7 @@ func (conf *WarewulfYaml) Read(confFileName string) error {
 }
 
 // Parse populates [WarewulfYaml] with the values from a yaml document.
-func (conf *WarewulfYaml) Parse(data []byte) error {
+func (conf *WarewulfYaml) Parse(data []byte, autodetect bool) error {
 	// ipxe binaries are merged not overwritten, store defaults separate
 	defIpxe := make(map[string]string)
 	for k, v := range conf.TFTP.IpxeBinaries {
@@ -107,6 +108,33 @@ func (conf *WarewulfYaml) Parse(data []byte) error {
 		}
 		if conf.Netmask == "" {
 			conf.Netmask = net.IP(network.Mask).String()
+		}
+	}
+
+	if autodetect {
+		if conf.Ipaddr == "" {
+			if ip := GetOutboundIP(); ip != nil {
+				conf.Ipaddr = ip.String()
+				conf.autodetected = true
+			}
+		}
+
+		if conf.Netmask == "" {
+			if ip := net.ParseIP(conf.Ipaddr); ip != nil {
+				if network, err := GetIPNetForIP(ip); err == nil {
+					conf.Netmask = net.IP(network.Mask).String()
+					conf.autodetected = true
+				}
+			}
+		}
+
+		if conf.Network == "" {
+			if ip := net.ParseIP(conf.Ipaddr); ip != nil {
+				if mask := net.IPMask(net.ParseIP(conf.Netmask)); mask != nil {
+					conf.Network = ip.Mask(mask).String()
+					conf.autodetected = true
+				}
+			}
 		}
 	}
 
@@ -159,6 +187,10 @@ func (conf *WarewulfYaml) InitializedFromFile() bool {
 
 func (conf *WarewulfYaml) GetWarewulfConf() string {
 	return conf.warewulfconf
+}
+
+func (conf *WarewulfYaml) Autodetected() bool {
+	return conf.autodetected
 }
 
 func (config *WarewulfYaml) Dump() ([]byte, error) {

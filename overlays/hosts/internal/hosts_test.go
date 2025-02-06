@@ -19,7 +19,7 @@ func Test_hostsOverlay(t *testing.T) {
 	env := testenv.New(t)
 	defer env.RemoveAll()
 	env.ImportFile("etc/warewulf/warewulf.conf", "warewulf.conf")
-	assert.NoError(t, config.Get().Read(env.GetPath("etc/warewulf/warewulf.conf")))
+	assert.NoError(t, config.Get().Read(env.GetPath("etc/warewulf/warewulf.conf"), false))
 	env.ImportFile("etc/warewulf/nodes.conf", "nodes.conf")
 	env.ImportFile("var/lib/warewulf/overlays/hosts/rootfs/etc/hosts.ww", "../rootfs/etc/hosts.ww")
 
