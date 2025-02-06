@@ -51,11 +51,13 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			wwlog.Debug("Create dir: %s", parent)
 			srcInfo, err := os.Stat(source)
 			if err != nil {
-				return fmt.Errorf("could not retrieve the stat for file: %s", err)
+				return fmt.Errorf("could not retrieve the stat for file: %w", err)
 			}
-			err = os.MkdirAll(parent, srcInfo.Mode())
+			mode := srcInfo.Mode()
+			mode |= ((mode & 0444) >> 2) // add execute permission wherever srcInfo has read
+			err = os.MkdirAll(parent, mode)
 			if err != nil {
-				return fmt.Errorf("could not create parent dif: %s: %v", parent, err)
+				return fmt.Errorf("could not create parent dir: %s: %w", parent, err)
 			}
 		}
 	}
