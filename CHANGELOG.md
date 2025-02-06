@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Don't mount /run during wwinit. #1566
 - Simpler permissions in official RPM packages. #1696
 - Create temporary files in overlay directory during `wwctl overlay edit`. #1473
+- Re-order SSH key types to make ed25519 default. #981
 
 ### Fixed
 

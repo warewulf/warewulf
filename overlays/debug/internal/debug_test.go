@@ -109,11 +109,11 @@ data from other structures.
 
 ### SSH
 - Key types:
+  - ed25519
+  - ecdsa
   - rsa
   - dsa
-  - ecdsa
-  - ed25519
-- First key type: rsa
+- First key type: ed25519
 
 ## Node
 

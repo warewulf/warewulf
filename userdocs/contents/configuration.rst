@@ -46,10 +46,10 @@ Warewulf (4.6.0):
        readonly: true
    ssh:
      key types:
+       - ed25519
+       - ecdsa
        - rsa
        - dsa
-       - ecdsa
-       - ed25519
    wwclient:
      port: 0
 
@@ -165,10 +165,10 @@ SSH key types to generate during ``wwctl configure ssh`` may be overridden using
 
    ssh:
      key types:
+       - ed25519
+       - ecdsa
        - rsa
        - dsa
-       - ecdsa
-       - ed25519
 
 Warewulf will generate host keys for each listed key type.
 The first listed key type is used to generate authentication ssh keys.

@@ -6,6 +6,7 @@ import (
 	"path"
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -18,6 +19,15 @@ func SSH(keyTypes ...string) error {
 	if os.Getuid() == 0 {
 		fmt.Printf("Updating system keys\n")
 		conf := warewulfconf.Get()
+
+		if conf.Warewulf.EnableHostOverlay() {
+			if err := overlay.BuildHostOverlay(); err != nil {
+				wwlog.Warn("host overlay could not be built: %s", err)
+			}
+		} else {
+			wwlog.Info("host overlays are disabled")
+		}
+
 		wwkeydir := path.Join(conf.Paths.Sysconfdir, "warewulf/keys") + "/"
 
 		err := os.MkdirAll(path.Join(conf.Paths.Sysconfdir, "warewulf/keys"), 0755)
