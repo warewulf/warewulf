@@ -2,7 +2,7 @@ package delete
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 )
 
 var (
@@ -14,13 +14,7 @@ var (
 		Aliases:               []string{"remove", "rm", "del"},
 		RunE:                  CobraRunE,
 		Args:                  cobra.MinimumNArgs(1),
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			if len(args) != 0 {
-				return nil, cobra.ShellCompDirectiveNoFileComp
-			}
-			nodeDB, _ := node.New()
-			return nodeDB.ListAllProfiles(), cobra.ShellCompDirectiveNoFileComp
-		},
+		ValidArgsFunction:     completions.Profiles,
 	}
 	SetYes bool
 )
