@@ -1,6 +1,23 @@
 Troubleshooting
 ===============
 
+warewulfd
+---------
+
+The Warewulf server (``warewulfd``) sends logs to the systemd journal.
+
+.. code-block::
+
+   journalctl -u warewulfd.service
+
+To increase the verbosity of the log, specify either ``--verbose`` or
+``--debug`` in the warewulfd OPTIONS.
+
+.. code-block::
+
+   echo "OPTIONS=--debug" >>/etc/default/warewulfd
+   systemctl restart warewulfd.service
+
 iPXE
 ----
 

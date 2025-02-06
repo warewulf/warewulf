@@ -9,7 +9,7 @@ Type=exec
 EnvironmentFile=-/etc/default/warewulfd
 User=root
 Group=root
-ExecStart=@BINDIR@/wwctl server
+ExecStart=@BINDIR@/wwctl server $OPTIONS
 ExecReload=/bin/kill -HUP "$MAINPID"
 Restart=always
 
