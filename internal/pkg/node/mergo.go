@@ -71,7 +71,7 @@ type Transformer struct{}
 func (t Transformer) Transformer(typ reflect.Type) func(dst, src reflect.Value) error {
 	if typ == reflect.TypeOf(net.IP{}) {
 		return func(dst, src reflect.Value) error {
-			if !src.IsValid() || !src.CanSet() {
+			if !src.IsValid() || src.IsZero() {
 				return nil
 			}
 			dst.Set(src)

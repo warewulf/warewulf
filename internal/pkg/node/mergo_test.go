@@ -935,11 +935,14 @@ nodeprofiles:
 nodes:
   n1:
     profiles:
-    - p1`,
-			node:   "n1",
-			field:  "NetDevs[default].Netmask",
-			source: "p1",
-			value:  "255.255.255.0",
+    - p1
+    network devices:
+      default:
+        ipaddr: 192.168.1.1`,
+			nodes:   []string{"n1", "n1"},
+			fields:  []string{"NetDevs[default].Netmask", "NetDevs[default].Ipaddr"},
+			sources: []string{"p1", ""},
+			values:  []string{"255.255.255.0", "192.168.1.1"},
 		},
 	}
 
