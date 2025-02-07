@@ -146,7 +146,7 @@ func BuildSpecificOverlays(nodes []node.Node, allNodes []node.Node, overlayNames
 	var wg sync.WaitGroup
 	worker := func() {
 		for n := range nodeChan {
-			wwlog.Info("Building overlay for %s: %v", n, overlayNames)
+			wwlog.Info("Building overlay for %s: %v", n.Id(), overlayNames)
 			for _, overlayName := range overlayNames {
 				err := BuildOverlay(n, allNodes, "", []string{overlayName})
 				if err != nil {

@@ -10,11 +10,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Document defining kernel args that include commas. #1679
 - Recommend installing ipmitool with Warewulf package. #970
+- Add completion for profile list. #1695
 
 ### Changed
 
 - `wwctl node list <--yaml|--json>` outputs a map keyed by node name. #1667
 - Don't mount /run during wwinit. #1566
+- Simpler permissions in official RPM packages. #1696
+- Create temporary files in overlay directory during `wwctl overlay edit`. #1473
 
 ### Fixed
 
@@ -32,6 +35,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix a warewulfd panic when no kernel fields are specified. #1689
 - Create site overlay directory. #1690
 - Urlencode asset keys during dracut boot. #1610
+- Set execute permissions for intermediate directories during `wwctl overlay import --parents`. #1655
+- Fix log output formatting during overlay build.
+- Prevent merging of zero-value net.IP fields. #1710
 
 ## v4.6.0rc1, 2025-01-29
 
