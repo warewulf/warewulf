@@ -6,7 +6,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"io"
 	"io/fs"
 	"net"
@@ -18,6 +17,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"gopkg.in/yaml.v3"
 
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
