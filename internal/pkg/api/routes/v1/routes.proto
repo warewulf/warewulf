@@ -62,7 +62,7 @@ message ImageInfo {
 	string kernelVersion = 3;
 	uint64 createDate = 4; // creation date in unix time
 	uint64 modDate = 5; // date of last modification in unix time
-	uint64 size = 6; // size of chroot and images in bytes
+	// uint64 size = 6; // size of chroot and images in bytes
 	uint64 imgSize = 7;
 	uint64 imgSizeComp = 8;
 }

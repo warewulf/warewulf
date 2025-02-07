@@ -45,7 +45,6 @@ nodes:
 						KernelVersion: "kernel",
 						CreateDate:    uint64(time.Unix(0, 0).Unix()),
 						ModDate:       uint64(time.Unix(0, 0).Unix()),
-						Size:          uint64(1),
 					})
 					return
 				}
