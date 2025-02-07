@@ -32,20 +32,6 @@ dhcp:
 image mounts:
 - dest: /etc/resolv.conf
   source: /etc/resolv.conf
-paths:
-  bindir: /usr/local/bin
-  cachedir: /var/local/cache
-  datadir: /usr/local/share
-  firewallddir: /usr/lib/firewalld/services
-  ipxesource: /usr/local/share/ipxe
-  localstatedir: /var/local
-  srvdir: /srv
-  sysconfdir: /usr/local/etc
-  systemddir: /usr/lib/systemd/system
-  wwchrootdir: /var/local/warewulf/chroots
-  wwclientdir: /warewulf
-  wwoverlaydir: /var/local/warewulf/overlays
-  wwprovisiondir: /var/local/warewulf/provision
 ssh:
   key types:
   - ed25519
@@ -60,7 +46,6 @@ tftp:
     "00:09": ipxe-snponly-x86_64.efi
     "00:0B": arm64-efi/snponly.efi
   systemd name: tftp
-  tftproot: /var/lib/tftpboot
 `,
 		},
 		"cidr": {
@@ -88,20 +73,6 @@ dhcp:
 image mounts:
 - dest: /etc/resolv.conf
   source: /etc/resolv.conf
-paths:
-  bindir: /usr/local/bin
-  cachedir: /var/local/cache
-  datadir: /usr/local/share
-  firewallddir: /usr/lib/firewalld/services
-  ipxesource: /usr/local/share/ipxe
-  localstatedir: /var/local
-  srvdir: /srv
-  sysconfdir: /usr/local/etc
-  systemddir: /usr/lib/systemd/system
-  wwchrootdir: /var/local/warewulf/chroots
-  wwclientdir: /warewulf
-  wwoverlaydir: /var/local/warewulf/overlays
-  wwprovisiondir: /var/local/warewulf/provision
 ssh:
   key types:
   - ed25519
@@ -116,7 +87,6 @@ tftp:
     "00:09": ipxe-snponly-x86_64.efi
     "00:0B": arm64-efi/snponly.efi
   systemd name: tftp
-  tftproot: /var/lib/tftpboot
 `,
 		},
 		"cidr with conflicts": {
@@ -146,20 +116,6 @@ dhcp:
 image mounts:
 - dest: /etc/resolv.conf
   source: /etc/resolv.conf
-paths:
-  bindir: /usr/local/bin
-  cachedir: /var/local/cache
-  datadir: /usr/local/share
-  firewallddir: /usr/lib/firewalld/services
-  ipxesource: /usr/local/share/ipxe
-  localstatedir: /var/local
-  srvdir: /srv
-  sysconfdir: /usr/local/etc
-  systemddir: /usr/lib/systemd/system
-  wwchrootdir: /var/local/warewulf/chroots
-  wwclientdir: /warewulf
-  wwoverlaydir: /var/local/warewulf/overlays
-  wwprovisiondir: /var/local/warewulf/provision
 ssh:
   key types:
   - ed25519
@@ -174,7 +130,6 @@ tftp:
     "00:09": ipxe-snponly-x86_64.efi
     "00:0B": arm64-efi/snponly.efi
   systemd name: tftp
-  tftproot: /var/lib/tftpboot
 `,
 		},
 		"ipv6 cidr": {
@@ -201,20 +156,6 @@ dhcp:
 image mounts:
 - dest: /etc/resolv.conf
   source: /etc/resolv.conf
-paths:
-  bindir: /usr/local/bin
-  cachedir: /var/local/cache
-  datadir: /usr/local/share
-  firewallddir: /usr/lib/firewalld/services
-  ipxesource: /usr/local/share/ipxe
-  localstatedir: /var/local
-  srvdir: /srv
-  sysconfdir: /usr/local/etc
-  systemddir: /usr/lib/systemd/system
-  wwchrootdir: /var/local/warewulf/chroots
-  wwclientdir: /warewulf
-  wwoverlaydir: /var/local/warewulf/overlays
-  wwprovisiondir: /var/local/warewulf/provision
 ssh:
   key types:
   - ed25519
@@ -229,7 +170,6 @@ tftp:
     "00:09": ipxe-snponly-x86_64.efi
     "00:0B": arm64-efi/snponly.efi
   systemd name: tftp
-  tftproot: /var/lib/tftpboot
 `,
 		},
 		"ipv6 cidr conflict": {
@@ -257,20 +197,6 @@ dhcp:
 image mounts:
 - dest: /etc/resolv.conf
   source: /etc/resolv.conf
-paths:
-  bindir: /usr/local/bin
-  cachedir: /var/local/cache
-  datadir: /usr/local/share
-  firewallddir: /usr/lib/firewalld/services
-  ipxesource: /usr/local/share/ipxe
-  localstatedir: /var/local
-  srvdir: /srv
-  sysconfdir: /usr/local/etc
-  systemddir: /usr/lib/systemd/system
-  wwchrootdir: /var/local/warewulf/chroots
-  wwclientdir: /warewulf
-  wwoverlaydir: /var/local/warewulf/overlays
-  wwprovisiondir: /var/local/warewulf/provision
 ssh:
   key types:
   - ed25519
@@ -285,7 +211,6 @@ tftp:
     "00:09": ipxe-snponly-x86_64.efi
     "00:0B": arm64-efi/snponly.efi
   systemd name: tftp
-  tftproot: /var/lib/tftpboot
 `,
 		},
 		"example": {
@@ -349,20 +274,6 @@ image mounts:
 - dest: /etc/resolv.conf
   readonly: true
   source: /etc/resolv.conf
-paths:
-  bindir: /usr/local/bin
-  cachedir: /var/local/cache
-  datadir: /usr/local/share
-  firewallddir: /usr/lib/firewalld/services
-  ipxesource: /usr/local/share/ipxe
-  localstatedir: /var/local
-  srvdir: /srv
-  sysconfdir: /usr/local/etc
-  systemddir: /usr/lib/systemd/system
-  wwchrootdir: /var/local/warewulf/chroots
-  wwclientdir: /warewulf
-  wwoverlaydir: /var/local/warewulf/overlays
-  wwprovisiondir: /var/local/warewulf/provision
 ssh:
   key types:
   - ed25519
@@ -377,7 +288,6 @@ tftp:
     "00:09": ipxe-snponly-x86_64.efi
     "00:0B": arm64-efi/snponly.efi
   systemd name: tftp
-  tftproot: /var/lib/tftpboot
 `,
 		},
 	}
@@ -387,11 +297,19 @@ tftp:
 			conf := New()
 			err := conf.Parse([]byte(tt.input), false)
 			assert.NoError(t, err)
+			removePaths(conf)
 			result, err := conf.Dump()
 			assert.NoError(t, err)
 			assert.YAMLEq(t, tt.result, string(result))
 		})
 	}
+}
+
+// These paths are subject to change based on the environment the test is being
+// run in.
+func removePaths(conf *WarewulfYaml) {
+	conf.Paths = nil
+	conf.TFTP.TftpRoot = ""
 }
 
 func TestInitializedFromFile(t *testing.T) {
