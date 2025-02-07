@@ -55,6 +55,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Properly handle parsing of server network and netmask from CIDR `warewulf.conf:ipaddr`. #1541, #1594
 - Populate template field `NetworkCIDR`. #1700
 
+### Dependencies
+
+- Bump github.com/coreos/ignition/v2 from 2.19.0 to 2.20.0. #1583
+
 ## v4.6.0rc1, 2025-01-29
 
 ### Added
