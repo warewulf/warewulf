@@ -5,7 +5,7 @@ GO_TOOLS_BIN := $(addprefix $(TOOLS_BIN)/, $(notdir $(GO_TOOLS)))
 GO_TOOLS_VENDOR := $(addprefix vendor/, $(GO_TOOLS))
 
 GOLANGCI_LINT := $(TOOLS_BIN)/golangci-lint
-GOLANGCI_LINT_VERSION := v1.60.1
+GOLANGCI_LINT_VERSION := v1.63.4
 
 GOLANG_DEADCODE := $(TOOLS_BIN)/deadcode
 
