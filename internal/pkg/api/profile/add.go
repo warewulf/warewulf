@@ -19,7 +19,7 @@ func ProfileAdd(nsp *wwapiv1.NodeAddParameter) error {
 	}
 	nodeDB, err := node.New()
 	if err != nil {
-		return fmt.Errorf("Could not open database: %w", err)
+		return fmt.Errorf("could not open database: %w", err)
 	}
 	for _, p := range nsp.NodeNames {
 		if util.InSlice(nodeDB.ListAllProfiles(), p) {

@@ -28,7 +28,7 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
       - name: Check Warewulf code with golang linter (golang ${{ matrix.go-version }})
-        run: make lint
+        run: make lint staticcheck
 
   vet:
     runs-on: ubuntu-latest

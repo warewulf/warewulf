@@ -13,8 +13,8 @@ type NFSConf struct {
 	SystemdName     string           `yaml:"systemd name,omitempty" default:"nfsd"`
 }
 
-func (this NFSConf) Enabled() bool {
-	return BoolP(this.EnabledP)
+func (conf NFSConf) Enabled() bool {
+	return BoolP(conf.EnabledP)
 }
 
 // An NFSExportConf reprents a single NFS export / mount.

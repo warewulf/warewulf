@@ -186,46 +186,46 @@ type copyFile struct {
 	modTime  time.Time
 }
 
-func (this *copyFile) imageDest(imageName string) string {
-	return path.Join(image.RootFsDir(imageName), this.fileName)
+func (cf *copyFile) imageDest(imageName string) string {
+	return path.Join(image.RootFsDir(imageName), cf.fileName)
 }
 
-func (this *copyFile) copyToImage(imageName string) error {
-	imageDest := this.imageDest(imageName)
+func (cf *copyFile) copyToImage(imageName string) error {
+	imageDest := cf.imageDest(imageName)
 	if _, err := os.Stat(path.Dir(imageDest)); err != nil {
 		return err
 	} else if _, err := os.Stat(imageDest); err == nil {
 		return err
-	} else if _, err := os.Stat(this.src); err != nil {
+	} else if _, err := os.Stat(cf.src); err != nil {
 		return err
-	} else if err := util.CopyFile(this.src, imageDest); err != nil {
+	} else if err := util.CopyFile(cf.src, imageDest); err != nil {
 		return err
 	} else if stat, err := os.Stat(imageDest); err != nil {
 		return err
 	} else {
-		this.modTime = stat.ModTime()
+		cf.modTime = stat.ModTime()
 		return nil
 	}
 }
 
-func (this *copyFile) shouldRemoveFromImage(imageName string) bool {
-	imageDest := this.imageDest(imageName)
-	if this.modTime.IsZero() {
-		wwlog.Debug("file was not previously copied: %s", this.fileName)
+func (cf *copyFile) shouldRemoveFromImage(imageName string) bool {
+	imageDest := cf.imageDest(imageName)
+	if cf.modTime.IsZero() {
+		wwlog.Debug("file was not previously copied: %s", cf.fileName)
 		return false
 	} else if destStat, err := os.Stat(imageDest); err != nil {
-		wwlog.Verbose("file is no longer present: %s (%s)", this.fileName, err)
+		wwlog.Verbose("file is no longer present: %s (%s)", cf.fileName, err)
 		return false
-	} else if destStat.ModTime() == this.modTime {
-		wwlog.Verbose("don't remove modified file:", this.fileName)
+	} else if destStat.ModTime() == cf.modTime {
+		wwlog.Verbose("don't remove modified file:", cf.fileName)
 		return false
 	} else {
 		return true
 	}
 }
 
-func (this *copyFile) removeFromImage(imageName string) error {
-	imageDest := this.imageDest(imageName)
+func (cf *copyFile) removeFromImage(imageName string) error {
+	imageDest := cf.imageDest(imageName)
 	return os.Remove(imageDest)
 }
 

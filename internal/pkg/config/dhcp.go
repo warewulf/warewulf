@@ -10,6 +10,6 @@ type DHCPConf struct {
 	SystemdName string `yaml:"systemd name,omitempty" default:"dhcpd"`
 }
 
-func (this DHCPConf) Enabled() bool {
-	return BoolP(this.EnabledP)
+func (conf DHCPConf) Enabled() bool {
+	return BoolP(conf.EnabledP)
 }

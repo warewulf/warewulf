@@ -34,7 +34,7 @@ func Build(name string, buildForce bool) error {
 		var err error
 		ignore, err = util.ReadFile(excludes_file)
 		if err != nil {
-			return fmt.Errorf("Failed creating directory: %s: %w", imagePath, err)
+			return fmt.Errorf("failed creating directory: %s: %w", imagePath, err)
 		}
 	}
 

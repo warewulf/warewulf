@@ -28,8 +28,8 @@ type Initramfs struct {
 	imageName string
 }
 
-func (this *Initramfs) version() *version.Version {
-	matches := versionPattern.FindAllString(this.Path, -1)
+func (initrd *Initramfs) version() *version.Version {
+	matches := versionPattern.FindAllString(initrd.Path, -1)
 	for i := len(matches) - 1; i >= 0; i-- {
 		if version_, err := version.NewVersion(strings.TrimSuffix(matches[i], ".")); err == nil {
 			return version_
@@ -38,8 +38,8 @@ func (this *Initramfs) version() *version.Version {
 	return nil
 }
 
-func (this *Initramfs) Version() string {
-	version := this.version()
+func (initrd *Initramfs) Version() string {
+	version := initrd.version()
 	if version == nil {
 		return ""
 	} else {
@@ -47,9 +47,9 @@ func (this *Initramfs) Version() string {
 	}
 }
 
-func (this *Initramfs) FullPath() string {
-	root := RootFsDir(this.imageName)
-	return filepath.Join(root, this.Path)
+func (initrd *Initramfs) FullPath() string {
+	root := RootFsDir(initrd.imageName)
+	return filepath.Join(root, initrd.Path)
 }
 
 func FindInitramfsFromPattern(imageName string, version string, pattern string) (initramfs *Initramfs) {
