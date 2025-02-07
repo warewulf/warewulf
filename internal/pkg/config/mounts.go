@@ -10,10 +10,10 @@ type MountEntry struct {
 	CopyP     *bool  `yaml:"copy,omitempty"`    // temporarily copy the file into the image
 }
 
-func (this MountEntry) ReadOnly() bool {
-	return BoolP(this.ReadOnlyP)
+func (mount MountEntry) ReadOnly() bool {
+	return BoolP(mount.ReadOnlyP)
 }
 
-func (this MountEntry) Copy() bool {
-	return BoolP(this.CopyP)
+func (mount MountEntry) Copy() bool {
+	return BoolP(mount.CopyP)
 }

@@ -126,12 +126,12 @@ func FindAllKernels() (kernels collection) {
 	return kernels
 }
 
-func (this *Kernel) version() *version.Version {
-	return util.ParseVersion(this.Path)
+func (kernel *Kernel) version() *version.Version {
+	return util.ParseVersion(kernel.Path)
 }
 
-func (this *Kernel) Version() string {
-	version := this.version()
+func (kernel *Kernel) Version() string {
+	version := kernel.version()
 	if version == nil {
 		return ""
 	} else {
@@ -139,15 +139,15 @@ func (this *Kernel) Version() string {
 	}
 }
 
-func (this *Kernel) IsDebug() bool {
-	return strings.Contains(this.Path, "+debug")
+func (kernel *Kernel) IsDebug() bool {
+	return strings.Contains(kernel.Path, "+debug")
 }
 
-func (this *Kernel) IsRescue() bool {
-	return strings.Contains(this.Path, "-rescue")
+func (kernel *Kernel) IsRescue() bool {
+	return strings.Contains(kernel.Path, "-rescue")
 }
 
-func (this *Kernel) FullPath() string {
-	root := image.RootFsDir(this.ImageName)
-	return filepath.Join(root, this.Path)
+func (kernel *Kernel) FullPath() string {
+	root := image.RootFsDir(kernel.ImageName)
+	return filepath.Join(root, kernel.Path)
 }

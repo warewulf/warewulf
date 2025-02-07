@@ -24,7 +24,7 @@ func ImageCopy(cbp *wwapiv1.ImageCopyParameter) (err error) {
 	}
 
 	if !image.DoesSourceExist(cbp.ImageSource) {
-		return fmt.Errorf("image %s does not exists.", cbp.ImageSource)
+		return fmt.Errorf("image %s does not exist", cbp.ImageSource)
 	}
 
 	if !image.ValidName(cbp.ImageDestination) {
@@ -32,7 +32,7 @@ func ImageCopy(cbp *wwapiv1.ImageCopyParameter) (err error) {
 	}
 
 	if image.DoesSourceExist(cbp.ImageDestination) {
-		return fmt.Errorf("An other image with the name %s already exists", cbp.ImageDestination)
+		return fmt.Errorf("an other image with the name %s already exists", cbp.ImageDestination)
 	}
 
 	err = image.Duplicate(cbp.ImageSource, cbp.ImageDestination)
@@ -47,12 +47,12 @@ func ImageCopy(cbp *wwapiv1.ImageCopyParameter) (err error) {
 		}
 	}
 
-	return fmt.Errorf("Image %s has been succesfully duplicated as %s", cbp.ImageSource, cbp.ImageDestination)
+	return fmt.Errorf("image %s has been succesfully duplicated as %s", cbp.ImageSource, cbp.ImageDestination)
 }
 
 func ImageBuild(cbp *wwapiv1.ImageBuildParameter) (err error) {
 	if cbp == nil {
-		return fmt.Errorf("ImageBuildParameter is nil")
+		return fmt.Errorf("input parameter is nil")
 	}
 
 	var images []string
@@ -69,7 +69,7 @@ func ImageBuild(cbp *wwapiv1.ImageBuildParameter) (err error) {
 
 	for _, c := range images {
 		if !image.ValidSource(c) {
-			return fmt.Errorf("Image name does not exist: %s", c)
+			return fmt.Errorf("image name does not exist: %s", c)
 		}
 
 		err = image.Build(c, cbp.Force)
@@ -82,7 +82,7 @@ func ImageBuild(cbp *wwapiv1.ImageBuildParameter) (err error) {
 
 func ImageDelete(cdp *wwapiv1.ImageDeleteParameter) (err error) {
 	if cdp == nil {
-		return fmt.Errorf("ImageDeleteParameter is nil")
+		return fmt.Errorf("input parameter is nil")
 	}
 
 	nodeDB, err := node.New()
@@ -101,22 +101,22 @@ ARG_LOOP:
 		imageName := cdp.ImageNames[i]
 		for _, n := range nodes {
 			if n.ImageName == imageName {
-				wwlog.Error("Image is configured for nodes, skipping: %s", imageName)
+				wwlog.Error("image is configured for nodes, skipping: %s", imageName)
 				continue ARG_LOOP
 			}
 		}
 
 		if !image.ValidSource(imageName) {
-			wwlog.Error("Image name is not a valid source: %s", imageName)
+			wwlog.Error("image name is not a valid source: %s", imageName)
 			continue
 		}
 		err := image.DeleteSource(imageName)
 		if err != nil {
-			wwlog.Error("Could not remove source: %s", imageName)
+			wwlog.Error("could not remove source: %s", imageName)
 		}
 		err = image.DeleteImage(imageName)
 		if err != nil {
-			wwlog.Error("Could not remove image files %s", imageName)
+			wwlog.Error("could not remove image files %s", imageName)
 		}
 
 		fmt.Printf("Image has been deleted: %s\n", imageName)
@@ -127,7 +127,7 @@ ARG_LOOP:
 
 func ImageImport(cip *wwapiv1.ImageImportParameter) (imageName string, err error) {
 	if cip == nil {
-		err = fmt.Errorf("NodeAddParameter is nil")
+		err = fmt.Errorf("input parameter is nil")
 		return
 	}
 
@@ -137,7 +137,7 @@ func ImageImport(cip *wwapiv1.ImageImportParameter) (imageName string, err error
 		cip.Name = name
 	}
 	if !image.ValidName(cip.Name) {
-		err = fmt.Errorf("Image name contains illegal characters: %s", cip.Name)
+		err = fmt.Errorf("image name contains illegal characters: %s", cip.Name)
 		return
 	}
 
@@ -155,7 +155,7 @@ func ImageImport(cip *wwapiv1.ImageImportParameter) (imageName string, err error
 
 	if util.IsDir(fullPath) {
 		if !cip.Update {
-			err = fmt.Errorf("Image name exists, specify --force, --update, or choose a different name: %s", cip.Name)
+			err = fmt.Errorf("image name exists, specify --force, --update, or choose a different name: %s", cip.Name)
 			return
 		}
 		wwlog.Info("Updating existing image")
@@ -252,7 +252,7 @@ func ImageList() (imageInfo []*wwapiv1.ImageInfo, err error) {
 		sourceStat, err := os.Stat(image.SourceDir(source))
 		wwlog.Debug("Checking creation time for: %s,%v", image.SourceDir(source), sourceStat.ModTime())
 		if err != nil {
-			wwlog.Error("%s\n", err)
+			wwlog.Error("%s", err)
 		} else {
 			creationTime = uint64(sourceStat.ModTime().Unix())
 		}

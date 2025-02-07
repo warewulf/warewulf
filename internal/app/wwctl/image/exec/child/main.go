@@ -112,7 +112,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		wwlog.Debug("overlay options: %s", options)
 		err = syscall.Mount("overlay", imagePath, "overlay", 0, options)
 		if err != nil {
-			return fmt.Errorf("Couldn't create overlay for node render overlay: %s", err)
+			return fmt.Errorf("couldn't create overlay for node render overlay: %s", err)
 		}
 		ps1Str = fmt.Sprintf("[%s|ro|%s] Warewulf> ", imageName, nodename)
 	}

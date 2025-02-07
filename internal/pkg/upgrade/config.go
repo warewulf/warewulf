@@ -35,54 +35,54 @@ type WarewulfYaml struct {
 	WWClient        *WWClientConf `yaml:"wwclient"`
 }
 
-func (this *WarewulfYaml) Upgrade() (upgraded *config.WarewulfYaml) {
+func (legacy *WarewulfYaml) Upgrade() (upgraded *config.WarewulfYaml) {
 	upgraded = new(config.WarewulfYaml)
-	if this.WWInternal != "" {
-		logIgnore("WW_INTERNAL", this.WWInternal, "obsolete")
+	if legacy.WWInternal != "" {
+		logIgnore("WW_INTERNAL", legacy.WWInternal, "obsolete")
 	}
-	upgraded.Comment = this.Comment
-	upgraded.Ipaddr = this.Ipaddr
-	upgraded.Ipaddr6 = this.Ipaddr6
-	upgraded.Netmask = this.Netmask
-	upgraded.Network = this.Network
-	upgraded.Ipv6net = this.Ipv6net
-	upgraded.Fqdn = this.Fqdn
-	if this.Warewulf != nil {
-		upgraded.Warewulf = this.Warewulf.Upgrade()
+	upgraded.Comment = legacy.Comment
+	upgraded.Ipaddr = legacy.Ipaddr
+	upgraded.Ipaddr6 = legacy.Ipaddr6
+	upgraded.Netmask = legacy.Netmask
+	upgraded.Network = legacy.Network
+	upgraded.Ipv6net = legacy.Ipv6net
+	upgraded.Fqdn = legacy.Fqdn
+	if legacy.Warewulf != nil {
+		upgraded.Warewulf = legacy.Warewulf.Upgrade()
 	}
-	if this.DHCP != nil {
-		upgraded.DHCP = this.DHCP.Upgrade()
+	if legacy.DHCP != nil {
+		upgraded.DHCP = legacy.DHCP.Upgrade()
 	}
-	if this.TFTP != nil {
-		upgraded.TFTP = this.TFTP.Upgrade()
+	if legacy.TFTP != nil {
+		upgraded.TFTP = legacy.TFTP.Upgrade()
 	}
-	if this.NFS != nil {
-		upgraded.NFS = this.NFS.Upgrade()
+	if legacy.NFS != nil {
+		upgraded.NFS = legacy.NFS.Upgrade()
 	}
-	if this.SSH != nil {
-		upgraded.SSH = this.SSH.Upgrade()
+	if legacy.SSH != nil {
+		upgraded.SSH = legacy.SSH.Upgrade()
 	}
 	upgraded.MountsImage = make([]*config.MountEntry, 0)
-	for _, mount := range this.MountsImage {
+	for _, mount := range legacy.MountsImage {
 		upgraded.MountsImage = append(upgraded.MountsImage, mount.Upgrade())
 	}
 	if len(upgraded.MountsImage) == 0 {
-		for _, mount := range this.MountsContainer {
+		for _, mount := range legacy.MountsContainer {
 			upgraded.MountsImage = append(upgraded.MountsImage, mount.Upgrade())
 		}
 	}
-	if this.Paths != nil {
-		upgraded.Paths = this.Paths.Upgrade()
+	if legacy.Paths != nil {
+		upgraded.Paths = legacy.Paths.Upgrade()
 	}
-	if this.WWClient != nil {
-		upgraded.WWClient = this.WWClient.Upgrade()
+	if legacy.WWClient != nil {
+		upgraded.WWClient = legacy.WWClient.Upgrade()
 	}
-	if this.Warewulf != nil && this.Warewulf.DataStore != "" {
+	if legacy.Warewulf != nil && legacy.Warewulf.DataStore != "" {
 		if upgraded.Paths == nil {
 			upgraded.Paths = new(config.BuildConfig)
 		}
 		if upgraded.Paths.Datadir == "" {
-			upgraded.Paths.Datadir = this.Warewulf.DataStore
+			upgraded.Paths.Datadir = legacy.Warewulf.DataStore
 		}
 	}
 	return upgraded
@@ -99,17 +99,17 @@ type WarewulfConf struct {
 	GrubBoot          *bool  `yaml:"grubboot"`
 }
 
-func (this *WarewulfConf) Upgrade() (upgraded *config.WarewulfConf) {
+func (legacy *WarewulfConf) Upgrade() (upgraded *config.WarewulfConf) {
 	upgraded = new(config.WarewulfConf)
-	upgraded.Port = this.Port
-	upgraded.SecureP = this.Secure
-	upgraded.UpdateInterval = this.UpdateInterval
-	upgraded.AutobuildOverlaysP = this.AutobuildOverlays
-	upgraded.EnableHostOverlayP = this.EnableHostOverlay
-	if this.Syslog != nil {
+	upgraded.Port = legacy.Port
+	upgraded.SecureP = legacy.Secure
+	upgraded.UpdateInterval = legacy.UpdateInterval
+	upgraded.AutobuildOverlaysP = legacy.AutobuildOverlays
+	upgraded.EnableHostOverlayP = legacy.EnableHostOverlay
+	if legacy.Syslog != nil {
 		wwlog.Warn("syslog configuration ignored: all logs now go to stdout/stderr")
 	}
-	upgraded.GrubBootP = this.GrubBoot
+	upgraded.GrubBootP = legacy.GrubBoot
 	return upgraded
 }
 
@@ -121,13 +121,13 @@ type DHCPConf struct {
 	SystemdName string `yaml:"systemd name"`
 }
 
-func (this *DHCPConf) Upgrade() (upgraded *config.DHCPConf) {
+func (legacy *DHCPConf) Upgrade() (upgraded *config.DHCPConf) {
 	upgraded = new(config.DHCPConf)
-	upgraded.EnabledP = this.Enabled
-	upgraded.Template = this.Template
-	upgraded.RangeStart = this.RangeStart
-	upgraded.RangeEnd = this.RangeEnd
-	upgraded.SystemdName = this.SystemdName
+	upgraded.EnabledP = legacy.Enabled
+	upgraded.Template = legacy.Template
+	upgraded.RangeStart = legacy.RangeStart
+	upgraded.RangeEnd = legacy.RangeEnd
+	upgraded.SystemdName = legacy.SystemdName
 	return upgraded
 }
 
@@ -138,13 +138,13 @@ type TFTPConf struct {
 	IpxeBinaries map[string]string `yaml:"ipxe"`
 }
 
-func (this *TFTPConf) Upgrade() (upgraded *config.TFTPConf) {
+func (legacy *TFTPConf) Upgrade() (upgraded *config.TFTPConf) {
 	upgraded = new(config.TFTPConf)
-	upgraded.EnabledP = this.Enabled
-	upgraded.TftpRoot = this.TftpRoot
-	upgraded.SystemdName = this.SystemdName
+	upgraded.EnabledP = legacy.Enabled
+	upgraded.TftpRoot = legacy.TftpRoot
+	upgraded.SystemdName = legacy.SystemdName
 	upgraded.IpxeBinaries = make(map[string]string)
-	for name, binary := range this.IpxeBinaries {
+	for name, binary := range legacy.IpxeBinaries {
 		upgraded.IpxeBinaries[name] = binary
 	}
 	return upgraded
@@ -157,19 +157,19 @@ type NFSConf struct {
 	SystemdName     string           `yaml:"systemd name"`
 }
 
-func (this *NFSConf) Upgrade() (upgraded *config.NFSConf) {
+func (legacy *NFSConf) Upgrade() (upgraded *config.NFSConf) {
 	upgraded = new(config.NFSConf)
-	upgraded.EnabledP = this.Enabled
+	upgraded.EnabledP = legacy.Enabled
 	upgraded.ExportsExtended = make([]*config.NFSExportConf, 0)
-	for _, export := range this.Exports {
+	for _, export := range legacy.Exports {
 		extendedExport := new(config.NFSExportConf)
 		extendedExport.Path = export
 		upgraded.ExportsExtended = append(upgraded.ExportsExtended, extendedExport)
 	}
-	for _, export := range this.ExportsExtended {
+	for _, export := range legacy.ExportsExtended {
 		upgraded.ExportsExtended = append(upgraded.ExportsExtended, export.Upgrade())
 	}
-	upgraded.SystemdName = this.SystemdName
+	upgraded.SystemdName = legacy.SystemdName
 	return upgraded
 }
 
@@ -180,12 +180,12 @@ type NFSExportConf struct {
 	Mount         *bool  `yaml:"mount"`
 }
 
-func (this *NFSExportConf) Upgrade() (upgraded *config.NFSExportConf) {
+func (legacy *NFSExportConf) Upgrade() (upgraded *config.NFSExportConf) {
 	upgraded = new(config.NFSExportConf)
-	upgraded.Path = this.Path
-	upgraded.ExportOptions = this.ExportOptions
-	if this.Mount != nil && *(this.Mount) {
-		wwlog.Warn("Legacy mount configured for NFS export %s: use `wwctl upgrade nodes --with-warewulfconf=<original file>` to port to nodes.conf", this.Path)
+	upgraded.Path = legacy.Path
+	upgraded.ExportOptions = legacy.ExportOptions
+	if legacy.Mount != nil && *(legacy.Mount) {
+		wwlog.Warn("Legacy mount configured for NFS export %s: use `wwctl upgrade nodes --with-warewulfconf=<original file>` to port to nodes.conf", legacy.Path)
 	}
 	return upgraded
 }
@@ -194,9 +194,9 @@ type SSHConf struct {
 	KeyTypes []string `yaml:"key types"`
 }
 
-func (this *SSHConf) Upgrade() (upgraded *config.SSHConf) {
+func (legacy *SSHConf) Upgrade() (upgraded *config.SSHConf) {
 	upgraded = new(config.SSHConf)
-	upgraded.KeyTypes = append([]string{}, this.KeyTypes...)
+	upgraded.KeyTypes = append([]string{}, legacy.KeyTypes...)
 	return upgraded
 }
 
@@ -208,13 +208,13 @@ type MountEntry struct {
 	Copy     *bool  `yaml:"copy"`
 }
 
-func (this *MountEntry) Upgrade() (upgraded *config.MountEntry) {
+func (legacy *MountEntry) Upgrade() (upgraded *config.MountEntry) {
 	upgraded = new(config.MountEntry)
-	upgraded.Source = this.Source
-	upgraded.Dest = this.Dest
-	upgraded.ReadOnlyP = this.ReadOnly
-	upgraded.Options = this.Options
-	upgraded.CopyP = this.Copy
+	upgraded.Source = legacy.Source
+	upgraded.Dest = legacy.Dest
+	upgraded.ReadOnlyP = legacy.ReadOnly
+	upgraded.Options = legacy.Options
+	upgraded.CopyP = legacy.Copy
 	return upgraded
 }
 
@@ -234,20 +234,20 @@ type BuildConfig struct {
 	WWClientdir    string
 }
 
-func (this *BuildConfig) Upgrade() (upgraded *config.BuildConfig) {
+func (legacy *BuildConfig) Upgrade() (upgraded *config.BuildConfig) {
 	upgraded = new(config.BuildConfig)
-	upgraded.Bindir = this.Bindir
-	upgraded.Sysconfdir = this.Sysconfdir
-	upgraded.Localstatedir = this.Localstatedir
-	upgraded.Cachedir = this.Cachedir
-	upgraded.Ipxesource = this.Ipxesource
-	upgraded.Srvdir = this.Srvdir
-	upgraded.Firewallddir = this.Firewallddir
-	upgraded.Datadir = this.Datadir
-	upgraded.WWOverlaydir = this.WWOverlaydir
-	upgraded.WWChrootdir = this.WWChrootdir
-	upgraded.WWProvisiondir = this.WWProvisiondir
-	upgraded.WWClientdir = this.WWClientdir
+	upgraded.Bindir = legacy.Bindir
+	upgraded.Sysconfdir = legacy.Sysconfdir
+	upgraded.Localstatedir = legacy.Localstatedir
+	upgraded.Cachedir = legacy.Cachedir
+	upgraded.Ipxesource = legacy.Ipxesource
+	upgraded.Srvdir = legacy.Srvdir
+	upgraded.Firewallddir = legacy.Firewallddir
+	upgraded.Datadir = legacy.Datadir
+	upgraded.WWOverlaydir = legacy.WWOverlaydir
+	upgraded.WWChrootdir = legacy.WWChrootdir
+	upgraded.WWProvisiondir = legacy.WWProvisiondir
+	upgraded.WWClientdir = legacy.WWClientdir
 	return upgraded
 }
 
@@ -255,8 +255,8 @@ type WWClientConf struct {
 	Port uint16 `yaml:"port"`
 }
 
-func (this *WWClientConf) Upgrade() (upgraded *config.WWClientConf) {
+func (legacy *WWClientConf) Upgrade() (upgraded *config.WWClientConf) {
 	upgraded = new(config.WWClientConf)
-	upgraded.Port = this.Port
+	upgraded.Port = legacy.Port
 	return upgraded
 }

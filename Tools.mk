@@ -20,10 +20,10 @@ PROTOC_GEN_GRPC_GATEWAY := $(TOOLS_BIN)/protoc-gen-grpc-gateway
 
 ifeq ($(ARCH),aarch64)
 PROTOC_URL := https://github.com/protocolbuffers/protobuf/releases/download/v24.0/protoc-24.0-linux-aarch_64.zip
-PROTOC_GEN_GRPC_GATEWAY_URL := https://github.com/grpc-ecosystem/grpc-gateway/releases/download/v2.16.2/protoc-gen-grpc-gateway-v2.16.2-linux-arm64
+PROTOC_GEN_GRPC_GATEWAY_URL := https://github.com/grpc-ecosystem/grpc-gateway/releases/download/v2.26.0/protoc-gen-grpc-gateway-v2.26.0-linux-arm64
 else
 PROTOC_URL := https://github.com/protocolbuffers/protobuf/releases/download/v24.0/protoc-24.0-linux-x86_64.zip
-PROTOC_GEN_GRPC_GATEWAY_URL := https://github.com/grpc-ecosystem/grpc-gateway/releases/download/v2.16.2/protoc-gen-grpc-gateway-v2.16.2-linux-x86_64
+PROTOC_GEN_GRPC_GATEWAY_URL := https://github.com/grpc-ecosystem/grpc-gateway/releases/download/v2.26.0/protoc-gen-grpc-gateway-v2.26.0-linux-x86_64
 endif
 
 $(TOOLS_DIR):
@@ -50,10 +50,10 @@ $(PROTOC_GEN_GRPC_GATEWAY):
 	chmod +x $(PROTOC_GEN_GRPC_GATEWAY)
 
 $(PROTOC_GEN_GO):
-	GOBIN="$(PWD)/$(TOOLS_BIN)" go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
+	GOBIN="$(PWD)/$(TOOLS_BIN)" go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.5
 
 $(PROTOC_GEN_GO_GRPC):
-	GOBIN="$(PWD)/$(TOOLS_BIN)" go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+	GOBIN="$(PWD)/$(TOOLS_BIN)" go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1
 
 $(GOLANG_LICENSES):
 	GOBIN="$(PWD)/$(TOOLS_BIN)" go install github.com/google/go-licenses@v1.6.0
