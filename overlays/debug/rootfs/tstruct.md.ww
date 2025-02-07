@@ -25,7 +25,6 @@ data from other structures.
 - UpdateInterval: {{ .Warewulf.UpdateInterval }}
 - AutobuildOverlays: {{ .Warewulf.AutobuildOverlays }}
 - EnableHostOverlay: {{ .Warewulf.EnableHostOverlay }}
-- Syslog: {{ .Warewulf.Syslog }}
 
 ### Network
 

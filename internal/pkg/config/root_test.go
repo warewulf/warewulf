@@ -15,7 +15,6 @@ func TestDefaultWarewulfYaml(t *testing.T) {
 	assert.Equal(t, 60, conf.Warewulf.UpdateInterval)
 	assert.True(t, conf.Warewulf.AutobuildOverlays())
 	assert.True(t, conf.Warewulf.EnableHostOverlay())
-	assert.False(t, conf.Warewulf.Syslog())
 
 	assert.True(t, conf.DHCP.Enabled())
 	assert.Equal(t, "default", conf.DHCP.Template)
@@ -80,7 +79,6 @@ warewulf:
   update interval: 60
   autobuild overlays: true
   host overlay: true
-  syslog: false
 dhcp:
   enabled: true
   range start: 192.168.200.50
@@ -121,7 +119,6 @@ image mounts:
 	assert.Equal(t, 60, conf.Warewulf.UpdateInterval)
 	assert.True(t, conf.Warewulf.AutobuildOverlays())
 	assert.True(t, conf.Warewulf.EnableHostOverlay())
-	assert.False(t, conf.Warewulf.Syslog())
 
 	assert.True(t, conf.DHCP.Enabled())
 	assert.Equal(t, "192.168.200.50", conf.DHCP.RangeStart)

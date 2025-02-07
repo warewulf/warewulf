@@ -150,7 +150,6 @@ warewulf:
   secure: true
   update interval: 60
   autobuild overlays: true
-  syslog: false
 dhcp:
   enabled: true
   template: default
@@ -216,7 +215,6 @@ warewulf:
   update interval: 60
   autobuild overlays: true
   host overlay: true
-  syslog: false
 dhcp:
   enabled: true
   template: default
@@ -281,7 +279,6 @@ warewulf:
   update interval: 60
   autobuild overlays: true
   host overlay: true
-  syslog: false
 dhcp:
   enabled: true
   range start: 192.168.200.50
@@ -360,7 +357,6 @@ warewulf:
   update interval: 60
   autobuild overlays: true
   host overlay: true
-  syslog: false
 dhcp:
   enabled: true
   range start: 10.0.1.1
@@ -454,7 +450,6 @@ warewulf:
   update interval: 60
   autobuild overlays: true
   host overlay: true
-  syslog: false
 dhcp:
   enabled: true
   range start: 10.0.1.1

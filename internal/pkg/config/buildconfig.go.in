@@ -45,7 +45,6 @@ type WarewulfConf struct {
 	UpdateInterval     int   `yaml:"update interval,omitempty" default:"60"`
 	AutobuildOverlaysP *bool `yaml:"autobuild overlays,omitempty" default:"true"`
 	EnableHostOverlayP *bool `yaml:"host overlay,omitempty" default:"true"`
-	SyslogP            *bool `yaml:"syslog,omitempty" default:"false"`
 	GrubBootP          *bool `yaml:"grubboot,omitempty" default:"false"`
 }
 
@@ -59,10 +58,6 @@ func (this WarewulfConf) AutobuildOverlays() bool {
 
 func (this WarewulfConf) EnableHostOverlay() bool {
 	return BoolP(this.EnableHostOverlayP)
-}
-
-func (this WarewulfConf) Syslog() bool {
-	return BoolP(this.SyslogP)
 }
 
 func (this WarewulfConf) GrubBoot() bool {

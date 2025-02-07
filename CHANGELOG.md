@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Document defining kernel args that include commas. #1679
 - Recommend installing ipmitool with Warewulf package. #970
 - Add completion for profile list. #1695
+- Add OPTIONS argument for `warewulfd.service`. #1707
 
 ### Changed
 
@@ -40,6 +41,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Set execute permissions for intermediate directories during `wwctl overlay import --parents`. #1655
 - Fix log output formatting during overlay build.
 - Prevent merging of zero-value net.IP fields. #1710
+
+### Removed
+
+- Remove `warewulf.conf:syslog`. #1606
 
 ## v4.6.0rc1, 2025-01-29
 

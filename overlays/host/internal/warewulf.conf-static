@@ -7,7 +7,6 @@ warewulf:
   update interval: 60
   autobuild overlays: true
   host overlay: true
-  syslog: true
 dhcp:
   enabled: true
   template: static
