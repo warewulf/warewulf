@@ -13,6 +13,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add completion for profile list. #1695
 - Add OPTIONS argument for `warewulfd.service`. #1707
 - Document `warewulf.conf:dhcp.template`. #1701
+- New template field `IpCIDR`. #1700
+- `wwctl configure` persists auto-detected server network settings to `warewulf.conf`. #1700
 
 ### Changed
 
@@ -22,6 +24,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Only calculate image chroot size when requested. #1504
 - Create temporary files in overlay directory during `wwctl overlay edit`. #1473
 - Re-order SSH key types to make ed25519 default. #981
+- Don't assume default values for `warewulf.conf` network settings. #1700
+- Omit DHCP pool from `dhcpd.conf` if any required fields are missing. #1700
+- `warewulf.conf:ipaddr6` is no longer required to be a `/64` or smaller. #1700
 
 ### Fixed
 
@@ -46,6 +51,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 - Remove `warewulf.conf:syslog`. #1606
+- Properly handle parsing of server network and netmask from CIDR `warewulf.conf:ipaddr`. #1541, #1594
+- Populate template field `NetworkCIDR`. #1700
 
 ## v4.6.0rc1, 2025-01-29
 

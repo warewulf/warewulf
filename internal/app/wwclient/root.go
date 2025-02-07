@@ -54,11 +54,11 @@ func GetRootCommand() *cobra.Command {
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	conf := warewulfconf.Get()
 	if WarewulfConfArg != "" {
-		err = conf.Read(WarewulfConfArg)
+		err = conf.Read(WarewulfConfArg, false)
 	} else if os.Getenv("WAREWULFCONF") != "" {
-		err = conf.Read(os.Getenv("WAREWULFCONF"))
+		err = conf.Read(os.Getenv("WAREWULFCONF"), false)
 	} else {
-		err = conf.Read(warewulfconf.ConfigFile)
+		err = conf.Read(warewulfconf.ConfigFile, false)
 	}
 	if err != nil {
 		return

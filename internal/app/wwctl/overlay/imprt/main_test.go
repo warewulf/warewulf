@@ -52,7 +52,7 @@ nodes: {}
 	conf_yml := ``
 
 	conf := warewulfconf.New()
-	err = conf.Parse([]byte(conf_yml))
+	err = conf.Parse([]byte(conf_yml), false)
 	assert.NoError(t, err)
 	warewulfd.SetNoDaemon()
 	conf.Paths.WWOverlaydir = overlayDir

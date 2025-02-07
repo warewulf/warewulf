@@ -29,6 +29,7 @@ data from other structures.
 ### Network
 
 - Ipaddr: {{ .Ipaddr }}
+- IpCIDR: {{ .IpCIDR }}
 - Ipaddr6: {{ .Ipaddr6 }}
 - Netmask: {{ .Netmask }}
 - Network: {{ .Network }}

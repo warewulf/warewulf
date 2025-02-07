@@ -11,6 +11,14 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var err error
+
+	conf := warewulfconf.Get()
+	if conf.Autodetected() && conf.InitializedFromFile() {
+		if err = conf.PersistToFile(conf.GetWarewulfConf()); err != nil {
+			wwlog.Warn("error when persisting auto-detected settings: %s", err)
+		}
+	}
+
 	if allFunctions {
 		err = configure.DHCP()
 		if err != nil {

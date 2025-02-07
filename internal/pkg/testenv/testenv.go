@@ -92,7 +92,7 @@ func (env *TestEnv) init() {
 
 func (env *TestEnv) Configure() *config.WarewulfYaml {
 	conf := config.New()
-	err := conf.Read(env.GetPath(path.Join(Sysconfdir, "warewulf/warewulf.conf")))
+	err := conf.Read(env.GetPath(path.Join(Sysconfdir, "warewulf/warewulf.conf")), false)
 	env.assertNoError(err)
 	conf.Paths.Sysconfdir = env.GetPath(Sysconfdir)
 	conf.Paths.Bindir = env.GetPath(Bindir)
