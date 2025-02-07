@@ -70,6 +70,13 @@ configurations:
   network, failures will occur. This specifies the range of addresses
   you want DHCP to use.
 
+* ``dhcp:template`` defines an optional DHCP template variable to control the
+  generation of the DHCP template.
+  
+  Specifying ``template: static`` populates ``dhcpd.conf`` with static leases
+  for each host, bypassing the DHCP range. Run ``wwctl configure dhcp`` to
+  update ``dhcpd.conf`` when nodes are added, removed, or changed.
+
 The other configuration options are usually not touched, but they are
 explained as follows:
 
