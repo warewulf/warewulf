@@ -63,7 +63,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/coreos/ignition/blob/v2.19.0/LICENSE>
+**License URL:** <https://github.com/coreos/ignition/blob/v2.20.0/LICENSE>
 
 ## github.com/coreos/vcontext
 
@@ -495,7 +495,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.26.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.28.0:LICENSE>
 
 ## golang.org/x/exp/maps
 
@@ -507,7 +507,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/net/+/v0.28.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/net/+/v0.30.0:LICENSE>
 
 ## golang.org/x/sync
 
