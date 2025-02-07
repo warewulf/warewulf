@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Simpler permissions in official RPM packages. #1696
 - Only calculate image chroot size when requested. #1504
 - Create temporary files in overlay directory during `wwctl overlay edit`. #1473
+- Re-order SSH key types to make ed25519 default. #981
 
 ### Fixed
 

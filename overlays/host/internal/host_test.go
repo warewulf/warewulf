@@ -313,7 +313,7 @@ Filename: etc/profile.d/ssh_setup.csh
 if ( ( $_UID > 500 || $_UID == 0 ) && ( ! -f "$HOME/.ssh/config" && ! -f "$HOME/.ssh/cluster" ) ) then
     echo "Configuring SSH for cluster access"
     install -d -m 700 $HOME/.ssh
-    ssh-keygen -t rsa -f $HOME/.ssh/cluster -N '' -C "Warewulf Cluster key" >& /dev/null
+    ssh-keygen -t ed25519 -f $HOME/.ssh/cluster -N '' -C "Warewulf Cluster key" >& /dev/null
     cat $HOME/.ssh/cluster.pub >>! $HOME/.ssh/authorized_keys
     chmod 0600 $HOME/.ssh/authorized_keys
 
@@ -347,7 +347,7 @@ Filename: etc/profile.d/ssh_setup.sh
 if [ $_UID -ge 500 -o $_UID -eq 0 ] && [ ! -f "$HOME/.ssh/config" -a ! -f "$HOME/.ssh/cluster" ]; then
     echo "Configuring SSH for cluster access"
     install -d -m 700 $HOME/.ssh
-    ssh-keygen -t rsa -f $HOME/.ssh/cluster -N '' -C "Warewulf Cluster key" > /dev/null 2>&1
+    ssh-keygen -t ed25519 -f $HOME/.ssh/cluster -N '' -C "Warewulf Cluster key" > /dev/null 2>&1
     cat $HOME/.ssh/cluster.pub >> $HOME/.ssh/authorized_keys
     chmod 0600 $HOME/.ssh/authorized_keys
 
