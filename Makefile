@@ -166,7 +166,8 @@ init:
 dist: $(config)
 	rm -rf .dist/
 	mkdir -p .dist/$(WAREWULF)-$(VERSION)
-	tar -c --files-from <(git ls-files) | tar -C .dist/$(WAREWULF)-$(VERSION) -x
+	git ls-files >.dist/git-ls-files
+	tar -c --files-from .dist/git-ls-files | tar -C .dist/$(WAREWULF)-$(VERSION) -x
 	cp -a vendor/ $(config) .dist/$(WAREWULF)-$(VERSION)
 	scripts/get-version.sh >.dist/$(WAREWULF)-$(VERSION)/VERSION
 	tar -C .dist -czf $(WAREWULF)-$(VERSION).tar.gz $(WAREWULF)-$(VERSION)
