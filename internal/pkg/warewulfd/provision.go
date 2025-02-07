@@ -83,7 +83,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 
 	if remoteNode.AssetKey != "" && remoteNode.AssetKey != rinfo.assetkey {
 		w.WriteHeader(http.StatusUnauthorized)
-		wwlog.Denied("Incorrect asset key for node: %s", remoteNode.Id())
+		wwlog.Denied("incorrect asset key: node %s: %s", remoteNode.Id(), rinfo.assetkey)
 		updateStatus(remoteNode.Id(), status_stage, "BAD_ASSET", rinfo.ipaddr)
 		return
 	}

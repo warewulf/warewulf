@@ -34,6 +34,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Specify init=/init when booting with Grub+dracut. #1573
 - Fix a warewulfd panic when no kernel fields are specified. #1689
 - Create site overlay directory. #1690
+- Urlencode asset keys during dracut boot. #1610
 - Set execute permissions for intermediate directories during `wwctl overlay import --parents`. #1655
 - Fix log output formatting during overlay build.
 - Prevent merging of zero-value net.IP fields. #1710
