@@ -152,7 +152,6 @@ autoconnect=true
 [ethernet]
 [ipv4]
 method=manual
-address=<nil>
 route1=192.168.1.0/24,192.168.2.254
 [vlan]
 interface-name=eth0.902
@@ -176,7 +175,6 @@ autoconnect=true
 [ethernet]
 [ipv4]
 method=manual
-address=<nil>
 
 [ipv6]
 addr-gen-mode=stable-privacy

@@ -7,6 +7,44 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func Test_IpCIDR(t *testing.T) {
+	tests := map[string]struct {
+		ipaddr  net.IP
+		netmask net.IP
+		cidr    string
+	}{
+		"nil": {
+			ipaddr:  nil,
+			netmask: nil,
+			cidr:    "",
+		},
+		"ip only": {
+			ipaddr:  net.ParseIP("192.168.1.1"),
+			netmask: nil,
+			cidr:    "",
+		},
+		"netmask only": {
+			ipaddr:  nil,
+			netmask: net.ParseIP("255.255.255.0"),
+			cidr:    "",
+		},
+		"working": {
+			ipaddr:  net.ParseIP("192.168.1.1"),
+			netmask: net.ParseIP("255.255.255.0"),
+			cidr:    "192.168.1.1/24",
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			n := new(NetDev)
+			n.Ipaddr = tt.ipaddr
+			n.Netmask = tt.netmask
+			assert.Equal(t, tt.cidr, n.IpCIDR())
+		})
+	}
+}
+
 func Test_Empty(t *testing.T) {
 	var netdev NetDev
 	var netdevPtr *NetDev
