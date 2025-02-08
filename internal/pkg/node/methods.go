@@ -3,7 +3,6 @@ package node
 import (
 	"net"
 	"reflect"
-	"regexp"
 	"sort"
 	"strings"
 
@@ -40,7 +39,7 @@ func FilterNodeListByName(set []Node, searchList []string) []Node {
 	if len(searchList) > 0 {
 		for _, search := range searchList {
 			for _, entry := range set {
-				if match, _ := regexp.MatchString("^"+search+"$", entry.id); match {
+				if entry.id == search {
 					unique[entry.id] = entry
 				}
 			}
@@ -67,7 +66,7 @@ func FilterProfileListByName(set []Profile, searchList []string) []Profile {
 	if len(searchList) > 0 {
 		for _, search := range searchList {
 			for _, entry := range set {
-				if match, _ := regexp.MatchString("^"+search+"$", entry.id); match {
+				if entry.id == search {
 					unique[entry.id] = entry
 				}
 			}
