@@ -6,28 +6,48 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_Single(t *testing.T) {
-	assert.Equal(t, []string{"node1"}, Expand([]string{"node1"}))
-}
+func TestHostList(t *testing.T) {
+	tests := map[string]struct {
+		input  []string
+		output []string
+	}{
+		"single": {
+			input:  []string{"node1"},
+			output: []string{"node1"},
+		},
+		"multiple": {
+			input:  []string{"node1", "node2"},
+			output: []string{"node1", "node2"},
+		},
+		"range": {
+			input:  []string{"node[1-2]"},
+			output: []string{"node1", "node2"},
+		},
+		"internal comma": {
+			input:  []string{"node[1,2]"},
+			output: []string{"node1", "node2"},
+		},
+		"mixed range comma": {
+			input:  []string{"node[1,2-3]"},
+			output: []string{"node1", "node2", "node3"},
+		},
+		"external comma": {
+			input:  []string{"node1,node2"},
+			output: []string{"node1", "node2"},
+		},
+		"mixed external comma with range": {
+			input:  []string{"n[1-3],n5,n[7-8,10]"},
+			output: []string{"n1", "n2", "n3", "n5", "n7", "n8", "n10"},
+		},
+		"leading zeroes": {
+			input:  []string{"n[01-03]"},
+			output: []string{"n01", "n02", "n03"},
+		},
+	}
 
-func Test_Multiple(t *testing.T) {
-	assert.Equal(t, []string{"node1", "node2"}, Expand([]string{"node1", "node2"}))
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, tt.output, Expand(tt.input))
+		})
+	}
 }
-
-func Test_Range(t *testing.T) {
-	assert.Equal(t, []string{"node1", "node2"}, Expand([]string{"node[1-2]"}))
-}
-
-func Test_Internal_Comma(t *testing.T) {
-	assert.Equal(t, []string{"node1", "node2"}, Expand([]string{"node[1,2]"}))
-}
-
-func Test_Mixed_Range_Comma(t *testing.T) {
-	assert.Equal(t, []string{"node1", "node2", "node3"}, Expand([]string{"node[1,2-3]"}))
-}
-
-// not currently supported
-//
-// func Test_External_Comma(t *testing.T) {
-// 	assert.Equal(t, []string{"node1", "node2"}, Expand([]string{"node1,node2"}))
-// }

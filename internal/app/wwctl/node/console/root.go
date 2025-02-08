@@ -2,6 +2,7 @@ package console
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 )
 
 var (
@@ -12,6 +13,7 @@ var (
 		Long:                  "Start a new IPMI console for NODENAME.",
 		Args:                  cobra.MinimumNArgs(1),
 		RunE:                  CobraRunE,
+		ValidArgsFunction:     completions.Nodes(0), // no limit
 	}
 )
 

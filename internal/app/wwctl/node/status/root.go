@@ -1,6 +1,9 @@
 package nodestatus
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
+)
 
 var (
 	baseCmd = &cobra.Command{
@@ -9,7 +12,7 @@ var (
 		Short:                 "View the provisioning status of nodes",
 		Long:                  "View and monitor the status of nodes as they are provisioned and check in.",
 		RunE:                  CobraRunE,
-		Args:                  cobra.MinimumNArgs(0),
+		ValidArgsFunction:     completions.Nodes(0), // no limit
 	}
 	SetWatch       bool
 	SetUpdate      int

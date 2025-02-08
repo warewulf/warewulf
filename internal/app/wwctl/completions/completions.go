@@ -7,6 +7,7 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/image"
 	"github.com/warewulf/warewulf/internal/pkg/kernel"
 	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/overlay"
 )
 
 func NodeKernelVersion(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -51,18 +52,37 @@ func ProfileKernelVersion(cmd *cobra.Command, args []string, toComplete string) 
 func Images(num int) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		if num <= 0 || len(args) < num {
-			sources, _ := image.ListSources()
-			return sources, cobra.ShellCompDirectiveNoFileComp
-		} else {
-			return nil, cobra.ShellCompDirectiveNoFileComp
+			if sources, err := image.ListSources(); err != nil {
+				return sources, cobra.ShellCompDirectiveNoFileComp
+			}
 		}
+		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
 }
 
-func Profiles(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	if len(args) != 0 {
+func Nodes(num int) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if num <= 0 || len(args) < num {
+			if registry, err := node.New(); err == nil {
+				return registry.ListAllNodes(), cobra.ShellCompDirectiveNoFileComp
+			}
+		}
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
-	registry, _ := node.New()
-	return registry.ListAllProfiles(), cobra.ShellCompDirectiveNoFileComp
+}
+
+func Profiles(num int) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if num <= 0 || len(args) < num {
+			if registry, err := node.New(); err == nil {
+				return registry.ListAllProfiles(), cobra.ShellCompDirectiveNoFileComp
+			}
+		}
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+}
+
+func Overlays(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	list := overlay.FindOverlays()
+	return list, cobra.ShellCompDirectiveNoFileComp
 }

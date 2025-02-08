@@ -13,7 +13,7 @@ var (
 		Short:                 "Import node(s) from yaml file",
 		Long:                  "This command imports all the nodes defined in a file. It will overwrite nodes with same name.",
 		RunE:                  CobraRunE,
-		Args:                  cobra.MinimumNArgs(1),
+		Args:                  cobra.ExactArgs(1),
 		Aliases:               []string{"import"},
 	}
 	ImportCVS bool

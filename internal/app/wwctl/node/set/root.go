@@ -1,14 +1,10 @@
 package set
 
 import (
-	"log"
-
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 	"github.com/warewulf/warewulf/internal/app/wwctl/flags"
-	"github.com/warewulf/warewulf/internal/pkg/image"
 	"github.com/warewulf/warewulf/internal/pkg/node"
-	"github.com/warewulf/warewulf/internal/pkg/overlay"
 )
 
 type variables struct {
@@ -31,15 +27,7 @@ func GetCommand() *cobra.Command {
 		Aliases:               []string{"modify"},
 		Args:                  cobra.MinimumNArgs(1), // require pattern as a mandatory arg
 		RunE:                  CobraRunE(&vars),
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			if len(args) != 0 {
-				return nil, cobra.ShellCompDirectiveNoFileComp
-			}
-
-			nodeDB, _ := node.New()
-			nodes := nodeDB.ListAllNodes()
-			return nodes, cobra.ShellCompDirectiveNoFileComp
-		},
+		ValidArgsFunction:     completions.Nodes(0), // no limit
 	}
 
 	vars.nodeConf.CreateFlags(baseCmd)
@@ -50,37 +38,20 @@ func GetCommand() *cobra.Command {
 	baseCmd.PersistentFlags().BoolVarP(&vars.setYes, "yes", "y", false, "Set 'yes' to all questions asked")
 	baseCmd.PersistentFlags().BoolVarP(&vars.setForce, "force", "f", false, "Force configuration (even on error)")
 	// register the command line completions
-	if err := baseCmd.RegisterFlagCompletionFunc("image", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		list, _ := image.ListSources()
-		return list, cobra.ShellCompDirectiveNoFileComp
-	}); err != nil {
-		log.Println(err)
+	if err := baseCmd.RegisterFlagCompletionFunc("image", completions.Images(0)); err != nil { // no limit
+		panic(err)
 	}
 	if err := baseCmd.RegisterFlagCompletionFunc("kernelversion", completions.NodeKernelVersion); err != nil {
-		log.Println(err)
+		panic(err)
 	}
-	if err := baseCmd.RegisterFlagCompletionFunc("runtime", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		list := overlay.FindOverlays()
-		return list, cobra.ShellCompDirectiveNoFileComp
-	}); err != nil {
-		log.Println(err)
+	if err := baseCmd.RegisterFlagCompletionFunc("runtime", completions.Overlays); err != nil {
+		panic(err)
 	}
-	if err := baseCmd.RegisterFlagCompletionFunc("wwinit", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		list := overlay.FindOverlays()
-		return list, cobra.ShellCompDirectiveNoFileComp
-	}); err != nil {
-		log.Println(err)
+	if err := baseCmd.RegisterFlagCompletionFunc("wwinit", completions.Overlays); err != nil {
+		panic(err)
 	}
-	if err := baseCmd.RegisterFlagCompletionFunc("profile", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		var list []string
-		nodeDB, _ := node.New()
-		profiles, _ := nodeDB.FindAllProfiles()
-		for _, profile := range profiles {
-			list = append(list, profile.Id())
-		}
-		return list, cobra.ShellCompDirectiveNoFileComp
-	}); err != nil {
-		log.Println(err)
+	if err := baseCmd.RegisterFlagCompletionFunc("profile", completions.Profiles(0)); err != nil { // no limit
+		panic(err)
 	}
 
 	return baseCmd
