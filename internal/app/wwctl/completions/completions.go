@@ -48,9 +48,15 @@ func ProfileKernelVersion(cmd *cobra.Command, args []string, toComplete string) 
 	return kernelVersions, cobra.ShellCompDirectiveNoFileComp
 }
 
-func Images(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	sources, _ := image.ListSources()
-	return sources, cobra.ShellCompDirectiveNoFileComp
+func Images(num int) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if num <= 0 || len(args) < num {
+			sources, _ := image.ListSources()
+			return sources, cobra.ShellCompDirectiveNoFileComp
+		} else {
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+	}
 }
 
 func Profiles(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

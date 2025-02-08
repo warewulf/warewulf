@@ -24,9 +24,13 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			if err != nil {
 				return err
 			}
+
 			if vars.full {
 				t.AddHeader("IMAGE NAME", "NODES", "KERNEL VERSION", "CREATION TIME", "MODIFICATION TIME", "SIZE")
 				for i := 0; i < len(imageInfo); i++ {
+					if len(args) > 0 && !util.InSlice(args, imageInfo[i].Name) {
+						continue
+					}
 					createTime := time.Unix(int64(imageInfo[i].CreateDate), 0)
 					modTime := time.Unix(int64(imageInfo[i].ModDate), 0)
 					sz := util.ByteToString(int64(imageInfo[i].ImgSize))
@@ -53,6 +57,9 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			} else if vars.kernel {
 				t.AddHeader("IMAGE NAME", "NODES", "KERNEL VERSION")
 				for i := 0; i < len(imageInfo); i++ {
+					if len(args) > 0 && !util.InSlice(args, imageInfo[i].Name) {
+						continue
+					}
 					t.AddLine(
 						imageInfo[i].Name,
 						strconv.FormatUint(uint64(imageInfo[i].NodeCount), 10),
@@ -62,6 +69,9 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			} else if showSize {
 				t.AddHeader("IMAGE NAME", "NODES", "SIZE")
 				for i := 0; i < len(imageInfo); i++ {
+					if len(args) > 0 && !util.InSlice(args, imageInfo[i].Name) {
+						continue
+					}
 					sz := util.ByteToString(int64(imageInfo[i].ImgSize))
 					if vars.compressed {
 						sz = util.ByteToString(int64(imageInfo[i].ImgSizeComp))
@@ -84,9 +94,15 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			}
 		} else {
 			t.AddHeader("IMAGE NAME")
-			list, _ := image.ListSources()
-			for _, cont := range list {
-				t.AddLine(cont)
+			list, err := image.ListSources()
+			if err != nil {
+				return err
+			}
+			for _, name := range list {
+				if len(args) > 0 && !util.InSlice(args, name) {
+					continue
+				}
+				t.AddLine(name)
 			}
 		}
 		t.Print()

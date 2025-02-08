@@ -10,7 +10,6 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
-
 	csp := &wwapiv1.ImageShowParameter{
 		ImageName: args[0],
 	}
