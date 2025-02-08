@@ -13,6 +13,7 @@ var (
 			"setup the ssh keys nodes using the 'default' system overlay as well as user owned\n" +
 			"keys.",
 		RunE: CobraRunE,
+		Args: cobra.ExactArgs(0),
 	}
 	keyTypes []string
 )

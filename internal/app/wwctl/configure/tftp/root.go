@@ -10,6 +10,7 @@ var (
 		Long: "TFTP is a dependent service of Warewulf, this tool will enable the tftp services\n" +
 			"on your Warewulf master.",
 		RunE: CobraRunE,
+		Args: cobra.ExactArgs(0),
 	}
 	setShow bool
 )

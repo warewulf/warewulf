@@ -12,6 +12,7 @@ var (
 		Long: "DHCP is a dependent service to Warewulf. This command will configure DHCP as defined\n" +
 			"in the warewulf.conf file.",
 		RunE: CobraRunE,
+		Args: cobra.ExactArgs(0),
 	}
 )
 

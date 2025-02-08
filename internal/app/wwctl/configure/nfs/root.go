@@ -10,6 +10,7 @@ var (
 		Long: "NFS is an optional dependent service of Warewulf, this tool will automatically\n" +
 			"configure NFS as per the configuration in the warewulf.conf file.",
 		RunE: CobraRunE,
+		Args: cobra.ExactArgs(0),
 	}
 )
 
