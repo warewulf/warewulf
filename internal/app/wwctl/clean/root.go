@@ -15,6 +15,7 @@ func GetCommand() *cobra.Command {
 		Short:                 "Clean up",
 		Long:                  "This command cleans the OCI cache and removes leftovers from deleted nodes",
 		RunE:                  CobraRunE(&vars),
+		Args:                  cobra.ExactArgs(0),
 	}
 	return baseCmd
 }
