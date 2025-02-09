@@ -34,7 +34,7 @@ func GetCommand() *cobra.Command {
 			"Note: use the string 'UNSET' to remove a configuration",
 		Aliases:           []string{"modify"},
 		RunE:              CobraRunE(&vars),
-		ValidArgsFunction: completions.Profiles(0), // no limit
+		ValidArgsFunction: completions.Profiles,
 	}
 	vars.profileConf.CreateFlags(baseCmd)
 	vars.profileDel.CreateDelFlags(baseCmd)
@@ -42,7 +42,7 @@ func GetCommand() *cobra.Command {
 	flags.AddContainer(baseCmd, &(vars.profileConf.ImageName))
 	baseCmd.PersistentFlags().BoolVarP(&vars.setYes, "yes", "y", false, "Set 'yes' to all questions asked")
 	// register the command line completions
-	if err := baseCmd.RegisterFlagCompletionFunc("image", completions.Images(0)); err != nil { // no limit
+	if err := baseCmd.RegisterFlagCompletionFunc("image", completions.Images); err != nil { // no limit
 		panic(err)
 	}
 	if err := baseCmd.RegisterFlagCompletionFunc("kernelversion", completions.ProfileKernelVersion); err != nil {

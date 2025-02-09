@@ -12,7 +12,7 @@ var (
 		Short:                 "Edit node(s) with editor",
 		Long:                  "This command opens an editor for the given profiles.",
 		RunE:                  CobraRunE,
-		ValidArgsFunction:     completions.Profiles(0),
+		ValidArgsFunction:     completions.Profiles,
 	}
 	NoHeader bool
 )

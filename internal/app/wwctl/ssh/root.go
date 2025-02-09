@@ -15,7 +15,7 @@ var (
 		Args:                  cobra.MinimumNArgs(2),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) == 0 {
-				return completions.Nodes(1)(cmd, args, toComplete)
+				return completions.Nodes(cmd, args, toComplete)
 			}
 			return completions.None(cmd, args, toComplete)
 		},

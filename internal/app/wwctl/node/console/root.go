@@ -13,7 +13,7 @@ var (
 		Long:                  "Start a new IPMI console for NODENAME.",
 		Args:                  cobra.MinimumNArgs(1),
 		RunE:                  CobraRunE,
-		ValidArgsFunction:     completions.Nodes(0), // no limit
+		ValidArgsFunction:     completions.Nodes,
 	}
 )
 

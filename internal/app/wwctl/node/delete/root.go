@@ -14,7 +14,7 @@ var (
 		Args:                  cobra.MinimumNArgs(1),
 		RunE:                  CobraRunE,
 		Aliases:               []string{"rm", "del", "remove"},
-		ValidArgsFunction:     completions.Nodes(0), // no limit
+		ValidArgsFunction:     completions.Nodes,
 	}
 	SetYes   bool
 	SetForce bool // no hash checking, so always using force

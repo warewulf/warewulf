@@ -12,7 +12,7 @@ var (
 		Short:                 "View the provisioning status of nodes",
 		Long:                  "View and monitor the status of nodes as they are provisioned and check in.",
 		RunE:                  CobraRunE,
-		ValidArgsFunction:     completions.Nodes(0), // no limit
+		ValidArgsFunction:     completions.Nodes,
 	}
 	SetWatch       bool
 	SetUpdate      int

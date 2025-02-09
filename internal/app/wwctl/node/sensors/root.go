@@ -21,7 +21,7 @@ func GetCommand() *cobra.Command {
 		Long:                  "Show IPMI sensor information for nodes matching PATTERN.",
 		Args:                  cobra.MinimumNArgs(1),
 		RunE:                  CobraRunE(&vars),
-		ValidArgsFunction:     completions.Nodes(0), // no limit
+		ValidArgsFunction:     completions.Nodes,
 	}
 	powerCmd.PersistentFlags().BoolVarP(&vars.Full, "full", "F", false, "show detailed output.")
 	powerCmd.PersistentFlags().BoolVarP(&vars.Showcmd, "show", "s", false, "only show command which will be executed")

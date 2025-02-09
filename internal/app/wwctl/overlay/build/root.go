@@ -14,7 +14,7 @@ var (
 		Short:                 "(Re)build node overlays",
 		Long:                  "This command builds overlays for given nodes.",
 		RunE:                  CobraRunE,
-		ValidArgsFunction:     completions.Nodes(0), // no limit
+		ValidArgsFunction:     completions.Nodes,
 	}
 	OverlayNames []string
 	OverlayDir   string

@@ -13,7 +13,12 @@ var baseCmd = &cobra.Command{
 	Long:                  "This command will rename an existing image.",
 	RunE:                  CobraRunE,
 	Args:                  cobra.ExactArgs(2),
-	ValidArgsFunction:     completions.Images(1),
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if len(args) == 0 {
+			return completions.Images(cmd, args, toComplete)
+		}
+		return completions.None(cmd, args, toComplete)
+	},
 }
 
 var SetBuild bool

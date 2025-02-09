@@ -29,7 +29,7 @@ func GetCommand() *cobra.Command {
 	vars.profileAdd.CreateAddFlags(baseCmd)
 	flags.AddContainer(baseCmd, &(vars.profileConf.ImageName))
 	// register the command line completions
-	if err := baseCmd.RegisterFlagCompletionFunc("image", completions.Images(0)); err != nil { // no limit
+	if err := baseCmd.RegisterFlagCompletionFunc("image", completions.Images); err != nil { // no limit
 		panic(err)
 	}
 	if err := baseCmd.RegisterFlagCompletionFunc("kernelversion", completions.ProfileKernelVersion); err != nil {

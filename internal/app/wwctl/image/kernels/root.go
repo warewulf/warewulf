@@ -14,7 +14,7 @@ var (
 		Long:                  "This command lists the kernels that are available in the imported images.",
 		RunE:                  CobraRunE,
 		Aliases:               []string{"kernel"},
-		ValidArgsFunction:     completions.Images(0), // no limit
+		ValidArgsFunction:     completions.Images,
 	}
 )
 

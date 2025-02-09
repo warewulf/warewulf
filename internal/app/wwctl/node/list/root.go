@@ -24,7 +24,7 @@ func GetCommand() *cobra.Command {
 			"nodes matching a PATTERN.",
 		RunE:              CobraRunE(&vars),
 		Aliases:           []string{"ls"},
-		ValidArgsFunction: completions.Nodes(0), // no limit
+		ValidArgsFunction: completions.Nodes,
 	}
 	baseCmd.PersistentFlags().BoolVarP(&vars.showNet, "net", "n", false, "Show node network configurations")
 	baseCmd.PersistentFlags().BoolVarP(&vars.showIpmi, "ipmi", "i", false, "Show node IPMI configurations")
