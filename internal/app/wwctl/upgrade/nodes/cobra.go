@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 	"github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/upgrade"
 	"github.com/warewulf/warewulf/internal/pkg/util"
@@ -26,7 +27,9 @@ func GetCommand() *cobra.Command {
 		Short:                 "Upgrade an existing nodes.conf",
 		Long: `Upgrades nodes.conf from a previous version of Warewulf 4 to a format
 supported by the current version.`,
-		RunE: UpgradeNodesConf,
+		RunE:              UpgradeNodesConf,
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: completions.None,
 	}
 	command.Flags().BoolVar(&addDefaults, "add-defaults", false, "Configure a default profile and set default node values")
 	command.Flags().BoolVar(&replaceOverlays, "replace-overlays", false, "Replace 'wwinit' and 'generic' overlays with their split replacements")
