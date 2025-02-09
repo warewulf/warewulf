@@ -37,10 +37,10 @@ func GetCommand() *cobra.Command {
 	if err := baseCmd.RegisterFlagCompletionFunc("kernelversion", completions.NodeKernelVersion); err != nil {
 		panic(err)
 	}
-	if err := baseCmd.RegisterFlagCompletionFunc("runtime", completions.Overlays); err != nil {
+	if err := baseCmd.RegisterFlagCompletionFunc("runtime", completions.OverlayList); err != nil {
 		panic(err)
 	}
-	if err := baseCmd.RegisterFlagCompletionFunc("wwinit", completions.Overlays); err != nil {
+	if err := baseCmd.RegisterFlagCompletionFunc("wwinit", completions.OverlayList); err != nil {
 		panic(err)
 	}
 	if err := baseCmd.RegisterFlagCompletionFunc("profile", completions.Profiles(0)); err != nil { // no limit

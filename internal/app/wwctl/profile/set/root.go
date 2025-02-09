@@ -48,10 +48,10 @@ func GetCommand() *cobra.Command {
 	if err := baseCmd.RegisterFlagCompletionFunc("kernelversion", completions.ProfileKernelVersion); err != nil {
 		panic(err)
 	}
-	if err := baseCmd.RegisterFlagCompletionFunc("runtime", completions.Overlays); err != nil {
+	if err := baseCmd.RegisterFlagCompletionFunc("runtime", completions.OverlayList); err != nil {
 		panic(err)
 	}
-	if err := baseCmd.RegisterFlagCompletionFunc("wwinit", completions.Overlays); err != nil {
+	if err := baseCmd.RegisterFlagCompletionFunc("wwinit", completions.OverlayList); err != nil {
 		panic(err)
 	}
 	return baseCmd

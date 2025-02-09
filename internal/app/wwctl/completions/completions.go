@@ -1,6 +1,8 @@
 package completions
 
 import (
+	"strings"
+
 	"github.com/spf13/cobra"
 
 	"github.com/warewulf/warewulf/internal/pkg/hostlist"
@@ -85,6 +87,17 @@ func Profiles(num int) func(cmd *cobra.Command, args []string, toComplete string
 func Overlays(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	list := overlay.FindOverlays()
 	return list, cobra.ShellCompDirectiveNoFileComp
+}
+
+func OverlayList(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	list, directive := Overlays(cmd, args, toComplete)
+	lastCommaIndex := strings.LastIndex(toComplete, ",")
+	if lastCommaIndex >= 0 {
+		for i := range list {
+			list[i] = toComplete[:lastCommaIndex+1] + list[i]
+		}
+	}
+	return list, directive
 }
 
 func OverlayFiles(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
