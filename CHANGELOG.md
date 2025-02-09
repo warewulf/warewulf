@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## v4.6.0, unreleased
+
+### Added
+
+- Added missing hostlist support for `wwctl node` and `wwctl overlay build`. #1635
+- Added support for comma-separated hostlist patterns. #1635
+
+### Fixed
+
+- Fixed detection of overlay files in `wwctl overlay list --long`.
+- Fixed panics in `wwctl node sensors` and `wwctl node console` when ipmi not configured.
+- Fixed completions for `wwctl` commands.
+
+### Removed
+
+- Removed partial support for regex searches in node and profile lists. #1635
+
 ## v4.6.0rc2, 2025-02-07
 
 ### Added
@@ -48,7 +65,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Set execute permissions for intermediate directories during `wwctl overlay import --parents`. #1655
 - Fix log output formatting during overlay build.
 - Prevent merging of zero-value net.IP fields. #1710
-- Fixed detection of overlay files in `wwctl overlay list --long`
 
 ### Removed
 
