@@ -1,6 +1,9 @@
 package tftp
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
+)
 
 var (
 	baseCmd = &cobra.Command{
@@ -9,8 +12,9 @@ var (
 		Short:                 "Manage and initialize TFTP",
 		Long: "TFTP is a dependent service of Warewulf, this tool will enable the tftp services\n" +
 			"on your Warewulf master.",
-		RunE: CobraRunE,
-		Args: cobra.ExactArgs(0),
+		RunE:              CobraRunE,
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: completions.None,
 	}
 	setShow bool
 )
