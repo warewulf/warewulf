@@ -4,7 +4,7 @@ import (
 	"runtime"
 
 	"github.com/spf13/cobra"
-	"github.com/warewulf/warewulf/internal/pkg/overlay"
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 )
 
 var (
@@ -17,11 +17,13 @@ var (
 		Args:                  cobra.RangeArgs(2, 3),
 		Aliases:               []string{"cp"},
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			if len(args) != 0 {
-				return nil, cobra.ShellCompDirectiveNoFileComp
+			if len(args) == 0 {
+				return completions.Overlays(cmd, args, toComplete)
+			} else if len(args) == 1 {
+				return completions.LocalFiles(cmd, args, toComplete)
+			} else {
+				return completions.None(cmd, args, toComplete)
 			}
-			list := overlay.FindOverlays()
-			return list, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
 	NoOverlayUpdate bool

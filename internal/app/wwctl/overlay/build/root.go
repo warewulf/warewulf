@@ -1,12 +1,10 @@
 package build
 
 import (
-	"log"
 	"runtime"
 
 	"github.com/spf13/cobra"
-	"github.com/warewulf/warewulf/internal/pkg/node"
-	"github.com/warewulf/warewulf/internal/pkg/overlay"
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 )
 
 var (
@@ -16,19 +14,7 @@ var (
 		Short:                 "(Re)build node overlays",
 		Long:                  "This command builds overlays for given nodes.",
 		RunE:                  CobraRunE,
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			if len(args) != 0 {
-				return nil, cobra.ShellCompDirectiveNoFileComp
-			}
-
-			nodeDB, _ := node.New()
-			nodes, _ := nodeDB.FindAllNodes()
-			var node_names []string
-			for _, node := range nodes {
-				node_names = append(node_names, node.Id())
-			}
-			return node_names, cobra.ShellCompDirectiveNoFileComp
-		},
+		ValidArgsFunction:     completions.Nodes(0), // no limit
 	}
 	OverlayNames []string
 	OverlayDir   string
@@ -38,11 +24,8 @@ var (
 func init() {
 	baseCmd.PersistentFlags().StringSliceVarP(&OverlayNames, "overlay", "O", []string{}, "Build only specific overlay(s)")
 
-	if err := baseCmd.RegisterFlagCompletionFunc("overlay", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		list := overlay.FindOverlays()
-		return list, cobra.ShellCompDirectiveNoFileComp
-	}); err != nil {
-		log.Println(err)
+	if err := baseCmd.RegisterFlagCompletionFunc("overlay", completions.Overlays); err != nil {
+		panic(err)
 	}
 	baseCmd.PersistentFlags().StringVarP(&OverlayDir, "output", "o", "", `Do not create an overlay image for distribution but write to
 	the given directory. An overlay must also be ge given to use this option.`)

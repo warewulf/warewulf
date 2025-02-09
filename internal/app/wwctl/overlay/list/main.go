@@ -22,7 +22,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	t := table.New(cmd.OutOrStdout())
 	if ListLong {
-		t.AddHeader("PERM MODE", "UID", "GID", "SYSTEM-OVERLAY", "FILE PATH", "SITE")
+		t.AddHeader("PERM MODE", "UID", "GID", "OVERLAY", "FILE PATH", "SITE")
 	} else {
 		t.AddHeader("OVERLAY NAME", "FILES/DIRS", "SITE")
 	}
@@ -40,8 +40,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Debug("Iterating overlay rootfs: %s", overlay_.Rootfs())
 		if ListLong {
 			for file := range files {
-				s, err := os.Stat(files[file])
+				s, err := os.Stat(overlay_.File(files[file]))
 				if err != nil {
+					wwlog.Warn("%s: %s: %s", name, files[file], err)
 					continue
 				}
 

@@ -48,6 +48,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Set execute permissions for intermediate directories during `wwctl overlay import --parents`. #1655
 - Fix log output formatting during overlay build.
 - Prevent merging of zero-value net.IP fields. #1710
+- Fixed detection of overlay files in `wwctl overlay list --long`
 
 ### Removed
 

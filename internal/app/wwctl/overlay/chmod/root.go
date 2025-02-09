@@ -2,7 +2,7 @@ package chmod
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/warewulf/warewulf/internal/pkg/overlay"
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 )
 
 var (
@@ -15,16 +15,11 @@ var (
 		RunE:                  CobraRunE,
 		Args:                  cobra.ExactArgs(3),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			if len(args) == 0 {
-				list := overlay.FindOverlays()
-				return list, cobra.ShellCompDirectiveNoFileComp
-			} else if len(args) == 1 {
-				ret, err := overlay.OverlayGetFiles(args[0])
-				if err == nil {
-					return ret, cobra.ShellCompDirectiveNoFileComp
-				}
+			if len(args) < 2 {
+				return completions.OverlayAndFiles(cmd, args, toComplete)
+			} else {
+				return completions.None(cmd, args, toComplete)
 			}
-			return []string{""}, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
 )

@@ -2,7 +2,7 @@ package list
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/warewulf/warewulf/internal/pkg/overlay"
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 )
 
 var (
@@ -12,15 +12,8 @@ var (
 		Short:                 "List Warewulf Overlays and files",
 		Long:                  "This command displays information about all Warewulf overlays or the specified\nOVERLAY_NAME. It also supports listing overlay content information.",
 		RunE:                  CobraRunE,
-		Args:                  cobra.MinimumNArgs(0),
 		Aliases:               []string{"ls"},
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			if len(args) != 0 {
-				return nil, cobra.ShellCompDirectiveNoFileComp
-			}
-			list := overlay.FindOverlays()
-			return list, cobra.ShellCompDirectiveNoFileComp
-		},
+		ValidArgsFunction:     completions.Overlays,
 	}
 	ListContents bool
 	ListLong     bool

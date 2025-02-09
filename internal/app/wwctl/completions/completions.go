@@ -86,3 +86,24 @@ func Overlays(cmd *cobra.Command, args []string, toComplete string) ([]string, c
 	list := overlay.FindOverlays()
 	return list, cobra.ShellCompDirectiveNoFileComp
 }
+
+func OverlayFiles(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	ret, _ := overlay.OverlayGetFiles(args[0])
+	return ret, cobra.ShellCompDirectiveNoFileComp
+}
+
+func OverlayAndFiles(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if len(args) == 0 {
+		return Overlays(cmd, args, toComplete)
+	} else {
+		return OverlayFiles(cmd, args, toComplete)
+	}
+}
+
+func None(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
+func LocalFiles(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return nil, cobra.ShellCompDirectiveDefault
+}
