@@ -2,7 +2,7 @@ package edit
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 )
 
 var (
@@ -12,18 +12,7 @@ var (
 		Short:                 "Edit node(s) with editor",
 		Long:                  "This command opens an editor for the given profiles.",
 		RunE:                  CobraRunE,
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			if len(args) != 0 {
-				return nil, cobra.ShellCompDirectiveNoFileComp
-			}
-			nodeDB, _ := node.New()
-			profiles, _ := nodeDB.FindAllProfiles()
-			var p_names []string
-			for _, profile := range profiles {
-				p_names = append(p_names, profile.Id())
-			}
-			return p_names, cobra.ShellCompDirectiveNoFileComp
-		},
+		ValidArgsFunction:     completions.Profiles(0),
 	}
 	NoHeader bool
 )

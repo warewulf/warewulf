@@ -14,7 +14,7 @@ var (
 		Aliases:               []string{"remove", "rm", "del"},
 		RunE:                  CobraRunE,
 		Args:                  cobra.MinimumNArgs(1),
-		ValidArgsFunction:     completions.Profiles,
+		ValidArgsFunction:     completions.Profiles(0), // no limit
 	}
 	SetYes bool
 )
