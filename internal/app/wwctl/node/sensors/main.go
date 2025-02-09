@@ -47,7 +47,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 		results := make(chan power.IPMI, jobcount)
 
 		for _, node := range nodes {
-			if node.Ipmi.Ipaddr.IsUnspecified() {
+			if node.Ipmi == nil || node.Ipmi.Ipaddr == nil || node.Ipmi.Ipaddr.IsUnspecified() {
 				wwlog.Error("%s: No IPMI IP address", node.Id())
 				continue
 			}
