@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed panics in `wwctl node sensors` and `wwctl node console` when ipmi not configured.
 - Fixed completions for `wwctl` commands.
 - Return "" when NetDev.IpCIDR is empty.
+- Updated `wwctl node export` to include node IDs. #1718
 
 ### Removed
 
