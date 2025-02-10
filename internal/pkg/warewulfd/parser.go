@@ -1,6 +1,8 @@
 package warewulfd
 
 import (
+	"fmt"
+	"net"
 	"net/http"
 	"strconv"
 	"strings"
@@ -100,6 +102,7 @@ type parserInfoRender struct {
 	overlay    string
 	node       string
 	ipaddr     string
+	path       string
 	remoteport int
 }
 

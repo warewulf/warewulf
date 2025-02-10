@@ -2,7 +2,6 @@ package warewulfd
 
 import (
 	"fmt"
-	"net"
 	"net/http"
 	"os"
 	"path"
@@ -11,7 +10,6 @@ import (
 
 	"github.com/warewulf/warewulf/internal/pkg/config"
 
-	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/util"
@@ -130,6 +128,7 @@ func OverlaySend(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+/*
 type parserInfoRender struct {
 	overlay    string
 	path       string
@@ -250,3 +249,4 @@ func parseReqRender(req *http.Request) (ret parserInfoRender, err error) {
 
 	}
 }
+*/
