@@ -43,6 +43,26 @@ func TestHostList(t *testing.T) {
 			input:  []string{"n[01-03]"},
 			output: []string{"n01", "n02", "n03"},
 		},
+		"double expansion": {
+			input:  []string{"r[1-2]-n[3-4]"},
+			output: []string{"r1-n3", "r1-n4", "r2-n3", "r2-n4"},
+		},
+		"double expansion, with commas": {
+			input:  []string{"r[1,2]-n[3,4]"},
+			output: []string{"r1-n3", "r1-n4", "r2-n3", "r2-n4"},
+		},
+		"wrong comma order": {
+			input:  []string{"node[4,1]"},
+			output: []string{"node4", "node1"},
+		},
+		"wrong dash order": {
+			input:  []string{"node[4-1]"},
+			output: nil,
+		},
+		"minus node": {
+			input:  []string{"node[-1]"},
+			output: []string{"node0", "node1"},
+		},
 	}
 
 	for name, tt := range tests {
