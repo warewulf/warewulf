@@ -23,6 +23,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Removed partial support for regex searches in node and profile lists. #1635
 
+### Changed
+
+- DHCP template generates as much of the subnet and range definition as possible. #1469
+
 ## v4.6.0rc2, 2025-02-07
 
 ### Added
