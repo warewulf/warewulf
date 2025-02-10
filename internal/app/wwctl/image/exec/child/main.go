@@ -20,8 +20,6 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-const exitEval = `$(VALU="$?" ; if [ $VALU == 0 ]; then echo write; else echo discard; fi)`
-
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	if os.Getpid() != 1 {
 		return fmt.Errorf("PID is not 1: %d", os.Getpid())
@@ -78,7 +76,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	if err != nil {
 		return fmt.Errorf("failed to mount: %w", err)
 	}
-	ps1Str := fmt.Sprintf("[%s|%s] Warewulf> ", imageName, exitEval)
+	ps1Prefix := fmt.Sprintf(`[warewulf:%s]`, imageName)
 	if len(lowerObjects) != 0 && nodename == "" {
 		options := fmt.Sprintf("lowerdir=%s,upperdir=%s,workdir=%s",
 			path.Join(runDir, "lower"), imagePath, path.Join(runDir, "work"))
@@ -114,11 +112,11 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		if err != nil {
 			return fmt.Errorf("couldn't create overlay for node render overlay: %s", err)
 		}
-		ps1Str = fmt.Sprintf("[%s|ro|%s] Warewulf> ", imageName, nodename)
+		ps1Prefix = fmt.Sprintf(`warewulf:%s(ro)] `, imageName)
 	}
 	if !image.IsWriteAble(imageName) && nodename == "" {
 		wwlog.Verbose("mounting %s ro", imagePath)
-		ps1Str = fmt.Sprintf("[%s|ro] Warewulf> ", imageName)
+		ps1Prefix = fmt.Sprintf(`warewulf:%s(ro)] `, imageName)
 		err = syscall.Mount(imagePath, imagePath, "", syscall.MS_BIND, "")
 		if err != nil {
 			return fmt.Errorf("failed to prepare bind mount: %w", err)
@@ -172,7 +170,15 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		return fmt.Errorf("failed to mount /run: %w", err)
 	}
 
-	os.Setenv("PS1", ps1Str)
+	var ps1Base string
+	if v, ok := os.LookupEnv("WW_PS1"); ok {
+		ps1Base = v
+	} else {
+		ps1Base = `\w\$ `
+		os.Setenv("WW_PS1", ps1Base)
+	}
+
+	os.Setenv("PS1", fmt.Sprintf("%s %s", ps1Prefix, ps1Base))
 	os.Setenv("PATH", "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin")
 	os.Setenv("HISTFILE", "/dev/null")
 
