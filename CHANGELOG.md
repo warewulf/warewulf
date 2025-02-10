@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed completions for `wwctl` commands.
 - Return "" when NetDev.IpCIDR is empty.
 - Updated `wwctl node export` to include node IDs. #1718
+- Don't add "default" profile to new nodes if it does not exist. #1721
 
 ### Removed
 

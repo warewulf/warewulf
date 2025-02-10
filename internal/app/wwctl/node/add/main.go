@@ -54,7 +54,11 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 		delete(vars.nodeConf.Disks, "UNDEF")
 		vars.nodeConf.Ipmi.Tags = vars.nodeAdd.IpmiTagsAdd
 		if len(vars.nodeConf.Profiles) == 0 {
-			vars.nodeConf.Profiles = []string{"default"}
+			if registry, err := node.New(); err == nil {
+				if _, err := registry.GetProfile("default"); err == nil {
+					vars.nodeConf.Profiles = []string{"default"}
+				}
+			}
 		}
 		buffer, err := yaml.Marshal(vars.nodeConf)
 		if err != nil {
