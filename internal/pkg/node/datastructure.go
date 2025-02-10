@@ -42,8 +42,8 @@ type Profile struct {
 	ClusterName    string                 `yaml:"cluster name,omitempty" lopt:"cluster" sopt:"c" comment:"Set cluster group"`
 	ImageName      string                 `yaml:"image name,omitempty" lopt:"image" comment:"Set image name"`
 	Ipxe           string                 `yaml:"ipxe template,omitempty" lopt:"ipxe" comment:"Set the iPXE template name"`
-	RuntimeOverlay []string               `yaml:"runtime overlay,omitempty" lopt:"runtime" sopt:"R" comment:"Set the runtime overlay"`
-	SystemOverlay  []string               `yaml:"system overlay,omitempty" lopt:"wwinit" sopt:"O" comment:"Set the system overlay"`
+	RuntimeOverlay []string               `yaml:"runtime overlay,omitempty" lopt:"runtime-overlays" sopt:"R" comment:"Set the runtime overlay"`
+	SystemOverlay  []string               `yaml:"system overlay,omitempty" lopt:"system-overlays" sopt:"O" comment:"Set the system overlay"`
 	Kernel         *KernelConf            `yaml:"kernel,omitempty"`
 	Ipmi           *IpmiConf              `yaml:"ipmi,omitempty"`
 	Init           string                 `yaml:"init,omitempty" lopt:"init" sopt:"i" comment:"Define the init process to boot the image"`

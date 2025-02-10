@@ -40,6 +40,8 @@ func GetCommand() *cobra.Command {
 	vars.profileDel.CreateDelFlags(baseCmd)
 	vars.profileAdd.CreateAddFlags(baseCmd)
 	flags.AddContainer(baseCmd, &(vars.profileConf.ImageName))
+	flags.AddWwinit(baseCmd, &(vars.profileConf.SystemOverlay))
+	flags.AddRuntime(baseCmd, &(vars.profileConf.RuntimeOverlay))
 	baseCmd.PersistentFlags().BoolVarP(&vars.setYes, "yes", "y", false, "Set 'yes' to all questions asked")
 	// register the command line completions
 	if err := baseCmd.RegisterFlagCompletionFunc("image", completions.Images); err != nil { // no limit
@@ -48,7 +50,13 @@ func GetCommand() *cobra.Command {
 	if err := baseCmd.RegisterFlagCompletionFunc("kernelversion", completions.ProfileKernelVersion); err != nil {
 		panic(err)
 	}
+	if err := baseCmd.RegisterFlagCompletionFunc("runtime-overlays", completions.OverlayList); err != nil {
+		panic(err)
+	}
 	if err := baseCmd.RegisterFlagCompletionFunc("runtime", completions.OverlayList); err != nil {
+		panic(err)
+	}
+	if err := baseCmd.RegisterFlagCompletionFunc("system-overlays", completions.OverlayList); err != nil {
 		panic(err)
 	}
 	if err := baseCmd.RegisterFlagCompletionFunc("wwinit", completions.OverlayList); err != nil {

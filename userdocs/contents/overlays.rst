@@ -211,7 +211,7 @@ from the host to it. This overlay is then combined with the existing overlays.
   # wwctl overlay create welcome
   # wwctl overlay mkdir welcome /etc
   # wwctl overlay import welcome /etc/issue
-  # wwctl profile set default --wwinit=wwinit,wwclient,welcome
+  # wwctl profile set default --system-overlay=wwinit,wwclient,welcome
   ? Are you sure you want to modify 1 profile(s)? [y/N] y
   # wwctl profile list default -a |grep welcome
   default              SystemOverlay      wwinit,wwclient,welcome
