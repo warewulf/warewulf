@@ -2,7 +2,7 @@ package delete
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 )
 
 var (
@@ -14,15 +14,7 @@ var (
 		Args:                  cobra.MinimumNArgs(1),
 		RunE:                  CobraRunE,
 		Aliases:               []string{"rm", "del", "remove"},
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			if len(args) != 0 {
-				return nil, cobra.ShellCompDirectiveNoFileComp
-			}
-
-			nodeDB, _ := node.New()
-			nodes := nodeDB.ListAllNodes()
-			return nodes, cobra.ShellCompDirectiveNoFileComp
-		},
+		ValidArgsFunction:     completions.Nodes,
 	}
 	SetYes   bool
 	SetForce bool // no hash checking, so always using force

@@ -2,6 +2,7 @@ package list
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 )
 
 type variables struct {
@@ -22,6 +23,7 @@ func GetCommand() *cobra.Command {
 		Long:                  "This command will show you the images that are imported into Warewulf.",
 		RunE:                  CobraRunE(&vars),
 		Aliases:               []string{"ls"},
+		ValidArgsFunction:     completions.Images,
 	}
 	baseCmd.PersistentFlags().BoolVarP(&vars.full, "long", "l", false, "show all")
 	baseCmd.PersistentFlags().BoolVarP(&vars.kernel, "kernel", "k", false, "show kernel version")

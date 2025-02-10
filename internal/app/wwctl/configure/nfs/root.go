@@ -1,6 +1,9 @@
 package nfs
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
+)
 
 var (
 	baseCmd = &cobra.Command{
@@ -9,7 +12,9 @@ var (
 		Short:                 "Manage and initialize NFS",
 		Long: "NFS is an optional dependent service of Warewulf, this tool will automatically\n" +
 			"configure NFS as per the configuration in the warewulf.conf file.",
-		RunE: CobraRunE,
+		RunE:              CobraRunE,
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: completions.None,
 	}
 )
 

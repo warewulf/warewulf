@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 	"github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/upgrade"
 	"github.com/warewulf/warewulf/internal/pkg/util"
@@ -23,7 +24,9 @@ func GetCommand() *cobra.Command {
 		Short:                 "Upgrade an existing warewulf.conf",
 		Long: `Upgrades warewulf.conf from a previous version of Warewulf 4 to a format
 supported by the current version.`,
-		RunE: UpgradeNodesConf,
+		RunE:              UpgradeNodesConf,
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: completions.None,
 	}
 	command.Flags().StringVarP(&inputPath, "input-path", "i", "", "Path to a legacy warewulf.conf")
 	command.Flags().StringVarP(&outputPath, "output-path", "o", "", "Path to write the upgraded warewulf.conf to")

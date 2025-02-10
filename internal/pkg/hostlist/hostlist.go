@@ -4,77 +4,113 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"unicode"
 )
 
-func toInt(i string) int {
-	ret, _ := strconv.Atoi(i)
-	return ret
-}
-
-func isDigit(s string) bool {
-	r := []rune(s)
-
-	for i := 0; i < len(r); i++ {
-		if !unicode.IsDigit(r[i]) {
-			return false
-		}
-	}
-
-	return true
-}
-
-func expand_iterate(list []string) ([]string, int) {
-	var ret []string
-	var count int
-
-	for _, i := range list {
-
-		bracketIndex1 := strings.Index(i, "[")
-		bracketIndex2 := strings.Index(i, "]")
-
-		if bracketIndex1 >= 0 && bracketIndex1 < bracketIndex2 {
-			prefix := i[:bracketIndex1]
-			suffix := i[bracketIndex2+1:]
-			ranges := strings.Split(i[bracketIndex1+1:bracketIndex2], ",")
-			count++
-
-			for _, r := range ranges {
-				iterate := strings.Split(r, "-")
-
-				if len(iterate) == 1 {
-					if !isDigit(iterate[0]) {
-						return ret, 0
-					} else {
-						ret = append(ret, prefix+iterate[0]+suffix)
-					}
-				} else if len(iterate) == 2 {
-					if !isDigit(iterate[0]) || !isDigit(iterate[1]) {
-						return ret, 0
-					} else {
-						sigfigures := len(iterate[0])
-						for i := toInt(iterate[0]); i <= toInt(iterate[1]); i++ {
-							ret = append(ret, fmt.Sprintf(`%s%.`+fmt.Sprintf("%d", sigfigures)+`d%s`, prefix, i, suffix))
-						}
-					}
-				}
-			}
-		}
-	}
-	return ret, count
-}
-
+// Expand takes a slice of host strings, possibly containing comma-separated
+// values and bracketed ranges (e.g. "node[01-03]") and returns a fully expanded
+// slice of host names.
 func Expand(list []string) []string {
-	ret := list
+	// First, split each input string on commas that occur outside brackets.
+	var preList []string
+	for _, s := range list {
+		parts := splitTopLevel(s)
+		preList = append(preList, parts...)
+	}
 
+	expanded := preList
 	for {
-		loop, count := expand_iterate(ret)
-
+		onceExpanded, count := expandOnce(expanded)
 		if count == 0 {
 			break
 		}
-		ret = loop
+		expanded = onceExpanded
 	}
 
-	return ret
+	return expanded
+}
+
+// expandOnce performs a single round of bracket expansion.
+func expandOnce(hosts []string) ([]string, int) {
+	var result []string
+	var expansionCount int
+
+	for _, host := range hosts {
+		bracketStart := strings.Index(host, "[")
+		bracketEnd := strings.Index(host, "]")
+
+		if bracketStart >= 0 && bracketStart < bracketEnd {
+			prefix := host[:bracketStart]
+			suffix := host[bracketEnd+1:]
+			// Extract the content between brackets and split on commas.
+			ranges := strings.Split(host[bracketStart+1:bracketEnd], ",")
+			expansionCount++
+
+			for _, rng := range ranges {
+				parts := strings.Split(rng, "-")
+
+				if len(parts) == 1 {
+					if !isDigit(parts[0]) {
+						// Abort expansion on invalid input.
+						return result, 0
+					}
+					result = append(result, prefix+parts[0]+suffix)
+				} else if len(parts) == 2 {
+					if !isDigit(parts[0]) || !isDigit(parts[1]) {
+						return result, 0
+					}
+					sigFigures := len(parts[0])
+					startNum := toInt(parts[0])
+					endNum := toInt(parts[1])
+					for num := startNum; num <= endNum; num++ {
+						result = append(result, fmt.Sprintf("%s%0*d%s", prefix, sigFigures, num, suffix))
+					}
+				}
+			}
+		} else {
+			// No brackets; keep the string as is.
+			result = append(result, host)
+		}
+	}
+
+	return result, expansionCount
+}
+
+// splitTopLevel splits s on commas that are not inside square brackets.
+func splitTopLevel(s string) []string {
+	var parts []string
+	depth := 0
+	start := 0
+	for i, ch := range s {
+		switch ch {
+		case '[':
+			depth++
+		case ']':
+			if depth > 0 {
+				depth--
+			}
+		case ',':
+			if depth == 0 {
+				parts = append(parts, s[start:i])
+				start = i + 1
+			}
+		}
+	}
+	parts = append(parts, s[start:])
+	return parts
+}
+
+// toInt converts a numeric string to an integer. Assumes valid input.
+func toInt(s string) int {
+	num, _ := strconv.Atoi(s)
+	return num
+}
+
+// isDigit returns true if s consists solely of ASCII digits.
+func isDigit(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if s[i] < '0' || s[i] > '9' {
+			return false
+		}
+	}
+	return true
 }

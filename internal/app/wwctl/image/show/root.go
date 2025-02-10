@@ -2,7 +2,7 @@ package show
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/warewulf/warewulf/internal/pkg/image"
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 )
 
 var (
@@ -13,15 +13,13 @@ var (
 		Long: `Shows the base directory for the chroot of the given image.
 More information about the image can be shown with the '-a' option.`,
 		RunE: CobraRunE,
+		Args: cobra.ExactArgs(1),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			if len(args) != 0 {
-				return nil, cobra.ShellCompDirectiveNoFileComp
+			if len(args) == 0 {
+				return completions.Images(cmd, args, toComplete)
 			}
-			list, _ := image.ListSources()
-			return list, cobra.ShellCompDirectiveNoFileComp
+			return completions.None(cmd, args, toComplete)
 		},
-
-		Args: cobra.MinimumNArgs(1),
 	}
 	ShowAll bool
 )

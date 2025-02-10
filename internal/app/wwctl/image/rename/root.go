@@ -2,7 +2,7 @@ package rename
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/warewulf/warewulf/internal/pkg/image"
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 )
 
 var baseCmd = &cobra.Command{
@@ -12,13 +12,12 @@ var baseCmd = &cobra.Command{
 	Short:                 "Rename an existing image",
 	Long:                  "This command will rename an existing image.",
 	RunE:                  CobraRunE,
-	Args:                  cobra.MinimumNArgs(2),
+	Args:                  cobra.ExactArgs(2),
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		if len(args) != 0 {
-			return nil, cobra.ShellCompDirectiveNoFileComp
+		if len(args) == 0 {
+			return completions.Images(cmd, args, toComplete)
 		}
-		list, _ := image.ListSources()
-		return list, cobra.ShellCompDirectiveNoFileComp
+		return completions.None(cmd, args, toComplete)
 	},
 }
 

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
@@ -34,6 +35,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		for nodeID := range registry.Nodes {
 			args = append(args, nodeID)
 		}
+	} else {
+		args = hostlist.Expand(args)
 	}
 	wwlog.Debug("node list: %v", args)
 

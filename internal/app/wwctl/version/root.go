@@ -1,15 +1,19 @@
 package version
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
+)
 
 var (
 	baseCmd = &cobra.Command{
-		Use:     "version",
-		Short:   "Version information",
-		Long:    "This command will print the Warewulf version.",
-		RunE:    CobraRunE,
-		Args:    cobra.ExactArgs(0),
-		Aliases: []string{"vers"},
+		Use:               "version",
+		Short:             "Version information",
+		Long:              "This command will print the Warewulf version.",
+		RunE:              CobraRunE,
+		Args:              cobra.NoArgs,
+		Aliases:           []string{"vers"},
+		ValidArgsFunction: completions.None,
 	}
 	ListFull bool
 )

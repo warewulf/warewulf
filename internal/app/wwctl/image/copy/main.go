@@ -10,11 +10,6 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
-
-	if len(args) > 2 {
-		wwlog.Warn("copy only requires 2 arguments but you provided %d arguments. Hence, they will be ignored.", len(args))
-	}
-
 	cdp := &wwapiv1.ImageCopyParameter{
 		ImageSource:      args[0],
 		ImageDestination: args[1],

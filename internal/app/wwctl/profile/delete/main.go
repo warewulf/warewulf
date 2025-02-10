@@ -37,9 +37,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 						if np == r {
 							wwlog.Verbose("Removing profile from node %s: %s", n.Id(), r)
 							n.Profiles = append(n.Profiles[:i], n.Profiles[i+1:]...)
-							if err != nil {
-								return fmt.Errorf("failed to update node: %w", err)
-							}
 						}
 					}
 				}

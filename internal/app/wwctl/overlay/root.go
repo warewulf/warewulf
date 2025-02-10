@@ -34,7 +34,6 @@ func init() {
 	baseCmd.AddCommand(imprt.GetCommand())
 	baseCmd.AddCommand(chmod.GetCommand())
 	baseCmd.AddCommand(chown.GetCommand())
-
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

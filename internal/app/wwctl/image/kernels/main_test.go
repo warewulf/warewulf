@@ -27,12 +27,12 @@ Image  Kernel  Version  Default  Nodes
 		},
 		"list": {
 			files: map[string][]string{
-				"image1": []string{
+				"image1": {
 					"/boot/vmlinuz-5.14.0-427.18.1.el9_4.x86_64",
 					"/boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64",
 					"/boot/vmlinuz-4.14.0-427.18.1.el8_4.x86_64",
 				},
-				"image2": []string{
+				"image2": {
 					"/boot/vmlinuz-0-rescue-eb46964329b146e39518c625feab3ea0",
 					"/boot/vmlinuz-5.14.0-362.24.1.el9_3.aarch64",
 					"/boot/vmlinuz-5.14.0-427.31.1.el9_4.aarch64+debug",
@@ -56,12 +56,12 @@ image2  /boot/vmlinuz-5.14.0-427.31.1.el9_4.aarch64+debug        5.14.0-427.31.1
 		},
 		"single image": {
 			files: map[string][]string{
-				"image1": []string{
+				"image1": {
 					"/boot/vmlinuz-5.14.0-427.18.1.el9_4.x86_64",
 					"/boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64",
 					"/boot/vmlinuz-4.14.0-427.18.1.el8_4.x86_64",
 				},
-				"image2": []string{
+				"image2": {
 					"/boot/vmlinuz-0-rescue-eb46964329b146e39518c625feab3ea0",
 					"/boot/vmlinuz-5.14.0-362.24.1.el9_3.aarch64",
 					"/boot/vmlinuz-5.14.0-427.31.1.el9_4.aarch64+debug",

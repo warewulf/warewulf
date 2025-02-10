@@ -39,4 +39,15 @@ func Test_Overlay_List(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "email.ww")
 	})
+	t.Run("overlay list long", func(t *testing.T) {
+		baseCmd.SetArgs([]string{"--long"})
+		baseCmd := GetCommand()
+		buf := new(bytes.Buffer)
+		baseCmd.SetOut(buf)
+		baseCmd.SetErr(buf)
+		wwlog.SetLogWriter(buf)
+		err := baseCmd.Execute()
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "email.ww")
+	})
 }

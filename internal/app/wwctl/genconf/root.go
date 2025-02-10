@@ -6,15 +6,18 @@ import (
 	"github.com/warewulf/warewulf/internal/app/wwctl/genconf/man"
 	"github.com/warewulf/warewulf/internal/app/wwctl/genconf/reference"
 	"github.com/warewulf/warewulf/internal/app/wwctl/genconf/warewulfconf"
+
+	cobraCompletions "github.com/warewulf/warewulf/internal/app/wwctl/completions"
 )
 
 var (
 	baseCmd = &cobra.Command{
-		Use:     "genconfig",
-		Short:   "Generate various configurations",
-		Long:    "This command will allow you to generate different configurations like bash-completions.",
-		Args:    cobra.ExactArgs(0),
-		Aliases: []string{"cnf"},
+		Use:               "genconfig",
+		Short:             "Generate various configurations",
+		Long:              "This command will allow you to generate different configurations like bash-completions.",
+		Args:              cobra.NoArgs,
+		Aliases:           []string{"cnf"},
+		ValidArgsFunction: cobraCompletions.None,
 	}
 	ListFull  bool
 	WWctlRoot *cobra.Command

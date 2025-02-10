@@ -2,7 +2,7 @@ package on
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 )
 
 type variables struct {
@@ -14,23 +14,12 @@ type variables struct {
 func GetCommand() *cobra.Command {
 	vars := variables{}
 	powerCmd := &cobra.Command{
-		Use:   "on [OPTIONS] [PATTERN ...]",
-		Short: "Power on the given node(s)",
-		Long:  "This command will power on a set of nodes specified by PATTERN.",
-		RunE:  CobraRunE(&vars),
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			if len(args) != 0 {
-				return nil, cobra.ShellCompDirectiveNoFileComp
-			}
-
-			nodeDB, _ := node.New()
-			nodes, _ := nodeDB.FindAllNodes()
-			var node_names []string
-			for _, node := range nodes {
-				node_names = append(node_names, node.Id())
-			}
-			return node_names, cobra.ShellCompDirectiveNoFileComp
-		},
+		Use:               "on [OPTIONS] [PATTERN ...]",
+		Short:             "Power on the given node(s)",
+		Long:              "This command will power on a set of nodes specified by PATTERN.",
+		RunE:              CobraRunE(&vars),
+		Args:              cobra.MinimumNArgs(1),
+		ValidArgsFunction: completions.Nodes,
 	}
 	powerCmd.PersistentFlags().BoolVarP(&vars.Showcmd, "show", "s", false, "only show command which will be executed")
 	powerCmd.PersistentFlags().IntVar(&vars.Fanout, "fanout", 50, "how many command should be executed in parallel")

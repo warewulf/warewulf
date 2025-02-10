@@ -5,6 +5,7 @@ import (
 	"syscall"
 
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
 
@@ -14,6 +15,8 @@ var (
 		Use:                   "server [OPTIONS]",
 		Short:                 "Start Warewulf server",
 		RunE:                  CobraRunE,
+		Args:                  cobra.NoArgs,
+		ValidArgsFunction:     completions.None,
 	}
 )
 

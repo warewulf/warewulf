@@ -2,6 +2,7 @@ package mkdir
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 )
 
 var (
@@ -11,7 +12,14 @@ var (
 		Short:                 "Create a new directory within an Overlay",
 		Long:                  "This command creates a new directory within the Warewulf OVERLAY_NAME.",
 		RunE:                  CobraRunE,
-		Args:                  cobra.MinimumNArgs(2),
+		Args:                  cobra.ExactArgs(2),
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) == 0 {
+				return completions.Overlays(cmd, args, toComplete)
+			} else {
+				return completions.None(cmd, args, toComplete)
+			}
+		},
 	}
 	PermMode int32
 )

@@ -22,7 +22,7 @@ are:
 Imported images are used to create bootable images.`,
 		Example: "wwctl image import docker://ghcr.io/warewulf/warewulf-rockylinux:8 rockylinux-8",
 		RunE:    CobraRunE,
-		Args:    cobra.MinimumNArgs(1),
+		Args:    cobra.RangeArgs(1, 2),
 		PreRun: func(cmd *cobra.Command, args []string) {
 			if SetForce && SetUpdate {
 				wwlog.Warn("Both --force and --update flags are set, will ignore --update flag")

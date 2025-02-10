@@ -1,6 +1,9 @@
 package hostfile
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
+)
 
 var (
 	baseCmd = &cobra.Command{
@@ -9,6 +12,8 @@ var (
 		Short:                 "update hostfile on master",
 		Long:                  "Manage the hostfile on the master node\n",
 		RunE:                  CobraRunE,
+		Args:                  cobra.NoArgs,
+		ValidArgsFunction:     completions.None,
 	}
 )
 
