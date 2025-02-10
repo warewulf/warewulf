@@ -412,7 +412,7 @@ Return the ipv4 address and mask in CIDR format. Aimed for the use in
 templates.
 */
 func (netdev *NetDev) IpCIDR() string {
-	if netdev.Ipaddr.IsUnspecified() || netdev.Netmask.IsUnspecified() {
+	if netdev.Ipaddr == nil || netdev.Ipaddr.IsUnspecified() || netdev.Netmask == nil || netdev.Netmask.IsUnspecified() {
 		return ""
 	}
 	ipCIDR := net.IPNet{

@@ -20,6 +20,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 - Removed partial support for regex searches in node and profile lists. #1635
+### Fixed
+
+- Return "" when NetDev.IpCIDR is empty.
 
 ## v4.6.0rc2, 2025-02-07
 
