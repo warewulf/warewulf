@@ -10,19 +10,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Added missing hostlist support for `wwctl node` and `wwctl overlay build`. #1635
 - Added support for comma-separated hostlist patterns. #1635
+- Added default value for `warewulf.conf:dhcp.template`. #1725
 
 ### Fixed
 
 - Fixed detection of overlay files in `wwctl overlay list --long`.
 - Fixed panics in `wwctl node sensors` and `wwctl node console` when ipmi not configured.
 - Fixed completions for `wwctl` commands.
+- Return "" when NetDev.IpCIDR is empty.
 
 ### Removed
 
 - Removed partial support for regex searches in node and profile lists. #1635
-### Fixed
-
-- Return "" when NetDev.IpCIDR is empty.
 
 ## v4.6.0rc2, 2025-02-07
 
