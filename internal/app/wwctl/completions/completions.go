@@ -52,7 +52,7 @@ func ProfileKernelVersion(cmd *cobra.Command, args []string, toComplete string) 
 }
 
 func Images(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	if sources, err := image.ListSources(); err != nil {
+	if sources, err := image.ListSources(); err == nil {
 		return sources, cobra.ShellCompDirectiveNoFileComp
 	}
 	return nil, cobra.ShellCompDirectiveNoFileComp
