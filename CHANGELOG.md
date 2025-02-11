@@ -11,11 +11,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added missing hostlist support for `wwctl node` and `wwctl overlay build`. #1635
 - Added support for comma-separated hostlist patterns. #1635
 - Added default value for `warewulf.conf:dhcp.template`. #1725
+- Added `UniqueField` template function. #829
 
 ### Changed
 
 - Hide internal `wwctl completion` and `wwctl genconfig` commands. #1716
 - Make .ww suffix optional during `wwctl overlay show --render`. #649
+- DHCP template generates as much of the subnet and range definition as possible. #1469
+- Updated overlay flags to `wwctl <node|profile> <add|set> [--runtime-overlays|--system-overlays]`. #1495
+- syncuser overlay reads host passwd and group database from sysconfdir. #1736
+- syncuser overlay skips duplicate users and groups in passwd and group databases. #829
 
 ### Fixed
 
@@ -30,11 +35,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Removed partial support for regex searches in node and profile lists. #1635
 - Remove redundant `wwctl genconfig completions` command. #1716
-
-### Changed
-
-- DHCP template generates as much of the subnet and range definition as possible. #1469
-- Updated overlay flags to `wwctl <node|profile> <add|set> [--runtime-overlays|--system-overlays]`. #1495
 
 ## v4.6.0rc2, 2025-02-07
 

@@ -161,6 +161,10 @@ all users on both the Warewulf server and from the image. To function
 properly, ``wwctl image syncuser`` must have also been run on the image
 image to synchronize its user and group IDs with those of the server.
 
+If a ``PasswordlessRoot`` tag is set to "true", the overlay will also insert a
+"passwordless" root entry. This can be particularly useful for accessing a
+cluster node when its network interface is not properly configured.
+
 ignition
 --------
 
