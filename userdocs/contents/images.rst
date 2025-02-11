@@ -306,6 +306,16 @@ construct the final ``PS1`` variable for the shell.
    # env WW_PS1="\u@\h:\w\$ " wwctl image shell rockylinux-9
    [warewulf:rockylinux-9] root@rocky:/$
 
+Shell history
+-------------
+
+By default, Warewulf image shell sessions don't retain history; but you can
+specify a history file by specifing ``WW_HISTFILE``. Note that this file is
+stored within the image; you may want to exclude it when the image is built.
+(See :ref:`exclude`.)
+
+.. _exclude:
+
 Excluding Files from an Image
 -----------------------------
 

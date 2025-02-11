@@ -170,6 +170,8 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		return fmt.Errorf("failed to mount /run: %w", err)
 	}
 
+	os.Setenv("PATH", "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin")
+
 	var ps1Base string
 	if v, ok := os.LookupEnv("WW_PS1"); ok {
 		ps1Base = v
@@ -177,10 +179,16 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		ps1Base = `\w\$ `
 		os.Setenv("WW_PS1", ps1Base)
 	}
-
 	os.Setenv("PS1", fmt.Sprintf("%s %s", ps1Prefix, ps1Base))
-	os.Setenv("PATH", "/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin")
-	os.Setenv("HISTFILE", "/dev/null")
+
+	var histfile string
+	if v, ok := os.LookupEnv("WW_HISTFILE"); ok {
+		histfile = v
+	} else {
+		histfile = "/dev/null"
+		os.Setenv("WW_HISTFILE", histfile)
+	}
+	os.Setenv("HISTFILE", histfile)
 
 	wwlog.Debug("Exec: %s %s", args[1], args[1:])
 	return syscall.Exec(args[1], args[1:], os.Environ())
