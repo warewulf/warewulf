@@ -142,11 +142,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 	if SyncUser {
 		if userdbChanged {
-			if err = image.SyncUids(imageName, false); err != nil {
+			if err = image.Syncuser(imageName, false); err != nil {
 				wwlog.Error("syncuser error: %s", err)
 			}
 		} else {
-			wwlog.Info("Skipping syncuser (passwd or group not changed)")
+			wwlog.Info("Skipping syncuser (passwd and group files not changed)")
 		}
 	}
 

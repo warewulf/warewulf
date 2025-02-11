@@ -12,7 +12,7 @@ import (
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	if SyncUser {
 		for _, name := range args {
-			if err := image.SyncUids(name, true); err != nil {
+			if err := image.Syncuser(name, true); err != nil {
 				return fmt.Errorf("syncuser error: %w", err)
 			}
 		}

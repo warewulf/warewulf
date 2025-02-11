@@ -15,7 +15,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if !image.ValidName(imageName) {
 		return fmt.Errorf("%s is not a valid image", imageName)
 	}
-	err := image.SyncUids(imageName, write)
+	err := image.Syncuser(imageName, write)
 	if err != nil {
 		return fmt.Errorf("error in synchronize: %s", err)
 	}
