@@ -86,7 +86,7 @@ func Syncuser(imageName string, write bool) error {
 		wwlog.Info("uid/gid synced for image %s", imageName)
 	} else {
 		if passwdSync.needsSync() || groupSync.needsSync() {
-			wwlog.Info("uid/gid not synced: run `wwctl image syncuser --write %s`", imageName)
+			wwlog.Info("uid/gid not synced: run `wwctl image syncuser --write=true %s` to synchronize", imageName)
 		} else {
 			wwlog.Info("uid/gid already synced")
 		}

@@ -22,7 +22,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	if write && !build {
 		// when write = true and build = false, we will print a warnning, this is the default case
-		wwlog.Warn("Syncuser is completed, please remember to rebuild image or add `--build` flag for automatic rebuild after syncuser")
+		wwlog.Warn("Syncuser is completed. Rebuild image or add `--build` flag for automatic rebuild after syncuser.")
 	} else if write && build {
 		// if write = true and build = true, then it'll trigger the image build after sync
 		cbp := &wwapiv1.ImageBuildParameter{
