@@ -22,7 +22,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Updated overlay flags to `wwctl <node|profile> <add|set> [--runtime-overlays|--system-overlays]`. #1495
 - syncuser overlay reads host passwd and group database from sysconfdir. #1736
 - syncuser overlay skips duplicate users and groups in passwd and group databases. #829
-- `wwctl image syncuser --write` is true by default.
+- `wwctl image syncuser --write` is true by default. #1736
+- Update syncuser documentation. #1736
 
 ### Fixed
 

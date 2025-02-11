@@ -196,27 +196,30 @@ See ProxyFromEnvironment_ For more information.
 Syncuser
 ========
 
-At import time Warewulf checks if the names of the users on the host
-match the users and UIDs/GIDs in the imported image. If there is
-mismatch, the import command will print out a warning.  By setting the
-``--syncuser`` flag you advise Warewulf to try to syncronize the users
-from the host to the image, which means that ``/etc/passwd`` and
-``/etc/group`` of the imported image are updated and all the files
-belonging to these UIDs and GIDs will also be updated.
+Warewulf can optionally synchronize UIDs and GIDs from the Warewulf server to an
+image. This can be particularly useful when there is no central directory (e.g.,
+an LDAP server). Some system services (notably "munge") require a user to have
+the same UID across all nodes.
 
-A check if the users of the host and image matches can be
-triggered with the ``syncuser`` command.
+With the addition of the "syncuser" overlay, Warewulf syncuser also supports
+defining local users on the Warewulf server for synchronization to cluster
+nodes.
 
-.. code-block:: console
+If there is mismatch between the server and the image, the import command will
+print out a warning.
 
-   # wwctl image syncuser image-name
-
-With the ``--write`` flag it will update the image to match the
-user database of the host as described above.
+Syncuser may be invoked during image import, exec, shell, or build.
 
 .. code-block:: console
 
-   wwctl image syncuser --write image-name
+   # wwctl image import --syncuser docker://ghcr.io/warewulf/warewulf-rockylinux:9 rockylinux-9
+   # wwctl image exec --syncuser rockylinux-9 -- /usr/bin/echo "Hello, world!"
+   # wwctl image shell --syncuser rockylinux-9
+   # wwctl image build --syncuser rockylinux-9
+   # wwctl image syncuser rockylinux-9
+
+After syncuser, ``/etc/passwd`` and ``/etc/group`` in the image are updated, and
+permissions on files belonging to these UIDs and GIDs are updated to match.
 
 Listing All Imported Images
 ===========================
