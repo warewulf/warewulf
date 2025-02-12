@@ -104,6 +104,11 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			kernelArgs = strings.Join(remoteNode.Kernel.Args, " ")
 			kernelVersion = remoteNode.Kernel.Version
 		}
+		if kernelVersion == "" {
+			if kernel_ := kernel.FromNode(&remoteNode); kernel_ != nil {
+				kernelVersion = kernel_.Version()
+			}
+		}
 		tmpl_data = &templateVars{
 			Id:            remoteNode.Id(),
 			Cluster:       remoteNode.ClusterName,
@@ -185,6 +190,11 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			if remoteNode.Kernel != nil {
 				kernelArgs = strings.Join(remoteNode.Kernel.Args, " ")
 				kernelVersion = remoteNode.Kernel.Version
+			}
+			if kernelVersion == "" {
+				if kernel_ := kernel.FromNode(&remoteNode); kernel_ != nil {
+					kernelVersion = kernel_.Version()
+				}
 			}
 			tmpl_data = &templateVars{
 				Id:            remoteNode.Id(),
