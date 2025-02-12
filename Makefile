@@ -63,7 +63,7 @@ man_pages: wwctl $(wildcard docs/man/man5/*.5)
 
 etc/bash_completion.d/wwctl: wwctl
 	mkdir -p etc/bash_completion.d/
-	./wwctl --emptyconf genconfig completions >etc/bash_completion.d/wwctl
+	./wwctl --emptyconf completion bash >etc/bash_completion.d/wwctl
 
 .PHONY: lint
 lint: $(config)

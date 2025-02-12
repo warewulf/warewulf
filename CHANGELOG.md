@@ -12,6 +12,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added support for comma-separated hostlist patterns. #1635
 - Added default value for `warewulf.conf:dhcp.template`. #1725
 
+### Changed
+
+- Hide internal `wwctl completion` and `wwctl genconfig` commands. #1716
+
 ### Fixed
 
 - Fixed detection of overlay files in `wwctl overlay list --long`.
@@ -23,6 +27,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 - Removed partial support for regex searches in node and profile lists. #1635
+- Remove redundant `wwctl genconfig completions` command. #1716
 
 ### Changed
 
