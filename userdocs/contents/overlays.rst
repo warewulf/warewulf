@@ -110,6 +110,21 @@ configured network interfaces, typically based on a known MAC address.
 - systemd.netname
 - udev.netname
 
+Several of the network configuration overlays support netdev tags to further
+customize the interface:
+
+- **``DNS[0-9]*``:** one or more DNS servers
+- **``DNSSEARCH``:** domain search path
+- **``MASTER``:** the master for a bond interface
+
+NetworkManager
+^^^^^^^^^^^^^^
+
+- **``parent_device``:** the parent device of a vlan interface
+- **``vlan_id``:** the vlan id for a vlan interface
+- **``downdelay``, ``updelay``, ``miimon``, ``mode``, ``xmit_hash_policy``:**
+  bond device settings
+
 Basics
 ------
 

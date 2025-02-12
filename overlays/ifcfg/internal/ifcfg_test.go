@@ -11,65 +11,39 @@ import (
 )
 
 func Test_ifcfgOverlay(t *testing.T) {
-	env := testenv.New(t)
-	defer env.RemoveAll()
-	env.ImportFile("var/lib/warewulf/overlays/ifcfg/rootfs/etc/sysconfig/network-scripts/ifcfg.ww", "../rootfs/etc/sysconfig/network-scripts/ifcfg.ww")
-	env.ImportFile("var/lib/warewulf/overlays/ifcfg/rootfs/etc/sysconfig/network-scripts/route.ww", "../rootfs/etc/sysconfig/network-scripts/route.ww")
-	env.ImportFile("var/lib/warewulf/overlays/ifcfg/rootfs/etc/sysconfig/network.ww", "../rootfs/etc/sysconfig/network.ww")
-
-	tests := []struct {
-		name       string
+	tests := map[string]struct {
 		nodes_conf string
 		args       []string
 		log        string
 	}{
-		{
-			name:       "ifcfg:ifcfg.ww",
-			nodes_conf: "nodes.conf",
-			args:       []string{"--render", "node1", "ifcfg", "etc/sysconfig/network-scripts/ifcfg.ww"},
-			log:        ifcfg,
-		},
-		{
-			name:       "ifcfg:network.ww",
-			nodes_conf: "nodes.conf",
-			args:       []string{"--render", "node1", "ifcfg", "etc/sysconfig/network.ww"},
-			log:        ifcfg_network,
-		},
-		{
-			name:       "ifcfg:ifcfg.ww (vlan)",
-			nodes_conf: "nodes.conf-vlan",
-			args:       []string{"--render", "node1", "ifcfg", "etc/sysconfig/network-scripts/ifcfg.ww"},
-			log:        ifcfg_vlan,
-		},
-		{
-			name:       "ifcfg:route.ww",
-			nodes_conf: "nodes.conf-vlan",
-			args:       []string{"--render", "node1", "ifcfg", "etc/sysconfig/network-scripts/route.ww"},
-			log:        ifcfg_routes,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			env.ImportFile("etc/warewulf/nodes.conf", tt.nodes_conf)
-			cmd := show.GetCommand()
-			cmd.SetArgs(tt.args)
-			stdout := bytes.NewBufferString("")
-			stderr := bytes.NewBufferString("")
-			logbuf := bytes.NewBufferString("")
-			cmd.SetOut(stdout)
-			cmd.SetErr(stderr)
-			wwlog.SetLogWriter(logbuf)
-			err := cmd.Execute()
-			assert.NoError(t, err)
-			assert.Empty(t, stdout.String())
-			assert.Empty(t, stderr.String())
-			assert.Equal(t, tt.log, logbuf.String())
-		})
-	}
-}
-
-const ifcfg string = `backupFile: true
+		"ifcfg:ifcfg.ww": {
+			nodes_conf: `
+nodes:
+  node1:
+    network devices:
+      default:
+        device: wwnet0
+        hwaddr: e6:92:39:49:7b:03
+        ipaddr: 192.168.3.21
+        netmask: 255.255.255.0
+        gateway: 192.168.3.1
+        tags:
+          DNS1: 1.1.1.1
+          DNS2: 1.0.0.1
+          DNSSEARCH: "example.com example.net"
+      secondary:
+        device: wwnet1
+        hwaddr: 9a:77:29:73:14:f1
+        ipaddr: 192.168.3.22
+        netmask: 255.255.255.0
+        gateway: 192.168.3.1
+        tags:
+          DNS1: 8.8.8.8
+          DNS2: 8.8.4.4
+          DNSSEARCH: "example.net;example.com;"
+`,
+			args: []string{"--render", "node1", "ifcfg", "etc/sysconfig/network-scripts/ifcfg.ww"},
+			log: `backupFile: true
 writeFile: true
 Filename: ifcfg-default.conf
 
@@ -89,6 +63,7 @@ IPV6_DEFROUTE=yes
 IPV6_FAILURE_FATAL=no
 DNS1=1.1.1.1
 DNS2=1.0.0.1
+DOMAIN="example.com example.net"
 backupFile: true
 writeFile: true
 Filename: ifcfg-secondary.conf
@@ -108,16 +83,61 @@ IPV6_DEFROUTE=yes
 IPV6_FAILURE_FATAL=no
 DNS1=8.8.8.8
 DNS2=8.8.4.4
-`
-
-const ifcfg_network string = `backupFile: true
+DOMAIN="example.net example.com"
+`,
+		},
+		"ifcfg:network.ww": {
+			nodes_conf: `
+nodes:
+  node1:
+    network devices:
+      default:
+        device: wwnet0
+        hwaddr: e6:92:39:49:7b:03
+        ipaddr: 192.168.3.21
+        netmask: 255.255.255.0
+        gateway: 192.168.3.1
+        tags:
+          DNS1: 1.1.1.1
+          DNS2: 1.0.0.1
+          DNSSEARCH: "example.com example.net"
+      secondary:
+        device: wwnet1
+        hwaddr: 9a:77:29:73:14:f1
+        ipaddr: 192.168.3.22
+        netmask: 255.255.255.0
+        gateway: 192.168.3.1
+        tags:
+          DNS1: 8.8.8.8
+          DNS2: 8.8.4.4
+          DNSSEARCH: "example.net;example.com;"
+`,
+			args: []string{"--render", "node1", "ifcfg", "etc/sysconfig/network.ww"},
+			log: `backupFile: true
 writeFile: true
 Filename: etc/sysconfig/network
 NETWORKING=yes
 HOSTNAME=node1
-`
-
-const ifcfg_vlan string = `backupFile: true
+`,
+		},
+		"ifcfg:ifcfg.ww (vlan)": {
+			nodes_conf: `
+nodes:
+  node1:
+    primary network: untagged
+    network devices:
+      untagged:
+        onboot: true
+        device: eth0
+      tagged:
+        onboot: true
+        type: vlan
+        device: eth0.902
+        tags:
+          route1: "192.168.1.0/24,192.168.2.254"
+`,
+			args: []string{"--render", "node1", "ifcfg", "etc/sysconfig/network-scripts/ifcfg.ww"},
+			log: `backupFile: true
 writeFile: true
 Filename: ifcfg-tagged.conf
 
@@ -146,9 +166,26 @@ IPV6INIT=yes
 IPV6_AUTOCONF=yes
 IPV6_DEFROUTE=yes
 IPV6_FAILURE_FATAL=no
-`
-
-const ifcfg_routes string = `backupFile: true
+`,
+		},
+		"ifcfg:route.ww": {
+			nodes_conf: `
+nodes:
+  node1:
+    primary network: untagged
+    network devices:
+      untagged:
+        onboot: true
+        device: eth0
+      tagged:
+        onboot: true
+        type: vlan
+        device: eth0.902
+        tags:
+          route1: "192.168.1.0/24,192.168.2.254"
+`,
+			args: []string{"--render", "node1", "ifcfg", "etc/sysconfig/network-scripts/route.ww"},
+			log: `backupFile: true
 writeFile: true
 Filename: route-tagged.conf
 
@@ -159,4 +196,32 @@ backupFile: true
 writeFile: true
 Filename: route-untagged.conf
 # This file is autogenerated by warewulf
-`
+`,
+		},
+	}
+
+	env := testenv.New(t)
+	defer env.RemoveAll()
+	env.ImportFile("var/lib/warewulf/overlays/ifcfg/rootfs/etc/sysconfig/network-scripts/ifcfg.ww", "../rootfs/etc/sysconfig/network-scripts/ifcfg.ww")
+	env.ImportFile("var/lib/warewulf/overlays/ifcfg/rootfs/etc/sysconfig/network-scripts/route.ww", "../rootfs/etc/sysconfig/network-scripts/route.ww")
+	env.ImportFile("var/lib/warewulf/overlays/ifcfg/rootfs/etc/sysconfig/network.ww", "../rootfs/etc/sysconfig/network.ww")
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			env.WriteFile("etc/warewulf/nodes.conf", tt.nodes_conf)
+			cmd := show.GetCommand()
+			cmd.SetArgs(tt.args)
+			stdout := bytes.NewBufferString("")
+			stderr := bytes.NewBufferString("")
+			logbuf := bytes.NewBufferString("")
+			cmd.SetOut(stdout)
+			cmd.SetErr(stderr)
+			wwlog.SetLogWriter(logbuf)
+			err := cmd.Execute()
+			assert.NoError(t, err)
+			assert.Empty(t, stdout.String())
+			assert.Empty(t, stderr.String())
+			assert.Equal(t, tt.log, logbuf.String())
+		})
+	}
+}

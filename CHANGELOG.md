@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added default value for `warewulf.conf:dhcp.template`. #1725
 - Added `UniqueField` template function. #829
 - Added `wwctl image build --syncuser`. #1321
+- Added support for a DNSSEARCH netdev tag in network configuration overlays. #1256
 
 ### Changed
 

@@ -50,7 +50,7 @@ gateway={{ $netdev.Gateway }}
 {{- end }}
 {{- $dns := "" }}
 {{- range $tk, $tv := $netdev.Tags }}
-{{- if eq (substr 0 3 $tk) "DNS" }}
+{{- if regexMatch "^DNS[0-9]*$" $tk }}
 {{- $dns = print $dns $tv ";" }}
 {{- else if eq (substr 0 5 $tk) "route" }}
 {{$tk}}={{$tv}}
@@ -58,6 +58,9 @@ gateway={{ $netdev.Gateway }}
 {{- end }}
 {{- if $dns }}
 dns={{$dns}}
+{{- end }}
+{{- if $netdev.Tags.DNSSEARCH }}
+dns-search={{ join ";" (without (regexSplit "[ ;]+" $netdev.Tags.DNSSEARCH -1) "") }};
 {{- end }}
 {{- end }}
 
