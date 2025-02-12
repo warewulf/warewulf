@@ -130,9 +130,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		afterPasswdTime := getTime(path.Join(imagePath, "/etc/passwd"))
 		wwlog.Debug("passwdTime: %v", afterPasswdTime)
 		if beforePasswdTime.Before(afterPasswdTime) {
-			if !SyncUser {
-				wwlog.Warn("/etc/passwd has been modified, maybe you want to run syncuser")
-			}
 			userdbChanged = true
 		}
 	}
@@ -140,16 +137,16 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		afterGroupTime := getTime(path.Join(imagePath, "/etc/group"))
 		wwlog.Debug("groupTime: %v", afterGroupTime)
 		if beforeGroupTime.Before(afterGroupTime) {
-			if !SyncUser {
-				wwlog.Warn("/etc/group has been modified, maybe you want to run syncuser")
-			}
 			userdbChanged = true
 		}
 	}
-	if userdbChanged && SyncUser {
-		err = image.SyncUids(imageName, false)
-		if err != nil {
-			wwlog.Error("Error in user sync, fix error and run 'syncuser' manually: %s", err)
+	if SyncUser {
+		if userdbChanged {
+			if err = image.SyncUids(imageName, false); err != nil {
+				wwlog.Error("syncuser error: %s", err)
+			}
+		} else {
+			wwlog.Info("Skipping syncuser (passwd or group not changed)")
 		}
 	}
 

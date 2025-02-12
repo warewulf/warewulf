@@ -35,6 +35,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Removed partial support for regex searches in node and profile lists. #1635
 - Remove redundant `wwctl genconfig completions` command. #1716
+- Remove syncuser warning messages in `wwctl` that assume its use. #1321
 
 ## v4.6.0rc2, 2025-02-07
 
