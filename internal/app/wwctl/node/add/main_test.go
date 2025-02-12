@@ -16,7 +16,7 @@ func Test_Add(t *testing.T) {
 		args    []string
 		wantErr bool
 		stdout  string
-		chkout  bool
+		inDb    string
 		outDb   string
 	}{
 		{name: "single node add",
@@ -25,10 +25,22 @@ func Test_Add(t *testing.T) {
 			stdout:  "",
 			outDb: `nodeprofiles: {}
 nodes:
+  n01: {}
+`},
+		{name: "single node add with default profile",
+			args:    []string{"n01"},
+			wantErr: false,
+			stdout:  "",
+			inDb: `
+nodeprofiles:
+  default: {}`,
+			outDb: `
+nodeprofiles:
+  default: {}
+nodes:
   n01:
     profiles:
-    - default
-`},
+    - default`},
 		{name: "single node add, profile foo",
 			args:    []string{"--profile=foo", "n01"},
 			wantErr: false,
@@ -47,8 +59,6 @@ nodes:
 nodes:
   n01:
     discoverable: "true"
-    profiles:
-    - default
 `},
 		{name: "single node add, discoverable true, implicit",
 			args:    []string{"--discoverable", "n01"},
@@ -58,14 +68,11 @@ nodes:
 nodes:
   n01:
     discoverable: "true"
-    profiles:
-    - default
 `},
 		{name: "single node add, discoverable wrong argument",
 			args:    []string{"--discoverable=maybe", "n01"},
 			wantErr: true,
 			stdout:  "",
-			chkout:  false,
 			outDb: `nodeprofiles: {}
 nodes: {}
 `},
@@ -77,8 +84,6 @@ nodes: {}
 nodes:
   n01:
     discoverable: "false"
-    profiles:
-    - default
 `},
 		{name: "single node add with Kernel args",
 			args:    []string{"--kernelargs=foo", "n01"},
@@ -90,8 +95,6 @@ nodes:
     kernel:
       args:
       - foo
-    profiles:
-    - default
 `},
 		{name: "double node add explicit",
 			args:    []string{"n01", "n02"},
@@ -99,12 +102,8 @@ nodes:
 			stdout:  "",
 			outDb: `nodeprofiles: {}
 nodes:
-  n01:
-    profiles:
-    - default
-  n02:
-    profiles:
-    - default
+  n01: {}
+  n02: {}
 `},
 		{name: "single node with ipaddr6",
 			args:    []string{"--ipaddr6=fdaa::1", "n01"},
@@ -113,8 +112,6 @@ nodes:
 			outDb: `nodeprofiles: {}
 nodes:
   n01:
-    profiles:
-    - default
     network devices:
       default:
         ip6addr: fdaa::1
@@ -126,8 +123,6 @@ nodes:
 			outDb: `nodeprofiles: {}
 nodes:
   n01:
-    profiles:
-    - default
     network devices:
       default:
         ipaddr: 10.0.0.1
@@ -136,7 +131,6 @@ nodes:
 			args:    []string{"--ipaddr=10.0.1", "n01"},
 			wantErr: true,
 			stdout:  "",
-			chkout:  false,
 			outDb: `nodeprofiles: {}
 nodes: {}
 `},
@@ -147,20 +141,14 @@ nodes: {}
 			outDb: `nodeprofiles: {}
 nodes:
   n01:
-    profiles:
-    - default
     network devices:
       default:
         ipaddr: 10.10.0.1
   n02:
-    profiles:
-    - default
     network devices:
       default:
         ipaddr: 10.10.0.2
   n03:
-    profiles:
-    - default
     network devices:
       default:
         ipaddr: 10.10.0.3
@@ -172,20 +160,14 @@ nodes:
 			outDb: `nodeprofiles: {}
 nodes:
   n01:
-    profiles:
-    - default
     network devices:
       foo:
         ipaddr: 10.10.0.1
   n02:
-    profiles:
-    - default
     network devices:
       foo:
         ipaddr: 10.10.0.2
   n03:
-    profiles:
-    - default
     network devices:
       foo:
         ipaddr: 10.10.0.3
@@ -199,24 +181,18 @@ nodes:
   n01:
     ipmi:
       ipaddr: 10.20.0.1
-    profiles:
-    - default
     network devices:
       foo:
         ipaddr: 10.10.0.1
   n02:
     ipmi:
       ipaddr: 10.20.0.2
-    profiles:
-    - default
     network devices:
       foo:
         ipaddr: 10.10.0.2
   n03:
     ipmi:
       ipaddr: 10.20.0.3
-    profiles:
-    - default
     network devices:
       foo:
         ipaddr: 10.10.0.3
@@ -228,8 +204,6 @@ nodes:
 			outDb: `nodeprofiles: {}
 nodes:
   n01:
-    profiles:
-    - default
     filesystems:
       /dev/vda1:
         path: /var
@@ -248,8 +222,6 @@ nodes: {}
 			outDb: `nodeprofiles: {}
 nodes:
   n01:
-    profiles:
-    - default
     disks:
       /dev/vda:
         partitions:
@@ -266,8 +238,6 @@ nodes:
 			outDb: `nodeprofiles: {}
 nodes:
   n01:
-    profiles:
-    - default
     disks:
       /dev/vda:
         partitions:
@@ -282,7 +252,7 @@ nodes:
 	warewulfd.SetNoDaemon()
 	for _, tt := range tests {
 		env := testenv.New(t)
-		env.WriteFile("etc/warewulf/nodes.conf", ``)
+		env.WriteFile("etc/warewulf/nodes.conf", tt.inDb)
 		var err error
 		t.Run(tt.name, func(t *testing.T) {
 			baseCmd := GetCommand()
@@ -300,9 +270,6 @@ nodes:
 			assert.NoError(t, configErr)
 			dumpBytes, _ := config.Dump()
 			assert.YAMLEq(t, tt.outDb, string(dumpBytes))
-			if tt.chkout {
-				assert.Equal(t, tt.outDb, buf.String())
-			}
 		})
 	}
 }
