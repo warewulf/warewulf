@@ -1,0 +1,14 @@
+#!/usr/bin/sh
+
+. /warewulf/config
+
+echo "Warewulf prescript runner (/warewulf/wwprescripts)"
+scriptdir=/warewulf/init.d
+echo "Looking for prescripts in /warewulf/init.d/..."
+ls -1 "${scriptdir}/" | while read -r name; do
+    echo "Running prescript: ${name}..."
+    sh "${scriptdir}/${name}"
+done
+echo
+echo "Running ${WWINIT}..."
+exec $WWINIT

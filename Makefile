@@ -216,7 +216,7 @@ install: build docs ## Install Warewulf from source
 	(cd overlays && find * -path '*/internal' -prune -o -type d -exec mkdir -pv $(DESTDIR)$(DATADIR)/warewulf/overlays/{} \;)
 	(cd overlays && find * -path '*/internal' -prune -o -type l -exec cp -av {} $(DESTDIR)$(DATADIR)/warewulf/overlays/{} \;)
 	chmod 0755 $(DESTDIR)$(DATADIR)/warewulf/overlays/wwinit/rootfs/init
-	chmod 0755 $(DESTDIR)$(DATADIR)/warewulf/overlays/wwinit/rootfs/$(WWCLIENTDIR)/wwinit
+	chmod 0755 $(DESTDIR)$(DATADIR)/warewulf/overlays/wwinit/rootfs/$(WWCLIENTDIR)/wwprescripts
 	chmod 0600 $(DESTDIR)$(DATADIR)/warewulf/overlays/wwinit/rootfs/$(WWCLIENTDIR)/config.ww
 	chmod 0600 $(DESTDIR)$(DATADIR)/warewulf/overlays/ssh.host_keys/rootfs/etc/ssh/ssh*
 	chmod 0644 $(DESTDIR)$(DATADIR)/warewulf/overlays/ssh.host_keys/rootfs/etc/ssh/ssh*.pub.ww

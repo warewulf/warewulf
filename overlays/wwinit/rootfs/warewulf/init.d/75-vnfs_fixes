@@ -2,23 +2,19 @@
 
 . /warewulf/config
 
-# This will eventually be optional
-if true; then
-    if [ -f "/etc/pam.d/system-auth" ]; then
-        echo "FIXING: system-auth"
-        sed -i -e '/^account.*pam_unix\.so\s*$/s/\s*$/\ broken_shadow/' /etc/pam.d/system-auth
+echo "Warewulf prescript: VNFS fixes"
+echo
+
+add_broken_shadow() {
+    if [ -f "${1}" ]; then
+        echo "Adding broken_shadow to ${1}..."
+        sed -i -e '/^account.*pam_unix\.so\s*$/s/\s*$/\ broken_shadow/' "${1}"
     fi
+}
 
-    if [ -f "/etc/pam.d/password-auth" ]; then
-        echo "FIXING: password-auth"
-        sed -i -e '/^account.*pam_unix\.so\s*$/s/\s*$/\ broken_shadow/' /etc/pam.d/password-auth
-    fi
+add_broken_shadow /etc/pam.d/system-auth
+add_broken_shadow /etc/pam.d/password-auth
+add_broken_shadow /etc/pam.d/common-account
 
-    if [ -f "/etc/pam.d/common-account" ]; then
-        echo "FIXING: common-account"
-        sed -i -e '/^account.*pam_unix\.so\s*$/s/\s*$/\ broken_shadow/' /etc/pam.d/common-account
-    fi
-fi
-
-
+echo "Adjusting root directory permissions..."
 chmod 755 /

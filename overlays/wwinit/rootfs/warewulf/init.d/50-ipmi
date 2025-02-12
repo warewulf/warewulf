@@ -4,17 +4,22 @@
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
+echo "Warewulf prescript: IPMI"
+echo
+
 if [ "$WWIPMI_WRITE" != "true" ]; then
     echo "IPMI write not configured: skipping"
     exit
 fi
 
+echo "Loading IPMI kernel modules..."
 modprobe ipmi_si ipmi_ssif ipmi_devintf ipmi_msghandler || (
-    echo "unable to load IPMI kernel modules: skipping IPMI configuration"
+    echo "Unable to load IPMI kernel modules: skipping IPMI configuration"
     exit
 )
 
 if [ ! -e /dev/ipmi0 ]; then
+    echo "/dev/ipmi0 does not exist; creating..."
     sleep 1
     ipmi_dev=$(grep ipmidev /proc/devices | awk '{ print $1 }')
     mknod -m 0666 /dev/ipmi0 c "$ipmi_dev" 0
@@ -83,7 +88,7 @@ if [ -n "$WWIPMI_PASSWORD" ]; then
     fi
 fi
 
-# Serial Over LAN
+echo "Configuring Serial over LAN..."
 ipmitool channel setaccess 1 2 link=on ipmi=on callin=on privilege=4
 ipmitool sol set force-encryption true 1
 ipmitool sol set force-authentication true 1

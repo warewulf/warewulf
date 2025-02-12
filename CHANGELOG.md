@@ -33,8 +33,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   and to include `PS1` from the environment if present. #1245
 - DHCP template generates as much of the subnet and range definition as possible. #1469
 - Updated overlay flags to `wwctl <node|profile> <add|set> [--runtime-overlays|--system-overlays]`. #1495
-- Update ipxe and grub configuration for clarity and logging. #1156
+- Added logging and updated output during iPXE and GRUB. #1156
 - Defined a menu for iPXE. #1156
+- Added logging to wwinit scripts. #1156
+- Renamed /warewulf/wwinit to /warewulf/prescripts. #1156
 
 ### Fixed
 

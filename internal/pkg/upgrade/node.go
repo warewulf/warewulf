@@ -165,6 +165,7 @@ type Node struct {
 func (legacy *Node) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *node.Node) {
 	upgraded = new(node.Node)
 	upgraded.Tags = make(map[string]string)
+	upgraded.Resources = make(map[string]node.Resource)
 	upgraded.Disks = make(map[string]*node.Disk)
 	upgraded.FileSystems = make(map[string]*node.FileSystem)
 	upgraded.Ipmi = new(node.IpmiConf)
@@ -330,6 +331,11 @@ func (legacy *Node) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *n
 				upgraded.RuntimeOverlay,
 				indexOf(upgraded.RuntimeOverlay, "generic"),
 				genericSplitOverlays)
+		}
+	}
+	if legacy.Resources != nil {
+		for key, value := range legacy.Resources {
+			upgraded.Resources[key] = value
 		}
 	}
 	return

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. /warewulf/config
-
-echo "Bringing up lo:127.0.0.1"
+echo "Warewulf prescript: localhost"
+echo
+echo "Bringing up lo..."
 /sbin/ip link set dev lo up
