@@ -2,32 +2,11 @@ package apinode
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/node"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v3"
 )
-
-/*
-Returns filtered list of nodes
-*/
-func FilteredNodes(nodeList *wwapiv1.NodeList) *wwapiv1.NodeYaml {
-	nodeDB, err := node.New()
-	if err != nil {
-		wwlog.Error("Could not open nodeDB: %s\n", err)
-		os.Exit(1)
-	}
-	nodeMap, _ := nodeDB.FindAllNodes()
-	nodeMap = node.FilterNodeListByName(nodeMap, nodeList.Output)
-	buffer, _ := yaml.Marshal(nodeMap)
-	retVal := wwapiv1.NodeYaml{
-		NodeConfMapYaml: string(buffer),
-		Hash:            nodeDB.StringHash(),
-	}
-	return &retVal
-}
 
 /*
 Add nodes from yaml
