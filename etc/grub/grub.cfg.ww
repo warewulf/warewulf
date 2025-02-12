@@ -1,77 +1,170 @@
-{{ if .ImageName }}
-echo "================================================================================"
-echo "Warewulf v4 now http booting grub: {{.Fqdn}} ({{.Hwaddr}})"
-echo "================================================================================"
 echo
-echo "Warewulf Controller: {{.Ipaddr}}"
+echo "Warewulf v4 (GRUB)"
 echo
-sleep 1
+echo "Warewulf Server:"
+echo "* Ipaddr: {{.Ipaddr}}"
+echo "* Port: {{.Port}}"
+echo
+echo "This node:"
+echo "* Fqdn: {{.Fqdn}}"
+echo "* Hwaddr: {{.Hwaddr}}"
+echo "* ImageName: {{.ImageName}}"
+{{- if .KernelVersion }}
+echo "* KernelVersion: {{.KernelVersion}}"
+{{- else }}
+echo "* KernelVersion: (image default)"
+{{- end }}
+echo "* KernelArgs: {{.KernelArgs}}"
+
+{{- if not .ImageName }}
+echo "!!"
+echo "!! No image defined for {{.Fqdn}}."
+echo "!! Rebooting in 30s...
+echo "!!"
+sleep 30
+reboot
+{{- end }}
+
+echo "Reading asset key..."
 smbios --type 3 --get-string 8 --set assetkey
 
 uri="(http,{{.Ipaddr}}:{{.Port}})/provision/${net_default_mac}?assetkey=${assetkey}"
 kernel="${uri}&stage=kernel"
-image="${uri}&stage=image&compress=gz"
-system="${uri}&stage=system&compress=gz"
-runtime="${uri}&stage=runtime&compress=gz"
 
-set default={{ or .Tags.GrubMenuEntry "ww4" }}
-set timeout=5
+set default={{ or .Tags.GrubMenuEntry "single-stage" }}
+set timeout=2
 
-menuentry "Network boot node: {{.Id}}" --id ww4 {
-    {{if .KernelVersion }}
-    echo "Kernel:                {{.KernelVersion}}"
-    {{else}}
-    echo "Kernel:                {{.ImageName}} (image default)"
-    {{end}}
-    echo "KernelArgs:            {{.KernelArgs}}"
+menuentry "Single-stage boot" --id single-stage {
+    echo "Warewulf Server:"
+    echo "* Ipaddr: {{.Ipaddr}}"
+    echo "* Port: {{.Port}}"
+    echo
+    echo "This node:"
+    echo "* Fqdn: {{.Fqdn}}"
+    echo "* Hwaddr: {{.Hwaddr}}"
+    echo "* ImageName: {{.ImageName}}"
+    {{- if .KernelVersion }}
+    echo "* KernelVersion: {{.KernelVersion}}"
+    {{- else }}
+    echo "* KernelVersion: (image default)"
+    {{- end }}
+    echo "* KernelArgs: {{.KernelArgs}}"
+    echo
+    echo "Downloading kernel image..."
     linux $kernel wwid=${net_default_mac} {{.KernelArgs}}
-    if [ x$? = x0 ] ; then
-        echo "Loading Image:         {{.ImageName}}"
-        initrd $image $system $runtime
-        boot
-    else
-        echo "MESSAGE: This node seems to be unconfigured. Please have your system administrator add a"
-        echo "         configuration for this node with HW address: ${net_default_mac}"
-        echo ""
-        echo "Rebooting in 1 minute..."
-        sleep 60
-        reboot
+    if [ $? != 0 ]
+    then
+        echo "!!"
+        echo "!! Unable to load kernel."
+        echo "!! Rebooting in 15s..."
+        echo "!!"
     fi
+
+    echo "Downloading images..."
+    image="${uri}&stage=image&compress=gz"
+    system="${uri}&stage=system&compress=gz"
+    runtime="${uri}&stage=runtime&compress=gz"
+    initrd $image $system $runtime
+    if [ $? != 0 ]
+    then
+        echo "!!"
+        echo "!! Unable to load images."
+        echo "!! Rebooting in 15s..."
+        echo "!!"
+    fi
+
+    echo "Booting..."
+    boot
 }
 
-menuentry "Network boot node with dracut: {{.Id}}" --id dracut {
+menuentry "Single-stage boot (no compression)" --id single-stage-nocompress {
+    echo "Warewulf Server:"
+    echo "* Ipaddr: {{.Ipaddr}}"
+    echo "* Port: {{.Port}}"
+    echo
+    echo "This node:"
+    echo "* Fqdn: {{.Fqdn}}"
+    echo "* Hwaddr: {{.Hwaddr}}"
+    echo "* ImageName: {{.ImageName}}"
+    {{- if .KernelVersion }}
+    echo "* KernelVersion: {{.KernelVersion}}"
+    {{- else }}
+    echo "* KernelVersion: (image default)"
+    {{- end }}
+    echo "* KernelArgs: {{.KernelArgs}}"
+    echo
+    echo "Downloading kernel image..."
+    linux $kernel wwid=${net_default_mac} {{.KernelArgs}}
+    if [ $? != 0 ]
+    then
+        echo "!!"
+        echo "!! Unable to load kernel."
+        echo "!! Rebooting in 15s..."
+        echo "!!"
+    fi
+
+    echo "Downloading images..."
+    image="${uri}&stage=image"
+    system="${uri}&stage=system"
+    runtime="${uri}&stage=runtime"
+    initrd $image $system $runtime
+    if [ $? != 0 ]
+    then
+        echo "!!"
+        echo "!! Unable to load images."
+        echo "!! Rebooting in 15s..."
+        echo "!!"
+    fi
+
+    echo "Booting..."
+    boot
+}
+
+menuentry "Two stage boot with dracut" --id dracut {
+    echo "Warewulf Server:"
+    echo "* Ipaddr: {{.Ipaddr}}"
+    echo "* Port: {{.Port}}"
+    echo
+    echo "This node:"
+    echo "* Fqdn: {{.Fqdn}}"
+    echo "* Hwaddr: {{.Hwaddr}}"
+    echo "* ImageName: {{.ImageName}}"
+    {{- if .KernelVersion }}
+    echo "* KernelVersion: {{.KernelVersion}}"
+    {{- else }}
+    echo "* KernelVersion: (image default)"
+    {{- end }}
+    echo "* KernelArgs: {{.KernelArgs}}"
+
     initramfs="${uri}&stage=initramfs"
 
     wwinit_uri="http://{{.Ipaddr}}:{{.Port}}/provision/${net_default_mac}"
-
-    {{if .KernelVersion }}
-    echo "Kernel:                {{.KernelVersion}}"
-    {{else}}
-    echo "Kernel:                {{.ImageName}} (image default)"
-    {{end}}
-    echo "KernelArgs:            {{.KernelArgs}}"
-
     net_args="rd.neednet=1 {{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} {{end}}{{end}}"
     wwinit_args="root=wwinit wwinit.uri=${wwinit_uri} init=/init"
+
+    echo
+    echo "Downloading kernel image..."
     linux $kernel wwid=${net_default_mac} {{.KernelArgs}} $net_args $wwinit_args
-
-    if [ x$? = x0 ] ; then
-        echo "Loading Image:         {{.ImageName}}"
-        initrd $initramfs
-        boot
-    else
-        echo "MESSAGE: This node seems to be unconfigured. Please have your system administrator add a"
-        echo "         configuration for this node with HW address: ${net_default_mac}"
-        echo ""
-        echo "Rebooting in 1 minute..."
-        sleep 60
-        reboot
+    if [ $? != 0 ]
+    then
+        echo "!!"
+        echo "!! Unable to load kernel."
+        echo "!! Rebooting in 15s..."
+        echo "!!"
     fi
-}
 
-menuentry "Chainload specific configfile" {
-    conf="(http,{{.Ipaddr}}:{{.Port}})/efiboot/grub.cfg?assetkey=${assetkey}"
-    configfile $conf
+    echo "Downloading initramfs..."
+    initrd $initramfs
+    if [ $? != 0 ]
+    then
+        echo "!!"
+        echo "!! Unable to load initramfs."
+        echo "!! Rebooting in 15s..."
+        echo "!!"
+    fi
+
+    echo "Booting..."
+    boot
 }
 
 menuentry "UEFI Firmware Settings" --id "uefi-firmware" {
@@ -87,12 +180,3 @@ menuentry "System shutdown" {
     echo "System shutting down..."
     halt
 }
-{{ else }}
-echo "================================================================================"
-echo " Warewulf v4:"
-echo " No node image defined for this node ({{.Fqdn}})."
-echo " Rebooting in 30s."
-echo "================================================================================"
-sleep 30
-reboot
-{{ end }}

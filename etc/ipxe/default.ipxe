@@ -1,94 +1,129 @@
 #!ipxe
-{{ if .ImageName }}
+echo 
+echo Warewulf v4 (iPXE)
 echo
-echo ================================================================================
-echo Warewulf v4 now booting: {{.Fqdn}} ({{.Hwaddr}})
-echo
-echo Image:         {{.ImageName}}
-{{if .KernelVersion }}
-echo Kernel:        {{.KernelVersion}}
-{{else}}
-echo Kernel:        {{.ImageName}} (image default)
-{{end}}
-echo KernelArgs:    {{.KernelArgs}}
-echo
+set next start
+goto metadata
 
-set uri_base http://{{.Ipaddr}}:{{.Port}}/provision/{{.Hwaddr}}?assetkey=${asset}&uuid=${uuid}
-echo Warewulf Controller: {{.Ipaddr}}
-
-echo Downloading Kernel Image:
-kernel --name kernel ${uri_base}&stage=kernel       || goto reboot
-
-# imgextract causes RAM space problems on non-EFI systems (because of the 3GB barrier
-# in 32-Bit mode).
-# -> Use the old initrd method with a compressed image to save as much RAM as possible
-# in this early boot stage.
-# See <https://github.com/warewulf/warewulf/issues/222> for more details.
-iseq ${platform} efi && goto efi || goto noefi
-
-:efi
-
-# try extracting compressed images first
-# NOTE: system overlay tends to be the smallest, so failure here is the cheapest
-echo Downloading Image:
-imgextract --name image ${uri_base}&stage=image&compress=gz || goto nocompress
-
-echo Downloading System Overlay:
-imgextract --name system ${uri_base}&stage=system&compress=gz       || goto reboot
-
-echo Downloading Runtime Overlay:
-imgextract --name runtime ${uri_base}&stage=runtime&compress=gz     && set runtime_initrd initrd=runtime || echo Failed downloading runtime overlay.
-
-goto imoktogo
-
-:nocompress
-
-echo
-echo Image extract not supported in this iPXE, using standard initrd mode
-
-echo Downloading Image:
-initrd --name image ${uri_base}&stage=image     || goto reboot
-
-echo Downloading System Overlay:
-initrd --name system ${uri_base}&stage=system           || goto reboot
-
-echo Downloading Runtime Overlay:
-initrd --name runtime ${uri_base}&stage=runtime         && set runtime_initrd initrd=runtime || echo Failed downloading runtime overlay.
-
-goto imoktogo
-
-:noefi
-
-echo
-echo Use legacy initrd mode with compressed images
-
-echo Downloading Image:
-initrd --name image ${uri_base}&stage=image&compress=gz || goto reboot
-
-echo Downloading System Overlay:
-initrd --name system ${uri_base}&stage=system&compress=gz       || goto reboot
-
-echo Downloading Runtime Overlay:
-initrd --name runtime ${uri_base}&stage=runtime&compress=gz     && set runtime_initrd initrd=runtime || echo Failed downloading runtime overlay.
-
-
-:imoktogo
-
-echo boot kernel initrd=image initrd=system ${runtime_initrd} wwid={{.Hwaddr}} {{.KernelArgs}}
-boot kernel initrd=image initrd=system ${runtime_initrd} wwid={{.Hwaddr}} {{.KernelArgs}} ||  goto reboot
-
-:reboot
-echo
-echo There was an error, rebooting in 15s...
-echo
-sleep 15
-reboot
-{{ else }}
-echo ================================================================================
-echo  Warewulf v4:
-echo  No image defined for this node ({{.Fqdn}}).
-echo  Rebooting in 30s.
-echo ================================================================================
+:start
+{{- if not .ImageName }}
+echo !!
+echo !! No image defined for {{.Fqdn}}.
+echo !! Rebooting in 30s...
+echo !!
 sleep 30
 reboot
-{{ end }}
+{{- end }}
+
+set baseuri http://{{.Ipaddr}}:{{.Port}}/provision/{{.Hwaddr}}
+set uri ${baseuri}?assetkey=${asset}&uuid=${uuid}
+
+echo Downloading kernel image...
+kernel --name kernel ${uri}&stage=kernel || goto reboot
+
+{{- if .Tags.IPXEMenuEntry }}
+set method {{ .Tags.IPXEMenuEntry }}
+{{- else }}
+# https://github.com/warewulf/warewulf/issues/222
+iseq ${platform} efi && set method imgextract || set method initrd
+{{- end }}
+
+:menu
+menu Warewulf v4 image provisioning method
+item imgextract Single-stage with imgextract
+item initrd Single-stage with initrd
+item initrd_nocompress Single stage with initrd (no compression)
+item dracut Two stage with dracut
+item shell iPXE shell
+choose --default ${method} --timeout 2000 method && goto ${method} || goto menu
+
+:imgextract
+set next imgextract_continue
+goto metadata
+:imgextract_continue
+echo
+echo Downloading compressed image with imgextract...
+imgextract --name image ${uri}&stage=image&compress=gz || goto error_use_initrd
+echo Downloading compressed system overlay image with imgextract...
+imgextract --name system ${uri}&stage=system&compress=gz || goto error_reboot
+echo Downloading compressed runtime overlay image with imgextract...
+imgextract --name runtime ${uri}&stage=runtime&compress=gz && set runtime_initrd initrd=runtime || echo Unable to download runtime overlay. (ignored)
+goto boot_single_stage
+
+:error_use_initrd
+echo Encountered an error. Now using initrd.
+goto initrd_continue
+
+:initrd
+set next initrd_continue
+goto metadata
+:initrd_continue
+echo
+echo Downloading compressed image with initrd...
+initrd --name image ${uri}&stage=image&compress=gz || goto error_reboot
+echo Downloading compressed system overlay with initrd...
+initrd --name system ${uri}&stage=system&compress=gz || goto error_reboot
+echo Downloading compressed runtime overlay with initrd...
+initrd --name runtime ${uri}&stage=runtime&compress=gz && set runtime_initrd initrd=runtime || echo Unable to download runtime overlay. (ignored)
+goto boot_single_stage
+
+:initrd_nocompress
+set next initrd_nocompress_continue
+goto metadata
+:initrd_nocompress_continue
+echo
+echo Downloading uncompressed image with initrd...
+initrd --name image ${uri}&stage=image || goto error_reboot
+echo Downloading uncompressed system overlay with initrd...
+initrd --name system ${uri}&stage=system || goto error_reboot
+echo Downloading uncompressed runtime overlay with initrd...
+initrd --name runtime ${uri}&stage=runtime && set runtime_initrd initrd=runtime || echo Unable to download runtime overlay. (ignored)
+goto boot_single_stage
+
+:dracut
+set next dracut_continue
+goto metadata
+:dracut_continue
+echo
+echo Downloading dracut initramfs...
+initrd --name initramfs ${uri}&stage=initramfs || goto error_reboot
+set dracut_net rd.neednet=1 {{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} ip={{$netdev.Device}}:dhcp {{end}}{{end}}
+set dracut_wwinit root=wwinit wwinit.uri=${baseuri} init=/init
+goto boot_two_stage_dracut
+
+:boot_single_stage
+echo Booting (single stage)...
+boot kernel initrd=image initrd=system ${runtime_initrd} wwid={{.Hwaddr}} {{.KernelArgs}} || goto error_reboot
+
+:boot_two_stage_dracut
+echo Booting dracut (first stage)...
+boot kernel initrd=initramfs ${dracut_net} ${dracut_wwinit} wwid={{.Hwaddr}} {{.KernelArgs}} || error_reboot
+
+:error_reboot
+echo !!
+echo !! Encountered an error.
+echo !! rebooting in 15s...
+echo !!
+sleep 15
+reboot
+
+:shell
+shell
+goto menu
+
+:metadata
+echo Warewulf Server:
+echo * Ipaddr: {{.Ipaddr}}
+echo * Port: {{.Port}}
+echo
+echo This node:
+echo * Fqdn: {{.Fqdn}}
+echo * Hwaddr: {{.Hwaddr}}
+echo * ImageName: {{.ImageName}}
+{{- if .KernelVersion }}
+echo * KernelVersion: {{.KernelVersion}}
+{{- else }}
+echo * KernelVersion: (image default)
+{{- end }}
+echo * KernelArgs: {{.KernelArgs}}
+goto ${next}

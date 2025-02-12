@@ -226,7 +226,31 @@ func (legacy *Node) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *n
 	if upgraded.Ipmi.Write == "" && legacy.IpmiWrite != "" {
 		warnError(upgraded.Ipmi.Write.Set(legacy.IpmiWrite))
 	}
-	upgraded.Ipxe = legacy.Ipxe
+	if legacy.Keys != nil {
+		for key, value := range legacy.Keys {
+			upgraded.Tags[key] = value
+		}
+	}
+	if legacy.Tags != nil {
+		for key, value := range legacy.Tags {
+			upgraded.Tags[key] = value
+		}
+	}
+	for _, tag := range legacy.TagsDel {
+		delete(upgraded.Tags, tag)
+	}
+	if legacy.Ipxe == "dracut" {
+		if _, ok := upgraded.Tags["IPXEMenuEntry"]; !ok {
+			wwlog.Info("Replacing ipxe template 'dracut' with 'default' and setting tag 'IPXEMenuEntry=dracut'")
+			upgraded.Ipxe = "default"
+			upgraded.Tags["IPXEMenuEntry"] = "dracut"
+		} else {
+			wwlog.Warn("Found ipxe template 'dracut' but tag 'IPXEMenuEntry' is already set; ignoring")
+			upgraded.Ipxe = legacy.Ipxe
+		}
+	} else {
+		upgraded.Ipxe = legacy.Ipxe
+	}
 	if legacy.Kernel != nil {
 		upgraded.Kernel = legacy.Kernel.Upgrade(upgraded.ImageName)
 	} else {
@@ -236,11 +260,6 @@ func (legacy *Node) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *n
 			Override: legacy.KernelOverride,
 		}
 		upgraded.Kernel = inlineKernel.Upgrade(upgraded.ImageName)
-	}
-	if legacy.Keys != nil {
-		for key, value := range legacy.Keys {
-			upgraded.Tags[key] = value
-		}
 	}
 	if legacy.NetDevs != nil {
 		for name, netDev := range legacy.NetDevs {
@@ -312,14 +331,6 @@ func (legacy *Node) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *n
 				indexOf(upgraded.RuntimeOverlay, "generic"),
 				genericSplitOverlays)
 		}
-	}
-	if legacy.Tags != nil {
-		for key, value := range legacy.Tags {
-			upgraded.Tags[key] = value
-		}
-	}
-	for _, tag := range legacy.TagsDel {
-		delete(upgraded.Tags, tag)
 	}
 	return
 }
@@ -427,7 +438,31 @@ func (legacy *Profile) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded
 	if upgraded.Ipmi.Write == "" && legacy.IpmiWrite != "" {
 		warnError(upgraded.Ipmi.Write.Set(legacy.IpmiWrite))
 	}
-	upgraded.Ipxe = legacy.Ipxe
+	if legacy.Keys != nil {
+		for key, value := range legacy.Keys {
+			upgraded.Tags[key] = value
+		}
+	}
+	if legacy.Tags != nil {
+		for key, value := range legacy.Tags {
+			upgraded.Tags[key] = value
+		}
+	}
+	for _, tag := range legacy.TagsDel {
+		delete(upgraded.Tags, tag)
+	}
+	if legacy.Ipxe == "dracut" {
+		if _, ok := upgraded.Tags["IPXEMenuEntry"]; !ok {
+			wwlog.Info("Replacing ipxe template 'dracut' with 'default' and setting tag 'IPXEMenuEntry=dracut'")
+			upgraded.Ipxe = "default"
+			upgraded.Tags["IPXEMenuEntry"] = "dracut"
+		} else {
+			wwlog.Warn("Found ipxe template 'dracut' but tag 'IPXEMenuEntry' is already set; ignoring")
+			upgraded.Ipxe = legacy.Ipxe
+		}
+	} else {
+		upgraded.Ipxe = legacy.Ipxe
+	}
 	if legacy.Kernel != nil {
 		upgraded.Kernel = legacy.Kernel.Upgrade(upgraded.ImageName)
 	} else {
@@ -437,11 +472,6 @@ func (legacy *Profile) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded
 			Override: legacy.KernelOverride,
 		}
 		upgraded.Kernel = inlineKernel.Upgrade(upgraded.ImageName)
-	}
-	if legacy.Keys != nil {
-		for key, value := range legacy.Keys {
-			upgraded.Tags[key] = value
-		}
 	}
 	if legacy.NetDevs != nil {
 		for name, netDev := range legacy.NetDevs {
@@ -502,14 +532,6 @@ func (legacy *Profile) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded
 				indexOf(upgraded.RuntimeOverlay, "generic"),
 				genericSplitOverlays)
 		}
-	}
-	if legacy.Tags != nil {
-		for key, value := range legacy.Tags {
-			upgraded.Tags[key] = value
-		}
-	}
-	for _, tag := range legacy.TagsDel {
-		delete(upgraded.Tags, tag)
 	}
 	if legacy.Resources != nil {
 		for key, value := range legacy.Resources {

@@ -854,6 +854,29 @@ nfs:
     mount: false
 `,
 	},
+	{
+		name: "Replace dracut template with IPXEMenuEntry",
+		legacyYaml: `
+nodeprofiles:
+  default:
+    ipxe template: dracut
+nodes:
+  n1:
+    ipxe template: dracut
+`,
+		upgradedYaml: `
+nodeprofiles:
+  default:
+    ipxe template: default
+    tags:
+      IPXEMenuEntry: dracut
+nodes:
+  n1:
+    ipxe template: default
+    tags:
+      IPXEMenuEntry: dracut
+`,
+	},
 }
 
 func Test_UpgradeNodesYaml(t *testing.T) {
