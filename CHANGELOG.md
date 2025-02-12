@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 - DHCP template generates as much of the subnet and range definition as possible. #1469
+- Updated overlay flags to `wwctl <node|profile> <add|set> [--runtime-overlays|--system-overlays]`. #1495
 
 ## v4.6.0rc2, 2025-02-07
 

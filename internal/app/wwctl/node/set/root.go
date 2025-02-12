@@ -34,6 +34,8 @@ func GetCommand() *cobra.Command {
 	vars.nodeAdd.CreateAddFlags(baseCmd)
 	vars.nodeDel.CreateDelFlags(baseCmd)
 	flags.AddContainer(baseCmd, &(vars.nodeConf.Profile.ImageName))
+	flags.AddWwinit(baseCmd, &(vars.nodeConf.SystemOverlay))
+	flags.AddRuntime(baseCmd, &(vars.nodeConf.RuntimeOverlay))
 	baseCmd.PersistentFlags().BoolVarP(&vars.setNodeAll, "all", "a", false, "Set all nodes")
 	baseCmd.PersistentFlags().BoolVarP(&vars.setYes, "yes", "y", false, "Set 'yes' to all questions asked")
 	baseCmd.PersistentFlags().BoolVarP(&vars.setForce, "force", "f", false, "Force configuration (even on error)")
@@ -44,7 +46,13 @@ func GetCommand() *cobra.Command {
 	if err := baseCmd.RegisterFlagCompletionFunc("kernelversion", completions.NodeKernelVersion); err != nil {
 		panic(err)
 	}
+	if err := baseCmd.RegisterFlagCompletionFunc("runtime-overlays", completions.OverlayList); err != nil {
+		panic(err)
+	}
 	if err := baseCmd.RegisterFlagCompletionFunc("runtime", completions.OverlayList); err != nil {
+		panic(err)
+	}
+	if err := baseCmd.RegisterFlagCompletionFunc("system-overlays", completions.OverlayList); err != nil {
 		panic(err)
 	}
 	if err := baseCmd.RegisterFlagCompletionFunc("wwinit", completions.OverlayList); err != nil {
