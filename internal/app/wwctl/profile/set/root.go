@@ -44,7 +44,7 @@ func GetCommand() *cobra.Command {
 	flags.AddRuntime(baseCmd, &(vars.profileConf.RuntimeOverlay))
 	baseCmd.PersistentFlags().BoolVarP(&vars.setYes, "yes", "y", false, "Set 'yes' to all questions asked")
 	// register the command line completions
-	if err := baseCmd.RegisterFlagCompletionFunc("image", completions.Images); err != nil { // no limit
+	if err := baseCmd.RegisterFlagCompletionFunc("image", completions.Images); err != nil {
 		panic(err)
 	}
 	if err := baseCmd.RegisterFlagCompletionFunc("kernelversion", completions.ProfileKernelVersion); err != nil {

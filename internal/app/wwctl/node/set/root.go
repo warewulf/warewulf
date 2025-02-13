@@ -40,7 +40,7 @@ func GetCommand() *cobra.Command {
 	baseCmd.PersistentFlags().BoolVarP(&vars.setYes, "yes", "y", false, "Set 'yes' to all questions asked")
 	baseCmd.PersistentFlags().BoolVarP(&vars.setForce, "force", "f", false, "Force configuration (even on error)")
 	// register the command line completions
-	if err := baseCmd.RegisterFlagCompletionFunc("image", completions.Images); err != nil { // no limit
+	if err := baseCmd.RegisterFlagCompletionFunc("image", completions.Images); err != nil {
 		panic(err)
 	}
 	if err := baseCmd.RegisterFlagCompletionFunc("kernelversion", completions.NodeKernelVersion); err != nil {
@@ -58,7 +58,7 @@ func GetCommand() *cobra.Command {
 	if err := baseCmd.RegisterFlagCompletionFunc("wwinit", completions.OverlayList); err != nil {
 		panic(err)
 	}
-	if err := baseCmd.RegisterFlagCompletionFunc("profile", completions.Profiles); err != nil { // no limit
+	if err := baseCmd.RegisterFlagCompletionFunc("profile", completions.Profiles); err != nil {
 		panic(err)
 	}
 

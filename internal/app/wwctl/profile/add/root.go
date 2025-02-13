@@ -31,7 +31,7 @@ func GetCommand() *cobra.Command {
 	flags.AddWwinit(baseCmd, &(vars.profileConf.SystemOverlay))
 	flags.AddRuntime(baseCmd, &(vars.profileConf.RuntimeOverlay))
 	// register the command line completions
-	if err := baseCmd.RegisterFlagCompletionFunc("image", completions.Images); err != nil { // no limit
+	if err := baseCmd.RegisterFlagCompletionFunc("image", completions.Images); err != nil {
 		panic(err)
 	}
 	if err := baseCmd.RegisterFlagCompletionFunc("kernelversion", completions.ProfileKernelVersion); err != nil {
