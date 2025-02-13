@@ -127,6 +127,17 @@ nodes:
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "testoverlay")
 	})
+	t.Run("overlay shows overlay without suffix", func(t *testing.T) {
+		baseCmd.SetArgs([]string{"-r", "node1", "testoverlay", "overlay"})
+		baseCmd := GetCommand()
+		buf := new(bytes.Buffer)
+		baseCmd.SetOut(buf)
+		baseCmd.SetErr(buf)
+		wwlog.SetLogWriter(buf)
+		err := baseCmd.Execute()
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "testoverlay")
+	})
 	t.Run("site overlays precede", func(t *testing.T) {
 		baseCmd.SetArgs([]string{"-r", "node1", "dist", "foo.ww"})
 		baseCmd := GetCommand()

@@ -26,11 +26,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	overlayFile := overlay_.File(fileName)
-	if !util.IsFile(overlayFile) {
-		return fmt.Errorf("file: %s does not exist within overlay", overlayFile)
-	}
 
 	if NodeName == "" {
+		if !util.IsFile(overlayFile) {
+			return fmt.Errorf("%s: %s not found", overlayName, overlayFile)
+		}
 		f, err := os.ReadFile(overlayFile)
 		if err != nil {
 			return err
@@ -39,7 +39,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Output("%s", string(f))
 	} else {
 		if !util.IsFile(overlayFile) {
-			return fmt.Errorf("%s is not a file", overlayFile)
+			possibleFile := fmt.Sprintf("%s.ww", overlayFile)
+			if filepath.Ext(overlayFile) != ".ww" && util.IsFile(possibleFile) {
+				wwlog.Debug("found overlay template: %s", possibleFile)
+				overlayFile = possibleFile
+			} else {
+				return fmt.Errorf("%s: %s not found", overlayName, overlayFile)
+			}
 		}
 		if filepath.Ext(overlayFile) != ".ww" {
 			wwlog.Warn("%s lacks the '.ww' suffix, will not be rendered in an overlay", fileName)
