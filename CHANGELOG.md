@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added `wwctl image build --syncuser`. #1321
 - Added support for a DNSSEARCH netdev tag in network configuration overlays. #1256
 - Added `WW_HISTFILE` to control shell history location during `wwctl image shell`. #1732
+- Added target help in Makefile. #1740
 
 ### Changed
 

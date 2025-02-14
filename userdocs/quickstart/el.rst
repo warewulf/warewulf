@@ -30,7 +30,7 @@ If you prefer, you can also install Warewulf from source.
 
    git clone https://github.com/warewulf/warewulf.git
    cd warewulf
-   make
+   make all
    make install
 
 Configure firewalld

@@ -1,28 +1,44 @@
+.DEFAULT_GOAL := help
+
 .PHONY: all
 all: build
+
+##@ General
+
+# https://gist.github.com/prwhite/8168133
+# Maybe use https://github.com/drdv/makefile-doc in the future
+help: ## Display this help
+	@awk 'BEGIN {FS = ":.*##"; printf "The Warewulf Makefile\n\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
+	@echo
+	@echo "Define OFFLINE_BUILD=1 to avoid requiring network access."
 
 include Variables.mk
 include Tools.mk
 
+##@ Build
+
 .PHONY: build
-build: wwctl wwclient etc/bash_completion.d/wwctl
+build: wwctl wwclient etc/bash_completion.d/wwctl ## Build the Warewulf binaries
 
 .PHONY: api
 api: wwapid wwapic wwapird
 
 .PHONY: docs
-docs: man_pages reference
+docs: man_pages reference ## Build the documentation
 
-vendor:
-	go mod vendor
+.PHONY: spec
+spec: warewulf.spec ## Create an RPM spec file
 
-.PHONY: tidy
-tidy:
-	go mod tidy
-
-.PHONY: fmt
-fmt:
-	go fmt ./...
+.PHONY: dist
+dist: $(config) ## Create a distributable source tarball
+	rm -rf .dist/
+	mkdir -p .dist/$(WAREWULF)-$(VERSION)
+	git ls-files >.dist/dist-files
+	tar -c --files-from .dist/dist-files | tar -C .dist/$(WAREWULF)-$(VERSION) -x
+	test -d vendor/ && cp -a vendor/ .dist/$(WAREWULF)-$(VERSION) || :
+	scripts/get-version.sh >.dist/$(WAREWULF)-$(VERSION)/VERSION
+	tar -C .dist -czf $(WAREWULF)-$(VERSION).tar.gz $(WAREWULF)-$(VERSION)
+	rm -rf .dist/
 
 config = include/systemd/warewulfd.service \
 	internal/pkg/config/buildconfig.go \
@@ -65,28 +81,49 @@ etc/bash_completion.d/wwctl: wwctl
 	mkdir -p etc/bash_completion.d/
 	./wwctl --emptyconf completion bash >etc/bash_completion.d/wwctl
 
+.PHONY: reference
+reference: wwctl
+	mkdir -p userdocs/reference
+	./wwctl --emptyconf genconfig reference userdocs/reference/
+
+latexpdf: reference
+	make -C userdocs latexpdf
+
+##@ Development
+
+vendor: ## Create the vendor directory (if it does not exist)
+	go mod vendor
+
+.PHONY: tidy
+tidy: ## Clean up golang dependencies
+	go mod tidy
+
+.PHONY: fmt
+fmt: ## Update source code formatting
+	go fmt ./...
+
 .PHONY: lint
-lint: $(config)
+lint: $(config) ## Run the linter
 	$(GOLANGCI_LINT) run --build-tags "$(WW_GO_BUILD_TAGS)" --timeout=5m ./...
 
 .PHONY: staticcheck
-staticcheck: $(GOLANG_STATICCHECK) $(config)
+staticcheck: $(GOLANG_STATICCHECK) $(config) ## Run static code check
 	$(GOLANG_STATICCHECK) ./...
 
 .PHONY: deadcode
-deadcode: $(config)
+deadcode: $(config) ## Check for unused code
 	$(GOLANG_DEADCODE) -test ./...
 
 .PHONY: vet
-vet: $(config)
+vet: $(config) ## Check for invalid code
 	go vet ./...
 
 .PHONY: test
-test: $(config)
+test: $(config) ## Run full test suite
 	TZ=UTC go test ./...
 
 .PHONY: test-cover
-test-cover: $(config)
+test-cover: $(config) ## Generate a coverage report for the test suite
 	rm -rf coverage
 	mkdir coverage
 	go list -f '{{if gt (len .TestGoFiles) 0}}"TZ=UTC go test -covermode count -coverprofile {{.Name}}.coverprofile -coverpkg ./... {{.ImportPath}}"{{end}}' ./... | xargs -I {} bash -c {}
@@ -95,8 +132,57 @@ test-cover: $(config)
 	rm *.coverprofile
 	go tool cover -html=coverage/cover.out -o=coverage/cover.html
 
+.PHONY: LICENSE_DEPENDENCIES.md
+LICENSE_DEPENDENCIES.md: $(GOLANG_LICENSES) scripts/update-license-dependencies.sh
+	rm -rf vendor
+	GOLANG_LICENSES=$(GOLANG_LICENSES) scripts/update-license-dependencies.sh
+
+.PHONY: licenses
+licenses: LICENSE_DEPENDENCIES.md # Update LICENSE_DEPENDENCIES.md
+
+.PHONY: cleanconfig
+cleanconfig:
+	rm -f $(config)
+	rm -rf etc/bash_completion.d/
+
+.PHONY: cleantest
+cleantest:
+	rm -rf *.coverprofile
+
+.PHONY: cleandist
+cleandist:
+	rm -f $(WAREWULF)-$(VERSION).tar.gz
+	rm -rf .dist/
+
+.PHONY: cleanmake
+cleanmake:
+	rm -f Defaults.mk
+
+.PHONY: cleanbin
+cleanbin:
+	rm -f wwapi{c,d,rd}
+	rm -f wwclient
+	rm -f wwctl
+	rm -f update_configuration
+
+.PHONY: cleandocs
+cleandocs:
+	rm -rf userdocs/_*
+	rm -rf userdocs/reference/*
+	rm -rf docs/man/man1
+	rm -rf docs/man/man5/*.gz
+
+.PHONY: cleanvendor
+cleanvendor:
+	rm -rf vendor
+
+.PHONY: clean
+clean: cleanconfig cleantest cleandist cleantools cleanmake cleanbin cleandocs ## Remove built configuration, docs, binaries, and artifacts
+
+##@ Installation
+
 .PHONY: install
-install: build docs
+install: build docs ## Install Warewulf from source
 	install -d -m 0755 $(DESTDIR)$(BINDIR)
 	install -d -m 0755 $(DESTDIR)$(WWCHROOTDIR)
 	install -d -m 0755 $(DESTDIR)$(WWOVERLAYDIR)
@@ -162,64 +248,6 @@ init:
 	cp -r tftpboot/* $(WWTFTPDIR)/ipxe/
 	restorecon -r $(WWTFTPDIR)
 
-.PHONY: dist
-dist: $(config)
-	rm -rf .dist/
-	mkdir -p .dist/$(WAREWULF)-$(VERSION)
-	git ls-files >.dist/dist-files
-	tar -c --files-from .dist/dist-files | tar -C .dist/$(WAREWULF)-$(VERSION) -x
-	test -d vendor/ && cp -a vendor/ .dist/$(WAREWULF)-$(VERSION) || :
-	scripts/get-version.sh >.dist/$(WAREWULF)-$(VERSION)/VERSION
-	tar -C .dist -czf $(WAREWULF)-$(VERSION).tar.gz $(WAREWULF)-$(VERSION)
-	rm -rf .dist/
-
-.PHONY: reference
-reference: wwctl
-	mkdir -p userdocs/reference
-	./wwctl --emptyconf genconfig reference userdocs/reference/
-
-latexpdf: reference
-	make -C userdocs latexpdf
-
-.PHONY: cleanconfig
-cleanconfig:
-	rm -f $(config)
-	rm -rf etc/bash_completion.d/
-
-.PHONY: cleantest
-cleantest:
-	rm -rf *.coverprofile
-
-.PHONY: cleandist
-cleandist:
-	rm -f $(WAREWULF)-$(VERSION).tar.gz
-	rm -rf .dist/
-
-.PHONY: cleanmake
-cleanmake:
-	rm -f Defaults.mk
-
-.PHONY: cleanbin
-cleanbin:
-	rm -f wwapi{c,d,rd}
-	rm -f wwclient
-	rm -f wwctl
-	rm -f update_configuration
-
-.PHONY: cleandocs
-cleandocs:
-	rm -rf userdocs/_*
-	rm -rf userdocs/reference/*
-	rm -rf docs/man/man1
-	rm -rf docs/man/man5/*.gz
-
-.PHONY: cleanvendor
-cleanvendor:
-	rm -rf vendor
-
-.PHONY: clean
-clean: cleanconfig cleantest cleandist cleantools cleanmake cleanbin cleandocs
-
 ifndef OFFLINE_BUILD
 wwctl: vendor
 wwclient: vendor
@@ -254,8 +282,3 @@ cleanproto:
 
 clean: cleanvendor
 endif
-
-.PHONY: LICENSE_DEPENDENCIES.md
-LICENSE_DEPENDENCIES.md: $(GOLANG_LICENSES) scripts/update-license-dependencies.sh
-	rm -rf vendor
-	GOLANG_LICENSES=$(GOLANG_LICENSES) scripts/update-license-dependencies.sh

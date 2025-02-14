@@ -129,7 +129,7 @@ make defaults \
     IPXESOURCE=/usr/share/ipxe \
     DRACUTMODDIR=/usr/lib/dracut/modules.d \
     CACHEDIR=%{_localstatedir}/cache
-make
+make build
 %if %{api}
 make api
 %endif
