@@ -130,3 +130,34 @@ func importSoftlink(lnk string) string {
 func softlink(target string) string {
 	return fmt.Sprintf("{{ /* softlink \"%s\" */ }}", target)
 }
+
+// UniqueField returns a filtered version of a multi-line input string. input is
+// expected to be a field-separated format with one record per line (terminated
+// by `\n`). Order of lines is preserved, with the first matching line taking
+// precedence.
+//
+// For example, parsing /etc/passwd filter /etc/passwd for unique user names:
+//
+// Lines without the index field (e.g., blank lines) are always included in the
+// output.
+//
+// UniqueField(":", 0, passwdContent)
+func UniqueField(sep string, index int, input string) string {
+	inputLines := strings.Split(input, "\n")
+	var outputLines []string
+	found := make(map[string]bool)
+	for _, line := range inputLines {
+		inputFields := strings.Split(line, sep)
+		if len(inputFields) > index {
+			field := inputFields[index]
+			if field != "" {
+				if found[field] {
+					continue
+				}
+				found[field] = true
+			}
+		}
+		outputLines = append(outputLines, line)
+	}
+	return strings.Join(outputLines, "\n")
+}

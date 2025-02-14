@@ -59,3 +59,50 @@ func Test_createIgnitionJson(t *testing.T) {
 	node := nodeInfos[0]
 	assert.JSONEq(t, expected_json, createIgnitionJson(&node))
 }
+
+func Test_UniqueField(t *testing.T) {
+	tests := map[string]struct {
+		input  string
+		sep    string
+		field  int
+		output string
+	}{
+		"empty": {
+			input:  ``,
+			sep:    ":",
+			field:  0,
+			output: ``,
+		},
+
+		"unique input": {
+			input: `
+name1:aaaa
+name2:bbbb
+`,
+			sep:   ":",
+			field: 0,
+			output: `
+name1:aaaa
+name2:bbbb
+`,
+		},
+
+		"duplicate field": {
+			input: `
+name1: aaaa
+name1: bbbb
+`,
+			sep:   ":",
+			field: 0,
+			output: `
+name1: aaaa
+`,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, tt.output, UniqueField(tt.sep, tt.field, tt.input))
+		})
+	}
+}

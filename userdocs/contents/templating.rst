@@ -135,13 +135,13 @@ The following template will create a file called
   </interface>
   {{ end -}}
 
-Special Commands
-----------------
+Special Functions
+-----------------
 
 Include
 ^^^^^^^
 
-A file from the host can be include with following template
+A file from the host can be included with following template
 
 .. code-block::
 
@@ -228,6 +228,25 @@ readlink
 
 Evaluates the soft link on the Warewulf server and returns the target.
 
+UniqueField
+^^^^^^^^^^^
+
+UniqueField returns a filtered version of a multi-line input string. input is
+expected to be a field-separated format with one record per line (terminated by
+`\n`). Order of lines is preserved, with the first matching line taking
+precedence.
+
+For example, the following template snippet has been used in the ``syncuser`` overlay
+to generate a combined ``/etc/passwd``.
+
+.. code-block::
+
+   {{
+       printf "%s\n%s" 
+           (IncludeFrom $.ImageName "/etc/passwd" | trim)
+           (Include (printf "%s/%s" .Paths.Sysconfdir "passwd") | trim)
+       | UniqueField ":" 0 | trim
+   }}
 
 Node specific files
 -------------------

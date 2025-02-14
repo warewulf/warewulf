@@ -12,14 +12,12 @@ import (
 	"syscall"
 
 	"github.com/pkg/errors"
+	"github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-const passwdPath = "/etc/passwd"
-const groupPath = "/etc/group"
-
-// SyncUids updates the /etc/passwd and /etc/group files in the
+// Syncuser updates the /etc/passwd and /etc/group files in the
 // image identified by imageName by installing the equivalent
 // files from the host and appending names only in the
 // image. Files in the image are updated to match the new
@@ -33,14 +31,15 @@ const groupPath = "/etc/group"
 // A conflict arises if the image has an entry with the same id as
 // an entry in the host and the host does not have an entry with the
 // same name. In this case, an error is returned.
-func SyncUids(imageName string, write bool) error {
-	wwlog.Debug("SyncUids(imageName=%v, write=%v)", imageName, write)
+func Syncuser(imageName string, write bool) error {
+	wwlog.Debug("Syncuser(imageName=%v, write=%v)", imageName, write)
+	conf := config.Get()
 	imagePath := RootFsDir(imageName)
-	imagePasswdPath := path.Join(imagePath, passwdPath)
-	imageGroupPath := path.Join(imagePath, groupPath)
+	imagePasswdPath := path.Join(imagePath, "/etc/passwd")
+	imageGroupPath := path.Join(imagePath, "/etc/group")
 
 	passwdSync := make(syncDB)
-	if err := passwdSync.readFromHost(passwdPath); err != nil {
+	if err := passwdSync.readFromHost(path.Join(conf.Paths.Sysconfdir, "passwd")); err != nil {
 		return err
 	}
 	if err := passwdSync.readFromimage(imagePasswdPath); err != nil {
@@ -51,7 +50,7 @@ func SyncUids(imageName string, write bool) error {
 	}
 
 	groupSync := make(syncDB)
-	if err := groupSync.readFromHost(groupPath); err != nil {
+	if err := groupSync.readFromHost(path.Join(conf.Paths.Sysconfdir, "group")); err != nil {
 		return err
 	}
 	if err := groupSync.readFromimage(imageGroupPath); err != nil {
@@ -78,16 +77,16 @@ func SyncUids(imageName string, write bool) error {
 		if err := groupSync.chownGroupFiles(); err != nil {
 			return err
 		}
-		if err := passwdSync.update(imagePasswdPath, passwdPath); err != nil {
+		if err := passwdSync.update(imagePasswdPath, "/etc/passwd"); err != nil {
 			return err
 		}
-		if err := groupSync.update(imageGroupPath, groupPath); err != nil {
+		if err := groupSync.update(imageGroupPath, "/etc/group"); err != nil {
 			return err
 		}
 		wwlog.Info("uid/gid synced for image %s", imageName)
 	} else {
 		if passwdSync.needsSync() || groupSync.needsSync() {
-			wwlog.Info("uid/gid not synced: run `wwctl image syncuser --write %s`", imageName)
+			wwlog.Info("uid/gid not synced: run `wwctl image syncuser --write=true %s` to synchronize", imageName)
 		} else {
 			wwlog.Info("uid/gid already synced")
 		}

@@ -11,35 +11,61 @@ import (
 )
 
 func Test_syncuserOverlay(t *testing.T) {
-	t.Skip("syncuser is not yet isolated from the host")
-
 	env := testenv.New(t)
 	defer env.RemoveAll()
 	env.ImportFile("etc/warewulf/nodes.conf", "nodes.conf")
-	env.ImportFile("var/lib/warewulf/overlays/syncuser/rootfs/etc/passwd.ww", "../../../../../overlays/syncuser/rootfs/etc/passwd.ww")
-	env.ImportFile("var/lib/warewulf/overlays/syncuser/rootfs/etc/group.ww", "../../../../../overlays/syncuser/rootfs/etc/group.ww")
-	env.WriteFile("var/lib/warewulf/chroots/rockylinux-9/rootfs/etc/passwd", `root:x:0:0:root:/root:/bin/bash`)
-	env.WriteFile("var/lib/warewulf/chroots/rockylinux-9/rootfs/etc/group", `root:x:0:`)
+	env.ImportFile("var/lib/warewulf/overlays/syncuser/rootfs/etc/passwd.ww", "../rootfs/etc/passwd.ww")
+	env.ImportFile("var/lib/warewulf/overlays/syncuser/rootfs/etc/group.ww", "../rootfs/etc/group.ww")
+	env.WriteFile("etc/passwd", `
+root:x:0:0:root:/root:/bin/bash
+user:x:1000:1000:user:/home/user:/bin/bash
+`)
+	env.WriteFile("etc/group", `
+root:x:0:
+user:x:1000:
+`)
+	env.WriteFile("var/lib/warewulf/chroots/rockylinux-9/rootfs/etc/passwd", `
+root:x:0:0:root:/root:/bin/bash
+`)
+	env.WriteFile("var/lib/warewulf/chroots/rockylinux-9/rootfs/etc/group", `
+root:x:0:
+`)
 
-	tests := []struct {
-		name string
+	tests := map[string]struct {
 		args []string
 		log  string
 	}{
-		{
-			name: "syncuser:passwd.ww",
+		"syncuser:passwd.ww": {
 			args: []string{"--render", "node1", "syncuser", "etc/passwd.ww"},
-			log:  syncuser_passwd,
+			log: `backupFile: true
+writeFile: true
+Filename: etc/passwd
+root:x:0:0:root:/root:/bin/bash
+user:x:1000:1000:user:/home/user:/bin/bash
+`,
 		},
-		{
-			name: "syncuser:group.ww",
+		"syncuser:passwd.ww (passwordless root)": {
+			args: []string{"--render", "node2", "syncuser", "etc/passwd.ww"},
+			log: `backupFile: true
+writeFile: true
+Filename: etc/passwd
+root::0:0:root:/root:/bin/bash
+user:x:1000:1000:user:/home/user:/bin/bash
+`,
+		},
+		"syncuser:group.ww": {
 			args: []string{"--render", "node1", "syncuser", "etc/group.ww"},
-			log:  syncuser_group,
+			log: `backupFile: true
+writeFile: true
+Filename: etc/group
+root:x:0:
+user:x:1000:
+`,
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
 			cmd := show.GetCommand()
 			cmd.SetArgs(tt.args)
 			stdout := bytes.NewBufferString("")
@@ -56,17 +82,3 @@ func Test_syncuserOverlay(t *testing.T) {
 		})
 	}
 }
-
-const syncuser_passwd string = `backupFile: true
-writeFile: true
-Filename: etc/passwd
-# Uncomment the following line to enable passwordless root login
-# root::0:0:root:/root:/bin/bash
-root:x:0:0:root:/root:/bin/bash
-`
-
-const syncuser_group string = `backupFile: true
-writeFile: true
-Filename: etc/group
-root:x:0:
-`

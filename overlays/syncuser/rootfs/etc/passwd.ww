@@ -1,4 +1,7 @@
-# Uncomment the following line to enable passwordless root login
-# root::0:0:root:/root:/bin/bash
-{{IncludeFrom $.ImageName "/etc/passwd"}}
-{{Include "/etc/passwd"}}
+{{- $sources := list }}
+{{- if and .Tags.PasswordlessRoot (eq (lower .Tags.PasswordlessRoot) "true") }}
+{{- $sources = append $sources "root::0:0:root:/root:/bin/bash" }}
+{{- end }}
+{{- $sources = append $sources (IncludeFrom $.ImageName "/etc/passwd" | trim) }}
+{{- $sources = append $sources (Include (printf "%s/%s" .Paths.Sysconfdir "passwd") | trim) }}
+{{- join "\n" $sources | UniqueField ":" 0 | trim }}

@@ -23,11 +23,13 @@ var (
 	}
 	BuildForce bool
 	BuildAll   bool
+	SyncUser   bool
 )
 
 func init() {
 	baseCmd.PersistentFlags().BoolVarP(&BuildAll, "all", "a", false, "(re)Build all images")
 	baseCmd.PersistentFlags().BoolVarP(&BuildForce, "force", "f", false, "Force rebuild, even if it isn't necessary")
+	baseCmd.PersistentFlags().BoolVar(&SyncUser, "syncuser", false, "Synchronize UIDs/GIDs from host to image")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

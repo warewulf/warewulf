@@ -29,7 +29,7 @@ uid/gid collision is detected. File ownerships are also changed.`,
 )
 
 func init() {
-	baseCmd.PersistentFlags().BoolVar(&write, "write", false, "Synchronize uis/gids and write files in image")
+	baseCmd.PersistentFlags().BoolVar(&write, "write", true, "Synchronize uis/gids and write files in image")
 	baseCmd.PersistentFlags().BoolVar(&build, "build", false, "Build image after syncuser is completed")
 }
 

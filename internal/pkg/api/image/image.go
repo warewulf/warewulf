@@ -193,9 +193,9 @@ func ImageImport(cip *wwapiv1.ImageImportParameter) (imageName string, err error
 	}
 
 	if cip.SyncUser {
-		err = image.SyncUids(cip.Name, true)
+		err = image.Syncuser(cip.Name, true)
 		if err != nil {
-			err = fmt.Errorf("error in user sync, fix error and run 'syncuser' manually: %s", err)
+			err = fmt.Errorf("syncuser error: %w", err)
 			return
 		}
 	}
