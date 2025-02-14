@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added `UniqueField` template function. #829
 - Added `wwctl image build --syncuser`. #1321
 - Added support for a DNSSEARCH netdev tag in network configuration overlays. #1256
+- Added `WW_HISTFILE` to control shell history location during `wwctl image shell`. #1732
 
 ### Changed
 
@@ -25,6 +26,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - syncuser overlay skips duplicate users and groups in passwd and group databases. #829
 - `wwctl image syncuser --write` is true by default. #1736
 - Update syncuser documentation. #1736
+- Update PS1 during `wwctl image shell` to include working directory by default,
+  and to include `PS1` from the environment if present. #1245
 
 ### Fixed
 

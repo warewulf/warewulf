@@ -291,6 +291,31 @@ If the files ``/etc/passwd`` or ``/etc/group`` were updated, there
 will be an additional check to confirm if the users are in sync as
 described in `Syncuser`_ section.
 
+Specifying a prompt
+-------------------
+
+Warewulf sets a custom prompt during a ``wwctl image shell`` session. This
+prompt may be customized using the ``WW_PS1`` variable, which is used to
+construct the final ``PS1`` variable for the shell.
+
+.. code-block::
+
+   # wwctl image shell rockylinux-9
+   [warewulf:rockylinux-9] /#
+
+   # env WW_PS1="\u@\h:\w\$ " wwctl image shell rockylinux-9
+   [warewulf:rockylinux-9] root@rocky:/$
+
+Shell history
+-------------
+
+By default, Warewulf image shell sessions don't retain history; but you can
+specify a history file by specifing ``WW_HISTFILE``. Note that this file is
+stored within the image; you may want to exclude it when the image is built.
+(See :ref:`exclude`.)
+
+.. _exclude:
+
 Excluding Files from an Image
 -----------------------------
 
