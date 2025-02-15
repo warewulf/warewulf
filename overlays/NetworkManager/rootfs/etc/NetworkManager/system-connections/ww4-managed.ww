@@ -39,7 +39,13 @@ mtu={{ $netdev.MTU }}
 {{- end }}
 {{- end }}
 
-{{- if not $netdev.Tags.master }}
+{{- if $netdev.Tags.master }}
+[ipv4]
+method=disabled
+
+[ipv6]
+method=disabled
+{{- else }}
 [ipv4]
 method=manual
 {{- if $netdev.IpCIDR }}
@@ -62,14 +68,6 @@ dns={{$dns}}
 {{- if $netdev.Tags.DNSSEARCH }}
 dns-search={{ join ";" (without (regexSplit "[ ;]+" $netdev.Tags.DNSSEARCH -1) "") }};
 {{- end }}
-{{- end }}
-
-{{- if eq $netdev.Type "vlan" }}
-[vlan]
-interface-name={{ $netdev.Device }}
-parent={{ $netdev.Tags.parent_device }}
-id={{ $netdev.Tags.vlan_id }}
-{{- end }}
 
 [ipv6]
 addr-gen-mode=stable-privacy
@@ -77,5 +75,13 @@ method=ignore
 never-default=true
 {{- if $netdev.Ipaddr6 }}
 ipaddr="{{ $netdev.Ipaddr6 }}"
+{{- end }}
+{{- end }}
+
+{{- if eq $netdev.Type "vlan" }}
+[vlan]
+interface-name={{ $netdev.Device }}
+parent={{ $netdev.Tags.parent_device }}
+id={{ $netdev.Tags.vlan_id }}
 {{- end }}
 {{- end }}

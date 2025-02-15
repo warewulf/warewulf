@@ -40,6 +40,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Updated `wwctl node export` to include node IDs. #1718
 - Don't add "default" profile to new nodes if it does not exist. #1721
 - Make DHCP range optional.
+- Don't use DHCP for interfaces attached to a bond. #1743
 
 ### Removed
 
