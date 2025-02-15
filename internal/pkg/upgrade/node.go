@@ -158,7 +158,8 @@ func (legacy *NodesYaml) Upgrade(addDefaults bool, replaceOverlays bool, warewul
 }
 
 type Node struct {
-	Profile `yaml:"-,inline"`
+	Discoverable string `yaml:"discoverable,omitempty"`
+	Profile      `yaml:"-,inline"`
 }
 
 func (legacy *Node) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *node.Node) {
@@ -330,7 +331,6 @@ type Profile struct {
 	ImageName      string                 `yaml:"image name,omitempty"`
 	ContainerName  string                 `yaml:"container name,omitempty"`
 	Disabled       string                 `yaml:"disabled,omitempty"`
-	Discoverable   string                 `yaml:"discoverable,omitempty"`
 	Disks          map[string]*Disk       `yaml:"disks,omitempty"`
 	FileSystems    map[string]*FileSystem `yaml:"filesystems,omitempty"`
 	Init           string                 `yaml:"init,omitempty"`
@@ -382,9 +382,6 @@ func (legacy *Profile) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded
 	}
 	if legacy.Disabled != "" {
 		logIgnore("Disabled", legacy.Disabled, "obsolete")
-	}
-	if legacy.Discoverable != "" {
-		logIgnore("Discoverable", legacy.Discoverable, "invalid for profiles")
 	}
 	if legacy.Disks != nil {
 		for name, disk := range legacy.Disks {
