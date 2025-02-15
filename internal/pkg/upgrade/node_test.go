@@ -552,6 +552,16 @@ nodeprofiles:
       - net.naming-scheme=v238
     init: /sbin/init
     root: initramfs
+    resources:
+      fstab:
+        - spec: warewulf:/home
+          file: /home
+          vfstype: nfs
+          mntops: defaults,nofail
+        - spec: warewulf:/opt
+          file: /opt
+          vfstype: nfs
+          mntops: defaults,noauto,nofail,ro
 nodes:
   n1:
     profiles:
@@ -579,6 +589,12 @@ nodeprofiles:
       - udev.netname
       - systemd.netname
       - NetworkManager
+    resources:
+      fstab:
+        - spec: warewulf:/scratch
+          file: /scratch
+          vfstype: nfs
+          mntops: defaults,nofail
   custom: {}
 nodes:
   n1:
@@ -616,6 +632,12 @@ nodeprofiles:
       - net.naming-scheme=v238
     init: /sbin/init
     root: initramfs
+    resources:
+      fstab:
+        - spec: warewulf:/scratch
+          file: /scratch
+          vfstype: nfs
+          mntops: defaults,nofail
 nodes:
   n1:
     profiles:

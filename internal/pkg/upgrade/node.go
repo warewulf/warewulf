@@ -93,6 +93,25 @@ func (legacy *NodesYaml) Upgrade(addDefaults bool, replaceOverlays bool, warewul
 		if defaultProfile.Ipxe == "" {
 			defaultProfile.Ipxe = "default"
 		}
+		if _, ok := defaultProfile.Resources["fstab"]; !ok {
+			if defaultProfile.Resources == nil {
+				defaultProfile.Resources = make(map[string]node.Resource)
+			}
+			defaultProfile.Resources["fstab"] = []map[string]string{
+				{
+					"spec":    "warewulf:/home",
+					"file":    "/home",
+					"vfstype": "nfs",
+					"mntops":  "defaults,nofail",
+				},
+				{
+					"spec":    "warewulf:/opt",
+					"file":    "/opt",
+					"vfstype": "nfs",
+					"mntops":  "defaults,noauto,nofail,ro",
+				},
+			}
+		}
 	}
 	if warewulfconf != nil && warewulfconf.NFS != nil {
 		var fstab []map[string]string
@@ -339,11 +358,15 @@ type Profile struct {
 	SystemOverlay  interface{}            `yaml:"system overlay,omitempty"`
 	Tags           map[string]string      `yaml:"tags,omitempty"`
 	TagsDel        []string               `yaml:"tagsdel,omitempty"`
+	Resources      map[string]Resource    `yaml:"resources,omitempty"`
 }
+
+type Resource interface{}
 
 func (legacy *Profile) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *node.Profile) {
 	upgraded = new(node.Profile)
 	upgraded.Tags = make(map[string]string)
+	upgraded.Resources = make(map[string]node.Resource)
 	upgraded.Disks = make(map[string]*node.Disk)
 	upgraded.FileSystems = make(map[string]*node.FileSystem)
 	upgraded.Kernel = new(node.KernelConf)
@@ -490,6 +513,11 @@ func (legacy *Profile) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded
 	}
 	for _, tag := range legacy.TagsDel {
 		delete(upgraded.Tags, tag)
+	}
+	if legacy.Resources != nil {
+		for key, value := range legacy.Resources {
+			upgraded.Resources[key] = value
+		}
 	}
 	return
 }
