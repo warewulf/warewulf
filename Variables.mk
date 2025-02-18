@@ -62,12 +62,12 @@ TFTPDIR ?= /var/lib/tftpboot
 
 # Warewulf directory paths
 VARLIST += WWCLIENTDIR WWCONFIGDIR WWPROVISIONDIR WWOVERLAYDIR WWCHROOTDIR WWTFTPDIR WWDOCDIR IPXESOURCE
-WWCONFIGDIR := $(SYSCONFDIR)/$(WAREWULF)
-WWPROVISIONDIR := $(LOCALSTATEDIR)/$(WAREWULF)/provision
-WWOVERLAYDIR := $(LOCALSTATEDIR)/$(WAREWULF)/overlays
-WWCHROOTDIR := $(LOCALSTATEDIR)/$(WAREWULF)/chroots
-WWTFTPDIR := $(TFTPDIR)/$(WAREWULF)
-WWDOCDIR := $(DOCDIR)/$(WAREWULF)
+WWCONFIGDIR ?= $(SYSCONFDIR)/$(WAREWULF)
+WWPROVISIONDIR ?= $(LOCALSTATEDIR)/$(WAREWULF)/provision
+WWOVERLAYDIR ?= $(LOCALSTATEDIR)/$(WAREWULF)/overlays
+WWCHROOTDIR ?= $(LOCALSTATEDIR)/$(WAREWULF)/chroots
+WWTFTPDIR ?= $(TFTPDIR)/$(WAREWULF)
+WWDOCDIR ?= $(DOCDIR)/$(WAREWULF)
 WWCLIENTDIR ?= /warewulf
 
 CONFIG := $(shell pwd)
@@ -85,5 +85,7 @@ export GOPROXY
 WW_GO_BUILD_TAGS := containers_image_openpgp containers_image_ostree
 
 .PHONY: defaults
-defaults:
+defaults: Defaults.mk
+
+Defaults.mk:
 	printf " $(foreach V,$(VARLIST),$V := $(strip $($V))\n)" >Defaults.mk

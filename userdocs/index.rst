@@ -6,52 +6,69 @@ Welcome to the Warewulf User Guide!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents
+   :caption: Getting Started
 
-   Introduction <contents/introduction>
-   Background <contents/background>
-   Stateless Provisioning <contents/stateless>
-   Control Server Setup <contents/setup>
-   Warewulf Installation <contents/installation>
-   Warewulf Configuration <contents/configuration>
-   Upgrading Warewulf <contents/upgrade>
-   Controlling Warewulf (wwctl) <contents/wwctl>
-   Warewulf Initialization <contents/initialization>
-   Image Management <contents/images>
-   Kernel Management <contents/kernel>
-   Boot Management <contents/boot-management>
-   Node Configuration <contents/nodeconfig>
-   Node Profiles <contents/profiles>
-   Warewulf Overlays <contents/overlays>
-   Node Provisioning <contents/provisioning>
-   IPMI <contents/ipmi>
-   Disk Management <contents/disks>
-   Security <contents/security>
-   Templating <contents/templating>
-   dnsmasq <contents/dnsmasq>
-   Troubleshooting <contents/troubleshooting>
-   Known issues <contents/known-issues>
+   Introduction <getting-started/introduction>
+   The Provisioning Process <getting-started/provisioning>
+   Network Planning <getting-started/network>
+   Enterprise Linux Quickstart (Rocky Linux, CentOS, and RHEL) <getting-started/el-quickstart>
+   SUSE Quickstart (openSUSE Leap and SLES) <getting-started/suse-quickstart>
+   Debian Quickstart <getting-started/debian-quickstart>
+   Glossary <getting-started/glossary>
 
 .. toctree::
    :maxdepth: 2
-   :caption: Quickstart
+   :caption: Server
 
-   Enterprise Linux (Rocky Linux, CentOS, and RHEL) <quickstart/el>
-   openSUSE Leap and SLES 15 <quickstart/suse15>
-   Debian 12 <quickstart/debian12>
+   Server Installation <server/installation>
+   Controlling Warewulf (wwctl) <server/wwctl>
+   Server Configuration <server/configuration>
+   Using dnsmasq <server/dnsmasq>
+   Security <server/security>
+   Bootloaders <server/bootloaders>
+   Upgrading Warewulf <server/upgrade>
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Nodes and Profiles
+
+   Cluster Nodes <nodes/nodes>
+   Node Profiles <nodes/profiles>
+   Network <nodes/network>
+   IPMI <nodes/ipmi>
+   Disks <nodes/disks>
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Images
+
+   Node Images <images/images>
+   Image Kernels <images/kernel>
+   Syncuser <images/syncuser>
+   SELinux <images/selinux>
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Overlays
+
+   Overlays <overlays/overlays>
+   Templating <overlays/templates>
+
+.. toctree::
+   :maxdepth: 2
+   :caption: troubleshooting
+
+   Troubleshooting <troubleshooting/troubleshooting>
+   Known issues <troubleshooting/known-issues>
 
 .. toctree::
    :maxdepth: 2
    :caption: Contributing
 
    Contributing <contributing/contributing>
-   Debugging <contributing/debugging>
+   Development Environment <contributing/development-environment>
    Documentation <contributing/documentation>
-   Development Environment (Dev Container/VSC) <contributing/development-environment-devcontainer>
-   Development Environment (Vagrant) <contributing/development-environment-vagrant>
-   Development Environment (KVM) <contributing/development-environment-kvm>
-   Development Environment (VirtualBox) <contributing/development-environment-vbox>
-   Glossary <contents/glossary>
+   Debugging <contributing/debugging>
 
 .. toctree::
    :maxdepth: 1

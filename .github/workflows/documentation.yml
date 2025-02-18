@@ -36,7 +36,7 @@ jobs:
 
       - name: Install Sphinx
         run: |
-          pip install --user --upgrade --upgrade-strategy eager sphinx sphinx-rtd-theme restructuredtext_lint pygments
+          pip install --user --upgrade --upgrade-strategy eager sphinx sphinx-rtd-theme restructuredtext_lint pygments sphinx_reredirects
 
       - name: Include reference docs
         run: |

@@ -46,6 +46,8 @@ config = include/systemd/warewulfd.service \
 .PHONY: config
 config: $(config)
 
+$(config): Defaults.mk
+
 apiconfig = etc/wwapic.conf \
 	etc/wwapid.conf \
 	etc/wwapird.conf
