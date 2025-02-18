@@ -93,6 +93,25 @@ func (legacy *NodesYaml) Upgrade(addDefaults bool, replaceOverlays bool, warewul
 		if defaultProfile.Ipxe == "" {
 			defaultProfile.Ipxe = "default"
 		}
+		if _, ok := defaultProfile.Resources["fstab"]; !ok {
+			if defaultProfile.Resources == nil {
+				defaultProfile.Resources = make(map[string]node.Resource)
+			}
+			defaultProfile.Resources["fstab"] = []map[string]string{
+				{
+					"spec":    "warewulf:/home",
+					"file":    "/home",
+					"vfstype": "nfs",
+					"mntops":  "defaults,nofail",
+				},
+				{
+					"spec":    "warewulf:/opt",
+					"file":    "/opt",
+					"vfstype": "nfs",
+					"mntops":  "defaults,noauto,nofail,ro",
+				},
+			}
+		}
 	}
 	if warewulfconf != nil && warewulfconf.NFS != nil {
 		var fstab []map[string]string
@@ -139,7 +158,8 @@ func (legacy *NodesYaml) Upgrade(addDefaults bool, replaceOverlays bool, warewul
 }
 
 type Node struct {
-	Profile `yaml:"-,inline"`
+	Discoverable string `yaml:"discoverable,omitempty"`
+	Profile      `yaml:"-,inline"`
 }
 
 func (legacy *Node) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *node.Node) {
@@ -311,7 +331,6 @@ type Profile struct {
 	ImageName      string                 `yaml:"image name,omitempty"`
 	ContainerName  string                 `yaml:"container name,omitempty"`
 	Disabled       string                 `yaml:"disabled,omitempty"`
-	Discoverable   string                 `yaml:"discoverable,omitempty"`
 	Disks          map[string]*Disk       `yaml:"disks,omitempty"`
 	FileSystems    map[string]*FileSystem `yaml:"filesystems,omitempty"`
 	Init           string                 `yaml:"init,omitempty"`
@@ -339,11 +358,15 @@ type Profile struct {
 	SystemOverlay  interface{}            `yaml:"system overlay,omitempty"`
 	Tags           map[string]string      `yaml:"tags,omitempty"`
 	TagsDel        []string               `yaml:"tagsdel,omitempty"`
+	Resources      map[string]Resource    `yaml:"resources,omitempty"`
 }
+
+type Resource interface{}
 
 func (legacy *Profile) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *node.Profile) {
 	upgraded = new(node.Profile)
 	upgraded.Tags = make(map[string]string)
+	upgraded.Resources = make(map[string]node.Resource)
 	upgraded.Disks = make(map[string]*node.Disk)
 	upgraded.FileSystems = make(map[string]*node.FileSystem)
 	upgraded.Kernel = new(node.KernelConf)
@@ -359,9 +382,6 @@ func (legacy *Profile) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded
 	}
 	if legacy.Disabled != "" {
 		logIgnore("Disabled", legacy.Disabled, "obsolete")
-	}
-	if legacy.Discoverable != "" {
-		logIgnore("Discoverable", legacy.Discoverable, "invalid for profiles")
 	}
 	if legacy.Disks != nil {
 		for name, disk := range legacy.Disks {
@@ -490,6 +510,11 @@ func (legacy *Profile) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded
 	}
 	for _, tag := range legacy.TagsDel {
 		delete(upgraded.Tags, tag)
+	}
+	if legacy.Resources != nil {
+		for key, value := range legacy.Resources {
+			upgraded.Resources[key] = value
+		}
 	}
 	return
 }

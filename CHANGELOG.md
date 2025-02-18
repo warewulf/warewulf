@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added support for a DNSSEARCH netdev tag in network configuration overlays. #1256
 - Added `WW_HISTFILE` to control shell history location during `wwctl image shell`. #1732
 - Added target help in Makefile. #1740
+- Added fstab mounts for `/home` and `/opt` to initial default profile. #1744
 
 ### Changed
 
@@ -46,6 +47,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Remove redundant `wwctl genconfig completions` command. #1716
 - Remove syncuser warning messages in `wwctl` that assume its use. #1321
 - Remove syncuser from the list of default runtime overlays. #1322
+- Removed check for "discoverable" profiles during `wwctl upgrade nodes`.
 
 ## v4.6.0rc2, 2025-02-07
 
