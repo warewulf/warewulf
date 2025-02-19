@@ -10,6 +10,7 @@
 {{- if eq $fs.Format "swap"}}
 [Unit]
 ConditionPathExists=/warewulf/ignition.json
+Requires=ignition-ww4-disks.service
 After=ignition-ww4-disks.service
 Before=swap.target
 [Swap]
@@ -20,6 +21,7 @@ RequiredBy=swap.target
 [Unit]
 ConditionPathExists=/warewulf/ignition.json
 Before=local-fs.target
+Requires=ignition-ww4-disks.service
 After=ignition-ww4-disks.service
 [Mount]
 Where={{ $fs.Path }}
