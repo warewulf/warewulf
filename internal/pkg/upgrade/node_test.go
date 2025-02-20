@@ -254,7 +254,7 @@ nodes:
 `,
 	},
 	{
-		name:            "keys and tags",
+		name:            "keys, tags, and resources",
 		addDefaults:     false,
 		replaceOverlays: false,
 		legacyYaml: `
@@ -269,6 +269,13 @@ nodeprofiles:
       key4: valD
     tagsdel:
       - key4
+    resources:
+      res1:
+        - val1a
+        - val1b
+      res2:
+        - val2a
+        - val2b
     network devices:
       default:
         tags:
@@ -295,6 +302,13 @@ nodes:
       key4: valD
     tagsdel:
       - key4
+    resources:
+      resn1:
+        - valn1a
+        - valn1b
+      resn2:
+        - valn2a
+        - valn2b
     network devices:
       default:
         tags:
@@ -327,6 +341,13 @@ nodeprofiles:
       key1: val1
       key2: valB
       key3: valC
+    resources:
+      res1:
+        - val1a
+        - val1b
+      res2:
+        - val2a
+        - val2b
 nodes:
   n1:
     ipmi:
@@ -342,6 +363,13 @@ nodes:
       key1: val1
       key2: valB
       key3: valC
+    resources:
+      resn1:
+        - valn1a
+        - valn1b
+      resn2:
+        - valn2a
+        - valn2b
 `,
 	},
 	{
@@ -852,6 +880,29 @@ nfs:
     mount: true
   - path: /var
     mount: false
+`,
+	},
+	{
+		name: "Replace dracut template with IPXEMenuEntry",
+		legacyYaml: `
+nodeprofiles:
+  default:
+    ipxe template: dracut
+nodes:
+  n1:
+    ipxe template: dracut
+`,
+		upgradedYaml: `
+nodeprofiles:
+  default:
+    ipxe template: default
+    tags:
+      IPXEMenuEntry: dracut
+nodes:
+  n1:
+    ipxe template: default
+    tags:
+      IPXEMenuEntry: dracut
 `,
 	},
 }

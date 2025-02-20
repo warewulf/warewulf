@@ -332,24 +332,22 @@ initramfs inside the image.
    necessary to remove ``/etc/machine-id`` for dracut to properly generate 
    the initramfs in the location that Warewulf is expecting.
 
-Set the node's iPXE template to ``dracut`` to direct iPXE to fetch the
-node's initramfs image and boot with dracut semantics, rather than
-booting the node image directly.
+To direct iPXE to fetch the node's initramfs image and boot with dracut
+semantics, set an ``IPXEMenuEntry`` tag for the node.
 
 .. note::
 
-   Warewulf iPXE templates are located at ``/etc/warewulf/ipxe/`` when
-   Warewulf is installed via official packages. You can learn more
-   about how dracut booting works by inspecting its iPXE template at
-   ``/etc/warewulf/ipxe/dracut.ipxe``.
+   Warewulf configures iPXE with a template located at
+   ``/etc/warewulf/ipxe/default.ipxe``. Inspect the template to learn more about
+   the dracut booting process.
 
 .. code-block:: shell
 
-   wwctl node set wwnode1 --ipxe dracut
+   wwctl node set wwnode1 --tagadd IPXEMenuEntry=dracut
 
 .. note::
 
-   The iPXE template may be set at the node or profile level.
+   The IPXEMenuEntry variable may be set at the node or profile level.
 
 Alternatively, to direct GRUB to fetch the node's initramfs image and boot with
 dracut semantics, set a ``GrubMenuEntry`` tag for the node.
@@ -379,8 +377,3 @@ to use up to 50% of physical memory. This size limit may be adjustd
 using the kernel argument `wwinit.tmpfs.size`. (This parameter is
 passed to the `size` option during tmpfs mount. See ``tmpfs(5)`` for
 more details.)
-
-.. warning::
-
-   Kernel overrides are not currently fully supported during dracut initramfs boot.
-

@@ -2,32 +2,42 @@
 
 . /warewulf/config
 
+echo "Warewulf prescript: SELinux"
+
 if test -f "/etc/sysconfig/selinux"; then
     . /etc/sysconfig/selinux
 else
-    echo "Skipping SELinux configuration: Host config not found: /etc/sysconfig/selinux"
+    echo "File not found: /etc/sysconfig/selinux"
+    echo "Skipping SELinux configuration."
     exit
 fi
 
-if test "$SELINUX" == "disabled"; then
-    echo "Skipping SELinux setup per /etc/sysconfig/selinux"
+if [ "$SELINUX" = "disabled" ]; then
+    echo "/etc/sysconfig/selinux:SELINUX=${SELINUX}: skipping SELinux configuration."
     exit
 fi
 
 if grep -q "selinux=0" /proc/cmdline; then
-    echo "Skipping SELinux setup per kernel command line"
+    echo "/proc/cmdline:selinux=0: skipping SELinux configuration."
     exit
 fi
 
-if [ $(findmnt / --noheadings --output SOURCE) == 'rootfs' ]; then
-    echo "Skipping SELinux configuration: rootfs does not support SELinux contexts"
+if [ $(findmnt / --noheadings --output SOURCE) = 'rootfs' ]; then
+    echo "/ is a 'rootfs' file system, which does not support SELinux contexts."
+    echo "Skipping SELinux configuration."
     echo
-    echo "WARNING: SELinux prep is being skipped, but SELinux is enabled on host! This may"
-    echo "WARNING: cause the system to not work properly. Try setting 'Root=tmpfs'"
-    sleep 5
+    echo "WARNING: SELinux configuration is being skipped, but SELinux is"
+    echo "WARNING: enabled in the image! The node will probably not boot"
+    echo "WARNING: properly."
+    echo "WARNING:"
+    echo "WARNING: Try setting 'Root=tmpfs'"
+    echo
+    echo "Continuing in 60s..."
+    sleep 60
     exit
 fi
 
-echo "Setting up SELinux"
+echo "Loading SELinux policy..."
 /sbin/load_policy -i
+echo "Restoring filesystem labels..."
 /sbin/restorecon -e /sys -r /

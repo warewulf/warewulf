@@ -23,11 +23,9 @@ iPXE
 
 If you're using iPXE to boot (the default), you can get a command prompt by pressing with C-b during boot.
 
-From the iPXE command prompt, you can run the same commands from `default.ipxe`_ (or `dracut.ipxe`_) to troubleshoot potential boot problems.
+From the iPXE command prompt, you can run the same commands from `default.ipxe`_ to troubleshoot potential boot problems.
 
 .. _default.ipxe: https://github.com/warewulf/warewulf/blob/main/etc/ipxe/default.ipxe
-
-.. _dracut.ipxe: https://github.com/warewulf/warewulf/blob/main/etc/ipxe/dracut.ipxe
 
 For example, the following commands perform a (relatively) normal Warewulf boot.
 (Substitute your Warewulf server's IP address in place of 10.0.0.1,

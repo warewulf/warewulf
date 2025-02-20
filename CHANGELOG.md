@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added `WW_HISTFILE` to control shell history location during `wwctl image shell`. #1732
 - Added target help in Makefile. #1740
 - Added fstab mounts for `/home` and `/opt` to initial default profile. #1744
+- Add support for an `IPXEMenuEntry` tag to select the boot method during iPXE.
 
 ### Changed
 
@@ -30,6 +31,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Update syncuser documentation. #1736
 - Update PS1 during `wwctl image shell` to include working directory by default,
   and to include `PS1` from the environment if present. #1245
+- DHCP template generates as much of the subnet and range definition as possible. #1469
+- Updated overlay flags to `wwctl <node|profile> <add|set> [--runtime-overlays|--system-overlays]`. #1495
+- Added logging and updated output during iPXE and GRUB. #1156
+- Defined a menu for iPXE. #1156
+- Added logging to wwinit scripts. #1156
+- Renamed /warewulf/wwinit to /warewulf/prescripts. #1156
+- Display auto-detected kernel version during iPXE and GRUB. #1742
 
 ### Fixed
 
@@ -49,6 +57,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Remove syncuser warning messages in `wwctl` that assume its use. #1321
 - Remove syncuser from the list of default runtime overlays. #1322
 - Removed check for "discoverable" profiles during `wwctl upgrade nodes`.
+- Removed `dracut.ipxe` template. (Use `default.ipxe` and set tag `IPXEMenuEntry=dracut`.)
 
 ## v4.6.0rc2, 2025-02-07
 
