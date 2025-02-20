@@ -17,6 +17,7 @@
 /docs/man/man5/*.5.gz
 /etc/bash_completion.d/
 warewulf.spec
+warewulf-sosplugin.spec
 internal/pkg/config/buildconfig.go
 include/systemd/warewulfd.service
 warewulf-*.tar.gz
