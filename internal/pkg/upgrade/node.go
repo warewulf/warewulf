@@ -67,6 +67,47 @@ func (legacy *NodesYaml) Upgrade(addDefaults bool, replaceOverlays bool, warewul
 			wwlog.Warn("node %s does not include the default profile: verify default settings manually", name)
 		}
 	}
+	if warewulfconf != nil && warewulfconf.NFS != nil {
+		var fstab []map[string]string
+		for _, export := range warewulfconf.NFS.Exports {
+			fstab = append(fstab, map[string]string{
+				"spec":    fmt.Sprintf("warewulf:%s", export),
+				"file":    export,
+				"vfstype": "nfs",
+			})
+		}
+		for _, export := range warewulfconf.NFS.ExportsExtended {
+			if export.Mount != nil && *(export.Mount) {
+				entry := map[string]string{
+					"spec":    fmt.Sprintf("warewulf:%s", export.Path),
+					"file":    export.Path,
+					"vfstype": "nfs",
+				}
+				if export.MountOptions != "" {
+					entry["mntops"] = export.MountOptions
+				}
+				fstab = append(fstab, entry)
+			}
+		}
+		if len(fstab) > 0 {
+			if _, ok := upgraded.NodeProfiles["default"]; !ok {
+				upgraded.NodeProfiles["default"] = new(node.Profile)
+			}
+			if upgraded.NodeProfiles["default"].Resources == nil {
+				upgraded.NodeProfiles["default"].Resources = make(map[string]node.Resource)
+			}
+			if _, ok := upgraded.NodeProfiles["default"].Resources["fstab"]; ok {
+				if prevFstab, ok := (upgraded.NodeProfiles["default"].Resources["fstab"]).([]map[string]string); ok {
+					newFstab := append(prevFstab, fstab...)
+					upgraded.NodeProfiles["default"].Resources["fstab"] = newFstab
+				} else {
+					wwlog.Warn("Unable to port NFS mounts from warewulf.conf: incompatible existing fstab resource in default profile")
+				}
+			} else {
+				upgraded.NodeProfiles["default"].Resources["fstab"] = fstab
+			}
+		}
+	}
 	if addDefaults {
 		if _, ok := upgraded.NodeProfiles["default"]; !ok {
 			upgraded.NodeProfiles["default"] = new(node.Profile)
@@ -110,47 +151,6 @@ func (legacy *NodesYaml) Upgrade(addDefaults bool, replaceOverlays bool, warewul
 					"vfstype": "nfs",
 					"mntops":  "defaults,noauto,nofail,ro",
 				},
-			}
-		}
-	}
-	if warewulfconf != nil && warewulfconf.NFS != nil {
-		var fstab []map[string]string
-		for _, export := range warewulfconf.NFS.Exports {
-			fstab = append(fstab, map[string]string{
-				"spec":    fmt.Sprintf("warewulf:%s", export),
-				"file":    export,
-				"vfstype": "nfs",
-			})
-		}
-		for _, export := range warewulfconf.NFS.ExportsExtended {
-			if export.Mount != nil && *(export.Mount) {
-				entry := map[string]string{
-					"spec":    fmt.Sprintf("warewulf:%s", export.Path),
-					"file":    export.Path,
-					"vfstype": "nfs",
-				}
-				if export.MountOptions != "" {
-					entry["mntops"] = export.MountOptions
-				}
-				fstab = append(fstab, entry)
-			}
-		}
-		if len(fstab) > 0 {
-			if _, ok := upgraded.NodeProfiles["default"]; !ok {
-				upgraded.NodeProfiles["default"] = new(node.Profile)
-			}
-			if upgraded.NodeProfiles["default"].Resources == nil {
-				upgraded.NodeProfiles["default"].Resources = make(map[string]node.Resource)
-			}
-			if _, ok := upgraded.NodeProfiles["default"].Resources["fstab"]; ok {
-				if prevFstab, ok := (upgraded.NodeProfiles["default"].Resources["fstab"]).([]map[string]string); ok {
-					newFstab := append(prevFstab, fstab...)
-					upgraded.NodeProfiles["default"].Resources["fstab"] = newFstab
-				} else {
-					wwlog.Warn("Unable to port NFS mounts from warewulf.conf: incompatible existing fstab resource in default profile")
-				}
-			} else {
-				upgraded.NodeProfiles["default"].Resources["fstab"] = fstab
 			}
 		}
 	}

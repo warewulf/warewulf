@@ -53,6 +53,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Wait until ignition has completed before trying to mount.
 - Fix timeout problem for wwclient. #1741
 - Fixed default "true" state of NetDev.OnBoot. #1754
+- Port NFS mounts during `wwctl upgrade nodes` before applying defaults. #1758
 
 ### Removed
 
