@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwtype"
 )
 
@@ -74,7 +73,7 @@ func check(infoType reflect.Type, infoVal reflect.Value) (err error) {
 }
 
 func checker(value string, valType string) (niceValue string, err error) {
-	if valType == "" || value == "" || util.InSlice(wwtype.GetUnsetVerbs(), value) {
+	if valType == "" || value == "" || wwtype.IsUnsetVerb(value) {
 		return "", nil
 	}
 	switch valType {

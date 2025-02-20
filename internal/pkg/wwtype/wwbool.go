@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/warewulf/warewulf/internal/pkg/util"
 )
 
 // Simple string which can be converted to bool. Backend storage
@@ -16,17 +14,38 @@ type WWbool string
 Transform the underlying string value to bool
 */
 func (val WWbool) Bool() bool {
-	str := string(val)
-	if util.InSlice(GetUnsetVerbs(), str) {
+	str := strings.ToLower(string(val))
+	if IsUnsetVerb(str) {
 		return false
 	}
-	if strings.ToLower(str) == "yes" {
+	switch str {
+	case "yes":
+		return true
+	case "no", "":
+		return false
+	}
+	bval, err := strconv.ParseBool(str)
+	if err != nil {
+		return false
+	}
+	return bval
+}
+
+func (val WWbool) BoolDefaultTrue() bool {
+	str := strings.ToLower(string(val))
+	if IsUnsetVerb(str) {
+		return false
+	}
+	switch str {
+	case "yes", "":
+		return true
+	case "no":
+		return false
+	}
+	bval, err := strconv.ParseBool(str)
+	if err != nil {
 		return true
 	}
-	if strings.ToLower(str) == "no" {
-		return false
-	}
-	bval, _ := strconv.ParseBool(str)
 	return bval
 }
 
@@ -34,7 +53,7 @@ func (val WWbool) Bool() bool {
 Set the string, only accept bool values like true, false, but also UNDEF
 */
 func (val *WWbool) Set(str string) error {
-	if util.InSlice(GetUnsetVerbs(), str) {
+	if IsUnsetVerb(str) {
 		// run the unset verb trough, will be filtered out later
 		*val = WWbool(str)
 		return nil

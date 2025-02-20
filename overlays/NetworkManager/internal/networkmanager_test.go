@@ -256,6 +256,7 @@ Filename: warewulf-bond0.conf
 id=bond0
 interface-name=bond0
 type=bond
+autoconnect=true
 [bond]
 downdelay=0
 miimon=100
@@ -282,6 +283,7 @@ interface-name=en1
 type=ethernet
 master=bond0
 slave-type=bond
+autoconnect=true
 [ethernet]
 mac-address=e6:92:39:49:7b:03
 [ipv4]
@@ -300,6 +302,7 @@ interface-name=en2
 type=ethernet
 master=bond0
 slave-type=bond
+autoconnect=true
 [ethernet]
 mac-address=9a:77:29:73:14:f1
 [ipv4]

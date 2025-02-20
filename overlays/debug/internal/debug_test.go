@@ -169,7 +169,7 @@ node methods in addition to its fields.
   - Tags:
 - NetDevs[default]:
   - Type: 
-  - OnBoot: true
+  - OnBoot: true (true)
   - Device: wwnet0
   - Hwaddr: e6:92:39:49:7b:03
   - Ipaddr: 192.168.3.21
@@ -182,7 +182,7 @@ node methods in addition to its fields.
   - Tags:
 - NetDevs[secondary]:
   - Type: 
-  - OnBoot: true
+  - OnBoot: true (true)
   - Device: wwnet1
   - Hwaddr: 9a:77:29:73:14:f1
   - Ipaddr: 192.168.3.22

@@ -114,7 +114,7 @@ node methods in addition to its fields.
 {{- range $index, $netdev := .NetDevs }}
 - NetDevs[{{ $index }}]:
   - Type: {{ $netdev.Type }}
-  - OnBoot: {{ $netdev.OnBoot }}
+  - OnBoot: {{ $netdev.OnBoot }} ({{ $netdev.OnBoot.BoolDefaultTrue }})
   - Device: {{ $netdev.Device }}
   - Hwaddr: {{ $netdev.Hwaddr }}
   - Ipaddr: {{ $netdev.Ipaddr }}
