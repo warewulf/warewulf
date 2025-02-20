@@ -2,6 +2,21 @@
 Troubleshooting
 ===============
 
+sos
+===
+
+The ``warewulf-sos`` package (new in v4.6.1) adds support for gathering Warewulf
+server configuration information in an sos report.
+
+.. code-block::
+
+   dnf -y install warewulf-sos
+   sos report # optionally, --enable-plugins=warewulf
+
+.. note::
+
+   The ``warewulf-sos`` package is not currently built for SUSE.
+
 warewulfd
 =========
 

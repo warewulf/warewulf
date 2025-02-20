@@ -72,6 +72,7 @@ Requires: dhcp
 BuildRequires: git
 BuildRequires: make
 BuildRequires: gpgme-devel
+BuildRequires: python3-devel
 %if %{api}
 BuildRequires: libassuan-devel
 %endif
@@ -79,30 +80,11 @@ BuildRequires: libassuan-devel
 Recommends: logrotate
 Recommends: ipmitool
 
+
 %description
 Warewulf is a stateless and diskless provisioning
 system for large clusters of bare metal and/or virtual systems.
 
-%package dracut
-Summary: dracut module for loading a Warewulf image
-BuildArch: noarch
-
-Requires: dracut
-%if 0%{?suse_version}
-%else
-Requires: dracut-network
-%endif
-Requires: curl
-Requires: cpio
-Requires: dmidecode
-
-%description dracut
-Warewulf is a stateless and diskless provisioning
-system for large clusters of bare metal and/or virtual systems.
-
-This subpackage contains a dracut module that can be used to generate
-an initramfs that can fetch and boot a Warewulf node image from a
-Warewulf server.
 
 %prep
 %setup -q -n %{name}-%{version} -b0 %if %{?with_offline:-a2}
@@ -128,6 +110,7 @@ make defaults \
     WWCLIENTDIR=/warewulf \
     IPXESOURCE=/usr/share/ipxe \
     DRACUTMODDIR=/usr/lib/dracut/modules.d \
+    SOSPLUGINS=%{python3_sitelib}/sos/report/plugins \
     CACHEDIR=%{_localstatedir}/cache
 make build
 %if %{api}
@@ -231,12 +214,55 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %endif
 
 
+%package dracut
+Summary: dracut module for loading a Warewulf image
+BuildArch: noarch
+
+Requires: dracut
+%if 0%{?suse_version}
+%else
+Requires: dracut-network
+%endif
+Requires: curl
+Requires: cpio
+Requires: dmidecode
+
+%description dracut
+Warewulf is a stateless and diskless provisioning system for large clusters of
+bare metal and/or virtual systems.
+
+This subpackage contains a dracut module that can be used to generate an
+initramfs that can fetch and boot a Warewulf node image from a Warewulf server.
+
 %files dracut
 %defattr(-, root, root)
 %{_prefix}/lib/dracut/modules.d/90wwinit
 
 
+%if 0%{?suse_version} || 0%{?sle_version}
+%else
+%package sos
+Summary: sos plugin for Warewulf
+BuildArch: noarch
+Requires: sos
+
+%description sos
+Warewulf is a stateless and diskless provisioning system for large clusters of
+bare metal and/or virtual systems.
+
+This subpackage contains an sos module that can be used to include information
+about Warewulf in an sos report.
+
+%files sos
+%{python3_sitelib}/sos/report/plugins/warewulf.py
+%{python3_sitelib}/sos/report/plugins/__pycache__/warewulf.*.pyc
+%endif
+
+
 %changelog
+* Thu Feb 20 2025 Stephen Simpson <ssimpson@ciq.com>
+- Added sos plugin
+
 * Sat Feb 1 2025 Jonathon Anderson <janderson@ciq.com>
 - Add Recommends: ipmitool
 
