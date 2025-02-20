@@ -10,7 +10,7 @@ type={{ default "ethernet" (lower $netdev.Type) }}
 master={{ $netdev.Tags.master }}
 slave-type=bond
 {{- end }}
-{{- if $netdev.OnBoot }}
+{{- if ne $netdev.OnBoot "false" }}
 autoconnect=true
 {{- end }}
 
