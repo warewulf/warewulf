@@ -64,6 +64,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		return
 	}
 	pid, err := pidfile.Write(PIDFile)
+	defer cleanUp()
 	if err != nil && pid == -1 {
 		wwlog.Warn("%v. starting new wwclient", err)
 	} else if err != nil && pid > 0 {
@@ -73,9 +74,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	if os.Args[0] == path.Join(conf.Paths.WWClientdir, "wwclient") {
 		err := os.Chdir("/")
 		if err != nil {
-			wwlog.Error("failed to change dir: %s", err)
-			_ = os.Remove(PIDFile)
-			os.Exit(1)
+			return fmt.Errorf("failed to change dir: %w", err)
 		}
 		log.Printf("Updating live file system LIVE, cancel now if this is in error")
 		time.Sleep(5000 * time.Millisecond)
@@ -85,16 +84,12 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		fmt.Printf("For full functionality call with: %s\n", path.Join(conf.Paths.WWClientdir, "wwclient"))
 		err := os.MkdirAll("/warewulf/wwclient-test", 0755)
 		if err != nil {
-			wwlog.Error("failed to create dir: %s", err)
-			_ = os.Remove(PIDFile)
-			os.Exit(1)
+			return fmt.Errorf("failed to create dir: %w", err)
 		}
 
 		err = os.Chdir("/warewulf/wwclient-test")
 		if err != nil {
-			wwlog.Error("failed to change dir: %s", err)
-			_ = os.Remove(PIDFile)
-			os.Exit(1)
+			return fmt.Errorf("failed to change dir: %w", err)
 		}
 	}
 
@@ -117,7 +112,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 				KeepAlive: 30 * time.Second,
 			}).DialContext,
 			MaxIdleConns:          100,
-			IdleConnTimeout:       90 * time.Second,
+			IdleConnTimeout:       2 * time.Duration(conf.Warewulf.UpdateInterval) * time.Second,
 			TLSHandshakeTimeout:   10 * time.Second,
 			ExpectContinueTimeout: 1 * time.Second,
 		},
@@ -145,8 +140,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		// /sys/firmware/devicetree/base/chosen/rpi-duid
 		piSerial, err := os.ReadFile("/sys/firmware/devicetree/base/serial-number")
 		if err != nil {
-			wwlog.Error("Could not get SMBIOS info: %s", smbiosErr)
-			os.Exit(1)
+			return fmt.Errorf("could not get SMBIOS info: %w", smbiosErr)
 		}
 		localUUID = uuid.NewSHA1(uuid.NameSpaceURL, []byte("http://raspberrypi.com/serial-number/"+string(piSerial)))
 		tag = "Unknown"
@@ -154,14 +148,12 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 
 	cmdline, err := os.ReadFile("/proc/cmdline")
 	if err != nil {
-		wwlog.Error("Could not read from /proc/cmdline: %s", err)
-		os.Exit(1)
+		return fmt.Errorf("could not read from /proc/cmdline: %w", err)
 	}
 
 	wwid_tmp := strings.Split(string(cmdline), "wwid=")
 	if len(wwid_tmp) < 2 {
-		wwlog.Error("'wwid' is not defined in /proc/cmdline")
-		os.Exit(1)
+		return fmt.Errorf("'wwid' is not defined in /proc/cmdline")
 	}
 
 	wwid := strings.Split(wwid_tmp[1], " ")[0]
@@ -172,8 +164,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		iface := wwid[1 : len(wwid)-1]
 		wwid_tmp, err := os.ReadFile(fmt.Sprintf("/sys/class/net/%s/address", iface))
 		if err != nil {
-			wwlog.Error("'wwid' cannot be dereferenced from /sys/class/net", iface)
-			os.Exit(1)
+			return fmt.Errorf("'wwid' cannot be dereferenced from /sys/class/net: %w", err)
 		}
 		wwid = strings.TrimSuffix(string(wwid_tmp), "\n")
 		wwlog.Info("Dereferencing wwid from [%s] to %s", iface, wwid)
@@ -197,7 +188,6 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 				stopTimer.Reset(0)
 			case syscall.SIGTERM, syscall.SIGINT:
 				wwlog.Info("termination wwclient!, %v", sig)
-				cleanUp()
 				os.Exit(0)
 			}
 		}
