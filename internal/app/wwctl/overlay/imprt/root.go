@@ -24,12 +24,14 @@ var (
 			}
 		},
 	}
+	OverwriteFile   bool
 	NoOverlayUpdate bool
 	CreateDirs      bool
 	Workers         int
 )
 
 func init() {
+	baseCmd.PersistentFlags().BoolVarP(&OverwriteFile, "overwrite", "o", false, "Overwrite file if exists")
 	baseCmd.PersistentFlags().BoolVarP(&NoOverlayUpdate, "noupdate", "n", false, "Don't update overlays")
 	baseCmd.PersistentFlags().BoolVarP(&CreateDirs, "parents", "p", false, "Create any necessary parent directories")
 	baseCmd.PersistentFlags().IntVar(&Workers, "workers", 0, "The number of parallel workers building overlays (<=0 indicates 1 worker per CPU)")
