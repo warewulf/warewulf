@@ -880,6 +880,73 @@ nfs:
     mount: true
   - path: /var
     mount: false
+    mount options: defaults
+  - path: /srv
+    mount options: defaults
+`,
+	},
+	{
+		name:        "Legacy extended export mounts with defaults",
+		addDefaults: true,
+		legacyYaml: `
+nodeprofiles:
+  default: {}
+`,
+		upgradedYaml: `
+nodeprofiles:
+  default:
+    ipxe template: default
+    runtime overlay:
+      - hosts
+      - ssh.authorized_keys
+      - syncuser
+    system overlay:
+      - wwinit
+      - wwclient
+      - fstab
+      - hostname
+      - ssh.host_keys
+      - issue
+      - resolv
+      - udev.netname
+      - systemd.netname
+      - ifcfg
+      - NetworkManager
+      - debian.interfaces
+      - wicked
+      - ignition
+    kernel:
+      args:
+      - quiet
+      - crashkernel=no
+      - vga=791
+      - net.naming-scheme=v238
+    init: /sbin/init
+    root: initramfs
+    resources:
+      fstab:
+        - spec: warewulf:/home
+          file: /home
+          vfstype: nfs
+        - spec: warewulf:/opt
+          file: /opt
+          mntops: defaults,ro
+          vfstype: nfs
+nodes: {}
+`,
+		warewulfConf: `
+nfs:
+  export paths:
+  - path: /home
+    mount: true
+  - path: /opt
+    mount options: defaults,ro
+    mount: true
+  - path: /var
+    mount: false
+    mount options: defaults
+  - path: /srv
+    mount options: defaults
 `,
 	},
 	{
