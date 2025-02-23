@@ -52,6 +52,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Don't use DHCP for interfaces attached to a bond. #1743
 - Wait until ignition has completed before trying to mount.
 - Fix timeout problem for wwclient. #1741
+- Fixed default "true" state of NetDev.OnBoot. #1754
 
 ### Removed
 
