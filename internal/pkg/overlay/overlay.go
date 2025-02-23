@@ -108,12 +108,14 @@ func BuildAllOverlays(nodes []node.Node, allNodes []node.Node, workerCount int) 
 	var wg sync.WaitGroup
 	worker := func() {
 		for n := range nodeChan {
-			wwlog.Info("Building system overlays for %s: [%s]", n.Id(), strings.Join(n.SystemOverlay, ", "))
+			wwlog.Info("Building system overlay image for %s", n.Id())
+			wwlog.Debug("System overlays for %s: [%s]", n.Id(), strings.Join(n.SystemOverlay, ", "))
 			if err := BuildOverlay(n, allNodes, "system", n.SystemOverlay); err != nil {
 				errChan <- fmt.Errorf("could not build system overlays %v for node %s: %w", n.SystemOverlay, n.Id(), err)
 			}
 
-			wwlog.Info("Building runtime overlays for %s: [%s]", n.Id(), strings.Join(n.RuntimeOverlay, ", "))
+			wwlog.Info("Building runtime overlay image for %s", n.Id())
+			wwlog.Debug("Runtime overlays for %s: [%s]", n.Id(), strings.Join(n.RuntimeOverlay, ", "))
 			if err := BuildOverlay(n, allNodes, "runtime", n.RuntimeOverlay); err != nil {
 				errChan <- fmt.Errorf("could not build runtime overlays %v for node %s: %w", n.RuntimeOverlay, n.Id(), err)
 			}
@@ -239,7 +241,12 @@ func BuildOverlay(nodeConf node.Node, allNodes []node.Node, context string, over
 	}
 
 	// create the dir where the overlay images will reside
-	name := fmt.Sprintf("overlay %s/%v", nodeConf.Id(), overlayNames)
+	var name string
+	if context != "" {
+		name = fmt.Sprintf("%s %s overlay", nodeConf.Id(), context)
+	} else {
+		name = fmt.Sprintf("%s overlay/%v", nodeConf.Id(), overlayNames)
+	}
 	overlayImage := OverlayImage(nodeConf.Id(), context, overlayNames)
 	overlayImageDir := path.Dir(overlayImage)
 

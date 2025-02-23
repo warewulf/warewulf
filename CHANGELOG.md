@@ -38,6 +38,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added logging to wwinit scripts. #1156
 - Renamed /warewulf/wwinit to /warewulf/prescripts. #1156
 - Display auto-detected kernel version during iPXE and GRUB. #1742
+- Reduced default verbosity of `wwctl overlay build`.
 
 ### Fixed
 
