@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## v4.6.0, unreleased
+
+### Dependencies
+
+- Bump github.com/grpc-ecosystem/grpc-gateway/v2 from 2.23.0 to 2.26.1 #1724
+- Bump google.golang.org/protobuf from 1.35.1 to 1.36.5 #1712
+- Bump github.com/containers/storage from 1.55.2 to 1.57.1 #1676
+- Bump google.golang.org/grpc from 1.67.1 to 1.70.0 #1650
+
 ## v4.6.0rc3, 2025-02-23
 
 ### Added
