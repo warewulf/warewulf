@@ -462,12 +462,13 @@ Edit
 ----
 .. code-block:: console
 
-  wwctl overlay edit [--mode,-m MODE|--parents,-p] overlay-name file
+  wwctl overlay edit [--mode,-m MODE|--parents,-p|--command,-c COMMAND] overlay-name file
 
 Use this command to edit an existing or a new file in the given
 overlay. If a the new file ends with a ``.ww`` suffix an example
 template header is added to the file. With the ``--parents`` flag
-necessary parent directories for a new file are created.
+necessary parent directories for a new file are created. The editor
+is set by the environment variable `EDITOR` or by ``--command`` option.
 
 Import
 ------
