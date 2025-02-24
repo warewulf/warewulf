@@ -23,6 +23,9 @@ Put sources in place
 
 Compile Warewulf and then build the RPM
 ================
-* cd warewulf-4.6.0rc2
-* make
-* rpmbuild -ba warewulf.spec
+
+.. code-block:: bash
+
+   cd warewulf-4.6.0rc2
+   make
+   rpmbuild -ba warewulf.spec
