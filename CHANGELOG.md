@@ -12,6 +12,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Bump google.golang.org/protobuf from 1.35.1 to 1.36.5 #1712
 - Bump github.com/containers/storage from 1.55.2 to 1.57.1 #1676
 - Bump google.golang.org/grpc from 1.67.1 to 1.70.0 #1650
+- Bump golang.org/x/crypto from 0.28.0 to 0.31.0 #1772
+- Bump golang.org/x/net from 0.30.0 to 0.33.0 #1774
+- Bump github.com/go-jose/go-jose/v4 from 4.0.2 to 4.0.5 #1773
+- Bump github.com/golang/glog from 1.2.3 to 1.2.4 #1771
 
 ## v4.6.0rc3, 2025-02-23
 

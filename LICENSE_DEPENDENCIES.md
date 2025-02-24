@@ -117,7 +117,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/go-jose/go-jose/blob/v4.0.2/LICENSE>
+**License URL:** <https://github.com/go-jose/go-jose/blob/v4.0.5/LICENSE>
 
 ## github.com/go-logr/logr
 
@@ -195,7 +195,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/golang/glog/blob/v1.2.3/LICENSE>
+**License URL:** <https://github.com/golang/glog/blob/v1.2.4/LICENSE>
 
 ## github.com/google/go-containerregistry/pkg/name
 
@@ -405,7 +405,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/go-jose/go-jose/blob/v4.0.2/json/LICENSE>
+**License URL:** <https://github.com/go-jose/go-jose/blob/v4.0.5/json/LICENSE>
 
 ## github.com/gogo/protobuf/proto
 
@@ -495,7 +495,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.30.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.32.0:LICENSE>
 
 ## golang.org/x/exp/maps
 
@@ -507,7 +507,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/net/+/v0.32.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/net/+/v0.33.0:LICENSE>
 
 ## golang.org/x/sync
 
@@ -525,7 +525,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/term/+/v0.27.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/term/+/v0.28.0:LICENSE>
 
 ## golang.org/x/text
 
