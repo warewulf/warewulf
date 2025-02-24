@@ -29,3 +29,5 @@ Compile Warewulf and then build the RPM
    cd warewulf-4.6.0rc2
    make
    rpmbuild -ba warewulf.spec
+
+Your RPMs are now present under /root/rpmbuild/RPMS
