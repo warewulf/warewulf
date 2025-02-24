@@ -22,11 +22,13 @@ var (
 	}
 	CreateDirs bool
 	PermMode   int32
+	Command    string
 )
 
 func init() {
 	baseCmd.PersistentFlags().BoolVarP(&CreateDirs, "parents", "p", false, "Create any necessary parent directories")
 	baseCmd.PersistentFlags().Int32VarP(&PermMode, "mode", "m", 0755, "Permission mode for directory")
+	baseCmd.PersistentFlags().StringVarP(&Command, "command", "c", "", "Command to run editor")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

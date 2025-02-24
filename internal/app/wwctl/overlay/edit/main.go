@@ -79,10 +79,16 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	editor := os.Getenv("EDITOR")
+	if Command != "" {
+		editor = Command
+	}
 	if editor == "" {
 		editor = "/bin/vi"
 	}
-	if editorErr := util.ExecInteractive(editor, tempFile.Name()); editorErr != nil {
+	editorArgs := util.ShellSplit(editor) // do not break spaces across quoted strings
+	editor = editorArgs[0]
+	editorArgs = append(editorArgs[1:], tempFile.Name())
+	if editorErr := util.ExecInteractive(editor, editorArgs...); editorErr != nil {
 		return fmt.Errorf("editor process exited with an error: %s", editorErr)
 	}
 

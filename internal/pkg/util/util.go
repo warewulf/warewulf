@@ -284,6 +284,23 @@ func FindFilterFiles(
 	return ofiles, nil
 }
 
+// Split a string by spaces perserving quoted strings (no escaping)
+func ShellSplit(s string) []string {
+	re := regexp.MustCompile(`"([^"]*)"|'([^']*)'|\S+`)
+	matches := re.FindAllStringSubmatch(s, -1)
+	var result []string
+	for _, match := range matches {
+		if match[1] != "" {
+			result = append(result, match[1]) // Double-quoted match
+		} else if match[2] != "" {
+			result = append(result, match[2]) // Single-quoted match
+		} else {
+			result = append(result, match[0]) // Non-quoted match
+		}
+	}
+	return result
+}
+
 // ******************************************************************************
 func ExecInteractive(command string, a ...string) error {
 	wwlog.Debug("ExecInteractive(%s, %s)", command, a)
