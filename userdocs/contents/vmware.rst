@@ -6,15 +6,14 @@ Using Warewulf on VMWare
 Sample Network Configuration
 ================
 
-* Master node has 2 virtual NICs
-** Public NIC with public IP
-** Private NIC on private 10 subnet (In this case 10.85.0.0/16)
-*** IP: 10.85.0.1
-*** Subnet: 255.255.0.0
-
-* Slave Nodes has 1 virtual NIC
-** On same private 10 subnet
-*** Slave Nodes to use IP pool 10.85.1.1 - 10.85.1.255
+- Master node has 2 virtual NICs
+  - Public NIC with public IP
+  - Private NIC on private 10 subnet (In this case 10.85.0.0/16)
+    - IP: 10.85.0.1
+    - Subnet: 255.255.0.0
+- Slave Nodes has 1 virtual NIC
+  - On same private 10 subnet
+  - Slave Nodes to use IP pool 10.85.1.1 - 10.85.1.255
 
 
 VMs won't ipxe boot
@@ -32,4 +31,4 @@ There is an issue where some versions of VMWare use their own DHCP server, even 
 
 Issues with 'Failed to allocate memory for files'
 ================
-Solution is to use Dracut (e.g. /contents/boot-management.html#booting-with-dracut)
+Solution is to use Dracut. See https://warewulf.org/docs/main/contents/boot-management.html#booting-with-dracut
