@@ -51,6 +51,9 @@ jobs:
         permissions: write-all
 
         steps:
+          - name: Install git
+            run: |
+              dnf install -y git
           - name: Checkout Code
             uses: actions/checkout@v4
             with:
