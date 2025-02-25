@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Fix nightly builds.
 - Better handling for missing NetDev.Device. #1777
+- Remove dracut NetworkManager connections between boot phases. #1780
 
 ## v4.6.0rc3, 2025-02-23
 
