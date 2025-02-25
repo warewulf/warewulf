@@ -36,7 +36,7 @@ nodes:
 	}{
 		"sensors": {
 			args:     []string{"--show", "n01"},
-			expected: "10.10.10.10: ipmitool -I lan -H 10.10.10.10 -p 623 -U admin -P admin -e ~ sdr list",
+			expected: `10.10.10.10: ipmitool -H 10.10.10.10 -U "admin" -P "admin" sdr list`,
 		},
 	}
 

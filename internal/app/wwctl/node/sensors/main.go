@@ -7,9 +7,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/batch"
+	"github.com/warewulf/warewulf/internal/pkg/bmc"
 	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 	"github.com/warewulf/warewulf/internal/pkg/node"
-	"github.com/warewulf/warewulf/internal/pkg/power"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -44,14 +44,14 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 
 		batchpool := batch.New(50)
 		jobcount := len(nodes)
-		results := make(chan power.IPMI, jobcount)
+		results := make(chan bmc.TemplateStruct, jobcount)
 
 		for _, node := range nodes {
 			if node.Ipmi == nil || node.Ipmi.Ipaddr == nil || node.Ipmi.Ipaddr.IsUnspecified() {
 				wwlog.Error("%s: No IPMI IP address", node.Id())
 				continue
 			}
-			ipmiCmd := power.IPMI{
+			ipmiCmd := bmc.TemplateStruct{
 				IpmiConf: *node.Ipmi,
 				ShowOnly: vars.Showcmd,
 			}
