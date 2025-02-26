@@ -1,7 +1,9 @@
 package build
 
 import (
+	"os"
 	"runtime"
+	"strconv"
 
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
@@ -29,7 +31,13 @@ func init() {
 	}
 	baseCmd.PersistentFlags().StringVarP(&OverlayDir, "output", "o", "", `Do not create an overlay image for distribution but write to
 	the given directory. An overlay must also be ge given to use this option.`)
-	baseCmd.PersistentFlags().IntVar(&Workers, "workers", runtime.NumCPU(), "The number of parallel workers building overlays")
+	workers := runtime.NumCPU()
+	numCPU := os.Getenv("WWWORKER")
+	wwWorker, err := strconv.Atoi(numCPU)
+	if err == nil {
+		workers = wwWorker
+	}
+	baseCmd.PersistentFlags().IntVar(&Workers, "workers", workers, "The number of parallel workers building overlays")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

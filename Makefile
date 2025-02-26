@@ -73,7 +73,7 @@ wwapird: $(config) $(apiconfig) $(call godeps,internal/app/api/wwapird/wwapird.g
 .PHONY: man_pages
 man_pages: wwctl $(wildcard docs/man/man5/*.5)
 	mkdir -p docs/man/man1
-	./wwctl --emptyconf genconfig man docs/man/man1
+	WWWORKER=8 ./wwctl --emptyconf genconfig man docs/man/man1
 	gzip --force docs/man/man1/*.1
 	for manpage in docs/man/man5/*.5; do gzip <$${manpage} >$${manpage}.gz; done
 
