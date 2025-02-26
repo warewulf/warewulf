@@ -20,7 +20,6 @@ func TestFindInitramfs(t *testing.T) {
 	assert.NoError(t, os.MkdirAll(filepath.Join(RootFsDir("image"), "boot"), 0700))
 
 	tests := map[string]struct {
-		name      string
 		initramfs []string
 		ver       string
 		path      string
@@ -44,6 +43,11 @@ func TestFindInitramfs(t *testing.T) {
 			initramfs: []string{"/boot/initrd-1.1.1.aarch64.img"},
 			ver:       "1.1.1",
 			path:      "/boot/initrd-1.1.1.aarch64.img",
+		},
+		"ok case 5 (ubuntu)": {
+			initramfs: []string{"/boot/initrd.img-6.11.0-18-generic"},
+			ver:       "6.11.0-18",
+			path:      "/boot/initrd.img-6.11.0-18-generic",
 		},
 		"prefix match": {
 			initramfs: []string{"/boot/initrd-1.1.1.aarch64.img"},
