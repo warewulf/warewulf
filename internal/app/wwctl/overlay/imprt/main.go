@@ -41,7 +41,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		dest = path.Join(dest, path.Base(source))
 	}
 
-	if util.IsFile(overlay_.File(dest)) {
+	if !OverwriteFile && util.IsFile(overlay_.File(dest)) {
 		return fmt.Errorf("a file with that name already exists in the overlay: %s", overlayName)
 	}
 

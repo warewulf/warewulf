@@ -473,12 +473,14 @@ Import
 ------
 .. code-block:: console
 
-  wwctl overlay import [--mode,-m|--noupdate,-n] overlay-name file-name [new-file-name]
+  wwctl overlay import [--overwrite,-o|--parents,-p|--noupdate,-n] overlay-name file-name [new-file-name]
 
 The given file is imported to the overlay. If no new-file-name is
 given, the file will be placed in the overlay at the same path as on
 the host. With the ``--noupdate`` flag you can block the rebuild of
-the overlays.
+the overlays.  The ``--overwrite`` flag will overwrite the destination
+file if it exists.  The ``--parents`` flag will create parent directories
+if they do not exist.
 
 List
 ----
