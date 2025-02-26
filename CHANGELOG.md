@@ -18,6 +18,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Fix nightly builds.
 
+### Changed
+
+- User `wwctl overlay <import|build> --workers=0` to indicate `runtime.NumCPU()`. #1782
+
 ## v4.6.0rc3, 2025-02-23
 
 ### Added

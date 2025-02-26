@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/node"
@@ -88,7 +89,11 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			}
 		}
 
-		return overlay.BuildSpecificOverlays(updateNodes, nodes, []string{overlayName}, Workers)
+		workers := Workers
+		if workers <= 0 {
+			workers = runtime.NumCPU()
+		}
+		return overlay.BuildSpecificOverlays(updateNodes, nodes, []string{overlayName}, workers)
 	}
 
 	return nil
