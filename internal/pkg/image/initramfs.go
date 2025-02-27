@@ -14,6 +14,7 @@ var (
 	initramfsSearchPaths = []string{
 		"/boot/initramfs-*",
 		"/boot/initrd-*",
+		"/boot/initrd.img-*",
 	}
 
 	versionPattern *regexp.Regexp
