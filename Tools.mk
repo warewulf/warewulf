@@ -59,7 +59,7 @@ $(GOLANG_LICENSES):
 	GOBIN="$(PWD)/$(TOOLS_BIN)" go install github.com/google/go-licenses@v1.6.0
 
 $(GOLANG_STATICCHECK):
-	GOBIN="$(PWD)/$(TOOLS_BIN)" go install honnef.co/go/tools/cmd/staticcheck@latest
+	GOBIN="$(PWD)/$(TOOLS_BIN)" go install honnef.co/go/tools/cmd/staticcheck@v0.5.1
 
 .PHONY: cleantools
 cleantools:
