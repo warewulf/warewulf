@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Support Ubuntu-style dracut initrd images.
 
+### Changed
+
+- Changed curl in wwinit dracut module to retry on all errors
+
 ### Fixed
 
 - Fix nightly builds.

@@ -15,7 +15,7 @@ do
     fi
     (
         curl --location --silent --get ${localport} \
-            --retry 60 --retry-delay 1 \
+            --retry 60 --retry-delay 1 --retry-all-errors \
             --data-urlencode "assetkey=${wwinit_assetkey}" \
             --data-urlencode "uuid=${wwinit_uuid}" \
             --data-urlencode "stage=${stage}" \
