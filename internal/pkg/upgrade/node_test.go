@@ -576,8 +576,6 @@ nodeprofiles:
       args:
       - quiet
       - crashkernel=no
-      - vga=791
-      - net.naming-scheme=v238
     init: /sbin/init
     root: initramfs
     resources:
@@ -656,8 +654,6 @@ nodeprofiles:
       args:
       - quiet
       - crashkernel=no
-      - vga=791
-      - net.naming-scheme=v238
     init: /sbin/init
     root: initramfs
     resources:
@@ -919,8 +915,6 @@ nodeprofiles:
       args:
       - quiet
       - crashkernel=no
-      - vga=791
-      - net.naming-scheme=v238
     init: /sbin/init
     root: initramfs
     resources:
