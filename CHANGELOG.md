@@ -28,6 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added target help in Makefile. #1740
 - Added fstab mounts for `/home` and `/opt` to initial default profile. #1744
 - Add support for an `IPXEMenuEntry` tag to select the boot method during iPXE.
+- Error out if key isn't known for power template #1768
 
 ### Changed
 

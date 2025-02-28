@@ -43,7 +43,7 @@ func (ipmi *IPMI) getStr() (cmdStr string, err error) {
 	if err != nil {
 		return "", fmt.Errorf("couldn't find the template which defines the ipmi/bmc command: %s", err)
 	}
-	cmdTmpl, err := template.New("bmc command").Parse(string(fbuf))
+	cmdTmpl, err := template.New("bmc command").Option("missingkey=error").Parse(string(fbuf))
 	if err != nil {
 		return "", err
 	}
