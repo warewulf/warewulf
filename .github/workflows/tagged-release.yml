@@ -20,6 +20,7 @@ jobs:
       - name: Build spec and dist
         run: |
           make warewulf.spec dist
+          make warewulf-sosplugin.spec
 
       - name: Upload spec and dist
         uses: actions/upload-artifact@v4
@@ -27,6 +28,7 @@ jobs:
           name: spec-and-dist
           path: |
             warewulf.spec
+            warewulf-sosplugin.spec
             warewulf-*.tar.gz
 
       - name: Attach dist to release
@@ -82,4 +84,36 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           file: "/var/lib/mock/${{ matrix.target }}/result/warewulf-*.rpm"
+          tags: true
+
+  sos-rpm:
+    name: Build sosreport RPM
+    needs: dist
+    runs-on: ubuntu-latest
+    container:
+      image: rockylinux/rockylinux:9
+      options: --privileged
+    
+    steps:
+      - name: Prepare mock and rpm-build
+        run: |
+          dnf -y install epel-release
+          dnf -y install mock rpm-build
+          echo "config_opts['print_main_output'] = True" >>/etc/mock/site-defaults.cfg
+
+      - name: Download dist and spec
+        uses: actions/download-artifact@v4
+        with:
+          name: spec-and-dist
+
+      - name: Build sosreport RPM
+        run: |
+          mock -r rocky+epel-9-x86_64 --rebuild --spec=warewulf-sosplugin.spec --sources=.
+
+      - name: Attach RPM and SRPM to release
+        uses: xresloader/upload-to-github-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          file: "/var/lib/mock/rocky+epel-9-x86_64/result/warewulf-*.rpm"
           tags: true
