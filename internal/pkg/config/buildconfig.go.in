@@ -46,6 +46,7 @@ type WarewulfConf struct {
 	AutobuildOverlaysP *bool `yaml:"autobuild overlays,omitempty" default:"true"`
 	EnableHostOverlayP *bool `yaml:"host overlay,omitempty" default:"true"`
 	GrubBootP          *bool `yaml:"grubboot,omitempty" default:"false"`
+	CacheControl       string `yaml:"cachecontrol" default:"max-age=60"`
 }
 
 func (conf WarewulfConf) Secure() bool {
