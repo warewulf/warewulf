@@ -29,6 +29,8 @@ Welcome to the Warewulf User Guide!
    Security <contents/security>
    Templating <contents/templating>
    dnsmasq <contents/dnsmasq>
+   VMWare <contents/vmware>
+   Building RPMs <contents/rpmbuild>
    Troubleshooting <contents/troubleshooting>
    Known issues <contents/known-issues>
 

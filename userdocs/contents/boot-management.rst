@@ -318,11 +318,15 @@ load the image. This module is available in the
 ``warewulf-dracut`` subpackage, which must be installed in the
 image.
 
-With the ``warewulf-dracut`` package installed, you can build an
+With the ``warewulf-dracut`` package installed in your image, you can build an
 initramfs inside the image.
 
+Enter the image with ``wwctl image shell``
 .. code-block:: shell
+    wwctl image shell rockylinux-9
 
+Now within the image, install and build dracut
+.. code-block:: shell
    dnf -y install warewulf-dracut
    dracut --force --no-hostonly --add wwinit --regenerate-all
 
