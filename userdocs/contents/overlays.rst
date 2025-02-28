@@ -178,9 +178,9 @@ To function properly, ``wwctl image syncuser`` (or the ``--syncuser`` option
 during ``import``, ``exec``, ``shell``, or ``build``) must have also been run on
 the image to synchronize its user and group IDs with those of the server.
 
-If a ``PasswordlessRoot`` tag is set to "true", the overlay will also insert a
+If a ``PasswordlessRoot`` tag is set to "true", by uncommenting the top line of /etc/passwd on the provisioned compute node, the overlay will also insert a
 "passwordless" root entry. This can be particularly useful for accessing a
-cluster node when its network interface is not properly configured.
+cluster node when its network interface is not properly configured. This is not recommended for production; this is for debugging why a node won’t come up properly.
 
 ignition
 --------
