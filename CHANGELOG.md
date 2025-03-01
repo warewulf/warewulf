@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Support Ubuntu-style dracut initrd images.
 
+### Changed
+
+- Match default kernel arguments from `wwctl upgrade nodes` with the distributed `nodes.conf`.
+
 ### Fixed
 
 - Fix nightly builds.

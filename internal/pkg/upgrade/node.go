@@ -123,7 +123,7 @@ func (legacy *NodesYaml) Upgrade(addDefaults bool, replaceOverlays bool, warewul
 				defaultProfile.RuntimeOverlay, genericSplitOverlays...)
 		}
 		if len(defaultProfile.Kernel.Args) < 1 {
-			defaultProfile.Kernel.Args = []string{"quiet", "crashkernel=no", "vga=791", "net.naming-scheme=v238"}
+			defaultProfile.Kernel.Args = []string{"quiet", "crashkernel=no"}
 		}
 		if defaultProfile.Init == "" {
 			defaultProfile.Init = "/sbin/init"
