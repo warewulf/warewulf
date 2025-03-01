@@ -357,13 +357,13 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/googleapis/go-genproto/blob/19429a94021a/googleapis/api/LICENSE>
+**License URL:** <https://github.com/googleapis/go-genproto/blob/702378808489/googleapis/api/LICENSE>
 
 ## google.golang.org/genproto/googleapis/rpc/status
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/googleapis/go-genproto/blob/19429a94021a/googleapis/rpc/LICENSE>
+**License URL:** <https://github.com/googleapis/go-genproto/blob/702378808489/googleapis/rpc/LICENSE>
 
 ## google.golang.org/grpc
 
@@ -435,7 +435,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/grpc-ecosystem/grpc-gateway/blob/v2.23.0/LICENSE>
+**License URL:** <https://github.com/grpc-ecosystem/grpc-gateway/blob/v2.26.1/LICENSE>
 
 ## github.com/klauspost/compress/internal/snapref
 
@@ -513,7 +513,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/sync/+/v0.10.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/sync/+/v0.11.0:LICENSE>
 
 ## golang.org/x/sys
 
@@ -531,7 +531,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/text/+/v0.21.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/text/+/v0.22.0:LICENSE>
 
 ## google.golang.org/protobuf
 
