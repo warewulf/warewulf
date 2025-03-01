@@ -9,7 +9,9 @@ TYPE={{ default "Ethernet" $netdev.Type }}
 {{- if $netdev.Tags.master }}
 MASTER={{ $netdev.Tags.master }}
 {{- end }}
+{{- if $netdev.Device }}
 DEVICE={{ $netdev.Device }}
+{{- end }}
 NAME={{ $devname }}
 {{- if $netdev.MTU }}
 MTU={{ $netdev.MTU }}
