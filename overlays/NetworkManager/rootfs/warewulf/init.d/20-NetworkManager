@@ -1,0 +1,6 @@
+#!/bin/sh
+
+echo "Warewulf prescript: NetworkManager"
+echo
+echo "Removing NetworkManager state from any prior boot stage..."
+rm -rf /run/NetworkManager

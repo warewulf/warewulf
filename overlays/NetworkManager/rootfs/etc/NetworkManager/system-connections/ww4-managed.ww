@@ -4,7 +4,9 @@
 
 [connection]
 id={{ $devname }}
+{{- if $netdev.Device }}
 interface-name={{ $netdev.Device }}
+{{- end }}
 type={{ default "ethernet" (lower $netdev.Type) }}
 {{- if $netdev.Tags.master }}
 master={{ $netdev.Tags.master }}
@@ -78,7 +80,9 @@ ipaddr="{{ $netdev.Ipaddr6 }}"
 
 {{- if eq $netdev.Type "vlan" }}
 [vlan]
+{{- if $netdev.Device }}
 interface-name={{ $netdev.Device }}
+{{- end }}
 parent={{ $netdev.Tags.parent_device }}
 id={{ $netdev.Tags.vlan_id }}
 {{- end }}

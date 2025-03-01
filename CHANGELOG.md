@@ -16,6 +16,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Bump golang.org/x/net from 0.30.0 to 0.33.0 #1774
 - Bump github.com/go-jose/go-jose/v4 from 4.0.2 to 4.0.5 #1773
 - Bump github.com/golang/glog from 1.2.3 to 1.2.4 #1771
+### Added
+
+- Support Ubuntu-style dracut initrd images.
+
+### Changed
+
+- Match default kernel arguments from `wwctl upgrade nodes` with the distributed `nodes.conf`.
+
+### Fixed
+
+- Fix nightly builds.
+- Better handling for missing NetDev.Device. #1777
+- Remove dracut NetworkManager connections between boot phases. #1780
+
+### Changed
+
+- User `wwctl overlay <import|build> --workers=0` to indicate `runtime.NumCPU()`. #1782
 
 ## v4.6.0rc3, 2025-02-23
 
