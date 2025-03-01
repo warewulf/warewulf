@@ -3,6 +3,7 @@ package build
 import (
 	"errors"
 	"fmt"
+	"runtime"
 	"strings"
 	"syscall"
 
@@ -67,10 +68,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	oldMask := syscall.Umask(000)
 	defer syscall.Umask(oldMask)
 
+	workers := Workers
+	if workers <= 0 {
+		workers = runtime.NumCPU()
+	}
+
 	if len(OverlayNames) > 0 {
-		err = overlay.BuildSpecificOverlays(filteredNodes, allNodes, OverlayNames, Workers)
+		err = overlay.BuildSpecificOverlays(filteredNodes, allNodes, OverlayNames, workers)
 	} else {
-		err = overlay.BuildAllOverlays(filteredNodes, allNodes, Workers)
+		err = overlay.BuildAllOverlays(filteredNodes, allNodes, workers)
 	}
 
 	if err != nil {
