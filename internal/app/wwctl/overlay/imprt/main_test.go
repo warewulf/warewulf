@@ -10,7 +10,7 @@ import (
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
-	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd/daemon"
 )
 
 func Test_List(t *testing.T) {
@@ -56,7 +56,7 @@ nodes: {}
 	conf := warewulfconf.New()
 	err = conf.Parse([]byte(conf_yml), false)
 	assert.NoError(t, err)
-	warewulfd.SetNoDaemon()
+	daemon.SetNoDaemon()
 	conf.Paths.WWOverlaydir = overlayDir
 
 	_, err = node.Parse([]byte(inDb))

@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
-	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd/daemon"
 )
 
 func Test_Add(t *testing.T) {
@@ -43,7 +43,7 @@ nodes: {}
 		},
 	}
 
-	warewulfd.SetNoDaemon()
+	daemon.SetNoDaemon()
 	for _, tt := range tests {
 		env := testenv.New(t)
 		env.WriteFile("etc/warewulf/nodes.conf", ``)

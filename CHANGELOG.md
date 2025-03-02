@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Added `wwctl overlay import --overwrite` to overwrite existing overlay file.
 - wwclient uses `WW_IPADDR`, if set, to contact the Warewulf server. #1788
+- Add a new OpenAPI v3 REST API to warewulfd at /api. #1588
 
 ### Fixed
 
@@ -25,11 +26,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Display a warning during overlay build if an overlay list is empty. #1808
 - Fix processing of UNDEF and UNSET during `wwctl <node|profile> set`. #1837
 - Actually cause grub to sleep and reboot when log messages indiacte. #1838
+- Allow `--verbose` and `--debug` to set log level for warewulfd. #1801
 
 ### Changed
 
 - Update GitHub actions to build aarch64 artifacts.
 - Explicitly enforce the number or arguments accepted by some `wwctl` subcommands. #1717
+- Update JSON output to match YAML field names. #1588
+- Update JSON output to omit empty values. #1588
 
 ### Removed
 

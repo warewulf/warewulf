@@ -9,7 +9,7 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
-	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd/daemon"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v3"
 )
@@ -68,7 +68,7 @@ func NodeAdd(nap *wwapiv1.NodeAddParameter) (err error) {
 		return fmt.Errorf("failed to persist new node: %w", err)
 	}
 
-	err = warewulfd.DaemonReload()
+	err = daemon.DaemonReload()
 	if err != nil {
 		return fmt.Errorf("failed to reload warewulf daemon: %w", err)
 	}

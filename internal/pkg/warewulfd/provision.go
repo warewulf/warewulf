@@ -18,6 +18,7 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd/nodedb"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -74,7 +75,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 	// TODO: when module version is upgraded to go1.18, should be 'any' type
 	var tmpl_data *templateVars
 
-	remoteNode, err := GetNodeOrSetDiscoverable(rinfo.hwaddr)
+	remoteNode, err := nodedb.GetNodeOrSetDiscoverable(rinfo.hwaddr)
 	if err != nil && err != node.ErrNoUnconfigured {
 		wwlog.ErrorExc(err, "")
 		w.WriteHeader(http.StatusServiceUnavailable)
@@ -84,7 +85,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 	if remoteNode.AssetKey != "" && remoteNode.AssetKey != rinfo.assetkey {
 		w.WriteHeader(http.StatusUnauthorized)
 		wwlog.Denied("incorrect asset key: node %s: %s", remoteNode.Id(), rinfo.assetkey)
-		updateStatus(remoteNode.Id(), status_stage, "BAD_ASSET", rinfo.ipaddr)
+		nodedb.UpdateStatus(remoteNode.Id(), status_stage, "BAD_ASSET", rinfo.ipaddr)
 		return
 	}
 
@@ -321,17 +322,17 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			}
 		}
 
-		updateStatus(remoteNode.Id(), status_stage, path.Base(stage_file), rinfo.ipaddr)
+		nodedb.UpdateStatus(remoteNode.Id(), status_stage, path.Base(stage_file), rinfo.ipaddr)
 
 	} else if stage_file == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		wwlog.Error("No resource selected")
-		updateStatus(remoteNode.Id(), status_stage, "BAD_REQUEST", rinfo.ipaddr)
+		nodedb.UpdateStatus(remoteNode.Id(), status_stage, "BAD_REQUEST", rinfo.ipaddr)
 
 	} else {
 		w.WriteHeader(http.StatusNotFound)
 		wwlog.Error("Not found: %s", stage_file)
-		updateStatus(remoteNode.Id(), status_stage, "NOT_FOUND", rinfo.ipaddr)
+		nodedb.UpdateStatus(remoteNode.Id(), status_stage, "NOT_FOUND", rinfo.ipaddr)
 	}
 
 }

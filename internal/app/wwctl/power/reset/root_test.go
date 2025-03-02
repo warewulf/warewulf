@@ -7,12 +7,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
-	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd/daemon"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func Test_Power_Status(t *testing.T) {
-	warewulfd.SetNoDaemon()
+	daemon.SetNoDaemon()
 	env := testenv.New(t)
 	defer env.RemoveAll()
 	env.WriteFile("etc/warewulf/nodes.conf", `

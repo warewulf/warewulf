@@ -1,4 +1,4 @@
-package warewulfd
+package nodedb
 
 import (
 	"encoding/json"
@@ -61,7 +61,7 @@ func LoadNodeStatus() error {
 	return nil
 }
 
-func updateStatus(nodeID, stage, sent, ipaddr string) {
+func UpdateStatus(nodeID, stage, sent, ipaddr string) {
 	dbLock.Lock()
 	defer dbLock.Unlock()
 	rightnow := time.Now().Unix()

@@ -8,7 +8,7 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
-	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd/daemon"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v3"
 )
@@ -25,7 +25,7 @@ func ProfileSet(set *wwapiv1.ConfSetParameter) (err error) {
 	if err = nodeDB.Persist(); err != nil {
 		return err
 	}
-	if err = warewulfd.DaemonReload(); err != nil {
+	if err = daemon.DaemonReload(); err != nil {
 		return err
 	}
 	return
