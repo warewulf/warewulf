@@ -5,7 +5,7 @@ User Guide
 Welcome to the Warewulf User Guide!
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Getting Started
 
    Introduction <getting-started/introduction>
@@ -17,7 +17,7 @@ Welcome to the Warewulf User Guide!
    Glossary <getting-started/glossary>
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Server
 
    Server Installation <server/installation>
@@ -29,7 +29,7 @@ Welcome to the Warewulf User Guide!
    Upgrading Warewulf <server/upgrade>
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Nodes and Profiles
 
    Cluster Nodes <nodes/nodes>
@@ -39,7 +39,7 @@ Welcome to the Warewulf User Guide!
    Disks <nodes/disks>
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Images
 
    Node Images <images/images>
@@ -48,21 +48,21 @@ Welcome to the Warewulf User Guide!
    SELinux <images/selinux>
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Overlays
 
    Overlays <overlays/overlays>
    Templating <overlays/templates>
 
 .. toctree::
-   :maxdepth: 2
-   :caption: troubleshooting
+   :maxdepth: 1
+   :caption: Troubleshooting
 
    Troubleshooting <troubleshooting/troubleshooting>
    Known issues <troubleshooting/known-issues>
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contributing
 
    Contributing <contributing/contributing>
@@ -83,3 +83,9 @@ Welcome to the Warewulf User Guide!
    :glob:
 
    reference/man5/*
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Release Notes
+
+   v4.6.0 <release/v4.6.0>

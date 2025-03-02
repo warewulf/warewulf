@@ -34,6 +34,8 @@ specifying  ``--netname``.
    an interface may fail to be named correct if its desired name conflicts with
    the kernel-assigned name of another interface during the boot process.
 
+.. _bonding:
+
 Bonding
 =======
 
@@ -60,6 +62,8 @@ The ``ifcfg`` and ``NetworkManager`` overlays can configure a network bond like 
      tags:
        master: bond0
 
+.. _vlan:
+
 VLAN
 ====
 
@@ -83,6 +87,8 @@ Other network systems need additional network tags:
      --type vlan \
      --nettagadd "vlan_id=42,parent_device=eth0" \
      n001
+
+.. _static_routes:
 
 Static Routes
 =============

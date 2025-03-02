@@ -1,0 +1,453 @@
+====================
+v4.6.0 Release Notes
+====================
+
+v4.6.0 is a significant upgrade, with many changes relative to the v4.5.x
+series.
+
+Particularly significant changes, especially those affecting the user interface,
+are described below. Additional changes not impacting the user interface are
+listed in the `CHANGELOG`_.
+
+.. _CHANGELOG: https://github.com/warewulf/warewulf/blob/main/CHANGELOG.md
+
+Documentation
+=============
+
+The `user documentation`_ has been significantly refactored and re-written. The
+majority of changes mentioned here should be documented in more detail there, as
+well, and the reorganization and deduplication supports better documentation
+maintenance in the future.
+
+The documentation also now includes complete and automatically-generated
+references for all ``wwctl`` commands, sub-comands, and options.
+
+.. _user documentation: https://warewulf.org/docs/
+
+Upgrade
+=======
+
+Warewulf v4.6.0 adds the ``wwctl upgrade`` command to assist with upgrading from
+previous versions of Warewulf v4. This command updates existing configuration
+files for use with the current version.
+
+There are two subcommands:
+
+- ``wwctl upgrade config`` updates ``warewulf.conf``.
+- ``wwctl upgrade nodes`` updates ``nodes.conf``.
+
+Both of these will attempt to update their respective configuration file
+in-place, retaining a copy of the previous version with a ``.bak`` suffix.
+Alternatively, you can see what each command will do by specifying an
+``--output-file=-`` option, to direct the output of the command to "standard
+out."
+
+``wwctl upgrade nodes`` additionally requires two options to be specified:
+
+- ``--add-defaults`` adds default settings to the default profile when those
+  settings are absent. If you *do not* wish to add defaults, specify
+  ``--add-defaults=false``.
+  
+  For more information, see the section on the default profile, below.
+
+- ``--replace-overlays`` replaces any reference to the "generic" or "wwinit"
+  overlays with a new set of overlays that replace their behavior. Because an
+  overlay named "wwinit" is present in both the legacy and the upgraded state,
+  ``--replace-overlays`` is **not** idempotent, and should only be used once. If
+  you *do not* wish to replace overlays, specify ``--replace-overlays=false``.
+  
+  For more information, see the section on overlays, below.
+  
+The default profile
+===================
+
+At various points Warewulf v4 has had a number of built-in default settings.
+These settings were once "compiled in," and more recently were moved to a
+dedicated ``defaults.conf`` file. In v4.6.0 these defaults have been moved to
+the default profile, and are included in ``nodes.conf`` for new installations.
+
+A legacy configuration from a previous Warewulf installation can be updated to
+include recommended defaults using ``wwctl upgrade nodes --add-defaults``. (For
+more information, refer to the section on upgrades, above.)
+
+If the default overlay exists, it will be automatically (and explicitly)
+included by new nodes created with ``wwctl node add``. It is otherwise not
+"special," and may be removed if a different organization is preferred.
+
+A few ``wwctl`` commands have previously had ``--setdefault`` options to
+automatically update the default profile: these options have been removed in
+v4.6.0.
+
+Images
+======
+
+One of the more visible changes to Warewulf in v4.6.0: "containers" have been
+renamed to "images" (more specifically, "node images") throughout the interface,
+documentation, and even code. This decision (requested by the user community) is
+meant to alleviate confusion regarding whether Warewulf "containers" are "real"
+containers running on a container runtime with potential performance and
+operational consequences.
+
+Warewulf "containers" have never been "virtualized" or executed with a container
+runtime. Rather, the name "container" was selected to imply the integration in
+v4 with the container ecosystem of tooling for defining, building, storing, and
+testing node images. But this terminology ended up causing persistent confusion,
+so a more industry-standard "node image" terminology has been adopted in stead.
+
+The ``wwctl container`` command is retained as an alias for the new ``wwctl
+image`` command. The variables ``.Container`` and ``.ContainerName`` are also
+retained as overlay template variables. These backwards-compatibility retentions
+will continue to work through the v4.6.x series.
+
+There are smaller changes to the image system, as well:
+
+- ``wwctl image shell`` now supports a ``WW_HISTFILE`` environment variable to
+  save shell history _inside_ the image.
+- ``wwctl image shell`` now supports a ``WW_PS1`` environment variable to
+  specify the prompt for the interactive shell. The default prompt has also been
+  updated to indicate the current directory.
+- ``wwctl image import`` now supports ``--username`` and ``--password``
+  parameters for authenticating to a secure OCI registry.
+- ``wwctl image import`` now supports a ``--nohttps`` parameter to use HTTP,
+  rather than HTTPS, when importing an image from an OCI registry.
+- ``wwctl image import`` now supports a ``--platform`` parameter to specify a
+  different target architecture (e.g.., for importing an aarch64 image into an
+  x86_64 Warewulf server). This simplifies importing images in a
+  multi-architecture environment.
+- ``wwctl image <exec|shell|copy>`` all now support a ``--build`` flag to
+  control whether the image should be automatically rebuilt after the operation.
+  (For ``exec`` and ``shell`` the default value is "true", and may be disabled
+  with ``--build=false``. For ``copy`` the default value is "false", and may be
+  enabled with ``--build`` or ``--build=true``.)
+- Warewulf v4.5 used the permissions on an image's ``rootfs/`` directory to
+  determine a "read-only" state of the image. This behavior is now replaced with
+  a sentinel ``readonly`` file stored alongside ``rootfs/`` in the image
+  "chroot" directory. (For more information, see the "known issues" section in
+  the Warewulf documentation.)
+
+Kernels
+=======
+
+Warewulf v4.6.0 removes the ``wwctl kernel`` command, and all its subcommands,
+along with the ``wwctl <node|profile> <add|set> --kerneloverride`` parameter.
+All kernels are now provisioned from an associated node image. If more than one
+kernel is present in the image, Warewulf uses the highest-version, non-debug
+kernel; but an explicit kernel version or kernel path can be specified with
+``wwctl <node|profile> <add|set> --kernelversion``.
+
+``wwctl image kernels`` provides a new interface to show what kernels are
+available in each image, along with information regarding the detected version,
+whether the kernel is the "default" for the image, and how many nodes are
+configured to use it. (If no version is specified, the detected kernel version
+is provided to overlay templates as ``.Kernel.Version``).
+
+Kernel arguments are also now represented as a list, rather than as a flat
+string. This allows kernel arguments to be combined from various levels (e.g.,
+profiles and the node) without having to re-specify the full argument list.
+However, this also means that kernel arguments must be explicitly *negated* to
+remove them from prior specification. (For example, you might need to specify
+both ``~crashkernel=no`` and ``crashkernel=512MB``.) List arguments to ``wwctl
+<node|profile> <add|set>`` may be comma-separated; so arguments that *contain* a
+comma must now be quoted on the command-line. (e.g., ``wwctl profile set default
+--cluster oso  --kernelargs 'console=tty0,"console=ttyS0,115200"'``)
+
+Overlays
+========
+
+``wwctl overlay build`` has been enhanced to build overlays in parallel, and has
+also been made significantly more efficient. As a result, building overlay
+images for large clusters now takes significantly less time. By default, the
+number of parallel workers is equal to the number of CPUs on the Warewulf
+server; this can be adjusted with a new ``wwctl overlay <import|build>
+--workers=0`` parameter.
+
+The "wwinit" and "generic" overlays have been split into multiple overlays based
+on discrete functionality. Their equivalents may be substituted using ``wwctl
+upgrade nodes --replace-overlays``. (See the section on upgrading above.) This
+supports more precise removal of default overlay functionality from a given node
+or profile by removing only a subset of the default overlays. (For example, you
+may wish to include only one of the network management overlays,
+``NetworkManager``, ``ifcfg``, ``wicked``, or ``debian.interfaces``.)
+
+Overlays have been further separated into "distribution" and "site" overlays.
+All overlays provided with Warewulf are "distribution" overlays, and should not
+be modified. New overlays, and modifications to distribution overlays, are
+stored as "site" overlays. Site overlays are retained between Warewulf upgrades,
+and take precedence over a distribution overlay of the same name.
+
+``wwctl overlay build --host`` and ``--nodes`` have been removed to clarify that
+the host overlay is not "built." To support development and debugging of the
+host overlay, ``wwctl overlay show --render=host`` now renders overlay templates
+as they would be applied to the Warewulf server. #623
+
+There are smaller changes to the overlay system, as well:
+
+- ``wwctl <node|profile> <add|set> [--system-overlays|--runtime-overlays]``
+  replaces ``--wwinit`` and ``--runtime``, respectively. (The original flags are
+  retained, but deprecated.)
+- ``wwctl overlay show --render`` can now accept the path to a template without
+  its ``.ww`` suffix.
+
+Templates
+=========
+
+Overlay templates now have access to the full suite of `Sprig template
+functions. <https://github.com/Masterminds/sprig>`_ Use of the local ``tr`` and
+``slice`` template functions in the distribution overlays has been replaced with
+their Sprig equivalents (``replace`` and ``substr``, respectively).
+
+An additional template function, :ref:`UniqueField`, was added to facilitate
+removing duplicate ``passwd`` and ``group`` entries in the ``syncuser`` overlay.
+(For more information, see the section on syncuser, below.)
+
+A set of new template functions, :ref:`importLink`, :ref:`softlink`, and
+:ref:`readlink`, add support for creating symbolic links from overlay templates.
+
+The new :ref:`localtime` overlay configures the timezone of a cluster node.
+
+Network Overlays
+================
+
+The network overlays now support :ref:`VLAN tagging <vlan>`, and :ref:`static
+routes <static_routes>`, and have improved support for configuring a
+:ref:`network bond. <bonding>` They also now support specifying a :ref:`DNS
+search path. <dns>`
+
+.. note::
+
+   Not all functionality is supported by all network overlays.
+
+There are smaller changes to the network overlays, as well:
+
+- The NetworkManager overlay now prevents interfaces without a specified
+  ``Ipaddr`` from activating DHCP.
+- The NetworkManager overlay now only marks interfaces "unmanaged" if they have
+  neither a ``Device`` name nor an ``Hwaddr`` specified.
+
+Profiles
+========
+
+Node profiles now support profiles themselves, allowing for complex nested
+hierarchies of nested profiles.
+
+.. code-block:: yaml
+
+   nodeprofiles:
+     default:
+       profiles:
+         - rocky
+         - net
+     rocky:
+       image name: rockylinux-9
+     net:
+       network devices:
+         default:
+           netmask: 255.255.255.0
+           gateway: 192.168.1.1
+   nodes:
+     n1:
+       profiles:
+         - default
+       network devices:
+         default:
+           ipaddr: 192.168.1.101
+
+Resources and NFS
+=================
+
+Resources are similar to tags except that their value is an arbitrary data
+structure rather than just a string. This data is represented as YAML data in
+``nodes.conf``, and these data structures may then be referenced by overlay
+templates to implement more expressive cluster behavior.
+
+Resources can currently only be defined with ``wwctl <node|profile> edit``, or
+by editing ``nodes.conf`` directly.
+
+.. note::
+
+   Resources are defined only at the root of nodes (and profiles), not on
+   network interfaces and IPMI interfaces.
+
+The premiere use of resources is in the refactoring of NFS client configuration.
+
+NFS
+===
+
+Cluster node NFS mounts are no longer configured in ``warewulf.conf``. In stead,
+a new ``fstab`` overlay configures NFS (or any other) mounts on cluster nodes
+based on an ``fstab`` resource definition.
+
+.. code-block:: yaml
+
+   nodeprofiles:
+     default:
+       resources:
+         fstab:
+           - spec: warewulf:/home
+             file: /home
+             vfstype: nfs
+             mntops: defaults,nofail
+           - spec: warewulf:/opt
+             file: /opt
+             vfstype: nfs
+             mntops: defaults,noauto,nofail,ro
+
+Syncuser
+========
+
+"Syncuser" has always been optional, but the output of certain commands has been
+updated to no longer imply that not running syncuser is an error condition. The
+``wwctl image build --syncuser`` now explicitly opts-in to automatic syncuser
+during image build, and the ``wwctl image syncuser --write`` parameter is now
+automatically enabled. (Specify ``--write=false`` to disable.)
+
+Some syncuser functionality is now implemented in a new ``syncuser`` overlay.
+While this overlay *is* supplied by ``wwctl upgrade nodes --replace-overlays``,
+it is not included by default in the initial ``nodes.conf`` in new deployments.
+
+There are smaller changes to the syncuser, as well:
+
+- The ``syncuser`` overlay now looks for the ``passwd`` and ``group`` databases
+  in ``sysconfdir``, rather than explicitly in ``/etc/``. This change is
+  primarily to support testing; but it does mean that if ``sysconfdir`` is a
+  path other than ``/etc/`` then these databases must be provided explicitly
+  (e.g., by copying them or symlinking them into ``sysconfdir``).
+- The ``syncuser`` overlay now skips duplicate users and groups when generating
+  synchronized ``passwd`` and ``group`` databases.
+
+Network Boot and wwinit
+=======================
+
+The network boot and wwinit process have been made more consistent and verbose
+for both iPXE and GRUB methods. Additional output and logging provides more
+information about each step of the process as it happens to aid in
+troubleshooting. And available network boot options are now presented using an
+iPXE menu, allowing a specific method to be selected without using a custom iPXE
+script.
+
+Utilizing the new iPXE menu, specifying an ``IPXEMenuEntry`` tag on a cluster
+node now selects the boot method to use, similar to the previously-existing
+``GRUBMenuEntry``. The ``dracut.ipxe`` script has now been merged into the
+default iPXE script, and specifying ``IPXEMenuEntry=dracut`` now replaces
+specifying a discrete ``dracut`` iPXE template.
+
+An issue that prevented nodes from booting in some circumstances with the
+Warewulf server configured in "secure" mode have also been resolved: now, if the
+runtime overlay cannot be downloaded during boot, boot proceeds regardless, and
+``wwclient`` applies the runtime overlay after boot when it is able to control
+its source port.
+
+IPMI
+====
+
+The IPMI system has been refactored to use templates to define the required IPMI
+template from the cluster node configuration. This is expected to support
+additional BMC implementation in the future.
+
+CLI
+===
+
+There have been many enhancements to the ``wwctl`` command:
+
+``wwctl`` has been updated to use a different table-formatting library that
+produces more natural output without extraneous whitespace padding.
+
+``wwctl`` has been updated to add hostlist support to ``wwctl node`` and ``wwctl
+overlay build``. Hostlists have also been enhanced to support comma-separated
+hostlist patterns. (e.g., ``n[1-2],n5,n[8-9]``) Other pattern formats (regular
+expressions and globs) are no longer supported.
+
+``wwctl`` has been updated to add "tab completions" for additional parameters.
+
+``wwctl <node|profile> list [--yaml|--json]`` generates machine-readable output
+in YAML and JSON format, and ``wwctl node export`` has been updated to match,
+including indicating node IDs.
+
+``wwctl`` now return a non-zero exit code on error.
+
+There are smaller changes to the syncuser, as well:
+
+- ``wwctl <node|profile> list --fullall`` has been removed.
+- ``wwctl clean`` removes the OCI cache and vestigial overlay images from
+  deleted nodes.
+- ``wwctl container exec`` no longer requires a double hyphen (``-- --``) before
+  flags.
+
+Debian/Ubuntu
+=============
+
+Warewulf v4.6.0 does not yet fully support Debian or Ubuntu; but there have been
+multiple improvements towards future support:
+
+- ``warewulfd`` can now detect Ubuntu-style Dracut initrd images.
+- A new ``netplan`` overlay adds support for modern Debian/Ubuntu network
+  configuration.
+- Multiple internal shell scripts have been updated for POSIX compatibility to
+  support internal use of shells other than Bash.
+
+Server
+======
+
+The Warewulf server daemon (``warewulfd``) has been refactored to more closely
+behave like a `12-factor app <https://12factor.net/>`_. As such, the ability to
+daemonize has been removed (as have the daemon management commands, ``wwctl
+server <start,stop,status,restart,reload>``). The server now always runs in the
+foreground and logs to stdout rather than to ``/var/log/warewulfd.log`` or
+syslog.
+
+The ``warewulfd.service`` systemd unit has been updated to read environment
+variables from ``/etc/default/warewulfd``, and now references an ``OPTIONS``
+environment variable to supply additional arguments to the ``wwctl server``
+command. (e.g., ``OPTIONS=--debug``)
+
+``wwctl`` auto-detects some network settings if they are not specified in
+``warewulf.conf``. These settings are now written back to ``warewulf.conf``
+after auto-detection. The ``ipaddr`` field of ``warewulf.conf`` can now also
+handle a CIDR-formatted address, which internally populates the ``netmask`` and
+``network`` fields. These network fields are also provided to overlay templates
+in CIDR format as ``IpCIDR`` and ``NetworkCIDR`` fields.
+
+A new ``warewulfd`` API endpoint at
+``/overlay-file/{overlay}/{path...}?render={id}`` supports fetching (and
+rendering) arbitrary overlay files.
+
+There are smaller changes to the server, as well:
+
+- ``wwctl configure ssh`` now generates ed25519 keys by default.
+
+DHCP Server
+===========
+
+The Warewulf server's external DHCP service now more flexibly accounts for the
+presence or absence of an address range. ``wwctl configure dhcp`` now generates
+a DHCP configuration without a defined range, generating as much of the subnet
+and range definition as possible, for either a "default" configuration or a
+"static" configuration.
+
+For Warewulf Developers
+=======================
+
+Finally, there are a number of changes that really only matter to Warewulf
+developers:
+
+The minimum Go version is now ``1.22.9``, as required by updated dependencies.
+
+Warewulf v4.6.0 includes a significant refactor of the internal datastructures
+that represent cluster nodes. The NodeInfo structure (in-memory-only) has been
+merged with NodeConf, the YAML-backed data structure. In its place, a new Field
+system supports tracks the source of node fields while values are merged from
+profiles for use explicitly during ``wwctl node list --all``.
+
+The primary Warewulf ``Makefile`` has been enhanced with target help: just run
+``make`` to see a list and descriptions of notable targets.
+
+The official Warewulf RPM spec file has been updated to recommend the
+installation of ``ipmitool``. It also simplifies the permissions of installed
+files, and omits the gRPC API by default.
+
+The GitHub CI process now runs "staticcheck," and problems highlighted by it
+have been resolved. Recent problems in the nightly build workflow have also been
+resolved.
+
+A Visual Studio Code "development container" definition is now included in the
+repository.

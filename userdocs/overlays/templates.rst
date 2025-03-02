@@ -83,6 +83,8 @@ abort string is found.
   
    {{ IncludeBlock "/etc/hosts" "# Do not edit after this line" }}
 
+.. _importLink:
+
 ImportLink
 ----------
 
@@ -120,6 +122,8 @@ more than once in a template to write content to multiple files.
    {{/* content here */}}
    {{- end }}
 
+.. _softlink:
+
 softlink
 --------
 
@@ -128,6 +132,8 @@ Causes the processed template file to become a symlink to the referenced target.
 .. code-block::
   
    {{ printf "%s/%s" "/usr/share/zoneinfo" .Tags.localtime | softlink }}
+
+.. _readlink:
 
 readlink
 --------
@@ -162,6 +168,8 @@ nobackup
 .. code-block::
 
    {{ nobackup }}
+
+.. _UniqueField:
 
 UniqueField
 -----------

@@ -220,6 +220,8 @@ configured network interfaces, typically based on a known MAC address.
 - systemd.netname
 - udev.netname
 
+.. _dns:
+
 Several of the network configuration overlays support netdev tags to further
 customize the interface:
 
@@ -307,6 +309,19 @@ the use of most available template metadata.
 .. code-block:: shell
   
    wwctl overlay show --render=<nodename> debug tstruct.md.ww
+
+.. _localtime:
+
+localtime
+---------
+
+The **localtime** overlay configures the timezone of a cluster node to match
+that of the Warewulf server; alternatively, a different timezone may be
+specified with a ``localtime`` tag.
+
+.. code-block:: shell
+
+   wwctl profile set default --tagadd="localtime=UTC"
 
 host
 ----
