@@ -227,8 +227,8 @@ be rebuilt into a bootable static object automatically. (To skip the automatic
 image rebuild, specify ``--build=false``.)
 
 If the files ``/etc/passwd`` or ``/etc/group`` were updated, there will be an
-additional check to confirm if the users are in sync as described in `Syncuser`_
-section.
+additional check to confirm if the users are in sync as described in the
+:ref:`Syncuser` section.
 
 Specifying a Prompt
 -------------------

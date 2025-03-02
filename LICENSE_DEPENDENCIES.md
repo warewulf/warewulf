@@ -317,6 +317,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/stefanberger/go-pkcs11uri/blob/78284954bff6/LICENSE>
 
+## github.com/swaggest/swgui
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/swaggest/swgui/blob/v1.8.2/LICENSE>
+
 ## github.com/vbatts/go-mtree/pkg/govis
 
 **License:** Apache-2.0
@@ -370,6 +376,12 @@ The dependencies and their licenses are as follows:
 **License:** Apache-2.0
 
 **License URL:** <https://github.com/grpc/grpc-go/blob/v1.70.0/LICENSE>
+
+## gopkg.in/yaml.v2
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/go-yaml/yaml/blob/v2.4.0/LICENSE>
 
 ## github.com/moby/sys/capability
 
@@ -466,6 +478,12 @@ The dependencies and their licenses are as follows:
 **License:** BSD-3-Clause
 
 **License URL:** <https://github.com/proglottis/gpgme/blob/v0.1.3/LICENSE>
+
+## github.com/santhosh-tekuri/jsonschema/v3
+
+**License:** BSD-3-Clause
+
+**License URL:** <https://github.com/santhosh-tekuri/jsonschema/blob/v3.1.0/LICENSE>
 
 ## github.com/spf13/pflag
 
@@ -629,6 +647,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/felixge/httpsnoop/blob/v1.0.4/LICENSE.txt>
 
+## github.com/go-chi/chi/v5
+
+**License:** MIT
+
+**License URL:** <https://github.com/go-chi/chi/blob/v5.2.1/LICENSE>
+
 ## github.com/huandu/xstrings
 
 **License:** MIT
@@ -749,6 +773,42 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/stretchr/testify/blob/v1.10.0/LICENSE>
 
+## github.com/swaggest/form/v5
+
+**License:** MIT
+
+**License URL:** <https://github.com/swaggest/form/blob/v5.1.1/LICENSE>
+
+## github.com/swaggest/jsonschema-go
+
+**License:** MIT
+
+**License URL:** <https://github.com/swaggest/jsonschema-go/blob/v0.3.73/LICENSE>
+
+## github.com/swaggest/openapi-go
+
+**License:** MIT
+
+**License URL:** <https://github.com/swaggest/openapi-go/blob/v0.2.55/LICENSE>
+
+## github.com/swaggest/refl
+
+**License:** MIT
+
+**License URL:** <https://github.com/swaggest/refl/blob/v1.3.0/LICENSE>
+
+## github.com/swaggest/rest
+
+**License:** MIT
+
+**License URL:** <https://github.com/swaggest/rest/blob/v0.2.73/LICENSE>
+
+## github.com/swaggest/usecase
+
+**License:** MIT
+
+**License URL:** <https://github.com/swaggest/usecase/blob/v1.3.1/LICENSE>
+
 ## github.com/titanous/rocacheck
 
 **License:** MIT
@@ -760,6 +820,12 @@ The dependencies and their licenses are as follows:
 **License:** MIT
 
 **License URL:** <https://github.com/urfave/cli/blob/v1.22.16/LICENSE>
+
+## github.com/vearutop/statigz
+
+**License:** MIT
+
+**License URL:** <https://github.com/vearutop/statigz/blob/v1.4.0/LICENSE>
 
 ## github.com/vincent-petithory/dataurl
 

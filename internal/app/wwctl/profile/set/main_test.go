@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
-	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd/daemon"
 )
 
 type test_description struct {
@@ -23,7 +23,7 @@ func run_test(t *testing.T, test test_description) {
 	env := testenv.New(t)
 	defer env.RemoveAll()
 	env.WriteFile("etc/warewulf/nodes.conf", test.inDB)
-	warewulfd.SetNoDaemon()
+	daemon.SetNoDaemon()
 	name := test.name
 	if name == "" {
 		name = t.Name()
