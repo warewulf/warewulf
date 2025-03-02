@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
-	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd/daemon"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -71,7 +71,7 @@ nodes:
 	env.WriteFile("usr/share/warewulf/overlays/dist/foo.ww", "foo")
 	env.WriteFile("var/lib/warewulf/overlays/dist/foo.ww", "foobaar")
 
-	warewulfd.SetNoDaemon()
+	daemon.SetNoDaemon()
 	t.Run("overlay show raw", func(t *testing.T) {
 		baseCmd.SetArgs([]string{"testoverlay", "email.ww"})
 		baseCmd := GetCommand()
@@ -177,7 +177,7 @@ nodes:
 
 	env.WriteFile(path.Join(testenv.WWOverlaydir, "testoverlay/template.ww"), template)
 	defer env.RemoveAll()
-	warewulfd.SetNoDaemon()
+	daemon.SetNoDaemon()
 
 	host, err := os.Hostname()
 	if err != nil {
