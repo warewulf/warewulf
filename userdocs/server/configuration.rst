@@ -333,6 +333,19 @@ Configuration for the ``wwclient`` service on cluster nodes.
   ``wwclient`` will use the TCP port "987" by default if ``secure: true``; but,
   if that port is otherwise in use, a different port may be specified.
 
+api
+===
+
+Configuration for the ``api`` component of the ``warewulfd`` service.
+
+.. code-block:: yaml
+
+   api:
+     enabled: true
+
+* ``api:enabled``: : Whether the ``warewulfd`` service should provide access via
+  a REST interface.
+
 hostfile
 ========
 

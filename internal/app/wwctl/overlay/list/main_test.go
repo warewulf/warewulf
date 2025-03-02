@@ -8,7 +8,7 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
-	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd/daemon"
 )
 
 func Test_Overlay_List(t *testing.T) {
@@ -17,7 +17,7 @@ func Test_Overlay_List(t *testing.T) {
 {{ if .Tags.email }}eMail: {{ .Tags.email }}{{else}} noMail{{- end }}
 `)
 	defer env.RemoveAll()
-	warewulfd.SetNoDaemon()
+	daemon.SetNoDaemon()
 	t.Run("overlay list", func(t *testing.T) {
 		baseCmd := GetCommand()
 		buf := new(bytes.Buffer)

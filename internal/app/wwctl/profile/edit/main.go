@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
-	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd/daemon"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v3"
 )
@@ -124,7 +124,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					return err
 				}
 
-				if err := warewulfd.DaemonReload(); err != nil {
+				if err := daemon.DaemonReload(); err != nil {
 					return fmt.Errorf("failed to reload warewulf daemon: %w", err)
 				}
 			}

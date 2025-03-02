@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
-	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd/daemon"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -95,7 +95,7 @@ nodes:
 		},
 	}
 
-	warewulfd.SetNoDaemon()
+	daemon.SetNoDaemon()
 	env := testenv.New(t)
 	defer env.RemoveAll()
 
@@ -153,25 +153,7 @@ nodes:
 			args: []string{"-j"},
 			output: `
 {
-  "default": {
-    "Profiles": null,
-    "Comment": "",
-    "ClusterName": "",
-    "ImageName": "",
-    "Ipxe": "",
-    "RuntimeOverlay": null,
-    "SystemOverlay": null,
-    "Kernel": null,
-    "Ipmi": null,
-    "Init": "",
-    "Root": "",
-    "NetDevs": null,
-    "Tags": null,
-    "PrimaryNetDev": "",
-    "Disks": null,
-    "FileSystems": null,
-    "Resources": null
-  }
+  "default": {}
 }
 `,
 			inDb: `
@@ -205,44 +187,8 @@ nodes:
 			args: []string{"-j"},
 			output: `
 {
-  "default": {
-    "Profiles": null,
-    "Comment": "",
-    "ClusterName": "",
-    "ImageName": "",
-    "Ipxe": "",
-    "RuntimeOverlay": null,
-    "SystemOverlay": null,
-    "Kernel": null,
-    "Ipmi": null,
-    "Init": "",
-    "Root": "",
-    "NetDevs": null,
-    "Tags": null,
-    "PrimaryNetDev": "",
-    "Disks": null,
-    "FileSystems": null,
-    "Resources": null
-  },
-  "test": {
-    "Profiles": null,
-    "Comment": "",
-    "ClusterName": "",
-    "ImageName": "",
-    "Ipxe": "",
-    "RuntimeOverlay": null,
-    "SystemOverlay": null,
-    "Kernel": null,
-    "Ipmi": null,
-    "Init": "",
-    "Root": "",
-    "NetDevs": null,
-    "Tags": null,
-    "PrimaryNetDev": "",
-    "Disks": null,
-    "FileSystems": null,
-    "Resources": null
-  }
+  "default": {},
+  "test": {}
 }
 `,
 			inDb: `
@@ -257,7 +203,7 @@ nodes:
 		},
 	}
 
-	warewulfd.SetNoDaemon()
+	daemon.SetNoDaemon()
 	env := testenv.New(t)
 	defer env.RemoveAll()
 
