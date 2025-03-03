@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Warewulf User Guide'
-copyright = '2024, Warewulf Project Contributors'
+copyright = '2025, Warewulf Project Contributors'
 author = 'Warewulf Project Contributors'
 release = 'main'
 
@@ -16,8 +16,9 @@ release = 'main'
 
 extensions = [
     'sphinx.ext.graphviz',
-    'sphinx_reredirects',
 ]
+if not tags.has('pdf'):
+    extensions.append('sphinx_reredirects')
 
 redirects = {
     'contents/background': '../getting-started/introduction.html',
