@@ -14,7 +14,7 @@ require (
 	github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
 	github.com/coreos/ignition/v2 v2.20.0
 	github.com/coreos/vcontext v0.0.0-20230201181013-d72178a18687
-	github.com/creasty/defaults v1.7.0
+	github.com/creasty/defaults v1.8.0
 	github.com/fatih/color v1.18.0
 	github.com/golang/glog v1.2.4
 	github.com/google/uuid v1.6.0
