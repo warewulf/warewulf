@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## Unreleased
+
+### Added
+
+- Add a new OpenAPI v3 REST API to warewulfd at /api. #1588
+
+### Changed
+
+- Update JSON output to match YAML field names. #1588
+- Update JSON output to omit empty values. #1588
+
+### Fixed
+
+- Allow `--verbose` and `--debug` to set log level for warewulfd. #1801
+
 ## v4.6.0, 2025-03-02
 
 ### Added

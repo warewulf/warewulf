@@ -1,4 +1,4 @@
-package warewulfd
+package daemon
 
 import (
 	"fmt"
@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"strconv"
 	"syscall"
-	"time"
 
 	"github.com/pkg/errors"
 	"github.com/warewulf/warewulf/internal/pkg/util"
@@ -15,10 +14,7 @@ import (
 
 const (
 	WAREWULFD_PIDFILE = "/var/run/warewulfd.pid"
-	WAREWULFD_LOGFILE = "/var/log/warewulfd.log"
 )
-
-var loginit bool
 
 // allow to run without daemon for tests
 var nodaemon bool
@@ -30,32 +26,6 @@ func init() {
 // run without daemon
 func SetNoDaemon() {
 	nodaemon = true
-}
-
-func DaemonFormatter(logLevel int, rec *wwlog.LogRecord) string {
-	return "[" + rec.Time.Format(time.UnixDate) + "] " + wwlog.DefaultFormatter(logLevel, rec)
-}
-
-func DaemonInitLogging() error {
-	if loginit {
-		return nil
-	}
-
-	wwlog.SetLogFormatter(DaemonFormatter)
-
-	level_str, ok := os.LookupEnv("WAREWULFD_LOGLEVEL")
-	if ok {
-		level, err := strconv.Atoi(level_str)
-		if err == nil {
-			wwlog.SetLogLevel(level)
-		}
-	} else {
-		wwlog.SetLogLevel(wwlog.INFO)
-	}
-
-	loginit = true
-
-	return nil
 }
 
 func DaemonStatus() error {

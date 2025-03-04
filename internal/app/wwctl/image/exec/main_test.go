@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
-	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd/daemon"
 )
 
 func mockChildCmd(cmd *cobra.Command, args []string) error {
@@ -29,7 +29,7 @@ func Test_Exec(t *testing.T) {
 	defer func() {
 		childCommandFunc = runChildCmd
 	}()
-	warewulfd.SetNoDaemon()
+	daemon.SetNoDaemon()
 
 	tests := []struct {
 		name   string
