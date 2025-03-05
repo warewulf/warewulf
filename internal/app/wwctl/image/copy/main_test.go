@@ -6,14 +6,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
-	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd/daemon"
 )
 
 func Test_Copy(t *testing.T) {
 	env := testenv.New(t)
 	env.WriteFile(path.Join(testenv.WWChrootdir, "test-image/rootfs/bin/sh"), `test`)
 	defer env.RemoveAll()
-	warewulfd.SetNoDaemon()
+	daemon.SetNoDaemon()
 
 	t.Run("image copy without build", func(t *testing.T) {
 		baseCmd := GetCommand()
