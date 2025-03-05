@@ -41,24 +41,26 @@ jobs:
   rpm:
     name: Build RPMs
     needs: dist
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runs-on }}
     container:
       image: rockylinux/rockylinux:9
       options: --privileged
     strategy:
       fail-fast: false
       matrix:
+        arch: [x86_64, aarch64]
+        dist: [el9, el8, suse.lp155]
         include:
-          - target: rocky+epel-8-x86_64
-            arch: x86_64
-            dist: el8
-          - target: rocky+epel-9-x86_64
-            arch: x86_64
-            dist: el9
-          - target: opensuse-leap-15.5-x86_64
-            arch: x86_64
-            dist: suse.lp155
-
+          - dist: el8
+            target: rocky+epel-8 #-arch
+          - dist: el9
+            target: rocky+epel-9
+          - dist: suse.lp155
+            target: opensuse-leap-15.5
+          - arch: x86_64
+            runs-on: ubuntu-24.04
+          - arch: aarch64
+            runs-on: ubuntu-24.04-arm
     steps:
       - name: Prepare mock and rpm-build
         run: |
@@ -73,13 +75,13 @@ jobs:
 
       - name: Build RPMs and run tests
         run: |
-          mock -r ${{ matrix.target }} --rebuild --spec=warewulf.spec --sources=. \
-          && mock -r ${{ matrix.target }} --chroot -- bash -c "make -C /builddir/build/BUILD/warewulf-*/ test"
+          mock -r ${{ matrix.target }}-${{ matrix.arch }} --rebuild --spec=warewulf.spec --sources=. \
+          && mock -r ${{ matrix.target }}-${{ matrix.arch }} --chroot -- bash -c "make -C /builddir/build/BUILD/warewulf-*/ test"
 
       - name: Attach RPM and SRPM to release
         uses: xresloader/upload-to-github-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          file: "/var/lib/mock/${{ matrix.target }}/result/warewulf-*.rpm"
+          file: "/var/lib/mock/${{ matrix.target }}-${{ matrix.arch }}/result/warewulf-*.rpm"
           tags: true
