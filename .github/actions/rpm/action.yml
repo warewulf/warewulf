@@ -20,6 +20,10 @@ inputs:
   event-id:
     description: "Github event id"
     required: true
+  upload-source:
+    description: "Upload source"
+    required: false
+    default: 'false'
 
 runs:
   using: "composite"
@@ -74,6 +78,7 @@ runs:
         path: /var/lib/mock/${{ inputs.target }}/result/${{ env.RPM }}
 
     - name: Upload SRPM
+      if: ${{ inputs.upload-source == 'true' }}
       uses: actions/upload-artifact@v4
       with:
         name: ${{ env.SRPM }}
