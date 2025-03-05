@@ -75,6 +75,7 @@ func RunServer() error {
 	wwHandler.HandleFunc("/overlay-runtime/", ProvisionSend)
 	wwHandler.HandleFunc("/overlay-file/", OverlaySend)
 	wwHandler.HandleFunc("/status", StatusSend)
+	wwHandler.HandleFunc("/images/", ImagesSend)
 
 	conf := warewulfconf.Get()
 
