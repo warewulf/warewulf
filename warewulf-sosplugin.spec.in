@@ -1,0 +1,53 @@
+%define dist .el
+
+Name:           warewulf-sos
+Version:        @VERSION@
+Release:        @RELEASE@%{?dist}
+Summary:        Warewulf plugin for sos reports
+
+License:        BSD-3-Clause
+URL:            https://github.com/warewulf/warewulf
+Source:         https://github.com/warewulf/warewulf/releases/download/v%{version}/warewulf-%{version}.tar.gz
+
+BuildArch:      noarch
+Requires:       sos
+
+%description
+The sos-warewulf package provides a Warewulf plugin for sosreport.
+
+%prep
+%setup -q -n warewulf-%{version} -b0 %if %{?with_offline:-a2}
+
+%build
+
+%install
+install -D -m 0644 include/sos/warewulf.py %{buildroot}/tmp/warewulf.py
+
+%post
+sos_dir=$(python3 -c "import sos; print(sos.__path__[0])" 2>/dev/null)
+plugin_dir="${sos_dir}/report/plugins"
+
+if [ -d "$plugin_dir" ]; then
+    cp -p /tmp/warewulf.py "$plugin_dir"/warewulf.py
+else
+    echo "Warning: sos plugin directory ($plugin_dir) not found" >&2
+fi
+
+rm -f %{buildroot}/tmp/warewulf.py
+
+%preun
+# Only remove the file on complete uninstall
+if [ "$1" -eq 0 ]; then
+    sos_dir=$(python3 -c "import sos; print(sos.__path__[0])" 2>/dev/null)
+    plugin_dir="${sos_dir}/report/plugins"
+    [ -f "$plugin_dir/warewulf.py" ] && rm -f "$plugin_dir/warewulf.py"
+fi
+
+%postun
+
+%files
+%missingok /tmp/warewulf.py
+
+%changelog
+* Thu Feb 20 2025 Stephen Simpson <ssimpson@ciq.com>
+- Initial release
