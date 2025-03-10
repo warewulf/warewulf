@@ -29,11 +29,13 @@ type templateVars struct {
 	Id            string
 	Cluster       string
 	ImageName     string
+	Ipxe          string
 	Hwaddr        string
 	Ipaddr        string
 	Port          string
 	KernelArgs    string
 	KernelVersion string
+	Root          string
 	Tags          map[string]string
 	NetDevs       map[string]*node.NetDev
 }
@@ -120,6 +122,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			ImageName:     remoteNode.ImageName,
 			KernelArgs:    kernelArgs,
 			KernelVersion: kernelVersion,
+			Root:          remoteNode.Root,
 			NetDevs:       remoteNode.NetDevs,
 			Tags:          remoteNode.Tags}
 	} else if rinfo.stage == "kernel" {
@@ -205,8 +208,10 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 				Hostname:      remoteNode.Id(),
 				Hwaddr:        rinfo.hwaddr,
 				ImageName:     remoteNode.ImageName,
+				Ipxe:          remoteNode.Ipxe,
 				KernelArgs:    kernelArgs,
 				KernelVersion: kernelVersion,
+				Root:          remoteNode.Root,
 				NetDevs:       remoteNode.NetDevs,
 				Tags:          remoteNode.Tags}
 			if stage_file == "" {
