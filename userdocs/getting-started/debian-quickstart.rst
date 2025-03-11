@@ -127,8 +127,8 @@ and set it for the "default" node profile.
 
 .. code-block:: bash
 
-   wwctl image import docker://ghcr.io/warewulf/warewulf-debian:12.0 debian-12.0
-   wwctl profile set default --image=debian-12.0
+   sudo wwctl image import docker://ghcr.io/warewulf/warewulf-debian:12.0 debian-12.0
+   sudo wwctl profile set default --image=debian-12.0
 
 Set up the default node profile
 ===============================
