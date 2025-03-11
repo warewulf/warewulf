@@ -4,7 +4,15 @@ info "Mounting tmpfs at $NEWROOT"
 mount -t tmpfs -o mpol=interleave ${wwinit_tmpfs_size_option} tmpfs "$NEWROOT"
 
 # check connectivity to warewulfd
-for i in {1..60}; do curl "${wwinit_uri}" > /dev/null; if [[ $? -eq 0 ]]; then break; fi; sleep 1; done;
+for i in {1..60}
+do
+    curl --silent "${wwinit_uri}" > /dev/null
+    if [[ $? -eq 0 ]]
+    then
+        break
+    fi
+    sleep 1
+done
 
 for stage in "image" "system" "runtime"
 do

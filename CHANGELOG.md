@@ -17,7 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## Unreleased
 
 ### Added
-- Add connectivity check to dracut before image download. 
+- Add connectivity check to dracut before image download. #1800 
 
 ### Removed
 
