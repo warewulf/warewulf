@@ -14,9 +14,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 - Update GitHub actions to build aarch64 artifacts.
-## Unreleased
 
 ### Added
+
 - Add connectivity check to dracut before image download. #1800 
 
 ### Removed
