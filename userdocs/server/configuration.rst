@@ -38,7 +38,7 @@ Re-run both of these commands when making changes to ``warewulf.conf``.
      tftproot: /var/lib/tftpboot
      systemd name: tftp
      ipxe:
-       00:0B: arm64-efi/snponly.efi
+       "00:0B": arm64-efi/snponly.efi
        "00:00": undionly.kpxe
        "00:07": ipxe-snponly-x86_64.efi
        "00:09": ipxe-snponly-x86_64.efi
@@ -176,7 +176,7 @@ directory and enables the TFTP service.
      tftproot: /var/lib/tftpboot
      systemd name: tftp
      ipxe:
-       00:0B: arm64-efi/snponly.efi
+       "00:0B": arm64-efi/snponly.efi
        "00:00": undionly.kpxe
        "00:07": ipxe-snponly-x86_64.efi
        "00:09": ipxe-snponly-x86_64.efi
