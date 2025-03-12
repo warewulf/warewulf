@@ -114,7 +114,17 @@ func getNestedFieldValue(obj interface{}, name string) (value reflect.Value, err
 		value = value.Elem()
 	}
 
-	fieldNames := strings.Split(name, ".")
+	//fieldNames := strings.Split(name, ".") Test
+	in_quote := false
+	fieldNames := strings.FieldsFunc(name, func(r rune) bool {
+		if r == '[' {
+			in_quote = true
+		} else if r == ']' {
+			in_quote = false
+		}
+		return !in_quote && r == '.'
+	})
+
 	for _, fieldName := range fieldNames {
 		var key string
 		fieldName, key = parseMapField(fieldName)
