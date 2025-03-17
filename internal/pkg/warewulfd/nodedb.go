@@ -69,36 +69,40 @@ func GetNodeOrSetDiscoverable(hwaddr string) (node.Node, error) {
 	// If we failed to find a node, let's see if we can add one...
 	wwlog.Warn("node not configured: %s", hwaddr)
 
-	node, netdev, err := db.yml.FindDiscoverableNode()
+	nodeFound, netdev, err := db.yml.FindDiscoverableNode()
 	if err != nil {
 		// NOTE: this is taken as there is no discoverable node, so return the
 		// empty one
-		return node, err
+		return nodeFound, err
 	}
 	// update node
-	wwlog.Debug("discoverd node: %s netdev: %s", node.Id(), netdev)
-	nodeChanges, _ := db.yml.GetNodeOnly(node.Id()) // ignore error as nodeId is in db
+	wwlog.Debug("discovered node: %s netdev: %s", nodeFound.Id(), netdev)
+	nodeChanges, _ := db.yml.GetNodeOnly(nodeFound.Id()) // ignore error as nodeId is in db
+	if _, ok := nodeChanges.NetDevs[netdev]; !ok {
+		nodeChanges.NetDevs = make(map[string]*node.NetDev)
+		nodeChanges.NetDevs[netdev] = new(node.NetDev)
+	}
 	wwlog.Debug("node: %v", nodeChanges)
 	nodeChanges.NetDevs[netdev].Hwaddr = hwaddr
 	nodeChanges.Discoverable = "UNDEF"
-	err = db.yml.SetNode(node.Id(), nodeChanges)
+	err = db.yml.SetNode(nodeFound.Id(), nodeChanges)
 	if err != nil {
-		return node, err
+		return nodeFound, err
 	}
 	err = db.yml.Persist()
 	if err != nil {
-		return node, fmt.Errorf("%s (failed to persist node configuration) %w", hwaddr, err)
+		return nodeFound, fmt.Errorf("%s (failed to persist node configuration) %w", hwaddr, err)
 	}
 	err = loadNodeDB()
 	if err != nil {
-		return node, fmt.Errorf("%s (failed to reload configuration) %w", hwaddr, err)
+		return nodeFound, fmt.Errorf("%s (failed to reload configuration) %w", hwaddr, err)
 	}
 	// NOTE: previously all overlays were built here, but that will also
 	// be done automatically when attempting to serve an overlay that
 	// hasn't been built (without blocking the database).
 
-	wwlog.Serv("%s (node %s automatically configured)", hwaddr, node.Id())
+	wwlog.Serv("%s (node %s automatically configured)", hwaddr, nodeFound.Id())
 
 	// return the discovered node
-	return db.yml.GetNode(node.Id())
+	return db.yml.GetNode(nodeFound.Id())
 }
