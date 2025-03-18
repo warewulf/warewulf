@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Replaced unreadable >= character external sphinx module for pdf doc build.
 - Handle missing ipmi fields during bmc commands. #1768
 - Properly configure a default IPMI template during `wwctl upgrade nodes --add-defaults`.
+- Fixed display of dotted field names. #1825
 
 ### Changed
 

@@ -672,6 +672,18 @@ nodeprofiles:
 			source: "",
 			value:  "p1,p2",
 		},
+		"dotted netdev name": {
+			nodesConf: `
+nodes:
+  n1:
+    network devices:
+      eth0.100:
+        type: Ethernet`,
+			node:   "n1",
+			field:  "NetDevs[eth0.100].Type",
+			source: "",
+			value:  "Ethernet",
+		},
 		"node netdev tag": {
 			nodesConf: `
 nodes:

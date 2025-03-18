@@ -114,7 +114,7 @@ func getNestedFieldValue(obj interface{}, name string) (value reflect.Value, err
 		value = value.Elem()
 	}
 
-	fieldNames := strings.Split(name, ".")
+	fieldNames := splitFieldName(name)
 	for _, fieldName := range fieldNames {
 		var key string
 		fieldName, key = parseMapField(fieldName)
@@ -139,6 +139,45 @@ func getNestedFieldValue(obj interface{}, name string) (value reflect.Value, err
 		}
 	}
 	return
+}
+
+// splitName splits a string into components using the '.' character as a delimiter,
+// except when the '.' appears inside square brackets.
+//
+// For example, given the input "NetDevs[eth0.100].Type", it returns:
+//
+//	[]string{"NetDevs[eth0.100]", "Type"}
+func splitFieldName(s string) []string {
+	var parts []string
+	var current []rune
+	inBracket := false
+
+	for _, r := range s {
+		switch r {
+		case '[':
+			inBracket = true
+			current = append(current, r)
+		case ']':
+			inBracket = false
+			current = append(current, r)
+		case '.':
+			if inBracket {
+				// If we're inside brackets, keep the dot.
+				current = append(current, r)
+			} else {
+				// Outside brackets, split here.
+				parts = append(parts, string(current))
+				current = nil
+			}
+		default:
+			current = append(current, r)
+		}
+	}
+	// Append any remaining characters as the last part.
+	if len(current) > 0 {
+		parts = append(parts, string(current))
+	}
+	return parts
 }
 
 // getNestedFieldString retrieves the string representation
