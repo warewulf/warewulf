@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Update GitHub actions to build aarch64 artifacts.
 
+### Fixed
+- Bump golang.org/x/net from 0.33.0 to 0.36.0 to fix CVE-2025-22870
+
 ## v4.6.0, 2025-03-02
 
 ### Added
