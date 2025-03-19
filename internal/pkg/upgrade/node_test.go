@@ -578,6 +578,7 @@ nodeprofiles:
       args:
       - quiet
       - crashkernel=no
+      - net.ifnames=1
     init: /sbin/init
     root: initramfs
     resources:
@@ -658,6 +659,7 @@ nodeprofiles:
       args:
       - quiet
       - crashkernel=no
+      - net.ifnames=1
     init: /sbin/init
     root: initramfs
     resources:
@@ -1014,6 +1016,7 @@ nodeprofiles:
       args:
       - quiet
       - crashkernel=no
+      - net.ifnames=1
     init: /sbin/init
     root: initramfs
     resources:
