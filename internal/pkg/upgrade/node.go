@@ -122,6 +122,9 @@ func (legacy *NodesYaml) Upgrade(addDefaults bool, replaceOverlays bool, warewul
 			defaultProfile.RuntimeOverlay = append(
 				defaultProfile.RuntimeOverlay, genericSplitOverlays...)
 		}
+		if defaultProfile.Kernel == nil {
+			defaultProfile.Kernel = new(node.KernelConf)
+		}
 		if len(defaultProfile.Kernel.Args) < 1 {
 			defaultProfile.Kernel.Args = []string{"quiet", "crashkernel=no"}
 		}
@@ -152,6 +155,12 @@ func (legacy *NodesYaml) Upgrade(addDefaults bool, replaceOverlays bool, warewul
 					"mntops":  "defaults,noauto,nofail,ro",
 				},
 			}
+		}
+		if defaultProfile.Ipmi == nil {
+			defaultProfile.Ipmi = new(node.IpmiConf)
+		}
+		if defaultProfile.Ipmi.Template == "" {
+			defaultProfile.Ipmi.Template = "ipmitool.tmpl"
 		}
 	}
 	return upgraded
