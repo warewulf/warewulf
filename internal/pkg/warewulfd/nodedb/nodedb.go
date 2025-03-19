@@ -1,4 +1,4 @@
-package warewulfd
+package nodedb
 
 import (
 	"fmt"
