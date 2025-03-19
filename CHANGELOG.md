@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - Support Ubuntu-style dracut initrd images.
+- Fix regression that net.ifnames=1 was missing in the kernel command line, which forces SUSE udev to default behavior
 
 ### Fixed
 
