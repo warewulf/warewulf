@@ -309,7 +309,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/spf13/cobra/blob/v1.8.1/LICENSE.txt>
+**License URL:** <https://github.com/spf13/cobra/blob/v1.9.1/LICENSE.txt>
 
 ## github.com/stefanberger/go-pkcs11uri
 
@@ -471,7 +471,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/spf13/pflag/blob/d5e0c0615ace/LICENSE>
+**License URL:** <https://github.com/spf13/pflag/blob/v1.0.6/LICENSE>
 
 ## github.com/ulikunitz/xz
 
@@ -603,7 +603,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/cpuguy83/go-md2man/blob/v2.0.5/LICENSE.md>
+**License URL:** <https://github.com/cpuguy83/go-md2man/blob/v2.0.6/LICENSE.md>
 
 ## github.com/creasty/defaults
 
