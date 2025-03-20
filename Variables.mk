@@ -51,6 +51,7 @@ BASHCOMPDIR ?= /etc/bash_completion.d
 FIREWALLDDIR ?= /usr/lib/firewalld/services
 LOGROTATEDIR ?= /etc/logrotate.d
 DRACUTMODDIR ?= /usr/lib/dracut/modules.d
+SOSPLUGINS ?= /usr/lib/python3.9/site-packages/sos/report/plugins
 ifeq ($(OS),suse)
   TFTPDIR ?= /srv/tftpboot
 endif
