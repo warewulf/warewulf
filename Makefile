@@ -89,7 +89,7 @@ reference: wwctl
 	./wwctl --emptyconf genconfig reference userdocs/reference/
 
 latexpdf: reference
-	make -C userdocs latexpdf
+	SPHINXOPTS='-t pdf -D release=$(VERSION)' make -C userdocs latexpdf
 
 ##@ Development
 
