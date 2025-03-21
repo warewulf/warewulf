@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Handle missing ipmi fields during bmc commands. #1768
 - Properly configure a default IPMI template during `wwctl upgrade nodes --add-defaults`.
 - Fixed display of dotted field names. #1825
+- Add single quote around escapechar in ipmitool template #1830
 
 ### Changed
 

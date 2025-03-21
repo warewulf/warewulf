@@ -41,7 +41,7 @@ func Test_Ipmitool(t *testing.T) {
 					Password:   "calvin",
 				},
 			},
-			cmdStr: `ipmitool -I lanplus -e ~ -p 687 -H 192.168.1.100 -U "root" -P "calvin" chassis power status`,
+			cmdStr: `ipmitool -I lanplus -e "~" -p 687 -H 192.168.1.100 -U "root" -P "calvin" chassis power status`,
 		},
 		"nobmc PowerStatus full": {
 			bmc: TemplateStruct{
