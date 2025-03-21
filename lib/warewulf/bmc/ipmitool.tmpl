@@ -1,6 +1,6 @@
 {{ $cmd := "ipmitool" }}
 {{ if .Interface }}{{ $cmd = cat $cmd "-I" .Interface }}{{ end }}
-{{ if .EscapeChar }}{{ $cmd = cat $cmd "-e" (printf "'%s'" .EscapeChar) }}{{ end }}
+{{ if .EscapeChar }}{{ $cmd = cat $cmd "-e" (printf "\"%s\"" .EscapeChar) }}{{ end }}
 {{ if .Port }}{{ $cmd = cat $cmd "-p" .Port }}{{ end }}
 {{ if .Ipaddr }}{{ $cmd = cat $cmd "-H" .Ipaddr }}{{ end }}
 {{ if .UserName }}{{ $cmd = cat $cmd "-U" (printf "\"%s\"" .UserName) }}{{ end }}
