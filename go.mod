@@ -1,8 +1,7 @@
 module github.com/warewulf/warewulf
 
 go 1.22.0
-
-toolchain go1.22.9
+toolchain go1.24.1
 
 require (
 	dario.cat/mergo v1.0.1
@@ -18,7 +17,7 @@ require (
 	github.com/fatih/color v1.18.0
 	github.com/golang/glog v1.2.4
 	github.com/google/uuid v1.6.0
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.1
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.3
 	github.com/hashicorp/go-version v1.7.0
 	github.com/manifoldco/promptui v0.9.0
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
@@ -28,9 +27,9 @@ require (
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
 	github.com/talos-systems/go-smbios v0.1.1
-	golang.org/x/sys v0.29.0
-	golang.org/x/term v0.28.0
-	google.golang.org/genproto/googleapis/api v0.0.0-20250204164813-702378808489
+	golang.org/x/sys v0.30.0
+	golang.org/x/term v0.29.0
+	google.golang.org/genproto/googleapis/api v0.0.0-20250303144028-a0af3efb3deb
 	google.golang.org/grpc v1.70.0
 	google.golang.org/protobuf v1.36.5
 	gopkg.in/yaml.v3 v3.0.1
@@ -137,10 +136,10 @@ require (
 	go.opentelemetry.io/otel v1.32.0 // indirect
 	go.opentelemetry.io/otel/metric v1.32.0 // indirect
 	go.opentelemetry.io/otel/trace v1.32.0 // indirect
-	golang.org/x/crypto v0.32.0 // indirect
+	golang.org/x/crypto v0.33.0 // indirect
 	golang.org/x/exp v0.0.0-20241217172543-b2144cdd0a67 // indirect
-	golang.org/x/net v0.33.0 // indirect
+	golang.org/x/net v0.35.0 // indirect
 	golang.org/x/sync v0.11.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250204164813-702378808489 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250303144028-a0af3efb3deb // indirect
 )
