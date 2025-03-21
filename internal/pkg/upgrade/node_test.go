@@ -553,6 +553,8 @@ nodes:
 nodeprofiles:
   default:
     ipxe template: default
+    ipmi:
+      template: ipmitool.tmpl
     runtime overlay:
       - hosts
       - ssh.authorized_keys
@@ -634,6 +636,8 @@ nodes:
 nodeprofiles:
   custom: {}
   default:
+    ipmi:
+      template: ipmitool.tmpl
     ipxe template: default
     runtime overlay:
       - hosts
@@ -891,6 +895,8 @@ nodeprofiles:
 		upgradedYaml: `
 nodeprofiles:
   default:
+    ipmi:
+      template: ipmitool.tmpl
     ipxe template: default
     runtime overlay:
       - hosts

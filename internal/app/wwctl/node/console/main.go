@@ -5,9 +5,9 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/pkg/bmc"
 	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 	"github.com/warewulf/warewulf/internal/pkg/node"
-	"github.com/warewulf/warewulf/internal/pkg/power"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -43,7 +43,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Error("%s: No IPMI IP address", node.Id())
 			continue
 		}
-		ipmiCmd := power.IPMI{IpmiConf: *node.Ipmi}
+		ipmiCmd := bmc.TemplateStruct{IpmiConf: *node.Ipmi}
 		if err := ipmiCmd.Console(); err != nil {
 			wwlog.Error("%s: Console problem", node.Id())
 			returnErr = err

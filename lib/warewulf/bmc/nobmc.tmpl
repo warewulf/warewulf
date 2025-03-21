@@ -1,11 +1,10 @@
-{{/* used command to access nodes without bmc*/}}
-{{- if eq .Cmd "PowerOn" }}wol {{ .Interface }}
-{{- else if eq .Cmd "PowerOff" }}ssh {{ .Ipaddr }} echo o > /proc/sysrq-trigger
-{{- else if eq .Cmd "PowerCycle" }}ssh {{ .Ipaddr }} echo r > /proc/sysrq-trigger
-{{- else if eq .Cmd "PowerReset" }}ssh {{ .Ipaddr }} echo r > /proc/sysrq-trigger
-{{- else if eq .Cmd "PowerSoft" }}ssh {{ .Ipaddr }} reboot
-{{- else if eq .Cmd "PowerStatus" }}ping -c 1 {{ .Ipaddr }} &> /dev/null && echo ON || echo OFF
-{{- else if eq .Cmd "SDRList" }}ssh {{ .Ipaddr }} sensors
-{{- else if eq .Cmd "SensorList" }}ssh {{ .Ipaddr }} sensors
-{{- else if eq .Cmd "Console" }}echo node sol
+{{- if eq .Cmd "PowerOn" }}wol "{{ .Interface }}"
+{{- else if eq .Cmd "PowerOff" }}ssh "{{ .Ipaddr }}" echo o > /proc/sysrq-trigger
+{{- else if eq .Cmd "PowerCycle" }}ssh "{{ .Ipaddr }}" echo r > /proc/sysrq-trigger
+{{- else if eq .Cmd "PowerReset" }}ssh "{{ .Ipaddr }}" echo r > /proc/sysrq-trigger
+{{- else if eq .Cmd "PowerSoft" }}ssh "{{ .Ipaddr }}" reboot
+{{- else if eq .Cmd "PowerStatus" }}ping -c 1 "{{ .Ipaddr }}" &> /dev/null && echo ON || echo OFF
+{{- else if eq .Cmd "SDRList" }}ssh "{{ .Ipaddr }}" sensors
+{{- else if eq .Cmd "SensorList" }}ssh "{{ .Ipaddr }}" sensors
+{{- else if eq .Cmd "Console" }}echo "sol not available"
 {{- else }}echo "command not found"{{ end }}

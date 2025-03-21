@@ -36,7 +36,7 @@ nodes:
 	}{
 		"power cycle": {
 			args:     []string{"--show", "n01"},
-			expected: "10.10.10.10: ipmitool -I lan -H 10.10.10.10 -p 623 -U admin -P admin -e ~ chassis power cycle",
+			expected: `10.10.10.10: ipmitool -H 10.10.10.10 -U "admin" -P "admin" chassis power cycle`,
 		},
 	}
 

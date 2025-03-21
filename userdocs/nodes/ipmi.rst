@@ -75,25 +75,24 @@ configured with a template which defines Warewulf's IPMI behavior.
 
 .. code-block::
 
-   {{/* used command to access the ipmi interface of the nodes */}}
-   {{- $escapechar := "~" }}
-   {{- $port := "623" }}
-   {{- $interface := "lan" }}
-   {{- $args := "" }}
-   {{- if .EscapeChar }} $escapechar = .EscapeChar {{ end }}
-   {{- if .Port }} {{ $port = .Port }} {{ end }}
-   {{- if .Interface }} {{ $interface = .Interface }} {{ end }}
-   {{- if eq .Cmd "PowerOn" }} {{ $args = "chassis power on" }} {{ end }}
-   {{- if eq .Cmd "PowerOff" }} {{ $args = "chassis power off" }} {{ end }}
-   {{- if eq .Cmd "PowerCycle" }} {{ $args = "chassis power cycle" }} {{ end }}
-   {{- if eq .Cmd "PowerReset" }} {{ $args = "chassis power reset" }} {{ end }}
-   {{- if eq .Cmd "PowerSoft" }} {{ $args = "chassis power soft" }} {{ end }}
-   {{- if eq .Cmd "PowerStatus" }} {{ $args = "chassis power status" }} {{ end }}
-   {{- if eq .Cmd "SDRList" }} {{ $args = "sdr list" }} {{ end }}
-   {{- if eq .Cmd "SensorList" }} {{ $args = "sensor list" }} {{ end }}
-   {{- if eq .Cmd "Console" }} {{ $args = "sol activate" }} {{ end }}
-   {{- $cmd := printf "ipmitool -I %s -H %s -p %s -U %s -P %s -e %s %s" $interface .Ipaddr $port .UserName .Password  $escapechar $args }}
-   {{ $cmd }}
+   {{ $cmd := "ipmitool" }}
+   {{ if .Interface }}{{ $cmd = cat $cmd "-I" .Interface }}{{ end }}
+   {{ if .EscapeChar }}{{ $cmd = cat $cmd "-e" .EscapeChar }}{{ end }}
+   {{ if .Port }}{{ $cmd = cat $cmd "-p" .Port }}{{ end }}
+   {{ if .Ipaddr }}{{ $cmd = cat $cmd "-H" .Ipaddr }}{{ end }}
+   {{ if .UserName }}{{ $cmd = cat $cmd "-U" (printf "\"%s\"" .UserName) }}{{ end }}
+   {{ if .Password }}{{ $cmd = cat $cmd "-P" (printf "\"%s\"" .Password) }}{{ end }}
+   {{ if eq .Cmd "PowerOn" }}{{ $cmd = cat $cmd "chassis power on" }}
+   {{ else if eq .Cmd "PowerOff" }}{{ $cmd = cat $cmd "chassis power off" }}
+   {{ else if eq .Cmd "PowerCycle" }}{{ $cmd = cat $cmd "chassis power cycle" }}
+   {{ else if eq .Cmd "PowerReset" }}{{ $cmd = cat $cmd "chassis power reset" }}
+   {{ else if eq .Cmd "PowerSoft" }}{{ $cmd = cat $cmd "chassis power soft" }}
+   {{ else if eq .Cmd "PowerStatus" }}{{ $cmd = cat $cmd "chassis power status" }}
+   {{ else if eq .Cmd "SDRList" }}{{ $cmd = cat $cmd "sdr list" }}
+   {{ else if eq .Cmd "SensorList" }}{{ $cmd = cat $cmd "sensor list" }}
+   {{ else if eq .Cmd "Console" }}{{ $cmd = cat $cmd "sol activate" }}
+   {{ end }}
+   {{- $cmd -}}
 
 A different template can be used to change the IPMI behavior using the
 ``--ipmitemplate`` field. Referenced templates must be located in

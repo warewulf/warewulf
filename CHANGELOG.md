@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Fixed panic in warewulfd if node netdev is only defined in a profile. #1817
 - Replaced unreadable >= character external sphinx module for pdf doc build.
+- Handle missing ipmi fields during bmc commands. #1768
+- Properly configure a default IPMI template during `wwctl upgrade nodes --add-defaults`.
 
 ### Changed
 
