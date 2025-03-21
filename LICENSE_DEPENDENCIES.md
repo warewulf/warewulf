@@ -609,7 +609,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/creasty/defaults/blob/v1.7.0/LICENSE>
+**License URL:** <https://github.com/creasty/defaults/blob/v1.8.0/LICENSE>
 
 ## github.com/docker/docker-credential-helpers
 
