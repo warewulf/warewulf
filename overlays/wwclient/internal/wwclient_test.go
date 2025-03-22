@@ -57,5 +57,6 @@ Filename: warewulf/init.d/80-wwclient
 # Only start if the systemd is not available
 test -e /usr/lib/systemd/systemd && exit 0
 echo "Starting wwclient"
+if [ -r /etc/default/wwclient ]; then . /etc/default/wwclient; fi
 nohup /warewulf/wwclient >/var/log/wwclient.log 2>&1 </dev/null &
 `

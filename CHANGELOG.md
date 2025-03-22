@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - Added `wwctl overlay import --overwrite` to overwrite existing overlay file.
+- wwclient uses `WW_IPADDR`, if set, to contact the Warewulf server. #1788
 
 ### Fixed
 
