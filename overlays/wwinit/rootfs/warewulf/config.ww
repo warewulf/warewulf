@@ -8,3 +8,6 @@ WWIPMI_GATEWAY="{{$.Ipmi.Gateway}}"
 WWIPMI_USER="{{$.Ipmi.UserName}}"
 WWIPMI_PASSWORD="{{$.Ipmi.Password}}"
 WWIPMI_WRITE="{{$.Ipmi.Write.Bool}}"
+{{- if $.Ipmi.Tags.vlan }}
+WWIPMI_VLAN="{{$.Ipmi.Tags.vlan}}"
+{{- end }}
