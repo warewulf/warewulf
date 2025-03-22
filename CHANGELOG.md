@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - Added `wwctl overlay import --overwrite` to overwrite existing overlay file.
+- Add `--retry-connrefused` to dracut curl commands.
 
 ### Fixed
 
