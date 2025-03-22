@@ -28,6 +28,13 @@ desired IPMI configuration to the node's BMC during boot.
     wwctl node set n1 \
       --ipmiaddr=192.168.2.1
 
+Additionally, a ``vlan`` ipmi tag can be used to set the IPMI VLAN ID.
+
+.. code-block::
+
+   wwctl profile set default \
+     --ipmitagadd vlan=42
+
 ``wwctl node list`` has a specific overview for IPMI settings.
 
 .. code-block:: console

@@ -32,6 +32,16 @@ command -v ipmitool >/dev/null 2>&1 || (
 
 lan_info="$(ipmitool lan print 1)"
 
+if [ -n "$WWIPMI_VLAN" ]; then
+    prev_vlan=$(echo "$lan_info" | grep "^802.1q VLAN ID *:" | awk -F': ' '{print $2 }')
+    if [ "$prev_vlan" == "$WWIPMI_VLAN" ] || [ "$prev_vlan" = "Disabled" -a "$WWIPMI_VLAN" = off ]; then
+        echo "IPMI VLAN: $WWIPMI_VLAN"
+    else
+        echo "IPMI VLAN: $prev_vlan -> $WWIPMI_VLAN"
+        echo ipmitool lan set 1 vlan id "$WWIPMI_VLAN"
+    fi
+fi
+
 if [ -n "$WWIPMI_IPADDR" ]; then
     prev_ip=$(echo "$lan_info" | grep "^IP Address *:" | awk -F': ' '{ print $2 }')
     if [ "$prev_ip" != "$WWIPMI_IPADDR" ]; then
