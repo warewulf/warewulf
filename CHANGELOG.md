@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## v4.6.1, unreleased
 
+### Added
+
+- Added `wwctl overlay import --overwrite` to overwrite existing overlay file.
+
 ### Fixed
 
 - Fixed panic in warewulfd if node netdev is only defined in a profile. #1817

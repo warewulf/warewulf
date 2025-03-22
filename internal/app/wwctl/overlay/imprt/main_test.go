@@ -1,6 +1,7 @@
 package imprt
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"testing"
@@ -8,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
 
@@ -88,4 +90,81 @@ nodes: {}
 			t.FailNow()
 		}
 	})
+}
+
+func Test_Import(t *testing.T) {
+	tests := map[string]struct {
+		initFiles   []string
+		initDirs    []string
+		args        []string
+		errExpected bool
+	}{
+		"import a file": {
+			initFiles: []string{"importfile"},
+			initDirs:  []string{"/var/lib/warewulf/overlays/to1/rootfs"},
+			args:      []string{"to1", "importfile"},
+		},
+
+		"import missing parent": {
+			initFiles:   []string{"importfile"},
+			initDirs:    []string{"/var/lib/warewulf/overlays/to1/rootfs"},
+			args:        []string{"to1", "importfile", "a/b/importfile"},
+			errExpected: true,
+		},
+
+		"import create parents": {
+			initFiles:   []string{"importfile"},
+			initDirs:    []string{"/var/lib/warewulf/overlays/to1/rootfs"},
+			args:        []string{"to1", "importfile", "a/b/importfile", "--parents"},
+			errExpected: false,
+		},
+
+		"import fail overwrite": {
+			initFiles:   []string{"importfile", "/var/lib/warewulf/overlays/to1/rootfs/importfile"},
+			args:        []string{"to1", "importfile"},
+			errExpected: true,
+		},
+
+		"import overwrite": {
+			initFiles:   []string{"importfile", "/var/lib/warewulf/overlays/to1/rootfs/importfile"},
+			args:        []string{"to1", "importfile", "--overwrite"},
+			errExpected: false,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			env := testenv.New(t)
+			defer env.RemoveAll()
+			{
+				wd, err := os.Getwd()
+				assert.NoError(t, err)
+				defer func() { assert.NoError(t, os.Chdir(wd)) }()
+			}
+			assert.NoError(t, os.Chdir(env.GetPath(".")))
+
+			OverwriteFile = false
+			CreateDirs = false
+
+			for _, file := range tt.initFiles {
+				env.CreateFile(file)
+			}
+			for _, dir := range tt.initDirs {
+				env.MkdirAll(dir)
+			}
+
+			cmd := GetCommand()
+			cmd.SetArgs(tt.args)
+			stdout := new(bytes.Buffer)
+			cmd.SetOut(stdout)
+			stderr := new(bytes.Buffer)
+			cmd.SetErr(stderr)
+			err := cmd.Execute()
+			if tt.errExpected {
+				assert.Error(t, err, stdout)
+			} else {
+				assert.NoError(t, err, stderr)
+			}
+		})
+	}
 }
