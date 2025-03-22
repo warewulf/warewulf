@@ -294,6 +294,11 @@ If a ``PasswordlessRoot`` tag is set to "true", the overlay will also insert a
 "passwordless" root entry. This can be particularly useful for accessing a
 cluster node when its network interface is not properly configured.
 
+.. warning::
+
+   ``PasswordlessRoot`` is not recommended for production; it should only be
+   used during debugging, when normal authentication is not functional.
+
 ignition
 --------
 

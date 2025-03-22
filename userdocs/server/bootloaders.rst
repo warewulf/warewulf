@@ -334,13 +334,13 @@ Warewulf provides a dracut module to configure the dracut initramfs to load the
 image. This module is available in the ``warewulf-dracut`` subpackage, which
 must be installed in the image.
 
-With the ``warewulf-dracut`` package installed, you can build an initramfs
-inside the image.
+With the ``warewulf-dracut`` package installed in the image, you can then build
+an initramfs inside the image.
 
 .. code-block:: shell
 
-   dnf -y install warewulf-dracut
-   dracut --force --no-hostonly --add wwinit --regenerate-all
+   wwctl image exec rockylinux-9 --build=false -- /usr/bin/dnf -y install https://github.com/warewulf/warewulf/releases/download/v4.6.0/warewulf-dracut-4.6.0-1.el9.noarch.rpm
+   wwctl image exec rockylinux-9 -- /usr/bin/dracut --force --no-hostonly --add wwinit --regenerate-all
 
 .. note::
 
