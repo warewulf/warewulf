@@ -5,6 +5,7 @@ After=local-fs.target
 
 [Service]
 Type=notify
+EnvironmentFile=-/etc/default/wwclient
 ExecStart=/warewulf/wwclient
 ExecReload=/bin/kill -s SIGHUP "$MAINPID"
 PIDFile=/var/run/wwclient.pid

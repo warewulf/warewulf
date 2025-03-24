@@ -52,7 +52,7 @@ A node or profile can configure an overlay in two different ways:
 .. code-block:: shell
 
    wwctl profile set default \
-     --system-overlays="wwinit,,wwclient,fstab,hostname,ssh.host_keys,systemd.netname,NetworkManager" \
+     --system-overlays="wwinit,wwclient,fstab,hostname,ssh.host_keys,systemd.netname,NetworkManager" \
      --runime-overlays="hosts,ssh.authorized_keys"
 
 Multiple overlays can be applied to a single node, and overlays from multiple
@@ -201,6 +201,10 @@ wwclient
 All configured overlays are provisioned initially along with the node image
 itself; but **wwclient** periodically fetches and applies the runtime overlay to
 allow configuration of some settings without a reboot.
+
+wwclient will contat the ``ipaddr`` value from ``warewulf.conf`` by default.
+This can be overridden by specifying a ``WW_IPADDR`` environment variable, which
+can be set via an overlay in ``/etc/default/wwclient``.
 
 Network interfaces
 ------------------
