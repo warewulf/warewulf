@@ -18,14 +18,14 @@ Rocky Linux 9
 
 .. code-block:: console
 
-   # dnf install https://github.com/warewulf/warewulf/releases/download/v4.6.0rc2/warewulf-4.6.0rc2-1.el9.x86_64.rpm
+   # dnf install https://github.com/warewulf/warewulf/releases/download/v4.6.0/warewulf-4.6.0-1.el9.x86_64.rpm
 
 openSuse Leap
 -------------
 
 .. code-block:: console
 
-   # zypper install https://github.com/warewulf/warewulf/releases/download/v4.6.0rc2/warewulf-4.6.0rc2-1.suse.lp155.x86_64.rpm
+   # zypper install https://github.com/warewulf/warewulf/releases/download/v4.6.0/warewulf-4.6.0-1.suse.lp155.x86_64.rpm
 
 Container images
 ================
@@ -97,9 +97,9 @@ appropriate substitutions:
 
 .. code-block:: bash
 
-   curl -LO https://github.com/warewulf/warewulf/releases/download/v4.6.0rc2/warewulf-4.6.0rc2.tar.gz
-   tar -xf warewulf-4.6.0rc2.tar.gz
-   cd warewulf-4.6.0rc2
+   curl -LO https://github.com/warewulf/warewulf/releases/download/v4.6.0/warewulf-4.6.0.tar.gz
+   tar -xf warewulf-4.6.0.tar.gz
+   cd warewulf-4.6.0
    make all && sudo make install
 
 Git
@@ -118,7 +118,7 @@ from the main site, the GitHub releases page, or from a Git tag.
 
    git clone https://github.com/warewulf/warewulf.git
    cd warewulf
-   git checkout main # or switch to a tag like 'v4.6.0rc2'
+   git checkout main # or switch to a tag like 'v4.6.0'
    make all && sudo make install
 
 Runtime Dependencies
@@ -133,6 +133,22 @@ services. Generally these are provided by your distribution.
 
 If you are using an Enterprise Linux compatible distribution you can install
 them with ``dnf install dhcp-server tftp-server nfs-utils``.
+
+Building RPM packages from source
+=================================
+
+You can also build RPM packages from source.
+
+.. code-block:: bash
+
+   dnf -y install epel-release
+   dnf -y install make mock
+   git clone git@github.com:warewulf/warewulf.git
+   (
+      cd warewulf
+      make clean && make dist warewulf.spec && mock -r rocky+epel-9-$(arch) --rebuild --spec=warewulf.spec --sources=.
+   )
+   dnf -y install /var/lib/mock/rocky+epel-9-$(arch)/result/warewulf-*.$(arch).rpm
 
 Starting warewulfd
 ==================
