@@ -22,6 +22,7 @@ func GetCommand() *cobra.Command {
 		RunE:                  CobraRunE(&vars),
 		Aliases:               []string{"ls"},
 		ValidArgsFunction:     completions.Profiles,
+		Args:                  cobra.ArbitraryArgs,
 	}
 	baseCmd.PersistentFlags().BoolVarP(&vars.showAll, "all", "a", false, "Show all profile configurations")
 	baseCmd.PersistentFlags().BoolVarP(&vars.showYaml, "yaml", "y", false, "Show profile configurations via yaml format")

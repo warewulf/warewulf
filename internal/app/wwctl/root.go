@@ -30,6 +30,7 @@ var (
 		PersistentPreRunE:     rootPersistentPreRunE,
 		SilenceUsage:          true,
 		SilenceErrors:         true,
+		Args:                  cobra.NoArgs,
 	}
 	verboseArg      bool
 	DebugFlag       bool

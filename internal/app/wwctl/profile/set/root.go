@@ -35,6 +35,7 @@ func GetCommand() *cobra.Command {
 		Aliases:           []string{"modify"},
 		RunE:              CobraRunE(&vars),
 		ValidArgsFunction: completions.Profiles,
+		Args:              cobra.ArbitraryArgs,
 	}
 	vars.profileConf.CreateFlags(baseCmd)
 	vars.profileDel.CreateDelFlags(baseCmd)

@@ -13,6 +13,7 @@ var (
 		Long:                  "This command opens an editor for the given nodes.",
 		RunE:                  CobraRunE,
 		ValidArgsFunction:     completions.Nodes,
+		Args:                  cobra.ArbitraryArgs,
 	}
 	NoHeader bool
 )

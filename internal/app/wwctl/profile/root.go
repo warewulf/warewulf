@@ -15,6 +15,7 @@ var (
 		Use:                   "profile COMMAND [OPTIONS]",
 		Short:                 "Node configuration profile management",
 		Long:                  "Management of node profile settings",
+		Args:                  cobra.NoArgs,
 	}
 )
 

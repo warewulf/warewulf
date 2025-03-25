@@ -13,6 +13,7 @@ var (
 		Long:                  "View and monitor the status of nodes as they are provisioned and check in.",
 		RunE:                  CobraRunE,
 		ValidArgsFunction:     completions.Nodes,
+		Args:                  cobra.ArbitraryArgs,
 	}
 	SetWatch       bool
 	SetUpdate      int

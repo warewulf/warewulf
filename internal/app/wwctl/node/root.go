@@ -23,6 +23,7 @@ var (
 			"node ranges. For example: n00[00-4].cluster[0-1] will identify the first 5 nodes\n" +
 			"in cluster0 and cluster1.",
 		Aliases: []string{"nodes"},
+		Args:    cobra.NoArgs,
 	}
 )
 

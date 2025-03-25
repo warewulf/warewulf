@@ -16,6 +16,7 @@ var (
 		Use:                   "power COMMAND [OPTIONS]",
 		Short:                 "Warewulf node power management",
 		Long:                  "This command controls the power state of nodes.",
+		Args:                  cobra.NoArgs,
 	}
 )
 
