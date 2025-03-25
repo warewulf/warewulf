@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Properly configure a default IPMI template during `wwctl upgrade nodes --add-defaults`.
 - Fixed display of dotted field names. #1825
 - Add single quote around escapechar in ipmitool template #1830
+- Update nodes and profiles when renaming an image. #1637
 
 ### Changed
 

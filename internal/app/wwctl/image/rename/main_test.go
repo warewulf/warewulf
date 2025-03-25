@@ -16,6 +16,13 @@ import (
 func Test_Rename(t *testing.T) {
 	env := testenv.New(t)
 	env.WriteFile(path.Join(testenv.WWChrootdir, "test-image/rootfs/file"), `test`)
+	env.WriteFile("etc/warewulf/nodes.conf", `
+nodeprofiles:
+  default:
+    image name: test-image
+nodes:
+  n1:
+    image name: test-image`)
 	defer env.RemoveAll()
 	warewulfd.SetNoDaemon()
 
@@ -38,6 +45,14 @@ func Test_Rename(t *testing.T) {
 	t.Run("Image list", func(t *testing.T) {
 		verifyImageListOutput(t, "test-image-rename")
 	})
+
+	assert.YAMLEq(t, `
+nodeprofiles:
+  default:
+    image name: test-image-rename
+nodes:
+  n1:
+    image name: test-image-rename`, env.ReadFile("etc/warewulf/nodes.conf"))
 }
 
 func verifyImageListOutput(t *testing.T, content string) {
