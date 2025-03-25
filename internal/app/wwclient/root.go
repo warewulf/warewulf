@@ -31,6 +31,7 @@ var (
 		Long:         "wwclient fetches the runtime overlay and puts it on the disk",
 		RunE:         CobraRunE,
 		SilenceUsage: true,
+		Args:         cobra.NoArgs,
 	}
 	DebugFlag       bool
 	PIDFile         string

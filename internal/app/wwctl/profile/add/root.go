@@ -24,6 +24,7 @@ func GetCommand() *cobra.Command {
 		Aliases:               []string{"new", "create"},
 		RunE:                  CobraRunE(&vars),
 		ValidArgsFunction:     completions.None,
+		Args:                  cobra.MinimumNArgs(1),
 	}
 	vars.profileConf.CreateFlags(baseCmd)
 	vars.profileAdd.CreateAddFlags(baseCmd)

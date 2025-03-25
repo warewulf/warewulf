@@ -13,6 +13,7 @@ var (
 		Long:                  "This command exports the given nodes as yaml to stdout.",
 		RunE:                  CobraRunE,
 		ValidArgsFunction:     completions.Nodes,
+		Args:                  cobra.ArbitraryArgs,
 	}
 	NoHeader bool
 )

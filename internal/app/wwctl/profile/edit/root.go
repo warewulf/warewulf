@@ -13,6 +13,7 @@ var (
 		Long:                  "This command opens an editor for the given profiles.",
 		RunE:                  CobraRunE,
 		ValidArgsFunction:     completions.Profiles,
+		Args:                  cobra.ArbitraryArgs,
 	}
 	NoHeader bool
 )

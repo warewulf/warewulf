@@ -25,6 +25,7 @@ func GetCommand() *cobra.Command {
 		RunE:              CobraRunE(&vars),
 		Aliases:           []string{"ls"},
 		ValidArgsFunction: completions.Nodes,
+		Args:              cobra.ArbitraryArgs,
 	}
 	baseCmd.PersistentFlags().BoolVarP(&vars.showNet, "net", "n", false, "Show node network configurations")
 	baseCmd.PersistentFlags().BoolVarP(&vars.showIpmi, "ipmi", "i", false, "Show node IPMI configurations")

@@ -20,6 +20,7 @@ var (
 		Use:                   "overlay COMMAND [OPTIONS]",
 		Short:                 "Warewulf Overlay Management",
 		Long:                  "Management interface for Warewulf overlays",
+		Args:                  cobra.NoArgs,
 	}
 )
 
