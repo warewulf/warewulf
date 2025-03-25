@@ -51,16 +51,16 @@ The ``ifcfg`` and ``NetworkManager`` overlays can configure a network bond like 
        device: bond0
        ipaddr: 192.168.3.100
        netmask: 255.255.255.0
-   en1:
-     device: en1
-     hwaddr: e6:92:39:49:7b:03
-     tags:
-       master: bond0
-   en2:
-     device: en2
-     hwaddr: 9a:77:29:73:14:f1
-     tags:
-       master: bond0
+     en1:
+       device: en1
+       hwaddr: e6:92:39:49:7b:03
+       tags:
+         master: bond0
+     en2:
+       device: en2
+       hwaddr: 9a:77:29:73:14:f1
+       tags:
+         master: bond0
 
 .. _vlan:
 
