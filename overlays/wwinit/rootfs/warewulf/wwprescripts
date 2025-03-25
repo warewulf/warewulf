@@ -9,6 +9,28 @@ ls -1 "${scriptdir}/" | while read -r name; do
     echo "Running prescript: ${name}..."
     sh "${scriptdir}/${name}"
 done
-echo
-echo "Running ${WWINIT}..."
-exec $WWINIT
+
+init="${WWINIT}"
+if [ -z "${init}" ]
+then
+    for candidate in /sbin/init /etc/init /bin/init
+    do
+        if [ -x "${candidate}" ]
+        then
+            init="${candidate}"
+            break
+        fi
+    done
+fi
+
+if [ -n "${init}" ]
+then
+    echo
+    echo "Running ${init}..."
+    exec "${init}"
+else
+    echo "ERROR: init not defined and not found."
+    echo "Rebooting in 1 minute..."
+    sleep 60
+    echo b > /proc/sysrq-trigger || /sbin/reboot -f
+fi

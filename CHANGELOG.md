@@ -20,6 +20,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed display of dotted field names. #1825
 - Add single quote around escapechar in ipmitool template #1830
 - Update nodes and profiles when renaming an image. #1637
+- If init is not specified, wwinit looks for /sbin/init, /etc/init, and /bin/init. #1808
+- assume ipxe template=default if not set. #1808, #1813
+- Display a warning during overlay build if an overlay list is empty. #1808
 
 ### Changed
 

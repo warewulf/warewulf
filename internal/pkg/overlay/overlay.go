@@ -110,12 +110,18 @@ func BuildAllOverlays(nodes []node.Node, allNodes []node.Node, workerCount int) 
 		for n := range nodeChan {
 			wwlog.Info("Building system overlay image for %s", n.Id())
 			wwlog.Debug("System overlays for %s: [%s]", n.Id(), strings.Join(n.SystemOverlay, ", "))
+			if len(n.SystemOverlay) < 1 {
+				wwlog.Warn("No system overlays defined for %s", n.Id())
+			}
 			if err := BuildOverlay(n, allNodes, "system", n.SystemOverlay); err != nil {
 				errChan <- fmt.Errorf("could not build system overlays %v for node %s: %w", n.SystemOverlay, n.Id(), err)
 			}
 
 			wwlog.Info("Building runtime overlay image for %s", n.Id())
 			wwlog.Debug("Runtime overlays for %s: [%s]", n.Id(), strings.Join(n.RuntimeOverlay, ", "))
+			if len(n.RuntimeOverlay) < 1 {
+				wwlog.Warn("No runtime overlays defined for %s", n.Id())
+			}
 			if err := BuildOverlay(n, allNodes, "runtime", n.RuntimeOverlay); err != nil {
 				errChan <- fmt.Errorf("could not build runtime overlays %v for node %s: %w", n.RuntimeOverlay, n.Id(), err)
 			}
