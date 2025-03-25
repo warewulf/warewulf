@@ -90,18 +90,19 @@ func ImageDelete(cdp *wwapiv1.ImageDeleteParameter) (err error) {
 		return fmt.Errorf("could not open nodeDB: %s", err)
 	}
 
-	nodes, err := nodeDB.FindAllNodes()
-	if err != nil {
-		return
-	}
-
 ARG_LOOP:
 	for i := 0; i < len(cdp.ImageNames); i++ {
 		//_, arg := range args {
 		imageName := cdp.ImageNames[i]
-		for _, n := range nodes {
+		for _, n := range nodeDB.Nodes {
 			if n.ImageName == imageName {
-				wwlog.Error("image is configured for nodes, skipping: %s", imageName)
+				wwlog.Error("image %s is in use by node %s, skipping", imageName, n.Id())
+				continue ARG_LOOP
+			}
+		}
+		for _, p := range nodeDB.NodeProfiles {
+			if p.ImageName == imageName {
+				wwlog.Error("image %s is in use by profile %s, skipping", imageName, p.Id())
 				continue ARG_LOOP
 			}
 		}
@@ -355,23 +356,17 @@ func ImageRename(crp *wwapiv1.ImageRenameParameter) (err error) {
 		return err
 	}
 
-	nodes, err := nodeDB.FindAllNodes()
-	if err != nil {
-		return err
-	}
-	for _, node := range nodes {
+	for nodeId, node := range nodeDB.Nodes {
 		if node.ImageName == crp.ImageName {
-			node.ImageName = crp.TargetName
+			wwlog.Debug("updating node %s image to %s", nodeId, crp.TargetName)
+			nodeDB.Nodes[nodeId].ImageName = crp.TargetName
 		}
 	}
 
-	profiles, err := nodeDB.FindAllProfiles()
-	if err != nil {
-		return err
-	}
-	for _, profile := range profiles {
+	for profileId, profile := range nodeDB.NodeProfiles {
 		if profile.ImageName == crp.ImageName {
-			profile.ImageName = crp.TargetName
+			wwlog.Debug("updating profile %s image to %s", profileId, crp.TargetName)
+			nodeDB.NodeProfiles[profileId].ImageName = crp.TargetName
 		}
 	}
 
