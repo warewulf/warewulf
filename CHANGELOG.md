@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Display a warning during overlay build if an overlay list is empty. #1808
 - Fix processing of UNDEF and UNSET during `wwctl <node|profile> set`. #1837
 - Actually cause grub to sleep and reboot when log messages indiacte. #1838
+- Fixed issue with importing new nodes from yaml. #1842
 
 ### Changed
 
