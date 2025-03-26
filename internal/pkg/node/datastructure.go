@@ -6,8 +6,6 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwtype"
 )
 
-const undef string = "UNDEF"
-
 /******
  * YAML data representations
  ******/
