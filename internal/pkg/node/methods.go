@@ -201,7 +201,7 @@ func recursiveFlatten(obj interface{}) (hasContent bool) {
 			if typeObj.Elem().Field(i).Type == reflect.TypeOf([]string{}) {
 				del := false
 				for _, elem := range (valObj.Elem().Field(i).Interface()).([]string) {
-					if strings.EqualFold(elem, undef) {
+					if isUnsetValue(elem) {
 						del = true
 					}
 				}
@@ -213,7 +213,7 @@ func recursiveFlatten(obj interface{}) (hasContent bool) {
 				hasContent = true
 			}
 		case reflect.String:
-			if strings.EqualFold(valObj.Elem().Field(i).String(), undef) {
+			if isUnsetValue(valObj.Elem().Field(i).String()) {
 				valObj.Elem().Field(i).SetString("")
 			}
 			if valObj.Elem().Field(i).String() != "" {
@@ -420,4 +420,10 @@ func (netdev *NetDev) IpCIDR() string {
 		Mask: net.IPMask(netdev.Netmask),
 	}
 	return ipCIDR.String()
+}
+
+var unsetValues = []string{"UNSET", "UNDEF"}
+
+func isUnsetValue(value string) bool {
+	return util.InSlice(unsetValues, value)
 }
