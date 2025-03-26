@@ -85,6 +85,31 @@ Recommends: ipmitool
 Warewulf is a stateless and diskless provisioning
 system for large clusters of bare metal and/or virtual systems.
 
+%package dracut
+Summary: dracut module for loading a Warewulf image
+BuildArch: noarch
+
+Requires: dracut
+%if 0%{?suse_version}
+Requires: gptfdisk
+%else
+Requires: gdisk
+Requires: dracut-network
+%endif
+Requires: ignition
+Requires: curl
+Requires: cpio
+Requires: dmidecode
+Requires: rsync
+Requires: jq
+
+%description dracut
+Warewulf is a stateless and diskless provisioning
+system for large clusters of bare metal and/or virtual systems.
+
+This subpackage contains a dracut module that can be used to generate
+an initramfs that can fetch and boot a Warewulf node image from a
+Warewulf server.
 
 %prep
 %setup -q -n %{name}-%{version} -b0 %if %{?with_offline:-a2}
