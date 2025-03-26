@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd/nodedb"
 )
 
 func Test_GetNodeOrSetDiscoverable(t *testing.T) {
@@ -80,10 +81,10 @@ nodes:
 			defer env.RemoveAll()
 			env.WriteFile("/etc/warewulf/nodes.conf", tt.nodesConf)
 
-			err := LoadNodeDB()
+			err := nodedb.LoadNodeDB()
 			assert.NoError(t, err)
 
-			node, err := GetNodeOrSetDiscoverable(tt.hwaddr)
+			node, err := nodedb.GetNodeOrSetDiscoverable(tt.hwaddr)
 			if tt.err {
 				assert.Error(t, err)
 			} else {

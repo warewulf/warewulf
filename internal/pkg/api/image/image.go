@@ -14,7 +14,7 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/kernel"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
-	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd/daemon"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -163,7 +163,7 @@ func ImageImport(cip *wwapiv1.ImageImportParameter) (imageName string, err error
 	} else if strings.HasPrefix(cip.Source, "docker://") || strings.HasPrefix(cip.Source, "docker-daemon://") ||
 		strings.HasPrefix(cip.Source, "file://") || util.IsFile(cip.Source) {
 		var sCtx *types.SystemContext
-		sCtx, err = getSystemContext(cip.OciNoHttps, cip.OciUsername, cip.OciPassword, cip.Platform)
+		sCtx, err = GetSystemContext(cip.OciNoHttps, cip.OciUsername, cip.OciPassword, cip.Platform)
 		if err != nil {
 			return
 		}
@@ -375,18 +375,18 @@ func ImageRename(crp *wwapiv1.ImageRenameParameter) (err error) {
 		return err
 	}
 
-	err = warewulfd.DaemonStatus()
+	err = daemon.DaemonStatus()
 	if err != nil {
 		// warewulfd is not running, skip
 		return nil
 	}
 
 	// else reload daemon to apply new changes
-	return warewulfd.DaemonReload()
+	return daemon.DaemonReload()
 }
 
 // create the system context and reading out environment variables
-func getSystemContext(noHttps bool, username string, password string, platform string) (sCtx *types.SystemContext, err error) {
+func GetSystemContext(noHttps bool, username string, password string, platform string) (sCtx *types.SystemContext, err error) {
 	sCtx = &types.SystemContext{}
 	// only check env if noHttps wasn't set
 	if !noHttps {

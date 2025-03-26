@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
-	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd/daemon"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -393,7 +393,7 @@ NODE  FIELD  PROFILE  VALUE
 		},
 	}
 
-	warewulfd.SetNoDaemon()
+	daemon.SetNoDaemon()
 	env := testenv.New(t)
 	defer env.RemoveAll()
 
@@ -447,27 +447,9 @@ nodes:
 			stdout: `
 {
   "n01": {
-    "Discoverable": "",
-    "AssetKey": "",
-    "Profiles": [
+    "profiles": [
       "default"
-    ],
-    "Comment": "",
-    "ClusterName": "",
-    "ImageName": "",
-    "Ipxe": "",
-    "RuntimeOverlay": null,
-    "SystemOverlay": null,
-    "Kernel": null,
-    "Ipmi": null,
-    "Init": "",
-    "Root": "",
-    "NetDevs": null,
-    "Tags": null,
-    "PrimaryNetDev": "",
-    "Disks": null,
-    "FileSystems": null,
-    "Resources": null
+    ]
   }
 }
 `,
@@ -486,50 +468,14 @@ nodes:
 			stdout: `
 {
   "n01": {
-    "Discoverable": "",
-    "AssetKey": "",
-    "Profiles": [
+    "profiles": [
       "default"
-    ],
-    "Comment": "",
-    "ClusterName": "",
-    "ImageName": "",
-    "Ipxe": "",
-    "RuntimeOverlay": null,
-    "SystemOverlay": null,
-    "Kernel": null,
-    "Ipmi": null,
-    "Init": "",
-    "Root": "",
-    "NetDevs": null,
-    "Tags": null,
-    "PrimaryNetDev": "",
-    "Disks": null,
-    "FileSystems": null,
-    "Resources": null
+    ]
   },
   "n02": {
-    "Discoverable": "",
-    "AssetKey": "",
-    "Profiles": [
+    "profiles": [
       "default"
-    ],
-    "Comment": "",
-    "ClusterName": "",
-    "ImageName": "",
-    "Ipxe": "",
-    "RuntimeOverlay": null,
-    "SystemOverlay": null,
-    "Kernel": null,
-    "Ipmi": null,
-    "Init": "",
-    "Root": "",
-    "NetDevs": null,
-    "Tags": null,
-    "PrimaryNetDev": "",
-    "Disks": null,
-    "FileSystems": null,
-    "Resources": null
+    ]
   }
 }
 `,
@@ -593,7 +539,7 @@ nodes:
 		},
 	}
 
-	warewulfd.SetNoDaemon()
+	daemon.SetNoDaemon()
 	for _, tt := range tests {
 		env := testenv.New(t)
 		env.WriteFile("etc/warewulf/nodes.conf", tt.inDb)

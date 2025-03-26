@@ -10,6 +10,9 @@ import (
 	"syscall"
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd/api"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd/nodedb"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -33,55 +36,53 @@ func (h *slashFix) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.mux.ServeHTTP(w, r)
 }
 
+func defaultHandler() *slashFix {
+	var wwHandler http.ServeMux
+	wwHandler.HandleFunc("/provision/", ProvisionSend)
+	wwHandler.HandleFunc("/ipxe/", ProvisionSend)
+	wwHandler.HandleFunc("/efiboot/", ProvisionSend)
+	wwHandler.HandleFunc("/kernel/", ProvisionSend)
+	wwHandler.HandleFunc("/container/", ProvisionSend)
+	wwHandler.HandleFunc("/overlay-system/", ProvisionSend)
+	wwHandler.HandleFunc("/overlay-runtime/", ProvisionSend)
+	wwHandler.HandleFunc("/overlay-file/", OverlaySend)
+	wwHandler.HandleFunc("/status", nodedb.StatusSend)
+	return &slashFix{&wwHandler}
+}
+
 func RunServer() error {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGHUP)
 
 	go func() {
 		for range c {
-			wwlog.Warn("Received SIGHUP, reloading...")
-			err := LoadNodeDB()
-			if err != nil {
-				wwlog.Error("Could not load node DB: %s", err)
-			}
-
-			err = LoadNodeStatus()
-			if err != nil {
-				wwlog.Error("Could not prepopulate node status DB: %s", err)
-			}
+			wwlog.Info("Received SIGHUP, reloading...")
+			nodedb.Reload()
 		}
 	}()
 
-	err := LoadNodeDB()
-	if err != nil {
-		wwlog.Error("Could not load database: %s", err)
-	}
-
-	err = LoadNodeStatus()
-	if err != nil {
-		wwlog.Error("Could not prepopulate node status DB: %s", err)
-	}
-
-	if err != nil {
-		wwlog.Warn("couldn't copy default shim: %s", err)
-	}
-	var wwHandler http.ServeMux
-	wwHandler.HandleFunc("/provision/", ProvisionSend)
-	wwHandler.HandleFunc("/ipxe/", ProvisionSend)
-	wwHandler.HandleFunc("/efiboot/", ProvisionSend)
-	wwHandler.HandleFunc("/kernel/", ProvisionSend)
-	wwHandler.HandleFunc("/image/", ProvisionSend)
-	wwHandler.HandleFunc("/overlay-system/", ProvisionSend)
-	wwHandler.HandleFunc("/overlay-runtime/", ProvisionSend)
-	wwHandler.HandleFunc("/overlay-file/", OverlaySend)
-	wwHandler.HandleFunc("/status", StatusSend)
+	nodedb.Reload()
 
 	conf := warewulfconf.Get()
-
 	daemonPort := conf.Warewulf.Port
-	err = http.ListenAndServe(":"+strconv.Itoa(daemonPort), &slashFix{&wwHandler})
 
-	if err != nil {
+	auth := warewulfconf.NewAuthentication()
+	if util.IsFile(conf.Paths.AuthenticationConf()) {
+		if err := auth.Read(conf.Paths.AuthenticationConf()); err != nil {
+			wwlog.Warn("%w\n", err)
+		}
+	}
+
+	apiHandler := api.Handler(auth)
+	defaultHandler := defaultHandler()
+	dispatchHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/api") && conf.API != nil && conf.API.Enabled() {
+			apiHandler.ServeHTTP(w, r)
+		} else {
+			defaultHandler.ServeHTTP(w, r)
+		}
+	})
+	if err := http.ListenAndServe(":"+strconv.Itoa(daemonPort), dispatchHandler); err != nil {
 		return fmt.Errorf("could not start listening service: %w", err)
 	}
 

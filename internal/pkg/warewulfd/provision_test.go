@@ -12,6 +12,7 @@ import (
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd/nodedb"
 )
 
 var provisionSendTests = []struct {
@@ -81,7 +82,7 @@ nodes:
 	env.WriteFile("/etc/warewulf/ipxe/test.ipxe", "{{.KernelVersion}}{{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} {{end}}{{end}}")
 	env.WriteFile("/etc/warewulf/grub/grub.cfg.ww", "{{ .Tags.GrubMenuEntry }}")
 
-	dbErr := LoadNodeDB()
+	dbErr := nodedb.LoadNodeDB()
 	assert.NoError(t, dbErr)
 
 	conf := warewulfconf.Get()

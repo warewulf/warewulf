@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
-	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd/daemon"
 )
 
 func Test_Node_Set(t *testing.T) {
@@ -666,7 +666,7 @@ nodes:
 			env := testenv.New(t)
 			defer env.RemoveAll()
 			env.WriteFile("etc/warewulf/nodes.conf", tt.inDB)
-			warewulfd.SetNoDaemon()
+			daemon.SetNoDaemon()
 
 			baseCmd := GetCommand()
 			args := append(tt.args, "--yes")
