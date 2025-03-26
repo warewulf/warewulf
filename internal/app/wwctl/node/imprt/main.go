@@ -27,11 +27,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("could not read: %s", err)
 	}
-	if !ImportCVS {
+	if !ImportCSV {
 		err = yaml.Unmarshal(buffer, importMap)
 		if err == nil {
-			yes := util.Confirm(fmt.Sprintf("Are you sure you want to modify %d nodes", len(importMap)))
-			if yes {
+			if setYes || util.Confirm(fmt.Sprintf("Are you sure you want to modify %d nodes", len(importMap))) {
 				err = apinode.NodeAddFromYaml(&wwapiv1.NodeYaml{NodeConfMapYaml: string(buffer)})
 				if err != nil {
 					return fmt.Errorf("got following problem when writing back yaml: %s", err)
@@ -68,8 +67,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				}
 			}
 		}
-		yes := util.Confirm(fmt.Sprintf("Are you sure you want to import %d nodes", len(importMap)))
-		if yes {
+		if setYes || util.Confirm(fmt.Sprintf("Are you sure you want to import %d nodes", len(importMap))) {
 			// create second buffer an marshall nodeMap to it
 			buffer, err = yaml.Marshal(importMap)
 			if err != nil {

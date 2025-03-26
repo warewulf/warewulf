@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Added `wwctl overlay import --overwrite` to overwrite existing overlay file.
 - wwclient uses `WW_IPADDR`, if set, to contact the Warewulf server. #1788
+- Add `wwctl node import --yes` to assume yes to confirmations.
 
 ### Fixed
 
@@ -25,11 +26,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Display a warning during overlay build if an overlay list is empty. #1808
 - Fix processing of UNDEF and UNSET during `wwctl <node|profile> set`. #1837
 - Actually cause grub to sleep and reboot when log messages indiacte. #1838
+- Fixed issue with importing new nodes from yaml. #1842
 
 ### Changed
 
 - Update GitHub actions to build aarch64 artifacts.
 - Explicitly enforce the number or arguments accepted by some `wwctl` subcommands. #1717
+- Renamed `wwctl node import --cvs` to `--csv`.
 
 ### Removed
 
