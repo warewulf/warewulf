@@ -58,6 +58,8 @@ menuentry "Single-stage boot" --id single-stage {
         echo "!! Unable to load kernel."
         echo "!! Rebooting in 15s..."
         echo "!!"
+        sleep 15
+        reboot
     fi
 
     echo "Downloading images..."
@@ -71,6 +73,8 @@ menuentry "Single-stage boot" --id single-stage {
         echo "!! Unable to load images."
         echo "!! Rebooting in 15s..."
         echo "!!"
+        sleep 15
+        reboot
     fi
 
     echo "Booting..."
@@ -101,6 +105,8 @@ menuentry "Single-stage boot (no compression)" --id single-stage-nocompress {
         echo "!! Unable to load kernel."
         echo "!! Rebooting in 15s..."
         echo "!!"
+        sleep 15
+        reboot
     fi
 
     echo "Downloading images..."
@@ -114,6 +120,8 @@ menuentry "Single-stage boot (no compression)" --id single-stage-nocompress {
         echo "!! Unable to load images."
         echo "!! Rebooting in 15s..."
         echo "!!"
+        sleep 15
+        reboot
     fi
 
     echo "Booting..."
@@ -151,6 +159,8 @@ menuentry "Two stage boot with dracut" --id dracut {
         echo "!! Unable to load kernel."
         echo "!! Rebooting in 15s..."
         echo "!!"
+        sleep 15
+        reboot
     fi
 
     echo "Downloading initramfs..."
@@ -161,6 +171,8 @@ menuentry "Two stage boot with dracut" --id dracut {
         echo "!! Unable to load initramfs."
         echo "!! Rebooting in 15s..."
         echo "!!"
+        sleep 15
+        reboot
     fi
 
     echo "Booting..."
