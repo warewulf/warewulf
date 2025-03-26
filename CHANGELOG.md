@@ -43,6 +43,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Bump github.com/spf13/cobra from 1.8.1 to 1.9.1 #1795
 - Bump github.com/creasty/defaults from 1.7.0 to 1.8.0 #1794
 
+### Fixed
+- Bump golang.org/x/net from 0.33.0 to 0.36.0 to fix CVE-2025-22870
+
 ## v4.6.0, 2025-03-02
 
 ### Added

@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: ['1.22', '1.23']
+        go-version: ['1.23', '1.24']
     steps:
       - name: Checkout Warewulf
         uses: actions/checkout@v4
@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: ['1.22', '1.23']
+        go-version: ['1.23', '1.24']
     steps:
       - name: Checkout Warewulf
         uses: actions/checkout@v4
@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: ['1.22', '1.23']
+        go-version: ['1.23', '1.24']
     steps:
       - name: Checkout Warewulf
         uses: actions/checkout@v4
@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: ['1.22', '1.23']
+        go-version: ['1.23', '1.24']
     steps:
       - name: Checkout Warewulf
         uses: actions/checkout@v4
@@ -85,7 +85,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: ['1.22', '1.23']
+        go-version: ['1.23', '1.24']
     steps:
       - name: Checkout Warewulf
         uses: actions/checkout@v4
@@ -99,7 +99,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: ['1.22', '1.23']
+        go-version: ['1.23', '1.24']
     steps:
       - name: Checkout Warewulf
         uses: actions/checkout@v4
