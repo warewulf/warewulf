@@ -676,7 +676,7 @@ nodes:
 `,
 	},
 	{
-		name:            "replace overlays conflicts",
+		name:            "replace overlays",
 		addDefaults:     false,
 		replaceOverlays: true,
 		legacyYaml: `
@@ -692,6 +692,99 @@ nodes:
       - generic
     system overlay:
       - wwinit
+`,
+		upgradedYaml: `
+nodeprofiles:
+  default:
+    runtime overlay:
+      - hosts
+      - ssh.authorized_keys
+      - syncuser
+    system overlay:
+      - wwinit
+      - wwclient
+      - fstab
+      - hostname
+      - ssh.host_keys
+      - issue
+      - resolv
+      - udev.netname
+      - systemd.netname
+      - ifcfg
+      - NetworkManager
+      - debian.interfaces
+      - wicked
+      - ignition
+nodes:
+  n1:
+    runtime overlay:
+      - hosts
+      - ssh.authorized_keys
+      - syncuser
+    system overlay:
+      - wwinit
+      - wwclient
+      - fstab
+      - hostname
+      - ssh.host_keys
+      - issue
+      - resolv
+      - udev.netname
+      - systemd.netname
+      - ifcfg
+      - NetworkManager
+      - debian.interfaces
+      - wicked
+      - ignition
+`,
+	},
+	{
+		name:            "replace overlays again",
+		addDefaults:     false,
+		replaceOverlays: true,
+		legacyYaml: `
+nodeprofiles:
+  default:
+    runtime overlay:
+      - hosts
+      - ssh.authorized_keys
+      - syncuser
+    system overlay:
+      - wwinit
+      - wwclient
+      - fstab
+      - hostname
+      - ssh.host_keys
+      - issue
+      - resolv
+      - udev.netname
+      - systemd.netname
+      - ifcfg
+      - NetworkManager
+      - debian.interfaces
+      - wicked
+      - ignition
+nodes:
+  n1:
+    runtime overlay:
+      - hosts
+      - ssh.authorized_keys
+      - syncuser
+    system overlay:
+      - wwinit
+      - wwclient
+      - fstab
+      - hostname
+      - ssh.host_keys
+      - issue
+      - resolv
+      - udev.netname
+      - systemd.netname
+      - ifcfg
+      - NetworkManager
+      - debian.interfaces
+      - wicked
+      - ignition
 `,
 		upgradedYaml: `
 nodeprofiles:
