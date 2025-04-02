@@ -1,0 +1,2 @@
+[Service]
+ExecStart=/usr/bin/nm-online -q -t 300
