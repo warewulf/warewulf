@@ -189,6 +189,18 @@ nodes:
 `,
 		},
 		{
+			name:    "node list with no ipmi data",
+			args:    []string{"--ipmi"},
+			wantErr: false,
+			stdout: `
+NODE  IPMI IPADDR  IPMI PORT  IPMI USERNAME  IPMI INTERFACE
+----  -----------  ---------  -------------  --------------
+n1    --           --         --             --`,
+			inDb: `
+nodes:
+  n1: {}`,
+		},
+		{
 			name:    "node list profile with ipmi user",
 			args:    []string{"-i"},
 			wantErr: false,

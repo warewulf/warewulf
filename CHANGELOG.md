@@ -29,6 +29,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Actually cause grub to sleep and reboot when log messages indiacte. #1838
 - Fixed issue with importing new nodes from yaml. #1842
 - `wwctl upgrade nodes --replace-overlays` avoids applying overlays multiple times. #1823
+- Fix a panic during `wwctl node list --ipmi` for nodes with no ipmi configuration. #1847
 
 ### Changed
 
