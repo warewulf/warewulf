@@ -12,6 +12,7 @@ import (
 type parserInfo struct {
 	hwaddr     string
 	ipaddr     string
+	ipaddr6    string
 	remoteport int
 	assetkey   string
 	uuid       string
@@ -47,21 +48,19 @@ func parseReq(req *http.Request) (parserInfo, error) {
 	}
 	ret.hwaddr = hwaddr
 	ipaddrtemp = ""
-        ipaddr = strings.Split(req.RemoteAddr, ":")
-        // IPv6 addresses hextets are split on ":"
-        if len(ipaddr) > 2 {
-                for i := 0; i < len(ipaddr)-1; i++ {
-                        ipaddrtemp += ipaddr[i] + ":"
-                }
-                ret.ipaddr6 = strings.TrimSuffix(ipaddrtemp, ":")
-        }
-        ret.ipaddr = strings.Split(req.RemoteAddr, ":")[0]
-        ret.remoteport, _ = strconv.Atoi(strings.Split(req.RemoteAddr, ":")[len(ipaddr)-1])
-        if ret.remoteport == 0 {
-                return ret, errors.New("could not obtain remote port from HTTP request: " + req.RemoteAddr)
-        }
-	ret.remoteport, _ = strconv.Atoi(strings.Split(req.RemoteAddr, ":")[1])
-
+	ipaddr = strings.Split(req.RemoteAddr, ":")
+	// IPv6 addresses hextets are split on ":"
+	if len(ipaddr) > 2 {
+		for i := 0; i < len(ipaddr)-1; i++ {
+			ipaddrtemp += ipaddr[i] + ":"
+		}
+		ret.ipaddr6 = strings.TrimSuffix(ipaddrtemp, ":")
+	}
+	ret.ipaddr = strings.Split(req.RemoteAddr, ":")[0]
+	ret.remoteport, _ = strconv.Atoi(strings.Split(req.RemoteAddr, ":")[len(ipaddr)-1])
+	if ret.remoteport == 0 {
+		return ret, errors.New("could not obtain remote port from HTTP request: " + req.RemoteAddr)
+	}
 	if len(req.URL.Query()["assetkey"]) > 0 {
 		ret.assetkey = req.URL.Query()["assetkey"][0]
 	}
