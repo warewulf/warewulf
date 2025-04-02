@@ -46,4 +46,4 @@
 * Daniele Colombo [@dacolombo](https://github.com/dacolombo)
 * Stephen Simpson [@ssimpson89](https://github.com/ssimpson89)
 * Rafael Lopez <raflopez1@gmail.com> @rafalop
-* Dacian Reece-Stremtan <dacianstremtan@gmail.com> [@dacianstremtan](https://github.com/dacianstremtan)
+* Dacian Reece-Stremtan <dacianstremtan@gmail.com> 

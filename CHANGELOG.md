@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - wwclient uses `WW_IPADDR`, if set, to contact the Warewulf server. #1788
 - Add `wwctl node import --yes` to assume yes to confirmations.
 - Set an IPMI tag ``vlan`` to configure the vlan during ``ipmiwrite``. #1031
-- IPv6 support
+- IPv6 PXE support
 
 ### Fixed
 
