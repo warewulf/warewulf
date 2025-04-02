@@ -23,6 +23,8 @@ type parserInfo struct {
 
 func parseReq(req *http.Request) (parserInfo, error) {
 	var ret parserInfo
+	var ipaddr []string
+	var ipaddrtemp string
 
 	url := strings.Split(req.URL.Path, "?")[0]
 	path_parts := strings.Split(url, "/")
@@ -44,7 +46,20 @@ func parseReq(req *http.Request) (parserInfo, error) {
 		ret.efifile = path_parts[2]
 	}
 	ret.hwaddr = hwaddr
-	ret.ipaddr = strings.Split(req.RemoteAddr, ":")[0]
+	ipaddrtemp = ""
+        ipaddr = strings.Split(req.RemoteAddr, ":")
+        // IPv6 addresses hextets are split on ":"
+        if len(ipaddr) > 2 {
+                for i := 0; i < len(ipaddr)-1; i++ {
+                        ipaddrtemp += ipaddr[i] + ":"
+                }
+                ret.ipaddr6 = strings.TrimSuffix(ipaddrtemp, ":")
+        }
+        ret.ipaddr = strings.Split(req.RemoteAddr, ":")[0]
+        ret.remoteport, _ = strconv.Atoi(strings.Split(req.RemoteAddr, ":")[len(ipaddr)-1])
+        if ret.remoteport == 0 {
+                return ret, errors.New("could not obtain remote port from HTTP request: " + req.RemoteAddr)
+        }
 	ret.remoteport, _ = strconv.Atoi(strings.Split(req.RemoteAddr, ":")[1])
 
 	if len(req.URL.Query()["assetkey"]) > 0 {

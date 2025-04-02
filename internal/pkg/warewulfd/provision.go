@@ -31,6 +31,7 @@ type templateVars struct {
 	ImageName     string
 	Hwaddr        string
 	Ipaddr        string
+	Ipaddr6       string
 	Port          string
 	KernelArgs    string
 	KernelVersion string
@@ -118,6 +119,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			Cluster:       remoteNode.ClusterName,
 			Fqdn:          remoteNode.Id(),
 			Ipaddr:        conf.Ipaddr,
+			Ipaddr6:       conf.Ipaddr6,
 			Port:          strconv.Itoa(conf.Warewulf.Port),
 			Hostname:      remoteNode.Id(),
 			Hwaddr:        rinfo.hwaddr,
@@ -205,6 +207,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 				Cluster:       remoteNode.ClusterName,
 				Fqdn:          remoteNode.Id(),
 				Ipaddr:        conf.Ipaddr,
+				Ipaddr6:       conf.Ipaddr6,
 				Port:          strconv.Itoa(conf.Warewulf.Port),
 				Hostname:      remoteNode.Id(),
 				Hwaddr:        rinfo.hwaddr,

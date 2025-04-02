@@ -137,16 +137,21 @@ func (conf *WarewulfYaml) Parse(data []byte, autodetect bool) error {
 			}
 		}
 	}
-
-	if conf.Ipaddr6 != "" {
-		if _, network, err := net.ParseCIDR(conf.Ipaddr6); err == nil {
-			if conf.Ipv6net == "" {
-				conf.Ipv6net = network.IP.String()
-			}
-		} else {
-			return fmt.Errorf("invalid ipv6 address: must use CIDR notation: %s", conf.Ipaddr6)
-		}
-	}
+        if conf.Ipaddr6 != "" {
+                if conf.Ipv6net == "" {
+                        wwlog.Error("Ipv6 network has not been set in warewulf.conf: ipv6net")
+                        return fmt.Errorf("Invalid Ipv6 network")
+                }
+                _, ipv6net, err := net.ParseCIDR(conf.Ipv6net)
+                if err != nil {
+                        wwlog.Error("Invalid Ipv6 address specified, must be CIDR notation: %s", conf.Ipv6net)
+                        return fmt.Errorf("Invalid Ipv6 network")
+                }
+                if msize, _ := ipv6net.Mask.Size(); msize > 64 {
+                        wwlog.Error("ipv6 mask size must be smaller than 64")
+                        return fmt.Errorf("Invalid Ipv6 network size")
+                }
+        }
 
 	return nil
 }
