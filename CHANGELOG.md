@@ -13,6 +13,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add `wwctl node import --yes` to assume yes to confirmations.
 - Set an IPMI tag ``vlan`` to configure the vlan during ``ipmiwrite``. #1031
 - Added net.ifnames=1 to default kernel argument list. #1820
+- IPv6 PXE support
+
 
 ### Fixed
 
