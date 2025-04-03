@@ -126,7 +126,7 @@ func (legacy *NodesYaml) Upgrade(addDefaults bool, replaceOverlays bool, warewul
 			defaultProfile.Kernel = new(node.KernelConf)
 		}
 		if len(defaultProfile.Kernel.Args) < 1 {
-			defaultProfile.Kernel.Args = []string{"quiet", "crashkernel=no"}
+			defaultProfile.Kernel.Args = []string{"quiet", "crashkernel=no", "net.ifnames=1"}
 		}
 		if defaultProfile.Init == "" {
 			defaultProfile.Init = "/sbin/init"
