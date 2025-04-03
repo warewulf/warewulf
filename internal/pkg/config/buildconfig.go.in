@@ -68,6 +68,10 @@ func (paths BuildConfig) NodesConf() string {
 	return path.Join(paths.Sysconfdir, "warewulf", "nodes.conf")
 }
 
+func (paths BuildConfig) AuthenticationConf() string {
+	return path.Join(paths.Sysconfdir, "warewulf", "auth.conf")
+}
+
 func (paths BuildConfig) OciBlobCachedir() string {
 	return path.Join(paths.Cachedir, "warewulf")
 }

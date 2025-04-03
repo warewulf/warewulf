@@ -49,8 +49,6 @@ func DaemonInitLogging() error {
 		if err == nil {
 			wwlog.SetLogLevel(level)
 		}
-	} else {
-		wwlog.SetLogLevel(wwlog.INFO)
 	}
 
 	loginit = true

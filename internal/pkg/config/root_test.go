@@ -46,6 +46,11 @@ tftp:
     "00:09": ipxe-snponly-x86_64.efi
     "00:0B": arm64-efi/snponly.efi
   systemd name: tftp
+api:
+  enabled: false
+  allowed subnets:
+  - 127.0.0.0/8
+  - ::1/128
 `,
 		},
 		"cidr": {
@@ -87,6 +92,11 @@ tftp:
     "00:09": ipxe-snponly-x86_64.efi
     "00:0B": arm64-efi/snponly.efi
   systemd name: tftp
+api:
+  enabled: false
+  allowed subnets:
+  - 127.0.0.0/8
+  - ::1/128
 `,
 		},
 		"cidr with conflicts": {
@@ -130,6 +140,11 @@ tftp:
     "00:09": ipxe-snponly-x86_64.efi
     "00:0B": arm64-efi/snponly.efi
   systemd name: tftp
+api:
+  enabled: false
+  allowed subnets:
+  - 127.0.0.0/8
+  - ::1/128
 `,
 		},
 		"ipv6 cidr": {
@@ -170,6 +185,11 @@ tftp:
     "00:09": ipxe-snponly-x86_64.efi
     "00:0B": arm64-efi/snponly.efi
   systemd name: tftp
+api:
+  enabled: false
+  allowed subnets:
+  - 127.0.0.0/8
+  - ::1/128
 `,
 		},
 		"ipv6 cidr conflict": {
@@ -211,6 +231,11 @@ tftp:
     "00:09": ipxe-snponly-x86_64.efi
     "00:0B": arm64-efi/snponly.efi
   systemd name: tftp
+api:
+  enabled: false
+  allowed subnets:
+  - 127.0.0.0/8
+  - ::1/128
 `,
 		},
 		"example": {
@@ -288,6 +313,11 @@ tftp:
     "00:09": ipxe-snponly-x86_64.efi
     "00:0B": arm64-efi/snponly.efi
   systemd name: tftp
+api:
+  enabled: false
+  allowed subnets:
+  - 127.0.0.0/8
+  - ::1/128
 `,
 		},
 	}

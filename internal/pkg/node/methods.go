@@ -356,7 +356,7 @@ func (node *Node) updatePrimaryNetDev() {
 		}
 		sort.Strings(keys)
 		if len(keys) > 0 {
-			wwlog.Debug("%s: no primary defined, sanitizing to: %s", node.id, keys[0])
+			wwlog.Debug("%s: no primary netdev defined, sanitizing to: %s", node.id, keys[0])
 			node.NetDevs[keys[0]].primary = true
 			node.PrimaryNetDev = keys[0]
 		}

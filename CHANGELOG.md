@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add `wwctl node import --yes` to assume yes to confirmations.
 - Set an IPMI tag ``vlan`` to configure the vlan during ``ipmiwrite``. #1031
 - Added net.ifnames=1 to default kernel argument list. #1820
+- Add a new OpenAPI v3 REST API to warewulfd at /api. #1588
 
 ### Fixed
 
@@ -31,12 +32,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed issue with importing new nodes from yaml. #1842
 - `wwctl upgrade nodes --replace-overlays` avoids applying overlays multiple times. #1823
 - Fix a panic during `wwctl node list --ipmi` for nodes with no ipmi configuration. #1847
+- Allow `--verbose` and `--debug` to set log level for warewulfd. #1801
 
 ### Changed
 
 - Update GitHub actions to build aarch64 artifacts.
 - Explicitly enforce the number or arguments accepted by some `wwctl` subcommands. #1717
 - Renamed `wwctl node import --cvs` to `--csv`.
+- Update JSON output to match YAML field names. #1588
+- Update JSON output to omit empty values. #1588
 
 ### Removed
 

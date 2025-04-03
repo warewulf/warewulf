@@ -284,6 +284,8 @@ Two SSH overlays configure host keys (one set for all node in the cluster) and
 - ssh.authorized_keys
 - ssh.host_keys
 
+.. _Syncuser:
+
 syncuser
 --------
 
