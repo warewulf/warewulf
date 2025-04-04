@@ -32,6 +32,7 @@ type WarewulfYaml struct {
 	Ipv6net     string        `yaml:"ipv6net,omitempty"`
 	Fqdn        string        `yaml:"fqdn,omitempty"`
 	Warewulf    *WarewulfConf `yaml:"warewulf,omitempty"`
+	API         *APIConf      `yaml:"api,omitempty"`
 	DHCP        *DHCPConf     `yaml:"dhcp,omitempty"`
 	TFTP        *TFTPConf     `yaml:"tftp,omitempty"`
 	NFS         *NFSConf      `yaml:"nfs,omitempty"`
@@ -55,6 +56,7 @@ func New() *WarewulfYaml {
 	cachedConf.NFS = new(NFSConf)
 	cachedConf.SSH = new(SSHConf)
 	cachedConf.Paths = new(BuildConfig)
+	cachedConf.API = new(APIConf)
 	if err := defaults.Set(&cachedConf); err != nil {
 		panic(err)
 	}

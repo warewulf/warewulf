@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd/server"
 )
 
 var (
@@ -31,7 +32,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if err := warewulfd.DaemonInitLogging(); err != nil {
 		return fmt.Errorf("failed to configure logging: %w", err)
 	}
-	if err := warewulfd.RunServer(); err != nil {
+	if err := server.RunServer(); err != nil {
 		return fmt.Errorf("failed to start Warewulf server: %w", err)
 	}
 	return nil
