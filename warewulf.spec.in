@@ -244,7 +244,7 @@ about Warewulf in an sos report.
 
 
 %changelog
-* Mon Apr 1 2025 Jonathon Anderson <janderson@ciq.com>
+* Tue Apr 1 2025 Jonathon Anderson <janderson@ciq.com>
 - Remove gRPC API
 
 * Thu Feb 20 2025 Stephen Simpson <ssimpson@ciq.com>
