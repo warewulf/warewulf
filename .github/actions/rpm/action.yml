@@ -67,8 +67,14 @@ runs:
 
     - name: Build RPMs and run tests
       run: |
-        mock -r ${{ inputs.target }} --rebuild --spec=warewulf.spec --sources=.
-        mock -r ${{ inputs.target }} --chroot -- make -C /builddir/build/BUILD/warewulf-${{ env.EXPECTED_VERSION }} test
+        root="${{ inputs.target }}"
+        eol_root="/etc/mock/eol/${root}.cfg"
+        if [ -f "${eol_root}" ]
+        then
+          root="${eol_root}"
+        fi
+        mock --root="${root}" --rebuild --spec=warewulf.spec --sources=.
+        mock --root="${root}" --chroot -- make -C /builddir/build/BUILD/warewulf-${{ env.EXPECTED_VERSION }} test
       shell: bash
 
     - name: Upload RPM

@@ -216,6 +216,9 @@ install: build docs ## Install Warewulf from source
 	for f in docs/man/man5/*.5.gz; do install -m 0644 $$f $(DESTDIR)$(MANDIR)/man5/; done
 	install -pd -m 0755 $(DESTDIR)$(DRACUTMODDIR)/90wwinit
 	install -m 0644 dracut/modules.d/90wwinit/*.sh $(DESTDIR)$(DRACUTMODDIR)/90wwinit
+
+.PHONY: install-sos
+install-sos:
 	install -D -m 0644 include/sos/warewulf.py $(DESTDIR)$(SOSPLUGINS)/warewulf.py
 
 .PHONY: init

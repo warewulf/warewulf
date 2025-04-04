@@ -1,0 +1,111 @@
+====================
+v4.6.1 Release Notes
+====================
+
+v4.6.1 is a regularly-scheduled minor release in the v4.6.x series.
+
+Significant changes are described below. Additional changes are listed in the
+`CHANGELOG`_.
+
+.. _CHANGELOG: https://github.com/warewulf/warewulf/blob/main/CHANGELOG.md
+
+aarch64 packages
+================
+
+We're now building and publishing aarch64 packages with GitHub releases.
+
+New REST API
+============
+
+Possibly the largest change in v4.6.1 is the addition of a new :ref:`REST API
+<rest-api>`. This API is optionally served by ``warewulfd`` at ``/api``, and is
+disabled by default.
+
+Changed JSON output
+===================
+
+The REST API returns JSON, which has brought additional attention to the JSON
+output previously only output by ``wwctl <node|profile> list --json``. This
+output has been updated such that the JSON object properties match field names
+used in ``nodes.conf``. JSON output also now omits empty or unspecified values.
+
+New command-line options
+========================
+
+A couple new ``wwctl`` options have been added:
+
+- ``wwctl overlay import --overwrite`` overwrites existing overlay files during
+  import.
+- ``wwctl node import --yes`` skips the interactive confirmaton dialog and
+  assumes a "yes" answer.
+
+New tags
+========
+
+A new ``vlan`` IPMI tag configures the IPMI interface to use the specified vlan
+during ``ipmiwrite``.
+
+.. code-block::
+
+   wwctl profile set default --ipmitagadd=vlan=100
+
+Customize wwclient connection to Warewulf server
+================================================
+
+In some circumstances (e.g., when isolating compute nodes from the provisioning
+network) it may be useful for ``wwclient`` to connect to a different IP address
+than the default Warewulf server address. To support this, ``wwclient`` will
+connect to the address specified in the environment variable ``WW_IPADDR``, if
+present.
+
+This variable can be specified in ``/etc/default/wwclient`` with an overlay.
+
+Distribution-specific fixes
+===========================
+
+Downstream SUSE packages have historically set a kernel argument
+``net.ifnames=1`` to `enable predictable network interfaces`_. This argument is
+now set in the initial ``nodes.conf`` and during ``wwctl upgrade nodes
+--add-defaults``.
+
+.. _enable predictable network interfaces: https://documentation.suse.com/smart/network/html/network-interface-predictable-naming/index.html
+
+Upgrade fixes and default behaviors
+===================================
+
+v4.6.0 moved default settings from ``defaults.conf`` (and, before that,
+compiled-in constants) with settings on the "default" profile in the initial
+``nodes.conf``, and added ``wwctl upgrade nodes --add-defaults`` to add default
+settings to an existing ``nodes.conf``. However, this removal of default
+settings caused surprising deficiencies in some cases; and, in others
+``--add-defaults`` simply failed to set proper defaults.
+
+- ``wwctl upgrade nodes --add-defaults`` now sets a default iPXE template. If no
+  default template is set, ``warewulfd`` looks for a template named "default".
+- If no init is specified, ``wwinit`` now looks for ``/sbin/init``,
+  ``/etc/init``, and ``/bin/init``.
+- `wwctl upgrade nodes --replace-overlays` now avoids adding the same overlay
+  multiple times to the same node or profile.
+- If, during ``wwctl overlay build``, a node has an empty system or runtime
+  overlay, a warning is printed.
+
+Misc. bug fixes
+===============
+
+- Fixed a panic in ``warewulfd`` when a network device isn't configured
+  explicitly on a node.
+- ``wwctl <power|node console|node sensors>`` now better handles missing
+  required IPMI fields.
+- Field names containing periods (e.g., ``NetDev[eth0.100]``) are now displayed
+  properly in ``wwctl <node|profile> list``.
+- Properly quote a specified escape character during ``ipmitool`` commands.
+- Update related nodes and profiles when renaming an image.
+- ``wwctl <node|profile> set`` now properly handles "UNDEF" and "UNSET" to
+  remove a defined field value.
+- Configure the GRUB bootloader to sleep and reboot on certain errors (to allow
+  error messages to be read).
+- ``wwctl node import`` can now import new nodes, not just update existing
+  nodes.
+- Fixed a panic during ``wwctl node list --ipmi`` for nodes with no IPMI
+  configuration.
+- Fixed processing of ``--verbose`` and ``--debug`` when starting ``warewulfd``.

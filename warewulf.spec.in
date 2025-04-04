@@ -123,6 +123,9 @@ yq e '
   .tftp.ipxe."00:09" = "ipxe-x86_64.efi" |
   .tftp.ipxe."00:0B" = "snp-arm64.efi" ' \
   -i %{buildroot}%{_sysconfdir}/warewulf/warewulf.conf
+%else
+make install-sos \
+    DESTDIR=%{buildroot}
 %endif
 
 %pre
