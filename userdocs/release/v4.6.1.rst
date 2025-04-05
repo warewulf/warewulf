@@ -89,6 +89,17 @@ settings caused surprising deficiencies in some cases; and, in others
 - If, during ``wwctl overlay build``, a node has an empty system or runtime
   overlay, a warning is printed.
 
+New SOS plugin
+==============
+
+A new ``warewulf-sos`` subpackage installs an SOS plugin to gather logs and
+other state from the Warewulf server for filing a support request. Currently
+only available in Enterprise Linux distributions.
+
+.. code-block::
+
+   sos report --enable-plugins warewulf
+
 Misc. bug fixes
 ===============
 
