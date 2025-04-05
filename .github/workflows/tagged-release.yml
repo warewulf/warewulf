@@ -78,8 +78,14 @@ jobs:
 
       - name: Build RPMs and run tests
         run: |
-          mock -r ${{ matrix.target }}-${{ matrix.arch }} --rebuild --spec=warewulf.spec --sources=. \
-          && mock -r ${{ matrix.target }}-${{ matrix.arch }} --chroot -- bash -c "make -C /builddir/build/BUILD/warewulf-*/ test"
+          root="${{ matrix.target }}-${{ matrix.arch }}"
+          eol_root="/etc/mock/eol/${root}.cfg"
+          if [ -f "${eol_root}" ]
+          then
+            root="${eol_root}"
+          fi
+          mock --root="${root}" --rebuild --spec=warewulf.spec --sources=. \
+          && mock --root="${root}" --chroot -- bash -c "make -C /builddir/build/BUILD/warewulf-*/ test"
 
       - name: Attach RPM and SRPM to release
         uses: xresloader/upload-to-github-release@v1
