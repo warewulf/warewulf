@@ -106,3 +106,13 @@ func GetNodeOrSetDiscoverable(hwaddr string) (node.Node, error) {
 	// return the discovered node
 	return db.yml.GetNode(nodeFound.Id())
 }
+
+func Reload() {
+	if err := LoadNodeDB(); err != nil {
+		wwlog.Error("Could not load node DB: %s", err)
+	}
+
+	if err := LoadNodeStatus(); err != nil {
+		wwlog.Error("Could not prepopulate node status DB: %s", err)
+	}
+}

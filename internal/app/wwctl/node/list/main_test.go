@@ -189,6 +189,18 @@ nodes:
 `,
 		},
 		{
+			name:    "node list with no ipmi data",
+			args:    []string{"--ipmi"},
+			wantErr: false,
+			stdout: `
+NODE  IPMI IPADDR  IPMI PORT  IPMI USERNAME  IPMI INTERFACE
+----  -----------  ---------  -------------  --------------
+n1    --           --         --             --`,
+			inDb: `
+nodes:
+  n1: {}`,
+		},
+		{
 			name:    "node list profile with ipmi user",
 			args:    []string{"-i"},
 			wantErr: false,
@@ -447,27 +459,9 @@ nodes:
 			stdout: `
 {
   "n01": {
-    "Discoverable": "",
-    "AssetKey": "",
-    "Profiles": [
+    "profiles": [
       "default"
-    ],
-    "Comment": "",
-    "ClusterName": "",
-    "ImageName": "",
-    "Ipxe": "",
-    "RuntimeOverlay": null,
-    "SystemOverlay": null,
-    "Kernel": null,
-    "Ipmi": null,
-    "Init": "",
-    "Root": "",
-    "NetDevs": null,
-    "Tags": null,
-    "PrimaryNetDev": "",
-    "Disks": null,
-    "FileSystems": null,
-    "Resources": null
+    ]
   }
 }
 `,
@@ -486,50 +480,14 @@ nodes:
 			stdout: `
 {
   "n01": {
-    "Discoverable": "",
-    "AssetKey": "",
-    "Profiles": [
+    "profiles": [
       "default"
-    ],
-    "Comment": "",
-    "ClusterName": "",
-    "ImageName": "",
-    "Ipxe": "",
-    "RuntimeOverlay": null,
-    "SystemOverlay": null,
-    "Kernel": null,
-    "Ipmi": null,
-    "Init": "",
-    "Root": "",
-    "NetDevs": null,
-    "Tags": null,
-    "PrimaryNetDev": "",
-    "Disks": null,
-    "FileSystems": null,
-    "Resources": null
+    ]
   },
   "n02": {
-    "Discoverable": "",
-    "AssetKey": "",
-    "Profiles": [
+    "profiles": [
       "default"
-    ],
-    "Comment": "",
-    "ClusterName": "",
-    "ImageName": "",
-    "Ipxe": "",
-    "RuntimeOverlay": null,
-    "SystemOverlay": null,
-    "Kernel": null,
-    "Ipmi": null,
-    "Init": "",
-    "Root": "",
-    "NetDevs": null,
-    "Tags": null,
-    "PrimaryNetDev": "",
-    "Disks": null,
-    "FileSystems": null,
-    "Resources": null
+    ]
   }
 }
 `,

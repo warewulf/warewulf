@@ -5,105 +5,130 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
 
-type test_description struct {
-	name    string
-	args    []string
-	wantErr bool
-	stdout  string
-	inDB    string
-	outDb   string
-}
-
-func run_test(t *testing.T, test test_description) {
-	env := testenv.New(t)
-	defer env.RemoveAll()
-	env.WriteFile("etc/warewulf/nodes.conf", test.inDB)
-	warewulfd.SetNoDaemon()
-	name := test.name
-	if name == "" {
-		name = t.Name()
+func Test_Profile_Set(t *testing.T) {
+	tests := map[string]struct {
+		args    []string
+		wantErr bool
+		inDB    string
+		outDb   string
+	}{
+		"Test_Set_Netdev": {
+			args:    []string{"--netdev=eth0", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default: {}
+nodes: {}`,
+			outDb: `
+nodeprofiles:
+  default:
+    network devices:
+      default:
+        device: eth0
+nodes: {}`,
+		},
+		"Test_Set_Netdev_and_Mask": {
+			args:    []string{"--netdev=eth0", "-M=255.255.255.0", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default: {}
+nodes: {}`,
+			outDb: `
+nodeprofiles:
+  default:
+    network devices:
+      default:
+        device: eth0
+        netmask: 255.255.255.0
+nodes: {}`,
+		},
+		"Set Mask Existing NetDev": {
+			args:    []string{"-M=255.255.255.0", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    network devices:
+      default:
+        device: eth0
+nodes: {}`,
+			outDb: `
+nodeprofiles:
+  default:
+    network devices:
+      default:
+        device: eth0
+        netmask: 255.255.255.0
+nodes: {}`,
+		},
+		"--image=UNSET": {
+			args:    []string{"--image=UNSET", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    image: rockylinux-9
+nodes: {}`,
+			outDb: `
+nodeprofiles:
+  default: {}
+nodes: {}`,
+		},
+		"--image=UNDEF": {
+			args:    []string{"--image=UNDEF", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    image: rockylinux-9
+nodes: {}`,
+			outDb: `
+nodeprofiles:
+  default: {}
+nodes: {}`,
+		},
+		"--tagadd=mytag=0.0.0.0": {
+			args:    []string{"--tagadd=mytag=0.0.0.0", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default: {}
+nodes: {}`,
+			outDb: `
+nodeprofiles:
+  default:
+    tags:
+      mytag: 0.0.0.0
+nodes: {}`,
+		},
 	}
-	t.Run(name, func(t *testing.T) {
-		baseCmd := GetCommand()
-		test.args = append(test.args, "--yes")
-		baseCmd.SetArgs(test.args)
-		buf := new(bytes.Buffer)
-		baseCmd.SetOut(buf)
-		baseCmd.SetErr(buf)
-		err := baseCmd.Execute()
-		if test.wantErr {
-			assert.Error(t, err)
-		} else {
-			assert.NoError(t, err)
-			assert.Equal(t, buf.String(), test.stdout)
-			content := env.ReadFile("etc/warewulf/nodes.conf")
-			assert.YAMLEq(t, test.outDb, content)
-		}
-	})
-}
 
-func Test_Set_Netdev(t *testing.T) {
-	test := test_description{
-		args:    []string{"--netname=default", "--netdev=eth0", "default"},
-		wantErr: false,
-		stdout:  "",
-		inDB: `nodeprofiles:
-  default: {}
-nodes: {}
-`,
-		outDb: `nodeprofiles:
-  default:
-    network devices:
-      default:
-        device: eth0
-nodes: {}
-`}
-	run_test(t, test)
-}
-func Test_Set_Netdev_and_Mask(t *testing.T) {
-	test := test_description{
-		args:    []string{"--netname=default", "--netdev=eth0", "-M=255.255.255.0", "default"},
-		wantErr: false,
-		stdout:  "",
-		inDB: `nodeprofiles:
-  default: {}
-nodes: {}
-`,
-		outDb: `nodeprofiles:
-  default:
-    network devices:
-      default:
-        device: eth0
-        netmask: 255.255.255.0
-nodes: {}
-`}
-	run_test(t, test)
-}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			env := testenv.New(t)
+			defer env.RemoveAll()
+			env.WriteFile("etc/warewulf/nodes.conf", tt.inDB)
+			warewulfd.SetNoDaemon()
+			baseCmd := GetCommand()
+			args := append(tt.args, "--yes")
+			baseCmd.SetArgs(args)
+			buf := new(bytes.Buffer)
+			baseCmd.SetOut(buf)
+			baseCmd.SetErr(buf)
+			err := baseCmd.Execute()
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				content := env.ReadFile("etc/warewulf/nodes.conf")
+				assert.YAMLEq(t, tt.outDb, content)
+			}
 
-func Test_Set_Mask_Existing_NetDev(t *testing.T) {
-	test := test_description{
-		args:    []string{"--netname=default", "-M=255.255.255.0", "default"},
-		wantErr: false,
-		stdout:  "",
-		inDB: `nodeprofiles:
-  default:
-    network devices:
-      default:
-        device: eth0
-nodes: {}
-`,
-		outDb: `nodeprofiles:
-  default:
-    network devices:
-      default:
-        device: eth0
-        netmask: 255.255.255.0
-nodes: {}
-`}
-	run_test(t, test)
+		})
+	}
 }

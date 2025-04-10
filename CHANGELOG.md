@@ -4,12 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## v4.6.1, unreleased
+## v4.6.1, 2025-04-04
 
 ### Added
 
 - Added `wwctl overlay import --overwrite` to overwrite existing overlay file.
-- Add `--retry-connrefused` to dracut curl commands.
+- wwclient uses `WW_IPADDR`, if set, to contact the Warewulf server. #1788
+- Add `wwctl node import --yes` to assume yes to confirmations.
+- Set an IPMI tag ``vlan`` to configure the vlan during ``ipmiwrite``. #1031
+- Added net.ifnames=1 to default kernel argument list. #1820
+- Add a new OpenAPI v3 REST API to warewulfd at /api. #1588
+- New sos plugin in `warewulf-sos` subpackage. #1822
+- Add `--retry-connrefused` to dracut curl commands. #1800
 
 ### Fixed
 
@@ -19,10 +25,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Properly configure a default IPMI template during `wwctl upgrade nodes --add-defaults`.
 - Fixed display of dotted field names. #1825
 - Add single quote around escapechar in ipmitool template #1830
+- Update nodes and profiles when renaming an image. #1637
+- If init is not specified, wwinit looks for /sbin/init, /etc/init, and /bin/init. #1808
+- assume ipxe template=default if not set. #1808, #1813
+- Display a warning during overlay build if an overlay list is empty. #1808
+- Fix processing of UNDEF and UNSET during `wwctl <node|profile> set`. #1837
+- Actually cause grub to sleep and reboot when log messages indiacte. #1838
+- Fixed issue with importing new nodes from yaml. #1842
+- `wwctl upgrade nodes --replace-overlays` avoids applying overlays multiple times. #1823
+- Fix a panic during `wwctl node list --ipmi` for nodes with no ipmi configuration. #1847
+- Allow `--verbose` and `--debug` to set log level for warewulfd. #1801
 
 ### Changed
 
 - Update GitHub actions to build aarch64 artifacts.
+- Explicitly enforce the number or arguments accepted by some `wwctl` subcommands. #1717
+- Renamed `wwctl node import --cvs` to `--csv`.
+- Update JSON output to match YAML field names. #1588
+- Update JSON output to omit empty values. #1588
 
 ### Removed
 
@@ -38,7 +58,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - Support Ubuntu-style dracut initrd images.
-- New sos plugin in `warewulf-sos` subpackage.
 
 ### Fixed
 

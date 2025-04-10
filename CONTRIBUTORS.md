@@ -45,3 +45,4 @@
 * Ian Kaufman <ikaufman@ucsd.edu> [@iankgt40](https://github.com/iankgt40)
 * Daniele Colombo [@dacolombo](https://github.com/dacolombo)
 * Stephen Simpson [@ssimpson89](https://github.com/ssimpson89)
+* Rafael Lopez <raflopez1@gmail.com> @rafalop

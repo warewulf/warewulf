@@ -201,7 +201,7 @@ func recursiveFlatten(obj interface{}) (hasContent bool) {
 			if typeObj.Elem().Field(i).Type == reflect.TypeOf([]string{}) {
 				del := false
 				for _, elem := range (valObj.Elem().Field(i).Interface()).([]string) {
-					if strings.EqualFold(elem, undef) {
+					if isUnsetValue(elem) {
 						del = true
 					}
 				}
@@ -213,7 +213,7 @@ func recursiveFlatten(obj interface{}) (hasContent bool) {
 				hasContent = true
 			}
 		case reflect.String:
-			if strings.EqualFold(valObj.Elem().Field(i).String(), undef) {
+			if isUnsetValue(valObj.Elem().Field(i).String()) {
 				valObj.Elem().Field(i).SetString("")
 			}
 			if valObj.Elem().Field(i).String() != "" {
@@ -356,7 +356,7 @@ func (node *Node) updatePrimaryNetDev() {
 		}
 		sort.Strings(keys)
 		if len(keys) > 0 {
-			wwlog.Debug("%s: no primary defined, sanitizing to: %s", node.id, keys[0])
+			wwlog.Debug("%s: no primary netdev defined, sanitizing to: %s", node.id, keys[0])
 			node.NetDevs[keys[0]].primary = true
 			node.PrimaryNetDev = keys[0]
 		}
@@ -420,4 +420,10 @@ func (netdev *NetDev) IpCIDR() string {
 		Mask: net.IPMask(netdev.Netmask),
 	}
 	return ipCIDR.String()
+}
+
+var unsetValues = []string{"UNSET", "UNDEF"}
+
+func isUnsetValue(value string) bool {
+	return util.InSlice(unsetValues, value)
 }

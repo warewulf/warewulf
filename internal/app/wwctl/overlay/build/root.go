@@ -13,6 +13,7 @@ var (
 		Long:                  "This command builds overlays for given nodes.",
 		RunE:                  CobraRunE,
 		ValidArgsFunction:     completions.Nodes,
+		Args:                  cobra.ArbitraryArgs,
 	}
 	OverlayNames []string
 	OverlayDir   string

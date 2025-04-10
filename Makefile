@@ -20,9 +20,6 @@ include Tools.mk
 .PHONY: build
 build: wwctl wwclient etc/bash_completion.d/wwctl ## Build the Warewulf binaries
 
-.PHONY: api
-api: wwapid wwapic wwapird
-
 .PHONY: docs
 docs: man_pages reference ## Build the documentation
 
@@ -48,12 +45,6 @@ config: $(config)
 
 $(config): Defaults.mk
 
-apiconfig = etc/wwapic.conf \
-	etc/wwapid.conf \
-	etc/wwapird.conf
-.PHONY: apiconfig
-apiconfig: $(apiconfig)
-
 %: %.in
 	sed -ne "$(foreach V,$(VARLIST),s,@$V@,$(strip $($V)),g;)p" $@.in >$@
 
@@ -62,15 +53,6 @@ wwctl: $(config) $(call godeps,cmd/wwctl/main.go)
 
 wwclient: $(config) $(call godeps,cmd/wwclient/main.go)
 	CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags "-extldflags -static" -o wwclient cmd/wwclient/main.go
-
-wwapid: $(config) $(apiconfig) $(call godeps,internal/app/api/wwapid/wwapid.go)
-	go build -o ./wwapid internal/app/api/wwapid/wwapid.go
-
-wwapic: $(config) $(apiconfig) $(call godeps,internal/app/api/wwapic/wwapic.go)
-	go build -o ./wwapic  internal/app/api/wwapic/wwapic.go
-
-wwapird: $(config) $(apiconfig) $(call godeps,internal/app/api/wwapird/wwapird.go)
-	go build -o ./wwapird internal/app/api/wwapird/wwapird.go
 
 .PHONY: man_pages
 man_pages: wwctl $(wildcard docs/man/man5/*.5)
@@ -162,7 +144,6 @@ cleanmake:
 
 .PHONY: cleanbin
 cleanbin:
-	rm -f wwapi{c,d,rd}
 	rm -f wwclient
 	rm -f wwctl
 	rm -f update_configuration
@@ -207,6 +188,7 @@ install: build docs ## Install Warewulf from source
 	# wwctl genconfig to get the compiled in paths to warewulf.conf
 	install -d -m 0755 $(DESTDIR)$(DATADIR)/warewulf/bmc
 	test -f $(DESTDIR)$(WWCONFIGDIR)/warewulf.conf || ./wwctl --warewulfconf etc/warewulf.conf genconfig warewulfconf print> $(DESTDIR)$(WWCONFIGDIR)/warewulf.conf
+	test -f $(DESTDIR)$(WWCONFIGDIR)/auth.conf || install -m 0600 etc/auth.conf $(DESTDIR)$(WWCONFIGDIR)
 	test -f $(DESTDIR)$(WWCONFIGDIR)/nodes.conf || install -m 0644 etc/nodes.conf $(DESTDIR)$(WWCONFIGDIR)
 	for f in etc/examples/*.ww; do install -m 0644 $$f $(DESTDIR)$(WWCONFIGDIR)/examples/; done
 	for f in etc/ipxe/*.ipxe; do install -m 0644 $$f $(DESTDIR)$(WWCONFIGDIR)/ipxe/; done
@@ -234,16 +216,10 @@ install: build docs ## Install Warewulf from source
 	for f in docs/man/man5/*.5.gz; do install -m 0644 $$f $(DESTDIR)$(MANDIR)/man5/; done
 	install -pd -m 0755 $(DESTDIR)$(DRACUTMODDIR)/90wwinit
 	install -m 0644 dracut/modules.d/90wwinit/*.sh $(DESTDIR)$(DRACUTMODDIR)/90wwinit
-	install -D -m 0644 include/sos/warewulf.py $(DESTDIR)$(SOSPLUGINS)/warewulf.py
 
-.PHONY: installapi
-installapi:
-	install -m 0755 wwapic $(DESTDIR)$(BINDIR)
-	install -m 0755 wwapid $(DESTDIR)$(BINDIR)
-	install -m 0755 wwapird $(DESTDIR)$(BINDIR)
-	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapic.conf || install -m 0644 etc/wwapic.conf $(DESTDIR)$(WWCONFIGDIR)
-	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapid.conf || install -m 0644 etc/wwapid.conf $(DESTDIR)$(WWCONFIGDIR)
-	test -f $(DESTDIR)$(WWCONFIGDIR)/wwapird.conf || install -m 0644 etc/wwapird.conf $(DESTDIR)$(WWCONFIGDIR)
+.PHONY: install-sos
+install-sos:
+	install -D -m 0644 include/sos/warewulf.py $(DESTDIR)$(SOSPLUGINS)/warewulf.py
 
 .PHONY: init
 init:
@@ -255,9 +231,6 @@ ifndef OFFLINE_BUILD
 wwctl: vendor
 wwclient: vendor
 update_configuration: vendor
-wwapid: vendor
-wwapic: vendor
-wwapird: vendor
 dist: vendor
 
 lint: $(GOLANGCI_LINT)

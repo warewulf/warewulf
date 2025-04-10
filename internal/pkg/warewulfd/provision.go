@@ -97,7 +97,11 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		}
 
 	} else if rinfo.stage == "ipxe" {
-		stage_file = path.Join(conf.Paths.Sysconfdir, "warewulf/ipxe/"+remoteNode.Ipxe+".ipxe")
+		template := remoteNode.Ipxe
+		if template == "" {
+			template = "default"
+		}
+		stage_file = path.Join(conf.Paths.Sysconfdir, "warewulf/ipxe", template+".ipxe")
 		kernelArgs := ""
 		kernelVersion := ""
 		if remoteNode.Kernel != nil {

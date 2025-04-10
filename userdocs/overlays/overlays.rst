@@ -52,7 +52,7 @@ A node or profile can configure an overlay in two different ways:
 .. code-block:: shell
 
    wwctl profile set default \
-     --system-overlays="wwinit,,wwclient,fstab,hostname,ssh.host_keys,systemd.netname,NetworkManager" \
+     --system-overlays="wwinit,wwclient,fstab,hostname,ssh.host_keys,systemd.netname,NetworkManager" \
      --runime-overlays="hosts,ssh.authorized_keys"
 
 Multiple overlays can be applied to a single node, and overlays from multiple
@@ -202,6 +202,10 @@ All configured overlays are provisioned initially along with the node image
 itself; but **wwclient** periodically fetches and applies the runtime overlay to
 allow configuration of some settings without a reboot.
 
+wwclient will contat the ``ipaddr`` value from ``warewulf.conf`` by default.
+This can be overridden by specifying a ``WW_IPADDR`` environment variable, which
+can be set via an overlay in ``/etc/default/wwclient``.
+
 Network interfaces
 ------------------
 
@@ -280,6 +284,8 @@ Two SSH overlays configure host keys (one set for all node in the cluster) and
 - ssh.authorized_keys
 - ssh.host_keys
 
+.. _Syncuser:
+
 syncuser
 --------
 
@@ -293,6 +299,11 @@ the image to synchronize its user and group IDs with those of the server.
 If a ``PasswordlessRoot`` tag is set to "true", the overlay will also insert a
 "passwordless" root entry. This can be particularly useful for accessing a
 cluster node when its network interface is not properly configured.
+
+.. warning::
+
+   ``PasswordlessRoot`` is not recommended for production; it should only be
+   used during debugging, when normal authentication is not functional.
 
 ignition
 --------

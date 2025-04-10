@@ -27,6 +27,7 @@ Welcome to the Warewulf User Guide!
    Security <server/security>
    Bootloaders <server/bootloaders>
    Upgrading Warewulf <server/upgrade>
+   REST API <server/api>
 
 .. toctree::
    :maxdepth: 1
@@ -89,3 +90,4 @@ Welcome to the Warewulf User Guide!
    :caption: Release Notes
 
    v4.6.0 <release/v4.6.0>
+   v4.6.1 <release/v4.6.1>

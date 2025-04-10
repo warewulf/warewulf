@@ -126,7 +126,7 @@ func (legacy *NodesYaml) Upgrade(addDefaults bool, replaceOverlays bool, warewul
 			defaultProfile.Kernel = new(node.KernelConf)
 		}
 		if len(defaultProfile.Kernel.Args) < 1 {
-			defaultProfile.Kernel.Args = []string{"quiet", "crashkernel=no"}
+			defaultProfile.Kernel.Args = []string{"quiet", "crashkernel=no", "net.ifnames=1"}
 		}
 		if defaultProfile.Init == "" {
 			defaultProfile.Init = "/sbin/init"
@@ -329,18 +329,10 @@ func (legacy *Node) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *n
 		}
 	}
 	if replaceOverlays {
-		if indexOf(upgraded.SystemOverlay, "wwinit") != -1 {
-			upgraded.SystemOverlay = replaceSliceElement(
-				upgraded.SystemOverlay,
-				indexOf(upgraded.SystemOverlay, "wwinit"),
-				wwinitSplitOverlays)
-		}
-		if indexOf(upgraded.RuntimeOverlay, "generic") != -1 {
-			upgraded.RuntimeOverlay = replaceSliceElement(
-				upgraded.RuntimeOverlay,
-				indexOf(upgraded.RuntimeOverlay, "generic"),
-				genericSplitOverlays)
-		}
+		upgraded.SystemOverlay = replaceOverlay(
+			upgraded.SystemOverlay, "wwinit", wwinitSplitOverlays)
+		upgraded.RuntimeOverlay = replaceOverlay(
+			upgraded.RuntimeOverlay, "generic", genericSplitOverlays)
 	}
 	if legacy.Resources != nil {
 		for key, value := range legacy.Resources {
@@ -535,18 +527,10 @@ func (legacy *Profile) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded
 		}
 	}
 	if replaceOverlays {
-		if indexOf(upgraded.SystemOverlay, "wwinit") != -1 {
-			upgraded.SystemOverlay = replaceSliceElement(
-				upgraded.SystemOverlay,
-				indexOf(upgraded.SystemOverlay, "wwinit"),
-				wwinitSplitOverlays)
-		}
-		if indexOf(upgraded.RuntimeOverlay, "generic") != -1 {
-			upgraded.RuntimeOverlay = replaceSliceElement(
-				upgraded.RuntimeOverlay,
-				indexOf(upgraded.RuntimeOverlay, "generic"),
-				genericSplitOverlays)
-		}
+		upgraded.SystemOverlay = replaceOverlay(
+			upgraded.SystemOverlay, "wwinit", wwinitSplitOverlays)
+		upgraded.RuntimeOverlay = replaceOverlay(
+			upgraded.RuntimeOverlay, "generic", genericSplitOverlays)
 	}
 	if legacy.Resources != nil {
 		for key, value := range legacy.Resources {

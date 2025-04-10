@@ -23,6 +23,7 @@ var baseCmd = &cobra.Command{
 		"node images. These commands will help you import, manage, and transform\n" +
 		"images into bootable Warewulf images.",
 	Aliases: []string{"vnfs", "container"},
+	Args:    cobra.NoArgs,
 }
 
 func init() {

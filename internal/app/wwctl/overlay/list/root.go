@@ -14,6 +14,7 @@ var (
 		RunE:                  CobraRunE,
 		Aliases:               []string{"ls"},
 		ValidArgsFunction:     completions.Overlays,
+		Args:                  cobra.ArbitraryArgs,
 	}
 	ListContents bool
 	ListLong     bool

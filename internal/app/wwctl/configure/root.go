@@ -17,6 +17,7 @@ var (
 		Long: "This application allows you to manage and initialize Warewulf dependent system\n" +
 			"services based on the configuration in the warewulf.conf file.",
 		RunE: CobraRunE,
+		Args: cobra.NoArgs,
 	}
 	allFunctions bool
 )

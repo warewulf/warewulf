@@ -167,28 +167,6 @@ func (config *NodesYaml) FindAllProfiles(nodes ...string) (profileList []Profile
 }
 
 /*
-Return the names of all available nodes
-*/
-func (config *NodesYaml) ListAllNodes() []string {
-	nodeList := make([]string, len(config.Nodes))
-	for name := range config.Nodes {
-		nodeList = append(nodeList, name)
-	}
-	return nodeList
-}
-
-/*
-Return the names of all available nodes
-*/
-func (config *NodesYaml) ListAllProfiles() []string {
-	var nodeList []string
-	for name := range config.NodeProfiles {
-		nodeList = append(nodeList, name)
-	}
-	return nodeList
-}
-
-/*
 FindDiscoverableNode returns the first discoverable node and an
 interface to associate with the discovered interface. If the nodUNDEFe has
 a primary interface, it is returned; otherwise, the first interface

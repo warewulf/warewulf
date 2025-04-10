@@ -31,6 +31,7 @@ var (
 		Long:         "wwclient fetches the runtime overlay and puts it on the disk",
 		RunE:         CobraRunE,
 		SilenceUsage: true,
+		Args:         cobra.NoArgs,
 	}
 	DebugFlag       bool
 	PIDFile         string
@@ -193,8 +194,12 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		}
 	}()
 	var finishedInitialSync bool = false
+	ipaddr := os.Getenv("WW_IPADDR")
+	if ipaddr == "" {
+		ipaddr = conf.Ipaddr
+	}
 	for {
-		updateSystem(conf.Ipaddr, conf.Warewulf.Port, wwid, tag, localUUID)
+		updateSystem(ipaddr, conf.Warewulf.Port, wwid, tag, localUUID)
 		if !finishedInitialSync {
 			// ignore error and status here, as this wouldn't change anything
 			_, _ = daemon.SdNotify(false, daemon.SdNotifyReady)
