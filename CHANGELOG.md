@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added net.ifnames=1 to default kernel argument list. #1820
 - Add a new OpenAPI v3 REST API to warewulfd at /api. #1588
 - New sos plugin in `warewulf-sos` subpackage. #1822
+- Add `--retry-connrefused` to dracut curl commands. #1800
 
 ### Fixed
 
