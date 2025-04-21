@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Added override.conf for nm-wait-online-initrd.service with dracut.
 
+### Changed
+
+- Partial removal of the old API.
+
 ## v4.6.1, 2025-04-04
 
 ### Added
