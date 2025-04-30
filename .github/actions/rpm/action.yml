@@ -59,7 +59,7 @@ runs:
         GENERIC_RELEASE=$(rpm -q --qf "%{RELEASE}\n" --specfile warewulf.spec | cut -d. -f1 | head -1)
         RPM=warewulf-${VERSION}-${GENERIC_RELEASE}.${{ inputs.dist }}.${{ inputs.arch }}.rpm
         SRPM=warewulf-${VERSION}-${GENERIC_RELEASE}.${{ inputs.dist }}.src.rpm
-        DRACUT=wareful-dracut-${VERSION}-${GENERIC_RELEASE}.${{ inputs.dist }}.noarch.rpm
+        DRACUT=warewulf-dracut-${VERSION}-${GENERIC_RELEASE}.${{ inputs.dist }}.noarch.rpm
         echo "RPM=${RPM}" >> $GITHUB_ENV
         echo "SRPM=${SRPM}" >> $GITHUB_ENV
         echo "DRACUT=${DRACUT}" >> $GITHUB_ENV
