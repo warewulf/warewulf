@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"io"
 	"net"
 	"net/http"
@@ -83,6 +84,46 @@ func TestOverlayAPI(t *testing.T) {
 			"overlay": "testoverlay",
 			"path": "email.ww",
 			"contents": "\n{{ if .Tags.email }}eMail: {{ .Tags.email }}{{else}} noMail{{- end }}\n",
+			"perms": "<<PRESENCE>>",
+			"uid": "<<PRESENCE>>",
+			"gid": "<<PRESENCE>>"
+		}`)
+	})
+
+	t.Run("update overlay file", func(t *testing.T) {
+		req, err := http.NewRequest(http.MethodPut, srv.URL+"/api/overlays/testoverlay/file?path=email.ww", bytes.NewReader([]byte("{\"content\":\"hello world\"}")))
+		assert.NoError(t, err)
+
+		// set request
+		resp, err := http.DefaultTransport.RoundTrip(req)
+		assert.NoError(t, err)
+
+		// validate the resp
+		body, err := io.ReadAll(resp.Body)
+		assert.NoError(t, err)
+		assert.NoError(t, resp.Body.Close())
+
+		assert.JSONEq(t, `{"files":["/email.ww"], "site":false}`, string(body))
+
+		// get again
+		req, err = http.NewRequest(http.MethodGet, srv.URL+"/api/overlays/testoverlay/file?path=email.ww", nil)
+		assert.NoError(t, err)
+
+		// send request
+		resp, err = http.DefaultTransport.RoundTrip(req)
+		assert.NoError(t, err)
+
+		// validate the resp
+		body, err = io.ReadAll(resp.Body)
+		assert.NoError(t, err)
+		assert.NoError(t, resp.Body.Close())
+
+		ja := jsonassert.New(t)
+		ja.Assert(string(body), `
+		{
+			"overlay": "testoverlay",
+			"path": "email.ww",
+			"contents": "hello world",
 			"perms": "<<PRESENCE>>",
 			"uid": "<<PRESENCE>>",
 			"gid": "<<PRESENCE>>"

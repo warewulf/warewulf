@@ -71,8 +71,10 @@ func Handler(auth *config.Authentication, allowedNets []net.IPNet) *web.Service 
 			r.Method(http.MethodGet, "/{name}", nethttp.NewHandler(getOverlayByName()))
 			r.Method(http.MethodGet, "/{name}/file", nethttp.NewHandler(getOverlayFile()))
 			r.Method(http.MethodPut, "/{name}", nethttp.NewHandler(createOverlay()))
+			r.Method(http.MethodPut, "/{name}/file", nethttp.NewHandler(createOverlayFile()))
 			r.Method(http.MethodDelete, "/{name}", nethttp.NewHandler(deleteOverlay()))
 			r.Method(http.MethodDelete, "/{name}/file", nethttp.NewHandler(deleteOverlayFile()))
+			r.Method(http.MethodPut, "/{name}/file", nethttp.NewHandler(updateOverlayFile()))
 		})
 	})
 

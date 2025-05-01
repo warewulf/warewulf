@@ -36,7 +36,6 @@ func FirstError(errs ...error) (err error) {
 }
 
 func DirModTime(path string) (time.Time, error) {
-
 	var lastTime time.Time
 	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -186,7 +185,8 @@ func FindFilterFiles(
 	path string,
 	includePattern []string,
 	ignorePattern []string,
-	ignore_xdev bool) (ofiles []string, err error) {
+	ignore_xdev bool,
+) (ofiles []string, err error) {
 	wwlog.Debug("Finding files: %s include: %s ignore: %s", path, includePattern, ignorePattern)
 
 	// Preprocess patterns to remove leading (and trailing) /, as we are handling relative paths
@@ -347,7 +347,7 @@ Appending the lines to the given file
 */
 func AppendLines(fileName string, lines []string) error {
 	wwlog.Verbose("appending %v lines to %s", len(lines), fileName)
-	file, err := os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
 		return fmt.Errorf("can't open file: %s: %w", fileName, err)
 	}
@@ -362,6 +362,21 @@ func AppendLines(fileName string, lines []string) error {
 	return nil
 }
 
+func OverwriteFile(fileName string, content []byte) error {
+	wwlog.Verbose("overwrite file %s", fileName)
+	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_TRUNC, 0o644)
+	if err != nil {
+		return fmt.Errorf("failed to open file: %s, err: %w", fileName, err)
+	}
+	defer file.Close()
+
+	_, err = file.Write(content)
+	if err != nil {
+		return fmt.Errorf("while writing file: %s, err: %w", fileName, err)
+	}
+	return file.Sync()
+}
+
 /*
 ******************************************************************************
 
@@ -372,14 +387,15 @@ func CpioCreate(
 	ifiles []string,
 	ofile string,
 	format string,
-	cpio_args ...string) (err error) {
-
+	cpio_args ...string,
+) (err error) {
 	args := []string{
 		"--quiet",
 		"--create",
 		"--directory", rootdir,
 		"--format", format,
-		"--file=" + ofile}
+		"--file=" + ofile,
+	}
 
 	args = append(args, cpio_args...)
 
@@ -413,13 +429,12 @@ func CpioCreate(
 	Compress a file using gzip or pigz
 */
 func FileGz(
-	file string) (err error) {
-
+	file string,
+) (err error) {
 	file_gz := file + ".gz"
 
 	if IsFile(file_gz) {
 		err := os.Remove(file_gz)
-
 		if err != nil {
 			return fmt.Errorf("could not remove existing file: %s: %w", file_gz, err)
 		}
@@ -509,9 +524,9 @@ func BuildFsImage(
 	ignore []string,
 	ignore_xdev bool,
 	format string,
-	cpio_args ...string) (err error) {
-
-	err = os.MkdirAll(path.Dir(imagePath), 0755)
+	cpio_args ...string,
+) (err error) {
+	err = os.MkdirAll(path.Dir(imagePath), 0o755)
 	if err != nil {
 		return fmt.Errorf("failed to create image directory for %s: %s: %w", name, imagePath, err)
 	}
