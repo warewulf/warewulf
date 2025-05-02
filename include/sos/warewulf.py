@@ -29,7 +29,7 @@ class Warewulf(Plugin, IndependentPlugin):
         self.add_cmd_output([
             "wwctl node list",
             "wwctl node list -a",
-            "wwctl container list",
+            "wwctl container list -l",
             "wwctl profile list",
             "wwctl profile list -a",
             "wwctl image kernels",
