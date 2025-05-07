@@ -363,3 +363,26 @@ names of the cluster nodes and thier interfaces.
 
 Entries from the Warewulf server's ``/etc/hosts`` file are distributed to
 cluster nodes by the "hosts" overlay.
+
+logging
+=======
+
+You can control the logging verbosity using the ``WAREWULFD_LOGLEVEL``
+environment variable.
+
+The best place to set this is in ``/etc/default/warewulfd``, which is
+sourced by the ``warewulfd.service`` systemd unit via the EnvironmentFile
+directive.
+
+By default, the log level is ``wwlog.INFO`` (20), and the messages are logged at
+either ``INFO`` or ``SERV`` (25).
+
+Setting the log level to ``WARN`` (30) should suppress ``INFO`` and ``SERV``
+while still surfacing more important issues.
+
+To do that, execute the following commands:
+
+.. code-block:: console
+
+  echo WAREWULFD_LOGLEVEL=30 >> /etc/default/warewulfd
+  systemctl restart warewulfd.service
