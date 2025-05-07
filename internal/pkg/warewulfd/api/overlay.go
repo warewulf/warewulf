@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"slices"
 
 	"github.com/swaggest/usecase"
 	"github.com/swaggest/usecase/status"
@@ -229,6 +230,38 @@ func deleteOverlay() usecase.Interactor {
 	})
 	u.SetTitle("Delete an overlay")
 	u.SetDescription("Delete an overlay.")
+	u.SetTags("Overlay")
+	return u
+}
+
+func buildOverlay() usecase.Interactor {
+	type buildOverlayInput struct {
+		Name string `path:"name" required:"true" description:"Name of overlay to create"`
+	}
+	u := usecase.NewInteractor(func(ctx context.Context, input *buildOverlayInput, output *OverlayResponse) error {
+		wwlog.Debug("api.buildSpecificOverlay()")
+		if registry, err := node.New(); err != nil {
+			return err
+		} else {
+			nodes, err := registry.FindAllNodes()
+			if err != nil {
+				return err
+			}
+
+			for _, node := range nodes {
+				if slices.Contains(node.RuntimeOverlay, input.Name) || slices.Contains(node.SystemOverlay, input.Name) {
+					if err := overlay.BuildOverlay(node, nodes, "", []string{input.Name}); err != nil {
+						return err
+					}
+				}
+			}
+
+			*output = *NewOverlayResponse(input.Name)
+			return nil
+		}
+	})
+	u.SetTitle("Build specific overlay")
+	u.SetDescription("Build specific overlay.")
 	u.SetTags("Overlay")
 	return u
 }
