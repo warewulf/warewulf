@@ -12,6 +12,7 @@ import (
 	"strings"
 	"sync"
 	"text/template"
+	"time"
 
 	"github.com/Masterminds/sprig/v3"
 
@@ -21,9 +22,7 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-var (
-	ErrDoesNotExist = fmt.Errorf("overlay does not exist")
-)
+var ErrDoesNotExist = fmt.Errorf("overlay does not exist")
 
 // Overlay represents an overlay directory path.
 type Overlay string
@@ -104,9 +103,13 @@ func (overlay Overlay) IsDistributionOverlay() bool {
 func BuildAllOverlays(nodes []node.Node, allNodes []node.Node, workerCount int) error {
 	nodeChan := make(chan node.Node, len(nodes))
 	errChan := make(chan error, len(nodes)*2)
+	registry, err := node.New()
+	if err != nil {
+		return err
+	}
 
 	var wg sync.WaitGroup
-	worker := func() {
+	worker := func(registry node.NodesYaml) {
 		for n := range nodeChan {
 			wwlog.Info("Building system overlay image for %s", n.Id())
 			wwlog.Debug("System overlays for %s: [%s]", n.Id(), strings.Join(n.SystemOverlay, ", "))
@@ -115,6 +118,10 @@ func BuildAllOverlays(nodes []node.Node, allNodes []node.Node, workerCount int) 
 			}
 			if err := BuildOverlay(n, allNodes, "system", n.SystemOverlay); err != nil {
 				errChan <- fmt.Errorf("could not build system overlays %v for node %s: %w", n.SystemOverlay, n.Id(), err)
+			} else {
+				if node, ok := registry.Nodes[n.Id()]; ok {
+					node.SystemOverlayMTime = time.Now().Format(time.RFC3339)
+				}
 			}
 
 			wwlog.Info("Building runtime overlay image for %s", n.Id())
@@ -124,6 +131,10 @@ func BuildAllOverlays(nodes []node.Node, allNodes []node.Node, workerCount int) 
 			}
 			if err := BuildOverlay(n, allNodes, "runtime", n.RuntimeOverlay); err != nil {
 				errChan <- fmt.Errorf("could not build runtime overlays %v for node %s: %w", n.RuntimeOverlay, n.Id(), err)
+			} else {
+				if node, ok := registry.Nodes[n.Id()]; ok {
+					node.RuntimeOverlayMTime = time.Now().Format(time.RFC3339)
+				}
 			}
 		}
 		wg.Done()
@@ -131,7 +142,7 @@ func BuildAllOverlays(nodes []node.Node, allNodes []node.Node, workerCount int) 
 
 	for i := 0; i < workerCount; i++ {
 		wg.Add(1)
-		go worker()
+		go worker(registry)
 	}
 	for _, n := range nodes {
 		nodeChan <- n
@@ -143,6 +154,11 @@ func BuildAllOverlays(nodes []node.Node, allNodes []node.Node, workerCount int) 
 
 	for err := range errChan {
 		return err
+	}
+
+	// no error occurs case, then persist nodes changes
+	if err := registry.Persist(); err != nil {
+		return fmt.Errorf("while persist all nodes: %w", err)
 	}
 	return nil
 }
@@ -195,7 +211,7 @@ func BuildHostOverlay() error {
 	if err != nil {
 		return fmt.Errorf("could not build host overlay: %w ", err)
 	}
-	if !(stats.Mode() == os.FileMode(0750|os.ModeDir) || stats.Mode() == os.FileMode(0700|os.ModeDir)) {
+	if !(stats.Mode() == os.FileMode(0o750|os.ModeDir) || stats.Mode() == os.FileMode(0o700|os.ModeDir)) {
 		wwlog.SecWarn("Permissions of host overlay dir %s are %s (750 is considered as secure)", hostdir, stats.Mode())
 	}
 	registry, err := node.New()
@@ -256,7 +272,7 @@ func BuildOverlay(nodeConf node.Node, allNodes []node.Node, context string, over
 	overlayImage := OverlayImage(nodeConf.Id(), context, overlayNames)
 	overlayImageDir := path.Dir(overlayImage)
 
-	err := os.MkdirAll(overlayImageDir, 0750)
+	err := os.MkdirAll(overlayImageDir, 0o750)
 	if err != nil {
 		return fmt.Errorf("failed to create directory for %s: %s: %w", name, overlayImageDir, err)
 	}
@@ -291,8 +307,10 @@ func BuildOverlay(nodeConf node.Node, allNodes []node.Node, context string, over
 	return err
 }
 
-var regFile *regexp.Regexp
-var regLink *regexp.Regexp
+var (
+	regFile *regexp.Regexp
+	regLink *regexp.Regexp
+)
 
 func init() {
 	regFile = regexp.MustCompile(`.*{{\s*/\*\s*file\s*["'](.*)["']\s*\*/\s*}}.*`)
@@ -439,7 +457,6 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 
 			return nil
 		})
-
 		if err != nil {
 			return fmt.Errorf("failed to build overlay image directory: %w", err)
 		}
@@ -460,7 +477,6 @@ func CarefulWriteBuffer(destFile string, buffer bytes.Buffer, backupFile bool, p
 				return fmt.Errorf("failed to create backup: %s -> %s.wwbackup %w", destFile, destFile, err)
 			}
 		}
-
 	}
 	w, err := os.OpenFile(destFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, perm)
 	if err != nil {
@@ -480,7 +496,8 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (
 	buffer bytes.Buffer,
 	backupFile bool,
 	writeFile bool,
-	err error) {
+	err error,
+) {
 	backupFile = true
 	writeFile = true
 	// Build our FuncMap

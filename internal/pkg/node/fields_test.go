@@ -9,7 +9,7 @@ import (
 )
 
 func Test_getNestedFieldString(t *testing.T) {
-	var tests = map[string]struct {
+	tests := map[string]struct {
 		nodesConf string
 		node      string
 		field     string
@@ -140,7 +140,7 @@ nodes:
 }
 
 func Test_listFields(t *testing.T) {
-	var tests = map[string]struct {
+	tests := map[string]struct {
 		object interface{}
 		fields []string
 	}{
@@ -200,6 +200,8 @@ func Test_listFields(t *testing.T) {
 				"Tags[tag]",
 				"PrimaryNetDev",
 				"Resources[resource]",
+				"RuntimeOverlayMTime",
+				"SystemOverlayMTime",
 			},
 		},
 		"profile": {
