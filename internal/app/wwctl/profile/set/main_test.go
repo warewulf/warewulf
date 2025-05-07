@@ -106,6 +106,66 @@ nodeprofiles:
       mytag: 0.0.0.0
 nodes: {}`,
 		},
+		"set fs,part and disk": {
+			args: []string{"--fsname=var", "--fspath=/var", "--fsformat=btrfs", "--partname=var", "--partnumber=1", "--diskname=/dev/vda", "default"},
+			inDB: `
+nodeprofiles:
+  default: {}
+nodes: {}`,
+			outDb: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          var:
+            number: "1"
+    filesystems:
+      /dev/disk/by-partlabel/var:
+        format: btrfs
+        path: /var
+nodes: {}`,
+		},
+		"single delete not existing fs": {
+			args:    []string{"--fsdel=foo", "default"},
+			wantErr: true,
+			inDB: `
+nodeprofiles:
+  default: {}
+nodes: {} `,
+			outDb: `
+nodeprofiles:
+  default: {}
+nodes: {}`,
+		},
+
+		"single node delete existing partition": {
+			args:    []string{"--partdel=var", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          var:
+            number: "1"
+        path: /var
+    filesystems:
+      /dev/disk/by-partlabel/var:
+        format: btrfs
+        path: /var
+nodes: {}
+`,
+			outDb: `
+nodeprofiles:
+  default:
+    filesystems:
+      /dev/disk/by-partlabel/var:
+        format: btrfs
+        path: /var
+nodes: {}`,
+		},
 	}
 
 	for name, tt := range tests {
