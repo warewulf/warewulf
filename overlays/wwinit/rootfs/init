@@ -26,6 +26,9 @@ WWROOT="${WWROOT:-initramfs}"
 if [ "${WWROOT}" = "initramfs" ]; then
     echo "WWROOT=${WWROOT}: using initial rootfs and invoking ${WWPRESCRIPTS}..."
     exec "${WWPRESCRIPTS}"
+elif [ "${WWROOT}" = "persistent" ] ; then 
+    echo "WWROOT=${WWROOT}: booting from DISK"
+    exec "${WWPRESCRIPTS}"
 elif [ "${WWROOT}" = "ramfs" -o "${WWROOT}" = "tmpfs" ]; then
     echo "WWROOT=${WWROOT}: setting up new ${WWROOT} rootfs (/newroot)..."
     mkdir /newroot
