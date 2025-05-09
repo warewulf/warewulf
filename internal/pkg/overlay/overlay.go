@@ -496,12 +496,7 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (
 		"softlink":     softlink,
 		"readlink":     filepath.EvalSymlinks,
 		"IgnitionJson": func() string {
-			str := createIgnitionJson(data.ThisNode)
-			if str != "" {
-				return str
-			}
-			writeFile = false
-			return ""
+			return createIgnitionJson(data.ThisNode)
 		},
 		"abort": func() string {
 			wwlog.Debug("abort file called in %s", fileName)
