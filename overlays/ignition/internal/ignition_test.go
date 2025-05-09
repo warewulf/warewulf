@@ -42,6 +42,12 @@ func Test_ignitionOverlay(t *testing.T) {
 			log:  ignition_json,
 			json: true,
 		},
+		{
+			name: "ignition:ignition.json (resources)",
+			args: []string{"--quiet", "--render", "node2", "ignition", "warewulf/ignition.json.ww"},
+			log:  ignition_json_resources,
+			json: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -151,6 +157,33 @@ const ignition_json string = `{
         "device": "/dev/disk/by-partlabel/swap",
         "format": "swap",
         "path": "swap",
+        "wipeFilesystem": false
+      }
+    ]
+  }
+}`
+
+const ignition_json_resources string = `{
+  "storage": {
+    "disks": [
+      {
+        "device": "/dev/vda",
+        "partitions": [
+          {
+            "label": "rootfs",
+            "number": 1,
+            "shouldExist": true,
+            "wipePartitionEntry": false
+          }
+        ],
+        "wipeTable": true
+      }
+    ],
+    "filesystems": [
+      {
+        "device": "/dev/disk/by-partlabel/rootfs",
+        "format": "ext4",
+        "path": "/",
         "wipeFilesystem": false
       }
     ]
