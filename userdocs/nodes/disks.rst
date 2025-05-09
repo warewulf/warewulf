@@ -79,6 +79,34 @@ existing file system is wiped.
      --diskname /dev/vda --partname scratch \
      --fsname scratch --fsformat btrfs --fspath /scratch
 
+Resource definition
+===================
+
+Ignition may alternatively be configured using an "ignition" resource.
+
+.. code-block:: yaml
+
+   n1:
+     resources:
+       ignition:
+         storage:
+           disks:
+             - device: /dev/vda
+               partitions:
+                 - label: scratch
+                   shouldExist: true
+                   wipePartitionEntry: true
+               wipeTable: true
+           filesystems:
+             - device: /dev/disk/by-partlabel/scratch
+               format: btrfs
+               path: /scratch
+               wipeFilesystem: false
+
+If any disk/partition/filesystem configuration is provided for a node with
+explicit arguments to ``wwctl <node|profile> set``, the "ignition" resource is
+ignored.
+
 Boot-time configuration
 =======================
 
