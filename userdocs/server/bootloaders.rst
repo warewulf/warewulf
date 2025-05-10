@@ -321,8 +321,8 @@ directly from the node's assigned image.
 
 .. _booting with dracut:
 
-Booting with dracut
-===================
+Two-stage boot: dracut
+======================
 
 Some systems, typically due to limitations in their BIOS or EFI firmware, are
 unable to load image of a certain size directly with a traditional bootloader,
@@ -339,19 +339,16 @@ an initramfs inside the image.
 
 EL installation
 ---------------
+
 .. code-block:: shell
 
+   # Enterprise Linux
    wwctl image exec rockylinux-9 --build=false -- /usr/bin/dnf -y install https://github.com/warewulf/warewulf/releases/download/v4.6.1/warewulf-dracut-4.6.1-1.el9.noarch.rpm
    wwctl image exec rockylinux-9 -- /usr/bin/dracut --force --no-hostonly --add wwinit --regenerate-all
 
-
-SUSE installation
------------------
-.. code-block:: shell
-
-   zypper -y install warewulf-dracut
-   dracut --force --no-hostonly --add wwinit --regenerate-all
-
+   # SUSE
+   wwctl image exec leap-15 --build=false -- /usr/bin/zypper -y install https://github.com/warewulf/warewulf/releases/download/v4.6.1/warewulf-dracut-4.6.1-1.suse.lp155.noarch.rpm
+   wwctl image exec leap-15 -- /usr/bin/dracut --force --no-hostonly --add wwinit --regenerate-all
 
 .. note::
 
@@ -403,42 +400,51 @@ to 50% of physical memory. This size limit may be adjusted using the kernel
 argument `wwinit.tmpfs.size`. (This parameter is passed to the `size` option
 during tmpfs mount. See ``tmpfs(5)`` for more details.)
 
-Persistent installation
-========================
-With the `dracut` installation enabled warewulf can also install 
-the node image to a harddrive. On the first boot of the node the
-compressed node image is simply dumped onto the configured partition.
+Provision to disk
+=================
 
+*New in Warewulf v4.6.2*
 
-.. warning::
-   warewulf doesn't install the bootloader to the disk and add UEFI 
-   entries. In order to boot the node network booting is required and 
-   at every boot the kernel and the initrd is transfered over the network.
+As a tech preview, the Warewulf two-stage boot process can provision the node
+image to local storage.
 
-Configuration
--------------
-
-The node image will be installed to the partition called `rootfs`. You 
-can add add a rootfs with e.g. following command 
-
-.. code-block:: shell
-
-   wwctl node set n01 \
-     --diskname /dev/vda --diskwipe \
-     --partname rootfs --partcreate --partnumber 1 \
-     --fsname rootfs --fsformat ext4 --fspath /rootfs
-
-Now the node boot method has to be set to persitent with following command
-
-.. code-block:: shell
-
-   wwctl node set n01 --root persistent
-
-and the node rebooted. 
- 
 .. note::
 
-   If the boot mode is perisiten the configured partion labeled `rootfs` will
-   be mounted as `/`. With any other boot method mount point confiured (here `/roofs`)
-   will be used.
+   Warewulf doesn't install a bootloader to the disk or add UEFI entries. Nodes
+   still request an image and configuration from the Warewulf server on every
+   boot.
 
+File system preparation
+-----------------------
+
+Warewulf needs a prepared file system to deploy the image to. Warewulf can
+provision this file system as well using Ignition.
+
+.. code-block:: shell
+
+   wwctl node set wwnode1 \
+     --diskname /dev/vda --diskwipe \
+     --partname rootfs --partcreate --partnumber 1 \
+     --fsname rootfs --fsformat ext4 --fspath /
+
+In order to allow Dracut to provision the disk, partition, and file system,
+Ignition must be included in the Dracut image.
+
+.. code-block:: shell
+
+   # Enterprise Linux
+   wwctl image exec rockylinux-9 -- /usr/bin/dracut --force --no-hostonly --add wwinit --add ignition --regenerate-all
+
+   # SUSE
+   wwctl image exec leap-15 -- /usr/bin/dracut --force --no-hostonly --add wwinit --add ignition --regenerate-all
+
+The necessary file system may alternatively be prepared out-of-band.
+
+Configuring the root device
+---------------------------
+
+Set the desired storage device using the ``--root`` parameter.
+
+.. code-block:: shell
+
+   wwctl node set wwnode1 --root /dev/disk/by-partlabel/rootfs

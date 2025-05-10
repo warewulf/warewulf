@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Added override.conf for nm-wait-online-initrd.service with dracut.
 - Added userdocs for `wwctl node import` from yaml/csv.
+- (preview) Support provisioning to local storage with `wwctl <node|partition> set --root=/path/to/disk`
+- (preview) Support disk provisioning during dracut boot stage with Ignition
 
 ### Fixed
 
@@ -254,8 +256,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add man pages and command reference to userdocs. #1488
 - Document building images from scratch with Apptainer. #1485
 - Added warewulfd:/overlay-file/{overlay}/{path...}?render={id}
-- Add `wwct configure rsync` and the template `rsyncd.conf.ww`
-- Make dracut aware of `root==perisitent` which will install the node image to the parition `rootfs`
 
 ### Changed
 
