@@ -23,7 +23,10 @@ WWPRESCRIPTS=/warewulf/wwprescripts
 chmod +rx "${WWPRESCRIPTS}"
 
 WWROOT="${WWROOT:-initramfs}"
-if [ "${WWROOT}" = "initramfs" ]; then
+if [ -x "${WWPRESCRIPTS}" ]; then
+    echo "WWROOT=${WWROOT}: using already prepared rootfs and invoking ${WWPRESCRIPTS}..."
+    exec "${WWPRESCRIPTS}"
+elif [ "${WWROOT}" = "initramfs" ]; then
     echo "WWROOT=${WWROOT}: using initial rootfs and invoking ${WWPRESCRIPTS}..."
     exec "${WWPRESCRIPTS}"
 elif [ "${WWROOT}" = "ramfs" -o "${WWROOT}" = "tmpfs" ]; then
