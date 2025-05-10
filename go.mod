@@ -17,7 +17,6 @@ require (
 	github.com/creasty/defaults v1.8.0
 	github.com/fatih/color v1.18.0
 	github.com/go-chi/chi/v5 v5.2.1
-	github.com/golang/glog v1.2.4
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.1
 	github.com/hashicorp/go-version v1.7.0
