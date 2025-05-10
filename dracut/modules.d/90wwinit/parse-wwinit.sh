@@ -31,5 +31,12 @@ wwinit|wwinit:*)
         export wwinit_root_device="${root#wwinit:}"
         ;;
     esac
+
+    case "${wwinit_root_device}" in
+    initramfs|rootfs)
+        info "warewulf: using tmpfs in stead of ${wwinit_root_device}"
+        export wwinit_root_device=tmpfs
+        ;;
+    esac
     ;;
 esac
