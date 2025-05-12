@@ -191,12 +191,6 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/go-openapi/validate/blob/v0.24.0/LICENSE>
 
-## github.com/golang/glog
-
-**License:** Apache-2.0
-
-**License URL:** <https://github.com/golang/glog/blob/v1.2.4/LICENSE>
-
 ## github.com/google/go-containerregistry/pkg/name
 
 **License:** Apache-2.0

@@ -18,38 +18,6 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-func ImageCopy(cbp *wwapiv1.ImageCopyParameter) (err error) {
-	if cbp == nil {
-		return fmt.Errorf("imageCopyParameter is nil")
-	}
-
-	if !image.DoesSourceExist(cbp.ImageSource) {
-		return fmt.Errorf("image %s does not exist", cbp.ImageSource)
-	}
-
-	if !image.ValidName(cbp.ImageDestination) {
-		return fmt.Errorf("image name contains illegal characters : %s", cbp.ImageDestination)
-	}
-
-	if image.DoesSourceExist(cbp.ImageDestination) {
-		return fmt.Errorf("an other image with the name %s already exists", cbp.ImageDestination)
-	}
-
-	err = image.Duplicate(cbp.ImageSource, cbp.ImageDestination)
-	if err != nil {
-		return fmt.Errorf("could not duplicate image: %s", err.Error())
-	}
-
-	if cbp.Build {
-		err = image.Build(cbp.ImageDestination, true)
-		if err != nil {
-			return err
-		}
-	}
-
-	return fmt.Errorf("image %s has been succesfully duplicated as %s", cbp.ImageSource, cbp.ImageDestination)
-}
-
 func ImageBuild(cbp *wwapiv1.ImageBuildParameter) (err error) {
 	if cbp == nil {
 		return fmt.Errorf("input parameter is nil")
