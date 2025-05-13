@@ -230,14 +230,8 @@ func ImageList() (imageInfo []*wwapiv1.ImageInfo, err error) {
 		if err == nil {
 			modTime = uint64(imageStat.ModTime().Unix())
 		}
-		imgSize := 0
-		if imgF, err := os.Stat(image.ImageFile(source)); err == nil {
-			imgSize = int(imgF.Size())
-		}
-		imgCSize := 0
-		if imgFC, err := os.Stat(image.ImageFile(source) + ".gz"); err == nil {
-			imgCSize = int(imgFC.Size())
-		}
+		imgSize := image.ImageSize(source)
+		imgCSize := image.CompressedImageSize(source)
 		imageInfo = append(imageInfo, &wwapiv1.ImageInfo{
 			Name:          source,
 			NodeCount:     uint32(nodemap[source]),

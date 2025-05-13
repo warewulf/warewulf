@@ -96,7 +96,7 @@ staticcheck: $(GOLANG_STATICCHECK) $(config) ## Run static code check
 
 .PHONY: deadcode
 deadcode: $(config) ## Check for unused code
-	$(GOLANG_DEADCODE) -test ./...
+	test $$($(GOLANG_DEADCODE) -test ./... | tee /dev/stderr | wc -l) = 0
 
 .PHONY: vet
 vet: $(config) ## Check for invalid code
