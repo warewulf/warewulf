@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
@@ -17,6 +18,7 @@ func TestNodeAPI(t *testing.T) {
 	warewulfd.SetNoDaemon()
 	env := testenv.New(t)
 	defer env.RemoveAll()
+	ja := jsonassert.New(t)
 
 	allowedNets := []net.IPNet{
 		{
@@ -171,6 +173,6 @@ func TestNodeAPI(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NoError(t, resp.Body.Close())
 
-		assert.JSONEq(t, `{"kernel": {"version": "v1.0.1-newversion", "args": ["kernel-args"]}}`, string(body))
+		ja.Assert(string(body), `{"kernel": {"version": "v1.0.1-newversion", "args": ["kernel-args"]}, "runtime overlay mtime":"<<PRESENCE>>", "system overlay mtime":"<<PRESENCE>>"}`)
 	})
 }
