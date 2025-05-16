@@ -6,13 +6,16 @@ Requires=ignition-ww4-disks.service
 After=ignition-ww4-disks.service
 Requisite=ignition-ww4-disks.service
 # Get the mounts
-{{- range $fsdevice,$fs := .FileSystems }}
+{{- $filesystems := coalesce .FileSystems (.Resources.filesystems | toJson) }}
+{{- range $key, $fs := $filesystems }}
+{{- $fsdevice := default $key $fs.device }}
 {{- $prefix := $fsdevice }}
 {{- $prefix = replace "-" "\\x2d" $fsdevice }}
 {{- $prefix = replace "/" "-" $prefix }}
 {{- $prefix = substr 1 -1 $prefix }}{{ $suffix := "mount" }}
-{{- if eq $fs.Format "swap"}}
-{{- $prefix = replace "/dev/disk/by-partlabel/" "dev-disk-by\\x2dpartlabel-" $fsdevice }}{{ $suffix = "swap"}}
+{{- if eq $fs.Format "swap" }}
+{{- $prefix = replace "/dev/disk/by-partlabel/" "dev-disk-by\\x2dpartlabel-" $fsdevice }}
+{{- $suffix = "swap" }}
 {{- else }}
 {{- if ne $fs.Path "" }}
 {{- $prefix = replace "-" "\\x2d" $fs.Path }}
