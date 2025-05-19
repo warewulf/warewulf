@@ -242,7 +242,10 @@ func updateNode() usecase.Interactor {
 }
 
 func buildAllOverlays() usecase.Interactor {
-	u := usecase.NewInteractor(func(ctx context.Context, _ struct{}, output *[]string) error {
+	type buildOverlayInput struct {
+		Overlays []string `json:"overlays" description:"Name of overlays to build"`
+	}
+	u := usecase.NewInteractor(func(ctx context.Context, input *buildOverlayInput, output *[]string) error {
 		wwlog.Debug("api.buildAllOverlays()")
 		if registry, err := node.New(); err != nil {
 			return err
@@ -255,8 +258,14 @@ func buildAllOverlays() usecase.Interactor {
 					ret[i] = nodes[i].Id()
 				}
 				sort.Strings(ret)
-				if err := overlay.BuildAllOverlays(nodes, nodes, runtime.NumCPU()); err != nil {
-					return err
+				if len(input.Overlays) > 0 {
+					if err := overlay.BuildSpecificOverlays(nodes, nodes, input.Overlays, runtime.NumCPU()); err != nil {
+						return err
+					}
+				} else {
+					if err := overlay.BuildAllOverlays(nodes, nodes, runtime.NumCPU()); err != nil {
+						return err
+					}
 				}
 				*output = ret
 				return nil
