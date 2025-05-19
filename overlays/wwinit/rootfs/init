@@ -6,6 +6,8 @@ echo "Mounting kernel file systems..."
 mountpoint -q /proc || (mkdir -p /proc && mount -t proc proc /proc && echo "Mounted /proc")
 mountpoint -q /dev || (mkdir -p /dev && mount -t devtmpfs devtmpfs /dev && echo "Mounted /dev")
 mountpoint -q /sys || (mkdir -p /sys && mount -t sysfs sysfs /sys && echo "Mounted /sys")
+# https://systemd.io/INITRD_INTERFACE/
+mountpoint -q /run || (mkdir -p /run && mount -t tmpfs -o mode=0755,nodev,nosuid,strictatime tmpfs /run && echo "Mounted /run")
 echo
 echo "Loading /warewulf/config..."
 if [ -f "/warewulf/config" ]; then
