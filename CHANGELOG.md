@@ -56,6 +56,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Update GitHub actions to build aarch64 artifacts.
 - Explicitly enforce the number or arguments accepted by some `wwctl` subcommands. #1717
 - Renamed `wwctl node import --cvs` to `--csv`.
+- Added `-l` flag to `wwctl container list` within the sos plugin for better reporting.
 - Update JSON output to match YAML field names. #1588
 - Update JSON output to omit empty values. #1588
 
