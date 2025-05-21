@@ -133,7 +133,7 @@ func TestNodeAPI(t *testing.T) {
 	})
 
 	t.Run("test build all nodes overlays", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodPost, srv.URL+"/api/nodes/overlays/build", nil)
+		req, err := http.NewRequest(http.MethodPost, srv.URL+"/api/nodes/overlays/build", bytes.NewReader([]byte(`{"overlays":[]}`)))
 		assert.NoError(t, err)
 
 		resp, err := http.DefaultTransport.RoundTrip(req)
