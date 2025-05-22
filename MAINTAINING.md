@@ -6,8 +6,8 @@
 
 - [Anderson, Jonathon](janderson@ciq.com) (CIQ)
 - [Goll, Christian](cgoll@suse.de) (SUSE)
-- [Hanks, John](griznog@gmail.com) (Chan Zuckerburg Biohub)
 - [Kurtzer, Greg](gmk@ciq.com) (CIQ)
+- [Middelkoop, Timothy](tmiddelkoop@internet2.edu) (Internet2)
 - [Siadal, Jeremy](jeremy.c.siadal@intel.com) (Intel)
 
 TSC chair: Jonathon Anderson (November 2023)
@@ -21,6 +21,10 @@ New TSC members may be nominated by an existing member of the TSC, and
 may be admitted by consensus vote by the existing TSC members.
 
 The TSC chair is selected by the TSC once per year in November.
+
+TSC members should advise the TSC when they are no longer able to
+continue in their role. The member is then removed from the committee
+by vote of the remaining TSC members.
 
 ## Roadmapping
 
