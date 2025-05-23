@@ -321,8 +321,8 @@ directly from the node's assigned image.
 
 .. _booting with dracut:
 
-Booting with dracut
-===================
+Two-stage boot: dracut
+======================
 
 Some systems, typically due to limitations in their BIOS or EFI firmware, are
 unable to load image of a certain size directly with a traditional bootloader,
@@ -337,10 +337,18 @@ must be installed in the image.
 With the ``warewulf-dracut`` package installed in the image, you can then build
 an initramfs inside the image.
 
+EL installation
+---------------
+
 .. code-block:: shell
 
+   # Enterprise Linux
    wwctl image exec rockylinux-9 --build=false -- /usr/bin/dnf -y install https://github.com/warewulf/warewulf/releases/download/v4.6.1/warewulf-dracut-4.6.1-1.el9.noarch.rpm
    wwctl image exec rockylinux-9 -- /usr/bin/dracut --force --no-hostonly --add wwinit --regenerate-all
+
+   # SUSE
+   wwctl image exec leap-15 --build=false -- /usr/bin/zypper -y install https://github.com/warewulf/warewulf/releases/download/v4.6.1/warewulf-dracut-4.6.1-1.suse.lp155.noarch.rpm
+   wwctl image exec leap-15 -- /usr/bin/dracut --force --no-hostonly --add wwinit --regenerate-all
 
 .. note::
 
@@ -391,3 +399,52 @@ The wwinit module provisions to tmpfs. By default, tmpfs is permitted to use up
 to 50% of physical memory. This size limit may be adjusted using the kernel
 argument `wwinit.tmpfs.size`. (This parameter is passed to the `size` option
 during tmpfs mount. See ``tmpfs(5)`` for more details.)
+
+Provision to disk
+=================
+
+*New in Warewulf v4.6.2*
+
+As a tech preview, the Warewulf two-stage boot process can provision the node
+image to local storage.
+
+.. note::
+
+   Warewulf doesn't install a bootloader to the disk or add UEFI entries. Nodes
+   still request an image and configuration from the Warewulf server on every
+   boot.
+
+File system preparation
+-----------------------
+
+Warewulf needs a prepared file system to deploy the image to. Warewulf can
+provision this file system as well using Ignition.
+
+.. code-block:: shell
+
+   wwctl node set wwnode1 \
+     --diskname /dev/vda --diskwipe \
+     --partname rootfs --partcreate --partnumber 1 \
+     --fsname rootfs --fsformat ext4 --fspath /
+
+In order to allow Dracut to provision the disk, partition, and file system,
+Ignition must be included in the Dracut image.
+
+.. code-block:: shell
+
+   # Enterprise Linux
+   wwctl image exec rockylinux-9 -- /usr/bin/dracut --force --no-hostonly --add wwinit --add ignition --regenerate-all
+
+   # SUSE
+   wwctl image exec leap-15 -- /usr/bin/dracut --force --no-hostonly --add wwinit --add ignition --regenerate-all
+
+The necessary file system may alternatively be prepared out-of-band.
+
+Configuring the root device
+---------------------------
+
+Set the desired storage device using the ``--root`` parameter.
+
+.. code-block:: shell
+
+   wwctl node set wwnode1 --root /dev/disk/by-partlabel/rootfs
