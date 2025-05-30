@@ -37,9 +37,9 @@ There are two subcommands:
 - ``wwctl upgrade nodes`` updates ``nodes.conf``.
 
 Both of these will attempt to update their respective configuration file
-in-place, retaining a copy of the previous version with a ``.bak`` suffix.
+in-place, retaining a copy of the previous version with a ``-old`` suffix.
 Alternatively, you can see what each command will do by specifying an
-``--output-file=-`` option, to direct the output of the command to "standard
+``--output-path=-`` option, to direct the output of the command to "standard
 out."
 
 ``wwctl upgrade nodes`` additionally requires two options to be specified:
@@ -252,8 +252,8 @@ hierarchies of nested profiles.
          default:
            ipaddr: 192.168.1.101
 
-Resources and NFS
-=================
+Resources
+=========
 
 Resources are similar to tags except that their value is an arbitrary data
 structure rather than just a string. This data is represented as YAML data in
@@ -270,8 +270,8 @@ by editing ``nodes.conf`` directly.
 
 The premiere use of resources is in the refactoring of NFS client configuration.
 
-NFS
-===
+NFS Mounts
+==========
 
 Cluster node NFS mounts are no longer configured in ``warewulf.conf``. In stead,
 a new ``fstab`` overlay configures NFS (or any other) mounts on cluster nodes
@@ -365,7 +365,7 @@ including indicating node IDs.
 
 ``wwctl`` now return a non-zero exit code on error.
 
-There are smaller changes to the syncuser, as well:
+There are smaller changes to ``wwctl``, as well:
 
 - ``wwctl <node|profile> list --fullall`` has been removed.
 - ``wwctl clean`` removes the OCI cache and vestigial overlay images from
