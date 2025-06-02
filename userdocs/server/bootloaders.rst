@@ -400,6 +400,8 @@ to 50% of physical memory. This size limit may be adjusted using the kernel
 argument `wwinit.tmpfs.size`. (This parameter is passed to the `size` option
 during tmpfs mount. See ``tmpfs(5)`` for more details.)
 
+.. _provision to disk:
+
 Provision to disk
 =================
 
@@ -408,17 +410,36 @@ Provision to disk
 As a tech preview, the Warewulf two-stage boot process can provision the node
 image to local storage.
 
+.. warning::
+
+   This functionality is a technology preview and should be used with care. Pay
+   specific attention to ``wipeFilesytem`` (ignition) and ``overwrite`` (mkfs)
+   settings.
+
 .. note::
 
    Warewulf doesn't install a bootloader to the disk or add UEFI entries. Nodes
    still request an image and configuration from the Warewulf server on every
    boot.
 
-File system preparation
------------------------
+.. note::
+
+   While provisioning to disk should be possible during a single-stage boot, not
+   all features are available:
+   
+   - Warewulf does not perform hardware detection to ensure that necessary
+     kernel modules are loaded prior to init.
+   - Warewulf does not load udev to ensure that ``/dev/disk/by-*`` symlinks are
+     available prior to init.
+
+With Ignition
+-------------
 
 Warewulf needs a prepared file system to deploy the image to. Warewulf can
-provision this file system as well using Ignition.
+provision this file system using Ignition. To use Ignition, include ``ignition``
+in your system overlay. The ignition overlay provisions disks during init and,
+optionally, during the first stage of a two-stage boot. This allows the
+root file system to be provisioned before the image is loaded.
 
 .. code-block:: shell
 
@@ -427,23 +448,107 @@ provision this file system as well using Ignition.
      --partname rootfs --partcreate --partnumber 1 \
      --fsname rootfs --fsformat ext4 --fspath /
 
+Alternatively, Ignition may be configured using a resource.
+
+.. code-block:: yaml
+
+   ignition:
+     storage:
+       disks:
+         - device: /dev/sda
+           partitions:
+             - label: rootfs
+           wipeTable: true
+       filesystems:
+         - device: /dev/disk/by-partlabel/ignition-rootfs
+           format: ext4
+           path: /
+           wipeFilesystem: false
+
 In order to allow Dracut to provision the disk, partition, and file system,
 Ignition must be included in the Dracut image.
 
 .. code-block:: shell
 
-   # Enterprise Linux
    wwctl image exec rockylinux-9 -- /usr/bin/dracut --force --no-hostonly --add wwinit --add ignition --regenerate-all
 
-   # SUSE
-   wwctl image exec leap-15 -- /usr/bin/dracut --force --no-hostonly --add wwinit --add ignition --regenerate-all
-
 The necessary file system may alternatively be prepared out-of-band.
+
+With sfdisk and mkfs
+--------------------
+
+Systems that do not have access to Ignition (e.g., Rocky Linux 8) can provision
+the root file system using a combination of ``sfdisk`` and ``mkfs``. To use
+them, include ``sfdisk`` and ``mkfs`` in your system overlay. The ``sfdisk`` and
+``mkfs`` overlays provision disk and file systems during the first stage of a
+two-stage boot. This allows the root file system to be provisioned before the
+image is loaded.
+
+Configure the ``sfdisk`` and ``mkfs`` overlays using resources:
+
+.. code-block:: yaml
+
+   fdisk:
+     - device: /dev/sda
+       label: gpt
+       partitions:
+         - device: /dev/sda1
+           name: rootfs
+   mkfs:
+     - device: /dev/disk/by-partlabel/sfdisk-rootfs
+       type: ext4
+
+In order to allow Dracut to provision the disk, partition, and file system, some
+additional commands must be included in the Dracut image, depending on which
+functionality is used:
+
+- **sfdisk:** writes the partition table
+
+  - **blockdev:** used to re-read the partition table after writing
+
+  - **udevadm:** used to trigger udev events after writing the partition table
+
+- **mkfs:** formats file systems (may also require file-system-specific commands like mkfs.ext4)
+
+  - **mkfs.ext4**, **mkfs.btrfs**, etc: used by mkfs to format specific file systems
+
+  - **wipefs:** used to determine if a file system already exists
+
+.. code-block:: shell
+
+   wwctl image exec rockylinux-8 -- /usr/bin/dracut --force --no-hostonly \
+     --add wwinit \
+     --install sfdisk \
+     --install blockdev \
+     --install udevadm \
+     --install mkfs \
+     --install mkfs.ext4 \
+     --install wipefs \
+     --regenerate-all
+
+File systems created using the ``sfdisk``, ``mkfs``, and even ``mkswap``
+overlays can be mounted explicitly using the ``fstab`` overlay by configuring
+its resource.
+
+.. code-block:: yaml
+
+   fstab:
+     - file: /
+       spec: /dev/disk/by-partlabel/rootfs
+       vfstype: ext4
+     - file: /scratch
+       mntops: nofail
+       spec: /dev/disk/by-partlabel/scratch
+       vfstype: ext4
+     - file: none
+       spec: /dev/disk/by-partlabel/swap
+       vfstype: swap
 
 Configuring the root device
 ---------------------------
 
-Set the desired storage device using the ``--root`` parameter.
+Set the desired storage device for the node image using the ``--root``
+parameter.
 
 .. code-block:: shell
 
