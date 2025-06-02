@@ -1,0 +1,27 @@
+#!/bin/sh
+
+if ! command -v info >/dev/null; then
+    info() {
+        printf '%s\n' "$*"
+    }
+fi
+
+if ! command -v die >/dev/null; then
+    die() {
+        printf '%s\n' "$*" >&2
+        exit 1
+    }
+fi
+
+if command -v mkfs >/dev/null ; then :
+{{- with $mkfs := index .Resources "mkfs" }}
+{{- 	range $i, $fs := $mkfs }}
+{{- 		if and $fs.type $fs.device}}
+    info "warewulf: mkfs: formatting {{ $fs.device }}"
+    mkfs {{ print "--type=" $fs.type }} {{ default "" $fs.options }} {{ $fs.device }} {{ default "" $fs.size }} || die "warewulf: mkfs: failed to format {{ $fs.device }}"
+{{- 		end }}
+{{- 	end }}
+{{- end }}
+else
+    info "warewulf: mkfs not found"
+fi

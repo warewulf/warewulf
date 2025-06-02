@@ -1,0 +1,27 @@
+#!/bin/sh
+
+if ! command -v info >/dev/null; then
+    info() {
+        printf '%s\n' "$*"
+    }
+fi
+
+if ! command -v die >/dev/null; then
+    die() {
+        printf '%s\n' "$*" >&2
+        exit 1
+    }
+fi
+
+if command -v mkswap >/dev/null; then :
+{{- with $mkswap := index .Resources "mkswap" }}
+{{- 	range $fs := $mkswap }}
+{{- 		if $fs.device }}
+    info "warewulf: mkswap: formatting {{ $fs.device }}"
+    mkswap {{ not (empty $fs.label) | ternary (print "--label" $fs.label) "" }} {{ $fs.device }} {{ default "" $fs.size }} || die "warewulf: mkswap: failed to format {{ $fs.device }}"
+{{- 		end }}
+{{- 	end }}
+{{- end }}
+else
+    info "warewulf: mkswap not found"
+fi

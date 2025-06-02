@@ -1,0 +1,37 @@
+#!/bin/sh
+
+if ! command -v info >/dev/null; then
+    info() {
+        printf '%s\n' "$*"
+    }
+fi
+
+if ! command -v die >/dev/null; then
+    die() {
+        printf '%s\n' "$*" >&2
+        exit 1
+    }
+fi
+
+if ! command -v sfdisk >/dev/null ; then
+    info "warewulf: sfdisk not found, skipping partitioning"
+else :
+{{- with $sfdisk := index .Resources "sfdisk" }}
+{{- 	range $i, $device := $sfdisk }}
+{{- 		if $device.device }}
+    info "warewulf: sfdisk: partitioning {{ $device.device }}"
+    sfdisk {{ $device.device }} < "${PREFIX}/warewulf/sfdisk/device-{{ $i }}" || die "warewulf: sfdisk: failed to partition {{ $device.device }}"
+
+    if command -v blockdev >/dev/null ; then
+        info "warewulf: blockdev: re-reading partition table"
+        blockdev --rereadpt {{ $device.device }}
+    fi
+{{- 		end }}
+{{- 	end }}
+    if command -v udevadm >/dev/null ; then
+        info "warewulf: udevadm: triggering udev events for block devices"
+        udevadm trigger --subsystem-match=block --action=add
+        udevadm settle
+    fi
+{{- end }}
+fi

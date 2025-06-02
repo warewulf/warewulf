@@ -190,6 +190,9 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %{_datadir}/warewulf/overlays/wwclient/rootfs/*
 %{_datadir}/warewulf/overlays/wwinit/rootfs/*
 %{_datadir}/warewulf/overlays/localtime/rootfs/*
+%{_datadir}/warewulf/overlays/sfdisk/rootfs/*
+%{_datadir}/warewulf/overlays/mkfs/rootfs/*
+%{_datadir}/warewulf/overlays/mkswap/rootfs/*
 
 %{_bindir}/wwctl
 %{_prefix}/lib/firewalld/services/warewulf.xml
