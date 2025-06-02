@@ -22,17 +22,13 @@ get_stage() {
     ) || die "Unable to load stage: ${stage}"
 }
 
-if [ "${wwinit_root_device}" != "tmpfs" ]; then
-    mkdir /tmp/wwinit
-    NEWROOT=/tmp/wwinit get_stage "system"
-    if [ -x /usr/bin/ignition ]; then
-        /usr/bin/ignition --root "${NEWROOT}" --config-cache=/tmp/wwinit/warewulf/ignition.json --platform=metal --stage=disks || die "warewulf: failed to partition/format disk"
-    else
-        info "warewulf: /usr/bin/ignition not found. Assuming ${wwinit_root_device} already prepared."
-    fi
+mkdir /tmp/wwinit
+NEWROOT=/tmp/wwinit get_stage "system"
+if [ -x /tmp/wwinit/warewulf/run-wwinit.d ]; then
+        PREFIX=/tmp/wwinit /tmp/wwinit/warewulf/run-wwinit.d
 fi
 
-info "warewulf: Mounting ${wwinit_root_device} at ${NEWROOT}"
+info "warewulf: mounting ${wwinit_root_device} at ${NEWROOT}"
 (
     if [ "${wwinit_root_device}" = "tmpfs" ]; then
         mount -t tmpfs -o mpol=interleave ${wwinit_tmpfs_size_option} "${wwinit_root_device}" "${NEWROOT}"
