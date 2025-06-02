@@ -24,9 +24,11 @@ type Node struct {
 	id    string
 	valid bool // Is set true, if called by the constructor
 	// exported values
-	Discoverable wwtype.WWbool     `yaml:"discoverable,omitempty" json:"discoverable,omitempty" lopt:"discoverable" sopt:"e" comment:"Make discoverable in given network (true/false)"`
-	AssetKey     string            `yaml:"asset key,omitempty"    json:"asset key,omitempty"    lopt:"asset"                 comment:"Set the node's Asset tag (key)"`
-	Profile      `yaml:"-,inline"` // include all values set in the profile, but inline them in yaml output if these are part of Node
+	Discoverable        wwtype.WWbool     `yaml:"discoverable,omitempty" json:"discoverable,omitempty" lopt:"discoverable" sopt:"e" comment:"Make discoverable in given network (true/false)"`
+	AssetKey            string            `yaml:"asset key,omitempty"    json:"asset key,omitempty"    lopt:"asset"                 comment:"Set the node's Asset tag (key)"`
+	Profile             `yaml:"-,inline"` // include all values set in the profile, but inline them in yaml output if these are part of Node
+	RuntimeOverlayMTime string            `yaml:"runtime overlay mtime,omitempty" json:"runtime overlay mtime,omitempty"`
+	SystemOverlayMTime  string            `yaml:"system overlay mtime,omitempty" json:"system overlay mtime,omitempty"`
 }
 
 /*

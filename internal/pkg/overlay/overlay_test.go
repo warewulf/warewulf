@@ -20,7 +20,7 @@ import (
 )
 
 func Test_FindOverlays(t *testing.T) {
-	var tests = map[string]struct {
+	tests := map[string]struct {
 		distOverlays []string
 		siteOverlays []string
 		overlayList  []string
@@ -75,7 +75,7 @@ func Test_OverlayMethods(t *testing.T) {
 	env.WriteFile(path.Join(sitedir, "both/rootfs/testfile"), "the site version")
 	env.WriteFile(path.Join(distdir, "both/rootfs/testfile"), "the distribution version")
 
-	var tests = map[string]struct {
+	tests := map[string]struct {
 		name    string
 		path    string
 		rootfs  string
@@ -157,7 +157,7 @@ func Test_OverlayMethods(t *testing.T) {
 }
 
 func Test_BuildOverlayIndir(t *testing.T) {
-	var tests = map[string]struct {
+	tests := map[string]struct {
 		node            node.Node
 		overlays        []string
 		overlayFiles    map[string]string
@@ -320,7 +320,7 @@ Tags:map[]
 }
 
 func Test_BuildOverlay(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		description string
 		nodeName    string
 		context     string
@@ -361,7 +361,7 @@ func Test_BuildOverlay(t *testing.T) {
 			overlays:    []string{"o1"},
 			image:       "o1.img",
 			contents:    []string{"o1.txt"},
-			perms:       []int{0644},
+			perms:       []int{0o644},
 		},
 		{
 			description: "if multiple overlays are specified without a node, then the combined overlay is built directly in the overlay directory",
@@ -370,7 +370,7 @@ func Test_BuildOverlay(t *testing.T) {
 			overlays:    []string{"o1", "o2"},
 			image:       "o1-o2.img",
 			contents:    []string{"o1.txt", "o2.txt"},
-			perms:       []int{0644, 0644},
+			perms:       []int{0o644, 0o644},
 		},
 		{
 			description: "if a single node overlay is specified, then the overlay is built in a node overlay directory",
@@ -379,7 +379,7 @@ func Test_BuildOverlay(t *testing.T) {
 			overlays:    []string{"o1"},
 			image:       "node1/o1.img",
 			contents:    []string{"o1.txt"},
-			perms:       []int{0644},
+			perms:       []int{0o644},
 		},
 		{
 			description: "if multiple node overlays are specified, then the combined overlay is built in a node overlay directory",
@@ -388,7 +388,7 @@ func Test_BuildOverlay(t *testing.T) {
 			overlays:    []string{"o1", "o2"},
 			image:       "node1/o1-o2.img",
 			contents:    []string{"o1.txt", "o2.txt"},
-			perms:       []int{0644, 0644},
+			perms:       []int{0o644, 0o644},
 		},
 		{
 			description: "if no node system overlays are specified, then context pointed overlay is generated",
@@ -413,7 +413,7 @@ func Test_BuildOverlay(t *testing.T) {
 			overlays:    []string{"o1"},
 			image:       "node1/__SYSTEM__.img",
 			contents:    []string{"o1.txt"},
-			perms:       []int{0644},
+			perms:       []int{0o644},
 		},
 		{
 			description: "if a single node runtime overlay is specified, then a runtime overlay image is generated in a node overlay directory",
@@ -422,7 +422,7 @@ func Test_BuildOverlay(t *testing.T) {
 			overlays:    []string{"o1"},
 			image:       "node1/__RUNTIME__.img",
 			contents:    []string{"o1.txt"},
-			perms:       []int{0644},
+			perms:       []int{0o644},
 		},
 		{
 			description: "if multiple node system overlays are specified, then a system overlay image is generated with the contents of both overlays",
@@ -431,7 +431,7 @@ func Test_BuildOverlay(t *testing.T) {
 			overlays:    []string{"o1", "o2"},
 			image:       "node1/__SYSTEM__.img",
 			contents:    []string{"o1.txt", "o2.txt"},
-			perms:       []int{0644, 0644},
+			perms:       []int{0o644, 0o644},
 		},
 		{
 			description: "if multiple node runtime overlays are specified, then a runtime overlay image is generated with the contents of both overlays",
@@ -440,7 +440,7 @@ func Test_BuildOverlay(t *testing.T) {
 			overlays:    []string{"o1", "o2"},
 			image:       "node1/__RUNTIME__.img",
 			contents:    []string{"o1.txt", "o2.txt"},
-			perms:       []int{0644, 0644},
+			perms:       []int{0o644, 0o644},
 		},
 		{
 			description: "validating altered permissions are retained",
@@ -449,7 +449,7 @@ func Test_BuildOverlay(t *testing.T) {
 			overlays:    []string{"o3"},
 			image:       "node1/__RUNTIME__.img",
 			contents:    []string{"subdir", "subdir/o3.txt"},
-			perms:       []int{0700, 0600},
+			perms:       []int{0o700, 0o600},
 		},
 	}
 
@@ -457,12 +457,12 @@ func Test_BuildOverlay(t *testing.T) {
 	defer env.RemoveAll()
 
 	env.CreateFile("var/lib/warewulf/overlays/o1/rootfs/o1.txt")
-	env.Chmod("var/lib/warewulf/overlays/o1/rootfs/o1.txt", 0644)
+	env.Chmod("var/lib/warewulf/overlays/o1/rootfs/o1.txt", 0o644)
 	env.CreateFile("var/lib/warewulf/overlays/o2/rootfs/o2.txt")
-	env.Chmod("var/lib/warewulf/overlays/o2/rootfs/o2.txt", 0644)
+	env.Chmod("var/lib/warewulf/overlays/o2/rootfs/o2.txt", 0o644)
 	env.CreateFile("var/lib/warewulf/overlays/o3/rootfs/subdir/o3.txt.ww")
-	env.Chmod("var/lib/warewulf/overlays/o3/rootfs/subdir", 0700)
-	env.Chmod("var/lib/warewulf/overlays/o3/rootfs/subdir/o3.txt.ww", 0600)
+	env.Chmod("var/lib/warewulf/overlays/o3/rootfs/subdir", 0o700)
+	env.Chmod("var/lib/warewulf/overlays/o3/rootfs/subdir/o3.txt.ww", 0o600)
 
 	for _, tt := range tests {
 		nodeInfo := node.NewNode(tt.nodeName)
@@ -492,7 +492,7 @@ func Test_BuildOverlay(t *testing.T) {
 }
 
 func Test_BuildAllOverlays(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		description     string
 		nodes           []string
 		systemOverlays  [][]string
@@ -564,13 +564,18 @@ func Test_BuildAllOverlays(t *testing.T) {
 		},
 	}
 
+	env := testenv.New(t)
+	defer env.RemoveAll()
+
+	env.WriteFile("etc/warewulf/nodes.conf", `nodeprofiles: {}
+nodes: {}`)
 	conf := warewulfconf.Get()
 	overlayDir, overlayDirErr := os.MkdirTemp(os.TempDir(), "ww-test-overlay-*")
 	assert.NoError(t, overlayDirErr)
 	defer os.RemoveAll(overlayDir)
 	conf.Paths.WWOverlaydir = overlayDir
-	assert.NoError(t, os.Mkdir(path.Join(overlayDir, "o1"), 0700))
-	assert.NoError(t, os.Mkdir(path.Join(overlayDir, "o2"), 0700))
+	assert.NoError(t, os.Mkdir(path.Join(overlayDir, "o1"), 0o700))
+	assert.NoError(t, os.Mkdir(path.Join(overlayDir, "o2"), 0o700))
 
 	for _, tt := range tests {
 		t.Run(tt.description, func(t *testing.T) {
@@ -604,7 +609,7 @@ func Test_BuildAllOverlays(t *testing.T) {
 }
 
 func Test_BuildSpecificOverlays(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		description string
 		nodes       []string
 		overlays    []string
@@ -667,8 +672,8 @@ func Test_BuildSpecificOverlays(t *testing.T) {
 	assert.NoError(t, overlayDirErr)
 	defer os.RemoveAll(overlayDir)
 	conf.Paths.WWOverlaydir = overlayDir
-	assert.NoError(t, os.Mkdir(path.Join(overlayDir, "o1"), 0700))
-	assert.NoError(t, os.Mkdir(path.Join(overlayDir, "o2"), 0700))
+	assert.NoError(t, os.Mkdir(path.Join(overlayDir, "o1"), 0o700))
+	assert.NoError(t, os.Mkdir(path.Join(overlayDir, "o2"), 0o700))
 
 	for _, tt := range tests {
 		t.Run(tt.description, func(t *testing.T) {
