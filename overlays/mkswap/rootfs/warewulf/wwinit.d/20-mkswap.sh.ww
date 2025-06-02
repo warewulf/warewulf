@@ -15,12 +15,31 @@ if ! command -v die >/dev/null; then
     }
 fi
 
+already_formatted() {
+    if ! command -v wipefs >/dev/null ; then
+        info "warewulf: wipefs not found, cannot check if device is already formatted"
+        return 0
+    fi
+
+    if wipefs -n "${1}" &>/dev/null; then
+        info "warewulf: ${1} already formatted"
+        return 0
+    fi
+
+    return 1
+}
+
 if command -v mkswap >/dev/null; then :
 {{- with $mkswap := index .Resources "mkswap" }}
 {{- 	range $fs := $mkswap }}
 {{- 		if $fs.device }}
-    info "warewulf: mkswap: formatting {{ $fs.device }}"
-    mkswap {{ not (empty $fs.label) | ternary (print "--label" $fs.label) "" }} {{ $fs.device }} {{ default "" $fs.size }} || die "warewulf: mkswap: failed to format {{ $fs.device }}"
+    if {{if $fs.overwrite}}true{{else}}false{{end}} || ! already_formatted {{ $fs.device }}; then
+        info "warewulf: mkswap: formatting {{ $fs.device }}"
+        mkswap {{ not (empty $fs.label) | ternary (print "--label=" $fs.label) "" }} {{ $fs.device }} {{ default "" $fs.size }} || die "warewulf: mkswap: failed to format {{ $fs.device }}"
+    else
+        info "warewulf: mkswap: skipping {{ $fs.device }}"
+        continue
+    fi
 {{- 		end }}
 {{- 	end }}
 {{- end }}
