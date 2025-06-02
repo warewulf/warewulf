@@ -159,7 +159,7 @@ For example, the ``imgextract`` command can be `explicitly enabled`_.
    support for ZLIB and GZIP archive image formats.
 
 Configuring Warewulf (>= v4.5.0)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In Warewulf v4.5.0, Warewulf can be configured to use these files using the
 ``tftp.ipxe`` and ``paths.ipxesource`` configuration parameters in
