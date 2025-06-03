@@ -88,7 +88,7 @@ echo
 echo Downloading dracut initramfs...
 initrd --name initramfs ${uri}&stage=initramfs || goto error_reboot
 set dracut_net rd.neednet=1 {{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} ip={{$netdev.Device}}:dhcp {{end}}{{end}}
-set dracut_wwinit root=wwinit wwinit.uri=${baseuri} init=/init
+set dracut_wwinit root=wwinit:{{default "tmpfs" .Root}} wwinit.uri=${baseuri} init=/warewulf/run-init
 goto boot_two_stage_dracut
 
 :boot_single_stage

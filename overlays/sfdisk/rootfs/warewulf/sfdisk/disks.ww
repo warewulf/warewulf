@@ -1,0 +1,26 @@
+{{- with $sfdisk := index .Resources "sfdisk" }}
+{{- 	range $i, $device := $sfdisk }}
+{{ 		file (print "device-" $i) }}
+{{- 		range $header := list "unit" "label" "label-id" "first-lba" "last-lba" "table-length" "grain" "sector-size" }}
+{{- 			if index $device $header }}
+{{ $header }}: {{ index $device $header }}
+{{- 			end }}
+{{- 		end }}
+{{- 		range $partition := $device.partitions }}
+{{- 			$fields := list }}
+{{- 			range $field := list "start" "size" "attrs" "uuid" "name" "type" }}
+{{- 				if index $partition $field }}
+{{- 					$fields = append $fields (print $field "=" (index $partition $field)) }}
+{{- 				end }}
+{{- 				if $partition.bootable }}
+{{- 					$fields = append $fields "bootable" }}
+{{- 				end }}
+{{- 			end }}
+{{- 			if $partition.device }}
+{{ $partition.device }} : {{ $fields | join " " }}
+{{- 			else }}
+{{ $fields | join " " }}
+{{- 			end }}
+{{- 		end }}
+{{- 	end }}
+{{- end }}
