@@ -192,8 +192,15 @@ In particular:
 - Update PAM configuration to allow missing shadow entries
 - Relabel the file system for SELinux
 
-Other overlays may place additional scripts in ``/warewulf/init.d/`` to affect
-node configuration in this pre-boot environment.
+Other overlays can place scripts in one of two locations for additional pre-init
+provisioning actions:
+
+- **/warewulf/wwinit.d/:** executed in the initial root final system before the
+  image is loaded into its final location. In a two-stage boot, these scripts
+  are executed in the Dracut initramfs.
+
+- **/warewulf/init.d/:** executed in the final root file system but before
+  calling ``init``.
 
 wwclient
 --------
