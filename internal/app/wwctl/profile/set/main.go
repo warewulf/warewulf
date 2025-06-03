@@ -24,26 +24,26 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			vars.profileConf.NetDevs[vars.profileAdd.Net].Tags = vars.profileAdd.NetTagsAdd
 		}
 		delete(vars.profileConf.NetDevs, "UNDEF")
-		if vars.fsName != "" {
-			if !strings.HasPrefix(vars.fsName, "/dev") {
-				if vars.fsName == vars.partName {
-					vars.fsName = "/dev/disk/by-partlabel/" + vars.partName
+		if vars.profileAdd.FsName != "" {
+			if !strings.HasPrefix(vars.profileAdd.FsName, "/dev") {
+				if vars.profileAdd.FsName == vars.profileAdd.PartName {
+					vars.profileAdd.FsName = "/dev/disk/by-partlabel/" + vars.profileAdd.PartName
 				} else {
 					return fmt.Errorf("filesystems need to have a underlying blockdev")
 				}
 			}
 			fs := *vars.profileConf.FileSystems["UNDEF"]
-			vars.profileConf.FileSystems[vars.fsName] = &fs
+			vars.profileConf.FileSystems[vars.profileAdd.FsName] = &fs
 		}
 		delete(vars.profileConf.FileSystems, "UNDEF")
-		if vars.diskName != "" && vars.partName != "" {
+		if vars.profileAdd.DiskName != "" && vars.profileAdd.PartName != "" {
 			prt := *vars.profileConf.Disks["UNDEF"].Partitions["UNDEF"]
-			vars.profileConf.Disks["UNDEF"].Partitions[vars.partName] = &prt
+			vars.profileConf.Disks["UNDEF"].Partitions[vars.profileAdd.PartName] = &prt
 			delete(vars.profileConf.Disks["UNDEF"].Partitions, "UNDEF")
 			dsk := *vars.profileConf.Disks["UNDEF"]
-			vars.profileConf.Disks[vars.diskName] = &dsk
+			vars.profileConf.Disks[vars.profileAdd.DiskName] = &dsk
 		}
-		if (vars.diskName != "") != (vars.partName != "") {
+		if (vars.profileAdd.DiskName != "") != (vars.profileAdd.PartName != "") {
 			return fmt.Errorf("partition and disk must be specified")
 		}
 		delete(vars.profileConf.Disks, "UNDEF")
@@ -55,10 +55,10 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 		wwlog.Debug("sending following values: %s", string(buffer))
 		set := wwapiv1.ConfSetParameter{
 			NodeConfYaml:     string(buffer[:]),
-			NetdevDelete:     vars.setNetDevDel,
-			PartitionDelete:  vars.setPartDel,
-			DiskDelete:       vars.setDiskDel,
-			FilesystemDelete: vars.setFsDel,
+			NetdevDelete:     vars.profileDel.NetDel,
+			PartitionDelete:  vars.profileDel.PartDel,
+			DiskDelete:       vars.profileDel.DiskDel,
+			FilesystemDelete: vars.profileDel.FsDel,
 			TagAdd:           vars.profileAdd.TagsAdd,
 			TagDel:           vars.profileDel.TagsDel,
 			NetTagAdd:        vars.profileAdd.NetTagsAdd,

@@ -8,19 +8,12 @@ import (
 )
 
 type variables struct {
-	setNetDevDel string
-	setDiskDel   string
-	setPartDel   string
-	setFsDel     string
-	setNodeAll   bool
-	setYes       bool
-	setForce     bool
-	partName     string
-	diskName     string
-	fsName       string
-	profileConf  node.Profile
-	profileDel   node.NodeConfDel
-	profileAdd   node.NodeConfAdd
+	setNodeAll  bool
+	setYes      bool
+	setForce    bool
+	profileConf node.Profile
+	profileDel  node.NodeConfDel
+	profileAdd  node.NodeConfAdd
 }
 
 func GetCommand() *cobra.Command {
