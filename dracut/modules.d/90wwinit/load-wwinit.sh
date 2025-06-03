@@ -23,7 +23,11 @@ get_stage() {
 }
 
 mkdir /tmp/wwinit
-NEWROOT=/tmp/wwinit get_stage "system"
+(
+    # fetch the system overlay into /tmp/wwinit
+    local NEWROOT=/tmp/wwinit
+    get_stage "system"
+)
 if [ -x /tmp/wwinit/warewulf/run-wwinit.d ]; then
         PREFIX=/tmp/wwinit /tmp/wwinit/warewulf/run-wwinit.d
 fi
