@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - Added override.conf for nm-wait-online-initrd.service with dracut.
+- Added userdocs for `wwctl node import` from yaml/csv.
 
 ### Fixed
 
