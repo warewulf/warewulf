@@ -15,6 +15,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Updated 70-persistent-net.rules.ww to use `(lower $netdev.Type)` for case-insensitive comparison of "infiniband".
 - Fixed a regression in SELinux support by restoring the `/run` mount during wwinit. #1910
 
+### Changed
+
+- Added `-l` flag to `wwctl image list` within the sos plugin for better reporting. #1855
+
 ### Removed
 
 - Removed the gRPC API servers and client. #1876
