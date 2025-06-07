@@ -17,27 +17,28 @@ struct which contains the variables to which are available in
 the templates.
 */
 type TemplateStruct struct {
-	Id            string
-	Hostname      string
-	BuildHost     string
-	BuildTime     string
-	BuildTimeUnix string
-	BuildSource   string
-	Ipaddr        string
-	IpCIDR        string
-	Ipaddr6       string
-	Netmask       string
-	Network       string
-	NetworkCIDR   string
-	Overlay       string
-	Ipv6          bool
-	Dhcp          warewulfconf.DHCPConf
-	Nfs           warewulfconf.NFSConf
-	Ssh           warewulfconf.SSHConf
-	Warewulf      warewulfconf.WarewulfConf
-	Tftp          warewulfconf.TFTPConf
-	Paths         warewulfconf.BuildConfig
-	AllNodes      []node.Node
+	Id              string
+	Hostname        string
+	BuildHost       string
+	BuildTime       string
+	BuildTimeUnix   string
+	BuildSource     string
+	Ipaddr          string
+	IpCIDR          string
+	Ipaddr6         string
+	Netmask         string
+	NetPrefixLength int
+	Network         string
+	NetworkCIDR     string
+	Overlay         string
+	Ipv6            bool
+	Dhcp            warewulfconf.DHCPConf
+	Nfs             warewulfconf.NFSConf
+	Ssh             warewulfconf.SSHConf
+	Warewulf        warewulfconf.WarewulfConf
+	Tftp            warewulfconf.TFTPConf
+	Paths           warewulfconf.BuildConfig
+	AllNodes        []node.Node
 	node.Node
 	// backward compatiblity
 	Container     string
@@ -71,6 +72,7 @@ func InitStruct(overlayName string, nodeData node.Node, allNodes []node.Node) (T
 	tstruct.IpCIDR = controller.IpCIDR()
 	tstruct.Ipaddr6 = controller.Ipaddr6
 	tstruct.Netmask = controller.Netmask
+	tstruct.NetPrefixLength = controller.NetPrefixLength
 	tstruct.Network = controller.Network
 	tstruct.NetworkCIDR = controller.NetworkCIDR()
 	// init some convenience vars

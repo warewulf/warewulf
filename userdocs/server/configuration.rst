@@ -227,6 +227,39 @@ Warewulf server and enables and starts the NFS service.
 * ``systemd name``: Identifies the systemd service that manages the NFS
   service. Used during ``wwctl configure nfs`` to restart the service.
 
+It is also possible to use NFS Ganesha instead of the kernel nfs server.
+Below shows an example nfs config block for nfs-ganesha, which will configure
+``/etc/ganesha/ganesha.conf`` on the Warewulf server and enables and starts
+the nfs-ganesha service.
+
+.. code-block:: yaml
+
+   nfs:
+     enabled: true
+     ganesha exports:
+       - path: /home
+         access type: rw
+         squash: none
+         pseudo: /custom/path/home
+       - path: /opt
+         access type: rw
+         squash: none
+     systemd name: nfs-ganesha
+
+* ``nfs:ganesha exports``: A list of NFS Ganesha exports to configure on the 
+  Warewulf server. Each export defines a ``path`` to be exported and configuration
+  options based on Ganesha configuration options. Currently only ``access type``
+  and ``squash`` and ``pseudo`` are supported. Pseudo is an optional parameter that
+  allows NFS ganesha to present exports from a customised path in a pseudo fs. 
+  Refer to NFS Ganesha documentation for more details on export options.
+
+* ``systemd name``: Identifies the systemd service that manages the NFS Ganesha
+  service. Used during ``wwctl configure nfs`` to restart the service.
+
+If more customisation is required for the ganesha configuration, use ``wwctl
+overlay edit host /etc/ganesha/ganesha.conf`` to create a site-specific version
+of the ganesha config template and adjust accordingly.
+
 ssh
 ===
 
