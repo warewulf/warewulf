@@ -24,22 +24,23 @@ var cachedConf WarewulfYaml
 // some information about the Warewulf server locally, and has
 // [WarewulfConf], [DHCPConf], [TFTPConf], and [NFSConf] sub-sections.
 type WarewulfYaml struct {
-	Comment     string        `yaml:"comment,omitempty"`
-	Ipaddr      string        `yaml:"ipaddr,omitempty"`
-	Ipaddr6     string        `yaml:"ipaddr6,omitempty"`
-	Netmask     string        `yaml:"netmask,omitempty"`
-	Network     string        `yaml:"network,omitempty"`
-	Ipv6net     string        `yaml:"ipv6net,omitempty"`
-	Fqdn        string        `yaml:"fqdn,omitempty"`
-	Warewulf    *WarewulfConf `yaml:"warewulf,omitempty"`
-	API         *APIConf      `yaml:"api,omitempty"`
-	DHCP        *DHCPConf     `yaml:"dhcp,omitempty"`
-	TFTP        *TFTPConf     `yaml:"tftp,omitempty"`
-	NFS         *NFSConf      `yaml:"nfs,omitempty"`
-	SSH         *SSHConf      `yaml:"ssh,omitempty"`
-	MountsImage []*MountEntry `yaml:"image mounts,omitempty" default:"[{\"source\": \"/etc/resolv.conf\", \"dest\": \"/etc/resolv.conf\"}]"`
-	Paths       *BuildConfig  `yaml:"paths,omitempty"`
-	WWClient    *WWClientConf `yaml:"wwclient,omitempty"`
+	Comment         string        `yaml:"comment,omitempty"`
+	Ipaddr          string        `yaml:"ipaddr,omitempty"`
+	Ipaddr6         string        `yaml:"ipaddr6,omitempty"`
+	Netmask         string        `yaml:"netmask,omitempty"`
+	NetPrefixLength int           `yaml:"network prefix length,omitempty"`
+	Network         string        `yaml:"network,omitempty"`
+	Ipv6net         string        `yaml:"ipv6net,omitempty"`
+	Fqdn            string        `yaml:"fqdn,omitempty"`
+	Warewulf        *WarewulfConf `yaml:"warewulf,omitempty"`
+	API             *APIConf      `yaml:"api,omitempty"`
+	DHCP            *DHCPConf     `yaml:"dhcp,omitempty"`
+	TFTP            *TFTPConf     `yaml:"tftp,omitempty"`
+	NFS             *NFSConf      `yaml:"nfs,omitempty"`
+	SSH             *SSHConf      `yaml:"ssh,omitempty"`
+	MountsImage     []*MountEntry `yaml:"image mounts,omitempty" default:"[{\"source\": \"/etc/resolv.conf\", \"dest\": \"/etc/resolv.conf\"}]"`
+	Paths           *BuildConfig  `yaml:"paths,omitempty"`
+	WWClient        *WWClientConf `yaml:"wwclient,omitempty"`
 
 	warewulfconf string
 	autodetected bool
@@ -111,6 +112,9 @@ func (conf *WarewulfYaml) Parse(data []byte, autodetect bool) error {
 		if conf.Netmask == "" {
 			conf.Netmask = net.IP(network.Mask).String()
 		}
+		if conf.NetPrefixLength == 0 {
+			conf.NetPrefixLength, _ = network.Mask.Size()
+		}
 	}
 
 	if autodetect {
@@ -125,6 +129,7 @@ func (conf *WarewulfYaml) Parse(data []byte, autodetect bool) error {
 			if ip := net.ParseIP(conf.Ipaddr); ip != nil {
 				if network, err := GetIPNetForIP(ip); err == nil {
 					conf.Netmask = net.IP(network.Mask).String()
+					conf.NetPrefixLength, _ = network.Mask.Size()
 					conf.autodetected = true
 				}
 			}
@@ -134,6 +139,7 @@ func (conf *WarewulfYaml) Parse(data []byte, autodetect bool) error {
 			if ip := net.ParseIP(conf.Ipaddr); ip != nil {
 				if mask := net.IPMask(net.ParseIP(conf.Netmask)); mask != nil {
 					conf.Network = ip.Mask(mask).String()
+					conf.NetPrefixLength, _ = mask.Size()
 					conf.autodetected = true
 				}
 			}
