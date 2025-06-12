@@ -31,10 +31,12 @@ var (
 
 func init() {
 	baseCmd.PersistentFlags().StringArrayVarP(&binds, "bind", "b", []string{}, `source[:destination[:{ro|copy}]]
-Bind a local path which must exist into the image. If destination is not
-set, uses the same path as source. "ro" binds read-only. "copy" temporarily
+Bind a local path which must exist into the image.
+If destination is not set, uses the same path as
+source. "ro" binds read-only. "copy" temporarily
 copies the file into the image.`)
-	baseCmd.PersistentFlags().StringVarP(&nodeName, "node", "n", "", "Create a read only view of the image for the given node")
+	baseCmd.PersistentFlags().StringVarP(&nodeName, "node", "n", "", `Create a read only view of the image for the given
+node`)
 	baseCmd.PersistentFlags().BoolVar(&syncUser, "syncuser", false, "Synchronize UIDs/GIDs from host to image")
 	baseCmd.PersistentFlags().BoolVar(&build, "build", true, "(Re)build the image automatically")
 }
