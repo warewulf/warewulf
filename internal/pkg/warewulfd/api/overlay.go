@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"syscall"
 
 	"github.com/swaggest/usecase"
 	"github.com/swaggest/usecase/status"
@@ -68,9 +69,12 @@ func getOverlayByName() usecase.Interactor {
 }
 
 type OverlayFile struct {
-	Overlay  string `json:"overlay"`
-	Path     string `json:"path"`
-	Contents string `json:"contents"`
+	Overlay  string      `json:"overlay"`
+	Path     string      `json:"path"`
+	Contents string      `json:"contents"`
+	Perms    os.FileMode `json:"perms"`
+	Uid      uint32      `json:"uid"`
+	Gid      uint32      `json:"gid"`
 	rendered bool
 }
 
@@ -83,7 +87,23 @@ func (of *OverlayFile) Exists() bool {
 }
 
 func (of *OverlayFile) readContents() (string, error) {
-	f, err := os.ReadFile(of.FullPath())
+	fullPath := of.FullPath()
+	f, err := os.ReadFile(fullPath)
+	if err != nil {
+		wwlog.Warn("os.ReadFile err %w", err)
+		return "", err
+	}
+	// Populate the permissions, uid, and gid.
+	s, err := os.Stat(fullPath)
+	if err != nil {
+		wwlog.Warn("os.Stat err %w", err)
+		return "", err
+	}
+	fileMode := s.Mode()
+	of.Perms = fileMode & os.ModePerm
+	sys := s.Sys()
+	of.Uid = sys.(*syscall.Stat_t).Uid
+	of.Gid = sys.(*syscall.Stat_t).Gid
 	return string(f), err
 }
 
