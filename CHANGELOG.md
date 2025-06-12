@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 - Added `-l` flag to `wwctl image list` within the sos plugin for better reporting. #1855
+- Moved `wwclient` binary to the `wwclient` overlay.
 
 ### Removed
 
