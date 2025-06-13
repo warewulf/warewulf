@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"io"
 	"net"
 	"net/http"
@@ -74,7 +75,22 @@ func TestOverlayAPI(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NoError(t, resp.Body.Close())
 
-		assert.JSONEq(t, `{"overlay":"testoverlay","path":"email.ww","contents":"\n{{ if .Tags.email }}eMail: {{ .Tags.email }}{{else}} noMail{{- end }}\n"}`, string(body))
+		// gid and uid values may vary depending on where this test is run. (local box, github, etc)
+		// Assert the keys exist, but ignore the values.
+		var data map[string]interface{}
+		err = json.Unmarshal([]byte(body), &data)
+		assert.NoError(t, err)
+		assert.Contains(t, data, "gid")
+		assert.Contains(t, data, "uid")
+
+		// delete gid and uid from the map for comparison
+		delete(data, "gid")
+		delete(data, "uid")
+
+		body2, err := json.Marshal(data)
+		assert.NoError(t, err)
+
+		assert.JSONEq(t, `{"perms":420, "overlay":"testoverlay","path":"email.ww","contents":"\n{{ if .Tags.email }}eMail: {{ .Tags.email }}{{else}} noMail{{- end }}\n"}`, string(body2))
 	})
 
 	t.Run("create an overlay", func(t *testing.T) {
