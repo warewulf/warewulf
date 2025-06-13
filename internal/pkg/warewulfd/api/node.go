@@ -123,9 +123,13 @@ func addNode() usecase.Interactor {
 
 	u := usecase.NewInteractor(func(ctx context.Context, input addNodeInput, output *node.Node) error {
 		wwlog.Debug("api.addNode(ID:%v, Node:%+v)", input.ID, input.Node)
+		// registry is the warewulf node "db" yaml file.
 		if registry, err := node.New(); err != nil {
 			return err
 		} else {
+			if _, ok := registry.Nodes[input.ID]; ok {
+				return status.Wrap(fmt.Errorf("node name '%s' already exists", input.ID), status.InvalidArgument)
+			}
 			for _, profile := range input.Node.Profiles {
 				if _, ok := registry.NodeProfiles[profile]; !ok {
 					return status.Wrap(fmt.Errorf("profile '%s' does not exist", profile), status.InvalidArgument)

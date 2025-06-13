@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Updated 70-persistent-net.rules.ww to use `(lower $netdev.Type)` for case-insensitive comparison of "infiniband".
 - Fixed a regression in SELinux support by restoring the `/run` mount during wwinit. #1910
 - Fixed `wwctl profile set` for disks, partitions and file systems. #1883
+- Do not let API add a node that exists
 
 ### Changed
 
