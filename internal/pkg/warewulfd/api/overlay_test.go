@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
@@ -74,7 +75,18 @@ func TestOverlayAPI(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NoError(t, resp.Body.Close())
 
-		assert.JSONEq(t, `{"overlay":"testoverlay","path":"email.ww","contents":"\n{{ if .Tags.email }}eMail: {{ .Tags.email }}{{else}} noMail{{- end }}\n"}`, string(body))
+		// gid and uid values may vary depending on where this test is run. (local box, github, etc)
+		// Assert the keys exist, but ignore the values.
+		ja := jsonassert.New(t)
+		ja.Assert(string(body), `
+		{
+			"overlay": "testoverlay",
+			"path": "email.ww",
+			"contents": "\n{{ if .Tags.email }}eMail: {{ .Tags.email }}{{else}} noMail{{- end }}\n",
+			"perms": "<<PRESENCE>>",
+			"uid": "<<PRESENCE>>",
+			"gid": "<<PRESENCE>>"
+		}`)
 	})
 
 	t.Run("create an overlay", func(t *testing.T) {
