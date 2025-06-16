@@ -1,13 +1,13 @@
 package api
 
 import (
-	"encoding/json"
 	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
@@ -77,20 +77,16 @@ func TestOverlayAPI(t *testing.T) {
 
 		// gid and uid values may vary depending on where this test is run. (local box, github, etc)
 		// Assert the keys exist, but ignore the values.
-		var data map[string]interface{}
-		err = json.Unmarshal([]byte(body), &data)
-		assert.NoError(t, err)
-		assert.Contains(t, data, "gid")
-		assert.Contains(t, data, "uid")
-
-		// delete gid and uid from the map for comparison
-		delete(data, "gid")
-		delete(data, "uid")
-
-		body2, err := json.Marshal(data)
-		assert.NoError(t, err)
-
-		assert.JSONEq(t, `{"perms":420, "overlay":"testoverlay","path":"email.ww","contents":"\n{{ if .Tags.email }}eMail: {{ .Tags.email }}{{else}} noMail{{- end }}\n"}`, string(body2))
+		ja := jsonassert.New(t)
+		ja.Assert(string(body), `
+		{
+			"overlay": "testoverlay",
+			"path": "email.ww",
+			"contents": "\n{{ if .Tags.email }}eMail: {{ .Tags.email }}{{else}} noMail{{- end }}\n",
+			"perms": "<<PRESENCE>>",
+			"uid": "<<PRESENCE>>",
+			"gid": "<<PRESENCE>>"
+		}`)
 	})
 
 	t.Run("create an overlay", func(t *testing.T) {
