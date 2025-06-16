@@ -3,7 +3,6 @@ package wwclient
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -77,7 +76,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		if err != nil {
 			return fmt.Errorf("failed to change dir: %w", err)
 		}
-		log.Printf("Updating live file system LIVE, cancel now if this is in error")
+		wwlog.Warn("updating live file system: cancel now if this is in error")
 		time.Sleep(5000 * time.Millisecond)
 	} else {
 		fmt.Printf("Called via: %s\n", os.Args[0])
@@ -101,7 +100,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	} else if conf.Warewulf.Secure() {
 		// Setup local port to something privileged (<1024)
 		localTCPAddr.Port = 987
-		wwlog.Info("Running from trusted port")
+		wwlog.Info("Running from trusted port: %d", localTCPAddr.Port)
 	}
 
 	Webclient = &http.Client{
@@ -184,11 +183,11 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			sig := <-sigs
 			switch sig {
 			case syscall.SIGHUP:
-				log.Printf("Received SIGNAL: %s\n", sig)
+				wwlog.Info("received signal: %s", sig)
 				stopTimer.Stop()
 				stopTimer.Reset(0)
 			case syscall.SIGTERM, syscall.SIGINT:
-				wwlog.Info("termination wwclient!, %v", sig)
+				wwlog.Info("terminating wwclient, %v", sig)
 				os.Exit(0)
 			}
 		}
@@ -227,7 +226,7 @@ func updateSystem(ipaddr string, port int, wwid string, tag string, localUUID uu
 			Path:     fmt.Sprintf("provision/%s", wwid),
 			RawQuery: values.Encode(),
 		}
-		wwlog.Debug("Making request: %s", getURL)
+		wwlog.Debug("making request: %s", getURL)
 		resp, err = Webclient.Get(getURL.String())
 		if err == nil {
 			break
@@ -236,23 +235,23 @@ func updateSystem(ipaddr string, port int, wwid string, tag string, localUUID uu
 				counter = 0
 			}
 			if counter == 0 {
-				log.Println(err)
+				wwlog.Error("%s", err)
 			}
 			counter++
 		}
 		time.Sleep(1000 * time.Millisecond)
 	}
 	if resp.StatusCode != 200 {
-		log.Printf("Not updating runtime overlay, got status code: %d\n", resp.StatusCode)
+		wwlog.Warn("not applying runtime overlay: got status code: %d", resp.StatusCode)
 		time.Sleep(60000 * time.Millisecond)
 		return
 	}
-	log.Printf("Updating system\n")
+	wwlog.Info("applying runtime overlay")
 	command := exec.Command("/bin/sh", "-c", "gzip -dc | cpio -iu")
 	command.Stdin = resp.Body
 	err := command.Run()
 	if err != nil {
-		log.Printf("ERROR: Failed running CPIO: %s\n", err)
+		wwlog.Error("failed running cpio: %s", err)
 	}
 }
 
