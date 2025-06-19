@@ -10,10 +10,97 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
+func (node *Node) DiskList() (disks []*Disk) {
+	names := make([]string, 0, len(node.Disks))
+	for name := range node.Disks {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	for _, name := range names {
+		disk := node.Disks[name]
+		if disk != nil {
+			disks = append(disks, disk)
+		}
+	}
+	return disks
+}
+
+func (node *Node) FileSystemList() (fs []*FileSystem) {
+	names := make([]string, 0, len(node.FileSystems))
+	for name := range node.FileSystems {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	for _, name := range names {
+		fsys := node.FileSystems[name]
+		if fsys != nil {
+			fs = append(fs, fsys)
+		}
+	}
+	return fs
+}
+
+func (disk *Disk) Id() string {
+	return disk.id
+}
+
+func (disk *Disk) PartitionList() (partitions []*Partition) {
+	names := make([]string, 0, len(disk.Partitions))
+	for name := range disk.Partitions {
+		names = append(names, name)
+	}
+	sort.SliceStable(names, func(i, j int) bool {
+		pi := disk.Partitions[names[i]]
+		pj := disk.Partitions[names[j]]
+
+		// Try to compare by Number (as int)
+		ni, erri := strconv.Atoi(pi.Number)
+		nj, errj := strconv.Atoi(pj.Number)
+		if erri == nil && errj == nil {
+			if ni != nj {
+				return ni < nj
+			}
+		} else if erri == nil {
+			return true // i has a number, j does not
+		} else if errj == nil {
+			return false // j has a number, i does not
+		}
+
+		// Next, compare by id if set
+		if pi.id != "" && pj.id != "" {
+			if pi.id != pj.id {
+				return pi.id < pj.id
+			}
+		} else if pi.id != "" {
+			return true // i has id, j does not
+		} else if pj.id != "" {
+			return false // j has id, i does not
+		}
+
+		// Fallback: compare by name (map key)
+		return names[i] < names[j]
+	})
+	for _, name := range names {
+		part := disk.Partitions[name]
+		if part != nil {
+			partitions = append(partitions, part)
+		}
+	}
+	return partitions
+}
+
+func (partition *Partition) Id() string {
+	return partition.id
+}
+
+func (fs *FileSystem) Id() string {
+	return fs.id
+}
+
 /*
 Create a ignition struct class for ignition
 */
-func (node *Node) GetStorage() (stor types_3_4.Storage, rep string, err error) {
+func (node *Node) GetIgnitionStorage() (stor types_3_4.Storage, rep string, err error) {
 	var fileSystems []types_3_4.Filesystem
 	for fsdevice, fs := range node.FileSystems {
 		var mountOptions []types_3_4.MountOption
@@ -141,8 +228,8 @@ type SimpleIgnitionConfig struct {
 /*
 Get a simple config which can be marshalled to json
 */
-func (node *Node) GetConfig() (conf SimpleIgnitionConfig, rep string, err error) {
-	conf.Storage, rep, err = node.GetStorage()
+func (node *Node) GetIgnitionConfig() (conf SimpleIgnitionConfig, rep string, err error) {
+	conf.Storage, rep, err = node.GetIgnitionStorage()
 	conf.Ignition.Version = "3.1.0"
 	return
 }

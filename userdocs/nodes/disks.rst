@@ -4,7 +4,8 @@ Provisioning disks
 
 As a tech preview, Warewulf provides structures to define disks, partitions, and
 file systems. These structures can generate a configuration for `Ignition`_ to
-provision partitions and file systems dynamically on cluster nodes.
+provision partitions and file systems dynamically on cluster nodes, or with
+sfdisk, mkfs, and mkswap during boot.
 
 .. _Ignition: https://coreos.github.io/ignition/
 

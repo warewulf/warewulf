@@ -92,6 +92,7 @@ type NetDev struct {
 Holds the disks of a node
 */
 type Disk struct {
+	id         string                `yaml:"-"                    json:"-"`
 	WipeTable  bool                  `yaml:"wipe_table,omitempty" json:"wipe_table,omitempty" lopt:"diskwipe" comment:"whether or not the partition tables shall be wiped"`
 	Partitions map[string]*Partition `yaml:"partitions,omitempty" json:"partitions,omitempty"`
 }
@@ -101,6 +102,7 @@ partition definition, the label must be uniq so its used as the key in the
 Partitions map
 */
 type Partition struct {
+	id                 string `yaml:"-"                              json:"-"`
 	Number             string `yaml:"number,omitempty"               json:"number,omitempty"               lopt:"partnumber" comment:"set the partition number, if not set next free slot is used" type:"uint"`
 	SizeMiB            string `yaml:"size_mib,omitempty"             json:"size_mib,omitempty"             lopt:"partsize"   comment:"set the size of the partition, if not set maximal possible size is used" type:"uint"`
 	StartMiB           string `yaml:"start_mib,omitempty"            json:"start_mib,omitempty"                              comment:"the start of the partition" type:"uint"`
@@ -115,6 +117,7 @@ type Partition struct {
 Definition of a filesystem. The device is uniq so its used as key
 */
 type FileSystem struct {
+	id             string   `yaml:"-"                         json:"-"`
 	Format         string   `yaml:"format,omitempty"          json:"format,omitempty"          lopt:"fsformat" comment:"format of the file system"`
 	Path           string   `yaml:"path,omitempty"            json:"path,omitempty"            lopt:"fspath"   comment:"the mount point of the file system"`
 	WipeFileSystem bool     `yaml:"wipe_filesystem,omitempty" json:"wipe_filesystem,omitempty" lopt:"fswipe"   comment:"wipe file system at boot"`

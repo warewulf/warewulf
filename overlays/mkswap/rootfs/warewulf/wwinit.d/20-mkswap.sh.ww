@@ -1,0 +1,69 @@
+#!/bin/sh
+
+PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin
+
+if ! command -v info >/dev/null; then
+    info() {
+        printf '%s\n' "$*"
+    }
+fi
+
+if ! command -v die >/dev/null; then
+    die() {
+        printf '%s\n' "$*" >&2
+        exit 1
+    }
+fi
+
+already_formatted() {
+    if ! command -v wipefs >/dev/null ; then
+        info "warewulf: wipefs not found, cannot check if device is already formatted"
+        return 0
+    fi
+
+    if wipefs -n "${1}" &>/dev/null; then
+        info "warewulf: ${1} already formatted"
+        return 0
+    fi
+
+    return 1
+}
+
+if command -v mkswap >/dev/null; then :
+{{- $filesystems := list }}
+{{- if .FileSystems }}
+{{- 	range $fs := .ThisNode.FileSystemList }}
+{{- 		if eq $fs.Format "swap" }}
+{{- 			$fsDict := dict "device" $fs.Id "overwrite" $fs.WipeFileSystem }}
+{{- 			if $fs.Format }}
+{{- 				$_ := set $fsDict "type" $fs.Format }}
+{{- 			end }}
+{{- 			if $fs.Options }}
+{{- 				$_ := set $fsDict "options" ($fs.Options | join " ") }}
+{{- 			end }}
+{{- 			if $fs.Label }}
+{{- 				$_ := set $fsDict "label" $fs.Label }}
+{{- 			end }}
+{{- 			if $fs.Uuid }}
+{{- 				$_ := set $fsDict "uuid" $fs.Uuid }}
+{{- 			end }}
+{{- 			$filesystems = append $filesystems $fsDict }}
+{{- 		end }}
+{{- 	end }}
+{{- else }}
+{{- 	$filesystems = index .Resources "mkswap" }}
+{{- end }}
+{{- range $fs := $filesystems }}
+{{- 	if $fs.device }}
+    if {{if $fs.overwrite}}true{{else}}false{{end}} || ! already_formatted {{ $fs.device }}; then
+        info "warewulf: mkswap: formatting {{ $fs.device }}"
+        mkswap {{ not (empty $fs.label) | ternary (print "--label=" $fs.label) "" }} {{ not (empty $fs.uuid) | ternary (print "--uuid=" $fs.uuid) "" }} {{ $fs.device }} {{ default "" $fs.size }} || die "warewulf: mkswap: failed to format {{ $fs.device }}"
+    else
+        info "warewulf: mkswap: skipping {{ $fs.device }}"
+        continue
+    fi
+{{- 	end }}
+{{- end }}
+else
+    info "warewulf: mkswap not found"
+fi

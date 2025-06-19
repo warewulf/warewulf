@@ -1,0 +1,40 @@
+#!/bin/sh
+
+if ! command -v info >/dev/null; then
+    info() {
+        printf '%s\n' "$*"
+    }
+fi
+
+. /warewulf/config
+
+scriptdir=/warewulf/init.d
+echo "warewulf: running scripts in ${scriptdir}..."
+ls -1 "${scriptdir}/" | while read -r name; do
+    info "warewulf: ${name}"
+    sh "${scriptdir}/${name}"
+done
+
+init="${WWINIT}"
+if [ -z "${init}" ]
+then
+    for candidate in /sbin/init /etc/init /bin/init
+    do
+        if [ -x "${candidate}" ]
+        then
+            init="${candidate}"
+            break
+        fi
+    done
+fi
+
+if [ -n "${init}" ]
+then
+    info "warewulf: invoking ${init}..."
+    exec "${init}"
+else
+    echo "ERROR: init not defined or not found."
+    echo "Rebooting in 1 minute..."
+    sleep 60
+    echo b > /proc/sysrq-trigger || /sbin/reboot -f
+fi

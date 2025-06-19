@@ -1,0 +1,51 @@
+#!/bin/sh
+
+PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin
+
+if ! command -v info >/dev/null; then
+    info() {
+        printf '%s\n' "$*"
+    }
+fi
+
+if ! command -v die >/dev/null; then
+    die() {
+        printf '%s\n' "$*" >&2
+        exit 1
+    }
+fi
+
+if ! command -v sfdisk >/dev/null ; then
+    info "warewulf: sfdisk not found, skipping partitioning"
+else :
+{{- $disks := list }}
+{{- if .Disks }}
+{{- 	range $disk := .ThisNode.DiskList }}
+{{- 		$diskDict := dict "device" $disk.Id }}
+{{- 		if $disk.WipeTable }}
+{{- 			$_ := set $diskDict "wipe" "always" }}
+{{- 		end }}
+{{- 		$disks = append $disks $diskDict }}
+{{- 	end }}
+{{- else }}
+{{- 	$disks = index .Resources "sfdisk" }}
+{{- end }}
+{{- range $i, $device := $disks }}
+{{- 	if $device.device }}
+    info "warewulf: sfdisk: partitioning {{ $device.device }}"
+    sfdisk --wipe "{{ default "auto" $device.wipe }}" "{{ $device.device }}" < "${PREFIX}/warewulf/sfdisk/device-{{ $i }}" || die "warewulf: sfdisk: failed to partition {{ $device.device }}"
+
+    if command -v blockdev >/dev/null ; then
+        info "warewulf: blockdev: re-reading partition table"
+        blockdev --rereadpt {{ $device.device }}
+    fi
+{{- 	end }}
+{{- end }}
+{{- if $disks }}
+    if command -v udevadm >/dev/null ; then
+        info "warewulf: udevadm: triggering udev events for block devices"
+        udevadm trigger --subsystem-match=block --action=add
+        udevadm settle
+    fi
+{{- end }}
+fi

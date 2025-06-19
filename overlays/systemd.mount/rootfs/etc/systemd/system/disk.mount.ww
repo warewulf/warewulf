@@ -1,0 +1,24 @@
+{{- $abort := true }}
+{{- range $fs := .ThisNode.FileSystemList }}
+{{- 	if and $fs.Path (ne $fs.Format "swap") }}
+{{- 		$abort = false }}
+{{ file (print ($fs.Path | SystemdEscapePath) ".mount") }}
+
+[Unit]
+Before=local-fs.target
+
+[Mount]
+Where={{ $fs.Path }}
+What={{ $fs.Id }}
+Type={{ $fs.Format }}
+{{- 			if $fs.MountOptions }}
+Options={{ $fs.MountOptions }}
+{{- 			end }}
+
+[Install]
+RequiredBy=local-fs.target
+{{- 	end }}
+{{- end }}
+{{- if $abort }}
+{{ abort }}
+{{- end }}

@@ -1,0 +1,19 @@
+{{- $abort := true }}
+{{- range $fs := .ThisNode.FileSystemList }}
+{{- 	if eq $fs.Format "swap" }}
+{{- 		$abort = false }}
+{{ file (print ($fs.Id | SystemdEscapePath) ".swap") }}
+
+[Unit]
+Before=swap.target
+
+[Swap]
+What={{ $fs.Id }}
+
+[Install]
+RequiredBy=swap.target
+{{- 	end }}
+{{- end }}
+{{- if $abort }}
+{{ abort }}
+{{- end }}

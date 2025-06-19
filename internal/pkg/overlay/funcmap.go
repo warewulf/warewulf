@@ -102,7 +102,7 @@ func templateImageFileInclude(imagename string, filepath string) string {
 // Don't return an error as we use this function for template evaluation, so
 // error will turn up there as the return string
 func createIgnitionJson(node *node.Node) string {
-	conf, rep, err := node.GetConfig()
+	conf, rep, err := node.GetIgnitionConfig()
 	if len(conf.Storage.Disks) == 0 && len(conf.Storage.Filesystems) == 0 {
 		wwlog.Debug("no disks or filesystems present, don't create a json object")
 		return ""
