@@ -14,6 +14,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Updated 70-persistent-net.rules.ww to use `(lower $netdev.Type)` for case-insensitive comparison of "infiniband".
 
+### Changed
+
+- Updated troubleshooting documentation to include info on tmpfs and numa
+
 ## v4.6.1, 2025-04-04
 
 ### Added
