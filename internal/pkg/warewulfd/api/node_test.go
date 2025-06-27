@@ -28,7 +28,7 @@ func TestNodeAPI(t *testing.T) {
 	defer srv.Close()
 
 	t.Run("add a node", func(t *testing.T) {
-		// prepareration
+		// preparation
 
 		testNode := `{
   "node":{
@@ -49,6 +49,15 @@ func TestNodeAPI(t *testing.T) {
 		assert.NoError(t, resp.Body.Close())
 
 		assert.JSONEq(t, `{"kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}`, string(body))
+
+		// Add the same node again, it should fail since the name is duplicated.
+		req, err = http.NewRequest(http.MethodPut, srv.URL+"/api/nodes/test", bytes.NewBuffer([]byte(testNode)))
+		assert.NoError(t, err)
+
+		resp, err = http.DefaultTransport.RoundTrip(req)
+		assert.NoError(t, err)
+
+		assert.Equal(t, 400, resp.StatusCode) // Invalid aurgument error
 	})
 
 	t.Run("read all nodes", func(t *testing.T) {
