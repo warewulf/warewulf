@@ -95,6 +95,16 @@ referenced symlink.
 
    {{ ImportLink "/etc/localtime" }}
 
+When paired with ``file``, ``ImportLink`` can create multiple symlinks from a
+single template.
+
+.. code-block::
+
+   {{ file "/tmp/test-link1"}}
+   {{ softlink "/tmp/test-target1" }}
+   {{ file "/tmp/test-link2"}}
+   {{ softlink "/tmp/test-target2" }}
+
 basename
 --------
 
@@ -132,6 +142,9 @@ Causes the processed template file to become a symlink to the referenced target.
 .. code-block::
   
    {{ printf "%s/%s" "/usr/share/zoneinfo" .Tags.localtime | softlink }}
+
+When paired with ``file``, ``softlink`` can create multiple symlinks from a
+single template.
 
 .. _readlink:
 

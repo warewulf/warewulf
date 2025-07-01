@@ -371,6 +371,105 @@ specified with a ``localtime`` tag.
 
    wwctl profile set default --tagadd="localtime=UTC"
 
+sfdisk
+------
+
+The **sfdisk** overlay partitions block devices during wwinit. Configuration may
+be provided using native disk and partition configuration or via an ``sfdisk``
+resource.
+
+Multiple devices can be partitioned, with each device provided as an item in
+``sfdisk`` list.
+
+.. code-block:: yaml
+
+   sfdisk:
+     - device: /dev/sda
+       label: gpt
+       partitions:
+         - device: /dev/sda1
+           name: sfdisk-rootfs
+           size: 4194304
+         - device: /dev/sda2
+           name: sfdisk-scratch
+           size: 1048576
+         - device: /dev/sda3
+           name: sfdisk-swap
+           size: 2097152
+
+All headers and named partition fields supported by the ``sfdisk`` input format
+are supported in the ``sfdisk`` resource.
+
+If any disk/partition configuration is provided for a node with explicit
+arguments to ``wwctl <node|profile> set``, the ``sfdisk`` resource is ignored.
+
+To use the sfdisk overlay, include sfdisk in the Dracut image. Optionally also
+include blockdev and/or udevadm, to allow the partition table to be re-scanned.
+
+.. code-block:: shell
+
+   wwctl image exec rockylinux-8 -- /usr/bin/dracut --force --no-hostonly --add wwinit --install sfdisk --install blockdev --install udevadm --regenerate-all
+
+For more information, see the :ref:`provision to disk` section.
+
+mkfs
+----
+
+The **mkfs** overlay formats block devices during wwinit. Configuration may be
+provided using native filesystem fields or via an ``mkfs`` resource.
+
+.. code-block:: yaml
+
+   mkfs:
+     - device: /dev/sda1 # the device to format
+       type: xfs # what type of file system to create
+       options: -b 1024 # additional options to pass to mkfs
+       overwrite: false # whether to overwrite an existing format
+       size: 0 # defaults to the full device
+
+If any filesystem configuration is provided for a node with explicit arguments
+to ``wwctl <node|profile> set``, the ``mkfs`` resource is ignored.
+
+To use the mkfs overlay, include mkfs and any necessary file-system-specific
+sub-commands in the Dracut image. Optionally also include wipefs to detect
+existing file systems.
+
+.. code-block:: shell
+
+   wwctl image exec rockylinux-9 -- /usr/bin/dracut --force --no-hostonly --add wwinit --install mkfs --install mkfs.ext4 --install wipefs --regenerate-all
+
+For more information, see the :ref:`provision to disk` section.
+
+mkswap
+------
+
+The **mkswap** overlay formats block devices during wwinit. Configuration may be
+provided using native filesystem fields or via a ``mkswap`` resource.
+
+.. code-block:: yaml
+
+   mkswap:
+     - device: /dev/sda2 # the device to format
+       overwrite: false # whether to overwrite an existing format
+       label: swap # the label to set for the swap device
+
+If any filesystem configuration is provided for a node with explicit arguments
+to ``wwctl <node|profile> set``, the ``mkswap`` resource is ignored.
+
+To use the mkswap overlay, include mkswap in the Dracut image. Optionally also
+include wipefs to detect existing file systems.
+
+.. code-block:: shell
+
+   wwctl image exec rockylinux-9 -- /usr/bin/dracut --force --no-hostonly --add wwinit --install mkswap --regenerate-all
+
+systemd mounts
+--------------
+
+Two overlays, **systemd.mount** and **systemd.swap**, configure mounted and swap
+storage based on the configuration of native file system fields. They are often
+paired with the ``mkfs`` and ``mkswap`` overlays.
+
 host
 ----
 

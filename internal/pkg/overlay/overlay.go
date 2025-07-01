@@ -368,17 +368,24 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 				// search for magic file name comment
 				fileScanner := bufio.NewScanner(bytes.NewReader(buffer.Bytes()))
 				fileScanner.Split(ScanLines)
-				foundFileComment := false
+				writingToNamedFile := false
+				isLink := false
 				for fileScanner.Scan() {
 					line := fileScanner.Text()
 					filenameFromTemplate := regFile.FindAllStringSubmatch(line, -1)
-					softlinkFromTemplate := regLink.FindAllStringSubmatch(line, -1)
-					if len(softlinkFromTemplate) != 0 {
-						wwlog.Debug("Creating soft link %s -> %s", outputPath, softlinkFromTemplate[0][1])
-						return os.Symlink(softlinkFromTemplate[0][1], outputPath)
+					targetFromTemplate := regLink.FindAllStringSubmatch(line, -1)
+					if len(targetFromTemplate) != 0 {
+						target := targetFromTemplate[0][1]
+						wwlog.Debug("Creating soft link %s -> %s", outputPath, target)
+						err := os.Symlink(target, outputPath)
+						if err != nil {
+							return fmt.Errorf("could not create symlink from template: %w", err)
+						} else {
+							isLink = true
+						}
 					} else if len(filenameFromTemplate) != 0 {
 						wwlog.Debug("Writing file %s", filenameFromTemplate[0][1])
-						if foundFileComment {
+						if writingToNamedFile && !isLink {
 							err = CarefulWriteBuffer(outputPath, fileBuffer, backupFile, info.Mode())
 							if err != nil {
 								return fmt.Errorf("could not write file from template: %w", err)
@@ -390,22 +397,25 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 							fileBuffer.Reset()
 						}
 						outputPath = path.Join(path.Dir(originalOutputPath), filenameFromTemplate[0][1])
-						foundFileComment = true
+						writingToNamedFile = true
+						isLink = false
 					} else {
 						if _, err = fileBuffer.WriteString(line); err != nil {
 							return fmt.Errorf("could not write to template buffer: %w", err)
 						}
 					}
 				}
-				err = CarefulWriteBuffer(outputPath, fileBuffer, backupFile, info.Mode())
-				if err != nil {
-					return fmt.Errorf("could not write file from template: %w", err)
+				if !isLink {
+					err = CarefulWriteBuffer(outputPath, fileBuffer, backupFile, info.Mode())
+					if err != nil {
+						return fmt.Errorf("could not write file from template: %w", err)
+					}
+					err = util.CopyUIDGID(walkPath, outputPath)
+					if err != nil {
+						return fmt.Errorf("failed setting permissions on template output file: %w", err)
+					}
+					wwlog.Debug("Wrote template file into overlay: %s", outputPath)
 				}
-				err = util.CopyUIDGID(walkPath, outputPath)
-				if err != nil {
-					return fmt.Errorf("failed setting permissions on template output file: %w", err)
-				}
-				wwlog.Debug("Wrote template file into overlay: %s", outputPath)
 
 			} else if info.Mode()&os.ModeSymlink == os.ModeSymlink {
 				wwlog.Debug("Found symlink %s", walkPath)

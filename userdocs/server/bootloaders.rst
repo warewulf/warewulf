@@ -454,6 +454,52 @@ Ignition must be included in the Dracut image.
 
 The necessary file system may alternatively be prepared out-of-band.
 
+With sfdisk and mkfs
+--------------------
+
+Systems that do not have access to Ignition (e.g., Rocky Linux 8) can provision
+the root file system using a combination of ``sfdisk`` and ``mkfs``. To use
+them, include ``sfdisk`` and ``mkfs`` in your system overlay. The ``sfdisk`` and
+``mkfs`` overlays provision disk and file systems during the first stage of a
+two-stage boot. This allows the root file system to be provisioned before the
+image is loaded.
+
+Configure the ``sfdisk`` and ``mkfs`` overlays using resources:
+
+.. code-block:: shell
+
+   wwctl node set wwnode1 \
+     --diskname /dev/vda --diskwipe \
+     --partname rootfs --partcreate --partnumber 1 \
+     --fsname rootfs --fsformat ext4 --fspath /
+
+In order to allow Dracut to provision the disk, partition, and file system, some
+additional commands must be included in the Dracut image, depending on which
+functionality is used:
+
+- **sfdisk:** writes the partition table
+
+  - **blockdev:** used to re-read the partition table after writing
+
+  - **udevadm:** used to trigger udev events after writing the partition table
+
+- **mkfs:** formats file systems (may also require file-system-specific commands like mkfs.ext4)
+
+  - **mkfs.ext4**, **mkfs.btrfs**, etc: used by mkfs to format specific file systems
+
+  - **wipefs:** used to determine if a file system already exists
+
+.. code-block:: shell
+
+   wwctl image exec rockylinux-8 -- /usr/bin/dracut --force --no-hostonly \
+     --add wwinit \
+     --install sfdisk \
+     --install blockdev \
+     --install udevadm \
+     --install mkfs \
+     --install mkfs.ext4 \
+     --install wipefs \
+     --regenerate-all
 
 Configuring the root device
 ---------------------------

@@ -1,0 +1,52 @@
+{{- $disks := list }}
+{{- if .Disks }}
+{{- 	$diskNames := list }}
+{{- 	range $disk := .ThisNode.DiskList }}
+{{- 		$partitions := list }}
+{{- 		range $partition := $disk.PartitionList }}
+{{- 			if $partition.ShouldExist }}
+{{- 				$partitionDict := dict "name" $partition.Id }}
+{{- 				if $partition.StartMiB }}
+{{- 					$_ := set $partitionDict "start" (printf "%s%s" $partition.StartMiB "MiB") }}
+{{- 				end }}
+{{- 				if $partition.SizeMiB }}
+{{- 					$_ := set $partitionDict "size" (printf "%s%s" $partition.SizeMiB "MiB") }}
+{{- 				end }}
+{{- 				if $partition.TypeGuid }}
+{{- 					$_ := set $partitionDict "type" $partition.TypeGuid }}
+{{- 				end }}
+{{- 				if $partition.Guid }}
+{{- 					$_ := set $partitionDict "uuid" $partition.Guid }}
+{{- 				end }}
+{{- 				$partitions = append $partitions $partitionDict }}
+{{- 			end }}
+{{- 		end }}
+{{- 		$disks = append $disks (dict "partitions" $partitions) }}
+{{- 	end }}
+{{- else }}
+{{- 	$disks = index .Resources "sfdisk" }}
+{{- end }}
+{{- range $i, $device := $disks }}
+{{ 	file (print "device-" $i) }}
+{{- 	range $header := list "unit" "label" "label-id" "first-lba" "last-lba" "table-length" "grain" "sector-size" }}
+{{- 		if index $device $header }}
+{{ $header }}: {{ index $device $header }}
+{{- 		end }}
+{{- 	end }}
+{{- 	range $partition := $device.partitions }}
+{{- 		$fields := list }}
+{{- 		range $field := list "start" "size" "attrs" "uuid" "name" "type" }}
+{{- 			if index $partition $field }}
+{{- 				$fields = append $fields (print $field "=" (index $partition $field)) }}
+{{- 			end }}
+{{- 			if $partition.bootable }}
+{{- 				$fields = append $fields "bootable" }}
+{{- 			end }}
+{{- 		end }}
+{{- 		if $partition.device }}
+{{ $partition.device }} : {{ $fields | join " " }}
+{{- 		else }}
+{{ $fields | join " " }}
+{{- 		end }}
+{{- 	end }}
+{{- end }}
