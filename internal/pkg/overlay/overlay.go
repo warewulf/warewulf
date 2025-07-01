@@ -14,6 +14,7 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
+	"github.com/coreos/go-systemd/v22/unit"
 
 	"github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/node"
@@ -496,12 +497,7 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (
 		"softlink":     softlink,
 		"readlink":     filepath.EvalSymlinks,
 		"IgnitionJson": func() string {
-			str := createIgnitionJson(data.ThisNode)
-			if str != "" {
-				return str
-			}
-			writeFile = false
-			return ""
+			return createIgnitionJson(data.ThisNode)
 		},
 		"abort": func() string {
 			wwlog.Debug("abort file called in %s", fileName)
@@ -513,7 +509,9 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (
 			backupFile = false
 			return ""
 		},
-		"UniqueField": UniqueField,
+		"UniqueField":       UniqueField,
+		"SystemdEscape":     unit.UnitNameEscape,
+		"SystemdEscapePath": unit.UnitNamePathEscape,
 	}
 
 	// Merge sprig.FuncMap with our FuncMap

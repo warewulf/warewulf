@@ -1,29 +1,42 @@
 #!/bin/sh
-# root=wwinit
+# root=wwinit|wwinit:*
 
 [ -z "$root" ] && root=$(getarg root=)
 
-if [ "${root}" = "wwinit" ] || [ "${root}" = "persistent" ] ; then
+case "${root}" in
+wwinit|wwinit:*)
     info "warewulf: root=${root}"
-    export wwinit_uuid=$(dmidecode -s system-uuid)
-    export wwinit_assetkey=$(dmidecode -s chassis-asset-tag)
+
     export wwinit_uri="$(getarg wwinit.uri)"
-    export wwinit_ignition="$(getarg wwinit.ignition)"
-    export wwinit_ip="$(getarg wwinit.ip)"
-    export wwinit_imagename="$(getarg wwinit.imagename)"
-    export wwinit_id=$(getarg wwinit.id)
-    wwinit_tmpfs_size=$(getarg wwinit.tmpfs.size=)
-    if [ -n "$wwinit_tmpfs_size" ] ; then
-        info "warewulf: wwinit.tmpfs.size=${wwinit_tmpfs_size}"
-        export wwinit_tmpfs_size_option="-o size=${wwinit_tmpfs_size}"
-    fi
-    if [ "${root}" = "persistent" ] ; then 
-        export wwinit_persistent="1"; info "warewulf: wwinit_persistent=$wwinit_persistent"
-    fi
-    if [ -n "${wwinit_uri}" ] ; then
-        info "warewulf: Found root=${root} and a Warewulf server uri. Will boot from Warewulf."
+    if [ -n "${wwinit_uri}" ]; then
+        info "warewulf: Found root=${root} and wwinit.uri=${wwinit_uri}. Will boot from Warewulf."
         rootok=1
     else
-        die "warewulf: Found root=${root} but no Warewulf server uri. Cannot boot from Warewulf."
+        die "warewulf: Found root=${root} but no wwinit.uri. Cannot boot from Warewulf."
     fi
-fi
+
+    export wwinit_uuid=$(dmidecode -s system-uuid)
+    export wwinit_assetkey=$(dmidecode -s chassis-asset-tag)
+
+    wwinit_tmpfs_size="$(getarg wwinit.tmpfs.size)"
+    if [ -n "$wwinit_tmpfs_size" ]; then
+        export wwinit_tmpfs_size_option="-o size=${wwinit_tmpfs_size}"
+    fi
+
+    case "${root}" in
+    wwinit)
+        export wwinit_root_device="tmpfs"
+        ;;
+    wwinit:*)
+        export wwinit_root_device="${root#wwinit:}"
+        ;;
+    esac
+
+    case "${wwinit_root_device}" in
+    initramfs|rootfs)
+        info "warewulf: using tmpfs in stead of ${wwinit_root_device}"
+        export wwinit_root_device=tmpfs
+        ;;
+    esac
+    ;;
+esac

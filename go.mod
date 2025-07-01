@@ -12,6 +12,7 @@ require (
 	github.com/containers/image/v5 v5.32.2
 	github.com/containers/storage v1.57.1
 	github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
+	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/coreos/ignition/v2 v2.20.0
 	github.com/coreos/vcontext v0.0.0-20230201181013-d72178a18687
 	github.com/creasty/defaults v1.8.0
@@ -58,7 +59,6 @@ require (
 	github.com/containers/libtrust v0.0.0-20230121012942-c1716e8a8d01 // indirect
 	github.com/containers/ocicrypt v1.2.0 // indirect
 	github.com/coreos/go-semver v0.3.1 // indirect
-	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.6 // indirect
 	github.com/cyberphone/json-canonicalization v0.0.0-20231217050601-ba74d44ecf5f // indirect
 	github.com/cyphar/filepath-securejoin v0.3.6 // indirect

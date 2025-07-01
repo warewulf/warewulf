@@ -1,53 +1,65 @@
 #!/bin/sh
 
-echo "Warewulf pre-init (/init)"
-echo
-echo "Mounting kernel file systems..."
+if ! command -v info >/dev/null; then
+    info() {
+        printf '%s\n' "$*"
+    }
+fi
+
+if ! command -v die >/dev/null; then
+    die() {
+        printf '%s\n' "$*" >&2
+        echo
+        echo "Rebooting in 1 minute..."
+        sleep 60
+        echo b > /proc/sysrq-trigger || /sbin/reboot -f
+    }
+fi
+
+info "warewulf: running pre-init wwinit process..."
+
+info "warewulf: mounting kernel file systems..."
 mountpoint -q /proc || (mkdir -p /proc && mount -t proc proc /proc && echo "Mounted /proc")
 mountpoint -q /dev || (mkdir -p /dev && mount -t devtmpfs devtmpfs /dev && echo "Mounted /dev")
 mountpoint -q /sys || (mkdir -p /sys && mount -t sysfs sysfs /sys && echo "Mounted /sys")
 # https://systemd.io/INITRD_INTERFACE/
 mountpoint -q /run || (mkdir -p /run && mount -t tmpfs -o mode=0755,nodev,nosuid,strictatime tmpfs /run && echo "Mounted /run")
-echo
-echo "Loading /warewulf/config..."
+
+info "warewulf: loading /warewulf/config..."
 if [ -f "/warewulf/config" ]; then
     . /warewulf/config
 else
-    echo "ERROR: Warewulf configuration file not found."
-    echo "Rebooting in 1 minute..."
-    sleep 60
-    echo b > /proc/sysrq-trigger || /sbin/reboot -f
+    die "warewulf: ERROR: /warewulf/config not found"
 fi
-echo
-echo "Configuring root file system..."
 
-WWPRESCRIPTS=/warewulf/wwprescripts
-chmod +rx "${WWPRESCRIPTS}"
+if [ -x /warewulf/run-wwinit.d ]; then
+        /warewulf/run-wwinit.d
+fi
 
+NEXT_INIT=/warewulf/run-init
+chmod +rx "${NEXT_INIT}"
+
+info "warewulf: configuring root file system..."
 WWROOT="${WWROOT:-initramfs}"
 if [ "${WWROOT}" = "initramfs" ]; then
-    echo "WWROOT=${WWROOT}: using initial rootfs and invoking ${WWPRESCRIPTS}..."
-    exec "${WWPRESCRIPTS}"
-elif [ "${WWROOT}" = "persistent" ] ; then 
-    echo "WWROOT=${WWROOT}: booting from DISK"
-    exec "${WWPRESCRIPTS}"
-elif [ "${WWROOT}" = "ramfs" -o "${WWROOT}" = "tmpfs" ]; then
-    echo "WWROOT=${WWROOT}: setting up new ${WWROOT} rootfs (/newroot)..."
-    mkdir /newroot
-    mount wwroot /newroot -t ${WWROOT} -o mpol=interleave # mpol ignored for ramfs
-    tar -cf - --exclude ./proc --exclude ./sys --exclude ./dev --exclude --exclude ./newroot . | tar -xf - -C /newroot
-    mkdir /newroot/proc /newroot/dev /newroot/sys 2>/dev/null
-    echo "Switching to new rootfs (/newroot) and invoking ${WWPRESCRIPTS}..."
-    exec /sbin/switch_root /newroot "${WWPRESCRIPTS}"
+    info "warewulf: using initial rootfs and invoking ${NEXT_INIT}..."
+    exec "${NEXT_INIT}"
 else
-    echo "ERROR: Unrecognized rootfs type requested: ${WWROOT}"
-    echo "Rebooting in 1 minute..."
-    sleep 60
-    echo b > /proc/sysrq-trigger || /sbin/reboot -f
+    mkdir /newroot
+    info "warewulf: mounting ${WWROOT} at /newroot"
+    if [ "${WWROOT}" = "ramfs" -o "${WWROOT}" = "tmpfs" ]; then
+        mount wwroot /newroot -t ${WWROOT} -o mpol=interleave # mpol ignored for ramfs
+    else
+        mount ${WWROOT} /newroot
+    fi
+
+    info "warewulf: copying image to /newroot..."
+    tar -cf - --exclude ./proc --exclude ./sys --exclude ./dev --exclude --exclude ./newroot . | tar -xf - -C /newroot
+
+    mkdir /newroot/proc /newroot/dev /newroot/sys 2>/dev/null
+
+    info "warewulf: switching to /newroot and invoking ${NEXT_INIT}..."
+    exec /sbin/switch_root /newroot "${NEXT_INIT}"
 fi
 
-echo
-echo "ERROR: wwinit encountered a problem."
-echo "Rebooting in 1 minute..."
-sleep 60
-echo b > /proc/sysrq-trigger || /sbin/reboot -f
+die "warewulf: ERROR: wwinit encountered a problem."

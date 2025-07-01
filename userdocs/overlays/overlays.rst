@@ -192,8 +192,15 @@ In particular:
 - Update PAM configuration to allow missing shadow entries
 - Relabel the file system for SELinux
 
-Other overlays may place additional scripts in ``/warewulf/init.d/`` to affect
-node configuration in this pre-boot environment.
+Other overlays can place scripts in one of two locations for additional pre-init
+provisioning actions:
+
+- **/warewulf/wwinit.d/:** executed in the initial root final system before the
+  image is loaded into its final location. In a two-stage boot, these scripts
+  are executed in the Dracut initramfs.
+
+- **/warewulf/init.d/:** executed in the final root file system but before
+  calling ``init``.
 
 wwclient
 --------
@@ -309,6 +316,36 @@ ignition
 --------
 
 The **ignition** overlay defines partitions and file systems on local disks.
+Configuration may be provided via native disk, partition, and filesystem fields
+or via an ``ignition`` resource.
+
+.. code-block:: yaml
+
+   ignition:
+     storage:
+       disks:
+         - device: /dev/vda
+           partitions:
+             - label: scratch
+               shouldExist: true
+               wipePartitionEntry: true
+           wipeTable: true
+       filesystems:
+         - device: /dev/disk/by-partlabel/scratch
+           format: btrfs
+           path: /scratch
+           wipeFilesystem: false
+
+If any disk/partition/filesystem configuration is provided for a node with
+explicit arguments to ``wwctl <node|profile> set``, the ``ignition`` resource is
+ignored.
+
+To use ignition during Dracut (so that the root file system may be provisioned
+before the image is loaded) include Ignition in the Dracut image.
+
+.. code-block:: shell
+
+   wwctl image exec rockylinux-9 -- /usr/bin/dracut --force --no-hostonly --add wwinit --add ignition --regenerate-all
 
 debug
 -----
