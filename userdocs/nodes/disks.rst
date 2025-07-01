@@ -146,3 +146,117 @@ file systems once, you may
 See the `upstream ignition documentation`_ for additional information.
 
 .. _upstream ignition documentation: https://coreos.github.io/ignition/operator-notes/#filesystem-reuse-semantics
+
+
+.. _provision to disk:
+
+Provision to disk
+=================
+
+*New in Warewulf v4.6.2*
+
+As a tech preview, the Warewulf two-stage boot process can provision the node
+image to local storage.
+
+.. warning::
+
+   This functionality is a technology preview and should be used with care. Pay
+   specific attention to ``wipeFilesytem`` and similar settings.
+
+.. note::
+
+   Warewulf doesn't install a bootloader to the disk or add UEFI entries. Nodes
+   still request an image and configuration from the Warewulf server on every
+   boot.
+
+.. note::
+
+   While provisioning to disk should be possible during a single-stage boot, not
+   all features are available:
+
+   - Warewulf does not perform hardware detection to ensure that necessary
+     kernel modules are loaded prior to init.
+   - Warewulf does not load udev to ensure that ``/dev/disk/by-*`` symlinks are
+     available prior to init.
+
+With Ignition
+-------------
+
+Warewulf needs a prepared file system to deploy the image to. Warewulf can
+provision this file system using Ignition. To use Ignition, include ``ignition``
+in your system overlay. The ignition overlay provisions disks during init and,
+optionally, during the first stage of a two-stage boot. This allows the
+root file system to be provisioned before the image is loaded.
+
+.. code-block:: shell
+
+   wwctl node set wwnode1 \
+     --diskname /dev/vda --diskwipe \
+     --partname rootfs --partcreate --partnumber 1 \
+     --fsname rootfs --fsformat ext4 --fspath /
+
+In order to allow Dracut to provision the disk, partition, and file system,
+Ignition must be included in the Dracut image.
+
+.. code-block:: shell
+
+   wwctl image exec rockylinux-9 -- /usr/bin/dracut --force --no-hostonly --add wwinit --add ignition --regenerate-all
+
+The necessary file system may alternatively be prepared out-of-band.
+
+With sfdisk and mkfs
+--------------------
+
+Systems that do not have access to Ignition (e.g., Rocky Linux 8) can provision
+the root file system using a combination of ``sfdisk`` and ``mkfs``. To use
+them, include ``sfdisk`` and ``mkfs`` in your system overlay. The ``sfdisk`` and
+``mkfs`` overlays provision disk and file systems during the first stage of a
+two-stage boot. This allows the root file system to be provisioned before the
+image is loaded.
+
+Configure the ``sfdisk`` and ``mkfs`` overlays using resources:
+
+.. code-block:: shell
+
+   wwctl node set wwnode1 \
+     --diskname /dev/vda --diskwipe \
+     --partname rootfs --partcreate --partnumber 1 \
+     --fsname rootfs --fsformat ext4 --fspath /
+
+In order to allow Dracut to provision the disk, partition, and file system, some
+additional commands must be included in the Dracut image, depending on which
+functionality is used:
+
+- **sfdisk:** writes the partition table
+
+  - **blockdev:** used to re-read the partition table after writing
+
+  - **udevadm:** used to trigger udev events after writing the partition table
+
+- **mkfs:** formats file systems (may also require file-system-specific commands like mkfs.ext4)
+
+  - **mkfs.ext4**, **mkfs.btrfs**, etc: used by mkfs to format specific file systems
+
+  - **wipefs:** used to determine if a file system already exists
+
+.. code-block:: shell
+
+   wwctl image exec rockylinux-8 -- /usr/bin/dracut --force --no-hostonly \
+     --add wwinit \
+     --install sfdisk \
+     --install blockdev \
+     --install udevadm \
+     --install mkfs \
+     --install mkfs.ext4 \
+     --install wipefs \
+     --regenerate-all
+
+Configuring the root device
+---------------------------
+
+Set the desired storage device for the node image using the ``--root``
+parameter.
+
+.. code-block:: shell
+
+   wwctl node set wwnode1 --root /dev/disk/by-partlabel/rootfs
