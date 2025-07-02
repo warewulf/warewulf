@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed sleep/rebooting on error during GRUB boot. #1894
 - Fixed IPMI VLAN configuration. #1892
 - Fixed `wwctl image shell --help` to fit properly within 80 columns.
+- Preserve existing permissions during `wwctl overlay edit`. #1886
 
 ### Changed
 
