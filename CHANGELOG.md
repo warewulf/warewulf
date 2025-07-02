@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed `wwctl profile set` for disks, partitions and file systems. #1883
 - Do not let API add a node that exists
 - Fixed sleep/rebooting on error during GRUB boot. #1894
+- Fixed IPMI VLAN configuration. #1892
 
 ### Changed
 
