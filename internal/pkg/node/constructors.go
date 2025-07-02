@@ -195,7 +195,7 @@ func (config *NodesYaml) FindDiscoverableNode() (Node, string, error) {
 	return EmptyNode(), "", ErrNoUnconfigured
 }
 
-func (node *Node) SetIds(id string) {
+func (node *Node) setIds(id string) {
 	node.id = id
 	for diskId, disk := range node.Disks {
 		disk.id = diskId
