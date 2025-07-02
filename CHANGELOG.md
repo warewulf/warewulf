@@ -11,6 +11,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added override.conf for nm-wait-online-initrd.service with dracut.
 - Added userdocs for `wwctl node import` from yaml/csv.
 - Added uid, gid, and permissions to OverlayFile in REST API. #1925
+- (preview) Support provisioning to local storage with `wwctl <node|partition> set --root=/path/to/disk`. #1894
+- (preview) Support disk provisioning during dracut boot stage with Ignition, sfdisk, mkfs, and mkswap. #1894
+- Support creating multiple symlinks from a single overlay template. #1894
+- Added systemd.mount and systemd.swap overlays. #1894
+- Support configuring Ignition with resources. #1894
+- Added `wwctl <node|partition> set --parttype`. #1894
 
 ### Fixed
 
@@ -18,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed a regression in SELinux support by restoring the `/run` mount during wwinit. #1910
 - Fixed `wwctl profile set` for disks, partitions and file systems. #1883
 - Do not let API add a node that exists
+- Fixed sleep/rebooting on error during GRUB boot. #1894
 
 ### Changed
 

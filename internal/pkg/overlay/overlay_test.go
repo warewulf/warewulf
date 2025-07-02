@@ -253,6 +253,22 @@ T3
 				"test-link": "/test-target",
 			},
 		},
+		"multiple symlinks from template": {
+			overlays: []string{"o1"},
+			overlayFiles: map[string]string{
+				"/var/lib/warewulf/overlays/o1/rootfs/test-link.ww": `
+{{ file "test-link1"}}
+{{ softlink "/test-target1" }}
+{{ file "test-link2"}}
+{{ softlink "/test-target2" }}
+`,
+			},
+			outputDir: "/image",
+			outputSymlinks: map[string]string{
+				"test-link1": "/test-target1",
+				"test-link2": "/test-target2",
+			},
+		},
 		"expansion of nodes": {
 			overlays: []string{"o1"},
 			overlayFiles: map[string]string{
