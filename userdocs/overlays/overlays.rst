@@ -260,8 +260,13 @@ The **issue** overlay configures a standard Warewulf status message for display
 during login.
 
 The **resolv** overlay configures ``/etc/resolv.conf`` based on the value of
-"DNS" nettags. (In most situations this should be unnecessary, as the network
-interface configuration should handle this dynamically.)
+"DNS" :ref:`nettags <nettags>`. (In most situations this should be unnecessary,
+as the network interface configuration should handle this dynamically.)
+
+.. code-block:: shell
+
+   wwctl node set n1 --nettagadd="DNS1=1.1.1.1"
+   wwctl node set n1 --nettagadd="DNS2=1.0.0.1"
 
 fstab
 -----
