@@ -206,6 +206,12 @@ Importing Nodes From a File
 You can import nodes into Warewulf by using the ``wwctl node import`` command.
 The file used must be in YAML format.
 
+.. warning::
+   Importing a node configuration will fully overwrite the existing settings, 
+   including any customizations not present in the import file. If the node 
+   already exists and you wish to update it, ensure that the import file 
+   includes all the options you want to retain.
+
 The YAML file must be a mapping of node names to their attributes, where each
 node is represented as a dictionary of attributes. To simplify the creation of
 the YAML file, you can use the wwctl node export command to export the current

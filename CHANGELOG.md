@@ -4,11 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## Unreleased
+## v4.6.2, 2025-07-09
 
 ### Added
 
-- Added override.conf for nm-wait-online-initrd.service with dracut.
 - Added userdocs for `wwctl node import` from yaml/csv.
 - Added uid, gid, and permissions to OverlayFile in REST API. #1925
 - (preview) Support provisioning to local storage with `wwctl <node|partition> set --root=/path/to/disk`. #1894
@@ -30,6 +29,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed IPMI VLAN configuration. #1892
 - Fixed `wwctl image shell --help` to fit properly within 80 columns.
 - Preserve existing permissions during `wwctl overlay edit`. #1886
+- Configure NetworkManager to wait for interfaces to come online before provisioning with Dracut.
 
 ### Changed
 

@@ -340,11 +340,11 @@ an initramfs inside the image.
 .. code-block:: shell
 
    # Enterprise Linux
-   wwctl image exec rockylinux-9 --build=false -- /usr/bin/dnf -y install https://github.com/warewulf/warewulf/releases/download/v4.6.1/warewulf-dracut-4.6.1-1.el9.noarch.rpm
+   wwctl image exec rockylinux-9 --build=false -- /usr/bin/dnf -y install https://github.com/warewulf/warewulf/releases/download/v4.6.2/warewulf-dracut-4.6.2-1.el9.noarch.rpm
    wwctl image exec rockylinux-9 -- /usr/bin/dracut --force --no-hostonly --add wwinit --regenerate-all
 
    # SUSE
-   wwctl image exec leap-15 --build=false -- /usr/bin/zypper -y install https://github.com/warewulf/warewulf/releases/download/v4.6.1/warewulf-dracut-4.6.1-1.suse.lp155.noarch.rpm
+   wwctl image exec leap-15 --build=false -- /usr/bin/zypper -y install https://github.com/warewulf/warewulf/releases/download/v4.6.2/warewulf-dracut-4.6.2-1.suse.lp155.noarch.rpm
    wwctl image exec leap-15 -- /usr/bin/dracut --force --no-hostonly --add wwinit --regenerate-all
 
 .. note::
