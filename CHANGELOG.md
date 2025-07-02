@@ -28,6 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed IPMI VLAN configuration. #1892
 - Fixed `wwctl image shell --help` to fit properly within 80 columns.
 - Preserve existing permissions during `wwctl overlay edit`. #1886
+- Fixed `wwctl node import --csv`. #1862
 
 ### Changed
 

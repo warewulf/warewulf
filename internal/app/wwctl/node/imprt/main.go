@@ -12,6 +12,7 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v3"
 )
 
@@ -53,7 +54,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			Usage()
 			os.Exit(1)
 		}
-		argsLen := len(records[0])
+		fieldNames := records[0]
+		argsLen := len(fieldNames)
 		for i, line := range records[1:] {
 			if len(line) != argsLen {
 				return fmt.Errorf("wrong number of fields in lube %d", i+1)
@@ -62,8 +64,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				if j == 0 {
 					continue
 				}
-				if importMap[line[0]] == nil {
-					importMap[line[0]] = new(node.Node)
+				nodeName := line[0]
+				fieldName := fieldNames[j]
+				fieldValue := line[j]
+				if importMap[nodeName] == nil {
+					importMap[nodeName] = new(node.Node)
+				}
+				ok := importMap[nodeName].SetLopt(fieldName, fieldValue)
+				if !(ok) {
+					wwlog.Debug("Could not import %s", fieldValue)
 				}
 			}
 		}

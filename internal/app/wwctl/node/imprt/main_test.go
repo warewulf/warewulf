@@ -19,7 +19,7 @@ func Test_Node_Import(t *testing.T) {
 		outDB      string
 	}{
 		"import new node": {
-			args: []string{"importFile"},
+			args: []string{"--csv=false"},
 			importFile: `
 n1:
   id: n1
@@ -46,6 +46,28 @@ nodes:
         hwaddr: c4:cb:e1:bb:dd:e9
         ipaddr: 192.168.1.10`,
 		},
+		"import from CSV": {
+			args: []string{"--csv=true"},
+			importFile: `nodename,net.default.hwaddr,net.default.ipaddr,net.default.netmask,net.default.gateway,net.default.netdev,discoverable,image
+n1,11:22:33:44:55:66,192.168.1.10,255.255.255.0,192.168.1.1,eth0,false,rocky-9`,
+			wantErr: false,
+			inDB: `
+nodeprofiles: {}
+nodes: {}`,
+			outDB: `
+nodeprofiles: {}
+nodes:
+  n1:
+    image name: rocky-9
+    discoverable: "false"
+    network devices:
+      default:
+        device: eth0
+        hwaddr: 11:22:33:44:55:66
+        ipaddr: 192.168.1.10
+        netmask: 255.255.255.0
+        gateway: 192.168.1.1`,
+		},
 	}
 
 	for name, tt := range tests {
@@ -63,7 +85,7 @@ nodes:
 			warewulfd.SetNoDaemon()
 
 			baseCmd := GetCommand()
-			args := append(tt.args, "--yes")
+			args := append(tt.args, "importFile", "--yes")
 			baseCmd.SetArgs(args)
 			buf := new(bytes.Buffer)
 			baseCmd.SetOut(buf)
