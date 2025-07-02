@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added systemd.mount and systemd.swap overlays. #1894
 - Support configuring Ignition with resources. #1894
 - Added `wwctl <node|partition> set --parttype`. #1894
+- Added additional documentation for network tags. #1856
 
 ### Fixed
 
