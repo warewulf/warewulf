@@ -40,6 +40,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Removed the gRPC API servers and client. #1876
 
+### Changed
+
+- Updated troubleshooting documentation to include info on tmpfs and numa
+
 ## v4.6.1, 2025-04-04
 
 ### Added
