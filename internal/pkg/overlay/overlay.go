@@ -22,9 +22,7 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-var (
-	ErrDoesNotExist = fmt.Errorf("overlay does not exist")
-)
+var ErrDoesNotExist = fmt.Errorf("overlay does not exist")
 
 // Overlay represents an overlay directory path.
 type Overlay string
@@ -196,7 +194,7 @@ func BuildHostOverlay() error {
 	if err != nil {
 		return fmt.Errorf("could not build host overlay: %w ", err)
 	}
-	if !(stats.Mode() == os.FileMode(0750|os.ModeDir) || stats.Mode() == os.FileMode(0700|os.ModeDir)) {
+	if !(stats.Mode() == os.FileMode(0o750|os.ModeDir) || stats.Mode() == os.FileMode(0o700|os.ModeDir)) {
 		wwlog.SecWarn("Permissions of host overlay dir %s are %s (750 is considered as secure)", hostdir, stats.Mode())
 	}
 	registry, err := node.New()
@@ -257,7 +255,7 @@ func BuildOverlay(nodeConf node.Node, allNodes []node.Node, context string, over
 	overlayImage := OverlayImage(nodeConf.Id(), context, overlayNames)
 	overlayImageDir := path.Dir(overlayImage)
 
-	err := os.MkdirAll(overlayImageDir, 0750)
+	err := os.MkdirAll(overlayImageDir, 0o750)
 	if err != nil {
 		return fmt.Errorf("failed to create directory for %s: %s: %w", name, overlayImageDir, err)
 	}
@@ -292,8 +290,10 @@ func BuildOverlay(nodeConf node.Node, allNodes []node.Node, context string, over
 	return err
 }
 
-var regFile *regexp.Regexp
-var regLink *regexp.Regexp
+var (
+	regFile *regexp.Regexp
+	regLink *regexp.Regexp
+)
 
 func init() {
 	regFile = regexp.MustCompile(`.*{{\s*/\*\s*file\s*["'](.*)["']\s*\*/\s*}}.*`)
@@ -450,7 +450,6 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 
 			return nil
 		})
-
 		if err != nil {
 			return fmt.Errorf("failed to build overlay image directory: %w", err)
 		}
@@ -471,7 +470,6 @@ func CarefulWriteBuffer(destFile string, buffer bytes.Buffer, backupFile bool, p
 				return fmt.Errorf("failed to create backup: %s -> %s.wwbackup %w", destFile, destFile, err)
 			}
 		}
-
 	}
 	w, err := os.OpenFile(destFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, perm)
 	if err != nil {
@@ -491,7 +489,8 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (
 	buffer bytes.Buffer,
 	backupFile bool,
 	writeFile bool,
-	err error) {
+	err error,
+) {
 	backupFile = true
 	writeFile = true
 	// Build our FuncMap
