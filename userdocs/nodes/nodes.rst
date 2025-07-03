@@ -203,47 +203,14 @@ Resources can only be managed with ``wwctl node edit``.
 Importing Nodes From a File
 ===========================
 
-You can import nodes into Warewulf by using the ``wwctl node import`` command. The
-file used must be in YAML or CSV format. 
+You can import nodes into Warewulf by using the ``wwctl node import`` command.
+The file used must be in YAML format.
 
-.. warning::
-   Importing a node configuration will fully overwrite the existing settings, 
-   including any customizations not present in the import file. If the node 
-   already exists and you wish to update it, ensure that the import file 
-   includes all the options you want to retain.
-
-CSV Import
-----------
-
-.. note::
-   As of Warewulf v4.6.1, the csv import functionality is broken and an 
-   `issue <https://github.com/warewulf/warewulf/issues/1862>`_
-   has been created to track this.
-
-The CSV file must have a header where the first field must always be the nodename, 
-and the rest of the fields are the same as the long commandline options. Network 
-device must have the form ``net.$NETNAME.$NETOPTION``. (e.g., ``net.default.ipaddr``). 
-Tags are currently not supported and must be added separately after the import. 
-
-As an example, the following CSV file:
-
-.. code-block:: csv
-
-   nodename,net.default.hwaddr,net.default.ipaddr,net.default.netmask,net.default.gateway,discoverable,image
-   n1,00:00:00:00:00:01,10.0.2.1,255.255.255.0,10.0.2.254,false,rockylinux-9
-
-This can be imported with the following command:
-
-.. code-block:: shell
-
-   wwctl node import --csv /path/to/nodes.csv
-
-YAML Import
------------
-
-The YAML file must be a mapping of node names to their attributes, where each node is represented as a dictionary of attributes. 
-To simplify the creation of the YAML file, you can use the wwctl node export command to export the current node configuration to a YAML file. 
-This exported file can serve as a template for creating new nodes.
+The YAML file must be a mapping of node names to their attributes, where each
+node is represented as a dictionary of attributes. To simplify the creation of
+the YAML file, you can use the wwctl node export command to export the current
+node configuration to a YAML file. This exported file can serve as a template
+for creating new nodes.
 
 A minimal example of a YAML file looks like this:
 

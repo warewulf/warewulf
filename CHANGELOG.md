@@ -39,6 +39,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 - Removed the gRPC API servers and client. #1876
+- Removed ``wwctl node import --csv``. #1862
 
 ## v4.6.1, 2025-04-04
 
