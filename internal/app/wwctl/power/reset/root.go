@@ -3,6 +3,7 @@ package reset
 import (
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
+	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 )
 
 type variables struct {
@@ -17,7 +18,7 @@ func GetCommand() *cobra.Command {
 		DisableFlagsInUseLine: true,
 		Use:                   "reset [OPTIONS] [PATTERN ...]",
 		Short:                 "Issue a reset to node(s)",
-		Long:                  "This command will issue a reset to a set of nodes specified by PATTERN.",
+		Long:                  "This command will issue a reset to a set of nodes specified by PATTERN.\n" + hostlist.Docstring,
 		RunE:                  CobraRunE(&vars),
 		Args:                  cobra.MinimumNArgs(1),
 		ValidArgsFunction:     completions.Nodes,

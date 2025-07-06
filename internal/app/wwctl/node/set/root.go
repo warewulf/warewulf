@@ -5,6 +5,7 @@ import (
 	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 	"github.com/warewulf/warewulf/internal/app/wwctl/flags"
 	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 )
 
 type variables struct {
@@ -23,7 +24,7 @@ func GetCommand() *cobra.Command {
 		DisableFlagsInUseLine: true,
 		Use:                   "set [OPTIONS] PATTERN",
 		Short:                 "Configure node properties",
-		Long:                  "This command sets configuration properties for nodes matching PATTERN.\n\nNote: use the string 'UNSET' to remove a configuration",
+		Long:                  "This command sets configuration properties for nodes matching PATTERN.\n\nNote: use the string 'UNSET' to remove a configuration\n" + hostlist.Docstring,
 		Aliases:               []string{"modify"},
 		Args:                  cobra.MinimumNArgs(1), // require pattern as a mandatory arg
 		RunE:                  CobraRunE(&vars),
