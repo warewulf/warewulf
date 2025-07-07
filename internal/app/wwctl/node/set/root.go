@@ -4,8 +4,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 	"github.com/warewulf/warewulf/internal/app/wwctl/flags"
-	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/hostlist"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 )
 
 type variables struct {
