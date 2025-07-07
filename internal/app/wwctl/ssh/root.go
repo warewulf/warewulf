@@ -3,6 +3,7 @@ package ssh
 import (
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
+	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 )
 
 var (
@@ -10,7 +11,7 @@ var (
 		DisableFlagsInUseLine: true,
 		Use:                   "ssh [OPTIONS] NODE_PATTERN COMMAND",
 		Short:                 "SSH into configured nodes in parallel",
-		Long:                  "Easily ssh into nodes in parallel to run non-interactive commands\n",
+		Long:                  "Easily ssh into nodes in parallel to run non-interactive commands\n" + hostlist.Docstring,
 		RunE:                  CobraRunE,
 		Args:                  cobra.MinimumNArgs(2),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
