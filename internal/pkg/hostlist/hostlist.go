@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-const Docstring = "Node patterns are a comma-separated list of individual pattern. Each pattern can either be a full node name or a node range like node[01-03,05]."
+const Docstring = "Node patterns are a comma-separated list of individual pattern.\nEach pattern can either be a full node name or a node range like node[01-03,05]."
 
 // Expand takes a slice of host strings, possibly containing comma-separated
 // values and bracketed ranges (e.g. "node[01-03]") and returns a fully expanded
