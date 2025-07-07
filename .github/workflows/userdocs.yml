@@ -1,5 +1,5 @@
 ---
-name: publish_docs
+name: userdocs
 
 on:
   workflow_dispatch: {}
@@ -22,28 +22,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+      - uses: actions/setup-python@v5
 
-      - name: Update repositories
+      - name: prepare
         run: |
           sudo apt update
-
-      - name: Install dependencies
-        run: |
           sudo apt-get install -f -y texlive-latex-extra latexmk graphviz pandoc
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-
-      - name: Install Sphinx
-        run: |
           pip install --user --upgrade --upgrade-strategy eager sphinx sphinx-rtd-theme restructuredtext_lint pygments sphinx_reredirects
 
-      - name: Include reference docs
+      - name: make generated docs
         run: |
-          make reference
-
-      - name: Include man pages
-        run: |
+          make docs
           mkdir -p userdocs/reference/man5
           for f in docs/man/man5/*.5
           do
@@ -54,11 +43,11 @@ jobs:
             pandoc -f man -t rst "$f" >> "$output"
           done
 
-      - name: Build web documentation
+      - name: build userdocs
         run: |
           make -C userdocs html
 
-      - name: Install SSH key
+      - name: publish docs to github.com/warewulf/warewulf.org
         if: github.event_name != 'pull_request'
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
@@ -74,10 +63,6 @@ jobs:
           EOT
           git config --global user.email "actions@github.com"
           git config --global user.name "gh-actions"
-
-      - name: Update website repo
-        if: github.event_name != 'pull_request'
-        run: |
           git clone git@github.com:warewulf/warewulf.org.git ~/warewulf-web
           mkdir -p ~/warewulf-web/static/docs
           rm -rf ~/warewulf-web/static/docs/${GITHUB_REF##*/}

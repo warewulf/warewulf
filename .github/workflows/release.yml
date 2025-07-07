@@ -1,0 +1,168 @@
+---
+name: release
+
+on:
+  workflow_dispatch: {}
+  push:
+    tags:
+      - 'v*.*.*'
+  schedule:
+    - cron: '05 00 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  dist:
+    name: Build warewulf.spec and source dist
+    runs-on: ubuntu-latest
+    outputs:
+      has-recent-commits: ${{ steps.commits.outputs.has-recent-commits }}
+      commits: ${{ steps.commits.outputs.commits }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get commit logs (nightly)
+        if: github.event_name == 'schedule'
+        id: commits
+        shell: bash
+        run: |
+          echo "commits=$(git log --since="$(date -d '24 hours ago' --iso-8601)" --oneline | base64 --wrap=0)" >>$GITHUB_OUTPUT
+          if git log --since="$(date -d '24 hours ago' --iso-8601)" --oneline | grep -q .; then
+            echo "has-recent-commits=true" >>$GITHUB_OUTPUT
+          else
+            echo "has-recent-commits=false" >>$GITHUB_OUTPUT
+            echo "No commits found in the last 24 hours"
+          fi
+
+      - name: Build spec and dist
+        run: |
+          make warewulf.spec dist
+
+      - name: Upload spec
+        uses: actions/upload-artifact@v4
+        with:
+          name: warewulf-spec
+          retention-days: 7
+          path: |
+            warewulf.spec
+
+      - name: Upload dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: warewulf-dist
+          retention-days: 7
+          path: |
+            warewulf-*.tar.gz
+
+  rpms:
+    needs: dist
+    if: github.event_name != 'schedule' || needs.dist.outputs.has-recent-commits == 'true'
+    name: Build RPMs
+    runs-on: ${{ matrix.runs-on }}
+    container:
+      image: rockylinux/rockylinux:9
+      options: --privileged
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64, aarch64]
+        dist: [el9, el8, suse.lp155]
+        include:
+          - dist: el8
+            target: rocky+epel-8
+          - dist: el9
+            target: rocky+epel-9
+          - dist: suse.lp155
+            target: opensuse-leap-15.5
+          - arch: x86_64
+            runs-on: ubuntu-24.04
+          - arch: aarch64
+            runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Prepare mock
+        run: |
+          dnf -y install epel-release
+          dnf -y install rpm-build mock
+          usermod -a -G mock $(whoami)
+          echo "config_opts['print_main_output'] = True" >>/etc/mock/site-defaults.cfg
+
+      - name: Download spec
+        uses: actions/download-artifact@v4
+        with:
+          name: warewulf-spec
+
+      - name: Download dist
+        uses: actions/download-artifact@v4
+        with:
+          name: warewulf-dist
+
+      - name: Build RPMs and run tests
+        run: |
+          root="${{ matrix.target }}-${{ matrix.arch }}"
+          eol_root="/etc/mock/eol/${root}.cfg"
+          if [ -f "${eol_root}" ]
+          then
+            root="${eol_root}"
+          fi
+          mock --root="${root}" --rebuild --spec=warewulf.spec --sources=. \
+          && mock --root="${root}" --chroot -- bash -c "make -C /builddir/build/BUILD/warewulf-*/ test"
+
+      - name: Upload RPMs
+        uses: actions/upload-artifact@v4
+        with:
+          name: warewulf-rpms-${{ matrix.target }}-${{ matrix.arch }}
+          retention-days: 7
+          path: |
+            /var/lib/mock/${{ matrix.target }}-${{ matrix.arch }}/result/warewulf-*.rpm
+
+  release:
+    needs: [dist, rpms]
+    if: github.event_name == 'push' || (github.event_name == 'schedule' && needs.dist.outputs.has-recent-commits == 'true')
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+          merge-multiple: true
+
+      - name: Delete previous release (nightly)
+        if: github.event_name == 'schedule'
+        run: |
+          gh release delete "nightly" \
+            --repo ${{ github.repository }} \
+            --cleanup-tag --yes \
+          || echo "No previous nightly release found"
+
+      - name: Create release (tagged)
+        if: github.event_name == 'push'
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            artifacts/*.tar.gz \
+            artifacts/*.rpm \
+            --repo ${{ github.repository }} \
+            --title "${{ github.ref_name }}" \
+            --draft
+
+      - name: Create release (nightly)
+        if: github.event_name == 'schedule'
+        run: |
+          COMMITS=$(echo "${{ needs.dist.outputs.commits }}" | base64 --decode)
+          gh release create "nightly" \
+            artifacts/*.tar.gz \
+            artifacts/*.rpm \
+            --repo ${{ github.repository }} \
+            --title "nightly" \
+            --prerelease \
+            --notes "NIGHTLY RELEASE
+
+          Commits from the last 24 hours:
+
+          ${COMMITS}"
