@@ -10,10 +10,12 @@ import (
 
 func Test_GetNodeOrSetDiscoverable(t *testing.T) {
 	var tests = map[string]struct {
-		nodesConf string
-		hwaddr    string
-		node      string
-		err       bool
+		nodesConf    string
+		hwaddr       string
+		node         string
+		err          bool
+		initFiles    []string
+		removedFiles []string
 	}{
 		"empty": {
 			nodesConf: `
@@ -34,6 +36,29 @@ nodes:
 			node:   "n1",
 		},
 		"discoverable": {
+			nodesConf: `
+nodes:
+  n1:
+    discoverable: true
+    network devices:
+      default: {}
+`,
+			hwaddr: "00:00:00:00:00:01",
+			node:   "n1",
+		},
+		"discoverable autobuild": {
+			initFiles: []string{
+				"/srv/warewulf/overlays/n1/__SYSTEM__.img",
+				"/srv/warewulf/overlays/n1/__SYSTEM__.img.gz",
+				"/srv/warewulf/overlays/n1/__RUNTIME__.img",
+				"/srv/warewulf/overlays/n1/__RUNTIME__.img.gz",
+			},
+			removedFiles: []string{
+				"/srv/warewulf/overlays/n1/__SYSTEM__.img",
+				"/srv/warewulf/overlays/n1/__SYSTEM__.img.gz",
+				"/srv/warewulf/overlays/n1/__RUNTIME__.img",
+				"/srv/warewulf/overlays/n1/__RUNTIME__.img.gz",
+			},
 			nodesConf: `
 nodes:
   n1:
@@ -77,20 +102,25 @@ nodes:
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			env := testenv.New(t)
+			for _, file := range tt.initFiles {
+				env.CreateFile(file)
+			}
 			defer env.RemoveAll()
 			env.WriteFile("/etc/warewulf/nodes.conf", tt.nodesConf)
 
 			err := LoadNodeDB()
 			assert.NoError(t, err)
 
-			node, err := GetNodeOrSetDiscoverable(tt.hwaddr)
+			node, err := GetNodeOrSetDiscoverable(tt.hwaddr, true)
 			if tt.err {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, tt.node, node.Id())
 			}
+			for _, file := range tt.removedFiles {
+				assert.NoFileExists(t, env.GetPath(file), "File should not exist: %s", file)
+			}
 		})
 	}
-
 }

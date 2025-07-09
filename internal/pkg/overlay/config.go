@@ -105,3 +105,19 @@ func OverlayImage(nodeName string, context string, overlayNames []string) string
 
 	return path.Join(config.Get().Paths.OverlayProvisiondir(), nodeName, name)
 }
+
+func ClearOverlayImage(nodeName string, context string, overlayNames []string) error {
+	imagePath := OverlayImage(nodeName, context, overlayNames)
+	if util.IsFile(imagePath) {
+		if err := os.Remove(imagePath); err != nil {
+			return fmt.Errorf("failed to remove overlay image: %w", err)
+		}
+	}
+	compressedImagePath := imagePath + ".gz"
+	if util.IsFile(compressedImagePath) {
+		if err := os.Remove(compressedImagePath); err != nil {
+			return fmt.Errorf("failed to remove compressed overlay image: %w", err)
+		}
+	}
+	return nil
+}
