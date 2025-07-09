@@ -254,6 +254,74 @@ nodes:
 `,
 	},
 	{
+		name:            "Kernel args as string",
+		addDefaults:     false,
+		replaceOverlays: false,
+		legacyYaml: `
+nodeprofiles:
+  default:
+    kernel:
+      version: "2.6"
+      args: quiet
+nodes:
+  n1:
+    kernel:
+      version: "2.6"
+      args: quiet
+`,
+		upgradedYaml: `
+nodeprofiles:
+  default:
+    kernel:
+      version: "2.6"
+      args:
+      - quiet
+nodes:
+  n1:
+    kernel:
+      version: "2.6"
+      args:
+      - quiet
+`,
+	},
+	{
+		name:            "Kernel args as list",
+		addDefaults:     false,
+		replaceOverlays: false,
+		legacyYaml: `
+nodeprofiles:
+  default:
+    kernel:
+      version: "2.6"
+      args:
+      - quiet
+      - 1
+nodes:
+  n1:
+    kernel:
+      version: "2.6"
+      args:
+      - quiet
+      - 2
+`,
+		upgradedYaml: `
+nodeprofiles:
+  default:
+    kernel:
+      version: "2.6"
+      args:
+      - quiet
+      - "1"
+nodes:
+  n1:
+    kernel:
+      version: "2.6"
+      args:
+      - quiet
+      - "2"
+`,
+	},
+	{
 		name:            "keys, tags, and resources",
 		addDefaults:     false,
 		replaceOverlays: false,
