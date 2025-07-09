@@ -13,6 +13,8 @@ on:
     branches:
       - main
       - 'v4.*.x'
+    paths:
+      - 'userdocs/**'
 
 jobs:
   publish:
