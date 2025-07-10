@@ -159,7 +159,7 @@ For example, the ``imgextract`` command can be `explicitly enabled`_.
    support for ZLIB and GZIP archive image formats.
 
 Configuring Warewulf (>= v4.5.0)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In Warewulf v4.5.0, Warewulf can be configured to use these files using the
 ``tftp.ipxe`` and ``paths.ipxesource`` configuration parameters in
@@ -321,8 +321,8 @@ directly from the node's assigned image.
 
 .. _booting with dracut:
 
-Booting with dracut
-===================
+Two-stage boot: dracut
+======================
 
 Some systems, typically due to limitations in their BIOS or EFI firmware, are
 unable to load image of a certain size directly with a traditional bootloader,
@@ -339,8 +339,13 @@ an initramfs inside the image.
 
 .. code-block:: shell
 
-   wwctl image exec rockylinux-9 --build=false -- /usr/bin/dnf -y install https://github.com/warewulf/warewulf/releases/download/v4.6.1/warewulf-dracut-4.6.1-1.el9.noarch.rpm
+   # Enterprise Linux
+   wwctl image exec rockylinux-9 --build=false -- /usr/bin/dnf -y install https://github.com/warewulf/warewulf/releases/download/v4.6.2/warewulf-dracut-4.6.2-1.el9.noarch.rpm
    wwctl image exec rockylinux-9 -- /usr/bin/dracut --force --no-hostonly --add wwinit --regenerate-all
+
+   # SUSE
+   wwctl image exec leap-15 --build=false -- /usr/bin/zypper -y install https://github.com/warewulf/warewulf/releases/download/v4.6.2/warewulf-dracut-4.6.2-1.suse.lp155.noarch.rpm
+   wwctl image exec leap-15 -- /usr/bin/dracut --force --no-hostonly --add wwinit --regenerate-all
 
 .. note::
 

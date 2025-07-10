@@ -15,25 +15,21 @@ versions (e.g., v4.6.1) are tagged on a separate release branch.
 
 2. Update `userdocs` references that imply the latest release to refer to the
    new version.
-   - `contents/installation.rst`
-   - `contributing/development-environment-vagrant.rst`
-   - `quickstart/debian12.rst`
-   - `quickstart/el.rst`
 
 3. Add full release notes to `userdocs/release/` and update
    `userdocs/index.rst`.
 
 4. Add summarized release notes to `.github/releases/`.
 
-5. Cherry-pick updates from 1 and 2 above to a release branch if necessary.
-   (i.e., when not doing a new major release)
+5. Cherry-pick updates to a release branch if necessary. (i.e., when not doing a
+   new major release)
    
        git cherry-pick -x -m1 --signoff
    
 6. Create a signed tag for the release of the format v4.MINOR.PATCH, following
    the format specified in <MAINTAINING.md>.
    
-       git tag --sign v4.6.1; git push origin v4.6.1
+       git tag --sign v4.6.2; git push origin v4.6.2
 
 7. Monitor the release action associated with the pushed tag at
    https://github.com/warewulf/warewulf/actions, and verify the generated draft

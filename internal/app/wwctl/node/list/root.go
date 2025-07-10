@@ -3,6 +3,7 @@ package list
 import (
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
+	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 )
 
 type variables struct {
@@ -21,7 +22,7 @@ func GetCommand() *cobra.Command {
 		Use:                   "list [OPTIONS] [PATTERN]",
 		Short:                 "List nodes",
 		Long: "This command lists all configured nodes. Optionally, it will list only\n" +
-			"nodes matching a PATTERN.",
+			"nodes matching a PATTERN.\n" + hostlist.Docstring,
 		RunE:              CobraRunE(&vars),
 		Aliases:           []string{"ls"},
 		ValidArgsFunction: completions.Nodes,

@@ -1,0 +1,51 @@
+---
+name: testsuite
+
+on:
+  pull_request:
+    branches:
+      - main
+      - 'v4.*.x'
+    paths-ignore:
+      - 'docs/**'
+
+jobs:
+  testsuite:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.22', '1.23']
+    steps:
+      - name: Checkout Warewulf
+        uses: actions/checkout@v4
+      - name: Install gpgme (dependency)
+        run: |
+          sudo apt update \
+          && sudo apt-get install libgpgme-dev
+        shell: bash
+      - name: Setup go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: true
+      - name: Prepare Warewulf
+        shell: bash
+        run: |
+          make config
+          make vendor
+      - name: Check for out-of-date license information
+        run: make LICENSE_DEPENDENCIES.md && git diff --quiet LICENSE_DEPENDENCIES.md
+      - name: Check Warewulf code with golang linter (golang ${{ matrix.go-version }})
+        run: make lint
+      - name: Check Warewulf code with staticcheck (golang ${{ matrix.go-version }})
+        run: make staticcheck
+      - name: Vet Warewulf code (golang ${{ matrix.go-version }})
+        run: make vet
+      - name: Check Warewulf code for formatting (golang ${{ matrix.go-version }})
+        run: test "$(make -s fmt | wc -l)" == 0
+      - name: Check for dead Warewulf code (golang ${{ matrix.go-version }})
+        run: make deadcode
+      - name: Run the test suite (golang ${{ matrix.go-version }})
+        run: make test
+      - name: Build Warewulf (golang ${{ matrix.go-version }})
+        run: make all

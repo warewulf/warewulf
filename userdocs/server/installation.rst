@@ -18,14 +18,14 @@ Rocky Linux 9
 
 .. code-block:: console
 
-   # dnf install https://github.com/warewulf/warewulf/releases/download/v4.6.1/warewulf-4.6.1-1.el9.x86_64.rpm
+   # dnf install https://github.com/warewulf/warewulf/releases/download/v4.6.2/warewulf-4.6.2-1.el9.x86_64.rpm
 
 openSuse Leap
 -------------
 
 .. code-block:: console
 
-   # zypper install https://github.com/warewulf/warewulf/releases/download/v4.6.1/warewulf-4.6.1-1.suse.lp155.x86_64.rpm
+   # zypper install https://github.com/warewulf/warewulf/releases/download/v4.6.2/warewulf-4.6.2-1.suse.lp155.x86_64.rpm
 
 Container images
 ================
@@ -97,9 +97,9 @@ appropriate substitutions:
 
 .. code-block:: bash
 
-   curl -LO https://github.com/warewulf/warewulf/releases/download/v4.6.1/warewulf-4.6.1.tar.gz
-   tar -xf warewulf-4.6.1.tar.gz
-   cd warewulf-4.6.1
+   curl -LO https://github.com/warewulf/warewulf/releases/download/v4.6.2/warewulf-4.6.2.tar.gz
+   tar -xf warewulf-4.6.2.tar.gz
+   cd warewulf-4.6.2
    make all && sudo make install
 
 Git
@@ -118,7 +118,7 @@ from the main site, the GitHub releases page, or from a Git tag.
 
    git clone https://github.com/warewulf/warewulf.git
    cd warewulf
-   git checkout main # or switch to a tag like 'v4.6.1'
+   git checkout main # or switch to a tag like 'v4.6.2'
    make all && sudo make install
 
 Runtime Dependencies

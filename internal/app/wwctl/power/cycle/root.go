@@ -3,6 +3,7 @@ package cycle
 import (
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
+	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 )
 
 type variables struct {
@@ -17,7 +18,7 @@ func GetCommand() *cobra.Command {
 		DisableFlagsInUseLine: true,
 		Use:                   "cycle [OPTIONS] [PATTERN ...]",
 		Short:                 "Power cycle the given node(s)",
-		Long:                  "This command cycles power for a set of nodes specified by PATTERN.",
+		Long:                  "This command cycles power for a set of nodes specified by PATTERN.\n" + hostlist.Docstring,
 		RunE:                  CobraRunE(&vars),
 		Args:                  cobra.MinimumNArgs(1),
 		ValidArgsFunction:     completions.Nodes,

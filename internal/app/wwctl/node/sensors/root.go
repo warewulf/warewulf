@@ -3,6 +3,7 @@ package sensors
 import (
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
+	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 )
 
 type variables struct {
@@ -18,7 +19,7 @@ func GetCommand() *cobra.Command {
 		DisableFlagsInUseLine: true,
 		Use:                   "sensors [OPTIONS] PATTERN",
 		Short:                 "Show node IPMI sensor information",
-		Long:                  "Show IPMI sensor information for nodes matching PATTERN.",
+		Long:                  "Show IPMI sensor information for nodes matching PATTERN.\n" + hostlist.Docstring,
 		Args:                  cobra.MinimumNArgs(1),
 		RunE:                  CobraRunE(&vars),
 		ValidArgsFunction:     completions.Nodes,

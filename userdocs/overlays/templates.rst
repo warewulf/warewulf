@@ -95,6 +95,16 @@ referenced symlink.
 
    {{ ImportLink "/etc/localtime" }}
 
+When paired with ``file``, ``ImportLink`` can create multiple symlinks from a
+single template.
+
+.. code-block::
+
+   {{ file "/tmp/test-link1"}}
+   {{ softlink "/tmp/test-target1" }}
+   {{ file "/tmp/test-link2"}}
+   {{ softlink "/tmp/test-target2" }}
+
 basename
 --------
 
@@ -133,6 +143,9 @@ Causes the processed template file to become a symlink to the referenced target.
   
    {{ printf "%s/%s" "/usr/share/zoneinfo" .Tags.localtime | softlink }}
 
+When paired with ``file``, ``softlink`` can create multiple symlinks from a
+single template.
+
 .. _readlink:
 
 readlink
@@ -148,7 +161,13 @@ symlink.
 IgnitionJson
 ------------
 
-Generates JSON suitable for use by Ignition to create 
+Generates JSON suitable for use by Ignition to create partitions and file
+systems, from the data stored in a node's native ``disks`` and ``filesystems``
+fields.
+
+.. code-block::
+
+   {{ IgnitionJson }}
 
 abort
 -----
@@ -174,10 +193,9 @@ nobackup
 UniqueField
 -----------
 
-UniqueField returns a filtered version of a multi-line input string. input is
-expected to be a field-separated format with one record per line (terminated by
-`\n`). Order of lines is preserved, with the first matching line taking
-precedence.
+Returns a filtered version of a multi-line input string. input is expected to be
+a field-separated format with one record per line (terminated by `\n`). Order of
+lines is preserved, with the first matching line taking precedence.
 
 For example, the following template snippet has been used in the ``syncuser`` overlay
 to generate a combined ``/etc/passwd``.
@@ -190,6 +208,24 @@ to generate a combined ``/etc/passwd``.
            (Include (printf "%s/%s" .Paths.Sysconfdir "passwd") | trim)
        | UniqueField ":" 0 | trim
    }}
+
+SystemdEscape
+-------------
+
+Escapes a string for use in a systemd unit file.
+
+Escape rules are documented at `systemd.unit. <https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html#String%20Escaping%20for%20Inclusion%20in%20Unit%20Names>`_
+
+SystemdEscapePath
+-----------------
+
+Escapes a path for use in a systemd unit file.
+
+.. code-block::
+
+   {{ file (print ($fs.path | SystemdEscapePath) ".mount") }}
+
+Escape rules are documented at `systemd.unit. <https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html#String%20Escaping%20for%20Inclusion%20in%20Unit%20Names>`_
 
 Examples
 ========

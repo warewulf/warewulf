@@ -31,7 +31,7 @@ Install Warewulf and dependencies
    cd ~/git
    git clone https://github.com/warewulf/warewulf.git
    cd warewulf
-   git checkout main # or switch to a tag like 'v4.6.1'
+   git checkout main # or switch to a tag like 'v4.6.2'
    make all && sudo make install
 
 Configure firewalld
@@ -127,7 +127,7 @@ and set it for the "default" node profile.
 
 .. code-block:: bash
 
-   sudo wwctl image import docker://ghcr.io/warewulf/warewulf-debian:12.0 debian-12.0
+   sudo wwctl image import --build docker://ghcr.io/warewulf/warewulf-debian:12.0 debian-12.0
    sudo wwctl profile set default --image=debian-12.0
 
 Set up the default node profile
@@ -179,7 +179,7 @@ configurations.
 
 .. code-block:: bash
 
-   sudo wwctl node add n0000.cluster --ipaddr 192.168.200.100 --discoverable true
+   sudo wwctl node add n0000.cluster --ipaddr 192.168.200.100 --discoverable
 
 At this point you can view the basic configuration of this node by
 typing the following:

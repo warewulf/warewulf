@@ -4,13 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## Unreleased
+## v4.6.2, 2025-07-09
 
 ### Added
 
-- Added override.conf for nm-wait-online-initrd.service with dracut.
 - Added userdocs for `wwctl node import` from yaml/csv.
 - Added uid, gid, and permissions to OverlayFile in REST API. #1925
+- (preview) Support provisioning to local storage with `wwctl <node|partition> set --root=/path/to/disk`. #1894
+- (preview) Support disk provisioning during dracut boot stage with Ignition, sfdisk, mkfs, and mkswap. #1894
+- Support creating multiple symlinks from a single overlay template. #1894
+- Added systemd.mount and systemd.swap overlays. #1894
+- Support configuring Ignition with resources. #1894
+- Added `wwctl <node|partition> set --parttype`. #1894
+- Added additional documentation for network tags. #1856
+- Added node pattern description to commands that use it. #1936
 - Test for adding duplicate node or profile name via API.
 
 ### Fixed
@@ -19,6 +26,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed a regression in SELinux support by restoring the `/run` mount during wwinit. #1910
 - Fixed `wwctl profile set` for disks, partitions and file systems. #1883
 - Do not let API add a node that exists
+- Do not let API add a profile that exists
+- Fixed sleep/rebooting on error during GRUB boot. #1894
+- Fixed IPMI VLAN configuration. #1892
+- Fixed `wwctl image shell --help` to fit properly within 80 columns.
+- Preserve existing permissions during `wwctl overlay edit`. #1886
+- Configure NetworkManager to wait for interfaces to come online before provisioning with Dracut.
 - Do not let API add a profile that exists
 
 ### Changed
@@ -30,6 +43,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 - Removed the gRPC API servers and client. #1876
+- Removed ``wwctl node import --csv``. #1862
 
 ## v4.6.1, 2025-04-04
 

@@ -148,7 +148,7 @@ menuentry "Two stage boot with dracut" --id dracut {
 
     wwinit_uri="http://{{.Ipaddr}}:{{.Port}}/provision/${net_default_mac}"
     net_args="rd.neednet=1 {{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} {{end}}{{end}}"
-    wwinit_args="root=wwinit wwinit.uri=${wwinit_uri} init=/init"
+    wwinit_args="root=wwinit:{{default "tmpfs" .Root}} wwinit.uri=${wwinit_uri} init=/warewulf/run-init"
 
     echo
     echo "Downloading kernel image..."

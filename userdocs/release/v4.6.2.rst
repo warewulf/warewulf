@@ -1,0 +1,56 @@
+====================
+v4.6.2 Release Notes
+====================
+
+v4.6.2 is a regularly-scheduled minor release in the v4.6.x series. It also
+includes a preview implementation of the ability to provision the node image to
+a local disk.
+
+Significant changes are described below. Additional changes are listed in the
+`CHANGELOG`_.
+
+.. _CHANGELOG: https://github.com/warewulf/warewulf/blob/main/CHANGELOG.md
+
+Provisioning to disk
+====================
+
+v4.6.2 includes a preview implementation of the ability to provision the node
+image to a local disk. This includes the ability to provision disks earlier in
+the boot process, primarily during the first phase of a two-phase boot using
+dracut.
+
+Disks may be provisioned using ``ignition``, as before; but may now also be
+provisioned using new ``sfdisk``, ``mkfs``, and ``mkswap`` overlays, and to
+mount configured file systems using ``systemd.mount`` and ``systemd.swap``
+overlays. These overlays may also each be configured using overlay-specific
+"resources", which may additional control compared to Warewulf's built-in disk,
+partition, and file system configuration.
+
+To support more complext partition layouts, ``wwctl <node|partition> set
+--parttype`` has been added to specify non-default partition types. This is
+particularly useful when creating an EFI partition, which may be used in a
+future release to configure serverless local booting.
+
+Finally, ``wwctl profile set`` has been fixed to now properly support
+configuration of disks, partitions and file systems.
+
+For more information, see the :ref:`provision to disk` section.
+
+REST API
+========
+
+v4.6.2 continues development of the REST API, properly handling attempts to
+create a node that already exists, and fetching uid, gid, and mode permissions
+for overlay files. The previous gRPC-based API servers and client have also been
+removed.
+
+Other fixes
+===========
+
+- NetworkManager now waits for interfaces to come online before provisioning with Dracut.
+- The ``udev.netname`` overlay now properly handles InfiniBand interfaces in more cases.
+- Fixed a regression in SELinux support by restoring the ``/run`` mount during wwinit.
+- GRUB now properly reports errors and reboots when an error occurs.
+- Fixed IPMI VLAN configuration.
+- Preserve existing permissions during ``wwctl overlay edit``.
+- Fix CSV processing during ``wwctl node import --csv``.

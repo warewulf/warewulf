@@ -34,6 +34,17 @@ specifying  ``--netname``.
    an interface may fail to be named correct if its desired name conflicts with
    the kernel-assigned name of another interface during the boot process.
 
+.. _nettags:
+
+Network Tags
+============
+
+Each network device can optionally have one or more key-value pair tags.
+
+.. code-block:: shell
+
+   wwctl node set n1 --nettagadd="DNS1=1.1.1.1"
+
 .. _bonding:
 
 Bonding
