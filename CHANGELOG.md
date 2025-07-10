@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added `wwctl <node|partition> set --parttype`. #1894
 - Added additional documentation for network tags. #1856
 - Added node pattern description to commands that use it. #1936
+- API for power control
 
 ### Fixed
 
