@@ -52,6 +52,15 @@ func TestProfileAPI(t *testing.T) {
 		assert.NoError(t, resp.Body.Close())
 		assert.NoError(t, err)
 		assert.JSONEq(t, `{"kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}`, string(body))
+
+		// Add the same node again. It should fail since the name is duplicated.
+		req, err = http.NewRequest(http.MethodPut, srv.URL+"/api/profiles/test", bytes.NewBuffer([]byte(testProfile)))
+		assert.NoError(t, err)
+
+		resp, err = http.DefaultTransport.RoundTrip(req)
+		assert.NoError(t, err)
+
+		assert.Equal(t, 400, resp.StatusCode) // Invalid aurgument error
 	})
 
 	t.Run("re-read all profiles", func(t *testing.T) {

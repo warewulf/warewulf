@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added `wwctl <node|partition> set --parttype`. #1894
 - Added additional documentation for network tags. #1856
 - Added node pattern description to commands that use it. #1936
+- Test for adding duplicate node or profile name via API.
 
 ### Fixed
 
@@ -25,11 +26,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed a regression in SELinux support by restoring the `/run` mount during wwinit. #1910
 - Fixed `wwctl profile set` for disks, partitions and file systems. #1883
 - Do not let API add a node that exists
+- Do not let API add a profile that exists
 - Fixed sleep/rebooting on error during GRUB boot. #1894
 - Fixed IPMI VLAN configuration. #1892
 - Fixed `wwctl image shell --help` to fit properly within 80 columns.
 - Preserve existing permissions during `wwctl overlay edit`. #1886
 - Configure NetworkManager to wait for interfaces to come online before provisioning with Dracut.
+- Do not let API add a profile that exists
 
 ### Changed
 
