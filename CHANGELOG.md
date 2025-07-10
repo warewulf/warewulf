@@ -11,7 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added override.conf for nm-wait-online-initrd.service with dracut.
 - Added userdocs for `wwctl node import` from yaml/csv.
 - Added uid, gid, and permissions to OverlayFile in REST API. #1925
-- Test for adding duplicate node name via API.
+- Test for adding duplicate node or profile name via API.
 
 ### Fixed
 
@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed a regression in SELinux support by restoring the `/run` mount during wwinit. #1910
 - Fixed `wwctl profile set` for disks, partitions and file systems. #1883
 - Do not let API add a node that exists
+- Do not let API add a profile that exists
 
 ### Changed
 

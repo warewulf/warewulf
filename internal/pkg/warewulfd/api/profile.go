@@ -66,6 +66,9 @@ func addProfile() usecase.Interactor {
 		if registry, err := node.New(); err != nil {
 			return err
 		} else {
+			if _, exists := registry.NodeProfiles[input.ID]; exists {
+				return status.Wrap(fmt.Errorf("profile '%s' already exists", input.ID), status.InvalidArgument)
+			}
 			for _, profile := range input.Profile.Profiles {
 				if _, ok := registry.NodeProfiles[profile]; !ok {
 					return status.Wrap(fmt.Errorf("profile '%s' does not exist", profile), status.InvalidArgument)
