@@ -3,8 +3,10 @@ package api
 import (
 	"context"
 	"fmt"
+	"os"
 	"runtime"
 	"sort"
+	"time"
 
 	"dario.cat/mergo"
 	"github.com/swaggest/usecase"
@@ -37,6 +39,60 @@ func getNodes() usecase.Interactor {
 	u.SetTitle("Get nodes")
 	u.SetDescription("Get all nodes, including field values from associated profiles.")
 	u.SetTags("Node")
+	return u
+}
+
+func getNodeOverlays() usecase.Interactor {
+	type getOverlaysInput struct {
+		ID string `path:"id" description:"ID of node to retrieve overlays for"`
+	}
+	type buildEntry struct {
+		MTime string `json:"mtime,omitempty" yaml:"mtime,omitempty"`
+	}
+	type overlayEntry struct {
+		Overlays []string    `json:"overlays,omitempty" yaml:"overlays,omitempty"`
+		Build    *buildEntry `json:"build,omitempty" yaml:"build,omitempty"`
+	}
+	type getOverlaysOutput struct {
+		SystemOverlay  *overlayEntry `json:"system overlay,omitempty" yaml:"system overlay,omitempty"`
+		RuntimeOverlay *overlayEntry `json:"runtime overlay,omitempty" yaml:"runtime overlay,omitempty"`
+	}
+	u := usecase.NewInteractor(func(ctx context.Context, input *getOverlaysInput, output *getOverlaysOutput) error {
+		wwlog.Debug("api.getNodeOverlays()")
+		if registry, err := node.New(); err != nil {
+			return err
+		} else {
+			if node_, err := registry.GetNode(input.ID); err != nil {
+				return status.Wrap(err, status.NotFound)
+			} else {
+				out := getOverlaysOutput{
+					SystemOverlay: &overlayEntry{
+						Overlays: node_.SystemOverlay,
+						Build:    &buildEntry{},
+					},
+					RuntimeOverlay: &overlayEntry{
+						Overlays: node_.RuntimeOverlay,
+						Build:    &buildEntry{},
+					},
+				}
+				sysImagePath := overlay.OverlayImage(input.ID, "system", node_.SystemOverlay)
+				if sysImageStat, err := os.Stat(sysImagePath); err == nil {
+					out.SystemOverlay.Build.MTime = sysImageStat.ModTime().Format(time.RFC3339)
+				}
+
+				runtimeImagePath := overlay.OverlayImage(input.ID, "runtime", node_.RuntimeOverlay)
+				if runtimeImageStat, err := os.Stat(runtimeImagePath); err == nil {
+					out.RuntimeOverlay.Build.MTime = runtimeImageStat.ModTime().Format(time.RFC3339)
+				}
+				*output = out
+				return nil
+			}
+		}
+	})
+	u.SetTitle("Get overlay info for a node")
+	u.SetDescription("Get system and runtime overlay info for a node.")
+	u.SetTags("Node")
+
 	return u
 }
 
