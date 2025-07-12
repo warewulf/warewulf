@@ -9,6 +9,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - Added system and runtime overlay built time.
+- Support If-None-Match header in `PUT /api/nodes/{id}`
+
+### Changed
+
+- Restore default idempotency of `PUT /api/nodes/{id}`
 
 ### Changed
 

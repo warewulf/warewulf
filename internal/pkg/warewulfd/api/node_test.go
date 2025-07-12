@@ -74,6 +74,60 @@ func TestNodeAPI(t *testing.T) {
 		assert.JSONEq(t, `{"node1": {}, "test": {"system overlay": ["so1"], "runtime overlay": ["ro1"], "kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}}`, string(body))
 	})
 
+	t.Run("test idempotency (put same node again)", func(t *testing.T) {
+		// prepareration
+
+		testNode := `{
+  "node":{
+    "system overlay": ["so1"],
+	"runtime overlay": ["ro1"],
+    "kernel": {
+      "version": "v1.0.0",
+      "args": ["kernel-args"]
+    }
+  }
+}`
+		req, err := http.NewRequest(http.MethodPut, srv.URL+"/api/nodes/test", bytes.NewBuffer([]byte(testNode)))
+		assert.NoError(t, err)
+
+		resp, err := http.DefaultTransport.RoundTrip(req)
+		assert.NoError(t, err)
+
+		body, err := io.ReadAll(resp.Body)
+		assert.NoError(t, err)
+		assert.NoError(t, resp.Body.Close())
+
+		assert.JSONEq(t, `{"system overlay": ["so1"], "runtime overlay": ["ro1"], "kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}`, string(body))
+	})
+
+	t.Run("fail if node already exists (given appropriate header)", func(t *testing.T) {
+		// prepareration
+
+		testNode := `{
+  "node":{
+    "system overlay": ["so1"],
+	"runtime overlay": ["ro1"],
+    "kernel": {
+      "version": "v1.0.0",
+      "args": ["kernel-args"]
+    }
+  }
+}`
+		req, err := http.NewRequest(http.MethodPut, srv.URL+"/api/nodes/test", bytes.NewBuffer([]byte(testNode)))
+		assert.NoError(t, err)
+		req.Header.Set("If-None-Match", "*")
+
+		resp, err := http.DefaultTransport.RoundTrip(req)
+		assert.NoError(t, err)
+
+		body, err := io.ReadAll(resp.Body)
+		assert.NoError(t, err)
+		assert.NoError(t, resp.Body.Close())
+
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		assert.Contains(t, string(body), "node 'test' already exists")
+	})
+
 	t.Run("get one specific node", func(t *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, srv.URL+"/api/nodes/test", nil)
 		assert.NoError(t, err)
@@ -228,6 +282,32 @@ func TestNodeAPI(t *testing.T) {
 		}
 	})
 
+	t.Run("replace a node", func(t *testing.T) {
+		// prepareration
+
+		testNode := `{
+  "node":{
+    "system overlay": ["so1"],
+	"runtime overlay": ["ro1"],
+    "kernel": {
+      "version": "v1.0.0",
+      "args": ["kernel-args"]
+    }
+  }
+}`
+		req, err := http.NewRequest(http.MethodPut, srv.URL+"/api/nodes/test", bytes.NewBuffer([]byte(testNode)))
+		assert.NoError(t, err)
+
+		resp, err := http.DefaultTransport.RoundTrip(req)
+		assert.NoError(t, err)
+
+		body, err := io.ReadAll(resp.Body)
+		assert.NoError(t, err)
+		assert.NoError(t, resp.Body.Close())
+
+		assert.JSONEq(t, `{"system overlay": ["so1"], "runtime overlay": ["ro1"], "kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}`, string(body))
+	})
+
 	t.Run("test delete nodes", func(t *testing.T) {
 		req, err := http.NewRequest(http.MethodDelete, srv.URL+"/api/nodes/test", nil)
 		assert.NoError(t, err)
@@ -239,6 +319,6 @@ func TestNodeAPI(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NoError(t, resp.Body.Close())
 
-		assert.JSONEq(t, `{"system overlay": ["so1"], "runtime overlay": ["ro1"], "kernel": {"version": "v1.0.1-newversion", "args": ["kernel-args"]}}`, string(body))
+		assert.JSONEq(t, `{"system overlay": ["so1"], "runtime overlay": ["ro1"], "kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}`, string(body))
 	})
 }
