@@ -170,18 +170,20 @@ func getNodeFields() usecase.Interactor {
 
 func addNode() usecase.Interactor {
 	type addNodeInput struct {
-		ID   string    `path:"id" required:"true" description:"ID of node to be added"`
-		Node node.Node `json:"node" required:"true" description:"Field values in JSON format for added node"`
+		ID          string    `path:"id" required:"true" description:"ID of node to be added"`
+		Node        node.Node `json:"node" required:"true" description:"Field values in JSON format for added node"`
+		IfNoneMatch string    `header:"If-None-Match" description:"Set to '*' to indicate that the node should only be created if it does not already exist"`
 	}
 
 	u := usecase.NewInteractor(func(ctx context.Context, input addNodeInput, output *node.Node) error {
 		wwlog.Debug("api.addNode(ID:%v, Node:%+v)", input.ID, input.Node)
-		// registry is the warewulf node "db" yaml file.
 		if registry, err := node.New(); err != nil {
 			return err
 		} else {
-			if _, ok := registry.Nodes[input.ID]; ok {
-				return status.Wrap(fmt.Errorf("node name '%s' already exists", input.ID), status.InvalidArgument)
+			if input.IfNoneMatch == "*" {
+				if _, ok := registry.Nodes[input.ID]; ok {
+					return status.Wrap(fmt.Errorf("node '%s' already exists", input.ID), status.InvalidArgument)
+				}
 			}
 			for _, profile := range input.Node.Profiles {
 				if _, ok := registry.NodeProfiles[profile]; !ok {

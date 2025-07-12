@@ -54,6 +54,37 @@ func TestProfileAPI(t *testing.T) {
 		assert.JSONEq(t, `{"kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}`, string(body))
 	})
 
+	t.Run("test idempotency", func(t *testing.T) {
+		testProfile := `{"profile": {"kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}}`
+		req, err := http.NewRequest(http.MethodPut, srv.URL+"/api/profiles/test", bytes.NewBuffer([]byte(testProfile)))
+		assert.NoError(t, err)
+
+		resp, err := http.DefaultTransport.RoundTrip(req)
+		assert.NoError(t, err)
+
+		body, err := io.ReadAll(resp.Body)
+		assert.NoError(t, resp.Body.Close())
+		assert.NoError(t, err)
+		assert.JSONEq(t, `{"kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}`, string(body))
+	})
+
+	t.Run("fail if profile already exists (given appropriate header)", func(t *testing.T) {
+		testProfile := `{"profile": {"kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}}`
+		req, err := http.NewRequest(http.MethodPut, srv.URL+"/api/profiles/test", bytes.NewBuffer([]byte(testProfile)))
+		assert.NoError(t, err)
+		req.Header.Set("If-None-Match", "*")
+
+		resp, err := http.DefaultTransport.RoundTrip(req)
+		assert.NoError(t, err)
+
+		body, err := io.ReadAll(resp.Body)
+		assert.NoError(t, resp.Body.Close())
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		assert.Contains(t, string(body), "profile 'test' already exists")
+	})
+
 	t.Run("re-read all profiles", func(t *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, srv.URL+"/api/profiles", nil)
 		assert.NoError(t, err)
@@ -107,6 +138,20 @@ func TestProfileAPI(t *testing.T) {
 		assert.JSONEq(t, `{"kernel": {"version": "v1.0.1-newversion", "args": ["kernel-args"]}}`, string(body))
 	})
 
+	t.Run("test overwrite", func(t *testing.T) {
+		testProfile := `{"profile": {"kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}}`
+		req, err := http.NewRequest(http.MethodPut, srv.URL+"/api/profiles/test", bytes.NewBuffer([]byte(testProfile)))
+		assert.NoError(t, err)
+
+		resp, err := http.DefaultTransport.RoundTrip(req)
+		assert.NoError(t, err)
+
+		body, err := io.ReadAll(resp.Body)
+		assert.NoError(t, resp.Body.Close())
+		assert.NoError(t, err)
+		assert.JSONEq(t, `{"kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}`, string(body))
+	})
+
 	t.Run("test delete a profile", func(t *testing.T) {
 		req, err := http.NewRequest(http.MethodDelete, srv.URL+"/api/profiles/test", nil)
 		assert.NoError(t, err)
@@ -117,6 +162,6 @@ func TestProfileAPI(t *testing.T) {
 		body, err := io.ReadAll(resp.Body)
 		assert.NoError(t, resp.Body.Close())
 		assert.NoError(t, err)
-		assert.JSONEq(t, `{"kernel": {"version": "v1.0.1-newversion", "args": ["kernel-args"]}}`, string(body))
+		assert.JSONEq(t, `{"kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}`, string(body))
 	})
 }
