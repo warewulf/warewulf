@@ -3,8 +3,10 @@ package api
 import (
 	"context"
 	"fmt"
+	"os"
 	"runtime"
 	"sort"
+	"time"
 
 	"dario.cat/mergo"
 	"github.com/swaggest/usecase"
@@ -37,6 +39,57 @@ func getNodes() usecase.Interactor {
 	u.SetTitle("Get nodes")
 	u.SetDescription("Get all nodes, including field values from associated profiles.")
 	u.SetTags("Node")
+	return u
+}
+
+func getNodeOverlayInfo() usecase.Interactor {
+	type getOverlaysInput struct {
+		ID string `path:"id" description:"ID of node to retrieve overlays for"`
+	}
+	type overlayInfo struct {
+		Overlays []string   `json:"overlays,omitempty" yaml:"overlays,omitempty"`
+		MTime    *time.Time `json:"mtime,omitempty" yaml:"mtime,omitempty"`
+	}
+	type getOverlaysOutput struct {
+		SystemOverlay  *overlayInfo `json:"system overlay,omitempty" yaml:"system overlay,omitempty"`
+		RuntimeOverlay *overlayInfo `json:"runtime overlay,omitempty" yaml:"runtime overlay,omitempty"`
+	}
+	u := usecase.NewInteractor(func(ctx context.Context, input *getOverlaysInput, output *getOverlaysOutput) error {
+		wwlog.Debug("api.getNodeOverlayInfo()")
+		if registry, err := node.New(); err != nil {
+			return err
+		} else {
+			if node_, err := registry.GetNode(input.ID); err != nil {
+				return status.Wrap(err, status.NotFound)
+			} else {
+				out := getOverlaysOutput{
+					SystemOverlay: &overlayInfo{
+						Overlays: node_.SystemOverlay,
+					},
+					RuntimeOverlay: &overlayInfo{
+						Overlays: node_.RuntimeOverlay,
+					},
+				}
+				sysImagePath := overlay.OverlayImage(input.ID, "system", node_.SystemOverlay)
+				if sysImageStat, err := os.Stat(sysImagePath); err == nil {
+					mtime := sysImageStat.ModTime()
+					out.SystemOverlay.MTime = &mtime
+				}
+
+				runtimeImagePath := overlay.OverlayImage(input.ID, "runtime", node_.RuntimeOverlay)
+				if runtimeImageStat, err := os.Stat(runtimeImagePath); err == nil {
+					mtime := runtimeImageStat.ModTime()
+					out.RuntimeOverlay.MTime = &mtime
+				}
+				*output = out
+				return nil
+			}
+		}
+	})
+	u.SetTitle("Get overlay info for a node")
+	u.SetDescription("Get system and runtime overlay info for a node.")
+	u.SetTags("Node")
+
 	return u
 }
 
