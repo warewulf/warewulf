@@ -42,23 +42,20 @@ func getNodes() usecase.Interactor {
 	return u
 }
 
-func getNodeOverlays() usecase.Interactor {
+func getNodeOverlayInfo() usecase.Interactor {
 	type getOverlaysInput struct {
 		ID string `path:"id" description:"ID of node to retrieve overlays for"`
 	}
-	type buildEntry struct {
-		MTime string `json:"mtime,omitempty" yaml:"mtime,omitempty"`
-	}
-	type overlayEntry struct {
-		Overlays []string    `json:"overlays,omitempty" yaml:"overlays,omitempty"`
-		Build    *buildEntry `json:"build,omitempty" yaml:"build,omitempty"`
+	type overlayInfo struct {
+		Overlays []string   `json:"overlays,omitempty" yaml:"overlays,omitempty"`
+		MTime    *time.Time `json:"mtime,omitempty" yaml:"mtime,omitempty"`
 	}
 	type getOverlaysOutput struct {
-		SystemOverlay  *overlayEntry `json:"system overlay,omitempty" yaml:"system overlay,omitempty"`
-		RuntimeOverlay *overlayEntry `json:"runtime overlay,omitempty" yaml:"runtime overlay,omitempty"`
+		SystemOverlay  *overlayInfo `json:"system overlay,omitempty" yaml:"system overlay,omitempty"`
+		RuntimeOverlay *overlayInfo `json:"runtime overlay,omitempty" yaml:"runtime overlay,omitempty"`
 	}
 	u := usecase.NewInteractor(func(ctx context.Context, input *getOverlaysInput, output *getOverlaysOutput) error {
-		wwlog.Debug("api.getNodeOverlays()")
+		wwlog.Debug("api.getNodeOverlayInfo()")
 		if registry, err := node.New(); err != nil {
 			return err
 		} else {
@@ -66,23 +63,23 @@ func getNodeOverlays() usecase.Interactor {
 				return status.Wrap(err, status.NotFound)
 			} else {
 				out := getOverlaysOutput{
-					SystemOverlay: &overlayEntry{
+					SystemOverlay: &overlayInfo{
 						Overlays: node_.SystemOverlay,
-						Build:    &buildEntry{},
 					},
-					RuntimeOverlay: &overlayEntry{
+					RuntimeOverlay: &overlayInfo{
 						Overlays: node_.RuntimeOverlay,
-						Build:    &buildEntry{},
 					},
 				}
 				sysImagePath := overlay.OverlayImage(input.ID, "system", node_.SystemOverlay)
 				if sysImageStat, err := os.Stat(sysImagePath); err == nil {
-					out.SystemOverlay.Build.MTime = sysImageStat.ModTime().Format(time.RFC3339)
+					mtime := sysImageStat.ModTime()
+					out.SystemOverlay.MTime = &mtime
 				}
 
 				runtimeImagePath := overlay.OverlayImage(input.ID, "runtime", node_.RuntimeOverlay)
 				if runtimeImageStat, err := os.Stat(runtimeImagePath); err == nil {
-					out.RuntimeOverlay.Build.MTime = runtimeImageStat.ModTime().Format(time.RFC3339)
+					mtime := runtimeImageStat.ModTime()
+					out.RuntimeOverlay.MTime = &mtime
 				}
 				*output = out
 				return nil
