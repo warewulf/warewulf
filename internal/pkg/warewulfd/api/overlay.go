@@ -223,28 +223,32 @@ func deleteOverlay() usecase.Interactor {
 
 	u := usecase.NewInteractor(func(ctx context.Context, input deleteOverlayInput, output *OverlayResponse) error {
 		wwlog.Debug("api.deleteOverlay(Name:%v, Force:%v)", input.Name, input.Force)
-		if registry, err := node.New(); err != nil {
-			return err
-		} else {
-			nodesCount := len(registry.ListNodesUsingOverlay(input.Name))
-			profilesCount := len(registry.ListProfilesUsingOverlay(input.Name))
-			if nodesCount > 0 || profilesCount > 0 {
-				return status.Wrap(fmt.Errorf(
-					"overlay '%s' is in use by %v nodes and %v profiles", input.Name, nodesCount, profilesCount),
-					status.InvalidArgument)
-			}
-		}
-		*output = *NewOverlayResponse(input.Name)
 		overlay_ := overlay.GetSiteOverlay(input.Name)
 		if input.Force {
 			if err := os.RemoveAll(overlay_.Path()); err != nil {
 				return err
 			}
 		} else {
-			if err := os.Remove(overlay_.Path()); err != nil {
+			if registry, err := node.New(); err != nil {
 				return err
+			} else {
+				nodesCount := len(registry.ListNodesUsingOverlay(input.Name))
+				profilesCount := len(registry.ListProfilesUsingOverlay(input.Name))
+				if nodesCount > 0 || profilesCount > 0 {
+					return status.Wrap(fmt.Errorf(
+						"overlay '%s' is in use by %v nodes and %v profiles", input.Name, nodesCount, profilesCount),
+						status.InvalidArgument)
+				}
+			}
+			if err := os.Remove(overlay_.Rootfs()); err != nil {
+				return status.Wrap(fmt.Errorf("failed to remove overlay rootfs: %v", err), status.Code(409))
+			} else {
+				if err := os.Remove(overlay_.Path()); err != nil {
+					return status.Wrap(fmt.Errorf("failed to remove overlay: %v", err), status.Code(409))
+				}
 			}
 		}
+		*output = *NewOverlayResponse(input.Name)
 		return nil
 	})
 	u.SetTitle("Delete an overlay")

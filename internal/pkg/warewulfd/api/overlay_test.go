@@ -128,6 +128,6 @@ func TestOverlayAPI(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NoError(t, resp.Body.Close())
 
-		assert.JSONEq(t, `{"files":null, "site":true}`, string(body))
+		assert.JSONEq(t, `{"files":[], "site":true}`, string(body))
 	})
 }
