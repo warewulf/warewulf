@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 - Restore default idempotency of `PUT /api/nodes/{id}`
+- `DELETE /api/overlays/{name}?force=true` can delete overlays that are in use
 
 ### Changed
 
