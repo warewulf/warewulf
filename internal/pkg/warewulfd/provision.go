@@ -76,7 +76,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 	// TODO: when module version is upgraded to go1.18, should be 'any' type
 	var tmpl_data *templateVars
 
-	remoteNode, err := GetNodeOrSetDiscoverable(rinfo.hwaddr)
+	remoteNode, err := GetNodeOrSetDiscoverable(rinfo.hwaddr, conf.Warewulf.AutobuildOverlays())
 	if err != nil && err != node.ErrNoUnconfigured {
 		wwlog.ErrorExc(err, "")
 		w.WriteHeader(http.StatusServiceUnavailable)

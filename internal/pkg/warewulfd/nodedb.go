@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -53,7 +54,7 @@ func loadNodeDB() (err error) {
 	return nil
 }
 
-func GetNodeOrSetDiscoverable(hwaddr string) (node.Node, error) {
+func GetNodeOrSetDiscoverable(hwaddr string, autobuildOverlays bool) (node.Node, error) {
 	db.lock.RLock()
 	defer db.lock.RUnlock()
 	// NOTE: since discoverable nodes will write an updated DB to file and then
@@ -97,9 +98,14 @@ func GetNodeOrSetDiscoverable(hwaddr string) (node.Node, error) {
 	if err != nil {
 		return nodeFound, fmt.Errorf("%s (failed to reload configuration) %w", hwaddr, err)
 	}
-	// NOTE: previously all overlays were built here, but that will also
-	// be done automatically when attempting to serve an overlay that
-	// hasn't been built (without blocking the database).
+	if autobuildOverlays {
+		if err := overlay.ClearOverlayImage(nodeFound.Id(), "system", []string{}); err != nil {
+			wwlog.Warn("Failed to clear system overlay image: %s: %s", nodeFound.Id(), err)
+		}
+		if err := overlay.ClearOverlayImage(nodeFound.Id(), "runtime", []string{}); err != nil {
+			wwlog.Warn("Failed to clear runtime overlay image: %s: %s", nodeFound.Id(), err)
+		}
+	}
 
 	wwlog.Serv("%s (node %s automatically configured)", hwaddr, nodeFound.Id())
 
