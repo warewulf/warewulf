@@ -256,3 +256,35 @@ func deleteOverlay() usecase.Interactor {
 	u.SetTags("Overlay")
 	return u
 }
+
+func deleteOverlayFile() usecase.Interactor {
+	type deleteOverlayFileInput struct {
+		Name    string `path:"name" required:"true" description:"Name of overlay to get a file from"`
+		Path    string `query:"path" required:"true" description:"Path to file to get from an overlay"`
+		Force   bool   `query:"force" default:"false" description:"Whether to forcely delete a overlay, default:'false'"`
+		Cleanup bool   `query:"cleanup" default:"false" description:"Whether to cleanup empty parent directories, default:'false'"`
+	}
+
+	u := usecase.NewInteractor(func(ctx context.Context, input deleteOverlayFileInput, output *OverlayResponse) error {
+		wwlog.Debug("api.deleteOverlayFile(Name:%v, Path:%v)", input.Name, input.Path)
+		if input.Path == "" {
+			return status.Wrap(fmt.Errorf("must specify a path"), status.InvalidArgument)
+		}
+
+		if relPath, err := url.QueryUnescape(input.Path); err != nil {
+			return fmt.Errorf("failed to decode path: %v: %w", input.Path, err)
+		} else {
+			overlay_ := overlay.GetOverlay(input.Name)
+			err := overlay_.DeleteFile(relPath, input.Force, input.Cleanup)
+			if err != nil {
+				return fmt.Errorf("unable to delete overlay file %v: %v: %w", input.Name, relPath, err)
+			}
+		}
+		*output = *NewOverlayResponse(input.Name)
+		return nil
+	})
+	u.SetTitle("Delete a file from an overlay")
+	u.SetDescription("Delete a file from an overlay from the overlay name and file path")
+	u.SetTags("Overlay")
+	return u
+}
