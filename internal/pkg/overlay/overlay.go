@@ -66,8 +66,22 @@ func (overlay Overlay) Rootfs() string {
 //
 // Returns:
 //   - The full path to the specified file in the overlay's rootfs.
+//     If the specified path does not exist in the overlay, the empty string is returned.
 func (overlay Overlay) File(filePath string) string {
-	return path.Join(overlay.Rootfs(), filePath)
+	rootfs := overlay.Rootfs()
+	fullPath := path.Join(rootfs, filePath)
+	cleanPath := filepath.Clean(fullPath)
+	cleanRootfs := filepath.Clean(rootfs)
+	rel, err := filepath.Rel(cleanRootfs, cleanPath)
+	if err != nil {
+		return ""
+	}
+
+	if strings.HasPrefix(rel, "..") {
+		return ""
+	}
+
+	return cleanPath
 }
 
 // Exists checks whether the overlay path exists and is a directory.

@@ -259,9 +259,9 @@ func deleteOverlay() usecase.Interactor {
 
 func deleteOverlayFile() usecase.Interactor {
 	type deleteOverlayFileInput struct {
-		Name    string `path:"name" required:"true" description:"Name of overlay to get a file from"`
-		Path    string `query:"path" required:"true" description:"Path to file to get from an overlay"`
-		Force   bool   `query:"force" default:"false" description:"Whether to forcely delete a overlay, default:'false'"`
+		Name    string `path:"name" required:"true" description:"Name of overlay to delete a file from"`
+		Path    string `query:"path" required:"true" description:"Path to file to delete from an overlay"`
+		Force   bool   `query:"force" default:"false" description:"Whether to forcefully delete an overlay file, default:'false'"`
 		Cleanup bool   `query:"cleanup" default:"false" description:"Whether to cleanup empty parent directories, default:'false'"`
 	}
 
