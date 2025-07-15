@@ -34,6 +34,7 @@ func Handler(auth *config.Authentication, allowedNets []net.IPNet) *web.Service 
 			r.Method(http.MethodGet, "/{id}/fields", nethttp.NewHandler(getNodeFields()))
 			r.Method(http.MethodPost, "/overlays/build", nethttp.NewHandler(buildAllOverlays()))
 			r.Method(http.MethodPost, "/{id}/overlays/build", nethttp.NewHandler(buildOverlays()))
+			r.Method(http.MethodGet, "/{id}/overlays", nethttp.NewHandler(getNodeOverlayInfo()))
 		})
 	})
 
@@ -71,6 +72,7 @@ func Handler(auth *config.Authentication, allowedNets []net.IPNet) *web.Service 
 			r.Method(http.MethodGet, "/{name}/file", nethttp.NewHandler(getOverlayFile()))
 			r.Method(http.MethodPut, "/{name}", nethttp.NewHandler(createOverlay()))
 			r.Method(http.MethodDelete, "/{name}", nethttp.NewHandler(deleteOverlay()))
+			r.Method(http.MethodDelete, "/{name}/file", nethttp.NewHandler(deleteOverlayFile()))
 		})
 	})
 

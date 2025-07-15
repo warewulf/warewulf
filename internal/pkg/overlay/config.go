@@ -54,7 +54,7 @@ func (overlay Overlay) Create() error {
 	if util.IsDir(overlay.Path()) {
 		return fmt.Errorf("overlay already exists: %s", overlay)
 	}
-	return os.MkdirAll(overlay.Rootfs(), 0755)
+	return os.MkdirAll(overlay.Rootfs(), 0o755)
 }
 
 // Creates a site overlay from an existing distribution overlay.
@@ -69,7 +69,7 @@ func (overlay Overlay) CloneSiteOverlay() (siteOverlay Overlay, err error) {
 		return siteOverlay, fmt.Errorf("site overlay already exists: %s", siteOverlay.Name())
 	}
 	if !util.IsDir(filepath.Dir(overlay.Path())) {
-		if err := os.MkdirAll(filepath.Dir(overlay.Path()), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(overlay.Path()), 0o755); err != nil {
 			return siteOverlay, err
 		}
 	}
