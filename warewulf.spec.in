@@ -61,10 +61,10 @@ Requires: ipxe-bootimgs-aarch64
 %endif
 
 %if 0%{?rhel} >= 8 || 0%{?suse_version} || 0%{?fedora}
-Requires: dhcp-server
+Requires: dnsmasq
 %else
 # rhel < 8
-Requires: dhcp
+Requires: dnsmasq
 %endif
 
 BuildRequires: git
