@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+### Added
+
+- Added system and runtime overlay built time.
+- Support If-None-Match header in `PUT /api/nodes/{id}`
+- Added `DELETE /api/overlays/{name}/file?path={path}`
+- Added `PUT /api/overlays{name}file?path={path}`
+
+### Changed
+
+- Restore default idempotency of `PUT /api/nodes/{id}`
+- `DELETE /api/overlays/{name}?force=true` can delete overlays that are in use
+
 ### Changed
 
 - `warewulfd` overlay autobuild rebuilds overlays after node discovery. #1468
@@ -60,6 +72,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add a new OpenAPI v3 REST API to warewulfd at /api. #1588
 - New sos plugin in `warewulf-sos` subpackage. #1822
 - Add `--retry-connrefused` to dracut curl commands. #1800
+- Support for updating overlay file.
 
 ### Fixed
 

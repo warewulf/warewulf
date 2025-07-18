@@ -57,8 +57,9 @@ func getProfileByID() usecase.Interactor {
 
 func addProfile() usecase.Interactor {
 	type addProfileInput struct {
-		ID      string       `path:"id" required:"true" description:"ID of profile to add"`
-		Profile node.Profile `json:"profile" required:"true" description:"Field values in JSON format for added profile"`
+		ID          string       `path:"id" required:"true" description:"ID of profile to add"`
+		Profile     node.Profile `json:"profile" required:"true" description:"Field values in JSON format for added profile"`
+		IfNoneMatch string       `header:"If-None-Match" description:"Set to '*' to indicate that the profile should only be created if it does not already exist"`
 	}
 
 	u := usecase.NewInteractor(func(ctx context.Context, input addProfileInput, output *node.Profile) error {
@@ -66,6 +67,11 @@ func addProfile() usecase.Interactor {
 		if registry, err := node.New(); err != nil {
 			return err
 		} else {
+			if input.IfNoneMatch == "*" {
+				if _, ok := registry.NodeProfiles[input.ID]; ok {
+					return status.Wrap(fmt.Errorf("profile '%s' already exists", input.ID), status.InvalidArgument)
+				}
+			}
 			for _, profile := range input.Profile.Profiles {
 				if _, ok := registry.NodeProfiles[profile]; !ok {
 					return status.Wrap(fmt.Errorf("profile '%s' does not exist", profile), status.InvalidArgument)
