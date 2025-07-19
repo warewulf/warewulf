@@ -11,15 +11,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added system and runtime overlay built time.
 - Support If-None-Match header in `PUT /api/nodes/{id}`
 - Added `DELETE /api/overlays/{name}/file?path={path}`
-
-### Changed
-
-- Restore default idempotency of `PUT /api/nodes/{id}`
-- `DELETE /api/overlays/{name}?force=true` can delete overlays that are in use
+- Added `GET|POST /api/power/{id}`
 
 ### Changed
 
 - `warewulfd` overlay autobuild rebuilds overlays after node discovery. #1468
+- Restore default idempotency of `PUT /api/nodes/{id}`
+- `DELETE /api/overlays/{name}?force=true` can delete overlays that are in use
 
 ## v4.6.2, 2025-07-09
 
