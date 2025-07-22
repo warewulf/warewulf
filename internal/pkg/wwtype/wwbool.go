@@ -33,6 +33,14 @@ func (val WWbool) Bool() bool {
 	return bval
 }
 
+/*
+Return a pointer to a bool
+*/
+func (val WWbool) BoolPtr() *bool {
+	ret := val.Bool()
+	return &ret
+}
+
 func (val WWbool) BoolDefaultTrue() bool {
 	str := strings.ToLower(string(val))
 	if isUnsetValue(str) {
@@ -88,4 +96,12 @@ var unsetValues = []string{"unset", "delete", "undef", "--", "nil", "0.0.0.0"}
 
 func isUnsetValue(value string) bool {
 	return util.InSlice(unsetValues, strings.ToLower(value))
+}
+
+/*
+Parse a string to a WWBool
+*/
+func Parse(in string) (ret WWbool) {
+	ret.Set(in)
+	return
 }
