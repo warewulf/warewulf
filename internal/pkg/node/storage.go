@@ -115,7 +115,7 @@ func (node *Node) GetIgnitionStorage() (stor types_3_4.Storage, rep string, err 
 		myFs := types_3_4.Filesystem{
 			Device:         fsdevice,
 			Path:           &fs.Path,
-			WipeFilesystem: &wipe,
+			WipeFilesystem: wipe.BoolPtr(),
 		}
 		if fs.Format != "" {
 			myFs.Format = &fs.Format
@@ -156,14 +156,14 @@ func (node *Node) GetIgnitionStorage() (stor types_3_4.Storage, rep string, err 
 			myPart := types_3_4.Partition{
 				Label:              &label,
 				Number:             number,
-				ShouldExist:        &shouldExist,
-				WipePartitionEntry: &wipe,
+				ShouldExist:        shouldExist.BoolPtr(),
+				WipePartitionEntry: wipe.BoolPtr(),
 			}
 			if part.Guid != "" {
 				myPart.GUID = &part.Guid
 			}
-			if part.Resize {
-				myPart.Resize = &resize
+			if part.Resize.Bool() {
+				myPart.Resize = resize.BoolPtr()
 			}
 			if part.SizeMiB != "" {
 				var size int
@@ -202,7 +202,7 @@ func (node *Node) GetIgnitionStorage() (stor types_3_4.Storage, rep string, err 
 		disks = append(disks, types_3_4.Disk{
 			Device:     diskDev,
 			Partitions: partitions,
-			WipeTable:  &wipe,
+			WipeTable:  wipe.BoolPtr(),
 		})
 	}
 	stor = types_3_4.Storage{
