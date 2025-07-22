@@ -589,11 +589,11 @@ nodes:
   n1:
     disks:
       /dev/vda:
-        wipe_table: true
+        wipe_table: "true"
         partitions:
           scratch:
             number: "1"
-            should_exist: true
+            should_exist: "true"
           swap:
             number: "2"
             size_mib: "1024"
