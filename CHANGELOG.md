@@ -48,6 +48,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `DELETE /api/overlays/{name}?force=true` can delete overlays that are in use
 - `warewulfd` overlay autobuild rebuilds overlays after node discovery. #1468
 - Improved netplan support. #1873
+- fixed boolean options for the disk related seetings
 
 ### Fixed
 
