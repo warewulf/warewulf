@@ -289,7 +289,7 @@ func deleteOverlayFile() usecase.Interactor {
 	return u
 }
 
-func updateOverlay() usecase.Interactor {
+func updateOverlayFile() usecase.Interactor {
 	type updateOverlayInput struct {
 		Name    string `path:"name" required:"true" description:"Name of overlay to update"`
 		Path    string `query:"path" required:"true" description:"Path to file to get from an overlay"`

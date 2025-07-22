@@ -91,7 +91,7 @@ func TestOverlayAPI(t *testing.T) {
 	})
 
 	t.Run("update overlay file", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodPatch, srv.URL+"/api/overlays/testoverlay/file?path=email.ww", bytes.NewReader([]byte("{\"content\":\"hello world\"}")))
+		req, err := http.NewRequest(http.MethodPut, srv.URL+"/api/overlays/testoverlay/file?path=email.ww", bytes.NewReader([]byte("{\"content\":\"hello world\"}")))
 		assert.NoError(t, err)
 
 		// set request
