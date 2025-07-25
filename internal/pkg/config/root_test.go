@@ -21,6 +21,7 @@ warewulf:
   host overlay: true
   port: 9873
   secure: true
+  systemd name: warewuld
   update interval: 60
 nfs:
   enabled: true
@@ -115,6 +116,7 @@ warewulf:
   host overlay: true
   port: 9873
   secure: true
+  systemd name: warewuld
   update interval: 60
 nfs:
   enabled: true
@@ -206,6 +208,7 @@ warewulf:
   host overlay: true
   port: 9873
   secure: true
+  systemd name: warewuld
   update interval: 60
 nfs:
   enabled: true
@@ -280,6 +283,7 @@ warewulf:
   host overlay: true
   port: 9873
   secure: false
+  systemd name: warewuld
   update interval: 60
 nfs:
   enabled: true

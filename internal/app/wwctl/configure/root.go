@@ -7,6 +7,7 @@ import (
 	"github.com/warewulf/warewulf/internal/app/wwctl/configure/nfs"
 	"github.com/warewulf/warewulf/internal/app/wwctl/configure/ssh"
 	"github.com/warewulf/warewulf/internal/app/wwctl/configure/tftp"
+	"github.com/warewulf/warewulf/internal/app/wwctl/configure/warewulfd"
 )
 
 var (
@@ -28,6 +29,7 @@ func init() {
 	baseCmd.AddCommand(ssh.GetCommand())
 	baseCmd.AddCommand(nfs.GetCommand())
 	baseCmd.AddCommand(hostfile.GetCommand())
+	baseCmd.AddCommand(warewulfd.GetCommand())
 
 	baseCmd.Flags().BoolVarP(&allFunctions, "all", "a", false, "Configure all services")
 }
