@@ -114,12 +114,14 @@ func (overlay Overlay) IsDistributionOverlay() bool {
 	return path.Dir(overlay.Path()) == config.Get().Paths.DistributionOverlaydir()
 }
 
-func (overlay Overlay) CreateOverlayFile(filePath string, content []byte, force bool) error {
+func (overlay Overlay) AddFile(filePath string, content []byte, parents bool, force bool) error {
 	wwlog.Info("Creating file %s in overlay %s, force: %v", filePath, overlay.Name(), force)
 	fullPath := overlay.File(filePath)
 	// create necessary parent directories
-	if err := os.MkdirAll(path.Dir(fullPath), 0o755); err != nil {
-		return fmt.Errorf("failed to create parent directories for %s: %w", fullPath, err)
+	if parents {
+		if err := os.MkdirAll(path.Dir(fullPath), 0o755); err != nil {
+			return fmt.Errorf("failed to create parent directories for %s: %w", fullPath, err)
+		}
 	}
 
 	// if the file already exists and force is false, return an error

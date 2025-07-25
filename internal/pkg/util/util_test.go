@@ -92,19 +92,3 @@ func Test_FindFilterFiles(t *testing.T) {
 		})
 	}
 }
-
-func Test_Overwrite(t *testing.T) {
-	t.Run("overwrite a file", func(t *testing.T) {
-		env := testenv.New(t)
-		defer env.RemoveAll()
-		env.CreateFile("file")
-		env.WriteFile("file", "hello world")
-
-		assert.Equal(t, "hello world", env.ReadFile("file"))
-
-		err := OverwriteFile(env.GetPath("file"), []byte("hello warewulf"))
-		assert.NoError(t, err)
-
-		assert.Equal(t, "hello warewulf", env.ReadFile("file"))
-	})
-}
