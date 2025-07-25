@@ -362,21 +362,6 @@ func AppendLines(fileName string, lines []string) error {
 	return nil
 }
 
-func OverwriteFile(fileName string, content []byte) error {
-	wwlog.Verbose("overwrite file %s", fileName)
-	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_TRUNC, 0o644)
-	if err != nil {
-		return fmt.Errorf("failed to open file: %s, err: %w", fileName, err)
-	}
-	defer file.Close()
-
-	_, err = file.Write(content)
-	if err != nil {
-		return fmt.Errorf("while writing file: %s, err: %w", fileName, err)
-	}
-	return file.Sync()
-}
-
 /*
 ******************************************************************************
 

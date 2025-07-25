@@ -215,39 +215,6 @@ func createOverlay() usecase.Interactor {
 	return u
 }
 
-func createOverlayFile() usecase.Interactor {
-	type createOverlayFileInput struct {
-		Name    string `path:"name" required:"true" description:"Name of overlay to create a file in"`
-		Path    string `query:"path" required:"true" description:"Path to file to create in an overlay"`
-		Force   bool   `query:"force" default:"false" description:"Whether to forcefully create an overlay file, default:'false'"`
-		Content string `json:"content" required:"true" description:"Content of the file to create"`
-	}
-
-	u := usecase.NewInteractor(func(ctx context.Context, input createOverlayFileInput, output *OverlayResponse) error {
-		wwlog.Debug("api.createOverlayFile(Name:%v, Path:%v, Force: %v)", input.Name, input.Path, input.Force)
-		if input.Path == "" {
-			return status.Wrap(fmt.Errorf("must specify a path"), status.InvalidArgument)
-		}
-		if input.Content == "" {
-			return status.Wrap(fmt.Errorf("content should not be empty"), status.InvalidArgument)
-		}
-		if relPath, err := url.QueryUnescape(input.Path); err != nil {
-			return fmt.Errorf("failed to decode path: %v: %w", input.Path, err)
-		} else {
-			newOverlay := overlay.GetOverlay(input.Name)
-			if err := newOverlay.CreateOverlayFile(relPath, []byte(input.Content), input.Force); err != nil {
-				return fmt.Errorf("unable to create overlay file %v: %v: %w", input.Name, relPath, err)
-			}
-			*output = *NewOverlayResponse(input.Name)
-			return nil
-		}
-	})
-	u.SetTitle("Create a file in an overlay")
-	u.SetDescription("Create a file in an overlay from the overlay name and file path.")
-	u.SetTags("Overlay")
-	return u
-}
-
 func deleteOverlay() usecase.Interactor {
 	type deleteOverlayInput struct {
 		Name  string `path:"name" required:"true" description:"Name of overlay to delete"`
@@ -322,36 +289,35 @@ func deleteOverlayFile() usecase.Interactor {
 	return u
 }
 
-func updateOverlayFile() usecase.Interactor {
-	type updateOverlayInput struct {
-		Name    string `path:"name" required:"true" description:"Name of overlay to update"`
-		Path    string `query:"path" required:"true" description:"Path to file to get from an overlay"`
-		Content string `json:"content" required:"true" description:"New content"`
+func addOverlayFile() usecase.Interactor {
+	type createOverlayFileInput struct {
+		Name        string `path:"name" required:"true" description:"Name of overlay to add a file to"`
+		Path        string `query:"path" required:"true" description:"Path to file to create in the overlay"`
+		Content     string `json:"content" required:"true" description:"Content of the file to create"`
+		IfNoneMatch string `header:"If-None-Match" description:"Set to '*' to indicate that the file should only be added if it does not already exist"`
 	}
 
-	u := usecase.NewInteractor(func(ctx context.Context, input updateOverlayInput, output *OverlayResponse) error {
-		wwlog.Debug("api.updateOverlay(Name: %s)", input.Name)
+	u := usecase.NewInteractor(func(ctx context.Context, input createOverlayFileInput, output *OverlayResponse) error {
+		wwlog.Debug("api.addOverlayFile(Name:%v, Path:%v, IfNoneMatch: %v)", input.Name, input.Path, input.IfNoneMatch)
 		if input.Path == "" {
 			return status.Wrap(fmt.Errorf("must specify a path"), status.InvalidArgument)
 		}
 		if input.Content == "" {
-			return status.Wrap(fmt.Errorf("new content should not be empty"), status.InvalidArgument)
+			return status.Wrap(fmt.Errorf("content should not be empty"), status.InvalidArgument)
 		}
-		*output = *NewOverlayResponse(input.Name)
-
 		if relPath, err := url.QueryUnescape(input.Path); err != nil {
-			return status.Wrap(fmt.Errorf("failed to decode path"), status.InvalidArgument)
+			return fmt.Errorf("failed to decode path: %v: %w", input.Path, err)
 		} else {
 			overlay_ := overlay.GetOverlay(input.Name)
-			file := overlay_.File(relPath)
-			if err := util.OverwriteFile(file, []byte(input.Content)); err != nil {
-				return fmt.Errorf("failed to overwrite file: %s, err: %w", file, err)
+			if err := overlay_.AddFile(relPath, []byte(input.Content), true, !(input.IfNoneMatch == "*")); err != nil {
+				return fmt.Errorf("unable to add overlay file %v: %v: %w", input.Name, relPath, err)
 			}
+			*output = *NewOverlayResponse(input.Name)
+			return nil
 		}
-		return nil
 	})
-	u.SetTitle("Update an overlay")
-	u.SetDescription("Update an overlay")
+	u.SetTitle("Add a file to an overlay")
+	u.SetDescription("Add a file to an overlay from the overlay name and file path.")
 	u.SetTags("Overlay")
 	return u
 }

@@ -732,7 +732,7 @@ func Test_CreateOverlayFile(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			newOverlay := GetSiteOverlay(tt.overlayName)
-			err := newOverlay.CreateOverlayFile(tt.filePath, tt.content, tt.force)
+			err := newOverlay.AddFile(tt.filePath, tt.content, true, tt.force)
 			assert.NoError(t, err)
 
 			newFile := newOverlay.File(tt.filePath)
