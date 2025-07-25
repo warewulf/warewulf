@@ -20,33 +20,32 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if allFunctions {
+		err = configure.WAREWULFD()
+		if err != nil {
+			return err
+		}
 		err = configure.DHCP()
 		if err != nil {
-			wwlog.Error("%s", err)
-			os.Exit(1)
+			return err
 		}
 
 		err = configure.NFS()
 		if err != nil {
-			wwlog.Error("%s", err)
-			os.Exit(1)
+			return err
 		}
 
 		err = configure.SSH(warewulfconf.Get().SSH.KeyTypes...)
 		if err != nil {
-			wwlog.Error("%s", err)
-			os.Exit(1)
+			return err
 		}
 
 		err = configure.TFTP()
 		if err != nil {
-			wwlog.Error("%s", err)
-			os.Exit(1)
+			return err
 		}
 		err = configure.Hostfile()
 		if err != nil {
-			wwlog.Error("%s", err)
-			os.Exit(1)
+			return err
 		}
 
 	} else {
