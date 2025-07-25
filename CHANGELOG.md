@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 - Improved netplan support. #1873
+- Added warewuld to `wwctl configure`
 
 ## v4.6.2, 2025-07-09
 
