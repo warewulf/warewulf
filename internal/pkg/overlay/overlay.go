@@ -116,6 +116,16 @@ func (overlay Overlay) IsDistributionOverlay() bool {
 
 func (overlay Overlay) AddFile(filePath string, content []byte, parents bool, force bool) error {
 	wwlog.Info("Creating file %s in overlay %s, force: %v", filePath, overlay.Name(), force)
+
+	if overlay.IsDistributionOverlay() {
+		siteOverlay, err := overlay.CloneSiteOverlay()
+		if err != nil {
+			return fmt.Errorf("failed to clone distribution overlay '%s' to site overlay: %w", overlay.Name(), err)
+		}
+		// replace the overlay with newly creatd siteOverlay
+		overlay = siteOverlay
+	}
+
 	fullPath := overlay.File(filePath)
 	// create necessary parent directories
 	if parents {
