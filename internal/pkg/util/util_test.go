@@ -9,7 +9,7 @@ import (
 )
 
 func Test_FindFiles(t *testing.T) {
-	var tests = map[string]struct {
+	tests := map[string]struct {
 		createFiles []string
 		findFiles   []string
 	}{
@@ -43,7 +43,7 @@ func Test_FindFiles(t *testing.T) {
 }
 
 func Test_FindFilterFiles(t *testing.T) {
-	var tests = map[string]struct {
+	tests := map[string]struct {
 		createFiles []string
 		include     []string
 		exclude     []string

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"io"
 	"net"
 	"net/http"
@@ -89,6 +90,46 @@ func TestOverlayAPI(t *testing.T) {
 		}`)
 	})
 
+	t.Run("update overlay file", func(t *testing.T) {
+		req, err := http.NewRequest(http.MethodPut, srv.URL+"/api/overlays/testoverlay/file?path=email.ww", bytes.NewReader([]byte("{\"content\":\"hello world\"}")))
+		assert.NoError(t, err)
+
+		// set request
+		resp, err := http.DefaultTransport.RoundTrip(req)
+		assert.NoError(t, err)
+
+		// validate the resp
+		body, err := io.ReadAll(resp.Body)
+		assert.NoError(t, err)
+		assert.NoError(t, resp.Body.Close())
+
+		assert.JSONEq(t, `{"files":["/email.ww"], "site":false}`, string(body))
+
+		// get again
+		req, err = http.NewRequest(http.MethodGet, srv.URL+"/api/overlays/testoverlay/file?path=email.ww", nil)
+		assert.NoError(t, err)
+
+		// send request
+		resp, err = http.DefaultTransport.RoundTrip(req)
+		assert.NoError(t, err)
+
+		// validate the resp
+		body, err = io.ReadAll(resp.Body)
+		assert.NoError(t, err)
+		assert.NoError(t, resp.Body.Close())
+
+		ja := jsonassert.New(t)
+		ja.Assert(string(body), `
+		{
+			"overlay": "testoverlay",
+			"path": "email.ww",
+			"contents": "hello world",
+			"perms": "<<PRESENCE>>",
+			"uid": "<<PRESENCE>>",
+			"gid": "<<PRESENCE>>"
+		}`)
+	})
+
 	t.Run("create an overlay", func(t *testing.T) {
 		req, err := http.NewRequest(http.MethodPut, srv.URL+"/api/overlays/test", nil)
 		assert.NoError(t, err)
@@ -117,6 +158,20 @@ func TestOverlayAPI(t *testing.T) {
 		assert.JSONEq(t, `{"test":{"files":null, "site":true},"testoverlay":{"files":["/email.ww"], "site":false}}`, string(body))
 	})
 
+	t.Run("test delete overlay file", func(t *testing.T) {
+		req, err := http.NewRequest(http.MethodDelete, srv.URL+"/api/overlays/testoverlay/file?path=email.ww&force=true", nil)
+		assert.NoError(t, err)
+
+		resp, err := http.DefaultTransport.RoundTrip(req)
+		assert.NoError(t, err)
+
+		body, err := io.ReadAll(resp.Body)
+		assert.NoError(t, err)
+		assert.NoError(t, resp.Body.Close())
+
+		assert.JSONEq(t, `{"files":null, "site":true}`, string(body))
+	})
+
 	t.Run("test delete overlays", func(t *testing.T) {
 		req, err := http.NewRequest(http.MethodDelete, srv.URL+"/api/overlays/test?force=true", nil)
 		assert.NoError(t, err)
@@ -128,6 +183,6 @@ func TestOverlayAPI(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NoError(t, resp.Body.Close())
 
-		assert.JSONEq(t, `{"files":null, "site":true}`, string(body))
+		assert.JSONEq(t, `{"files":[], "site":true}`, string(body))
 	})
 }
