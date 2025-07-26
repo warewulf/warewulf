@@ -77,6 +77,15 @@ func Handler(auth *config.Authentication, allowedNets []net.IPNet) *web.Service 
 		})
 	})
 
+	api.Route("/api/power", func(r chi.Router) {
+		r.Group(func(r chi.Router) {
+			r.Use(AuthMiddleware(auth, allowedNets))
+
+			r.Method(http.MethodGet, "/{id}", nethttp.NewHandler(getPower()))
+			r.Method(http.MethodPost, "/{id}", nethttp.NewHandler(setPower()))
+		})
+	})
+
 	api.Docs("/api/docs", swgui.New)
 
 	return api
