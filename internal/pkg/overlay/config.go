@@ -68,8 +68,8 @@ func (overlay Overlay) CloneSiteOverlay() (siteOverlay Overlay, err error) {
 	if siteOverlay.Exists() {
 		return siteOverlay, fmt.Errorf("site overlay already exists: %s", siteOverlay.Name())
 	}
-	if !util.IsDir(filepath.Dir(overlay.Path())) {
-		if err := os.MkdirAll(filepath.Dir(overlay.Path()), 0o755); err != nil {
+	if !util.IsDir(filepath.Dir(siteOverlay.Path())) {
+		if err := os.MkdirAll(filepath.Dir(siteOverlay.Path()), 0o755); err != nil {
 			return siteOverlay, err
 		}
 	}

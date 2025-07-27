@@ -17,13 +17,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Restore default idempotency of `PUT /api/nodes/{id}`
 - `DELETE /api/overlays/{name}?force=true` can delete overlays that are in use
-
-### Changed
-
 - `warewulfd` overlay autobuild rebuilds overlays after node discovery. #1468
 ### Fixed
 
 - Improved netplan support. #1873
+
+### Fixed
+
+- Fixed a bug when cloning an overlay to site when parent is missing
 
 ## v4.6.2, 2025-07-09
 

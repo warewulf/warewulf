@@ -330,7 +330,7 @@ func FindOverlays() (overlayList []string) {
 		files = append(files, distfiles...)
 	}
 	if sitefiles, err := os.ReadDir(controller.Paths.SiteOverlaydir()); err != nil {
-		wwlog.Warn("error reading overalys from %s: %s", controller.Paths.SiteOverlaydir(), err)
+		wwlog.Warn("error reading overlays from %s: %s", controller.Paths.SiteOverlaydir(), err)
 	} else {
 		files = append(files, sitefiles...)
 	}

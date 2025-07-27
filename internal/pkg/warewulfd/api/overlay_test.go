@@ -103,7 +103,7 @@ func TestOverlayAPI(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NoError(t, resp.Body.Close())
 
-		assert.JSONEq(t, `{"files":["/email.ww"], "site":false}`, string(body))
+		assert.JSONEq(t, `{"files":["/email.ww"], "site":true}`, string(body))
 
 		// get again
 		req, err = http.NewRequest(http.MethodGet, srv.URL+"/api/overlays/testoverlay/file?path=email.ww", nil)
@@ -155,7 +155,7 @@ func TestOverlayAPI(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NoError(t, resp.Body.Close())
 
-		assert.JSONEq(t, `{"test":{"files":null, "site":true},"testoverlay":{"files":["/email.ww"], "site":false}}`, string(body))
+		assert.JSONEq(t, `{"test":{"files":null, "site":true},"testoverlay":{"files":["/email.ww"], "site":true}}`, string(body))
 	})
 
 	t.Run("test delete overlay file", func(t *testing.T) {
