@@ -12,7 +12,6 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
-	"github.com/warewulf/warewulf/internal/pkg/wwtype"
 )
 
 var wwinitSplitOverlays = []string{
@@ -711,7 +710,10 @@ func (legacy *Disk) Upgrade() (upgraded *node.Disk) {
 			upgraded.Partitions[name] = partition.Upgrade()
 		}
 	}
-	upgraded.WipeTable = wwtype.Parse(legacy.WipeTable)
+	err := upgraded.WipeTable.Set(legacy.WipeTable)
+	if err != nil {
+		wwlog.Warn("error when parsing legacy.WipeTable: %w", err)
+	}
 	return
 }
 
@@ -730,12 +732,21 @@ func (legacy *Partition) Upgrade() (upgraded *node.Partition) {
 	upgraded = new(node.Partition)
 	upgraded.Guid = legacy.Guid
 	upgraded.Number = legacy.Number
-	upgraded.Resize = wwtype.Parse(legacy.Resize)
-	upgraded.ShouldExist = wwtype.Parse(legacy.ShouldExist)
+	err := upgraded.Resize.Set(legacy.Resize)
+	if err != nil {
+		wwlog.Warn("error when parsing legacy.Resize: %w", err)
+	}
+	err = upgraded.ShouldExist.Set(legacy.ShouldExist)
+	if err != nil {
+		wwlog.Warn("error when parsing legacy.ShouldExist: %w", err)
+	}
 	upgraded.SizeMiB = legacy.SizeMiB
 	upgraded.StartMiB = legacy.StartMiB
 	upgraded.TypeGuid = legacy.TypeGuid
-	upgraded.WipePartitionEntry = wwtype.Parse(legacy.WipePartitionEntry)
+	err = upgraded.WipePartitionEntry.Set(legacy.WipePartitionEntry)
+	if err != nil {
+		wwlog.Warn("error when parsing legacy.WipePartitionEntry: %w", err)
+	}
 	return
 }
 
@@ -771,6 +782,9 @@ func (legacy *FileSystem) Upgrade() (upgraded *node.FileSystem) {
 	upgraded.Options = append(upgraded.Options, legacy.Options...)
 	upgraded.Path = legacy.Path
 	upgraded.Uuid = legacy.Uuid
-	upgraded.WipeFileSystem = wwtype.Parse(legacy.WipeFileSystem)
+	err := upgraded.WipeFileSystem.Set(legacy.WipeFileSystem)
+	if err != nil {
+		wwlog.Warn("error when parsing legacy.WipeFileSystem: %w", err)
+	}
 	return
 }
