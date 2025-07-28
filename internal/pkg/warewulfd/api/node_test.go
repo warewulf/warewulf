@@ -2,13 +2,11 @@ package api
 
 import (
 	"bytes"
-	"encoding/json"
 	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
@@ -16,26 +14,23 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
 
-func TestNodeAPI(t *testing.T) {
-	warewulfd.SetNoDaemon()
-	env := testenv.New(t)
-	env.MkdirAll("/var/lib/warewulf/overlays/so1")
-	env.MkdirAll("/var/lib/warewulf/overlays/ro1")
-	defer env.RemoveAll()
-
-	allowedNets := []net.IPNet{
-		{
-			IP:   net.IPv4(127, 0, 0, 0),
-			Mask: net.CIDRMask(8, 32),
+var nodeTests = map[string]struct {
+	initConf    string
+	initFiles   []string
+	request     func(serverURL string) (*http.Request, error)
+	response    string
+	status      int
+	resultConf  string
+	resultFiles []string
+}{
+	"add a node": {
+		initConf: "",
+		initFiles: []string{
+			"/var/lib/warewulf/overlays/so1/rootfs/file",
+			"/var/lib/warewulf/overlays/ro1/rootfs/file",
 		},
-	}
-	srv := httptest.NewServer(Handler(nil, allowedNets))
-	defer srv.Close()
-
-	t.Run("add a node", func(t *testing.T) {
-		// prepareration
-
-		testNode := `{
+		request: func(serverURL string) (*http.Request, error) {
+			testNode := `{
   "node":{
     "system overlay": ["so1"],
 	"runtime overlay": ["ro1"],
@@ -45,221 +40,251 @@ func TestNodeAPI(t *testing.T) {
     }
   }
 }`
-		req, err := http.NewRequest(http.MethodPut, srv.URL+"/api/nodes/test", bytes.NewBuffer([]byte(testNode)))
-		assert.NoError(t, err)
+			return http.NewRequest(http.MethodPut, serverURL+"/api/nodes/n1", bytes.NewBuffer([]byte(testNode)))
+		},
+		response: `{"system overlay": ["so1"], "runtime overlay": ["ro1"], "kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}`,
+		resultConf: `
+nodeprofiles: {}
+nodes:
+  n1:
+    system overlay:
+      - so1
+    runtime overlay:
+      - ro1
+    kernel:
+      version: "v1.0.0"
+      args:
+        - "kernel-args"
+`,
+	},
 
-		resp, err := http.DefaultTransport.RoundTrip(req)
-		assert.NoError(t, err)
+	"read all nodes": {
+		initConf: `
+nodeprofiles: {}
+nodes:
+  n1:
+    system overlay:
+      - so1
+    runtime overlay:
+      - ro1
+    kernel:
+      version: "v1.0.0"
+      args:
+        - "kernel-args"
+`,
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodGet, serverURL+"/api/nodes", nil)
+		},
+		response: `{"n1": {"system overlay": ["so1"], "runtime overlay": ["ro1"], "kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}}`,
+	},
 
-		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err)
-		assert.NoError(t, resp.Body.Close())
-
-		assert.JSONEq(t, `{"system overlay": ["so1"], "runtime overlay": ["ro1"], "kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}`, string(body))
-	})
-
-	t.Run("read all nodes", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodGet, srv.URL+"/api/nodes", nil)
-		assert.NoError(t, err)
-
-		// send request
-		resp, err := http.DefaultTransport.RoundTrip(req)
-		assert.NoError(t, err)
-
-		// validate the resp
-		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err)
-		assert.NoError(t, resp.Body.Close())
-
-		assert.JSONEq(t, `{"node1": {}, "test": {"system overlay": ["so1"], "runtime overlay": ["ro1"], "kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}}`, string(body))
-	})
-
-	t.Run("test idempotency (put same node again)", func(t *testing.T) {
-		// prepareration
-
-		testNode := `{
+	"test idempotency (replacing existing node)": {
+		initConf: `
+nodeprofiles: {}
+nodes:
+  n1:
+    system overlay:
+      - so1
+    runtime overlay:
+      - ro1
+    kernel:
+      version: "v1.0.0"
+      args:
+        - "kernel-args"
+`,
+		initFiles: []string{
+			"/var/lib/warewulf/overlays/so2/rootfs/file",
+			"/var/lib/warewulf/overlays/ro2/rootfs/file",
+		},
+		request: func(serverURL string) (*http.Request, error) {
+			testNode := `{
   "node":{
-    "system overlay": ["so1"],
-	"runtime overlay": ["ro1"],
+    "system overlay": ["so2"],
+	"runtime overlay": ["ro2"],
     "kernel": {
       "version": "v1.0.0",
       "args": ["kernel-args"]
     }
   }
 }`
-		req, err := http.NewRequest(http.MethodPut, srv.URL+"/api/nodes/test", bytes.NewBuffer([]byte(testNode)))
-		assert.NoError(t, err)
+			return http.NewRequest(http.MethodPut, serverURL+"/api/nodes/n1", bytes.NewBuffer([]byte(testNode)))
+		},
+		response: `{"system overlay": ["so2"], "runtime overlay": ["ro2"], "kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}`,
+		resultConf: `
+nodeprofiles: {}
+nodes:
+  n1:
+    system overlay:
+      - so2
+    runtime overlay:
+      - ro2
+    kernel:
+      version: "v1.0.0"
+      args:
+        - "kernel-args"
+`,
+	},
 
-		resp, err := http.DefaultTransport.RoundTrip(req)
-		assert.NoError(t, err)
-
-		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err)
-		assert.NoError(t, resp.Body.Close())
-
-		assert.JSONEq(t, `{"system overlay": ["so1"], "runtime overlay": ["ro1"], "kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}`, string(body))
-	})
-
-	t.Run("fail if node already exists (given appropriate header)", func(t *testing.T) {
-		// prepareration
-
-		testNode := `{
+	"test preventing replacing a node": {
+		initConf: `
+nodeprofiles: {}
+nodes:
+  n1:
+    system overlay:
+      - so1
+    runtime overlay:
+      - ro1
+    kernel:
+      version: "v1.0.0"
+      args:
+        - "kernel-args"
+`,
+		initFiles: []string{
+			"/var/lib/warewulf/overlays/so2/rootfs/file",
+			"/var/lib/warewulf/overlays/ro2/rootfs/file",
+		},
+		request: func(serverURL string) (*http.Request, error) {
+			testNode := `{
   "node":{
-    "system overlay": ["so1"],
-	"runtime overlay": ["ro1"],
+    "system overlay": ["so2"],
+	"runtime overlay": ["ro2"],
     "kernel": {
       "version": "v1.0.0",
       "args": ["kernel-args"]
     }
   }
 }`
-		req, err := http.NewRequest(http.MethodPut, srv.URL+"/api/nodes/test", bytes.NewBuffer([]byte(testNode)))
-		assert.NoError(t, err)
-		req.Header.Set("If-None-Match", "*")
+			req, err := http.NewRequest(http.MethodPut, serverURL+"/api/nodes/n1", bytes.NewBuffer([]byte(testNode)))
+			req.Header.Set("If-None-Match", "*")
+			return req, err
+		},
+		response: `{"error": "invalid argument: node 'n1' already exists", "status": "INVALID_ARGUMENT"}`,
+		status:   http.StatusBadRequest,
+		resultConf: `
+nodeprofiles: {}
+nodes:
+  n1:
+    system overlay:
+      - so1
+    runtime overlay:
+      - ro1
+    kernel:
+      version: "v1.0.0"
+      args:
+        - "kernel-args"
+`,
+	},
 
-		resp, err := http.DefaultTransport.RoundTrip(req)
-		assert.NoError(t, err)
+	"get one specific node": {
+		initConf: `
+nodeprofiles: {}
+nodes:
+  n1:
+    system overlay:
+      - so1
+    runtime overlay:
+      - ro1
+    kernel:
+      version: "v1.0.0"
+      args:
+        - "kernel-args"
+`,
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodGet, serverURL+"/api/nodes/n1", nil)
+		},
+		response: `{"system overlay": ["so1"], "runtime overlay": ["ro1"], "kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}`,
+	},
 
-		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err)
-		assert.NoError(t, resp.Body.Close())
+	"get one specific node with a profile": {
+		initConf: `
+nodeprofiles:
+  default:
+    system overlay:
+      - so1
+    runtime overlay:
+      - ro1
+nodes:
+  n1:
+    profiles:
+      - default
+    kernel:
+      version: "v1.0.0"
+      args:
+        - "kernel-args"
+`,
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodGet, serverURL+"/api/nodes/n1", nil)
+		},
+		response: `{"profiles": ["default"], "system overlay": ["so1"], "runtime overlay": ["ro1"], "kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}`,
+	},
 
-		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-		assert.Contains(t, string(body), "node 'test' already exists")
-	})
+	"get one specific raw node with a profile": {
+		initConf: `
+nodeprofiles:
+  default:
+    system overlay:
+      - so1
+    runtime overlay:
+      - ro1
+nodes:
+  n1:
+    profiles:
+      - default
+    kernel:
+      version: "v1.0.0"
+      args:
+        - "kernel-args"
+`,
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodGet, serverURL+"/api/nodes/n1/raw", nil)
+		},
+		response: `{"profiles": ["default"], "kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}`,
+	},
 
-	t.Run("get one specific node", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodGet, srv.URL+"/api/nodes/test", nil)
-		assert.NoError(t, err)
+	"get unbuilt overlay info for the node": {
+		initConf: `
+nodeprofiles: {}
+nodes:
+  n1:
+    system overlay:
+      - so1
+    runtime overlay:
+      - ro1
+    kernel:
+      version: "v1.0.0"
+      args:
+        - "kernel-args"
+`,
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodGet, serverURL+"/api/nodes/n1/overlays", nil)
+		},
+		response: `{"system overlay": { "overlays": ["so1"] }, "runtime overlay": { "overlays": ["ro1"] }}`,
+	},
 
-		// send request
-		resp, err := http.DefaultTransport.RoundTrip(req)
-		assert.NoError(t, err)
-
-		// validate the resp
-		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err)
-		assert.NoError(t, resp.Body.Close())
-
-		assert.JSONEq(t, `{"system overlay": ["so1"], "runtime overlay": ["ro1"], "kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}`, string(body))
-	})
-
-	t.Run("get unbuilt overlay info for the node", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodGet, srv.URL+"/api/nodes/test/overlays", nil)
-		assert.NoError(t, err)
-
-		// send request
-		resp, err := http.DefaultTransport.RoundTrip(req)
-		assert.NoError(t, err)
-
-		// validate the response
-		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err)
-		assert.NoError(t, resp.Body.Close())
-
-		ja := jsonassert.New(t)
-		ja.Assertf(string(body), `{
-			"system overlay": {
-				"overlays": ["so1"]
-			},
-			"runtime overlay": {
-				"overlays": ["ro1"]
-			}
-		}`)
-	})
-
-	t.Run("update the node", func(t *testing.T) {
-		updateNode := `{
-  "node":{
-    "kernel": {
-      "version": "v1.0.1-newversion"
-    }
-  }
-}`
-		req, err := http.NewRequest(http.MethodPatch, srv.URL+"/api/nodes/test", bytes.NewBuffer([]byte(updateNode)))
-		assert.NoError(t, err)
-
-		resp, err := http.DefaultTransport.RoundTrip(req)
-		assert.NoError(t, err)
-
-		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err)
-		assert.NoError(t, resp.Body.Close())
-
-		assert.JSONEq(t, `{"system overlay": ["so1"], "runtime overlay": ["ro1"], "kernel": {"version": "v1.0.1-newversion", "args": ["kernel-args"]}}`, string(body))
-	})
-
-	t.Run("get one specific node (again)", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodGet, srv.URL+"/api/nodes/test", nil)
-		assert.NoError(t, err)
-
-		resp, err := http.DefaultTransport.RoundTrip(req)
-		assert.NoError(t, err)
-
-		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err)
-		assert.NoError(t, resp.Body.Close())
-
-		assert.JSONEq(t, `{"system overlay": ["so1"], "runtime overlay": ["ro1"], "kernel": {"version": "v1.0.1-newversion", "args": ["kernel-args"]}}`, string(body))
-	})
-
-	t.Run("get one specific (raw) node", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodGet, srv.URL+"/api/nodes/test/raw", nil)
-		assert.NoError(t, err)
-
-		resp, err := http.DefaultTransport.RoundTrip(req)
-		assert.NoError(t, err)
-
-		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err)
-		assert.NoError(t, resp.Body.Close())
-
-		assert.JSONEq(t, `{"system overlay": ["so1"], "runtime overlay": ["ro1"], "kernel": {"version": "v1.0.1-newversion", "args": ["kernel-args"]}}`, string(body))
-	})
-
-	t.Run("test build all nodes overlays", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodPost, srv.URL+"/api/nodes/overlays/build", nil)
-		assert.NoError(t, err)
-
-		resp, err := http.DefaultTransport.RoundTrip(req)
-		assert.NoError(t, err)
-
-		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err)
-		assert.NoError(t, resp.Body.Close())
-
-		assert.JSONEq(t, `["node1", "test"]`, string(body))
-	})
-
-	t.Run("test build one node's overlays", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodPost, srv.URL+"/api/nodes/test/overlays/build", nil)
-		assert.NoError(t, err)
-
-		resp, err := http.DefaultTransport.RoundTrip(req)
-		assert.NoError(t, err)
-
-		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err)
-		assert.NoError(t, resp.Body.Close())
-
-		assert.JSONEq(t, `"test"`, string(body))
-	})
-
-	t.Run("get built overlay info for the node", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodGet, srv.URL+"/api/nodes/test/overlays", nil)
-		assert.NoError(t, err)
-
-		// send request
-		resp, err := http.DefaultTransport.RoundTrip(req)
-		assert.NoError(t, err)
-
-		// validate the response
-		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err)
-		assert.NoError(t, resp.Body.Close())
-
-		ja := jsonassert.New(t)
-		ja.Assertf(string(body), `{
+	"get built overlay info for the node": {
+		initConf: `
+nodeprofiles: {}
+nodes:
+  n1:
+    system overlay:
+      - so1
+    runtime overlay:
+      - ro1
+    kernel:
+      version: "v1.0.0"
+      args:
+        - "kernel-args"
+`,
+		initFiles: []string{
+			"/srv/warewulf/overlays/n1/__SYSTEM__.img",
+			"/srv/warewulf/overlays/n1/__SYSTEM__.img.gz",
+			"/srv/warewulf/overlays/n1/__RUNTIME__.img",
+			"/srv/warewulf/overlays/n1/__RUNTIME__.img.gz",
+		},
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodGet, serverURL+"/api/nodes/n1/overlays", nil)
+		},
+		response: `{
 			"system overlay": {
 				"overlays": ["so1"],
 				"mtime": "<<PRESENCE>>"
@@ -268,57 +293,187 @@ func TestNodeAPI(t *testing.T) {
 				"overlays": ["ro1"],
 				"mtime": "<<PRESENCE>>"
 			}
-		}`)
+		}`,
+	},
 
-		data := map[string]any{}
-		assert.NoError(t, json.Unmarshal(body, &data))
-		{
-			_, err := time.Parse(time.RFC3339, data["system overlay"].(map[string]any)["mtime"].(string))
-			assert.NoError(t, err)
-		}
-		{
-			_, err := time.Parse(time.RFC3339, data["runtime overlay"].(map[string]any)["mtime"].(string))
-			assert.NoError(t, err)
-		}
-	})
-
-	t.Run("replace a node", func(t *testing.T) {
-		// prepareration
-
-		testNode := `{
+	"update a node": {
+		initConf: `
+nodeprofiles: {}
+nodes:
+  n1:
+    system overlay:
+      - so1
+    runtime overlay:
+      - ro1
+    kernel:
+      version: "v1.0.0"
+      args:
+        - "kernel-args"
+`,
+		request: func(serverURL string) (*http.Request, error) {
+			updateNode := `{
   "node":{
-    "system overlay": ["so1"],
-	"runtime overlay": ["ro1"],
     "kernel": {
-      "version": "v1.0.0",
-      "args": ["kernel-args"]
+      "version": "v1.0.1-newversion"
     }
   }
 }`
-		req, err := http.NewRequest(http.MethodPut, srv.URL+"/api/nodes/test", bytes.NewBuffer([]byte(testNode)))
-		assert.NoError(t, err)
+			return http.NewRequest(http.MethodPatch, serverURL+"/api/nodes/n1", bytes.NewBuffer([]byte(updateNode)))
+		},
+		response: `{"system overlay": ["so1"], "runtime overlay": ["ro1"], "kernel": {"version": "v1.0.1-newversion", "args": ["kernel-args"]}}`,
+		resultConf: `
+nodeprofiles: {}
+nodes:
+  n1:
+    system overlay:
+      - so1
+    runtime overlay:
+      - ro1
+    kernel:
+      version: "v1.0.1-newversion"
+      args:
+        - "kernel-args"
+`,
+	},
 
-		resp, err := http.DefaultTransport.RoundTrip(req)
-		assert.NoError(t, err)
+	"test build all nodes overlays": {
+		initConf: `
+nodeprofiles:
+  default:
+    system overlay:
+      - so1
+    runtime overlay:
+      - ro1
+nodes:
+  n1:
+    profiles:
+      - default
+  n2:
+    profiles:
+      - default
+`,
+		initFiles: []string{
+			"/var/lib/warewulf/overlays/so1/rootfs/file",
+			"/var/lib/warewulf/overlays/ro1/rootfs/file",
+		},
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodPost, serverURL+"/api/nodes/overlays/build", nil)
+		},
+		response: `["n1", "n2"]`,
+		resultFiles: []string{
+			"/srv/warewulf/overlays/n1/__SYSTEM__.img",
+			"/srv/warewulf/overlays/n1/__SYSTEM__.img.gz",
+			"/srv/warewulf/overlays/n1/__RUNTIME__.img",
+			"/srv/warewulf/overlays/n1/__RUNTIME__.img.gz",
+			"/srv/warewulf/overlays/n2/__SYSTEM__.img",
+			"/srv/warewulf/overlays/n2/__SYSTEM__.img.gz",
+			"/srv/warewulf/overlays/n2/__RUNTIME__.img",
+			"/srv/warewulf/overlays/n2/__RUNTIME__.img.gz",
+		},
+	},
 
-		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err)
-		assert.NoError(t, resp.Body.Close())
+	"test build one node's overlays": {
+		initConf: `
+nodeprofiles: {}
+nodes:
+  n1:
+    system overlay:
+      - so1
+    runtime overlay:
+      - ro1
+    kernel:
+      version: "v1.0.0"
+      args:
+        - "kernel-args"
+`,
+		initFiles: []string{
+			"/var/lib/warewulf/overlays/so1/rootfs/file",
+			"/var/lib/warewulf/overlays/ro1/rootfs/file",
+		},
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodPost, serverURL+"/api/nodes/n1/overlays/build", nil)
+		},
+		response: `"n1"`,
+		resultFiles: []string{
+			"/srv/warewulf/overlays/n1/__SYSTEM__.img",
+			"/srv/warewulf/overlays/n1/__SYSTEM__.img.gz",
+			"/srv/warewulf/overlays/n1/__RUNTIME__.img",
+			"/srv/warewulf/overlays/n1/__RUNTIME__.img.gz",
+		},
+	},
 
-		assert.JSONEq(t, `{"system overlay": ["so1"], "runtime overlay": ["ro1"], "kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}`, string(body))
-	})
+	"test delete nodes": {
+		initConf: `
+nodeprofiles: {}
+nodes:
+  n1:
+    system overlay:
+      - so1
+    runtime overlay:
+      - ro1
+    kernel:
+      version: "v1.0.0"
+      args:
+        - "kernel-args"
+`,
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodDelete, serverURL+"/api/nodes/n1", nil)
+		},
+		response: `{"system overlay": ["so1"], "runtime overlay": ["ro1"], "kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}`,
+		resultConf: `
+nodeprofiles: {}
+nodes: {}
+`,
+	},
+}
 
-	t.Run("test delete nodes", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodDelete, srv.URL+"/api/nodes/test", nil)
-		assert.NoError(t, err)
+func TestNodeAPI(t *testing.T) {
+	for name, tt := range nodeTests {
+		t.Run(name, func(t *testing.T) {
+			warewulfd.SetNoDaemon()
+			env := testenv.New(t)
+			defer env.RemoveAll()
 
-		resp, err := http.DefaultTransport.RoundTrip(req)
-		assert.NoError(t, err)
+			env.WriteFile("/etc/warewulf/nodes.conf", tt.initConf)
+			for _, fileName := range tt.initFiles {
+				env.CreateFile(fileName)
+			}
 
-		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err)
-		assert.NoError(t, resp.Body.Close())
+			allowedNets := []net.IPNet{
+				{
+					IP:   net.IPv4(127, 0, 0, 0),
+					Mask: net.CIDRMask(8, 32),
+				},
+			}
+			srv := httptest.NewServer(Handler(nil, allowedNets))
+			defer srv.Close()
 
-		assert.JSONEq(t, `{"system overlay": ["so1"], "runtime overlay": ["ro1"], "kernel": {"version": "v1.0.0", "args": ["kernel-args"]}}`, string(body))
-	})
+			req, err := tt.request(srv.URL)
+			assert.NoError(t, err)
+
+			resp, err := http.DefaultTransport.RoundTrip(req)
+			assert.NoError(t, err)
+
+			expectedStatus := tt.status
+			if expectedStatus == 0 {
+				expectedStatus = http.StatusOK
+			}
+			assert.Equal(t, expectedStatus, resp.StatusCode)
+
+			body, err := io.ReadAll(resp.Body)
+			assert.NoError(t, err)
+			assert.NoError(t, resp.Body.Close())
+
+			ja := jsonassert.New(t)
+			ja.Assertf(string(body), tt.response) //nolint:govet
+
+			if tt.resultConf != "" {
+				assert.YAMLEq(t, tt.resultConf, env.ReadFile("/etc/warewulf/nodes.conf"))
+			}
+
+			for _, fileName := range tt.resultFiles {
+				assert.FileExists(t, env.GetPath(fileName))
+			}
+		})
+	}
 }
