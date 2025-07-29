@@ -223,32 +223,98 @@ func deleteOverlay() usecase.Interactor {
 
 	u := usecase.NewInteractor(func(ctx context.Context, input deleteOverlayInput, output *OverlayResponse) error {
 		wwlog.Debug("api.deleteOverlay(Name:%v, Force:%v)", input.Name, input.Force)
-		if registry, err := node.New(); err != nil {
-			return err
-		} else {
-			nodesCount := len(registry.ListNodesUsingOverlay(input.Name))
-			profilesCount := len(registry.ListProfilesUsingOverlay(input.Name))
-			if nodesCount > 0 || profilesCount > 0 {
-				return status.Wrap(fmt.Errorf(
-					"overlay '%s' is in use by %v nodes and %v profiles", input.Name, nodesCount, profilesCount),
-					status.InvalidArgument)
-			}
-		}
-		*output = *NewOverlayResponse(input.Name)
 		overlay_ := overlay.GetSiteOverlay(input.Name)
 		if input.Force {
 			if err := os.RemoveAll(overlay_.Path()); err != nil {
 				return err
 			}
 		} else {
-			if err := os.Remove(overlay_.Path()); err != nil {
+			if registry, err := node.New(); err != nil {
 				return err
+			} else {
+				nodesCount := len(registry.ListNodesUsingOverlay(input.Name))
+				profilesCount := len(registry.ListProfilesUsingOverlay(input.Name))
+				if nodesCount > 0 || profilesCount > 0 {
+					return status.Wrap(fmt.Errorf(
+						"overlay '%s' is in use by %v nodes and %v profiles", input.Name, nodesCount, profilesCount),
+						status.InvalidArgument)
+				}
+			}
+			if err := os.Remove(overlay_.Rootfs()); err != nil {
+				return status.Wrap(fmt.Errorf("failed to remove overlay rootfs: %v", err), status.Code(409))
+			} else {
+				if err := os.Remove(overlay_.Path()); err != nil {
+					return status.Wrap(fmt.Errorf("failed to remove overlay: %v", err), status.Code(409))
+				}
 			}
 		}
+		*output = *NewOverlayResponse(input.Name)
 		return nil
 	})
 	u.SetTitle("Delete an overlay")
 	u.SetDescription("Delete an overlay.")
+	u.SetTags("Overlay")
+	return u
+}
+
+func deleteOverlayFile() usecase.Interactor {
+	type deleteOverlayFileInput struct {
+		Name    string `path:"name" required:"true" description:"Name of overlay to delete a file from"`
+		Path    string `query:"path" required:"true" description:"Path to file to delete from an overlay"`
+		Force   bool   `query:"force" default:"false" description:"Whether to forcefully delete an overlay file, default:'false'"`
+		Cleanup bool   `query:"cleanup" default:"false" description:"Whether to cleanup empty parent directories, default:'false'"`
+	}
+
+	u := usecase.NewInteractor(func(ctx context.Context, input deleteOverlayFileInput, output *OverlayResponse) error {
+		wwlog.Debug("api.deleteOverlayFile(Name:%v, Path:%v)", input.Name, input.Path)
+		if input.Path == "" {
+			return status.Wrap(fmt.Errorf("must specify a path"), status.InvalidArgument)
+		}
+
+		if relPath, err := url.QueryUnescape(input.Path); err != nil {
+			return fmt.Errorf("failed to decode path: %v: %w", input.Path, err)
+		} else {
+			overlay_ := overlay.GetOverlay(input.Name)
+			err := overlay_.DeleteFile(relPath, input.Force, input.Cleanup)
+			if err != nil {
+				return fmt.Errorf("unable to delete overlay file %v: %v: %w", input.Name, relPath, err)
+			}
+		}
+		*output = *NewOverlayResponse(input.Name)
+		return nil
+	})
+	u.SetTitle("Delete a file from an overlay")
+	u.SetDescription("Delete a file from an overlay from the overlay name and file path")
+	u.SetTags("Overlay")
+	return u
+}
+
+func addOverlayFile() usecase.Interactor {
+	type createOverlayFileInput struct {
+		Name        string `path:"name" required:"true" description:"Name of overlay to add a file to"`
+		Path        string `query:"path" required:"true" description:"Path to file to create in the overlay"`
+		Content     string `json:"content" required:"true" description:"Content of the file to create"`
+		IfNoneMatch string `header:"If-None-Match" description:"Set to '*' to indicate that the file should only be added if it does not already exist"`
+	}
+
+	u := usecase.NewInteractor(func(ctx context.Context, input createOverlayFileInput, output *OverlayResponse) error {
+		wwlog.Debug("api.addOverlayFile(Name:%v, Path:%v, IfNoneMatch: %v)", input.Name, input.Path, input.IfNoneMatch)
+		if input.Path == "" {
+			return status.Wrap(fmt.Errorf("must specify a path"), status.InvalidArgument)
+		}
+		if relPath, err := url.QueryUnescape(input.Path); err != nil {
+			return fmt.Errorf("failed to decode path: %v: %w", input.Path, err)
+		} else {
+			overlay_ := overlay.GetOverlay(input.Name)
+			if err := overlay_.AddFile(relPath, []byte(input.Content), true, !(input.IfNoneMatch == "*")); err != nil {
+				return fmt.Errorf("unable to add overlay file %v: %v: %w", input.Name, relPath, err)
+			}
+			*output = *NewOverlayResponse(input.Name)
+			return nil
+		}
+	})
+	u.SetTitle("Add a file to an overlay")
+	u.SetDescription("Add a file to an overlay from the overlay name and file path.")
 	u.SetTags("Overlay")
 	return u
 }

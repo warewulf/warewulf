@@ -1,10 +1,12 @@
 package api
 
 import (
+	"bytes"
 	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/kinbiko/jsonassert"
@@ -13,121 +15,162 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
 
-func TestOverlayAPI(t *testing.T) {
-	warewulfd.SetNoDaemon()
-	env := testenv.New(t)
-	defer env.RemoveAll()
-	env.WriteFile("usr/share/warewulf/overlays/testoverlay/email.ww", `
-{{ if .Tags.email }}eMail: {{ .Tags.email }}{{else}} noMail{{- end }}
-`)
+const sampleTemplate = `{{ if .Tags.email }}eMail: {{ .Tags.email }}{{else}} noMail{{- end }}
+`
 
-	allowedNets := []net.IPNet{
-		{
-			IP:   net.IPv4(127, 0, 0, 0),
-			Mask: net.CIDRMask(8, 32),
+var overlayTests = map[string]struct {
+	initFiles     map[string]string
+	request       func(serverURL string) (*http.Request, error)
+	response      string
+	status        int
+	resultFiles   []string
+	validateFiles map[string]string // file path -> expected content
+}{
+	"get all overlays": {
+		initFiles: map[string]string{
+			"/usr/share/warewulf/overlays/testoverlay/email.ww": sampleTemplate,
 		},
-	}
-	srv := httptest.NewServer(Handler(nil, allowedNets))
-	defer srv.Close()
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodGet, serverURL+"/api/overlays", nil)
+		},
+		response: `{"testoverlay":{"files":["/email.ww"], "site":false}}`,
+	},
 
-	t.Run("get all overlays", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodGet, srv.URL+"/api/overlays", nil)
-		assert.NoError(t, err)
+	"get one specific overlay": {
+		initFiles: map[string]string{
+			"/usr/share/warewulf/overlays/testoverlay/email.ww": sampleTemplate,
+		},
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodGet, serverURL+"/api/overlays/testoverlay", nil)
+		},
+		response: `{"files":["/email.ww"], "site":false}`,
+	},
 
-		// send request
-		resp, err := http.DefaultTransport.RoundTrip(req)
-		assert.NoError(t, err)
-
-		// validate the resp
-		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err)
-		assert.NoError(t, resp.Body.Close())
-
-		assert.JSONEq(t, `{"testoverlay":{"files":["/email.ww"], "site":false}}`, string(body))
-	})
-
-	t.Run("get one specific overlay", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodGet, srv.URL+"/api/overlays/testoverlay", nil)
-		assert.NoError(t, err)
-
-		// send request
-		resp, err := http.DefaultTransport.RoundTrip(req)
-		assert.NoError(t, err)
-
-		// validate the resp
-		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err)
-		assert.NoError(t, resp.Body.Close())
-
-		assert.JSONEq(t, `{"files":["/email.ww"], "site":false}`, string(body))
-	})
-
-	t.Run("get overlay file", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodGet, srv.URL+"/api/overlays/testoverlay/file?path=email.ww", nil)
-		assert.NoError(t, err)
-
-		// send request
-		resp, err := http.DefaultTransport.RoundTrip(req)
-		assert.NoError(t, err)
-
-		// validate the resp
-		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err)
-		assert.NoError(t, resp.Body.Close())
-
-		// gid and uid values may vary depending on where this test is run. (local box, github, etc)
-		// Assert the keys exist, but ignore the values.
-		ja := jsonassert.New(t)
-		ja.Assert(string(body), `
-		{
+	"get overlay file": {
+		initFiles: map[string]string{
+			"/usr/share/warewulf/overlays/testoverlay/email.ww": sampleTemplate,
+		},
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodGet, serverURL+"/api/overlays/testoverlay/file?path=email.ww", nil)
+		},
+		response: `{
 			"overlay": "testoverlay",
 			"path": "email.ww",
-			"contents": "\n{{ if .Tags.email }}eMail: {{ .Tags.email }}{{else}} noMail{{- end }}\n",
+			"contents": "{{ if .Tags.email }}eMail: {{ .Tags.email }}{{else}} noMail{{- end }}\n",
 			"perms": "<<PRESENCE>>",
 			"uid": "<<PRESENCE>>",
 			"gid": "<<PRESENCE>>"
-		}`)
-	})
+		}`,
+	},
 
-	t.Run("create an overlay", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodPut, srv.URL+"/api/overlays/test", nil)
-		assert.NoError(t, err)
+	"update overlay file": {
+		initFiles: map[string]string{
+			"/usr/share/warewulf/overlays/testoverlay/email.ww": sampleTemplate,
+		},
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodPut, serverURL+"/api/overlays/testoverlay/file?path=email.ww", bytes.NewReader([]byte("{\"content\":\"hello world\"}")))
+		},
+		response: `{"files":["/email.ww"], "site":true}`,
+		validateFiles: map[string]string{
+			"/var/lib/warewulf/overlays/testoverlay/email.ww": "hello world",
+		},
+	},
 
-		resp, err := http.DefaultTransport.RoundTrip(req)
-		assert.NoError(t, err)
+	"create an overlay": {
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodPut, serverURL+"/api/overlays/test", nil)
+		},
+		response: `{"files":null, "site":true}`,
+		resultFiles: []string{
+			"/var/lib/warewulf/overlays/test",
+		},
+	},
 
-		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err)
-		assert.NoError(t, resp.Body.Close())
+	"get all overlays after creation": {
+		initFiles: map[string]string{
+			"/usr/share/warewulf/overlays/testoverlay/email.ww": sampleTemplate,
+			"/var/lib/warewulf/overlays/test/rootfs/":           "",
+			"/var/lib/warewulf/overlays/testoverlay/email.ww":   sampleTemplate,
+		},
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodGet, serverURL+"/api/overlays", nil)
+		},
+		response: `{"test":{"files":null, "site":true},"testoverlay":{"files":["/email.ww"], "site":true}}`,
+	},
 
-		assert.JSONEq(t, `{"files":null, "site":true}`, string(body))
-	})
+	"delete overlay file": {
+		initFiles: map[string]string{
+			"/var/lib/warewulf/overlays/testoverlay/email.ww": sampleTemplate,
+		},
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodDelete, serverURL+"/api/overlays/testoverlay/file?path=email.ww&force=true", nil)
+		},
+		response: `{"files":null, "site":true}`,
+	},
 
-	t.Run("get all overlays", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodGet, srv.URL+"/api/overlays", nil)
-		assert.NoError(t, err)
+	"delete overlay": {
+		initFiles: map[string]string{
+			"/var/lib/warewulf/overlays/test/": "",
+		},
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodDelete, serverURL+"/api/overlays/test?force=true", nil)
+		},
+		response: `{"files":[], "site":true}`,
+	},
+}
 
-		resp, err := http.DefaultTransport.RoundTrip(req)
-		assert.NoError(t, err)
+func TestOverlayAPI(t *testing.T) {
+	for name, tt := range overlayTests {
+		t.Run(name, func(t *testing.T) {
+			warewulfd.SetNoDaemon()
+			env := testenv.New(t)
+			defer env.RemoveAll()
 
-		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err)
-		assert.NoError(t, resp.Body.Close())
+			// Create test files
+			for fileName, fileContent := range tt.initFiles {
+				if strings.HasSuffix(fileName, "/") {
+					env.MkdirAll(fileName)
+				} else {
+					env.WriteFile(fileName, fileContent)
+				}
+			}
 
-		assert.JSONEq(t, `{"test":{"files":null, "site":true},"testoverlay":{"files":["/email.ww"], "site":false}}`, string(body))
-	})
+			allowedNets := []net.IPNet{
+				{
+					IP:   net.IPv4(127, 0, 0, 0),
+					Mask: net.CIDRMask(8, 32),
+				},
+			}
+			srv := httptest.NewServer(Handler(nil, allowedNets))
+			defer srv.Close()
 
-	t.Run("test delete overlays", func(t *testing.T) {
-		req, err := http.NewRequest(http.MethodDelete, srv.URL+"/api/overlays/test?force=true", nil)
-		assert.NoError(t, err)
+			req, err := tt.request(srv.URL)
+			assert.NoError(t, err)
 
-		resp, err := http.DefaultTransport.RoundTrip(req)
-		assert.NoError(t, err)
+			resp, err := http.DefaultTransport.RoundTrip(req)
+			assert.NoError(t, err)
 
-		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err)
-		assert.NoError(t, resp.Body.Close())
+			expectedStatus := tt.status
+			if expectedStatus == 0 {
+				expectedStatus = http.StatusOK
+			}
+			assert.Equal(t, expectedStatus, resp.StatusCode)
 
-		assert.JSONEq(t, `{"files":null, "site":true}`, string(body))
-	})
+			body, err := io.ReadAll(resp.Body)
+			assert.NoError(t, err)
+			assert.NoError(t, resp.Body.Close())
+
+			ja := jsonassert.New(t)
+			ja.Assertf(string(body), tt.response) //nolint:govet // tt.response is used as a format string with special tokens
+
+			for _, fileName := range tt.resultFiles {
+				assert.DirExists(t, env.GetPath(fileName))
+			}
+
+			for filePath, expectedContent := range tt.validateFiles {
+				actualContent := env.ReadFile(filePath)
+				assert.Equal(t, expectedContent, actualContent)
+			}
+		})
+	}
 }
