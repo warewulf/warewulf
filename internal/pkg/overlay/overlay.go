@@ -66,7 +66,7 @@ func (overlay Overlay) Rootfs() string {
 //
 // Returns:
 //   - The full path to the specified file in the overlay's rootfs.
-//     If the specified path does not exist in the overlay, the empty string is returned.
+//     If the specified path is not contained within the overlay, the empty string is returned.
 func (overlay Overlay) File(filePath string) string {
 	rootfs := overlay.Rootfs()
 	fullPath := path.Join(rootfs, filePath)
@@ -122,7 +122,7 @@ func (overlay Overlay) AddFile(filePath string, content []byte, parents bool, fo
 		if err != nil {
 			return fmt.Errorf("failed to clone distribution overlay '%s' to site overlay: %w", overlay.Name(), err)
 		}
-		// replace the overlay with newly creatd siteOverlay
+		// replace the overlay with newly created siteOverlay
 		overlay = siteOverlay
 	}
 
@@ -168,7 +168,7 @@ func (overlay Overlay) DeleteFile(filePath string, force, cleanup bool) error {
 			if err != nil {
 				return fmt.Errorf("failed to clone distribution overlay '%s' to site overlay: %w", overlay.Name(), err)
 			}
-			// replace the overlay with newly creatd siteOverlay
+			// replace the overlay with newly created siteOverlay
 			overlay = siteOverlay
 		}
 

@@ -302,9 +302,6 @@ func addOverlayFile() usecase.Interactor {
 		if input.Path == "" {
 			return status.Wrap(fmt.Errorf("must specify a path"), status.InvalidArgument)
 		}
-		if input.Content == "" {
-			return status.Wrap(fmt.Errorf("content should not be empty"), status.InvalidArgument)
-		}
 		if relPath, err := url.QueryUnescape(input.Path); err != nil {
 			return fmt.Errorf("failed to decode path: %v: %w", input.Path, err)
 		} else {
