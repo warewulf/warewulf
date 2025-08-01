@@ -201,3 +201,35 @@ Running Containers on Cluster Nodes
 Some container runtimes, notably Podman, require file system features that are
 not available in ``initrootfs``. Cluster nodes using Podman (and some other
 container runtimes) should be configured with ``--root=tmpfs``.
+
+tmpfs and NUMA
+==============
+
+Warewulf can optionally mount the root filesystem as ``tmpfs`` instead of the
+default ``initramfs``. Warewulf will add ``mpol=interleave`` to the mount point
+which will distribute the memory across all NUMA nodes. This avoids the
+hotspotting that occurs when the default initramfs stores large node images on a
+single NUMA node. To enable this, set the rootfs type to tmpfs:
+
+.. code-block:: shell
+   
+   wwctl profile set default --root=tmpfs
+   
+You may also adjust the tmpfs size via the ``wwinit.tmpfs.size`` kernel
+argument:
+
+.. code-block:: shell
+   
+   # Set tmpfs to use maximum 1GB  
+   wwctl profile set default --kernelargs="wwinit.tmpfs.size=1G"
+   # You can also use a percentage of physical RAM
+   wwctl profile set default --kernelargs="wwinit.tmpfs.size=25%" 
+
+By default this is set to 50% of physical RAM. Note that tmpfs is required for
+SELinux overlays since initramfs cannot preserve SELinux contexts.
+
+.. note::
+
+   On some systems, it may also be necessary to include the ``noefi`` kernel
+   argument. This works around specific EFI firmware bugs that can prevent
+   proper memory release during the transition from ``initramfs`` to ``tmpfs``.

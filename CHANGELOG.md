@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added `PUT|DELETE /api/overlays/{name}/file?path={path}`
 - Added `DELETE /api/overlays/{name}/file?path={path}`
 - Added `wwctl configure warewulfd`
+- Added troubleshooting documentation regarding NUMA and tmpfs
 
 ### Changed
 
