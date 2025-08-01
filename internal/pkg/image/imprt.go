@@ -7,7 +7,6 @@ import (
 
 	"github.com/containers/image/v5/types"
 	"github.com/containers/storage/drivers/copy"
-	"github.com/containers/storage/pkg/reexec"
 	"github.com/pkg/errors"
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
@@ -67,9 +66,6 @@ func ImportDirectory(uri string, name string) error {
 
 	if !util.IsFile(path.Join(uri, "/bin/sh")) {
 		return errors.New("Source directory has no /bin/sh: " + uri)
-	}
-	if reexec.Init() {
-		return errors.New("couldn't init reexec")
 	}
 	err = copy.DirCopy(uri, fullPath, copy.Content, true)
 	if err != nil {
