@@ -40,12 +40,13 @@ func (conf TFTPConf) Enabled() bool {
 // WarewulfConf adds additional Warewulf-specific configuration to
 // BaseConf.
 type WarewulfConf struct {
-	Port               int   `yaml:"port,omitempty" default:"9873"`
-	SecureP            *bool `yaml:"secure,omitempty" default:"true"`
-	UpdateInterval     int   `yaml:"update interval,omitempty" default:"60"`
-	AutobuildOverlaysP *bool `yaml:"autobuild overlays,omitempty" default:"true"`
-	EnableHostOverlayP *bool `yaml:"host overlay,omitempty" default:"true"`
-	GrubBootP          *bool `yaml:"grubboot,omitempty" default:"false"`
+	Port               int    `yaml:"port,omitempty" default:"9873"`
+	SecureP            *bool  `yaml:"secure,omitempty" default:"true"`
+	UpdateInterval     int    `yaml:"update interval,omitempty" default:"60"`
+	AutobuildOverlaysP *bool  `yaml:"autobuild overlays,omitempty" default:"true"`
+	EnableHostOverlayP *bool  `yaml:"host overlay,omitempty" default:"true"`
+	GrubBootP          *bool  `yaml:"grubboot,omitempty" default:"false"`
+	SystemdName        string `yaml:"systemd name,omitempty"`
 }
 
 func (conf WarewulfConf) Secure() bool {
