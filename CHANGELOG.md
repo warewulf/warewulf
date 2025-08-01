@@ -26,7 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Fixed a bug when cloning an overlay to site when parent is missing
 - Fixed `wwctl upgrade nodes` to properly handle kernel argument lists. #1938
-- Improved netplan support. #1873
+- Fixed a panic during `wwctl overlay edit` due to missing `reexec.Init()`. #1879
 
 ## v4.6.2, 2025-07-09
 

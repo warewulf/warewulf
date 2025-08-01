@@ -4,10 +4,15 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/containers/storage/pkg/reexec"
 	"github.com/warewulf/warewulf/internal/app/wwctl"
 )
 
 func main() {
+	if reexec.Init() {
+		return
+	}
+
 	root := wwctl.GetRootCommand()
 
 	err := root.Execute()
