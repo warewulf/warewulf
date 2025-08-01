@@ -4,6 +4,7 @@ echo
 echo "Warewulf Server:"
 echo "* Ipaddr: {{.Ipaddr}}"
 echo "* Port: {{.Port}}"
+echo "* Authority: {{.Authority}}"
 echo
 echo "This node:"
 echo "* Fqdn: {{.Fqdn}}"
@@ -28,7 +29,7 @@ reboot
 echo "Reading asset key..."
 smbios --type 3 --get-string 8 --set assetkey
 
-uri="(http,{{.Ipaddr}}:{{.Port}})/provision/${net_default_mac}?assetkey=${assetkey}"
+uri="(http,{{.Authority}})/provision/${net_default_mac}?assetkey=${assetkey}"
 kernel="${uri}&stage=kernel"
 
 set default={{ or .Tags.GrubMenuEntry "single-stage" }}

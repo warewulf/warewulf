@@ -14,12 +14,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added `DELETE /api/overlays/{name}/file?path={path}`
 - Added `wwctl configure warewulfd`
 - Added troubleshooting documentation regarding NUMA and tmpfs
+- Added support for IPv6 when booting with iPXE. #1852
 
 ### Changed
 
 - Restore default idempotency of `PUT /api/nodes/{id}`
 - `DELETE /api/overlays/{name}?force=true` can delete overlays that are in use
 - `warewulfd` overlay autobuild rebuilds overlays after node discovery. #1468
+
+### Fixed
+
 - Improved netplan support. #1873
 
 ### Fixed
