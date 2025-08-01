@@ -6,7 +6,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
@@ -71,11 +70,14 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	}
 	tempFile.Close()
 
-	var startTime time.Time
-	if fileInfo, err := os.Stat(tempFile.Name()); err != nil {
-		return fmt.Errorf("unable to stat %s: %s", tempFile.Name(), err)
-	} else {
-		startTime = fileInfo.ModTime()
+	initialFile, err := os.Open(tempFile.Name())
+	if err != nil {
+		return fmt.Errorf("unable to open temp file for hashing: %s", err)
+	}
+	initialHash, err := util.HashFile(initialFile)
+	initialFile.Close()
+	if err != nil {
+		return fmt.Errorf("unable to calculate initial hash of %s: %s", tempFile.Name(), err)
 	}
 
 	editor := os.Getenv("EDITOR")
@@ -86,13 +88,19 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		return fmt.Errorf("editor process exited with an error: %s", editorErr)
 	}
 
-	if fileInfo, err := os.Stat(tempFile.Name()); err != nil {
-		return fmt.Errorf("unable to stat %s: %s", tempFile.Name(), err)
-	} else {
-		if startTime == fileInfo.ModTime() {
-			wwlog.Debug("No change detected. Not updating overlay.")
-			return nil
-		}
+	finalFile, err := os.Open(tempFile.Name())
+	if err != nil {
+		return fmt.Errorf("unable to open temp file for final hashing: %s", err)
+	}
+	finalHash, err := util.HashFile(finalFile)
+	finalFile.Close()
+	if err != nil {
+		return fmt.Errorf("unable to calculate final hash of %s: %s", tempFile.Name(), err)
+	}
+
+	if initialHash == finalHash {
+		wwlog.Debug("No change detected. Not updating overlay.")
+		return nil
 	}
 
 	if !overlay_.IsSiteOverlay() {
