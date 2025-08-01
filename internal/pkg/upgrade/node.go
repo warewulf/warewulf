@@ -588,8 +588,15 @@ type KernelConf struct {
 func (legacy *KernelConf) Upgrade(imageName string) (upgraded *node.KernelConf) {
 	upgraded = new(node.KernelConf)
 	switch args := legacy.Args.(type) {
-	case []string:
-		upgraded.Args = args
+	case []interface{}:
+		for _, arg := range args {
+			switch arg.(type) {
+			case map[string]interface{}, []interface{}, map[interface{}]interface{}:
+				wwlog.Warn("unable to parse Kernel.Args: non-scalar value %v", arg)
+			default:
+				upgraded.Args = append(upgraded.Args, fmt.Sprintf("%v", arg))
+			}
+		}
 	case string:
 		if args != "" {
 			upgraded.Args = strings.Fields(args)
