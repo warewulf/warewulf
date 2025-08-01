@@ -15,7 +15,7 @@ sleep 30
 reboot
 {{- end }}
 
-set baseuri http://{{.Ipaddr}}:{{.Port}}/provision/{{.Hwaddr}}
+set baseuri http://{{.Authority}}/provision/{{.Hwaddr}}
 set uri ${baseuri}?assetkey=${asset}&uuid=${uuid}
 
 echo Downloading kernel image...
@@ -115,6 +115,7 @@ goto menu
 echo Warewulf Server:
 echo * Ipaddr: {{.Ipaddr}}
 echo * Port: {{.Port}}
+echo * Authority: {{.Authority}}
 echo
 echo This node:
 echo * Fqdn: {{.Fqdn}}

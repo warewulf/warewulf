@@ -2,7 +2,7 @@ package warewulfd
 
 import (
 	"net/http"
-	"strconv"
+	"net/netip"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -44,9 +44,12 @@ func parseReq(req *http.Request) (parserInfo, error) {
 		ret.efifile = path_parts[2]
 	}
 	ret.hwaddr = hwaddr
-	ret.ipaddr = strings.Split(req.RemoteAddr, ":")[0]
-	ret.remoteport, _ = strconv.Atoi(strings.Split(req.RemoteAddr, ":")[1])
-
+	remoteAddrPort, err := netip.ParseAddrPort(req.RemoteAddr)
+	if err != nil {
+		return ret, errors.New("could not parse remote address")
+	}
+	ret.ipaddr = remoteAddrPort.Addr().String()
+	ret.remoteport = int(remoteAddrPort.Port())
 	if len(req.URL.Query()["assetkey"]) > 0 {
 		ret.assetkey = req.URL.Query()["assetkey"][0]
 	}

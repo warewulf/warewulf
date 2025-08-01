@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/netip"
 	"path"
 	"path/filepath"
 	"strconv"
@@ -32,7 +33,9 @@ type templateVars struct {
 	Ipxe          string
 	Hwaddr        string
 	Ipaddr        string
+	Ipaddr6       string
 	Port          string
+	Authority     string
 	KernelArgs    string
 	KernelVersion string
 	Root          string
@@ -115,12 +118,30 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 				kernelVersion = kernel_.Version()
 			}
 		}
+		authority := fmt.Sprintf("%s:%d", conf.Ipaddr, conf.Warewulf.Port)
+		ipaddr6 := ""
+		if confIpaddr6, err := netip.ParsePrefix(conf.Ipaddr6); err == nil {
+			ipaddr6 = confIpaddr6.Addr().String()
+		}
+		if rinfoIpaddr, err := netip.ParseAddr(rinfo.ipaddr); err == nil {
+			if rinfoIpaddr.Is6() {
+				if ipaddr6 != "" {
+					authority = fmt.Sprintf("[%s]:%d", ipaddr6, conf.Warewulf.Port)
+				} else {
+					wwlog.Error("No valid IPv6 address configured, but request is IPv6")
+				}
+			}
+		} else {
+			wwlog.Error("Could not parse request IP address: %s", rinfo.ipaddr)
+		}
 		tmpl_data = &templateVars{
 			Id:            remoteNode.Id(),
 			Cluster:       remoteNode.ClusterName,
 			Fqdn:          remoteNode.Id(),
 			Ipaddr:        conf.Ipaddr,
+			Ipaddr6:       ipaddr6,
 			Port:          strconv.Itoa(conf.Warewulf.Port),
+			Authority:     authority,
 			Hostname:      remoteNode.Id(),
 			Hwaddr:        rinfo.hwaddr,
 			ImageName:     remoteNode.ImageName,
@@ -203,12 +224,30 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 					kernelVersion = kernel_.Version()
 				}
 			}
+			authority := fmt.Sprintf("%s:%d", conf.Ipaddr, conf.Warewulf.Port)
+			ipaddr6 := ""
+			if confIpaddr6, err := netip.ParsePrefix(conf.Ipaddr6); err == nil {
+				ipaddr6 = confIpaddr6.Addr().String()
+			}
+			if rinfoIpaddr, err := netip.ParseAddr(rinfo.ipaddr); err == nil {
+				if rinfoIpaddr.Is6() {
+					if ipaddr6 != "" {
+						authority = fmt.Sprintf("[%s]:%d", ipaddr6, conf.Warewulf.Port)
+					} else {
+						wwlog.Error("No valid IPv6 address configured, but request is IPv6")
+					}
+				}
+			} else {
+				wwlog.Error("Could not parse request IP address: %s", rinfo.ipaddr)
+			}
 			tmpl_data = &templateVars{
 				Id:            remoteNode.Id(),
 				Cluster:       remoteNode.ClusterName,
 				Fqdn:          remoteNode.Id(),
 				Ipaddr:        conf.Ipaddr,
+				Ipaddr6:       ipaddr6,
 				Port:          strconv.Itoa(conf.Warewulf.Port),
+				Authority:     authority,
 				Hostname:      remoteNode.Id(),
 				Hwaddr:        rinfo.hwaddr,
 				ImageName:     remoteNode.ImageName,
