@@ -111,6 +111,7 @@ nodes:
         format: btrfs
         path: /scratch
         wipe_filesystem: true
+        mount_options: "nondefault"
       /dev/disk/by-partlabel/swap:
         format: swap
         path: swap`,
@@ -129,6 +130,7 @@ After=ignition-ww4-disks.service
 Where=/scratch
 What=/dev/disk/by-partlabel/scratch
 Type=btrfs
+Options=nondefault
 [Install]
 RequiredBy=local-fs.target
 backupFile: true

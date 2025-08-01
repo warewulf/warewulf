@@ -61,7 +61,8 @@ sysfs /sys sysfs defaults 0 0
 proc /proc proc defaults 0 0
 # mounts for local file systems created with ignition in nodes.conf
 # all with noauto as mounts happens with systemd units
-/dev/disk/by-partlabel/scratch /scratch btrfs noauto,defaults 0 0
+/dev/disk/by-partlabel/scratch /scratch btrfs noauto,nondefault 0 0
+/dev/disk/by-partlabel/scratch2 /scratch2 btrfs noauto,defaults 0 0
 /dev/disk/by-partlabel/swap swap swap noauto,defaults 0 0
 warewulf:/home /home nfs defaults 0 0
 `

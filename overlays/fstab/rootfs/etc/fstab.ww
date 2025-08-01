@@ -9,7 +9,7 @@ proc /proc proc defaults 0 0
 # all with noauto as mounts happens with systemd units
 {{- range $fsdevice,$fs := .FileSystems }}
 {{ $fsdevice }} {{ $fs.Path }} {{ $fs.Format }}
-{{- if $fs.MountOptions }} noauto{{range $index,$opt := $fs.MountOptions }},{{ $opt }}{{ end }} 0 0
+{{- if $fs.MountOptions }} noauto,{{ $fs.MountOptions }} 0 0
 {{- else }} noauto,defaults 0 0
 {{- end }}{{ end }}{{ end }}
 {{- with $fstab := index .Resources "fstab" }}
