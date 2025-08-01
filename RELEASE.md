@@ -1,7 +1,7 @@
 # Release procedure
 
 Major versions (e.g., v4.6.0) are tagged directly on the main branch. Minor
-versions (e.g., v4.6.1) are tagged on a separate release branch.
+versions (e.g., v4.6.3) are tagged on a separate release branch.
 
 1. Update `CHANGELOG.md`.
 
@@ -29,7 +29,7 @@ versions (e.g., v4.6.1) are tagged on a separate release branch.
 6. Create a signed tag for the release of the format v4.MINOR.PATCH, following
    the format specified in <MAINTAINING.md>.
    
-       git tag --sign v4.6.2; git push origin v4.6.2
+       git tag --sign v4.6.3; git push origin v4.6.3
 
 7. Monitor the release action associated with the pushed tag at
    https://github.com/warewulf/warewulf/actions, and verify the generated draft

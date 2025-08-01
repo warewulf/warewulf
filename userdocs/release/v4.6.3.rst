@@ -1,0 +1,63 @@
+====================
+v4.6.3 Release Notes
+====================
+
+v4.6.3 is a regularly-scheduled minor release in the v4.6.x series.
+
+Significant changes are described below. Additional changes are listed in the
+`CHANGELOG`_.
+
+.. _CHANGELOG: https://github.com/warewulf/warewulf/blob/main/CHANGELOG.md
+
+REST API
+========
+
+v4.6.3 continues development of the REST API, adding support for the
+``If-None-Match: *`` header to prevent overwriting an existing entity.
+
+Other new functionality in the REST API includes:
+
+- ``GET /api/nodes/{id}/overlays`` returns built time metadata for a node's
+  system and runtime overlay images.
+- ``PUT /api/overlays/{name}/file?path={path}`` creates files in overlays.
+- ``DELETE /api/overlays/{name}/file?path={path}`` delete files in overlays.
+- ``DELETE /api/overlays/{name}?force=true`` deletes overlays that are in use.
+
+IPv6 Support
+============
+
+IPv6 is now supported during the iPXE network boot process, one step towards
+improving overall IPv6 support.
+
+Overlay Autobuild
+=================
+
+The Warewulf server (when "autobuild overlays" is enabled) now automatically
+rebuilds overlays after node discovery, which resolves an issue where overlays
+were out-of-sync with the newly-discovered configuration. This is one step in a
+more general effort to imrpove overlay autobuild so that manual overlay builds
+are less often required.
+
+Warewulf server configuration
+=============================
+
+The ``wwctl configure`` command can now enable and (re)start the warewulf server
+daemon itself to apply updated configuration, either as part of ``wwctl
+configure -a`` or ``wwctl configure warewulfd``.
+
+Ubuntu and Debian Support
+=========================
+
+The ``netplan`` overlay is now much more feature-complete, with relative parity
+to the other network configuration overlays. This is one step in a more general
+effort to support Wareewulf in Ubuntu and Debian environments.
+
+Other fixes
+===========
+
+- Fixed ``wwctl upgrade nodes`` to properly handle kernel argument lists.
+- Fixed a panic during ``wwctl overlay edit`` due to missing ``reexec.Init()``.
+- Fixed handling of comma-separated mount options in ``fstab`` and ``ignition``
+  overlays.
+- Fixed a race condition in ``wwctl overlay edit`` that led to changes not being
+  properly detected and applied.

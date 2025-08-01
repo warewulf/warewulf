@@ -327,7 +327,7 @@ script.
 
 Utilizing the new iPXE menu, specifying an ``IPXEMenuEntry`` tag on a cluster
 node now selects the boot method to use, similar to the previously-existing
-``GRUBMenuEntry``. The ``dracut.ipxe`` script has now been merged into the
+``GrubMenuEntry``. The ``dracut.ipxe`` script has now been merged into the
 default iPXE script, and specifying ``IPXEMenuEntry=dracut`` now replaces
 specifying a discrete ``dracut`` iPXE template.
 

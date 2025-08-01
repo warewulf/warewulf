@@ -31,7 +31,7 @@ Install Warewulf and dependencies
    cd ~/git
    git clone https://github.com/warewulf/warewulf.git
    cd warewulf
-   git checkout main # or switch to a tag like 'v4.6.2'
+   git checkout main # or switch to a tag like 'v4.6.3'
    make all && sudo make install
 
 Configure firewalld
