@@ -27,7 +27,7 @@ Where={{ $fs.Path }}
 What={{ $fsdevice }}
 Type={{ $fs.Format }}
 {{- if $fs.MountOptions }}
-Options={{ $fs.MountOptions | join "." }}
+Options={{ $fs.MountOptions }}
 {{- end }}
 [Install]
 RequiredBy=local-fs.target
