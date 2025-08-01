@@ -82,7 +82,7 @@ system for large clusters of bare metal and/or virtual systems.
 
 
 %prep
-%setup -q -n %{name}-%{version} -b0 %if %{?with_offline:-a2}
+%setup -q -n %{name}-%{version} -b0
 
 
 %build

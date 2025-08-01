@@ -29,6 +29,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed a panic during `wwctl overlay edit` due to missing `reexec.Init()`. #1879
 - Fixed handling of comma-separated mount options in `fstab` and `ignition` overlays. #1950
 - Fixed a race condition in `wwctl overlay edit`. #1947
+- Fixed a syntax error in the RPM specfile.
 
 ## v4.6.2, 2025-07-09
 
