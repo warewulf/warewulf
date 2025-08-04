@@ -139,19 +139,22 @@ func Test_OverlayMethods(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			overlay := GetOverlay(tt.name)
-			assert.Equal(t, tt.name, overlay.Name())
-			assert.Equal(t, env.GetPath(tt.path), overlay.Path())
-			assert.Equal(t, env.GetPath(tt.rootfs), overlay.Rootfs())
-			assert.Equal(t, env.GetPath(tt.file), overlay.File("testfile"))
-			if tt.content != "" {
-				buffer, err := os.ReadFile(overlay.File("testfile"))
+			overlay, err := GetOverlay(tt.name)
+			if tt.exists {
 				assert.NoError(t, err)
-				assert.Equal(t, tt.content, string(buffer))
+				assert.Equal(t, tt.name, overlay.Name())
+				assert.Equal(t, env.GetPath(tt.path), overlay.Path())
+				assert.Equal(t, env.GetPath(tt.rootfs), overlay.Rootfs())
+				assert.Equal(t, env.GetPath(tt.file), overlay.File("testfile"))
+				if tt.content != "" {
+					buffer, err := os.ReadFile(overlay.File("testfile"))
+					assert.NoError(t, err)
+					assert.Equal(t, tt.content, string(buffer))
+				}
+				assert.Equal(t, tt.exists, overlay.Exists())
+				assert.Equal(t, tt.isSite, overlay.IsSiteOverlay())
+				assert.Equal(t, tt.isDist, overlay.IsDistributionOverlay())
 			}
-			assert.Equal(t, tt.exists, overlay.Exists())
-			assert.Equal(t, tt.isSite, overlay.IsSiteOverlay())
-			assert.Equal(t, tt.isDist, overlay.IsDistributionOverlay())
 		})
 	}
 }

@@ -15,18 +15,16 @@ import (
 )
 
 // GetOverlay returns the filesystem path of an overlay identified by its name,
-// along with a boolean indicating whether the returned overlayPath corresponds
-// to a site-specific overlay.
-func GetOverlay(name string) (overlay Overlay) {
+func GetOverlay(name string) (overlay Overlay, err error) {
 	overlay = GetSiteOverlay(name)
 	if overlay.Exists() {
-		return overlay
+		return overlay, nil
 	}
 	overlay = GetDistributionOverlay(name)
 	if overlay.Exists() {
-		return overlay
+		return overlay, nil
 	}
-	return GetSiteOverlay(name)
+	return "", ErrDoesNotExist
 }
 
 // GetDistributionOverlay returns the filesystem path of a distribution overlay
@@ -66,7 +64,7 @@ func (overlay Overlay) CloneSiteOverlay() (siteOverlay Overlay, err error) {
 		return siteOverlay, fmt.Errorf("source overlay does not exist: %s", overlay.Name())
 	}
 	if siteOverlay.Exists() {
-		return siteOverlay, fmt.Errorf("site overlay already exists: %s", siteOverlay.Name())
+		return siteOverlay, nil
 	}
 	if !util.IsDir(filepath.Dir(siteOverlay.Path())) {
 		if err := os.MkdirAll(filepath.Dir(siteOverlay.Path()), 0o755); err != nil {

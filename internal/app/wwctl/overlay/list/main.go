@@ -28,10 +28,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, name := range overlays {
-		overlay_ := overlay.GetOverlay(name)
+		overlay_, err := overlay.GetOverlay(name)
 
-		if !overlay_.Exists() {
-			wwlog.Error("system/%s (path not found:%s)", name, overlay_.Rootfs())
+		if err != nil {
+			wwlog.Error("%s:%s", name, err)
 			continue
 		}
 
