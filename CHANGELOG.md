@@ -7,13 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## Unreleased
 
 ### Added
+
 - Build support for EL10, EL10 depends on `dnsmasq` and no longer `dhcpd-server` (EOL). #1974
 - `make rpm` added for local development rpm builds. #1974
 
 ### Changed
+
 - `make dist` now uses `mktemp` instead of `.dist`. #1974
 - Fixed dnsmasq template file to use basename for ipxe files. #1974
 - For EL10 default to dnsmasq for dhcpd and tftp. #1974
+- Refactored overlay class. #1968
 
 ## v4.6.3, 2025-08-01
 

@@ -2,58 +2,44 @@ package chown
 
 import (
 	"fmt"
-	"os"
 	"strconv"
-
-	"github.com/warewulf/warewulf/internal/pkg/overlay"
-	"github.com/warewulf/warewulf/internal/pkg/util"
+	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/pkg/overlay"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	var uid int
-	var gid int
+	fileName := args[1]
+	chownSpec := args[2]
+
+	var uid, gid = -1, -1
 	var err error
 
-	overlayName := args[0]
-	fileName := args[1]
-
-	uid, err = strconv.Atoi(args[2])
-	if err != nil {
-		return fmt.Errorf("UID is not an integer: %s", args[2])
-	}
-
-	if len(args) > 3 {
-		gid, err = strconv.Atoi(args[3])
-		if err != nil {
-			return fmt.Errorf("GID is not an integer: %s", args[3])
+	if strings.Contains(chownSpec, ":") {
+		parts := strings.SplitN(chownSpec, ":", 2)
+		if parts[0] != "" {
+			uid, err = strconv.Atoi(parts[0])
+			if err != nil {
+				return fmt.Errorf("UID is not an integer: %s", parts[0])
+			}
+		}
+		if parts[1] != "" {
+			gid, err = strconv.Atoi(parts[1])
+			if err != nil {
+				return fmt.Errorf("GID is not an integer: %s", parts[1])
+			}
 		}
 	} else {
-		gid = -1
-	}
-
-	overlay_ := overlay.GetOverlay(overlayName)
-	if !overlay_.Exists() {
-		return fmt.Errorf("overlay does not exist: %s", overlayName)
-	}
-
-	if !overlay_.IsSiteOverlay() {
-		overlay_, err = overlay_.CloneSiteOverlay()
+		uid, err = strconv.Atoi(chownSpec)
 		if err != nil {
-			return err
+			return fmt.Errorf("UID is not an integer: %s", chownSpec)
 		}
 	}
 
-	overlayFile := overlay_.File(fileName)
-	if !(util.IsFile(overlayFile) || util.IsDir(overlayFile)) {
-		return fmt.Errorf("file does not exist within overlay: %s:%s", overlayName, fileName)
-	}
-
-	err = os.Chown(overlayFile, uid, gid)
+	myOverlay, err := overlay.GetOverlay(args[0])
 	if err != nil {
-		return fmt.Errorf("could not set ownership: %s", err)
+		return err
 	}
-
-	return nil
+	return myOverlay.Chown(fileName, uid, gid)
 }

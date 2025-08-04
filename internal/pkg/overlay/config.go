@@ -15,58 +15,53 @@ import (
 )
 
 // GetOverlay returns the filesystem path of an overlay identified by its name,
-// along with a boolean indicating whether the returned overlayPath corresponds
-// to a site-specific overlay.
-func GetOverlay(name string) (overlay Overlay) {
-	overlay = GetSiteOverlay(name)
+func GetOverlay(name string) (overlay Overlay, err error) {
+	overlay = getSiteOverlayName(name)
 	if overlay.Exists() {
-		return overlay
+		return overlay, nil
 	}
-	overlay = GetDistributionOverlay(name)
+	overlay = getDistributionOverlay(name)
 	if overlay.Exists() {
-		return overlay
+		return overlay, nil
 	}
-	return GetSiteOverlay(name)
-}
-
-// GetDistributionOverlay returns the filesystem path of a distribution overlay
-// identified by the given name.
-func GetDistributionOverlay(name string) (overlay Overlay) {
-	return getOverlay(config.Get().Paths.DistributionOverlaydir(), name)
-}
-
-// GetSiteOverlay returns the filesystem path of a site-specific overlay
-// identified by the given name.
-func GetSiteOverlay(name string) (overlay Overlay) {
-	return getOverlay(config.Get().Paths.SiteOverlaydir(), name)
-}
-
-// getOverlay constructs an overlay based on the given overlay directory and
-// overlay name. The overlay does not necessarily exist.
-func getOverlay(overlaydir, name string) (overlay Overlay) {
-	return Overlay(path.Join(overlaydir, name))
+	return "", ErrDoesNotExist
 }
 
 // Create creates a new overlay directory for the given overlay
 //
 // Returns an error if the overlay already exists or if directory creation fails.
-func (overlay Overlay) Create() error {
+func Create(name string) (overlay Overlay, err error) {
+	overlay = getSiteOverlayName(name)
 	if util.IsDir(overlay.Path()) {
-		return fmt.Errorf("overlay already exists: %s", overlay)
+		return overlay, fmt.Errorf("overlay already exists: %s", name)
 	}
-	return os.MkdirAll(overlay.Rootfs(), 0o755)
+	wwlog.Verbose("created site overlay under: %s", overlay.Path())
+	return overlay, os.MkdirAll(path.Join(overlay.Path(), "rootfs"), 0o755)
+}
+
+// GetDistributionOverlay returns the filesystem path of a distribution overlay
+// identified by the given name.
+func getDistributionOverlay(name string) Overlay {
+	return Overlay(path.Join(config.Get().Paths.DistributionOverlaydir(), name))
+}
+
+// GetSiteOverlay returns the filesystem path of a site-specific overlay
+// identified by the given name.
+func getSiteOverlayName(name string) (overlay Overlay) {
+	return Overlay(path.Join(config.Get().Paths.SiteOverlaydir(), name))
 }
 
 // Creates a site overlay from an existing distribution overlay.
 //
 // If the distribution overlay doesn't exist, return an error.
 func (overlay Overlay) CloneSiteOverlay() (siteOverlay Overlay, err error) {
-	siteOverlay = GetSiteOverlay(overlay.Name())
+	wwlog.Verbose("Creating site overlay: %s", overlay.Name())
+	siteOverlay = getSiteOverlayName(overlay.Name())
 	if !util.IsDir(overlay.Path()) {
 		return siteOverlay, fmt.Errorf("source overlay does not exist: %s", overlay.Name())
 	}
 	if siteOverlay.Exists() {
-		return siteOverlay, fmt.Errorf("site overlay already exists: %s", siteOverlay.Name())
+		return siteOverlay, nil
 	}
 	if !util.IsDir(filepath.Dir(siteOverlay.Path())) {
 		if err := os.MkdirAll(filepath.Dir(siteOverlay.Path()), 0o755); err != nil {

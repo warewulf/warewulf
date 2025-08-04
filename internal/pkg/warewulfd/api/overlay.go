@@ -24,10 +24,13 @@ type OverlayResponse struct {
 func NewOverlayResponse(name string) *OverlayResponse {
 	o := new(OverlayResponse)
 	o.Files = []string{}
-	if files, err := overlay.OverlayGetFiles(name); err == nil {
-		o.Files = files
+	myOverlay, err := overlay.GetOverlay(name)
+	if err == nil {
+		if files, err := myOverlay.GetFiles(); err == nil {
+			o.Files = files
+		}
+		o.Site = myOverlay.IsSiteOverlay()
 	}
-	o.Site = overlay.GetOverlay(name).IsSiteOverlay()
 	return o
 }
 
@@ -55,7 +58,7 @@ func getOverlayByName() usecase.Interactor {
 
 	u := usecase.NewInteractor(func(ctx context.Context, input getOverlayByNameInput, output *OverlayResponse) error {
 		wwlog.Debug("api.getOverlayByName(Name:%v)", input.Name)
-		if !overlay.GetOverlay(input.Name).Exists() {
+		if _, err := overlay.GetOverlay(input.Name); err != nil {
 			return status.Wrap(fmt.Errorf("overlay not found: %v", input.Name), status.NotFound)
 		} else {
 			*output = *NewOverlayResponse(input.Name)
@@ -79,11 +82,13 @@ type OverlayFile struct {
 }
 
 func (of *OverlayFile) FullPath() string {
-	return path.Join(overlay.GetOverlay(of.Overlay).Rootfs(), of.Path)
+	myOverlay, _ := overlay.GetOverlay(of.Overlay)
+	return myOverlay.File(of.Path)
 }
 
 func (of *OverlayFile) Exists() bool {
-	return overlay.GetOverlay(of.Overlay).Exists() && util.IsFile(of.FullPath())
+	myOverlay, _ := overlay.GetOverlay(of.Overlay)
+	return myOverlay.Exists() && util.IsFile(of.FullPath())
 }
 
 func (of *OverlayFile) readContents() (string, error) {
@@ -202,9 +207,12 @@ func createOverlay() usecase.Interactor {
 
 	u := usecase.NewInteractor(func(ctx context.Context, input createOverlayInput, output *OverlayResponse) error {
 		wwlog.Debug("api.createOverlay(Name:%v)", input.Name)
-		newOverlay := overlay.GetSiteOverlay(input.Name)
-		if err := newOverlay.Create(); err != nil {
-			return err
+		newOverlay, err := overlay.GetOverlay(input.Name)
+		if err != nil {
+			newOverlay, err = overlay.Create(input.Name)
+			if err != nil {
+				return err
+			}
 		}
 		*output = *NewOverlayResponse(newOverlay.Name())
 		return nil
@@ -223,12 +231,9 @@ func deleteOverlay() usecase.Interactor {
 
 	u := usecase.NewInteractor(func(ctx context.Context, input deleteOverlayInput, output *OverlayResponse) error {
 		wwlog.Debug("api.deleteOverlay(Name:%v, Force:%v)", input.Name, input.Force)
-		overlay_ := overlay.GetSiteOverlay(input.Name)
-		if input.Force {
-			if err := os.RemoveAll(overlay_.Path()); err != nil {
-				return err
-			}
-		} else {
+		overlay_, _ := overlay.GetOverlay(input.Name)
+		isSiteOverlay := overlay_.IsSiteOverlay()
+		if !input.Force {
 			if registry, err := node.New(); err != nil {
 				return err
 			} else {
@@ -240,15 +245,12 @@ func deleteOverlay() usecase.Interactor {
 						status.InvalidArgument)
 				}
 			}
-			if err := os.Remove(overlay_.Rootfs()); err != nil {
-				return status.Wrap(fmt.Errorf("failed to remove overlay rootfs: %v", err), status.Code(409))
-			} else {
-				if err := os.Remove(overlay_.Path()); err != nil {
-					return status.Wrap(fmt.Errorf("failed to remove overlay: %v", err), status.Code(409))
-				}
-			}
+		}
+		if err := os.RemoveAll(overlay_.Path()); err != nil {
+			return status.Wrap(fmt.Errorf("failed to remove overlay: %v", err), status.Code(409))
 		}
 		*output = *NewOverlayResponse(input.Name)
+		output.Site = isSiteOverlay
 		return nil
 	})
 	u.SetTitle("Delete an overlay")
@@ -274,7 +276,7 @@ func deleteOverlayFile() usecase.Interactor {
 		if relPath, err := url.QueryUnescape(input.Path); err != nil {
 			return fmt.Errorf("failed to decode path: %v: %w", input.Path, err)
 		} else {
-			overlay_ := overlay.GetOverlay(input.Name)
+			overlay_, _ := overlay.GetOverlay(input.Name)
 			err := overlay_.DeleteFile(relPath, input.Force, input.Cleanup)
 			if err != nil {
 				return fmt.Errorf("unable to delete overlay file %v: %v: %w", input.Name, relPath, err)
@@ -305,7 +307,12 @@ func addOverlayFile() usecase.Interactor {
 		if relPath, err := url.QueryUnescape(input.Path); err != nil {
 			return fmt.Errorf("failed to decode path: %v: %w", input.Path, err)
 		} else {
-			overlay_ := overlay.GetOverlay(input.Name)
+			overlay_, err := overlay.GetOverlay(input.Name)
+			if err != nil {
+				if _, err := overlay.Create(input.Name); err != nil {
+					return err
+				}
+			}
 			if err := overlay_.AddFile(relPath, []byte(input.Content), true, !(input.IfNoneMatch == "*")); err != nil {
 				return fmt.Errorf("unable to add overlay file %v: %v: %w", input.Name, relPath, err)
 			}
