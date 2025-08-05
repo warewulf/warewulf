@@ -252,8 +252,8 @@ func (overlay Overlay) Mkdir(path string, mode int32) (err error) {
 		}
 	}
 	fullPath := overlay.File(path)
-	if !(util.IsFile(fullPath) || util.IsDir(fullPath)) {
-		return fmt.Errorf("file does not exist within overlay: %s:%s", overlay.Name(), fullPath)
+	if util.IsFile(fullPath) || util.IsDir(fullPath) {
+		wwlog.Warn("path already exists, overwriting permissions: %s:%s", overlay.Name(), fullPath)
 	}
 	return os.MkdirAll(fullPath, os.FileMode(mode))
 }
