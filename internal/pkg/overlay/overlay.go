@@ -152,6 +152,9 @@ func (overlay Overlay) AddFile(filePath string, content []byte, parents bool, fo
 func (overlay Overlay) DeleteFile(filePath string, force, cleanup bool) (err error) {
 	wwlog.Info("Deleting file %s from overlay %s, force: %v, cleanup: %v", filePath, overlay.Name(), force, cleanup)
 	if filePath == "" {
+		if overlay.IsDistributionOverlay() {
+			return fmt.Errorf("cannot delete a distribution overlay: %s", overlay.Name())
+		}
 		if force {
 			err := os.RemoveAll(overlay.Path())
 			if err != nil {
