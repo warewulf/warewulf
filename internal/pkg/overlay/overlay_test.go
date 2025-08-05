@@ -722,8 +722,8 @@ func Test_CreateOverlayFile(t *testing.T) {
 		content     []byte
 		force       bool
 	}{
-		{"create file", "test", "newfile.ww", []byte("new file"), false},
-		{"overwrite existing file", "test", "existingfile.ww", []byte("overwrite file"), true},
+		{"create file", "test", "test.ww", []byte("new file"), false},
+		{"overwrite existing file", "test", "test.ww", []byte("overwrite file"), true},
 	}
 
 	conf := warewulfconf.Get()
@@ -731,11 +731,15 @@ func Test_CreateOverlayFile(t *testing.T) {
 	assert.NoError(t, overlayDirErr)
 	defer os.RemoveAll(overlayDir)
 	conf.Paths.WWOverlaydir = overlayDir
-
+	conf.Paths.Datadir = "/dev/null"
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			newOverlay := GetSiteOverlay(tt.overlayName)
-			err := newOverlay.AddFile(tt.filePath, tt.content, true, tt.force)
+			newOverlay, err := GetOverlay(tt.overlayName)
+			if err != nil {
+				newOverlay, err = Create(tt.overlayName)
+			}
+			assert.NoError(t, err)
+			err = newOverlay.AddFile(tt.filePath, tt.content, true, tt.force)
 			assert.NoError(t, err)
 
 			newFile := newOverlay.File(tt.filePath)

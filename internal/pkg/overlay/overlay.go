@@ -100,7 +100,7 @@ func (overlay Overlay) Exists() bool {
 // Returns:
 //   - true if the overlay is a site overlay; false otherwise.
 func (overlay Overlay) IsSiteOverlay() bool {
-	return path.Dir(overlay.Path()) == path.Dir(config.Get().Paths.SiteOverlaydir())
+	return strings.Contains(overlay.Path(), config.Get().Paths.SiteOverlaydir())
 }
 
 // IsDistributionOverlay determines whether the overlay is a distribution overlay.
@@ -111,7 +111,7 @@ func (overlay Overlay) IsSiteOverlay() bool {
 // Returns:
 //   - true if the overlay is a distribution overlay; false otherwise.
 func (overlay Overlay) IsDistributionOverlay() bool {
-	return path.Dir(overlay.Path()) == path.Dir(config.Get().Paths.DistributionOverlaydir())
+	return strings.Contains(overlay.Path(), config.Get().Paths.DistributionOverlaydir())
 }
 
 func (overlay Overlay) AddFile(filePath string, content []byte, parents bool, force bool) error {
@@ -125,7 +125,9 @@ func (overlay Overlay) AddFile(filePath string, content []byte, parents bool, fo
 		// replace the overlay with newly created siteOverlay
 		overlay = siteOverlay
 	}
-
+	if !overlay.IsSiteOverlay() {
+		return fmt.Errorf("cloning of site overlay failed")
+	}
 	fullPath := overlay.File(filePath)
 	// create necessary parent directories
 	if parents {
