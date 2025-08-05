@@ -2,24 +2,38 @@ package chown
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
-	"strconv"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	fileName := args[1]
+	chownSpec := args[2]
 
-	uid, err := strconv.Atoi(args[2])
-	if err != nil {
-		return fmt.Errorf("UID is not an integer: %s", args[2])
-	}
+	var uid, gid = -1, -1
+	var err error
 
-	gid := -1
-	if len(args) > 3 {
-		gid, err = strconv.Atoi(args[3])
+	if strings.Contains(chownSpec, ":") {
+		parts := strings.SplitN(chownSpec, ":", 2)
+		if parts[0] != "" {
+			uid, err = strconv.Atoi(parts[0])
+			if err != nil {
+				return fmt.Errorf("UID is not an integer: %s", parts[0])
+			}
+		}
+		if parts[1] != "" {
+			gid, err = strconv.Atoi(parts[1])
+			if err != nil {
+				return fmt.Errorf("GID is not an integer: %s", parts[1])
+			}
+		}
+	} else {
+		uid, err = strconv.Atoi(chownSpec)
 		if err != nil {
-			return fmt.Errorf("GID is not an integer: %s", args[3])
+			return fmt.Errorf("UID is not an integer: %s", chownSpec)
 		}
 	}
 
