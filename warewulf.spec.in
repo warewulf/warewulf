@@ -60,7 +60,9 @@ Requires: ipxe-bootimgs-aarch64
 %endif
 %endif
 
-%if 0%{?rhel} >= 8 || 0%{?suse_version} || 0%{?fedora}
+%if 0%{?rhel} >= 10 || 0%{?suse_version} || 0%{?fedora}
+Requires: dnsmasq
+%elif 0%{?rhel} >= 8
 Requires: dhcp-server
 %else
 # rhel < 8
