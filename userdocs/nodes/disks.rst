@@ -130,7 +130,7 @@ mounted. If partitions or file systems already exist on the disk, ``ignition``
 tries to reuse existing file systems by default.
 
 To ignore existing file systems and provision fresh file systems on each boot,
-specify the ``--fswipe``` flag for that filesystem, and ``--diskwipe`` for the
+specify the ``--fswipe`` flag for that filesystem, and ``--diskwipe`` for the
 disk, as necessary.
 
 If you would like to re-use existing partitions but want to replace existing
