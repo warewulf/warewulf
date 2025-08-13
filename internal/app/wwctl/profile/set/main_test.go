@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func Test_Profile_Set(t *testing.T) {
@@ -138,7 +139,6 @@ nodeprofiles:
   default: {}
 nodes: {}`,
 		},
-
 		"single node delete existing partition": {
 			args:    []string{"--partdel=var", "default"},
 			wantErr: false,
@@ -150,7 +150,6 @@ nodeprofiles:
         partitions:
           var:
             number: "1"
-        path: /var
     filesystems:
       /dev/disk/by-partlabel/var:
         format: btrfs
@@ -166,8 +165,74 @@ nodeprofiles:
         path: /var
 nodes: {}`,
 		},
+		"single set wipetabe to true": {
+			args:    []string{"--diskwipe=true", "--partname=var", "--diskname=/dev/vda", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          var:
+            number: "1"
+    filesystems:
+      /dev/disk/by-partlabel/var:
+        format: btrfs
+        path: /var
+nodes: {}
+`,
+			outDb: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        wipe_table: "true"
+        partitions:
+          var:
+            number: "1"
+    filesystems:
+      /dev/disk/by-partlabel/var:
+        format: btrfs
+        path: /var
+nodes: {}`,
+		},
+		"single set wipetabe to false": {
+			args:    []string{"--diskwipe=false", "--partname=var", "--diskname=/dev/vda", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        wipe_table: "true"
+        partitions:
+          var:
+            number: "1"
+    filesystems:
+      /dev/disk/by-partlabel/var:
+        format: btrfs
+        path: /var
+nodes: {}
+`,
+			outDb: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        wipe_table: "false"
+        partitions:
+          var:
+            number: "1"
+    filesystems:
+      /dev/disk/by-partlabel/var:
+        format: btrfs
+        path: /var
+nodes: {}`,
+		},
 	}
 
+	wwlog.SetLogLevel(wwlog.DEBUG)
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			env := testenv.New(t)
