@@ -33,6 +33,7 @@ var provisionSendTests = []struct {
 	{"ipxe test with NetDevs, KernelVersion, and Authority", "/provision/00:00:00:00:00:ff?stage=ipxe", "1.1.1 ifname=net:00:00:00:00:00:ff  10.10.0.1 fd00:10::1 10.10.0.1:9873", 200, "10.10.10.12:9873"},
 	{"ipxe ipv6", "/provision/00:00:00:00:00:ff?stage=ipxe", "1.1.1 ifname=net:00:00:00:00:00:ff  10.10.0.1 fd00:10::1 [fd00:10::1]:9873", 200, "[fd00:10::10:12]:9873"},
 	{"find grub.cfg", "/efiboot/grub.cfg", "dracut 10.10.0.1:9873", 200, "10.10.10.11:9873"},
+		{"runtime check", "/provision/00:00:00:ff:ff:ff?stage=runtime_check", "d4fb6ad047fbac151075de8550975cd4b842cc7c4cc5d5b0e38a4a7d6e47d4c1\n", 200, "10.10.10.10:9873"},
 }
 
 func Test_ProvisionSend(t *testing.T) {
