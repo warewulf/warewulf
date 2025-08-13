@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/netip"
+	"os"
 	"path"
 	"path/filepath"
 	"strconv"
@@ -66,12 +67,14 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 	}
 
 	status_stages := map[string]string{
-		"efiboot":   "EFI",
-		"ipxe":      "IPXE",
-		"kernel":    "KERNEL",
-		"system":    "SYSTEM_OVERLAY",
-		"runtime":   "RUNTIME_OVERLAY",
-		"initramfs": "INITRAMFS"}
+		"efiboot":       "EFI",
+		"ipxe":          "IPXE",
+		"kernel":        "KERNEL",
+		"system":        "SYSTEM_OVERLAY",
+		"runtime":       "RUNTIME_OVERLAY",
+		"initramfs":     "INITRAMFS",
+		"runtime_check": "RUNTIME_CHECK",
+	}
 
 	status_stage := status_stages[rinfo.stage]
 	var stage_file string
@@ -193,6 +196,45 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			wwlog.ErrorExc(err, "")
 			return
 		}
+	} else if rinfo.stage == "runtime_check" {
+		stage_file, err = getOverlayFile(
+			remoteNode,
+			"runtime",
+			[]string{},
+			conf.Warewulf.AutobuildOverlays())
+
+		if err != nil {
+			if errors.Is(err, overlay.ErrDoesNotExist) {
+				w.WriteHeader(http.StatusNotFound)
+				wwlog.ErrorExc(err, "")
+				updateStatus(remoteNode.Id(), status_stage, "NOT_FOUND", rinfo.ipaddr)
+				return
+			}
+			w.WriteHeader(http.StatusInternalServerError)
+			wwlog.ErrorExc(err, "")
+			updateStatus(remoteNode.Id(), status_stage, "ERROR", rinfo.ipaddr)
+			return
+		}
+		file, err := os.Open(stage_file)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			wwlog.Error("Could not open file for checksum '%s': %s", stage_file, err)
+			updateStatus(remoteNode.Id(), status_stage, "ERROR", rinfo.ipaddr)
+			return
+		}
+		checksum, err := util.HashFile(file)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			wwlog.Error("Could not get checksum for '%s': %s", stage_file, err)
+			updateStatus(remoteNode.Id(), status_stage, "ERROR", rinfo.ipaddr)
+			return
+		}
+		file.Close()
+		w.Header().Set("Content-Type", "text/plain; charset=us-ascii")
+		fmt.Fprintln(w, checksum)
+		updateStatus(remoteNode.Id(), status_stage, "CHECKSUM", rinfo.ipaddr)
+		wwlog.Info("send runtime checksum for %s -> %s", stage_file, remoteNode.Id())
+		return
 	} else if rinfo.stage == "efiboot" {
 		wwlog.Debug("requested method: %s", req.Method)
 		imageName := remoteNode.ImageName
