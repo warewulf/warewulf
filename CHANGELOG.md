@@ -4,21 +4,6 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## Unreleased
-
-### Added
-
-- `wwclient --once` prompts wwclient to run once. #1226
-
-### Changed
-
-- `wwclient` places files from the runtime overlay atomically. #1307, #1975
-
-### Fixed
-
-- Fixed a bug in `wwclient` which prevented proper cleanup of ephemeral files.
-- Fixed `wwclient --debug` to properly enable debug logging.
-
 ## v4.6.3, 2025-08-01
 
 ### Added
