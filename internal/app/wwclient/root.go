@@ -1,8 +1,10 @@
 package wwclient
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -20,6 +22,7 @@ import (
 	"github.com/talos-systems/go-smbios/smbios"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/pidfile"
+	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -197,8 +200,9 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	if ipaddr == "" {
 		ipaddr = conf.Ipaddr
 	}
+	var currentSum []byte
 	for {
-		updateSystem(ipaddr, conf.Warewulf.Port, wwid, tag, localUUID)
+		currentSum = updateSystem(ipaddr, conf.Warewulf.Port, wwid, tag, localUUID, currentSum)
 		if !finishedInitialSync {
 			// ignore error and status here, as this wouldn't change anything
 			_, _ = daemon.SdNotify(false, daemon.SdNotifyReady)
@@ -210,9 +214,59 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	}
 }
 
-func updateSystem(ipaddr string, port int, wwid string, tag string, localUUID uuid.UUID) {
+// check if currentSum matches the sum returned from the server, if both sum are same, do nothingm if
+// sum differs update the overlay. Return error and empty sum on any error.
+func updateSystem(ipaddr string, port int, wwid string, tag string, localUUID uuid.UUID, currentSum []byte) []byte {
 	var resp *http.Response
 	counter := 0
+
+	if len(currentSum) > 0 {
+		var err error
+		values := &url.Values{}
+		values.Set("assetkey", tag)
+		values.Set("uuid", localUUID.String())
+		values.Set("stage", "runtime_check")
+		values.Set("checksum", string(currentSum))
+
+		getURL := &url.URL{
+			Scheme:   "http",
+			Host:     fmt.Sprintf("%s:%d", ipaddr, port),
+			Path:     fmt.Sprintf("provision/%s", wwid),
+			RawQuery: values.Encode(),
+		}
+		wwlog.Debug("making checksum request: %s", getURL)
+		for {
+			resp, err = Webclient.Get(getURL.String())
+			if err == nil {
+				break
+			} else {
+				if counter > 60 {
+					counter = 0
+				}
+				if counter == 0 {
+					wwlog.Error("%s", err)
+				}
+				counter++
+			}
+			time.Sleep(1000 * time.Millisecond)
+		}
+
+		if resp.StatusCode == http.StatusOK {
+			remoteSum, err := io.ReadAll(resp.Body)
+			if err != nil {
+				wwlog.Error("could not read checksum from response: %s", err)
+				resp.Body.Close()
+				return []byte{}
+			}
+			resp.Body.Close()
+			if bytes.Equal(bytes.TrimSpace(remoteSum), currentSum) {
+				wwlog.Info("runtime overlay is current")
+				return currentSum
+			}
+		} // Checksum is different or not found, so fall through to update
+	}
+
+	counter = 0
 	for {
 		var err error
 		values := &url.Values{}
@@ -241,18 +295,62 @@ func updateSystem(ipaddr string, port int, wwid string, tag string, localUUID uu
 		}
 		time.Sleep(1000 * time.Millisecond)
 	}
-	if resp.StatusCode != 200 {
+
+	if resp.StatusCode == http.StatusNoContent {
+		wwlog.Info("no runtime overlay available for this node")
+		return []byte{}
+	}
+
+	if resp.StatusCode != http.StatusOK {
 		wwlog.Warn("not applying runtime overlay: got status code: %d", resp.StatusCode)
 		time.Sleep(60000 * time.Millisecond)
-		return
+		return []byte{}
 	}
+
+	tmpFile, err := os.CreateTemp(os.TempDir(), "ww-runtime-")
+	if err != nil {
+		wwlog.Error("could not create temporary file: %s", err)
+		return []byte{}
+	}
+	defer os.Remove(tmpFile.Name())
+
+	_, err = io.Copy(tmpFile, resp.Body)
+	if err != nil {
+		wwlog.Error("failed to write runtime overlay to temporary file: %s", err)
+		tmpFile.Close()
+		return []byte{}
+	}
+	tmpFile.Close()
+	resp.Body.Close()
+
+	r, err := os.Open(tmpFile.Name())
+	if err != nil {
+		wwlog.Error("could not open temporary file for reading: %s", err)
+		return []byte{}
+	}
+	defer r.Close()
+
+	newSum, err := util.HashFile(r)
+	if err != nil {
+		wwlog.Error("could not hash runtime overlay: %s", err)
+		return []byte{}
+	}
+
 	wwlog.Info("applying runtime overlay")
+	_, err = r.Seek(0, 0)
+	if err != nil {
+		wwlog.Error("could not seek in temporary file: %s", err)
+		return []byte{}
+	}
+
 	command := exec.Command("/bin/sh", "-c", "gzip -dc | cpio -iu")
-	command.Stdin = resp.Body
-	err := command.Run()
+	command.Stdin = r
+	err = command.Run()
 	if err != nil {
 		wwlog.Error("failed running cpio: %s", err)
+		return []byte{}
 	}
+	return []byte(newSum)
 }
 
 func cleanUp() {
