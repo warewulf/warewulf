@@ -13,7 +13,6 @@ func main() {
 
 	err := root.Execute()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		if wwclient.DebugFlag {
 			fmt.Printf("\nSTACK TRACE: %+v\n", err)
 		}
