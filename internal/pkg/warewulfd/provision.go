@@ -86,6 +86,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 	if err != nil && err != node.ErrNoUnconfigured {
 		wwlog.ErrorExc(err, "")
 		w.WriteHeader(http.StatusServiceUnavailable)
+		updateStatus(rinfo.hwaddr, "noop", "UNKNOWN_NODE", rinfo.ipaddr)
 		return
 	}
 
