@@ -24,12 +24,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `wwctl overlay edit` again writes temporary files to the default location.
   (After #1886 better resolves the underlying issue from #1473.) #1946
 - Prevent brp-mangle-shebangs from changing files in overlays.
+- The NetworkManager overlay now only adds an `[ethernet]` section for ethernet interfaces.
 
 ### Fixed
 
 - Fixed a bug in `wwclient` which prevented proper cleanup of ephemeral files.
 - Fixed `wwclient --debug` to properly enable debug logging.
 - Updated golang BuildRequires in RPM specfile. #1990
+
+### Changed
+
+### Fixed
 
 ## v4.6.3, 2025-08-01
 
