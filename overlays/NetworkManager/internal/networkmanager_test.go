@@ -259,7 +259,6 @@ id=tagged
 interface-name=eth0.902
 type=vlan
 autoconnect=true
-[ethernet]
 [ipv4]
 method=manual
 route1=192.168.1.0/24,192.168.2.254
@@ -331,7 +330,6 @@ miimon=100
 mode=balance-rr
 xmit_hash_policy=layer2+3
 updelay=0
-[ethernet]
 [ipv4]
 method=manual
 address=192.168.3.110/24
