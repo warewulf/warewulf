@@ -29,7 +29,7 @@ transport-mode=datagram
 {{- if $netdev.MTU }}
 mtu={{ $netdev.MTU }}
 {{- end }}
-{{- else }}
+{{- else if eq (default "ethernet" (lower $netdev.Type)) "ethernet" }}
 [ethernet]
 {{- if $netdev.Hwaddr }}
 mac-address={{ $netdev.Hwaddr }}
