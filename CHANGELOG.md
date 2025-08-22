@@ -20,11 +20,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Refactored overlay class. #1968
 - `wwclient` places files from the runtime overlay atomically. #1307, #1975
 - `wwclient` skips files that do not appear to have been modified. #1984
+- The NetworkManager overlay now only adds an `[ethernet]` section for ethernet interfaces.
 
 ### Fixed
 
 - Fixed a bug in `wwclient` which prevented proper cleanup of ephemeral files.
 - Fixed `wwclient --debug` to properly enable debug logging.
+
+### Changed
+
+### Fixed
 
 ## v4.6.3, 2025-08-01
 
