@@ -260,7 +260,7 @@ dhcp-option-force=tag:efi-http,60,HTTPClient
 # for http boot always use shim/grub
 dhcp-boot=tag:efi-http,"http://192.168.0.1:9873/efiboot/shim.efi"
 dhcp-boot=tag:x86PC,"/warewulf/ipxe-snponly-x86_64.efi"
-dhcp-boot=tag:aarch64,"/warewulf/arm64-efi/snponly.efi"
+dhcp-boot=tag:aarch64,"/warewulf/snponly.efi"
 # iPXE binary will get the following configuration file
 dhcp-boot=tag:iPXE,"http://192.168.0.1:9873/ipxe/${mac:hexhyp}?assetkey=${asset}&uuid=${uuid}"
 dhcp-no-override

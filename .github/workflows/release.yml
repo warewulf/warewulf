@@ -19,6 +19,7 @@ jobs:
     outputs:
       has-recent-commits: ${{ steps.commits.outputs.has-recent-commits }}
       commits: ${{ steps.commits.outputs.commits }}
+      version: ${{ steps.version.outputs.version }}
 
     steps:
       - name: Checkout Code
@@ -43,6 +44,13 @@ jobs:
         run: |
           make warewulf.spec dist
 
+      - name: Get build version
+        id: version
+        run: |
+          VERSION=$(make version)
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Version: ${VERSION}"
+
       - name: Upload spec
         uses: actions/upload-artifact@v4
         with:
@@ -65,18 +73,20 @@ jobs:
     name: Build RPMs
     runs-on: ${{ matrix.runs-on }}
     container:
-      image: rockylinux/rockylinux:9
+      image: rockylinux/rockylinux:10
       options: --privileged
     strategy:
       fail-fast: false
       matrix:
         arch: [x86_64, aarch64]
-        dist: [el9, el8, suse.lp155]
+        dist: [el10, el9, el8, suse.lp155]
         include:
           - dist: el8
             target: rocky+epel-8
           - dist: el9
             target: rocky+epel-9
+          - dist: el10
+            target: rocky+epel-10
           - dist: suse.lp155
             target: opensuse-leap-15.5
           - arch: x86_64
@@ -110,7 +120,7 @@ jobs:
             root="${eol_root}"
           fi
           mock --root="${root}" --rebuild --spec=warewulf.spec --sources=. \
-          && mock --root="${root}" --chroot -- bash -c "make -C /builddir/build/BUILD/warewulf-*/ test"
+          && mock --root="${root}" --chroot -- bash -c "make -C /builddir/build/BUILD/warewulf-${{ needs.dist.outputs.version }} test"
 
       - name: Upload RPMs
         uses: actions/upload-artifact@v4
