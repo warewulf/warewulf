@@ -17,6 +17,10 @@ include Tools.mk
 
 ##@ Build
 
+.PHONY: version
+version: ## Build version
+	@echo $(VERSION)
+
 .PHONY: build
 build: wwctl wwclient etc/bash_completion.d/wwctl ## Build the Warewulf binaries
 
@@ -28,14 +32,21 @@ spec: warewulf.spec ## Create an RPM spec file
 
 .PHONY: dist
 dist: $(config) ## Create a distributable source tarball
-	rm -rf .dist/
-	mkdir -p .dist/$(WAREWULF)-$(VERSION)
-	git ls-files >.dist/dist-files
-	tar -c --files-from .dist/dist-files | tar -C .dist/$(WAREWULF)-$(VERSION) -x
-	test -d vendor/ && cp -a vendor/ .dist/$(WAREWULF)-$(VERSION) || :
-	scripts/get-version.sh >.dist/$(WAREWULF)-$(VERSION)/VERSION
-	tar -C .dist -czf $(WAREWULF)-$(VERSION).tar.gz $(WAREWULF)-$(VERSION)
-	rm -rf .dist/
+	$(eval TMPDIR := $(shell mktemp -d))
+	mkdir -p $(TMPDIR)/$(WAREWULF)-$(VERSION)
+	git ls-files >$(TMPDIR)/dist-files
+	tar -c --files-from $(TMPDIR)/dist-files | tar -C $(TMPDIR)/$(WAREWULF)-$(VERSION) -x
+	test -d vendor/ && cp -a vendor/ $(TMPDIR)/$(WAREWULF)-$(VERSION) || :
+	scripts/get-version.sh >$(TMPDIR)/$(WAREWULF)-$(VERSION)/VERSION
+	tar -C $(TMPDIR) -czf $(WAREWULF)-$(VERSION).tar.gz $(WAREWULF)-$(VERSION)
+	rm -rf $(TMPDIR)
+
+RPMDIR = $(HOME)/rpmbuild
+.PHONY: rpm
+rpm: spec dist ## Create an RPM package
+	@mkdir -p $(RPMDIR)/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+	cp $(WAREWULF)-$(VERSION).tar.gz $(RPMDIR)/SOURCES/
+	rpmbuild -bb warewulf.spec
 
 config = include/systemd/warewulfd.service \
 	internal/pkg/config/buildconfig.go \

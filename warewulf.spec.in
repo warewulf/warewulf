@@ -50,7 +50,9 @@ BuildRequires: system-release
 BuildRequires: systemd
 BuildRequires: golang >= 1.16
 BuildRequires: firewalld-filesystem
+%if ! (0%{?rhel} >= 10)
 Requires: tftp-server
+%endif
 Requires: nfs-utils
 %if 0%{?rhel} < 8
 Requires: ipxe-bootimgs
@@ -60,11 +62,15 @@ Requires: ipxe-bootimgs-aarch64
 %endif
 %endif
 
+%if 0%{?rhel} >= 10
+Requires: dnsmasq
+%else
 %if 0%{?rhel} >= 8 || 0%{?suse_version} || 0%{?fedora}
 Requires: dhcp-server
 %else
-# rhel < 8
+# rhel < 8 and others
 Requires: dhcp
+%endif
 %endif
 
 BuildRequires: git
@@ -115,6 +121,14 @@ export OFFLINE_BUILD=1
 export NO_BRP_STALE_LINK_ERROR=yes
 make install \
     DESTDIR=%{buildroot}
+
+%if 0%{?rhel} >= 10
+sed -i '
+  s/systemd name: dhcpd/systemd name: dnsmasq/
+  s/systemd name: tftp/systemd name: dnsmasq/
+  /- dsa/d' \
+  -i %{buildroot}%{_sysconfdir}/warewulf/warewulf.conf
+%endif
 
 %if 0%{?suse_version} || 0%{?sle_version}
 yq e '
