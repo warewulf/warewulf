@@ -22,12 +22,12 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	} else {
 		dest = source
 	}
-	overlay_, err := overlay.GetOverlay(args[0])
+	overlay_, err := overlay.Get(args[0])
 	if err != nil {
 		return err
 	}
 	if !overlay_.IsSiteOverlay() {
-		overlay_, err = overlay_.CloneSiteOverlay()
+		overlay_, err = overlay_.CloneToSite()
 		if err != nil {
 			return err
 		}

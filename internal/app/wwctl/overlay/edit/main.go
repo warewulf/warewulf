@@ -35,7 +35,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	overlayName := args[0]
 	fileName := args[1]
 
-	myOverlay, err := overlay.GetOverlay(overlayName)
+	myOverlay, err := overlay.Get(overlayName)
 	if err != nil {
 		return err
 	}
@@ -104,14 +104,13 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	if !myOverlay.IsSiteOverlay() {
-		myOverlay, err = myOverlay.CloneSiteOverlay()
+		myOverlay, err = myOverlay.CloneToSite()
 		if err != nil {
 			return err
 		}
+		overlayFile = myOverlay.File(fileName)
+		overlayFileDir = path.Dir(overlayFile)
 	}
-	// re-generate because overlay_ may have changed
-	overlayFile = myOverlay.File(fileName)
-	overlayFileDir = path.Dir(overlayFile)
 
 	if CreateDirs {
 		if err := os.MkdirAll(overlayFileDir, 0755); err != nil {

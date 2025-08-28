@@ -99,10 +99,10 @@ func GetNodeOrSetDiscoverable(hwaddr string, autobuildOverlays bool) (node.Node,
 		return nodeFound, fmt.Errorf("%s (failed to reload configuration) %w", hwaddr, err)
 	}
 	if autobuildOverlays {
-		if err := overlay.ClearOverlayImage(nodeFound.Id(), "system", []string{}); err != nil {
+		if err := overlay.RemoveImage(nodeFound.Id(), "system", []string{}); err != nil {
 			wwlog.Warn("Failed to clear system overlay image: %s: %s", nodeFound.Id(), err)
 		}
-		if err := overlay.ClearOverlayImage(nodeFound.Id(), "runtime", []string{}); err != nil {
+		if err := overlay.RemoveImage(nodeFound.Id(), "runtime", []string{}); err != nil {
 			wwlog.Warn("Failed to clear runtime overlay image: %s: %s", nodeFound.Id(), err)
 		}
 	}

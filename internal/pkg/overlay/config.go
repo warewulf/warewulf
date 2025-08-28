@@ -14,9 +14,9 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-// GetOverlay returns the filesystem path of an overlay identified by its name,
-func GetOverlay(name string) (overlay Overlay, err error) {
-	overlay = getSiteOverlayName(name)
+// Get returns the filesystem path of an overlay identified by its name,
+func Get(name string) (overlay Overlay, err error) {
+	overlay = getSiteOverlay(name)
 	if overlay.Exists() {
 		return overlay, nil
 	}
@@ -31,38 +31,39 @@ func GetOverlay(name string) (overlay Overlay, err error) {
 //
 // Returns an error if the overlay already exists or if directory creation fails.
 func Create(name string) (overlay Overlay, err error) {
-	overlay = getSiteOverlayName(name)
-	if util.IsDir(overlay.Path()) {
+	overlay = getSiteOverlay(name)
+	if overlay.Exists() {
 		return overlay, fmt.Errorf("overlay already exists: %s", name)
 	}
 	wwlog.Verbose("created site overlay under: %s", overlay.Path())
 	return overlay, os.MkdirAll(path.Join(overlay.Path(), "rootfs"), 0o755)
 }
 
-// GetDistributionOverlay returns the filesystem path of a distribution overlay
-// identified by the given name.
+// GetDistributionOverlay returns a distribution overlay identified by the given
+// name.
 func getDistributionOverlay(name string) Overlay {
 	return Overlay(path.Join(config.Get().Paths.DistributionOverlaydir(), name))
 }
 
-// GetSiteOverlay returns the filesystem path of a site-specific overlay
-// identified by the given name.
-func getSiteOverlayName(name string) (overlay Overlay) {
+// getSiteOverlay returns a site-specific overlay identified by the given name.
+func getSiteOverlay(name string) (overlay Overlay) {
 	return Overlay(path.Join(config.Get().Paths.SiteOverlaydir(), name))
 }
 
-// Creates a site overlay from an existing distribution overlay.
+// CloneToSite creates a site overlay from an existing distribution overlay.
 //
 // If the distribution overlay doesn't exist, return an error.
-func (overlay Overlay) CloneSiteOverlay() (siteOverlay Overlay, err error) {
-	wwlog.Verbose("Creating site overlay: %s", overlay.Name())
-	siteOverlay = getSiteOverlayName(overlay.Name())
-	if !util.IsDir(overlay.Path()) {
-		return siteOverlay, fmt.Errorf("source overlay does not exist: %s", overlay.Name())
-	}
+func (overlay Overlay) CloneToSite() (siteOverlay Overlay, err error) {
+	wwlog.Verbose("Cloning to site overlay: %s", overlay.Name())
+	siteOverlay = getSiteOverlay(overlay.Name())
 	if siteOverlay.Exists() {
 		return siteOverlay, nil
 	}
+
+	if !overlay.Exists() {
+		return siteOverlay, fmt.Errorf("source overlay does not exist: %s", overlay.Name())
+	}
+
 	if !util.IsDir(filepath.Dir(siteOverlay.Path())) {
 		if err := os.MkdirAll(filepath.Dir(siteOverlay.Path()), 0o755); err != nil {
 			return siteOverlay, err
@@ -72,7 +73,7 @@ func (overlay Overlay) CloneSiteOverlay() (siteOverlay Overlay, err error) {
 	return siteOverlay, err
 }
 
-// OverlayImage returns the full path to an overlay image based on the
+// Image returns the full path to an overlay image based on the
 // context and the overlays contained in it.
 //
 // If a context is provided, the image file name is based on that
@@ -83,7 +84,7 @@ func (overlay Overlay) CloneSiteOverlay() (siteOverlay Overlay, err error) {
 //
 // If the context is empty and no overlays are specified, the empty
 // string is returned.
-func OverlayImage(nodeName string, context string, overlayNames []string) string {
+func Image(nodeName string, context string, overlayNames []string) string {
 	var name string
 	if context != "" {
 		if len(overlayNames) > 0 {
@@ -101,8 +102,8 @@ func OverlayImage(nodeName string, context string, overlayNames []string) string
 	return path.Join(config.Get().Paths.OverlayProvisiondir(), nodeName, name)
 }
 
-func ClearOverlayImage(nodeName string, context string, overlayNames []string) error {
-	imagePath := OverlayImage(nodeName, context, overlayNames)
+func RemoveImage(nodeName string, context string, overlayNames []string) error {
+	imagePath := Image(nodeName, context, overlayNames)
 	if util.IsFile(imagePath) {
 		if err := os.Remove(imagePath); err != nil {
 			return fmt.Errorf("failed to remove overlay image: %w", err)

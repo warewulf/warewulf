@@ -39,7 +39,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 		}
 
 		for _, name := range overlays {
-			overlay_, err := overlay.GetOverlay(name)
+			overlay_, err := overlay.Get(name)
 
 			if err != nil {
 				wwlog.Error("%s:%s", name, err)

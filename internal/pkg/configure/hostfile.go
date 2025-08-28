@@ -14,7 +14,7 @@ import (
 Creates '/etc/hosts' from the host template.
 */
 func Hostfile() (err error) {
-	overlay_, err := overlay.GetOverlay("host")
+	overlay_, err := overlay.Get("host")
 	if err != nil {
 		return err
 	}

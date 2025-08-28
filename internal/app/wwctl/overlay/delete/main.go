@@ -12,7 +12,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		fileName = args[1]
 	}
 
-	myOverlay, err := overlay.GetOverlay(args[0])
+	myOverlay, err := overlay.Get(args[0])
 	if err != nil {
 		return err
 	}

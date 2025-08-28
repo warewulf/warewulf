@@ -9,7 +9,7 @@ import (
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	myOverlay, err := overlay.GetOverlay(args[0])
+	myOverlay, err := overlay.Get(args[0])
 	if err != nil {
 		return err
 	}

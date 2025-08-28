@@ -129,16 +129,13 @@ func (overlay Overlay) IsDistributionOverlay() bool {
 func (overlay Overlay) AddFile(filePath string, content []byte, parents bool, force bool) error {
 	wwlog.Info("Creating file %s in overlay %s, force: %v", filePath, overlay.Name(), force)
 
-	if overlay.IsDistributionOverlay() {
-		siteOverlay, err := overlay.CloneSiteOverlay()
+	if !overlay.IsSiteOverlay() {
+		siteOverlay, err := overlay.CloneToSite()
 		if err != nil {
 			return fmt.Errorf("failed to clone distribution overlay '%s' to site overlay: %w", overlay.Name(), err)
 		}
 		// replace the overlay with newly created siteOverlay
 		overlay = siteOverlay
-	}
-	if !overlay.IsSiteOverlay() {
-		return fmt.Errorf("cloning of site overlay failed")
 	}
 	fullPath := overlay.File(filePath)
 	// create necessary parent directories
@@ -192,7 +189,7 @@ func (overlay Overlay) DeleteFile(filePath string, force, cleanup bool) (err err
 		return fmt.Errorf("file %s does not exist in overlay %s", filePath, overlay.Name())
 	}
 	if overlay.IsDistributionOverlay() {
-		siteOverlay, err := overlay.CloneSiteOverlay()
+		siteOverlay, err := overlay.CloneToSite()
 		if err != nil {
 			return fmt.Errorf("failed to clone distribution overlay '%s' to site overlay: %w", overlay.Name(), err)
 		}
@@ -230,10 +227,10 @@ func (overlay Overlay) DeleteFile(filePath string, force, cleanup bool) (err err
 	return nil
 }
 
-// chmod for the given oppath in the overlay
+// chmod for the given path in the overlay
 func (overlay Overlay) Chmod(path string, mode uint64) (err error) {
 	if !overlay.IsSiteOverlay() {
-		overlay, err = overlay.CloneSiteOverlay()
+		overlay, err = overlay.CloneToSite()
 		if err != nil {
 			return err
 		}
@@ -249,7 +246,7 @@ func (overlay Overlay) Chmod(path string, mode uint64) (err error) {
 // chown file or dir in overlay
 func (overlay Overlay) Chown(path string, uid, gid int) (err error) {
 	if !overlay.IsSiteOverlay() {
-		overlay, err = overlay.CloneSiteOverlay()
+		overlay, err = overlay.CloneToSite()
 		if err != nil {
 			return err
 		}
@@ -263,7 +260,7 @@ func (overlay Overlay) Chown(path string, uid, gid int) (err error) {
 
 func (overlay Overlay) Mkdir(path string, mode int32) (err error) {
 	if !overlay.IsSiteOverlay() {
-		overlay, err = overlay.CloneSiteOverlay()
+		overlay, err = overlay.CloneToSite()
 		if err != nil {
 			return err
 		}
@@ -364,7 +361,7 @@ func BuildHostOverlay() error {
 	hostname, _ := os.Hostname()
 	hostData := node.NewNode(hostname)
 	wwlog.Info("Building overlay for %s: host", hostname)
-	hostdir, err := GetOverlay("host")
+	hostdir, err := Get("host")
 	if err != nil {
 		return err
 	}
@@ -430,7 +427,7 @@ func BuildOverlay(nodeConf node.Node, allNodes []node.Node, context string, over
 	} else {
 		name = fmt.Sprintf("%s overlay/%v", nodeConf.Id(), overlayNames)
 	}
-	overlayImage := OverlayImage(nodeConf.Id(), context, overlayNames)
+	overlayImage := Image(nodeConf.Id(), context, overlayNames)
 	overlayImageDir := path.Dir(overlayImage)
 
 	err := os.MkdirAll(overlayImageDir, 0o750)
@@ -494,7 +491,7 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 	wwlog.Verbose("Processing node/overlays: %s/%s", nodeData.Id(), strings.Join(overlayNames, ","))
 	for _, overlayName := range overlayNames {
 		wwlog.Verbose("Building overlay %s for node %s in %s", overlayName, nodeData.Id(), outputDir)
-		overlayRootfs, err := GetOverlay(overlayName)
+		overlayRootfs, err := Get(overlayName)
 		if err != nil {
 			return err
 		}

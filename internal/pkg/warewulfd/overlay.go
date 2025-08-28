@@ -25,7 +25,7 @@ func OverlaySend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	myOverlay, err := overlay.GetOverlay(rinfo.overlay)
+	myOverlay, err := overlay.Get(rinfo.overlay)
 	if err != nil {
 		message := "overlay not found: %s"
 		wwlog.Error(message, rinfo.overlay)

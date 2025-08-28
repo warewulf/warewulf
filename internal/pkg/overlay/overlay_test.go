@@ -139,7 +139,7 @@ func Test_OverlayMethods(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			overlay, err := GetOverlay(tt.name)
+			overlay, err := Get(tt.name)
 			if tt.exists {
 				assert.NoError(t, err)
 				assert.Equal(t, tt.name, overlay.Name())
@@ -734,7 +734,7 @@ func Test_CreateOverlayFile(t *testing.T) {
 	conf.Paths.Datadir = "/dev/null"
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			newOverlay, err := GetOverlay(tt.overlayName)
+			newOverlay, err := Get(tt.overlayName)
 			if err != nil {
 				newOverlay, err = Create(tt.overlayName)
 			}
