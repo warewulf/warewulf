@@ -100,7 +100,13 @@ func (overlay Overlay) Exists() bool {
 // Returns:
 //   - true if the overlay is a site overlay; false otherwise.
 func (overlay Overlay) IsSiteOverlay() bool {
-	return strings.Contains(overlay.Path(), config.Get().Paths.SiteOverlaydir())
+	siteDir := filepath.Clean(config.Get().Paths.SiteOverlaydir())
+	overlayPath := filepath.Clean(overlay.Path())
+	if rel, err := filepath.Rel(siteDir, overlayPath); err != nil {
+		return false
+	} else {
+		return !strings.HasPrefix(rel, "..")
+	}
 }
 
 // IsDistributionOverlay determines whether the overlay is a distribution overlay.
@@ -111,7 +117,13 @@ func (overlay Overlay) IsSiteOverlay() bool {
 // Returns:
 //   - true if the overlay is a distribution overlay; false otherwise.
 func (overlay Overlay) IsDistributionOverlay() bool {
-	return strings.Contains(overlay.Path(), config.Get().Paths.DistributionOverlaydir())
+	siteDir := filepath.Clean(config.Get().Paths.DistributionOverlaydir())
+	overlayPath := filepath.Clean(overlay.Path())
+	if rel, err := filepath.Rel(siteDir, overlayPath); err != nil {
+		return false
+	} else {
+		return !strings.HasPrefix(rel, "..")
+	}
 }
 
 func (overlay Overlay) AddFile(filePath string, content []byte, parents bool, force bool) error {

@@ -52,8 +52,9 @@ func getOverlayFile(n node.Node, context string, stage_overlays []string, autobu
 		build = util.PathIsNewer(stage_file, config.Get().Paths.NodesConf())
 
 		for _, overlayname := range stage_overlays {
-			myOverlay, _ := overlay.GetOverlay(overlayname)
-			build = build || util.PathIsNewer(stage_file, myOverlay.Rootfs())
+			if myOverlay, err := overlay.GetOverlay(overlayname); err == nil {
+				build = build || util.PathIsNewer(stage_file, myOverlay.Rootfs())
+			}
 		}
 	}
 
