@@ -30,7 +30,7 @@ func Test_OverlayImage(t *testing.T) {
 	conf.Paths.WWProvisiondir = "p"
 	for _, tt := range overlayImageTests {
 		t.Run(tt.description, func(t *testing.T) {
-			out := OverlayImage(tt.node, tt.context, tt.overlays)
+			out := Image(tt.node, tt.context, tt.overlays)
 			if tt.image != out {
 				t.Errorf("got %q, want %q", out, tt.image)
 			}

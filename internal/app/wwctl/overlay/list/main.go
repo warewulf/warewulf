@@ -2,6 +2,7 @@ package list
 
 import (
 	"os"
+	"strconv"
 	"syscall"
 
 	"github.com/spf13/cobra"
@@ -11,62 +12,80 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-func CobraRunE(cmd *cobra.Command, args []string) error {
-	var overlays []string
+/*
+RunE needs a function of type func(*cobraCommand,[]string) err, but
+in order to avoid global variables which mess up testing a function of
+the required type is returned
+*/
+func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		var overlays []string
 
-	if len(args) > 0 {
-		overlays = args
-	} else {
-		overlays = overlay.FindOverlays()
-	}
-
-	t := table.New(cmd.OutOrStdout())
-	if ListLong {
-		t.AddHeader("PERM MODE", "UID", "GID", "OVERLAY", "FILE PATH", "SITE")
-	} else {
-		t.AddHeader("OVERLAY NAME", "FILES/DIRS", "SITE")
-	}
-
-	for _, name := range overlays {
-		overlay_ := overlay.GetOverlay(name)
-
-		if !overlay_.Exists() {
-			wwlog.Error("system/%s (path not found:%s)", name, overlay_.Rootfs())
-			continue
-		}
-
-		files := util.FindFiles(overlay_.Rootfs())
-
-		wwlog.Debug("Iterating overlay rootfs: %s", overlay_.Rootfs())
-		if ListLong {
-			for file := range files {
-				s, err := os.Stat(overlay_.File(files[file]))
-				if err != nil {
-					wwlog.Warn("%s: %s: %s", name, files[file], err)
-					continue
-				}
-
-				fileMode := s.Mode()
-				perms := fileMode & os.ModePerm
-
-				sys := s.Sys()
-
-				t.AddLine(perms, sys.(*syscall.Stat_t).Uid, sys.(*syscall.Stat_t).Gid, name, files[file], overlay_.IsSiteOverlay())
-			}
-		} else if ListContents {
-			var fileCount int
-			for file := range files {
-				t.AddLine(name, files[file], overlay_.IsSiteOverlay())
-				fileCount++
-			}
-			if fileCount == 0 {
-				t.AddLine(name, 0, overlay_.IsSiteOverlay())
-			}
+		if len(args) > 0 {
+			overlays = args
 		} else {
-			t.AddLine(name, len(files), overlay_.IsSiteOverlay())
+			overlays = overlay.FindOverlays()
 		}
-	}
-	t.Print()
 
-	return nil
+		t := table.New(cmd.OutOrStdout())
+		locationStr := "SITE"
+		if vars.ShowPath {
+			locationStr = "PATH"
+		}
+		if vars.ListLong {
+			t.AddHeader("PERM MODE", "UID", "GID", "OVERLAY", "FILE PATH", locationStr)
+		} else {
+			t.AddHeader("OVERLAY NAME", "FILES/DIRS", locationStr)
+		}
+
+		for _, name := range overlays {
+			overlay_, err := overlay.Get(name)
+
+			if err != nil {
+				wwlog.Error("%s:%s", name, err)
+				continue
+			}
+
+			files := util.FindFiles(overlay_.Rootfs())
+
+			wwlog.Debug("Iterating overlay rootfs: %s", overlay_.Rootfs())
+			if vars.ListLong {
+				for file := range files {
+					s, err := os.Stat(overlay_.File(files[file]))
+					if err != nil {
+						wwlog.Warn("%s: %s: %s", name, files[file], err)
+						continue
+					}
+					fileMode := s.Mode()
+					perms := fileMode & os.ModePerm
+					sys := s.Sys()
+					locLine := strconv.FormatBool(overlay_.IsSiteOverlay())
+					if vars.ShowPath {
+						locLine = overlay_.Path()
+					}
+					t.AddLine(perms, sys.(*syscall.Stat_t).Uid, sys.(*syscall.Stat_t).Gid, name, files[file], locLine)
+				}
+			} else {
+				locLine := strconv.FormatBool(overlay_.IsSiteOverlay())
+				if vars.ShowPath {
+					locLine = overlay_.Path()
+				}
+				if vars.ListContents {
+					var fileCount int
+					for file := range files {
+						t.AddLine(name, files[file], locLine)
+						fileCount++
+					}
+					if fileCount == 0 {
+						t.AddLine(name, 0, locLine)
+					}
+				} else {
+					t.AddLine(name, len(files), locLine)
+				}
+			}
+		}
+		t.Print()
+
+		return nil
+	}
 }

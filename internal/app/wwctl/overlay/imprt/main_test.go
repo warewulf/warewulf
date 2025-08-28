@@ -77,7 +77,7 @@ nodes: {}
 			t.FailNow()
 		}
 
-		baseCmd.SetArgs([]string{"-p", "-n", "test", file.Name()})
+		baseCmd.SetArgs([]string{"-p", "test", file.Name()})
 		baseCmd.SetOut(nil)
 		baseCmd.SetErr(nil)
 		err = baseCmd.Execute()

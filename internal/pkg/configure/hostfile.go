@@ -14,7 +14,10 @@ import (
 Creates '/etc/hosts' from the host template.
 */
 func Hostfile() (err error) {
-	overlay_ := overlay.GetOverlay("host")
+	overlay_, err := overlay.Get("host")
+	if err != nil {
+		return err
+	}
 	hostTemplate := path.Join(overlay_.Rootfs(), "/etc/hosts.ww")
 	if !(util.IsFile(hostTemplate)) {
 		return fmt.Errorf("'the overlay template '/etc/hosts.ww' does not exists in 'host' overlay")

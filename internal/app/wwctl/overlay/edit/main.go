@@ -35,19 +35,19 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	overlayName := args[0]
 	fileName := args[1]
 
-	overlay_ := overlay.GetOverlay(overlayName)
-	if !overlay_.Exists() {
-		return fmt.Errorf("overlay does not exist: %s", overlayName)
+	myOverlay, err := overlay.Get(overlayName)
+	if err != nil {
+		return err
 	}
 
-	overlayFile := overlay_.File(fileName)
+	overlayFile := myOverlay.File(fileName)
 	wwlog.Debug("Will edit overlay file: %s", overlayFile)
 	overlayFileDir := path.Dir(overlayFile)
 	if !(util.IsDir(overlayFileDir) || CreateDirs) {
 		return fmt.Errorf("%s does not exist. Use '--parents' option to create automatically", overlayFileDir)
 	}
 
-	tempFile, tempFileErr := os.CreateTemp(overlay_.Path(), "ww-overlay-edit-")
+	tempFile, tempFileErr := os.CreateTemp(myOverlay.Path(), "ww-overlay-edit-")
 	if tempFileErr != nil {
 		return fmt.Errorf("unable to create temporary file for editing: %s", tempFileErr)
 	}
@@ -103,15 +103,14 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		return nil
 	}
 
-	if !overlay_.IsSiteOverlay() {
-		overlay_, err = overlay_.CloneSiteOverlay()
+	if !myOverlay.IsSiteOverlay() {
+		myOverlay, err = myOverlay.CloneToSite()
 		if err != nil {
 			return err
 		}
+		overlayFile = myOverlay.File(fileName)
+		overlayFileDir = path.Dir(overlayFile)
 	}
-	// re-generate because overlay_ may have changed
-	overlayFile = overlay_.File(fileName)
-	overlayFileDir = path.Dir(overlayFile)
 
 	if CreateDirs {
 		if err := os.MkdirAll(overlayFileDir, 0755); err != nil {

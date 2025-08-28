@@ -139,19 +139,22 @@ func Test_OverlayMethods(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			overlay := GetOverlay(tt.name)
-			assert.Equal(t, tt.name, overlay.Name())
-			assert.Equal(t, env.GetPath(tt.path), overlay.Path())
-			assert.Equal(t, env.GetPath(tt.rootfs), overlay.Rootfs())
-			assert.Equal(t, env.GetPath(tt.file), overlay.File("testfile"))
-			if tt.content != "" {
-				buffer, err := os.ReadFile(overlay.File("testfile"))
+			overlay, err := Get(tt.name)
+			if tt.exists {
 				assert.NoError(t, err)
-				assert.Equal(t, tt.content, string(buffer))
+				assert.Equal(t, tt.name, overlay.Name())
+				assert.Equal(t, env.GetPath(tt.path), overlay.Path())
+				assert.Equal(t, env.GetPath(tt.rootfs), overlay.Rootfs())
+				assert.Equal(t, env.GetPath(tt.file), overlay.File("testfile"))
+				if tt.content != "" {
+					buffer, err := os.ReadFile(overlay.File("testfile"))
+					assert.NoError(t, err)
+					assert.Equal(t, tt.content, string(buffer))
+				}
+				assert.Equal(t, tt.exists, overlay.Exists())
+				assert.Equal(t, tt.isSite, overlay.IsSiteOverlay())
+				assert.Equal(t, tt.isDist, overlay.IsDistributionOverlay())
 			}
-			assert.Equal(t, tt.exists, overlay.Exists())
-			assert.Equal(t, tt.isSite, overlay.IsSiteOverlay())
-			assert.Equal(t, tt.isDist, overlay.IsDistributionOverlay())
 		})
 	}
 }
@@ -719,8 +722,8 @@ func Test_CreateOverlayFile(t *testing.T) {
 		content     []byte
 		force       bool
 	}{
-		{"create file", "test", "newfile.ww", []byte("new file"), false},
-		{"overwrite existing file", "test", "existingfile.ww", []byte("overwrite file"), true},
+		{"create file", "test", "test.ww", []byte("new file"), false},
+		{"overwrite existing file", "test", "test.ww", []byte("overwrite file"), true},
 	}
 
 	conf := warewulfconf.Get()
@@ -728,11 +731,15 @@ func Test_CreateOverlayFile(t *testing.T) {
 	assert.NoError(t, overlayDirErr)
 	defer os.RemoveAll(overlayDir)
 	conf.Paths.WWOverlaydir = overlayDir
-
+	conf.Paths.Datadir = "/dev/null"
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			newOverlay := GetSiteOverlay(tt.overlayName)
-			err := newOverlay.AddFile(tt.filePath, tt.content, true, tt.force)
+			newOverlay, err := Get(tt.overlayName)
+			if err != nil {
+				newOverlay, err = Create(tt.overlayName)
+			}
+			assert.NoError(t, err)
+			err = newOverlay.AddFile(tt.filePath, tt.content, true, tt.force)
 			assert.NoError(t, err)
 
 			newFile := newOverlay.File(tt.filePath)

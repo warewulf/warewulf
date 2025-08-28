@@ -45,15 +45,16 @@ func sendFile(
 }
 
 func getOverlayFile(n node.Node, context string, stage_overlays []string, autobuild bool) (stage_file string, err error) {
-	stage_file = overlay.OverlayImage(n.Id(), context, stage_overlays)
+	stage_file = overlay.Image(n.Id(), context, stage_overlays)
 	build := !util.IsFile(stage_file)
 	wwlog.Verbose("stage file: %s", stage_file)
 	if !build && autobuild {
 		build = util.PathIsNewer(stage_file, config.Get().Paths.NodesConf())
 
 		for _, overlayname := range stage_overlays {
-			overlayDir := overlay.GetOverlay(overlayname).Rootfs()
-			build = build || util.PathIsNewer(stage_file, overlayDir)
+			if myOverlay, err := overlay.Get(overlayname); err == nil {
+				build = build || util.PathIsNewer(stage_file, myOverlay.Rootfs())
+			}
 		}
 	}
 

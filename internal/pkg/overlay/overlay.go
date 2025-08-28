@@ -100,7 +100,13 @@ func (overlay Overlay) Exists() bool {
 // Returns:
 //   - true if the overlay is a site overlay; false otherwise.
 func (overlay Overlay) IsSiteOverlay() bool {
-	return path.Dir(overlay.Path()) == config.Get().Paths.SiteOverlaydir()
+	siteDir := filepath.Clean(config.Get().Paths.SiteOverlaydir())
+	overlayPath := filepath.Clean(overlay.Path())
+	if rel, err := filepath.Rel(siteDir, overlayPath); err != nil {
+		return false
+	} else {
+		return !strings.HasPrefix(rel, "..")
+	}
 }
 
 // IsDistributionOverlay determines whether the overlay is a distribution overlay.
@@ -111,21 +117,26 @@ func (overlay Overlay) IsSiteOverlay() bool {
 // Returns:
 //   - true if the overlay is a distribution overlay; false otherwise.
 func (overlay Overlay) IsDistributionOverlay() bool {
-	return path.Dir(overlay.Path()) == config.Get().Paths.DistributionOverlaydir()
+	siteDir := filepath.Clean(config.Get().Paths.DistributionOverlaydir())
+	overlayPath := filepath.Clean(overlay.Path())
+	if rel, err := filepath.Rel(siteDir, overlayPath); err != nil {
+		return false
+	} else {
+		return !strings.HasPrefix(rel, "..")
+	}
 }
 
 func (overlay Overlay) AddFile(filePath string, content []byte, parents bool, force bool) error {
 	wwlog.Info("Creating file %s in overlay %s, force: %v", filePath, overlay.Name(), force)
 
-	if overlay.IsDistributionOverlay() {
-		siteOverlay, err := overlay.CloneSiteOverlay()
+	if !overlay.IsSiteOverlay() {
+		siteOverlay, err := overlay.CloneToSite()
 		if err != nil {
 			return fmt.Errorf("failed to clone distribution overlay '%s' to site overlay: %w", overlay.Name(), err)
 		}
 		// replace the overlay with newly created siteOverlay
 		overlay = siteOverlay
 	}
-
 	fullPath := overlay.File(filePath)
 	// create necessary parent directories
 	if parents {
@@ -145,67 +156,120 @@ func (overlay Overlay) AddFile(filePath string, content []byte, parents bool, fo
 	return os.WriteFile(fullPath, content, 0o644)
 }
 
-// DeleteFile deletes a file or the entire overlay directory.
-// If the file belongs to a distribution overlay, it will be cloned to a site overlay
-// before deletion.
-func (overlay Overlay) DeleteFile(filePath string, force, cleanup bool) error {
-	wwlog.Info("Deleting file %s from overlay %s, force: %v, cleanup: %v", filePath, overlay.Name(), force, cleanup)
-	if filePath == "" {
-		if force {
-			err := os.RemoveAll(overlay.Path())
-			if err != nil {
-				return fmt.Errorf("failed to delete overlay forcely: %w", err)
-			}
-		} else {
-			err := os.Remove(overlay.Path())
-			if err != nil {
-				return fmt.Errorf("failed to delete overlay: %w", err)
-			}
+func (overlay Overlay) Delete(force bool) (err error) {
+	wwlog.Info("Deleting overlay %s, force: %v", overlay.Name(), force)
+	if overlay.IsDistributionOverlay() {
+		return fmt.Errorf("cannot delete a distribution overlay: %s", overlay.Name())
+	}
+	if force {
+		err := os.RemoveAll(overlay.Path())
+		if err != nil {
+			return fmt.Errorf("failed to delete overlay forcely: %w", err)
 		}
 	} else {
-		if overlay.IsDistributionOverlay() {
-			siteOverlay, err := overlay.CloneSiteOverlay()
-			if err != nil {
-				return fmt.Errorf("failed to clone distribution overlay '%s' to site overlay: %w", overlay.Name(), err)
-			}
-			// replace the overlay with newly created siteOverlay
-			overlay = siteOverlay
+		// remove rootfs at first
+		if err = os.Remove(overlay.Rootfs()); err != nil {
+			return fmt.Errorf("failed to delete overlay: %w", err)
 		}
-
-		fullPath := overlay.File(filePath)
-		if !util.IsFile(fullPath) {
-			return fmt.Errorf("file %s does not exist in overlay %s", filePath, overlay.Name())
-		}
-
-		if force {
-			if err := os.RemoveAll(fullPath); err != nil {
-				return fmt.Errorf("failed to delete file %s from overlay %s: %w", filePath, overlay.Name(), err)
-			}
-		} else {
-			if err := os.Remove(fullPath); err != nil {
-				return fmt.Errorf("failed to delete file %s from overlay %s: %w", filePath, overlay.Name(), err)
-			}
-		}
-
-		if cleanup {
-			// cleanup the empty parents
-			i := path.Dir(fullPath)
-			for i != overlay.Rootfs() {
-				wwlog.Debug("Evaluating directory to remove: %s", i)
-				err := os.Remove(i)
-				if err != nil {
-					// if the directory is not empty, we stop here
-					if !os.IsNotExist(err) {
-						wwlog.Debug("Could not remove directory %s: %v", i, err)
-					}
-					break
-				}
-				wwlog.Debug("Removed empty directory: %s", i)
-				i = path.Dir(i)
+		if overlay.Exists() {
+			if err = os.Remove(overlay.Path()); err != nil {
+				return fmt.Errorf("failed to delete overlay: %w", err)
 			}
 		}
 	}
 	return nil
+}
+
+// DeleteFile deletes a file or the entire overlay directory.
+// before deletion.
+func (overlay Overlay) DeleteFile(filePath string, force, cleanup bool) (err error) {
+	wwlog.Info("Deleting file %s from overlay %s, force: %v, cleanup: %v", filePath, overlay.Name(), force, cleanup)
+	// first check if file exists
+	if !util.IsFile(overlay.File(filePath)) {
+		return fmt.Errorf("file %s does not exist in overlay %s", filePath, overlay.Name())
+	}
+	if overlay.IsDistributionOverlay() {
+		siteOverlay, err := overlay.CloneToSite()
+		if err != nil {
+			return fmt.Errorf("failed to clone distribution overlay '%s' to site overlay: %w", overlay.Name(), err)
+		}
+		// replace the overlay with newly created siteOverlay
+		overlay = siteOverlay
+	}
+	fullPath := overlay.File(filePath)
+	if force {
+		if err := os.RemoveAll(fullPath); err != nil {
+			return fmt.Errorf("failed to delete file %s from overlay %s: %w", filePath, overlay.Name(), err)
+		}
+	} else {
+		if err := os.Remove(fullPath); err != nil {
+			return fmt.Errorf("failed to delete file %s from overlay %s: %w", filePath, overlay.Name(), err)
+		}
+	}
+
+	if cleanup {
+		// cleanup the empty parents
+		i := path.Dir(fullPath)
+		for i != overlay.Rootfs() {
+			wwlog.Debug("Evaluating directory to remove: %s", i)
+			err := os.Remove(i)
+			if err != nil {
+				// if the directory is not empty, we stop here
+				if !os.IsNotExist(err) {
+					wwlog.Debug("Could not remove directory %s: %v", i, err)
+				}
+				break
+			}
+			wwlog.Debug("Removed empty directory: %s", i)
+			i = path.Dir(i)
+		}
+	}
+	return nil
+}
+
+// chmod for the given path in the overlay
+func (overlay Overlay) Chmod(path string, mode uint64) (err error) {
+	if !overlay.IsSiteOverlay() {
+		overlay, err = overlay.CloneToSite()
+		if err != nil {
+			return err
+		}
+	}
+	fullPath := overlay.File(path)
+	if !(util.IsFile(fullPath) || util.IsDir(fullPath)) {
+		return fmt.Errorf("file does not exist within overlay: %s:%s", overlay.Name(), fullPath)
+	}
+
+	return os.Chmod(fullPath, os.FileMode(mode))
+}
+
+// chown file or dir in overlay
+func (overlay Overlay) Chown(path string, uid, gid int) (err error) {
+	if !overlay.IsSiteOverlay() {
+		overlay, err = overlay.CloneToSite()
+		if err != nil {
+			return err
+		}
+	}
+	fullPath := overlay.File(path)
+	if !(util.IsFile(fullPath) || util.IsDir(fullPath)) {
+		return fmt.Errorf("file does not exist within overlay: %s:%s", overlay.Name(), fullPath)
+	}
+	return os.Chown(fullPath, uid, gid)
+}
+
+func (overlay Overlay) Mkdir(path string, mode int32) (err error) {
+	if !overlay.IsSiteOverlay() {
+		overlay, err = overlay.CloneToSite()
+		if err != nil {
+			return err
+		}
+	}
+	fullPath := overlay.File(path)
+	if util.IsFile(fullPath) || util.IsDir(fullPath) {
+		wwlog.Warn("path already exists, overwriting permissions: %s:%s", overlay.Name(), fullPath)
+	}
+	return os.MkdirAll(fullPath, os.FileMode(mode))
 }
 
 func BuildAllOverlays(nodes []node.Node, allNodes []node.Node, workerCount int) error {
@@ -297,13 +361,16 @@ func BuildHostOverlay() error {
 	hostname, _ := os.Hostname()
 	hostData := node.NewNode(hostname)
 	wwlog.Info("Building overlay for %s: host", hostname)
-	hostdir := GetOverlay("host").Rootfs()
-	stats, err := os.Stat(hostdir)
+	hostdir, err := Get("host")
+	if err != nil {
+		return err
+	}
+	stats, err := os.Stat(hostdir.Rootfs())
 	if err != nil {
 		return fmt.Errorf("could not build host overlay: %w ", err)
 	}
 	if !(stats.Mode() == os.FileMode(0o750|os.ModeDir) || stats.Mode() == os.FileMode(0o700|os.ModeDir)) {
-		wwlog.SecWarn("Permissions of host overlay dir %s are %s (750 is considered as secure)", hostdir, stats.Mode())
+		wwlog.SecWarn("Permissions of host overlay dir %s are %s (750 is considered as secure)", hostdir.Rootfs(), stats.Mode())
 	}
 	registry, err := node.New()
 	if err != nil {
@@ -360,7 +427,7 @@ func BuildOverlay(nodeConf node.Node, allNodes []node.Node, context string, over
 	} else {
 		name = fmt.Sprintf("%s overlay/%v", nodeConf.Id(), overlayNames)
 	}
-	overlayImage := OverlayImage(nodeConf.Id(), context, overlayNames)
+	overlayImage := Image(nodeConf.Id(), context, overlayNames)
 	overlayImageDir := path.Dir(overlayImage)
 
 	err := os.MkdirAll(overlayImageDir, 0o750)
@@ -424,19 +491,19 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 	wwlog.Verbose("Processing node/overlays: %s/%s", nodeData.Id(), strings.Join(overlayNames, ","))
 	for _, overlayName := range overlayNames {
 		wwlog.Verbose("Building overlay %s for node %s in %s", overlayName, nodeData.Id(), outputDir)
-		overlayRootfs := GetOverlay(overlayName).Rootfs()
-		if !util.IsDir(overlayRootfs) {
-			return fmt.Errorf("overlay %s: %w", overlayName, ErrDoesNotExist)
+		overlayRootfs, err := Get(overlayName)
+		if err != nil {
+			return err
 		}
 
-		wwlog.Debug("Walking the overlay structure: %s", overlayRootfs)
-		err := filepath.Walk(overlayRootfs, func(walkPath string, info os.FileInfo, err error) error {
+		wwlog.Debug("Walking the overlay structure: %s", overlayRootfs.Rootfs())
+		err = filepath.Walk(overlayRootfs.Rootfs(), func(walkPath string, info os.FileInfo, err error) error {
 			if err != nil {
 				return fmt.Errorf("error for %s: %w", walkPath, err)
 			}
 			wwlog.Debug("Found overlay file: %s", walkPath)
 
-			relPath, relErr := filepath.Rel(overlayRootfs, walkPath)
+			relPath, relErr := filepath.Rel(overlayRootfs.Rootfs(), walkPath)
 			if relErr != nil {
 				wwlog.Warn("Error computing relative path for %s: %v", walkPath, relErr)
 				return relErr
@@ -669,15 +736,10 @@ func ScanLines(data []byte, atEOF bool) (advance int, token []byte, err error) {
 }
 
 // Get all the files as a string slice for a given overlay
-func OverlayGetFiles(name string) (files []string, err error) {
-	baseDir := GetOverlay(name).Rootfs()
-	if !util.IsDir(baseDir) {
-		err = fmt.Errorf("overlay %s doesn't exist", name)
-		return
-	}
-	err = filepath.Walk(baseDir, func(path string, info fs.FileInfo, err error) error {
+func (overlay Overlay) GetFiles() (files []string, err error) {
+	err = filepath.Walk(overlay.Rootfs(), func(path string, info fs.FileInfo, err error) error {
 		if util.IsFile(path) {
-			files = append(files, strings.TrimPrefix(path, baseDir))
+			files = append(files, strings.TrimPrefix(path, overlay.Rootfs()))
 		}
 		return nil
 	})

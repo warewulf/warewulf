@@ -81,12 +81,12 @@ func addProfile() usecase.Interactor {
 				return status.Wrap(fmt.Errorf("image '%s' does not exist", input.Profile.ImageName), status.InvalidArgument)
 			}
 			for _, overlay_ := range input.Profile.SystemOverlay {
-				if !overlay.GetOverlay(overlay_).Exists() {
+				if _, err = overlay.Get(overlay_); err != nil {
 					return status.Wrap(fmt.Errorf("overlay '%s' does not exist", overlay_), status.InvalidArgument)
 				}
 			}
 			for _, overlay_ := range input.Profile.RuntimeOverlay {
-				if !overlay.GetOverlay(overlay_).Exists() {
+				if _, err = overlay.Get(overlay_); err != nil {
 					return status.Wrap(fmt.Errorf("overlay '%s' does not exist", overlay_), status.InvalidArgument)
 				}
 			}
@@ -126,12 +126,12 @@ func updateProfile() usecase.Interactor {
 				return status.Wrap(fmt.Errorf("image '%s' does not exist", input.Profile.ImageName), status.InvalidArgument)
 			}
 			for _, overlay_ := range input.Profile.SystemOverlay {
-				if !overlay.GetOverlay(overlay_).Exists() {
+				if _, err = overlay.Get(overlay_); err != nil {
 					return status.Wrap(fmt.Errorf("overlay '%s' does not exist", overlay_), status.InvalidArgument)
 				}
 			}
 			for _, overlay_ := range input.Profile.RuntimeOverlay {
-				if !overlay.GetOverlay(overlay_).Exists() {
+				if _, err = overlay.Get(overlay_); err != nil {
 					return status.Wrap(fmt.Errorf("overlay '%s' does not exist", overlay_), status.InvalidArgument)
 				}
 			}

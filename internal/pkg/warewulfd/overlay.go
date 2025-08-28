@@ -25,8 +25,8 @@ func OverlaySend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	o := overlay.GetOverlay(rinfo.overlay)
-	if !o.Exists() {
+	myOverlay, err := overlay.Get(rinfo.overlay)
+	if err != nil {
 		message := "overlay not found: %s"
 		wwlog.Error(message, rinfo.overlay)
 		http.Error(w, fmt.Sprintf(message, rinfo.overlay), http.StatusNoContent)
@@ -41,7 +41,7 @@ func OverlaySend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	overlayFile := o.File(rinfo.path)
+	overlayFile := myOverlay.File(rinfo.path)
 	if !path.IsAbs(overlayFile) {
 		message := "Path %s isn't absolute"
 		wwlog.Denied(message, overlayFile)

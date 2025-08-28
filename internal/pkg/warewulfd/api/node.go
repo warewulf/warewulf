@@ -70,13 +70,13 @@ func getNodeOverlayInfo() usecase.Interactor {
 						Overlays: node_.RuntimeOverlay,
 					},
 				}
-				sysImagePath := overlay.OverlayImage(input.ID, "system", node_.SystemOverlay)
+				sysImagePath := overlay.Image(input.ID, "system", node_.SystemOverlay)
 				if sysImageStat, err := os.Stat(sysImagePath); err == nil {
 					mtime := sysImageStat.ModTime()
 					out.SystemOverlay.MTime = &mtime
 				}
 
-				runtimeImagePath := overlay.OverlayImage(input.ID, "runtime", node_.RuntimeOverlay)
+				runtimeImagePath := overlay.Image(input.ID, "runtime", node_.RuntimeOverlay)
 				if runtimeImageStat, err := os.Stat(runtimeImagePath); err == nil {
 					mtime := runtimeImageStat.ModTime()
 					out.RuntimeOverlay.MTime = &mtime
@@ -194,12 +194,12 @@ func addNode() usecase.Interactor {
 				return status.Wrap(fmt.Errorf("image '%s' does not exist", input.Node.ImageName), status.InvalidArgument)
 			}
 			for _, overlay_ := range input.Node.SystemOverlay {
-				if !overlay.GetOverlay(overlay_).Exists() {
+				if _, err = overlay.Get(overlay_); err != nil {
 					return status.Wrap(fmt.Errorf("overlay '%s' does not exist", overlay_), status.InvalidArgument)
 				}
 			}
 			for _, overlay_ := range input.Node.RuntimeOverlay {
-				if !overlay.GetOverlay(overlay_).Exists() {
+				if _, err = overlay.Get(overlay_); err != nil {
 					return status.Wrap(fmt.Errorf("overlay '%s' does not exist", overlay_), status.InvalidArgument)
 				}
 			}
@@ -269,12 +269,12 @@ func updateNode() usecase.Interactor {
 				return status.Wrap(fmt.Errorf("image '%s' does not exist", input.Node.ImageName), status.InvalidArgument)
 			}
 			for _, overlay_ := range input.Node.SystemOverlay {
-				if !overlay.GetOverlay(overlay_).Exists() {
+				if _, err = overlay.Get(overlay_); err != nil {
 					return status.Wrap(fmt.Errorf("overlay '%s' does not exist", overlay_), status.InvalidArgument)
 				}
 			}
 			for _, overlay_ := range input.Node.RuntimeOverlay {
-				if !overlay.GetOverlay(overlay_).Exists() {
+				if _, err = overlay.Get(overlay_); err != nil {
 					return status.Wrap(fmt.Errorf("overlay '%s' does not exist", overlay_), status.InvalidArgument)
 				}
 			}

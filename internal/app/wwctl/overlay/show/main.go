@@ -20,9 +20,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	overlayName := args[0]
 	fileName := args[1]
 
-	overlay_ := overlay.GetOverlay(overlayName)
-	if !overlay_.Exists() {
-		return fmt.Errorf("overlay does not exist: %s", overlayName)
+	overlay_, err := overlay.Get(overlayName)
+	if err != nil {
+		return err
 	}
 
 	overlayFile := overlay_.File(fileName)

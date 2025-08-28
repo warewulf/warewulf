@@ -108,7 +108,7 @@ var overlayTests = map[string]struct {
 		response: `{"files":null, "site":true}`,
 	},
 
-	"delete overlay": {
+	"force delete site overlay": {
 		initFiles: map[string]string{
 			"/var/lib/warewulf/overlays/test/": "",
 		},
@@ -116,6 +116,16 @@ var overlayTests = map[string]struct {
 			return http.NewRequest(http.MethodDelete, serverURL+"/api/overlays/test?force=true", nil)
 		},
 		response: `{"files":[], "site":true}`,
+	},
+
+	"force delete distribution overlay": {
+		initFiles: map[string]string{
+			"/usr/share/warewulf/overlays/test/email.ww": sampleTemplate,
+		},
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodDelete, serverURL+"/api/overlays/test?force=true", nil)
+		},
+		status: 400,
 	},
 }
 
@@ -160,8 +170,10 @@ func TestOverlayAPI(t *testing.T) {
 			assert.NoError(t, err)
 			assert.NoError(t, resp.Body.Close())
 
-			ja := jsonassert.New(t)
-			ja.Assertf(string(body), tt.response) //nolint:govet // tt.response is used as a format string with special tokens
+			if tt.response != "" {
+				ja := jsonassert.New(t)
+				ja.Assertf(string(body), tt.response) //nolint:govet // tt.response is used as a format string with special tokens
+			}
 
 			for _, fileName := range tt.resultFiles {
 				assert.DirExists(t, env.GetPath(fileName))
