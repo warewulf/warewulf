@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Build support for EL10, EL10 depends on `dnsmasq` and no longer `dhcpd-server` (EOL). #1974
 - `make rpm` added for local development rpm builds. #1974
+- `wwclient --once` prompts wwclient to run once. #1226
 
 ### Changed
 
@@ -17,6 +18,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed dnsmasq template file to use basename for ipxe files. #1974
 - For EL10 default to dnsmasq for dhcpd and tftp. #1974
 - Refactored overlay class. #1968
+- `wwclient` places files from the runtime overlay atomically. #1307, #1975
+- `wwclient` skips files that do not appear to have been modified. #1984
+
+### Fixed
+
+- Fixed a bug in `wwclient` which prevented proper cleanup of ephemeral files.
+- Fixed `wwclient --debug` to properly enable debug logging.
 
 ## v4.6.3, 2025-08-01
 

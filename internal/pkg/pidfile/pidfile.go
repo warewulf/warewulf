@@ -1,6 +1,6 @@
+// Package pidfile provides utilities for managing process ID files.
+// Based on original work found here, github.com/soellman/pidfile
 package pidfile
-
-// based on original work found here, github.com/soellman/pidfile
 
 import (
 	"errors"
@@ -12,22 +12,30 @@ import (
 )
 
 var (
+	// ErrProcessRunning indicates that a process with the PID from the pidfile is currently running.
 	ErrProcessRunning = errors.New("process is running")
-	ErrFileStale      = errors.New("pidfile exists but process is not running")
-	ErrFileInvalid    = errors.New("pidfile has invalid contents")
+	// ErrFileStale indicates that the pidfile exists but the process is not running.
+	ErrFileStale = errors.New("pidfile exists but process is not running")
+	// ErrFileInvalid indicates that the pidfile contains invalid or unparseable contents.
+	ErrFileInvalid = errors.New("pidfile has invalid contents")
 )
 
-// Remove a pidfile
+// Remove removes a pidfile from the filesystem.
+// It returns an error if the file cannot be removed.
 func Remove(filename string) error {
 	return os.RemoveAll(filename)
 }
 
-// Write writes a pidfile, returning an error
-// if the process is already running or pidfile is orphaned
+// Write writes a pidfile containing the current process ID.
+// It returns the PID and an error if the process is already running or pidfile is orphaned.
 func Write(filename string) (int, error) {
 	return WriteControl(filename, os.Getpid(), false)
 }
 
+// WriteControl writes a pidfile with the specified PID and control options.
+// If overwrite is false and a stale pidfile exists, it returns ErrFileStale.
+// If overwrite is true, it will overwrite stale pidfiles.
+// It returns the PID and an error if the process is already running.
 func WriteControl(filename string, pid int, overwrite bool) (int, error) {
 	// Check for existing pid
 	oldpid, err := pidfileContents(filename)
@@ -49,6 +57,8 @@ func WriteControl(filename string, pid int, overwrite bool) (int, error) {
 	return pid, os.WriteFile(filename, []byte(fmt.Sprintf("%d\n", pid)), 0644)
 }
 
+// pidfileContents reads and parses the PID from a pidfile.
+// It returns the PID and an error if the file cannot be read or contains invalid data.
 func pidfileContents(filename string) (int, error) {
 	contents, err := os.ReadFile(filename)
 	if err != nil {
@@ -63,6 +73,8 @@ func pidfileContents(filename string) (int, error) {
 	return pid, nil
 }
 
+// pidIsRunning checks if a process with the given PID is currently running.
+// It returns true if the process is running, false otherwise.
 func pidIsRunning(pid int) bool {
 	process, err := os.FindProcess(pid)
 	if err != nil {
