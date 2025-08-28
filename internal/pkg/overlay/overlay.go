@@ -159,70 +159,72 @@ func (overlay Overlay) AddFile(filePath string, content []byte, parents bool, fo
 	return os.WriteFile(fullPath, content, 0o644)
 }
 
+func (overlay Overlay) Delete(force bool) (err error) {
+	wwlog.Info("Deleting overlay %s, force: %v", overlay.Name(), force)
+	if overlay.IsDistributionOverlay() {
+		return fmt.Errorf("cannot delete a distribution overlay: %s", overlay.Name())
+	}
+	if force {
+		err := os.RemoveAll(overlay.Path())
+		if err != nil {
+			return fmt.Errorf("failed to delete overlay forcely: %w", err)
+		}
+	} else {
+		// remove rootfs at first
+		if err = os.Remove(overlay.Rootfs()); err != nil {
+			return fmt.Errorf("failed to delete overlay: %w", err)
+		}
+		if overlay.Exists() {
+			if err = os.Remove(overlay.Path()); err != nil {
+				return fmt.Errorf("failed to delete overlay: %w", err)
+			}
+		}
+	}
+	return nil
+}
+
 // DeleteFile deletes a file or the entire overlay directory.
 // before deletion.
 func (overlay Overlay) DeleteFile(filePath string, force, cleanup bool) (err error) {
 	wwlog.Info("Deleting file %s from overlay %s, force: %v, cleanup: %v", filePath, overlay.Name(), force, cleanup)
-	if filePath == "" {
-		if overlay.IsDistributionOverlay() {
-			return fmt.Errorf("cannot delete a distribution overlay: %s", overlay.Name())
+	// first check if file exists
+	if !util.IsFile(overlay.File(filePath)) {
+		return fmt.Errorf("file %s does not exist in overlay %s", filePath, overlay.Name())
+	}
+	if overlay.IsDistributionOverlay() {
+		siteOverlay, err := overlay.CloneSiteOverlay()
+		if err != nil {
+			return fmt.Errorf("failed to clone distribution overlay '%s' to site overlay: %w", overlay.Name(), err)
 		}
-		if force {
-			err := os.RemoveAll(overlay.Path())
-			if err != nil {
-				return fmt.Errorf("failed to delete overlay forcely: %w", err)
-			}
-		} else {
-			// remove rootfs at first
-			if err = os.Remove(overlay.Rootfs()); err != nil {
-				return fmt.Errorf("failed to delete overlay: %w", err)
-			}
-			if overlay.Exists() {
-				if err = os.Remove(overlay.Path()); err != nil {
-					return fmt.Errorf("failed to delete overlay: %w", err)
-				}
-			}
+		// replace the overlay with newly created siteOverlay
+		overlay = siteOverlay
+	}
+	fullPath := overlay.File(filePath)
+	if force {
+		if err := os.RemoveAll(fullPath); err != nil {
+			return fmt.Errorf("failed to delete file %s from overlay %s: %w", filePath, overlay.Name(), err)
 		}
 	} else {
-		// first check if file exists
-		if !util.IsFile(overlay.File(filePath)) {
-			return fmt.Errorf("file %s does not exist in overlay %s", filePath, overlay.Name())
+		if err := os.Remove(fullPath); err != nil {
+			return fmt.Errorf("failed to delete file %s from overlay %s: %w", filePath, overlay.Name(), err)
 		}
-		if overlay.IsDistributionOverlay() {
-			siteOverlay, err := overlay.CloneSiteOverlay()
-			if err != nil {
-				return fmt.Errorf("failed to clone distribution overlay '%s' to site overlay: %w", overlay.Name(), err)
-			}
-			// replace the overlay with newly created siteOverlay
-			overlay = siteOverlay
-		}
-		fullPath := overlay.File(filePath)
-		if force {
-			if err := os.RemoveAll(fullPath); err != nil {
-				return fmt.Errorf("failed to delete file %s from overlay %s: %w", filePath, overlay.Name(), err)
-			}
-		} else {
-			if err := os.Remove(fullPath); err != nil {
-				return fmt.Errorf("failed to delete file %s from overlay %s: %w", filePath, overlay.Name(), err)
-			}
-		}
+	}
 
-		if cleanup {
-			// cleanup the empty parents
-			i := path.Dir(fullPath)
-			for i != overlay.Rootfs() {
-				wwlog.Debug("Evaluating directory to remove: %s", i)
-				err := os.Remove(i)
-				if err != nil {
-					// if the directory is not empty, we stop here
-					if !os.IsNotExist(err) {
-						wwlog.Debug("Could not remove directory %s: %v", i, err)
-					}
-					break
+	if cleanup {
+		// cleanup the empty parents
+		i := path.Dir(fullPath)
+		for i != overlay.Rootfs() {
+			wwlog.Debug("Evaluating directory to remove: %s", i)
+			err := os.Remove(i)
+			if err != nil {
+				// if the directory is not empty, we stop here
+				if !os.IsNotExist(err) {
+					wwlog.Debug("Could not remove directory %s: %v", i, err)
 				}
-				wwlog.Debug("Removed empty directory: %s", i)
-				i = path.Dir(i)
+				break
 			}
+			wwlog.Debug("Removed empty directory: %s", i)
+			i = path.Dir(i)
 		}
 	}
 	return nil

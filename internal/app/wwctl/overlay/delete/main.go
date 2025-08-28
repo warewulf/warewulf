@@ -16,5 +16,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	return myOverlay.DeleteFile(fileName, Force, Parents)
+
+	if fileName == "" {
+		return myOverlay.Delete(Force)
+	} else {
+		return myOverlay.DeleteFile(fileName, Force, Parents)
+	}
 }

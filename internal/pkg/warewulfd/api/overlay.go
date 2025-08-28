@@ -232,7 +232,7 @@ func createOverlay() usecase.Interactor {
 func deleteOverlay() usecase.Interactor {
 	type deleteOverlayInput struct {
 		Name  string `path:"name" required:"true" description:"Name of overlay to delete"`
-		Force bool   `query:"force" default:"false" description:"Whether to delete a non-empty overlay, default:'false'"`
+		Force bool   `query:"force" default:"false" description:"Whether to delete a non-empty or in-use overlay, default:'false'"`
 	}
 
 	u := usecase.NewInteractor(func(ctx context.Context, input deleteOverlayInput, output *OverlayResponse) error {
@@ -241,7 +241,11 @@ func deleteOverlay() usecase.Interactor {
 		if err != nil {
 			return err
 		}
-		isSiteOverlay := overlay_.IsSiteOverlay()
+
+		if overlay_.IsDistributionOverlay() {
+			return status.Wrap(fmt.Errorf("distribution overlay: %s", overlay_.Name()), status.InvalidArgument)
+		}
+
 		if !input.Force {
 			if registry, err := node.New(); err != nil {
 				return err
@@ -255,11 +259,11 @@ func deleteOverlay() usecase.Interactor {
 				}
 			}
 		}
-		if err := os.RemoveAll(overlay_.Path()); err != nil {
+		if err := overlay_.Delete(input.Force); err != nil {
 			return status.Wrap(fmt.Errorf("failed to remove overlay: %v", err), status.Code(409))
 		}
 		*output = *NewOverlayResponse(input.Name)
-		output.Site = isSiteOverlay
+		output.Site = overlay_.IsSiteOverlay()
 		return nil
 	})
 	u.SetTitle("Delete an overlay")
