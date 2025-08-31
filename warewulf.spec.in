@@ -242,7 +242,7 @@ initramfs that can fetch and boot a Warewulf node image from a Warewulf server.
 
 %files dracut
 %defattr(-, root, root)
-%{_prefix}/lib/dracut/modules.d/90wwinit
+%{_prefix}/lib/dracut/modules.d/50wwinit
 
 
 %if 0%{?suse_version} || 0%{?sle_version}
