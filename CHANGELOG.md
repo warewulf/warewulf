@@ -36,6 +36,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 ### Fixed
+- Set `SLAVE=yes` in ifcfg files when `MASTER` is set. #1980
 
 ## v4.6.3, 2025-08-01
 
