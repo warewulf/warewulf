@@ -91,14 +91,15 @@ type=ethernet
 autoconnect=true
 [ethernet]
 mac-address=e6:92:39:49:7b:03
+
 [ipv4]
 method=manual
 address=192.168.3.21/24
 gateway=192.168.3.1
 
 [ipv6]
-addr-gen-mode=stable-privacy
 method=ignore
+addr-gen-mode=stable-privacy
 never-default=true
 backupFile: true
 writeFile: true
@@ -112,6 +113,7 @@ type=ethernet
 autoconnect=true
 [ethernet]
 mac-address=9a:77:29:73:14:f1
+
 [ipv4]
 method=manual
 address=192.168.3.22/24
@@ -120,8 +122,8 @@ dns=8.8.8.8;8.8.4.4;
 dns-search=example.com;example.net;
 
 [ipv6]
-addr-gen-mode=stable-privacy
 method=ignore
+addr-gen-mode=stable-privacy
 never-default=true
 `,
 		},
@@ -160,14 +162,15 @@ type=ethernet
 autoconnect=true
 [ethernet]
 mac-address=e6:92:39:49:7b:03
+
 [ipv4]
 method=manual
 address=192.168.3.21/24
 gateway=192.168.3.1
 
 [ipv6]
-addr-gen-mode=stable-privacy
 method=ignore
+addr-gen-mode=stable-privacy
 never-default=true
 backupFile: true
 writeFile: true
@@ -180,6 +183,7 @@ type=ethernet
 autoconnect=true
 [ethernet]
 mac-address=9a:77:29:73:14:f1
+
 [ipv4]
 method=manual
 address=192.168.3.22/24
@@ -188,8 +192,8 @@ dns=8.8.8.8;8.8.4.4;
 dns-search=example.com;example.net;
 
 [ipv6]
-addr-gen-mode=stable-privacy
 method=ignore
+addr-gen-mode=stable-privacy
 never-default=true
 `,
 		},
@@ -259,13 +263,14 @@ id=tagged
 interface-name=eth0.902
 type=vlan
 autoconnect=true
+
 [ipv4]
 method=manual
 route1=192.168.1.0/24,192.168.2.254
 
 [ipv6]
-addr-gen-mode=stable-privacy
 method=ignore
+addr-gen-mode=stable-privacy
 never-default=true
 [vlan]
 interface-name=eth0.902
@@ -282,12 +287,13 @@ interface-name=eth0
 type=ethernet
 autoconnect=true
 [ethernet]
+
 [ipv4]
-method=manual
+method=disabled
 
 [ipv6]
-addr-gen-mode=stable-privacy
 method=ignore
+addr-gen-mode=stable-privacy
 never-default=true
 `,
 		},
@@ -330,13 +336,14 @@ miimon=100
 mode=balance-rr
 xmit_hash_policy=layer2+3
 updelay=0
+
 [ipv4]
 method=manual
 address=192.168.3.110/24
 
 [ipv6]
-addr-gen-mode=stable-privacy
 method=ignore
+addr-gen-mode=stable-privacy
 never-default=true
 backupFile: true
 writeFile: true
@@ -352,6 +359,7 @@ slave-type=bond
 autoconnect=true
 [ethernet]
 mac-address=e6:92:39:49:7b:03
+
 [ipv4]
 method=disabled
 
@@ -371,6 +379,7 @@ slave-type=bond
 autoconnect=true
 [ethernet]
 mac-address=9a:77:29:73:14:f1
+
 [ipv4]
 method=disabled
 

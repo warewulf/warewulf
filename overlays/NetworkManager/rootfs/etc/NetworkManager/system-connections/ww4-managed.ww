@@ -39,17 +39,18 @@ mtu={{ $netdev.MTU }}
 {{- end }}
 {{- end }}
 
-{{- if $netdev.Tags.master }}
 [ipv4]
-method=disabled
-
-[ipv6]
-method=disabled
-{{- else }}
-[ipv4]
+{{- $hasRoutes := false }}
+{{- range $tk, $tv := $netdev.Tags }}
+{{- if eq (substr 0 5 $tk) "route" }}{{ $hasRoutes = true }}{{ end }}
+{{- end }}
+{{- if and (or $netdev.Ipaddr $hasRoutes) (not $netdev.Tags.master) }}
 method=manual
-{{- if $netdev.IpCIDR }}
+{{- if $netdev.Ipaddr }}
 address={{ $netdev.IpCIDR }}
+{{- end }}
+{{- else }}
+method=disabled
 {{- end }}
 {{- if $netdev.Gateway }}
 gateway={{ $netdev.Gateway }}
@@ -70,8 +71,11 @@ dns-search={{ join ";" (without (regexSplit "[ ;]+" $netdev.Tags.DNSSEARCH -1) "
 {{- end }}
 
 [ipv6]
-addr-gen-mode=stable-privacy
+{{- if $netdev.Tags.master }}
+method=disabled
+{{- else }}
 method=ignore
+addr-gen-mode=stable-privacy
 never-default=true
 {{- if $netdev.Ipaddr6 }}
 ipaddr="{{ $netdev.Ipaddr6 }}"
