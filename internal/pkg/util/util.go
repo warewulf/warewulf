@@ -617,3 +617,8 @@ func EqualYaml(a interface{}, b interface{}) (bool, error) {
 
 	return bytes.Equal(aYaml, bYaml), nil
 }
+
+// BoolP returns the value of a bool pointer, or false if nil
+func BoolP(p *bool) bool {
+	return p != nil && *p
+}

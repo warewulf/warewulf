@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func Test_Profile_Set(t *testing.T) {
@@ -187,7 +186,7 @@ nodeprofiles:
   default:
     disks:
       /dev/vda:
-        wipe_table: "true"
+        wipe_table: true
         partitions:
           var:
             number: "1"
@@ -205,7 +204,7 @@ nodeprofiles:
   default:
     disks:
       /dev/vda:
-        wipe_table: "true"
+        wipe_table: true
         partitions:
           var:
             number: "1"
@@ -220,7 +219,7 @@ nodeprofiles:
   default:
     disks:
       /dev/vda:
-        wipe_table: "false"
+        wipe_table: false
         partitions:
           var:
             number: "1"
@@ -232,7 +231,6 @@ nodes: {}`,
 		},
 	}
 
-	wwlog.SetLogLevel(wwlog.DEBUG)
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			env := testenv.New(t)

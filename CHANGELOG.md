@@ -30,6 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed a bug in `wwclient` which prevented proper cleanup of ephemeral files.
 - Fixed `wwclient --debug` to properly enable debug logging.
 - Updated golang BuildRequires in RPM specfile. #1990
+- Fixed handling of `wwctl` boolean options for disk related seetings.
 
 ## v4.6.3, 2025-08-01
 
@@ -48,7 +49,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `DELETE /api/overlays/{name}?force=true` can delete overlays that are in use
 - `warewulfd` overlay autobuild rebuilds overlays after node discovery. #1468
 - Improved netplan support. #1873
-- fixed boolean options for the disk related seetings
 
 ### Fixed
 

@@ -710,9 +710,10 @@ func (legacy *Disk) Upgrade() (upgraded *node.Disk) {
 			upgraded.Partitions[name] = partition.Upgrade()
 		}
 	}
-	err := upgraded.WipeTable.Set(legacy.WipeTable)
-	if err != nil {
-		wwlog.Warn("error when parsing legacy.WipeTable: %w", err)
+	if legacy.WipeTable != "" {
+		if val, err := strconv.ParseBool(legacy.WipeTable); err == nil {
+			upgraded.WipeTableP = &val
+		}
 	}
 	return
 }
@@ -732,20 +733,23 @@ func (legacy *Partition) Upgrade() (upgraded *node.Partition) {
 	upgraded = new(node.Partition)
 	upgraded.Guid = legacy.Guid
 	upgraded.Number = legacy.Number
-	err := upgraded.Resize.Set(legacy.Resize)
-	if err != nil {
-		wwlog.Warn("error when parsing legacy.Resize: %w", err)
+	if legacy.Resize != "" {
+		if val, err := strconv.ParseBool(legacy.Resize); err == nil {
+			upgraded.ResizeP = &val
+		}
 	}
-	err = upgraded.ShouldExist.Set(legacy.ShouldExist)
-	if err != nil {
-		wwlog.Warn("error when parsing legacy.ShouldExist: %w", err)
+	if legacy.ShouldExist != "" {
+		if val, err := strconv.ParseBool(legacy.ShouldExist); err == nil {
+			upgraded.ShouldExistP = &val
+		}
 	}
 	upgraded.SizeMiB = legacy.SizeMiB
 	upgraded.StartMiB = legacy.StartMiB
 	upgraded.TypeGuid = legacy.TypeGuid
-	err = upgraded.WipePartitionEntry.Set(legacy.WipePartitionEntry)
-	if err != nil {
-		wwlog.Warn("error when parsing legacy.WipePartitionEntry: %w", err)
+	if legacy.WipePartitionEntry != "" {
+		if val, err := strconv.ParseBool(legacy.WipePartitionEntry); err == nil {
+			upgraded.WipePartitionEntryP = &val
+		}
 	}
 	return
 }
@@ -782,9 +786,10 @@ func (legacy *FileSystem) Upgrade() (upgraded *node.FileSystem) {
 	upgraded.Options = append(upgraded.Options, legacy.Options...)
 	upgraded.Path = legacy.Path
 	upgraded.Uuid = legacy.Uuid
-	err := upgraded.WipeFileSystem.Set(legacy.WipeFileSystem)
-	if err != nil {
-		wwlog.Warn("error when parsing legacy.WipeFileSystem: %w", err)
+	if legacy.WipeFileSystem != "" {
+		if val, err := strconv.ParseBool(legacy.WipeFileSystem); err == nil {
+			upgraded.WipeFileSystemP = &val
+		}
 	}
 	return
 }

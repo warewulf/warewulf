@@ -72,7 +72,7 @@ func NodeSetParameterCheck(set *wwapiv1.ConfSetParameter) (nodeDB node.NodesYaml
 				return
 			}
 			// merge in
-			err = mergo.Merge(nodePtr, &newConf, mergo.WithOverride)
+			err = mergo.Merge(nodePtr, &newConf, mergo.WithOverride, mergo.WithTransformers(node.Transformer{}))
 			if err != nil {
 				return
 			}

@@ -113,7 +113,7 @@ nodes:
           rootfs:
             resize: false`,
 			node:  "n1",
-			field: "Disks[/dev/vda].Partitions[rootfs].Resize",
+			field: "Disks[/dev/vda].Partitions[rootfs].ResizeP",
 			value: "false",
 		},
 	}

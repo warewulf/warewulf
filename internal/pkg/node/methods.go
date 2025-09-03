@@ -187,12 +187,16 @@ func recursiveFlatten(obj interface{}) (hasContent bool) {
 
 		case reflect.Ptr:
 			if valObj.Elem().Field(i).Addr().IsValid() {
-				ret := recursiveFlatten((valObj.Elem().Field(i).Interface()))
-				if !ret {
-					valObj.Elem().Field(i).Set(reflect.Zero(valObj.Elem().Field(i).Type()))
+				// Handle *bool fields separately as they are not structs
+				if typeObj.Elem().Field(i).Type == reflect.TypeOf((*bool)(nil)) {
+					hasContent = !valObj.Elem().Field(i).IsZero() || hasContent
+				} else {
+					ret := recursiveFlatten((valObj.Elem().Field(i).Interface()))
+					if !ret {
+						valObj.Elem().Field(i).Set(reflect.Zero(valObj.Elem().Field(i).Type()))
+					}
+					hasContent = ret || hasContent
 				}
-				hasContent = ret || hasContent
-
 			}
 		case reflect.Struct:
 			ret := recursiveFlatten((valObj.Elem().Field(i).Addr().Interface()))

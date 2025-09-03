@@ -72,7 +72,7 @@ func ProfileSetParameterCheck(set *wwapiv1.ConfSetParameter) (nodeDB node.NodesY
 				return
 			}
 			// merge in
-			err = mergo.Merge(profilePtr, &newProfile, mergo.WithOverride)
+			err = mergo.Merge(profilePtr, &newProfile, mergo.WithOverride, mergo.WithTransformers(node.Transformer{}))
 			if err != nil {
 				return
 			}

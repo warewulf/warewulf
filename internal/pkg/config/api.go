@@ -4,6 +4,7 @@ import (
 	"net"
 
 	"github.com/creasty/defaults"
+	"github.com/warewulf/warewulf/internal/pkg/util"
 )
 
 type IPNet net.IPNet
@@ -46,5 +47,5 @@ func (conf *APIConf) Unmarshal(unmarshal func(interface{}) error) error {
 }
 
 func (conf APIConf) Enabled() bool {
-	return BoolP(conf.EnabledP)
+	return util.BoolP(conf.EnabledP)
 }

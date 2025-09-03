@@ -5,10 +5,6 @@ import (
 	"net"
 )
 
-func BoolP(p *bool) bool {
-	return p != nil && *p
-}
-
 func GetOutboundIP() net.IP {
 	conn, err := net.Dial("udp", "192.0.2.1:80")
 	if err != nil {

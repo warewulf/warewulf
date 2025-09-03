@@ -69,7 +69,18 @@ func (config *NodesYaml) getProfilesProfiles(input []string, visited map[string]
 type Transformer struct{}
 
 func (t Transformer) Transformer(typ reflect.Type) func(dst, src reflect.Value) error {
-	if typ == reflect.TypeOf(net.IP{}) {
+	if typ == reflect.TypeOf((*bool)(nil)) {
+		return func(dst, src reflect.Value) error {
+			if !src.IsValid() {
+				return nil
+			}
+			// Always override *bool values when source is set
+			if !src.IsNil() {
+				dst.Set(src)
+			}
+			return nil
+		}
+	} else if typ == reflect.TypeOf(net.IP{}) {
 		return func(dst, src reflect.Value) error {
 			if !src.IsValid() || src.IsNil() {
 				return nil

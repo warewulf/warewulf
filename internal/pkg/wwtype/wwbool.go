@@ -33,14 +33,6 @@ func (val WWbool) Bool() bool {
 	return bval
 }
 
-/*
-Return a pointer to a bool
-*/
-func (val WWbool) BoolPtr() *bool {
-	ret := val.Bool()
-	return &ret
-}
-
 func (val WWbool) BoolDefaultTrue() bool {
 	str := strings.ToLower(string(val))
 	if isUnsetValue(str) {

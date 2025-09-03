@@ -111,11 +111,13 @@ func (node *Node) GetIgnitionStorage() (stor types_3_4.Storage, rep string, err 
 		for _, opt := range fs.Options {
 			fsOption = append(fsOption, types_3_4.FilesystemOption(opt))
 		}
-		wipe := fs.WipeFileSystem
 		myFs := types_3_4.Filesystem{
-			Device:         fsdevice,
-			Path:           &fs.Path,
-			WipeFilesystem: wipe.BoolPtr(),
+			Device: fsdevice,
+			Path:   &fs.Path,
+		}
+		if fs.WipeFileSystemP != nil {
+			wipeFs := fs.WipeFileSystem()
+			myFs.WipeFilesystem = &wipeFs
 		}
 		if fs.Format != "" {
 			myFs.Format = &fs.Format
@@ -142,9 +144,6 @@ func (node *Node) GetIgnitionStorage() (stor types_3_4.Storage, rep string, err 
 	for diskDev, disk := range node.Disks {
 		var partitions []types_3_4.Partition
 		for partlabel, part := range disk.Partitions {
-			resize := part.Resize
-			shouldExist := part.ShouldExist
-			wipe := part.WipePartitionEntry
 			label := partlabel
 			var number int
 			if part.Number != "" {
@@ -154,16 +153,23 @@ func (node *Node) GetIgnitionStorage() (stor types_3_4.Storage, rep string, err 
 				}
 			}
 			myPart := types_3_4.Partition{
-				Label:              &label,
-				Number:             number,
-				ShouldExist:        shouldExist.BoolPtr(),
-				WipePartitionEntry: wipe.BoolPtr(),
+				Label:  &label,
+				Number: number,
+			}
+			if part.ShouldExistP != nil {
+				shouldExist := part.ShouldExist()
+				myPart.ShouldExist = &shouldExist
+			}
+			if part.WipePartitionEntryP != nil {
+				wipeEntry := part.WipePartitionEntry()
+				myPart.WipePartitionEntry = &wipeEntry
 			}
 			if part.Guid != "" {
 				myPart.GUID = &part.Guid
 			}
-			if part.Resize.Bool() {
-				myPart.Resize = resize.BoolPtr()
+			if part.ResizeP != nil {
+				resize := part.Resize()
+				myPart.Resize = &resize
 			}
 			if part.SizeMiB != "" {
 				var size int
@@ -198,12 +204,15 @@ func (node *Node) GetIgnitionStorage() (stor types_3_4.Storage, rep string, err 
 			}
 			return partitions[i].Number < partitions[j].Number
 		})
-		wipe := disk.WipeTable
-		disks = append(disks, types_3_4.Disk{
+		disk_struct := types_3_4.Disk{
 			Device:     diskDev,
 			Partitions: partitions,
-			WipeTable:  wipe.BoolPtr(),
-		})
+		}
+		if disk.WipeTableP != nil {
+			wipe := disk.WipeTable()
+			disk_struct.WipeTable = &wipe
+		}
+		disks = append(disks, disk_struct)
 	}
 	stor = types_3_4.Storage{
 		Disks:       disks,
