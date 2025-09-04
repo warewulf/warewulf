@@ -14,7 +14,8 @@
 %define _build_id_links none
 %endif
 
-%global __brp_mangle_shebangs_exclude_from ^/usr/share/warewulf/overlays/.*$
+%define _overlaydir %{_overlaydir}
+%global __brp_mangle_shebangs_exclude_from ^%{_overlaydir}/.*$
 
 
 Name: warewulf
@@ -182,35 +183,35 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 
 %dir %{_datadir}/warewulf
 %{_datadir}/warewulf/bmc
-%dir %{_datadir}/warewulf/overlays
-%dir %{_datadir}/warewulf/overlays/*
-%dir %{_datadir}/warewulf/overlays/*/rootfs
-%{_datadir}/warewulf/overlays/NetworkManager/rootfs/*
-%{_datadir}/warewulf/overlays/debian.interfaces/rootfs/*
-%{_datadir}/warewulf/overlays/debug/rootfs/*
-%{_datadir}/warewulf/overlays/fstab/rootfs/*
-%{_datadir}/warewulf/overlays/host/rootfs/*
-%{_datadir}/warewulf/overlays/hostname/rootfs/*
-%{_datadir}/warewulf/overlays/hosts/rootfs/*
-%{_datadir}/warewulf/overlays/ifcfg/rootfs/*
-%{_datadir}/warewulf/overlays/ignition/rootfs/*
-%{_datadir}/warewulf/overlays/issue/rootfs/*
-%{_datadir}/warewulf/overlays/netplan/rootfs/*
-%{_datadir}/warewulf/overlays/resolv/rootfs/*
-%attr(700, -, -) %{_datadir}/warewulf/overlays/ssh.authorized_keys/rootfs/*
-%{_datadir}/warewulf/overlays/ssh.host_keys/rootfs/*
-%{_datadir}/warewulf/overlays/syncuser/rootfs/*
-%{_datadir}/warewulf/overlays/systemd.netname/rootfs/*
-%{_datadir}/warewulf/overlays/udev.netname/rootfs/*
-%{_datadir}/warewulf/overlays/wicked/rootfs/*
-%{_datadir}/warewulf/overlays/wwclient/rootfs/*
-%{_datadir}/warewulf/overlays/wwinit/rootfs/*
-%{_datadir}/warewulf/overlays/localtime/rootfs/*
-%{_datadir}/warewulf/overlays/sfdisk/rootfs/*
-%{_datadir}/warewulf/overlays/mkfs/rootfs/*
-%{_datadir}/warewulf/overlays/mkswap/rootfs/*
-%{_datadir}/warewulf/overlays/systemd.mount/rootfs/*
-%{_datadir}/warewulf/overlays/systemd.swap/rootfs/*
+%dir %{_overlaydir}
+%dir %{_overlaydir}/*
+%dir %{_overlaydir}/*/rootfs
+%{_overlaydir}/NetworkManager/rootfs/*
+%{_overlaydir}/debian.interfaces/rootfs/*
+%{_overlaydir}/debug/rootfs/*
+%{_overlaydir}/fstab/rootfs/*
+%{_overlaydir}/host/rootfs/*
+%{_overlaydir}/hostname/rootfs/*
+%{_overlaydir}/hosts/rootfs/*
+%{_overlaydir}/ifcfg/rootfs/*
+%{_overlaydir}/ignition/rootfs/*
+%{_overlaydir}/issue/rootfs/*
+%{_overlaydir}/netplan/rootfs/*
+%{_overlaydir}/resolv/rootfs/*
+%attr(700, -, -) %{_overlaydir}/ssh.authorized_keys/rootfs/*
+%{_overlaydir}/ssh.host_keys/rootfs/*
+%{_overlaydir}/syncuser/rootfs/*
+%{_overlaydir}/systemd.netname/rootfs/*
+%{_overlaydir}/udev.netname/rootfs/*
+%{_overlaydir}/wicked/rootfs/*
+%{_overlaydir}/wwclient/rootfs/*
+%{_overlaydir}/wwinit/rootfs/*
+%{_overlaydir}/localtime/rootfs/*
+%{_overlaydir}/sfdisk/rootfs/*
+%{_overlaydir}/mkfs/rootfs/*
+%{_overlaydir}/mkswap/rootfs/*
+%{_overlaydir}/systemd.mount/rootfs/*
+%{_overlaydir}/systemd.swap/rootfs/*
 
 %{_bindir}/wwctl
 %{_prefix}/lib/firewalld/services/warewulf.xml
