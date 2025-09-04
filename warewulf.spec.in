@@ -14,7 +14,7 @@
 %define _build_id_links none
 %endif
 
-%define _overlaydir %{_overlaydir}
+%define _overlaydir %{_datadir}/warewulf/overlays
 %global __brp_mangle_shebangs_exclude_from ^%{_overlaydir}/.*$
 
 
