@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Build support for EL10, EL10 depends on `dnsmasq` and no longer `dhcpd-server` (EOL). #1974
 - `make rpm` added for local development rpm builds. #1974
 - `wwclient --once` prompts wwclient to run once. #1226
+- Added default for warewulf 'systemd name' #1993
 
 ### Changed
 
