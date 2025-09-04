@@ -35,7 +35,7 @@ Conflicts: warewulf-ipmi
 %if 0%{?suse_version} || 0%{?sle_version}
 BuildRequires: distribution-release
 BuildRequires: systemd-rpm-macros
-BuildRequires: go >= 1.16
+BuildRequires: go >= 1.22
 BuildRequires: firewall-macros
 BuildRequires: firewalld
 BuildRequires: tftp
@@ -48,7 +48,7 @@ Requires: ipxe-bootimgs
 # Assume Red Hat/Fedora build
 BuildRequires: system-release
 BuildRequires: systemd
-BuildRequires: golang >= 1.16
+BuildRequires: golang >= 1.22
 BuildRequires: firewalld-filesystem
 %if ! (0%{?rhel} >= 10)
 Requires: tftp-server
@@ -266,6 +266,9 @@ about Warewulf in an sos report.
 
 
 %changelog
+* Thu Sep 4 2025 Jonathon Anderson <janderson@ciq.com>
+- Update golang BuildRequires to 1.22
+
 * Tue Apr 1 2025 Jonathon Anderson <janderson@ciq.com>
 - Remove gRPC API
 
