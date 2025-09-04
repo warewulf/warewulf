@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `wwclient` skips files that do not appear to have been modified. #1984
 - `wwctl overlay edit` again writes temporary files to the default location.
   (After #1886 better resolves the underlying issue from #1473.) #1946
+- Prevent brp-mangle-shebangs from changing files in overlays.
 
 ### Fixed
 

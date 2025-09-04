@@ -14,6 +14,8 @@
 %define _build_id_links none
 %endif
 
+%global __brp_mangle_shebangs_exclude_from ^/usr/share/warewulf/overlays/.*$
+
 
 Name: warewulf
 Summary: A provisioning system for large clusters of bare metal and/or virtual systems
@@ -268,6 +270,7 @@ about Warewulf in an sos report.
 %changelog
 * Thu Sep 4 2025 Jonathon Anderson <janderson@ciq.com>
 - Update golang BuildRequires to 1.22
+- Exclude overlay files from brp-mangle-shebangs
 
 * Tue Apr 1 2025 Jonathon Anderson <janderson@ciq.com>
 - Remove gRPC API
