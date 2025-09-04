@@ -47,7 +47,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		return fmt.Errorf("%s does not exist. Use '--parents' option to create automatically", overlayFileDir)
 	}
 
-	tempFile, tempFileErr := os.CreateTemp(myOverlay.Path(), "ww-overlay-edit-")
+	tempFile, tempFileErr := os.CreateTemp("", "ww-overlay-edit-")
 	if tempFileErr != nil {
 		return fmt.Errorf("unable to create temporary file for editing: %s", tempFileErr)
 	}
