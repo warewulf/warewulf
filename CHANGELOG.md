@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Fixed a bug in `wwclient` which prevented proper cleanup of ephemeral files.
 - Fixed `wwclient --debug` to properly enable debug logging.
+- Updated golang BuildRequires in RPM specfile. #1990
 
 ## v4.6.3, 2025-08-01
 
