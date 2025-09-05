@@ -24,6 +24,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `wwctl overlay edit` again writes temporary files to the default location.
   (After #1886 better resolves the underlying issue from #1473.) #1946
 - Prevent brp-mangle-shebangs from changing files in overlays.
+- The NetworkManager overlay now only adds an `[ethernet]` section for ethernet interfaces.
+- The NetworkManager overlay now sets `ipv4:method=disabled` if no address or route is specified. #1986
 
 ### Fixed
 
@@ -31,6 +33,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed `wwclient --debug` to properly enable debug logging.
 - Updated golang BuildRequires in RPM specfile. #1990
 - Fixed handling of `wwctl` boolean options for disk related seetings.
+
+### Changed
+
+### Fixed
+- Set `SLAVE=yes` in ifcfg files when `MASTER` is set. #1980
 
 ## v4.6.3, 2025-08-01
 
