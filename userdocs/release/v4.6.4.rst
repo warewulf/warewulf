@@ -1,0 +1,72 @@
+====================
+v4.6.4 Release Notes
+====================
+
+v4.6.4 is a regularly-scheduled minor release in the v4.6.x series.
+
+Significant changes are described below. Additional changes are listed in the
+`CHANGELOG`_.
+
+.. _CHANGELOG: https://github.com/warewulf/warewulf/blob/main/CHANGELOG.md
+
+EL10 and dnsmasq support
+========================
+
+To support the ongoing development and upcoming release of OpenHPC 4, Warewulf
+v4.6.4 adds initial support and automatic CI/CD builds for EL10. EL10 does not
+include the ISC DHCP server, so EL10 packages depend on and use dnsmasq by
+default.
+
+Warewulf v4 has included some support for dnsmasq since v4.4.0, but its
+use by default in EL10 will bring additional visibility. For now, this includes:
+
+- A fix for a bug that prevented proper handling of iPXE files when using
+  dnsmasq.
+
+wwclient
+========
+
+v4.6.4 makes a number of enhancements to ``wwclient``, the daemon that
+periodically re-applies the runtime overlay to cluster nodes.
+
+- ``wwclient`` now places files from the runtime overlay atomically, such that
+  any application concurrently reading an updated file will only ever see the
+  complete previous or updated content.
+- ``wwclient`` now skips updating files that do not appear to have been
+  modified, as judged by file size and modification time.
+- ``wwclient --once`` prompts wwclient to run once, which is useful both for
+  testing and for dispatching updates more dynamically (e.g., between compute
+  jobs).
+- ``wwclient --debug`` now generates more and more useful debug output.
+
+wwctl configure warewulfd
+=========================
+
+v4.6.4 adds the ability to enable and (re)start the warewulf server daemon
+itself to apply updated configuration, either as part of ``wwctl configure -a``
+or ``wwctl configure warewulfd``. This only takes effect if a ``systemd name``
+for Warewulf is specified in ``warewulf.conf``.
+
+.. code-block:: yaml
+
+   warewulf:
+     systemd name: warewulfd
+
+New installations will include ``systemd name: warewulfd`` by default.
+
+Network configuration fixes
+===========================
+
+- The NetworkManager overlay now omits the ``[ethernet]`` section for
+  non-ethernet interfaces.
+- The NetworkManager overlay now sets ``ipv4:method=disabled`` if no address or
+  route is specified.
+- The ifcfg overlay now sets ``SLAVE=yes`` when `MASTER` is set. #1980
+
+Other fixes
+===========
+
+- Prevent brp-mangle-shebangs from changing files in overlays. (e.g.,
+  ``/bin/sh`` to ``/usr/bin/sh``)
+- Updated golang BuildRequires in the RPM specfile to 1.22.
+- Fixed unsetting boolean options with ``wwctl``.
