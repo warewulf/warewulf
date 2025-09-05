@@ -33,8 +33,7 @@ func Test_createIgnitionJson(t *testing.T) {
         "partitions": [
           {
             "label": "scratch",
-            "shouldExist": true,
-            "wipePartitionEntry": false
+            "shouldExist": true
           }
         ],
         "wipeTable": true

@@ -1,4 +1,4 @@
-package util
+package util_test
 
 import (
 	"path/filepath"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
+	"github.com/warewulf/warewulf/internal/pkg/util"
 )
 
 func Test_FindFiles(t *testing.T) {
@@ -36,7 +37,7 @@ func Test_FindFiles(t *testing.T) {
 				env.CreateFile(filepath.Join("/test", file_))
 			}
 
-			files := FindFiles(env.GetPath("/test"))
+			files := util.FindFiles(env.GetPath("/test"))
 			assert.Equal(t, tt.findFiles, files)
 		})
 	}
@@ -86,7 +87,7 @@ func Test_FindFilterFiles(t *testing.T) {
 				env.CreateFile(filepath.Join("/test", file_))
 			}
 
-			files, err := FindFilterFiles(env.GetPath("/test"), tt.include, tt.exclude, true)
+			files, err := util.FindFilterFiles(env.GetPath("/test"), tt.include, tt.exclude, true)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.findFiles, files)
 		})

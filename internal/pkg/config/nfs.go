@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/creasty/defaults"
+	"github.com/warewulf/warewulf/internal/pkg/util"
 )
 
 // NFSConf represents the NFS configuration that will be used by
@@ -14,7 +15,7 @@ type NFSConf struct {
 }
 
 func (conf NFSConf) Enabled() bool {
-	return BoolP(conf.EnabledP)
+	return util.BoolP(conf.EnabledP)
 }
 
 // An NFSExportConf reprents a single NFS export / mount.

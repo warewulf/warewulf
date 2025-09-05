@@ -138,7 +138,6 @@ nodeprofiles:
   default: {}
 nodes: {}`,
 		},
-
 		"single node delete existing partition": {
 			args:    []string{"--partdel=var", "default"},
 			wantErr: false,
@@ -150,7 +149,6 @@ nodeprofiles:
         partitions:
           var:
             number: "1"
-        path: /var
     filesystems:
       /dev/disk/by-partlabel/var:
         format: btrfs
@@ -160,6 +158,71 @@ nodes: {}
 			outDb: `
 nodeprofiles:
   default:
+    filesystems:
+      /dev/disk/by-partlabel/var:
+        format: btrfs
+        path: /var
+nodes: {}`,
+		},
+		"single set wipetabe to true": {
+			args:    []string{"--diskwipe=true", "--partname=var", "--diskname=/dev/vda", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          var:
+            number: "1"
+    filesystems:
+      /dev/disk/by-partlabel/var:
+        format: btrfs
+        path: /var
+nodes: {}
+`,
+			outDb: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        wipe_table: true
+        partitions:
+          var:
+            number: "1"
+    filesystems:
+      /dev/disk/by-partlabel/var:
+        format: btrfs
+        path: /var
+nodes: {}`,
+		},
+		"single set wipetabe to false": {
+			args:    []string{"--diskwipe=false", "--partname=var", "--diskname=/dev/vda", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        wipe_table: true
+        partitions:
+          var:
+            number: "1"
+    filesystems:
+      /dev/disk/by-partlabel/var:
+        format: btrfs
+        path: /var
+nodes: {}
+`,
+			outDb: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        wipe_table: false
+        partitions:
+          var:
+            number: "1"
     filesystems:
       /dev/disk/by-partlabel/var:
         format: btrfs

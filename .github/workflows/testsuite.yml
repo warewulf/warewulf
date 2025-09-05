@@ -42,7 +42,9 @@ jobs:
       - name: Vet Warewulf code (golang ${{ matrix.go-version }})
         run: make vet
       - name: Check Warewulf code for formatting (golang ${{ matrix.go-version }})
-        run: test "$(make -s fmt | wc -l)" == 0
+        run: |
+          make -s fmt | tee /tmp/fmt-output
+          test "$(wc -l </tmp/fmt-output)" == 0
       - name: Check for dead Warewulf code (golang ${{ matrix.go-version }})
         run: make deadcode
       - name: Run the test suite (golang ${{ matrix.go-version }})

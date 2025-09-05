@@ -3,10 +3,59 @@ package node
 import (
 	"net"
 	"reflect"
+	"strconv"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/wwtype"
 )
+
+// boolPtrFlag implements pflag.Value for *bool fields
+type boolPtrFlag struct {
+	ptr **bool
+}
+
+func (f *boolPtrFlag) String() string {
+	if *f.ptr == nil {
+		return ""
+	}
+	return strconv.FormatBool(**f.ptr)
+}
+
+func (f *boolPtrFlag) Set(value string) error {
+	// Handle unset values
+	unsetValues := []string{"unset", "delete", "undef", "--", "nil"}
+	for _, unset := range unsetValues {
+		if strings.ToLower(value) == unset {
+			*f.ptr = nil
+			return nil
+		}
+	}
+
+	// Handle yes/no
+	if strings.ToLower(value) == "yes" {
+		v := true
+		*f.ptr = &v
+		return nil
+	}
+	if strings.ToLower(value) == "no" {
+		v := false
+		*f.ptr = &v
+		return nil
+	}
+
+	// Parse boolean
+	if val, err := strconv.ParseBool(value); err == nil {
+		*f.ptr = &val
+		return nil
+	}
+
+	return nil
+}
+
+func (f *boolPtrFlag) Type() string {
+	return "bool"
+}
 
 type NodeConfDel struct {
 	TagsDel     []string `lopt:"tagdel" comment:"add tags"`
@@ -172,6 +221,21 @@ func createFlags(baseCmd *cobra.Command,
 					myType.Tag.Get("lopt"),
 					net.IP{}, // empty default!
 					myType.Tag.Get("comment"))
+			}
+		} else if myType.Type == reflect.TypeOf((*bool)(nil)) {
+			// Handle *bool type for nullable booleans
+			ptr := myVal.Addr().Interface().(**bool)
+			if myType.Tag.Get("sopt") != "" {
+				baseCmd.PersistentFlags().VarP(&boolPtrFlag{ptr: ptr},
+					myType.Tag.Get("lopt"),
+					myType.Tag.Get("sopt"),
+					myType.Tag.Get("comment"))
+				baseCmd.Flag(myType.Tag.Get("lopt")).NoOptDefVal = "true"
+			} else {
+				baseCmd.PersistentFlags().Var(&boolPtrFlag{ptr: ptr},
+					myType.Tag.Get("lopt"),
+					myType.Tag.Get("comment"))
+				baseCmd.Flag(myType.Tag.Get("lopt")).NoOptDefVal = "true"
 			}
 		} else if myType.Type == reflect.TypeOf(wwbool) {
 			ptr := myVal.Addr().Interface().(*wwtype.WWbool)

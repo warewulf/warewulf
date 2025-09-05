@@ -242,15 +242,12 @@ nodes:
         "partitions": [
           {
             "label": "scratch",
-            "shouldExist": true,
-            "wipePartitionEntry": false
+            "shouldExist": true
           },
           {
             "label": "swap",
             "number": 1,
-            "shouldExist": false,
-            "sizeMiB": 1024,
-            "wipePartitionEntry": false
+            "sizeMiB": 1024
           }
         ],
         "wipeTable": true
@@ -266,8 +263,7 @@ nodes:
       {
         "device": "/dev/disk/by-partlabel/swap",
         "format": "swap",
-        "path": "swap",
-        "wipeFilesystem": false
+        "path": "swap"
       }
     ]
   }

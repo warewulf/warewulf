@@ -710,7 +710,11 @@ func (legacy *Disk) Upgrade() (upgraded *node.Disk) {
 			upgraded.Partitions[name] = partition.Upgrade()
 		}
 	}
-	upgraded.WipeTable, _ = strconv.ParseBool(legacy.WipeTable)
+	if legacy.WipeTable != "" {
+		if val, err := strconv.ParseBool(legacy.WipeTable); err == nil {
+			upgraded.WipeTableP = &val
+		}
+	}
 	return
 }
 
@@ -729,12 +733,24 @@ func (legacy *Partition) Upgrade() (upgraded *node.Partition) {
 	upgraded = new(node.Partition)
 	upgraded.Guid = legacy.Guid
 	upgraded.Number = legacy.Number
-	upgraded.Resize, _ = strconv.ParseBool(legacy.Resize)
-	upgraded.ShouldExist, _ = strconv.ParseBool(legacy.ShouldExist)
+	if legacy.Resize != "" {
+		if val, err := strconv.ParseBool(legacy.Resize); err == nil {
+			upgraded.ResizeP = &val
+		}
+	}
+	if legacy.ShouldExist != "" {
+		if val, err := strconv.ParseBool(legacy.ShouldExist); err == nil {
+			upgraded.ShouldExistP = &val
+		}
+	}
 	upgraded.SizeMiB = legacy.SizeMiB
 	upgraded.StartMiB = legacy.StartMiB
 	upgraded.TypeGuid = legacy.TypeGuid
-	upgraded.WipePartitionEntry, _ = strconv.ParseBool(legacy.WipePartitionEntry)
+	if legacy.WipePartitionEntry != "" {
+		if val, err := strconv.ParseBool(legacy.WipePartitionEntry); err == nil {
+			upgraded.WipePartitionEntryP = &val
+		}
+	}
 	return
 }
 
@@ -770,6 +786,10 @@ func (legacy *FileSystem) Upgrade() (upgraded *node.FileSystem) {
 	upgraded.Options = append(upgraded.Options, legacy.Options...)
 	upgraded.Path = legacy.Path
 	upgraded.Uuid = legacy.Uuid
-	upgraded.WipeFileSystem, _ = strconv.ParseBool(legacy.WipeFileSystem)
+	if legacy.WipeFileSystem != "" {
+		if val, err := strconv.ParseBool(legacy.WipeFileSystem); err == nil {
+			upgraded.WipeFileSystemP = &val
+		}
+	}
 	return
 }
