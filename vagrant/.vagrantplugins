@@ -1,0 +1,42 @@
+class InitWarewulf < Vagrant.plugin(2, :command)
+  def self.synopsis
+    "Initialize Warewulf Dev Environment"
+  end
+
+  def execute
+    ww_version = `git describe --abbrev=0 2>/dev/null`
+    ww_version = ww_version[1..-1]
+    system "WW_VERSION=#{ww_version} vagrant up"
+    system "vagrant provision --provision-with provision-vbmc wwctl"
+    system "vagrant provision --provision-with add-ww-nodes wwctl"
+  end
+end
+
+class CleanupWarewulf < Vagrant.plugin(2, :command)
+  def self.synopsis
+    "Cleanup Warewulf Dev Environment"
+  end
+
+  def execute
+    system "vagrant ssh wwctl -c 'sudo wwctl power off n1' || true"
+    system "vagrant ssh wwctl -c 'sudo wwctl power off n2' || true"
+    system "vagrant halt"
+    system "vagrant destroy -f"
+  end
+end
+
+class InitWarewulfPlugin < Vagrant.plugin(2)
+  name "InitWarewulf"
+
+  command "init-warewulf" do
+    InitWarewulf
+  end
+end
+
+class CleanupWarewulfPlugin < Vagrant.plugin(2)
+  name "CleanupWarewulf"
+
+  command "cleanup-warewulf" do
+    CleanupWarewulf
+  end
+end
