@@ -103,7 +103,7 @@ nodes:
 			field:     "Resources[fstab]",
 			jsonValue: `[{"file":"/home","freq":0,"mntops":"defaults","passno":0,"spec":"warewulf:/home","vfstype":"nfs"}]`,
 		},
-		"disk partition": {
+		"disk partition (with name tag)": {
 			nodesConf: `
 nodes:
   n1:
@@ -113,7 +113,7 @@ nodes:
           rootfs:
             resize: false`,
 			node:  "n1",
-			field: "Disks[/dev/vda].Partitions[rootfs].ResizeP",
+			field: "Disks[/dev/vda].Partitions[rootfs].Resize",
 			value: "false",
 		},
 	}
@@ -254,6 +254,28 @@ func Test_listFields(t *testing.T) {
 				"Tags[tag]",
 				"PrimaryNetDev",
 				"Resources[resource]",
+			},
+		},
+		"disk with name tags": {
+			object: Disk{
+				Partitions: map[string]*Partition{
+					"root": {
+						WipePartitionEntryP: new(bool),
+						ShouldExistP:        new(bool),
+						ResizeP:             new(bool),
+					},
+				},
+			},
+			fields: []string{
+				"WipeTable",
+				"Partitions[root].Number",
+				"Partitions[root].SizeMiB",
+				"Partitions[root].StartMiB",
+				"Partitions[root].TypeGuid",
+				"Partitions[root].Guid",
+				"Partitions[root].WipePartitionEntry",
+				"Partitions[root].ShouldExist",
+				"Partitions[root].Resize",
 			},
 		},
 	}

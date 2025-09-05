@@ -94,7 +94,7 @@ Holds the disks of a node
 */
 type Disk struct {
 	id         string                `yaml:"-"                    json:"-"`
-	WipeTableP *bool                 `yaml:"wipe_table,omitempty" json:"wipe_table,omitempty" lopt:"diskwipe" comment:"whether or not the partition tables shall be wiped"`
+	WipeTableP *bool                 `yaml:"wipe_table,omitempty" json:"wipe_table,omitempty" lopt:"diskwipe" comment:"whether or not the partition tables shall be wiped" name:"WipeTable"`
 	Partitions map[string]*Partition `yaml:"partitions,omitempty" json:"partitions,omitempty"`
 }
 
@@ -109,9 +109,9 @@ type Partition struct {
 	StartMiB            string `yaml:"start_mib,omitempty"            json:"start_mib,omitempty"                              comment:"the start of the partition" type:"uint"`
 	TypeGuid            string `yaml:"type_guid,omitempty"            json:"type_guid,omitempty"            lopt:"parttype"   comment:"Set the partition type GUID"`
 	Guid                string `yaml:"guid,omitempty"                 json:"guid,omitempty"                                   comment:"the GPT unique partition GUID"`
-	WipePartitionEntryP *bool  `yaml:"wipe_partition_entry,omitempty" json:"wipe_partition_entry,omitempty"                   comment:"if true, Ignition will clobber an existing partition if it does not match the config"`
-	ShouldExistP        *bool  `yaml:"should_exist,omitempty"         json:"should_exist,omitempty"         lopt:"partcreate" comment:"Create partition if it does not exist"`
-	ResizeP             *bool  `yaml:"resize,omitempty"               json:"resize,omitempty"                                 comment:"whether or not the existing partition should be resize"`
+	WipePartitionEntryP *bool  `yaml:"wipe_partition_entry,omitempty" json:"wipe_partition_entry,omitempty"                   comment:"if true, Ignition will clobber an existing partition if it does not match the config" name:"WipePartitionEntry"`
+	ShouldExistP        *bool  `yaml:"should_exist,omitempty"         json:"should_exist,omitempty"         lopt:"partcreate" comment:"Create partition if it does not exist" name:"ShouldExist"`
+	ResizeP             *bool  `yaml:"resize,omitempty"               json:"resize,omitempty"                                 comment:"whether or not the existing partition should be resize" name:"Resize"`
 }
 
 /*
@@ -121,7 +121,7 @@ type FileSystem struct {
 	id              string   `yaml:"-"                         json:"-"`
 	Format          string   `yaml:"format,omitempty"          json:"format,omitempty"          lopt:"fsformat" comment:"format of the file system"`
 	Path            string   `yaml:"path,omitempty"            json:"path,omitempty"            lopt:"fspath"   comment:"the mount point of the file system"`
-	WipeFileSystemP *bool    `yaml:"wipe_filesystem,omitempty" json:"wipe_filesystem,omitempty" lopt:"fswipe"   comment:"wipe file system at boot"`
+	WipeFileSystemP *bool    `yaml:"wipe_filesystem,omitempty" json:"wipe_filesystem,omitempty" lopt:"fswipe"   comment:"wipe file system at boot" name:"WipeFileSystem"`
 	Label           string   `yaml:"label,omitempty"           json:"label,omitempty"                           comment:"the label of the filesystem"`
 	Uuid            string   `yaml:"uuid,omitempty"            json:"uuid,omitempty"                            comment:"the uuid of the filesystem"`
 	Options         []string `yaml:"options,omitempty"         json:"options,omitempty"                         comment:"any additional options to be passed to the format-specific mkfs utility"`
