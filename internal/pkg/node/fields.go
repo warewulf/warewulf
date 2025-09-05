@@ -129,7 +129,9 @@ func getNestedFieldValue(obj interface{}, name string) (value reflect.Value, err
 			err = fmt.Errorf("no value: %v", name)
 			return
 		}
-		value = value.FieldByName(fieldName)
+		// Find the actual field name if fieldName might be a display name
+		actualFieldName := findActualFieldName(value.Type(), fieldName)
+		value = value.FieldByName(actualFieldName)
 		if key != "" {
 			value = value.MapIndex(reflect.ValueOf(key))
 			if !value.IsValid() {
@@ -213,6 +215,29 @@ func listFields(obj interface{}) (fields []string) {
 	return listReflectedFields(reflect.TypeOf(obj), reflect.ValueOf(obj), "")
 }
 
+// getFieldDisplayName returns the display name for a struct field.
+// If the field has a "name" tag, it returns that value. Otherwise, it returns the field's actual name.
+func getFieldDisplayName(field reflect.StructField) string {
+	if name := field.Tag.Get("name"); name != "" {
+		return name
+	}
+	return field.Name
+}
+
+// findActualFieldName finds the actual struct field name given a display name.
+// If no field matches the display name, it returns the original name (assuming it's already the actual field name).
+func findActualFieldName(structType reflect.Type, displayName string) string {
+	for _, field := range reflect.VisibleFields(structType) {
+		if !field.IsExported() || field.Anonymous {
+			continue
+		}
+		if getFieldDisplayName(field) == displayName {
+			return field.Name
+		}
+	}
+	return displayName // fallback to original name
+}
+
 // listReflectedFields recursively traverses the structure defined by reflect.Type and reflect.Value
 // to discover field paths. It supports struct fields, pointer fields, and map fields (with keys).
 // Fields are returned as their dotted paths. For map fields, keys are included as "[key]" segments.
@@ -225,6 +250,7 @@ func listReflectedFields(t reflect.Type, v reflect.Value, prefix string) (fields
 		}
 		fieldType := field.Type
 		fieldValue := reflect.Value{}
+		displayName := getFieldDisplayName(field)
 		if v.IsValid() {
 			fieldValue = v.FieldByName(field.Name)
 		}
@@ -233,7 +259,7 @@ func listReflectedFields(t reflect.Type, v reflect.Value, prefix string) (fields
 			fieldValue = fieldValue.Elem()
 		}
 		if fieldType.Kind() == reflect.Struct {
-			fields = append(fields, listReflectedFields(fieldType, fieldValue, fmt.Sprintf("%v%v.", prefix, field.Name))...)
+			fields = append(fields, listReflectedFields(fieldType, fieldValue, fmt.Sprintf("%v%v.", prefix, displayName))...)
 		} else if fieldType.Kind() == reflect.Map {
 			if !fieldValue.IsValid() {
 				continue
@@ -250,13 +276,13 @@ func listReflectedFields(t reflect.Type, v reflect.Value, prefix string) (fields
 					}
 				}
 				if elementType.Kind() == reflect.Struct {
-					fields = append(fields, listReflectedFields(elementType, elementValue, fmt.Sprintf("%v%v[%v].", prefix, field.Name, key.String()))...)
+					fields = append(fields, listReflectedFields(elementType, elementValue, fmt.Sprintf("%v%v[%v].", prefix, displayName, key.String()))...)
 				} else {
-					fields = append(fields, fmt.Sprintf("%v%v[%v]", prefix, field.Name, key.String()))
+					fields = append(fields, fmt.Sprintf("%v%v[%v]", prefix, displayName, key.String()))
 				}
 			}
 		} else {
-			fields = append(fields, prefix+field.Name)
+			fields = append(fields, prefix+displayName)
 		}
 	}
 	return
