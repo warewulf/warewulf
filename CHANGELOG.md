@@ -4,20 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## Unreleased
+## v4.6.5, unreleased
+
+## v4.6.4, 2025-09-05
 
 ### Added
 
-- Build support for EL10, EL10 depends on `dnsmasq` and no longer `dhcpd-server` (EOL). #1974
-- `make rpm` added for local development rpm builds. #1974
+- Initial support for EL10 using `dnsmasq` in place of `dhcpd-server`. #1974
+- `make rpm` for local development rpm builds. #1974
 - `wwclient --once` prompts wwclient to run once. #1226
-- Added default for warewulf 'systemd name' #1993
+- Added `wwctl configure warewulfd`
 
 ### Changed
 
 - `make dist` now uses `mktemp` instead of `.dist`. #1974
 - Fixed dnsmasq template file to use basename for ipxe files. #1974
-- For EL10 default to dnsmasq for dhcpd and tftp. #1974
 - Refactored overlay class. #1968
 - `wwclient` places files from the runtime overlay atomically. #1307, #1975
 - `wwclient` skips files that do not appear to have been modified. #1984
@@ -32,11 +33,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed a bug in `wwclient` which prevented proper cleanup of ephemeral files.
 - Fixed `wwclient --debug` to properly enable debug logging.
 - Updated golang BuildRequires in RPM specfile. #1990
-- Fixed handling of `wwctl` boolean options for disk related seetings.
-
-### Changed
-
-### Fixed
+- Fixed handling of `wwctl` boolean options for disk related settings.
 - Set `SLAVE=yes` in ifcfg files when `MASTER` is set. #1980
 
 ## v4.6.3, 2025-08-01
@@ -46,7 +43,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added system and runtime overlay built time to REST API.
 - Support If-None-Match header in `PUT /api/nodes/{id}`
 - Added `PUT|DELETE /api/overlays/{name}/file?path={path}`
-- Added `wwctl configure warewulfd`
 - Added troubleshooting documentation regarding NUMA and tmpfs
 - Added support for IPv6 when booting with iPXE. #1852
 
