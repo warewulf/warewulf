@@ -217,6 +217,9 @@ install: build docs ## Install Warewulf from source
 	chmod 0644 $(DESTDIR)$(DATADIR)/warewulf/overlays/ssh.host_keys/rootfs/etc/ssh/ssh*.pub.ww
 	chmod 0600 $(DESTDIR)$(DATADIR)/warewulf/overlays/NetworkManager/rootfs/etc/NetworkManager/system-connections/ww4-managed.ww
 	chmod 0750 $(DESTDIR)$(DATADIR)/warewulf/overlays/host/rootfs
+	rm -rf $(DESTDIR)$(DATADIR)/warewulf/overlays/debian.interfaces # replacing symlink with a copy
+	install -d -m 755 $(DESTDIR)$(DATADIR)/warewulf/overlays/debian.interfaces
+	cp -a $(DESTDIR)$(DATADIR)/warewulf/overlays/ifupdown/* $(DESTDIR)$(DATADIR)/warewulf/overlays/debian.interfaces/
 	install -m 0755 wwctl $(DESTDIR)$(BINDIR)
 	install -m 0755 wwclient $(DESTDIR)$(DATADIR)/warewulf/overlays/wwclient/rootfs/$(WWCLIENTDIR)/wwclient
 	install -m 0644 include/firewalld/warewulf.xml $(DESTDIR)$(FIREWALLDDIR)

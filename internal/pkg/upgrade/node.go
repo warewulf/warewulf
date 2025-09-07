@@ -25,8 +25,8 @@ var wwinitSplitOverlays = []string{
 	"udev.netname",
 	"systemd.netname",
 	"ifcfg",
+	"ifupdown",
 	"NetworkManager",
-	"debian.interfaces",
 	"wicked",
 	"ignition",
 }
