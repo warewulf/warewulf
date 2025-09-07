@@ -221,9 +221,15 @@ systems. All of these are applied by default; but the list may be trimmed to
 the desired system.
 
 - ifcfg
+- ifupdown
 - NetworkManager
-- debian.interfaces
 - wicked
+
+.. note::
+
+   The ``ifupdown`` overlay was previously named ``debian.interfaces``. The old
+   name is still supported for compatibility, but it is deprecated and will be
+   removed in a future release.
 
 Warewulf also configures both systemd and udev with the intended names of
 configured network interfaces, typically based on a known MAC address.

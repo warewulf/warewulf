@@ -143,8 +143,8 @@ node methods in addition to its fields.
   - udev.netname
   - systemd.netname
   - ifcfg
+  - ifupdown
   - NetworkManager
-  - debian.interfaces
   - wicked
   - ignition
 - Init: /sbin/init
