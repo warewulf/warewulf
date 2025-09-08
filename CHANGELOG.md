@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix "address already in use" in `wwclient` when `secure: true`. #2009
 - Use device names in netplan bonds. #2013
 
+### Dependencies
+
+- Updated github.com/ulikunitz/xz to 0.5.14 (CVE-2025-58058) #2007
+
 ## v4.6.4, 2025-09-05
 
 ### Added

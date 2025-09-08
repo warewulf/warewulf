@@ -489,7 +489,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/ulikunitz/xz/blob/v0.5.12/LICENSE>
+**License URL:** <https://github.com/ulikunitz/xz/blob/v0.5.14/LICENSE>
 
 ## github.com/vbatts/go-mtree
 
