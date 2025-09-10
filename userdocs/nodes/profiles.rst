@@ -39,7 +39,7 @@ You can view the fields of a profile with ``wwctl profile --all``.
    default  ImageName         --
    default  Ipxe              default
    default  RuntimeOverlay    hosts,ssh.authorized_keys
-   default  SystemOverlay     wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition
+   default  SystemOverlay     wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,ifupdown,NetworkManager,wicked,ignition
    default  Kernel.Version    --
    default  Kernel.Args       quiet,crashkernel=no
    default  Init              /sbin/init
@@ -58,7 +58,7 @@ You can view the fields of a profile with ``wwctl profile --all``.
    n1    Comment           default  This profile is automatically included for each node
    n1    Ipxe              default  default
    n1    RuntimeOverlay    default  hosts,ssh.authorized_keys
-   n1    SystemOverlay     default  wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition
+   n1    SystemOverlay     default  wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,ifupdown,NetworkManager,wicked,ignition
    n1    Kernel.Args       default  quiet,crashkernel=no
    n1    Init              default  /sbin/init
    n1    Root              default  initramfs
@@ -108,7 +108,7 @@ to each node.
    n1    ImageName                 image    rockylinux-9
    n1    Ipxe                      default  default
    n1    RuntimeOverlay            default  hosts,ssh.authorized_keys
-   n1    SystemOverlay             default  wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,NetworkManager,debian.interfaces,wicked,ignition
+   n1    SystemOverlay             default  wwinit,wwclient,fstab,hostname,ssh.host_keys,issue,resolv,udev.netname,systemd.netname,ifcfg,ifupdown,NetworkManager,wicked,ignition
    n1    Kernel.Args               default  quiet,crashkernel=no
    n1    Init                      default  /sbin/init
    n1    Root                      default  initramfs

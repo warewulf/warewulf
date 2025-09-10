@@ -638,8 +638,8 @@ nodeprofiles:
       - udev.netname
       - systemd.netname
       - ifcfg
+      - ifupdown
       - NetworkManager
-      - debian.interfaces
       - wicked
       - ignition
     kernel:
@@ -781,8 +781,8 @@ nodeprofiles:
       - udev.netname
       - systemd.netname
       - ifcfg
+      - ifupdown
       - NetworkManager
-      - debian.interfaces
       - wicked
       - ignition
 nodes:
@@ -802,8 +802,8 @@ nodes:
       - udev.netname
       - systemd.netname
       - ifcfg
+      - ifupdown
       - NetworkManager
-      - debian.interfaces
       - wicked
       - ignition
 `,
@@ -830,8 +830,8 @@ nodeprofiles:
       - udev.netname
       - systemd.netname
       - ifcfg
+      - ifupdown
       - NetworkManager
-      - debian.interfaces
       - wicked
       - ignition
 nodes:
@@ -851,8 +851,8 @@ nodes:
       - udev.netname
       - systemd.netname
       - ifcfg
+      - ifupdown
       - NetworkManager
-      - debian.interfaces
       - wicked
       - ignition
 `,
@@ -874,8 +874,8 @@ nodeprofiles:
       - udev.netname
       - systemd.netname
       - ifcfg
+      - ifupdown
       - NetworkManager
-      - debian.interfaces
       - wicked
       - ignition
 nodes:
@@ -895,8 +895,8 @@ nodes:
       - udev.netname
       - systemd.netname
       - ifcfg
+      - ifupdown
       - NetworkManager
-      - debian.interfaces
       - wicked
       - ignition
 `,
@@ -1076,8 +1076,8 @@ nodeprofiles:
       - udev.netname
       - systemd.netname
       - ifcfg
+      - ifupdown
       - NetworkManager
-      - debian.interfaces
       - wicked
       - ignition
     kernel:

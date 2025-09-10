@@ -13,7 +13,9 @@ import (
 func Test_wickedOverlay(t *testing.T) {
 	env := testenv.New(t)
 	defer env.RemoveAll()
+
 	env.ImportFile("var/lib/warewulf/overlays/debian.interfaces/rootfs/etc/network/interfaces.d/default.ww", "../rootfs/etc/network/interfaces.d/default.ww")
+	env.ImportFile("var/lib/warewulf/overlays/ifupdown/rootfs/etc/network/interfaces.d/default.ww", "../rootfs/etc/network/interfaces.d/default.ww")
 
 	tests := []struct {
 		name       string
@@ -25,7 +27,13 @@ func Test_wickedOverlay(t *testing.T) {
 			name:       "debian.interfaces",
 			nodes_conf: "nodes.conf",
 			args:       []string{"--render", "node1", "debian.interfaces", "etc/network/interfaces.d/default.ww"},
-			log:        debian_interfaces,
+			log:        expected_log,
+		},
+		{
+			name:       "ifupdown",
+			nodes_conf: "nodes.conf",
+			args:       []string{"--render", "node1", "ifupdown", "etc/network/interfaces.d/default.ww"},
+			log:        expected_log,
 		},
 	}
 
@@ -49,7 +57,7 @@ func Test_wickedOverlay(t *testing.T) {
 	}
 }
 
-const debian_interfaces string = `backupFile: true
+const expected_log string = `backupFile: true
 writeFile: true
 Filename: default
 

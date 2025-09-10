@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## v4.6.5, unreleased
 
+### Changed
+
+- Renamed debian.interfaces overlay to ifupdown
+
 ## v4.6.4, 2025-09-05
 
 ### Added
