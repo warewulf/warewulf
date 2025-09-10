@@ -115,6 +115,20 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 				LocalAddr: &localTCPAddr,
 				Timeout:   30 * time.Second,
 				KeepAlive: 30 * time.Second,
+				Control: func(network, address string, c syscall.RawConn) error {
+					var sockoptErr error
+					err := c.Control(func(fd uintptr) {
+						// Set SO_REUSEADDR to allow immediate reuse of the local port
+						sockoptErr = syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_REUSEADDR, 1)
+					})
+					if err != nil {
+						return err
+					}
+					if sockoptErr != nil {
+						return sockoptErr
+					}
+					return nil
+				},
 			}).DialContext,
 			MaxIdleConns:          100,
 			IdleConnTimeout:       2 * time.Duration(conf.Warewulf.UpdateInterval) * time.Second,
@@ -271,6 +285,7 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 		wwlog.Debug("making request: %s", getURL)
 		resp, err = Webclient.Get(getURL.String())
 		if err == nil {
+			defer resp.Body.Close()
 			break
 		} else {
 			if counter > 60 {
@@ -510,6 +525,12 @@ func copyFile(src, dst string, srcInfo os.FileInfo) error {
 }
 
 func cleanUp() {
+	// Close idle connections to prevent "address already in use" errors
+	if Webclient != nil {
+		if transport, ok := Webclient.Transport.(*http.Transport); ok {
+			transport.CloseIdleConnections()
+		}
+	}
 	err := pidfile.Remove(PIDFile)
 	if err != nil {
 		wwlog.Error("could not remove pidfile: %s", err)
