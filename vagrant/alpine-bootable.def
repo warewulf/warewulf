@@ -1,0 +1,15 @@
+Bootstrap: docker
+From: alpine:3.22
+
+%post
+  apk add linux-lts linux-firmware-none openrc mdevd-openrc alpine-conf
+  setup-devd udev || true
+  passwd -d root
+  rc-update add networking boot
+  rc-update add modules
+  setup-sshd openssh
+  ln -s /bin/sh /usr/bin/sh
+  cat > /etc/ssh/sshd_config.d/empty-password.conf <<EOF
+PermitRootLogin yes
+PermitEmptyPasswords yes
+EOF

@@ -31,3 +31,6 @@ userdocs/reference/*
 /warewulf-?.?.?/
 *.coverprofile
 LICENSE_DEPENDENCIES.csv
+
+/vagrant/.vagrant
+/vagrant/*.pid
