@@ -48,9 +48,9 @@ network:
         mode: {{ default "balance-rr" $netdev.Tags.mode }}
         mii-monitor-interval: {{ default 100 $netdev.Tags.miimon }}
 {{- $interfaces := list }}
-{{- range $ifacename, $iface := $NetDevs }}
-{{- if eq $iface.Tags.master $devname }}
-{{- $interfaces = append $interfaces $ifacename }}
+{{- range $iface := $NetDevs }}
+{{- if eq $iface.Tags.master $netdev.Device }}
+{{- $interfaces = append $interfaces $iface.Device }}
 {{- end }}
 {{- end }}
 {{- if $interfaces }}
