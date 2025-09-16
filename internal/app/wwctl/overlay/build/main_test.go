@@ -34,8 +34,8 @@ func Benchmark_Overlay_Build(b *testing.B) {
       - udev.netname
       - systemd.netname
       - ifcfg
+      - ifupdown
       - NetworkManager
-      - debian.interfaces
       - wicked
       - ignition
     kernel:
@@ -3044,7 +3044,7 @@ nodes:
       - default`)
 
 	runtimeOverlays := []string{"hosts", "ssh.authorized_keys", "syncuser"}
-	systemOverlays := []string{"wwinit", "wwclient", "fstab", "hostname", "ssh.host_keys", "issue", "resolv", "udev.netname", "systemd.netname", "ifcfg", "NetworkManager", "debian.interfaces", "wicked", "ignition"}
+	systemOverlays := []string{"wwinit", "wwclient", "fstab", "hostname", "ssh.host_keys", "issue", "resolv", "udev.netname", "systemd.netname", "ifcfg", "ifupdown", "NetworkManager", "wicked", "ignition"}
 
 	for _, overlay := range append(runtimeOverlays, systemOverlays...) {
 		env.ImportDir(

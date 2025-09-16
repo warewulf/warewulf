@@ -194,6 +194,7 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %{_overlaydir}/hostname/rootfs/*
 %{_overlaydir}/hosts/rootfs/*
 %{_overlaydir}/ifcfg/rootfs/*
+%{_overlaydir}/ifupdown/rootfs/*
 %{_overlaydir}/ignition/rootfs/*
 %{_overlaydir}/issue/rootfs/*
 %{_overlaydir}/netplan/rootfs/*
