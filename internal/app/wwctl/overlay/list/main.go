@@ -3,6 +3,7 @@ package list
 import (
 	"os"
 	"strconv"
+	"strings"
 	"syscall"
 
 	"github.com/spf13/cobra"
@@ -33,7 +34,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 			locationStr = "PATH"
 		}
 		if vars.ListLong {
-			t.AddHeader("PERM MODE", "UID", "GID", "OVERLAY", "FILE PATH", locationStr)
+			t.AddHeader("PERM MODE", "UID", "GID", "OVERLAY", "FILE PATH", locationStr, "VARS")
 		} else {
 			t.AddHeader("OVERLAY NAME", "FILES/DIRS", locationStr)
 		}
@@ -50,10 +51,14 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 
 			wwlog.Debug("Iterating overlay rootfs: %s", overlay_.Rootfs())
 			if vars.ListLong {
-				for file := range files {
-					s, err := os.Stat(overlay_.File(files[file]))
+				for _, file := range files {
+					templateVars := []string{}
+					if !strings.HasSuffix(file, "/") {
+						templateVars = overlay_.ParseVars(file)
+					}
+					s, err := os.Stat(overlay_.File(file))
 					if err != nil {
-						wwlog.Warn("%s: %s: %s", name, files[file], err)
+						wwlog.Warn("%s: %s: %s", name, file, err)
 						continue
 					}
 					fileMode := s.Mode()
@@ -63,7 +68,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 					if vars.ShowPath {
 						locLine = overlay_.Path()
 					}
-					t.AddLine(perms, sys.(*syscall.Stat_t).Uid, sys.(*syscall.Stat_t).Gid, name, files[file], locLine)
+					t.AddLine(perms, sys.(*syscall.Stat_t).Uid, sys.(*syscall.Stat_t).Gid, name, file, locLine, templateVars)
 				}
 			} else {
 				locLine := strconv.FormatBool(overlay_.IsSiteOverlay())
