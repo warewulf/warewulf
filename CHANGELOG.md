@@ -49,6 +49,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- `wwctl overlay show -l` will now also list the used tags in a template
 - Initial support for EL10 using `dnsmasq` in place of `dhcpd-server`. #1974
 - `make rpm` for local development rpm builds. #1974
 - `wwclient --once` prompts wwclient to run once. #1226
