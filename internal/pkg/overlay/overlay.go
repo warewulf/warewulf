@@ -12,6 +12,7 @@ import (
 	"strings"
 	"sync"
 	"text/template"
+	"text/template/parse"
 
 	"github.com/Masterminds/sprig/v3"
 	"github.com/coreos/go-systemd/v22/unit"
@@ -270,6 +271,82 @@ func (overlay Overlay) Mkdir(path string, mode int32) (err error) {
 		wwlog.Warn("path already exists, overwriting permissions: %s:%s", overlay.Name(), fullPath)
 	}
 	return os.MkdirAll(fullPath, os.FileMode(mode))
+}
+
+// returns a list of the variable names for the given template
+func (overlay Overlay) ParseVars(file string) []string {
+	if !strings.HasSuffix(file, ".ww") {
+		return nil
+	}
+	fullPath := overlay.File(file)
+	if !util.IsFile(fullPath) {
+		wwlog.Error("Template file does not exist in overlay %s: %s", overlay.Name(), file)
+		return nil
+	}
+
+	var (
+		writeFile  bool
+		backupFile bool
+	)
+	funcMap := getTemplateFuncMap(fullPath, TemplateStruct{}, &writeFile, &backupFile)
+	tmpl, err := template.New(path.Base(fullPath)).Option("missingkey=default").Funcs(funcMap).ParseFiles(fullPath)
+	if err != nil {
+		wwlog.Error("Could not parse template file %s: %s", fullPath, err)
+		return nil
+	}
+
+	vars := make(map[string]bool)
+	if tmpl.Tree != nil && tmpl.Tree.Root != nil {
+		walkParseTree(tmpl.Tree.Root, vars)
+	}
+
+	result := make([]string, 0, len(vars))
+	for v := range vars {
+		if v != "" {
+			result = append(result, v)
+		}
+	}
+	return result
+}
+
+// walkParseTree recursively traverses the template's parse tree to find variables.
+func walkParseTree(node parse.Node, vars map[string]bool) {
+	if node == nil {
+		return
+	}
+
+	switch n := node.(type) {
+	case *parse.ActionNode:
+		walkParseTree(n.Pipe, vars)
+	case *parse.IfNode:
+		walkParseTree(n.Pipe, vars)
+		walkParseTree(n.List, vars)
+		walkParseTree(n.ElseList, vars)
+	case *parse.ListNode:
+		if n != nil {
+			for _, child := range n.Nodes {
+				walkParseTree(child, vars)
+			}
+		}
+	case *parse.RangeNode:
+		walkParseTree(n.Pipe, vars)
+		walkParseTree(n.List, vars)
+	case *parse.WithNode:
+		walkParseTree(n.Pipe, vars)
+		walkParseTree(n.List, vars)
+	case *parse.PipeNode:
+		if n != nil {
+			for _, cmd := range n.Cmds {
+				for _, arg := range cmd.Args {
+					walkParseTree(arg, vars)
+				}
+			}
+		}
+	case *parse.VariableNode, *parse.FieldNode:
+		if strings.Contains(n.String(), "Tags") {
+			vars[n.String()] = true
+		}
+	}
 }
 
 func BuildAllOverlays(nodes []node.Node, allNodes []node.Node, workerCount int) error {
@@ -668,19 +745,9 @@ func CarefulWriteBuffer(destFile string, buffer bytes.Buffer, backupFile bool, p
 	return err
 }
 
-/*
-Parses the template with the given filename, variables must be in data. Returns the
-parsed template as bytes.Buffer, and the bool variables for backupFile and writeFile.
-If something goes wrong an error is returned.
-*/
-func RenderTemplateFile(fileName string, data TemplateStruct) (
-	buffer bytes.Buffer,
-	backupFile bool,
-	writeFile bool,
-	err error,
-) {
-	backupFile = true
-	writeFile = true
+// getTemplateFuncMap returns a template.FuncMap with all the functions
+// for warewulf templates.
+func getTemplateFuncMap(fileName string, data TemplateStruct, writeFile *bool, backupFile *bool) template.FuncMap {
 	// Build our FuncMap
 	funcMap := template.FuncMap{
 		"Include":      templateFileInclude,
@@ -698,12 +765,12 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (
 		},
 		"abort": func() string {
 			wwlog.Debug("abort file called in %s", fileName)
-			writeFile = false
+			*writeFile = false
 			return ""
 		},
 		"nobackup": func() string {
 			wwlog.Debug("not backup for %s", fileName)
-			backupFile = false
+			*backupFile = false
 			return ""
 		},
 		"UniqueField":       UniqueField,
@@ -715,6 +782,24 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (
 	for key, value := range sprig.TxtFuncMap() {
 		funcMap[key] = value
 	}
+	return funcMap
+}
+
+/*
+Parses the template with the given filename, variables must be in data. Returns the
+parsed template as bytes.Buffer, and the bool variables for backupFile and writeFile.
+If something goes wrong an error is returned.
+*/
+func RenderTemplateFile(fileName string, data TemplateStruct) (
+	buffer bytes.Buffer,
+	backupFile bool,
+	writeFile bool,
+	err error,
+) {
+	backupFile = true
+	writeFile = true
+
+	funcMap := getTemplateFuncMap(fileName, data, &writeFile, &backupFile)
 
 	// Create the template with the merged FuncMap
 	tmpl, err := template.New(path.Base(fileName)).Option("missingkey=default").Funcs(funcMap).ParseGlob(fileName)
