@@ -23,13 +23,14 @@ xmit_hash_policy={{ default "layer2+3" $netdev.Tags.xmit_hash_policy }}
 updelay={{ default 0 $netdev.Tags.updelay }}
 {{- end }}
 
+{{/* If using infiniband bonds the mtu will be incorrectly set in the [ethernet] section */ -}}
 {{- if eq (lower $netdev.Type) "infiniband" }}
 [infiniband]
 transport-mode=datagram
 {{- if $netdev.MTU }}
 mtu={{ $netdev.MTU }}
 {{- end }}
-{{- else if eq (default "ethernet" (lower $netdev.Type)) "ethernet" }}
+{{- else if or (eq (default "ethernet" (lower $netdev.Type)) "ethernet") (eq (lower $netdev.Type) "bond")  }}
 [ethernet]
 {{- if $netdev.Hwaddr }}
 mac-address={{ $netdev.Hwaddr }}
