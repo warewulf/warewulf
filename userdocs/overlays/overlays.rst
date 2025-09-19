@@ -288,10 +288,17 @@ customize the interface:
 NetworkManager
 ^^^^^^^^^^^^^^
 
+The NetworkManager overlay supports additional netdev tags for advanced
+interface configuration:
+
 - **parent_device:** the parent device of a vlan interface
 - **vlan_id:** the vlan id for a vlan interface
 - **downdelay, updelay, miimon, mode, xmit_hash_policy:**
   bond device settings
+- **type:** a secondary interface type, typically used to specify the bond type
+  (e.g., ``ethernet`` or ``infiniband``)
+- **mtu:** specify the mtu for the interface
+- **cloned-mac-address:** set a cloned MAC address for the interface
 
 Basics
 ------
