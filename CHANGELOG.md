@@ -31,6 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Prevent brp-mangle-shebangs from changing files in overlays.
 - The NetworkManager overlay now only adds an `[ethernet]` section for ethernet interfaces.
 - The NetworkManager overlay now sets `ipv4:method=disabled` if no address or route is specified. #1986
+- The NetworkManager overlay now sets mtu for infiband bondes correctly
 
 ### Fixed
 
