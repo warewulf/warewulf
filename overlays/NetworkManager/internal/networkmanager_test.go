@@ -89,6 +89,7 @@ id=default
 interface-name=wwnet0
 type=ethernet
 autoconnect=true
+
 [ethernet]
 mac-address=e6:92:39:49:7b:03
 
@@ -111,6 +112,7 @@ id=secondary
 interface-name=wwnet1
 type=ethernet
 autoconnect=true
+
 [ethernet]
 mac-address=9a:77:29:73:14:f1
 
@@ -160,6 +162,7 @@ Filename: warewulf-default.conf
 id=default
 type=ethernet
 autoconnect=true
+
 [ethernet]
 mac-address=e6:92:39:49:7b:03
 
@@ -181,6 +184,7 @@ Filename: warewulf-secondary.conf
 id=secondary
 type=ethernet
 autoconnect=true
+
 [ethernet]
 mac-address=9a:77:29:73:14:f1
 
@@ -286,6 +290,7 @@ id=untagged
 interface-name=eth0
 type=ethernet
 autoconnect=true
+
 [ethernet]
 
 [ipv4]
@@ -337,6 +342,9 @@ mode=balance-rr
 xmit_hash_policy=layer2+3
 updelay=0
 
+
+[ethernet]
+
 [ipv4]
 method=manual
 address=192.168.3.110/24
@@ -357,6 +365,7 @@ type=ethernet
 master=bond0
 slave-type=bond
 autoconnect=true
+
 [ethernet]
 mac-address=e6:92:39:49:7b:03
 
@@ -377,6 +386,7 @@ type=ethernet
 master=bond0
 slave-type=bond
 autoconnect=true
+
 [ethernet]
 mac-address=9a:77:29:73:14:f1
 
@@ -455,7 +465,6 @@ master=bond0
 slave-type=bond
 autoconnect=true
 
-
 [ethernet]
 
 [ipv4]
@@ -475,7 +484,6 @@ type=ethernet
 master=bond0
 slave-type=bond
 autoconnect=true
-
 
 [ethernet]
 
