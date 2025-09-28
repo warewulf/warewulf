@@ -31,6 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Set dnsmasq to listen to the Warewulf interface to prevent to binding to localhost:53
 - Added Ipv6 support to `/etc/hosts` on host and nodes.
 - Added IPv6 support to wwclient
+- `sfdisk` overlay creates a GPT label when wiping disks. #2025
 
 ### Removed
 
