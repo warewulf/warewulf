@@ -33,7 +33,7 @@ else :
 {{- range $i, $device := $disks }}
 {{- 	if $device.device }}
     info "warewulf: sfdisk: partitioning {{ $device.device }}"
-    sfdisk --wipe "{{ default "auto" $device.wipe }}" "{{ $device.device }}" < "${PREFIX}/warewulf/sfdisk/device-{{ $i }}" || die "warewulf: sfdisk: failed to partition {{ $device.device }}"
+    sfdisk --label gpt --wipe "{{ default "auto" $device.wipe }}" "{{ $device.device }}" < "${PREFIX}/warewulf/sfdisk/device-{{ $i }}" || die "warewulf: sfdisk: failed to partition {{ $device.device }}"
 
     if command -v blockdev >/dev/null ; then
         info "warewulf: blockdev: re-reading partition table"
