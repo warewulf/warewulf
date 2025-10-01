@@ -65,7 +65,7 @@ Requires: ipxe-bootimgs-aarch64
 %endif
 %endif
 
-%if 0%{?rhel} >= 10
+%if 0%{?rhel} >= 10 || 0%{?openEuler}
 Requires: dnsmasq
 %else
 %if 0%{?rhel} >= 8 || 0%{?suse_version} || 0%{?fedora}
@@ -125,7 +125,7 @@ export NO_BRP_STALE_LINK_ERROR=yes
 make install \
     DESTDIR=%{buildroot}
 
-%if 0%{?rhel} >= 10
+%if 0%{?rhel} >= 10 || 0%{?openEuler}
 sed -i '
   s/systemd name: dhcpd/systemd name: dnsmasq/
   s/systemd name: tftp/systemd name: dnsmasq/
