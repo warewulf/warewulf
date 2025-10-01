@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 - Renamed debian.interfaces overlay to ifupdown
+- Change the DHCP server package used on openeuler 24.03 to dnsmasq
 
 ## v4.6.4, 2025-09-05
 
