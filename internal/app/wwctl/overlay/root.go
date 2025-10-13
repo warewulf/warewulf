@@ -12,6 +12,7 @@ import (
 	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/list"
 	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/mkdir"
 	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/show"
+	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/variables"
 )
 
 var (
@@ -35,6 +36,7 @@ func init() {
 	baseCmd.AddCommand(imprt.GetCommand())
 	baseCmd.AddCommand(chmod.GetCommand())
 	baseCmd.AddCommand(chown.GetCommand())
+	baseCmd.AddCommand(variables.GetCommand())
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
