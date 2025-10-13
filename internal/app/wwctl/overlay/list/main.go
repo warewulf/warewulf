@@ -1,10 +1,7 @@
 package list
 
 import (
-	"os"
 	"strconv"
-	"strings"
-	"syscall"
 
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/app/wwctl/table"
@@ -33,11 +30,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 		if vars.ShowPath {
 			locationStr = "PATH"
 		}
-		if vars.ListLong {
-			t.AddHeader("PERM MODE", "UID", "GID", "OVERLAY", "FILE PATH", locationStr, "VARS")
-		} else {
-			t.AddHeader("OVERLAY NAME", "FILES/DIRS", locationStr)
-		}
+		t.AddHeader("OVERLAY NAME", "FILES/DIRS", locationStr)
 
 		for _, name := range overlays {
 			overlay_, err := overlay.Get(name)
@@ -50,43 +43,21 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 			files := util.FindFiles(overlay_.Rootfs())
 
 			wwlog.Debug("Iterating overlay rootfs: %s", overlay_.Rootfs())
-			if vars.ListLong {
-				for _, file := range files {
-					templateVars := []string{}
-					if !strings.HasSuffix(file, "/") {
-						templateVars = overlay_.ParseVars(file)
-					}
-					s, err := os.Stat(overlay_.File(file))
-					if err != nil {
-						wwlog.Warn("%s: %s: %s", name, file, err)
-						continue
-					}
-					fileMode := s.Mode()
-					perms := fileMode & os.ModePerm
-					sys := s.Sys()
-					locLine := strconv.FormatBool(overlay_.IsSiteOverlay())
-					if vars.ShowPath {
-						locLine = overlay_.Path()
-					}
-					t.AddLine(perms, sys.(*syscall.Stat_t).Uid, sys.(*syscall.Stat_t).Gid, name, file, locLine, templateVars)
+			locLine := strconv.FormatBool(overlay_.IsSiteOverlay())
+			if vars.ShowPath {
+				locLine = overlay_.Path()
+			}
+			if vars.ListContents || vars.ListLong {
+				var fileCount int
+				for file := range files {
+					t.AddLine(name, files[file], locLine)
+					fileCount++
+				}
+				if fileCount == 0 {
+					t.AddLine(name, 0, locLine)
 				}
 			} else {
-				locLine := strconv.FormatBool(overlay_.IsSiteOverlay())
-				if vars.ShowPath {
-					locLine = overlay_.Path()
-				}
-				if vars.ListContents {
-					var fileCount int
-					for file := range files {
-						t.AddLine(name, files[file], locLine)
-						fileCount++
-					}
-					if fileCount == 0 {
-						t.AddLine(name, 0, locLine)
-					}
-				} else {
-					t.AddLine(name, len(files), locLine)
-				}
+				t.AddLine(name, len(files), locLine)
 			}
 		}
 		t.Print()
