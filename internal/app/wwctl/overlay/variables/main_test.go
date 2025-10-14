@@ -2,99 +2,66 @@ package variables
 
 import (
 	"bytes"
-	"io"
-	"os"
-	"path"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func Test_Overlay_Variables(t *testing.T) {
 	env := testenv.New(t)
 	defer env.RemoveAll()
-	conf := env.Configure()
-
-	// be quiet
-	wwlog.SetLogFormatter(func(int, *wwlog.LogRecord) string { return "" })
-
-	overlayDir := path.Join(conf.Paths.SiteOverlaydir(), "test-overlay")
-	err := os.MkdirAll(overlayDir, 0755)
-	if err != nil {
-		t.Fatalf("could not create overlay dir: %v", err)
-	}
+	warewulfd.SetNoDaemon()
 
 	templateContent := `
+{{/* .Kernel.Tags.foo: "some help text" */}}
 {{ .Kernel.Tags.foo }}
 {{ .Node.Tags.bar }}
 {{ .Cluster.Tags.baz }}
+{{ .Kernel.Vars }}
 `
-	templatePath := path.Join(overlayDir, "test.ww")
-	err = os.WriteFile(templatePath, []byte(templateContent), 0644)
-	if err != nil {
-		t.Fatalf("could not write template file: %v", err)
-	}
+	env.WriteFile("var/lib/warewulf/overlays/test-overlay/test.ww", templateContent)
 
-	// Redirect stdout
-	old := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
+	t.Run("overlay variables", func(t *testing.T) {
+		baseCmd := GetCommand()
+		buf := new(bytes.Buffer)
+		baseCmd.SetOut(buf)
+		baseCmd.SetErr(buf)
+		wwlog.SetLogWriter(buf)
 
-	baseCmd.SetArgs([]string{"test-overlay", "test.ww"})
-	err = baseCmd.Execute()
-	assert.NoError(t, err)
+		baseCmd.SetArgs([]string{"test-overlay", "test.ww"})
+		err := baseCmd.Execute()
+		assert.NoError(t, err)
 
-	// Restore stdout
-	w.Close()
-	os.Stdout = old
+		output := buf.String()
+		assert.Contains(t, output, "OVERLAY VARIABLE")
+		assert.Contains(t, output, ".Kernel.Tags.foo")
+		assert.Contains(t, output, "some help text")
+	})
 
-	var buf bytes.Buffer
-	_, err = io.Copy(&buf, r)
-	if err != nil {
-		t.Fatalf("could not read stdout: %v", err)
-	}
+	t.Run("overlay variables no file", func(t *testing.T) {
+		baseCmd := GetCommand()
+		buf := new(bytes.Buffer)
+		baseCmd.SetOut(buf)
+		baseCmd.SetErr(buf)
+		wwlog.SetLogWriter(buf)
 
-	output := strings.TrimSpace(buf.String())
-	expected := []string{
-		".Kernel.Tags.foo",
-		".Node.Tags.bar",
-		".Cluster.Tags.baz",
-	}
+		baseCmd.SetArgs([]string{"test-overlay", "no-file.ww"})
+		err := baseCmd.Execute()
+		assert.Error(t, err)
+	})
 
-	outputLines := strings.Split(output, "\n")
-	assert.ElementsMatch(t, expected, outputLines)
-}
+	t.Run("overlay variables no overlay", func(t *testing.T) {
+		baseCmd := GetCommand()
+		buf := new(bytes.Buffer)
+		baseCmd.SetOut(buf)
+		baseCmd.SetErr(buf)
+		wwlog.SetLogWriter(buf)
 
-func Test_Overlay_Variables_No_File(t *testing.T) {
-	env := testenv.New(t)
-	defer env.RemoveAll()
-	conf := env.Configure()
-
-	// be quiet
-	wwlog.SetLogFormatter(func(int, *wwlog.LogRecord) string { return "" })
-	overlayDir := path.Join(conf.Paths.SiteOverlaydir(), "test-overlay")
-	err := os.MkdirAll(overlayDir, 0755)
-	if err != nil {
-		t.Fatalf("could not create overlay dir: %v", err)
-	}
-
-	baseCmd.SetArgs([]string{"test-overlay", "test.ww"})
-	err = baseCmd.Execute()
-	assert.Error(t, err)
-}
-
-func Test_Overlay_Variables_No_Overlay(t *testing.T) {
-	env := testenv.New(t)
-	defer env.RemoveAll()
-	env.Configure()
-
-	// be quiet
-	wwlog.SetLogFormatter(func(int, *wwlog.LogRecord) string { return "" })
-
-	baseCmd.SetArgs([]string{"no-overlay", "test.ww"})
-	err := baseCmd.Execute()
-	assert.Error(t, err)
+		baseCmd.SetArgs([]string{"no-overlay", "test.ww"})
+		err := baseCmd.Execute()
+		assert.Error(t, err)
+	})
 }
