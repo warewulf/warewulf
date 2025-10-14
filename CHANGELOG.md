@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Renamed debian.interfaces overlay to ifupdown
 
+### Fixed
+
+- Fix "address already in use" in `wwclient` when `secure: true`. #2009
+
 ## v4.6.4, 2025-09-05
 
 ### Added
