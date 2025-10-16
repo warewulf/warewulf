@@ -17,10 +17,12 @@ import (
 
 	"github.com/coreos/go-systemd/daemon"
 	"github.com/google/uuid"
+	"github.com/opencontainers/selinux/go-selinux"
 	"github.com/spf13/cobra"
 	"github.com/talos-systems/go-smbios/smbios"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/pidfile"
+	"github.com/warewulf/warewulf/internal/pkg/version"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -81,6 +83,8 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 	defer cleanUp()
+
+	wwlog.Debug("Version: %s", version.GetVersion())
 
 	target := "/"
 	if os.Args[0] == path.Join(conf.Paths.WWClientdir, "wwclient") {
@@ -537,56 +541,43 @@ func cleanUp() {
 	}
 }
 
-// isSELinuxEnabled checks if SELinux is present and enabled on the system
-func isSELinuxEnabled() bool {
-	// Check if SELinux filesystem is mounted
-	if _, err := os.Stat("/sys/fs/selinux"); os.IsNotExist(err) {
-		return false
-	}
-
-	// Check if SELinux is enabled (enforcing or permissive)
-	_, err := os.ReadFile("/sys/fs/selinux/enforce")
-	return err == nil
-}
-
 // setSELinuxContextForDestination sets the SELinux context on a temporary file or symlink
 // to match what the destination path should have
 func setSELinuxContextForDestination(tempPath, destPath string) error {
-	if !isSELinuxEnabled() {
+	if !selinux.GetEnabled() {
+		wwlog.Debug("SELinux not enabled, skipping context setting for %s", tempPath)
 		return nil
 	}
 
-	wwlog.Debug("setting SELinux context for temp file %s based on destination %s", tempPath, destPath)
-
-	// Use matchpathcon to get the expected context for the destination
-	cmd := exec.Command("matchpathcon", "-n", destPath)
-	output, err := cmd.Output()
-	if err != nil {
-		// If matchpathcon fails, fall back to restorecon on the temp file
-		wwlog.Debug("matchpathcon failed for %s, using restorecon: %s", destPath, err)
-		cmd = exec.Command("restorecon", "-F", tempPath)
-		if err := cmd.Run(); err != nil {
-			wwlog.Warn("failed to restore SELinux context for temp file %s: %s", tempPath, err)
+	// Try to get the existing destination's context to preserve it.
+	//
+	// We prefer the existing context if the file already exists, because the
+	// context is not defined by the overlay itself.
+	refPath := destPath
+	expectedContext, err := selinux.LfileLabel(refPath)
+	if err != nil || expectedContext == "" {
+		// If destination doesn't exist, compute what context it should have based on parent directory
+		wwlog.Debug("unable to get context from destination %s", refPath)
+		refPath = filepath.Dir(destPath)
+		parentContext, err := selinux.FileLabel(refPath)
+		if err != nil || parentContext == "" {
+			wwlog.Debug("unable to get context from parent %s", refPath)
 			return err
 		}
-		return nil
-	}
 
-	expectedContext := strings.TrimSpace(string(output))
-	if expectedContext == "" {
-		wwlog.Debug("empty context from matchpathcon for %s, using restorecon", destPath)
-		cmd = exec.Command("restorecon", "-F", tempPath)
-		if err := cmd.Run(); err != nil {
-			wwlog.Warn("failed to restore SELinux context for temp file %s: %s", tempPath, err)
+		// Compute what the kernel would assign for a file created in this
+		// parent directory
+		expectedContext, err = selinux.ComputeCreateContext(parentContext, parentContext, "file")
+		if err != nil || expectedContext == "" {
+			wwlog.Debug("could not compute context from parent %s", refPath)
 			return err
 		}
-		return nil
 	}
 
-	// Set the context on the temp file/symlink
-	cmd = exec.Command("chcon", "-h", expectedContext, tempPath)
-	if err := cmd.Run(); err != nil {
-		wwlog.Warn("failed to set SELinux context %s for temp file %s: %s", expectedContext, tempPath, err)
+	// Use LsetFileLabel for symlinks (it's safe for regular files too)
+	wwlog.Debug("setting context %s on temp file %s from %s", expectedContext, tempPath, refPath)
+	if err := selinux.LsetFileLabel(tempPath, expectedContext); err != nil {
+		wwlog.Warn("failed to set context %s for temp file %s: %s", expectedContext, tempPath, err)
 		return err
 	}
 
