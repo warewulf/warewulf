@@ -54,7 +54,7 @@ else
     fi
 
     info "warewulf: copying image to /newroot..."
-    tar -cf - --exclude ./proc --exclude ./sys --exclude ./dev --exclude --exclude ./newroot . | tar -xf - -C /newroot
+    tar -cf - --exclude ./proc --exclude ./sys --exclude ./dev --exclude --exclude ./newroot --xattrs . | tar -xf --xattrs - -C /newroot
 
     mkdir /newroot/proc /newroot/dev /newroot/sys 2>/dev/null
 
