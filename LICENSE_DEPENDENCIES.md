@@ -263,6 +263,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/opencontainers/runtime-spec/blob/v1.2.0/LICENSE>
 
+## github.com/opencontainers/selinux
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/opencontainers/selinux/blob/v1.11.1/LICENSE>
+
 ## github.com/opencontainers/umoci
 
 **License:** Apache-2.0

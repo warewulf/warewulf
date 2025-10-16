@@ -30,6 +30,7 @@ type TFTPConf struct {
 	EnabledP    *bool  `yaml:"enabled" default:"true"`
 	TftpRoot    string `yaml:"tftproot,omitempty" default:"@TFTPDIR@"`
 	SystemdName string `yaml:"systemd name,omitempty" default:"tftp"`
+	Selinux     string `yaml:"selinux,omitempty"`
 
 	IpxeBinaries map[string]string `yaml:"ipxe,omitempty" default:"{\"00:09\": \"ipxe-snponly-x86_64.efi\",\"00:00\": \"undionly.kpxe\",\"00:0B\": \"arm64-efi/snponly.efi\",\"00:07\":  \"ipxe-snponly-x86_64.efi\"}"`
 }

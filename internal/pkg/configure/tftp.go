@@ -3,7 +3,9 @@ package configure
 import (
 	"os"
 	"path"
+	"strings"
 
+	"github.com/opencontainers/selinux/go-selinux"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
@@ -43,6 +45,22 @@ func TFTP() (err error) {
 			}
 		}
 	}
+
+	// Set SELinux context if configured
+	if selinux.GetEnabled() && getSelinuxContext(controller.TFTP.Selinux) != "" {
+		currentLabel, err := selinux.FileLabel(tftpdir)
+		if err != nil {
+			wwlog.Warn("Failed to get current SELinux context for %s: %s", tftpdir, err)
+		} else if currentLabel != controller.TFTP.Selinux {
+			wwlog.Info("Setting SELinux context for %s to %s", tftpdir, controller.TFTP.Selinux)
+			if err := selinux.Chcon(tftpdir, controller.TFTP.Selinux, true); err != nil {
+				wwlog.Warn("Failed to set SELinux context on %s: %s", tftpdir, err)
+			} else {
+				wwlog.Info("To make the SELinux policy permanent, run: semanage fcontext -a '%s' '%s(/.*)?'", controller.TFTP.Selinux, tftpdir)
+			}
+		}
+	}
+
 	if !controller.TFTP.Enabled() {
 		wwlog.Warn("Warewulf does not auto start TFTP services due to disable by warewulf.conf")
 		return nil
@@ -55,4 +73,12 @@ func TFTP() (err error) {
 	}
 
 	return nil
+}
+
+func getSelinuxContext(value string) string {
+	if strings.ToLower(value) == "default" {
+		return "system_u:object_r:public_content_t:s0"
+	} else {
+		return value
+	}
 }

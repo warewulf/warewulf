@@ -6,10 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## v4.6.5, unreleased
 
+### Added
+
+- `wwctl configure tftp` can configure the SELinux context of the TFTP directory. #1997
+
 ### Changed
 
 - Renamed debian.interfaces overlay to ifupdown
 - Change the DHCP server package used on openeuler 24.03 to dnsmasq
+- Renamed debian.interfaces overlay to ifupdown.
+- Use opencontainers/selinux to manage SELinux in wwclient.
 
 ### Fixed
 
