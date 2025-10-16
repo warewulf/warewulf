@@ -321,7 +321,19 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 		wwlog.Error("failed running cpio: %s", err)
 		return
 	}
-
+	// apply saved xattrs
+	_, err = os.Stat(filepath.Join(tempDir, "xattrs"))
+	if err != nil {
+		wwlog.Debug("no xattrs file in overlay")
+	} else {
+		command = exec.Command("setfattr", "-h", fmt.Sprintf("--restore=%s", filepath.Join(tempDir, "xattrs")))
+		err = command.Run()
+		if err != nil {
+			wwlog.Error("failed to apply xattrs to overlay: %s", err)
+		}
+		os.Remove(filepath.Join(tempDir, "xattrs"))
+		wwlog.Debug("xattrs applied to overlay")
+	}
 	// Atomically move files from temp directory to current working directory
 	err = atomicApplyOverlay(tempDir, target)
 	if err != nil {

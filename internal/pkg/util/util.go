@@ -517,6 +517,12 @@ func BuildFsImage(
 	}
 	wwlog.Debug("Created image directory for %s: %s", name, imagePath)
 
+	err = CreateXattrDump(rootfsPath, filepath.Join(rootfsPath, "xattrs"))
+	// should this be fatal?
+	if err != nil {
+		wwlog.Warn("Xattrs were not saved for %s: %s: %w", name, rootfsPath, err)
+	}
+
 	files, err := FindFilterFiles(
 		rootfsPath,
 		include,
@@ -621,4 +627,35 @@ func EqualYaml(a interface{}, b interface{}) (bool, error) {
 // BoolP returns the value of a bool pointer, or false if nil
 func BoolP(p *bool) bool {
 	return p != nil && *p
+}
+
+// CreateXattrDump creates a xattr dump file for the path rootfsPath at filePath
+func CreateXattrDump(rootfsPath string, filePath string) error {
+
+	outfile, err := os.Create(filePath)
+	if err != nil {
+		return fmt.Errorf("unable to create xattr file for %s: %w", rootfsPath, err)
+	}
+	defer outfile.Close()
+	wwlog.Debug("Created empty xattr file for %s at %s", rootfsPath, filePath)
+
+	mask := ".*"
+	if strings.Contains(rootfsPath, "overlay") {
+		// in an overlay, only capture capability and system xattrs
+		mask = "security.capability|system.*"
+	}
+
+	getfattr := exec.Command("getfattr", "-R", "-d", "-m", mask, "-e", "hex", "-P", "-h", ".")
+	getfattr.Dir = rootfsPath
+	getfattr.Stdout = outfile
+
+	err = getfattr.Run()
+
+	if err != nil {
+		os.Remove(filePath)
+		return fmt.Errorf("error archiving xattrs for %s: %w", rootfsPath, err)
+	}
+	wwlog.Debug("Xattr file created for %s at %s", rootfsPath, filePath)
+
+	return nil
 }

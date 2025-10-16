@@ -1,0 +1,12 @@
+#!/bin/sh
+
+. /warewulf/config
+
+if test -f /xattrs; then
+    /bin/setfattr -h --restore=/xattrs 2> /dev/null
+    rm -f /xattrs
+    echo "Xattrs applied"
+else
+    echo "No xattrs file found."
+    exit
+fi
