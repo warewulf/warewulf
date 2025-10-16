@@ -39,26 +39,17 @@ if ! command -v die >/dev/null; then
 fi
 
 already_formatted() {
-    dev="$1"
-
-    # Step 1: check if blkid recognizes a filesystem
-    fs_type=$(blkid -o value -s TYPE "$dev" 2>/dev/null)
-
-    if [ -z "$fs_type" ]; then
-        # No recognized filesystem
-        return 1
+    if ! command -v wipefs >/dev/null ; then
+        info "warewulf: wipefs not found, cannot check if device is already formatted"
+        return 0
     fi
 
-    # Step 2: try mounting read-only to a temp dir
-    tmpdir=$(mktemp -d)
-    if mount -o ro,norecovery -t "$fs_type" "$dev" "$tmpdir" >/dev/null 2>&1; then
-        umount "$tmpdir"
-        rmdir "$tmpdir"
-        return 0  # usable filesystem
-    else
-        rmdir "$tmpdir"
-        return 1  # filesystem exists but not mountable → treat as unformatted
+    if wipefs -n "${1}" &>/dev/null; then
+        info "warewulf: ${1} already formatted"
+        return 0
     fi
+
+    return 1
 }
 
 if command -v mkfs >/dev/null ; then :
@@ -98,26 +89,17 @@ if ! command -v die >/dev/null; then
 fi
 
 already_formatted() {
-    dev="$1"
-
-    # Step 1: check if blkid recognizes a filesystem
-    fs_type=$(blkid -o value -s TYPE "$dev" 2>/dev/null)
-
-    if [ -z "$fs_type" ]; then
-        # No recognized filesystem
-        return 1
+    if ! command -v wipefs >/dev/null ; then
+        info "warewulf: wipefs not found, cannot check if device is already formatted"
+        return 0
     fi
 
-    # Step 2: try mounting read-only to a temp dir
-    tmpdir=$(mktemp -d)
-    if mount -o ro,norecovery -t "$fs_type" "$dev" "$tmpdir" >/dev/null 2>&1; then
-        umount "$tmpdir"
-        rmdir "$tmpdir"
-        return 0  # usable filesystem
-    else
-        rmdir "$tmpdir"
-        return 1  # filesystem exists but not mountable → treat as unformatted
+    if wipefs -n "${1}" &>/dev/null; then
+        info "warewulf: ${1} already formatted"
+        return 0
     fi
+
+    return 1
 }
 
 if command -v mkfs >/dev/null ; then :
@@ -129,7 +111,7 @@ if command -v mkfs >/dev/null ; then :
     fi
     if true || ! already_formatted /dev/disk/by-partlabel/scratch; then
         info "warewulf: mkfs: formatting /dev/disk/by-partlabel/scratch"
-        mkfs --type=ext4   -f /dev/disk/by-partlabel/scratch  || die "warewulf: mkfs: failed to format /dev/disk/by-partlabel/scratch"
+        mkfs --type=ext4   -F /dev/disk/by-partlabel/scratch  || die "warewulf: mkfs: failed to format /dev/disk/by-partlabel/scratch"
     else
         info "warewulf: mkfs: skipping /dev/disk/by-partlabel/scratch"
     fi
@@ -173,26 +155,17 @@ if ! command -v die >/dev/null; then
 fi
 
 already_formatted() {
-    dev="$1"
-
-    # Step 1: check if blkid recognizes a filesystem
-    fs_type=$(blkid -o value -s TYPE "$dev" 2>/dev/null)
-
-    if [ -z "$fs_type" ]; then
-        # No recognized filesystem
-        return 1
+    if ! command -v wipefs >/dev/null ; then
+        info "warewulf: wipefs not found, cannot check if device is already formatted"
+        return 0
     fi
 
-    # Step 2: try mounting read-only to a temp dir
-    tmpdir=$(mktemp -d)
-    if mount -o ro,norecovery -t "$fs_type" "$dev" "$tmpdir" >/dev/null 2>&1; then
-        umount "$tmpdir"
-        rmdir "$tmpdir"
-        return 0  # usable filesystem
-    else
-        rmdir "$tmpdir"
-        return 1  # filesystem exists but not mountable → treat as unformatted
+    if wipefs -n "${1}" &>/dev/null; then
+        info "warewulf: ${1} already formatted"
+        return 0
     fi
+
+    return 1
 }
 
 if command -v mkfs >/dev/null ; then :
@@ -204,7 +177,7 @@ if command -v mkfs >/dev/null ; then :
     fi
     if true || ! already_formatted /dev/disk/by-partlabel/scratch; then
         info "warewulf: mkfs: formatting /dev/disk/by-partlabel/scratch"
-        mkfs --type=ext4    -f /dev/disk/by-partlabel/scratch  || die "warewulf: mkfs: failed to format /dev/disk/by-partlabel/scratch"
+        mkfs --type=ext4    -F /dev/disk/by-partlabel/scratch  || die "warewulf: mkfs: failed to format /dev/disk/by-partlabel/scratch"
     else
         info "warewulf: mkfs: skipping /dev/disk/by-partlabel/scratch"
     fi
