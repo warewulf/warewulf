@@ -1,6 +1,7 @@
 package wwclient
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -322,18 +323,23 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 		return
 	}
 	// apply saved xattrs
-	_, err = os.Stat(filepath.Join(tempDir, "xattrs"))
-	if err != nil {
-		wwlog.Debug("no xattrs file in overlay")
-	} else {
-		command = exec.Command("setfattr", "-h", fmt.Sprintf("--restore=%s", filepath.Join(tempDir, "xattrs")))
-		err = command.Run()
+	xattrsDir := filepath.Join(tempDir, "warewulf", "xattrs")
+	err = filepath.WalkDir(xattrsDir, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
-			wwlog.Error("failed to apply xattrs to overlay: %s", err)
+			return err
 		}
-		os.Remove(filepath.Join(tempDir, "xattrs"))
-		wwlog.Debug("xattrs applied to overlay")
+		if d.Type().IsRegular() {
+			command = exec.Command("setfattr", "-h", fmt.Sprintf("--restore=%s", path))
+			err = command.Run()
+			err = errors.Join(err, os.Remove(path))
+		}
+		return err
+	})
+	if err != nil {
+		wwlog.Warn("Xattrs were not succesfully applied: %w", err)
 	}
+	wwlog.Debug("xattrs applied to overlay")
+
 	// Atomically move files from temp directory to current working directory
 	err = atomicApplyOverlay(tempDir, target)
 	if err != nil {

@@ -523,7 +523,7 @@ func BuildFsImage(
 	if err != nil {
 		wwlog.Warn("Failed to create xattrs dir for %s: %s: %w", name, rootfsPath, err)
 	} else {
-		err = CreateXattrDump(rootfsPath, filepath.Join(xattrsPath, fmt.Sprintf("xattrs-%s", name)))
+		err = CreateXattrDump(rootfsPath, filepath.Join(xattrsPath, fmt.Sprintf("xattrs-%s", HashString(name))))
 		if err != nil {
 			wwlog.Warn("Failed to save xattrs for %s: %w", name, err)
 		}
@@ -633,6 +633,12 @@ func EqualYaml(a interface{}, b interface{}) (bool, error) {
 // BoolP returns the value of a bool pointer, or false if nil
 func BoolP(p *bool) bool {
 	return p != nil && *p
+}
+
+func HashString(s string) string {
+	hasher := sha256.New()
+	hasher.Write([]byte(s))
+	return hex.EncodeToString(hasher.Sum(nil))
 }
 
 // CreateXattrDump creates a xattr dump file for the path rootfsPath at filePath
