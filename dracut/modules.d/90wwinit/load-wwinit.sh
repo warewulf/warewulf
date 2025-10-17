@@ -20,9 +20,6 @@ get_stage() {
         | gzip -d \
         | cpio -ium --directory="${NEWROOT}"
     ) || die "Unable to load stage: ${stage}"
-    pushd "${NEWROOT}" 2> /dev/null
-    setfattr -h --restore=xattrs 2> /dev/null
-    popd 2> /dev/null
 }
 
 mkdir /tmp/wwinit

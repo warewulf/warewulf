@@ -14,7 +14,7 @@ depends() {
 }
 
 install() {
-    inst_multiple cpio curl dmidecode setfattr
+    inst_multiple cpio curl dmidecode
     inst_hook cmdline 30 "$moddir/parse-wwinit.sh"
     inst_hook pre-mount 30 "$moddir/load-wwinit.sh"
     if dracut_module_included "network-manager" && dracut_module_included "systemd"

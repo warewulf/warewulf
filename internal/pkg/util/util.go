@@ -517,10 +517,16 @@ func BuildFsImage(
 	}
 	wwlog.Debug("Created image directory for %s: %s", name, imagePath)
 
-	err = CreateXattrDump(rootfsPath, filepath.Join(rootfsPath, "xattrs"))
-	// should this be fatal?
+	xattrsPath := filepath.Join(rootfsPath, "warewulf", "xattrs")
+	err = os.MkdirAll(xattrsPath, 0o700)
+	// should failure to capture xattrs be fatal?
 	if err != nil {
-		wwlog.Warn("Xattrs were not saved for %s: %s: %w", name, rootfsPath, err)
+		wwlog.Warn("Failed to create xattrs dir for %s: %s: %w", name, rootfsPath, err)
+	} else {
+		err = CreateXattrDump(rootfsPath, filepath.Join(xattrsPath, fmt.Sprintf("xattrs-%s", name)))
+		if err != nil {
+			wwlog.Warn("Failed to save xattrs for %s: %w", name, err)
+		}
 	}
 
 	files, err := FindFilterFiles(
