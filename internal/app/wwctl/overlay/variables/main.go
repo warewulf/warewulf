@@ -10,6 +10,7 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
+	"golang.org/x/exp/maps"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
@@ -29,6 +30,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	varMap.ConfToTemplateMap(node.Node{}, "")
 	if vars == nil {
 		return fmt.Errorf("could not parse variables for %s in overlay %s", filePath, overlayName)
+	}
+	commentKeys := maps.Keys(commentMap)
+	sort.Strings(commentKeys)
+	for _, docLn := range commentKeys {
+		if strings.Contains(docLn, "wwdoc") {
+			wwlog.Info(commentMap[docLn])
+		}
 	}
 	t := table.New(cmd.OutOrStdout())
 	t.AddHeader("OVERLAY VARIABLE", "HELP", "TYPE", "CMD OPTION")

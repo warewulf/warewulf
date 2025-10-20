@@ -89,9 +89,12 @@ Creating and Modifying Overlays
 
 You can add a new overlay to Warewulf with ``wwctl overlay create``.
 
+
+
 .. code-block:: shell
 
    wwctl overlay create issue
+
 
 A new overlay is just an empty directory. For it to be useful it needs to
 contain some files.
@@ -103,10 +106,13 @@ into the overlay.
 
    wwctl overlay import --parents issue /etc/issue
 
+
+
 This imports ``/etc/issue`` from the Warewulf server into the new ``issue``
 overlay.
 
 .. note::
+
 
    The ``issue`` overlay already existed as a distribution overlay. Creating one
    shadows the distribution overlay with a new site overlay, allowing for local
@@ -118,9 +124,11 @@ overlay.
 
 You can also edit a new or existing overlay file in an interactive editor.
 
+
 .. code-block:: shell
 
    wwctl overlay edit issue /etc/issue
+
 
 Use ``wwctl overlay show`` to inspect the content of an overlay file.
 
@@ -138,6 +146,8 @@ distribution to a given cluster node.
    wwctl overlay import issue /etc/issue /etc/issue.ww
    wwctl overlay show issue /etc/issue.ww --render=n1
 
+
+
 More information about templates is available in :ref:`its own section
 <templates>`.
 
@@ -151,6 +161,20 @@ option.
 
    It is not possible to delete files with an overlay.
 
+
+Overlay Variables
+-----------------
+
+The command ``wwctl overlay variables`` can be used to show the used variables
+in a template. The command also shows the help text for each variable. The help
+text can be defined in two ways. The first is a general documentation which is
+not tied to a variable. This can be done with the following syntax:
+``{{/* wwdoc: Your documentation text */}}``. The second way is to define a help
+text for a specific variable. This can be done with the following syntax:
+``{{/* .My.Var: Your help text */}}``. If a help text is defined for a variable,
+it will be used instead of the default help text.
+
+
 Permissions
 -----------
 
@@ -162,6 +186,7 @@ mode that they have on the Warewulf server. Use ``wwctl overlay chown`` and
 
    wwctl overlay chown issue /etc/issue.ww root root
    wwctl overlay chmod issue /etc/issue.ww 0644
+
 
 Distribution Overlays
 =====================

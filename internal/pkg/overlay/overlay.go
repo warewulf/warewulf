@@ -16,7 +16,6 @@ import (
 
 	"github.com/Masterminds/sprig/v3"
 	"github.com/coreos/go-systemd/v22/unit"
-	"gopkg.in/yaml.v2"
 
 	"github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/node"
@@ -312,7 +311,8 @@ func (overlay Overlay) ParseVars(file string) []string {
 
 // ParseCommentVars parses a template file for comments that contain variable documentations.
 // The comments must be in the format `{{/* key: value */}}`. The content is parsed as YAML.
-func (overlay Overlay) ParseCommentVars(file string) map[string]string {
+func (overlay Overlay) ParseCommentVars(file string) (retMap map[string]string) {
+	retMap = make(map[string]string)
 	if !strings.HasSuffix(file, ".ww") {
 		return nil
 	}
@@ -328,24 +328,15 @@ func (overlay Overlay) ParseCommentVars(file string) map[string]string {
 		return nil
 	}
 
-	vars := make(map[string]string)
-	re := regexp.MustCompile(`{{\s*/\*(.*?)\*/\s*}}`)
+	re := regexp.MustCompile(`{{\s*/\*\s*(.*?):\s*(.*?)\s*\*/\s*}}`)
 	matches := re.FindAllStringSubmatch(string(content), -1)
-
-	for _, match := range matches {
-		commentContent := strings.TrimSpace(match[1])
-		var data map[string]string
-		err := yaml.Unmarshal([]byte(commentContent), &data)
-		if err == nil {
-			for k, v := range data {
-				vars[k] = v
-			}
-		} else {
-			wwlog.Debug("Could not parse template comment as yaml in file %s: %s", file, err)
+	wwlog.Debug("matches: %v len(%d:%d)", matches, len(matches), len(matches[0]))
+	for i := range matches {
+		if len(matches[i]) > 2 {
+			retMap[matches[i][1]] = matches[i][2]
 		}
 	}
-
-	return vars
+	return
 }
 
 // walkParseTree recursively traverses the template's parse tree to find variables.
