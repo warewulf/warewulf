@@ -35,6 +35,14 @@ Additionally, a ``vlan`` ipmi tag can be used to set the IPMI VLAN ID.
    wwctl profile set default \
      --ipmitagadd vlan=42
 
+A ``bit-rate`` ipmi tag can be used to set the Serial over LAN bit rate (defaults to 38.4).
+Typical options are 19.2, 38.4, and 115.2.
+
+.. code-block::
+
+   wwctl profile set default \
+     --ipmitagadd bit-rate=115.2
+
 ``wwctl node list`` has a specific overview for IPMI settings.
 
 .. code-block:: console
