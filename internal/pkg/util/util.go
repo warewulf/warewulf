@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -701,11 +700,13 @@ func SGetXattrsR(rootPath string, mask string) ([]string, error) {
 
 		var entry strings.Builder
 		entry.WriteString(fmt.Sprintf("# file: %s\n", relativePath))
-
+		xattrError := 0
 		for _, i := range xattrNames {
 			t, err := xattr.Get(path, i)
 			if err != nil {
-				return err
+				wwlog.Debug("failed to get xattr for %s", path)
+				xattrError++
+				continue
 			}
 			if xattrMask.MatchString(i) {
 				entry.WriteString(fmt.Sprintf("%s=0x%s\n", i, hex.EncodeToString(t)))
@@ -719,6 +720,9 @@ func SGetXattrsR(rootPath string, mask string) ([]string, error) {
 		}
 
 		allXattrs = append(allXattrs, entry.String())
+		if xattrError > 0 {
+			err = fmt.Errorf("encountered at least one error getting xattrs for %s", path)
+		}
 		return err
 	})
 
@@ -739,8 +743,10 @@ func WriteXattrFile(path string, xattrs []string) error {
 	}
 	defer file.Close()
 	for _, entry := range xattrs {
-		_, e := file.WriteString(entry)
-		err = errors.Join(err, e)
+		_, err := file.WriteString(entry)
+		if err != nil {
+			return err
+		}
 	}
 	return err
 }
@@ -754,12 +760,13 @@ func SetXattrsFromFile(prefix string, file string) error {
 		return err
 	}
 	defer f.Close()
+	var ourError error
 
 	fileLineRegex := regexp.MustCompile("^# file: (.+)$")
 	// must be a file with the xattrs hex encoded, must be 0x prefixed (as if it were output by getfattr)
 	xattrLineRegex := regexp.MustCompile(`^(.+\..+)=0[xX]([0-9a-fA-F]+)$`)
 
-	var ourErrors error
+	failedFiles := 0
 	scanner := bufio.NewScanner(f)
 	fileName := ""
 	for scanner.Scan() {
@@ -775,18 +782,25 @@ func SetXattrsFromFile(prefix string, file string) error {
 			xattrValue, err := hex.DecodeString(matches[2])
 			if err != nil {
 				// this shouldn't happen
-				errors.Join(ourErrors, err)
+				wwlog.Debug("failed to decode xattr value for %s for file %s", xattrName, fileName)
+				failedFiles++
 				continue
 			}
-			xattr.LSet(fileName, xattrName, xattrValue)
-			continue
+			err = xattr.LSet(fileName, xattrName, xattrValue)
+			if err != nil {
+				wwlog.Debug("failed to set xattr %s for file %s", xattrName, fileName)
+				failedFiles++
+			}
 		} else {
 			// hopefully this is just an empty new line or something and we're about to get a new file
 			fileName = ""
 			continue
 		}
 	}
-	return ourErrors
+	if failedFiles > 0 {
+		ourError = fmt.Errorf("failed to apply all xattrs")
+	}
+	return ourError
 }
 
 // CopyXattrs copies the xattrs from source to dest
