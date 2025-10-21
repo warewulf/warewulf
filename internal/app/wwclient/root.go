@@ -1,7 +1,6 @@
 package wwclient
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -22,6 +21,7 @@ import (
 	"github.com/talos-systems/go-smbios/smbios"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/pidfile"
+	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -329,14 +329,16 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 			return err
 		}
 		if d.Type().IsRegular() {
-			command = exec.Command("setfattr", "-h", fmt.Sprintf("--restore=%s", path))
-			err = command.Run()
-			err = errors.Join(err, os.Remove(path))
+			err = util.SetXattrsFromFile(tempDir, path)
 		}
+		if err != nil {
+			wwlog.Warn("failed to apply xattrs from file %s", path)
+		}
+		os.Remove(path)
 		return err
 	})
 	if err != nil {
-		wwlog.Warn("Xattrs were not succesfully applied: %w", err)
+		wwlog.Warn("errors encountered while appying xattr files: %w", err)
 	}
 	wwlog.Debug("xattrs applied to overlay")
 
@@ -537,6 +539,11 @@ func copyFile(src, dst string, srcInfo os.FileInfo) error {
 	err = os.Chtimes(dst, time.Time{}, srcInfo.ModTime())
 	if err != nil {
 		wwlog.Warn("failed to update timestamps for file %s: %s", dst, err)
+	}
+	wwlog.Debug("Copying xattrs for file: %s", dst)
+	err = util.CopyXattrs(src, dst)
+	if err != nil {
+		wwlog.Warn("failed to copy xattrs for file %s: %s", dst, err)
 	}
 
 	return nil
