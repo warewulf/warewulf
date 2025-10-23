@@ -528,6 +528,9 @@ func BuildFsImage(
 		err = CreateXattrDump(rootfsPath, filepath.Join(xattrsPath, fmt.Sprintf("xattrs-%s", HashString(name))))
 		if err != nil {
 			wwlog.Warn("Failed to save xattrs for %s: %w", name, err)
+			os.Remove(xattrsPath)
+			// this will only succeed if /warewulf is empty
+			os.Remove(filepath.Join(rootfsPath, "warewulf"))
 		}
 	}
 
@@ -735,7 +738,7 @@ func SGetXattrsR(rootPath string, mask string) ([]string, error) {
 func WriteXattrFile(path string, xattrs []string) error {
 	if len(xattrs) < 1 {
 		wwlog.Debug("WriteXattrFile declining to write empty xattrs file")
-		return nil
+		return fmt.Errorf("no xattrs to write")
 	}
 	file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
 	if err != nil {
