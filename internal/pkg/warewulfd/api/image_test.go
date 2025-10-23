@@ -66,7 +66,7 @@ var imageTests = map[string]struct {
 		request: func(serverURL string) (*http.Request, error) {
 			return http.NewRequest(http.MethodPost, serverURL+"/api/images/test-image/build?force=true&default=true", nil)
 		},
-		response: `{"kernels":[], "size":1536, "buildtime":"<<PRESENCE>>", "writable":true}`,
+		response: `{"kernels":[], "size":512, "buildtime":"<<PRESENCE>>", "writable":true}`,
 		resultFiles: []string{
 			"/srv/warewulf/images/test-image.img",
 			"/srv/warewulf/images/test-image.img.gz",
@@ -81,7 +81,7 @@ var imageTests = map[string]struct {
 		request: func(serverURL string) (*http.Request, error) {
 			return http.NewRequest(http.MethodPatch, serverURL+"/api/images/test-image?build=true", bytes.NewBuffer([]byte(`{"name": "new-image"}`)))
 		},
-		response:     `{"kernels":[], "size":1536, "buildtime":"<<PRESENCE>>", "writable":true}`,
+		response:     `{"kernels":[], "size":512, "buildtime":"<<PRESENCE>>", "writable":true}`,
 		authenticate: true,
 	},
 
