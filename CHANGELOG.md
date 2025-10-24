@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Fix "address already in use" in `wwclient` when `secure: true`. #2009
 - Use device names in netplan bonds. #2013
+- Fix ImageDelete API not returning error when checking if image is used by nodes/profiles
 
 ### Dependencies
 
