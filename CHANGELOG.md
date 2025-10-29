@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## v4.6.5, unreleased
 
+### Added
+
+- Configure `/var/lib/warewulf/tftpboot` for use by dnsmasq in EL10 and OpenEuler packages. #1997
+
 ### Changed
 
 - Renamed debian.interfaces overlay to ifupdown
