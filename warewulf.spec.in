@@ -1,11 +1,29 @@
 %global debug_package %{nil}
 
-%if 0%{?suse_version}
-%global tftpdir /srv/tftpboot
+# feature macros
+%if 0%{?rhel} >= 10 || 0%{?openEuler}
+%global use_dnsmasq 1
+%global use_warewulf_tftpdir 1
 %else
-# Assume Fedora-based OS if not SUSE-based
+%global use_dnsmasq 0
+%global use_warewulf_tftpdir 0
+%endif
+
+%if 0%{?suse_version} || 0%{?sle_version}
+%global is_suse 1
+%else
+%global is_suse 0
+%endif
+
+# Set tftpdir based on distribution
+%if 0%{?is_suse}
+%global tftpdir /srv/tftpboot
+%elif 0%{?use_warewulf_tftpdir}
+%global tftpdir /var/lib/warewulf/tftpboot
+%else
 %global tftpdir /var/lib/tftpboot
 %endif
+
 %global srvdir %{_sharedstatedir}
 
 %global wwgroup warewulf
@@ -35,14 +53,13 @@ Conflicts: warewulf-vnfs
 Conflicts: warewulf-provision
 Conflicts: warewulf-ipmi
 
-%if 0%{?suse_version} || 0%{?sle_version}
+%if 0%{?is_suse}
 BuildRequires: distribution-release
 BuildRequires: systemd-rpm-macros
 BuildRequires: go >= 1.22
 BuildRequires: firewall-macros
 BuildRequires: firewalld
 BuildRequires: tftp
-BuildRequires: yq
 Requires: tftp
 Requires: nfs-kernel-server
 Requires: firewalld
@@ -53,7 +70,7 @@ BuildRequires: system-release
 BuildRequires: systemd
 BuildRequires: golang >= 1.22
 BuildRequires: firewalld-filesystem
-%if ! (0%{?rhel} >= 10)
+%if ! 0%{?use_dnsmasq}
 Requires: tftp-server
 %endif
 Requires: nfs-utils
@@ -65,15 +82,13 @@ Requires: ipxe-bootimgs-aarch64
 %endif
 %endif
 
-%if 0%{?rhel} >= 10 || 0%{?openEuler}
+%if 0%{?use_dnsmasq}
 Requires: dnsmasq
-%else
-%if 0%{?rhel} >= 8 || 0%{?suse_version} || 0%{?fedora}
+%elif 0%{?rhel} >= 8 || 0%{?is_suse} || 0%{?fedora}
 Requires: dhcp-server
 %else
 # rhel < 8 and others
 Requires: dhcp
-%endif
 %endif
 
 BuildRequires: git
@@ -126,21 +141,13 @@ make install \
     DESTDIR=%{buildroot}
 
 %if 0%{?rhel} >= 10 || 0%{?openEuler}
-sed -i '
-  s/systemd name: dhcpd/systemd name: dnsmasq/
-  s/systemd name: tftp/systemd name: dnsmasq/
-  /- dsa/d' \
-  -i %{buildroot}%{_sysconfdir}/warewulf/warewulf.conf
+cp -f etc/warewulf.conf-el10 %{buildroot}%{_sysconfdir}/warewulf/warewulf.conf
+mkdir -p %{buildroot}%{_sharedstatedir}/warewulf/tftpboot
+%elif 0%{?is_suse}
+cp -f etc/warewulf.conf-suse %{buildroot}%{_sysconfdir}/warewulf/warewulf.conf
 %endif
 
-%if 0%{?suse_version} || 0%{?sle_version}
-yq e '
-  .tftp.ipxe."00:00" = "undionly.kpxe" |
-  .tftp.ipxe."00:07" = "ipxe-x86_64.efi" |
-  .tftp.ipxe."00:09" = "ipxe-x86_64.efi" |
-  .tftp.ipxe."00:0B" = "snp-arm64.efi" ' \
-  -i %{buildroot}%{_sysconfdir}/warewulf/warewulf.conf
-%else
+%if ! 0%{?is_suse}
 make install-sos \
     DESTDIR=%{buildroot}
 %endif
@@ -164,6 +171,21 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %firewalld_reload
 
 
+%if 0%{?use_warewulf_tftpdir}
+%triggerin -- selinux-policy-targeted
+semanage fcontext -a -t public_content_t "%{_sharedstatedir}/warewulf/tftpboot(/.*)?" 2>/dev/null || :
+restorecon -R -v %{_sharedstatedir}/warewulf/tftpboot 2>/dev/null || :
+
+%triggerun -- selinux-policy-targeted
+semanage fcontext -d -t public_content_t "%{_sharedstatedir}/warewulf/tftpboot(/.*)?" 2>/dev/null || :
+
+%triggerpostun -- selinux-policy-targeted
+if [ -d %{_sharedstatedir}/warewulf/tftpboot ]; then
+    restorecon -R -v %{_sharedstatedir}/warewulf/tftpboot 2>/dev/null || :
+fi
+%endif
+
+
 %files
 %defattr(-, root, root)
 
@@ -180,6 +202,9 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %dir %{_sharedstatedir}/warewulf
 %dir %{_sharedstatedir}/warewulf/chroots
 %dir %{_sharedstatedir}/warewulf/overlays
+%if 0%{?use_warewulf_tftpdir}
+%dir %attr(0755, root, root) %{_sharedstatedir}/warewulf/tftpboot
+%endif
 
 %dir %{_datadir}/warewulf
 %{_datadir}/warewulf/bmc
@@ -229,8 +254,7 @@ Summary: dracut module for loading a Warewulf image
 BuildArch: noarch
 
 Requires: dracut
-%if 0%{?suse_version}
-%else
+%if ! 0%{?is_suse}
 Requires: dracut-network
 %endif
 Requires: curl
@@ -249,8 +273,7 @@ initramfs that can fetch and boot a Warewulf node image from a Warewulf server.
 %{_prefix}/lib/dracut/modules.d/90wwinit
 
 
-%if 0%{?suse_version} || 0%{?sle_version}
-%else
+%if ! 0%{?is_suse}
 %package sos
 Summary: sos plugin for Warewulf
 BuildArch: noarch
@@ -270,6 +293,10 @@ about Warewulf in an sos report.
 
 
 %changelog
+* Tue Oct 28 2025 Jonathon Anderson <janderson@ciq.com>
+- Create /var/lib/warewulf/tftpboot for dnsmasq environments
+- Use static variants for warewulf.conf-suse and warewulf.conf-el10
+
 * Thu Sep 4 2025 Jonathon Anderson <janderson@ciq.com>
 - Update golang BuildRequires to 1.22
 - Exclude overlay files from brp-mangle-shebangs
