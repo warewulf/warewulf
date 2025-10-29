@@ -1,0 +1,39 @@
+ipaddr: 10.0.0.1
+netmask: 255.255.252.0
+warewulf:
+  secure: false
+  update interval: 60
+  autobuild overlays: true
+  host overlay: true
+  systemd name: warewulfd
+dhcp:
+  enabled: true
+  range start: 10.0.1.1
+  range end: 10.0.1.255
+  systemd name: dnsmasq
+  template: default
+tftp:
+  enabled: true
+  systemd name: dnsmasq
+  ipxe:
+    00:09: ipxe-snponly-x86_64.efi
+    00:00: undionly.kpxe
+    00:0B: arm64-efi/snponly.efi
+    00:07: ipxe-snponly-x86_64.efi
+nfs:
+  enabled: true
+  export paths:
+  - path: /home
+    export options: rw,sync
+  - path: /opt
+    export options: ro,sync,no_root_squash
+  systemd name: nfs-server
+image mounts:
+  - source: /etc/resolv.conf
+    dest: /etc/resolv.conf
+    readonly: true
+ssh:
+  key types:
+    - ed25519
+    - ecdsa
+    - rsa
