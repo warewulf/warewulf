@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## v4.6.5, unreleased
 
+### Added
+
+- `wwclient.aarch64` overlay always provides an aarch64 wwclient executable.
+- `wwclient.x86_64` overlay always provides an x86_64 wwclient executable.
+
 ### Changed
 
 - Renamed debian.interfaces overlay to ifupdown
