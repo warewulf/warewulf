@@ -24,6 +24,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
+
+		err = configure.TFTP()
+		if err != nil {
+			return err
+		}
+
 		err = configure.DHCP()
 		if err != nil {
 			return err
@@ -39,10 +45,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			return err
 		}
 
-		err = configure.TFTP()
-		if err != nil {
-			return err
-		}
 		err = configure.Hostfile()
 		if err != nil {
 			return err

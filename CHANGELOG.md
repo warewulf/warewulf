@@ -11,6 +11,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Renamed debian.interfaces overlay to ifupdown
 - Change the DHCP server package used on openeuler 24.03 to dnsmasq
 - Added configurable Serial over LAN speed via IPMI `bit-rate` tag in `50-ipmi` template
+- Manage SELinux context of TFTP directory. #1997
+- Dynamically write `$tftpdir/warewulf/grub.cfg` to the configured value from `warewulf.conf`
+- Absolute paths specified with `{{ file }}` in an overlay now write to that absolute path.
 
 ### Fixed
 
