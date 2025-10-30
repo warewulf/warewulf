@@ -204,7 +204,6 @@ install: build docs ## Install Warewulf from source
 	for f in etc/ipxe/*.ipxe; do install -m 0644 $$f $(DESTDIR)$(WWCONFIGDIR)/ipxe/; done
 	for f in lib/warewulf/bmc/*.tmpl; do install -m 0644 $$f $(DESTDIR)$(DATADIR)/warewulf/bmc; done
 	install -m 0644 etc/grub/grub.cfg.ww $(DESTDIR)$(WWCONFIGDIR)/grub/grub.cfg.ww
-	install -m 0644 etc/grub/chainload.ww $(DESTDIR)$(DATADIR)/warewulf/overlays/host/rootfs$(TFTPDIR)/warewulf/grub.cfg.ww
 	install -m 0644 etc/logrotate.d/warewulfd.conf $(DESTDIR)$(LOGROTATEDIR)/warewulfd.conf
 	(cd overlays && find * -path '*/internal' -prune -o -type f -exec install -D -m 0644 {} $(DESTDIR)$(DATADIR)/warewulf/overlays/{} \;)
 	(cd overlays && find * -path '*/internal' -prune -o -type d -exec mkdir -pv $(DESTDIR)$(DATADIR)/warewulf/overlays/{} \;)
