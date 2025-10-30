@@ -395,6 +395,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/pkg/errors/blob/v0.9.1/LICENSE>
 
+## github.com/pkg/xattr
+
+**License:** BSD-2-Clause
+
+**License URL:** <https://github.com/pkg/xattr/blob/v0.4.12/LICENSE>
+
 ## github.com/russross/blackfriday/v2
 
 **License:** BSD-2-Clause

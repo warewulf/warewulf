@@ -21,6 +21,7 @@ import (
 	"github.com/talos-systems/go-smbios/smbios"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/pidfile"
+	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -321,6 +322,25 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 		wwlog.Error("failed running cpio: %s", err)
 		return
 	}
+	// apply saved xattrs
+	xattrsDir := filepath.Join(tempDir, "warewulf", "xattrs")
+	err = filepath.WalkDir(xattrsDir, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.Type().IsRegular() {
+			err = util.SetXattrsFromFile(tempDir, path)
+		}
+		if err != nil {
+			wwlog.Warn("failed to apply xattrs from file %s", path)
+		}
+		os.Remove(path)
+		return err
+	})
+	if err != nil {
+		wwlog.Warn("errors encountered while appying xattr files: %w", err)
+	}
+	wwlog.Debug("xattrs applied to overlay")
 
 	// Atomically move files from temp directory to current working directory
 	err = atomicApplyOverlay(tempDir, target)
@@ -519,6 +539,11 @@ func copyFile(src, dst string, srcInfo os.FileInfo) error {
 	err = os.Chtimes(dst, time.Time{}, srcInfo.ModTime())
 	if err != nil {
 		wwlog.Warn("failed to update timestamps for file %s: %s", dst, err)
+	}
+	wwlog.Debug("Copying xattrs for file: %s", dst)
+	err = util.CopyXattrs(src, dst)
+	if err != nil {
+		wwlog.Warn("failed to copy xattrs for file %s: %s", dst, err)
 	}
 
 	return nil

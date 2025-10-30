@@ -18,6 +18,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/pkg/xattr"
+
 	"gopkg.in/yaml.v3"
 
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -517,6 +519,21 @@ func BuildFsImage(
 	}
 	wwlog.Debug("Created image directory for %s: %s", name, imagePath)
 
+	xattrsPath := filepath.Join(rootfsPath, "warewulf", "xattrs")
+	err = os.MkdirAll(xattrsPath, 0o700)
+	// should failure to capture xattrs be fatal?
+	if err != nil {
+		wwlog.Warn("Failed to create xattrs dir for %s: %s: %w", name, rootfsPath, err)
+	} else {
+		err = CreateXattrDump(rootfsPath, filepath.Join(xattrsPath, fmt.Sprintf("xattrs-%s", HashString(name))))
+		if err != nil {
+			wwlog.Warn("Failed to save xattrs for %s: %w", name, err)
+			os.Remove(xattrsPath)
+			// this will only succeed if /warewulf is empty
+			os.Remove(filepath.Join(rootfsPath, "warewulf"))
+		}
+	}
+
 	files, err := FindFilterFiles(
 		rootfsPath,
 		include,
@@ -621,4 +638,203 @@ func EqualYaml(a interface{}, b interface{}) (bool, error) {
 // BoolP returns the value of a bool pointer, or false if nil
 func BoolP(p *bool) bool {
 	return p != nil && *p
+}
+
+func HashString(s string) string {
+	hasher := sha256.New()
+	hasher.Write([]byte(s))
+	return hex.EncodeToString(hasher.Sum(nil))
+}
+
+// CreateXattrDump creates a xattr dump file for the path rootfsPath at filePath
+func CreateXattrDump(rootfsPath string, filePath string) error {
+
+	// we probably could capture everything, but we're likely on concerned with
+	// these xattr types
+	mask := "security\\.capability|system\\.posix_acl.*|security\\.selinux"
+	if strings.Contains(rootfsPath, "overlay") {
+		// in an overlay, only capture capability and acl xattrs
+		mask = "security\\.capability|system\\.posix_acl.*"
+	}
+
+	xattrs, err := SGetXattrsR(rootfsPath, mask)
+	if err != nil {
+		wwlog.Warn("Failed to get xattrs for %s: %w", rootfsPath, err)
+	}
+
+	err = WriteXattrFile(filePath, xattrs)
+
+	if err != nil {
+		os.Remove(filePath)
+		return fmt.Errorf("error archiving xattrs for %s: %w", rootfsPath, err)
+	}
+	wwlog.Debug("Xattr file created for %s at %s", rootfsPath, filePath)
+
+	return nil
+}
+
+// SGetXattrsR recursively retrieves the xattrs for files under rootPath in a
+// format compatible with the getfattr command
+func SGetXattrsR(rootPath string, mask string) ([]string, error) {
+	xattrMask, err := regexp.Compile(mask)
+	if err != nil {
+		return nil, err
+	}
+	wwlog.Debug("SGetXattrsR called with rootPath: %s and mask: %s", rootPath, mask)
+	var allXattrs []string
+
+	err = filepath.WalkDir(rootPath, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.Type() == fs.ModeSymlink {
+			// do not act on
+			return nil
+		}
+		xattrNames, err := xattr.List(path)
+		if err != nil {
+			return err
+		}
+
+		relativePath, err := filepath.Rel(rootPath, path)
+		if err != nil {
+			return err
+		}
+
+		var entry strings.Builder
+		entry.WriteString(fmt.Sprintf("# file: %s\n", relativePath))
+		xattrError := 0
+		for _, i := range xattrNames {
+			t, err := xattr.Get(path, i)
+			if err != nil {
+				wwlog.Debug("failed to get xattr for %s", path)
+				xattrError++
+				continue
+			}
+			if xattrMask.MatchString(i) {
+				entry.WriteString(fmt.Sprintf("%s=0x%s\n", i, hex.EncodeToString(t)))
+			}
+		}
+		//newline between files in xattr file
+		entry.WriteString("\n")
+		if strings.Count(entry.String(), "\n") < 3 {
+			// skip files without captured xattrs
+			return nil
+		}
+
+		allXattrs = append(allXattrs, entry.String())
+		if xattrError > 0 {
+			err = fmt.Errorf("encountered at least one error getting xattrs for %s", path)
+		}
+		return err
+	})
+
+	return allXattrs, err
+}
+
+// WriteXattrFile writes a file containing one or more file xattr entries in
+// the style of the output of the setfattr command. This output should be
+// compatible with the setfattr --restore command.
+func WriteXattrFile(path string, xattrs []string) error {
+	if len(xattrs) < 1 {
+		wwlog.Debug("WriteXattrFile declining to write empty xattrs file")
+		return fmt.Errorf("no xattrs to write")
+	}
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	for _, entry := range xattrs {
+		_, err := file.WriteString(entry)
+		if err != nil {
+			return err
+		}
+	}
+	return err
+}
+
+// SetXattrsFromFile ingests a file containing xattr entries in the style of
+// getfattr and restores them recursively to prefix in the style of
+// setfattr --restore
+func SetXattrsFromFile(prefix string, file string) error {
+	f, err := os.Open(file)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	var ourError error
+
+	fileLineRegex := regexp.MustCompile("^# file: (.+)$")
+	// must be a file with the xattrs hex encoded, must be 0x prefixed (as if it were output by getfattr)
+	xattrLineRegex := regexp.MustCompile(`^(.+\..+)=0[xX]([0-9a-fA-F]+)$`)
+
+	failedFiles := 0
+	scanner := bufio.NewScanner(f)
+	fileName := ""
+	for scanner.Scan() {
+		line := scanner.Text()
+		if matches := fileLineRegex.FindStringSubmatch(line); matches != nil {
+			// this is a new file line
+			fileName = filepath.Join(prefix, matches[1])
+			continue
+		} else if matches := xattrLineRegex.FindStringSubmatch(line); matches != nil {
+			// xattr line
+			xattrName := matches[1]
+			//WHAT DO YOU MEAN YOU CAN'T DECODE A 0X PREFIXED STRING?!
+			xattrValue, err := hex.DecodeString(matches[2])
+			if err != nil {
+				// this shouldn't happen
+				wwlog.Debug("failed to decode xattr value for %s for file %s", xattrName, fileName)
+				failedFiles++
+				continue
+			}
+			err = xattr.LSet(fileName, xattrName, xattrValue)
+			if err != nil {
+				wwlog.Debug("failed to set xattr %s for file %s", xattrName, fileName)
+				failedFiles++
+			}
+		} else {
+			// hopefully this is just an empty new line or something and we're about to get a new file
+			fileName = ""
+			continue
+		}
+	}
+	if failedFiles > 0 {
+		ourError = fmt.Errorf("failed to apply all xattrs")
+	}
+	return ourError
+}
+
+// CopyXattrs copies the xattrs from source to dest
+func CopyXattrs(source string, dest string) error {
+	//we explicitly cannot copy selinux attrs
+	filter := regexp.MustCompile(`security\.selinux`)
+	xattrNames, err := xattr.List(source)
+	if err != nil {
+		return err
+	}
+	var filteredNames []string
+	for _, v := range xattrNames {
+		if filter.MatchString(v) {
+			continue
+		}
+		filteredNames = append(filteredNames, v)
+	}
+	var xattrValues [][]byte
+	for _, v := range filteredNames {
+		xattrValue, err := xattr.Get(source, v)
+		if err != nil {
+			return err
+		}
+		xattrValues = append(xattrValues, xattrValue)
+	}
+	for i, v := range filteredNames {
+		err := xattr.Set(dest, v, xattrValues[i])
+		if err != nil {
+			return err
+		}
+	}
+
+	return err
 }
