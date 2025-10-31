@@ -21,8 +21,10 @@ include Tools.mk
 version: ## Build version
 	@echo $(VERSION)
 
+WWCLIENTS = wwclient wwclient.x86_64 wwclient.aarch64
+
 .PHONY: build
-build: wwctl wwclient etc/bash_completion.d/wwctl ## Build the Warewulf binaries
+build: wwctl $(WWCLIENTS) etc/bash_completion.d/wwctl ## Build the Warewulf binaries
 
 .PHONY: docs
 docs: man_pages reference ## Build the documentation
@@ -63,7 +65,13 @@ wwctl: $(config) $(call godeps,cmd/wwctl/main.go)
 	GOOS=linux go build -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o wwctl cmd/wwctl/main.go
 
 wwclient: $(config) $(call godeps,cmd/wwclient/main.go)
-	CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags "-extldflags -static" -o wwclient cmd/wwclient/main.go
+	CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags "-extldflags -static -s -w" -o wwclient cmd/wwclient/main.go
+
+wwclient.x86_64: $(config) $(call godeps,cmd/wwclient/main.go)
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -mod vendor -a -ldflags "-extldflags -static -s -w" -o wwclient.x86_64 cmd/wwclient/main.go
+
+wwclient.aarch64: $(config) $(call godeps,cmd/wwclient/main.go)
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -mod vendor -a -ldflags "-extldflags -static -s -w" -o wwclient.aarch64 cmd/wwclient/main.go
 
 .PHONY: man_pages
 man_pages: wwctl $(wildcard docs/man/man5/*.5)
@@ -155,7 +163,7 @@ cleanmake:
 
 .PHONY: cleanbin
 cleanbin:
-	rm -f wwclient
+	rm -f $(WWCLIENTS)
 	rm -f wwctl
 	rm -f update_configuration
 
@@ -181,7 +189,6 @@ install: build docs ## Install Warewulf from source
 	install -d -m 0755 $(DESTDIR)$(WWCHROOTDIR)
 	install -d -m 0755 $(DESTDIR)$(WWOVERLAYDIR)
 	install -d -m 0755 $(DESTDIR)$(WWPROVISIONDIR)
-	install -d -m 0755 $(DESTDIR)$(DATADIR)/warewulf/overlays/wwclient/rootfs/$(WWCLIENTDIR)
 	install -d -m 0755 $(DESTDIR)$(DATADIR)/warewulf/overlays/host/rootfs/$(TFTPDIR)/warewulf/
 	install -d -m 0755 $(DESTDIR)$(WWCONFIGDIR)/examples
 	install -d -m 0755 $(DESTDIR)$(WWCONFIGDIR)/ipxe
@@ -216,11 +223,7 @@ install: build docs ## Install Warewulf from source
 	chmod 0644 $(DESTDIR)$(DATADIR)/warewulf/overlays/ssh.host_keys/rootfs/etc/ssh/ssh*.pub.ww
 	chmod 0600 $(DESTDIR)$(DATADIR)/warewulf/overlays/NetworkManager/rootfs/etc/NetworkManager/system-connections/ww4-managed.ww
 	chmod 0750 $(DESTDIR)$(DATADIR)/warewulf/overlays/host/rootfs
-	rm -rf $(DESTDIR)$(DATADIR)/warewulf/overlays/debian.interfaces # replacing symlink with a copy
-	install -d -m 755 $(DESTDIR)$(DATADIR)/warewulf/overlays/debian.interfaces
-	cp -a $(DESTDIR)$(DATADIR)/warewulf/overlays/ifupdown/* $(DESTDIR)$(DATADIR)/warewulf/overlays/debian.interfaces/
 	install -m 0755 wwctl $(DESTDIR)$(BINDIR)
-	install -m 0755 wwclient $(DESTDIR)$(DATADIR)/warewulf/overlays/wwclient/rootfs/$(WWCLIENTDIR)/wwclient
 	install -m 0644 include/firewalld/warewulf.xml $(DESTDIR)$(FIREWALLDDIR)
 	install -m 0644 include/systemd/warewulfd.service $(DESTDIR)$(SYSTEMDDIR)
 	install -m 0644 LICENSE.md $(DESTDIR)$(WWDOCDIR)
@@ -229,6 +232,16 @@ install: build docs ## Install Warewulf from source
 	for f in docs/man/man5/*.5.gz; do install -m 0644 $$f $(DESTDIR)$(MANDIR)/man5/; done
 	install -pd -m 0755 $(DESTDIR)$(DRACUTMODDIR)/90wwinit
 	install -m 0644 dracut/modules.d/90wwinit/*.sh  dracut/modules.d/90wwinit/*.override $(DESTDIR)$(DRACUTMODDIR)/90wwinit
+
+	# copy ifupdown to debian.interfaces for backwards compatibility with previous name
+	cp -a $(DESTDIR)$(DATADIR)/warewulf/overlays/ifupdown $(DESTDIR)$(DATADIR)/warewulf/overlays/debian.interfaces
+
+	install -d -m 0755 $(DESTDIR)$(DATADIR)/warewulf/overlays/wwclient/rootfs/$(WWCLIENTDIR)
+	cp -a $(DESTDIR)$(DATADIR)/warewulf/overlays/wwclient $(DESTDIR)$(DATADIR)/warewulf/overlays/wwclient.aarch64
+	cp -a $(DESTDIR)$(DATADIR)/warewulf/overlays/wwclient $(DESTDIR)$(DATADIR)/warewulf/overlays/wwclient.x86_64
+	install -m 0755 wwclient $(DESTDIR)$(DATADIR)/warewulf/overlays/wwclient/rootfs/$(WWCLIENTDIR)/wwclient
+	install -m 0755 wwclient.x86_64 $(DESTDIR)$(DATADIR)/warewulf/overlays/wwclient.x86_64/rootfs/$(WWCLIENTDIR)/wwclient
+	install -m 0755 wwclient.aarch64 $(DESTDIR)$(DATADIR)/warewulf/overlays/wwclient.aarch64/rootfs/$(WWCLIENTDIR)/wwclient
 
 .PHONY: install-sos
 install-sos:
@@ -243,6 +256,8 @@ init:
 ifndef OFFLINE_BUILD
 wwctl: vendor
 wwclient: vendor
+wwclient.x86_64: vendor
+wwclient.aarch64: vendor
 update_configuration: vendor
 dist: vendor
 

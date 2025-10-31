@@ -443,19 +443,11 @@ Then, ``wwctl image exec`` will work regardless of the architecture of the
 image. For more information about QEMU, see their `GitHub
 <https://github.com/multiarch/qemu-user-static>`_
 
-To use wwclient on a booted image using a different architecture, wwclient must
-be compiled for the specific architecture. This requires GOLang build tools 1.21
-or newer. Below is an example for building wwclient for arm64:
+.. note::
 
-.. code-block:: console
-
-   # git clone https://github.com/warewulf/warewulf
-   # cd warewulf
-   # GOARCH=arm64 PREFIX=/ make wwclient
-   # mkdir -p /var/lib/warewulf/overlays/wwclient_arm64/rootfs/warewulf
-   # cp wwclient /var/lib/warewulf/overlays/wwclient_arm64/rootfs/warewulf
-
-Then, apply the new "wwclient_arm64" system overlay to your arm64 node/profile
+   When provisioning cluster nodes with a different architecture than the
+   Warewulf server, also use the matching architecture-specific :ref:`wwclient`
+   overlay: e.g., wwclient.x86_64 or wwclient.aarch64.
 
 Read-only images
 ================

@@ -210,6 +210,8 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %{_overlaydir}/udev.netname/rootfs/*
 %{_overlaydir}/wicked/rootfs/*
 %{_overlaydir}/wwclient/rootfs/*
+%{_overlaydir}/wwclient.x86_64/rootfs/*
+%{_overlaydir}/wwclient.aarch64/rootfs/*
 %{_overlaydir}/wwinit/rootfs/*
 %{_overlaydir}/localtime/rootfs/*
 %{_overlaydir}/sfdisk/rootfs/*
