@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -58,37 +59,38 @@ func ImageDelete(cdp *wwapiv1.ImageDeleteParameter) (err error) {
 		return fmt.Errorf("could not open nodeDB: %s", err)
 	}
 
-ARG_LOOP:
-	for i := 0; i < len(cdp.ImageNames); i++ {
-		//_, arg := range args {
-		imageName := cdp.ImageNames[i]
-		for _, n := range nodeDB.Nodes {
-			if n.ImageName == imageName {
-				wwlog.Error("image %s is in use by node %s, skipping", imageName, n.Id())
-				continue ARG_LOOP
-			}
-		}
-		for _, p := range nodeDB.NodeProfiles {
-			if p.ImageName == imageName {
-				wwlog.Error("image %s is in use by profile %s, skipping", imageName, p.Id())
-				continue ARG_LOOP
-			}
-		}
-
+	// validate image names
+	for _, imageName := range cdp.ImageNames {
 		if !image.ValidSource(imageName) {
-			wwlog.Error("image name is not a valid source: %s", imageName)
-			continue
+			return fmt.Errorf("image name is not valid source: %s", imageName)
 		}
+	}
+
+	// check if the deleted images are not used by nodes
+	for nodeName, node := range nodeDB.Nodes {
+		if slices.Contains(cdp.ImageNames, node.ImageName) {
+			return fmt.Errorf("image %s is in use by node %s, cannot delete", node.ImageName, nodeName)
+		}
+	}
+
+	// check if the deleted images are not used by profiles
+	for profileName, profile := range nodeDB.NodeProfiles {
+		if slices.Contains(cdp.ImageNames, profile.ImageName) {
+			return fmt.Errorf("image %s is in use by profile %s, cannot delete", profile.ImageName, profileName)
+		}
+	}
+
+	// delete images
+	for _, imageName := range cdp.ImageNames {
 		err := image.DeleteSource(imageName)
 		if err != nil {
-			wwlog.Error("could not remove source: %s", imageName)
+			return fmt.Errorf("could not remove source image %s: %w", imageName, err)
 		}
 		err = image.DeleteImage(imageName)
 		if err != nil {
-			wwlog.Error("could not remove image files %s", imageName)
+			return fmt.Errorf("could not remove image file %s: %w", imageName, err)
 		}
-
-		fmt.Printf("Image has been deleted: %s\n", imageName)
+		wwlog.Info("Image %q has been deleted", imageName)
 	}
 
 	return
