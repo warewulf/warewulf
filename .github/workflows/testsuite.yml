@@ -51,3 +51,5 @@ jobs:
         run: make test
       - name: Build Warewulf (golang ${{ matrix.go-version }})
         run: make all
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile
