@@ -13,9 +13,22 @@ import (
 
 func TFTP() (err error) {
 	controller := warewulfconf.Get()
-	var tftpdir string = path.Join(controller.TFTP.TftpRoot, "warewulf")
 	oldMask := unix.Umask(0)
 	defer unix.Umask(oldMask)
+
+	// Check if TftpRoot exists, create and restore context if needed
+	if _, err := os.Stat(controller.TFTP.TftpRoot); err != nil {
+		err = os.MkdirAll(controller.TFTP.TftpRoot, 0755)
+		if err != nil {
+			return err
+		}
+		if err := util.RestoreSELinuxContext(controller.TFTP.TftpRoot); err != nil {
+			wwlog.Warn("failed to restore SELinux context for %s: %s", controller.TFTP.TftpRoot, err)
+		}
+	}
+
+	// Create tftpdir if needed
+	var tftpdir string = path.Join(controller.TFTP.TftpRoot, "warewulf")
 	err = os.MkdirAll(tftpdir, 0755)
 	if err != nil {
 		return
@@ -43,6 +56,7 @@ func TFTP() (err error) {
 			}
 		}
 	}
+
 	if !controller.TFTP.Enabled() {
 		wwlog.Warn("Warewulf does not auto start TFTP services due to disable by warewulf.conf")
 		return nil

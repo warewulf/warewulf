@@ -263,6 +263,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/opencontainers/runtime-spec/blob/v1.2.0/LICENSE>
 
+## github.com/opencontainers/selinux
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/opencontainers/selinux/blob/v1.11.1/LICENSE>
+
 ## github.com/opencontainers/umoci
 
 **License:** Apache-2.0
@@ -489,7 +495,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/ulikunitz/xz/blob/v0.5.12/LICENSE>
+**License URL:** <https://github.com/ulikunitz/xz/blob/v0.5.14/LICENSE>
 
 ## github.com/vbatts/go-mtree
 

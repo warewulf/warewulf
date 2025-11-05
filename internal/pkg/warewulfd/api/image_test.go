@@ -16,7 +16,8 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
 
-var imageTests = map[string]struct {
+var imageTests = []struct {
+	name              string
 	initFiles         []string
 	request           func(serverURL string) (*http.Request, error)
 	response          string
@@ -25,7 +26,8 @@ var imageTests = map[string]struct {
 	resultAbsentFiles []string
 	authenticate      bool
 }{
-	"test no authentication": {
+	{
+		name: "test no authentication",
 		initFiles: []string{
 			"/var/lib/warewulf/chroots/test-image/rootfs/file",
 		},
@@ -36,8 +38,8 @@ var imageTests = map[string]struct {
 		status:       http.StatusUnauthorized,
 		authenticate: false,
 	},
-
-	"test get all images": {
+	{
+		name: "test get all images",
 		initFiles: []string{
 			"/var/lib/warewulf/chroots/test-image/rootfs/file",
 		},
@@ -47,8 +49,8 @@ var imageTests = map[string]struct {
 		response:     `{"test-image": {"kernels":[], "size":0, "buildtime":0, "writable":true}}`,
 		authenticate: true,
 	},
-
-	"test get single image": {
+	{
+		name: "test get single image",
 		initFiles: []string{
 			"/var/lib/warewulf/chroots/test-image/rootfs/file",
 		},
@@ -58,8 +60,8 @@ var imageTests = map[string]struct {
 		response:     `{"kernels":[], "size":0, "buildtime":0, "writable":true}`,
 		authenticate: true,
 	},
-
-	"test build image": {
+	{
+		name: "test build image",
 		initFiles: []string{
 			"/var/lib/warewulf/chroots/test-image/rootfs/file",
 		},
@@ -73,8 +75,8 @@ var imageTests = map[string]struct {
 		},
 		authenticate: true,
 	},
-
-	"test rename image": {
+	{
+		name: "test rename image",
 		initFiles: []string{
 			"/var/lib/warewulf/chroots/test-image/rootfs/file",
 		},
@@ -84,15 +86,15 @@ var imageTests = map[string]struct {
 		response:     `{"kernels":[], "size":512, "buildtime":"<<PRESENCE>>", "writable":true}`,
 		authenticate: true,
 	},
-
-	"test delete image": {
+	{
+		name: "test delete image",
 		initFiles: []string{
 			"/var/lib/warewulf/chroots/new-image/rootfs/file",
 		},
 		request: func(serverURL string) (*http.Request, error) {
 			return http.NewRequest(http.MethodDelete, serverURL+"/api/images/new-image", nil)
 		},
-		response: `{"kernels":[], "size":0, "buildtime":"<<PRESENCE>>", "writable":true}`,
+		response: `{"kernels":[], "size":512, "buildtime":"<<PRESENCE>>", "writable":true}`,
 		resultAbsentFiles: []string{
 			"/var/lib/warewulf/chroots/new-image",
 			"/srv/warewulf/images/new-image.img",
@@ -108,13 +110,13 @@ users:
 - name: admin
   password hash: $2b$05$5QVWDpiWE7L4SDL9CYdi3O/l6HnbNOLoXgY2sa1bQQ7aSBKdSqvsC
 `
+	env := testenv.New(t)
+	defer env.RemoveAll()
 
-	for name, tt := range imageTests {
-		t.Run(name, func(t *testing.T) {
-			warewulfd.SetNoDaemon()
-			env := testenv.New(t)
-			defer env.RemoveAll()
+	warewulfd.SetNoDaemon()
 
+	for _, tt := range imageTests {
+		t.Run(tt.name, func(t *testing.T) {
 			// Create test files
 			for _, fileName := range tt.initFiles {
 				env.CreateFile(fileName)

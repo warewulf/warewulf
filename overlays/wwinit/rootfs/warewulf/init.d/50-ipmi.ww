@@ -105,6 +105,6 @@ ipmitool sol set force-authentication true 1
 ipmitool sol set privilege-level admin 1
 ipmitool sol payload enable 1 2
 ipmitool sol set enabled true 1 1
-speed=38.4  # 19.2 38.4 115.2
+speed={{ default "38.4" (index .Ipmi.Tags "bit-rate") }}
 ipmitool sol set non-volatile-bit-rate $speed 1
 ipmitool sol set volatile-bit-rate $speed 1

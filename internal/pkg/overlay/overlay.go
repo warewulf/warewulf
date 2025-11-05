@@ -571,7 +571,20 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 							}
 							fileBuffer.Reset()
 						}
-						outputPath = path.Join(path.Dir(originalOutputPath), filenameFromTemplate[0][1])
+						if path.IsAbs(filenameFromTemplate[0][1]) {
+							outputPath = filenameFromTemplate[0][1]
+							// Create parent directory for absolute paths
+							parentDir := path.Dir(outputPath)
+							sourceDirInfo, err := os.Stat(path.Dir(walkPath))
+							if err != nil {
+								return fmt.Errorf("could not stat source directory: %w", err)
+							}
+							if err := os.MkdirAll(parentDir, sourceDirInfo.Mode()); err != nil {
+								return fmt.Errorf("could not create parent directory for absolute path: %w", err)
+							}
+						} else {
+							outputPath = path.Join(path.Dir(originalOutputPath), filenameFromTemplate[0][1])
+						}
 						writingToNamedFile = true
 						isLink = false
 					} else {
