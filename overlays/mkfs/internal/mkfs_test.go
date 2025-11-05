@@ -105,13 +105,13 @@ already_formatted() {
 if command -v mkfs >/dev/null ; then :
     if false || ! already_formatted /dev/disk/by-partlabel/rootfs; then
         info "warewulf: mkfs: formatting /dev/disk/by-partlabel/rootfs"
-        mkfs --type=ext4    /dev/disk/by-partlabel/rootfs  || die "warewulf: mkfs: failed to format /dev/disk/by-partlabel/rootfs"
+        mkfs --type=ext4     /dev/disk/by-partlabel/rootfs  || die "warewulf: mkfs: failed to format /dev/disk/by-partlabel/rootfs"
     else
         info "warewulf: mkfs: skipping /dev/disk/by-partlabel/rootfs"
     fi
     if true || ! already_formatted /dev/disk/by-partlabel/scratch; then
         info "warewulf: mkfs: formatting /dev/disk/by-partlabel/scratch"
-        mkfs --type=ext4   -F /dev/disk/by-partlabel/scratch  || die "warewulf: mkfs: failed to format /dev/disk/by-partlabel/scratch"
+        mkfs --type=ext4    -F /dev/disk/by-partlabel/scratch  || die "warewulf: mkfs: failed to format /dev/disk/by-partlabel/scratch"
     else
         info "warewulf: mkfs: skipping /dev/disk/by-partlabel/scratch"
     fi
@@ -171,7 +171,7 @@ already_formatted() {
 if command -v mkfs >/dev/null ; then :
     if false || ! already_formatted /dev/disk/by-partlabel/rootfs; then
         info "warewulf: mkfs: formatting /dev/disk/by-partlabel/rootfs"
-        mkfs --type=ext4    /dev/disk/by-partlabel/rootfs  || die "warewulf: mkfs: failed to format /dev/disk/by-partlabel/rootfs"
+        mkfs --type=ext4     /dev/disk/by-partlabel/rootfs  || die "warewulf: mkfs: failed to format /dev/disk/by-partlabel/rootfs"
     else
         info "warewulf: mkfs: skipping /dev/disk/by-partlabel/rootfs"
     fi
