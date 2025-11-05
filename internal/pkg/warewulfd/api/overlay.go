@@ -213,12 +213,13 @@ func createOverlay() usecase.Interactor {
 
 	u := usecase.NewInteractor(func(ctx context.Context, input createOverlayInput, output *OverlayResponse) error {
 		wwlog.Debug("api.createOverlay(Name:%v)", input.Name)
-		newOverlay, err := overlay.Get(input.Name)
+		if _, err := overlay.Get(input.Name); err == nil {
+			// existing overlay, return a conflict error
+			return status.Wrap(fmt.Errorf("%s overlay already exists", input.Name), status.AlreadyExists)
+		}
+		newOverlay, err := overlay.Create(input.Name)
 		if err != nil {
-			newOverlay, err = overlay.Create(input.Name)
-			if err != nil {
-				return err
-			}
+			return err
 		}
 		*output = *NewOverlayResponse(newOverlay.Name())
 		return nil
