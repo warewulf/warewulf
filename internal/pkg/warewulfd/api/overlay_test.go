@@ -18,7 +18,8 @@ import (
 const sampleTemplate = `{{ if .Tags.email }}eMail: {{ .Tags.email }}{{else}} noMail{{- end }}
 `
 
-var overlayTests = map[string]struct {
+var overlayTests = []struct {
+	name          string
 	initFiles     map[string]string
 	request       func(serverURL string) (*http.Request, error)
 	response      string
@@ -26,7 +27,8 @@ var overlayTests = map[string]struct {
 	resultFiles   []string
 	validateFiles map[string]string // file path -> expected content
 }{
-	"get all overlays": {
+	{
+		name: "get all overlays",
 		initFiles: map[string]string{
 			"/usr/share/warewulf/overlays/testoverlay/email.ww": sampleTemplate,
 		},
@@ -35,8 +37,8 @@ var overlayTests = map[string]struct {
 		},
 		response: `{"testoverlay":{"files":["/email.ww"], "site":false}}`,
 	},
-
-	"get one specific overlay": {
+	{
+		name: "get one specific overlay",
 		initFiles: map[string]string{
 			"/usr/share/warewulf/overlays/testoverlay/email.ww": sampleTemplate,
 		},
@@ -45,8 +47,8 @@ var overlayTests = map[string]struct {
 		},
 		response: `{"files":["/email.ww"], "site":false}`,
 	},
-
-	"get overlay file": {
+	{
+		name: "get overlay file",
 		initFiles: map[string]string{
 			"/usr/share/warewulf/overlays/testoverlay/email.ww": sampleTemplate,
 		},
@@ -62,8 +64,8 @@ var overlayTests = map[string]struct {
 			"gid": "<<PRESENCE>>"
 		}`,
 	},
-
-	"update overlay file": {
+	{
+		name: "update overlay file",
 		initFiles: map[string]string{
 			"/usr/share/warewulf/overlays/testoverlay/email.ww": sampleTemplate,
 		},
@@ -75,8 +77,8 @@ var overlayTests = map[string]struct {
 			"/var/lib/warewulf/overlays/testoverlay/email.ww": "hello world",
 		},
 	},
-
-	"create an overlay": {
+	{
+		name: "create an overlay",
 		request: func(serverURL string) (*http.Request, error) {
 			return http.NewRequest(http.MethodPut, serverURL+"/api/overlays/test", nil)
 		},
@@ -85,8 +87,15 @@ var overlayTests = map[string]struct {
 			"/var/lib/warewulf/overlays/test",
 		},
 	},
-
-	"get all overlays after creation": {
+	{
+		name: "create an overlay conflict",
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodPut, serverURL+"/api/overlays/test", nil)
+		},
+		status: 409,
+	},
+	{
+		name: "get all overlays after creation",
 		initFiles: map[string]string{
 			"/usr/share/warewulf/overlays/testoverlay/email.ww": sampleTemplate,
 			"/var/lib/warewulf/overlays/test/rootfs/":           "",
@@ -97,8 +106,8 @@ var overlayTests = map[string]struct {
 		},
 		response: `{"test":{"files":null, "site":true},"testoverlay":{"files":["/email.ww"], "site":true}}`,
 	},
-
-	"delete overlay file": {
+	{
+		name: "delete overlay file",
 		initFiles: map[string]string{
 			"/var/lib/warewulf/overlays/testoverlay/email.ww": sampleTemplate,
 		},
@@ -107,8 +116,8 @@ var overlayTests = map[string]struct {
 		},
 		response: `{"files":null, "site":true}`,
 	},
-
-	"force delete site overlay": {
+	{
+		name: "force delete site overlay",
 		initFiles: map[string]string{
 			"/var/lib/warewulf/overlays/test/": "",
 		},
@@ -117,8 +126,8 @@ var overlayTests = map[string]struct {
 		},
 		response: `{"files":[], "site":true}`,
 	},
-
-	"force delete distribution overlay": {
+	{
+		name: "force delete distribution overlay",
 		initFiles: map[string]string{
 			"/usr/share/warewulf/overlays/test/email.ww": sampleTemplate,
 		},
@@ -130,12 +139,12 @@ var overlayTests = map[string]struct {
 }
 
 func TestOverlayAPI(t *testing.T) {
-	for name, tt := range overlayTests {
-		t.Run(name, func(t *testing.T) {
-			warewulfd.SetNoDaemon()
-			env := testenv.New(t)
-			defer env.RemoveAll()
+	warewulfd.SetNoDaemon()
+	env := testenv.New(t)
+	defer env.RemoveAll()
 
+	for _, tt := range overlayTests {
+		t.Run(tt.name, func(t *testing.T) {
 			// Create test files
 			for fileName, fileContent := range tt.initFiles {
 				if strings.HasSuffix(fileName, "/") {

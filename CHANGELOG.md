@@ -58,6 +58,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Write `$tftpdir/warewulf/grub.cfg` to `tftproot` as configured in `warewulf.conf`. #2055
 - Automatically create a GPT label when `sfdisk` overlay wipes disks. #2025
 - Fix configuration of MTU on bonds with `NetworkManager`. #2059
+- Use device names in netplan bonds. #2013
+- Fix ImageDelete API not returning error when checking if image is used by nodes/profiles
+- Return HTTP 409 status when creating an existing overlay
 
 ### Dependencies
 
