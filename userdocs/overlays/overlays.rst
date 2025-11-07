@@ -202,6 +202,8 @@ provisioning actions:
 - **/warewulf/init.d/:** executed in the final root file system but before
   calling ``init``.
 
+.. _wwclient:
+
 wwclient
 --------
 
@@ -209,9 +211,14 @@ All configured overlays are provisioned initially along with the node image
 itself; but **wwclient** periodically fetches and applies the runtime overlay to
 allow configuration of some settings without a reboot.
 
-wwclient will contat the ``ipaddr`` value from ``warewulf.conf`` by default.
-This can be overridden by specifying a ``WW_IPADDR`` environment variable, which
-can be set via an overlay in ``/etc/default/wwclient``.
+wwclient contacts the ``ipaddr`` value from ``warewulf.conf`` by default. This
+can be overridden by specifying a ``WW_IPADDR`` environment variable, which can
+be set via an overlay in ``/etc/default/wwclient``.
+
+The default wwclient overlay contains a ``wwclient`` executable compiled for the
+same architecture as the Warewulf server. Architecture-specific wwclient.aarch64
+and wwclient.x86_64 overlays are available as well. This supports using wwclient
+on cluster nodes with a different architecture than the Warewulf server.
 
 Network interfaces
 ------------------

@@ -6,9 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## v4.6.5, unreleased
 
+### Added
+
+- `wwclient.aarch64` overlay always provides an aarch64 wwclient executable.
+- `wwclient.x86_64` overlay always provides an x86_64 wwclient executable.
+
 ### Changed
 
 - Renamed debian.interfaces overlay to ifupdown
+- Change the DHCP server package used on openeuler 24.03 to dnsmasq
+- Added configurable Serial over LAN speed via IPMI `bit-rate` tag in `50-ipmi` template
+- Manage SELinux context of TFTP directory. #1997
+- Dynamically write `$tftpdir/warewulf/grub.cfg` to the configured value from `warewulf.conf`
+- Absolute paths specified with `{{ file }}` in an overlay now write to that absolute path.
+- Use opencontainers/selinux to manage SELinux in wwclient.
+
+### Fixed
+
+- Fix "address already in use" in `wwclient` when `secure: true`. #2009
+- Use device names in netplan bonds. #2013
+- Fix ImageDelete API not returning error when checking if image is used by nodes/profiles
+
+### Dependencies
+
+- Updated github.com/ulikunitz/xz to 0.5.14 (CVE-2025-58058) #2007
 
 ## v4.6.4, 2025-09-05
 

@@ -1,6 +1,6 @@
-FROM opensuse/tumbleweed:latest as builder
+FROM opensuse/tumbleweed:latest AS builder
 
-RUN zypper  -n install --no-recommends git go1.22 libgpgme-devel unzip &&\
+RUN zypper  -n install --no-recommends git go1.22 unzip &&\
   zypper -n install -t pattern devel_basis
 
 # now build the warewulf
