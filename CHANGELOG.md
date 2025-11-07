@@ -6,8 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## v4.6.5, unreleased
 
-- Fixed mkfs overlay overwrite/force-flag behavior. #2028.
-
 ### Added
 
 - `wwclient.aarch64` overlay always provides an aarch64 wwclient executable.
@@ -22,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Dynamically write `$tftpdir/warewulf/grub.cfg` to the configured value from `warewulf.conf`
 - Absolute paths specified with `{{ file }}` in an overlay now write to that absolute path.
 - Use opencontainers/selinux to manage SELinux in wwclient.
+- Fixed mkfs overlay overwrite/force-flag behavior. #2028.
 
 ### Fixed
 
