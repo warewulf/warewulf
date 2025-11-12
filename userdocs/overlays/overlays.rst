@@ -85,77 +85,173 @@ Warewulf will attempt to build/update overlays as needed (configurable in the
 are often necessary.
 
 Creating and Modifying Overlays
+
 ===============================
+
+
 
 You can add a new overlay to Warewulf with ``wwctl overlay create``.
 
+
+
 .. code-block:: shell
+
+
 
    wwctl overlay create issue
 
+
+
 A new overlay is just an empty directory. For it to be useful it needs to
+
 contain some files.
 
+
+
 For example, ``wwctl overlay import`` imports files from the Warewulf server
+
 into the overlay.
 
+
+
 .. code-block:: shell
+
+
 
    wwctl overlay import --parents issue /etc/issue
 
+
+
 This imports ``/etc/issue`` from the Warewulf server into the new ``issue``
+
 overlay.
+
+
 
 .. note::
 
+
+
    The ``issue`` overlay already existed as a distribution overlay. Creating one
+
    shadows the distribution overlay with a new site overlay, allowing for local
+
    modification.
 
+
+
    Any modification to a distribution overlay first transparently creates a new
+
    site overlay and applies any changes there: distribution overlays should
+
    always remain unmodified.
+
+
 
 You can also edit a new or existing overlay file in an interactive editor.
 
+
+
 .. code-block:: shell
+
+
 
    wwctl overlay edit issue /etc/issue
 
+
+
 Use ``wwctl overlay show`` to inspect the content of an overlay file.
 
+
+
 .. code-block:: shell
+
+
 
    wwctl overlay show issue /etc/issue
 
+
+
 Overlay files that end with ``.ww`` are templates. You can use ``wwctl overlay
+
 show --render=<node>`` to show how a given template file would be rendered for
+
 distribution to a given cluster node.
+
+
 
 .. code-block:: shell
 
+
+
    wwctl overlay delete issue /etc/issue
+
    wwctl overlay import issue /etc/issue /etc/issue.ww
+
    wwctl overlay show issue /etc/issue.ww --render=n1
 
+
+
 More information about templates is available in :ref:`its own section
+
 <templates>`.
 
+
+
 The content of the file for the given overlay is displayed with this command.
+
 With the ``--render`` option a template is rendered as it will be rendered for
+
 the given node. The node name is a mandatory argument to the ``--render`` flag.
+
 Additional information for the file can be suppressed with the ``--quiet``
+
 option.
+
+
 
 .. note::
 
+
+
    It is not possible to delete files with an overlay.
 
+
+
+Overlay Variables
+
+-----------------
+
+
+
+The command ``wwctl overlay variables`` can be used to show the used variables
+
+in a template. The command also shows the help text for each variable. The help
+
+text can be defined in two ways. The first is a general documentation which is
+
+not tied to a variable. This can be done with the following syntax:
+
+``{{/* wwdoc: Your documentation text */}}``. The second way is to define a help
+
+text for a specific variable. This can be done with the following syntax:
+
+``{{/* .My.Var: Your help text */}}``. If a help text is defined for a variable,
+
+it will be used instead of the default help text.
+
+
+
 Permissions
+
 -----------
 
+
+
 Overlay files are distributed to cluster nodes with the same user, group, and
+
 mode that they have on the Warewulf server. Use ``wwctl overlay chown`` and
+
 ``wwctl overlay chmod`` to adjust them as necessary.
 
 .. code-block:: shell
