@@ -330,7 +330,11 @@ func (overlay Overlay) ParseCommentVars(file string) (retMap map[string]string) 
 
 	re := regexp.MustCompile(`{{\s*/\*\s*(.*?):\s*(.*?)\s*\*/\s*}}`)
 	matches := re.FindAllStringSubmatch(string(content), -1)
-	wwlog.Debug("matches: %v len(%d:%d)", matches, len(matches), len(matches[0]))
+	if len(matches) > 0 {
+		wwlog.Debug("matches: %v len(%d:%d)", matches, len(matches), len(matches[0]))
+	} else {
+		wwlog.Debug("matches: [] len(0)")
+	}
 	for i := range matches {
 		if len(matches[i]) > 2 {
 			retMap[matches[i][1]] = matches[i][2]
@@ -361,9 +365,15 @@ func walkParseTree(node parse.Node, vars map[string]bool) {
 	case *parse.RangeNode:
 		walkParseTree(n.Pipe, vars)
 		walkParseTree(n.List, vars)
+		walkParseTree(n.ElseList, vars)
 	case *parse.WithNode:
 		walkParseTree(n.Pipe, vars)
 		walkParseTree(n.List, vars)
+		walkParseTree(n.ElseList, vars)
+	case *parse.TemplateNode:
+		walkParseTree(n.Pipe, vars)
+	case *parse.BreakNode, *parse.ContinueNode:
+		// No variables to extract
 	case *parse.PipeNode:
 		if n != nil {
 			for _, cmd := range n.Cmds {

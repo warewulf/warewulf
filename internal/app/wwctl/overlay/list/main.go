@@ -1,7 +1,9 @@
 package list
 
 import (
+	"os"
 	"strconv"
+	"syscall"
 
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/app/wwctl/table"
@@ -30,7 +32,11 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 		if vars.ShowPath {
 			locationStr = "PATH"
 		}
-		t.AddHeader("OVERLAY NAME", "FILES/DIRS", locationStr)
+		if vars.ListLong {
+			t.AddHeader("PERM MODE", "UID", "GID", "OVERLAY", "FILE PATH", locationStr)
+		} else {
+			t.AddHeader("OVERLAY NAME", "FILES/DIRS", locationStr)
+		}
 
 		for _, name := range overlays {
 			overlay_, err := overlay.Get(name)
@@ -43,21 +49,39 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 			files := util.FindFiles(overlay_.Rootfs())
 
 			wwlog.Debug("Iterating overlay rootfs: %s", overlay_.Rootfs())
-			locLine := strconv.FormatBool(overlay_.IsSiteOverlay())
-			if vars.ShowPath {
-				locLine = overlay_.Path()
-			}
-			if vars.ListContents || vars.ListLong {
-				var fileCount int
+			if vars.ListLong {
 				for file := range files {
-					t.AddLine(name, files[file], locLine)
-					fileCount++
-				}
-				if fileCount == 0 {
-					t.AddLine(name, 0, locLine)
+					s, err := os.Stat(overlay_.File(files[file]))
+					if err != nil {
+						wwlog.Warn("%s: %s: %s", name, files[file], err)
+						continue
+					}
+					fileMode := s.Mode()
+					perms := fileMode & os.ModePerm
+					sys := s.Sys()
+					locLine := strconv.FormatBool(overlay_.IsSiteOverlay())
+					if vars.ShowPath {
+						locLine = overlay_.Path()
+					}
+					t.AddLine(perms, sys.(*syscall.Stat_t).Uid, sys.(*syscall.Stat_t).Gid, name, files[file], locLine)
 				}
 			} else {
-				t.AddLine(name, len(files), locLine)
+				locLine := strconv.FormatBool(overlay_.IsSiteOverlay())
+				if vars.ShowPath {
+					locLine = overlay_.Path()
+				}
+				if vars.ListContents {
+					var fileCount int
+					for file := range files {
+						t.AddLine(name, files[file], locLine)
+						fileCount++
+					}
+					if fileCount == 0 {
+						t.AddLine(name, 0, locLine)
+					}
+				} else {
+					t.AddLine(name, len(files), locLine)
+				}
 			}
 		}
 		t.Print()
