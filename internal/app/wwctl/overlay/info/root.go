@@ -1,4 +1,4 @@
-package variables
+package info
 
 import (
 	"github.com/spf13/cobra"
@@ -7,10 +7,10 @@ import (
 
 var (
 	baseCmd = &cobra.Command{
-		Use:     "variables [flags] OVERLAY_NAME FILE_PATH",
+		Use:     "info [flags] OVERLAY_NAME FILE_PATH",
 		Short:   "Show variables for a template file in an overlay",
 		Long:    "This command will show the variables for a given template file in a given\n" + "overlay.",
-		Aliases: []string{"vars", "tags"},
+		Aliases: []string{"vars", "tags", "information"},
 		Args:    cobra.ExactArgs(2),
 		RunE:    CobraRunE,
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `wwclient.aarch64` overlay always provides an aarch64 wwclient executable.
 - `wwclient.x86_64` overlay always provides an x86_64 wwclient executable.
 - systemd-networkd overlay with IPv6 support
+- `wwctl overlay info` lists the variables used by an overlay template
 
 ### Changed
 
@@ -49,7 +50,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-- `wwctl overlay show -l` will now also list the used tags in a template
 - Initial support for EL10 using `dnsmasq` in place of `dhcpd-server`. #1974
 - `make rpm` for local development rpm builds. #1974
 - `wwclient --once` prompts wwclient to run once. #1226
