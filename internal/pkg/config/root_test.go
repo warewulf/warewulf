@@ -153,53 +153,6 @@ ipaddr6: "2001:db8::1/64"
 `,
 			result: `
 ipaddr6: "2001:db8::1/64"
-ipv6net: "2001:db8::"
-warewulf:
-  autobuild overlays: true
-  grubboot: false
-  host overlay: true
-  port: 9873
-  secure: true
-  update interval: 60
-nfs:
-  enabled: true
-  systemd name: nfsd
-dhcp:
-  enabled: true
-  systemd name: dhcpd
-  template: default
-image mounts:
-- dest: /etc/resolv.conf
-  source: /etc/resolv.conf
-ssh:
-  key types:
-  - ed25519
-  - ecdsa
-  - rsa
-  - dsa
-tftp:
-  enabled: true
-  ipxe:
-    "00:00": undionly.kpxe
-    "00:07": ipxe-snponly-x86_64.efi
-    "00:09": ipxe-snponly-x86_64.efi
-    "00:0B": arm64-efi/snponly.efi
-  systemd name: tftp
-api:
-  enabled: false
-  allowed subnets:
-  - 127.0.0.0/8
-  - ::1/128
-`,
-		},
-		"ipv6 cidr conflict": {
-			input: `
-ipaddr6: "2001:db8:1::1/64"
-ipv6net: "2001:db8:2::"
-`,
-			result: `
-ipaddr6: "2001:db8:1::1/64"
-ipv6net: "2001:db8:2::"
 warewulf:
   autobuild overlays: true
   grubboot: false
