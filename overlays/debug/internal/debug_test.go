@@ -91,6 +91,7 @@ data from other structures.
 - Ipaddr: 192.168.0.1
 - IpCIDR: 192.168.0.1/24
 - Ipaddr6: 
+- IpCIDR6: 
 - Netmask: 255.255.255.0
 - Network: 192.168.0.0
 - NetworkCIDR: 192.168.0.0/24
@@ -102,6 +103,8 @@ data from other structures.
 - Dhcp.Template: default
 - Dhcp.RangeStart: 
 - Dhcp.RangeEnd: 
+- Dhcp.Range6Start: 
+- Dhcp.Range6End: 
 - Dhcp.SystemdName: dhcpd
 
 ### NFS

@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Dynamically write `$tftpdir/warewulf/grub.cfg` to the configured value from `warewulf.conf`
 - Absolute paths specified with `{{ file }}` in an overlay now write to that absolute path.
 - Use opencontainers/selinux to manage SELinux in wwclient.
+- Replace unused/unneeded IPv6net with IpCIDR6 to align with IPv4
+- Add IPv6 DHCP range
 
 ### Fixed
 

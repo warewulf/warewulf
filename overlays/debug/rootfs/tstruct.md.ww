@@ -31,6 +31,7 @@ data from other structures.
 - Ipaddr: {{ .Ipaddr }}
 - IpCIDR: {{ .IpCIDR }}
 - Ipaddr6: {{ .Ipaddr6 }}
+- IpCIDR6: {{ .IpCIDR6 }}
 - Netmask: {{ .Netmask }}
 - Network: {{ .Network }}
 - NetworkCIDR: {{ .NetworkCIDR }}
@@ -42,6 +43,8 @@ data from other structures.
 - Dhcp.Template: {{ .Dhcp.Template }}
 - Dhcp.RangeStart: {{ .Dhcp.RangeStart }}
 - Dhcp.RangeEnd: {{ .Dhcp.RangeEnd }}
+- Dhcp.Range6Start: {{ .Dhcp.Range6Start }}
+- Dhcp.Range6End: {{ .Dhcp.Range6End }}
 - Dhcp.SystemdName: {{ .Dhcp.SystemdName }}
 
 ### NFS

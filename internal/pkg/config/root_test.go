@@ -152,7 +152,7 @@ api:
 ipaddr6: "2001:db8::1/64"
 `,
 			result: `
-ipaddr6: "2001:db8::1/64"
+ipaddr6: "2001:db8::1"
 warewulf:
   autobuild overlays: true
   grubboot: false

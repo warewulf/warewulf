@@ -29,6 +29,7 @@ type WarewulfYaml struct {
 	Ipaddr6     string        `yaml:"ipaddr6,omitempty"`
 	Netmask     string        `yaml:"netmask,omitempty"`
 	Network     string        `yaml:"network,omitempty"`
+	IpCIDR6     string        `yaml:"-"`
 	Fqdn        string        `yaml:"fqdn,omitempty"`
 	Warewulf    *WarewulfConf `yaml:"warewulf,omitempty"`
 	API         *APIConf      `yaml:"api,omitempty"`
@@ -140,7 +141,13 @@ func (conf *WarewulfYaml) Parse(data []byte, autodetect bool) error {
 	}
 
 	if conf.Ipaddr6 != "" {
-		if _, _, err := net.ParseCIDR(conf.Ipaddr6); err != nil {
+		if ip, _, err := net.ParseCIDR(conf.Ipaddr6); err == nil {
+			if ip.To4() != nil {
+				return fmt.Errorf("invalid ipv6 address: ip address is ipv4: %s", conf.Ipaddr6)
+			}
+			conf.IpCIDR6 = conf.Ipaddr6
+			conf.Ipaddr6 = ip.String()
+		} else {
 			return fmt.Errorf("invalid ipv6 address: must use CIDR notation: %s", conf.Ipaddr6)
 		}
 	}
