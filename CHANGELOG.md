@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Use opencontainers/selinux to manage SELinux in wwclient.
 - Replace unused/unneeded IPv6net with IpCIDR6 to align with IPv4
 - Add IPv6 DHCP range
+- Add IPv6 functionality for dnsmasq
 
 ### Fixed
 
