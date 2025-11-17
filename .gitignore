@@ -6,6 +6,7 @@
 
 # binaries
 /wwclient
+/wwclient.*
 /wwctl
 /update_configuration
 /wwapic
