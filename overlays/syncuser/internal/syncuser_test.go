@@ -62,6 +62,50 @@ root:x:0:
 user:x:1000:
 `,
 		},
+		"syncuser:passwd.ww (with local users)": {
+			args: []string{"--render", "node3", "syncuser", "etc/passwd.ww"},
+			log: `backupFile: true
+writeFile: true
+Filename: etc/passwd
+root:x:0:0:root:/root:/bin/bash
+user:x:1000:1000:user:/home/user:/bin/bash
+dbuser:x:1001:1002:Database User:/var/lib/db:/bin/nologin
+appuser:x:1003:1004:Application User:/opt/app:/bin/bash
+`,
+		},
+		"syncuser:group.ww (with local groups)": {
+			args: []string{"--render", "node3", "syncuser", "etc/group.ww"},
+			log: `backupFile: true
+writeFile: true
+Filename: etc/group
+root:x:0:
+user:x:1000:
+dbuser:x:1002:
+appuser:x:1004:
+dbgroup:x:1002:dbuser,appuser
+appgroup:x:1004:appuser
+`,
+		},
+		"syncuser:passwd.ww (local user without gecos)": {
+			args: []string{"--render", "node4", "syncuser", "etc/passwd.ww"},
+			log: `backupFile: true
+writeFile: true
+Filename: etc/passwd
+root:x:0:0:root:/root:/bin/bash
+user:x:1000:1000:user:/home/user:/bin/bash
+svcuser:x:2001:2001::/:/sbin/nologin
+`,
+		},
+		"syncuser:group.ww (local user primary group)": {
+			args: []string{"--render", "node4", "syncuser", "etc/group.ww"},
+			log: `backupFile: true
+writeFile: true
+Filename: etc/group
+root:x:0:
+user:x:1000:
+svcuser:x:2001:
+`,
+		},
 	}
 
 	for name, tt := range tests {

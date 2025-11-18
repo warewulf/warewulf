@@ -1,6 +1,23 @@
-{{
-    printf "%s\n%s"
-        (IncludeFrom $.ImageName "/etc/group" | trim)
-        (Include (printf "%s/%s" .Paths.Sysconfdir "group") | trim)
-    | UniqueField ":" 0 | trim
-}}
+{{- $sources := list }}
+{{- $sources = append $sources (IncludeFrom $.ImageName "/etc/group" | trim) }}
+{{- $sources = append $sources (Include (printf "%s/%s" .Paths.Sysconfdir "group") | trim) }}
+
+{{- if .Resources.localusers }}
+{{- range .Resources.localusers }}
+  {{- if .gid }}
+    {{- $sources = append $sources (printf "%s:x:%d:" .name .gid) }}
+  {{- end }}
+{{- end }}
+{{- end }}
+
+{{- if .Resources.localgroups }}
+{{- range .Resources.localgroups }}
+  {{- $memberStr := "" }}
+  {{- if .members }}
+    {{- $memberStr = join "," .members }}
+  {{- end }}
+  {{- $sources = append $sources (printf "%s:x:%d:%s" .name .gid $memberStr) }}
+{{- end }}
+{{- end }}
+
+{{- join "\n" $sources | UniqueField ":" 0 | trim }}
