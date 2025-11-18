@@ -28,3 +28,48 @@ Syncuser may be invoked during image import, exec, shell, or build.
 
 After syncuser, ``/etc/passwd`` and ``/etc/group`` in the image are updated, and
 permissions on files belonging to these UIDs and GIDs are updated to match.
+
+Syncing Local Users and Groups
+=========
+
+Warewulf now supports defining **node-specific local users and groups** through
+the :ref:`resources <nodes-resources>` section of node definitions. These user and 
+group entries are merged into the ``syncuser`` overlay and included in ``/etc/passwd`` and
+``/etc/group`` on the target nodes.
+
+This is useful for applications that require a node-local account (e.g.,
+database, application, or storage service users) without having to maintain
+centralized identity management.
+
+.. note::
+
+   Users created through this method do not have passwords set. They are intended for service accounts and non-interactive use.
+
+Example:
+
+.. code-block:: yaml
+
+   nodes:
+     n1:
+       ...
+        resources:
+          localgroups:
+            - gid: 1002
+              members:
+                - dbuser
+                - dbuserbackup
+              name: dbgroup
+          localusers:
+            - gid: 1001
+              home: /
+              name: dbuser
+              shell: /bin/nologin
+              uid: 1001
+            - gid: 1005
+              home: /
+              name: dbuserbackup
+              shell: /bin/nologin
+              uid: 1005
+        
+When ``syncuser`` is executed on this node’s associated image, the ``dbuser``
+and ``dbgroup`` entries will be added or updated accordingly.
