@@ -172,6 +172,8 @@ node directly, to network interfaces, and even to IPMI interfaces.
    wwctl node set n1 --tagadd="localtime=UTC"
    wwctl node set n1 --nettagadd="DNS1=1.1.1.1"
 
+.. _nodes-resources:
+
 Resources
 =========
 
