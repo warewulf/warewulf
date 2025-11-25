@@ -284,11 +284,7 @@ func (overlay Overlay) ParseVars(file string) []string {
 		return nil
 	}
 
-	var (
-		writeFile  bool
-		backupFile bool
-	)
-	funcMap := getTemplateFuncMap(fullPath, TemplateStruct{}, &writeFile, &backupFile)
+	funcMap, _, _ := getTemplateFuncMap(fullPath, TemplateStruct{})
 	tmpl, err := template.New(path.Base(fullPath)).Option("missingkey=default").Funcs(funcMap).ParseFiles(fullPath)
 	if err != nil {
 		wwlog.Error("Could not parse template file %s: %s", fullPath, err)
@@ -651,7 +647,7 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 				if err != nil {
 					return fmt.Errorf("failed to render template %s: %w", walkPath, err)
 				}
-				if !writeFile {
+				if !*writeFile {
 					return nil
 				}
 				var fileBuffer bytes.Buffer
@@ -676,7 +672,7 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 					} else if len(filenameFromTemplate) != 0 {
 						wwlog.Debug("Writing file %s", filenameFromTemplate[0][1])
 						if writingToNamedFile && !isLink {
-							err = CarefulWriteBuffer(outputPath, fileBuffer, backupFile, info.Mode())
+							err = CarefulWriteBuffer(outputPath, fileBuffer, *backupFile, info.Mode())
 							if err != nil {
 								return fmt.Errorf("could not write file from template: %w", err)
 							}
@@ -709,7 +705,7 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 					}
 				}
 				if !isLink {
-					err = CarefulWriteBuffer(outputPath, fileBuffer, backupFile, info.Mode())
+					err = CarefulWriteBuffer(outputPath, fileBuffer, *backupFile, info.Mode())
 					if err != nil {
 						return fmt.Errorf("could not write file from template: %w", err)
 					}
@@ -785,9 +781,13 @@ func CarefulWriteBuffer(destFile string, buffer bytes.Buffer, backupFile bool, p
 
 // getTemplateFuncMap returns a template.FuncMap with all the functions
 // for warewulf templates.
-func getTemplateFuncMap(fileName string, data TemplateStruct, writeFile *bool, backupFile *bool) template.FuncMap {
+func getTemplateFuncMap(fileName string, data TemplateStruct) (funcMap template.FuncMap, writeFile, backupFile *bool) {
 	// Build our FuncMap
-	funcMap := template.FuncMap{
+	_writeFile := true
+	_backupFile := true
+	writeFile = &_writeFile
+	backupFile = &_backupFile
+	funcMap = template.FuncMap{
 		"Include":      templateFileInclude,
 		"IncludeFrom":  templateImageFileInclude,
 		"IncludeBlock": templateFileBlock,
@@ -820,7 +820,7 @@ func getTemplateFuncMap(fileName string, data TemplateStruct, writeFile *bool, b
 	for key, value := range sprig.TxtFuncMap() {
 		funcMap[key] = value
 	}
-	return funcMap
+	return funcMap, writeFile, backupFile
 }
 
 /*
@@ -829,15 +829,11 @@ parsed template as bytes.Buffer, and the bool variables for backupFile and write
 If something goes wrong an error is returned.
 */
 func RenderTemplateFile(fileName string, data TemplateStruct) (
-	buffer bytes.Buffer,
-	backupFile bool,
-	writeFile bool,
+	buffer bytes.Buffer, backupFile, writeFile *bool,
 	err error,
 ) {
-	backupFile = true
-	writeFile = true
 
-	funcMap := getTemplateFuncMap(fileName, data, &writeFile, &backupFile)
+	funcMap, writeFile, backupFile := getTemplateFuncMap(fileName, data)
 
 	// Create the template with the merged FuncMap
 	tmpl, err := template.New(path.Base(fileName)).Option("missingkey=default").Funcs(funcMap).ParseGlob(fileName)

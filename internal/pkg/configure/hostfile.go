@@ -49,8 +49,8 @@ func Hostfile() (err error) {
 		return
 	}
 
-	if writeFile {
-		err = overlay.CarefulWriteBuffer("/etc/hosts", buffer, backupFile, info.Mode())
+	if *writeFile {
+		err = overlay.CarefulWriteBuffer("/etc/hosts", buffer, *backupFile, info.Mode())
 		if err != nil {
 			return fmt.Errorf("could not write file from template: %w", err)
 		}
