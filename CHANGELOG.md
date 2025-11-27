@@ -21,8 +21,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Absolute paths specified with `{{ file }}` in an overlay now write to that absolute path.
 - Use opencontainers/selinux to manage SELinux in wwclient.
 - Replace unused/unneeded IPv6net with IpCIDR6 to align with IPv4
-- Add IPv6 DHCP range
-- Add IPv6 functionality for dnsmasq
+- Improved IPv6 support
+  - Add PrefixLen6 for prefix length, Gateway6, and IPv6 DHCP range
+  - IPv6 support for Dnsmasq and NetworkManager
+  - Rename Netdev ip6addr to ipaddr6 for consistency
+  - Set `addr-gen-mode=eui64`
+- Set dnsmasq to listen to the Warewulf interface to prevent to binding to localhost:53
+
+### Removed
+
+- Remove unused Netdev `Prefix` field.
 
 ### Fixed
 

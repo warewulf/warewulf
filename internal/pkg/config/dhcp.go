@@ -11,8 +11,8 @@ type DHCPConf struct {
 	Template    string `yaml:"template,omitempty" default:"default"`
 	RangeStart  string `yaml:"range start,omitempty"`
 	RangeEnd    string `yaml:"range end,omitempty"`
-	Range6Start  string `yaml:"range6 start,omitempty"`
-	Range6End    string `yaml:"range6 end,omitempty"`
+	Range6Start string `yaml:"range6 start,omitempty"`
+	Range6End   string `yaml:"range6 end,omitempty"`
 	SystemdName string `yaml:"systemd name,omitempty" default:"dhcpd"`
 }
 

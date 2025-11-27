@@ -30,8 +30,10 @@ dhcp-no-override
 enable-tftp
 tftp-root={{ $.Tftp.TftpRoot }}
 {{- end }}
+{{ if and $.Dhcp.RangeStart $.Dhcp.RangeEnd -}}
 # define the the range
 dhcp-range={{$.Dhcp.RangeStart}},{{$.Dhcp.RangeEnd}},{{$.Netmask}},6h
+{{ end -}}
 {{ range $node := $.AllNodes -}}
 {{ range $devname, $netdev := $node.NetDevs -}}
 {{ if and $netdev.Ipaddr $netdev.Hwaddr -}}

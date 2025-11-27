@@ -114,7 +114,7 @@ nodes:
   n01:
     network devices:
       default:
-        ip6addr: fdaa::1
+        ipaddr6: fdaa::1
 `},
 		{name: "single node with ipaddr",
 			args:    []string{"--ipaddr=10.0.0.1", "n01"},

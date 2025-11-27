@@ -25,12 +25,13 @@ type TemplateStruct struct {
 	BuildSource   string
 	Ipaddr        string
 	IpCIDR        string
-	Ipaddr6       string
-	IpCIDR6       string
 	Netmask       string
 	Network       string
 	NetworkCIDR   string
 	Overlay       string
+	Ipaddr6       string
+	IpCIDR6       string
+	PrefixLen6    string
 	Ipv6          bool
 	Dhcp          warewulfconf.DHCPConf
 	Nfs           warewulfconf.NFSConf
@@ -70,14 +71,15 @@ func InitStruct(overlayName string, nodeData node.Node, allNodes []node.Node) (T
 	tstruct.Warewulf = *controller.Warewulf
 	tstruct.Ipaddr = controller.Ipaddr
 	tstruct.IpCIDR = controller.IpCIDR()
-	tstruct.Ipaddr6 = controller.Ipaddr6
-	tstruct.IpCIDR6 = controller.IpCIDR6
-	if controller.Ipaddr6 != "" && controller.IpCIDR6 != "" {
-		tstruct.Ipv6 = true
-	}
 	tstruct.Netmask = controller.Netmask
 	tstruct.Network = controller.Network
 	tstruct.NetworkCIDR = controller.NetworkCIDR()
+	tstruct.Ipaddr6 = controller.Ipaddr6
+	tstruct.IpCIDR6 = controller.IpCIDR6()
+	tstruct.PrefixLen6 = controller.PrefixLen6
+	if controller.Ipaddr6 != "" && controller.PrefixLen6 != "" {
+		tstruct.Ipv6 = true
+	}
 	// init some convenience vars
 	tstruct.Id = nodeData.Id()
 	tstruct.Hostname = nodeData.Id()

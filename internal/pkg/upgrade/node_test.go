@@ -223,6 +223,31 @@ nodes:
 `,
 	},
 	{
+		name:            "Rename ip6addr to ipaddr6",
+		addDefaults:     false,
+		replaceOverlays: false,
+		legacyYaml: `
+nodeprofiles: {}
+nodes:
+  n1:
+    network devices:
+      default:
+        device: wwnet0
+        hwaddr: e6:92:39:49:7b:03
+        ip6addr: 2001:db8::111
+  `,
+		upgradedYaml: `
+nodeprofiles: {}
+nodes:
+  n1:
+    network devices:
+      default:
+        device: wwnet0
+        hwaddr: e6:92:39:49:7b:03
+        ipaddr6: 2001:db8::111
+`,
+	},
+	{
 		name:            "inline Kernel settings",
 		addDefaults:     false,
 		replaceOverlays: false,

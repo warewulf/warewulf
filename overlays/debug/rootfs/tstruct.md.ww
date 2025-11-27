@@ -30,11 +30,12 @@ data from other structures.
 
 - Ipaddr: {{ .Ipaddr }}
 - IpCIDR: {{ .IpCIDR }}
-- Ipaddr6: {{ .Ipaddr6 }}
-- IpCIDR6: {{ .IpCIDR6 }}
 - Netmask: {{ .Netmask }}
 - Network: {{ .Network }}
 - NetworkCIDR: {{ .NetworkCIDR }}
+- Ipaddr6: {{ .Ipaddr6 }}
+- IpCIDR6: {{ .IpCIDR6 }}
+- PrefixLen6: {{ .PrefixLen6 }}
 - Ipv6: {{ .Ipv6 }}
 
 ### DHCP
@@ -121,10 +122,12 @@ node methods in addition to its fields.
   - Device: {{ $netdev.Device }}
   - Hwaddr: {{ $netdev.Hwaddr }}
   - Ipaddr: {{ $netdev.Ipaddr }}
-  - Ipaddr6: {{ $netdev.Ipaddr6 }}
-  - Prefix: {{ $netdev.Prefix }}
   - Netmask: {{ $netdev.Netmask }}
   - Gateway: {{ $netdev.Gateway }}
+  - Ipaddr6: {{ $netdev.Ipaddr6 }}
+  - IpCIDR6: {{ $netdev.IpCIDR6 }}
+  - PrefixLen6: {{ $netdev.PrefixLen6 }}
+  - Gateway6: {{ $netdev.Gateway6 }}
   - MTU: {{ $netdev.MTU }}
   - Primary: {{ $netdev.Primary }}
   - Tags:

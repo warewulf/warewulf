@@ -74,11 +74,15 @@ dns-search={{ join ";" (without (regexSplit "[ ;]+" $netdev.Tags.DNSSEARCH -1) "
 {{- if $netdev.Tags.master }}
 method=disabled
 {{- else }}
-method=ignore
-addr-gen-mode=stable-privacy
-never-default=true
+addr-gen-mode=eui64
 {{- if $netdev.Ipaddr6 }}
-ipaddr="{{ $netdev.Ipaddr6 }}"
+method=manual
+addresses={{ $netdev.IpCIDR6 }}
+{{- if $netdev.Gateway6 }}
+gateway={{ $netdev.Gateway6 }}
+{{- end }}
+{{- else }}
+method=disabled
 {{- end }}
 {{- end }}
 

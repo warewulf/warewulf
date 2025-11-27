@@ -633,21 +633,24 @@ func (legacy *KernelConf) Upgrade(imageName string) (upgraded *node.KernelConf) 
 }
 
 type NetDev struct {
-	Default string            `yaml:"default"`
-	Device  string            `yaml:"device,omitempty"`
-	Gateway string            `yaml:"gateway,omitempty"`
-	Hwaddr  string            `yaml:"hwaddr,omitempty"`
-	IpCIDR  string            `yaml:"ipcidr,omitempty"`
-	Ipaddr  string            `yaml:"ipaddr,omitempty"`
-	Ipaddr6 string            `yaml:"ip6addr,omitempty"`
-	MTU     string            `yaml:"mtu,omitempty"`
-	Netmask string            `yaml:"netmask,omitempty"`
-	OnBoot  string            `yaml:"onboot,omitempty"`
-	Prefix  string            `yaml:"prefix,omitempty"`
-	Primary string            `yaml:"primary,omitempty"`
-	Tags    map[string]string `yaml:"tags,omitempty"`
-	TagsDel []string          `yaml:"tagsdel,omitempty"`
-	Type    string            `yaml:"type,omitempty"`
+	Default    string            `yaml:"default"`
+	Device     string            `yaml:"device,omitempty"`
+	Gateway    string            `yaml:"gateway,omitempty"`
+	Gateway6   string            `yaml:"gateway6,omitempty"`
+	Hwaddr     string            `yaml:"hwaddr,omitempty"`
+	IpCIDR     string            `yaml:"ipcidr,omitempty"`
+	Ip6addr    string            `yaml:"ip6addr,omitempty"`
+	Ipaddr     string            `yaml:"ipaddr,omitempty"`
+	Ipaddr6    string            `yaml:"ipaddr6,omitempty"`
+	MTU        string            `yaml:"mtu,omitempty"`
+	Netmask    string            `yaml:"netmask,omitempty"`
+	OnBoot     string            `yaml:"onboot,omitempty"`
+	Prefix     string            `yaml:"prefix,omitempty"`
+	PrefixLen6 string            `yaml:"prefixlen6,omitempty"`
+	Primary    string            `yaml:"primary,omitempty"`
+	Tags       map[string]string `yaml:"tags,omitempty"`
+	TagsDel    []string          `yaml:"tagsdel,omitempty"`
+	Type       string            `yaml:"type,omitempty"`
 }
 
 func (legacy *NetDev) Upgrade(addDefaults bool) (upgraded *node.NetDev) {
@@ -655,9 +658,17 @@ func (legacy *NetDev) Upgrade(addDefaults bool) (upgraded *node.NetDev) {
 	upgraded.Tags = make(map[string]string)
 	upgraded.Device = legacy.Device
 	upgraded.Gateway = net.ParseIP(legacy.Gateway)
+	upgraded.Gateway6 = net.ParseIP(legacy.Gateway6)
 	upgraded.Hwaddr = legacy.Hwaddr
 	upgraded.Ipaddr = net.ParseIP(legacy.Ipaddr)
-	upgraded.Ipaddr6 = net.ParseIP(legacy.Ipaddr6)
+	if legacy.Ip6addr != "" {
+		if legacy.Ipaddr6 != legacy.Ip6addr {
+			wwlog.Error("Ipaddr6 (%s) and Ip6addr (%s) are both set and not the same, remove Ip6addr", legacy.Ipaddr6, legacy.Ip6addr)
+		}
+		upgraded.Ipaddr6 = net.ParseIP(legacy.Ip6addr)
+	} else {
+		upgraded.Ipaddr6 = net.ParseIP(legacy.Ipaddr6)
+	}
 	upgraded.MTU = legacy.MTU
 	upgraded.Netmask = net.ParseIP(legacy.Netmask)
 	if legacy.IpCIDR != "" {
@@ -676,7 +687,10 @@ func (legacy *NetDev) Upgrade(addDefaults bool) (upgraded *node.NetDev) {
 	if legacy.OnBoot != "" {
 		warnError(upgraded.OnBoot.Set(legacy.OnBoot))
 	}
-	upgraded.Prefix = net.ParseIP(legacy.Prefix)
+	if legacy.Prefix != "" {
+		logIgnore("Prefix", legacy.Prefix, "obsolete")
+	}
+	upgraded.PrefixLen6 = legacy.PrefixLen6
 	if legacy.Tags != nil {
 		for key, value := range legacy.Tags {
 			upgraded.Tags[key] = value

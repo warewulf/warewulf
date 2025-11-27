@@ -89,7 +89,7 @@ nodes:
 	secureFalse := false
 	conf.Warewulf.SecureP = &secureFalse
 	conf.Ipaddr = "10.10.0.1"
-	conf.Ipaddr6 = "fd00:10::1/64"
+	conf.Ipaddr6 = "fd00:10::1"
 	assert.NoError(t, os.MkdirAll(path.Join(conf.Paths.OverlayProvisiondir(), "n1"), 0700))
 	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.OverlayProvisiondir(), "n1", "__SYSTEM__.img"), []byte("system overlay"), 0600))
 	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.OverlayProvisiondir(), "n1", "__RUNTIME__.img"), []byte("runtime overlay"), 0600))

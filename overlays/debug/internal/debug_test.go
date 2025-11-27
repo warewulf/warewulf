@@ -90,11 +90,12 @@ data from other structures.
 
 - Ipaddr: 192.168.0.1
 - IpCIDR: 192.168.0.1/24
-- Ipaddr6: 
-- IpCIDR6: 
 - Netmask: 255.255.255.0
 - Network: 192.168.0.0
 - NetworkCIDR: 192.168.0.0/24
+- Ipaddr6: 
+- IpCIDR6: 
+- PrefixLen6: 
 - Ipv6: false
 
 ### DHCP
@@ -176,10 +177,12 @@ node methods in addition to its fields.
   - Device: wwnet0
   - Hwaddr: e6:92:39:49:7b:03
   - Ipaddr: 192.168.3.21
-  - Ipaddr6: <nil>
-  - Prefix: <nil>
   - Netmask: 255.255.255.0
   - Gateway: 192.168.3.1
+  - Ipaddr6: <nil>
+  - IpCIDR6: 
+  - PrefixLen6: 
+  - Gateway6: <nil>
   - MTU: 
   - Primary: false
   - Tags:
@@ -189,15 +192,32 @@ node methods in addition to its fields.
   - Device: wwnet1
   - Hwaddr: 9a:77:29:73:14:f1
   - Ipaddr: 192.168.3.22
-  - Ipaddr6: <nil>
-  - Prefix: <nil>
   - Netmask: 255.255.255.0
   - Gateway: 192.168.3.1
+  - Ipaddr6: <nil>
+  - IpCIDR6: 
+  - PrefixLen6: 
+  - Gateway6: <nil>
   - MTU: 
   - Primary: false
   - Tags:
     - DNS1=8.8.8.8
     - DNS2=8.8.4.4
+- NetDevs[tertiary]:
+  - Type: 
+  - OnBoot:  (true)
+  - Device: wwnet3
+  - Hwaddr: 9a:77:29:73:14:f8
+  - Ipaddr: <nil>
+  - Netmask: <nil>
+  - Gateway: <nil>
+  - Ipaddr6: fd00:10::3
+  - IpCIDR6: fd00:10::3/64
+  - PrefixLen6: 64
+  - Gateway6: fd00:10::1
+  - MTU: 
+  - Primary: false
+  - Tags:
 
 ## Other nodes
 

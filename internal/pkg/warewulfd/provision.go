@@ -120,8 +120,8 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		}
 		authority := fmt.Sprintf("%s:%d", conf.Ipaddr, conf.Warewulf.Port)
 		ipaddr6 := ""
-		if confIpaddr6, err := netip.ParsePrefix(conf.Ipaddr6); err == nil {
-			ipaddr6 = confIpaddr6.Addr().String()
+		if confIpaddr6, err := netip.ParseAddr(conf.Ipaddr6); err == nil {
+			ipaddr6 = confIpaddr6.String()
 		}
 		if rinfoIpaddr, err := netip.ParseAddr(rinfo.ipaddr); err == nil {
 			if rinfoIpaddr.Is6() {
@@ -226,8 +226,8 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 			}
 			authority := fmt.Sprintf("%s:%d", conf.Ipaddr, conf.Warewulf.Port)
 			ipaddr6 := ""
-			if confIpaddr6, err := netip.ParsePrefix(conf.Ipaddr6); err == nil {
-				ipaddr6 = confIpaddr6.Addr().String()
+			if confIpaddr6, err := netip.ParseAddr(conf.Ipaddr6); err == nil {
+				ipaddr6 = confIpaddr6.String()
 			}
 			if rinfoIpaddr, err := netip.ParseAddr(rinfo.ipaddr); err == nil {
 				if rinfoIpaddr.Is6() {

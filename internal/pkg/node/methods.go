@@ -4,6 +4,7 @@ import (
 	"net"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/warewulf/warewulf/internal/pkg/util"
@@ -424,6 +425,28 @@ func (netdev *NetDev) IpCIDR() string {
 		Mask: net.IPMask(netdev.Netmask),
 	}
 	return ipCIDR.String()
+}
+
+/*
+Return the ipv6 address with prefix CIDR format. Aimed for the use in
+template, symmetric with IpCIDR.
+*/
+func (netdev *NetDev) IpCIDR6() string {
+	if netdev.Ipaddr6 == nil || netdev.Ipaddr6.IsUnspecified() || netdev.PrefixLen6 == "" {
+		return ""
+	}
+	if netdev.Ipaddr6.To4() != nil {
+		return ""
+	}
+	prefix, err := strconv.Atoi(netdev.PrefixLen6)
+	if err != nil || prefix < 0 || prefix > 128 {
+		return ""
+	}
+	ipCIDR6 := net.IPNet{
+		IP:   netdev.Ipaddr6,
+		Mask: net.CIDRMask(prefix, 128),
+	}
+	return ipCIDR6.String()
 }
 
 var unsetValues = []string{"UNSET", "UNDEF"}
