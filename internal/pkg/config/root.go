@@ -8,6 +8,7 @@ package config
 
 import (
 	"bytes"
+	"fmt"
 	"net"
 	"os"
 	"reflect"
@@ -170,6 +171,15 @@ func (config *WarewulfYaml) NetworkCIDR() string {
 	return cidr.String()
 }
 
+func (config *WarewulfYaml) NetworkCIDR6() string {
+	cidr := fmt.Sprintf("%s/%s", config.Ipaddr6, config.PrefixLen6)
+	_, ipnet, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return ""
+	}
+	return ipnet.String()
+}
+
 func (config *WarewulfYaml) IpCIDR() string {
 	if config.Ipaddr == "" || config.Netmask == "" {
 		return ""
@@ -185,25 +195,12 @@ func (config *WarewulfYaml) IpCIDR() string {
 }
 
 func (config *WarewulfYaml) IpCIDR6() string {
-	if config.Ipaddr6 == "" || config.PrefixLen6 == "" {
+	cidr := fmt.Sprintf("%s/%s", config.Ipaddr6, config.PrefixLen6)
+	ip, _, err := net.ParseCIDR(cidr)
+	if err != nil || ip == nil || ip.To4() != nil {
 		return ""
 	}
-	ip := net.ParseIP(config.Ipaddr6)
-	if ip == nil || ip.To4() != nil {
-		return ""
-	}
-	prefix, err := strconv.Atoi(config.PrefixLen6)
-	if err != nil {
-		return ""
-	}
-	cidr := net.IPNet{
-		IP:   ip,
-		Mask: net.CIDRMask(prefix, 128),
-	}
-	if cidr.IP == nil || cidr.Mask == nil {
-		return ""
-	}
-	return cidr.String()
+	return cidr
 }
 
 // InitializedFromFile returns true if [WarewulfYaml] memory was read from

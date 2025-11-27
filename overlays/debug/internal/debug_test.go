@@ -93,10 +93,11 @@ data from other structures.
 - Netmask: 255.255.255.0
 - Network: 192.168.0.0
 - NetworkCIDR: 192.168.0.0/24
-- Ipaddr6: 
-- IpCIDR6: 
-- PrefixLen6: 
-- Ipv6: false
+- Ipaddr6: 2001:db8::1
+- PrefixLen6: 64
+- IpCIDR6: 2001:db8::1/64
+- NetworkCIDR6: 2001:db8::/64
+- Ipv6: true
 
 ### DHCP
 
@@ -180,8 +181,8 @@ node methods in addition to its fields.
   - Netmask: 255.255.255.0
   - Gateway: 192.168.3.1
   - Ipaddr6: <nil>
-  - IpCIDR6: 
   - PrefixLen6: 
+  - IpCIDR6: 
   - Gateway6: <nil>
   - MTU: 
   - Primary: false
@@ -195,8 +196,8 @@ node methods in addition to its fields.
   - Netmask: 255.255.255.0
   - Gateway: 192.168.3.1
   - Ipaddr6: <nil>
-  - IpCIDR6: 
   - PrefixLen6: 
+  - IpCIDR6: 
   - Gateway6: <nil>
   - MTU: 
   - Primary: false
@@ -211,10 +212,10 @@ node methods in addition to its fields.
   - Ipaddr: <nil>
   - Netmask: <nil>
   - Gateway: <nil>
-  - Ipaddr6: fd00:10::3
-  - IpCIDR6: fd00:10::3/64
+  - Ipaddr6: 2001:db8::3
   - PrefixLen6: 64
-  - Gateway6: fd00:10::1
+  - IpCIDR6: 2001:db8::3/64
+  - Gateway6: 2001:db8::1
   - MTU: 
   - Primary: false
   - Tags:

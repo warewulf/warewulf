@@ -34,8 +34,9 @@ data from other structures.
 - Network: {{ .Network }}
 - NetworkCIDR: {{ .NetworkCIDR }}
 - Ipaddr6: {{ .Ipaddr6 }}
-- IpCIDR6: {{ .IpCIDR6 }}
 - PrefixLen6: {{ .PrefixLen6 }}
+- IpCIDR6: {{ .IpCIDR6 }}
+- NetworkCIDR6: {{ .NetworkCIDR6 }}
 - Ipv6: {{ .Ipv6 }}
 
 ### DHCP
@@ -125,8 +126,8 @@ node methods in addition to its fields.
   - Netmask: {{ $netdev.Netmask }}
   - Gateway: {{ $netdev.Gateway }}
   - Ipaddr6: {{ $netdev.Ipaddr6 }}
-  - IpCIDR6: {{ $netdev.IpCIDR6 }}
   - PrefixLen6: {{ $netdev.PrefixLen6 }}
+  - IpCIDR6: {{ $netdev.IpCIDR6 }}
   - Gateway6: {{ $netdev.Gateway6 }}
   - MTU: {{ $netdev.MTU }}
   - Primary: {{ $netdev.Primary }}

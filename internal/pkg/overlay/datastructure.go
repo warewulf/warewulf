@@ -30,8 +30,9 @@ type TemplateStruct struct {
 	NetworkCIDR   string
 	Overlay       string
 	Ipaddr6       string
-	IpCIDR6       string
 	PrefixLen6    string
+	IpCIDR6       string
+	NetworkCIDR6  string
 	Ipv6          bool
 	Dhcp          warewulfconf.DHCPConf
 	Nfs           warewulfconf.NFSConf
@@ -75,8 +76,9 @@ func InitStruct(overlayName string, nodeData node.Node, allNodes []node.Node) (T
 	tstruct.Network = controller.Network
 	tstruct.NetworkCIDR = controller.NetworkCIDR()
 	tstruct.Ipaddr6 = controller.Ipaddr6
-	tstruct.IpCIDR6 = controller.IpCIDR6()
 	tstruct.PrefixLen6 = controller.PrefixLen6
+	tstruct.IpCIDR6 = controller.IpCIDR6()
+	tstruct.NetworkCIDR6 = controller.NetworkCIDR6()
 	if controller.Ipaddr6 != "" && controller.PrefixLen6 != "" {
 		tstruct.Ipv6 = true
 	}
