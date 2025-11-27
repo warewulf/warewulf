@@ -28,6 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - Set `addr-gen-mode=eui64`
 - Set dnsmasq to listen to the Warewulf interface to prevent to binding to localhost:53
 - Added Ipv6 support to `/etc/hosts` on host and nodes.
+- Added IPv6 support to wwclient
 
 ### Removed
 
