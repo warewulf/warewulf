@@ -1,4 +1,4 @@
-package debian_interfaces
+package ifupdown
 
 import (
 	"bytes"
@@ -82,4 +82,8 @@ iface wwnet1 inet static
   gateway 192.168.3.1
   mtu 9000
   up ip route add 192.168.1.0/24 via 192.168.3.254 dev wwnet1
+iface wwnet1 inet6 static
+  address 2001:db8::23/64
+  gateway 2001:db8::1
+  mtu 9000
 `

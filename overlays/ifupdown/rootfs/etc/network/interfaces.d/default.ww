@@ -5,6 +5,7 @@
 auto {{ $netdev.Device }}
 {{- end }}
 allow-hotplug {{ $netdev.Device }}
+{{- if $netdev.Ipaddr }}
 iface {{ $netdev.Device }} inet static
   address {{ $netdev.Ipaddr }}
   netmask {{ $netdev.Netmask }}
@@ -15,4 +16,11 @@ iface {{ $netdev.Device }} inet static
   up ip route add {{ index (splitList "," $tv) 0 }} via {{ index (splitList "," $tv) 1 }} dev {{ $netdev.Device }}
   {{- end }}
   {{- end }}
+{{- end }}
+{{- if $netdev.Ipaddr6 }}
+iface {{ $netdev.Device }} inet6 static
+  address {{ $netdev.IpCIDR6 }}
+  {{ if $netdev.Gateway6 }}gateway {{ $netdev.Gateway6 }}{{ end }}
+  {{ if $netdev.MTU }}mtu {{ $netdev.MTU }}{{ end }}
+{{- end }}
 {{ end -}}
