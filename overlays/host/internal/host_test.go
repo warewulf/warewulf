@@ -333,6 +333,14 @@ Filename: etc/hosts
 192.168.3.22  node1-secondary node1-wwnet1
 # Entry for node2
 192.168.3.23 node2 node2-default node2-wwnet0
+
+# Warewulf Ipv6
+2001:db8::1 %HOSTNAME% warewulf
+# Entry for node1
+2001:db8::111 node1 node1-default node1-wwnet0
+2001:db8::112  node1-secondary node1-wwnet1
+# Entry for node2
+2001:db8::121 node2 node2-default node2-wwnet0
 `
 
 const host_ssh_setup_csh = `backupFile: true

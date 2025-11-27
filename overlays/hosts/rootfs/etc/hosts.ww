@@ -12,3 +12,20 @@
 {{- end }}
 {{- end }}
 {{- end }}
+
+{{- if .Ipv6 }}
+
+# Warewulf Ipv6
+{{$.Ipaddr6}} {{$.BuildHost}} warewulf
+
+{{- range $node := $.AllNodes}}{{/* for each node */}}
+# Entry for {{$node.Id}}
+{{- range $devname, $netdev := $node.NetDevs}}{{/* for each network device on the node */}}
+{{- if $netdev.Ipaddr6}}{{/* if we have an ip address on this network device */}}
+{{- /* emit the node name as hostname if this is the primary */}}
+{{$netdev.Ipaddr6}} {{if $netdev.Primary}}{{$node.Id}}{{end}} {{$node.Id}}-{{$devname}} {{if $netdev.Device}}{{$node.Id}}-{{$netdev.Device}}{{end}}
+{{- end }}{{/* if ip */}}
+{{- end }}{{/* for each network device */}}
+{{- end }}{{/* for each node */}}
+
+{{- end }}{{/* for .IPv6 */}}
