@@ -20,6 +20,7 @@ Address={{ $netdev.IpCIDR }}
 Gateway={{ $netdev.Gateway }}
 {{- end }}
 {{- if $netdev.IpCIDR6 }}
+IPv6AcceptRA=no
 IPv6PrivacyExtensions=false
 Address={{ $netdev.IpCIDR6 }}
 {{- end }}
@@ -33,6 +34,7 @@ DNS={{ $tv }}
 {{- end }}
 
 {{- if $netdev.MTU }}
+
 [Link]
 MTUBytes={{ $netdev.MTU }}
 {{- end }}
@@ -49,7 +51,7 @@ Gateway={{ index $route 1 }}
 {{- if $netdev.Ipaddr6 }}
 
 [DHCPv6]
-UseAddress=no
+DUIDType=link-layer
 {{ end -}}
 
 {{ end -}}

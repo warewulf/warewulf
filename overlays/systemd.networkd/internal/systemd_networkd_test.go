@@ -69,6 +69,7 @@ MACAddress=e6:92:39:49:7b:03
 DHCP=no
 Address=192.168.3.21/24
 Gateway=192.168.3.1
+
 [Link]
 MTUBytes=1500
 backupFile: true
@@ -83,9 +84,11 @@ MACAddress=9a:77:29:73:14:f1
 DHCP=no
 Address=192.168.3.22/24
 Gateway=192.168.3.1
+IPv6AcceptRA=no
 IPv6PrivacyExtensions=false
 Address=2001:db8::23/64
 Gateway=2001:db8::1
+
 [Link]
 MTUBytes=9000
 
@@ -94,7 +97,7 @@ Destination=192.168.1.0/24
 Gateway=192.168.3.254
 
 [DHCPv6]
-UseAddress=no
+DUIDType=link-layer
 `
 
 const expected_log_without_hwaddr string = `backupFile: true
@@ -109,6 +112,7 @@ Name=wwnet0
 DHCP=no
 Address=192.168.3.21/24
 Gateway=192.168.3.1
+
 [Link]
 MTUBytes=1500
 backupFile: true
@@ -122,9 +126,11 @@ Name=wwnet1
 DHCP=no
 Address=192.168.3.22/24
 Gateway=192.168.3.1
+IPv6AcceptRA=no
 IPv6PrivacyExtensions=false
 Address=2001:db8::23/64
 Gateway=2001:db8::1
+
 [Link]
 MTUBytes=9000
 
@@ -133,5 +139,5 @@ Destination=192.168.1.0/24
 Gateway=192.168.3.254
 
 [DHCPv6]
-UseAddress=no
+DUIDType=link-layer
 `
