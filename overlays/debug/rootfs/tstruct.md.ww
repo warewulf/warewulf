@@ -36,6 +36,7 @@ data from other structures.
 - Ipaddr6: {{ .Ipaddr6 }}
 - PrefixLen6: {{ .PrefixLen6 }}
 - IpCIDR6: {{ .IpCIDR6 }}
+- Network6: {{ .Network6 }}
 - NetworkCIDR6: {{ .NetworkCIDR6 }}
 - Ipv6: {{ .Ipv6 }}
 

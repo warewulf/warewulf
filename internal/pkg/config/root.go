@@ -157,6 +157,15 @@ func (conf *WarewulfYaml) Parse(data []byte, autodetect bool) error {
 	return nil
 }
 
+func (config *WarewulfYaml) Network6() string {
+	cidr := fmt.Sprintf("%s/%s", config.Ipaddr6, config.PrefixLen6)
+	_, ipnet, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return ""
+	}
+	return ipnet.IP.String()
+}
+
 func (config *WarewulfYaml) NetworkCIDR() string {
 	if config.Network == "" || config.Netmask == "" {
 		return ""

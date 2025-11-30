@@ -96,6 +96,7 @@ data from other structures.
 - Ipaddr6: 2001:db8::1
 - PrefixLen6: 64
 - IpCIDR6: 2001:db8::1/64
+- Network6: 2001:db8::
 - NetworkCIDR6: 2001:db8::/64
 - Ipv6: true
 

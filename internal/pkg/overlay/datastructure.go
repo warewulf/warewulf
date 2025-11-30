@@ -32,6 +32,7 @@ type TemplateStruct struct {
 	Ipaddr6       string
 	PrefixLen6    string
 	IpCIDR6       string
+	Network6      string
 	NetworkCIDR6  string
 	Ipv6          bool
 	Dhcp          warewulfconf.DHCPConf
@@ -78,6 +79,7 @@ func InitStruct(overlayName string, nodeData node.Node, allNodes []node.Node) (T
 	tstruct.Ipaddr6 = controller.Ipaddr6
 	tstruct.PrefixLen6 = controller.PrefixLen6
 	tstruct.IpCIDR6 = controller.IpCIDR6()
+	tstruct.Network6 = controller.Network6()
 	tstruct.NetworkCIDR6 = controller.NetworkCIDR6()
 	if controller.Ipaddr6 != "" && controller.PrefixLen6 != "" {
 		tstruct.Ipv6 = true
