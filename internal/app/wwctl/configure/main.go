@@ -1,11 +1,14 @@
 package configure
 
 import (
+	"fmt"
 	"os"
+	"path"
 
 	"github.com/spf13/cobra"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/configure"
+	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -20,6 +23,19 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if allFunctions {
+		keystore := path.Join(conf.Paths.Sysconfdir, "warewulf", "keys")
+		keyFile := path.Join(keystore, "warewulf.key")
+		certFile := path.Join(keystore, "warewulf.crt")
+
+		if !util.IsFile(keyFile) || !util.IsFile(certFile) {
+			err = configure.GenKeys()
+			if err != nil {
+				return err
+			}
+		} else {
+			fmt.Printf("Keys already exist in %s\n", keystore)
+		}
+
 		err = configure.WAREWULFD()
 		if err != nil {
 			return err

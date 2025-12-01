@@ -39,6 +39,7 @@ type templateVars struct {
 	KernelArgs    string
 	KernelVersion string
 	Root          string
+	Https         bool
 	Tags          map[string]string
 	NetDevs       map[string]*node.NetDev
 }
@@ -247,6 +248,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 				Ipaddr:        conf.Ipaddr,
 				Ipaddr6:       ipaddr6,
 				Port:          strconv.Itoa(conf.Warewulf.Port),
+				Https:         conf.Warewulf.EnableHttps(),
 				Authority:     authority,
 				Hostname:      remoteNode.Id(),
 				Hwaddr:        rinfo.hwaddr,
