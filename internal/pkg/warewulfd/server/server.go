@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path"
 	"strconv"
 	"strings"
 	"syscall"
@@ -82,6 +83,24 @@ func RunServer() error {
 			defaultHandler.ServeHTTP(w, r)
 		}
 	})
+
+	if conf.Warewulf.EnableHttps() {
+		key := path.Join(conf.Paths.Sysconfdir, "warewulf", "keys", "warewulf.key")
+		crt := path.Join(conf.Paths.Sysconfdir, "warewulf", "keys", "warewulf.crt")
+
+		if !util.IsFile(key) || !util.IsFile(crt) {
+			wwlog.Error("HTTPS enabled but keys not found in %s", path.Join(conf.Paths.Sysconfdir, "warewulf", "keys"))
+		} else {
+			go func() {
+				wwlog.Info("Starting HTTPS service on port %d", conf.Warewulf.SecurePort)
+				if err := http.ListenAndServeTLS(":"+strconv.Itoa(conf.Warewulf.SecurePort), crt, key, dispatchHandler); err != nil {
+					wwlog.Error("Could not start HTTPS service: %s", err)
+				}
+			}()
+		}
+	}
+
+	wwlog.Info("Starting HTTP service on port %d", daemonPort)
 	if err := http.ListenAndServe(":"+strconv.Itoa(daemonPort), dispatchHandler); err != nil {
 		return fmt.Errorf("could not start listening service: %w", err)
 	}
