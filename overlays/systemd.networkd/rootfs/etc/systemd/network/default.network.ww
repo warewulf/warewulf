@@ -15,17 +15,18 @@ DHCP=no
 {{- end }}
 {{- if $netdev.IpCIDR }}
 Address={{ $netdev.IpCIDR }}
-{{- end }}
 {{- if $netdev.Gateway }}
 Gateway={{ $netdev.Gateway }}
+{{- end }}
 {{- end }}
 {{- if $netdev.IpCIDR6 }}
 IPv6AcceptRA=no
 IPv6PrivacyExtensions=false
+LinkLocalAddressing=ipv6
 Address={{ $netdev.IpCIDR6 }}
-{{- end }}
 {{- if $netdev.Gateway6 }}
 Gateway={{ $netdev.Gateway6 }}
+{{- end }}
 {{- end }}
 {{- range $tk, $tv := $netdev.Tags }}
 {{- if regexMatch "^DNS[0-9]*$" $tk }}
@@ -33,11 +34,12 @@ DNS={{ $tv }}
 {{- end }}
 {{- end }}
 
-{{- if $netdev.MTU }}
-
 [Link]
+{{- if $netdev.MTU }}
 MTUBytes={{ $netdev.MTU }}
 {{- end }}
+
+{{- /* Route */}}
 {{- range $tk, $tv := $netdev.Tags }}
 {{- if eq (substr 0 5 $tk) "route" }}
 {{- $route := splitList "," $tv }}

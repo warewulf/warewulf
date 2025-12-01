@@ -86,6 +86,7 @@ Address=192.168.3.22/24
 Gateway=192.168.3.1
 IPv6AcceptRA=no
 IPv6PrivacyExtensions=false
+LinkLocalAddressing=ipv6
 Address=2001:db8::23/64
 Gateway=2001:db8::1
 
@@ -128,6 +129,7 @@ Address=192.168.3.22/24
 Gateway=192.168.3.1
 IPv6AcceptRA=no
 IPv6PrivacyExtensions=false
+LinkLocalAddressing=ipv6
 Address=2001:db8::23/64
 Gateway=2001:db8::1
 

@@ -1,6 +1,0 @@
-ipaddr6: 2001:db8::1
-prefixlen6: 64
-dhcp:
-  enabled: true
-  range6 start: 2001:db8::100
-  range6 end: 2001:db8::0:1FF

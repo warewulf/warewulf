@@ -30,15 +30,9 @@ dhcp-no-override
 enable-tftp
 tftp-root={{ $.Tftp.TftpRoot }}
 {{- end }}
-{{ if and $.Dhcp.RangeStart $.Dhcp.RangeEnd -}}
-# define the the range
-dhcp-range={{$.Dhcp.RangeStart}},{{$.Dhcp.RangeEnd}},{{$.Netmask}},6h
-{{ end -}}
-{{ if and $.Dhcp.Range6Start $.Dhcp.Range6End -}}
-dhcp-range={{$.Dhcp.Range6Start}},{{$.Dhcp.Range6End}},6h
-{{ end -}}
 
 {{- if .Ipv6 }}
+
 # IPv6 routing announcements
 enable-ra
 
@@ -61,6 +55,21 @@ dhcp-option=tag:iPXE,option6:bootfile-url,"http://[{{$.Ipaddr6}}]:{{$.Warewulf.P
 
 {{- end }}
 
+# define the dhcp range
+{{ if and $.Dhcp.RangeStart $.Dhcp.RangeEnd -}}
+dhcp-range={{$.Dhcp.RangeStart}},{{$.Dhcp.RangeEnd}},{{$.Netmask}},6h
+{{ else -}}
+dhcp-range={{$.Network}},static,{{$.Netmask}},6h
+{{ end -}}
+{{ if .Ipv6 -}}
+{{ if and $.Dhcp.Range6Start $.Dhcp.Range6End -}}
+dhcp-range={{$.Dhcp.Range6Start}},{{$.Dhcp.Range6End}},6h
+{{ else -}}
+dhcp-range={{$.Network6}},ra-stateless,{{$.PrefixLen6}},6h
+{{ end -}}
+{{ end -}}
+
+{{ if eq .Dhcp.Template "static" }}
 # hosts
 {{ range $node := $.AllNodes -}}
 {{ range $devname, $netdev := $node.NetDevs -}}
@@ -68,7 +77,7 @@ dhcp-host=
   {{- if $netdev.Hwaddr -}}
     {{$netdev.Hwaddr}},id:00:03:00:01:{{$netdev.Hwaddr}},
   {{- end -}}
-  set:warewulf,
+  set:{{ $node.Tags.Tag | default "warewulf" }},
   {{- if $netdev.Ipaddr -}}
     {{- $netdev.Ipaddr -}},
   {{- end -}}
@@ -78,3 +87,5 @@ dhcp-host=
   {{$node.Id}},infinite
 {{ end -}}
 {{ end -}}
+
+{{- end -}}
