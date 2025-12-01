@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - `wwclient.aarch64` overlay always provides an aarch64 wwclient executable.
 - `wwclient.x86_64` overlay always provides an x86_64 wwclient executable.
+- systemd-networkd overlay with IPv6 support
 
 ### Changed
 
@@ -20,6 +21,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Dynamically write `$tftpdir/warewulf/grub.cfg` to the configured value from `warewulf.conf`
 - Absolute paths specified with `{{ file }}` in an overlay now write to that absolute path.
 - Use opencontainers/selinux to manage SELinux in wwclient.
+- Replace unused/unneeded IPv6net with IpCIDR6 and NetworkCIDR6 to align with IPv4
+- Improved IPv6 support
+  - Add PrefixLen6 for prefix length, Gateway6, and IPv6 DHCP range
+  - IPv6 support for Dnsmasq and NetworkManager
+  - Rename Netdev ip6addr to ipaddr6 for consistency
+  - Set `addr-gen-mode=eui64`
+- Set dnsmasq to listen to the Warewulf interface to prevent to binding to localhost:53
+- Added Ipv6 support to `/etc/hosts` on host and nodes.
+- Added IPv6 support to wwclient
+
+### Removed
+
+- Remove unused Netdev `Prefix` field.
 
 ### Fixed
 

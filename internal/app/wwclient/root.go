@@ -225,7 +225,11 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	var finishedInitialSync bool = false
 	ipaddr := os.Getenv("WW_IPADDR")
 	if ipaddr == "" {
-		ipaddr = conf.Ipaddr
+		if conf.Ipaddr6 != "" {
+			ipaddr = conf.Ipaddr6
+		} else {
+			ipaddr = conf.Ipaddr
+		}
 	}
 
 	for {

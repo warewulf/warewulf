@@ -45,6 +45,59 @@ func Test_IpCIDR(t *testing.T) {
 	}
 }
 
+func Test_IpCIDR6(t *testing.T) {
+	tests := map[string]struct {
+		ipaddr net.IP
+		prefix string
+		cidr   string
+	}{
+		"nil": {
+			ipaddr: nil,
+			prefix: "",
+			cidr:   "",
+		},
+		"ip only": {
+			ipaddr: net.ParseIP("fd00:10::1"),
+			prefix: "",
+			cidr:   "",
+		},
+		"netmask only": {
+			ipaddr: nil,
+			prefix: "64",
+			cidr:   "",
+		},
+		"ipv4": {
+			ipaddr: net.ParseIP("10.0.0.1"),
+			prefix: "64",
+			cidr:   "",
+		},
+		"invalid prefix type": {
+			ipaddr: net.ParseIP("fd00:10::1"),
+			prefix: "string",
+			cidr:   "",
+		},
+		"invalid prefix": {
+			ipaddr: net.ParseIP("fd00:10::1"),
+			prefix: "129",
+			cidr:   "",
+		},
+		"working": {
+			ipaddr: net.ParseIP("fd00:10::1"),
+			prefix: "64",
+			cidr:   "fd00:10::1/64",
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			n := new(NetDev)
+			n.Ipaddr6 = tt.ipaddr
+			n.PrefixLen6 = tt.prefix
+			assert.Equal(t, tt.cidr, n.IpCIDR6())
+		})
+	}
+}
+
 func Test_Empty(t *testing.T) {
 	var netdev NetDev
 	var netdevPtr *NetDev

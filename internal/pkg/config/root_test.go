@@ -152,54 +152,8 @@ api:
 ipaddr6: "2001:db8::1/64"
 `,
 			result: `
-ipaddr6: "2001:db8::1/64"
-ipv6net: "2001:db8::"
-warewulf:
-  autobuild overlays: true
-  grubboot: false
-  host overlay: true
-  port: 9873
-  secure: true
-  update interval: 60
-nfs:
-  enabled: true
-  systemd name: nfsd
-dhcp:
-  enabled: true
-  systemd name: dhcpd
-  template: default
-image mounts:
-- dest: /etc/resolv.conf
-  source: /etc/resolv.conf
-ssh:
-  key types:
-  - ed25519
-  - ecdsa
-  - rsa
-  - dsa
-tftp:
-  enabled: true
-  ipxe:
-    "00:00": undionly.kpxe
-    "00:07": ipxe-snponly-x86_64.efi
-    "00:09": ipxe-snponly-x86_64.efi
-    "00:0B": arm64-efi/snponly.efi
-  systemd name: tftp
-api:
-  enabled: false
-  allowed subnets:
-  - 127.0.0.0/8
-  - ::1/128
-`,
-		},
-		"ipv6 cidr conflict": {
-			input: `
-ipaddr6: "2001:db8:1::1/64"
-ipv6net: "2001:db8:2::"
-`,
-			result: `
-ipaddr6: "2001:db8:1::1/64"
-ipv6net: "2001:db8:2::"
+ipaddr6: "2001:db8::1"
+prefixlen6: "64"
 warewulf:
   autobuild overlays: true
   grubboot: false
@@ -465,6 +419,59 @@ func TestNetworkCIDR(t *testing.T) {
 			conf.Network = tt.network
 			conf.Netmask = tt.netmask
 			assert.Equal(t, tt.cidr, conf.NetworkCIDR())
+		})
+	}
+}
+
+func TestIpCIDR6(t *testing.T) {
+	tests := map[string]struct {
+		ipaddr6    string
+		prefixlen6 string
+		cidr       string
+	}{
+		"blank": {
+			ipaddr6:    "",
+			prefixlen6: "",
+			cidr:       "",
+		},
+		"ip only": {
+			ipaddr6:    "2001:db8::1",
+			prefixlen6: "",
+			cidr:       "",
+		},
+		"prefix only": {
+			ipaddr6:    "",
+			prefixlen6: "64",
+			cidr:       "",
+		},
+		"full": {
+			ipaddr6:    "2001:db8::1",
+			prefixlen6: "64",
+			cidr:       "2001:db8::1/64",
+		},
+		"invalid ip": {
+			ipaddr6:    "asdf",
+			prefixlen6: "64",
+			cidr:       "",
+		},
+		"invalid prefix": {
+			ipaddr6:    "2001:db8::1",
+			prefixlen6: "asdf",
+			cidr:       "",
+		},
+		"ipv4 address": {
+			ipaddr6:    "192.168.0.1",
+			prefixlen6: "24",
+			cidr:       "",
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			conf := New()
+			conf.Ipaddr6 = tt.ipaddr6
+			conf.PrefixLen6 = tt.prefixlen6
+			assert.Equal(t, tt.cidr, conf.IpCIDR6())
 		})
 	}
 }

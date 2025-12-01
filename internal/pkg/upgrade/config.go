@@ -45,7 +45,9 @@ func (legacy *WarewulfYaml) Upgrade() (upgraded *config.WarewulfYaml) {
 	upgraded.Ipaddr6 = legacy.Ipaddr6
 	upgraded.Netmask = legacy.Netmask
 	upgraded.Network = legacy.Network
-	upgraded.Ipv6net = legacy.Ipv6net
+	if legacy.Ipv6net != "" {
+		logIgnore("Ipv6net", legacy.Ipv6net, "obsolete")
+	}
 	upgraded.Fqdn = legacy.Fqdn
 	if legacy.Warewulf != nil {
 		upgraded.Warewulf = legacy.Warewulf.Upgrade()

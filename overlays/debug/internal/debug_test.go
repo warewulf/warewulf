@@ -90,11 +90,15 @@ data from other structures.
 
 - Ipaddr: 192.168.0.1
 - IpCIDR: 192.168.0.1/24
-- Ipaddr6: 
 - Netmask: 255.255.255.0
 - Network: 192.168.0.0
 - NetworkCIDR: 192.168.0.0/24
-- Ipv6: false
+- Ipaddr6: 2001:db8::1
+- PrefixLen6: 64
+- IpCIDR6: 2001:db8::1/64
+- Network6: 2001:db8::
+- NetworkCIDR6: 2001:db8::/64
+- Ipv6: true
 
 ### DHCP
 
@@ -102,6 +106,8 @@ data from other structures.
 - Dhcp.Template: default
 - Dhcp.RangeStart: 
 - Dhcp.RangeEnd: 
+- Dhcp.Range6Start: 
+- Dhcp.Range6End: 
 - Dhcp.SystemdName: dhcpd
 
 ### NFS
@@ -173,10 +179,12 @@ node methods in addition to its fields.
   - Device: wwnet0
   - Hwaddr: e6:92:39:49:7b:03
   - Ipaddr: 192.168.3.21
-  - Ipaddr6: <nil>
-  - Prefix: <nil>
   - Netmask: 255.255.255.0
   - Gateway: 192.168.3.1
+  - Ipaddr6: <nil>
+  - PrefixLen6: 
+  - IpCIDR6: 
+  - Gateway6: <nil>
   - MTU: 
   - Primary: false
   - Tags:
@@ -186,15 +194,32 @@ node methods in addition to its fields.
   - Device: wwnet1
   - Hwaddr: 9a:77:29:73:14:f1
   - Ipaddr: 192.168.3.22
-  - Ipaddr6: <nil>
-  - Prefix: <nil>
   - Netmask: 255.255.255.0
   - Gateway: 192.168.3.1
+  - Ipaddr6: <nil>
+  - PrefixLen6: 
+  - IpCIDR6: 
+  - Gateway6: <nil>
   - MTU: 
   - Primary: false
   - Tags:
     - DNS1=8.8.8.8
     - DNS2=8.8.4.4
+- NetDevs[tertiary]:
+  - Type: 
+  - OnBoot:  (true)
+  - Device: wwnet3
+  - Hwaddr: 9a:77:29:73:14:f8
+  - Ipaddr: <nil>
+  - Netmask: <nil>
+  - Gateway: <nil>
+  - Ipaddr6: 2001:db8::3
+  - PrefixLen6: 64
+  - IpCIDR6: 2001:db8::3/64
+  - Gateway6: 2001:db8::1
+  - MTU: 
+  - Primary: false
+  - Tags:
 
 ## Other nodes
 

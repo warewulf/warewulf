@@ -30,12 +30,62 @@ dhcp-no-override
 enable-tftp
 tftp-root={{ $.Tftp.TftpRoot }}
 {{- end }}
-# define the the range
+
+{{- if .Ipv6 }}
+
+# IPv6 routing announcements
+enable-ra
+
+# IPv6 matching (client-arch=61)
+dhcp-match=set:x86PC,option6:61,0007   # EFI x86-64
+dhcp-match=set:aarch64,option6:61,0011 # EFI aarch64
+dhcp-vendorclass=set:x86PC,enterprise:343,PXEClient:Arch:00007   # EFI x86-64
+dhcp-vendorclass=set:aarch64,enterprise:343,PXEClient:Arch:00011 # EFI aarch64
+
+# IPv6 bootfile-url (iPXE EFI binary)
+{{ with (index $.Tftp.IpxeBinaries "00:07" ) -}}
+dhcp-option=tag:x86PC,option6:bootfile-url,"tftp://[{{$.Ipaddr6}}]/warewulf/{{ index $.Tftp.IpxeBinaries "00:07" }}"
+{{ end -}}
+{{ with (index $.Tftp.IpxeBinaries "00:0B" ) -}}
+dhcp-option=tag:aarch64,option6:bootfile-url,"tftp://[{{$.Ipaddr6}}]/warewulf/{{ index $.Tftp.IpxeBinaries "00:0B" | basename }}"
+{{ end -}}
+
+# IPv6 iPXE binary will get the following configuration file
+dhcp-option=tag:iPXE,option6:bootfile-url,"http://[{{$.Ipaddr6}}]:{{$.Warewulf.Port}}/ipxe/${mac:hexhyp}?assetkey=${asset}&uuid=${uuid}"
+
+{{- end }}
+
+# define the dhcp range
+{{ if and $.Dhcp.RangeStart $.Dhcp.RangeEnd -}}
 dhcp-range={{$.Dhcp.RangeStart}},{{$.Dhcp.RangeEnd}},{{$.Netmask}},6h
+{{ else -}}
+dhcp-range={{$.Network}},static,{{$.Netmask}},6h
+{{ end -}}
+{{ if .Ipv6 -}}
+{{ if and $.Dhcp.Range6Start $.Dhcp.Range6End -}}
+dhcp-range={{$.Dhcp.Range6Start}},{{$.Dhcp.Range6End}},6h
+{{ else -}}
+dhcp-range={{$.Network6}},ra-stateless,{{$.PrefixLen6}},6h
+{{ end -}}
+{{ end -}}
+
+{{ if eq .Dhcp.Template "static" }}
+# hosts
 {{ range $node := $.AllNodes -}}
 {{ range $devname, $netdev := $node.NetDevs -}}
-{{ if and $netdev.Ipaddr $netdev.Hwaddr -}}
-dhcp-host={{$netdev.Hwaddr}},set:warewulf,{{$node.Id}},{{$netdev.Ipaddr}},infinite
-{{- end }}
+dhcp-host=
+  {{- if $netdev.Hwaddr -}}
+    {{$netdev.Hwaddr}},id:00:03:00:01:{{$netdev.Hwaddr}},
+  {{- end -}}
+  set:{{ $node.Tags.Tag | default "warewulf" }},
+  {{- if $netdev.Ipaddr -}}
+    {{- $netdev.Ipaddr -}},
+  {{- end -}}
+  {{- if $netdev.Ipaddr6 -}}
+    [{{$netdev.Ipaddr6}}],
+  {{- end -}}
+  {{$node.Id}},infinite
 {{ end -}}
 {{ end -}}
+
+{{- end -}}

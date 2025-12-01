@@ -75,18 +75,19 @@ type KernelConf struct {
 }
 
 type NetDev struct {
-	Type    string            `yaml:"type,omitempty"    json:"type,omitempty"     lopt:"type"    sopt:"T" comment:"Set device type of given network"`
-	OnBoot  wwtype.WWbool     `yaml:"onboot,omitempty"  json:"onbot,omitempty"    lopt:"onboot"           comment:"Enable/disable network device (true/false)"`
-	Device  string            `yaml:"device,omitempty"  json:"device,omitempty"   lopt:"netdev"  sopt:"N" comment:"Set the device for given network"`
-	Hwaddr  string            `yaml:"hwaddr,omitempty"  json:"hwaddr,omitempty"   lopt:"hwaddr"  sopt:"H" comment:"Set the device's HW address for given network" type:"MAC"`
-	Ipaddr  net.IP            `yaml:"ipaddr,omitempty"  json:"ipaddr,omitempty"   lopt:"ipaddr"  sopt:"I" comment:"IPv4 address in given network" type:"IP"`
-	Ipaddr6 net.IP            `yaml:"ip6addr,omitempty" json:"ip6addr,omitempty"  lopt:"ipaddr6"          comment:"IPv6 address" type:"IP"`
-	Prefix  net.IP            `yaml:"prefix,omitempty"  json:"prefix,omitempty"`
-	Netmask net.IP            `yaml:"netmask,omitempty" json:"netmask,omitempty"  lopt:"netmask" sopt:"M" comment:"Set the networks netmask" type:"IP"`
-	Gateway net.IP            `yaml:"gateway,omitempty" json:"gateway,omitempty"  lopt:"gateway" sopt:"G" comment:"Set the node's network device gateway" type:"IP"`
-	MTU     string            `yaml:"mtu,omitempty"     json:"mtu,omitempty"      lopt:"mtu"              comment:"Set the mtu" type:"uint"`
-	Tags    map[string]string `yaml:"tags,omitempty"    json:"tags,omitempty"`
-	primary bool
+	Type       string            `yaml:"type,omitempty"       json:"type,omitempty"       lopt:"type"       sopt:"T" comment:"Set device type of given network"`
+	OnBoot     wwtype.WWbool     `yaml:"onboot,omitempty"     json:"onbot,omitempty"      lopt:"onboot"              comment:"Enable/disable network device (true/false)"`
+	Device     string            `yaml:"device,omitempty"     json:"device,omitempty"     lopt:"netdev"     sopt:"N" comment:"Set the device for given network"`
+	Hwaddr     string            `yaml:"hwaddr,omitempty"     json:"hwaddr,omitempty"     lopt:"hwaddr"     sopt:"H" comment:"Set the device's HW address for given network" type:"MAC"`
+	Ipaddr     net.IP            `yaml:"ipaddr,omitempty"     json:"ipaddr,omitempty"     lopt:"ipaddr"     sopt:"I" comment:"IPv4 address in given network" type:"IP"`
+	Netmask    net.IP            `yaml:"netmask,omitempty"    json:"netmask,omitempty"    lopt:"netmask"    sopt:"M" comment:"Set the networks netmask" type:"IP"`
+	Gateway    net.IP            `yaml:"gateway,omitempty"    json:"gateway,omitempty"    lopt:"gateway"    sopt:"G" comment:"Set the node's IPv4 network device gateway" type:"IP"`
+	Ipaddr6    net.IP            `yaml:"ipaddr6,omitempty"    json:"ipaddr6,omitempty"    lopt:"ipaddr6"             comment:"IPv6 address in given network" type:"IP"`
+	PrefixLen6 string            `yaml:"prefixlen6,omitempty" json:"prefixlen6,omitempty" lopt:"prefixlen6"          comment:"Set the networks IPv6 prefix length" type:"uint"`
+	Gateway6   net.IP            `yaml:"gateway6,omitempty"   json:"gateway6,omitempty"   lopt:"gateway6"            comment:"Set the node's IPv6 network device gateway" type:"IP"`
+	MTU        string            `yaml:"mtu,omitempty"        json:"mtu,omitempty"        lopt:"mtu"                 comment:"Set the mtu" type:"uint"`
+	Tags       map[string]string `yaml:"tags,omitempty"       json:"tags,omitempty"`
+	primary    bool
 }
 
 /*
