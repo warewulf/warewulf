@@ -46,8 +46,10 @@ echo Downloading compressed image with imgextract...
 imgextract --name image ${uri}&stage=image&compress=gz || goto error_use_initrd
 echo Downloading compressed system overlay image with imgextract...
 imgextract --name system ${uri}&stage=system&compress=gz || goto error_reboot
+{{- if not (eq .Https true) }}
 echo Downloading compressed runtime overlay image with imgextract...
 imgextract --name runtime ${uri}&stage=runtime&compress=gz && set runtime_initrd initrd=runtime || echo Unable to download runtime overlay. (ignored)
+{{- end }}
 goto boot_single_stage
 
 :error_use_initrd
@@ -63,8 +65,10 @@ echo Downloading compressed image with initrd...
 initrd --name image ${uri}&stage=image&compress=gz || goto error_reboot
 echo Downloading compressed system overlay with initrd...
 initrd --name system ${uri}&stage=system&compress=gz || goto error_reboot
+{{- if not (eq .Https true) }}
 echo Downloading compressed runtime overlay with initrd...
 initrd --name runtime ${uri}&stage=runtime&compress=gz && set runtime_initrd initrd=runtime || echo Unable to download runtime overlay. (ignored)
+{{- end }}
 goto boot_single_stage
 
 :initrd_nocompress
@@ -76,8 +80,10 @@ echo Downloading uncompressed image with initrd...
 initrd --name image ${uri}&stage=image || goto error_reboot
 echo Downloading uncompressed system overlay with initrd...
 initrd --name system ${uri}&stage=system || goto error_reboot
+{{- if not (eq .Https true) }}
 echo Downloading uncompressed runtime overlay with initrd...
 initrd --name runtime ${uri}&stage=runtime && set runtime_initrd initrd=runtime || echo Unable to download runtime overlay. (ignored)
+{{- end }}
 goto boot_single_stage
 
 :dracut
