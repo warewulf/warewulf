@@ -37,7 +37,7 @@ func (h *slashFix) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.mux.ServeHTTP(w, r)
 }
 
-func defaultHandler() *slashFix {
+func configureHandler(includeRuntime bool, apiHandler http.Handler) *slashFix {
 	var wwHandler http.ServeMux
 	wwHandler.HandleFunc("/provision/", warewulfd.ProvisionSend)
 	wwHandler.HandleFunc("/ipxe/", warewulfd.ProvisionSend)
@@ -45,9 +45,16 @@ func defaultHandler() *slashFix {
 	wwHandler.HandleFunc("/kernel/", warewulfd.ProvisionSend)
 	wwHandler.HandleFunc("/container/", warewulfd.ProvisionSend)
 	wwHandler.HandleFunc("/overlay-system/", warewulfd.ProvisionSend)
-	wwHandler.HandleFunc("/overlay-runtime/", warewulfd.ProvisionSend)
+	if includeRuntime {
+		wwHandler.HandleFunc("/overlay-runtime/", warewulfd.ProvisionSend)
+	}
 	wwHandler.HandleFunc("/overlay-file/", warewulfd.OverlaySend)
 	wwHandler.HandleFunc("/status", warewulfd.StatusSend)
+
+	if apiHandler != nil {
+		wwHandler.Handle("/api/", apiHandler)
+	}
+
 	return &slashFix{&wwHandler}
 }
 
@@ -74,15 +81,12 @@ func RunServer() error {
 		}
 	}
 
-	apiHandler := api.Handler(auth, conf.API.AllowedIPNets())
-	defaultHandler := defaultHandler()
-	dispatchHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, "/api") && conf.API != nil && conf.API.Enabled() {
-			apiHandler.ServeHTTP(w, r)
-		} else {
-			defaultHandler.ServeHTTP(w, r)
-		}
-	})
+	var apiHandler http.Handler
+	if conf.API != nil && conf.API.Enabled() {
+		apiHandler = api.Handler(auth, conf.API.AllowedIPNets())
+	}
+
+	httpHandler := configureHandler(!conf.Warewulf.EnableHttps(), apiHandler)
 
 	if conf.Warewulf.EnableHttps() {
 		key := path.Join(conf.Paths.Sysconfdir, "warewulf", "keys", "warewulf.key")
@@ -91,9 +95,10 @@ func RunServer() error {
 		if !util.IsFile(key) || !util.IsFile(crt) {
 			wwlog.Error("HTTPS enabled but keys not found in %s", path.Join(conf.Paths.Sysconfdir, "warewulf", "keys"))
 		} else {
+			httpsHandler := configureHandler(true, apiHandler)
 			go func() {
 				wwlog.Info("Starting HTTPS service on port %d", conf.Warewulf.SecurePort)
-				if err := http.ListenAndServeTLS(":"+strconv.Itoa(conf.Warewulf.SecurePort), crt, key, dispatchHandler); err != nil {
+				if err := http.ListenAndServeTLS(":"+strconv.Itoa(conf.Warewulf.SecurePort), crt, key, httpsHandler); err != nil {
 					wwlog.Error("Could not start HTTPS service: %s", err)
 				}
 			}()
@@ -101,7 +106,7 @@ func RunServer() error {
 	}
 
 	wwlog.Info("Starting HTTP service on port %d", daemonPort)
-	if err := http.ListenAndServe(":"+strconv.Itoa(daemonPort), dispatchHandler); err != nil {
+	if err := http.ListenAndServe(":"+strconv.Itoa(daemonPort), httpHandler); err != nil {
 		return fmt.Errorf("could not start listening service: %w", err)
 	}
 
