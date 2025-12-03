@@ -19,6 +19,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - New `mig` overlay to configure NVIDIA MIG devices. #2102
 - Updated arguments for `ValidString` to match `regexp.MatchString`
 - New `mig` overlay to configure NVIDIA MIG devices. #2102
+- TLS with the command `wwctl configure tls` for key management.
+  Keys can be created automtically or imported. The runtime overlay is
+  if TLS is enabled is not distributed over plain http.
+  
 
 ## v4.6.5, 2026-01-12
 
@@ -34,6 +38,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - New `range6 start` and `range6 end` in `warewulf.conf:dhcp`. #2068
 - New `Gateway6` network device field. #2068
 - New `systemd-networkd` overlay. #2068
+- `wwclient.aarch64` overlay always provides an aarch64 wwclient executable.
+- `wwclient.x86_64` overlay always provides an x86_64 wwclient executable.
+- systemd-networkd overlay with IPv6 support
+- `wwctl overlay info` lists the variables used by an overlay template
+- TLS
 
 ### Changed
 
