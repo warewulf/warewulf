@@ -1,6 +1,10 @@
 package wwclient
 
 import (
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/pem"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -112,9 +116,31 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		wwlog.Info("running from trusted port: %d", localTCPAddr.Port)
 	}
 
+	tlsConfig := &tls.Config{}
+	if conf.Warewulf.EnableHttps() {
+		caCert, err := os.ReadFile("/warewulf/keys/warewulf.crt")
+		if err != nil {
+			wwlog.Error("failed to read ca cert: %s", err)
+			return err
+		}
+		block, _ := pem.Decode(caCert)
+		if block == nil {
+			wwlog.Warn("failed to parse certificate PEM")
+		} else if cert, err := x509.ParseCertificate(block.Bytes); err == nil {
+			wwlog.Info("using cert: %s", cert.SerialNumber)
+		} else {
+			wwlog.Warn("parsing cert failed: %s", err)
+		}
+
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+		tlsConfig.RootCAs = caCertPool
+	}
+
 	Webclient = &http.Client{
 		Transport: &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
+			TLSClientConfig: tlsConfig,
+			Proxy:           http.ProxyFromEnvironment,
 			DialContext: (&net.Dialer{
 				LocalAddr: &localTCPAddr,
 				Timeout:   30 * time.Second,
@@ -232,8 +258,15 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
+	port := conf.Warewulf.Port
+	scheme := "http"
+	if conf.Warewulf.EnableHttps() {
+		port = conf.Warewulf.SecurePort
+		scheme = "https"
+	}
+
 	for {
-		updateSystem(target, ipaddr, conf.Warewulf.Port, wwid, tag, localUUID)
+		updateSystem(target, ipaddr, port, wwid, tag, localUUID, scheme)
 		if !finishedInitialSync {
 			// Notify systemd that the service has started successfully.
 			//
@@ -274,7 +307,7 @@ func parseWWIDFromCmdline(cmdline string) (string, error) {
 	return "", fmt.Errorf("wwid parameter not found in kernel command line")
 }
 
-func updateSystem(target string, ipaddr string, port int, wwid string, tag string, localUUID uuid.UUID) {
+func updateSystem(target string, ipaddr string, port int, wwid string, tag string, localUUID uuid.UUID, scheme string) {
 	var resp *http.Response
 	counter := 0
 	for {
@@ -285,7 +318,7 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 		values.Set("stage", "runtime")
 		values.Set("compress", "gz")
 		getURL := &url.URL{
-			Scheme:   "http",
+			Scheme:   scheme,
 			Host:     fmt.Sprintf("%s:%d", ipaddr, port),
 			Path:     fmt.Sprintf("provision/%s", wwid),
 			RawQuery: values.Encode(),
@@ -296,6 +329,15 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 			defer resp.Body.Close()
 			break
 		} else {
+			var certificateInvalidError x509.CertificateInvalidError
+			var unknownAuthorityError x509.UnknownAuthorityError
+			var hostnameError x509.HostnameError
+			if errors.As(err, &certificateInvalidError) ||
+				errors.As(err, &unknownAuthorityError) ||
+				errors.As(err, &hostnameError) {
+				wwlog.Error("TLS connection failed: %v", err)
+				os.Exit(1)
+			}
 			if counter > 60 {
 				counter = 0
 			}
