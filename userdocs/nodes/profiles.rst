@@ -92,11 +92,6 @@ to each node.
 
    wwctl node set n1 --profile="default,net,image"
 
-.. note::
-
-   If two profiles set the same field, the right-most profile in the node's list
-   takes precedence. Field values set directly on nodes take precedence over
-   profile field values.
 
 .. code-block:: console
 
@@ -120,12 +115,146 @@ groups of cluster nodes and to test new configurations on smaller subsets of
 nodes. For example, you can use this method to run a different kernel on only a
 subset or group of cluster nodes without changing any other node attributes.
 
+Profile Precedence and Combinations of Profiles
+=============================================
+
+In case of scalar fields, the right-most profile in the node's profile list
+takes precedence. Field values set directly on nodes take precedence over
+profile field values. However, things behave differently for field types, like
+lists, where it makes sense to combine their values.
+
+Let's assume we have in addition to the node profile two more profiles:
+``default`` and ``profile_a``. The field ``root`` serves as an example
+for a scalar field and ``runtime overlay`` for list typed fields.
+
+We start with a configuration where the node uses only the default profile.
+
+.. code-block:: console
+
+   nodeprofiles:
+      profile_a:
+        runtime overlay:
+          - runtime_overlay_from_profile_a
+        root: root_from_profile_a
+      default:
+        runtime overlay:
+          - runtime_overlay_from_default
+        root: root_from_default
+   nodes:
+     n1:
+       profiles:
+         - default
+       runtime overlay:
+         - runtime_overlay_from_node_profile
+       root: root_from_node_profile
+
+Next we filter the output a little to focus on one field at time.
+
+.. code-block:: console
+
+   # wwctl node list n1 --all | grep -E '(NODE|----|Root)'
+     NODE  FIELD             PROFILE               VALUE
+     ----  -----             -------               -----
+     n1    Root              SUPERSEDED            root_from_node_profile
+
+As expected, the value originates from the node profile because the node
+profile has highest precedence.
+
+Things are different for the list typed field ``runtime overlay``.
+
+.. code-block:: console
+
+   #  wwctl node list n1 --all | grep -E '(NODE|----|Runtime)'
+      NODE  FIELD             PROFILE     VALUE
+      ----  -----             -------     -----
+      n1    RuntimeOverlay    default,n1  runtime_overlay_from_default,runtime_overlay_from_node_profile
+
+Here the value from the node profile is appended to the value of the
+default profile.
+
+Next we remove the value for ``root`` from the node profile and add
+``profile_a`` to the list of profiles for the node.
+
+.. code-block:: shell
+
+   nodes:
+     n1:
+       profiles:
+         - default
+         - profile_a
+       runtime overlay:
+         - runtime_overlay_from_node_profile
+
+First we check the ``root`` field and see that it set from ``profile_a``
+as ``profile_a`` is now the profile with highest precedence.
+
+.. code-block:: console
+
+   # wwctl node list n1 --all | grep -E '(NODE|----|Root)'
+     NODE  FIELD             PROFILE               VALUE
+     ----  -----             -------               -----
+     n1    Root              profile_a             root_from_profile_a
+
+The value of ``runtime overlay`` is now a combination of the values of
+all three profiles.
+
+.. code-block:: console
+
+   # wwctl node list n1 --all | grep -E '(NODE|----|Runtime)'
+   NODE  FIELD             PROFILE               VALUE
+   ----  -----             -------               -----
+   n1    RuntimeOverlay    default,profile_a,n1  runtime_overlay_from_default,runtime_overlay_from_profile_a,runtime_overlay_from_node_profile
+
+We get the same result when making use of nested profiles, that is
+when we add ``profile_a`` to the list of profiles within the default profile.
+
+.. code-block:: shell
+
+   nodeprofiles:
+      default:
+        profiles:
+          - profile_a
+        ...
+      ...
+   nodes:
+     n1:
+       profiles:
+         - default
+       ...
+
 Negating Profiles
 =================
 
 Profiles may be negated by later profiles. For example, a profile list
 ``p2,~p1`` adds the profile ``p2`` to a node and removes a previously-applied
 ``p1`` profile from a node.
+
+.. code-block:: console
+
+   nodeprofiles:
+     p1:
+       runtime overlay:
+         - runtime_overlay_from_p1
+     p2:
+       profiles:
+         - p1
+       runtime overlay:
+         - runtime_overlay_from_p2
+   nodes:
+     n1:
+       profiles:
+         - p2
+         - ~p1
+
+The value of ``runtime overlay`` is then just ``runtime_overlay_from_p2``.
+
+.. code-block:: shell
+
+   # wwctl node list n2 --all
+   NODE  FIELD           PROFILE  VALUE
+   ----  -----           -------  -----
+   n2    Profiles        --       p2,~p1
+   n2    RuntimeOverlay  p2       runtime_overlay_from_p2
 
 Using Profiles Effectively
 ==========================
