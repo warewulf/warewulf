@@ -33,6 +33,28 @@ non-overlay templates as well.
   commands for the ``wwctl power``, ``wwctl sensor``, and ``wwctl console``
   commands.
 
+Template documentation
+======================
+
+Templates can include documentation to be included in the output of ``wwctl overlay info``.
+
+.. code::
+
+   {{/* wwdoc: Your documentation text */}}
+
+Template variables
+==================
+
+Overlay templates have access to a number of variables that provide information
+about the server configuration, the node being provisioned, and all nodes in the
+cluster. An example of the variables available, and their use, is included with
+Warewulf in the ``tstruct.ww`` template of the ``debug`` overlay.
+
+Variables used in an overlay template can be documented by adding a comment to
+the template with the form ``{{/* .My.Var: Your help text */}}``. Variable help
+text defined in a comment replaces that variable's default help text in the
+output of ``wwctl overlay info``.
+
 Template functions
 ==================
 

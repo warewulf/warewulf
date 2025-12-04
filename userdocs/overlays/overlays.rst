@@ -25,6 +25,37 @@ within the overlays with ``wwctl overlay list --all``.
    fstab         etc/          false
    fstab         etc/fstab.ww  false
 
+Overlay Variables
+-----------------
+
+The command ``wwctl overlay info`` shows the variables used in an overlay
+template, along with the help text for each variable.
+
+.. code-block:: console
+
+   # wwctl overlay info NetworkManager etc/NetworkManager/system-connections/ww4-managed.ww
+   VARIABLE                        HELP                                           TYPE    OPTION
+   --------                        ----                                           ----    ------
+   $netdev.Device                  Set the device for given network               string  --netdev
+   $netdev.Gateway                 Set the node's network device gateway          IP      --gateway
+   $netdev.Hwaddr                  Set the device's HW address for given network  string  --hwaddr
+   $netdev.Ipaddr                  IPv4 address in given network                  IP      --ipaddr
+   $netdev.Ipaddr6                 IPv4 address in given network                  IP      --ipaddr
+   $netdev.Ipaddr6                 IPv6 address                                   IP      --ipaddr6
+   $netdev.MTU                     Set the mtu                                    string  --mtu
+   $netdev.OnBoot.BoolDefaultTrue  Enable/disable network device (true/false)     WWbool  --onboot
+   $netdev.Tags
+   $netdev.Tags.DNSSEARCH
+   $netdev.Tags.downdelay
+   $netdev.Tags.master
+   $netdev.Tags.miimon
+   $netdev.Tags.mode
+   $netdev.Tags.parent_device
+   $netdev.Tags.updelay
+   $netdev.Tags.vlan_id
+   $netdev.Tags.xmit_hash_policy
+   $netdev.Type                    Set device type of given network               string  --type
+
 Structure
 =========
 
@@ -89,12 +120,9 @@ Creating and Modifying Overlays
 
 You can add a new overlay to Warewulf with ``wwctl overlay create``.
 
-
-
 .. code-block:: shell
 
    wwctl overlay create issue
-
 
 A new overlay is just an empty directory. For it to be useful it needs to
 contain some files.
@@ -106,13 +134,10 @@ into the overlay.
 
    wwctl overlay import --parents issue /etc/issue
 
-
-
 This imports ``/etc/issue`` from the Warewulf server into the new ``issue``
 overlay.
 
 .. note::
-
 
    The ``issue`` overlay already existed as a distribution overlay. Creating one
    shadows the distribution overlay with a new site overlay, allowing for local
@@ -124,11 +149,9 @@ overlay.
 
 You can also edit a new or existing overlay file in an interactive editor.
 
-
 .. code-block:: shell
 
    wwctl overlay edit issue /etc/issue
-
 
 Use ``wwctl overlay show`` to inspect the content of an overlay file.
 
@@ -146,8 +169,6 @@ distribution to a given cluster node.
    wwctl overlay import issue /etc/issue /etc/issue.ww
    wwctl overlay show issue /etc/issue.ww --render=n1
 
-
-
 More information about templates is available in :ref:`its own section
 <templates>`.
 
@@ -160,20 +181,6 @@ option.
 .. note::
 
    It is not possible to delete files with an overlay.
-
-
-Overlay Variables
------------------
-
-The command ``wwctl overlay variables`` can be used to show the used variables
-in a template. The command also shows the help text for each variable. The help
-text can be defined in two ways. The first is a general documentation which is
-not tied to a variable. This can be done with the following syntax:
-``{{/* wwdoc: Your documentation text */}}``. The second way is to define a help
-text for a specific variable. This can be done with the following syntax:
-``{{/* .My.Var: Your help text */}}``. If a help text is defined for a variable,
-it will be used instead of the default help text.
-
 
 Permissions
 -----------
@@ -398,7 +405,7 @@ provided as an example. In particular, the provided `tstruct.md.ww` demonstrates
 the use of most available template metadata.
 
 .. code-block:: shell
-  
+
    wwctl overlay show --render=<nodename> debug tstruct.md.ww
 
 .. _localtime:

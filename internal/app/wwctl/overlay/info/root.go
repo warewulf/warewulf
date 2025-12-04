@@ -10,7 +10,7 @@ var (
 		Use:     "info [flags] OVERLAY_NAME FILE_PATH",
 		Short:   "Show variables for a template file in an overlay",
 		Long:    "This command will show the variables for a given template file in a given\n" + "overlay.",
-		Aliases: []string{"vars", "tags", "information"},
+		Aliases: []string{"variables", "vars"},
 		Args:    cobra.ExactArgs(2),
 		RunE:    CobraRunE,
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

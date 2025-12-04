@@ -39,7 +39,7 @@ func Test_Overlay_Variables(t *testing.T) {
 		assert.NoError(t, err)
 
 		output := buf.String()
-		assert.Contains(t, output, "OVERLAY VARIABLE")
+		assert.Contains(t, output, "VARIABLE")
 		assert.Contains(t, output, ".Kernel.Tags.foo")
 		assert.Contains(t, output, "some help text")
 		assert.Regexp(t, `(?s)First Line.*Second Line`, output, "First Line should come before Second Line")

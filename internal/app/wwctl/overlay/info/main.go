@@ -39,7 +39,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 	t := table.New(cmd.OutOrStdout())
-	t.AddHeader("OVERLAY VARIABLE", "HELP", "TYPE", "CMD OPTION")
+	t.AddHeader("VARIABLE", "OPTION", "TYPE", "HELP")
 
 	for _, v := range vars {
 		found := false
@@ -78,19 +78,19 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			if match {
 				opt := ""
 				if val.LongOpt != "" {
-					opt = val.LongOpt
+					opt = "--" + val.LongOpt
 				}
 				if hasCommentHelp {
-					t.AddLine(v, helpText, val.Type, opt)
+					t.AddLine(v, opt, val.Type, helpText)
 				} else {
-					t.AddLine(v, val.Comment, val.Type, opt)
+					t.AddLine(v, opt, val.Type, val.Comment)
 				}
 				found = true
 			}
 		}
 		if !found {
 			if hasCommentHelp {
-				t.AddLine(v, helpText, "", "")
+				t.AddLine(v, "", "", helpText)
 			} else if strings.Contains(v, "Tags") {
 				t.AddLine(v, "", "", "", "")
 			}
