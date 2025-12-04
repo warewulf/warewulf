@@ -1,8 +1,13 @@
 package wwclient
 
 import (
+	"crypto"
+	"crypto/rand"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/asn1"
+	"encoding/base64"
+	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -15,9 +20,13 @@ import (
 	"os/signal"
 	"path"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/google/go-tpm/legacy/tpm2"
+	"github.com/google/go-tpm/tpmutil"
 
 	"github.com/coreos/go-systemd/daemon"
 	"github.com/google/uuid"
@@ -45,6 +54,12 @@ var (
 	PIDFile         string
 	Webclient       *http.Client
 	WarewulfConfArg string
+
+	// TPM related flags
+	quoteTPMPath   string
+	quoteCertIndex uint
+	quoteTmplIndex uint
+	quoteFlag      bool
 )
 
 func init() {
@@ -53,6 +68,10 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&PIDFile, "pidfile", "p", "/var/run/wwclient.pid", "PIDFile to use")
 	rootCmd.PersistentFlags().StringVar(&WarewulfConfArg, "warewulfconf", "", "Set the warewulf configuration file")
 
+	rootCmd.PersistentFlags().BoolVar(&quoteFlag, "quote", false, "Extract TPM EK certificate and display as JSON")
+	rootCmd.PersistentFlags().StringVar(&quoteTPMPath, "tpm-path", "/dev/tpm0", "Path to the TPM device (used with --quote)")
+	rootCmd.PersistentFlags().UintVar(&quoteCertIndex, "cert-index", 0x01C00002, "NVRAM index of the certificate file (used with --quote)")
+	rootCmd.PersistentFlags().UintVar(&quoteTmplIndex, "template-index", 0, "NVRAM index of the EK template; if zero, default RSA EK template is used (used with --quote)")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
@@ -61,11 +80,280 @@ func GetRootCommand() *cobra.Command {
 	return rootCmd
 }
 
+// Quote struct to hold EK certificate and attestation data
+type Quote struct {
+	EKCert    string            `json:"ek_cert"`
+	EKPub     string            `json:"ek_pub"`
+	AKPub     string            `json:"ak_pub"`
+	Quote     string            `json:"quote"`
+	Signature *tpm2.Signature   `json:"signature"`
+	PCRs      map[string]string `json:"pcrs"`
+	Nonce     string            `json:"nonce"`
+	EventLog  string            `json:"eventlog,omitempty"`
+}
+
+// Default EK template defined in:
+// https://trustedcomputinggroup.org/wp-content/uploads/Credential_Profile_EK_V2.0_R14_published.pdf
+var defaultEKTemplate = tpm2.Public{
+	Type:    tpm2.AlgRSA,
+	NameAlg: tpm2.AlgSHA256,
+	Attributes: tpm2.FlagFixedTPM | tpm2.FlagFixedParent | tpm2.FlagSensitiveDataOrigin |
+		tpm2.FlagAdminWithPolicy | tpm2.FlagRestricted | tpm2.FlagDecrypt,
+	AuthPolicy: []byte{
+		0x83, 0x71, 0x97, 0x67, 0x44, 0x84,
+		0xB3, 0xF8, 0x1A, 0x90, 0xCC, 0x8D,
+		0x46, 0xA5, 0xD7, 0x24, 0xFD, 0x52,
+		0xD7, 0x6E, 0x06, 0x52, 0x0B, 0x64,
+		0xF2, 0xA1, 0xDA, 0x1B, 0x33, 0x14,
+		0x69, 0xAA,
+	},
+	RSAParameters: &tpm2.RSAParams{
+		Symmetric: &tpm2.SymScheme{
+			Alg:     tpm2.AlgAES,
+			KeyBits: 128,
+			Mode:    tpm2.AlgCFB,
+		},
+		KeyBits:    2048,
+		ModulusRaw: make([]byte, 256),
+	},
+}
+
+func getAttestationData(path string, certIdx, tmplIdx uint32) (*Quote, error) {
+	rwc, err := tpm2.OpenTPM(path)
+	if err != nil {
+		return nil, fmt.Errorf("can't open TPM at %q: %v", path, err)
+	}
+	defer rwc.Close()
+
+	// 1. Read EK Cert
+	ekCert, err := tpm2.NVRead(rwc, tpmutil.Handle(certIdx))
+	if err != nil {
+		return nil, fmt.Errorf("reading EK cert: %v", err)
+	}
+
+	var raw asn1.RawValue
+	paddingBytes, err := asn1.Unmarshal(ekCert, &raw)
+	if err != nil {
+		return nil, fmt.Errorf("ASN.1 Unmarshal failed: %v", err)
+	}
+	wwlog.Debug("TPM NV Index bytes read: %d", len(ekCert))
+	wwlog.Debug("Padding found from ASN.1 Unmarshal: %d", len(paddingBytes))
+
+	cert, err := x509.ParseCertificate(ekCert[0 : len(ekCert)-len(paddingBytes)])
+	if err != nil {
+		return nil, fmt.Errorf("parsing EK cert: %v", err)
+	}
+
+	// 2. Create EK
+	var ekh tpmutil.Handle
+	var ekPub crypto.PublicKey
+	if tmplIdx != 0 {
+		ekTemplate, err := tpm2.NVRead(rwc, tpmutil.Handle(tmplIdx))
+		if err != nil {
+			return nil, fmt.Errorf("reading EK template: %v", err)
+		}
+		ekh, ekPub, err = tpm2.CreatePrimaryRawTemplate(rwc, tpm2.HandleEndorsement, tpm2.PCRSelection{}, "", "", ekTemplate)
+		if err != nil {
+			return nil, fmt.Errorf("creating EK: %v", err)
+		}
+	} else {
+		ekh, ekPub, err = tpm2.CreatePrimary(rwc, tpm2.HandleEndorsement, tpm2.PCRSelection{}, "", "", defaultEKTemplate)
+		if err != nil {
+			return nil, fmt.Errorf("creating EK: %v", err)
+		}
+	}
+	defer tpm2.FlushContext(rwc, ekh)
+
+	if !reflect.DeepEqual(ekPub, cert.PublicKey) {
+		return nil, errors.New("public key in EK certificate differs from public key created via EK template")
+	}
+
+	ekPubBytes, err := x509.MarshalPKIXPublicKey(ekPub)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal EK public key: %w", err)
+	}
+
+	// 3. Start Session for AK Creation
+	sessHandle, _, err := tpm2.StartAuthSession(
+		rwc,
+		tpm2.HandleNull,
+		tpm2.HandleNull,
+		make([]byte, 16),
+		nil,
+		tpm2.SessionPolicy,
+		tpm2.AlgNull,
+		tpm2.AlgSHA256,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("starting session: %v", err)
+	}
+	defer tpm2.FlushContext(rwc, sessHandle)
+
+	// Authorize against Endorsement Hierarchy
+	_, _, err = tpm2.PolicySecret(
+		rwc,
+		tpm2.HandleEndorsement,
+		tpm2.AuthCommand{Session: tpm2.HandlePasswordSession, Attributes: tpm2.AttrContinueSession},
+		sessHandle,
+		nil, nil, nil, 0,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("policy secret: %v", err)
+	}
+
+	// 4. Create AK
+	akTemplate := tpm2.Public{
+		Type:    tpm2.AlgECC,
+		NameAlg: tpm2.AlgSHA256,
+		Attributes: tpm2.FlagFixedTPM | tpm2.FlagFixedParent | tpm2.FlagSensitiveDataOrigin |
+			tpm2.FlagUserWithAuth | tpm2.FlagRestricted | tpm2.FlagSign | tpm2.FlagStClear,
+		AuthPolicy: nil,
+		ECCParameters: &tpm2.ECCParams{
+			Symmetric: &tpm2.SymScheme{
+				Alg: tpm2.AlgNull,
+			},
+			Sign: &tpm2.SigScheme{
+				Alg: tpm2.AlgECDSA,
+				Hash: tpm2.AlgSHA256,
+			},
+			CurveID: tpm2.CurveNISTP256,
+			KDF: &tpm2.KDFScheme{
+				Alg: tpm2.AlgNull,
+			},
+		},
+	}
+
+	priv, pub, _, _, _, err := tpm2.CreateKeyUsingAuth(
+		rwc,
+		ekh,
+		tpm2.PCRSelection{},
+		tpm2.AuthCommand{Session: sessHandle, Attributes: tpm2.AttrContinueSession},
+		"",
+		akTemplate,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("create AK: %v", err)
+	}
+
+	// 5. Load AK
+	// Refresh session (flush old, start new)
+	tpm2.FlushContext(rwc, sessHandle)
+
+	sessHandleLoad, _, err := tpm2.StartAuthSession(
+		rwc,
+		tpm2.HandleNull,
+		tpm2.HandleNull,
+		make([]byte, 16),
+		nil,
+		tpm2.SessionPolicy,
+		tpm2.AlgNull,
+		tpm2.AlgSHA256,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("starting session for load: %v", err)
+	}
+	defer tpm2.FlushContext(rwc, sessHandleLoad)
+
+	_, _, err = tpm2.PolicySecret(
+		rwc,
+		tpm2.HandleEndorsement,
+		tpm2.AuthCommand{Session: tpm2.HandlePasswordSession, Attributes: tpm2.AttrContinueSession},
+		sessHandleLoad,
+		nil, nil, nil, 0,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("policy secret for load: %v", err)
+	}
+
+	akHandle, _, err := tpm2.LoadUsingAuth(
+		rwc,
+		ekh,
+		tpm2.AuthCommand{Session: sessHandleLoad, Attributes: tpm2.AttrContinueSession},
+		pub,
+		priv,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("load AK: %v", err)
+	}
+	defer tpm2.FlushContext(rwc, akHandle)
+
+	// 6. Quote
+	nonce := make([]byte, 8)
+	rand.Read(nonce)
+
+	pcrSel := tpm2.PCRSelection{
+		Hash: tpm2.AlgSHA256,
+		PCRs: []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
+	}
+
+	quote, sig, err := tpm2.Quote(
+		rwc,
+		akHandle,
+		"",
+		"",
+		nonce,
+		pcrSel,
+		tpm2.AlgNull,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("quote: %v", err)
+	}
+
+	// 7. Read PCRs
+	pcrVals, err := tpm2.ReadPCRs(rwc, pcrSel)
+	if err != nil {
+		return nil, fmt.Errorf("read PCRs: %v", err)
+	}
+
+	pcrMap := make(map[string]string)
+	for i, v := range pcrVals {
+		pcrMap[fmt.Sprintf("%d", i)] = fmt.Sprintf("%x", v)
+	}
+
+	// 8. Read EventLog
+	var eventLog []byte
+	eventLogPath := "/sys/kernel/security/tpm0/binary_bios_measurements"
+	if _, err := os.Stat(eventLogPath); err == nil {
+		eventLog, err = os.ReadFile(eventLogPath)
+		if err != nil {
+			wwlog.Warn("failed to read event log: %v", err)
+		}
+	} else {
+		wwlog.Debug("event log not found at %s", eventLogPath)
+	}
+
+	return &Quote{
+		EKCert:    base64.StdEncoding.EncodeToString(ekCert),
+		EKPub:     base64.StdEncoding.EncodeToString(ekPubBytes),
+		AKPub:     base64.StdEncoding.EncodeToString(pub),
+		Quote:     base64.StdEncoding.EncodeToString(quote),
+		Signature: sig,
+		PCRs:      pcrMap,
+		Nonce:     base64.StdEncoding.EncodeToString(nonce),
+		EventLog:  base64.StdEncoding.EncodeToString(eventLog),
+	}, nil
+}
+
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	if DebugFlag {
 		wwlog.SetLogLevel(wwlog.DEBUG)
 	} else {
 		wwlog.SetLogLevel(wwlog.INFO)
+	}
+
+	if quoteFlag {
+		quote, err := getAttestationData(quoteTPMPath, uint32(quoteCertIndex), uint32(quoteTmplIndex))
+		if err != nil {
+			return fmt.Errorf("failed to get attestation data: %w", err)
+		}
+
+		jsonData, err := json.MarshalIndent(quote, "", "  ")
+		if err != nil {
+			return fmt.Errorf("failed to marshal quote to JSON: %w", err)
+		}
+
+		fmt.Println(string(jsonData))
+		return nil
 	}
 
 	conf := warewulfconf.Get()
