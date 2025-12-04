@@ -4,10 +4,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/app/wwctl/configure/dhcp"
 	"github.com/warewulf/warewulf/internal/app/wwctl/configure/hostfile"
-	"github.com/warewulf/warewulf/internal/app/wwctl/configure/keys"
 	"github.com/warewulf/warewulf/internal/app/wwctl/configure/nfs"
 	"github.com/warewulf/warewulf/internal/app/wwctl/configure/ssh"
 	"github.com/warewulf/warewulf/internal/app/wwctl/configure/tftp"
+	"github.com/warewulf/warewulf/internal/app/wwctl/configure/tls"
 	"github.com/warewulf/warewulf/internal/app/wwctl/configure/warewulfd"
 )
 
@@ -30,7 +30,7 @@ func init() {
 	baseCmd.AddCommand(ssh.GetCommand())
 	baseCmd.AddCommand(nfs.GetCommand())
 	baseCmd.AddCommand(hostfile.GetCommand())
-	baseCmd.AddCommand(keys.GetCommand())
+	baseCmd.AddCommand(tls.GetCommand())
 	baseCmd.AddCommand(warewulfd.GetCommand())
 
 	baseCmd.Flags().BoolVarP(&allFunctions, "all", "a", false, "Configure all services")

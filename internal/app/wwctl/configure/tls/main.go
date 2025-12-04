@@ -1,4 +1,4 @@
-package keys
+package tls
 
 import (
 	"crypto/x509"
@@ -75,7 +75,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	} else {
 		if create {
-			if err := configure.GenKeys(); err != nil {
+			if err := configure.GenTLSKeys(); err != nil {
 				return err
 			}
 			if err := configure.WAREWULFD(); err != nil {
