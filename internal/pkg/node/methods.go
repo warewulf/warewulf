@@ -324,32 +324,6 @@ type TemplateVarDetails struct {
 	LongOpt string
 }
 
-// Type to sore a map which looks and feels like the variables in a template
-type TemplateVarMap map[string]TemplateVarDetails
-
-// Fill the map so that every key is like a template variable and the value is the comment field
-func (varMap TemplateVarMap) ConfToTemplateMap(obj interface{}, prefix string) {
-	objType := reflect.TypeOf(obj)
-	// now iterate of every field
-	for i := 0; i < objType.NumField(); i++ {
-		field := objType.Field(i)
-		if field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Struct {
-			varMap.ConfToTemplateMap(reflect.New(field.Type.Elem()).Elem().Interface(), field.Name)
-		} else if field.Type.Kind() == reflect.Map && field.Type.Elem().Kind() == reflect.Ptr {
-			varMap.ConfToTemplateMap(reflect.New(field.Type.Elem().Elem()).Elem().Interface(), field.Name)
-		} else if field.Type.Kind() == reflect.Struct && field.Anonymous {
-			varMap.ConfToTemplateMap(reflect.New(field.Type).Elem().Interface(), field.Name)
-		} else {
-			varMap[prefix+"."+field.Name] = TemplateVarDetails{
-				Name:    field.Name,
-				Comment: field.Tag.Get("comment"),
-				Type:    field.Type.Name(),
-				LongOpt: field.Tag.Get("lopt"),
-			}
-		}
-	}
-}
-
 /*
 Returns the id of the node
 */

@@ -7,7 +7,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/app/wwctl/table"
-	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"golang.org/x/exp/maps"
@@ -23,14 +22,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	vars := ov.ParseVars(filePath)
-	sort.Strings(vars)
-	commentMap := ov.ParseCommentVars(filePath)
-	varMap := node.TemplateVarMap{}
-	varMap.ConfToTemplateMap(node.Node{}, "")
-	if vars == nil {
+	// Use new type-based variable resolution
+	varFields := ov.ParseVarFields(filePath)
+	if varFields == nil {
 		return fmt.Errorf("could not parse variables for %s in overlay %s", filePath, overlayName)
 	}
+
+	// Still parse comment vars for wwdoc and inline documentation
+	commentMap := ov.ParseCommentVars(filePath)
 	commentKeys := maps.Keys(commentMap)
 	sort.Strings(commentKeys)
 	for _, docLn := range commentKeys {
@@ -38,64 +37,56 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Info(commentMap[docLn])
 		}
 	}
+
+	// Sort variables by name for consistent output
+	varNames := maps.Keys(varFields)
+	sort.Strings(varNames)
+
 	t := table.New(cmd.OutOrStdout())
 	t.AddHeader("VARIABLE", "OPTION", "TYPE", "HELP")
 
-	for _, v := range vars {
-		found := false
-		helpText, hasCommentHelp := commentMap[v]
+	for _, varName := range varNames {
+		fieldInfo := varFields[varName]
+		helpText, hasCommentHelp := commentMap[varName]
 
-		for key, val := range varMap {
-			// fuzzy match, ignore case and try to also match singular / plural
-			textLower := strings.ToLower(v)
-			keyLower := strings.ToLower(key)
-			match := false
-			if strings.Contains(textLower, keyLower) {
-				match = true
-			} else {
-				keyParts := strings.Split(key, ".")
-				newParts := make([]string, len(keyParts))
-				for i, p := range keyParts {
-					newParts[i] = strings.ToLower(p)
-				}
-				for i, part := range newParts {
-					originalPart := part
-					var variation string
-					if strings.HasSuffix(part, "s") {
-						variation = strings.TrimSuffix(part, "s")
-					} else {
-						variation = part + "s"
-					}
-					newParts[i] = variation
-					variantKey := strings.Join(newParts, ".")
-					if strings.Contains(textLower, variantKey) {
-						match = true
-						break
-					}
-					newParts[i] = originalPart // restore for next iteration
-				}
+		// Extract metadata from the resolved field
+		opt := ""
+		typ := ""
+		help := ""
+
+		// Check if we have valid field information (field name is not empty)
+		hasValidField := fieldInfo.Field.Name != ""
+
+		if hasValidField {
+			// Get option from lopt tag
+			if lopt := fieldInfo.Field.Tag.Get("lopt"); lopt != "" {
+				opt = "--" + lopt
 			}
-			if match {
-				opt := ""
-				if val.LongOpt != "" {
-					opt = "--" + val.LongOpt
-				}
-				if hasCommentHelp {
-					t.AddLine(v, opt, val.Type, helpText)
-				} else {
-					t.AddLine(v, opt, val.Type, val.Comment)
-				}
-				found = true
+
+			// Get type from type tag, or use field type string
+			typ = fieldInfo.Field.Tag.Get("type")
+			if typ == "" {
+				// Use String() instead of Name() to handle composite types (slices, maps, pointers)
+				typ = fieldInfo.Field.Type.String()
 			}
+
+			// Get help from comment tag
+			help = fieldInfo.Field.Tag.Get("comment")
 		}
-		if !found {
-			if hasCommentHelp {
-				t.AddLine(v, "", "", helpText)
-			} else if strings.Contains(v, "Tags") {
-				t.AddLine(v, "", "", "", "")
-			}
+
+		// Prefer inline comment documentation if available
+		if hasCommentHelp {
+			help = helpText
+		}
+
+		// Special handling for Tags fields
+		if strings.Contains(varName, "Tags") {
+			t.AddLine(varName, opt, typ, help)
+		} else if hasValidField || hasCommentHelp {
+			t.AddLine(varName, opt, typ, help)
 		}
 	}
+
 	t.Print()
 	return nil
 }

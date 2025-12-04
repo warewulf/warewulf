@@ -36,6 +36,7 @@ require (
 	github.com/swaggest/usecase v1.3.1
 	github.com/talos-systems/go-smbios v0.1.1
 	golang.org/x/crypto v0.32.0
+	golang.org/x/exp v0.0.0-20241217172543-b2144cdd0a67
 	golang.org/x/sys v0.29.0
 	golang.org/x/term v0.28.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20250204164813-702378808489
@@ -149,7 +150,6 @@ require (
 	go.opentelemetry.io/otel v1.32.0 // indirect
 	go.opentelemetry.io/otel/metric v1.32.0 // indirect
 	go.opentelemetry.io/otel/trace v1.32.0 // indirect
-	golang.org/x/exp v0.0.0-20241217172543-b2144cdd0a67 // indirect
 	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sync v0.11.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
