@@ -117,7 +117,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	tlsConfig := &tls.Config{}
-	if conf.Warewulf.EnableHttps() {
+	if conf.Warewulf.EnableTLS() {
 		caCert, err := os.ReadFile("/warewulf/keys/warewulf.crt")
 		if err != nil {
 			wwlog.Error("failed to read ca cert: %s", err)
@@ -260,7 +260,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 
 	port := conf.Warewulf.Port
 	scheme := "http"
-	if conf.Warewulf.EnableHttps() {
+	if conf.Warewulf.EnableTLS() {
 		port = conf.Warewulf.SecurePort
 		scheme = "https"
 	}

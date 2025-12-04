@@ -86,14 +86,14 @@ func RunServer() error {
 		apiHandler = api.Handler(auth, conf.API.AllowedIPNets())
 	}
 
-	httpHandler := configureHandler(!conf.Warewulf.EnableHttps(), apiHandler)
+	httpHandler := configureHandler(!conf.Warewulf.EnableTLS(), apiHandler)
 
-	if conf.Warewulf.EnableHttps() {
+	if conf.Warewulf.EnableTLS() {
 		key := path.Join(conf.Paths.Sysconfdir, "warewulf", "keys", "warewulf.key")
 		crt := path.Join(conf.Paths.Sysconfdir, "warewulf", "keys", "warewulf.crt")
 
 		if !util.IsFile(key) || !util.IsFile(crt) {
-			wwlog.Error("HTTPS enabled but keys not found in %s", path.Join(conf.Paths.Sysconfdir, "warewulf", "keys"))
+			wwlog.Error("TLS enabled but keys not found in %s", path.Join(conf.Paths.Sysconfdir, "warewulf", "keys"))
 		} else {
 			httpsHandler := configureHandler(true, apiHandler)
 			go func() {

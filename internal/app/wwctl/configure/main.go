@@ -28,7 +28,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		certFile := path.Join(keystore, "warewulf.crt")
 
 		if !util.IsFile(keyFile) || !util.IsFile(certFile) {
-			err = configure.GenKeys()
+			err = configure.GenTLSKeys()
 			if err != nil {
 				return err
 			}

@@ -248,7 +248,7 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 				Ipaddr:        conf.Ipaddr,
 				Ipaddr6:       ipaddr6,
 				Port:          strconv.Itoa(conf.Warewulf.Port),
-				Https:         conf.Warewulf.EnableHttps(),
+				Https:         conf.Warewulf.EnableTLS(),
 				Authority:     authority,
 				Hostname:      remoteNode.Id(),
 				Hwaddr:        rinfo.hwaddr,

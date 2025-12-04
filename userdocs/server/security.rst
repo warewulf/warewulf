@@ -96,8 +96,8 @@ The https functionality can be enabled by setting
 .. code-block:: yaml
 ..
 .. warewulf:
-..   enable https: true
-..   secure port:  9874
+..   tls:         true
+..   secure port: 9874
 ..
 
 Which will enable a https server on the secure port. The certificate and key

@@ -1,4 +1,4 @@
-package keys
+package tls
 
 import (
 	"github.com/spf13/cobra"
@@ -8,13 +8,13 @@ import (
 var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:                   "keys [OPTIONS]",
+		Use:                   "tls [OPTIONS]",
+		Aliases:               []string{"keys", "key", "cert", "crt"},
 		Short:                 "Manage and initialize x509 keys",
-		Long: "This application allows you to manage the x509 keys for Warewulf\n" +
-			"based on the configuration in the warewulf.conf file.",
-		RunE:              CobraRunE,
-		Args:              cobra.NoArgs,
-		ValidArgsFunction: completions.None,
+		Long:                  `This application allows you to manage the x509 keys and certificates for Warewulf.`,
+		RunE:                  CobraRunE,
+		Args:                  cobra.NoArgs,
+		ValidArgsFunction:     completions.None,
 	}
 	importPath string
 	exportPath string
