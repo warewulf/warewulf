@@ -17,7 +17,7 @@ func TestParse(t *testing.T) {
 			result: `
 warewulf:
   autobuild overlays: true
-  enable https: false
+  tls: false
   grubboot: false
   host overlay: true
   port: 9873
@@ -65,7 +65,7 @@ network: 192.168.0.0
 netmask: 255.255.255.0
 warewulf:
   autobuild overlays: true
-  enable https: false
+  tls: false
   grubboot: false
   host overlay: true
   port: 9873
@@ -115,7 +115,7 @@ network: 192.168.0.0
 netmask: 255.255.0.0
 warewulf:
   autobuild overlays: true
-  enable https: false
+  tls: false
   grubboot: false
   host overlay: true
   port: 9873
@@ -162,7 +162,7 @@ ipaddr6: "2001:db8::1"
 prefixlen6: "64"
 warewulf:
   autobuild overlays: true
-  enable https: false
+  tls: false
   grubboot: false
   host overlay: true
   port: 9873
@@ -238,7 +238,7 @@ netmask: 255.255.255.0
 network: 192.168.200.0
 warewulf:
   autobuild overlays: true
-  enable https: false
+  tls: false
   grubboot: false
   host overlay: true
   port: 9873
