@@ -18,9 +18,9 @@ import (
 )
 
 /*
-GenKeys checks for existence of x509 keys and creates them if they don't exist.
+GenTLSKeys checks for existence of x509 keys and creates them if they don't exist.
 */
-func GenKeys() error {
+func GenTLSKeys() error {
 	conf := warewulfconf.Get()
 	keystore := path.Join(conf.Paths.Sysconfdir, "warewulf", "keys")
 
