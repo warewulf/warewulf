@@ -22,6 +22,8 @@ type Quote struct {
 	PCRs      map[string]string `json:"pcrs"`
 	Nonce     string            `json:"nonce"`
 	EventLog  string            `json:"eventlog,omitempty"`
+	Name      string            `json:"name"`
+	ID        string            `json:"id"`
 }
 
 var (
