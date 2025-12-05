@@ -27,13 +27,12 @@ import (
 	"github.com/coreos/go-systemd/daemon"
 	"github.com/google/uuid"
 	"github.com/opencontainers/selinux/go-selinux"
-	"github.com/siderolabs/go-smbios/smbios"
 	"github.com/spf13/cobra"
+	"github.com/talos-systems/go-smbios/smbios"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/pidfile"
 	"github.com/warewulf/warewulf/internal/pkg/version"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
-	"github.com/warewulf/warewulf/internal/pkg/wwurl"
 )
 
 var (
@@ -172,6 +171,8 @@ func getAttestationData(path string, certIdx, tmplIdx uint32) (*Quote, error) {
 		PCRs:      pcrMap,
 		Nonce:     base64.StdEncoding.EncodeToString(nonce),
 		EventLog:  base64.StdEncoding.EncodeToString(eventLog),
+		Name:      name,
+		ID:        id,
 	}, nil
 }
 
@@ -181,6 +182,61 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	} else {
 		wwlog.SetLogLevel(wwlog.INFO)
 	}
+
+	var localUUID uuid.UUID
+	var tag string
+	smbiosDump, smbiosErr := smbios.New()
+	if smbiosErr == nil {
+		sysinfoDump := smbiosDump.SystemInformation()
+		localUUID, _ = sysinfoDump.UUID()
+		x := smbiosDump.SystemEnclosure()
+		tag = strings.ReplaceAll(x.AssetTagNumber(), " ", "_")
+		if tag == "Unknown" {
+			dmiOut, err := exec.Command("dmidecode", "-s", "chassis-asset-tag").Output()
+			if err == nil {
+				chassisAssetTag := strings.TrimSpace(string(dmiOut))
+				if chassisAssetTag != "" {
+					tag = chassisAssetTag
+				}
+			}
+		}
+	} else {
+		// Raspberry Pi serial and DUID locations
+		// /sys/firmware/devicetree/base/serial-number
+		// /sys/firmware/devicetree/base/chosen/rpi-duid
+		piSerial, err := os.ReadFile("/sys/firmware/devicetree/base/serial-number")
+		if err != nil {
+			return fmt.Errorf("could not get SMBIOS info: %w", smbiosErr)
+		}
+		localUUID = uuid.NewSHA1(uuid.NameSpaceURL, []byte("http://raspberrypi.com/serial-number/"+string(piSerial)))
+		tag = "Unknown"
+	}
+
+	wwlog.Debug("uuid: %s", localUUID.String())
+	wwlog.Debug("assetkey: %s", tag)
+
+	if wwid != "" {
+		cmdline, err := os.ReadFile("/proc/cmdline")
+		if err != nil {
+			return fmt.Errorf("could not read from /proc/cmdline: %w", err)
+		}
+		wwid, err = parseWWIDFromCmdline(string(cmdline))
+		if err != nil {
+			return fmt.Errorf("failed to parse wwid: %w", err)
+		}
+	}
+	// Dereference wwid from [interface] for cases that cannot have /proc/cmdline set by bootloader
+	if len(wwid) > 0 && string(wwid[0]) == "[" {
+		iface := wwid[1 : len(wwid)-1]
+		wwid_tmp, err := os.ReadFile(fmt.Sprintf("/sys/class/net/%s/address", iface))
+		if err != nil {
+			return fmt.Errorf("'wwid' cannot be dereferenced from /sys/class/net: %w", err)
+		}
+		wwid = strings.TrimSuffix(string(wwid_tmp), "\n")
+		wwlog.Info("dereferencing wwid from [%s] to %s", iface, wwid)
+	}
+
+	wwlog.Debug("wwid: %s", wwid)
 
 	if quoteFlag {
 		quote, err := getAttestationData(quoteTPMPath, uint32(quoteCertIndex), uint32(quoteTmplIndex))
@@ -246,9 +302,9 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		wwlog.Info("running from trusted port: %d", localTCPAddr.Port)
 	}
 
-	tlsConfig := &tls.Config{MinVersion: tls.VersionTLS13}
-	if conf.Warewulf.TLSEnabled() {
-		caCert, err := os.ReadFile("/warewulf/tls/warewulf.crt")
+	tlsConfig := &tls.Config{}
+	if conf.Warewulf.EnableTLS() {
+		caCert, err := os.ReadFile("/warewulf/keys/warewulf.crt")
 		if err != nil {
 			wwlog.Error("failed to read ca cert: %s", err)
 			return err
@@ -300,8 +356,10 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	var tag string
 	smbiosDump, smbiosErr := smbios.New()
 	if smbiosErr == nil {
-		localUUID, _ = uuid.Parse(smbiosDump.SystemInformation.UUID)
-		tag = strings.ReplaceAll(smbiosDump.SystemEnclosure.AssetTagNumber, " ", "_")
+		sysinfoDump := smbiosDump.SystemInformation()
+		localUUID, _ = sysinfoDump.UUID()
+		x := smbiosDump.SystemEnclosure()
+		tag = strings.ReplaceAll(x.AssetTagNumber(), " ", "_")
 		if tag == "Unknown" {
 			dmiOut, err := exec.Command("dmidecode", "-s", "chassis-asset-tag").Output()
 			if err == nil {
@@ -370,13 +428,13 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 				stopTimer.Reset(0)
 			case syscall.SIGTERM, syscall.SIGINT:
 				wwlog.Info("terminating wwclient, %v", sig)
-				// Signal main loop to exit gracefully
+				// Signal main loop to exit instead of calling os.Exit(0)
 				exitChan <- true
 				return
 			}
 		}
 	}()
-	finishedInitialSync := false
+	var finishedInitialSync bool = false
 	ipaddr := os.Getenv("WW_IPADDR")
 	if ipaddr == "" {
 		if conf.Ipaddr6 != "" {
@@ -394,9 +452,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	for {
-		if err := updateSystem(target, ipaddr, port, wwid, tag, localUUID, scheme); err != nil {
-			return err
-		}
+		updateSystem(target, ipaddr, port, wwid, tag, localUUID, scheme)
 		if !finishedInitialSync {
 			// Notify systemd that the service has started successfully.
 			//
@@ -437,7 +493,7 @@ func parseWWIDFromCmdline(cmdline string) (string, error) {
 	return "", fmt.Errorf("wwid parameter not found in kernel command line")
 }
 
-func updateSystem(target string, ipaddr string, port int, wwid string, tag string, localUUID uuid.UUID, scheme string) error {
+func updateSystem(target string, ipaddr string, port int, wwid string, tag string, localUUID uuid.UUID, scheme string) {
 	var resp *http.Response
 	counter := 0
 	for {
@@ -455,6 +511,7 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 		wwlog.Debug("making request: %s", getURL)
 		resp, err = Webclient.Get(getURL.String())
 		if err == nil {
+			defer resp.Body.Close()
 			break
 		} else {
 			var certificateInvalidError x509.CertificateInvalidError
@@ -463,23 +520,23 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 			if errors.As(err, &certificateInvalidError) ||
 				errors.As(err, &unknownAuthorityError) ||
 				errors.As(err, &hostnameError) {
-				return fmt.Errorf("TLS connection failed: %w", err)
+				wwlog.Error("TLS connection failed: %v", err)
+				os.Exit(1)
 			}
 			if counter > 60 {
 				counter = 0
 			}
 			if counter == 0 {
-				wwlog.Error("%s", wwurl.SanitizeError(err))
+				wwlog.Error("%s", err)
 			}
 			counter++
 		}
 		time.Sleep(1000 * time.Millisecond)
 	}
-	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != 200 {
 		wwlog.Warn("not applying runtime overlay: got status code: %d", resp.StatusCode)
 		time.Sleep(60000 * time.Millisecond)
-		return nil
+		return
 	}
 
 	wwlog.Info("applying runtime overlay")
@@ -488,20 +545,16 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 	tempDir, err := os.MkdirTemp("", "wwclient-")
 	if err != nil {
 		wwlog.Error("failed to create temp directory: %s", err)
-		return nil
+		return
 	}
-	defer func() {
-		if err := os.RemoveAll(tempDir); err != nil {
-			wwlog.Warn("failed to remove temp directory %s: %s", tempDir, err)
-		}
-	}()
+	defer os.RemoveAll(tempDir)
 	wwlog.Debug("unpacking runtime overlay to %s", tempDir)
 	command := exec.Command("/bin/sh", "-c", fmt.Sprintf("gzip -dc | cpio -imu --directory=%s", tempDir))
 	command.Stdin = resp.Body
 	err = command.Run()
 	if err != nil {
 		wwlog.Error("failed running cpio: %s", err)
-		return nil
+		return
 	}
 
 	// Atomically move files from temp directory to current working directory
@@ -509,7 +562,6 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 	if err != nil {
 		wwlog.Error("failed to apply overlay: %s", err)
 	}
-	return nil
 }
 
 func atomicApplyOverlay(srcDir, destDir string) error {
@@ -602,7 +654,7 @@ func atomicApplyOverlay(srcDir, destDir string) error {
 			wwlog.Debug("moving symlink %s to %s", tempPath, destPath)
 			err = os.Rename(tempPath, destPath)
 			if err != nil {
-				_ = os.Remove(tempPath)
+				os.Remove(tempPath)
 				return fmt.Errorf("failed to atomically move symlink %s to %s: %w", tempPath, destPath, err)
 			}
 
@@ -641,7 +693,7 @@ func atomicApplyOverlay(srcDir, destDir string) error {
 			wwlog.Debug("copying file from %s to temp location %s", srcPath, tempPath)
 			err = copyFile(srcPath, tempPath, info)
 			if err != nil {
-				_ = os.Remove(tempPath)
+				os.Remove(tempPath)
 				return fmt.Errorf("failed to copy %s to temp location: %w", srcPath, err)
 			}
 
@@ -656,7 +708,7 @@ func atomicApplyOverlay(srcDir, destDir string) error {
 			wwlog.Debug("moving %s to %s", tempPath, destPath)
 			err = os.Rename(tempPath, destPath)
 			if err != nil {
-				_ = os.Remove(tempPath)
+				os.Remove(tempPath)
 				return fmt.Errorf("failed to atomically move %s to %s: %w", tempPath, destPath, err)
 			}
 		}
@@ -665,22 +717,18 @@ func atomicApplyOverlay(srcDir, destDir string) error {
 	})
 }
 
-func copyFile(src, dst string, srcInfo os.FileInfo) (err error) {
+func copyFile(src, dst string, srcInfo os.FileInfo) error {
 	srcFile, err := os.Open(src)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = srcFile.Close() }()
+	defer srcFile.Close()
 
 	dstFile, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, srcInfo.Mode())
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if cerr := dstFile.Close(); cerr != nil && err == nil {
-			err = cerr
-		}
-	}()
+	defer dstFile.Close()
 
 	_, err = io.Copy(dstFile, srcFile)
 	if err != nil {
