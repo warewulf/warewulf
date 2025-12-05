@@ -1,6 +1,7 @@
 package wwclient
 
 import (
+	"bytes"
 	"crypto/rand"
 	"crypto/tls"
 	"crypto/x509"
@@ -31,6 +32,7 @@ import (
 	"github.com/talos-systems/go-smbios/smbios"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/pidfile"
+	"github.com/warewulf/warewulf/internal/pkg/tpm"
 	"github.com/warewulf/warewulf/internal/pkg/version"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -44,29 +46,27 @@ var (
 		SilenceUsage: true,
 		Args:         cobra.NoArgs,
 	}
-	Once            bool
+	once            bool
 	DebugFlag       bool
 	PIDFile         string
-	Webclient       *http.Client
+	wwid            string
+	webclient       *http.Client
 	WarewulfConfArg string
 
 	// TPM related flags
-	quoteTPMPath   string
-	quoteCertIndex uint
-	quoteTmplIndex uint
-	quoteFlag      bool
+	quoteFlag bool
 )
 
 func init() {
-	rootCmd.PersistentFlags().BoolVar(&Once, "once", false, "Run once and exit")
+	rootCmd.PersistentFlags().BoolVar(&once, "once", false, "Run once and exit")
 	rootCmd.PersistentFlags().BoolVarP(&DebugFlag, "debug", "d", false, "Run with debugging messages enabled.")
 	rootCmd.PersistentFlags().StringVarP(&PIDFile, "pidfile", "p", "/var/run/wwclient.pid", "PIDFile to use")
 	rootCmd.PersistentFlags().StringVar(&WarewulfConfArg, "warewulfconf", "", "Set the warewulf configuration file")
+	rootCmd.PersistentFlags().StringVar(&WarewulfConfArg, "wwid", "", "Set wwid flag manually")
 
 	rootCmd.PersistentFlags().BoolVar(&quoteFlag, "quote", false, "Extract TPM EK certificate and display as JSON")
-	rootCmd.PersistentFlags().StringVar(&quoteTPMPath, "tpm-path", "/dev/tpm0", "Path to the TPM device (used with --quote)")
-	rootCmd.PersistentFlags().UintVar(&quoteCertIndex, "cert-index", 0x01C00002, "NVRAM index of the certificate file (used with --quote)")
-	rootCmd.PersistentFlags().UintVar(&quoteTmplIndex, "template-index", 0, "NVRAM index of the EK template; if zero, default RSA EK template is used (used with --quote)")
+	rootCmd.PersistentFlags().BoolVar(&uploadQuoteFlag, "upload-quote", false, "Upload TPM quote to the server")
+	rootCmd.PersistentFlags().BoolVar(&getChallengeFlag, "get-challenge", false, "Retrieve and decrypt TPM challenge from the server")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
@@ -162,7 +162,7 @@ func getAttestationData(path string, certIdx, tmplIdx uint32) (*Quote, error) {
 		return nil, fmt.Errorf("marshaling AK public: %v", err)
 	}
 
-	return &Quote{
+	return &tpm.Quote{
 		EKCert:    base64.StdEncoding.EncodeToString(ekCertBytes),
 		EKPub:     base64.StdEncoding.EncodeToString(ekPubBytes),
 		AKPub:     base64.StdEncoding.EncodeToString(akPubBytes),
@@ -239,7 +239,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	wwlog.Debug("wwid: %s", wwid)
 
 	if quoteFlag {
-		quote, err := getAttestationData(quoteTPMPath, uint32(quoteCertIndex), uint32(quoteTmplIndex))
+		quote, err := getAttestationData(tag, wwid)
 		if err != nil {
 			return fmt.Errorf("failed to get attestation data: %w", err)
 		}
@@ -303,8 +303,8 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	tlsConfig := &tls.Config{}
-	if conf.Warewulf.EnableTLS() {
-		caCert, err := os.ReadFile("/warewulf/keys/warewulf.crt")
+	if conf.Warewulf.TLSEnabled() {
+		caCert, err := os.ReadFile("/warewulf/tls/warewulf.crt")
 		if err != nil {
 			wwlog.Error("failed to read ca cert: %s", err)
 			return err
@@ -323,7 +323,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		tlsConfig.RootCAs = caCertPool
 	}
 
-	Webclient = &http.Client{
+	webclient = &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: tlsConfig,
 			Proxy:           http.ProxyFromEnvironment,
@@ -418,6 +418,120 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	// Add a channel to signal main loop to exit gracefully
 	exitChan := make(chan bool, 1)
 
+	var finishedInitialSync bool = false
+	ipaddr := os.Getenv("WW_IPADDR")
+	if ipaddr == "" {
+		if conf.Ipaddr6 != "" {
+			ipaddr = conf.Ipaddr6
+		} else {
+			ipaddr = conf.Ipaddr
+		}
+	}
+
+	port := conf.Warewulf.Port
+	scheme := "http"
+	if conf.Warewulf.EnableTLS() {
+		port = conf.Warewulf.SecurePort
+		scheme = "https"
+	}
+
+	if uploadQuoteFlag {
+		quote, err := getAttestationData(tag, wwid)
+		if err != nil {
+			return fmt.Errorf("failed to get attestation data: %w", err)
+		}
+
+		jsonData, err := json.Marshal(quote)
+		if err != nil {
+			return fmt.Errorf("failed to marshal quote to JSON: %w", err)
+		}
+
+		postURL := &url.URL{
+			Scheme: scheme,
+			Host:   fmt.Sprintf("%s:%d", ipaddr, port),
+			Path:   "tpm/",
+		}
+
+		q := postURL.Query()
+		q.Set("wwid", wwid)
+		postURL.RawQuery = q.Encode()
+
+		req, err := http.NewRequest("POST", postURL.String(), bytes.NewBuffer(jsonData))
+		if err != nil {
+			return fmt.Errorf("failed to create request: %w", err)
+		}
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := webclient.Do(req)
+		if err != nil {
+			return fmt.Errorf("failed to upload quote: %w", err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("failed to upload quote: server returned %s", resp.Status)
+		}
+
+		fmt.Println("TPM quote uploaded successfully")
+		return nil
+	}
+
+	if getChallengeFlag {
+		challengeURL := &url.URL{
+			Scheme: scheme,
+			Host:   fmt.Sprintf("%s:%d", ipaddr, port),
+			Path:   "tpm-challenge",
+		}
+		q := challengeURL.Query()
+		q.Set("wwid", wwid)
+		challengeURL.RawQuery = q.Encode()
+
+		resp, err := webclient.Get(challengeURL.String())
+		if err != nil {
+			return fmt.Errorf("failed to retrieve challenge: %w", err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("failed to retrieve challenge: server returned %s", resp.Status)
+		}
+
+		var encryptedCredential attest.EncryptedCredential
+		err = json.NewDecoder(resp.Body).Decode(&encryptedCredential)
+		if err != nil {
+			return fmt.Errorf("failed to decode encrypted credential: %w", err)
+		}
+
+		t, err := attest.OpenTPM(nil)
+		if err != nil {
+			return fmt.Errorf("opening TPM: %v", err)
+		}
+		defer t.Close()
+
+		eks, err := t.EKs()
+		if err != nil {
+			return fmt.Errorf("getting EKs: %v", err)
+		}
+		if len(eks) == 0 {
+			return fmt.Errorf("no EKs found")
+		}
+
+		ak, err := t.NewAK(nil)
+		if err != nil {
+			return fmt.Errorf("creating AK: %v", err)
+		}
+		defer ak.Close(t)
+
+		secret, err := ak.ActivateCredential(t, encryptedCredential)
+		if err != nil {
+			return fmt.Errorf("failed to activate credential: %w", err)
+		}
+
+		fmt.Printf("Decrypted secret: %x\n", secret)
+		return nil
+	}
+	var finishedInitialSync bool = false
+
 	go func() {
 		for {
 			sig := <-sigs
@@ -461,7 +575,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			finishedInitialSync = true
 		}
 
-		if Once {
+		if once {
 			return nil
 		}
 
@@ -509,7 +623,7 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 			RawQuery: values.Encode(),
 		}
 		wwlog.Debug("making request: %s", getURL)
-		resp, err = Webclient.Get(getURL.String())
+		resp, err = webclient.Get(getURL.String())
 		if err == nil {
 			defer resp.Body.Close()
 			break
@@ -761,8 +875,8 @@ func copyFile(src, dst string, srcInfo os.FileInfo) error {
 
 func cleanUp() {
 	// Close idle connections to prevent "address already in use" errors
-	if Webclient != nil {
-		if transport, ok := Webclient.Transport.(*http.Transport); ok {
+	if webclient != nil {
+		if transport, ok := webclient.Transport.(*http.Transport); ok {
 			transport.CloseIdleConnections()
 		}
 	}
