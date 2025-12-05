@@ -5,24 +5,48 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path"
 
 	"github.com/google/go-attestation/attest"
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/tpm"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
+	"gopkg.in/yaml.v3"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
-	quoteFile := args[0]
-
-	data, err := os.ReadFile(quoteFile)
-	if err != nil {
-		return fmt.Errorf("reading quote file: %v", err)
-	}
-
+	target := args[0]
 	var quote tpm.Quote
-	if err := json.Unmarshal(data, &quote); err != nil {
-		return fmt.Errorf("unmarshalling quote: %v", err)
+
+	if _, err := os.Stat(target); err == nil {
+		data, err := os.ReadFile(target)
+		if err != nil {
+			return fmt.Errorf("reading quote file: %v", err)
+		}
+
+		if err := json.Unmarshal(data, &quote); err != nil {
+			return fmt.Errorf("unmarshalling quote: %v", err)
+		}
+	} else {
+		conf := config.Get()
+		tpmConfPath := path.Join(conf.Paths.Sysconfdir, "warewulf/tpm.conf")
+
+		data, err := os.ReadFile(tpmConfPath)
+		if err != nil {
+			return fmt.Errorf("reading tpm config: %v", err)
+		}
+
+		var quotes map[string]tpm.Quote
+		if err := yaml.Unmarshal(data, &quotes); err != nil {
+			return fmt.Errorf("unmarshalling tpm config: %v", err)
+		}
+
+		var ok bool
+		quote, ok = quotes[target]
+		if !ok {
+			return fmt.Errorf("node not found in TPM database or file not found: %s", target)
+		}
 	}
 
 	if verified, err := quote.Verify(); !verified {
