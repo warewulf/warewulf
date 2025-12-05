@@ -160,3 +160,8 @@ func (partition *Partition) Resize() bool {
 func (fs *FileSystem) WipeFileSystem() bool {
 	return util.BoolP(fs.WipeFileSystemP)
 }
+
+// return node id
+func (n *Node) GetId() string {
+	return n.id
+}

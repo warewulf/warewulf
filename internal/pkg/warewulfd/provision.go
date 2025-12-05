@@ -1,9 +1,24 @@
 package warewulfd
 
 import (
+	"bytes"
+	"errors"
+	"fmt"
 	"net/http"
+	"net/netip"
+	"path"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"text/template"
 
+	"github.com/Masterminds/sprig/v3"
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/image"
+	"github.com/warewulf/warewulf/internal/pkg/kernel"
 	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/overlay"
+	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -24,14 +39,15 @@ type templateVars struct {
 	KernelArgs    string
 	KernelVersion string
 	Root          string
-	TLS           bool
+	Https         bool
 	Tags          map[string]string
 	NetDevs       map[string]*node.NetDev
 }
 
-func HandleProvision(w http.ResponseWriter, req *http.Request) {
-	// Parse just enough to determine the stage
-	rinfo, err := parseRequest(req)
+func ProvisionSend(w http.ResponseWriter, req *http.Request) {
+	wwlog.Debug("Requested URL: %s", req.URL.String())
+	conf := warewulfconf.Get()
+	rinfo, err := parseReq(req)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		wwlog.ErrorExc(err, "Bad status")
