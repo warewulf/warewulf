@@ -14,16 +14,17 @@ import (
 
 // Quote struct to hold EK certificate and attestation data
 type Quote struct {
-	EKCert    string            `json:"ek_cert"`
-	EKPub     string            `json:"ek_pub"`
-	AKPub     string            `json:"ak_pub"`
-	Quote     string            `json:"quote"`
-	Signature string            `json:"signature"`
-	PCRs      map[string]string `json:"pcrs"`
-	Nonce     string            `json:"nonce"`
-	EventLog  string            `json:"eventlog,omitempty"`
-	Name      string            `json:"name"`
-	ID        string            `json:"id"`
+	EKCert    string            `json:"ek_cert" yaml:"ek_cert"`
+	EKPub     string            `json:"ek_pub" yaml:"ek_pub"`
+	AKPub     string            `json:"ak_pub" yaml:"ak_pub"`
+	Quote     string            `json:"quote" yaml:"quote"`
+	Signature string            `json:"signature" yaml:"signature"`
+	PCRs      map[string]string `json:"pcrs" yaml:"pcrs"`
+	Nonce     string            `json:"nonce" yaml:"nonce"`
+	EventLog  string            `json:"eventlog,omitempty" yaml:"eventlog,omitempty"`
+	Token     string            `json:"token,omitempty" yaml:"token,omitempty"`
+	Name      string            `json:"name" yaml:"name"`
+	ID        string            `json:"id" yaml:"id"`
 }
 
 var (
