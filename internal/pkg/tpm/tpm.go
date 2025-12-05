@@ -1,14 +1,15 @@
 package tpm
 
 import (
-	"bytes"
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/sha256"
+	"crypto"
+	"crypto/x509"
 	"encoding/base64"
+	"encoding/hex"
+	"errors"
 	"fmt"
+	"strconv"
 
-	"github.com/google/go-tpm/legacy/tpm2"
+	"github.com/google/go-attestation/attest"
 )
 
 // Quote struct to hold EK certificate and attestation data
@@ -17,88 +18,127 @@ type Quote struct {
 	EKPub     string            `json:"ek_pub"`
 	AKPub     string            `json:"ak_pub"`
 	Quote     string            `json:"quote"`
-	Signature *tpm2.Signature   `json:"signature"`
+	Signature string            `json:"signature"`
 	PCRs      map[string]string `json:"pcrs"`
 	Nonce     string            `json:"nonce"`
 	EventLog  string            `json:"eventlog,omitempty"`
 }
 
-func VerifyQuote(quote *Quote) error {
+var (
+	ErrDecodeAKPub     = errors.New("decoding AKPub failed")
+	ErrParseAKPub      = errors.New("parsing TPM public key failed")
+	ErrDecodeQuote     = errors.New("decoding quote failed")
+	ErrDecodeSignature = errors.New("decoding signature failed")
+	ErrDecodeNonce     = errors.New("decoding nonce failed")
+	ErrQuoteVerify     = errors.New("quote verification failed")
+	ErrNoEventLog      = errors.New("no event log present")
+	ErrEventLogVerify  = errors.New("event log verification failed")
+)
+
+func (quote *Quote) Verify() (bool, error) {
 	// 1. Parse AK Public Key
 	akPubBytes, err := base64.StdEncoding.DecodeString(quote.AKPub)
 	if err != nil {
-		return fmt.Errorf("decoding AKPub: %v", err)
+		return false, fmt.Errorf("%w: %v", ErrDecodeAKPub, err)
 	}
 
-	// Decode TPM public key
-	akPubTPM, err := tpm2.DecodePublic(akPubBytes)
+	akPub, err := x509.ParsePKIXPublicKey(akPubBytes)
 	if err != nil {
-		return fmt.Errorf("decoding TPM public key: %v", err)
+		return false, fmt.Errorf("%w: %v", ErrParseAKPub, err)
 	}
 
-	if akPubTPM.Type != tpm2.AlgECC {
-		return fmt.Errorf("AK is not ECC")
-	}
-
-	var curve elliptic.Curve
-	switch akPubTPM.ECCParameters.CurveID {
-	case tpm2.CurveNISTP256:
-		curve = elliptic.P256()
-	default:
-		return fmt.Errorf("unsupported curve: %v", akPubTPM.ECCParameters.CurveID)
-	}
-
-	ecdsaPub := &ecdsa.PublicKey{
-		Curve: curve,
-		X:     akPubTPM.ECCParameters.Point.X(),
-		Y:     akPubTPM.ECCParameters.Point.Y(),
-	}
-
-	// 2. Decode Attestation Data (Quote)
+	// 2. Decode Quote
 	quoteBytes, err := base64.StdEncoding.DecodeString(quote.Quote)
 	if err != nil {
-		return fmt.Errorf("decoding quote: %v", err)
+		return false, fmt.Errorf("%w: %v", ErrDecodeQuote, err)
 	}
 
-	attest, err := tpm2.DecodeAttestationData(quoteBytes)
+	sigBytes, err := base64.StdEncoding.DecodeString(quote.Signature)
 	if err != nil {
-		return fmt.Errorf("decoding attestation data: %v", err)
+		return false, fmt.Errorf("%w: %v", ErrDecodeSignature, err)
 	}
 
-	// 3. Verify Signature
-	if quote.Signature == nil {
-		return fmt.Errorf("missing signature")
-	}
-	if quote.Signature.ECC == nil {
-		return fmt.Errorf("signature is not ECC")
-	}
-
-	// Hash the quote data
-	hash := sha256.Sum256(quoteBytes)
-
-	if !ecdsa.Verify(ecdsaPub, hash[:], quote.Signature.ECC.R, quote.Signature.ECC.S) {
-		return fmt.Errorf("signature verification failed")
-	}
-
-	// 4. Verify Nonce (Qualification)
 	nonceBytes, err := base64.StdEncoding.DecodeString(quote.Nonce)
 	if err != nil {
-		return fmt.Errorf("decoding nonce: %v", err)
+		return false, fmt.Errorf("%w: %v", ErrDecodeNonce, err)
 	}
 
-	if !bytes.Equal(attest.ExtraData, nonceBytes) {
-		return fmt.Errorf("nonce mismatch: expected %x, got %x", nonceBytes, attest.ExtraData)
+	// Construct go-attestation Quote object
+	q := attest.Quote{
+		Version:   attest.TPMVersion20,
+		Quote:     quoteBytes,
+		Signature: sigBytes,
 	}
 
-	// 5. Verify Magic
-	if attest.Magic != 0xff544347 { // TPM_GENERATED_VALUE
-		return fmt.Errorf("invalid magic: %x", attest.Magic)
+	// Reconstruct PCRs
+	var pcrs []attest.PCR
+	for idxStr, digestHex := range quote.PCRs {
+		idx, err := strconv.Atoi(idxStr)
+		if err != nil {
+			continue
+		}
+		digest, err := hex.DecodeString(digestHex)
+		if err != nil {
+			continue
+		}
+		pcrs = append(pcrs, attest.PCR{
+			Index:     idx,
+			Digest:    digest,
+			DigestAlg: crypto.SHA256,
+		})
 	}
 
-	// 6. Verify Type
-	if attest.Type != tpm2.TagAttestQuote {
-		return fmt.Errorf("invalid type: %v", attest.Type)
+	verifier := &attest.AKPublic{
+		Public: akPub,
+		Hash:   crypto.SHA256,
+	}
+	if err := verifier.Verify(q, pcrs, nonceBytes); err != nil {
+		return false, fmt.Errorf("%w: %v", ErrQuoteVerify, err)
 	}
 
-	return nil
+	return true, nil
+}
+
+func (quote *Quote) VerifyEventLog() (bool, error) {
+	if quote.EventLog == "" {
+		return false, ErrNoEventLog
+	}
+
+	logBytes, err := base64.StdEncoding.DecodeString(quote.EventLog)
+	if err != nil {
+		return false, fmt.Errorf("decoding event log: %v", err)
+	}
+
+	el, err := attest.ParseEventLog(logBytes)
+	if err != nil {
+		return false, fmt.Errorf("parsing event log: %v", err)
+	}
+
+	// Reconstruct PCRs
+	var pcrs []attest.PCR
+	for idxStr, digestHex := range quote.PCRs {
+		idx, err := strconv.Atoi(idxStr)
+		if err != nil {
+			continue
+		}
+		digest, err := hex.DecodeString(digestHex)
+		if err != nil {
+			continue
+		}
+		pcrs = append(pcrs, attest.PCR{
+			Index:     idx,
+			Digest:    digest,
+			DigestAlg: crypto.SHA256,
+		})
+	}
+
+	if _, err := el.Verify(pcrs); err != nil {
+		var replayErr attest.ReplayError
+		if errors.As(err, &replayErr) {
+			return false, fmt.Errorf("%w: invalid PCRs %v", ErrEventLogVerify, replayErr.InvalidPCRs)
+		}
+		return false, fmt.Errorf("%w: %v", ErrEventLogVerify, err)
+	}
+
+	return true, nil
 }
