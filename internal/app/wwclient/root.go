@@ -29,7 +29,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/opencontainers/selinux/go-selinux"
 	"github.com/spf13/cobra"
-	"github.com/talos-systems/go-smbios/smbios"
+	"github.com/siderolabs/go-smbios/smbios"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/pidfile"
 	"github.com/warewulf/warewulf/internal/pkg/tpm"
@@ -54,7 +54,9 @@ var (
 	WarewulfConfArg string
 
 	// TPM related flags
-	quoteFlag bool
+	quoteFlag        bool
+	uploadQuoteFlag  bool
+	getChallengeFlag bool
 )
 
 func init() {
@@ -62,7 +64,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&DebugFlag, "debug", "d", false, "Run with debugging messages enabled.")
 	rootCmd.PersistentFlags().StringVarP(&PIDFile, "pidfile", "p", "/var/run/wwclient.pid", "PIDFile to use")
 	rootCmd.PersistentFlags().StringVar(&WarewulfConfArg, "warewulfconf", "", "Set the warewulf configuration file")
-	rootCmd.PersistentFlags().StringVar(&WarewulfConfArg, "wwid", "", "Set wwid flag manually")
+	rootCmd.PersistentFlags().StringVar(&wwid, "wwid", "", "Set wwid flag manually")
 
 	rootCmd.PersistentFlags().BoolVar(&quoteFlag, "quote", false, "Extract TPM EK certificate and display as JSON")
 	rootCmd.PersistentFlags().BoolVar(&uploadQuoteFlag, "upload-quote", false, "Upload TPM quote to the server")
@@ -75,23 +77,9 @@ func GetRootCommand() *cobra.Command {
 	return rootCmd
 }
 
-// Quote struct to hold EK certificate and attestation data
-type Quote struct {
-	EKCert    string            `json:"ek_cert"`
-	EKPub     string            `json:"ek_pub"`
-	AKPub     string            `json:"ak_pub"`
-	Quote     string            `json:"quote"`
-	Signature string            `json:"signature"`
-	PCRs      map[string]string `json:"pcrs"`
-	Nonce     string            `json:"nonce"`
-	EventLog  string            `json:"eventlog,omitempty"`
-}
-
-func getAttestationData(path string, certIdx, tmplIdx uint32) (*Quote, error) {
+func getAttestationData(name, id string) (*tpm.Quote, error) {
 	// Open TPM
-	t, err := attest.OpenTPM(&attest.OpenConfig{
-		TPMVersion: attest.TPMVersion20,
-	})
+	t, err := attest.OpenTPM(nil)
 	if err != nil {
 		return nil, fmt.Errorf("opening TPM: %v", err)
 	}
@@ -152,7 +140,7 @@ func getAttestationData(path string, certIdx, tmplIdx uint32) (*Quote, error) {
 	}
 
 	akParams := ak.AttestationParameters()
-	akPubObj, err := attest.ParseAKPublic(attest.TPMVersion20, akParams.Public)
+	akPubObj, err := attest.ParseAKPublic(akParams.Public)
 	if err != nil {
 		return nil, fmt.Errorf("parsing AK public: %v", err)
 	}
@@ -352,59 +340,6 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			ExpectContinueTimeout: 1 * time.Second,
 		},
 	}
-	var localUUID uuid.UUID
-	var tag string
-	smbiosDump, smbiosErr := smbios.New()
-	if smbiosErr == nil {
-		sysinfoDump := smbiosDump.SystemInformation()
-		localUUID, _ = sysinfoDump.UUID()
-		x := smbiosDump.SystemEnclosure()
-		tag = strings.ReplaceAll(x.AssetTagNumber(), " ", "_")
-		if tag == "Unknown" {
-			dmiOut, err := exec.Command("dmidecode", "-s", "chassis-asset-tag").Output()
-			if err == nil {
-				chassisAssetTag := strings.TrimSpace(string(dmiOut))
-				if chassisAssetTag != "" {
-					tag = chassisAssetTag
-				}
-			}
-		}
-	} else {
-		// Raspberry Pi serial and DUID locations
-		// /sys/firmware/devicetree/base/serial-number
-		// /sys/firmware/devicetree/base/chosen/rpi-duid
-		piSerial, err := os.ReadFile("/sys/firmware/devicetree/base/serial-number")
-		if err != nil {
-			return fmt.Errorf("could not get SMBIOS info: %w", smbiosErr)
-		}
-		localUUID = uuid.NewSHA1(uuid.NameSpaceURL, []byte("http://raspberrypi.com/serial-number/"+string(piSerial)))
-		tag = "Unknown"
-	}
-
-	wwlog.Debug("uuid: %s", localUUID.String())
-	wwlog.Debug("assetkey: %s", tag)
-
-	cmdline, err := os.ReadFile("/proc/cmdline")
-	if err != nil {
-		return fmt.Errorf("could not read from /proc/cmdline: %w", err)
-	}
-	wwid, err := parseWWIDFromCmdline(string(cmdline))
-	if err != nil {
-		return fmt.Errorf("failed to parse wwid: %w", err)
-	}
-
-	// Dereference wwid from [interface] for cases that cannot have /proc/cmdline set by bootloader
-	if string(wwid[0]) == "[" {
-		iface := wwid[1 : len(wwid)-1]
-		wwid_tmp, err := os.ReadFile(fmt.Sprintf("/sys/class/net/%s/address", iface))
-		if err != nil {
-			return fmt.Errorf("'wwid' cannot be dereferenced from /sys/class/net: %w", err)
-		}
-		wwid = strings.TrimSuffix(string(wwid_tmp), "\n")
-		wwlog.Info("dereferencing wwid from [%s] to %s", iface, wwid)
-	}
-
-	wwlog.Debug("wwid: %s", wwid)
 
 	duration := 300
 	if conf.Warewulf.UpdateInterval > 0 {
@@ -418,7 +353,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	// Add a channel to signal main loop to exit gracefully
 	exitChan := make(chan bool, 1)
 
-	var finishedInitialSync bool = false
+	// var finishedInitialSync bool = false
 	ipaddr := os.Getenv("WW_IPADDR")
 	if ipaddr == "" {
 		if conf.Ipaddr6 != "" {
@@ -430,8 +365,8 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 
 	port := conf.Warewulf.Port
 	scheme := "http"
-	if conf.Warewulf.EnableTLS() {
-		port = conf.Warewulf.SecurePort
+	if conf.Warewulf.TLSEnabled() {
+		port = conf.Warewulf.TlsPort
 		scheme = "https"
 	}
 
@@ -449,7 +384,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		postURL := &url.URL{
 			Scheme: scheme,
 			Host:   fmt.Sprintf("%s:%d", ipaddr, port),
-			Path:   "tpm/",
+			Path:   "tpm-quote/",
 		}
 
 		q := postURL.Query()
@@ -548,6 +483,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			}
 		}
 	}()
+<<<<<<< HEAD
 	var finishedInitialSync bool = false
 	ipaddr := os.Getenv("WW_IPADDR")
 	if ipaddr == "" {
@@ -564,6 +500,8 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		port = conf.Warewulf.TLSPort
 		scheme = "https"
 	}
+=======
+>>>>>>> 52d983a8 (create challenge for node)
 
 	for {
 		updateSystem(target, ipaddr, port, wwid, tag, localUUID, scheme)
