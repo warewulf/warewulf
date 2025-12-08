@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/google/go-attestation/attest"
 )
@@ -23,12 +24,31 @@ type Quote struct {
 	Nonce     string            `json:"nonce" yaml:"nonce"`
 	EventLog  string            `json:"eventlog,omitempty" yaml:"eventlog,omitempty"`
 	Token     string            `json:"token,omitempty" yaml:"token,omitempty"`
-	Name      string            `json:"name" yaml:"name"`
 	ID        string            `json:"id" yaml:"id"`
+	Modified  time.Time         `json:"modified" yaml:"modified"`
+}
+
+// Challenge struct to hold encrypted credentials and secrets for TPM challenges
+
+type Challenge struct {
+	EncryptedCredential attest.EncryptedCredential `json:"encrypted_credential" yaml:"encrypted_credential"`
+
+	Secret []byte `json:"secret" yaml:"secret"`
+
+	ID string `json:"id" yaml:"id"`
+}
+
+// TPMConfig struct to hold both Quotes and Challenges
+
+type TPMConfig struct {
+	Quotes map[string]Quote `yaml:"quotes"`
+
+	Challenges map[string]Challenge `yaml:"challenges"`
 }
 
 var (
-	ErrDecodeAKPub     = errors.New("decoding AKPub failed")
+	ErrDecodeAKPub = errors.New("decoding AKPub failed")
+
 	ErrParseAKPub      = errors.New("parsing TPM public key failed")
 	ErrDecodeQuote     = errors.New("decoding quote failed")
 	ErrDecodeSignature = errors.New("decoding signature failed")
@@ -68,7 +88,6 @@ func (quote *Quote) Verify() (bool, error) {
 
 	// Construct go-attestation Quote object
 	q := attest.Quote{
-		Version:   attest.TPMVersion20,
 		Quote:     quoteBytes,
 		Signature: sigBytes,
 	}
