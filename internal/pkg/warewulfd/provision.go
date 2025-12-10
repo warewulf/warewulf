@@ -1,30 +1,24 @@
 package warewulfd
 
 import (
-	"bytes"
+	"crypto/sha256"
+	"crypto/x509"
+	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
-	"net/netip"
 	"os"
-	"path"
 	"path/filepath"
-	"strconv"
-	"strings"
-	"text/template"
+	"time"
 
-	"github.com/Masterminds/sprig/v3"
+	"github.com/google/go-attestation/attest"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
-	"github.com/warewulf/warewulf/internal/pkg/image"
-	"github.com/warewulf/warewulf/internal/pkg/kernel"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 	nodedb "github.com/warewulf/warewulf/internal/pkg/node"
-	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/tpm"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
-	"gopkg.in/yaml.v3"
 )
 
 type templateVars struct {
@@ -44,15 +38,14 @@ type templateVars struct {
 	KernelArgs    string
 	KernelVersion string
 	Root          string
-	Https         bool
+	TLS           bool
 	Tags          map[string]string
 	NetDevs       map[string]*node.NetDev
 }
 
-func ProvisionSend(w http.ResponseWriter, req *http.Request) {
-	wwlog.Debug("Requested URL: %s", req.URL.String())
-	conf := warewulfconf.Get()
-	rinfo, err := parseReq(req)
+func HandleProvision(w http.ResponseWriter, req *http.Request) {
+	// Parse just enough to determine the stage
+	rinfo, err := parseRequest(req)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		wwlog.ErrorExc(err, "Bad status")
@@ -82,4 +75,251 @@ func ProvisionSend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	handler(w, req)
+}
+func TPMReceive(w http.ResponseWriter, req *http.Request) {
+	wwlog.Debug("Requested URL: %s", req.URL.String())
+
+	wwidRecv := req.URL.Query().Get("wwid")
+	if wwidRecv == "" {
+		wwlog.Error("TPM receive: wwid parameter missing")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Validate node exists
+	nodes, err := nodedb.New()
+	if err != nil {
+		wwlog.Error("Failed to load node configuration: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	// Check if the node exists by ID, IP or HW address
+	node, err := nodes.GetNodeOnly(wwidRecv)
+	if err != nil {
+		if node, err = nodes.FindByIpaddr(wwidRecv); err != nil {
+			if node, err = nodes.FindByHwaddr(wwidRecv); err != nil {
+				wwlog.Error("Node not found: %s", wwidRecv)
+				w.WriteHeader(http.StatusNotFound)
+				return
+			}
+		}
+	}
+
+	body, err := io.ReadAll(req.Body)
+	if err != nil {
+		wwlog.Error("Failed to read request body: %s", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	var newQuote tpm.Quote
+	err = json.Unmarshal(body, &newQuote)
+	if err != nil {
+		wwlog.Error("Failed to unmarshal JSON quote: %s", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	newQuote.ID = wwidRecv
+	newQuote.Modified = time.Now()
+
+	tpmStore, err := NewTPMLogStore(node.GetId())
+	if err != nil {
+		wwlog.Error("Failed to access TPM store: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if err := tpmStore.Save(newQuote); err != nil {
+		wwlog.Error("Failed to write TPM quote: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	wwlog.Info("Stored TPM quote for node %s", newQuote.ID)
+	w.WriteHeader(http.StatusOK)
+}
+
+func TPMChallengeSend(w http.ResponseWriter, req *http.Request) {
+	wwlog.Debug("Requested URL: %s", req.URL.String())
+
+	wwidRecv := req.URL.Query().Get("wwid")
+	if wwidRecv == "" {
+		wwlog.Error("TPM challenge send: wwid parameter missing")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	nodes, err := nodedb.New()
+	if err != nil {
+		wwlog.Error("Failed to load node configuration: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	node, err := nodes.GetNodeOnly(wwidRecv)
+	if err != nil {
+		if node, err = nodes.FindByIpaddr(wwidRecv); err != nil {
+			if node, err = nodes.FindByHwaddr(wwidRecv); err != nil {
+				wwlog.Error("Node not found: %s", wwidRecv)
+				w.WriteHeader(http.StatusNotFound)
+				return
+			}
+		}
+	}
+
+	conf := warewulfconf.Get()
+	tpmPath := filepath.Join(conf.Paths.OverlayProvisiondir(), node.GetId(), "tpm.json")
+
+	if !util.IsFile(tpmPath) {
+		wwlog.Error("No TPM quote found for node %s", node.GetId())
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	data, err := os.ReadFile(tpmPath)
+	if err != nil {
+		wwlog.Error("Failed to read TPM quote: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	var existingQuote tpm.Quote
+	err = json.Unmarshal(data, &existingQuote)
+	if err != nil {
+		wwlog.Error("Failed to unmarshal TPM quote: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	ekPubBytes, err := base64.StdEncoding.DecodeString(existingQuote.EKPub)
+	if err != nil {
+		wwlog.Error("Failed to decode EKPub for node %s: %s", node.GetId(), err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	akPubBytes, err := base64.StdEncoding.DecodeString(existingQuote.AKPub)
+	if err != nil {
+		wwlog.Error("Failed to decode AKPub for node %s: %s", node.GetId(), err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	akPub, err := x509.ParsePKIXPublicKey(akPubBytes)
+	if err != nil {
+		wwlog.Error("Failed to parse AK public key for node %s: %s", node.GetId(), err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	ekPub, err := x509.ParsePKIXPublicKey(ekPubBytes)
+	if err != nil {
+		wwlog.Error("Failed to parse EK public key for node %s: %s", node.GetId(), err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	akPubDER, err := x509.MarshalPKIXPublicKey(akPub)
+	if err != nil {
+		wwlog.Error("Failed to marshal AK public key for node %s: %s", node.GetId(), err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	akAttestParams := attest.AttestationParameters{
+		Public: akPubDER,
+		// Other fields like Name, AttestedCreationInfo would ideally come from the client during AK creation
+	}
+
+	activationParams := attest.ActivationParameters{
+		EK: ekPub,
+		AK: akAttestParams,
+	}
+
+	secret, encryptedCredential, err := activationParams.Generate()
+	if err != nil {
+		wwlog.Error("Error generating Credential Activation Challenge for node %s: %s", node.GetId(), err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	newChallenge := tpm.Challenge{
+		EncryptedCredential: *encryptedCredential,
+		Secret:              secret,
+		ID:                  node.GetId(),
+	}
+
+	out, err := json.MarshalIndent(newChallenge, "", "  ")
+	if err != nil {
+		wwlog.Error("Failed to marshal TPM challenge: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	challengePath := filepath.Join(conf.Paths.OverlayProvisiondir(), node.GetId(), "tpm_challenge.json")
+	err = os.WriteFile(challengePath, out, 0644)
+	if err != nil {
+		wwlog.Error("Failed to write TPM challenge: %s", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(newChallenge.EncryptedCredential)
+
+	wwlog.Info("Sent TPM challenge for node %s", node.GetId())
+}
+
+func updateTPMLogs(nodeId, filename, checksum string) error {
+	conf := warewulfconf.Get()
+	tpmPath := filepath.Join(conf.Paths.OverlayProvisiondir(), nodeId, "tpm.json")
+
+	if !util.IsFile(tpmPath) {
+		return nil
+	}
+
+	data, err := os.ReadFile(tpmPath)
+	if err != nil {
+		return err
+	}
+
+	var quote tpm.Quote
+	err = json.Unmarshal(data, &quote)
+	if err != nil {
+		return err
+	}
+
+	// Check if log entry already exists
+	found := false
+	if strings.Contains(filename, "grub.cfg.ww") {
+		var newLogs []tpm.FileLog
+		for _, log := range quote.Logs {
+			if !strings.Contains(log.Filename, "grub.cfg.ww") {
+				newLogs = append(newLogs, log)
+			}
+		}
+		quote.Logs = newLogs
+	} else {
+		for i, log := range quote.Logs {
+			if log.Filename == filename {
+				quote.Logs[i].Checksum = checksum
+				found = true
+				break
+			}
+		}
+	}
+
+	if !found {
+		quote.Logs = append(quote.Logs, tpm.FileLog{
+			Filename: filename,
+			Source:   source,
+			Checksum: checksum,
+		})
+	}
+
+	out, err := json.MarshalIndent(quote, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(tpmPath, out, 0644)
 }
