@@ -40,6 +40,10 @@ There are multiple ways to secure the Warewulf provisioning process:
   This means that the nodes only boot the kernel which is provided by the
   distributor and also custom complied modules can't be loaded.
 
+* Tls (transport layer security) can be enabled for the warewulf server. However
+  the https is only used for runtime overlays. The kernel and system image are *always*
+  transfered unencrypted as iPXE and grub can't handle https.
+
 SELinux
 =======
 
@@ -82,3 +86,34 @@ with the Warewulf server.
    nft add rule inet filter input tcp dport 9873 accept
    nft list ruleset >/etc/nftables.conf
    systemctl restart nftables
+
+
+HTTPS
+=====
+
+The https functionality can be enabled by setting
+
+.. code-block:: yaml
+..
+.. warewulf:
+..   tls:         true
+..   secure port: 9874
+..
+
+Which will enable a https server on the secure port. The certificate and key
+can be created as self signed key with ``wwctl configure keys --create``. The
+keys and certificate are stored if not configured otherwise as
+
+.. code-block:: console
+..
+.. /etc/warewulf/keys/warewulf.crt # PEM certificate
+.. /etc/warewulf/keys/warewulf.key # PEM RSA Key
+
+
+
+For the key and certifcate generation no addiotional parameters can be set, but
+you can import your own keys, with ``wwctl configure keys import``.
+
+If HTTPS is enabled the delivery of the runtime overlays is disabled over HTTP, so
+you **must** use `wwclient` to get the runtime overlays.
+

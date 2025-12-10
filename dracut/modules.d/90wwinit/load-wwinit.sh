@@ -41,6 +41,6 @@ info "warewulf: mounting ${wwinit_root_device} at ${NEWROOT}"
     fi
 ) || die "warewulf: failed to mount ${wwinit_root_device} at ${NEWROOT}"
 
-for stage in "image" "system" "runtime"; do
+for stage in "image" "system" ; do
     get_stage "${stage}"
 done

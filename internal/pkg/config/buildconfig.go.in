@@ -42,7 +42,9 @@ func (conf TFTPConf) Enabled() bool {
 // BaseConf.
 type WarewulfConf struct {
 	Port               int    `yaml:"port,omitempty" default:"9873"`
+	SecurePort         int    `yaml:"secure port,omitempty" default:"9874"`
 	SecureP            *bool  `yaml:"secure,omitempty" default:"true"`
+	EnableTLSP         *bool  `yaml:"tls,omitempty" default:"false"`
 	UpdateInterval     int    `yaml:"update interval,omitempty" default:"60"`
 	AutobuildOverlaysP *bool  `yaml:"autobuild overlays,omitempty" default:"true"`
 	EnableHostOverlayP *bool  `yaml:"host overlay,omitempty" default:"true"`
@@ -52,6 +54,10 @@ type WarewulfConf struct {
 
 func (conf WarewulfConf) Secure() bool {
 	return util.BoolP(conf.SecureP)
+}
+
+func (conf WarewulfConf) EnableTLS() bool {
+	return util.BoolP(conf.EnableTLSP)
 }
 
 func (conf WarewulfConf) AutobuildOverlays() bool {
