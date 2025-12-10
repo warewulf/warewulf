@@ -32,10 +32,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	commentMap := ov.ParseCommentVars(filePath)
 	commentKeys := maps.Keys(commentMap)
 	sort.Strings(commentKeys)
+	hasWwdoc := false
 	for _, docLn := range commentKeys {
 		if strings.Contains(docLn, "wwdoc") {
 			wwlog.Info(commentMap[docLn])
+			hasWwdoc = true
 		}
+	}
+
+	// Add newline after wwdoc lines if they exist
+	if hasWwdoc {
+		fmt.Fprintln(cmd.OutOrStdout())
 	}
 
 	// Sort variables by name for consistent output
