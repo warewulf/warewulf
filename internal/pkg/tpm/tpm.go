@@ -13,6 +13,13 @@ import (
 	"github.com/google/go-attestation/attest"
 )
 
+// FileLog struct to hold checksums of files sent to the node
+type FileLog struct {
+	Filename string `json:"filename" yaml:"filename"`
+	Source   string `json:"source" yaml:"source"`
+	Checksum string `json:"checksum" yaml:"checksum"`
+}
+
 // Quote struct to hold EK certificate and attestation data
 type Quote struct {
 	EKCert    string            `json:"ek_cert" yaml:"ek_cert"`
@@ -26,6 +33,7 @@ type Quote struct {
 	Token     string            `json:"token,omitempty" yaml:"token,omitempty"`
 	ID        string            `json:"id" yaml:"id"`
 	Modified  time.Time         `json:"modified" yaml:"modified"`
+	Logs      []FileLog         `json:"logs,omitempty" yaml:"logs,omitempty"`
 }
 
 // Challenge struct to hold encrypted credentials and secrets for TPM challenges

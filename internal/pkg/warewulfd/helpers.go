@@ -52,13 +52,13 @@ func buildTemplateVars(conf *warewulfconf.WarewulfYaml, rinfo parsedRequest, rem
 	}
 
 	return &templateVars{
-		Id:      remoteNode.Id(),
-		Cluster: remoteNode.ClusterName,
-		Fqdn:    remoteNode.Id(),
-		Ipaddr:  conf.Ipaddr,
-		Ipaddr6: ipaddr6,
-		Port:    strconv.Itoa(conf.Warewulf.Port),
-		// TLS:           conf.Warewulf.TLSEnabled(),
+		Id:            remoteNode.Id(),
+		Cluster:       remoteNode.ClusterName,
+		Fqdn:          remoteNode.Id(),
+		Ipaddr:        conf.Ipaddr,
+		Ipaddr6:       ipaddr6,
+		Port:          strconv.Itoa(conf.Warewulf.Port),
+		TLS:           conf.Warewulf.TLSEnabled(),
 		Authority:     authority,
 		Hostname:      remoteNode.Id(),
 		Hwaddr:        rinfo.hwaddr,
