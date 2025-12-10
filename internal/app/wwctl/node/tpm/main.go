@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"sort"
 
 	"github.com/google/go-attestation/attest"
 	"github.com/spf13/cobra"
@@ -74,9 +75,14 @@ func displayEventLog(b64Log string) error {
 		return fmt.Errorf("parsing event log: %v", err)
 	}
 
+	events := el.Events(attest.HashSHA256)
+	sort.Slice(events, func(i, j int) bool {
+		return events[i].Index < events[j].Index
+	})
+
 	fmt.Println("TPM Event Log (SHA256):")
-	for _, event := range el.Events(attest.HashSHA256) {
-		fmt.Printf("PCR[%d] Type=%x Digest=%x\n", event.Index, event.Type, event.Digest)
+	for _, event := range events {
+		fmt.Printf("PCR[%d] Type=%s Digest=%x\n", event.Index, event.Type, event.Digest)
 	}
 	return nil
 }
