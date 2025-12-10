@@ -159,7 +159,6 @@ func getAttestationData(name, id string) (*tpm.Quote, error) {
 		PCRs:      pcrMap,
 		Nonce:     base64.StdEncoding.EncodeToString(nonce),
 		EventLog:  base64.StdEncoding.EncodeToString(eventLog),
-		Name:      name,
 		ID:        id,
 	}, nil
 }
