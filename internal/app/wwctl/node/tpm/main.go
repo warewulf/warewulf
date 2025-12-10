@@ -12,7 +12,6 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/tpm"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
-	"gopkg.in/yaml.v3"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
@@ -30,22 +29,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	} else {
 		conf := config.Get()
-		tpmConfPath := path.Join(conf.Paths.Sysconfdir, "warewulf/tpm.conf")
+		tpmPath := path.Join(conf.Paths.OverlayProvisiondir(), target, "tpm.json")
 
-		data, err := os.ReadFile(tpmConfPath)
+		data, err := os.ReadFile(tpmPath)
 		if err != nil {
-			return fmt.Errorf("reading tpm config: %v", err)
+			return fmt.Errorf("reading tpm quote for node %s: %v", target, err)
 		}
 
-		var quotes map[string]tpm.Quote
-		if err := yaml.Unmarshal(data, &quotes); err != nil {
-			return fmt.Errorf("unmarshalling tpm config: %v", err)
-		}
-
-		var ok bool
-		quote, ok = quotes[target]
-		if !ok {
-			return fmt.Errorf("node not found in TPM database or file not found: %s", target)
+		if err := json.Unmarshal(data, &quote); err != nil {
+			return fmt.Errorf("unmarshalling quote: %v", err)
 		}
 	}
 
