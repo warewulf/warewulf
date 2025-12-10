@@ -44,7 +44,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	defer os.Remove(tempFile.Name())
 
 	if !NoHeader {
-		yamlTemplate := node.UnmarshalConf(node.Profile{}, nil)
+		yamlTemplate := node.ConfToYaml(node.Profile{}, nil)
 		if _, err := tempFile.WriteString("#profilename:\n#  " + strings.Join(yamlTemplate, "\n#  ") + "\n"); err != nil {
 			return err
 		}

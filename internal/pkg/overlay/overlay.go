@@ -8,10 +8,12 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"strings"
 	"sync"
 	"text/template"
+	"text/template/parse"
 
 	"github.com/Masterminds/sprig/v3"
 	"github.com/coreos/go-systemd/v22/unit"
@@ -270,6 +272,481 @@ func (overlay Overlay) Mkdir(path string, mode int32) (err error) {
 		wwlog.Warn("path already exists, overwriting permissions: %s:%s", overlay.Name(), fullPath)
 	}
 	return os.MkdirAll(fullPath, os.FileMode(mode))
+}
+
+// FieldInfo contains detailed type information about a template variable
+type FieldInfo struct {
+	Field      reflect.StructField // Complete field metadata including tags
+	ParentType reflect.Type        // The containing struct type
+	FullPath   string              // Full path like ".NetDevs.Ipaddr6"
+	VarName    string              // Original variable name from template
+}
+
+// ParseVarFields returns detailed type information for each variable in the template
+// by using reflection to resolve the actual struct fields being referenced.
+func (overlay Overlay) ParseVarFields(file string) map[string]FieldInfo {
+	if !strings.HasSuffix(file, ".ww") {
+		return nil
+	}
+	fullPath := overlay.File(file)
+	if !util.IsFile(fullPath) {
+		wwlog.Error("Template file does not exist in overlay %s: %s", overlay.Name(), file)
+		return nil
+	}
+
+	funcMap, _, _ := getTemplateFuncMap(fullPath, TemplateStruct{})
+	tmpl, err := template.New(path.Base(fullPath)).Option("missingkey=default").Funcs(funcMap).ParseFiles(fullPath)
+	if err != nil {
+		wwlog.Error("Could not parse template file %s: %s", fullPath, err)
+		return nil
+	}
+
+	result := make(map[string]FieldInfo)
+	rootType := reflect.TypeOf(TemplateStruct{})
+
+	// Track range variables and their types
+	rangeVars := make(map[string]reflect.Type)
+	// Initialize $ to refer to the root template context
+	rangeVars["$"] = rootType
+
+	if tmpl.Tree != nil && tmpl.Tree.Root != nil {
+		walkParseTree(tmpl.Tree.Root, rootType, "", rangeVars, result)
+	}
+
+	return result
+}
+
+// ParseCommentVars parses a template file for comments that contain variable documentations.
+// The comments must be in the format `{{/* key: value */}}`. The content is parsed as YAML.
+func (overlay Overlay) ParseCommentVars(file string) (retMap map[string]string) {
+	retMap = make(map[string]string)
+	if !strings.HasSuffix(file, ".ww") {
+		return nil
+	}
+	fullPath := overlay.File(file)
+	if !util.IsFile(fullPath) {
+		wwlog.Error("Template file does not exist in overlay %s: %s", overlay.Name(), file)
+		return nil
+	}
+
+	content, err := os.ReadFile(fullPath)
+	if err != nil {
+		wwlog.Error("Could not read template file %s: %s", fullPath, err)
+		return nil
+	}
+
+	re := regexp.MustCompile(`{{\s*/\*\s*(.*?):\s*(.*?)\s*\*/\s*}}`)
+	matches := re.FindAllStringSubmatch(string(content), -1)
+	if len(matches) > 0 {
+		wwlog.Debug("matches: %v len(%d:%d)", matches, len(matches), len(matches[0]))
+	} else {
+		wwlog.Debug("matches: [] len(0)")
+	}
+	for i := range matches {
+		if len(matches[i]) > 2 {
+			retMap[matches[i][1]] = matches[i][2]
+		}
+	}
+	return
+}
+
+// walkParseTree recursively traverses the template's parse tree and resolves
+// variable references to actual struct fields using reflection.
+func walkParseTree(node parse.Node, currentType reflect.Type, currentPath string, rangeVars map[string]reflect.Type, result map[string]FieldInfo) {
+	if node == nil {
+		return
+	}
+
+	switch n := node.(type) {
+	case *parse.ActionNode:
+		// Handle variable assignments like $var := expr
+		if n.Pipe != nil && len(n.Pipe.Decl) > 0 && len(n.Pipe.Cmds) > 0 {
+			// Try to resolve the type of the expression being assigned
+			cmd := n.Pipe.Cmds[0]
+			if len(cmd.Args) > 0 {
+				// Check for field access (e.g., $NetDevs := .NetDevs)
+				if field, ok := cmd.Args[0].(*parse.FieldNode); ok {
+					fieldInfo := resolveFieldChain(currentType, field.Ident, currentPath)
+					if fieldInfo != nil {
+						// Record all declared variables with this type
+						for _, decl := range n.Pipe.Decl {
+							rangeVars[decl.Ident[0]] = fieldInfo.Field.Type
+						}
+					}
+				} else if varNode, ok := cmd.Args[0].(*parse.VariableNode); ok {
+					// Check for variable-to-variable assignment (e.g., $b := $a)
+					if len(varNode.Ident) == 1 {
+						// Simple variable reference
+						varBaseName := varNode.Ident[0]
+						if varType, exists := rangeVars[varBaseName]; exists {
+							for _, decl := range n.Pipe.Decl {
+								rangeVars[decl.Ident[0]] = varType
+							}
+						}
+					}
+				}
+			}
+		}
+		walkParseTree(n.Pipe, currentType, currentPath, rangeVars, result)
+
+	case *parse.IfNode:
+		walkParseTree(n.Pipe, currentType, currentPath, rangeVars, result)
+		walkParseTree(n.List, currentType, currentPath, rangeVars, result)
+		walkParseTree(n.ElseList, currentType, currentPath, rangeVars, result)
+
+	case *parse.ListNode:
+		if n != nil {
+			for _, child := range n.Nodes {
+				walkParseTree(child, currentType, currentPath, rangeVars, result)
+			}
+		}
+
+	case *parse.RangeNode:
+		// Handle range statements like {{range $key, $val := .NetDevs}}
+		// First, walk the pipe to record the variable being ranged over
+		walkParseTree(n.Pipe, currentType, currentPath, rangeVars, result)
+
+		if n.Pipe != nil && len(n.Pipe.Cmds) > 0 {
+			// Get what's being ranged over to determine element type
+			var fieldInfo *FieldInfo
+
+			// Check for both FieldNode (e.g., .NetDevs) and VariableNode (e.g., $disk.PartitionList)
+			rangeField := extractFieldFromPipe(n.Pipe)
+			if rangeField != nil {
+				// Resolve the type of the field being ranged over
+				fieldInfo = resolveFieldChain(currentType, rangeField.Ident, currentPath)
+			} else {
+				// Check if it's a variable access
+				for _, cmd := range n.Pipe.Cmds {
+					for _, arg := range cmd.Args {
+						if varNode, ok := arg.(*parse.VariableNode); ok {
+							varBaseName := varNode.Ident[0]
+							if varType, exists := rangeVars[varBaseName]; exists {
+								if len(varNode.Ident) > 1 {
+									// Multi-part variable like $disk.PartitionList
+									fieldIdents := varNode.Ident[1:] // Skip the variable name
+									fieldInfo = resolveFieldChain(varType, fieldIdents, currentPath)
+								} else {
+									// Simple variable like $NetDevs
+									fieldInfo = &FieldInfo{
+										Field: reflect.StructField{
+											Name: varBaseName,
+											Type: varType,
+										},
+										ParentType: currentType,
+										FullPath:   currentPath,
+									}
+								}
+								break
+							}
+						}
+					}
+					if fieldInfo != nil {
+						break
+					}
+				}
+			}
+
+			if fieldInfo != nil {
+				rangeType := fieldInfo.Field.Type
+
+				// For slices and arrays, get the element type
+				if rangeType.Kind() == reflect.Slice || rangeType.Kind() == reflect.Array {
+					rangeType = rangeType.Elem()
+				}
+
+				// For maps, get the value type
+				if rangeType.Kind() == reflect.Map {
+					rangeType = rangeType.Elem()
+				}
+
+				// Dereference pointers
+				if rangeType.Kind() == reflect.Ptr {
+					rangeType = rangeType.Elem()
+				}
+
+				// Track the range variable assignments
+				if len(n.Pipe.Decl) > 0 {
+					if len(n.Pipe.Decl) == 2 {
+						// Two-variable range: $key, $val := .Map or $index, $val := .Slice
+						keyType := reflect.TypeOf(0) // Default to int for slice indices
+						if fieldInfo.Field.Type.Kind() == reflect.Map {
+							keyType = fieldInfo.Field.Type.Key()
+						}
+						rangeVars[n.Pipe.Decl[0].Ident[0]] = keyType   // First variable is key/index
+						rangeVars[n.Pipe.Decl[1].Ident[0]] = rangeType // Second variable is value
+					} else {
+						// Single-variable range: $val := .Slice
+						rangeVars[n.Pipe.Decl[0].Ident[0]] = rangeType
+					}
+				}
+
+				// Walk the range body with the element type
+				walkParseTree(n.List, rangeType, fieldInfo.FullPath, rangeVars, result)
+			}
+		}
+		walkParseTree(n.ElseList, currentType, currentPath, rangeVars, result)
+
+	case *parse.WithNode:
+		walkParseTree(n.Pipe, currentType, currentPath, rangeVars, result)
+		walkParseTree(n.List, currentType, currentPath, rangeVars, result)
+		walkParseTree(n.ElseList, currentType, currentPath, rangeVars, result)
+
+	case *parse.TemplateNode:
+		walkParseTree(n.Pipe, currentType, currentPath, rangeVars, result)
+
+	case *parse.PipeNode:
+		if n != nil {
+			for _, cmd := range n.Cmds {
+				for _, arg := range cmd.Args {
+					walkParseTree(arg, currentType, currentPath, rangeVars, result)
+				}
+			}
+		}
+
+	case *parse.FieldNode:
+		// Field access like .Ipmi.Ipaddr or $netdev.Ipaddr
+		varName := n.String()
+
+		// Determine the base type for field resolution
+		baseType := currentType
+		basePath := currentPath
+
+		// Check if this is a variable access (starts with $)
+		if strings.HasPrefix(varName, "$") {
+			// Extract variable name (e.g., "$netdev.Device" -> "netdev")
+			parts := strings.SplitN(varName[1:], ".", 2)
+			if len(parts) > 0 {
+				varBaseName := parts[0]
+				if varType, exists := rangeVars[varBaseName]; exists {
+					baseType = varType
+					basePath = currentPath
+				}
+			}
+		}
+
+		fieldInfo := resolveFieldChain(baseType, n.Ident, basePath)
+
+		// If resolution failed, try adding "P" suffix to last identifier
+		// This handles methods like Primary() backed by PrimaryP field
+		if fieldInfo == nil && len(n.Ident) >= 1 {
+			identWithP := make([]string, len(n.Ident))
+			copy(identWithP, n.Ident)
+			identWithP[len(identWithP)-1] += "P"
+			fieldInfo = resolveFieldChain(baseType, identWithP, basePath)
+			// Use the original variable name (without P)
+			if fieldInfo != nil {
+				fieldInfo.VarName = varName
+			}
+		}
+
+		if fieldInfo != nil {
+			if fieldInfo.VarName == "" {
+				fieldInfo.VarName = varName
+			}
+			result[varName] = *fieldInfo
+		}
+
+	case *parse.VariableNode:
+		// Variable reference like $netdev or possibly $netdev.Field
+		varName := n.String()
+
+		// Check if this is a simple variable or a field access on a variable
+		if len(n.Ident) > 1 {
+			// This is $var.Field or $var.Field.Method - handle like a FieldNode
+			varBaseName := n.Ident[0]
+			if varType, exists := rangeVars[varBaseName]; exists {
+				// Resolve the field chain starting from the variable's type
+				fieldIdents := n.Ident[1:] // Skip the variable name, keep the fields
+				fieldInfo := resolveFieldChain(varType, fieldIdents, currentPath)
+
+				// If resolution failed and we have multiple parts, the last part might be a method
+				// Try resolving without the last identifier (e.g., OnBoot.BoolDefaultTrue -> OnBoot)
+				if fieldInfo == nil && len(fieldIdents) > 1 {
+					fieldIdents = fieldIdents[:len(fieldIdents)-1]
+					fieldInfo = resolveFieldChain(varType, fieldIdents, currentPath)
+					// Use a simplified variable name without the method
+					if fieldInfo != nil {
+						// Build simplified name: $varBaseName.field1.field2 (without method)
+						simplifiedName := varBaseName
+						for _, ident := range fieldIdents {
+							simplifiedName += "." + ident
+						}
+						fieldInfo.VarName = simplifiedName
+					}
+				}
+
+				// If resolution still failed, try adding "P" suffix to last identifier
+				// This handles methods like Primary() backed by PrimaryP field
+				if fieldInfo == nil && len(fieldIdents) >= 1 {
+					// Try with "P" suffix on the last identifier
+					fieldIdentsWithP := make([]string, len(fieldIdents))
+					copy(fieldIdentsWithP, fieldIdents)
+					fieldIdentsWithP[len(fieldIdentsWithP)-1] += "P"
+					fieldInfo = resolveFieldChain(varType, fieldIdentsWithP, currentPath)
+					// Use the original variable name (without P)
+					if fieldInfo != nil {
+						fieldInfo.VarName = varName
+					}
+				}
+
+				if fieldInfo != nil {
+					if fieldInfo.VarName == "" {
+						fieldInfo.VarName = varName
+					}
+					result[fieldInfo.VarName] = *fieldInfo
+				}
+			}
+		} else if len(n.Ident) == 1 {
+			// Simple variable reference
+			varBaseName := n.Ident[0]
+			if varType, exists := rangeVars[varBaseName]; exists {
+				result[varName] = FieldInfo{
+					VarName:    varName,
+					ParentType: varType,
+					FullPath:   currentPath,
+				}
+			}
+		}
+	}
+}
+
+// extractFieldFromPipe extracts the FieldNode from a pipe (used in range statements)
+func extractFieldFromPipe(pipe *parse.PipeNode) *parse.FieldNode {
+	if pipe == nil || len(pipe.Cmds) == 0 {
+		return nil
+	}
+	for _, cmd := range pipe.Cmds {
+		for _, arg := range cmd.Args {
+			if field, ok := arg.(*parse.FieldNode); ok {
+				return field
+			}
+		}
+	}
+	return nil
+}
+
+// resolveFieldChain walks a chain of field identifiers (like ["Ipmi", "Ipaddr"])
+// and returns the final field's information using reflection.
+// Methods are resolved and reported. If a method has a backing field with "P" suffix,
+// the backing field's metadata is used; otherwise, the method's return type is used.
+func resolveFieldChain(rootType reflect.Type, idents []string, basePath string) *FieldInfo {
+	if rootType.Kind() == reflect.Ptr {
+		rootType = rootType.Elem()
+	}
+
+	if len(idents) == 0 {
+		return nil
+	}
+
+	currentType := rootType
+	fullPath := basePath
+	var finalField reflect.StructField
+	var parentType reflect.Type
+
+	for i, fieldName := range idents {
+		if currentType.Kind() != reflect.Struct {
+			return nil
+		}
+
+		field, found := currentType.FieldByName(fieldName)
+		if !found {
+			// Field not found - try to find a method with this name
+			// This handles methods like DiskList(), PartitionList(), Id(), ShouldExist()
+			ptrType := reflect.PointerTo(currentType)
+			method, methodFound := ptrType.MethodByName(fieldName)
+			if !methodFound {
+				return nil
+			}
+
+			// Get the method's return type (first return value)
+			methodType := method.Type
+			if methodType.NumOut() == 0 {
+				return nil
+			}
+			returnType := methodType.Out(0)
+
+			// Check if there's a backing field with "P" suffix
+			// Only methods with backing fields should be reported as user-facing variables
+			backingFieldName := fieldName + "P"
+			backingField, backingFound := currentType.FieldByName(backingFieldName)
+
+			// For the last identifier in the chain
+			if i == len(idents)-1 {
+				if backingFound {
+					// Use the backing field's metadata (tags) but the method's return type
+					// This gives us the documentation from ShouldExistP but the type from ShouldExist()
+					finalField = reflect.StructField{
+						Name: fieldName,
+						Type: returnType, // Use method's return type, not backing field's type
+						Tag:  backingField.Tag,
+					}
+					parentType = currentType
+					fullPath += "." + fieldName // Use method name in path, not field name
+					currentType = returnType
+				} else {
+					// No backing field - create a field with the method's return type
+					// This allows documenting methods via comments
+					finalField = reflect.StructField{
+						Name: fieldName,
+						Type: returnType,
+					}
+					parentType = currentType
+					fullPath += "." + fieldName
+					currentType = returnType
+				}
+			} else {
+				// Not the last identifier - we're in the middle of a chain (e.g., DiskList in node.DiskList.PartitionList)
+				// Continue walking with the method's return type for type resolution
+				parentType = currentType
+				fullPath += "." + fieldName
+				currentType = returnType
+
+				// We don't have a real field yet, just continue to next identifier
+				// Don't set finalField here as we need to keep walking
+				continue
+			}
+		} else {
+			// Field found
+			finalField = field
+			parentType = currentType
+			fullPath += "." + fieldName
+			currentType = field.Type
+		}
+
+		// Dereference pointer types for next iteration
+		if currentType.Kind() == reflect.Ptr {
+			currentType = currentType.Elem()
+		}
+
+		// For map types, remaining identifiers are map keys, not fields
+		if currentType.Kind() == reflect.Map && i < len(idents)-1 {
+			// Append remaining path as map keys
+			mapKeyPath := ""
+			for j := i + 1; j < len(idents); j++ {
+				mapKeyPath += "." + idents[j]
+			}
+			fullPath += mapKeyPath
+
+			// Create a synthetic field with the map's value type
+			// For Tags (map[string]string), accessing Tags.key should return string, not map[string]string
+			valueType := currentType.Elem()
+			return &FieldInfo{
+				Field: reflect.StructField{
+					Name: idents[len(idents)-1], // Use the last key as the field name
+					Type: valueType,             // Use the map's value type
+				},
+				ParentType: parentType,
+				FullPath:   fullPath,
+			}
+		}
+	}
+
+	return &FieldInfo{
+		Field:      finalField,
+		ParentType: parentType,
+		FullPath:   fullPath,
+	}
 }
 
 func BuildAllOverlays(nodes []node.Node, allNodes []node.Node, workerCount int) error {
@@ -536,7 +1013,7 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 				if err != nil {
 					return fmt.Errorf("failed to render template %s: %w", walkPath, err)
 				}
-				if !writeFile {
+				if !*writeFile {
 					return nil
 				}
 				var fileBuffer bytes.Buffer
@@ -561,7 +1038,7 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 					} else if len(filenameFromTemplate) != 0 {
 						wwlog.Debug("Writing file %s", filenameFromTemplate[0][1])
 						if writingToNamedFile && !isLink {
-							err = CarefulWriteBuffer(outputPath, fileBuffer, backupFile, info.Mode())
+							err = CarefulWriteBuffer(outputPath, fileBuffer, *backupFile, info.Mode())
 							if err != nil {
 								return fmt.Errorf("could not write file from template: %w", err)
 							}
@@ -594,7 +1071,7 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 					}
 				}
 				if !isLink {
-					err = CarefulWriteBuffer(outputPath, fileBuffer, backupFile, info.Mode())
+					err = CarefulWriteBuffer(outputPath, fileBuffer, *backupFile, info.Mode())
 					if err != nil {
 						return fmt.Errorf("could not write file from template: %w", err)
 					}
@@ -668,21 +1145,15 @@ func CarefulWriteBuffer(destFile string, buffer bytes.Buffer, backupFile bool, p
 	return err
 }
 
-/*
-Parses the template with the given filename, variables must be in data. Returns the
-parsed template as bytes.Buffer, and the bool variables for backupFile and writeFile.
-If something goes wrong an error is returned.
-*/
-func RenderTemplateFile(fileName string, data TemplateStruct) (
-	buffer bytes.Buffer,
-	backupFile bool,
-	writeFile bool,
-	err error,
-) {
-	backupFile = true
-	writeFile = true
+// getTemplateFuncMap returns a template.FuncMap with all the functions
+// for warewulf templates.
+func getTemplateFuncMap(fileName string, data TemplateStruct) (funcMap template.FuncMap, writeFile, backupFile *bool) {
 	// Build our FuncMap
-	funcMap := template.FuncMap{
+	_writeFile := true
+	_backupFile := true
+	writeFile = &_writeFile
+	backupFile = &_backupFile
+	funcMap = template.FuncMap{
 		"Include":      templateFileInclude,
 		"IncludeFrom":  templateImageFileInclude,
 		"IncludeBlock": templateFileBlock,
@@ -698,12 +1169,12 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (
 		},
 		"abort": func() string {
 			wwlog.Debug("abort file called in %s", fileName)
-			writeFile = false
+			*writeFile = false
 			return ""
 		},
 		"nobackup": func() string {
 			wwlog.Debug("not backup for %s", fileName)
-			backupFile = false
+			*backupFile = false
 			return ""
 		},
 		"UniqueField":       UniqueField,
@@ -715,6 +1186,20 @@ func RenderTemplateFile(fileName string, data TemplateStruct) (
 	for key, value := range sprig.TxtFuncMap() {
 		funcMap[key] = value
 	}
+	return funcMap, writeFile, backupFile
+}
+
+/*
+Parses the template with the given filename, variables must be in data. Returns the
+parsed template as bytes.Buffer, and the bool variables for backupFile and writeFile.
+If something goes wrong an error is returned.
+*/
+func RenderTemplateFile(fileName string, data TemplateStruct) (
+	buffer bytes.Buffer, backupFile, writeFile *bool,
+	err error,
+) {
+
+	funcMap, writeFile, backupFile := getTemplateFuncMap(fileName, data)
 
 	// Create the template with the merged FuncMap
 	tmpl, err := template.New(path.Base(fileName)).Option("missingkey=default").Funcs(funcMap).ParseGlob(fileName)

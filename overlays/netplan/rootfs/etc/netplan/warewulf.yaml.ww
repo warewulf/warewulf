@@ -2,10 +2,10 @@
 network:
   version: 2
   renderer: networkd
+{{- $NetDevs := .NetDevs }}
 {{- $ethernets := list }}
 {{- $bonds := list }}
-{{- $NetDevs := .NetDevs }}
-{{- range $devname, $netdev := .NetDevs }}
+{{- range $devname, $netdev := $NetDevs }}
 {{- if $netdev.Device }}
 {{- if eq (default "ethernet" (lower $netdev.Type)) "ethernet" }}
 {{- $ethernets = append $ethernets $devname }}
@@ -16,8 +16,8 @@ network:
 {{- end }}
 {{- if $ethernets }}
   ethernets:
-{{- range $devname := $ethernets }}
-{{- $netdev := (index $NetDevs $devname) }}
+{{- range $netdev := $NetDevs }}
+{{- if eq (default "ethernet" (lower $netdev.Type)) "ethernet" }}
     {{$netdev.Device}}:
       dhcp4: no
       optional: true
@@ -30,10 +30,11 @@ network:
 {{- end }}
 {{- end }}
 {{- end }}
+{{- end }}
 {{- if $bonds }}
   bonds:
-{{- range $devname := $bonds }}
-{{- $netdev := (index $NetDevs $devname) }}
+{{- range $netdev := $NetDevs }}
+{{- if eq (lower $netdev.Type) "bond" }}
     {{$netdev.Device}}:
       dhcp4: no
       optional: true
@@ -57,6 +58,7 @@ network:
       interfaces:
 {{- range $ifacename := $interfaces }}
       - {{ $ifacename }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

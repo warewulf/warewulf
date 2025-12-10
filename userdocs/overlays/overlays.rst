@@ -25,6 +25,37 @@ within the overlays with ``wwctl overlay list --all``.
    fstab         etc/          false
    fstab         etc/fstab.ww  false
 
+Overlay Variables
+-----------------
+
+The command ``wwctl overlay info`` shows the variables used in an overlay
+template, along with the help text for each variable.
+
+.. code-block:: console
+
+   # wwctl overlay info NetworkManager etc/NetworkManager/system-connections/ww4-managed.ww
+   VARIABLE                        HELP                                           TYPE    OPTION
+   --------                        ----                                           ----    ------
+   $netdev.Device                  Set the device for given network               string  --netdev
+   $netdev.Gateway                 Set the node's network device gateway          IP      --gateway
+   $netdev.Hwaddr                  Set the device's HW address for given network  string  --hwaddr
+   $netdev.Ipaddr                  IPv4 address in given network                  IP      --ipaddr
+   $netdev.Ipaddr6                 IPv4 address in given network                  IP      --ipaddr
+   $netdev.Ipaddr6                 IPv6 address                                   IP      --ipaddr6
+   $netdev.MTU                     Set the mtu                                    string  --mtu
+   $netdev.OnBoot.BoolDefaultTrue  Enable/disable network device (true/false)     WWbool  --onboot
+   $netdev.Tags
+   $netdev.Tags.DNSSEARCH
+   $netdev.Tags.downdelay
+   $netdev.Tags.master
+   $netdev.Tags.miimon
+   $netdev.Tags.mode
+   $netdev.Tags.parent_device
+   $netdev.Tags.updelay
+   $netdev.Tags.vlan_id
+   $netdev.Tags.xmit_hash_policy
+   $netdev.Type                    Set device type of given network               string  --type
+
 Structure
 =========
 
@@ -162,6 +193,7 @@ mode that they have on the Warewulf server. Use ``wwctl overlay chown`` and
 
    wwctl overlay chown issue /etc/issue.ww root root
    wwctl overlay chmod issue /etc/issue.ww 0644
+
 
 Distribution Overlays
 =====================
@@ -373,7 +405,7 @@ provided as an example. In particular, the provided `tstruct.md.ww` demonstrates
 the use of most available template metadata.
 
 .. code-block:: shell
-  
+
    wwctl overlay show --render=<nodename> debug tstruct.md.ww
 
 .. _localtime:
