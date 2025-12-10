@@ -207,6 +207,7 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %{_overlaydir}/ssh.host_keys/rootfs/*
 %{_overlaydir}/syncuser/rootfs/*
 %{_overlaydir}/systemd.netname/rootfs/*
+%{_overlaydir}/systemd.networkd/rootfs/*
 %{_overlaydir}/udev.netname/rootfs/*
 %{_overlaydir}/wicked/rootfs/*
 %{_overlaydir}/wwclient/rootfs/*
