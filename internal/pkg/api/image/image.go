@@ -130,7 +130,8 @@ func ImageImport(cip *wwapiv1.ImageImportParameter) (imageName string, err error
 			return
 		}
 		wwlog.Info("Updating existing image")
-	} else if strings.HasPrefix(cip.Source, "docker://") || strings.HasPrefix(cip.Source, "docker-daemon://") ||
+	}
+	if strings.HasPrefix(cip.Source, "docker://") || strings.HasPrefix(cip.Source, "docker-daemon://") ||
 		strings.HasPrefix(cip.Source, "file://") || util.IsFile(cip.Source) {
 		var sCtx *types.SystemContext
 		sCtx, err = GetSystemContext(cip.OciNoHttps, cip.OciUsername, cip.OciPassword, cip.Platform)
