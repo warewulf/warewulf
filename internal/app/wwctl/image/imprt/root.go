@@ -40,8 +40,8 @@ Imported images are used to create bootable images.`,
 )
 
 func init() {
-	baseCmd.PersistentFlags().BoolVarP(&SetForce, "force", "f", false, "Force overwrite of an existing image")
-	baseCmd.PersistentFlags().BoolVarP(&SetUpdate, "update", "u", false, "Update and overwrite an existing image")
+	baseCmd.PersistentFlags().BoolVarP(&SetForce, "force", "f", false, "Remove existing image and import new image with that name")
+	baseCmd.PersistentFlags().BoolVarP(&SetUpdate, "update", "u", false, "Overwrite files in an existing image with the files of remote image")
 	baseCmd.PersistentFlags().BoolVarP(&SetBuild, "build", "b", false, "Build image after pulling")
 	baseCmd.PersistentFlags().BoolVar(&SyncUser, "syncuser", false, "Synchronize UIDs/GIDs from host to image")
 	baseCmd.PersistentFlags().BoolVar(&OciNoHttps, "nohttps", false, "Ignore wrong TLS certificates, superseedes env WAREWULF_OCI_NOHTTPS")
