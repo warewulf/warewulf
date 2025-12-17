@@ -269,15 +269,26 @@ func TPMChallengeSend(w http.ResponseWriter, req *http.Request) {
 	wwlog.Info("Sent TPM challenge for node %s", node.GetId())
 }
 
-func updateTPMLogs(nodeId, filename, checksum string) error {
-	conf := warewulfconf.Get()
-	tpmPath := filepath.Join(conf.Paths.OverlayProvisiondir(), nodeId, "tpm.json")
+type TPMLogStore struct {
+	path string
+}
 
-	if !util.IsFile(tpmPath) {
+func NewTPMLogStore(nodeId string) *TPMLogStore {
+	conf := warewulfconf.Get()
+	return &TPMLogStore{
+		path: filepath.Join(conf.Paths.OverlayProvisiondir(), nodeId, "tpm.json"),
+	}
+}
+
+func (s *TPMLogStore) SetFilename(filename string) {
+	s.path = filename
+}
+
+func (s *TPMLogStore) ClearLogs() error {
+	if !util.IsFile(s.path) {
 		return nil
 	}
-
-	data, err := os.ReadFile(tpmPath)
+	data, err := os.ReadFile(s.path)
 	if err != nil {
 		return err
 	}
@@ -287,39 +298,42 @@ func updateTPMLogs(nodeId, filename, checksum string) error {
 	if err != nil {
 		return err
 	}
+	quote.SentLog = []tpm.FileLog{}
+	out, err := json.MarshalIndent(quote, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(s.path, out, 0644)
+}
 
-	// Check if log entry already exists
-	found := false
-	if strings.Contains(filename, "grub.cfg.ww") {
-		var newLogs []tpm.FileLog
-		for _, log := range quote.Logs {
-			if !strings.Contains(log.Filename, "grub.cfg.ww") {
-				newLogs = append(newLogs, log)
-			}
+func (s *TPMLogStore) Update(filename, checksum string) error {
+	if checksum == "" {
+		fileBytes, err := os.ReadFile(filename)
+		if err != nil {
+			return fmt.Errorf("couldn't access file for quote: %s", err)
 		}
-		quote.Logs = newLogs
-	} else {
-		for i, log := range quote.Logs {
-			if log.Filename == filename {
-				quote.Logs[i].Checksum = checksum
-				found = true
-				break
-			}
-		}
+		sum := sha256.Sum256(fileBytes)
+		checksum = fmt.Sprintf("%x", sum)
+	}
+	data, err := os.ReadFile(s.path)
+	if err != nil {
+		return fmt.Errorf("couldn't access storage for quote: %s", err)
+	}
+	quote := tpm.Quote{}
+	err = json.Unmarshal(data, &quote)
+	if err != nil {
+		return err
 	}
 
-	if !found {
-		quote.Logs = append(quote.Logs, tpm.FileLog{
-			Filename: filename,
-			Source:   source,
-			Checksum: checksum,
-		})
-	}
+	quote.SentLog = append(quote.SentLog, tpm.FileLog{
+		Filename: filename,
+		Checksum: checksum,
+	})
 
 	out, err := json.MarshalIndent(quote, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	return os.WriteFile(tpmPath, out, 0644)
+	return os.WriteFile(s.path, out, 0644)
 }
