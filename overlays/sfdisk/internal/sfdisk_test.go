@@ -181,7 +181,7 @@ if ! command -v sfdisk >/dev/null ; then
     info "warewulf: sfdisk not found, skipping partitioning"
 else :
     info "warewulf: sfdisk: partitioning /dev/sda"
-    sfdisk --wipe "auto" "/dev/sda" < "${PREFIX}/warewulf/sfdisk/device-0" || die "warewulf: sfdisk: failed to partition /dev/sda"
+    sfdisk  --wipe "auto" "/dev/sda" < "${PREFIX}/warewulf/sfdisk/device-0" || die "warewulf: sfdisk: failed to partition /dev/sda"
 
     if command -v blockdev >/dev/null ; then
         info "warewulf: blockdev: re-reading partition table"
@@ -238,14 +238,14 @@ if ! command -v sfdisk >/dev/null ; then
     info "warewulf: sfdisk not found, skipping partitioning"
 else :
     info "warewulf: sfdisk: partitioning /dev/sda"
-    sfdisk --wipe "auto" "/dev/sda" < "${PREFIX}/warewulf/sfdisk/device-0" || die "warewulf: sfdisk: failed to partition /dev/sda"
+    sfdisk  --wipe "auto" "/dev/sda" < "${PREFIX}/warewulf/sfdisk/device-0" || die "warewulf: sfdisk: failed to partition /dev/sda"
 
     if command -v blockdev >/dev/null ; then
         info "warewulf: blockdev: re-reading partition table"
         blockdev --rereadpt /dev/sda
     fi
     info "warewulf: sfdisk: partitioning /dev/sdb"
-    sfdisk --wipe "always" "/dev/sdb" < "${PREFIX}/warewulf/sfdisk/device-1" || die "warewulf: sfdisk: failed to partition /dev/sdb"
+    sfdisk --label gpt --wipe "always" "/dev/sdb" < "${PREFIX}/warewulf/sfdisk/device-1" || die "warewulf: sfdisk: failed to partition /dev/sdb"
 
     if command -v blockdev >/dev/null ; then
         info "warewulf: blockdev: re-reading partition table"
