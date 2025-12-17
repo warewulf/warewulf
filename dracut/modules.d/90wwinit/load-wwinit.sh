@@ -1,5 +1,7 @@
 #!/bin/bash
 
+[ -z "${wwinit_root_device}" ] && return 0
+
 get_stage() {
     stage="${1}"
     info "warewulf: loading stage: ${stage}"
