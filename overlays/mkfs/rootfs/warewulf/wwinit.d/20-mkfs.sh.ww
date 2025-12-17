@@ -59,9 +59,9 @@ if command -v mkfs >/dev/null ; then :
         info "warewulf: mkfs: formatting {{ $fs.device }}"
         {{- $forceFlag := "" }}
         {{- if $fs.overwrite }}
-            {{- if eq $fs.type "ext4" }}
+            {{- if regexMatch "^ext[234]$" $fs.type }}
                 {{- $forceFlag = "-F" }}
-            {{- else }}
+            {{- else if regexMatch "^(xfs|btrfs)$" $fs.type }}
                 {{- $forceFlag = "-f" }}
             {{- end }}
         {{- end }}
