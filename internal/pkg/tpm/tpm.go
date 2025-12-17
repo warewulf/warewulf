@@ -35,7 +35,7 @@ type Quote struct {
 	Token     string            `json:"token,omitempty" yaml:"token,omitempty"`
 	ID        string            `json:"id" yaml:"id"`
 	Modified  time.Time         `json:"modified" yaml:"modified"`
-	Logs      []FileLog         `json:"logs,omitempty" yaml:"logs,omitempty"`
+	SentLog   []FileLog         `json:"sentlogs,omitempty" yaml:"logs,omitempty"`
 }
 
 // Challenge struct to hold encrypted credentials and secrets for TPM challenges
@@ -175,8 +175,8 @@ func (quote *Quote) VerifyEventLog() (bool, error) {
 	return true, nil
 }
 
-
 func (quote *Quote) VerifyGrubBinary() error {
+	sentReceived := []FileLog{}
 	if quote.EventLog != "" {
 		logBytes, err := base64.StdEncoding.DecodeString(quote.EventLog)
 		if err == nil {
@@ -188,10 +188,11 @@ func (quote *Quote) VerifyGrubBinary() error {
 						continue
 					}
 					found := false
-					for _, log := range quote.Logs {
+					for _, log := range quote.SentLog {
 						sum, err := hex.DecodeString(log.Checksum)
 						if err == nil && bytes.Equal(sum, event.Digest) {
 							found = true
+							sentReceived = append(sentReceived, log)
 							break
 						}
 					}
@@ -223,12 +224,11 @@ func (quote *Quote) VerifyGrubBinary() error {
 	// Start with empty SHA256 (32 bytes of zeros)
 	pcr := make([]byte, 32)
 
-	for _, log := range quote.Logs {
+	for _, log := range sentReceived {
 		sum, err := hex.DecodeString(log.Checksum)
 		if err != nil {
 			return fmt.Errorf("failed to decode checksum for %s: %v", log.Filename, err)
 		}
-
 		// TPM Extend: NewPCR = SHA256(OldPCR || DataHash)
 		hasher := sha256.New()
 		hasher.Write(pcr)
