@@ -1,7 +1,9 @@
 package tpm
 
 import (
+	"bytes"
 	"crypto"
+	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/hex"
@@ -11,12 +13,12 @@ import (
 	"time"
 
 	"github.com/google/go-attestation/attest"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 // FileLog struct to hold checksums of files sent to the node
 type FileLog struct {
 	Filename string `json:"filename" yaml:"filename"`
-	Source   string `json:"source" yaml:"source"`
 	Checksum string `json:"checksum" yaml:"checksum"`
 }
 
@@ -171,4 +173,72 @@ func (quote *Quote) VerifyEventLog() (bool, error) {
 	}
 
 	return true, nil
+}
+
+
+func (quote *Quote) VerifyGrubBinary() error {
+	if quote.EventLog != "" {
+		logBytes, err := base64.StdEncoding.DecodeString(quote.EventLog)
+		if err == nil {
+			el, err := attest.ParseEventLog(logBytes)
+			if err == nil {
+				events := el.Events(attest.HashSHA256)
+				for _, event := range events {
+					if event.Index != 9 {
+						continue
+					}
+					found := false
+					for _, log := range quote.Logs {
+						sum, err := hex.DecodeString(log.Checksum)
+						if err == nil && bytes.Equal(sum, event.Digest) {
+							found = true
+							break
+						}
+					}
+					if !found {
+						wwlog.Warn("Event not found in tpm.json: Digest=%x Data=%s", event.Digest, FormatEventData(event))
+					}
+				}
+			}
+		}
+	} else {
+		sentReceived = quote.SentLog
+	}
+
+	if quote.PCRs == nil {
+		return fmt.Errorf("no PCRs in quote")
+	}
+
+	// We expect PCR9
+	pcr9Hex, ok := quote.PCRs["9"]
+	if !ok {
+		return fmt.Errorf("PCR9 not present in quote")
+	}
+
+	pcr9, err := hex.DecodeString(pcr9Hex)
+	if err != nil {
+		return fmt.Errorf("failed to decode PCR9: %v", err)
+	}
+
+	// Start with empty SHA256 (32 bytes of zeros)
+	pcr := make([]byte, 32)
+
+	for _, log := range quote.Logs {
+		sum, err := hex.DecodeString(log.Checksum)
+		if err != nil {
+			return fmt.Errorf("failed to decode checksum for %s: %v", log.Filename, err)
+		}
+
+		// TPM Extend: NewPCR = SHA256(OldPCR || DataHash)
+		hasher := sha256.New()
+		hasher.Write(pcr)
+		hasher.Write(sum)
+		pcr = hasher.Sum(nil)
+	}
+
+	if !bytes.Equal(pcr, pcr9) {
+		return fmt.Errorf("PCR9 mismatch: expected %x, got %x", pcr, pcr9)
+	}
+
+	return nil
 }
