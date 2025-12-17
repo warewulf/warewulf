@@ -55,8 +55,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Info("Event Log Verification Successful")
 		}
 
-		if err := displayEventLog(quote.EventLog); err != nil {
-			wwlog.Warn("Failed to display event log: %v", err)
+		if err := quote.VerifyGrubBinary(); err != nil {
+			wwlog.Warn("GRUB Binary Verification Failed: %v", err)
+		} else {
+			wwlog.Info("GRUB Binary Verification Successful")
+		}
+		if displayEvent {
+			if err := displayEventLog(quote.EventLog); err != nil {
+				wwlog.Warn("Failed to display event log: %v", err)
+			}
 		}
 	}
 
@@ -78,6 +85,18 @@ func displayEventLog(b64Log string) error {
 
 	fmt.Println("TPM Event Log (SHA256):")
 	for _, event := range events {
+		if len(pcrFilter) > 0 {
+			found := false
+			for _, p := range pcrFilter {
+				if p == event.Index {
+					found = true
+					break
+				}
+			}
+			if !found {
+				continue
+			}
+		}
 		fmt.Printf("PCR[%d] Type=%s Digest=%x Data=%s\n", event.Index, event.Type, event.Digest, tpm.FormatEventData(event))
 	}
 	return nil
