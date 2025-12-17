@@ -14,28 +14,36 @@ slave-type=bond
 {{- end }}
 autoconnect={{ $netdev.OnBoot.BoolDefaultTrue }}
 
-{{- if eq (lower $netdev.Type) "bond" }}
+{{- if or (eq (lower $netdev.Type) "bond") (eq (lower (default "" $netdev.Tags.type)) "bond") }}
 [bond]
 downdelay={{ default 0 $netdev.Tags.downdelay }}
 miimon={{ default 100 $netdev.Tags.miimon }}
 mode={{ default "balance-rr" $netdev.Tags.mode }}
 xmit_hash_policy={{ default "layer2+3" $netdev.Tags.xmit_hash_policy }}
 updelay={{ default 0 $netdev.Tags.updelay }}
+{{- if index $netdev.Tags "cloned-mac-address" }}
+cloned-mac-address={{ index $netdev.Tags "cloned-mac-address" }}
+{{- end }}
 {{- end }}
 
-{{- if eq (lower $netdev.Type) "infiniband" }}
+{{- if or (eq (lower $netdev.Type) "infiniband") (eq (lower (default "" $netdev.Tags.type)) "infiniband") }}
 [infiniband]
 transport-mode=datagram
 {{- if $netdev.MTU }}
 mtu={{ $netdev.MTU }}
 {{- end }}
-{{- else if eq (default "ethernet" (lower $netdev.Type)) "ethernet" }}
+{{- end }}
+
+{{- if or (eq (default "ethernet" (lower $netdev.Type)) "ethernet") (eq (lower (default "" $netdev.Tags.type)) "ethernet") }}
 [ethernet]
 {{- if $netdev.Hwaddr }}
 mac-address={{ $netdev.Hwaddr }}
 {{- end }}
 {{- if $netdev.MTU }}
 mtu={{ $netdev.MTU }}
+{{- end }}
+{{- if index $netdev.Tags "cloned-mac-address" }}
+cloned-mac-address={{ index $netdev.Tags "cloned-mac-address" }}
 {{- end }}
 {{- end }}
 

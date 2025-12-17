@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `wwclient.x86_64` overlay always provides an x86_64 wwclient executable.
 - systemd-networkd overlay with IPv6 support
 - `wwctl overlay info` lists the variables used by an overlay template
+- Added support for setting mtu and mac address on bonds with NetworkManager #2059
 
 ### Changed
 
