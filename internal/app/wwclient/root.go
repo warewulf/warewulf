@@ -78,7 +78,42 @@ func GetRootCommand() *cobra.Command {
 	return rootCmd
 }
 
-func getAttestationData(name, id string) (*tpm.Quote, error) {
+func loadOrCreateAK(t *attest.TPM) (*attest.AK, error) {
+	akBlobPath := "/warewulf/tpm/ak.blob"
+	if err := os.MkdirAll(filepath.Dir(akBlobPath), 0755); err != nil {
+		return nil, fmt.Errorf("creating state directory: %v", err)
+	}
+
+	if blob, err := os.ReadFile(akBlobPath); err == nil {
+		ak, err := t.LoadAK(blob)
+		if err == nil {
+			wwlog.Debug("Loaded existing AK from %s", akBlobPath)
+			return ak, nil
+		}
+		wwlog.Warn("Failed to load existing AK: %v", err)
+	}
+
+	wwlog.Verbose("Creating new AK")
+	ak, err := t.NewAK(nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating AK: %v", err)
+	}
+
+	blob, err := ak.Marshal()
+	if err != nil {
+		wwlog.Warn("Failed to marshal AK: %v", err)
+	} else {
+		if err := os.WriteFile(akBlobPath, blob, 0600); err != nil {
+			wwlog.Warn("Failed to save AK: %v", err)
+		} else {
+			wwlog.Debug("Saved AK to %s", akBlobPath)
+		}
+	}
+
+	return ak, nil
+}
+
+func getAttestationData(id string) (*tpm.Quote, error) {
 	// Open TPM
 	t, err := attest.OpenTPM(nil)
 	if err != nil {
@@ -97,7 +132,7 @@ func getAttestationData(name, id string) (*tpm.Quote, error) {
 	ek := eks[0]
 
 	// Create AK
-	ak, err := t.NewAK(nil)
+	ak, err := loadOrCreateAK(t)
 	if err != nil {
 		return nil, fmt.Errorf("creating AK: %v", err)
 	}
@@ -141,26 +176,21 @@ func getAttestationData(name, id string) (*tpm.Quote, error) {
 	}
 
 	akParams := ak.AttestationParameters()
-	akPubObj, err := attest.ParseAKPublic(akParams.Public)
-	if err != nil {
-		return nil, fmt.Errorf("parsing AK public: %v", err)
-	}
-
-	akPubBytes, err := x509.MarshalPKIXPublicKey(akPubObj.Public)
-	if err != nil {
-		return nil, fmt.Errorf("marshaling AK public: %v", err)
-	}
+	akPubBytes := akParams.Public
 
 	return &tpm.Quote{
-		EKCert:    base64.StdEncoding.EncodeToString(ekCertBytes),
-		EKPub:     base64.StdEncoding.EncodeToString(ekPubBytes),
-		AKPub:     base64.StdEncoding.EncodeToString(akPubBytes),
-		Quote:     base64.StdEncoding.EncodeToString(q.Quote),
-		Signature: base64.StdEncoding.EncodeToString(q.Signature),
-		PCRs:      pcrMap,
-		Nonce:     base64.StdEncoding.EncodeToString(nonce),
-		EventLog:  base64.StdEncoding.EncodeToString(eventLog),
-		ID:        id,
+		EKCert:            base64.StdEncoding.EncodeToString(ekCertBytes),
+		EKPub:             base64.StdEncoding.EncodeToString(ekPubBytes),
+		AKPub:             base64.StdEncoding.EncodeToString(akPubBytes),
+		Quote:             base64.StdEncoding.EncodeToString(q.Quote),
+		Signature:         base64.StdEncoding.EncodeToString(q.Signature),
+		CreateData:        base64.StdEncoding.EncodeToString(akParams.CreateData),
+		CreateAttestation: base64.StdEncoding.EncodeToString(akParams.CreateAttestation),
+		CreateSignature:   base64.StdEncoding.EncodeToString(akParams.CreateSignature),
+		PCRs:              pcrMap,
+		Nonce:             base64.StdEncoding.EncodeToString(nonce),
+		EventLog:          base64.StdEncoding.EncodeToString(eventLog),
+		ID:                id,
 	}, nil
 }
 
@@ -203,7 +233,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	wwlog.Debug("uuid: %s", localUUID.String())
 	wwlog.Debug("assetkey: %s", tag)
 
-	if wwid != "" {
+	if wwid == "" {
 		cmdline, err := os.ReadFile("/proc/cmdline")
 		if err != nil {
 			return fmt.Errorf("could not read from /proc/cmdline: %w", err)
@@ -227,7 +257,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	wwlog.Debug("wwid: %s", wwid)
 
 	if quoteFlag {
-		quote, err := getAttestationData(tag, wwid)
+		quote, err := getAttestationData(wwid)
 		if err != nil {
 			return fmt.Errorf("failed to get attestation data: %w", err)
 		}
@@ -263,22 +293,6 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	defer cleanUp()
 
 	wwlog.Debug("Version: %s", version.Version())
-
-	target := "/"
-	if os.Args[0] == path.Join(conf.Paths.WWClientdir, "wwclient") {
-		wwlog.Warn("updating live file system: cancel now if this is in error")
-		time.Sleep(5000 * time.Millisecond)
-	} else {
-		target = "/warewulf/wwclient-test"
-
-		fmt.Printf("Called via: %s\n", os.Args[0])
-		fmt.Printf("Runtime overlay is being put in '%s' rather than '/'\n", target)
-		fmt.Printf("For full functionality call with: %s\n", path.Join(conf.Paths.WWClientdir, "wwclient"))
-		err := os.MkdirAll(target, 0755)
-		if err != nil {
-			return fmt.Errorf("failed to create dir: %w", err)
-		}
-	}
 
 	localTCPAddr := net.TCPAddr{}
 	if conf.WWClient != nil && conf.WWClient.Port > 0 {
@@ -371,7 +385,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	if uploadQuoteFlag {
-		quote, err := getAttestationData(tag, wwid)
+		quote, err := getAttestationData(wwid)
 		if err != nil {
 			return fmt.Errorf("failed to get attestation data: %w", err)
 		}
@@ -410,7 +424,6 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		fmt.Println("TPM quote uploaded successfully")
 		return nil
 	}
-
 	if getChallengeFlag {
 		challengeURL := &url.URL{
 			Scheme: scheme,
@@ -451,7 +464,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			return fmt.Errorf("no EKs found")
 		}
 
-		ak, err := t.NewAK(nil)
+		ak, err := loadOrCreateAK(t)
 		if err != nil {
 			return fmt.Errorf("creating AK: %v", err)
 		}
@@ -462,7 +475,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			return fmt.Errorf("failed to activate credential: %w", err)
 		}
 
-		fmt.Printf("Decrypted secret: %x\n", secret)
+		wwlog.Info("Decrypted secret: %x\n", secret)
 		return nil
 	}
 	var finishedInitialSync bool = false
@@ -486,6 +499,21 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	var finishedInitialSync bool = false
 
 	for {
+		target := "/"
+		if os.Args[0] == path.Join(conf.Paths.WWClientdir, "wwclient") {
+			wwlog.Warn("updating live file system: cancel now if this is in error")
+			time.Sleep(5000 * time.Millisecond)
+		} else {
+			target = "/warewulf/wwclient-test"
+
+			fmt.Printf("Called via: %s\n", os.Args[0])
+			fmt.Printf("Runtime overlay is being put in '%s' rather than '/'\n", target)
+			fmt.Printf("For full functionality call with: %s\n", path.Join(conf.Paths.WWClientdir, "wwclient"))
+			err := os.MkdirAll(target, 0755)
+			if err != nil {
+				return fmt.Errorf("failed to create dir: %w", err)
+			}
+		}
 		if err := updateSystem(target, ipaddr, port, wwid, tag, localUUID, scheme); err != nil {
 			return err
 		}
