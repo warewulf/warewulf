@@ -49,4 +49,4 @@
 * Arian Cabrera [@acabrera86](https://github.com/acabrera86)
 * Dacian Reece-Stremtan <dacianstremtan@gmail.com> [@dacianstremtan](https://github.com/dacianstremtan)
 * Adrian Reber <areber@redhat.com>
-* Karker Said <said.karker@gmail.com>
+* Karker Said <said.karker@gmail.com> [@kosmolito](https://github.com/kosmolito)

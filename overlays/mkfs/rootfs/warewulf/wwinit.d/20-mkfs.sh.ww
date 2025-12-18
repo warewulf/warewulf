@@ -57,10 +57,17 @@ if command -v mkfs >/dev/null ; then :
 {{- 	if and $fs.type $fs.device }}
     if {{if $fs.overwrite}}true{{else}}false{{end}} || ! already_formatted {{ $fs.device }}; then
         info "warewulf: mkfs: formatting {{ $fs.device }}"
-        mkfs {{ not (empty $fs.type) | ternary (print "--type=" $fs.type) "" }} {{ not (empty $fs.label) | ternary (print "-L " $fs.label) "" }} {{ not (empty $fs.uuid) | ternary (print "-U " $fs.uuid) "" }} {{ default "" $fs.options }} {{ $fs.device }} {{ default "" $fs.size }} || die "warewulf: mkfs: failed to format {{ $fs.device }}"
+        {{- $forceFlag := "" }}
+        {{- if $fs.overwrite }}
+            {{- if regexMatch "^ext[234]$" $fs.type }}
+                {{- $forceFlag = "-F" }}
+            {{- else if regexMatch "^(xfs|btrfs)$" $fs.type }}
+                {{- $forceFlag = "-f" }}
+            {{- end }}
+        {{- end }}
+        mkfs {{ not (empty $fs.type) | ternary (print "--type=" $fs.type) "" }} {{ not (empty $fs.label) | ternary (print "-L " $fs.label) "" }} {{ not (empty $fs.uuid) | ternary (print "-U " $fs.uuid) "" }} {{ default "" $fs.options }} {{ not (empty $forceFlag) | ternary (print $forceFlag) "" }} {{ $fs.device }} {{ default "" $fs.size }} || die "warewulf: mkfs: failed to format {{ $fs.device }}"
     else
         info "warewulf: mkfs: skipping {{ $fs.device }}"
-        continue
     fi
 {{- 	end }}
 {{- end }}
