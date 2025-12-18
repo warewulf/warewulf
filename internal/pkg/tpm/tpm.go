@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto"
 	"crypto/sha256"
-	"crypto/x509"
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
@@ -31,11 +30,16 @@ type Quote struct {
 	Signature string            `json:"signature" yaml:"signature"`
 	PCRs      map[string]string `json:"pcrs" yaml:"pcrs"`
 	Nonce     string            `json:"nonce" yaml:"nonce"`
-	EventLog  string            `json:"eventlog,omitempty" yaml:"eventlog,omitempty"`
-	Token     string            `json:"token,omitempty" yaml:"token,omitempty"`
-	ID        string            `json:"id" yaml:"id"`
-	Modified  time.Time         `json:"modified" yaml:"modified"`
-	SentLog   []FileLog         `json:"sentlogs,omitempty" yaml:"logs,omitempty"`
+
+	CreateData        string `json:"create_data,omitempty" yaml:"create_data,omitempty"`
+	CreateAttestation string `json:"create_attestation,omitempty" yaml:"create_attestation,omitempty"`
+	CreateSignature   string `json:"create_signature,omitempty" yaml:"create_signature,omitempty"`
+
+	EventLog string    `json:"eventlog,omitempty" yaml:"eventlog,omitempty"`
+	Token    string    `json:"token,omitempty" yaml:"token,omitempty"`
+	ID       string    `json:"id" yaml:"id"`
+	Modified time.Time `json:"modified" yaml:"modified"`
+	SentLog  []FileLog `json:"sentlogs,omitempty" yaml:"logs,omitempty"`
 }
 
 // Challenge struct to hold encrypted credentials and secrets for TPM challenges
@@ -75,7 +79,7 @@ func (quote *Quote) Verify() (bool, error) {
 		return false, fmt.Errorf("%w: %v", ErrDecodeAKPub, err)
 	}
 
-	akPub, err := x509.ParsePKIXPublicKey(akPubBytes)
+	akPubObj, err := attest.ParseAKPublic(akPubBytes)
 	if err != nil {
 		return false, fmt.Errorf("%w: %v", ErrParseAKPub, err)
 	}
@@ -113,6 +117,7 @@ func (quote *Quote) Verify() (bool, error) {
 		if err != nil {
 			continue
 		}
+		wwlog.Verbose("pcr[%d]: %x", idx, digest)
 		pcrs = append(pcrs, attest.PCR{
 			Index:     idx,
 			Digest:    digest,
@@ -121,9 +126,13 @@ func (quote *Quote) Verify() (bool, error) {
 	}
 
 	verifier := &attest.AKPublic{
-		Public: akPub,
+		Public: akPubObj.Public,
 		Hash:   crypto.SHA256,
 	}
+	wwlog.Verbose("Quote: %x", q.Quote)
+	wwlog.Verbose("Signature: %x", q.Signature)
+	wwlog.Verbose("nonceBytes: %x", nonceBytes)
+	wwlog.Verbose("akPub: %x", akPubObj.Public)
 	if err := verifier.Verify(q, pcrs, nonceBytes); err != nil {
 		return false, fmt.Errorf("%w: %v", ErrQuoteVerify, err)
 	}
