@@ -204,30 +204,47 @@ func TPMChallengeSend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	akPub, err := x509.ParsePKIXPublicKey(akPubBytes)
-	if err != nil {
-		wwlog.Error("Failed to parse AK public key for node %s: %s", node.GetId(), err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
 	ekPub, err := x509.ParsePKIXPublicKey(ekPubBytes)
 	if err != nil {
 		wwlog.Error("Failed to parse EK public key for node %s: %s", node.GetId(), err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	var createData []byte
+	var createAttestation []byte
+	var createSignature []byte
+	if existingQuote.CreateData != "" {
+		createData, err = base64.StdEncoding.DecodeString(existingQuote.CreateData)
+		if err != nil {
+			wwlog.Error("Failed to decode CreateData for node %s: %s", node.GetId(), err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
 
-	akPubDER, err := x509.MarshalPKIXPublicKey(akPub)
-	if err != nil {
-		wwlog.Error("Failed to marshal AK public key for node %s: %s", node.GetId(), err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+	if existingQuote.CreateAttestation != "" {
+		createAttestation, err = base64.StdEncoding.DecodeString(existingQuote.CreateAttestation)
+		if err != nil {
+			wwlog.Error("Failed to decode CreateAttestation for node %s: %s", node.GetId(), err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	if existingQuote.CreateSignature != "" {
+		createSignature, err = base64.StdEncoding.DecodeString(existingQuote.CreateSignature)
+		if err != nil {
+			wwlog.Error("Failed to decode CreateSignature for node %s: %s", node.GetId(), err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	}
 
 	akAttestParams := attest.AttestationParameters{
-		Public: akPubDER,
-		// Other fields like Name, AttestedCreationInfo would ideally come from the client during AK creation
+		Public:            akPubBytes,
+		CreateData:        createData,
+		CreateAttestation: createAttestation,
+		CreateSignature:   createSignature,
 	}
 
 	activationParams := attest.ActivationParameters{
@@ -241,6 +258,7 @@ func TPMChallengeSend(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	wwlog.Debug("secret %s: %x", node.GetId(), secret)
 
 	newChallenge := tpm.Challenge{
 		EncryptedCredential: *encryptedCredential,
