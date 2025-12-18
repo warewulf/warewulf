@@ -42,23 +42,22 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if verified, err := quote.Verify(); !verified {
-		wwlog.Error("Quote Verification Failed: %v", err)
-		os.Exit(1)
+		return fmt.Errorf("Quote Verification Failed: %v", err)
 	}
 
 	wwlog.Info("Quote Verification Successful")
 
 	if quote.EventLog != "" {
 		if verified, err := quote.VerifyEventLog(); !verified {
-			wwlog.Warn("Event Log Verification Failed: %v", err)
+			return fmt.Errorf("Event Log Verification Failed: %v", err)
 		} else {
 			wwlog.Info("Event Log Verification Successful")
 		}
 
 		if err := quote.VerifyGrubBinary(); err != nil {
-			wwlog.Warn("GRUB Binary Verification Failed: %v", err)
+			return fmt.Errorf("GRUB Binary Log Verification Failed: %v", err)
 		} else {
-			wwlog.Info("GRUB Binary Verification Successful")
+			wwlog.Info("GRUB Binary Log Verification Successful")
 		}
 		if displayEvent {
 			if err := displayEventLog(quote.EventLog); err != nil {
