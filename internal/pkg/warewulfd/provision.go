@@ -273,11 +273,45 @@ type TPMLogStore struct {
 	path string
 }
 
-func NewTPMLogStore(nodeId string) *TPMLogStore {
+func NewTPMLogStore(nodeId string) (*TPMLogStore, error) {
 	conf := warewulfconf.Get()
-	return &TPMLogStore{
-		path: filepath.Join(conf.Paths.OverlayProvisiondir(), nodeId, "tpm.json"),
+	path := filepath.Join(conf.Paths.OverlayProvisiondir(), nodeId, "tpm.json")
+
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return nil, err
 	}
+
+	if !util.IsFile(path) {
+		out, err := json.MarshalIndent(tpm.Quote{}, "", "  ")
+		if err != nil {
+			return nil, err
+		}
+		if err := os.WriteFile(path, out, 0644); err != nil {
+			return nil, err
+		}
+	}
+
+	return &TPMLogStore{
+		path: path,
+	}, nil
+}
+
+func (s *TPMLogStore) Save(newQuote tpm.Quote) error {
+	data, err := os.ReadFile(s.path)
+	if err != nil {
+		return fmt.Errorf("couldn't access storage for quote: %s", err)
+	}
+	var existingQuote tpm.Quote
+	if err := json.Unmarshal(data, &existingQuote); err == nil {
+		newQuote.SentLog = existingQuote.SentLog
+	}
+
+	out, err := json.MarshalIndent(newQuote, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(s.path, out, 0644)
 }
 
 func (s *TPMLogStore) SetFilename(filename string) {
@@ -292,7 +326,6 @@ func (s *TPMLogStore) ClearLogs() error {
 	if err != nil {
 		return err
 	}
-
 	var quote tpm.Quote
 	err = json.Unmarshal(data, &quote)
 	if err != nil {
@@ -323,6 +356,12 @@ func (s *TPMLogStore) Update(filename, checksum string) error {
 	err = json.Unmarshal(data, &quote)
 	if err != nil {
 		return err
+	}
+
+	for _, entry := range quote.SentLog {
+		if entry.Filename == filename && entry.Checksum == checksum {
+			return nil
+		}
 	}
 
 	quote.SentLog = append(quote.SentLog, tpm.FileLog{
