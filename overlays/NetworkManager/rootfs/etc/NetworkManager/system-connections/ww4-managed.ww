@@ -15,6 +15,10 @@ slave-type=bond
 autoconnect={{ $netdev.OnBoot.BoolDefaultTrue }}
 
 {{- if or (eq (lower $netdev.Type) "bond") (eq (lower (default "" $netdev.Tags.type)) "bond") }}
+{{- if $netdev.MTU }}
+[ethernet]
+mtu={{ $netdev.MTU }}
+{{- end }}
 [bond]
 downdelay={{ default 0 $netdev.Tags.downdelay }}
 miimon={{ default 100 $netdev.Tags.miimon }}
