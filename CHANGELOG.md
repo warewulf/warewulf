@@ -46,6 +46,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix warewulf-dracut to not run the wwinit module if root is not set to `root=wwclient*`
 - Fix `wwctl image import --update` #2066
 - Fix filesystem overwrite/force behavior in mkfs overlay. #2028
+- Prevent ignition from running twice in a provision-to-disk configuration. #1981
 
 ### Dependencies
 
