@@ -76,6 +76,17 @@ make sense anywhere but a node (e.g., ``--hwaddr`` and ``--ipaddr``).
      --image=rockylinux-9 \
      --netmask=255.255.255.0
 
+Un-setting Profile Fields
+-------------------------
+
+Profile fields can be cleared using the ``wwctl profile unset`` command, which
+works the same way as ``wwctl node unset``.
+
+.. code-block:: shell
+
+   wwctl profile unset default --image
+   wwctl profile unset default --netname=default --netmask
+
 Multiple Profiles
 =================
 

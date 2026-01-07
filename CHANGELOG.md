@@ -67,6 +67,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Expand troubleshooting documentation for container runtimes
 - Ignore local coding agent files
 - Add dracut_static ipxe method
+- Added `wwctl <node|profile> unset` #1954
 
 ### Removed
 

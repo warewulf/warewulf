@@ -115,7 +115,7 @@ func recursiveCreateFlags(obj interface{}, baseCmd *cobra.Command) {
 		} else if field.Anonymous {
 			recursiveCreateFlags(fieldVal.Addr().Interface(), baseCmd)
 
-		} else if field.Type.Kind() == reflect.Ptr {
+		} else if field.Type.Kind() == reflect.Ptr && !fieldVal.IsNil() {
 			recursiveCreateFlags(fieldVal.Interface(), baseCmd)
 
 		} else if field.Type.Kind() == reflect.Struct {
@@ -126,7 +126,10 @@ func recursiveCreateFlags(obj interface{}, baseCmd *cobra.Command) {
 			case reflect.String, reflect.Interface:
 				continue
 			case reflect.Pointer, reflect.Slice, reflect.Map:
-				// add a map with key UNDEF so that it can hold values N.B. UNDEF can never be added through command line
+				// Map fields need a concrete entry to recurse into so sub-field flags can be
+				// registered. If the map is empty, create a synthetic "UNDEF" entry for this
+				// purpose. "UNDEF" is never a valid user-supplied key and is stripped out
+				// before any changes are persisted.
 				key := reflect.ValueOf("UNDEF")
 				if fieldVal.Len() == 0 {
 					if fieldVal.IsNil() {
@@ -254,3 +257,87 @@ func createFlags(baseCmd *cobra.Command,
 		}
 	}
 }
+
+/*
+CreateUnsetFlags creates boolean flags for unsetting fields.
+Returns a map from flag name to bool pointer.
+*/
+
+func (nodeConf *Node) CreateUnsetFlags(baseCmd *cobra.Command) map[string]*bool {
+	unsetMap := make(map[string]*bool)
+	recursiveCreateUnsetFlags(nodeConf, baseCmd, unsetMap)
+	return unsetMap
+}
+
+func (profileConf *Profile) CreateUnsetFlags(baseCmd *cobra.Command) map[string]*bool {
+	unsetMap := make(map[string]*bool)
+	recursiveCreateUnsetFlags(profileConf, baseCmd, unsetMap)
+	return unsetMap
+}
+
+func recursiveCreateUnsetFlags(obj interface{}, baseCmd *cobra.Command, unsetMap map[string]*bool) {
+	elemType := reflect.TypeOf(obj).Elem()
+	elemVal := reflect.ValueOf(obj).Elem()
+
+	for i := 0; i < elemVal.NumField(); i++ {
+		field := elemType.Field(i)
+		fieldVal := elemVal.Field(i)
+
+		if !field.IsExported() {
+			continue
+		}
+
+		if field.Tag.Get("comment") != "" {
+			// Create boolean flag for this field
+			createUnsetFlag(baseCmd, field, unsetMap)
+		} else if field.Anonymous {
+			recursiveCreateUnsetFlags(fieldVal.Addr().Interface(), baseCmd, unsetMap)
+		} else if field.Type.Kind() == reflect.Ptr && !fieldVal.IsNil() {
+			recursiveCreateUnsetFlags(fieldVal.Interface(), baseCmd, unsetMap)
+		} else if field.Type.Kind() == reflect.Struct {
+			recursiveCreateUnsetFlags(fieldVal.Addr().Interface(), baseCmd, unsetMap)
+		} else if field.Type.Kind() == reflect.Map {
+			switch field.Type.Elem().Kind() {
+			case reflect.String, reflect.Interface:
+				continue
+			case reflect.Pointer, reflect.Slice, reflect.Map:
+				// Map fields need a concrete entry to recurse into so sub-field flags can be
+				// registered. If the map is empty, create a synthetic "UNDEF" entry for this
+				// purpose. "UNDEF" is never a valid user-supplied key and is stripped out
+				// before any changes are persisted.
+				key := reflect.ValueOf("UNDEF")
+				if fieldVal.Len() == 0 {
+					if fieldVal.IsNil() {
+						fieldVal.Set(reflect.MakeMap(field.Type))
+					}
+					newPtr := reflect.New(field.Type.Elem().Elem())
+					fieldVal.SetMapIndex(key, newPtr)
+				} else {
+					key = fieldVal.MapKeys()[0]
+				}
+				recursiveCreateUnsetFlags(fieldVal.MapIndex(key).Interface(), baseCmd, unsetMap)
+			}
+		}
+	}
+}
+
+func createUnsetFlag(baseCmd *cobra.Command, myType reflect.StructField, unsetMap map[string]*bool) {
+	if myType.Tag.Get("lopt") != "" {
+		flagName := myType.Tag.Get("lopt")
+		shortOpt := myType.Tag.Get("sopt")
+
+		// Create a new bool variable for this flag
+		boolPtr := new(bool)
+		unsetMap[flagName] = boolPtr
+
+		comment := myType.Tag.Get("comment")
+
+		// Create boolean flag with short option if available
+		if shortOpt != "" {
+			baseCmd.PersistentFlags().BoolVarP(boolPtr, flagName, shortOpt, false, comment)
+		} else {
+			baseCmd.PersistentFlags().BoolVar(boolPtr, flagName, false, comment)
+		}
+	}
+}
+
