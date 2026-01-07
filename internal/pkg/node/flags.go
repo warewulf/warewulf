@@ -265,6 +265,12 @@ func (nodeConf *Node) CreateUnsetFlags(baseCmd *cobra.Command) map[string]*bool 
 	return unsetMap
 }
 
+func (profileConf *Profile) CreateUnsetFlags(baseCmd *cobra.Command) map[string]*bool {
+	unsetMap := make(map[string]*bool)
+	recursiveCreateUnsetFlags(profileConf, baseCmd, unsetMap)
+	return unsetMap
+}
+
 func recursiveCreateUnsetFlags(obj interface{}, baseCmd *cobra.Command, unsetMap map[string]*bool) {
 	elemType := reflect.TypeOf(obj).Elem()
 	elemVal := reflect.ValueOf(obj).Elem()
@@ -338,6 +344,12 @@ func createUnsetFlag(baseCmd *cobra.Command, myType reflect.StructField, unsetMa
 // Walks the struct once and checks each field against the map for efficiency (O(n) vs O(m*n))
 func ApplyUnsetFields(nodeConf *Node, unsetFields map[string]*bool, netname string) {
 	recursiveApplyUnset(nodeConf, unsetFields, netname)
+}
+
+// ApplyUnsetFieldsProfile sets fields in profileConf to zero values based on unsetFields map
+// Walks the struct once and checks each field against the map for efficiency (O(n) vs O(m*n))
+func ApplyUnsetFieldsProfile(profileConf *Profile, unsetFields map[string]*bool, netname string) {
+	recursiveApplyUnset(profileConf, unsetFields, netname)
 }
 
 func recursiveApplyUnset(obj interface{}, unsetFields map[string]*bool, netname string) {
