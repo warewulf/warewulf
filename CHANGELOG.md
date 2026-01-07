@@ -66,6 +66,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Document configuring the arp cache for large clusters
 - Expand troubleshooting documentation for container runtimes
 - Ignore local coding agent files
+- Added `wwctl <node|profile> unset` #1954
 
 ### Removed
 

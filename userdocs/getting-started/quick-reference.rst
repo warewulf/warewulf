@@ -94,7 +94,7 @@ Adding a node
      --kernelargs="quiet crashkernel=no"
 
    # Un-set a field (revert to profile/default value)
-   wwctl node set n1 --image=UNDEF
+   wwctl node unset n1 --image
 
 Network interfaces
 ==================

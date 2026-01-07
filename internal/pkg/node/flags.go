@@ -1,6 +1,7 @@
 package node
 
 import (
+	"fmt"
 	"net"
 	"reflect"
 	"strconv"
@@ -115,7 +116,7 @@ func recursiveCreateFlags(obj interface{}, baseCmd *cobra.Command) {
 		} else if field.Anonymous {
 			recursiveCreateFlags(fieldVal.Addr().Interface(), baseCmd)
 
-		} else if field.Type.Kind() == reflect.Ptr {
+		} else if field.Type.Kind() == reflect.Ptr && !fieldVal.IsNil() {
 			recursiveCreateFlags(fieldVal.Interface(), baseCmd)
 
 		} else if field.Type.Kind() == reflect.Struct {
@@ -250,6 +251,193 @@ func createFlags(baseCmd *cobra.Command,
 					myType.Tag.Get("lopt"),
 					myType.Tag.Get("comment"))
 				baseCmd.Flag(myType.Tag.Get("lopt")).NoOptDefVal = "true"
+			}
+		}
+	}
+}
+
+/*
+CreateUnsetFlags creates boolean flags for unsetting fields.
+Returns a map from flag name to bool pointer.
+*/
+func (nodeConf *Node) CreateUnsetFlags(baseCmd *cobra.Command) map[string]*bool {
+	unsetMap := make(map[string]*bool)
+	recursiveCreateUnsetFlags(nodeConf, baseCmd, unsetMap)
+	return unsetMap
+}
+
+func (profileConf *Profile) CreateUnsetFlags(baseCmd *cobra.Command) map[string]*bool {
+	unsetMap := make(map[string]*bool)
+	recursiveCreateUnsetFlags(profileConf, baseCmd, unsetMap)
+	return unsetMap
+}
+
+func recursiveCreateUnsetFlags(obj interface{}, baseCmd *cobra.Command, unsetMap map[string]*bool) {
+	elemType := reflect.TypeOf(obj).Elem()
+	elemVal := reflect.ValueOf(obj).Elem()
+
+	for i := 0; i < elemVal.NumField(); i++ {
+		field := elemType.Field(i)
+		fieldVal := elemVal.Field(i)
+
+		if !field.IsExported() {
+			continue
+		}
+
+		if field.Tag.Get("comment") != "" {
+			// Create boolean flag for this field
+			createUnsetFlag(baseCmd, field, unsetMap)
+		} else if field.Anonymous {
+			recursiveCreateUnsetFlags(fieldVal.Addr().Interface(), baseCmd, unsetMap)
+		} else if field.Type.Kind() == reflect.Ptr && !fieldVal.IsNil() {
+			recursiveCreateUnsetFlags(fieldVal.Interface(), baseCmd, unsetMap)
+		} else if field.Type.Kind() == reflect.Struct {
+			recursiveCreateUnsetFlags(fieldVal.Addr().Interface(), baseCmd, unsetMap)
+		} else if field.Type.Kind() == reflect.Map {
+			switch field.Type.Elem().Kind() {
+			case reflect.String, reflect.Interface:
+				continue
+			case reflect.Pointer, reflect.Slice, reflect.Map:
+				key := reflect.ValueOf("UNDEF")
+				if fieldVal.Len() == 0 {
+					if fieldVal.IsNil() {
+						fieldVal.Set(reflect.MakeMap(field.Type))
+					}
+					newPtr := reflect.New(field.Type.Elem().Elem())
+					fieldVal.SetMapIndex(key, newPtr)
+				} else {
+					key = fieldVal.MapKeys()[0]
+				}
+				recursiveCreateUnsetFlags(fieldVal.MapIndex(key).Interface(), baseCmd, unsetMap)
+			}
+		}
+	}
+}
+
+func createUnsetFlag(baseCmd *cobra.Command, myType reflect.StructField, unsetMap map[string]*bool) {
+	if myType.Tag.Get("lopt") != "" {
+		flagName := myType.Tag.Get("lopt")
+		shortOpt := myType.Tag.Get("sopt")
+
+		// Create a new bool variable for this flag
+		boolPtr := new(bool)
+		unsetMap[flagName] = boolPtr
+
+		comment := myType.Tag.Get("comment")
+
+		// Create boolean flag with short option if available
+		if shortOpt != "" {
+			baseCmd.PersistentFlags().BoolVarP(boolPtr, flagName, shortOpt, false, comment)
+		} else {
+			baseCmd.PersistentFlags().BoolVar(boolPtr, flagName, false, comment)
+		}
+	}
+}
+
+// UnsetScope defines which map entries to scope field-level unsets to.
+// Empty strings mean the map is skipped entirely (sub-entity fields require scoping).
+type UnsetScope struct {
+	NetName  string
+	DiskName string
+	PartName string
+	FsName   string
+}
+
+// ValidateUnsetScope checks that sub-entity unset flags have the required
+// scoping flags, matching the behavior of the set command which requires
+// --diskname/--partname/--fsname to target specific entities.
+func ValidateUnsetScope(unsetFields map[string]*bool, scope UnsetScope) error {
+	for flagName, boolPtr := range unsetFields {
+		if boolPtr == nil || !*boolPtr {
+			continue
+		}
+		if strings.HasPrefix(flagName, "part") {
+			if scope.DiskName == "" || scope.PartName == "" {
+				return fmt.Errorf("--diskname and --partname must be specified with --%s", flagName)
+			}
+		} else if strings.HasPrefix(flagName, "disk") {
+			if scope.DiskName == "" {
+				return fmt.Errorf("--diskname must be specified with --%s", flagName)
+			}
+		} else if strings.HasPrefix(flagName, "fs") {
+			if scope.FsName == "" {
+				return fmt.Errorf("--fsname must be specified with --%s", flagName)
+			}
+		}
+	}
+	return nil
+}
+
+// ApplyUnsetFields sets fields in nodeConf to zero values based on unsetFields map
+// Walks the struct once and checks each field against the map for efficiency (O(n) vs O(m*n))
+func ApplyUnsetFields(nodeConf *Node, unsetFields map[string]*bool, scope UnsetScope) {
+	recursiveApplyUnset(nodeConf, unsetFields, scope)
+}
+
+// ApplyUnsetFieldsProfile sets fields in profileConf to zero values based on unsetFields map
+// Walks the struct once and checks each field against the map for efficiency (O(n) vs O(m*n))
+func ApplyUnsetFieldsProfile(profileConf *Profile, unsetFields map[string]*bool, scope UnsetScope) {
+	recursiveApplyUnset(profileConf, unsetFields, scope)
+}
+
+// scopeMapUnset recurses into the named map entry only.
+// If scopeName is empty, the map is skipped entirely — callers must
+// specify which sub-entity to modify.
+func scopeMapUnset(fieldVal reflect.Value, scopeName string, unsetFields map[string]*bool, scope UnsetScope) {
+	if scopeName == "" {
+		return
+	}
+	key := reflect.ValueOf(scopeName)
+	if fieldVal.MapIndex(key).IsValid() {
+		mapVal := fieldVal.MapIndex(key)
+		if !mapVal.IsZero() {
+			recursiveApplyUnset(mapVal.Interface(), unsetFields, scope)
+		}
+	}
+}
+
+func recursiveApplyUnset(obj interface{}, unsetFields map[string]*bool, scope UnsetScope) {
+	elemType := reflect.TypeOf(obj).Elem()
+	elemVal := reflect.ValueOf(obj).Elem()
+
+	for i := 0; i < elemVal.NumField(); i++ {
+		field := elemType.Field(i)
+		fieldVal := elemVal.Field(i)
+
+		if !field.IsExported() {
+			continue
+		}
+
+		// Check if this field should be unset (O(1) map lookup)
+		flagName := field.Tag.Get("lopt")
+		if flagName != "" && unsetFields[flagName] != nil && *unsetFields[flagName] {
+			// Zero this field
+			fieldVal.Set(reflect.Zero(fieldVal.Type()))
+			continue // Don't recurse into zeroed field
+		}
+
+		// Recurse into nested structs and maps
+		if field.Anonymous {
+			recursiveApplyUnset(fieldVal.Addr().Interface(), unsetFields, scope)
+		} else if field.Type.Kind() == reflect.Ptr && !fieldVal.IsNil() {
+			recursiveApplyUnset(fieldVal.Interface(), unsetFields, scope)
+		} else if field.Type.Kind() == reflect.Struct {
+			recursiveApplyUnset(fieldVal.Addr().Interface(), unsetFields, scope)
+		} else if field.Type.Kind() == reflect.Map {
+			switch field.Type.Elem().Kind() {
+			case reflect.Pointer:
+				switch field.Name {
+				case "NetDevs":
+					scopeMapUnset(fieldVal, scope.NetName, unsetFields, scope)
+				case "Disks":
+					scopeMapUnset(fieldVal, scope.DiskName, unsetFields, scope)
+				case "FileSystems":
+					scopeMapUnset(fieldVal, scope.FsName, unsetFields, scope)
+				case "Partitions":
+					scopeMapUnset(fieldVal, scope.PartName, unsetFields, scope)
+				default:
+					scopeMapUnset(fieldVal, "", unsetFields, scope)
+				}
 			}
 		}
 	}
