@@ -4,9 +4,7 @@ class InitWarewulf < Vagrant.plugin(2, :command)
   end
 
   def execute
-    ww_version = `git describe --abbrev=0 2>/dev/null`
-    ww_version = ww_version[1..-1]
-    system "WW_VERSION=#{ww_version} vagrant up"
+    system "vagrant up"
     system "vagrant provision --provision-with provision-vbmc wwctl"
     system "vagrant provision --provision-with add-ww-nodes wwctl"
   end

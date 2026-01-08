@@ -2,12 +2,13 @@
 # vi: set ft=ruby :
 
 ENV['VAGRANT_NO_PARALLEL'] = 'yes'
-ww_version = ENV.fetch('WW_VERSION', "4.6.3")
 
 Vagrant.configure("2") do |config|
+  ww_version = ENV['WW_VERSION'] || "4.6.4" # set this env-var to adjust which version of WW will be installed
+  
   config.vm.define :wwctl do |wwctl|
     wwctl.vm.box = "rockylinux/9"
-    wwctl.vm.box_version = "6.0.0"
+    wwctl.vm.box_version = "5.0.0" # see: https://git.resf.org/infrastructure/meta/issues/138
     wwctl.vm.network :private_network, :ip => "10.100.100.254", :libvirt__dhcp_enabled => false, :libvirt__network_name => 'netboot'
     wwctl.vm.synced_folder '.', '/vagrant', disabled: true
 
@@ -16,9 +17,9 @@ Vagrant.configure("2") do |config|
     end
 
     wwctl.vm.provider :libvirt do |domain|
-      domain.memory = 1024
+      domain.memory = 2048
       domain.cpus = 2
-      domain.machine_virtual_size = 12
+      domain.machine_virtual_size = 32
     end
 
     wwctl.vm.provision "init-wwctl", type: "shell", path: "init-scripts/init-wwctl.sh", args: [ww_version]
@@ -28,6 +29,8 @@ Vagrant.configure("2") do |config|
     wwctl.vm.provision "add-ww-nodes", type: "shell", run: "never", path: "init-scripts/add-ww-nodes.sh"
   end
 
+  # Ram here is specific to the size of the ww node that's starting up. For alpine 768mb is fine - for EL or SLES
+  # you will need to allocate a higher value for `domain.memory`.
   config.vm.define :wwnode1 do |node1|
     node1.vm.network :private_network, :libvirt__network_name => 'netboot', :libvirt__mac => '006e6f646531'
     node1.vm.synced_folder '.', '/vagrant', disabled: true

@@ -1,8 +1,70 @@
 #!/bin/sh
 
-echo ", +" | sfdisk --no-reread -N 5 /dev/vda
-partprobe
-xfs_growfs /dev/vda5
+#
+# Resize root partition (if necessary)
+#
+dnf install -y cloud-utils-growpart util-linux bc
+
+echo ""
+echo "================================================================================"
+echo "[Resizing Root Partition]"
+echo ""
+
+# Find the device that is mounted as root (/)
+ROOT_DEVICE=$(findmnt -n -o SOURCE /)
+echo "Detected root device: $ROOT_DEVICE"
+
+# Resolve any symlinks or device-mapper names to the actual partition
+ROOT_PARTITION=$(readlink -f "$ROOT_DEVICE")
+echo "Detected root partition: $ROOT_PARTITION"
+
+# Extract the parent disk and partition number from the partition path
+PARENT_DISK="/dev/$(lsblk -no PKNAME "$ROOT_PARTITION")"
+PARTITION_SUFFIX="${ROOT_PARTITION#$PARENT_DISK}"
+PARTITION_NUMBER="${PARTITION_SUFFIX#p}"
+echo "Parent disk: $PARENT_DISK"
+echo "Partition number: $PARTITION_NUMBER"
+
+# Check if there's actually room to grow
+# Note: We use tail -n +2 to skip the first line, which is the disk itself.
+# Lines 2 onward are the actual partitions.
+DISK_SIZE_BYTES=$(lsblk -b -dn -o SIZE "$PARENT_DISK")
+PARTITIONS_SIZE_BYTES=$(lsblk -b -ln -o SIZE "$PARENT_DISK" | tail -n +2 | paste -sd+ | bc)
+UNALLOCATED_BYTES=$((DISK_SIZE_BYTES - PARTITIONS_SIZE_BYTES))
+THRESHOLD_BYTES=$((100 * 1024 * 1024))
+
+echo "Disk size: $((DISK_SIZE_BYTES / 1024 / 1024)) MiB"
+echo "Allocated to partitions: $((PARTITIONS_SIZE_BYTES / 1024 / 1024)) MiB"
+echo "Unallocated space: $((UNALLOCATED_BYTES / 1024 / 1024)) MiB"
+
+if [ "$UNALLOCATED_BYTES" -gt "$THRESHOLD_BYTES" ]; then
+    echo "Growing partition $PARENT_DISK partition $PARTITION_NUMBER..."
+    growpart "$PARENT_DISK" "$PARTITION_NUMBER"
+
+    FS_TYPE=$(lsblk -no FSTYPE "$ROOT_PARTITION")
+    echo "Detected filesystem type: $FS_TYPE"
+
+    case "$FS_TYPE" in
+        xfs)
+            xfs_growfs /
+            ;;
+        ext4|ext3|ext2)
+            resize2fs "$ROOT_PARTITION"
+            ;;
+        *)
+            echo "Warning: Unknown filesystem type '$FS_TYPE'. Cannot auto-resize."
+            echo "Partition was grown, but you may need to manually resize the filesystem."
+            ;;
+    esac
+
+    echo "Root partition successfully grown!"
+    df -h /
+else
+    echo "No significant unallocated space available. Nothing to do."
+fi
+
+echo "================================================================================"
+echo ""
 
 echo "StreamLocalBindUnlink yes" > /etc/ssh/sshd_config.d/60-forward-cleanup.conf
 systemctl reload sshd.service
@@ -123,3 +185,5 @@ EOF
 
 systemctl daemon-reload
 
+# shut down the firewall - not needed for this test environment:
+sudo systemctl disable --now firewalld
