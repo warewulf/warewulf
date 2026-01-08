@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - systemd-networkd overlay with IPv6 support
 - `wwctl overlay info` lists the variables used by an overlay template
 - Added support for setting mtu and mac address on bonds with NetworkManager #2059
+- Added new Vagrant/Libvirt basic test/dev environment #2081, #2003
 
 ### Changed
 
@@ -52,7 +53,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Dependencies
 
 - Updated github.com/ulikunitz/xz to 0.5.14 (CVE-2025-58058) #2007
-- Vagrant/Libvirt basic test/dev environment
 
 ## v4.6.4, 2025-09-05
 
