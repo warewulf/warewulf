@@ -49,10 +49,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix `wwctl image import --update` #2066
 - Fix filesystem overwrite/force behavior in mkfs overlay. #2028
 - Prevent ignition from running twice in a provision-to-disk configuration. #1981
+- Fix `warewulf.spec.in` to resolve a build break for openSUSE 15.x
 
 ### Dependencies
 
 - Updated github.com/ulikunitz/xz to 0.5.14 (CVE-2025-58058) #2007
+- Updated github.com/opencontainers/selinux to v1.13.1 (CVE-2025-52881)
+- Updated github.com/cyphar/filepath-securejoin to v0.5.1 (indirect via selinux version bump)
 
 ## v4.6.4, 2025-09-05
 
@@ -146,7 +149,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 - Removed the gRPC API servers and client. #1876
-- Removed ``wwctl node import --csv``. #1862
+- Removed `wwctl node import --csv`. #1862
 
 ## v4.6.1, 2025-04-04
 
@@ -155,7 +158,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added `wwctl overlay import --overwrite` to overwrite existing overlay file.
 - wwclient uses `WW_IPADDR`, if set, to contact the Warewulf server. #1788
 - Add `wwctl node import --yes` to assume yes to confirmations.
-- Set an IPMI tag ``vlan`` to configure the vlan during ``ipmiwrite``. #1031
+- Set an IPMI tag `vlan` to configure the vlan during `ipmiwrite`. #1031
 - Added net.ifnames=1 to default kernel argument list. #1820
 - Add a new OpenAPI v3 REST API to warewulfd at /api. #1588
 - New sos plugin in `warewulf-sos` subpackage. #1822
@@ -518,7 +521,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix dhcpd.conf static template to include next-server and dhcp-range #1536
 - Fix panic when adding tag with existing netdev #1546
 
-
 ## v4.5.7, 2024-09-11
 
 ### Added
@@ -549,6 +551,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `wwctl conatiner list --kernel` shows the kernel detected for each container. #1283
 - `wwctl container list --size` shows the uncompressed size of each container. `--compressed` shows the compressed size, and `--chroot` shows the size of the container source on the server. #954, #1117
 - Add a logrotate config for `warewulfd.log`. #1311
+
 ### Changed
 
 - Refactor URL handling in wwclient to consistently escape arguments.
@@ -643,7 +646,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - Document warewulf.conf:paths. #635
-- New "Overlay" template variable contains the name of the overlay being built. #1052 
+- New "Overlay" template variable contains the name of the overlay being built. #1052
 - Documented HTTP proxy environment variables for `wwctl container import`. #1214
 
 ### Changed

@@ -77,7 +77,8 @@ Requires: ipxe-bootimgs-aarch64
 %if 0%{?is_suse}
 BuildRequires: tftp
 Requires: tftp
-%elif 0%{?use_dnsmasq}
+%else
+%if 0%{?use_dnsmasq}
 Requires: dnsmasq
 %else
 # Assume Red Hat/Fedora
@@ -86,6 +87,7 @@ Requires: tftp-server
 Requires: dhcp-server
 %else
 Requires: dhcp
+%endif
 %endif
 %endif
 
@@ -140,8 +142,10 @@ make install \
 
 %if 0%{?rhel} >= 10 || 0%{?openEuler}
 cp -f etc/warewulf.conf-el10 %{buildroot}%{_sysconfdir}/warewulf/warewulf.conf
-%elif 0%{?is_suse}
+%else
+%if 0%{?is_suse}
 cp -f etc/warewulf.conf-suse %{buildroot}%{_sysconfdir}/warewulf/warewulf.conf
+%endif
 %endif
 
 %if ! 0%{?is_suse}
