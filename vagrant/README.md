@@ -157,7 +157,7 @@ sudo wwctl power on n2
 
 ## System Setup: `libvirt`, `vagrant-libvirt`, and `Vagrant` Installation
 
-**Note**: Vagrant bundles it's own embedded Ruby environment in Vagrant. The Vagrant package installer may not always recognize system dependencies. Instructions for working around this are included for `Enterprise Linux 9 and 10` below as well for `openSUSE Leap 16`. There are other options for running `vagrant-libvirt`. For more information please see the [vagrant-libvirt](https://vagrant-libvirt.github.io/vagrant-libvirt/) site.
+**Note**: Vagrant bundles its own embedded Ruby environment in Vagrant. The Vagrant package installer may not always recognize system dependencies. Instructions for working around this are included for `Enterprise Linux 9 and 10` below as well for `openSUSE Leap 16`. There are other options for running `vagrant-libvirt`. For more information please see the [vagrant-libvirt](https://vagrant-libvirt.github.io/vagrant-libvirt/) site.
 
 ### `libvirt` Install
 
