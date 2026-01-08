@@ -267,7 +267,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/opencontainers/selinux/blob/v1.11.1/LICENSE>
+**License URL:** <https://github.com/opencontainers/selinux/blob/v1.13.1/LICENSE>
 
 ## github.com/opencontainers/umoci
 
@@ -406,12 +406,6 @@ The dependencies and their licenses are as follows:
 **License:** BSD-3-Clause
 
 **License URL:** <https://github.com/imdario/mergo/blob/v1.0.1/LICENSE>
-
-## github.com/cyphar/filepath-securejoin
-
-**License:** BSD-3-Clause
-
-**License URL:** <https://github.com/cyphar/filepath-securejoin/blob/v0.3.6/LICENSE>
 
 ## github.com/go-jose/go-jose/v4/json
 
@@ -844,6 +838,18 @@ The dependencies and their licenses are as follows:
 **License:** MIT
 
 **License URL:** <https://github.com/go-yaml/yaml/blob/v3.0.1/LICENSE>
+
+## github.com/cyphar/filepath-securejoin
+
+**License:** MPL-2.0
+
+**License URL:** <https://github.com/cyphar/filepath-securejoin/blob/v0.5.1/COPYING.md>
+
+## github.com/cyphar/filepath-securejoin/pathrs-lite
+
+**License:** MPL-2.0
+
+**License URL:** <https://github.com/cyphar/filepath-securejoin/blob/v0.5.1/pathrs-lite/README.md>
 
 ## github.com/hashicorp/go-version
 
