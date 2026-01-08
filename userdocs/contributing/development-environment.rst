@@ -95,3 +95,11 @@ required.  To use the Dev Container, click the "Open a Remote Window" button on
 the bottom left of the editor (`><` icon) and select "Reopen in Container".
 This will build the container and open a new VSC window with the container as
 the development environment. 
+
+Using Vagrant and Libvirt
+=========================
+
+Vagrant can be used to quickly spin up a test/development environment for Warewulf.
+A `Vagrantfile` is provided in `vagrant` directory of the Warewulf repository.
+See the `README.md <https://github.com/warewulf/warewulf/blob/main/vagrant/README.md>`_
+for more details.

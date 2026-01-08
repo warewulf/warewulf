@@ -1,0 +1,58 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+ENV['VAGRANT_NO_PARALLEL'] = 'yes'
+
+Vagrant.configure("2") do |config|
+  ww_version = ENV['WW_VERSION'] || "4.6.4" # set this env-var to adjust which version of WW will be installed
+  
+  config.vm.define :wwctl do |wwctl|
+    wwctl.vm.box = "rockylinux/9"
+    wwctl.vm.box_version = "5.0.0" # see: https://git.resf.org/infrastructure/meta/issues/138
+    wwctl.vm.network :private_network, :ip => "10.100.100.254", :libvirt__dhcp_enabled => false, :libvirt__network_name => 'netboot'
+    wwctl.vm.synced_folder '.', '/vagrant', disabled: true
+
+    wwctl.trigger.after :up, :reload do |trigger|
+      trigger.run = {path: "export-libvirt-sock.sh"}
+    end
+
+    wwctl.vm.provider :libvirt do |domain|
+      domain.memory = 2048
+      domain.cpus = 2
+      domain.machine_virtual_size = 32
+    end
+
+    wwctl.vm.provision "init-wwctl", type: "shell", path: "init-scripts/init-wwctl.sh", args: [ww_version]
+    wwctl.vm.provision "file", source: "alpine-bootable.def", destination: "alpine-bootable.def"
+    wwctl.vm.provision "file", source: "alpine-boot.sh", destination: "alpine-boot.sh"
+    wwctl.vm.provision "provision-vbmc", type: "shell", run: "never", path: "init-scripts/start-vbmcd.sh"
+    wwctl.vm.provision "add-ww-nodes", type: "shell", run: "never", path: "init-scripts/add-ww-nodes.sh"
+  end
+
+  # Ram here is specific to the size of the ww node that's starting up. For alpine 768mb is fine - for EL or SLES
+  # you will need to allocate a higher value for `domain.memory`.
+  config.vm.define :wwnode1 do |node1|
+    node1.vm.network :private_network, :libvirt__network_name => 'netboot', :libvirt__mac => '006e6f646531'
+    node1.vm.synced_folder '.', '/vagrant', disabled: true
+    node1.vm.provider :libvirt do |domain|
+      domain.memory = 768
+      domain.cpus = 1
+      domain.mgmt_attach = false
+      boot_network = {'network' => 'netboot'}
+      domain.boot boot_network
+    end
+  end
+
+  config.vm.define :wwnode2 do |node2|
+    node2.vm.network :private_network, :libvirt__network_name => 'netboot', :libvirt__mac => '006e6f646532'
+    node2.vm.synced_folder '.', '/vagrant', disabled: true
+    node2.vm.provider :libvirt do |domain|
+      domain.memory = 768
+      domain.cpus = 1
+      domain.mgmt_attach = false
+      boot_network = {'network' => 'netboot'}
+      domain.boot boot_network
+    end
+  end
+
+end
