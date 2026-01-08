@@ -79,7 +79,7 @@ jobs:
       fail-fast: false
       matrix:
         arch: [x86_64, aarch64]
-        dist: [el10, el9, el8, suse.lp155]
+        dist: [el10, el9, el8, suse.lp156]
         include:
           - dist: el8
             target: rocky+epel-8
@@ -87,8 +87,8 @@ jobs:
             target: rocky+epel-9
           - dist: el10
             target: rocky+epel-10
-          - dist: suse.lp155
-            target: opensuse-leap-15.5
+          - dist: suse.lp156
+            target: opensuse-leap-15.6
           - arch: x86_64
             runs-on: ubuntu-24.04
           - arch: aarch64

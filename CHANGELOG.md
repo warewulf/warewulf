@@ -49,10 +49,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix `wwctl image import --update` #2066
 - Fix filesystem overwrite/force behavior in mkfs overlay. #2028
 - Prevent ignition from running twice in a provision-to-disk configuration. #1981
+- Fix `warewulf.spec.in` to resolve a build break for openSUSE 15.x
 
 ### Dependencies
 
 - Updated github.com/ulikunitz/xz to 0.5.14 (CVE-2025-58058) #2007
+- Updated github.com/opencontainers/selinux to v1.13.1 (CVE-2025-52881)
+- Updated github.com/cyphar/filepath-securejoin to v0.5.1 (indirect via selinux version bump)
 
 ## v4.6.4, 2025-09-05
 
