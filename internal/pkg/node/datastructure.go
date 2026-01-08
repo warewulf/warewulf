@@ -64,7 +64,7 @@ type IpmiConf struct {
 	Port       string            `yaml:"port,omitempty"       json:"port,omitempty"       lopt:"ipmiport"       comment:"Set the IPMI port"`
 	Interface  string            `yaml:"interface,omitempty"  json:"interface,omitempty"  lopt:"ipmiinterface"  comment:"Set the node's IPMI interface (defaults: 'lan')"`
 	EscapeChar string            `yaml:"escapechar,omitempty" json:"escapechar,omitempty" lopt:"ipmiescapechar" comment:"Set the IPMI escape character (defaults: '~')"`
-	Write      wwtype.WWbool     `yaml:"write,omitempty"      json:"write,omitempty"      lopt:"ipmiwrite"      comment:"Enable the write of impi configuration (true/false)"`
+	Write      wwtype.WWbool     `yaml:"write,omitempty"      json:"write,omitempty"      lopt:"ipmiwrite"      comment:"Enable the write of ipmi configuration (true/false)"`
 	Template   string            `yaml:"template,omitempty"   json:"template,omitempty"   lopt:"ipmitemplate"   comment:"template used for ipmi command"`
 	Tags       map[string]string `yaml:"tags,omitempty"       json:"tags,omitempty"`
 }
