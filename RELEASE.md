@@ -29,7 +29,7 @@ versions (e.g., v4.6.3) are tagged on a separate release branch.
 6. Create a signed tag for the release of the format v4.MINOR.PATCH, following
    the format specified in <MAINTAINING.md>.
    
-       git tag --sign v4.6.3; git push origin v4.6.3
+       git tag --sign v4.6.5; git push origin v4.6.5
 
 7. Monitor the release action associated with the pushed tag at
    https://github.com/warewulf/warewulf/actions, and verify the generated draft

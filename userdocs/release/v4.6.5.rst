@@ -1,0 +1,108 @@
+====================
+v4.6.5 Release Notes
+====================
+
+v4.6.5 is a regularly-scheduled minor release in the v4.6.x series.
+
+Significant changes are described below. Additional changes are listed in the
+`CHANGELOG`_.
+
+.. _CHANGELOG: https://github.com/warewulf/warewulf/blob/main/CHANGELOG.md
+
+wwctl overlay info
+==================
+
+A new ``wwctl overlay info`` command lists variables used by an overlay
+template, including the ``wwctl <node|profile> set`` argument used to set that
+variable.
+
+.. code-block: console
+
+   # wwctl overlay info ifcfg /etc/sysconfig/network-scripts/ifcfg.ww
+   VARIABLE                OPTION     TYPE                     HELP
+   --------                ------     ----                     ----
+   $netdev.Device          --netdev   string                   Set the device for given network
+   $netdev.Gateway         --gateway  IP                       Set the node's IPv4 network device gateway
+   $netdev.Hwaddr          --hwaddr   MAC                      Set the device's HW address for given network
+   $netdev.Ipaddr          --ipaddr   IP                       IPv4 address in given network
+   $netdev.Ipaddr6         --ipaddr6  IP                       IPv6 address in given network
+   $netdev.MTU             --mtu      uint                     Set the mtu
+   $netdev.Netmask         --netmask  IP                       Set the networks netmask
+   $netdev.OnBoot          --onboot   wwtype.WWbool            Enable/disable network device (true/false)
+   $netdev.Tags                       map[string]string
+   $netdev.Tags.DNSSEARCH             string
+   $netdev.Tags.master                string
+   $netdev.Type            --type     string                   Set device type of given network
+   .NetDevs                           map[string]*node.NetDev
+
+Other variables and the overlay itself can also be documented explicitly within a template.
+
+.. code-block:: text
+
+   {{/* wwdoc: Configures chronyd to synchronize time with a specific time server. */}}
+   {{/* .Tags.ntp_server: the NTP server to synchonize with */}}
+
+wwctl image import --update
+===========================
+
+The ``wwctl image import`` come has included an ``--update`` option since
+v4.6.0, but it has not been functional. The option now imports an image
+on-top-of an existing image and is meant to be used to update an existing image
+with new files from an updated upstream or external image (e.g., by importing a
+new version of an image from an OCI registry).
+
+wwclient
+========
+
+One of the last real impediments to multi-architecture support in Warewulf has
+been the wwclient daemon which, though distributed to cluster nodes, has been
+built only for the architecture of the Warewulf server. Now, new
+``wwclient.aarch64`` and ``wwclient.x86_64`` overlays provide
+architecture-specific builds of wwclient for aarch64 and x86_64 nodes,
+respectively.
+
+wwclient has also been enhanced with IPv6 support, and now properly handles
+recently-used addresses when restarting.
+
+Network management
+==================
+
+A number of network management improvements have been made. Most deal with
+improving IPv6 support. The ``debian.interfaces`` overlay has been renamed to
+``ifupdown`` to better reflect its support for both Debian, Ubuntu, and Alpine
+systems. The ``netplan`` and ``NetworkManager`` overlay have improved support
+for bonded interfaces; and a new ``systemd-networkd`` overlay adds support for
+the systemd networking daemon.
+
+Packaging
+=========
+
+The openEuler 24.03 RPM package now uses dnsmasq by default.
+
+Development
+===========
+
+Work has resumed on support for using Vagrant to initialize a basic testing /
+development environment with libvirt.
+
+warewulf-dracut
+===============
+
+A bug between ``warewulf-dracut`` and the ``ignition`` overlay previously caused
+non-root filesystems from mounting when provisioning the image to disk. A fix in
+``warewulf-dracut`` prevents ignition from running twice, allowing all file
+systems to mount properly. The ``wwinit`` dracut module also no longer runs the
+wwinit module if root is not set to `root=wwclient*`.
+
+These fixes require installing the updated ``warewulf-dracut`` package in the
+node image.
+
+Other fixes
+===========
+
+- Enhanced `wwctl configure tftp` to manage the SELinux context of TFTP directory. #1997
+- Enhanced overlay templates to support absolute paths with `{{ file }}`. #2055
+- Fix ImageDelete API not returning error when checking if image is used by nodes/profiles. #1705
+- Fix filesystem overwrite/force behavior in `mkfs` overlay. #2028
+- Write `$tftpdir/warewulf/grub.cfg` to `tftproot` as configured in `warewulf.conf`. #2055
+- Automatically create a GPT label when `sfdisk` overlay wipes disks. #2025
