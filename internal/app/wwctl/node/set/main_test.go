@@ -659,6 +659,28 @@ nodeprofiles: {}
 nodes:
   n1: {}`,
 		},
+		"--partwipe": {
+			args:    []string{"--partwipe", "--partname=var", "--diskname=/dev/vda", "n01"},
+			wantErr: false,
+			inDB: `
+nodes:
+  n01:
+    disks:
+      /dev/vda:
+        partitions:
+          var:
+            number: "1"`,
+			outDB: `
+nodeprofiles: {}
+nodes:
+  n01:
+    disks:
+      /dev/vda:
+        partitions:
+          var:
+            number: "1"
+            wipe_partition_entry: true`,
+		},
 	}
 
 	for name, tt := range tests {

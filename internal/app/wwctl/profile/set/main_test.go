@@ -229,6 +229,38 @@ nodeprofiles:
         path: /var
 nodes: {}`,
 		},
+		"single set partwipe to true": {
+			args:    []string{"--partwipe=true", "--partname=var", "--diskname=/dev/vda", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          var:
+            number: "1"
+    filesystems:
+      /dev/disk/by-partlabel/var:
+        format: btrfs
+        path: /var
+nodes: {}
+`,
+			outDb: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          var:
+            number: "1"
+            wipe_partition_entry: true
+    filesystems:
+      /dev/disk/by-partlabel/var:
+        format: btrfs
+        path: /var
+nodes: {}`,
+		},
 	}
 
 	for name, tt := range tests {

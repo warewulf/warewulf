@@ -110,7 +110,7 @@ type Partition struct {
 	StartMiB            string `yaml:"start_mib,omitempty"            json:"start_mib,omitempty"                              comment:"the start of the partition" type:"uint"`
 	TypeGuid            string `yaml:"type_guid,omitempty"            json:"type_guid,omitempty"            lopt:"parttype"   comment:"Set the partition type GUID"`
 	Guid                string `yaml:"guid,omitempty"                 json:"guid,omitempty"                                   comment:"the GPT unique partition GUID"`
-	WipePartitionEntryP *bool  `yaml:"wipe_partition_entry,omitempty" json:"wipe_partition_entry,omitempty"                   comment:"if true, Ignition will clobber an existing partition if it does not match the config" name:"WipePartitionEntry"`
+	WipePartitionEntryP *bool  `yaml:"wipe_partition_entry,omitempty" json:"wipe_partition_entry,omitempty" lopt:"partwipe"   comment:"if true, Ignition will clobber an existing partition if it does not match the config" name:"WipePartitionEntry"`
 	ShouldExistP        *bool  `yaml:"should_exist,omitempty"         json:"should_exist,omitempty"         lopt:"partcreate" comment:"Create partition if it does not exist" name:"ShouldExist"`
 	ResizeP             *bool  `yaml:"resize,omitempty"               json:"resize,omitempty"                                 comment:"whether or not the existing partition should be resize" name:"Resize"`
 }
