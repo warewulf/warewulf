@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## v4.6.6, unreleased
+
+### Fixed
+
+- Remove requisite dependency between ignition disk target and ignition service. #2083
+
 ## v4.6.5, 2026-01-12
 
 ### Added
