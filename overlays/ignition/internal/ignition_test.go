@@ -46,7 +46,6 @@ Description=mount ww4 disks
 # make sure that the disks are available
 Requires=ww-ignition.service
 After=ww-ignition.service
-Requisite=ww-ignition.service
 # Get the mounts
 Wants=scratch.mount
 Wants=dev-disk-by\x2dpartlabel-swap.swap
@@ -85,7 +84,6 @@ Description=mount ww4 disks
 # make sure that the disks are available
 Requires=ww-ignition.service
 After=ww-ignition.service
-Requisite=ww-ignition.service
 # Get the mounts
 Wants=scratch.mount
 Wants=dev-disk-by\x2dpartlabel-swap.swap
