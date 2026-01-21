@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Remove requisite dependency between ignition disk target and ignition service. #2083
 - Return HTTP 409 status when creating an existing overlay
 
+### Added
+
+- New --partwipe flag for profile and node set
+
 ## v4.6.5, 2026-01-12
 
 ### Added
