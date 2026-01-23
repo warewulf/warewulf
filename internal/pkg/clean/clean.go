@@ -2,7 +2,8 @@ package clean
 
 import (
 	"os"
-	"path"
+	"path/filepath"
+	"strings"
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/node"
@@ -26,7 +27,11 @@ func CleanOverlays() error {
 		return err
 	}
 	nodes := nodeDB.ListAllNodes()
-	dirList, err := os.ReadDir(warewulfconf.Paths.OverlayProvisiondir())
+
+	// Clean the base directory path FIRST
+	baseDir := filepath.Clean(warewulfconf.Paths.OverlayProvisiondir())
+
+	dirList, err := os.ReadDir(baseDir)
 	if err != nil {
 		return err
 	}
@@ -34,9 +39,26 @@ func CleanOverlays() error {
 		if !item.IsDir() {
 			continue
 		}
+
 		if !util.InSlice(nodes, item.Name()) {
-			wwlog.Verbose("removing overlays of delete node: %s", item.Name())
-			err = os.RemoveAll(path.Join(warewulfconf.Paths.OverlayProvisiondir(), item.Name()))
+
+			// Construct and validate the path (filepath.Join already calls Clean)
+			cleanTarget := filepath.Join(baseDir, item.Name())
+
+			// Verify the path is within baseDir
+			rel, err := filepath.Rel(baseDir, cleanTarget)
+			if err != nil {
+				wwlog.Warn("failed to compute relative path for %s: %v", item.Name(), err)
+				continue
+			}
+
+			if strings.HasPrefix(rel, "..") {
+				wwlog.Warn("skipping directory with path traversal attempt: %s", item.Name())
+				continue
+			}
+
+			wwlog.Verbose("removing overlays of deleted node: %s", item.Name())
+			err = os.RemoveAll(cleanTarget)
 			if err != nil {
 				return err
 			}

@@ -2,7 +2,7 @@ package clean
 
 import (
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -87,6 +87,38 @@ nodes:
 			skipOverlaySetup: true,
 			wantErr:          true,
 		},
+		"skips directories with suspicious names starting with ..": {
+			nodesConf: `nodeprofiles: {}
+nodes:
+  node1: {}`,
+			overlayDirs:   []string{"node1", "..suspicious", "..hidden"},
+			wantPreserved: []string{"node1"},
+			// Directories starting with ".." are skipped by path traversal protection
+			wantDeleted: []string{},
+			wantErr:     false,
+		},
+		"handles directory names with dots correctly": {
+			nodesConf: `nodeprofiles: {}
+nodes:
+  node1: {}
+  node.valid: {}`,
+			overlayDirs:   []string{"node1", "node.valid", "node.orphaned"},
+			wantPreserved: []string{"node1", "node.valid"},
+			wantDeleted:   []string{"node.orphaned"},
+			wantErr:       false,
+		},
+		"validates path traversal protection with edge case names": {
+			nodesConf: `nodeprofiles: {}
+nodes:
+  validnode: {}`,
+			// Test various edge cases that should be handled by validation
+			overlayDirs:   []string{"validnode", "..test", "...triple"},
+			wantPreserved: []string{"validnode"},
+			// Names starting with ".." should be skipped; "...triple" has 3 dots
+			// which when used in filepath.Rel might result in relative path starting with ".."
+			wantDeleted: []string{},
+			wantErr:     false,
+		},
 	}
 
 	for name, tt := range tests {
@@ -107,12 +139,12 @@ nodes:
 				// Setup overlay directories
 				for _, dir := range tt.overlayDirs {
 					// Create a file inside each directory to make it a proper overlay dir
-					env.WriteFile(path.Join("srv/warewulf/overlays", dir, "__SYSTEM__.img"), "Fake System")
+					env.WriteFile(filepath.Join("srv/warewulf/overlays", dir, "__SYSTEM__.img"), "Fake System")
 				}
 
 				// Setup overlay files (non-directories)
 				for _, file := range tt.overlayFiles {
-					env.WriteFile(path.Join("srv/warewulf/overlays", file), "test content")
+					env.WriteFile(filepath.Join("srv/warewulf/overlays", file), "test content")
 				}
 			} else {
 				// For tests that skip setup, remove the overlay directory
@@ -131,19 +163,19 @@ nodes:
 
 				// Verify preserved directories exist
 				for _, dir := range tt.wantPreserved {
-					dirPath := env.GetPath(path.Join("srv/warewulf/overlays", dir))
+					dirPath := env.GetPath(filepath.Join("srv/warewulf/overlays", dir))
 					assert.DirExists(t, dirPath, "expected directory %s to be preserved", dir)
 				}
 
 				// Verify deleted directories do not exist
 				for _, dir := range tt.wantDeleted {
-					dirPath := env.GetPath(path.Join("srv/warewulf/overlays", dir))
+					dirPath := env.GetPath(filepath.Join("srv/warewulf/overlays", dir))
 					assert.NoDirExists(t, dirPath, "expected directory %s to be deleted", dir)
 				}
 
 				// Verify files were not deleted (when specified)
 				for _, file := range tt.overlayFiles {
-					filePath := env.GetPath(path.Join("srv/warewulf/overlays", file))
+					filePath := env.GetPath(filepath.Join("srv/warewulf/overlays", file))
 					assert.FileExists(t, filePath, "expected file %s to be skipped", file)
 				}
 			}
