@@ -87,15 +87,16 @@ nodes:
 			skipOverlaySetup: true,
 			wantErr:          true,
 		},
-		"skips directories with suspicious names starting with ..": {
+		"cleans directories with names starting with .. (not actual traversal)": {
 			nodesConf: `nodeprofiles: {}
 nodes:
   node1: {}`,
-			overlayDirs:   []string{"node1", "..suspicious", "..hidden"},
+			overlayDirs: []string{"node1", "..suspicious", "..hidden"},
+			// These are just oddly-named directories, not actual path traversal
+			// They remain inside baseDir and should be cleaned up normally
 			wantPreserved: []string{"node1"},
-			// Directories starting with ".." are skipped by path traversal protection
-			wantDeleted: []string{},
-			wantErr:     false,
+			wantDeleted:   []string{"..suspicious", "..hidden"},
+			wantErr:       false,
 		},
 		"handles directory names with dots correctly": {
 			nodesConf: `nodeprofiles: {}
@@ -107,16 +108,16 @@ nodes:
 			wantDeleted:   []string{"node.orphaned"},
 			wantErr:       false,
 		},
-		"validates path traversal protection with edge case names": {
+		"handles edge case directory names with multiple dots": {
 			nodesConf: `nodeprofiles: {}
 nodes:
   validnode: {}`,
-			// Test various edge cases that should be handled by validation
+			// Directory names like "..test" and "...triple" are just unusual names,
+			// not actual path traversal - they stay within baseDir and can be safely deleted
 			overlayDirs:   []string{"validnode", "..test", "...triple"},
 			wantPreserved: []string{"validnode"},
-			// Names starting with ".." (including "...triple") are skipped by path traversal protection
-			wantDeleted: []string{},
-			wantErr:     false,
+			wantDeleted:   []string{"..test", "...triple"},
+			wantErr:       false,
 		},
 	}
 

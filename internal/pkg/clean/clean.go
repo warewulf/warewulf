@@ -1,6 +1,7 @@
 package clean
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -45,16 +46,32 @@ func CleanOverlays() error {
 			// Construct and validate the path (filepath.Join already calls Clean)
 			cleanTarget := filepath.Join(baseDir, item.Name())
 
-			// Verify the path is within baseDir
+			// Compute the relative path to verify cleanTarget is within baseDir.
+			// This should never fail in normal operation since we just constructed cleanTarget
+			// using filepath.Join(baseDir, item.Name()). However, filepath.Rel() can fail in
+			// edge cases (different volumes on Windows, symlink anomalies, filesystem corruption).
+			// If we cannot determine the path relationship, we cannot safely validate whether
+			// deletion would stay within bounds, so we fail-secure and return an error.
 			rel, err := filepath.Rel(baseDir, cleanTarget)
 			if err != nil {
-				wwlog.Warn("failed to compute relative path for %s: %v", item.Name(), err)
-				continue
+				return fmt.Errorf(
+					"failed to compute relative path for '%s' with overlay working directory '%s': %w",
+					item.Name(),
+					baseDir,
+					err,
+				)
 			}
 
-			if strings.HasPrefix(rel, "..") {
-				wwlog.Warn("skipping directory with path traversal attempt: %s", item.Name())
-				continue
+			// Check for actual parent directory traversal (CWE-23 mitigation)
+			// This catches paths that escape baseDir like ".." or "../etc/passwd"
+			// but allows legitimate directory names like "..suspicious" or "...triple"
+			// which remain inside baseDir despite starting with dots.
+			if rel == ".." || strings.HasPrefix(rel, ".."+string(os.PathSeparator)) {
+				return fmt.Errorf(
+					"'%s' is not inside of overlay working directory: %s",
+					item.Name(),
+					baseDir,
+				)
 			}
 
 			wwlog.Verbose("removing overlays of deleted node: %s", item.Name())
