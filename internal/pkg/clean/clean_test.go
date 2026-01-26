@@ -114,8 +114,7 @@ nodes:
 			// Test various edge cases that should be handled by validation
 			overlayDirs:   []string{"validnode", "..test", "...triple"},
 			wantPreserved: []string{"validnode"},
-			// Names starting with ".." should be skipped; "...triple" has 3 dots
-			// which when used in filepath.Rel might result in relative path starting with ".."
+			// Names starting with ".." (including "...triple") are skipped by path traversal protection
 			wantDeleted: []string{},
 			wantErr:     false,
 		},
