@@ -961,7 +961,7 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 		return fmt.Errorf("output must a be a directory: %s", outputDir)
 	}
 
-	if !util.ValidString(strings.Join(overlayNames, ""), "^[a-zA-Z0-9-._:]+$") {
+	if !util.ValidString("^[a-zA-Z0-9-._:]+$", strings.Join(overlayNames, "")) {
 		return fmt.Errorf("overlay names contains illegal characters: %v", overlayNames)
 	}
 
