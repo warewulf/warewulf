@@ -12,7 +12,7 @@ import (
 )
 
 func ValidName(name string) bool {
-	if !util.ValidString(name, "^[\\w\\-\\.\\:]+$") {
+	if !util.ValidString("^[\\w\\-\\.\\:]+$", name) {
 		wwlog.Warn("Image name has illegal characters: %s", name)
 		return false
 	}

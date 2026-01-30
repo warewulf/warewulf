@@ -27,7 +27,7 @@ func legacyKernelVersionFile(kernelName string) string {
 		return ""
 	}
 
-	if !util.ValidString(kernelName, "^[a-zA-Z0-9-._]+$") {
+	if !util.ValidString("^[a-zA-Z0-9-._]+$", kernelName) {
 		return ""
 	}
 

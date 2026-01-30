@@ -129,8 +129,8 @@ func ReadFile(path string) ([]string, error) {
 	return lines, nil
 }
 
-func ValidString(pattern string, expr string) bool {
-	if b, _ := regexp.MatchString(expr, pattern); b {
+func ValidString(pattern string, s string) bool {
+	if b, _ := regexp.MatchString(pattern, s); b {
 		return true
 	}
 	return false
