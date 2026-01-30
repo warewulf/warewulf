@@ -1,0 +1,37 @@
+#!/usr/bin/bash
+set -euo pipefail
+
+# This script configures NVIDIA MIG (Multi-Instance GPU) partitions based on the provided
+# gpuMigType string argument. It supports both a single configuration for all GPUs or
+# individual configurations per GPU.
+# Example inputs:
+#   "14,14,14,15"               # single config for all GPUs
+#   "14,14,14,15 7,7,7,8"  # per-GPU configs for GPU0 and GPU1
+
+# See https://docs.nvidia.com/datacenter/tesla/mig-user-guide/supported-mig-profiles.html for details on supported MIG profiles
+
+# Get the gpuMigType string from the first argument
+MIG_STRING="${1}"
+if [[ -z "$MIG_STRING" ]]; then
+  echo "Usage: $0 <gpuMigType string>" >&2
+  exit 1
+fi
+
+# Check if nvidia-smi command exists
+if ! command -v nvidia-smi &> /dev/null; then
+  echo "Error: nvidia-smi command not found" >&2
+  exit 1
+fi
+
+# enable MIG mode
+nvidia-smi -mig 1
+
+# per-GPU space-separated list (one token per GPU), otherwise single-string common case
+if [[ "$MIG_STRING" == *" "* ]]; then
+  read -a PER_GPU_MIG_CONFIGS <<< "$MIG_STRING"
+  for gpu_index in "${!PER_GPU_MIG_CONFIGS[@]}"; do
+    nvidia-smi mig -cgi "${PER_GPU_MIG_CONFIGS[$gpu_index]}" -i "$gpu_index" -C
+  done
+else
+  nvidia-smi mig -cgi "$MIG_STRING" -C
+fi

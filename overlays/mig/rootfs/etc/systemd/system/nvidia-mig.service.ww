@@ -1,0 +1,13 @@
+[Unit]
+DefaultDependencies=no
+Description=Configure NVIDIA MIG (Multi-Instance GPU) partitions at boot time
+Before=nvidia-persistenced.service nvidia-dcgm.service dcgm_exporter.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/_config_mig "{{ .Tags.gpuMigType | default "2,2" }}"
+ExecStop=sh -c 'nvidia-smi mig -dci ; nvidia-smi mig -dgi ; nvidia-smi -mig 0'
+
+[Install]
+WantedBy=multi-user.target
