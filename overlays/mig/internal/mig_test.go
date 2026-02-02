@@ -14,7 +14,7 @@ func Test_migOverlay(t *testing.T) {
 	env := testenv.New(t)
 	defer env.RemoveAll()
 	env.ImportFile("etc/warewulf/nodes.conf", "nodes.conf")
-	env.ImportFile("var/lib/warewulf/overlays/mig/rootfs/etc/systemd/system/nvidia-mig.service.ww", "../rootfs/etc/systemd/system/nvidia-mig.service.ww")
+	env.ImportFile("var/lib/warewulf/overlays/mig/rootfs/etc/systemd/system/ww-nvidia-mig.service.ww", "../rootfs/etc/systemd/system/ww-nvidia-mig.service.ww")
 
 	tests := []struct {
 		name string
@@ -23,18 +23,23 @@ func Test_migOverlay(t *testing.T) {
 	}{
 		{
 			name: "mig:nvidia-mig.service (default)",
-			args: []string{"--render", "node1", "mig", "etc/systemd/system/nvidia-mig.service.ww"},
+			args: []string{"--render", "node1", "mig", "etc/systemd/system/ww-nvidia-mig.service.ww"},
 			log:  migServiceDefault,
 		},
 		{
-			name: "mig:nvidia-mig.service (per-gpu)",
-			args: []string{"--render", "node2", "mig", "etc/systemd/system/nvidia-mig.service.ww"},
-			log:  migServicePerGpu,
+			name: "mig:nvidia-mig.service (homogeneous)",
+			args: []string{"--render", "node2", "mig", "etc/systemd/system/ww-nvidia-mig.service.ww"},
+			log:  migServiceHomogeneous,
 		},
 		{
-			name: "mig:nvidia-mig.service (custom)",
-			args: []string{"--render", "node3", "mig", "etc/systemd/system/nvidia-mig.service.ww"},
-			log:  migServiceCustom,
+			name: "mig:nvidia-mig.service (heterogeneous)",
+			args: []string{"--render", "node3", "mig", "etc/systemd/system/ww-nvidia-mig.service.ww"},
+			log:  migServiceHeterogeneous,
+		},
+		{
+			name: "mig:nvidia-mig.service (heterogeneous short names)",
+			args: []string{"--render", "node4", "mig", "etc/systemd/system/ww-nvidia-mig.service.ww"},
+			log:  migServiceHeterogeneousShortNames,
 		},
 	}
 
@@ -59,53 +64,114 @@ func Test_migOverlay(t *testing.T) {
 
 const migServiceDefault string = `backupFile: true
 writeFile: true
-Filename: etc/systemd/system/nvidia-mig.service
+Filename: etc/systemd/system/ww-nvidia-mig.service
 [Unit]
 DefaultDependencies=no
-Description=Configure NVIDIA MIG (Multi-Instance GPU) partitions at boot time
-Before=nvidia-persistenced.service nvidia-dcgm.service dcgm_exporter.service
+Description=Configure NVIDIA MIG (Multi-Instance GPU) partitions via Warewulf
+Before=nvidia-persistenced.service nvidia-dcgm.service dcgm_exporter.service nvsm.service nvsm-core.service
+ConditionPathExists=/usr/bin/nvidia-smi
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/local/sbin/_config_mig "2,2"
-ExecStop=sh -c 'nvidia-smi mig -dci ; nvidia-smi mig -dgi ; nvidia-smi -mig 0'
+ExecStartPre=-/usr/bin/nvidia-smi -pm 1
+ExecStartPre=/usr/bin/nvidia-smi -mig 1
+ExecStart=/usr/bin/nvidia-smi mig -cgi 2,2 -C
+ExecStartPost=-/usr/bin/nvidia-smi -L
+ExecStartPost=-/usr/bin/sh /usr/local/sbin/mig2gres
+ExecStop=-/usr/bin/nvidia-smi mig -dci
+ExecStop=-/usr/bin/nvidia-smi mig -dgi
+ExecStop=/usr/bin/nvidia-smi -mig 0
+TimeoutStartSec=300
+TimeoutStopSec=300
 
 [Install]
 WantedBy=multi-user.target
 `
 
-const migServicePerGpu string = `backupFile: true
+const migServiceHomogeneous string = `backupFile: true
 writeFile: true
-Filename: etc/systemd/system/nvidia-mig.service
+Filename: etc/systemd/system/ww-nvidia-mig.service
 [Unit]
 DefaultDependencies=no
-Description=Configure NVIDIA MIG (Multi-Instance GPU) partitions at boot time
-Before=nvidia-persistenced.service nvidia-dcgm.service dcgm_exporter.service
+Description=Configure NVIDIA MIG (Multi-Instance GPU) partitions via Warewulf
+Before=nvidia-persistenced.service nvidia-dcgm.service dcgm_exporter.service nvsm.service nvsm-core.service
+ConditionPathExists=/usr/bin/nvidia-smi
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/local/sbin/_config_mig "14,14,14,15 7,7,7,8"
-ExecStop=sh -c 'nvidia-smi mig -dci ; nvidia-smi mig -dgi ; nvidia-smi -mig 0'
+ExecStartPre=-/usr/bin/nvidia-smi -pm 1
+ExecStartPre=/usr/bin/nvidia-smi -mig 1
+ExecStart=/usr/bin/nvidia-smi mig -cgi 14,14,14,15 -C
+ExecStartPost=-/usr/bin/nvidia-smi -L
+ExecStartPost=-/usr/bin/sh /usr/local/sbin/mig2gres
+ExecStop=-/usr/bin/nvidia-smi mig -dci
+ExecStop=-/usr/bin/nvidia-smi mig -dgi
+ExecStop=/usr/bin/nvidia-smi -mig 0
+TimeoutStartSec=300
+TimeoutStopSec=300
 
 [Install]
 WantedBy=multi-user.target
 `
 
-const migServiceCustom string = `backupFile: true
+
+const migServiceHeterogeneous string = `backupFile: true
 writeFile: true
-Filename: etc/systemd/system/nvidia-mig.service
+Filename: etc/systemd/system/ww-nvidia-mig.service
 [Unit]
 DefaultDependencies=no
-Description=Configure NVIDIA MIG (Multi-Instance GPU) partitions at boot time
-Before=nvidia-persistenced.service nvidia-dcgm.service dcgm_exporter.service
+Description=Configure NVIDIA MIG (Multi-Instance GPU) partitions via Warewulf
+Before=nvidia-persistenced.service nvidia-dcgm.service dcgm_exporter.service nvsm.service nvsm-core.service
+ConditionPathExists=/usr/bin/nvidia-smi
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/local/sbin/_config_mig "1,1,1,1"
-ExecStop=sh -c 'nvidia-smi mig -dci ; nvidia-smi mig -dgi ; nvidia-smi -mig 0'
+ExecStartPre=-/usr/bin/nvidia-smi -pm 1
+ExecStartPre=/usr/bin/nvidia-smi -mig 1
+ExecStart=/usr/bin/nvidia-smi mig -cgi 14,14,14,15 -i 0 -C
+ExecStart=/usr/bin/nvidia-smi mig -cgi 9,9 -i 1 -C
+ExecStart=/usr/bin/nvidia-smi mig -cgi 0 -i 2 -C
+ExecStart=/usr/bin/nvidia-smi mig -cgi 0 -i 3 -C
+ExecStartPost=-/usr/bin/nvidia-smi -L
+ExecStartPost=-/usr/bin/sh /usr/local/sbin/mig2gres
+ExecStop=-/usr/bin/nvidia-smi mig -dci
+ExecStop=-/usr/bin/nvidia-smi mig -dgi
+ExecStop=/usr/bin/nvidia-smi -mig 0
+TimeoutStartSec=300
+TimeoutStopSec=300
+
+[Install]
+WantedBy=multi-user.target
+`
+
+const migServiceHeterogeneousShortNames string = `backupFile: true
+writeFile: true
+Filename: etc/systemd/system/ww-nvidia-mig.service
+[Unit]
+DefaultDependencies=no
+Description=Configure NVIDIA MIG (Multi-Instance GPU) partitions via Warewulf
+Before=nvidia-persistenced.service nvidia-dcgm.service dcgm_exporter.service nvsm.service nvsm-core.service
+ConditionPathExists=/usr/bin/nvidia-smi
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStartPre=-/usr/bin/nvidia-smi -pm 1
+ExecStartPre=/usr/bin/nvidia-smi -mig 1
+ExecStart=/usr/bin/nvidia-smi mig -cgi 1g.23gb+me,1g.23gb,1g.23gb,1g.23gb,1g.23gb,1g.23gb,1g.23gb -i 0 -C
+ExecStart=/usr/bin/nvidia-smi mig -cgi 3g.90gb,3g.90gb -i 1 -C
+ExecStart=/usr/bin/nvidia-smi mig -cgi 0 -i 2 -C
+ExecStart=/usr/bin/nvidia-smi mig -cgi 0 -i 3 -C
+ExecStartPost=-/usr/bin/nvidia-smi -L
+ExecStartPost=-/usr/bin/sh /usr/local/sbin/mig2gres
+ExecStop=-/usr/bin/nvidia-smi mig -dci
+ExecStop=-/usr/bin/nvidia-smi mig -dgi
+ExecStop=/usr/bin/nvidia-smi -mig 0
+TimeoutStartSec=300
+TimeoutStopSec=300
 
 [Install]
 WantedBy=multi-user.target
