@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Updated arguments for `ValidString` to match `regexp.MatchString`
 - New `mig` overlay to configure NVIDIA MIG devices. #2102
 - Updated arguments for `ValidString` to match `regexp.MatchString`
+- New `mig` overlay to configure NVIDIA MIG devices. #2102
 
 ## v4.6.5, 2026-01-12
 
