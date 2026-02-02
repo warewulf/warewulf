@@ -1,0 +1,32 @@
+[Unit]
+DefaultDependencies=no
+Description=Configure NVIDIA MIG (Multi-Instance GPU) partitions via Warewulf
+Before=nvidia-persistenced.service nvidia-dcgm.service dcgm_exporter.service nvsm.service nvsm-core.service
+ConditionPathExists=/usr/bin/nvidia-smi
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStartPre=-/usr/bin/nvidia-smi -pm 1
+ExecStartPre=/usr/bin/nvidia-smi -mig 1
+{{- $rawMigProfiles := default "2,2" .Tags.gpuMigProfiles -}}
+{{- $migProfiles := splitList ":" $rawMigProfiles -}}
+{{- if gt (len $migProfiles) 1 -}}
+{{- range $gpuIndex, $migProfile := $migProfiles -}}
+  {{- if ne $migProfile "" }}
+ExecStart=/usr/bin/nvidia-smi mig -cgi {{$migProfile}} -i {{$gpuIndex}} -C
+  {{- end -}}
+{{- end -}}
+{{- else }}
+ExecStart=/usr/bin/nvidia-smi mig -cgi {{$rawMigProfiles}} -C
+{{- end }}
+ExecStartPost=-/usr/bin/nvidia-smi -L
+ExecStartPost=-/usr/bin/sh /usr/local/sbin/mig2gres
+ExecStop=-/usr/bin/nvidia-smi mig -dci
+ExecStop=-/usr/bin/nvidia-smi mig -dgi
+ExecStop=/usr/bin/nvidia-smi -mig 0
+TimeoutStartSec=300
+TimeoutStopSec=300
+
+[Install]
+WantedBy=multi-user.target

@@ -14,6 +14,21 @@ if ! command -v nvidia-smi &> /dev/null; then
   exit 1
 fi
 
+if ! command -v grep &> /dev/null; then
+  echo "Error: grep command not found" >&2
+  exit 1
+fi
+
+if ! command -v awk &> /dev/null; then
+  echo "Error: awk command not found" >&2
+  exit 1
+fi
+
+if ! command -v hostname &> /dev/null; then
+  echo "Error: hostname command not found" >&2
+  exit 1
+fi
+
 hostname=$(hostname -s)
 
 nvidia-smi mig -lgi | grep -E '^\|' | grep -v '===' | grep -v 'GPU.*Name' | while read line; do
@@ -25,6 +40,7 @@ nvidia-smi mig -lgi | grep -E '^\|' | grep -v '===' | grep -v 'GPU.*Name' | whil
 
   pattern="gpu${gpu}/gi${gi}/access"
   minor=$(grep "^${pattern} " /proc/driver/nvidia-caps/mig-minors | awk '{print $2}')
+  device_file="/dev/nvidia-caps/nvidia-cap${minor}"
 
-  echo "NodeName=${hostname} Name=gpu Type=${name} File=/dev/nvidia-caps/nvidia-cap${minor}"
+  echo "NodeName=${hostname} Name=gpu Type=${name} File=${device_file}"
 done
