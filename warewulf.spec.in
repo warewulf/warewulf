@@ -224,6 +224,7 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %{_overlaydir}/mkswap/rootfs/*
 %{_overlaydir}/systemd.mount/rootfs/*
 %{_overlaydir}/systemd.swap/rootfs/*
+%{_overlaydir}/mig/rootfs/*
 
 %{_bindir}/wwctl
 %{_prefix}/lib/firewalld/services/warewulf.xml
