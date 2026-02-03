@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Remove requisite dependency between ignition disk target and ignition service. #2083
 - Return HTTP 409 status when creating an existing overlay
+- Fix path traversal vulnerability (CWE-23) in overlay cleanup function
 
 ### Added
 
