@@ -116,7 +116,6 @@ TimeoutStopSec=300
 WantedBy=multi-user.target
 `
 
-
 const migServiceHeterogeneous string = `backupFile: true
 writeFile: true
 Filename: etc/systemd/system/ww-nvidia-mig.service
