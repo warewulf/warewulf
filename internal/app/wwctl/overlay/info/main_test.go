@@ -325,6 +325,44 @@ Config: {{ .Tags.value }}
 				".Tags.enabled          string  \n" +
 				".Tags.value            string  \n",
 		},
+		{
+			name: "wwdoc comments with trimmed whitespace",
+			writeFiles: map[string]string{
+				"var/lib/warewulf/overlays/test-overlay/trimmed-doc.ww": `
+{{- /* wwdoc: Configuration for GPU MIG partitions with trimmed whitespace */ -}}
+{{- /* wwdoc-details: This template demonstrates wwdoc comments with {{- -}} syntax */ -}}
+{{- /* .Tags.gpuMigProfiles: List of MIG profile IDs with GPU indices */ -}}}
+GPU Profile: {{ .Tags.gpuMigProfiles }}
+`,
+			},
+			args:        []string{"test-overlay", "trimmed-doc.ww"},
+			expectError: false,
+			expectedOutput: "Configuration for GPU MIG partitions with trimmed whitespace\n" +
+				"This template demonstrates wwdoc comments with {{- -}} syntax\n" +
+				"\n" +
+				"VARIABLE              OPTION  TYPE    HELP\n" +
+				"--------              ------  ----    ----\n" +
+				".Tags.gpuMigProfiles          string  List of MIG profile IDs with GPU indices\n",
+		},
+		{
+			name: "wwdoc comments with half-trimmed whitespace",
+			writeFiles: map[string]string{
+				"var/lib/warewulf/overlays/test-overlay/half-trimmed-doc.ww": `
+{{- /* wwdoc: Configuration for GPU MIG partitions with half-trimmed whitespace */}}
+{{- /* wwdoc-details: This template demonstrates wwdoc comments with {{- }} syntax */}}
+{{- /* .Tags.gpuMigProfiles: List of MIG profile IDs with GPU indices */}}}
+GPU Profile: {{ .Tags.gpuMigProfiles }}
+`,
+			},
+			args:        []string{"test-overlay", "half-trimmed-doc.ww"},
+			expectError: false,
+			expectedOutput: "Configuration for GPU MIG partitions with half-trimmed whitespace\n" +
+				"This template demonstrates wwdoc comments with {{- }} syntax\n" +
+				"\n" +
+				"VARIABLE              OPTION  TYPE    HELP\n" +
+				"--------              ------  ----    ----\n" +
+				".Tags.gpuMigProfiles          string  List of MIG profile IDs with GPU indices\n",
+		},
 	}
 
 	for _, tt := range tests {
