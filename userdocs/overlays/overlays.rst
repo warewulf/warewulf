@@ -527,6 +527,70 @@ Two overlays, **systemd.mount** and **systemd.swap**, configure mounted and swap
 storage based on the configuration of native file system fields. They are often
 paired with the ``mkfs`` and ``mkswap`` overlays.
 
+mig
+----
+
+The **mig** overlay configures NVIDIA MIG (Multi-Instance GPU) settings on nodes 
+with supported NVIDIA GPUs. The **mig** overlay requires the NVIDIA driver and
+the ``nvidia-smi`` tool to be installed and functional on the node.
+
+MIG configuration is based on the ``gpuMigProfiles`` tag, which specifies a 
+comma-separated list of MIG profiles IDs or profile short names to configure.
+
+For example, to configure a node with four MIG instances of profile 14 and one 
+instance of profile 15 on all GPUs:
+
+.. code-block:: shell
+
+   wwctl node set n1 --tagadd="gpuMigProfiles=14,14,14,15"
+
+The MIG instances can also be defined by their profile short names:
+
+.. code-block:: shell
+
+    wwctl node set n1 --tagadd="gpuMigProfiles=2g.20gb,2g.20gb,2g.20gb,1g.20gb"   
+
+If different GPUs on a node require different MIG configurations, the
+``gpuMigProfiles`` tag can be specified as a colon-separated list of comma-separated
+lists. Commas separate profiles on a single GPU. Colons separate GPUs by index order.
+A value of 0 indicates no MIG partitioning and uses the full GPU.
+
+For example, to configure a node that has four GPUs, where:
+
+- GPU 0 has three instances of profile 14 and one instance of profile 15
+- GPU 1 has two instances of profile 9
+- GPU 2 and GPU 3 have one instance of profile 0 (no partitioning):
+
+
+.. code-block:: shell
+
+   wwctl node set n1 --tagadd="gpuMigProfiles=14,14,14,15:9,9:0:0"
+
+This can also be done using profile short names:
+
+.. code-block:: shell
+
+   wwctl node set n1 --tagadd="gpuMigProfiles=2g.20gb,2g.20gb,2g.20gb,1g.20gb:3g.40gb,3g.40gb:0:0"
+
+The exact MIG configuration available depends on the specific NVIDIA GPU model
+present in the node. To see the available MIG profiles for a given GPU model, run:
+
+.. code-block:: shell
+
+  nvidia-smi mig -lgip
+
+Refer to `NVIDIA’s documentation <https://docs.nvidia.com/datacenter/tesla/mig-user-guide/supported-mig-profiles.html>`_ for more information on MIG profiles.
+
+Once configured, the NVIDIA MIG instances can be mapped to Slurm GRES entries 
+backed by ``/dev/nvidia-caps/capXX`` device files. 
+
+To generate the mapping of MIG instances to ``/dev/nvidia-caps/capXX`` device files
+for Slurm's ``gres.conf`` file, use the script provided by this overlay on on the node:
+
+.. code-block:: shell
+
+  /usr/bin/sh /usr/local/sbin/mig2gres
+
 host
 ----
 
