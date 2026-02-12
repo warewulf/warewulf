@@ -35,6 +35,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - New `Gateway6` network device field. #2068
 - New `systemd-networkd` overlay. #2068
 
+### Added
+
+- xattr handling for overlays and images. #2043
+
 ### Changed
 
 - Renamed `debian.interfaces` overlay to `ifupdown`. #2011
