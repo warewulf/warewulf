@@ -21,6 +21,7 @@ specifying  ``--netname``.
 
    wwctl node set n1 \
      --netname=infiniband \
+     --type=infiniband \
      --netdev=ib1 \
      --ipaddr=10.0.3.1 \
      --netmask=255.255.255.0
@@ -111,3 +112,11 @@ using a network tag of the form ``route<N>=<dest>,<gateway>``.
 
    wwctl node set n001 \
      --nettagadd "route1=192.168.2.0/24,192.168.1.254"
+
+Type
+====
+
+When using the NetworkManager overlay template the ``type`` attribute
+determines how the connection is configured.  If not set, it
+defaults to ``ethernet``. To correctly configure IPoIB with NetworkManager it
+is required that ``type`` is set to ``infiniband``.
