@@ -242,7 +242,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 				stopTimer.Reset(0)
 			case syscall.SIGTERM, syscall.SIGINT:
 				wwlog.Info("terminating wwclient, %v", sig)
-				// Signal main loop to exit instead of calling os.Exit(0)
+				// Signal main loop to exit gracefully
 				exitChan <- true
 				return
 			}
@@ -266,7 +266,9 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	for {
-		updateSystem(target, ipaddr, port, wwid, tag, localUUID, scheme)
+		if err := updateSystem(target, ipaddr, port, wwid, tag, localUUID, scheme); err != nil {
+			return err
+		}
 		if !finishedInitialSync {
 			// Notify systemd that the service has started successfully.
 			//
@@ -307,7 +309,7 @@ func parseWWIDFromCmdline(cmdline string) (string, error) {
 	return "", fmt.Errorf("wwid parameter not found in kernel command line")
 }
 
-func updateSystem(target string, ipaddr string, port int, wwid string, tag string, localUUID uuid.UUID, scheme string) {
+func updateSystem(target string, ipaddr string, port int, wwid string, tag string, localUUID uuid.UUID, scheme string) error {
 	var resp *http.Response
 	counter := 0
 	for {
@@ -334,8 +336,7 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 			if errors.As(err, &certificateInvalidError) ||
 				errors.As(err, &unknownAuthorityError) ||
 				errors.As(err, &hostnameError) {
-				wwlog.Error("TLS connection failed: %v", err)
-				os.Exit(1)
+				return fmt.Errorf("TLS connection failed: %w", err)
 			}
 			if counter > 60 {
 				counter = 0
@@ -351,7 +352,7 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 	if resp.StatusCode != 200 {
 		wwlog.Warn("not applying runtime overlay: got status code: %d", resp.StatusCode)
 		time.Sleep(60000 * time.Millisecond)
-		return
+		return nil
 	}
 
 	wwlog.Info("applying runtime overlay")
@@ -360,7 +361,7 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 	tempDir, err := os.MkdirTemp("", "wwclient-")
 	if err != nil {
 		wwlog.Error("failed to create temp directory: %s", err)
-		return
+		return nil
 	}
 	defer os.RemoveAll(tempDir)
 	wwlog.Debug("unpacking runtime overlay to %s", tempDir)
@@ -369,7 +370,7 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 	err = command.Run()
 	if err != nil {
 		wwlog.Error("failed running cpio: %s", err)
-		return
+		return nil
 	}
 
 	// Atomically move files from temp directory to current working directory
@@ -377,6 +378,7 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 	if err != nil {
 		wwlog.Error("failed to apply overlay: %s", err)
 	}
+	return nil
 }
 
 func atomicApplyOverlay(srcDir, destDir string) error {
