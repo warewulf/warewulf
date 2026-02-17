@@ -94,6 +94,7 @@ func RunServer() error {
 
 		if !util.IsFile(key) || !util.IsFile(crt) {
 			wwlog.Error("TLS enabled but keys not found in %s", path.Join(conf.Paths.Sysconfdir, "warewulf", "tls"))
+			wwlog.Error("Runtime overlays will NOT be served. Run 'wwctl configure tls --create' to generate keys.")
 		} else {
 			httpsHandler := configureHandler(true, apiHandler)
 			go func() {
