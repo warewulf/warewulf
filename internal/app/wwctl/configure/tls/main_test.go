@@ -15,7 +15,7 @@ func Test_Keys(t *testing.T) {
 	defer env.RemoveAll()
 
 	// Define a keystore path within the test environment
-	keystoreRelPath := "etc/warewulf/keys"
+	keystoreRelPath := "etc/warewulf/tls"
 	keystorePath := env.GetPath(keystoreRelPath)
 
 	// Reload configuration to pick up the change

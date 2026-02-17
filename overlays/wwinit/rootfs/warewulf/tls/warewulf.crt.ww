@@ -1,4 +1,4 @@
-{{- $crt := Include "keys/warewulf.crt" -}}
+{{- $crt := Include "tls/warewulf.crt" -}}
 {{- if eq $crt "" -}}
 {{ abort }}
 {{- else -}}

@@ -17,7 +17,7 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	conf := config.Get()
-	keystore := path.Join(conf.Paths.Sysconfdir, "warewulf", "keys")
+	keystore := path.Join(conf.Paths.Sysconfdir, "warewulf", "tls")
 
 	if err := os.MkdirAll(keystore, 0755); err != nil {
 		return fmt.Errorf("could not create keystore directory: %w", err)

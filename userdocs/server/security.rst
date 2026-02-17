@@ -106,8 +106,8 @@ keys and certificate are stored if not configured otherwise as
 
 .. code-block:: console
 ..
-.. /etc/warewulf/keys/warewulf.crt # PEM certificate
-.. /etc/warewulf/keys/warewulf.key # PEM RSA Key
+.. /etc/warewulf/tls/warewulf.crt # PEM certificate
+.. /etc/warewulf/tls/warewulf.key # PEM RSA Key
 
 
 

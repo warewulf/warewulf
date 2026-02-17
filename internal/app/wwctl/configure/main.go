@@ -23,7 +23,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if allFunctions {
-		keystore := path.Join(conf.Paths.Sysconfdir, "warewulf", "keys")
+		keystore := path.Join(conf.Paths.Sysconfdir, "warewulf", "tls")
 		keyFile := path.Join(keystore, "warewulf.key")
 		certFile := path.Join(keystore, "warewulf.crt")
 

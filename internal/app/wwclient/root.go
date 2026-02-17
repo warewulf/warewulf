@@ -118,7 +118,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 
 	tlsConfig := &tls.Config{}
 	if conf.Warewulf.EnableTLS() {
-		caCert, err := os.ReadFile("/warewulf/keys/warewulf.crt")
+		caCert, err := os.ReadFile("/warewulf/tls/warewulf.crt")
 		if err != nil {
 			wwlog.Error("failed to read ca cert: %s", err)
 			return err

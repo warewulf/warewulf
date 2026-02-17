@@ -22,7 +22,7 @@ GenTLSKeys checks for existence of x509 keys and creates them if they don't exis
 */
 func GenTLSKeys() error {
 	conf := warewulfconf.Get()
-	keystore := path.Join(conf.Paths.Sysconfdir, "warewulf", "keys")
+	keystore := path.Join(conf.Paths.Sysconfdir, "warewulf", "tls")
 
 	keyFile := path.Join(keystore, "warewulf.key")
 	certFile := path.Join(keystore, "warewulf.crt")
