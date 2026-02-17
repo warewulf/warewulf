@@ -26,7 +26,6 @@ func GenTLSKeys() error {
 
 	keyFile := path.Join(keystore, "warewulf.key")
 	certFile := path.Join(keystore, "warewulf.crt")
-	pubFile := path.Join(keystore, "warewulf.rsa.pub")
 	wwlog.Verbose("Generating new x509 keys in %s", keystore)
 	priv, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
@@ -85,19 +84,6 @@ func GenTLSKeys() error {
 	defer certOut.Close()
 	if err := pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes}); err != nil {
 		return fmt.Errorf("failed to write data to cert file: %w", err)
-	}
-
-	pubBytes, err := x509.MarshalPKIXPublicKey(&priv.PublicKey)
-	if err != nil {
-		return fmt.Errorf("failed to marshal public key: %w", err)
-	}
-	pubOut, err := os.OpenFile(pubFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
-		return fmt.Errorf("failed to open public key file for writing: %w", err)
-	}
-	defer pubOut.Close()
-	if err := pem.Encode(pubOut, &pem.Block{Type: "PUBLIC KEY", Bytes: pubBytes}); err != nil {
-		return fmt.Errorf("failed to write data to public key file: %w", err)
 	}
 
 	return nil

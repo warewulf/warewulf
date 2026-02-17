@@ -38,7 +38,6 @@ func Test_Keys(t *testing.T) {
 		assert.NoError(t, err)
 		assert.FileExists(t, path.Join(keystorePath, "warewulf.key"))
 		assert.FileExists(t, path.Join(keystorePath, "warewulf.crt"))
-		assert.FileExists(t, path.Join(keystorePath, "warewulf.rsa.pub"))
 	})
 
 	t.Run("keys exist check", func(t *testing.T) {
