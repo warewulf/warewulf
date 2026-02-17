@@ -326,7 +326,6 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 		wwlog.Debug("making request: %s", getURL)
 		resp, err = Webclient.Get(getURL.String())
 		if err == nil {
-			defer resp.Body.Close()
 			break
 		} else {
 			var certificateInvalidError x509.CertificateInvalidError
@@ -348,6 +347,7 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 		}
 		time.Sleep(1000 * time.Millisecond)
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
 		wwlog.Warn("not applying runtime overlay: got status code: %d", resp.StatusCode)
 		time.Sleep(60000 * time.Millisecond)
