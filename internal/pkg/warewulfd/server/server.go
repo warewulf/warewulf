@@ -88,28 +88,30 @@ func RunServer() error {
 
 	httpHandler := configureHandler(!conf.Warewulf.EnableTLS(), apiHandler)
 
+	errChan := make(chan error, 2)
+
 	if conf.Warewulf.EnableTLS() {
 		key := path.Join(conf.Paths.Sysconfdir, "warewulf", "tls", "warewulf.key")
 		crt := path.Join(conf.Paths.Sysconfdir, "warewulf", "tls", "warewulf.crt")
 
 		if !util.IsFile(key) || !util.IsFile(crt) {
-			wwlog.Error("TLS enabled but keys not found in %s", path.Join(conf.Paths.Sysconfdir, "warewulf", "tls"))
-			wwlog.Error("Runtime overlays will NOT be served. Run 'wwctl configure tls --create' to generate keys.")
-		} else {
-			httpsHandler := configureHandler(true, apiHandler)
-			go func() {
-				wwlog.Info("Starting HTTPS service on port %d", conf.Warewulf.SecurePort)
-				if err := http.ListenAndServeTLS(":"+strconv.Itoa(conf.Warewulf.SecurePort), crt, key, httpsHandler); err != nil {
-					wwlog.Error("Could not start HTTPS service: %s", err)
-				}
-			}()
+			return fmt.Errorf("TLS enabled but keys not found in %s, run 'wwctl configure tls --create' to generate keys", path.Join(conf.Paths.Sysconfdir, "warewulf", "tls"))
 		}
+		httpsHandler := configureHandler(true, apiHandler)
+		go func() {
+			wwlog.Info("Starting HTTPS service on port %d", conf.Warewulf.SecurePort)
+			if err := http.ListenAndServeTLS(":"+strconv.Itoa(conf.Warewulf.SecurePort), crt, key, httpsHandler); err != nil {
+				errChan <- fmt.Errorf("could not start HTTPS service: %w", err)
+			}
+		}()
 	}
 
-	wwlog.Info("Starting HTTP service on port %d", daemonPort)
-	if err := http.ListenAndServe(":"+strconv.Itoa(daemonPort), httpHandler); err != nil {
-		return fmt.Errorf("could not start listening service: %w", err)
-	}
+	go func() {
+		wwlog.Info("Starting HTTP service on port %d", daemonPort)
+		if err := http.ListenAndServe(":"+strconv.Itoa(daemonPort), httpHandler); err != nil {
+			errChan <- fmt.Errorf("could not start HTTP service: %w", err)
+		}
+	}()
 
-	return nil
+	return <-errChan
 }
