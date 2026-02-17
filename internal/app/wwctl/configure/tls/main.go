@@ -43,8 +43,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if err := util.CopyFile(sourceKey, keyFile); err != nil {
 			return fmt.Errorf("failed to import key: %w", err)
 		}
+		if err := os.Chmod(keyFile, 0600); err != nil {
+			return fmt.Errorf("failed to set key file permissions: %w", err)
+		}
 		if err := util.CopyFile(sourceCert, certFile); err != nil {
 			return fmt.Errorf("failed to import cert: %w", err)
+		}
+		if err := os.Chmod(certFile, 0644); err != nil {
+			return fmt.Errorf("failed to set cert file permissions: %w", err)
 		}
 		fmt.Fprintf(cmd.OutOrStdout(), "Imported keys from %s\n", importPath)
 
