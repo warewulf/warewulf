@@ -1,0 +1,6 @@
+{{- $crt := Include "keys/warewulf.crt" -}}
+{{- if eq $crt "" -}}
+{{ abort }}
+{{- else -}}
+{{ $crt }}
+{{- end -}}
