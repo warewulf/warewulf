@@ -116,7 +116,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		wwlog.Info("running from trusted port: %d", localTCPAddr.Port)
 	}
 
-	tlsConfig := &tls.Config{}
+	tlsConfig := &tls.Config{MinVersion: tls.VersionTLS13}
 	if conf.Warewulf.EnableTLS() {
 		caCert, err := os.ReadFile("/warewulf/tls/warewulf.crt")
 		if err != nil {
