@@ -327,31 +327,31 @@ type TemplateVarDetails struct {
 /*
 Returns the id of the node
 */
-func (node *Node) Id() string {
+func (node Node) Id() string {
 	return node.id
 }
 
 /*
 Returns the id of the profile
 */
-func (node *Profile) Id() string {
+func (node Profile) Id() string {
 	return node.id
 }
 
 // ContainerName returns the value of the ImageName field for backwards-compatibility.
-func (node *Node) ContainerName() string {
+func (node Node) ContainerName() string {
 	return node.ImageName
 }
 
 // ContainerName returns the value of the ImageName field for backwards-compatibility.
-func (profile *Profile) ContainerName() string {
+func (profile Profile) ContainerName() string {
 	return profile.ImageName
 }
 
 /*
 Returns if the node is a valid in the database
 */
-func (node *Node) Valid() bool {
+func (node Node) Valid() bool {
 	return node.valid
 }
 
@@ -420,7 +420,7 @@ func cleanList(list []string) (ret []string) {
 Return the ipv4 address and mask in CIDR format. Aimed for the use in
 templates.
 */
-func (netdev *NetDev) IpCIDR() string {
+func (netdev NetDev) IpCIDR() string {
 	if netdev.Ipaddr == nil || netdev.Ipaddr.IsUnspecified() || netdev.Netmask == nil || netdev.Netmask.IsUnspecified() {
 		return ""
 	}
@@ -435,7 +435,7 @@ func (netdev *NetDev) IpCIDR() string {
 Return the ipv6 address with prefix CIDR format. Aimed for the use in
 template, symmetric with IpCIDR.
 */
-func (netdev *NetDev) IpCIDR6() string {
+func (netdev NetDev) IpCIDR6() string {
 	if netdev.Ipaddr6 == nil || netdev.Ipaddr6.IsUnspecified() || netdev.PrefixLen6 == "" {
 		return ""
 	}
