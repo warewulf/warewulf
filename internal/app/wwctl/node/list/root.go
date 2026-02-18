@@ -13,6 +13,7 @@ type variables struct {
 	showLong bool
 	showYaml bool
 	showJson bool
+	format   string
 }
 
 func GetCommand() *cobra.Command {
@@ -34,6 +35,7 @@ func GetCommand() *cobra.Command {
 	baseCmd.PersistentFlags().BoolVarP(&vars.showLong, "long", "l", false, "Show long or wide format")
 	baseCmd.PersistentFlags().BoolVarP(&vars.showYaml, "yaml", "y", false, "Show yaml format")
 	baseCmd.PersistentFlags().BoolVarP(&vars.showJson, "json", "j", false, "Show json format")
+	baseCmd.PersistentFlags().StringVarP(&vars.format, "format", "f", "", "Show formatted output, as the format must be a template")
 
 	return baseCmd
 }

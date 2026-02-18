@@ -549,6 +549,32 @@ nodes:
         ipaddr: 1.1.1.1
 `,
 		},
+		{
+			name:    "formatted test",
+			args:    []string{"--format", "{{ .Id }} profiles: {{range .Profiles}}{{ . }} ips: {{end}}{{range .NetDevs}}{{ .Ipaddr}}{{end}}\n"},
+			wantErr: false,
+			stdout: `
+n01 profiles: default ips: 1.1.1.1
+n02 profiles: default ips: 1.1.1.1`,
+			inDb: `nodeprofiles:
+  default: {}
+nodes:
+  n01:
+    profiles:
+    - default
+    network devices:
+      default:
+        hwaddr: aa:bb:cc:dd:ee:ff
+        ipaddr: 1.1.1.1
+  n02:
+    profiles:
+    - default
+    network devices:
+      default:
+        hwaddr: aa:bb:cc:dd:ee:ff
+        ipaddr: 1.1.1.1
+`,
+		},
 	}
 
 	warewulfd.SetNoDaemon()

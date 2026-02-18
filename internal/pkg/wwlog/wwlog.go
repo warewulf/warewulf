@@ -56,6 +56,11 @@ var (
 	logFormatter LogFormatter = DefaultFormatter
 )
 
+// get output of the log
+func GetLogOut() io.Writer {
+	return logOut
+}
+
 func LevelNameEff(level int) (int, int, string) {
 	n := len(levelNums)
 	idx := sort.SearchInts(levelNums, level)
