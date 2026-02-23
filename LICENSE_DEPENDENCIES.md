@@ -645,7 +645,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/go-chi/chi/blob/v5.2.1/LICENSE>
+**License URL:** <https://github.com/go-chi/chi/blob/v5.2.5/LICENSE>
 
 ## github.com/huandu/xstrings
 

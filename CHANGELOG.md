@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Remove requisite dependency between ignition disk target and ignition service. #2083
 - Return HTTP 409 status when creating an existing overlay
 - Allow whitespace to be trimmed for wwdoc comments. #2109
+- update go-chi to 5.2.5 to fix  CVE-2025-69725	
 
 ### Added
 
