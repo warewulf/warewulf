@@ -1,6 +1,7 @@
 package warewulfd
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -16,7 +17,49 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-func OverlaySend(w http.ResponseWriter, req *http.Request) {
+// HandleOverlay handles system and runtime overlay requests
+func HandleOverlay(w http.ResponseWriter, req *http.Request) {
+	ctx, err := initHandleRequest(w, req)
+	if err != nil {
+		return // response already written
+	}
+
+	if !ctx.remoteNode.Valid() {
+		wwlog.Error("%s (unknown/unconfigured node)", ctx.rinfo.hwaddr)
+		sendResponse(w, req, "", nil, ctx)
+		return
+	}
+
+	var context string
+	var request_overlays []string
+
+	if len(ctx.rinfo.overlay) > 0 {
+		request_overlays = strings.Split(ctx.rinfo.overlay, ",")
+	} else {
+		context = ctx.rinfo.stage
+	}
+
+	stageFile, err := getOverlayFile(
+		ctx.remoteNode,
+		context,
+		request_overlays,
+		ctx.conf.Warewulf.AutobuildOverlays())
+
+	if err != nil {
+		if errors.Is(err, overlay.ErrDoesNotExist) {
+			w.WriteHeader(http.StatusNotFound)
+			wwlog.ErrorExc(err, "")
+			return
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+		wwlog.ErrorExc(err, "")
+		return
+	}
+
+	sendResponse(w, req, stageFile, nil, ctx)
+}
+
+func HandleOverlayFile(w http.ResponseWriter, req *http.Request) {
 	rinfo, err := parseReqRender(req)
 	if err != nil {
 		message := "error parsing request: %s"

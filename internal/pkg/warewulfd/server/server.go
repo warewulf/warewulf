@@ -37,19 +37,20 @@ func (h *slashFix) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.mux.ServeHTTP(w, r)
 }
 
-func configureHandler(includeRuntime bool, apiHandler http.Handler) *slashFix {
+func configureRootHandler(apiHandler http.Handler, includeRuntime bool) *slashFix {
 	var wwHandler http.ServeMux
-	wwHandler.HandleFunc("/provision/", warewulfd.ProvisionSend)
-	wwHandler.HandleFunc("/ipxe/", warewulfd.ProvisionSend)
-	wwHandler.HandleFunc("/efiboot/", warewulfd.ProvisionSend)
-	wwHandler.HandleFunc("/kernel/", warewulfd.ProvisionSend)
-	wwHandler.HandleFunc("/container/", warewulfd.ProvisionSend)
-	wwHandler.HandleFunc("/overlay-system/", warewulfd.ProvisionSend)
+	wwHandler.HandleFunc("/provision/", warewulfd.HandleProvision)
+	wwHandler.HandleFunc("/ipxe/", warewulfd.HandleIpxe)
+	wwHandler.HandleFunc("/efiboot/", warewulfd.HandleEfiBoot)
+	wwHandler.HandleFunc("/kernel/", warewulfd.HandleKernel)
+	wwHandler.HandleFunc("/image/", warewulfd.HandleImage)
+	wwHandler.HandleFunc("/container/", warewulfd.HandleImage)
+	wwHandler.HandleFunc("/overlay-system/", warewulfd.HandleOverlay)
 	if includeRuntime {
-		wwHandler.HandleFunc("/overlay-runtime/", warewulfd.ProvisionSend)
+		wwHandler.HandleFunc("/overlay-runtime/", warewulfd.HandleOverlay)
 	}
-	wwHandler.HandleFunc("/overlay-file/", warewulfd.OverlaySend)
-	wwHandler.HandleFunc("/status", warewulfd.StatusSend)
+	wwHandler.HandleFunc("/overlay-file/", warewulfd.HandleOverlayFile)
+	wwHandler.HandleFunc("/status", warewulfd.HandleStatus)
 
 	if apiHandler != nil {
 		wwHandler.Handle("/api/", apiHandler)
@@ -86,7 +87,7 @@ func RunServer() error {
 		apiHandler = api.Handler(auth, conf.API.AllowedIPNets())
 	}
 
-	httpHandler := configureHandler(!conf.Warewulf.EnableTLS(), apiHandler)
+	httpHandler := configureRootHandler(apiHandler, !conf.Warewulf.EnableTLS())
 
 	errChan := make(chan error, 2)
 
@@ -97,7 +98,7 @@ func RunServer() error {
 		if !util.IsFile(key) || !util.IsFile(crt) {
 			return fmt.Errorf("TLS enabled but keys not found in %s, run 'wwctl configure tls --create' to generate keys", path.Join(conf.Paths.Sysconfdir, "warewulf", "tls"))
 		}
-		httpsHandler := configureHandler(true, apiHandler)
+		httpsHandler := configureRootHandler(apiHandler, true)
 		go func() {
 			wwlog.Info("Starting HTTPS service on port %d", conf.Warewulf.SecurePort)
 			if err := http.ListenAndServeTLS(":"+strconv.Itoa(conf.Warewulf.SecurePort), crt, key, httpsHandler); err != nil {

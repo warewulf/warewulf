@@ -100,7 +100,7 @@ nodes:
 			req := httptest.NewRequest(http.MethodGet, tt.url, nil)
 			req.RemoteAddr = tt.ip
 			w := httptest.NewRecorder()
-			ProvisionSend(w, req)
+			HandleProvision(w, req)
 			res := w.Result()
 			defer res.Body.Close()
 

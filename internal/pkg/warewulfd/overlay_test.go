@@ -95,7 +95,7 @@ nodes:
 		t.Run(description, func(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, tt.url, nil)
 			w := httptest.NewRecorder()
-			OverlaySend(w, req)
+			HandleOverlayFile(w, req)
 			res := w.Result()
 			defer res.Body.Close()
 
