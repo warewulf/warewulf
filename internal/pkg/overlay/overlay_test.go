@@ -788,3 +788,82 @@ func readCpio(name string) (headers map[string]*cpio.Header, err error) {
 		headers[header.Name] = header
 	}
 }
+
+func TestBuildHostOverlay(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+
+	// Setup "host" overlay
+	hostOverlayDir := "var/lib/warewulf/overlays/host/rootfs"
+	env.MkdirAll(hostOverlayDir)
+	env.WriteFile(path.Join(hostOverlayDir, "testfile"), "host content")
+	
+	// Set permissions as expected by BuildHostOverlay
+	env.Chmod("var/lib/warewulf/overlays/host/rootfs", 0750)
+
+	// Override hostOverlayDest to a safe directory
+	oldDest := hostOverlayDest
+	hostOverlayDest = env.GetPath("host-root")
+	env.MkdirAll("host-root")
+	defer func() { hostOverlayDest = oldDest }()
+
+	err := BuildHostOverlay()
+	assert.NoError(t, err)
+
+	// Verify that the file was "installed" to the host root
+	assert.Equal(t, "host content", env.ReadFile("host-root/testfile"))
+
+	t.Run("with template", func(t *testing.T) {
+		env.WriteFile(path.Join(hostOverlayDir, "test-template.ww"), "hostname: {{ .Hostname }}")
+		err := BuildHostOverlay()
+		assert.NoError(t, err)
+		assert.Contains(t, env.ReadFile("host-root/test-template"), "hostname: ")
+	})
+
+	t.Run("override existing file", func(t *testing.T) {
+		// Existing file
+		env.WriteFile("host-root/existing-file", "old content")
+		// Overlay file
+		env.WriteFile(path.Join(hostOverlayDir, "existing-file"), "new content")
+
+		err := BuildHostOverlay()
+		assert.NoError(t, err)
+		assert.Equal(t, "new content", env.ReadFile("host-root/existing-file"))
+	})
+
+	t.Run("override existing template and check backup", func(t *testing.T) {
+		// Existing file
+		env.WriteFile("host-root/template-file", "old template content")
+		// Overlay template
+		env.WriteFile(path.Join(hostOverlayDir, "template-file.ww"), "new template content")
+
+		err := BuildHostOverlay()
+		assert.NoError(t, err)
+		assert.Equal(t, "new template content", env.ReadFile("host-root/template-file"))
+		assert.Equal(t, "old template content", env.ReadFile("host-root/template-file.wwbackup"))
+	})
+
+	t.Run("override existing softlink", func(t *testing.T) {
+		// Existing file that the softlink points to
+		env.WriteFile("host-root/real-file", "real content")
+		// Existing softlink
+		env.Symlink("real-file", "host-root/softlink-file")
+		
+		// Overlay file
+		env.WriteFile(path.Join(hostOverlayDir, "softlink-file"), "new content")
+
+		err := BuildHostOverlay()
+		assert.NoError(t, err)
+		
+		// Verify that the softlink was replaced by the overlay file, not followed
+		assert.Equal(t, "new content", env.ReadFile("host-root/softlink-file"))
+		
+		// Verify the real file was untouched
+		assert.Equal(t, "real content", env.ReadFile("host-root/real-file"))
+		
+		// Ensure it is no longer a softlink (it should be a regular file now)
+		fi, err := os.Lstat(env.GetPath("host-root/softlink-file"))
+		assert.NoError(t, err)
+		assert.True(t, fi.Mode().IsRegular(), "target should be a regular file, not a symlink")
+	})
+}
