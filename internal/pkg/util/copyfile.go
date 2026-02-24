@@ -45,6 +45,11 @@ func CopyFile(src string, dst string) error {
 		wwlog.Debug("Ownership copy from %s to %s failed.\n %s", src, dst, err)
 		return err
 	}
+	err = CopyXattrs(src, dst)
+	if err != nil {
+		wwlog.Debug("Xattr copy from %s to %s failed. \n %s", src, dst, err)
+		return err
+	}
 	return nil
 }
 
