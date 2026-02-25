@@ -265,8 +265,8 @@ parameter.
 Known Problems
 --------------
 
-If the partition table of disk isn't properly readable the command `sgdisk --zap-all`
-which is used by ignition to wipe the partition returns with `2` which is handled by
-ignition prior version `2.16.2` as an error and no paritions nor filesystems are created.
-As the partition is wiped during that step a reboot of the node will lead to correct partitions
-and file systems.
+If the partition table on the disk isn't properly readable the command ``sgdisk
+--zap-all`` (which is used by Ignition to wipe the partition table) returns with
+code ``2``. This is interpreted by Ignition < ``2.16.2`` as an error, and no
+partitions or filesystems are created. Since the partition table is still wiped,
+partitioning and formatting should succeed on the next boot.
