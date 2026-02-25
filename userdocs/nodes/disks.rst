@@ -260,3 +260,13 @@ parameter.
 .. code-block:: shell
 
    wwctl node set wwnode1 --root /dev/disk/by-partlabel/rootfs
+
+
+Known Problems
+--------------
+
+If the partition table on the disk isn't properly readable the command ``sgdisk
+--zap-all`` (which is used by Ignition to wipe the partition table) returns with
+code ``2``. This is interpreted by Ignition < ``2.16.2`` as an error, and no
+partitions or filesystems are created. Since the partition table is still wiped,
+partitioning and formatting should succeed on the next boot.
