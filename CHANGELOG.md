@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   Keys can be created automtically or imported. The runtime overlay is
   if TLS is enabled is not distributed over plain http.
   
+- Documented that booting a node twice fixes broken partition tables
 
 ## v4.6.5, 2026-01-12
 
