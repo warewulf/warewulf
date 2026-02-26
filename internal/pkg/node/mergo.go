@@ -168,6 +168,14 @@ func (config *NodesYaml) MergeNode(id string) (node Node, fields fieldMap, err e
 		delete(fields, "Profiles")
 	}
 
+	node.Comment = originalNode.Comment
+	if node.Comment != "" {
+		fields.Set("Comment", "", node.Comment)
+		fields["Comment"].Source = ""
+	} else {
+		delete(fields, "Comment")
+	}
+
 	node.setIds(id)
 	node.valid = true
 	node.updatePrimaryNetDev()

@@ -239,7 +239,7 @@ nodes:
 			source: "",
 			value:  "n1 comment",
 		},
-		"profile comment": {
+		"profile comment not inherited": {
 			nodesConf: `
 nodes:
   n1:
@@ -250,10 +250,10 @@ nodeprofiles:
     comment: p1 comment`,
 			node:   "n1",
 			field:  "Comment",
-			source: "p1",
-			value:  "p1 comment",
+			source: "",
+			value:  "",
 		},
-		"multiple profile comments": {
+		"multiple profile comments not inherited": {
 			nodesConf: `
 nodes:
   n1:
@@ -267,10 +267,10 @@ nodeprofiles:
     comment: p2 comment`,
 			node:   "n1",
 			field:  "Comment",
-			source: "p2",
-			value:  "p2 comment",
+			source: "",
+			value:  "",
 		},
-		"node comment supersedes profile comment": {
+		"node comment with profile comment": {
 			nodesConf: `
 nodes:
   n1:
@@ -282,10 +282,10 @@ nodeprofiles:
     comment: p1 comment`,
 			node:   "n1",
 			field:  "Comment",
-			source: "SUPERSEDED",
+			source: "",
 			value:  "n1 comment",
 		},
-		"node comment supersedes multiple profile comments": {
+		"node comment with multiple profile comments": {
 			nodesConf: `
 nodes:
   n1:
@@ -300,10 +300,10 @@ nodeprofiles:
     comment: p2 comment`,
 			node:   "n1",
 			field:  "Comment",
-			source: "SUPERSEDED",
+			source: "",
 			value:  "n1 comment",
 		},
-		"nested profile comments": {
+		"nested profile comments not inherited": {
 			nodesConf: `
 nodes:
   n1:
@@ -318,8 +318,8 @@ nodeprofiles:
     comment: p2 comment`,
 			node:   "n1",
 			field:  "Comment",
-			source: "p2",
-			value:  "p2 comment",
+			source: "",
+			value:  "",
 		},
 		"node kernel args": {
 			nodesConf: `

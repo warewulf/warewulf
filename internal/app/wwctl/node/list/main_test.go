@@ -157,7 +157,6 @@ nodes:
 NODE  FIELD     PROFILE  VALUE
 ----  -----     -------  -----
 n01   Profiles  --       default
-n01   Comment   default  profilecomment
 `,
 			inDb: `nodeprofiles:
   default:
@@ -173,10 +172,10 @@ nodes:
 			args:    []string{"-a"},
 			wantErr: false,
 			stdout: `
-NODE  FIELD     PROFILE     VALUE
-----  -----     -------     -----
-n01   Profiles  --          default
-n01   Comment   SUPERSEDED  nodecomment
+NODE  FIELD     PROFILE  VALUE
+----  -----     -------  -----
+n01   Profiles  --       default
+n01   Comment   --       nodecomment
 `,
 			inDb: `nodeprofiles:
   default:
