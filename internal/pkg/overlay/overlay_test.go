@@ -276,8 +276,8 @@ T3
 			overlays: []string{"o1"},
 			overlayFiles: map[string]string{
 				"/var/lib/warewulf/overlays/o1/rootfs/test-link.ww": `
-{{ file "file1" -}}
-{{ file "file2" -}}
+{{- file "file1" -}}
+{{- file "file2" -}}
 `, // should result in how tempy files
 			},
 			outputDir: "/image",
@@ -296,10 +296,8 @@ T3
 			},
 			outputDir: "/image",
 			outputFiles: map[string]string{
-				"file1": `
-`,
-				"file2": `
-`,
+				"file1": "\n",
+				"file2": "\n",
 			},
 		},
 		"expansion of nodes": {
