@@ -272,6 +272,36 @@ T3
 				"test-link2": "/test-target2",
 			},
 		},
+		"multiple files from template without new lines": {
+			overlays: []string{"o1"},
+			overlayFiles: map[string]string{
+				"/var/lib/warewulf/overlays/o1/rootfs/test-link.ww": `
+{{ file "file1" -}}
+{{ file "file2" -}}
+`, // should result in how tempy files
+			},
+			outputDir: "/image",
+			outputFiles: map[string]string{
+				"file1": "",
+				"file2": "",
+			},
+		},
+		"multiple files from template": {
+			overlays: []string{"o1"},
+			overlayFiles: map[string]string{
+				"/var/lib/warewulf/overlays/o1/rootfs/test-link.ww": `
+{{ file "file1" }}
+{{ file "file2" }}
+`, // should result in two files with both extactly one new line as tempate doesn't have a -
+			},
+			outputDir: "/image",
+			outputFiles: map[string]string{
+				"file1": `
+`,
+				"file2": `
+`,
+			},
+		},
 		"expansion of nodes": {
 			overlays: []string{"o1"},
 			overlayFiles: map[string]string{
