@@ -94,12 +94,12 @@ func RunServer() error {
 		crt := path.Join(conf.Paths.Sysconfdir, "warewulf", "tls", "warewulf.crt")
 
 		if !util.IsFile(key) || !util.IsFile(crt) {
-			return fmt.Errorf("TLS enabled but keys not found in %s, run 'wwctl configure tls --create' to generate keys", path.Join(conf.Paths.Sysconfdir, "warewulf", "tls"))
+			return fmt.Errorf("TLS enabled but keys not found in %s, run 'wwctl configure tls' to generate keys", path.Join(conf.Paths.Sysconfdir, "warewulf", "tls"))
 		}
 		httpsHandler := configureRootHandler(apiHandler)
 		go func() {
-			wwlog.Info("Starting HTTPS service on port %d", conf.Warewulf.SecurePort)
-			if err := http.ListenAndServeTLS(":"+strconv.Itoa(conf.Warewulf.SecurePort), crt, key, httpsHandler); err != nil {
+			wwlog.Info("Starting HTTPS service on port %d", conf.Warewulf.TlsPort)
+			if err := http.ListenAndServeTLS(":"+strconv.Itoa(conf.Warewulf.TlsPort), crt, key, httpsHandler); err != nil {
 				errChan <- fmt.Errorf("could not start HTTPS service: %w", err)
 			}
 		}()

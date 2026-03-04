@@ -14,6 +14,9 @@ func Test_Keys(t *testing.T) {
 	env := testenv.New(t)
 	defer env.RemoveAll()
 
+	// Enable TLS in the test config
+	env.WriteFile("etc/warewulf/warewulf.conf", "warewulf:\n  tls: true\n")
+
 	// Define a keystore path within the test environment
 	keystoreRelPath := "etc/warewulf/tls"
 	keystorePath := env.GetPath(keystoreRelPath)
@@ -24,11 +27,10 @@ func Test_Keys(t *testing.T) {
 	t.Run("keys create", func(t *testing.T) {
 		baseCmd := GetCommand()
 		// Reset flags
-		create = true
 		importPath = ""
 		exportPath = ""
 
-		baseCmd.SetArgs([]string{"--create"})
+		baseCmd.SetArgs([]string{})
 		buf := new(bytes.Buffer)
 		baseCmd.SetOut(buf)
 		baseCmd.SetErr(buf)
@@ -43,11 +45,10 @@ func Test_Keys(t *testing.T) {
 	t.Run("keys exist check", func(t *testing.T) {
 		baseCmd := GetCommand()
 		// Reset flags
-		create = true // Even with create, it should say they exist
 		importPath = ""
 		exportPath = ""
 
-		baseCmd.SetArgs([]string{"--create"})
+		baseCmd.SetArgs([]string{})
 		buf := new(bytes.Buffer)
 		baseCmd.SetOut(buf)
 		baseCmd.SetErr(buf)
@@ -61,7 +62,6 @@ func Test_Keys(t *testing.T) {
 	t.Run("keys display", func(t *testing.T) {
 		baseCmd := GetCommand()
 		// Reset flags
-		create = false
 		importPath = ""
 		exportPath = ""
 
@@ -88,7 +88,6 @@ func Test_Keys(t *testing.T) {
 
 		baseCmd := GetCommand()
 		// Reset flags
-		create = false
 		importPath = ""
 		exportPath = exportFullPath
 

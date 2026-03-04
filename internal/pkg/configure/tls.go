@@ -14,15 +14,43 @@ import (
 	"time"
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-/*
-GenTLSKeys checks for existence of x509 keys and creates them if they don't exist.
-*/
+// TLS ensures TLS keys exist if TLS is enabled.
+// If force is true, regenerates even if keys already exist.
+// Returns true if new keys were generated.
+func TLS(force bool) (bool, error) {
+	conf := warewulfconf.Get()
+	if !conf.Warewulf.EnableTLS() {
+		return false, nil
+	}
+
+	keystore := path.Join(conf.Paths.Sysconfdir, "warewulf", "tls")
+	keyFile := path.Join(keystore, "warewulf.key")
+	certFile := path.Join(keystore, "warewulf.crt")
+
+	if !force && util.IsFile(keyFile) && util.IsFile(certFile) {
+		wwlog.Info("TLS keys already exist in %s", keystore)
+		return false, nil
+	}
+
+	if err := GenTLSKeys(); err != nil {
+		return false, err
+	}
+	wwlog.Info("TLS keys generated in %s", keystore)
+	return true, nil
+}
+
+// GenTLSKeys generates new TLS keys and certificate unconditionally.
 func GenTLSKeys() error {
 	conf := warewulfconf.Get()
 	keystore := path.Join(conf.Paths.Sysconfdir, "warewulf", "tls")
+
+	if err := os.MkdirAll(keystore, 0755); err != nil {
+		return fmt.Errorf("could not create keystore directory: %w", err)
+	}
 
 	keyFile := path.Join(keystore, "warewulf.key")
 	certFile := path.Join(keystore, "warewulf.crt")

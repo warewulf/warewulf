@@ -61,7 +61,7 @@ if [ "${WWTLS}" = "true" ] && [ -f "$cert_file" ]; then
     # TLS enabled: build HTTPS URI using wwid from kernel cmdline
     # (mirrors wwclient URL construction in internal/app/wwclient/root.go)
     wwid=$(getarg wwid)
-    runtime_uri="https://${WWIPADDR}:${WWSECUREPORT}/provision/${wwid}"
+    runtime_uri="https://${WWIPADDR}:${WWTLSPORT}/provision/${wwid}"
     get_stage "runtime" "${runtime_uri}" "${cert_file}" || warn "warewulf: unable to load runtime overlay over HTTPS (ignored)"
 else
     # No TLS: fetch runtime over HTTP

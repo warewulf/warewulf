@@ -19,10 +19,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	conf := config.Get()
 	keystore := path.Join(conf.Paths.Sysconfdir, "warewulf", "tls")
 
-	if err := os.MkdirAll(keystore, 0755); err != nil {
-		return fmt.Errorf("could not create keystore directory: %w", err)
-	}
-
 	keyFile := path.Join(keystore, "warewulf.key")
 	certFile := path.Join(keystore, "warewulf.crt")
 
@@ -75,21 +71,21 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	if util.IsFile(keyFile) && util.IsFile(certFile) && !force {
-		if create {
-			fmt.Fprintf(cmd.OutOrStdout(), "Keys already exist in %s\n", keystore)
+	if !conf.Warewulf.EnableTLS() {
+		fmt.Fprintf(cmd.OutOrStdout(), "TLS is not enabled in warewulf.conf\n")
+		return nil
+	}
+
+	created, err := configure.TLS(force)
+	if err != nil {
+		return err
+	}
+	if created {
+		if err := configure.WAREWULFD(); err != nil {
+			return fmt.Errorf("failed to restart warewulfd: %w", err)
 		}
 	} else {
-		if create {
-			if err := configure.GenTLSKeys(); err != nil {
-				return err
-			}
-			if err := configure.WAREWULFD(); err != nil {
-				return fmt.Errorf("failed to restart warewulfd: %w", err)
-			}
-		} else {
-			return fmt.Errorf("keys not found in: %s", keystore)
-		}
+		fmt.Fprintf(cmd.OutOrStdout(), "Keys already exist in %s\n", keystore)
 	}
 
 	w := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 2, ' ', 0)

@@ -18,14 +18,12 @@ var (
 	}
 	importPath string
 	exportPath string
-	create     bool
 	force      bool
 )
 
 func init() {
 	baseCmd.PersistentFlags().StringVar(&importPath, "import", "", "Import keys from directory")
 	baseCmd.PersistentFlags().StringVar(&exportPath, "export", "", "Export keys to directory")
-	baseCmd.PersistentFlags().BoolVar(&create, "create", false, "Create keys if they do not exist")
 	baseCmd.PersistentFlags().BoolVarP(&force, "force", "f", false, "Enforce creation of keys even if they exist")
 }
 
