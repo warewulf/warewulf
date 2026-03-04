@@ -47,8 +47,10 @@ func HandleProvision(w http.ResponseWriter, req *http.Request) {
 		handler = HandleKernel
 	case "image":
 		handler = HandleImage
-	case "system", "runtime":
-		handler = HandleOverlay
+	case "system":
+		handler = HandleSystemOverlay
+	case "runtime":
+		handler = HandleRuntimeOverlay
 	case "efiboot":
 		handler = HandleEfiBoot
 	case "shim":
