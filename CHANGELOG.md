@@ -4,14 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## v4.6.6, unreleased
+## v4.7.0, unreleased
 
 ### Fixed
 
 - Remove requisite dependency between ignition disk target and ignition service. #2083
 - Return HTTP 409 status when creating an existing overlay
 - Allow whitespace to be trimmed for wwdoc comments. #2109
-- update go-chi to 5.2.5 to fix  CVE-2025-69725
+- update go-chi to 5.2.5 to fix CVE-2025-69725
 - Prevented profile `comment` field from being inherited by nodes. #2078
 
 ### Added
@@ -20,6 +20,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Updated arguments for `ValidString` to match `regexp.MatchString`
 - New `mig` overlay to configure NVIDIA MIG devices. #2102
 - Documented that booting a node twice fixes broken partition tables
+
+### Changed
+
+- Updated `MAINTAINING.md` to document golang version policy
 
 ## v4.6.5, 2026-01-12
 
