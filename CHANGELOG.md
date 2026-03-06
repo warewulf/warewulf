@@ -68,6 +68,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   the node continues to boot and `wwclient` retries the download at runtime.
 - `hosts` overlay added to the default system overlay list
 - Distinguish between OS images and overlay images in documentation
+- Updated iPXE, GRUB, and dracut boot scripts to use dedicated server routes
+  (`/kernel/`, `/image/`, `/system/`, `/runtime/`, `/initramfs/`) instead of
+  `/provision/{hwaddr}?stage=X`
+- Updated `wwclient` to use the `/runtime/` route for runtime overlay downloads
+- New `wwinit.server` kernel parameter for dracut/wwinit boot; `wwinit.uri`
+  remains supported for backward compatibility
+- Updated troubleshooting documentation examples to reflect the new URL scheme
+
+### Changed
+
 - Updated `MAINTAINING.md` to document golang version policy
 - Clarified functionality of syncuser commands and overlay in documentation
 - Audit and correct documentation, cobra help text, and log messages for accuracy
