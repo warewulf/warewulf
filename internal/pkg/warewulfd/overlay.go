@@ -95,7 +95,7 @@ func HandleSystemOverlay(w http.ResponseWriter, req *http.Request) {
 // If TLS is enabled, returns 403 Forbidden for plain-HTTP requests.
 // If an explicit ?overlay= list is present, delegates to HandleOverlayList.
 func HandleRuntimeOverlay(w http.ResponseWriter, req *http.Request) {
-	if config.Get().Warewulf.EnableTLS() && req.TLS == nil {
+	if config.Get().Warewulf.TLSEnabled() && req.TLS == nil {
 		wwlog.Denied("runtime overlay requested over insecure connection")
 		w.WriteHeader(http.StatusForbidden)
 		return

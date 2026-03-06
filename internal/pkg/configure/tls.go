@@ -23,7 +23,7 @@ import (
 // Returns true if new keys were generated.
 func TLS(force bool) (bool, error) {
 	conf := warewulfconf.Get()
-	if !conf.Warewulf.EnableTLS() {
+	if !conf.Warewulf.TLSEnabled() {
 		return false, nil
 	}
 

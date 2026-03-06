@@ -44,7 +44,7 @@ type WarewulfConf struct {
 	Port               int    `yaml:"port,omitempty" default:"9873"`
 	TlsPort            int    `yaml:"tls port,omitempty" default:"9874"`
 	SecureP            *bool  `yaml:"secure,omitempty" default:"true"`
-	EnableTLSP         *bool  `yaml:"tls,omitempty" default:"false"`
+	TLSEnabledP        *bool  `yaml:"tls,omitempty"`
 	UpdateInterval     int    `yaml:"update interval,omitempty" default:"60"`
 	AutobuildOverlaysP *bool  `yaml:"autobuild overlays,omitempty" default:"true"`
 	EnableHostOverlayP *bool  `yaml:"host overlay,omitempty" default:"true"`
@@ -56,8 +56,8 @@ func (conf WarewulfConf) Secure() bool {
 	return util.BoolP(conf.SecureP)
 }
 
-func (conf WarewulfConf) EnableTLS() bool {
-	return util.BoolP(conf.EnableTLSP)
+func (conf WarewulfConf) TLSEnabled() bool {
+	return util.BoolP(conf.TLSEnabledP)
 }
 
 func (conf WarewulfConf) AutobuildOverlays() bool {

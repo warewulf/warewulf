@@ -37,6 +37,17 @@ func (h *slashFix) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.mux.ServeHTTP(w, r)
 }
 
+func requireTLS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.TLS == nil {
+			wwlog.Denied("API request over insecure connection")
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 func configureRootHandler(apiHandler http.Handler) *slashFix {
 	var wwHandler http.ServeMux
 	wwHandler.HandleFunc("/provision/", warewulfd.HandleProvision)
@@ -89,13 +100,16 @@ func RunServer() error {
 	var apiHandler http.Handler
 	if conf.API != nil && conf.API.Enabled() {
 		apiHandler = api.Handler(auth, conf.API.AllowedIPNets())
+		if conf.API.TLSEnabled() {
+			apiHandler = requireTLS(apiHandler)
+		}
 	}
 
 	httpHandler := configureRootHandler(apiHandler)
 
 	errChan := make(chan error, 2)
 
-	if conf.Warewulf.EnableTLS() {
+	if conf.Warewulf.TLSEnabled() {
 		key := path.Join(conf.Paths.Sysconfdir, "warewulf", "tls", "warewulf.key")
 		crt := path.Join(conf.Paths.Sysconfdir, "warewulf", "tls", "warewulf.crt")
 

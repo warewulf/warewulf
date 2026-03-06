@@ -71,7 +71,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
-	if !conf.Warewulf.EnableTLS() {
+	if !conf.Warewulf.TLSEnabled() {
 		fmt.Fprintf(cmd.OutOrStdout(), "TLS is not enabled in warewulf.conf\n")
 		return nil
 	}
