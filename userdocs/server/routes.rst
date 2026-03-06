@@ -21,7 +21,7 @@ of colons and are normalized automatically.
 URL Patterns
 ============
 
-Every provisioning route (except ``/overlay-file/`` and ``/status``) supports
+Every provisioning route (except ``/status``) supports
 six equivalent URL patterns for specifying the node identity:
 
 .. code-block:: none
@@ -118,11 +118,7 @@ When ``autobuild overlays`` is enabled in ``warewulf.conf``, the server
 will automatically rebuild the overlay if it is out of date relative to
 ``nodes.conf`` or the overlay source files.
 
-**Query parameters:** ``assetkey``, ``uuid``, ``compress``, ``overlay``
-
-* ``overlay``: A comma-separated list of overlay names. When specified, only
-  the named overlays are served (rather than the node's full system overlay
-  set).
+**Query parameters:** ``assetkey``, ``uuid``, ``compress``
 
 ``/runtime/{wwid}``
 -------------------
@@ -141,36 +137,7 @@ When TLS is enabled in ``warewulf.conf``, this route requires that the request
 arrive over HTTPS. Plain-HTTP requests are rejected with ``403 Forbidden``. The
 HTTPS listener port is configured with ``warewulf:tls port``.
 
-**Query parameters:** ``assetkey``, ``uuid``, ``compress``, ``overlay``
-
-* ``overlay``: A comma-separated list of overlay names. Same behavior as for
-  ``/system/``.
-
-``/overlay-file/{overlay}/{path}``
-----------------------------------
-
-Provides direct access to an individual file within a named overlay. This
-route uses a different URL structure than the other provisioning routes: the
-overlay name is in the second path segment, and the file path within the overlay
-follows.
-
-If the ``render`` parameter is provided, the file is rendered as a Go template
-for the specified node and the rendered content is returned. If ``render`` is
-absent, the raw file bytes are returned without any template processing.
-
-If the requested path does not end in ``.ww`` but a ``.ww``-suffixed version of
-the file exists, and a ``render`` node is specified, the server automatically
-serves the ``.ww`` template.
-
-**Query parameters:**
-
-* ``render``: Node ID to render the template for. If not specified, the raw
-  file is returned.
-
-.. note::
-
-   This route does not require authentication via ``assetkey`` and does not
-   perform node lookup by hardware address.
+**Query parameters:** ``assetkey``, ``uuid``, ``compress``
 
 ``/efiboot/{file}``
 -------------------
@@ -246,8 +213,7 @@ A legacy dispatcher route. The provisioning stage is determined by the
 * ``stage=runtime`` → ``/runtime/``
 * ``stage=grub`` → ``/grub/``
 
-**Query parameters:** ``stage`` (required), ``assetkey``, ``uuid``, ``compress``,
-``overlay``
+**Query parameters:** ``stage`` (required), ``assetkey``, ``uuid``, ``compress``
 
 Status Route
 ============

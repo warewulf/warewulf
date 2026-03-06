@@ -114,6 +114,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Moved "multiple networks" documentation from getting-started to a new server
   networking section. #2164
 
+### Removed
+
+- `/overlay-file/` server route
+- `?overlay=` query parameter from `/system/` and `/runtime/` routes
+- `--overlay` (`-O`) and `--output` (`-o`) flags from `wwctl overlay build`
+- `BuildSpecificOverlays` internal function
+
 ## v4.6.5, 2026-01-12
 
 ### Added
