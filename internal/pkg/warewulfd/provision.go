@@ -51,10 +51,6 @@ func HandleProvision(w http.ResponseWriter, req *http.Request) {
 		handler = HandleSystemOverlay
 	case "runtime":
 		handler = HandleRuntimeOverlay
-	case "efiboot":
-		handler = HandleEfiBoot
-	case "shim":
-		handler = HandleShim
 	case "grub":
 		handler = HandleGrub
 	case "initramfs":

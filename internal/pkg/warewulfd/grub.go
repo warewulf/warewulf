@@ -2,32 +2,25 @@ package warewulfd
 
 import (
 	"net/http"
+	"path"
 
-	"github.com/warewulf/warewulf/internal/pkg/image"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-// HandleGrub handles direct GRUB binary requests
+// HandleGrub handles GRUB configuration requests
 func HandleGrub(w http.ResponseWriter, req *http.Request) {
 	ctx, err := initHandleRequest(w, req)
 	if err != nil {
 		return // response already written
 	}
 
-	var stageFile string
-
 	if !ctx.remoteNode.Valid() {
 		wwlog.Error("%s (unknown/unconfigured node)", ctx.rinfo.hwaddr)
-	} else {
-		if ctx.remoteNode.ImageName != "" {
-			stageFile = image.GrubFind(ctx.remoteNode.ImageName)
-			if stageFile == "" {
-				wwlog.Error("No grub found for image %s", ctx.remoteNode.ImageName)
-			}
-		} else {
-			wwlog.Warn("No conainer set for node %s", ctx.remoteNode.Id())
-		}
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 
-	sendResponse(w, req, stageFile, nil, ctx)
+	stageFile := path.Join(ctx.conf.Paths.Sysconfdir, "warewulf/grub/grub.cfg.ww")
+	tmplData := buildTemplateVars(ctx.conf, ctx.rinfo, ctx.remoteNode)
+	sendResponse(w, req, stageFile, tmplData, ctx)
 }

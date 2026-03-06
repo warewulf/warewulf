@@ -42,13 +42,19 @@ func configureRootHandler(apiHandler http.Handler) *slashFix {
 	wwHandler.HandleFunc("/provision/", warewulfd.HandleProvision)
 	wwHandler.HandleFunc("/ipxe/", warewulfd.HandleIpxe)
 	wwHandler.HandleFunc("/efiboot/", warewulfd.HandleEfiBoot)
+	wwHandler.HandleFunc("/grub/", warewulfd.HandleGrub)
 	wwHandler.HandleFunc("/kernel/", warewulfd.HandleKernel)
 	wwHandler.HandleFunc("/image/", warewulfd.HandleImage)
+	wwHandler.HandleFunc("/initramfs/", warewulfd.HandleInitramfs)
+	wwHandler.HandleFunc("/system/", warewulfd.HandleSystemOverlay)
+	wwHandler.HandleFunc("/runtime/", warewulfd.HandleRuntimeOverlay)
+	wwHandler.HandleFunc("/status", warewulfd.HandleStatus)
+
+	/* Deprecated */
 	wwHandler.HandleFunc("/container/", warewulfd.HandleImage)
 	wwHandler.HandleFunc("/overlay-system/", warewulfd.HandleSystemOverlay)
 	wwHandler.HandleFunc("/overlay-runtime/", warewulfd.HandleRuntimeOverlay)
 	wwHandler.HandleFunc("/overlay-file/", warewulfd.HandleOverlayFile)
-	wwHandler.HandleFunc("/status", warewulfd.HandleStatus)
 
 	if apiHandler != nil {
 		wwHandler.Handle("/api/", apiHandler)

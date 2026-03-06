@@ -47,6 +47,7 @@ func initHandleRequest(w http.ResponseWriter, req *http.Request) (*requestContex
 
 	status_stages := map[string]string{
 		"efiboot":   "EFI",
+		"grub":      "GRUB",
 		"ipxe":      "IPXE",
 		"kernel":    "KERNEL",
 		"system":    "SYSTEM_OVERLAY",
@@ -102,14 +103,23 @@ func parseRequest(req *http.Request) (parsedRequest, error) {
 	// handle when stage was passed in the url path /[stage]/hwaddr
 	stage := path_parts[1]
 	hwaddr := ""
-	if stage != "efiboot" {
+	switch stage {
+	case "efiboot":
+		// /efiboot/{file}: no hwaddr in path; identified via ARP
+		if len(path_parts) > 3 {
+			ret.efifile = strings.Join(path_parts[2:], "/")
+		} else {
+			ret.efifile = path_parts[2]
+		}
+	case "grub":
+		// /grub/{hwaddr}: hwaddr explicit in path
 		hwaddr = path_parts[2]
 		hwaddr = strings.ReplaceAll(hwaddr, "-", ":")
 		hwaddr = strings.ToLower(hwaddr)
-	} else if len(path_parts) > 3 {
-		ret.efifile = strings.Join(path_parts[2:], "/")
-	} else {
-		ret.efifile = path_parts[2]
+	default:
+		hwaddr = path_parts[2]
+		hwaddr = strings.ReplaceAll(hwaddr, "-", ":")
+		hwaddr = strings.ToLower(hwaddr)
 	}
 	ret.hwaddr = hwaddr
 	remoteAddrPort, err := netip.ParseAddrPort(req.RemoteAddr)
@@ -137,12 +147,14 @@ func parseRequest(req *http.Request) (parsedRequest, error) {
 			ret.stage = "kernel"
 		case "image", "container":
 			ret.stage = "image"
-		case "overlay-system":
+		case "overlay-system", "system":
 			ret.stage = "system"
-		case "overlay-runtime":
+		case "overlay-runtime", "runtime":
 			ret.stage = "runtime"
 		case "efiboot":
 			ret.stage = "efiboot"
+		case "grub":
+			ret.stage = "grub"
 		case "initramfs":
 			ret.stage = "initramfs"
 		}
@@ -154,14 +166,23 @@ func parseRequest(req *http.Request) (parsedRequest, error) {
 	if len(req.URL.Query()["compress"]) > 0 {
 		ret.compress = req.URL.Query()["compress"][0]
 	}
+	if ret.efifile == "" && len(req.URL.Query()["file"]) > 0 {
+		ret.efifile = req.URL.Query()["file"][0]
+	}
 	if ret.stage == "" {
 		return ret, errors.New("no stage encoded in GET")
 	}
 	if ret.hwaddr == "" {
-		ret.hwaddr = ArpFind(ret.ipaddr)
-		wwlog.Verbose("node mac not encoded, arp cache got %s for %s", ret.hwaddr, ret.ipaddr)
-		if ret.hwaddr == "" {
-			return ret, errors.New("no hwaddr encoded in GET")
+		if len(req.URL.Query()["wwid"]) > 0 {
+			ret.hwaddr = req.URL.Query()["wwid"][0]
+			ret.hwaddr = strings.ReplaceAll(ret.hwaddr, "-", ":")
+			ret.hwaddr = strings.ToLower(ret.hwaddr)
+		} else {
+			ret.hwaddr = ArpFind(ret.ipaddr)
+			wwlog.Verbose("node mac not encoded, arp cache got %s for %s", ret.hwaddr, ret.ipaddr)
+			if ret.hwaddr == "" {
+				return ret, errors.New("no hwaddr encoded in GET")
+			}
 		}
 	}
 	if ret.ipaddr == "" {
