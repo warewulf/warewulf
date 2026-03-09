@@ -40,9 +40,9 @@ There are multiple ways to secure the Warewulf provisioning process:
   This means that the nodes only boot the kernel which is provided by the
   distributor and also custom complied modules can't be loaded.
 
-* Tls (transport layer security) can be enabled for the warewulf server. However
-  the https is only used for runtime overlays. The kernel and system image are *always*
-  transfered unencrypted as iPXE and grub can't handle https.
+* TLS (transport layer security) can be enabled for the Warewulf server. When
+  enabled, HTTPS is used when transferring runtime overlays. The kernel and
+  system image are *always* transferred unencrypted.
 
 SELinux
 =======
@@ -87,33 +87,35 @@ with the Warewulf server.
    nft list ruleset >/etc/nftables.conf
    systemctl restart nftables
 
+TLS / HTTPS
+===========
 
-HTTPS
-=====
-
-The https functionality can be enabled by setting
+TLS can be enabled by setting ``tls: true`` in the Warewulf server
+configuration.
 
 .. code-block:: yaml
-..
-.. warewulf:
-..   tls:         true
-..   secure port: 9874
-..
 
-Which will enable a https server on the secure port. The certificate and key
-can be created as self signed key with ``wwctl configure keys --create``. The
-keys and certificate are stored if not configured otherwise as
+   warewulf:
+     tls: true
+     tls port: 9874
 
-.. code-block:: console
-..
-.. /etc/warewulf/tls/warewulf.crt # PEM certificate
-.. /etc/warewulf/tls/warewulf.key # PEM RSA Key
+This enables an HTTPS server on the TLS port (default: ``9874``). A key and
+self-signed certificate can be created with ``wwctl configure tls``.
 
+By default, the key and certificate are stored in ``/etc/warewulf/tls/``.
 
+You can also import your own keys with ``wwctl configure tls --import``.
 
-For the key and certifcate generation no addiotional parameters can be set, but
-you can import your own keys, with ``wwctl configure keys import``.
+If HTTPS is enabled the delivery of the runtime overlay is disabled over HTTP,
+and the runtime overlay is only retrieved by ``wwclient``.
 
-If HTTPS is enabled the delivery of the runtime overlays is disabled over HTTP, so
-you **must** use `wwclient` to get the runtime overlays.
+To additionally require TLS for access to the REST API, set ``tls: true`` under
+the ``api:`` section:
 
+.. code-block:: yaml
+
+   api:
+     enabled: true
+     tls: true
+
+When ``api: tls`` is set, the REST API rejects plain-HTTP requests.

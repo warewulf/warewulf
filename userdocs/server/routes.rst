@@ -277,6 +277,9 @@ When enabled in ``warewulf.conf``, ``warewulfd`` exposes a REST API under
 ``/api/``. The API provides programmatic access to nodes, profiles, images,
 and overlays. Interactive documentation is available at ``/api/docs``.
 
+When TLS is enabled, access to the REST API can additionally be restricted to
+HTTPS-only requests by setting ``api: tls: true`` in ``warewulf.conf``.
+
 See :ref:`rest-api` for full details.
 
 .. _server-routes-security:

@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## v4.6.6, unreleased
+## v4.7.0, unreleased
 
 ### Fixed
 
@@ -16,7 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-- New --partwipe flag for profile and node set
+- New `--partwipe` flag for profile and node set
 - Updated arguments for `ValidString` to match `regexp.MatchString`
 - New `mig` overlay to configure NVIDIA MIG devices. #2102
 - Documented that booting a node twice fixes broken partition tables
@@ -27,12 +27,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   if TLS is enabled is not distributed over plain http.
   
 - Documented that booting a node twice fixes broken partition tables
-- Updated arguments for `ValidString` to match `regexp.MatchString`
-- New `mig` overlay to configure NVIDIA MIG devices. #2102
-- TLS with the command `wwctl configure tls` for key management.
-  Keys can be created automtically or imported. The runtime overlay is
-  if TLS is enabled is not distributed over plain http.
-  
+- TLS support for `warewulfd` and REST API
+- New `wwctl configure tls` command to generate and configure TLS keys and
+  certificates
+- New dedicated `warewulfd` server routes (`/ipxe/`, `/kernel/`, `/image/`,
+  `/initramfs/`, `/system/`, `/runtime/`, `/grub/`, `/efiboot/`)
+
+### Changed
+
+- Runtime overlay download failure during dracut/wwinit boot is now non-fatal;
+  the node continues to boot and `wwclient` retries the download at runtime.
+- `hosts` overlay added to the default system overlay list
 
 ## v4.6.5, 2026-01-12
 
@@ -48,11 +53,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - New `range6 start` and `range6 end` in `warewulf.conf:dhcp`. #2068
 - New `Gateway6` network device field. #2068
 - New `systemd-networkd` overlay. #2068
-- `wwclient.aarch64` overlay always provides an aarch64 wwclient executable.
-- `wwclient.x86_64` overlay always provides an x86_64 wwclient executable.
-- systemd-networkd overlay with IPv6 support
-- `wwctl overlay info` lists the variables used by an overlay template
-- TLS
 
 ### Changed
 
