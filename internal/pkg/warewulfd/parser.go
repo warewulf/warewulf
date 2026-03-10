@@ -14,10 +14,9 @@ import (
 
 // requestContext holds the validated results of the parsed request
 type requestContext struct {
-	conf        *warewulfconf.WarewulfYaml
-	rinfo       parsedRequest
-	remoteNode  node.Node
-	statusStage string
+	conf       *warewulfconf.WarewulfYaml
+	rinfo      parsedRequest
+	remoteNode node.Node
 }
 
 // initHandleRequest performs common initial request parsing, security checks,
@@ -45,17 +44,6 @@ func initHandleRequest(w http.ResponseWriter, req *http.Request) (*requestContex
 		}
 	}
 
-	status_stages := map[string]string{
-		"efiboot":   "EFI",
-		"grub":      "GRUB",
-		"ipxe":      "IPXE",
-		"kernel":    "KERNEL",
-		"system":    "SYSTEM_OVERLAY",
-		"runtime":   "RUNTIME_OVERLAY",
-		"initramfs": "INITRAMFS"}
-
-	statusStage := status_stages[rinfo.stage]
-
 	remoteNode, err := GetNodeOrSetDiscoverable(rinfo.hwaddr, conf.Warewulf.AutobuildOverlays())
 	if err != nil && err != node.ErrNoUnconfigured {
 		wwlog.ErrorExc(err, "")
@@ -66,15 +54,14 @@ func initHandleRequest(w http.ResponseWriter, req *http.Request) (*requestContex
 	if remoteNode.AssetKey != "" && remoteNode.AssetKey != rinfo.assetkey {
 		w.WriteHeader(http.StatusUnauthorized)
 		wwlog.Denied("incorrect asset key: node %s: %s", remoteNode.Id(), rinfo.assetkey)
-		updateStatus(remoteNode.Id(), statusStage, "BAD_ASSET", rinfo.ipaddr)
+		updateStatus(remoteNode.Id(), rinfo.stage, "BAD_ASSET", rinfo.ipaddr)
 		return nil, fmt.Errorf("incorrect asset key")
 	}
 
 	return &requestContext{
-		conf:        conf,
-		rinfo:       rinfo,
-		remoteNode:  remoteNode,
-		statusStage: statusStage,
+		conf:       conf,
+		rinfo:      rinfo,
+		remoteNode: remoteNode,
 	}, nil
 }
 
