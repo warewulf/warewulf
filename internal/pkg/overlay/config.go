@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/containers/storage/drivers/copy"
@@ -14,8 +15,23 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
+var validOverlayName = regexp.MustCompile(`^[a-zA-Z0-9\-._:]+$`)
+
+func validateOverlayName(name string) error {
+	if name == "" {
+		return fmt.Errorf("overlay name must not be empty")
+	}
+	if !validOverlayName.MatchString(name) {
+		return fmt.Errorf("overlay name contains illegal characters: %s", name)
+	}
+	return nil
+}
+
 // Get returns the filesystem path of an overlay identified by its name,
 func Get(name string) (overlay Overlay, err error) {
+	if err := validateOverlayName(name); err != nil {
+		return "", err
+	}
 	overlay = getSiteOverlay(name)
 	if overlay.Exists() {
 		return overlay, nil
@@ -31,6 +47,9 @@ func Get(name string) (overlay Overlay, err error) {
 //
 // Returns an error if the overlay already exists or if directory creation fails.
 func Create(name string) (overlay Overlay, err error) {
+	if err := validateOverlayName(name); err != nil {
+		return "", err
+	}
 	overlay = getSiteOverlay(name)
 	if overlay.Exists() {
 		return overlay, fmt.Errorf("overlay already exists: %s", name)

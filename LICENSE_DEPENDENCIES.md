@@ -17,11 +17,23 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/Masterminds/goutils/blob/v1.1.1/LICENSE.txt>
 
+## github.com/containerd/errdefs
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/containerd/errdefs/blob/v1.0.0/LICENSE>
+
+## github.com/containerd/errdefs/pkg
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/containerd/errdefs/blob/pkg/v0.3.0/pkg/LICENSE>
+
 ## github.com/containers/image/v5
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/containers/image/blob/v5.32.2/LICENSE>
+**License URL:** <https://github.com/containers/image/blob/v5.36.2/LICENSE>
 
 ## github.com/containers/libtrust
 
@@ -33,13 +45,13 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/containers/ocicrypt/blob/v1.2.0/LICENSE>
+**License URL:** <https://github.com/containers/ocicrypt/blob/v1.2.1/LICENSE>
 
 ## github.com/containers/storage
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/containers/storage/blob/v1.57.1/LICENSE>
+**License URL:** <https://github.com/containers/storage/blob/v1.59.1/LICENSE>
 
 ## github.com/coreos/go-semver/semver
 
@@ -75,7 +87,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/cyberphone/json-canonicalization/blob/ba74d44ecf5f/LICENSE>
+**License URL:** <https://github.com/cyberphone/json-canonicalization/blob/19d51d7fe467/LICENSE>
 
 ## github.com/digitalocean/go-smbios/smbios
 
@@ -89,7 +101,7 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/distribution/reference/blob/v0.6.0/LICENSE>
 
-## github.com/docker/distribution/registry
+## github.com/docker/distribution/registry/api
 
 **License:** Apache-2.0
 
@@ -99,7 +111,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/docker/docker/blob/v27.1.1/LICENSE>
+**License URL:** <https://github.com/docker/docker/blob/v28.3.2/LICENSE>
 
 ## github.com/docker/go-connections
 
@@ -117,13 +129,13 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/go-jose/go-jose/blob/v4.0.5/LICENSE>
+**License URL:** <https://github.com/go-jose/go-jose/blob/v4.1.1/LICENSE>
 
 ## github.com/go-logr/logr
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/go-logr/logr/blob/v1.4.2/LICENSE>
+**License URL:** <https://github.com/go-logr/logr/blob/v1.4.3/LICENSE>
 
 ## github.com/go-logr/stdr
 
@@ -131,77 +143,17 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/go-logr/stdr/blob/v1.2.2/LICENSE>
 
-## github.com/go-openapi/analysis
-
-**License:** Apache-2.0
-
-**License URL:** <https://github.com/go-openapi/analysis/blob/v0.23.0/LICENSE>
-
-## github.com/go-openapi/errors
-
-**License:** Apache-2.0
-
-**License URL:** <https://github.com/go-openapi/errors/blob/v0.22.0/LICENSE>
-
-## github.com/go-openapi/jsonpointer
-
-**License:** Apache-2.0
-
-**License URL:** <https://github.com/go-openapi/jsonpointer/blob/v0.21.0/LICENSE>
-
-## github.com/go-openapi/jsonreference
-
-**License:** Apache-2.0
-
-**License URL:** <https://github.com/go-openapi/jsonreference/blob/v0.21.0/LICENSE>
-
-## github.com/go-openapi/loads
-
-**License:** Apache-2.0
-
-**License URL:** <https://github.com/go-openapi/loads/blob/v0.22.0/LICENSE>
-
-## github.com/go-openapi/runtime
-
-**License:** Apache-2.0
-
-**License URL:** <https://github.com/go-openapi/runtime/blob/v0.28.0/LICENSE>
-
-## github.com/go-openapi/spec
-
-**License:** Apache-2.0
-
-**License URL:** <https://github.com/go-openapi/spec/blob/v0.21.0/LICENSE>
-
-## github.com/go-openapi/strfmt
-
-**License:** Apache-2.0
-
-**License URL:** <https://github.com/go-openapi/strfmt/blob/v0.23.0/LICENSE>
-
-## github.com/go-openapi/swag
-
-**License:** Apache-2.0
-
-**License URL:** <https://github.com/go-openapi/swag/blob/v0.23.0/LICENSE>
-
-## github.com/go-openapi/validate
-
-**License:** Apache-2.0
-
-**License URL:** <https://github.com/go-openapi/validate/blob/v0.24.0/LICENSE>
-
 ## github.com/google/go-containerregistry/pkg/name
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/google/go-containerregistry/blob/v0.20.1/LICENSE>
+**License URL:** <https://github.com/google/go-containerregistry/blob/v0.20.3/LICENSE>
 
 ## github.com/klauspost/compress
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/klauspost/compress/blob/v1.17.11/LICENSE>
+**License URL:** <https://github.com/klauspost/compress/blob/v1.18.0/LICENSE>
 
 ## github.com/moby/docker-image-spec/specs-go/v1
 
@@ -219,7 +171,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/moby/sys/blob/user/v0.3.0/user/LICENSE>
+**License URL:** <https://github.com/moby/sys/blob/user/v0.4.0/user/LICENSE>
 
 ## github.com/modern-go/concurrent
 
@@ -233,12 +185,6 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/modern-go/reflect2/blob/v1.0.2/LICENSE>
 
-## github.com/oklog/ulid
-
-**License:** Apache-2.0
-
-**License URL:** <https://github.com/oklog/ulid/blob/v1.3.1/LICENSE>
-
 ## github.com/opencontainers/go-digest
 
 **License:** Apache-2.0
@@ -249,19 +195,19 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/opencontainers/image-spec/blob/v1.1.0/LICENSE>
+**License URL:** <https://github.com/opencontainers/image-spec/blob/v1.1.1/LICENSE>
 
 ## github.com/opencontainers/runc/libcontainer/user
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/opencontainers/runc/blob/v1.1.14/LICENSE>
+**License URL:** <https://github.com/opencontainers/runc/blob/v1.2.3/LICENSE>
 
 ## github.com/opencontainers/runtime-spec/specs-go
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/opencontainers/runtime-spec/blob/v1.2.0/LICENSE>
+**License URL:** <https://github.com/opencontainers/runtime-spec/blob/v1.2.1/LICENSE>
 
 ## github.com/opencontainers/selinux
 
@@ -291,19 +237,19 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/sigstore/fulcio/blob/v1.4.5/LICENSE>
+**License URL:** <https://github.com/sigstore/fulcio/blob/v1.6.6/LICENSE>
 
-## github.com/sigstore/rekor/pkg/generated/models
+## github.com/sigstore/protobuf-specs/gen/pb-go/common/v1
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/sigstore/rekor/blob/v1.3.6/LICENSE>
+**License URL:** <https://github.com/sigstore/protobuf-specs/blob/v0.4.1/LICENSE>
 
 ## github.com/sigstore/sigstore/pkg
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/sigstore/sigstore/blob/v1.8.4/LICENSE>
+**License URL:** <https://github.com/sigstore/sigstore/blob/v1.9.5/LICENSE>
 
 ## github.com/spf13/cobra
 
@@ -329,53 +275,53 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/vbatts/go-mtree/blob/v0.5.0/pkg/govis/COPYING>
 
-## go.mongodb.org/mongo-driver
+## go.opentelemetry.io/auto/sdk
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/mongodb/mongo-go-driver/blob/v1.14.0/LICENSE>
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go-instrumentation/blob/sdk/v1.1.0/sdk/LICENSE>
 
 ## go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/open-telemetry/opentelemetry-go-contrib/blob/instrumentation/net/http/otelhttp/v0.53.0/instrumentation/net/http/otelhttp/LICENSE>
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go-contrib/blob/instrumentation/net/http/otelhttp/v0.60.0/instrumentation/net/http/otelhttp/LICENSE>
 
 ## go.opentelemetry.io/otel
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/v1.32.0/LICENSE>
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/v1.37.0/LICENSE>
 
 ## go.opentelemetry.io/otel/metric
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/metric/v1.32.0/metric/LICENSE>
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/metric/v1.37.0/metric/LICENSE>
 
 ## go.opentelemetry.io/otel/trace
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/trace/v1.32.0/trace/LICENSE>
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/trace/v1.37.0/trace/LICENSE>
 
 ## google.golang.org/genproto/googleapis/api
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/googleapis/go-genproto/blob/702378808489/googleapis/api/LICENSE>
+**License URL:** <https://github.com/googleapis/go-genproto/blob/57b25ae835d4/googleapis/api/LICENSE>
 
 ## google.golang.org/genproto/googleapis/rpc/status
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/googleapis/go-genproto/blob/702378808489/googleapis/rpc/LICENSE>
+**License URL:** <https://github.com/googleapis/go-genproto/blob/57b25ae835d4/googleapis/rpc/LICENSE>
 
 ## google.golang.org/grpc
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/grpc/grpc-go/blob/v1.70.0/LICENSE>
+**License URL:** <https://github.com/grpc/grpc-go/blob/v1.75.1/LICENSE>
 
 ## gopkg.in/yaml.v2
 
@@ -405,13 +351,13 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/imdario/mergo/blob/v1.0.1/LICENSE>
+**License URL:** <https://github.com/imdario/mergo/blob/v1.0.2/LICENSE>
 
 ## github.com/go-jose/go-jose/v4/json
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/go-jose/go-jose/blob/v4.0.5/json/LICENSE>
+**License URL:** <https://github.com/go-jose/go-jose/blob/v4.1.1/json/LICENSE>
 
 ## github.com/gogo/protobuf/proto
 
@@ -441,13 +387,13 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/grpc-ecosystem/grpc-gateway/blob/v2.26.1/LICENSE>
+**License URL:** <https://github.com/grpc-ecosystem/grpc-gateway/blob/v2.27.3/LICENSE>
 
 ## github.com/klauspost/compress/internal/snapref
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/klauspost/compress/blob/v1.17.11/internal/snapref/LICENSE>
+**License URL:** <https://github.com/klauspost/compress/blob/v1.18.0/internal/snapref/LICENSE>
 
 ## github.com/manifoldco/promptui
 
@@ -471,7 +417,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/proglottis/gpgme/blob/v0.1.3/LICENSE>
+**License URL:** <https://github.com/proglottis/gpgme/blob/v0.1.4/LICENSE>
 
 ## github.com/santhosh-tekuri/jsonschema/v3
 
@@ -501,13 +447,13 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/vbatts/tar-split/blob/v0.11.7/LICENSE>
+**License URL:** <https://github.com/vbatts/tar-split/blob/v0.12.1/LICENSE>
 
 ## golang.org/x/crypto
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.32.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.40.0:LICENSE>
 
 ## golang.org/x/exp/maps
 
@@ -519,37 +465,37 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/net/+/v0.33.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/net/+/v0.41.0:LICENSE>
 
-## golang.org/x/sync
+## golang.org/x/sync/semaphore
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/sync/+/v0.11.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/sync/+/v0.17.0:LICENSE>
 
 ## golang.org/x/sys
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/sys/+/v0.29.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/sys/+/v0.37.0:LICENSE>
 
 ## golang.org/x/term
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/term/+/v0.28.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/term/+/v0.36.0:LICENSE>
 
 ## golang.org/x/text
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/text/+/v0.22.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/text/+/v0.29.0:LICENSE>
 
 ## google.golang.org/protobuf
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/protocolbuffers/protobuf-go/blob/v1.36.5/LICENSE>
+**License URL:** <https://github.com/protocolbuffers/protobuf-go/blob/v1.36.10/LICENSE>
 
 ## github.com/davecgh/go-spew/spew
 
@@ -561,7 +507,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/BurntSushi/toml/blob/v1.4.0/COPYING>
+**License URL:** <https://github.com/BurntSushi/toml/blob/v1.5.0/COPYING>
 
 ## github.com/Masterminds/semver/v3
 
@@ -593,12 +539,6 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/apex/log/blob/v1.4.0/LICENSE>
 
-## github.com/asaskevich/govalidator
-
-**License:** MIT
-
-**License URL:** <https://github.com/asaskevich/govalidator/blob/a9d515a09cc2/LICENSE>
-
 ## github.com/cheynewallace/tabby
 
 **License:** MIT
@@ -627,7 +567,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/docker/docker-credential-helpers/blob/v0.8.2/LICENSE>
+**License URL:** <https://github.com/docker/docker-credential-helpers/blob/v0.9.3/LICENSE>
 
 ## github.com/fatih/color
 
@@ -653,12 +593,6 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/huandu/xstrings/blob/v1.5.0/LICENSE>
 
-## github.com/josharian/intern
-
-**License:** MIT
-
-**License URL:** <https://github.com/josharian/intern/blob/v1.0.0/license.md>
-
 ## github.com/json-iterator/go
 
 **License:** MIT
@@ -669,19 +603,13 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/klauspost/compress/blob/v1.17.11/zstd/internal/xxhash/LICENSE.txt>
+**License URL:** <https://github.com/klauspost/compress/blob/v1.18.0/zstd/internal/xxhash/LICENSE.txt>
 
 ## github.com/klauspost/pgzip
 
 **License:** MIT
 
 **License URL:** <https://github.com/klauspost/pgzip/blob/v1.2.6/LICENSE>
-
-## github.com/mailru/easyjson
-
-**License:** MIT
-
-**License URL:** <https://github.com/mailru/easyjson/blob/v0.7.7/LICENSE>
 
 ## github.com/mattn/go-colorable
 
@@ -705,19 +633,13 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/mattn/go-sqlite3/blob/v1.14.22/LICENSE>
+**License URL:** <https://github.com/mattn/go-sqlite3/blob/v1.14.28/LICENSE>
 
 ## github.com/mitchellh/copystructure
 
 **License:** MIT
 
 **License URL:** <https://github.com/mitchellh/copystructure/blob/v1.2.0/LICENSE>
-
-## github.com/mitchellh/mapstructure
-
-**License:** MIT
-
-**License URL:** <https://github.com/mitchellh/mapstructure/blob/v1.5.0/LICENSE>
 
 ## github.com/mitchellh/reflectwalk
 
@@ -741,7 +663,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/secure-systems-lab/go-securesystemslib/blob/v0.8.0/LICENSE>
+**License URL:** <https://github.com/secure-systems-lab/go-securesystemslib/blob/v0.9.0/LICENSE>
 
 ## github.com/shopspring/decimal
 
@@ -754,6 +676,12 @@ The dependencies and their licenses are as follows:
 **License:** MIT
 
 **License URL:** <https://github.com/sirupsen/logrus/blob/v1.9.3/LICENSE>
+
+## github.com/smallstep/pkcs7
+
+**License:** MIT
+
+**License URL:** <https://github.com/smallstep/pkcs7/blob/v0.1.1/LICENSE>
 
 ## github.com/spf13/cast
 
@@ -827,12 +755,6 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/vincent-petithory/dataurl/blob/v1.0.0/LICENSE>
 
-## go.mozilla.org/pkcs7
-
-**License:** MIT
-
-**License URL:** <https://github.com/mozilla-services/pkcs7/blob/33d05740a352/LICENSE>
-
 ## gopkg.in/yaml.v3
 
 **License:** MIT
@@ -861,7 +783,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MPL-2.0
 
-**License URL:** <https://github.com/letsencrypt/boulder/blob/89b07f4543e0/LICENSE.txt>
+**License URL:** <https://github.com/letsencrypt/boulder/blob/de9c06129bec/LICENSE.txt>
 
 ## github.com/talos-systems/go-smbios/smbios
 
@@ -873,5 +795,5 @@ The dependencies and their licenses are as follows:
 
 **License:** Unlicense
 
-**License URL:** <https://github.com/vbauerster/mpb/blob/v8.7.5/UNLICENSE>
+**License URL:** <https://github.com/vbauerster/mpb/blob/v8.10.2/UNLICENSE>
 

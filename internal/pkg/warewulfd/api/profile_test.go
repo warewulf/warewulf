@@ -222,7 +222,7 @@ func TestProfileAPI(t *testing.T) {
 			assert.NoError(t, resp.Body.Close())
 
 			ja := jsonassert.New(t)
-			ja.Assertf(string(body), tt.response) //nolint:govet
+			ja.Assert(string(body), tt.response)
 
 			if tt.resultConf != "" {
 				assert.YAMLEq(t, tt.resultConf, env.ReadFile("/etc/warewulf/nodes.conf"))
