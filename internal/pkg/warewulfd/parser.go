@@ -96,6 +96,12 @@ func parseHwaddr(hwaddr string) string {
 	return hwaddr
 }
 
+// parseRequest extracts provisioning parameters from an HTTP request. The
+// stage and hwaddr are taken from the URL path, with fallbacks to query
+// parameters and ARP cache lookup for hwaddr. Stage aliases (e.g.
+// "container", "overlay-system") are normalized to their canonical names.
+//
+// See userdocs/server/routes.rst for more information.
 func parseRequest(req *http.Request) (parsedRequest, error) {
 	var ret parsedRequest
 

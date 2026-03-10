@@ -1,3 +1,8 @@
+// Package warewulfd implements the Warewulf provisioning daemon, handling
+// HTTP requests from compute nodes for boot files, kernel images, overlays,
+// and EFI bootloaders.
+//
+// See userdocs/server/routes.rst for more information.
 package warewulfd
 
 import (

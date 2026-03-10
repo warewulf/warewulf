@@ -1,3 +1,7 @@
+// Package server starts the Warewulf HTTP(S) server, registers provisioning
+// and API routes, and handles TLS configuration and SIGHUP-triggered reloads.
+//
+// See userdocs/server/routes.rst for more information.
 package server
 
 import (
