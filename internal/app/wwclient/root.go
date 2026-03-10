@@ -316,12 +316,11 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 		values := &url.Values{}
 		values.Set("assetkey", tag)
 		values.Set("uuid", localUUID.String())
-		values.Set("stage", "runtime")
 		values.Set("compress", "gz")
 		getURL := &url.URL{
 			Scheme:   scheme,
 			Host:     fmt.Sprintf("%s:%d", ipaddr, port),
-			Path:     fmt.Sprintf("provision/%s", wwid),
+			Path:     fmt.Sprintf("runtime/%s", wwid),
 			RawQuery: values.Encode(),
 		}
 		wwlog.Debug("making request: %s", getURL)
