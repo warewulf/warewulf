@@ -13,6 +13,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Allow whitespace to be trimmed for wwdoc comments. #2109
 - update go-chi to 5.2.5 to fix  CVE-2025-69725
 - Prevented profile `comment` field from being inherited by nodes. #2078
+- Error handling for /newroot mount during single-stage boot
+- Bugfix for command-line arguments during single-stage image unpacking
 
 ### Added
 
