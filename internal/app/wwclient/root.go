@@ -28,6 +28,7 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/pidfile"
 	"github.com/warewulf/warewulf/internal/pkg/version"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
+	"github.com/warewulf/warewulf/internal/pkg/wwurl"
 )
 
 var (
@@ -340,7 +341,7 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 				counter = 0
 			}
 			if counter == 0 {
-				wwlog.Error("%s", err)
+				wwlog.Error("%s", wwurl.SanitizeError(err))
 			}
 			counter++
 		}
