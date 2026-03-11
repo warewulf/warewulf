@@ -1,6 +1,10 @@
 package wwclient
 
 import (
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/pem"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -112,9 +116,31 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		wwlog.Info("running from trusted port: %d", localTCPAddr.Port)
 	}
 
+	tlsConfig := &tls.Config{MinVersion: tls.VersionTLS13}
+	if conf.Warewulf.TLSEnabled() {
+		caCert, err := os.ReadFile("/warewulf/tls/warewulf.crt")
+		if err != nil {
+			wwlog.Error("failed to read ca cert: %s", err)
+			return err
+		}
+		block, _ := pem.Decode(caCert)
+		if block == nil {
+			wwlog.Warn("failed to parse certificate PEM")
+		} else if cert, err := x509.ParseCertificate(block.Bytes); err == nil {
+			wwlog.Info("using cert: %s", cert.SerialNumber)
+		} else {
+			wwlog.Warn("parsing cert failed: %s", err)
+		}
+
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+		tlsConfig.RootCAs = caCertPool
+	}
+
 	Webclient = &http.Client{
 		Transport: &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
+			TLSClientConfig: tlsConfig,
+			Proxy:           http.ProxyFromEnvironment,
 			DialContext: (&net.Dialer{
 				LocalAddr: &localTCPAddr,
 				Timeout:   30 * time.Second,
@@ -216,7 +242,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 				stopTimer.Reset(0)
 			case syscall.SIGTERM, syscall.SIGINT:
 				wwlog.Info("terminating wwclient, %v", sig)
-				// Signal main loop to exit instead of calling os.Exit(0)
+				// Signal main loop to exit gracefully
 				exitChan <- true
 				return
 			}
@@ -232,8 +258,17 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		}
 	}
 
+	port := conf.Warewulf.Port
+	scheme := "http"
+	if conf.Warewulf.TLSEnabled() {
+		port = conf.Warewulf.TlsPort
+		scheme = "https"
+	}
+
 	for {
-		updateSystem(target, ipaddr, conf.Warewulf.Port, wwid, tag, localUUID)
+		if err := updateSystem(target, ipaddr, port, wwid, tag, localUUID, scheme); err != nil {
+			return err
+		}
 		if !finishedInitialSync {
 			// Notify systemd that the service has started successfully.
 			//
@@ -274,7 +309,7 @@ func parseWWIDFromCmdline(cmdline string) (string, error) {
 	return "", fmt.Errorf("wwid parameter not found in kernel command line")
 }
 
-func updateSystem(target string, ipaddr string, port int, wwid string, tag string, localUUID uuid.UUID) {
+func updateSystem(target string, ipaddr string, port int, wwid string, tag string, localUUID uuid.UUID, scheme string) error {
 	var resp *http.Response
 	counter := 0
 	for {
@@ -285,7 +320,7 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 		values.Set("stage", "runtime")
 		values.Set("compress", "gz")
 		getURL := &url.URL{
-			Scheme:   "http",
+			Scheme:   scheme,
 			Host:     fmt.Sprintf("%s:%d", ipaddr, port),
 			Path:     fmt.Sprintf("provision/%s", wwid),
 			RawQuery: values.Encode(),
@@ -293,9 +328,16 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 		wwlog.Debug("making request: %s", getURL)
 		resp, err = Webclient.Get(getURL.String())
 		if err == nil {
-			defer resp.Body.Close()
 			break
 		} else {
+			var certificateInvalidError x509.CertificateInvalidError
+			var unknownAuthorityError x509.UnknownAuthorityError
+			var hostnameError x509.HostnameError
+			if errors.As(err, &certificateInvalidError) ||
+				errors.As(err, &unknownAuthorityError) ||
+				errors.As(err, &hostnameError) {
+				return fmt.Errorf("TLS connection failed: %w", err)
+			}
 			if counter > 60 {
 				counter = 0
 			}
@@ -306,10 +348,11 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 		}
 		time.Sleep(1000 * time.Millisecond)
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
 		wwlog.Warn("not applying runtime overlay: got status code: %d", resp.StatusCode)
 		time.Sleep(60000 * time.Millisecond)
-		return
+		return nil
 	}
 
 	wwlog.Info("applying runtime overlay")
@@ -318,7 +361,7 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 	tempDir, err := os.MkdirTemp("", "wwclient-")
 	if err != nil {
 		wwlog.Error("failed to create temp directory: %s", err)
-		return
+		return nil
 	}
 	defer os.RemoveAll(tempDir)
 	wwlog.Debug("unpacking runtime overlay to %s", tempDir)
@@ -327,7 +370,7 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 	err = command.Run()
 	if err != nil {
 		wwlog.Error("failed running cpio: %s", err)
-		return
+		return nil
 	}
 
 	// Atomically move files from temp directory to current working directory
@@ -335,6 +378,7 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 	if err != nil {
 		wwlog.Error("failed to apply overlay: %s", err)
 	}
+	return nil
 }
 
 func atomicApplyOverlay(srcDir, destDir string) error {

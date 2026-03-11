@@ -16,6 +16,29 @@ import (
 	"golang.org/x/term"
 )
 
+func displayStage(stage string) string {
+	switch stage {
+	case "efiboot":
+		return "EFI"
+	case "grub":
+		return "GRUB"
+	case "ipxe":
+		return "IPXE"
+	case "kernel":
+		return "KERNEL"
+	case "image":
+		return "IMAGE"
+	case "system":
+		return "SYSTEM OVERLAY"
+	case "runtime":
+		return "RUNTIME OVERLAY"
+	case "initramfs":
+		return "INITRAMFS"
+	default:
+		return strings.ToUpper(stage)
+	}
+}
+
 func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 
 	controller := warewulfconf.Get()
@@ -102,11 +125,11 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 					continue
 				}
 				if rightnow-o.Lastseen >= int64(controller.Warewulf.UpdateInterval*2) {
-					color.Red("%-20s %-20s %-25s %-10d\n", o.NodeName, o.Stage, o.Sent, rightnow-o.Lastseen)
+					color.Red("%-20s %-20s %-25s %-10d\n", o.NodeName, displayStage(o.Stage), o.Sent, rightnow-o.Lastseen)
 				} else if rightnow-o.Lastseen >= int64(controller.Warewulf.UpdateInterval+5) {
-					color.Yellow("%-20s %-20s %-25s %-10d\n", o.NodeName, o.Stage, o.Sent, rightnow-o.Lastseen)
+					color.Yellow("%-20s %-20s %-25s %-10d\n", o.NodeName, displayStage(o.Stage), o.Sent, rightnow-o.Lastseen)
 				} else {
-					fmt.Printf("%-20s %-20s %-25s %-10d\n", o.NodeName, o.Stage, o.Sent, rightnow-o.Lastseen)
+					fmt.Printf("%-20s %-20s %-25s %-10d\n", o.NodeName, displayStage(o.Stage), o.Sent, rightnow-o.Lastseen)
 				}
 			} else {
 				color.HiBlack("%-20s %-20s %-25s %-10s\n", o.NodeName, "--", "--", "--")

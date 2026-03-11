@@ -1,0 +1,6 @@
+{{- $crt := Include "tls/warewulf.crt" -}}
+{{- if eq $crt "" -}}
+{{ abort }}
+{{- else -}}
+{{ $crt }}
+{{- end -}}

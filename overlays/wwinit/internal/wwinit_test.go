@@ -15,6 +15,8 @@ func Test_wwinitOverlay(t *testing.T) {
 	defer env.RemoveAll()
 	env.ImportFile("etc/warewulf/warewulf.conf", "warewulf.conf")
 	env.ImportFile("etc/warewulf/nodes.conf", "nodes.conf")
+	env.Configure() // Reload configuration to pick up the changes to warewulf.conf and nodes.conf
+
 	env.ImportFile("var/lib/warewulf/overlays/wwinit/rootfs/etc/warewulf/warewulf.conf.ww", "../rootfs/etc/warewulf/warewulf.conf.ww")
 	env.ImportFile("var/lib/warewulf/overlays/wwinit/rootfs/warewulf/config.ww", "../rootfs/warewulf/config.ww")
 	env.ImportFile("var/lib/warewulf/overlays/wwinit/rootfs/warewulf/init.d/50-ipmi.ww", "../rootfs/warewulf/init.d/50-ipmi.ww")
@@ -100,6 +102,9 @@ WWIPMI_GATEWAY="192.168.4.1"
 WWIPMI_USER="user"
 WWIPMI_PASSWORD="password"
 WWIPMI_WRITE="true"
+WWTLS=false
+WWTLSPORT=9874
+WWIPADDR=192.168.0.1
 `
 
 const wwinit_50_ipmi string = `backupFile: true

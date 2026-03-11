@@ -1,12 +1,13 @@
 package configure
 
 import (
+	"fmt"
 	"os"
 	"path"
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/image"
 	"github.com/warewulf/warewulf/internal/pkg/util"
-	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"golang.org/x/sys/unix"
 )
@@ -35,7 +36,7 @@ func TFTP() (err error) {
 	}
 
 	if controller.Warewulf.GrubBoot() {
-		err := warewulfd.CopyShimGrub()
+		err := CopyShimGrub()
 		if err != nil {
 			wwlog.Warn("error when copying shim/grub binaries: %s", err)
 		}
@@ -69,4 +70,31 @@ func TFTP() (err error) {
 	}
 
 	return nil
+}
+
+func CopyShimGrub() (err error) {
+	conf := warewulfconf.Get()
+	wwlog.Debug("copy shim and grub binaries from host")
+	shimPath := image.ShimFind("")
+	if shimPath == "" {
+		return fmt.Errorf("no shim found on the host os")
+	}
+	err = util.CopyFile(shimPath, path.Join(conf.TFTP.TftpRoot, "warewulf", "shim.efi"))
+	if err != nil {
+		return err
+	}
+	_ = os.Chmod(path.Join(conf.TFTP.TftpRoot, "warewulf", "shim.efi"), 0o755)
+	grubPath := image.GrubFind("")
+	if grubPath == "" {
+		return fmt.Errorf("no grub found on host os")
+	}
+	err = util.CopyFile(grubPath, path.Join(conf.TFTP.TftpRoot, "warewulf", "grub.efi"))
+	if err != nil {
+		return err
+	}
+	_ = os.Chmod(path.Join(conf.TFTP.TftpRoot, "warewulf", "grub.efi"), 0o755)
+	err = util.CopyFile(grubPath, path.Join(conf.TFTP.TftpRoot, "warewulf", "grubx64.efi"))
+	_ = os.Chmod(path.Join(conf.TFTP.TftpRoot, "warewulf", "grubx64.efi"), 0o755)
+
+	return
 }

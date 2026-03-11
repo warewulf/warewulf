@@ -23,6 +23,7 @@ Welcome to the Warewulf User Guide!
    Server Installation <server/installation>
    Controlling Warewulf (wwctl) <server/wwctl>
    Server Configuration <server/configuration>
+   Server Routes <server/routes>
    Using dnsmasq <server/dnsmasq>
    Security <server/security>
    Bootloaders <server/bootloaders>

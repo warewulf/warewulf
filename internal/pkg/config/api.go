@@ -29,6 +29,7 @@ func (n IPNet) IPNet() net.IPNet {
 
 type APIConf struct {
 	EnabledP    *bool   `yaml:"enabled,omitempty"         default:"false"`
+	TLSEnabledP *bool   `yaml:"tls,omitempty"`
 	AllowedNets []IPNet `yaml:"allowed subnets,omitempty" default:"[\"127.0.0.0/8\", \"::1/128\"]"`
 }
 
@@ -48,4 +49,8 @@ func (conf *APIConf) Unmarshal(unmarshal func(interface{}) error) error {
 
 func (conf APIConf) Enabled() bool {
 	return util.BoolP(conf.EnabledP)
+}
+
+func (conf APIConf) TLSEnabled() bool {
+	return util.BoolP(conf.TLSEnabledP)
 }

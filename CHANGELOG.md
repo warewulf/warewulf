@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## v4.6.6, unreleased
+## v4.7.0, unreleased
 
 ### Fixed
 
@@ -13,13 +13,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Allow whitespace to be trimmed for wwdoc comments. #2109
 - update go-chi to 5.2.5 to fix  CVE-2025-69725
 - Prevented profile `comment` field from being inherited by nodes. #2078
+- Error handling for /newroot mount during single-stage boot
+- Bugfix for command-line arguments during single-stage image unpacking
 
 ### Added
 
-- New --partwipe flag for profile and node set
+- New `--partwipe` flag for profile and node set
 - Updated arguments for `ValidString` to match `regexp.MatchString`
 - New `mig` overlay to configure NVIDIA MIG devices. #2102
 - Documented that booting a node twice fixes broken partition tables
+- Updated arguments for `ValidString` to match `regexp.MatchString`
+- New `mig` overlay to configure NVIDIA MIG devices. #2102
+- TLS with the command `wwctl configure tls` for key management.
+  Keys can be created automtically or imported. The runtime overlay is
+  if TLS is enabled is not distributed over plain http.
+  
+- Documented that booting a node twice fixes broken partition tables
+- TLS support for `warewulfd` and REST API
+- New `wwctl configure tls` command to generate and configure TLS keys and
+  certificates
+- New dedicated `warewulfd` server routes (`/ipxe/`, `/kernel/`, `/image/`,
+  `/initramfs/`, `/system/`, `/runtime/`, `/grub/`, `/efiboot/`)
+
+### Changed
+
+- Runtime overlay download failure during dracut/wwinit boot is now non-fatal;
+  the node continues to boot and `wwclient` retries the download at runtime.
+- `hosts` overlay added to the default system overlay list
 
 ## v4.6.5, 2026-01-12
 

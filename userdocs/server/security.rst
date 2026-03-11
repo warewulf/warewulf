@@ -40,6 +40,10 @@ There are multiple ways to secure the Warewulf provisioning process:
   This means that the nodes only boot the kernel which is provided by the
   distributor and also custom complied modules can't be loaded.
 
+* TLS (transport layer security) can be enabled for the Warewulf server. When
+  enabled, HTTPS is used when transferring runtime overlays. The kernel and
+  system image are *always* transferred unencrypted.
+
 SELinux
 =======
 
@@ -82,3 +86,36 @@ with the Warewulf server.
    nft add rule inet filter input tcp dport 9873 accept
    nft list ruleset >/etc/nftables.conf
    systemctl restart nftables
+
+TLS / HTTPS
+===========
+
+TLS can be enabled by setting ``tls: true`` in the Warewulf server
+configuration.
+
+.. code-block:: yaml
+
+   warewulf:
+     tls: true
+     tls port: 9874
+
+This enables an HTTPS server on the TLS port (default: ``9874``). A key and
+self-signed certificate can be created with ``wwctl configure tls``.
+
+By default, the key and certificate are stored in ``/etc/warewulf/tls/``.
+
+You can also import your own keys with ``wwctl configure tls --import``.
+
+If HTTPS is enabled the delivery of the runtime overlay is disabled over HTTP,
+and the runtime overlay is only retrieved by ``wwclient``.
+
+To additionally require TLS for access to the REST API, set ``tls: true`` under
+the ``api:`` section:
+
+.. code-block:: yaml
+
+   api:
+     enabled: true
+     tls: true
+
+When ``api: tls`` is set, the REST API rejects plain-HTTP requests.

@@ -21,6 +21,7 @@ warewulf:
   host overlay: true
   port: 9873
   secure: true
+  tls port: 9874
   update interval: 60
 nfs:
   enabled: true
@@ -67,6 +68,7 @@ warewulf:
   host overlay: true
   port: 9873
   secure: true
+  tls port: 9874
   update interval: 60
 nfs:
   enabled: true
@@ -115,6 +117,7 @@ warewulf:
   host overlay: true
   port: 9873
   secure: true
+  tls port: 9874
   update interval: 60
 nfs:
   enabled: true
@@ -160,6 +163,7 @@ warewulf:
   host overlay: true
   port: 9873
   secure: true
+  tls port: 9874
   update interval: 60
 nfs:
   enabled: true
@@ -234,6 +238,7 @@ warewulf:
   host overlay: true
   port: 9873
   secure: false
+  tls port: 9874
   update interval: 60
 nfs:
   enabled: true
