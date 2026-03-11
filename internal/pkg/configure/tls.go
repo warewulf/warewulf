@@ -100,7 +100,7 @@ func GenTLSKeys() error {
 	if err != nil {
 		return fmt.Errorf("failed to open key file for writing: %w", err)
 	}
-	defer keyOut.Close()
+	defer func() { _ = keyOut.Close() }()
 	if err := pem.Encode(keyOut, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(priv)}); err != nil {
 		return fmt.Errorf("failed to write data to key file: %w", err)
 	}
@@ -109,7 +109,7 @@ func GenTLSKeys() error {
 	if err != nil {
 		return fmt.Errorf("failed to open cert file for writing: %w", err)
 	}
-	defer certOut.Close()
+	defer func() { _ = certOut.Close() }()
 	if err := pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes}); err != nil {
 		return fmt.Errorf("failed to write data to cert file: %w", err)
 	}

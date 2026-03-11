@@ -52,7 +52,7 @@ nodes:
 			w := httptest.NewRecorder()
 			HandleInitramfs(w, req)
 			res := w.Result()
-			defer res.Body.Close()
+			defer func() { _ = res.Body.Close() }()
 
 			assert.Equal(t, tt.status, res.StatusCode)
 		})

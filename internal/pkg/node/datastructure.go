@@ -1,11 +1,18 @@
 package node
 
 import (
+	"encoding/gob"
 	"net"
 
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwtype"
 )
+
+func init() {
+	gob.Register([]interface{}{})
+	gob.Register(map[string]interface{}{})
+	gob.Register(map[interface{}]interface{}{})
+}
 
 /******
  * YAML data representations

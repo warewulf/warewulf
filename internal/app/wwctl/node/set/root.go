@@ -34,7 +34,7 @@ func GetCommand() *cobra.Command {
 	vars.nodeConf.CreateFlags(baseCmd)
 	vars.nodeAdd.CreateAddFlags(baseCmd)
 	vars.nodeDel.CreateDelFlags(baseCmd)
-	flags.AddContainer(baseCmd, &(vars.nodeConf.Profile.ImageName))
+	flags.AddContainer(baseCmd, &(vars.nodeConf.ImageName))
 	flags.AddWwinit(baseCmd, &(vars.nodeConf.SystemOverlay))
 	flags.AddRuntime(baseCmd, &(vars.nodeConf.RuntimeOverlay))
 	baseCmd.PersistentFlags().BoolVarP(&vars.setNodeAll, "all", "a", false, "Set all nodes")

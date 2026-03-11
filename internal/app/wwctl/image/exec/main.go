@@ -99,8 +99,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if !image.ValidSource(imageName) {
 		return fmt.Errorf("unknown Warewulf image: %s", imageName)
 	}
-	os.Setenv("WW_CONTAINER_SHELL", imageName)
-	os.Setenv("WW_IMAGE_SHELL", imageName)
+	_ = os.Setenv("WW_CONTAINER_SHELL", imageName)
+	_ = os.Setenv("WW_IMAGE_SHELL", imageName)
 
 	imagePath := image.RootFsDir(imageName)
 
@@ -213,7 +213,7 @@ func (cf *copyFile) shouldRemoveFromImage(imageName string) bool {
 	} else if destStat, err := os.Stat(imageDest); err != nil {
 		wwlog.Verbose("file is no longer present: %s (%s)", cf.fileName, err)
 		return false
-	} else if destStat.ModTime() == cf.modTime {
+	} else if destStat.ModTime().Equal(cf.modTime) {
 		wwlog.Verbose("don't remove modified file:", cf.fileName)
 		return false
 	} else {

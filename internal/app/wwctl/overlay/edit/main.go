@@ -43,7 +43,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	overlayFile := myOverlay.File(fileName)
 	wwlog.Debug("Will edit overlay file: %s", overlayFile)
 	overlayFileDir := path.Dir(overlayFile)
-	if !(util.IsDir(overlayFileDir) || CreateDirs) {
+	if !util.IsDir(overlayFileDir) && !CreateDirs {
 		return fmt.Errorf("%s does not exist. Use '--parents' option to create automatically", overlayFileDir)
 	}
 
@@ -51,7 +51,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	if tempFileErr != nil {
 		return fmt.Errorf("unable to create temporary file for editing: %s", tempFileErr)
 	}
-	defer os.Remove(tempFile.Name())
+	defer func() { _ = os.Remove(tempFile.Name()) }()
 	wwlog.Debug("Using temporary file %s", tempFile.Name())
 
 	if util.IsFile(overlayFile) {
@@ -62,20 +62,22 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		if _, err := io.Copy(tempFile, originalFile); err != nil {
 			return fmt.Errorf("unable to copy %s to %s for editing: %s", originalFile.Name(), tempFile.Name(), err)
 		}
-		originalFile.Close()
+		_ = originalFile.Close()
 	} else if filepath.Ext(overlayFile) == ".ww" {
 		if _, err := tempFile.Write([]byte(initialTemplate)); err != nil {
 			return fmt.Errorf("unable to write to %s: %s", tempFile.Name(), err)
 		}
 	}
-	tempFile.Close()
+	if err := tempFile.Close(); err != nil {
+		return fmt.Errorf("failed to close temp file %s: %w", tempFile.Name(), err)
+	}
 
 	initialFile, err := os.Open(tempFile.Name())
 	if err != nil {
 		return fmt.Errorf("unable to open temp file for hashing: %s", err)
 	}
 	initialHash, err := util.HashFile(initialFile)
-	initialFile.Close()
+	_ = initialFile.Close()
 	if err != nil {
 		return fmt.Errorf("unable to calculate initial hash of %s: %s", tempFile.Name(), err)
 	}
@@ -93,7 +95,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		return fmt.Errorf("unable to open temp file for final hashing: %s", err)
 	}
 	finalHash, err := util.HashFile(finalFile)
-	finalFile.Close()
+	_ = finalFile.Close()
 	if err != nil {
 		return fmt.Errorf("unable to calculate final hash of %s: %s", tempFile.Name(), err)
 	}

@@ -42,7 +42,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	// Add newline after wwdoc lines if they exist
 	if hasWwdoc {
-		fmt.Fprintln(cmd.OutOrStdout())
+		_, _ = fmt.Fprintln(cmd.OutOrStdout())
 	}
 
 	// Sort variables by name for consistent output

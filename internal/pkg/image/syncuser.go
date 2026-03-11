@@ -160,7 +160,7 @@ func (db syncDB) read(fileName string, fromimage bool) error {
 	if file, err := os.Open(fileName); err != nil {
 		return err
 	} else {
-		defer file.Close()
+		defer func() { _ = file.Close() }()
 		fileScanner := bufio.NewScanner(file)
 		for fileScanner.Scan() {
 			line := fileScanner.Text()
@@ -293,7 +293,7 @@ func (db syncDB) getOnlyimageLines(fileName string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 	fileScanner := bufio.NewScanner(file)
 
 	var lines []string

@@ -250,7 +250,7 @@ func Test_Log(t *testing.T) {
 			outCh <- string(out)
 		}()
 
-		w.Close()
+		_ = w.Close()
 		os.Stderr = oldErr
 		out := <-outCh
 		if tt.exactMatch {

@@ -25,6 +25,34 @@ var overlayImageTests = []struct {
 	{"node with context and overlays", "node1", "system", []string{"o1", "o2"}, "p/overlays/node1/__SYSTEM__.img"},
 }
 
+var validateOverlayNameTests = []struct {
+	name    string
+	wantErr bool
+}{
+	{"valid", false},
+	{"valid-with-dashes", false},
+	{"valid.with.dots", false},
+	{"valid_underscore", false},
+	{"", true},
+	{"../../etc", true},
+	{"../foo", true},
+	{"/etc/passwd", true},
+	{"foo/bar", true},
+	{"foo bar", true},
+	{"foo\x00bar", true},
+}
+
+func Test_validateOverlayName(t *testing.T) {
+	for _, tt := range validateOverlayNameTests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateOverlayName(tt.name)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("validateOverlayName(%q) error = %v, wantErr %v", tt.name, err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func Test_OverlayImage(t *testing.T) {
 	conf := warewulfconf.Get()
 	conf.Paths.WWProvisiondir = "p"

@@ -19,7 +19,7 @@ func Test_List(t *testing.T) {
 		t.Errorf("Could not create temp folder: %v", err)
 		t.FailNow()
 	}
-	defer os.RemoveAll(tmpdir)
+	defer func() { _ = os.RemoveAll(tmpdir) }()
 
 	overlayDir := fmt.Sprintf("%s/overlay", tmpdir)
 	err = os.MkdirAll(overlayDir, 0o755)
@@ -40,7 +40,7 @@ func Test_List(t *testing.T) {
 		t.Errorf("Could not create tempfile")
 		t.FailNow()
 	}
-	file.Close()
+	_ = file.Close()
 	err = os.Chmod(file.Name(), 0o755)
 	if err != nil {
 		t.Errorf("Could not change the file %s mode: %v", file.Name(), err)

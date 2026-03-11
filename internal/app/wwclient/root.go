@@ -22,8 +22,8 @@ import (
 	"github.com/coreos/go-systemd/daemon"
 	"github.com/google/uuid"
 	"github.com/opencontainers/selinux/go-selinux"
+	"github.com/siderolabs/go-smbios/smbios"
 	"github.com/spf13/cobra"
-	"github.com/talos-systems/go-smbios/smbios"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/pidfile"
 	"github.com/warewulf/warewulf/internal/pkg/version"
@@ -170,10 +170,8 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	var tag string
 	smbiosDump, smbiosErr := smbios.New()
 	if smbiosErr == nil {
-		sysinfoDump := smbiosDump.SystemInformation()
-		localUUID, _ = sysinfoDump.UUID()
-		x := smbiosDump.SystemEnclosure()
-		tag = strings.ReplaceAll(x.AssetTagNumber(), " ", "_")
+		localUUID, _ = uuid.Parse(smbiosDump.SystemInformation.UUID)
+		tag = strings.ReplaceAll(smbiosDump.SystemEnclosure.AssetTagNumber, " ", "_")
 		if tag == "Unknown" {
 			dmiOut, err := exec.Command("dmidecode", "-s", "chassis-asset-tag").Output()
 			if err == nil {
@@ -248,7 +246,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			}
 		}
 	}()
-	var finishedInitialSync bool = false
+	finishedInitialSync := false
 	ipaddr := os.Getenv("WW_IPADDR")
 	if ipaddr == "" {
 		if conf.Ipaddr6 != "" {
@@ -348,7 +346,7 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 		}
 		time.Sleep(1000 * time.Millisecond)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != 200 {
 		wwlog.Warn("not applying runtime overlay: got status code: %d", resp.StatusCode)
 		time.Sleep(60000 * time.Millisecond)
@@ -363,7 +361,11 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 		wwlog.Error("failed to create temp directory: %s", err)
 		return nil
 	}
-	defer os.RemoveAll(tempDir)
+	defer func() {
+		if err := os.RemoveAll(tempDir); err != nil {
+			wwlog.Warn("failed to remove temp directory %s: %s", tempDir, err)
+		}
+	}()
 	wwlog.Debug("unpacking runtime overlay to %s", tempDir)
 	command := exec.Command("/bin/sh", "-c", fmt.Sprintf("gzip -dc | cpio -imu --directory=%s", tempDir))
 	command.Stdin = resp.Body
@@ -471,7 +473,7 @@ func atomicApplyOverlay(srcDir, destDir string) error {
 			wwlog.Debug("moving symlink %s to %s", tempPath, destPath)
 			err = os.Rename(tempPath, destPath)
 			if err != nil {
-				os.Remove(tempPath)
+				_ = os.Remove(tempPath)
 				return fmt.Errorf("failed to atomically move symlink %s to %s: %w", tempPath, destPath, err)
 			}
 
@@ -510,7 +512,7 @@ func atomicApplyOverlay(srcDir, destDir string) error {
 			wwlog.Debug("copying file from %s to temp location %s", srcPath, tempPath)
 			err = copyFile(srcPath, tempPath, info)
 			if err != nil {
-				os.Remove(tempPath)
+				_ = os.Remove(tempPath)
 				return fmt.Errorf("failed to copy %s to temp location: %w", srcPath, err)
 			}
 
@@ -525,7 +527,7 @@ func atomicApplyOverlay(srcDir, destDir string) error {
 			wwlog.Debug("moving %s to %s", tempPath, destPath)
 			err = os.Rename(tempPath, destPath)
 			if err != nil {
-				os.Remove(tempPath)
+				_ = os.Remove(tempPath)
 				return fmt.Errorf("failed to atomically move %s to %s: %w", tempPath, destPath, err)
 			}
 		}
@@ -534,18 +536,22 @@ func atomicApplyOverlay(srcDir, destDir string) error {
 	})
 }
 
-func copyFile(src, dst string, srcInfo os.FileInfo) error {
+func copyFile(src, dst string, srcInfo os.FileInfo) (err error) {
 	srcFile, err := os.Open(src)
 	if err != nil {
 		return err
 	}
-	defer srcFile.Close()
+	defer func() { _ = srcFile.Close() }()
 
 	dstFile, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, srcInfo.Mode())
 	if err != nil {
 		return err
 	}
-	defer dstFile.Close()
+	defer func() {
+		if cerr := dstFile.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
 
 	_, err = io.Copy(dstFile, srcFile)
 	if err != nil {

@@ -305,7 +305,7 @@ func TestInitializedFromFile(t *testing.T) {
 	example_warewulf_conf := ""
 	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
 	assert.NoError(t, warewulfConfErr)
-	defer os.Remove(tempWarewulfConf.Name())
+	defer func() { _ = os.Remove(tempWarewulfConf.Name()) }()
 	_, warewulfConfErr = tempWarewulfConf.Write([]byte(example_warewulf_conf))
 	assert.NoError(t, warewulfConfErr)
 	assert.NoError(t, tempWarewulfConf.Sync())

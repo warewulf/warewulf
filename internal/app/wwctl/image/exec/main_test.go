@@ -82,8 +82,8 @@ func Test_Exec(t *testing.T) {
 				nodeName = ""
 				Build = true
 				SyncUser = false
-				os.Remove(env.GetPath("/srv/warewulf/images/test.img"))
-				os.Remove(env.GetPath("/srv/warewulf/images/test.img.gz"))
+				_ = os.Remove(env.GetPath("/srv/warewulf/images/test.img"))
+				_ = os.Remove(env.GetPath("/srv/warewulf/images/test.img.gz"))
 			}()
 			cmd := GetCommand()
 			cmd.SetArgs(tt.args)
