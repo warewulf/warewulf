@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Remove requisite dependency between ignition disk target and ignition service. #2083
 - Return HTTP 409 status when creating an existing overlay
 - Allow whitespace to be trimmed for wwdoc comments. #2109
-- update go-chi to 5.2.5 to fix  CVE-2025-69725
+- update go-chi to 5.2.5 to fix CVE-2025-69725
 - Prevented profile `comment` field from being inherited by nodes. #2078
 - Error handling for /newroot mount during single-stage boot
 - Bugfix for command-line arguments during single-stage image unpacking
@@ -65,6 +65,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Runtime overlay download failure during dracut/wwinit boot is now non-fatal;
   the node continues to boot and `wwclient` retries the download at runtime.
 - `hosts` overlay added to the default system overlay list
+
+### Changed
+
+- Updated `MAINTAINING.md` to document golang version policy
 
 ## v4.6.5, 2026-01-12
 

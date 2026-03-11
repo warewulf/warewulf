@@ -131,3 +131,19 @@ by vote of the remaining TSC members.
 
 - A patch release may be published by the TSC whenever one or more
   changes have been ported to a minor branch.
+
+## Golang version
+
+- Warewulf is built with the most recent version of Go that is available
+  as a system package across the Linux distributions for which Warewulf
+  [publishes official packages](https://github.com/warewulf/warewulf/blob/main/.github/workflows/release.yml),
+  in consultation with the OpenHPC project and its Go version requirements.
+
+- The minimum Go version declared in `go.mod` is updated at the start
+  of each minor release cycle to reflect the Go version available
+  across all supported distributions.
+
+### Notes
+
+- On EL8, Go is installed using the `go-toolset` module from the
+  appstream repository.
