@@ -100,7 +100,7 @@ nodes:
 			w := httptest.NewRecorder()
 			HandleOverlayFile(w, req)
 			res := w.Result()
-			defer res.Body.Close()
+			defer func() { _ = res.Body.Close() }()
 
 			data, readErr := io.ReadAll(res.Body)
 			assert.NoError(t, readErr)
@@ -168,7 +168,7 @@ nodes:
 			w := httptest.NewRecorder()
 			HandleSystemOverlay(w, req)
 			res := w.Result()
-			defer res.Body.Close()
+			defer func() { _ = res.Body.Close() }()
 
 			data, readErr := io.ReadAll(res.Body)
 			assert.NoError(t, readErr)

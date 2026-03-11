@@ -346,7 +346,7 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 		}
 		time.Sleep(1000 * time.Millisecond)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != 200 {
 		wwlog.Warn("not applying runtime overlay: got status code: %d", resp.StatusCode)
 		time.Sleep(60000 * time.Millisecond)

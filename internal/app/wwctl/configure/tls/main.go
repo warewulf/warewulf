@@ -48,7 +48,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if err := os.Chmod(certFile, 0644); err != nil {
 			return fmt.Errorf("failed to set cert file permissions: %w", err)
 		}
-		fmt.Fprintf(cmd.OutOrStdout(), "Imported keys from %s\n", importPath)
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Imported keys from %s\n", importPath)
 
 		if err := configure.WAREWULFD(); err != nil {
 			return fmt.Errorf("failed to restart warewulfd: %w", err)
@@ -67,12 +67,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if err := util.CopyFile(certFile, path.Join(exportPath, "warewulf.crt")); err != nil {
 			return fmt.Errorf("failed to export cert: %w", err)
 		}
-		fmt.Fprintf(cmd.OutOrStdout(), "Exported keys to %s\n", exportPath)
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Exported keys to %s\n", exportPath)
 		return nil
 	}
 
 	if !conf.Warewulf.TLSEnabled() {
-		fmt.Fprintf(cmd.OutOrStdout(), "TLS is not enabled in warewulf.conf\n")
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "TLS is not enabled in warewulf.conf\n")
 		return nil
 	}
 
@@ -85,20 +85,20 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("failed to restart warewulfd: %w", err)
 		}
 	} else {
-		fmt.Fprintf(cmd.OutOrStdout(), "Keys already exist in %s\n", keystore)
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Keys already exist in %s\n", keystore)
 	}
 
 	w := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 2, ' ', 0)
 
-	fmt.Fprintf(w, "Private Key:\t%s\n", keyFile)
-	fmt.Fprintf(w, "Certificate:\t%s\n", certFile)
+	_, _ = fmt.Fprintf(w, "Private Key:\t%s\n", keyFile)
+	_, _ = fmt.Fprintf(w, "Certificate:\t%s\n", certFile)
 
 	keyBytes, err := os.ReadFile(keyFile)
 	if err == nil {
 		block, _ := pem.Decode(keyBytes)
 		if block != nil {
 			if key, err := x509.ParsePKCS1PrivateKey(block.Bytes); err == nil {
-				fmt.Fprintf(w, "Key Size:\t%d bits\n", key.N.BitLen())
+				_, _ = fmt.Fprintf(w, "Key Size:\t%d bits\n", key.N.BitLen())
 			}
 		}
 	}
@@ -108,22 +108,22 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		block, _ := pem.Decode(certBytes)
 		if block != nil {
 			if cert, err := x509.ParseCertificate(block.Bytes); err == nil {
-				fmt.Fprintf(w, "Issuer:\t%s\n", cert.Issuer)
-				fmt.Fprintf(w, "Subject:\t%s\n", cert.Subject)
-				fmt.Fprintf(w, "Valid From:\t%s\n", cert.NotBefore)
-				fmt.Fprintf(w, "Valid Until:\t%s\n", cert.NotAfter)
-				fmt.Fprintf(w, "Serial Nr:\t%s\n", cert.SerialNumber)
+				_, _ = fmt.Fprintf(w, "Issuer:\t%s\n", cert.Issuer)
+				_, _ = fmt.Fprintf(w, "Subject:\t%s\n", cert.Subject)
+				_, _ = fmt.Fprintf(w, "Valid From:\t%s\n", cert.NotBefore)
+				_, _ = fmt.Fprintf(w, "Valid Until:\t%s\n", cert.NotAfter)
+				_, _ = fmt.Fprintf(w, "Serial Nr:\t%s\n", cert.SerialNumber)
 
 				var ipStrings []string
 				for _, ip := range cert.IPAddresses {
 					ipStrings = append(ipStrings, ip.String())
 				}
-				fmt.Fprintf(w, "IP Addresses:\t%s\n", strings.Join(ipStrings, ", "))
-				fmt.Fprintf(w, "DNS Names:\t%s\n", strings.Join(cert.DNSNames, ", "))
+				_, _ = fmt.Fprintf(w, "IP Addresses:\t%s\n", strings.Join(ipStrings, ", "))
+				_, _ = fmt.Fprintf(w, "DNS Names:\t%s\n", strings.Join(cert.DNSNames, ", "))
 			}
 		}
 	}
-	w.Flush()
+	_ = w.Flush()
 
 	return nil
 }
