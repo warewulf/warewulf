@@ -23,7 +23,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/opencontainers/selinux/go-selinux"
 	"github.com/spf13/cobra"
-	"github.com/talos-systems/go-smbios/smbios"
+	"github.com/siderolabs/go-smbios/smbios"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/pidfile"
 	"github.com/warewulf/warewulf/internal/pkg/version"
@@ -170,10 +170,8 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	var tag string
 	smbiosDump, smbiosErr := smbios.New()
 	if smbiosErr == nil {
-		sysinfoDump := smbiosDump.SystemInformation()
-		localUUID, _ = sysinfoDump.UUID()
-		x := smbiosDump.SystemEnclosure()
-		tag = strings.ReplaceAll(x.AssetTagNumber(), " ", "_")
+		localUUID, _ = uuid.Parse(smbiosDump.SystemInformation.UUID)
+		tag = strings.ReplaceAll(smbiosDump.SystemEnclosure.AssetTagNumber, " ", "_")
 		if tag == "Unknown" {
 			dmiOut, err := exec.Command("dmidecode", "-s", "chassis-asset-tag").Output()
 			if err == nil {
