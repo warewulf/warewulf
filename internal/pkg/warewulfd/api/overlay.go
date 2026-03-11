@@ -119,7 +119,7 @@ func (of *OverlayFile) readContents() (string, error) {
 }
 
 func (of *OverlayFile) renderContents(nodeName string) (string, error) {
-	if !(path.Ext(of.Path) == ".ww") {
+	if path.Ext(of.Path) != ".ww" {
 		return "", fmt.Errorf("'%s' does not end with '.ww'", of.Path)
 	}
 
@@ -329,7 +329,7 @@ func addOverlayFile() usecase.Interactor {
 					return err
 				}
 			}
-			if err := overlay_.AddFile(relPath, []byte(input.Content), true, !(input.IfNoneMatch == "*")); err != nil {
+			if err := overlay_.AddFile(relPath, []byte(input.Content), true, input.IfNoneMatch != "*"); err != nil {
 				return fmt.Errorf("unable to add overlay file %v: %v: %w", input.Name, relPath, err)
 			}
 			*output = *NewOverlayResponse(input.Name)

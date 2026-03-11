@@ -119,7 +119,7 @@ nodes:
 				_, _ = io.Copy(&buf, stdoutR)
 				stdoutC <- buf.String()
 			}()
-			stdoutW.Close()
+			_ = stdoutW.Close()
 			os.Stdout = oriout
 
 			stdout := <-stdoutC

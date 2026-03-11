@@ -29,7 +29,7 @@ func TFTP() (err error) {
 	}
 
 	// Create tftpdir if needed
-	var tftpdir string = path.Join(controller.TFTP.TftpRoot, "warewulf")
+	tftpdir := path.Join(controller.TFTP.TftpRoot, "warewulf")
 	err = os.MkdirAll(tftpdir, 0755)
 	if err != nil {
 		return

@@ -97,7 +97,7 @@ func Test_OverlayChown(t *testing.T) {
 			filePath := filepath.Join(overlayDir, tt.fileName)
 			f, err := os.Create(filePath)
 			assert.NoError(t, err)
-			f.Close()
+			_ = f.Close()
 			// get initial owner
 			stat, err := os.Stat(filePath)
 			assert.NoError(t, err)

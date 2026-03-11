@@ -14,7 +14,7 @@ func TestFindInitramfs(t *testing.T) {
 	conf := warewulfconf.Get()
 	temp, err := os.MkdirTemp(os.TempDir(), "ww-conf-*")
 	assert.NoError(t, err)
-	defer os.RemoveAll(temp)
+	defer func() { _ = os.RemoveAll(temp) }()
 	conf.Paths.WWChrootdir = temp
 
 	assert.NoError(t, os.MkdirAll(filepath.Join(RootFsDir("image"), "boot"), 0700))

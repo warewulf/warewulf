@@ -186,7 +186,7 @@ nodes:
 			w := httptest.NewRecorder()
 			HandleRuntimeOverlay(w, req)
 			res := w.Result()
-			defer res.Body.Close()
+			defer func() { _ = res.Body.Close() }()
 
 			data, readErr := io.ReadAll(res.Body)
 			assert.NoError(t, readErr)

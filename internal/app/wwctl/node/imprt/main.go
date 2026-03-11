@@ -18,7 +18,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("could not open file: %s", err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	importMap := make(map[string]*node.Node)
 	buffer, err := io.ReadAll(file)

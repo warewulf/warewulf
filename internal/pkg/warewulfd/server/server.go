@@ -37,7 +37,7 @@ type slashFix struct {
 Filter out the '//'
 */
 func (h *slashFix) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	r.URL.Path = strings.Replace(r.URL.Path, "//", "/", -1)
+	r.URL.Path = strings.ReplaceAll(r.URL.Path, "//", "/")
 	h.mux.ServeHTTP(w, r)
 }
 

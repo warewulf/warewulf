@@ -47,7 +47,7 @@ func NodeStatus(nodeNames []string) (nodeStatusResponse *wwapiv1.NodeStatusRespo
 		wwlog.Error("Could not connect to Warewulf server: %s", err)
 		return
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	decoder := json.NewDecoder(resp.Body)
 	var wwNodeStatus allStatus

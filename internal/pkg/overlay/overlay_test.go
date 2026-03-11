@@ -586,7 +586,7 @@ func Test_BuildAllOverlays(t *testing.T) {
 	conf := warewulfconf.Get()
 	overlayDir, overlayDirErr := os.MkdirTemp(os.TempDir(), "ww-test-overlay-*")
 	assert.NoError(t, overlayDirErr)
-	defer os.RemoveAll(overlayDir)
+	defer func() { _ = os.RemoveAll(overlayDir) }()
 	conf.Paths.WWOverlaydir = overlayDir
 	assert.NoError(t, os.Mkdir(path.Join(overlayDir, "o1"), 0o700))
 	assert.NoError(t, os.Mkdir(path.Join(overlayDir, "o2"), 0o700))
@@ -595,7 +595,7 @@ func Test_BuildAllOverlays(t *testing.T) {
 		t.Run(tt.description, func(t *testing.T) {
 			provisionDir, provisionDirErr := os.MkdirTemp(os.TempDir(), "ww-test-provision-*")
 			assert.NoError(t, provisionDirErr)
-			defer os.RemoveAll(provisionDir)
+			defer func() { _ = os.RemoveAll(provisionDir) }()
 			conf.Paths.WWProvisiondir = provisionDir
 
 			var nodes []node.Node
@@ -684,7 +684,7 @@ func Test_BuildSpecificOverlays(t *testing.T) {
 	conf := warewulfconf.Get()
 	overlayDir, overlayDirErr := os.MkdirTemp(os.TempDir(), "ww-test-overlay-*")
 	assert.NoError(t, overlayDirErr)
-	defer os.RemoveAll(overlayDir)
+	defer func() { _ = os.RemoveAll(overlayDir) }()
 	conf.Paths.WWOverlaydir = overlayDir
 	assert.NoError(t, os.Mkdir(path.Join(overlayDir, "o1"), 0o700))
 	assert.NoError(t, os.Mkdir(path.Join(overlayDir, "o2"), 0o700))
@@ -693,7 +693,7 @@ func Test_BuildSpecificOverlays(t *testing.T) {
 		t.Run(tt.description, func(t *testing.T) {
 			provisionDir, provisionDirErr := os.MkdirTemp(os.TempDir(), "ww-test-provision-*")
 			assert.NoError(t, provisionDirErr)
-			defer os.RemoveAll(provisionDir)
+			defer func() { _ = os.RemoveAll(provisionDir) }()
 			conf.Paths.WWProvisiondir = provisionDir
 
 			var nodes []node.Node
@@ -729,7 +729,7 @@ func Test_CreateOverlayFile(t *testing.T) {
 	conf := warewulfconf.Get()
 	overlayDir, overlayDirErr := os.MkdirTemp(os.TempDir(), "ww-test-overlay-*")
 	assert.NoError(t, overlayDirErr)
-	defer os.RemoveAll(overlayDir)
+	defer func() { _ = os.RemoveAll(overlayDir) }()
 	conf.Paths.WWOverlaydir = overlayDir
 	conf.Paths.Datadir = "/dev/null"
 	for _, tt := range tests {
@@ -757,7 +757,7 @@ func dirIsEmpty(t *testing.T, name string) bool {
 		t.Log(err)
 		return true
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	dirnames, err2 := f.Readdirnames(1)
 	if err2 == io.EOF {
@@ -773,7 +773,7 @@ func readCpio(name string) (headers map[string]*cpio.Header, err error) {
 	if err != nil {
 		return headers, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	reader := cpio.NewReader(f)
 	headers = make(map[string]*cpio.Header)

@@ -24,7 +24,7 @@ func sendFile(
 		w.WriteHeader(http.StatusInternalServerError)
 		return err
 	}
-	defer fd.Close()
+	defer func() { _ = fd.Close() }()
 
 	stat, err := fd.Stat()
 	if err != nil {
@@ -40,7 +40,7 @@ func sendFile(
 		fd)
 
 	wwlog.Info("send %s -> %s", filename, sendto)
-	req.Body.Close()
+	_ = req.Body.Close()
 	return nil
 }
 
@@ -100,7 +100,7 @@ func ArpFind(ip string) (mac string) {
 	if err != nil {
 		return
 	}
-	defer arpCache.Close()
+	defer func() { _ = arpCache.Close() }()
 
 	scanner := bufio.NewScanner(arpCache)
 	scanner.Scan()

@@ -41,7 +41,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if tempErr != nil {
 		return fmt.Errorf("could not create temp file: %s", tempErr)
 	}
-	defer os.Remove(tempFile.Name())
+	defer func() { _ = os.Remove(tempFile.Name()) }()
 
 	if !NoHeader {
 		yamlTemplate := node.ConfToYaml(node.Profile{}, nil)

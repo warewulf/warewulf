@@ -238,7 +238,7 @@ func (overlay Overlay) Chmod(path string, mode uint64) (err error) {
 		}
 	}
 	fullPath := overlay.File(path)
-	if !(util.IsFile(fullPath) || util.IsDir(fullPath)) {
+	if !util.IsFile(fullPath) && !util.IsDir(fullPath) {
 		return fmt.Errorf("file does not exist within overlay: %s:%s", overlay.Name(), fullPath)
 	}
 
@@ -254,7 +254,7 @@ func (overlay Overlay) Chown(path string, uid, gid int) (err error) {
 		}
 	}
 	fullPath := overlay.File(path)
-	if !(util.IsFile(fullPath) || util.IsDir(fullPath)) {
+	if !util.IsFile(fullPath) && !util.IsDir(fullPath) {
 		return fmt.Errorf("file does not exist within overlay: %s:%s", overlay.Name(), fullPath)
 	}
 	return os.Chown(fullPath, uid, gid)
@@ -309,8 +309,8 @@ func (overlay Overlay) ParseVarFields(file string) map[string]FieldInfo {
 	// Initialize $ to refer to the root template context
 	rangeVars["$"] = rootType
 
-	if tmpl.Tree != nil && tmpl.Tree.Root != nil {
-		walkParseTree(tmpl.Tree.Root, rootType, "", rangeVars, result)
+	if tmpl.Tree != nil && tmpl.Root != nil {
+		walkParseTree(tmpl.Root, rootType, "", rangeVars, result)
 	}
 
 	return result
@@ -846,7 +846,7 @@ func BuildHostOverlay() error {
 	if err != nil {
 		return fmt.Errorf("could not build host overlay: %w ", err)
 	}
-	if !(stats.Mode() == os.FileMode(0o750|os.ModeDir) || stats.Mode() == os.FileMode(0o700|os.ModeDir)) {
+	if stats.Mode() != os.FileMode(0o750|os.ModeDir) && stats.Mode() != os.FileMode(0o700|os.ModeDir) {
 		wwlog.SecWarn("Permissions of host overlay dir %s are %s (750 is considered as secure)", hostdir.Rootfs(), stats.Mode())
 	}
 	registry, err := node.New()
@@ -918,7 +918,11 @@ func BuildOverlay(nodeConf node.Node, allNodes []node.Node, context string, over
 	if err != nil {
 		return fmt.Errorf("failed to create temporary directory for %s: %w", name, err)
 	}
-	defer os.RemoveAll(buildDir)
+	defer func() {
+		if err := os.RemoveAll(buildDir); err != nil {
+			wwlog.Warn("failed to remove temporary build directory %s: %s", buildDir, err)
+		}
+	}()
 
 	wwlog.Debug("Created temporary directory for %s: %s", name, buildDir)
 
@@ -1126,7 +1130,7 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 /*
 Writes buffer to the destination file. If wwbackup is set a wwbackup will be created.
 */
-func CarefulWriteBuffer(destFile string, buffer bytes.Buffer, backupFile bool, perm fs.FileMode) error {
+func CarefulWriteBuffer(destFile string, buffer bytes.Buffer, backupFile bool, perm fs.FileMode) (err error) {
 	wwlog.Debug("Trying to careful write file (%d bytes): %s", buffer.Len(), destFile)
 	if backupFile {
 		if !util.IsFile(destFile+".wwbackup") && util.IsFile(destFile) {
@@ -1140,7 +1144,11 @@ func CarefulWriteBuffer(destFile string, buffer bytes.Buffer, backupFile bool, p
 	if err != nil {
 		return fmt.Errorf("could not open new file for template %w", err)
 	}
-	defer w.Close()
+	defer func() {
+		if cerr := w.Close(); cerr != nil && err == nil {
+			err = fmt.Errorf("failed to close file %s: %w", destFile, cerr)
+		}
+	}()
 	_, err = buffer.WriteTo(w)
 	return err
 }

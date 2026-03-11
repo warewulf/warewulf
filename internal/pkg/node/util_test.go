@@ -83,7 +83,7 @@ func Test_nodeYaml_FindByHwaddr(t *testing.T) {
 				t.Errorf("FindByHwaddr() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !(got.id == tt.want) {
+			if got.id != tt.want {
 				t.Errorf("FindByHwaddr() got = %v, want %v", got, tt.want)
 			}
 		})
@@ -121,7 +121,7 @@ func Test_nodeYaml_FindByIpaddr(t *testing.T) {
 				t.Errorf("FindByIpaddr() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !(got.id == tt.want) {
+			if got.id != tt.want {
 				t.Errorf("FindByHwaddr() got = %v, want %v", got, tt.want)
 			}
 		})

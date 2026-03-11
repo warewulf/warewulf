@@ -45,7 +45,7 @@ func templateFileBlock(inc string, abortStr string) (string, error) {
 		wwlog.Info("couldn't read block %s: %s", inc, err)
 		return abortStr, nil
 	}
-	defer readFile.Close()
+	defer func() { _ = readFile.Close() }()
 	var cont string
 	fileScanner := bufio.NewScanner(readFile)
 	fileScanner.Split(bufio.ScanLines)

@@ -175,7 +175,7 @@ func (env *TestEnv) WriteFile(fileName string, content string) {
 
 	f, err := os.Create(env.GetPath(fileName))
 	env.assertNoError(err)
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	_, err = f.WriteString(content)
 	env.assertNoError(err)
 	err = os.Chtimes(env.GetPath(fileName),

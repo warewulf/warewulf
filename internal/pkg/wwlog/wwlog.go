@@ -205,9 +205,9 @@ func LogCaller(level int, skip int, err error, message string, a ...interface{})
 
 		message = logFormatter(logLevel, &rec)
 		if level == INFO || level == OUT {
-			fmt.Fprint(logOut, message)
+			_, _ = fmt.Fprint(logOut, message)
 		} else {
-			fmt.Fprint(logErr, message)
+			_, _ = fmt.Fprint(logErr, message)
 
 		}
 	}
