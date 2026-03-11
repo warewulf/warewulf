@@ -477,7 +477,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/sys/+/v0.41.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/sys/+/v0.42.0:LICENSE>
 
 ## golang.org/x/term
 

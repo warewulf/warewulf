@@ -1,8 +1,6 @@
 module github.com/warewulf/warewulf
 
-go 1.24.0
-
-toolchain go1.24.6
+go 1.25.0
 
 require (
 	dario.cat/mergo v1.0.2
@@ -37,7 +35,7 @@ require (
 	github.com/swaggest/usecase v1.3.1
 	golang.org/x/crypto v0.48.0
 	golang.org/x/exp v0.0.0-20241217172543-b2144cdd0a67
-	golang.org/x/sys v0.41.0
+	golang.org/x/sys v0.42.0
 	golang.org/x/term v0.40.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20260209200024-4cfbd4190f57
 	google.golang.org/grpc v1.79.2

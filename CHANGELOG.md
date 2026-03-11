@@ -16,12 +16,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Error handling for /newroot mount during single-stage boot
 - Bugfix for command-line arguments during single-stage image unpacking
 - Fix path traversal vulnerability (CWE-23) by validating overlay names in `overlay.Get()` and `overlay.Create()`
-- Upgrade golang version to 1.24 to resolve stdlib CVEs (CVE-2025-4673, CVE-2025-58187, CVE-2025-61723, CVE-2025-58188, CVE-2025-61725, CVE-2025-61726, CVE-2025-47907, CVE-2025-58189, CVE-2025-47906, CVE-2025-58186, CVE-2025-61727, CVE-2025-61724, CVE-2025-58185, CVE-2025-47912, CVE-2025-61729, CVE-2025-0913, CVE-2025-22873, CVE-2024-45336, CVE-2024-45341, CVE-2025-58183, CVE-2025-68121, CVE-2025-61730)
+- Upgrade golang version to 1.25 to resolve stdlib CVEs (CVE-2025-4673, CVE-2025-58187, CVE-2025-61723, CVE-2025-58188, CVE-2025-61725, CVE-2025-61726, CVE-2025-47907, CVE-2025-58189, CVE-2025-47906, CVE-2025-58186, CVE-2025-61727, CVE-2025-61724, CVE-2025-58185, CVE-2025-47912, CVE-2025-61729, CVE-2025-0913, CVE-2025-22873, CVE-2024-45336, CVE-2024-45341, CVE-2025-58183, CVE-2025-68121, CVE-2025-61730)
 
 ### Dependencies
 
 - Bump golang.org/x/term from 0.28.0 to 0.40.0 #2037
-- Bump golang.org/x/sys from 0.29.0 to 0.41.0 #2036
+- Bump golang.org/x/sys from 0.29.0 to 0.42.0 #2036
 - Bump golang.org/x/crypto from 0.31.0 to 0.48.0
 - Bump golang.org/x/net from 0.33.0 to 0.49.0 #1819
 - Bump github.com/grpc-ecosystem/grpc-gateway/v2 from 2.26.1 to 2.28.0 #2032
