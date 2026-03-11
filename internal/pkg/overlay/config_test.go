@@ -42,12 +42,12 @@ var validateOverlayNameTests = []struct {
 	{"foo\x00bar", true},
 }
 
-func Test_validateOverlayName(t *testing.T) {
+func Test_ValidateName(t *testing.T) {
 	for _, tt := range validateOverlayNameTests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := validateOverlayName(tt.name)
+			err := ValidateName(tt.name)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("validateOverlayName(%q) error = %v, wantErr %v", tt.name, err, tt.wantErr)
+				t.Errorf("ValidateName(%q) error = %v, wantErr %v", tt.name, err, tt.wantErr)
 			}
 		})
 	}

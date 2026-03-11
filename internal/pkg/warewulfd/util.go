@@ -45,6 +45,11 @@ func sendFile(
 }
 
 func getOverlayFile(n node.Node, context string, stage_overlays []string, autobuild bool) (stage_file string, err error) {
+	for _, name := range stage_overlays {
+		if err := overlay.ValidateName(name); err != nil {
+			return "", err
+		}
+	}
 	stage_file = overlay.Image(n.Id(), context, stage_overlays)
 	build := !util.IsFile(stage_file)
 	wwlog.Verbose("stage file: %s", stage_file)

@@ -147,3 +147,4 @@ by vote of the remaining TSC members.
 
 - On EL8, Go is installed using the `go-toolset` module from the
   appstream repository.
+- OpenHPC uses https://eur.openeuler.openatom.cn/coprs/openhpc/OpenHPC/packages/ to build for openEuler.

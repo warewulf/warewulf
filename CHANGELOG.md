@@ -22,6 +22,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix path traversal vulnerability (CWE-23) in overlay cleanup function
 - Fix `wwctl image build --all` to build all images
 - Fix `wwctl node set --all` to set values on all nodes
+- Fix path traversal vulnerability (CWE-23)
+- Bump minimum golang version to 1.25.5 to address stdlib CVEs
 
 ### Dependencies
 

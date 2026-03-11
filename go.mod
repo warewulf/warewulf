@@ -1,6 +1,6 @@
 module github.com/warewulf/warewulf
 
-go 1.25.0
+go 1.25.5
 
 require (
 	dario.cat/mergo v1.0.2
