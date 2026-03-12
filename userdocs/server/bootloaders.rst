@@ -245,7 +245,7 @@ advantage that secure boot can be used. That means that only the signed kernel
 of a distribution can be booted. This can be a huge security benefit for some
 scenarios.
 
-In order to enable the grub boot method it has to be enabled in `warewulf.conf`.
+In order to enable the grub boot method it has to be enabled in ``warewulf.conf``.
 
 .. code-block:: yaml
 
@@ -276,14 +276,14 @@ Secure boot
 If secure boot is enabled at every step a signature is checked and the boot
 process fails if this check fails. The shim typically only includes the key for
 a single operating system, which means that each distribution needs separate
-`shim` and `grub` executables. Warewulf extracts these binaries from the images.
+``shim`` and ``grub`` executables. Warewulf extracts these binaries from the images.
 If the node is unknown to Warewulf or can't be identified during the TFTP boot
 phase, the shim/grub binaries of the host in which Warewulf is running are used.
 
 Install shim and efi
 --------------------
 
-`shim.efi` and `grub.efi` must be installed in the image for it to be
+``shim.efi`` and ``grub.efi`` must be installed in the image for it to be
 booted by GRUB.
 
 .. code-block:: console
@@ -316,7 +316,7 @@ diagram is the following:
       grub->kernel [label="http"];
     }
 
-Warewulf delivers the initial `shim.efi` and `grub.efi` via http as taken
+Warewulf delivers the initial ``shim.efi`` and ``grub.efi`` via http as taken
 directly from the node's assigned image.
 
 .. _booting with dracut:
@@ -394,5 +394,5 @@ during boot.
 
 The wwinit module provisions to tmpfs. By default, tmpfs is permitted to use up
 to 50% of physical memory. This size limit may be adjusted using the kernel
-argument `wwinit.tmpfs.size`. (This parameter is passed to the `size` option
+argument ``wwinit.tmpfs.size``. (This parameter is passed to the ``size`` option
 during tmpfs mount. See ``tmpfs(5)`` for more details.)

@@ -345,7 +345,7 @@ particularly easy to do with Apptainer.
 
 .. _OCI base image: https://docs.docker.com/build/building/base-images/
 
-Consider the following file called `warewulf-rockylinux-9.def`:
+Consider the following file called ``warewulf-rockylinux-9.def``:
 
 .. code-block:: singularity
 
@@ -427,7 +427,7 @@ Image Architecture
 
 By default, Warewulf will try to import an image of the same platform (e.g.,
 amd64, arm64) as the local system. To specify the platform to import, either
-specify `WAREWULF_OCI_PLATFORM` or use the argument `--platform` during import.
+specify ``WAREWULF_OCI_PLATFORM`` or use the argument ``--platform`` during import.
 
 It is possible to build, edit, and provision images of different architectures
 (i.e. aarch64) from an x86_64 host by using QEMU. Simply run the appropriate

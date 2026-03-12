@@ -102,7 +102,7 @@ will continue to work through the v4.6.x series.
 There are smaller changes to the image system, as well:
 
 - ``wwctl image shell`` now supports a ``WW_HISTFILE`` environment variable to
-  save shell history _inside_ the image.
+  save shell history *inside* the image.
 - ``wwctl image shell`` now supports a ``WW_PS1`` environment variable to
   specify the prompt for the interactive shell. The default prompt has also been
   updated to indicate the current directory.

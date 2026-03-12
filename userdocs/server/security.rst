@@ -36,7 +36,7 @@ There are multiple ways to secure the Warewulf provisioning process:
   privileged (< 1024) TCP port. This prevents unprivileged cluster users from
   being able to retrieve the runtime overlay.
 
-* When the nodes are booted via `shim` and `grub` Secure Boot can be enabled.
+* When the nodes are booted via ``shim`` and ``grub`` Secure Boot can be enabled.
   This means that the nodes only boot the kernel which is provided by the
   distributor and also custom complied modules can't be loaded.
 

@@ -109,7 +109,7 @@ warewulf
   can be specified at ``wwclient:port``.)
 
   Changing this option requires rebuilding node overlays and rebooting compute
-  nodes to configure them to use a privileged port for `wwclient`.
+  nodes to configure them to use a privileged port for ``wwclient``.
 
 * ``warewulf:update interval``: This defines the frequency (in seconds) with
   which the Warewulf client on the compute node fetches overlay updates.

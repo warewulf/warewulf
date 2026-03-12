@@ -84,7 +84,7 @@ settings caused surprising deficiencies in some cases; and, in others
   default template is set, ``warewulfd`` looks for a template named "default".
 - If no init is specified, ``wwinit`` now looks for ``/sbin/init``,
   ``/etc/init``, and ``/bin/init``.
-- `wwctl upgrade nodes --replace-overlays` now avoids adding the same overlay
+- ``wwctl upgrade nodes --replace-overlays`` now avoids adding the same overlay
   multiple times to the same node or profile.
 - If, during ``wwctl overlay build``, a node has an empty system or runtime
   overlay, a warning is printed.

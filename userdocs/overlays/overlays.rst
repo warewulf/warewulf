@@ -408,7 +408,7 @@ debug
 -----
 
 The **debug** overlay is not intended to be used in configuration, but is
-provided as an example. In particular, the provided `tstruct.md.ww` demonstrates
+provided as an example. In particular, the provided ``tstruct.md.ww`` demonstrates
 the use of most available template metadata.
 
 .. code-block:: shell

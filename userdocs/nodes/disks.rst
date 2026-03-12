@@ -55,7 +55,7 @@ sizes should also be set (specified in MiB), except for the last partition: if
 no size is given, the maximum available size is used. Each partition has the
 switches ``should_exist`` and ``wipe_partition_entry`` which control the
 partition creation process (via the ``--partcreate`` and ``--partwipe`` flags).
-When omitting a partition number the `wipe_partition_entry` should be true, as
+When omitting a partition number the ``wipe_partition_entry`` should be true, as
 this allows ignition to replace the existing partition.
 
 .. code-block:: shell
@@ -136,7 +136,7 @@ disk, as necessary.
 If you would like to re-use existing partitions but want to replace existing
 file systems once, you may
 
-* wipe the existing data with tools like ``wipefs`` or `dd` [#]_; or
+* wipe the existing data with tools like ``wipefs`` or ``dd`` [#]_; or
 * set the ``--fswipe`` flag and remove it after one reboot.
 
 .. [#] With ``wipefs`` you have to remove the filesystem *and* parition
