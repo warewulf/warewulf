@@ -23,10 +23,10 @@ Disks may be provisioned using ``ignition``, as before; but may now also be
 provisioned using new ``sfdisk``, ``mkfs``, and ``mkswap`` overlays, and to
 mount configured file systems using ``systemd.mount`` and ``systemd.swap``
 overlays. These overlays may also each be configured using overlay-specific
-"resources", which may additional control compared to Warewulf's built-in disk,
+"resources", which may provide additional control compared to Warewulf's built-in disk,
 partition, and file system configuration.
 
-To support more complext partition layouts, ``wwctl <node|partition> set
+To support more complex partition layouts, ``wwctl <node|profile> set
 --parttype`` has been added to specify non-default partition types. This is
 particularly useful when creating an EFI partition, which may be used in a
 future release to configure serverless local booting.

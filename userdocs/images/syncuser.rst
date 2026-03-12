@@ -13,7 +13,7 @@ an LDAP server).
 Combined with the "syncuser" overlay, Warewulf syncuser also supports defining
 local users on the Warewulf server for synchronization to cluster nodes.
 
-If there is mismatch between the server and the image, the import command will
+If there is a mismatch between the server and the image, the import command will
 generate a warning.
 
 Syncuser may be invoked during image import, exec, shell, or build.

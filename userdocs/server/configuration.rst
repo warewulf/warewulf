@@ -4,7 +4,7 @@ Server Configuration
 
 By default, the Warewulf server configuration is located at
 ``/etc/warewulf/warewulf.conf``. This is a YAML-formatted configuration file
-used by to configured the Warewulf server itself and its external services.
+used to configure the Warewulf server itself and its external services.
 
 An initial ``warewulf.conf`` is packaged with Warewulf. Each section is covered
 in detail below.
@@ -232,7 +232,7 @@ ssh
 
 *New in Warewulf v4.5.1*
 
-SSH key types to generate during ``wwctl configure ssh``. This create the
+SSH key types to generate during ``wwctl configure ssh``. This creates the
 appropriate host keys (stored in ``/etc/warewulf/keys/``) and authentication
 keys for passwordless ``ssh`` to cluster nodes. It also installs shell profiles
 ``/etc/profile.d/ssh_setup.csh`` and ``/etc/profile.d/ssh_setup.sh`` to
@@ -248,7 +248,7 @@ Warewulf server.
        - rsa
        - dsa
 
-* ``ssh:key types``: Warewulf generate host keys for each listed key type.
+* ``ssh:key types``: Warewulf generates host keys for each listed key type.
 
 The first listed key type is used to generate authentication ssh keys.
 
@@ -359,7 +359,7 @@ hostfile
 There are no explicit "hostfile" configuration options in ``warewulf.conf``; but
 ``wwctl configure hostfile`` updates the Warewulf server's ``/etc/hosts`` file
 to include expected configuration for the server itself as well as the known
-names of the cluster nodes and thier interfaces.
+names of the cluster nodes and their interfaces.
 
 Entries from the Warewulf server's ``/etc/hosts`` file are distributed to
 cluster nodes by the "hosts" overlay.

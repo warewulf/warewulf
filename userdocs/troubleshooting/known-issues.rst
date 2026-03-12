@@ -93,7 +93,7 @@ gigabytes. Workarounds exist for these issues in most circumstances:
   decompress the image rather than the kernel.
 
 * Some BIOS / firmware retain a "memory hole" feature for legacy devices, e.g.,
-  reserving a 1MB block of memory at the 15MB-16MB address range. this feature
+  reserving a 1MB block of memory at the 15MB-16MB address range. This feature
   can interfere with booting stateless node images.
 
   If you are still getting "Not enough memory" or "No space left on device"

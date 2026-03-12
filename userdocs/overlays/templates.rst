@@ -215,7 +215,7 @@ nobackup
 UniqueField
 -----------
 
-Returns a filtered version of a multi-line input string. input is expected to be
+Returns a filtered version of a multi-line input string. Input is expected to be
 a field-separated format with one record per line (terminated by ``\n``). Order of
 lines is preserved, with the first matching line taking precedence.
 

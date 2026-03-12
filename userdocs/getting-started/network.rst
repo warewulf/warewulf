@@ -63,7 +63,7 @@ the management of ``dhcpd`` and ``tftp``. There are two ways to achieve this:
 
 The first method is relatively trivial. The second method is described below.
 
-As first the first step, add the dummy node.
+As the first step, add the dummy node.
 
 .. code-block:: shell
 
@@ -87,8 +87,8 @@ Add the delivery networks to this node.
     --nettagadd network=10.0.30.0,dynstart=10.10.30.10,dynend=10.10.30.50 \
     deliverynet
 
-The ip address is used as the network address of host in the delivery network
-and an additional tags is used for definition of the network itself and the
+The IP address is used as the network address of the host in the delivery network
+and an additional tag is used for the definition of the network itself and the
 dynamic dhcp range. You can check the result with ``wwctl node list``.
 
 .. code-block:: console

@@ -10,7 +10,7 @@ version and configuration drift, eventually becoming a point of discrete
 administration and debugging. The larger the cluster, the harder this problem is
 to solve.
 
-This is the problem that Warewulf was created solve.
+This is the problem that Warewulf was created to solve.
 
 Provisioning Overview
 =====================
@@ -78,7 +78,7 @@ When a cluster node boots from Warewulf, the following process occurs:
 
    * In a single-stage provisioning configuration, the desired image and
      overlays are combined and provisioned immediately by the bootloader as the
-     kernel's initial root file system. This is straightfoward, but does not
+     kernel's initial root file system. This is straightforward, but does not
      work in all environments: some systems have memory layouts that are not
      handled properly by either iPXE or GRUB for sufficiently large image sizes,
      leading to strange, unpredictable results.

@@ -36,7 +36,7 @@ A couple new ``wwctl`` options have been added:
 
 - ``wwctl overlay import --overwrite`` overwrites existing overlay files during
   import.
-- ``wwctl node import --yes`` skips the interactive confirmaton dialog and
+- ``wwctl node import --yes`` skips the interactive confirmation dialog and
   assumes a "yes" answer.
 
 New tags

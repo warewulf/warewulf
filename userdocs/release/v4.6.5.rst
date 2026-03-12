@@ -40,12 +40,12 @@ Other variables and the overlay itself can also be documented explicitly within 
 .. code-block:: text
 
    {{/* wwdoc: Configures chronyd to synchronize time with a specific time server. */}}
-   {{/* .Tags.ntp_server: the NTP server to synchonize with */}}
+   {{/* .Tags.ntp_server: the NTP server to synchronize with */}}
 
 wwctl image import --update
 ===========================
 
-The ``wwctl image import`` come has included an ``--update`` option since
+The ``wwctl image import`` command has included an ``--update`` option since
 v4.6.0, but it has not been functional. The option now imports an image
 on-top-of an existing image and is meant to be used to update an existing image
 with new files from an updated upstream or external image (e.g., by importing a
@@ -88,7 +88,7 @@ development environment with libvirt.
 warewulf-dracut
 ===============
 
-A bug between ``warewulf-dracut`` and the ``ignition`` overlay previously caused
+A bug between ``warewulf-dracut`` and the ``ignition`` overlay previously prevented
 non-root filesystems from mounting when provisioning the image to disk. A fix in
 ``warewulf-dracut`` prevents ignition from running twice, allowing all file
 systems to mount properly. The ``wwinit`` dracut module also no longer runs the

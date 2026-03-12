@@ -25,7 +25,7 @@ built-in help with either ``wwctl help`` or ``--help``.
 Hostlists
 =========
 
-Many of the commands (e.g., ``wwctl node list`` support a "hostlist"
+Many of the commands (e.g., ``wwctl node list``) support a "hostlist"
 syntax for referring to multiple nodes at once. Hostlist expressions
 support both ranges and comma-separated numerical lists.
 

@@ -8,8 +8,8 @@ supported; but it is often better to manage it using the ``wwctl`` command.
 
 .. note::
 
-   The ``nodes.conf`` file is YAML document that can be edited directly or
-   managed with configuation management; but its internal structure is
+   The ``nodes.conf`` file is a YAML document that can be edited directly or
+   managed with configuration management; but its internal structure is
    technically undocumented and subject to change between versions. After
    Warewulf v4.6.0, the ``wwctl upgrade nodes`` command can be used to update a
    ``nodes.conf`` from a previous Warewulf v4 version.
@@ -99,7 +99,7 @@ edit``.
 List values
 -----------
 
-Some node fields, such as overlays and kernel aruments, accept a list of values.
+Some node fields, such as overlays and kernel arguments, accept a list of values.
 These may be specified as a comma-separated list or as multiple arguments.
 
 To include an explicit comma in the value, enclose the value in inner-quotes.

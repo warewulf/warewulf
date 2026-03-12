@@ -82,7 +82,7 @@ You can import node images from an OCI registry, public or private.
     The Warewulf project maintains a set of `example node images
     <https://github.com/warewulf/warewulf-node-images>`_ that are configured to
     boot when used with Warewulf. These images can be imported directly into
-    Warewulf or used as base images for local custom image.
+    Warewulf or used as base images for local custom images.
 
 A few environmental variables can be used to control communication with the OCI
 registry:
@@ -118,7 +118,7 @@ See ProxyFromEnvironment_ for more information.
 
 The above is just an example. Consideration should be done before doing it this
 way if you are in a security sensitive environment or shared environments as
-this command line wil show up in the process table.
+this command line will show up in the process table.
 
 Local OCI Archive
 -----------------
@@ -313,7 +313,7 @@ Defining New Images
 It is absolutely possible to import a base image into Warewulf and make all
 changes interactively with ``wwctl image shell``; but it is often better to
 define new images with a container image definition file. This can be done using
-the OCI and Singularity (Apptainer) ecoystems.
+the OCI and Singularity (Apptainer) ecosystems.
 
 Podman
 ------

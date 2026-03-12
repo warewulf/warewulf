@@ -103,7 +103,7 @@ by the ``ignition`` overlay.
 Example disk configurations
 ===========================
 
-This command formats a btrfs file system on a "scratch" partion of
+This command formats a btrfs file system on a "scratch" partition of
 "vda" and mounts it at ``/scratch``.
 
 .. code-block:: shell
@@ -139,7 +139,7 @@ file systems once, you may
 * wipe the existing data with tools like ``wipefs`` or ``dd`` [#]_; or
 * set the ``--fswipe`` flag and remove it after one reboot.
 
-.. [#] With ``wipefs`` you have to remove the filesystem *and* parition
+.. [#] With ``wipefs`` you have to remove the filesystem *and* partition
     information. E.g., use ``wipefs -fa /dev/vda*`` to remove all file system
     information and partition information.
 

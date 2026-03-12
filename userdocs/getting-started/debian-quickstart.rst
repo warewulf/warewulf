@@ -14,7 +14,7 @@ Install the basic services
 .. note::
 
    If you get an error message concerning *isc-dhcp-server.service* you
-   probably need to configure the network intarface that isc-dhcp-server
+   probably need to configure the network interface that isc-dhcp-server
    will listen to. Run ``sudo dpkg-reconfigure isc-dhcp-server`` and enter
    the name of your cluster's private network interface (e.g. enp2s0). After that, you might also need to run ``sudo systemctl enable isc-dhcp-server``.
 
@@ -104,8 +104,8 @@ Configure system services automatically
 
 There are a number of services and configurations that Warewulf relies
 on to operate.  If you wish to configure all services, you can do so
-individually (omitting the ``--all``) will print a help and usage
-instructions.
+with the following command. Running ``wwctl configure`` individually
+(omitting the ``--all``) will print help and usage instructions.
 
 .. code-block:: bash
 

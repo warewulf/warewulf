@@ -66,10 +66,10 @@ cluster node's MAC address in place of 00:00:00:00:00:00.)
 - The ``kernel`` command fetches a kernel for later booting.
 
 - The ``imgextract`` command fetches and decompresses the images that will make
-  up the booted noe image. In a typical environment this is used to load a
+  up the booted node image. In a typical environment this is used to load a
   minimal "initial ramdisk" which, then, boots the rest of the system. Warewulf,
   by default, loads the entire image as an initial ramdisk, and also loads the
-  system and runtime overlays at this time time.
+  system and runtime overlays at this time.
 
 - The ``boot`` command tells iPXE to boot the system with the given kernel and
   ramdisks.
@@ -127,7 +127,7 @@ the port number if you have changed it from the default of 9873.)
   a typical environment this is used to load a minimal "initial ramdisk" which,
   then, boots the rest of the system. Warewulf, by default, loads the entire
   image as an initial ramdisk, and also loads the system and runtime overlays at
-  this time time.
+  this time.
 
 - The ``boot`` command tells GRUB to boot the system with the previously-defined
   configuration.

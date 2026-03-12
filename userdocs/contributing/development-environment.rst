@@ -4,7 +4,7 @@ Development Environment
 
 To develop and test the Warewulf server, you need a single system (typically a
 virtual machine) to serve as a test server deployment. To actually test
-provisioning your development server also needs a dedicated network that it can
+provisioning, your development server also needs a dedicated network that it can
 run DHCP on. This can typically be provisioned as a virtual network bridge in
 virtual machine software.
 
@@ -17,7 +17,7 @@ Options include:
 
 A Warewulf development environment should likely use Rocky Linux 9 or openSUSE
 LEAP 15, though there are ongoing development efforts using Debian and Ubuntu as
-well.)
+well.
 
 Compiling Warewulf for a Development Server
 ===========================================
@@ -80,7 +80,7 @@ More information:
 
 * `The golang testing package <https://pkg.go.dev/testing>`_
 * `Table Driven Tests <https://go.dev/wiki/TableDrivenTests>`_
-* `Testift assert <https://pkg.go.dev/github.com/stretchr/testify/assert>`_
+* `Testify assert <https://pkg.go.dev/github.com/stretchr/testify/assert>`_
 * `Warewulf testenv <https://pkg.go.dev/github.com/warewulf/warewulf/internal/pkg/testenv>`_
 
 Using a Dev Container
@@ -90,7 +90,7 @@ Visual Studio Code (VSC) can utilize a Dev Container for a self-contained
 environment that has all the necessary tools and dependencies to build and test
 Warewulf. The Dev Container is based on the Rocky 9 image and is built using the
 ``devcontainer.json`` file in the ``.devcontainer`` directory of the Warewulf
-repository.  To use this working Docker/Podman and VSC installations are
+repository.  To use this, working Docker/Podman and VSC installations are
 required.  To use the Dev Container, click the "Open a Remote Window" button on
 the bottom left of the editor (``><`` icon) and select "Reopen in Container".
 This will build the container and open a new VSC window with the container as
@@ -100,6 +100,6 @@ Using Vagrant and Libvirt
 =========================
 
 Vagrant can be used to quickly spin up a test/development environment for Warewulf.
-A ``Vagrantfile`` is provided in ``vagrant`` directory of the Warewulf repository.
+A ``Vagrantfile`` is provided in the ``vagrant`` directory of the Warewulf repository.
 See the `README.md <https://github.com/warewulf/warewulf/blob/main/vagrant/README.md>`_
 for more details.

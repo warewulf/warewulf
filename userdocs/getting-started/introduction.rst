@@ -15,7 +15,7 @@ running on the same node image. As of Warewulf v4, the node image can be managed
 using industry-standard container tooling and/or CI/CD pipelines. This can be as
 simple as DockerHub or your own private GitLab CI infrastructure. With this
 architecture, Warewulf combines the best of High Performance Computing (HPC),
-Cloud, Hyperscale, and Enterprise deployment principals to create and maintain
+Cloud, Hyperscale, and Enterprise deployment principles to create and maintain
 large scalable stateless clusters.
 
 Warewulf is used most prominently in High Performance Computing (HPC) clusters,
@@ -46,7 +46,7 @@ flexible provisioning system for all types of clusters.
   to Dell, Debian, SUSE, Rocky, CentOS, and RHEL, Warewulf can be used in most
   any environment.
 
-* **Secure**: Warewulf support SELinux out-of-the-box. Just install SELinux in
+* **Secure**: Warewulf supports SELinux out-of-the-box. Just install SELinux in
   your node image and let Warewulf do the rest!
 
 * **Open Source**: Warewulf is and has always been open source. It can be used

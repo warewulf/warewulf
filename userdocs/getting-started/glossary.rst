@@ -9,7 +9,7 @@ Cluster network
 External services
     The Warewulf server can configure external services to support the
     provisioning process. For example, the Warewulf server typically deploys and
-    configures a DHCP server (either ISC DHCP or dnsqmasq) and a TFTP server.
+    configures a DHCP server (either ISC DHCP or dnsmasq) and a TFTP server.
 
 Image
     The node images that Warewulf manages and provisions. Images may be imported

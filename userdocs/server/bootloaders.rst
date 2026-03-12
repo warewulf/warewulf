@@ -36,7 +36,7 @@ the Warewulf configuration process to configure the ``ipxe`` service.
       ipxe_cfg->kernel[ltail=cluster0,label="http"];
   }
 
-Starting in v4.5.0, Warewulf no longer includes an iPXE binary. In stead, by
+Starting in v4.5.0, Warewulf no longer includes an iPXE binary. Instead, by
 default Warewulf uses the iPXE that comes with the host OS.
 
 Unfortunately, we’ve encountered a few instances where bugs in the OS-provided
@@ -325,7 +325,7 @@ Two-stage boot: dracut
 ======================
 
 Some systems, typically due to limitations in their BIOS or EFI firmware, are
-unable to load image of a certain size directly with a traditional bootloader,
+unable to load an image of a certain size directly with a traditional bootloader,
 either iPXE or GRUB. As a workaround for such systems, Warewulf can be
 configured to load a dracut initramfs from the image and to use that initramfs
 to load the full image.
