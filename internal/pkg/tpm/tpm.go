@@ -40,6 +40,7 @@ type Quote struct {
 	ID       string    `json:"id" yaml:"id"`
 	Modified time.Time `json:"modified" yaml:"modified"`
 	SentLog  []FileLog `json:"sentlogs,omitempty" yaml:"logs,omitempty"`
+	Challenge *Challenge `json:"challenge,omitempty" yaml:"challenge,omitempty"`
 }
 
 // Challenge struct to hold encrypted credentials and secrets for TPM challenges
