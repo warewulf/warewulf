@@ -65,6 +65,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - New `mig` overlay to configure NVIDIA MIG devices. #2102
 - Documented that booting a node twice fixes broken partition tables
 - TLS support for `warewulfd` and REST API.
+- Updated arguments for `ValidString` to match `regexp.MatchString`
+- New `mig` overlay to configure NVIDIA MIG devices. #2102
+- TLS with the command `wwctl configure tls` for key management.
+  Keys can be created automtically or imported. The runtime overlay is
+  if TLS is enabled is not distributed over plain http.
+- Documented that booting a node twice fixes broken partition tables
+- TLS support for `warewulfd` and REST API
 - New `wwctl configure tls` command to generate and configure TLS keys and
   certificates.
 - New dedicated `warewulfd` server routes (`/ipxe/`, `/kernel/`, `/image/`,
@@ -82,6 +89,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 - Removed gRPC API libraries and protobuf types
+  `/initramfs/`, `/system/`, `/runtime/`, `/grub/`, `/efiboot/`)
+- New systemd.service overlay. #1134
 
 ### Changed
 
