@@ -527,6 +527,109 @@ Two overlays, **systemd.mount** and **systemd.swap**, configure mounted and swap
 storage based on the configuration of native file system fields. They are often
 paired with the ``mkfs`` and ``mkswap`` overlays.
 
+systemd services
+----------------
+
+The **systemd.service** overlay generates systemd service unit files from a
+``systemd.service`` resource defined in the node or profile configuration.
+Each entry in the resource map defines one service unit (``<name>.service``),
+enabled in ``multi-user.target``.
+
+Resource field names use systemd's native capitalization, so the resource
+definition reads like a unit file:
+
+.. code-block:: yaml
+
+   nodes:
+     n1:
+       resources:
+         systemd.service:
+           site-tuning:
+             Type: oneshot
+             After: network-online.target
+             RemainAfterExit: "yes"
+             ExecStart: /usr/local/sbin/site-tuning.sh
+             Description: Site-specific post-boot tuning
+           my-daemon:
+             ExecStart: /usr/local/bin/my-daemon --config /etc/my-daemon.conf
+             Description: Custom site daemon
+             Restart: on-failure
+
+The following fields are supported:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Field
+     - systemd section
+     - Default
+   * - *(map key)*
+     - *(unit filename: ``<key>.service``)*
+     - required
+   * - ``Description``
+     - ``[Unit]``
+     - ``Warewulf-managed service: <name>``
+   * - ``After``
+     - ``[Unit]``
+     - ``network-online.target``
+   * - ``Before``
+     - ``[Unit]``
+     - *(none)*
+   * - ``Wants``
+     - ``[Unit]``
+     - *(none)*
+   * - ``Requires``
+     - ``[Unit]``
+     - *(none)*
+   * - ``ConditionPathExists``
+     - ``[Unit]``
+     - *(none)*
+   * - ``Type``
+     - ``[Service]``
+     - *(systemd default)*
+   * - ``RemainAfterExit``
+     - ``[Service]``
+     - *(none)*
+   * - ``ExecStartPre``
+     - ``[Service]``
+     - *(none)*
+   * - ``ExecStart``
+     - ``[Service]``
+     - *(none)*
+   * - ``ExecStartPost``
+     - ``[Service]``
+     - *(none)*
+   * - ``ExecStop``
+     - ``[Service]``
+     - *(none)*
+   * - ``Restart``
+     - ``[Service]``
+     - *(none)*
+   * - ``WantedBy``
+     - ``[Install]``
+     - ``multi-user.target``
+
+Fields not specified are omitted from the generated unit file, deferring to
+systemd's built-in defaults.
+
+To add a custom script, first write it into the node image or a site overlay,
+then reference it from the resource definition. For example:
+
+.. code-block:: shell
+
+   # Add the script to the node image
+   wwctl image exec rockylinux-9 -- bash -c \
+     'cat > /usr/local/sbin/site-tuning.sh << EOF
+   #!/bin/bash
+   sysctl -w vm.swappiness=10
+   EOF
+   chmod +x /usr/local/sbin/site-tuning.sh'
+
+   # Define the service via profile
+   wwctl profile set default \
+     --resourceadd systemd.service.site-tuning.Type=oneshot \
+     --resourceadd systemd.service.site-tuning.ExecStart=/usr/local/sbin/site-tuning.sh
+
 mig
 ----
 
