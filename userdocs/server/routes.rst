@@ -181,6 +181,12 @@ of the client's IP address against the kernel's ARP cache (``/proc/net/arp``).
 This route is intended for EFI HTTP Boot clients, where the firmware fetches
 a boot URI from DHCP and cannot perform variable substitution.
 
+.. note::
+
+   On large clusters the kernel's default ARP cache limits may be exceeded,
+   causing node identification to fail. See
+   :ref:`arp-cache-overflow-on-large-clusters` for tuning guidance.
+
 The ``{file}`` component determines what is served:
 
 * ``shim.efi``: Serves the ``shim.efi`` binary extracted from the node's
