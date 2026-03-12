@@ -2,9 +2,11 @@ package warewulfd
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"fmt"
 	"net/http"
 	"net/netip"
+	"os"
 	"path"
 	"path/filepath"
 	"strconv"
@@ -110,6 +112,8 @@ func sendResponse(w http.ResponseWriter, req *http.Request, stageFile string, tm
 
 			w.Header().Set("Content-Type", "text")
 			w.Header().Set("Content-Length", strconv.Itoa(buf.Len()))
+			ctx.tpm.Update(stageFile, fmt.Sprintf("%x", sha256.Sum256(buf.Bytes())))
+
 			_, err = buf.WriteTo(w)
 			if err != nil {
 				wwlog.ErrorExc(err, "")
@@ -132,8 +136,16 @@ func sendResponse(w http.ResponseWriter, req *http.Request, stageFile string, tm
 					ctx.rinfo.compress, stageFile)
 				w.WriteHeader(http.StatusNotFound)
 			}
+			// Read file content for checksum
+			fileBytes, err := os.ReadFile(stageFile)
+			if err != nil {
+				wwlog.ErrorExc(err, "")
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			ctx.tpm.Update(stageFile, fmt.Sprintf("%x", sha256.Sum256(fileBytes)))
 
-			err := sendFile(w, req, stageFile, ctx.remoteNode.Id())
+			err = sendFile(w, req, stageFile, ctx.remoteNode.Id())
 			if err != nil {
 				wwlog.ErrorExc(err, "")
 				return

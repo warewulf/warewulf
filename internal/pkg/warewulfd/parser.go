@@ -17,6 +17,7 @@ type requestContext struct {
 	conf       *warewulfconf.WarewulfYaml
 	rinfo      parsedRequest
 	remoteNode node.Node
+	tpm        *TPMLogStore
 }
 
 // initHandleRequest performs common initial request parsing, security checks,
@@ -51,6 +52,11 @@ func initHandleRequest(w http.ResponseWriter, req *http.Request) (*requestContex
 		return nil, err
 	}
 
+	tpm, err := NewTPMLogStore(remoteNode.Id())
+	if err != nil {
+		wwlog.Warn("couldn't create tpm log for node: %s", remoteNode.Id())
+	}
+
 	if remoteNode.AssetKey != "" && remoteNode.AssetKey != rinfo.assetkey {
 		w.WriteHeader(http.StatusUnauthorized)
 		wwlog.Denied("incorrect asset key for node %s:", remoteNode.Id())
@@ -62,6 +68,7 @@ func initHandleRequest(w http.ResponseWriter, req *http.Request) (*requestContex
 		conf:       conf,
 		rinfo:      rinfo,
 		remoteNode: remoteNode,
+		tpm:        tpm,
 	}, nil
 }
 
