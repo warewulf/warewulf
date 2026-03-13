@@ -41,6 +41,8 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	wwlog.Info("TPM Manufacturer: %s", quote.GetManufacturer())
+
 	if verified, err := quote.Verify(); !verified {
 		return fmt.Errorf("Quote Verification Failed: %v", err)
 	}
