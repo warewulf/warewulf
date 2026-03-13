@@ -81,7 +81,7 @@ func TPMReceive(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	wwlog.Info("Stored TPM quote for node %s", newQuote.ID)
+	wwlog.Info("Stored TPM quote for node %s (Manufacturer: %s)", newQuote.ID, newQuote.GetManufacturer())
 	w.WriteHeader(http.StatusOK)
 }
 
