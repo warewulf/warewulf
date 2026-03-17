@@ -100,11 +100,11 @@ goto boot_two_stage_dracut
 
 :boot_single_stage
 echo Booting (single stage)...
-boot kernel initrd=image initrd=system ${runtime_initrd} wwid={{.Hwaddr}} {{.KernelArgs}} || goto error_reboot
+boot kernel initrd=image initrd=system ${runtime_initrd} wwid={{.Hwaddr}} {{if .Tpm}}tpm {{end}}{{.KernelArgs}} || goto error_reboot
 
 :boot_two_stage_dracut
 echo Booting dracut (first stage)...
-boot kernel initrd=initramfs ${dracut_net} ${dracut_wwinit} wwid={{.Hwaddr}} {{.KernelArgs}} || error_reboot
+boot kernel initrd=initramfs ${dracut_net} ${dracut_wwinit} wwid={{.Hwaddr}} {{if .Tpm}}tpm {{end}}{{.KernelArgs}} || error_reboot
 
 :error_reboot
 echo !!
