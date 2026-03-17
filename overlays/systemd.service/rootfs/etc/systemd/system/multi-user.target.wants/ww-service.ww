@@ -1,0 +1,8 @@
+{{- $services := index .Resources "systemd.service" }}
+{{- if not $services }}
+{{ abort }}
+{{- end }}
+{{- range $name, $svc := $services }}
+{{ file (print $name ".service") }}
+{{ softlink (print "/etc/systemd/system/" $name ".service") }}
+{{- end }}
