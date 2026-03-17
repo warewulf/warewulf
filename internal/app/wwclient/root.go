@@ -28,8 +28,8 @@ import (
 	"github.com/coreos/go-systemd/daemon"
 	"github.com/google/uuid"
 	"github.com/opencontainers/selinux/go-selinux"
-	"github.com/spf13/cobra"
 	"github.com/siderolabs/go-smbios/smbios"
+	"github.com/spf13/cobra"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/pidfile"
 	"github.com/warewulf/warewulf/internal/pkg/tpm"
@@ -54,7 +54,6 @@ var (
 	WarewulfConfArg string
 
 	// TPM related flags
-	quoteFlag        bool
 	uploadQuoteFlag  bool
 	getChallengeFlag bool
 )
@@ -65,8 +64,6 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&PIDFile, "pidfile", "p", "/var/run/wwclient.pid", "PIDFile to use")
 	rootCmd.PersistentFlags().StringVar(&WarewulfConfArg, "warewulfconf", "", "Set the warewulf configuration file")
 	rootCmd.PersistentFlags().StringVar(&wwid, "wwid", "", "Set wwid flag manually")
-
-	rootCmd.PersistentFlags().BoolVar(&quoteFlag, "quote", false, "Extract TPM EK certificate and display as JSON")
 	rootCmd.PersistentFlags().BoolVar(&uploadQuoteFlag, "upload-quote", false, "Upload TPM quote to the server")
 	rootCmd.PersistentFlags().BoolVar(&getChallengeFlag, "get-challenge", false, "Retrieve and decrypt TPM challenge from the server")
 }
@@ -204,10 +201,8 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	var tag string
 	smbiosDump, smbiosErr := smbios.New()
 	if smbiosErr == nil {
-		sysinfoDump := smbiosDump.SystemInformation()
-		localUUID, _ = sysinfoDump.UUID()
-		x := smbiosDump.SystemEnclosure()
-		tag = strings.ReplaceAll(x.AssetTagNumber(), " ", "_")
+		localUUID, _ = uuid.Parse(smbiosDump.SystemInformation.UUID)
+		tag = strings.ReplaceAll(smbiosDump.SystemEnclosure.AssetTagNumber, " ", "_")
 		if tag == "Unknown" {
 			dmiOut, err := exec.Command("dmidecode", "-s", "chassis-asset-tag").Output()
 			if err == nil {
@@ -232,11 +227,12 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	wwlog.Debug("uuid: %s", localUUID.String())
 	wwlog.Debug("assetkey: %s", tag)
 
-	if wwid == "" {
-		cmdline, err := os.ReadFile("/proc/cmdline")
-		if err != nil {
-			return fmt.Errorf("could not read from /proc/cmdline: %w", err)
-		}
+	cmdline, err := os.ReadFile("/proc/cmdline")
+	if err != nil {
+		wwlog.Warn("could not read from /proc/cmdline: %s", err)
+	}
+
+	if wwid == "" && err == nil {
 		wwid, err = parseWWIDFromCmdline(string(cmdline))
 		if err != nil {
 			return fmt.Errorf("failed to parse wwid: %w", err)
@@ -254,21 +250,6 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	wwlog.Debug("wwid: %s", wwid)
-
-	if quoteFlag {
-		quote, err := getAttestationData(wwid)
-		if err != nil {
-			return fmt.Errorf("failed to get attestation data: %w", err)
-		}
-
-		jsonData, err := json.MarshalIndent(quote, "", "  ")
-		if err != nil {
-			return fmt.Errorf("failed to marshal quote to JSON: %w", err)
-		}
-
-		fmt.Println(string(jsonData))
-		return nil
-	}
 
 	conf := warewulfconf.Get()
 	if WarewulfConfArg != "" {
@@ -379,11 +360,11 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	port := conf.Warewulf.Port
 	scheme := "http"
 	if conf.Warewulf.TLSEnabled() {
-		port = conf.Warewulf.TlsPort
+		port = conf.Warewulf.TLSPort
 		scheme = "https"
 	}
 
-	if uploadQuoteFlag {
+	if uploadQuoteFlag || parseTPMFromCmdline(string(cmdline)) {
 		quote, err := getAttestationData(wwid)
 		if err != nil {
 			return fmt.Errorf("failed to get attestation data: %w", err)
@@ -421,9 +402,13 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		}
 
 		fmt.Println("TPM quote uploaded successfully")
-		return nil
+		if uploadQuoteFlag {
+			// manual run bail out
+			return nil
+		}
 	}
-	if getChallengeFlag {
+	var secret []byte
+	if getChallengeFlag || parseTPMFromCmdline(string(cmdline)) {
 		challengeURL := &url.URL{
 			Scheme: scheme,
 			Host:   fmt.Sprintf("%s:%d", ipaddr, port),
@@ -469,15 +454,16 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		}
 		defer ak.Close(t)
 
-		secret, err := ak.ActivateCredential(t, encryptedCredential)
+		secret, err = ak.ActivateCredential(t, encryptedCredential)
 		if err != nil {
 			return fmt.Errorf("failed to activate credential: %w", err)
 		}
 
-		wwlog.Info("Decrypted secret: %x\n", secret)
-		return nil
+		if getChallengeFlag {
+			wwlog.Info("Decrypted secret: %x\n", secret)
+			return nil
+		}
 	}
-	var finishedInitialSync bool = false
 
 	go func() {
 		for {
@@ -495,25 +481,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			}
 		}
 	}()
-<<<<<<< HEAD
 	var finishedInitialSync bool = false
-	ipaddr := os.Getenv("WW_IPADDR")
-	if ipaddr == "" {
-		if conf.Ipaddr6 != "" {
-			ipaddr = conf.Ipaddr6
-		} else {
-			ipaddr = conf.Ipaddr
-		}
-	}
-
-	port := conf.Warewulf.Port
-	scheme := "http"
-	if conf.Warewulf.TLSEnabled() {
-		port = conf.Warewulf.TLSPort
-		scheme = "https"
-	}
-=======
->>>>>>> 52d983a8 (create challenge for node)
 
 	for {
 		target := "/"
@@ -531,7 +499,16 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 				return fmt.Errorf("failed to create dir: %w", err)
 			}
 		}
-		updateSystem(target, ipaddr, port, wwid, tag, localUUID, scheme)
+		updateSystem(updateOptions{
+			target:    target,
+			ipaddr:    ipaddr,
+			port:      port,
+			wwid:      wwid,
+			tag:       tag,
+			localUUID: localUUID,
+			scheme:    scheme,
+			secret:    secret,
+		})
 		if !finishedInitialSync {
 			// Notify systemd that the service has started successfully.
 			//
@@ -572,19 +549,57 @@ func parseWWIDFromCmdline(cmdline string) (string, error) {
 	return "", fmt.Errorf("wwid parameter not found in kernel command line")
 }
 
-func updateSystem(target string, ipaddr string, port int, wwid string, tag string, localUUID uuid.UUID, scheme string) {
+// parseTPMFromCmdline extracts the tpm parameter from kernel command line
+func parseTPMFromCmdline(cmdline string) bool {
+	params := strings.Fields(cmdline)
+	ret := false
+
+	for _, param := range params {
+		if strings.EqualFold(param, "tpm") {
+			ret = true
+		} else if strings.HasPrefix(strings.ToLower(param), "tpm=") {
+			val := strings.TrimPrefix(strings.ToLower(param), "tpm=")
+			if val == "1" || val == "true" || val == "yes" || val == "on" {
+				ret = true
+			} else if val == "0" || val == "false" || val == "no" || val == "off" {
+				ret = false
+			}
+		}
+	}
+
+	return ret
+}
+
+type updateOptions struct {
+	target    string
+	ipaddr    string
+	port      int
+	wwid      string
+	tag       string
+	localUUID uuid.UUID
+	scheme    string
+	secret    []byte
+}
+
+func updateSystem(options updateOptions) {
 	var resp *http.Response
 	counter := 0
 	for {
 		var err error
 		values := &url.Values{}
-		values.Set("assetkey", tag)
-		values.Set("uuid", localUUID.String())
+		if options.tag != "" {
+			values.Set("assetkey", options.tag)
+		}
+		if len(options.secret) != 0 {
+			values.Set("tpmsecret", string(options.secret))
+		}
+		values.Set("uuid", options.localUUID.String())
+		values.Set("stage", "runtime")
 		values.Set("compress", "gz")
 		getURL := &url.URL{
-			Scheme:   scheme,
-			Host:     fmt.Sprintf("%s:%d", ipaddr, port),
-			Path:     fmt.Sprintf("runtime/%s", wwid),
+			Scheme:   options.scheme,
+			Host:     fmt.Sprintf("%s:%d", options.ipaddr, options.port),
+			Path:     fmt.Sprintf("provision/%s", options.wwid),
 			RawQuery: values.Encode(),
 		}
 		wwlog.Debug("making request: %s", getURL)
@@ -637,7 +652,7 @@ func updateSystem(target string, ipaddr string, port int, wwid string, tag strin
 	}
 
 	// Atomically move files from temp directory to current working directory
-	err = atomicApplyOverlay(tempDir, target)
+	err = atomicApplyOverlay(tempDir, options.target)
 	if err != nil {
 		wwlog.Error("failed to apply overlay: %s", err)
 	}

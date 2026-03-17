@@ -380,3 +380,19 @@ func (s *TPMLogStore) Update(filename, checksum string) error {
 
 	return os.WriteFile(s.path, out, 0644)
 }
+
+func (s *TPMLogStore) GetSecret() string {
+	if !util.IsFile(s.path) {
+		return ""
+	}
+	data, err := os.ReadFile(s.path)
+	if err != nil {
+		return ""
+	}
+	var quote tpm.Quote
+	err = json.Unmarshal(data, &quote)
+	if err != nil {
+		return ""
+	}
+	return string(quote.Challenge.Secret)
+}

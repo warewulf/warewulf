@@ -53,7 +53,7 @@ menuentry "Single-stage boot" --id single-stage {
     echo "* KernelArgs: {{.KernelArgs}}"
     echo
     echo "Downloading kernel image..."
-    linux $kernel wwid=${net_default_mac} {{.KernelArgs}}
+    linux $kernel wwid=${net_default_mac} {{if .Tpm}}tpm {{end}}{{.KernelArgs}}
     if [ $? != 0 ]
     then
         echo "!!"
@@ -102,7 +102,7 @@ menuentry "Single-stage boot (no compression)" --id single-stage-nocompress {
     echo "* KernelArgs: {{.KernelArgs}}"
     echo
     echo "Downloading kernel image..."
-    linux $kernel wwid=${net_default_mac} {{.KernelArgs}}
+    linux $kernel wwid=${net_default_mac} {{if .Tpm}}tpm {{end}}{{.KernelArgs}}
     if [ $? != 0 ]
     then
         echo "!!"
@@ -159,7 +159,7 @@ menuentry "Two stage boot with dracut" --id dracut {
 
     echo
     echo "Downloading kernel image..."
-    linux $kernel wwid=${net_default_mac} {{.KernelArgs}} $net_args $wwinit_args
+    linux $kernel wwid=${net_default_mac} {{if .Tpm}}tpm {{end}}{{.KernelArgs}} $net_args $wwinit_args
     if [ $? != 0 ]
     then
         echo "!!"
