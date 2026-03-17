@@ -44,6 +44,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Document reclaiming RAM by moving the image to swap
 - New `--partwipe` flag for profile and node set
 - Updated arguments for `ValidString` to match `regexp.MatchString`
 - New `mig` overlay to configure NVIDIA MIG devices. #2102

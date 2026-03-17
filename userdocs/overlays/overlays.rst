@@ -520,6 +520,10 @@ include wipefs to detect existing file systems.
 
    wwctl image exec rockylinux-9 -- /usr/bin/dracut --force --no-hostonly --add wwinit --install mkswap --regenerate-all
 
+For a complete walkthrough of configuring swap to free memory consumed by the
+in-memory node image, including which root filesystem types support swap
+reclamation, see :ref:`swap-and-image-memory`.
+
 systemd mounts
 --------------
 

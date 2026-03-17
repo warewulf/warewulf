@@ -251,6 +251,11 @@ argument:
 By default this is set to 50% of physical RAM. Note that tmpfs is required for
 SELinux overlays since initramfs cannot preserve SELinux contexts.
 
+Because the root is ``tmpfs``, the kernel can also swap cold image pages to a
+local swap device, freeing RAM for running workloads. This does not apply to the
+default ``initramfs`` root (single-stage boot), where pages are pinned in memory
+and cannot be swapped. See :ref:`swap-and-image-memory` for a complete walkthrough.
+
 .. note::
 
    On some systems, it may also be necessary to include the ``noefi`` kernel
