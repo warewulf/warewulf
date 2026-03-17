@@ -18,6 +18,11 @@ func TestSanitizeURL(t *testing.T) {
 			want:  "https://192.168.3.1:9874/provision/00:0c:29:7c:49:6f?assetkey=REDACTED&compress=gz&stage=runtime&uuid=62184d56-6d53-9895-0b51-035f457c496f",
 		},
 		{
+			name:  "redacts tpmsecret",
+			input: "https://192.168.3.1:9874/runtime/00:0c:29:7c:49:6f?assetkey=secretvalue&compress=gz&tpmsecret=secretvalue",
+			want:  "https://192.168.3.1:9874/runtime/00:0c:29:7c:49:6f?assetkey=REDACTED&compress=gz&tpmsecret=REDACTED",
+		},
+		{
 			name:  "no assetkey unchanged",
 			input: "https://192.168.3.1:9874/provision/00:0c:29:7c:49:6f?compress=gz&stage=runtime",
 			want:  "https://192.168.3.1:9874/provision/00:0c:29:7c:49:6f?compress=gz&stage=runtime",

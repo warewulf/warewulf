@@ -6,7 +6,7 @@ import (
 )
 
 // sensitiveParams are query parameter keys that should be redacted in logs.
-var sensitiveParams = []string{"assetkey"}
+var sensitiveParams = []string{"assetkey", "tpmsecret"}
 
 // embeddedURLPattern matches an http(s) URL within a larger string, stopping at
 // whitespace or a double quote so it works whether the URL is quoted or not.
