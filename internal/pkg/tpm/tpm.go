@@ -50,7 +50,7 @@ var tpmManufacturers = map[string]string{
 	"1055": "SMSC",
 	"104A": "STMicroelectronics",
 	"104C": "Texas Instruments",
-	
+
 	// Legacy / Alternate 4-byte ASCII HEX mappings (e.g. "INTC" -> 494E5443)
 	"414D4400": "AMD",
 	"414D4420": "AMD",
@@ -83,11 +83,11 @@ type Quote struct {
 	CreateAttestation string `json:"create_attestation,omitempty" yaml:"create_attestation,omitempty"`
 	CreateSignature   string `json:"create_signature,omitempty" yaml:"create_signature,omitempty"`
 
-	EventLog string    `json:"eventlog,omitempty" yaml:"eventlog,omitempty"`
-	Token    string    `json:"token,omitempty" yaml:"token,omitempty"`
-	ID       string    `json:"id" yaml:"id"`
-	Modified time.Time `json:"modified" yaml:"modified"`
-	SentLog  []FileLog `json:"sentlogs,omitempty" yaml:"logs,omitempty"`
+	EventLog  string     `json:"eventlog,omitempty" yaml:"eventlog,omitempty"`
+	Token     string     `json:"token,omitempty" yaml:"token,omitempty"`
+	ID        string     `json:"id" yaml:"id"`
+	Modified  time.Time  `json:"modified" yaml:"modified"`
+	SentLog   []FileLog  `json:"sentlogs,omitempty" yaml:"logs,omitempty"`
 	Challenge *Challenge `json:"challenge,omitempty" yaml:"challenge,omitempty"`
 }
 
