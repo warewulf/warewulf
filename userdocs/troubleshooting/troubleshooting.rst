@@ -198,9 +198,32 @@ investigate:
 Running Containers on Cluster Nodes
 ===================================
 
-Some container runtimes, notably Podman, require file system features that are
-not available in ``initrootfs``. Cluster nodes using Podman (and some other
-container runtimes) should be configured with ``--root=tmpfs``.
+Container runtimes such as Podman require filesystem features — most notably
+OverlayFS support for image storage and container layers — that are not
+available with the default ``initramfs`` root filesystem. To run Podman or
+similar runtimes on cluster nodes, configure the node or profile to use
+``tmpfs`` as the root filesystem:
+
+.. code-block:: shell
+
+   # Apply to all nodes via a profile
+   wwctl profile set default --root=tmpfs
+
+   # Or apply to a specific node
+   wwctl node set <nodename> --root=tmpfs
+
+After changing the root filesystem type, reboot the affected nodes to apply
+the new configuration.
+
+.. note::
+
+   The node image itself must have Podman (or the desired container runtime)
+   installed. See :ref:`images` for guidance on customizing node images.
+
+For information on tuning tmpfs memory usage and NUMA interleaving behavior,
+see :ref:`tmpfs-and-numa` below.
+
+.. _tmpfs-and-numa:
 
 tmpfs and NUMA
 ==============
