@@ -56,7 +56,6 @@ func initHandleRequest(w http.ResponseWriter, req *http.Request) (*requestContex
 	if err != nil {
 		wwlog.Warn("couldn't create tpm log for node: %s", remoteNode.Id())
 	}
-
 	if remoteNode.AssetKey != "" && remoteNode.AssetKey != rinfo.assetkey {
 		w.WriteHeader(http.StatusUnauthorized)
 		wwlog.Denied("incorrect asset key for node %s:", remoteNode.Id())
@@ -77,6 +76,7 @@ type parsedRequest struct {
 	ipaddr     string
 	remoteport int
 	assetkey   string
+	tpmsecret  string
 	uuid       string
 	stage      string
 	overlay    string
@@ -165,6 +165,9 @@ func parseRequest(req *http.Request) (parsedRequest, error) {
 
 	if len(req.URL.Query()["assetkey"]) > 0 {
 		ret.assetkey = req.URL.Query()["assetkey"][0]
+	}
+	if len(req.URL.Query()["tpmsecret"]) > 0 {
+		ret.tpmsecret = req.URL.Query()["tpmsecret"][0]
 	}
 	if len(req.URL.Query()["uuid"]) > 0 {
 		ret.uuid = req.URL.Query()["uuid"][0]
