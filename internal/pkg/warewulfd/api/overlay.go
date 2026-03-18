@@ -101,13 +101,13 @@ func (of *OverlayFile) readContents() (string, error) {
 	fullPath := of.FullPath()
 	f, err := os.ReadFile(fullPath)
 	if err != nil {
-		wwlog.Warn("os.ReadFile err %w", err)
+		wwlog.Warn("os.ReadFile err %v", err)
 		return "", err
 	}
 	// Populate the permissions, uid, and gid.
 	s, err := os.Stat(fullPath)
 	if err != nil {
-		wwlog.Warn("os.Stat err %w", err)
+		wwlog.Warn("os.Stat err %v", err)
 		return "", err
 	}
 	fileMode := s.Mode()

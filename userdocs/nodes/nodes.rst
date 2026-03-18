@@ -113,7 +113,8 @@ To include an explicit comma in the value, enclose the value in inner-quotes.
 Un-setting Node Fields
 ----------------------
 
-To un-set a field value, set the value to ``UNDEF``.
+To un-set a field value, set the value to ``UNDEF`` or ``UNSET`` (both are
+accepted).
 
 .. code-block:: shell
 

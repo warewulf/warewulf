@@ -5,8 +5,8 @@ SELinux-enabled Images
 ======================
 
 Warewulf supports booting SELinux-enabled images, though nodes using SELinux
-must be configured to use tmpfs for their image file system. ("ramfs," often
-used by default, does not support extended file attributes, which are required
+must be configured to use tmpfs for their image file system. (The default
+``initramfs`` root does not support extended file attributes, which are required
 for SELinux context labeling.)
 
 .. code-block:: bash
@@ -26,4 +26,4 @@ in the warewulf-node-images repository.
 .. _An example: https://github.com/warewulf/warewulf-node-images/tree/main/examples/rockylinux-9-selinux
 
 SELinux requires extended attributes, which aren't supported on a default
-``initrootfs``. Nodes using SELinux should specify ``--root=tmpfs``.
+``initramfs`` root. Nodes using SELinux should specify ``--root=tmpfs``.

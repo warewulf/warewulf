@@ -30,7 +30,7 @@ Server management
 
 .. code-block:: shell
 
-   # Configure all external services (DHCP, TFTP, NFS, SSH, hosts)
+   # Configure all external services (TLS, warewulfd, TFTP, DHCP, NFS, SSH, hosts)
    wwctl configure --all
 
    # Configure individual services

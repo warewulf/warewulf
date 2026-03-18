@@ -97,7 +97,7 @@ func RunServer() error {
 	auth := warewulfconf.NewAuthentication()
 	if util.IsFile(conf.Paths.AuthenticationConf()) {
 		if err := auth.Read(conf.Paths.AuthenticationConf()); err != nil {
-			wwlog.Warn("%w\n", err)
+			wwlog.Warn("%v", err)
 		}
 	}
 

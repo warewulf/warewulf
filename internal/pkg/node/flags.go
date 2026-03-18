@@ -58,7 +58,7 @@ func (f *boolPtrFlag) Type() string {
 }
 
 type NodeConfDel struct {
-	TagsDel     []string `lopt:"tagdel" comment:"add tags"`
+	TagsDel     []string `lopt:"tagdel" comment:"delete tags"`
 	IpmiTagsDel []string `lopt:"ipmitagdel" comment:"delete ipmi tags"`
 	NetTagsDel  []string `lopt:"nettagdel" comment:"delete network tags"`
 	NetDel      string   `lopt:"netdel" comment:"network to delete"`

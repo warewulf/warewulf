@@ -124,7 +124,7 @@ warewulf
   applied to the Warewulf server during configuration. (The host overlay is used
   to configure external services.)
 
-* ``warewulf::grubboot``: Controls whether iPXE (default) or GRUB is used as the
+* ``warewulf:grubboot``: Controls whether iPXE (default) or GRUB is used as the
   network bootloader.
 
 dhcp
@@ -270,10 +270,10 @@ to operate in the host environment prior to deployment.
 
 * ``image mounts:dest``: The path in the image to use for the mount.
 
-* ``image mounts::readonly``: Whether the mount should be read-only (``true``)
+* ``image mounts:readonly``: Whether the mount should be read-only (``true``)
   or allow writes into the server path (``false``).
 
-* ``image mounts::copy``: When ``true``, copy files into the image rather than
+* ``image mounts:copy``: When ``true``, copy files into the image rather than
   mount. This is useful for initializing files with a starting value from the
   Warewulf server that should then be maintained as part of the image.
 
@@ -299,7 +299,7 @@ Override paths to images, overlays, and other Warewulf components.
 * ``paths:sysconfdir``: The parent directory for the ``warewulf`` configuration
   directory, which stores ``warewulf.conf`` and ``nodes.conf``.
 
-* ``paths::cachedir``: The parent directory for the ``warewulf`` cache of OCI
+* ``paths:cachedir``: The parent directory for the ``warewulf`` cache of OCI
   images during ``wwctl image import``. The cache is stored at
   ``$cachedir/warewulf`` and can be cleared with ``wwctl clean``.
 

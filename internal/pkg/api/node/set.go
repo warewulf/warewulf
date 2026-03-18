@@ -88,7 +88,7 @@ func NodeSetParameterCheck(set *wwapiv1.ConfSetParameter) (nodeDB node.NodesYaml
 			if set.PartitionDelete != "" {
 				for diskname, disk := range nodePtr.Disks {
 					if _, ok := disk.Partitions[set.PartitionDelete]; ok {
-						wwlog.Verbose("Node: %s, on disk %, deleting partition: %s", nId, diskname, set.PartitionDelete)
+						wwlog.Verbose("Node: %s, on disk %s, deleting partition: %s", nId, diskname, set.PartitionDelete)
 						delete(disk.Partitions, set.PartitionDelete)
 					} else {
 						return nodeDB, count, fmt.Errorf("partition doesn't exist: %s", set.PartitionDelete)

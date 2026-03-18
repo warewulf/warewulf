@@ -82,7 +82,7 @@ func DaemonStatus() error {
 	} else {
 		err := process.Signal(syscall.Signal(0))
 		if err != nil {
-			return fmt.Errorf("failed to send process SIGCONT: %w", err)
+			return fmt.Errorf("failed to send signal 0 (process existence check): %w", err)
 		} else {
 			wwlog.Serv("Warewulf server is running at PID: %d", pid)
 		}

@@ -167,10 +167,10 @@ func SetLogWriterInfo(newOut io.Writer) {
 }
 
 /*
-Set the log ofr info only
+Set the log writer for errors
 */
 func SetLogWriterErr(newOut io.Writer) {
-	logOut = newOut
+	logErr = newOut
 }
 
 /*
