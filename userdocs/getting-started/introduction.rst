@@ -9,10 +9,10 @@ Warewulf is known for its massive scalability and simple management of stateless
 (disk optional) provisioning.
 
 Warewulf leverages a simple administrative model centralizing administration
-around virtual node images which are used to provision out to the cluster nodes.
-This means you can have hundreds or thousands of cluster nodes all booting and
-running on the same node image. As of Warewulf v4, the node image can be managed
-using industry-standard container tooling and/or CI/CD pipelines. This can be as
+around virtual OS images which are used to provision cluster nodes. This means
+you can have hundreds or thousands of cluster nodes all booting and running on
+the same OS image. As of Warewulf v4, the OS image can be managed using
+industry-standard container tooling and/or CI/CD pipelines. This can be as
 simple as DockerHub or your own private GitLab CI infrastructure. With this
 architecture, Warewulf combines the best of High Performance Computing (HPC),
 Cloud, Hyperscale, and Enterprise deployment principles to create and maintain
@@ -47,7 +47,7 @@ flexible provisioning system for all types of clusters.
   any environment.
 
 * **Secure**: Warewulf supports SELinux out-of-the-box. Just install SELinux in
-  your node image and let Warewulf do the rest!
+  your OS image and let Warewulf do the rest!
 
 * **Open Source**: Warewulf is and has always been open source. It can be used
   in any environment, whether public, private, non-profit, or commercial. And
@@ -70,14 +70,14 @@ configuration and image and overlay assignments.
 **Node profiles** provide a flexible abstraction for applying configuration to
 multiple nodes.
 
-**Node images** provide a bootable operating system image, including the kernel
-that will be used to boot the cluster node. Node images provide a base operating
+**Operating system images** provide a bootable image, including the kernel
+that will be used to boot the cluster node. OS images provide the base operating
 system and, by default, run entirely in memory. This means that when you
 reboot the node, the node retains no information about Warewulf or how it
 booted; but it also means that they return to their initial known-good state.
 
 **Overlays** customize the provisioned operating system image with static files
-and dynamic templates applied with the node image and, optionally, periodically
+and dynamic templates applied with the OS image and, optionally, periodically
 at runtime.
 
 Beowulf overview

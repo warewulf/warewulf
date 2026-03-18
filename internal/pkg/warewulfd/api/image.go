@@ -54,7 +54,7 @@ func getImages() usecase.Interactor {
 		}
 	})
 	u.SetTitle("Get images")
-	u.SetDescription("Get all node images")
+	u.SetDescription("Get all OS images")
 	u.SetTags("Image")
 	return u
 }
@@ -74,7 +74,7 @@ func getImageByName() usecase.Interactor {
 		}
 	})
 	u.SetTitle("Get an image")
-	u.SetDescription("Get a node image by its name")
+	u.SetDescription("Get an OS image by its name")
 	u.SetTags("Image")
 	return u
 }
@@ -110,7 +110,7 @@ func importImage() usecase.Interactor {
 		}
 	})
 	u.SetTitle("Import an image")
-	u.SetDescription("Import a node image from an OCI registry")
+	u.SetDescription("Import an OS image from an OCI registry")
 	u.SetTags("Image")
 
 	return u
@@ -146,7 +146,7 @@ func deleteImage() usecase.Interactor {
 		return image_api.ImageDelete(cdp)
 	})
 	u.SetTitle("Delete an image")
-	u.SetDescription("Delete an existing node image")
+	u.SetDescription("Delete an existing OS image")
 	u.SetTags("Image")
 
 	return u
@@ -156,7 +156,7 @@ func updateImage() usecase.Interactor {
 	type renameImageInput struct {
 		Name    string `path:"name" required:"true" description:"Name of image to update"`
 		NewName string `json:"name" description:"New name to rename the image to"`
-		Build   bool   `query:"build" default:"true" description:"Build the image image after renaming, default:'true'"`
+		Build   bool   `query:"build" default:"true" description:"Build the OS image after renaming, default:'true'"`
 	}
 
 	u := usecase.NewInteractor(func(ctx context.Context, input renameImageInput, output *Image) error {
@@ -179,7 +179,7 @@ func updateImage() usecase.Interactor {
 		return nil
 	})
 	u.SetTitle("Update or rename an image")
-	u.SetDescription("Update or rename an existing node image")
+	u.SetDescription("Update or rename an existing OS image")
 	u.SetTags("Image")
 
 	return u
@@ -188,7 +188,7 @@ func updateImage() usecase.Interactor {
 func buildImage() usecase.Interactor {
 	type buildImageInput struct {
 		Name  string `path:"name" required:"true" description:"Name of image to build"`
-		Force bool   `query:"force" default:"false" description:"Build the image image even if it appears unnecessary, default:'false'"`
+		Force bool   `query:"force" default:"false" description:"Build the OS image even if it appears unnecessary, default:'false'"`
 	}
 
 	u := usecase.NewInteractor(func(ctx context.Context, input buildImageInput, output *Image) error {
@@ -206,7 +206,7 @@ func buildImage() usecase.Interactor {
 		return nil
 	})
 	u.SetTitle("Build an image")
-	u.SetDescription("Build a node image")
+	u.SetDescription("Build an OS image")
 	u.SetTags("Image")
 
 	return u

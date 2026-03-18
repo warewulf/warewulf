@@ -32,7 +32,7 @@ the Warewulf configuration process to configure the ``ipxe`` service.
 
       bios->iPXE [lhead=cluster0,label="iPXE.efi"];
 
-      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from node image"];
+      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from OS image"];
       ipxe_cfg->kernel[ltail=cluster0,label="http"];
   }
 
@@ -235,7 +235,7 @@ Warewulf as a technology preview.
         grubcfg[shape=record label="{grub.cfg|static under TFTP root}"];
         grub->grubcfg[label="TFTP"];
       }
-      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from node image"];
+      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from OS image"];
       grubcfg->kernel[ltail=cluster1,label="http"];
   }
 
@@ -308,9 +308,9 @@ diagram is the following:
   digraph G{
       node [shape=box];
       efi [shape=record label="{EFI|boots from URI defined in filename}"];
-      shim [shape=record label="{shim.efi|replaces shim.efi with grubx64.efi in URI|extracted from node image}"];
-      grub [shape=record label="{grub.efi|checks for grub.cfg|extracted from node image}"]
-      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from node image"];
+      shim [shape=record label="{shim.efi|replaces shim.efi with grubx64.efi in URI|extracted from OS image}"];
+      grub [shape=record label="{grub.efi|checks for grub.cfg|extracted from OS image}"]
+      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from OS image"];
       efi->shim [label="http"];
       shim->grub [label="http"];
       grub->kernel [label="http"];

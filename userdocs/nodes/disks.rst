@@ -12,11 +12,6 @@ sfdisk, mkfs, and mkswap during boot.
 Ignition can, for example, create ``swap`` partitions or ``/scratch`` file
 systems.
 
-.. note::
-
-   Warewulf is not currently able to provision the node image onto an explicitly
-   provisioned root file system.
-
 Requirements
 ============
 
@@ -153,7 +148,7 @@ See the `upstream ignition documentation`_ for additional information.
 Swap and image memory usage
 ===========================
 
-Warewulf node images run entirely in memory. Configuring a local swap partition
+Warewulf images run entirely in memory. Configuring a local swap partition
 can allow the kernel to reclaim that RAM for applications — but only under the
 right conditions. Whether swap can free image memory depends on which root
 filesystem type the node uses.
@@ -162,7 +157,7 @@ tmpfs root
 ----------
 
 When the root filesystem is ``tmpfs`` (the default for two-stage dracut boot, or
-when ``--root=tmpfs`` is set explicitly), the node image lives in the page cache.
+when ``--root=tmpfs`` is set explicitly), the image lives in the page cache.
 The Linux kernel can swap ``tmpfs`` pages to a local swap device exactly as it
 would any other anonymous memory. Adding swap therefore lets the kernel evict
 cold image pages to disk and reclaim that RAM for running workloads.
@@ -176,7 +171,7 @@ initramfs root (single-stage boot default)
 The default single-stage boot places the image in an ``initramfs`` root, which
 is an instance of ``ramfs``. Unlike ``tmpfs``, ``ramfs`` pages are pinned in
 memory: the kernel will never swap them out. Configuring swap on a node with an
-``initramfs`` root will **not** free any memory used by the node image.
+``initramfs`` root will **not** free any memory used by the image.
 
 If you are using single-stage boot and want swap to help with image memory,
 switch to ``tmpfs`` root first:
@@ -284,9 +279,9 @@ needs memory, first note the image size with ``df -h /``:
    df -h /
 
 This shows how much tmpfs space the image occupies — that is the amount of RAM
-currently holding the node image.
+currently holding the image.
 
-Now apply memory pressure using ``stress-ng`` (install it in the node image if
+Now apply memory pressure using ``stress-ng`` (install it in the OS image if
 not already present). The allocation must exceed **available** RAM — not just
 total RAM — to force the kernel to evict image pages. Compute the target from
 ``MemTotal``:
@@ -310,7 +305,7 @@ While ``stress-ng`` is running, observe memory usage:
    Mem:            15Gi        15Gi        32Mi       120Mi       512Mi       192Mi
    Swap:           8.0Gi       4.2Gi       3.8Gi
 
-The ``Swap: used`` value has grown by roughly the size of the node image. The
+The ``Swap: used`` value has grown by roughly the size of the image. The
 kernel has evicted cold image pages to swap, making that RAM available to the
 application. The application can access the full physical memory of the node,
 not just what is left over after the image is loaded.
@@ -320,7 +315,7 @@ they are accessed again, so ``free -h`` will continue to show swap usage until
 the node is under less pressure and pages are faulted back in as needed.
 
 Moving image pages to swap proactively
----------------------------------------
+--------------------------------------
 
 Rather than simulating a workload, you can instruct the kernel to push image
 pages to swap directly. On Linux 6.1 and later with cgroup v2, write the
@@ -352,7 +347,7 @@ systemd unit to a custom overlay that runs at ``local-fs.target``:
 .. code-block:: ini
 
    [Unit]
-   Description=Reclaim node image memory to swap
+   Description=Reclaim OS image memory to swap
    After=local-fs.target
    ConditionPathExists=/sys/fs/cgroup/memory.reclaim
 
@@ -472,7 +467,7 @@ functionality is used:
 Configuring the root device
 ---------------------------
 
-Set the desired storage device for the node image using the ``--root``
+Set the desired storage device for the image using the ``--root``
 parameter.
 
 .. code-block:: shell

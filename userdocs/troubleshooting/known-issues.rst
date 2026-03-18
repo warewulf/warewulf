@@ -63,7 +63,7 @@ v4.6.0. <https://github.com/warewulf/warewulf/issues/892>`_
 Image Size Considerations
 =========================
 
-Node images can grow quickly as packages and other files are added to them. Even
+OS images can grow quickly as packages and other files are added to them. Even
 these larger images are often not an issue in modern environments; but some
 architectural limits exist that can impede the use of images larger than a few
 gigabytes. Workarounds exist for these issues in most circumstances:
@@ -94,7 +94,7 @@ gigabytes. Workarounds exist for these issues in most circumstances:
 
 * Some BIOS / firmware retain a "memory hole" feature for legacy devices, e.g.,
   reserving a 1MB block of memory at the 15MB-16MB address range. This feature
-  can interfere with booting stateless node images.
+  can interfere with booting stateless OS images.
 
   If you are still getting "Not enough memory" or "No space left on device"
   errors, try disabling any "memory hole" features or updating your system BIOS

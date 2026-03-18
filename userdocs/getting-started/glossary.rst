@@ -12,13 +12,7 @@ External services
     configures a DHCP server (either ISC DHCP or dnsmasq) and a TFTP server.
 
 Image
-    The node images that Warewulf manages and provisions. Images may be imported
-    from OCI image registries, OCI image archives, Apptainer sandboxes, and
-    manual chroot directories.
-
-    Warewulf images are maintained as an uncompressed "virtual node file system"
-    (VNFS, sometimes also referred to as a "chroot"). These virtual file systems
-    are then built as single-file images which may be used to provision a node.
+    See "Operating System (OS) Image" or "Overlay Image."
 
 Kernel
     In addition to an image, Warewulf also requires a kernel (typically a Linux
@@ -42,6 +36,14 @@ nodes.conf
     This file is sometimes referred to as the "nodes database" or "node
     registry."
 
+Operating System (OS) Image
+    An operating system image (or OS image) contains a bootable operating
+    system. When provisioning a cluster node, Warewulf combines the OS image
+    with the node's overlay images to provision the complete, configured image.
+
+    OS images may be imported from OCI image registries, OCI image archives,
+    Apptainer sandboxes, and manual chroot directories.
+
 Overlay
     Warewulf overlays provide customization for the provisioned image. Overlays
     may be configured on nodes or profiles, as either **system** or **runtime**
@@ -55,6 +57,15 @@ Overlay
 
     Warewulf includes a number of **distribution overlays**; but additional
     **site overlays** can be added to a Warewulf environment.
+
+Overlay Image
+    An overlay image contains the rendered contents of multiple overlays for a
+    given cluster node. Nodes have a "system overlay" image and a "runtime
+    overlay" image, based on the system and runtime overlays associated with each
+    node.
+
+    Overlay images are not managed directly, but are built by the ``wwctl
+    overlay build`` command.
 
 Profile
     Warewulf profiles are abstract nodes that carry the same configuration

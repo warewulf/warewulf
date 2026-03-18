@@ -16,8 +16,8 @@ for SELinux context labeling.)
 .. note::
 
    Versions of Warewulf prior to v4.5.8 also required a kernel argument
-   "rootfstype=ramfs" in order for wwinit to copy the node image to tmpfs; but
-   this is no longer required.
+   "rootfstype=ramfs" in order for wwinit to copy the image to tmpfs; but this
+   is no longer required.
 
 Once that is done, enable SELinux in ``/etc/sysconfig/selinux`` and install the
 appropriate packages in the image. `An example`_ of such an image is available

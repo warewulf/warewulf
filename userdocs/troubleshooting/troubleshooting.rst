@@ -66,7 +66,7 @@ cluster node's MAC address in place of 00:00:00:00:00:00.)
 - The ``kernel`` command fetches a kernel for later booting.
 
 - The ``imgextract`` command fetches and decompresses the images that will make
-  up the booted node image. In a typical environment this is used to load a
+  up the booted OS image. In a typical environment this is used to load a
   minimal "initial ramdisk" which, then, boots the rest of the system. Warewulf,
   by default, loads the entire image as an initial ramdisk, and also loads the
   system and runtime overlays at this time.
@@ -91,7 +91,7 @@ enabled. To do so, substitute the ``boot`` command above.
 
    You may be more familiar with specifying ``init=`` on the kernel command
    line. ``rdinit`` indicates "ramdisk init." Since Warewulf, by default, boots
-   the node image as an initial ramdisk, we must use ``rdinit=`` here.
+   the OS image as an initial ramdisk, we must use ``rdinit=`` here.
 
 GRUB
 ====
@@ -149,7 +149,7 @@ enabled. To do so, substitute the ``linux`` command above.
 
    You may be more familiar with specifying ``init=`` on the kernel command
    line. ``rdinit`` indicates "ramdisk init." Since Warewulf, by default, boots
-   the node image as an initial ramdisk, we must use ``rdinit=`` here.
+   the OS image as an initial ramdisk, we must use ``rdinit=`` here.
 
 Dracut
 ======
@@ -217,8 +217,8 @@ the new configuration.
 
 .. note::
 
-   The node image itself must have Podman (or the desired container runtime)
-   installed. See :ref:`images` for guidance on customizing node images.
+   The OS image itself must have Podman (or the desired container runtime)
+   installed. See :ref:`images` for guidance on customizing OS images.
 
 For information on tuning tmpfs memory usage and NUMA interleaving behavior,
 see :ref:`tmpfs-and-numa` below.
@@ -231,7 +231,7 @@ tmpfs and NUMA
 Warewulf can optionally mount the root filesystem as ``tmpfs`` instead of the
 default ``initramfs``. Warewulf will add ``mpol=interleave`` to the mount point
 which will distribute the memory across all NUMA nodes. This avoids the
-hotspotting that occurs when the default initramfs stores large node images on a
+hotspotting that occurs when the default initramfs stores large OS images on a
 single NUMA node. To enable this, set the rootfs type to tmpfs:
 
 .. code-block:: shell

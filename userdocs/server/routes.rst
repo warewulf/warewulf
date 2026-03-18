@@ -93,7 +93,7 @@ kernel is taken from the node's assigned image.
 ``/image/{wwid}``
 -----------------
 
-Serves the raw node image file for the node identified by ``{wwid}``.
+Serves the raw OS image file for the node identified by ``{wwid}``.
 
 **Query parameters:** ``assetkey``, ``uuid``, ``compress``
 

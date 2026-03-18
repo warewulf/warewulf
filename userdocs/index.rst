@@ -45,7 +45,7 @@ Welcome to the Warewulf User Guide!
    :maxdepth: 1
    :caption: Images
 
-   Node Images <images/images>
+   OS Images <images/images>
    Image Kernels <images/kernel>
    Syncuser <images/syncuser>
    SELinux <images/selinux>

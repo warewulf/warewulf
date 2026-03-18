@@ -95,7 +95,7 @@ systems to mount properly. The ``wwinit`` dracut module also no longer runs the
 wwinit module if root is not set to ``root=wwclient*``.
 
 These fixes require installing the updated ``warewulf-dracut`` package in the
-node image.
+OS image.
 
 Other fixes
 ===========

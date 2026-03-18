@@ -3,7 +3,7 @@ v4.6.2 Release Notes
 ====================
 
 v4.6.2 is a regularly-scheduled minor release in the v4.6.x series. It also
-includes a preview implementation of the ability to provision the node image to
+includes a preview implementation of the ability to provision the OS image to
 a local disk.
 
 Significant changes are described below. Additional changes are listed in the

@@ -11,7 +11,7 @@ Provisioning Security
 
 Provisioning is, by default, a relatively "insecure" process: there is generally
 nothing preventing a user on a cluster node from spoofing a provision request
-and downloading the node image and overlays for inspection. If any of these
+and downloading the OS image and overlays for inspection. If any of these
 include secrets (e.g., private keys) they are at risk of exposure.
 
 There are multiple ways to secure the Warewulf provisioning process:
@@ -50,7 +50,7 @@ SELinux
 The Warewulf server can be run with SELinux enabled in "targeted" and
 "enforcing" mode.
 
-For more information about running SELinux-enabled cluster node images, see
+For more information about running SELinux-enabled cluster OS images, see
 :ref:`SELinux-Enabled Images <selinux_images>`.
 
 firewalld

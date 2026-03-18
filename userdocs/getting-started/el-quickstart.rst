@@ -155,10 +155,10 @@ configure --all``.
    you may need to run ``restorecon -Rv /var/lib/tftpboot/`` to label
    files written to ``tftpboot``.
 
-Add a base node image
-=====================
+Add an OS image
+===============
 
-This will pull a basic node image from Docker Hub
+This will pull a basic OS image from Docker Hub
 and set it for the "default" node profile.
 
 .. code-block:: bash

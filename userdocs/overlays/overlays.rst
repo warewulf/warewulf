@@ -2,7 +2,7 @@
 Overlays
 ========
 
-Warewulf supplements provisioned node images with an "overlay" system. Overlays
+Warewulf supplements provisioned OS images with an "overlay" system. Overlays
 are collections of files and :ref:`templates` that are rendered
 and built per-node and then applied over the image during the provisioning
 process.
@@ -239,7 +239,7 @@ provisioning actions:
 wwclient
 --------
 
-All configured overlays are provisioned initially along with the node image
+All configured overlays are provisioned initially along with the OS image
 itself; but **wwclient** periodically fetches and applies the runtime overlay to
 allow configuration of some settings without a reboot.
 
@@ -521,8 +521,8 @@ include wipefs to detect existing file systems.
    wwctl image exec rockylinux-9 -- /usr/bin/dracut --force --no-hostonly --add wwinit --install mkswap --regenerate-all
 
 For a complete walkthrough of configuring swap to free memory consumed by the
-in-memory node image, including which root filesystem types support swap
-reclamation, see :ref:`swap-and-image-memory`.
+in-memory image, including which root filesystem types support swap reclamation,
+see :ref:`swap-and-image-memory`.
 
 systemd mounts
 --------------

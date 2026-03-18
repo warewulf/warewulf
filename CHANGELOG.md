@@ -67,9 +67,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Runtime overlay download failure during dracut/wwinit boot is now non-fatal;
   the node continues to boot and `wwclient` retries the download at runtime.
 - `hosts` overlay added to the default system overlay list
-
-### Changed
-
+- Distinguish between OS images and overlay images in documentation
 - Updated `MAINTAINING.md` to document golang version policy
 
 ## v4.6.5, 2026-01-12
