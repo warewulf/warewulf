@@ -22,12 +22,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Dependencies
 
-- Bump golang.org/x/term from 0.28.0 to 0.40.0 #2037
+- Bump golang.org/x/term from 0.28.0 to 0.41.0 #2037
 - Bump golang.org/x/sys from 0.29.0 to 0.42.0 #2036
-- Bump golang.org/x/crypto from 0.31.0 to 0.48.0
+- Bump golang.org/x/crypto from 0.31.0 to 0.49.0
 - Bump golang.org/x/net from 0.33.0 to 0.49.0 #1819
 - Bump github.com/grpc-ecosystem/grpc-gateway/v2 from 2.26.1 to 2.28.0 #2032
-- Bump google.golang.org/grpc from 1.70.0 to 1.79.2
+- Bump google.golang.org/grpc from 1.70.0 to 1.79.3
 - Bump google.golang.org/protobuf from 1.36.3 to 1.36.11
 - Bump github.com/containers/image/v5 from 5.32.2 to 5.36.2 #1996
 - Bump github.com/containers/storage from 1.57.1 to 1.59.1 #1970
