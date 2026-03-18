@@ -353,12 +353,14 @@ Two SSH overlays configure host keys (one set for all nodes in the cluster) and
 syncuser
 --------
 
-The **syncuser** overlay updates ``/etc/passwd`` and ``/etc/group`` to include
-all users on both the Warewulf server and from the image.
+The **syncuser** overlay updates ``/etc/passwd`` and ``/etc/group`` at
+provisioning time to include all users from both the Warewulf server and from
+the image.
 
 To function properly, ``wwctl image syncuser`` (or the ``--syncuser`` option
-during ``import``, ``exec``, ``shell``, or ``build``) must have also been run on
-the image to synchronize its user and group IDs with those of the server.
+during ``import``, ``exec``, ``shell``, or ``build``) must also have been run on
+the image to synchronize its user and group IDs with those of the server. See
+:doc:`/images/syncuser` for details on both parts of the syncuser feature.
 
 If a ``PasswordlessRoot`` tag is set to "true", the overlay will also insert a
 "passwordless" root entry. This can be particularly useful for accessing a
