@@ -63,6 +63,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `/initramfs/`, `/system/`, `/runtime/`, `/grub/`, `/efiboot/`).
 - Documented how to detect shadowed overlays in troubleshooting.
 - Documented `wwctl clean`. #2034
+- Documented the status of various top-level Warewulf features.
 
 
 ### Changed

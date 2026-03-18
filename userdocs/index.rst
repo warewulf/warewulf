@@ -16,6 +16,7 @@ Welcome to the Warewulf User Guide!
    Debian Quickstart <getting-started/debian-quickstart>
    Glossary <getting-started/glossary>
    Quick Reference <getting-started/quick-reference>
+   Feature Status <getting-started/feature-status>
 
 .. toctree::
    :maxdepth: 1
