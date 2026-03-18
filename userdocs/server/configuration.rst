@@ -300,7 +300,8 @@ Override paths to images, overlays, and other Warewulf components.
   directory, which stores ``warewulf.conf`` and ``nodes.conf``.
 
 * ``paths::cachedir``: The parent directory for the ``warewulf`` cache of OCI
-  images during ``wwctl image import``.
+  images during ``wwctl image import``. The cache is stored at
+  ``$cachedir/warewulf`` and can be cleared with ``wwctl clean``.
 
 * ``paths:ipxesource``: Where to get iPXE binaries. These files are copied to
   ``warewulf.conf:tftp:tftproot`` by ``wwctl configure tftp``.

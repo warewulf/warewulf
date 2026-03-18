@@ -311,3 +311,42 @@ and cannot be swapped. See :ref:`swap-and-image-memory` for a complete walkthrou
    On some systems, it may also be necessary to include the ``noefi`` kernel
    argument. This works around specific EFI firmware bugs that can prevent
    proper memory release during the transition from ``initramfs`` to ``tmpfs``.
+
+.. _oci-blob-cache:
+
+OCI Blob Cache
+==============
+
+Warewulf caches OCI image layers on disk to speed up repeated ``wwctl image
+import`` operations. The cache can grow large when many images — or many
+versions of the same image — are imported over time.
+
+**v4.6 and later**
+
+The cache is stored at ``$cachedir/warewulf`` (default: ``/var/cache/warewulf``
+on RPM-based distributions). It contains files and directories such as
+``blobs/``, ``index.json``, and ``oci-layout``.
+
+Use ``wwctl clean`` to remove the cache:
+
+.. code-block:: console
+
+   # wwctl clean
+
+The cache is rebuilt automatically on the next ``wwctl image import``.
+
+**v4.5.x and earlier (legacy cache location)**
+
+In v4.5.x and earlier releases, the OCI blob cache was stored at
+``$datastore/oci`` (default: ``/usr/share/oci`` in the Rocky Linux RPM
+packages). This location is not removed by ``wwctl clean``.
+
+If you are upgrading from v4.5.x and want to reclaim the space used by the
+old cache, you can safely delete this directory manually:
+
+.. code-block:: console
+
+   # rm -rf /usr/share/oci
+
+Adjust the path if your installation used a non-default ``datastore``
+setting in ``warewulf.conf``.

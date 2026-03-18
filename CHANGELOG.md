@@ -56,12 +56,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   if TLS is enabled is not distributed over plain http.
   
 - Documented that booting a node twice fixes broken partition tables
-- TLS support for `warewulfd` and REST API
+- TLS support for `warewulfd` and REST API.
 - New `wwctl configure tls` command to generate and configure TLS keys and
-  certificates
+  certificates.
 - New dedicated `warewulfd` server routes (`/ipxe/`, `/kernel/`, `/image/`,
-  `/initramfs/`, `/system/`, `/runtime/`, `/grub/`, `/efiboot/`)
-- Documented how to detech shadowed overlays in troubleshooting
+  `/initramfs/`, `/system/`, `/runtime/`, `/grub/`, `/efiboot/`).
+- Documented how to detect shadowed overlays in troubleshooting.
+- Documented `wwctl clean`. #2034
+
 
 ### Changed
 
