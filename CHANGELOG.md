@@ -61,6 +61,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   certificates
 - New dedicated `warewulfd` server routes (`/ipxe/`, `/kernel/`, `/image/`,
   `/initramfs/`, `/system/`, `/runtime/`, `/grub/`, `/efiboot/`)
+- Documented how to detech shadowed overlays in troubleshooting
 
 ### Changed
 

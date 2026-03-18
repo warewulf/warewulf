@@ -195,6 +195,56 @@ investigate:
 - Sometimes you need to add ``should_exist: "true"`` for the swap partition as
   well.
 
+Overlay Shadowing
+=================
+
+When Warewulf introduced the distinction between distribution overlays and site
+overlays, existing installations that had modified any distribution overlays
+were left with those modified files in the site overlay directory (typically
+``/var/lib/warewulf/overlays/``). Because a site overlay takes complete
+precedence over a distribution overlay with the same name — with no merging of
+individual files — the entire distribution overlay is shadowed. Any new files
+or updates added to the distribution overlay in a subsequent Warewulf upgrade
+will be hidden as long as a site overlay of the same name exists.
+
+To check whether any distribution overlays are being shadowed by site overlays,
+use ``wwctl overlay list``, which includes a ``SITE`` column:
+
+.. code-block::
+
+   wwctl overlay list
+
+Any overlay showing ``true`` in the ``SITE`` column that you did not
+intentionally create locally may be unintentionally shadowing its distribution
+counterpart.
+
+To see which files are present in a site overlay, use the ``--all`` flag:
+
+.. code-block::
+
+   wwctl overlay list --all <overlay_name>
+
+To see the filesystem paths of the overlays directly, use the ``--path`` flag:
+
+.. code-block::
+
+   wwctl overlay list --path
+
+If you determine that a site overlay is unintentionally shadowing a
+distribution overlay, you can restore the distribution overlay by deleting the
+site overlay. Back up any intentional local modifications first, then delete
+the site overlay:
+
+.. code-block::
+
+   wwctl overlay delete <overlay_name>
+
+``wwctl overlay delete`` only ever deletes site overlays, so this command is
+safe to run without risk of removing the underlying distribution overlay. After
+deleting the site overlay, ``wwctl overlay list`` should show ``false`` in the
+``SITE`` column for that overlay, confirming that the distribution overlay is
+now active.
+
 Running Containers on Cluster Nodes
 ===================================
 
