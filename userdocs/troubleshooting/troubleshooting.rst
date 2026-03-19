@@ -52,16 +52,17 @@ cluster node's MAC address in place of 00:00:00:00:00:00.)
 
 .. code-block::
 
-   set uri http://10.0.0.1:9873/provision/00:00:00:00:00:00
-   kernel --name kernel ${uri}?stage=kernel
-   imgextract --name image ${uri}?stage=image&compress=gz
-   imgextract --name system ${uri}?stage=system&compress=gz
-   imgextract --name runtime ${uri}?stage=runtime&compress=gz
+   set base http://10.0.0.1:9873
+   set hwaddr 00:00:00:00:00:00
+   kernel --name kernel ${base}/kernel/${hwaddr}
+   imgextract --name image ${base}/image/${hwaddr}?compress=gz
+   imgextract --name system ${base}/system/${hwaddr}?compress=gz
+   imgextract --name runtime ${base}/runtime/${hwaddr}?compress=gz
    boot kernel initrd=image initrd=system initrd=runtime
 
-- The ``uri`` variable points to ``warewulfd`` for future reference. This
-  includes the cluster node's MAC address so that Warewulf knows what image and
-  overlays to provide.
+- The ``base`` variable points to ``warewulfd`` for future reference. The MAC
+  address is appended to each resource path so that Warewulf knows what image
+  and overlays to provide.
 
 - The ``kernel`` command fetches a kernel for later booting.
 
@@ -110,12 +111,12 @@ the port number if you have changed it from the default of 9873.)
 
 .. code-block::
 
-   uri="(http,10.0.0.1:9873)/provision/${net_default_mac}"
-   linux "${uri}?stage=kernel" wwid=${net_default_mac}
-   initrd "${uri}?stage=image&compress=gz" "${uri}?stage=system&compress=gz" "${uri}?stage=runtime&compress=gz"
+   base="(http,10.0.0.1:9873)"
+   linux "${base}/kernel/${net_default_mac}" wwid=${net_default_mac}
+   initrd "${base}/image/${net_default_mac}?compress=gz" "${base}/system/${net_default_mac}?compress=gz" "${base}/runtime/${net_default_mac}?compress=gz"
    boot
 
-- The ``uri`` variable points to ``warewulfd`` for future reference.
+- The ``base`` variable points to ``warewulfd`` for future reference.
   ``${net_default_mac}`` provides Warewulf with the MAC address of the booting
   node, so that Warewulf knows what image and overlays to provide it.
 
@@ -143,7 +144,7 @@ enabled. To do so, substitute the ``linux`` command above.
 
 .. code-block::
 
-   linux "${uri}?stage=kernel" wwid=${net_default_mac} debug rdinit=/bin/sh
+   linux "${base}/kernel/${net_default_mac}" wwid=${net_default_mac} debug rdinit=/bin/sh
 
 .. note::
 

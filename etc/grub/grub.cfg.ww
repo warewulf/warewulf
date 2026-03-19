@@ -29,8 +29,9 @@ reboot
 echo "Reading asset key..."
 smbios --type 3 --get-string 8 --set assetkey
 
-uri="(http,{{.Authority}})/provision/${net_default_mac}?assetkey=${assetkey}"
-kernel="${uri}&stage=kernel"
+base="(http,{{.Authority}})"
+params="assetkey=${assetkey}"
+kernel="${base}/kernel/${net_default_mac}?${params}"
 
 set default={{ or .Tags.GrubMenuEntry "single-stage" }}
 set timeout=2
@@ -64,10 +65,10 @@ menuentry "Single-stage boot" --id single-stage {
     fi
 
     echo "Downloading images..."
-    image="${uri}&stage=image&compress=gz"
-    system="${uri}&stage=system&compress=gz"
+    image="${base}/image/${net_default_mac}?${params}&compress=gz"
+    system="${base}/system/${net_default_mac}?${params}&compress=gz"
     {{- if not (eq .TLS true) }}
-    runtime="${uri}&stage=runtime&compress=gz"
+    runtime="${base}/runtime/${net_default_mac}?${params}&compress=gz"
     {{- end }}
     initrd $image $system $runtime
     if [ $? != 0 ]
@@ -113,10 +114,10 @@ menuentry "Single-stage boot (no compression)" --id single-stage-nocompress {
     fi
 
     echo "Downloading images..."
-    image="${uri}&stage=image"
-    system="${uri}&stage=system"
+    image="${base}/image/${net_default_mac}?${params}"
+    system="${base}/system/${net_default_mac}?${params}"
     {{- if not (eq .TLS true) }}
-    runtime="${uri}&stage=runtime"
+    runtime="${base}/runtime/${net_default_mac}?${params}"
     {{- end }}
     initrd $image $system $runtime
     if [ $? != 0 ]
@@ -149,11 +150,12 @@ menuentry "Two stage boot with dracut" --id dracut {
     {{- end }}
     echo "* KernelArgs: {{.KernelArgs}}"
 
-    initramfs="${uri}&stage=initramfs"
+    initramfs="${base}/initramfs/${net_default_mac}?${params}"
 
     wwinit_uri="http://{{.Ipaddr}}:{{.Port}}/provision/${net_default_mac}"
+    wwinit_server="http://{{.Ipaddr}}:{{.Port}}"
     net_args="rd.neednet=1 {{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} {{end}}{{end}}"
-    wwinit_args="root=wwinit:{{default "tmpfs" .Root}} wwinit.uri=${wwinit_uri} init=/warewulf/run-init"
+    wwinit_args="root=wwinit:{{default "tmpfs" .Root}} wwinit.server=${wwinit_server} wwinit.uri=${wwinit_uri} init=/warewulf/run-init"
 
     echo
     echo "Downloading kernel image..."

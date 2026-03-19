@@ -15,11 +15,12 @@ sleep 30
 reboot
 {{- end }}
 
-set baseuri http://{{.Authority}}/provision/{{.Hwaddr}}
-set uri ${baseuri}?assetkey=${asset}&uuid=${uuid}
+set base http://{{.Authority}}
+set hwaddr {{.Hwaddr}}
+set params assetkey=${asset}&uuid=${uuid}
 
 echo Downloading kernel image...
-kernel --name kernel ${uri}&stage=kernel || goto reboot
+kernel --name kernel ${base}/kernel/${hwaddr}?${params} || goto reboot
 
 {{- if .Tags.IPXEMenuEntry }}
 set method {{ .Tags.IPXEMenuEntry }}
@@ -43,12 +44,12 @@ goto metadata
 :imgextract_continue
 echo
 echo Downloading compressed image with imgextract...
-imgextract --name image ${uri}&stage=image&compress=gz || goto error_use_initrd
+imgextract --name image ${base}/image/${hwaddr}?${params}&compress=gz || goto error_use_initrd
 echo Downloading compressed system overlay image with imgextract...
-imgextract --name system ${uri}&stage=system&compress=gz || goto error_reboot
+imgextract --name system ${base}/system/${hwaddr}?${params}&compress=gz || goto error_reboot
 {{- if not (eq .TLS true) }}
 echo Downloading compressed runtime overlay image with imgextract...
-imgextract --name runtime ${uri}&stage=runtime&compress=gz && set runtime_initrd initrd=runtime || echo Unable to download runtime overlay. (ignored)
+imgextract --name runtime ${base}/runtime/${hwaddr}?${params}&compress=gz && set runtime_initrd initrd=runtime || echo Unable to download runtime overlay. (ignored)
 {{- end }}
 goto boot_single_stage
 
@@ -62,12 +63,12 @@ goto metadata
 :initrd_continue
 echo
 echo Downloading compressed image with initrd...
-initrd --name image ${uri}&stage=image&compress=gz || goto error_reboot
+initrd --name image ${base}/image/${hwaddr}?${params}&compress=gz || goto error_reboot
 echo Downloading compressed system overlay with initrd...
-initrd --name system ${uri}&stage=system&compress=gz || goto error_reboot
+initrd --name system ${base}/system/${hwaddr}?${params}&compress=gz || goto error_reboot
 {{- if not (eq .TLS true) }}
 echo Downloading compressed runtime overlay with initrd...
-initrd --name runtime ${uri}&stage=runtime&compress=gz && set runtime_initrd initrd=runtime || echo Unable to download runtime overlay. (ignored)
+initrd --name runtime ${base}/runtime/${hwaddr}?${params}&compress=gz && set runtime_initrd initrd=runtime || echo Unable to download runtime overlay. (ignored)
 {{- end }}
 goto boot_single_stage
 
@@ -77,12 +78,12 @@ goto metadata
 :initrd_nocompress_continue
 echo
 echo Downloading uncompressed image with initrd...
-initrd --name image ${uri}&stage=image || goto error_reboot
+initrd --name image ${base}/image/${hwaddr}?${params} || goto error_reboot
 echo Downloading uncompressed system overlay with initrd...
-initrd --name system ${uri}&stage=system || goto error_reboot
+initrd --name system ${base}/system/${hwaddr}?${params} || goto error_reboot
 {{- if not (eq .TLS true) }}
 echo Downloading uncompressed runtime overlay with initrd...
-initrd --name runtime ${uri}&stage=runtime && set runtime_initrd initrd=runtime || echo Unable to download runtime overlay. (ignored)
+initrd --name runtime ${base}/runtime/${hwaddr}?${params} && set runtime_initrd initrd=runtime || echo Unable to download runtime overlay. (ignored)
 {{- end }}
 goto boot_single_stage
 
@@ -92,9 +93,9 @@ goto metadata
 :dracut_continue
 echo
 echo Downloading dracut initramfs...
-initrd --name initramfs ${uri}&stage=initramfs || goto error_reboot
+initrd --name initramfs ${base}/initramfs/${hwaddr}?${params} || goto error_reboot
 set dracut_net rd.neednet=1 {{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} ip={{$netdev.Device}}:dhcp {{end}}{{end}}
-set dracut_wwinit root=wwinit:{{default "tmpfs" .Root}} wwinit.uri=${baseuri} init=/warewulf/run-init
+set dracut_wwinit root=wwinit:{{default "tmpfs" .Root}} wwinit.server=${base} wwinit.uri=${base}/provision/${hwaddr} init=/warewulf/run-init
 goto boot_two_stage_dracut
 
 :boot_single_stage
