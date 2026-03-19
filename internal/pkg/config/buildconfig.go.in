@@ -42,7 +42,7 @@ func (conf TFTPConf) Enabled() bool {
 // BaseConf.
 type WarewulfConf struct {
 	Port               int    `yaml:"port,omitempty" default:"9873"`
-	TlsPort            int    `yaml:"tls port,omitempty" default:"9874"`
+	TLSPort            int    `yaml:"tls port,omitempty" default:"9874"`
 	SecureP            *bool  `yaml:"secure,omitempty" default:"true"`
 	TLSEnabledP        *bool  `yaml:"tls,omitempty"`
 	UpdateInterval     int    `yaml:"update interval,omitempty" default:"60"`

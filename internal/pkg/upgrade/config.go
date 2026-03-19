@@ -25,6 +25,7 @@ type WarewulfYaml struct {
 	Ipv6net         string        `yaml:"ipv6net"`
 	Fqdn            string        `yaml:"fqdn"`
 	Warewulf        *WarewulfConf `yaml:"warewulf"`
+	API             *APIConf      `yaml:"api"`
 	DHCP            *DHCPConf     `yaml:"dhcp"`
 	TFTP            *TFTPConf     `yaml:"tftp"`
 	NFS             *NFSConf      `yaml:"nfs"`
@@ -51,6 +52,9 @@ func (legacy *WarewulfYaml) Upgrade() (upgraded *config.WarewulfYaml) {
 	upgraded.Fqdn = legacy.Fqdn
 	if legacy.Warewulf != nil {
 		upgraded.Warewulf = legacy.Warewulf.Upgrade()
+	}
+	if legacy.API != nil {
+		upgraded.API = legacy.API.Upgrade()
 	}
 	if legacy.DHCP != nil {
 		upgraded.DHCP = legacy.DHCP.Upgrade()
@@ -92,7 +96,9 @@ func (legacy *WarewulfYaml) Upgrade() (upgraded *config.WarewulfYaml) {
 
 type WarewulfConf struct {
 	Port              int    `yaml:"port"`
+	TLSPort           int    `yaml:"tls port"`
 	Secure            *bool  `yaml:"secure"`
+	TLSEnabled        *bool  `yaml:"tls"`
 	UpdateInterval    int    `yaml:"update interval"`
 	AutobuildOverlays *bool  `yaml:"autobuild overlays"`
 	EnableHostOverlay *bool  `yaml:"host overlay"`
@@ -105,7 +111,9 @@ type WarewulfConf struct {
 func (legacy *WarewulfConf) Upgrade() (upgraded *config.WarewulfConf) {
 	upgraded = new(config.WarewulfConf)
 	upgraded.Port = legacy.Port
+	upgraded.TLSPort = legacy.TLSPort
 	upgraded.SecureP = legacy.Secure
+	upgraded.TLSEnabledP = legacy.TLSEnabled
 	upgraded.UpdateInterval = legacy.UpdateInterval
 	upgraded.AutobuildOverlaysP = legacy.AutobuildOverlays
 	upgraded.EnableHostOverlayP = legacy.EnableHostOverlay
@@ -114,6 +122,20 @@ func (legacy *WarewulfConf) Upgrade() (upgraded *config.WarewulfConf) {
 	}
 	upgraded.GrubBootP = legacy.GrubBoot
 	upgraded.SystemdName = legacy.SystemdName
+	return upgraded
+}
+
+type APIConf struct {
+	Enabled     *bool          `yaml:"enabled"`
+	TLSEnabled  *bool          `yaml:"tls"`
+	AllowedNets []config.IPNet `yaml:"allowed subnets"`
+}
+
+func (legacy *APIConf) Upgrade() (upgraded *config.APIConf) {
+	upgraded = new(config.APIConf)
+	upgraded.EnabledP = legacy.Enabled
+	upgraded.TLSEnabledP = legacy.TLSEnabled
+	upgraded.AllowedNets = append([]config.IPNet{}, legacy.AllowedNets...)
 	return upgraded
 }
 

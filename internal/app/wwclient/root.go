@@ -260,7 +260,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	port := conf.Warewulf.Port
 	scheme := "http"
 	if conf.Warewulf.TLSEnabled() {
-		port = conf.Warewulf.TlsPort
+		port = conf.Warewulf.TLSPort
 		scheme = "https"
 	}
 

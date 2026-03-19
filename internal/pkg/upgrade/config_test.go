@@ -582,6 +582,63 @@ paths:
   datadir: /usr/share
 `,
 	},
+	{
+		name: "v4.6.5-tls",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+netmask: 255.255.252.0
+network: 10.0.0.0
+warewulf:
+  port: 9873
+  tls port: 9874
+  secure: true
+  tls: true
+  update interval: 60
+  autobuild overlays: true
+  host overlay: true
+api:
+  enabled: true
+  tls: true
+  allowed subnets:
+    - 127.0.0.0/8
+    - ::1/128
+dhcp:
+  enabled: true
+  range start: 10.0.1.1
+  range end: 10.0.1.255
+  systemd name: dhcpd
+tftp:
+  enabled: true
+  systemd name: tftp
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+netmask: 255.255.252.0
+network: 10.0.0.0
+warewulf:
+  port: 9873
+  tls port: 9874
+  secure: true
+  tls: true
+  update interval: 60
+  autobuild overlays: true
+  host overlay: true
+api:
+  enabled: true
+  tls: true
+  allowed subnets:
+    - 127.0.0.0/8
+    - ::1/128
+dhcp:
+  enabled: true
+  range start: 10.0.1.1
+  range end: 10.0.1.255
+  systemd name: dhcpd
+tftp:
+  enabled: true
+  systemd name: tftp
+`,
+	},
 }
 
 func Test_UpgradeConfig(t *testing.T) {
