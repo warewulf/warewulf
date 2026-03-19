@@ -2,12 +2,12 @@
 Overlays
 ========
 
-Warewulf supplements provisioned node images with an "overlay" system. Overlays
+Warewulf supplements provisioned OS images with an "overlay" system. Overlays
 are collections of files and :ref:`templates` that are rendered
 and built per-node and then applied over the image during the provisioning
 process.
 
-Overlays are the primary mechanism for adding functionality Warewulf. Much of
+Overlays are the primary mechanism for adding functionality to Warewulf. Much of
 even core functionality in Warewulf is implemented as distribution overlays, and
 this flexibility is also available for local, custom overlays. By combining
 templates with tags, network tags, and resources, the node registry
@@ -84,7 +84,7 @@ A node or profile can configure an overlay in two different ways:
 
    wwctl profile set default \
      --system-overlays="wwinit,wwclient,fstab,hostname,ssh.host_keys,systemd.netname,NetworkManager" \
-     --runime-overlays="hosts,ssh.authorized_keys"
+     --runtime-overlays="hosts,ssh.authorized_keys"
 
 Multiple overlays can be applied to a single node, and overlays from multiple
 profiles are appended together when applied to a single node.
@@ -92,7 +92,7 @@ profiles are appended together when applied to a single node.
 Building Overlays
 =================
 
-Overlays are built (e.g., with ``wwctl overly build``) into compressed overlay
+Overlays are built (e.g., with ``wwctl overlay build``) into compressed overlay
 images for distribution to cluster nodes. These images typically match these two
 use cases: system and runtime. As such, each cluster node typically has two
 overlay images.
@@ -107,7 +107,7 @@ overlay images.
    Created image for n1 runtime overlay: /var/lib/warewulf/provision/overlays/n1/__RUNTIME__.img
    Compressed image for n1 runtime overlay: /var/lib/warewulf/provision/overlays/n1/__RUNTIME__.img.gz
 
-Overlay images for multiple node are built in parallel. By default, each CPU in
+Overlay images for multiple nodes are built in parallel. By default, each CPU in
 the Warewulf server will build overlays independently. The number of workers can
 be specified with the ``--workers`` option.
 
@@ -239,7 +239,7 @@ provisioning actions:
 wwclient
 --------
 
-All configured overlays are provisioned initially along with the node image
+All configured overlays are provisioned initially along with the OS image
 itself; but **wwclient** periodically fetches and applies the runtime overlay to
 allow configuration of some settings without a reboot.
 
@@ -342,7 +342,7 @@ resource. It also creates entries for file systems defined by Ignition.
 ssh
 ---
 
-Two SSH overlays configure host keys (one set for all node in the cluster) and
+Two SSH overlays configure host keys (one set for all nodes in the cluster) and
 ``authorized_keys`` for the root account.
 
 - ssh.authorized_keys
@@ -353,12 +353,14 @@ Two SSH overlays configure host keys (one set for all node in the cluster) and
 syncuser
 --------
 
-The **syncuser** overlay updates ``/etc/passwd`` and ``/etc/group`` to include
-all users on both the Warewulf server and from the image.
+The **syncuser** overlay updates ``/etc/passwd`` and ``/etc/group`` at
+provisioning time to include all users from both the Warewulf server and from
+the image.
 
 To function properly, ``wwctl image syncuser`` (or the ``--syncuser`` option
-during ``import``, ``exec``, ``shell``, or ``build``) must have also been run on
-the image to synchronize its user and group IDs with those of the server.
+during ``import``, ``exec``, ``shell``, or ``build``) must also have been run on
+the image to synchronize its user and group IDs with those of the server. See
+:doc:`/images/syncuser` for details on both parts of the syncuser feature.
 
 If a ``PasswordlessRoot`` tag is set to "true", the overlay will also insert a
 "passwordless" root entry. This can be particularly useful for accessing a
@@ -408,7 +410,7 @@ debug
 -----
 
 The **debug** overlay is not intended to be used in configuration, but is
-provided as an example. In particular, the provided `tstruct.md.ww` demonstrates
+provided as an example. In particular, the provided ``tstruct.md.ww`` demonstrates
 the use of most available template metadata.
 
 .. code-block:: shell
@@ -520,6 +522,10 @@ include wipefs to detect existing file systems.
 
    wwctl image exec rockylinux-9 -- /usr/bin/dracut --force --no-hostonly --add wwinit --install mkswap --regenerate-all
 
+For a complete walkthrough of configuring swap to free memory consumed by the
+in-memory image, including which root filesystem types support swap reclamation,
+see :ref:`swap-and-image-memory`.
+
 systemd mounts
 --------------
 
@@ -585,7 +591,7 @@ Once configured, the NVIDIA MIG instances can be mapped to Slurm GRES entries
 backed by ``/dev/nvidia-caps/capXX`` device files. 
 
 To generate the mapping of MIG instances to ``/dev/nvidia-caps/capXX`` device files
-for Slurm's ``gres.conf`` file, use the script provided by this overlay on on the node:
+for Slurm's ``gres.conf`` file, use the script provided by this overlay on the node:
 
 .. code-block:: shell
 
@@ -603,7 +609,7 @@ run. (Subsequent use of the host overlay won't overwrite existing
 
 The following services get configuration files via the host overlay:
 
-* ssh keys are created with the scrips ``ssh_setup.sh`` and
+* ssh keys are created with the scripts ``ssh_setup.sh`` and
   ``ssh_setup.csh``
 * hosts entries are created by manipulating ``/etc/hosts`` with the
   template ``hosts.ww``

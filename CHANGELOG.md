@@ -45,32 +45,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Document reclaiming RAM by moving the image to swap
 - New `--partwipe` flag for profile and node set
 - Updated arguments for `ValidString` to match `regexp.MatchString`
 - New `mig` overlay to configure NVIDIA MIG devices. #2102
 - Documented that booting a node twice fixes broken partition tables
-- Updated arguments for `ValidString` to match `regexp.MatchString`
-- New `mig` overlay to configure NVIDIA MIG devices. #2102
-- TLS with the command `wwctl configure tls` for key management.
-  Keys can be created automtically or imported. The runtime overlay is
-  if TLS is enabled is not distributed over plain http.
-  
-- Documented that booting a node twice fixes broken partition tables
-- TLS support for `warewulfd` and REST API
+- TLS support for `warewulfd` and REST API.
 - New `wwctl configure tls` command to generate and configure TLS keys and
-  certificates
+  certificates.
 - New dedicated `warewulfd` server routes (`/ipxe/`, `/kernel/`, `/image/`,
-  `/initramfs/`, `/system/`, `/runtime/`, `/grub/`, `/efiboot/`)
+  `/initramfs/`, `/system/`, `/runtime/`, `/grub/`, `/efiboot/`).
+- Documented how to detect shadowed overlays in troubleshooting.
+- Documented `wwctl clean`. #2034
+- Documented the status of various top-level Warewulf features.
+- Initial one-page quick reference guide
+- Document configuring the arp cache for large clusters
+- Expand troubleshooting documentation for container runtimes
 
 ### Changed
 
 - Runtime overlay download failure during dracut/wwinit boot is now non-fatal;
   the node continues to boot and `wwclient` retries the download at runtime.
 - `hosts` overlay added to the default system overlay list
-
-### Changed
-
+- Distinguish between OS images and overlay images in documentation
 - Updated `MAINTAINING.md` to document golang version policy
+- Clarified functionality of syncuser commands and overlay in documentation
+- Audit and correct documentation, cobra help text, and log messages for accuracy
 
 ## v4.6.5, 2026-01-12
 

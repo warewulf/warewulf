@@ -4,7 +4,7 @@ Server Configuration
 
 By default, the Warewulf server configuration is located at
 ``/etc/warewulf/warewulf.conf``. This is a YAML-formatted configuration file
-used by to configured the Warewulf server itself and its external services.
+used to configure the Warewulf server itself and its external services.
 
 An initial ``warewulf.conf`` is packaged with Warewulf. Each section is covered
 in detail below.
@@ -109,7 +109,7 @@ warewulf
   can be specified at ``wwclient:port``.)
 
   Changing this option requires rebuilding node overlays and rebooting compute
-  nodes to configure them to use a privileged port for `wwclient`.
+  nodes to configure them to use a privileged port for ``wwclient``.
 
 * ``warewulf:update interval``: This defines the frequency (in seconds) with
   which the Warewulf client on the compute node fetches overlay updates.
@@ -124,7 +124,7 @@ warewulf
   applied to the Warewulf server during configuration. (The host overlay is used
   to configure external services.)
 
-* ``warewulf::grubboot``: Controls whether iPXE (default) or GRUB is used as the
+* ``warewulf:grubboot``: Controls whether iPXE (default) or GRUB is used as the
   network bootloader.
 
 dhcp
@@ -232,7 +232,7 @@ ssh
 
 *New in Warewulf v4.5.1*
 
-SSH key types to generate during ``wwctl configure ssh``. This create the
+SSH key types to generate during ``wwctl configure ssh``. This creates the
 appropriate host keys (stored in ``/etc/warewulf/keys/``) and authentication
 keys for passwordless ``ssh`` to cluster nodes. It also installs shell profiles
 ``/etc/profile.d/ssh_setup.csh`` and ``/etc/profile.d/ssh_setup.sh`` to
@@ -248,7 +248,7 @@ Warewulf server.
        - rsa
        - dsa
 
-* ``ssh:key types``: Warewulf generate host keys for each listed key type.
+* ``ssh:key types``: Warewulf generates host keys for each listed key type.
 
 The first listed key type is used to generate authentication ssh keys.
 
@@ -270,10 +270,10 @@ to operate in the host environment prior to deployment.
 
 * ``image mounts:dest``: The path in the image to use for the mount.
 
-* ``image mounts::readonly``: Whether the mount should be read-only (``true``)
+* ``image mounts:readonly``: Whether the mount should be read-only (``true``)
   or allow writes into the server path (``false``).
 
-* ``image mounts::copy``: When ``true``, copy files into the image rather than
+* ``image mounts:copy``: When ``true``, copy files into the image rather than
   mount. This is useful for initializing files with a starting value from the
   Warewulf server that should then be maintained as part of the image.
 
@@ -299,8 +299,9 @@ Override paths to images, overlays, and other Warewulf components.
 * ``paths:sysconfdir``: The parent directory for the ``warewulf`` configuration
   directory, which stores ``warewulf.conf`` and ``nodes.conf``.
 
-* ``paths::cachedir``: The parent directory for the ``warewulf`` cache of OCI
-  images during ``wwctl image import``.
+* ``paths:cachedir``: The parent directory for the ``warewulf`` cache of OCI
+  images during ``wwctl image import``. The cache is stored at
+  ``$cachedir/warewulf`` and can be cleared with ``wwctl clean``.
 
 * ``paths:ipxesource``: Where to get iPXE binaries. These files are copied to
   ``warewulf.conf:tftp:tftproot`` by ``wwctl configure tftp``.
@@ -359,7 +360,7 @@ hostfile
 There are no explicit "hostfile" configuration options in ``warewulf.conf``; but
 ``wwctl configure hostfile`` updates the Warewulf server's ``/etc/hosts`` file
 to include expected configuration for the server itself as well as the known
-names of the cluster nodes and thier interfaces.
+names of the cluster nodes and their interfaces.
 
 Entries from the Warewulf server's ``/etc/hosts`` file are distributed to
 cluster nodes by the "hosts" overlay.

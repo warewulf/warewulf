@@ -93,7 +93,7 @@ kernel is taken from the node's assigned image.
 ``/image/{wwid}``
 -----------------
 
-Serves the raw node image file for the node identified by ``{wwid}``.
+Serves the raw OS image file for the node identified by ``{wwid}``.
 
 **Query parameters:** ``assetkey``, ``uuid``, ``compress``
 
@@ -180,6 +180,12 @@ identified by ``?wwid=`` (preferred) or, if not supplied, by an ARP lookup
 of the client's IP address against the kernel's ARP cache (``/proc/net/arp``).
 This route is intended for EFI HTTP Boot clients, where the firmware fetches
 a boot URI from DHCP and cannot perform variable substitution.
+
+.. note::
+
+   On large clusters the kernel's default ARP cache limits may be exceeded,
+   causing node identification to fail. See
+   :ref:`arp-cache-overflow-on-large-clusters` for tuning guidance.
 
 The ``{file}`` component determines what is served:
 

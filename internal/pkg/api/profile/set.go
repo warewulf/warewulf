@@ -89,7 +89,7 @@ func ProfileSetParameterCheck(set *wwapiv1.ConfSetParameter) (nodeDB node.NodesY
 			if set.PartitionDelete != "" {
 				for diskname, disk := range profilePtr.Disks {
 					if _, ok := disk.Partitions[set.PartitionDelete]; ok {
-						wwlog.Verbose("Node: %s, on disk %, deleting partition: %s", profileId, diskname, set.PartitionDelete)
+						wwlog.Verbose("Profile: %s, on disk %s, deleting partition: %s", profileId, diskname, set.PartitionDelete)
 						delete(disk.Partitions, set.PartitionDelete)
 					} else {
 						return nodeDB, count, fmt.Errorf("partition doesn't exist: %s", set.PartitionDelete)
@@ -99,7 +99,7 @@ func ProfileSetParameterCheck(set *wwapiv1.ConfSetParameter) (nodeDB node.NodesY
 			}
 			if set.DiskDelete != "" {
 				if _, ok := profilePtr.Disks[set.DiskDelete]; ok {
-					wwlog.Verbose("Node: %s, deleting disk: %s", profileId, set.DiskDelete)
+					wwlog.Verbose("Profile: %s, deleting disk: %s", profileId, set.DiskDelete)
 					delete(profilePtr.Disks, set.DiskDelete)
 				} else {
 					return nodeDB, count, fmt.Errorf("disk doesn't exist: %s", set.DiskDelete)
@@ -107,7 +107,7 @@ func ProfileSetParameterCheck(set *wwapiv1.ConfSetParameter) (nodeDB node.NodesY
 			}
 			if set.FilesystemDelete != "" {
 				if _, ok := profilePtr.FileSystems[set.FilesystemDelete]; ok {
-					wwlog.Verbose("Node: %s, deleting filesystem: %s", profileId, set.FilesystemDelete)
+					wwlog.Verbose("Profile: %s, deleting filesystem: %s", profileId, set.FilesystemDelete)
 					delete(profilePtr.FileSystems, set.FilesystemDelete)
 				} else {
 					return nodeDB, count, fmt.Errorf("disk doesn't exist: %s", set.FilesystemDelete)

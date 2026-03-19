@@ -32,7 +32,7 @@ Container images
 
 Warewulf can be built in a Linux container. This can be especially useful for
 testing and development, or to replace traditional package installation. It is
-also possible to only use the container for building and the install it in the
+also possible to only use the container for building and then install it in the
 host system afterwards. For that look at the INSTALL, UNINSTALL and PURGE labels
 inside the `Dockerfile`_
 

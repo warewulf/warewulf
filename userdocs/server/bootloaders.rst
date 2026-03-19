@@ -32,11 +32,11 @@ the Warewulf configuration process to configure the ``ipxe`` service.
 
       bios->iPXE [lhead=cluster0,label="iPXE.efi"];
 
-      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from node image"];
+      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from OS image"];
       ipxe_cfg->kernel[ltail=cluster0,label="http"];
   }
 
-Starting in v4.5.0, Warewulf no longer includes an iPXE binary. In stead, by
+Starting in v4.5.0, Warewulf no longer includes an iPXE binary. Instead, by
 default Warewulf uses the iPXE that comes with the host OS.
 
 Unfortunately, we’ve encountered a few instances where bugs in the OS-provided
@@ -235,7 +235,7 @@ Warewulf as a technology preview.
         grubcfg[shape=record label="{grub.cfg|static under TFTP root}"];
         grub->grubcfg[label="TFTP"];
       }
-      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from node image"];
+      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from OS image"];
       grubcfg->kernel[ltail=cluster1,label="http"];
   }
 
@@ -245,7 +245,7 @@ advantage that secure boot can be used. That means that only the signed kernel
 of a distribution can be booted. This can be a huge security benefit for some
 scenarios.
 
-In order to enable the grub boot method it has to be enabled in `warewulf.conf`.
+In order to enable the grub boot method it has to be enabled in ``warewulf.conf``.
 
 .. code-block:: yaml
 
@@ -276,14 +276,14 @@ Secure boot
 If secure boot is enabled at every step a signature is checked and the boot
 process fails if this check fails. The shim typically only includes the key for
 a single operating system, which means that each distribution needs separate
-`shim` and `grub` executables. Warewulf extracts these binaries from the images.
+``shim`` and ``grub`` executables. Warewulf extracts these binaries from the images.
 If the node is unknown to Warewulf or can't be identified during the TFTP boot
 phase, the shim/grub binaries of the host in which Warewulf is running are used.
 
 Install shim and efi
 --------------------
 
-`shim.efi` and `grub.efi` must be installed in the image for it to be
+``shim.efi`` and ``grub.efi`` must be installed in the image for it to be
 booted by GRUB.
 
 .. code-block:: console
@@ -308,15 +308,15 @@ diagram is the following:
   digraph G{
       node [shape=box];
       efi [shape=record label="{EFI|boots from URI defined in filename}"];
-      shim [shape=record label="{shim.efi|replaces shim.efi with grubx64.efi in URI|extracted from node image}"];
-      grub [shape=record label="{grub.efi|checks for grub.cfg|extracted from node image}"]
-      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from node image"];
+      shim [shape=record label="{shim.efi|replaces shim.efi with grubx64.efi in URI|extracted from OS image}"];
+      grub [shape=record label="{grub.efi|checks for grub.cfg|extracted from OS image}"]
+      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from OS image"];
       efi->shim [label="http"];
       shim->grub [label="http"];
       grub->kernel [label="http"];
     }
 
-Warewulf delivers the initial `shim.efi` and `grub.efi` via http as taken
+Warewulf delivers the initial ``shim.efi`` and ``grub.efi`` via http as taken
 directly from the node's assigned image.
 
 .. _booting with dracut:
@@ -325,7 +325,7 @@ Two-stage boot: dracut
 ======================
 
 Some systems, typically due to limitations in their BIOS or EFI firmware, are
-unable to load image of a certain size directly with a traditional bootloader,
+unable to load an image of a certain size directly with a traditional bootloader,
 either iPXE or GRUB. As a workaround for such systems, Warewulf can be
 configured to load a dracut initramfs from the image and to use that initramfs
 to load the full image.
@@ -394,5 +394,5 @@ during boot.
 
 The wwinit module provisions to tmpfs. By default, tmpfs is permitted to use up
 to 50% of physical memory. This size limit may be adjusted using the kernel
-argument `wwinit.tmpfs.size`. (This parameter is passed to the `size` option
+argument ``wwinit.tmpfs.size``. (This parameter is passed to the ``size`` option
 during tmpfs mount. See ``tmpfs(5)`` for more details.)

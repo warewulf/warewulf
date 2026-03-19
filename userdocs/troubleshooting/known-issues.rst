@@ -63,7 +63,7 @@ v4.6.0. <https://github.com/warewulf/warewulf/issues/892>`_
 Image Size Considerations
 =========================
 
-Node images can grow quickly as packages and other files are added to them. Even
+OS images can grow quickly as packages and other files are added to them. Even
 these larger images are often not an issue in modern environments; but some
 architectural limits exist that can impede the use of images larger than a few
 gigabytes. Workarounds exist for these issues in most circumstances:
@@ -93,9 +93,59 @@ gigabytes. Workarounds exist for these issues in most circumstances:
   decompress the image rather than the kernel.
 
 * Some BIOS / firmware retain a "memory hole" feature for legacy devices, e.g.,
-  reserving a 1MB block of memory at the 15MB-16MB address range. this feature
-  can interfere with booting stateless node images.
+  reserving a 1MB block of memory at the 15MB-16MB address range. This feature
+  can interfere with booting stateless OS images.
 
   If you are still getting "Not enough memory" or "No space left on device"
   errors, try disabling any "memory hole" features or updating your system BIOS
   or firmware.
+
+.. _arp-cache-overflow-on-large-clusters:
+
+ARP Cache Overflow on Large Clusters
+=====================================
+
+On clusters with many nodes, the Linux kernel's default ARP cache limits may be
+too low, causing the Warewulf server to log:
+
+.. code-block:: text
+
+   neighbour: arp_cache: neighbor table overflow!
+
+The kernel manages the ARP cache with three garbage-collection thresholds:
+
+* ``net.ipv4.neigh.default.gc_thresh1`` -- no garbage collection below this
+  count (default: 128)
+* ``net.ipv4.neigh.default.gc_thresh2`` -- garbage collection is triggered above
+  this count (default: 512)
+* ``net.ipv4.neigh.default.gc_thresh3`` -- hard limit; entries are dropped above
+  this count (default: 1024)
+
+This is particularly relevant for Warewulf because ``warewulfd`` identifies nodes
+by looking up their IP address in the kernel's ARP cache (``/proc/net/arp``) during
+provisioning. If cache entries for cluster nodes are evicted, node identification
+can fail.
+
+Increase the thresholds on the Warewulf server. As a starting point:
+
+.. code-block:: shell
+
+   sysctl -w net.ipv4.neigh.default.gc_thresh2=1024
+   sysctl -w net.ipv4.neigh.default.gc_thresh3=2048
+
+For larger clusters (hundreds of nodes or more), higher values may be needed:
+
+.. code-block:: shell
+
+   sysctl -w net.ipv4.neigh.default.gc_thresh2=2048
+   sysctl -w net.ipv4.neigh.default.gc_thresh3=4096
+
+To make the change persistent across reboots, create a file in ``/etc/sysctl.d/``:
+
+.. code-block:: shell
+
+   cat > /etc/sysctl.d/90-warewulf-arp.conf << 'EOF'
+   net.ipv4.neigh.default.gc_thresh2 = 2048
+   net.ipv4.neigh.default.gc_thresh3 = 4096
+   EOF
+   sysctl -p /etc/sysctl.d/90-warewulf-arp.conf

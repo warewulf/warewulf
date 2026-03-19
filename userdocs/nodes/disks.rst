@@ -12,11 +12,6 @@ sfdisk, mkfs, and mkswap during boot.
 Ignition can, for example, create ``swap`` partitions or ``/scratch`` file
 systems.
 
-.. note::
-
-   Warewulf is not currently able to provision the node image onto an explicitly
-   provisioned root file system.
-
 Requirements
 ============
 
@@ -55,7 +50,7 @@ sizes should also be set (specified in MiB), except for the last partition: if
 no size is given, the maximum available size is used. Each partition has the
 switches ``should_exist`` and ``wipe_partition_entry`` which control the
 partition creation process (via the ``--partcreate`` and ``--partwipe`` flags).
-When omitting a partition number the `wipe_partition_entry` should be true, as
+When omitting a partition number the ``wipe_partition_entry`` should be true, as
 this allows ignition to replace the existing partition.
 
 .. code-block:: shell
@@ -103,7 +98,7 @@ by the ``ignition`` overlay.
 Example disk configurations
 ===========================
 
-This command formats a btrfs file system on a "scratch" partion of
+This command formats a btrfs file system on a "scratch" partition of
 "vda" and mounts it at ``/scratch``.
 
 .. code-block:: shell
@@ -136,10 +131,10 @@ disk, as necessary.
 If you would like to re-use existing partitions but want to replace existing
 file systems once, you may
 
-* wipe the existing data with tools like ``wipefs`` or `dd` [#]_; or
+* wipe the existing data with tools like ``wipefs`` or ``dd`` [#]_; or
 * set the ``--fswipe`` flag and remove it after one reboot.
 
-.. [#] With ``wipefs`` you have to remove the filesystem *and* parition
+.. [#] With ``wipefs`` you have to remove the filesystem *and* partition
     information. E.g., use ``wipefs -fa /dev/vda*`` to remove all file system
     information and partition information.
 
@@ -147,6 +142,224 @@ See the `upstream ignition documentation`_ for additional information.
 
 .. _upstream ignition documentation: https://coreos.github.io/ignition/operator-notes/#filesystem-reuse-semantics
 
+
+.. _swap-and-image-memory:
+
+Swap and image memory usage
+===========================
+
+Warewulf images run entirely in memory. Configuring a local swap partition
+can allow the kernel to reclaim that RAM for applications — but only under the
+right conditions. Whether swap can free image memory depends on which root
+filesystem type the node uses.
+
+tmpfs root
+----------
+
+When the root filesystem is ``tmpfs`` (the default for two-stage dracut boot, or
+when ``--root=tmpfs`` is set explicitly), the image lives in the page cache.
+The Linux kernel can swap ``tmpfs`` pages to a local swap device exactly as it
+would any other anonymous memory. Adding swap therefore lets the kernel evict
+cold image pages to disk and reclaim that RAM for running workloads.
+
+This is the recommended configuration for nodes with large images relative to
+available RAM.
+
+initramfs root (single-stage boot default)
+------------------------------------------
+
+The default single-stage boot places the image in an ``initramfs`` root, which
+is an instance of ``ramfs``. Unlike ``tmpfs``, ``ramfs`` pages are pinned in
+memory: the kernel will never swap them out. Configuring swap on a node with an
+``initramfs`` root will **not** free any memory used by the image.
+
+If you are using single-stage boot and want swap to help with image memory,
+switch to ``tmpfs`` root first:
+
+.. code-block:: shell
+
+   wwctl profile set default --root=tmpfs
+
+For background on ``tmpfs`` NUMA interleaving and size limits, see
+:ref:`tmpfs-and-numa`.
+
+.. note::
+
+   Two-stage dracut boot always uses ``tmpfs`` regardless of the ``--root``
+   setting. If you are already using dracut, no additional root configuration
+   is needed.
+
+Example: configuring swap to reclaim image memory
+--------------------------------------------------
+
+This example provisions a swap partition on the local disk of each node and
+activates it at boot, enabling the kernel to reclaim RAM occupied by the node
+image.
+
+**1. Configure tmpfs root** (skip if using two-stage dracut boot):
+
+.. code-block:: shell
+
+   wwctl profile set default --root=tmpfs
+
+**2. Add a swap partition** to the node or profile disk configuration. This
+example adds an 8 GiB swap partition as the first partition of ``/dev/vda``:
+
+.. code-block:: shell
+
+   wwctl profile set default \
+     --diskname /dev/vda --diskwipe \
+     --partname swap --partcreate --partnumber 1 --partsize=8192 \
+     --fsname swap --fsformat swap --fspath swap
+
+**3. Add the required overlays** to the system overlay so that the swap
+partition is formatted and activated at boot. The ``-O`` / ``--system-overlays``
+flag replaces the entire overlay list, so include any overlays already
+configured for the profile. Use Ignition (recommended for Rocky Linux 9 and
+openSUSE):
+
+.. code-block:: shell
+
+   wwctl profile set default \
+     -O wwinit,wwclient,fstab,hostname,ssh.host_keys,systemd.netname,NetworkManager,ignition,systemd.swap
+
+Or, for systems without Ignition (e.g., Rocky Linux 8), use the ``sfdisk`` and
+``mkswap`` overlays instead:
+
+.. code-block:: shell
+
+   wwctl profile set default \
+     -O wwinit,wwclient,fstab,hostname,ssh.host_keys,systemd.netname,NetworkManager,sfdisk,mkswap,systemd.swap
+
+**4. Rebuild the dracut initramfs** with the tools needed to provision the disk
+during the two-stage boot (skip for single-stage boot):
+
+.. code-block:: shell
+
+   # Ignition path
+   wwctl image exec rockylinux-9 -- /usr/bin/dracut --force --no-hostonly \
+     --add wwinit --add ignition --regenerate-all
+
+   # sfdisk/mkswap path
+   wwctl image exec rockylinux-8 -- /usr/bin/dracut --force --no-hostonly \
+     --add wwinit --install sfdisk --install blockdev --install udevadm \
+     --install mkswap --regenerate-all
+
+**5. Reboot nodes** to apply the new configuration.
+
+Verifying swap is active
+------------------------
+
+After reboot, confirm that the swap device is active:
+
+.. code-block:: shell
+
+   swapon --show
+
+Then check the overall memory picture with ``free -h``:
+
+.. code-block:: text
+
+   $ free -h
+                  total        used        free      shared  buff/cache   available
+   Mem:            15Gi        12Gi       256Mi       120Mi       2.8Gi       2.8Gi
+   Swap:           8.0Gi        0Ki       8.0Gi
+
+At idle, most of the node's RAM is occupied by the image. The ``Swap:`` line
+shows the available device but near-zero usage at this point.
+
+Confirming that the image gets swapped out
+------------------------------------------
+
+To demonstrate that the kernel evicts image pages to swap when an application
+needs memory, first note the image size with ``df -h /``:
+
+.. code-block:: shell
+
+   df -h /
+
+This shows how much tmpfs space the image occupies — that is the amount of RAM
+currently holding the image.
+
+Now apply memory pressure using ``stress-ng`` (install it in the OS image if
+not already present). The allocation must exceed **available** RAM — not just
+total RAM — to force the kernel to evict image pages. Compute the target from
+``MemTotal``:
+
+.. code-block:: shell
+
+   stress-ng --vm 1 \
+     --vm-bytes $(awk '/MemTotal/{printf "%dM", $2*0.9/1024}' /proc/meminfo) \
+     --vm-keep -t 60s &
+
+While ``stress-ng`` is running, observe memory usage:
+
+.. code-block:: shell
+
+   free -h
+
+.. code-block:: text
+
+   $ free -h
+                  total        used        free      shared  buff/cache   available
+   Mem:            15Gi        15Gi        32Mi       120Mi       512Mi       192Mi
+   Swap:           8.0Gi       4.2Gi       3.8Gi
+
+The ``Swap: used`` value has grown by roughly the size of the image. The
+kernel has evicted cold image pages to swap, making that RAM available to the
+application. The application can access the full physical memory of the node,
+not just what is left over after the image is loaded.
+
+After ``stress-ng`` finishes, the evicted image pages remain on swap until
+they are accessed again, so ``free -h`` will continue to show swap usage until
+the node is under less pressure and pages are faulted back in as needed.
+
+Moving image pages to swap proactively
+--------------------------------------
+
+Rather than simulating a workload, you can instruct the kernel to push image
+pages to swap directly. On Linux 6.1 and later with cgroup v2, write the
+desired reclaim size to ``memory.reclaim``:
+
+.. code-block:: shell
+
+   # Request that the kernel reclaim up to 4 GiB from the root cgroup
+   # (adjust to match your image size shown by df -h /)
+   echo "4G" > /sys/fs/cgroup/memory.reclaim
+
+If the kernel cannot reclaim the full requested amount it returns an error:
+
+.. code-block:: text
+
+   -bash: echo: write error: Resource temporarily unavailable
+
+This is expected and benign. It means the kernel reclaimed as much as it could
+but the reclaimable pool was exhausted before reaching the target.
+
+The kernel will swap out reclaimable pages until the target is met or exhausted, then stop.
+Run ``free -h`` immediately afterwards to see the reduction in ``Mem: used``
+and corresponding increase in ``Swap: used``.
+
+This works best when run early in the boot process, before applications start,
+when nearly all anonymous memory belongs to the image. To automate it, add a
+systemd unit to a custom overlay that runs at ``local-fs.target``:
+
+.. code-block:: ini
+
+   [Unit]
+   Description=Reclaim OS image memory to swap
+   After=local-fs.target
+   ConditionPathExists=/sys/fs/cgroup/memory.reclaim
+
+   [Service]
+   Type=oneshot
+   ExecStart=/bin/sh -c 'echo "$(df --output=used / | tail -1)K" > /sys/fs/cgroup/memory.reclaim'
+
+   [Install]
+   WantedBy=multi-user.target
+
+This reads the actual image size from ``df`` and requests that exact amount be
+reclaimed, so it adapts automatically as the image grows or shrinks.
 
 .. _provision to disk:
 
@@ -254,7 +467,7 @@ functionality is used:
 Configuring the root device
 ---------------------------
 
-Set the desired storage device for the node image using the ``--root``
+Set the desired storage device for the image using the ``--root``
 parameter.
 
 .. code-block:: shell

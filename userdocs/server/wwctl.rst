@@ -8,10 +8,12 @@ functionality.
 
 * ``configure``: configures the Warewulf server and its external services
 * ``node``: manages nodes in the cluster
-* ``profiles``: defines common sets of node configuration which can be applied
+* ``profile``: defines common sets of node configuration which can be applied
   to multiple nodes
 * ``image``: configures (node) images
-* ``overlays``: manages overlays
+* ``overlay``: manages overlays
+* ``clean``: removes the OCI image cache and leftover overlay images from
+  deleted nodes
 
 ``wwctl`` also provides additional helpers for interacting with cluster nodes
 over SSH and IPMI.
@@ -25,7 +27,7 @@ built-in help with either ``wwctl help`` or ``--help``.
 Hostlists
 =========
 
-Many of the commands (e.g., ``wwctl node list`` support a "hostlist"
+Many of the commands (e.g., ``wwctl node list``) support a "hostlist"
 syntax for referring to multiple nodes at once. Hostlist expressions
 support both ranges and comma-separated numerical lists.
 
@@ -47,12 +49,43 @@ through the following command :
    ================================================================================
    n1                   RUNTIME_OVERLAY      __RUNTIME__.img.gz        16
 
-For each node, there are 4 different stages:
+For each node, there are 7 different stages:
 
+* **EFI**
 * **IPXE**
 * **KERNEL**
+* **IMAGE**
+* **INITRAMFS**
 * **SYSTEM_OVERLAY**
 * **RUNTIME_OVERLAY**
 
 You can use the ``wwctl node status`` to check communication between the
 Warewulf server (``warewulfd``) and the Warewulf client (``wwclient``).
+
+.. note:: A provisioning workflow might not use every stage.
+
+Maintenance
+===========
+
+``wwctl clean`` reclaims disk space by removing two categories of data that
+accumulate over time:
+
+* The OCI blob cache, stored at ``$cachedir/warewulf`` (default:
+  ``/var/cache/warewulf``). This cache is populated during ``wwctl image
+  import`` and speeds up subsequent imports of images that share layers. It
+  is safe to remove: the next ``wwctl image import`` will re-download any
+  needed layers.
+
+* Provisioned overlay images for nodes that have been deleted from the node
+  database. These are stored under ``$wwprovisiondir/overlays`` and are no
+  longer needed once the corresponding node is removed.
+
+.. code-block:: console
+
+   # wwctl clean
+
+``wwctl clean`` is particularly useful after deleting a large number of nodes,
+or when disk space is limited on the Warewulf server. Note that ``wwctl clean``
+only removes the current cache location (``$cachedir/warewulf``); if you are
+upgrading from v4.5.x, the legacy cache at ``$datastore/oci`` must be removed
+manually (see :ref:`oci-blob-cache`).

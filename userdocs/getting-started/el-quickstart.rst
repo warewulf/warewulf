@@ -9,7 +9,7 @@ Install Warewulf
 ================
 
 The preferred way to install Warewulf on Enterprise Linux is using the
-the RPMs published in `GitHub releases`_. For example, to install the
+RPMs published in `GitHub releases`_. For example, to install the
 v4.6.5 release on Enterprise Linux 9:
 
 .. code-block:: bash
@@ -153,12 +153,12 @@ configure --all``.
 
    If you just installed the system fresh and have SELinux enforcing,
    you may need to run ``restorecon -Rv /var/lib/tftpboot/`` to label
-   files written to q`tftpboot``.
+   files written to ``tftpboot``.
 
-Add a base node image
-=====================
+Add an OS image
+===============
 
-This will pull a basic node image from Docker Hub
+This will pull a basic OS image from Docker Hub
 and set it for the "default" node profile.
 
 .. code-block:: bash
