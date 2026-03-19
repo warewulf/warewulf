@@ -254,6 +254,30 @@ HTTPS-only requests by setting ``api: tls: true`` in ``warewulf.conf``.
 
 See :ref:`rest-api` for full details.
 
+Files Route
+===========
+
+``/files/{path}``
+-----------------
+
+Serves static files from the warewulf files directory (``wwfilesdir`` in
+``warewulf.conf``, defaulting to ``/var/lib/warewulf/files``). Subdirectories
+are supported. No authentication or node identity is required.
+
+.. code-block:: console
+
+   # Place files in the warewulf files directory:
+   $ cp myfile.txt /var/lib/warewulf/files/
+   $ mkdir -p /var/lib/warewulf/files/scripts
+   $ cp setup.sh /var/lib/warewulf/files/scripts/
+
+   # Fetch from a compute node:
+   $ curl http://<server>:9873/files/myfile.txt
+   $ curl http://<server>:9873/files/scripts/setup.sh
+
+Directory listing is disabled; requests for a directory path return
+``404 Not Found``.
+
 .. _server-routes-security:
 
 Security

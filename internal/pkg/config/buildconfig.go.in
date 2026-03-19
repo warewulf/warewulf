@@ -21,6 +21,7 @@ type BuildConfig struct {
 	WWChrootdir    string `yaml:"wwchrootdir,omitempty" default:"@WWCHROOTDIR@"`
 	WWProvisiondir string `yaml:"wwprovisiondir,omitempty" default:"@WWPROVISIONDIR@"`
 	WWClientdir    string `yaml:"wwclientdir,omitempty" default:"@WWCLIENTDIR@"`
+	WWFilesdir     string `yaml:"wwfilesdir,omitempty" default:"@WWFILESDIR@"`
 }
 
 const Version = "@VERSION@"
