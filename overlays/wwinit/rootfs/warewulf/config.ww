@@ -12,5 +12,5 @@ WWIPMI_WRITE="{{$.Ipmi.Write.Bool}}"
 WWIPMI_VLAN="{{$.Ipmi.Tags.vlan}}"
 {{- end }}
 WWTLS={{$.Warewulf.TLSEnabled}}
-WWTLSPORT={{$.Warewulf.TlsPort}}
+WWTLSPORT={{$.Warewulf.TLSPort}}
 WWIPADDR={{$.Ipaddr}}

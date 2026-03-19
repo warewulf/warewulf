@@ -122,8 +122,8 @@ func RunServer() error {
 		}
 		httpsHandler := configureRootHandler(apiHandler)
 		go func() {
-			wwlog.Info("Starting HTTPS service on port %d", conf.Warewulf.TlsPort)
-			if err := http.ListenAndServeTLS(":"+strconv.Itoa(conf.Warewulf.TlsPort), crt, key, httpsHandler); err != nil {
+			wwlog.Info("Starting HTTPS service on port %d", conf.Warewulf.TLSPort)
+			if err := http.ListenAndServeTLS(":"+strconv.Itoa(conf.Warewulf.TLSPort), crt, key, httpsHandler); err != nil {
 				errChan <- fmt.Errorf("could not start HTTPS service: %w", err)
 			}
 		}()
