@@ -75,9 +75,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - New `wwinit.server` kernel parameter for dracut/wwinit boot; `wwinit.uri`
   remains supported for backward compatibility
 - Updated troubleshooting documentation examples to reflect the new URL scheme
-
-### Changed
-
 - Updated `MAINTAINING.md` to document golang version policy
 - Clarified functionality of syncuser commands and overlay in documentation
 - Audit and correct documentation, cobra help text, and log messages for accuracy
