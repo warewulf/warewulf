@@ -321,7 +321,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/grpc/grpc-go/blob/v1.79.2/LICENSE>
+**License URL:** <https://github.com/grpc/grpc-go/blob/v1.79.3/LICENSE>
 
 ## gopkg.in/yaml.v2
 
@@ -453,7 +453,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.48.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.49.0:LICENSE>
 
 ## golang.org/x/exp/maps
 
@@ -465,13 +465,13 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/net/+/v0.49.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/net/+/v0.51.0:LICENSE>
 
 ## golang.org/x/sync/semaphore
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/sync/+/v0.19.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/sync/+/v0.20.0:LICENSE>
 
 ## golang.org/x/sys
 
@@ -483,13 +483,13 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/term/+/v0.40.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/term/+/v0.41.0:LICENSE>
 
 ## golang.org/x/text
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/text/+/v0.34.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/text/+/v0.35.0:LICENSE>
 
 ## google.golang.org/protobuf
 
