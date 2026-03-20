@@ -59,7 +59,12 @@ func initHandleRequest(w http.ResponseWriter, req *http.Request) (*requestContex
 	if remoteNode.AssetKey != "" && remoteNode.AssetKey != rinfo.assetkey {
 		w.WriteHeader(http.StatusUnauthorized)
 		wwlog.Denied("incorrect asset key for node %s:", remoteNode.Id())
-		updateStatus(remoteNode.Id(), rinfo.stage, "BAD_ASSET", rinfo.ipaddr)
+		updateStatus(&NodeStatus{
+			NodeName: remoteNode.Id(),
+			Stage:    rinfo.stage,
+			Sent:     "BAD_ASSET",
+			Ipaddr:   rinfo.ipaddr,
+		})
 		return nil, fmt.Errorf("incorrect asset key")
 	}
 
