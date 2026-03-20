@@ -21,6 +21,7 @@ type NodeStatus struct {
 	Sent     string `json:"sent"`
 	Ipaddr   string `json:"ipaddr"`
 	Lastseen int64  `json:"last seen"`
+	Security string `json:"security"`
 }
 
 var (
@@ -61,21 +62,14 @@ func LoadNodeStatus() error {
 	return nil
 }
 
-func updateStatus(nodeID, stage, sent, ipaddr string) {
+func updateStatus(n *NodeStatus) {
 	dbLock.Lock()
 	defer dbLock.Unlock()
-	rightnow := time.Now().Unix()
 
-	wwlog.Debug("Updating node status data: %s", nodeID)
+	wwlog.Debug("Updating node status data: %s", n.NodeName)
+	n.Lastseen = time.Now().Unix()
 
-	n := NodeStatus{
-		NodeName: nodeID,
-		Stage:    stage,
-		Lastseen: rightnow,
-		Sent:     sent,
-		Ipaddr:   ipaddr,
-	}
-	statusDB.Nodes[nodeID] = &n
+	statusDB.Nodes[n.NodeName] = n
 }
 
 func statusJSON() ([]byte, error) {
