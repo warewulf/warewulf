@@ -22,7 +22,13 @@ type nodeStatus struct {
 	Sent     string `json:"sent"`
 	Ipaddr   string `json:"ipaddr"`
 	Lastseen int64  `json:"last seen"`
+	Security string `json:"security"`
 }
+
+const (
+	formatStrHdr = "%-15s %-15s %-25s %-10s %-10s\n"
+	formatStr    = "%-15s %-15s %-25s %-10d %-10s\n"
+)
 
 func displayStage(stage string) string {
 	switch stage {
@@ -88,7 +94,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			}
 		}
 
-		fmt.Printf("%-20s %-20s %-25s %-10s\n", "NODENAME", "STAGE", "SENT", "LASTSEEN (s)")
+		fmt.Printf(formatStrHdr, "NODENAME", "STAGE", "SENT", "LASTSEEN", "SECURITY")
 		fmt.Printf("%s\n", strings.Repeat("=", 80))
 
 		wwlog.Verbose("Building sort index")
@@ -121,7 +127,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 				}
 			})
 		} else if SetSortReverse {
-			wwlog.Verbose("Reversing sort order")
+			wwlog.Debug("Reversing sort order")
 			sort.Slice(statuses, func(i, j int) bool {
 				return statuses[i].NodeName > statuses[j].NodeName
 			})
@@ -132,7 +138,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			})
 		}
 
-		wwlog.Verbose("Printing results")
+		wwlog.Debug("Printing results")
 		for i := 0; i < len(statuses); i++ {
 			o := statuses[i]
 			if SetTime > 0 && o.Lastseen < SetTime {
@@ -144,14 +150,14 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 					continue
 				}
 				if rightnow-o.Lastseen >= int64(controller.Warewulf.UpdateInterval*2) {
-					color.Red("%-20s %-20s %-25s %-10d\n", o.NodeName, displayStage(o.Stage), o.Sent, rightnow-o.Lastseen)
+					color.Red(formatStr, o.NodeName, displayStage(o.Stage), o.Sent, rightnow-o.Lastseen, o.Security)
 				} else if rightnow-o.Lastseen >= int64(controller.Warewulf.UpdateInterval+5) {
-					color.Yellow("%-20s %-20s %-25s %-10d\n", o.NodeName, displayStage(o.Stage), o.Sent, rightnow-o.Lastseen)
+					color.Yellow(formatStr, o.NodeName, displayStage(o.Stage), o.Sent, rightnow-o.Lastseen, o.Security)
 				} else {
-					fmt.Printf("%-20s %-20s %-25s %-10d\n", o.NodeName, displayStage(o.Stage), o.Sent, rightnow-o.Lastseen)
+					fmt.Printf(formatStr, o.NodeName, displayStage(o.Stage), o.Sent, rightnow-o.Lastseen, o.Security)
 				}
 			} else {
-				color.HiBlack("%-20s %-20s %-25s %-10s\n", o.NodeName, "--", "--", "--")
+				color.HiBlack(formatStrHdr, o.NodeName, "--", "--", "--", "--")
 			}
 			if count+4 >= height && SetWatch {
 				if count+1 != len(statuses) {
