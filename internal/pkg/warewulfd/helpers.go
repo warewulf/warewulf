@@ -153,16 +153,38 @@ func sendResponse(w http.ResponseWriter, req *http.Request, stageFile string, tm
 			}
 		}
 
-		updateStatus(ctx.remoteNode.Id(), ctx.rinfo.stage, path.Base(stageFile), ctx.rinfo.ipaddr)
+		status := NodeStatus{
+			NodeName: ctx.remoteNode.Id(),
+			Stage:    ctx.rinfo.stage,
+			Sent:     path.Base(stageFile),
+			Ipaddr:   ctx.rinfo.ipaddr,
+		}
+		if ctx.rinfo.assetkey != "" {
+			status.Security = "ASSET"
+		}
+		if ctx.rinfo.tpmsecret != "" {
+			status.Security = "TPM"
+		}
+		updateStatus(&status)
 
 	} else if stageFile == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		wwlog.Error("No resource selected")
-		updateStatus(ctx.remoteNode.Id(), ctx.rinfo.stage, "BAD_REQUEST", ctx.rinfo.ipaddr)
+		updateStatus(&NodeStatus{
+			NodeName: ctx.remoteNode.Id(),
+			Stage:    ctx.rinfo.stage,
+			Sent:     "BAD_REQUEST",
+			Ipaddr:   ctx.rinfo.ipaddr,
+		})
 
 	} else {
 		w.WriteHeader(http.StatusNotFound)
 		wwlog.Error("Not found: %s", stageFile)
-		updateStatus(ctx.remoteNode.Id(), ctx.rinfo.stage, "NOT_FOUND", ctx.rinfo.ipaddr)
+		updateStatus(&NodeStatus{
+			NodeName: ctx.remoteNode.Id(),
+			Stage:    ctx.rinfo.stage,
+			Sent:     "NOT_FOUND",
+			Ipaddr:   ctx.rinfo.ipaddr,
+		})
 	}
 }
