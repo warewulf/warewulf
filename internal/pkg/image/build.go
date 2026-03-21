@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/pkg/errors"
-
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -17,7 +15,7 @@ func Build(name string, buildForce bool) error {
 	imagePath := ImageFile(name)
 
 	if !ValidSource(name) {
-		return errors.Errorf("Image does not exist: %s", name)
+		return fmt.Errorf("Image does not exist: %s", name)
 	}
 
 	if !buildForce {
