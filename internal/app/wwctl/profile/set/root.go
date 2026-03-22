@@ -9,7 +9,6 @@ import (
 
 type variables struct {
 	setYes      bool
-	setForce    bool
 	profileConf node.Profile
 	profileDel  node.NodeConfDel
 	profileAdd  node.NodeConfAdd

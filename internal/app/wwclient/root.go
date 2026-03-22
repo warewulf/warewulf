@@ -89,7 +89,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	}
 	defer cleanUp()
 
-	wwlog.Debug("Version: %s", version.GetVersion())
+	wwlog.Debug("Version: %s", version.Version())
 
 	target := "/"
 	if os.Args[0] == path.Join(conf.Paths.WWClientdir, "wwclient") {

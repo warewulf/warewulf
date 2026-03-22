@@ -19,7 +19,7 @@ func Handler(auth *config.Authentication, allowedNets []net.IPNet) *web.Service 
 
 	api.OpenAPISchema().SetTitle("Warewulf v4 API")
 	api.OpenAPISchema().SetDescription("This service provides an API to a Warewulf v4 server.")
-	api.OpenAPISchema().SetVersion(version.GetVersion())
+	api.OpenAPISchema().SetVersion(version.Version())
 
 	api.Route("/api/nodes", func(r chi.Router) {
 		r.Group(func(r chi.Router) {

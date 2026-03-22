@@ -15,7 +15,7 @@ func Build(name string, buildForce bool) error {
 	imagePath := ImageFile(name)
 
 	if !ValidSource(name) {
-		return fmt.Errorf("Image does not exist: %s", name)
+		return fmt.Errorf("image does not exist: %s", name)
 	}
 
 	if !buildForce {

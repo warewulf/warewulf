@@ -383,12 +383,6 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/gorilla/mux/blob/v1.8.1/LICENSE>
 
-## github.com/grpc-ecosystem/grpc-gateway/v2
-
-**License:** BSD-3-Clause
-
-**License URL:** <https://github.com/grpc-ecosystem/grpc-gateway/blob/v2.28.0/LICENSE>
-
 ## github.com/klauspost/compress/internal/snapref
 
 **License:** BSD-3-Clause

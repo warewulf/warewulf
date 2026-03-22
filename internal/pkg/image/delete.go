@@ -67,12 +67,12 @@ func DeleteImage(name string) error {
 		wwlog.Verbose("removing %s for image %s", imageFile+".gz", name)
 		errGz := os.Remove(imageFile + ".gz")
 		if errImg != nil {
-			return fmt.Errorf("Problems delete %s for image %s: %s", imageFile, name, errImg)
+			return fmt.Errorf("problem deleting %s for image %s: %s", imageFile, name, errImg)
 		}
 		if errGz != nil {
-			return fmt.Errorf("Problems delete %s for image %s: %s", imageFile+".gz", name, errGz)
+			return fmt.Errorf("problem deleting %s for image %s: %s", imageFile+".gz", name, errGz)
 		}
 		return nil
 	}
-	return fmt.Errorf("Image %s of image %s doesn't exist", imageFile, name)
+	return fmt.Errorf("image %s of image %s doesn't exist", imageFile, name)
 }
