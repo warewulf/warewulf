@@ -8,7 +8,6 @@ import (
 )
 
 type variables struct {
-	setNodeAll  bool
 	setYes      bool
 	setForce    bool
 	profileConf node.Profile
