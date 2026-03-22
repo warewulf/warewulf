@@ -40,6 +40,8 @@ func GetCommand() *cobra.Command {
 	baseCmd.PersistentFlags().BoolVarP(&vars.setNodeAll, "all", "a", false, "Set all nodes")
 	baseCmd.PersistentFlags().BoolVarP(&vars.setYes, "yes", "y", false, "Set 'yes' to all questions asked")
 	baseCmd.PersistentFlags().BoolVarP(&vars.setForce, "force", "f", false, "Force configuration (even on error)")
+	_ = baseCmd.PersistentFlags().MarkDeprecated("force", "this flag never had any effect and will be removed in a future release")
+	_ = baseCmd.PersistentFlags().MarkHidden("force")
 	// register the command line completions
 	if err := baseCmd.RegisterFlagCompletionFunc("image", completions.Images); err != nil {
 		panic(err)

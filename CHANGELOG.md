@@ -72,6 +72,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Refactored `wwctl <node|profile> set` to use cobra `cmd.Flags().Changed()` to
   apply only explicitly-set fields.
+- Deprecated `wwctl node set --force` (never had any effect; will be removed in
+  a future release)
 - Runtime overlay download failure during dracut/wwinit boot is now non-fatal;
   the node continues to boot and `wwclient` retries the download at runtime.
 - `hosts` overlay added to the default system overlay list
