@@ -681,6 +681,22 @@ nodes:
             number: "1"
             wipe_partition_entry: true`,
 		},
+		"--all modifies all nodes": {
+			args:    []string{"--all", "--comment=batch-update"},
+			wantErr: false,
+			inDB: `
+nodeprofiles: {}
+nodes:
+  n01: {}
+  n02: {}`,
+			outDB: `
+nodeprofiles: {}
+nodes:
+  n01:
+    comment: batch-update
+  n02:
+    comment: batch-update`,
+		},
 	}
 
 	for name, tt := range tests {

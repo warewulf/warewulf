@@ -26,7 +26,7 @@ func GetCommand() *cobra.Command {
 		Short:                 "Configure node properties",
 		Long:                  "This command sets configuration properties for nodes matching PATTERN.\n\nNote: use the string 'UNSET' to remove a configuration\n" + hostlist.Docstring,
 		Aliases:               []string{"modify"},
-		Args:                  cobra.MinimumNArgs(1), // require pattern as a mandatory arg
+		Args:                  cobra.ArbitraryArgs,
 		RunE:                  CobraRunE(&vars),
 		ValidArgsFunction:     completions.Nodes,
 	}
