@@ -9,9 +9,6 @@ import (
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 
-	fmt.Println("wwctl version:\t", version.GetVersion())
-
-	wwVersionResponse := version.Version()
-	fmt.Println("rpc version:", wwVersionResponse.String())
+	fmt.Println("wwctl version:\t", version.Version())
 	return nil
 }

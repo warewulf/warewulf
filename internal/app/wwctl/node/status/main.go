@@ -1,20 +1,28 @@
 package nodestatus
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"sort"
 	"strings"
 	"time"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	apinode "github.com/warewulf/warewulf/internal/pkg/api/node"
-	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"golang.org/x/term"
 )
+
+type nodeStatus struct {
+	NodeName string `json:"node name"`
+	Stage    string `json:"stage"`
+	Sent     string `json:"sent"`
+	Ipaddr   string `json:"ipaddr"`
+	Lastseen int64  `json:"last seen"`
+}
 
 func displayStage(stage string) string {
 	switch stage {
@@ -54,10 +62,21 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		var count int
 		rightnow := time.Now().Unix()
 
-		var nodeStatusResponse *wwapiv1.NodeStatusResponse
-		nodeStatusResponse, err = apinode.NodeStatus([]string{})
+		statusURL := fmt.Sprintf("http://%s:%d/status", controller.Ipaddr, controller.Warewulf.Port)
+		wwlog.Verbose("Connecting to: %s", statusURL)
+
+		resp, err := http.Get(statusURL)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not connect to Warewulf server: %w", err)
+		}
+
+		var wwNodeStatus struct {
+			Nodes map[string]*nodeStatus `json:"nodes"`
+		}
+		err = json.NewDecoder(resp.Body).Decode(&wwNodeStatus)
+		_ = resp.Body.Close()
+		if err != nil {
+			return fmt.Errorf("could not decode JSON: %w", err)
 		}
 
 		if SetWatch {
@@ -73,20 +92,20 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		fmt.Printf("%s\n", strings.Repeat("=", 80))
 
 		wwlog.Verbose("Building sort index")
-		var statuses []*wwapiv1.NodeStatus
+		var statuses []*nodeStatus
 		if len(args) > 0 {
 			nodeList := hostlist.Expand(args)
-			for i := 0; i < len(nodeStatusResponse.NodeStatus); i++ {
-				for j := 0; j < len(nodeList); j++ {
-					if nodeStatusResponse.NodeStatus[i].NodeName == nodeList[j] {
-						statuses = append(statuses, nodeStatusResponse.NodeStatus[i])
+			for _, v := range wwNodeStatus.Nodes {
+				for _, name := range nodeList {
+					if v.NodeName == name {
+						statuses = append(statuses, v)
 						break
 					}
 				}
 			}
 		} else {
-			for i := 0; i < len(nodeStatusResponse.NodeStatus); i++ {
-				statuses = append(statuses, nodeStatusResponse.NodeStatus[i])
+			for _, v := range wwNodeStatus.Nodes {
+				statuses = append(statuses, v)
 			}
 		}
 

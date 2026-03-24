@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix path traversal vulnerability (CWE-23) by validating overlay names in `overlay.Get()` and `overlay.Create()`
 - Upgrade golang version to 1.25 to resolve stdlib CVEs (CVE-2025-4673, CVE-2025-58187, CVE-2025-61723, CVE-2025-58188, CVE-2025-61725, CVE-2025-61726, CVE-2025-47907, CVE-2025-58189, CVE-2025-47906, CVE-2025-58186, CVE-2025-61727, CVE-2025-61724, CVE-2025-58185, CVE-2025-47912, CVE-2025-61729, CVE-2025-0913, CVE-2025-22873, CVE-2024-45336, CVE-2024-45341, CVE-2025-58183, CVE-2025-68121, CVE-2025-61730)
 - Fix path traversal vulnerability (CWE-23) in overlay cleanup function
+- Fix `wwctl image build --all` to build all images
+- Fix `wwctl node set --all` to set values on all nodes
 
 ### Dependencies
 
@@ -62,8 +64,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Document configuring the arp cache for large clusters
 - Expand troubleshooting documentation for container runtimes
 
+### Removed
+
+- Removed gRPC API libraries and protobuf types
+
 ### Changed
 
+- Refactored `wwctl <node|profile> set` to use cobra `cmd.Flags().Changed()` to
+  apply only explicitly-set fields.
+- Deprecated `wwctl node set --force` (never had any effect; will be removed in
+  a future release)
 - Runtime overlay download failure during dracut/wwinit boot is now non-fatal;
   the node continues to boot and `wwclient` retries the download at runtime.
 - `hosts` overlay added to the default system overlay list

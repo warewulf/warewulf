@@ -7,11 +7,10 @@ import (
 
 	"github.com/swaggest/usecase"
 	"github.com/swaggest/usecase/status"
-	image_api "github.com/warewulf/warewulf/internal/pkg/api/image"
-	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/image"
 	"github.com/warewulf/warewulf/internal/pkg/kernel"
 	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -99,7 +98,7 @@ func importImage() usecase.Interactor {
 			return status.Wrap(fmt.Errorf("name contains illegal characters: %s", input.Name), status.InvalidArgument)
 		}
 
-		if sctx, err := image_api.GetSystemContext(input.NoHttps, input.User, input.Password, ""); err != nil {
+		if sctx, err := image.GetSystemContext(input.NoHttps, input.User, input.Password, ""); err != nil {
 			return err
 		} else {
 			if err := image.ImportDocker(input.URI, input.Name, sctx); err != nil {
@@ -139,11 +138,7 @@ func deleteImage() usecase.Interactor {
 			}
 		}
 
-		cdp := &wwapiv1.ImageDeleteParameter{
-			ImageNames: []string{input.Name},
-		}
-
-		return image_api.ImageDelete(cdp)
+		return image.Delete(input.Name)
 	})
 	u.SetTitle("Delete an image")
 	u.SetDescription("Delete an existing OS image")
@@ -163,16 +158,11 @@ func updateImage() usecase.Interactor {
 		wwlog.Debug("api.updateImage(Name:%v, NewName:%v, Build:%v)", input.Name, input.NewName, input.Build)
 		name := input.Name
 		if input.NewName != "" {
-			crp := &wwapiv1.ImageRenameParameter{
-				ImageName:  input.Name,
-				TargetName: input.NewName,
-				Build:      input.Build,
-			}
-
-			if err := image_api.ImageRename(crp); err != nil {
+			if err := image.Rename(input.Name, input.NewName, input.Build); err != nil {
 				return err
 			}
 			name = input.NewName
+			warewulfd.Reload()
 		}
 
 		*output = *NewImage(name)
@@ -193,12 +183,8 @@ func buildImage() usecase.Interactor {
 
 	u := usecase.NewInteractor(func(ctx context.Context, input buildImageInput, output *Image) error {
 		wwlog.Debug("api.buildImage(Name:%v, Force:%v)", input.Name, input.Force)
-		cbp := &wwapiv1.ImageBuildParameter{
-			ImageNames: []string{input.Name},
-			Force:      input.Force,
-		}
 
-		if err := image_api.ImageBuild(cbp); err != nil {
+		if err := image.Build(input.Name, input.Force); err != nil {
 			return err
 		}
 

@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	apiprofile "github.com/warewulf/warewulf/internal/pkg/api/profile"
-	"github.com/warewulf/warewulf/internal/pkg/node"
 	"gopkg.in/yaml.v3"
 
 	"github.com/spf13/cobra"
-	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/util"
 )
 
 func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err error) {
@@ -49,11 +48,23 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 		if err != nil {
 			return fmt.Errorf("can not marshall nodeInfo: %w", err)
 		}
-		set := wwapiv1.NodeAddParameter{
-			NodeConfYaml: string(buffer[:]),
-			NodeNames:    args,
-			Force:        true,
+		nodeDB, err := node.New()
+		if err != nil {
+			return fmt.Errorf("could not open database: %w", err)
 		}
-		return apiprofile.ProfileAdd(&set)
+		for _, p := range args {
+			if util.InSlice(nodeDB.ListAllProfiles(), p) {
+				return fmt.Errorf("profile with name %s already exists", p)
+			}
+			pNew, err := nodeDB.AddProfile(p)
+			if err != nil {
+				return err
+			}
+			err = yaml.Unmarshal(buffer, pNew)
+			if err != nil {
+				return fmt.Errorf("failed to add profile: %w", err)
+			}
+		}
+		return nodeDB.Persist()
 	}
 }

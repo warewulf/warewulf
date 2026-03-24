@@ -6,8 +6,6 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	apinode "github.com/warewulf/warewulf/internal/pkg/api/node"
-	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"gopkg.in/yaml.v3"
@@ -32,9 +30,22 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if setYes || util.Confirm(fmt.Sprintf("Are you sure you want to modify %d nodes", len(importMap))) {
-		err = apinode.NodeAddFromYaml(&wwapiv1.NodeYaml{NodeConfMapYaml: string(buffer)})
+		nodeDB, err := node.New()
 		if err != nil {
-			return fmt.Errorf("got following problem when writing back yaml: %s", err)
+			return fmt.Errorf("could not open NodeDB: %w", err)
+		}
+		for nodeName, nodeData := range importMap {
+			if _, err := nodeDB.GetNodeOnly(nodeName); err == node.ErrNotFound {
+				if _, err := nodeDB.AddNode(nodeName); err != nil {
+					return fmt.Errorf("couldn't add new node: %w", err)
+				}
+			}
+			if err := nodeDB.SetNode(nodeName, *nodeData); err != nil {
+				return fmt.Errorf("couldn't set node: %w", err)
+			}
+		}
+		if err := nodeDB.Persist(); err != nil {
+			return fmt.Errorf("failed to persist nodedb: %w", err)
 		}
 	}
 

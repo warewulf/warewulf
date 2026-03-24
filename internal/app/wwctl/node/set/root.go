@@ -26,7 +26,7 @@ func GetCommand() *cobra.Command {
 		Short:                 "Configure node properties",
 		Long:                  "This command sets configuration properties for nodes matching PATTERN.\n\nNote: use the string 'UNSET' to remove a configuration\n" + hostlist.Docstring,
 		Aliases:               []string{"modify"},
-		Args:                  cobra.MinimumNArgs(1), // require pattern as a mandatory arg
+		Args:                  cobra.ArbitraryArgs,
 		RunE:                  CobraRunE(&vars),
 		ValidArgsFunction:     completions.Nodes,
 	}
@@ -40,6 +40,8 @@ func GetCommand() *cobra.Command {
 	baseCmd.PersistentFlags().BoolVarP(&vars.setNodeAll, "all", "a", false, "Set all nodes")
 	baseCmd.PersistentFlags().BoolVarP(&vars.setYes, "yes", "y", false, "Set 'yes' to all questions asked")
 	baseCmd.PersistentFlags().BoolVarP(&vars.setForce, "force", "f", false, "Force configuration (even on error)")
+	_ = baseCmd.PersistentFlags().MarkDeprecated("force", "this flag never had any effect and will be removed in a future release")
+	_ = baseCmd.PersistentFlags().MarkHidden("force")
 	// register the command line completions
 	if err := baseCmd.RegisterFlagCompletionFunc("image", completions.Images); err != nil {
 		panic(err)
