@@ -121,6 +121,11 @@ var (
 	ErrEventLogVerify  = errors.New("event log verification failed")
 )
 
+// HasQuote checks if the essential fields for a TPM quote are present.
+func (quote *Quote) HasQuote() bool {
+	return quote.Quote != "" && quote.Signature != "" && quote.AKPub != "" && quote.Nonce != ""
+}
+
 func (quote *Quote) Verify() (bool, error) {
 	// 1. Parse AK Public Key
 	akPubBytes, err := base64.StdEncoding.DecodeString(quote.AKPub)
