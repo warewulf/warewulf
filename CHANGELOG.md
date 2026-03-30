@@ -63,6 +63,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Initial one-page quick reference guide
 - Document configuring the arp cache for large clusters
 - Expand troubleshooting documentation for container runtimes
+- Ignore local coding agent files
 
 ### Removed
 
