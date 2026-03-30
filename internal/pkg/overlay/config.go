@@ -17,7 +17,9 @@ import (
 
 var validOverlayName = regexp.MustCompile(`^[a-zA-Z0-9\-._:]+$`)
 
-func validateOverlayName(name string) error {
+// ValidateName validates that an overlay name consists only of safe characters.
+// It does not check whether the overlay actually exists.
+func ValidateName(name string) error {
 	if name == "" {
 		return fmt.Errorf("overlay name must not be empty")
 	}
@@ -29,7 +31,7 @@ func validateOverlayName(name string) error {
 
 // Get returns the filesystem path of an overlay identified by its name,
 func Get(name string) (overlay Overlay, err error) {
-	if err := validateOverlayName(name); err != nil {
+	if err := ValidateName(name); err != nil {
 		return "", err
 	}
 	overlay = getSiteOverlay(name)
@@ -47,7 +49,7 @@ func Get(name string) (overlay Overlay, err error) {
 //
 // Returns an error if the overlay already exists or if directory creation fails.
 func Create(name string) (overlay Overlay, err error) {
-	if err := validateOverlayName(name); err != nil {
+	if err := ValidateName(name); err != nil {
 		return "", err
 	}
 	overlay = getSiteOverlay(name)
@@ -104,6 +106,12 @@ func (overlay Overlay) CloneToSite() (siteOverlay Overlay, err error) {
 // If the context is empty and no overlays are specified, the empty
 // string is returned.
 func Image(nodeName string, context string, overlayNames []string) string {
+	for _, overlayName := range overlayNames {
+		if err := ValidateName(overlayName); err != nil {
+			wwlog.Warn("invalid overlay name: %s", overlayName)
+			return ""
+		}
+	}
 	var name string
 	if context != "" {
 		if len(overlayNames) > 0 {
