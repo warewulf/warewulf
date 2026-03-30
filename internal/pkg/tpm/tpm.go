@@ -11,6 +11,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"maps"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -379,4 +381,84 @@ func (quote *Quote) GetManufacturer() string {
 	}
 
 	return "Unknown"
+}
+
+// VerifyAndDisplay validates the TPM quote and logs the result using wwlog.
+// If displayEvent is true, it returns the formatted event log.
+func (quote *Quote) VerifyAndDisplay(pcrFilter []int, displayEvent bool) (string, error) {
+	wwlog.Info("TPM Manufacturer: %s", quote.GetManufacturer())
+
+	if !quote.HasQuote() {
+		return "", fmt.Errorf("TPM Quote not available")
+	}
+
+	if verified, err := quote.Verify(); !verified {
+		return "", fmt.Errorf("Quote Verification Failed: %v", err)
+	}
+
+	wwlog.Info("Quote Verification Successful")
+
+	var eventLogStr string
+	if quote.EventLog != "" {
+		if verified, err := quote.VerifyEventLog(); !verified {
+			return "", fmt.Errorf("Event Log Verification Failed: %v", err)
+		} else {
+			wwlog.Info("Event Log Verification Successful")
+		}
+
+		if err := quote.VerifyGrubBinary(); err != nil {
+			return "", fmt.Errorf("GRUB Binary Log Verification Failed: %v", err)
+		} else {
+			wwlog.Info("GRUB Binary Log Verification Successful")
+		}
+		if displayEvent {
+			var err error
+			eventLogStr, err = DisplayEventLog(quote.EventLog, pcrFilter)
+			if err != nil {
+				wwlog.Warn("Failed to format event log: %v", err)
+			}
+		}
+	}
+	return eventLogStr, nil
+}
+
+// DisplayEventLog decodes and parses the base64-encoded TPM event log,
+// returning a formatted string representation of the events.
+func DisplayEventLog(b64Log string, pcrFilter []int) (string, error) {
+	logBytes, err := base64.StdEncoding.DecodeString(b64Log)
+	if err != nil {
+		return "", fmt.Errorf("decoding event log: %v", err)
+	}
+
+	el, err := attest.ParseEventLog(logBytes)
+	if err != nil {
+		return "", fmt.Errorf("parsing event log: %v", err)
+	}
+
+	events := el.Events(attest.HashSHA256)
+
+	var sb bytes.Buffer
+	sb.WriteString("TPM Event Log (SHA256):\n")
+	pcrEvents := make(map[int][]string)
+	for _, event := range events {
+		pcrEvents[event.Index] = append(pcrEvents[event.Index], fmt.Sprintf("Type=%s Digest=%x Data=%s\n", event.Type, event.Digest, FormatEventData(event)))
+	}
+	for _, idx := range slices.Sorted(maps.Keys(pcrEvents)) {
+		if len(pcrFilter) > 0 {
+			found := false
+			for _, p := range pcrFilter {
+				if p == idx {
+					found = true
+					break
+				}
+			}
+			if !found {
+				continue
+			}
+		}
+		for _, ev := range pcrEvents[idx] {
+			sb.WriteString(fmt.Sprintf("PCR[%d] %s", idx, ev))
+		}
+	}
+	return sb.String(), nil
 }
