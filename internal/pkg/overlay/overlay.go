@@ -26,6 +26,8 @@ import (
 
 var ErrDoesNotExist = fmt.Errorf("overlay does not exist")
 
+var hostOverlayDest = "/"
+
 // Overlay represents an overlay directory path.
 type Overlay string
 
@@ -858,7 +860,7 @@ func BuildHostOverlay() error {
 	if err != nil {
 		return err
 	}
-	return BuildOverlayIndir(hostData, allNodes, []string{"host"}, "/")
+	return BuildOverlayIndir(hostData, allNodes, []string{"host"}, hostOverlayDest)
 }
 
 /*
