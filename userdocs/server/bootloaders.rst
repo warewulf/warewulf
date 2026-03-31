@@ -216,7 +216,8 @@ Booting with GRUB
 =================
 
 Support for GRUB as a network bootloader (replacing iPXE) is available in
-Warewulf as a technology preview.
+Warewulf as a technology preview. GRUB is required for Secure Boot and TPM-based
+node authentication.
 
 .. graphviz::
 
