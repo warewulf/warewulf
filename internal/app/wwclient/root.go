@@ -109,7 +109,7 @@ func loadOrCreateAK(t *attest.TPM) (*attest.AK, error) {
 	return ak, nil
 }
 
-func getAttestationData(id string) (*tpm.Quote, error) {
+func getAttestationData(id string) (*tpm.TpmUpload, error) {
 	// Open TPM
 	t, err := attest.OpenTPM(nil)
 	if err != nil {
@@ -174,19 +174,21 @@ func getAttestationData(id string) (*tpm.Quote, error) {
 	akParams := ak.AttestationParameters()
 	akPubBytes := akParams.Public
 
-	return &tpm.Quote{
-		EKCert:            base64.StdEncoding.EncodeToString(ekCertBytes),
-		EKPub:             base64.StdEncoding.EncodeToString(ekPubBytes),
-		AKPub:             base64.StdEncoding.EncodeToString(akPubBytes),
-		Quote:             base64.StdEncoding.EncodeToString(q.Quote),
-		Signature:         base64.StdEncoding.EncodeToString(q.Signature),
-		CreateData:        base64.StdEncoding.EncodeToString(akParams.CreateData),
-		CreateAttestation: base64.StdEncoding.EncodeToString(akParams.CreateAttestation),
-		CreateSignature:   base64.StdEncoding.EncodeToString(akParams.CreateSignature),
-		PCRs:              pcrMap,
-		Nonce:             base64.StdEncoding.EncodeToString(nonce),
-		EventLog:          base64.StdEncoding.EncodeToString(eventLog),
-		ID:                id,
+	return &tpm.TpmUpload{
+		TpmData: tpm.TpmData{
+			EKCert:            base64.StdEncoding.EncodeToString(ekCertBytes),
+			EKPub:             base64.StdEncoding.EncodeToString(ekPubBytes),
+			AKPub:             base64.StdEncoding.EncodeToString(akPubBytes),
+			Quote:             base64.StdEncoding.EncodeToString(q.Quote),
+			Signature:         base64.StdEncoding.EncodeToString(q.Signature),
+			CreateData:        base64.StdEncoding.EncodeToString(akParams.CreateData),
+			CreateAttestation: base64.StdEncoding.EncodeToString(akParams.CreateAttestation),
+			CreateSignature:   base64.StdEncoding.EncodeToString(akParams.CreateSignature),
+			PCRs:              pcrMap,
+			Nonce:             base64.StdEncoding.EncodeToString(nonce),
+		},
+		EventLog: base64.StdEncoding.EncodeToString(eventLog),
+		ID:       id,
 	}, nil
 }
 
@@ -457,6 +459,12 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		secret, err = ak.ActivateCredential(t, encryptedCredential)
 		if err != nil {
 			return fmt.Errorf("failed to activate credential: %w", err)
+		}
+
+		if err := os.MkdirAll("/warewulf", 0755); err != nil {
+			wwlog.Warn("Failed to create /warewulf directory: %v", err)
+		} else if err := os.WriteFile("/warewulf/secret", secret, 0600); err != nil {
+			wwlog.Warn("Failed to save secret to /warewulf/secret: %v", err)
 		}
 
 		if getChallengeFlag {

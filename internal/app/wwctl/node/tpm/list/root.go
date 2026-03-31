@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	keyFlag bool
+	keyFlag  bool
+	jsonFlag bool
 )
 
 func GetCommand() *cobra.Command {
@@ -22,6 +23,7 @@ func GetCommand() *cobra.Command {
 	}
 
 	baseCmd.Flags().BoolVarP(&keyFlag, "key", "k", false, "Display the activation secret instead of the EK public key")
+	baseCmd.Flags().BoolVarP(&jsonFlag, "json", "j", false, "Output data in JSON format")
 
 	return baseCmd
 }

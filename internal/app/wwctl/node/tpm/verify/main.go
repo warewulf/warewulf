@@ -45,11 +45,21 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 				continue
 			}
 			wwlog.Info("Node: %s", n.Id())
-			logStr, err := quote.VerifyAndDisplay(vars.pcrFilter, vars.displayEvent)
+			logStr, err := quote.VerifyAndDisplayData(&quote.Current, vars.pcrFilter, vars.displayEvent)
 			if err != nil {
 				wwlog.Error("Verifying node %s: %v", n.Id(), err)
 			} else if logStr != "" {
 				fmt.Print(logStr)
+			}
+
+			if quote.New.HasQuote() {
+				wwlog.Info("Node: %s (NEW)", n.Id())
+				logStrNew, errNew := quote.VerifyAndDisplayData(&quote.New, vars.pcrFilter, vars.displayEvent)
+				if errNew != nil {
+					wwlog.Error("Verifying node %s (NEW): %v", n.Id(), errNew)
+				} else if logStrNew != "" {
+					fmt.Print(logStrNew)
+				}
 			}
 		}
 		return nil
