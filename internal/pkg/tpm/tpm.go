@@ -100,6 +100,7 @@ type Quote struct {
 	Challenge *Challenge `json:"challenge,omitempty" yaml:"challenge,omitempty"`
 }
 
+// UnmarshalJSON implements the json.Unmarshaler interface for Quote, ensuring legacy TpmData fields are correctly mapped to the Current field.
 func (q *Quote) UnmarshalJSON(data []byte) error {
 	type Alias Quote
 	var aux Alias
@@ -164,6 +165,7 @@ func (quote *Quote) HasQuote() bool {
 	return quote.Current.HasQuote()
 }
 
+// Verify validates the TPM quote using the provided AK public key, PCRs, and nonce.
 func (data *TpmData) Verify() (bool, error) {
 	// 1. Parse AK Public Key
 	akPubBytes, err := base64.StdEncoding.DecodeString(data.AKPub)
@@ -232,14 +234,17 @@ func (data *TpmData) Verify() (bool, error) {
 	return true, nil
 }
 
+// Verify validates the current TPM quote.
 func (quote *Quote) Verify() (bool, error) {
 	return quote.Current.Verify()
 }
 
+// VerifyEventLog validates the event log against the PCRs in the current quote.
 func (quote *Quote) VerifyEventLog() (bool, error) {
 	return quote.VerifyEventLogData(&quote.Current)
 }
 
+// VerifyEventLogData validates the event log against the PCRs in the provided TpmData.
 func (quote *Quote) VerifyEventLogData(data *TpmData) (bool, error) {
 	if quote.EventLog == "" {
 		return false, ErrNoEventLog
@@ -284,10 +289,12 @@ func (quote *Quote) VerifyEventLogData(data *TpmData) (bool, error) {
 	return true, nil
 }
 
+// VerifyGrubBinary validates that the GRUB binaries reported in the event log match the expected checksums and reconstruct the PCR9 value.
 func (quote *Quote) VerifyGrubBinary() error {
 	return quote.VerifyGrubBinaryData(&quote.Current)
 }
 
+// VerifyGrubBinaryData validates the GRUB binaries for the provided TpmData.
 func (quote *Quote) VerifyGrubBinaryData(data *TpmData) error {
 	sentReceived := []FileLog{}
 	if quote.EventLog != "" {
@@ -443,6 +450,7 @@ func (quote *Quote) VerifyAndDisplay(pcrFilter []int, displayEvent bool) (string
 	return quote.VerifyAndDisplayData(&quote.Current, pcrFilter, displayEvent)
 }
 
+// VerifyAndDisplayData validates the provided TpmData and returns a formatted event log if requested.
 func (quote *Quote) VerifyAndDisplayData(data *TpmData, pcrFilter []int, displayEvent bool) (string, error) {
 	wwlog.Info("TPM Manufacturer: %s", data.GetManufacturer())
 	if data.EKPub != "" {
@@ -496,6 +504,7 @@ func (quote *Quote) VerifyAndDisplayData(data *TpmData, pcrFilter []int, display
 	return eventLogStr, nil
 }
 
+// Equal compares two TpmData structures for equality, ignoring PCR8 and PCR9 which may change.
 func (data *TpmData) Equal(other *TpmData) bool {
 	if data.EKCert != other.EKCert || data.EKPub != other.EKPub || data.AKPub != other.AKPub ||
 		data.Quote != other.Quote || data.Signature != other.Signature || data.Nonce != other.Nonce ||
