@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
@@ -461,14 +462,16 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			return fmt.Errorf("failed to activate credential: %w", err)
 		}
 
+		hexSecret := hex.EncodeToString(secret)
+
 		if err := os.MkdirAll("/warewulf", 0755); err != nil {
 			wwlog.Warn("Failed to create /warewulf directory: %v", err)
-		} else if err := os.WriteFile("/warewulf/secret", secret, 0600); err != nil {
+		} else if err := os.WriteFile("/warewulf/secret", []byte(hexSecret), 0600); err != nil {
 			wwlog.Warn("Failed to save secret to /warewulf/secret: %v", err)
 		}
 
 		if getChallengeFlag {
-			wwlog.Info("Decrypted secret: %x\n", secret)
+			wwlog.Info("Decrypted secret: %s\n", hexSecret)
 			return nil
 		}
 	}

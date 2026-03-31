@@ -286,6 +286,7 @@ func (s *TPMLogStore) Save(upload tpm.TpmUpload) error {
 	if !quote.Current.HasQuote() {
 		quote.Current = upload.TpmData
 	} else if !quote.Current.Equal(&upload.TpmData) {
+		wwlog.Info("TPM quote changed for node %s: different PCRs: %v", upload.ID, quote.Current.Diff(&upload.TpmData))
 		quote.New = upload.TpmData
 	} else {
 		quote.Current = upload.TpmData
