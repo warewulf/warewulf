@@ -9,6 +9,7 @@ import (
 	"encoding/asn1"
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"maps"
@@ -71,8 +72,8 @@ type FileLog struct {
 	Checksum string `json:"checksum" yaml:"checksum"`
 }
 
-// Quote struct to hold EK certificate and attestation data
-type Quote struct {
+// TpmData struct to hold EK certificate and attestation data
+type TpmData struct {
 	EKCert    string            `json:"ek_cert" yaml:"ek_cert"`
 	EKPub     string            `json:"ek_pub" yaml:"ek_pub"`
 	AKPub     string            `json:"ak_pub" yaml:"ak_pub"`
@@ -84,6 +85,12 @@ type Quote struct {
 	CreateData        string `json:"create_data,omitempty" yaml:"create_data,omitempty"`
 	CreateAttestation string `json:"create_attestation,omitempty" yaml:"create_attestation,omitempty"`
 	CreateSignature   string `json:"create_signature,omitempty" yaml:"create_signature,omitempty"`
+}
+
+// Quote struct to hold EK certificate and attestation data
+type Quote struct {
+	Current TpmData `json:"current" yaml:"current"`
+	New     TpmData `json:"new,omitempty" yaml:"new,omitempty"`
 
 	EventLog  string     `json:"eventlog,omitempty" yaml:"eventlog,omitempty"`
 	Token     string     `json:"token,omitempty" yaml:"token,omitempty"`
@@ -91,6 +98,30 @@ type Quote struct {
 	Modified  time.Time  `json:"modified" yaml:"modified"`
 	SentLog   []FileLog  `json:"sentlogs,omitempty" yaml:"logs,omitempty"`
 	Challenge *Challenge `json:"challenge,omitempty" yaml:"challenge,omitempty"`
+}
+
+func (q *Quote) UnmarshalJSON(data []byte) error {
+	type Alias Quote
+	var aux Alias
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+	*q = Quote(aux)
+
+	if !q.Current.HasQuote() {
+		var dataFields TpmData
+		if err := json.Unmarshal(data, &dataFields); err == nil && dataFields.HasQuote() {
+			q.Current = dataFields
+		}
+	}
+	return nil
+}
+
+// TpmUpload is what the node sends
+type TpmUpload struct {
+	TpmData
+	EventLog string `json:"eventlog,omitempty"`
+	ID       string `json:"id"`
 }
 
 // Challenge struct to hold encrypted credentials and secrets for TPM challenges
@@ -124,13 +155,18 @@ var (
 )
 
 // HasQuote checks if the essential fields for a TPM quote are present.
-func (quote *Quote) HasQuote() bool {
-	return quote.Quote != "" && quote.Signature != "" && quote.AKPub != "" && quote.Nonce != ""
+func (data *TpmData) HasQuote() bool {
+	return data.Quote != "" && data.Signature != "" && data.AKPub != "" && data.Nonce != ""
 }
 
-func (quote *Quote) Verify() (bool, error) {
+// HasQuote checks if the essential fields for a TPM quote are present.
+func (quote *Quote) HasQuote() bool {
+	return quote.Current.HasQuote()
+}
+
+func (data *TpmData) Verify() (bool, error) {
 	// 1. Parse AK Public Key
-	akPubBytes, err := base64.StdEncoding.DecodeString(quote.AKPub)
+	akPubBytes, err := base64.StdEncoding.DecodeString(data.AKPub)
 	if err != nil {
 		return false, fmt.Errorf("%w: %v", ErrDecodeAKPub, err)
 	}
@@ -141,17 +177,17 @@ func (quote *Quote) Verify() (bool, error) {
 	}
 
 	// 2. Decode Quote
-	quoteBytes, err := base64.StdEncoding.DecodeString(quote.Quote)
+	quoteBytes, err := base64.StdEncoding.DecodeString(data.Quote)
 	if err != nil {
 		return false, fmt.Errorf("%w: %v", ErrDecodeQuote, err)
 	}
 
-	sigBytes, err := base64.StdEncoding.DecodeString(quote.Signature)
+	sigBytes, err := base64.StdEncoding.DecodeString(data.Signature)
 	if err != nil {
 		return false, fmt.Errorf("%w: %v", ErrDecodeSignature, err)
 	}
 
-	nonceBytes, err := base64.StdEncoding.DecodeString(quote.Nonce)
+	nonceBytes, err := base64.StdEncoding.DecodeString(data.Nonce)
 	if err != nil {
 		return false, fmt.Errorf("%w: %v", ErrDecodeNonce, err)
 	}
@@ -164,7 +200,7 @@ func (quote *Quote) Verify() (bool, error) {
 
 	// Reconstruct PCRs
 	var pcrs []attest.PCR
-	for idxStr, digestHex := range quote.PCRs {
+	for idxStr, digestHex := range data.PCRs {
 		idx, err := strconv.Atoi(idxStr)
 		if err != nil {
 			continue
@@ -196,7 +232,15 @@ func (quote *Quote) Verify() (bool, error) {
 	return true, nil
 }
 
+func (quote *Quote) Verify() (bool, error) {
+	return quote.Current.Verify()
+}
+
 func (quote *Quote) VerifyEventLog() (bool, error) {
+	return quote.VerifyEventLogData(&quote.Current)
+}
+
+func (quote *Quote) VerifyEventLogData(data *TpmData) (bool, error) {
 	if quote.EventLog == "" {
 		return false, ErrNoEventLog
 	}
@@ -213,7 +257,7 @@ func (quote *Quote) VerifyEventLog() (bool, error) {
 
 	// Reconstruct PCRs
 	var pcrs []attest.PCR
-	for idxStr, digestHex := range quote.PCRs {
+	for idxStr, digestHex := range data.PCRs {
 		idx, err := strconv.Atoi(idxStr)
 		if err != nil {
 			continue
@@ -241,6 +285,10 @@ func (quote *Quote) VerifyEventLog() (bool, error) {
 }
 
 func (quote *Quote) VerifyGrubBinary() error {
+	return quote.VerifyGrubBinaryData(&quote.Current)
+}
+
+func (quote *Quote) VerifyGrubBinaryData(data *TpmData) error {
 	sentReceived := []FileLog{}
 	if quote.EventLog != "" {
 		logBytes, err := base64.StdEncoding.DecodeString(quote.EventLog)
@@ -271,12 +319,12 @@ func (quote *Quote) VerifyGrubBinary() error {
 		sentReceived = quote.SentLog
 	}
 
-	if quote.PCRs == nil {
+	if data.PCRs == nil {
 		return fmt.Errorf("no PCRs in quote")
 	}
 
 	// We expect PCR9
-	pcr9Hex, ok := quote.PCRs["9"]
+	pcr9Hex, ok := data.PCRs["9"]
 	if !ok {
 		return fmt.Errorf("PCR9 not present in quote")
 	}
@@ -310,12 +358,12 @@ func (quote *Quote) VerifyGrubBinary() error {
 
 // GetManufacturer parses the EK certificate's Subject Alternative Name extension
 // to find the tcg-at-tpmManufacturer attribute and returns the mapped manufacturer name.
-func (quote *Quote) GetManufacturer() string {
-	if quote.EKCert == "" {
+func (data *TpmData) GetManufacturer() string {
+	if data.EKCert == "" {
 		return "Unknown"
 	}
 
-	certBytes, err := base64.StdEncoding.DecodeString(quote.EKCert)
+	certBytes, err := base64.StdEncoding.DecodeString(data.EKCert)
 	if err != nil {
 		return "Unknown"
 	}
@@ -383,16 +431,42 @@ func (quote *Quote) GetManufacturer() string {
 	return "Unknown"
 }
 
+// GetManufacturer parses the EK certificate's Subject Alternative Name extension
+// to find the tcg-at-tpmManufacturer attribute and returns the mapped manufacturer name.
+func (quote *Quote) GetManufacturer() string {
+	return quote.Current.GetManufacturer()
+}
+
 // VerifyAndDisplay validates the TPM quote and logs the result using wwlog.
 // If displayEvent is true, it returns the formatted event log.
 func (quote *Quote) VerifyAndDisplay(pcrFilter []int, displayEvent bool) (string, error) {
-	wwlog.Info("TPM Manufacturer: %s", quote.GetManufacturer())
+	return quote.VerifyAndDisplayData(&quote.Current, pcrFilter, displayEvent)
+}
 
-	if !quote.HasQuote() {
+func (quote *Quote) VerifyAndDisplayData(data *TpmData, pcrFilter []int, displayEvent bool) (string, error) {
+	wwlog.Info("TPM Manufacturer: %s", data.GetManufacturer())
+	if data.EKPub != "" {
+		if ekPubBytes, err := base64.StdEncoding.DecodeString(data.EKPub); err == nil {
+			hash := sha256.Sum256(ekPubBytes)
+			wwlog.Info("EKPub (SHA256): %x", hash)
+		} else {
+			wwlog.Warn("EKPub: invalid base64")
+		}
+	}
+	if data.AKPub != "" {
+		if akPubBytes, err := base64.StdEncoding.DecodeString(data.AKPub); err == nil {
+			hash := sha256.Sum256(akPubBytes)
+			wwlog.Info("AKPub (SHA256): %x", hash)
+		} else {
+			wwlog.Warn("AKPub: invalid base64")
+		}
+	}
+
+	if !data.HasQuote() {
 		return "", fmt.Errorf("TPM Quote not available")
 	}
 
-	if verified, err := quote.Verify(); !verified {
+	if verified, err := data.Verify(); !verified {
 		return "", fmt.Errorf("Quote Verification Failed: %v", err)
 	}
 
@@ -400,13 +474,13 @@ func (quote *Quote) VerifyAndDisplay(pcrFilter []int, displayEvent bool) (string
 
 	var eventLogStr string
 	if quote.EventLog != "" {
-		if verified, err := quote.VerifyEventLog(); !verified {
+		if verified, err := quote.VerifyEventLogData(data); !verified {
 			return "", fmt.Errorf("Event Log Verification Failed: %v", err)
 		} else {
 			wwlog.Info("Event Log Verification Successful")
 		}
 
-		if err := quote.VerifyGrubBinary(); err != nil {
+		if err := quote.VerifyGrubBinaryData(data); err != nil {
 			return "", fmt.Errorf("GRUB Binary Log Verification Failed: %v", err)
 		} else {
 			wwlog.Info("GRUB Binary Log Verification Successful")
@@ -420,6 +494,32 @@ func (quote *Quote) VerifyAndDisplay(pcrFilter []int, displayEvent bool) (string
 		}
 	}
 	return eventLogStr, nil
+}
+
+func (data *TpmData) Equal(other *TpmData) bool {
+	if data.EKCert != other.EKCert || data.EKPub != other.EKPub || data.AKPub != other.AKPub ||
+		data.Quote != other.Quote || data.Signature != other.Signature || data.Nonce != other.Nonce ||
+		data.CreateData != other.CreateData || data.CreateAttestation != other.CreateAttestation ||
+		data.CreateSignature != other.CreateSignature {
+		return false
+	}
+	for k, v := range data.PCRs {
+		if k == "8" || k == "9" {
+			continue
+		}
+		if v2, ok := other.PCRs[k]; !ok || v != v2 {
+			return false
+		}
+	}
+	for k, v := range other.PCRs {
+		if k == "8" || k == "9" {
+			continue
+		}
+		if v2, ok := data.PCRs[k]; !ok || v != v2 {
+			return false
+		}
+	}
+	return true
 }
 
 // DisplayEventLog decodes and parses the base64-encoded TPM event log,

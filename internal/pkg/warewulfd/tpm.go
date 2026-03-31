@@ -58,15 +58,14 @@ func TPMReceive(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var newQuote tpm.Quote
-	err = json.Unmarshal(body, &newQuote)
+	var upload tpm.TpmUpload
+	err = json.Unmarshal(body, &upload)
 	if err != nil {
 		wwlog.Error("Failed to unmarshal JSON quote: %s", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	newQuote.ID = wwidRecv
-	newQuote.Modified = time.Now()
+	upload.ID = wwidRecv
 
 	tpmStore, err := NewTPMLogStore(node.GetId())
 	if err != nil {
@@ -75,13 +74,13 @@ func TPMReceive(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if err := tpmStore.Save(newQuote); err != nil {
+	if err := tpmStore.Save(upload); err != nil {
 		wwlog.Error("Failed to write TPM quote: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	wwlog.Info("Stored TPM quote for node %s (Manufacturer: %s)", newQuote.ID, newQuote.GetManufacturer())
+	wwlog.Info("Stored TPM quote for node %s (Manufacturer: %s)", upload.ID, upload.TpmData.GetManufacturer())
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -154,14 +153,14 @@ func TPMChallengeSend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ekPubBytes, err := base64.StdEncoding.DecodeString(existingQuote.EKPub)
+	ekPubBytes, err := base64.StdEncoding.DecodeString(existingQuote.Current.EKPub)
 	if err != nil {
 		wwlog.Error("Failed to decode EKPub for node %s: %s", node.GetId(), err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	akPubBytes, err := base64.StdEncoding.DecodeString(existingQuote.AKPub)
+	akPubBytes, err := base64.StdEncoding.DecodeString(existingQuote.Current.AKPub)
 	if err != nil {
 		wwlog.Error("Failed to decode AKPub for node %s: %s", node.GetId(), err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -177,8 +176,8 @@ func TPMChallengeSend(w http.ResponseWriter, req *http.Request) {
 	var createData []byte
 	var createAttestation []byte
 	var createSignature []byte
-	if existingQuote.CreateData != "" {
-		createData, err = base64.StdEncoding.DecodeString(existingQuote.CreateData)
+	if existingQuote.Current.CreateData != "" {
+		createData, err = base64.StdEncoding.DecodeString(existingQuote.Current.CreateData)
 		if err != nil {
 			wwlog.Error("Failed to decode CreateData for node %s: %s", node.GetId(), err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -186,8 +185,8 @@ func TPMChallengeSend(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	if existingQuote.CreateAttestation != "" {
-		createAttestation, err = base64.StdEncoding.DecodeString(existingQuote.CreateAttestation)
+	if existingQuote.Current.CreateAttestation != "" {
+		createAttestation, err = base64.StdEncoding.DecodeString(existingQuote.Current.CreateAttestation)
 		if err != nil {
 			wwlog.Error("Failed to decode CreateAttestation for node %s: %s", node.GetId(), err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -195,8 +194,8 @@ func TPMChallengeSend(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	if existingQuote.CreateSignature != "" {
-		createSignature, err = base64.StdEncoding.DecodeString(existingQuote.CreateSignature)
+	if existingQuote.Current.CreateSignature != "" {
+		createSignature, err = base64.StdEncoding.DecodeString(existingQuote.Current.CreateSignature)
 		if err != nil {
 			wwlog.Error("Failed to decode CreateSignature for node %s: %s", node.GetId(), err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -276,19 +275,26 @@ func NewTPMLogStore(nodeId string) (*TPMLogStore, error) {
 	}, nil
 }
 
-func (s *TPMLogStore) Save(newQuote tpm.Quote) error {
+func (s *TPMLogStore) Save(upload tpm.TpmUpload) error {
 	data, err := os.ReadFile(s.path)
 	if err != nil {
 		return fmt.Errorf("couldn't access storage for quote: %s", err)
 	}
-	var existingQuote tpm.Quote
-	if err := json.Unmarshal(data, &existingQuote); err == nil {
-		newQuote.SentLog = existingQuote.SentLog
-		newQuote.Challenge = existingQuote.Challenge
-	}
-	newQuote.Modified = time.Now()
+	var quote tpm.Quote
+	_ = json.Unmarshal(data, &quote)
 
-	out, err := json.MarshalIndent(newQuote, "", "  ")
+	if !quote.Current.HasQuote() {
+		quote.Current = upload.TpmData
+	} else if !quote.Current.Equal(&upload.TpmData) {
+		quote.New = upload.TpmData
+	} else {
+		quote.Current = upload.TpmData
+	}
+	quote.EventLog = upload.EventLog
+	quote.ID = upload.ID
+	quote.Modified = time.Now()
+
+	out, err := json.MarshalIndent(quote, "", "  ")
 	if err != nil {
 		return err
 	}
