@@ -52,6 +52,7 @@ func FormatEventData(event attest.Event) string {
 	}
 }
 
+// isPrintable returns true if more than 90% of the data is printable ASCII.
 func isPrintable(data []byte) bool {
 	if len(data) == 0 {
 		return false
@@ -65,6 +66,7 @@ func isPrintable(data []byte) bool {
 	return float64(printable)/float64(len(data)) > 0.9
 }
 
+// cleanString removes non-printable characters from a string.
 func cleanString(s string) string {
 	return strings.TrimSpace(strings.Map(func(r rune) rune {
 		if unicode.IsPrint(r) {
@@ -81,6 +83,7 @@ type efiGUID struct {
 	Data4 [8]byte
 }
 
+// parseUEFIVariableName parses a UEFI variable name from a byte slice.
 func parseUEFIVariableName(data []byte) (string, error) {
 	r := bytes.NewReader(data)
 	var header struct {
@@ -101,6 +104,7 @@ func parseUEFIVariableName(data []byte) (string, error) {
 	return string(utf16.Decode(nameBuf)), nil
 }
 
+// parseEFIImageLoadPath parses an EFI image load path from a byte slice.
 func parseEFIImageLoadPath(data []byte) (string, error) {
 	r := bytes.NewReader(data)
 	var header struct {
