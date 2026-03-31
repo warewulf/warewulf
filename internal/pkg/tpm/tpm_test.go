@@ -36,8 +36,10 @@ func TestVerifyGrubBinary(t *testing.T) {
 			{Filename: "file1", Checksum: sum1Hex},
 			{Filename: "file2", Checksum: sum2Hex},
 		},
-		PCRs: map[string]string{
-			"9": pcrHex,
+		Current: TpmData{
+			PCRs: map[string]string{
+				"9": pcrHex,
+			},
 		},
 	}
 
@@ -46,7 +48,7 @@ func TestVerifyGrubBinary(t *testing.T) {
 	}
 
 	// Test failure
-	quote.PCRs["9"] = "0000000000000000000000000000000000000000000000000000000000000000"
+	quote.Current.PCRs["9"] = "0000000000000000000000000000000000000000000000000000000000000000"
 	if err := quote.VerifyGrubBinary(); err == nil {
 		t.Error("VerifyGrubBinary should have failed with wrong PCR")
 	}
