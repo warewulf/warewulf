@@ -43,6 +43,7 @@ Welcome to the Warewulf User Guide!
    Network <nodes/network>
    IPMI <nodes/ipmi>
    Disks <nodes/disks>
+   TPM <nodes/tpm>
 
 .. toctree::
    :maxdepth: 1
