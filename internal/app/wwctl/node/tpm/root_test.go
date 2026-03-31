@@ -12,7 +12,7 @@ func Test_GetCommand(t *testing.T) {
 	assert.Equal(t, "tpm COMMAND [OPTIONS]", cmd.Use)
 
 	subCommands := cmd.Commands()
-	assert.Len(t, subCommands, 3)
+	assert.Len(t, subCommands, 4)
 
 	found := make(map[string]bool)
 	for _, sub := range subCommands {
@@ -22,4 +22,5 @@ func Test_GetCommand(t *testing.T) {
 	assert.True(t, found["list"])
 	assert.True(t, found["verify"])
 	assert.True(t, found["check"])
+	assert.True(t, found["reset"])
 }
