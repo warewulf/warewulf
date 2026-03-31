@@ -38,15 +38,17 @@ func TestTPMLogStore(t *testing.T) {
 	var initialQuote tpm.Quote
 	err = json.Unmarshal(data, &initialQuote)
 	assert.NoError(t, err)
-	assert.Empty(t, initialQuote.EKCert)
+	assert.Empty(t, initialQuote.Current.EKCert)
 	assert.NotZero(t, initialQuote.Modified)
 
 	// Test Save (Quote)
-	newQuote := tpm.Quote{
-		ID:     nodeId,
-		EKCert: "dummy_cert",
+	newUpload := tpm.TpmUpload{
+		ID: nodeId,
+		TpmData: tpm.TpmData{
+			EKCert: "dummy_cert",
+		},
 	}
-	err = store.Save(newQuote)
+	err = store.Save(newUpload)
 	assert.NoError(t, err)
 
 	data, err = os.ReadFile(tpmPath)
@@ -54,7 +56,7 @@ func TestTPMLogStore(t *testing.T) {
 	var savedQuote tpm.Quote
 	err = json.Unmarshal(data, &savedQuote)
 	assert.NoError(t, err)
-	assert.Equal(t, "dummy_cert", savedQuote.EKCert)
+	assert.Equal(t, "dummy_cert", savedQuote.Current.EKCert)
 	assert.Equal(t, nodeId, savedQuote.ID)
 	assert.True(t, savedQuote.Modified.After(initialQuote.Modified) || savedQuote.Modified.Equal(initialQuote.Modified))
 
