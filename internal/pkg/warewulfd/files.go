@@ -136,8 +136,9 @@ func authenticateNode(w http.ResponseWriter, req *http.Request) (node.Node, bool
 // Every request must identify a node via ?wwid= or ARP fallback.
 // If the node has an asset key, ?assetkey= must match.
 // When secure mode is enabled, requests must come from a privileged port.
-// If ?render is present and the file ends with .ww, the file is rendered as a
-// Go template for the identified node.
+// If ?render is present, the file is rendered as a Go template for the
+// identified node. If the path does not end in .ww but a .ww-suffixed version
+// exists, that file is used.
 func HandleFiles(w http.ResponseWriter, req *http.Request) {
 	conf := warewulfconf.Get()
 	filesDir := conf.Paths.WWFilesdir
@@ -158,11 +159,18 @@ func HandleFiles(w http.ResponseWriter, req *http.Request) {
 		}
 
 		if !strings.HasSuffix(filePath, ".ww") {
-			http.Error(w, "render requires a .ww template file", http.StatusBadRequest)
-			return
-		}
-
-		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+			wwFilePath := filePath + ".ww"
+			if _, err := os.Stat(wwFilePath); err == nil {
+				wwlog.Debug("files: using .ww suffix for %s", filePath)
+				filePath = wwFilePath
+			} else if _, err := os.Stat(filePath); err == nil {
+				http.Error(w, "render requires a .ww template file", http.StatusBadRequest)
+				return
+			} else {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
+		} else if _, err := os.Stat(filePath); os.IsNotExist(err) {
 			http.Error(w, "not found", http.StatusNotFound)
 			return
 		}

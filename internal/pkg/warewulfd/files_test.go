@@ -223,6 +223,26 @@ func Test_HandleFiles_Render(t *testing.T) {
 		assert.Equal(t, "hostname="+testNodeName, string(data))
 	})
 
+	t.Run("render without .ww suffix uses .ww fallback", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/files/template?render&wwid="+testHwaddr, nil)
+		w := httptest.NewRecorder()
+		HandleFiles(w, req)
+		res := w.Result()
+		defer func() { _ = res.Body.Close() }()
+
+		assert.Equal(t, http.StatusOK, res.StatusCode)
+		data, err := io.ReadAll(res.Body)
+		assert.NoError(t, err)
+		assert.Equal(t, "node="+testNodeName, string(data))
+	})
+
+	t.Run("render without .ww suffix, neither file exists returns 404", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/files/missing?render&wwid="+testHwaddr, nil)
+		w := httptest.NewRecorder()
+		HandleFiles(w, req)
+		assert.Equal(t, http.StatusNotFound, w.Result().StatusCode)
+	})
+
 	t.Run("path traversal with render returns 404", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/files/../secret.ww?render&wwid="+testHwaddr, nil)
 		w := httptest.NewRecorder()
