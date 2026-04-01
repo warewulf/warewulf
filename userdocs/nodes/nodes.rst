@@ -113,13 +113,47 @@ To include an explicit comma in the value, enclose the value in inner-quotes.
 Un-setting Node Fields
 ----------------------
 
-To un-set a field value, set the value to ``UNDEF`` or ``UNSET`` (both are
-accepted).
+Node fields can be cleared using the ``wwctl node unset`` command. Each field is
+specified as a boolean flag; the field is cleared when the flag is present.
 
 .. code-block:: shell
 
-   wwctl node set n1 \
-     --image=UNDEF
+   wwctl node unset n1 --image
+   wwctl node unset n1 --kernelargs
+
+To unset fields on a specific network interface, disk, partition, or filesystem,
+use the scoping flags ``--netname``, ``--diskname``, ``--partname``, and
+``--fsname``.
+
+.. code-block:: shell
+
+   wwctl node unset n1 --netname=secondary --ipaddr
+
+Entire sub-objects can be removed by name using ``--net``, ``--disk``,
+``--part``, and ``--fs``.
+
+.. code-block:: shell
+
+   wwctl node unset n1 --net=secondary
+
+Tags can be selectively removed with ``--tag``, ``--nettag``, and
+``--ipmitag``.
+
+.. code-block:: shell
+
+   wwctl node unset n1 --tag=localtime
+   wwctl node unset n1 --nettag=DNS1
+
+A full list of available flags is shown by ``wwctl node unset --help``.
+
+.. note::
+
+   You can also un-set a field by setting its value to ``UNDEF`` or ``UNSET``
+   with ``wwctl node set``.
+
+   .. code-block:: shell
+
+      wwctl node set n1 --image=UNDEF
 
 Configuring an Image
 ====================
