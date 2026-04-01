@@ -146,6 +146,10 @@ func HandleOverlayFile(w http.ResponseWriter, req *http.Request) {
 
 	_, render := req.URL.Query()["render"]
 	if render {
+		if renderName := req.URL.Query().Get("render"); renderName != "" && renderName != remoteNode.Id() {
+			http.Error(w, fmt.Sprintf("render node %q does not match identified node %q", renderName, remoteNode.Id()), http.StatusBadRequest)
+			return
+		}
 		if !strings.HasSuffix(overlayFile, ".ww") {
 			http.Error(w, "render requires a .ww template file", http.StatusBadRequest)
 			return
