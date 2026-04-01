@@ -21,7 +21,7 @@ of colons and are normalized automatically.
 URL Patterns
 ============
 
-Every provisioning route (except ``/overlay-file/`` and ``/status``) supports
+Every provisioning route (except ``/status``) supports
 six equivalent URL patterns for specifying the node identity:
 
 .. code-block:: none
@@ -138,32 +138,6 @@ arrive over HTTPS. Plain-HTTP requests are rejected with ``403 Forbidden``. The
 HTTPS listener port is configured with ``warewulf:tls port``.
 
 **Query parameters:** ``assetkey``, ``uuid``, ``compress``
-
-``/overlay-file/{overlay}/{path}``
-----------------------------------
-
-Provides direct access to an individual file within a named overlay. This
-route uses a different URL structure than the other provisioning routes: the
-overlay name is in the second path segment, and the file path within the overlay
-follows.
-
-If the ``render`` parameter is provided, the file is rendered as a Go template
-for the specified node and the rendered content is returned. If ``render`` is
-absent, the raw file bytes are returned without any template processing.
-
-If the requested path does not end in ``.ww`` but a ``.ww``-suffixed version of
-the file exists, and a ``render`` node is specified, the server automatically
-serves the ``.ww`` template.
-
-**Query parameters:**
-
-* ``render``: Node ID to render the template for. If not specified, the raw
-  file is returned.
-
-.. note::
-
-   This route does not require authentication via ``assetkey`` and does not
-   perform node lookup by hardware address.
 
 ``/efiboot/{file}``
 -------------------
