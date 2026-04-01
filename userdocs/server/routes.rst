@@ -154,16 +154,22 @@ and correct.
 
 Without the ``?render`` parameter, the raw file bytes are returned. With
 ``?render``, the file is rendered as a Go template for the identified node.
-Rendering is only supported for files ending in ``.ww``; using ``?render`` on
-a non-``.ww`` file returns ``400 Bad Request``.
+The path must refer to a ``.ww`` template file. If the path does not end in
+``.ww`` but a ``.ww``-suffixed version of the file exists, that file is used
+automatically. Using ``?render`` on a path where no ``.ww`` file can be found
+returns ``400 Bad Request`` if the exact file exists, or ``404 Not Found`` if
+neither form exists.
 
 .. code-block:: console
 
    # Fetch a raw file from an overlay:
    $ curl 'http://<server>:9873/overlay-file/generic/etc/hosts?wwid=00:00:00:00:00:01'
 
-   # Fetch a rendered template:
+   # Fetch a rendered template (explicit .ww suffix):
    $ curl 'http://<server>:9873/overlay-file/generic/etc/hosts.ww?render&wwid=00:00:00:00:00:01'
+
+   # Fetch a rendered template (implicit .ww suffix):
+   $ curl 'http://<server>:9873/overlay-file/generic/etc/hosts?render&wwid=00:00:00:00:00:01'
 
 **Query parameters:** ``wwid``, ``assetkey``, ``render``
 
@@ -316,12 +322,14 @@ match; a missing key returns ``401 Unauthorized`` and an incorrect key returns
 Directory listing is disabled; requests for a directory path return
 ``404 Not Found``.
 
-**Template rendering:** Files with a ``.ww`` extension can be rendered as Go
-templates by adding the ``?render`` query parameter. The template is rendered
-in the context of the identified node, with the same template functions and
-data available as in overlay templates. Without ``?render``, ``.ww`` files are
-returned as raw template source. Using ``?render`` on a non-``.ww`` file returns
-``400 Bad Request``.
+**Template rendering:** Adding the ``?render`` query parameter renders the file
+as a Go template for the identified node, with the same template functions and
+data available as in overlay templates. Without ``?render``, files are returned
+as raw bytes. The path must refer to a ``.ww`` template file. If the path does
+not end in ``.ww`` but a ``.ww``-suffixed version exists, that file is used
+automatically. Using ``?render`` on a path where no ``.ww`` file can be found
+returns ``400 Bad Request`` if the exact file exists, or ``404 Not Found`` if
+neither form exists.
 
 .. code-block:: console
 
@@ -331,8 +339,11 @@ returned as raw template source. Using ``?render`` on a non-``.ww`` file returns
    # Fetch the raw template:
    $ curl http://<server>:9873/files/info.ww?wwid=00:00:00:00:00:01
 
-   # Fetch the rendered template:
+   # Fetch the rendered template (explicit .ww suffix):
    $ curl 'http://<server>:9873/files/info.ww?render&wwid=00:00:00:00:00:01'
+
+   # Fetch the rendered template (implicit .ww suffix):
+   $ curl 'http://<server>:9873/files/info?render&wwid=00:00:00:00:00:01'
 
 **Query parameters:** ``wwid``, ``assetkey``, ``render``
 
