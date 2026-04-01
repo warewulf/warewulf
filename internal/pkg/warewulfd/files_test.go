@@ -183,6 +183,26 @@ func Test_HandleFiles_Render(t *testing.T) {
 		assert.Equal(t, "node="+testNodeName, string(data))
 	})
 
+	t.Run("render=nodename matching identified node succeeds", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/files/template.ww?render="+testNodeName+"&wwid="+testHwaddr, nil)
+		w := httptest.NewRecorder()
+		HandleFiles(w, req)
+		res := w.Result()
+		defer func() { _ = res.Body.Close() }()
+
+		assert.Equal(t, http.StatusOK, res.StatusCode)
+		data, err := io.ReadAll(res.Body)
+		assert.NoError(t, err)
+		assert.Equal(t, "node="+testNodeName, string(data))
+	})
+
+	t.Run("render=nodename mismatching identified node returns 400", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/files/template.ww?render=wrongnode&wwid="+testHwaddr, nil)
+		w := httptest.NewRecorder()
+		HandleFiles(w, req)
+		assert.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
+	})
+
 	t.Run("render non-.ww file returns 400", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/files/plain.txt?render&wwid="+testHwaddr, nil)
 		w := httptest.NewRecorder()
