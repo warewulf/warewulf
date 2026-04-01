@@ -109,6 +109,11 @@ func HandleOverlayFile(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	remoteNode, ok := authenticateNode(w, req)
+	if !ok {
+		return
+	}
+
 	myOverlay, err := overlay.Get(overlayName)
 	if err != nil {
 		wwlog.Error("overlay-file: overlay not found: %s", overlayName)
@@ -137,11 +142,6 @@ func HandleOverlayFile(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, "not found", http.StatusNotFound)
 			return
 		}
-	}
-
-	remoteNode, ok := authenticateNode(w, req)
-	if !ok {
-		return
 	}
 
 	_, render := req.URL.Query()["render"]
