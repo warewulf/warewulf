@@ -12,6 +12,7 @@ import (
 	"github.com/warewulf/warewulf/internal/app/wwctl/node/sensors"
 	"github.com/warewulf/warewulf/internal/app/wwctl/node/set"
 	nodestatus "github.com/warewulf/warewulf/internal/app/wwctl/node/status"
+	"github.com/warewulf/warewulf/internal/app/wwctl/node/tpm"
 )
 
 var (
@@ -38,6 +39,7 @@ func init() {
 	baseCmd.AddCommand(edit.GetCommand())
 	baseCmd.AddCommand(imprt.GetCommand())
 	baseCmd.AddCommand(export.GetCommand())
+	baseCmd.AddCommand(tpm.GetCommand())
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

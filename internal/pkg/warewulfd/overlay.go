@@ -116,6 +116,17 @@ func HandleRuntimeOverlay(w http.ResponseWriter, req *http.Request) {
 		sendResponse(w, req, "", nil, ctx)
 		return
 	}
+	if ctx.remoteNode.TpmEnabled() && (ctx.tpm.GetSecret() == "" || ctx.tpm.GetSecret() != ctx.rinfo.tpmsecret) {
+		w.WriteHeader(http.StatusUnauthorized)
+		wwlog.Denied("incorrect tpm secret for node %s:", ctx.remoteNode.Id())
+		updateStatus(&NodeStatus{
+			NodeName: ctx.remoteNode.Id(),
+			Stage:    ctx.rinfo.stage,
+			Sent:     "BAD_SECRET",
+			Ipaddr:   ctx.rinfo.ipaddr,
+		})
+		return
+	}
 
 	stageFile, err := getOverlayFile(
 		ctx.remoteNode,

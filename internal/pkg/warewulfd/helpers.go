@@ -2,9 +2,11 @@ package warewulfd
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"fmt"
 	"net/http"
 	"net/netip"
+	"os"
 	"path"
 	"path/filepath"
 	"strconv"
@@ -59,6 +61,7 @@ func buildTemplateVars(conf *warewulfconf.WarewulfYaml, rinfo parsedRequest, rem
 		Ipaddr6:       ipaddr6,
 		Port:          strconv.Itoa(conf.Warewulf.Port),
 		TLS:           conf.Warewulf.TLSEnabled(),
+		Tpm:           remoteNode.TpmEnabled(),
 		Authority:     authority,
 		Hostname:      remoteNode.Id(),
 		Hwaddr:        rinfo.hwaddr,
@@ -110,6 +113,8 @@ func sendResponse(w http.ResponseWriter, req *http.Request, stageFile string, tm
 
 			w.Header().Set("Content-Type", "text")
 			w.Header().Set("Content-Length", strconv.Itoa(buf.Len()))
+			ctx.tpm.Update(stageFile, fmt.Sprintf("%x", sha256.Sum256(buf.Bytes())))
+
 			_, err = buf.WriteTo(w)
 			if err != nil {
 				wwlog.ErrorExc(err, "")
@@ -132,24 +137,54 @@ func sendResponse(w http.ResponseWriter, req *http.Request, stageFile string, tm
 					ctx.rinfo.compress, stageFile)
 				w.WriteHeader(http.StatusNotFound)
 			}
+			// Read file content for checksum
+			fileBytes, err := os.ReadFile(stageFile)
+			if err != nil {
+				wwlog.ErrorExc(err, "")
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			ctx.tpm.Update(stageFile, fmt.Sprintf("%x", sha256.Sum256(fileBytes)))
 
-			err := sendFile(w, req, stageFile, ctx.remoteNode.Id())
+			err = sendFile(w, req, stageFile, ctx.remoteNode.Id())
 			if err != nil {
 				wwlog.ErrorExc(err, "")
 				return
 			}
 		}
 
-		updateStatus(ctx.remoteNode.Id(), ctx.rinfo.stage, path.Base(stageFile), ctx.rinfo.ipaddr)
+		status := NodeStatus{
+			NodeName: ctx.remoteNode.Id(),
+			Stage:    ctx.rinfo.stage,
+			Sent:     path.Base(stageFile),
+			Ipaddr:   ctx.rinfo.ipaddr,
+		}
+		if ctx.rinfo.assetkey != "" {
+			status.Security = "ASSET"
+		}
+		if ctx.rinfo.tpmsecret != "" {
+			status.Security = "TPM"
+		}
+		updateStatus(&status)
 
 	} else if stageFile == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		wwlog.Error("No resource selected")
-		updateStatus(ctx.remoteNode.Id(), ctx.rinfo.stage, "BAD_REQUEST", ctx.rinfo.ipaddr)
+		updateStatus(&NodeStatus{
+			NodeName: ctx.remoteNode.Id(),
+			Stage:    ctx.rinfo.stage,
+			Sent:     "BAD_REQUEST",
+			Ipaddr:   ctx.rinfo.ipaddr,
+		})
 
 	} else {
 		w.WriteHeader(http.StatusNotFound)
 		wwlog.Error("Not found: %s", stageFile)
-		updateStatus(ctx.remoteNode.Id(), ctx.rinfo.stage, "NOT_FOUND", ctx.rinfo.ipaddr)
+		updateStatus(&NodeStatus{
+			NodeName: ctx.remoteNode.Id(),
+			Stage:    ctx.rinfo.stage,
+			Sent:     "NOT_FOUND",
+			Ipaddr:   ctx.rinfo.ipaddr,
+		})
 	}
 }
