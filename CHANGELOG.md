@@ -70,6 +70,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 - Removed gRPC API libraries and protobuf types
+- Removed `?overlay=` query parameter from `/system/`, `/runtime/`, and `/provision/` warewulfd routes
+- Removed `--overlay` (`-O`) and `--output` (`-o`) flags from `wwctl overlay build`
+- Removed `/overlay-file/` route from warewulfd
 
 ### Changed
 

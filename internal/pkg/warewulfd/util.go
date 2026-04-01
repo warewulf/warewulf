@@ -44,47 +44,32 @@ func sendFile(
 	return nil
 }
 
-func getOverlayFile(n node.Node, context string, stage_overlays []string, autobuild bool) (stage_file string, err error) {
-	for _, name := range stage_overlays {
-		if err := overlay.ValidateName(name); err != nil {
-			return "", err
-		}
-	}
-	stage_file = overlay.Image(n.Id(), context, stage_overlays)
+func getOverlayFile(n node.Node, context string, autobuild bool) (stage_file string, err error) {
+	stage_file = overlay.Image(n.Id(), context, nil)
 	build := !util.IsFile(stage_file)
 	wwlog.Verbose("stage file: %s", stage_file)
 	if !build && autobuild {
 		build = util.PathIsNewer(stage_file, config.Get().Paths.NodesConf())
-
-		for _, overlayname := range stage_overlays {
-			if myOverlay, err := overlay.Get(overlayname); err == nil {
-				build = build || util.PathIsNewer(stage_file, myOverlay.Rootfs())
-			}
-		}
 	}
 
 	if build {
 		registry, err := node.New()
 		if err != nil {
-			wwlog.Error("Failed to build overlay: %s, %s, %s\n%s",
-				n.Id(), stage_overlays, stage_file, err)
+			wwlog.Error("Failed to build overlay: %s, %s\n%s",
+				n.Id(), stage_file, err)
 			return "", err
 		}
 		var allNodes []node.Node
 		allNodes, err = registry.FindAllNodes()
 		if err != nil {
-			wwlog.Error("Failed to build overlay: %s, %s, %s\n%s",
-				n.Id(), stage_overlays, stage_file, err)
+			wwlog.Error("Failed to build overlay: %s, %s\n%s",
+				n.Id(), stage_file, err)
 			return "", err
 		}
-		if len(stage_overlays) > 0 {
-			err = overlay.BuildSpecificOverlays([]node.Node{n}, allNodes, stage_overlays, 1)
-		} else {
-			err = overlay.BuildAllOverlays([]node.Node{n}, allNodes, 1)
-		}
+		err = overlay.BuildAllOverlays([]node.Node{n}, allNodes, 1)
 		if err != nil {
-			wwlog.Error("Failed to build overlay: %s, %s, %s\n%s",
-				n.Id(), stage_overlays, stage_file, err)
+			wwlog.Error("Failed to build overlay: %s, %s\n%s",
+				n.Id(), stage_file, err)
 		}
 	}
 
