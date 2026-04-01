@@ -280,6 +280,65 @@ HTTPS-only requests by setting ``api: tls: true`` in ``warewulf.conf``.
 
 See :ref:`rest-api` for full details.
 
+Files Route
+===========
+
+``/files/{path}``
+-----------------
+
+Serves static files from the warewulf files directory (``wwfilesdir`` in
+``warewulf.conf``, defaulting to ``/var/lib/warewulf/files``). Subdirectories
+are supported.
+
+Every request must identify a node, either via the ``?wwid=`` query parameter
+(a hardware address) or by ARP cache lookup of the requesting IP. If no node
+can be identified, the server returns ``401 Unauthorized``.
+
+When ``secure`` is enabled in ``warewulf.conf``, requests must originate from a
+privileged port (< 1024); otherwise ``403 Forbidden`` is returned. If the node
+has an ``AssetKey`` configured, the ``?assetkey=`` parameter must be present and
+match; a missing key returns ``401 Unauthorized`` and an incorrect key returns
+``403 Forbidden``.
+
+.. code-block:: console
+
+   # Place files in the warewulf files directory:
+   $ cp myfile.txt /var/lib/warewulf/files/
+   $ mkdir -p /var/lib/warewulf/files/scripts
+   $ cp setup.sh /var/lib/warewulf/files/scripts/
+
+   # Fetch from a compute node:
+   $ curl http://<server>:9873/files/myfile.txt?wwid=00:00:00:00:00:01
+   $ curl http://<server>:9873/files/scripts/setup.sh?wwid=00:00:00:00:00:01
+
+Directory listing is disabled; requests for a directory path return
+``404 Not Found``.
+
+**Template rendering:** Adding the ``?render`` query parameter renders the file
+as a Go template for the identified node, with the same template functions and
+data available as in overlay templates. Without ``?render``, files are returned
+as raw bytes. The path must refer to a ``.ww`` template file. If the path does
+not end in ``.ww`` but a ``.ww``-suffixed version exists, that file is used
+automatically. Using ``?render`` on a path where no ``.ww`` file can be found
+returns ``400 Bad Request`` if the exact file exists, or ``404 Not Found`` if
+neither form exists.
+
+.. code-block:: console
+
+   # Place a template in the files directory:
+   $ echo 'hostname={{ .Hostname }}' > /var/lib/warewulf/files/info.ww
+
+   # Fetch the raw template:
+   $ curl http://<server>:9873/files/info.ww?wwid=00:00:00:00:00:01
+
+   # Fetch the rendered template (explicit .ww suffix):
+   $ curl 'http://<server>:9873/files/info.ww?render&wwid=00:00:00:00:00:01'
+
+   # Fetch the rendered template (implicit .ww suffix):
+   $ curl 'http://<server>:9873/files/info?render&wwid=00:00:00:00:00:01'
+
+**Query parameters:** ``wwid``, ``assetkey``, ``render``
+
 .. _server-routes-security:
 
 Security

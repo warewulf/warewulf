@@ -49,6 +49,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- New `/files/` server route to serve static files from the warewulf files directory (`wwfilesdir`, default `LOCALSTATEDIR/warewulf/files`)
 - Document reclaiming RAM by moving the image to swap
 - New `--partwipe` flag for profile and node set
 - Updated arguments for `ValidString` to match `regexp.MatchString`
