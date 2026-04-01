@@ -1,7 +1,6 @@
 package overlay
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
 	"io/fs"
@@ -947,13 +946,11 @@ func BuildOverlay(nodeConf node.Node, allNodes []node.Node, context string, over
 }
 
 var (
-	regFile *regexp.Regexp
-	regLink *regexp.Regexp
+	regMarker *regexp.Regexp
 )
 
 func init() {
-	regFile = regexp.MustCompile(`.*{{\s*/\*\s*file\s*["'](.*)["']\s*\*/\s*}}.*`)
-	regLink = regexp.MustCompile(`.*{{\s*/\*\s*softlink\s*["'](.*)["']\s*\*/\s*}}.*`)
+	regMarker = regexp.MustCompile(`{{\s*/\*\s*(file|softlink)\s*["']([^"']+)["']\s*\*/\s*}}[ \t\r]*\n?`)
 }
 
 // Build the given overlays for a node in the given directory.
@@ -1021,17 +1018,22 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 					return nil
 				}
 				var fileBuffer bytes.Buffer
-				// search for magic file name comment
-				fileScanner := bufio.NewScanner(bytes.NewReader(buffer.Bytes()))
-				fileScanner.Split(ScanLines)
+				content := buffer.Bytes()
+				matches := regMarker.FindAllSubmatchIndex(content, -1)
 				writingToNamedFile := false
 				isLink := false
-				for fileScanner.Scan() {
-					line := fileScanner.Text()
-					filenameFromTemplate := regFile.FindAllStringSubmatch(line, -1)
-					targetFromTemplate := regLink.FindAllStringSubmatch(line, -1)
-					if len(targetFromTemplate) != 0 {
-						target := targetFromTemplate[0][1]
+				lastIdx := 0
+
+				for _, match := range matches {
+					if match[0] > lastIdx {
+						fileBuffer.Write(content[lastIdx:match[0]])
+					}
+
+					markerType := string(content[match[2]:match[3]])
+					markerValue := string(content[match[4]:match[5]])
+
+					if markerType == "softlink" {
+						target := markerValue
 						wwlog.Debug("Creating soft link %s -> %s", outputPath, target)
 						err := os.Symlink(target, outputPath)
 						if err != nil {
@@ -1039,8 +1041,8 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 						} else {
 							isLink = true
 						}
-					} else if len(filenameFromTemplate) != 0 {
-						wwlog.Debug("Writing file %s", filenameFromTemplate[0][1])
+					} else if markerType == "file" {
+						wwlog.Debug("Writing file %s", markerValue)
 						if writingToNamedFile && !isLink {
 							err = CarefulWriteBuffer(outputPath, fileBuffer, *backupFile, info.Mode())
 							if err != nil {
@@ -1052,8 +1054,8 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 							}
 							fileBuffer.Reset()
 						}
-						if path.IsAbs(filenameFromTemplate[0][1]) {
-							outputPath = filenameFromTemplate[0][1]
+						if path.IsAbs(markerValue) {
+							outputPath = markerValue
 							// Create parent directory for absolute paths
 							parentDir := path.Dir(outputPath)
 							sourceDirInfo, err := os.Stat(path.Dir(walkPath))
@@ -1064,16 +1066,18 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 								return fmt.Errorf("could not create parent directory for absolute path: %w", err)
 							}
 						} else {
-							outputPath = path.Join(path.Dir(originalOutputPath), filenameFromTemplate[0][1])
+							outputPath = path.Join(path.Dir(originalOutputPath), markerValue)
 						}
 						writingToNamedFile = true
 						isLink = false
-					} else {
-						if _, err = fileBuffer.WriteString(line); err != nil {
-							return fmt.Errorf("could not write to template buffer: %w", err)
-						}
 					}
+					lastIdx = match[1]
 				}
+
+				if lastIdx < len(content) {
+					fileBuffer.Write(content[lastIdx:])
+				}
+
 				if !isLink {
 					err = CarefulWriteBuffer(outputPath, fileBuffer, *backupFile, info.Mode())
 					if err != nil {
