@@ -17,49 +17,8 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-// HandleOverlayList handles requests for an explicit comma-separated list of
-// named overlays via the ?overlay= query parameter.
-func HandleOverlayList(w http.ResponseWriter, req *http.Request) {
-	ctx, err := initHandleRequest(w, req)
-	if err != nil {
-		return // response already written
-	}
-
-	if !ctx.remoteNode.Valid() {
-		wwlog.Error("%s (unknown/unconfigured node)", ctx.rinfo.hwaddr)
-		sendResponse(w, req, "", nil, ctx)
-		return
-	}
-
-	request_overlays := strings.Split(ctx.rinfo.overlay, ",")
-	stageFile, err := getOverlayFile(
-		ctx.remoteNode,
-		"",
-		request_overlays,
-		ctx.conf.Warewulf.AutobuildOverlays())
-
-	if err != nil {
-		if errors.Is(err, overlay.ErrDoesNotExist) {
-			w.WriteHeader(http.StatusNotFound)
-			wwlog.ErrorExc(err, "")
-			return
-		}
-		w.WriteHeader(http.StatusInternalServerError)
-		wwlog.ErrorExc(err, "")
-		return
-	}
-
-	sendResponse(w, req, stageFile, nil, ctx)
-}
-
 // HandleSystemOverlay handles system overlay requests.
-// If an explicit ?overlay= list is present, delegates to HandleOverlayList.
 func HandleSystemOverlay(w http.ResponseWriter, req *http.Request) {
-	if len(req.URL.Query()["overlay"]) > 0 {
-		HandleOverlayList(w, req)
-		return
-	}
-
 	ctx, err := initHandleRequest(w, req)
 	if err != nil {
 		return // response already written
@@ -74,7 +33,6 @@ func HandleSystemOverlay(w http.ResponseWriter, req *http.Request) {
 	stageFile, err := getOverlayFile(
 		ctx.remoteNode,
 		"system",
-		nil,
 		ctx.conf.Warewulf.AutobuildOverlays())
 
 	if err != nil {
@@ -93,16 +51,10 @@ func HandleSystemOverlay(w http.ResponseWriter, req *http.Request) {
 
 // HandleRuntimeOverlay handles runtime overlay requests.
 // If TLS is enabled, returns 403 Forbidden for plain-HTTP requests.
-// If an explicit ?overlay= list is present, delegates to HandleOverlayList.
 func HandleRuntimeOverlay(w http.ResponseWriter, req *http.Request) {
 	if config.Get().Warewulf.TLSEnabled() && req.TLS == nil {
 		wwlog.Denied("runtime overlay requested over insecure connection")
 		w.WriteHeader(http.StatusForbidden)
-		return
-	}
-
-	if len(req.URL.Query()["overlay"]) > 0 {
-		HandleOverlayList(w, req)
 		return
 	}
 
@@ -120,7 +72,6 @@ func HandleRuntimeOverlay(w http.ResponseWriter, req *http.Request) {
 	stageFile, err := getOverlayFile(
 		ctx.remoteNode,
 		"runtime",
-		nil,
 		ctx.conf.Warewulf.AutobuildOverlays())
 
 	if err != nil {

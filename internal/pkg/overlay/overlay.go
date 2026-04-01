@@ -795,42 +795,6 @@ func BuildAllOverlays(nodes []node.Node, allNodes []node.Node, workerCount int) 
 	return nil
 }
 
-func BuildSpecificOverlays(nodes []node.Node, allNodes []node.Node, overlayNames []string, workerCount int) error {
-	nodeChan := make(chan node.Node, len(nodes))
-	errChan := make(chan error, len(nodes))
-
-	var wg sync.WaitGroup
-	worker := func() {
-		for n := range nodeChan {
-			wwlog.Info("Building overlay for %s: %v", n.Id(), overlayNames)
-			for _, overlayName := range overlayNames {
-				err := BuildOverlay(n, allNodes, "", []string{overlayName})
-				if err != nil {
-					errChan <- fmt.Errorf("could not build overlay %s for node %s: %w", overlayName, n.Id(), err)
-				}
-			}
-		}
-		wg.Done()
-	}
-
-	for i := 0; i < workerCount; i++ {
-		wg.Add(1)
-		go worker()
-	}
-	for _, n := range nodes {
-		nodeChan <- n
-	}
-	close(nodeChan)
-
-	wg.Wait()
-	close(errChan)
-
-	for err := range errChan {
-		return err
-	}
-	return nil
-}
-
 /*
 Build overlay for the host, so no argument needs to be given
 */

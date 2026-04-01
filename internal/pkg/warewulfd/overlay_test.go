@@ -120,8 +120,6 @@ var systemOverlayTests = []struct {
 	ip          string
 }{
 	{"system overlay", "/system/00:00:00:ff:ff:ff", "system overlay", 200, "10.10.10.10:9873"},
-	{"fake overlay returns 404", "/system/00:00:00:ff:ff:ff?overlay=fake", "", 404, "10.10.10.10:9873"},
-	{"specific overlay", "/system/00:00:00:ff:ff:ff?overlay=o1", "specific overlay", 200, "10.10.10.10:9873"},
 }
 
 var runtimeOverlayTests = []struct {
@@ -159,7 +157,6 @@ nodes:
 	assert.NoError(t, os.MkdirAll(path.Join(conf.Paths.OverlayProvisiondir(), "n1"), 0700))
 	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.OverlayProvisiondir(), "n1", "__SYSTEM__.img"), []byte("system overlay"), 0600))
 	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.OverlayProvisiondir(), "n1", "__RUNTIME__.img"), []byte("runtime overlay"), 0600))
-	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.OverlayProvisiondir(), "n1", "o1.img"), []byte("specific overlay"), 0600))
 
 	for _, tt := range systemOverlayTests {
 		t.Run(tt.description, func(t *testing.T) {
