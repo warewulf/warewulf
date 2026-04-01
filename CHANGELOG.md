@@ -114,10 +114,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - New chrony template
 - Moved "multiple networks" documentation from getting-started to a new server
   networking section. #2164
+- Updated `/overlay-file/` to require ?wwid= for all requests, replacing
+  ?render= with ?render, and to support assetkey checking
 
 ### Removed
 
-- `/overlay-file/` server route
 - `?overlay=` query parameter from `/system/` and `/runtime/` routes
 - `--overlay` (`-O`) and `--output` (`-o`) flags from `wwctl overlay build`
 - `BuildSpecificOverlays` internal function

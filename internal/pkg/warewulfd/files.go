@@ -65,23 +65,20 @@ func resolveFilesPath(filesDir string, reqPath string) string {
 	return cleanPath
 }
 
-// HandleFiles serves static files from the configured warewulf files directory.
-// Every request must identify a node via ?wwid= or ARP fallback.
-// If the node has an asset key, ?assetkey= must match.
+// authenticateNode identifies and authenticates a node for the request.
+// The node is identified via ?wwid= query parameter or ARP cache fallback.
 // When secure mode is enabled, requests must come from a privileged port.
-// If ?render is present and the file ends with .ww, the file is rendered as a
-// Go template for the identified node.
-func HandleFiles(w http.ResponseWriter, req *http.Request) {
+// If the node has an asset key, ?assetkey= must match.
+// On success, returns the authenticated node and true.
+// On failure, writes the HTTP error response and returns false.
+func authenticateNode(w http.ResponseWriter, req *http.Request) (node.Node, bool) {
 	conf := warewulfconf.Get()
-	filesDir := conf.Paths.WWFilesdir
-	wwlog.Debug("Serving file from %s: %s", filesDir, req.URL.Path)
 
-	// --- Identify node ---
 	remoteAddrPort, err := netip.ParseAddrPort(req.RemoteAddr)
 	if err != nil {
 		wwlog.Error("could not parse remote address: %s", req.RemoteAddr)
 		http.Error(w, "could not parse remote address", http.StatusInternalServerError)
-		return
+		return node.Node{}, false
 	}
 	ipaddr := remoteAddrPort.Addr().String()
 	remoteport := int(remoteAddrPort.Port())
@@ -97,23 +94,22 @@ func HandleFiles(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 	if hwaddr == "" {
-		wwlog.Denied("files: unable to identify node for %s", ipaddr)
+		wwlog.Denied("unable to identify node for %s", ipaddr)
 		http.Error(w, "unable to identify node", http.StatusUnauthorized)
-		return
+		return node.Node{}, false
 	}
 
 	remoteNode, err := GetNodeOrSetDiscoverable(hwaddr, false)
 	if err != nil {
-		wwlog.Denied("files: node not found for hwaddr %s: %s", hwaddr, err)
+		wwlog.Denied("node not found for hwaddr %s: %s", hwaddr, err)
 		http.Error(w, "node not found", http.StatusUnauthorized)
-		return
+		return node.Node{}, false
 	}
 
-	// --- Auth checks ---
 	if conf.Warewulf.Secure() && remoteport >= 1024 {
-		wwlog.Denied("files: non-privileged port: %s", req.RemoteAddr)
+		wwlog.Denied("non-privileged port: %s", req.RemoteAddr)
 		http.Error(w, "non-privileged port", http.StatusForbidden)
-		return
+		return node.Node{}, false
 	}
 
 	if remoteNode.AssetKey != "" {
@@ -122,15 +118,34 @@ func HandleFiles(w http.ResponseWriter, req *http.Request) {
 			assetkey = req.URL.Query()["assetkey"][0]
 		}
 		if assetkey == "" {
-			wwlog.Denied("files: missing asset key for node %s", remoteNode.Id())
+			wwlog.Denied("missing asset key for node %s", remoteNode.Id())
 			http.Error(w, "asset key required", http.StatusUnauthorized)
-			return
+			return node.Node{}, false
 		}
 		if assetkey != remoteNode.AssetKey {
-			wwlog.Denied("files: incorrect asset key for node %s", remoteNode.Id())
+			wwlog.Denied("incorrect asset key for node %s", remoteNode.Id())
 			http.Error(w, "incorrect asset key", http.StatusForbidden)
-			return
+			return node.Node{}, false
 		}
+	}
+
+	return remoteNode, true
+}
+
+// HandleFiles serves static files from the configured warewulf files directory.
+// Every request must identify a node via ?wwid= or ARP fallback.
+// If the node has an asset key, ?assetkey= must match.
+// When secure mode is enabled, requests must come from a privileged port.
+// If ?render is present and the file ends with .ww, the file is rendered as a
+// Go template for the identified node.
+func HandleFiles(w http.ResponseWriter, req *http.Request) {
+	conf := warewulfconf.Get()
+	filesDir := conf.Paths.WWFilesdir
+	wwlog.Debug("Serving file from %s: %s", filesDir, req.URL.Path)
+
+	remoteNode, ok := authenticateNode(w, req)
+	if !ok {
+		return
 	}
 
 	// --- Serve the file ---

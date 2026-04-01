@@ -70,6 +70,7 @@ func configureRootHandler(apiHandler http.Handler) *slashFix {
 	wwHandler.HandleFunc("/container/", warewulfd.HandleImage)
 	wwHandler.HandleFunc("/overlay-system/", warewulfd.HandleSystemOverlay)
 	wwHandler.HandleFunc("/overlay-runtime/", warewulfd.HandleRuntimeOverlay)
+	wwHandler.HandleFunc("/overlay-file/", warewulfd.HandleOverlayFile)
 
 	if apiHandler != nil {
 		wwHandler.Handle("/api/", apiHandler)
