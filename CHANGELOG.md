@@ -95,7 +95,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Updated `MAINTAINING.md` to document golang version policy
 - Clarified functionality of syncuser commands and overlay in documentation
 - Audit and correct documentation, cobra help text, and log messages for accuracy
-- Updated `/overlay-file/` to require ?wwid= for all requests, replacing ?render= with ?render, and to support assetkey checking
 
 ## v4.6.5, 2026-01-12
 
