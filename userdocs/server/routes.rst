@@ -262,7 +262,17 @@ Files Route
 
 Serves static files from the warewulf files directory (``wwfilesdir`` in
 ``warewulf.conf``, defaulting to ``/var/lib/warewulf/files``). Subdirectories
-are supported. No authentication or node identity is required.
+are supported.
+
+Every request must identify a node, either via the ``?wwid=`` query parameter
+(a hardware address) or by ARP cache lookup of the requesting IP. If no node
+can be identified, the server returns ``401 Unauthorized``.
+
+When ``secure`` is enabled in ``warewulf.conf``, requests must originate from a
+privileged port (< 1024); otherwise ``403 Forbidden`` is returned. If the node
+has an ``AssetKey`` configured, the ``?assetkey=`` parameter must be present and
+match; a missing key returns ``401 Unauthorized`` and an incorrect key returns
+``403 Forbidden``.
 
 .. code-block:: console
 
@@ -272,11 +282,31 @@ are supported. No authentication or node identity is required.
    $ cp setup.sh /var/lib/warewulf/files/scripts/
 
    # Fetch from a compute node:
-   $ curl http://<server>:9873/files/myfile.txt
-   $ curl http://<server>:9873/files/scripts/setup.sh
+   $ curl http://<server>:9873/files/myfile.txt?wwid=00:00:00:00:00:01
+   $ curl http://<server>:9873/files/scripts/setup.sh?wwid=00:00:00:00:00:01
 
 Directory listing is disabled; requests for a directory path return
 ``404 Not Found``.
+
+**Template rendering:** Files with a ``.ww`` extension can be rendered as Go
+templates by adding the ``?render`` query parameter. The template is rendered
+in the context of the identified node, with the same template functions and
+data available as in overlay templates. Without ``?render``, ``.ww`` files are
+returned as raw template source. Using ``?render`` on a non-``.ww`` file returns
+``400 Bad Request``.
+
+.. code-block:: console
+
+   # Place a template in the files directory:
+   $ echo 'hostname={{ .Hostname }}' > /var/lib/warewulf/files/info.ww
+
+   # Fetch the raw template:
+   $ curl http://<server>:9873/files/info.ww?wwid=00:00:00:00:00:01
+
+   # Fetch the rendered template:
+   $ curl 'http://<server>:9873/files/info.ww?render&wwid=00:00:00:00:00:01'
+
+**Query parameters:** ``wwid``, ``assetkey``, ``render``
 
 .. _server-routes-security:
 

@@ -1,10 +1,17 @@
 package warewulfd
 
 import (
+	"fmt"
 	"net/http"
+	"net/netip"
 	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -34,12 +41,154 @@ func (fs noListFileSystem) Open(name string) (http.File, error) {
 	return f, nil
 }
 
+// resolveFilesPath safely resolves a request path to a file within filesDir.
+// Returns the clean absolute path or an empty string if the path escapes filesDir.
+func resolveFilesPath(filesDir string, reqPath string) string {
+	// Strip the /files/ prefix
+	relPath := strings.TrimPrefix(reqPath, "/files/")
+	if relPath == "" {
+		return ""
+	}
+
+	fullPath := filepath.Join(filesDir, relPath)
+	cleanPath := filepath.Clean(fullPath)
+	cleanDir := filepath.Clean(filesDir)
+
+	rel, err := filepath.Rel(cleanDir, cleanPath)
+	if err != nil {
+		return ""
+	}
+	if strings.HasPrefix(rel, "..") {
+		return ""
+	}
+
+	return cleanPath
+}
+
 // HandleFiles serves static files from the configured warewulf files directory.
-// Subdirectories are supported. Directory listing is disabled.
+// Every request must identify a node via ?wwid= or ARP fallback.
+// If the node has an asset key, ?assetkey= must match.
+// When secure mode is enabled, requests must come from a privileged port.
+// If ?render is present and the file ends with .ww, the file is rendered as a
+// Go template for the identified node.
 func HandleFiles(w http.ResponseWriter, req *http.Request) {
 	conf := warewulfconf.Get()
 	filesDir := conf.Paths.WWFilesdir
 	wwlog.Debug("Serving file from %s: %s", filesDir, req.URL.Path)
-	fs := noListFileSystem{http.Dir(filesDir)}
-	http.StripPrefix("/files/", http.FileServer(fs)).ServeHTTP(w, req)
+
+	// --- Identify node ---
+	remoteAddrPort, err := netip.ParseAddrPort(req.RemoteAddr)
+	if err != nil {
+		wwlog.Error("could not parse remote address: %s", req.RemoteAddr)
+		http.Error(w, "could not parse remote address", http.StatusInternalServerError)
+		return
+	}
+	ipaddr := remoteAddrPort.Addr().String()
+	remoteport := int(remoteAddrPort.Port())
+
+	var hwaddr string
+	if len(req.URL.Query()["wwid"]) > 0 {
+		hwaddr = parseHwaddr(req.URL.Query()["wwid"][0])
+	}
+	if hwaddr == "" {
+		if mac := parseHwaddr(ArpFind(ipaddr)); mac != "" {
+			hwaddr = mac
+			wwlog.Verbose("using %s from arp cache for %s", hwaddr, ipaddr)
+		}
+	}
+	if hwaddr == "" {
+		wwlog.Denied("files: unable to identify node for %s", ipaddr)
+		http.Error(w, "unable to identify node", http.StatusUnauthorized)
+		return
+	}
+
+	remoteNode, err := GetNodeOrSetDiscoverable(hwaddr, false)
+	if err != nil {
+		wwlog.Denied("files: node not found for hwaddr %s: %s", hwaddr, err)
+		http.Error(w, "node not found", http.StatusUnauthorized)
+		return
+	}
+
+	// --- Auth checks ---
+	if conf.Warewulf.Secure() && remoteport >= 1024 {
+		wwlog.Denied("files: non-privileged port: %s", req.RemoteAddr)
+		http.Error(w, "non-privileged port", http.StatusForbidden)
+		return
+	}
+
+	if remoteNode.AssetKey != "" {
+		assetkey := ""
+		if len(req.URL.Query()["assetkey"]) > 0 {
+			assetkey = req.URL.Query()["assetkey"][0]
+		}
+		if assetkey == "" {
+			wwlog.Denied("files: missing asset key for node %s", remoteNode.Id())
+			http.Error(w, "asset key required", http.StatusUnauthorized)
+			return
+		}
+		if assetkey != remoteNode.AssetKey {
+			wwlog.Denied("files: incorrect asset key for node %s", remoteNode.Id())
+			http.Error(w, "incorrect asset key", http.StatusForbidden)
+			return
+		}
+	}
+
+	// --- Serve the file ---
+	_, render := req.URL.Query()["render"]
+	if render {
+		filePath := resolveFilesPath(filesDir, req.URL.Path)
+		if filePath == "" {
+			http.Error(w, "not found", http.StatusNotFound)
+			return
+		}
+
+		if !strings.HasSuffix(filePath, ".ww") {
+			http.Error(w, "render requires a .ww template file", http.StatusBadRequest)
+			return
+		}
+
+		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+			http.Error(w, "not found", http.StatusNotFound)
+			return
+		}
+
+		registry, err := node.New()
+		if err != nil {
+			wwlog.Error("files: error opening node database: %s", err)
+			http.Error(w, fmt.Sprintf("error opening node database: %s", err), http.StatusInternalServerError)
+			return
+		}
+
+		allNodes, err := registry.FindAllNodes()
+		if err != nil {
+			wwlog.Error("files: error loading nodes: %s", err)
+			http.Error(w, fmt.Sprintf("error loading nodes: %s", err), http.StatusInternalServerError)
+			return
+		}
+
+		tstruct, err := overlay.InitStruct("", remoteNode, allNodes)
+		if err != nil {
+			wwlog.Error("files: error initializing template data: %s", err)
+			http.Error(w, fmt.Sprintf("error initializing template data: %s", err), http.StatusInternalServerError)
+			return
+		}
+		tstruct.BuildSource = filePath
+
+		buffer, _, _, err := overlay.RenderTemplateFile(filePath, tstruct)
+		if err != nil {
+			wwlog.Error("files: error rendering template %s: %s", filePath, err)
+			http.Error(w, fmt.Sprintf("error rendering template: %s", err), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/octet-stream")
+		w.Header().Set("Content-Length", strconv.Itoa(buffer.Len()))
+		if _, err := buffer.WriteTo(w); err != nil {
+			wwlog.Error("files: error writing response: %s", err)
+		}
+		wwlog.Info("files: rendered %s for node %s", filePath, remoteNode.Id())
+	} else {
+		fs := noListFileSystem{http.Dir(filesDir)}
+		http.StripPrefix("/files/", http.FileServer(fs)).ServeHTTP(w, req)
+	}
 }
