@@ -44,7 +44,9 @@ func Build(name string, buildForce bool) error {
 		ignore,
 		// ignore cross-device files
 		true,
-		"newc")
+		"newc",
+		// cpio args
+		"--renumber-inodes")
 
 	return err
 }
