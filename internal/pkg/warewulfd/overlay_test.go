@@ -14,104 +14,6 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 )
 
-var overlaySendTests = map[string]struct {
-	url    string
-	body   string
-	status int
-}{
-	"get file": {
-		url:    "/overlay-file/pub/non-template",
-		body:   "Non-template: {{.Id}}",
-		status: 200,
-	},
-	"getting a missing file returns 404": {
-		url:    "/overlay-file/pub/does-not-exist",
-		body:   "",
-		status: 404,
-	},
-	"get raw template": {
-		url:    "/overlay-file/pub/template.ww",
-		body:   "Template: {{.Id}}",
-		status: 200,
-	},
-	"get rendered template": {
-		url:    "/overlay-file/pub/template.ww?render=n1",
-		body:   "Template: n1",
-		status: 200,
-	},
-	"get rendered template without explicit suffix": {
-		url:    "/overlay-file/pub/template?render=n1",
-		body:   "Template: n1",
-		status: 200,
-	},
-	"explicit suffix required when no node specified": {
-		url:    "/overlay-file/pub/template",
-		body:   "",
-		status: 404,
-	},
-	"getting a template with a missing node returns 404": {
-		url:    "/overlay-file/pub/test.template.ww?render=n2",
-		body:   "",
-		status: 404,
-	},
-	"don't render non-template files": {
-		url:    "/overlay-file/pub/non-template?render=n1",
-		body:   "Non-template: {{.Id}}",
-		status: 200,
-	},
-	"getting a missing template returns 404": {
-		url:    "/overlay-file/pub/does-not-exist.ww?render=n1",
-		body:   "",
-		status: 404,
-	},
-	"get a file from a subdir": {
-		url:    "/overlay-file/pub/subdir/non-template",
-		body:   "Non-template (subdir): {{.Id}}",
-		status: 200,
-	},
-	"render a template from a subdir": {
-		url:    "/overlay-file/pub/subdir/template.ww?render=n1",
-		body:   "Template (subdir): n1",
-		status: 200,
-	},
-}
-
-func Test_OverlaySend(t *testing.T) {
-	env := testenv.New(t)
-	env.WriteFile("etc/warewulf/warewulf.conf", `
-warewulf:
-  secure: false
-`)
-	env.WriteFile("etc/warewulf/nodes.conf", `
-nodeprofiles:
-  default: {}
-nodes:
-  n1: {}
-`)
-	_ = env.Configure()
-	env.WriteFile("var/lib/warewulf/overlays/pub/rootfs/non-template", "Non-template: {{.Id}}")
-	env.WriteFile("var/lib/warewulf/overlays/pub/rootfs/template.ww", "Template: {{.Id}}")
-	env.WriteFile("var/lib/warewulf/overlays/pub/rootfs/subdir/non-template", "Non-template (subdir): {{.Id}}")
-	env.WriteFile("var/lib/warewulf/overlays/pub/rootfs/subdir/template.ww", "Template (subdir): {{.Id}}")
-
-	for description, tt := range overlaySendTests {
-		t.Run(description, func(t *testing.T) {
-			req := httptest.NewRequest(http.MethodGet, tt.url, nil)
-			w := httptest.NewRecorder()
-			HandleOverlayFile(w, req)
-			res := w.Result()
-			defer func() { _ = res.Body.Close() }()
-
-			data, readErr := io.ReadAll(res.Body)
-			assert.NoError(t, readErr)
-			if tt.body != "" {
-				assert.Equal(t, tt.body, string(data))
-			}
-			assert.Equal(t, tt.status, res.StatusCode)
-		})
-	}
-}
-
 var systemOverlayTests = []struct {
 	description string
 	url         string
@@ -193,4 +95,214 @@ nodes:
 			assert.Equal(t, tt.status, res.StatusCode)
 		})
 	}
+}
+
+func Test_HandleOverlayFile(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+
+	env.WriteFile(testenv.WWOverlaydir+"/testoverlay/rootfs/etc/plain.conf", "plain content")
+	env.WriteFile(testenv.WWOverlaydir+"/testoverlay/rootfs/etc/template.ww", "node={{ .Id }}")
+	env.WriteFile(testenv.WWOverlaydir+"/testoverlay/rootfs/etc/notww.txt", "not a template")
+
+	env.WriteFile("etc/warewulf/nodes.conf", testNodesConf)
+	assert.NoError(t, LoadNodeDB())
+
+	conf := warewulfconf.Get()
+	conf.Warewulf.SecureP = boolPtr(false)
+
+	t.Run("raw non-.ww file", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/overlay-file/testoverlay/etc/plain.conf?wwid="+testHwaddr, nil)
+		w := httptest.NewRecorder()
+		HandleOverlayFile(w, req)
+		res := w.Result()
+		defer func() { _ = res.Body.Close() }()
+
+		assert.Equal(t, http.StatusOK, res.StatusCode)
+		data, err := io.ReadAll(res.Body)
+		assert.NoError(t, err)
+		assert.Equal(t, "plain content", string(data))
+	})
+
+	t.Run("raw .ww file without render", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/overlay-file/testoverlay/etc/template.ww?wwid="+testHwaddr, nil)
+		w := httptest.NewRecorder()
+		HandleOverlayFile(w, req)
+		res := w.Result()
+		defer func() { _ = res.Body.Close() }()
+
+		assert.Equal(t, http.StatusOK, res.StatusCode)
+		data, err := io.ReadAll(res.Body)
+		assert.NoError(t, err)
+		assert.Equal(t, "node={{ .Id }}", string(data))
+	})
+
+	t.Run("render .ww file", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/overlay-file/testoverlay/etc/template.ww?render&wwid="+testHwaddr, nil)
+		w := httptest.NewRecorder()
+		HandleOverlayFile(w, req)
+		res := w.Result()
+		defer func() { _ = res.Body.Close() }()
+
+		assert.Equal(t, http.StatusOK, res.StatusCode)
+		data, err := io.ReadAll(res.Body)
+		assert.NoError(t, err)
+		assert.Equal(t, "node="+testNodeName, string(data))
+	})
+
+	t.Run("render without .ww suffix uses .ww fallback", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/overlay-file/testoverlay/etc/template?render&wwid="+testHwaddr, nil)
+		w := httptest.NewRecorder()
+		HandleOverlayFile(w, req)
+		res := w.Result()
+		defer func() { _ = res.Body.Close() }()
+
+		assert.Equal(t, http.StatusOK, res.StatusCode)
+		data, err := io.ReadAll(res.Body)
+		assert.NoError(t, err)
+		assert.Equal(t, "node="+testNodeName, string(data))
+	})
+
+	t.Run("render=nodename matching identified node succeeds", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/overlay-file/testoverlay/etc/template.ww?render="+testNodeName+"&wwid="+testHwaddr, nil)
+		w := httptest.NewRecorder()
+		HandleOverlayFile(w, req)
+		res := w.Result()
+		defer func() { _ = res.Body.Close() }()
+
+		assert.Equal(t, http.StatusOK, res.StatusCode)
+		data, err := io.ReadAll(res.Body)
+		assert.NoError(t, err)
+		assert.Equal(t, "node="+testNodeName, string(data))
+	})
+
+	t.Run("render=nodename mismatching identified node returns 400", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/overlay-file/testoverlay/etc/template.ww?render=wrongnode&wwid="+testHwaddr, nil)
+		w := httptest.NewRecorder()
+		HandleOverlayFile(w, req)
+		assert.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
+	})
+
+	t.Run("render non-.ww file returns 400", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/overlay-file/testoverlay/etc/notww.txt?render&wwid="+testHwaddr, nil)
+		w := httptest.NewRecorder()
+		HandleOverlayFile(w, req)
+		assert.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
+	})
+
+	t.Run("nonexistent overlay returns 404", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/overlay-file/nosuchoverlay/etc/file.conf?wwid="+testHwaddr, nil)
+		w := httptest.NewRecorder()
+		HandleOverlayFile(w, req)
+		assert.Equal(t, http.StatusNotFound, w.Result().StatusCode)
+	})
+
+	t.Run("nonexistent file in overlay returns 404", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/overlay-file/testoverlay/etc/missing.conf?wwid="+testHwaddr, nil)
+		w := httptest.NewRecorder()
+		HandleOverlayFile(w, req)
+		assert.Equal(t, http.StatusNotFound, w.Result().StatusCode)
+	})
+
+	t.Run("no node identification returns 401", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/overlay-file/testoverlay/etc/plain.conf", nil)
+		w := httptest.NewRecorder()
+		HandleOverlayFile(w, req)
+		assert.Equal(t, http.StatusUnauthorized, w.Result().StatusCode)
+	})
+
+	t.Run("path traversal returns 404", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/overlay-file/testoverlay/../../../etc/passwd?wwid="+testHwaddr, nil)
+		w := httptest.NewRecorder()
+		HandleOverlayFile(w, req)
+		assert.Equal(t, http.StatusNotFound, w.Result().StatusCode)
+	})
+
+	t.Run("no overlay specified returns 400", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/overlay-file//etc/plain.conf?wwid="+testHwaddr, nil)
+		w := httptest.NewRecorder()
+		HandleOverlayFile(w, req)
+		assert.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
+	})
+
+	t.Run("no path specified returns 400", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/overlay-file/testoverlay/?wwid="+testHwaddr, nil)
+		w := httptest.NewRecorder()
+		HandleOverlayFile(w, req)
+		assert.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
+	})
+}
+
+func Test_HandleOverlayFile_AssetKey(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+
+	env.WriteFile(testenv.WWOverlaydir+"/testoverlay/rootfs/etc/plain.conf", "plain content")
+
+	env.WriteFile("etc/warewulf/nodes.conf", testNodesConfWithAssetKey)
+	assert.NoError(t, LoadNodeDB())
+
+	conf := warewulfconf.Get()
+	conf.Warewulf.SecureP = boolPtr(false)
+
+	t.Run("assetkey required but missing", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/overlay-file/testoverlay/etc/plain.conf?wwid="+testHwaddr, nil)
+		w := httptest.NewRecorder()
+		HandleOverlayFile(w, req)
+		assert.Equal(t, http.StatusUnauthorized, w.Result().StatusCode)
+	})
+
+	t.Run("assetkey required and wrong", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/overlay-file/testoverlay/etc/plain.conf?wwid="+testHwaddr+"&assetkey=wrong", nil)
+		w := httptest.NewRecorder()
+		HandleOverlayFile(w, req)
+		assert.Equal(t, http.StatusForbidden, w.Result().StatusCode)
+	})
+
+	t.Run("assetkey required and correct", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/overlay-file/testoverlay/etc/plain.conf?wwid="+testHwaddr+"&assetkey=secret123", nil)
+		w := httptest.NewRecorder()
+		HandleOverlayFile(w, req)
+		res := w.Result()
+		defer func() { _ = res.Body.Close() }()
+
+		assert.Equal(t, http.StatusOK, res.StatusCode)
+		data, err := io.ReadAll(res.Body)
+		assert.NoError(t, err)
+		assert.Equal(t, "plain content", string(data))
+	})
+}
+
+func Test_HandleOverlayFile_SecurePort(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+
+	env.WriteFile(testenv.WWOverlaydir+"/testoverlay/rootfs/etc/plain.conf", "plain content")
+
+	env.WriteFile("etc/warewulf/nodes.conf", testNodesConf)
+	assert.NoError(t, LoadNodeDB())
+
+	conf := warewulfconf.Get()
+	conf.Warewulf.SecureP = boolPtr(true)
+
+	t.Run("non-privileged port rejected", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/overlay-file/testoverlay/etc/plain.conf?wwid="+testHwaddr, nil)
+		w := httptest.NewRecorder()
+		HandleOverlayFile(w, req)
+		assert.Equal(t, http.StatusForbidden, w.Result().StatusCode)
+	})
+
+	t.Run("privileged port accepted", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/overlay-file/testoverlay/etc/plain.conf?wwid="+testHwaddr, nil)
+		req.RemoteAddr = "192.0.2.1:80"
+		w := httptest.NewRecorder()
+		HandleOverlayFile(w, req)
+		res := w.Result()
+		defer func() { _ = res.Body.Close() }()
+
+		assert.Equal(t, http.StatusOK, res.StatusCode)
+		data, err := io.ReadAll(res.Body)
+		assert.NoError(t, err)
+		assert.Equal(t, "plain content", string(data))
+	})
 }

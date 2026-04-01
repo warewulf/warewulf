@@ -3,7 +3,6 @@ package warewulfd
 import (
 	"errors"
 	"fmt"
-	"net"
 	"net/http"
 	"os"
 	"path"
@@ -13,7 +12,6 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
-	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -88,142 +86,122 @@ func HandleRuntimeOverlay(w http.ResponseWriter, req *http.Request) {
 	sendResponse(w, req, stageFile, nil, ctx)
 }
 
+// HandleOverlayFile serves an individual file from a named overlay's rootfs.
+// The URL structure is /overlay-file/{overlay}/{path}.
+// Every request must identify a node via ?wwid= or ARP fallback.
+// If ?render is present, the file is rendered as a Go template for the
+// identified node. If the path does not end in .ww but a .ww-suffixed version
+// exists, that file is used. Otherwise the raw file is returned.
 func HandleOverlayFile(w http.ResponseWriter, req *http.Request) {
-	rinfo, err := parseReqRender(req)
+	parts := strings.Split(req.URL.Path, "/")
+	if len(parts) < 4 {
+		http.Error(w, "overlay and path required", http.StatusBadRequest)
+		return
+	}
+	overlayName := parts[2]
+	filePath := strings.Join(parts[3:], "/")
+	if overlayName == "" {
+		http.Error(w, "no overlay specified", http.StatusBadRequest)
+		return
+	}
+	if filePath == "" {
+		http.Error(w, "no path specified", http.StatusBadRequest)
+		return
+	}
+
+	remoteNode, ok := authenticateNode(w, req)
+	if !ok {
+		return
+	}
+
+	myOverlay, err := overlay.Get(overlayName)
 	if err != nil {
-		message := "error parsing request: %s"
-		wwlog.ErrorExc(err, message, err)
-		http.Error(w, fmt.Sprintf(message, err), http.StatusBadRequest)
+		wwlog.Error("overlay-file: overlay not found: %s", overlayName)
+		http.Error(w, fmt.Sprintf("overlay not found: %s", overlayName), http.StatusNotFound)
 		return
 	}
 
-	myOverlay, err := overlay.Get(rinfo.overlay)
-	if err != nil {
-		message := "overlay not found: %s"
-		wwlog.Error(message, rinfo.overlay)
-		http.Error(w, fmt.Sprintf(message, rinfo.overlay), http.StatusNoContent)
-		return
-	}
-
-	wwlog.Info("recv: render req overlay: %s, path: %s, node: %s", rinfo.overlay, rinfo.path, rinfo.node)
-	if config.Get().Warewulf.Secure() && rinfo.remoteport >= 1024 {
-		message := "non-privileged port: %s"
-		wwlog.Denied(message, req.RemoteAddr)
-		http.Error(w, fmt.Sprintf(message, req.RemoteAddr), http.StatusUnauthorized)
-		return
-	}
-
-	overlayFile := myOverlay.File(rinfo.path)
+	overlayFile := myOverlay.File(filePath)
 	if !path.IsAbs(overlayFile) {
-		message := "Path %s isn't absolute"
-		wwlog.Denied(message, overlayFile)
-		http.Error(w, fmt.Sprintf(message, overlayFile), http.StatusNotFound)
+		http.Error(w, "not found", http.StatusNotFound)
 		return
 	}
 
-	if !util.IsFile(overlayFile) {
-		if rinfo.node != "" && util.IsFile(overlayFile+".ww") {
-			wwlog.Debug("appending .ww for file: %s", overlayFile)
-			overlayFile += ".ww"
+	if _, err := os.Stat(overlayFile); os.IsNotExist(err) {
+		_, hasRender := req.URL.Query()["render"]
+		wwFile := myOverlay.File(filePath + ".ww")
+		if hasRender && path.IsAbs(wwFile) {
+			if _, err := os.Stat(wwFile); err == nil {
+				wwlog.Debug("overlay-file: using .ww suffix for %s", filePath)
+				overlayFile = wwFile
+			} else {
+				http.Error(w, "not found", http.StatusNotFound)
+				return
+			}
 		} else {
-			message := "file doesn't exists: %s"
-			wwlog.Denied(message, overlayFile)
-			http.Error(w, fmt.Sprintf(message, overlayFile), http.StatusNotFound)
+			http.Error(w, "not found", http.StatusNotFound)
 			return
 		}
 	}
 
-	if strings.HasSuffix(overlayFile, ".ww") && rinfo.node != "" {
-		nodeDB, err := node.New()
-		if err != nil {
-			message := "error opening node database: %s"
-			wwlog.ErrorExc(err, message, err)
-			http.Error(w, fmt.Sprintf(message, err), http.StatusNotFound)
+	_, render := req.URL.Query()["render"]
+	if render {
+		if renderName := req.URL.Query().Get("render"); renderName != "" && renderName != remoteNode.Id() {
+			http.Error(w, fmt.Sprintf("render node %q does not match identified node %q", renderName, remoteNode.Id()), http.StatusBadRequest)
+			return
+		}
+		if !strings.HasSuffix(overlayFile, ".ww") {
+			http.Error(w, "render requires a .ww template file", http.StatusBadRequest)
 			return
 		}
 
-		node, err := nodeDB.GetNode(rinfo.node)
+		registry, err := node.New()
 		if err != nil {
-			message := "error getting node: %s"
-			wwlog.ErrorExc(err, message, err)
-			http.Error(w, fmt.Sprintf(message, err), http.StatusNotFound)
+			wwlog.Error("overlay-file: error opening node database: %s", err)
+			http.Error(w, fmt.Sprintf("error opening node database: %s", err), http.StatusInternalServerError)
 			return
 		}
 
-		allNodes, err := nodeDB.FindAllNodes()
+		allNodes, err := registry.FindAllNodes()
 		if err != nil {
-			message := "error loading nodes from registry: %s"
-			wwlog.ErrorExc(err, message, err)
-			http.Error(w, fmt.Sprintf(message, err), http.StatusInternalServerError)
+			wwlog.Error("overlay-file: error loading nodes: %s", err)
+			http.Error(w, fmt.Sprintf("error loading nodes: %s", err), http.StatusInternalServerError)
 			return
 		}
 
-		tstruct, err := overlay.InitStruct(overlayFile, node, allNodes)
+		tstruct, err := overlay.InitStruct(overlayName, remoteNode, allNodes)
 		if err != nil {
-			message := "error initializing template data: %s"
-			wwlog.ErrorExc(err, message, err)
-			http.Error(w, fmt.Sprintf(message, err), http.StatusInternalServerError)
+			wwlog.Error("overlay-file: error initializing template data: %s", err)
+			http.Error(w, fmt.Sprintf("error initializing template data: %s", err), http.StatusInternalServerError)
 			return
 		}
 		tstruct.BuildSource = overlayFile
 
 		buffer, _, _, err := overlay.RenderTemplateFile(overlayFile, tstruct)
 		if err != nil {
-			message := "error rendering overlay template: %s"
-			wwlog.ErrorExc(err, message, err)
-			http.Error(w, fmt.Sprintf(message, err), http.StatusInternalServerError)
+			wwlog.Error("overlay-file: error rendering template %s: %s", overlayFile, err)
+			http.Error(w, fmt.Sprintf("error rendering template: %s", err), http.StatusInternalServerError)
 			return
 		}
+
+		w.Header().Set("Content-Type", "application/octet-stream")
 		w.Header().Set("Content-Length", strconv.Itoa(buffer.Len()))
-		_, err = buffer.WriteTo(w)
-		if err != nil {
-			message := "error writing overlay template over http connection: %s"
-			wwlog.ErrorExc(err, message, err)
-			http.Error(w, fmt.Sprintf(message, err), http.StatusInternalServerError)
+		if _, err := buffer.WriteTo(w); err != nil {
+			wwlog.Error("overlay-file: error writing response: %s", err)
 		}
-		wwlog.Info("%s: %s", node.Id(), overlayFile)
+		wwlog.Info("overlay-file: rendered %s for node %s", overlayFile, remoteNode.Id())
 	} else {
 		fileBytes, err := os.ReadFile(overlayFile)
 		if err != nil {
-			message := "error reading file: %s"
-			wwlog.ErrorExc(err, message, err)
-			http.Error(w, fmt.Sprintf(message, err), http.StatusInternalServerError)
+			wwlog.Error("overlay-file: error reading file: %s", err)
+			http.Error(w, fmt.Sprintf("error reading file: %s", err), http.StatusInternalServerError)
 			return
 		}
-		_, err = w.Write(fileBytes)
-		if err != nil {
-			message := "error writing overlay file over http connection: %s"
-			wwlog.ErrorExc(err, message, err)
-			http.Error(w, fmt.Sprintf(message, err), http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/octet-stream")
+		w.Header().Set("Content-Length", strconv.Itoa(len(fileBytes)))
+		if _, err := w.Write(fileBytes); err != nil {
+			wwlog.Error("overlay-file: error writing response: %s", err)
 		}
-		wwlog.Info("send overlay file for node %s: %s", rinfo.node, overlayFile)
+		wwlog.Info("overlay-file: sent %s for node %s", overlayFile, remoteNode.Id())
 	}
-}
-
-type parserInfoRender struct {
-	overlay    string
-	path       string
-	node       string
-	remoteport int
-}
-
-func parseReqRender(req *http.Request) (ret parserInfoRender, err error) {
-	parts := strings.Split(req.URL.Path, "/")
-	ret.overlay = parts[2]
-	if ret.overlay == "" {
-		return ret, fmt.Errorf("no overlay specified")
-	}
-	ret.path = strings.Join(parts[3:], "/")
-	if ret.path == "" {
-		return ret, fmt.Errorf("no path specified")
-	}
-	if len(req.URL.Query()["render"]) > 0 {
-		ret.node = req.URL.Query()["render"][0]
-	}
-	if _, remoteport, err := net.SplitHostPort(req.RemoteAddr); err != nil {
-		return ret, fmt.Errorf("could not obtain remote port from HTTP request: %w", err)
-	} else if ret.remoteport, err = strconv.Atoi(remoteport); err != nil {
-		return ret, fmt.Errorf("couldn't obtain remote port from HTTP request: %w", err)
-	}
-	return ret, nil
 }

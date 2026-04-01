@@ -21,7 +21,7 @@ of colons and are normalized automatically.
 URL Patterns
 ============
 
-Every provisioning route (except ``/overlay-file/`` and ``/status``) supports
+Every provisioning route (except ``/status``) supports
 six equivalent URL patterns for specifying the node identity:
 
 .. code-block:: none
@@ -142,28 +142,36 @@ HTTPS listener port is configured with ``warewulf:tls port``.
 ``/overlay-file/{overlay}/{path}``
 ----------------------------------
 
-Provides direct access to an individual file within a named overlay. This
-route uses a different URL structure than the other provisioning routes: the
-overlay name is in the second path segment, and the file path within the overlay
-follows.
+Provides direct access to an individual file within a named overlay's
+``rootfs/`` directory. The overlay name is in the second path segment, and the
+file path within the overlay follows.
 
-If the ``render`` parameter is provided, the file is rendered as a Go template
-for the specified node and the rendered content is returned. If ``render`` is
-absent, the raw file bytes are returned without any template processing.
+Every request must identify a node, either via ``?wwid=`` or by ARP cache
+lookup. If no node can be identified, the server returns ``401 Unauthorized``.
+When ``secure`` is enabled, requests must originate from a privileged port.
+If the node has an ``AssetKey``, the ``?assetkey=`` parameter must be present
+and correct.
 
-If the requested path does not end in ``.ww`` but a ``.ww``-suffixed version of
-the file exists, and a ``render`` node is specified, the server automatically
-serves the ``.ww`` template.
+Without the ``?render`` parameter, the raw file bytes are returned. With
+``?render``, the file is rendered as a Go template for the identified node.
+The path must refer to a ``.ww`` template file. If the path does not end in
+``.ww`` but a ``.ww``-suffixed version of the file exists, that file is used
+automatically. Using ``?render`` on a path where no ``.ww`` file can be found
+returns ``400 Bad Request`` if the exact file exists, or ``404 Not Found`` if
+neither form exists.
 
-**Query parameters:**
+.. code-block:: console
 
-* ``render``: Node ID to render the template for. If not specified, the raw
-  file is returned.
+   # Fetch a raw file from an overlay:
+   $ curl 'http://<server>:9873/overlay-file/generic/etc/hosts?wwid=00:00:00:00:00:01'
 
-.. note::
+   # Fetch a rendered template (explicit .ww suffix):
+   $ curl 'http://<server>:9873/overlay-file/generic/etc/hosts.ww?render&wwid=00:00:00:00:00:01'
 
-   This route does not require authentication via ``assetkey`` and does not
-   perform node lookup by hardware address.
+   # Fetch a rendered template (implicit .ww suffix):
+   $ curl 'http://<server>:9873/overlay-file/generic/etc/hosts?render&wwid=00:00:00:00:00:01'
+
+**Query parameters:** ``wwid``, ``assetkey``, ``render``
 
 ``/efiboot/{file}``
 -------------------
