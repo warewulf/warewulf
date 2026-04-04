@@ -64,12 +64,12 @@ func configureRootHandler(apiHandler http.Handler) *slashFix {
 	wwHandler.HandleFunc("/system/", warewulfd.HandleSystemOverlay)
 	wwHandler.HandleFunc("/runtime/", warewulfd.HandleRuntimeOverlay)
 	wwHandler.HandleFunc("/status", warewulfd.HandleStatus)
+	wwHandler.HandleFunc("/files/", warewulfd.HandleFiles)
 
 	/* Deprecated */
 	wwHandler.HandleFunc("/container/", warewulfd.HandleImage)
 	wwHandler.HandleFunc("/overlay-system/", warewulfd.HandleSystemOverlay)
 	wwHandler.HandleFunc("/overlay-runtime/", warewulfd.HandleRuntimeOverlay)
-	wwHandler.HandleFunc("/overlay-file/", warewulfd.HandleOverlayFile)
 
 	if apiHandler != nil {
 		wwHandler.Handle("/api/", apiHandler)

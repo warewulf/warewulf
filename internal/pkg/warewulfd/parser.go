@@ -36,7 +36,7 @@ func initHandleRequest(w http.ResponseWriter, req *http.Request) (*requestContex
 
 	wwlog.Info("request from hwaddr:%s ipaddr:%s | stage:%s", rinfo.hwaddr, req.RemoteAddr, rinfo.stage)
 
-	if (rinfo.stage == "runtime" || len(rinfo.overlay) > 0) && conf.Warewulf.Secure() {
+	if rinfo.stage == "runtime" && conf.Warewulf.Secure() {
 		if rinfo.remoteport >= 1024 {
 			wwlog.Denied("Non-privileged port: %s", req.RemoteAddr)
 			w.WriteHeader(http.StatusUnauthorized)
@@ -72,7 +72,6 @@ type parsedRequest struct {
 	assetkey   string
 	uuid       string
 	stage      string
-	overlay    string
 	efifile    string
 	compress   string
 }
@@ -162,9 +161,7 @@ func parseRequest(req *http.Request) (parsedRequest, error) {
 	if len(req.URL.Query()["uuid"]) > 0 {
 		ret.uuid = req.URL.Query()["uuid"][0]
 	}
-	if len(req.URL.Query()["overlay"]) > 0 {
-		ret.overlay = req.URL.Query()["overlay"][0]
-	}
+
 	if len(req.URL.Query()["compress"]) > 0 {
 		ret.compress = req.URL.Query()["compress"][0]
 	}
