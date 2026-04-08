@@ -1,0 +1,13 @@
+{{- if .FileSystems }}
+{{- range $fsdevice, $fs := .FileSystems }}
+{{- if and $fs.Path (ne $fs.Path "/") (ne $fs.Format "swap") }}
+{{ $fsdevice }} {{ $fs.Format }} {{ $fs.Path }}
+{{- end }}
+{{- end }}
+{{- else if .Resources.ignition.storage.filesystems }}
+{{- range $fs := .Resources.ignition.storage.filesystems }}
+{{- if and $fs.path (ne $fs.path "/") (ne $fs.format "swap") }}
+{{ $fs.device }} {{ $fs.format }} {{ $fs.path }}
+{{- end }}
+{{- end }}
+{{- end }}
