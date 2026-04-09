@@ -34,7 +34,7 @@ require (
 	github.com/swaggest/usecase v1.3.1
 	golang.org/x/crypto v0.49.0
 	golang.org/x/exp v0.0.0-20241217172543-b2144cdd0a67
-	golang.org/x/sys v0.42.0
+	golang.org/x/sys v0.43.0
 	golang.org/x/term v0.41.0
 	gopkg.in/yaml.v3 v3.0.1
 )
