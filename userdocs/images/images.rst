@@ -97,7 +97,7 @@ They can be overwritten with ``--nohttps``, ``--username`` and ``--password``.
 
 .. code-block:: console
 
-   # wwctl import --username tux --password supersecret docker://ghcr.io/privatereg/rocky:8
+   # wwctl image import --username tux --password supersecret docker://ghcr.io/privatereg/rocky:8
 
 You can also set ``HTTP_PROXY``, ``HTTPS_PROXY``, and ``NO_PROXY`` (or their
 lower-case versions) to use a proxy during ``wwctl image import``.
