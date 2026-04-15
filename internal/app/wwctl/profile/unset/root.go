@@ -3,29 +3,12 @@ package unset
 import (
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
+	wwctlunset "github.com/warewulf/warewulf/internal/app/wwctl/unset"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 )
 
-type variables struct {
-	unsetYes    bool
-	unsetForce  bool
-	unsetFields map[string]*bool
-	unsetScopes map[string]string
-	netname     string
-	diskname    string
-	partname    string
-	fsname      string
-	tags        []string
-	ipmiTags    []string
-	netTags     []string
-	netDel      []string
-	diskDel     []string
-	partDel     []string
-	fsDel       []string
-}
-
 func GetCommand() *cobra.Command {
-	vars := variables{}
+	vars := wwctlunset.Vars{}
 	profileConf := node.NewProfile("")
 
 	baseCmd := &cobra.Command{
@@ -39,28 +22,28 @@ func GetCommand() *cobra.Command {
 	}
 
 	// Create unset flags and store maps
-	vars.unsetFields, vars.unsetScopes = profileConf.CreateUnsetFlags(baseCmd)
+	vars.UnsetFields, vars.UnsetScopes = profileConf.CreateUnsetFlags(baseCmd)
 
 	// Add scoping flags for specifying which sub-entity to modify
-	baseCmd.PersistentFlags().StringVar(&vars.netname, "netname", "default", "network which is modified")
-	baseCmd.PersistentFlags().StringVar(&vars.diskname, "diskname", "", "disk to modify")
-	baseCmd.PersistentFlags().StringVar(&vars.partname, "partname", "", "partition to modify (requires --diskname)")
-	baseCmd.PersistentFlags().StringVar(&vars.fsname, "fsname", "", "filesystem to modify")
+	baseCmd.PersistentFlags().StringVar(&vars.Netname, "netname", "default", "network which is modified")
+	baseCmd.PersistentFlags().StringVar(&vars.Diskname, "diskname", "", "disk to modify")
+	baseCmd.PersistentFlags().StringVar(&vars.Partname, "partname", "", "partition to modify (requires --diskname)")
+	baseCmd.PersistentFlags().StringVar(&vars.Fsname, "fsname", "", "filesystem to modify")
 
 	// Add tag deletion flags
-	baseCmd.PersistentFlags().StringSliceVar(&vars.tags, "tag", []string{}, "Unset tags")
-	baseCmd.PersistentFlags().StringSliceVar(&vars.ipmiTags, "ipmitag", []string{}, "Unset IPMI tags")
-	baseCmd.PersistentFlags().StringSliceVar(&vars.netTags, "nettag", []string{}, "Unset network tags")
+	baseCmd.PersistentFlags().StringSliceVar(&vars.Tags, "tag", []string{}, "Unset tags")
+	baseCmd.PersistentFlags().StringSliceVar(&vars.IpmiTags, "ipmitag", []string{}, "Unset IPMI tags")
+	baseCmd.PersistentFlags().StringSliceVar(&vars.NetTags, "nettag", []string{}, "Unset network tags")
 
 	// Add object deletion flags
-	baseCmd.PersistentFlags().StringSliceVar(&vars.netDel, "net", []string{}, "Unset network device by name")
-	baseCmd.PersistentFlags().StringSliceVar(&vars.diskDel, "disk", []string{}, "Unset disk by name")
-	baseCmd.PersistentFlags().StringSliceVar(&vars.partDel, "part", []string{}, "Unset partition by name")
-	baseCmd.PersistentFlags().StringSliceVar(&vars.fsDel, "fs", []string{}, "Unset filesystem by name")
+	baseCmd.PersistentFlags().StringSliceVar(&vars.NetDel, "net", []string{}, "Unset network device by name")
+	baseCmd.PersistentFlags().StringSliceVar(&vars.DiskDel, "disk", []string{}, "Unset disk by name")
+	baseCmd.PersistentFlags().StringSliceVar(&vars.PartDel, "part", []string{}, "Unset partition by name")
+	baseCmd.PersistentFlags().StringSliceVar(&vars.FsDel, "fs", []string{}, "Unset filesystem by name")
 
 	// Add control flags
-	baseCmd.PersistentFlags().BoolVarP(&vars.unsetYes, "yes", "y", false, "Set 'yes' to all questions asked")
-	baseCmd.PersistentFlags().BoolVarP(&vars.unsetForce, "force", "f", false, "Force configuration (even on error)")
+	baseCmd.PersistentFlags().BoolVarP(&vars.UnsetYes, "yes", "y", false, "Set 'yes' to all questions asked")
+	baseCmd.PersistentFlags().BoolVarP(&vars.UnsetForce, "force", "f", false, "Force configuration (even on error)")
 
 	return baseCmd
 }

@@ -4,25 +4,25 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	wwctlflags "github.com/warewulf/warewulf/internal/app/wwctl/flags"
+	wwctlunset "github.com/warewulf/warewulf/internal/app/wwctl/unset"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
+func CobraRunE(vars *wwctlunset.Vars) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		// Check if any fields were specified
 		anyFieldSet := false
-		for _, boolPtr := range vars.unsetFields {
+		for _, boolPtr := range vars.UnsetFields {
 			if *boolPtr {
 				anyFieldSet = true
 				break
 			}
 		}
-		anyFieldSet = anyFieldSet || len(vars.tags) > 0 || len(vars.ipmiTags) > 0 || len(vars.netTags) > 0 ||
-			len(vars.netDel) > 0 || len(vars.diskDel) > 0 || len(vars.partDel) > 0 || len(vars.fsDel) > 0
+		anyFieldSet = anyFieldSet || len(vars.Tags) > 0 || len(vars.IpmiTags) > 0 || len(vars.NetTags) > 0 ||
+			len(vars.NetDel) > 0 || len(vars.DiskDel) > 0 || len(vars.PartDel) > 0 || len(vars.FsDel) > 0
 		if !anyFieldSet {
 			return fmt.Errorf("no fields specified to unset")
 		}
@@ -33,12 +33,12 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 		}
 
 		// Validate scoping: sub-entity fields require their parent scope flags
-		if err := wwctlflags.ValidateUnsetScope(vars.unsetFields, vars.unsetScopes, vars.diskname, vars.partname, vars.fsname); err != nil {
+		if err := wwctlunset.ValidateScopeRequirements(vars); err != nil {
 			return err
 		}
 
 		// Confirmation prompt
-		if !vars.unsetYes {
+		if !vars.UnsetYes {
 			count := 0
 			for _, profileName := range args {
 				if _, ok := nodeDB.NodeProfiles[profileName]; ok {
@@ -54,111 +54,20 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 			}
 		}
 
-		// Modify profiles directly
 		modifiedCount := 0
 		for _, profileName := range args {
 			profilePtr, ok := nodeDB.NodeProfiles[profileName]
 			if !ok {
 				wwlog.Warn("invalid profile: %s", profileName)
-				if !vars.unsetForce {
+				if !vars.UnsetForce {
 					return fmt.Errorf("profile not found: %s", profileName)
 				}
 				continue
 			}
 
-			// Build scope profile: zero-value with map entries for the keys to target
-			scopeProfile := node.NewProfile("")
-			scopeProfile.NetDevs[vars.netname] = &node.NetDev{}
-			if vars.diskname != "" {
-				disk := &node.Disk{}
-				if vars.partname != "" {
-					disk.Partitions = map[string]*node.Partition{vars.partname: {}}
-				}
-				scopeProfile.Disks = map[string]*node.Disk{vars.diskname: disk}
+			if err := wwctlunset.UpdateEntity(profilePtr, vars); err != nil {
+				return err
 			}
-			if vars.fsname != "" {
-				scopeProfile.FileSystems = map[string]*node.FileSystem{vars.fsname: {}}
-			}
-			changed := func(lopt string) bool {
-				boolPtr, ok := vars.unsetFields[lopt]
-				return ok && boolPtr != nil && *boolPtr
-			}
-			profilePtr.UpdateFrom(&scopeProfile, changed)
-
-			// Delete specified tags
-			for _, key := range vars.tags {
-				delete(profilePtr.Tags, key)
-			}
-			if profilePtr.Ipmi != nil {
-				for _, key := range vars.ipmiTags {
-					delete(profilePtr.Ipmi.Tags, key)
-				}
-			}
-			if len(vars.netTags) > 0 {
-				if netDev, ok := profilePtr.NetDevs[vars.netname]; ok && netDev != nil {
-					for _, key := range vars.netTags {
-						delete(netDev.Tags, key)
-					}
-				}
-			}
-
-			// Delete entire objects by name
-			for _, name := range vars.netDel {
-				delete(profilePtr.NetDevs, name)
-			}
-			for _, name := range vars.diskDel {
-				delete(profilePtr.Disks, name)
-			}
-			for _, name := range vars.partDel {
-				if vars.diskname != "" {
-					disk, ok := profilePtr.Disks[vars.diskname]
-					if !ok || disk == nil {
-						return fmt.Errorf("disk doesn't exist: %s", vars.diskname)
-					}
-					if _, ok := disk.Partitions[name]; !ok {
-						return fmt.Errorf("partition doesn't exist: %s", name)
-					}
-					delete(disk.Partitions, name)
-				} else {
-					found := false
-					for _, disk := range profilePtr.Disks {
-						if disk == nil {
-							continue
-						}
-						if _, ok := disk.Partitions[name]; ok {
-							delete(disk.Partitions, name)
-							found = true
-						}
-					}
-					if !found {
-						return fmt.Errorf("partition doesn't exist: %s", name)
-					}
-				}
-			}
-			for _, name := range vars.fsDel {
-				delete(profilePtr.FileSystems, name)
-			}
-
-			// Clean up empty structs
-			profilePtr.Flatten()
-
-			// Remove any empty map entries left after flattening
-			for netName, netDev := range profilePtr.NetDevs {
-				if node.ObjectIsEmpty(netDev) {
-					delete(profilePtr.NetDevs, netName)
-				}
-			}
-			for diskName, disk := range profilePtr.Disks {
-				if node.ObjectIsEmpty(disk) {
-					delete(profilePtr.Disks, diskName)
-				}
-			}
-			for fsName, fs := range profilePtr.FileSystems {
-				if node.ObjectIsEmpty(fs) {
-					delete(profilePtr.FileSystems, fsName)
-				}
-			}
-
 			modifiedCount++
 		}
 
@@ -166,15 +75,12 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("no profiles were modified")
 		}
 
-		// Save changes
 		if err := nodeDB.Persist(); err != nil {
 			return fmt.Errorf("failed to persist changes: %w", err)
 		}
 
-		// Reload daemon
 		if err := warewulfd.DaemonReload(); err != nil {
 			wwlog.Warn("failed to reload daemon: %v", err)
-			// Don't fail - changes were saved
 		}
 
 		wwlog.Info("Successfully unset fields on %d profile(s)", modifiedCount)
