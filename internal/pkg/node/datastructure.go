@@ -82,17 +82,17 @@ type KernelConf struct {
 }
 
 type NetDev struct {
-	Type       string            `yaml:"type,omitempty"       json:"type,omitempty"       lopt:"type"       sopt:"T" comment:"device type of given network"`
-	OnBoot     wwtype.WWbool     `yaml:"onboot,omitempty"     json:"onbot,omitempty"      lopt:"onboot"              comment:"network device (true/false)"`
-	Device     string            `yaml:"device,omitempty"     json:"device,omitempty"     lopt:"netdev"     sopt:"N" comment:"the device for given network"`
-	Hwaddr     string            `yaml:"hwaddr,omitempty"     json:"hwaddr,omitempty"     lopt:"hwaddr"     sopt:"H" comment:"the device's HW address for given network" type:"MAC"`
-	Ipaddr     net.IP            `yaml:"ipaddr,omitempty"     json:"ipaddr,omitempty"     lopt:"ipaddr"     sopt:"I" comment:"IPv4 address in given network" type:"IP"`
-	Netmask    net.IP            `yaml:"netmask,omitempty"    json:"netmask,omitempty"    lopt:"netmask"    sopt:"M" comment:"the network's netmask" type:"IP"`
-	Gateway    net.IP            `yaml:"gateway,omitempty"    json:"gateway,omitempty"    lopt:"gateway"    sopt:"G" comment:"the node's IPv4 network device gateway" type:"IP"`
-	Ipaddr6    net.IP            `yaml:"ipaddr6,omitempty"    json:"ipaddr6,omitempty"    lopt:"ipaddr6"             comment:"IPv6 address in given network" type:"IP"`
-	PrefixLen6 string            `yaml:"prefixlen6,omitempty" json:"prefixlen6,omitempty" lopt:"prefixlen6"          comment:"the network's IPv6 prefix length" type:"uint"`
-	Gateway6   net.IP            `yaml:"gateway6,omitempty"   json:"gateway6,omitempty"   lopt:"gateway6"            comment:"the node's IPv6 network device gateway" type:"IP"`
-	MTU        string            `yaml:"mtu,omitempty"        json:"mtu,omitempty"        lopt:"mtu"                 comment:"the MTU" type:"uint"`
+	Type       string            `yaml:"type,omitempty"       json:"type,omitempty"       lopt:"type"       sopt:"T" comment:"device type of given network"                       scope:"net"`
+	OnBoot     wwtype.WWbool     `yaml:"onboot,omitempty"     json:"onbot,omitempty"      lopt:"onboot"              comment:"network device (true/false)"                          scope:"net"`
+	Device     string            `yaml:"device,omitempty"     json:"device,omitempty"     lopt:"netdev"     sopt:"N" comment:"the device for given network"                         scope:"net"`
+	Hwaddr     string            `yaml:"hwaddr,omitempty"     json:"hwaddr,omitempty"     lopt:"hwaddr"     sopt:"H" comment:"the device's HW address for given network" type:"MAC" scope:"net"`
+	Ipaddr     net.IP            `yaml:"ipaddr,omitempty"     json:"ipaddr,omitempty"     lopt:"ipaddr"     sopt:"I" comment:"IPv4 address in given network" type:"IP"              scope:"net"`
+	Netmask    net.IP            `yaml:"netmask,omitempty"    json:"netmask,omitempty"    lopt:"netmask"    sopt:"M" comment:"the network's netmask" type:"IP"                      scope:"net"`
+	Gateway    net.IP            `yaml:"gateway,omitempty"    json:"gateway,omitempty"    lopt:"gateway"    sopt:"G" comment:"the node's IPv4 network device gateway" type:"IP"     scope:"net"`
+	Ipaddr6    net.IP            `yaml:"ipaddr6,omitempty"    json:"ipaddr6,omitempty"    lopt:"ipaddr6"             comment:"IPv6 address in given network" type:"IP"              scope:"net"`
+	PrefixLen6 string            `yaml:"prefixlen6,omitempty" json:"prefixlen6,omitempty" lopt:"prefixlen6"          comment:"the network's IPv6 prefix length" type:"uint"          scope:"net"`
+	Gateway6   net.IP            `yaml:"gateway6,omitempty"   json:"gateway6,omitempty"   lopt:"gateway6"            comment:"the node's IPv6 network device gateway" type:"IP"     scope:"net"`
+	MTU        string            `yaml:"mtu,omitempty"        json:"mtu,omitempty"        lopt:"mtu"                 comment:"the MTU" type:"uint"                                  scope:"net"`
 	Tags       map[string]string `yaml:"tags,omitempty"       json:"tags,omitempty"`
 	primary    bool
 }

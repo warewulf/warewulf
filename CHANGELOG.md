@@ -77,7 +77,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Refactored `wwctl <node|profile> set` to use cobra `cmd.Flags().Changed()` to
   apply only explicitly-set fields.
-- `wwctl <node|profile> set --partdel` and `wwctl <node|profile> unset --part`
+- `wwctl <node|profile> set --partdel` and `wwctl <node|profile> unset --partname`
   now scope partition deletion to a specific disk when `--diskname` is provided;
   without `--diskname`, the partition is removed from all disks (previous behavior).
 - `wwctl <node|profile> set` now calls `Flatten()` after each modification,

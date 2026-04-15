@@ -35,12 +35,6 @@ func GetCommand() *cobra.Command {
 	baseCmd.PersistentFlags().StringSliceVar(&vars.IpmiTags, "ipmitag", []string{}, "Unset IPMI tags")
 	baseCmd.PersistentFlags().StringSliceVar(&vars.NetTags, "nettag", []string{}, "Unset network tags")
 
-	// Add object deletion flags
-	baseCmd.PersistentFlags().StringSliceVar(&vars.NetDel, "net", []string{}, "Unset network device by name")
-	baseCmd.PersistentFlags().StringSliceVar(&vars.DiskDel, "disk", []string{}, "Unset disk by name")
-	baseCmd.PersistentFlags().StringSliceVar(&vars.PartDel, "part", []string{}, "Unset partition by name")
-	baseCmd.PersistentFlags().StringSliceVar(&vars.FsDel, "fs", []string{}, "Unset filesystem by name")
-
 	// Add control flags
 	baseCmd.PersistentFlags().BoolVarP(&vars.UnsetYes, "yes", "y", false, "Set 'yes' to all questions asked")
 	baseCmd.PersistentFlags().BoolVarP(&vars.UnsetForce, "force", "f", false, "Force configuration (even on error)")

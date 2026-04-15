@@ -722,7 +722,7 @@ nodes: {}`,
 
 		// Object deletion tests
 		"unset net removes entire netdev from profile": {
-			args:    []string{"--net=eth0", "--yes", "default"},
+			args:    []string{"--netname=eth0", "--yes", "default"},
 			wantErr: false,
 			inDB: `
 nodeprofiles:
@@ -742,7 +742,7 @@ nodeprofiles:
 nodes: {}`,
 		},
 		"unset net nonexistent is noop on profile": {
-			args:    []string{"--net=nonet", "--yes", "default"},
+			args:    []string{"--netname=nonet", "--yes", "default"},
 			wantErr: false,
 			inDB: `
 nodeprofiles:
@@ -760,7 +760,7 @@ nodeprofiles:
 nodes: {}`,
 		},
 		"unset disk removes entire disk from profile": {
-			args:    []string{"--disk=/dev/vda", "--yes", "default"},
+			args:    []string{"--diskname=/dev/vda", "--yes", "default"},
 			wantErr: false,
 			inDB: `
 nodeprofiles:
@@ -789,7 +789,7 @@ nodeprofiles:
 nodes: {}`,
 		},
 		"unset part removes partition from profile disk": {
-			args:    []string{"--part=swap", "--yes", "default"},
+			args:    []string{"--partname=swap", "--yes", "default"},
 			wantErr: false,
 			inDB: `
 nodeprofiles:
@@ -816,7 +816,7 @@ nodeprofiles:
 nodes: {}`,
 		},
 		"unset part scoped to diskname removes partition only from that disk": {
-			args:    []string{"--part=swap", "--diskname=/dev/vda", "--yes", "default"},
+			args:    []string{"--partname=swap", "--diskname=/dev/vda", "--yes", "default"},
 			wantErr: false,
 			inDB: `
 nodeprofiles:
@@ -845,7 +845,7 @@ nodeprofiles:
 nodes: {}`,
 		},
 		"unset part unscoped removes partition from all disks": {
-			args:    []string{"--part=swap", "--yes", "default"},
+			args:    []string{"--partname=swap", "--yes", "default"},
 			wantErr: false,
 			inDB: `
 nodeprofiles:
@@ -868,7 +868,7 @@ nodeprofiles:
 nodes: {}`,
 		},
 		"unset part unscoped skips disks that lack the partition": {
-			args:    []string{"--part=swap", "--yes", "default"},
+			args:    []string{"--partname=swap", "--yes", "default"},
 			wantErr: false,
 			inDB: `
 nodeprofiles:
@@ -897,7 +897,7 @@ nodeprofiles:
 nodes: {}`,
 		},
 		"error: unset part unscoped not found on any disk": {
-			args:    []string{"--part=nopart", "--yes", "default"},
+			args:    []string{"--partname=nopart", "--yes", "default"},
 			wantErr: true,
 			inDB: `
 nodeprofiles:
@@ -921,7 +921,7 @@ nodeprofiles:
 nodes: {}`,
 		},
 		"error: unset part scoped to nonexistent disk": {
-			args:    []string{"--part=swap", "--diskname=/dev/nonexistent", "--yes", "default"},
+			args:    []string{"--partname=swap", "--diskname=/dev/nonexistent", "--yes", "default"},
 			wantErr: true,
 			inDB: `
 nodeprofiles:
@@ -945,7 +945,7 @@ nodeprofiles:
 nodes: {}`,
 		},
 		"error: unset part scoped partition not in disk": {
-			args:    []string{"--part=nopart", "--diskname=/dev/vda", "--yes", "default"},
+			args:    []string{"--partname=nopart", "--diskname=/dev/vda", "--yes", "default"},
 			wantErr: true,
 			inDB: `
 nodeprofiles:
@@ -969,7 +969,7 @@ nodeprofiles:
 nodes: {}`,
 		},
 		"unset fs removes filesystem from profile": {
-			args:    []string{"--fs=/dev/disk/by-partlabel/swap", "--yes", "default"},
+			args:    []string{"--fsname=/dev/disk/by-partlabel/swap", "--yes", "default"},
 			wantErr: false,
 			inDB: `
 nodeprofiles:

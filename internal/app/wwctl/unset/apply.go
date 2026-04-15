@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 // ValidateScopeRequirements checks that sub-entity unset flags have the
@@ -33,6 +34,39 @@ func ValidateScopeRequirements(vars *Vars) error {
 	return nil
 }
 
+// WarnDeletions prints a warning line for each sub-entity that will be deleted
+// entirely (scoping flag given with no corresponding sub-field flags). Call
+// before prompting for confirmation so the user knows what will be removed.
+func WarnDeletions(vars *Vars) {
+	if vars.NetnameChanged && !HasScopedFieldSet(vars, "net") && len(vars.NetTags) == 0 {
+		wwlog.Warn("network device %q will be removed entirely", vars.Netname)
+	}
+	if vars.Diskname != "" && vars.Partname == "" && !HasScopedFieldSet(vars, "disk") {
+		wwlog.Warn("disk %q will be removed entirely", vars.Diskname)
+	}
+	if vars.Fsname != "" && !HasScopedFieldSet(vars, "fs") {
+		wwlog.Warn("filesystem %q will be removed entirely", vars.Fsname)
+	}
+	if vars.Partname != "" && !HasScopedFieldSet(vars, "disk,part") {
+		if vars.Diskname != "" {
+			wwlog.Warn("partition %q on disk %q will be removed entirely", vars.Partname, vars.Diskname)
+		} else {
+			wwlog.Warn("partition %q will be removed from all disks", vars.Partname)
+		}
+	}
+}
+
+// HasScopedFieldSet returns true if any field in vars.UnsetFields is set and
+// has exactly the given scope value in vars.UnsetScopes.
+func HasScopedFieldSet(vars *Vars, scope string) bool {
+	for flagName, boolPtr := range vars.UnsetFields {
+		if boolPtr != nil && *boolPtr && vars.UnsetScopes[flagName] == scope {
+			return true
+		}
+	}
+	return false
+}
+
 // Entity is satisfied by *node.Node and *node.Profile.
 type Entity interface {
 	GetProfile() *node.Profile
@@ -46,16 +80,25 @@ func UpdateEntity(entity Entity, vars *Vars) error {
 	target := entity.GetProfile()
 	// Build scope: a zero-valued Profile with map entries for the targeted
 	// sub-entity keys so UpdateFrom knows which sub-entity to clear fields on.
+	// Only add sub-entities that actually have fields being unset — adding an
+	// entry unconditionally causes recursiveUpdateFrom to create stubs in the
+	// target, which defeats existence checks in the deletion logic below.
 	scope := node.NewProfile("")
-	scope.NetDevs[vars.Netname] = &node.NetDev{}
-	if vars.Diskname != "" {
-		disk := &node.Disk{}
-		if vars.Partname != "" {
-			disk.Partitions = map[string]*node.Partition{vars.Partname: {}}
-		}
-		scope.Disks = map[string]*node.Disk{vars.Diskname: disk}
+	if HasScopedFieldSet(vars, "net") {
+		scope.NetDevs[vars.Netname] = &node.NetDev{}
 	}
-	if vars.Fsname != "" {
+	if vars.Diskname != "" {
+		hasDiskFields := HasScopedFieldSet(vars, "disk")
+		hasPartFields := HasScopedFieldSet(vars, "disk,part")
+		if hasDiskFields || hasPartFields {
+			disk := &node.Disk{}
+			if vars.Partname != "" && hasPartFields {
+				disk.Partitions = map[string]*node.Partition{vars.Partname: {}}
+			}
+			scope.Disks = map[string]*node.Disk{vars.Diskname: disk}
+		}
+	}
+	if vars.Fsname != "" && HasScopedFieldSet(vars, "fs") {
 		scope.FileSystems = map[string]*node.FileSystem{vars.Fsname: {}}
 	}
 
@@ -82,41 +125,43 @@ func UpdateEntity(entity Entity, vars *Vars) error {
 		}
 	}
 
-	// Delete entire objects by name
-	for _, name := range vars.NetDel {
-		delete(target.NetDevs, name)
+	// Delete entire sub-entities when scoping flag given with no sub-fields.
+	// Net: also guard against --nettag (tag ops use --netname for scoping).
+	// Disk: also guard against --partname (that scopes a partition operation).
+	if vars.NetnameChanged && !HasScopedFieldSet(vars, "net") && len(vars.NetTags) == 0 {
+		delete(target.NetDevs, vars.Netname)
 	}
-	for _, name := range vars.DiskDel {
-		delete(target.Disks, name)
+	if vars.Diskname != "" && vars.Partname == "" && !HasScopedFieldSet(vars, "disk") {
+		delete(target.Disks, vars.Diskname)
 	}
-	for _, name := range vars.PartDel {
+	if vars.Fsname != "" && !HasScopedFieldSet(vars, "fs") {
+		delete(target.FileSystems, vars.Fsname)
+	}
+	if vars.Partname != "" && !HasScopedFieldSet(vars, "disk,part") {
 		if vars.Diskname != "" {
 			disk, ok := target.Disks[vars.Diskname]
 			if !ok || disk == nil {
 				return fmt.Errorf("disk doesn't exist: %s", vars.Diskname)
 			}
-			if _, ok := disk.Partitions[name]; !ok {
-				return fmt.Errorf("partition doesn't exist: %s", name)
+			if _, ok := disk.Partitions[vars.Partname]; !ok {
+				return fmt.Errorf("partition doesn't exist: %s", vars.Partname)
 			}
-			delete(disk.Partitions, name)
+			delete(disk.Partitions, vars.Partname)
 		} else {
 			found := false
 			for _, disk := range target.Disks {
 				if disk == nil {
 					continue
 				}
-				if _, ok := disk.Partitions[name]; ok {
-					delete(disk.Partitions, name)
+				if _, ok := disk.Partitions[vars.Partname]; ok {
+					delete(disk.Partitions, vars.Partname)
 					found = true
 				}
 			}
 			if !found {
-				return fmt.Errorf("partition doesn't exist: %s", name)
+				return fmt.Errorf("partition doesn't exist: %s", vars.Partname)
 			}
 		}
-	}
-	for _, name := range vars.FsDel {
-		delete(target.FileSystems, name)
 	}
 
 	entity.Flatten()

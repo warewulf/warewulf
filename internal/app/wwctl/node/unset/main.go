@@ -15,6 +15,7 @@ import (
 func CobraRunE(vars *wwctlunset.Vars) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		// Check if any fields were specified
+		vars.NetnameChanged = cmd.Flags().Changed("netname")
 		anyFieldSet := false
 		for _, boolPtr := range vars.UnsetFields {
 			if *boolPtr {
@@ -23,7 +24,8 @@ func CobraRunE(vars *wwctlunset.Vars) func(cmd *cobra.Command, args []string) er
 			}
 		}
 		anyFieldSet = anyFieldSet || len(vars.Tags) > 0 || len(vars.IpmiTags) > 0 || len(vars.NetTags) > 0 ||
-			len(vars.NetDel) > 0 || len(vars.DiskDel) > 0 || len(vars.PartDel) > 0 || len(vars.FsDel) > 0
+			vars.NetnameChanged || cmd.Flags().Changed("diskname") ||
+			cmd.Flags().Changed("fsname") || cmd.Flags().Changed("partname")
 		if !anyFieldSet {
 			return fmt.Errorf("no fields specified to unset")
 		}
@@ -52,6 +54,7 @@ func CobraRunE(vars *wwctlunset.Vars) func(cmd *cobra.Command, args []string) er
 			if count == 0 {
 				return fmt.Errorf("no valid nodes found")
 			}
+			wwctlunset.WarnDeletions(vars)
 			yes := util.Confirm(fmt.Sprintf("Are you sure you want to modify %d node(s)", count))
 			if !yes {
 				return nil
