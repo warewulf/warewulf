@@ -1114,6 +1114,58 @@ nodes:
             number: "2"
             size_mib: "51200"`,
 		},
+		"unset part scoped to diskname removes partition only from that disk": {
+			args:    []string{"--part=swap", "--diskname=/dev/vda", "n01"},
+			wantErr: false,
+			inDB: `
+nodeprofiles: {}
+nodes:
+  n01:
+    disks:
+      /dev/vda:
+        partitions:
+          swap:
+            number: "1"
+            size_mib: "4096"
+      /dev/vdb:
+        partitions:
+          swap:
+            number: "1"
+            size_mib: "4096"`,
+			outDB: `
+nodeprofiles: {}
+nodes:
+  n01:
+    disks:
+      /dev/vdb:
+        partitions:
+          swap:
+            number: "1"
+            size_mib: "4096"`,
+		},
+		"unset part unscoped removes partition from all disks": {
+			args:    []string{"--part=swap", "n01"},
+			wantErr: false,
+			inDB: `
+nodeprofiles: {}
+nodes:
+  n01:
+    disks:
+      /dev/vda:
+        partitions:
+          swap:
+            number: "1"
+            size_mib: "4096"
+      /dev/vdb:
+        partitions:
+          swap:
+            number: "1"
+            size_mib: "4096"`,
+			outDB: `
+nodeprofiles: {}
+nodes:
+  n01: {}`,
+		},
 		"unset part nonexistent is noop": {
 			args:    []string{"--part=nopart", "n01"},
 			wantErr: false,

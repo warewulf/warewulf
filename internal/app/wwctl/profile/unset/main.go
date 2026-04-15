@@ -110,11 +110,17 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 				delete(profilePtr.Disks, name)
 			}
 			for _, name := range vars.partDel {
-				for _, disk := range profilePtr.Disks {
-					if disk == nil {
-						continue
+				if vars.diskname != "" {
+					if disk, ok := profilePtr.Disks[vars.diskname]; ok && disk != nil {
+						delete(disk.Partitions, name)
 					}
-					delete(disk.Partitions, name)
+				} else {
+					for _, disk := range profilePtr.Disks {
+						if disk == nil {
+							continue
+						}
+						delete(disk.Partitions, name)
+					}
 				}
 			}
 			for _, name := range vars.fsDel {

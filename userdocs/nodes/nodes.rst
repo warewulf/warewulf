@@ -130,11 +130,14 @@ use the scoping flags ``--netname``, ``--diskname``, ``--partname``, and
    wwctl node unset n1 --netname=secondary --ipaddr
 
 Entire sub-objects can be removed by name using ``--net``, ``--disk``,
-``--part``, and ``--fs``.
+``--part``, and ``--fs``. For ``--part``, an optional ``--diskname`` scopes the
+deletion to a specific disk; without it, the named partition is removed from
+all disks.
 
 .. code-block:: shell
 
    wwctl node unset n1 --net=secondary
+   wwctl node unset n1 --part=swap --diskname=/dev/vda
 
 Tags can be selectively removed with ``--tag``, ``--nettag``, and
 ``--ipmitag``.

@@ -459,6 +459,73 @@ nodes:
         format: btrfs
         path: /var`,
 		},
+		"single node delete partition scoped to diskname": {
+			args:    []string{"--partdel=var", "--diskname=/dev/vda", "n01"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    comment: testit
+nodes:
+  n01:
+    profiles:
+    - default
+    disks:
+      /dev/vda:
+        partitions:
+          var:
+            number: "1"
+      /dev/vdb:
+        partitions:
+          var:
+            number: "1"`,
+			outDB: `
+nodeprofiles:
+  default:
+    comment: testit
+nodes:
+  n01:
+    profiles:
+    - default
+    disks:
+      /dev/vda: {}
+      /dev/vdb:
+        partitions:
+          var:
+            number: "1"`,
+		},
+		"single node delete partition unscoped removes from all disks": {
+			args:    []string{"--partdel=var", "n01"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    comment: testit
+nodes:
+  n01:
+    profiles:
+    - default
+    disks:
+      /dev/vda:
+        partitions:
+          var:
+            number: "1"
+      /dev/vdb:
+        partitions:
+          var:
+            number: "1"`,
+			outDB: `
+nodeprofiles:
+  default:
+    comment: testit
+nodes:
+  n01:
+    profiles:
+    - default
+    disks:
+      /dev/vda: {}
+      /dev/vdb: {}`,
+		},
 		"single node delete existing disk": {
 			args:    []string{"--diskdel=/dev/vda", "n01"},
 			wantErr: false,

@@ -164,6 +164,56 @@ nodeprofiles:
         path: /var
 nodes: {}`,
 		},
+		"single profile delete partition scoped to diskname": {
+			args:    []string{"--partdel=var", "--diskname=/dev/vda", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          var:
+            number: "1"
+      /dev/vdb:
+        partitions:
+          var:
+            number: "1"
+nodes: {}
+`,
+			outDb: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda: {}
+      /dev/vdb:
+        partitions:
+          var:
+            number: "1"
+nodes: {}`,
+		},
+		"single profile delete partition unscoped removes from all disks": {
+			args:    []string{"--partdel=var", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          var:
+            number: "1"
+      /dev/vdb:
+        partitions:
+          var:
+            number: "1"
+nodes: {}
+`,
+			outDb: `
+nodeprofiles:
+  default: {}
+nodes: {}`,
+		},
 		"single set wipetabe to true": {
 			args:    []string{"--diskwipe=true", "--partname=var", "--diskname=/dev/vda", "default"},
 			wantErr: false,

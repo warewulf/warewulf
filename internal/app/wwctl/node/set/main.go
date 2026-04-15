@@ -41,7 +41,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			dsk := *vars.nodeConf.Disks["UNDEF"]
 			vars.nodeConf.Disks[vars.nodeAdd.DiskName] = &dsk
 		}
-		if (vars.nodeAdd.DiskName != "") != (vars.nodeAdd.PartName != "") {
+		if vars.nodeAdd.PartName != "" && vars.nodeAdd.DiskName == "" {
 			return fmt.Errorf("partition and disk must be specified")
 		}
 		delete(vars.nodeConf.Disks, "UNDEF")
@@ -82,12 +82,24 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 				delete(nodePtr.NetDevs, vars.nodeDel.NetDel)
 			}
 			if vars.nodeDel.PartDel != "" {
-				for diskname, disk := range nodePtr.Disks {
-					if _, ok := disk.Partitions[vars.nodeDel.PartDel]; ok {
-						wwlog.Verbose("Node: %s, on disk %s, deleting partition: %s", nId, diskname, vars.nodeDel.PartDel)
-						delete(disk.Partitions, vars.nodeDel.PartDel)
-					} else {
+				if vars.nodeAdd.DiskName != "" {
+					disk, ok := nodePtr.Disks[vars.nodeAdd.DiskName]
+					if !ok || disk == nil {
+						return fmt.Errorf("disk doesn't exist: %s", vars.nodeAdd.DiskName)
+					}
+					if _, ok := disk.Partitions[vars.nodeDel.PartDel]; !ok {
 						return fmt.Errorf("partition doesn't exist: %s", vars.nodeDel.PartDel)
+					}
+					wwlog.Verbose("Node: %s, on disk %s, deleting partition: %s", nId, vars.nodeAdd.DiskName, vars.nodeDel.PartDel)
+					delete(disk.Partitions, vars.nodeDel.PartDel)
+				} else {
+					for diskname, disk := range nodePtr.Disks {
+						if _, ok := disk.Partitions[vars.nodeDel.PartDel]; ok {
+							wwlog.Verbose("Node: %s, on disk %s, deleting partition: %s", nId, diskname, vars.nodeDel.PartDel)
+							delete(disk.Partitions, vars.nodeDel.PartDel)
+						} else {
+							return fmt.Errorf("partition doesn't exist: %s", vars.nodeDel.PartDel)
+						}
 					}
 				}
 			}
@@ -136,6 +148,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 					netDev.Tags[key] = val
 				}
 			}
+			nodePtr.Flatten()
 			count++
 		}
 

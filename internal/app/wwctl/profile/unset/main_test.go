@@ -797,6 +797,58 @@ nodeprofiles:
             size_mib: "51200"
 nodes: {}`,
 		},
+		"unset part scoped to diskname removes partition only from that disk": {
+			args:    []string{"--part=swap", "--diskname=/dev/vda", "--yes", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          swap:
+            number: "1"
+            size_mib: "4096"
+      /dev/vdb:
+        partitions:
+          swap:
+            number: "1"
+            size_mib: "4096"
+nodes: {}`,
+			outDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vdb:
+        partitions:
+          swap:
+            number: "1"
+            size_mib: "4096"
+nodes: {}`,
+		},
+		"unset part unscoped removes partition from all disks": {
+			args:    []string{"--part=swap", "--yes", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          swap:
+            number: "1"
+            size_mib: "4096"
+      /dev/vdb:
+        partitions:
+          swap:
+            number: "1"
+            size_mib: "4096"
+nodes: {}`,
+			outDB: `
+nodeprofiles:
+  default: {}
+nodes: {}`,
+		},
 		"unset fs removes filesystem from profile": {
 			args:    []string{"--fs=/dev/disk/by-partlabel/swap", "--yes", "default"},
 			wantErr: false,
