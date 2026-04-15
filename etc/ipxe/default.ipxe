@@ -35,6 +35,7 @@ item imgextract Single-stage with imgextract
 item initrd Single-stage with initrd
 item initrd_nocompress Single stage with initrd (no compression)
 item dracut Two stage with dracut
+item dracut_static Two stage with dracut and static ips
 item shell iPXE shell
 choose --default ${method} --timeout 2000 method && goto ${method} || goto menu
 
@@ -95,6 +96,17 @@ echo
 echo Downloading dracut initramfs...
 initrd --name initramfs ${base}/initramfs/${hwaddr}?${params} || goto error_reboot
 set dracut_net rd.neednet=1 {{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} ip={{$netdev.Device}}:dhcp {{end}}{{end}}
+set dracut_wwinit root=wwinit:{{default "tmpfs" .Root}} wwinit.server=${base} wwinit.uri=${base}/provision/${hwaddr} init=/warewulf/run-init
+goto boot_two_stage_dracut
+
+:dracut_static
+set next dracut_static_continue
+goto metadata
+:dracut_static_continue
+echo
+echo Downloading dracut initramfs...
+initrd --name initramfs ${base}/initramfs/${hwaddr}?${params} || goto error_reboot
+set dracut_net rd.neednet=1 {{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} ip={{$netdev.Ipaddr}}::{{$netdev.Gateway}}:{{$netdev.Netmask}}::{{$netdev.Device}}:on {{end}}{{end}}
 set dracut_wwinit root=wwinit:{{default "tmpfs" .Root}} wwinit.server=${base} wwinit.uri=${base}/provision/${hwaddr} init=/warewulf/run-init
 goto boot_two_stage_dracut
 
