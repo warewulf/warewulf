@@ -526,6 +526,58 @@ nodes:
       /dev/vda: {}
       /dev/vdb: {}`,
 		},
+		"single node delete partition unscoped skips disks without it": {
+			args:    []string{"--partdel=var", "n01"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    comment: testit
+nodes:
+  n01:
+    profiles:
+    - default
+    disks:
+      /dev/vda:
+        partitions:
+          var:
+            number: "1"
+      /dev/vdb:
+        partitions:
+          boot:
+            number: "2"`,
+			outDB: `
+nodeprofiles:
+  default:
+    comment: testit
+nodes:
+  n01:
+    profiles:
+    - default
+    disks:
+      /dev/vda: {}
+      /dev/vdb:
+        partitions:
+          boot:
+            number: "2"`,
+		},
+		"single node delete partition unscoped errors when not found": {
+			args:    []string{"--partdel=nonexistent", "n01"},
+			wantErr: true,
+			inDB: `
+nodeprofiles:
+  default:
+    comment: testit
+nodes:
+  n01:
+    profiles:
+    - default
+    disks:
+      /dev/vda:
+        partitions:
+          var:
+            number: "1"`,
+		},
 		"single node delete existing disk": {
 			args:    []string{"--diskdel=/dev/vda", "n01"},
 			wantErr: false,

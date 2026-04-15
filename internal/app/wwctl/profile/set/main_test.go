@@ -214,6 +214,48 @@ nodeprofiles:
   default: {}
 nodes: {}`,
 		},
+		"single profile delete partition unscoped skips disks without it": {
+			args:    []string{"--partdel=var", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          var:
+            number: "1"
+      /dev/vdb:
+        partitions:
+          boot:
+            number: "2"
+nodes: {}
+`,
+			outDb: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda: {}
+      /dev/vdb:
+        partitions:
+          boot:
+            number: "2"
+nodes: {}`,
+		},
+		"single profile delete partition unscoped errors when not found": {
+			args:    []string{"--partdel=nonexistent", "default"},
+			wantErr: true,
+			inDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          var:
+            number: "1"
+nodes: {}
+`,
+		},
 		"single set wipetabe to true": {
 			args:    []string{"--diskwipe=true", "--partname=var", "--diskname=/dev/vda", "default"},
 			wantErr: false,

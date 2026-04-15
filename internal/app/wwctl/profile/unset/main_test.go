@@ -508,6 +508,24 @@ nodeprofiles:
         ipaddr: 192.168.1.100
 nodes: {}`,
 		},
+		"unset net field targeting nonexistent network leaves db unchanged": {
+			args:    []string{"--ipaddr", "--yes", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    network devices:
+      eth0:
+        ipaddr: 10.0.0.100
+nodes: {}`,
+			outDB: `
+nodeprofiles:
+  default:
+    network devices:
+      eth0:
+        ipaddr: 10.0.0.100
+nodes: {}`,
+		},
 
 		// Already unset (idempotent)
 		"unset already-unset field": {
@@ -847,6 +865,107 @@ nodes: {}`,
 			outDB: `
 nodeprofiles:
   default: {}
+nodes: {}`,
+		},
+		"unset part unscoped skips disks that lack the partition": {
+			args:    []string{"--part=swap", "--yes", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          swap:
+            number: "1"
+            size_mib: "4096"
+      /dev/vdb:
+        partitions:
+          root:
+            number: "2"
+            size_mib: "51200"
+nodes: {}`,
+			outDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vdb:
+        partitions:
+          root:
+            number: "2"
+            size_mib: "51200"
+nodes: {}`,
+		},
+		"error: unset part unscoped not found on any disk": {
+			args:    []string{"--part=nopart", "--yes", "default"},
+			wantErr: true,
+			inDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          swap:
+            number: "1"
+            size_mib: "4096"
+nodes: {}`,
+			outDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          swap:
+            number: "1"
+            size_mib: "4096"
+nodes: {}`,
+		},
+		"error: unset part scoped to nonexistent disk": {
+			args:    []string{"--part=swap", "--diskname=/dev/nonexistent", "--yes", "default"},
+			wantErr: true,
+			inDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          swap:
+            number: "1"
+            size_mib: "4096"
+nodes: {}`,
+			outDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          swap:
+            number: "1"
+            size_mib: "4096"
+nodes: {}`,
+		},
+		"error: unset part scoped partition not in disk": {
+			args:    []string{"--part=nopart", "--diskname=/dev/vda", "--yes", "default"},
+			wantErr: true,
+			inDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          swap:
+            number: "1"
+            size_mib: "4096"
+nodes: {}`,
+			outDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          swap:
+            number: "1"
+            size_mib: "4096"
 nodes: {}`,
 		},
 		"unset fs removes filesystem from profile": {

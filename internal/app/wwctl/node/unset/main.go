@@ -115,15 +115,27 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 			}
 			for _, name := range vars.partDel {
 				if vars.diskname != "" {
-					if disk, ok := nodePtr.Disks[vars.diskname]; ok && disk != nil {
-						delete(disk.Partitions, name)
+					disk, ok := nodePtr.Disks[vars.diskname]
+					if !ok || disk == nil {
+						return fmt.Errorf("disk doesn't exist: %s", vars.diskname)
 					}
+					if _, ok := disk.Partitions[name]; !ok {
+						return fmt.Errorf("partition doesn't exist: %s", name)
+					}
+					delete(disk.Partitions, name)
 				} else {
+					found := false
 					for _, disk := range nodePtr.Disks {
 						if disk == nil {
 							continue
 						}
-						delete(disk.Partitions, name)
+						if _, ok := disk.Partitions[name]; ok {
+							delete(disk.Partitions, name)
+							found = true
+						}
+					}
+					if !found {
+						return fmt.Errorf("partition doesn't exist: %s", name)
 					}
 				}
 			}

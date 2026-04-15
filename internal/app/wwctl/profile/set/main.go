@@ -88,13 +88,16 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 					wwlog.Verbose("Profile: %s, on disk %s, deleting partition: %s", profileId, vars.profileAdd.DiskName, vars.profileDel.PartDel)
 					delete(disk.Partitions, vars.profileDel.PartDel)
 				} else {
+					found := false
 					for diskname, disk := range profilePtr.Disks {
 						if _, ok := disk.Partitions[vars.profileDel.PartDel]; ok {
 							wwlog.Verbose("Profile: %s, on disk %s, deleting partition: %s", profileId, diskname, vars.profileDel.PartDel)
 							delete(disk.Partitions, vars.profileDel.PartDel)
-						} else {
-							return fmt.Errorf("partition doesn't exist: %s", vars.profileDel.PartDel)
+							found = true
 						}
+					}
+					if !found {
+						return fmt.Errorf("partition doesn't exist: %s", vars.profileDel.PartDel)
 					}
 				}
 			}
