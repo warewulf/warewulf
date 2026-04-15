@@ -260,22 +260,26 @@ func createFlags(baseCmd *cobra.Command,
 
 /*
 CreateUnsetFlags creates boolean flags for unsetting fields.
-Returns a map from flag name to bool pointer.
+Returns a map from flag name to *bool (whether the flag was set by the user)
+and a map from flag name to required scope (values: "disk", "disk,part", "fs").
+Fields with no scope restriction have no entry in the scope map.
+The scope values are read directly from the "scope" struct tag on each field.
 */
-
-func (nodeConf *Node) CreateUnsetFlags(baseCmd *cobra.Command) map[string]*bool {
+func (nodeConf *Node) CreateUnsetFlags(baseCmd *cobra.Command) (map[string]*bool, map[string]string) {
 	unsetMap := make(map[string]*bool)
-	recursiveCreateUnsetFlags(nodeConf, baseCmd, unsetMap)
-	return unsetMap
+	scopeMap := make(map[string]string)
+	recursiveCreateUnsetFlags(nodeConf, baseCmd, unsetMap, scopeMap)
+	return unsetMap, scopeMap
 }
 
-func (profileConf *Profile) CreateUnsetFlags(baseCmd *cobra.Command) map[string]*bool {
+func (profileConf *Profile) CreateUnsetFlags(baseCmd *cobra.Command) (map[string]*bool, map[string]string) {
 	unsetMap := make(map[string]*bool)
-	recursiveCreateUnsetFlags(profileConf, baseCmd, unsetMap)
-	return unsetMap
+	scopeMap := make(map[string]string)
+	recursiveCreateUnsetFlags(profileConf, baseCmd, unsetMap, scopeMap)
+	return unsetMap, scopeMap
 }
 
-func recursiveCreateUnsetFlags(obj interface{}, baseCmd *cobra.Command, unsetMap map[string]*bool) {
+func recursiveCreateUnsetFlags(obj interface{}, baseCmd *cobra.Command, unsetMap map[string]*bool, scopeMap map[string]string) {
 	elemType := reflect.TypeOf(obj).Elem()
 	elemVal := reflect.ValueOf(obj).Elem()
 
@@ -288,14 +292,13 @@ func recursiveCreateUnsetFlags(obj interface{}, baseCmd *cobra.Command, unsetMap
 		}
 
 		if field.Tag.Get("comment") != "" {
-			// Create boolean flag for this field
-			createUnsetFlag(baseCmd, field, unsetMap)
+			createUnsetFlag(baseCmd, field, unsetMap, scopeMap)
 		} else if field.Anonymous {
-			recursiveCreateUnsetFlags(fieldVal.Addr().Interface(), baseCmd, unsetMap)
+			recursiveCreateUnsetFlags(fieldVal.Addr().Interface(), baseCmd, unsetMap, scopeMap)
 		} else if field.Type.Kind() == reflect.Ptr && !fieldVal.IsNil() {
-			recursiveCreateUnsetFlags(fieldVal.Interface(), baseCmd, unsetMap)
+			recursiveCreateUnsetFlags(fieldVal.Interface(), baseCmd, unsetMap, scopeMap)
 		} else if field.Type.Kind() == reflect.Struct {
-			recursiveCreateUnsetFlags(fieldVal.Addr().Interface(), baseCmd, unsetMap)
+			recursiveCreateUnsetFlags(fieldVal.Addr().Interface(), baseCmd, unsetMap, scopeMap)
 		} else if field.Type.Kind() == reflect.Map {
 			switch field.Type.Elem().Kind() {
 			case reflect.String, reflect.Interface:
@@ -315,24 +318,25 @@ func recursiveCreateUnsetFlags(obj interface{}, baseCmd *cobra.Command, unsetMap
 				} else {
 					key = fieldVal.MapKeys()[0]
 				}
-				recursiveCreateUnsetFlags(fieldVal.MapIndex(key).Interface(), baseCmd, unsetMap)
+				recursiveCreateUnsetFlags(fieldVal.MapIndex(key).Interface(), baseCmd, unsetMap, scopeMap)
 			}
 		}
 	}
 }
 
-func createUnsetFlag(baseCmd *cobra.Command, myType reflect.StructField, unsetMap map[string]*bool) {
+func createUnsetFlag(baseCmd *cobra.Command, myType reflect.StructField, unsetMap map[string]*bool, scopeMap map[string]string) {
 	if myType.Tag.Get("lopt") != "" {
 		flagName := myType.Tag.Get("lopt")
 		shortOpt := myType.Tag.Get("sopt")
 
-		// Create a new bool variable for this flag
 		boolPtr := new(bool)
 		unsetMap[flagName] = boolPtr
 
-		comment := myType.Tag.Get("comment")
+		if scope := myType.Tag.Get("scope"); scope != "" {
+			scopeMap[flagName] = scope
+		}
 
-		// Create boolean flag with short option if available
+		comment := myType.Tag.Get("comment")
 		if shortOpt != "" {
 			baseCmd.PersistentFlags().BoolVarP(boolPtr, flagName, shortOpt, false, comment)
 		} else {

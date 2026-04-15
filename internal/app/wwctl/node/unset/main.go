@@ -37,7 +37,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 		args = hostlist.Expand(args)
 
 		// Validate scoping: sub-entity fields require their parent scope flags
-		if err := wwctlflags.ValidateUnsetScope(vars.unsetFields, vars.diskname, vars.partname, vars.fsname); err != nil {
+		if err := wwctlflags.ValidateUnsetScope(vars.unsetFields, vars.unsetScopes, vars.diskname, vars.partname, vars.fsname); err != nil {
 			return err
 		}
 

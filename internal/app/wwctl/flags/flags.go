@@ -2,28 +2,29 @@ package flags
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
 
 // ValidateUnsetScope checks that sub-entity unset flags have the required
-// scoping flags. Disk field flags require --diskname; partition field flags
-// require both --diskname and --partname; filesystem field flags require --fsname.
-func ValidateUnsetScope(unsetFields map[string]*bool, diskName, partName, fsName string) error {
+// scoping flags, using the scope map produced by node.CreateUnsetFlags.
+// Scope values: "disk" requires --diskname; "disk,part" requires both
+// --diskname and --partname; "fs" requires --fsname.
+func ValidateUnsetScope(unsetFields map[string]*bool, scopeMap map[string]string, diskName, partName, fsName string) error {
 	for flagName, boolPtr := range unsetFields {
 		if boolPtr == nil || !*boolPtr {
 			continue
 		}
-		if strings.HasPrefix(flagName, "part") {
+		switch scopeMap[flagName] {
+		case "disk,part":
 			if diskName == "" || partName == "" {
 				return fmt.Errorf("--diskname and --partname must be specified with --%s", flagName)
 			}
-		} else if strings.HasPrefix(flagName, "disk") {
+		case "disk":
 			if diskName == "" {
 				return fmt.Errorf("--diskname must be specified with --%s", flagName)
 			}
-		} else if strings.HasPrefix(flagName, "fs") {
+		case "fs":
 			if fsName == "" {
 				return fmt.Errorf("--fsname must be specified with --%s", flagName)
 			}

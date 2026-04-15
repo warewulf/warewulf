@@ -102,7 +102,7 @@ Holds the disks of a node
 */
 type Disk struct {
 	id         string                `yaml:"-"                    json:"-"`
-	WipeTableP *bool                 `yaml:"wipe_table,omitempty" json:"wipe_table,omitempty" lopt:"diskwipe" comment:"whether or not the partition tables shall be wiped" name:"WipeTable"`
+	WipeTableP *bool                 `yaml:"wipe_table,omitempty" json:"wipe_table,omitempty" lopt:"diskwipe" comment:"whether or not the partition tables shall be wiped" name:"WipeTable" scope:"disk"`
 	Partitions map[string]*Partition `yaml:"partitions,omitempty" json:"partitions,omitempty"`
 }
 
@@ -112,13 +112,13 @@ Partitions map
 */
 type Partition struct {
 	id                  string `yaml:"-"                              json:"-"`
-	Number              string `yaml:"number,omitempty"               json:"number,omitempty"               lopt:"partnumber" comment:"the partition number (if not set, next free slot is used)" type:"uint"`
-	SizeMiB             string `yaml:"size_mib,omitempty"             json:"size_mib,omitempty"             lopt:"partsize"   comment:"the partition size (if not set, maximum possible size is used)" type:"uint"`
+	Number              string `yaml:"number,omitempty"               json:"number,omitempty"               lopt:"partnumber" comment:"the partition number (if not set, next free slot is used)" type:"uint"  scope:"disk,part"`
+	SizeMiB             string `yaml:"size_mib,omitempty"             json:"size_mib,omitempty"             lopt:"partsize"   comment:"the partition size (if not set, maximum possible size is used)" type:"uint" scope:"disk,part"`
 	StartMiB            string `yaml:"start_mib,omitempty"            json:"start_mib,omitempty"                              comment:"the start of the partition" type:"uint"`
-	TypeGuid            string `yaml:"type_guid,omitempty"            json:"type_guid,omitempty"            lopt:"parttype"   comment:"the partition type GUID"`
+	TypeGuid            string `yaml:"type_guid,omitempty"            json:"type_guid,omitempty"            lopt:"parttype"   comment:"the partition type GUID"                                                         scope:"disk,part"`
 	Guid                string `yaml:"guid,omitempty"                 json:"guid,omitempty"                                   comment:"the GPT unique partition GUID"`
-	WipePartitionEntryP *bool  `yaml:"wipe_partition_entry,omitempty" json:"wipe_partition_entry,omitempty" lopt:"partwipe"   comment:"if true, Ignition will clobber an existing partition if it does not match the config" name:"WipePartitionEntry"`
-	ShouldExistP        *bool  `yaml:"should_exist,omitempty"         json:"should_exist,omitempty"         lopt:"partcreate" comment:"create the partition if it does not exist" name:"ShouldExist"`
+	WipePartitionEntryP *bool  `yaml:"wipe_partition_entry,omitempty" json:"wipe_partition_entry,omitempty" lopt:"partwipe"   comment:"if true, Ignition will clobber an existing partition if it does not match the config" name:"WipePartitionEntry" scope:"disk,part"`
+	ShouldExistP        *bool  `yaml:"should_exist,omitempty"         json:"should_exist,omitempty"         lopt:"partcreate" comment:"create the partition if it does not exist" name:"ShouldExist"                        scope:"disk,part"`
 	ResizeP             *bool  `yaml:"resize,omitempty"               json:"resize,omitempty"                                 comment:"whether or not the existing partition should be resize" name:"Resize"`
 }
 
@@ -127,9 +127,9 @@ Definition of a filesystem. The device is uniq so its used as key
 */
 type FileSystem struct {
 	id              string   `yaml:"-"                         json:"-"`
-	Format          string   `yaml:"format,omitempty"          json:"format,omitempty"          lopt:"fsformat" comment:"format of the file system"`
-	Path            string   `yaml:"path,omitempty"            json:"path,omitempty"            lopt:"fspath"   comment:"the mount point of the file system"`
-	WipeFileSystemP *bool    `yaml:"wipe_filesystem,omitempty" json:"wipe_filesystem,omitempty" lopt:"fswipe"   comment:"wipe file system at boot" name:"WipeFileSystem"`
+	Format          string   `yaml:"format,omitempty"          json:"format,omitempty"          lopt:"fsformat" comment:"format of the file system"                                                   scope:"fs"`
+	Path            string   `yaml:"path,omitempty"            json:"path,omitempty"            lopt:"fspath"   comment:"the mount point of the file system"                                           scope:"fs"`
+	WipeFileSystemP *bool    `yaml:"wipe_filesystem,omitempty" json:"wipe_filesystem,omitempty" lopt:"fswipe"   comment:"wipe file system at boot" name:"WipeFileSystem"                               scope:"fs"`
 	Label           string   `yaml:"label,omitempty"           json:"label,omitempty"                           comment:"the label of the filesystem"`
 	Uuid            string   `yaml:"uuid,omitempty"            json:"uuid,omitempty"                            comment:"the uuid of the filesystem"`
 	Options         []string `yaml:"options,omitempty"         json:"options,omitempty"                         comment:"any additional options to be passed to the format-specific mkfs utility"`

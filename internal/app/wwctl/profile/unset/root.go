@@ -10,7 +10,7 @@ type variables struct {
 	unsetYes    bool
 	unsetForce  bool
 	unsetFields map[string]*bool
-	profileConf node.Profile
+	unsetScopes map[string]string
 	netname     string
 	diskname    string
 	partname    string
@@ -26,7 +26,7 @@ type variables struct {
 
 func GetCommand() *cobra.Command {
 	vars := variables{}
-	vars.profileConf = node.NewProfile("")
+	profileConf := node.NewProfile("")
 
 	baseCmd := &cobra.Command{
 		DisableFlagsInUseLine: true,
@@ -38,8 +38,8 @@ func GetCommand() *cobra.Command {
 		ValidArgsFunction:     completions.Profiles,
 	}
 
-	// Create unset flags and store map
-	vars.unsetFields = vars.profileConf.CreateUnsetFlags(baseCmd)
+	// Create unset flags and store maps
+	vars.unsetFields, vars.unsetScopes = profileConf.CreateUnsetFlags(baseCmd)
 
 	// Add scoping flags for specifying which sub-entity to modify
 	baseCmd.PersistentFlags().StringVar(&vars.netname, "netname", "default", "network which is modified")

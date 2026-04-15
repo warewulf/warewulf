@@ -11,7 +11,7 @@ type variables struct {
 	unsetYes    bool
 	unsetForce  bool
 	unsetFields map[string]*bool
-	nodeConf    node.Node // For traversing struct
+	unsetScopes map[string]string
 	netname     string
 	diskname    string
 	partname    string
@@ -27,7 +27,7 @@ type variables struct {
 
 func GetCommand() *cobra.Command {
 	vars := variables{}
-	vars.nodeConf = node.NewNode("")
+	nodeConf := node.NewNode("")
 
 	baseCmd := &cobra.Command{
 		DisableFlagsInUseLine: true,
@@ -39,8 +39,8 @@ func GetCommand() *cobra.Command {
 		ValidArgsFunction:     completions.Nodes,
 	}
 
-	// Create unset flags and store map
-	vars.unsetFields = vars.nodeConf.CreateUnsetFlags(baseCmd)
+	// Create unset flags and store maps
+	vars.unsetFields, vars.unsetScopes = nodeConf.CreateUnsetFlags(baseCmd)
 
 	// Add scoping flags for specifying which sub-entity to modify
 	baseCmd.PersistentFlags().StringVar(&vars.netname, "netname", "default", "network which is modified")
