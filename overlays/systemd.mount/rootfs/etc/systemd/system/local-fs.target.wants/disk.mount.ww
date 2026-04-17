@@ -2,7 +2,7 @@
 {{- range $fs := .ThisNode.FileSystemList }}
 {{- 	if and $fs.Path (ne $fs.Format "swap") }}
 {{- 		$abort = false }}
-{{ file (print ($fs.Path | SystemdEscapePath) ".mount") }}
+{{- file (print ($fs.Path | SystemdEscapePath) ".mount") -}}
 {{ softlink (print "/etc/systemd/system/" ($fs.Path | SystemdEscapePath) ".mount") }}
 {{- 	end }}
 {{- end }}

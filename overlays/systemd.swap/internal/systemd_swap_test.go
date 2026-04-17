@@ -35,8 +35,6 @@ nodes:
 			output: `backupFile: true
 writeFile: true
 Filename: dev-disk-by\x2dpartlabel-swap.swap
-
-
 [Unit]
 Before=swap.target
 
@@ -67,8 +65,7 @@ nodes:
 			output: `backupFile: true
 writeFile: true
 Filename: dev-disk-by\x2dpartlabel-swap.swap
-
-{{ /* softlink "/etc/systemd/system/dev-disk-by\x2dpartlabel-swap.swap" */ }}
+Symlink: /etc/systemd/system/dev-disk-by\x2dpartlabel-swap.swap
 `,
 		},
 	}
