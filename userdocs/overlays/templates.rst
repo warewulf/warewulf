@@ -260,6 +260,30 @@ Escapes a path for use in a systemd unit file.
 Escape rules are documented at `systemd.unit. <https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html#String%20Escaping%20for%20Inclusion%20in%20Unit%20Names>`_
 
 
+Recursive Rendering
+-------------------
+
+``RenderResult`` triggers a second rendering pass on the current file's output,
+treating it as a new template. This allows templates to emit template syntax that
+is evaluated in a subsequent pass. For example:
+
+.. code-block::
+
+   {{ "{{ \"hello\" | upper }}" }}{{ RenderResult }}
+
+produces ``HELLO``. Without ``{{RenderResult}}``, the output would be the literal
+string ``{{ "hello" | upper }}``.
+
+Each ``{{ RenderResult }}`` call triggers exactly one additional pass. To chain
+multiple passes, the re-rendered output must itself emit ``{{ RenderResult }}``.
+``RenderPass`` returns the current pass number (0 on the first pass,
+incrementing on each subsequent pass):
+
+.. code-block::
+
+   Pass: {{ RenderPass }}{{ RenderResult }}{{ "Pass: {{ RenderPass }}" }}
+
+
 Examples
 ========
 

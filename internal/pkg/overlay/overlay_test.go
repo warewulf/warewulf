@@ -973,6 +973,57 @@ func TestRenderTemplate(t *testing.T) {
 				assert.Equal(t, "HELLO", rt.Files[0].Buffer.String())
 			},
 		},
+		{
+			name:     "RenderResult and recursiveRender",
+			template: `{{ "{{ \"hello\" | upper }}" }}{{ RenderResult }}`,
+			validate: func(t *testing.T, rt *RenderedTemplate, err error) {
+				assert.NoError(t, err)
+				// The flag should be cleared by RenderTemplate after the second pass
+				assert.False(t, rt.Files[0].ReRender)
+				assert.Equal(t, `HELLO`, rt.Files[0].Buffer.String())
+			},
+		},
+		{
+			name:     "Nested RenderResult",
+			template: `{{ "{{ \"{{ \\\"hello\\\" | upper }}\" }}{{ RenderResult }}" }}{{ RenderResult }}`,
+			validate: func(t *testing.T, rt *RenderedTemplate, err error) {
+				assert.NoError(t, err)
+				assert.Equal(t, `HELLO`, rt.Files[0].Buffer.String())
+			},
+		},
+		{
+			name:     "RenderPass",
+			template: `Pass:{{ RenderPass }}{{ RenderResult }}{{ "{{ RenderPass }}" }}`,
+			validate: func(t *testing.T, rt *RenderedTemplate, err error) {
+				assert.NoError(t, err)
+				// The first RenderPass is 0, the second (re-rendered) is 1.
+				// Initial render: "Pass:0{{ RenderPass }}"
+				// Result should be `Pass:01`
+				assert.Equal(t, `Pass:01`, rt.Files[0].Buffer.String())
+			},
+		},
+		{
+			name: "RenderPass multi-level",
+			// Pass 0 emits "0" and RenderResult; pass 1 emits "1" and RenderResult; pass 2 emits "2" with no further RenderResult.
+			template: `{{ RenderPass }}{{ RenderResult }}{{ "{{ RenderPass }}{{ RenderResult }}{{ \"{{ RenderPass }}\" }}" }}`,
+			validate: func(t *testing.T, rt *RenderedTemplate, err error) {
+				assert.NoError(t, err)
+				assert.Equal(t, "012", rt.Files[0].Buffer.String())
+			},
+		},
+		{
+			name: "file() emitted by re-render",
+			// Pass 0 emits RenderResult and a template that, when re-rendered, calls file("new.txt").
+			// The default slot is empty after the re-render (its buffer was reset), so it is
+			// stripped and only the named file survives.
+			template: `{{ RenderResult }}{{ "{{- file \"new.txt\" -}}new content" }}`,
+			validate: func(t *testing.T, rt *RenderedTemplate, err error) {
+				assert.NoError(t, err)
+				assert.Len(t, rt.Files, 1)
+				assert.Equal(t, "new.txt", rt.Files[0].Name)
+				assert.Equal(t, "new content", rt.Files[0].Buffer.String())
+			},
+		},
 	}
 
 	for _, tt := range tests {

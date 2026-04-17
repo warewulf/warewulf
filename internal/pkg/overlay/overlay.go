@@ -1154,6 +1154,7 @@ type RenderedFile struct {
 	IsSymlink bool
 	Target    string
 	Buffer    bytes.Buffer
+	ReRender  bool
 }
 
 // RenderedTemplate is the complete output of rendering a .ww template file.
@@ -1167,6 +1168,7 @@ type RenderedTemplate struct {
 	WriteFile  bool
 	BackupFile bool
 	Files      []*RenderedFile
+	Pass       int // current render pass; 0 on the initial pass, incrementing on each re-render
 }
 
 type multiFileWriter struct {
@@ -1227,6 +1229,16 @@ func buildTemplateFuncMap(fileName string, data TemplateStruct, result *Rendered
 		return ""
 	}
 
+	renderFileAgainFn := func() string {
+		wwlog.Debug("renderFileAgain")
+		result.Files[len(result.Files)-1].ReRender = true
+		return ""
+	}
+
+	renderPassFn := func() int {
+		return result.Pass
+	}
+
 	funcMap := template.FuncMap{
 		"Include":           templateFileInclude,
 		"IncludeFrom":       templateImageFileInclude,
@@ -1244,6 +1256,8 @@ func buildTemplateFuncMap(fileName string, data TemplateStruct, result *Rendered
 		"UniqueField":       UniqueField,
 		"SystemdEscape":     unit.UnitNameEscape,
 		"SystemdEscapePath": unit.UnitNamePathEscape,
+		"RenderResult":      renderFileAgainFn,
+		"RenderPass":        renderPassFn,
 	}
 
 	for key, value := range sprig.TxtFuncMap() {
@@ -1277,6 +1291,22 @@ func RenderTemplate(fileName string, data TemplateStruct) (*RenderedTemplate, er
 			result.WriteFile = false
 		} else {
 			return nil, fmt.Errorf("could not execute template: %w", err)
+		}
+	}
+
+	// Re-render any files that called RenderResult. Each file loops until its
+	// re-rendered output no longer calls RenderResult. Index-based iteration is
+	// required so that file() calls inside a recursive render, which append new
+	// entries to result.Files, are also visited.
+	for i := 0; i < len(result.Files); i++ {
+		f := result.Files[i]
+		for f.ReRender {
+			f.ReRender = false
+			result.Pass++
+			writer.current = &f.Buffer
+			if err := f.recursiveRender(data, result, writer); err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -1321,4 +1351,25 @@ func (overlay Overlay) GetFiles() (files []string, err error) {
 		return nil
 	})
 	return
+}
+
+func (currentFile *RenderedFile) recursiveRender(data TemplateStruct, result *RenderedTemplate, writer *multiFileWriter) error {
+	funcMap := buildTemplateFuncMap(currentFile.Name, data, result, writer)
+	content := currentFile.Buffer.String()
+	currentFile.Buffer.Reset()
+	tmpl, err := template.New(currentFile.Name).Option("missingkey=default").Funcs(funcMap).Parse(content)
+	if err != nil {
+		return fmt.Errorf("could not recursively parse template: %v", err)
+	}
+	if err = tmpl.Execute(writer, data); err != nil {
+		if errors.Is(err, errAbort) {
+			// abort() halts execution at the call site; content up to that point
+			// is preserved in result.Files[0].Buffer for debugging via overlay show / API.
+			result.WriteFile = false
+		} else {
+			return fmt.Errorf("could not execute template: %w", err)
+		}
+	}
+
+	return nil
 }
