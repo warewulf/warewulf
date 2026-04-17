@@ -18,6 +18,29 @@ import (
 const sampleTemplate = `{{ if .Tags.email }}eMail: {{ .Tags.email }}{{else}} noMail{{- end }}
 `
 
+const multiFileTemplate = `{{- range $name := list "alpha" "beta" }}
+{{- file $name -}}
+content of {{ $name }}
+{{ end -}}`
+
+const abortTemplate = `{{- abort -}}`
+
+const abortWithContentTemplate = `some content
+{{- abort -}}`
+
+const symlinkTemplate = `{{- softlink "/usr/share/zoneinfo/UTC" -}}`
+
+const multiSymlinkTemplate = `{{- file "link1" -}}
+{{- softlink "/target1" -}}
+{{- file "link2" -}}
+{{- softlink "/target2" -}}`
+
+const sampleNodesConf = `
+nodeprofiles: {}
+nodes:
+  node1: {}
+`
+
 var overlayTests = []struct {
 	name          string
 	initFiles     map[string]string
@@ -105,6 +128,96 @@ var overlayTests = []struct {
 			return http.NewRequest(http.MethodGet, serverURL+"/api/overlays", nil)
 		},
 		response: `{"test":{"files":null, "site":true},"testoverlay":{"files":["/email.ww"], "site":true}}`,
+	},
+	{
+		name: "render multi-file overlay template",
+		initFiles: map[string]string{
+			"/usr/share/warewulf/overlays/multioverlay/multi.ww": multiFileTemplate,
+			"/etc/warewulf/nodes.conf":                           sampleNodesConf,
+		},
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodGet, serverURL+"/api/overlays/multioverlay/file?path=multi.ww&render=node1", nil)
+		},
+		response: `{
+			"overlay": "multioverlay",
+			"path": "multi.ww",
+			"contents": "Filename: alpha\ncontent of alpha\nFilename: beta\ncontent of beta\n",
+			"perms": "<<PRESENCE>>",
+			"uid": "<<PRESENCE>>",
+			"gid": "<<PRESENCE>>"
+		}`,
+	},
+	{
+		name: "render aborted template",
+		initFiles: map[string]string{
+			"/usr/share/warewulf/overlays/multioverlay/abort.ww": abortTemplate,
+			"/etc/warewulf/nodes.conf":                           sampleNodesConf,
+		},
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodGet, serverURL+"/api/overlays/multioverlay/file?path=abort.ww&render=node1", nil)
+		},
+		response: `{
+			"overlay": "multioverlay",
+			"path": "abort.ww",
+			"contents": "Aborted\n",
+			"perms": "<<PRESENCE>>",
+			"uid": "<<PRESENCE>>",
+			"gid": "<<PRESENCE>>"
+		}`,
+	},
+	{
+		name: "render aborted template with pre-abort content",
+		initFiles: map[string]string{
+			"/usr/share/warewulf/overlays/multioverlay/abort-content.ww": abortWithContentTemplate,
+			"/etc/warewulf/nodes.conf":                                   sampleNodesConf,
+		},
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodGet, serverURL+"/api/overlays/multioverlay/file?path=abort-content.ww&render=node1", nil)
+		},
+		response: `{
+			"overlay": "multioverlay",
+			"path": "abort-content.ww",
+			"contents": "some contentAborted\n",
+			"perms": "<<PRESENCE>>",
+			"uid": "<<PRESENCE>>",
+			"gid": "<<PRESENCE>>"
+		}`,
+	},
+	{
+		name: "render single-file symlink template",
+		initFiles: map[string]string{
+			"/usr/share/warewulf/overlays/multioverlay/symlink.ww": symlinkTemplate,
+			"/etc/warewulf/nodes.conf":                             sampleNodesConf,
+		},
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodGet, serverURL+"/api/overlays/multioverlay/file?path=symlink.ww&render=node1", nil)
+		},
+		response: `{
+			"overlay": "multioverlay",
+			"path": "symlink.ww",
+			"contents": "Symlink: /usr/share/zoneinfo/UTC\n",
+			"perms": "<<PRESENCE>>",
+			"uid": "<<PRESENCE>>",
+			"gid": "<<PRESENCE>>"
+		}`,
+	},
+	{
+		name: "render multi-file symlink template",
+		initFiles: map[string]string{
+			"/usr/share/warewulf/overlays/multioverlay/multi-symlink.ww": multiSymlinkTemplate,
+			"/etc/warewulf/nodes.conf":                                   sampleNodesConf,
+		},
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodGet, serverURL+"/api/overlays/multioverlay/file?path=multi-symlink.ww&render=node1", nil)
+		},
+		response: `{
+			"overlay": "multioverlay",
+			"path": "multi-symlink.ww",
+			"contents": "Filename: link1\nSymlink: /target1\nFilename: link2\nSymlink: /target2\n",
+			"perms": "<<PRESENCE>>",
+			"uid": "<<PRESENCE>>",
+			"gid": "<<PRESENCE>>"
+		}`,
 	},
 	{
 		name: "delete overlay file",

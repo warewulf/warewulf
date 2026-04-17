@@ -35,8 +35,6 @@ nodes:
 			output: `backupFile: true
 writeFile: true
 Filename: -.mount
-
-
 [Unit]
 Before=local-fs.target
 
@@ -50,7 +48,6 @@ RequiredBy=local-fs.target
 backupFile: true
 writeFile: true
 Filename: scratch.mount
-
 [Unit]
 Before=local-fs.target
 
@@ -83,12 +80,11 @@ nodes:
 			output: `backupFile: true
 writeFile: true
 Filename: -.mount
-
-{{ /* softlink "/etc/systemd/system/-.mount" */ }}
+Symlink: /etc/systemd/system/-.mount
 backupFile: true
 writeFile: true
 Filename: scratch.mount
-{{ /* softlink "/etc/systemd/system/scratch.mount" */ }}
+Symlink: /etc/systemd/system/scratch.mount
 `,
 		},
 	}

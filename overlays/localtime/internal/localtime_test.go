@@ -52,5 +52,5 @@ func Test_localtimeOverlay(t *testing.T) {
 const localtime string = `backupFile: true
 writeFile: true
 Filename: etc/localtime
-{{ /* softlink "/usr/share/zoneinfo/GMT" */ }}
+Symlink: /usr/share/zoneinfo/GMT
 `

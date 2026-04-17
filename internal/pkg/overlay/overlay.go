@@ -1,8 +1,8 @@
 package overlay
 
 import (
-	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -294,7 +294,13 @@ func (overlay Overlay) ParseVarFields(file string) map[string]FieldInfo {
 		return nil
 	}
 
-	funcMap, _, _ := getTemplateFuncMap(fullPath, TemplateStruct{})
+	renderState := &RenderedTemplate{
+		Files: []*RenderedFile{
+			{Name: ""},
+		},
+	}
+	renderWriter := &multiFileWriter{current: &renderState.Files[0].Buffer}
+	funcMap := buildTemplateFuncMap(fullPath, TemplateStruct{}, renderState, renderWriter)
 	tmpl, err := template.New(path.Base(fullPath)).Option("missingkey=default").Funcs(funcMap).ParseFiles(fullPath)
 	if err != nil {
 		wwlog.Error("Could not parse template file %s: %s", fullPath, err)
@@ -946,16 +952,6 @@ func BuildOverlay(nodeConf node.Node, allNodes []node.Node, context string, over
 	return err
 }
 
-var (
-	regFile *regexp.Regexp
-	regLink *regexp.Regexp
-)
-
-func init() {
-	regFile = regexp.MustCompile(`.*{{\s*/\*\s*file\s*["'](.*)["']\s*\*/\s*}}.*`)
-	regLink = regexp.MustCompile(`.*{{\s*/\*\s*softlink\s*["'](.*)["']\s*\*/\s*}}.*`)
-}
-
 // Build the given overlays for a node in the given directory.
 func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []string, outputDir string) error {
 	if len(overlayNames) == 0 {
@@ -1005,7 +1001,7 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 
 			} else if filepath.Ext(walkPath) == ".ww" {
 				originalOutputPath := outputPath
-				outputPath := strings.TrimSuffix(outputPath, ".ww")
+				defaultOutputPath := strings.TrimSuffix(outputPath, ".ww")
 				tstruct, err := InitStruct(overlayName, nodeData, allNodes)
 				if err != nil {
 					return fmt.Errorf("failed to initial data for %s: %w", nodeData.Id(), err)
@@ -1013,79 +1009,60 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 				tstruct.BuildSource = walkPath
 				wwlog.Verbose("Evaluating overlay template file: %s", walkPath)
 
-				buffer, backupFile, writeFile, err := RenderTemplateFile(walkPath, tstruct)
+				rendered, err := RenderTemplate(walkPath, tstruct)
 				if err != nil {
 					return fmt.Errorf("failed to render template %s: %w", walkPath, err)
 				}
-				if !*writeFile {
+				if !rendered.WriteFile {
 					return nil
 				}
-				var fileBuffer bytes.Buffer
-				// search for magic file name comment
-				fileScanner := bufio.NewScanner(bytes.NewReader(buffer.Bytes()))
-				fileScanner.Split(ScanLines)
-				writingToNamedFile := false
-				isLink := false
-				for fileScanner.Scan() {
-					line := fileScanner.Text()
-					filenameFromTemplate := regFile.FindAllStringSubmatch(line, -1)
-					targetFromTemplate := regLink.FindAllStringSubmatch(line, -1)
-					if len(targetFromTemplate) != 0 {
-						target := targetFromTemplate[0][1]
-						wwlog.Debug("Creating soft link %s -> %s", outputPath, target)
-						err := os.Symlink(target, outputPath)
-						if err != nil {
-							return fmt.Errorf("could not create symlink from template: %w", err)
-						} else {
-							isLink = true
-						}
-					} else if len(filenameFromTemplate) != 0 {
-						wwlog.Debug("Writing file %s", filenameFromTemplate[0][1])
-						if writingToNamedFile && !isLink {
-							err = CarefulWriteBuffer(outputPath, fileBuffer, *backupFile, info.Mode())
-							if err != nil {
-								return fmt.Errorf("could not write file from template: %w", err)
-							}
-							err = util.CopyUIDGID(walkPath, outputPath)
-							if err != nil {
-								return fmt.Errorf("failed setting permissions on template output file: %w", err)
-							}
-							fileBuffer.Reset()
-						}
-						if path.IsAbs(filenameFromTemplate[0][1]) {
-							outputPath = filenameFromTemplate[0][1]
-							// Create parent directory for absolute paths
-							parentDir := path.Dir(outputPath)
-							sourceDirInfo, err := os.Stat(path.Dir(walkPath))
-							if err != nil {
-								return fmt.Errorf("could not stat source directory: %w", err)
-							}
-							if err := os.MkdirAll(parentDir, sourceDirInfo.Mode()); err != nil {
-								return fmt.Errorf("could not create parent directory for absolute path: %w", err)
-							}
-						} else {
-							outputPath = path.Join(path.Dir(originalOutputPath), filenameFromTemplate[0][1])
-						}
-						writingToNamedFile = true
-						isLink = false
-					} else {
-						if _, err = fileBuffer.WriteString(line); err != nil {
-							return fmt.Errorf("could not write to template buffer: %w", err)
-						}
-					}
-				}
-				if !isLink {
-					err = CarefulWriteBuffer(outputPath, fileBuffer, *backupFile, info.Mode())
-					if err != nil {
-						return fmt.Errorf("could not write file from template: %w", err)
-					}
-					err = util.CopyUIDGID(walkPath, outputPath)
-					if err != nil {
-						return fmt.Errorf("failed setting permissions on template output file: %w", err)
-					}
-					wwlog.Debug("Wrote template file into overlay: %s", outputPath)
-				}
 
+				// Write each output file. The default slot (Name == "") is written to
+				// defaultOutputPath when it is the only file. When named files are also
+				// present, the default slot is skipped unless it is a symlink: content
+				// before the first file() call often includes template setup (variable
+				// assignments, range headers) that produces incidental whitespace, and
+				// writing it as a separate file would be unexpected. A softlink() call
+				// before any file() call is always intentional and must be honored.
+				// Named files are always written.
+				for _, f := range rendered.Files {
+					var filePath string
+					if f.Name == "" {
+						if len(rendered.Files) > 1 && !f.IsSymlink {
+							continue
+						}
+						filePath = defaultOutputPath
+					} else if path.IsAbs(f.Name) {
+						filePath = f.Name
+						parentDir := path.Dir(filePath)
+						sourceDirInfo, err := os.Stat(path.Dir(walkPath))
+						if err != nil {
+							return fmt.Errorf("could not stat source directory: %w", err)
+						}
+						if err := os.MkdirAll(parentDir, sourceDirInfo.Mode()); err != nil {
+							return fmt.Errorf("could not create parent directory for absolute path: %w", err)
+						}
+					} else {
+						filePath = path.Join(path.Dir(originalOutputPath), f.Name)
+					}
+
+					if f.IsSymlink {
+						wwlog.Debug("Creating soft link %s -> %s", filePath, f.Target)
+						if err = os.Symlink(f.Target, filePath); err != nil {
+							return fmt.Errorf("could not create symlink from template: %w", err)
+						}
+					} else {
+						wwlog.Debug("Writing file %s", f.Name)
+						err = CarefulWriteBuffer(filePath, f.Buffer, rendered.BackupFile, info.Mode())
+						if err != nil {
+							return fmt.Errorf("could not write file from template: %w", err)
+						}
+						err = util.CopyUIDGID(walkPath, filePath)
+						if err != nil {
+							return fmt.Errorf("failed setting permissions on template output file: %w", err)
+						}
+					}
+				}
 			} else if info.Mode()&os.ModeSymlink == os.ModeSymlink {
 				wwlog.Debug("Found symlink %s", walkPath)
 				target, err := os.Readlink(walkPath)
@@ -1153,92 +1130,186 @@ func CarefulWriteBuffer(destFile string, buffer bytes.Buffer, backupFile bool, p
 	return err
 }
 
-// getTemplateFuncMap returns a template.FuncMap with all the functions
-// for warewulf templates.
-func getTemplateFuncMap(fileName string, data TemplateStruct) (funcMap template.FuncMap, writeFile, backupFile *bool) {
-	// Build our FuncMap
-	_writeFile := true
-	_backupFile := true
-	writeFile = &_writeFile
-	backupFile = &_backupFile
-	funcMap = template.FuncMap{
-		"Include":      templateFileInclude,
-		"IncludeFrom":  templateImageFileInclude,
-		"IncludeBlock": templateFileBlock,
-		"ImportLink":   importSoftlink,
-		"basename":     path.Base,
-		"inc":          func(i int) int { return i + 1 },
-		"dec":          func(i int) int { return i - 1 },
-		"file":         func(str string) string { return fmt.Sprintf("{{ /* file \"%s\" */ }}", str) },
-		"softlink":     softlink,
-		"readlink":     filepath.EvalSymlinks,
-		"IgnitionJson": func() string {
-			return createIgnitionJson(data.ThisNode)
-		},
-		"abort": func() string {
-			wwlog.Debug("abort file called in %s", fileName)
-			*writeFile = false
-			return ""
-		},
-		"nobackup": func() string {
-			wwlog.Debug("not backup for %s", fileName)
-			*backupFile = false
-			return ""
-		},
+// errAbort is returned by the abort() template function to halt template execution
+// at the exact point of the call. RenderTemplate catches this sentinel and sets
+// result.WriteFile = false rather than propagating it as a real error.
+var errAbort = errors.New("abort")
+
+// RenderedFile represents one output file or symlink produced by a .ww template.
+// Template rendering uses a state-based multi-file writer instead of post-processing
+// sentinel strings. When a .ww template calls file("name"), the fileFn closure appends
+// a RenderedFile to the result and redirects the multiFileWriter to that file's buffer.
+// All subsequent template output flows into that buffer until the next file() call.
+// This approach is whitespace-trim safe: the old sentinel approach broke when {{- -}}
+// caused adjacent file() calls to collapse onto a single line, causing the greedy regex
+// to match only the last sentinel.
+//
+// A RenderedFile with an empty Name is the default slot. It holds all template
+// output when no file() calls are made, or the content written before the first
+// file() call when file() calls are present. What callers do with that content
+// is their responsibility: BuildOverlayIndir does not write it to disk when named
+// files are also present, but RenderTemplateFile always returns it.
+type RenderedFile struct {
+	Name      string
+	IsSymlink bool
+	Target    string
+	Buffer    bytes.Buffer
+}
+
+// RenderedTemplate is the complete output of rendering a .ww template file.
+// Files is always initialized with a default entry (Name == "") before rendering.
+// When no file() calls are present, all content goes to that entry and it is the
+// only element. When file() calls are present, named entries follow the default.
+// The default entry is stripped only when its buffer is empty; a non-empty buffer
+// is preserved so callers can inspect pre-file() content. Whether that content is
+// written to disk is left to the caller (see BuildOverlayIndir).
+type RenderedTemplate struct {
+	WriteFile  bool
+	BackupFile bool
+	Files      []*RenderedFile
+}
+
+type multiFileWriter struct {
+	current *bytes.Buffer // redirected by file() and softlink() closures
+}
+
+func (w *multiFileWriter) Write(p []byte) (n int, err error) {
+	return w.current.Write(p)
+}
+
+// buildTemplateFuncMap constructs the template FuncMap for a .ww template.
+// result and writer are the shared mutable state closed over by the stateful
+// template functions (file, softlink, ImportLink, abort, nobackup). They must
+// be allocated by the caller so RenderTemplate and ParseVarFields can each
+// supply their own isolated state.
+func buildTemplateFuncMap(fileName string, data TemplateStruct, result *RenderedTemplate, writer *multiFileWriter) template.FuncMap {
+	softlinkFn := func(target string) string {
+		if len(result.Files) > 0 {
+			last := result.Files[len(result.Files)-1]
+			last.IsSymlink = true
+			last.Target = target
+		}
+		return ""
+	}
+
+	importlinkFn := func(lnk string) (string, error) {
+		resolvedTarget, err := filepath.EvalSymlinks(lnk)
+		if err != nil {
+			return "", fmt.Errorf("ImportLink: failed to resolve symlink %q: %w", lnk, err)
+		}
+		wwlog.Debug("importing softlink pointing to: %s", resolvedTarget)
+		return softlinkFn(resolvedTarget), nil
+	}
+
+	// fileFn switches the active write target; returns "" so no output is emitted.
+	fileFn := func(name string) string {
+		f := &RenderedFile{Name: name}
+		result.Files = append(result.Files, f)
+		writer.current = &f.Buffer
+		return ""
+	}
+
+	incFn := func(i int) int { return i + 1 }
+	decFn := func(i int) int { return i - 1 }
+
+	ignitionFn := func() string {
+		return createIgnitionJson(data.ThisNode)
+	}
+
+	abortFn := func() (string, error) {
+		wwlog.Debug("abort file called in %s", fileName)
+		return "", errAbort
+	}
+
+	nobackupFn := func() string {
+		wwlog.Debug("not backup for %s", fileName)
+		result.BackupFile = false
+		return ""
+	}
+
+	funcMap := template.FuncMap{
+		"Include":           templateFileInclude,
+		"IncludeFrom":       templateImageFileInclude,
+		"IncludeBlock":      templateFileBlock,
+		"ImportLink":        importlinkFn,
+		"basename":          path.Base,
+		"inc":               incFn,
+		"dec":               decFn,
+		"file":              fileFn,
+		"softlink":          softlinkFn,
+		"readlink":          filepath.EvalSymlinks,
+		"IgnitionJson":      ignitionFn,
+		"abort":             abortFn,
+		"nobackup":          nobackupFn,
 		"UniqueField":       UniqueField,
 		"SystemdEscape":     unit.UnitNameEscape,
 		"SystemdEscapePath": unit.UnitNamePathEscape,
 	}
 
-	// Merge sprig.FuncMap with our FuncMap
 	for key, value := range sprig.TxtFuncMap() {
 		funcMap[key] = value
 	}
-	return funcMap, writeFile, backupFile
+	return funcMap
 }
 
-/*
-Parses the template with the given filename, variables must be in data. Returns the
-parsed template as bytes.Buffer, and the bool variables for backupFile and writeFile.
-If something goes wrong an error is returned.
-*/
+// RenderTemplate renders the .ww template at fileName with the provided data,
+// returning a RenderedTemplate that describes all output files. The file() and
+// softlink() template functions update state directly rather than emitting
+// sentinel strings, so they work correctly regardless of whitespace trimming.
+func RenderTemplate(fileName string, data TemplateStruct) (*RenderedTemplate, error) {
+	result := &RenderedTemplate{
+		WriteFile:  true,
+		BackupFile: true,
+		Files:      []*RenderedFile{{Name: ""}},
+	}
+	writer := &multiFileWriter{current: &result.Files[0].Buffer}
+	funcMap := buildTemplateFuncMap(fileName, data, result, writer)
+
+	tmpl, err := template.New(path.Base(fileName)).Option("missingkey=default").Funcs(funcMap).ParseGlob(fileName)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse template %s: %w", fileName, err)
+	}
+
+	if err = tmpl.Execute(writer, data); err != nil {
+		if errors.Is(err, errAbort) {
+			// abort() halts execution at the call site; content up to that point
+			// is preserved in result.Files[0].Buffer for debugging via overlay show / API.
+			result.WriteFile = false
+		} else {
+			return nil, fmt.Errorf("could not execute template: %w", err)
+		}
+	}
+
+	// Strip the default slot only when its buffer is empty and it is not a symlink.
+	// A non-empty buffer means the template wrote content before the first file()
+	// call; a symlink means softlink() was called before any file() call. Either
+	// way the entry is preserved for callers to inspect or act on.
+	// What is written to disk is decided by the caller, not here.
+	if len(result.Files) > 1 && result.Files[0].Name == "" && result.Files[0].Buffer.Len() == 0 && !result.Files[0].IsSymlink {
+		result.Files = result.Files[1:]
+	}
+
+	return result, nil
+}
+
+// RenderTemplateFile is a wrapper around RenderTemplate for callers that only
+// need a single rendered buffer. It returns the default slot (Files[0].Buffer):
+// all content when the template makes no file() calls, or the content written
+// before the first file() call when file() calls are present. Callers that need
+// named output files or symlink information should use RenderTemplate directly.
 func RenderTemplateFile(fileName string, data TemplateStruct) (
 	buffer bytes.Buffer, backupFile, writeFile *bool,
 	err error,
 ) {
-
-	funcMap, writeFile, backupFile := getTemplateFuncMap(fileName, data)
-
-	// Create the template with the merged FuncMap
-	tmpl, err := template.New(path.Base(fileName)).Option("missingkey=default").Funcs(funcMap).ParseGlob(fileName)
-	if err != nil {
-		err = fmt.Errorf("could not parse template %s: %w", fileName, err)
+	rendered, renderErr := RenderTemplate(fileName, data)
+	if renderErr != nil {
+		err = renderErr
 		return
 	}
-
-	err = tmpl.Execute(&buffer, data)
-	if err != nil {
-		err = fmt.Errorf("could not execute template: %w", err)
-		return
-	}
+	backupFile = &rendered.BackupFile
+	writeFile = &rendered.WriteFile
+	buffer = rendered.Files[0].Buffer
 	return
-}
-
-// Simple version of ScanLines, but include the line break
-func ScanLines(data []byte, atEOF bool) (advance int, token []byte, err error) {
-	if atEOF && len(data) == 0 {
-		return 0, nil, nil
-	}
-	if i := bytes.IndexByte(data, '\n'); i >= 0 {
-		// We have a full newline-terminated line.
-		return i + 1, data[0 : i+1], nil
-	}
-	// If we're at EOF, we have a final, non-terminated line. Return it.
-	if atEOF {
-		return len(data), data, nil
-	}
-	// Request more data.
-	return 0, nil, nil
 }
 
 // Get all the files as a string slice for a given overlay

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
@@ -116,19 +115,6 @@ func createIgnitionJson(node *node.Node) string {
 	}
 	tmpYaml, _ := json.Marshal(&conf)
 	return string(tmpYaml)
-}
-
-func importSoftlink(lnk string) string {
-	target, err := filepath.EvalSymlinks(lnk)
-	if err != nil {
-		return "abort"
-	}
-	wwlog.Debug("importing softlink pointing to: %s", target)
-	return softlink(target)
-}
-
-func softlink(target string) string {
-	return fmt.Sprintf("{{ /* softlink \"%s\" */ }}", target)
 }
 
 // UniqueField returns a filtered version of a multi-line input string. input is
