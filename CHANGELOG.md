@@ -24,6 +24,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fix `wwctl node set --all` to set values on all nodes
 - Fix path traversal vulnerability (CWE-23)
 - Bump minimum golang version to 1.25.5 to address stdlib CVEs
+- Fix `{{ file }}`, `{{ softlink }}`, and `{{ ImportLink }}` template functions
+  to use state-based routing instead of sentinel strings, so whitespace-trimming
+  syntax (e.g. `{{- file "name" -}}`) correctly creates all named files and
+  symlinks. #2188
+- Add `{{ RenderResult }}` and `{{ RenderPass }}` template functions for
+  recursive rendering: `RenderResult` re-renders the current file's output as a
+  new template, and `RenderPass` returns the current pass number (0-indexed).
 
 ### Dependencies
 
