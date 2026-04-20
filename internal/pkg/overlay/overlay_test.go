@@ -230,8 +230,79 @@ T3
 			outputDir: "/image",
 			outputFiles: map[string]string{
 				"t1.txt": "\nT1\n",
-				"t2.txt": "T2\n",
-				"t3.txt": "T3\n",
+				"t2.txt": "\nT2\n",
+				"t3.txt": "\nT3\n",
+			},
+		},
+		"multifile whitespace trimmed": {
+			overlays: []string{"o1"},
+			overlayFiles: map[string]string{
+				"/var/lib/warewulf/overlays/o1/rootfs/file.txt.ww": `{{- range $i, $name := list "a" "b" "c" }}
+{{ file $name }}
+{{- end -}}`,
+			},
+			outputDir: "/image",
+			outputFiles: map[string]string{
+				"a": "\n",
+				"b": "\n",
+				"c": "",
+			},
+		},
+		"abort": {
+			// Regression test: abort() must suppress all file output in BuildOverlayIndir.
+			overlays: []string{"o1"},
+			overlayFiles: map[string]string{
+				"/var/lib/warewulf/overlays/o1/rootfs/file.txt.ww": `{{- abort -}}`,
+			},
+			outputDir:   "/image",
+			outputFiles: map[string]string{},
+		},
+		"multifile all empty with whitespace trimming": {
+			// Regression test: before the state-based rewrite, using {{- file "name" -}}
+			// caused adjacent file() sentinels to collapse onto one line. The greedy .*
+			// in the regex matched only the last sentinel, so only the final file was
+			// created. All three files must be created here, each with zero content.
+			overlays: []string{"o1"},
+			overlayFiles: map[string]string{
+				"/var/lib/warewulf/overlays/o1/rootfs/file.txt.ww": `{{- range $name := list "a" "b" "c" -}}
+{{- file $name -}}
+{{- end -}}`,
+			},
+			outputDir: "/image",
+			outputFiles: map[string]string{
+				"a": "",
+				"b": "",
+				"c": "",
+			},
+		},
+		"multifile default symlink written to disk": {
+			// A softlink() call before any file() call targets the default output
+			// path and must be created even when named files are also present.
+			overlays: []string{"o1"},
+			overlayFiles: map[string]string{
+				"/var/lib/warewulf/overlays/o1/rootfs/file.txt.ww": `{{- softlink "/link-target" -}}{{- file "named.txt" -}}named content`,
+			},
+			outputDir: "/image",
+			outputFiles: map[string]string{
+				"named.txt": "named content",
+			},
+			outputSymlinks: map[string]string{
+				"file.txt": "/link-target",
+			},
+		},
+		"multifile pre-file content not written to disk": {
+			// Content written before the first file() call is preserved in the
+			// RenderedTemplate (RenderTemplateFile returns it), but BuildOverlayIndir
+			// does not write it to disk when named files are present. Only named.txt
+			// is created; file.txt is not, despite the non-empty default buffer.
+			overlays: []string{"o1"},
+			overlayFiles: map[string]string{
+				"/var/lib/warewulf/overlays/o1/rootfs/file.txt.ww": `pre-file content
+{{ file "named.txt" }}named content`,
+			},
+			outputDir: "/image",
+			outputFiles: map[string]string{
+				"named.txt": "named content",
 			},
 		},
 		"symlink": {
@@ -334,6 +405,24 @@ Tags:map[]
 				assert.NoError(t, err)
 				assert.Equal(t, expTarget, target)
 			}
+		})
+	}
+}
+
+func Test_BuildOverlayIndir_PathTraversal(t *testing.T) {
+	tests := map[string]string{
+		"relative traversal": `{{- file "../../../../etc/shadow" -}}escaped`,
+		"absolute traversal": `{{- file "/../../etc/shadow" -}}escaped`,
+	}
+
+	for name, tmpl := range tests {
+		t.Run(name, func(t *testing.T) {
+			env := testenv.New(t)
+			defer env.RemoveAll()
+			env.WriteFile("/var/lib/warewulf/overlays/o1/rootfs/file.txt.ww", tmpl)
+			env.MkdirAll("/image")
+			err := BuildOverlayIndir(node.Node{}, []node.Node{}, []string{"o1"}, env.GetPath("/image"))
+			assert.ErrorContains(t, err, "escapes output directory")
 		})
 	}
 }
@@ -749,6 +838,223 @@ func Test_CreateOverlayFile(t *testing.T) {
 			assert.Equal(t, tt.content, readContent)
 		})
 	}
+}
+
+func Test_RenderTemplate_ImportLink(t *testing.T) {
+	// Create a real symlink on the host filesystem for the success case.
+	// ImportLink calls filepath.EvalSymlinks on the host, not in the overlay rootfs.
+	tmpDir := t.TempDir()
+	target := filepath.Join(tmpDir, "real-target")
+	err := os.WriteFile(target, []byte("content"), 0644)
+	assert.NoError(t, err)
+	link := filepath.Join(tmpDir, "test-link")
+	err = os.Symlink(target, link)
+	assert.NoError(t, err)
+
+	t.Run("ImportLink success", func(t *testing.T) {
+		env := testenv.New(t)
+		defer env.RemoveAll()
+		tmplContent := fmt.Sprintf(`{{- ImportLink %q -}}`, link)
+		tmplPath := env.GetPath("test.ww")
+		env.WriteFile("test.ww", tmplContent)
+		rendered, err := RenderTemplate(tmplPath, TemplateStruct{})
+		assert.NoError(t, err)
+		assert.True(t, rendered.Files[0].IsSymlink)
+		assert.Equal(t, target, rendered.Files[0].Target)
+	})
+
+	t.Run("ImportLink failure", func(t *testing.T) {
+		env := testenv.New(t)
+		defer env.RemoveAll()
+		tmplPath := env.GetPath("test.ww")
+		env.WriteFile("test.ww", `{{- ImportLink "/nonexistent/path/that/does/not/exist" -}}`)
+		_, err := RenderTemplate(tmplPath, TemplateStruct{})
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "ImportLink")
+	})
+}
+
+func TestRenderTemplate(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+
+	// Setup for Include and IncludeBlock
+	includeDir := env.GetPath(path.Join(testenv.Sysconfdir, "warewulf"))
+	env.MkdirAll(path.Join(testenv.Sysconfdir, "warewulf"))
+
+	includeFile := path.Join(includeDir, "test-include")
+	err := os.WriteFile(includeFile, []byte("included content\n"), 0644)
+	assert.NoError(t, err)
+
+	blockFile := path.Join(includeDir, "test-block")
+	err = os.WriteFile(blockFile, []byte("line1\nline2\nABORT\nline3\n"), 0644)
+	assert.NoError(t, err)
+
+	// Setup for IncludeFrom
+	imageName := "test-image"
+	imageRootfs := env.GetPath(path.Join(testenv.WWChrootdir, imageName, "rootfs"))
+	env.MkdirAll(path.Join(testenv.WWChrootdir, imageName, "rootfs"))
+	err = os.WriteFile(path.Join(imageRootfs, "file-in-image"), []byte("image content\n"), 0644)
+	assert.NoError(t, err)
+
+	tests := []struct {
+		name     string
+		template string
+		data     TemplateStruct
+		validate func(*testing.T, *RenderedTemplate, error)
+	}{
+		{
+			name:     "Basic functions",
+			template: `{{inc 1}} {{dec 5}} {{basename "/path/to/file"}}`,
+			validate: func(t *testing.T, rt *RenderedTemplate, err error) {
+				assert.NoError(t, err)
+				assert.Equal(t, "2 4 file", rt.Files[0].Buffer.String())
+			},
+		},
+		{
+			name:     "File redirection",
+			template: `default content{{file "other"}}other content`,
+			validate: func(t *testing.T, rt *RenderedTemplate, err error) {
+				assert.NoError(t, err)
+				// Pre-file() content is in the default slot; the named slot follows it.
+				assert.Len(t, rt.Files, 2)
+				assert.Equal(t, "", rt.Files[0].Name)
+				assert.Equal(t, "default content", rt.Files[0].Buffer.String())
+				assert.Equal(t, "other", rt.Files[1].Name)
+				assert.Equal(t, "other content", rt.Files[1].Buffer.String())
+			},
+		},
+		{
+			name:     "Softlink",
+			template: `{{softlink "/target"}}`,
+			validate: func(t *testing.T, rt *RenderedTemplate, err error) {
+				assert.NoError(t, err)
+				assert.True(t, rt.Files[0].IsSymlink)
+				assert.Equal(t, "/target", rt.Files[0].Target)
+			},
+		},
+		{
+			name:     "No backup",
+			template: `{{nobackup}}content`,
+			validate: func(t *testing.T, rt *RenderedTemplate, err error) {
+				assert.NoError(t, err)
+				assert.False(t, rt.BackupFile)
+			},
+		},
+		{
+			name:     "Abort",
+			template: `some content{{abort}}more content`,
+			validate: func(t *testing.T, rt *RenderedTemplate, err error) {
+				assert.NoError(t, err)
+				assert.False(t, rt.WriteFile)
+				assert.Contains(t, rt.Files[0].Buffer.String(), "some content")
+				assert.NotContains(t, rt.Files[0].Buffer.String(), "more content")
+			},
+		},
+		{
+			name:     "Systemd Escape",
+			template: `{{SystemdEscape "foo-bar/baz"}}`,
+			validate: func(t *testing.T, rt *RenderedTemplate, err error) {
+				assert.NoError(t, err)
+				assert.Equal(t, "foo\\x2dbar-baz", rt.Files[0].Buffer.String())
+			},
+		},
+		{
+			name:     "Include",
+			template: `{{Include "test-include"}}`,
+			validate: func(t *testing.T, rt *RenderedTemplate, err error) {
+				assert.NoError(t, err)
+				assert.Equal(t, "included content", rt.Files[0].Buffer.String())
+			},
+		},
+		{
+			name:     "IncludeBlock",
+			template: `{{IncludeBlock "test-block" "ABORT"}}`,
+			validate: func(t *testing.T, rt *RenderedTemplate, err error) {
+				assert.NoError(t, err)
+				assert.Equal(t, "line1\nline2\nABORT", rt.Files[0].Buffer.String())
+			},
+		},
+		{
+			name:     "IncludeFrom",
+			template: fmt.Sprintf(`{{IncludeFrom %q "file-in-image"}}`, imageName),
+			validate: func(t *testing.T, rt *RenderedTemplate, err error) {
+				assert.NoError(t, err)
+				assert.Equal(t, "image content", rt.Files[0].Buffer.String())
+			},
+		},
+		{
+			name:     "Sprig functions",
+			template: `{{ "hello" | upper }}`,
+			validate: func(t *testing.T, rt *RenderedTemplate, err error) {
+				assert.NoError(t, err)
+				assert.Equal(t, "HELLO", rt.Files[0].Buffer.String())
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tmpFile := path.Join(env.BaseDir, tt.name+".ww")
+			err := os.WriteFile(tmpFile, []byte(tt.template), 0644)
+			assert.NoError(t, err)
+
+			rt, err := RenderTemplate(tmpFile, tt.data)
+			tt.validate(t, rt, err)
+		})
+	}
+}
+
+func TestRenderTemplateFile(t *testing.T) {
+	t.Run("no file() calls returns all content", func(t *testing.T) {
+		env := testenv.New(t)
+		defer env.RemoveAll()
+		env.WriteFile("test.ww", `hello world`)
+		buf, backupFile, writeFile, err := RenderTemplateFile(env.GetPath("test.ww"), TemplateStruct{})
+		assert.NoError(t, err)
+		assert.True(t, *backupFile)
+		assert.True(t, *writeFile)
+		assert.Equal(t, "hello world", buf.String())
+	})
+
+	t.Run("pre-file() content is returned when file() calls are present", func(t *testing.T) {
+		// When a template writes content before the first file() call,
+		// RenderTemplateFile returns that pre-file() content from the default slot.
+		env := testenv.New(t)
+		defer env.RemoveAll()
+		env.WriteFile("test.ww", `pre-file content{{ file "other" }}other content`)
+		buf, _, _, err := RenderTemplateFile(env.GetPath("test.ww"), TemplateStruct{})
+		assert.NoError(t, err)
+		assert.Equal(t, "pre-file content", buf.String())
+	})
+
+	t.Run("empty default slot is always preserved when file() calls are present", func(t *testing.T) {
+		// When there is no content before the first file() call, the empty
+		// default slot is retained. RenderTemplate always returns it as Files[0].
+		env := testenv.New(t)
+		defer env.RemoveAll()
+		env.WriteFile("test.ww", `{{- file "other" -}}other content`)
+		rendered, err := RenderTemplate(env.GetPath("test.ww"), TemplateStruct{})
+		assert.NoError(t, err)
+		assert.Len(t, rendered.Files, 2)
+		assert.Equal(t, "", rendered.Files[0].Name)
+		assert.Equal(t, "", rendered.Files[0].Buffer.String())
+		assert.Equal(t, "other", rendered.Files[1].Name)
+		assert.Equal(t, "other content", rendered.Files[1].Buffer.String())
+	})
+
+	t.Run("RenderTemplateFile returns empty buffer not named-file content", func(t *testing.T) {
+		// When the template has no pre-file() content, RenderTemplateFile must
+		// return an empty buffer (the default slot), not the content of the named
+		// file. Before the fix, the stripped default slot caused Files[0] to be
+		// the named file, so RenderTemplateFile silently returned named content.
+		env := testenv.New(t)
+		defer env.RemoveAll()
+		env.WriteFile("test.ww", `{{- file "other" -}}other content`)
+		buf, _, _, err := RenderTemplateFile(env.GetPath("test.ww"), TemplateStruct{})
+		assert.NoError(t, err)
+		assert.Equal(t, "", buf.String())
+	})
 }
 
 func dirIsEmpty(t *testing.T, name string) bool {

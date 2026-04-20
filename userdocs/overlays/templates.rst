@@ -115,17 +115,17 @@ referenced symlink.
 
 .. code-block::
 
-   {{ ImportLink "/etc/localtime" }}
+   {{- ImportLink "/etc/localtime" -}}
 
 When paired with ``file``, ``ImportLink`` can create multiple symlinks from a
 single template.
 
 .. code-block::
 
-   {{ file "/tmp/test-link1"}}
-   {{ softlink "/tmp/test-target1" }}
-   {{ file "/tmp/test-link2"}}
-   {{ softlink "/tmp/test-target2" }}
+   {{- file "/tmp/test-link1" -}}
+   {{- softlink "/tmp/test-target1" -}}
+   {{- file "/tmp/test-link2" -}}
+   {{- softlink "/tmp/test-target2" -}}
 
 basename
 --------
@@ -146,11 +146,21 @@ file
 Write the content from the template to the specified file name. May be specified
 more than once in a template to write content to multiple files.
 
+When no ``file`` call is present, all template output is written to the
+**default output path**: the template filename with the ``.ww`` suffix stripped
+(e.g., ``/etc/hosts.ww`` → ``/etc/hosts``).
+
+When one or more ``file`` calls are present, each call redirects subsequent
+template output to that named file. Any content rendered before the first
+``file`` call is not written to disk. A ``softlink`` or ``ImportLink`` placed
+before any ``file`` call still applies to the default output path and is
+written to disk even when named files are also present.
+
 .. code-block::
 
    {{- range $devname, $netdev := .NetDevs }}
    {{- $filename := print "ifcfg-" $devname ".conf" }}
-   {{ file $filename }}
+   {{- file $filename -}}
    {{/* content here */}}
    {{- end }}
 
@@ -163,7 +173,7 @@ Causes the processed template file to become a symlink to the referenced target.
 
 .. code-block::
   
-   {{ printf "%s/%s" "/usr/share/zoneinfo" .Tags.localtime | softlink }}
+   {{- printf "%s/%s" "/usr/share/zoneinfo" .Tags.localtime | softlink -}}
 
 When paired with ``file``, ``softlink`` can create multiple symlinks from a
 single template.
@@ -198,7 +208,7 @@ Immediately aborts processing the template and does not write a file.
 
 .. code-block::
   
-   {{ abort }}
+   {{- abort -}}
 
 nobackup
 --------
@@ -208,7 +218,7 @@ nobackup
 
 .. code-block::
 
-   {{ nobackup }}
+   {{- nobackup -}}
 
 .. _UniqueField:
 
@@ -245,9 +255,10 @@ Escapes a path for use in a systemd unit file.
 
 .. code-block::
 
-   {{ file (print ($fs.path | SystemdEscapePath) ".mount") }}
+   {{- file (print ($fs.path | SystemdEscapePath) ".mount") -}}
 
 Escape rules are documented at `systemd.unit. <https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html#String%20Escaping%20for%20Inclusion%20in%20Unit%20Names>`_
+
 
 Examples
 ========
