@@ -189,6 +189,7 @@ install: build docs ## Install Warewulf from source
 	install -d -m 0755 $(DESTDIR)$(WWCHROOTDIR)
 	install -d -m 0755 $(DESTDIR)$(WWOVERLAYDIR)
 	install -d -m 0755 $(DESTDIR)$(WWPROVISIONDIR)
+	install -d -m 0755 $(DESTDIR)$(WWFILESDIR)
 	install -d -m 0755 $(DESTDIR)$(DATADIR)/warewulf/overlays/host/rootfs/$(TFTPDIR)/warewulf/
 	install -d -m 0755 $(DESTDIR)$(WWCONFIGDIR)/examples
 	install -d -m 0755 $(DESTDIR)$(WWCONFIGDIR)/ipxe

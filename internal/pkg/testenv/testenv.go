@@ -43,6 +43,7 @@ const WWOverlaydir = "var/lib/warewulf/overlays"
 const WWChrootdir = "var/lib/warewulf/chroots"
 const WWProvisiondir = "srv/warewulf"
 const Cachedir = "var/cache"
+const WWFilesdir = "var/lib/warewulf/files"
 
 // New creates a test environment in a temporary directory and configures
 // Warewulf to use it.
@@ -106,6 +107,7 @@ func (env *TestEnv) Configure() *config.WarewulfYaml {
 	conf.Paths.WWChrootdir = env.GetPath(WWChrootdir)
 	conf.Paths.WWProvisiondir = env.GetPath(WWProvisiondir)
 	conf.Paths.Cachedir = env.GetPath(Cachedir)
+	conf.Paths.WWFilesdir = env.GetPath(WWFilesdir)
 	conf.Paths.WWClientdir = "/warewulf"
 
 	for _, confPath := range []string{

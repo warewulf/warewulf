@@ -21,7 +21,7 @@ of colons and are normalized automatically.
 URL Patterns
 ============
 
-Every provisioning route (except ``/overlay-file/`` and ``/status``) supports
+Every provisioning route (except ``/status``) supports
 six equivalent URL patterns for specifying the node identity:
 
 .. code-block:: none
@@ -118,11 +118,7 @@ When ``autobuild overlays`` is enabled in ``warewulf.conf``, the server
 will automatically rebuild the overlay if it is out of date relative to
 ``nodes.conf`` or the overlay source files.
 
-**Query parameters:** ``assetkey``, ``uuid``, ``compress``, ``overlay``
-
-* ``overlay``: A comma-separated list of overlay names. When specified, only
-  the named overlays are served (rather than the node's full system overlay
-  set).
+**Query parameters:** ``assetkey``, ``uuid``, ``compress``
 
 ``/runtime/{wwid}``
 -------------------
@@ -141,36 +137,7 @@ When TLS is enabled in ``warewulf.conf``, this route requires that the request
 arrive over HTTPS. Plain-HTTP requests are rejected with ``403 Forbidden``. The
 HTTPS listener port is configured with ``warewulf:tls port``.
 
-**Query parameters:** ``assetkey``, ``uuid``, ``compress``, ``overlay``
-
-* ``overlay``: A comma-separated list of overlay names. Same behavior as for
-  ``/system/``.
-
-``/overlay-file/{overlay}/{path}``
-----------------------------------
-
-Provides direct access to an individual file within a named overlay. This
-route uses a different URL structure than the other provisioning routes: the
-overlay name is in the second path segment, and the file path within the overlay
-follows.
-
-If the ``render`` parameter is provided, the file is rendered as a Go template
-for the specified node and the rendered content is returned. If ``render`` is
-absent, the raw file bytes are returned without any template processing.
-
-If the requested path does not end in ``.ww`` but a ``.ww``-suffixed version of
-the file exists, and a ``render`` node is specified, the server automatically
-serves the ``.ww`` template.
-
-**Query parameters:**
-
-* ``render``: Node ID to render the template for. If not specified, the raw
-  file is returned.
-
-.. note::
-
-   This route does not require authentication via ``assetkey`` and does not
-   perform node lookup by hardware address.
+**Query parameters:** ``assetkey``, ``uuid``, ``compress``
 
 ``/efiboot/{file}``
 -------------------
@@ -246,8 +213,7 @@ A legacy dispatcher route. The provisioning stage is determined by the
 * ``stage=runtime`` → ``/runtime/``
 * ``stage=grub`` → ``/grub/``
 
-**Query parameters:** ``stage`` (required), ``assetkey``, ``uuid``, ``compress``,
-``overlay``
+**Query parameters:** ``stage`` (required), ``assetkey``, ``uuid``, ``compress``
 
 Status Route
 ============
@@ -287,6 +253,65 @@ When TLS is enabled, access to the REST API can additionally be restricted to
 HTTPS-only requests by setting ``api: tls: true`` in ``warewulf.conf``.
 
 See :ref:`rest-api` for full details.
+
+Files Route
+===========
+
+``/files/{path}``
+-----------------
+
+Serves static files from the warewulf files directory (``wwfilesdir`` in
+``warewulf.conf``, defaulting to ``/var/lib/warewulf/files``). Subdirectories
+are supported.
+
+Every request must identify a node, either via the ``?wwid=`` query parameter
+(a hardware address) or by ARP cache lookup of the requesting IP. If no node
+can be identified, the server returns ``401 Unauthorized``.
+
+When ``secure`` is enabled in ``warewulf.conf``, requests must originate from a
+privileged port (< 1024); otherwise ``403 Forbidden`` is returned. If the node
+has an ``AssetKey`` configured, the ``?assetkey=`` parameter must be present and
+match; a missing key returns ``401 Unauthorized`` and an incorrect key returns
+``403 Forbidden``.
+
+.. code-block:: console
+
+   # Place files in the warewulf files directory:
+   $ cp myfile.txt /var/lib/warewulf/files/
+   $ mkdir -p /var/lib/warewulf/files/scripts
+   $ cp setup.sh /var/lib/warewulf/files/scripts/
+
+   # Fetch from a compute node:
+   $ curl http://<server>:9873/files/myfile.txt?wwid=00:00:00:00:00:01
+   $ curl http://<server>:9873/files/scripts/setup.sh?wwid=00:00:00:00:00:01
+
+Directory listing is disabled; requests for a directory path return
+``404 Not Found``.
+
+**Template rendering:** Adding the ``?render`` query parameter renders the file
+as a Go template for the identified node, with the same template functions and
+data available as in overlay templates. Without ``?render``, files are returned
+as raw bytes. The path must refer to a ``.ww`` template file. If the path does
+not end in ``.ww`` but a ``.ww``-suffixed version exists, that file is used
+automatically. Using ``?render`` on a path where no ``.ww`` file can be found
+returns ``400 Bad Request`` if the exact file exists, or ``404 Not Found`` if
+neither form exists.
+
+.. code-block:: console
+
+   # Place a template in the files directory:
+   $ echo 'hostname={{ .Hostname }}' > /var/lib/warewulf/files/info.ww
+
+   # Fetch the raw template:
+   $ curl http://<server>:9873/files/info.ww?wwid=00:00:00:00:00:01
+
+   # Fetch the rendered template (explicit .ww suffix):
+   $ curl 'http://<server>:9873/files/info.ww?render&wwid=00:00:00:00:00:01'
+
+   # Fetch the rendered template (implicit .ww suffix):
+   $ curl 'http://<server>:9873/files/info?render&wwid=00:00:00:00:00:01'
+
+**Query parameters:** ``wwid``, ``assetkey``, ``render``
 
 .. _server-routes-security:
 

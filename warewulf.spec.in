@@ -188,6 +188,7 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %dir %{_sharedstatedir}/warewulf
 %dir %{_sharedstatedir}/warewulf/chroots
 %dir %{_sharedstatedir}/warewulf/overlays
+%dir %{_sharedstatedir}/warewulf/files
 
 %dir %{_datadir}/warewulf
 %{_datadir}/warewulf/bmc
