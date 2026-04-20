@@ -53,6 +53,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- TPM based node attestation:
+  - Added `wwctl node tpm` command group (`list`, `check`, `verify`, `reset`) for managing node TPM state. #2136
+  - Added automatic TPM quote generation and challenge retrieval to `wwclient` during node boot. #2136
+  - Added `/tpm-quote/` and `/tpm-challenge` routes to `warewulfd` for TPM attestation. #2136
+  - Added JSON output support to `wwctl node tpm list` which includes the activation secret.
+  - `wwclient` now saves the decrypted secret to `/warewulf/secret` on the node.
 - Document reclaiming RAM by moving the image to swap
 - New `--partwipe` flag for profile and node set
 - Updated arguments for `ValidString` to match `regexp.MatchString`

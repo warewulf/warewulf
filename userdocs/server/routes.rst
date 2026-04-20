@@ -172,6 +172,26 @@ serves the ``.ww`` template.
    This route does not require authentication via ``assetkey`` and does not
    perform node lookup by hardware address.
 
+``/tpm-quote/``
+---------------
+
+Receives and stores a TPM quote and event log uploaded by a node during boot.
+This route allows a cluster node to securely authenticate itself and verify its boot
+integrity. The quote is verified during the subsequent challenge request.
+
+**Query parameters:** ``wwid``
+
+``/tpm-challenge``
+------------------
+
+Generates and serves a Credential Activation Challenge for the node identified
+by ``wwid``. The server first verifies the node's previously uploaded TPM quote,
+event log, and GRUB measurements. If verification succeeds, the server returns an
+encrypted challenge that only the node's specific TPM can decrypt. This challenge
+is used by the node to securely unlock its runtime overlay.
+
+**Query parameters:** ``wwid``
+
 ``/efiboot/{file}``
 -------------------
 

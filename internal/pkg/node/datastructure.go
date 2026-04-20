@@ -4,7 +4,9 @@ import (
 	"encoding/gob"
 	"net"
 
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"github.com/warewulf/warewulf/internal/pkg/wwtype"
 )
 
@@ -50,6 +52,7 @@ type Profile struct {
 	Ipxe           string                 `yaml:"ipxe template,omitempty"    json:"ipxe template,omitempty"    lopt:"ipxe"                         comment:"Set the iPXE template name"`
 	RuntimeOverlay []string               `yaml:"runtime overlay,omitempty"  json:"runtime overlay,omitempty"  lopt:"runtime-overlays"    sopt:"R" comment:"Set the runtime overlay"`
 	SystemOverlay  []string               `yaml:"system overlay,omitempty"   json:"system overlay,omitempty"   lopt:"system-overlays"     sopt:"O" comment:"Set the system overlay"`
+	Tpm            *bool                  `yaml:"tpm,omitempty"              json:"tpm,omitempty"               lopt:"tpm" comment:"Enable check of the downloaded images using tpm"`
 	Kernel         *KernelConf            `yaml:"kernel,omitempty"           json:"kernel,omitempty"`
 	Ipmi           *IpmiConf              `yaml:"ipmi,omitempty"             json:"ipmi,omitempty"`
 	Init           string                 `yaml:"init,omitempty"             json:"init,omitempty"             lopt:"init"                sopt:"i" comment:"Define the init process to boot the image"`
@@ -159,4 +162,19 @@ func (partition *Partition) Resize() bool {
 // FileSystem methods
 func (fs *FileSystem) WipeFileSystem() bool {
 	return util.BoolP(fs.WipeFileSystemP)
+}
+
+// return node id
+func (n *Node) GetId() string {
+	return n.id
+}
+
+// return tpm status of node, also checks if https is set
+func (n *Node) TpmEnabled() bool {
+	conf := warewulfconf.Get()
+	if !conf.Warewulf.TLSEnabled() {
+		wwlog.Warn("node %s requests TPM but https is disabled", n.GetId())
+		return false
+	}
+	return util.BoolP(n.Tpm)
 }
