@@ -115,7 +115,7 @@ func recursiveCreateFlags(obj interface{}, baseCmd *cobra.Command) {
 		} else if field.Anonymous {
 			recursiveCreateFlags(fieldVal.Addr().Interface(), baseCmd)
 
-		} else if field.Type.Kind() == reflect.Ptr {
+		} else if field.Type.Kind() == reflect.Ptr && !fieldVal.IsNil() {
 			recursiveCreateFlags(fieldVal.Interface(), baseCmd)
 
 		} else if field.Type.Kind() == reflect.Struct {
@@ -126,7 +126,10 @@ func recursiveCreateFlags(obj interface{}, baseCmd *cobra.Command) {
 			case reflect.String, reflect.Interface:
 				continue
 			case reflect.Pointer, reflect.Slice, reflect.Map:
-				// add a map with key UNDEF so that it can hold values N.B. UNDEF can never be added through command line
+				// Map fields need a concrete entry to recurse into so sub-field flags can be
+				// registered. If the map is empty, create a synthetic "UNDEF" entry for this
+				// purpose. "UNDEF" is never a valid user-supplied key and is stripped out
+				// before any changes are persisted.
 				key := reflect.ValueOf("UNDEF")
 				if fieldVal.Len() == 0 {
 					if fieldVal.IsNil() {
@@ -251,6 +254,93 @@ func createFlags(baseCmd *cobra.Command,
 					myType.Tag.Get("comment"))
 				baseCmd.Flag(myType.Tag.Get("lopt")).NoOptDefVal = "true"
 			}
+		}
+	}
+}
+
+/*
+CreateUnsetFlags creates boolean flags for unsetting fields.
+Returns a map from flag name to *bool (whether the flag was set by the user)
+and a map from flag name to required scope (values: "disk", "disk,part", "fs").
+Fields with no scope restriction have no entry in the scope map.
+The scope values are read directly from the "scope" struct tag on each field.
+*/
+func (nodeConf *Node) CreateUnsetFlags(baseCmd *cobra.Command) (map[string]*bool, map[string]string) {
+	unsetMap := make(map[string]*bool)
+	scopeMap := make(map[string]string)
+	recursiveCreateUnsetFlags(nodeConf, baseCmd, unsetMap, scopeMap)
+	return unsetMap, scopeMap
+}
+
+func (profileConf *Profile) CreateUnsetFlags(baseCmd *cobra.Command) (map[string]*bool, map[string]string) {
+	unsetMap := make(map[string]*bool)
+	scopeMap := make(map[string]string)
+	recursiveCreateUnsetFlags(profileConf, baseCmd, unsetMap, scopeMap)
+	return unsetMap, scopeMap
+}
+
+func recursiveCreateUnsetFlags(obj interface{}, baseCmd *cobra.Command, unsetMap map[string]*bool, scopeMap map[string]string) {
+	elemType := reflect.TypeOf(obj).Elem()
+	elemVal := reflect.ValueOf(obj).Elem()
+
+	for i := 0; i < elemVal.NumField(); i++ {
+		field := elemType.Field(i)
+		fieldVal := elemVal.Field(i)
+
+		if !field.IsExported() {
+			continue
+		}
+
+		if field.Tag.Get("comment") != "" {
+			createUnsetFlag(baseCmd, field, unsetMap, scopeMap)
+		} else if field.Anonymous {
+			recursiveCreateUnsetFlags(fieldVal.Addr().Interface(), baseCmd, unsetMap, scopeMap)
+		} else if field.Type.Kind() == reflect.Ptr && !fieldVal.IsNil() {
+			recursiveCreateUnsetFlags(fieldVal.Interface(), baseCmd, unsetMap, scopeMap)
+		} else if field.Type.Kind() == reflect.Struct {
+			recursiveCreateUnsetFlags(fieldVal.Addr().Interface(), baseCmd, unsetMap, scopeMap)
+		} else if field.Type.Kind() == reflect.Map {
+			switch field.Type.Elem().Kind() {
+			case reflect.String, reflect.Interface:
+				continue
+			case reflect.Pointer, reflect.Slice, reflect.Map:
+				// Map fields need a concrete entry to recurse into so sub-field flags can be
+				// registered. If the map is empty, create a synthetic "UNDEF" entry for this
+				// purpose. "UNDEF" is never a valid user-supplied key and is stripped out
+				// before any changes are persisted.
+				key := reflect.ValueOf("UNDEF")
+				if fieldVal.Len() == 0 {
+					if fieldVal.IsNil() {
+						fieldVal.Set(reflect.MakeMap(field.Type))
+					}
+					newPtr := reflect.New(field.Type.Elem().Elem())
+					fieldVal.SetMapIndex(key, newPtr)
+				} else {
+					key = fieldVal.MapKeys()[0]
+				}
+				recursiveCreateUnsetFlags(fieldVal.MapIndex(key).Interface(), baseCmd, unsetMap, scopeMap)
+			}
+		}
+	}
+}
+
+func createUnsetFlag(baseCmd *cobra.Command, myType reflect.StructField, unsetMap map[string]*bool, scopeMap map[string]string) {
+	if myType.Tag.Get("lopt") != "" {
+		flagName := myType.Tag.Get("lopt")
+		shortOpt := myType.Tag.Get("sopt")
+
+		boolPtr := new(bool)
+		unsetMap[flagName] = boolPtr
+
+		if scope := myType.Tag.Get("scope"); scope != "" {
+			scopeMap[flagName] = scope
+		}
+
+		comment := myType.Tag.Get("comment")
+		if shortOpt != "" {
+			baseCmd.PersistentFlags().BoolVarP(boolPtr, flagName, shortOpt, false, comment)
+		} else {
+			baseCmd.PersistentFlags().BoolVar(boolPtr, flagName, false, comment)
 		}
 	}
 }

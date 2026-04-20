@@ -41,7 +41,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			dsk := *vars.profileConf.Disks["UNDEF"]
 			vars.profileConf.Disks[vars.profileAdd.DiskName] = &dsk
 		}
-		if (vars.profileAdd.DiskName != "") != (vars.profileAdd.PartName != "") {
+		if vars.profileAdd.PartName != "" && vars.profileAdd.DiskName == "" {
 			return fmt.Errorf("partition and disk must be specified")
 		}
 		delete(vars.profileConf.Disks, "UNDEF")
@@ -77,11 +77,26 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 				delete(profilePtr.NetDevs, vars.profileDel.NetDel)
 			}
 			if vars.profileDel.PartDel != "" {
-				for diskname, disk := range profilePtr.Disks {
-					if _, ok := disk.Partitions[vars.profileDel.PartDel]; ok {
-						wwlog.Verbose("Profile: %s, on disk %s, deleting partition: %s", profileId, diskname, vars.profileDel.PartDel)
-						delete(disk.Partitions, vars.profileDel.PartDel)
-					} else {
+				if vars.profileAdd.DiskName != "" {
+					disk, ok := profilePtr.Disks[vars.profileAdd.DiskName]
+					if !ok || disk == nil {
+						return fmt.Errorf("disk doesn't exist: %s", vars.profileAdd.DiskName)
+					}
+					if _, ok := disk.Partitions[vars.profileDel.PartDel]; !ok {
+						return fmt.Errorf("partition doesn't exist: %s", vars.profileDel.PartDel)
+					}
+					wwlog.Verbose("Profile: %s, on disk %s, deleting partition: %s", profileId, vars.profileAdd.DiskName, vars.profileDel.PartDel)
+					delete(disk.Partitions, vars.profileDel.PartDel)
+				} else {
+					found := false
+					for diskname, disk := range profilePtr.Disks {
+						if _, ok := disk.Partitions[vars.profileDel.PartDel]; ok {
+							wwlog.Verbose("Profile: %s, on disk %s, deleting partition: %s", profileId, diskname, vars.profileDel.PartDel)
+							delete(disk.Partitions, vars.profileDel.PartDel)
+							found = true
+						}
+					}
+					if !found {
 						return fmt.Errorf("partition doesn't exist: %s", vars.profileDel.PartDel)
 					}
 				}
@@ -133,6 +148,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 					netDev.Tags[key] = val
 				}
 			}
+			profilePtr.Flatten()
 			count++
 		}
 
