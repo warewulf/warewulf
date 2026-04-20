@@ -947,7 +947,9 @@ func BuildOverlay(nodeConf node.Node, allNodes []node.Node, context string, over
 		[]string{},
 		// ignore cross-device files
 		true,
-		"newc")
+		"newc",
+		// cpio args
+		"--renumber-inodes")
 
 	return err
 }
