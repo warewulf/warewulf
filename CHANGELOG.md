@@ -28,6 +28,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   to use state-based routing instead of sentinel strings, so whitespace-trimming
   syntax (e.g. `{{- file "name" -}}`) correctly creates all named files and
   symlinks. #2118
+- Emit default routes in the `netplan` overlay when `gateway` or `gateway6`
+  is set on ethernet or bond devices (Netplan `routes` with `to: default` and
+  `to: "::/0"`).
 
 ### Dependencies
 
