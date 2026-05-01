@@ -252,6 +252,14 @@ same architecture as the Warewulf server. Architecture-specific wwclient.aarch64
 and wwclient.x86_64 overlays are available as well. This supports using wwclient
 on cluster nodes with a different architecture than the Warewulf server.
 
+``wwclient`` also provides ``overlay-diff capture`` to compare a source directory
+against a baseline directory and report deterministic file-level differences. This
+is useful when creating or validating overlay content:
+
+.. code-block:: shell
+
+   wwclient overlay-diff capture --source ./new-root --baseline ./old-root
+
 Network interfaces
 ------------------
 
