@@ -106,6 +106,34 @@ func TestFormatTableAndJSON(t *testing.T) {
 	assert.Contains(t, string(jsonOut), "\"path\": \"/file.txt\"")
 }
 
+func TestScanTreeWithOptions_ExcludesPaths(t *testing.T) {
+	tmpDir := t.TempDir()
+	if !assert.NoError(t, os.MkdirAll(filepath.Join(tmpDir, "var", "log"), 0755)) {
+		return
+	}
+	if !assert.NoError(t, os.WriteFile(filepath.Join(tmpDir, "var", "log", "ignored.log"), []byte("x"), 0644)) {
+		return
+	}
+	if !assert.NoError(t, os.MkdirAll(filepath.Join(tmpDir, "etc"), 0755)) {
+		return
+	}
+	if !assert.NoError(t, os.WriteFile(filepath.Join(tmpDir, "etc", "config"), []byte("y"), 0644)) {
+		return
+	}
+
+	entries, err := ScanTreeWithOptions(tmpDir, ScanOptions{Excludes: []string{"/var/log"}})
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	_, hasLogDir := entries["/var/log"]
+	_, hasLogFile := entries["/var/log/ignored.log"]
+	_, hasConfig := entries["/etc/config"]
+	assert.False(t, hasLogDir)
+	assert.False(t, hasLogFile)
+	assert.True(t, hasConfig)
+}
+
 // writeTestFile creates parent directories and writes test content.
 func writeTestFile(t *testing.T, path string, content string) {
 	t.Helper()

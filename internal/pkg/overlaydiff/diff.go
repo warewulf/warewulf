@@ -67,6 +67,11 @@ type Change struct {
 // permissionMask filters file mode bits to the permission-related flags.
 const permissionMask = os.ModePerm | os.ModeSetuid | os.ModeSetgid | os.ModeSticky
 
+// ScanOptions controls scan-time behavior.
+type ScanOptions struct {
+	Excludes []string
+}
+
 // Diff scans both roots and returns the changes required to make baseline match source.
 func Diff(sourceRoot, baselineRoot string) ([]Change, error) {
 	source, err := ScanTree(sourceRoot)
@@ -85,6 +90,13 @@ func Diff(sourceRoot, baselineRoot string) ([]Change, error) {
 // ScanTree walks the filesystem rooted at root and returns a map of relative
 // paths to Entry describing each object.
 func ScanTree(root string) (map[string]Entry, error) {
+	return ScanTreeWithOptions(root, ScanOptions{})
+}
+
+// ScanTreeWithOptions walks the filesystem rooted at root and returns a map of
+// relative paths to Entry describing each object. Excludes are interpreted as
+// normalized path prefixes (e.g. /var/log).
+func ScanTreeWithOptions(root string, options ScanOptions) (map[string]Entry, error) {
 	rootAbs, err := filepath.Abs(root)
 	if err != nil {
 		return nil, fmt.Errorf("failed to resolve root path %s: %w", root, err)
@@ -98,6 +110,7 @@ func ScanTree(root string) (map[string]Entry, error) {
 		return nil, fmt.Errorf("root path is not a directory: %s", rootAbs)
 	}
 
+	excludes := NormalizeExcludes(options.Excludes)
 	entries := make(map[string]Entry)
 	err = filepath.WalkDir(rootAbs, func(current string, d os.DirEntry, walkErr error) error {
 		if walkErr != nil {
@@ -114,6 +127,13 @@ func ScanTree(root string) (map[string]Entry, error) {
 		}
 
 		relPath = normalizeRelPath(relPath)
+
+		if shouldExclude(relPath, excludes) {
+			if d.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
 
 		info, err := os.Lstat(current)
 		if err != nil {
@@ -153,6 +173,15 @@ func ScanTree(root string) (map[string]Entry, error) {
 	}
 
 	return entries, nil
+}
+
+func shouldExclude(path string, excludes []string) bool {
+	for _, exclude := range excludes {
+		if path == exclude || strings.HasPrefix(path, exclude+"/") {
+			return true
+		}
+	}
+	return false
 }
 
 // Compare computes a sorted list of Change describing differences between two maps.

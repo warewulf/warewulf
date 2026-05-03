@@ -16,7 +16,8 @@ var (
 )
 
 func init() {
-	baseCmd.AddCommand(capture.GetCommand())
+	baseCmd.AddCommand(capture.GetStartCommand())
+	baseCmd.AddCommand(capture.GetStopCommand())
 }
 
 func GetCommand() *cobra.Command {
