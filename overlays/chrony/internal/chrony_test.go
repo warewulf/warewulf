@@ -39,9 +39,9 @@ server 192.168.1.254 iburst
 # Record the rate at which the system clock gains/losses time.
 driftfile /var/lib/chrony/drift
 
-# Allow the system clock to be stepped in the first three updates
+# Allow the system clock to be stepped at any time
 # if its offset is larger than 1 second.
-makestep 1.0 3
+makestep 1.0 -1
 
 # Enable kernel synchronization of the real-time clock (RTC).
 rtcsync
@@ -163,9 +163,9 @@ server 10.0.0.2 iburst
 # Record the rate at which the system clock gains/losses time.
 driftfile /var/lib/chrony/drift
 
-# Allow the system clock to be stepped in the first three updates
+# Allow the system clock to be stepped at any time
 # if its offset is larger than 1 second.
-makestep 1.0 3
+makestep 1.0 -1
 
 # Enable kernel synchronization of the real-time clock (RTC).
 rtcsync
