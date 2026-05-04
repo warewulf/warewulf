@@ -37,6 +37,7 @@
 - Tobias Ribizel <mail@ribizel.de>
 - Tobias Poschwatta <poschwatta@zib.de>
 - Josh Burks <jeburks2@asu.edu>
+- Jacob Sommerville <jsommerville@tenstorrent.com>
 - Elmar Pruesse <pruessee@njhealth.org> @epruesse
 - Adam Michel <elfurbe@furbism.com> [@elfurbe](https://github.com/elfurbe)
 - Brandon Biggs <brandonsbiggs@gmail.com>

@@ -49,6 +49,9 @@ network:
       optional: true
       addresses:
       - 192.168.3.21/24
+      routes:
+      - to: default
+        via: 192.168.3.1
       mtu: 1500
 `,
 		},
@@ -87,12 +90,18 @@ network:
       optional: true
       addresses:
       - 192.168.3.21/24
+      routes:
+      - to: default
+        via: 192.168.3.1
       mtu: 1500
     wwnet1:
       dhcp4: no
       optional: true
       addresses:
       - 192.168.3.22/24
+      routes:
+      - to: default
+        via: 192.168.3.1
       mtu: 9000
 `,
 		},

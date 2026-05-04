@@ -25,6 +25,17 @@ network:
       addresses:
       - {{$netdev.IpCIDR}}
 {{- end }}
+{{- if or $netdev.Gateway $netdev.Gateway6 }}
+      routes:
+{{- if $netdev.Gateway }}
+      - to: default
+        via: {{$netdev.Gateway}}
+{{- end }}
+{{- if $netdev.Gateway6 }}
+      - to: "::/0"
+        via: {{$netdev.Gateway6}}
+{{- end }}
+{{- end }}
 {{- if $netdev.MTU}}
       mtu: {{$netdev.MTU}}
 {{- end }}
@@ -41,6 +52,17 @@ network:
 {{- if $netdev.IpCIDR }}
       addresses:
       - {{$netdev.IpCIDR}}
+{{- end }}
+{{- if or $netdev.Gateway $netdev.Gateway6 }}
+      routes:
+{{- if $netdev.Gateway }}
+      - to: default
+        via: {{$netdev.Gateway}}
+{{- end }}
+{{- if $netdev.Gateway6 }}
+      - to: "::/0"
+        via: {{$netdev.Gateway6}}
+{{- end }}
 {{- end }}
 {{- if $netdev.MTU}}
       mtu: {{$netdev.MTU}}
