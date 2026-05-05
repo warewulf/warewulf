@@ -106,6 +106,36 @@ user:x:1000:
 svcuser:x:2001:
 `,
 		},
+		"syncuser:group.ww (local user gid collides with image group gid)": {
+			args: []string{"--render", "node5", "syncuser", "etc/group.ww"},
+			log: `backupFile: true
+writeFile: true
+Filename: etc/group
+root:x:0:
+user:x:1000:
+collideuser:x:1000:
+`,
+		},
+		"syncuser:passwd.ww (local users from profile)": {
+			args: []string{"--render", "node6", "syncuser", "etc/passwd.ww"},
+			log: `backupFile: true
+writeFile: true
+Filename: etc/passwd
+root:x:0:0:root:/root:/bin/bash
+user:x:1000:1000:user:/home/user:/bin/bash
+profileuser:x:3001:3001::/var/lib/profilesvc:/sbin/nologin
+`,
+		},
+		"syncuser:group.ww (local users from profile)": {
+			args: []string{"--render", "node6", "syncuser", "etc/group.ww"},
+			log: `backupFile: true
+writeFile: true
+Filename: etc/group
+root:x:0:
+user:x:1000:
+profileuser:x:3001:
+`,
+		},
 	}
 
 	for name, tt := range tests {

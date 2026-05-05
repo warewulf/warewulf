@@ -4,7 +4,7 @@
 
 {{- if .Resources.localusers }}
 {{- range .Resources.localusers }}
-  {{- if .gid }}
+  {{- if hasKey . "gid" }}
     {{- $sources = append $sources (printf "%s:x:%d:" .name .gid) }}
   {{- end }}
 {{- end }}
