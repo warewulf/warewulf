@@ -447,7 +447,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.49.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.50.0:LICENSE>
 
 ## golang.org/x/exp/maps
 
@@ -459,7 +459,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/net/+/v0.51.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/net/+/v0.52.0:LICENSE>
 
 ## golang.org/x/sync/semaphore
 
@@ -471,19 +471,19 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/sys/+/v0.42.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/sys/+/v0.43.0:LICENSE>
 
 ## golang.org/x/term
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/term/+/v0.41.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/term/+/v0.42.0:LICENSE>
 
 ## golang.org/x/text
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/text/+/v0.35.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/text/+/v0.36.0:LICENSE>
 
 ## google.golang.org/protobuf
 
@@ -579,7 +579,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/fatih/color/blob/v1.18.0/LICENSE.md>
+**License URL:** <https://github.com/fatih/color/blob/v1.19.0/LICENSE.md>
 
 ## github.com/felixge/httpsnoop
 
@@ -789,7 +789,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MPL-2.0
 
-**License URL:** <https://github.com/hashicorp/go-version/blob/v1.8.0/LICENSE>
+**License URL:** <https://github.com/hashicorp/go-version/blob/v1.9.0/LICENSE>
 
 ## github.com/letsencrypt/boulder
 
