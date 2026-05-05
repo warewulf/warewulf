@@ -64,9 +64,9 @@ func Test_Overlay_Variables(t *testing.T) {
 			expectError: false,
 			expectedOutput: "VARIABLE        OPTION        TYPE      HELP\n" +
 				"--------        ------        ----      ----\n" +
-				".Ipmi.Ipaddr    --ipmiaddr    IP        Set the IPMI IP address\n" +
-				".Ipmi.UserName  --ipmiuser    string    Set the IPMI username\n" +
-				".Kernel.Args    --kernelargs  []string  Set kernel arguments\n" +
+				".Ipmi.Ipaddr    --ipmiaddr    IP        the IPMI IP address\n" +
+				".Ipmi.UserName  --ipmiuser    string    the IPMI username\n" +
+				".Kernel.Args    --kernelargs  []string  kernel arguments\n" +
 				".Warewulf.Port                int       \n",
 		},
 		{
@@ -153,7 +153,7 @@ Default: {{ .Hostname }}
 				"--------         ------           ----                     ----\n" +
 				".Hostname                         string                   \n" +
 				".Id                               string                   \n" +
-				".Kernel.Version  --kernelversion  string                   Set kernel version\n" +
+				".Kernel.Version  --kernelversion  string                   kernel version\n" +
 				".NetDevs                          map[string]*node.NetDev  \n",
 		},
 		{
@@ -172,7 +172,7 @@ Default: {{ .Hostname }}
 				"--------      ------        ----      ----\n" +
 				".Hostname                   string    \n" +
 				".Id                         string    \n" +
-				".Kernel.Args  --kernelargs  []string  Set kernel arguments\n" +
+				".Kernel.Args  --kernelargs  []string  kernel arguments\n" +
 				".Tags.foo                   string    \n",
 		},
 		{
@@ -187,7 +187,7 @@ Default: {{ .Hostname }}
 			expectError: false,
 			expectedOutput: "VARIABLE    OPTION   TYPE    HELP\n" +
 				"--------    ------   ----    ----\n" +
-				".ImageName  --image  string  Set image name\n",
+				".ImageName  --image  string  image name\n",
 		},
 		{
 			name: "mixed documentation types",
@@ -263,9 +263,9 @@ IP: {{ $netdev.Ipaddr }}
 				"\n" +
 				"VARIABLE        OPTION    TYPE                     HELP\n" +
 				"--------        ------    ----                     ----\n" +
-				"$netdev.Device  --netdev  string                   Set the device for given network\n" +
+				"$netdev.Device  --netdev  string                   the device for given network\n" +
 				"$netdev.Ipaddr  --ipaddr  IP                       IPv4 address in given network\n" +
-				"$netdev.Type    --type    string                   Set device type of given network\n" +
+				"$netdev.Type    --type    string                   device type of given network\n" +
 				".NetDevs                  map[string]*node.NetDev  \n",
 		},
 		{
@@ -283,8 +283,8 @@ IP: {{ $netdev.Ipaddr }}
 			expectError: false,
 			expectedOutput: "VARIABLE        OPTION    TYPE                     HELP\n" +
 				"--------        ------    ----                     ----\n" +
-				"$netdev.Device  --netdev  string                   Set the device for given network\n" +
-				"$netdev.Type    --type    string                   Set device type of given network\n" +
+				"$netdev.Device  --netdev  string                   the device for given network\n" +
+				"$netdev.Type    --type    string                   device type of given network\n" +
 				".NetDevs                  map[string]*node.NetDev  \n",
 		},
 		{

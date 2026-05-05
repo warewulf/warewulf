@@ -7,6 +7,7 @@ import (
 	"github.com/warewulf/warewulf/internal/app/wwctl/profile/edit"
 	"github.com/warewulf/warewulf/internal/app/wwctl/profile/list"
 	"github.com/warewulf/warewulf/internal/app/wwctl/profile/set"
+	"github.com/warewulf/warewulf/internal/app/wwctl/profile/unset"
 )
 
 var (
@@ -25,6 +26,7 @@ func init() {
 	baseCmd.AddCommand(add.GetCommand())
 	baseCmd.AddCommand(delete.GetCommand())
 	baseCmd.AddCommand(edit.GetCommand())
+	baseCmd.AddCommand(unset.GetCommand())
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

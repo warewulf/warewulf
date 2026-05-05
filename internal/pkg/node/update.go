@@ -19,6 +19,28 @@ func (dst *Profile) UpdateFrom(src *Profile, changed func(string) bool) {
 	recursiveUpdateFrom(reflect.ValueOf(dst).Elem(), reflect.ValueOf(src).Elem(), changed)
 }
 
+// UpdateFromProfile applies src as a profile-shaped source, copying fields
+// where changed returns true. Wraps UpdateFrom by embedding src in a Node.
+func (dst *Node) UpdateFromProfile(src *Profile, changed func(string) bool) {
+	dst.UpdateFrom(&Node{Profile: *src}, changed)
+}
+
+// UpdateFromProfile applies src as a profile-shaped source, copying fields
+// where changed returns true.
+func (dst *Profile) UpdateFromProfile(src *Profile, changed func(string) bool) {
+	dst.UpdateFrom(src, changed)
+}
+
+// GetProfile returns the Profile embedded in the Node.
+func (n *Node) GetProfile() *Profile {
+	return &n.Profile
+}
+
+// GetProfile returns the Profile itself.
+func (p *Profile) GetProfile() *Profile {
+	return p
+}
+
 func recursiveUpdateFrom(dst, src reflect.Value, changed func(string) bool) {
 	srcType := src.Type()
 
