@@ -145,6 +145,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Remove unused Netdev `Prefix` field. #2068
 - Remove unused `IPv6net` from host configuration. #2068
+- Renamed debian.interfaces overlay to ifupdown
+- Change the DHCP server package used on openeuler 24.03 to dnsmasq
+- Added configurable Serial over LAN speed via IPMI `bit-rate` tag in `50-ipmi` template
+- Manage SELinux context of TFTP directory. #1997
+- Dynamically write `$tftpdir/warewulf/grub.cfg` to the configured value from `warewulf.conf`
+- Absolute paths specified with `{{ file }}` in an overlay now write to that absolute path.
+- Use opencontainers/selinux to manage SELinux in wwclient.
+- `syncuser` overlay can now add local users and local groups to nodes by using resources.
 
 ### Fixed
 

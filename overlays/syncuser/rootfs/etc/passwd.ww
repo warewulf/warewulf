@@ -4,4 +4,10 @@
 {{- end }}
 {{- $sources = append $sources (IncludeFrom $.ImageName "/etc/passwd" | trim) }}
 {{- $sources = append $sources (Include (printf "%s/%s" .Paths.Sysconfdir "passwd") | trim) }}
+{{- if .Resources.localusers }}
+{{- range .Resources.localusers }}
+{{- $gecos := .gecos | default "" }}
+{{- $sources = append $sources (printf "%s:x:%d:%d:%s:%s:%s" .name .uid .gid $gecos .home .shell) }}
+{{- end }}
+{{- end }}
 {{- join "\n" $sources | UniqueField ":" 0 | trim }}

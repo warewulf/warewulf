@@ -57,3 +57,44 @@ For the overlay to work correctly, the image should also have been prepared with
 the syncuser command (see above) so that UID/GID values are consistent.
 
 See :ref:`Syncuser` in the overlays documentation for more detail.
+
+Node-specific local users and groups
+-------------------------------------
+
+Warewulf supports defining **node-specific local users and groups** through
+the :ref:`resources <nodes-resources>` section of node definitions. These user and
+group entries are merged into the syncuser overlay and included in ``/etc/passwd`` and
+``/etc/group`` on the target nodes at provisioning time.
+
+This is useful for applications that require a node-local account (e.g.,
+database, application, or storage service users) without having to maintain
+centralized identity management.
+
+.. note::
+
+   Users created through this method do not have passwords set. They are intended for service accounts and non-interactive use.
+
+Example:
+
+.. code-block:: yaml
+
+   nodes:
+     n1:
+       resources:
+         localgroups:
+           - gid: 1002
+             members:
+               - dbuser
+               - dbuserbackup
+             name: dbgroup
+         localusers:
+           - gid: 1001
+             home: /
+             name: dbuser
+             shell: /bin/nologin
+             uid: 1001
+           - gid: 1005
+             home: /
+             name: dbuserbackup
+             shell: /bin/nologin
+             uid: 1005
