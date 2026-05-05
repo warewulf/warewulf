@@ -34,10 +34,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Dependencies
 
-- Bump golang.org/x/term from 0.28.0 to 0.41.0 #2037
-- Bump golang.org/x/sys from 0.29.0 to 0.42.0 #2036
-- Bump golang.org/x/crypto from 0.31.0 to 0.49.0
-- Bump golang.org/x/net from 0.33.0 to 0.49.0 #1819
+- Bump golang.org/x/term from 0.28.0 to 0.42.0 #2037 #2157
+- Bump golang.org/x/sys from 0.29.0 to 0.43.0 #2036 #2153
+- Bump golang.org/x/crypto from 0.31.0 to 0.50.0 #2156
+- Bump golang.org/x/net from 0.33.0 to 0.52.0 #1819
+- Bump golang.org/x/text from 0.21.0 to 0.36.0
 - Bump github.com/grpc-ecosystem/grpc-gateway/v2 from 2.26.1 to 2.28.0 #2032
 - Bump google.golang.org/grpc from 1.70.0 to 1.79.3
 - Bump google.golang.org/protobuf from 1.36.3 to 1.36.11
@@ -50,7 +51,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Bump github.com/swaggest/openapi-go from 0.2.55 to 0.2.60
 - Bump github.com/swaggest/rest from 0.2.73 to 0.2.75
 - Bump github.com/swaggest/swgui from 1.8.2 to 1.8.5
-- Bump github.com/hashicorp/go-version from 1.7.0 to 1.8.0
+- Bump github.com/hashicorp/go-version from 1.7.0 to 1.9.0 #2145
+- Bump github.com/fatih/color from 1.18.0 to 1.19.0 #2143
 - Bump github.com/opencontainers/umoci from 0.4.7 to 0.6.0
 - Migrate github.com/talos-systems/go-smbios to github.com/siderolabs/go-smbios v0.3.3 (module renamed)
 
