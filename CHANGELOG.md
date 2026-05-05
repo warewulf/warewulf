@@ -31,6 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Emit default routes in the `netplan` overlay when `gateway` or `gateway6`
   is set on ethernet or bond devices (Netplan `routes` with `to: default` and
   `to: "::/0"`).
+- Fixed incorrect help docs for `wwctl overlay chown`. #2166
 
 ### Dependencies
 
@@ -108,6 +109,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Clarified functionality of syncuser commands and overlay in documentation
 - Audit and correct documentation, cobra help text, and log messages for accuracy
 - New chrony template
+- Moved "multiple networks" documentation from getting-started to a new server
+  networking section. #2164
 
 ## v4.6.5, 2026-01-12
 
