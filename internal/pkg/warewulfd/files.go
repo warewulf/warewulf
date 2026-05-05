@@ -67,7 +67,8 @@ func resolveFilesPath(filesDir string, reqPath string) string {
 
 // authenticateNode identifies and authenticates a node for the request.
 // The node is identified via ?wwid= query parameter or ARP cache fallback.
-// When secure mode is enabled, requests must come from a privileged port.
+// When secure files mode is enabled (inherits from secure unless overridden by
+// secure files in warewulf.conf), requests must come from a privileged port.
 // If the node has an asset key, ?assetkey= must match.
 // On success, returns the authenticated node and true.
 // On failure, writes the HTTP error response and returns false.
@@ -106,7 +107,7 @@ func authenticateNode(w http.ResponseWriter, req *http.Request) (node.Node, bool
 		return node.Node{}, false
 	}
 
-	if conf.Warewulf.Secure() && remoteport >= 1024 {
+	if conf.Warewulf.SecureFiles() && remoteport >= 1024 {
 		wwlog.Denied("non-privileged port: %s", req.RemoteAddr)
 		http.Error(w, "non-privileged port", http.StatusForbidden)
 		return node.Node{}, false
@@ -135,7 +136,7 @@ func authenticateNode(w http.ResponseWriter, req *http.Request) (node.Node, bool
 // HandleFiles serves static files from the configured warewulf files directory.
 // Every request must identify a node via ?wwid= or ARP fallback.
 // If the node has an asset key, ?assetkey= must match.
-// When secure mode is enabled, requests must come from a privileged port.
+// When secure files mode is enabled, requests must come from a privileged port.
 // If ?render is present, the file is rendered as a Go template for the
 // identified node. If the path does not end in .ww but a .ww-suffixed version
 // exists, that file is used.

@@ -348,6 +348,36 @@ func Test_HandleFiles_SecurePort(t *testing.T) {
 	})
 }
 
+func Test_HandleFiles_SecureFilesOverride(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+
+	env.WriteFile(testenv.WWFilesdir+"/test.txt", "hello warewulf")
+
+	env.WriteFile("etc/warewulf/nodes.conf", testNodesConf)
+	assert.NoError(t, LoadNodeDB())
+
+	conf := warewulfconf.Get()
+	conf.Paths.WWFilesdir = env.GetPath(testenv.WWFilesdir)
+	conf.Warewulf.SecureP = boolPtr(true)
+	conf.Warewulf.SecureFilesP = boolPtr(false)
+	defer func() { conf.Warewulf.SecureFilesP = nil }()
+
+	t.Run("secure=true secure files=false allows non-privileged port", func(t *testing.T) {
+		// httptest.NewRequest defaults to 192.0.2.1:1234 (port >= 1024)
+		req := httptest.NewRequest(http.MethodGet, "/files/test.txt?wwid="+testHwaddr, nil)
+		w := httptest.NewRecorder()
+		HandleFiles(w, req)
+		res := w.Result()
+		defer func() { _ = res.Body.Close() }()
+
+		assert.Equal(t, http.StatusOK, res.StatusCode)
+		data, err := io.ReadAll(res.Body)
+		assert.NoError(t, err)
+		assert.Equal(t, "hello warewulf", string(data))
+	})
+}
+
 func boolPtr(b bool) *bool {
 	return &b
 }

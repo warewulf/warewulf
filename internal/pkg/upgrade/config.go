@@ -113,6 +113,7 @@ type WarewulfConf struct {
 	Port              int    `yaml:"port"`
 	TLSPort           int    `yaml:"tls port"`
 	Secure            *bool  `yaml:"secure"`
+	SecureFiles       *bool  `yaml:"secure files"`
 	TLSEnabled        *bool  `yaml:"tls"`
 	UpdateInterval    int    `yaml:"update interval"`
 	AutobuildOverlays *bool  `yaml:"autobuild overlays"`
@@ -128,6 +129,7 @@ func (legacy *WarewulfConf) Upgrade() (upgraded *config.WarewulfConf) {
 	upgraded.Port = legacy.Port
 	upgraded.TLSPort = legacy.TLSPort
 	upgraded.SecureP = legacy.Secure
+	upgraded.SecureFilesP = legacy.SecureFiles
 	upgraded.TLSEnabledP = legacy.TLSEnabled
 	upgraded.UpdateInterval = legacy.UpdateInterval
 	upgraded.AutobuildOverlaysP = legacy.AutobuildOverlays
