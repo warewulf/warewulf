@@ -111,13 +111,13 @@ warewulf
   Changing this option requires rebuilding node overlays and rebooting compute
   nodes to configure them to use a privileged port for ``wwclient``.
 
-* ``warewulf:secure files``: Controls whether the ``/files/`` and
-  ``/overlay-file/`` routes require requests to originate from a privileged
-  port. When unset, this inherits from ``warewulf:secure``.
+* ``warewulf:secure files``: Controls whether the ``/files/`` route requires
+  requests to originate from a privileged port. When unset, this inherits from
+  ``warewulf:secure``.
 
   Set to ``false`` when ``warewulf:secure`` is ``true`` to allow unprivileged
   clients (e.g. scripts or services not running as root) to fetch files from
-  these routes without requiring a privileged source port.
+  this route without requiring a privileged source port.
 
 * ``warewulf:update interval``: This defines the frequency (in seconds) with
   which the Warewulf client on the compute node fetches overlay updates.

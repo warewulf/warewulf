@@ -139,40 +139,6 @@ HTTPS listener port is configured with ``warewulf:tls port``.
 
 **Query parameters:** ``assetkey``, ``uuid``, ``compress``
 
-``/overlay-file/{overlay}/{path}``
-----------------------------------
-
-Provides direct access to an individual file within a named overlay's
-``rootfs/`` directory. The overlay name is in the second path segment, and the
-file path within the overlay follows.
-
-Every request must identify a node, either via ``?wwid=`` or by ARP cache
-lookup. If no node can be identified, the server returns ``401 Unauthorized``.
-When ``secure`` is enabled, requests must originate from a privileged port.
-If the node has an ``AssetKey``, the ``?assetkey=`` parameter must be present
-and correct.
-
-Without the ``?render`` parameter, the raw file bytes are returned. With
-``?render``, the file is rendered as a Go template for the identified node.
-The path must refer to a ``.ww`` template file. If the path does not end in
-``.ww`` but a ``.ww``-suffixed version of the file exists, that file is used
-automatically. Using ``?render`` on a path where no ``.ww`` file can be found
-returns ``400 Bad Request`` if the exact file exists, or ``404 Not Found`` if
-neither form exists.
-
-.. code-block:: console
-
-   # Fetch a raw file from an overlay:
-   $ curl 'http://<server>:9873/overlay-file/generic/etc/hosts?wwid=00:00:00:00:00:01'
-
-   # Fetch a rendered template (explicit .ww suffix):
-   $ curl 'http://<server>:9873/overlay-file/generic/etc/hosts.ww?render&wwid=00:00:00:00:00:01'
-
-   # Fetch a rendered template (implicit .ww suffix):
-   $ curl 'http://<server>:9873/overlay-file/generic/etc/hosts?render&wwid=00:00:00:00:00:01'
-
-**Query parameters:** ``wwid``, ``assetkey``, ``render``
-
 ``/efiboot/{file}``
 -------------------
 
