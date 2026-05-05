@@ -108,6 +108,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Clarified functionality of syncuser commands and overlay in documentation
 - Audit and correct documentation, cobra help text, and log messages for accuracy
 - New chrony template
+- Moved "multiple networks" documentation from getting-started to a new server
+  networking section. #2164
 
 ## v4.6.5, 2026-01-12
 

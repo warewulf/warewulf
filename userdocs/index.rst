@@ -26,6 +26,7 @@ Welcome to the Warewulf User Guide!
    Controlling Warewulf (wwctl) <server/wwctl>
    Server Configuration <server/configuration>
    Server Routes <server/routes>
+   Networking <server/networking>
    Using dnsmasq <server/dnsmasq>
    Security <server/security>
    Bootloaders <server/bootloaders>
