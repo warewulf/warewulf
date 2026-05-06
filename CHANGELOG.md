@@ -49,9 +49,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Bump github.com/coreos/go-systemd/v22 from 22.5.0 to 22.7.0
 - Bump github.com/spf13/cobra from 1.9.1 to 1.10.2
 - Bump github.com/stretchr/testify from 1.10.0 to 1.11.1
-- Bump github.com/swaggest/openapi-go from 0.2.55 to 0.2.60
+- Bump github.com/swaggest/openapi-go from 0.2.55 to 0.2.61
 - Bump github.com/swaggest/rest from 0.2.73 to 0.2.75
-- Bump github.com/swaggest/swgui from 1.8.2 to 1.8.5
+- Bump github.com/swaggest/swgui from 1.8.2 to 1.8.7
+- Bump github.com/opencontainers/selinux from 1.13.1 to 1.14.0
 - Bump github.com/hashicorp/go-version from 1.7.0 to 1.9.0 #2145
 - Bump github.com/fatih/color from 1.18.0 to 1.19.0 #2143
 - Bump github.com/opencontainers/umoci from 0.4.7 to 0.6.0
