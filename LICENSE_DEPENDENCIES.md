@@ -219,7 +219,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/opencontainers/selinux/blob/v1.13.1/LICENSE>
+**License URL:** <https://github.com/opencontainers/selinux/blob/v1.14.0/LICENSE>
 
 ## github.com/opencontainers/umoci
 
@@ -267,7 +267,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/swaggest/swgui/blob/v1.8.5/LICENSE>
+**License URL:** <https://github.com/swaggest/swgui/blob/v1.8.7/LICENSE>
 
 ## github.com/vbatts/go-mtree/pkg/govis
 
@@ -717,7 +717,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/swaggest/openapi-go/blob/v0.2.60/LICENSE>
+**License URL:** <https://github.com/swaggest/openapi-go/blob/v0.2.61/LICENSE>
 
 ## github.com/swaggest/refl
 
