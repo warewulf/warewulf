@@ -28,7 +28,7 @@ require (
 	github.com/siderolabs/go-smbios v0.3.3
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
-	github.com/swaggest/openapi-go v0.2.60
+	github.com/swaggest/openapi-go v0.2.61
 	github.com/swaggest/rest v0.2.75
 	github.com/swaggest/swgui v1.8.5
 	github.com/swaggest/usecase v1.3.1
