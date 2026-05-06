@@ -1161,6 +1161,31 @@ nodes:
       IPXEMenuEntry: dracut
 `,
 	},
+	{
+		name:            "preserve custom IPMI template",
+		addDefaults:     false,
+		replaceOverlays: false,
+		legacyYaml: `
+nodeprofiles:
+  default:
+    ipmi:
+      template: custom-ipmi.tmpl
+nodes:
+  n1:
+    ipmi:
+      template: node-ipmi.tmpl
+`,
+		upgradedYaml: `
+nodeprofiles:
+  default:
+    ipmi:
+      template: custom-ipmi.tmpl
+nodes:
+  n1:
+    ipmi:
+      template: node-ipmi.tmpl
+`,
+	},
 }
 
 func Test_UpgradeNodesYaml(t *testing.T) {

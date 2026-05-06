@@ -1,6 +1,9 @@
 package upgrade
 
 import (
+	"net"
+	"strconv"
+
 	"gopkg.in/yaml.v3"
 
 	"github.com/warewulf/warewulf/internal/pkg/config"
@@ -23,6 +26,7 @@ type WarewulfYaml struct {
 	Netmask         string        `yaml:"netmask"`
 	Network         string        `yaml:"network"`
 	Ipv6net         string        `yaml:"ipv6net"`
+	PrefixLen6      string        `yaml:"prefixlen6"`
 	Fqdn            string        `yaml:"fqdn"`
 	Warewulf        *WarewulfConf `yaml:"warewulf"`
 	API             *APIConf      `yaml:"api"`
@@ -46,8 +50,19 @@ func (legacy *WarewulfYaml) Upgrade() (upgraded *config.WarewulfYaml) {
 	upgraded.Ipaddr6 = legacy.Ipaddr6
 	upgraded.Netmask = legacy.Netmask
 	upgraded.Network = legacy.Network
+	upgraded.PrefixLen6 = legacy.PrefixLen6
 	if legacy.Ipv6net != "" {
-		logIgnore("Ipv6net", legacy.Ipv6net, "obsolete")
+		if ip, ipnet, err := net.ParseCIDR(legacy.Ipv6net); err == nil {
+			if upgraded.Ipaddr6 == "" {
+				upgraded.Ipaddr6 = ip.String()
+			}
+			if upgraded.PrefixLen6 == "" {
+				prefixLen, _ := ipnet.Mask.Size()
+				upgraded.PrefixLen6 = strconv.Itoa(prefixLen)
+			}
+		} else {
+			logIgnore("Ipv6net", legacy.Ipv6net, "unparsable")
+		}
 	}
 	upgraded.Fqdn = legacy.Fqdn
 	if legacy.Warewulf != nil {
@@ -144,6 +159,8 @@ type DHCPConf struct {
 	Template    string `yaml:"template"`
 	RangeStart  string `yaml:"range start"`
 	RangeEnd    string `yaml:"range end"`
+	Range6Start string `yaml:"range6 start"`
+	Range6End   string `yaml:"range6 end"`
 	SystemdName string `yaml:"systemd name"`
 }
 
@@ -153,6 +170,8 @@ func (legacy *DHCPConf) Upgrade() (upgraded *config.DHCPConf) {
 	upgraded.Template = legacy.Template
 	upgraded.RangeStart = legacy.RangeStart
 	upgraded.RangeEnd = legacy.RangeEnd
+	upgraded.Range6Start = legacy.Range6Start
+	upgraded.Range6End = legacy.Range6End
 	upgraded.SystemdName = legacy.SystemdName
 	return upgraded
 }
