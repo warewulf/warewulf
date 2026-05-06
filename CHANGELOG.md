@@ -32,6 +32,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   is set on ethernet or bond devices (Netplan `routes` with `to: default` and
   `to: "::/0"`).
 - Fixed incorrect help docs for `wwctl overlay chown`. #2166
+- Added a missing `goto` in `default.ipxe`. #2177
 
 ### Dependencies
 

@@ -116,7 +116,7 @@ boot kernel initrd=image initrd=system ${runtime_initrd} wwid={{.Hwaddr}} {{.Ker
 
 :boot_two_stage_dracut
 echo Booting dracut (first stage)...
-boot kernel initrd=initramfs ${dracut_net} ${dracut_wwinit} wwid={{.Hwaddr}} {{.KernelArgs}} || error_reboot
+boot kernel initrd=initramfs ${dracut_net} ${dracut_wwinit} wwid={{.Hwaddr}} {{.KernelArgs}} || goto error_reboot
 
 :error_reboot
 echo !!
