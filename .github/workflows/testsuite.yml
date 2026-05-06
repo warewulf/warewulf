@@ -2,6 +2,7 @@
 name: testsuite
 
 on:
+  workflow_dispatch:
   pull_request:
     branches:
       - main
@@ -53,3 +54,26 @@ jobs:
         run: make all
       - name: Build the Docker image
         run: docker build . --file Dockerfile
+
+  integration-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Warewulf
+        uses: actions/checkout@v4
+      # /opt and /home are bind-mounted from the host because
+      # overlayfs does not support NFS exporting.
+      - name: Start Rocky Linux 10 container
+        run: >-
+          sudo podman run
+          -w /home/warewulf
+          --privileged
+          -v /home:/home
+          -v /opt:/opt
+          -v ${{ github.workspace }}:/home/warewulf
+          -d
+          --systemd=true
+          --hostname sms
+          rockylinux/rockylinux:10-ubi-init
+          /usr/lib/systemd/systemd
+      - name: Run integration test
+        run: sudo podman exec -it -l bash -c "cd /home/warewulf; bash scripts/integration-test-el.sh"

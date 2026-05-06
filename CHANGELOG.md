@@ -65,6 +65,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - New `--partwipe` flag for profile and node set
 - Updated arguments for `ValidString` to match `regexp.MatchString`
 - New `mig` overlay to configure NVIDIA MIG devices. #2102
+- CI integration test that provisions QEMU VMs via Warewulf on Rocky Linux 10
 - Documented that booting a node twice fixes broken partition tables
 - TLS support for `warewulfd` and REST API.
 - New `wwctl configure tls` command to generate and configure TLS keys and
