@@ -44,7 +44,7 @@ func initHandleRequest(w http.ResponseWriter, req *http.Request) (*requestContex
 		}
 	}
 
-	remoteNode, err := GetNodeOrSetDiscoverable(rinfo.hwaddr, conf.Warewulf.AutobuildOverlays())
+	remoteNode, err := GetOrDiscoverNode(rinfo.hwaddr, conf.Warewulf.AutobuildOverlays())
 	if err != nil && err != node.ErrNoUnconfigured {
 		wwlog.ErrorExc(err, "")
 		w.WriteHeader(http.StatusServiceUnavailable)

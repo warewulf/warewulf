@@ -100,7 +100,7 @@ func authenticateNode(w http.ResponseWriter, req *http.Request) (node.Node, bool
 		return node.Node{}, false
 	}
 
-	remoteNode, err := GetNodeOrSetDiscoverable(hwaddr, false)
+	remoteNode, err := GetNode(hwaddr)
 	if err != nil {
 		wwlog.Denied("node not found for hwaddr %s: %s", hwaddr, err)
 		http.Error(w, "node not found", http.StatusUnauthorized)
