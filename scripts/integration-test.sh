@@ -5,6 +5,25 @@ set -ex
 ls -la /dev/kvm 2>/dev/null || echo "WARNING: /dev/kvm not found — KVM unavailable"
 lscpu
 
+if [ ! -e /etc/os-release ]; then
+	echo "Cannot detect OS without /etc/os-release"
+	exit 1
+fi
+
+# shellcheck disable=SC1091
+. /etc/os-release
+
+PKG_MANAGER=zypper
+YES="-n"
+
+for like in ${ID_LIKE}; do
+	if [ "${like}" = "fedora" ]; then
+		PKG_MANAGER=dnf
+		YES="-y"
+		break
+	fi
+done
+
 loop_command() {
 	local retry_counter=0
 	local max_retries=5
@@ -23,41 +42,83 @@ loop_command() {
 	done
 }
 
-# Clean dnf cache to avoid stale metadata in container images
-loop_command dnf clean all
+if [ "${PKG_MANAGER}" = "dnf" ]; then
+	# Clean dnf cache to avoid stale metadata in container images
+	loop_command dnf clean all
 
-# Enable EPEL and CRB repositories
-loop_command dnf -y install epel-release
-loop_command dnf config-manager --set-enabled crb
+	# Enable EPEL and CRB repositories
+	loop_command dnf -y install epel-release
+	loop_command dnf config-manager --set-enabled crb
 
-# Install build and VM provisioning dependencies
-loop_command dnf -y install \
-	cpio \
-	git \
-	make \
-	golang \
-	gpgme-devel \
-	python3-devel \
-	qemu-kvm \
-	ipxe-roms-qemu \
-	edk2-ovmf \
-	dnsmasq \
-	iproute \
-	iptables-nft \
-	initscripts-service \
-	yq \
-	ipxe-bootimgs-x86 \
-	ipxe-bootimgs-aarch64 \
-	tftp-server \
-	nfs-utils \
-	policycoreutils-python-utils
+	# Install build and VM provisioning dependencies
+	loop_command dnf -y install \
+		cpio \
+		git \
+		make \
+		golang \
+		gpgme-devel \
+		python3-devel \
+		qemu-kvm \
+		ipxe-roms-qemu \
+		edk2-ovmf \
+		dnsmasq \
+		iproute \
+		iptables-nft \
+		initscripts-service \
+		yq \
+		ipxe-bootimgs-x86 \
+		ipxe-bootimgs-aarch64 \
+		tftp-server \
+		nfs-utils \
+		policycoreutils-python-utils
+
+	WW_CONF=warewulf.conf-el10
+	IMAGE_NAME=rocky-10
+	IMAGE_URL="docker://ghcr.io/warewulf/warewulf-rockylinux:10"
+else
+	# Clean zypper cache to avoid stale metadata in container images
+	loop_command zypper clean --all
+
+	# Add the utilities repository for yq
+	loop_command zypper -n addrepo --no-gpgcheck \
+		https://download.opensuse.org/repositories/utilities/16.0/utilities.repo
+	loop_command zypper -n --gpg-auto-import-keys refresh
+
+	# Install build and VM provisioning dependencies
+	loop_command zypper -n install \
+		cpio \
+		git \
+		make \
+		golang-packaging \
+		go \
+		libgpgme-devel \
+		python3-devel \
+		qemu-kvm \
+		qemu-ipxe \
+		qemu-ovmf-x86_64 \
+		dnsmasq \
+		iproute2 \
+		iptables \
+		gawk \
+		yq \
+		tftp \
+		nfs-kernel-server \
+		openssh \
+		chrony \
+		procps \
+		iputils
+
+	WW_CONF=warewulf.conf-suse
+	IMAGE_NAME=leap-16
+	IMAGE_URL="docker://registry.opensuse.org/science/warewulf/leap-16.0/images/disk:latest"
+fi
 
 # Build and install Warewulf
 go mod vendor
 make defaults PREFIX=/usr SYSCONFDIR=/etc
 make build
 make install
-cp -f etc/warewulf.conf-el10 /etc/warewulf/warewulf.conf
+cp -f "etc/${WW_CONF}" /etc/warewulf/warewulf.conf
 systemctl daemon-reload
 
 # Network configuration
@@ -194,7 +255,20 @@ if [[ -n "${ROMFILE}" ]]; then
 	DEVICE_OPTS+=",romfile=${ROMFILE}"
 fi
 
-/usr/libexec/qemu-kvm \
+# Find qemu-kvm binary
+QEMU_KVM=""
+for candidate in /usr/libexec/qemu-kvm /usr/bin/qemu-kvm; do
+	if [[ -x "${candidate}" ]]; then
+		QEMU_KVM="${candidate}"
+		break
+	fi
+done
+if [[ -z "${QEMU_KVM}" ]]; then
+	echo "fake ipmitool: qemu-kvm not found" >&2
+	exit 1
+fi
+
+"${QEMU_KVM}" \
 	"${ARCH_FLAGS[@]}" \
 	-pidfile "/tmp/vm-${idx}.pid" \
 	-m 3072 -smp 2 \
@@ -230,6 +304,8 @@ yq -i '.dhcp["range start"] = "'"${internal_network}"'"' \
 	/etc/warewulf/warewulf.conf
 yq -i '.dhcp["range end"] = "static"' /etc/warewulf/warewulf.conf
 yq -i '.dhcp.template = "static"' /etc/warewulf/warewulf.conf
+yq -i '.dhcp["systemd name"] = "dnsmasq"' /etc/warewulf/warewulf.conf
+yq -i '.ssh["key types"] -= ["dsa"]' /etc/warewulf/warewulf.conf
 
 # Configure nodes.conf
 sed -i "s/defaults,noauto,nofail,ro/defaults,nofail,ro/" \
@@ -265,12 +341,12 @@ wwctl configure --all
 bash /etc/profile.d/ssh_setup.sh
 
 # Import the base image
-wwctl image import docker://ghcr.io/warewulf/warewulf-rockylinux:10 \
-	rocky-10 --syncuser
+wwctl image import "${IMAGE_URL}" \
+	"${IMAGE_NAME}" --syncuser
 
 # Add compute nodes
 for ((i = 0; i < num_computes; i++)); do
-	wwctl node add --image=rocky-10 --profile=nodes --netname=default \
+	wwctl node add --image="${IMAGE_NAME}" --profile=nodes --netname=default \
 		--ipaddr="${c_ip[$i]}" --hwaddr="${c_mac[$i]}" \
 		--ipmiaddr="${c_bmc[$i]}" "${c_name[$i]}"
 done
@@ -278,7 +354,7 @@ done
 wwctl profile set -y -A 'crashkernel=no,net.ifnames=1,console=hvc0,loglevel=5' default
 
 # Rebuild image, overlays, and reconfigure
-wwctl image build rocky-10
+wwctl image build "${IMAGE_NAME}"
 wwctl overlay build
 wwctl configure --all
 
@@ -299,7 +375,7 @@ for ((i = 0; i < num_computes; i++)); do
 	echo "Waiting for ${c_name[$i]} (${c_ip[$i]}) to become reachable..."
 	for ((try = 1; try <= MAX_RETRIES; try++)); do
 		if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 \
-			"${c_ip[$i]}" hostname 2>/dev/null; then
+			"${c_ip[$i]}" uname -n 2>/dev/null; then
 			echo "${c_name[$i]} is up after $(( SECONDS - BOOT_START )) seconds"
 			break
 		fi

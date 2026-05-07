@@ -57,12 +57,19 @@ jobs:
 
   integration-test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: Rocky Linux 10
+            container: rockylinux/rockylinux:10-ubi-init
+          - name: SUSE Linux 16.0
+            container: registry.suse.com/bci/bci-init:16.0
     steps:
       - name: Checkout Warewulf
         uses: actions/checkout@v4
       # /opt and /home are bind-mounted from the host because
       # overlayfs does not support NFS exporting.
-      - name: Start Rocky Linux 10 container
+      - name: Start ${{ matrix.name }} container
         run: >-
           sudo podman run
           -w /home/warewulf
@@ -73,7 +80,7 @@ jobs:
           -d
           --systemd=true
           --hostname sms
-          rockylinux/rockylinux:10-ubi-init
+          ${{ matrix.container }}
           /usr/lib/systemd/systemd
       - name: Run integration test
-        run: sudo podman exec -it -l bash -c "cd /home/warewulf; bash scripts/integration-test-el.sh"
+        run: sudo podman exec -it -l bash -c "cd /home/warewulf; bash scripts/integration-test.sh"
