@@ -23,8 +23,6 @@ var provisionSendTests = []struct {
 }{
 	{"system overlay", "/provision/00:00:00:ff:ff:ff?stage=system", "system overlay", 200, "10.10.10.10:9873"},
 	{"runtime overlay", "/provision/00:00:00:ff:ff:ff?stage=runtime", "runtime overlay", 200, "10.10.10.10:9873"},
-	{"fake overlay", "/provision/00:00:00:ff:ff:ff?stage=system&overlay=fake", "", 404, "10.10.10.10:9873"},
-	{"specific overlay", "/provision/00:00:00:ff:ff:ff?stage=system&overlay=o1", "specific overlay", 200, "10.10.10.10:9873"},
 	{"grub config", "/provision/00:00:00:ff:ff:ff?stage=grub", "", 200, "10.10.10.10:9873"},
 	{"grub config rendered", "/provision/00:00:00:00:ff:ff?stage=grub", "dracut 10.10.0.1:9873", 200, "10.10.10.11:9873"},
 	{"find initramfs", "/provision/00:00:00:ff:ff:ff?stage=initramfs", "", 200, "10.10.10.10:9873"},
@@ -90,7 +88,6 @@ nodes:
 	assert.NoError(t, os.MkdirAll(path.Join(conf.Paths.OverlayProvisiondir(), "n1"), 0700))
 	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.OverlayProvisiondir(), "n1", "__SYSTEM__.img"), []byte("system overlay"), 0600))
 	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.OverlayProvisiondir(), "n1", "__RUNTIME__.img"), []byte("runtime overlay"), 0600))
-	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.OverlayProvisiondir(), "n1", "o1.img"), []byte("specific overlay"), 0600))
 
 	for _, tt := range provisionSendTests {
 		t.Run(tt.description, func(t *testing.T) {

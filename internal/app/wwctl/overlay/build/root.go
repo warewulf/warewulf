@@ -15,19 +15,10 @@ var (
 		ValidArgsFunction:     completions.Nodes,
 		Args:                  cobra.ArbitraryArgs,
 	}
-	OverlayNames []string
-	OverlayDir   string
-	Workers      int
+	Workers int
 )
 
 func init() {
-	baseCmd.PersistentFlags().StringSliceVarP(&OverlayNames, "overlay", "O", []string{}, "Build only specific overlay(s)")
-
-	if err := baseCmd.RegisterFlagCompletionFunc("overlay", completions.Overlays); err != nil {
-		panic(err)
-	}
-	baseCmd.PersistentFlags().StringVarP(&OverlayDir, "output", "o", "", `Do not create an overlay image for distribution but write to
-	the given directory. An overlay must also be given to use this option.`)
 	baseCmd.PersistentFlags().IntVar(&Workers, "workers", 0, "The number of parallel workers building overlays (<=0 indicates 1 worker per CPU)")
 }
 

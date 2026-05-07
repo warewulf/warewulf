@@ -583,6 +583,27 @@ paths:
 `,
 	},
 	{
+		name: "secure files override",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+netmask: 255.255.252.0
+warewulf:
+  port: 9873
+  secure: true
+  secure files: false
+  update interval: 60
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+netmask: 255.255.252.0
+warewulf:
+  port: 9873
+  secure: true
+  secure files: false
+  update interval: 60
+`,
+	},
+	{
 		name: "v4.6.5-tls",
 		legacyYaml: `
 ipaddr: 10.0.0.1

@@ -21,6 +21,7 @@ type BuildConfig struct {
 	WWChrootdir    string `yaml:"wwchrootdir,omitempty" default:"@WWCHROOTDIR@"`
 	WWProvisiondir string `yaml:"wwprovisiondir,omitempty" default:"@WWPROVISIONDIR@"`
 	WWClientdir    string `yaml:"wwclientdir,omitempty" default:"@WWCLIENTDIR@"`
+	WWFilesdir     string `yaml:"wwfilesdir,omitempty" default:"@WWFILESDIR@"`
 }
 
 const Version = "@VERSION@"
@@ -44,6 +45,7 @@ type WarewulfConf struct {
 	Port               int    `yaml:"port,omitempty" default:"9873"`
 	TLSPort            int    `yaml:"tls port,omitempty" default:"9874"`
 	SecureP            *bool  `yaml:"secure,omitempty" default:"true"`
+	SecureFilesP       *bool  `yaml:"secure files,omitempty"`
 	TLSEnabledP        *bool  `yaml:"tls,omitempty"`
 	UpdateInterval     int    `yaml:"update interval,omitempty" default:"60"`
 	AutobuildOverlaysP *bool  `yaml:"autobuild overlays,omitempty" default:"true"`
@@ -54,6 +56,13 @@ type WarewulfConf struct {
 
 func (conf WarewulfConf) Secure() bool {
 	return util.BoolP(conf.SecureP)
+}
+
+func (conf WarewulfConf) SecureFiles() bool {
+	if conf.SecureFilesP != nil {
+		return *conf.SecureFilesP
+	}
+	return conf.Secure()
 }
 
 func (conf WarewulfConf) TLSEnabled() bool {

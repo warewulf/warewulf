@@ -62,6 +62,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - Document reclaiming RAM by moving the image to swap
+- New `/files/` server route to serve static files from the warewulf files directory (`wwfilesdir`, default `LOCALSTATEDIR/warewulf/files`)
+- New `warewulf:secure files` configuration option to control whether the `/files/` route requires requests from a privileged port, independent of `warewulf:secure`
 - New `--partwipe` flag for profile and node set
 - Updated arguments for `ValidString` to match `regexp.MatchString`
 - New `mig` overlay to configure NVIDIA MIG devices. #2102
@@ -85,6 +87,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Removed
 
 - Removed gRPC API libraries and protobuf types
+- Removed `/overlay-file/` server route (use `/files/` instead)
+- `?overlay=` query parameter from `/system/` and `/runtime/` routes
+- `--overlay` (`-O`) and `--output` (`-o`) flags from `wwctl overlay build`
 
 ### Changed
 
