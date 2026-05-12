@@ -10,10 +10,12 @@ import (
 
 // Snapshot captures a scan baseline for later comparison.
 type Snapshot struct {
-	SourceRoot string           `json:"source_root"`
-	CreatedAt  time.Time        `json:"created_at"`
-	Excludes   []string         `json:"excludes,omitempty"`
-	Entries    map[string]Entry `json:"entries"`
+	SourceRoot string              `json:"source_root"`
+	CreatedAt  time.Time           `json:"created_at"`
+	Excludes   []string            `json:"excludes,omitempty"`
+	Entries    map[string]Entry    `json:"entries"`
+	Changes    []ChangeSummary     `json:"changes,omitempty"`
+	Decisions  map[string]Decision `json:"decisions,omitempty"`
 }
 
 // NewSnapshot constructs a snapshot for the given scan result.
@@ -23,6 +25,7 @@ func NewSnapshot(sourceRoot string, excludes []string, entries map[string]Entry)
 		CreatedAt:  time.Now().UTC(),
 		Excludes:   NormalizeExcludes(excludes),
 		Entries:    entries,
+		Decisions:  make(map[string]Decision),
 	}
 }
 
@@ -58,6 +61,9 @@ func LoadSnapshot(path string) (Snapshot, error) {
 	snapshot.Excludes = NormalizeExcludes(snapshot.Excludes)
 	if snapshot.Entries == nil {
 		snapshot.Entries = make(map[string]Entry)
+	}
+	if snapshot.Decisions == nil {
+		snapshot.Decisions = make(map[string]Decision)
 	}
 
 	return snapshot, nil

@@ -20,7 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `wwclient.x86_64` overlay always provides an x86_64 wwclient executable.
 - systemd-networkd overlay with IPv6 support
 - `wwctl overlay info` lists the variables used by an overlay template
-- `wwclient overlay-diff capture` to compare a source tree with a baseline and emit deterministic file differences for overlay authoring.
+- `wwclient overlay-diff start/stop` workflow to capture a baseline, compare source changes, and emit deterministic file differences for overlay authoring.
 - New --partwipe flag for profile and node set
 - Updated arguments for `ValidString` to match `regexp.MatchString`
 - New `mig` overlay to configure NVIDIA MIG devices. #2102
