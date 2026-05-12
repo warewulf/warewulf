@@ -24,6 +24,7 @@ func TestStartStopCommand_TableOutput(t *testing.T) {
 		return
 	}
 
+	// Capture baseline, mutate source, then verify table output and summary.
 	startCmd := GetStartCommand()
 	startCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile})
 	startOut := new(bytes.Buffer)
@@ -82,6 +83,7 @@ func TestStartStopCommand_JSONOutput(t *testing.T) {
 		return
 	}
 
+	// JSON payload should remain clean; summary goes to stderr.
 	stopCmd := GetStopCommand()
 	stopCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile, "--format", "json"})
 	stopOut := new(bytes.Buffer)
@@ -133,6 +135,7 @@ func TestStopCommand_InteractivePersistsDecision(t *testing.T) {
 		return
 	}
 
+	// Answering once should persist a stable decision in capture.json.
 	stopCmd := GetStopCommand()
 	stopCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile, "--interactive"})
 	stopCmd.SetIn(strings.NewReader("y\n"))
@@ -174,6 +177,7 @@ func TestStopCommand_InteractiveRecoversInvalidPersistedDecision(t *testing.T) {
 		return
 	}
 
+	// Simulate a legacy/invalid stored decision and verify re-selection recovery.
 	snapshot, err := overlaydiff.LoadSnapshot(stateFile)
 	if !assert.NoError(t, err) {
 		return
@@ -231,6 +235,7 @@ func TestStopCommand_FilterAndExportSelected(t *testing.T) {
 		return
 	}
 
+	// Filter to one path and export only explicit selections.
 	stopCmd := GetStopCommand()
 	stopCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile, "--interactive", "--only", "modified", "--path-prefix", "/a.txt", "--export", "--export-dir", exportDir})
 	stopCmd.SetIn(strings.NewReader("y\n"))
@@ -481,6 +486,145 @@ func TestStopCommand_RejectsNonDirectoryExportDir(t *testing.T) {
 		return
 	}
 	assert.Contains(t, err.Error(), "not a directory")
+}
+
+func TestStopCommand_ArtifactWritesOverlayStructureAndManifest(t *testing.T) {
+	tmpDir := t.TempDir()
+	sourceDir := filepath.Join(tmpDir, "source")
+	stateFile := filepath.Join(tmpDir, "capture.json")
+	artifactParent := filepath.Join(tmpDir, "artifacts")
+	overlayName := "demo-overlay"
+
+	if !assert.NoError(t, os.MkdirAll(sourceDir, 0o755)) {
+		return
+	}
+	if !assert.NoError(t, os.WriteFile(filepath.Join(sourceDir, "a.txt"), []byte("a-old"), 0o644)) {
+		return
+	}
+	if !assert.NoError(t, os.WriteFile(filepath.Join(sourceDir, "b.txt"), []byte("b-old"), 0o644)) {
+		return
+	}
+
+	startCmd := GetStartCommand()
+	startCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile})
+	startCmd.SetOut(new(bytes.Buffer))
+	startCmd.SetErr(new(bytes.Buffer))
+	if !assert.NoError(t, startCmd.Execute()) {
+		return
+	}
+
+	if !assert.NoError(t, os.WriteFile(filepath.Join(sourceDir, "a.txt"), []byte("a-new"), 0o644)) {
+		return
+	}
+	if !assert.NoError(t, os.WriteFile(filepath.Join(sourceDir, "b.txt"), []byte("b-new"), 0o644)) {
+		return
+	}
+
+	stopCmd := GetStopCommand()
+	stopCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile, "--interactive", "--only", "modified", "--path-prefix", "/a.txt", "--artifact", "--artifact-dir", artifactParent, "--overlay-name", overlayName, "--node-source", "node01"})
+	stopCmd.SetIn(strings.NewReader("y\n"))
+	stopOut := new(bytes.Buffer)
+	stopCmd.SetOut(stopOut)
+	stopCmd.SetErr(new(bytes.Buffer))
+
+	if !assert.NoError(t, stopCmd.Execute()) {
+		return
+	}
+
+	artifactRoot := filepath.Join(artifactParent, overlayName)
+	rootfs := filepath.Join(artifactRoot, "rootfs")
+	data, err := os.ReadFile(filepath.Join(rootfs, "a.txt"))
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, "a-new", string(data))
+	_, err = os.Stat(filepath.Join(rootfs, "b.txt"))
+	assert.Error(t, err)
+
+	manifest, err := overlaydiff.LoadArtifactManifest(filepath.Join(artifactRoot, overlaydiff.ArtifactManifestFileName))
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, overlayName, manifest.OverlayName)
+	assert.Equal(t, sourceDir, manifest.SourceRoot)
+	assert.Equal(t, "node01", manifest.NodeSource)
+	assert.Equal(t, []string{"/a.txt"}, manifest.SelectedPaths)
+	assert.Equal(t, 1, manifest.Summary.Selected)
+
+	assert.NoError(t, overlaydiff.ValidateArtifact(artifactRoot))
+	assert.Contains(t, stopOut.String(), "Artifact exported 1 selected entries")
+}
+
+func TestStopCommand_ArtifactRequiresOverlayName(t *testing.T) {
+	tmpDir := t.TempDir()
+	sourceDir := filepath.Join(tmpDir, "source")
+	stateFile := filepath.Join(tmpDir, "capture.json")
+
+	if !assert.NoError(t, os.MkdirAll(sourceDir, 0o755)) {
+		return
+	}
+	if !assert.NoError(t, os.WriteFile(filepath.Join(sourceDir, "a.txt"), []byte("old"), 0o644)) {
+		return
+	}
+
+	startCmd := GetStartCommand()
+	startCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile})
+	startCmd.SetOut(new(bytes.Buffer))
+	startCmd.SetErr(new(bytes.Buffer))
+	if !assert.NoError(t, startCmd.Execute()) {
+		return
+	}
+
+	if !assert.NoError(t, os.WriteFile(filepath.Join(sourceDir, "a.txt"), []byte("new"), 0o644)) {
+		return
+	}
+
+	stopCmd := GetStopCommand()
+	stopCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile, "--artifact"})
+	stopCmd.SetOut(new(bytes.Buffer))
+	stopCmd.SetErr(new(bytes.Buffer))
+
+	err := stopCmd.Execute()
+	if !assert.Error(t, err) {
+		return
+	}
+	assert.Contains(t, err.Error(), "overlay name")
+}
+
+func TestStopCommand_ArtifactAndExportMutuallyExclusive(t *testing.T) {
+	tmpDir := t.TempDir()
+	sourceDir := filepath.Join(tmpDir, "source")
+	stateFile := filepath.Join(tmpDir, "capture.json")
+
+	if !assert.NoError(t, os.MkdirAll(sourceDir, 0o755)) {
+		return
+	}
+	if !assert.NoError(t, os.WriteFile(filepath.Join(sourceDir, "a.txt"), []byte("old"), 0o644)) {
+		return
+	}
+
+	startCmd := GetStartCommand()
+	startCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile})
+	startCmd.SetOut(new(bytes.Buffer))
+	startCmd.SetErr(new(bytes.Buffer))
+	if !assert.NoError(t, startCmd.Execute()) {
+		return
+	}
+
+	if !assert.NoError(t, os.WriteFile(filepath.Join(sourceDir, "a.txt"), []byte("new"), 0o644)) {
+		return
+	}
+
+	stopCmd := GetStopCommand()
+	stopCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile, "--artifact", "--overlay-name", "demo", "--export"})
+	stopCmd.SetOut(new(bytes.Buffer))
+	stopCmd.SetErr(new(bytes.Buffer))
+
+	err := stopCmd.Execute()
+	if !assert.Error(t, err) {
+		return
+	}
+	assert.Contains(t, err.Error(), "can not be combined")
 }
 
 func TestStopCommand_MissingSnapshot(t *testing.T) {

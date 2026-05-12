@@ -24,6 +24,10 @@ var (
 	stopPathPrefix  []string
 	stopExport      bool
 	stopExportDir   string
+	stopArtifact    bool
+	stopArtifactDir string
+	stopOverlayName string
+	stopNodeSource  string
 )
 
 func GetStopCommand() *cobra.Command {
@@ -45,12 +49,17 @@ func GetStopCommand() *cobra.Command {
 	cmd.Flags().StringArrayVar(&stopPathPrefix, "path-prefix", nil, "Only include path prefix (repeatable, example: /etc)")
 	cmd.Flags().BoolVar(&stopExport, "export", false, "Copy selected files to an export directory")
 	cmd.Flags().StringVar(&stopExportDir, "export-dir", "", "Export destination directory (default: randomized /tmp/wwclient-overlaydiff-*)")
+	cmd.Flags().BoolVar(&stopArtifact, "artifact", false, "Export selected files as an overlay artifact directory")
+	cmd.Flags().StringVar(&stopArtifactDir, "artifact-dir", "", "Artifact parent directory (default: randomized /tmp/wwclient-overlay-artifact-*)")
+	cmd.Flags().StringVar(&stopOverlayName, "overlay-name", "", "Overlay name for artifact mode")
+	cmd.Flags().StringVar(&stopNodeSource, "node-source", "", "Optional node identifier stored in artifact metadata")
 
 	_ = cmd.MarkFlagRequired("source")
 	return cmd
 }
 
 func runStop(cmd *cobra.Command, args []string) error {
+	// Route human-readable status to stderr in JSON mode so stdout stays machine-parseable.
 	format := strings.ToLower(stopFormat)
 	if format != "table" && format != "json" {
 		return fmt.Errorf("invalid format %q: expected table or json", stopFormat)
@@ -64,6 +73,21 @@ func runStop(cmd *cobra.Command, args []string) error {
 	onlyFilters, err := overlaydiff.ParseChangeTypes(stopOnly)
 	if err != nil {
 		return err
+	}
+
+	if stopArtifact && (stopExport || strings.TrimSpace(stopExportDir) != "") {
+		return fmt.Errorf("--artifact mode can not be combined with --export/--export-dir")
+	}
+	if strings.TrimSpace(stopArtifactDir) != "" && !stopArtifact {
+		return fmt.Errorf("--artifact-dir requires --artifact")
+	}
+	if strings.TrimSpace(stopOverlayName) != "" && !stopArtifact {
+		return fmt.Errorf("--overlay-name requires --artifact")
+	}
+	if stopArtifact {
+		if err := overlaydiff.ValidateOverlayName(stopOverlayName); err != nil {
+			return err
+		}
 	}
 
 	stateFile := resolveStateFilePath(stopStateFile)
@@ -106,6 +130,7 @@ func runStop(cmd *cobra.Command, args []string) error {
 	}
 
 	if stopInteractive {
+		// Persist each answer immediately so interrupted sessions can resume safely.
 		if err := runInteractiveSelection(cmd.InOrStdin(), textOut, changes, &snapshot, stateFile); err != nil {
 			if errors.Is(err, errInteractiveCancelled) {
 				_, _ = fmt.Fprintln(textOut, "Cancelled. Decisions were saved and can be resumed later.")
@@ -140,6 +165,49 @@ func runStop(cmd *cobra.Command, args []string) error {
 			return err
 		}
 		_, _ = fmt.Fprintf(textOut, "Exported %d selected entries to %s\n", exported, exportDir)
+	}
+
+	if stopArtifact {
+		artifactParent, err := prepareArtifactParentDir(strings.TrimSpace(stopArtifactDir))
+		if err != nil {
+			return err
+		}
+		artifactRoot := filepath.Join(artifactParent, strings.TrimSpace(stopOverlayName))
+		if err := ensureSecureDirPath(artifactParent, artifactRoot); err != nil {
+			return err
+		}
+
+		artifactRootfs := filepath.Join(artifactRoot, "rootfs")
+		if err := ensureSecureDirPath(artifactParent, artifactRootfs); err != nil {
+			return err
+		}
+
+		exported, err := exportSelected(sourceAbs, artifactRootfs, changes, snapshot.Decisions)
+		if err != nil {
+			return err
+		}
+
+		manifest := overlaydiff.BuildArtifactManifest(
+			strings.TrimSpace(stopOverlayName),
+			sourceAbs,
+			strings.TrimSpace(stopNodeSource),
+			selectedPaths(changes, snapshot.Decisions),
+			overlaydiff.DecisionSummary{
+				Selected:  selected,
+				Skipped:   skipped,
+				Templated: templated,
+				Unset:     unset,
+			},
+		)
+		manifestPath := filepath.Join(artifactRoot, overlaydiff.ArtifactManifestFileName)
+		if err := overlaydiff.SaveArtifactManifest(manifestPath, manifest); err != nil {
+			return err
+		}
+		if err := overlaydiff.ValidateArtifact(artifactRoot); err != nil {
+			return err
+		}
+
+		_, _ = fmt.Fprintf(textOut, "Artifact exported %d selected entries to %s\n", exported, artifactRoot)
 	}
 
 	return nil
@@ -211,6 +279,7 @@ func summarizeDecisions(changes []overlaydiff.Change, decisions map[string]overl
 	return
 }
 
+// normalizeDecision treats unknown persisted values as unset to recover legacy/corrupt state.
 func normalizeDecision(value overlaydiff.Decision) overlaydiff.Decision {
 	switch value {
 	case "", overlaydiff.DecisionUnset:
@@ -256,6 +325,55 @@ func prepareExportDir(custom string) (string, error) {
 	return exportDir, nil
 }
 
+func prepareArtifactParentDir(custom string) (string, error) {
+	if custom == "" {
+		dir, err := os.MkdirTemp("/tmp", "wwclient-overlay-artifact-")
+		if err != nil {
+			return "", fmt.Errorf("failed to create artifact directory in /tmp: %w", err)
+		}
+		return dir, nil
+	}
+
+	artifactDir := filepath.Clean(custom)
+	info, err := os.Lstat(artifactDir)
+	if err == nil {
+		if info.Mode()&os.ModeSymlink != 0 {
+			return "", fmt.Errorf("artifact directory must not be a symlink: %s", artifactDir)
+		}
+		if !info.IsDir() {
+			return "", fmt.Errorf("artifact directory is not a directory: %s", artifactDir)
+		}
+		return artifactDir, nil
+	}
+	if !errors.Is(err, os.ErrNotExist) {
+		return "", fmt.Errorf("failed to inspect artifact directory %s: %w", artifactDir, err)
+	}
+
+	absoluteArtifactDir, err := filepath.Abs(artifactDir)
+	if err != nil {
+		return "", fmt.Errorf("failed to resolve artifact directory %s: %w", artifactDir, err)
+	}
+	if err := ensureSecureDirPath(string(filepath.Separator), absoluteArtifactDir); err != nil {
+		return "", err
+	}
+	return artifactDir, nil
+}
+
+func selectedPaths(changes []overlaydiff.Change, decisions map[string]overlaydiff.Decision) []string {
+	paths := make([]string, 0, len(changes))
+	for _, change := range changes {
+		if decisions[change.Path] != overlaydiff.DecisionYes {
+			continue
+		}
+		if change.Source == nil {
+			continue
+		}
+		paths = append(paths, change.Path)
+	}
+	return paths
+}
+
+// exportSelected writes only explicitly selected entries into the destination root.
 func exportSelected(sourceRoot, exportDir string, changes []overlaydiff.Change, decisions map[string]overlaydiff.Decision) (int, error) {
 	exported := 0
 	for _, change := range changes {
@@ -307,6 +425,7 @@ func exportSelected(sourceRoot, exportDir string, changes []overlaydiff.Change, 
 	return exported, nil
 }
 
+// ensureWithinExportRoot rejects path traversal outside the target root.
 func ensureWithinExportRoot(root string, target string) error {
 	rel, err := filepath.Rel(root, target)
 	if err != nil {
@@ -318,6 +437,7 @@ func ensureWithinExportRoot(root string, target string) error {
 	return nil
 }
 
+// ensureSecureDirPath creates/validates each parent directory while forbidding symlink hops.
 func ensureSecureDirPath(root string, target string) error {
 	if err := ensureWithinExportRoot(root, target); err != nil {
 		return err
@@ -367,6 +487,7 @@ var (
 )
 
 func copyFile(sourcePath, destPath string, mode fs.FileMode) error {
+	// Create destination with regular-file semantics, then restore source mode.
 	input, err := os.Open(sourcePath)
 	if err != nil {
 		return fmt.Errorf("failed to open source file %s: %w", sourcePath, err)
