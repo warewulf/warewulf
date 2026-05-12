@@ -85,6 +85,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Ignore local coding agent files
 - Add dracut_static ipxe method
 - Added `wwctl <node|profile> unset` #1954
+- Added the possibilty to create virtual machines with bmc templates which means that 
+  `wwctl power up vn01` would create a 'local' virtaul machine
 
 ### Removed
 
