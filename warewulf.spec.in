@@ -195,6 +195,7 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %dir %{_overlaydir}/*
 %dir %{_overlaydir}/*/rootfs
 %{_overlaydir}/NetworkManager/rootfs/*
+%{_overlaydir}/chrony/rootfs/*
 %{_overlaydir}/debian.interfaces/rootfs/*
 %{_overlaydir}/debug/rootfs/*
 %{_overlaydir}/fstab/rootfs/*
