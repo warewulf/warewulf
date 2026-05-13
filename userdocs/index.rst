@@ -99,3 +99,4 @@ Welcome to the Warewulf User Guide!
    v4.6.3 <release/v4.6.3>
    v4.6.4 <release/v4.6.4>
    v4.6.5 <release/v4.6.5>
+   v4.7.0 <release/v4.7.0>

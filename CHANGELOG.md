@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## v4.7.0, unreleased
+## v4.7.0, 2026-05-12
 
 ### Fixed
 
@@ -13,17 +13,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Remove requisite dependency between ignition disk target and ignition service. #2083
 - Return HTTP 409 status when creating an existing overlay
 - Allow whitespace to be trimmed for wwdoc comments. #2109
-- update go-chi to 5.2.5 to fix CVE-2025-69725
 - Prevented profile `comment` field from being inherited by nodes. #2078
 - Error handling for /newroot mount during single-stage boot
 - Bugfix for command-line arguments during single-stage image unpacking
-- Fix path traversal vulnerability (CWE-23) by validating overlay names in `overlay.Get()` and `overlay.Create()`
-- Upgrade golang version to 1.25 to resolve stdlib CVEs (CVE-2025-4673, CVE-2025-58187, CVE-2025-61723, CVE-2025-58188, CVE-2025-61725, CVE-2025-61726, CVE-2025-47907, CVE-2025-58189, CVE-2025-47906, CVE-2025-58186, CVE-2025-61727, CVE-2025-61724, CVE-2025-58185, CVE-2025-47912, CVE-2025-61729, CVE-2025-0913, CVE-2025-22873, CVE-2024-45336, CVE-2024-45341, CVE-2025-58183, CVE-2025-68121, CVE-2025-61730)
-- Fix path traversal vulnerability (CWE-23) in overlay cleanup function
+- Fix reported path traversal vulnerability (CWE-23) in overlay handling
 - Fix `wwctl image build --all` to build all images
 - Fix `wwctl node set --all` to set values on all nodes
-- Fix path traversal vulnerability (CWE-23)
-- Bump minimum golang version to 1.25.5 to address stdlib CVEs
 - Fix `{{ file }}`, `{{ softlink }}`, and `{{ ImportLink }}` template functions
   to use state-based routing instead of sentinel strings, so whitespace-trimming
   syntax (e.g. `{{- file "name" -}}`) correctly creates all named files and
@@ -34,42 +29,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed incorrect help docs for `wwctl overlay chown`. #2166
 - Added a missing `goto` in `default.ipxe`. #2177
 
-### Dependencies
-
-- Bump golang.org/x/term from 0.28.0 to 0.43.0 #2037 #2157 #2183 #2188
-- Bump golang.org/x/sys from 0.29.0 to 0.44.0 #2036 #2153 #2182 #2188
-- Bump golang.org/x/crypto from 0.31.0 to 0.51.0 #2156 #2184 #2188
-- Bump golang.org/x/net from 0.33.0 to 0.53.0 #1819
-- Bump golang.org/x/text from 0.21.0 to 0.37.0
-- Bump github.com/grpc-ecosystem/grpc-gateway/v2 from 2.26.1 to 2.28.0 #2032 #2126
-- Bump google.golang.org/grpc from 1.70.0 to 1.79.3 #2137
-- Bump google.golang.org/protobuf from 1.36.3 to 1.36.11 #2126
-- Bump github.com/containers/image/v5 from 5.32.2 to 5.36.2 #1996
-- Bump github.com/containers/storage from 1.57.1 to 1.59.1 #1970
-- Bump github.com/coreos/ignition/v2 from 2.20.0 to 2.26.0 #2126
-- Bump github.com/coreos/go-systemd/v22 from 22.5.0 to 22.7.0 #2126
-- Bump github.com/spf13/cobra from 1.9.1 to 1.10.2 #2126
-- Bump github.com/stretchr/testify from 1.10.0 to 1.11.1 #2126
-- Bump github.com/swaggest/openapi-go from 0.2.55 to 0.2.61 #2126 #2174
-- Bump github.com/swaggest/rest from 0.2.73 to 0.2.75 #2126
-- Bump github.com/swaggest/swgui from 1.8.2 to 1.8.7 #2126 #2173
-- Bump github.com/opencontainers/selinux from 1.13.1 to 1.14.1 #2185 #2188
-- Bump github.com/hashicorp/go-version from 1.7.0 to 1.9.0 #2145
-- Bump github.com/fatih/color from 1.18.0 to 1.19.0 #2143
-- Bump github.com/opencontainers/umoci from 0.4.7 to 0.6.0 #2126
-- Migrate github.com/talos-systems/go-smbios to github.com/siderolabs/go-smbios v0.3.3 (module renamed) #2126
-
 ### Added
 
 - Document reclaiming RAM by moving the image to swap
 - New `/files/` server route to serve static files from the warewulf files directory (`wwfilesdir`, default `LOCALSTATEDIR/warewulf/files`)
 - New `warewulf:secure files` configuration option to control whether the `/files/` route requires requests from a privileged port, independent of `warewulf:secure`
 - New `--partwipe` flag for profile and node set
-- Updated arguments for `ValidString` to match `regexp.MatchString`
 - New `mig` overlay to configure NVIDIA MIG devices. #2102
-- CI integration test that provisions QEMU VMs via Warewulf on Rocky Linux 10
-- Add Leap support to CI integration test with matrix build for Rocky Linux 10
-  and SUSE Linux 16.0
+- CI integration test that provisions QEMU VMs via Warewulf on Rocky Linux and
+  SUSE Linux
 - Documented that booting a node twice fixes broken partition tables
 - TLS support for `warewulfd` and REST API.
 - New `wwctl configure tls` command to generate and configure TLS keys and
@@ -90,8 +58,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Removed gRPC API libraries and protobuf types
 - Removed `/overlay-file/` server route (use `/files/` instead)
-- `?overlay=` query parameter from `/system/` and `/runtime/` routes
-- `--overlay` (`-O`) and `--output` (`-o`) flags from `wwctl overlay build`
+- Removed `?overlay=` query parameter from `/system/` and `/runtime/` routes
+- Removed `--overlay` (`-O`) and `--output` (`-o`) flags from `wwctl overlay build`
 
 ### Changed
 
@@ -121,6 +89,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - New chrony template
 - Moved "multiple networks" documentation from getting-started to a new server
   networking section. #2164
+
+### Dependencies
+
+- Increase minimum golang version to 1.25.5 to address stdlib CVEs
+- Update go-chi to 5.2.5 to fix CVE-2025-69725
+- Bump golang.org/x/term from 0.28.0 to 0.43.0 #2037 #2157 #2183 #2188
+- Bump golang.org/x/sys from 0.29.0 to 0.44.0 #2036 #2153 #2182 #2188
+- Bump golang.org/x/crypto from 0.31.0 to 0.51.0 #2156 #2184 #2188
+- Bump golang.org/x/net from 0.33.0 to 0.53.0 #1819
+- Bump golang.org/x/text from 0.21.0 to 0.37.0
+- Bump github.com/grpc-ecosystem/grpc-gateway/v2 from 2.26.1 to 2.28.0 #2032 #2126
+- Bump google.golang.org/grpc from 1.70.0 to 1.79.3 #2137
+- Bump google.golang.org/protobuf from 1.36.3 to 1.36.11 #2126
+- Bump github.com/containers/image/v5 from 5.32.2 to 5.36.2 #1996
+- Bump github.com/containers/storage from 1.57.1 to 1.59.1 #1970
+- Bump github.com/coreos/ignition/v2 from 2.20.0 to 2.26.0 #2126
+- Bump github.com/coreos/go-systemd/v22 from 22.5.0 to 22.7.0 #2126
+- Bump github.com/spf13/cobra from 1.9.1 to 1.10.2 #2126
+- Bump github.com/stretchr/testify from 1.10.0 to 1.11.1 #2126
+- Bump github.com/swaggest/openapi-go from 0.2.55 to 0.2.61 #2126 #2174
+- Bump github.com/swaggest/rest from 0.2.73 to 0.2.75 #2126
+- Bump github.com/swaggest/swgui from 1.8.2 to 1.8.7 #2126 #2173
+- Bump github.com/opencontainers/selinux from 1.13.1 to 1.14.1 #2185 #2188
+- Bump github.com/hashicorp/go-version from 1.7.0 to 1.9.0 #2145
+- Bump github.com/fatih/color from 1.18.0 to 1.19.0 #2143
+- Bump github.com/opencontainers/umoci from 0.4.7 to 0.6.0 #2126
+- Migrate github.com/talos-systems/go-smbios to github.com/siderolabs/go-smbios v0.3.3 (module renamed) #2126
 
 ## v4.6.5, 2026-01-12
 

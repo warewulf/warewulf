@@ -1,0 +1,177 @@
+====================
+v4.7.0 Release Notes
+====================
+
+v4.7.0 is a significant upgrade, with many changes relative to the v4.6.x
+series.
+
+Particularly significant changes, especially those affecting the user interface,
+are described below. Additional changes are listed in the `CHANGELOG`_.
+
+.. _CHANGELOG: https://github.com/warewulf/warewulf/blob/main/CHANGELOG.md
+
+Running ``wwctl upgrade`` should be sufficient when upgrading from v4.6.x and
+previous releases, but back up your configuration (``nodes.conf`` and
+``warewulf.conf``) when upgrading.
+
+Documentation
+=============
+
+The user documentation has received a substantial audit and update for
+v4.7.0:
+
+- An initial one-page quick reference guide.
+- New documentation describing the status of various top-level Warewulf
+  features.
+- New documentation for the ``wwctl clean`` command.
+- New documentation on reclaiming RAM by moving the image to swap.
+- New documentation on configuring the ARP cache for large clusters.
+- Expanded troubleshooting documentation for container runtimes.
+- New documentation on detecting shadowed overlays.
+- A new section on multiple-network server configurations, moved from
+  getting-started to a dedicated server networking section.
+- Audit and corrections to documentation, cobra help text, and log messages.
+- Clarified functionality of ``syncuser`` commands and the ``syncuser``
+  overlay.
+- The documentation now distinguishes more clearly between OS images and overlay
+  images.
+- A new troubleshooting section describes how to detect shadowed overlays.
+
+wwctl unset
+===========
+
+The ``wwctl set`` command was previously enhanced with automatic type-checking
+to ensure that input field values were valid for their target field. However,
+this broke the ability to unset some fields with a sentinel ``UNDEF`` value
+(e.g., because ``UNDEF`` is not a valid IP address).
+
+A new ``wwctl <node|profile> unset`` command provides explicit removal of
+individual configuration fields, replacing the use of empty-string assignment
+or ``--del`` flags on ``wwctl <node|profile> set``. The ``set`` and ``unset``
+commands are now implemented in a unified fashion using cobra's
+``cmd.Flags().Changed()`` to apply only explicitly-set fields.
+
+``wwctl <node|profile> set --partdel`` and ``wwctl <node|profile> unset
+--partname`` now scope partition deletion to a specific disk when
+``--diskname`` is provided; without ``--diskname``, the partition is removed
+from all disks (the previous behavior). A new ``--partwipe`` flag has also
+been added to ``wwctl <node|profile> set``.
+
+Refactored Server Routes
+========================
+
+The ``warewulfd`` HTTP API has been refactored to use a set of dedicated,
+purpose-specific server routes in place of the previous
+``/provision/{hwaddr}?stage=X`` interface. The new routes are:
+
+- ``/ipxe/`` for iPXE scripts
+- ``/kernel/`` for kernel images
+- ``/image/`` for node images
+- ``/initramfs/`` for initramfs images
+- ``/system/`` for system overlays
+- ``/runtime/`` for runtime overlays
+- ``/grub/`` for GRUB configuration
+- ``/efiboot/`` for EFI boot files
+
+The iPXE, GRUB, and dracut boot scripts and templates have been updated to use
+the new routes, and ``wwclient`` now uses the ``/runtime/`` route for runtime
+overlay downloads. A new ``wwinit.server`` kernel parameter is used for
+dracut/wwinit boot. (The previous ``wwinit.uri`` parameter, as well as the
+``/provision/`` route, remains supported for backward compatibility.)
+
+New Files Route
+===============
+
+A new ``/files/`` server route serves static files from the Warewulf files
+directory (typically ``/var/lib/warewulf/files/``). The route supports optional
+template rendering and an optional ``.ww`` suffix, allowing both raw and
+template-rendered files to be served.
+
+A new ``warewulf:secure files`` configuration option in ``warewulf.conf``
+controls whether the ``/files/`` route requires requests from a privileged
+port, independently of the global ``warewulf:secure`` setting.
+
+TLS Support
+===========
+
+Warewulf v4.7.0 adds TLS support to ``warewulfd`` and the REST API. A new
+``wwctl configure tls`` command generates and configures TLS keys and
+certificates for the Warewulf server.
+
+Removed Sub-Overlay Support
+===========================
+
+The ``/overlay-file/`` route, the ``?overlay=`` query parameter on ``/system/``
+and ``/runtime/``, and the ``--overlay`` (``-O``) and ``--output`` (``-o``)
+flags on ``wwctl overlay build`` have all been removed.
+
+Internal gRPC Removal
+=====================
+
+The gRPC API libraries and protobuf types have been removed from Warewulf. The
+node, profile, and image functions previously implemented via gRPC have been
+refactored to use the same internal interfaces used by the REST API, simplifying
+the codebase and reducing the number of dependencies.
+
+Network Overlays
+================
+
+- New ``chrony`` overlay to configure ``chronyd``.
+
+- The ``netplan`` overlay can now configure now emits default routes.
+
+- The ``syncuser`` overlay now supports defining explicit local users and
+  groups.
+
+- A new ``mig`` overlay configures NVIDIA MIG devices.
+
+- The ``hosts`` overlay has been added to the default system overlay list.
+
+Template Functions and Whitespace
+=================================
+
+The ``{{ file }}``, ``{{ softlink }}``, and ``{{ ImportLink }}`` template
+functions have been refactored to use state-based routing instead of sentinel
+strings. Whitespace-trimming syntax (e.g., ``{{- file "name" -}}``) now
+correctly creates all named files and symlinks.
+
+Security
+========
+
+Multiple theoretical path-traversal vulnerabilities in overlay handling have
+been fixed. (These vulnerabilities are not believed to have been exploitable,
+but have been addressed as a matter of best practice.)
+
+The ``assetkey`` field is no longer leaked into ``wwclient`` logs.
+
+The minimum Go version has been increased to 1.25.5 to pick up multiple stdlib
+CVE fixes, and many other library dependencies have been updated. See
+`CHANGELOG`_ for the full list.
+
+Development and CI
+==================
+
+- A new CI integration test provisions QEMU VMs via Warewulf on Rocky Linux
+  10, with matrix builds adding SUSE Linux 16.0 (Leap) coverage.
+- The userdocs CI job has been sped up.
+
+Other Fixes
+===========
+
+- Include API configuration during ``wwctl upgrade config``.
+- The ``comment`` field is no longer inherited from profiles by nodes.
+- Fix the requisite dependency between the ignition disk target and the
+  ignition service.
+- Allow whitespace to be trimmed for ``wwdoc`` comments.
+- Improved error handling for the ``/newroot`` mount during single-stage
+  boot, and bugfixes for command-line arguments during single-stage image
+  unpacking.
+- Fixed incorrect help docs for ``wwctl overlay chown``.
+- Raised the open file limit for the ``warewulfd`` service to match systemd
+  precedence.
+- A missing ``goto`` has been added to ``default.ipxe`` to fix an iPXE menu
+  fallthrough bug.
+- The Warewulf REST API now returns HTTP 409 when attempting to create an
+  overlay that already exists.
+- Runtime overlay download failure during dracut/wwinit boot is now non-fatal:
+  the node continues to boot and ``wwclient`` retries the download at runtime.
