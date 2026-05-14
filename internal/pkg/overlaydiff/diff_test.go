@@ -140,6 +140,25 @@ func TestShouldExclude_AutoCacheSegments(t *testing.T) {
 	assert.False(t, shouldExclude("/opt/cached/data.db", nil))
 }
 
+func TestScanTreeWithOptions_IncludeRoots(t *testing.T) {
+	tmpDir := t.TempDir()
+	writeTestFile(t, filepath.Join(tmpDir, "etc", "a.conf"), "a")
+	writeTestFile(t, filepath.Join(tmpDir, "var", "lib", "svc", "state.json"), "{}")
+	writeTestFile(t, filepath.Join(tmpDir, "home", "user", "file.txt"), "x")
+
+	entries, err := ScanTreeWithOptions(tmpDir, ScanOptions{IncludeRoots: []string{"/etc", "/var/lib"}})
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	_, hasEtc := entries["/etc/a.conf"]
+	_, hasVarLib := entries["/var/lib/svc/state.json"]
+	_, hasHome := entries["/home/user/file.txt"]
+	assert.True(t, hasEtc)
+	assert.True(t, hasVarLib)
+	assert.False(t, hasHome)
+}
+
 // writeTestFile creates parent directories and writes test content.
 func writeTestFile(t *testing.T, path string, content string) {
 	t.Helper()

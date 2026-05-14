@@ -9,8 +9,10 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
+	"sync"
 	"syscall"
 )
 
@@ -72,7 +74,14 @@ const permissionMask = os.ModePerm | os.ModeSetuid | os.ModeSetgid | os.ModeStic
 
 // ScanOptions controls scan-time behavior.
 type ScanOptions struct {
-	Excludes []string
+	Excludes     []string
+	IncludeRoots []string
+	HashWorkers  int
+}
+
+type hashJob struct {
+	absPath string
+	relPath string
 }
 
 // Diff scans both roots and returns the changes required to make baseline match source.
@@ -114,7 +123,10 @@ func ScanTreeWithOptions(root string, options ScanOptions) (map[string]Entry, er
 	}
 
 	excludes := NormalizeExcludes(options.Excludes)
+	includes := NormalizeExcludes(options.IncludeRoots)
 	entries := make(map[string]Entry)
+	// Defer file hashing so we can perform it in parallel after traversal.
+	hashJobs := make([]hashJob, 0)
 	err = filepath.WalkDir(rootAbs, func(current string, d os.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			if isSkippableScanError(walkErr) {
@@ -136,6 +148,13 @@ func ScanTreeWithOptions(root string, options ScanOptions) (map[string]Entry, er
 		}
 
 		relPath = normalizeRelPath(relPath)
+
+		if !shouldInclude(relPath, includes) {
+			if d.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
 
 		if shouldExclude(relPath, excludes) {
 			if d.IsDir() {
@@ -176,14 +195,7 @@ func ScanTreeWithOptions(root string, options ScanOptions) (map[string]Entry, er
 		default:
 			entry.Type = EntryFile
 			entry.Size = info.Size()
-			hash, err := hashFile(current)
-			if err != nil {
-				if isSkippableScanError(err) {
-					return nil
-				}
-				return fmt.Errorf("failed to hash file %s: %w", current, err)
-			}
-			entry.Hash = hash
+			hashJobs = append(hashJobs, hashJob{absPath: current, relPath: relPath})
 		}
 
 		entries[relPath] = entry
@@ -193,7 +205,81 @@ func ScanTreeWithOptions(root string, options ScanOptions) (map[string]Entry, er
 		return nil, fmt.Errorf("failed scanning tree %s: %w", rootAbs, err)
 	}
 
+	if err := populateFileHashes(entries, hashJobs, options.HashWorkers); err != nil {
+		return nil, fmt.Errorf("failed hashing files in %s: %w", rootAbs, err)
+	}
+
 	return entries, nil
+}
+
+func populateFileHashes(entries map[string]Entry, jobs []hashJob, workers int) error {
+	if len(jobs) == 0 {
+		return nil
+	}
+	if workers <= 0 {
+		// Default worker count tracks available CPU cores.
+		workers = runtime.NumCPU()
+		if workers < 1 {
+			workers = 1
+		}
+	}
+
+	jobCh := make(chan hashJob)
+	errCh := make(chan error, 1)
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+
+	workerFn := func() {
+		defer wg.Done()
+		for job := range jobCh {
+			hash, err := hashFile(job.absPath)
+			if err != nil {
+				if isSkippableScanError(err) {
+					// File vanished or became inaccessible between walk and hash.
+					mu.Lock()
+					delete(entries, job.relPath)
+					mu.Unlock()
+					continue
+				}
+				select {
+				case errCh <- fmt.Errorf("failed to hash file %s: %w", job.absPath, err):
+				default:
+				}
+				return
+			}
+
+			mu.Lock()
+			entry := entries[job.relPath]
+			entry.Hash = hash
+			entries[job.relPath] = entry
+			mu.Unlock()
+		}
+	}
+
+	for i := 0; i < workers; i++ {
+		wg.Add(1)
+		go workerFn()
+	}
+
+	for _, job := range jobs {
+		select {
+		case err := <-errCh:
+			close(jobCh)
+			wg.Wait()
+			return err
+		default:
+			jobCh <- job
+		}
+	}
+	close(jobCh)
+	wg.Wait()
+
+	select {
+	case err := <-errCh:
+		return err
+	default:
+		return nil
+	}
 }
 
 func isSkippableScanError(err error) bool {
@@ -211,6 +297,19 @@ func shouldExclude(path string, excludes []string) bool {
 
 	for _, exclude := range excludes {
 		if path == exclude || strings.HasPrefix(path, exclude+"/") {
+			return true
+		}
+	}
+	return false
+}
+
+func shouldInclude(path string, includes []string) bool {
+	if len(includes) == 0 {
+		// No include roots configured means "scan everything under root".
+		return true
+	}
+	for _, include := range includes {
+		if path == include || strings.HasPrefix(path, include+"/") || strings.HasPrefix(include, path+"/") {
 			return true
 		}
 	}
