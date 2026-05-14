@@ -40,7 +40,7 @@ func GetStopCommand() *cobra.Command {
 		Args:                  cobra.NoArgs,
 	}
 
-	cmd.Flags().StringVar(&stopSourcePath, "source", "", "Source directory to scan")
+	cmd.Flags().StringVar(&stopSourcePath, "source", "", "Source directory to scan (default: /)")
 	cmd.Flags().StringVar(&stopStateFile, "state-file", "", "Snapshot file path")
 	cmd.Flags().StringArrayVar(&stopExcludes, "exclude", nil, defaultExcludeHelp())
 	cmd.Flags().StringVar(&stopFormat, "format", "table", "Output format: table|json")
@@ -54,7 +54,6 @@ func GetStopCommand() *cobra.Command {
 	cmd.Flags().StringVar(&stopOverlayName, "overlay-name", "", "Overlay name for artifact mode")
 	cmd.Flags().StringVar(&stopNodeSource, "node-source", "", "Optional node identifier stored in artifact metadata")
 
-	_ = cmd.MarkFlagRequired("source")
 	return cmd
 }
 
@@ -96,7 +95,12 @@ func runStop(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	sourceAbs, err := filepath.Abs(stopSourcePath)
+	sourcePath := strings.TrimSpace(stopSourcePath)
+	if sourcePath == "" {
+		sourcePath = defaultSourcePath
+	}
+
+	sourceAbs, err := filepath.Abs(sourcePath)
 	if err != nil {
 		return fmt.Errorf("failed to resolve source path: %w", err)
 	}

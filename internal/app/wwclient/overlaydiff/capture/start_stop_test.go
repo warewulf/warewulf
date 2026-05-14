@@ -642,3 +642,42 @@ func TestStopCommand_MissingSnapshot(t *testing.T) {
 
 	assert.Error(t, stopCmd.Execute())
 }
+
+func TestStartStopCommand_SourceFlagOptional(t *testing.T) {
+	tmpDir := t.TempDir()
+	sourceDir := filepath.Join(tmpDir, "source")
+	stateFile := filepath.Join(tmpDir, "capture.json")
+
+	if !assert.NoError(t, os.MkdirAll(sourceDir, 0o755)) {
+		return
+	}
+	if !assert.NoError(t, os.WriteFile(filepath.Join(sourceDir, "file.txt"), []byte("old"), 0o644)) {
+		return
+	}
+
+	startCmd := GetStartCommand()
+	startSourcePath = sourceDir
+	startCmd.SetArgs([]string{"--state-file", stateFile})
+	startCmd.SetOut(new(bytes.Buffer))
+	startCmd.SetErr(new(bytes.Buffer))
+	if !assert.NoError(t, startCmd.Execute()) {
+		return
+	}
+
+	if !assert.NoError(t, os.WriteFile(filepath.Join(sourceDir, "file.txt"), []byte("new"), 0o644)) {
+		return
+	}
+
+	stopCmd := GetStopCommand()
+	stopSourcePath = sourceDir
+	stopCmd.SetArgs([]string{"--state-file", stateFile})
+	stopOut := new(bytes.Buffer)
+	stopCmd.SetOut(stopOut)
+	stopCmd.SetErr(new(bytes.Buffer))
+	if !assert.NoError(t, stopCmd.Execute()) {
+		return
+	}
+
+	assert.Contains(t, stopOut.String(), "modified")
+	assert.Contains(t, stopOut.String(), "/file.txt")
+}

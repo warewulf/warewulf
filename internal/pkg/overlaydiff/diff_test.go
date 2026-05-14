@@ -134,6 +134,12 @@ func TestScanTreeWithOptions_ExcludesPaths(t *testing.T) {
 	assert.True(t, hasConfig)
 }
 
+func TestShouldExclude_AutoCacheSegments(t *testing.T) {
+	assert.True(t, shouldExclude("/home/anyuser/.cache/ibus/socket", nil))
+	assert.True(t, shouldExclude("/opt/cache/data.db", nil))
+	assert.False(t, shouldExclude("/opt/cached/data.db", nil))
+}
+
 // writeTestFile creates parent directories and writes test content.
 func writeTestFile(t *testing.T, path string, content string) {
 	t.Helper()

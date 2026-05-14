@@ -3,12 +3,15 @@ package overlaydiff
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
+	"io/fs"
 	"io"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+	"syscall"
 )
 
 // EntryType describes the kind of filesystem entry.
@@ -114,6 +117,12 @@ func ScanTreeWithOptions(root string, options ScanOptions) (map[string]Entry, er
 	entries := make(map[string]Entry)
 	err = filepath.WalkDir(rootAbs, func(current string, d os.DirEntry, walkErr error) error {
 		if walkErr != nil {
+			if isSkippableScanError(walkErr) {
+				if d != nil && d.IsDir() {
+					return filepath.SkipDir
+				}
+				return nil
+			}
 			return walkErr
 		}
 
@@ -137,6 +146,12 @@ func ScanTreeWithOptions(root string, options ScanOptions) (map[string]Entry, er
 
 		info, err := os.Lstat(current)
 		if err != nil {
+			if isSkippableScanError(err) {
+				if d.IsDir() {
+					return filepath.SkipDir
+				}
+				return nil
+			}
 			return fmt.Errorf("failed to lstat %s: %w", current, err)
 		}
 
@@ -150,6 +165,9 @@ func ScanTreeWithOptions(root string, options ScanOptions) (map[string]Entry, er
 			entry.Type = EntrySymlink
 			linkTarget, err := os.Readlink(current)
 			if err != nil {
+				if isSkippableScanError(err) {
+					return nil
+				}
 				return fmt.Errorf("failed to read symlink target for %s: %w", current, err)
 			}
 			entry.LinkTarget = linkTarget
@@ -160,6 +178,9 @@ func ScanTreeWithOptions(root string, options ScanOptions) (map[string]Entry, er
 			entry.Size = info.Size()
 			hash, err := hashFile(current)
 			if err != nil {
+				if isSkippableScanError(err) {
+					return nil
+				}
 				return fmt.Errorf("failed to hash file %s: %w", current, err)
 			}
 			entry.Hash = hash
@@ -175,9 +196,30 @@ func ScanTreeWithOptions(root string, options ScanOptions) (map[string]Entry, er
 	return entries, nil
 }
 
+func isSkippableScanError(err error) bool {
+	return errors.Is(err, fs.ErrPermission) ||
+		errors.Is(err, os.ErrPermission) ||
+		errors.Is(err, fs.ErrNotExist) ||
+		errors.Is(err, os.ErrNotExist) ||
+		errors.Is(err, syscall.ENXIO)
+}
+
 func shouldExclude(path string, excludes []string) bool {
+	if hasAutoExcludedSegment(path) {
+		return true
+	}
+
 	for _, exclude := range excludes {
 		if path == exclude || strings.HasPrefix(path, exclude+"/") {
+			return true
+		}
+	}
+	return false
+}
+
+func hasAutoExcludedSegment(path string) bool {
+	for _, segment := range strings.Split(path, "/") {
+		if segment == "cache" || segment == ".cache" {
 			return true
 		}
 	}
