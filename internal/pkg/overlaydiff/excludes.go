@@ -7,6 +7,11 @@ import (
 
 // DefaultExcludes are common runtime/log/cache paths excluded from scanning.
 var DefaultExcludes = []string{
+	"/boot",
+	"/home",
+	"/root",
+	"/media",
+	"/mnt",
 	"/var/log",
 	"/var/cache",
 	"/var/tmp",

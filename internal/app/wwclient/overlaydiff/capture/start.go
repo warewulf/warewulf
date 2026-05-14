@@ -3,10 +3,13 @@ package capture
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/overlaydiff"
 )
+
+const defaultSourcePath = "/"
 
 var (
 	startSourcePath string
@@ -24,16 +27,19 @@ func GetStartCommand() *cobra.Command {
 		Args:                  cobra.NoArgs,
 	}
 
-	cmd.Flags().StringVar(&startSourcePath, "source", "", "Source directory to scan")
+	cmd.Flags().StringVar(&startSourcePath, "source", "", "Source directory to scan (default: /)")
 	cmd.Flags().StringVar(&startStateFile, "state-file", "", "Snapshot file path")
 	cmd.Flags().StringArrayVar(&startExcludes, "exclude", nil, defaultExcludeHelp())
-
-	_ = cmd.MarkFlagRequired("source")
 	return cmd
 }
 
 func runStart(cmd *cobra.Command, args []string) error {
-	sourceAbs, err := filepath.Abs(startSourcePath)
+	sourcePath := strings.TrimSpace(startSourcePath)
+	if sourcePath == "" {
+		sourcePath = defaultSourcePath
+	}
+
+	sourceAbs, err := filepath.Abs(sourcePath)
 	if err != nil {
 		return fmt.Errorf("failed to resolve source path: %w", err)
 	}
