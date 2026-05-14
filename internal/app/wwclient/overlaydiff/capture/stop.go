@@ -40,7 +40,7 @@ func GetStopCommand() *cobra.Command {
 		Args:                  cobra.NoArgs,
 	}
 
-	cmd.Flags().StringVar(&stopSourcePath, "source", "", "Source directory to scan (default: /)")
+	cmd.Flags().StringVar(&stopSourcePath, "source", "", "Source directory to scan (default: /; optimized)")
 	cmd.Flags().StringVar(&stopStateFile, "state-file", "", "Snapshot file path")
 	cmd.Flags().StringArrayVar(&stopExcludes, "exclude", nil, defaultExcludeHelp())
 	cmd.Flags().StringVar(&stopFormat, "format", "table", "Output format: table|json")
@@ -117,7 +117,11 @@ func runStop(cmd *cobra.Command, args []string) error {
 		excludes = overlaydiff.ResolveExcludes(nil)
 	}
 
-	entries, err := overlaydiff.ScanTreeWithOptions(sourceAbs, overlaydiff.ScanOptions{Excludes: excludes})
+	scanOptions := overlaydiff.ScanOptions{Excludes: excludes}
+	if sourceAbs == defaultSourcePath {
+		scanOptions.IncludeRoots = defaultIncludeRoots
+	}
+	entries, err := overlaydiff.ScanTreeWithOptions(sourceAbs, scanOptions)
 	if err != nil {
 		return err
 	}

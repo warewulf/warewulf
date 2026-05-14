@@ -11,6 +11,10 @@ import (
 
 const defaultSourcePath = "/"
 
+// defaultIncludeRoots keeps the default "/" workflow fast by restricting
+// traversal to system-admin relevant trees.
+var defaultIncludeRoots = []string{"/etc", "/var/lib", "/usr/local", "/opt", "/srv"}
+
 var (
 	startSourcePath string
 	startStateFile  string
@@ -27,7 +31,7 @@ func GetStartCommand() *cobra.Command {
 		Args:                  cobra.NoArgs,
 	}
 
-	cmd.Flags().StringVar(&startSourcePath, "source", "", "Source directory to scan (default: /)")
+	cmd.Flags().StringVar(&startSourcePath, "source", "", "Source directory to scan (default: / with optimized system roots)")
 	cmd.Flags().StringVar(&startStateFile, "state-file", "", "Snapshot file path")
 	cmd.Flags().StringArrayVar(&startExcludes, "exclude", nil, defaultExcludeHelp())
 	return cmd
@@ -45,7 +49,12 @@ func runStart(cmd *cobra.Command, args []string) error {
 	}
 
 	excludes := overlaydiff.ResolveExcludes(startExcludes)
-	entries, err := overlaydiff.ScanTreeWithOptions(sourceAbs, overlaydiff.ScanOptions{Excludes: excludes})
+	scanOptions := overlaydiff.ScanOptions{Excludes: excludes}
+	if sourcePath == defaultSourcePath {
+		// For default runs, scan only curated system roots.
+		scanOptions.IncludeRoots = defaultIncludeRoots
+	}
+	entries, err := overlaydiff.ScanTreeWithOptions(sourceAbs, scanOptions)
 	if err != nil {
 		return err
 	}
