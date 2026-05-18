@@ -263,6 +263,7 @@ the desired system.
 - ifupdown
 - NetworkManager
 - wicked
+- netplan
 
 .. note::
 
