@@ -55,7 +55,7 @@ network:
 {{- end }}
 {{- if $netdev.Tags.DNSSEARCH }}
       search:
-{{- range $domain := (split " " $netdev.Tags.DNSSEARCH) }}
+{{- range $domain := (regexSplit "[ \t]+" $netdev.Tags.DNSSEARCH -1) }}
       - {{ $domain }}
 {{- end }}
 {{- end }}
