@@ -39,6 +39,27 @@ network:
 {{- if $netdev.MTU}}
       mtu: {{$netdev.MTU}}
 {{- end }}
+{{- $nameservers := list }}
+{{- range $tk, $tv := $netdev.Tags }}
+  {{- if regexMatch "^DNS[0-9]*$" $tk }}
+    {{- $nameservers = append $nameservers $tv }}
+  {{- end }}
+{{- end }}
+{{- if or $nameservers $netdev.Tags.DNSSEARCH }}
+      nameservers:
+{{- if $nameservers }}
+        addresses:
+{{- range $addr := $nameservers }}
+        - {{ $addr }}
+{{- end }}
+{{- end }}
+{{- if $netdev.Tags.DNSSEARCH }}
+        search:
+{{- range $domain := (regexSplit "[ \t]+" $netdev.Tags.DNSSEARCH -1) }}
+        - {{ $domain }}
+{{- end }}
+{{- end }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
