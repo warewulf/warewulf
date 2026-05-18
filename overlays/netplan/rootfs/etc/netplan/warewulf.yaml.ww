@@ -61,6 +61,8 @@ network:
 {{- end }}
 {{- end }}
 {{- end }}
+{{- end }}
+{{- end }}
 {{- if $bonds }}
   bonds:
 {{- range $netdev := $NetDevs }}
