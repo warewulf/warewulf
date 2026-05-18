@@ -50,7 +50,6 @@ Re-run both of these commands when making changes to ``warewulf.conf``.
        - ed25519
        - ecdsa
        - rsa
-       - dsa
    image mounts:
      - source: /etc/resolv.conf
        dest: /etc/resolv.conf
@@ -254,7 +253,6 @@ Warewulf server.
        - ed25519
        - ecdsa
        - rsa
-       - dsa
 
 * ``ssh:key types``: Warewulf generates host keys for each listed key type.
 
