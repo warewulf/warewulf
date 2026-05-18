@@ -46,17 +46,17 @@ network:
   {{- end }}
 {{- end }}
 {{- if or $nameservers $netdev.Tags.DNSSEARCH }}
-    nameservers:
+      nameservers:
 {{- if $nameservers }}
-      addresses:
+        addresses:
 {{- range $addr := $nameservers }}
-      - {{ $addr }}
+        - {{ $addr }}
 {{- end }}
 {{- end }}
 {{- if $netdev.Tags.DNSSEARCH }}
-      search:
+        search:
 {{- range $domain := (regexSplit "[ \t]+" $netdev.Tags.DNSSEARCH -1) }}
-      - {{ $domain }}
+        - {{ $domain }}
 {{- end }}
 {{- end }}
 {{- end }}
