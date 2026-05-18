@@ -6,13 +6,13 @@ network:
 {{- $ethernets := list }}
 {{- $bonds := list }}
 {{- range $devname, $netdev := $NetDevs }}
-  {{- if $netdev.Device }}
-    {{- if eq (default "ethernet" (lower $netdev.Type)) "ethernet" }}
-      {{- $ethernets = append $ethernets $devname }}
-    {{- else if eq (lower $netdev.Type) "bond" }}
-      {{- $bonds = append $bonds $devname }}
-    {{- end }}
-  {{- end }}
+{{- if $netdev.Device }}
+{{- if eq (default "ethernet" (lower $netdev.Type)) "ethernet" }}
+{{- $ethernets = append $ethernets $devname }}
+{{- else if eq (lower $netdev.Type) "bond" }}
+{{- $bonds = append $bonds $devname }}
+{{- end }}
+{{- end }}
 {{- end }}
 {{- if $ethernets }}
   ethernets:
@@ -93,9 +93,9 @@ network:
         mii-monitor-interval: {{ default 100 $netdev.Tags.miimon }}
 {{- $interfaces := list }}
 {{- range $iface := $NetDevs }}
-  {{- if eq $iface.Tags.master $netdev.Device }}
-    {{- $interfaces = append $interfaces $iface.Device }}
-  {{- end }}
+{{- if eq $iface.Tags.master $netdev.Device }}
+{{- $interfaces = append $interfaces $iface.Device }}
+{{- end }}
 {{- end }}
 {{- if $interfaces }}
       interfaces:
