@@ -39,6 +39,7 @@ network:
 {{- if $netdev.MTU}}
       mtu: {{$netdev.MTU}}
 {{- end }}
+{{- $nameservers := list }}
 {{- range $tk, $tv := $netdev.Tags }}
   {{- if regexMatch "^DNS[0-9]*$" $tk }}
     {{- $nameservers = append $nameservers $tv }}
@@ -49,13 +50,13 @@ network:
 {{- if $nameservers }}
       addresses:
 {{- range $addr := $nameservers }}
-      - $addr
+      - {{ $addr }}
 {{- end }}
 {{- end }}
 {{- if $netdev.Tags.DNSSEARCH }}
       search:
-{{- range $domain := $netdev.Tags.DNSSEARCH }}
-      - $domain
+{{- range $domain := (split " " $netdev.Tags.DNSSEARCH) }}
+      - {{ $domain }}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -90,9 +91,9 @@ network:
         mii-monitor-interval: {{ default 100 $netdev.Tags.miimon }}
 {{- $interfaces := list }}
 {{- range $iface := $NetDevs }}
-{{- if eq $iface.Tags.master $netdev.Device }}
-{{- $interfaces = append $interfaces $iface.Device }}
-{{- end }}
+  {{- if eq $iface.Tags.master $netdev.Device }}
+    {{- $interfaces = append $interfaces $iface.Device }}
+  {{- end }}
 {{- end }}
 {{- if $interfaces }}
       interfaces:
