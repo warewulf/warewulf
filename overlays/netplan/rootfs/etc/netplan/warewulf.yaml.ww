@@ -6,13 +6,13 @@ network:
 {{- $ethernets := list }}
 {{- $bonds := list }}
 {{- range $devname, $netdev := $NetDevs }}
-{{- if $netdev.Device }}
-{{- if eq (default "ethernet" (lower $netdev.Type)) "ethernet" }}
-{{- $ethernets = append $ethernets $devname }}
-{{- else if eq (lower $netdev.Type) "bond" }}
-{{- $bonds = append $bonds $devname }}
-{{- end }}
-{{- end }}
+  {{- if $netdev.Device }}
+    {{- if eq (default "ethernet" (lower $netdev.Type)) "ethernet" }}
+      {{- $ethernets = append $ethernets $devname }}
+    {{- else if eq (lower $netdev.Type) "bond" }}
+      {{- $bonds = append $bonds $devname }}
+    {{- end }}
+  {{- end }}
 {{- end }}
 {{- if $ethernets }}
   ethernets:
@@ -38,6 +38,24 @@ network:
 {{- end }}
 {{- if $netdev.MTU}}
       mtu: {{$netdev.MTU}}
+{{- end }}
+{{- range $tk, $tv := $netdev.Tags }}
+  {{- if regexMatch "^DNS[0-9]*$" $tk }}
+    {{- $nameservers = append $nameservers $tv }}
+  {{- end }}
+{{- end }}
+{{- if or $nameservers $netdev.Tags.DNSSEARCH }}
+    nameservers:
+{{- if $nameservers }}
+      addresses:
+{{- range $addr := $nameservers }}
+      - $addr
+{{- end }}
+{{- end }}
+{{- if $netdev.Tags.DNSSEARCH }}
+      search:
+{{- range $domain := $netdev.Tags.DNSSEARCH }}
+      - $domain
 {{- end }}
 {{- end }}
 {{- end }}
