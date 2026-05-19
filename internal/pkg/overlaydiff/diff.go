@@ -5,8 +5,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"io/fs"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -48,12 +48,15 @@ const (
 // Fields such as Size or Hash are populated for regular files; LinkTarget
 // is populated for symlinks.
 type Entry struct {
-	Path       string    `json:"path"`
-	Type       EntryType `json:"type"`
-	Mode       uint32    `json:"mode"`
-	Size       int64     `json:"size,omitempty"`
-	Hash       string    `json:"hash,omitempty"`
-	LinkTarget string    `json:"link_target,omitempty"`
+	Path          string    `json:"path"`
+	Type          EntryType `json:"type"`
+	Mode          uint32    `json:"mode"`
+	Size          int64     `json:"size,omitempty"`
+	MTimeUnixNano int64     `json:"mtime_unix_nano,omitempty"`
+	Inode         uint64    `json:"inode,omitempty"`
+	Device        uint64    `json:"device,omitempty"`
+	Hash          string    `json:"hash,omitempty"`
+	LinkTarget    string    `json:"link_target,omitempty"`
 }
 
 // Change represents a detected difference for a single path between the
@@ -74,9 +77,10 @@ const permissionMask = os.ModePerm | os.ModeSetuid | os.ModeSetgid | os.ModeStic
 
 // ScanOptions controls scan-time behavior.
 type ScanOptions struct {
-	Excludes     []string
-	IncludeRoots []string
-	HashWorkers  int
+	Excludes        []string
+	IncludeRoots    []string
+	HashWorkers     int
+	BaselineEntries map[string]Entry
 }
 
 type hashJob struct {
@@ -195,7 +199,17 @@ func ScanTreeWithOptions(root string, options ScanOptions) (map[string]Entry, er
 		default:
 			entry.Type = EntryFile
 			entry.Size = info.Size()
-			hashJobs = append(hashJobs, hashJob{absPath: current, relPath: relPath})
+			entry.MTimeUnixNano = info.ModTime().UnixNano()
+			if stat, ok := info.Sys().(*syscall.Stat_t); ok {
+				entry.Inode = stat.Ino
+				entry.Device = uint64(stat.Dev)
+			}
+
+			if baseline, ok := options.BaselineEntries[relPath]; ok && canReuseFileHash(entry, baseline) {
+				entry.Hash = baseline.Hash
+			} else {
+				hashJobs = append(hashJobs, hashJob{absPath: current, relPath: relPath})
+			}
 		}
 
 		entries[relPath] = entry
@@ -288,6 +302,26 @@ func isSkippableScanError(err error) bool {
 		errors.Is(err, fs.ErrNotExist) ||
 		errors.Is(err, os.ErrNotExist) ||
 		errors.Is(err, syscall.ENXIO)
+}
+
+func canReuseFileHash(current Entry, baseline Entry) bool {
+	if current.Type != EntryFile || baseline.Type != EntryFile {
+		return false
+	}
+	if baseline.Hash == "" {
+		return false
+	}
+	if current.Size != baseline.Size || current.Mode != baseline.Mode || current.MTimeUnixNano != baseline.MTimeUnixNano {
+		return false
+	}
+
+	if current.Inode != 0 && current.Device != 0 && baseline.Inode != 0 && baseline.Device != 0 {
+		if current.Inode != baseline.Inode || current.Device != baseline.Device {
+			return false
+		}
+	}
+
+	return true
 }
 
 func shouldExclude(path string, excludes []string) bool {

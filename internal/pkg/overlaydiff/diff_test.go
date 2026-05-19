@@ -159,6 +159,37 @@ func TestScanTreeWithOptions_IncludeRoots(t *testing.T) {
 	assert.False(t, hasHome)
 }
 
+func TestCanReuseFileHash(t *testing.T) {
+	baseline := Entry{
+		Path:          "/etc/app.conf",
+		Type:          EntryFile,
+		Mode:          0o644,
+		Size:          123,
+		MTimeUnixNano: 1000,
+		Inode:         42,
+		Device:        8,
+		Hash:          "abc",
+	}
+
+	current := baseline
+	assert.True(t, canReuseFileHash(current, baseline))
+
+	current.MTimeUnixNano = 2000
+	assert.False(t, canReuseFileHash(current, baseline))
+
+	current = baseline
+	current.Inode = 99
+	assert.False(t, canReuseFileHash(current, baseline))
+
+	current = baseline
+	current.Inode = 0
+	current.Device = 0
+	baselineNoID := baseline
+	baselineNoID.Inode = 0
+	baselineNoID.Device = 0
+	assert.True(t, canReuseFileHash(current, baselineNoID))
+}
+
 // writeTestFile creates parent directories and writes test content.
 func writeTestFile(t *testing.T, path string, content string) {
 	t.Helper()

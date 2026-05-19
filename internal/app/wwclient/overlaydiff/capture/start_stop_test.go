@@ -135,7 +135,7 @@ func TestStopCommand_InteractivePersistsDecision(t *testing.T) {
 		return
 	}
 
-	// Answering once should persist a stable decision in capture.json.
+	// Answering once should persist a stable decision in sidecar state.
 	stopCmd := GetStopCommand()
 	stopCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile, "--interactive"})
 	stopCmd.SetIn(strings.NewReader("y\n"))
@@ -146,7 +146,8 @@ func TestStopCommand_InteractivePersistsDecision(t *testing.T) {
 		return
 	}
 
-	data, err := os.ReadFile(stateFile)
+	decisionStateFile := overlaydiff.DefaultDecisionStatePath(stateFile)
+	data, err := os.ReadFile(decisionStateFile)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -197,11 +198,60 @@ func TestStopCommand_InteractiveRecoversInvalidPersistedDecision(t *testing.T) {
 		return
 	}
 
-	updated, err := overlaydiff.LoadSnapshot(stateFile)
+	decisionState, err := overlaydiff.LoadDecisionState(overlaydiff.DefaultDecisionStatePath(stateFile))
 	if !assert.NoError(t, err) {
 		return
 	}
-	assert.Equal(t, overlaydiff.DecisionYes, updated.Decisions["/new.txt"])
+	assert.Equal(t, overlaydiff.DecisionYes, decisionState.Decisions["/new.txt"])
+}
+
+func TestStopCommand_InteractiveUsesSnapshotDecisionsFallback(t *testing.T) {
+	tmpDir := t.TempDir()
+	sourceDir := filepath.Join(tmpDir, "source")
+	stateFile := filepath.Join(tmpDir, "capture.json")
+	if !assert.NoError(t, os.MkdirAll(sourceDir, 0o755)) {
+		return
+	}
+
+	if !assert.NoError(t, os.WriteFile(filepath.Join(sourceDir, "new.txt"), []byte("old"), 0o644)) {
+		return
+	}
+
+	startCmd := GetStartCommand()
+	startCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile})
+	startCmd.SetOut(new(bytes.Buffer))
+	startCmd.SetErr(new(bytes.Buffer))
+	if !assert.NoError(t, startCmd.Execute()) {
+		return
+	}
+
+	if !assert.NoError(t, os.WriteFile(filepath.Join(sourceDir, "new.txt"), []byte("new"), 0o644)) {
+		return
+	}
+
+	snapshot, err := overlaydiff.LoadSnapshot(stateFile)
+	if !assert.NoError(t, err) {
+		return
+	}
+	snapshot.Decisions["/new.txt"] = overlaydiff.DecisionYes
+	if !assert.NoError(t, overlaydiff.SaveSnapshot(stateFile, snapshot)) {
+		return
+	}
+
+	stopCmd := GetStopCommand()
+	stopCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile, "--interactive"})
+	stopCmd.SetIn(strings.NewReader(""))
+	stopCmd.SetOut(new(bytes.Buffer))
+	stopCmd.SetErr(new(bytes.Buffer))
+	if !assert.NoError(t, stopCmd.Execute()) {
+		return
+	}
+
+	decisionState, err := overlaydiff.LoadDecisionState(overlaydiff.DefaultDecisionStatePath(stateFile))
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, overlaydiff.DecisionYes, decisionState.Decisions["/new.txt"])
 }
 
 func TestStopCommand_FilterAndExportSelected(t *testing.T) {

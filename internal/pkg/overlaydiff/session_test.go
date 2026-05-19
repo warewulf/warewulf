@@ -8,6 +8,28 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestDecisionState_SaveAndLoad(t *testing.T) {
+	tmpDir := t.TempDir()
+	stateFile := filepath.Join(tmpDir, "capture.json")
+	decisionPath := DefaultDecisionStatePath(stateFile)
+
+	input := map[string]Decision{
+		"/etc/a": DecisionYes,
+		"/etc/b": DecisionNo,
+	}
+	if !assert.NoError(t, SaveDecisionState(decisionPath, input)) {
+		return
+	}
+
+	loaded, err := LoadDecisionState(decisionPath)
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, 1, loaded.Version)
+	assert.Equal(t, DecisionYes, loaded.Decisions["/etc/a"])
+	assert.Equal(t, DecisionNo, loaded.Decisions["/etc/b"])
+}
+
 func TestLoadSnapshot_BackwardCompatibleDecisions(t *testing.T) {
 	// Legacy snapshots without decisions should still load with defaults.
 	tmpDir := t.TempDir()
