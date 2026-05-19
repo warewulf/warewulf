@@ -120,7 +120,6 @@ data from other structures.
   - ed25519
   - ecdsa
   - rsa
-  - dsa
 - First key type: ed25519
 
 ## Node
