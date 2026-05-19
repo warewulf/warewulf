@@ -30,6 +30,8 @@ var (
 	stopNodeSource  string
 )
 
+const decisionCheckpointInterval = 10
+
 func GetStopCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		DisableFlagsInUseLine: true,
@@ -94,6 +96,12 @@ func runStop(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	decisionStatePath := overlaydiff.DefaultDecisionStatePath(stateFile)
+	if decisionState, decisionErr := overlaydiff.LoadDecisionState(decisionStatePath); decisionErr == nil {
+		snapshot.Decisions = decisionState.Decisions
+	} else if !errors.Is(decisionErr, os.ErrNotExist) {
+		return decisionErr
+	}
 
 	sourcePath := strings.TrimSpace(stopSourcePath)
 	if sourcePath == "" {
@@ -121,6 +129,7 @@ func runStop(cmd *cobra.Command, args []string) error {
 	if sourceAbs == defaultSourcePath {
 		scanOptions.IncludeRoots = defaultIncludeRoots
 	}
+	scanOptions.BaselineEntries = snapshot.Entries
 	entries, err := overlaydiff.ScanTreeWithOptions(sourceAbs, scanOptions)
 	if err != nil {
 		return err
@@ -139,7 +148,7 @@ func runStop(cmd *cobra.Command, args []string) error {
 
 	if stopInteractive {
 		// Persist each answer immediately so interrupted sessions can resume safely.
-		if err := runInteractiveSelection(cmd.InOrStdin(), textOut, changes, &snapshot, stateFile); err != nil {
+		if err := runInteractiveSelection(cmd.InOrStdin(), textOut, changes, &snapshot, decisionStatePath); err != nil {
 			if errors.Is(err, errInteractiveCancelled) {
 				_, _ = fmt.Fprintln(textOut, "Cancelled. Decisions were saved and can be resumed later.")
 				return err
@@ -223,8 +232,16 @@ func runStop(cmd *cobra.Command, args []string) error {
 
 var errInteractiveCancelled = errors.New("interactive selection cancelled")
 
-func runInteractiveSelection(in io.Reader, out io.Writer, changes []overlaydiff.Change, snapshot *overlaydiff.Snapshot, stateFile string) error {
+func runInteractiveSelection(in io.Reader, out io.Writer, changes []overlaydiff.Change, snapshot *overlaydiff.Snapshot, decisionStatePath string) error {
 	reader := bufio.NewReader(in)
+	pendingSaves := 0
+	flush := func() error {
+		if err := overlaydiff.SaveDecisionState(decisionStatePath, snapshot.Decisions); err != nil {
+			return err
+		}
+		pendingSaves = 0
+		return nil
+	}
 
 	for idx, change := range changes {
 		currentDecision := normalizeDecision(snapshot.Decisions[change.Path])
@@ -239,6 +256,9 @@ func runInteractiveSelection(in io.Reader, out io.Writer, changes []overlaydiff.
 			answer, err := reader.ReadString('\n')
 			if err != nil {
 				if errors.Is(err, io.EOF) {
+					if flushErr := flush(); flushErr != nil {
+						return flushErr
+					}
 					return errInteractiveCancelled
 				}
 				return err
@@ -252,7 +272,7 @@ func runInteractiveSelection(in io.Reader, out io.Writer, changes []overlaydiff.
 			case "t", "templated":
 				snapshot.Decisions[change.Path] = overlaydiff.DecisionTemplated
 			case "e", "exit":
-				if err := overlaydiff.SaveSnapshot(stateFile, *snapshot); err != nil {
+				if err := flush(); err != nil {
 					return err
 				}
 				return errInteractiveCancelled
@@ -261,11 +281,17 @@ func runInteractiveSelection(in io.Reader, out io.Writer, changes []overlaydiff.
 				continue
 			}
 
-			if err := overlaydiff.SaveSnapshot(stateFile, *snapshot); err != nil {
-				return err
+			pendingSaves++
+			if pendingSaves >= decisionCheckpointInterval {
+				if err := flush(); err != nil {
+					return err
+				}
 			}
 			break
 		}
+	}
+	if err := flush(); err != nil {
+		return err
 	}
 
 	return nil
