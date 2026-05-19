@@ -190,6 +190,19 @@ func TestCanReuseFileHash(t *testing.T) {
 	assert.True(t, canReuseFileHash(current, baselineNoID))
 }
 
+func TestDedupeTopLevelIncludes(t *testing.T) {
+	input := []string{"/etc", "/etc/ssh", "/var/lib", "/var/lib/app", "/opt"}
+	result := dedupeTopLevelIncludes(input)
+	assert.Equal(t, []string{"/etc", "/opt", "/var/lib"}, result)
+}
+
+func TestResolveScanWorkers_DefaultAggressiveCapped(t *testing.T) {
+	workers := resolveScanWorkers(0)
+	assert.GreaterOrEqual(t, workers, 1)
+	assert.LessOrEqual(t, workers, 12)
+	assert.Equal(t, 7, resolveScanWorkers(7))
+}
+
 // writeTestFile creates parent directories and writes test content.
 func writeTestFile(t *testing.T, path string, content string) {
 	t.Helper()
