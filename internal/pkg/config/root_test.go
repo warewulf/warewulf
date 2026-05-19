@@ -38,7 +38,6 @@ ssh:
   - ed25519
   - ecdsa
   - rsa
-  - dsa
 tftp:
   enabled: true
   ipxe:
@@ -85,7 +84,6 @@ ssh:
   - ed25519
   - ecdsa
   - rsa
-  - dsa
 tftp:
   enabled: true
   ipxe:
@@ -134,7 +132,6 @@ ssh:
   - ed25519
   - ecdsa
   - rsa
-  - dsa
 tftp:
   enabled: true
   ipxe:
@@ -180,7 +177,6 @@ ssh:
   - ed25519
   - ecdsa
   - rsa
-  - dsa
 tftp:
   enabled: true
   ipxe:
@@ -263,7 +259,6 @@ ssh:
   - ed25519
   - ecdsa
   - rsa
-  - dsa
 tftp:
   enabled: true
   ipxe:

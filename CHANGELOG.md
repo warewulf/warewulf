@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## Unreleased
+
+### Changed
+
+- Remove `dsa` from default `ssh: key types`; sshd silently skips DSA host keys
+  on EL9 / OpenSSH 8.7p1+, leaving nodes with no usable host keys. #1185
+
 ## v4.7.0, 2026-05-12
 
 ### Fixed
