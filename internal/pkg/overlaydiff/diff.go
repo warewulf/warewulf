@@ -79,6 +79,7 @@ const permissionMask = os.ModePerm | os.ModeSetuid | os.ModeSetgid | os.ModeStic
 type ScanOptions struct {
 	Excludes        []string
 	IncludeRoots    []string
+	ScanWorkers     int
 	HashWorkers     int
 	BaselineEntries map[string]Entry
 }
@@ -128,10 +129,112 @@ func ScanTreeWithOptions(root string, options ScanOptions) (map[string]Entry, er
 
 	excludes := NormalizeExcludes(options.Excludes)
 	includes := NormalizeExcludes(options.IncludeRoots)
+	if len(includes) > 0 {
+		return scanIncludedRoots(rootAbs, includes, excludes, options)
+	}
+
 	entries := make(map[string]Entry)
-	// Defer file hashing so we can perform it in parallel after traversal.
 	hashJobs := make([]hashJob, 0)
-	err = filepath.WalkDir(rootAbs, func(current string, d os.DirEntry, walkErr error) error {
+	if err := scanTreeInto(rootAbs, rootAbs, includes, excludes, options, entries, &hashJobs); err != nil {
+		return nil, fmt.Errorf("failed scanning tree %s: %w", rootAbs, err)
+	}
+
+	if err := populateFileHashes(entries, hashJobs, options.HashWorkers); err != nil {
+		return nil, fmt.Errorf("failed hashing files in %s: %w", rootAbs, err)
+	}
+
+	return entries, nil
+}
+
+func scanIncludedRoots(rootAbs string, includes []string, excludes []string, options ScanOptions) (map[string]Entry, error) {
+	includes = dedupeTopLevelIncludes(includes)
+	workers := resolveScanWorkers(options.ScanWorkers)
+	if workers > len(includes) {
+		workers = len(includes)
+	}
+	if workers < 1 {
+		workers = 1
+	}
+
+	entries := make(map[string]Entry)
+	hashJobs := make([]hashJob, 0)
+	var mu sync.Mutex
+
+	includeCh := make(chan string)
+	errCh := make(chan error, 1)
+	var wg sync.WaitGroup
+
+	workerFn := func() {
+		defer wg.Done()
+		for include := range includeCh {
+			subRoot := filepath.Join(rootAbs, strings.TrimPrefix(include, "/"))
+			info, err := os.Lstat(subRoot)
+			if err != nil {
+				if isSkippableScanError(err) {
+					continue
+				}
+				select {
+				case errCh <- fmt.Errorf("failed to inspect include root %s: %w", include, err):
+				default:
+				}
+				return
+			}
+			if !info.IsDir() {
+				continue
+			}
+
+			localEntries := make(map[string]Entry)
+			localJobs := make([]hashJob, 0)
+			if err := scanTreeInto(rootAbs, subRoot, nil, excludes, options, localEntries, &localJobs); err != nil {
+				select {
+				case errCh <- fmt.Errorf("failed scanning include root %s: %w", include, err):
+				default:
+				}
+				return
+			}
+
+			mu.Lock()
+			for path, entry := range localEntries {
+				entries[path] = entry
+			}
+			hashJobs = append(hashJobs, localJobs...)
+			mu.Unlock()
+		}
+	}
+
+	for i := 0; i < workers; i++ {
+		wg.Add(1)
+		go workerFn()
+	}
+
+	for _, include := range includes {
+		select {
+		case err := <-errCh:
+			close(includeCh)
+			wg.Wait()
+			return nil, err
+		default:
+			includeCh <- include
+		}
+	}
+	close(includeCh)
+	wg.Wait()
+
+	select {
+	case err := <-errCh:
+		return nil, err
+	default:
+	}
+
+	if err := populateFileHashes(entries, hashJobs, options.HashWorkers); err != nil {
+		return nil, fmt.Errorf("failed hashing files in %s: %w", rootAbs, err)
+	}
+
+	return entries, nil
+}
+
+func scanTreeInto(rootAbs string, walkRoot string, includes []string, excludes []string, options ScanOptions, entries map[string]Entry, hashJobs *[]hashJob) error {
+	err := filepath.WalkDir(walkRoot, func(current string, d os.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			if isSkippableScanError(walkErr) {
 				if d != nil && d.IsDir() {
@@ -142,7 +245,7 @@ func ScanTreeWithOptions(root string, options ScanOptions) (map[string]Entry, er
 			return walkErr
 		}
 
-		if current == rootAbs {
+		if current == walkRoot {
 			return nil
 		}
 
@@ -208,7 +311,7 @@ func ScanTreeWithOptions(root string, options ScanOptions) (map[string]Entry, er
 			if baseline, ok := options.BaselineEntries[relPath]; ok && canReuseFileHash(entry, baseline) {
 				entry.Hash = baseline.Hash
 			} else {
-				hashJobs = append(hashJobs, hashJob{absPath: current, relPath: relPath})
+				*hashJobs = append(*hashJobs, hashJob{absPath: current, relPath: relPath})
 			}
 		}
 
@@ -216,14 +319,53 @@ func ScanTreeWithOptions(root string, options ScanOptions) (map[string]Entry, er
 		return nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed scanning tree %s: %w", rootAbs, err)
+		return err
 	}
 
-	if err := populateFileHashes(entries, hashJobs, options.HashWorkers); err != nil {
-		return nil, fmt.Errorf("failed hashing files in %s: %w", rootAbs, err)
-	}
+	return nil
+}
 
-	return entries, nil
+func resolveScanWorkers(workers int) int {
+	if workers > 0 {
+		return workers
+	}
+	count := runtime.NumCPU() * 2
+	if count > 12 {
+		count = 12
+	}
+	if count < 1 {
+		count = 1
+	}
+	return count
+}
+
+func dedupeTopLevelIncludes(includes []string) []string {
+	if len(includes) <= 1 {
+		return includes
+	}
+	ordered := make([]string, len(includes))
+	copy(ordered, includes)
+	sort.SliceStable(ordered, func(i, j int) bool {
+		if len(ordered[i]) == len(ordered[j]) {
+			return ordered[i] < ordered[j]
+		}
+		return len(ordered[i]) < len(ordered[j])
+	})
+
+	result := make([]string, 0, len(ordered))
+	for _, include := range ordered {
+		skip := false
+		for _, existing := range result {
+			if include == existing || strings.HasPrefix(include, existing+"/") {
+				skip = true
+				break
+			}
+		}
+		if !skip {
+			result = append(result, include)
+		}
+	}
+	return result
 }
 
 func populateFileHashes(entries map[string]Entry, jobs []hashJob, workers int) error {
@@ -231,8 +373,10 @@ func populateFileHashes(entries map[string]Entry, jobs []hashJob, workers int) e
 		return nil
 	}
 	if workers <= 0 {
-		// Default worker count tracks available CPU cores.
-		workers = runtime.NumCPU()
+		workers = runtime.NumCPU() * 3
+		if workers > 32 {
+			workers = 32
+		}
 		if workers < 1 {
 			workers = 1
 		}
