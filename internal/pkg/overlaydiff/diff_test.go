@@ -1,6 +1,7 @@
 package overlaydiff
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -201,6 +202,42 @@ func TestResolveScanWorkers_DefaultAggressiveCapped(t *testing.T) {
 	assert.GreaterOrEqual(t, workers, 1)
 	assert.LessOrEqual(t, workers, 12)
 	assert.Equal(t, 7, resolveScanWorkers(7))
+}
+
+func BenchmarkCompareSparseChanges(b *testing.B) {
+	source, baseline := buildCompareFixture(100000, 1000)
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = Compare(source, baseline)
+	}
+}
+
+func BenchmarkCompareDenseChanges(b *testing.B) {
+	source, baseline := buildCompareFixture(100000, 50000)
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = Compare(source, baseline)
+	}
+}
+
+func buildCompareFixture(total int, changed int) (map[string]Entry, map[string]Entry) {
+	source := make(map[string]Entry, total)
+	baseline := make(map[string]Entry, total)
+
+	for i := 0; i < total; i++ {
+		path := fmt.Sprintf("/etc/f-%06d.conf", i)
+		hash := "same"
+		if i < changed {
+			hash = "changed"
+		}
+
+		source[path] = Entry{Path: path, Type: EntryFile, Mode: 0o644, Hash: hash}
+		baseline[path] = Entry{Path: path, Type: EntryFile, Mode: 0o644, Hash: "same"}
+	}
+
+	return source, baseline
 }
 
 // writeTestFile creates parent directories and writes test content.

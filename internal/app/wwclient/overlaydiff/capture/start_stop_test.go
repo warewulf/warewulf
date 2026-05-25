@@ -693,6 +693,72 @@ func TestStopCommand_MissingSnapshot(t *testing.T) {
 	assert.Error(t, stopCmd.Execute())
 }
 
+func TestStartCommand_EventAssistedWritesState(t *testing.T) {
+	tmpDir := t.TempDir()
+	sourceDir := filepath.Join(tmpDir, "source")
+	stateFile := filepath.Join(tmpDir, "capture.json")
+	if !assert.NoError(t, os.MkdirAll(sourceDir, 0o755)) {
+		return
+	}
+
+	startCmd := GetStartCommand()
+	startCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile, "--event-assisted"})
+	startOut := new(bytes.Buffer)
+	startCmd.SetOut(startOut)
+	startCmd.SetErr(new(bytes.Buffer))
+
+	if !assert.NoError(t, startCmd.Execute()) {
+		return
+	}
+
+	eventState, err := overlaydiff.LoadEventState(overlaydiff.DefaultEventStatePath(stateFile))
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	assert.Equal(t, "event-assisted", eventState.Mode)
+	assert.NotEmpty(t, eventState.SessionID)
+	assert.Contains(t, startOut.String(), "Event-assisted session initialized")
+}
+
+func TestStopCommand_EventAssistedMissingStateFallsBack(t *testing.T) {
+	tmpDir := t.TempDir()
+	sourceDir := filepath.Join(tmpDir, "source")
+	stateFile := filepath.Join(tmpDir, "capture.json")
+	if !assert.NoError(t, os.MkdirAll(sourceDir, 0o755)) {
+		return
+	}
+
+	if !assert.NoError(t, os.WriteFile(filepath.Join(sourceDir, "x.txt"), []byte("old"), 0o644)) {
+		return
+	}
+
+	startCmd := GetStartCommand()
+	startCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile})
+	startCmd.SetOut(new(bytes.Buffer))
+	startCmd.SetErr(new(bytes.Buffer))
+	if !assert.NoError(t, startCmd.Execute()) {
+		return
+	}
+
+	if !assert.NoError(t, os.WriteFile(filepath.Join(sourceDir, "x.txt"), []byte("new"), 0o644)) {
+		return
+	}
+
+	stopCmd := GetStopCommand()
+	stopCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile, "--event-assisted"})
+	stopOut := new(bytes.Buffer)
+	stopCmd.SetOut(stopOut)
+	stopCmd.SetErr(new(bytes.Buffer))
+
+	if !assert.NoError(t, stopCmd.Execute()) {
+		return
+	}
+
+	assert.Contains(t, stopOut.String(), "Event-assisted state not found; falling back to full scan.")
+	assert.Contains(t, stopOut.String(), "modified")
+}
+
 func TestStartStopCommand_SourceFlagOptional(t *testing.T) {
 	tmpDir := t.TempDir()
 	sourceDir := filepath.Join(tmpDir, "source")
