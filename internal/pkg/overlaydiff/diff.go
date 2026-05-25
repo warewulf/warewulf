@@ -505,46 +505,40 @@ func hasAutoExcludedSegment(path string) bool {
 
 // Compare computes a sorted list of Change describing differences between two maps.
 func Compare(source map[string]Entry, baseline map[string]Entry) []Change {
-	keySet := make(map[string]struct{}, len(source)+len(baseline))
-	for key := range source {
-		keySet[key] = struct{}{}
-	}
-	for key := range baseline {
-		keySet[key] = struct{}{}
-	}
-
-	keys := make([]string, 0, len(keySet))
-	for key := range keySet {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
-
 	changes := make([]Change, 0)
-	for _, key := range keys {
-		src, srcExists := source[key]
+
+	for key, src := range source {
 		base, baseExists := baseline[key]
-
-		switch {
-		case srcExists && !baseExists:
+		if !baseExists {
 			changes = append(changes, newChange(key, ChangeAdded, &src, nil))
-		case !srcExists && baseExists:
-			changes = append(changes, newChange(key, ChangeRemoved, nil, &base))
-		case srcExists && baseExists:
-			if src.Type != base.Type {
-				changes = append(changes, newChange(key, ChangeTypeChanged, &src, &base))
-				continue
-			}
+			continue
+		}
 
-			if entryModified(src, base) {
-				changes = append(changes, newChange(key, ChangeModified, &src, &base))
-				continue
-			}
+		if src.Type != base.Type {
+			changes = append(changes, newChange(key, ChangeTypeChanged, &src, &base))
+			continue
+		}
 
-			if src.Mode != base.Mode {
-				changes = append(changes, newChange(key, ChangeModeChanged, &src, &base))
-			}
+		if entryModified(src, base) {
+			changes = append(changes, newChange(key, ChangeModified, &src, &base))
+			continue
+		}
+
+		if src.Mode != base.Mode {
+			changes = append(changes, newChange(key, ChangeModeChanged, &src, &base))
 		}
 	}
+
+	for key, base := range baseline {
+		if _, srcExists := source[key]; srcExists {
+			continue
+		}
+		changes = append(changes, newChange(key, ChangeRemoved, nil, &base))
+	}
+
+	sort.Slice(changes, func(i, j int) bool {
+		return changes[i].Path < changes[j].Path
+	})
 
 	return changes
 }
