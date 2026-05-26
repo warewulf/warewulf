@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/configure"
+	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -20,6 +21,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if allFunctions {
+		if conf.Warewulf.EnableHostOverlay() {
+			wwlog.Info("Building overlay...")
+			if err = overlay.BuildHostOverlay(); err != nil {
+				wwlog.Warn("host overlay could not be built: %s", err)
+			}
+		} else {
+			wwlog.Info("host overlays are disabled")
+		}
+
 		if _, err = configure.TLS(false); err != nil {
 			return err
 		}
