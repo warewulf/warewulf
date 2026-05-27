@@ -29,6 +29,7 @@ var (
 	stopOverlayName string
 	stopNodeSource  string
 	stopEventAssisted bool
+	stopNoInteractive bool
 )
 
 const decisionCheckpointInterval = 10
@@ -48,6 +49,7 @@ func GetStopCommand() *cobra.Command {
 	cmd.Flags().StringArrayVar(&stopExcludes, "exclude", nil, defaultExcludeHelp())
 	cmd.Flags().StringVar(&stopFormat, "format", "table", "Output format: table|json")
 	cmd.Flags().BoolVar(&stopInteractive, "interactive", false, "Prompt for per-path selection decisions")
+	cmd.Flags().BoolVar(&stopNoInteractive, "no-interactive", false, "Disable interactive selection prompts")
 	cmd.Flags().StringArrayVar(&stopOnly, "only", nil, "Only include change class (repeatable): added|modified|mode-changed")
 	cmd.Flags().StringArrayVar(&stopPathPrefix, "path-prefix", nil, "Only include path prefix (repeatable, example: /etc)")
 	cmd.Flags().BoolVar(&stopExport, "export", false, "Copy selected files to an export directory")
@@ -171,7 +173,8 @@ func runStop(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if stopInteractive {
+	interactiveEnabled := stopInteractive || !stopNoInteractive
+	if interactiveEnabled {
 		// Persist each answer immediately so interrupted sessions can resume safely.
 		if err := runInteractiveSelection(cmd.InOrStdin(), textOut, changes, &snapshot, decisionStatePath); err != nil {
 			if errors.Is(err, errInteractiveCancelled) {
