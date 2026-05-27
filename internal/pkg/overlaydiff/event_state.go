@@ -14,7 +14,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-const eventStateVersion = 1
+const eventStateVersion = 2
 
 // EventHealth describes whether event-assisted state is suitable for fast-path use.
 type EventHealth string
@@ -108,6 +108,21 @@ func LoadEventState(path string) (EventState, error) {
 	var state EventState
 	if err := json.Unmarshal(data, &state); err != nil {
 		return EventState{}, fmt.Errorf("failed to unmarshal event state: %w", err)
+	}
+	if state.Version != eventStateVersion {
+		return EventState{}, fmt.Errorf("unsupported event state version: %d", state.Version)
+	}
+	if state.Mode != "event-assisted" {
+		return EventState{}, fmt.Errorf("invalid event state mode: %q", state.Mode)
+	}
+	if strings.TrimSpace(state.SessionID) == "" {
+		return EventState{}, fmt.Errorf("invalid event state: missing session_id")
+	}
+	if strings.TrimSpace(state.SourceRoot) == "" {
+		return EventState{}, fmt.Errorf("invalid event state: missing source_root")
+	}
+	if state.StartedAt.IsZero() {
+		return EventState{}, fmt.Errorf("invalid event state: missing started_at")
 	}
 
 	state.IncludeRoots = NormalizeExcludes(state.IncludeRoots)

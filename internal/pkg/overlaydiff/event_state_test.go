@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -31,6 +32,53 @@ func TestEventState_SaveAndLoad(t *testing.T) {
 	assert.Equal(t, state.Health, loaded.Health)
 	assert.Equal(t, []string{"/etc", "/var/lib"}, loaded.IncludeRoots)
 	assert.Equal(t, []string{"/etc"}, loaded.WatchRoots)
+}
+
+func TestEventState_LoadRejectsUnsupportedVersion(t *testing.T) {
+	tmpDir := t.TempDir()
+	statePath := filepath.Join(tmpDir, "capture.events.json")
+
+	content := `{
+  "version": 1,
+  "mode": "event-assisted",
+  "session_id": "legacy",
+  "source_root": "/",
+  "started_at": "2026-05-03T00:00:00Z",
+  "updated_at": "2026-05-03T00:00:00Z",
+  "health": "ok"
+}`
+	if !assert.NoError(t, os.WriteFile(statePath, []byte(content), 0o644)) {
+		return
+	}
+
+	_, err := LoadEventState(statePath)
+	if !assert.Error(t, err) {
+		return
+	}
+	assert.Contains(t, err.Error(), "unsupported event state version")
+}
+
+func TestEventState_LoadRejectsMissingRequiredFields(t *testing.T) {
+	tmpDir := t.TempDir()
+	statePath := filepath.Join(tmpDir, "capture.events.json")
+
+	state := EventState{
+		Version:    eventStateVersion,
+		Mode:       "event-assisted",
+		SourceRoot: "/",
+		StartedAt:  time.Now().UTC(),
+		UpdatedAt:  time.Now().UTC(),
+		Health:     EventHealthOK,
+	}
+	if !assert.NoError(t, SaveEventState(statePath, state)) {
+		return
+	}
+
+	_, err := LoadEventState(statePath)
+	if !assert.Error(t, err) {
+		return
+	}
+	assert.Contains(t, err.Error(), "missing session_id")
 }
 
 func TestProbeEventWatchRoots(t *testing.T) {

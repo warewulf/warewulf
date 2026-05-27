@@ -40,7 +40,7 @@ func TestStartStopCommand_TableOutput(t *testing.T) {
 	}
 
 	stopCmd := GetStopCommand()
-	stopCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile})
+	stopCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile, "--no-interactive"})
 	stopOut := new(bytes.Buffer)
 	stopCmd.SetOut(stopOut)
 	stopCmd.SetErr(new(bytes.Buffer))
@@ -85,7 +85,7 @@ func TestStartStopCommand_JSONOutput(t *testing.T) {
 
 	// JSON payload should remain clean; summary goes to stderr.
 	stopCmd := GetStopCommand()
-	stopCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile, "--format", "json"})
+	stopCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile, "--format", "json", "--no-interactive"})
 	stopOut := new(bytes.Buffer)
 	stopErr := new(bytes.Buffer)
 	stopCmd.SetOut(stopOut)
@@ -109,6 +109,44 @@ func TestStartStopCommand_JSONOutput(t *testing.T) {
 	assert.Equal(t, "/new.txt", payload[0].Path)
 
 	assert.Contains(t, stopErr.String(), "Decision summary:")
+}
+
+func TestStopCommand_DefaultsToInteractive(t *testing.T) {
+	tmpDir := t.TempDir()
+	sourceDir := filepath.Join(tmpDir, "source")
+	stateFile := filepath.Join(tmpDir, "capture.json")
+	if !assert.NoError(t, os.MkdirAll(sourceDir, 0o755)) {
+		return
+	}
+
+	if !assert.NoError(t, os.WriteFile(filepath.Join(sourceDir, "new.txt"), []byte("old"), 0o644)) {
+		return
+	}
+
+	startCmd := GetStartCommand()
+	startCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile})
+	startCmd.SetOut(new(bytes.Buffer))
+	startCmd.SetErr(new(bytes.Buffer))
+	if !assert.NoError(t, startCmd.Execute()) {
+		return
+	}
+
+	if !assert.NoError(t, os.WriteFile(filepath.Join(sourceDir, "new.txt"), []byte("new"), 0o644)) {
+		return
+	}
+
+	stopCmd := GetStopCommand()
+	stopCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile})
+	stopCmd.SetIn(strings.NewReader("y\n"))
+	stopOut := new(bytes.Buffer)
+	stopCmd.SetOut(stopOut)
+	stopCmd.SetErr(new(bytes.Buffer))
+
+	if !assert.NoError(t, stopCmd.Execute()) {
+		return
+	}
+
+	assert.Contains(t, stopOut.String(), "-> (y)es, (n)o, (t)emplated, (e)xit")
 }
 
 func TestStopCommand_InteractivePersistsDecision(t *testing.T) {
@@ -630,7 +668,7 @@ func TestStopCommand_ArtifactRequiresOverlayName(t *testing.T) {
 	}
 
 	stopCmd := GetStopCommand()
-	stopCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile, "--artifact"})
+	stopCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile, "--artifact", "--no-interactive"})
 	stopCmd.SetOut(new(bytes.Buffer))
 	stopCmd.SetErr(new(bytes.Buffer))
 
@@ -666,7 +704,7 @@ func TestStopCommand_ArtifactAndExportMutuallyExclusive(t *testing.T) {
 	}
 
 	stopCmd := GetStopCommand()
-	stopCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile, "--artifact", "--overlay-name", "demo", "--export"})
+	stopCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile, "--artifact", "--overlay-name", "demo", "--export", "--no-interactive"})
 	stopCmd.SetOut(new(bytes.Buffer))
 	stopCmd.SetErr(new(bytes.Buffer))
 
@@ -686,7 +724,7 @@ func TestStopCommand_MissingSnapshot(t *testing.T) {
 	}
 
 	stopCmd := GetStopCommand()
-	stopCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile})
+	stopCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile, "--no-interactive"})
 	stopCmd.SetOut(new(bytes.Buffer))
 	stopCmd.SetErr(new(bytes.Buffer))
 
@@ -746,7 +784,7 @@ func TestStopCommand_EventAssistedMissingStateFallsBack(t *testing.T) {
 	}
 
 	stopCmd := GetStopCommand()
-	stopCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile, "--event-assisted"})
+	stopCmd.SetArgs([]string{"--source", sourceDir, "--state-file", stateFile, "--event-assisted", "--no-interactive"})
 	stopOut := new(bytes.Buffer)
 	stopCmd.SetOut(stopOut)
 	stopCmd.SetErr(new(bytes.Buffer))
@@ -786,7 +824,7 @@ func TestStartStopCommand_SourceFlagOptional(t *testing.T) {
 
 	stopCmd := GetStopCommand()
 	stopSourcePath = sourceDir
-	stopCmd.SetArgs([]string{"--state-file", stateFile})
+	stopCmd.SetArgs([]string{"--state-file", stateFile, "--no-interactive"})
 	stopOut := new(bytes.Buffer)
 	stopCmd.SetOut(stopOut)
 	stopCmd.SetErr(new(bytes.Buffer))
