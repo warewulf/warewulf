@@ -1,8 +1,11 @@
 package capture
 
 import (
+	"archive/tar"
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -576,7 +579,7 @@ func TestStopCommand_RejectsNonDirectoryExportDir(t *testing.T) {
 	assert.Contains(t, err.Error(), "not a directory")
 }
 
-func TestStopCommand_ArtifactWritesOverlayStructureAndManifest(t *testing.T) {
+func TestStopCommand_ArtifactWritesArchiveWithOverlayStructureAndManifest(t *testing.T) {
 	tmpDir := t.TempDir()
 	sourceDir := filepath.Join(tmpDir, "source")
 	stateFile := filepath.Join(tmpDir, "capture.json")
@@ -619,17 +622,16 @@ func TestStopCommand_ArtifactWritesOverlayStructureAndManifest(t *testing.T) {
 		return
 	}
 
-	artifactRoot := filepath.Join(artifactParent, overlayName)
-	rootfs := filepath.Join(artifactRoot, "rootfs")
-	data, err := os.ReadFile(filepath.Join(rootfs, "a.txt"))
+	artifactPath := filepath.Join(artifactParent, overlayName+".tar.gz")
+	entries, err := readArtifactArchiveEntries(artifactPath)
 	if !assert.NoError(t, err) {
 		return
 	}
-	assert.Equal(t, "a-new", string(data))
-	_, err = os.Stat(filepath.Join(rootfs, "b.txt"))
-	assert.Error(t, err)
+	assert.Equal(t, "a-new", entries["rootfs/a.txt"])
+	_, ok := entries["rootfs/b.txt"]
+	assert.False(t, ok)
 
-	manifest, err := overlaydiff.LoadArtifactManifest(filepath.Join(artifactRoot, overlaydiff.ArtifactManifestFileName))
+	manifest, err := loadManifestFromArchive(artifactPath)
 	if !assert.NoError(t, err) {
 		return
 	}
@@ -639,8 +641,64 @@ func TestStopCommand_ArtifactWritesOverlayStructureAndManifest(t *testing.T) {
 	assert.Equal(t, []string{"/a.txt"}, manifest.SelectedPaths)
 	assert.Equal(t, 1, manifest.Summary.Selected)
 
-	assert.NoError(t, overlaydiff.ValidateArtifact(artifactRoot))
+	assert.FileExists(t, artifactPath)
 	assert.Contains(t, stopOut.String(), "Artifact exported 1 selected entries")
+	assert.Contains(t, stopOut.String(), artifactPath)
+}
+
+func readArtifactArchiveEntries(archivePath string) (map[string]string, error) {
+	archiveFile, err := os.Open(archivePath)
+	if err != nil {
+		return nil, err
+	}
+	defer archiveFile.Close()
+
+	gzipReader, err := gzip.NewReader(archiveFile)
+	if err != nil {
+		return nil, err
+	}
+	defer gzipReader.Close()
+
+	entries := make(map[string]string)
+	tarReader := tar.NewReader(gzipReader)
+	for {
+		header, err := tarReader.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		if header.Typeflag != tar.TypeReg {
+			continue
+		}
+		data, err := io.ReadAll(tarReader)
+		if err != nil {
+			return nil, err
+		}
+		entries[header.Name] = string(data)
+	}
+	return entries, nil
+}
+
+func loadManifestFromArchive(archivePath string) (overlaydiff.ArtifactManifest, error) {
+	entries, err := readArtifactArchiveEntries(archivePath)
+	if err != nil {
+		return overlaydiff.ArtifactManifest{}, err
+	}
+	manifestFile, err := os.CreateTemp("", "overlaydiff-manifest-test-*.json")
+	if err != nil {
+		return overlaydiff.ArtifactManifest{}, err
+	}
+	manifestPath := manifestFile.Name()
+	if err := manifestFile.Close(); err != nil {
+		return overlaydiff.ArtifactManifest{}, err
+	}
+	if err := os.WriteFile(manifestPath, []byte(entries[overlaydiff.ArtifactManifestFileName]), 0o600); err != nil {
+		return overlaydiff.ArtifactManifest{}, err
+	}
+	defer os.Remove(manifestPath)
+	return overlaydiff.LoadArtifactManifest(manifestPath)
 }
 
 func TestStopCommand_ArtifactRequiresOverlayName(t *testing.T) {

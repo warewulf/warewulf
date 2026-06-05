@@ -1,7 +1,9 @@
 package capture
 
 import (
+	"archive/tar"
 	"bufio"
+	"compress/gzip"
 	"errors"
 	"fmt"
 	"io"
@@ -15,19 +17,19 @@ import (
 )
 
 var (
-	stopSourcePath  string
-	stopStateFile   string
-	stopExcludes    []string
-	stopFormat      string
-	stopInteractive bool
-	stopOnly        []string
-	stopPathPrefix  []string
-	stopExport      bool
-	stopExportDir   string
-	stopArtifact    bool
-	stopArtifactDir string
-	stopOverlayName string
-	stopNodeSource  string
+	stopSourcePath    string
+	stopStateFile     string
+	stopExcludes      []string
+	stopFormat        string
+	stopInteractive   bool
+	stopOnly          []string
+	stopPathPrefix    []string
+	stopExport        bool
+	stopExportDir     string
+	stopArtifact      bool
+	stopArtifactDir   string
+	stopOverlayName   string
+	stopNodeSource    string
 	stopEventAssisted bool
 	stopNoInteractive bool
 )
@@ -54,7 +56,7 @@ func GetStopCommand() *cobra.Command {
 	cmd.Flags().StringArrayVar(&stopPathPrefix, "path-prefix", nil, "Only include path prefix (repeatable, example: /etc)")
 	cmd.Flags().BoolVar(&stopExport, "export", false, "Copy selected files to an export directory")
 	cmd.Flags().StringVar(&stopExportDir, "export-dir", "", "Export destination directory (default: randomized /tmp/wwclient-overlaydiff-*)")
-	cmd.Flags().BoolVar(&stopArtifact, "artifact", false, "Export selected files as an overlay artifact directory")
+	cmd.Flags().BoolVar(&stopArtifact, "artifact", false, "Export selected files as a compressed overlay artifact")
 	cmd.Flags().StringVar(&stopArtifactDir, "artifact-dir", "", "Artifact parent directory (default: randomized /tmp/wwclient-overlay-artifact-*)")
 	cmd.Flags().StringVar(&stopOverlayName, "overlay-name", "", "Overlay name for artifact mode")
 	cmd.Flags().StringVar(&stopNodeSource, "node-source", "", "Optional node identifier stored in artifact metadata")
@@ -217,13 +219,20 @@ func runStop(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
-		artifactRoot := filepath.Join(artifactParent, strings.TrimSpace(stopOverlayName))
-		if err := ensureSecureDirPath(artifactParent, artifactRoot); err != nil {
+		artifactPath := filepath.Join(artifactParent, strings.TrimSpace(stopOverlayName)+".tar.gz")
+		if err := ensureArtifactFilePath(artifactParent, artifactPath); err != nil {
 			return err
 		}
 
+		stageParent, err := os.MkdirTemp("/tmp", "wwclient-overlay-artifact-stage-")
+		if err != nil {
+			return fmt.Errorf("failed to create artifact staging directory: %w", err)
+		}
+		defer os.RemoveAll(stageParent)
+
+		artifactRoot := filepath.Join(stageParent, strings.TrimSpace(stopOverlayName))
 		artifactRootfs := filepath.Join(artifactRoot, "rootfs")
-		if err := ensureSecureDirPath(artifactParent, artifactRootfs); err != nil {
+		if err := ensureSecureDirPath(stageParent, artifactRootfs); err != nil {
 			return err
 		}
 
@@ -251,8 +260,11 @@ func runStop(cmd *cobra.Command, args []string) error {
 		if err := overlaydiff.ValidateArtifact(artifactRoot); err != nil {
 			return err
 		}
+		if err := writeArtifactArchive(artifactRoot, artifactPath); err != nil {
+			return err
+		}
 
-		_, _ = fmt.Fprintf(textOut, "Artifact exported %d selected entries to %s\n", exported, artifactRoot)
+		_, _ = fmt.Fprintf(textOut, "Artifact exported %d selected entries to %s\n", exported, artifactPath)
 	}
 
 	return nil
@@ -419,6 +431,86 @@ func prepareArtifactParentDir(custom string) (string, error) {
 		return "", err
 	}
 	return artifactDir, nil
+}
+
+func ensureArtifactFilePath(root string, target string) error {
+	if err := ensureWithinExportRoot(root, target); err != nil {
+		return err
+	}
+	if err := ensureSecureDirPath(root, filepath.Dir(target)); err != nil {
+		return err
+	}
+	if info, err := os.Lstat(target); err == nil && info.Mode()&os.ModeSymlink != 0 {
+		return fmt.Errorf("artifact archive must not be a symlink: %s", target)
+	} else if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("failed to inspect artifact archive %s: %w", target, err)
+	}
+	return nil
+}
+
+func writeArtifactArchive(artifactRoot string, archivePath string) error {
+	output, err := os.Create(archivePath)
+	if err != nil {
+		return fmt.Errorf("failed to create artifact archive %s: %w", archivePath, err)
+	}
+	defer output.Close()
+
+	gzipWriter := gzip.NewWriter(output)
+	defer gzipWriter.Close()
+
+	tarWriter := tar.NewWriter(gzipWriter)
+	defer tarWriter.Close()
+
+	return filepath.WalkDir(artifactRoot, func(current string, entry fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		if current == artifactRoot {
+			return nil
+		}
+
+		info, err := os.Lstat(current)
+		if err != nil {
+			return fmt.Errorf("failed to inspect artifact entry %s: %w", current, err)
+		}
+
+		rel, err := filepath.Rel(artifactRoot, current)
+		if err != nil {
+			return fmt.Errorf("failed to resolve artifact entry %s: %w", current, err)
+		}
+		rel = filepath.ToSlash(rel)
+
+		var link string
+		if info.Mode()&os.ModeSymlink != 0 {
+			link, err = os.Readlink(current)
+			if err != nil {
+				return fmt.Errorf("failed to read artifact symlink %s: %w", current, err)
+			}
+		}
+
+		header, err := tar.FileInfoHeader(info, link)
+		if err != nil {
+			return fmt.Errorf("failed to create tar header for %s: %w", current, err)
+		}
+		header.Name = rel
+		if err := tarWriter.WriteHeader(header); err != nil {
+			return fmt.Errorf("failed to write tar header for %s: %w", current, err)
+		}
+
+		if !info.Mode().IsRegular() {
+			return nil
+		}
+
+		input, err := os.Open(current)
+		if err != nil {
+			return fmt.Errorf("failed to open artifact file %s: %w", current, err)
+		}
+		defer input.Close()
+		if _, err := io.Copy(tarWriter, input); err != nil {
+			return fmt.Errorf("failed to archive artifact file %s: %w", current, err)
+		}
+		return nil
+	})
 }
 
 func selectedPaths(changes []overlaydiff.Change, decisions map[string]overlaydiff.Decision) []string {
