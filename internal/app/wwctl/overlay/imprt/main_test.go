@@ -1,14 +1,20 @@
 package imprt
 
 import (
+	"archive/tar"
 	"bytes"
+	"compress/gzip"
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/overlay"
+	"github.com/warewulf/warewulf/internal/pkg/overlaydiff"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
@@ -145,6 +151,7 @@ func Test_Import(t *testing.T) {
 
 			OverwriteFile = false
 			CreateDirs = false
+			ArchiveImport = false
 
 			for _, file := range tt.initFiles {
 				env.CreateFile(file)
@@ -167,4 +174,162 @@ func Test_Import(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_ImportArchive(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+
+	overlayName := "archive-overlay"
+	archivePath := env.GetPath("artifact.tar.gz")
+	createOverlayArchive(t, archivePath, overlayName, map[string]string{
+		"rootfs/etc/config": "hello\n",
+	})
+
+	OverwriteFile = false
+	CreateDirs = false
+	ArchiveImport = false
+
+	cmd := GetCommand()
+	cmd.SetArgs([]string{"--archive", overlayName, archivePath})
+	cmd.SetOut(new(bytes.Buffer))
+	cmd.SetErr(new(bytes.Buffer))
+	if !assert.NoError(t, cmd.Execute()) {
+		return
+	}
+
+	data, err := os.ReadFile(env.GetPath(filepath.Join("var/lib/warewulf/overlays", overlayName, "rootfs/etc/config")))
+	if !assert.NoError(t, err) {
+		return
+	}
+	assert.Equal(t, "hello\n", string(data))
+	assert.FileExists(t, env.GetPath(filepath.Join("var/lib/warewulf/overlays", overlayName, overlaydiff.ArtifactManifestFileName)))
+	assert.Contains(t, overlay.FindOverlays(), overlayName)
+}
+
+func Test_ImportArchiveOverwrite(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+
+	overlayName := "archive-overlay"
+	archivePath := env.GetPath("artifact.tar.gz")
+	createOverlayArchive(t, archivePath, overlayName, map[string]string{
+		"rootfs/etc/config": "new\n",
+	})
+	env.WriteFile(filepath.Join("var/lib/warewulf/overlays", overlayName, "rootfs/etc/config"), "old\n")
+
+	OverwriteFile = false
+	CreateDirs = false
+	ArchiveImport = false
+
+	cmd := GetCommand()
+	cmd.SetArgs([]string{"--archive", overlayName, archivePath})
+	cmd.SetOut(new(bytes.Buffer))
+	cmd.SetErr(new(bytes.Buffer))
+	err := cmd.Execute()
+	assert.Error(t, err)
+
+	OverwriteFile = false
+	CreateDirs = false
+	ArchiveImport = false
+	cmd = GetCommand()
+	cmd.SetArgs([]string{"--archive", "--overwrite", overlayName, archivePath})
+	cmd.SetOut(new(bytes.Buffer))
+	cmd.SetErr(new(bytes.Buffer))
+	if !assert.NoError(t, cmd.Execute()) {
+		return
+	}
+	assert.Equal(t, "new\n", env.ReadFile(filepath.Join("var/lib/warewulf/overlays", overlayName, "rootfs/etc/config")))
+}
+
+func Test_ImportArchiveRejectsNameMismatch(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+
+	archivePath := env.GetPath("artifact.tar.gz")
+	createOverlayArchive(t, archivePath, "manifest-name", map[string]string{
+		"rootfs/etc/config": "hello\n",
+	})
+
+	OverwriteFile = false
+	CreateDirs = false
+	ArchiveImport = false
+
+	cmd := GetCommand()
+	cmd.SetArgs([]string{"--archive", "requested-name", archivePath})
+	cmd.SetOut(new(bytes.Buffer))
+	cmd.SetErr(new(bytes.Buffer))
+	err := cmd.Execute()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "does not match")
+}
+
+func Test_ImportArchiveRejectsTraversal(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+
+	overlayName := "archive-overlay"
+	archivePath := env.GetPath("artifact.tar.gz")
+	createOverlayArchive(t, archivePath, overlayName, map[string]string{
+		"../escape":       "bad",
+		"rootfs/etc/file": "ok",
+	})
+
+	OverwriteFile = false
+	CreateDirs = false
+	ArchiveImport = false
+
+	cmd := GetCommand()
+	cmd.SetArgs([]string{"--archive", overlayName, archivePath})
+	cmd.SetOut(new(bytes.Buffer))
+	cmd.SetErr(new(bytes.Buffer))
+	err := cmd.Execute()
+	assert.Error(t, err)
+	assert.NoDirExists(t, env.GetPath(filepath.Join("var/lib/warewulf/overlays", overlayName)))
+}
+
+func createOverlayArchive(t *testing.T, archivePath string, overlayName string, files map[string]string) {
+	t.Helper()
+	archiveFile, err := os.Create(archivePath)
+	assert.NoError(t, err)
+	defer archiveFile.Close()
+
+	gzipWriter := gzip.NewWriter(archiveFile)
+	defer gzipWriter.Close()
+
+	tarWriter := tar.NewWriter(gzipWriter)
+	defer tarWriter.Close()
+
+	writeTarDir(t, tarWriter, "rootfs")
+	manifest := overlaydiff.BuildArtifactManifest(overlayName, "/", "", []string{"/etc/config"}, overlaydiff.DecisionSummary{Selected: 1})
+	manifestFile, err := os.CreateTemp(t.TempDir(), "manifest-*.json")
+	assert.NoError(t, err)
+	manifestPath := manifestFile.Name()
+	assert.NoError(t, manifestFile.Close())
+	assert.NoError(t, overlaydiff.SaveArtifactManifest(manifestPath, manifest))
+	writeTarFileFromDisk(t, tarWriter, overlaydiff.ArtifactManifestFileName, manifestPath)
+
+	for name, content := range files {
+		writeTarFile(t, tarWriter, name, content)
+	}
+}
+
+func writeTarDir(t *testing.T, writer *tar.Writer, name string) {
+	t.Helper()
+	assert.NoError(t, writer.WriteHeader(&tar.Header{Name: name, Typeflag: tar.TypeDir, Mode: 0o755}))
+}
+
+func writeTarFile(t *testing.T, writer *tar.Writer, name string, content string) {
+	t.Helper()
+	header := &tar.Header{Name: name, Typeflag: tar.TypeReg, Mode: 0o644, Size: int64(len(content))}
+	assert.NoError(t, writer.WriteHeader(header))
+	_, err := io.WriteString(writer, content)
+	assert.NoError(t, err)
+}
+
+func writeTarFileFromDisk(t *testing.T, writer *tar.Writer, name string, path string) {
+	t.Helper()
+	data, err := os.ReadFile(path)
+	assert.NoError(t, err)
+	writeTarFile(t, writer, name, string(data))
 }
