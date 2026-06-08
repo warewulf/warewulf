@@ -30,7 +30,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Remove `dsa` from default `ssh: key types`; sshd silently skips DSA host keys
   on EL9 / OpenSSH 8.7p1+, leaving nodes with no usable host keys. #1185
-- Add an `ipv6_method` node tag to set the NetworkManager `[ipv6]` method, e.g. `auto` for SLAAC.
+- Add an `ipv6_method` node tag to set the NetworkManager `[ipv6]` method, e.g.
+  `auto` for SLAAC.
+- Don't silence curl when downloading with dracut. #2200
 
 ### Fixed
 
