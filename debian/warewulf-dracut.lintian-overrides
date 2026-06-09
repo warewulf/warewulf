@@ -1,0 +1,2 @@
+# dracut module scripts are sourced by dracut, not executed directly.
+warewulf-dracut: script-not-executable [usr/lib/dracut/modules.d/90wwinit/*]

@@ -1,0 +1,2 @@
+var/lib/warewulf/chroots
+var/lib/warewulf/overlays

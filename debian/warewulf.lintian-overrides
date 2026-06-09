@@ -1,0 +1,21 @@
+# Files under /usr/share/warewulf/overlays/ are the rootfs templates that
+# Warewulf ships into diskless node images. They are not part of the host's
+# runtime and so are deliberately exempt from most host-side policy checks:
+# they include cross-arch wwclient binaries, Go-template (.ww) shell
+# scripts, and systemd unit symlinks meant for the target image.
+warewulf: arch-dependent-file-in-usr-share [usr/share/warewulf/overlays/*]
+warewulf: binary-from-other-architecture [usr/share/warewulf/overlays/*]
+warewulf: statically-linked-binary [usr/share/warewulf/overlays/wwclient*]
+warewulf: service-file-is-not-a-file [usr/share/warewulf/overlays/*]
+warewulf: shell-script-fails-syntax-check [usr/share/warewulf/overlays/*]
+warewulf: wrong-path-for-interpreter * [usr/share/warewulf/overlays/*]
+warewulf: script-not-executable [usr/share/warewulf/overlays/*]
+warewulf: csh-considered-harmful * [usr/share/warewulf/overlays/*]
+
+# /etc/bash_completion.d/ is the path the upstream Makefile uses, matching
+# the RPM packaging. Migrating to /usr/share/bash-completion/completions/
+# would require a Makefile change shared with RPM builds.
+warewulf: package-installs-into-obsolete-dir * [etc/bash_completion.d/*]
+
+# wwctl is a Go binary; PIE is not enabled in the upstream Makefile.
+warewulf: hardening-no-pie [usr/bin/wwctl]

@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    purge)
+        if getent group warewulf >/dev/null; then
+            delgroup --system warewulf || true
+        fi
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0
