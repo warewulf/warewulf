@@ -130,8 +130,63 @@ jobs:
           path: |
             /var/lib/mock/${{ matrix.target }}-${{ matrix.arch }}/result/warewulf-*.rpm
 
+  debs:
+    needs: dist
+    if: github.event_name != 'schedule' || needs.dist.outputs.has-recent-commits == 'true'
+    name: Build DEBs
+    runs-on: ${{ matrix.runs-on }}
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64, aarch64]
+        dist: [noble]
+        include:
+          - arch: x86_64
+            runs-on: ubuntu-24.04
+          - arch: aarch64
+            runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential devscripts debhelper dh-golang \
+            git make libgpgme-dev python3-dev
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Download dist
+        uses: actions/download-artifact@v4
+        with:
+          name: warewulf-dist
+
+      - name: Unpack source
+        run: |
+          VERSION='${{ needs.dist.outputs.version }}'
+          mkdir -p build
+          cp warewulf-${VERSION}.tar.gz build/warewulf_${VERSION}.orig.tar.gz
+          tar -C build -xzf build/warewulf_${VERSION}.orig.tar.gz
+
+      - name: Build DEBs
+        run: |
+          VERSION='${{ needs.dist.outputs.version }}'
+          cd build/warewulf-${VERSION}
+          scripts/gen-deb-changelog.sh "${VERSION}" >debian/changelog
+          dpkg-buildpackage -us -uc -b
+
+      - name: Upload DEBs
+        uses: actions/upload-artifact@v4
+        with:
+          name: warewulf-debs-${{ matrix.dist }}-${{ matrix.arch }}
+          retention-days: 7
+          path: |
+            build/*.deb
+
   release:
-    needs: [dist, rpms]
+    needs: [dist, rpms, debs]
     if: github.event_name == 'push' || (github.event_name == 'schedule' && needs.dist.outputs.has-recent-commits == 'true')
     runs-on: ubuntu-latest
     env:
@@ -157,6 +212,7 @@ jobs:
           gh release create "${{ github.ref_name }}" \
             artifacts/*.tar.gz \
             artifacts/*.rpm \
+            artifacts/*.deb \
             --repo ${{ github.repository }} \
             --title "${{ github.ref_name }}" \
             --draft
@@ -168,6 +224,7 @@ jobs:
           gh release create "nightly" \
             artifacts/*.tar.gz \
             artifacts/*.rpm \
+            artifacts/*.deb \
             --repo ${{ github.repository }} \
             --title "nightly" \
             --prerelease \

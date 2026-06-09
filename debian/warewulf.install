@@ -1,0 +1,11 @@
+usr/bin/wwctl
+etc/warewulf
+etc/bash_completion.d/wwctl
+etc/logrotate.d/warewulfd.conf
+lib/systemd/system/warewulfd.service
+usr/lib/firewalld/services/warewulf.xml
+usr/share/warewulf/bmc
+usr/share/warewulf/overlays
+usr/share/man/man1
+usr/share/man/man5
+usr/share/doc/warewulf/LICENSE.md

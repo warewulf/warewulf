@@ -1,0 +1,48 @@
+#!/usr/bin/make -f
+
+export DH_VERBOSE = 1
+
+MAKEVARS = \
+	OFFLINE_BUILD=1 \
+	OS=ubuntu \
+	PREFIX=/usr \
+	BINDIR=/usr/bin \
+	SYSCONFDIR=/etc \
+	DATADIR=/usr/share \
+	MANDIR=/usr/share/man \
+	DOCDIR=/usr/share/doc \
+	LOCALSTATEDIR=/var \
+	SRVDIR=/srv \
+	SYSTEMDDIR=/lib/systemd/system \
+	BASHCOMPDIR=/etc/bash_completion.d \
+	FIREWALLDDIR=/usr/lib/firewalld/services \
+	WWCLIENTDIR=/warewulf \
+	IPXESOURCE=/usr/share/ipxe \
+	DRACUTMODDIR=/usr/lib/dracut/modules.d \
+	SOSPLUGINS=/usr/lib/python3/dist-packages/sos/report/plugins
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	$(MAKE) defaults $(MAKEVARS)
+
+override_dh_auto_build:
+	$(MAKE) build docs $(MAKEVARS)
+
+override_dh_auto_install:
+	$(MAKE) install install-sos DESTDIR=$(CURDIR)/debian/tmp $(MAKEVARS)
+
+override_dh_install:
+	dh_install --sourcedir=debian/tmp
+
+override_dh_auto_test:
+
+override_dh_dwz:
+
+override_dh_strip:
+	dh_strip --exclude=overlays/wwclient
+
+override_dh_auto_clean:
+	$(MAKE) clean || true
+	dh_auto_clean

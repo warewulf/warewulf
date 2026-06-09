@@ -50,6 +50,17 @@ rpm: spec dist ## Create an RPM package
 	cp $(WAREWULF)-$(VERSION).tar.gz $(RPMDIR)/SOURCES/
 	rpmbuild -bb warewulf.spec
 
+DEBDIR = .debbuild
+.PHONY: deb
+deb: dist ## Create a Debian package
+	rm -rf $(DEBDIR)
+	mkdir -p $(DEBDIR)
+	cp $(WAREWULF)-$(VERSION).tar.gz $(DEBDIR)/$(WAREWULF)_$(VERSION).orig.tar.gz
+	tar -C $(DEBDIR) -xzf $(DEBDIR)/$(WAREWULF)_$(VERSION).orig.tar.gz
+	scripts/gen-deb-changelog.sh $(VERSION) >$(DEBDIR)/$(WAREWULF)-$(VERSION)/debian/changelog
+	cd $(DEBDIR)/$(WAREWULF)-$(VERSION) && dpkg-buildpackage -us -uc -b
+	@echo "Built packages in $(DEBDIR)/"
+
 config = include/systemd/warewulfd.service \
 	internal/pkg/config/buildconfig.go \
 	warewulf.spec
@@ -157,6 +168,10 @@ cleandist:
 	rm -f $(WAREWULF)-$(VERSION).tar.gz
 	rm -rf .dist/
 
+.PHONY: cleandeb
+cleandeb:
+	rm -rf $(DEBDIR)
+
 .PHONY: cleanmake
 cleanmake:
 	rm -f Defaults.mk
@@ -179,7 +194,7 @@ cleanvendor:
 	rm -rf vendor
 
 .PHONY: clean
-clean: cleanconfig cleantest cleandist cleantools cleanmake cleanbin cleandocs ## Remove built configuration, docs, binaries, and artifacts
+clean: cleanconfig cleantest cleandist cleandeb cleantools cleanmake cleanbin cleandocs ## Remove built configuration, docs, binaries, and artifacts
 
 ##@ Installation
 
