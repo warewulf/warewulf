@@ -12,7 +12,9 @@ func TestParseVersion(t *testing.T) {
 		"el10_2 with suffix after dist": {"/lib/modules/6.12.0-211.16.1.el10_2.0.1.x86_64/vmlinuz", "6.12.0-211.16.1"},
 		"el9_8 with suffix after dist":  {"/lib/modules/5.14.0-687.10.1.el9_8.0.1.x86_64/vmlinuz", "5.14.0-687.10.1"},
 		"el9_8 plain dist tag":          {"/lib/modules/5.14.0-687.10.1.el9_8.x86_64/vmlinuz", "5.14.0-687.10.1"},
+		"el9_7 respin suffix (#2199)":   {"/boot/vmlinuz-5.14.0-611.55.1.el9_7.0.3.x86_64", "5.14.0-611.55.1"},
 		"boot path with .gz":            {"/boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64.gz", "5.14.0-427.24.1"},
+		"leap16":                        {"/lib/modules/6.12.0-160000.33-default/vmlinuz", "6.12.0-160000.33"},
 		"no version in path":            {"/boot/vmlinuz-linux", ""},
 	}
 	for name, tt := range tests {
