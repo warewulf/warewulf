@@ -11,6 +11,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Remove `dsa` from default `ssh: key types`; sshd silently skips DSA host keys
   on EL9 / OpenSSH 8.7p1+, leaving nodes with no usable host keys. #1185
 
+### Fixed
+
+- Kernel version detection for kernels whose RPM release field contains a
+  version-like suffix after the dist tag (e.g. `5.14.0-687.10.1.el9_8.0.1`).
+  These were mis-detected (e.g. `8.0.1` instead of `5.14.0-687.10.1`) because
+  `ParseVersion` returned the last regex match found in the kernel path. This
+  also caused the wrong kernel to be selected as the default. #2199
+
 ## v4.7.0, 2026-05-12
 
 ### Fixed
