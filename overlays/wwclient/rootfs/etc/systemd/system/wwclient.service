@@ -1,5 +1,7 @@
 [Unit]
 Description=Warewulf node runtime overlay update
+Documentation=https://warewulf.org/
+Wants=network.target
 After=network.target
 After=local-fs.target
 
@@ -8,8 +10,11 @@ Type=notify
 EnvironmentFile=-/etc/default/wwclient
 ExecStart=/warewulf/wwclient
 ExecReload=/bin/kill -s SIGHUP "$MAINPID"
-PIDFile=/var/run/wwclient.pid
-TimeoutSec=60
+TimeoutStartSec=infinity
+TimeoutStopSec=30
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=0
 
 [Install]
 WantedBy=multi-user.target
