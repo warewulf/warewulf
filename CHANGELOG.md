@@ -8,11 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- wwclient.service changed to allow internal retry logic to continue forever,
+  instead of being terminated after 60s if startup is slow (f.ex temporary
+  network failure). Attempt restart if wwclient terminates abnormally.
 - Remove `dsa` from default `ssh: key types`; sshd silently skips DSA host keys
   on EL9 / OpenSSH 8.7p1+, leaving nodes with no usable host keys. #1185
 
 ### Fixed
 
+- Remove obsolete PIDFile directive from wwclient.service
 - Kernel version detection for kernels whose RPM release field contains a
   version-like suffix after the dist tag (e.g. `5.14.0-687.10.1.el9_8.0.1`).
   These were mis-detected (e.g. `8.0.1` instead of `5.14.0-687.10.1`) because
