@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/hostlist"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"golang.org/x/term"
 )
@@ -94,6 +95,9 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		wwlog.Verbose("Building sort index")
 		var statuses []*nodeStatus
 		if len(args) > 0 {
+			if _, err := node.New(); err != nil {
+				return fmt.Errorf("could not open node configuration: %w", err)
+			}
 			nodeList := hostlist.Expand(args)
 			for _, v := range wwNodeStatus.Nodes {
 				for _, name := range nodeList {

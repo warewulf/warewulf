@@ -392,6 +392,7 @@ func negList(list []string) (ret []string) {
 
 func (p *Profile) cleanLists() {
 	p.Profiles = cleanList(p.Profiles)
+	p.NodeGroups = cleanList(p.NodeGroups)
 	p.SystemOverlay = cleanList(p.SystemOverlay)
 	p.RuntimeOverlay = cleanList(p.RuntimeOverlay)
 	if p.Kernel != nil {

@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+### Added
+
+
+- Nodegroups are now available for targeting sets of nodes in `wwctl` commands.
+  Declared additively: as a top-level `nodegroups:` stanza in `nodes.conf`, on
+  individual nodes or in profiles. Reference a nodegroup from the command line with the `@`
+  prefix, for example `wwctl power reset @rack1`. `@all` is reserved and always
+  expands to every defined node (unless explicitly excluded).
+- `wwctl nodegroup list [NAME ...]` enumerates every nodegroup referenced
+  anywhere in the configuration along with its members.
+- Tab completion for nodegroups.
+ 
 ### Changed
 
 - Remove `dsa` from default `ssh: key types`; sshd silently skips DSA host keys
