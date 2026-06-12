@@ -59,10 +59,45 @@ func Images(cmd *cobra.Command, args []string, toComplete string) ([]string, cob
 }
 
 func Nodes(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	if registry, err := node.New(); err == nil {
-		return registry.ListAllNodes(), cobra.ShellCompDirectiveNoFileComp
+	registry, err := node.New()
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
-	return nil, cobra.ShellCompDirectiveNoFileComp
+	candidates := registry.ListAllNodes()
+	hasAll := false
+	for _, name := range registry.ListAllNodegroups() {
+		if name == "all" {
+			hasAll = true
+		}
+		candidates = append(candidates, "@"+name)
+	}
+	if !hasAll {
+		candidates = append(candidates, "@all")
+	}
+	return candidates, cobra.ShellCompDirectiveNoFileComp
+}
+
+// Nodegroups completes nodegroup names without an "@" prefix. Use this for
+// commands that take literal nodegroup names (e.g., `wwctl nodegroup list`).
+// The reserved "all" group is included so it shows up even when nothing is
+// declared yet.
+func Nodegroups(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	registry, err := node.New()
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+	candidates := registry.ListAllNodegroups()
+	hasAll := false
+	for _, n := range candidates {
+		if n == "all" {
+			hasAll = true
+			break
+		}
+	}
+	if !hasAll {
+		candidates = append(candidates, "all")
+	}
+	return candidates, cobra.ShellCompDirectiveNoFileComp
 }
 
 func Profiles(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

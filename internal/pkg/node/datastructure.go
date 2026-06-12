@@ -23,6 +23,7 @@ Structure of which goes to disk
 type NodesYaml struct {
 	NodeProfiles map[string]*Profile `yaml:"nodeprofiles"`
 	Nodes        map[string]*Node    `yaml:"nodes"`
+	NodeGroups   map[string][]string `yaml:"nodegroups,omitempty" json:"nodegroups,omitempty"`
 }
 
 /*
@@ -44,6 +45,7 @@ type Profile struct {
 	id string
 	// exported values
 	Profiles       []string               `yaml:"profiles,omitempty"         json:"profiles,omitempty"         lopt:"profile"             sopt:"P" comment:"the node's profile members (comma separated)"`
+	NodeGroups     []string               `yaml:"nodegroups,omitempty"       json:"nodegroups,omitempty"       lopt:"nodegroups"          sopt:"g" comment:"the nodegroups this node is a member of (comma separated)"`
 	Comment        string                 `yaml:"comment,omitempty"          json:"comment,omitempty"          lopt:"comment"                      comment:"arbitrary string comment"`
 	ClusterName    string                 `yaml:"cluster name,omitempty"     json:"cluster name,omitempty"     lopt:"cluster"             sopt:"c" comment:"cluster group"`
 	ImageName      string                 `yaml:"image name,omitempty"       json:"image name,omitempty"       lopt:"image"                        comment:"image name"`
