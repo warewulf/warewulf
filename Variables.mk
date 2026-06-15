@@ -28,7 +28,15 @@ endif
 
 # System directory paths
 VARLIST += PREFIX BINDIR SYSCONFDIR SRVDIR DATADIR MANDIR DOCDIR LOCALSTATEDIR RELEASE CACHEDIR
-PREFIX ?= /usr/local
+# When building from source on a system without an OS-release-detected install
+# (i.e. not a distro package build), default to /opt/warewulf to avoid
+# conflicts with package-manager-installed files. Distro packagers and users
+# who prefer /usr/local can override with: make PREFIX=/usr/local install
+ifeq ($(USE_LSB_PATHS),)
+  PREFIX ?= /opt/warewulf
+else
+  PREFIX ?= /usr/local
+endif
 BINDIR ?= $(PREFIX)/bin
 SYSCONFDIR ?= $(PREFIX)/etc
 DATADIR ?= $(PREFIX)/share
