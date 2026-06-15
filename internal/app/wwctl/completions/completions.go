@@ -78,7 +78,7 @@ func Nodes(cmd *cobra.Command, args []string, toComplete string) ([]string, cobr
 }
 
 // Nodegroups completes nodegroup names without an "@" prefix. Use this for
-// commands that take literal nodegroup names (e.g., `wwctl nodegroup list`).
+// commands that take literal nodegroup names (e.g., `wwctl node group list`).
 // The reserved "all" group is included so it shows up even when nothing is
 // declared yet.
 func Nodegroups(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

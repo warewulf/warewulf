@@ -6,7 +6,7 @@ import (
 	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 )
 
-// GetCommand returns the `wwctl nodegroup list` cobra command.
+// GetCommand returns the `wwctl node group list` cobra command.
 func GetCommand() *cobra.Command {
 	baseCmd := &cobra.Command{
 		DisableFlagsInUseLine: true,

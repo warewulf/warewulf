@@ -101,7 +101,7 @@ nodegroup the node is otherwise a member of.
 
 There is one display gotcha: the merge step strips standalone ``~``-prefixed
 entries, so ``wwctl node list head01 -a`` will not show ``~all`` under
-``NodeGroups``. To verify the opt-out took effect, run ``wwctl nodegroup
+``NodeGroups``. To verify the opt-out took effect, run ``wwctl node group
 list all`` and confirm the node is missing from the member list, or grep the
 raw ``nodes.conf``.
 
@@ -149,12 +149,12 @@ resolves normally.
 Inspecting Nodegroups
 =====================
 
-``wwctl nodegroup list`` enumerates every nodegroup referenced anywhere in
+``wwctl node group list`` enumerates every nodegroup referenced anywhere in
 the configuration along with its members (the union of all three sources):
 
 .. code-block:: console
 
-   # wwctl nodegroup list
+   # wwctl node group list
    NODEGROUP  MEMBERS
    ---------  -------
    admin      n02
@@ -165,8 +165,8 @@ Pass one or more names to filter the listing, including the built-in
 
 .. code-block:: console
 
-   # wwctl nodegroup list rack1
-   # wwctl nodegroup list all
+   # wwctl node group list rack1
+   # wwctl node group list all
 
 To see which nodegroups a *specific node* belongs to (and which source
 contributed each), use ``wwctl node list <node> -a`` and look at the

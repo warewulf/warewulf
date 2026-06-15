@@ -7,6 +7,7 @@ import (
 	"github.com/warewulf/warewulf/internal/app/wwctl/node/delete"
 	"github.com/warewulf/warewulf/internal/app/wwctl/node/edit"
 	"github.com/warewulf/warewulf/internal/app/wwctl/node/export"
+	"github.com/warewulf/warewulf/internal/app/wwctl/node/group"
 	"github.com/warewulf/warewulf/internal/app/wwctl/node/imprt"
 	"github.com/warewulf/warewulf/internal/app/wwctl/node/list"
 	"github.com/warewulf/warewulf/internal/app/wwctl/node/sensors"
@@ -40,6 +41,7 @@ func init() {
 	baseCmd.AddCommand(edit.GetCommand())
 	baseCmd.AddCommand(imprt.GetCommand())
 	baseCmd.AddCommand(export.GetCommand())
+	baseCmd.AddCommand(group.GetCommand())
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
