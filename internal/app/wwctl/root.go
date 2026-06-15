@@ -9,7 +9,6 @@ import (
 	"github.com/warewulf/warewulf/internal/app/wwctl/genconf"
 	"github.com/warewulf/warewulf/internal/app/wwctl/image"
 	"github.com/warewulf/warewulf/internal/app/wwctl/node"
-	"github.com/warewulf/warewulf/internal/app/wwctl/nodegroup"
 	"github.com/warewulf/warewulf/internal/app/wwctl/overlay"
 	"github.com/warewulf/warewulf/internal/app/wwctl/power"
 	"github.com/warewulf/warewulf/internal/app/wwctl/profile"
@@ -54,7 +53,6 @@ func init() {
 	rootCmd.AddCommand(overlay.GetCommand())
 	rootCmd.AddCommand(image.GetCommand())
 	rootCmd.AddCommand(node.GetCommand())
-	rootCmd.AddCommand(nodegroup.GetCommand())
 	rootCmd.AddCommand(power.GetCommand())
 	rootCmd.AddCommand(profile.GetCommand())
 	rootCmd.AddCommand(configure.GetCommand())

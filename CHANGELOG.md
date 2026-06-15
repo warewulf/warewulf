@@ -14,7 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   individual nodes or in profiles. Reference a nodegroup from the command line with the `@`
   prefix, for example `wwctl power reset @rack1`. `@all` is reserved and always
   expands to every defined node (unless explicitly excluded).
-- `wwctl nodegroup list [NAME ...]` enumerates every nodegroup referenced
+- `wwctl node group list [NAME ...]` enumerates every nodegroup referenced
   anywhere in the configuration along with its members.
 - Tab completion for nodegroups.
  
