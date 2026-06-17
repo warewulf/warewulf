@@ -1,6 +1,7 @@
 package overlay
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
@@ -1141,6 +1142,62 @@ func prepareSymlinkPath(filePath string, target string, backupFile bool) (skip b
 		return false, fmt.Errorf("failed removing existing file at %s: %w", filePath, err)
 	}
 	return false, nil
+}
+
+// TemplateOutputPaths renders a .ww template and returns the deployed paths it
+// would create, matching the path selection semantics used by BuildOverlayIndir.
+func TemplateOutputPaths(templatePath string, deployedTemplatePath string, overlayName string, nodeData node.Node, allNodes []node.Node) ([]string, error) {
+	deployedTemplatePath = path.Clean(deployedTemplatePath)
+	defaultOutputPath := strings.TrimSuffix(deployedTemplatePath, ".ww")
+
+	tstruct, err := InitStruct(overlayName, nodeData, allNodes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initial data for %s: %w", nodeData.Id(), err)
+	}
+	tstruct.BuildSource = templatePath
+
+	buffer, _, writeFile, err := RenderTemplateFile(templatePath, tstruct)
+	if err != nil {
+		return nil, fmt.Errorf("failed to render template %s: %w", templatePath, err)
+	}
+	if !*writeFile {
+		return nil, nil
+	}
+
+	var paths []string
+	outputPath := defaultOutputPath
+	fileScanner := bufio.NewScanner(bytes.NewReader(buffer.Bytes()))
+	fileScanner.Split(ScanLines)
+	writingToNamedFile := false
+	isLink := false
+	for fileScanner.Scan() {
+		line := fileScanner.Text()
+		filenameFromTemplate := regFile.FindAllStringSubmatch(line, -1)
+		targetFromTemplate := regLink.FindAllStringSubmatch(line, -1)
+		if len(targetFromTemplate) != 0 {
+			paths = append(paths, outputPath)
+			isLink = true
+		} else if len(filenameFromTemplate) != 0 {
+			if writingToNamedFile && !isLink {
+				paths = append(paths, outputPath)
+			}
+			if path.IsAbs(filenameFromTemplate[0][1]) {
+				outputPath = path.Clean(filenameFromTemplate[0][1])
+			} else {
+				outputPath = path.Clean(path.Join(path.Dir(deployedTemplatePath), filenameFromTemplate[0][1]))
+			}
+			writingToNamedFile = true
+			isLink = false
+		}
+	}
+	if err := fileScanner.Err(); err != nil {
+		return nil, fmt.Errorf("failed to scan rendered template %s: %w", templatePath, err)
+	}
+	if !isLink {
+		paths = append(paths, outputPath)
+	}
+
+	return paths, nil
 }
 
 /*

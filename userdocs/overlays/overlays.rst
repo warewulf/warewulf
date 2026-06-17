@@ -25,6 +25,47 @@ within the overlays with ``wwctl overlay list --all``.
    fstab         etc/          false
    fstab         etc/fstab.ww  false
 
+Tracing Overlay File Sources
+----------------------------
+
+Use ``wwctl overlay blame`` to show which configured overlays contribute files
+to a node. This is useful when a node receives the same path from multiple
+overlays, or when a file is inherited from a profile and it is not obvious which
+overlay owns it.
+
+.. code-block:: console
+
+   # wwctl overlay blame n1
+   /etc/issue                         issue                [system overlay]
+   /etc/systemd/network/10-ww4        systemd.netname      [system overlay]
+   /etc/hosts                         hosts                [runtime overlay]
+
+The command uses the node's merged configuration, so overlays inherited from
+profiles are included. System overlays are listed first, followed by runtime
+overlays, and paths are displayed as they are deployed on the node. If multiple
+overlays provide the same deployed path, each contributing overlay is printed on
+its own line.
+
+Template files ending in ``.ww`` are evaluated for output path discovery. This
+means templates that emit multiple files with ``{{ file "..." }}``, create
+symlinks with ``{{ softlink "..." }}``, or abort rendering are reported according
+to the paths they would deploy.
+
+Filter the output to a subtree with ``--path-prefix``. Prefix matching is path
+boundary aware, so ``/etc`` matches ``/etc/hosts`` but not ``/etc2/file``.
+
+.. code-block:: shell
+
+   wwctl overlay blame --path-prefix /etc/systemd n1
+
+By default, ``wwctl overlay blame`` reports files, symlinks, and templates. Use
+``--show-mode-changes`` to also include directory paths, which can be relevant
+when directory modes or ownership are controlled by overlays.
+
+.. code-block:: shell
+
+   wwctl overlay blame --show-mode-changes n1
+
 Overlay Variables
 -----------------
 
