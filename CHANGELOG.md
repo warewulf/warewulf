@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - systemd-networkd overlay with IPv6 support
 - `wwctl overlay info` lists the variables used by an overlay template
 - `wwclient overlay-diff start/stop` workflow to capture a baseline, compare source changes, and emit deterministic file differences for overlay authoring.
+- `wwctl overlay blame` traces node overlay files back to their source system or runtime overlay.
 - New --partwipe flag for profile and node set
 - Updated arguments for `ValidString` to match `regexp.MatchString`
 - New `mig` overlay to configure NVIDIA MIG devices. #2102
