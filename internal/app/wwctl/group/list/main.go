@@ -30,6 +30,10 @@ func cobraRunE(noHeader *bool) func(cmd *cobra.Command, args []string) error {
 		if len(args) > 0 {
 			seen := make(map[string]struct{}, len(args))
 			for _, a := range args {
+				a = strings.TrimPrefix(a, "@")
+				if a == "" {
+					continue
+				}
 				if _, ok := seen[a]; ok {
 					continue
 				}
