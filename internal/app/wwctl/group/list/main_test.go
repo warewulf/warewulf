@@ -75,6 +75,16 @@ GROUP    MEMBERS
 missing  --
 `,
 		},
+		{
+			name: "noheader prints comma-separated members for a single group",
+			args: []string{"--noheader", "rack1"},
+			want: `n01,n02,n03`,
+		},
+		{
+			name: "noheader dedupes across multiple groups",
+			args: []string{"-n", "rack1", "admin"},
+			want: `n01,n02,n03,n04`,
+		},
 	}
 
 	for _, tt := range tests {
@@ -93,4 +103,23 @@ missing  --
 			assert.Equal(t, strings.TrimSpace(tt.want), strings.TrimSpace(buf.String()))
 		})
 	}
+}
+
+func Test_GroupList_NoHeaderRequiresArg(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+	env.WriteFile("etc/warewulf/nodes.conf", `
+nodes:
+  n01: {}
+`)
+
+	cmd := GetCommand()
+	buf := new(bytes.Buffer)
+	cmd.SetOut(buf)
+	cmd.SetErr(buf)
+	wwlog.SetLogWriter(buf)
+	cmd.SetArgs([]string{"-n"})
+	err := cmd.Execute()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "requires at least one group argument")
 }

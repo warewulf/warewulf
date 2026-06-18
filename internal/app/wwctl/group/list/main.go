@@ -11,10 +11,16 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/node"
 )
 
-// CobraRunE lists all groups, or the filtered subset passed as args. Unknown
-// groups are reported as having no members.
-func CobraRunE() func(cmd *cobra.Command, args []string) error {
+// cobraRunE lists all groups, or the filtered subset passed as args. Unknown
+// groups are reported as having no members. When noHeader is set, the output
+// is a single comma-separated, deduped list of node names with no header or
+// table formatting; at least one group argument is required in that mode.
+func cobraRunE(noHeader *bool) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
+		if *noHeader && len(args) == 0 {
+			return fmt.Errorf("--noheader requires at least one group argument")
+		}
+
 		nodeDB, err := node.New()
 		if err != nil {
 			return fmt.Errorf("could not open node configuration: %w", err)
@@ -33,6 +39,23 @@ func CobraRunE() func(cmd *cobra.Command, args []string) error {
 			sort.Strings(names)
 		} else {
 			names = nodeDB.ListAllGroups()
+		}
+
+		if *noHeader {
+			seen := make(map[string]struct{})
+			var members []string
+			for _, name := range names {
+				for _, m := range nodeDB.GroupMembers(name) {
+					if _, ok := seen[m]; ok {
+						continue
+					}
+					seen[m] = struct{}{}
+					members = append(members, m)
+				}
+			}
+			sort.Strings(members)
+			fmt.Fprintln(cmd.OutOrStdout(), strings.Join(members, ","))
+			return nil
 		}
 
 		t := table.New(cmd.OutOrStdout())

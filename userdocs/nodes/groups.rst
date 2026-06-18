@@ -4,23 +4,22 @@ Node Groups
 
 Groups let you refer to a set of nodes by a single short name on the
 ``wwctl`` command line. Most ``wwctl`` subcommands that take a list of nodes
-(``wwctl power``, ``wwctl ssh``, ``wwctl node list``, ``wwctl node set``,
-``wwctl overlay build``, …) accept group references in addition to literal
-node names and :ref:`hostlist <hostlist>` patterns. A group reference is the
-name prefixed with ``@``.
+(``wwctl power``, ``wwctl ssh``, ``wwctl overlay build``, …) accept group
+references in addition to literal node names and :ref:`hostlist <hostlist>`
+patterns. A group reference is the name prefixed with ``@``.
 
 .. code-block:: console
 
    # wwctl power reset @rack1
    # wwctl ssh @gpu uptime
-   # wwctl overlay build @all
+   # wwctl overlay build @chemistry
 
 Declaring Group Membership
 ==========================
 
 Group membership is declared on nodes and profiles via a ``groups:`` field;
-the two sources are additive, so a node is in group ``G`` if it (or any
-profile it inherits) lists ``G``.
+the two sources are additive, so a node is in group ``foo`` if it (or any
+profile it inherits) lists ``foo``.
 
 .. code-block:: yaml
 
@@ -42,76 +41,48 @@ profile it inherits) lists ``G``.
        groups:
          - admin
          - login
+     head01:
+       groups:
+         - admin
+         - ~all
 
 In the example above, ``@gpu-nodes`` resolves to every node that uses the
 ``gpu`` profile, ``@rack1`` resolves to ``n01`` and ``n02``, and ``@admin``
-resolves to ``n02``.
+resolves to ``n02``. ``head01`` is included in ``@admin`` but excluded from
+``@all``.
 
 The ``@all`` Built-in Group
 ===========================
 
 The name ``all`` is reserved. ``@all`` always expands to every node defined
-in ``nodes.conf``, even if no user-defined groups exist.
+in ``nodes.conf``, even if no user-defined groups exist. Nodes can be excluded
+from ``all`` by negating it via node or profile config.
 
-Opting a Node Out of ``@all``
-=============================
-
-Add the literal entry ``~all`` to a node's ``groups:`` field (or to a
-profile the node inherits) to permanently exclude that node from ``@all``
-expansion. This is the right knob for a head node, a quarantined node, or
-anything else that should never be targeted by a bulk command issued
-against ``@all``.
-
-.. code-block:: yaml
-
-   nodeprofiles:
-     quarantine:
-       groups:
-         - ~all
-   nodes:
-     head01:
-       groups:
-         - ~all
-     n02:
-       profiles:
-         - quarantine
-
-``wwctl power reset @all`` will now skip both ``head01`` and ``n02``. The
-exclusion does not affect explicit per-node commands (``wwctl power reset
-head01`` still targets it directly), nor does it affect any user-defined
-group the node is otherwise a member of.
-
-There is one display gotcha: the merge step strips standalone ``~``-prefixed
-entries, so ``wwctl node list head01 -a`` will not show ``~all`` under
-``Groups``. To verify the opt-out took effect, run ``wwctl group list all``
-and confirm the node is missing from the member list, or grep the raw
-``nodes.conf``.
-
-Negating an Inherited Group
-===========================
+Excluding from a group
+======================
 
 A ``groups:`` entry prefixed with ``~`` removes a group that would
 otherwise be inherited from a profile, the same way ``profiles:`` and
-overlay lists support negation. For example, given a base profile that
-places all nodes in the ``default`` group:
+overlay lists support negation. For example, given a ``lab-course`` profile
+that places all nodes in the ``interactive`` group:
 
 .. code-block:: yaml
 
    nodeprofiles:
-     base:
+     lab-course:
        groups:
-         - default
+         - interactive
    nodes:
      n01:
        profiles:
-         - base
+         - lab-course
      n02:
        profiles:
-         - base
+         - lab-course
        groups:
-         - ~default
+         - ~interactive
 
-``@default`` resolves to ``n01`` only; ``n02`` has been removed from the
+``@interactive`` resolves to ``n01`` only; ``n02`` has been removed from the
 group via negation.
 
 Combining References on the Command Line
@@ -149,6 +120,19 @@ Pass one or more names to filter the listing, including the built-in
 
    # wwctl group list rack1
    # wwctl group list all
+
+Pass ``--noheader`` / ``-n`` together with one or more group names to get
+just the membership as a single comma-separated, deduped list — useful for
+feeding the membership into non-``wwctl`` tools:
+
+.. code-block:: console
+
+   # wwctl group list -n lab-course
+   n01,n02,n03
+   # scontrol create reservation [...] nodes=$(wwctl group list -n lab-course)
+
+Inspecting Nodes
+================
 
 To see which groups a *specific node* belongs to (and which source
 contributed each), use ``wwctl node list <node> -a`` and look at the
