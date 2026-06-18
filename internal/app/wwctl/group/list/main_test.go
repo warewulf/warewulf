@@ -66,6 +66,17 @@ all    n01,n02,n03,n04
 `,
 		},
 		{
+			name: "--all appends the built-in all group to the default listing",
+			args: []string{"-a"},
+			want: `
+GROUP  MEMBERS
+-----  -------
+admin  n04
+all    n01,n02,n03,n04
+rack1  n01,n02,n03
+`,
+		},
+		{
 			name: "unknown group warns and shows empty members",
 			args: []string{"missing"},
 			want: `
@@ -121,5 +132,5 @@ nodes:
 	cmd.SetArgs([]string{"-n"})
 	err := cmd.Execute()
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "requires at least one group argument")
+	assert.Contains(t, err.Error(), "requires at least one group")
 }
