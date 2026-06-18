@@ -8,9 +8,39 @@ import (
 
 const Docstring = "Node patterns are a comma-separated list of individual patterns.\nEach pattern can either be a full node name or a node range like node[01-03,05]."
 
+// GroupPrefix marks a token passed to Expand as a node-group reference rather
+// than a literal host name or bracketed range, e.g. "@rack1".
+const GroupPrefix = "@"
+
+// GroupResolver expands a single group name (without the leading "@")
+type GroupResolver interface {
+	GroupMembers(name string) []string
+}
+
+// Groups without members return as empty
+type nopResolver struct{}
+
+func (nopResolver) GroupMembers(string) []string { return nil }
+
+var groupResolver GroupResolver = nopResolver{}
+
+// Install resolver for groups unless nil
+func SetGroupResolver(r GroupResolver) {
+	if r == nil {
+		r = nopResolver{}
+	}
+	groupResolver = r
+}
+
 // Expand takes a slice of host strings, possibly containing comma-separated
-// values and bracketed ranges (e.g. "node[01-03]") and returns a fully expanded
-// slice of host names.
+// values and bracketed ranges (e.g. "node[01-03]"), and returns a fully
+// expanded slice of host names.
+//
+// Tokens prefixed with "@" are treated as node-group references and resolved
+// via the resolver registered with SetGroupResolver; the union of all
+// resolved members is returned, deduplicated against any plain host names in
+// the same call. Before any resolver is registered the default no-op
+// resolver is active, so groups without members are dropped.
 func Expand(list []string) []string {
 	// First, split each input string on commas that occur outside brackets.
 	var preList []string
@@ -28,7 +58,36 @@ func Expand(list []string) []string {
 		expanded = onceExpanded
 	}
 
-	return expanded
+	return resolveGroups(expanded)
+}
+
+// resolveGroups walks bracket-expanded token. Plain tokens pass
+// through in order; groups append their members at the position of "@".
+// Duplicates are removed.
+func resolveGroups(tokens []string) []string {
+	seen := make(map[string]struct{}, len(tokens))
+	var result []string
+	add := func(s string) {
+		if _, ok := seen[s]; ok {
+			return
+		}
+		seen[s] = struct{}{}
+		result = append(result, s)
+	}
+	for _, tok := range tokens {
+		if !strings.HasPrefix(tok, GroupPrefix) {
+			add(tok)
+			continue
+		}
+		name := strings.TrimPrefix(tok, GroupPrefix)
+		if name == "" {
+			continue
+		}
+		for _, id := range groupResolver.GroupMembers(name) {
+			add(id)
+		}
+	}
+	return result
 }
 
 // expandOnce performs a single round of bracket expansion.
