@@ -11,13 +11,18 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/node"
 )
 
-// cobraRunE lists all groups, or the filtered subset passed as args. Unknown
-// groups are reported as having no members. When noHeader is set, the output
-// is a single comma-separated, deduped list of node names with no header or
-// table formatting; at least one group is required in that mode. When
-// includeAll is set, the built-in `all` group is added to the listing.
-func cobraRunE(noHeader, includeAll *bool) func(cmd *cobra.Command, args []string) error {
+// cobraRunE lists groups and their members. With no args, every group
+// referenced anywhere in the configuration is shown along with the built-in
+// `all` group. With args, only the named groups are shown. When noHeader is
+// set, the output is a single comma-separated, deduped list of node names
+// with no header or table formatting; at least one GROUP is required in
+// that mode.
+func cobraRunE(noHeader *bool) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
+		if *noHeader && len(args) == 0 {
+			return fmt.Errorf("--noheader requires at least one group argument")
+		}
+
 		nodeDB, err := node.New()
 		if err != nil {
 			return fmt.Errorf("could not open node configuration: %w", err)
@@ -44,16 +49,19 @@ func cobraRunE(noHeader, includeAll *bool) func(cmd *cobra.Command, args []strin
 			for _, g := range nodeDB.ListAllGroups() {
 				add(g)
 			}
-		}
-		if *includeAll {
 			add(node.AllGroup)
 		}
-		sort.Strings(names)
+		sort.Slice(names, func(i, j int) bool {
+			if names[i] == node.AllGroup {
+				return true
+			}
+			if names[j] == node.AllGroup {
+				return false
+			}
+			return names[i] < names[j]
+		})
 
 		if *noHeader {
-			if len(names) == 0 {
-				return fmt.Errorf("--noheader requires at least one group (pass GROUP arguments or --all)")
-			}
 			memberSeen := make(map[string]struct{})
 			var members []string
 			for _, name := range names {
