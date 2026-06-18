@@ -39,7 +39,7 @@ Welcome to the Warewulf User Guide!
 
    Cluster Nodes <nodes/nodes>
    Node Profiles <nodes/profiles>
-   Nodegroups <nodes/nodegroups>
+   Node Groups <nodes/groups>
    Network <nodes/network>
    IPMI <nodes/ipmi>
    Disks <nodes/disks>

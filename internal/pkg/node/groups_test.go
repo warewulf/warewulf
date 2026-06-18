@@ -8,30 +8,15 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 )
 
-func Test_GroupMembers_FromNodegroupsStanza(t *testing.T) {
-	registry, err := Parse([]byte(`
-nodes:
-  n01: {}
-  n02: {}
-  n03: {}
-nodegroups:
-  rack1:
-    - n01
-    - n02
-`))
-	assert.NoError(t, err)
-	assert.Equal(t, []string{"n01", "n02"}, registry.GroupMembers("rack1"))
-}
-
 func Test_GroupMembers_FromPerNodeField(t *testing.T) {
 	registry, err := Parse([]byte(`
 nodes:
   n01:
-    nodegroups:
+    groups:
       - admin
   n02: {}
   n03:
-    nodegroups:
+    groups:
       - admin
       - rack2
 `))
@@ -44,7 +29,7 @@ func Test_GroupMembers_FromProfileInheritance(t *testing.T) {
 	registry, err := Parse([]byte(`
 nodeprofiles:
   gpu:
-    nodegroups:
+    groups:
       - gpu-nodes
 nodes:
   n01:
@@ -56,35 +41,23 @@ nodes:
 	assert.Equal(t, []string{"n01"}, registry.GroupMembers("gpu-nodes"))
 }
 
-func Test_GroupMembers_UnionOfBothSources(t *testing.T) {
+func Test_GroupMembers_UnionOfNodeAndProfile(t *testing.T) {
 	registry, err := Parse([]byte(`
+nodeprofiles:
+  base:
+    groups:
+      - default
 nodes:
   n01:
-    nodegroups:
-      - admin
-  n02: {}
+    profiles:
+      - base
+  n02:
+    groups:
+      - default
   n03: {}
-nodegroups:
-  admin:
-    - n02
 `))
 	assert.NoError(t, err)
-	assert.Equal(t, []string{"n01", "n02"}, registry.GroupMembers("admin"))
-}
-
-func Test_GroupMembers_HostlistRangeInNodegroupsStanza(t *testing.T) {
-	registry, err := Parse([]byte(`
-nodes:
-  n01: {}
-  n02: {}
-  n03: {}
-  n04: {}
-nodegroups:
-  rack1:
-    - n[01-03]
-`))
-	assert.NoError(t, err)
-	assert.Equal(t, []string{"n01", "n02", "n03"}, registry.GroupMembers("rack1"))
+	assert.Equal(t, []string{"n01", "n02"}, registry.GroupMembers("default"))
 }
 
 func Test_GroupMembers_AllBuiltin(t *testing.T) {
@@ -98,24 +71,11 @@ nodes:
 	assert.Equal(t, []string{"n01", "n02", "n03"}, registry.GroupMembers("all"))
 }
 
-func Test_GroupMembers_AllIgnoresUserDefinedAll(t *testing.T) {
-	registry, err := Parse([]byte(`
-nodes:
-  n01: {}
-  n02: {}
-nodegroups:
-  all:
-    - n01
-`))
-	assert.NoError(t, err)
-	assert.Equal(t, []string{"n01", "n02"}, registry.GroupMembers("all"))
-}
-
 func Test_GroupMembers_NegationViaProfileMerge(t *testing.T) {
 	registry, err := Parse([]byte(`
 nodeprofiles:
   base:
-    nodegroups:
+    groups:
       - default
 nodes:
   n01:
@@ -124,7 +84,7 @@ nodes:
   n02:
     profiles:
       - base
-    nodegroups:
+    groups:
       - ~default
 `))
 	assert.NoError(t, err)
@@ -136,7 +96,7 @@ func Test_GroupMembers_All_HonorsLiteralOptOut(t *testing.T) {
 nodes:
   n01: {}
   n02:
-    nodegroups:
+    groups:
       - ~all
   n03: {}
 `))
@@ -149,7 +109,7 @@ func Test_GroupMembers_All_HonorsProfileInheritedOptOut(t *testing.T) {
 	registry, err := Parse([]byte(`
 nodeprofiles:
   quarantine:
-    nodegroups:
+    groups:
       - ~all
 nodes:
   n01: {}
@@ -175,14 +135,14 @@ func Test_HostlistExpand_WithGroupResolver(t *testing.T) {
 	registry, err := Parse([]byte(`
 nodes:
   n01:
-    nodegroups:
+    groups:
       - admin
-  n02: {}
+      - rack1
+  n02:
+    groups:
+      - rack1
   n03: {}
   n04: {}
-nodegroups:
-  rack1:
-    - n[01-02]
 `))
 	assert.NoError(t, err)
 	hostlist.SetGroupResolver(&registry)
@@ -225,38 +185,35 @@ func Test_ListAllGroups(t *testing.T) {
 	registry, err := Parse([]byte(`
 nodeprofiles:
   gpu:
-    nodegroups:
+    groups:
       - gpu-nodes
 nodes:
   n01:
-    nodegroups:
+    groups:
       - admin
+      - rack1
   n02:
     profiles:
       - gpu
-nodegroups:
-  rack1:
-    - n01
-  rack2:
-    - n02
+    groups:
+      - rack2
 `))
 	assert.NoError(t, err)
-	assert.Equal(t, []string{"admin", "gpu-nodes", "rack1", "rack2"}, registry.ListAllNodegroups())
+	assert.Equal(t, []string{"admin", "gpu-nodes", "rack1", "rack2"}, registry.ListAllGroups())
 }
 
 func Test_ListNodesUsingGroup(t *testing.T) {
 	registry, err := Parse([]byte(`
 nodes:
   n01:
-    nodegroups:
+    groups:
       - admin
-  n02: {}
-nodegroups:
-  admin:
-    - n02
+  n02:
+    groups:
+      - admin
 `))
 	assert.NoError(t, err)
-	nodes, err := registry.ListNodesUsingNodegroup("admin")
+	nodes, err := registry.ListNodesUsingGroup("admin")
 	assert.NoError(t, err)
 	assert.Len(t, nodes, 2)
 	ids := []string{nodes[0].Id(), nodes[1].Id()}

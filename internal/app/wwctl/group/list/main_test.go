@@ -11,26 +11,25 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-func Test_NodegroupList(t *testing.T) {
+func Test_GroupList(t *testing.T) {
 	const nodesConf = `
 nodeprofiles:
   gpu:
-    nodegroups:
+    groups:
       - rack1
 nodes:
   n01:
     profiles:
       - gpu
   n02:
-    nodegroups:
+    groups:
       - rack1
-  n03: {}
-  n04: {}
-nodegroups:
-  rack1:
-    - n03
-  admin:
-    - n04
+  n03:
+    groups:
+      - rack1
+  n04:
+    groups:
+      - admin
 `
 
 	tests := []struct {
@@ -39,41 +38,41 @@ nodegroups:
 		want string
 	}{
 		{
-			name: "list all enumerates every defined nodegroup",
+			name: "list all enumerates every referenced group",
 			args: []string{},
 			want: `
-NODEGROUP  MEMBERS
----------  -------
-admin      n04
-rack1      n01,n02,n03
+GROUP  MEMBERS
+-----  -------
+admin  n04
+rack1  n01,n02,n03
 `,
 		},
 		{
-			name: "filter to a single nodegroup",
+			name: "filter to a single group",
 			args: []string{"rack1"},
 			want: `
-NODEGROUP  MEMBERS
----------  -------
-rack1      n01,n02,n03
+GROUP  MEMBERS
+-----  -------
+rack1  n01,n02,n03
 `,
 		},
 		{
 			name: "@all expands to every node",
 			args: []string{"all"},
 			want: `
-NODEGROUP  MEMBERS
----------  -------
-all        n01,n02,n03,n04
+GROUP  MEMBERS
+-----  -------
+all    n01,n02,n03,n04
 `,
 		},
 		{
-			name: "unknown nodegroup warns and shows empty members",
+			name: "unknown group warns and shows empty members",
 			args: []string{"missing"},
 			want: `
-WARN   : unknown nodegroup: missing
-NODEGROUP  MEMBERS
----------  -------
-missing    --
+WARN   : unknown group: missing
+GROUP    MEMBERS
+-----    -------
+missing  --
 `,
 		},
 	}

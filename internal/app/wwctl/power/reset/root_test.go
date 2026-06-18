@@ -65,16 +65,21 @@ nodeprofiles:
       template: ipmitool.tmpl
       username: admin
       password: admin
+  rack1:
+    groups:
+    - rack1
 nodes:
   n01:
     profiles:
     - default
+    - rack1
     ipmi:
       ipaddr: 10.10.10.10
   n02:
     profiles:
     - default
-    nodegroups:
+    - rack1
+    groups:
     - admin
     ipmi:
       ipaddr: 10.10.10.11
@@ -82,25 +87,21 @@ nodes:
     profiles:
     - default
     ipmi:
-      ipaddr: 10.10.10.12
-nodegroups:
-  rack1:
-    - n01
-    - n02`)
+      ipaddr: 10.10.10.12`)
 	env.ImportFile("usr/share/warewulf/bmc/ipmitool.tmpl", "../../../../../lib/warewulf/bmc/ipmitool.tmpl")
 
 	tests := map[string]struct {
 		args     []string
 		expected []string
 	}{
-		"@rack1 expands to nodegroups stanza": {
+		"@rack1 expands to profile-inherited group": {
 			args: []string{"--show", "@rack1"},
 			expected: []string{
 				`10.10.10.10: ipmitool -H 10.10.10.10 -U "admin" -P "admin" chassis power reset`,
 				`10.10.10.11: ipmitool -H 10.10.10.11 -U "admin" -P "admin" chassis power reset`,
 			},
 		},
-		"@admin expands to per-node nodegroups field": {
+		"@admin expands to per-node groups field": {
 			args: []string{"--show", "@admin"},
 			expected: []string{
 				`10.10.10.11: ipmitool -H 10.10.10.11 -U "admin" -P "admin" chassis power reset`,

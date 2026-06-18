@@ -65,7 +65,7 @@ func Nodes(cmd *cobra.Command, args []string, toComplete string) ([]string, cobr
 	}
 	candidates := registry.ListAllNodes()
 	hasAll := false
-	for _, name := range registry.ListAllNodegroups() {
+	for _, name := range registry.ListAllGroups() {
 		if name == "all" {
 			hasAll = true
 		}
@@ -77,16 +77,15 @@ func Nodes(cmd *cobra.Command, args []string, toComplete string) ([]string, cobr
 	return candidates, cobra.ShellCompDirectiveNoFileComp
 }
 
-// Nodegroups completes nodegroup names without an "@" prefix. Use this for
-// commands that take literal nodegroup names (e.g., `wwctl node group list`).
-// The reserved "all" group is included so it shows up even when nothing is
-// declared yet.
-func Nodegroups(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+// Groups completes group names without an "@" prefix. Use this for commands
+// that take literal group names (e.g., `wwctl group list`). The reserved
+// "all" group is included so it shows up even when nothing is declared yet.
+func Groups(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	registry, err := node.New()
 	if err != nil {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	}
-	candidates := registry.ListAllNodegroups()
+	candidates := registry.ListAllGroups()
 	hasAll := false
 	for _, n := range candidates {
 		if n == "all" {
