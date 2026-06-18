@@ -92,6 +92,7 @@ func TestCompress(t *testing.T) {
 		t.Run(name, func(t *testing.T) { assert.Equal(t, tt.output, Compress(tt.input)) })
 	}
 }
+
 type fakeResolver map[string][]string
 
 func (f fakeResolver) GroupMembers(name string) []string { return f[name] }
