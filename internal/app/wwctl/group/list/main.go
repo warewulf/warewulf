@@ -14,46 +14,54 @@ import (
 // cobraRunE lists all groups, or the filtered subset passed as args. Unknown
 // groups are reported as having no members. When noHeader is set, the output
 // is a single comma-separated, deduped list of node names with no header or
-// table formatting; at least one group argument is required in that mode.
-func cobraRunE(noHeader *bool) func(cmd *cobra.Command, args []string) error {
+// table formatting; at least one group is required in that mode. When
+// includeAll is set, the built-in `all` group is added to the listing.
+func cobraRunE(noHeader, includeAll *bool) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-		if *noHeader && len(args) == 0 {
-			return fmt.Errorf("--noheader requires at least one group argument")
-		}
-
 		nodeDB, err := node.New()
 		if err != nil {
 			return fmt.Errorf("could not open node configuration: %w", err)
 		}
 
 		var names []string
-		if len(args) > 0 {
-			seen := make(map[string]struct{}, len(args))
-			for _, a := range args {
-				a = strings.TrimPrefix(a, "@")
-				if a == "" {
-					continue
-				}
-				if _, ok := seen[a]; ok {
-					continue
-				}
-				seen[a] = struct{}{}
-				names = append(names, a)
+		seen := make(map[string]struct{}, len(args)+1)
+		add := func(g string) {
+			if g == "" {
+				return
 			}
-			sort.Strings(names)
-		} else {
-			names = nodeDB.ListAllGroups()
+			if _, ok := seen[g]; ok {
+				return
+			}
+			seen[g] = struct{}{}
+			names = append(names, g)
 		}
 
+		if len(args) > 0 {
+			for _, a := range args {
+				add(strings.TrimPrefix(a, "@"))
+			}
+		} else {
+			for _, g := range nodeDB.ListAllGroups() {
+				add(g)
+			}
+		}
+		if *includeAll {
+			add(node.AllGroup)
+		}
+		sort.Strings(names)
+
 		if *noHeader {
-			seen := make(map[string]struct{})
+			if len(names) == 0 {
+				return fmt.Errorf("--noheader requires at least one group (pass GROUP arguments or --all)")
+			}
+			memberSeen := make(map[string]struct{})
 			var members []string
 			for _, name := range names {
 				for _, m := range nodeDB.GroupMembers(name) {
-					if _, ok := seen[m]; ok {
+					if _, ok := memberSeen[m]; ok {
 						continue
 					}
-					seen[m] = struct{}{}
+					memberSeen[m] = struct{}{}
 					members = append(members, m)
 				}
 			}

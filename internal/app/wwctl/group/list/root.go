@@ -8,7 +8,7 @@ import (
 
 // GetCommand returns the `wwctl group list` cobra command.
 func GetCommand() *cobra.Command {
-	var noHeader bool
+	var noHeader, includeAll bool
 	baseCmd := &cobra.Command{
 		DisableFlagsInUseLine: true,
 		Use:                   "list [GROUP ...]",
@@ -17,12 +17,14 @@ func GetCommand() *cobra.Command {
 			"Membership is the union of the per-node `groups:` field and any\n" +
 			"`groups:` declared on a profile the node inherits. Without the\n" +
 			"GROUP argument, all groups are shown.",
-		RunE:              cobraRunE(&noHeader),
+		RunE:              cobraRunE(&noHeader, &includeAll),
 		Aliases:           []string{"ls"},
 		Args:              cobra.ArbitraryArgs,
 		ValidArgsFunction: completions.Groups,
 	}
 	baseCmd.Flags().BoolVarP(&noHeader, "noheader", "n", false,
-		"Print a comma-separated list of member nodes with no header or table formatting (deduped across all requested groups). Requires at least one GROUP argument.")
+		"Print a comma-separated list of member nodes with no header or table formatting (deduped across all requested groups). Requires at least one GROUP.")
+	baseCmd.Flags().BoolVarP(&includeAll, "all", "a", false,
+		"Also include the built-in `all` group (every node, minus any with `~all`) in the output.")
 	return baseCmd
 }
