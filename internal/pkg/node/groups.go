@@ -40,8 +40,19 @@ func (config *NodesYaml) GroupMembers(name string) []string {
 		}
 	}
 
+	// don't warn on declared but empty groups
 	if len(members) == 0 {
-		wwlog.Warn("unknown group: %s", name)
+		declared := false
+		for _, g := range config.ListAllGroups() {
+			if g == name {
+				declared = true
+				break
+			}
+		}
+		// print warning if groups is not declared anywhere (aka doesn't exist)
+		if !declared {
+			wwlog.Warn("unknown group: %s", name)
+		}
 	}
 
 	result := make([]string, 0, len(members))
