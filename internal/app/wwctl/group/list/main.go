@@ -11,8 +11,8 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/node"
 )
 
-// Returns all nodegroups unless filtered. Unknown nodegroups are
-// reported as having no members
+// CobraRunE lists all groups, or the filtered subset passed as args. Unknown
+// groups are reported as having no members.
 func CobraRunE() func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		nodeDB, err := node.New()
@@ -32,11 +32,11 @@ func CobraRunE() func(cmd *cobra.Command, args []string) error {
 			}
 			sort.Strings(names)
 		} else {
-			names = nodeDB.ListAllNodegroups()
+			names = nodeDB.ListAllGroups()
 		}
 
 		t := table.New(cmd.OutOrStdout())
-		t.AddHeader("NODEGROUP", "MEMBERS")
+		t.AddHeader("GROUP", "MEMBERS")
 		for _, name := range names {
 			members := nodeDB.GroupMembers(name)
 			t.AddLine(table.Prep([]string{name, strings.Join(members, ",")})...)

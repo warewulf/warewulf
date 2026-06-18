@@ -9,14 +9,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 
-- Nodegroups are now available for targeting sets of nodes in `wwctl` commands.
-  Declared additively: as a top-level `nodegroups:` stanza in `nodes.conf`, on
-  individual nodes or in profiles. Reference a nodegroup from the command line with the `@`
-  prefix, for example `wwctl power reset @rack1`. `@all` is reserved and always
-  expands to every defined node (unless explicitly excluded).
-- `wwctl node group list [NAME ...]` enumerates every nodegroup referenced
-  anywhere in the configuration along with its members.
-- Tab completion for nodegroups.
+- Groups are now available for targeting sets of nodes in `wwctl` commands.
+  Declared via a `groups:` field on individual nodes or profiles (the two
+  sources are additive). Reference a group from the command line with the
+  `@` prefix, for example `wwctl power reset @rack1`. `@all` is reserved
+  and always expands to every defined node (unless explicitly excluded
+  with `~all`).
+- `wwctl group list [NAME ...]` enumerates every group referenced anywhere
+  in the configuration along with its members.
+- Tab completion for groups.
  
 ### Changed
 

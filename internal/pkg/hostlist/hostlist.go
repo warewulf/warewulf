@@ -40,7 +40,7 @@ func SetGroupResolver(r GroupResolver) {
 // via the resolver registered with SetGroupResolver; the union of all
 // resolved members is returned, deduplicated against any plain host names in
 // the same call. Before any resolver is registered the default no-op
-// resolver is active, so nodegroups without members are dropped
+// resolver is active, so groups without members are dropped.
 func Expand(list []string) []string {
 	// First, split each input string on commas that occur outside brackets.
 	var preList []string

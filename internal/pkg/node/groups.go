@@ -9,18 +9,19 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-// Rserved group name that expands to every node not explicitly masked
+// Reserved group name that expands to every node not explicitly masked
 const AllGroup = "all"
 
-// Returns sorted, deduped list. Union of nodesgroups from nodes.conf,
-// per-node or profile
+// GroupMembers returns a sorted, deduped list of nodes belonging to the
+// named group. Membership is the union of every node and profile that
+// declares the group in its `groups:` field. A node carrying the literal
+// token "~<name>" (directly or via a profile) is excluded.
 func (config *NodesYaml) GroupMembers(name string) []string {
 	if name == AllGroup {
 		all := config.ListAllNodes()
 		filtered := make([]string, 0, len(all))
-		// mask node if it has an "~all", explicit or inherited 
 		for _, id := range all {
-			if config.hasLiteralNodegroup(id, "~"+AllGroup) {
+			if config.hasLiteralGroup(id, "~"+AllGroup) {
 				continue
 			}
 			filtered = append(filtered, id)
@@ -29,31 +30,18 @@ func (config *NodesYaml) GroupMembers(name string) []string {
 	}
 
 	members := make(map[string]struct{})
-
-	for _, entry := range hostlist.Expand(config.NodeGroups[name]) {
-		if _, ok := config.Nodes[entry]; ok {
-			members[entry] = struct{}{}
-		} else {
-			wwlog.Warn("nodegroup %q references unknown node: %s", name, entry)
-		}
-	}
-
 	for id := range config.Nodes {
 		merged, err := config.GetNode(id)
 		if err != nil {
 			continue
 		}
-		if slices.Contains(merged.NodeGroups, name) {
+		if slices.Contains(merged.Groups, name) {
 			members[id] = struct{}{}
 		}
 	}
 
 	if len(members) == 0 {
-		// Only warn if neither source mentioned the nodegroup; otherwise the
-		// caller asked for a defined-but-empty nodegroup, which is fine.
-		if _, defined := config.NodeGroups[name]; !defined {
-			wwlog.Warn("unknown nodegroup: %s", name)
-		}
+		wwlog.Warn("unknown group: %s", name)
 	}
 
 	result := make([]string, 0, len(members))
@@ -64,10 +52,12 @@ func (config *NodesYaml) GroupMembers(name string) []string {
 	return result
 }
 
-// Check for token regardless of ~ negation
-func (config *NodesYaml) hasLiteralNodegroup(nodeID, token string) bool {
+// hasLiteralGroup reports whether the node carries the given token verbatim
+// in its own groups list or in a non-negated profile's groups list. Used to
+// honor `~all` opt-outs, which the normal merge step would otherwise strip.
+func (config *NodesYaml) hasLiteralGroup(nodeID, token string) bool {
 	if n, ok := config.Nodes[nodeID]; ok {
-		if slices.Contains(n.NodeGroups, token) {
+		if slices.Contains(n.Groups, token) {
 			return true
 		}
 	}
@@ -76,7 +66,7 @@ func (config *NodesYaml) hasLiteralNodegroup(nodeID, token string) bool {
 			continue
 		}
 		if profile, err := config.GetProfile(profileID); err == nil {
-			if slices.Contains(profile.NodeGroups, token) {
+			if slices.Contains(profile.Groups, token) {
 				return true
 			}
 		}
@@ -84,8 +74,9 @@ func (config *NodesYaml) hasLiteralNodegroup(nodeID, token string) bool {
 	return false
 }
 
-// Returns node objects for every nodegroup member
-func (config *NodesYaml) ListNodesUsingNodegroup(name string) ([]Node, error) {
+// ListNodesUsingGroup returns the merged node objects for every member of
+// the named group.
+func (config *NodesYaml) ListNodesUsingGroup(name string) ([]Node, error) {
 	members := config.GroupMembers(name)
 	if len(members) == 0 {
 		return nil, nil
@@ -93,14 +84,12 @@ func (config *NodesYaml) ListNodesUsingNodegroup(name string) ([]Node, error) {
 	return config.FindAllNodes(members...)
 }
 
-// Returns a sorted/deduped list of every nodegroup from nodes.conf, node or profile.
-func (config *NodesYaml) ListAllNodegroups() []string {
+// ListAllGroups returns a sorted, deduped list of every group referenced on
+// any node or profile. Negated entries (`~name`) are excluded.
+func (config *NodesYaml) ListAllGroups() []string {
 	seen := make(map[string]struct{})
-	for name := range config.NodeGroups {
-		seen[name] = struct{}{}
-	}
 	for _, node := range config.Nodes {
-		for _, g := range node.NodeGroups {
+		for _, g := range node.Groups {
 			if strings.HasPrefix(g, "~") {
 				continue
 			}
@@ -108,7 +97,7 @@ func (config *NodesYaml) ListAllNodegroups() []string {
 		}
 	}
 	for _, profile := range config.NodeProfiles {
-		for _, g := range profile.NodeGroups {
+		for _, g := range profile.Groups {
 			if strings.HasPrefix(g, "~") {
 				continue
 			}
@@ -122,3 +111,6 @@ func (config *NodesYaml) ListAllNodegroups() []string {
 	sort.Strings(out)
 	return out
 }
+
+// Compile-time guard: NodesYaml must satisfy hostlist.GroupResolver.
+var _ hostlist.GroupResolver = (*NodesYaml)(nil)

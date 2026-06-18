@@ -166,7 +166,7 @@ func Test_listFields(t *testing.T) {
 				"Discoverable",
 				"AssetKey",
 				"Profiles",
-				"NodeGroups",
+				"Groups",
 				"Comment",
 				"ClusterName",
 				"ImageName",
@@ -222,7 +222,7 @@ func Test_listFields(t *testing.T) {
 			},
 			fields: []string{
 				"Profiles",
-				"NodeGroups",
+				"Groups",
 				"Comment",
 				"ClusterName",
 				"ImageName",
