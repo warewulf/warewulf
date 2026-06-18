@@ -820,4 +820,3 @@ The dependencies and their licenses are as follows:
 **License:** Unlicense
 
 **License URL:** <https://github.com/vbauerster/mpb/blob/v8.10.2/UNLICENSE>
-
