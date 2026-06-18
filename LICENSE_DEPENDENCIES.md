@@ -95,12 +95,6 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/coreos/vcontext/blob/d72178a18687/LICENSE>
 
-## github.com/cyberphone/json-canonicalization/go/src/webpki.org/jsoncanonicalizer
-
-**License:** Apache-2.0
-
-**License URL:** <https://github.com/cyberphone/json-canonicalization/blob/19d51d7fe467/LICENSE>
-
 ## github.com/distribution/reference
 
 **License:** Apache-2.0
@@ -149,11 +143,23 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/go-logr/stdr/blob/v1.2.2/LICENSE>
 
+## github.com/google/go-attestation/attest
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/google/go-attestation/blob/v0.6.0/LICENSE>
+
 ## github.com/google/go-containerregistry/pkg/name
 
 **License:** Apache-2.0
 
 **License URL:** <https://github.com/google/go-containerregistry/blob/v0.20.3/LICENSE>
+
+## github.com/google/go-tpm
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/google/go-tpm/blob/v0.9.6/LICENSE>
 
 ## github.com/klauspost/compress
 
@@ -353,6 +359,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/imdario/mergo/blob/v1.0.2/LICENSE>
 
+## github.com/cyphar/filepath-securejoin
+
+**License:** BSD-3-Clause
+
+**License URL:** <https://github.com/cyphar/filepath-securejoin/blob/v0.5.1/COPYING.md>
+
 ## github.com/go-jose/go-jose/v4/json
 
 **License:** BSD-3-Clause
@@ -382,6 +394,12 @@ The dependencies and their licenses are as follows:
 **License:** BSD-3-Clause
 
 **License URL:** <https://github.com/gorilla/mux/blob/v1.8.1/LICENSE>
+
+## github.com/klauspost/compress
+
+**License:** BSD-3-Clause
+
+**License URL:** <https://github.com/klauspost/compress/blob/v1.18.0/LICENSE>
 
 ## github.com/klauspost/compress/internal/snapref
 
@@ -442,6 +460,24 @@ The dependencies and their licenses are as follows:
 **License:** BSD-3-Clause
 
 **License URL:** <https://github.com/vbatts/tar-split/blob/v0.12.1/LICENSE>
+
+## go.opentelemetry.io/otel
+
+**License:** BSD-3-Clause
+
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/v1.39.0/LICENSE>
+
+## go.opentelemetry.io/otel/metric
+
+**License:** BSD-3-Clause
+
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/metric/v1.39.0/metric/LICENSE>
+
+## go.opentelemetry.io/otel/trace
+
+**License:** BSD-3-Clause
+
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/trace/v1.39.0/trace/LICENSE>
 
 ## golang.org/x/crypto
 
@@ -604,6 +640,12 @@ The dependencies and their licenses are as follows:
 **License:** MIT
 
 **License URL:** <https://github.com/json-iterator/go/blob/v1.1.12/LICENSE>
+
+## github.com/klauspost/compress
+
+**License:** MIT
+
+**License URL:** <https://github.com/klauspost/compress/blob/v1.18.0/LICENSE>
 
 ## github.com/klauspost/compress/zstd/internal/xxhash
 
@@ -779,12 +821,6 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/cyphar/filepath-securejoin/blob/v0.5.1/COPYING.md>
 
-## github.com/cyphar/filepath-securejoin/pathrs-lite
-
-**License:** MPL-2.0
-
-**License URL:** <https://github.com/cyphar/filepath-securejoin/blob/v0.5.1/pathrs-lite/README.md>
-
 ## github.com/hashicorp/go-version
 
 **License:** MPL-2.0
@@ -802,6 +838,12 @@ The dependencies and their licenses are as follows:
 **License:** MPL-2.0
 
 **License URL:** <https://github.com/siderolabs/go-smbios/blob/v0.3.3/LICENSE>
+
+## github.com/cyberphone/json-canonicalization/go/src/webpki.org/jsoncanonicalizer
+
+**License:** Unknown
+
+**Project URL:** <https://github.com/cyberphone/json-canonicalization/go/src/webpki.org/jsoncanonicalizer>
 
 ## github.com/rootless-containers/proto/go-proto
 
