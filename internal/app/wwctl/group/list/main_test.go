@@ -38,11 +38,12 @@ nodes:
 		want string
 	}{
 		{
-			name: "list all enumerates every referenced group",
+			name: "list all enumerates every referenced group plus the built-in all, with all on top",
 			args: []string{},
 			want: `
 GROUP  MEMBERS
 -----  -------
+all    n01,n02,n03,n04
 admin  n04
 rack1  n01,n02,n03
 `,
@@ -63,17 +64,6 @@ rack1  n01,n02,n03
 GROUP  MEMBERS
 -----  -------
 all    n01,n02,n03,n04
-`,
-		},
-		{
-			name: "--all appends the built-in all group to the default listing",
-			args: []string{"-a"},
-			want: `
-GROUP  MEMBERS
------  -------
-admin  n04
-all    n01,n02,n03,n04
-rack1  n01,n02,n03
 `,
 		},
 		{
@@ -132,5 +122,5 @@ nodes:
 	cmd.SetArgs([]string{"-n"})
 	err := cmd.Execute()
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "requires at least one group")
+	assert.Contains(t, err.Error(), "requires at least one group argument")
 }
