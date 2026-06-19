@@ -2,6 +2,7 @@ package set
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -61,12 +62,17 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 
 		changed := cmd.Flags().Changed
 		var count uint
+		profileChanges := map[string][]node.Change{}
 		for _, profileId := range args {
 			wwlog.Verbose("evaluating profile: %s", profileId)
 			profilePtr, err := nodeDB.GetProfilePtr(profileId)
 			if err != nil {
 				wwlog.Warn("invalid profile: %s", profileId)
 				continue
+			}
+			var before *node.Profile
+			if !vars.setYes {
+				before = profilePtr.Clone()
 			}
 			profilePtr.UpdateFrom(&vars.profileConf, changed)
 			if vars.profileDel.NetDel != "" {
@@ -149,12 +155,20 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 				}
 			}
 			profilePtr.Flatten()
+			if before != nil {
+				profileChanges[profileId] = node.DiffProfile(before, profilePtr)
+			}
 			count++
 		}
 
 		if !vars.setYes {
-			yes := util.Confirm(fmt.Sprintf("Are you sure you want to modify %d profile(s)", count))
-			if !yes {
+			summary := node.FormatChanges(profileChanges)
+			if summary == "" {
+				wwlog.Info("No changes to apply.")
+				return nil
+			}
+			fmt.Fprint(os.Stderr, summary)
+			if !util.Confirm(fmt.Sprintf("Apply these changes to %d profile(s)?", count)) {
 				return nil
 			}
 		}

@@ -2,6 +2,7 @@ package set
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -66,12 +67,17 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 
 		changed := cmd.Flags().Changed
 		var count uint
+		nodeChanges := map[string][]node.Change{}
 		for _, nId := range args {
 			wwlog.Debug("evaluating node: %s", nId)
 			nodePtr, err := nodeDB.GetNodeOnlyPtr(nId)
 			if err != nil {
 				wwlog.Warn("invalid node: %s", nId)
 				continue
+			}
+			var before *node.Node
+			if !vars.setYes {
+				before = nodePtr.Clone()
 			}
 			nodePtr.UpdateFrom(&vars.nodeConf, changed)
 			if vars.nodeDel.NetDel != "" {
@@ -152,11 +158,20 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 				}
 			}
 			nodePtr.Flatten()
+			if before != nil {
+				nodeChanges[nId] = node.DiffProfile(&before.Profile, &nodePtr.Profile)
+			}
 			count++
 		}
 
 		if !vars.setYes {
-			if !util.Confirm(fmt.Sprintf("Are you sure you want to modify %d nodes(s)", count)) {
+			summary := node.FormatChanges(nodeChanges)
+			if summary == "" {
+				wwlog.Info("No changes to apply.")
+				return nil
+			}
+			fmt.Fprint(os.Stderr, summary)
+			if !util.Confirm(fmt.Sprintf("Apply these changes to %d node(s)?", count)) {
 				return nil
 			}
 		}
