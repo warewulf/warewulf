@@ -2,7 +2,6 @@ package set
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -168,7 +167,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 				wwlog.Info("No changes to apply.")
 				return nil
 			}
-			fmt.Fprint(os.Stderr, summary)
+			wwlog.Output("%s", summary)
 			if !util.Confirm(fmt.Sprintf("Apply these changes to %d profile(s)?", len(profileChanges))) {
 				return nil
 			}
