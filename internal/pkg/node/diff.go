@@ -16,7 +16,7 @@ type Change struct {
 	After  string
 }
 
-// Clone deep-copies the profile via YAML round-trip.
+// Profile.Clone yaml deep copy
 func (p *Profile) Clone() *Profile {
 	data, err := yaml.Marshal(p)
 	if err != nil {
@@ -29,7 +29,7 @@ func (p *Profile) Clone() *Profile {
 	return &out
 }
 
-// Clone deep-copies the node via YAML round-trip.
+// Node.Clone yaml deep copy
 func (n *Node) Clone() *Node {
 	data, err := yaml.Marshal(n)
 	if err != nil {
@@ -42,7 +42,7 @@ func (n *Node) Clone() *Node {
 	return &out
 }
 
-// Diff returns the field-level differences between before and after, sorted by path; paths use lopt-tag names with bracket notation for map keys (e.g. "tags[hostname]").
+// Field-level diff between before and after, sorted by path; use lopt-tag names with bracket notation for map keys (e.g. "tags[hostname]").
 func Diff[T Profile | Node](before, after *T) []Change {
 	var changes []Change
 	diffStruct(reflect.ValueOf(before).Elem(), reflect.ValueOf(after).Elem(), "", &changes)
@@ -189,7 +189,7 @@ func fmtScalar(v reflect.Value) string {
 	return "<unset>"
 }
 
-// FormatChanges renders a per-entity change map; entities with identical change-sets share a header line. Returns "" when empty.
+// Render a per-entity change map; entities with identical change-sets share a header line. Returns "" when empty.
 func FormatChanges(entityChanges map[string][]Change) string {
 	type group struct {
 		ids     []string
