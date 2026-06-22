@@ -9,44 +9,41 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Change is a single field-level difference between two profiles.
+// Change is a single field-level difference.
 type Change struct {
 	Path   string
 	Before string
 	After  string
 }
 
-// Clone returns a deep copy of the profile via YAML round-trip.
+// Clone deep-copies the profile via YAML round-trip.
 func (p *Profile) Clone() *Profile {
 	data, err := yaml.Marshal(p)
 	if err != nil {
-		return nil
+		panic(fmt.Sprintf("Profile.Clone: marshal failed: %v", err))
 	}
 	out := NewProfile(p.Id())
 	if err := yaml.Unmarshal(data, &out); err != nil {
-		return nil
+		panic(fmt.Sprintf("Profile.Clone: unmarshal failed: %v", err))
 	}
 	return &out
 }
 
-// Clone returns a deep copy of the node via YAML round-trip.
+// Clone deep-copies the node via YAML round-trip.
 func (n *Node) Clone() *Node {
 	data, err := yaml.Marshal(n)
 	if err != nil {
-		return nil
+		panic(fmt.Sprintf("Node.Clone: marshal failed: %v", err))
 	}
 	out := NewNode(n.Id())
 	if err := yaml.Unmarshal(data, &out); err != nil {
-		return nil
+		panic(fmt.Sprintf("Node.Clone: unmarshal failed: %v", err))
 	}
 	return &out
 }
 
-// DiffProfile returns the field-level differences between before and after.
-// Paths use lopt-tag names when available (falling back to lowercase field
-// names) and bracket notation for map keys (e.g. "tags[hostname]",
-// "netdev[default].ipaddr"). The result is sorted by path.
-func DiffProfile(before, after *Profile) []Change {
+// Diff returns the field-level differences between before and after, sorted by path; paths use lopt-tag names with bracket notation for map keys (e.g. "tags[hostname]").
+func Diff[T Profile | Node](before, after *T) []Change {
 	var changes []Change
 	diffStruct(reflect.ValueOf(before).Elem(), reflect.ValueOf(after).Elem(), "", &changes)
 	sort.Slice(changes, func(i, j int) bool { return changes[i].Path < changes[j].Path })
@@ -104,7 +101,7 @@ func diffValue(before, after reflect.Value, path string, out *[]Change) {
 	case reflect.Map:
 		diffMap(before, after, path, out)
 	case reflect.Slice:
-		// Byte slices (e.g. net.IP) render via their Stringer rather than as a list of bytes.
+		// net.IP and other byte slices render via Stringer, not as a byte list.
 		if before.Type().Elem().Kind() == reflect.Uint8 {
 			bs, as := fmtScalar(before), fmtScalar(after)
 			if bs != as {
@@ -151,7 +148,6 @@ func diffMap(before, after reflect.Value, prefix string, out *[]Change) {
 
 func mapGet(m reflect.Value, key string) reflect.Value {
 	if !m.IsValid() || m.IsNil() {
-		// Return a zero value of the element type so callers can recurse safely.
 		return reflect.Zero(m.Type().Elem())
 	}
 	v := m.MapIndex(reflect.ValueOf(key))
@@ -193,9 +189,7 @@ func fmtScalar(v reflect.Value) string {
 	return "<unset>"
 }
 
-// FormatChanges renders a per-entity change map as a multi-line summary.
-// Entities (nodes or profiles) with the same change-set are grouped together
-// onto a single header line. Returns "" when there are no changes.
+// FormatChanges renders a per-entity change map; entities with identical change-sets share a header line. Returns "" when empty.
 func FormatChanges(entityChanges map[string][]Change) string {
 	type group struct {
 		ids     []string

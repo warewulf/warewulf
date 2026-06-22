@@ -66,7 +66,6 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 		}
 
 		changed := cmd.Flags().Changed
-		var count uint
 		nodeChanges := map[string][]node.Change{}
 		for _, nId := range args {
 			wwlog.Debug("evaluating node: %s", nId)
@@ -78,6 +77,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			var before *node.Node
 			if !vars.setYes {
 				before = nodePtr.Clone()
+				before.Flatten()
 			}
 			nodePtr.UpdateFrom(&vars.nodeConf, changed)
 			if vars.nodeDel.NetDel != "" {
@@ -159,9 +159,10 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			}
 			nodePtr.Flatten()
 			if before != nil {
-				nodeChanges[nId] = node.DiffProfile(&before.Profile, &nodePtr.Profile)
+				if ch := node.Diff(before, nodePtr); len(ch) > 0 {
+					nodeChanges[nId] = ch
+				}
 			}
-			count++
 		}
 
 		if !vars.setYes {
@@ -171,7 +172,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 				return nil
 			}
 			fmt.Fprint(os.Stderr, summary)
-			if !util.Confirm(fmt.Sprintf("Apply these changes to %d node(s)?", count)) {
+			if !util.Confirm(fmt.Sprintf("Apply these changes to %d node(s)?", len(nodeChanges))) {
 				return nil
 			}
 		}
