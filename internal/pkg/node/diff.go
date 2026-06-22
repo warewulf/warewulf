@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 	"gopkg.in/yaml.v3"
 )
 
@@ -222,7 +223,7 @@ func FormatChanges(entityChanges map[string][]Change) string {
 		if i > 0 {
 			b.WriteString("\n")
 		}
-		fmt.Fprintf(&b, "%s:\n", strings.Join(g.ids, ", "))
+		fmt.Fprintf(&b, "%s:\n", hostlist.Compress(g.ids))
 		for _, c := range g.changes {
 			fmt.Fprintf(&b, "  %s: %s → %s\n", c.Path, c.Before, c.After)
 		}

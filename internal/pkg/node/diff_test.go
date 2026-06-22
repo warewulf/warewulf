@@ -99,7 +99,7 @@ func TestFormatChanges_Collapse(t *testing.T) {
 		"n03": uniq,
 	})
 
-	assert.Equal(t, "n01, n02:\n  system-overlays: [wwinit] → [wwinit, foo]\n\nn03:\n  comment: <unset> → \"x\"\n", out)
+	assert.Equal(t, "n[01-02]:\n  system-overlays: [wwinit] → [wwinit, foo]\n\nn03:\n  comment: <unset> → \"x\"\n", out)
 }
 
 func TestFormatChanges_Empty(t *testing.T) {
@@ -130,4 +130,3 @@ func TestDiff_NodeOnlyFields(t *testing.T) {
 	}
 	assert.True(t, sawDiscoverable, "discoverable change must be reported")
 }
-

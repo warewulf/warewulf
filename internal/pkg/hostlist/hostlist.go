@@ -2,6 +2,7 @@ package hostlist
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -99,6 +100,87 @@ func splitTopLevel(s string) []string {
 	}
 	parts = append(parts, s[start:])
 	return parts
+}
+
+// Compress is the inverse of Expand: it returns a hostlist-style string in
+// which numeric suffixes sharing a prefix and zero-pad width are collapsed
+// into bracket notation. E.g. ["n01","n02","n03","n05"] -> "n[01-03,05]".
+// Names without a trailing digit run are emitted as-is.
+func Compress(ids []string) string {
+	type group struct {
+		prefix   string
+		width    int
+		nums     []int
+		single   string
+		firstIdx int
+	}
+	groups := map[string]*group{}
+	var order []string
+	for idx, id := range ids {
+		i := len(id)
+		for i > 0 && id[i-1] >= '0' && id[i-1] <= '9' {
+			i--
+		}
+		var key string
+		if i == len(id) {
+			key = "\x00" + id
+		} else {
+			key = id[:i] + "\x00" + strconv.Itoa(len(id)-i)
+		}
+		g, ok := groups[key]
+		if !ok {
+			g = &group{firstIdx: idx}
+			if i == len(id) {
+				g.single = id
+			} else {
+				g.prefix = id[:i]
+				g.width = len(id) - i
+			}
+			groups[key] = g
+			order = append(order, key)
+		}
+		if g.width > 0 {
+			n, _ := strconv.Atoi(id[i:])
+			g.nums = append(g.nums, n)
+		}
+	}
+	sort.SliceStable(order, func(i, j int) bool {
+		return groups[order[i]].firstIdx < groups[order[j]].firstIdx
+	})
+
+	var parts []string
+	for _, k := range order {
+		g := groups[k]
+		if g.width == 0 {
+			parts = append(parts, g.single)
+			continue
+		}
+		sort.Ints(g.nums)
+		if len(g.nums) == 1 {
+			parts = append(parts, fmt.Sprintf("%s%0*d", g.prefix, g.width, g.nums[0]))
+			continue
+		}
+		var ranges []string
+		start, prev := g.nums[0], g.nums[0]
+		flush := func() {
+			if start == prev {
+				ranges = append(ranges, fmt.Sprintf("%0*d", g.width, start))
+			} else {
+				ranges = append(ranges, fmt.Sprintf("%0*d-%0*d", g.width, start, g.width, prev))
+			}
+		}
+		for _, v := range g.nums[1:] {
+			if v == prev+1 {
+				prev = v
+				continue
+			}
+			flush()
+			start, prev = v, v
+		}
+		flush()
+		parts = append(parts, fmt.Sprintf("%s[%s]", g.prefix, strings.Join(ranges, ",")))
+	}
+	return strings.Join(parts, ",")
 }
 
 // toInt converts a numeric string to an integer. Assumes valid input.
