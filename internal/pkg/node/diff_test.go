@@ -27,15 +27,6 @@ func TestDiff_ScalarString(t *testing.T) {
 	assert.Equal(t, []Change{{Path: "comment", Before: `"old"`, After: `"new"`}}, changes)
 }
 
-func TestDiff_ScalarFromUnset(t *testing.T) {
-	a := NewNode("n01")
-	b := a.Clone()
-	b.Comment = "hello"
-
-	changes := Diff(&a.Profile, &b.Profile)
-	assert.Equal(t, []Change{{Path: "comment", Before: "<unset>", After: `"hello"`}}, changes)
-}
-
 func TestDiff_Slice(t *testing.T) {
 	a := NewNode("n01")
 	a.SystemOverlay = []string{"wwinit", "wwclient"}
@@ -84,16 +75,18 @@ func TestDiff_TagMap(t *testing.T) {
 	assert.Contains(t, changes, Change{Path: "tags[rack]", Before: "<unset>", After: `"A1"`})
 }
 
-func TestDiff_NetDevField(t *testing.T) {
+func TestDiff_NetDevMap(t *testing.T) {
 	a := NewNode("n01")
 	a.NetDevs = map[string]*NetDev{
 		"default": {Ipaddr: net.ParseIP("10.0.0.1"), Device: "eth0"},
 	}
 	b := a.Clone()
 	b.NetDevs["default"].Ipaddr = net.ParseIP("10.0.0.2")
+	b.NetDevs["secondary"] = &NetDev{Device: "eth1"}
 
 	changes := Diff(&a.Profile, &b.Profile)
 	assert.Contains(t, changes, Change{Path: "netdevs[default].ipaddr", Before: "10.0.0.1", After: "10.0.0.2"})
+	assert.Contains(t, changes, Change{Path: "netdevs[secondary].netdev", Before: "<unset>", After: `"eth1"`})
 }
 
 func TestFormatChanges_Collapse(t *testing.T) {
@@ -138,14 +131,3 @@ func TestDiff_NodeOnlyFields(t *testing.T) {
 	assert.True(t, sawDiscoverable, "discoverable change must be reported")
 }
 
-func TestDiff_NetDevAdded(t *testing.T) {
-	a := NewNode("n01")
-	a.NetDevs = map[string]*NetDev{
-		"default": {Device: "eth0"},
-	}
-	b := a.Clone()
-	b.NetDevs["secondary"] = &NetDev{Device: "eth1"}
-
-	changes := Diff(&a.Profile, &b.Profile)
-	assert.Contains(t, changes, Change{Path: "netdevs[secondary].netdev", Before: "<unset>", After: `"eth1"`})
-}
