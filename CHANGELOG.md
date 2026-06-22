@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+### Added
+
+- deb packages for Ubuntu 24.04. #867
+
 ### Changed
 
 - Remove `dsa` from default `ssh: key types`; sshd silently skips DSA host keys

@@ -1,0 +1,21 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    configure)
+        if ! getent group warewulf >/dev/null; then
+            addgroup --system warewulf
+        fi
+        if [ -f /etc/warewulf/nodes.conf ]; then
+            chgrp warewulf /etc/warewulf/nodes.conf
+            chmod 0640 /etc/warewulf/nodes.conf
+        fi
+        if [ -f /etc/warewulf/auth.conf ]; then
+            chmod 0600 /etc/warewulf/auth.conf
+        fi
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0

@@ -1,0 +1,62 @@
+Source: warewulf
+Section: admin
+Priority: optional
+Maintainer: Jonathon Anderson <janderson@ciq.com>
+Build-Depends:
+ debhelper-compat (= 13),
+ dh-golang,
+ golang-1.25-go,
+ make,
+ git,
+ libgpgme-dev,
+ python3-dev
+Standards-Version: 4.6.2
+Homepage: https://warewulf.org/
+Vcs-Browser: https://github.com/warewulf/warewulf
+Vcs-Git: https://github.com/warewulf/warewulf.git
+
+Package: warewulf
+Architecture: any
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ adduser,
+ nfs-kernel-server,
+ tftpd-hpa | atftpd,
+ isc-dhcp-server | kea-dhcp4-server,
+ ipxe
+Recommends: logrotate, ipmitool, firewalld
+Conflicts: warewulf-common, warewulf-cluster, warewulf-vnfs, warewulf-provision, warewulf-ipmi
+Replaces: warewulf-common, warewulf-cluster, warewulf-vnfs, warewulf-provision, warewulf-ipmi
+Description: provisioning system for large clusters of bare metal or virtual systems
+ Warewulf is a stateless and diskless provisioning system for large
+ clusters of bare metal and/or virtual systems.
+
+Package: warewulf-dracut
+Architecture: all
+Depends:
+ ${misc:Depends},
+ dracut,
+ dracut-network,
+ curl,
+ cpio,
+ dmidecode
+Description: dracut module for loading a Warewulf image
+ Warewulf is a stateless and diskless provisioning system for large clusters
+ of bare metal and/or virtual systems.
+ .
+ This subpackage contains a dracut module that can be used to generate an
+ initramfs that can fetch and boot a Warewulf OS image from a Warewulf server.
+
+Package: warewulf-sos
+Architecture: all
+Depends:
+ ${misc:Depends},
+ python3,
+ sosreport
+Description: sos plugin for Warewulf
+ Warewulf is a stateless and diskless provisioning system for large clusters
+ of bare metal and/or virtual systems.
+ .
+ This subpackage contains an sos module that can be used to include
+ information about Warewulf in an sos report.

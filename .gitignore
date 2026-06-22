@@ -33,6 +33,7 @@ Defaults.mk
 /etc/wwapird.conf
 /etc/defaults.conf
 .dist/
+.debbuild/
 userdocs/_*
 userdocs/reference/*
 /warewulf-?.?.?/
