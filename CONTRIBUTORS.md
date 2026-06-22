@@ -32,7 +32,7 @@
 - Andreas Skau <andreas@scheen.no> @buzh
 - Dietmar Rieder <dietmar.rieder@i-med.ac.at>
 - Andreas Henkel <henkel@uni-mainz.de>
-- Timothy Middelkoop <tmiddelkoop@internet2.edu>
+- Timothy Middelkoop <tmiddelkoop@internet2.edu> @middelkoopt
 - Shane Nehring <snehring@iastate.edu>
 - Tobias Ribizel <mail@ribizel.de>
 - Tobias Poschwatta <poschwatta@zib.de>

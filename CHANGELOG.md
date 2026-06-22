@@ -13,6 +13,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- Prevent cpio hardlink corruption caused by 64-bit inode numbers truncating to
+  colliding 32-bit values when building node images and overlays: pass
+  `--renumber-inodes` to cpio when the installed version supports it (GNU cpio
+  >= 2.13). #2091
 - Kernel version detection for kernels whose RPM release field contains a
   version-like suffix after the dist tag (e.g. `5.14.0-687.10.1.el9_8.0.1`).
   These were mis-detected (e.g. `8.0.1` instead of `5.14.0-687.10.1`) because

@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -366,6 +367,21 @@ func AppendLines(fileName string, lines []string) (err error) {
 	return nil
 }
 
+var (
+	cpioRenumberInodesOnce   sync.Once
+	cpioRenumberInodesCached bool
+)
+
+// cpioRenumberInodesSupported returns true if the installed cpio supports
+// --renumber-inodes (GNU cpio >= 2.13). Result is cached after the first call.
+func cpioRenumberInodesSupported() bool {
+	cpioRenumberInodesOnce.Do(func() {
+		out, _ := exec.Command("cpio", "--help").CombinedOutput()
+		cpioRenumberInodesCached = strings.Contains(string(out), "--renumber-inodes")
+	})
+	return cpioRenumberInodesCached
+}
+
 /*
 ******************************************************************************
 
@@ -384,6 +400,10 @@ func CpioCreate(
 		"--directory", rootdir,
 		"--format", format,
 		"--file=" + ofile,
+	}
+
+	if cpioRenumberInodesSupported() {
+		args = append(args, "--renumber-inodes")
 	}
 
 	args = append(args, cpio_args...)
