@@ -43,24 +43,7 @@ func CobraRunE(vars *wwctlunset.Vars) func(cmd *cobra.Command, args []string) er
 			return err
 		}
 
-		// Confirmation prompt
-		if !vars.UnsetYes {
-			count := 0
-			for _, nodeName := range args {
-				if _, ok := nodeDB.Nodes[nodeName]; ok {
-					count++
-				}
-			}
-			if count == 0 {
-				return fmt.Errorf("no valid nodes found")
-			}
-			wwctlunset.WarnDeletions(vars)
-			yes := util.Confirm(fmt.Sprintf("Are you sure you want to modify %d node(s)", count))
-			if !yes {
-				return nil
-			}
-		}
-
+		nodeChanges := map[string][]node.Change{}
 		modifiedCount := 0
 		for _, nodeName := range args {
 			nodePtr, ok := nodeDB.Nodes[nodeName]
@@ -72,14 +55,40 @@ func CobraRunE(vars *wwctlunset.Vars) func(cmd *cobra.Command, args []string) er
 				continue
 			}
 
+			before := nodePtr.Clone()
+			before.Flatten()
+
 			if err := wwctlunset.UpdateEntity(nodePtr, vars); err != nil {
 				return err
 			}
 			modifiedCount++
+
+			nodePtr.Flatten()
+			if before != nil {
+				if ch := node.Diff(before, nodePtr); len(ch) > 0 {
+					nodeChanges[nodeName] = ch
+				}
+			}
 		}
 
 		if modifiedCount == 0 {
 			return fmt.Errorf("no nodes were modified")
+		}
+
+		summary := node.FormatChanges(nodeChanges)
+		if !vars.UnsetYes {
+			if summary == "" {
+				wwlog.Info("No changes to apply.")
+				return nil
+			}
+			wwlog.Output("%s", summary)
+			wwctlunset.WarnDeletions(vars)
+			if !util.Confirm(fmt.Sprintf("Apply these changes to %d node(s)?", len(nodeChanges))) {
+				wwlog.Info("No changes made!")
+				return nil
+			}
+		} else {
+			wwlog.Output("Applying following changes:\n%s", summary)
 		}
 
 		if err := nodeDB.Persist(); err != nil {
