@@ -68,11 +68,8 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 				wwlog.Warn("invalid profile: %s", profileId)
 				continue
 			}
-			var before *node.Profile
-			if !vars.setYes {
-				before = profilePtr.Clone()
-				before.Flatten()
-			}
+			before := profilePtr.Clone()
+			before.Flatten()
 			profilePtr.UpdateFrom(&vars.profileConf, changed)
 			if vars.profileDel.NetDel != "" {
 				if _, ok := profilePtr.NetDevs[vars.profileDel.NetDel]; !ok {
@@ -161,16 +158,19 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			}
 		}
 
+		summary := node.FormatChanges(profileChanges)
 		if !vars.setYes {
-			summary := node.FormatChanges(profileChanges)
 			if summary == "" {
 				wwlog.Info("No changes to apply.")
 				return nil
 			}
 			wwlog.Output("%s", summary)
 			if !util.Confirm(fmt.Sprintf("Apply these changes to %d profile(s)?", len(profileChanges))) {
+				wwlog.Info("No changes made!")
 				return nil
 			}
+		} else {
+			wwlog.Output("Applying following changes:\n %s", summary)
 		}
 
 		if err := nodeDB.Persist(); err != nil {
