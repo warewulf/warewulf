@@ -60,7 +60,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 		}
 
 		changed := cmd.Flags().Changed
-		var count uint
+		profileChanges := map[string][]node.Change{}
 		for _, profileId := range args {
 			wwlog.Verbose("evaluating profile: %s", profileId)
 			profilePtr, err := nodeDB.GetProfilePtr(profileId)
@@ -68,6 +68,8 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 				wwlog.Warn("invalid profile: %s", profileId)
 				continue
 			}
+			before := profilePtr.Clone()
+			before.Flatten()
 			profilePtr.UpdateFrom(&vars.profileConf, changed)
 			if vars.profileDel.NetDel != "" {
 				if _, ok := profilePtr.NetDevs[vars.profileDel.NetDel]; !ok {
@@ -149,14 +151,26 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 				}
 			}
 			profilePtr.Flatten()
-			count++
+			if before != nil {
+				if ch := node.Diff(before, profilePtr); len(ch) > 0 {
+					profileChanges[profileId] = ch
+				}
+			}
 		}
 
+		summary := node.FormatChanges(profileChanges)
 		if !vars.setYes {
-			yes := util.Confirm(fmt.Sprintf("Are you sure you want to modify %d profile(s)", count))
-			if !yes {
+			if summary == "" {
+				wwlog.Info("No changes to apply.")
 				return nil
 			}
+			wwlog.Output("%s", summary)
+			if !util.Confirm(fmt.Sprintf("Apply these changes to %d profile(s)?", len(profileChanges))) {
+				wwlog.Info("No changes made!")
+				return nil
+			}
+		} else {
+			wwlog.Output("Applying following changes:\n %s", summary)
 		}
 
 		if err := nodeDB.Persist(); err != nil {

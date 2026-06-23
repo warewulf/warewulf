@@ -65,7 +65,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 		}
 
 		changed := cmd.Flags().Changed
-		var count uint
+		nodeChanges := map[string][]node.Change{}
 		for _, nId := range args {
 			wwlog.Debug("evaluating node: %s", nId)
 			nodePtr, err := nodeDB.GetNodeOnlyPtr(nId)
@@ -73,6 +73,8 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 				wwlog.Warn("invalid node: %s", nId)
 				continue
 			}
+			before := nodePtr.Clone()
+			before.Flatten()
 			nodePtr.UpdateFrom(&vars.nodeConf, changed)
 			if vars.nodeDel.NetDel != "" {
 				if _, ok := nodePtr.NetDevs[vars.nodeDel.NetDel]; !ok {
@@ -152,13 +154,26 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 				}
 			}
 			nodePtr.Flatten()
-			count++
+			if before != nil {
+				if ch := node.Diff(before, nodePtr); len(ch) > 0 {
+					nodeChanges[nId] = ch
+				}
+			}
 		}
 
+		summary := node.FormatChanges(nodeChanges)
 		if !vars.setYes {
-			if !util.Confirm(fmt.Sprintf("Are you sure you want to modify %d nodes(s)", count)) {
+			if summary == "" {
+				wwlog.Info("No changes to apply.")
 				return nil
 			}
+			wwlog.Output("%s", summary)
+			if !util.Confirm(fmt.Sprintf("Apply these changes to %d node(s)?", len(nodeChanges))) {
+				wwlog.Info("No changes made!")
+				return nil
+			}
+		} else {
+			wwlog.Output("Applying following changes:\n%s", summary)
 		}
 
 		if err := nodeDB.Persist(); err != nil {

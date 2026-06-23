@@ -71,3 +71,26 @@ func TestHostList(t *testing.T) {
 		})
 	}
 }
+
+func TestCompress(t *testing.T) {
+	tests := map[string]struct {
+		input  []string
+		output string
+	}{
+		"empty":             {input: nil, output: ""},
+		"single":            {input: []string{"n01"}, output: "n01"},
+		"consecutive":       {input: []string{"n01", "n02", "n03"}, output: "n[01-03]"},
+		"sparse":            {input: []string{"n01", "n03", "n05"}, output: "n[01,03,05]"},
+		"mixed run + gap":   {input: []string{"n01", "n02", "n04"}, output: "n[01-02,04]"},
+		"different prefix":  {input: []string{"n01", "n02", "rack01"}, output: "n[01-02],rack01"},
+		"different width":   {input: []string{"n1", "n01"}, output: "n1,n01"},
+		"no digits":         {input: []string{"head", "login"}, output: "head,login"},
+		"cross-zero rollup": {input: []string{"n09", "n10", "n11"}, output: "n[09-11]"},
+		"out of order":      {input: []string{"n03", "n01", "n02"}, output: "n[01-03]"},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, tt.output, Compress(tt.input))
+		})
+	}
+}

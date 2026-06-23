@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+### Added
+
+- `wwctl node set` and `wwctl profile set` now display a per-field
+  before/after diff of the changes they are about to apply before prompting
+  for confirmation. Nodes (or profiles) receiving identical changes are
+  grouped onto a single header. Suppressed by `-y`/`--yes`.
+
 ### Changed
 
 - Remove `dsa` from default `ssh: key types`; sshd silently skips DSA host keys
