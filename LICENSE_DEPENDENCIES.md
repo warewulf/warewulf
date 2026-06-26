@@ -135,7 +135,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/go-jose/go-jose/blob/v4.1.3/LICENSE>
+**License URL:** <https://github.com/go-jose/go-jose/blob/v4.1.4/LICENSE>
 
 ## github.com/go-logr/logr
 
@@ -215,11 +215,11 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/opencontainers/runtime-spec/blob/v1.2.1/LICENSE>
 
-## github.com/opencontainers/selinux
+## github.com/opencontainers/selinux/go-selinux
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/opencontainers/selinux/blob/v1.14.1/LICENSE>
+**License URL:** <https://github.com/opencontainers/selinux/blob/v1.15.0/LICENSE>
 
 ## github.com/opencontainers/umoci
 
@@ -231,7 +231,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/siderolabs/go-smbios/blob/v0.3.3/smbios/internal/github.com/digitalocean/go-smbios/LICENSE.md>
+**License URL:** <https://github.com/siderolabs/go-smbios/blob/v0.3.4/smbios/internal/github.com/digitalocean/go-smbios/LICENSE.md>
 
 ## github.com/sigstore/fulcio/pkg/certificate
 
@@ -329,12 +329,6 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/go-yaml/yaml/blob/v2.4.0/LICENSE>
 
-## github.com/moby/sys/capability
-
-**License:** BSD-2-Clause
-
-**License URL:** <https://github.com/moby/sys/blob/capability/v0.4.0/capability/LICENSE>
-
 ## github.com/pkg/errors
 
 **License:** BSD-2-Clause
@@ -357,7 +351,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/go-jose/go-jose/blob/v4.1.3/json/LICENSE>
+**License URL:** <https://github.com/go-jose/go-jose/blob/v4.1.4/json/LICENSE>
 
 ## github.com/gogo/protobuf/proto
 
@@ -447,7 +441,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.51.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.52.0:LICENSE>
 
 ## golang.org/x/exp/maps
 
@@ -459,7 +453,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/net/+/v0.53.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/net/+/v0.54.0:LICENSE>
 
 ## golang.org/x/sync/semaphore
 
@@ -471,7 +465,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/sys/+/v0.44.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/sys/+/v0.45.0:LICENSE>
 
 ## golang.org/x/term
 
@@ -591,7 +585,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/go-chi/chi/blob/v5.2.5/LICENSE>
+**License URL:** <https://github.com/go-chi/chi/blob/v5.3.0/LICENSE>
 
 ## github.com/huandu/xstrings
 
@@ -779,12 +773,6 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/cyphar/filepath-securejoin/blob/v0.5.1/COPYING.md>
 
-## github.com/cyphar/filepath-securejoin/pathrs-lite
-
-**License:** MPL-2.0
-
-**License URL:** <https://github.com/cyphar/filepath-securejoin/blob/v0.5.1/pathrs-lite/README.md>
-
 ## github.com/hashicorp/go-version
 
 **License:** MPL-2.0
@@ -801,7 +789,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MPL-2.0
 
-**License URL:** <https://github.com/siderolabs/go-smbios/blob/v0.3.3/LICENSE>
+**License URL:** <https://github.com/siderolabs/go-smbios/blob/v0.3.4/LICENSE>
 
 ## github.com/rootless-containers/proto/go-proto
 
