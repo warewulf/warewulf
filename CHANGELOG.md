@@ -8,7 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-- deb packages for Ubuntu 24.04. #867
+- deb packages for Ubuntu 24.04, with Ubuntu-appropriate service names
+  (`isc-dhcp-server`, `tftpd-hpa`), iPXE binary names, and iPXE source path
+  (`/usr/lib/ipxe`) baked into the default `warewulf.conf`. #867
 
 ### Changed
 
@@ -26,6 +28,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   These were mis-detected (e.g. `8.0.1` instead of `5.14.0-687.10.1`) because
   `ParseVersion` returned the last regex match found in the kernel path. This
   also caused the wrong kernel to be selected as the default. #2199
+- The `90wwinit` dracut module now waits for the network on images that use
+  `systemd-networkd` (or any non-NetworkManager configuration). Previously
+  only NetworkManager got a readiness gate (via `nm-wait-online`), so the
+  initramfs could try to fetch the Warewulf image before the network was up.
+  #867
 
 ## v4.7.0, 2026-05-12
 

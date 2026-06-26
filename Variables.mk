@@ -61,6 +61,23 @@ endif
 # Default to Red Hat / Rocky Linux
 TFTPDIR ?= /var/lib/tftpboot
 
+# OS-Specific service names and iPXE binaries baked into the default
+# warewulf.conf. These differ between distribution packages (e.g. the
+# DHCP and TFTP systemd units and the names of the iPXE EFI binaries
+# shipped by each distro's ipxe package).
+VARLIST += DHCPDSYSTEMDNAME TFTPSYSTEMDNAME IPXEEFI IPXEARM64EFI
+ifeq ($(OS),ubuntu)
+  DHCPDSYSTEMDNAME ?= isc-dhcp-server
+  TFTPSYSTEMDNAME ?= tftpd-hpa
+  IPXEEFI ?= snponly.efi
+  IPXEARM64EFI ?= ipxe-arm64.efi
+endif
+# Default to Red Hat / Rocky Linux
+DHCPDSYSTEMDNAME ?= dhcpd
+TFTPSYSTEMDNAME ?= tftp
+IPXEEFI ?= ipxe-snponly-x86_64.efi
+IPXEARM64EFI ?= arm64-efi/snponly.efi
+
 # Warewulf directory paths
 VARLIST += WWCLIENTDIR WWCONFIGDIR WWPROVISIONDIR WWOVERLAYDIR WWCHROOTDIR WWTFTPDIR WWDOCDIR IPXESOURCE SOSPLUGINS WWFILESDIR
 WWCONFIGDIR ?= $(SYSCONFDIR)/$(WAREWULF)

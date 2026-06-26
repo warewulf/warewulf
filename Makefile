@@ -63,6 +63,7 @@ deb: dist ## Create a Debian package
 
 config = include/systemd/warewulfd.service \
 	internal/pkg/config/buildconfig.go \
+	internal/pkg/config/dhcp.go \
 	warewulf.spec
 .PHONY: config
 config: $(config)

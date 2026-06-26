@@ -18,7 +18,7 @@ MAKEVARS = \
 	BASHCOMPDIR=/etc/bash_completion.d \
 	FIREWALLDDIR=/usr/lib/firewalld/services \
 	WWCLIENTDIR=/warewulf \
-	IPXESOURCE=/usr/share/ipxe \
+	IPXESOURCE=/usr/lib/ipxe \
 	DRACUTMODDIR=/usr/lib/dracut/modules.d \
 	SOSPLUGINS=/usr/lib/python3/dist-packages/sos/report/plugins
 

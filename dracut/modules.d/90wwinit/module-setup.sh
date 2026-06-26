@@ -20,5 +20,7 @@ install() {
     if dracut_module_included "network-manager" && dracut_module_included "systemd"
     then
         inst_simple "$moddir/nm-wait-online-initrd.service.override" "/etc/systemd/system/nm-wait-online-initrd.service.d/override.conf"
+    else
+        inst_hook initqueue/finished 99 "$moddir/check-network.sh"
     fi
 }

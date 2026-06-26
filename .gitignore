@@ -25,6 +25,7 @@ AGENTS.md
 /etc/bash_completion.d/
 warewulf.spec
 internal/pkg/config/buildconfig.go
+internal/pkg/config/dhcp.go
 include/systemd/warewulfd.service
 warewulf-*.tar.gz
 Defaults.mk
