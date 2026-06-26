@@ -30,6 +30,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `ParseVersion` returned the last regex match found in the kernel path. This
   also caused the wrong kernel to be selected as the default. #2199
 
+### Dependencies
+
+- Bump github.com/go-chi/chi/v5 from 5.2.5 to 5.3.0 #2196
+- Bump github.com/siderolabs/go-smbios from 0.3.3 to 0.3.4 #2195
+- Bump github.com/opencontainers/selinux from 1.14.1 to 1.15.0 #2194
+- Bump golang.org/x/crypto from 0.51.0 to 0.52.0 #2193
+- Bump golang.org/x/sys from 0.44.0 to 0.45.0 #2192
+
 ## v4.7.0, 2026-05-12
 
 ### Fixed
