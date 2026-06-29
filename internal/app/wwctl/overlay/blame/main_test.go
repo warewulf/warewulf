@@ -2,6 +2,7 @@ package blame
 
 import (
 	"bytes"
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -48,6 +49,34 @@ func TestOverlayBlame(t *testing.T) {
 /run/runtime.conf                   profile-runtime  [runtime overlay]
 /etc/runtime-node.conf              node-runtime     [runtime overlay]
 `, stdout)
+}
+
+func TestOverlayBlameJSONOutput(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+
+	env.WriteFile("etc/warewulf/nodes.conf", testNodesConf)
+	createTestOverlayRoots(env)
+	env.WriteFile("var/lib/warewulf/overlays/profile-system/rootfs/etc/profile.conf", "profile\n")
+	env.WriteFile("var/lib/warewulf/overlays/profile-runtime/rootfs/run/runtime.conf", "runtime\n")
+
+	stdout, err := executeCommand("--format", "json", "node1")
+	assert.NoError(t, err)
+	assert.NotContains(t, stdout, "[system overlay]")
+
+	var payload []blameLine
+	if !assert.NoError(t, json.Unmarshal([]byte(stdout), &payload)) {
+		return
+	}
+	assert.Equal(t, []blameLine{
+		{Path: "/etc/profile.conf", Overlay: "profile-system", Context: "system"},
+		{Path: "/run/runtime.conf", Overlay: "profile-runtime", Context: "runtime"},
+	}, payload)
+}
+
+func TestOverlayBlameInvalidFormat(t *testing.T) {
+	_, err := executeCommand("--format", "yaml", "node1")
+	assert.ErrorContains(t, err, `invalid format "yaml": expected table or json`)
 }
 
 func TestOverlayBlameShowModeChangesIncludesDirectories(t *testing.T) {
