@@ -58,6 +58,16 @@ boundary aware, so ``/etc`` matches ``/etc/hosts`` but not ``/etc2/file``.
 
    wwctl overlay blame --path-prefix /etc/systemd n1
 
+Use ``--format json`` when the output should be consumed by scripts.
+
+.. code-block:: shell
+
+   wwctl overlay blame --format json n1
+
+The JSON output contains one object per contributing overlay path with the
+deployed ``path``, source ``overlay``, and overlay ``context`` (``system`` or
+``runtime``).
+
 By default, ``wwctl overlay blame`` reports files, symlinks, and templates. Use
 ``--show-mode-changes`` to also include directory paths, which can be relevant
 when directory modes or ownership are controlled by overlays.

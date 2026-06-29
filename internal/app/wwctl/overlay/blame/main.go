@@ -1,6 +1,7 @@
 package blame
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path"
@@ -15,13 +16,18 @@ import (
 )
 
 type blameLine struct {
-	Path    string
-	Overlay string
-	Context string
+	Path    string `json:"path"`
+	Overlay string `json:"overlay"`
+	Context string `json:"context"`
 }
 
 func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
+		format := strings.ToLower(vars.Format)
+		if format != "table" && format != "json" {
+			return fmt.Errorf("invalid format %q: expected table or json", vars.Format)
+		}
+
 		nodeDB, err := node.New()
 		if err != nil {
 			return fmt.Errorf("could not open node configuration: %w", err)
@@ -51,11 +57,20 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 		}
 		lines = append(lines, contextLines...)
 
-		return printBlameLines(cmd, lines)
+		return printBlameLines(cmd, lines, format)
 	}
 }
 
-func printBlameLines(cmd *cobra.Command, lines []blameLine) error {
+func printBlameLines(cmd *cobra.Command, lines []blameLine, format string) error {
+	if format == "json" {
+		data, err := json.MarshalIndent(lines, "", "  ")
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprintf(cmd.OutOrStdout(), "%s\n", data)
+		return err
+	}
+
 	pathWidth := 0
 	overlayWidth := 0
 	for _, line := range lines {

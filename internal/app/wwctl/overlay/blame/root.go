@@ -8,6 +8,7 @@ import (
 type variables struct {
 	PathPrefix      string
 	ShowModeChanges bool
+	Format          string
 }
 
 // GetCommand returns the cobra.Command for overlay blame.
@@ -24,6 +25,7 @@ func GetCommand() *cobra.Command {
 	}
 	baseCmd.PersistentFlags().StringVar(&vars.PathPrefix, "path-prefix", "", "Only show deployed paths under this prefix")
 	baseCmd.PersistentFlags().BoolVar(&vars.ShowModeChanges, "show-mode-changes", false, "Include directory paths as mode-relevant contributors")
+	baseCmd.PersistentFlags().StringVar(&vars.Format, "format", "table", "Output format: table|json")
 
 	return baseCmd
 }
