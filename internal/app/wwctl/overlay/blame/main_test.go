@@ -124,6 +124,79 @@ func TestOverlayBlamePathPrefix(t *testing.T) {
 	assert.Equal(t, "/etc/app.conf  profile-system  [system overlay]\n", stdout)
 }
 
+func TestOverlayBlamePathExactMatch(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+
+	env.WriteFile("etc/warewulf/nodes.conf", testNodesConf)
+	createTestOverlayRoots(env)
+	env.WriteFile("var/lib/warewulf/overlays/profile-system/rootfs/etc", "not-a-dir\n")
+	env.WriteFile("var/lib/warewulf/overlays/profile-runtime/rootfs/etc/app.conf", "app\n")
+
+	stdout, err := executeCommand("--path", "/etc", "node1")
+	assert.NoError(t, err)
+	assert.Equal(t, "/etc  profile-system  [system overlay]\n", stdout)
+}
+
+func TestOverlayBlamePathPreservesDuplicateContributors(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+
+	env.WriteFile("etc/warewulf/nodes.conf", testNodesConf)
+	createTestOverlayRoots(env)
+	env.WriteFile("var/lib/warewulf/overlays/profile-system/rootfs/etc/app.conf", "profile\n")
+	env.WriteFile("var/lib/warewulf/overlays/node-system/rootfs/etc/app.conf", "node\n")
+	env.WriteFile("var/lib/warewulf/overlays/profile-runtime/rootfs/etc/app.conf", "runtime\n")
+
+	stdout, err := executeCommand("--path", "etc/app.conf", "node1")
+	assert.NoError(t, err)
+	assert.Equal(t, `/etc/app.conf  profile-system   [system overlay]
+/etc/app.conf  node-system      [system overlay]
+/etc/app.conf  profile-runtime  [runtime overlay]
+`, stdout)
+}
+
+func TestOverlayBlamePathJSONOutput(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+
+	env.WriteFile("etc/warewulf/nodes.conf", testNodesConf)
+	createTestOverlayRoots(env)
+	env.WriteFile("var/lib/warewulf/overlays/profile-system/rootfs/etc/app.conf", "profile\n")
+	env.WriteFile("var/lib/warewulf/overlays/profile-runtime/rootfs/run/runtime.conf", "runtime\n")
+
+	stdout, err := executeCommand("--path", "/run/runtime.conf", "--format", "json", "node1")
+	assert.NoError(t, err)
+
+	var payload []blameLine
+	if !assert.NoError(t, json.Unmarshal([]byte(stdout), &payload)) {
+		return
+	}
+	assert.Equal(t, []blameLine{
+		{Path: "/run/runtime.conf", Overlay: "profile-runtime", Context: "runtime"},
+	}, payload)
+}
+
+func TestOverlayBlamePathMatchesTemplateGeneratedPath(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+
+	env.WriteFile("etc/warewulf/nodes.conf", testNodesConf)
+	createTestOverlayRoots(env)
+	env.WriteFile("var/lib/warewulf/overlays/profile-system/rootfs/etc/source.conf.ww", `{{ file "generated.conf" }}
+generated
+`)
+
+	stdout, err := executeCommand("--path", "/etc/generated.conf", "node1")
+	assert.NoError(t, err)
+	assert.Equal(t, "/etc/generated.conf  profile-system  [system overlay]\n", stdout)
+}
+
+func TestOverlayBlamePathAndPathPrefixConflict(t *testing.T) {
+	_, err := executeCommand("--path", "/etc/app.conf", "--path-prefix", "/etc", "node1")
+	assert.ErrorContains(t, err, "--path and --path-prefix can not be combined")
+}
+
 func TestOverlayBlameTemplateGeneratedPaths(t *testing.T) {
 	env := testenv.New(t)
 	defer env.RemoveAll()
