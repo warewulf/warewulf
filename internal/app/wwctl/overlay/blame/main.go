@@ -21,11 +21,20 @@ type blameLine struct {
 	Context string `json:"context"`
 }
 
+type pathFilter struct {
+	Exact  string
+	Prefix string
+}
+
 func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		format := strings.ToLower(vars.Format)
 		if format != "table" && format != "json" {
 			return fmt.Errorf("invalid format %q: expected table or json", vars.Format)
+		}
+		filter := newPathFilter(vars.Path, vars.PathPrefix)
+		if filter.Exact != "" && filter.Prefix != "" {
+			return fmt.Errorf("--path and --path-prefix can not be combined")
 		}
 
 		nodeDB, err := node.New()
@@ -42,16 +51,15 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("could not get node list: %w", err)
 		}
 
-		prefix := normalizePathPrefix(vars.PathPrefix)
 		var lines []blameLine
 
-		contextLines, err := collectBlameLines(nodeData, allNodes, nodeData.SystemOverlay, "system", vars.ShowModeChanges, prefix)
+		contextLines, err := collectBlameLines(nodeData, allNodes, nodeData.SystemOverlay, "system", vars.ShowModeChanges, filter)
 		if err != nil {
 			return err
 		}
 		lines = append(lines, contextLines...)
 
-		contextLines, err = collectBlameLines(nodeData, allNodes, nodeData.RuntimeOverlay, "runtime", vars.ShowModeChanges, prefix)
+		contextLines, err = collectBlameLines(nodeData, allNodes, nodeData.RuntimeOverlay, "runtime", vars.ShowModeChanges, filter)
 		if err != nil {
 			return err
 		}
@@ -86,7 +94,7 @@ func printBlameLines(cmd *cobra.Command, lines []blameLine, format string) error
 	return nil
 }
 
-func collectBlameLines(nodeData node.Node, allNodes []node.Node, overlayNames []string, context string, includeDirs bool, prefix string) ([]blameLine, error) {
+func collectBlameLines(nodeData node.Node, allNodes []node.Node, overlayNames []string, context string, includeDirs bool, filter pathFilter) ([]blameLine, error) {
 	var lines []blameLine
 	for _, overlayName := range overlayNames {
 		if !util.ValidString("^[a-zA-Z0-9-._:]+$", overlayName) {
@@ -98,7 +106,7 @@ func collectBlameLines(nodeData node.Node, allNodes []node.Node, overlayNames []
 			return nil, fmt.Errorf("could not get overlay %s: %w", overlayName, err)
 		}
 
-		overlayLines, err := collectOverlayLines(nodeData, allNodes, overlayRoot, overlayName, context, includeDirs, prefix)
+		overlayLines, err := collectOverlayLines(nodeData, allNodes, overlayRoot, overlayName, context, includeDirs, filter)
 		if err != nil {
 			return nil, err
 		}
@@ -107,7 +115,7 @@ func collectBlameLines(nodeData node.Node, allNodes []node.Node, overlayNames []
 	return lines, nil
 }
 
-func collectOverlayLines(nodeData node.Node, allNodes []node.Node, overlayRoot overlay.Overlay, overlayName string, context string, includeDirs bool, prefix string) ([]blameLine, error) {
+func collectOverlayLines(nodeData node.Node, allNodes []node.Node, overlayRoot overlay.Overlay, overlayName string, context string, includeDirs bool, filter pathFilter) ([]blameLine, error) {
 	var lines []blameLine
 	rootfs := overlayRoot.Rootfs()
 	err := filepath.Walk(rootfs, func(walkPath string, info os.FileInfo, err error) error {
@@ -139,7 +147,7 @@ func collectOverlayLines(nodeData node.Node, allNodes []node.Node, overlayRoot o
 				return err
 			}
 			for _, templatePath := range paths {
-				if !pathMatchesPrefix(templatePath, prefix) {
+				if !filter.matches(templatePath) {
 					continue
 				}
 				lines = append(lines, blameLine{
@@ -150,7 +158,7 @@ func collectOverlayLines(nodeData node.Node, allNodes []node.Node, overlayRoot o
 			}
 			return nil
 		}
-		if !pathMatchesPrefix(deployedPath, prefix) {
+		if !filter.matches(deployedPath) {
 			return nil
 		}
 
@@ -180,12 +188,22 @@ func deployedOverlayPath(relPath string) string {
 	return path.Clean(deployedPath)
 }
 
-func normalizePathPrefix(prefix string) string {
-	if prefix == "" {
+func newPathFilter(exact string, prefix string) pathFilter {
+	return pathFilter{
+		Exact:  normalizePathFilterValue(exact),
+		Prefix: normalizePathFilterValue(prefix),
+	}
+}
+
+func normalizePathFilterValue(value string) string {
+	if value == "" {
 		return ""
 	}
-	prefix = path.Clean("/" + strings.TrimPrefix(filepath.ToSlash(prefix), "/"))
-	return prefix
+	return path.Clean("/" + strings.TrimPrefix(filepath.ToSlash(value), "/"))
+}
+
+func normalizePathPrefix(prefix string) string {
+	return normalizePathFilterValue(prefix)
 }
 
 func pathMatchesPrefix(filePath string, prefix string) bool {
@@ -193,4 +211,11 @@ func pathMatchesPrefix(filePath string, prefix string) bool {
 		return true
 	}
 	return filePath == prefix || strings.HasPrefix(filePath, prefix+"/")
+}
+
+func (filter pathFilter) matches(filePath string) bool {
+	if filter.Exact != "" {
+		return filePath == filter.Exact
+	}
+	return pathMatchesPrefix(filePath, filter.Prefix)
 }

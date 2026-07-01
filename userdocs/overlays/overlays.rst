@@ -58,6 +58,14 @@ boundary aware, so ``/etc`` matches ``/etc/hosts`` but not ``/etc2/file``.
 
    wwctl overlay blame --path-prefix /etc/systemd n1
 
+Use ``--path`` to focus on one exact deployed path. This is useful when you know
+which file is wrong and need to identify every configured overlay that contributes
+that path. Exact matching means ``--path /etc`` does not match ``/etc/hosts``.
+
+.. code-block:: shell
+
+   wwctl overlay blame --path /etc/hosts n1
+
 Use ``--format json`` when the output should be consumed by scripts.
 
 .. code-block:: shell
