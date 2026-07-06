@@ -29,6 +29,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   These were mis-detected (e.g. `8.0.1` instead of `5.14.0-687.10.1`) because
   `ParseVersion` returned the last regex match found in the kernel path. This
   also caused the wrong kernel to be selected as the default. #2199
+- Fixed generation of invalid `[ipv4]` sections in NetworkManager keyfiles
+  for IPv6-only interfaces. `gateway=`, `dns=`, `dns-search=`, and route lines
+  were being emitted even when `method=disabled`.
 
 ## v4.7.0, 2026-05-12
 
