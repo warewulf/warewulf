@@ -42,6 +42,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   on EL9 / OpenSSH 8.7p1+, leaving nodes with no usable host keys. #1185
 - Don't silence curl when downloading with dracut. #2200
 
+- Cosmetic changes have been made to YAML generation but they can subtly change behavior. 
+  goccy YAML orders keys alphabetically and uses double quotes for numeric strings instead of single quotes. #2179
+
 ### Fixed
 
 - `wwctl power` (`cycle`, `off`, `on`, `reset`, `soft`, `status`) no longer runs
