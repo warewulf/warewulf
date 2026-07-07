@@ -19,7 +19,7 @@ import (
 	"syscall"
 	"time"
 
-	"gopkg.in/yaml.v3"
+	"github.com/goccy/go-yaml"
 
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -623,11 +623,7 @@ func HashFile(file *os.File) (string, error) {
 }
 
 func EncodeYaml(data interface{}) ([]byte, error) {
-	buf := new(bytes.Buffer)
-	encoder := yaml.NewEncoder(buf)
-	encoder.SetIndent(2)
-	err := encoder.Encode(data)
-	return buf.Bytes(), err
+	return yaml.MarshalWithOptions(data, yaml.Indent(2), yaml.IndentSequence(true))
 }
 
 func EqualYaml(a interface{}, b interface{}) (bool, error) {

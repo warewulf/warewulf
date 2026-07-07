@@ -3,7 +3,7 @@ package node
 import (
 	"testing"
 
-	"gopkg.in/yaml.v3"
+	"github.com/goccy/go-yaml"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -88,7 +88,7 @@ nodes:
 		err = yaml.Unmarshal([]byte(nodeConfYml1), &testConf)
 		assert.NoError(t, err)
 		if testConf.Hash() != nodeConf1.Hash() {
-			err = yaml.Unmarshal([]byte(nodeConfYml1), nodeConf1)
+			err = yaml.Unmarshal([]byte(nodeConfYml1), &nodeConf1)
 			assert.NoError(t, err)
 			t.Errorf("Hashes for same configuration differs: %x != %x", nodeConf1.Hash(), nodeConf1.Hash())
 		}

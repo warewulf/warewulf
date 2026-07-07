@@ -18,6 +18,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Remove `dsa` from default `ssh: key types`; sshd silently skips DSA host keys
   on EL9 / OpenSSH 8.7p1+, leaving nodes with no usable host keys. #1185
 
+- Cosmetic changes have been made to YAML generation but they can subtly change behavior. 
+  goccy YAML orders keys alphabetically and uses double quotes for numeric strings instead of single quotes. #2179
+
 ### Fixed
 
 - Prevent cpio hardlink corruption caused by 64-bit inode numbers truncating to
