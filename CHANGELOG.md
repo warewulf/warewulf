@@ -33,6 +33,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed generation of invalid `[ipv4]` sections in NetworkManager keyfiles
   for IPv6-only interfaces. `gateway=`, `dns=`, `dns-search=`, and route lines
   were being emitted even when `method=disabled`.
+- `wwctl node status` now works on IPv6-only servers: it falls back to
+  `ipaddr6` when `ipaddr` is unset, brackets IPv6 literals in the status URL,
+  and bounds the request with a timeout. #2214
 
 ## v4.7.0, 2026-05-12
 
