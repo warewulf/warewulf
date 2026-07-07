@@ -31,6 +31,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   on EL9 / OpenSSH 8.7p1+, leaving nodes with no usable host keys. #1185
 - Add an `ipv6_method` node tag to set the NetworkManager `[ipv6]` method, e.g. `auto` for SLAAC.
 
+- Cosmetic changes have been made to YAML generation but they can subtly change behavior. 
+  goccy YAML orders keys alphabetically and uses double quotes for numeric strings instead of single quotes. #2179
+
 ### Fixed
 
 - The two-stage dracut boot now completes on IPv6-only nodes. The `:dracut` entry

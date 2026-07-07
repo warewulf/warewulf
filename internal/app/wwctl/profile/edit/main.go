@@ -6,12 +6,12 @@ import (
 	"os"
 	"strings"
 
+	"github.com/goccy/go-yaml"
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
-	"gopkg.in/yaml.v3"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {

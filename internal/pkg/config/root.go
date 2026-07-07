@@ -15,8 +15,8 @@ import (
 	"strconv"
 
 	"github.com/creasty/defaults"
+	"github.com/goccy/go-yaml"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
-	"gopkg.in/yaml.v3"
 )
 
 var cachedConf WarewulfYaml
@@ -97,8 +97,11 @@ func (conf *WarewulfYaml) Parse(data []byte, autodetect bool) error {
 		defIpxe[k] = v
 		delete(conf.TFTP.IpxeBinaries, k)
 	}
-	if err := yaml.Unmarshal(data, &conf); err != nil {
-		return err
+
+	if len(bytes.TrimSpace(data)) > 0 {
+		if err := yaml.Unmarshal(data, conf); err != nil {
+			return err
+		}
 	}
 	if len(conf.TFTP.IpxeBinaries) == 0 {
 		conf.TFTP.IpxeBinaries = defIpxe
@@ -228,8 +231,7 @@ func (conf *WarewulfYaml) Autodetected() bool {
 
 func (config *WarewulfYaml) Dump() ([]byte, error) {
 	var buf bytes.Buffer
-	yamlEncoder := yaml.NewEncoder(&buf)
-	yamlEncoder.SetIndent(2)
+	yamlEncoder := yaml.NewEncoder(&buf, yaml.Indent(2), yaml.IndentSequence(true))
 	err := yamlEncoder.Encode(config)
 	return buf.Bytes(), err
 }
