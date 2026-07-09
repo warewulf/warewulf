@@ -41,7 +41,8 @@ func New() (NodesYaml, error) {
 // parameter.
 func Parse(data []byte) (nodeList NodesYaml, err error) {
 	wwlog.Debug("Unmarshaling the node configuration")
-	err = yaml.Unmarshal(data, &nodeList)
+	nodeList.commentMap = make(yaml.CommentMap)
+	err = yaml.UnmarshalWithOptions(data, &nodeList, yaml.CommentToMap(nodeList.commentMap))
 	if err != nil {
 		return nodeList, err
 	}
@@ -182,11 +183,10 @@ without a hardware address is returned.
 If no unconfigured node is found, an error is returned.
 */
 func (config *NodesYaml) FindDiscoverableNode() (Node, string, error) {
-
 	nodes, _ := config.FindAllNodes()
 
 	for _, node := range nodes {
-		if !(node.Discoverable.Bool()) {
+		if !node.Discoverable.Bool() {
 			continue
 		}
 		if _, ok := node.NetDevs[node.PrimaryNetDev]; ok {

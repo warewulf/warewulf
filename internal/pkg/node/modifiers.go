@@ -5,10 +5,10 @@ import (
 	"encoding/gob"
 	"os"
 
+	"github.com/goccy/go-yaml"
 	"github.com/pkg/errors"
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
-	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -150,5 +150,5 @@ func (config *NodesYaml) Dump() ([]byte, error) {
 	for _, val := range config.Nodes {
 		val.Flatten()
 	}
-	return util.EncodeYaml(config)
+	return yaml.MarshalWithOptions(config, yaml.Indent(2), yaml.IndentSequence(true), yaml.WithComment(config.commentMap))
 }
