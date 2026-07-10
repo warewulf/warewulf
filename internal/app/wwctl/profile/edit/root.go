@@ -16,10 +16,13 @@ var (
 		Args:                  cobra.ArbitraryArgs,
 	}
 	NoHeader bool
+	Yes      bool
 )
 
 func init() {
 	baseCmd.PersistentFlags().BoolVar(&NoHeader, "noheader", false, "Do not print header")
+	baseCmd.PersistentFlags().BoolVarP(&Yes, "yes", "y", false, "Always confirm")
+	_ = baseCmd.PersistentFlags().MarkHidden("yes")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.

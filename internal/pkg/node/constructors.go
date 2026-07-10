@@ -195,6 +195,18 @@ func (config *NodesYaml) FindDiscoverableNode() (Node, string, error) {
 	return EmptyNode(), "", ErrNoUnconfigured
 }
 
+// returns  the comments in nodes.conf
+func (config *NodesYaml) GetComments() (comments yaml.CommentMap) {
+	return config.commentMap
+}
+
+// merge in new comments into global comments
+func (config *NodesYaml) AddComments(comment yaml.CommentMap) {
+	for key, value := range comment {
+		config.commentMap[key] = value
+	}
+}
+
 func (node *Node) setIds(id string) {
 	node.id = id
 	for diskId, disk := range node.Disks {

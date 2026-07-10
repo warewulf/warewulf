@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Cosmetic changes have been made to YAML generation but they can subtly change behavior. 
   goccy YAML orders keys alphabetically and uses double quotes for numeric strings instead of single quotes. #2179
+- Comments in `nodes.conf`` are now preserved if a node/profile is added/deleted/modified. `wwctl node/profile edit` 
+  also respects the comments.
 
 ### Fixed
 
