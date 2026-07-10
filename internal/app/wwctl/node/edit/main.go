@@ -2,7 +2,6 @@ package edit
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"strings"
 
@@ -14,6 +13,8 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
+
+const Seperator = "# DO NOT EDIT ABOVE THIS LINE, CHANGES WILL BE LOST"
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	if !node.CanWriteConfig() {
@@ -48,7 +49,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	if !NoHeader {
 		yamlTemplate := node.ConfToYaml(node.Node{}, nil)
-		if _, err := tempFile.WriteString("#nodename:\n#  " + strings.Join(yamlTemplate, "\n#  ") + "\n"); err != nil {
+		if _, err := tempFile.WriteString("#nodename:\n#  " + strings.Join(yamlTemplate, "\n#  ") + "\n" + Seperator + "\n"); err != nil {
 			return err
 		}
 	}
@@ -60,13 +61,27 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if origYaml, err := util.EncodeYaml(origNodes); err != nil {
+	comments := registry.GetComments()
+	strippedComments := make(yaml.CommentMap)
+	for k, v := range comments {
+		if strings.HasPrefix(k, "$.nodes.") {
+			newKey := "$." + strings.TrimPrefix(k, "$.nodes.")
+			strippedComments[newKey] = v
+		}
+	}
+
+	if origYaml, err := yaml.MarshalWithOptions(origNodes, yaml.Indent(2), yaml.IndentSequence(true), yaml.WithComment(strippedComments)); err != nil {
 		return err
 	} else if _, err := tempFile.Write(origYaml); err != nil {
 		return err
 	}
 
-	sum1, sumErr := util.HashFile(tempFile)
+	initialFile, err := os.Open(tempFile.Name())
+	if err != nil {
+		return err
+	}
+	sum1, sumErr := util.HashFile(initialFile)
+	_ = initialFile.Close()
 	if sumErr != nil {
 		return sumErr
 	}
@@ -77,7 +92,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("editor process exited with non-zero code: %w", err)
 		}
 
-		sum2, sumErr := util.HashFile(tempFile)
+		finalFile, err := os.Open(tempFile.Name())
+		if err != nil {
+			return err
+		}
+		sum2, sumErr := util.HashFile(finalFile)
+		_ = finalFile.Close()
 		if sumErr != nil {
 			return sumErr
 		}
@@ -86,12 +106,18 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if sum1 != sum2 {
 			wwlog.Debug("modified")
 
-			editYaml, err := io.ReadAll(tempFile)
+			editYamlBytes, err := os.ReadFile(tempFile.Name())
 			if err != nil {
 				return err
 			}
+			editYaml := string(editYamlBytes)
+			if idx := strings.Index(editYaml, Seperator); idx != -1 {
+				editYaml = editYaml[idx+len(Seperator):]
+			}
+
 			editNodes := make(map[string]*node.Node)
-			if err := yaml.Unmarshal(editYaml, &editNodes); err != nil {
+			newCommentMap := make(yaml.CommentMap)
+			if err := yaml.UnmarshalWithOptions([]byte(editYaml), &editNodes, yaml.CommentToMap(newCommentMap)); err != nil {
 				wwlog.Error("%v\n", err)
 				if util.Confirm("Parse error: retry") {
 					continue
@@ -99,6 +125,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					break
 				}
 			}
+
+			restoredComments := make(yaml.CommentMap)
+			for k, v := range newCommentMap {
+				if strings.HasPrefix(k, "$.") {
+					newKey := "$.nodes." + strings.TrimPrefix(k, "$.")
+					restoredComments[newKey] = v
+				}
+			}
+			registry.AddComments(restoredComments)
 
 			var added, deleted, updated int
 			for nodeID := range origNodes {
@@ -122,7 +157,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				}
 			}
 
-			if util.Confirm(fmt.Sprintf("Are you sure you want to add %d, delete %d, and update %d nodes", added, deleted, updated)) {
+			if Yes || util.Confirm(fmt.Sprintf("Are you sure you want to add %d, delete %d, and update %d nodes", added, deleted, updated)) {
 				if err := registry.Persist(); err != nil {
 					return err
 				}
