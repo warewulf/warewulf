@@ -89,6 +89,8 @@ addresses={{ $netdev.IpCIDR6 }}
 {{- if $netdev.Gateway6 }}
 gateway={{ $netdev.Gateway6 }}
 {{- end }}
+{{- else if $netdev.Tags.ipv6_method }}
+method={{ $netdev.Tags.ipv6_method }}
 {{- else }}
 method=disabled
 {{- end }}
