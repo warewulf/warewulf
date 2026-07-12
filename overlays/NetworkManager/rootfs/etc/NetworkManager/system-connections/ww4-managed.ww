@@ -57,9 +57,6 @@ method=manual
 {{- if $netdev.Ipaddr }}
 address={{ $netdev.IpCIDR }}
 {{- end }}
-{{- else }}
-method=disabled
-{{- end }}
 {{- if $netdev.Gateway }}
 gateway={{ $netdev.Gateway }}
 {{- end }}
@@ -76,6 +73,9 @@ dns={{$dns}}
 {{- end }}
 {{- if $netdev.Tags.DNSSEARCH }}
 dns-search={{ join ";" (without (regexSplit "[ ;]+" $netdev.Tags.DNSSEARCH -1) "") }};
+{{- end }}
+{{- else }}
+method=disabled
 {{- end }}
 
 [ipv6]
