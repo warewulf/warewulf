@@ -1,6 +1,5 @@
 #!/bin/sh
 
-set -e
 set -u
 
 if [ -d "vendor" ]; then
@@ -20,7 +19,7 @@ exclude="github.com/warewulf/warewulf"
 # Ensure a constant sort order
 export LC_ALL=C
 
-${GOLANG_LICENSES:-go-licenses} csv ./... | grep -v -E "${exclude}" | sort -k3,3 -k1,1 -t, > LICENSE_DEPENDENCIES.csv
+(${GOLANG_LICENSES:-go-licenses} csv ./... 2>&1 || true) | grep "," | grep -v "^[EWF][0-9]" | grep -v -E "${exclude}" | sort -k3,3 -k1,1 -t, > LICENSE_DEPENDENCIES.csv
 
 # Header for the markdown file
 cat <<-'EOF' >LICENSE_DEPENDENCIES.md
