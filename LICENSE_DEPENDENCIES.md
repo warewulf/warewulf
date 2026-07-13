@@ -219,7 +219,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/opencontainers/selinux/blob/v1.14.1/LICENSE>
+**License URL:** <https://github.com/opencontainers/selinux/blob/v1.15.0/LICENSE>
 
 ## github.com/opencontainers/umoci
 
