@@ -36,6 +36,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `wwctl node status` now works on IPv6-only servers: it falls back to
   `ipaddr6` when `ipaddr` is unset, brackets IPv6 literals in the status URL,
   and bounds the request with a timeout. #2214
+- `wwctl node import` now reloads `warewulfd` after persisting `nodes.conf`,
+  matching every other mutating `wwctl node ...` command (`add`, `delete`,
+  `set`, `unset`, `edit`). Previously imported nodes were invisible to
+  `wwctl node status` (and to the daemon's in-memory registry that serves
+  PXE and wwclient) until `warewulfd` was reloaded or restarted; `wwctl
+  node list` was unaffected because it reads `nodes.conf` from disk.
 
 ## v4.7.0, 2026-05-12
 
