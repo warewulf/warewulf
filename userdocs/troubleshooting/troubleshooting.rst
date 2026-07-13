@@ -246,6 +246,54 @@ deleting the site overlay, ``wwctl overlay list`` should show ``false`` in the
 ``SITE`` column for that overlay, confirming that the distribution overlay is
 now active.
 
+.. _overlay-merged-usr:
+
+Overlays and Merged-``/usr`` Symlinks
+=====================================
+
+On many modern Linux distributions, several top-level directories are not real
+directories but symlinks into ``/usr``:
+
+- ``/bin`` → ``/usr/bin``
+- ``/sbin`` → ``/usr/sbin``
+- ``/lib`` → ``/usr/lib``
+- ``/lib64`` → ``/usr/lib64``
+
+This is known as the "merged ``/usr``" layout. Because Warewulf overlays are
+applied by walking the overlay's ``rootfs`` and creating each directory as a
+*real* directory on the node, placing files under any of these paths in an
+overlay replaces the distribution's symlink with a directory. This diverges the
+node's filesystem from what the image expects and can cause difficult-to-debug
+failures — most notably, a two-stage (Dracut) boot that fails at the
+``switch_root`` step, seemingly out of nowhere.
+
+For example, an overlay that adds a compatibility symlink under ``/lib64``:
+
+.. code-block:: none
+
+   my-overlay
+   └── rootfs
+       └── lib64
+           └── libexample.so.1 -> libexample.so.1.2.3
+
+will shadow the ``/lib64`` → ``/usr/lib64`` symlink with a directory containing
+only ``libexample.so.1``, hiding the rest of the system's libraries.
+
+**Always target the real ``/usr`` path instead.** Rework the overlay to use
+``/usr/lib64`` (and likewise ``/usr/bin``, ``/usr/sbin``, and ``/usr/lib``):
+
+.. code-block:: none
+
+   my-overlay
+   └── rootfs
+       └── usr
+           └── lib64
+               └── libexample.so.1 -> libexample.so.1.2.3
+
+The ``/lib64`` → ``/usr/lib64`` symlink from the image then continues to resolve
+correctly, and your file appears at both ``/lib64/libexample.so.1`` and
+``/usr/lib64/libexample.so.1``.
+
 Running Containers on Cluster Nodes
 ===================================
 

@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   before/after diff of the changes they are about to apply before prompting
   for confirmation. Nodes (or profiles) receiving identical changes are
   grouped onto a single header. Suppressed by `-y`/`--yes`.
+- Added documentation about dealing with "merged" `/usr` and Warewulf overlays.
 
 ### Changed
 
