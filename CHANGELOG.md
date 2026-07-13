@@ -37,6 +37,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `ipaddr6` when `ipaddr` is unset, brackets IPv6 literals in the status URL,
   and bounds the request with a timeout. #2214
 
+### Dependencies
+
+- Bump github.com/go-chi/chi/v5 from 5.2.5 to 5.3.0 #2196
+
 ## v4.7.0, 2026-05-12
 
 ### Fixed
