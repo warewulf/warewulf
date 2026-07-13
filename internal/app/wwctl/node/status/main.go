@@ -3,8 +3,10 @@ package nodestatus
 import (
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -47,14 +49,49 @@ func displayStage(stage string) string {
 	}
 }
 
-func CobraRunE(cmd *cobra.Command, args []string) (err error) {
+// statusHTTPTimeout bounds how long "wwctl node status" waits on the
+// warewulfd /status endpoint. The request would otherwise use
+// http.DefaultClient, which has no timeout, so an unreachable or
+// firewalled server would hang the command indefinitely.
+const statusHTTPTimeout = 30 * time.Second
 
+// statusURL builds the warewulfd /status endpoint URL from the server
+// configuration. It prefers the IPv4 server address (ipaddr) and falls
+// back to the IPv6 address (ipaddr6), so that node status works on
+// IPv6-only servers where ipaddr is left unset. net.JoinHostPort
+// brackets IPv6 literals correctly (e.g. [2001:db8::1]:9873).
+//
+// The IPv4-first order preserves the previous node status behavior,
+// which only ever used ipaddr. Address selection is currently duplicated
+// across the tree (wwclient prefers ipaddr6; warewulfd is request-driven);
+// consolidating it behind a shared config method is left as a follow-up.
+func statusURL(controller *warewulfconf.WarewulfYaml) (string, error) {
+	serverAddr := controller.Ipaddr
+	if serverAddr == "" {
+		serverAddr = controller.Ipaddr6
+	}
+
+	if serverAddr == "" {
+		confFile := controller.GetWarewulfConf()
+		if confFile == "" {
+			confFile = "warewulf.conf"
+		}
+		return "", fmt.Errorf("warewulf server address is not configured: set ipaddr or ipaddr6 in %s", confFile)
+	}
+
+	hostPort := net.JoinHostPort(serverAddr, strconv.Itoa(controller.Warewulf.Port))
+	return fmt.Sprintf("http://%s/status", hostPort), nil
+}
+
+func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	controller := warewulfconf.Get()
 
-	if controller.Ipaddr == "" {
-		return fmt.Errorf("warewulf Server IP Address is not properly configured")
-
+	endpoint, err := statusURL(controller)
+	if err != nil {
+		return err
 	}
+
+	client := &http.Client{Timeout: statusHTTPTimeout}
 
 	for {
 		var elipsis bool
@@ -62,10 +99,9 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		var count int
 		rightnow := time.Now().Unix()
 
-		statusURL := fmt.Sprintf("http://%s:%d/status", controller.Ipaddr, controller.Warewulf.Port)
-		wwlog.Verbose("Connecting to: %s", statusURL)
+		wwlog.Verbose("Connecting to: %s", endpoint)
 
-		resp, err := http.Get(statusURL)
+		resp, err := client.Get(endpoint)
 		if err != nil {
 			return fmt.Errorf("could not connect to Warewulf server: %w", err)
 		}
