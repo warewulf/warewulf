@@ -5,10 +5,10 @@ import (
 	"io"
 	"os"
 
+	"github.com/goccy/go-yaml"
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
-	"gopkg.in/yaml.v3"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
@@ -24,7 +24,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("could not read: %s", err)
 	}
 
-	err = yaml.Unmarshal(buffer, importMap)
+	err = yaml.Unmarshal(buffer, &importMap)
 	if err != nil {
 		return fmt.Errorf("could not parse import file: %s", err)
 	}

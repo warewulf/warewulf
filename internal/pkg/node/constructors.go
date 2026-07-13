@@ -8,7 +8,7 @@ import (
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 
-	"gopkg.in/yaml.v3"
+	"github.com/goccy/go-yaml"
 )
 
 func CanWriteConfig() bool {
@@ -34,7 +34,8 @@ func New() (NodesYaml, error) {
 // parameter.
 func Parse(data []byte) (nodeList NodesYaml, err error) {
 	wwlog.Debug("Unmarshaling the node configuration")
-	err = yaml.Unmarshal(data, &nodeList)
+	nodeList.commentMap = make(yaml.CommentMap)
+	err = yaml.UnmarshalWithOptions(data, &nodeList, yaml.CommentToMap(nodeList.commentMap))
 	if err != nil {
 		return nodeList, err
 	}
@@ -175,11 +176,10 @@ without a hardware address is returned.
 If no unconfigured node is found, an error is returned.
 */
 func (config *NodesYaml) FindDiscoverableNode() (Node, string, error) {
-
 	nodes, _ := config.FindAllNodes()
 
 	for _, node := range nodes {
-		if !(node.Discoverable.Bool()) {
+		if !node.Discoverable.Bool() {
 			continue
 		}
 		if _, ok := node.NetDevs[node.PrimaryNetDev]; ok {
@@ -193,6 +193,18 @@ func (config *NodesYaml) FindDiscoverableNode() (Node, string, error) {
 	}
 
 	return EmptyNode(), "", ErrNoUnconfigured
+}
+
+// returns  the comments in nodes.conf
+func (config *NodesYaml) GetComments() (comments yaml.CommentMap) {
+	return config.commentMap
+}
+
+// merge in new comments into global comments
+func (config *NodesYaml) AddComments(comment yaml.CommentMap) {
+	for key, value := range comment {
+		config.commentMap[key] = value
+	}
 }
 
 func (node *Node) setIds(id string) {

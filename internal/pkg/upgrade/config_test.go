@@ -366,10 +366,10 @@ tftp:
   enabled: true
   systemd name: tftp
   ipxe:
-    00:0B: arm64-efi/snponly.efi
     "00:00": undionly.kpxe
     "00:07": ipxe-snponly-x86_64.efi
     "00:09": ipxe-snponly-x86_64.efi
+    00:0B: arm64-efi/snponly.efi
 nfs:
   enabled: true
   export paths:
@@ -413,10 +413,10 @@ tftp:
   enabled: true
   systemd name: tftp
   ipxe:
-    00:0B: arm64-efi/snponly.efi
     "00:00": undionly.kpxe
     "00:07": ipxe-snponly-x86_64.efi
     "00:09": ipxe-snponly-x86_64.efi
+    00:0B: arm64-efi/snponly.efi
 nfs:
   enabled: true
   export paths:
@@ -459,10 +459,10 @@ tftp:
   enabled: true
   systemd name: tftp
   ipxe:
-    00:0B: arm64-efi/snponly.efi
     "00:00": undionly.kpxe
     "00:07": ipxe-snponly-x86_64.efi
     "00:09": ipxe-snponly-x86_64.efi
+    00:0B: arm64-efi/snponly.efi
 nfs:
   enabled: true
   export paths:
@@ -509,10 +509,10 @@ tftp:
   enabled: true
   systemd name: tftp
   ipxe:
-    00:0B: arm64-efi/snponly.efi
     "00:00": undionly.kpxe
     "00:07": ipxe-snponly-x86_64.efi
     "00:09": ipxe-snponly-x86_64.efi
+    00:0B: arm64-efi/snponly.efi
 nfs:
   enabled: true
   export paths:
@@ -556,10 +556,10 @@ tftp:
   enabled: true
   systemd name: tftp
   ipxe:
-    00:0B: arm64-efi/snponly.efi
     "00:00": undionly.kpxe
     "00:07": ipxe-snponly-x86_64.efi
     "00:09": ipxe-snponly-x86_64.efi
+    00:0B: arm64-efi/snponly.efi
 nfs:
   enabled: true
   export paths:
@@ -727,7 +727,7 @@ tftp:
 ipaddr: 10.0.0.1
 netmask: 255.255.252.0
 network: 10.0.0.0
-ipaddr6: '2001:db8::'
+ipaddr6: "2001:db8::"
 prefixlen6: "64"
 warewulf:
   port: 9873

@@ -16,6 +16,7 @@ require (
 	github.com/creasty/defaults v1.8.0
 	github.com/fatih/color v1.19.0
 	github.com/go-chi/chi/v5 v5.2.5
+	github.com/goccy/go-yaml v1.19.2
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-version v1.9.0
 	github.com/kinbiko/jsonassert v1.2.0
@@ -36,7 +37,6 @@ require (
 	golang.org/x/exp v0.0.0-20241217172543-b2144cdd0a67
 	golang.org/x/sys v0.44.0
 	golang.org/x/term v0.43.0
-	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -142,4 +142,5 @@ require (
 	google.golang.org/grpc v1.79.3 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
