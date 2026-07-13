@@ -135,7 +135,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/go-jose/go-jose/blob/v4.1.3/LICENSE>
+**License URL:** <https://github.com/go-jose/go-jose/blob/v4.1.4/LICENSE>
 
 ## github.com/go-logr/logr
 
@@ -291,19 +291,19 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/v1.39.0/LICENSE>
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/v1.41.0/LICENSE>
 
 ## go.opentelemetry.io/otel/metric
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/metric/v1.39.0/metric/LICENSE>
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/metric/v1.41.0/metric/LICENSE>
 
 ## go.opentelemetry.io/otel/trace
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/trace/v1.39.0/trace/LICENSE>
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/trace/v1.41.0/trace/LICENSE>
 
 ## google.golang.org/genproto/googleapis/api
 
@@ -357,7 +357,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/go-jose/go-jose/blob/v4.1.3/json/LICENSE>
+**License URL:** <https://github.com/go-jose/go-jose/blob/v4.1.4/json/LICENSE>
 
 ## github.com/gogo/protobuf/proto
 
@@ -459,7 +459,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/net/+/v0.54.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/net/+/v0.55.0:LICENSE>
 
 ## golang.org/x/sync/semaphore
 
