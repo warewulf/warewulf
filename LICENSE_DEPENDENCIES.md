@@ -447,7 +447,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.51.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.52.0:LICENSE>
 
 ## golang.org/x/exp/maps
 
@@ -459,7 +459,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/net/+/v0.53.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/net/+/v0.54.0:LICENSE>
 
 ## golang.org/x/sync/semaphore
 
@@ -471,7 +471,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/sys/+/v0.44.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/sys/+/v0.45.0:LICENSE>
 
 ## golang.org/x/term
 
