@@ -182,6 +182,15 @@ option.
 
    It is not possible to delete files with an overlay.
 
+.. warning::
+
+   On many modern distributions, ``/bin``, ``/sbin``, ``/lib``, and ``/lib64``
+   are symlinks into ``/usr``. An overlay that targets one of these directories
+   replaces that symlink with a directory, which can break the node's filesystem
+   in subtle ways (including two-stage Dracut boots failing at ``switch_root``).
+   Target the real ``/usr`` paths (e.g., ``/usr/lib64``) instead. See
+   :ref:`overlay-merged-usr` for details.
+
 Permissions
 -----------
 
