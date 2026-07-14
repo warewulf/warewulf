@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 	"gopkg.in/yaml.v3"
 )
 
@@ -47,6 +48,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if err := nodeDB.Persist(); err != nil {
 			return fmt.Errorf("failed to persist nodedb: %w", err)
 		}
+		return warewulfd.DaemonReload()
 	}
 
 	return nil
