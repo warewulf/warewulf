@@ -3,8 +3,8 @@
 # Time:   {{.BuildTime}}
 # Source: {{.BuildSource}}
 {{- range $node := $.AllNodes}}                  {{/* for each node */}}
-{{ $node.Id.Get }} {{ range $i,$profile := $node.Profiles.GetSlice }}
+{{ $node.Id }} {{ range $i,$profile := $node.Profiles }}
 {{- if $i }},{{end}}
 {{- $profile }}{{ end }}
-{{- range $key,$value := $node.Tags }},{{$value.Get}}{{ end }}
+{{- range $key,$value := $node.Tags }},{{$value}}{{ end }}
 {{- end }}
