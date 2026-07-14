@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+### Added
+
+- Added documentation about dealing with "merged" `/usr` and Warewulf overlays.
+
 ### Changed
 
 - Remove `dsa` from default `ssh: key types`; sshd silently skips DSA host keys
