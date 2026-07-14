@@ -43,6 +43,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `wwctl node status` (and to the daemon's in-memory registry that serves
   PXE and wwclient) until `warewulfd` was reloaded or restarted; `wwctl
   node list` was unaffected because it reads `nodes.conf` from disk.
+- Mount additional (non-root) filesystems before image extraction during
+  provision-to-disk so files are written to the correct partitions. #2147
 
 ### Dependencies
 
