@@ -1,6 +1,6 @@
 module github.com/warewulf/warewulf
 
-go 1.25.5
+go 1.26.3
 
 require (
 	dario.cat/mergo v1.0.2
@@ -25,7 +25,7 @@ require (
 	github.com/opencontainers/selinux v1.15.0
 	github.com/opencontainers/umoci v0.6.0
 	github.com/pkg/errors v0.9.1
-	github.com/siderolabs/go-smbios v0.3.3
+	github.com/siderolabs/go-smbios v0.3.4
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
 	github.com/swaggest/openapi-go v0.2.61
