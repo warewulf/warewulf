@@ -20,6 +20,7 @@ func Test_wwinitOverlay(t *testing.T) {
 	env.ImportFile("var/lib/warewulf/overlays/wwinit/rootfs/etc/warewulf/warewulf.conf.ww", "../rootfs/etc/warewulf/warewulf.conf.ww")
 	env.ImportFile("var/lib/warewulf/overlays/wwinit/rootfs/warewulf/config.ww", "../rootfs/warewulf/config.ww")
 	env.ImportFile("var/lib/warewulf/overlays/wwinit/rootfs/warewulf/init.d/50-ipmi.ww", "../rootfs/warewulf/init.d/50-ipmi.ww")
+	env.ImportFile("var/lib/warewulf/overlays/wwinit/rootfs/warewulf/mounts.ww", "../rootfs/warewulf/mounts.ww")
 
 	tests := []struct {
 		name string
@@ -40,6 +41,16 @@ func Test_wwinitOverlay(t *testing.T) {
 			name: "wwinit:50-ipmi.ww",
 			args: []string{"--render", "node1", "wwinit", "warewulf/init.d/50-ipmi.ww"},
 			log:  wwinit_50_ipmi,
+		},
+		{
+			name: "wwinit:mounts.ww",
+			args: []string{"--render", "node1", "wwinit", "warewulf/mounts.ww"},
+			log:  wwinit_mounts,
+		},
+		{
+			name: "wwinit:mounts_ignition.ww",
+			args: []string{"--render", "node2", "wwinit", "warewulf/mounts.ww"},
+			log:  wwinit_mounts_ignition,
 		},
 	}
 
@@ -220,4 +231,18 @@ ipmitool sol set enabled true 1 1
 speed=115.2
 ipmitool sol set non-volatile-bit-rate $speed 1
 ipmitool sol set volatile-bit-rate $speed 1
+`
+
+const wwinit_mounts string = `backupFile: true
+writeFile: true
+Filename: warewulf/mounts
+
+/dev/sda1 ext4 /mnt/foo
+`
+
+const wwinit_mounts_ignition string = `backupFile: true
+writeFile: true
+Filename: warewulf/mounts
+
+/dev/sdb1 ext4 /mnt/bar
 `
