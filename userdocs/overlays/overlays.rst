@@ -115,6 +115,39 @@ template, along with the help text for each variable.
    $netdev.Tags.xmit_hash_policy
    $netdev.Type                    Set device type of given network               string  --type
 
+Pass ``--node`` to resolve template variables against a node's merged
+configuration. This adds a ``VALUE`` column for variables that have a single
+node-specific value.
+
+.. code-block:: console
+
+   # wwctl overlay info --node n1 issue etc/issue.ww
+   VARIABLE         VALUE       OPTION           TYPE                     HELP
+   --------         -----       ------           ----                     ----
+   .Id              n1                           string
+   .ImageName       leap-15.6   --image          string                   Set image name
+   .Kernel.Version  6.6.0       --kernelversion  string                   Set kernel version
+   .NetDevs         2 entries                    map[string]*node.NetDev
+   $netdev.Ipaddr   default=10.0.0.10, ib0=192.168.1.10  --ipaddr  IP     IPv4 address in given network
+
+Variables created inside template loops, such as ``$netdev.Ipaddr`` inside a
+``range`` over network devices, are expanded per entry when the source
+collection can be identified. Empty collections are reported explicitly, for
+example ``<dynamic: .NetDevs has 0 entries>``.
+
+Use ``--render`` with ``--node`` to preview the rendered template without
+building or writing an overlay image.
+
+.. code-block:: shell
+
+   wwctl overlay info --node n1 --render issue etc/issue.ww
+
+Use ``--format json`` for machine-readable output.
+
+.. code-block:: shell
+
+   wwctl overlay info --node n1 --format json issue etc/issue.ww
+
 Structure
 =========
 
@@ -311,13 +344,16 @@ same architecture as the Warewulf server. Architecture-specific wwclient.aarch64
 and wwclient.x86_64 overlays are available as well. This supports using wwclient
 on cluster nodes with a different architecture than the Warewulf server.
 
-``wwclient`` also provides ``overlay-diff capture`` to compare a source directory
-against a baseline directory and report deterministic file-level differences. This
-is useful when creating or validating overlay content:
+``wwclient`` also provides ``overlay-diff`` to capture a baseline snapshot and
+later compare a source directory against that baseline. This reports
+deterministic file-level differences and is useful when creating or validating
+overlay content:
 
 .. code-block:: shell
 
-   wwclient overlay-diff capture --source ./new-root --baseline ./old-root
+   wwclient overlay-diff start --source ./node-root --state-file ./capture.json
+   # make configuration changes under ./node-root
+   wwclient overlay-diff stop --source ./node-root --state-file ./capture.json --no-interactive
 
 Network interfaces
 ------------------
