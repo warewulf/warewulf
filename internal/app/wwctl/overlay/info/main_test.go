@@ -2,6 +2,8 @@ package info
 
 import (
 	"bytes"
+	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -401,4 +403,177 @@ GPU Profile: {{ .Tags.gpuMigProfiles }}
 			}
 		})
 	}
+}
+
+const nodeInfoTestNodesConf = `nodeprofiles:
+  default:
+    tags:
+      profiletag: from-profile
+nodes:
+  node1:
+    profiles:
+      - default
+    image name: test-image
+    kernel:
+      version: 6.1.0
+      args:
+        - quiet
+    tags:
+      foo: bar
+    network devices:
+      default:
+        device: eth0
+        ipaddr: 10.0.0.10
+      ib0:
+        device: ib0
+        ipaddr: 192.168.1.10
+`
+
+func TestOverlayInfoNodeValues(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+	warewulfd.SetNoDaemon()
+
+	env.WriteFile("etc/warewulf/nodes.conf", nodeInfoTestNodesConf)
+	env.WriteFile("var/lib/warewulf/overlays/test-overlay/node.ww", `{{ .Id }}
+{{ .Hostname }}
+{{ .ImageName }}
+{{ .Kernel.Version }}
+{{ .Tags.foo }}
+{{ .NetDevs }}
+{{ range $devname, $netdev := .NetDevs }}{{ $netdev.Ipaddr }}{{ end }}
+`)
+
+	output, err := executeInfoCommand("--node", "node1", "test-overlay", "node.ww")
+	assert.NoError(t, err)
+	assert.Contains(t, output, "VARIABLE")
+	assert.Contains(t, output, "VALUE")
+	assert.Contains(t, normalizedOutputRows(output), ".Id node1 string")
+	assert.Contains(t, normalizedOutputRows(output), ".Hostname node1 string")
+	assert.Contains(t, normalizedOutputRows(output), ".ImageName test-image --image string Set image name")
+	assert.Contains(t, normalizedOutputRows(output), ".Tags.foo bar string")
+	assert.Contains(t, normalizedOutputRows(output), ".NetDevs 2 entries map[string]*node.NetDev")
+	assert.Contains(t, normalizedOutputRows(output), "$netdev.Ipaddr default=10.0.0.10, ib0=192.168.1.10 --ipaddr IP IPv4 address in given network")
+}
+
+func TestOverlayInfoDynamicEmptyRange(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+	warewulfd.SetNoDaemon()
+
+	env.WriteFile("etc/warewulf/nodes.conf", `nodeprofiles:
+  default: {}
+nodes:
+  node1: {}
+`)
+	env.WriteFile("var/lib/warewulf/overlays/test-overlay/empty-range.ww", `{{ range $devname, $netdev := .NetDevs }}{{ $netdev.Ipaddr }}{{ end }}
+`)
+
+	output, err := executeInfoCommand("--node", "node1", "test-overlay", "empty-range.ww")
+	assert.NoError(t, err)
+	assert.Contains(t, output, "<dynamic: .NetDevs has 0 entries>")
+}
+
+func TestOverlayInfoRenderPreview(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+	warewulfd.SetNoDaemon()
+
+	env.WriteFile("etc/warewulf/nodes.conf", nodeInfoTestNodesConf)
+	env.WriteFile("var/lib/warewulf/overlays/test-overlay/render.ww", "node={{ .Id }}\nimage={{ .ImageName }}\n")
+
+	output, err := executeInfoCommand("--node", "node1", "--render", "test-overlay", "render.ww")
+	assert.NoError(t, err)
+	assert.Contains(t, output, "Rendered output:\nnode=node1\nimage=test-image\n")
+}
+
+func TestOverlayInfoRenderAbort(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+	warewulfd.SetNoDaemon()
+
+	env.WriteFile("etc/warewulf/nodes.conf", nodeInfoTestNodesConf)
+	env.WriteFile("var/lib/warewulf/overlays/test-overlay/abort.ww", "{{ abort }}\n")
+
+	output, err := executeInfoCommand("--node", "node1", "--render", "test-overlay", "abort.ww")
+	assert.NoError(t, err)
+	assert.Contains(t, output, "Rendered output: <template aborted; no output written>")
+}
+
+func TestOverlayInfoNodeJSON(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+	warewulfd.SetNoDaemon()
+
+	env.WriteFile("etc/warewulf/nodes.conf", nodeInfoTestNodesConf)
+	env.WriteFile("var/lib/warewulf/overlays/test-overlay/json.ww", "{{ .Id }}\n{{ .Tags.foo }}\n")
+
+	output, err := executeInfoCommand("--node", "node1", "--render", "--format", "json", "test-overlay", "json.ww")
+	assert.NoError(t, err)
+
+	var payload infoOutput
+	if !assert.NoError(t, json.Unmarshal([]byte(output), &payload)) {
+		return
+	}
+	assert.Equal(t, "test-overlay", payload.Overlay)
+	assert.Equal(t, "json.ww", payload.Template)
+	assert.Equal(t, "node1", payload.Node)
+	assert.Equal(t, "node1\nbar\n", payload.Rendered)
+	assert.NotEmpty(t, payload.Vars)
+	assert.True(t, containsVariableValue(payload.Vars, ".Id", "node1"))
+}
+
+func TestOverlayInfoValidationErrors(t *testing.T) {
+	_, err := executeInfoCommand("--format", "yaml", "test-overlay", "test.ww")
+	assert.ErrorContains(t, err, `invalid format "yaml": expected table or json`)
+
+	_, err = executeInfoCommand("--render", "test-overlay", "test.ww")
+	assert.ErrorContains(t, err, "--render requires --node")
+}
+
+func TestOverlayInfoMissingNode(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+	warewulfd.SetNoDaemon()
+
+	env.WriteFile("etc/warewulf/nodes.conf", nodeInfoTestNodesConf)
+	env.WriteFile("var/lib/warewulf/overlays/test-overlay/test.ww", "{{ .Id }}\n")
+
+	_, err := executeInfoCommand("--node", "missing", "test-overlay", "test.ww")
+	assert.ErrorContains(t, err, "could not get node missing")
+}
+
+func executeInfoCommand(args ...string) (string, error) {
+	cmd := GetCommand()
+	stdout := new(bytes.Buffer)
+	stderr := new(bytes.Buffer)
+	cmd.SetOut(stdout)
+	cmd.SetErr(stderr)
+	wwlog.SetLogWriter(stderr)
+	cmd.SetArgs(args)
+	err := cmd.Execute()
+	if stdout.Len() == 0 && stderr.Len() > 0 {
+		return stderr.String(), err
+	}
+	return stdout.String(), err
+}
+
+func containsVariableValue(vars []variableInfo, name string, value string) bool {
+	for _, variable := range vars {
+		if variable.Name == name && variable.Value == value {
+			return true
+		}
+	}
+	return false
+}
+
+func normalizedOutputRows(output string) []string {
+	var rows []string
+	for _, line := range strings.Split(output, "\n") {
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
+		rows = append(rows, strings.Join(strings.Fields(line), " "))
+	}
+	return rows
 }
