@@ -44,6 +44,7 @@ type Profile struct {
 	id string
 	// exported values
 	Profiles       []string               `yaml:"profiles,omitempty"         json:"profiles,omitempty"         lopt:"profile"             sopt:"P" comment:"the node's profile members (comma separated)"`
+	Groups         []string               `yaml:"groups,omitempty"           json:"groups,omitempty"           lopt:"groups"              sopt:"g" comment:"the groups this node is a member of (comma separated)"`
 	Comment        string                 `yaml:"comment,omitempty"          json:"comment,omitempty"          lopt:"comment"                      comment:"arbitrary string comment"`
 	ClusterName    string                 `yaml:"cluster name,omitempty"     json:"cluster name,omitempty"     lopt:"cluster"             sopt:"c" comment:"cluster group"`
 	ImageName      string                 `yaml:"image name,omitempty"       json:"image name,omitempty"       lopt:"image"                        comment:"image name"`
