@@ -37,6 +37,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `wwctl node status` now works on IPv6-only servers: it falls back to
   `ipaddr6` when `ipaddr` is unset, brackets IPv6 literals in the status URL,
   and bounds the request with a timeout. #2214
+- Fixed dnsmasq host overlay generation on IPv6-only servers (no `ipaddr`
+  set): `ww4-listen.conf.ww` no longer emits an empty `listen-address=` line,
+  and `ww4-hosts.conf.ww` no longer renders the IPv4 boot block (with blank
+  `http://` boot URLs) or an invalid `dhcp-range=,static,,6h`. The IPv4-only
+  sections are now guarded on `ipaddr`.
 - `wwctl node import` now reloads `warewulfd` after persisting `nodes.conf`,
   matching every other mutating `wwctl node ...` command (`add`, `delete`,
   `set`, `unset`, `edit`). Previously imported nodes were invisible to
