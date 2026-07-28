@@ -83,14 +83,20 @@ method=disabled
 method=disabled
 {{- else }}
 addr-gen-mode=eui64
+{{- if $netdev.Tags.ipv6_method }}
+method={{ $netdev.Tags.ipv6_method }}
 {{- if $netdev.Ipaddr6 }}
+addresses={{ $netdev.IpCIDR6 }}
+{{- if $netdev.Gateway6 }}
+gateway={{ $netdev.Gateway6 }}
+{{- end }}
+{{- end }}
+{{- else if $netdev.Ipaddr6 }}
 method=manual
 addresses={{ $netdev.IpCIDR6 }}
 {{- if $netdev.Gateway6 }}
 gateway={{ $netdev.Gateway6 }}
 {{- end }}
-{{- else if $netdev.Tags.ipv6_method }}
-method={{ $netdev.Tags.ipv6_method }}
 {{- else }}
 method=disabled
 {{- end }}
