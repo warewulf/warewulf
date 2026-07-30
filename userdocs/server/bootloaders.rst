@@ -396,3 +396,42 @@ The wwinit module provisions to tmpfs. By default, tmpfs is permitted to use up
 to 50% of physical memory. This size limit may be adjusted using the kernel
 argument ``wwinit.tmpfs.size``. (This parameter is passed to the ``size`` option
 during tmpfs mount. See ``tmpfs(5)`` for more details.)
+
+Network configuration in the dracut initramfs
+---------------------------------------------
+
+The ``:dracut`` entry passes ``rd.neednet=1`` and an ``ip=`` argument for each of
+the node's network devices, so that the initramfs can fetch the image from the
+Warewulf server. The autoconfiguration method is chosen per device from the
+node's configuration:
+
+- a device with an ``ipaddr6`` and no ``ipaddr`` gets ``ip=<device>:auto6``, so
+  that the initramfs configures IPv6 (SLAAC, and DHCPv6 if the router
+  advertisement asks for it) and does not wait for a DHCPv4 lease;
+- every other device, including dual-stack devices, gets ``ip=<device>:dhcp``.
+
+This matters because on an IPv6-only fabric a request for DHCPv4 is not merely
+redundant. NetworkManager's initrd generator translates ``ip=<device>:dhcp`` into
+``ipv4.method=auto`` with ``ipv4.may-fail=no``, which makes a DHCPv4 lease a
+requirement for the connection to activate. Where no DHCPv4 server exists the
+connection never activates, nothing that waits on the network proceeds, and the
+boot ends in the dracut emergency shell with ``FATAL: Unable to load stage:
+system``.
+
+The value a node will be served can be read without booting it.
+
+.. code-block:: shell
+
+   curl -s "http://<server>:<port>/ipxe/<hwaddr>" | grep 'set dracut_net'
+
+That prints one line for the ``:dracut`` entry and one for ``:dracut_static``.
+The latter builds its ``ip=`` argument from ``ipaddr``, ``gateway`` and
+``netmask``, so it does not support a node that has only an ``ipaddr6``.
+
+.. note::
+
+   When adjusting the method by hand in a copy of the template, prefer ``auto6``
+   over dracut's ``either6``. NetworkManager's initrd generator does not
+   recognise ``either6``: it falls back to interpreting the argument
+   positionally, fails to read the device name as an address, and discards the
+   whole ``ip=`` argument.

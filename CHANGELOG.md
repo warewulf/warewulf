@@ -33,6 +33,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- The two-stage dracut boot now completes on IPv6-only nodes. The `:dracut` entry
+  rendered `ip=<device>:dhcp` for every device, which NetworkManager's initrd
+  generator turns into a mandatory DHCPv4 lease, so the connection never
+  activated and the initramfs never fetched the image. A device with `ipaddr6`
+  and no `ipaddr` now renders `ip=<device>:auto6`. Part of #910
 - Prevent cpio hardlink corruption caused by 64-bit inode numbers truncating to
   colliding 32-bit values when building node images and overlays: pass
   `--renumber-inodes` to cpio when the installed version supports it (GNU cpio
