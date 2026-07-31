@@ -54,3 +54,4 @@
 - Jason Scott <jsco2t@outlook.com> @jsco2t
 - Sujeev Uthayakumar <sujeev.uthayakumar@gmail.com> [@Sujeev-Uthayakumar](https://github.com/Sujeev-Uthayakumar)
 - Jacob Sommerville <jsommerville@dow.com>
+- Howard Van Der Wal <howard.a.vanderwal@protonmail.com> [@metalllinux](https://github.com/metalllinux)
