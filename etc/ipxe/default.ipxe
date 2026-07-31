@@ -95,7 +95,7 @@ goto metadata
 echo
 echo Downloading dracut initramfs...
 initrd --name initramfs ${base}/initramfs/${hwaddr}?${params} || goto error_reboot
-set dracut_net rd.neednet=1 {{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}} ip={{$netdev.Device}}:dhcp {{end}}{{end}}
+set dracut_net rd.neednet=1 {{range $devname, $netdev := .NetDevs}}{{if and $netdev.Hwaddr $netdev.Device}} ifname={{$netdev.Device}}:{{$netdev.Hwaddr}}{{if and $netdev.Ipaddr6 (not $netdev.Ipaddr)}} ip={{$netdev.Device}}:auto6{{else}} ip={{$netdev.Device}}:dhcp{{end}} {{end}}{{end}}
 set dracut_wwinit root=wwinit:{{default "tmpfs" .Root}} wwinit.server=${base} wwinit.uri=${base}/provision/${hwaddr} init=/warewulf/run-init
 goto boot_two_stage_dracut
 
