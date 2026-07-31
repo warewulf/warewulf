@@ -297,11 +297,19 @@ booted by GRUB.
 These packages must also be installed on the Warewulf server host to enable
 node discovery using GRUB.
 
+.. _HTTP boot:
+
 HTTP boot
 ---------
 
-Modern EFI systems have the possibility to directly boot per http. The flow
-diagram is the following:
+Modern EFI systems have the possibility to directly boot per http. HTTP boot is
+part of the GRUB boot chain described above, and is not a separate bootloader.
+The node firmware fetches ``shim.efi`` over HTTP instead of TFTP, and the rest
+of the chain proceeds as it does for a TFTP-booted GRUB node. Warewulf does not
+serve an iPXE binary over HTTP, so HTTP boot cannot be used to start the iPXE
+boot method.
+
+The flow diagram is the following:
 
 .. graphviz::
 
@@ -319,6 +327,28 @@ diagram is the following:
 Warewulf delivers the initial ``shim.efi`` and ``grub.efi`` via http as taken
 directly from the node's assigned image.
 
+.. note::
+
+   HTTP boot has the following limitations in the current implementation.
+
+   * The DHCP rule that hands out the HTTP boot URI is generated differently by
+     each DHCP backend. With ISC ``dhcpd`` (the default) the rule is written
+     only when ``grubboot`` is enabled, and it matches any ``HTTPClient`` vendor
+     class, so the rule matches clients of any architecture. With ``dnsmasq``
+     the rule is always written, but it matches only the vendor class
+     ``HTTPClient:Arch:00016``, which is the `IANA processor architecture type`_
+     for "x64 uefi boot from http". An aarch64 client booting over HTTP presents
+     architecture type 19, "arm uefi 64 boot from http", and is therefore not
+     matched.
+   * The HTTP boot URI is built from the server's IPv4 address, so HTTP boot
+     requires an IPv4 address on the provisioning interface and is not usable on
+     an IPv6-only Warewulf server.
+   * The ``/efiboot/`` route identifies the requesting node from the ``wwid``
+     query parameter or, when that is absent, from a lookup of the client's
+     address in the IPv4 ARP cache. See :ref:`server-routes` for details.
+
+.. _IANA processor architecture type: https://www.iana.org/assignments/dhcpv6-parameters/dhcpv6-parameters.xhtml#processor-architecture
+
 .. _booting with dracut:
 
 Two-stage boot: dracut
@@ -329,6 +359,11 @@ unable to load an image of a certain size directly with a traditional bootloader
 either iPXE or GRUB. As a workaround for such systems, Warewulf can be
 configured to load a dracut initramfs from the image and to use that initramfs
 to load the full image.
+
+The two-stage boot is independent of how the first-stage bootloader reaches the
+node. It runs over the normal network boot path, whether iPXE or GRUB was
+delivered over TFTP or over HTTP, and it does not require :ref:`HTTP boot` to be
+configured.
 
 Warewulf provides a dracut module to configure the dracut initramfs to load the
 image. This module is available in the ``warewulf-dracut`` subpackage, which
