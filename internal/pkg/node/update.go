@@ -1,8 +1,19 @@
 package node
 
 import (
+	"flag"
 	"reflect"
+	"strings"
+
+	"github.com/google/uuid"
 )
+
+var MachineIdGenerator = func() string {
+	if flag.Lookup("test.v") != nil {
+		return ""
+	}
+	return strings.ReplaceAll(uuid.New().String(), "-", "")
+}
 
 // UpdateFrom copies fields from src to dst, but only those fields whose
 // corresponding cobra flag (identified by the "lopt" struct tag) reports
@@ -12,6 +23,9 @@ import (
 // The changed function should typically be cmd.Flags().Changed.
 func (dst *Node) UpdateFrom(src *Node, changed func(string) bool) {
 	recursiveUpdateFrom(reflect.ValueOf(dst).Elem(), reflect.ValueOf(src).Elem(), changed)
+	if dst.MachineId == "" && MachineIdGenerator != nil {
+		dst.MachineId = MachineIdGenerator()
+	}
 }
 
 // UpdateFrom copies fields from src to dst for profiles.
