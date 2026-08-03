@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/google/uuid"
 	"gopkg.in/yaml.v3"
 
 	"github.com/warewulf/warewulf/internal/pkg/kernel"
@@ -14,6 +15,10 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
+
+var MachineIdGenerator = func() string {
+	return strings.ReplaceAll(uuid.New().String(), "-", "")
+}
 
 var wwinitSplitOverlays = []string{
 	"wwinit",
@@ -169,6 +174,7 @@ func (legacy *NodesYaml) Upgrade(addDefaults bool, replaceOverlays bool, warewul
 
 type Node struct {
 	Discoverable string `yaml:"discoverable,omitempty"`
+	MachineId    string `yaml:"machine id,omitempty"`
 	Profile      `yaml:"-,inline"`
 }
 
@@ -182,6 +188,10 @@ func (legacy *Node) Upgrade(addDefaults bool, replaceOverlays bool) (upgraded *n
 	upgraded.Kernel = new(node.KernelConf)
 	upgraded.NetDevs = make(map[string]*node.NetDev)
 	upgraded.AssetKey = legacy.AssetKey
+	upgraded.MachineId = legacy.MachineId
+	if upgraded.MachineId == "" && MachineIdGenerator != nil {
+		upgraded.MachineId = MachineIdGenerator()
+	}
 	upgraded.ClusterName = legacy.ClusterName
 	upgraded.Comment = legacy.Comment
 	upgraded.ImageName = legacy.ImageName
