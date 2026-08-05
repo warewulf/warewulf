@@ -593,6 +593,12 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/go-chi/chi/blob/v5.3.0/LICENSE>
 
+## github.com/goccy/go-yaml
+
+**License:** MIT
+
+**License URL:** <https://github.com/goccy/go-yaml/blob/v1.19.2/LICENSE>
+
 ## github.com/huandu/xstrings
 
 **License:** MIT

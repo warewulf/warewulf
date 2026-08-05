@@ -55,3 +55,4 @@
 - Sujeev Uthayakumar <sujeev.uthayakumar@gmail.com> [@Sujeev-Uthayakumar](https://github.com/Sujeev-Uthayakumar)
 - Jacob Sommerville <jsommerville@dow.com>
 - Howard Van Der Wal <howard.a.vanderwal@protonmail.com> [@metalllinux](https://github.com/metalllinux)
+- Shelby McCowan <itsme@shelbymccowan.com> [@MusicDev33](https://github.com/MusicDev33)

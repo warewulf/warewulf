@@ -192,7 +192,7 @@ func recursiveFlatten(obj interface{}) (hasContent bool) {
 				if typeObj.Elem().Field(i).Type == reflect.TypeOf((*bool)(nil)) {
 					hasContent = !valObj.Elem().Field(i).IsZero() || hasContent
 				} else {
-					ret := recursiveFlatten((valObj.Elem().Field(i).Interface()))
+					ret := recursiveFlatten(valObj.Elem().Field(i).Interface())
 					if !ret {
 						valObj.Elem().Field(i).Set(reflect.Zero(valObj.Elem().Field(i).Type()))
 					}
@@ -200,12 +200,12 @@ func recursiveFlatten(obj interface{}) (hasContent bool) {
 				}
 			}
 		case reflect.Struct:
-			ret := recursiveFlatten((valObj.Elem().Field(i).Addr().Interface()))
+			ret := recursiveFlatten(valObj.Elem().Field(i).Addr().Interface())
 			hasContent = ret || hasContent
 		case reflect.Slice:
 			if typeObj.Elem().Field(i).Type == reflect.TypeOf([]string{}) {
 				del := false
-				for _, elem := range (valObj.Elem().Field(i).Interface()).([]string) {
+				for _, elem := range valObj.Elem().Field(i).Interface().([]string) {
 					if isUnsetValue(elem) {
 						del = true
 					}

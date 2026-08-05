@@ -4,6 +4,7 @@ import (
 	"encoding/gob"
 	"net"
 
+	"github.com/goccy/go-yaml"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwtype"
 )
@@ -23,6 +24,7 @@ Structure of which goes to disk
 type NodesYaml struct {
 	NodeProfiles map[string]*Profile `yaml:"nodeprofiles"`
 	Nodes        map[string]*Node    `yaml:"nodes"`
+	commentMap   yaml.CommentMap
 }
 
 /*

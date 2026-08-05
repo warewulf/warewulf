@@ -3,8 +3,8 @@ package node
 import (
 	"testing"
 
+	"github.com/goccy/go-yaml"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v3"
 )
 
 func newConstructorPrimaryNetworkTest(t *testing.T) NodesYaml {
