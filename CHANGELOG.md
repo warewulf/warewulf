@@ -42,6 +42,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   skipped and the command exits non-zero.
 - `wwctl profile set --nettagadd` no longer silently ignores the given tags
   when the network device already exists.
+- A failing script in `/warewulf/wwinit.d/` now aborts the boot instead of being
+  ignored. `run-wwinit.d` ran each script in a pipeline subshell without testing
+  its exit status, so only the last script's status survived, and neither the
+  two-stage `load-wwinit.sh` nor the single-stage `init` examined it. All four
+  shipped `wwinit.d` scripts call `die` when their operation fails, so an
+  Ignition, `sfdisk`, `mkfs` or `mkswap` failure was discarded and the boot
+  continued as though the step had succeeded, either mounting a filesystem that
+  may never have been created or, on a single-stage boot, coming up on a root
+  file system built in RAM with the failure not treated as fatal.
 - The two-stage dracut boot now completes on IPv6-only nodes. The `:dracut` entry
   rendered `ip=<device>:dhcp` for every device, which NetworkManager's initrd
   generator turns into a mandatory DHCPv4 lease, so the connection never

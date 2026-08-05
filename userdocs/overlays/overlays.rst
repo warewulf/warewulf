@@ -238,7 +238,8 @@ provisioning actions:
 
 - **/warewulf/wwinit.d/:** executed in the initial root final system before the
   image is loaded into its final location. In a two-stage boot, these scripts
-  are executed in the Dracut initramfs.
+  are executed in the Dracut initramfs. A script which exits non-zero aborts
+  the boot, and the remaining scripts in the directory are not run.
 
 - **/warewulf/init.d/:** executed in the final root file system but before
   calling ``init``.
