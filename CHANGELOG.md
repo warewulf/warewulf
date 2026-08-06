@@ -42,6 +42,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   skipped and the command exits non-zero.
 - `wwctl profile set --nettagadd` no longer silently ignores the given tags
   when the network device already exists.
+- A script in `/warewulf/wwinit.d/` no longer reports failure when its last
+  message cannot be written. Every script in that directory ends on a logging
+  call, so its exit status was really the status of a `printf`. A node whose
+  only `console=` argument names a device whose driver is a module, for example
+  `console=hvc0` on a kernel with `CONFIG_VIRTIO_CONSOLE=m`, has no usable
+  stdout when `init` runs, so that write fails and the script reported a failed
+  provisioning step having done nothing wrong. The fallback `info` and `warn`
+  helpers now always succeed, and each shipped `wwinit.d` script ends with an
+  explicit `exit 0`, so a script's exit status is its operation's.
 - A failing script in `/warewulf/wwinit.d/` now aborts the boot instead of being
   ignored. `run-wwinit.d` ran each script in a pipeline subshell without testing
   its exit status, so only the last script's status survived, and neither the
