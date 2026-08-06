@@ -3,12 +3,14 @@
 if ! command -v info >/dev/null; then
     info() {
         printf '%s\n' "$*"
+        return 0
     }
 fi
 
 if ! command -v warn >/dev/null; then
     warn() {
         printf '%s\n' "$*" >&2
+        return 0
     }
 fi
 
