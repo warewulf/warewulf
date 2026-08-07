@@ -141,12 +141,10 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 				for _, key := range vars.profileDel.NetTagsDel {
 					delete(netDev.Tags, key)
 				}
-				// Note: original API code used set.TagAdd here (likely a bug),
-				// preserving existing behavior by using TagsAdd
-				if len(vars.profileAdd.TagsAdd) > 0 && netDev.Tags == nil {
+				if len(vars.profileAdd.NetTagsAdd) > 0 && netDev.Tags == nil {
 					netDev.Tags = make(map[string]string)
 				}
-				for key, val := range vars.profileAdd.TagsAdd {
+				for key, val := range vars.profileAdd.NetTagsAdd {
 					netDev.Tags[key] = val
 				}
 			}

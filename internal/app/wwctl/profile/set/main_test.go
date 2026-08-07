@@ -353,6 +353,43 @@ nodeprofiles:
         path: /var
 nodes: {}`,
 		},
+		"--nettagadd with existing netdev": {
+			args:    []string{"--netname=eth0", "--nettagadd=DNS1=1.1.1.1", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    network devices:
+      eth0:
+        device: eth0
+nodes: {}`,
+			outDb: `
+nodeprofiles:
+  default:
+    network devices:
+      eth0:
+        device: eth0
+        tags:
+          DNS1: "1.1.1.1"
+nodes: {}`,
+		},
+		"--nettagadd adds tags to default profile": {
+			args:    []string{"--nettagadd=DNS1=1.1.1.1", "--nettagadd=DNS2=1.0.0.1", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default: {}
+nodes: {}`,
+			outDb: `
+nodeprofiles:
+  default:
+    network devices:
+      default:
+        tags:
+          DNS1: "1.1.1.1"
+          DNS2: "1.0.0.1"
+nodes: {}`,
+		},
 	}
 
 	for name, tt := range tests {
@@ -375,7 +412,6 @@ nodes: {}`,
 				content := env.ReadFile("etc/warewulf/nodes.conf")
 				assert.YAMLEq(t, tt.outDb, content)
 			}
-
 		})
 	}
 }

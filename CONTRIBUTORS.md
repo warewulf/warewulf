@@ -55,3 +55,4 @@
 - Sujeev Uthayakumar <sujeev.uthayakumar@gmail.com> [@Sujeev-Uthayakumar](https://github.com/Sujeev-Uthayakumar)
 - Jacob Sommerville <jsommerville@dow.com>
 - Howard Van Der Wal <howard.a.vanderwal@protonmail.com> [@metalllinux](https://github.com/metalllinux)
+- Sergio Cabello Simón <sergio.scs388@gmail.com> [@SergioZ3R0](https://github.com/SergioZ3R0)
