@@ -33,6 +33,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- `wwctl profile set --nettagadd` no longer silently ignores the given tags
+  when the network device already exists.
 - The two-stage dracut boot now completes on IPv6-only nodes. The `:dracut` entry
   rendered `ip=<device>:dhcp` for every device, which NetworkManager's initrd
   generator turns into a mandatory DHCPv4 lease, so the connection never
