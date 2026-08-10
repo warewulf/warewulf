@@ -34,6 +34,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- `wwctl power` (`cycle`, `off`, `on`, `reset`, `soft`, `status`) no longer runs
+  `ipmitool` without `-H` for a node that has no `ipmi: ipaddr:`, which fell back
+  to the local BMC and acted on the Warewulf server itself. Such nodes are now
+  skipped and the command exits non-zero.
 - `wwctl profile set --nettagadd` no longer silently ignores the given tags
   when the network device already exists.
 - The two-stage dracut boot now completes on IPv6-only nodes. The `:dracut` entry
