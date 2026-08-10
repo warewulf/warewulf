@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `wwctl group list [NAME ...]` enumerates every group referenced anywhere
   in the configuration along with its members.
 - Tab completion for groups.
+- Add IPMI address of nodes to /etc/hosts of master node
  
 ### Changed
 

@@ -56,3 +56,4 @@
 - Jacob Sommerville <jsommerville@dow.com>
 - Howard Van Der Wal <howard.a.vanderwal@protonmail.com> [@metalllinux](https://github.com/metalllinux)
 - Sergio Cabello Simón <sergio.scs388@gmail.com> [@SergioZ3R0](https://github.com/SergioZ3R0)
+- Jorge L Florit <jlflorit@gmail.com> [@conxuro](https://github.com/conxuro)
