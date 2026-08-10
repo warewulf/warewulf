@@ -8,7 +8,7 @@ By default, network configurations are applied to a "default" network interface.
 
 .. code-block:: shell
 
-  wwctl node set n1 \
+  wwctl node set n001 \
     --netdev=eno1 \
     --hwaddr=00:00:00:00:00:01 \
     --ipaddr=10.0.2.1 \
@@ -19,7 +19,7 @@ specifying  ``--netname``.
 
 .. code-block:: shell
 
-   wwctl node set n1 \
+   wwctl node set n001 \
      --netname=infiniband \
      --type=infiniband \
      --netdev=ib1 \
@@ -35,6 +35,7 @@ specifying  ``--netname``.
    an interface may fail to be named correct if its desired name conflicts with
    the kernel-assigned name of another interface during the boot process.
 
+
 .. _nettags:
 
 Network Tags
@@ -44,7 +45,24 @@ Each network device can optionally have one or more key-value pair tags.
 
 .. code-block:: shell
 
-   wwctl node set n1 --nettagadd="DNS1=1.1.1.1"
+   wwctl node set n001 \
+     --nettagadd="MYNETTAG=value"
+
+.. _dns:
+
+DNS
+===
+
+DNS of an interface (usually the default) can be configured using network tags.
+
+- ``DNS1``: configures the first nameserver IP
+- ``DNS2``: configures the second nameserver IP
+- ``DNSSEARCH``: configures the DNS search domain
+
+.. code-block:: shell
+
+   wwctl node set n001 \
+     --nettagadd "DNS1=10.0.0.1,DNS2=10.0.0.2,DNSSEARCH=my.domain.tld" \
 
 .. _bonding:
 
@@ -91,14 +109,13 @@ Other network systems need additional network tags:
 
 .. code-block:: shell
 
-   wwctl node set \
+   wwctl node set n001 \
      --netdev vlan42 \
      --ipaddr 10.0.42.1 \
      --netmask 255.255.252.0 \
      --netname iband \
      --type vlan \
-     --nettagadd "vlan_id=42,parent_device=eth0" \
-     n001
+     --nettagadd "vlan_id=42,parent_device=eth0"
 
 .. _static_routes:
 
@@ -112,6 +129,27 @@ using a network tag of the form ``route<N>=<dest>,<gateway>``.
 
    wwctl node set n001 \
      --nettagadd "route1=192.168.2.0/24,192.168.1.254"
+
+.. _hostname_suffix:
+
+Hostname Suffix
+===============
+
+The ``host`` and ``hosts`` overlays support the customization of names suffixes in ``/etc/hosts``.
+
+.. code-block:: shell
+
+   wwctl node set n001 \
+     --netname infiniband \
+     --nettagadd "netsuffix=ib"
+It will result in a content like the following.
+
+.. code-block:: shell
+
+   10.0.2.1 n001 n001-default n001-eno1
+   10.0.3.1 n001-ib n001-ib1
+
+.. _type:
 
 Type
 ====
