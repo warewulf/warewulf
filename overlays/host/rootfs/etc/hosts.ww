@@ -7,6 +7,9 @@
 
 {{- range $node := $.AllNodes}}{{/* for each node */}}
 # Entry for {{$node.Id}}
+{{- if $node.Ipmi.Ipaddr}}{{/* if we have IPMI address on the node */}}
+{{$node.Ipmi.Ipaddr}} {{$node.Id}}-ipmi
+{{- end }}
 {{- range $devname, $netdev := $node.NetDevs}}{{/* for each network device on the node */}}
 {{- if $netdev.Ipaddr}}{{/* if we have an ip address on this network device */}}
 {{- /* emit the node name as hostname if this is the primary */}}
