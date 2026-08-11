@@ -55,6 +55,12 @@ func (tstruct *TemplateStruct) getCommand() (cmdStr string, err error) {
 	}
 	cmdStr = strings.TrimSpace(tbuffer.String())
 	wwlog.Debug("bmc command: %s", cmdStr)
+	// ipmitool uses the local bmc, that of the warewulf server itself, when given
+	// neither a target host (-H) nor an explicit interface (-I)
+	if fields := strings.Fields(cmdStr); len(fields) > 0 && fields[0] == "ipmitool" &&
+		!strings.Contains(cmdStr, "-H ") && !strings.Contains(cmdStr, "-I ") {
+		return "", fmt.Errorf("no bmc target specified: refusing to run ipmitool against the local bmc")
+	}
 	return cmdStr, nil
 
 }
