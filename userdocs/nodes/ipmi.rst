@@ -43,6 +43,13 @@ Typical options are 19.2, 38.4, and 115.2.
    wwctl profile set default \
      --ipmitagadd bit-rate=115.2
 
+The ``host`` and ``hosts`` overlays support the customization of names suffixes in ``/etc/hosts``.
+
+.. code-block:: shell
+
+   wwctl profile set default \
+     --ipmitaggadd ipmisuffix=ipmi
+
 ``wwctl node list`` has a specific overview for IPMI settings.
 
 .. code-block:: console
