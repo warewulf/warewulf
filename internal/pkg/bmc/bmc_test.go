@@ -19,6 +19,7 @@ func Test_Ipmitool(t *testing.T) {
 			bmc: TemplateStruct{},
 			err: true,
 		},
+		// with no ipaddr the command has no -H and would target the local bmc
 		"ipmitool PowerStatus empty": {
 			bmc: TemplateStruct{
 				Cmd: "PowerStatus",
@@ -26,7 +27,32 @@ func Test_Ipmitool(t *testing.T) {
 					Template: "ipmitool.tmpl",
 				},
 			},
-			cmdStr: `ipmitool chassis power status`,
+			err: true,
+		},
+		// IsUnspecified is true for 0.0.0.0 but false for nil, so cover both
+		"ipmitool PowerStatus unspecified ipaddr": {
+			bmc: TemplateStruct{
+				Cmd: "PowerStatus",
+				IpmiConf: node.IpmiConf{
+					Template: "ipmitool.tmpl",
+					Ipaddr:   net.IPv4zero,
+					UserName: "root",
+					Password: "calvin",
+				},
+			},
+			cmdStr: `ipmitool -H 0.0.0.0 -U "root" -P "calvin" chassis power status`,
+		},
+		// an explicit interface is an intentional choice of transport, so it is
+		// honoured even without an address
+		"ipmitool PowerStatus explicit interface": {
+			bmc: TemplateStruct{
+				Cmd: "PowerStatus",
+				IpmiConf: node.IpmiConf{
+					Template:  "ipmitool.tmpl",
+					Interface: "open",
+				},
+			},
+			cmdStr: `ipmitool -I open chassis power status`,
 		},
 		"ipmitool PowerStatus full": {
 			bmc: TemplateStruct{
