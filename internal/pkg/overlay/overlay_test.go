@@ -899,6 +899,30 @@ func TestRenderTemplate(t *testing.T) {
 				assert.Equal(t, "HELLO", rt.Files[0].Buffer.String())
 			},
 		},
+		{
+			name:     "CIDR with dotted decimal netmask",
+			template: `{{ CIDR "10.0.0.1" "255.255.255.0" }}`,
+			validate: func(t *testing.T, rt *RenderedTemplate, err error) {
+				assert.NoError(t, err)
+				assert.Equal(t, "10.0.0.1/24", rt.Files[0].Buffer.String())
+			},
+		},
+		{
+			name:     "CIDR with CIDR prefix",
+			template: `{{ CIDR "192.168.1.5" "24" }}`,
+			validate: func(t *testing.T, rt *RenderedTemplate, err error) {
+				assert.NoError(t, err)
+				assert.Equal(t, "192.168.1.5/24", rt.Files[0].Buffer.String())
+			},
+		},
+		{
+			name:     "CIDR6",
+			template: `{{ CIDR6 "2001:db8::1" 64 }}`,
+			validate: func(t *testing.T, rt *RenderedTemplate, err error) {
+				assert.NoError(t, err)
+				assert.Equal(t, "2001:db8::1/64", rt.Files[0].Buffer.String())
+			},
+		},
 	}
 
 	for _, tt := range tests {
