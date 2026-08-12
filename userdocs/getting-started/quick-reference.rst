@@ -91,7 +91,8 @@ Adding a node
      --hwaddr=00:00:00:00:00:01 \
      --image=rockylinux-9 \
      --profile=default \
-     --kernelargs="quiet crashkernel=no"
+     --kernelargs=quiet \
+      --kernelargs=crashkernel=no
 
    # Un-set a field (revert to profile/default value)
    wwctl node unset n1 --image

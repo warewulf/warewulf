@@ -171,13 +171,13 @@ func createFlags(baseCmd *cobra.Command,
 		} else if myType.Type == reflect.TypeOf([]string{}) {
 			ptr := myVal.Addr().Interface().(*[]string)
 			if myType.Tag.Get("sopt") != "" {
-				baseCmd.PersistentFlags().StringSliceVarP(ptr,
+				baseCmd.PersistentFlags().StringArrayVarP(ptr,
 					myType.Tag.Get("lopt"),
 					myType.Tag.Get("sopt"),
 					[]string{},
 					myType.Tag.Get("comment"))
 			} else {
-				baseCmd.PersistentFlags().StringSliceVar(ptr,
+				baseCmd.PersistentFlags().StringArrayVar(ptr,
 					myType.Tag.Get("lopt"),
 					[]string{},
 					myType.Tag.Get("comment"))

@@ -150,7 +150,7 @@ nodes:
           dns: 1.1.1.1`,
 		},
 		"--nettagdel": {
-			args:    []string{"--nettagdel=dns1,dns2", "n01"},
+			args:    []string{"--nettagdel=dns1", "--nettagdel=dns2", "n01"},
 			wantErr: false,
 			inDB: `
 nodeprofiles: {}

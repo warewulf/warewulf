@@ -100,26 +100,14 @@ List values
 -----------
 
 Some node fields, such as overlays and kernel arguments, accept a list of values.
-These may be specified as a comma-separated list or as multiple arguments.
-
-To include an explicit comma in the value, enclose the value in inner-quotes.
+These may be specified by repeating the flag for each value.
 
 .. code-block:: shell
 
    wwctl node set n1 \
-     --kernelargs 'quiet,crashkernel=no,nosplash' \
-     --kernelargs='"console=ttyS0,115200"'
-
-Un-setting Node Fields
-----------------------
-
-Node fields can be cleared using the ``wwctl node unset`` command. Each field is
-specified as a boolean flag; the field is cleared when the flag is present.
-
-.. code-block:: shell
-
-   wwctl node unset n1 --image
-   wwctl node unset n1 --kernelargs
+     --kernelargs=quiet \
+     --kernelargs='crashkernel=no' \
+     --kernelargs='console=ttyS0,115200'
 
 To unset fields on a specific network interface, disk, partition, or filesystem,
 use the scoping flags ``--netname``, ``--diskname``, ``--partname``, and

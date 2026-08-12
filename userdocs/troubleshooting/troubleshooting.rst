@@ -162,7 +162,9 @@ it for additional logging and to switch to an interactive shell on error:
 
 .. code-block::
 
-   wwctl profile set default --kernelargs=rd.shell,rd.debug,log_buf_len=1M
+   wwctl profile set default --kernelargs=rd.shell \
+      --kernelargs=rd.debug \
+      --kernelargs=log_buf_len=1M
 
 For more information on debugging Dracut problems, see `the Fedora dracut
 problems guide.`_

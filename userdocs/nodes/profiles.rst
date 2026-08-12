@@ -101,7 +101,10 @@ to each node.
    wwctl profile add image
    wwctl profile set image --image=rockylinux-9
 
-   wwctl node set n1 --profile="default,net,image"
+   wwctl node set n1 \
+     --profile=default \
+     --profile=net \
+     --profile=image
 
 
 .. code-block:: console
