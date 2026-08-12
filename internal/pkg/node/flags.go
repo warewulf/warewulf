@@ -90,11 +90,10 @@ func (profileConf *Profile) CreateFlags(baseCmd *cobra.Command) {
 
 func (del *NodeConfDel) CreateDelFlags(baseCmd *cobra.Command) {
 	recursiveCreateFlags(del, baseCmd)
-
 }
+
 func (add *NodeConfAdd) CreateAddFlags(baseCmd *cobra.Command) {
 	recursiveCreateFlags(add, baseCmd)
-
 }
 
 func recursiveCreateFlags(obj interface{}, baseCmd *cobra.Command) {
@@ -111,16 +110,12 @@ func recursiveCreateFlags(obj interface{}, baseCmd *cobra.Command) {
 
 		if field.Tag.Get("comment") != "" {
 			createFlags(baseCmd, field, &fieldVal)
-
 		} else if field.Anonymous {
 			recursiveCreateFlags(fieldVal.Addr().Interface(), baseCmd)
-
 		} else if field.Type.Kind() == reflect.Ptr && !fieldVal.IsNil() {
 			recursiveCreateFlags(fieldVal.Interface(), baseCmd)
-
 		} else if field.Type.Kind() == reflect.Struct {
 			recursiveCreateFlags(fieldVal.Addr().Interface(), baseCmd)
-
 		} else if field.Type.Kind() == reflect.Map {
 			switch field.Type.Elem().Kind() {
 			case reflect.String, reflect.Interface:
@@ -150,7 +145,8 @@ func recursiveCreateFlags(obj interface{}, baseCmd *cobra.Command) {
 Helper function to create the different PersistentFlags() for different types.
 */
 func createFlags(baseCmd *cobra.Command,
-	myType reflect.StructField, myVal *reflect.Value) {
+	myType reflect.StructField, myVal *reflect.Value,
+) {
 	var wwbool wwtype.WWbool
 	if myType.Tag.Get("lopt") != "" {
 		if myType.Type == reflect.TypeOf("") {
@@ -181,7 +177,22 @@ func createFlags(baseCmd *cobra.Command,
 					myType.Tag.Get("lopt"),
 					[]string{},
 					myType.Tag.Get("comment"))
-
+			}
+		} else if myType.Type == reflect.TypeOf(KernelArgs{}) {
+			// KernelArgs is a named type based on []string, so we need to convert
+			// the pointer through reflection to get *[]string from *KernelArgs
+			ptr := (*[]string)(myVal.Addr().Convert(reflect.TypeOf((*[]string)(nil))).UnsafePointer())
+			if myType.Tag.Get("sopt") != "" {
+				baseCmd.PersistentFlags().StringArrayVarP(ptr,
+					myType.Tag.Get("lopt"),
+					myType.Tag.Get("sopt"),
+					[]string{},
+					myType.Tag.Get("comment"))
+			} else {
+				baseCmd.PersistentFlags().StringArrayVar(ptr,
+					myType.Tag.Get("lopt"),
+					[]string{},
+					myType.Tag.Get("comment"))
 			}
 		} else if myType.Type == reflect.TypeOf(map[string]string{}) {
 			ptr := myVal.Addr().Interface().(*map[string]string)

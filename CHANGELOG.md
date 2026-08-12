@@ -28,6 +28,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
  
 ### Changed
 
+- `wwctl node set --kernelargs` and `wwctl profile set --kernelargs` now use `StringArrayVar`
+  instead of `StringSliceVar`, which preserves commas within kernel argument values when using
+  multiple `--kernelargs` flags. This allows passing arguments like `console=ttyS0,115200n8`
+  without needing to escape or quote the commas.
 - Remove `dsa` from default `ssh: key types`; sshd silently skips DSA host keys
   on EL9 / OpenSSH 8.7p1+, leaving nodes with no usable host keys. #1185
 - Add an `ipv6_method` node tag to set the NetworkManager `[ipv6]` method, e.g. `auto` for SLAAC.
