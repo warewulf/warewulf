@@ -737,7 +737,23 @@ nodes:
       email: node
       newtag: newval`,
 		},
-		"--image=UNDEF": {
+		"--kernelargs with commas": {
+			args:    []string{"--kernelargs=crashkernel=no", "--kernelargs=console=ttyS0,115200n8", "--kernelargs=console=tty0", "n01"},
+			wantErr: false,
+			inDB: `
+nodes:
+  n01: {}`,
+			outDB: `
+nodeprofiles: {}
+nodes:
+  n01:
+    kernel:
+      args:
+      - crashkernel=no
+      - console=ttyS0,115200n8
+      - console=tty0`,
+		},
+		"--kernelargs=UNDEF": {
 			args:    []string{"--image=UNDEF", "n1"},
 			wantErr: false,
 			inDB: `
