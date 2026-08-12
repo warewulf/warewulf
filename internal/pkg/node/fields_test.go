@@ -36,6 +36,19 @@ nodes:
 			field: "Kernel.Args",
 			value: "n1 args",
 		},
+		"kernel args with internal commas": {
+			nodesConf: `
+nodes:
+  n1:
+    kernel:
+      args:
+      - crashkernel=no
+      - console=ttyS0,115200n8
+      - console=tty0`,
+			node:  "n1",
+			field: "Kernel.Args",
+			value: "crashkernel=no,console=ttyS0,115200n8,console=tty0",
+		},
 		"node tag (map)": {
 			nodesConf: `
 nodes:

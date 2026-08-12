@@ -413,6 +413,20 @@ nodeprofiles:
 			source: "p1,p2,n1",
 			value:  "p1 args,p2 args,n1 args",
 		},
+		"kernel args with commas": {
+			nodesConf: `
+nodes:
+  n1:
+    kernel:
+      args:
+      - crashkernel=no
+      - console=ttyS0,115200n8
+      - console=tty0`,
+			node:   "n1",
+			field:  "Kernel.Args",
+			source: "",
+			value:  "crashkernel=no,console=ttyS0,115200n8,console=tty0",
+		},
 		"node tag": {
 			nodesConf: `
 nodes:

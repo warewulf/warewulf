@@ -38,6 +38,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 - wwclient.service changed to accommodate internal retry logic. #2203
+- `wwctl node set --kernelargs` and `wwctl profile set --kernelargs` now use `StringArrayVar`
+  instead of `StringSliceVar`, which preserves commas within kernel argument values when using
+  multiple `--kernelargs` flags. This allows passing arguments like `console=ttyS0,115200n8`
+  without needing to escape or quote the commas.
 - Remove `dsa` from default `ssh: key types`; sshd silently skips DSA host keys
   on EL9 / OpenSSH 8.7p1+, leaving nodes with no usable host keys. #1185
 - Don't silence curl when downloading with dracut. #2200
