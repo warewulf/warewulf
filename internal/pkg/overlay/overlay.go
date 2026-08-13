@@ -5,11 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"net"
 	"os"
 	"path"
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"text/template"
@@ -1178,6 +1180,53 @@ func buildTemplateFuncMap(fileName string, data TemplateStruct, result *Rendered
 		return softlinkFn(resolvedTarget), nil
 	}
 
+	// cidrFn converts an IP address and netmask to CIDR notation.
+	cidrFn := func(ip, netmask string) (string, error) {
+		parsedIP := net.ParseIP(ip)
+		if parsedIP == nil {
+			return "", fmt.Errorf("invalid IP address: %s", ip)
+		}
+		// Parse the netmask - it can be in dotted decimal (255.255.255.0) or CIDR prefix (24) format
+		var parsedMask net.IPMask
+		if strings.Contains(netmask, ".") {
+			// Dotted decimal format
+			ipMask := net.ParseIP(netmask)
+			if ipMask == nil {
+				return "", fmt.Errorf("invalid netmask: %s", netmask)
+			}
+			parsedMask = net.IPMask(ipMask)
+		} else {
+			// CIDR prefix format
+			prefix, err := strconv.Atoi(netmask)
+			if err != nil {
+				return "", fmt.Errorf("invalid netmask (must be dotted decimal or CIDR prefix): %s", netmask)
+			}
+			if parsedIP.To4() != nil {
+				parsedMask = net.CIDRMask(prefix, 32)
+			} else {
+				parsedMask = net.CIDRMask(prefix, 128)
+			}
+		}
+		ipCIDR := net.IPNet{
+			IP:   parsedIP,
+			Mask: parsedMask,
+		}
+		return ipCIDR.String(), nil
+	}
+
+	// cidr6Fn converts an IPv6 address and prefix length to CIDR notation.
+	cidr6Fn := func(ip string, prefix int) (string, error) {
+		parsedIP := net.ParseIP(ip)
+		if parsedIP == nil || parsedIP.To4() != nil {
+			return "", fmt.Errorf("invalid IPv6 address: %s", ip)
+		}
+		ipCIDR := net.IPNet{
+			IP:   parsedIP,
+			Mask: net.CIDRMask(prefix, 128),
+		}
+		return ipCIDR.String(), nil
+	}
+
 	// fileFn switches the active write target; returns "" so no output is emitted.
 	fileFn := func(name string) string {
 		f := &RenderedFile{Name: name}
@@ -1221,6 +1270,8 @@ func buildTemplateFuncMap(fileName string, data TemplateStruct, result *Rendered
 		"UniqueField":       UniqueField,
 		"SystemdEscape":     unit.UnitNameEscape,
 		"SystemdEscapePath": unit.UnitNamePathEscape,
+		"CIDR":              cidrFn,
+		"CIDR6":             cidr6Fn,
 	}
 
 	for key, value := range sprig.TxtFuncMap() {
