@@ -76,6 +76,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Mount additional (non-root) filesystems before image extraction during
   provision-to-disk so files are written to the correct partitions. #2147
 - Fix MTU configuration with wicked. #2248
+- Overlay templates that create multiple files will create the parent
+  directories for the files if they don't yet exist
 
 ### Dependencies
 
