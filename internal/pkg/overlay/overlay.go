@@ -1027,6 +1027,12 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 
 					if f.IsSymlink {
 						wwlog.Debug("Creating soft link %s -> %s", filePath, f.Target)
+						if _, err := os.Lstat(filePath); err == nil {
+							wwlog.Debug("Link %s already exists, will try to remove", filePath)
+							if err := os.Remove(filePath); err != nil {
+								return fmt.Errorf("failed to remove existing link at %s: %w", filePath, err)
+							}
+						}
 						if err = os.Symlink(f.Target, filePath); err != nil {
 							return fmt.Errorf("could not create symlink from template: %w", err)
 						}

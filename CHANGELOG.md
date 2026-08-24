@@ -78,6 +78,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Mount additional (non-root) filesystems before image extraction during
   provision-to-disk so files are written to the correct partitions. #2147
 - Fix MTU configuration with wicked. #2248
+- Overlay templates that create symbolic links remove an existing link if it
+  already exists in the overlay. #2252
 
 ### Dependencies
 
