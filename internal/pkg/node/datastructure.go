@@ -34,6 +34,7 @@ type Node struct {
 	// exported values
 	Discoverable wwtype.WWbool     `yaml:"discoverable,omitempty" json:"discoverable,omitempty" lopt:"discoverable" sopt:"e" comment:"discoverable in given network (true/false)"`
 	AssetKey     string            `yaml:"asset key,omitempty"    json:"asset key,omitempty"    lopt:"asset"                 comment:"the node's Asset tag (key)"`
+	MachineId    string            `yaml:"machine id,omitempty"   json:"machine id,omitempty"   lopt:"machineid"             comment:"the node's UUID/machine ID"`
 	Profile      `yaml:"-,inline"` // include all values set in the profile, but inline them in yaml output if these are part of Node
 }
 

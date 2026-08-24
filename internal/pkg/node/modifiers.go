@@ -17,6 +17,9 @@ Add a node with the given ID and return a pointer to it
 */
 func (config *NodesYaml) AddNode(nodeID string) (*Node, error) {
 	newNode := NewNode(nodeID)
+	if newNode.MachineId == "" && MachineIdGenerator != nil {
+		newNode.MachineId = MachineIdGenerator()
+	}
 	wwlog.Verbose("Adding new node: %s", nodeID)
 	if _, ok := config.Nodes[nodeID]; ok {
 		return nil, errors.New("nodename already exists: " + nodeID)
