@@ -8,7 +8,7 @@ import (
 var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:                   "export  NODENAME",
+		Use:                   "export NODENAME",
 		Short:                 "Export nodes as yaml to stdout",
 		Long:                  "This command exports the given nodes as yaml to stdout.",
 		RunE:                  CobraRunE,

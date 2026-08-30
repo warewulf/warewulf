@@ -54,7 +54,20 @@ func loadNodeDB() (err error) {
 	return nil
 }
 
-func GetNodeOrSetDiscoverable(hwaddr string, autobuildOverlays bool) (node.Node, error) {
+// GetNode looks up a configured node by hardware address. It returns an error
+// if no node is configured for the given hwaddr.
+func GetNode(hwaddr string) (node.Node, error) {
+	db.lock.RLock()
+	defer db.lock.RUnlock()
+
+	nId, ok := db.NodeInfo[hwaddr]
+	if !ok {
+		return node.Node{}, fmt.Errorf("no node configured for hwaddr %s", hwaddr)
+	}
+	return db.yml.GetNode(nId)
+}
+
+func GetOrDiscoverNode(hwaddr string, autobuildOverlays bool) (node.Node, error) {
 	db.lock.RLock()
 	defer db.lock.RUnlock()
 	// NOTE: since discoverable nodes will write an updated DB to file and then

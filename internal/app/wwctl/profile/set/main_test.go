@@ -164,6 +164,98 @@ nodeprofiles:
         path: /var
 nodes: {}`,
 		},
+		"single profile delete partition scoped to diskname": {
+			args:    []string{"--partdel=var", "--diskname=/dev/vda", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          var:
+            number: "1"
+      /dev/vdb:
+        partitions:
+          var:
+            number: "1"
+nodes: {}
+`,
+			outDb: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda: {}
+      /dev/vdb:
+        partitions:
+          var:
+            number: "1"
+nodes: {}`,
+		},
+		"single profile delete partition unscoped removes from all disks": {
+			args:    []string{"--partdel=var", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          var:
+            number: "1"
+      /dev/vdb:
+        partitions:
+          var:
+            number: "1"
+nodes: {}
+`,
+			outDb: `
+nodeprofiles:
+  default: {}
+nodes: {}`,
+		},
+		"single profile delete partition unscoped skips disks without it": {
+			args:    []string{"--partdel=var", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          var:
+            number: "1"
+      /dev/vdb:
+        partitions:
+          boot:
+            number: "2"
+nodes: {}
+`,
+			outDb: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda: {}
+      /dev/vdb:
+        partitions:
+          boot:
+            number: "2"
+nodes: {}`,
+		},
+		"single profile delete partition unscoped errors when not found": {
+			args:    []string{"--partdel=nonexistent", "default"},
+			wantErr: true,
+			inDB: `
+nodeprofiles:
+  default:
+    disks:
+      /dev/vda:
+        partitions:
+          var:
+            number: "1"
+nodes: {}
+`,
+		},
 		"single set wipetabe to true": {
 			args:    []string{"--diskwipe=true", "--partname=var", "--diskname=/dev/vda", "default"},
 			wantErr: false,
@@ -261,6 +353,43 @@ nodeprofiles:
         path: /var
 nodes: {}`,
 		},
+		"--nettagadd with existing netdev": {
+			args:    []string{"--netname=eth0", "--nettagadd=DNS1=1.1.1.1", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    network devices:
+      eth0:
+        device: eth0
+nodes: {}`,
+			outDb: `
+nodeprofiles:
+  default:
+    network devices:
+      eth0:
+        device: eth0
+        tags:
+          DNS1: "1.1.1.1"
+nodes: {}`,
+		},
+		"--nettagadd adds tags to default profile": {
+			args:    []string{"--nettagadd=DNS1=1.1.1.1", "--nettagadd=DNS2=1.0.0.1", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default: {}
+nodes: {}`,
+			outDb: `
+nodeprofiles:
+  default:
+    network devices:
+      default:
+        tags:
+          DNS1: "1.1.1.1"
+          DNS2: "1.0.0.1"
+nodes: {}`,
+		},
 	}
 
 	for name, tt := range tests {
@@ -283,7 +412,6 @@ nodes: {}`,
 				content := env.ReadFile("etc/warewulf/nodes.conf")
 				assert.YAMLEq(t, tt.outDb, content)
 			}
-
 		})
 	}
 }

@@ -15,64 +15,31 @@ var getOverlayFileTests = []struct {
 	description string
 	node        string
 	context     string
-	overlays    []string
 	result      string
 }{
 	{
 		description: "empty inputs produces no result",
 		node:        "",
 		context:     "",
-		overlays:    nil,
 		result:      "",
 	},
 	{
-		description: "a node with no context or overlays produces no result",
+		description: "a node with no context produces no result",
 		node:        "node1",
 		context:     "",
-		overlays:    nil,
 		result:      "",
-	},
-	{
-		description: "overlays with no node or context points to a combined overlay image",
-		node:        "",
-		context:     "",
-		overlays:    []string{"o1", "o2"},
-		result:      "node1/o1-o2.img",
 	},
 	{
 		description: "system overlay for a node points to the node's system overlay image",
 		node:        "node1",
 		context:     "system",
-		overlays:    []string{"o1"},
 		result:      "node1/__SYSTEM__.img",
 	},
 	{
 		description: "runtime overlay for a node points to the node's runtime overlay image",
 		node:        "node1",
 		context:     "runtime",
-		overlays:    nil,
 		result:      "node1/__RUNTIME__.img",
-	},
-	{
-		description: "a specific overlay for a node points to that specific overlay image for that node",
-		node:        "node1",
-		context:     "",
-		overlays:    []string{"o1"},
-		result:      "node1/o1.img",
-	},
-	{
-		description: "a specific set of overlays for a node points to a combined overlay image for that node",
-		node:        "node1",
-		context:     "",
-		overlays:    []string{"o1", "o2"},
-		result:      "node1/o1-o2.img",
-	},
-	{
-		description: "a specific set of overlays for a node while also specifying a context points to the contextual overlay image for that node",
-		node:        "node1",
-		context:     "system",
-		overlays:    []string{"o1", "o2"},
-		result:      "node1/__SYSTEM__.img",
 	},
 }
 
@@ -91,9 +58,7 @@ nodes:
 		t.Run(tt.description, func(t *testing.T) {
 			nodeInfo, err := nodeDB.GetNode("node1")
 			assert.NoError(t, err)
-			nodeInfo.RuntimeOverlay = tt.overlays
-			nodeInfo.SystemOverlay = tt.overlays
-			result, err := getOverlayFile(nodeInfo, tt.context, tt.overlays, false)
+			result, err := getOverlayFile(nodeInfo, tt.context, false)
 			assert.NoError(t, err)
 			if tt.result != "" {
 				tt.result = path.Join(conf.Paths.OverlayProvisiondir(), tt.result)

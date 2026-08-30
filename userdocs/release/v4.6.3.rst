@@ -35,7 +35,7 @@ Overlay Autobuild
 The Warewulf server (when "autobuild overlays" is enabled) now automatically
 rebuilds overlays after node discovery, which resolves an issue where overlays
 were out-of-sync with the newly-discovered configuration. This is one step in a
-more general effort to imrpove overlay autobuild so that manual overlay builds
+more general effort to improve overlay autobuild so that manual overlay builds
 are less often required.
 
 Warewulf server configuration
@@ -50,7 +50,7 @@ Ubuntu and Debian Support
 
 The ``netplan`` overlay is now much more feature-complete, with relative parity
 to the other network configuration overlays. This is one step in a more general
-effort to support Wareewulf in Ubuntu and Debian environments.
+effort to support Warewulf in Ubuntu and Debian environments.
 
 Other fixes
 ===========

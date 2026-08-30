@@ -582,6 +582,165 @@ paths:
   datadir: /usr/share
 `,
 	},
+	{
+		name: "secure files override",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+netmask: 255.255.252.0
+warewulf:
+  port: 9873
+  secure: true
+  secure files: false
+  update interval: 60
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+netmask: 255.255.252.0
+warewulf:
+  port: 9873
+  secure: true
+  secure files: false
+  update interval: 60
+`,
+	},
+	{
+		name: "v4.6.5-tls",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+netmask: 255.255.252.0
+network: 10.0.0.0
+warewulf:
+  port: 9873
+  tls port: 9874
+  secure: true
+  tls: true
+  update interval: 60
+  autobuild overlays: true
+  host overlay: true
+api:
+  enabled: true
+  tls: true
+  allowed subnets:
+    - 127.0.0.0/8
+    - ::1/128
+dhcp:
+  enabled: true
+  range start: 10.0.1.1
+  range end: 10.0.1.255
+  systemd name: dhcpd
+tftp:
+  enabled: true
+  systemd name: tftp
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+netmask: 255.255.252.0
+network: 10.0.0.0
+warewulf:
+  port: 9873
+  tls port: 9874
+  secure: true
+  tls: true
+  update interval: 60
+  autobuild overlays: true
+  host overlay: true
+api:
+  enabled: true
+  tls: true
+  allowed subnets:
+    - 127.0.0.0/8
+    - ::1/128
+dhcp:
+  enabled: true
+  range start: 10.0.1.1
+  range end: 10.0.1.255
+  systemd name: dhcpd
+tftp:
+  enabled: true
+  systemd name: tftp
+`,
+	},
+	{
+		name: "v4.6.5-ipv6",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+netmask: 255.255.252.0
+network: 10.0.0.0
+ipaddr6: 2001:db8::1
+prefixlen6: 64
+warewulf:
+  port: 9873
+  secure: true
+  update interval: 60
+dhcp:
+  enabled: true
+  range start: 10.0.1.1
+  range end: 10.0.1.255
+  range6 start: 2001:db8::100
+  range6 end: 2001:db8::1ff
+  systemd name: dhcpd
+tftp:
+  enabled: true
+  systemd name: tftp
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+netmask: 255.255.252.0
+network: 10.0.0.0
+ipaddr6: 2001:db8::1
+prefixlen6: "64"
+warewulf:
+  port: 9873
+  secure: true
+  update interval: 60
+dhcp:
+  enabled: true
+  range start: 10.0.1.1
+  range end: 10.0.1.255
+  range6 start: 2001:db8::100
+  range6 end: 2001:db8::1ff
+  systemd name: dhcpd
+tftp:
+  enabled: true
+  systemd name: tftp
+`,
+	},
+	{
+		name: "v4.5-ipv6net",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+netmask: 255.255.252.0
+network: 10.0.0.0
+ipv6net: 2001:db8::/64
+warewulf:
+  port: 9873
+  secure: true
+  update interval: 60
+dhcp:
+  enabled: true
+  systemd name: dhcpd
+tftp:
+  enabled: true
+  systemd name: tftp
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+netmask: 255.255.252.0
+network: 10.0.0.0
+ipaddr6: '2001:db8::'
+prefixlen6: "64"
+warewulf:
+  port: 9873
+  secure: true
+  update interval: 60
+dhcp:
+  enabled: true
+  systemd name: dhcpd
+tftp:
+  enabled: true
+  systemd name: tftp
+`,
+	},
 }
 
 func Test_UpgradeConfig(t *testing.T) {

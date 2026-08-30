@@ -42,7 +42,7 @@ Configure the controller
 ========================
 
 Edit the file ``/etc/warewulf/warewulf.conf`` and ensure that you've
-set the appropriate configuration paramaters. Here are some of the
+set the appropriate configuration parameters. Here are some of the
 defaults for reference assuming that ``192.168.200.1`` is the IP
 address of your cluster's private network interface:
 
@@ -97,8 +97,8 @@ Configure system services automatically
 
 There are a number of services and configurations that Warewulf relies
 on to operate.  If you wish to configure all services, you can do so
-individually (omitting the ``--all``) will print a help and usage
-instructions.
+with the following command. Running ``wwctl configure`` individually
+(omitting the ``--all``) will print help and usage instructions.
 
 .. note::
 

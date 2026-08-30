@@ -19,11 +19,9 @@ var baseCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	Use:                   "image COMMAND [OPTIONS]",
 	Short:                 "Operating system image management",
-	Long: "Starting with version 4, Warewulf uses images to build the bootable\n" +
-		"node images. These commands will help you import, manage, and transform\n" +
-		"images into bootable Warewulf images.",
-	Aliases: []string{"vnfs", "container"},
-	Args:    cobra.NoArgs,
+	Long:                  "Import, manage, and transform OS images as bootable Warewulf images.",
+	Aliases:               []string{"vnfs", "container"},
+	Args:                  cobra.NoArgs,
 }
 
 func init() {

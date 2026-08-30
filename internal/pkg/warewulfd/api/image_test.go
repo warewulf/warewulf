@@ -161,7 +161,7 @@ users:
 			} else {
 				// For JSON responses
 				ja := jsonassert.New(t)
-				ja.Assertf(string(body), tt.response) //nolint:govet
+				ja.Assert(string(body), tt.response)
 			}
 
 			for _, fileName := range tt.resultFiles {

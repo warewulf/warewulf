@@ -5,13 +5,11 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	apinode "github.com/warewulf/warewulf/internal/pkg/api/node"
-	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
-	"gopkg.in/yaml.v3"
 )
 
 func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err error) {
@@ -43,49 +41,144 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			dsk := *vars.nodeConf.Disks["UNDEF"]
 			vars.nodeConf.Disks[vars.nodeAdd.DiskName] = &dsk
 		}
-		if (vars.nodeAdd.DiskName != "") != (vars.nodeAdd.PartName != "") {
+		if vars.nodeAdd.PartName != "" && vars.nodeAdd.DiskName == "" {
 			return fmt.Errorf("partition and disk must be specified")
 		}
 		delete(vars.nodeConf.Disks, "UNDEF")
 		vars.nodeConf.Ipmi.Tags = vars.nodeAdd.IpmiTagsAdd
-		buffer, err := yaml.Marshal(vars.nodeConf)
+
+		nodeDB, err := node.New()
 		if err != nil {
-			return fmt.Errorf("can not marshall nodeInfo: %s", err)
+			return fmt.Errorf("could not open configuration: %w", err)
 		}
-		wwlog.Debug("sending following values: %s", string(buffer))
+
 		args = hostlist.Expand(args)
-		set := wwapiv1.ConfSetParameter{
-			NodeConfYaml: string(buffer),
-
-			NetdevDelete:     vars.nodeDel.NetDel,
-			PartitionDelete:  vars.nodeDel.PartDel,
-			DiskDelete:       vars.nodeDel.DiskDel,
-			FilesystemDelete: vars.nodeDel.FsDel,
-			TagAdd:           vars.nodeAdd.TagsAdd,
-			TagDel:           vars.nodeDel.TagsDel,
-			NetTagAdd:        vars.nodeAdd.NetTagsAdd,
-			NetTagDel:        vars.nodeDel.NetTagsDel,
-			IpmiTagAdd:       vars.nodeAdd.IpmiTagsAdd,
-			IpmiTagDel:       vars.nodeDel.IpmiTagsDel,
-			Netdev:           vars.nodeAdd.Net,
-			AllConfs:         vars.setNodeAll,
-			Force:            vars.setForce,
-			ConfList:         args,
+		if len(args) == 0 && !vars.setNodeAll {
+			return fmt.Errorf("no nodes specified; use --all to modify all nodes")
+		}
+		if vars.setNodeAll {
+			args = nodeDB.ListAllNodes()
+			wwlog.Warn("this command will modify all nodes")
+		} else if len(nodeDB.ListAllNodes()) == 0 {
+			wwlog.Warn("no nodes/profiles found")
+			return nil
 		}
 
-		if !vars.setYes {
-			var nodeCount uint
-			// The checks run twice in the prompt case.
-			// Avoiding putting in a blocking prompt in an API.
-			_, nodeCount, err = apinode.NodeSetParameterCheck(&set)
+		changed := cmd.Flags().Changed
+		nodeChanges := map[string][]node.Change{}
+		for _, nId := range args {
+			wwlog.Debug("evaluating node: %s", nId)
+			nodePtr, err := nodeDB.GetNodeOnlyPtr(nId)
 			if err != nil {
-				return nil
+				wwlog.Warn("invalid node: %s", nId)
+				continue
 			}
-			yes := util.Confirm(fmt.Sprintf("Are you sure you want to modify %d nodes(s)", nodeCount))
-			if !yes {
-				return nil
+			before := nodePtr.Clone()
+			before.Flatten()
+			nodePtr.UpdateFrom(&vars.nodeConf, changed)
+			if vars.nodeDel.NetDel != "" {
+				if _, ok := nodePtr.NetDevs[vars.nodeDel.NetDel]; !ok {
+					return fmt.Errorf("network device name doesn't exist: %s", vars.nodeDel.NetDel)
+				}
+				wwlog.Verbose("Node: %s, Deleting network device: %s", nId, vars.nodeDel.NetDel)
+				delete(nodePtr.NetDevs, vars.nodeDel.NetDel)
+			}
+			if vars.nodeDel.PartDel != "" {
+				if vars.nodeAdd.DiskName != "" {
+					disk, ok := nodePtr.Disks[vars.nodeAdd.DiskName]
+					if !ok || disk == nil {
+						return fmt.Errorf("disk doesn't exist: %s", vars.nodeAdd.DiskName)
+					}
+					if _, ok := disk.Partitions[vars.nodeDel.PartDel]; !ok {
+						return fmt.Errorf("partition doesn't exist: %s", vars.nodeDel.PartDel)
+					}
+					wwlog.Verbose("Node: %s, on disk %s, deleting partition: %s", nId, vars.nodeAdd.DiskName, vars.nodeDel.PartDel)
+					delete(disk.Partitions, vars.nodeDel.PartDel)
+				} else {
+					found := false
+					for diskname, disk := range nodePtr.Disks {
+						if _, ok := disk.Partitions[vars.nodeDel.PartDel]; ok {
+							wwlog.Verbose("Node: %s, on disk %s, deleting partition: %s", nId, diskname, vars.nodeDel.PartDel)
+							delete(disk.Partitions, vars.nodeDel.PartDel)
+							found = true
+						}
+					}
+					if !found {
+						return fmt.Errorf("partition doesn't exist: %s", vars.nodeDel.PartDel)
+					}
+				}
+			}
+			if vars.nodeDel.DiskDel != "" {
+				if _, ok := nodePtr.Disks[vars.nodeDel.DiskDel]; ok {
+					wwlog.Verbose("Node: %s, deleting disk: %s", nId, vars.nodeDel.DiskDel)
+					delete(nodePtr.Disks, vars.nodeDel.DiskDel)
+				} else {
+					return fmt.Errorf("disk doesn't exist: %s", vars.nodeDel.DiskDel)
+				}
+			}
+			if vars.nodeDel.FsDel != "" {
+				if _, ok := nodePtr.FileSystems[vars.nodeDel.FsDel]; ok {
+					wwlog.Verbose("Node: %s, deleting filesystem: %s", nId, vars.nodeDel.FsDel)
+					delete(nodePtr.FileSystems, vars.nodeDel.FsDel)
+				} else {
+					return fmt.Errorf("filesystem doesn't exist: %s", vars.nodeDel.FsDel)
+				}
+			}
+			for _, key := range vars.nodeDel.TagsDel {
+				delete(nodePtr.Tags, key)
+			}
+			for key, val := range vars.nodeAdd.TagsAdd {
+				if nodePtr.Tags == nil {
+					nodePtr.Tags = make(map[string]string)
+				}
+				nodePtr.Tags[key] = val
+			}
+			for key, val := range vars.nodeAdd.IpmiTagsAdd {
+				if nodePtr.Ipmi.Tags == nil {
+					nodePtr.Ipmi.Tags = make(map[string]string)
+				}
+				nodePtr.Ipmi.Tags[key] = val
+			}
+			for _, key := range vars.nodeDel.IpmiTagsDel {
+				delete(nodePtr.Ipmi.Tags, key)
+			}
+			if netDev, ok := nodePtr.NetDevs[vars.nodeAdd.Net]; ok {
+				for _, key := range vars.nodeDel.NetTagsDel {
+					delete(netDev.Tags, key)
+				}
+				if len(vars.nodeAdd.NetTagsAdd) > 0 && netDev.Tags == nil {
+					netDev.Tags = make(map[string]string)
+				}
+				for key, val := range vars.nodeAdd.NetTagsAdd {
+					netDev.Tags[key] = val
+				}
+			}
+			nodePtr.Flatten()
+			if before != nil {
+				if ch := node.Diff(before, nodePtr); len(ch) > 0 {
+					nodeChanges[nId] = ch
+				}
 			}
 		}
-		return apinode.NodeSet(&set)
+
+		summary := node.FormatChanges(nodeChanges)
+		if !vars.setYes {
+			if summary == "" {
+				wwlog.Info("No changes to apply.")
+				return nil
+			}
+			wwlog.Output("%s", summary)
+			if !util.Confirm(fmt.Sprintf("Apply these changes to %d node(s)?", len(nodeChanges))) {
+				wwlog.Info("No changes made!")
+				return nil
+			}
+		} else {
+			wwlog.Output("Applying following changes:\n%s", summary)
+		}
+
+		if err := nodeDB.Persist(); err != nil {
+			return err
+		}
+		return warewulfd.DaemonReload()
 	}
 }

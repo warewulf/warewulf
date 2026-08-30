@@ -1,6 +1,6 @@
-# Node images have moved
+# OS images have moved
 
-Warewulf node images are now being maintained in a separate repository:
+Warewulf OS images are now being maintained in a separate repository:
 
 https://github.com/warewulf/warewulf-node-images.
 

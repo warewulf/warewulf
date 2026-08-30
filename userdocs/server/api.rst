@@ -27,7 +27,7 @@ and passwords able to authenticate to the API.
      - name: admin
        password hash: $2b$05$5QVWDpiWE7L4SDL9CYdi3O/l6HnbNOLoXgY2sa1bQQ7aSBKdSqvsC
 
-Passwords are stored as bcrypt2 hashses, which can be generated with ``mkpasswd``.
+Passwords are stored as bcrypt2 hashes, which can be generated with ``mkpasswd``.
 
 .. code-block:: console
 

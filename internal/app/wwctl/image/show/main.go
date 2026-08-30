@@ -3,35 +3,61 @@ package show
 import (
 	"fmt"
 
-	"github.com/warewulf/warewulf/internal/pkg/api/image"
-	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/warewulf/warewulf/internal/pkg/image"
+	"github.com/warewulf/warewulf/internal/pkg/kernel"
+	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/util"
 
 	"github.com/spf13/cobra"
 )
 
-func CobraRunE(cmd *cobra.Command, args []string) (err error) {
-	csp := &wwapiv1.ImageShowParameter{
-		ImageName: args[0],
+func CobraRunE(cmd *cobra.Command, args []string) error {
+
+	imageName := args[0]
+
+	if !image.ValidName(imageName) {
+		return fmt.Errorf("%s is not a valid image name", imageName)
 	}
 
-	var r *wwapiv1.ImageShowResponse
-	r, err = image.ImageShow(csp)
+	rootFsDir := image.RootFsDir(imageName)
+	if !util.IsDir(rootFsDir) {
+		return fmt.Errorf("%s is not a valid image", imageName)
+	}
+	kernel := kernel.FindKernels(imageName).Default()
+	kernelVersion := ""
+	if kernel != nil {
+		kernelVersion = kernel.Version()
+	}
+
+	nodeDB, err := node.New()
 	if err != nil {
-		return
+		return err
+	}
+
+	nodes, err := nodeDB.FindAllNodes()
+	if err != nil {
+		return err
+	}
+
+	var nodeList []string
+	for _, n := range nodes {
+		if n.ImageName == imageName {
+			nodeList = append(nodeList, n.Id())
+		}
 	}
 
 	if !ShowAll {
-		fmt.Printf("%s\n", r.Rootfs)
+		fmt.Printf("%s\n", rootFsDir)
 	} else {
-		kernelVersion := r.KernelVersion
 		if kernelVersion == "" {
 			kernelVersion = "not found"
 		}
-		fmt.Printf("Name: %s\n", r.Name)
+		fmt.Printf("Name: %s\n", imageName)
 		fmt.Printf("KernelVersion: %s\n", kernelVersion)
-		fmt.Printf("Rootfs: %s\n", r.Rootfs)
-		fmt.Printf("Nr nodes: %d\n", len(r.Nodes))
-		fmt.Printf("Nodes: %s\n", r.Nodes)
+		fmt.Printf("Rootfs: %s\n", rootFsDir)
+		fmt.Printf("Nr nodes: %d\n", len(nodeList))
+		fmt.Printf("Nodes: %v\n", nodeList)
 	}
-	return
+
+	return nil
 }

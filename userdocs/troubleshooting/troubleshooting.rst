@@ -52,24 +52,25 @@ cluster node's MAC address in place of 00:00:00:00:00:00.)
 
 .. code-block::
 
-   set uri http://10.0.0.1:9873/provision/00:00:00:00:00:00
-   kernel --name kernel ${uri}?stage=kernel
-   imgextract --name image ${uri}?stage=image&compress=gz
-   imgextract --name system ${uri}?stage=system&compress=gz
-   imgextract --name runtime ${uri}?stage=runtime&compress=gz
+   set base http://10.0.0.1:9873
+   set hwaddr 00:00:00:00:00:00
+   kernel --name kernel ${base}/kernel/${hwaddr}
+   imgextract --name image ${base}/image/${hwaddr}?compress=gz
+   imgextract --name system ${base}/system/${hwaddr}?compress=gz
+   imgextract --name runtime ${base}/runtime/${hwaddr}?compress=gz
    boot kernel initrd=image initrd=system initrd=runtime
 
-- The ``uri`` variable points to ``warewulfd`` for future reference. This
-  includes the cluster node's MAC address so that Warewulf knows what image and
-  overlays to provide.
+- The ``base`` variable points to ``warewulfd`` for future reference. The MAC
+  address is appended to each resource path so that Warewulf knows what image
+  and overlays to provide.
 
 - The ``kernel`` command fetches a kernel for later booting.
 
 - The ``imgextract`` command fetches and decompresses the images that will make
-  up the booted noe image. In a typical environment this is used to load a
+  up the booted OS image. In a typical environment this is used to load a
   minimal "initial ramdisk" which, then, boots the rest of the system. Warewulf,
   by default, loads the entire image as an initial ramdisk, and also loads the
-  system and runtime overlays at this time time.
+  system and runtime overlays at this time.
 
 - The ``boot`` command tells iPXE to boot the system with the given kernel and
   ramdisks.
@@ -91,7 +92,7 @@ enabled. To do so, substitute the ``boot`` command above.
 
    You may be more familiar with specifying ``init=`` on the kernel command
    line. ``rdinit`` indicates "ramdisk init." Since Warewulf, by default, boots
-   the node image as an initial ramdisk, we must use ``rdinit=`` here.
+   the OS image as an initial ramdisk, we must use ``rdinit=`` here.
 
 GRUB
 ====
@@ -110,12 +111,12 @@ the port number if you have changed it from the default of 9873.)
 
 .. code-block::
 
-   uri="(http,10.0.0.1:9873)/provision/${net_default_mac}"
-   linux "${uri}?stage=kernel" wwid=${net_default_mac}
-   initrd "${uri}?stage=image&compress=gz" "${uri}?stage=system&compress=gz" "${uri}?stage=runtime&compress=gz"
+   base="(http,10.0.0.1:9873)"
+   linux "${base}/kernel/${net_default_mac}" wwid=${net_default_mac}
+   initrd "${base}/image/${net_default_mac}?compress=gz" "${base}/system/${net_default_mac}?compress=gz" "${base}/runtime/${net_default_mac}?compress=gz"
    boot
 
-- The ``uri`` variable points to ``warewulfd`` for future reference.
+- The ``base`` variable points to ``warewulfd`` for future reference.
   ``${net_default_mac}`` provides Warewulf with the MAC address of the booting
   node, so that Warewulf knows what image and overlays to provide it.
 
@@ -127,7 +128,7 @@ the port number if you have changed it from the default of 9873.)
   a typical environment this is used to load a minimal "initial ramdisk" which,
   then, boots the rest of the system. Warewulf, by default, loads the entire
   image as an initial ramdisk, and also loads the system and runtime overlays at
-  this time time.
+  this time.
 
 - The ``boot`` command tells GRUB to boot the system with the previously-defined
   configuration.
@@ -143,13 +144,13 @@ enabled. To do so, substitute the ``linux`` command above.
 
 .. code-block::
 
-   linux "${uri}?stage=kernel" wwid=${net_default_mac} debug rdinit=/bin/sh
+   linux "${base}/kernel/${net_default_mac}" wwid=${net_default_mac} debug rdinit=/bin/sh
 
 .. note::
 
    You may be more familiar with specifying ``init=`` on the kernel command
    line. ``rdinit`` indicates "ramdisk init." Since Warewulf, by default, boots
-   the node image as an initial ramdisk, we must use ``rdinit=`` here.
+   the OS image as an initial ramdisk, we must use ``rdinit=`` here.
 
 Dracut
 ======
@@ -195,12 +196,133 @@ investigate:
 - Sometimes you need to add ``should_exist: "true"`` for the swap partition as
   well.
 
+Overlay Shadowing
+=================
+
+When Warewulf introduced the distinction between distribution overlays and site
+overlays, existing installations that had modified any distribution overlays
+were left with those modified files in the site overlay directory (typically
+``/var/lib/warewulf/overlays/``). Because a site overlay takes complete
+precedence over a distribution overlay with the same name — with no merging of
+individual files — the entire distribution overlay is shadowed. Any new files
+or updates added to the distribution overlay in a subsequent Warewulf upgrade
+will be hidden as long as a site overlay of the same name exists.
+
+To check whether any distribution overlays are being shadowed by site overlays,
+use ``wwctl overlay list``, which includes a ``SITE`` column:
+
+.. code-block::
+
+   wwctl overlay list
+
+Any overlay showing ``true`` in the ``SITE`` column that you did not
+intentionally create locally may be unintentionally shadowing its distribution
+counterpart.
+
+To see which files are present in a site overlay, use the ``--all`` flag:
+
+.. code-block::
+
+   wwctl overlay list --all <overlay_name>
+
+To see the filesystem paths of the overlays directly, use the ``--path`` flag:
+
+.. code-block::
+
+   wwctl overlay list --path
+
+If you determine that a site overlay is unintentionally shadowing a
+distribution overlay, you can restore the distribution overlay by deleting the
+site overlay. Back up any intentional local modifications first, then delete
+the site overlay:
+
+.. code-block::
+
+   wwctl overlay delete <overlay_name>
+
+``wwctl overlay delete`` only ever deletes site overlays, so this command is
+safe to run without risk of removing the underlying distribution overlay. After
+deleting the site overlay, ``wwctl overlay list`` should show ``false`` in the
+``SITE`` column for that overlay, confirming that the distribution overlay is
+now active.
+
+.. _overlay-merged-usr:
+
+Overlays and Merged-``/usr`` Symlinks
+=====================================
+
+On many modern Linux distributions, several top-level directories are not real
+directories but symlinks into ``/usr``:
+
+- ``/bin`` → ``/usr/bin``
+- ``/sbin`` → ``/usr/sbin``
+- ``/lib`` → ``/usr/lib``
+- ``/lib64`` → ``/usr/lib64``
+
+This is known as the "merged ``/usr``" layout. Because Warewulf overlays are
+applied by walking the overlay's ``rootfs`` and creating each directory as a
+*real* directory on the node, placing files under any of these paths in an
+overlay replaces the distribution's symlink with a directory. This diverges the
+node's filesystem from what the image expects and can cause difficult-to-debug
+failures — most notably, a two-stage (Dracut) boot that fails at the
+``switch_root`` step, seemingly out of nowhere.
+
+For example, an overlay that adds a compatibility symlink under ``/lib64``:
+
+.. code-block:: none
+
+   my-overlay
+   └── rootfs
+       └── lib64
+           └── libexample.so.1 -> libexample.so.1.2.3
+
+will shadow the ``/lib64`` → ``/usr/lib64`` symlink with a directory containing
+only ``libexample.so.1``, hiding the rest of the system's libraries.
+
+**Always target the real ``/usr`` path instead.** Rework the overlay to use
+``/usr/lib64`` (and likewise ``/usr/bin``, ``/usr/sbin``, and ``/usr/lib``):
+
+.. code-block:: none
+
+   my-overlay
+   └── rootfs
+       └── usr
+           └── lib64
+               └── libexample.so.1 -> libexample.so.1.2.3
+
+The ``/lib64`` → ``/usr/lib64`` symlink from the image then continues to resolve
+correctly, and your file appears at both ``/lib64/libexample.so.1`` and
+``/usr/lib64/libexample.so.1``.
+
 Running Containers on Cluster Nodes
 ===================================
 
-Some container runtimes, notably Podman, require file system features that are
-not available in ``initrootfs``. Cluster nodes using Podman (and some other
-container runtimes) should be configured with ``--root=tmpfs``.
+Container runtimes such as Podman require filesystem features — most notably
+OverlayFS support for image storage and container layers — that are not
+available with the default ``initramfs`` root filesystem. To run Podman or
+similar runtimes on cluster nodes, configure the node or profile to use
+``tmpfs`` as the root filesystem:
+
+.. code-block:: shell
+
+   # Apply to all nodes via a profile
+   wwctl profile set default --root=tmpfs
+
+   # Or apply to a specific node
+   wwctl node set <nodename> --root=tmpfs
+
+After changing the root filesystem type, reboot the affected nodes to apply
+the new configuration.
+
+.. note::
+
+   The OS image itself must have Podman (or the desired container runtime)
+   installed. See :ref:`images` for guidance on customizing OS images.
+
+For information on tuning tmpfs memory usage and NUMA interleaving behavior,
+see :ref:`tmpfs-and-numa` below.
+
+.. _tmpfs-and-numa:
 
 tmpfs and NUMA
 ==============
@@ -208,7 +330,7 @@ tmpfs and NUMA
 Warewulf can optionally mount the root filesystem as ``tmpfs`` instead of the
 default ``initramfs``. Warewulf will add ``mpol=interleave`` to the mount point
 which will distribute the memory across all NUMA nodes. This avoids the
-hotspotting that occurs when the default initramfs stores large node images on a
+hotspotting that occurs when the default initramfs stores large OS images on a
 single NUMA node. To enable this, set the rootfs type to tmpfs:
 
 .. code-block:: shell
@@ -228,8 +350,52 @@ argument:
 By default this is set to 50% of physical RAM. Note that tmpfs is required for
 SELinux overlays since initramfs cannot preserve SELinux contexts.
 
+Because the root is ``tmpfs``, the kernel can also swap cold image pages to a
+local swap device, freeing RAM for running workloads. This does not apply to the
+default ``initramfs`` root (single-stage boot), where pages are pinned in memory
+and cannot be swapped. See :ref:`swap-and-image-memory` for a complete walkthrough.
+
 .. note::
 
    On some systems, it may also be necessary to include the ``noefi`` kernel
    argument. This works around specific EFI firmware bugs that can prevent
    proper memory release during the transition from ``initramfs`` to ``tmpfs``.
+
+.. _oci-blob-cache:
+
+OCI Blob Cache
+==============
+
+Warewulf caches OCI image layers on disk to speed up repeated ``wwctl image
+import`` operations. The cache can grow large when many images — or many
+versions of the same image — are imported over time.
+
+**v4.6 and later**
+
+The cache is stored at ``$cachedir/warewulf`` (default: ``/var/cache/warewulf``
+on RPM-based distributions). It contains files and directories such as
+``blobs/``, ``index.json``, and ``oci-layout``.
+
+Use ``wwctl clean`` to remove the cache:
+
+.. code-block:: console
+
+   # wwctl clean
+
+The cache is rebuilt automatically on the next ``wwctl image import``.
+
+**v4.5.x and earlier (legacy cache location)**
+
+In v4.5.x and earlier releases, the OCI blob cache was stored at
+``$datastore/oci`` (default: ``/usr/share/oci`` in the Rocky Linux RPM
+packages). This location is not removed by ``wwctl clean``.
+
+If you are upgrading from v4.5.x and want to reclaim the space used by the
+old cache, you can safely delete this directory manually:
+
+.. code-block:: console
+
+   # rm -rf /usr/share/oci
+
+Adjust the path if your installation used a non-default ``datastore``
+setting in ``warewulf.conf``.

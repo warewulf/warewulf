@@ -1,29 +1,98 @@
 package nodestatus
 
 import (
+	"encoding/json"
 	"fmt"
+	"net"
+	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	apinode "github.com/warewulf/warewulf/internal/pkg/api/node"
-	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/hostlist"
+	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"golang.org/x/term"
 )
 
-func CobraRunE(cmd *cobra.Command, args []string) (err error) {
+type nodeStatus struct {
+	NodeName string `json:"node name"`
+	Stage    string `json:"stage"`
+	Sent     string `json:"sent"`
+	Ipaddr   string `json:"ipaddr"`
+	Lastseen int64  `json:"last seen"`
+}
 
+func displayStage(stage string) string {
+	switch stage {
+	case "efiboot":
+		return "EFI"
+	case "grub":
+		return "GRUB"
+	case "ipxe":
+		return "IPXE"
+	case "kernel":
+		return "KERNEL"
+	case "image":
+		return "IMAGE"
+	case "system":
+		return "SYSTEM OVERLAY"
+	case "runtime":
+		return "RUNTIME OVERLAY"
+	case "initramfs":
+		return "INITRAMFS"
+	default:
+		return strings.ToUpper(stage)
+	}
+}
+
+// statusHTTPTimeout bounds how long "wwctl node status" waits on the
+// warewulfd /status endpoint. The request would otherwise use
+// http.DefaultClient, which has no timeout, so an unreachable or
+// firewalled server would hang the command indefinitely.
+const statusHTTPTimeout = 30 * time.Second
+
+// statusURL builds the warewulfd /status endpoint URL from the server
+// configuration. It prefers the IPv4 server address (ipaddr) and falls
+// back to the IPv6 address (ipaddr6), so that node status works on
+// IPv6-only servers where ipaddr is left unset. net.JoinHostPort
+// brackets IPv6 literals correctly (e.g. [2001:db8::1]:9873).
+//
+// The IPv4-first order preserves the previous node status behavior,
+// which only ever used ipaddr. Address selection is currently duplicated
+// across the tree (wwclient prefers ipaddr6; warewulfd is request-driven);
+// consolidating it behind a shared config method is left as a follow-up.
+func statusURL(controller *warewulfconf.WarewulfYaml) (string, error) {
+	serverAddr := controller.Ipaddr
+	if serverAddr == "" {
+		serverAddr = controller.Ipaddr6
+	}
+
+	if serverAddr == "" {
+		confFile := controller.GetWarewulfConf()
+		if confFile == "" {
+			confFile = "warewulf.conf"
+		}
+		return "", fmt.Errorf("warewulf server address is not configured: set ipaddr or ipaddr6 in %s", confFile)
+	}
+
+	hostPort := net.JoinHostPort(serverAddr, strconv.Itoa(controller.Warewulf.Port))
+	return fmt.Sprintf("http://%s/status", hostPort), nil
+}
+
+func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	controller := warewulfconf.Get()
 
-	if controller.Ipaddr == "" {
-		return fmt.Errorf("warewulf Server IP Address is not properly configured")
-
+	endpoint, err := statusURL(controller)
+	if err != nil {
+		return err
 	}
+
+	client := &http.Client{Timeout: statusHTTPTimeout}
 
 	for {
 		var elipsis bool
@@ -31,10 +100,20 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		var count int
 		rightnow := time.Now().Unix()
 
-		var nodeStatusResponse *wwapiv1.NodeStatusResponse
-		nodeStatusResponse, err = apinode.NodeStatus([]string{})
+		wwlog.Verbose("Connecting to: %s", endpoint)
+
+		resp, err := client.Get(endpoint)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not connect to Warewulf server: %w", err)
+		}
+
+		var wwNodeStatus struct {
+			Nodes map[string]*nodeStatus `json:"nodes"`
+		}
+		err = json.NewDecoder(resp.Body).Decode(&wwNodeStatus)
+		_ = resp.Body.Close()
+		if err != nil {
+			return fmt.Errorf("could not decode JSON: %w", err)
 		}
 
 		if SetWatch {
@@ -50,20 +129,23 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		fmt.Printf("%s\n", strings.Repeat("=", 80))
 
 		wwlog.Verbose("Building sort index")
-		var statuses []*wwapiv1.NodeStatus
+		var statuses []*nodeStatus
 		if len(args) > 0 {
+			if _, err := node.New(); err != nil {
+				return fmt.Errorf("could not open node configuration: %w", err)
+			}
 			nodeList := hostlist.Expand(args)
-			for i := 0; i < len(nodeStatusResponse.NodeStatus); i++ {
-				for j := 0; j < len(nodeList); j++ {
-					if nodeStatusResponse.NodeStatus[i].NodeName == nodeList[j] {
-						statuses = append(statuses, nodeStatusResponse.NodeStatus[i])
+			for _, v := range wwNodeStatus.Nodes {
+				for _, name := range nodeList {
+					if v.NodeName == name {
+						statuses = append(statuses, v)
 						break
 					}
 				}
 			}
 		} else {
-			for i := 0; i < len(nodeStatusResponse.NodeStatus); i++ {
-				statuses = append(statuses, nodeStatusResponse.NodeStatus[i])
+			for _, v := range wwNodeStatus.Nodes {
+				statuses = append(statuses, v)
 			}
 		}
 
@@ -102,11 +184,11 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 					continue
 				}
 				if rightnow-o.Lastseen >= int64(controller.Warewulf.UpdateInterval*2) {
-					color.Red("%-20s %-20s %-25s %-10d\n", o.NodeName, o.Stage, o.Sent, rightnow-o.Lastseen)
+					color.Red("%-20s %-20s %-25s %-10d\n", o.NodeName, displayStage(o.Stage), o.Sent, rightnow-o.Lastseen)
 				} else if rightnow-o.Lastseen >= int64(controller.Warewulf.UpdateInterval+5) {
-					color.Yellow("%-20s %-20s %-25s %-10d\n", o.NodeName, o.Stage, o.Sent, rightnow-o.Lastseen)
+					color.Yellow("%-20s %-20s %-25s %-10d\n", o.NodeName, displayStage(o.Stage), o.Sent, rightnow-o.Lastseen)
 				} else {
-					fmt.Printf("%-20s %-20s %-25s %-10d\n", o.NodeName, o.Stage, o.Sent, rightnow-o.Lastseen)
+					fmt.Printf("%-20s %-20s %-25s %-10d\n", o.NodeName, displayStage(o.Stage), o.Sent, rightnow-o.Lastseen)
 				}
 			} else {
 				color.HiBlack("%-20s %-20s %-25s %-10s\n", o.NodeName, "--", "--", "--")

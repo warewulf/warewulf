@@ -80,7 +80,7 @@ func printStaticTable(cmd *cobra.Command, varFields map[string]overlay.FieldInfo
 
 	// Add newline after wwdoc lines if they exist
 	if hasWwdoc {
-		fmt.Fprintln(cmd.OutOrStdout())
+		_, _ = fmt.Fprintln(cmd.OutOrStdout())
 	}
 
 	// Sort variables by name for consistent output

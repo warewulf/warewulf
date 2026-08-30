@@ -8,7 +8,7 @@ import (
 var (
 	baseCmd = &cobra.Command{
 		Use:               "print",
-		Short:             "print wareweulf.conf",
+		Short:             "print warewulf.conf",
 		Long:              "This command prints the actual used warewulf.conf, can be used to create an empty valid warewulf.conf",
 		RunE:              CobraRunE,
 		Args:              cobra.NoArgs,

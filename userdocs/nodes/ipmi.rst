@@ -13,7 +13,7 @@ Configuration
 Typically, common settings for IPMI interfaces are set on a profile, leaving
 only the IP address set per-node.
 
-If ``--ipmiwrite`` is set to `true`, the ``wwinit`` overlay will write the
+If ``--ipmiwrite`` is set to ``true``, the ``wwinit`` overlay will write the
 desired IPMI configuration to the node's BMC during boot.
 
 .. code-block::

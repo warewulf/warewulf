@@ -8,8 +8,8 @@ supported; but it is often better to manage it using the ``wwctl`` command.
 
 .. note::
 
-   The ``nodes.conf`` file is YAML document that can be edited directly or
-   managed with configuation management; but its internal structure is
+   The ``nodes.conf`` file is a YAML document that can be edited directly or
+   managed with configuration management; but its internal structure is
    technically undocumented and subject to change between versions. After
    Warewulf v4.6.0, the ``wwctl upgrade nodes`` command can be used to update a
    ``nodes.conf`` from a previous Warewulf v4 version.
@@ -99,7 +99,7 @@ edit``.
 List values
 -----------
 
-Some node fields, such as overlays and kernel aruments, accept a list of values.
+Some node fields, such as overlays and kernel arguments, accept a list of values.
 These may be specified as a comma-separated list or as multiple arguments.
 
 To include an explicit comma in the value, enclose the value in inner-quotes.
@@ -113,12 +113,50 @@ To include an explicit comma in the value, enclose the value in inner-quotes.
 Un-setting Node Fields
 ----------------------
 
-To un-set a field value, set the value to ``UNDEF``.
+Node fields can be cleared using the ``wwctl node unset`` command. Each field is
+specified as a boolean flag; the field is cleared when the flag is present.
 
 .. code-block:: shell
 
-   wwctl node set n1 \
-     --image=UNDEF
+   wwctl node unset n1 --image
+   wwctl node unset n1 --kernelargs
+
+To unset fields on a specific network interface, disk, partition, or filesystem,
+use the scoping flags ``--netname``, ``--diskname``, ``--partname``, and
+``--fsname``.
+
+.. code-block:: shell
+
+   wwctl node unset n1 --netname=secondary --ipaddr
+
+If a scoping flag is given without any sub-field flags, the entire named
+sub-entity is removed. For ``--partname``, an optional ``--diskname`` scopes
+the deletion to a specific disk; without it, the named partition is removed
+from all disks.
+
+.. code-block:: shell
+
+   wwctl node unset n1 --netname=secondary
+   wwctl node unset n1 --partname=swap --diskname=/dev/vda
+
+Tags can be selectively removed with ``--tag``, ``--nettag``, and
+``--ipmitag``.
+
+.. code-block:: shell
+
+   wwctl node unset n1 --tag=localtime
+   wwctl node unset n1 --nettag=DNS1
+
+A full list of available flags is shown by ``wwctl node unset --help``.
+
+.. note::
+
+   You can also un-set some fields by setting their value to ``UNDEF`` or
+   ``UNSET`` with ``wwctl node set``.
+
+   .. code-block:: shell
+
+      wwctl node set n1 --image=UNDEF
 
 Configuring an Image
 ====================
@@ -171,6 +209,8 @@ node directly, to network interfaces, and even to IPMI interfaces.
 
    wwctl node set n1 --tagadd="localtime=UTC"
    wwctl node set n1 --nettagadd="DNS1=1.1.1.1"
+
+.. _nodes-resources:
 
 Resources
 =========

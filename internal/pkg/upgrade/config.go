@@ -1,6 +1,9 @@
 package upgrade
 
 import (
+	"net"
+	"strconv"
+
 	"gopkg.in/yaml.v3"
 
 	"github.com/warewulf/warewulf/internal/pkg/config"
@@ -23,8 +26,10 @@ type WarewulfYaml struct {
 	Netmask         string        `yaml:"netmask"`
 	Network         string        `yaml:"network"`
 	Ipv6net         string        `yaml:"ipv6net"`
+	PrefixLen6      string        `yaml:"prefixlen6"`
 	Fqdn            string        `yaml:"fqdn"`
 	Warewulf        *WarewulfConf `yaml:"warewulf"`
+	API             *APIConf      `yaml:"api"`
 	DHCP            *DHCPConf     `yaml:"dhcp"`
 	TFTP            *TFTPConf     `yaml:"tftp"`
 	NFS             *NFSConf      `yaml:"nfs"`
@@ -45,12 +50,26 @@ func (legacy *WarewulfYaml) Upgrade() (upgraded *config.WarewulfYaml) {
 	upgraded.Ipaddr6 = legacy.Ipaddr6
 	upgraded.Netmask = legacy.Netmask
 	upgraded.Network = legacy.Network
+	upgraded.PrefixLen6 = legacy.PrefixLen6
 	if legacy.Ipv6net != "" {
-		logIgnore("Ipv6net", legacy.Ipv6net, "obsolete")
+		if ip, ipnet, err := net.ParseCIDR(legacy.Ipv6net); err == nil {
+			if upgraded.Ipaddr6 == "" {
+				upgraded.Ipaddr6 = ip.String()
+			}
+			if upgraded.PrefixLen6 == "" {
+				prefixLen, _ := ipnet.Mask.Size()
+				upgraded.PrefixLen6 = strconv.Itoa(prefixLen)
+			}
+		} else {
+			logIgnore("Ipv6net", legacy.Ipv6net, "unparsable")
+		}
 	}
 	upgraded.Fqdn = legacy.Fqdn
 	if legacy.Warewulf != nil {
 		upgraded.Warewulf = legacy.Warewulf.Upgrade()
+	}
+	if legacy.API != nil {
+		upgraded.API = legacy.API.Upgrade()
 	}
 	if legacy.DHCP != nil {
 		upgraded.DHCP = legacy.DHCP.Upgrade()
@@ -92,7 +111,10 @@ func (legacy *WarewulfYaml) Upgrade() (upgraded *config.WarewulfYaml) {
 
 type WarewulfConf struct {
 	Port              int    `yaml:"port"`
+	TLSPort           int    `yaml:"tls port"`
 	Secure            *bool  `yaml:"secure"`
+	SecureFiles       *bool  `yaml:"secure files"`
+	TLSEnabled        *bool  `yaml:"tls"`
 	UpdateInterval    int    `yaml:"update interval"`
 	AutobuildOverlays *bool  `yaml:"autobuild overlays"`
 	EnableHostOverlay *bool  `yaml:"host overlay"`
@@ -105,7 +127,10 @@ type WarewulfConf struct {
 func (legacy *WarewulfConf) Upgrade() (upgraded *config.WarewulfConf) {
 	upgraded = new(config.WarewulfConf)
 	upgraded.Port = legacy.Port
+	upgraded.TLSPort = legacy.TLSPort
 	upgraded.SecureP = legacy.Secure
+	upgraded.SecureFilesP = legacy.SecureFiles
+	upgraded.TLSEnabledP = legacy.TLSEnabled
 	upgraded.UpdateInterval = legacy.UpdateInterval
 	upgraded.AutobuildOverlaysP = legacy.AutobuildOverlays
 	upgraded.EnableHostOverlayP = legacy.EnableHostOverlay
@@ -117,11 +142,27 @@ func (legacy *WarewulfConf) Upgrade() (upgraded *config.WarewulfConf) {
 	return upgraded
 }
 
+type APIConf struct {
+	Enabled     *bool          `yaml:"enabled"`
+	TLSEnabled  *bool          `yaml:"tls"`
+	AllowedNets []config.IPNet `yaml:"allowed subnets"`
+}
+
+func (legacy *APIConf) Upgrade() (upgraded *config.APIConf) {
+	upgraded = new(config.APIConf)
+	upgraded.EnabledP = legacy.Enabled
+	upgraded.TLSEnabledP = legacy.TLSEnabled
+	upgraded.AllowedNets = append([]config.IPNet{}, legacy.AllowedNets...)
+	return upgraded
+}
+
 type DHCPConf struct {
 	Enabled     *bool  `yaml:"enabled"`
 	Template    string `yaml:"template"`
 	RangeStart  string `yaml:"range start"`
 	RangeEnd    string `yaml:"range end"`
+	Range6Start string `yaml:"range6 start"`
+	Range6End   string `yaml:"range6 end"`
 	SystemdName string `yaml:"systemd name"`
 }
 
@@ -131,6 +172,8 @@ func (legacy *DHCPConf) Upgrade() (upgraded *config.DHCPConf) {
 	upgraded.Template = legacy.Template
 	upgraded.RangeStart = legacy.RangeStart
 	upgraded.RangeEnd = legacy.RangeEnd
+	upgraded.Range6Start = legacy.Range6Start
+	upgraded.Range6End = legacy.Range6End
 	upgraded.SystemdName = legacy.SystemdName
 	return upgraded
 }

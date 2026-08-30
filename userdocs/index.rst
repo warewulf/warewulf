@@ -15,6 +15,8 @@ Welcome to the Warewulf User Guide!
    SUSE Quickstart (openSUSE Leap and SLES) <getting-started/suse-quickstart>
    Debian Quickstart <getting-started/debian-quickstart>
    Glossary <getting-started/glossary>
+   Quick Reference <getting-started/quick-reference>
+   Feature Status <getting-started/feature-status>
 
 .. toctree::
    :maxdepth: 1
@@ -23,6 +25,8 @@ Welcome to the Warewulf User Guide!
    Server Installation <server/installation>
    Controlling Warewulf (wwctl) <server/wwctl>
    Server Configuration <server/configuration>
+   Server Routes <server/routes>
+   Networking <server/networking>
    Using dnsmasq <server/dnsmasq>
    Security <server/security>
    Bootloaders <server/bootloaders>
@@ -35,6 +39,7 @@ Welcome to the Warewulf User Guide!
 
    Cluster Nodes <nodes/nodes>
    Node Profiles <nodes/profiles>
+   Node Groups <nodes/groups>
    Network <nodes/network>
    IPMI <nodes/ipmi>
    Disks <nodes/disks>
@@ -43,7 +48,7 @@ Welcome to the Warewulf User Guide!
    :maxdepth: 1
    :caption: Images
 
-   Node Images <images/images>
+   OS Images <images/images>
    Image Kernels <images/kernel>
    Syncuser <images/syncuser>
    SELinux <images/selinux>
@@ -95,3 +100,4 @@ Welcome to the Warewulf User Guide!
    v4.6.3 <release/v4.6.3>
    v4.6.4 <release/v4.6.4>
    v4.6.5 <release/v4.6.5>
+   v4.7.0 <release/v4.7.0>

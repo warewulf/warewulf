@@ -7,11 +7,10 @@ import (
 
 	"github.com/swaggest/usecase"
 	"github.com/swaggest/usecase/status"
-	image_api "github.com/warewulf/warewulf/internal/pkg/api/image"
-	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/image"
 	"github.com/warewulf/warewulf/internal/pkg/kernel"
 	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -54,7 +53,7 @@ func getImages() usecase.Interactor {
 		}
 	})
 	u.SetTitle("Get images")
-	u.SetDescription("Get all node images")
+	u.SetDescription("Get all OS images")
 	u.SetTags("Image")
 	return u
 }
@@ -74,7 +73,7 @@ func getImageByName() usecase.Interactor {
 		}
 	})
 	u.SetTitle("Get an image")
-	u.SetDescription("Get a node image by its name")
+	u.SetDescription("Get an OS image by its name")
 	u.SetTags("Image")
 	return u
 }
@@ -99,7 +98,7 @@ func importImage() usecase.Interactor {
 			return status.Wrap(fmt.Errorf("name contains illegal characters: %s", input.Name), status.InvalidArgument)
 		}
 
-		if sctx, err := image_api.GetSystemContext(input.NoHttps, input.User, input.Password, ""); err != nil {
+		if sctx, err := image.GetSystemContext(input.NoHttps, input.User, input.Password, ""); err != nil {
 			return err
 		} else {
 			if err := image.ImportDocker(input.URI, input.Name, sctx); err != nil {
@@ -110,7 +109,7 @@ func importImage() usecase.Interactor {
 		}
 	})
 	u.SetTitle("Import an image")
-	u.SetDescription("Import a node image from an OCI registry")
+	u.SetDescription("Import an OS image from an OCI registry")
 	u.SetTags("Image")
 
 	return u
@@ -139,14 +138,10 @@ func deleteImage() usecase.Interactor {
 			}
 		}
 
-		cdp := &wwapiv1.ImageDeleteParameter{
-			ImageNames: []string{input.Name},
-		}
-
-		return image_api.ImageDelete(cdp)
+		return image.Delete(input.Name)
 	})
 	u.SetTitle("Delete an image")
-	u.SetDescription("Delete an existing node image")
+	u.SetDescription("Delete an existing OS image")
 	u.SetTags("Image")
 
 	return u
@@ -156,30 +151,25 @@ func updateImage() usecase.Interactor {
 	type renameImageInput struct {
 		Name    string `path:"name" required:"true" description:"Name of image to update"`
 		NewName string `json:"name" description:"New name to rename the image to"`
-		Build   bool   `query:"build" default:"true" description:"Build the image image after renaming, default:'true'"`
+		Build   bool   `query:"build" default:"true" description:"Build the OS image after renaming, default:'true'"`
 	}
 
 	u := usecase.NewInteractor(func(ctx context.Context, input renameImageInput, output *Image) error {
 		wwlog.Debug("api.updateImage(Name:%v, NewName:%v, Build:%v)", input.Name, input.NewName, input.Build)
 		name := input.Name
 		if input.NewName != "" {
-			crp := &wwapiv1.ImageRenameParameter{
-				ImageName:  input.Name,
-				TargetName: input.NewName,
-				Build:      input.Build,
-			}
-
-			if err := image_api.ImageRename(crp); err != nil {
+			if err := image.Rename(input.Name, input.NewName, input.Build); err != nil {
 				return err
 			}
 			name = input.NewName
+			warewulfd.Reload()
 		}
 
 		*output = *NewImage(name)
 		return nil
 	})
 	u.SetTitle("Update or rename an image")
-	u.SetDescription("Update or rename an existing node image")
+	u.SetDescription("Update or rename an existing OS image")
 	u.SetTags("Image")
 
 	return u
@@ -188,17 +178,13 @@ func updateImage() usecase.Interactor {
 func buildImage() usecase.Interactor {
 	type buildImageInput struct {
 		Name  string `path:"name" required:"true" description:"Name of image to build"`
-		Force bool   `query:"force" default:"false" description:"Build the image image even if it appears unnecessary, default:'false'"`
+		Force bool   `query:"force" default:"false" description:"Build the OS image even if it appears unnecessary, default:'false'"`
 	}
 
 	u := usecase.NewInteractor(func(ctx context.Context, input buildImageInput, output *Image) error {
 		wwlog.Debug("api.buildImage(Name:%v, Force:%v)", input.Name, input.Force)
-		cbp := &wwapiv1.ImageBuildParameter{
-			ImageNames: []string{input.Name},
-			Force:      input.Force,
-		}
 
-		if err := image_api.ImageBuild(cbp); err != nil {
+		if err := image.Build(input.Name, input.Force); err != nil {
 			return err
 		}
 
@@ -206,7 +192,7 @@ func buildImage() usecase.Interactor {
 		return nil
 	})
 	u.SetTitle("Build an image")
-	u.SetDescription("Build a node image")
+	u.SetDescription("Build an OS image")
 	u.SetTags("Image")
 
 	return u

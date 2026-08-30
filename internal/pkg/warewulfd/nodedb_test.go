@@ -1,10 +1,13 @@
 package warewulfd
 
 import (
+	"os"
+	"path"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 )
 
@@ -111,7 +114,7 @@ nodes:
 			err := LoadNodeDB()
 			assert.NoError(t, err)
 
-			node, err := GetNodeOrSetDiscoverable(tt.hwaddr, true)
+			node, err := GetOrDiscoverNode(tt.hwaddr, true)
 			if tt.err {
 				assert.Error(t, err)
 			} else {
@@ -123,4 +126,68 @@ nodes:
 			}
 		})
 	}
+}
+
+func Test_GetNode(t *testing.T) {
+	t.Run("configured node found", func(t *testing.T) {
+		env := testenv.New(t)
+		defer env.RemoveAll()
+		env.WriteFile("/etc/warewulf/nodes.conf", `
+nodes:
+  n1:
+    network devices:
+      default:
+        hwaddr: 00:00:00:00:00:01
+`)
+		assert.NoError(t, LoadNodeDB())
+
+		n, err := GetNode("00:00:00:00:00:01")
+		assert.NoError(t, err)
+		assert.Equal(t, "n1", n.Id())
+	})
+
+	t.Run("unknown hwaddr returns error", func(t *testing.T) {
+		env := testenv.New(t)
+		defer env.RemoveAll()
+		env.WriteFile("/etc/warewulf/nodes.conf", `
+nodes:
+  n1:
+    network devices:
+      default:
+        hwaddr: 00:00:00:00:00:01
+`)
+		assert.NoError(t, LoadNodeDB())
+
+		_, err := GetNode("ff:ff:ff:ff:ff:ff")
+		assert.Error(t, err)
+	})
+
+	t.Run("does not consume discoverable nodes", func(t *testing.T) {
+		// This is the key behavioral difference from GetOrDiscoverNode:
+		// an unknown hwaddr must NOT cause a discoverable node to be
+		// configured, even when one is available.
+		env := testenv.New(t)
+		defer env.RemoveAll()
+		env.WriteFile("/etc/warewulf/nodes.conf", `
+nodes:
+  n1:
+    discoverable: true
+    network devices:
+      default: {}
+`)
+		assert.NoError(t, LoadNodeDB())
+
+		conf := warewulfconf.Get()
+		nodesConfPath := path.Join(conf.Paths.Sysconfdir, "warewulf", "nodes.conf")
+		before, err := os.ReadFile(nodesConfPath)
+		assert.NoError(t, err)
+
+		_, err = GetNode("ff:ff:ff:ff:ff:ff")
+		assert.Error(t, err)
+
+		// Verify the database was not mutated.
+		after, err := os.ReadFile(nodesConfPath)
+		assert.NoError(t, err)
+		assert.Equal(t, string(before), string(after), "GetNode must not write to nodes.conf")
+	})
 }

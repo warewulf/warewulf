@@ -68,16 +68,6 @@ func ValidSource(name string) bool {
 	return true
 }
 
-/*
-Delete the chroot of an image
-*/
-func DeleteSource(name string) error {
-	fullPath := SourceDir(name)
-
-	wwlog.Verbose("Removing path: %s", fullPath)
-	return os.RemoveAll(fullPath)
-}
-
 func Duplicate(name string, destination string) error {
 	fullPathImageSource := RootFsDir(name)
 
@@ -89,27 +79,6 @@ func Duplicate(name string, destination string) error {
 	}
 
 	return nil
-}
-
-/*
-Delete the image of an image
-*/
-func DeleteImage(name string) error {
-	imageFile := ImageFile(name)
-	if util.IsFile(imageFile) {
-		wwlog.Verbose("removing %s for image %s", imageFile, name)
-		errImg := os.Remove(imageFile)
-		wwlog.Verbose("removing %s for image %s", imageFile+".gz", name)
-		errGz := os.Remove(imageFile + ".gz")
-		if errImg != nil {
-			return errors.Errorf("Problems delete %s for image %s: %s\n", imageFile, name, errImg)
-		}
-		if errGz != nil {
-			return errors.Errorf("Problems delete %s for image %s: %s\n", imageFile+".gz", name, errGz)
-		}
-		return nil
-	}
-	return errors.Errorf("Image %s of image %s doesn't exist\n", imageFile, name)
 }
 
 func IsWriteAble(name string) bool {

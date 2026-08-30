@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -125,7 +126,7 @@ func ReadFile(path string) ([]string, error) {
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
 	}
-	f.Close()
+	_ = f.Close()
 	return lines, nil
 }
 
@@ -319,8 +320,8 @@ func CopyUIDGID(source string, dest string) error {
 	}
 
 	// root is always good, if we failt to get UID/GID of a file
-	var UID int = 0
-	var GID int = 0
+	var UID = 0
+	var GID = 0
 	if stat, ok := info.Sys().(*syscall.Stat_t); ok {
 		UID = int(stat.Uid)
 		GID = int(stat.Gid)
@@ -345,21 +346,40 @@ func IncrementIPv4(start net.IP, inc uint) net.IP {
 /*
 Appending the lines to the given file
 */
-func AppendLines(fileName string, lines []string) error {
+func AppendLines(fileName string, lines []string) (err error) {
 	wwlog.Verbose("appending %v lines to %s", len(lines), fileName)
 	file, err := os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
 		return fmt.Errorf("can't open file: %s: %w", fileName, err)
 	}
-	defer file.Close()
+	defer func() {
+		if cerr := file.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
 	for _, line := range lines {
 		wwlog.Debug("Appending '%s' to %s", line, fileName)
-		if _, err := file.WriteString(fmt.Sprintf("%s\n", line)); err != nil {
+		if _, err := fmt.Fprintf(file, "%s\n", line); err != nil {
 			return fmt.Errorf("can't write to file: %s: %w", fileName, err)
 		}
 
 	}
 	return nil
+}
+
+var (
+	cpioRenumberInodesOnce   sync.Once
+	cpioRenumberInodesCached bool
+)
+
+// cpioRenumberInodesSupported returns true if the installed cpio supports
+// --renumber-inodes (GNU cpio >= 2.13). Result is cached after the first call.
+func cpioRenumberInodesSupported() bool {
+	cpioRenumberInodesOnce.Do(func() {
+		out, _ := exec.Command("cpio", "--help").CombinedOutput()
+		cpioRenumberInodesCached = strings.Contains(string(out), "--renumber-inodes")
+	})
+	return cpioRenumberInodesCached
 }
 
 /*
@@ -382,6 +402,10 @@ func CpioCreate(
 		"--file=" + ofile,
 	}
 
+	if cpioRenumberInodesSupported() {
+		args = append(args, "--renumber-inodes")
+	}
+
 	args = append(args, cpio_args...)
 
 	proc := exec.Command("cpio", args...)
@@ -393,7 +417,7 @@ func CpioCreate(
 
 	err_in := make(chan error, 1)
 	go func() {
-		defer stdin.Close()
+		defer func() { _ = stdin.Close() }()
 		_, err := io.WriteString(stdin, strings.Join(ifiles, "\n"))
 		err_in <- err
 	}()
@@ -475,14 +499,16 @@ func FileGz(
 			err = proc.Start()
 			if err != nil {
 				_ = proc.Wait()
-				gzippedFile.Close()
-				os.Remove(file_gz)
+				_ = gzippedFile.Close()
+				_ = os.Remove(file_gz)
 				err = fmt.Errorf("unable to successfully execute compression program: %s: %w", compressor, err)
 			} else {
 				err = proc.Wait()
-				gzippedFile.Close()
+				if cerr := gzippedFile.Close(); cerr != nil {
+					wwlog.Warn("failed to close compressed image file %s: %s", file_gz, cerr)
+				}
 				if err != nil {
-					os.Remove(file_gz)
+					_ = os.Remove(file_gz)
 					err = fmt.Errorf("unable to successfully create compressed image file: %s: %w", file_gz, err)
 				} else {
 					wwlog.Verbose("Successfully compressed image file: %s", file_gz)

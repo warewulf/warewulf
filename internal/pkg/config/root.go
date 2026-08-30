@@ -234,7 +234,7 @@ func (config *WarewulfYaml) Dump() ([]byte, error) {
 	return buf.Bytes(), err
 }
 
-func (config *WarewulfYaml) PersistToFile(configFile string) error {
+func (config *WarewulfYaml) PersistToFile(configFile string) (err error) {
 	out, dumpErr := config.Dump()
 	if dumpErr != nil {
 		wwlog.Error("%s", dumpErr)
@@ -245,7 +245,11 @@ func (config *WarewulfYaml) PersistToFile(configFile string) error {
 		wwlog.Error("%s", err)
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if cerr := file.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
 	_, err = file.WriteString(string(out))
 	if err != nil {
 		return err

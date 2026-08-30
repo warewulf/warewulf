@@ -12,12 +12,13 @@ import (
 	"github.com/warewulf/warewulf/internal/app/wwctl/node/sensors"
 	"github.com/warewulf/warewulf/internal/app/wwctl/node/set"
 	nodestatus "github.com/warewulf/warewulf/internal/app/wwctl/node/status"
+	"github.com/warewulf/warewulf/internal/app/wwctl/node/unset"
 )
 
 var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:                   "node COMMAND [OPTONS]",
+		Use:                   "node COMMAND [OPTIONS]",
 		Short:                 "Node management",
 		Long: "Management of node settings. All node ranges can use brackets to identify\n" +
 			"node ranges. For example: n00[00-4].cluster[0-1] will identify the first 5 nodes\n" +
@@ -31,6 +32,7 @@ func init() {
 	baseCmd.AddCommand(sensors.GetCommand())
 	baseCmd.AddCommand(list.GetCommand())
 	baseCmd.AddCommand(set.GetCommand())
+	baseCmd.AddCommand(unset.GetCommand())
 	baseCmd.AddCommand(add.GetCommand())
 	baseCmd.AddCommand(delete.GetCommand())
 	baseCmd.AddCommand(console.GetCommand())

@@ -7,12 +7,13 @@ case "${root}" in
 wwinit|wwinit:*)
     info "warewulf: root=${root}"
 
+    export wwinit_server="$(getarg wwinit.server)"
     export wwinit_uri="$(getarg wwinit.uri)"
-    if [ -n "${wwinit_uri}" ]; then
-        info "warewulf: Found root=${root} and wwinit.uri=${wwinit_uri}. Will boot from Warewulf."
+    if [ -n "${wwinit_server}" ] || [ -n "${wwinit_uri}" ]; then
+        info "warewulf: Found root=${root} and wwinit.server=${wwinit_server} wwinit.uri=${wwinit_uri}. Will boot from Warewulf."
         rootok=1
     else
-        die "warewulf: Found root=${root} but no wwinit.uri. Cannot boot from Warewulf."
+        die "warewulf: Found root=${root} but neither wwinit.server nor wwinit.uri. Cannot boot from Warewulf."
     fi
 
     export wwinit_uuid=$(dmidecode -s system-uuid)

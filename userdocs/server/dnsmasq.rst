@@ -5,7 +5,7 @@ Using dnsmasq
 As an experimental feature, it is possible to use ``dnsmasq`` instead of the ISC
 ``dhcpd`` server and ``TFTP`` server.
 
-In order to keep the file ``/etc/dnsmasq.d/ww4-hosts.conf`` is created and must
+In order to keep the configuration manageable, the file ``/etc/dnsmasq.d/ww4-hosts.conf`` is created and must
 be included in the main ``dnsmasq.conf`` via the ``conf-dir=/etc/dnsmasq.d``
 option.
 

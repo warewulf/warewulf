@@ -99,27 +99,20 @@ by vote of the remaining TSC members.
 
 - All releases occur within major version “4.”
 
+- Any new major release is preceeded by one or more release candidates.
+
 ### Minor releases
 
 - A minor release is denoted by a tag named `v4.MINOR.0`.
+
+- Minor releases are defined by a previously-planned milestone named
+  for the projected release.
 
 - A minor release candidate is denoted by a tag named
   `v4.MINOR.0rcNUMBER`, where `NUMBER` begins at “1” and increments
   for each candidate for the given minor release.
 
-- Minor releases are defined by a previously-planned milestone named
-  for the projected release.
-
-- A minor release candidate may be published by the TSC when all
-  functional issues and pull requests in the associated milestone are
-  closed. (e.g., documentation issues and pull requests may remain.)
-  This may also be accomplished by the TSC re-scoping the associated
-  milestone (e.g., by moving issues or pull requests to a different
-  milestone).
-
-- A minor release may be published by the TSC two weeks after a
-  release candidate if no major defects have been found in the release
-  candidate and there are no open issues or pull requests.
+- A minor release may be preceeded by one or more release candidates.
 
 ### Patch releases
 
@@ -131,3 +124,35 @@ by vote of the remaining TSC members.
 
 - A patch release may be published by the TSC whenever one or more
   changes have been ported to a minor branch.
+
+- Patch releases are not typically preceeded by release candidates.
+
+### Release candidates
+
+- A release candidate may be published by the TSC when all functional issues and
+  pull requests in the associated milestone are closed. (e.g., documentation
+  issues and pull requests may remain.) This may also be accomplished by the TSC
+  re-scoping the associated milestone (e.g., by moving issues or pull requests
+  to a different milestone).
+
+- Once a release candidate has been published, the related final release may be
+  published by the TSC two weeks after a release candidate if no major defects
+  have been found in the release candidate and there are no open issues or pull
+  requests.
+
+## Golang version
+
+- Warewulf is built with the most recent version of Go that is available
+  as a system package across the Linux distributions for which Warewulf
+  [publishes official packages](https://github.com/warewulf/warewulf/blob/main/.github/workflows/release.yml),
+  in consultation with the OpenHPC project and its Go version requirements.
+
+- The minimum Go version declared in `go.mod` is updated at the start
+  of each minor release cycle to reflect the Go version available
+  across all supported distributions.
+
+### Notes
+
+- On EL8, Go is installed using the `go-toolset` module from the
+  appstream repository.
+- OpenHPC uses https://eur.openeuler.openatom.cn/coprs/openhpc/OpenHPC/packages/ to build for openEuler.

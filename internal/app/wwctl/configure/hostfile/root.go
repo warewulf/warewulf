@@ -8,7 +8,7 @@ import (
 var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:                   "hostfile  [OPTIONS]",
+		Use:                   "hostfile [OPTIONS]",
 		Short:                 "update hostfile on master",
 		Long:                  "Manage the hostfile on the master node\n",
 		RunE:                  CobraRunE,

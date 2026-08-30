@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"strings"
 	"syscall"
 
 	"github.com/swaggest/usecase"
@@ -101,13 +102,13 @@ func (of *OverlayFile) readContents() (string, error) {
 	fullPath := of.FullPath()
 	f, err := os.ReadFile(fullPath)
 	if err != nil {
-		wwlog.Warn("os.ReadFile err %w", err)
+		wwlog.Warn("os.ReadFile err %v", err)
 		return "", err
 	}
 	// Populate the permissions, uid, and gid.
 	s, err := os.Stat(fullPath)
 	if err != nil {
-		wwlog.Warn("os.Stat err %w", err)
+		wwlog.Warn("os.Stat err %v", err)
 		return "", err
 	}
 	fileMode := s.Mode()
@@ -119,7 +120,7 @@ func (of *OverlayFile) readContents() (string, error) {
 }
 
 func (of *OverlayFile) renderContents(nodeName string) (string, error) {
-	if !(path.Ext(of.Path) == ".ww") {
+	if path.Ext(of.Path) != ".ww" {
 		return "", fmt.Errorf("'%s' does not end with '.ww'", of.Path)
 	}
 
@@ -148,12 +149,46 @@ func (of *OverlayFile) renderContents(nodeName string) (string, error) {
 	}
 	tstruct.BuildSource = of.Path
 
-	buffer, _, _, renderErr := overlay.RenderTemplateFile(of.FullPath(), tstruct)
+	rendered, renderErr := overlay.RenderTemplate(of.FullPath(), tstruct)
 	if renderErr != nil {
 		return "", renderErr
 	}
 
-	return buffer.String(), nil
+	if !rendered.WriteFile {
+		// abort() was called in the template: nothing would be written to disk.
+		// Include any content rendered before the abort() call for debugging.
+		return rendered.Files[0].Buffer.String() + "Aborted\n", nil
+	}
+
+	// Single output file with no file() calls: return content as-is for backward
+	// compatibility. The default slot has Name == ""; named entries always have a
+	// non-empty Name regardless of how many there are.
+	if len(rendered.Files) == 1 && rendered.Files[0].Name == "" {
+		if rendered.Files[0].IsSymlink {
+			return "Symlink: " + rendered.Files[0].Target + "\n", nil
+		}
+		return rendered.Files[0].Buffer.String(), nil
+	}
+	// One or more file() calls: emit Filename: / Symlink: headers for each named
+	// entry. Skip the default slot (Name == ""); pre-file() content in it is
+	// for RenderTemplateFile callers, not serialized here.
+	var combined strings.Builder
+	for _, f := range rendered.Files {
+		if f.Name == "" {
+			continue
+		}
+		combined.WriteString("Filename: ")
+		combined.WriteString(f.Name)
+		combined.WriteString("\n")
+		if f.IsSymlink {
+			combined.WriteString("Symlink: ")
+			combined.WriteString(f.Target)
+			combined.WriteString("\n")
+		} else {
+			combined.WriteString(f.Buffer.String())
+		}
+	}
+	return combined.String(), nil
 }
 
 func NewOverlayFile(name string, path string, renderNodeName string) (*OverlayFile, error) {
@@ -329,7 +364,7 @@ func addOverlayFile() usecase.Interactor {
 					return err
 				}
 			}
-			if err := overlay_.AddFile(relPath, []byte(input.Content), true, !(input.IfNoneMatch == "*")); err != nil {
+			if err := overlay_.AddFile(relPath, []byte(input.Content), true, input.IfNoneMatch != "*"); err != nil {
 				return fmt.Errorf("unable to add overlay file %v: %v: %w", input.Name, relPath, err)
 			}
 			*output = *NewOverlayResponse(input.Name)

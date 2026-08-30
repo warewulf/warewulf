@@ -20,6 +20,10 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if allFunctions {
+		if _, err = configure.TLS(false); err != nil {
+			return err
+		}
+
 		err = configure.WAREWULFD()
 		if err != nil {
 			return err

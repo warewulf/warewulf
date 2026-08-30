@@ -2,15 +2,46 @@ package hostlist
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 )
 
-const Docstring = "Node patterns are a comma-separated list of individual pattern.\nEach pattern can either be a full node name or a node range like node[01-03,05]."
+const Docstring = "Node patterns are a comma-separated list of individual patterns.\nEach pattern can either be a full node name or a node range like node[01-03,05]."
+
+// GroupPrefix marks a token passed to Expand as a node-group reference rather
+// than a literal host name or bracketed range, e.g. "@rack1".
+const GroupPrefix = "@"
+
+// GroupResolver expands a single group name (without the leading "@")
+type GroupResolver interface {
+	GroupMembers(name string) []string
+}
+
+// Groups without members return as empty
+type nopResolver struct{}
+
+func (nopResolver) GroupMembers(string) []string { return nil }
+
+var groupResolver GroupResolver = nopResolver{}
+
+// Install resolver for groups unless nil
+func SetGroupResolver(r GroupResolver) {
+	if r == nil {
+		r = nopResolver{}
+	}
+	groupResolver = r
+}
 
 // Expand takes a slice of host strings, possibly containing comma-separated
-// values and bracketed ranges (e.g. "node[01-03]") and returns a fully expanded
-// slice of host names.
+// values and bracketed ranges (e.g. "node[01-03]"), and returns a fully
+// expanded slice of host names.
+//
+// Tokens prefixed with "@" are treated as node-group references and resolved
+// via the resolver registered with SetGroupResolver; the union of all
+// resolved members is returned, deduplicated against any plain host names in
+// the same call. Before any resolver is registered the default no-op
+// resolver is active, so groups without members are dropped.
 func Expand(list []string) []string {
 	// First, split each input string on commas that occur outside brackets.
 	var preList []string
@@ -28,7 +59,36 @@ func Expand(list []string) []string {
 		expanded = onceExpanded
 	}
 
-	return expanded
+	return resolveGroups(expanded)
+}
+
+// resolveGroups walks bracket-expanded token. Plain tokens pass
+// through in order; groups append their members at the position of "@".
+// Duplicates are removed.
+func resolveGroups(tokens []string) []string {
+	seen := make(map[string]struct{}, len(tokens))
+	var result []string
+	add := func(s string) {
+		if _, ok := seen[s]; ok {
+			return
+		}
+		seen[s] = struct{}{}
+		result = append(result, s)
+	}
+	for _, tok := range tokens {
+		if !strings.HasPrefix(tok, GroupPrefix) {
+			add(tok)
+			continue
+		}
+		name := strings.TrimPrefix(tok, GroupPrefix)
+		if name == "" {
+			continue
+		}
+		for _, id := range groupResolver.GroupMembers(name) {
+			add(id)
+		}
+	}
+	return result
 }
 
 // expandOnce performs a single round of bracket expansion.
@@ -99,6 +159,87 @@ func splitTopLevel(s string) []string {
 	}
 	parts = append(parts, s[start:])
 	return parts
+}
+
+// Compress is the inverse of Expand: it returns a hostlist-style string in
+// which numeric suffixes sharing a prefix and zero-pad width are collapsed
+// into bracket notation. E.g. ["n01","n02","n03","n05"] -> "n[01-03,05]".
+// Names without a trailing digit run are emitted as-is.
+func Compress(ids []string) string {
+	type group struct {
+		prefix   string
+		width    int
+		nums     []int
+		single   string
+		firstIdx int
+	}
+	groups := map[string]*group{}
+	var order []string
+	for idx, id := range ids {
+		i := len(id)
+		for i > 0 && id[i-1] >= '0' && id[i-1] <= '9' {
+			i--
+		}
+		var key string
+		if i == len(id) {
+			key = "\x00" + id
+		} else {
+			key = id[:i] + "\x00" + strconv.Itoa(len(id)-i)
+		}
+		g, ok := groups[key]
+		if !ok {
+			g = &group{firstIdx: idx}
+			if i == len(id) {
+				g.single = id
+			} else {
+				g.prefix = id[:i]
+				g.width = len(id) - i
+			}
+			groups[key] = g
+			order = append(order, key)
+		}
+		if g.width > 0 {
+			n, _ := strconv.Atoi(id[i:])
+			g.nums = append(g.nums, n)
+		}
+	}
+	sort.SliceStable(order, func(i, j int) bool {
+		return groups[order[i]].firstIdx < groups[order[j]].firstIdx
+	})
+
+	var parts []string
+	for _, k := range order {
+		g := groups[k]
+		if g.width == 0 {
+			parts = append(parts, g.single)
+			continue
+		}
+		sort.Ints(g.nums)
+		if len(g.nums) == 1 {
+			parts = append(parts, fmt.Sprintf("%s%0*d", g.prefix, g.width, g.nums[0]))
+			continue
+		}
+		var ranges []string
+		start, prev := g.nums[0], g.nums[0]
+		flush := func() {
+			if start == prev {
+				ranges = append(ranges, fmt.Sprintf("%0*d", g.width, start))
+			} else {
+				ranges = append(ranges, fmt.Sprintf("%0*d-%0*d", g.width, start, g.width, prev))
+			}
+		}
+		for _, v := range g.nums[1:] {
+			if v == prev+1 {
+				prev = v
+				continue
+			}
+			flush()
+			start, prev = v, v
+		}
+		flush()
+		parts = append(parts, fmt.Sprintf("%s[%s]", g.prefix, strings.Join(ranges, ",")))
+	}
+	return strings.Join(parts, ",")
 }
 
 // toInt converts a numeric string to an integer. Assumes valid input.

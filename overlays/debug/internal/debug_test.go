@@ -50,7 +50,7 @@ func Test_debugOverlay(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Empty(t, stdout.String())
 			assert.Empty(t, stderr.String())
-			assert.Equal(t, strings.Replace(tt.log, "%HOSTNAME%", hostname, -1), variableData.ReplaceAllString(logbuf.String(), "${1}: REMOVED_BY_TEST"))
+			assert.Equal(t, strings.ReplaceAll(tt.log, "%HOSTNAME%", hostname), variableData.ReplaceAllString(logbuf.String(), "${1}: REMOVED_BY_TEST"))
 		})
 	}
 }
@@ -120,7 +120,6 @@ data from other structures.
   - ed25519
   - ecdsa
   - rsa
-  - dsa
 - First key type: ed25519
 
 ## Node

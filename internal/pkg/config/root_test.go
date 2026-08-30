@@ -21,6 +21,7 @@ warewulf:
   host overlay: true
   port: 9873
   secure: true
+  tls port: 9874
   update interval: 60
 nfs:
   enabled: true
@@ -37,7 +38,6 @@ ssh:
   - ed25519
   - ecdsa
   - rsa
-  - dsa
 tftp:
   enabled: true
   ipxe:
@@ -67,6 +67,7 @@ warewulf:
   host overlay: true
   port: 9873
   secure: true
+  tls port: 9874
   update interval: 60
 nfs:
   enabled: true
@@ -83,7 +84,6 @@ ssh:
   - ed25519
   - ecdsa
   - rsa
-  - dsa
 tftp:
   enabled: true
   ipxe:
@@ -115,6 +115,7 @@ warewulf:
   host overlay: true
   port: 9873
   secure: true
+  tls port: 9874
   update interval: 60
 nfs:
   enabled: true
@@ -131,7 +132,6 @@ ssh:
   - ed25519
   - ecdsa
   - rsa
-  - dsa
 tftp:
   enabled: true
   ipxe:
@@ -160,6 +160,7 @@ warewulf:
   host overlay: true
   port: 9873
   secure: true
+  tls port: 9874
   update interval: 60
 nfs:
   enabled: true
@@ -176,7 +177,6 @@ ssh:
   - ed25519
   - ecdsa
   - rsa
-  - dsa
 tftp:
   enabled: true
   ipxe:
@@ -234,6 +234,7 @@ warewulf:
   host overlay: true
   port: 9873
   secure: false
+  tls port: 9874
   update interval: 60
 nfs:
   enabled: true
@@ -258,7 +259,6 @@ ssh:
   - ed25519
   - ecdsa
   - rsa
-  - dsa
 tftp:
   enabled: true
   ipxe:
@@ -300,7 +300,7 @@ func TestInitializedFromFile(t *testing.T) {
 	example_warewulf_conf := ""
 	tempWarewulfConf, warewulfConfErr := os.CreateTemp("", "warewulf.conf-")
 	assert.NoError(t, warewulfConfErr)
-	defer os.Remove(tempWarewulfConf.Name())
+	defer func() { _ = os.Remove(tempWarewulfConf.Name()) }()
 	_, warewulfConfErr = tempWarewulfConf.Write([]byte(example_warewulf_conf))
 	assert.NoError(t, warewulfConfErr)
 	assert.NoError(t, tempWarewulfConf.Sync())

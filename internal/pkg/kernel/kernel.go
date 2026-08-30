@@ -48,7 +48,7 @@ func (k collection) Default() *Kernel {
 	nk := append(collection{}, k...)
 	sort.Sort(sort.Reverse(nk))
 	for _, kernel := range nk {
-		if !(kernel.IsDebug() || kernel.IsRescue()) {
+		if !kernel.IsDebug() && !kernel.IsRescue() {
 			return kernel
 		}
 	}

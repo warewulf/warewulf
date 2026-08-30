@@ -25,12 +25,13 @@ jobs:
         with:
           submodules: recursive
       - uses: actions/setup-python@v5
+        with:
+          cache: pip
 
       - name: prepare
         run: |
-          sudo apt update
-          sudo apt-get install -f -y texlive-latex-extra latexmk graphviz pandoc
-          pip install --user --upgrade --upgrade-strategy eager sphinx sphinx-rtd-theme restructuredtext_lint pygments sphinx_reredirects
+          sudo apt-get install -f -y graphviz pandoc
+          pip install --user sphinx sphinx-rtd-theme restructuredtext_lint pygments sphinx_reredirects
 
       - name: make generated docs
         run: |

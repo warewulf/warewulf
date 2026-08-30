@@ -82,11 +82,12 @@
 - Andreas Skau <andreas@scheen.no> @buzh
 - Dietmar Rieder <dietmar.rieder@i-med.ac.at>
 - Andreas Henkel <henkel@uni-mainz.de>
-- Timothy Middelkoop <tmiddelkoop@internet2.edu>
+- Timothy Middelkoop <tmiddelkoop@internet2.edu> @middelkoopt
 - Shane Nehring <snehring@iastate.edu>
 - Tobias Ribizel <mail@ribizel.de>
 - Tobias Poschwatta <poschwatta@zib.de>
 - Josh Burks <jeburks2@asu.edu>
+- Jacob Sommerville <jsommerville@tenstorrent.com>
 - Elmar Pruesse <pruessee@njhealth.org> @epruesse
 - Adam Michel <elfurbe@furbism.com> [@elfurbe](https://github.com/elfurbe)
 - Brandon Biggs <brandonsbiggs@gmail.com>
@@ -102,3 +103,7 @@
 - Karker Said <said.karker@gmail.com> [@kosmolito](https://github.com/kosmolito)
 - Jason Scott <jsco2t@outlook.com> @jsco2t
 - Sujeev Uthayakumar <sujeev.uthayakumar@gmail.com> [@Sujeev-Uthayakumar](https://github.com/Sujeev-Uthayakumar)
+- Jacob Sommerville <jsommerville@dow.com>
+- Howard Van Der Wal <howard.a.vanderwal@protonmail.com> [@metalllinux](https://github.com/metalllinux)
+- Sergio Cabello Simón <sergio.scs388@gmail.com> [@SergioZ3R0](https://github.com/SergioZ3R0)
+- Jorge L Florit <jlflorit@gmail.com> [@conxuro](https://github.com/conxuro)

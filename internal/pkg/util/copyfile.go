@@ -7,7 +7,7 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-func CopyFile(src string, dst string) error {
+func CopyFile(src string, dst string) (err error) {
 
 	wwlog.Debug("Copying '%s' to '%s'", src, dst)
 
@@ -17,7 +17,7 @@ func CopyFile(src string, dst string) error {
 		wwlog.Debug("Could not open source file %s: %s", src, err)
 		return err
 	}
-	defer srcFD.Close()
+	defer func() { _ = srcFD.Close() }()
 
 	srcInfo, err := srcFD.Stat()
 	if err != nil {
@@ -30,7 +30,11 @@ func CopyFile(src string, dst string) error {
 		wwlog.Debug("Could not create destination file %s: %s", dst, err)
 		return err
 	}
-	defer dstFD.Close()
+	defer func() {
+		if cerr := dstFD.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
 
 	bytes, err := io.Copy(dstFD, srcFD)
 	if err != nil {

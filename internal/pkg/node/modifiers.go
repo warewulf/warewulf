@@ -113,7 +113,7 @@ func (config *NodesYaml) Persist() error {
 	return config.PersistToFile(warewulfconf.Get().Paths.NodesConf())
 }
 
-func (config *NodesYaml) PersistToFile(configFile string) error {
+func (config *NodesYaml) PersistToFile(configFile string) (err error) {
 	if configFile == "" {
 		configFile = warewulfconf.Get().Paths.NodesConf()
 	}
@@ -127,7 +127,11 @@ func (config *NodesYaml) PersistToFile(configFile string) error {
 		wwlog.Error("%s", err)
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if cerr := file.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
 	_, err = file.WriteString(string(out))
 	if err != nil {
 		return err

@@ -16,7 +16,7 @@ A new ``wwctl overlay info`` command lists variables used by an overlay
 template, including the ``wwctl <node|profile> set`` argument used to set that
 variable.
 
-.. code-block: console
+.. code-block:: console
 
    # wwctl overlay info ifcfg /etc/sysconfig/network-scripts/ifcfg.ww
    VARIABLE                OPTION     TYPE                     HELP
@@ -40,12 +40,12 @@ Other variables and the overlay itself can also be documented explicitly within 
 .. code-block:: text
 
    {{/* wwdoc: Configures chronyd to synchronize time with a specific time server. */}}
-   {{/* .Tags.ntp_server: the NTP server to synchonize with */}}
+   {{/* .Tags.ntp_server: the NTP server to synchronize with */}}
 
 wwctl image import --update
 ===========================
 
-The ``wwctl image import`` come has included an ``--update`` option since
+The ``wwctl image import`` command has included an ``--update`` option since
 v4.6.0, but it has not been functional. The option now imports an image
 on-top-of an existing image and is meant to be used to update an existing image
 with new files from an updated upstream or external image (e.g., by importing a
@@ -88,21 +88,21 @@ development environment with libvirt.
 warewulf-dracut
 ===============
 
-A bug between ``warewulf-dracut`` and the ``ignition`` overlay previously caused
+A bug between ``warewulf-dracut`` and the ``ignition`` overlay previously prevented
 non-root filesystems from mounting when provisioning the image to disk. A fix in
 ``warewulf-dracut`` prevents ignition from running twice, allowing all file
 systems to mount properly. The ``wwinit`` dracut module also no longer runs the
-wwinit module if root is not set to `root=wwclient*`.
+wwinit module if root is not set to ``root=wwclient*``.
 
 These fixes require installing the updated ``warewulf-dracut`` package in the
-node image.
+OS image.
 
 Other fixes
 ===========
 
-- Enhanced `wwctl configure tftp` to manage the SELinux context of TFTP directory. #1997
-- Enhanced overlay templates to support absolute paths with `{{ file }}`. #2055
+- Enhanced ``wwctl configure tftp`` to manage the SELinux context of TFTP directory. #1997
+- Enhanced overlay templates to support absolute paths with ``{{ file }}``. #2055
 - Fix ImageDelete API not returning error when checking if image is used by nodes/profiles. #1705
-- Fix filesystem overwrite/force behavior in `mkfs` overlay. #2028
-- Write `$tftpdir/warewulf/grub.cfg` to `tftproot` as configured in `warewulf.conf`. #2055
-- Automatically create a GPT label when `sfdisk` overlay wipes disks. #2025
+- Fix filesystem overwrite/force behavior in ``mkfs`` overlay. #2028
+- Write ``$tftpdir/warewulf/grub.cfg`` to ``tftproot`` as configured in ``warewulf.conf``. #2055
+- Automatically create a GPT label when ``sfdisk`` overlay wipes disks. #2025

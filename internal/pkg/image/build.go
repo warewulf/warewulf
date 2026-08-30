@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/pkg/errors"
-
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -17,7 +15,7 @@ func Build(name string, buildForce bool) error {
 	imagePath := ImageFile(name)
 
 	if !ValidSource(name) {
-		return errors.Errorf("Image does not exist: %s", name)
+		return fmt.Errorf("image does not exist: %s", name)
 	}
 
 	if !buildForce {
@@ -34,7 +32,7 @@ func Build(name string, buildForce bool) error {
 		var err error
 		ignore, err = util.ReadFile(excludes_file)
 		if err != nil {
-			return fmt.Errorf("failed creating directory: %s: %w", imagePath, err)
+			return fmt.Errorf("failed reading excludes file: %s: %w", excludes_file, err)
 		}
 	}
 

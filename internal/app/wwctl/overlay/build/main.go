@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"runtime"
-	"strings"
 	"syscall"
 
 	"github.com/spf13/cobra"
@@ -36,35 +35,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		filteredNodes = allNodes
 	}
 
-	// NOTE: this is to keep backward compatible
-	// passing -O a,b,c versus -O a -O b -O c, but will also accept -O a,b -O c
-	overlayNames := []string{}
-	for _, name := range OverlayNames {
-		names := strings.Split(name, ",")
-		overlayNames = append(overlayNames, names...)
-	}
-	OverlayNames = overlayNames
-
-	if OverlayDir != "" {
-		if len(OverlayNames) == 0 {
-			// TODO: should this behave the same as OverlayDir == "", and build default
-			// set to overlays?
-			return errors.New("must specify overlay(s) to build")
-		}
-
-		if len(args) > 0 {
-			if len(filteredNodes) != 1 {
-				return errors.New("must specify one node to build overlay")
-			}
-
-			for _, node := range filteredNodes {
-				return overlay.BuildOverlayIndir(node, allNodes, OverlayNames, OverlayDir)
-			}
-		} else {
-			return errors.New("must specify a node to build overlay")
-		}
-	}
-
 	oldMask := syscall.Umask(000)
 	defer syscall.Umask(oldMask)
 
@@ -73,13 +43,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		workers = runtime.NumCPU()
 	}
 
-	if len(OverlayNames) > 0 {
-		err = overlay.BuildSpecificOverlays(filteredNodes, allNodes, OverlayNames, workers)
-	} else {
-		err = overlay.BuildAllOverlays(filteredNodes, allNodes, workers)
-	}
-
-	if err != nil {
+	if err = overlay.BuildAllOverlays(filteredNodes, allNodes, workers); err != nil {
 		return fmt.Errorf("some overlays failed to be generated: %s", err)
 	}
 	return nil

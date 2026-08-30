@@ -10,11 +10,11 @@ smbios --type 3 --get-string 8 --set assetkey
 set timeout=2
 # Must chainload in order to get kernel args for specific node
 menuentry "Load specific configfile" {
-    conf="(http,{{.Ipaddr}}:{{.Warewulf.Port}})/efiboot/grub.cfg?assetkey=${assetkey}"
+    conf="(http,{{.Ipaddr}}:{{.Warewulf.Port}})/grub/${net_default_mac}?assetkey=${assetkey}"
     configfile $conf
 }
 menuentry "Chainload shim from image" {
-    shim="(http,{{.Ipaddr}}:{{.Warewulf.Port}})/efiboot/shim.efi?assetkey=${assetkey}"
+    shim="(http,{{.Ipaddr}}:{{.Warewulf.Port}})/efiboot/shim.efi?wwid=${net_default_mac}&assetkey=${assetkey}"
     chainloader ${shim}
 }
 menuentry "UEFI Firmware Settings" --id "uefi-firmware" {

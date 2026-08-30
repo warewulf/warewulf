@@ -71,3 +71,58 @@ func TestHostList(t *testing.T) {
 		})
 	}
 }
+
+func TestCompress(t *testing.T) {
+	tests := map[string]struct {
+		input  []string
+		output string
+	}{
+		"empty":             {input: nil, output: ""},
+		"single":            {input: []string{"n01"}, output: "n01"},
+		"consecutive":       {input: []string{"n01", "n02", "n03"}, output: "n[01-03]"},
+		"sparse":            {input: []string{"n01", "n03", "n05"}, output: "n[01,03,05]"},
+		"mixed run + gap":   {input: []string{"n01", "n02", "n04"}, output: "n[01-02,04]"},
+		"different prefix":  {input: []string{"n01", "n02", "rack01"}, output: "n[01-02],rack01"},
+		"different width":   {input: []string{"n1", "n01"}, output: "n1,n01"},
+		"no digits":         {input: []string{"head", "login"}, output: "head,login"},
+		"cross-zero rollup": {input: []string{"n09", "n10", "n11"}, output: "n[09-11]"},
+		"out of order":      {input: []string{"n03", "n01", "n02"}, output: "n[01-03]"},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) { assert.Equal(t, tt.output, Compress(tt.input)) })
+	}
+}
+
+type fakeResolver map[string][]string
+
+func (f fakeResolver) GroupMembers(name string) []string { return f[name] }
+
+func TestExpand_GroupResolver(t *testing.T) {
+	resolver := fakeResolver{
+		"rack1": {"n01", "n02"},
+		"rack2": {"n03", "n04"},
+		"admin": {"n01", "n09"},
+	}
+	SetGroupResolver(resolver)
+	t.Cleanup(func() { SetGroupResolver(nil) })
+
+	tests := map[string]struct {
+		input  []string
+		output []string
+	}{
+		"plain pass through":           {[]string{"n01", "n02"}, []string{"n01", "n02"}},
+		"single group":                 {[]string{"@rack1"}, []string{"n01", "n02"}},
+		"mixed plain and group":        {[]string{"n03", "@admin"}, []string{"n03", "n01", "n09"}},
+		"group dedupes against plain":  {[]string{"n01", "@rack1"}, []string{"n01", "n02"}},
+		"unknown group resolves empty": {[]string{"n02", "@bogus"}, []string{"n02"}},
+		"empty @ token ignored":        {[]string{"n02", "@"}, []string{"n02"}},
+		"comma-separated mixing":       {[]string{"n03,@admin"}, []string{"n03", "n01", "n09"}},
+		"bracket range over groups":    {[]string{"@rack[1-2]"}, []string{"n01", "n02", "n03", "n04"}},
+		"comma list of groups":         {[]string{"@rack1,@rack2"}, []string{"n01", "n02", "n03", "n04"}},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, tt.output, Expand(tt.input))
+		})
+	}
+}

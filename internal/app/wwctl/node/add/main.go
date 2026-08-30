@@ -2,14 +2,14 @@ package add
 
 import (
 	"fmt"
+	"net"
 	"strings"
 
-	"gopkg.in/yaml.v3"
-
 	"github.com/spf13/cobra"
-	apinode "github.com/warewulf/warewulf/internal/pkg/api/node"
-	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
+	"github.com/warewulf/warewulf/internal/pkg/hostlist"
 	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -60,16 +60,45 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 				}
 			}
 		}
-		buffer, err := yaml.Marshal(vars.nodeConf)
+		nodeDB, err := node.New()
 		if err != nil {
-			wwlog.Error("Can't marshall nodeInfo", err)
-			return err
+			return fmt.Errorf("failed to open node database: %w", err)
 		}
-		set := wwapiv1.NodeAddParameter{
-			NodeConfYaml: string(buffer[:]),
-			NodeNames:    args,
-			Force:        true,
+		nodeArgs := hostlist.Expand(args)
+		changed := cmd.Flags().Changed
+		var ipv4, ipmiaddr net.IP
+		for _, a := range nodeArgs {
+			n, err := nodeDB.AddNode(a)
+			if err != nil {
+				return fmt.Errorf("failed to add node: %w", err)
+			}
+			n.UpdateFrom(&vars.nodeConf, changed)
+			if !changed("profile") && len(vars.nodeConf.Profiles) > 0 {
+				n.Profiles = vars.nodeConf.Profiles
+			}
+			wwlog.Info("Added node: %s", a)
+			for _, dev := range n.NetDevs {
+				if !ipv4.IsUnspecified() && ipv4 != nil {
+					ipv4 = util.IncrementIPv4(ipv4, 1)
+					wwlog.Verbose("Incremented IP addr to %s", ipv4)
+					dev.Ipaddr = ipv4
+				} else if !dev.Ipaddr.IsUnspecified() {
+					ipv4 = dev.Ipaddr
+				}
+			}
+			if n.Ipmi != nil {
+				if !ipmiaddr.IsUnspecified() && ipmiaddr != nil {
+					ipmiaddr = util.IncrementIPv4(ipmiaddr, 1)
+					wwlog.Verbose("Incremented ipmi IP addr to %s", ipmiaddr)
+					n.Ipmi.Ipaddr = ipmiaddr
+				} else if !n.Ipmi.Ipaddr.IsUnspecified() {
+					ipmiaddr = n.Ipmi.Ipaddr
+				}
+			}
 		}
-		return apinode.NodeAdd(&set)
+		if err := nodeDB.Persist(); err != nil {
+			return fmt.Errorf("failed to persist new node: %w", err)
+		}
+		return warewulfd.DaemonReload()
 	}
 }

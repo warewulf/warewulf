@@ -20,9 +20,9 @@ func writeTempFile(t *testing.T, input string) string {
 
 func makeSyncDB(t *testing.T, hostInput string, imageInput string) syncDB {
 	hostFileName := writeTempFile(t, hostInput)
-	defer os.Remove(hostFileName)
+	defer func() { _ = os.Remove(hostFileName) }()
 	imageFileName := writeTempFile(t, imageInput)
-	defer os.Remove(imageFileName)
+	defer func() { _ = os.Remove(imageFileName) }()
 	db := make(syncDB)
 	var err error
 	err = db.readFromHost(hostFileName)
@@ -34,7 +34,7 @@ func makeSyncDB(t *testing.T, hostInput string, imageInput string) syncDB {
 
 func Test_readFromHost_single(t *testing.T) {
 	hostFileName := writeTempFile(t, `testuser:x:1001:1001::/home/testuser:/bin/bash`)
-	defer os.Remove(hostFileName)
+	defer func() { _ = os.Remove(hostFileName) }()
 
 	db := make(syncDB)
 	err := db.readFromHost(hostFileName)
@@ -50,7 +50,7 @@ func Test_readFromHost_multiple(t *testing.T) {
 testuser1:x:1001:1001::/home/testuser:/bin/bash
 testuser2:x:1002:1002::/home/testuser:/bin/bash
 `)
-	defer os.Remove(hostFileName)
+	defer func() { _ = os.Remove(hostFileName) }()
 
 	db := make(syncDB)
 	err := db.readFromHost(hostFileName)
@@ -65,7 +65,7 @@ testuser2:x:1002:1002::/home/testuser:/bin/bash
 
 func Test_readFromimage_single(t *testing.T) {
 	imageFileName := writeTempFile(t, `testuser:x:1001:1001::/home/testuser:/bin/bash`)
-	defer os.Remove(imageFileName)
+	defer func() { _ = os.Remove(imageFileName) }()
 
 	db := make(syncDB)
 	err := db.readFromimage(imageFileName)
@@ -81,7 +81,7 @@ func Test_readFromimage_multiple(t *testing.T) {
 testuser1:x:1001:1001::/home/testuser:/bin/bash
 testuser2:x:1002:1002::/home/testuser:/bin/bash
 `)
-	defer os.Remove(imageFileName)
+	defer func() { _ = os.Remove(imageFileName) }()
 
 	db := make(syncDB)
 	err := db.readFromimage(imageFileName)
@@ -98,13 +98,13 @@ func Test_readFromBoth_multiple(t *testing.T) {
 testuser1:x:1001:1001::/home/testuser:/bin/bash
 testuser2:x:1002:1002::/home/testuser:/bin/bash
 `)
-	defer os.Remove(imageFileName)
+	defer func() { _ = os.Remove(imageFileName) }()
 
 	hostFileName := writeTempFile(t, `
 testuser1:x:2001:2001::/home/testuser:/bin/bash
 testuser3:x:2003:2003::/home/testuser:/bin/bash
 `)
-	defer os.Remove(hostFileName)
+	defer func() { _ = os.Remove(hostFileName) }()
 
 	db := make(syncDB)
 	var err error
@@ -150,13 +150,13 @@ func Test_getOnlyimageLines(t *testing.T) {
 testuser1:x:1001:1001::/home/testuser:/bin/bash
 testuser2:x:1002:1002::/home/testuser:/bin/bash
 `)
-	defer os.Remove(imageFileName)
+	defer func() { _ = os.Remove(imageFileName) }()
 
 	hostFileName := writeTempFile(t, `
 testuser1:x:2001:2001::/home/testuser:/bin/bash
 testuser3:x:2003:2003::/home/testuser:/bin/bash
 `)
-	defer os.Remove(hostFileName)
+	defer func() { _ = os.Remove(hostFileName) }()
 
 	db := make(syncDB)
 	var err error
@@ -265,7 +265,7 @@ func Test_malformed_passwd(t *testing.T) {
 	hostInput := `"testuser1:x:1001:1001::/home/testuser:/bin/bash"
 	asdf`
 	hostFileName := writeTempFile(t, hostInput)
-	defer os.Remove(hostFileName)
+	defer func() { _ = os.Remove(hostFileName) }()
 	db := make(syncDB)
 	err := db.readFromHost(hostFileName)
 	assert.NoError(t, err)
@@ -278,7 +278,7 @@ func Test_network_passwd(t *testing.T) {
 +::::::
 -::::::`
 	hostFileName := writeTempFile(t, hostInput)
-	defer os.Remove(hostFileName)
+	defer func() { _ = os.Remove(hostFileName) }()
 	db := make(syncDB)
 	err := db.readFromHost(hostFileName)
 	assert.NotContains(t, buf.String(), "parse error")

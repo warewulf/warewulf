@@ -92,7 +92,7 @@ func statusJSON() ([]byte, error) {
 	return ret, nil
 }
 
-func StatusSend(w http.ResponseWriter, req *http.Request) {
+func HandleStatus(w http.ResponseWriter, req *http.Request) {
 
 	status, err := statusJSON()
 	if err != nil {

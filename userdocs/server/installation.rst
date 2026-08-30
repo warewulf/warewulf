@@ -18,21 +18,21 @@ Rocky Linux 9
 
 .. code-block:: console
 
-   # dnf install https://github.com/warewulf/warewulf/releases/download/v4.6.5/warewulf-4.6.5-1.el9.x86_64.rpm
+   # dnf install https://github.com/warewulf/warewulf/releases/download/v4.7.0/warewulf-4.7.0-1.el9.x86_64.rpm
 
 openSuse Leap
 -------------
 
 .. code-block:: console
 
-   # zypper install https://github.com/warewulf/warewulf/releases/download/v4.6.5/warewulf-4.6.5-1.suse.lp155.x86_64.rpm
+   # zypper install https://github.com/warewulf/warewulf/releases/download/v4.7.0/warewulf-4.7.0-1.suse.lp155.x86_64.rpm
 
 Container images
 ================
 
 Warewulf can be built in a Linux container. This can be especially useful for
 testing and development, or to replace traditional package installation. It is
-also possible to only use the container for building and the install it in the
+also possible to only use the container for building and then install it in the
 host system afterwards. For that look at the INSTALL, UNINSTALL and PURGE labels
 inside the `Dockerfile`_
 
@@ -97,9 +97,9 @@ appropriate substitutions:
 
 .. code-block:: bash
 
-   curl -LO https://github.com/warewulf/warewulf/releases/download/v4.6.5/warewulf-4.6.5.tar.gz
-   tar -xf warewulf-4.6.5.tar.gz
-   cd warewulf-4.6.5
+   curl -LO https://github.com/warewulf/warewulf/releases/download/v4.7.0/warewulf-4.7.0.tar.gz
+   tar -xf warewulf-4.7.0.tar.gz
+   cd warewulf-4.7.0
    make all && sudo make install
 
 Git
@@ -118,7 +118,7 @@ from the main site, the GitHub releases page, or from a Git tag.
 
    git clone https://github.com/warewulf/warewulf.git
    cd warewulf
-   git checkout main # or switch to a tag like 'v4.6.5'
+   git checkout main # or switch to a tag like 'v4.7.0'
    make all && sudo make install
 
 Runtime Dependencies

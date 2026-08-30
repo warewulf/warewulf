@@ -8,8 +8,8 @@ import (
 var (
 	baseCmd = &cobra.Command{
 		DisableFlagsInUseLine: true,
-		Use:                   "edit [OPTIONS] NODENAME",
-		Short:                 "Edit node(s) with editor",
+		Use:                   "edit [OPTIONS] PROFILE",
+		Short:                 "Edit profile(s) with editor",
 		Long:                  "This command opens an editor for the given profiles.",
 		RunE:                  CobraRunE,
 		ValidArgsFunction:     completions.Profiles,

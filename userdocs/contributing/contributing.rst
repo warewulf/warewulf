@@ -9,7 +9,7 @@ contributing code are all ways to help!
 Join the community
 ==================
 
-Whether you develop Warewulf or use it to deploy clusters, we hope ypu'll spread
+Whether you develop Warewulf or use it to deploy clusters, we hope you'll spread
 the word! Share your experiences online. Ask your distribution to include
 support for Warewulf. Consider giving a talk at a conference or meetup!
 

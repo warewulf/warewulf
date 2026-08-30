@@ -13,7 +13,7 @@ import (
 func TestGetReference(t *testing.T) {
 	temp, err := os.MkdirTemp(os.TempDir(), "ww-archive-*")
 	assert.NoError(t, err)
-	defer os.RemoveAll(temp)
+	defer func() { _ = os.RemoveAll(temp) }()
 
 	tests := []struct {
 		name string

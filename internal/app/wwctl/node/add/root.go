@@ -29,7 +29,7 @@ func GetCommand() *cobra.Command {
 	}
 	vars.nodeConf.CreateFlags(baseCmd)
 	vars.nodeAdd.CreateAddFlags(baseCmd)
-	flags.AddContainer(baseCmd, &(vars.nodeConf.Profile.ImageName))
+	flags.AddContainer(baseCmd, &(vars.nodeConf.ImageName))
 	flags.AddWwinit(baseCmd, &(vars.nodeConf.SystemOverlay))
 	flags.AddRuntime(baseCmd, &(vars.nodeConf.RuntimeOverlay))
 	// register the command line completions

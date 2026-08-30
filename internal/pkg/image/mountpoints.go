@@ -23,9 +23,10 @@ func InitMountPnts(binds []string) (mounts []*warewulfconf.MountEntry) {
 		readonly := false
 		copy_ := false
 		if len(bind) >= 3 {
-			if bind[2] == "ro" {
+			switch bind[2] {
+			case "ro":
 				readonly = true
-			} else if bind[2] == "copy" {
+			case "copy":
 				copy_ = true
 			}
 		}

@@ -32,11 +32,11 @@ the Warewulf configuration process to configure the ``ipxe`` service.
 
       bios->iPXE [lhead=cluster0,label="iPXE.efi"];
 
-      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from node image"];
+      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from OS image"];
       ipxe_cfg->kernel[ltail=cluster0,label="http"];
   }
 
-Starting in v4.5.0, Warewulf no longer includes an iPXE binary. In stead, by
+Starting in v4.5.0, Warewulf no longer includes an iPXE binary. Instead, by
 default Warewulf uses the iPXE that comes with the host OS.
 
 Unfortunately, we’ve encountered a few instances where bugs in the OS-provided
@@ -235,7 +235,7 @@ Warewulf as a technology preview.
         grubcfg[shape=record label="{grub.cfg|static under TFTP root}"];
         grub->grubcfg[label="TFTP"];
       }
-      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from node image"];
+      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from OS image"];
       grubcfg->kernel[ltail=cluster1,label="http"];
   }
 
@@ -245,7 +245,7 @@ advantage that secure boot can be used. That means that only the signed kernel
 of a distribution can be booted. This can be a huge security benefit for some
 scenarios.
 
-In order to enable the grub boot method it has to be enabled in `warewulf.conf`.
+In order to enable the grub boot method it has to be enabled in ``warewulf.conf``.
 
 .. code-block:: yaml
 
@@ -276,14 +276,14 @@ Secure boot
 If secure boot is enabled at every step a signature is checked and the boot
 process fails if this check fails. The shim typically only includes the key for
 a single operating system, which means that each distribution needs separate
-`shim` and `grub` executables. Warewulf extracts these binaries from the images.
+``shim`` and ``grub`` executables. Warewulf extracts these binaries from the images.
 If the node is unknown to Warewulf or can't be identified during the TFTP boot
 phase, the shim/grub binaries of the host in which Warewulf is running are used.
 
 Install shim and efi
 --------------------
 
-`shim.efi` and `grub.efi` must be installed in the image for it to be
+``shim.efi`` and ``grub.efi`` must be installed in the image for it to be
 booted by GRUB.
 
 .. code-block:: console
@@ -297,27 +297,57 @@ booted by GRUB.
 These packages must also be installed on the Warewulf server host to enable
 node discovery using GRUB.
 
+.. _HTTP boot:
+
 HTTP boot
 ---------
 
-Modern EFI systems have the possibility to directly boot per http. The flow
-diagram is the following:
+Modern EFI systems have the possibility to directly boot per http. HTTP boot is
+part of the GRUB boot chain described above, and is not a separate bootloader.
+The node firmware fetches ``shim.efi`` over HTTP instead of TFTP, and the rest
+of the chain proceeds as it does for a TFTP-booted GRUB node. Warewulf does not
+serve an iPXE binary over HTTP, so HTTP boot cannot be used to start the iPXE
+boot method.
+
+The flow diagram is the following:
 
 .. graphviz::
 
   digraph G{
       node [shape=box];
       efi [shape=record label="{EFI|boots from URI defined in filename}"];
-      shim [shape=record label="{shim.efi|replaces shim.efi with grubx64.efi in URI|extracted from node image}"];
-      grub [shape=record label="{grub.efi|checks for grub.cfg|extracted from node image}"]
-      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from node image"];
+      shim [shape=record label="{shim.efi|replaces shim.efi with grubx64.efi in URI|extracted from OS image}"];
+      grub [shape=record label="{grub.efi|checks for grub.cfg|extracted from OS image}"]
+      kernel [shape=record label="{kernel|ramdisk (root fs)|wwinit overlay}|extracted from OS image"];
       efi->shim [label="http"];
       shim->grub [label="http"];
       grub->kernel [label="http"];
     }
 
-Warewulf delivers the initial `shim.efi` and `grub.efi` via http as taken
+Warewulf delivers the initial ``shim.efi`` and ``grub.efi`` via http as taken
 directly from the node's assigned image.
+
+.. note::
+
+   HTTP boot has the following limitations in the current implementation.
+
+   * The DHCP rule that hands out the HTTP boot URI is generated differently by
+     each DHCP backend. With ISC ``dhcpd`` (the default) the rule is written
+     only when ``grubboot`` is enabled, and it matches any ``HTTPClient`` vendor
+     class, so the rule matches clients of any architecture. With ``dnsmasq``
+     the rule is always written, but it matches only the vendor class
+     ``HTTPClient:Arch:00016``, which is the `IANA processor architecture type`_
+     for "x64 uefi boot from http". An aarch64 client booting over HTTP presents
+     architecture type 19, "arm uefi 64 boot from http", and is therefore not
+     matched.
+   * The HTTP boot URI is built from the server's IPv4 address, so HTTP boot
+     requires an IPv4 address on the provisioning interface and is not usable on
+     an IPv6-only Warewulf server.
+   * The ``/efiboot/`` route identifies the requesting node from the ``wwid``
+     query parameter or, when that is absent, from a lookup of the client's
+     address in the IPv4 ARP cache. See :ref:`server-routes` for details.
+
+.. _IANA processor architecture type: https://www.iana.org/assignments/dhcpv6-parameters/dhcpv6-parameters.xhtml#processor-architecture
 
 .. _booting with dracut:
 
@@ -325,10 +355,15 @@ Two-stage boot: dracut
 ======================
 
 Some systems, typically due to limitations in their BIOS or EFI firmware, are
-unable to load image of a certain size directly with a traditional bootloader,
+unable to load an image of a certain size directly with a traditional bootloader,
 either iPXE or GRUB. As a workaround for such systems, Warewulf can be
 configured to load a dracut initramfs from the image and to use that initramfs
 to load the full image.
+
+The two-stage boot is independent of how the first-stage bootloader reaches the
+node. It runs over the normal network boot path, whether iPXE or GRUB was
+delivered over TFTP or over HTTP, and it does not require :ref:`HTTP boot` to be
+configured.
 
 Warewulf provides a dracut module to configure the dracut initramfs to load the
 image. This module is available in the ``warewulf-dracut`` subpackage, which
@@ -340,11 +375,11 @@ an initramfs inside the image.
 .. code-block:: shell
 
    # Enterprise Linux
-   wwctl image exec rockylinux-9 --build=false -- /usr/bin/dnf -y install https://github.com/warewulf/warewulf/releases/download/v4.6.5/warewulf-dracut-4.6.5-1.el9.noarch.rpm
+   wwctl image exec rockylinux-9 --build=false -- /usr/bin/dnf -y install https://github.com/warewulf/warewulf/releases/download/v4.7.0/warewulf-dracut-4.7.0-1.el9.noarch.rpm
    wwctl image exec rockylinux-9 -- /usr/bin/dracut --force --no-hostonly --add wwinit --regenerate-all
 
    # SUSE
-   wwctl image exec leap-15 --build=false -- /usr/bin/zypper -y install https://github.com/warewulf/warewulf/releases/download/v4.6.5/warewulf-dracut-4.6.5-1.suse.lp155.noarch.rpm
+   wwctl image exec leap-15 --build=false -- /usr/bin/zypper -y install https://github.com/warewulf/warewulf/releases/download/v4.7.0/warewulf-dracut-4.7.0-1.suse.lp155.noarch.rpm
    wwctl image exec leap-15 -- /usr/bin/dracut --force --no-hostonly --add wwinit --regenerate-all
 
 .. note::
@@ -394,5 +429,44 @@ during boot.
 
 The wwinit module provisions to tmpfs. By default, tmpfs is permitted to use up
 to 50% of physical memory. This size limit may be adjusted using the kernel
-argument `wwinit.tmpfs.size`. (This parameter is passed to the `size` option
+argument ``wwinit.tmpfs.size``. (This parameter is passed to the ``size`` option
 during tmpfs mount. See ``tmpfs(5)`` for more details.)
+
+Network configuration in the dracut initramfs
+---------------------------------------------
+
+The ``:dracut`` entry passes ``rd.neednet=1`` and an ``ip=`` argument for each of
+the node's network devices, so that the initramfs can fetch the image from the
+Warewulf server. The autoconfiguration method is chosen per device from the
+node's configuration:
+
+- a device with an ``ipaddr6`` and no ``ipaddr`` gets ``ip=<device>:auto6``, so
+  that the initramfs configures IPv6 (SLAAC, and DHCPv6 if the router
+  advertisement asks for it) and does not wait for a DHCPv4 lease;
+- every other device, including dual-stack devices, gets ``ip=<device>:dhcp``.
+
+This matters because on an IPv6-only fabric a request for DHCPv4 is not merely
+redundant. NetworkManager's initrd generator translates ``ip=<device>:dhcp`` into
+``ipv4.method=auto`` with ``ipv4.may-fail=no``, which makes a DHCPv4 lease a
+requirement for the connection to activate. Where no DHCPv4 server exists the
+connection never activates, nothing that waits on the network proceeds, and the
+boot ends in the dracut emergency shell with ``FATAL: Unable to load stage:
+system``.
+
+The value a node will be served can be read without booting it.
+
+.. code-block:: shell
+
+   curl -s "http://<server>:<port>/ipxe/<hwaddr>" | grep 'set dracut_net'
+
+That prints one line for the ``:dracut`` entry and one for ``:dracut_static``.
+The latter builds its ``ip=`` argument from ``ipaddr``, ``gateway`` and
+``netmask``, so it does not support a node that has only an ``ipaddr6``.
+
+.. note::
+
+   When adjusting the method by hand in a copy of the template, prefer ``auto6``
+   over dracut's ``either6``. NetworkManager's initrd generator does not
+   recognise ``either6``: it falls back to interpreting the argument
+   positionally, fails to read the device name as an address, and discards the
+   whole ``ip=`` argument.

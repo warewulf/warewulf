@@ -17,8 +17,8 @@ func init() {
 
 func ParseVersion(versionString string) *version.Version {
 	matches := versionPattern.FindAllString(versionString, -1)
-	for i := len(matches) - 1; i >= 0; i-- {
-		if version_, err := version.NewVersion(strings.TrimSuffix(matches[i], ".")); err == nil {
+	for _, match := range matches {
+		if version_, err := version.NewVersion(strings.TrimSuffix(match, ".")); err == nil {
 			return version_
 		}
 	}

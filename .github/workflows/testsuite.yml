@@ -2,6 +2,7 @@
 name: testsuite
 
 on:
+  workflow_dispatch:
   pull_request:
     branches:
       - main
@@ -14,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: ['1.22', '1.23']
+        go-version: ['1.25', '1.26']
     steps:
       - name: Checkout Warewulf
         uses: actions/checkout@v4
@@ -53,3 +54,33 @@ jobs:
         run: make all
       - name: Build the Docker image
         run: docker build . --file Dockerfile
+
+  integration-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: Rocky Linux 10
+            container: rockylinux/rockylinux:10-ubi-init
+          - name: SUSE Linux 16.0
+            container: registry.suse.com/bci/bci-init:16.0
+    steps:
+      - name: Checkout Warewulf
+        uses: actions/checkout@v4
+      # /opt and /home are bind-mounted from the host because
+      # overlayfs does not support NFS exporting.
+      - name: Start ${{ matrix.name }} container
+        run: >-
+          sudo podman run
+          -w /home/warewulf
+          --privileged
+          -v /home:/home
+          -v /opt:/opt
+          -v ${{ github.workspace }}:/home/warewulf
+          -d
+          --systemd=true
+          --hostname sms
+          ${{ matrix.container }}
+          /usr/lib/systemd/systemd
+      - name: Run integration test
+        run: sudo podman exec -it -l bash -c "cd /home/warewulf; bash scripts/integration-test.sh"

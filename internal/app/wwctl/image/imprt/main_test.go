@@ -108,7 +108,7 @@ func createDummyDockerArchive(t *testing.T, path string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	archiveTw := tar.NewWriter(f)
 

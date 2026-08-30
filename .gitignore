@@ -13,6 +13,12 @@
 /wwapid
 /wwapird
 
+# local files
+/.local/
+.claude/
+CLAUDE.md
+AGENTS.md
+
 # other created files
 /docs/man/man1
 /docs/man/man5/*.5.gz

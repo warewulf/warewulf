@@ -20,7 +20,7 @@ well, and the reorganization and deduplication supports better documentation
 maintenance in the future.
 
 The documentation also now includes complete and automatically-generated
-references for all ``wwctl`` commands, sub-comands, and options.
+references for all ``wwctl`` commands, sub-commands, and options.
 
 .. _user documentation: https://warewulf.org/docs/
 
@@ -92,7 +92,7 @@ Warewulf "containers" have never been "virtualized" or executed with a container
 runtime. Rather, the name "container" was selected to imply the integration in
 v4 with the container ecosystem of tooling for defining, building, storing, and
 testing node images. But this terminology ended up causing persistent confusion,
-so a more industry-standard "node image" terminology has been adopted in stead.
+so a more industry-standard "node image" terminology has been adopted instead.
 
 The ``wwctl container`` command is retained as an alias for the new ``wwctl
 image`` command. The variables ``.Container`` and ``.ContainerName`` are also
@@ -102,7 +102,7 @@ will continue to work through the v4.6.x series.
 There are smaller changes to the image system, as well:
 
 - ``wwctl image shell`` now supports a ``WW_HISTFILE`` environment variable to
-  save shell history _inside_ the image.
+  save shell history *inside* the image.
 - ``wwctl image shell`` now supports a ``WW_PS1`` environment variable to
   specify the prompt for the interactive shell. The default prompt has also been
   updated to indicate the current directory.
@@ -228,7 +228,7 @@ Profiles
 ========
 
 Node profiles now support profiles themselves, allowing for complex nested
-hierarchies of nested profiles.
+hierarchies of profiles.
 
 .. code-block:: yaml
 
@@ -363,7 +363,7 @@ expressions and globs) are no longer supported.
 in YAML and JSON format, and ``wwctl node export`` has been updated to match,
 including indicating node IDs.
 
-``wwctl`` now return a non-zero exit code on error.
+``wwctl`` now returns a non-zero exit code on error.
 
 There are smaller changes to ``wwctl``, as well:
 

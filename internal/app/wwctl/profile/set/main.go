@@ -5,12 +5,10 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	apiprofile "github.com/warewulf/warewulf/internal/pkg/api/profile"
-	"github.com/warewulf/warewulf/internal/pkg/api/routes/wwapiv1"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
-	"gopkg.in/yaml.v3"
 )
 
 func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err error) {
@@ -43,47 +41,139 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			dsk := *vars.profileConf.Disks["UNDEF"]
 			vars.profileConf.Disks[vars.profileAdd.DiskName] = &dsk
 		}
-		if (vars.profileAdd.DiskName != "") != (vars.profileAdd.PartName != "") {
+		if vars.profileAdd.PartName != "" && vars.profileAdd.DiskName == "" {
 			return fmt.Errorf("partition and disk must be specified")
 		}
 		delete(vars.profileConf.Disks, "UNDEF")
 		vars.profileConf.Ipmi.Tags = vars.profileAdd.IpmiTagsAdd
-		buffer, err := yaml.Marshal(vars.profileConf)
+
+		nodeDB, err := node.New()
 		if err != nil {
-			return fmt.Errorf("can not marshall nodeInfo: %s", err)
-		}
-		wwlog.Debug("sending following values: %s", string(buffer))
-		set := wwapiv1.ConfSetParameter{
-			NodeConfYaml:     string(buffer[:]),
-			NetdevDelete:     vars.profileDel.NetDel,
-			PartitionDelete:  vars.profileDel.PartDel,
-			DiskDelete:       vars.profileDel.DiskDel,
-			FilesystemDelete: vars.profileDel.FsDel,
-			TagAdd:           vars.profileAdd.TagsAdd,
-			TagDel:           vars.profileDel.TagsDel,
-			NetTagAdd:        vars.profileAdd.NetTagsAdd,
-			NetTagDel:        vars.profileDel.NetTagsDel,
-			IpmiTagAdd:       vars.profileAdd.IpmiTagsAdd,
-			IpmiTagDel:       vars.profileDel.IpmiTagsDel,
-
-			AllConfs: vars.setNodeAll,
-			Force:    vars.setForce,
-			ConfList: args,
+			return fmt.Errorf("could not open configuration: %w", err)
 		}
 
-		if !vars.setYes {
-			var profileCount uint
-			// The checks run twice in the prompt case.
-			// Avoiding putting in a blocking prompt in an API.
-			_, profileCount, err = apiprofile.ProfileSetParameterCheck(&set)
+		if len(args) == 0 {
+			return fmt.Errorf("no profiles specified")
+		} else if len(nodeDB.ListAllProfiles()) == 0 {
+			wwlog.Warn("no nodes/profiles found")
+			return nil
+		}
+
+		changed := cmd.Flags().Changed
+		profileChanges := map[string][]node.Change{}
+		for _, profileId := range args {
+			wwlog.Verbose("evaluating profile: %s", profileId)
+			profilePtr, err := nodeDB.GetProfilePtr(profileId)
 			if err != nil {
-				return err
+				wwlog.Warn("invalid profile: %s", profileId)
+				continue
 			}
-			yes := util.Confirm(fmt.Sprintf("Are you sure you want to modify %d profile(s)", profileCount))
-			if !yes {
-				return err
+			before := profilePtr.Clone()
+			before.Flatten()
+			profilePtr.UpdateFrom(&vars.profileConf, changed)
+			if vars.profileDel.NetDel != "" {
+				if _, ok := profilePtr.NetDevs[vars.profileDel.NetDel]; !ok {
+					return fmt.Errorf("network device name doesn't exist: %s", vars.profileDel.NetDel)
+				}
+				wwlog.Verbose("Profile: %s, Deleting network device: %s", profileId, vars.profileDel.NetDel)
+				delete(profilePtr.NetDevs, vars.profileDel.NetDel)
+			}
+			if vars.profileDel.PartDel != "" {
+				if vars.profileAdd.DiskName != "" {
+					disk, ok := profilePtr.Disks[vars.profileAdd.DiskName]
+					if !ok || disk == nil {
+						return fmt.Errorf("disk doesn't exist: %s", vars.profileAdd.DiskName)
+					}
+					if _, ok := disk.Partitions[vars.profileDel.PartDel]; !ok {
+						return fmt.Errorf("partition doesn't exist: %s", vars.profileDel.PartDel)
+					}
+					wwlog.Verbose("Profile: %s, on disk %s, deleting partition: %s", profileId, vars.profileAdd.DiskName, vars.profileDel.PartDel)
+					delete(disk.Partitions, vars.profileDel.PartDel)
+				} else {
+					found := false
+					for diskname, disk := range profilePtr.Disks {
+						if _, ok := disk.Partitions[vars.profileDel.PartDel]; ok {
+							wwlog.Verbose("Profile: %s, on disk %s, deleting partition: %s", profileId, diskname, vars.profileDel.PartDel)
+							delete(disk.Partitions, vars.profileDel.PartDel)
+							found = true
+						}
+					}
+					if !found {
+						return fmt.Errorf("partition doesn't exist: %s", vars.profileDel.PartDel)
+					}
+				}
+			}
+			if vars.profileDel.DiskDel != "" {
+				if _, ok := profilePtr.Disks[vars.profileDel.DiskDel]; ok {
+					wwlog.Verbose("Profile: %s, deleting disk: %s", profileId, vars.profileDel.DiskDel)
+					delete(profilePtr.Disks, vars.profileDel.DiskDel)
+				} else {
+					return fmt.Errorf("disk doesn't exist: %s", vars.profileDel.DiskDel)
+				}
+			}
+			if vars.profileDel.FsDel != "" {
+				if _, ok := profilePtr.FileSystems[vars.profileDel.FsDel]; ok {
+					wwlog.Verbose("Profile: %s, deleting filesystem: %s", profileId, vars.profileDel.FsDel)
+					delete(profilePtr.FileSystems, vars.profileDel.FsDel)
+				} else {
+					return fmt.Errorf("filesystem doesn't exist: %s", vars.profileDel.FsDel)
+				}
+			}
+			for _, key := range vars.profileDel.TagsDel {
+				delete(profilePtr.Tags, key)
+			}
+			for key, val := range vars.profileAdd.TagsAdd {
+				if profilePtr.Tags == nil {
+					profilePtr.Tags = make(map[string]string)
+				}
+				profilePtr.Tags[key] = val
+			}
+			for key, val := range vars.profileAdd.IpmiTagsAdd {
+				if profilePtr.Ipmi.Tags == nil {
+					profilePtr.Ipmi.Tags = make(map[string]string)
+				}
+				profilePtr.Ipmi.Tags[key] = val
+			}
+			for _, key := range vars.profileDel.IpmiTagsDel {
+				delete(profilePtr.Ipmi.Tags, key)
+			}
+			if netDev, ok := profilePtr.NetDevs[vars.profileAdd.Net]; ok {
+				for _, key := range vars.profileDel.NetTagsDel {
+					delete(netDev.Tags, key)
+				}
+				if len(vars.profileAdd.NetTagsAdd) > 0 && netDev.Tags == nil {
+					netDev.Tags = make(map[string]string)
+				}
+				for key, val := range vars.profileAdd.NetTagsAdd {
+					netDev.Tags[key] = val
+				}
+			}
+			profilePtr.Flatten()
+			if before != nil {
+				if ch := node.Diff(before, profilePtr); len(ch) > 0 {
+					profileChanges[profileId] = ch
+				}
 			}
 		}
-		return apiprofile.ProfileSet(&set)
+
+		summary := node.FormatChanges(profileChanges)
+		if !vars.setYes {
+			if summary == "" {
+				wwlog.Info("No changes to apply.")
+				return nil
+			}
+			wwlog.Output("%s", summary)
+			if !util.Confirm(fmt.Sprintf("Apply these changes to %d profile(s)?", len(profileChanges))) {
+				wwlog.Info("No changes made!")
+				return nil
+			}
+		} else {
+			wwlog.Output("Applying following changes:\n %s", summary)
+		}
+
+		if err := nodeDB.Persist(); err != nil {
+			return err
+		}
+		return warewulfd.DaemonReload()
 	}
 }

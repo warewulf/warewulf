@@ -1,3 +1,8 @@
+// Package warewulfd implements the Warewulf provisioning daemon, handling
+// HTTP requests from compute nodes for boot files, kernel images, overlays,
+// and EFI bootloaders.
+//
+// See userdocs/server/routes.rst for more information.
 package warewulfd
 
 import (
@@ -77,7 +82,7 @@ func DaemonStatus() error {
 	} else {
 		err := process.Signal(syscall.Signal(0))
 		if err != nil {
-			return fmt.Errorf("failed to send process SIGCONT: %w", err)
+			return fmt.Errorf("failed to send signal 0 (process existence check): %w", err)
 		} else {
 			wwlog.Serv("Warewulf server is running at PID: %d", pid)
 		}

@@ -550,6 +550,7 @@ type IpmiConf struct {
 	Port       string            `yaml:"port,omitempty"`
 	Tags       map[string]string `yaml:"tags,omitempty"`
 	TagsDel    []string          `yaml:"tagsdel,omitempty"`
+	Template   string            `yaml:"template,omitempty"`
 	UserName   string            `yaml:"username,omitempty"`
 	Write      string            `yaml:"write,omitempty"`
 }
@@ -564,6 +565,7 @@ func (legacy *IpmiConf) Upgrade() (upgraded *node.IpmiConf) {
 	upgraded.Netmask = net.ParseIP(legacy.Netmask)
 	upgraded.Password = legacy.Password
 	upgraded.Port = legacy.Port
+	upgraded.Template = legacy.Template
 	if legacy.Tags != nil {
 		for key, value := range legacy.Tags {
 			upgraded.Tags[key] = value

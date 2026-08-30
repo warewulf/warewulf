@@ -25,8 +25,40 @@ network:
       addresses:
       - {{$netdev.IpCIDR}}
 {{- end }}
+{{- if or $netdev.Gateway $netdev.Gateway6 }}
+      routes:
+{{- if $netdev.Gateway }}
+      - to: default
+        via: {{$netdev.Gateway}}
+{{- end }}
+{{- if $netdev.Gateway6 }}
+      - to: "::/0"
+        via: {{$netdev.Gateway6}}
+{{- end }}
+{{- end }}
 {{- if $netdev.MTU}}
       mtu: {{$netdev.MTU}}
+{{- end }}
+{{- $nameservers := list }}
+{{- range $tk, $tv := $netdev.Tags }}
+  {{- if regexMatch "^DNS[0-9]*$" $tk }}
+    {{- $nameservers = append $nameservers $tv }}
+  {{- end }}
+{{- end }}
+{{- if or $nameservers $netdev.Tags.DNSSEARCH }}
+      nameservers:
+{{- if $nameservers }}
+        addresses:
+{{- range $addr := $nameservers }}
+        - {{ $addr }}
+{{- end }}
+{{- end }}
+{{- if $netdev.Tags.DNSSEARCH }}
+        search:
+{{- range $domain := (regexSplit "[ \t]+" $netdev.Tags.DNSSEARCH -1) }}
+        - {{ $domain }}
+{{- end }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -41,6 +73,17 @@ network:
 {{- if $netdev.IpCIDR }}
       addresses:
       - {{$netdev.IpCIDR}}
+{{- end }}
+{{- if or $netdev.Gateway $netdev.Gateway6 }}
+      routes:
+{{- if $netdev.Gateway }}
+      - to: default
+        via: {{$netdev.Gateway}}
+{{- end }}
+{{- if $netdev.Gateway6 }}
+      - to: "::/0"
+        via: {{$netdev.Gateway6}}
+{{- end }}
 {{- end }}
 {{- if $netdev.MTU}}
       mtu: {{$netdev.MTU}}

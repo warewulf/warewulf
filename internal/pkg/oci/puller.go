@@ -20,6 +20,7 @@ import (
 	"github.com/opencontainers/umoci"
 	"github.com/opencontainers/umoci/oci/layer"
 	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 type pullerOpt func(*puller) error
@@ -140,7 +141,11 @@ func (p *puller) Pull(ctx context.Context, uri, dst string) (err error) {
 	if err != nil {
 		return err
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			wwlog.Warn("failed to remove temporary directory %s: %s", tmpDir, err)
+		}
+	}()
 
 	// create an oci bundle our tmpdir to avoid issues with umoci.UnpackRootfs()
 	tmpRef, err := layout.ParseReference(tmpDir + ":" + "tmp")

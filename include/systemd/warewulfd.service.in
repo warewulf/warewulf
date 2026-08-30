@@ -11,6 +11,7 @@ User=root
 Group=root
 ExecStart=@BINDIR@/wwctl server $OPTIONS
 ExecReload=/bin/kill -HUP "$MAINPID"
+LimitNOFILE=524288
 Restart=always
 
 [Install]

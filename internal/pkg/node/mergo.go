@@ -179,7 +179,7 @@ func (config *NodesYaml) MergeNode(id string) (node Node, fields fieldMap, err e
 	node.setIds(id)
 	node.valid = true
 	node.updatePrimaryNetDev()
-	node.Profile.cleanLists()
+	node.cleanLists()
 	return node, fields, nil
 }
 
