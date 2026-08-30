@@ -16,6 +16,12 @@ func TestValidateOverlayName(t *testing.T) {
 	assert.Error(t, ValidateOverlayName("../../escape"))
 }
 
+func TestBuildArtifactManifest_UsesSupportedSchemaVersion(t *testing.T) {
+	manifest := BuildArtifactManifest("demo", "/tmp/source", "", nil, DecisionSummary{})
+
+	assert.Equal(t, ArtifactSchemaVersion, manifest.SchemaVersion)
+}
+
 func TestValidateArtifact_Valid(t *testing.T) {
 	tmpDir := t.TempDir()
 	artifactRoot := filepath.Join(tmpDir, "demo")
@@ -48,7 +54,7 @@ func TestValidateArtifact_InvalidManifestPath(t *testing.T) {
 
 	// Non-normalized path should fail validation.
 	manifest := ArtifactManifest{
-		SchemaVersion: "v1",
+		SchemaVersion: ArtifactSchemaVersion,
 		OverlayName:   "demo",
 		SourceRoot:    "/tmp/source",
 		SelectedPaths: []string{"etc/config"},
@@ -63,4 +69,24 @@ func TestValidateArtifact_InvalidManifestPath(t *testing.T) {
 		return
 	}
 	assert.Contains(t, err.Error(), "normalized absolute-style")
+}
+
+func TestValidateArtifact_RejectsUnsupportedSchemaVersion(t *testing.T) {
+	for _, schemaVersion := range []string{"", "v2"} {
+		t.Run(schemaVersion, func(t *testing.T) {
+			artifactRoot := filepath.Join(t.TempDir(), "demo")
+			if !assert.NoError(t, os.MkdirAll(filepath.Join(artifactRoot, "rootfs"), 0o755)) {
+				return
+			}
+
+			manifest := BuildArtifactManifest("demo", "/tmp/source", "", nil, DecisionSummary{})
+			manifest.SchemaVersion = schemaVersion
+			if !assert.NoError(t, SaveArtifactManifest(filepath.Join(artifactRoot, ArtifactManifestFileName), manifest)) {
+				return
+			}
+
+			err := ValidateArtifact(artifactRoot)
+			assert.ErrorContains(t, err, "unsupported artifact schema version")
+		})
+	}
 }

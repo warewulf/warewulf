@@ -30,7 +30,6 @@ var (
 	stopArtifactDir   string
 	stopOverlayName   string
 	stopNodeSource    string
-	stopEventAssisted bool
 	stopNoInteractive bool
 )
 
@@ -60,7 +59,6 @@ func GetStopCommand() *cobra.Command {
 	cmd.Flags().StringVar(&stopArtifactDir, "artifact-dir", "", "Artifact parent directory (default: randomized /tmp/wwclient-overlay-artifact-*)")
 	cmd.Flags().StringVar(&stopOverlayName, "overlay-name", "", "Overlay name for artifact mode")
 	cmd.Flags().StringVar(&stopNodeSource, "node-source", "", "Optional node identifier stored in artifact metadata")
-	cmd.Flags().BoolVar(&stopEventAssisted, "event-assisted", false, "Use event-assisted session metadata when available")
 
 	return cmd
 }
@@ -107,29 +105,6 @@ func runStop(cmd *cobra.Command, args []string) error {
 		snapshot.Decisions = decisionState.Decisions
 	} else if !errors.Is(decisionErr, os.ErrNotExist) {
 		return decisionErr
-	}
-
-	if stopEventAssisted {
-		eventStatePath := overlaydiff.DefaultEventStatePath(stateFile)
-		eventState, eventErr := overlaydiff.LoadEventState(eventStatePath)
-		switch {
-		case errors.Is(eventErr, os.ErrNotExist):
-			_, _ = fmt.Fprintln(textOut, "Event-assisted state not found; falling back to full scan.")
-		case eventErr != nil:
-			_, _ = fmt.Fprintf(textOut, "Event-assisted state unreadable (%v); falling back to full scan.\n", eventErr)
-		default:
-			if eventState.SourceRoot != "" && snapshot.SourceRoot != "" && eventState.SourceRoot != snapshot.SourceRoot {
-				_, _ = fmt.Fprintln(textOut, "Event-assisted source mismatch; falling back to full scan.")
-			} else if eventState.Health != overlaydiff.EventHealthOK {
-				reason := strings.Join(eventState.Reasons, "; ")
-				if strings.TrimSpace(reason) == "" {
-					reason = "degraded watcher health"
-				}
-				_, _ = fmt.Fprintf(textOut, "Event-assisted state degraded (%s); falling back to full scan.\n", reason)
-			} else {
-				_, _ = fmt.Fprintln(textOut, "Event-assisted session loaded; candidate journal fast-path is not enabled yet, using full scan.")
-			}
-		}
 	}
 
 	sourcePath := strings.TrimSpace(stopSourcePath)
@@ -198,8 +173,8 @@ func runStop(cmd *cobra.Command, args []string) error {
 		_, _ = fmt.Fprint(cmd.OutOrStdout(), overlaydiff.FormatTable(changes))
 	}
 
-	selected, skipped, templated, unset := summarizeDecisions(changes, snapshot.Decisions)
-	_, _ = fmt.Fprintf(textOut, "Decision summary: selected=%d skipped=%d templated=%d unset=%d\n", selected, skipped, templated, unset)
+	selected, skipped, unset := summarizeDecisions(changes, snapshot.Decisions)
+	_, _ = fmt.Fprintf(textOut, "Decision summary: selected=%d skipped=%d unset=%d\n", selected, skipped, unset)
 
 	if stopExport || strings.TrimSpace(stopExportDir) != "" {
 		exportDir, err := prepareExportDir(strings.TrimSpace(stopExportDir))
@@ -247,10 +222,9 @@ func runStop(cmd *cobra.Command, args []string) error {
 			strings.TrimSpace(stopNodeSource),
 			selectedPaths(changes, snapshot.Decisions),
 			overlaydiff.DecisionSummary{
-				Selected:  selected,
-				Skipped:   skipped,
-				Templated: templated,
-				Unset:     unset,
+				Selected: selected,
+				Skipped:  skipped,
+				Unset:    unset,
 			},
 		)
 		manifestPath := filepath.Join(artifactRoot, overlaydiff.ArtifactManifestFileName)
@@ -292,7 +266,7 @@ func runInteractiveSelection(in io.Reader, out io.Writer, changes []overlaydiff.
 		}
 
 		for {
-			_, _ = fmt.Fprintf(out, "[%d/%d] %s %s (%s) -> (y)es, (n)o, (t)emplated, (e)xit: ", idx+1, len(changes), change.Change, change.Path, change.Type)
+			_, _ = fmt.Fprintf(out, "[%d/%d] %s %s (%s) -> (y)es, (n)o, (e)xit: ", idx+1, len(changes), change.Change, change.Path, change.Type)
 			answer, err := reader.ReadString('\n')
 			if err != nil {
 				if errors.Is(err, io.EOF) {
@@ -309,15 +283,13 @@ func runInteractiveSelection(in io.Reader, out io.Writer, changes []overlaydiff.
 				snapshot.Decisions[change.Path] = overlaydiff.DecisionYes
 			case "n", "no":
 				snapshot.Decisions[change.Path] = overlaydiff.DecisionNo
-			case "t", "templated":
-				snapshot.Decisions[change.Path] = overlaydiff.DecisionTemplated
 			case "e", "exit":
 				if err := flush(); err != nil {
 					return err
 				}
 				return errInteractiveCancelled
 			default:
-				_, _ = fmt.Fprintln(out, "Invalid answer, use y/n/t/e")
+				_, _ = fmt.Fprintln(out, "Invalid answer, use y/n/e")
 				continue
 			}
 
@@ -337,15 +309,13 @@ func runInteractiveSelection(in io.Reader, out io.Writer, changes []overlaydiff.
 	return nil
 }
 
-func summarizeDecisions(changes []overlaydiff.Change, decisions map[string]overlaydiff.Decision) (selected int, skipped int, templated int, unset int) {
+func summarizeDecisions(changes []overlaydiff.Change, decisions map[string]overlaydiff.Decision) (selected int, skipped int, unset int) {
 	for _, change := range changes {
 		switch normalizeDecision(decisions[change.Path]) {
 		case overlaydiff.DecisionYes:
 			selected++
 		case overlaydiff.DecisionNo:
 			skipped++
-		case overlaydiff.DecisionTemplated:
-			templated++
 		default:
 			unset++
 		}
@@ -358,7 +328,7 @@ func normalizeDecision(value overlaydiff.Decision) overlaydiff.Decision {
 	switch value {
 	case "", overlaydiff.DecisionUnset:
 		return overlaydiff.DecisionUnset
-	case overlaydiff.DecisionYes, overlaydiff.DecisionNo, overlaydiff.DecisionTemplated:
+	case overlaydiff.DecisionYes, overlaydiff.DecisionNo:
 		return value
 	default:
 		return overlaydiff.DecisionUnset

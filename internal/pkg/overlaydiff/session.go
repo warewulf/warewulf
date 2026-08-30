@@ -19,8 +19,6 @@ const (
 	DecisionYes Decision = "yes"
 	// DecisionNo marks a path intentionally skipped.
 	DecisionNo Decision = "no"
-	// DecisionTemplated marks a path for template-based handling.
-	DecisionTemplated Decision = "templated"
 )
 
 // ChangeSummary is persisted session metadata for a detected path.
