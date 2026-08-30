@@ -1095,45 +1095,25 @@ func TemplateOutputPaths(templatePath string, deployedTemplatePath string, overl
 	}
 	tstruct.BuildSource = templatePath
 
-	buffer, _, writeFile, err := RenderTemplateFile(templatePath, tstruct)
+	rendered, err := RenderTemplate(templatePath, tstruct)
 	if err != nil {
 		return nil, fmt.Errorf("failed to render template %s: %w", templatePath, err)
 	}
-	if !*writeFile {
+	if !rendered.WriteFile {
 		return nil, nil
 	}
 
-	var paths []string
-	outputPath := defaultOutputPath
-	fileScanner := bufio.NewScanner(bytes.NewReader(buffer.Bytes()))
-	fileScanner.Split(ScanLines)
-	writingToNamedFile := false
-	isLink := false
-	for fileScanner.Scan() {
-		line := fileScanner.Text()
-		filenameFromTemplate := regFile.FindAllStringSubmatch(line, -1)
-		targetFromTemplate := regLink.FindAllStringSubmatch(line, -1)
-		if len(targetFromTemplate) != 0 {
-			paths = append(paths, outputPath)
-			isLink = true
-		} else if len(filenameFromTemplate) != 0 {
-			if writingToNamedFile && !isLink {
-				paths = append(paths, outputPath)
+	paths := make([]string, 0, len(rendered.Files))
+	for _, file := range rendered.Files {
+		if file.Name == "" {
+			if len(rendered.Files) == 1 || file.IsSymlink {
+				paths = append(paths, defaultOutputPath)
 			}
-			if path.IsAbs(filenameFromTemplate[0][1]) {
-				outputPath = path.Clean(filenameFromTemplate[0][1])
-			} else {
-				outputPath = path.Clean(path.Join(path.Dir(deployedTemplatePath), filenameFromTemplate[0][1]))
-			}
-			writingToNamedFile = true
-			isLink = false
+		} else if path.IsAbs(file.Name) {
+			paths = append(paths, path.Clean(file.Name))
+		} else {
+			paths = append(paths, path.Clean(path.Join(path.Dir(deployedTemplatePath), file.Name)))
 		}
-	}
-	if err := fileScanner.Err(); err != nil {
-		return nil, fmt.Errorf("failed to scan rendered template %s: %w", templatePath, err)
-	}
-	if !isLink {
-		paths = append(paths, outputPath)
 	}
 
 	return paths, nil
