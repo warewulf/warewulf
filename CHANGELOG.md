@@ -16,9 +16,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-- `wwclient.aarch64` overlay always provides an aarch64 wwclient executable.
-- `wwclient.x86_64` overlay always provides an x86_64 wwclient executable.
-- systemd-networkd overlay with IPv6 support
 - `wwctl overlay info` lists the variables used by an overlay template
 - `wwclient overlay-diff start/stop` workflow to capture a baseline, compare source changes, and emit deterministic file differences for overlay authoring.
 - `wwctl overlay blame` traces node overlay files back to their source system or runtime overlay.
