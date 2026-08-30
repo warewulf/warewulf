@@ -19,7 +19,6 @@ var (
 	startSourcePath string
 	startStateFile  string
 	startExcludes   []string
-	startEventAssisted bool
 )
 
 func GetStartCommand() *cobra.Command {
@@ -35,7 +34,6 @@ func GetStartCommand() *cobra.Command {
 	cmd.Flags().StringVar(&startSourcePath, "source", "", "Source directory to scan (default: / with optimized system roots)")
 	cmd.Flags().StringVar(&startStateFile, "state-file", "", "Snapshot file path")
 	cmd.Flags().StringArrayVar(&startExcludes, "exclude", nil, defaultExcludeHelp())
-	cmd.Flags().BoolVar(&startEventAssisted, "event-assisted", false, "Enable event-assisted session metadata for faster stop runs")
 	return cmd
 }
 
@@ -65,26 +63,6 @@ func runStart(cmd *cobra.Command, args []string) error {
 	stateFile := resolveStateFilePath(startStateFile)
 	if err := overlaydiff.SaveSnapshot(stateFile, snapshot); err != nil {
 		return err
-	}
-
-	if startEventAssisted {
-		eventState := overlaydiff.NewEventState(sourceAbs, scanOptions.IncludeRoots)
-		watchRoots, reasons := overlaydiff.ProbeEventWatchRoots(sourceAbs, scanOptions.IncludeRoots)
-		eventState.WatchRoots = watchRoots
-		eventState.Reasons = reasons
-		if len(reasons) > 0 || len(watchRoots) == 0 {
-			eventState.Health = overlaydiff.EventHealthDegraded
-		}
-		eventStatePath := overlaydiff.DefaultEventStatePath(stateFile)
-		if err := overlaydiff.SaveEventState(eventStatePath, eventState); err != nil {
-			return err
-		}
-
-		if eventState.Health == overlaydiff.EventHealthOK {
-			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Event-assisted session initialized: %s\n", eventStatePath)
-		} else {
-			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Event-assisted session initialized in degraded mode: %s\n", eventStatePath)
-		}
 	}
 
 	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Capture saved to %s\n", stateFile)

@@ -288,7 +288,34 @@ func Test_ImportArchiveRejectsTraversal(t *testing.T) {
 	assert.NoDirExists(t, env.GetPath(filepath.Join("var/lib/warewulf/overlays", overlayName)))
 }
 
+func Test_ImportArchiveRejectsUnsupportedSchemaVersion(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+
+	overlayName := "archive-overlay"
+	archivePath := env.GetPath("artifact.tar.gz")
+	createOverlayArchiveWithSchemaVersion(t, archivePath, overlayName, "v2", map[string]string{
+		"rootfs/etc/config": "hello\n",
+	})
+
+	OverwriteFile = false
+	CreateDirs = false
+	ArchiveImport = false
+
+	cmd := GetCommand()
+	cmd.SetArgs([]string{"--archive", overlayName, archivePath})
+	cmd.SetOut(new(bytes.Buffer))
+	cmd.SetErr(new(bytes.Buffer))
+	err := cmd.Execute()
+	assert.ErrorContains(t, err, "unsupported artifact schema version")
+	assert.NoDirExists(t, env.GetPath(filepath.Join("var/lib/warewulf/overlays", overlayName)))
+}
+
 func createOverlayArchive(t *testing.T, archivePath string, overlayName string, files map[string]string) {
+	createOverlayArchiveWithSchemaVersion(t, archivePath, overlayName, overlaydiff.ArtifactSchemaVersion, files)
+}
+
+func createOverlayArchiveWithSchemaVersion(t *testing.T, archivePath string, overlayName string, schemaVersion string, files map[string]string) {
 	t.Helper()
 	archiveFile, err := os.Create(archivePath)
 	assert.NoError(t, err)
@@ -302,6 +329,7 @@ func createOverlayArchive(t *testing.T, archivePath string, overlayName string, 
 
 	writeTarDir(t, tarWriter, "rootfs")
 	manifest := overlaydiff.BuildArtifactManifest(overlayName, "/", "", []string{"/etc/config"}, overlaydiff.DecisionSummary{Selected: 1})
+	manifest.SchemaVersion = schemaVersion
 	manifestFile, err := os.CreateTemp(t.TempDir(), "manifest-*.json")
 	assert.NoError(t, err)
 	manifestPath := manifestFile.Name()
