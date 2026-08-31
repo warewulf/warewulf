@@ -1083,6 +1083,42 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 	return nil
 }
 
+// TemplateOutputPaths renders a .ww template and returns the deployed paths it
+// would create, matching the path selection semantics used by BuildOverlayIndir.
+func TemplateOutputPaths(templatePath string, deployedTemplatePath string, overlayName string, nodeData node.Node, allNodes []node.Node) ([]string, error) {
+	deployedTemplatePath = path.Clean(deployedTemplatePath)
+	defaultOutputPath := strings.TrimSuffix(deployedTemplatePath, ".ww")
+
+	tstruct, err := InitStruct(overlayName, nodeData, allNodes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initial data for %s: %w", nodeData.Id(), err)
+	}
+	tstruct.BuildSource = templatePath
+
+	rendered, err := RenderTemplate(templatePath, tstruct)
+	if err != nil {
+		return nil, fmt.Errorf("failed to render template %s: %w", templatePath, err)
+	}
+	if !rendered.WriteFile {
+		return nil, nil
+	}
+
+	paths := make([]string, 0, len(rendered.Files))
+	for _, file := range rendered.Files {
+		if file.Name == "" {
+			if len(rendered.Files) == 1 || file.IsSymlink {
+				paths = append(paths, defaultOutputPath)
+			}
+		} else if path.IsAbs(file.Name) {
+			paths = append(paths, path.Clean(file.Name))
+		} else {
+			paths = append(paths, path.Clean(path.Join(path.Dir(deployedTemplatePath), file.Name)))
+		}
+	}
+
+	return paths, nil
+}
+
 /*
 Writes buffer to the destination file. If wwbackup is set a wwbackup will be created.
 */

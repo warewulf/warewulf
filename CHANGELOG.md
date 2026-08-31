@@ -134,6 +134,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- `wwctl overlay info` lists the variables used by an overlay template
+- `wwclient overlay-diff start/stop` workflow to capture a baseline, compare source changes, and emit deterministic file differences for overlay authoring.
+- `wwctl overlay blame` traces node overlay files back to their source system or runtime overlay.
+- New --partwipe flag for profile and node set
+- Updated arguments for `ValidString` to match `regexp.MatchString`
 - Document reclaiming RAM by moving the image to swap
 - New `/files/` server route to serve static files from the warewulf files directory (`wwfilesdir`, default `LOCALSTATEDIR/warewulf/files`)
 - New `warewulf:secure files` configuration option to control whether the `/files/` route requires requests from a privileged port, independent of `warewulf:secure`

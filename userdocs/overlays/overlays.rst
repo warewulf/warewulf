@@ -25,6 +25,65 @@ within the overlays with ``wwctl overlay list --all``.
    fstab         etc/          false
    fstab         etc/fstab.ww  false
 
+Tracing Overlay File Sources
+----------------------------
+
+Use ``wwctl overlay blame`` to show which configured overlays contribute files
+to a node. This is useful when a node receives the same path from multiple
+overlays, or when a file is inherited from a profile and it is not obvious which
+overlay owns it.
+
+.. code-block:: console
+
+   # wwctl overlay blame n1
+   /etc/issue                         issue                [system overlay]
+   /etc/systemd/network/10-ww4        systemd.netname      [system overlay]
+   /etc/hosts                         hosts                [runtime overlay]
+
+The command uses the node's merged configuration, so overlays inherited from
+profiles are included. System overlays are listed first, followed by runtime
+overlays, and paths are displayed as they are deployed on the node. If multiple
+overlays provide the same deployed path, each contributing overlay is printed on
+its own line.
+
+Template files ending in ``.ww`` are evaluated for output path discovery. This
+means templates that emit multiple files with ``{{ file "..." }}``, create
+symlinks with ``{{ softlink "..." }}``, or abort rendering are reported according
+to the paths they would deploy.
+
+Filter the output to a subtree with ``--path-prefix``. Prefix matching is path
+boundary aware, so ``/etc`` matches ``/etc/hosts`` but not ``/etc2/file``.
+
+.. code-block:: shell
+
+   wwctl overlay blame --path-prefix /etc/systemd n1
+
+Use ``--path`` to focus on one exact deployed path. This is useful when you know
+which file is wrong and need to identify every configured overlay that contributes
+that path. Exact matching means ``--path /etc`` does not match ``/etc/hosts``.
+
+.. code-block:: shell
+
+   wwctl overlay blame --path /etc/hosts n1
+
+Use ``--format json`` when the output should be consumed by scripts.
+
+.. code-block:: shell
+
+   wwctl overlay blame --format json n1
+
+The JSON output contains one object per contributing overlay path with the
+deployed ``path``, source ``overlay``, and overlay ``context`` (``system`` or
+``runtime``).
+
+By default, ``wwctl overlay blame`` reports files, symlinks, and templates. Use
+``--show-mode-changes`` to also include directory paths, which can be relevant
+when directory modes or ownership are controlled by overlays.
+
+.. code-block:: shell
+
+   wwctl overlay blame --show-mode-changes n1
+
 Overlay Variables
 -----------------
 
@@ -55,6 +114,39 @@ template, along with the help text for each variable.
    $netdev.Tags.vlan_id
    $netdev.Tags.xmit_hash_policy
    $netdev.Type                    Set device type of given network               string  --type
+
+Pass ``--node`` to resolve template variables against a node's merged
+configuration. This adds a ``VALUE`` column for variables that have a single
+node-specific value.
+
+.. code-block:: console
+
+   # wwctl overlay info --node n1 issue etc/issue.ww
+   VARIABLE         VALUE       OPTION           TYPE                     HELP
+   --------         -----       ------           ----                     ----
+   .Id              n1                           string
+   .ImageName       leap-15.6   --image          string                   Set image name
+   .Kernel.Version  6.6.0       --kernelversion  string                   Set kernel version
+   .NetDevs         2 entries                    map[string]*node.NetDev
+   $netdev.Ipaddr   default=10.0.0.10, ib0=192.168.1.10  --ipaddr  IP     IPv4 address in given network
+
+Variables created inside template loops, such as ``$netdev.Ipaddr`` inside a
+``range`` over network devices, are expanded per entry when the source
+collection can be identified. Empty collections are reported explicitly, for
+example ``<dynamic: .NetDevs has 0 entries>``.
+
+Use ``--render`` with ``--node`` to preview the rendered template without
+building or writing an overlay image.
+
+.. code-block:: shell
+
+   wwctl overlay info --node n1 --render issue etc/issue.ww
+
+Use ``--format json`` for machine-readable output.
+
+.. code-block:: shell
+
+   wwctl overlay info --node n1 --format json issue etc/issue.ww
 
 Structure
 =========
@@ -260,6 +352,17 @@ The default wwclient overlay contains a ``wwclient`` executable compiled for the
 same architecture as the Warewulf server. Architecture-specific wwclient.aarch64
 and wwclient.x86_64 overlays are available as well. This supports using wwclient
 on cluster nodes with a different architecture than the Warewulf server.
+
+``wwclient`` also provides ``overlay-diff`` to capture a baseline snapshot and
+later compare a source directory against that baseline. This reports
+deterministic file-level differences and is useful when creating or validating
+overlay content:
+
+.. code-block:: shell
+
+   wwclient overlay-diff start --source ./node-root --state-file ./capture.json
+   # make configuration changes under ./node-root
+   wwclient overlay-diff stop --source ./node-root --state-file ./capture.json --no-interactive
 
 Network interfaces
 ------------------
