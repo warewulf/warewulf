@@ -30,7 +30,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/swaggest/openapi-go v0.2.61
 	github.com/swaggest/rest v0.2.75
-	github.com/swaggest/swgui v1.8.7
+	github.com/swaggest/swgui v1.8.9
 	github.com/swaggest/usecase v1.3.1
 	golang.org/x/crypto v0.54.0
 	golang.org/x/exp v0.0.0-20241217172543-b2144cdd0a67
