@@ -87,7 +87,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/coreos/ignition/blob/v2.26.0/LICENSE>
+**License URL:** <https://github.com/coreos/ignition/blob/v2.27.0/LICENSE>
 
 ## github.com/coreos/vcontext
 
@@ -273,7 +273,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/swaggest/swgui/blob/v1.8.7/LICENSE>
+**License URL:** <https://github.com/swaggest/swgui/blob/v1.8.9/LICENSE>
 
 ## github.com/vbatts/go-mtree/pkg/govis
 
@@ -407,12 +407,6 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/miekg/pkcs11/blob/v1.1.1/LICENSE>
 
-## github.com/pmezard/go-difflib/difflib
-
-**License:** BSD-3-Clause
-
-**License URL:** <https://github.com/pmezard/go-difflib/blob/5d4384ee4fb2/LICENSE>
-
 ## github.com/proglottis/gpgme
 
 **License:** BSD-3-Clause
@@ -430,6 +424,12 @@ The dependencies and their licenses are as follows:
 **License:** BSD-3-Clause
 
 **License URL:** <https://github.com/spf13/pflag/blob/v1.0.10/LICENSE>
+
+## github.com/stretchr/testify/internal/difflib
+
+**License:** BSD-3-Clause
+
+**License URL:** <https://github.com/stretchr/testify/blob/v1.12.1/internal/difflib/LICENSE>
 
 ## github.com/ulikunitz/xz
 
@@ -465,7 +465,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/net/+/v0.56.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/net/+/v0.57.0:LICENSE>
 
 ## golang.org/x/sync/semaphore
 
@@ -497,11 +497,11 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/protocolbuffers/protobuf-go/blob/v1.36.11/LICENSE>
 
-## github.com/davecgh/go-spew/spew
+## github.com/stretchr/testify/internal/spew
 
 **License:** ISC
 
-**License URL:** <https://github.com/davecgh/go-spew/blob/d8f796af33cc/LICENSE>
+**License URL:** <https://github.com/stretchr/testify/blob/v1.12.1/internal/spew/LICENSE>
 
 ## github.com/BurntSushi/toml
 
@@ -597,7 +597,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/go-chi/chi/blob/v5.3.1/LICENSE>
+**License URL:** <https://github.com/go-chi/chi/blob/v5.3.2/LICENSE>
 
 ## github.com/huandu/xstrings
 
@@ -705,7 +705,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/stretchr/testify/blob/v1.11.1/LICENSE>
+**License URL:** <https://github.com/stretchr/testify/blob/v1.12.1/LICENSE>
 
 ## github.com/swaggest/form/v5
 
@@ -771,7 +771,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/yaml/go-yaml/blob/v3.0.4/LICENSE>
+**License URL:** <https://github.com/yaml/go-yaml/blob/v3.0.5/LICENSE>
 
 ## gopkg.in/yaml.v3
 
