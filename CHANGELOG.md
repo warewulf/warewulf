@@ -79,10 +79,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Dependencies
 
-- Bump github.com/go-chi/chi/v5 from 5.2.5 to 5.3.0 #2196
-- Bump github.com/opencontainers/selinux from 1.14.1 to 1.15.0 #2194
-- Bump golang.org/x/crypto from 0.51.0 to 0.52.0 #2193
-- Bump golang.org/x/sys from 0.44.0 to 0.45.0 #2192
+- Bump github.com/go-chi/chi/v5 from 5.2.5 to 5.3.1 #2196 #2221
+- Bump github.com/opencontainers/selinux from 1.14.1 to 1.15.1 #2194 #2224
+- Bump golang.org/x/crypto from 0.51.0 to 0.54.0 #2193 #2222
+- Bump golang.org/x/sys from 0.44.0 to 0.47.0 #2192 #2222
 - Bump github.com/go-jose/go-jose/v4 from 4.1.3 to 4.1.4 to fix CVE-2026-34986 #2210
 
 ## v4.7.0, 2026-05-12
