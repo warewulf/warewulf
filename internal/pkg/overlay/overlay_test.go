@@ -427,6 +427,161 @@ func Test_BuildOverlayIndir_PathTraversal(t *testing.T) {
 	}
 }
 
+// Test_BuildOverlayIndir_SymlinkCollision covers softlink() rendering to a path
+// that is already occupied. Overlays are routinely rebuilt over an existing
+// tree -- most visibly the host overlay, which builds into "/" -- so a
+// collision is ordinary rather than exceptional, and what is already there must
+// not be destroyed silently.
+func Test_BuildOverlayIndir_SymlinkCollision(t *testing.T) {
+	const (
+		linkPath   = "/image/test-link"
+		backupPath = "/image/test-link.wwbackup"
+		target     = "/link-target"
+		other      = "/other-target"
+	)
+	const template = `{{- softlink "/link-target" -}}`
+
+	tests := map[string]struct {
+		template  string
+		setup     func(env *testenv.TestEnv)
+		expectErr string
+		verify    func(t *testing.T, env *testenv.TestEnv)
+	}{
+		"unoccupied path": {
+			template: template,
+			verify: func(t *testing.T, env *testenv.TestEnv) {
+				assertSymlinkTo(t, env, linkPath, target)
+				assertNotExist(t, env, backupPath)
+			},
+		},
+		"symlink already pointing at the target": {
+			// Nothing to do: rebuilding must be idempotent and must not
+			// leave a backup behind for a link it did not change.
+			template: template,
+			setup: func(env *testenv.TestEnv) {
+				env.Symlink(target, linkPath)
+			},
+			verify: func(t *testing.T, env *testenv.TestEnv) {
+				assertSymlinkTo(t, env, linkPath, target)
+				assertNotExist(t, env, backupPath)
+			},
+		},
+		"symlink pointing somewhere else": {
+			// A symlink holds no content of its own, so it is replaced
+			// outright rather than backed up.
+			template: template,
+			setup: func(env *testenv.TestEnv) {
+				env.Symlink(other, linkPath)
+			},
+			verify: func(t *testing.T, env *testenv.TestEnv) {
+				assertSymlinkTo(t, env, linkPath, target)
+				assertNotExist(t, env, backupPath)
+			},
+		},
+		"dangling symlink pointing somewhere else": {
+			// The existing link is inspected with Lstat/Readlink, so a
+			// target that does not exist is handled like any other link.
+			template: template,
+			setup: func(env *testenv.TestEnv) {
+				env.Symlink("/nonexistent", linkPath)
+			},
+			verify: func(t *testing.T, env *testenv.TestEnv) {
+				assertSymlinkTo(t, env, linkPath, target)
+				assertNotExist(t, env, backupPath)
+			},
+		},
+		"regular file": {
+			template: template,
+			setup: func(env *testenv.TestEnv) {
+				env.WriteFile(linkPath, "precious content")
+			},
+			verify: func(t *testing.T, env *testenv.TestEnv) {
+				assertSymlinkTo(t, env, linkPath, target)
+				assert.Equal(t, "precious content", env.ReadFile(backupPath))
+			},
+		},
+		"regular file with an existing backup": {
+			// The first backup is the pristine one, so it is kept and the
+			// current file is discarded, as CarefulWriteBuffer does.
+			template: template,
+			setup: func(env *testenv.TestEnv) {
+				env.WriteFile(linkPath, "second run")
+				env.WriteFile(backupPath, "first run")
+			},
+			verify: func(t *testing.T, env *testenv.TestEnv) {
+				assertSymlinkTo(t, env, linkPath, target)
+				assert.Equal(t, "first run", env.ReadFile(backupPath))
+			},
+		},
+		"regular file with nobackup": {
+			template: `{{- nobackup -}}{{- softlink "/link-target" -}}`,
+			setup: func(env *testenv.TestEnv) {
+				env.WriteFile(linkPath, "precious content")
+			},
+			verify: func(t *testing.T, env *testenv.TestEnv) {
+				assertSymlinkTo(t, env, linkPath, target)
+				assertNotExist(t, env, backupPath)
+			},
+		},
+		"directory": {
+			template: template,
+			setup: func(env *testenv.TestEnv) {
+				env.WriteFile(path.Join(linkPath, "keep.txt"), "kept")
+			},
+			expectErr: "refusing to replace directory",
+			verify: func(t *testing.T, env *testenv.TestEnv) {
+				assert.Equal(t, "kept", env.ReadFile(path.Join(linkPath, "keep.txt")))
+			},
+		},
+		"empty directory": {
+			// An empty directory is removable, so it must be rejected
+			// explicitly rather than by relying on os.Remove to fail.
+			template: template,
+			setup: func(env *testenv.TestEnv) {
+				env.MkdirAll(linkPath)
+			},
+			expectErr: "refusing to replace directory",
+			verify: func(t *testing.T, env *testenv.TestEnv) {
+				assert.True(t, util.IsDir(env.GetPath(linkPath)))
+			},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			env := testenv.New(t)
+			defer env.RemoveAll()
+			env.WriteFile("/var/lib/warewulf/overlays/o1/rootfs/test-link.ww", tt.template)
+			env.MkdirAll("/image")
+			if tt.setup != nil {
+				tt.setup(env)
+			}
+
+			err := BuildOverlayIndir(node.Node{}, []node.Node{}, []string{"o1"}, env.GetPath("/image"))
+			if tt.expectErr != "" {
+				assert.ErrorContains(t, err, tt.expectErr)
+			} else {
+				assert.NoError(t, err)
+			}
+			tt.verify(t, env)
+		})
+	}
+}
+
+func assertSymlinkTo(t *testing.T, env *testenv.TestEnv, fileName string, expected string) {
+	t.Helper()
+	target, err := os.Readlink(env.GetPath(fileName))
+	if assert.NoError(t, err, "%s is not a symlink", fileName) {
+		assert.Equal(t, expected, target)
+	}
+}
+
+func assertNotExist(t *testing.T, env *testenv.TestEnv, fileName string) {
+	t.Helper()
+	_, err := os.Lstat(env.GetPath(fileName))
+	assert.True(t, os.IsNotExist(err), "%s exists, but should not", fileName)
+}
+
 func Test_BuildOverlay(t *testing.T) {
 	tests := []struct {
 		description string
