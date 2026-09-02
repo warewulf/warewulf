@@ -219,13 +219,19 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/opencontainers/selinux/blob/v1.15.0/LICENSE>
+**License URL:** <https://github.com/opencontainers/selinux/blob/v1.15.1/LICENSE>
 
 ## github.com/opencontainers/umoci
 
 **License:** Apache-2.0
 
 **License URL:** <https://github.com/opencontainers/umoci/blob/v0.6.0/COPYING>
+
+## github.com/rootless-containers/proto/go-proto
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/rootless-containers/proto/blob/master/README.md#license>
 
 ## github.com/siderolabs/go-smbios/smbios/internal/github.com/digitalocean/go-smbios/smbios
 
@@ -447,7 +453,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.52.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.54.0:LICENSE>
 
 ## golang.org/x/exp/maps
 
@@ -459,31 +465,31 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/net/+/v0.55.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/net/+/v0.56.0:LICENSE>
 
 ## golang.org/x/sync/semaphore
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/sync/+/v0.20.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/sync/+/v0.22.0:LICENSE>
 
 ## golang.org/x/sys
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/sys/+/v0.45.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/sys/+/v0.47.0:LICENSE>
 
 ## golang.org/x/term
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/term/+/v0.43.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/term/+/v0.45.0:LICENSE>
 
 ## golang.org/x/text
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/text/+/v0.37.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/text/+/v0.40.0:LICENSE>
 
 ## google.golang.org/protobuf
 
@@ -591,7 +597,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/go-chi/chi/blob/v5.3.0/LICENSE>
+**License URL:** <https://github.com/go-chi/chi/blob/v5.3.1/LICENSE>
 
 ## github.com/huandu/xstrings
 
@@ -802,12 +808,6 @@ The dependencies and their licenses are as follows:
 **License:** MPL-2.0
 
 **License URL:** <https://github.com/siderolabs/go-smbios/blob/v0.3.3/LICENSE>
-
-## github.com/rootless-containers/proto/go-proto
-
-**License:** Unknown
-
-**Project URL:** <https://github.com/rootless-containers/proto/go-proto>
 
 ## github.com/vbauerster/mpb/v8
 
