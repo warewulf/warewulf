@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Remove `dsa` from default `ssh: key types`; sshd silently skips DSA host keys
   on EL9 / OpenSSH 8.7p1+, leaving nodes with no usable host keys. #1185
+- Don't silence curl when downloading with dracut. #2200
 
 ### Fixed
 

@@ -44,7 +44,7 @@ get_stage() {
         runtime) uri="${base}/runtime/${hwaddr}" ;;
     esac
     (
-        curl --location --silent --get ${localport} ${cacert_opt} \
+        curl --location --get ${localport} ${cacert_opt} \
             --retry 60 --retry-connrefused --retry-delay 1 \
             --data-urlencode "assetkey=${wwinit_assetkey}" \
             --data-urlencode "uuid=${wwinit_uuid}" \
