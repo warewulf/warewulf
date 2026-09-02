@@ -17,10 +17,42 @@ fi
 # Exclude ourselves
 exclude="github.com/warewulf/warewulf"
 
+# go-licenses only looks for a license file in the root of a
+# dependency's own Go module. Dependencies that declare their license
+# some other way are recorded here, as
+# "<license URL>,<license name>" keyed by package.
+override_license() {
+    case "$1" in
+	github.com/rootless-containers/proto/go-proto)
+	    # A nested module of github.com/rootless-containers/proto,
+	    # which is Apache-2.0 per its README and root COPYING.
+	    echo "https://github.com/rootless-containers/proto/blob/master/README.md#license,Apache-2.0"
+	    ;;
+    esac
+}
+
 # Ensure a constant sort order
 export LC_ALL=C
 
-${GOLANG_LICENSES:-go-licenses} csv ./... | grep -v -E "${exclude}" | sort -k3,3 -k1,1 -t, > LICENSE_DEPENDENCIES.csv
+${GOLANG_LICENSES:-go-licenses} csv ./... \
+    | grep -v -E "${exclude}" \
+    | while IFS="," read -r dep url license; do
+	override=$(override_license "${dep}")
+	if [ -n "${override}" ]; then
+	    echo "${dep},${override}"
+	else
+	    echo "${dep},${url},${license}"
+	fi
+    done \
+    | sort -k3,3 -k1,1 -t, > LICENSE_DEPENDENCIES.csv
+
+# Warn, rather than fail, so that a new dependency can still be
+# recorded while its license is being determined.
+if grep -q ",Unknown$" LICENSE_DEPENDENCIES.csv; then
+    echo "Warning: could not determine the license of these dependencies." >&2
+    echo "Identify them manually and add them to override_license in $0:" >&2
+    grep ",Unknown$" LICENSE_DEPENDENCIES.csv | cut -d, -f1 | sed 's/^/  /' >&2
+fi
 
 # Header for the markdown file
 cat <<-'EOF' >LICENSE_DEPENDENCIES.md
