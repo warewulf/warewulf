@@ -299,8 +299,8 @@ func (overlay Overlay) ParseVarFields(file string) map[string]FieldInfo {
 			{Name: ""},
 		},
 	}
-	renderWriter := &multiFileWriter{current: &renderState.Files[0].Buffer}
-	funcMap := buildTemplateFuncMap(fullPath, TemplateStruct{}, renderState, renderWriter)
+	renderWriter := &MultiFileWriter{Current: &renderState.Files[0].Buffer}
+	funcMap := BuildTemplateFuncMap(fullPath, TemplateStruct{}, renderState, renderWriter)
 	tmpl, err := template.New(path.Base(fullPath)).Option("missingkey=default").Funcs(funcMap).ParseFiles(fullPath)
 	if err != nil {
 		wwlog.Error("Could not parse template file %s: %s", fullPath, err)
@@ -1146,20 +1146,27 @@ type RenderedTemplate struct {
 	Files      []*RenderedFile
 }
 
-type multiFileWriter struct {
-	current *bytes.Buffer // redirected by file() and softlink() closures
+// MultiFileWriter is used by BuildTemplateFuncMap for stateful template functions.
+// External packages using BuildTemplateFuncMap should create an instance pointing
+// to their output buffer.
+type MultiFileWriter struct {
+	Current *bytes.Buffer // redirected by file() and softlink() closures
 }
 
-func (w *multiFileWriter) Write(p []byte) (n int, err error) {
-	return w.current.Write(p)
+func (w *MultiFileWriter) Write(p []byte) (n int, err error) {
+	return w.Current.Write(p)
 }
 
-// buildTemplateFuncMap constructs the template FuncMap for a .ww template.
+// BuildTemplateFuncMap constructs the template FuncMap for a .ww template.
 // result and writer are the shared mutable state closed over by the stateful
 // template functions (file, softlink, ImportLink, abort, nobackup). They must
 // be allocated by the caller so RenderTemplate and ParseVarFields can each
 // supply their own isolated state.
-func buildTemplateFuncMap(fileName string, data TemplateStruct, result *RenderedTemplate, writer *multiFileWriter) template.FuncMap {
+//
+// The data parameter accepts any type; functions that require specific data
+// types (like IgnitionJson which needs TemplateStruct) will fail gracefully
+// if the wrong type is provided.
+func BuildTemplateFuncMap(fileName string, data interface{}, result *RenderedTemplate, writer *MultiFileWriter) template.FuncMap {
 	softlinkFn := func(target string) string {
 		if len(result.Files) > 0 {
 			last := result.Files[len(result.Files)-1]
@@ -1182,7 +1189,7 @@ func buildTemplateFuncMap(fileName string, data TemplateStruct, result *Rendered
 	fileFn := func(name string) string {
 		f := &RenderedFile{Name: name}
 		result.Files = append(result.Files, f)
-		writer.current = &f.Buffer
+		writer.Current = &f.Buffer
 		return ""
 	}
 
@@ -1190,7 +1197,12 @@ func buildTemplateFuncMap(fileName string, data TemplateStruct, result *Rendered
 	decFn := func(i int) int { return i - 1 }
 
 	ignitionFn := func() string {
-		return createIgnitionJson(data.ThisNode)
+		// Type assert to TemplateStruct for overlay templates
+		if tstruct, ok := data.(TemplateStruct); ok {
+			return createIgnitionJson(tstruct.ThisNode)
+		}
+		wwlog.Warn("IgnitionJson function called with incompatible data type in %s", fileName)
+		return ""
 	}
 
 	abortFn := func() (string, error) {
@@ -1239,8 +1251,8 @@ func RenderTemplate(fileName string, data TemplateStruct) (*RenderedTemplate, er
 		BackupFile: true,
 		Files:      []*RenderedFile{{Name: ""}},
 	}
-	writer := &multiFileWriter{current: &result.Files[0].Buffer}
-	funcMap := buildTemplateFuncMap(fileName, data, result, writer)
+	writer := &MultiFileWriter{Current: &result.Files[0].Buffer}
+	funcMap := BuildTemplateFuncMap(fileName, data, result, writer)
 
 	tmpl, err := template.New(path.Base(fileName)).Option("missingkey=default").Funcs(funcMap).ParseGlob(fileName)
 	if err != nil {
