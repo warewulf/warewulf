@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Support for generating, persisting, and querying a unique node-specific `/etc/machine-id` inside the `wwinit` system overlay.
 - `wwctl node set` and `wwctl profile set` now display a per-field
   before/after diff of the changes they are about to apply before prompting
   for confirmation. Nodes (or profiles) receiving identical changes are
