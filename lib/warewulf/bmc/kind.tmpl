@@ -1,0 +1,96 @@
+{{- /* kind.tmpl - Docker-based virtual node management for BMC simulation */ -}}
+{{- $nodeName := .Ipaddr | toString | replace "." "-" -}}
+{{- if .Tags.nodename }}{{ $nodeName = .Tags.nodename }}{{ end -}}
+{{- $cpu := "2" }}{{ if .Tags.cpu }}{{ $cpu = .Tags.cpu }}{{ end -}}
+{{- $memory := "2g" }}{{ if .Tags.memory }}{{ $memory = .Tags.memory }}{{ end -}}
+{{- $disk := "20g" }}{{ if .Tags.disk }}{{ $disk = .Tags.disk }}{{ end -}}
+{{- $image := "kindest/node:latest" }}{{ if .Tags.image }}{{ $image = .Tags.image }}{{ end -}}
+{{- if eq .Cmd "PowerOn" -}}
+if docker inspect {{ $nodeName }} &>/dev/null; then
+  if [ "$(docker inspect -f '{{`{{.State.Running}}`}}' {{ $nodeName }})" == "false" ]; then
+    docker start {{ $nodeName }}
+    echo "Node {{ $nodeName }} started"
+  else
+    echo "Node {{ $nodeName }} already running"
+  fi
+else
+  docker run -d \
+    --name {{ $nodeName }} \
+    --hostname {{ $nodeName }} \
+    --cpus {{ $cpu }} \
+    --memory {{ $memory }} \
+    --tmpfs /tmp \
+    --tmpfs /run \
+    --volume /var \
+    --volume /lib/modules:/lib/modules:ro \
+    --privileged \
+    {{ $image }}
+  echo "Node {{ $nodeName }} created and started (CPU: {{ $cpu }}, Memory: {{ $memory }}, Disk: {{ $disk }})"
+fi
+{{- else if eq .Cmd "PowerOff" -}}
+if docker inspect {{ $nodeName }} &>/dev/null; then
+  if [ "$(docker inspect -f '{{`{{.State.Running}}`}}' {{ $nodeName }})" == "true" ]; then
+    docker stop {{ $nodeName }}
+    echo "Node {{ $nodeName }} stopped"
+  else
+    echo "Node {{ $nodeName }} already stopped"
+  fi
+else
+  echo "Node {{ $nodeName }} does not exist"
+fi
+{{- else if eq .Cmd "PowerCycle" -}}
+if docker inspect {{ $nodeName }} &>/dev/null; then
+  docker restart {{ $nodeName }}
+  echo "Node {{ $nodeName }} restarted"
+else
+  echo "Node {{ $nodeName }} does not exist"
+fi
+{{- else if eq .Cmd "PowerReset" -}}
+if docker inspect {{ $nodeName }} &>/dev/null; then
+  docker restart {{ $nodeName }}
+  echo "Node {{ $nodeName }} reset"
+else
+  echo "Node {{ $nodeName }} does not exist"
+fi
+{{- else if eq .Cmd "PowerSoft" -}}
+if docker inspect {{ $nodeName }} &>/dev/null; then
+  docker exec {{ $nodeName }} reboot 2>/dev/null || docker restart {{ $nodeName }}
+  echo "Node {{ $nodeName }} soft reboot"
+else
+  echo "Node {{ $nodeName }} does not exist"
+fi
+{{- else if eq .Cmd "PowerStatus" -}}
+if docker inspect {{ $nodeName }} &>/dev/null; then
+  if [ "$(docker inspect -f '{{`{{.State.Running}}`}}' {{ $nodeName }})" == "true" ]; then
+    echo "ON"
+  else
+    echo "OFF"
+  fi
+else
+  echo "NOT_EXIST"
+fi
+{{- else if eq .Cmd "SDRList" -}}
+if docker inspect {{ $nodeName }} &>/dev/null; then
+  echo "Node: {{ $nodeName }}"
+  echo "CPU: {{ $cpu }}"
+  echo "Memory: {{ $memory }}"
+  echo "Disk: {{ $disk }}"
+  echo "Image: {{ $image }}"
+else
+  echo "Node {{ $nodeName }} does not exist"
+fi
+{{- else if eq .Cmd "SensorList" -}}
+if docker inspect {{ $nodeName }} &>/dev/null && [ "$(docker inspect -f '{{`{{.State.Running}}`}}' {{ $nodeName }})" == "true" ]; then
+  docker stats {{ $nodeName }} --no-stream --no-trunc
+else
+  echo "Node {{ $nodeName }} not running"
+fi
+{{- else if eq .Cmd "Console" -}}
+if docker inspect {{ $nodeName }} &>/dev/null && [ "$(docker inspect -f '{{`{{.State.Running}}`}}' {{ $nodeName }})" == "true" ]; then
+  docker exec -it {{ $nodeName }} /bin/bash
+else
+  echo "Node {{ $nodeName }} not running"
+fi
+{{- else -}}
+echo "Unknown command: {{ .Cmd }}"
+{{- end -}}

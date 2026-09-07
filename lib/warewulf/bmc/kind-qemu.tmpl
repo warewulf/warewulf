@@ -1,0 +1,117 @@
+{{- /* kind-qemu.tmpl - QEMU-based virtual node management for BMC simulation */ -}}
+{{- $nodeName := .Ipaddr | toString | replace "." "-" -}}
+{{- if .Tags.nodename }}{{ $nodeName = .Tags.nodename }}{{ end -}}
+{{- $cpu := "2" }}{{ if .Tags.cpu }}{{ $cpu = .Tags.cpu }}{{ end -}}
+{{- $memory := "2048" }}{{ if .Tags.memory }}{{ $memory = .Tags.memory }}{{ end -}}
+{{- $disk := "20" }}{{ if .Tags.disk }}{{ $disk = .Tags.disk }}{{ end -}}
+{{- $diskPath := "/var/lib/qemu/images" }}{{ if .Tags.disk_path }}{{ $diskPath = .Tags.disk_path }}{{ end -}}
+{{- $macAddr := "" }}{{ if .Tags.mac }}{{ $macAddr = .Tags.mac }}{{ end -}}
+{{- $pidFile := printf "/var/run/qemu-%s.pid" $nodeName -}}
+{{- $monitorSocket := printf "/var/run/qemu-%s.monitor" $nodeName -}}
+{{- $diskFile := printf "%s/%s.qcow2" $diskPath $nodeName -}}
+{{- if eq .Cmd "PowerOn" -}}
+if [ -f {{ $pidFile }} ] && kill -0 $(cat {{ $pidFile }}) 2>/dev/null; then
+  echo "Node {{ $nodeName }} already running"
+else
+  # Create disk if it doesn't exist
+  if [ ! -d {{ $diskPath }} ]; then
+    mkdir -p {{ $diskPath }}
+  fi
+  if [ ! -f {{ $diskFile }} ]; then
+    qemu-img create -f qcow2 {{ $diskFile }} {{ $disk }}G
+  fi
+
+  # Build QEMU command
+  qemu_cmd="qemu-system-x86_64 \
+    -name {{ $nodeName }} \
+    -m {{ $memory }} \
+    -smp {{ $cpu }} \
+    -drive file={{ $diskFile }},format=qcow2,if=virtio \
+    -boot order=nc \
+    -netdev user,id=net0 \
+    -device virtio-net-pci,netdev=net0{{ if $macAddr }},mac={{ $macAddr }}{{ end }} \
+    -daemonize \
+    -pidfile {{ $pidFile }} \
+    -monitor unix:{{ $monitorSocket }},server,nowait \
+    -nographic \
+    -serial null"
+
+  # Start QEMU
+  eval $qemu_cmd
+  if [ $? -eq 0 ]; then
+    echo "Node {{ $nodeName }} created and started (CPU: {{ $cpu }}, Memory: {{ $memory }}MB, Disk: {{ $disk }}GB)"
+  else
+    echo "Failed to start node {{ $nodeName }}"
+    exit 1
+  fi
+fi
+{{- else if eq .Cmd "PowerOff" -}}
+if [ -f {{ $pidFile }} ] && kill -0 $(cat {{ $pidFile }}) 2>/dev/null; then
+  echo "system_powerdown" | socat - UNIX-CONNECT:{{ $monitorSocket }} || kill $(cat {{ $pidFile }})
+  echo "Node {{ $nodeName }} shutdown initiated"
+else
+  echo "Node {{ $nodeName }} not running"
+fi
+{{- else if eq .Cmd "PowerCycle" -}}
+if [ -f {{ $pidFile }} ] && kill -0 $(cat {{ $pidFile }}) 2>/dev/null; then
+  echo "system_reset" | socat - UNIX-CONNECT:{{ $monitorSocket }}
+  echo "Node {{ $nodeName }} reset"
+else
+  echo "Node {{ $nodeName }} not running"
+fi
+{{- else if eq .Cmd "PowerReset" -}}
+if [ -f {{ $pidFile }} ] && kill -0 $(cat {{ $pidFile }}) 2>/dev/null; then
+  echo "system_reset" | socat - UNIX-CONNECT:{{ $monitorSocket }}
+  echo "Node {{ $nodeName }} hard reset"
+else
+  echo "Node {{ $nodeName }} not running"
+fi
+{{- else if eq .Cmd "PowerSoft" -}}
+if [ -f {{ $pidFile }} ] && kill -0 $(cat {{ $pidFile }}) 2>/dev/null; then
+  echo "system_powerdown" | socat - UNIX-CONNECT:{{ $monitorSocket }}
+  echo "Node {{ $nodeName }} soft shutdown initiated"
+else
+  echo "Node {{ $nodeName }} not running"
+fi
+{{- else if eq .Cmd "PowerStatus" -}}
+if [ -f {{ $pidFile }} ] && kill -0 $(cat {{ $pidFile }}) 2>/dev/null; then
+  echo "ON"
+else
+  echo "OFF"
+fi
+{{- else if eq .Cmd "SDRList" -}}
+echo "=== Node {{ $nodeName }} Configuration ==="
+echo "CPU: {{ $cpu }}"
+echo "Memory: {{ $memory }}MB"
+echo "Disk: {{ $diskFile }}"
+if [ -f {{ $diskFile }} ]; then
+  qemu-img info {{ $diskFile }} | grep -E "(virtual size|disk size|format)"
+else
+  echo "Disk not created yet"
+fi
+if [ -f {{ $pidFile }} ]; then
+  echo "PID file: {{ $pidFile }}"
+  if kill -0 $(cat {{ $pidFile }}) 2>/dev/null; then
+    echo "Status: Running (PID: $(cat {{ $pidFile }}))"
+  else
+    echo "Status: Stopped (stale PID file)"
+  fi
+else
+  echo "Status: Not created"
+fi
+{{- else if eq .Cmd "SensorList" -}}
+if [ -f {{ $pidFile }} ] && kill -0 $(cat {{ $pidFile }}) 2>/dev/null; then
+  echo "info status" | socat - UNIX-CONNECT:{{ $monitorSocket }}
+else
+  echo "Node {{ $nodeName }} not running"
+fi
+{{- else if eq .Cmd "Console" -}}
+if [ -f {{ $pidFile }} ] && kill -0 $(cat {{ $pidFile }}) 2>/dev/null; then
+  echo "Cannot attach console - node started in daemon mode"
+  echo "Consider restarting with -serial stdio for console access"
+else
+  echo "Node {{ $nodeName }} not running"
+fi
+{{- else -}}
+echo "Unknown command: {{ .Cmd }}"
+{{- end -}}

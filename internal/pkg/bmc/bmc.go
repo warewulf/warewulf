@@ -9,10 +9,9 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/Masterminds/sprig/v3"
-
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -44,12 +43,22 @@ func (tstruct *TemplateStruct) getCommand() (cmdStr string, err error) {
 	if err != nil {
 		return "", fmt.Errorf("couldn't find the template which defines the bmc command: %s", err)
 	}
-	cmdTmpl, err := template.New("bmc command").Funcs(sprig.TxtFuncMap()).Parse(string(fbuf))
+
+	// Use overlay's BuildTemplateFuncMap for full template function support
+	result := &overlay.RenderedTemplate{
+		WriteFile:  true,
+		BackupFile: true,
+		Files:      []*overlay.RenderedFile{{Name: ""}},
+	}
+	var tbuffer bytes.Buffer
+	writer := &overlay.MultiFileWriter{Current: &tbuffer}
+	funcMap := overlay.BuildTemplateFuncMap(tstruct.Template, *tstruct, result, writer)
+
+	cmdTmpl, err := template.New("bmc command").Funcs(funcMap).Parse(string(fbuf))
 	if err != nil {
 		return "", err
 	}
-	var tbuffer bytes.Buffer
-	err = cmdTmpl.Execute(&tbuffer, *tstruct)
+	err = cmdTmpl.Execute(writer, *tstruct)
 	if err != nil {
 		return "", err
 	}
