@@ -28,6 +28,7 @@ PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin
 if ! command -v info >/dev/null; then
     info() {
         printf '%s\n' "$*"
+        return 0
     }
 fi
 
@@ -56,6 +57,10 @@ if command -v mkswap >/dev/null; then :
 else
     info "warewulf: mkswap not found"
 fi
+
+# The exit status of this script is the status of the provisioning
+# operation above, never that of the last message it printed.
+exit 0
 `,
 		},
 
@@ -74,6 +79,7 @@ PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin
 if ! command -v info >/dev/null; then
     info() {
         printf '%s\n' "$*"
+        return 0
     }
 fi
 
@@ -109,6 +115,10 @@ if command -v mkswap >/dev/null; then :
 else
     info "warewulf: mkswap not found"
 fi
+
+# The exit status of this script is the status of the provisioning
+# operation above, never that of the last message it printed.
+exit 0
 `,
 		},
 
@@ -128,6 +138,7 @@ PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin
 if ! command -v info >/dev/null; then
     info() {
         printf '%s\n' "$*"
+        return 0
     }
 fi
 
@@ -163,6 +174,10 @@ if command -v mkswap >/dev/null; then :
 else
     info "warewulf: mkswap not found"
 fi
+
+# The exit status of this script is the status of the provisioning
+# operation above, never that of the last message it printed.
+exit 0
 `,
 		},
 
@@ -189,6 +204,7 @@ PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin
 if ! command -v info >/dev/null; then
     info() {
         printf '%s\n' "$*"
+        return 0
     }
 fi
 
@@ -224,6 +240,10 @@ if command -v mkswap >/dev/null; then :
 else
     info "warewulf: mkswap not found"
 fi
+
+# The exit status of this script is the status of the provisioning
+# operation above, never that of the last message it printed.
+exit 0
 `,
 		},
 
@@ -251,6 +271,7 @@ PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin
 if ! command -v info >/dev/null; then
     info() {
         printf '%s\n' "$*"
+        return 0
     }
 fi
 
@@ -286,6 +307,10 @@ if command -v mkswap >/dev/null; then :
 else
     info "warewulf: mkswap not found"
 fi
+
+# The exit status of this script is the status of the provisioning
+# operation above, never that of the last message it printed.
+exit 0
 `,
 		},
 	}

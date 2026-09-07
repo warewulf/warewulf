@@ -351,7 +351,7 @@ for ((i = 0; i < num_computes; i++)); do
 		--ipmiaddr="${c_bmc[$i]}" "${c_name[$i]}"
 done
 
-wwctl profile set -y -A 'crashkernel=no,net.ifnames=1,console=hvc0,loglevel=5' default
+wwctl profile set -y -A 'crashkernel=no,net.ifnames=1,console=hvc0,console=ttyS0,loglevel=5' default
 
 # Rebuild image, overlays, and reconfigure
 wwctl image build "${IMAGE_NAME}"

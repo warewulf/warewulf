@@ -116,6 +116,7 @@ PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin
 if ! command -v info >/dev/null; then
     info() {
         printf '%s\n' "$*"
+        return 0
     }
 fi
 
@@ -130,6 +131,10 @@ if ! command -v sfdisk >/dev/null ; then
     info "warewulf: sfdisk not found, skipping partitioning"
 else :
 fi
+
+# The exit status of this script is the status of the provisioning
+# operation above, never that of the last message it printed.
+exit 0
 `,
 		},
 		"sfdisk:10-sfdisk.sh.ww (resource)": {
@@ -167,6 +172,7 @@ PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin
 if ! command -v info >/dev/null; then
     info() {
         printf '%s\n' "$*"
+        return 0
     }
 fi
 
@@ -193,6 +199,10 @@ else :
         udevadm settle
     fi
 fi
+
+# The exit status of this script is the status of the provisioning
+# operation above, never that of the last message it printed.
+exit 0
 `,
 		},
 		"sfdisk:10-sfdisk.sh.ww (native)": {
@@ -224,6 +234,7 @@ PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin
 if ! command -v info >/dev/null; then
     info() {
         printf '%s\n' "$*"
+        return 0
     }
 fi
 
@@ -257,6 +268,10 @@ else :
         udevadm settle
     fi
 fi
+
+# The exit status of this script is the status of the provisioning
+# operation above, never that of the last message it printed.
+exit 0
 `,
 		},
 	}

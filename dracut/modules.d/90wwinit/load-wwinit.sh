@@ -62,7 +62,8 @@ mkdir /tmp/wwinit
     get_stage "system" || die "Unable to load stage: system"
 )
 if [ -x /tmp/wwinit/warewulf/run-wwinit.d ]; then
-        PREFIX=/tmp/wwinit /tmp/wwinit/warewulf/run-wwinit.d
+        PREFIX=/tmp/wwinit /tmp/wwinit/warewulf/run-wwinit.d \
+            || die "warewulf: a wwinit.d script failed"
 fi
 
 info "warewulf: mounting ${wwinit_root_device} at ${NEWROOT}"
