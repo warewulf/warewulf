@@ -64,7 +64,7 @@ Filename: etc/hosts
 192.168.0.1 %HOSTNAME% warewulf
 # Entry for node1
 192.168.3.21 node1 node1-default node1-wwnet0
-192.168.3.22  node1-secondary node1-wwnet1
+192.168.3.22 node1-secondary node1-wwnet1
 # Entry for node2
 192.168.3.23 node2 node2-default node2-wwnet0
 `

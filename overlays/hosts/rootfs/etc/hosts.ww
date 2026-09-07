@@ -8,7 +8,7 @@
 # Entry for {{$node.Id}}
 {{- range $devname, $netdev := $node.NetDevs }}
 {{- if $netdev.Ipaddr}}
-{{$netdev.Ipaddr}} {{if $netdev.Primary}}{{$node.Id}}{{end}} {{$node.Id}}-{{$devname}} {{if $netdev.Device}}{{$node.Id}}-{{$netdev.Device}}{{end}}
+{{$netdev.Ipaddr}} {{if $netdev.Primary}}{{$node.Id}} {{end}}{{if $netdev.Tags.netsuffix}}{{$node.Id}}-{{$netdev.Tags.netsuffix}}{{else}}{{$node.Id}}-{{$devname}}{{end}}{{if $netdev.Device}} {{$node.Id}}-{{$netdev.Device}}{{end}}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -23,7 +23,7 @@
 {{- range $devname, $netdev := $node.NetDevs}}{{/* for each network device on the node */}}
 {{- if $netdev.Ipaddr6}}{{/* if we have an ip address on this network device */}}
 {{- /* emit the node name as hostname if this is the primary */}}
-{{$netdev.Ipaddr6}} {{if $netdev.Primary}}{{$node.Id}}{{end}} {{$node.Id}}-{{$devname}} {{if $netdev.Device}}{{$node.Id}}-{{$netdev.Device}}{{end}}
+{{$netdev.Ipaddr6}} {{if $netdev.Primary}}{{$node.Id}} {{end}}{{if $netdev.Tags.netsuffix}}{{$node.Id}}-{{$netdev.Tags.netsuffix}}{{else}}{{$node.Id}}-{{$devname}}{{end}}{{if $netdev.Device}} {{$node.Id}}-{{$netdev.Device}}{{end}}
 {{- end }}{{/* if ip */}}
 {{- end }}{{/* for each network device */}}
 {{- end }}{{/* for each node */}}

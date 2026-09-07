@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   in the configuration along with its members.
 - Tab completion for groups.
 - Add IPMI address of nodes to /etc/hosts of master node
+- Add support to customize hostname's network suffixes in /etc/hosts
  
 ### Changed
 
