@@ -450,7 +450,7 @@ func TestOverlayInfoNodeValues(t *testing.T) {
 	assert.Contains(t, output, "VALUE")
 	assert.Contains(t, normalizedOutputRows(output), ".Id node1 string")
 	assert.Contains(t, normalizedOutputRows(output), ".Hostname node1 string")
-	assert.Contains(t, normalizedOutputRows(output), ".ImageName test-image --image string Set image name")
+	assert.Contains(t, normalizedOutputRows(output), ".ImageName test-image --image string image name")
 	assert.Contains(t, normalizedOutputRows(output), ".Tags.foo bar string")
 	assert.Contains(t, normalizedOutputRows(output), ".NetDevs 2 entries map[string]*node.NetDev")
 	assert.Contains(t, normalizedOutputRows(output), "$netdev.Ipaddr default=10.0.0.10, ib0=192.168.1.10 --ipaddr IP IPv4 address in given network")
