@@ -2,7 +2,12 @@
 name: release
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Rebuild and republish the nightly even if it is already current'
+        type: boolean
+        default: false
   push:
     tags:
       - 'v*.*.*'
@@ -12,12 +17,16 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.event_name == 'push' && github.ref || 'nightly' }}
+  cancel-in-progress: false
+
 jobs:
   dist:
     name: Build warewulf.spec and source dist
     runs-on: ubuntu-latest
     outputs:
-      has-recent-commits: ${{ steps.commits.outputs.has-recent-commits }}
+      needs-build: ${{ steps.commits.outputs.needs-build }}
       commits: ${{ steps.commits.outputs.commits }}
       version: ${{ steps.version.outputs.version }}
 
@@ -27,18 +36,35 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get commit logs (nightly)
-        if: github.event_name == 'schedule'
+      - name: Check whether the nightly release is current
+        if: github.event_name != 'push'
         id: commits
         shell: bash
         run: |
-          echo "commits=$(git log --since="$(date -d '24 hours ago' --iso-8601)" --oneline | base64 --wrap=0)" >>$GITHUB_OUTPUT
-          if git log --since="$(date -d '24 hours ago' --iso-8601)" --oneline | grep -q .; then
-            echo "has-recent-commits=true" >>$GITHUB_OUTPUT
+          head=$(git rev-parse HEAD)
+          if last=$(git rev-parse -q --verify 'refs/tags/nightly^{commit}') \
+             && git merge-base --is-ancestor "${last}" "${head}"
+          then
+            range="${last}..${head}"
           else
-            echo "has-recent-commits=false" >>$GITHUB_OUTPUT
-            echo "No commits found in the last 24 hours"
+            echo "No usable nightly tag"
+            range=""
           fi
+
+          if [ -n "${range}" ] && [ "${last}" = "${head}" ]; then
+            echo "needs-build=false" >>$GITHUB_OUTPUT
+            echo "Nightly release is already current at ${head}"
+          else
+            echo "needs-build=true" >>$GITHUB_OUTPUT
+          fi
+
+          if [ -n "${range}" ]; then
+            log=$(git log --oneline "${range}")
+          else
+            echo "No range specified, using last 20 commits"
+            log=$(git log --oneline -n 20 "${head}")
+          fi
+          echo "commits=$(printf '%s' "${log}" | base64 --wrap=0)" >>$GITHUB_OUTPUT
 
       - name: Build spec and dist
         run: |
@@ -69,7 +95,10 @@ jobs:
 
   rpms:
     needs: dist
-    if: github.event_name != 'schedule' || needs.dist.outputs.has-recent-commits == 'true'
+    if: >-
+      github.event_name == 'push'
+      || inputs.force
+      || needs.dist.outputs.needs-build == 'true'
     name: Build RPMs
     runs-on: ${{ matrix.runs-on }}
     container:
@@ -132,10 +161,18 @@ jobs:
 
   release:
     needs: [dist, rpms]
-    if: github.event_name == 'push' || (github.event_name == 'schedule' && needs.dist.outputs.has-recent-commits == 'true')
+    if: >-
+      github.event_name == 'push'
+      || inputs.force
+      || needs.dist.outputs.needs-build == 'true'
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # The nightly release tracks the default branch only: a workflow_dispatch
+      # from any other ref builds RPMs but must not move the nightly tag.
+      IS_NIGHTLY: >-
+        ${{ github.event_name != 'push'
+            && github.ref_name == github.event.repository.default_branch }}
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -143,8 +180,22 @@ jobs:
           path: artifacts/
           merge-multiple: true
 
+      - name: Verify artifacts
+        run: |
+          # Fail here, before the next step deletes the current nightly release
+          # and its tag. Without this an empty download would destroy the good
+          # nightly and only be caught by the create step afterwards, leaving no
+          # release at all. Unmatched globs make ls exit non-zero.
+          ls -l artifacts/*.tar.gz artifacts/*.rpm
+
+      - name: Skip nightly release (not the default branch)
+        if: github.event_name != 'push' && env.IS_NIGHTLY != 'true'
+        run: |
+          echo "::notice::Built RPMs from ${{ github.ref_name }} but did not publish:" \
+               "the nightly release only tracks ${{ github.event.repository.default_branch }}."
+
       - name: Delete previous release (nightly)
-        if: github.event_name == 'schedule'
+        if: env.IS_NIGHTLY == 'true'
         run: |
           gh release delete "nightly" \
             --repo ${{ github.repository }} \
@@ -162,17 +213,18 @@ jobs:
             --draft
 
       - name: Create release (nightly)
-        if: github.event_name == 'schedule'
+        if: env.IS_NIGHTLY == 'true'
         run: |
           COMMITS=$(echo "${{ needs.dist.outputs.commits }}" | base64 --decode)
           gh release create "nightly" \
             artifacts/*.tar.gz \
             artifacts/*.rpm \
             --repo ${{ github.repository }} \
+            --target "${{ github.sha }}" \
             --title "nightly" \
             --prerelease \
             --notes "NIGHTLY RELEASE
 
-          Commits from the last 24 hours:
+          Commits for the nightly release:
 
           ${COMMITS}"
