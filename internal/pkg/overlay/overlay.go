@@ -1026,9 +1026,15 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 					}
 
 					if f.IsSymlink {
-						wwlog.Debug("Creating soft link %s -> %s", filePath, f.Target)
-						if err = os.Symlink(f.Target, filePath); err != nil {
-							return fmt.Errorf("could not create symlink from template: %w", err)
+						skip, err := prepareSymlinkPath(filePath, f.Target, rendered.BackupFile)
+						if err != nil {
+							return err
+						}
+						if !skip {
+							wwlog.Debug("Creating soft link %s -> %s", filePath, f.Target)
+							if err := os.Symlink(f.Target, filePath); err != nil {
+								return fmt.Errorf("could not create symlink from template: %w", err)
+							}
 						}
 					} else {
 						wwlog.Debug("Writing file %s", f.Name)
@@ -1081,6 +1087,60 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 	}
 
 	return nil
+}
+
+// prepareSymlinkPath clears filePath so that a symlink to target may be created
+// there, following the same wwbackup convention as CarefulWriteBuffer. It
+// reports skip when the correct symlink is already in place and nothing needs
+// to be done.
+//
+// An existing symlink is replaced outright: a symlink holds no content of its
+// own, so there is nothing to preserve. A regular file is moved aside to
+// filePath+".wwbackup" instead, or removed when a backup already exists or the
+// template called nobackup. A directory is an error, because removing it would
+// discard whatever it contains.
+func prepareSymlinkPath(filePath string, target string, backupFile bool) (skip bool, err error) {
+	info, err := os.Lstat(filePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+		return false, fmt.Errorf("failed to stat existing path at %s: %w", filePath, err)
+	}
+
+	if info.Mode()&os.ModeSymlink == os.ModeSymlink {
+		existing, err := os.Readlink(filePath)
+		if err != nil {
+			return false, fmt.Errorf("failed reading existing symlink at %s: %w", filePath, err)
+		}
+		if existing == target {
+			wwlog.Debug("Soft link %s -> %s already exists", filePath, target)
+			return true, nil
+		}
+		wwlog.Debug("Soft link %s points at %s: removing to re-link to %s", filePath, existing, target)
+		if err := os.Remove(filePath); err != nil {
+			return false, fmt.Errorf("failed to remove existing symlink at %s: %w", filePath, err)
+		}
+		return false, nil
+	}
+
+	if info.IsDir() {
+		return false, fmt.Errorf("refusing to replace directory %s with a symlink to %s", filePath, target)
+	}
+
+	backupPath := filePath + ".wwbackup"
+	if backupFile && !util.IsFile(backupPath) {
+		wwlog.Debug("Output file %s already exists: moving to backup file", filePath)
+		if err := os.Rename(filePath, backupPath); err != nil {
+			return false, fmt.Errorf("failed renaming %s to backup file: %w", filePath, err)
+		}
+		return false, nil
+	}
+	wwlog.Debug("Removing existing file %s in favor of a soft link", filePath)
+	if err := os.Remove(filePath); err != nil {
+		return false, fmt.Errorf("failed removing existing file at %s: %w", filePath, err)
+	}
+	return false, nil
 }
 
 /*
