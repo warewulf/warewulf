@@ -259,6 +259,31 @@ Escapes a path for use in a systemd unit file.
 
 Escape rules are documented at `systemd.unit. <https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html#String%20Escaping%20for%20Inclusion%20in%20Unit%20Names>`_
 
+CIDR
+----
+
+Converts an IP address and netmask to CIDR notation. The netmask can be specified
+as a dotted decimal (e.g., ``255.255.255.0``) or as a CIDR prefix length (e.g.,
+``24``). Works with both IPv4 and IPv6 addresses.
+
+.. code-block::
+
+   {{- $ip := "192.168.1.10" -}}
+   {{- $netmask := "255.255.255.0" -}}
+   IP/CIDR: {{ CIDR $ip $netmask }}
+
+CIDR6
+-----
+
+Converts an IPv6 address and prefix length to CIDR notation. This function is
+specifically for IPv6 addresses.
+
+.. code-block::
+
+   {{- file "/etc/network/interfaces" -}}
+   iface eth0 inet6 static
+      address 2001:db8::1
+      netmask {{ CIDR6 "2001:db8::1" 64 }}
 
 Examples
 ========
