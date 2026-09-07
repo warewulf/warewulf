@@ -1088,6 +1088,13 @@ Writes buffer to the destination file. If wwbackup is set a wwbackup will be cre
 */
 func CarefulWriteBuffer(destFile string, buffer bytes.Buffer, backupFile bool, perm fs.FileMode) (err error) {
 	wwlog.Debug("Trying to careful write file (%d bytes): %s", buffer.Len(), destFile)
+	parentDir := path.Dir(destFile)
+	if !util.IsDir(parentDir) {
+		wwlog.Debug("Creating parent directory: %s", parentDir)
+		if err := os.MkdirAll(parentDir, 0o755); err != nil {
+			return fmt.Errorf("failed to create parent directories for %s: %w", destFile, err)
+		}
+	}
 	if backupFile {
 		if !util.IsFile(destFile+".wwbackup") && util.IsFile(destFile) {
 			err := util.CopyFile(destFile, destFile+".wwbackup")
