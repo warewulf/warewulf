@@ -651,13 +651,13 @@ func readArtifactArchiveEntries(archivePath string) (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func() { assert.NoError(t, archiveFile.Close()) }()
+	defer func() { _ = archiveFile.Close() }()
 
 	gzipReader, err := gzip.NewReader(archiveFile)
 	if err != nil {
 		return nil, err
 	}
-	defer func() { assert.NoError(t, gzipReader.Close()) }()
+	defer func() { _ = gzipReader.Close() }()
 
 	entries := make(map[string]string)
 	tarReader := tar.NewReader(gzipReader)
