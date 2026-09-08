@@ -651,13 +651,13 @@ func readArtifactArchiveEntries(archivePath string) (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer archiveFile.Close()
+	defer func() { assert.NoError(t, archiveFile.Close()) }()
 
 	gzipReader, err := gzip.NewReader(archiveFile)
 	if err != nil {
 		return nil, err
 	}
-	defer gzipReader.Close()
+	defer func() { assert.NoError(t, gzipReader.Close()) }()
 
 	entries := make(map[string]string)
 	tarReader := tar.NewReader(gzipReader)
@@ -697,7 +697,7 @@ func loadManifestFromArchive(archivePath string) (overlaydiff.ArtifactManifest, 
 	if err := os.WriteFile(manifestPath, []byte(entries[overlaydiff.ArtifactManifestFileName]), 0o600); err != nil {
 		return overlaydiff.ArtifactManifest{}, err
 	}
-	defer os.Remove(manifestPath)
+	defer func() { _ = os.Remove(manifestPath) }()
 	return overlaydiff.LoadArtifactManifest(manifestPath)
 }
 

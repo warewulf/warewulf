@@ -139,13 +139,13 @@ func extractArtifactArchive(archivePath string, destRoot string) error {
 	if err != nil {
 		return fmt.Errorf("could not open artifact archive: %w", err)
 	}
-	defer archiveFile.Close()
+	defer func() { _ = archiveFile.Close() }()
 
 	gzipReader, err := gzip.NewReader(archiveFile)
 	if err != nil {
 		return fmt.Errorf("artifact archive is not gzip-compressed tar: %w", err)
 	}
-	defer gzipReader.Close()
+	defer func() { _ = gzipReader.Close() }()
 
 	tarReader := tar.NewReader(gzipReader)
 	for {
@@ -183,7 +183,7 @@ func extractArtifactEntry(reader io.Reader, header *tar.Header, destRoot string)
 		if err := ensureImportDir(destRoot, target, os.FileMode(header.Mode)); err != nil {
 			return err
 		}
-	case tar.TypeReg, tar.TypeRegA:
+	case tar.TypeReg:
 		if err := ensureImportDir(destRoot, filepath.Dir(target), 0o755); err != nil {
 			return err
 		}

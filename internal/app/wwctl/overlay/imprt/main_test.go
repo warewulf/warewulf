@@ -319,13 +319,13 @@ func createOverlayArchiveWithSchemaVersion(t *testing.T, archivePath string, ove
 	t.Helper()
 	archiveFile, err := os.Create(archivePath)
 	assert.NoError(t, err)
-	defer archiveFile.Close()
+	defer func() { assert.NoError(t, archiveFile.Close()) }()
 
 	gzipWriter := gzip.NewWriter(archiveFile)
-	defer gzipWriter.Close()
+	defer func() { assert.NoError(t, gzipWriter.Close()) }()
 
 	tarWriter := tar.NewWriter(gzipWriter)
-	defer tarWriter.Close()
+	defer func() { assert.NoError(t, tarWriter.Close()) }()
 
 	writeTarDir(t, tarWriter, "rootfs")
 	manifest := overlaydiff.BuildArtifactManifest(overlayName, "/", "", []string{"/etc/config"}, overlaydiff.DecisionSummary{Selected: 1})

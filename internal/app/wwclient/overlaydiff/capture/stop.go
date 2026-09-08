@@ -203,7 +203,7 @@ func runStop(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return fmt.Errorf("failed to create artifact staging directory: %w", err)
 		}
-		defer os.RemoveAll(stageParent)
+		defer func() { _ = os.RemoveAll(stageParent) }()
 
 		artifactRoot := filepath.Join(stageParent, strings.TrimSpace(stopOverlayName))
 		artifactRootfs := filepath.Join(artifactRoot, "rootfs")
@@ -418,18 +418,30 @@ func ensureArtifactFilePath(root string, target string) error {
 	return nil
 }
 
-func writeArtifactArchive(artifactRoot string, archivePath string) error {
+func writeArtifactArchive(artifactRoot string, archivePath string) (retErr error) {
 	output, err := os.Create(archivePath)
 	if err != nil {
 		return fmt.Errorf("failed to create artifact archive %s: %w", archivePath, err)
 	}
-	defer output.Close()
+	defer func() {
+		if err := output.Close(); err != nil && retErr == nil {
+			retErr = fmt.Errorf("failed to close artifact archive %s: %w", archivePath, err)
+		}
+	}()
 
 	gzipWriter := gzip.NewWriter(output)
-	defer gzipWriter.Close()
+	defer func() {
+		if err := gzipWriter.Close(); err != nil && retErr == nil {
+			retErr = fmt.Errorf("failed to close artifact gzip stream %s: %w", archivePath, err)
+		}
+	}()
 
 	tarWriter := tar.NewWriter(gzipWriter)
-	defer tarWriter.Close()
+	defer func() {
+		if err := tarWriter.Close(); err != nil && retErr == nil {
+			retErr = fmt.Errorf("failed to close artifact tar stream %s: %w", archivePath, err)
+		}
+	}()
 
 	return filepath.WalkDir(artifactRoot, func(current string, entry fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
@@ -475,9 +487,13 @@ func writeArtifactArchive(artifactRoot string, archivePath string) error {
 		if err != nil {
 			return fmt.Errorf("failed to open artifact file %s: %w", current, err)
 		}
-		defer input.Close()
-		if _, err := io.Copy(tarWriter, input); err != nil {
-			return fmt.Errorf("failed to archive artifact file %s: %w", current, err)
+		_, copyErr := io.Copy(tarWriter, input)
+		closeErr := input.Close()
+		if copyErr != nil {
+			return fmt.Errorf("failed to archive artifact file %s: %w", current, copyErr)
+		}
+		if closeErr != nil {
+			return fmt.Errorf("failed to close artifact file %s: %w", current, closeErr)
 		}
 		return nil
 	})
@@ -616,7 +632,7 @@ func copyFile(sourcePath, destPath string, mode fs.FileMode) error {
 	if err != nil {
 		return fmt.Errorf("failed to open source file %s: %w", sourcePath, err)
 	}
-	defer input.Close()
+	defer func() { _ = input.Close() }()
 
 	output, err := os.Create(destPath)
 	if err != nil {

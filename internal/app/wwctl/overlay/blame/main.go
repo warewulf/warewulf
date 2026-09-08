@@ -202,10 +202,6 @@ func normalizePathFilterValue(value string) string {
 	return path.Clean("/" + strings.TrimPrefix(filepath.ToSlash(value), "/"))
 }
 
-func normalizePathPrefix(prefix string) string {
-	return normalizePathFilterValue(prefix)
-}
-
 func pathMatchesPrefix(filePath string, prefix string) bool {
 	if prefix == "" || prefix == "/" {
 		return true

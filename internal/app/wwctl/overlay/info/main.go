@@ -281,9 +281,7 @@ func resolveDynamicRangeValue(tstruct overlay.TemplateStruct, varName string, fi
 
 	rangePathDisplay := fieldInfo.FullPath
 	suffix := "." + strings.Join(fieldParts, ".")
-	if strings.HasSuffix(rangePathDisplay, suffix) {
-		rangePathDisplay = strings.TrimSuffix(rangePathDisplay, suffix)
-	}
+	rangePathDisplay = strings.TrimSuffix(rangePathDisplay, suffix)
 	rangePath := strings.TrimPrefix(rangePathDisplay, ".")
 	if rangePath == "" {
 		return "", false
