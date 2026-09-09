@@ -65,10 +65,10 @@ wwctl: $(config) $(call godeps,cmd/wwctl/main.go)
 	GOOS=linux go build -mod vendor -tags "$(WW_GO_BUILD_TAGS)" -o wwctl cmd/wwctl/main.go
 
 wwclient: $(config) $(call godeps,cmd/wwclient/main.go)
-	CGO_ENABLED=0 GOOS=linux go build -mod vendor -a -ldflags "-extldflags -static -s -w" -o wwclient cmd/wwclient/main.go
+	CGO_ENABLED=0 GOOS=linux GOAMD64=v1 go build -mod vendor -a -ldflags "-extldflags -static -s -w" -o wwclient cmd/wwclient/main.go
 
 wwclient.x86_64: $(config) $(call godeps,cmd/wwclient/main.go)
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -mod vendor -a -ldflags "-extldflags -static -s -w" -o wwclient.x86_64 cmd/wwclient/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GOAMD64=v1 go build -mod vendor -a -ldflags "-extldflags -static -s -w" -o wwclient.x86_64 cmd/wwclient/main.go
 
 wwclient.aarch64: $(config) $(call godeps,cmd/wwclient/main.go)
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -mod vendor -a -ldflags "-extldflags -static -s -w" -o wwclient.aarch64 cmd/wwclient/main.go
