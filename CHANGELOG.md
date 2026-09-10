@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - Added documentation about dealing with "merged" `/usr` and Warewulf overlays.
+- Updated the API docs with a little more detail on the swagger UI
 
 ### Changed
 

@@ -4,7 +4,20 @@
 REST API
 ========
 
-On-line documentation for the API is available at ``/api/docs``.
+Interactive Documentation
+=========================
+
+The API is disabled by default. Set ``api:enabled: true`` in ``warewulf.conf``
+and restart ``warewulfd``.
+
+Interactive Swagger UI documentation is then served at ``/api/docs``, for
+example http://localhost:9873/api/docs, with its OpenAPI schema at
+``/api/docs/openapi.json``. Substitute the address and ``warewulf:port`` of the
+Warewulf server, or ``https`` and ``warewulf:tls port`` (default ``9874``) if
+``api:tls`` is enabled.
+
+The endpoints themselves require a user in ``/etc/warewulf/auth.conf``. See
+`Authentication`_ below.
 
 Authentication
 ==============
