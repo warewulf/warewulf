@@ -13,7 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   for confirmation. Nodes (or profiles) receiving identical changes are
   grouped onto a single header. Suppressed by `-y`/`--yes`.
 - Added documentation about dealing with "merged" `/usr` and Warewulf overlays.
-
+- Updated the API docs with a little more detail on the swagger UI
 
 - Groups are now available for targeting sets of nodes in `wwctl` commands.
   Declared via a `groups:` field on individual nodes or profiles (the two
