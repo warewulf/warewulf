@@ -58,3 +58,4 @@
 - Sergio Cabello Simón <sergio.scs388@gmail.com> [@SergioZ3R0](https://github.com/SergioZ3R0)
 - Jorge L Florit <jlflorit@gmail.com> [@conxuro](https://github.com/conxuro)
 - Travis Greene <trg244@msstate.edu> [@sn8to](https://github.com/sn8to)
+- Logan Enright <lenright@ciq.com> [loag-ciq](https://github.com/loag-ciq)
