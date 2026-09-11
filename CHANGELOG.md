@@ -34,6 +34,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add an `ipv6_method` node tag to set the NetworkManager `[ipv6]` method, e.g.
   `auto` for SLAAC.
 - Don't silence curl when downloading with dracut. #2200
+- Extend kernel version string matching. #2267
 
 ### Fixed
 
