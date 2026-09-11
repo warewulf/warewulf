@@ -6,7 +6,18 @@ import (
 )
 
 var (
-	baseCmd = &cobra.Command{
+	NodeName string
+	Render   bool
+	Format   string
+)
+
+// GetCommand returns the root cobra.Command for this application.
+func GetCommand() *cobra.Command {
+	NodeName = ""
+	Render = false
+	Format = "table"
+
+	baseCmd := &cobra.Command{
 		Use:     "info [flags] OVERLAY_NAME FILE_PATH",
 		Short:   "Show variables for a template file in an overlay",
 		Long:    "This command will show the variables for a given template file in a given\n" + "overlay.",
@@ -30,9 +41,8 @@ var (
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		},
 	}
-)
-
-// GetCommand returns the root cobra.Command for this application.
-func GetCommand() *cobra.Command {
+	baseCmd.PersistentFlags().StringVar(&NodeName, "node", "", "Resolve template variables for the given node")
+	baseCmd.PersistentFlags().BoolVar(&Render, "render", false, "Render a node-specific preview without writing files")
+	baseCmd.PersistentFlags().StringVar(&Format, "format", "table", "Output format: table|json")
 	return baseCmd
 }
