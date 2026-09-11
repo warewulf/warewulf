@@ -4,8 +4,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 var (
@@ -14,9 +14,7 @@ var (
 		"/boot/initrd-*",
 		"/boot/initrd.img-*",
 	}
-
 )
-
 
 type Initramfs struct {
 	Path      string

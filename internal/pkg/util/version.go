@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	versionPattern *regexp.Regexp
+	versionPattern     *regexp.Regexp
 	imageSuffixPattern *regexp.Regexp
 )
 
