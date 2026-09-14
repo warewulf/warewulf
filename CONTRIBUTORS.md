@@ -42,7 +42,7 @@
 - Adam Michel <elfurbe@furbism.com> [@elfurbe](https://github.com/elfurbe)
 - Brandon Biggs <brandonsbiggs@gmail.com>
 - Howard Van Der Wal <howard.a.vanderwal@protonmail.com> [@metalllinux](https://github.com/metalllinux)
-- Nicholas Porter <nap23@unm.edu>
+- Nicholas Porter <porternick@gmail.com>
 - Ian Kaufman <ikaufman@ucsd.edu> [@iankgt40](https://github.com/iankgt40)
 - Daniele Colombo [@dacolombo](https://github.com/dacolombo)
 - Stephen Simpson [@ssimpson89](https://github.com/ssimpson89)
