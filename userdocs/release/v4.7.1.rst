@@ -2,7 +2,7 @@
 v4.7.1 Release Notes
 ====================
 
-v4.7.1 is a bug-fix release in the v4.7.x series. It contains no new features.
+v4.7.1 is a bug-fix release in the v4.7.x series.
 
 Significant changes are described below. Additional changes are listed in the
 `CHANGELOG`_.
@@ -18,14 +18,13 @@ wwctl power could act on the Warewulf server
 to the local BMC, so a command intended for a node could power off or reset the
 Warewulf server itself.
 
-Such nodes are now skipped, and the command exits non-zero. This most commonly
-affected clusters containing virtual machines or other nodes with no BMC.
+Such nodes are now skipped, and the command exits non-zero.
 
 wwclient could fail with an illegal instruction
 ===============================================
 
 ``wwclient`` is distributed as a static binary built on the Warewulf server, but
-was compiled without pinning ``GOAMD64``. The Go toolchain then selected a
+was compiled without pinning ``GOAMD64``. The Go toolchain selected a
 microarchitecture level based on the build host, and the resulting binary could
 fail with an illegal instruction on older nodes.
 
@@ -66,13 +65,14 @@ with ``ipaddr6`` and no ``ipaddr`` now renders ``ip=<device>:auto6``.
 ``wwctl node status`` now falls back to ``ipaddr6`` when ``ipaddr`` is unset,
 brackets IPv6 literals in the status URL, and bounds the request with a timeout.
 
-The dnsmasq host overlay no longer emits an empty ``listen-address=`` line, the
-IPv4 boot block with blank ``http://`` boot URLs, or an invalid
-``dhcp-range=,static,,6h``. The IPv4-only sections are now guarded on ``ipaddr``.
+The IPv4-only sections in the dnsmasq host overlay template are now guarded on
+``ipaddr``. This prevents an erroneous empty ``listen-address=`` line, the IPv4
+boot block with blank ``http://`` boot URLs, and an invalid
+``dhcp-range=,static,,6h``. 
 
 The ``NetworkManager`` overlay no longer generates invalid ``[ipv4]`` sections
-for IPv6-only interfaces, where ``gateway=``, ``dns=``, ``dns-search=``, and
-route lines were emitted even under ``method=disabled``.
+for IPv6-only interfaces. (``gateway=``, ``dns=``, ``dns-search=``, and
+route lines were previously emitted even under ``method=disabled``.)
 
 DSA host keys removed from the defaults
 =======================================
