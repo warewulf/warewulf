@@ -1,0 +1,132 @@
+====================
+v4.7.1 Release Notes
+====================
+
+v4.7.1 is a bug-fix release in the v4.7.x series. It contains no new features.
+
+Significant changes are described below. Additional changes are listed in the
+`CHANGELOG`_.
+
+.. _CHANGELOG: https://github.com/warewulf/warewulf/blob/main/CHANGELOG.md
+
+wwctl power could act on the Warewulf server
+============================================
+
+``wwctl power`` (``cycle``, ``off``, ``on``, ``reset``, ``soft``, and
+``status``) ran ``ipmitool`` without a ``-H`` argument for any node with no
+``ipmi: ipaddr:`` configured. Without an explicit host, ``ipmitool`` falls back
+to the local BMC, so a command intended for a node could power off or reset the
+Warewulf server itself.
+
+Such nodes are now skipped, and the command exits non-zero. This most commonly
+affected clusters containing virtual machines or other nodes with no BMC.
+
+wwclient could fail with an illegal instruction
+===============================================
+
+``wwclient`` is distributed as a static binary built on the Warewulf server, but
+was compiled without pinning ``GOAMD64``. The Go toolchain then selected a
+microarchitecture level based on the build host, and the resulting binary could
+fail with an illegal instruction on older nodes.
+
+``wwclient`` is now built with ``GOAMD64=v1`` and runs on any 64-bit x86
+processor.
+
+Image and overlay corruption with large inode numbers
+=====================================================
+
+When building node images and overlays on a file system with 64-bit inode
+numbers, cpio truncated those numbers to 32 bits. Distinct files could collide
+on the truncated value and be written as hardlinks to each other, silently
+corrupting the resulting image.
+
+Warewulf now passes ``--renumber-inodes`` to cpio where the installed version
+supports it (GNU cpio 2.13 and later).
+
+Kernel version detection
+========================
+
+Kernel versions whose RPM release field contains a version-like suffix after the
+dist tag, such as ``5.14.0-687.10.1.el9_8.0.1``, were mis-detected: Warewulf
+reported ``8.0.1`` rather than ``5.14.0-687.10.1``, because ``ParseVersion``
+returned the last regular expression match found in the kernel path. This also
+caused the wrong kernel to be selected as the default. #2199
+
+IPv6-only servers and nodes
+===========================
+
+Several independent defects prevented Warewulf from operating on IPv6-only
+deployments.
+
+The two-stage dracut boot rendered ``ip=<device>:dhcp`` for every device, which
+NetworkManager's initrd generator turns into a mandatory DHCPv4 lease. The
+connection never activated and the initramfs never fetched the image. A device
+with ``ipaddr6`` and no ``ipaddr`` now renders ``ip=<device>:auto6``.
+
+``wwctl node status`` now falls back to ``ipaddr6`` when ``ipaddr`` is unset,
+brackets IPv6 literals in the status URL, and bounds the request with a timeout.
+
+The dnsmasq host overlay no longer emits an empty ``listen-address=`` line, the
+IPv4 boot block with blank ``http://`` boot URLs, or an invalid
+``dhcp-range=,static,,6h``. The IPv4-only sections are now guarded on ``ipaddr``.
+
+The ``NetworkManager`` overlay no longer generates invalid ``[ipv4]`` sections
+for IPv6-only interfaces, where ``gateway=``, ``dns=``, ``dns-search=``, and
+route lines were emitted even under ``method=disabled``.
+
+DSA host keys removed from the defaults
+=======================================
+
+``dsa`` has been removed from the default ``ssh: key types`` in
+``warewulf.conf``. On EL9 and other systems with OpenSSH 8.7p1 or later, sshd
+silently skips DSA host keys, which could leave nodes with no usable host keys
+at all. #1185
+
+Sites that have customized ``ssh: key types`` in ``warewulf.conf`` are
+unaffected.
+
+provision-to-disk filesystem mounting
+=====================================
+
+Non-root filesystems are now mounted before the image is extracted during
+provision-to-disk, so files are written to the correct partitions rather than
+all landing on the root filesystem. #2147
+
+This fix adds a ``/warewulf/mounts`` file to the ``wwinit`` overlay and a
+corresponding step to the ``wwinit`` dracut module. **Nodes must rebuild their
+initramfs** with the updated ``warewulf-dracut`` package for it to take effect.
+
+wwclient.service
+================
+
+The ``wwclient`` systemd unit dropped the obsolete ``PIDFile`` directive, which
+has no meaning for a ``Type=notify`` service, and replaced ``TimeoutSec=60``
+with ``TimeoutStartSec=infinity``, ``TimeoutStopSec=90``, ``Restart=on-failure``
+and ``StartLimitIntervalSec=0`` to accommodate wwclient's own retry logic. #2203
+
+A node that cannot reach the Warewulf server now continues retrying rather than
+failing the unit after 60 seconds.
+
+Other fixes
+===========
+
+- ``wwctl node import`` now reloads ``warewulfd``, matching every other mutating
+  ``wwctl node`` command. Previously imported nodes were invisible to
+  ``wwctl node status``, PXE, and wwclient until a reload or restart.
+- ``wwctl profile set --nettagadd`` no longer silently ignores the given tags
+  when the network device already exists.
+- Overlay templates that create multiple files now create the parent directories
+  for those files if they do not yet exist.
+- Overlay templates that create symbolic links now replace an existing link, and
+  an existing file, rather than failing. #2252
+- Fix MTU configuration with the ``wicked`` overlay. #2248
+- ``curl`` is no longer silenced when downloading with dracut, making boot
+  failures easier to diagnose. #2200
+- Fix the example ``genders.ww`` template, which still used a ``.Get`` accessor
+  API that no longer exists.
+
+Dependencies
+============
+
+Dependencies have been updated, including ``go-jose`` 4.1.4 to address
+CVE-2026-34986. See the `CHANGELOG`_ for the full list.

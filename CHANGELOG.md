@@ -28,7 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add an `ipv6_method` node tag to set the NetworkManager `[ipv6]` method.
   `disabled` or `ignore` methods cause a static address to be omitted.
 
-## v4.7.1, unreleased
+## v4.7.1, 2026-09-15
 
 ### Added
 
