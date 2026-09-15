@@ -12,9 +12,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   before/after diff of the changes they are about to apply before prompting
   for confirmation. Nodes (or profiles) receiving identical changes are
   grouped onto a single header. Suppressed by `-y`/`--yes`.
-- Added documentation about dealing with "merged" `/usr` and Warewulf overlays.
-- Updated the API docs with a little more detail on the swagger UI
-
 - Groups are now available for targeting sets of nodes in `wwctl` commands.
   Declared via a `groups:` field on individual nodes or profiles (the two
   sources are additive). Reference a group from the command line with the
@@ -25,14 +22,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   in the configuration along with its members.
 - Tab completion for groups.
 - Add IPMI address of nodes to /etc/hosts of master node
- 
+
+### Changed
+
+- Add an `ipv6_method` node tag to set the NetworkManager `[ipv6]` method.
+  `disabled` or `ignore` methods cause a static address to be omitted.
+
+## v4.7.1, 2026-09-15
+
+### Added
+
+- Added documentation about dealing with "merged" `/usr` and Warewulf overlays.
+- Updated the API docs with a little more detail on the swagger UI
+
 ### Changed
 
 - wwclient.service changed to accommodate internal retry logic. #2203
 - Remove `dsa` from default `ssh: key types`; sshd silently skips DSA host keys
   on EL9 / OpenSSH 8.7p1+, leaving nodes with no usable host keys. #1185
-- Add an `ipv6_method` node tag to set the NetworkManager `[ipv6]` method.
-  `disabled` or `ignore` methods cause a static address to be omitted.
 - Don't silence curl when downloading with dracut. #2200
 
 ### Fixed
