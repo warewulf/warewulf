@@ -83,16 +83,17 @@ method=disabled
 method=disabled
 {{- else }}
 addr-gen-mode=eui64
-{{- if $netdev.Ipaddr6 }}
-method=manual
+{{- /* Use an explicit ipv6_method tag
+       or default to manual or disabled depending on IpCIDR6 */}}
+{{- $method := default (ternary "manual" "disabled" (ne $netdev.IpCIDR6 "")) $netdev.Tags.ipv6_method }}
+method={{ $method }}
+{{- /* Only write a complete address, but skip for method=disabled or
+       method=ignore. */}}
+{{- if and $netdev.IpCIDR6 (not (has $method (list "disabled" "ignore"))) }}
 addresses={{ $netdev.IpCIDR6 }}
 {{- if $netdev.Gateway6 }}
 gateway={{ $netdev.Gateway6 }}
 {{- end }}
-{{- else if $netdev.Tags.ipv6_method }}
-method={{ $netdev.Tags.ipv6_method }}
-{{- else }}
-method=disabled
 {{- end }}
 {{- end }}
 
