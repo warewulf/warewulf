@@ -27,6 +27,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Add an `ipv6_method` node tag to set the NetworkManager `[ipv6]` method.
   `disabled` or `ignore` methods cause a static address to be omitted.
+- The monolithic `host` overlay is split into one host overlay per service it
+  configures: `dhcpd` (`etc/dhcp/dhcpd.conf.ww`), `dnsmasq`
+  (`etc/dnsmasq.d/ww4-hosts.conf.ww`, `etc/dnsmasq.d/ww4-listen.conf.ww`),
+  `nfsd` (`etc/exports.ww`), `tftproot` (`grub.cfg.ww`) and `ssh.wwctl`
+  (`etc/profile.d/ssh_setup.sh.ww`, `etc/profile.d/ssh_setup.csh.ww`). Each
+  `wwctl configure` subcommand now builds only the overlays for the service it
+  configures, rather than all of them. Warewulf no longer ships a `host`
+  overlay, but a site overlay of that name is still applied, after the
+  overlays above, so that existing local customizations keep working.
+- The `host` overlay's `etc/hosts.ww` is merged into the existing `hosts`
+  overlay, so a single template now renders `/etc/hosts` for both the
+  Warewulf server and the nodes. On the server it still preserves everything
+  above the `# Do not edit after this line` marker; on a node it still
+  generates the whole file. As a result, node `/etc/hosts` files now also
+  receive a `NODENAME-ipmi` entry for each node that has a BMC address.
+- `wwctl configure tftp` now builds the `tftproot` overlay, so `grub.cfg` in
+  the TFTP root is written by the subcommand that owns it.
+
+### Fixed
+
+- The dhcpd overlay's openSUSE `/etc/dhcpd.conf` compatibility symlink no
+  longer also renders `dhcpd.conf.ww` a second time.
 
 ## v4.7.2, unreleased
 

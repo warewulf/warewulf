@@ -1,8 +1,6 @@
 ipaddr: 192.168.0.1/24
 netmask: 255.255.255.0
 network: 192.168.0.0
-ipaddr6: 2001:db8::1/64
-prefixlen6: 64
 warewulf:
   port: 9873
   secure: false
@@ -10,7 +8,7 @@ warewulf:
   autobuild overlays: true
   host overlay: true
 dhcp:
-  enabled: true
+  enabled: false
   template: default
   range start: 192.168.0.100
   range end: 192.168.0.199

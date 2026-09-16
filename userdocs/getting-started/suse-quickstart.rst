@@ -22,12 +22,17 @@ Install Warewulf and dependencies
    make all
    sudo make install
 
-The standard configuration template for the dhcpd service is installed
-at the wrong location, you have to fix this with
+SUSE's ``dhcpd`` reads ``/etc/dhcpd.conf``, while Warewulf generates its
+configuration at ``/etc/dhcp/dhcpd.conf``. The ``dhcpd`` overlay bridges this
+by also installing ``/etc/dhcpd.conf`` as a symlink to the generated file. If
+you would rather have Warewulf write ``/etc/dhcpd.conf`` directly, move the
+template instead:
 
 .. code-block:: bash
 
-   mv /var/lib/warewulf/overlays/host/etc/dhcp/dhcpd.conf.ww /var/lib/warewulf/overlays/host/etc/dhcpd.conf.ww
+   cd /var/lib/warewulf/overlays/dhcpd/rootfs/etc
+   rm dhcpd.conf
+   mv dhcp/dhcpd.conf.ww dhcpd.conf.ww
 
 Install Warewulf from the open build service
 ============================================

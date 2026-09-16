@@ -127,9 +127,9 @@ warewulf
   Overlay autobuild is not 100% reliable; but it is particularly useful for
   building overlays for new nodes.
 
-* ``warewulf:host overlay``: Controls whether the special ``host`` overlay is
-  applied to the Warewulf server during configuration. (The host overlay is used
-  to configure external services.)
+* ``warewulf:host overlay``: Controls whether the host overlays are applied to
+  the Warewulf server during configuration. (Host overlays are used to
+  configure external services on the server. See :ref:`host-overlays`.)
 
 * ``warewulf:grubboot``: Controls whether iPXE (default) or GRUB is used as the
   network bootloader.

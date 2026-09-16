@@ -19,7 +19,7 @@ dhcp:
 tftp:
   enabled: false
 nfs:
-  enabled: true
+  enabled: false
   export paths:
   - path: /home
     export options: rw,sync
