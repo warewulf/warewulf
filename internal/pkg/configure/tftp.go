@@ -7,6 +7,7 @@ import (
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/image"
+	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"golang.org/x/sys/unix"
@@ -61,6 +62,14 @@ func TFTP() (err error) {
 	if !controller.TFTP.Enabled() {
 		wwlog.Warn("Warewulf does not auto start TFTP services due to disable by warewulf.conf")
 		return nil
+	}
+
+	if controller.Warewulf.EnableHostOverlay() {
+		if err := overlay.BuildHostOverlay("tftproot"); err != nil {
+			wwlog.Warn("host overlay could not be built: %s", err)
+		}
+	} else {
+		wwlog.Info("host overlays are disabled, did not modify the tftp root")
 	}
 
 	wwlog.Info("Enabling and restarting the TFTP services")

@@ -11,11 +11,11 @@ warewulf:
   host overlay: true
 dhcp:
   enabled: true
-  template: default
+  template: static
   range start: 192.168.0.100
   range end: 192.168.0.199
-  range6 start: ""
-  range6 end: ""
+  range6 start: 2001:db8::100
+  range6 end: 2001:db8::1FF
 tftp:
   enabled: false
 nfs:

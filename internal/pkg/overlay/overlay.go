@@ -802,24 +802,54 @@ func BuildAllOverlays(nodes []node.Node, allNodes []node.Node, workerCount int) 
 	return nil
 }
 
+// HostOverlays configure the Warewulf server itself and are built into "/".
+var HostOverlays = []string{
+	"dhcpd",
+	"dnsmasq",
+	"hosts",
+	"nfsd",
+	"ssh.wwctl",
+	"tftproot",
+}
+
+// sharedHostOverlays are also assigned to nodes, so their rootfs
+// permissions are not checked.
+var sharedHostOverlays = []string{"hosts"}
+
+// LegacyHostOverlay is the monolithic overlay replaced by HostOverlays.
+// A site overlay of this name is still applied last to preserve local
+// customizations.
+const LegacyHostOverlay = "host"
+
 /*
-Build overlay for the host, so no argument needs to be given
+Build overlays for the host. Defaults to all HostOverlays. The legacy
+host overlay is always applied last if it exists.
 */
-func BuildHostOverlay() error {
+func BuildHostOverlay(overlayNames ...string) error {
+	if len(overlayNames) == 0 {
+		overlayNames = HostOverlays
+	}
+	if !slices.Contains(overlayNames, LegacyHostOverlay) {
+		overlayNames = append(slices.Clone(overlayNames), LegacyHostOverlay)
+	}
+
+	var build []string
+	for _, overlayName := range overlayNames {
+		ok, err := checkHostOverlay(overlayName)
+		if err != nil {
+			return err
+		}
+		if ok {
+			build = append(build, overlayName)
+		}
+	}
+	if len(build) == 0 {
+		return nil
+	}
+
 	hostname, _ := os.Hostname()
 	hostData := node.NewNode(hostname)
-	wwlog.Info("Building overlay for %s: host", hostname)
-	hostdir, err := Get("host")
-	if err != nil {
-		return err
-	}
-	stats, err := os.Stat(hostdir.Rootfs())
-	if err != nil {
-		return fmt.Errorf("could not build host overlay: %w ", err)
-	}
-	if stats.Mode() != os.FileMode(0o750|os.ModeDir) && stats.Mode() != os.FileMode(0o700|os.ModeDir) {
-		wwlog.SecWarn("Permissions of host overlay dir %s are %s (750 is considered as secure)", hostdir.Rootfs(), stats.Mode())
-	}
+	wwlog.Info("Building overlays for %s: %s", hostname, strings.Join(build, ", "))
 	registry, err := node.New()
 	if err != nil {
 		return err
@@ -829,7 +859,32 @@ func BuildHostOverlay() error {
 	if err != nil {
 		return err
 	}
-	return BuildOverlayIndir(hostData, allNodes, []string{"host"}, "/")
+	return BuildOverlayIndir(hostData, allNodes, build, "/")
+}
+
+// checkHostOverlay reports whether a host overlay exists and warns if its
+// rootfs permissions are insecure.
+func checkHostOverlay(overlayName string) (bool, error) {
+	overlay_, err := Get(overlayName)
+	if errors.Is(err, ErrDoesNotExist) {
+		if overlayName == LegacyHostOverlay {
+			wwlog.Debug("No %s overlay to apply", overlayName)
+		} else {
+			wwlog.Warn("Skipping host overlay %s: overlay does not exist", overlayName)
+		}
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+	stats, err := os.Stat(overlay_.Rootfs())
+	if err != nil {
+		return false, fmt.Errorf("could not build host overlay %s: %w", overlayName, err)
+	}
+	secure := stats.Mode() == os.FileMode(0o750|os.ModeDir) || stats.Mode() == os.FileMode(0o700|os.ModeDir)
+	if !secure && !slices.Contains(sharedHostOverlays, overlayName) {
+		wwlog.SecWarn("Permissions of host overlay dir %s are %s (750 is considered as secure)", overlay_.Rootfs(), stats.Mode())
+	}
+	return true, nil
 }
 
 /*
