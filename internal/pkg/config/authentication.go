@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/goccy/go-yaml"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
-	"gopkg.in/yaml.v3"
 
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
