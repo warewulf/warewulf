@@ -2,6 +2,7 @@ package overlay
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/blame"
 	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/build"
 	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/chmod"
 	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/chown"
@@ -28,6 +29,7 @@ var (
 func init() {
 	baseCmd.AddCommand(list.GetCommand())
 	baseCmd.AddCommand(show.GetCommand())
+	baseCmd.AddCommand(blame.GetCommand())
 	baseCmd.AddCommand(create.GetCommand())
 	baseCmd.AddCommand(edit.GetCommand())
 	baseCmd.AddCommand(delete.GetCommand())
