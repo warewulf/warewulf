@@ -2,6 +2,7 @@ package info
 
 import (
 	"fmt"
+	"reflect"
 	"sort"
 	"strings"
 
@@ -73,8 +74,13 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			// Get type from type tag, or use field type string
 			typ = fieldInfo.Field.Tag.Get("type")
 			if typ == "" {
-				// Use String() instead of Name() to handle composite types (slices, maps, pointers)
-				typ = fieldInfo.Field.Type.String()
+				// Check if this is a named type based on a slice of strings and return the underlying type
+				fieldType := fieldInfo.Field.Type
+				if fieldType.Kind() == reflect.Slice && fieldType.Elem().Kind() == reflect.String {
+					typ = "[]string"
+				} else {
+					typ = fieldType.String()
+				}
 			}
 
 			// Get help from comment tag
