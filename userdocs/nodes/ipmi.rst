@@ -151,3 +151,133 @@ subcommand.
 * ``SDRList``
 * ``SensorList``
 * ``Console``
+
+Virtual BMC Templates
+======================
+
+Warewulf includes templates for managing virtual machines as simulated cluster
+nodes for testing and development. These templates use IPMI tags to configure
+virtual machine resources like CPU, memory, and disk size.
+
+Available Virtual BMC Templates
+--------------------------------
+
+kind.tmpl (Docker-based)
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Uses Docker containers to simulate virtual nodes. Lightweight and doesn't require
+full hardware virtualization.
+
+.. code-block:: console
+
+   wwctl node set vnode1 \
+     --ipmiaddr=10.0.0.100 \
+     --ipmitemplate=kind.tmpl \
+     --ipmitagadd nodename=vnode1 \
+     --ipmitagadd cpu=4 \
+     --ipmitagadd memory=4g \
+     --ipmitagadd disk=50g \
+     --ipmitagadd image=kindest/node:latest
+
+kind-libvirt.tmpl (KVM/Libvirt-based)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Uses libvirt and KVM for full hardware virtualization. Provides more realistic
+virtual machines with better isolation.
+
+.. code-block:: console
+
+   wwctl node set vnode2 \
+     --ipmiaddr=10.0.0.101 \
+     --ipmitemplate=kind-libvirt.tmpl \
+     --ipmitagadd nodename=vnode2 \
+     --ipmitagadd cpu=4 \
+     --ipmitagadd memory=4096 \
+     --ipmitagadd disk=50 \
+     --ipmitagadd disk_path=/var/lib/libvirt/images \
+     --ipmitagadd os_variant=ubuntu22.04
+
+kind-qemu.tmpl (QEMU-based)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Uses QEMU directly for virtual machine management. Provides fine-grained control
+over VM configuration and doesn't require libvirt.
+
+.. code-block:: console
+
+   wwctl node set vnode3 \
+     --ipmiaddr=10.0.0.102 \
+     --ipmitemplate=kind-qemu.tmpl \
+     --ipmitagadd nodename=vnode3 \
+     --ipmitagadd cpu=2 \
+     --ipmitagadd memory=2048 \
+     --ipmitagadd disk=20 \
+     --ipmitagadd disk_path=/var/lib/qemu/images \
+     --ipmitagadd mac=52:54:00:12:34:56
+
+Virtual BMC Configuration Tags
+-------------------------------
+
+The following IPMI tags can be used to configure virtual machine resources:
+
++-------------------+------------------------------------+-----------------------------+
+| Tag               | Description                        | Default                     |
++===================+====================================+=============================+
+| ``nodename``      | Custom VM name                     | IP address with dashes      |
++-------------------+------------------------------------+-----------------------------+
+| ``cpu``           | Number of CPUs                     | 2                           |
++-------------------+------------------------------------+-----------------------------+
+| ``memory``        | Memory size                        | 2g (kind), 2048 (others)    |
++-------------------+------------------------------------+-----------------------------+
+| ``disk``          | Disk size                          | 20g (kind), 20 (others)     |
++-------------------+------------------------------------+-----------------------------+
+| ``disk_path``     | Path for VM disk images            | /var/lib/libvirt/images or  |
+|                   |                                    | /var/lib/qemu/images        |
++-------------------+------------------------------------+-----------------------------+
+| ``image``         | Docker image (kind.tmpl only)      | kindest/node:latest         |
++-------------------+------------------------------------+-----------------------------+
+| ``os_variant``    | OS variant (kind-libvirt.tmpl)     | generic                     |
++-------------------+------------------------------------+-----------------------------+
+| ``mac``           | MAC address (kind-qemu.tmpl)       | Auto-generated              |
++-------------------+------------------------------------+-----------------------------+
+
+Virtual Node Power Management
+------------------------------
+
+Virtual nodes can be managed using the same ``wwctl power`` commands as physical
+nodes:
+
+.. code-block:: console
+
+   # Power on creates the VM if it doesn't exist
+   wwctl power on vnode1
+
+   # Power status checks if VM is running
+   wwctl power status vnode1
+
+   # SDR list shows VM configuration
+   wwctl power sdr vnode1
+
+   # Power off stops the VM but doesn't destroy it
+   wwctl power off vnode1
+
+**PowerOn Behavior**: When powering on a virtual node, the template will:
+
+1. Check if the VM already exists
+2. If it exists and is stopped, start it
+3. If it doesn't exist, create it with the configured resources, then start it
+
+**PowerOff Behavior**: Powering off stops the VM but preserves it for future use.
+The VM and its disk are not destroyed.
+
+Template Access
+---------------
+
+IPMI tags can be accessed in templates using the ``.Tags`` map:
+
+.. code-block::
+
+   {{ $cpu := "2" }}{{ if .Tags.cpu }}{{ $cpu = .Tags.cpu }}{{ end }}
+   {{ $memory := "2048" }}{{ if .Tags.memory }}{{ $memory = .Tags.memory }}{{ end }}
+   {{ $nodeName := .Ipaddr | toString | replace "." "-" }}
+   {{ if .Tags.nodename }}{{ $nodeName = .Tags.nodename }}{{ end }}
