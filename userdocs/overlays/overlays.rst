@@ -808,6 +808,36 @@ unrecognized ``systemd name`` is left without a recommendation. When a service
 lists more than one overlay, the overlays are applied left to right, with
 files from the rightmost overlay taking precedence.
 
+Customizing host overlays
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There are two ways to change what a service writes to the server.
+
+**Shadow an overlay.** A site overlay takes precedence over a distribution
+overlay of the same name, so creating a site overlay named ``dhcpd`` replaces
+the distribution ``dhcpd`` overlay entirely for every service that lists it.
+``wwctl overlay edit`` and ``wwctl overlay import`` clone a distribution
+overlay into the site overlay directory on first use, so editing a host
+overlay template shadows it automatically. Because the shadow replaces the
+whole overlay rather than merging file by file, a shadowed overlay keeps
+only the files it contains itself, and it no longer receives template
+updates from Warewulf packages.
+
+**Add a site-local overlay to the list.** Leave the shipped overlay in place
+and append your own overlay to that service's ``overlays`` list. The list is
+applied left to right, so the rightmost overlay wins for any file that
+appears in more than one:
+
+.. code-block:: yaml
+
+   dhcp:
+     overlays: dhcpd,mysite-dhcpd
+
+Here ``mysite-dhcpd`` can add files that ``dhcpd`` does not provide, or
+override individual files from it, while still tracking packaged updates to
+the rest of ``dhcpd``. Create such an overlay with ``wwctl overlay create
+mysite-dhcpd``.
+
 Existing files on the server are copied to backup files with a ``wwbackup``
 suffix at the first run. (Subsequent use of a host overlay won't overwrite
 existing ``wwbackup`` files.)
