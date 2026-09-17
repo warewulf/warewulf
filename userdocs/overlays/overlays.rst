@@ -685,7 +685,7 @@ list of overlay names.
      - ``dhcpd`` (``dnsmasq`` where dnsmasq provides DHCP)
    * - ``tftp:overlays``
      - ``wwctl configure tftp``
-     - ``tftproot``
+     - ``tftproot`` (``dnsmasq,tftproot`` where dnsmasq provides TFTP)
    * - ``nfs:overlays``
      - ``wwctl configure nfs``
      - ``nfsd``
@@ -697,8 +697,11 @@ list of overlay names.
      - ``hosts``
 
 These settings have no compiled-in default: the values above come from the
-``warewulf.conf`` packaged for each operating system, and ``wwctl upgrade
-config`` adds them to a configuration that predates them. When a service
+``warewulf.conf`` packaged for each operating system. ``wwctl upgrade config``
+adds them to a configuration that predates them, choosing each value from
+that service's configured ``systemd name`` (for example ``dhcpd`` for
+``dhcpd`` or ``isc-dhcp-server``, ``dnsmasq`` for ``dnsmasq``); an
+unrecognized ``systemd name`` is left without a recommendation. When a service
 lists more than one overlay, the overlays are applied left to right, with
 files from the rightmost overlay taking precedence.
 

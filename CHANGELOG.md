@@ -30,8 +30,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `ssh:overlays` and the new `hostfile:overlays`). Overlays are applied left
   to right, with files from the rightmost overlay taking precedence. There
   is no compiled-in default: the packaged `warewulf.conf` supplies values
-  appropriate to the operating system, and `wwctl upgrade config` adds them
-  to an existing configuration. `warewulf:host overlay` remains as the
+  appropriate to the operating system, and `wwctl upgrade config` recommends
+  a value for each empty `overlays` based on that service's configured
+  `systemd name` (`dhcpd`/`isc-dhcp-server` -> `dhcpd`, `dnsmasq` ->
+  `dnsmasq`, `tftp`/`tftpd`/`tftpd-hpa` -> `tftproot`, `dnsmasq` ->
+  `dnsmasq,tftproot` for TFTP, `nfs-server`/`nfsd`/`nfs-kernel-server` ->
+  `nfsd`, plus `ssh.wwctl` and `hosts`). `warewulf:host overlay` remains as the
   global switch for disabling host overlays entirely.
 
 ### Changed

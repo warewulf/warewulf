@@ -182,12 +182,11 @@ func (legacy *DHCPConf) Upgrade() (upgraded *config.DHCPConf) {
 	upgraded.SystemdName = legacy.SystemdName
 	upgraded.Overlays = legacy.Overlays
 	if len(upgraded.Overlays) == 0 {
-		// dnsmasq provides DHCP on distributions where it is the
-		// configured service; everywhere else it is dhcpd.
-		if legacy.SystemdName == "dnsmasq" {
-			upgraded.Overlays = config.OverlayList{"dnsmasq"}
-		} else {
+		switch legacy.SystemdName {
+		case "dhcpd", "isc-dhcp-server":
 			upgraded.Overlays = config.OverlayList{"dhcpd"}
+		case "dnsmasq":
+			upgraded.Overlays = config.OverlayList{"dnsmasq"}
 		}
 	}
 	return upgraded
@@ -212,7 +211,12 @@ func (legacy *TFTPConf) Upgrade() (upgraded *config.TFTPConf) {
 	}
 	upgraded.Overlays = legacy.Overlays
 	if len(upgraded.Overlays) == 0 {
-		upgraded.Overlays = config.OverlayList{"tftproot"}
+		switch legacy.SystemdName {
+		case "tftp", "tftpd", "tftpd-hpa":
+			upgraded.Overlays = config.OverlayList{"tftproot"}
+		case "dnsmasq":
+			upgraded.Overlays = config.OverlayList{"dnsmasq", "tftproot"}
+		}
 	}
 	return upgraded
 }
@@ -240,7 +244,10 @@ func (legacy *NFSConf) Upgrade() (upgraded *config.NFSConf) {
 	upgraded.SystemdName = legacy.SystemdName
 	upgraded.Overlays = legacy.Overlays
 	if len(upgraded.Overlays) == 0 {
-		upgraded.Overlays = config.OverlayList{"nfsd"}
+		switch legacy.SystemdName {
+		case "nfs-server", "nfsd", "nfs-kernel-server":
+			upgraded.Overlays = config.OverlayList{"nfsd"}
+		}
 	}
 	return upgraded
 }
