@@ -22,6 +22,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   in the configuration along with its members.
 - Tab completion for groups.
 - Add IPMI address of nodes to /etc/hosts of master node
+- `wwctl overlay show --render-host` renders an overlay template as for the
+  Warewulf server itself. It is mutually exclusive with `--render`.
 - Each service in `warewulf.conf` now has an `overlays` setting: a
   comma-separated list of host overlays that `wwctl configure` applies for
   that service (`dhcp:overlays`, `tftp:overlays`, `nfs:overlays`,
@@ -34,6 +36,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- `wwctl overlay show --render` now reports an error for an undefined node
+  name, rather than silently rendering the template as for the Warewulf
+  server. `--render=host`, `--render=<server hostname>` and the new
+  `--render-host` render as for the server.
 - Add an `ipv6_method` node tag to set the NetworkManager `[ipv6]` method.
   `disabled` or `ignore` methods cause a static address to be omitted.
 - The monolithic `host` overlay is split into one host overlay per service it

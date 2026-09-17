@@ -174,7 +174,17 @@ More information about templates is available in :ref:`its own section
 
 The content of the file for the given overlay is displayed with this command.
 With the ``--render`` option a template is rendered as it will be rendered for
-the given node. The node name is a mandatory argument to the ``--render`` flag.
+the given node. The node name is a mandatory argument to the ``--render`` flag,
+and must name a defined node.
+
+Use ``--render-host`` to render a template as it will be rendered for the
+Warewulf server itself, which is how :ref:`host overlays <host-overlays>` are
+built. ``--render`` and ``--render-host`` are mutually exclusive.
+
+.. code-block:: shell
+
+   wwctl overlay show hosts etc/hosts.ww --render-host
+
 Additional information for the file can be suppressed with the ``--quiet``
 option.
 

@@ -24,8 +24,9 @@ var (
 			return completions.None(cmd, args, toComplete)
 		},
 	}
-	NodeName string
-	Quiet    bool
+	NodeName   string
+	RenderHost bool
+	Quiet      bool
 )
 
 func init() {
@@ -36,6 +37,8 @@ func init() {
 	}); err != nil {
 		log.Println(err)
 	}
+	baseCmd.PersistentFlags().BoolVar(&RenderHost, "render-host", false, "render the template as for the Warewulf server itself")
+	baseCmd.MarkFlagsMutuallyExclusive("render", "render-host")
 	baseCmd.PersistentFlags().BoolVarP(&Quiet, "quiet", "q", false, "do not print information if multiple, backup files are written")
 }
 
