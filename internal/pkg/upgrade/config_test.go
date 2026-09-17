@@ -13,8 +13,8 @@ var configUpgradeTests = []struct {
 	upgradedYaml string
 }{
 	{
-		name:         "empty",
-		legacyYaml:   ``,
+		name:       "empty",
+		legacyYaml: ``,
 		upgradedYaml: `
 {}
 `,

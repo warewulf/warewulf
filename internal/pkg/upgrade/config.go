@@ -161,13 +161,13 @@ func (legacy *APIConf) Upgrade() (upgraded *config.APIConf) {
 }
 
 type DHCPConf struct {
-	Enabled     *bool  `yaml:"enabled"`
-	Template    string `yaml:"template"`
-	RangeStart  string `yaml:"range start"`
-	RangeEnd    string `yaml:"range end"`
-	Range6Start string `yaml:"range6 start"`
-	Range6End   string `yaml:"range6 end"`
-	SystemdName string `yaml:"systemd name"`
+	Enabled     *bool              `yaml:"enabled"`
+	Template    string             `yaml:"template"`
+	RangeStart  string             `yaml:"range start"`
+	RangeEnd    string             `yaml:"range end"`
+	Range6Start string             `yaml:"range6 start"`
+	Range6End   string             `yaml:"range6 end"`
+	SystemdName string             `yaml:"systemd name"`
 	Overlays    config.OverlayList `yaml:"overlays"`
 }
 
