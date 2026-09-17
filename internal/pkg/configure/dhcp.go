@@ -22,7 +22,7 @@ func DHCP() (err error) {
 		return
 	}
 	if controller.Warewulf.EnableHostOverlay() {
-		err = overlay.BuildHostOverlay("dhcpd", "dnsmasq")
+		err = overlay.BuildHostOverlay(controller.DHCP.Overlays...)
 		if err != nil {
 			wwlog.Warn("host overlay could not be built: %s", err)
 		}

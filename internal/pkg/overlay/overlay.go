@@ -802,33 +802,21 @@ func BuildAllOverlays(nodes []node.Node, allNodes []node.Node, workerCount int) 
 	return nil
 }
 
-// HostOverlays configure the Warewulf server itself and are built into "/".
-var HostOverlays = []string{
-	"dhcpd",
-	"dnsmasq",
-	"hosts",
-	"nfsd",
-	"ssh.wwctl",
-	"tftproot",
-}
-
 // sharedHostOverlays are also assigned to nodes, so their rootfs
 // permissions are not checked.
 var sharedHostOverlays = []string{"hosts"}
 
-// LegacyHostOverlay is the monolithic overlay replaced by HostOverlays.
-// A site overlay of this name is still applied last to preserve local
-// customizations.
+// LegacyHostOverlay is the monolithic overlay replaced by the
+// per-service host overlays configured in warewulf.conf. A site overlay
+// of this name is still applied last to preserve local customizations.
 const LegacyHostOverlay = "host"
 
 /*
-Build overlays for the host. Defaults to all HostOverlays. The legacy
-host overlay is always applied last if it exists.
+Build the named overlays for the host, in order, with files from the
+rightmost overlay taking precedence. The legacy host overlay is always
+applied last if it exists.
 */
 func BuildHostOverlay(overlayNames ...string) error {
-	if len(overlayNames) == 0 {
-		overlayNames = HostOverlays
-	}
 	if !slices.Contains(overlayNames, LegacyHostOverlay) {
 		overlayNames = append(slices.Clone(overlayNames), LegacyHostOverlay)
 	}

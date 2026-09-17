@@ -21,7 +21,7 @@ func SSH(keyTypes ...string) error {
 		conf := warewulfconf.Get()
 
 		if conf.Warewulf.EnableHostOverlay() {
-			if err := overlay.BuildHostOverlay("ssh.wwctl"); err != nil {
+			if err := overlay.BuildHostOverlay(conf.SSH.Overlays...); err != nil {
 				wwlog.Warn("host overlay could not be built: %s", err)
 			}
 		} else {

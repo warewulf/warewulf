@@ -12,9 +12,11 @@ dhcp:
   range end: 10.0.1.255
   systemd name: dnsmasq
   template: default
+  overlays: dnsmasq
 tftp:
   enabled: true
   systemd name: dnsmasq
+  overlays: tftproot
   ipxe:
     00:09: ipxe-snponly-x86_64.efi
     00:00: undionly.kpxe
@@ -28,6 +30,9 @@ nfs:
   - path: /opt
     export options: ro,sync,no_root_squash
   systemd name: nfs-server
+  overlays: nfsd
+hostfile:
+  overlays: hosts
 image mounts:
   - source: /etc/resolv.conf
     dest: /etc/resolv.conf
@@ -37,3 +42,4 @@ ssh:
     - ed25519
     - ecdsa
     - rsa
+  overlays: ssh.wwctl

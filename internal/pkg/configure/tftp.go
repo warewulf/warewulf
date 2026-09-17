@@ -65,7 +65,7 @@ func TFTP() (err error) {
 	}
 
 	if controller.Warewulf.EnableHostOverlay() {
-		if err := overlay.BuildHostOverlay("tftproot"); err != nil {
+		if err := overlay.BuildHostOverlay(controller.TFTP.Overlays...); err != nil {
 			wwlog.Warn("host overlay could not be built: %s", err)
 		}
 	} else {

@@ -19,7 +19,7 @@ func NFS() error {
 
 	if controller.NFS.Enabled() {
 		if controller.Warewulf.EnableHostOverlay() {
-			err := overlay.BuildHostOverlay("nfsd")
+			err := overlay.BuildHostOverlay(controller.NFS.Overlays...)
 			if err != nil {
 				wwlog.Warn("host overlay could not be built: %s", err)
 			}
