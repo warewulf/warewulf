@@ -2,17 +2,17 @@ package delete
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/node"
-	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	var count int
-	if util.InSlice(args, "default") {
+	if slices.Contains(args, "default") {
 		return fmt.Errorf("can't delete the `default` profile ")
 	}
 
