@@ -16,7 +16,7 @@ dhcp:
 tftp:
   enabled: true
   systemd name: dnsmasq
-  overlays: tftproot
+  overlays: dnsmasq,tftproot
   ipxe:
     00:09: ipxe-snponly-x86_64.efi
     00:00: undionly.kpxe

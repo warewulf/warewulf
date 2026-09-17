@@ -800,6 +800,111 @@ hostfile:
   overlays: hosts
 `,
 	},
+	{
+		name: "overlays from dnsmasq systemd names",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: dnsmasq
+tftp:
+  enabled: true
+  systemd name: dnsmasq
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: dnsmasq
+  overlays: dnsmasq
+tftp:
+  enabled: true
+  systemd name: dnsmasq
+  overlays: dnsmasq,tftproot
+hostfile:
+  overlays: hosts
+`,
+	},
+	{
+		name: "overlays from debian systemd names",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: isc-dhcp-server
+tftp:
+  enabled: true
+  systemd name: tftpd-hpa
+nfs:
+  enabled: true
+  systemd name: nfs-kernel-server
+ssh:
+  key types:
+    - ed25519
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: isc-dhcp-server
+  overlays: dhcpd
+tftp:
+  enabled: true
+  systemd name: tftpd-hpa
+  overlays: tftproot
+nfs:
+  enabled: true
+  systemd name: nfs-kernel-server
+  overlays: nfsd
+ssh:
+  key types:
+    - ed25519
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
+`,
+	},
+	{
+		name: "no overlays for unrecognized systemd names",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: mystery-dhcp
+tftp:
+  enabled: true
+  systemd name: mystery-tftp
+nfs:
+  enabled: true
+  systemd name: mystery-nfs
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: mystery-dhcp
+tftp:
+  enabled: true
+  systemd name: mystery-tftp
+nfs:
+  enabled: true
+  systemd name: mystery-nfs
+hostfile:
+  overlays: hosts
+`,
+	},
 }
 
 func Test_UpgradeConfig(t *testing.T) {
