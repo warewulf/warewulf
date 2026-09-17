@@ -305,6 +305,7 @@ yq -i '.dhcp["range start"] = "'"${internal_network}"'"' \
 yq -i '.dhcp["range end"] = "static"' /etc/warewulf/warewulf.conf
 yq -i '.dhcp.template = "static"' /etc/warewulf/warewulf.conf
 yq -i '.dhcp["systemd name"] = "dnsmasq"' /etc/warewulf/warewulf.conf
+yq -i '.dhcp.overlays = "dnsmasq"' /etc/warewulf/warewulf.conf
 yq -i '.ssh["key types"] -= ["dsa"]' /etc/warewulf/warewulf.conf
 
 # Configure nodes.conf
