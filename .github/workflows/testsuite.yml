@@ -72,9 +72,9 @@ jobs:
             container: rockylinux/rockylinux:10-ubi-init
           - name: SUSE Linux 16.0
             container: registry.suse.com/bci/bci-init:16.0
-          - name: Ubuntu 24.04
-            container: localhost/ubuntu-init:24.04
-            base: ubuntu:24.04
+          - name: Debian 12
+            container: localhost/debian-init:12
+            base: debian:12
     steps:
       - name: Checkout Warewulf
         uses: actions/checkout@v4
