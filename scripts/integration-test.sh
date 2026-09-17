@@ -117,6 +117,14 @@ elif [ "${PKG_MANAGER}" = "apt" ]; then
 		procps \
 		iputils-ping
 
+	# System uids are allocated in package install order, so the host and
+	# the image disagree even when both are Debian. syncuser can only
+	# reconcile a name that exists on both sides, so make sure the image's
+	# 'sshd' user has a host counterpart.
+	getent passwd sshd >/dev/null ||
+		useradd --system --no-create-home \
+			--shell /usr/sbin/nologin sshd
+
 	# Debian and Ubuntu ship a Go older than go.mod requires, and their
 	# "yq" is the Python implementation, whose syntax is incompatible with
 	# the expressions below. Install both from upstream instead.
