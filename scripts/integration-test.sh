@@ -21,6 +21,8 @@ YES="-n"
 GO_VERSION=1.25.5
 YQ_VERSION=v4.47.1
 
+SYNCUSER="--syncuser"
+
 case "${ID}" in
 debian | ubuntu)
 	PKG_MANAGER=apt
@@ -117,14 +119,6 @@ elif [ "${PKG_MANAGER}" = "apt" ]; then
 		procps \
 		iputils-ping
 
-	# System uids are allocated in package install order, so the host and
-	# the image disagree even when both are Debian. syncuser can only
-	# reconcile a name that exists on both sides, so make sure the image's
-	# 'sshd' user has a host counterpart.
-	getent passwd sshd >/dev/null ||
-		useradd --system --no-create-home \
-			--shell /usr/sbin/nologin sshd
-
 	# Debian and Ubuntu ship a Go older than go.mod requires, and their
 	# "yq" is the Python implementation, whose syntax is incompatible with
 	# the expressions below. Install both from upstream instead.
@@ -147,6 +141,11 @@ elif [ "${PKG_MANAGER}" = "apt" ]; then
 	WW_CONF=warewulf.conf-el10
 	IMAGE_NAME=debian-12
 	IMAGE_URL="docker://ghcr.io/warewulf/warewulf-debian:12.0"
+	# Debian allocates system uids in package install order, so the server
+	# and the image collide in the 100-110 range no matter how they are
+	# paired. The test only logs in as root, so skip the uid sync; the
+	# Enterprise Linux and SUSE jobs still cover it.
+	SYNCUSER=""
 else
 	# Clean zypper cache to avoid stale metadata in container images
 	loop_command zypper clean --all
@@ -431,7 +430,7 @@ bash /etc/profile.d/ssh_setup.sh
 
 # Import the base image
 wwctl image import "${IMAGE_URL}" \
-	"${IMAGE_NAME}" --syncuser
+	"${IMAGE_NAME}" ${SYNCUSER}
 
 # Add compute nodes
 for ((i = 0; i < num_computes; i++)); do
