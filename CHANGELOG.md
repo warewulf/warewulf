@@ -22,6 +22,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   in the configuration along with its members.
 - Tab completion for groups.
 - Add IPMI address of nodes to /etc/hosts of master node
+- Each service in `warewulf.conf` now has an `overlays` setting: a
+  comma-separated list of host overlays that `wwctl configure` applies for
+  that service (`dhcp:overlays`, `tftp:overlays`, `nfs:overlays`,
+  `ssh:overlays` and the new `hostfile:overlays`). Overlays are applied left
+  to right, with files from the rightmost overlay taking precedence. There
+  is no compiled-in default: the packaged `warewulf.conf` supplies values
+  appropriate to the operating system, and `wwctl upgrade config` adds them
+  to an existing configuration. `warewulf:host overlay` remains as the
+  global switch for disabling host overlays entirely.
 
 ### Changed
 

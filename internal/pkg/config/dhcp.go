@@ -14,6 +14,8 @@ type DHCPConf struct {
 	Range6Start string `yaml:"range6 start,omitempty"`
 	Range6End   string `yaml:"range6 end,omitempty"`
 	SystemdName string `yaml:"systemd name,omitempty" default:"dhcpd"`
+	// Overlays are the host overlays applied when DHCP is configured.
+	Overlays OverlayList `yaml:"overlays,omitempty"`
 }
 
 func (conf DHCPConf) Enabled() bool {

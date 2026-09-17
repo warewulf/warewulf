@@ -33,10 +33,12 @@ Re-run both of these commands when making changes to ``warewulf.conf``.
      enabled: true
      template: default
      systemd name: dhcpd
+     overlays: dhcpd
    tftp:
      enabled: true
      tftproot: /var/lib/tftpboot
      systemd name: tftp
+     overlays: tftproot
      ipxe:
        00:0B: arm64-efi/snponly.efi
        "00:00": undionly.kpxe
@@ -45,11 +47,15 @@ Re-run both of these commands when making changes to ``warewulf.conf``.
    nfs:
      enabled: true
      systemd name: nfsd
+     overlays: nfsd
    ssh:
      key types:
        - ed25519
        - ecdsa
        - rsa
+     overlays: ssh.wwctl
+   hostfile:
+     overlays: hosts
    image mounts:
      - source: /etc/resolv.conf
        dest: /etc/resolv.conf
@@ -147,6 +153,7 @@ DHCP service.
      enabled: true
      template: default
      systemd name: dhcpd
+     overlays: dhcpd
 
 * ``dhcp:enabled``: Whether Warewulf should configure a DHCP server on the
   cluster network. Set to ``false`` when managing DHCP separately.
@@ -169,6 +176,10 @@ DHCP service.
 * ``dhcp:systemd name``: Identifies the systemd service that manages the DHCP
   service. Used during ``wwctl configure dhcp`` to restart the service.
 
+* ``dhcp:overlays``: A comma-separated list of host overlays to apply during
+  ``wwctl configure dhcp``. Typically ``dhcpd``, or ``dnsmasq`` where dnsmasq
+  provides DHCP. See :ref:`host-overlays`.
+
 tftp
 ====
 
@@ -182,6 +193,7 @@ directory and enables the TFTP service.
      enabled: true
      tftproot: /var/lib/tftpboot
      systemd name: tftp
+     overlays: tftproot
      ipxe:
        00:0B: arm64-efi/snponly.efi
        "00:00": undionly.kpxe
@@ -197,6 +209,9 @@ directory and enables the TFTP service.
 
 * ``systemd name``: Identifies the systemd service that manages the TFTP
   service. Used during ``wwctl configure tftp`` to restart the service.
+
+* ``tftp:overlays``: A comma-separated list of host overlays to apply during
+  ``wwctl configure tftp``. Typically ``tftproot``. See :ref:`host-overlays`.
 
 * ``ipxe``: A map of DHCP option architecture-types to the iPXE binary that
   should be used for that architecture. iPXE binaries are searched for in
@@ -222,6 +237,7 @@ Warewulf server and enables and starts the NFS service.
        - path: /opt
          export options: ro,sync,no_root_squash
      systemd name: nfsd
+     overlays: nfsd
 
 * ``nfs:enabled``: Whether Warewulf should configure an NFS server on the
   cluster network. Set to ``false`` when not required or when managing NFS
@@ -233,6 +249,9 @@ Warewulf server and enables and starts the NFS service.
 
 * ``systemd name``: Identifies the systemd service that manages the NFS
   service. Used during ``wwctl configure nfs`` to restart the service.
+
+* ``nfs:overlays``: A comma-separated list of host overlays to apply during
+  ``wwctl configure nfs``. Typically ``nfsd``. See :ref:`host-overlays`.
 
 ssh
 ===
@@ -253,10 +272,29 @@ Warewulf server.
        - ed25519
        - ecdsa
        - rsa
+     overlays: ssh.wwctl
 
 * ``ssh:key types``: Warewulf generates host keys for each listed key type.
 
 The first listed key type is used to generate authentication ssh keys.
+
+* ``ssh:overlays``: A comma-separated list of host overlays to apply during
+  ``wwctl configure ssh``. Typically ``ssh.wwctl``. See :ref:`host-overlays`.
+
+hostfile
+========
+
+The ``/etc/hosts`` file on the Warewulf server can be configured explicitly
+with ``wwctl configure hostfile``.
+
+.. code-block:: yaml
+
+   hostfile:
+     overlays: hosts
+
+* ``hostfile:overlays``: A comma-separated list of host overlays to apply
+  during ``wwctl configure hostfile``. Typically ``hosts``. See
+  :ref:`host-overlays`.
 
 image mounts
 ============

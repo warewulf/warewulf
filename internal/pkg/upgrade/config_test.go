@@ -15,7 +15,9 @@ var configUpgradeTests = []struct {
 	{
 		name:         "empty",
 		legacyYaml:   ``,
-		upgradedYaml: `{}`,
+		upgradedYaml: `
+{}
+`,
 	},
 	{
 		name: "v4.0.0",
@@ -55,15 +57,20 @@ dhcp:
   range start: 192.168.1.150
   range end: 192.168.1.200
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   tftproot: /var/lib/tftpboot
   systemd name: tftp
+  overlays: tftproot
 nfs:
   export paths:
     - path: /home
     - path: /var/warewulf
   systemd name: nfs-server
+  overlays: nfsd
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -104,15 +111,20 @@ dhcp:
   range start: 192.168.1.150
   range end: 192.168.1.200
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   tftproot: /var/lib/tftpboot
   systemd name: tftp
+  overlays: tftproot
 nfs:
   export paths:
     - path: /home
     - path: /var/warewulf
   systemd name: nfs-server
+  overlays: nfsd
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -156,15 +168,20 @@ dhcp:
   range start: 192.168.200.50
   range end: 192.168.200.99
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   tftproot: /var/lib/tftpboot
   systemd name: tftp
+  overlays: tftproot
 nfs:
   export paths:
     - path: /home
     - path: /var/warewulf
   systemd name: nfs-server
+  overlays: nfsd
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -221,9 +238,11 @@ dhcp:
   range start: 192.168.200.50
   range end: 192.168.200.99
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
 nfs:
   enabled: true
   export paths:
@@ -232,6 +251,9 @@ nfs:
     - path: /opt
       export options: ro,sync,no_root_squash
   systemd name: nfs-server
+  overlays: nfsd
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -284,9 +306,11 @@ dhcp:
   range start: 192.168.200.50
   range end: 192.168.200.99
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
 nfs:
   enabled: true
   export paths:
@@ -295,6 +319,9 @@ nfs:
     - path: /opt
       export options: ro,sync,no_root_squash
   systemd name: nfs-server
+  overlays: nfsd
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -362,9 +389,11 @@ dhcp:
   range start: 10.0.1.1
   range end: 10.0.1.255
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
   ipxe:
     00:0B: arm64-efi/snponly.efi
     "00:00": undionly.kpxe
@@ -378,12 +407,16 @@ nfs:
     - path: /opt
       export options: ro,sync,no_root_squash
   systemd name: nfs-server
+  overlays: nfsd
 ssh:
   key types:
     - rsa
     - dsa
     - ecdsa
     - ed25519
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 image mounts:
   - source: /etc/resolv.conf
     dest: /etc/resolv.conf
@@ -455,9 +488,11 @@ dhcp:
   range start: 10.0.1.1
   range end: 10.0.1.255
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
   ipxe:
     00:0B: arm64-efi/snponly.efi
     "00:00": undionly.kpxe
@@ -471,12 +506,16 @@ nfs:
     - path: /opt
       export options: ro,sync,no_root_squash
   systemd name: nfs-server
+  overlays: nfsd
 ssh:
   key types:
     - rsa
     - dsa
     - ecdsa
     - ed25519
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 image mounts:
   - source: /etc/resolv.conf
     dest: /etc/resolv.conf
@@ -552,9 +591,11 @@ dhcp:
   range start: 10.0.1.1
   range end: 10.0.1.255
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
   ipxe:
     00:0B: arm64-efi/snponly.efi
     "00:00": undionly.kpxe
@@ -568,12 +609,16 @@ nfs:
     - path: /opt
       export options: ro,sync,no_root_squash
   systemd name: nfs-server
+  overlays: nfsd
 ssh:
   key types:
     - rsa
     - dsa
     - ecdsa
     - ed25519
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 image mounts:
   - source: /etc/resolv.conf
     dest: /etc/resolv.conf
@@ -601,6 +646,8 @@ warewulf:
   secure: true
   secure files: false
   update interval: 60
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -655,9 +702,13 @@ dhcp:
   range start: 10.0.1.1
   range end: 10.0.1.255
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -700,9 +751,13 @@ dhcp:
   range6 start: 2001:db8::100
   range6 end: 2001:db8::1ff
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -736,9 +791,13 @@ warewulf:
 dhcp:
   enabled: true
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
+hostfile:
+  overlays: hosts
 `,
 	},
 }

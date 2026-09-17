@@ -763,6 +763,38 @@ service it configures, and all of them by ``wwctl configure --all``. Building
 them can be disabled entirely with ``warewulf:host overlay`` in
 ``warewulf.conf``.
 
+Which overlays each service applies is configured with an ``overlays``
+setting in that service's section of ``warewulf.conf``: a comma-separated
+list of overlay names.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Setting
+     - Applied by
+     - Typical value
+   * - ``dhcp:overlays``
+     - ``wwctl configure dhcp``
+     - ``dhcpd`` (``dnsmasq`` where dnsmasq provides DHCP)
+   * - ``tftp:overlays``
+     - ``wwctl configure tftp``
+     - ``tftproot``
+   * - ``nfs:overlays``
+     - ``wwctl configure nfs``
+     - ``nfsd``
+   * - ``ssh:overlays``
+     - ``wwctl configure ssh``
+     - ``ssh.wwctl``
+   * - ``hostfile:overlays``
+     - ``wwctl configure hostfile``
+     - ``hosts``
+
+These settings have no compiled-in default: the values above come from the
+``warewulf.conf`` packaged for each operating system, and ``wwctl upgrade
+config`` adds them to a configuration that predates them. When a service
+lists more than one overlay, the overlays are applied left to right, with
+files from the rightmost overlay taking precedence.
+
 Existing files on the server are copied to backup files with a ``wwbackup``
 suffix at the first run. (Subsequent use of a host overlay won't overwrite
 existing ``wwbackup`` files.)
