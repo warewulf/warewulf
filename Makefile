@@ -113,6 +113,11 @@ lint: $(config) ## Run the linter
 staticcheck: $(GOLANG_STATICCHECK) $(config) ## Run static code check
 	$(GOLANG_STATICCHECK) ./...
 
+.PHONY: shellcheck
+shellcheck: ## Check shell scripts for portability
+	files=$$(grep -rlE '^#!(/usr)?/bin/(env )?(ba)?sh' --exclude='*.ww' --exclude='*.go' dracut/modules.d overlays) \
+	    && $(SHELLCHECK) --severity=warning $$files
+
 .PHONY: deadcode
 deadcode: $(config) ## Check for unused code
 	test $$($(GOLANG_DEADCODE) -test ./... | tee /dev/stderr | wc -l) = 0
@@ -263,6 +268,7 @@ dist: vendor
 
 lint: $(GOLANGCI_LINT)
 deadcode: $(GOLANG_DEADCODE)
+shellcheck: $(SHELLCHECK)
 
 clean: cleanvendor
 endif

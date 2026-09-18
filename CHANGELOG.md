@@ -28,6 +28,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add an `ipv6_method` node tag to set the NetworkManager `[ipv6]` method.
   `disabled` or `ignore` methods cause a static address to be omitted.
 
+## v4.7.2, unreleased
+
+### Fixed
+
+- Fixed non-POSIX compliant Bash in warewulf-dracut that broke 2-stage boot on Enterprise Linux 8. #2275
+- Fixed shellcheck warnings in the wwinit overlay and warewulf-dracut. #2275
+
+### Added
+
+- Added shellcheck to makefile and CI test suite. #2273
+
 ## v4.7.1, 2026-09-15
 
 ### Added

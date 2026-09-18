@@ -22,7 +22,7 @@ if grep -q "selinux=0" /proc/cmdline; then
     exit
 fi
 
-if [ $(findmnt / --noheadings --output SOURCE) = 'rootfs' ]; then
+if [ "$(findmnt / --noheadings --output SOURCE)" = 'rootfs' ]; then
     echo "/ is a 'rootfs' file system, which does not support SELinux contexts."
     echo "Skipping SELinux configuration."
     echo
