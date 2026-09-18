@@ -297,6 +297,21 @@ tap="tap${idx}"
 
 echo "fake ipmitool: launching QEMU VM ${name} on ${tap} (mac=${mac})"
 
+# NIC model. Debian's ipxe-qemu (1.0.0+git-20190125) ships a virtio ROM that
+# never registers a boot entry under SeaBIOS, so the iPXE banner never appears
+# and the guest falls through to "No bootable device" (Debian bug #929983).
+# The documented workaround is an e1000 NIC, whose ROM works.
+NIC_MODEL=virtio-net-pci
+ROM_NAMES=(pxe-virtio.rom virtio-net.rom)
+# shellcheck disable=SC1091
+. /etc/os-release
+case "${ID} ${ID_LIKE}" in
+*debian* | *ubuntu*)
+	NIC_MODEL=e1000
+	ROM_NAMES=(pxe-e1000.rom e1000_82540.rom 82540em.rom)
+	;;
+esac
+
 # Find the iPXE ROM. Without it the guest has no network boot firmware and
 # SeaBIOS silently falls through to floppy/CD/disk, so this is fatal.
 ROMFILE=""
@@ -308,7 +323,7 @@ for dir in \
 	/usr/lib/ipxe; do
 	# BIOS ROMs only: an efi-*.rom registers no BEV under SeaBIOS, so the
 	# guest silently falls through to floppy/CD/disk instead of PXE.
-	for rom in pxe-virtio.rom virtio-net.rom; do
+	for rom in "${ROM_NAMES[@]}"; do
 		if [[ -f "${dir}/${rom}" ]]; then
 			ROMFILE="${dir}/${rom}"
 			break 2
@@ -322,7 +337,7 @@ if [[ -z "${ROMFILE}" ]]; then
 		/usr/lib/ipxe /usr/lib/ipxe/qemu 2>&1 >&2 || true
 	exit 1
 fi
-echo "fake ipmitool: using iPXE ROM ${ROMFILE}"
+echo "fake ipmitool: using NIC ${NIC_MODEL} with iPXE ROM ${ROMFILE}"
 ls -lL "${ROMFILE}"
 
 # Architecture-specific QEMU flags
@@ -337,7 +352,7 @@ aarch64)
 esac
 
 NETDEV_OPTS="tap,id=net0,ifname=${tap},script=no,downscript=no"
-DEVICE_OPTS="virtio-net-pci,netdev=net0,mac=${mac}"
+DEVICE_OPTS="${NIC_MODEL},netdev=net0,mac=${mac}"
 if [[ -n "${ROMFILE}" ]]; then
 	DEVICE_OPTS+=",romfile=${ROMFILE}"
 fi
