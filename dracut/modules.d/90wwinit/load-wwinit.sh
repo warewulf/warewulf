@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 [ -z "${wwinit_root_device}" ] && return 0
 

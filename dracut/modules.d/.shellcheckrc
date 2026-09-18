@@ -1,0 +1,9 @@
+# The scripts under modules.d are dracut fragments: they are sourced by dracut
+# rather than executed, and dracut supplies both their inputs and their callers.
+# The checks below are therefore structurally inapplicable here.
+#
+# SC3043  'local' is not in POSIX, but every shell dracut uses supports it.
+# SC2154  kernel parameters are exported by parse-wwinit.sh; 'moddir' by dracut.
+# SC2034  'rootok' is consumed by dracut, not by the script that sets it.
+# SC2155  masked return values from getarg/dmidecode are deliberately ignored.
+disable=SC3043,SC2154,SC2034,SC2155
