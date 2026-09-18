@@ -297,19 +297,29 @@ tap="tap${idx}"
 
 echo "fake ipmitool: launching QEMU VM ${name} on ${tap} (mac=${mac})"
 
-# Find the iPXE ROM
+# Find the iPXE ROM. Without it the guest has no network boot firmware and
+# SeaBIOS silently falls through to floppy/CD/disk, so this is fatal.
 ROMFILE=""
-for candidate in \
-	/usr/share/ipxe/qemu/pxe-virtio.rom \
-	/usr/share/ipxe/virtio-net.rom \
-	/usr/share/qemu/pxe-virtio.rom \
-	/usr/lib/ipxe/qemu/pxe-virtio.rom \
-	/usr/lib/ipxe/qemu/efi-virtio.rom; do
-	if [[ -f "${candidate}" ]]; then
-		ROMFILE="${candidate}"
-		break
-	fi
+for dir in \
+	/usr/share/ipxe/qemu \
+	/usr/share/ipxe \
+	/usr/share/qemu \
+	/usr/lib/ipxe/qemu \
+	/usr/lib/ipxe; do
+	for rom in pxe-virtio.rom efi-virtio.rom virtio-net.rom; do
+		if [[ -f "${dir}/${rom}" ]]; then
+			ROMFILE="${dir}/${rom}"
+			break 2
+		fi
+	done
 done
+
+if [[ -z "${ROMFILE}" ]]; then
+	echo "fake ipmitool: no iPXE ROM found; searched:" >&2
+	ls -la /usr/share/ipxe /usr/share/ipxe/qemu /usr/share/qemu \
+		/usr/lib/ipxe /usr/lib/ipxe/qemu 2>&1 >&2 || true
+	exit 1
+fi
 
 # Architecture-specific QEMU flags
 ARCH_FLAGS=()
