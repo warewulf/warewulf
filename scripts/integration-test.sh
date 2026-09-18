@@ -306,7 +306,9 @@ for dir in \
 	/usr/share/qemu \
 	/usr/lib/ipxe/qemu \
 	/usr/lib/ipxe; do
-	for rom in pxe-virtio.rom efi-virtio.rom virtio-net.rom; do
+	# BIOS ROMs only: an efi-*.rom registers no BEV under SeaBIOS, so the
+	# guest silently falls through to floppy/CD/disk instead of PXE.
+	for rom in pxe-virtio.rom virtio-net.rom; do
 		if [[ -f "${dir}/${rom}" ]]; then
 			ROMFILE="${dir}/${rom}"
 			break 2
@@ -315,11 +317,13 @@ for dir in \
 done
 
 if [[ -z "${ROMFILE}" ]]; then
-	echo "fake ipmitool: no iPXE ROM found; searched:" >&2
+	echo "fake ipmitool: no BIOS iPXE ROM found; searched:" >&2
 	ls -la /usr/share/ipxe /usr/share/ipxe/qemu /usr/share/qemu \
 		/usr/lib/ipxe /usr/lib/ipxe/qemu 2>&1 >&2 || true
 	exit 1
 fi
+echo "fake ipmitool: using iPXE ROM ${ROMFILE}"
+ls -lL "${ROMFILE}"
 
 # Architecture-specific QEMU flags
 ARCH_FLAGS=()
