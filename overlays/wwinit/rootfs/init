@@ -47,7 +47,7 @@ if [ "${WWROOT}" = "initramfs" ]; then
 else
     mkdir /newroot
     info "warewulf: mounting ${WWROOT} at /newroot"
-    if [ "${WWROOT}" = "ramfs" -o "${WWROOT}" = "tmpfs" ]; then
+    if [ "${WWROOT}" = "ramfs" ] || [ "${WWROOT}" = "tmpfs" ]; then
         mount wwroot /newroot -t ${WWROOT} -o mpol=interleave # mpol ignored for ramfs
     else
         mount ${WWROOT} /newroot

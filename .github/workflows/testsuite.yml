@@ -55,6 +55,14 @@ jobs:
       - name: Build the Docker image
         run: docker build . --file Dockerfile
 
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Warewulf
+        uses: actions/checkout@v4
+      - name: Check shell scripts for portability
+        run: make shellcheck
+
   integration-test:
     runs-on: ubuntu-latest
     strategy:

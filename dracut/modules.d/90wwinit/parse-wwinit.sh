@@ -16,8 +16,8 @@ wwinit|wwinit:*)
         die "warewulf: Found root=${root} but neither wwinit.server nor wwinit.uri. Cannot boot from Warewulf."
     fi
 
-    export wwinit_uuid=$(dmidecode -s system-uuid)
-    export wwinit_assetkey=$(dmidecode -s chassis-asset-tag)
+    export wwinit_uuid="$(dmidecode -s system-uuid)"
+    export wwinit_assetkey="$(dmidecode -s chassis-asset-tag)"
 
     wwinit_tmpfs_size="$(getarg wwinit.tmpfs.size)"
     if [ -n "$wwinit_tmpfs_size" ]; then
