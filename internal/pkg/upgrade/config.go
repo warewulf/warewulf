@@ -183,7 +183,7 @@ func (legacy *DHCPConf) Upgrade() (upgraded *config.DHCPConf) {
 	upgraded.Overlays = legacy.Overlays
 	if len(upgraded.Overlays) == 0 {
 		switch legacy.SystemdName {
-		case "dhcpd", "isc-dhcp-server":
+		case "", "dhcpd", "isc-dhcp-server":
 			upgraded.Overlays = config.OverlayList{"dhcpd"}
 		case "dnsmasq":
 			upgraded.Overlays = config.OverlayList{"dnsmasq"}
@@ -212,7 +212,7 @@ func (legacy *TFTPConf) Upgrade() (upgraded *config.TFTPConf) {
 	upgraded.Overlays = legacy.Overlays
 	if len(upgraded.Overlays) == 0 {
 		switch legacy.SystemdName {
-		case "tftp", "tftpd", "tftpd-hpa":
+		case "", "tftp", "tftpd", "tftpd-hpa":
 			upgraded.Overlays = config.OverlayList{"tftproot"}
 		case "dnsmasq":
 			upgraded.Overlays = config.OverlayList{"dnsmasq", "tftproot"}
@@ -245,7 +245,7 @@ func (legacy *NFSConf) Upgrade() (upgraded *config.NFSConf) {
 	upgraded.Overlays = legacy.Overlays
 	if len(upgraded.Overlays) == 0 {
 		switch legacy.SystemdName {
-		case "nfs-server", "nfsd", "nfs-kernel-server":
+		case "", "nfs-server", "nfsd", "nfs-kernel-server":
 			upgraded.Overlays = config.OverlayList{"nfsd"}
 		}
 	}
