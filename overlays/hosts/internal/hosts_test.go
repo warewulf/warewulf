@@ -60,7 +60,7 @@ func Test_hostsOverlay(t *testing.T) {
 			assert.Empty(t, stderr.String())
 			log := logbuf.String()
 			if tt.header != "" {
-				log = skipHeader(log, tt.header)
+				log = skipHeader(t, log, tt.header)
 			}
 			assert.Equal(t, strings.ReplaceAll(tt.log, "%HOSTNAME%", hostname), log)
 		})
@@ -69,10 +69,17 @@ func Test_hostsOverlay(t *testing.T) {
 
 // skipHeader keeps the three leading render metadata lines and everything
 // from header onward.
-func skipHeader(log string, header string) string {
+func skipHeader(t *testing.T, log string, header string) string {
 	lines := strings.SplitAfterN(log, "\n", 4)
+	if !assert.Len(t, lines, 4, "expected render metadata lines before body") {
+		return log
+	}
 	meta, body := strings.Join(lines[:3], ""), lines[3]
-	return meta + body[strings.Index(body, header):]
+	idx := strings.Index(body, header)
+	if !assert.GreaterOrEqual(t, idx, 0, "header %q not found in rendered output", header) {
+		return log
+	}
+	return meta + body[idx:]
 }
 
 const hosts string = `backupFile: true

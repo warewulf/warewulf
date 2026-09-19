@@ -69,6 +69,8 @@ nfs:
     - path: /var/warewulf
   systemd name: nfs-server
   overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
 hostfile:
   overlays: hosts
 `,
@@ -123,6 +125,8 @@ nfs:
     - path: /var/warewulf
   systemd name: nfs-server
   overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
 hostfile:
   overlays: hosts
 `,
@@ -180,6 +184,8 @@ nfs:
     - path: /var/warewulf
   systemd name: nfs-server
   overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
 hostfile:
   overlays: hosts
 `,
@@ -252,6 +258,8 @@ nfs:
       export options: ro,sync,no_root_squash
   systemd name: nfs-server
   overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
 hostfile:
   overlays: hosts
 `,
@@ -320,6 +328,8 @@ nfs:
       export options: ro,sync,no_root_squash
   systemd name: nfs-server
   overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
 hostfile:
   overlays: hosts
 `,
@@ -646,6 +656,8 @@ warewulf:
   secure: true
   secure files: false
   update interval: 60
+ssh:
+  overlays: ssh.wwctl
 hostfile:
   overlays: hosts
 `,
@@ -707,6 +719,8 @@ tftp:
   enabled: true
   systemd name: tftp
   overlays: tftproot
+ssh:
+  overlays: ssh.wwctl
 hostfile:
   overlays: hosts
 `,
@@ -756,6 +770,8 @@ tftp:
   enabled: true
   systemd name: tftp
   overlays: tftproot
+ssh:
+  overlays: ssh.wwctl
 hostfile:
   overlays: hosts
 `,
@@ -796,6 +812,8 @@ tftp:
   enabled: true
   systemd name: tftp
   overlays: tftproot
+ssh:
+  overlays: ssh.wwctl
 hostfile:
   overlays: hosts
 `,
@@ -825,6 +843,8 @@ tftp:
   enabled: true
   systemd name: dnsmasq
   overlays: dnsmasq,tftproot
+ssh:
+  overlays: ssh.wwctl
 hostfile:
   overlays: hosts
 `,
@@ -898,6 +918,8 @@ tftp:
 nfs:
   enabled: true
   overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
 hostfile:
   overlays: hosts
 `,
@@ -931,6 +953,8 @@ tftp:
 nfs:
   enabled: true
   systemd name: mystery-nfs
+ssh:
+  overlays: ssh.wwctl
 hostfile:
   overlays: hosts
 `,

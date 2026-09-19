@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
-	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -18,13 +17,8 @@ func NFS() error {
 	controller := warewulfconf.Get()
 
 	if controller.NFS.Enabled() {
-		if controller.Warewulf.EnableHostOverlay() {
-			err := overlay.BuildHostOverlay(controller.NFS.Overlays...)
-			if err != nil {
-				wwlog.Warn("host overlay could not be built: %s", err)
-			}
-		} else {
-			wwlog.Info("host overlays are disabled, did not modify exports")
+		if err := buildHostOverlays("nfs", controller.NFS.Overlays); err != nil {
+			wwlog.Warn("host overlay could not be built: %s", err)
 		}
 		fmt.Printf("Enabling and restarting the NFS services\n")
 		if controller.NFS.SystemdName == "" {

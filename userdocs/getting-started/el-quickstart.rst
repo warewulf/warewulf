@@ -88,10 +88,12 @@ address of your cluster's private network interface.
      range start: 10.0.1.1
      range end: 10.0.1.255
      systemd name: dhcpd
+     overlays: dhcpd
    tftp:
      enabled: true
      tftproot: /var/lib/tftpboot
      systemd name: tftp
+     overlays: tftproot
      ipxe:
        "00:00": undionly.kpxe
        "00:07": ipxe-snponly-x86_64.efi
@@ -105,6 +107,11 @@ address of your cluster's private network interface.
      - path: /opt
        export options: ro,sync,no_root_squash
      systemd name: nfs-server
+     overlays: nfsd
+   ssh:
+     overlays: ssh.wwctl
+   hostfile:
+     overlays: hosts
    image mounts:
    - source: /etc/resolv.conf
      dest: /etc/resolv.conf

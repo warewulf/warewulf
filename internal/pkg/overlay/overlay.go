@@ -867,6 +867,9 @@ func checkHostOverlay(overlayName string) (bool, error) {
 	} else if err != nil {
 		return false, err
 	}
+	if overlayName == LegacyHostOverlay {
+		wwlog.Warn("Applying deprecated %s overlay: migrate its files to the per-service host overlays and remove it", overlayName)
+	}
 	stats, err := os.Stat(overlay_.Rootfs())
 	if err != nil {
 		return false, fmt.Errorf("could not build host overlay %s: %w", overlayName, err)

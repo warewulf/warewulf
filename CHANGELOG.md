@@ -63,6 +63,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   receive a `NODENAME-ipmi` entry for each node that has a BMC address.
 - `wwctl configure tftp` now builds the `tftproot` overlay, so `grub.cfg` in
   the TFTP root is written by the subcommand that owns it.
+- The integration test suite now also runs on Debian 12, alongside the
+  existing Enterprise Linux and openSUSE jobs.
 
 ### Fixed
 
