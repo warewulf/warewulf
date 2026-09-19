@@ -817,6 +817,9 @@ rightmost overlay taking precedence. The legacy host overlay is always
 applied last if it exists.
 */
 func BuildHostOverlay(overlayNames ...string) error {
+	if len(overlayNames) == 0 {
+		wwlog.Warn("No host overlays configured: set <service>:overlays in warewulf.conf or run `wwctl upgrade config`")
+	}
 	if !slices.Contains(overlayNames, LegacyHostOverlay) {
 		overlayNames = append(slices.Clone(overlayNames), LegacyHostOverlay)
 	}

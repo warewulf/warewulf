@@ -284,8 +284,10 @@ The first listed key type is used to generate authentication ssh keys.
 hostfile
 ========
 
-The ``/etc/hosts`` file on the Warewulf server can be configured explicitly
-with ``wwctl configure hostfile``.
+``wwctl configure hostfile`` updates the Warewulf server's ``/etc/hosts`` file
+to include expected configuration for the server itself as well as the known
+names of the cluster nodes and their interfaces. Entries from the server's
+``/etc/hosts`` file are distributed to cluster nodes by the ``hosts`` overlay.
 
 .. code-block:: yaml
 
@@ -404,17 +406,6 @@ Configuration for the REST API of the ``warewulfd`` service.
   default, only localhost has access. Does not apply to ``/api/docs``.
 
 See :ref:`rest-api` for authentication and the available endpoints.
-
-hostfile
-========
-
-There are no explicit "hostfile" configuration options in ``warewulf.conf``; but
-``wwctl configure hostfile`` updates the Warewulf server's ``/etc/hosts`` file
-to include expected configuration for the server itself as well as the known
-names of the cluster nodes and their interfaces.
-
-Entries from the Warewulf server's ``/etc/hosts`` file are distributed to
-cluster nodes by the "hosts" overlay.
 
 logging
 =======

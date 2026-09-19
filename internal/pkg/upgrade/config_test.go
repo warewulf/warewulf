@@ -873,6 +873,36 @@ hostfile:
 `,
 	},
 	{
+		name: "overlays from default (unset) systemd names",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+tftp:
+  enabled: true
+nfs:
+  enabled: true
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  overlays: dhcpd
+tftp:
+  enabled: true
+  overlays: tftproot
+nfs:
+  enabled: true
+  overlays: nfsd
+hostfile:
+  overlays: hosts
+`,
+	},
+	{
 		name: "no overlays for unrecognized systemd names",
 		legacyYaml: `
 ipaddr: 10.0.0.1
