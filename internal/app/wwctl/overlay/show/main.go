@@ -79,15 +79,11 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 			// "host" and the server's own hostname render as for the host, the
 			// same as --render-host. Any other unknown name is an error.
-			hostName, hostErr := os.Hostname()
-			if hostErr != nil {
-				return fmt.Errorf("could not get host name: %s", hostErr)
-			}
-			if NodeName != "host" && NodeName != hostName {
-				return fmt.Errorf("node not found: %s (use --render-host to render as the Warewulf server)", NodeName)
-			}
 			if nodeConf, err = hostNode(); err != nil {
 				return err
+			}
+			if NodeName != overlay.LegacyHostOverlay && NodeName != nodeConf.Id() {
+				return fmt.Errorf("node not found: %s (use --render-host to render as the Warewulf server)", NodeName)
 			}
 		}
 		var allNodes []node.Node

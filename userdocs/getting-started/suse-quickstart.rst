@@ -22,18 +22,6 @@ Install Warewulf and dependencies
    make all
    sudo make install
 
-SUSE's ``dhcpd`` reads ``/etc/dhcpd.conf``, while Warewulf generates its
-configuration at ``/etc/dhcp/dhcpd.conf``. The ``dhcpd`` overlay bridges this
-by also installing ``/etc/dhcpd.conf`` as a symlink to the generated file. If
-you would rather have Warewulf write ``/etc/dhcpd.conf`` directly, move the
-template instead:
-
-.. code-block:: bash
-
-   cd /var/lib/warewulf/overlays/dhcpd/rootfs/etc
-   rm dhcpd.conf
-   mv dhcp/dhcpd.conf.ww dhcpd.conf.ww
-
 Install Warewulf from the open build service
 ============================================
 
@@ -67,9 +55,11 @@ address of your cluster's private network interface:
       range start: 192.168.200.50
       range end: 192.168.200.99
       systemd name: dhcpd
+      overlays: dhcpd
     tftp:
       enabled: true
       systemd name: tftp
+      overlays: tftproot
     nfs:
       enabled: true
       export paths:
@@ -78,6 +68,11 @@ address of your cluster's private network interface:
       - path: /opt
         export options: ro,sync,no_root_squash
       systemd name: nfs-server
+      overlays: nfsd
+    ssh:
+      overlays: ssh.wwctl
+    hostfile:
+      overlays: hosts
     image mounts:
       - source: /etc/resolv.conf
         dest: /etc/resolv.conf

@@ -81,7 +81,10 @@ func (legacy *WarewulfYaml) Upgrade() (upgraded *config.WarewulfYaml) {
 	if legacy.NFS != nil {
 		upgraded.NFS = legacy.NFS.Upgrade()
 	}
-	if legacy.SSH != nil {
+	// ssh and hostfile are recommended even when absent from the legacy
+	// config, so that their host overlays are configured after upgrade.
+	// legacy.Warewulf is used as a proxy for a non-empty config.
+	if legacy.SSH != nil || legacy.Warewulf != nil {
 		upgraded.SSH = legacy.SSH.Upgrade()
 	}
 	if legacy.Hostfile != nil || legacy.Warewulf != nil {
@@ -276,8 +279,10 @@ type SSHConf struct {
 
 func (legacy *SSHConf) Upgrade() (upgraded *config.SSHConf) {
 	upgraded = new(config.SSHConf)
-	upgraded.KeyTypes = append([]string{}, legacy.KeyTypes...)
-	upgraded.Overlays = legacy.Overlays
+	if legacy != nil {
+		upgraded.KeyTypes = append([]string{}, legacy.KeyTypes...)
+		upgraded.Overlays = legacy.Overlays
+	}
 	if len(upgraded.Overlays) == 0 {
 		upgraded.Overlays = config.OverlayList{"ssh.wwctl"}
 	}
