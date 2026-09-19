@@ -214,4 +214,55 @@ nodes:
 		assert.Contains(t, buf.String(), "ClusterName: "+host)
 		assert.Contains(t, buf.String(), "BuildHost: "+host)
 	})
+
+	t.Run("overlay render rejects unknown node", func(t *testing.T) {
+		resetShowFlags()
+		baseCmd.SetArgs([]string{"-r", "nosuchnode", "testoverlay", "template.ww"})
+		baseCmd := GetCommand()
+		buf := new(bytes.Buffer)
+		baseCmd.SetOut(buf)
+		baseCmd.SetErr(buf)
+		wwlog.SetLogWriter(buf)
+		err := baseCmd.Execute()
+		assert.ErrorContains(t, err, "node not found: nosuchnode")
+	})
+
+	t.Run("overlay render rejects render with render-host", func(t *testing.T) {
+		resetShowFlags()
+		baseCmd.SetArgs([]string{"--render-host", "-r", "node1", "testoverlay", "template.ww"})
+		baseCmd := GetCommand()
+		buf := new(bytes.Buffer)
+		baseCmd.SetOut(buf)
+		baseCmd.SetErr(buf)
+		wwlog.SetLogWriter(buf)
+		err := baseCmd.Execute()
+		assert.Error(t, err)
+	})
+
+	t.Run("overlay render host template using --render-host", func(t *testing.T) {
+		resetShowFlags()
+		baseCmd.SetArgs([]string{"--render-host", "testoverlay", "template.ww"})
+		baseCmd := GetCommand()
+		buf := new(bytes.Buffer)
+		baseCmd.SetOut(buf)
+		baseCmd.SetErr(buf)
+		wwlog.SetLogWriter(buf)
+		err := baseCmd.Execute()
+		assert.NoError(t, err)
+		assert.Contains(t, buf.String(), "Id: "+host)
+		assert.Contains(t, buf.String(), "ClusterName: "+host)
+		assert.Contains(t, buf.String(), "BuildHost: "+host)
+	})
+}
+
+// resetShowFlags clears flag state between subtests, since baseCmd and its
+// flag variables are package-level and persist across Execute calls.
+func resetShowFlags() {
+	NodeName = ""
+	RenderHost = false
+	for _, name := range []string{"render", "render-host"} {
+		if flag := baseCmd.PersistentFlags().Lookup(name); flag != nil {
+			flag.Changed = false
+		}
+	}
 }

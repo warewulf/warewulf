@@ -63,6 +63,10 @@ func TFTP() (err error) {
 		return nil
 	}
 
+	if err := buildHostOverlays("tftp", controller.TFTP.Overlays); err != nil {
+		wwlog.Warn("host overlay could not be built: %s", err)
+	}
+
 	wwlog.Info("Enabling and restarting the TFTP services")
 	err = util.SystemdStart(controller.TFTP.SystemdName)
 	if err != nil {

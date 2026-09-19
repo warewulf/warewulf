@@ -199,9 +199,13 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %{_overlaydir}/debian.interfaces/rootfs/*
 %{_overlaydir}/debug/rootfs/*
 %{_overlaydir}/fstab/rootfs/*
-%{_overlaydir}/host/rootfs/*
+%{_overlaydir}/dhcpd/rootfs/*
+%{_overlaydir}/dnsmasq/rootfs/*
 %{_overlaydir}/hostname/rootfs/*
 %{_overlaydir}/hosts/rootfs/*
+%{_overlaydir}/nfsd/rootfs/*
+%{_overlaydir}/ssh.wwctl/rootfs/*
+%{_overlaydir}/tftproot/rootfs/*
 %{_overlaydir}/ifcfg/rootfs/*
 %{_overlaydir}/ifupdown/rootfs/*
 %{_overlaydir}/ignition/rootfs/*

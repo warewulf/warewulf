@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
-	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -21,13 +20,8 @@ func DHCP() (err error) {
 		wwlog.Warn("This system is not configured as a Warewulf DHCP controller")
 		return
 	}
-	if controller.Warewulf.EnableHostOverlay() {
-		err = overlay.BuildHostOverlay()
-		if err != nil {
-			wwlog.Warn("host overlay could not be built: %s", err)
-		}
-	} else {
-		wwlog.Info("host overlays are disabled, did not modify/create dhcpd configuration")
+	if err := buildHostOverlays("dhcp", controller.DHCP.Overlays); err != nil {
+		wwlog.Warn("host overlay could not be built: %s", err)
 	}
 	fmt.Printf("Enabling and restarting the DHCP services\n")
 	err = util.SystemdStart(controller.DHCP.SystemdName)

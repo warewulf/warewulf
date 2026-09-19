@@ -13,9 +13,11 @@ var configUpgradeTests = []struct {
 	upgradedYaml string
 }{
 	{
-		name:         "empty",
-		legacyYaml:   ``,
-		upgradedYaml: `{}`,
+		name:       "empty",
+		legacyYaml: ``,
+		upgradedYaml: `
+{}
+`,
 	},
 	{
 		name: "v4.0.0",
@@ -55,15 +57,22 @@ dhcp:
   range start: 192.168.1.150
   range end: 192.168.1.200
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   tftproot: /var/lib/tftpboot
   systemd name: tftp
+  overlays: tftproot
 nfs:
   export paths:
     - path: /home
     - path: /var/warewulf
   systemd name: nfs-server
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -104,15 +113,22 @@ dhcp:
   range start: 192.168.1.150
   range end: 192.168.1.200
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   tftproot: /var/lib/tftpboot
   systemd name: tftp
+  overlays: tftproot
 nfs:
   export paths:
     - path: /home
     - path: /var/warewulf
   systemd name: nfs-server
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -156,15 +172,22 @@ dhcp:
   range start: 192.168.200.50
   range end: 192.168.200.99
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   tftproot: /var/lib/tftpboot
   systemd name: tftp
+  overlays: tftproot
 nfs:
   export paths:
     - path: /home
     - path: /var/warewulf
   systemd name: nfs-server
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -221,9 +244,11 @@ dhcp:
   range start: 192.168.200.50
   range end: 192.168.200.99
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
 nfs:
   enabled: true
   export paths:
@@ -232,6 +257,11 @@ nfs:
     - path: /opt
       export options: ro,sync,no_root_squash
   systemd name: nfs-server
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -284,9 +314,11 @@ dhcp:
   range start: 192.168.200.50
   range end: 192.168.200.99
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
 nfs:
   enabled: true
   export paths:
@@ -295,6 +327,11 @@ nfs:
     - path: /opt
       export options: ro,sync,no_root_squash
   systemd name: nfs-server
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -362,9 +399,11 @@ dhcp:
   range start: 10.0.1.1
   range end: 10.0.1.255
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
   ipxe:
     00:0B: arm64-efi/snponly.efi
     "00:00": undionly.kpxe
@@ -378,12 +417,16 @@ nfs:
     - path: /opt
       export options: ro,sync,no_root_squash
   systemd name: nfs-server
+  overlays: nfsd
 ssh:
   key types:
     - rsa
     - dsa
     - ecdsa
     - ed25519
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 image mounts:
   - source: /etc/resolv.conf
     dest: /etc/resolv.conf
@@ -455,9 +498,11 @@ dhcp:
   range start: 10.0.1.1
   range end: 10.0.1.255
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
   ipxe:
     00:0B: arm64-efi/snponly.efi
     "00:00": undionly.kpxe
@@ -471,12 +516,16 @@ nfs:
     - path: /opt
       export options: ro,sync,no_root_squash
   systemd name: nfs-server
+  overlays: nfsd
 ssh:
   key types:
     - rsa
     - dsa
     - ecdsa
     - ed25519
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 image mounts:
   - source: /etc/resolv.conf
     dest: /etc/resolv.conf
@@ -552,9 +601,11 @@ dhcp:
   range start: 10.0.1.1
   range end: 10.0.1.255
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
   ipxe:
     00:0B: arm64-efi/snponly.efi
     "00:00": undionly.kpxe
@@ -568,12 +619,16 @@ nfs:
     - path: /opt
       export options: ro,sync,no_root_squash
   systemd name: nfs-server
+  overlays: nfsd
 ssh:
   key types:
     - rsa
     - dsa
     - ecdsa
     - ed25519
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 image mounts:
   - source: /etc/resolv.conf
     dest: /etc/resolv.conf
@@ -601,6 +656,10 @@ warewulf:
   secure: true
   secure files: false
   update interval: 60
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -655,9 +714,15 @@ dhcp:
   range start: 10.0.1.1
   range end: 10.0.1.255
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -700,9 +765,15 @@ dhcp:
   range6 start: 2001:db8::100
   range6 end: 2001:db8::1ff
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -736,9 +807,156 @@ warewulf:
 dhcp:
   enabled: true
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
+`,
+	},
+	{
+		name: "overlays from dnsmasq systemd names",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: dnsmasq
+tftp:
+  enabled: true
+  systemd name: dnsmasq
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: dnsmasq
+  overlays: dnsmasq
+tftp:
+  enabled: true
+  systemd name: dnsmasq
+  overlays: dnsmasq,tftproot
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
+`,
+	},
+	{
+		name: "overlays from debian systemd names",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: isc-dhcp-server
+tftp:
+  enabled: true
+  systemd name: tftpd-hpa
+nfs:
+  enabled: true
+  systemd name: nfs-kernel-server
+ssh:
+  key types:
+    - ed25519
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: isc-dhcp-server
+  overlays: dhcpd
+tftp:
+  enabled: true
+  systemd name: tftpd-hpa
+  overlays: tftproot
+nfs:
+  enabled: true
+  systemd name: nfs-kernel-server
+  overlays: nfsd
+ssh:
+  key types:
+    - ed25519
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
+`,
+	},
+	{
+		name: "overlays from default (unset) systemd names",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+tftp:
+  enabled: true
+nfs:
+  enabled: true
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  overlays: dhcpd
+tftp:
+  enabled: true
+  overlays: tftproot
+nfs:
+  enabled: true
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
+`,
+	},
+	{
+		name: "no overlays for unrecognized systemd names",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: mystery-dhcp
+tftp:
+  enabled: true
+  systemd name: mystery-tftp
+nfs:
+  enabled: true
+  systemd name: mystery-nfs
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: mystery-dhcp
+tftp:
+  enabled: true
+  systemd name: mystery-tftp
+nfs:
+  enabled: true
+  systemd name: mystery-nfs
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 `,
 	},
 }

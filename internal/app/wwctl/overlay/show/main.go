@@ -13,6 +13,18 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
+// hostNode returns the node data used to render a template as for the
+// Warewulf server itself.
+func hostNode() (node.Node, error) {
+	hostName, err := os.Hostname()
+	if err != nil {
+		return node.Node{}, fmt.Errorf("could not get host name: %s", err)
+	}
+	hostConf := node.NewNode(hostName)
+	hostConf.ClusterName = hostName
+	return hostConf, nil
+}
+
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	overlayName := args[0]
 	fileName := args[1]
@@ -24,7 +36,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	overlayFile := overlay_.File(fileName)
 
-	if NodeName == "" {
+	if NodeName == "" && !RenderHost {
 		// No node specified: show the raw template source without rendering.
 		if !util.IsFile(overlayFile) {
 			return fmt.Errorf("%s: %s not found", overlayName, overlayFile)
@@ -55,16 +67,24 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
-		nodeConf, err := nodeDB.GetNode(NodeName)
-		if err == node.ErrNotFound {
-			// Unknown node name: fall back to the local hostname so operators can
-			// preview templates on the warewulf server itself.
-			hostName, err := os.Hostname()
+		var nodeConf node.Node
+		if RenderHost {
+			nodeConf, err = hostNode()
 			if err != nil {
-				return fmt.Errorf("could not get host name: %s", err)
+				return err
 			}
-			nodeConf = node.NewNode(hostName)
-			nodeConf.ClusterName = hostName
+		} else if nodeConf, err = nodeDB.GetNode(NodeName); err != nil {
+			if err != node.ErrNotFound {
+				return err
+			}
+			// "host" and the server's own hostname render as for the host, the
+			// same as --render-host. Any other unknown name is an error.
+			if nodeConf, err = hostNode(); err != nil {
+				return err
+			}
+			if NodeName != overlay.LegacyHostOverlay && NodeName != nodeConf.Id() {
+				return fmt.Errorf("node not found: %s (use --render-host to render as the Warewulf server)", NodeName)
+			}
 		}
 		var allNodes []node.Node
 		allNodes, err = nodeDB.FindAllNodes()

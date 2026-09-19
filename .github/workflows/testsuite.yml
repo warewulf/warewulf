@@ -53,7 +53,7 @@ jobs:
       - name: Build Warewulf (golang ${{ matrix.go-version }})
         run: make all
       - name: Build the Docker image
-        run: docker build . --file Dockerfile
+        run: docker build . --file Dockerfile --no-cache --pull
 
   shellcheck:
     runs-on: ubuntu-latest
@@ -72,9 +72,25 @@ jobs:
             container: rockylinux/rockylinux:10-ubi-init
           - name: SUSE Linux 16.0
             container: registry.suse.com/bci/bci-init:16.0
+          - name: Debian 12
+            container: localhost/debian-init:12
+            base: debian:12
     steps:
       - name: Checkout Warewulf
         uses: actions/checkout@v4
+      # Debian and Ubuntu publish no systemd-enabled base image, so
+      # build one from the plain base image.
+      - name: Build ${{ matrix.name }} init image
+        if: matrix.base != ''
+        run: |
+          sudo podman build -t ${{ matrix.container }} -f - . <<'EOF'
+          FROM ${{ matrix.base }}
+          ENV DEBIAN_FRONTEND=noninteractive
+          RUN apt-get update \
+            && apt-get install -y --no-install-recommends \
+              systemd systemd-sysv dbus \
+            && rm -rf /var/lib/apt/lists/*
+          EOF
       # /opt and /home are bind-mounted from the host because
       # overlayfs does not support NFS exporting.
       - name: Start ${{ matrix.name }} container

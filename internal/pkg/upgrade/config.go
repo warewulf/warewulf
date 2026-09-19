@@ -34,6 +34,7 @@ type WarewulfYaml struct {
 	TFTP            *TFTPConf     `yaml:"tftp"`
 	NFS             *NFSConf      `yaml:"nfs"`
 	SSH             *SSHConf      `yaml:"ssh"`
+	Hostfile        *HostfileConf `yaml:"hostfile"`
 	MountsImage     []*MountEntry `yaml:"image mounts"`
 	MountsContainer []*MountEntry `yaml:"container mounts"`
 	Paths           *BuildConfig  `yaml:"paths"`
@@ -80,8 +81,14 @@ func (legacy *WarewulfYaml) Upgrade() (upgraded *config.WarewulfYaml) {
 	if legacy.NFS != nil {
 		upgraded.NFS = legacy.NFS.Upgrade()
 	}
-	if legacy.SSH != nil {
+	// ssh and hostfile are recommended even when absent from the legacy
+	// config, so that their host overlays are configured after upgrade.
+	// legacy.Warewulf is used as a proxy for a non-empty config.
+	if legacy.SSH != nil || legacy.Warewulf != nil {
 		upgraded.SSH = legacy.SSH.Upgrade()
+	}
+	if legacy.Hostfile != nil || legacy.Warewulf != nil {
+		upgraded.Hostfile = legacy.Hostfile.Upgrade()
 	}
 	upgraded.MountsImage = make([]*config.MountEntry, 0)
 	for _, mount := range legacy.MountsImage {
@@ -157,13 +164,14 @@ func (legacy *APIConf) Upgrade() (upgraded *config.APIConf) {
 }
 
 type DHCPConf struct {
-	Enabled     *bool  `yaml:"enabled"`
-	Template    string `yaml:"template"`
-	RangeStart  string `yaml:"range start"`
-	RangeEnd    string `yaml:"range end"`
-	Range6Start string `yaml:"range6 start"`
-	Range6End   string `yaml:"range6 end"`
-	SystemdName string `yaml:"systemd name"`
+	Enabled     *bool              `yaml:"enabled"`
+	Template    string             `yaml:"template"`
+	RangeStart  string             `yaml:"range start"`
+	RangeEnd    string             `yaml:"range end"`
+	Range6Start string             `yaml:"range6 start"`
+	Range6End   string             `yaml:"range6 end"`
+	SystemdName string             `yaml:"systemd name"`
+	Overlays    config.OverlayList `yaml:"overlays"`
 }
 
 func (legacy *DHCPConf) Upgrade() (upgraded *config.DHCPConf) {
@@ -175,14 +183,24 @@ func (legacy *DHCPConf) Upgrade() (upgraded *config.DHCPConf) {
 	upgraded.Range6Start = legacy.Range6Start
 	upgraded.Range6End = legacy.Range6End
 	upgraded.SystemdName = legacy.SystemdName
+	upgraded.Overlays = legacy.Overlays
+	if len(upgraded.Overlays) == 0 {
+		switch legacy.SystemdName {
+		case "", "dhcpd", "isc-dhcp-server":
+			upgraded.Overlays = config.OverlayList{"dhcpd"}
+		case "dnsmasq":
+			upgraded.Overlays = config.OverlayList{"dnsmasq"}
+		}
+	}
 	return upgraded
 }
 
 type TFTPConf struct {
-	Enabled      *bool             `yaml:"enabled"`
-	TftpRoot     string            `yaml:"tftproot"`
-	SystemdName  string            `yaml:"systemd name"`
-	IpxeBinaries map[string]string `yaml:"ipxe"`
+	Enabled      *bool              `yaml:"enabled"`
+	TftpRoot     string             `yaml:"tftproot"`
+	SystemdName  string             `yaml:"systemd name"`
+	IpxeBinaries map[string]string  `yaml:"ipxe"`
+	Overlays     config.OverlayList `yaml:"overlays"`
 }
 
 func (legacy *TFTPConf) Upgrade() (upgraded *config.TFTPConf) {
@@ -194,14 +212,24 @@ func (legacy *TFTPConf) Upgrade() (upgraded *config.TFTPConf) {
 	for name, binary := range legacy.IpxeBinaries {
 		upgraded.IpxeBinaries[name] = binary
 	}
+	upgraded.Overlays = legacy.Overlays
+	if len(upgraded.Overlays) == 0 {
+		switch legacy.SystemdName {
+		case "", "tftp", "tftpd", "tftpd-hpa":
+			upgraded.Overlays = config.OverlayList{"tftproot"}
+		case "dnsmasq":
+			upgraded.Overlays = config.OverlayList{"dnsmasq", "tftproot"}
+		}
+	}
 	return upgraded
 }
 
 type NFSConf struct {
-	Enabled         *bool            `yaml:"enabled"`
-	Exports         []string         `yaml:"exports"`
-	ExportsExtended []*NFSExportConf `yaml:"export paths"`
-	SystemdName     string           `yaml:"systemd name"`
+	Enabled         *bool              `yaml:"enabled"`
+	Exports         []string           `yaml:"exports"`
+	ExportsExtended []*NFSExportConf   `yaml:"export paths"`
+	SystemdName     string             `yaml:"systemd name"`
+	Overlays        config.OverlayList `yaml:"overlays"`
 }
 
 func (legacy *NFSConf) Upgrade() (upgraded *config.NFSConf) {
@@ -217,6 +245,13 @@ func (legacy *NFSConf) Upgrade() (upgraded *config.NFSConf) {
 		upgraded.ExportsExtended = append(upgraded.ExportsExtended, export.Upgrade())
 	}
 	upgraded.SystemdName = legacy.SystemdName
+	upgraded.Overlays = legacy.Overlays
+	if len(upgraded.Overlays) == 0 {
+		switch legacy.SystemdName {
+		case "", "nfs-server", "nfsd", "nfs-kernel-server":
+			upgraded.Overlays = config.OverlayList{"nfsd"}
+		}
+	}
 	return upgraded
 }
 
@@ -238,12 +273,34 @@ func (legacy *NFSExportConf) Upgrade() (upgraded *config.NFSExportConf) {
 }
 
 type SSHConf struct {
-	KeyTypes []string `yaml:"key types"`
+	KeyTypes []string           `yaml:"key types"`
+	Overlays config.OverlayList `yaml:"overlays"`
 }
 
 func (legacy *SSHConf) Upgrade() (upgraded *config.SSHConf) {
 	upgraded = new(config.SSHConf)
-	upgraded.KeyTypes = append([]string{}, legacy.KeyTypes...)
+	if legacy != nil {
+		upgraded.KeyTypes = append([]string{}, legacy.KeyTypes...)
+		upgraded.Overlays = legacy.Overlays
+	}
+	if len(upgraded.Overlays) == 0 {
+		upgraded.Overlays = config.OverlayList{"ssh.wwctl"}
+	}
+	return upgraded
+}
+
+type HostfileConf struct {
+	Overlays config.OverlayList `yaml:"overlays"`
+}
+
+func (legacy *HostfileConf) Upgrade() (upgraded *config.HostfileConf) {
+	upgraded = new(config.HostfileConf)
+	if legacy != nil {
+		upgraded.Overlays = legacy.Overlays
+	}
+	if len(upgraded.Overlays) == 0 {
+		upgraded.Overlays = config.OverlayList{"hosts"}
+	}
 	return upgraded
 }
 
