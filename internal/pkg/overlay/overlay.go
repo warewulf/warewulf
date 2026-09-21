@@ -806,11 +806,6 @@ func BuildAllOverlays(nodes []node.Node, allNodes []node.Node, workerCount int) 
 // permissions are not checked.
 var sharedHostOverlays = []string{"hosts"}
 
-// LegacyHostOverlay is the monolithic overlay replaced by the
-// per-service host overlays configured in warewulf.conf. A site overlay
-// of this name is still applied last to preserve local customizations.
-const LegacyHostOverlay = "host"
-
 /*
 Build the named overlays for the host, in order, with files from the
 rightmost overlay taking precedence. The legacy host overlay is always
@@ -820,8 +815,8 @@ func BuildHostOverlay(overlayNames ...string) error {
 	if len(overlayNames) == 0 {
 		wwlog.Warn("No host overlays configured: set <service>:overlays in warewulf.conf or run `wwctl upgrade config`")
 	}
-	if !slices.Contains(overlayNames, LegacyHostOverlay) {
-		overlayNames = append(slices.Clone(overlayNames), LegacyHostOverlay)
+	if !slices.Contains(overlayNames, "host") {
+		overlayNames = append(slices.Clone(overlayNames), "host")
 	}
 
 	var build []string
@@ -858,7 +853,7 @@ func BuildHostOverlay(overlayNames ...string) error {
 func checkHostOverlay(overlayName string) (bool, error) {
 	overlay_, err := Get(overlayName)
 	if errors.Is(err, ErrDoesNotExist) {
-		if overlayName == LegacyHostOverlay {
+		if overlayName == "host" {
 			wwlog.Debug("No %s overlay to apply", overlayName)
 		} else {
 			wwlog.Warn("Skipping host overlay %s: overlay does not exist", overlayName)
@@ -867,7 +862,7 @@ func checkHostOverlay(overlayName string) (bool, error) {
 	} else if err != nil {
 		return false, err
 	}
-	if overlayName == LegacyHostOverlay {
+	if overlayName == "host" {
 		wwlog.Warn("Applying deprecated %s overlay: migrate its files to the per-service host overlays and remove it", overlayName)
 	}
 	stats, err := os.Stat(overlay_.Rootfs())

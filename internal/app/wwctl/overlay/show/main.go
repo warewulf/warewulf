@@ -44,7 +44,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("could not get host name: %s", err)
 		}
 		shortName, _, _ := strings.Cut(hostName, ".")
-		if NodeName == overlay.LegacyHostOverlay || NodeName == hostName || NodeName == shortName {
+		if NodeName == "host" || NodeName == hostName || NodeName == shortName {
 			RenderHost = true
 		}
 	}
