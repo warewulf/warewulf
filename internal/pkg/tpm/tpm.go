@@ -1,0 +1,600 @@
+package tpm
+
+import (
+	"bytes"
+	"crypto"
+	"crypto/sha256"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/asn1"
+	"encoding/base64"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"maps"
+	"slices"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/google/go-attestation/attest"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
+)
+
+var (
+	oidExtensionSubjectAltName = asn1.ObjectIdentifier{2, 5, 29, 17}
+	oidTpmManufacturer         = asn1.ObjectIdentifier{2, 23, 133, 2, 1}
+)
+
+// TPM Manufacturer IDs from TCG Vendor ID Registry
+// https://trustedcomputinggroup.org/resource/vendor-id-registry/
+var tpmManufacturers = map[string]string{
+	"1022": "AMD",
+	"1114": "Atmel",
+	"14E4": "Broadcom",
+	"1137": "Cisco",
+	"1A68": "Flyslice",
+	"1AE0": "Google",
+	"103C": "HPE",
+	"19E5": "Huawei",
+	"1014": "IBM",
+	"15D1": "Infineon",
+	"8086": "Intel",
+	"17AA": "Lenovo",
+	"1414": "Microsoft",
+	"100B": "National Semi",
+	"1B4E": "Nationz",
+	"1050": "Nuvoton", // Also Winbond
+	"108E": "Qualcomm",
+	"1D87": "Rockchip",
+	"144D": "Samsung",
+	"1BFA": "Sinosun",
+	"1055": "SMSC",
+	"104A": "STMicroelectronics",
+	"104C": "Texas Instruments",
+
+	// Legacy / Alternate 4-byte ASCII HEX mappings (e.g. "INTC" -> 494E5443)
+	"414D4400": "AMD",
+	"414D4420": "AMD",
+	"49465800": "Infineon",
+	"49465820": "Infineon",
+	"494E5443": "Intel",
+	"4D534654": "Microsoft",
+	"4E544300": "Nuvoton",
+	"4E544320": "Nuvoton",
+	"53544D20": "STMicroelectronics",
+}
+
+// FileLog struct to hold checksums of files sent to the node
+type FileLog struct {
+	Filename string `json:"filename" yaml:"filename"`
+	Checksum string `json:"checksum" yaml:"checksum"`
+}
+
+// TpmData struct to hold EK certificate and attestation data
+type TpmData struct {
+	EKCert    string            `json:"ek_cert" yaml:"ek_cert"`
+	EKPub     string            `json:"ek_pub" yaml:"ek_pub"`
+	AKPub     string            `json:"ak_pub" yaml:"ak_pub"`
+	Quote     string            `json:"quote" yaml:"quote"`
+	Signature string            `json:"signature" yaml:"signature"`
+	PCRs      map[string]string `json:"pcrs" yaml:"pcrs"`
+	Nonce     string            `json:"nonce" yaml:"nonce"`
+
+	CreateData        string `json:"create_data,omitempty" yaml:"create_data,omitempty"`
+	CreateAttestation string `json:"create_attestation,omitempty" yaml:"create_attestation,omitempty"`
+	CreateSignature   string `json:"create_signature,omitempty" yaml:"create_signature,omitempty"`
+}
+
+// Quote struct to hold EK certificate and attestation data
+type Quote struct {
+	Current TpmData `json:"current" yaml:"current"`
+	New     TpmData `json:"new,omitempty" yaml:"new,omitempty"`
+
+	EventLog  string     `json:"eventlog,omitempty" yaml:"eventlog,omitempty"`
+	Token     string     `json:"token,omitempty" yaml:"token,omitempty"`
+	ID        string     `json:"id" yaml:"id"`
+	Modified  time.Time  `json:"modified" yaml:"modified"`
+	SentLog   []FileLog  `json:"sentlogs,omitempty" yaml:"logs,omitempty"`
+	Challenge *Challenge `json:"challenge,omitempty" yaml:"challenge,omitempty"`
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface for Quote, ensuring legacy TpmData fields are correctly mapped to the Current field.
+func (q *Quote) UnmarshalJSON(data []byte) error {
+	type Alias Quote
+	var aux Alias
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+	*q = Quote(aux)
+
+	if !q.Current.HasQuote() {
+		var dataFields TpmData
+		if err := json.Unmarshal(data, &dataFields); err == nil && dataFields.HasQuote() {
+			q.Current = dataFields
+		}
+	}
+	return nil
+}
+
+// TpmUpload is what the node sends
+type TpmUpload struct {
+	TpmData
+	EventLog string `json:"eventlog,omitempty"`
+	ID       string `json:"id"`
+}
+
+// Challenge struct to hold encrypted credentials and secrets for TPM challenges
+
+type Challenge struct {
+	EncryptedCredential attest.EncryptedCredential `json:"encrypted_credential" yaml:"encrypted_credential"`
+
+	Secret []byte `json:"secret" yaml:"secret"`
+
+	ID string `json:"id" yaml:"id"`
+}
+
+// TPMConfig struct to hold both Quotes and Challenges
+
+type TPMConfig struct {
+	Quotes map[string]Quote `yaml:"quotes"`
+
+	Challenges map[string]Challenge `yaml:"challenges"`
+}
+
+var (
+	ErrDecodeAKPub = errors.New("decoding AKPub failed")
+
+	ErrParseAKPub      = errors.New("parsing TPM public key failed")
+	ErrDecodeQuote     = errors.New("decoding quote failed")
+	ErrDecodeSignature = errors.New("decoding signature failed")
+	ErrDecodeNonce     = errors.New("decoding nonce failed")
+	ErrQuoteVerify     = errors.New("quote verification failed")
+	ErrNoEventLog      = errors.New("no event log present")
+	ErrEventLogVerify  = errors.New("event log verification failed")
+)
+
+// HasQuote checks if the essential fields for a TPM quote are present.
+func (data *TpmData) HasQuote() bool {
+	return data.Quote != "" && data.Signature != "" && data.AKPub != "" && data.Nonce != ""
+}
+
+// HasQuote checks if the essential fields for a TPM quote are present.
+func (quote *Quote) HasQuote() bool {
+	return quote.Current.HasQuote()
+}
+
+// Verify validates the TPM quote using the provided AK public key, PCRs, and nonce.
+func (data *TpmData) Verify() (bool, error) {
+	// 1. Parse AK Public Key
+	akPubBytes, err := base64.StdEncoding.DecodeString(data.AKPub)
+	if err != nil {
+		return false, fmt.Errorf("%w: %v", ErrDecodeAKPub, err)
+	}
+
+	akPubObj, err := attest.ParseAKPublic(akPubBytes)
+	if err != nil {
+		return false, fmt.Errorf("%w: %v", ErrParseAKPub, err)
+	}
+
+	// 2. Decode Quote
+	quoteBytes, err := base64.StdEncoding.DecodeString(data.Quote)
+	if err != nil {
+		return false, fmt.Errorf("%w: %v", ErrDecodeQuote, err)
+	}
+
+	sigBytes, err := base64.StdEncoding.DecodeString(data.Signature)
+	if err != nil {
+		return false, fmt.Errorf("%w: %v", ErrDecodeSignature, err)
+	}
+
+	nonceBytes, err := base64.StdEncoding.DecodeString(data.Nonce)
+	if err != nil {
+		return false, fmt.Errorf("%w: %v", ErrDecodeNonce, err)
+	}
+
+	// Construct go-attestation Quote object
+	q := attest.Quote{
+		Quote:     quoteBytes,
+		Signature: sigBytes,
+	}
+
+	// Reconstruct PCRs
+	var pcrs []attest.PCR
+	for idxStr, digestHex := range data.PCRs {
+		idx, err := strconv.Atoi(idxStr)
+		if err != nil {
+			continue
+		}
+		digest, err := hex.DecodeString(digestHex)
+		if err != nil {
+			continue
+		}
+		wwlog.Verbose("pcr[%d]: %x", idx, digest)
+		pcrs = append(pcrs, attest.PCR{
+			Index:     idx,
+			Digest:    digest,
+			DigestAlg: crypto.SHA256,
+		})
+	}
+
+	verifier := &attest.AKPublic{
+		Public: akPubObj.Public,
+		Hash:   crypto.SHA256,
+	}
+	wwlog.Verbose("Quote: %x", q.Quote)
+	wwlog.Verbose("Signature: %x", q.Signature)
+	wwlog.Verbose("nonceBytes: %x", nonceBytes)
+	wwlog.Verbose("akPub: %x", akPubObj.Public)
+	if err := verifier.Verify(q, pcrs, nonceBytes); err != nil {
+		return false, fmt.Errorf("%w: %v", ErrQuoteVerify, err)
+	}
+
+	return true, nil
+}
+
+// Verify validates the current TPM quote.
+func (quote *Quote) Verify() (bool, error) {
+	return quote.Current.Verify()
+}
+
+// VerifyEventLog validates the event log against the PCRs in the current quote.
+func (quote *Quote) VerifyEventLog() (bool, error) {
+	return quote.VerifyEventLogData(&quote.Current)
+}
+
+// VerifyEventLogData validates the event log against the PCRs in the provided TpmData.
+func (quote *Quote) VerifyEventLogData(data *TpmData) (bool, error) {
+	if quote.EventLog == "" {
+		return false, ErrNoEventLog
+	}
+
+	logBytes, err := base64.StdEncoding.DecodeString(quote.EventLog)
+	if err != nil {
+		return false, fmt.Errorf("decoding event log: %v", err)
+	}
+
+	el, err := attest.ParseEventLog(logBytes)
+	if err != nil {
+		return false, fmt.Errorf("parsing event log: %v", err)
+	}
+
+	// Reconstruct PCRs
+	var pcrs []attest.PCR
+	for idxStr, digestHex := range data.PCRs {
+		idx, err := strconv.Atoi(idxStr)
+		if err != nil {
+			continue
+		}
+		digest, err := hex.DecodeString(digestHex)
+		if err != nil {
+			continue
+		}
+		pcrs = append(pcrs, attest.PCR{
+			Index:     idx,
+			Digest:    digest,
+			DigestAlg: crypto.SHA256,
+		})
+	}
+
+	if _, err := el.Verify(pcrs); err != nil {
+		var replayErr attest.ReplayError
+		if errors.As(err, &replayErr) {
+			return false, fmt.Errorf("%w: invalid PCRs %v", ErrEventLogVerify, replayErr.InvalidPCRs)
+		}
+		return false, fmt.Errorf("%w: %v", ErrEventLogVerify, err)
+	}
+
+	return true, nil
+}
+
+// VerifyGrubBinary validates that the GRUB binaries reported in the event log match the expected checksums and reconstruct the PCR9 value.
+func (quote *Quote) VerifyGrubBinary() error {
+	return quote.VerifyGrubBinaryData(&quote.Current)
+}
+
+// VerifyGrubBinaryData validates the GRUB binaries for the provided TpmData.
+func (quote *Quote) VerifyGrubBinaryData(data *TpmData) error {
+	sentReceived := []FileLog{}
+	if quote.EventLog != "" {
+		logBytes, err := base64.StdEncoding.DecodeString(quote.EventLog)
+		if err == nil {
+			el, err := attest.ParseEventLog(logBytes)
+			if err == nil {
+				events := el.Events(attest.HashSHA256)
+				for _, event := range events {
+					if event.Index != 9 {
+						continue
+					}
+					found := false
+					for _, log := range quote.SentLog {
+						sum, err := hex.DecodeString(log.Checksum)
+						if err == nil && bytes.Equal(sum, event.Digest) {
+							found = true
+							sentReceived = append(sentReceived, log)
+							break
+						}
+					}
+					if !found {
+						wwlog.Warn("Event not found in tpm.json: Digest=%x Data=%s", event.Digest, FormatEventData(event))
+					}
+				}
+			}
+		}
+	} else {
+		sentReceived = quote.SentLog
+	}
+
+	if data.PCRs == nil {
+		return fmt.Errorf("no PCRs in quote")
+	}
+
+	// We expect PCR9
+	pcr9Hex, ok := data.PCRs["9"]
+	if !ok {
+		return fmt.Errorf("PCR9 not present in quote")
+	}
+
+	pcr9, err := hex.DecodeString(pcr9Hex)
+	if err != nil {
+		return fmt.Errorf("failed to decode PCR9: %v", err)
+	}
+
+	// Start with empty SHA256 (32 bytes of zeros)
+	pcr := make([]byte, 32)
+
+	for _, log := range sentReceived {
+		sum, err := hex.DecodeString(log.Checksum)
+		if err != nil {
+			return fmt.Errorf("failed to decode checksum for %s: %v", log.Filename, err)
+		}
+		// TPM Extend: NewPCR = SHA256(OldPCR || DataHash)
+		hasher := sha256.New()
+		hasher.Write(pcr)
+		hasher.Write(sum)
+		pcr = hasher.Sum(nil)
+	}
+
+	if !bytes.Equal(pcr, pcr9) {
+		return fmt.Errorf("PCR9 mismatch: expected %x, got %x", pcr, pcr9)
+	}
+
+	return nil
+}
+
+// GetManufacturer parses the EK certificate's Subject Alternative Name extension
+// to find the tcg-at-tpmManufacturer attribute and returns the mapped manufacturer name.
+func (data *TpmData) GetManufacturer() string {
+	if data.EKCert == "" {
+		return "Unknown"
+	}
+
+	certBytes, err := base64.StdEncoding.DecodeString(data.EKCert)
+	if err != nil {
+		return "Unknown"
+	}
+
+	cert, err := x509.ParseCertificate(certBytes)
+	if err != nil {
+		return "Unknown"
+	}
+
+	for _, ext := range cert.Extensions {
+		if !ext.Id.Equal(oidExtensionSubjectAltName) {
+			continue
+		}
+
+		var seq asn1.RawValue
+		if _, err := asn1.Unmarshal(ext.Value, &seq); err != nil {
+			continue
+		}
+
+		if !seq.IsCompound || seq.Tag != asn1.TagSequence {
+			continue
+		}
+
+		rest := seq.Bytes
+		for len(rest) > 0 {
+			var v asn1.RawValue
+			var err error
+			rest, err = asn1.Unmarshal(rest, &v)
+			if err != nil {
+				continue
+			}
+
+			// directoryName has tag 4
+			if v.Tag == 4 && v.Class == asn1.ClassContextSpecific {
+				var rdnSeq pkix.RDNSequence
+				if _, err := asn1.Unmarshal(v.Bytes, &rdnSeq); err != nil {
+					continue
+				}
+
+				for _, rdn := range rdnSeq {
+					for _, atv := range rdn {
+						if atv.Type.Equal(oidTpmManufacturer) {
+							if str, ok := atv.Value.(string); ok {
+								// Format is typically "id:1022" or "id:53544D20"
+								id := strings.TrimPrefix(str, "id:")
+								id = strings.ToUpper(id)
+
+								if name, ok := tpmManufacturers[id]; ok {
+									return name
+								}
+								// Strip 0x if present
+								id = strings.TrimPrefix(id, "0X")
+								if name, ok := tpmManufacturers[id]; ok {
+									return name
+								}
+								return "Unknown (" + str + ")"
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return "Unknown"
+}
+
+// GetManufacturer parses the EK certificate's Subject Alternative Name extension
+// to find the tcg-at-tpmManufacturer attribute and returns the mapped manufacturer name.
+func (quote *Quote) GetManufacturer() string {
+	return quote.Current.GetManufacturer()
+}
+
+// VerifyAndDisplay validates the TPM quote and logs the result using wwlog.
+// If displayEvent is true, it returns the formatted event log.
+func (quote *Quote) VerifyAndDisplay(pcrFilter []int, displayEvent bool) (string, error) {
+	return quote.VerifyAndDisplayData(&quote.Current, pcrFilter, displayEvent)
+}
+
+// VerifyAndDisplayData validates the provided TpmData and returns a formatted event log if requested.
+func (quote *Quote) VerifyAndDisplayData(data *TpmData, pcrFilter []int, displayEvent bool) (string, error) {
+	wwlog.Info("TPM Manufacturer: %s", data.GetManufacturer())
+	if data.EKPub != "" {
+		if ekPubBytes, err := base64.StdEncoding.DecodeString(data.EKPub); err == nil {
+			hash := sha256.Sum256(ekPubBytes)
+			wwlog.Info("EKPub (SHA256): %x", hash)
+		} else {
+			wwlog.Warn("EKPub: invalid base64")
+		}
+	}
+	if data.AKPub != "" {
+		if akPubBytes, err := base64.StdEncoding.DecodeString(data.AKPub); err == nil {
+			hash := sha256.Sum256(akPubBytes)
+			wwlog.Info("AKPub (SHA256): %x", hash)
+		} else {
+			wwlog.Warn("AKPub: invalid base64")
+		}
+	}
+
+	if !data.HasQuote() {
+		return "", fmt.Errorf("TPM Quote not available")
+	}
+
+	if verified, err := data.Verify(); !verified {
+		return "", fmt.Errorf("Quote Verification Failed: %v", err)
+	}
+
+	wwlog.Info("Quote Verification Successful")
+
+	var eventLogStr string
+	if quote.EventLog != "" {
+		if verified, err := quote.VerifyEventLogData(data); !verified {
+			return "", fmt.Errorf("Event Log Verification Failed: %v", err)
+		} else {
+			wwlog.Info("Event Log Verification Successful")
+		}
+
+		if err := quote.VerifyGrubBinaryData(data); err != nil {
+			return "", fmt.Errorf("GRUB Binary Log Verification Failed: %v", err)
+		} else {
+			wwlog.Info("GRUB Binary Log Verification Successful")
+		}
+		if displayEvent {
+			var err error
+			eventLogStr, err = DisplayEventLog(quote.EventLog, pcrFilter)
+			if err != nil {
+				wwlog.Warn("Failed to format event log: %v", err)
+			}
+		}
+	}
+	return eventLogStr, nil
+}
+
+// Equal compares two TpmData structures for equality, ignoring PCRs 8, 9 and 10 which may change.
+// It also ignores Quote, Signature and Nonce which are always unique for each quote.
+// AKPub and its creation data are ignored because they are regenerated if a node is re-provisioned;
+// only the hardware identity (EKPub and EKCert) is considered strictly stable.
+func (data *TpmData) Equal(other *TpmData) bool {
+	if data.EKCert != other.EKCert || data.EKPub != other.EKPub {
+		return false
+	}
+	for k, v := range data.PCRs {
+		if k == "8" || k == "9" || k == "10" {
+			continue
+		}
+		if v2, ok := other.PCRs[k]; !ok || v != v2 {
+			return false
+		}
+	}
+	for k, v := range other.PCRs {
+		if k == "8" || k == "9" || k == "10" {
+			continue
+		}
+		if v2, ok := data.PCRs[k]; !ok || v != v2 {
+			return false
+		}
+	}
+	return true
+}
+
+// Diff returns a list of PCRs that are different between two TpmData structures.
+func (data *TpmData) Diff(other *TpmData) []string {
+	var diff []string
+	keys := make(map[string]struct{})
+	for k := range data.PCRs {
+		keys[k] = struct{}{}
+	}
+	for k := range other.PCRs {
+		keys[k] = struct{}{}
+	}
+	sortedKeys := slices.Sorted(maps.Keys(keys))
+	for _, k := range sortedKeys {
+		if v, ok := data.PCRs[k]; ok {
+			if v2, ok2 := other.PCRs[k]; ok2 {
+				if v != v2 {
+					diff = append(diff, k)
+				}
+			} else {
+				diff = append(diff, k)
+			}
+		} else {
+			diff = append(diff, k)
+		}
+	}
+	return diff
+}
+
+// DisplayEventLog decodes and parses the base64-encoded TPM event log,
+// returning a formatted string representation of the events.
+func DisplayEventLog(b64Log string, pcrFilter []int) (string, error) {
+	logBytes, err := base64.StdEncoding.DecodeString(b64Log)
+	if err != nil {
+		return "", fmt.Errorf("decoding event log: %v", err)
+	}
+
+	el, err := attest.ParseEventLog(logBytes)
+	if err != nil {
+		return "", fmt.Errorf("parsing event log: %v", err)
+	}
+
+	events := el.Events(attest.HashSHA256)
+
+	var sb bytes.Buffer
+	sb.WriteString("TPM Event Log (SHA256):\n")
+	pcrEvents := make(map[int][]string)
+	for _, event := range events {
+		pcrEvents[event.Index] = append(pcrEvents[event.Index], fmt.Sprintf("Type=%s Digest=%x Data=%s\n", event.Type, event.Digest, FormatEventData(event)))
+	}
+	for _, idx := range slices.Sorted(maps.Keys(pcrEvents)) {
+		if len(pcrFilter) > 0 {
+			found := false
+			for _, p := range pcrFilter {
+				if p == idx {
+					found = true
+					break
+				}
+			}
+			if !found {
+				continue
+			}
+		}
+		for _, ev := range pcrEvents[idx] {
+			sb.WriteString(fmt.Sprintf("PCR[%d] %s", idx, ev))
+		}
+	}
+	return sb.String(), nil
+}

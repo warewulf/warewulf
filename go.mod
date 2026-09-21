@@ -16,6 +16,7 @@ require (
 	github.com/creasty/defaults v1.8.0
 	github.com/fatih/color v1.19.0
 	github.com/go-chi/chi/v5 v5.3.2
+	github.com/google/go-attestation v0.6.1
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-version v1.9.0
 	github.com/kinbiko/jsonassert v1.2.0
@@ -75,6 +76,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-containerregistry v0.20.3 // indirect
+	github.com/google/go-tpm v0.9.8 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.28.0 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
