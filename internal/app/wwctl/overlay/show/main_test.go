@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"path"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -183,37 +184,25 @@ nodes:
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Run("overlay render host template using 'host' value", func(t *testing.T) {
-		baseCmd.SetArgs([]string{"-r", "host", "testoverlay", "template.ww"})
-		baseCmd := GetCommand()
-		buf := new(bytes.Buffer)
-		baseCmd.SetOut(buf)
-		baseCmd.SetErr(buf)
-		wwlog.SetLogWriter(buf)
-		err := baseCmd.Execute()
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "Id: "+host)
-		assert.Contains(t, buf.String(), "ClusterName: "+host)
-		assert.Contains(t, buf.String(), "BuildHost: "+host)
-	})
-
-	t.Run("overlay render host template using host domain value", func(t *testing.T) {
-		host, err := os.Hostname()
-		if err != nil {
-			t.Fatal(err)
-		}
-		baseCmd.SetArgs([]string{"-r", host, "testoverlay", "template.ww"})
-		baseCmd := GetCommand()
-		buf := new(bytes.Buffer)
-		baseCmd.SetOut(buf)
-		baseCmd.SetErr(buf)
-		wwlog.SetLogWriter(buf)
-		err = baseCmd.Execute()
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "Id: "+host)
-		assert.Contains(t, buf.String(), "ClusterName: "+host)
-		assert.Contains(t, buf.String(), "BuildHost: "+host)
-	})
+	shortHost, _, _ := strings.Cut(host, ".")
+	// "host", the server's own host name and its short form all render as for
+	// the host.
+	for _, nodeName := range []string{"host", host, shortHost} {
+		t.Run("overlay render host template using "+nodeName, func(t *testing.T) {
+			resetShowFlags()
+			baseCmd.SetArgs([]string{"-r", nodeName, "testoverlay", "template.ww"})
+			baseCmd := GetCommand()
+			buf := new(bytes.Buffer)
+			baseCmd.SetOut(buf)
+			baseCmd.SetErr(buf)
+			wwlog.SetLogWriter(buf)
+			err := baseCmd.Execute()
+			assert.NoError(t, err)
+			assert.Contains(t, buf.String(), "Id: "+host)
+			assert.Contains(t, buf.String(), "ClusterName: "+host)
+			assert.Contains(t, buf.String(), "BuildHost: "+host)
+		})
+	}
 
 	t.Run("overlay render rejects unknown node", func(t *testing.T) {
 		resetShowFlags()
