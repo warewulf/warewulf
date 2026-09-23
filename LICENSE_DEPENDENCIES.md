@@ -149,7 +149,7 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/go-logr/stdr/blob/v1.2.2/LICENSE>
 
-## github.com/google/go-containerregistry/pkg/name
+## github.com/google/go-containerregistry/pkg
 
 **License:** Apache-2.0
 
@@ -358,6 +358,12 @@ The dependencies and their licenses are as follows:
 **License:** BSD-3-Clause
 
 **License URL:** <https://github.com/imdario/mergo/blob/v1.0.2/LICENSE>
+
+## github.com/apptainer/sif/v2/pkg/sif
+
+**License:** BSD-3-Clause
+
+**License URL:** <https://github.com/apptainer/sif/blob/v2.21.1/LICENSE.md>
 
 ## github.com/go-jose/go-jose/v4/json
 
