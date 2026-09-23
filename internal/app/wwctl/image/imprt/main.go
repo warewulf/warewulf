@@ -17,6 +17,17 @@ import (
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	source := args[0]
 
+	sifPath := ""
+	if local := strings.TrimPrefix(source, "file://"); util.IsFile(local) {
+		isSIF, err := image.IsSIF(local)
+		if err != nil {
+			return fmt.Errorf("could not read %s: %w", local, err)
+		}
+		if isSIF {
+			sifPath = local
+		}
+	}
+
 	// Shim in a name if none given.
 	name := ""
 	if len(args) == 2 {
@@ -24,6 +35,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 	if name == "" {
 		name = path.Base(source)
+		if sifPath != "" {
+			name = strings.TrimSuffix(name, ".sif")
+		}
 		wwlog.Info("Setting image name: %s", name)
 	}
 	if !image.ValidName(name) {
@@ -46,7 +60,12 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if strings.HasPrefix(source, "docker://") || strings.HasPrefix(source, "docker-daemon://") ||
+	if sifPath != "" {
+		if err := image.ImportSIF(sifPath, name); err != nil {
+			_ = image.DeleteSource(name)
+			return fmt.Errorf("could not import image: %s", err.Error())
+		}
+	} else if strings.HasPrefix(source, "docker://") || strings.HasPrefix(source, "docker-daemon://") ||
 		strings.HasPrefix(source, "file://") || util.IsFile(source) {
 		var sCtx *types.SystemContext
 		sCtx, err := image.GetSystemContext(OciNoHttps, OciUsername, OciPassword, Platform)

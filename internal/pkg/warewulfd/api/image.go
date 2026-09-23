@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/swaggest/usecase"
@@ -10,6 +11,7 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/image"
 	"github.com/warewulf/warewulf/internal/pkg/kernel"
 	"github.com/warewulf/warewulf/internal/pkg/node"
+	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -81,7 +83,7 @@ func getImageByName() usecase.Interactor {
 func importImage() usecase.Interactor {
 	type importImageInput struct {
 		Name     string `path:"name" required:"true" description:"Name of image to import"`
-		URI      string `json:"uri" required:"true" description:"OCI registry URI to import image definition from"`
+		URI      string `json:"uri" required:"true" description:"OCI registry URI (docker://) or absolute path to a SIF file on the server to import image from"`
 		NoHttps  bool   `json:"nohttps" default:"false" description:"Use http, rather than https, to communicate with the registry, default:'false'"`
 		User     string `json:"user" description:"Username for the registry, if needed"`
 		Password string `json:"password" description:"Password for the registry, if needed"`
@@ -90,12 +92,27 @@ func importImage() usecase.Interactor {
 	u := usecase.NewInteractor(func(ctx context.Context, input importImageInput, output *Image) error {
 		wwlog.Debug("api.importImage(Name:%v, URI:%v, NoHttps:%v, User:%v, Password:[redacted])",
 			input.Name, input.URI, input.NoHttps, input.User)
+		sifPath := ""
 		if !strings.HasPrefix(input.URI, "docker://") {
-			return status.Wrap(fmt.Errorf("missing docker:// prefix: %s", input.URI), status.InvalidArgument)
+			sifPath = strings.TrimPrefix(input.URI, "file://")
+			if !filepath.IsAbs(sifPath) || !util.IsFile(sifPath) {
+				return status.Wrap(fmt.Errorf("uri must use docker:// or be an absolute path to a SIF file: %s", input.URI), status.InvalidArgument)
+			}
+			if isSIF, err := image.IsSIF(sifPath); err != nil || !isSIF {
+				return status.Wrap(fmt.Errorf("not a SIF file: %s", input.URI), status.InvalidArgument)
+			}
 		}
 
 		if !image.ValidName(input.Name) {
 			return status.Wrap(fmt.Errorf("name contains illegal characters: %s", input.Name), status.InvalidArgument)
+		}
+
+		if sifPath != "" {
+			if err := image.ImportSIF(sifPath, input.Name); err != nil {
+				return err
+			}
+			*output = *NewImage(input.Name)
+			return nil
 		}
 
 		if sctx, err := image.GetSystemContext(input.NoHttps, input.User, input.Password, ""); err != nil {
@@ -109,7 +126,7 @@ func importImage() usecase.Interactor {
 		}
 	})
 	u.SetTitle("Import an image")
-	u.SetDescription("Import an OS image from an OCI registry")
+	u.SetDescription("Import an OS image from an OCI registry or a SIF file on the server")
 	u.SetTags("Image")
 
 	return u

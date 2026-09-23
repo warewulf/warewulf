@@ -52,8 +52,8 @@ Importing Images
 ================
 
 Before any cluster nodes can be provisioned, you must import an image. Images
-may be imported from an OCI registry, a local OCI archive, or a local directory
-or Apptainer sandbox.
+may be imported from an OCI registry, a local OCI archive, a local SIF image, or
+a local directory or Apptainer sandbox.
 
 OCI Registry
 ------------
@@ -130,6 +130,26 @@ Podman can save a ``.tar`` archive of an OCI image.
 
    podman save ghcr.io/warewulf/warewulf-rockylinux:8 >rockylinux-8.tar
    wwctl image import rockylinux-8.tar rockylinux-8
+
+Local SIF Images
+----------------
+
+Images in the Singularity Image Format (SIF), as built by Apptainer or
+SingularityCE, can be imported directly. Warewulf detects SIF images by their
+contents, so the file does not need a ``.sif`` extension, and Apptainer does not
+need to be installed on the Warewulf server.
+
+.. code-block:: shell
+
+   apptainer build rockylinux-8.sif docker://ghcr.io/warewulf/warewulf-rockylinux:8
+   wwctl image import rockylinux-8.sif rockylinux-8
+
+If no name is given, the file name without its ``.sif`` extension is used.
+
+The primary system partition of the SIF image is extracted into the image. It
+must be a squashfs filesystem compressed with gzip, xz, or zstd. OCI-SIF images
+(for example, those built with ``singularity build --oci``) and encrypted SIF
+images are not supported, and SIF signatures are not verified.
 
 Local Directories and Apptainer Sandboxes
 -----------------------------------------

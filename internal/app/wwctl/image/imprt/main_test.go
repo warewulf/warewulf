@@ -12,6 +12,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
+	"github.com/warewulf/warewulf/internal/pkg/squashfs/squashfstest"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 )
@@ -284,5 +285,50 @@ func Test_CobraRunE_Import(t *testing.T) {
 		assert.True(t, util.IsFile(env.GetPath(otherFilePath)), "file-kept should still exist")
 		content := env.ReadFile(otherFilePath)
 		assert.Equal(t, "persist", content, "file-kept content should be preserved")
+	})
+}
+
+func Test_CobraRunE_ImportSIF(t *testing.T) {
+	sifEntries := []squashfstest.Entry{
+		{Path: "bin/sh", Mode: 0o755, Content: []byte("shell")},
+	}
+
+	t.Run("Import SIF", func(t *testing.T) {
+		resetFlags()
+		env := testenv.New(t)
+		defer env.RemoveAll()
+
+		sifPath := env.GetPath("test-image.sif")
+		assert.NoError(t, squashfstest.WriteSIF(sifPath, sifEntries))
+
+		err := CobraRunE(&cobra.Command{}, []string{sifPath, "custom-name"})
+		assert.NoError(t, err)
+		assert.Equal(t, "shell", env.ReadFile("var/lib/warewulf/chroots/custom-name/rootfs/bin/sh"))
+	})
+
+	t.Run("Import SIF file URI default name", func(t *testing.T) {
+		resetFlags()
+		env := testenv.New(t)
+		defer env.RemoveAll()
+
+		sifPath := env.GetPath("test-image.sif")
+		assert.NoError(t, squashfstest.WriteSIF(sifPath, sifEntries))
+
+		err := CobraRunE(&cobra.Command{}, []string{"file://" + sifPath})
+		assert.NoError(t, err)
+		assert.Equal(t, "shell", env.ReadFile("var/lib/warewulf/chroots/test-image/rootfs/bin/sh"))
+	})
+
+	t.Run("Import SIF Without Shell", func(t *testing.T) {
+		resetFlags()
+		env := testenv.New(t)
+		defer env.RemoveAll()
+
+		sifPath := env.GetPath("test-image.sif")
+		assert.NoError(t, squashfstest.WriteSIF(sifPath, []squashfstest.Entry{{Path: "etc/hostname", Mode: 0o644}}))
+
+		err := CobraRunE(&cobra.Command{}, []string{sifPath, "no-shell"})
+		assert.ErrorContains(t, err, "has no /bin/sh")
+		assert.False(t, util.IsDir(env.GetPath("var/lib/warewulf/chroots/no-shell")), "failed import should be removed")
 	})
 }

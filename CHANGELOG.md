@@ -26,6 +26,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   Warewulf server itself. It is mutually exclusive with `--render`.
 - Add a comma-separated `overlays` list of host overlays for each configured
   service in `warewulf.conf`, applied by `wwctl configure`.
+- `wwctl image import` and the REST API can import SIF images. SIF images are
+  detected automatically and extracted without Apptainer or Singularity.
 
 ### Changed
 
