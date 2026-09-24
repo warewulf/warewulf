@@ -162,7 +162,11 @@ func Build(entries []Entry, opts Options) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer enc.Close()
+
+		defer func() {
+			_ = enc.Close()
+		}()
+
 		b.zstd = enc
 	}
 	b.inodes = &mdWriter{b: b}

@@ -232,7 +232,11 @@ func (sq *Reader) decompress(src []byte, limit int) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer zr.Close()
+
+		defer func() {
+			_ = zr.Close()
+		}()
+
 		rd = zr
 	case compXZ:
 		xr, err := xz.NewReader(bytes.NewReader(src))

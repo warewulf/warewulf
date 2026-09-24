@@ -27,7 +27,11 @@ func IsSIF(path string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	defer f.Close()
+
+	defer func() {
+		_ = f.Close()
+	}()
+
 	buf := make([]byte, len(sifMagic))
 	if _, err := f.ReadAt(buf, sifMagicOffset); err != nil {
 		if errors.Is(err, io.EOF) {
@@ -49,7 +53,10 @@ func ImportSIF(uri string, name string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+
+	defer func() {
+		_ = f.Close()
+	}()
 
 	img, err := sif.LoadContainer(f, sif.OptLoadWithCloseOnUnload(false))
 	if err != nil {
