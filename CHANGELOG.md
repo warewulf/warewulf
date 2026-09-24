@@ -24,52 +24,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add IPMI address of nodes to /etc/hosts of master node
 - `wwctl overlay show --render-host` renders an overlay template as for the
   Warewulf server itself. It is mutually exclusive with `--render`.
-- Each service in `warewulf.conf` now has an `overlays` setting: a
-  comma-separated list of host overlays that `wwctl configure` applies for
-  that service (`dhcp:overlays`, `tftp:overlays`, `nfs:overlays`,
-  `ssh:overlays` and the new `hostfile:overlays`). Overlays are applied left
-  to right, with files from the rightmost overlay taking precedence. There
-  is no compiled-in default: the packaged `warewulf.conf` supplies values
-  appropriate to the operating system, and `wwctl upgrade config` recommends
-  a value for each empty `overlays` based on that service's configured
-  `systemd name` (`dhcpd`/`isc-dhcp-server` -> `dhcpd`, `dnsmasq` ->
-  `dnsmasq`, `tftp`/`tftpd`/`tftpd-hpa` -> `tftproot`, `dnsmasq` ->
-  `dnsmasq,tftproot` for TFTP, `nfs-server`/`nfsd`/`nfs-kernel-server` ->
-  `nfsd`, plus `ssh.wwctl` and `hosts`). `warewulf:host overlay` remains as the
-  global switch for disabling host overlays entirely.
+- Add a comma-separated `overlays` list of host overlays for each configured
+  service in `warewulf.conf`, applied by `wwctl configure`.
 
 ### Changed
 
 - `wwctl overlay show --render` now reports an error for an undefined node
   name, rather than silently rendering the template as for the Warewulf
-  server. `--render=host`, `--render=<server hostname>` and the new
-  `--render-host` render as for the server.
+  server.
 - Add an `ipv6_method` node tag to set the NetworkManager `[ipv6]` method.
   `disabled` or `ignore` methods cause a static address to be omitted.
-- The monolithic `host` overlay is split into one host overlay per service it
-  configures: `dhcpd` (`etc/dhcp/dhcpd.conf.ww`), `dnsmasq`
-  (`etc/dnsmasq.d/ww4-hosts.conf.ww`, `etc/dnsmasq.d/ww4-listen.conf.ww`),
-  `nfsd` (`etc/exports.ww`), `tftproot` (`grub.cfg.ww`) and `ssh.wwctl`
-  (`etc/profile.d/ssh_setup.sh.ww`, `etc/profile.d/ssh_setup.csh.ww`). Each
-  `wwctl configure` subcommand now builds only the overlays for the service it
-  configures, rather than all of them. Warewulf no longer ships a `host`
-  overlay, but a site overlay of that name is still applied, after the
-  overlays above, so that existing local customizations keep working.
-- The `host` overlay's `etc/hosts.ww` is merged into the existing `hosts`
-  overlay, so a single template now renders `/etc/hosts` for both the
-  Warewulf server and the nodes. On the server it still preserves everything
-  above the `# Do not edit after this line` marker; on a node it still
-  generates the whole file. As a result, node `/etc/hosts` files now also
-  receive a `NODENAME-ipmi` entry for each node that has a BMC address.
-- `wwctl configure tftp` now builds the `tftproot` overlay, so `grub.cfg` in
-  the TFTP root is written by the subcommand that owns it.
-- The integration test suite now also runs on Debian 12, alongside the
-  existing Enterprise Linux and openSUSE jobs.
+- Split the monolithic `host` overlay for per-service application into `dhcpd`,
+  `dnsmasq`, `tftproot`, and `ssh.wwctl` overlays.
+- Adapted the `hosts` overlay for suitability as a host overlay (applied to the
+  Warewulf server).
+- Removed in-template service-enablement guards from `dhcpd` and `nfs` host
+  overlays.
 
 ### Fixed
 
 - The dhcpd overlay's openSUSE `/etc/dhcpd.conf` compatibility symlink no
   longer also renders `dhcpd.conf.ww` a second time.
+- Generate warnings from relative rather than exact permissions when applying
+  host overlays.
 
 ## v4.7.2, unreleased
 

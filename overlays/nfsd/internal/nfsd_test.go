@@ -26,7 +26,7 @@ func Test_nfsdOverlay(t *testing.T) {
 		{
 			name: "nfsd:/etc/exports",
 			conf: "warewulf.conf",
-			args: []string{"--render", "host", "nfsd", "etc/exports.ww"},
+			args: []string{"--render-host", "nfsd", "etc/exports.ww"},
 			log:  nfsd_exports,
 		},
 	}

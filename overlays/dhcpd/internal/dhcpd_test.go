@@ -26,13 +26,13 @@ func Test_dhcpdOverlay(t *testing.T) {
 		{
 			name: "dhcpd:/etc/dhcp/dhcpd.conf",
 			conf: "warewulf.conf",
-			args: []string{"--render", "host", "dhcpd", "etc/dhcp/dhcpd.conf.ww"},
+			args: []string{"--render-host", "dhcpd", "etc/dhcp/dhcpd.conf.ww"},
 			log:  dhcpd_conf,
 		},
 		{
 			name: "dhcpd:/etc/dhcp/dhcpd.conf(static)",
 			conf: "warewulf.conf-static",
-			args: []string{"--render", "host", "dhcpd", "etc/dhcp/dhcpd.conf.ww"},
+			args: []string{"--render-host", "dhcpd", "etc/dhcp/dhcpd.conf.ww"},
 			log:  dhcpd_conf_static,
 		},
 	}

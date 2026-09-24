@@ -286,8 +286,7 @@ hostfile
 
 ``wwctl configure hostfile`` updates the Warewulf server's ``/etc/hosts`` file
 to include expected configuration for the server itself as well as the known
-names of the cluster nodes and their interfaces. Entries from the server's
-``/etc/hosts`` file are distributed to cluster nodes by the ``hosts`` overlay.
+names of the cluster nodes and their interfaces.
 
 .. code-block:: yaml
 

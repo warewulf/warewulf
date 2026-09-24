@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
-	"slices"
 	"strings"
 	"sync"
 	"text/template"
@@ -802,32 +801,14 @@ func BuildAllOverlays(nodes []node.Node, allNodes []node.Node, workerCount int) 
 	return nil
 }
 
-// sharedHostOverlays are also assigned to nodes, so their rootfs
-// permissions are not checked.
-var sharedHostOverlays = []string{"hosts"}
-
 /*
 Build the named overlays for the host, in order, with files from the
-rightmost overlay taking precedence. The legacy host overlay is always
-applied last if it exists.
+rightmost overlay taking precedence.
 */
 func BuildHostOverlay(overlayNames ...string) error {
-	if len(overlayNames) == 0 {
-		wwlog.Warn("No host overlays configured: set <service>:overlays in warewulf.conf or run `wwctl upgrade config`")
-	}
-	if !slices.Contains(overlayNames, "host") {
-		overlayNames = append(slices.Clone(overlayNames), "host")
-	}
-
-	var build []string
-	for _, overlayName := range overlayNames {
-		ok, err := checkHostOverlay(overlayName)
-		if err != nil {
-			return err
-		}
-		if ok {
-			build = append(build, overlayName)
-		}
+	build, err := hostOverlaysToBuild(overlayNames)
+	if err != nil {
+		return err
 	}
 	if len(build) == 0 {
 		return nil
@@ -845,7 +826,26 @@ func BuildHostOverlay(overlayNames ...string) error {
 	if err != nil {
 		return err
 	}
-	return BuildOverlayIndir(hostData, allNodes, build, "/")
+	return buildOverlayIndir(hostData, allNodes, build, "/", true)
+}
+
+// hostOverlaysToBuild filters the named host overlays down to those that
+// exist, in the order given. Overlays are only ever built for the host
+// because a service named them: there is no implicit addition of the
+// legacy `host` overlay, which would otherwise apply every service's
+// configuration during every `wwctl configure` subcommand.
+func hostOverlaysToBuild(overlayNames []string) ([]string, error) {
+	var build []string
+	for _, overlayName := range overlayNames {
+		ok, err := checkHostOverlay(overlayName)
+		if err != nil {
+			return nil, err
+		}
+		if ok {
+			build = append(build, overlayName)
+		}
+	}
+	return build, nil
 }
 
 // checkHostOverlay reports whether a host overlay exists and warns if its
@@ -853,25 +853,21 @@ func BuildHostOverlay(overlayNames ...string) error {
 func checkHostOverlay(overlayName string) (bool, error) {
 	overlay_, err := Get(overlayName)
 	if errors.Is(err, ErrDoesNotExist) {
-		if overlayName == "host" {
-			wwlog.Debug("No %s overlay to apply", overlayName)
-		} else {
-			wwlog.Warn("Skipping host overlay %s: overlay does not exist", overlayName)
-		}
+		wwlog.Warn("Skipping host overlay %s: overlay does not exist", overlayName)
 		return false, nil
 	} else if err != nil {
 		return false, err
-	}
-	if overlayName == "host" {
-		wwlog.Warn("Applying deprecated %s overlay: migrate its files to the per-service host overlays and remove it", overlayName)
 	}
 	stats, err := os.Stat(overlay_.Rootfs())
 	if err != nil {
 		return false, fmt.Errorf("could not build host overlay %s: %w", overlayName, err)
 	}
-	secure := stats.Mode() == os.FileMode(0o750|os.ModeDir) || stats.Mode() == os.FileMode(0o700|os.ModeDir)
-	if !secure && !slices.Contains(sharedHostOverlays, overlayName) {
-		wwlog.SecWarn("Permissions of host overlay dir %s are %s (750 is considered as secure)", overlay_.Rootfs(), stats.Mode())
+	// Host overlays are applied to the Warewulf server's own / as root, so
+	// anyone who can write to one can modify this system.
+	if stats.Mode().Perm()&0o022 != 0 {
+		wwlog.SecWarn("Host overlay %s: %s is writable by group or other (%#o)."+
+			" Its contents are applied to / as root.",
+			overlayName, overlay_.Rootfs(), stats.Mode().Perm())
 	}
 	return true, nil
 }
@@ -963,6 +959,13 @@ func BuildOverlay(nodeConf node.Node, allNodes []node.Node, context string, over
 
 // Build the given overlays for a node in the given directory.
 func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []string, outputDir string) error {
+	return buildOverlayIndir(nodeData, allNodes, overlayNames, outputDir, false)
+}
+
+// buildOverlayIndir builds the given overlays into outputDir. hostOverlay
+// marks the build as being for the Warewulf server itself rather than for
+// a node, and is exposed to templates as .HostOverlay.
+func buildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []string, outputDir string, hostOverlay bool) error {
 	if len(overlayNames) == 0 {
 		return nil
 	}
@@ -1016,6 +1019,7 @@ func BuildOverlayIndir(nodeData node.Node, allNodes []node.Node, overlayNames []
 					return fmt.Errorf("failed to initial data for %s: %w", nodeData.Id(), err)
 				}
 				tstruct.BuildSource = walkPath
+				tstruct.HostOverlay = hostOverlay
 				wwlog.Verbose("Evaluating overlay template file: %s", walkPath)
 
 				rendered, err := RenderTemplate(walkPath, tstruct)

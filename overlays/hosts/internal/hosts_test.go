@@ -38,7 +38,7 @@ func Test_hostsOverlay(t *testing.T) {
 		},
 		{
 			name:   "hosts:/etc/hosts(server)",
-			args:   []string{"--render", hostname, "hosts", "etc/hosts.ww"},
+			args:   []string{"--render-host", "hosts", "etc/hosts.ww"},
 			log:    hosts_server,
 			header: "# Do not edit after this line",
 		},
@@ -65,6 +65,41 @@ func Test_hostsOverlay(t *testing.T) {
 			assert.Equal(t, strings.ReplaceAll(tt.log, "%HOSTNAME%", hostname), log)
 		})
 	}
+}
+
+// Test_hostsOverlayNodeNamedLikeServer checks that a node whose name happens
+// to match the Warewulf server's host name still renders as a node. The
+// template selects on .HostOverlay; selecting on the name would give this
+// node the server's own /etc/hosts.
+func Test_hostsOverlayNodeNamedLikeServer(t *testing.T) {
+	hostname, _ := os.Hostname()
+	env := testenv.New(t)
+	defer env.RemoveAll()
+	env.ImportFile("etc/warewulf/warewulf.conf", "warewulf.conf")
+	assert.NoError(t, config.Get().Read(env.GetPath("etc/warewulf/warewulf.conf"), false))
+	env.WriteFile("etc/warewulf/nodes.conf", `nodes:
+  `+hostname+`:
+    network devices:
+      default:
+        device: wwnet0
+        ipaddr: 192.168.3.99
+`)
+	env.ImportFile("var/lib/warewulf/overlays/hosts/rootfs/etc/hosts.ww", "../rootfs/etc/hosts.ww")
+
+	cmd := show.GetCommand()
+	cmd.SetArgs([]string{"--render", hostname, "hosts", "etc/hosts.ww"})
+	stdout := bytes.NewBufferString("")
+	stderr := bytes.NewBufferString("")
+	logbuf := bytes.NewBufferString("")
+	cmd.SetOut(stdout)
+	cmd.SetErr(stderr)
+	wwlog.SetLogWriter(logbuf)
+	assert.NoError(t, cmd.Execute())
+
+	log := logbuf.String()
+	assert.Contains(t, log, "127.0.0.1", "expected the node branch, with loopback entries")
+	assert.NotContains(t, log, "# Do not edit after this line",
+		"node render must not include the server's own /etc/hosts")
 }
 
 // skipHeader keeps the three leading render metadata lines and everything

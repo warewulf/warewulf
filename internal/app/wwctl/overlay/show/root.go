@@ -43,6 +43,20 @@ func init() {
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
+//
+// baseCmd and the variables its flags bind to are package-level, and cobra
+// neither resets those variables nor clears Changed between parses. Reset
+// them here so that repeated use in a single process -- tests, mostly --
+// starts from the flag defaults. This is called once per command tree,
+// before any flags are parsed, so it never discards a parsed value.
 func GetCommand() *cobra.Command {
+	NodeName = ""
+	RenderHost = false
+	Quiet = false
+	for _, name := range []string{"render", "render-host", "quiet"} {
+		if flag := baseCmd.PersistentFlags().Lookup(name); flag != nil {
+			flag.Changed = false
+		}
+	}
 	return baseCmd
 }

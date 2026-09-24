@@ -31,7 +31,7 @@ func Test_tftprootOverlay(t *testing.T) {
 			// grub.cfg.ww redirects its output into the TFTP root with file(),
 			// so the rendered file name is absolute rather than "grub.cfg".
 			name: "tftproot:grub.cfg",
-			args: []string{"--render", "host", "tftproot", "grub.cfg.ww"},
+			args: []string{"--render-host", "tftproot", "grub.cfg.ww"},
 			log:  tftproot_grub_cfg,
 		},
 	}

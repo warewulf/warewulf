@@ -36,19 +36,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	overlayFile := overlay_.File(fileName)
 
-	// "host" and the server's own host name (fully-qualified or short) render
-	// as for the host, the same as --render-host.
-	if NodeName != "" && !RenderHost {
-		hostName, err := os.Hostname()
-		if err != nil {
-			return fmt.Errorf("could not get host name: %s", err)
-		}
-		shortName, _, _ := strings.Cut(hostName, ".")
-		if NodeName == "host" || NodeName == hostName || NodeName == shortName {
-			RenderHost = true
-		}
-	}
-
 	if NodeName == "" && !RenderHost {
 		// No node specified: show the raw template source without rendering.
 		if !util.IsFile(overlayFile) {
@@ -102,6 +89,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			return err
 		}
 		tstruct.BuildSource = overlayFile
+		tstruct.HostOverlay = RenderHost
 		rendered, err := overlay.RenderTemplate(overlayFile, tstruct)
 		if err != nil {
 			return err

@@ -27,19 +27,19 @@ func Test_dnsmasqOverlay(t *testing.T) {
 		{
 			name: "dnsmasq:ww4-hosts.conf",
 			conf: "warewulf.conf",
-			args: []string{"--render", "host", "dnsmasq", "etc/dnsmasq.d/ww4-hosts.conf.ww"},
+			args: []string{"--render-host", "dnsmasq", "etc/dnsmasq.d/ww4-hosts.conf.ww"},
 			log:  dnsmasq_hosts,
 		},
 		{
 			name: "dnsmasq:ww4-hosts.conf(static)",
 			conf: "warewulf.conf-static",
-			args: []string{"--render", "host", "dnsmasq", "etc/dnsmasq.d/ww4-hosts.conf.ww"},
+			args: []string{"--render-host", "dnsmasq", "etc/dnsmasq.d/ww4-hosts.conf.ww"},
 			log:  dnsmasq_hosts_static,
 		},
 		{
 			name: "dnsmasq:ww4-listen.conf",
 			conf: "warewulf.conf",
-			args: []string{"--render", "host", "dnsmasq", "etc/dnsmasq.d/ww4-listen.conf.ww"},
+			args: []string{"--render-host", "dnsmasq", "etc/dnsmasq.d/ww4-listen.conf.ww"},
 			log:  dnsmasq_listen,
 		},
 	}

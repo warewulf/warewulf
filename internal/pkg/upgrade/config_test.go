@@ -11,6 +11,9 @@ var configUpgradeTests = []struct {
 	name         string
 	legacyYaml   string
 	upgradedYaml string
+	// retainLegacyHostOverlay simulates a `host` overlay still present on
+	// disk, which the caller detects and passes to Upgrade.
+	retainLegacyHostOverlay bool
 }{
 	{
 		name:       "empty",
@@ -959,6 +962,100 @@ hostfile:
   overlays: hosts
 `,
 	},
+	{
+		name:                    "legacy host overlay retained",
+		retainLegacyHostOverlay: true,
+		legacyYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: dhcpd
+tftp:
+  enabled: true
+  systemd name: tftp
+nfs:
+  enabled: true
+  systemd name: nfs-server
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: dhcpd
+  overlays: dhcpd,host
+tftp:
+  enabled: true
+  systemd name: tftp
+  overlays: tftproot,host
+nfs:
+  enabled: true
+  systemd name: nfs-server
+  overlays: nfsd,host
+ssh:
+  overlays: ssh.wwctl,host
+hostfile:
+  overlays: hosts,host
+`,
+	},
+	{
+		// A service whose systemd name is unrecognized infers no overlay of
+		// its own, so the retained legacy overlay is all it has -- which is
+		// exactly what such a site applies today.
+		name:                    "legacy host overlay retained for unrecognized systemd names",
+		retainLegacyHostOverlay: true,
+		legacyYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: mystery-dhcp
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: mystery-dhcp
+  overlays: host
+ssh:
+  overlays: ssh.wwctl,host
+hostfile:
+  overlays: hosts,host
+`,
+	},
+	{
+		// An administrator who already listed `host` should not get it twice.
+		name:                    "legacy host overlay not duplicated",
+		retainLegacyHostOverlay: true,
+		legacyYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: dhcpd
+  overlays: host,dhcpd
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: dhcpd
+  overlays: host,dhcpd
+ssh:
+  overlays: ssh.wwctl,host
+hostfile:
+  overlays: hosts,host
+`,
+	},
 }
 
 func Test_UpgradeConfig(t *testing.T) {
@@ -966,7 +1063,7 @@ func Test_UpgradeConfig(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			legacy, err := ParseConfig([]byte(tt.legacyYaml))
 			assert.NoError(t, err)
-			upgraded := legacy.Upgrade()
+			upgraded := legacy.Upgrade(tt.retainLegacyHostOverlay)
 			upgradedYaml, err := upgraded.Dump()
 			assert.NoError(t, err)
 			assert.Equal(t, strings.TrimSpace(tt.upgradedYaml), strings.TrimSpace(string(upgradedYaml)))

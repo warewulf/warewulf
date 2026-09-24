@@ -27,12 +27,12 @@ func Test_sshWwctlOverlay(t *testing.T) {
 	}{
 		{
 			name: "ssh.wwctl:ssh_setup.sh",
-			args: []string{"--render", "host", "ssh.wwctl", "etc/profile.d/ssh_setup.sh.ww"},
+			args: []string{"--render-host", "ssh.wwctl", "etc/profile.d/ssh_setup.sh.ww"},
 			log:  ssh_setup_sh,
 		},
 		{
 			name: "ssh.wwctl:ssh_setup.csh",
-			args: []string{"--render", "host", "ssh.wwctl", "etc/profile.d/ssh_setup.csh.ww"},
+			args: []string{"--render-host", "ssh.wwctl", "etc/profile.d/ssh_setup.csh.ww"},
 			log:  ssh_setup_csh,
 		},
 	}

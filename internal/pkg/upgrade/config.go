@@ -2,6 +2,7 @@ package upgrade
 
 import (
 	"net"
+	"slices"
 	"strconv"
 
 	"gopkg.in/yaml.v3"
@@ -9,6 +10,10 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
+
+// legacyHostOverlay is the name of the monolithic host overlay that
+// Warewulf shipped before it was split into one overlay per service.
+const legacyHostOverlay = "host"
 
 func ParseConfig(data []byte) (warewulfYaml *WarewulfYaml, err error) {
 	warewulfYaml = new(WarewulfYaml)
@@ -41,7 +46,15 @@ type WarewulfYaml struct {
 	WWClient        *WWClientConf `yaml:"wwclient"`
 }
 
-func (legacy *WarewulfYaml) Upgrade() (upgraded *config.WarewulfYaml) {
+// Upgrade converts a legacy warewulf.conf to the current format.
+//
+// retainLegacyHostOverlay records that a `host` overlay still exists on
+// disk. Warewulf no longer applies it implicitly, so it is appended to
+// each service's overlay list -- last, as it was previously applied --
+// to preserve the site's existing behavior. The caller is expected to
+// tell the administrator to migrate those files into the per-service
+// host overlays and remove the entries.
+func (legacy *WarewulfYaml) Upgrade(retainLegacyHostOverlay bool) (upgraded *config.WarewulfYaml) {
 	upgraded = new(config.WarewulfYaml)
 	if legacy.WWInternal != "" {
 		logIgnore("WW_INTERNAL", legacy.WWInternal, "obsolete")
@@ -90,6 +103,23 @@ func (legacy *WarewulfYaml) Upgrade() (upgraded *config.WarewulfYaml) {
 	if legacy.Hostfile != nil || legacy.Warewulf != nil {
 		upgraded.Hostfile = legacy.Hostfile.Upgrade()
 	}
+	if retainLegacyHostOverlay {
+		if upgraded.DHCP != nil {
+			appendLegacyHostOverlay(&upgraded.DHCP.Overlays)
+		}
+		if upgraded.TFTP != nil {
+			appendLegacyHostOverlay(&upgraded.TFTP.Overlays)
+		}
+		if upgraded.NFS != nil {
+			appendLegacyHostOverlay(&upgraded.NFS.Overlays)
+		}
+		if upgraded.SSH != nil {
+			appendLegacyHostOverlay(&upgraded.SSH.Overlays)
+		}
+		if upgraded.Hostfile != nil {
+			appendLegacyHostOverlay(&upgraded.Hostfile.Overlays)
+		}
+	}
 	upgraded.MountsImage = make([]*config.MountEntry, 0)
 	for _, mount := range legacy.MountsImage {
 		upgraded.MountsImage = append(upgraded.MountsImage, mount.Upgrade())
@@ -114,6 +144,16 @@ func (legacy *WarewulfYaml) Upgrade() (upgraded *config.WarewulfYaml) {
 		}
 	}
 	return upgraded
+}
+
+// appendLegacyHostOverlay adds the legacy `host` overlay to the end of a
+// service's overlay list, where it takes precedence over the per-service
+// overlays, as it did when it was applied implicitly.
+func appendLegacyHostOverlay(overlays *config.OverlayList) {
+	if slices.Contains(*overlays, legacyHostOverlay) {
+		return
+	}
+	*overlays = append(*overlays, legacyHostOverlay)
 }
 
 type WarewulfConf struct {
