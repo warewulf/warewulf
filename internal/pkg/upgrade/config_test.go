@@ -659,6 +659,12 @@ warewulf:
   secure: true
   secure files: false
   update interval: 60
+dhcp:
+  overlays: dhcpd
+tftp:
+  overlays: tftproot
+nfs:
+  overlays: nfsd
 ssh:
   overlays: ssh.wwctl
 hostfile:
@@ -722,6 +728,8 @@ tftp:
   enabled: true
   systemd name: tftp
   overlays: tftproot
+nfs:
+  overlays: nfsd
 ssh:
   overlays: ssh.wwctl
 hostfile:
@@ -773,6 +781,8 @@ tftp:
   enabled: true
   systemd name: tftp
   overlays: tftproot
+nfs:
+  overlays: nfsd
 ssh:
   overlays: ssh.wwctl
 hostfile:
@@ -815,6 +825,8 @@ tftp:
   enabled: true
   systemd name: tftp
   overlays: tftproot
+nfs:
+  overlays: nfsd
 ssh:
   overlays: ssh.wwctl
 hostfile:
@@ -846,6 +858,8 @@ tftp:
   enabled: true
   systemd name: dnsmasq
   overlays: dnsmasq,tftproot
+nfs:
+  overlays: nfsd
 ssh:
   overlays: ssh.wwctl
 hostfile:
@@ -1023,6 +1037,10 @@ dhcp:
   enabled: true
   systemd name: mystery-dhcp
   overlays: host
+tftp:
+  overlays: tftproot,host
+nfs:
+  overlays: nfsd,host
 ssh:
   overlays: ssh.wwctl,host
 hostfile:
@@ -1050,10 +1068,35 @@ dhcp:
   enabled: true
   systemd name: dhcpd
   overlays: host,dhcpd
+tftp:
+  overlays: tftproot,host
+nfs:
+  overlays: nfsd,host
 ssh:
   overlays: ssh.wwctl,host
 hostfile:
   overlays: hosts,host
+`,
+	},
+	{
+		// A legacy config that relied on the default (enabled) services
+		// still gets their host overlays, even without a `warewulf` section.
+		name: "overlays for absent service sections",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+dhcp:
+  overlays: dhcpd
+tftp:
+  overlays: tftproot
+nfs:
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 `,
 	},
 }

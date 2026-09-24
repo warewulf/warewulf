@@ -2,6 +2,7 @@ package upgrade
 
 import (
 	"net"
+	"reflect"
 	"slices"
 	"strconv"
 
@@ -85,22 +86,23 @@ func (legacy *WarewulfYaml) Upgrade(retainLegacyHostOverlay bool) (upgraded *con
 	if legacy.API != nil {
 		upgraded.API = legacy.API.Upgrade()
 	}
-	if legacy.DHCP != nil {
+	// Service sections are upgraded even when absent from a non-empty
+	// legacy config, which relied on their defaults, so that their host
+	// overlays are configured after upgrade.
+	nonEmpty := !reflect.ValueOf(*legacy).IsZero()
+	if legacy.DHCP != nil || nonEmpty {
 		upgraded.DHCP = legacy.DHCP.Upgrade()
 	}
-	if legacy.TFTP != nil {
+	if legacy.TFTP != nil || nonEmpty {
 		upgraded.TFTP = legacy.TFTP.Upgrade()
 	}
-	if legacy.NFS != nil {
+	if legacy.NFS != nil || nonEmpty {
 		upgraded.NFS = legacy.NFS.Upgrade()
 	}
-	// ssh and hostfile are recommended even when absent from the legacy
-	// config, so that their host overlays are configured after upgrade.
-	// legacy.Warewulf is used as a proxy for a non-empty config.
-	if legacy.SSH != nil || legacy.Warewulf != nil {
+	if legacy.SSH != nil || nonEmpty {
 		upgraded.SSH = legacy.SSH.Upgrade()
 	}
-	if legacy.Hostfile != nil || legacy.Warewulf != nil {
+	if legacy.Hostfile != nil || nonEmpty {
 		upgraded.Hostfile = legacy.Hostfile.Upgrade()
 	}
 	if retainLegacyHostOverlay {
@@ -154,6 +156,13 @@ func appendLegacyHostOverlay(overlays *config.OverlayList) {
 		return
 	}
 	*overlays = append(*overlays, legacyHostOverlay)
+}
+
+// logUnrecognizedService warns that no host overlays could be recommended
+// for a service because its systemd name is not recognized.
+func logUnrecognizedService(service, systemdName string) {
+	wwlog.Warn("Unrecognized %s systemd name %q: no host overlays recommended;"+
+		" set `%s:overlays` in warewulf.conf.", service, systemdName, service)
 }
 
 type WarewulfConf struct {
@@ -215,6 +224,9 @@ type DHCPConf struct {
 }
 
 func (legacy *DHCPConf) Upgrade() (upgraded *config.DHCPConf) {
+	if legacy == nil {
+		legacy = new(DHCPConf)
+	}
 	upgraded = new(config.DHCPConf)
 	upgraded.EnabledP = legacy.Enabled
 	upgraded.Template = legacy.Template
@@ -230,6 +242,8 @@ func (legacy *DHCPConf) Upgrade() (upgraded *config.DHCPConf) {
 			upgraded.Overlays = config.OverlayList{"dhcpd"}
 		case "dnsmasq":
 			upgraded.Overlays = config.OverlayList{"dnsmasq"}
+		default:
+			logUnrecognizedService("dhcp", legacy.SystemdName)
 		}
 	}
 	return upgraded
@@ -244,6 +258,9 @@ type TFTPConf struct {
 }
 
 func (legacy *TFTPConf) Upgrade() (upgraded *config.TFTPConf) {
+	if legacy == nil {
+		legacy = new(TFTPConf)
+	}
 	upgraded = new(config.TFTPConf)
 	upgraded.EnabledP = legacy.Enabled
 	upgraded.TftpRoot = legacy.TftpRoot
@@ -259,6 +276,8 @@ func (legacy *TFTPConf) Upgrade() (upgraded *config.TFTPConf) {
 			upgraded.Overlays = config.OverlayList{"tftproot"}
 		case "dnsmasq":
 			upgraded.Overlays = config.OverlayList{"dnsmasq", "tftproot"}
+		default:
+			logUnrecognizedService("tftp", legacy.SystemdName)
 		}
 	}
 	return upgraded
@@ -273,6 +292,9 @@ type NFSConf struct {
 }
 
 func (legacy *NFSConf) Upgrade() (upgraded *config.NFSConf) {
+	if legacy == nil {
+		legacy = new(NFSConf)
+	}
 	upgraded = new(config.NFSConf)
 	upgraded.EnabledP = legacy.Enabled
 	upgraded.ExportsExtended = make([]*config.NFSExportConf, 0)
@@ -290,6 +312,8 @@ func (legacy *NFSConf) Upgrade() (upgraded *config.NFSConf) {
 		switch legacy.SystemdName {
 		case "", "nfs-server", "nfsd", "nfs-kernel-server":
 			upgraded.Overlays = config.OverlayList{"nfsd"}
+		default:
+			logUnrecognizedService("nfs", legacy.SystemdName)
 		}
 	}
 	return upgraded

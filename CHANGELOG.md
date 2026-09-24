@@ -35,11 +35,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Add an `ipv6_method` node tag to set the NetworkManager `[ipv6]` method.
   `disabled` or `ignore` methods cause a static address to be omitted.
 - Split the monolithic `host` overlay for per-service application into `dhcpd`,
-  `dnsmasq`, `tftproot`, and `ssh.wwctl` overlays.
+  `dnsmasq`, `tftproot`, `nfsd`, and `ssh.wwctl` overlays.
 - Adapted the `hosts` overlay for suitability as a host overlay (applied to the
-  Warewulf server).
-- Removed in-template service-enablement guards from `dhcpd` and `nfs` host
+  Warewulf server). Nodes' `/etc/hosts` now also includes `<node>-ipmi`
+  entries.
+- Removed in-template service-enablement guards from `dhcpd` and `nfsd` host
   overlays.
+- **Breaking:** The `host` overlay has been removed and host overlays are no
+  longer applied implicitly. Each service's host overlays must be listed in its
+  `overlays` key in `warewulf.conf` (`dhcp`, `tftp`, `nfs`, `ssh`, and
+  `hostfile`); `wwctl configure` does not apply host overlays for a service
+  with no `overlays` listed. Run `wwctl upgrade config` after upgrading to add
+  them to an existing `warewulf.conf`.
 
 ### Fixed
 

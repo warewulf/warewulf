@@ -223,7 +223,8 @@ nodes:
 		err := baseCmd.Execute()
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "Id: "+host)
-		assert.Contains(t, buf.String(), "ClusterName: "+host)
+		// matches BuildHostOverlay, which does not set a cluster name
+		assert.NotContains(t, buf.String(), "ClusterName: "+host)
 		assert.Contains(t, buf.String(), "BuildHost: "+host)
 	})
 }

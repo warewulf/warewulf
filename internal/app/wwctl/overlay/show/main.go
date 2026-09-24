@@ -20,9 +20,7 @@ func hostNode() (node.Node, error) {
 	if err != nil {
 		return node.Node{}, fmt.Errorf("could not get host name: %s", err)
 	}
-	hostConf := node.NewNode(hostName)
-	hostConf.ClusterName = hostName
-	return hostConf, nil
+	return node.NewNode(hostName), nil
 }
 
 func CobraRunE(cmd *cobra.Command, args []string) error {

@@ -51,16 +51,17 @@ func UpgradeNodesConf(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	// Warewulf no longer applies a `host` overlay implicitly. If one is
-	// still present, retain it explicitly so that the site's existing
-	// customizations keep being applied after the upgrade.
+	// Warewulf no longer applies a `host` overlay implicitly. If a site
+	// `host` overlay is still present, retain it explicitly so that the
+	// site's existing customizations keep being applied after the upgrade.
+	// A stale distribution copy (e.g. left by `make install`) is ignored.
 	retainLegacyHostOverlay := false
-	if _, err := overlay.Get("host"); err == nil {
+	if o, err := overlay.Get("host"); err == nil && o.IsSiteOverlay() {
 		retainLegacyHostOverlay = true
 		wwlog.Warn("Found a legacy `host` overlay: adding it to each service's `overlays`" +
 			" so that it continues to be applied. Migrate its files into the per-service" +
 			" host overlays and remove those entries.")
-	} else if !errors.Is(err, overlay.ErrDoesNotExist) {
+	} else if err != nil && !errors.Is(err, overlay.ErrDoesNotExist) {
 		return err
 	}
 	upgraded := legacy.Upgrade(retainLegacyHostOverlay)

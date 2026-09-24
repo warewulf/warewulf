@@ -845,7 +845,7 @@ existing ``wwbackup`` files.)
    ``host``, which every service applied. Warewulf no longer ships a ``host``
    overlay, and no longer applies a site overlay of that name implicitly.
 
-   When ``wwctl upgrade config`` finds a ``host`` overlay still on disk, it
+   When ``wwctl upgrade config`` finds a site ``host`` overlay still on disk, it
    appends ``host`` to each service's ``overlays``, at the end of the list
    where it keeps the precedence it used to have, so that local
    customizations continue to take effect. Move those customizations into the

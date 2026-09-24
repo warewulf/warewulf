@@ -58,13 +58,13 @@ func TFTP() (err error) {
 		}
 	}
 
+	if err := buildHostOverlays("tftp", controller.TFTP.Overlays); err != nil {
+		wwlog.Warn("host overlay could not be built: %s", err)
+	}
+
 	if !controller.TFTP.Enabled() {
 		wwlog.Warn("Warewulf does not auto start TFTP services due to disable by warewulf.conf")
 		return nil
-	}
-
-	if err := buildHostOverlays("tftp", controller.TFTP.Overlays); err != nil {
-		wwlog.Warn("host overlay could not be built: %s", err)
 	}
 
 	wwlog.Info("Enabling and restarting the TFTP services")
