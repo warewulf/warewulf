@@ -3,6 +3,7 @@ package upgrade
 import (
 	"fmt"
 	"net"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -63,7 +64,7 @@ func (legacy *NodesYaml) Upgrade(addDefaults bool, replaceOverlays bool, warewul
 	}
 	for name, node := range legacy.Nodes {
 		upgraded.Nodes[name] = node.Upgrade(addDefaults, replaceOverlays)
-		if addDefaults && !util.InSlice(upgraded.Nodes[name].Profiles, "default") {
+		if addDefaults && !slices.Contains(upgraded.Nodes[name].Profiles, "default") {
 			wwlog.Warn("node %s does not include the default profile: verify default settings manually", name)
 		}
 	}

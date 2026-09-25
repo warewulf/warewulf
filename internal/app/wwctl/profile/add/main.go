@@ -2,13 +2,13 @@ package add
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"gopkg.in/yaml.v3"
 
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/node"
-	"github.com/warewulf/warewulf/internal/pkg/util"
 )
 
 func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err error) {
@@ -53,7 +53,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			return fmt.Errorf("could not open database: %w", err)
 		}
 		for _, p := range args {
-			if util.InSlice(nodeDB.ListAllProfiles(), p) {
+			if slices.Contains(nodeDB.ListAllProfiles(), p) {
 				return fmt.Errorf("profile with name %s already exists", p)
 			}
 			pNew, err := nodeDB.AddProfile(p)
