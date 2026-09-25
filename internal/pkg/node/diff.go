@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/goccy/go-yaml"
 	"github.com/warewulf/warewulf/internal/pkg/hostlist"
-	"gopkg.in/yaml.v3"
 )
 
 // Change is a single field-level difference.

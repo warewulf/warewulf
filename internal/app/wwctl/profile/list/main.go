@@ -5,8 +5,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/goccy/go-yaml"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 
 	"github.com/warewulf/warewulf/internal/app/wwctl/table"
 	"github.com/warewulf/warewulf/internal/pkg/node"

@@ -4,8 +4,8 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 
+	"github.com/goccy/go-yaml"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
-	"gopkg.in/yaml.v3"
 )
 
 /*
