@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -172,15 +173,19 @@ func TestCanReuseFileHash(t *testing.T) {
 		Hash:          "abc",
 	}
 
+	// Baseline was captured well after the recorded mtime, so the mtime can
+	// be trusted to detect later modifications.
+	capturedAt := time.Unix(0, baseline.MTimeUnixNano).Add(time.Hour)
+
 	current := baseline
-	assert.True(t, canReuseFileHash(current, baseline))
+	assert.True(t, canReuseFileHash(current, baseline, capturedAt))
 
 	current.MTimeUnixNano = 2000
-	assert.False(t, canReuseFileHash(current, baseline))
+	assert.False(t, canReuseFileHash(current, baseline, capturedAt))
 
 	current = baseline
 	current.Inode = 99
-	assert.False(t, canReuseFileHash(current, baseline))
+	assert.False(t, canReuseFileHash(current, baseline, capturedAt))
 
 	current = baseline
 	current.Inode = 0
@@ -188,7 +193,13 @@ func TestCanReuseFileHash(t *testing.T) {
 	baselineNoID := baseline
 	baselineNoID.Inode = 0
 	baselineNoID.Device = 0
-	assert.True(t, canReuseFileHash(current, baselineNoID))
+	assert.True(t, canReuseFileHash(current, baselineNoID, capturedAt))
+
+	// A file written in the same timestamp tick as the baseline scan may be
+	// rewritten without its mtime changing, so its hash must not be reused.
+	current = baseline
+	assert.False(t, canReuseFileHash(current, baseline, time.Unix(0, baseline.MTimeUnixNano)))
+	assert.False(t, canReuseFileHash(current, baseline, time.Time{}))
 }
 
 func TestDedupeTopLevelIncludes(t *testing.T) {

@@ -14,6 +14,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 )
 
 // EntryType describes the kind of filesystem entry.
@@ -82,7 +83,16 @@ type ScanOptions struct {
 	ScanWorkers     int
 	HashWorkers     int
 	BaselineEntries map[string]Entry
+	// BaselineCapturedAt records when BaselineEntries were taken. Baseline
+	// hashes are only reused for files whose mtime is older than this, so
+	// modifications hidden by filesystem timestamp granularity are not missed.
+	BaselineCapturedAt time.Time
 }
+
+// mtimeGranularity is the coarsest filesystem timestamp resolution we assume.
+// A file modified within this window of the baseline scan can keep the mtime
+// it had during that scan, so its recorded hash can not be trusted.
+const mtimeGranularity = time.Second
 
 type hashJob struct {
 	absPath string
@@ -308,7 +318,7 @@ func scanTreeInto(rootAbs string, walkRoot string, includes []string, excludes [
 				entry.Device = uint64(stat.Dev)
 			}
 
-			if baseline, ok := options.BaselineEntries[relPath]; ok && canReuseFileHash(entry, baseline) {
+			if baseline, ok := options.BaselineEntries[relPath]; ok && canReuseFileHash(entry, baseline, options.BaselineCapturedAt) {
 				entry.Hash = baseline.Hash
 			} else {
 				*hashJobs = append(*hashJobs, hashJob{absPath: current, relPath: relPath})
@@ -448,11 +458,14 @@ func isSkippableScanError(err error) bool {
 		errors.Is(err, syscall.ENXIO)
 }
 
-func canReuseFileHash(current Entry, baseline Entry) bool {
+func canReuseFileHash(current Entry, baseline Entry, baselineCapturedAt time.Time) bool {
 	if current.Type != EntryFile || baseline.Type != EntryFile {
 		return false
 	}
 	if baseline.Hash == "" {
+		return false
+	}
+	if !mtimeIsTrustworthy(baseline, baselineCapturedAt) {
 		return false
 	}
 	if current.Size != baseline.Size || current.Mode != baseline.Mode || current.MTimeUnixNano != baseline.MTimeUnixNano {
@@ -466,6 +479,17 @@ func canReuseFileHash(current Entry, baseline Entry) bool {
 	}
 
 	return true
+}
+
+// mtimeIsTrustworthy reports whether an unchanged mtime proves that the file
+// was not touched after the baseline scan. Timestamps recorded close to (or
+// after) the baseline scan can still be reused by a later write, so they are
+// rejected. An unknown baseline time disables hash reuse altogether.
+func mtimeIsTrustworthy(baseline Entry, baselineCapturedAt time.Time) bool {
+	if baselineCapturedAt.IsZero() {
+		return false
+	}
+	return baseline.MTimeUnixNano <= baselineCapturedAt.Add(-mtimeGranularity).UnixNano()
 }
 
 func shouldExclude(path string, excludes []string) bool {
