@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
 	"text/template"
@@ -467,7 +468,7 @@ func walkParseTree(node parse.Node, currentType reflect.Type, currentPath string
 				}
 
 				// Dereference pointers
-				if rangeType.Kind() == reflect.Ptr {
+				if rangeType.Kind() == reflect.Pointer {
 					rangeType = rangeType.Elem()
 				}
 
@@ -637,7 +638,7 @@ func extractFieldFromPipe(pipe *parse.PipeNode) *parse.FieldNode {
 // Methods are resolved and reported. If a method has a backing field with "P" suffix,
 // the backing field's metadata is used; otherwise, the method's return type is used.
 func resolveFieldChain(rootType reflect.Type, idents []string, basePath string) *FieldInfo {
-	if rootType.Kind() == reflect.Ptr {
+	if rootType.Kind() == reflect.Pointer {
 		rootType = rootType.Elem()
 	}
 
@@ -721,7 +722,7 @@ func resolveFieldChain(rootType reflect.Type, idents []string, basePath string) 
 		}
 
 		// Dereference pointer types for next iteration
-		if currentType.Kind() == reflect.Ptr {
+		if currentType.Kind() == reflect.Pointer {
 			currentType = currentType.Elem()
 		}
 

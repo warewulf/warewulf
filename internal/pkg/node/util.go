@@ -58,7 +58,7 @@ func ObjectIsEmpty(obj interface{}) bool {
 	}
 	varType := reflect.TypeOf(obj)
 	varVal := reflect.ValueOf(obj)
-	if varType.Kind() == reflect.Ptr && !varVal.IsNil() {
+	if varType.Kind() == reflect.Pointer && !varVal.IsNil() {
 		elem := varVal.Elem()
 		if elem.Kind() == reflect.Struct {
 			return ObjectIsEmpty(elem.Interface())
@@ -79,7 +79,7 @@ func ObjectIsEmpty(obj interface{}) bool {
 			if varVal.Field(i).Len() != 0 {
 				return false
 			}
-		} else if varType.Field(i).Type.Kind() == reflect.Ptr {
+		} else if varType.Field(i).Type.Kind() == reflect.Pointer {
 			if !ObjectIsEmpty(varVal.Field(i).Interface()) {
 				return false
 			}
