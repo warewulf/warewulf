@@ -58,17 +58,17 @@ Typical options are 19.2, 38.4, and 115.2.
 Power
 =====
 
-The ``wwctl power`` command can query and set the current power state of cluster
+The ``wwctl node power`` command can query and set the current power state of cluster
 nodes.
 
 .. code-block:: console
     
-    wwctl power status n1 # query the current power status
-    wwctl power off n1 # power off a cluster node
-    wwctl power on n1 # power on a cluster node
-    wwctl power reset n1 # forcibly reboot a node
-    wwctl power soft n1 # ask a node to shut down gracefully
-    wwctl power cycle n1 # power a cluster node off, then back on
+    wwctl node power status n1 # query the current power status
+    wwctl node power off n1 # power off a cluster node
+    wwctl node power on n1 # power on a cluster node
+    wwctl node power reset n1 # forcibly reboot a node
+    wwctl node power soft n1 # ask a node to shut down gracefully
+    wwctl node power cycle n1 # power a cluster node off, then back on
 
 Node ranges are supported; e.g., ``n[1-10]``.
 
@@ -139,8 +139,8 @@ All IPMI specific fields are accessible in the template:
 | ``--ipmitemplate``  | ``.Template``      |
 +---------------------+--------------------+
 
-Additionally, the ``.Cmd`` variable includes the relevant ``wwctl power``
-subcommand.
+Additionally, the ``.Cmd`` variable includes the relevant ``wwctl node power``
+action.
 
 * ``PowerOn``
 * ``PowerOff``

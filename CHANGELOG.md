@@ -15,7 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Groups are now available for targeting sets of nodes in `wwctl` commands.
   Declared via a `groups:` field on individual nodes or profiles (the two
   sources are additive). Reference a group from the command line with the
-  `@` prefix, for example `wwctl power reset @rack1`. `@all` is reserved
+  `@` prefix, for example `wwctl node power reset @rack1`. `@all` is reserved
   and always expands to every defined node (unless explicitly excluded
   with `~all`).
 - `wwctl group list [NAME ...]` enumerates every group referenced anywhere
@@ -27,6 +27,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Add an `ipv6_method` node tag to set the NetworkManager `[ipv6]` method.
   `disabled` or `ignore` methods cause a static address to be omitted.
+- Power command is now a subcommand of `wwctl node`, and is now a single
+  command; you can use `on`, `off`, `cycle`, `reset`, `soft`, or `status`
+- Can now use `--fanout` with `wwctl node power status`
 
 ## v4.7.2, unreleased
 
