@@ -104,6 +104,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Overlay templates that create symbolic links remove an existing link if it
   already exists in the overlay. #2252
 - Fix overlay creation of symbolic links over an existing file. #2252
+- Fix rendering `<nil>` in ipxe dracut_static method. #2273
 
 ### Dependencies
 
