@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
 	"text/template"
@@ -852,7 +853,7 @@ func FindOverlays() (overlayList []string) {
 		wwlog.Debug("Evaluating overlay source: %s", file.Name())
 		isdotfile := dotfilecheck.MatchString(file.Name())
 
-		if file.IsDir() && !isdotfile && !util.InSlice(overlayList, file.Name()) {
+		if file.IsDir() && !isdotfile && !slices.Contains(overlayList, file.Name()) {
 			overlayList = append(overlayList, file.Name())
 		}
 	}

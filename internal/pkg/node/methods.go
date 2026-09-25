@@ -3,11 +3,11 @@ package node
 import (
 	"net"
 	"reflect"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
 
-	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -294,7 +294,7 @@ func getYamlString(myType reflect.StructField, excludeList []string) ([]string, 
 	if len(strings.Split(ymlStr, ",")) > 1 {
 		ymlStr = strings.Split(ymlStr, ",")[0]
 	}
-	if util.InSlice(excludeList, ymlStr) {
+	if slices.Contains(excludeList, ymlStr) {
 		return []string{""}, false
 	} else if myType.Tag.Get("comment") == "" && myType.Type.Kind() == reflect.String {
 		return []string{""}, false
@@ -457,5 +457,5 @@ func (netdev *NetDev) IpCIDR6() string {
 var unsetValues = []string{"UNSET", "UNDEF"}
 
 func isUnsetValue(value string) bool {
-	return util.InSlice(unsetValues, value)
+	return slices.Contains(unsetValues, value)
 }

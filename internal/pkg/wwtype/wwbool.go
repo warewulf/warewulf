@@ -2,10 +2,9 @@ package wwtype
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
-
-	"github.com/warewulf/warewulf/internal/pkg/util"
 )
 
 // Simple string which can be converted to bool. Backend storage
@@ -87,5 +86,5 @@ func (b WWbool) Type() string {
 var unsetValues = []string{"unset", "delete", "undef", "--", "nil", "0.0.0.0"}
 
 func isUnsetValue(value string) bool {
-	return util.InSlice(unsetValues, strings.ToLower(value))
+	return slices.Contains(unsetValues, strings.ToLower(value))
 }

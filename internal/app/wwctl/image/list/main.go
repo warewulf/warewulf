@@ -2,6 +2,7 @@ package list
 
 import (
 	"os"
+	"slices"
 	"strconv"
 	"time"
 
@@ -41,7 +42,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			if vars.full {
 				t.AddHeader("IMAGE NAME", "NODES", "KERNEL VERSION", "CREATION TIME", "MODIFICATION TIME", "SIZE")
 				for _, name := range sources {
-					if len(args) > 0 && !util.InSlice(args, name) {
+					if len(args) > 0 && !slices.Contains(args, name) {
 						continue
 					}
 					kernelVersion := ""
@@ -80,7 +81,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			} else if vars.kernel {
 				t.AddHeader("IMAGE NAME", "NODES", "KERNEL VERSION")
 				for _, name := range sources {
-					if len(args) > 0 && !util.InSlice(args, name) {
+					if len(args) > 0 && !slices.Contains(args, name) {
 						continue
 					}
 					kernelVersion := ""
@@ -96,7 +97,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			} else if showSize {
 				t.AddHeader("IMAGE NAME", "NODES", "SIZE")
 				for _, name := range sources {
-					if len(args) > 0 && !util.InSlice(args, name) {
+					if len(args) > 0 && !slices.Contains(args, name) {
 						continue
 					}
 					sz := util.ByteToString(int64(image.ImageSize(name)))
@@ -125,7 +126,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 				return err
 			}
 			for _, name := range list {
-				if len(args) > 0 && !util.InSlice(args, name) {
+				if len(args) > 0 && !slices.Contains(args, name) {
 					continue
 				}
 				t.AddLine(name)
