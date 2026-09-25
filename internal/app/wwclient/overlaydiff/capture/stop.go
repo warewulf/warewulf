@@ -134,6 +134,7 @@ func runStop(cmd *cobra.Command, args []string) error {
 		scanOptions.IncludeRoots = defaultIncludeRoots
 	}
 	scanOptions.BaselineEntries = snapshot.Entries
+	scanOptions.BaselineCapturedAt = snapshot.CreatedAt
 	entries, err := overlaydiff.ScanTreeWithOptions(sourceAbs, scanOptions)
 	if err != nil {
 		return err
