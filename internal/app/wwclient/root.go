@@ -24,6 +24,7 @@ import (
 	"github.com/opencontainers/selinux/go-selinux"
 	"github.com/siderolabs/go-smbios/smbios"
 	"github.com/spf13/cobra"
+	"github.com/warewulf/warewulf/internal/app/wwclient/overlaydiff"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/pidfile"
 	"github.com/warewulf/warewulf/internal/pkg/version"
@@ -52,6 +53,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&DebugFlag, "debug", "d", false, "Run with debugging messages enabled.")
 	rootCmd.PersistentFlags().StringVarP(&PIDFile, "pidfile", "p", "/var/run/wwclient.pid", "PIDFile to use")
 	rootCmd.PersistentFlags().StringVar(&WarewulfConfArg, "warewulfconf", "", "Set the warewulf configuration file")
+	rootCmd.AddCommand(overlaydiff.GetCommand())
 
 }
 
