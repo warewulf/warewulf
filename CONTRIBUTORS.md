@@ -109,3 +109,4 @@
 - Jorge L Florit <jlflorit@gmail.com> [@conxuro](https://github.com/conxuro)
 - Travis Greene <trg244@msstate.edu> [@sn8to](https://github.com/sn8to)
 - Logan Enright <lenright@ciq.com> [loag-ciq](https://github.com/loag-ciq)
+- Shelby McCowan <itsme@shelbymccowan.com> [@MusicDev33](https://github.com/MusicDev33)
