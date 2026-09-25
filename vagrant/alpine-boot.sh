@@ -9,8 +9,8 @@ apptainer build -s /tmp/alpine-rootfs alpine-bootable.def
 wwctl image import --force /tmp/alpine-rootfs alpine
 wwctl image build alpine
 
-wwctl power off n1
-wwctl power off n2
+wwctl node power off n1
+wwctl node power off n2
 
 if ! wwctl overlay list | grep "alpine-net" >/dev/null; then
 	wwctl overlay create alpine-net
@@ -42,6 +42,6 @@ wwctl node set -y --image=alpine --profile=alpine n2
 wwctl overlay build n1
 wwctl overlay build n2
 
-wwctl power on n1
-wwctl power on n2
+wwctl node power on n1
+wwctl node power on n2
 

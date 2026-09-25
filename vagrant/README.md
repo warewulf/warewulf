@@ -66,7 +66,7 @@ Key architectural components:
 
 4. **Automated Provisioning**: The `init-wwctl.sh` script grows the root partition, installs Warewulf (version controlled via `WW_VERSION` env var), configures services, and sets up the vbmc systemd service. Nodes are registered via `add-ww-nodes.sh` with MAC addresses matching the Vagrantfile definitions.
 
-The result is a functional Warewulf cluster where `wwctl power on/off n1/n2` commands control the compute nodes through IPMI, and the nodes boot their operating system images via network provisioning.
+The result is a functional Warewulf cluster where `wwctl node power on/off n1/n2` commands control the compute nodes through IPMI, and the nodes boot their operating system images via network provisioning.
 
 ## Quick Start
 
@@ -149,10 +149,10 @@ vagrant ssh wwctl
 To then power-cycle the compute nodes you would do the following:
 
 ```shell
-sudo wwctl power off n1
-sudo wwctl power off n2
-sudo wwctl power on n1
-sudo wwctl power on n2
+sudo wwctl node power off n1
+sudo wwctl node power off n2
+sudo wwctl node power on n1
+sudo wwctl node power on n2
 ```
 
 ## System Setup: `libvirt`, `vagrant-libvirt`, and `Vagrant` Installation
@@ -536,7 +536,7 @@ The example uses Alpine Linux, but you can create and test other distributions:
 
    ```shell
    sudo wwctl node set n1,n2 --container rocky
-   sudo wwctl power cycle n1,n2
+   sudo wwctl node power cycle n1,n2
    ```
 
 ### Snapshot and Restore
