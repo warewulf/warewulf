@@ -50,6 +50,23 @@ func (config *NodesYaml) FindByIpaddr(ipaddr string) (Node, error) {
 }
 
 /*
+Find a node by its machine-id
+*/
+func (config *NodesYaml) FindByMachineId(machineId string) (Node, error) {
+	if machineId == "" {
+		return Node{}, errors.New("empty machine ID")
+	}
+	nodeList, _ := config.FindAllNodes()
+	for _, node := range nodeList {
+		if strings.EqualFold(node.MachineId, machineId) {
+			return node, nil
+		}
+	}
+
+	return Node{}, ErrNotFound
+}
+
+/*
 Check if the Object is empty, has no valid values
 */
 func ObjectIsEmpty(obj interface{}) bool {

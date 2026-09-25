@@ -1209,3 +1209,9 @@ func Test_UpgradeNodesYaml(t *testing.T) {
 		})
 	}
 }
+
+func init() {
+	MachineIdGenerator = func() string {
+		return ""
+	}
+}

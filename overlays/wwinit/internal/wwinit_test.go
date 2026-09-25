@@ -21,6 +21,7 @@ func Test_wwinitOverlay(t *testing.T) {
 	env.ImportFile("var/lib/warewulf/overlays/wwinit/rootfs/warewulf/config.ww", "../rootfs/warewulf/config.ww")
 	env.ImportFile("var/lib/warewulf/overlays/wwinit/rootfs/warewulf/init.d/50-ipmi.ww", "../rootfs/warewulf/init.d/50-ipmi.ww")
 	env.ImportFile("var/lib/warewulf/overlays/wwinit/rootfs/warewulf/mounts.ww", "../rootfs/warewulf/mounts.ww")
+	env.ImportFile("var/lib/warewulf/overlays/wwinit/rootfs/etc/machine-id.ww", "../rootfs/etc/machine-id.ww")
 
 	tests := []struct {
 		name string
@@ -31,6 +32,11 @@ func Test_wwinitOverlay(t *testing.T) {
 			name: "wwinit:warewulf.conf.ww",
 			args: []string{"--render", "node1", "wwinit", "etc/warewulf/warewulf.conf.ww"},
 			log:  wwinit_warewulf_conf,
+		},
+		{
+			name: "wwinit:machine-id.ww",
+			args: []string{"--render", "node1", "wwinit", "etc/machine-id.ww"},
+			log:  wwinit_machine_id,
 		},
 		{
 			name: "wwinit:config.ww",
@@ -245,4 +251,10 @@ writeFile: true
 Filename: warewulf/mounts
 
 /dev/sdb1 ext4 /mnt/bar
+`
+
+const wwinit_machine_id string = `backupFile: true
+writeFile: true
+Filename: etc/machine-id
+a1b2c3d4e5f60718293a4b5c6d7e8f90
 `
