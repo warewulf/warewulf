@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"path"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -183,8 +184,37 @@ nodes:
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Run("overlay render host template using 'host' value", func(t *testing.T) {
-		baseCmd.SetArgs([]string{"-r", "host", "testoverlay", "template.ww"})
+	shortHost, _, _ := strings.Cut(host, ".")
+	// --render names a node and nothing else: "host" and the server's own host
+	// name are not special, and --render-host is the only way to render as the
+	// server.
+	for _, nodeName := range []string{"host", host, shortHost, "nosuchnode"} {
+		t.Run("overlay render rejects undefined node "+nodeName, func(t *testing.T) {
+			baseCmd.SetArgs([]string{"-r", nodeName, "testoverlay", "template.ww"})
+			baseCmd := GetCommand()
+			buf := new(bytes.Buffer)
+			baseCmd.SetOut(buf)
+			baseCmd.SetErr(buf)
+			wwlog.SetLogWriter(buf)
+			err := baseCmd.Execute()
+			assert.ErrorContains(t, err, "node not found: "+nodeName)
+			assert.ErrorContains(t, err, "--render-host")
+		})
+	}
+
+	t.Run("overlay render rejects render with render-host", func(t *testing.T) {
+		baseCmd.SetArgs([]string{"--render-host", "-r", "node1", "testoverlay", "template.ww"})
+		baseCmd := GetCommand()
+		buf := new(bytes.Buffer)
+		baseCmd.SetOut(buf)
+		baseCmd.SetErr(buf)
+		wwlog.SetLogWriter(buf)
+		err := baseCmd.Execute()
+		assert.Error(t, err)
+	})
+
+	t.Run("overlay render host template using --render-host", func(t *testing.T) {
+		baseCmd.SetArgs([]string{"--render-host", "testoverlay", "template.ww"})
 		baseCmd := GetCommand()
 		buf := new(bytes.Buffer)
 		baseCmd.SetOut(buf)
@@ -193,25 +223,8 @@ nodes:
 		err := baseCmd.Execute()
 		assert.NoError(t, err)
 		assert.Contains(t, buf.String(), "Id: "+host)
-		assert.Contains(t, buf.String(), "ClusterName: "+host)
-		assert.Contains(t, buf.String(), "BuildHost: "+host)
-	})
-
-	t.Run("overlay render host template using host domain value", func(t *testing.T) {
-		host, err := os.Hostname()
-		if err != nil {
-			t.Fatal(err)
-		}
-		baseCmd.SetArgs([]string{"-r", host, "testoverlay", "template.ww"})
-		baseCmd := GetCommand()
-		buf := new(bytes.Buffer)
-		baseCmd.SetOut(buf)
-		baseCmd.SetErr(buf)
-		wwlog.SetLogWriter(buf)
-		err = baseCmd.Execute()
-		assert.NoError(t, err)
-		assert.Contains(t, buf.String(), "Id: "+host)
-		assert.Contains(t, buf.String(), "ClusterName: "+host)
+		// matches BuildHostOverlay, which does not set a cluster name
+		assert.NotContains(t, buf.String(), "ClusterName: "+host)
 		assert.Contains(t, buf.String(), "BuildHost: "+host)
 	})
 }

@@ -131,7 +131,7 @@ Default: true
 
 An IP address which defines the start of a dynamic address range which
 can be used when configuring the DHCP service. Provided to the host
-overlay as the variable \fB$.Dhcp.RangeStart\fP, typically for use in
+overlays as the variable \fB$.Dhcp.RangeStart\fP, typically for use in
 generating dhcpd.conf or similar.
 
 Templates typically expect this range to be within the \fBnetwork\fP
@@ -143,7 +143,7 @@ defined above.
 
 An IP address which defines the end of a dynamic address range which
 can be used when configuring the DHCP service. Provided to the host
-overlay as the variable \fB$.Dhcp.RangeEnd\fP, typically for use in
+overlays as the variable \fB$.Dhcp.RangeEnd\fP, typically for use in
 generating dhcpd.conf or similar.
 
 Templates typically expect this range to be within the \fBnetwork\fP
@@ -157,6 +157,22 @@ The systemd unit name which will be used to (re)start the DHCP service
 during \fBwwctl-configure(1)\fP, if necessary.
 
 Default: dhcpd
+.IP
+
+.TP
+\fBoverlays\fP
+
+A comma-separated list of host overlays which \fBwwctl-configure(1)\fP
+applies when configuring the DHCP service. Overlays are applied left to
+right, with files from the rightmost overlay taking precedence.
+
+There is no compiled-in default: the value is supplied by the
+\fBwarewulf.conf\fP packaged for the operating system, and
+\fBwwctl-upgrade(1)\fP recommends one based on \fBsystemd name\fP.
+Typically \fBdhcpd\fP, or \fBdnsmasq\fP where dnsmasq provides DHCP.
+
+If a service has no overlays, \fBwwctl-configure(1)\fP warns and does not
+regenerate that service's configuration.
 .IP
 
 .SS TFTP
@@ -181,6 +197,15 @@ The systemd unit name which will be used to (re)start the TFTP service
 during \fBwwctl-configure(1)\fP, if necessary.
 
 Default: tftp
+.IP
+
+.TP
+\fBoverlays\fP
+
+A comma-separated list of host overlays which \fBwwctl-configure(1)\fP
+applies when configuring the TFTP service. Typically \fBtftproot\fP, or
+\fBdnsmasq,tftproot\fP where dnsmasq provides TFTP. See \fBoverlays\fP
+under \fBDHCP\fP above.
 .IP
 
 .SS NFS
@@ -210,7 +235,7 @@ section for overall structure.)
 \fBpath\fP
 
 The path on the server to be exported via the NFS service. Provided to
-the host overlay as the variable \fB.Nfs.ExportsExtended[].Path\fP,
+the host overlays as the variable \fB.Nfs.ExportsExtended[].Path\fP,
 typically for use in generating /etc/exports or similar.
 .IP
 
@@ -218,7 +243,7 @@ typically for use in generating /etc/exports or similar.
 \fBexport options\fP
 
 The NFS export options to use when exporting the given \fBpath\fP via
-the NFS service. Provided to the host overlay as the variable
+the NFS service. Provided to the host overlays as the variable
 \fB.Nfs.ExportsExtended[].ExportOptions\fP, typically for use in
 generating /etc/exports or similar.
 
@@ -235,6 +260,53 @@ The systemd unit name which will be used to (re)start the NFS service
 during \fBwwctl-configure(1)\fP, if necessary.
 
 Default: nfsd
+.IP
+
+.TP
+\fBoverlays\fP
+
+A comma-separated list of host overlays which \fBwwctl-configure(1)\fP
+applies when configuring the NFS service. Typically \fBnfsd\fP. See
+\fBoverlays\fP under \fBDHCP\fP above.
+.IP
+
+.SS SSH
+.LP
+The \fBssh\fP parameter is a map of individual sub-parameters which
+inform how \fBwwctl-configure(1)\fP should configure ssh on the Warewulf
+server. (See the \fBEXAMPLE\fP section for overall structure.)
+
+.TP
+\fBkey types\fP
+
+The ssh key types for which \fBwwctl-configure(1)\fP generates cluster
+host keys. The first type listed is also used to generate user
+authentication keys.
+
+Default: ed25519, ecdsa, rsa
+.IP
+
+.TP
+\fBoverlays\fP
+
+A comma-separated list of host overlays which \fBwwctl-configure(1)\fP
+applies when configuring ssh. Typically \fBssh.wwctl\fP. See
+\fBoverlays\fP under \fBDHCP\fP above.
+.IP
+
+.SS HOSTFILE
+.LP
+The \fBhostfile\fP parameter is a map of individual sub-parameters which
+inform how \fBwwctl-configure(1)\fP should generate the Warewulf server's
+\fB/etc/hosts\fP. (See the \fBEXAMPLE\fP section for overall structure.)
+
+.TP
+\fBoverlays\fP
+
+A comma-separated list of host overlays which \fBwwctl-configure(1)\fP
+applies when configuring \fB/etc/hosts\fP. Typically \fBhosts\fP, which is
+also assigned to nodes so that they generate their own \fB/etc/hosts\fP
+from the same template. See \fBoverlays\fP under \fBDHCP\fP above.
 .IP
 
 .SH EXAMPLE
@@ -258,9 +330,11 @@ dhcp:
   range start: 10.0.0.10
   range end: 10.0.0.99
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
 nfs:
   enabled: true
   export paths:
@@ -269,6 +343,15 @@ nfs:
   - path: /opt
     export options: ro,sync,no_root_squash
   systemd name: nfs-server
+  overlays: nfsd
+ssh:
+  key types:
+    - ed25519
+    - ecdsa
+    - rsa
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 .EE
 
 .SH SEE ALSO

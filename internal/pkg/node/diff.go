@@ -77,7 +77,7 @@ func diffValue(before, after reflect.Value, path string, out *[]Change) {
 	switch before.Kind() {
 	case reflect.Struct:
 		diffStruct(before, after, path, out)
-	case reflect.Ptr:
+	case reflect.Pointer:
 		bNil := !before.IsValid() || before.IsNil()
 		aNil := !after.IsValid() || after.IsNil()
 		if bNil && aNil {

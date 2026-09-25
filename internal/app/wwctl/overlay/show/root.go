@@ -24,8 +24,9 @@ var (
 			return completions.None(cmd, args, toComplete)
 		},
 	}
-	NodeName string
-	Quiet    bool
+	NodeName   string
+	RenderHost bool
+	Quiet      bool
 )
 
 func init() {
@@ -36,10 +37,26 @@ func init() {
 	}); err != nil {
 		log.Println(err)
 	}
+	baseCmd.PersistentFlags().BoolVar(&RenderHost, "render-host", false, "render the template as for the Warewulf server itself")
+	baseCmd.MarkFlagsMutuallyExclusive("render", "render-host")
 	baseCmd.PersistentFlags().BoolVarP(&Quiet, "quiet", "q", false, "do not print information if multiple, backup files are written")
 }
 
 // GetRootCommand returns the root cobra.Command for the application.
+//
+// baseCmd and the variables its flags bind to are package-level, and cobra
+// neither resets those variables nor clears Changed between parses. Reset
+// them here so that repeated use in a single process -- tests, mostly --
+// starts from the flag defaults. This is called once per command tree,
+// before any flags are parsed, so it never discards a parsed value.
 func GetCommand() *cobra.Command {
+	NodeName = ""
+	RenderHost = false
+	Quiet = false
+	for _, name := range []string{"render", "render-host", "quiet"} {
+		if flag := baseCmd.PersistentFlags().Lookup(name); flag != nil {
+			flag.Changed = false
+		}
+	}
 	return baseCmd
 }

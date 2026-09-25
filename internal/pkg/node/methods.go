@@ -186,7 +186,7 @@ func recursiveFlatten(obj interface{}) (hasContent bool) {
 				}
 			}
 
-		case reflect.Ptr:
+		case reflect.Pointer:
 			if valObj.Elem().Field(i).Addr().IsValid() {
 				// Handle *bool fields separately as they are not structs
 				if typeObj.Elem().Field(i).Type == reflect.TypeOf((*bool)(nil)) {
@@ -258,7 +258,7 @@ func ConfToYaml(obj interface{}, excludeList []string) (lines []string) {
 				lines = append(lines, ymlStr...)
 			}
 		}
-		if field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Struct && field.Tag.Get("yaml") != "" {
+		if field.Type.Kind() == reflect.Pointer && field.Type.Elem().Kind() == reflect.Struct && field.Tag.Get("yaml") != "" {
 			typeLine := field.Tag.Get("yaml")
 			if len(strings.Split(typeLine, ",")) > 1 {
 				typeLine = strings.Split(typeLine, ",")[0] + ":"
@@ -268,7 +268,7 @@ func ConfToYaml(obj interface{}, excludeList []string) (lines []string) {
 			for _, ln := range nestedLine {
 				lines = append(lines, "  "+ln)
 			}
-		} else if field.Type.Kind() == reflect.Map && field.Type.Elem().Kind() == reflect.Ptr {
+		} else if field.Type.Kind() == reflect.Map && field.Type.Elem().Kind() == reflect.Pointer {
 			typeLine := field.Tag.Get("yaml")
 			if len(strings.Split(typeLine, ",")) > 1 {
 				typeLine = strings.Split(typeLine, ",")[0] + ":"
@@ -310,7 +310,7 @@ func getYamlString(myType reflect.StructField, excludeList []string) ([]string, 
 		return []string{ymlStr + ":", "  - string"}, true
 	} else if myType.Type == reflect.TypeOf(map[string]string{}) {
 		return []string{ymlStr + ":", "  key: value"}, true
-	} else if myType.Type.Kind() == reflect.Ptr {
+	} else if myType.Type.Kind() == reflect.Pointer {
 		return []string{ymlStr + ":"}, true
 	}
 	return []string{ymlStr}, true

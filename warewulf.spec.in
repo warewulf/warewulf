@@ -198,8 +198,9 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %{_overlaydir}/chrony/rootfs/*
 %{_overlaydir}/debian.interfaces/rootfs/*
 %{_overlaydir}/debug/rootfs/*
+%{_overlaydir}/dhcpd/rootfs/*
+%{_overlaydir}/dnsmasq/rootfs/*
 %{_overlaydir}/fstab/rootfs/*
-%{_overlaydir}/host/rootfs/*
 %{_overlaydir}/hostname/rootfs/*
 %{_overlaydir}/hosts/rootfs/*
 %{_overlaydir}/ifcfg/rootfs/*
@@ -207,12 +208,15 @@ getent group %{wwgroup} >/dev/null || groupadd -r %{wwgroup}
 %{_overlaydir}/ignition/rootfs/*
 %{_overlaydir}/issue/rootfs/*
 %{_overlaydir}/netplan/rootfs/*
+%{_overlaydir}/nfsd/rootfs/*
 %{_overlaydir}/resolv/rootfs/*
 %attr(700, -, -) %{_overlaydir}/ssh.authorized_keys/rootfs/*
 %{_overlaydir}/ssh.host_keys/rootfs/*
+%{_overlaydir}/ssh.wwctl/rootfs/*
 %{_overlaydir}/syncuser/rootfs/*
 %{_overlaydir}/systemd.netname/rootfs/*
 %{_overlaydir}/systemd.networkd/rootfs/*
+%{_overlaydir}/tftproot/rootfs/*
 %{_overlaydir}/udev.netname/rootfs/*
 %{_overlaydir}/wicked/rootfs/*
 %{_overlaydir}/wwclient/rootfs/*

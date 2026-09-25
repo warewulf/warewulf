@@ -266,7 +266,17 @@ More information about templates is available in :ref:`its own section
 
 The content of the file for the given overlay is displayed with this command.
 With the ``--render`` option a template is rendered as it will be rendered for
-the given node. The node name is a mandatory argument to the ``--render`` flag.
+the given node. The node name is a mandatory argument to the ``--render`` flag,
+and must name a defined node.
+
+Use ``--render-host`` to render a template as it will be rendered for the
+Warewulf server itself, which is how :ref:`host overlays <host-overlays>` are
+built. ``--render`` and ``--render-host`` are mutually exclusive.
+
+.. code-block:: shell
+
+   wwctl overlay show hosts etc/hosts.ww --render-host
+
 Additional information for the file can be suppressed with the ``--quiet``
 option.
 
@@ -710,22 +720,134 @@ for Slurm's ``gres.conf`` file, use the script provided by this overlay on the n
 
   /usr/bin/sh /usr/local/sbin/mig2gres
 
-host
-----
+.. _host-overlays:
 
-Configuration files used for the configuration of the Warewulf host /
-server are stored in the **host** overlay. Unlike other overlays, it
-*must* have the name ``host``. Existing files on the host are copied
-to backup files with a ``wwbackup`` suffix at the first
-run. (Subsequent use of the host overlay won't overwrite existing
-``wwbackup`` files.)
+Host Overlays
+-------------
 
-The following services get configuration files via the host overlay:
+Most overlays configure a Warewulf node. **Host overlays** configure the
+Warewulf server itself. They are applied to the server's own ``/`` rather than
+into a node image.
 
-* ssh keys are created with the scripts ``ssh_setup.sh`` and
-  ``ssh_setup.csh``
-* hosts entries are created by manipulating ``/etc/hosts`` with the
-  template ``hosts.ww``
-* nfs kernel server receives its exports from the template
-  ``exports.ww``
-* the dhcpd service is configured with ``dhcpd.conf.ww``
+Warewulf ships host overlays specific to the services they configure:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Overlay
+     - Templates
+     - Configures
+   * - ``dhcpd``
+     - ``etc/dhcp/dhcpd.conf.ww``
+     - The ISC ``dhcpd`` service. Also installs ``/etc/dhcpd.conf`` as a
+       symlink to ``/etc/dhcp/dhcpd.conf``, for distributions (such as
+       openSUSE) which read the former path.
+   * - ``dnsmasq``
+     - ``etc/dnsmasq.d/ww4-hosts.conf.ww``,
+       ``etc/dnsmasq.d/ww4-listen.conf.ww``
+     - ``dnsmasq``, as an alternative to ``dhcpd``.
+   * - ``hosts``
+     - ``etc/hosts.ww``
+     - ``/etc/hosts``, with an entry for every node network device and BMC.
+       This is the one overlay that is both a host overlay and a node
+       overlay: the same template renders the server's file and the nodes'.
+       On the server it preserves everything above a
+       ``# Do not edit after this line`` marker and regenerates the rest,
+       so hand-written entries survive; on a node it generates the whole
+       file, including the loopback entries.
+   * - ``nfsd``
+     - ``etc/exports.ww``
+     - The exports of the NFS kernel server.
+   * - ``ssh.wwctl``
+     - ``etc/profile.d/ssh_setup.sh.ww``,
+       ``etc/profile.d/ssh_setup.csh.ww``
+     - Login scripts which generate a cluster ssh key for each user on their
+       first login to the server.
+   * - ``tftproot``
+     - ``grub.cfg.ww``
+     - The top-level ``grub.cfg`` in the TFTP root, which is read by nodes
+       that boot via GRUB (see ``warewulf:grubboot``).
+
+Each host overlay is applied by the ``wwctl configure`` subcommand for the
+service it configures, and all of them by ``wwctl configure --all``. Applying
+them can be disabled entirely with ``warewulf:host overlay`` in
+``warewulf.conf``.
+
+Which overlays each service applies is configured with an ``overlays``
+setting in that service's section of ``warewulf.conf``.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Setting
+     - Applied by
+     - Typical value
+   * - ``dhcp:overlays``
+     - ``wwctl configure dhcp``
+     - ``dhcpd`` (``dnsmasq`` where dnsmasq provides DHCP)
+   * - ``tftp:overlays``
+     - ``wwctl configure tftp``
+     - ``tftproot`` (``dnsmasq,tftproot`` where dnsmasq provides TFTP)
+   * - ``nfs:overlays``
+     - ``wwctl configure nfs``
+     - ``nfsd``
+   * - ``ssh:overlays``
+     - ``wwctl configure ssh``
+     - ``ssh.wwctl``
+   * - ``hostfile:overlays``
+     - ``wwctl configure hostfile``
+     - ``hosts``
+
+These settings have no compiled-in default: the values above come from the
+``warewulf.conf`` packaged for each operating system. When a service lists more
+than one overlay, the overlays are applied left to right, with files from the
+rightmost overlay taking precedence.
+
+Customizing host overlays
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There are two ways to change what a service writes to the server.
+
+**Shadow an overlay.** A site overlay takes precedence over a distribution
+overlay of the same name, so creating a site overlay named ``dhcpd`` replaces
+the distribution ``dhcpd`` overlay entirely for every service that lists it.
+``wwctl overlay edit`` and ``wwctl overlay import`` clone a distribution overlay
+to a site overlay on first use, so editing a host overlay template shadows it
+automatically. Because the site overlay replaces the whole overlay rather than
+merging file by file, a shadowed overlay keeps only the files it contains
+itself, and it no longer receives template updates from Warewulf packages.
+
+**Add a site-local overlay to the list.** Leave the shipped overlay in place
+and append your own overlay to that service's ``overlays`` list. The list is
+applied left to right, so the rightmost overlay wins for any file that
+appears in more than one:
+
+.. code-block:: yaml
+
+   dhcp:
+     overlays: dhcpd,mysite-dhcpd
+
+Here ``mysite-dhcpd`` can add files that ``dhcpd`` does not provide, or
+override individual files from it, while still tracking packaged updates to
+the rest of ``dhcpd``. Create such an overlay with ``wwctl overlay create
+mysite-dhcpd``.
+
+Existing files on the server are copied to backup files with a ``wwbackup``
+suffix at the first run. (Subsequent use of a host overlay won't overwrite
+existing ``wwbackup`` files.)
+
+``wwctl`` logs a security warning when it applies a host overlay whose
+``rootfs`` directory is writable by group or other.
+
+.. note::
+
+   These templates were previously all part of a single overlay named
+   ``host``, which every service applied. Warewulf no longer ships a ``host``
+   overlay, and no longer applies a site overlay of that name implicitly.
+
+   When ``wwctl upgrade config`` finds a site ``host`` overlay still on disk, it
+   appends ``host`` to each service's ``overlays``, at the end of the list
+   where it keeps the precedence it used to have, so that local
+   customizations continue to take effect. Move those customizations into the
+   overlay for the relevant service and remove the ``host`` entries; until
+   you do, each service continues to apply the whole of the old overlay.

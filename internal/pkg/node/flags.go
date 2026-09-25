@@ -115,7 +115,7 @@ func recursiveCreateFlags(obj interface{}, baseCmd *cobra.Command) {
 		} else if field.Anonymous {
 			recursiveCreateFlags(fieldVal.Addr().Interface(), baseCmd)
 
-		} else if field.Type.Kind() == reflect.Ptr && !fieldVal.IsNil() {
+		} else if field.Type.Kind() == reflect.Pointer && !fieldVal.IsNil() {
 			recursiveCreateFlags(fieldVal.Interface(), baseCmd)
 
 		} else if field.Type.Kind() == reflect.Struct {
@@ -295,7 +295,7 @@ func recursiveCreateUnsetFlags(obj interface{}, baseCmd *cobra.Command, unsetMap
 			createUnsetFlag(baseCmd, field, unsetMap, scopeMap)
 		} else if field.Anonymous {
 			recursiveCreateUnsetFlags(fieldVal.Addr().Interface(), baseCmd, unsetMap, scopeMap)
-		} else if field.Type.Kind() == reflect.Ptr && !fieldVal.IsNil() {
+		} else if field.Type.Kind() == reflect.Pointer && !fieldVal.IsNil() {
 			recursiveCreateUnsetFlags(fieldVal.Interface(), baseCmd, unsetMap, scopeMap)
 		} else if field.Type.Kind() == reflect.Struct {
 			recursiveCreateUnsetFlags(fieldVal.Addr().Interface(), baseCmd, unsetMap, scopeMap)

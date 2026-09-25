@@ -22,11 +22,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   in the configuration along with its members.
 - Tab completion for groups.
 - Add IPMI address of nodes to /etc/hosts of master node
+- `wwctl overlay show --render-host` renders an overlay template as for the
+  Warewulf server itself. It is mutually exclusive with `--render`.
+- Add a comma-separated `overlays` list of host overlays for each configured
+  service in `warewulf.conf`, applied by `wwctl configure`.
 
 ### Changed
 
+- `wwctl overlay show --render` now reports an error for an undefined node
+  name, rather than silently rendering the template as for the Warewulf
+  server.
 - Add an `ipv6_method` node tag to set the NetworkManager `[ipv6]` method.
   `disabled` or `ignore` methods cause a static address to be omitted.
+- Split the monolithic `host` overlay for per-service application into `dhcpd`,
+  `dnsmasq`, `tftproot`, `nfsd`, and `ssh.wwctl` overlays.
+- Adapted the `hosts` overlay for suitability as a host overlay (applied to the
+  Warewulf server). Nodes' `/etc/hosts` now also includes `<node>-ipmi`
+  entries.
+- Removed in-template service-enablement guards from `dhcpd` and `nfsd` host
+  overlays.
+- **Breaking:** The `host` overlay has been removed and host overlays are no
+  longer applied implicitly. Each service's host overlays must be listed in its
+  `overlays` key in `warewulf.conf` (`dhcp`, `tftp`, `nfs`, `ssh`, and
+  `hostfile`); `wwctl configure` does not apply host overlays for a service
+  with no `overlays` listed. Run `wwctl upgrade config` after upgrading to add
+  them to an existing `warewulf.conf`.
+
+### Fixed
+
+- The dhcpd overlay's openSUSE `/etc/dhcpd.conf` compatibility symlink no
+  longer also renders `dhcpd.conf.ww` a second time.
+- Generate warnings from relative rather than exact permissions when applying
+  host overlays.
 
 ## v4.7.2, unreleased
 

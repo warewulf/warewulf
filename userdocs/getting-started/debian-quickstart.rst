@@ -73,9 +73,11 @@ address of your cluster's private network interface:
 	  range start: 192.168.200.50
 	  range end: 192.168.200.99
 	  systemd name: isc-dhcp-server
+	  overlays: dhcpd
 	tftp:
 	  enabled: true
 	  systemd name: tftpd-hpa
+	  overlays: tftproot
 	nfs:
 	  enabled: true
 	  export paths:
@@ -84,6 +86,11 @@ address of your cluster's private network interface:
 	  - path: /opt
 		export options: ro,sync,no_root_squash
 	  systemd name: nfs-server
+	  overlays: nfsd
+	ssh:
+	  overlays: ssh.wwctl
+	hostfile:
+	  overlays: hosts
 
 .. note::
 
