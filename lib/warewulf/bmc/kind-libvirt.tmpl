@@ -1,0 +1,116 @@
+{{- /* kind-libvirt.tmpl - Libvirt/KVM-based virtual node management for BMC simulation */ -}}
+{{- $nodeName := .Ipaddr | toString | replace "." "-" -}}
+{{- if .Tags.nodename }}{{ $nodeName = .Tags.nodename }}{{ end -}}
+{{- $cpu := "2" }}{{ if .Tags.cpu }}{{ $cpu = .Tags.cpu }}{{ end -}}
+{{- $memory := "2048" }}{{ if .Tags.memory }}{{ $memory = .Tags.memory }}{{ end -}}
+{{- $disk := "20" }}{{ if .Tags.disk }}{{ $disk = .Tags.disk }}{{ end -}}
+{{- $diskPath := "/var/lib/libvirt/images" }}{{ if .Tags.disk_path }}{{ $diskPath = .Tags.disk_path }}{{ end -}}
+{{- $osVariant := "generic" }}{{ if .Tags.os_variant }}{{ $osVariant = .Tags.os_variant }}{{ end -}}
+{{- if eq .Cmd "PowerOn" -}}
+if virsh dominfo {{ $nodeName }} &>/dev/null; then
+  state=$(virsh domstate {{ $nodeName }})
+  if [ "$state" == "shut off" ] || [ "$state" == "paused" ]; then
+    virsh start {{ $nodeName }}
+    echo "Node {{ $nodeName }} started"
+  else
+    echo "Node {{ $nodeName }} already running"
+  fi
+else
+  # Create disk if it doesn't exist
+  if [ ! -f {{ $diskPath }}/{{ $nodeName }}.qcow2 ]; then
+    qemu-img create -f qcow2 {{ $diskPath }}/{{ $nodeName }}.qcow2 {{ $disk }}G
+  fi
+
+  # Create and start VM
+  virt-install \
+    --name {{ $nodeName }} \
+    --vcpus {{ $cpu }} \
+    --memory {{ $memory }} \
+    --disk path={{ $diskPath }}/{{ $nodeName }}.qcow2,format=qcow2 \
+    --os-variant {{ $osVariant }} \
+    --network network=default \
+    --graphics none \
+    --console pty,target_type=serial \
+    --noautoconsole \
+    --boot network,hd \
+    --import 2>/dev/null || true
+
+  echo "Node {{ $nodeName }} created and started (CPU: {{ $cpu }}, Memory: {{ $memory }}MB, Disk: {{ $disk }}GB)"
+fi
+{{- else if eq .Cmd "PowerOff" -}}
+if virsh dominfo {{ $nodeName }} &>/dev/null; then
+  state=$(virsh domstate {{ $nodeName }})
+  if [ "$state" == "running" ]; then
+    virsh shutdown {{ $nodeName }}
+    echo "Node {{ $nodeName }} shutdown initiated"
+  else
+    echo "Node {{ $nodeName }} already stopped"
+  fi
+else
+  echo "Node {{ $nodeName }} does not exist"
+fi
+{{- else if eq .Cmd "PowerCycle" -}}
+if virsh dominfo {{ $nodeName }} &>/dev/null; then
+  virsh reboot {{ $nodeName }}
+  echo "Node {{ $nodeName }} rebooted"
+else
+  echo "Node {{ $nodeName }} does not exist"
+fi
+{{- else if eq .Cmd "PowerReset" -}}
+if virsh dominfo {{ $nodeName }} &>/dev/null; then
+  virsh reset {{ $nodeName }}
+  echo "Node {{ $nodeName }} reset"
+else
+  echo "Node {{ $nodeName }} does not exist"
+fi
+{{- else if eq .Cmd "PowerSoft" -}}
+if virsh dominfo {{ $nodeName }} &>/dev/null; then
+  virsh reboot {{ $nodeName }}
+  echo "Node {{ $nodeName }} soft reboot"
+else
+  echo "Node {{ $nodeName }} does not exist"
+fi
+{{- else if eq .Cmd "PowerStatus" -}}
+if virsh dominfo {{ $nodeName }} &>/dev/null; then
+  state=$(virsh domstate {{ $nodeName }})
+  if [ "$state" == "running" ]; then
+    echo "ON"
+  else
+    echo "OFF"
+  fi
+else
+  echo "NOT_EXIST"
+fi
+{{- else if eq .Cmd "SDRList" -}}
+if virsh dominfo {{ $nodeName }} &>/dev/null; then
+  echo "=== Node {{ $nodeName }} Configuration ==="
+  virsh dominfo {{ $nodeName }}
+  echo ""
+  echo "Disk: {{ $diskPath }}/{{ $nodeName }}.qcow2"
+  if [ -f {{ $diskPath }}/{{ $nodeName }}.qcow2 ]; then
+    qemu-img info {{ $diskPath }}/{{ $nodeName }}.qcow2 | grep -E "(virtual size|disk size|format)"
+  fi
+else
+  echo "Node {{ $nodeName }} does not exist"
+  echo "Configured: CPU={{ $cpu }}, Memory={{ $memory }}MB, Disk={{ $disk }}GB"
+fi
+{{- else if eq .Cmd "SensorList" -}}
+if virsh dominfo {{ $nodeName }} &>/dev/null; then
+  virsh domstats {{ $nodeName }}
+else
+  echo "Node {{ $nodeName }} does not exist"
+fi
+{{- else if eq .Cmd "Console" -}}
+if virsh dominfo {{ $nodeName }} &>/dev/null; then
+  state=$(virsh domstate {{ $nodeName }})
+  if [ "$state" == "running" ]; then
+    virsh console {{ $nodeName }}
+  else
+    echo "Node {{ $nodeName }} not running (state: $state)"
+  fi
+else
+  echo "Node {{ $nodeName }} does not exist"
+fi
+{{- else -}}
+echo "Unknown command: {{ .Cmd }}"
+{{- end -}}
