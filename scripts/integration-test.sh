@@ -16,10 +16,26 @@ fi
 PKG_MANAGER=zypper
 YES="-n"
 
+# Upstream versions used only on Debian/Ubuntu, whose packaged versions are
+# unsuitable (see the apt branch below).
+GO_VERSION=1.25.5
+YQ_VERSION=v4.47.1
+
+SYNCUSER="--syncuser"
+
+case "${ID}" in
+debian | ubuntu)
+	PKG_MANAGER=apt
+	;;
+esac
+
 for like in ${ID_LIKE}; do
 	if [ "${like}" = "fedora" ]; then
 		PKG_MANAGER=dnf
 		YES="-y"
+		break
+	elif [ "${like}" = "debian" ]; then
+		PKG_MANAGER=apt
 		break
 	fi
 done
@@ -75,6 +91,61 @@ if [ "${PKG_MANAGER}" = "dnf" ]; then
 	WW_CONF=warewulf.conf-el10
 	IMAGE_NAME=rocky-10
 	IMAGE_URL="docker://ghcr.io/warewulf/warewulf-rockylinux:10"
+elif [ "${PKG_MANAGER}" = "apt" ]; then
+	export DEBIAN_FRONTEND=noninteractive
+	loop_command apt-get update
+
+	# Install build and VM provisioning dependencies
+	loop_command apt-get install -y --no-install-recommends \
+		ca-certificates \
+		curl \
+		build-essential \
+		cpio \
+		git \
+		make \
+		libgpgme-dev \
+		libassuan-dev \
+		qemu-system-x86 \
+		ipxe \
+		ipxe-qemu \
+		ovmf \
+		dnsmasq \
+		iproute2 \
+		iptables \
+		gawk \
+		nfs-kernel-server \
+		openssh-client \
+		chrony \
+		procps \
+		iputils-ping
+
+	# Debian and Ubuntu ship a Go older than go.mod requires, and their
+	# "yq" is the Python implementation, whose syntax is incompatible with
+	# the expressions below. Install both from upstream instead.
+	deb_arch=$(dpkg --print-architecture)
+	loop_command curl -fsSL -o /tmp/go.tar.gz \
+		"https://go.dev/dl/go${GO_VERSION}.linux-${deb_arch}.tar.gz"
+	rm -rf /usr/local/go
+	tar -C /usr/local -xzf /tmp/go.tar.gz
+	ln -sf /usr/local/go/bin/go /usr/local/bin/go
+	loop_command curl -fsSL -o /usr/local/bin/yq \
+		"https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_${deb_arch}"
+	chmod +x /usr/local/bin/yq
+	export PATH=/usr/local/bin:${PATH}
+
+	# Warewulf looks for iPXE binaries under ${PREFIX}/share/ipxe, but
+	# Debian installs them under /usr/lib/ipxe.
+	install -d -m 0755 /usr/share/ipxe
+	cp -a /usr/lib/ipxe/*.efi /usr/lib/ipxe/*.kpxe /usr/share/ipxe/ || true
+
+	WW_CONF=warewulf.conf-el10
+	IMAGE_NAME=debian-12
+	IMAGE_URL="docker://ghcr.io/warewulf/warewulf-debian:12.0"
+	# Debian allocates system uids in package install order, so the server
+	# and the image collide in the 100-110 range no matter how they are
+	# paired. The test only logs in as root, so skip the uid sync; the
+	# Enterprise Linux and SUSE jobs still cover it.
+	SYNCUSER=""
 else
 	# Clean zypper cache to avoid stale metadata in container images
 	loop_command zypper clean --all
@@ -226,17 +297,48 @@ tap="tap${idx}"
 
 echo "fake ipmitool: launching QEMU VM ${name} on ${tap} (mac=${mac})"
 
-# Find the iPXE ROM
+# NIC model. Debian's ipxe-qemu (1.0.0+git-20190125) ships a virtio ROM that
+# never registers a boot entry under SeaBIOS, so the iPXE banner never appears
+# and the guest falls through to "No bootable device" (Debian bug #929983).
+# The documented workaround is an e1000 NIC, whose ROM works.
+NIC_MODEL=virtio-net-pci
+ROM_NAMES=(pxe-virtio.rom virtio-net.rom)
+# shellcheck disable=SC1091
+. /etc/os-release
+case "${ID} ${ID_LIKE}" in
+*debian* | *ubuntu*)
+	NIC_MODEL=e1000
+	ROM_NAMES=(pxe-e1000.rom e1000_82540.rom 82540em.rom)
+	;;
+esac
+
+# Find the iPXE ROM. Without it the guest has no network boot firmware and
+# SeaBIOS silently falls through to floppy/CD/disk, so this is fatal.
 ROMFILE=""
-for candidate in \
-	/usr/share/ipxe/qemu/pxe-virtio.rom \
-	/usr/share/ipxe/virtio-net.rom \
-	/usr/share/qemu/pxe-virtio.rom; do
-	if [[ -f "${candidate}" ]]; then
-		ROMFILE="${candidate}"
-		break
-	fi
+for dir in \
+	/usr/share/ipxe/qemu \
+	/usr/share/ipxe \
+	/usr/share/qemu \
+	/usr/lib/ipxe/qemu \
+	/usr/lib/ipxe; do
+	# BIOS ROMs only: an efi-*.rom registers no BEV under SeaBIOS, so the
+	# guest silently falls through to floppy/CD/disk instead of PXE.
+	for rom in "${ROM_NAMES[@]}"; do
+		if [[ -f "${dir}/${rom}" ]]; then
+			ROMFILE="${dir}/${rom}"
+			break 2
+		fi
+	done
 done
+
+if [[ -z "${ROMFILE}" ]]; then
+	echo "fake ipmitool: no BIOS iPXE ROM found; searched:" >&2
+	ls -la /usr/share/ipxe /usr/share/ipxe/qemu /usr/share/qemu \
+		/usr/lib/ipxe /usr/lib/ipxe/qemu 2>&1 >&2 || true
+	exit 1
+fi
+echo "fake ipmitool: using NIC ${NIC_MODEL} with iPXE ROM ${ROMFILE}"
+ls -lL "${ROMFILE}"
 
 # Architecture-specific QEMU flags
 ARCH_FLAGS=()
@@ -250,14 +352,15 @@ aarch64)
 esac
 
 NETDEV_OPTS="tap,id=net0,ifname=${tap},script=no,downscript=no"
-DEVICE_OPTS="virtio-net-pci,netdev=net0,mac=${mac}"
+DEVICE_OPTS="${NIC_MODEL},netdev=net0,mac=${mac}"
 if [[ -n "${ROMFILE}" ]]; then
 	DEVICE_OPTS+=",romfile=${ROMFILE}"
 fi
 
 # Find qemu-kvm binary
 QEMU_KVM=""
-for candidate in /usr/libexec/qemu-kvm /usr/bin/qemu-kvm; do
+for candidate in /usr/libexec/qemu-kvm /usr/bin/qemu-kvm /usr/bin/kvm \
+	/usr/bin/qemu-system-x86_64 /usr/bin/qemu-system-aarch64; do
 	if [[ -x "${candidate}" ]]; then
 		QEMU_KVM="${candidate}"
 		break
@@ -305,7 +408,21 @@ yq -i '.dhcp["range start"] = "'"${internal_network}"'"' \
 yq -i '.dhcp["range end"] = "static"' /etc/warewulf/warewulf.conf
 yq -i '.dhcp.template = "static"' /etc/warewulf/warewulf.conf
 yq -i '.dhcp["systemd name"] = "dnsmasq"' /etc/warewulf/warewulf.conf
+yq -i '.dhcp.overlays = "dnsmasq"' /etc/warewulf/warewulf.conf
 yq -i '.ssh["key types"] -= ["dsa"]' /etc/warewulf/warewulf.conf
+
+# Debian's iPXE binary names differ from the Enterprise Linux defaults
+if [ "${PKG_MANAGER}" = "apt" ]; then
+	for candidate in ipxe-snponly-x86_64.efi snponly.efi ipxe.efi; do
+		if [ -f "/usr/share/ipxe/${candidate}" ]; then
+			yq -i '.tftp.ipxe["00:07"] = "'"${candidate}"'"' \
+				/etc/warewulf/warewulf.conf
+			yq -i '.tftp.ipxe["00:09"] = "'"${candidate}"'"' \
+				/etc/warewulf/warewulf.conf
+			break
+		fi
+	done
+fi
 
 # Configure nodes.conf
 sed -i "s/defaults,noauto,nofail,ro/defaults,nofail,ro/" \
@@ -342,7 +459,7 @@ bash /etc/profile.d/ssh_setup.sh
 
 # Import the base image
 wwctl image import "${IMAGE_URL}" \
-	"${IMAGE_NAME}" --syncuser
+	"${IMAGE_NAME}" ${SYNCUSER}
 
 # Add compute nodes
 for ((i = 0; i < num_computes; i++)); do
