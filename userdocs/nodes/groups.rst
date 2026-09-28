@@ -4,13 +4,13 @@ Node Groups
 
 Groups let you refer to a set of nodes by a single short name on the
 ``wwctl`` command line. Most ``wwctl`` subcommands that take a list of nodes
-(``wwctl power``, ``wwctl ssh``, ``wwctl overlay build``, …) accept group
+(``wwctl node power``, ``wwctl ssh``, ``wwctl overlay build``, …) accept group
 references in addition to literal node names and :ref:`hostlist <hostlist>`
 patterns. A group reference is the name prefixed with ``@``.
 
 .. code-block:: console
 
-   # wwctl power reset @rack1
+   # wwctl node power reset @rack1
    # wwctl ssh @gpu uptime
    # wwctl overlay build @chemistry
 
@@ -93,7 +93,7 @@ single invocation. Duplicates are removed automatically.
 
 .. code-block:: shell
 
-   wwctl power reset n01 @rack2 login[01-02]
+   wwctl node power reset n01 @rack2 login[01-02]
 
 If a referenced group does not exist, Warewulf logs a warning and
 contributes no nodes from that token; the rest of the command line still

@@ -30,7 +30,7 @@ non-overlay templates as well.
 * ``/etc/warewulf/grub/``: includes GRUB script templates to direct GRUB during
   the network boot process.
 * ``/usr/share/warewulf/bmc/``: includes templates to generate BMC control
-  commands for the ``wwctl power``, ``wwctl sensor``, and ``wwctl console``
+  commands for the ``wwctl node power``, ``wwctl node sensors``, and ``wwctl node console``
   commands.
 
 Template documentation

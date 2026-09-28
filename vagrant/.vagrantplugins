@@ -16,8 +16,8 @@ class CleanupWarewulf < Vagrant.plugin(2, :command)
   end
 
   def execute
-    system "vagrant ssh wwctl -c 'sudo wwctl power off n1' || true"
-    system "vagrant ssh wwctl -c 'sudo wwctl power off n2' || true"
+    system "vagrant ssh wwctl -c 'sudo wwctl node power off n1' || true"
+    system "vagrant ssh wwctl -c 'sudo wwctl node power off n2' || true"
     system "vagrant halt"
     system "vagrant destroy -f"
   end

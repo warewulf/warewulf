@@ -55,7 +55,10 @@ func init() {
 	rootCmd.AddCommand(image.GetCommand())
 	rootCmd.AddCommand(node.GetCommand())
 	rootCmd.AddCommand(group.GetCommand())
+
+	//nolint:staticcheck
 	rootCmd.AddCommand(power.GetCommand())
+
 	rootCmd.AddCommand(profile.GetCommand())
 	rootCmd.AddCommand(configure.GetCommand())
 	rootCmd.AddCommand(server.GetCommand())

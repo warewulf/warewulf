@@ -181,11 +181,11 @@ IPMI
    wwctl node list --ipmi
 
    # Power commands
-   wwctl power status n[1-10]
-   wwctl power on n1
-   wwctl power off n1
-   wwctl power cycle n1
-   wwctl power reset n1
+   wwctl node power status n[1-10]
+   wwctl node power on n1
+   wwctl node power off n1
+   wwctl node power cycle n1
+   wwctl node power reset n1
 
    # Open serial-over-LAN console
    wwctl node console n1

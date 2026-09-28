@@ -9,6 +9,7 @@ import (
 	"github.com/warewulf/warewulf/internal/app/wwctl/node/export"
 	"github.com/warewulf/warewulf/internal/app/wwctl/node/imprt"
 	"github.com/warewulf/warewulf/internal/app/wwctl/node/list"
+	nodepower "github.com/warewulf/warewulf/internal/app/wwctl/node/power"
 	"github.com/warewulf/warewulf/internal/app/wwctl/node/sensors"
 	"github.com/warewulf/warewulf/internal/app/wwctl/node/set"
 	nodestatus "github.com/warewulf/warewulf/internal/app/wwctl/node/status"
@@ -36,6 +37,7 @@ func init() {
 	baseCmd.AddCommand(add.GetCommand())
 	baseCmd.AddCommand(delete.GetCommand())
 	baseCmd.AddCommand(console.GetCommand())
+	baseCmd.AddCommand(nodepower.GetCommand())
 	baseCmd.AddCommand(nodestatus.GetCommand())
 	baseCmd.AddCommand(edit.GetCommand())
 	baseCmd.AddCommand(imprt.GetCommand())
