@@ -7,14 +7,14 @@ func TestParseVersion(t *testing.T) {
 		path     string
 		expected string
 	}{
-		"el9_4 module path":             {"/lib/modules/5.14.0-427.37.1.el9_4.aarch64/vmlinuz", "5.14.0-427.37.1"},
-		"el8_6 boot path":               {"/boot/vmlinuz-4.18.0-372.13.1.el8_6.x86_64", "4.18.0-372.13.1"},
-		"el10_2 with suffix after dist": {"/lib/modules/6.12.0-211.16.1.el10_2.0.1.x86_64/vmlinuz", "6.12.0-211.16.1"},
-		"el9_8 with suffix after dist":  {"/lib/modules/5.14.0-687.10.1.el9_8.0.1.x86_64/vmlinuz", "5.14.0-687.10.1"},
-		"el9_8 plain dist tag":          {"/lib/modules/5.14.0-687.10.1.el9_8.x86_64/vmlinuz", "5.14.0-687.10.1"},
-		"el9_7 respin suffix (#2199)":   {"/boot/vmlinuz-5.14.0-611.55.1.el9_7.0.3.x86_64", "5.14.0-611.55.1"},
-		"boot path with .gz":            {"/boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64.gz", "5.14.0-427.24.1"},
-		"leap16":                        {"/lib/modules/6.12.0-160000.33-default/vmlinuz", "6.12.0-160000.33"},
+		"el9_4 module path":             {"/lib/modules/5.14.0-427.37.1.el9_4.aarch64/vmlinuz", "5.14.0-427.37.1.el9-4.aarch64"},
+		"el8_6 boot path":               {"/boot/vmlinuz-4.18.0-372.13.1.el8_6.x86_64", "4.18.0-372.13.1.el8-6.x86-64"},
+		"el10_2 with suffix after dist": {"/lib/modules/6.12.0-211.16.1.el10_2.0.1.x86_64/vmlinuz", "6.12.0-211.16.1.el10-2.0.1.x86-64"},
+		"el9_8 with suffix after dist":  {"/lib/modules/5.14.0-687.10.1.el9_8.0.1.x86_64/vmlinuz", "5.14.0-687.10.1.el9-8.0.1.x86-64"},
+		"el9_8 plain dist tag":          {"/lib/modules/5.14.0-687.10.1.el9_8.x86_64/vmlinuz", "5.14.0-687.10.1.el9-8.x86-64"},
+		"el9_7 respin suffix (#2199)":   {"/boot/vmlinuz-5.14.0-611.55.1.el9_7.0.3.x86_64", "5.14.0-611.55.1.el9-7.0.3.x86-64"},
+		"boot path with .gz":            {"/boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64.gz", "5.14.0-427.24.1.el9-4.x86-64"},
+		"leap16":                        {"/lib/modules/6.12.0-160000.33-default/vmlinuz", "6.12.0-160000.33-default"},
 		"no version in path":            {"/boot/vmlinuz-linux", ""},
 	}
 	for name, tt := range tests {

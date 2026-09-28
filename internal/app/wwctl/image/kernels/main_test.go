@@ -42,16 +42,16 @@ Image  Kernel  Version  Default  Nodes
 			},
 			args: []string{},
 			stdout: `
-Image   Kernel                                                   Version          Default  Nodes
------   ------                                                   -------          -------  -----
-image1  /boot/vmlinuz-4.14.0-427.18.1.el8_4.x86_64               4.14.0-427.18.1  false    0
-image1  /boot/vmlinuz-5.14.0-427.18.1.el9_4.x86_64               5.14.0-427.18.1  false    0
-image1  /boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64               5.14.0-427.24.1  true     0
-image2  /boot/vmlinuz-0-rescue-eb46964329b146e39518c625feab3ea0  --               false    0
-image2  /boot/vmlinuz-5.14.0-284.30.1.el9_2.aarch64              5.14.0-284.30.1  false    0
-image2  /boot/vmlinuz-5.14.0-362.24.1.el9_3.aarch64              5.14.0-362.24.1  false    0
-image2  /boot/vmlinuz-5.14.0-427.31.1.el9_4.aarch64              5.14.0-427.31.1  true     0
-image2  /boot/vmlinuz-5.14.0-427.31.1.el9_4.aarch64+debug        5.14.0-427.31.1  false    0
+Image   Kernel                                                   Version                              Default  Nodes
+-----   ------                                                   -------                              -------  -----
+image1  /boot/vmlinuz-4.14.0-427.18.1.el8_4.x86_64               4.14.0-427.18.1.el8-4.x86-64         false    0
+image1  /boot/vmlinuz-5.14.0-427.18.1.el9_4.x86_64               5.14.0-427.18.1.el9-4.x86-64         false    0
+image1  /boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64               5.14.0-427.24.1.el9-4.x86-64         true     0
+image2  /boot/vmlinuz-0-rescue-eb46964329b146e39518c625feab3ea0  --                                   false    0
+image2  /boot/vmlinuz-5.14.0-284.30.1.el9_2.aarch64              5.14.0-284.30.1.el9-2.aarch64        false    0
+image2  /boot/vmlinuz-5.14.0-362.24.1.el9_3.aarch64              5.14.0-362.24.1.el9-3.aarch64        false    0
+image2  /boot/vmlinuz-5.14.0-427.31.1.el9_4.aarch64              5.14.0-427.31.1.el9-4.aarch64        true     0
+image2  /boot/vmlinuz-5.14.0-427.31.1.el9_4.aarch64+debug        5.14.0-427.31.1.el9-4.aarch64+debug  false    0
 `,
 		},
 		"single image": {
@@ -71,13 +71,13 @@ image2  /boot/vmlinuz-5.14.0-427.31.1.el9_4.aarch64+debug        5.14.0-427.31.1
 			},
 			args: []string{"image2"},
 			stdout: `
-Image   Kernel                                                   Version          Default  Nodes
------   ------                                                   -------          -------  -----
-image2  /boot/vmlinuz-0-rescue-eb46964329b146e39518c625feab3ea0  --               false    0
-image2  /boot/vmlinuz-5.14.0-284.30.1.el9_2.aarch64              5.14.0-284.30.1  false    0
-image2  /boot/vmlinuz-5.14.0-362.24.1.el9_3.aarch64              5.14.0-362.24.1  false    0
-image2  /boot/vmlinuz-5.14.0-427.31.1.el9_4.aarch64              5.14.0-427.31.1  true     0
-image2  /boot/vmlinuz-5.14.0-427.31.1.el9_4.aarch64+debug        5.14.0-427.31.1  false    0
+Image   Kernel                                                   Version                              Default  Nodes
+-----   ------                                                   -------                              -------  -----
+image2  /boot/vmlinuz-0-rescue-eb46964329b146e39518c625feab3ea0  --                                   false    0
+image2  /boot/vmlinuz-5.14.0-284.30.1.el9_2.aarch64              5.14.0-284.30.1.el9-2.aarch64        false    0
+image2  /boot/vmlinuz-5.14.0-362.24.1.el9_3.aarch64              5.14.0-362.24.1.el9-3.aarch64        false    0
+image2  /boot/vmlinuz-5.14.0-427.31.1.el9_4.aarch64              5.14.0-427.31.1.el9-4.aarch64        true     0
+image2  /boot/vmlinuz-5.14.0-427.31.1.el9_4.aarch64+debug        5.14.0-427.31.1.el9-4.aarch64+debug  false    0
 `,
 		},
 	}

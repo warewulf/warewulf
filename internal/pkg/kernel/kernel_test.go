@@ -22,7 +22,7 @@ func Test_FindKernel(t *testing.T) {
 				"/boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64",
 				"/boot/vmlinuz-4.14.0-427.18.1.el8_4.x86_64",
 			},
-			version: "5.14.0-427.24.1",
+			version: "5.14.0-427.24.1.el9-4.x86-64",
 			path:    "/boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64",
 		},
 		"/boot/vmlinuz-* (2)": {
@@ -31,7 +31,7 @@ func Test_FindKernel(t *testing.T) {
 				"/boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64",
 				"/boot/vmlinuz-6.15.0-119-generic",
 			},
-			version: "6.15.0-119",
+			version: "6.15.0-119-generic",
 			path:    "/boot/vmlinuz-6.15.0-119-generic",
 		},
 		"/boot/vmlinuz-* (3)": {
@@ -39,7 +39,7 @@ func Test_FindKernel(t *testing.T) {
 				"/boot/vmlinuz-5.15.0-0-vanilla",
 				"/boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64",
 			},
-			version: "5.15.0-0",
+			version: "5.15.0-0-vanilla",
 			path:    "/boot/vmlinuz-5.15.0-0-vanilla",
 		},
 		"/boot/vmlinuz-* (4)": {
@@ -48,7 +48,7 @@ func Test_FindKernel(t *testing.T) {
 				"/boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64",
 				"/boot/vmlinuz-5.13.0-427.24.1.el9_4.x86_64",
 			},
-			version: "5.15.0",
+			version: "5.15.0-generic",
 			path:    "/boot/vmlinuz-5.15.0-generic",
 		},
 		"/lib/modules/*/vmlinuz": {
@@ -56,7 +56,7 @@ func Test_FindKernel(t *testing.T) {
 				"/lib/modules/5.14.0-427.18.1.el9_4.x86_64/vmlinuz",
 				"/lib/modules/5.14.0-427.24.1.el9_4.x86_64/vmlinuz",
 			},
-			version: "5.14.0-427.24.1",
+			version: "5.14.0-427.24.1.el9-4.x86-64",
 			path:    "/lib/modules/5.14.0-427.24.1.el9_4.x86_64/vmlinuz",
 		},
 		"/boot/vmlinuz-*.gz": {
@@ -64,7 +64,7 @@ func Test_FindKernel(t *testing.T) {
 				"/boot/vmlinuz-5.14.0-427.18.1.el9_4.x86_64.gz",
 				"/boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64.gz",
 			},
-			version: "5.14.0-427.24.1",
+			version: "5.14.0-427.24.1.el9-4.x86-64",
 			path:    "/boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64.gz",
 		},
 		"ignore rescue and debug kernels": {
@@ -75,7 +75,7 @@ func Test_FindKernel(t *testing.T) {
 				"/boot/vmlinuz-5.14.0-284.30.1.el9_2.aarch64",
 				"/boot/vmlinuz-5.14.0-427.31.1.el9_4.aarch64",
 			},
-			version: "5.14.0-427.31.1",
+			version: "5.14.0-427.31.1.el9-4.aarch64",
 			path:    "/boot/vmlinuz-5.14.0-427.31.1.el9_4.aarch64",
 		},
 		"no kernels": {
@@ -139,7 +139,7 @@ func Test_FromNode(t *testing.T) {
 				"/boot/vmlinuz-5.14.0-427.24.1.el9_4.x86_64",
 				"/boot/vmlinuz-4.14.0-427.18.1.el8_4.x86_64",
 			},
-			version: "4.14.0-427.18.1",
+			version: "4.14.0-427.18.1.el8-4.x86-64",
 			path:    "/boot/vmlinuz-4.14.0-427.18.1.el8_4.x86_64",
 		},
 		"none": {
