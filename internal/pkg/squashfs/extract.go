@@ -19,13 +19,17 @@ type extractor struct {
 	// links maps inode numbers of files with more than one link to the
 	// path they were first extracted to.
 	links map[uint32]string
+	// dirs records the directory listings that have been extracted.
+	dirs        map[uint64]bool
+	xattrWarned bool
 }
 
 // Extract writes the contents of the filesystem into dst, which must be an
 // existing directory. Entries that already exist in dst are replaced.
 //
 // Ownership, device nodes, and non-user extended attributes are only
-// restored when running as root.
+// restored when running as root. SELinux labels (security.selinux) are never
+// restored.
 func (sq *Reader) Extract(dst string) error {
 	root, err := sq.readInode(sq.sb.RootInode)
 	if err != nil {
@@ -38,18 +42,35 @@ func (sq *Reader) Extract(dst string) error {
 		sq:    sq,
 		root:  os.Geteuid() == 0,
 		links: map[uint32]string{},
+		dirs:  map[uint64]bool{},
 	}
 	return x.extractDir(root, dst)
 }
 
 func (x *extractor) extractDir(in *inode, dir string) error {
+	// Directories cannot be hard linked, so a listing that is reached twice
+	// belongs to a malformed image whose extraction could grow exponentially
+	// or never end. Empty directories have no listing of their own.
+	if in.dirSize > 3 {
+		key := uint64(in.dirBlock)<<16 | uint64(in.dirOffset)
+		if x.dirs[key] {
+			return fmt.Errorf("%s: directory is referenced more than once", dir)
+		}
+		x.dirs[key] = true
+	}
 	entries, err := x.sq.readDir(in)
 	if err != nil {
 		return fmt.Errorf("%s: %w", dir, err)
 	}
-	for _, e := range entries {
+	for i, e := range entries {
 		if e.name == "." || e.name == ".." || strings.ContainsAny(e.name, "/\x00") {
 			return fmt.Errorf("%s: invalid entry name %q", dir, e.name)
+		}
+		// Listings are sorted, so a name that is not greater than the one
+		// before it is a duplicate. A duplicate could replace an extracted
+		// directory with a symlink and redirect later hard links out of dst.
+		if i > 0 && e.name <= entries[i-1].name {
+			return fmt.Errorf("%s: directory entries are not sorted at %q", dir, e.name)
 		}
 		child, err := x.sq.readInode(e.inodeRef)
 		if err != nil {
@@ -127,16 +148,12 @@ func (x *extractor) writeFile(in *inode, path string) error {
 	if err != nil {
 		return err
 	}
-	if err := x.sq.writeFile(in, f); err != nil {
-		_ = f.Close()
-		return err
+	err = x.sq.writeFile(in, f)
+	if err == nil {
+		// Extend the file over any trailing sparse blocks.
+		err = f.Truncate(int64(in.fileSize))
 	}
-	// Extend the file over any trailing sparse blocks.
-	if err := f.Truncate(int64(in.fileSize)); err != nil {
-		_ = f.Close()
-		return err
-	}
-	return f.Close()
+	return errors.Join(err, f.Close())
 }
 
 // prepare removes any existing entry at path unless both it and the entry
@@ -170,18 +187,31 @@ func (x *extractor) setAttrs(in *inode, path string) error {
 		return fmt.Errorf("%s: %w", path, err)
 	}
 	for name, value := range xattrs {
+		// SELinux labels come from the system that built the image, so they
+		// are left to the policy of the system the image runs on.
+		if name == "security.selinux" {
+			continue
+		}
 		if !x.root && !strings.HasPrefix(name, "user.") {
 			wwlog.Debug("Skipping xattr %s on %s: requires root", name, path)
 			continue
 		}
-		if err := unix.Lsetxattr(path, name, value, 0); err != nil {
+		err := unix.Lsetxattr(path, name, value, 0)
+		if errors.Is(err, unix.ENOTSUP) {
+			if !x.xattrWarned {
+				wwlog.Warn("Extended attributes are not supported at %s and will not be restored", path)
+				x.xattrWarned = true
+			}
+			continue
+		}
+		if err != nil {
 			return fmt.Errorf("%s: setting xattr %s: %w", path, name, err)
 		}
 	}
 
 	if in.typ != typeSymlink && in.typ != typeExtSymlink {
 		if err := unix.Chmod(path, uint32(in.mode&0o7777)); err != nil {
-			return err
+			return fmt.Errorf("%s: %w", path, err)
 		}
 	}
 

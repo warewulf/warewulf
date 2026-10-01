@@ -43,8 +43,14 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	if !image.ValidName(name) {
 		return fmt.Errorf("image name contains illegal characters: %s", name)
 	}
+	// A SIF named "..sif" or "...sif" would otherwise name the image "." or
+	// "..", which refers to the image directory itself or its parent.
+	if sifPath != "" && (name == "." || name == "..") {
+		return fmt.Errorf("invalid image name: %s", name)
+	}
 
 	fullPath := image.SourceDir(name)
+	updating := SetUpdate && util.IsDir(fullPath)
 
 	// image already exists and should be removed first
 	if util.IsDir(fullPath) {
@@ -61,9 +67,17 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	if sifPath != "" {
+		if Platform != "" {
+			wwlog.Warn("--platform is ignored for SIF images")
+		}
 		if err := image.ImportSIF(sifPath, name); err != nil {
+			// An image being updated is not deleted, but it may already be
+			// partially overwritten.
+			if updating {
+				return fmt.Errorf("could not import image, %s may be partially updated: %w", name, err)
+			}
 			_ = image.DeleteSource(name)
-			return fmt.Errorf("could not import image: %s", err.Error())
+			return fmt.Errorf("could not import image: %w", err)
 		}
 	} else if strings.HasPrefix(source, "docker://") || strings.HasPrefix(source, "docker-daemon://") ||
 		strings.HasPrefix(source, "file://") || util.IsFile(source) {

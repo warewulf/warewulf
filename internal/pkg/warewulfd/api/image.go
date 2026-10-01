@@ -2,7 +2,10 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io/fs"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -11,7 +14,6 @@ import (
 	"github.com/warewulf/warewulf/internal/pkg/image"
 	"github.com/warewulf/warewulf/internal/pkg/kernel"
 	"github.com/warewulf/warewulf/internal/pkg/node"
-	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -83,7 +85,7 @@ func getImageByName() usecase.Interactor {
 func importImage() usecase.Interactor {
 	type importImageInput struct {
 		Name     string `path:"name" required:"true" description:"Name of image to import"`
-		URI      string `json:"uri" required:"true" description:"OCI registry URI (docker://) or absolute path to a SIF file on the server to import image from"`
+		URI      string `json:"uri" required:"true" description:"OCI registry URI (docker://) or absolute path (optionally file://) to a SIF file on the server to import image from"`
 		NoHttps  bool   `json:"nohttps" default:"false" description:"Use http, rather than https, to communicate with the registry, default:'false'"`
 		User     string `json:"user" description:"Username for the registry, if needed"`
 		Password string `json:"password" description:"Password for the registry, if needed"`
@@ -95,10 +97,14 @@ func importImage() usecase.Interactor {
 		sifPath := ""
 		if !strings.HasPrefix(input.URI, "docker://") {
 			sifPath = strings.TrimPrefix(input.URI, "file://")
-			if !filepath.IsAbs(sifPath) || !util.IsFile(sifPath) {
+			if !filepath.IsAbs(sifPath) {
 				return status.Wrap(fmt.Errorf("uri must use docker:// or be an absolute path to a SIF file: %s", input.URI), status.InvalidArgument)
 			}
-			if isSIF, err := image.IsSIF(sifPath); err != nil || !isSIF {
+			isSIF, err := image.IsSIF(sifPath)
+			if err != nil {
+				return status.Wrap(fmt.Errorf("could not read %s: %w", sifPath, err), status.InvalidArgument)
+			}
+			if !isSIF {
 				return status.Wrap(fmt.Errorf("not a SIF file: %s", input.URI), status.InvalidArgument)
 			}
 		}
@@ -108,7 +114,22 @@ func importImage() usecase.Interactor {
 		}
 
 		if sifPath != "" {
+			// Creating the image directory claims the name, which rejects an
+			// existing image and concurrent imports of the same name.
+			if err := os.MkdirAll(image.SourceParentDir(), 0755); err != nil {
+				return err
+			}
+			if err := os.Mkdir(image.SourceDir(input.Name), 0755); err != nil {
+				if errors.Is(err, fs.ErrExist) {
+					return status.Wrap(fmt.Errorf("image already exists: %s", input.Name), status.AlreadyExists)
+				}
+				return err
+			}
 			if err := image.ImportSIF(sifPath, input.Name); err != nil {
+				_ = image.DeleteSource(input.Name)
+				if errors.Is(err, image.ErrUnsupportedSIF) {
+					return status.Wrap(err, status.InvalidArgument)
+				}
 				return err
 			}
 			*output = *NewImage(input.Name)

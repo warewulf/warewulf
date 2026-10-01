@@ -147,9 +147,13 @@ need to be installed on the Warewulf server.
 If no name is given, the file name without its ``.sif`` extension is used.
 
 The primary system partition of the SIF image is extracted into the image. It
-must be a squashfs filesystem compressed with gzip, xz, or zstd. OCI-SIF images
-(for example, those built with ``singularity build --oci``) and encrypted SIF
-images are not supported, and SIF signatures are not verified.
+must be a squashfs filesystem compressed with gzip, xz, or zstd. xz images built
+with a BCJ filter (``mksquashfs -Xbcj``) are not supported. OCI-SIF images (for
+example, those built with ``singularity build --oci``) and encrypted SIF images
+are not supported, and SIF signatures are not verified. SELinux labels in the
+image are not restored. Overlay partitions (for example, those added with
+``apptainer overlay create``) are not imported, and ``--platform`` does not
+apply to SIF images.
 
 Local Directories and Apptainer Sandboxes
 -----------------------------------------
@@ -389,8 +393,8 @@ Consider the following file called ``warewulf-rockylinux-9.def``:
    rm -rf /boot/* /run/*
    dnf clean all
 
-Warewulf cannot directly import a container image from an Apptainer SIF yet, so
-an Apptainer image must be built as a *sandbox*.
+A SIF image built from this definition can be imported directly (see `Local SIF
+Images`_), or the image can be built as a *sandbox*.
 
 .. code-block:: console
 
@@ -407,8 +411,8 @@ Once a sandbox container image has been built, it can be imported into Warewulf.
 
 .. note::
 
-   Although warewulf does not currently support importing a SIF directly, a SIF
-   can be converted to a sandbox with Apptainer and then imported into Warewulf.
+   SIF images that Warewulf cannot import directly (see `Local SIF Images`_) can
+   be converted to a sandbox with Apptainer and then imported into Warewulf.
     
    .. code-block:: console
 

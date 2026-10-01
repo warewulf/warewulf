@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
+	"syscall"
 
 	"github.com/apptainer/sif/v2/pkg/sif"
+	securejoin "github.com/cyphar/filepath-securejoin"
 
 	"github.com/warewulf/warewulf/internal/pkg/squashfs"
-	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -21,8 +21,17 @@ var sifMagic = []byte("SIF_MAGIC\x00")
 
 const sifMagicOffset = 32
 
+// ErrUnsupportedSIF is returned when the contents of a SIF image cannot be
+// imported.
+var ErrUnsupportedSIF = errors.New("unsupported SIF image")
+
 // IsSIF reports whether the file at path is a SIF image.
 func IsSIF(path string) (bool, error) {
+	// Only regular files are opened: opening a FIFO or a device can block
+	// or have side effects.
+	if fi, err := os.Stat(path); err != nil || !fi.Mode().IsRegular() {
+		return false, err
+	}
 	f, err := os.Open(path)
 	if err != nil {
 		return false, err
@@ -45,7 +54,7 @@ func IsSIF(path string) (bool, error) {
 // ImportSIF imports the primary system partition of the SIF image at uri
 // as the image name. Only squashfs partitions are supported.
 func ImportSIF(uri string, name string) error {
-	if !ValidName(name) {
+	if !ValidName(name) || name == "." || name == ".." {
 		return errors.New("Image name contains illegal characters: " + name)
 	}
 
@@ -58,48 +67,54 @@ func ImportSIF(uri string, name string) error {
 		_ = f.Close()
 	}()
 
-	img, err := sif.LoadContainer(f, sif.OptLoadWithCloseOnUnload(false))
+	// The container is not unloaded: that would only close f, which the
+	// deferred Close above does.
+	img, err := sif.LoadContainer(f)
 	if err != nil {
-		return fmt.Errorf("could not load SIF image %s: %w", uri, err)
+		return fmt.Errorf("%w: could not load SIF image %s: %w", ErrUnsupportedSIF, uri, err)
 	}
-	defer func() {
-		if err := img.UnloadContainer(); err != nil {
-			wwlog.Warn("failed to unload SIF image %s: %s", uri, err)
-		}
-	}()
 
 	d, err := img.GetDescriptor(sif.WithPartitionType(sif.PartPrimSys))
 	if err != nil {
 		if _, ociErr := img.GetDescriptor(sif.WithDataType(sif.DataOCIRootIndex)); ociErr == nil {
-			return fmt.Errorf("%s is an OCI-SIF image, which is not supported", uri)
+			return fmt.Errorf("%w: %s is an OCI-SIF image, which is not supported", ErrUnsupportedSIF, uri)
 		}
-		return fmt.Errorf("could not find the primary system partition in %s: %w", uri, err)
+		return fmt.Errorf("%w: could not find the primary system partition in %s: %w", ErrUnsupportedSIF, uri, err)
 	}
 	fsType, _, arch, err := d.PartitionMetadata()
 	if err != nil {
-		return fmt.Errorf("could not read partition metadata in %s: %w", uri, err)
+		return fmt.Errorf("%w: could not read partition metadata in %s: %w", ErrUnsupportedSIF, uri, err)
 	}
 	if fsType != sif.FsSquash {
-		return fmt.Errorf("%s has an unsupported primary partition filesystem: %v", uri, fsType)
+		return fmt.Errorf("%w: %s has an unsupported primary partition filesystem: %v", ErrUnsupportedSIF, uri, fsType)
 	}
-	wwlog.Debug("Importing SIF primary partition: arch=%s offset=%d size=%d", arch, d.Offset(), d.Size())
+	if overlays, _ := img.GetDescriptors(sif.WithPartitionType(sif.PartOverlay)); len(overlays) > 0 {
+		wwlog.Warn("%s has an overlay partition, which is not imported", uri)
+	}
+	wwlog.Info("Importing SIF primary partition: arch=%s offset=%d size=%d", arch, d.Offset(), d.Size())
 
 	sq, err := squashfs.NewReader(io.NewSectionReader(f, d.Offset(), d.Size()))
 	if err != nil {
-		return fmt.Errorf("could not read squashfs partition in %s: %w", uri, err)
+		return fmt.Errorf("%w: could not read squashfs partition in %s: %w", ErrUnsupportedSIF, uri, err)
 	}
-	defer sq.Close()
 
 	fullPath := RootFsDir(name)
 	if err := os.MkdirAll(fullPath, 0755); err != nil {
 		return err
 	}
 	if err := sq.Extract(fullPath); err != nil {
+		// Errors from the host, such as a full disk, are not the image's fault.
+		if !errors.As(err, new(syscall.Errno)) {
+			err = fmt.Errorf("%w: %w", ErrUnsupportedSIF, err)
+		}
 		return err
 	}
 
-	if !util.IsFile(path.Join(fullPath, "/bin/sh")) {
-		return errors.New("SIF image has no /bin/sh: " + uri)
+	// Resolve symlinks such as /bin -> /usr/bin inside the image, not on the
+	// host.
+	sh, err := securejoin.SecureJoin(fullPath, "bin/sh")
+	if fi, statErr := os.Stat(sh); err != nil || statErr != nil || !fi.Mode().IsRegular() {
+		return fmt.Errorf("%w: %s has no /bin/sh", ErrUnsupportedSIF, uri)
 	}
 	return nil
 }

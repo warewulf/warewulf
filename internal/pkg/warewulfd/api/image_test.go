@@ -119,6 +119,10 @@ users:
 	assert.NoError(t, squashfstest.WriteSIF(sifPath, []squashfstest.Entry{
 		{Path: "bin/sh", Mode: 0o755, Content: []byte("shell")},
 	}))
+	noShellPath := env.GetPath("no-shell.sif")
+	assert.NoError(t, squashfstest.WriteSIF(noShellPath, []squashfstest.Entry{
+		{Path: "etc/hostname", Mode: 0o644},
+	}))
 	env.WriteFile("image.tar", "not a sif")
 
 	tests := []struct {
@@ -136,6 +140,14 @@ users:
 			result: "/var/lib/warewulf/chroots/sif-image/rootfs/bin/sh",
 		},
 		{
+			// relies on "sif path" above having imported sif-image
+			name:   "existing image",
+			image:  "sif-image",
+			uri:    sifPath,
+			status: http.StatusConflict,
+			result: "/var/lib/warewulf/chroots/sif-image/rootfs/bin/sh",
+		},
+		{
 			name:   "sif file uri",
 			image:  "sif-uri-image",
 			uri:    "file://" + sifPath,
@@ -150,6 +162,16 @@ users:
 		{
 			name:   "relative path",
 			uri:    "image.sif",
+			status: http.StatusBadRequest,
+		},
+		{
+			name:   "missing sif",
+			uri:    env.GetPath("missing.sif"),
+			status: http.StatusBadRequest,
+		},
+		{
+			name:   "sif without shell",
+			uri:    noShellPath,
 			status: http.StatusBadRequest,
 		},
 	}

@@ -331,4 +331,46 @@ func Test_CobraRunE_ImportSIF(t *testing.T) {
 		assert.ErrorContains(t, err, "has no /bin/sh")
 		assert.False(t, util.IsDir(env.GetPath("var/lib/warewulf/chroots/no-shell")), "failed import should be removed")
 	})
+
+	t.Run("Failed SIF update keeps image", func(t *testing.T) {
+		resetFlags()
+		env := testenv.New(t)
+		defer env.RemoveAll()
+		env.WriteFile("var/lib/warewulf/chroots/existing/rootfs/etc/keep", "keep")
+
+		sifPath := env.GetPath("test-image.sif")
+		assert.NoError(t, squashfstest.WriteSIF(sifPath, []squashfstest.Entry{{Path: "etc/hostname", Mode: 0o644}}))
+
+		SetUpdate = true
+		err := CobraRunE(&cobra.Command{}, []string{sifPath, "existing"})
+		assert.ErrorContains(t, err, "has no /bin/sh")
+		assert.ErrorContains(t, err, "may be partially updated")
+		assert.Equal(t, "keep", env.ReadFile("var/lib/warewulf/chroots/existing/rootfs/etc/keep"))
+	})
+
+	t.Run("Failed SIF update of a new image is removed", func(t *testing.T) {
+		resetFlags()
+		env := testenv.New(t)
+		defer env.RemoveAll()
+
+		sifPath := env.GetPath("test-image.sif")
+		assert.NoError(t, squashfstest.WriteSIF(sifPath, []squashfstest.Entry{{Path: "etc/hostname", Mode: 0o644}}))
+
+		SetUpdate = true
+		err := CobraRunE(&cobra.Command{}, []string{sifPath, "new"})
+		assert.ErrorContains(t, err, "has no /bin/sh")
+		assert.False(t, util.IsDir(env.GetPath("var/lib/warewulf/chroots/new")), "failed import should be removed")
+	})
+
+	t.Run("SIF file name that names a parent directory", func(t *testing.T) {
+		resetFlags()
+		env := testenv.New(t)
+		defer env.RemoveAll()
+
+		sifPath := env.GetPath("..sif")
+		assert.NoError(t, squashfstest.WriteSIF(sifPath, sifEntries))
+
+		err := CobraRunE(&cobra.Command{}, []string{sifPath})
+		assert.ErrorContains(t, err, "invalid image name")
+	})
 }

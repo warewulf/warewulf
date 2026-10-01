@@ -6,11 +6,13 @@ import (
 	"compress/zlib"
 	"encoding/binary"
 	"fmt"
+	"io"
 	"io/fs"
+	"maps"
 	"math/bits"
 	"path"
 	"runtime"
-	"sort"
+	"slices"
 	"strings"
 	"time"
 
@@ -52,6 +54,8 @@ const (
 // extended inode types are the basic types plus 7
 const extended = 7
 
+var xattrPrefixes = []string{"user.", "trusted.", "security."}
+
 // Entry describes a filesystem entry. Parent directories that are not
 // listed are created with mode 0755.
 type Entry struct {
@@ -64,14 +68,17 @@ type Entry struct {
 	// Target is the target of a symlink.
 	Target string
 	// Link, if set, makes this entry a hard link to the entry at Link.
-	Link   string
-	Major  uint32
-	Minor  uint32
+	Link  string
+	Major uint32
+	Minor uint32
+	// Xattrs are stored inline, except that a value repeated from an earlier
+	// entry is stored as a reference to it, as mksquashfs does.
 	Xattrs map[string][]byte
+	UID    uint32
+	GID    uint32
 }
 
-// Options configures an image. All entries are owned by root and the block
-// size is 4096.
+// Options configures an image. The block size is 4096.
 type Options struct {
 	// Compression defaults to Gzip.
 	Compression Compression
@@ -125,12 +132,7 @@ func (n *node) resolve() *node {
 }
 
 func (n *node) sortedChildren() []string {
-	names := make([]string, 0, len(n.children))
-	for name := range n.children {
-		names = append(names, name)
-	}
-	sort.Strings(names)
-	return names
+	return slices.Sorted(maps.Keys(n.children))
 }
 
 type builder struct {
@@ -142,6 +144,8 @@ type builder struct {
 	xattrKV   *mdWriter
 	xattrIDs  []byte
 	xattrs    uint32
+	values    map[string]uint64
+	ids       []uint32
 	frag      []byte
 	frags     []byte
 	fragCount uint32
@@ -154,8 +158,9 @@ func Build(entries []Entry, opts Options) ([]byte, error) {
 		opts.Compression = Gzip
 	}
 	b := &builder{
-		opts: opts,
-		img:  make([]byte, 96),
+		opts:   opts,
+		img:    make([]byte, 96),
+		values: map[string]uint64{},
 	}
 	if opts.Compression == Zstd {
 		enc, err := zstd.NewWriter(nil)
@@ -177,7 +182,6 @@ func Build(entries []Entry, opts Options) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	b.number(root)
 	if err := b.writeData(root); err != nil {
 		return nil, err
 	}
@@ -225,12 +229,11 @@ func Build(entries []Entry, opts Options) ([]byte, error) {
 	sb.FragTableStart = invalidTable
 	if b.fragCount > 0 {
 		sb.FragCount = b.fragCount
-		sb.FragTableStart = b.writeLookupTable(b.frags)
+		sb.FragTableStart = b.writeLookupTable(b.frags, nil)
 	}
 
-	// the only id is root, at index 0
-	sb.IDCount = 1
-	sb.IDTableStart = b.writeLookupTable(le(uint32(0)))
+	sb.IDCount = uint16(len(b.ids))
+	sb.IDTableStart = b.writeLookupTable(le(b.ids), nil)
 
 	sb.XattrIDTableStart = invalidTable
 	if b.xattrs == 0 {
@@ -238,13 +241,7 @@ func Build(entries []Entry, opts Options) ([]byte, error) {
 	} else {
 		kvStart := uint64(len(b.img))
 		b.img = append(b.img, b.xattrKV.finish()...)
-		var locs []uint64
-		for i := 0; i < len(b.xattrIDs); i += metadataBlockSize {
-			locs = append(locs, uint64(len(b.img)))
-			b.img = append(b.img, b.metadataBlock(b.xattrIDs[i:min(i+metadataBlockSize, len(b.xattrIDs))])...)
-		}
-		sb.XattrIDTableStart = uint64(len(b.img))
-		b.img = append(b.img, le(kvStart, b.xattrs, uint32(0), locs)...)
+		sb.XattrIDTableStart = b.writeLookupTable(b.xattrIDs, le(kvStart, b.xattrs, uint32(0)))
 	}
 
 	sb.BytesUsed = uint64(len(b.img))
@@ -253,7 +250,7 @@ func Build(entries []Entry, opts Options) ([]byte, error) {
 }
 
 func buildTree(entries []Entry) (*node, error) {
-	root := &node{e: Entry{Mode: fs.ModeDir | 0o755}, children: map[string]*node{}}
+	root := &node{e: Entry{Mode: fs.ModeDir | 0o755}, children: map[string]*node{}, xattrIdx: noXattr}
 	byPath := map[string]*node{}
 	lookup := func(p string) *node {
 		n := root
@@ -295,55 +292,35 @@ func buildTree(entries []Entry) (*node, error) {
 			return nil, fmt.Errorf("invalid hard link target %q", n.e.Link)
 		}
 		n.link = target
+		target.nlink++
 	}
 	return root, nil
 }
 
-// number assigns inode numbers and link counts.
-func (b *builder) number(n *node) {
+// writeData assigns inode numbers and link counts and writes file data,
+// depth first.
+func (b *builder) writeData(n *node) error {
 	b.inodeNum++
 	n.inum = b.inodeNum
-	n.xattrIdx = noXattr
-	n.nlink = 1
+	n.nlink++
 	if n.children != nil {
-		n.nlink = 2
+		n.nlink++
 	}
-	for _, name := range n.sortedChildren() {
-		c := n.children[name]
-		if c.link != nil {
-			continue
-		}
-		b.number(c)
-		if c.children != nil {
-			n.nlink++
-		}
-	}
-	for _, name := range n.sortedChildren() {
-		if c := n.children[name]; c.link != nil {
-			c.link.nlink++
-		}
-	}
-}
-
-func (b *builder) writeData(n *node) error {
 	for _, name := range n.sortedChildren() {
 		c := n.children[name]
 		if c.link != nil {
 			continue
 		}
 		b.addXattrs(c)
-		if c.children != nil {
-			if err := b.writeData(c); err != nil {
-				return err
-			}
-			continue
-		}
-		if c.basicType() != typeFile {
-			continue
-		}
-		if err := b.writeFile(c); err != nil {
+		if err := b.writeData(c); err != nil {
 			return err
 		}
+		if c.children != nil {
+			n.nlink++
+		}
+	}
+	if n.children == nil && n.basicType() == typeFile {
+		return b.writeFile(n)
 	}
 	return nil
 }
@@ -419,37 +396,43 @@ func (b *builder) addXattrs(n *node) {
 	if len(n.e.Xattrs) == 0 {
 		return
 	}
-	names := make([]string, 0, len(n.e.Xattrs))
-	for name := range n.e.Xattrs {
-		names = append(names, name)
-	}
-	sort.Strings(names)
 	ref := b.xattrKV.ref()
 	size, count := 0, 0
-	for _, name := range names {
-		var typ uint16
-		var suffix string
-		switch {
-		case strings.HasPrefix(name, "user."):
-			typ, suffix = 0, strings.TrimPrefix(name, "user.")
-		case strings.HasPrefix(name, "trusted."):
-			typ, suffix = 1, strings.TrimPrefix(name, "trusted.")
-		case strings.HasPrefix(name, "security."):
-			typ, suffix = 2, strings.TrimPrefix(name, "security.")
-		default:
+	for _, name := range slices.Sorted(maps.Keys(n.e.Xattrs)) {
+		typ := slices.IndexFunc(xattrPrefixes, func(p string) bool { return strings.HasPrefix(name, p) })
+		if typ < 0 {
 			continue
 		}
+		suffix := name[len(xattrPrefixes[typ]):]
 		value := n.e.Xattrs[name]
-		kv := append(le(typ, uint16(len(suffix))), suffix...)
-		kv = append(kv, le(uint32(len(value)))...)
-		kv = append(kv, value...)
-		b.xattrKV.write(kv)
-		size += len(kv)
+		valueRef, repeated := b.values[string(value)]
+		if repeated {
+			typ |= 0x100
+		}
+		key := append(le(uint16(typ), uint16(len(suffix))), suffix...)
+		b.xattrKV.write(key)
+		if repeated {
+			b.xattrKV.write(le(uint32(8), valueRef))
+		} else {
+			b.values[string(value)] = b.xattrKV.ref()
+			b.xattrKV.write(append(le(uint32(len(value))), value...))
+		}
+		size += len(key) + 4 + len(value)
 		count++
 	}
 	n.xattrIdx = b.xattrs
 	b.xattrs++
 	b.xattrIDs = append(b.xattrIDs, le(ref, uint32(count), uint32(size))...)
+}
+
+// idIndex returns the index of id in the id table, adding it if needed.
+func (b *builder) idIndex(id uint32) uint16 {
+	i := slices.Index(b.ids, id)
+	if i < 0 {
+		i = len(b.ids)
+		b.ids = append(b.ids, id)
+	}
+	return uint16(i)
 }
 
 // writeInodes writes the inodes of all non-directory entries.
@@ -509,7 +492,8 @@ func (b *builder) writeInode(n *node) {
 	e := n.e
 	typ := n.basicType()
 	hasXattr := n.xattrIdx != noXattr
-	if hasXattr || (typ == typeFile && n.nlink > 1) {
+	// A basic directory inode holds only a 16-bit listing size.
+	if hasXattr || (typ == typeFile && n.nlink > 1) || n.dirSize > 0xffff {
 		typ += extended
 	}
 	var mtime uint32
@@ -526,7 +510,7 @@ func (b *builder) writeInode(n *node) {
 	if e.Mode&fs.ModeSticky != 0 {
 		perm |= 0o1000
 	}
-	buf := le(typ, perm, uint16(0), uint16(0), mtime, n.inum)
+	buf := le(typ, perm, b.idIndex(e.UID), b.idIndex(e.GID), mtime, n.inum)
 
 	rdev := (e.Minor & 0xff) | (e.Major << 8) | ((e.Minor &^ 0xff) << 12)
 	size := uint64(len(e.Content))
@@ -539,19 +523,16 @@ func (b *builder) writeInode(n *node) {
 		buf = append(buf, le(uint32(n.blocksStart), n.fragIdx, n.fragOffset, uint32(size), n.blockSizes)...)
 	case typeFile + extended:
 		buf = append(buf, le(n.blocksStart, size, uint64(0), n.nlink, n.fragIdx, n.fragOffset, n.xattrIdx, n.blockSizes)...)
-	case typeSymlink:
+	case typeSymlink, typeSymlink + extended:
 		buf = append(append(buf, le(n.nlink, uint32(len(e.Target)))...), e.Target...)
-	case typeSymlink + extended:
-		buf = append(append(buf, le(n.nlink, uint32(len(e.Target)))...), e.Target...)
-		buf = append(buf, le(n.xattrIdx)...)
-	case typeBlockDev, typeCharDev:
+	case typeBlockDev, typeCharDev, typeBlockDev + extended, typeCharDev + extended:
 		buf = append(buf, le(n.nlink, rdev)...)
-	case typeBlockDev + extended, typeCharDev + extended:
-		buf = append(buf, le(n.nlink, rdev, n.xattrIdx)...)
-	case typeFifo, typeSocket:
+	case typeFifo, typeSocket, typeFifo + extended, typeSocket + extended:
 		buf = append(buf, le(n.nlink)...)
-	case typeFifo + extended, typeSocket + extended:
-		buf = append(buf, le(n.nlink, n.xattrIdx)...)
+	}
+	// extended symlink, device, and IPC inodes end with an xattr index
+	if typ >= typeSymlink+extended {
+		buf = append(buf, le(n.xattrIdx)...)
 	}
 	n.ref = b.inodes.ref()
 	b.inodes.write(buf)
@@ -559,30 +540,26 @@ func (b *builder) writeInode(n *node) {
 
 func (b *builder) compress(data []byte) ([]byte, error) {
 	var buf bytes.Buffer
+	var w io.WriteCloser
+	var err error
 	switch b.opts.Compression {
 	case Gzip:
-		w := zlib.NewWriter(&buf)
-		if _, err := w.Write(data); err != nil {
-			return nil, err
-		}
-		if err := w.Close(); err != nil {
-			return nil, err
-		}
+		w = zlib.NewWriter(&buf)
 	case XZ:
-		w, err := xz.NewWriter(&buf)
-		if err != nil {
-			return nil, err
-		}
-		if _, err := w.Write(data); err != nil {
-			return nil, err
-		}
-		if err := w.Close(); err != nil {
+		// Like mksquashfs, keep the dictionary no larger than a block.
+		if w, err = (xz.WriterConfig{DictCap: metadataBlockSize}).NewWriter(&buf); err != nil {
 			return nil, err
 		}
 	case Zstd:
 		return b.zstd.EncodeAll(data, nil), nil
 	default:
 		return nil, fmt.Errorf("unsupported compression %d", b.opts.Compression)
+	}
+	if _, err := w.Write(data); err != nil {
+		return nil, err
+	}
+	if err := w.Close(); err != nil {
+		return nil, err
 	}
 	return buf.Bytes(), nil
 }
@@ -596,13 +573,16 @@ func (b *builder) metadataBlock(data []byte) []byte {
 	return append(le(uint16(len(c))), c...)
 }
 
-func (b *builder) writeLookupTable(data []byte) uint64 {
+// writeLookupTable writes data as metadata blocks followed by hdr and the
+// list of block locations, and returns the position of hdr.
+func (b *builder) writeLookupTable(data, hdr []byte) uint64 {
 	var locs []uint64
 	for i := 0; i < len(data); i += metadataBlockSize {
 		locs = append(locs, uint64(len(b.img)))
 		b.img = append(b.img, b.metadataBlock(data[i:min(i+metadataBlockSize, len(data))])...)
 	}
 	start := uint64(len(b.img))
+	b.img = append(b.img, hdr...)
 	b.img = append(b.img, le(locs)...)
 	return start
 }
@@ -630,7 +610,6 @@ func (w *mdWriter) write(p []byte) {
 func (w *mdWriter) finish() []byte {
 	if len(w.pending) > 0 {
 		w.out = append(w.out, w.b.metadataBlock(w.pending)...)
-		w.pending = nil
 	}
 	return w.out
 }

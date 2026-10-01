@@ -1,9 +1,9 @@
 // Package squashfs reads SquashFS 4.0 filesystem images.
 //
 // It implements only what is needed to extract a complete image to a
-// directory: gzip, xz, and zstd compression, fragments, sparse files, hard
-// links, device nodes, and extended attributes. The on-disk format is
-// described at https://dr-emann.github.io/squashfs/.
+// directory: gzip, xz (without BCJ filters), and zstd compression, fragments,
+// sparse files, hard links, device nodes, and extended attributes. The
+// on-disk format is described at https://dr-emann.github.io/squashfs/.
 package squashfs
 
 import (
@@ -15,7 +15,7 @@ import (
 	"io"
 
 	"github.com/klauspost/compress/zstd"
-	"github.com/ulikunitz/xz"
+	"github.com/ulikunitz/xz/lzma"
 )
 
 const (
@@ -24,7 +24,13 @@ const (
 	metadataBlockSize = 8192
 	maxBlockSize      = 1 << 20
 	maxBlockCount     = 1 << 24
-	maxXattrValueSize = 1 << 20
+	maxCachedBlocks   = 1024
+	// Linux limits a single extended attribute value to 64 KiB.
+	maxXattrValueSize = 64 << 10
+	maxXattrSize      = 1 << 20
+	// A lookup table's index can name the same metadata block repeatedly, so
+	// the size of a table is bounded independently of the image size.
+	maxTableSize = 16 << 20
 
 	invalidTable      = 0xFFFFFFFFFFFFFFFF
 	noFragment        = 0xFFFFFFFF
@@ -96,20 +102,26 @@ type metadataBlock struct {
 }
 
 type fragmentEntry struct {
-	start uint64
-	size  uint32
+	Start uint64
+	Size  uint32
+	_     uint32
 }
 
 type xattrID struct {
-	ref   uint64
-	count uint32
+	Ref   uint64
+	Count uint32
+	_     uint32
 }
 
-// Reader reads a SquashFS image.
+var xattrPrefixes = [...]string{"user.", "trusted.", "security."}
+
+// zstdDecoder is shared by all Readers. DecodeAll is safe for concurrent use.
+var zstdDecoder, _ = zstd.NewReader(nil, zstd.WithDecoderMaxMemory(maxBlockSize))
+
+// Reader reads a SquashFS image. A Reader is not safe for concurrent use.
 type Reader struct {
 	r          io.ReaderAt
 	sb         superblock
-	zstd       *zstd.Decoder
 	ids        []uint32
 	frags      []fragmentEntry
 	xattrIDs   []xattrID
@@ -119,8 +131,7 @@ type Reader struct {
 	fragData   []byte
 }
 
-// NewReader returns a Reader for the SquashFS image in r. The caller must
-// call Close when done.
+// NewReader returns a Reader for the SquashFS image in r.
 func NewReader(r io.ReaderAt) (*Reader, error) {
 	sq := &Reader{
 		r:        r,
@@ -140,13 +151,7 @@ func NewReader(r io.ReaderAt) (*Reader, error) {
 		return nil, fmt.Errorf("invalid squashfs block size %d", sq.sb.BlockSize)
 	}
 	switch sq.sb.Compression {
-	case compGzip, compXZ:
-	case compZstd:
-		d, err := zstd.NewReader(nil, zstd.WithDecoderConcurrency(1), zstd.WithDecoderMaxMemory(maxBlockSize))
-		if err != nil {
-			return nil, err
-		}
-		sq.zstd = d
+	case compGzip, compXZ, compZstd:
 	default:
 		name, ok := compressionNames[sq.sb.Compression]
 		if !ok {
@@ -154,39 +159,26 @@ func NewReader(r io.ReaderAt) (*Reader, error) {
 		}
 		return nil, fmt.Errorf("unsupported squashfs compression: %s", name)
 	}
+	// Every read is bounded by BytesUsed, so check that the image is really
+	// that large; otherwise a small image could declare huge tables.
+	if _, err := sq.readAt(1, int64(sq.sb.BytesUsed)-1); err != nil {
+		return nil, fmt.Errorf("squashfs image is truncated or unreadable: %d bytes expected: %w", sq.sb.BytesUsed, err)
+	}
 	if err := sq.readTables(); err != nil {
-		sq.Close()
 		return nil, err
 	}
 	return sq, nil
 }
 
-// Close releases resources held by the Reader.
-func (sq *Reader) Close() {
-	if sq.zstd != nil {
-		sq.zstd.Close()
-	}
-}
-
 func (sq *Reader) readTables() error {
-	data, err := sq.readLookupTable(sq.sb.IDTableStart, uint64(sq.sb.IDCount), 4)
-	if err != nil {
+	var err error
+	if sq.ids, err = readLookupTable[uint32](sq, sq.sb.IDTableStart, uint64(sq.sb.IDCount)); err != nil {
 		return fmt.Errorf("reading id table: %w", err)
-	}
-	sq.ids = make([]uint32, sq.sb.IDCount)
-	for i := range sq.ids {
-		sq.ids[i] = binary.LittleEndian.Uint32(data[i*4:])
 	}
 
 	if sq.sb.FragCount > 0 {
-		data, err := sq.readLookupTable(sq.sb.FragTableStart, uint64(sq.sb.FragCount), 16)
-		if err != nil {
+		if sq.frags, err = readLookupTable[fragmentEntry](sq, sq.sb.FragTableStart, uint64(sq.sb.FragCount)); err != nil {
 			return fmt.Errorf("reading fragment table: %w", err)
-		}
-		sq.frags = make([]fragmentEntry, sq.sb.FragCount)
-		for i := range sq.frags {
-			sq.frags[i].start = binary.LittleEndian.Uint64(data[i*16:])
-			sq.frags[i].size = binary.LittleEndian.Uint32(data[i*16+8:])
 		}
 	}
 
@@ -197,14 +189,8 @@ func (sq *Reader) readTables() error {
 		}
 		sq.xattrStart = int64(binary.LittleEndian.Uint64(hdr))
 		count := binary.LittleEndian.Uint32(hdr[8:])
-		data, err := sq.readLookupTable(sq.sb.XattrIDTableStart+16, uint64(count), 16)
-		if err != nil {
+		if sq.xattrIDs, err = readLookupTable[xattrID](sq, sq.sb.XattrIDTableStart+16, uint64(count)); err != nil {
 			return fmt.Errorf("reading xattr id table: %w", err)
-		}
-		sq.xattrIDs = make([]xattrID, count)
-		for i := range sq.xattrIDs {
-			sq.xattrIDs[i].ref = binary.LittleEndian.Uint64(data[i*16:])
-			sq.xattrIDs[i].count = binary.LittleEndian.Uint32(data[i*16+8:])
 		}
 	}
 	return nil
@@ -232,20 +218,19 @@ func (sq *Reader) decompress(src []byte, limit int) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-
-		defer func() {
-			_ = zr.Close()
-		}()
-
 		rd = zr
 	case compXZ:
-		xr, err := xz.NewReader(bytes.NewReader(src))
+		data, dictCap, err := xzBlock(src)
+		if err != nil {
+			return nil, err
+		}
+		xr, err := lzma.Reader2Config{DictCap: dictCap}.NewReader2(bytes.NewReader(data))
 		if err != nil {
 			return nil, err
 		}
 		rd = xr
 	case compZstd:
-		out, err := sq.zstd.DecodeAll(src, nil)
+		out, err := zstdDecoder.DecodeAll(src, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -262,6 +247,46 @@ func (sq *Reader) decompress(src []byte, limit int) ([]byte, error) {
 		return nil, fmt.Errorf("decompressed block exceeds %d bytes", limit)
 	}
 	return out, nil
+}
+
+// xzBlock returns the LZMA2 data of the first block of an xz stream and its
+// dictionary size. Blocks written by mksquashfs hold a single LZMA2 filter
+// whose dictionary is no larger than the block size. The size is checked
+// because the decoder allocates whatever dictionary the stream declares.
+func xzBlock(src []byte) ([]byte, int, error) {
+	if len(src) < 14 || !bytes.HasPrefix(src, []byte("\xfd7zXZ\x00")) {
+		return nil, 0, errors.New("invalid xz stream header")
+	}
+	end := 12 + (int(src[12])+1)*4
+	if src[12] == 0 || end > len(src) {
+		return nil, 0, errors.New("invalid xz block header")
+	}
+	flags, hdr := src[13], src[14:end]
+	if flags&0x3c != 0 {
+		return nil, 0, errors.New("invalid xz block header")
+	}
+	if flags&0x03 != 0 {
+		return nil, 0, errors.New("xz filters other than LZMA2, such as BCJ, are not supported")
+	}
+	// Skip the optional compressed and uncompressed sizes.
+	for _, present := range []bool{flags&0x40 != 0, flags&0x80 != 0} {
+		if present {
+			_, n := binary.Uvarint(hdr)
+			if n <= 0 {
+				return nil, 0, errors.New("invalid xz block header")
+			}
+			hdr = hdr[n:]
+		}
+	}
+	if len(hdr) < 3 || hdr[0] != 0x21 || hdr[1] != 1 || hdr[2] > 40 {
+		return nil, 0, errors.New("xz block does not use a supported LZMA2 filter")
+	}
+	d := hdr[2]
+	dictCap := uint64(2|d&1) << (d/2 + 11)
+	if dictCap > maxBlockSize {
+		return nil, 0, fmt.Errorf("xz dictionary size %d exceeds %d bytes", dictCap, maxBlockSize)
+	}
+	return src[end:], int(dictCap), nil
 }
 
 // readMetadataBlock returns the uncompressed contents of the metadata block
@@ -289,23 +314,30 @@ func (sq *Reader) readMetadataBlock(pos int64) ([]byte, int64, error) {
 		}
 	}
 	b := metadataBlock{data: data, next: pos + 2 + size}
+	// Blocks may start at any position the image names, so bound the cache.
+	if len(sq.metadata) >= maxCachedBlocks {
+		clear(sq.metadata)
+	}
 	sq.metadata[pos] = b
 	return b.data, b.next, nil
 }
 
-// readLookupTable reads count entries of entrySize bytes from a table whose
-// list of metadata block locations begins at start.
-func (sq *Reader) readLookupTable(start, count uint64, entrySize int) ([]byte, error) {
-	if count > sq.sb.BytesUsed {
+// readLookupTable reads count entries from a table whose list of metadata
+// block locations begins at start.
+func readLookupTable[T any](sq *Reader, start, count uint64) ([]T, error) {
+	size := uint64(binary.Size(*new(T)))
+	// A table cannot hold more data than the image or maxTableSize.
+	if count > sq.sb.BytesUsed/size || count*size > maxTableSize {
 		return nil, fmt.Errorf("invalid table entry count %d", count)
 	}
-	total := int(count) * entrySize
+	total := int(count * size)
 	blocks := (total + metadataBlockSize - 1) / metadataBlockSize
 	index, err := sq.readAt(int64(blocks)*8, int64(start))
 	if err != nil {
 		return nil, err
 	}
-	out := make([]byte, 0, total)
+	// Grow out as blocks are read; total comes from the image.
+	var out []byte
 	for i := 0; i < blocks; i++ {
 		data, _, err := sq.readMetadataBlock(int64(binary.LittleEndian.Uint64(index[i*8:])))
 		if err != nil {
@@ -316,7 +348,8 @@ func (sq *Reader) readLookupTable(start, count uint64, entrySize int) ([]byte, e
 	if len(out) < total {
 		return nil, errors.New("table is truncated")
 	}
-	return out[:total], nil
+	entries := make([]T, count)
+	return entries, binary.Read(bytes.NewReader(out[:total]), binary.LittleEndian, entries)
 }
 
 // metadataReader reads a stream of bytes that may span metadata blocks.
@@ -467,33 +500,23 @@ func (sq *Reader) readInode(ref uint64) (*inode, error) {
 				return nil, fmt.Errorf("inode %d has invalid symlink target size %d", h.Number, s.Size)
 			}
 			target := make([]byte, s.Size)
-			if _, err = io.ReadFull(m, target); err == nil && h.Type == typeExtSymlink {
-				err = binary.Read(m, binary.LittleEndian, &in.xattr)
-			}
+			_, err = io.ReadFull(m, target)
 			in.target, in.nlink = string(target), s.Nlink
 		}
-	case typeBlockDev, typeCharDev:
+	case typeBlockDev, typeCharDev, typeExtBlockDev, typeExtCharDev:
 		var d struct {
 			Nlink, Rdev uint32
 		}
 		err = binary.Read(m, binary.LittleEndian, &d)
 		in.nlink, in.rdev = d.Nlink, d.Rdev
-	case typeExtBlockDev, typeExtCharDev:
-		var d struct {
-			Nlink, Rdev, Xattr uint32
-		}
-		err = binary.Read(m, binary.LittleEndian, &d)
-		in.nlink, in.rdev, in.xattr = d.Nlink, d.Rdev, d.Xattr
-	case typeFifo, typeSocket:
+	case typeFifo, typeSocket, typeExtFifo, typeExtSocket:
 		err = binary.Read(m, binary.LittleEndian, &in.nlink)
-	case typeExtFifo, typeExtSocket:
-		var d struct {
-			Nlink, Xattr uint32
-		}
-		err = binary.Read(m, binary.LittleEndian, &d)
-		in.nlink, in.xattr = d.Nlink, d.Xattr
 	default:
 		return nil, fmt.Errorf("inode %d has unknown type %d", h.Number, h.Type)
+	}
+	// Extended symlink, device, and IPC inodes end with an xattr index.
+	if err == nil && h.Type >= typeExtSymlink {
+		err = binary.Read(m, binary.LittleEndian, &in.xattr)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("reading inode %d: %w", h.Number, err)
@@ -510,8 +533,17 @@ func (sq *Reader) readBlockSizes(m *metadataReader, in *inode) error {
 	if count > maxBlockCount {
 		return fmt.Errorf("file size %d is too large", in.fileSize)
 	}
-	in.blockSizes = make([]uint32, count)
-	return binary.Read(m, binary.LittleEndian, in.blockSizes)
+	// Read in chunks so that a bogus file size cannot allocate more than the
+	// inode table actually holds.
+	for count > 0 {
+		chunk := make([]uint32, min(count, metadataBlockSize/4))
+		if err := binary.Read(m, binary.LittleEndian, chunk); err != nil {
+			return err
+		}
+		in.blockSizes = append(in.blockSizes, chunk...)
+		count -= uint64(len(chunk))
+	}
+	return nil
 }
 
 type dirEntry struct {
@@ -579,8 +611,11 @@ func (sq *Reader) writeFile(in *inode, w io.WriteSeeker) error {
 	for _, s := range in.blockSizes {
 		n := min(bs, remaining)
 		size := int64(s &^ blockUncompressed)
+		if size > bs {
+			return fmt.Errorf("data block at %d has invalid size %d", pos, size)
+		}
+		// Sparse blocks are skipped. The caller truncates over trailing ones.
 		if size == 0 {
-			// sparse block
 			if _, err := w.Seek(n, io.SeekCurrent); err != nil {
 				return err
 			}
@@ -633,11 +668,15 @@ func (sq *Reader) fragment(idx uint32) ([]byte, error) {
 		return nil, fmt.Errorf("invalid fragment index %d", idx)
 	}
 	f := sq.frags[idx]
-	data, err := sq.readAt(int64(f.size&^blockUncompressed), int64(f.start))
+	size := f.Size &^ blockUncompressed
+	if size > sq.sb.BlockSize {
+		return nil, fmt.Errorf("fragment %d has invalid size %d", idx, size)
+	}
+	data, err := sq.readAt(int64(size), int64(f.Start))
 	if err != nil {
 		return nil, err
 	}
-	if f.size&blockUncompressed == 0 {
+	if f.Size&blockUncompressed == 0 {
 		if data, err = sq.decompress(data, int(sq.sb.BlockSize)); err != nil {
 			return nil, fmt.Errorf("fragment %d: %w", idx, err)
 		}
@@ -655,12 +694,15 @@ func (sq *Reader) xattrs(idx uint32) (map[string][]byte, error) {
 		return nil, fmt.Errorf("invalid xattr index %d", idx)
 	}
 	id := sq.xattrIDs[idx]
-	m, err := sq.newMetadataReader(sq.xattrStart, id.ref>>16, uint16(id.ref))
+	m, err := sq.newMetadataReader(sq.xattrStart, id.Ref>>16, uint16(id.Ref))
 	if err != nil {
 		return nil, fmt.Errorf("reading xattrs: %w", err)
 	}
-	out := make(map[string][]byte, id.count)
-	for i := uint32(0); i < id.count; i++ {
+	// The count comes from the image, so it is not used to size the map, and
+	// the total size is bounded as the attributes are read.
+	out := map[string][]byte{}
+	total := 0
+	for i := uint32(0); i < id.Count; i++ {
 		var k struct {
 			Type, NameSize uint16
 		}
@@ -671,16 +713,9 @@ func (sq *Reader) xattrs(idx uint32) (map[string][]byte, error) {
 		if _, err := io.ReadFull(m, name); err != nil {
 			return nil, fmt.Errorf("reading xattr key: %w", err)
 		}
-		var prefix string
-		switch k.Type & 0xff {
-		case 0:
-			prefix = "user."
-		case 1:
-			prefix = "trusted."
-		case 2:
-			prefix = "security."
-		default:
-			return nil, fmt.Errorf("unknown xattr prefix type %d", k.Type&0xff)
+		prefix := int(k.Type & 0xff)
+		if prefix >= len(xattrPrefixes) {
+			return nil, fmt.Errorf("unknown xattr prefix type %d", prefix)
 		}
 		value, err := readXattrValue(m)
 		if err != nil {
@@ -701,7 +736,10 @@ func (sq *Reader) xattrs(idx uint32) (map[string][]byte, error) {
 				return nil, err
 			}
 		}
-		out[prefix+string(name)] = value
+		if total += len(name) + len(value); total > maxXattrSize {
+			return nil, fmt.Errorf("extended attributes exceed %d bytes", maxXattrSize)
+		}
+		out[xattrPrefixes[prefix]+string(name)] = value
 	}
 	return out, nil
 }
