@@ -3,6 +3,7 @@
 if ! command -v info >/dev/null; then
     info() {
         printf '%s\n' "$*"
+        return 0
     }
 fi
 
@@ -33,7 +34,7 @@ else
 fi
 
 if [ -x /warewulf/run-wwinit.d ]; then
-        /warewulf/run-wwinit.d
+        /warewulf/run-wwinit.d || die "warewulf: a wwinit.d script failed"
 fi
 
 NEXT_INIT=/warewulf/run-init
