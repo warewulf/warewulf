@@ -1,0 +1,2 @@
+{{/* wwdoc: Debian and Ubuntu chronyd read /etc/chrony/chrony.conf; link it to /etc/chrony.conf. */ -}}
+{{ softlink "/etc/chrony.conf" }}

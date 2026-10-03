@@ -53,7 +53,9 @@ allow 192.168.1.0/24
 logdir /var/log/chrony
 
 # Also include any directives found in configuration files in /etc/chrony.d
-include /etc/chrony.d/*.conf
+# (Red Hat, SUSE) or /etc/chrony/conf.d (Debian, Ubuntu). Unlike include,
+# confdir skips directories that do not exist.
+confdir /etc/chrony.d /etc/chrony/conf.d
 `,
 		},
 		"custom_server": {
@@ -93,7 +95,9 @@ allow 192.168.1.0/24
 logdir /var/log/chrony
 
 # Also include any directives found in configuration files in /etc/chrony.d
-include /etc/chrony.d/*.conf
+# (Red Hat, SUSE) or /etc/chrony/conf.d (Debian, Ubuntu). Unlike include,
+# confdir skips directories that do not exist.
+confdir /etc/chrony.d /etc/chrony/conf.d
 `,
 		},
 		"custom_server_and_servers": {
@@ -136,7 +140,9 @@ allow 192.168.1.0/24
 logdir /var/log/chrony
 
 # Also include any directives found in configuration files in /etc/chrony.d
-include /etc/chrony.d/*.conf
+# (Red Hat, SUSE) or /etc/chrony/conf.d (Debian, Ubuntu). Unlike include,
+# confdir skips directories that do not exist.
+confdir /etc/chrony.d /etc/chrony/conf.d
 `,
 		},
 		"custom_servers": {
@@ -177,7 +183,27 @@ allow 192.168.1.0/24
 logdir /var/log/chrony
 
 # Also include any directives found in configuration files in /etc/chrony.d
-include /etc/chrony.d/*.conf
+# (Red Hat, SUSE) or /etc/chrony/conf.d (Debian, Ubuntu). Unlike include,
+# confdir skips directories that do not exist.
+confdir /etc/chrony.d /etc/chrony/conf.d
+`,
+		},
+		"debian_conf_link": {
+			warewulf_conf: `
+ipaddr: 192.168.1.254
+netmask: 255.255.255.0
+network: 192.168.1.0
+`,
+			nodes_conf: `
+nodes:
+  node1:
+    ipaddr: 192.168.1.10
+`,
+			args: []string{"--render", "node1", "chrony", "etc/chrony/chrony.conf.ww"},
+			log: `backupFile: true
+writeFile: true
+Filename: etc/chrony/chrony.conf
+Symlink: /etc/chrony.conf
 `,
 		},
 	}
@@ -185,6 +211,7 @@ include /etc/chrony.d/*.conf
 	env := testenv.New(t)
 	defer env.RemoveAll()
 	env.ImportFile("var/lib/warewulf/overlays/chrony/rootfs/etc/chrony.conf.ww", "../rootfs/etc/chrony.conf.ww")
+	env.ImportFile("var/lib/warewulf/overlays/chrony/rootfs/etc/chrony/chrony.conf.ww", "../rootfs/etc/chrony/chrony.conf.ww")
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {

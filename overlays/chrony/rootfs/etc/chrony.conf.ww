@@ -33,4 +33,6 @@ allow {{ .NetworkCIDR }}
 logdir /var/log/chrony
 
 # Also include any directives found in configuration files in /etc/chrony.d
-include /etc/chrony.d/*.conf
+# (Red Hat, SUSE) or /etc/chrony/conf.d (Debian, Ubuntu). Unlike include,
+# confdir skips directories that do not exist.
+confdir /etc/chrony.d /etc/chrony/conf.d

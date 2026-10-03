@@ -34,6 +34,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Fixed non-POSIX compliant Bash in warewulf-dracut that broke 2-stage boot on Enterprise Linux 8. #2275
 - Fixed shellcheck warnings in the wwinit overlay and warewulf-dracut. #2275
+- Fixed the `chrony` overlay on Debian and Ubuntu. Their `chronyd` reads
+  `/etc/chrony/chrony.conf`, so it ignored the generated `/etc/chrony.conf`
+  and nodes never synchronized with the Warewulf server. The overlay now
+  links `/etc/chrony/chrony.conf` to `/etc/chrony.conf`. It also reads drop-in
+  files with `confdir`, which skips missing directories, instead of an
+  `include` that is fatal when `/etc/chrony.d` does not exist.
 
 ### Added
 
