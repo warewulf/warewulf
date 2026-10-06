@@ -21,7 +21,6 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-version v1.9.0
 	github.com/kinbiko/jsonassert v1.2.0
-	github.com/klauspost/compress v1.18.0
 	github.com/manifoldco/promptui v0.9.0
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
 	github.com/opencontainers/image-spec v1.1.1
@@ -35,7 +34,6 @@ require (
 	github.com/swaggest/rest v0.2.75
 	github.com/swaggest/swgui v1.8.9
 	github.com/swaggest/usecase v1.3.1
-	github.com/ulikunitz/xz v0.5.14
 	golang.org/x/crypto v0.54.0
 	golang.org/x/exp v0.0.0-20241217172543-b2144cdd0a67
 	golang.org/x/sys v0.47.0
@@ -83,6 +81,7 @@ require (
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/klauspost/pgzip v1.2.6 // indirect
 	github.com/letsencrypt/boulder v0.0.0-20240620165639-de9c06129bec // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
@@ -121,6 +120,7 @@ require (
 	github.com/swaggest/jsonschema-go v0.3.78 // indirect
 	github.com/swaggest/refl v1.4.0 // indirect
 	github.com/titanous/rocacheck v0.0.0-20171023193734-afe73141d399 // indirect
+	github.com/ulikunitz/xz v0.5.14 // indirect
 	github.com/urfave/cli v1.22.16 // indirect
 	github.com/vbatts/go-mtree v0.6.1-0.20250911112631-8307d76bc1b9 // indirect
 	github.com/vbatts/tar-split v0.12.1 // indirect

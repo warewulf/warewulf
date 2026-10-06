@@ -50,11 +50,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 
 	fullPath := image.SourceDir(name)
-	updating := SetUpdate && util.IsDir(fullPath)
 
 	// image already exists and should be removed first
 	if util.IsDir(fullPath) {
-		if SetUpdate {
+		// unsquashfs follows symlinks already in the destination, so a SIF
+		// image is never extracted over an existing image.
+		if sifPath != "" && SetUpdate && !SetForce {
+			return fmt.Errorf("--update is not supported for SIF images, use --force to replace %s", name)
+		}
+		if SetUpdate && sifPath == "" {
 			wwlog.Info("Updating existing image")
 		} else if SetForce {
 			wwlog.Info("Overwriting existing image")
@@ -71,11 +75,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			wwlog.Warn("--platform is ignored for SIF images")
 		}
 		if err := image.ImportSIF(sifPath, name); err != nil {
-			// An image being updated is not deleted, but it may already be
-			// partially overwritten.
-			if updating {
-				return fmt.Errorf("could not import image, %s may be partially updated: %w", name, err)
-			}
 			_ = image.DeleteSource(name)
 			return fmt.Errorf("could not import image: %w", err)
 		}

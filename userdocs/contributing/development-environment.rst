@@ -25,7 +25,7 @@ Compiling Warewulf for a Development Server
 .. code-block:: shell
 
    # Rocky Linux 9
-   dnf -y install git epel-release golang {libassuan,gpgme}-devel unzip tftp-server dhcp-server nfs-utils ipxe-bootimgs-{x86,aarch64}
+   dnf -y install git epel-release golang {libassuan,gpgme}-devel unzip tftp-server dhcp-server nfs-utils squashfs-tools ipxe-bootimgs-{x86,aarch64}
 
    git clone https://github.com/warewulf/warewulf.git
    cd warewulf

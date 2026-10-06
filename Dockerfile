@@ -55,6 +55,7 @@ RUN zypper  -n install \
   yq \
   tftp \
   systemd \
+  squashfs \
   && \
   zypper clean -a && \
   systemctl enable dhcpd && \

@@ -11,7 +11,7 @@ Install Warewulf and dependencies
 
    sudo zypper install -t pattern devel_basis
    sudo zypper install go
-   sudo zypper install tftp dhcp-server nfs-kernel-server
+   sudo zypper install tftp dhcp-server nfs-kernel-server squashfs
 
    sudo systemctl stop firewalld
    sudo systemctl disable firewalld

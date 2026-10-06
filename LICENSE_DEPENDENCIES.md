@@ -707,7 +707,7 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/spf13/cast/blob/v1.7.0/LICENSE>
 
-## github.com/stretchr/testify/assert
+## github.com/stretchr/testify
 
 **License:** MIT
 

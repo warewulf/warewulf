@@ -126,7 +126,10 @@ func importImage() usecase.Interactor {
 				return err
 			}
 			if err := image.ImportSIF(sifPath, input.Name); err != nil {
-				_ = image.DeleteSource(input.Name)
+				// A leftover directory would block the name.
+				if delErr := image.DeleteSource(input.Name); delErr != nil {
+					wwlog.Error("could not remove %s: %s", image.SourceDir(input.Name), delErr)
+				}
 				if errors.Is(err, image.ErrUnsupportedSIF) {
 					return status.Wrap(err, status.InvalidArgument)
 				}

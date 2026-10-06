@@ -22,7 +22,9 @@ are:
  * /path/to/image.sif
  * /path/to/chroot/
 SIF images are detected by their contents and must have a squashfs primary
-system partition. Apptainer and Singularity are not required.
+system partition. They are extracted with unsquashfs (squashfs-tools);
+Apptainer and Singularity are not required. An existing image cannot be
+updated from a SIF image with --update; use --force to replace it.
 Imported images are used to create bootable images.`,
 		Example: "wwctl image import docker://ghcr.io/warewulf/warewulf-rockylinux:8 rockylinux-8",
 		RunE:    CobraRunE,

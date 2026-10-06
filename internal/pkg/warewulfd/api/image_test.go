@@ -12,7 +12,7 @@ import (
 	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/config"
-	"github.com/warewulf/warewulf/internal/pkg/squashfs/squashfstest"
+	"github.com/warewulf/warewulf/internal/pkg/image/siftest"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
@@ -116,13 +116,9 @@ users:
 	warewulfd.SetNoDaemon()
 
 	sifPath := env.GetPath("image.sif")
-	assert.NoError(t, squashfstest.WriteSIF(sifPath, []squashfstest.Entry{
-		{Path: "bin/sh", Mode: 0o755, Content: []byte("shell")},
-	}))
+	siftest.WriteSIF(t, sifPath, map[string]string{"bin/sh": "shell"})
 	noShellPath := env.GetPath("no-shell.sif")
-	assert.NoError(t, squashfstest.WriteSIF(noShellPath, []squashfstest.Entry{
-		{Path: "etc/hostname", Mode: 0o644},
-	}))
+	siftest.WriteSIF(t, noShellPath, map[string]string{"etc/hostname": ""})
 	env.WriteFile("image.tar", "not a sif")
 
 	tests := []struct {

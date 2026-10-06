@@ -9,7 +9,7 @@ Install the basic services
 
 .. code-block:: bash
 
-   sudo apt install firewalld nfs-kernel-server tftpd-hpa isc-dhcp-server
+   sudo apt install firewalld nfs-kernel-server tftpd-hpa isc-dhcp-server squashfs-tools
 
 .. note::
 

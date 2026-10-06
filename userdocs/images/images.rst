@@ -136,8 +136,9 @@ Local SIF Images
 
 Images in the Singularity Image Format (SIF), as built by Apptainer or
 SingularityCE, can be imported directly. Warewulf detects SIF images by their
-contents, so the file does not need a ``.sif`` extension, and Apptainer does not
-need to be installed on the Warewulf server.
+contents, so the file does not need a ``.sif`` extension. The image is
+extracted with ``unsquashfs`` from squashfs-tools (``squashfs`` on SUSE), so
+Apptainer does not need to be installed on the Warewulf server.
 
 .. code-block:: shell
 
@@ -147,13 +148,18 @@ need to be installed on the Warewulf server.
 If no name is given, the file name without its ``.sif`` extension is used.
 
 The primary system partition of the SIF image is extracted into the image. It
-must be a squashfs filesystem compressed with gzip, xz, or zstd. xz images built
-with a BCJ filter (``mksquashfs -Xbcj``) are not supported. OCI-SIF images (for
-example, those built with ``singularity build --oci``) and encrypted SIF images
-are not supported, and SIF signatures are not verified. SELinux labels in the
-image are not restored. Overlay partitions (for example, those added with
+must be a squashfs filesystem using a compressor that the installed
+``unsquashfs`` supports. With squashfs-tools older than 4.4 (for example, on
+EL8), the partition is first copied to a temporary file next to the image,
+which needs free space equal to its size.
+OCI-SIF images (for example, those built with ``singularity build --oci``) and
+encrypted SIF images are not supported, and SIF signatures are not verified.
+When SELinux is enabled, the SELinux labels of the imported files are reset to
+the local policy with ``restorecon``.
+Overlay partitions (for example, those added with
 ``apptainer overlay create``) are not imported, and ``--platform`` does not
-apply to SIF images.
+apply to SIF images. An existing image cannot be updated from a SIF image with
+``--update``; use ``--force`` to replace it.
 
 Local Directories and Apptainer Sandboxes
 -----------------------------------------

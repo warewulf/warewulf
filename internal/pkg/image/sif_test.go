@@ -2,37 +2,23 @@ package image
 
 import (
 	"bytes"
-	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
-	"runtime"
 	"syscall"
 	"testing"
 
 	"github.com/apptainer/sif/v2/pkg/sif"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/warewulf/warewulf/internal/pkg/squashfs/squashfstest"
+	"github.com/warewulf/warewulf/internal/pkg/image/siftest"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 )
-
-func writeTestSIF(t *testing.T, path string, inputs ...sif.DescriptorInput) {
-	f, err := sif.CreateContainerAtPath(path, sif.OptCreateWithDescriptors(inputs...))
-	assert.NoError(t, err)
-	assert.NoError(t, f.UnloadContainer())
-}
-
-func partitionInput(t *testing.T, data []byte, fsType sif.FSType, partType sif.PartType) sif.DescriptorInput {
-	di, err := sif.NewDescriptorInput(sif.DataPartition, bytes.NewReader(data),
-		sif.OptPartitionMetadata(fsType, partType, runtime.GOARCH))
-	assert.NoError(t, err)
-	return di
-}
 
 func Test_IsSIF(t *testing.T) {
 	dir := t.TempDir()
 	sifPath := filepath.Join(dir, "image.sif")
-	assert.NoError(t, squashfstest.WriteSIF(sifPath, []squashfstest.Entry{{Path: "bin/sh", Mode: 0o755}}))
+	siftest.Write(t, sifPath, siftest.Partition(t, []byte("data"), sif.FsSquash, sif.PartPrimSys))
 	tarPath := filepath.Join(dir, "image.tar")
 	assert.NoError(t, os.WriteFile(tarPath, bytes.Repeat([]byte{0}, 1024), 0o644))
 	shortPath := filepath.Join(dir, "short")
@@ -65,78 +51,70 @@ func Test_IsSIF(t *testing.T) {
 }
 
 func Test_ImportSIF(t *testing.T) {
-	rootfs := []squashfstest.Entry{
-		{Path: "bin/sh", Mode: 0o755, Content: []byte("shell")},
-		{Path: "etc/os-release", Mode: 0o644, Content: []byte("NAME=test\n")},
-		{Path: "usr/bin/sh", Mode: fs.ModeSymlink | 0o777, Target: "../../bin/sh"},
+	squashDir := func(t *testing.T, build func(dir string)) []byte {
+		dir := t.TempDir()
+		build(dir)
+		return siftest.Squash(t, dir)
 	}
-	squash, err := squashfstest.Build(rootfs, squashfstest.Options{})
-	assert.NoError(t, err)
-	noShell, err := squashfstest.Build([]squashfstest.Entry{{Path: "etc/os-release", Mode: 0o644}}, squashfstest.Options{})
-	assert.NoError(t, err)
-	danglingShell, err := squashfstest.Build([]squashfstest.Entry{
-		{Path: "bin/sh", Mode: fs.ModeSymlink | 0o777, Target: "/nonexistent/busybox"},
-	}, squashfstest.Options{})
-	assert.NoError(t, err)
+	squash := squashDir(t, func(dir string) {
+		assert.NoError(t, os.MkdirAll(filepath.Join(dir, "bin"), 0o755))
+		assert.NoError(t, os.MkdirAll(filepath.Join(dir, "etc"), 0o755))
+		assert.NoError(t, os.MkdirAll(filepath.Join(dir, "usr/bin"), 0o755))
+		assert.NoError(t, os.WriteFile(filepath.Join(dir, "bin/sh"), []byte("shell"), 0o755))
+		assert.NoError(t, os.WriteFile(filepath.Join(dir, "etc/os-release"), []byte("NAME=test\n"), 0o644))
+		assert.NoError(t, os.Symlink("../../bin/sh", filepath.Join(dir, "usr/bin/sh")))
+	})
+	noShell := squashDir(t, func(dir string) {
+		assert.NoError(t, os.MkdirAll(filepath.Join(dir, "etc"), 0o755))
+		assert.NoError(t, os.WriteFile(filepath.Join(dir, "etc/os-release"), nil, 0o644))
+	})
+	danglingShell := squashDir(t, func(dir string) {
+		assert.NoError(t, os.MkdirAll(filepath.Join(dir, "bin"), 0o755))
+		assert.NoError(t, os.Symlink("/nonexistent/busybox", filepath.Join(dir, "bin/sh")))
+	})
 	// /bin/sh must not be looked up through the host's /bin
-	hostShell, err := squashfstest.Build([]squashfstest.Entry{
-		{Path: "bin", Mode: fs.ModeSymlink | 0o777, Target: "/bin"},
-	}, squashfstest.Options{})
+	hostShell := squashDir(t, func(dir string) {
+		assert.NoError(t, os.Symlink("/bin", filepath.Join(dir, "bin")))
+	})
+
+	primary := func(data []byte) []sif.DescriptorInput {
+		return []sif.DescriptorInput{siftest.Partition(t, data, sif.FsSquash, sif.PartPrimSys)}
+	}
+	ociIndex, err := sif.NewDescriptorInput(sif.DataOCIRootIndex, bytes.NewReader([]byte(`{"schemaVersion":2}`)))
 	assert.NoError(t, err)
 
 	tests := map[string]struct {
-		// data is the primary squashfs partition, used when inputs is nil
-		data   []byte
-		inputs func(t *testing.T) []sif.DescriptorInput
+		inputs []sif.DescriptorInput
 		name   string
 		err    string
 	}{
-		"squashfs":              {data: squash},
-		"invalid name":          {data: squash, name: "bad/name", err: "illegal characters"},
-		"parent directory name": {data: squash, name: "..", err: "illegal characters"},
-		"overlay partition": {
-			inputs: func(t *testing.T) []sif.DescriptorInput {
-				return []sif.DescriptorInput{
-					partitionInput(t, squash, sif.FsSquash, sif.PartPrimSys),
-					partitionInput(t, make([]byte, 4096), sif.FsExt3, sif.PartOverlay),
-				}
-			},
-		},
+		"squashfs":              {inputs: primary(squash)},
+		"invalid name":          {inputs: primary(squash), name: "bad/name", err: "illegal characters"},
+		"parent directory name": {inputs: primary(squash), name: "..", err: "illegal characters"},
+		"overlay partition": {inputs: []sif.DescriptorInput{
+			siftest.Partition(t, squash, sif.FsSquash, sif.PartPrimSys),
+			siftest.Partition(t, make([]byte, 4096), sif.FsExt3, sif.PartOverlay),
+		}},
 		"no primary partition": {
-			inputs: func(t *testing.T) []sif.DescriptorInput {
-				return []sif.DescriptorInput{partitionInput(t, squash, sif.FsSquash, sif.PartData)}
-			},
-			err: "could not find the primary system partition",
+			inputs: []sif.DescriptorInput{siftest.Partition(t, squash, sif.FsSquash, sif.PartData)},
+			err:    "could not find the primary system partition",
 		},
 		"ext3 partition": {
-			inputs: func(t *testing.T) []sif.DescriptorInput {
-				return []sif.DescriptorInput{partitionInput(t, squash, sif.FsExt3, sif.PartPrimSys)}
-			},
-			err: "unsupported primary partition filesystem",
+			inputs: []sif.DescriptorInput{siftest.Partition(t, squash, sif.FsExt3, sif.PartPrimSys)},
+			err:    "unsupported primary partition filesystem",
 		},
-		"oci-sif": {
-			inputs: func(t *testing.T) []sif.DescriptorInput {
-				di, err := sif.NewDescriptorInput(sif.DataOCIRootIndex, bytes.NewReader([]byte(`{"schemaVersion":2}`)))
-				assert.NoError(t, err)
-				return []sif.DescriptorInput{di}
-			},
-			err: "OCI-SIF image, which is not supported",
-		},
-		"not squashfs":   {data: bytes.Repeat([]byte{1}, 128), err: "not a squashfs filesystem"},
-		"no shell":       {data: noShell, err: "has no /bin/sh"},
-		"dangling shell": {data: danglingShell, err: "has no /bin/sh"},
-		"host shell":     {data: hostShell, err: "has no /bin/sh"},
+		"oci-sif":        {inputs: []sif.DescriptorInput{ociIndex}, err: "OCI-SIF image, which is not supported"},
+		"not squashfs":   {inputs: primary(bytes.Repeat([]byte{1}, 128)), err: "is not a squashfs filesystem"},
+		"no shell":       {inputs: primary(noShell), err: "has no /bin/sh"},
+		"dangling shell": {inputs: primary(danglingShell), err: "has no /bin/sh"},
+		"host shell":     {inputs: primary(hostShell), err: "has no /bin/sh"},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			env := testenv.New(t)
 			defer env.RemoveAll()
 			sifPath := env.GetPath("image.sif")
-			if tt.inputs == nil {
-				writeTestSIF(t, sifPath, partitionInput(t, tt.data, sif.FsSquash, sif.PartPrimSys))
-			} else {
-				writeTestSIF(t, sifPath, tt.inputs(t)...)
-			}
+			siftest.Write(t, sifPath, tt.inputs...)
 
 			imageName := tt.name
 			if imageName == "" {
@@ -154,6 +132,53 @@ func Test_ImportSIF(t *testing.T) {
 			target, err := os.Readlink(env.GetPath(filepath.Join(rootfsPath, "usr/bin/sh")))
 			assert.NoError(t, err)
 			assert.Equal(t, "../../bin/sh", target)
+		})
+	}
+}
+
+func Test_ImportSIF_oldUnsquashfs(t *testing.T) {
+	src := t.TempDir()
+	assert.NoError(t, os.MkdirAll(filepath.Join(src, "bin"), 0o755))
+	assert.NoError(t, os.WriteFile(filepath.Join(src, "bin/sh"), []byte("shell"), 0o755))
+	squash := siftest.Squash(t, src)
+
+	// A fake unsquashfs 4.3, which has no -o, runs the real one.
+	unsquashfs, err := exec.LookPath("unsquashfs")
+	assert.NoError(t, err)
+	bin := t.TempDir()
+	script := "#!/bin/sh\n" +
+		"[ \"$1\" = -version ] && { echo 'unsquashfs version 4.3 (2014/05/12)'; exit 0; }\n" +
+		"for a; do [ \"$a\" = -o ] && exit 99; done\n" +
+		"exec " + unsquashfs + " \"$@\"\n"
+	assert.NoError(t, os.WriteFile(filepath.Join(bin, "unsquashfs"), []byte(script), 0o755))
+	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	env := testenv.New(t)
+	defer env.RemoveAll()
+	sifPath := env.GetPath("image.sif")
+	siftest.Write(t, sifPath, siftest.Partition(t, squash, sif.FsSquash, sif.PartPrimSys))
+
+	assert.NoError(t, ImportSIF(sifPath, "testImage"))
+	assert.Equal(t, "shell", env.ReadFile("/var/lib/warewulf/chroots/testImage/rootfs/bin/sh"))
+	// The temporary copy of the partition is removed.
+	entries, err := os.ReadDir(env.GetPath("/var/lib/warewulf/chroots/testImage"))
+	assert.NoError(t, err)
+	assert.Len(t, entries, 1)
+}
+
+func Test_unsquashfsHasOffset(t *testing.T) {
+	tests := map[string]bool{
+		"unsquashfs version 4.3 (2014/05/12)":      false,
+		"unsquashfs version 4.4 (2019/08/29)":      true,
+		"unsquashfs version 4.4-git.1 (2021/1/17)": true,
+		"unsquashfs version 4.6.1 (2023/03/25)":    true,
+		"garbage":                                  false,
+	}
+	for out, want := range tests {
+		t.Run(out, func(t *testing.T) {
+			bin := filepath.Join(t.TempDir(), "unsquashfs")
+			assert.NoError(t, os.WriteFile(bin, []byte("#!/bin/sh\necho '"+out+"'\n"), 0o755))
+			assert.Equal(t, want, unsquashfsHasOffset(bin))
 		})
 	}
 }
