@@ -38,6 +38,7 @@ type WarewulfYaml struct {
 	TFTP        *TFTPConf     `yaml:"tftp,omitempty"`
 	NFS         *NFSConf      `yaml:"nfs,omitempty"`
 	SSH         *SSHConf      `yaml:"ssh,omitempty"`
+	Hostfile    *HostfileConf `yaml:"hostfile,omitempty"`
 	MountsImage []*MountEntry `yaml:"image mounts,omitempty" default:"[{\"source\": \"/etc/resolv.conf\", \"dest\": \"/etc/resolv.conf\"}]"`
 	Paths       *BuildConfig  `yaml:"paths,omitempty"`
 	WWClient    *WWClientConf `yaml:"wwclient,omitempty"`

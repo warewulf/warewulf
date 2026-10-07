@@ -78,8 +78,8 @@ Now the templates of ``dhcpd`` and/or ``dnsmasq`` must be modified.
 
 .. code-block:: shell
 
-   wwctl overlay edit host etc/dhcpd.conf.ww
-   wwctl overlay edit host etc/dnsmasq.d/ww4-hosts.ww
+   wwctl overlay edit dhcpd etc/dhcp/dhcpd.conf.ww
+   wwctl overlay edit dnsmasq etc/dnsmasq.d/ww4-hosts.conf.ww
 
 For the ``dhcp`` template you should add following lines
 

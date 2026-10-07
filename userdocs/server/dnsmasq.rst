@@ -38,13 +38,16 @@ typically at ``/etc/warewulf/warewulf.conf``:
 
    tftp:
      systemd name: dnsmasq
+     overlays: dnsmasq,tftproot
    dhcp:
      systemd name: dnsmasq
+     overlays: dnsmasq
 
 The configuration of ``dnsmasq`` often doesn't need to be changed, as the
 default configuration includes all files with following pattern
 ``/etc/dnsmasq.d/*conf`` into its configuration. This configuration is created
-by the overlay template ``host:/etc/dnsmasq.d/ww4-hosts.conf.ww``.
+by the overlay templates ``dnsmasq:/etc/dnsmasq.d/ww4-hosts.conf.ww`` and
+``dnsmasq:/etc/dnsmasq.d/ww4-listen.conf.ww``.
 
 .. note::
 

@@ -23,6 +23,10 @@ version: ## Build version
 
 WWCLIENTS = wwclient wwclient.x86_64 wwclient.aarch64
 
+# Host overlays, installed 0750 since they configure services on the
+# Warewulf server. "hosts" is excluded since it is also assigned to nodes.
+HOSTOVERLAYS = dhcpd dnsmasq nfsd ssh.wwctl tftproot
+
 .PHONY: build
 build: wwctl $(WWCLIENTS) etc/bash_completion.d/wwctl ## Build the Warewulf binaries
 
@@ -194,7 +198,7 @@ install: build docs ## Install Warewulf from source
 	install -d -m 0755 $(DESTDIR)$(WWCHROOTDIR)
 	install -d -m 0755 $(DESTDIR)$(WWOVERLAYDIR)
 	install -d -m 0755 $(DESTDIR)$(WWPROVISIONDIR)
-	install -d -m 0755 $(DESTDIR)$(DATADIR)/warewulf/overlays/host/rootfs/$(TFTPDIR)/warewulf/
+	install -d -m 0755 $(DESTDIR)$(DATADIR)/warewulf/overlays/tftproot/rootfs/$(TFTPDIR)/warewulf/
 	install -d -m 0755 $(DESTDIR)$(WWCONFIGDIR)/examples
 	install -d -m 0755 $(DESTDIR)$(WWCONFIGDIR)/ipxe
 	install -d -m 0755 $(DESTDIR)$(WWCONFIGDIR)/grub
@@ -227,7 +231,7 @@ install: build docs ## Install Warewulf from source
 	chmod 0600 $(DESTDIR)$(DATADIR)/warewulf/overlays/ssh.host_keys/rootfs/etc/ssh/ssh*
 	chmod 0644 $(DESTDIR)$(DATADIR)/warewulf/overlays/ssh.host_keys/rootfs/etc/ssh/ssh*.pub.ww
 	chmod 0600 $(DESTDIR)$(DATADIR)/warewulf/overlays/NetworkManager/rootfs/etc/NetworkManager/system-connections/ww4-managed.ww
-	chmod 0750 $(DESTDIR)$(DATADIR)/warewulf/overlays/host/rootfs
+	for o in $(HOSTOVERLAYS); do chmod 0750 $(DESTDIR)$(DATADIR)/warewulf/overlays/$$o/rootfs; done
 	install -m 0755 wwctl $(DESTDIR)$(BINDIR)
 	install -m 0644 include/firewalld/warewulf.xml $(DESTDIR)$(FIREWALLDDIR)
 	install -m 0644 include/systemd/warewulfd.service $(DESTDIR)$(SYSTEMDDIR)

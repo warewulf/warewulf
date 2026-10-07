@@ -17,9 +17,15 @@ struct which contains the variables to which are available in
 the templates.
 */
 type TemplateStruct struct {
-	Id            string
-	Hostname      string
-	BuildHost     string
+	Id       string
+	Hostname string
+	// BuildHost is the host name of the Warewulf server, whether the
+	// overlay is being built for the server itself or for a node.
+	BuildHost string
+	// HostOverlay is true when this overlay is being built for the
+	// Warewulf server itself rather than for a node. Templates shared
+	// between the two (such as the hosts overlay) branch on it.
+	HostOverlay   bool
 	BuildTime     string
 	BuildTimeUnix string
 	BuildSource   string

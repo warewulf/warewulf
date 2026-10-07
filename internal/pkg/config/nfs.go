@@ -12,6 +12,8 @@ type NFSConf struct {
 	EnabledP        *bool            `yaml:"enabled,omitempty" default:"true"`
 	ExportsExtended []*NFSExportConf `yaml:"export paths,omitempty" default:"[]"`
 	SystemdName     string           `yaml:"systemd name,omitempty" default:"nfsd"`
+	// Overlays are the host overlays applied when NFS is configured.
+	Overlays OverlayList `yaml:"overlays,omitempty"`
 }
 
 func (conf NFSConf) Enabled() bool {

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -8,8 +9,10 @@ import (
 
 	"github.com/warewulf/warewulf/internal/app/wwctl/completions"
 	"github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/upgrade"
 	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 var (
@@ -48,7 +51,20 @@ func UpgradeNodesConf(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	upgraded := legacy.Upgrade()
+	// Warewulf no longer applies a `host` overlay implicitly. If a site
+	// `host` overlay is still present, retain it explicitly so that the
+	// site's existing customizations keep being applied after the upgrade.
+	// A stale distribution copy (e.g. left by `make install`) is ignored.
+	retainLegacyHostOverlay := false
+	if o, err := overlay.Get("host"); err == nil && o.IsSiteOverlay() {
+		retainLegacyHostOverlay = true
+		wwlog.Warn("Found a legacy `host` overlay: adding it to each service's `overlays`" +
+			" so that it continues to be applied. Migrate its files into the per-service" +
+			" host overlays and remove those entries.")
+	} else if err != nil && !errors.Is(err, overlay.ErrDoesNotExist) {
+		return err
+	}
+	upgraded := legacy.Upgrade(retainLegacyHostOverlay)
 	if outputPath == "-" {
 		upgradedYaml, err := upgraded.Dump()
 		if err != nil {

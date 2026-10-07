@@ -61,7 +61,7 @@ func recursiveUpdateFrom(dst, src reflect.Value, changed func(string) bool) {
 		} else if field.Anonymous {
 			// Embedded struct (e.g., Profile in Node)
 			recursiveUpdateFrom(dstField, srcField, changed)
-		} else if field.Type.Kind() == reflect.Ptr && field.Type.Elem().Kind() == reflect.Struct {
+		} else if field.Type.Kind() == reflect.Pointer && field.Type.Elem().Kind() == reflect.Struct {
 			// Pointer-to-struct (e.g., *IpmiConf, *KernelConf)
 			if srcField.IsNil() {
 				continue

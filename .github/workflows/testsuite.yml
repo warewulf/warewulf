@@ -53,7 +53,7 @@ jobs:
       - name: Build Warewulf (golang ${{ matrix.go-version }})
         run: make all
       - name: Build the Docker image
-        run: docker build . --file Dockerfile
+        run: docker build . --file Dockerfile --no-cache --pull
 
   shellcheck:
     runs-on: ubuntu-latest

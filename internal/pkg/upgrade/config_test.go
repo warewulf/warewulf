@@ -11,11 +11,16 @@ var configUpgradeTests = []struct {
 	name         string
 	legacyYaml   string
 	upgradedYaml string
+	// retainLegacyHostOverlay simulates a `host` overlay still present on
+	// disk, which the caller detects and passes to Upgrade.
+	retainLegacyHostOverlay bool
 }{
 	{
-		name:         "empty",
-		legacyYaml:   ``,
-		upgradedYaml: `{}`,
+		name:       "empty",
+		legacyYaml: ``,
+		upgradedYaml: `
+{}
+`,
 	},
 	{
 		name: "v4.0.0",
@@ -55,15 +60,22 @@ dhcp:
   range start: 192.168.1.150
   range end: 192.168.1.200
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   tftproot: /var/lib/tftpboot
   systemd name: tftp
+  overlays: tftproot
 nfs:
   export paths:
     - path: /home
     - path: /var/warewulf
   systemd name: nfs-server
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -104,15 +116,22 @@ dhcp:
   range start: 192.168.1.150
   range end: 192.168.1.200
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   tftproot: /var/lib/tftpboot
   systemd name: tftp
+  overlays: tftproot
 nfs:
   export paths:
     - path: /home
     - path: /var/warewulf
   systemd name: nfs-server
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -156,15 +175,22 @@ dhcp:
   range start: 192.168.200.50
   range end: 192.168.200.99
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   tftproot: /var/lib/tftpboot
   systemd name: tftp
+  overlays: tftproot
 nfs:
   export paths:
     - path: /home
     - path: /var/warewulf
   systemd name: nfs-server
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -221,9 +247,11 @@ dhcp:
   range start: 192.168.200.50
   range end: 192.168.200.99
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
 nfs:
   enabled: true
   export paths:
@@ -232,6 +260,11 @@ nfs:
     - path: /opt
       export options: ro,sync,no_root_squash
   systemd name: nfs-server
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -284,9 +317,11 @@ dhcp:
   range start: 192.168.200.50
   range end: 192.168.200.99
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
 nfs:
   enabled: true
   export paths:
@@ -295,6 +330,11 @@ nfs:
     - path: /opt
       export options: ro,sync,no_root_squash
   systemd name: nfs-server
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -362,9 +402,11 @@ dhcp:
   range start: 10.0.1.1
   range end: 10.0.1.255
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
   ipxe:
     00:0B: arm64-efi/snponly.efi
     "00:00": undionly.kpxe
@@ -378,12 +420,16 @@ nfs:
     - path: /opt
       export options: ro,sync,no_root_squash
   systemd name: nfs-server
+  overlays: nfsd
 ssh:
   key types:
     - rsa
     - dsa
     - ecdsa
     - ed25519
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 image mounts:
   - source: /etc/resolv.conf
     dest: /etc/resolv.conf
@@ -455,9 +501,11 @@ dhcp:
   range start: 10.0.1.1
   range end: 10.0.1.255
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
   ipxe:
     00:0B: arm64-efi/snponly.efi
     "00:00": undionly.kpxe
@@ -471,12 +519,16 @@ nfs:
     - path: /opt
       export options: ro,sync,no_root_squash
   systemd name: nfs-server
+  overlays: nfsd
 ssh:
   key types:
     - rsa
     - dsa
     - ecdsa
     - ed25519
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 image mounts:
   - source: /etc/resolv.conf
     dest: /etc/resolv.conf
@@ -552,9 +604,11 @@ dhcp:
   range start: 10.0.1.1
   range end: 10.0.1.255
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
   ipxe:
     00:0B: arm64-efi/snponly.efi
     "00:00": undionly.kpxe
@@ -568,12 +622,16 @@ nfs:
     - path: /opt
       export options: ro,sync,no_root_squash
   systemd name: nfs-server
+  overlays: nfsd
 ssh:
   key types:
     - rsa
     - dsa
     - ecdsa
     - ed25519
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 image mounts:
   - source: /etc/resolv.conf
     dest: /etc/resolv.conf
@@ -601,6 +659,16 @@ warewulf:
   secure: true
   secure files: false
   update interval: 60
+dhcp:
+  overlays: dhcpd
+tftp:
+  overlays: tftproot
+nfs:
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -655,9 +723,17 @@ dhcp:
   range start: 10.0.1.1
   range end: 10.0.1.255
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
+nfs:
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -700,9 +776,17 @@ dhcp:
   range6 start: 2001:db8::100
   range6 end: 2001:db8::1ff
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
+nfs:
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
@@ -736,9 +820,283 @@ warewulf:
 dhcp:
   enabled: true
   systemd name: dhcpd
+  overlays: dhcpd
 tftp:
   enabled: true
   systemd name: tftp
+  overlays: tftproot
+nfs:
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
+`,
+	},
+	{
+		name: "overlays from dnsmasq systemd names",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: dnsmasq
+tftp:
+  enabled: true
+  systemd name: dnsmasq
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: dnsmasq
+  overlays: dnsmasq
+tftp:
+  enabled: true
+  systemd name: dnsmasq
+  overlays: dnsmasq,tftproot
+nfs:
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
+`,
+	},
+	{
+		name: "overlays from debian systemd names",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: isc-dhcp-server
+tftp:
+  enabled: true
+  systemd name: tftpd-hpa
+nfs:
+  enabled: true
+  systemd name: nfs-kernel-server
+ssh:
+  key types:
+    - ed25519
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: isc-dhcp-server
+  overlays: dhcpd
+tftp:
+  enabled: true
+  systemd name: tftpd-hpa
+  overlays: tftproot
+nfs:
+  enabled: true
+  systemd name: nfs-kernel-server
+  overlays: nfsd
+ssh:
+  key types:
+    - ed25519
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
+`,
+	},
+	{
+		name: "overlays from default (unset) systemd names",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+tftp:
+  enabled: true
+nfs:
+  enabled: true
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  overlays: dhcpd
+tftp:
+  enabled: true
+  overlays: tftproot
+nfs:
+  enabled: true
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
+`,
+	},
+	{
+		name: "no overlays for unrecognized systemd names",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: mystery-dhcp
+tftp:
+  enabled: true
+  systemd name: mystery-tftp
+nfs:
+  enabled: true
+  systemd name: mystery-nfs
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: mystery-dhcp
+tftp:
+  enabled: true
+  systemd name: mystery-tftp
+nfs:
+  enabled: true
+  systemd name: mystery-nfs
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
+`,
+	},
+	{
+		name:                    "legacy host overlay retained",
+		retainLegacyHostOverlay: true,
+		legacyYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: dhcpd
+tftp:
+  enabled: true
+  systemd name: tftp
+nfs:
+  enabled: true
+  systemd name: nfs-server
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: dhcpd
+  overlays: dhcpd,host
+tftp:
+  enabled: true
+  systemd name: tftp
+  overlays: tftproot,host
+nfs:
+  enabled: true
+  systemd name: nfs-server
+  overlays: nfsd,host
+ssh:
+  overlays: ssh.wwctl,host
+hostfile:
+  overlays: hosts,host
+`,
+	},
+	{
+		// A service whose systemd name is unrecognized infers no overlay of
+		// its own, so the retained legacy overlay is all it has -- which is
+		// exactly what such a site applies today.
+		name:                    "legacy host overlay retained for unrecognized systemd names",
+		retainLegacyHostOverlay: true,
+		legacyYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: mystery-dhcp
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: mystery-dhcp
+  overlays: host
+tftp:
+  overlays: tftproot,host
+nfs:
+  overlays: nfsd,host
+ssh:
+  overlays: ssh.wwctl,host
+hostfile:
+  overlays: hosts,host
+`,
+	},
+	{
+		// An administrator who already listed `host` should not get it twice.
+		name:                    "legacy host overlay not duplicated",
+		retainLegacyHostOverlay: true,
+		legacyYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: dhcpd
+  overlays: host,dhcpd
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+dhcp:
+  enabled: true
+  systemd name: dhcpd
+  overlays: host,dhcpd
+tftp:
+  overlays: tftproot,host
+nfs:
+  overlays: nfsd,host
+ssh:
+  overlays: ssh.wwctl,host
+hostfile:
+  overlays: hosts,host
+`,
+	},
+	{
+		// A legacy config that relied on the default (enabled) services
+		// still gets their host overlays, even without a `warewulf` section.
+		name: "overlays for absent service sections",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+dhcp:
+  overlays: dhcpd
+tftp:
+  overlays: tftproot
+nfs:
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 `,
 	},
 }
@@ -748,7 +1106,7 @@ func Test_UpgradeConfig(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			legacy, err := ParseConfig([]byte(tt.legacyYaml))
 			assert.NoError(t, err)
-			upgraded := legacy.Upgrade()
+			upgraded := legacy.Upgrade(tt.retainLegacyHostOverlay)
 			upgradedYaml, err := upgraded.Dump()
 			assert.NoError(t, err)
 			assert.Equal(t, strings.TrimSpace(tt.upgradedYaml), strings.TrimSpace(string(upgradedYaml)))

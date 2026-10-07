@@ -302,7 +302,7 @@ func valueStr(value reflect.Value) (output string) {
 	}
 
 	switch value.Kind() {
-	case reflect.Ptr, reflect.Interface, reflect.Map, reflect.Slice:
+	case reflect.Pointer, reflect.Interface, reflect.Map, reflect.Slice:
 		if value.IsNil() {
 			return ""
 		}
