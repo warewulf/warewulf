@@ -8,7 +8,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// skipIfRoot skips tests that rely on permission denial, which root bypasses.
+func skipIfRoot(t *testing.T) {
+	t.Helper()
+	if os.Geteuid() == 0 {
+		t.Skip("root bypasses file permission checks")
+	}
+}
+
 func TestScanTreeWithOptions_SkipsUnreadableFile(t *testing.T) {
+	skipIfRoot(t)
 	tmpDir := t.TempDir()
 	if !assert.NoError(t, os.WriteFile(filepath.Join(tmpDir, "ok.txt"), []byte("ok"), 0o644)) {
 		return
@@ -35,6 +44,7 @@ func TestScanTreeWithOptions_SkipsUnreadableFile(t *testing.T) {
 }
 
 func TestScanTreeWithOptions_SkipsUnreadableDirectory(t *testing.T) {
+	skipIfRoot(t)
 	tmpDir := t.TempDir()
 	if !assert.NoError(t, os.WriteFile(filepath.Join(tmpDir, "ok.txt"), []byte("ok"), 0o644)) {
 		return
