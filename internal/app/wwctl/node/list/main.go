@@ -5,8 +5,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/goccy/go-yaml"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 
 	"github.com/warewulf/warewulf/internal/app/wwctl/table"
 	"github.com/warewulf/warewulf/internal/pkg/hostlist"
@@ -37,7 +37,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			if vars.showJson {
 				buf, _ = json.MarshalIndent(nodeMap, "", "  ")
 			} else {
-				buf, _ = yaml.Marshal(nodeMap)
+				buf, _ = yaml.MarshalWithOptions(nodeMap, yaml.Indent(4), yaml.IndentSequence(true))
 			}
 			wwlog.Info(string(buf))
 		} else if vars.showAll {
