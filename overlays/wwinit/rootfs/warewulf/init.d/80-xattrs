@@ -1,0 +1,16 @@
+#!/bin/sh
+
+. /warewulf/config
+
+if test -d /warewulf/xattrs; then
+    for i in /warewulf/xattrs/*; do
+        echo "Restoring xattrs for $i."
+        if setfattr -h --restore="$i" 2> /dev/null; then
+            echo "Restoring xattrs failed."
+        fi
+        rm -f "$i"
+    done
+else
+    echo "No saved xattrs dir found."
+    exit
+fi
