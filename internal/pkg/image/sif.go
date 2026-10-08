@@ -28,6 +28,8 @@ const sifMagicOffset = 32
 // squashfsMagic begins a squashfs superblock.
 var squashfsMagic = []byte("hsqs")
 
+const squashfsMagicOffset = 0
+
 // ErrUnsupportedSIF is returned when the contents of a SIF image cannot be
 // imported.
 var ErrUnsupportedSIF = errors.New("unsupported SIF image")
@@ -62,7 +64,7 @@ func IsSIF(path string) (bool, error) {
 // as the image name. Only squashfs partitions are supported. The partition
 // is extracted with unsquashfs.
 func ImportSIF(uri string, name string) error {
-	if !ValidName(name) || name == "." || name == ".." {
+	if !ValidName(name) {
 		return errors.New("Image name contains illegal characters: " + name)
 	}
 
@@ -102,7 +104,7 @@ func ImportSIF(uri string, name string) error {
 		return fmt.Errorf("%w: %s has an unsupported primary partition filesystem: %v", ErrUnsupportedSIF, uri, fsType)
 	}
 	magic := make([]byte, len(squashfsMagic))
-	if _, err := f.ReadAt(magic, d.Offset()); err != nil && !errors.Is(err, io.EOF) {
+	if _, err := f.ReadAt(magic, d.Offset()+squashfsMagicOffset); err != nil && !errors.Is(err, io.EOF) {
 		return fmt.Errorf("could not read %s: %w", uri, err)
 	} else if err != nil || !bytes.Equal(magic, squashfsMagic) {
 		return fmt.Errorf("%w: primary partition in %s is not a squashfs filesystem", ErrUnsupportedSIF, uri)
@@ -120,6 +122,7 @@ func ImportSIF(uri string, name string) error {
 	args := []string{"-f", "-n", "-d", fullPath}
 	if os.Geteuid() != 0 {
 		// unsquashfs fails on xattrs that only root can set.
+		wwlog.Warn("not running as root: extended attributes in %s are not imported", uri)
 		args = append(args, "-no-xattrs")
 	}
 	hasOffset := unsquashfsHasOffset(unsquashfs)

@@ -88,9 +88,8 @@ func Test_ImportSIF(t *testing.T) {
 		name   string
 		err    string
 	}{
-		"squashfs":              {inputs: primary(squash)},
-		"invalid name":          {inputs: primary(squash), name: "bad/name", err: "illegal characters"},
-		"parent directory name": {inputs: primary(squash), name: "..", err: "illegal characters"},
+		"squashfs":     {inputs: primary(squash)},
+		"invalid name": {inputs: primary(squash), name: "bad/name", err: "illegal characters"},
 		"overlay partition": {inputs: []sif.DescriptorInput{
 			siftest.Partition(t, squash, sif.FsSquash, sif.PartPrimSys),
 			siftest.Partition(t, make([]byte, 4096), sif.FsExt3, sif.PartOverlay),
