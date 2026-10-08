@@ -1,8 +1,18 @@
 -include Defaults.mk
 
 # Linux distro (try and set to /etc/os-release ID)
-OS_REL := $(shell sh -c '. /etc/os-release; echo $ID')
+OS_REL := $(shell sh -c '. /etc/os-release; echo $$ID')
+OS_LIKE_REL := $(shell sh -c '. /etc/os-release; echo $$ID_LIKE' 2>/dev/null)
 OS ?= $(OS_REL)
+
+# Distro family used to select OS-specific defaults: OS plus, when OS was
+# autodetected, the /etc/os-release ID_LIKE list (e.g. "opensuse-leap suse
+# opensuse" on openSUSE Leap, "linuxmint ubuntu debian" on Linux Mint)
+ifeq ($(OS),$(OS_REL))
+  OS_FAMILY := $(OS) $(OS_LIKE_REL)
+else
+  OS_FAMILY := $(OS)
+endif
 
 ARCH_REL := $(shell uname -p)
 ARCH ?= $(ARCH_REL)
@@ -60,10 +70,10 @@ FIREWALLDDIR ?= /usr/lib/firewalld/services
 LOGROTATEDIR ?= /etc/logrotate.d
 DRACUTMODDIR ?= /usr/lib/dracut/modules.d
 SOSPLUGINS ?= /usr/lib/python3.9/site-packages/sos/report/plugins
-ifeq ($(OS),suse)
+ifneq (,$(filter suse,$(OS_FAMILY)))
   TFTPDIR ?= /srv/tftpboot
 endif
-ifeq ($(OS),ubuntu)
+ifneq (,$(filter debian ubuntu,$(OS_FAMILY)))
   TFTPDIR ?= /srv/tftp
 endif
 # Default to Red Hat / Rocky Linux
@@ -82,6 +92,10 @@ WWCLIENTDIR ?= /warewulf
 
 CONFIG := $(shell pwd)
 
+ifneq (,$(filter debian ubuntu,$(OS_FAMILY)))
+  IPXESOURCE ?= /usr/lib/ipxe
+endif
+# Default to Red Hat / Rocky Linux
 IPXESOURCE ?= $(PREFIX)/share/ipxe
 
 # helper functions
