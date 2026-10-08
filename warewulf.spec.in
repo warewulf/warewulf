@@ -96,6 +96,15 @@ BuildRequires: make
 BuildRequires: gpgme-devel
 BuildRequires: python3-devel
 
+# unsquashfs imports SIF images; mksquashfs builds test fixtures
+%if 0%{?is_suse}
+BuildRequires: squashfs
+Requires: squashfs
+%else
+BuildRequires: squashfs-tools
+Requires: squashfs-tools
+%endif
+
 Recommends: logrotate
 Recommends: ipmitool
 

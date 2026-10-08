@@ -29,7 +29,7 @@ If you prefer, you can also install Warewulf from source.
 
    dnf install git
    dnf install epel-release
-   dnf install golang {libassuan,gpgme}-devel unzip tftp-server dhcp-server nfs-utils ipxe-bootimgs-{x86,aarch64}
+   dnf install golang {libassuan,gpgme}-devel unzip tftp-server dhcp-server nfs-utils squashfs-tools ipxe-bootimgs-{x86,aarch64}
 
    git clone https://github.com/warewulf/warewulf.git
    cd warewulf

@@ -19,10 +19,10 @@ jobs:
     steps:
       - name: Checkout Warewulf
         uses: actions/checkout@v4
-      - name: Install gpgme (dependency)
+      - name: Install dependencies
         run: |
           sudo apt update \
-          && sudo apt-get install libgpgme-dev
+          && sudo apt-get install libgpgme-dev squashfs-tools
         shell: bash
       - name: Setup go ${{ matrix.go-version }}
         uses: actions/setup-go@v5

@@ -12,6 +12,7 @@ import (
 	"github.com/kinbiko/jsonassert"
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/config"
+	"github.com/warewulf/warewulf/internal/pkg/image/siftest"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
 )
@@ -102,6 +103,100 @@ var imageTests = []struct {
 		},
 		authenticate: true,
 	},
+}
+
+func TestImageAPIImportSIF(t *testing.T) {
+	authData := `
+users:
+- name: admin
+  password hash: $2b$05$5QVWDpiWE7L4SDL9CYdi3O/l6HnbNOLoXgY2sa1bQQ7aSBKdSqvsC
+`
+	env := testenv.New(t)
+	defer env.RemoveAll()
+	warewulfd.SetNoDaemon()
+
+	sifPath := env.GetPath("image.sif")
+	siftest.WriteSIF(t, sifPath, map[string]string{"bin/sh": "shell"})
+	noShellPath := env.GetPath("no-shell.sif")
+	siftest.WriteSIF(t, noShellPath, map[string]string{"etc/hostname": ""})
+	env.WriteFile("image.tar", "not a sif")
+
+	tests := []struct {
+		name   string
+		image  string
+		uri    string
+		status int
+		result string
+	}{
+		{
+			name:   "sif path",
+			image:  "sif-image",
+			uri:    sifPath,
+			status: http.StatusOK,
+			result: "/var/lib/warewulf/chroots/sif-image/rootfs/bin/sh",
+		},
+		{
+			// relies on "sif path" above having imported sif-image
+			name:   "existing image",
+			image:  "sif-image",
+			uri:    sifPath,
+			status: http.StatusConflict,
+			result: "/var/lib/warewulf/chroots/sif-image/rootfs/bin/sh",
+		},
+		{
+			name:   "sif file uri",
+			image:  "sif-uri-image",
+			uri:    "file://" + sifPath,
+			status: http.StatusOK,
+			result: "/var/lib/warewulf/chroots/sif-uri-image/rootfs/bin/sh",
+		},
+		{
+			name:   "not a sif",
+			uri:    env.GetPath("image.tar"),
+			status: http.StatusBadRequest,
+		},
+		{
+			name:   "relative path",
+			uri:    "image.sif",
+			status: http.StatusBadRequest,
+		},
+		{
+			name:   "missing sif",
+			uri:    env.GetPath("missing.sif"),
+			status: http.StatusBadRequest,
+		},
+		{
+			name:   "sif without shell",
+			uri:    noShellPath,
+			status: http.StatusBadRequest,
+		},
+	}
+	auth := config.NewAuthentication()
+	assert.NoError(t, auth.ParseFromRaw([]byte(authData)))
+	allowedNets := []net.IPNet{{IP: net.IPv4(127, 0, 0, 0), Mask: net.CIDRMask(8, 32)}}
+	srv := httptest.NewServer(Handler(auth, allowedNets))
+	defer srv.Close()
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			name := tt.image
+			if name == "" {
+				name = "rejected-image"
+			}
+			body := fmt.Sprintf(`{"uri": %q}`, tt.uri)
+			req, err := http.NewRequest(http.MethodPost, srv.URL+"/api/images/"+name+"/import", bytes.NewBufferString(body))
+			assert.NoError(t, err)
+			req.SetBasicAuth("admin", "admin")
+			resp, err := http.DefaultTransport.RoundTrip(req)
+			assert.NoError(t, err)
+			assert.NoError(t, resp.Body.Close())
+			assert.Equal(t, tt.status, resp.StatusCode)
+			if tt.result != "" {
+				assert.Equal(t, "shell", env.ReadFile(tt.result))
+			}
+		})
+	}
+	assert.NoDirExists(t, env.GetPath("/var/lib/warewulf/chroots/rejected-image"))
 }
 
 func TestImageAPI(t *testing.T) {

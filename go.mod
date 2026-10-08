@@ -5,6 +5,7 @@ go 1.25.5
 require (
 	dario.cat/mergo v1.0.2
 	github.com/Masterminds/sprig/v3 v3.3.0
+	github.com/apptainer/sif/v2 v2.21.1
 	github.com/cavaliergopher/cpio v1.0.1
 	github.com/cheynewallace/tabby v1.1.1
 	github.com/containers/image/v5 v5.36.2
@@ -14,6 +15,7 @@ require (
 	github.com/coreos/ignition/v2 v2.27.0
 	github.com/coreos/vcontext v0.0.0-20230201181013-d72178a18687
 	github.com/creasty/defaults v1.8.0
+	github.com/cyphar/filepath-securejoin v0.5.1
 	github.com/fatih/color v1.19.0
 	github.com/go-chi/chi/v5 v5.3.2
 	github.com/google/uuid v1.6.0
@@ -61,7 +63,6 @@ require (
 	github.com/coreos/go-semver v0.3.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
 	github.com/cyberphone/json-canonicalization v0.0.0-20241213102144-19d51d7fe467 // indirect
-	github.com/cyphar/filepath-securejoin v0.5.1 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/distribution v2.8.3+incompatible // indirect
 	github.com/docker/docker v28.3.2+incompatible // indirect

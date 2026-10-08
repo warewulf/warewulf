@@ -17,6 +17,17 @@ import (
 func CobraRunE(cmd *cobra.Command, args []string) error {
 	source := args[0]
 
+	sifPath := ""
+	if local := strings.TrimPrefix(source, "file://"); util.IsFile(local) {
+		isSIF, err := image.IsSIF(local)
+		if err != nil {
+			return fmt.Errorf("could not read %s: %w", local, err)
+		}
+		if isSIF {
+			sifPath = local
+		}
+	}
+
 	// Shim in a name if none given.
 	name := ""
 	if len(args) == 2 {
@@ -24,17 +35,30 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 	}
 	if name == "" {
 		name = path.Base(source)
+		if sifPath != "" {
+			name = strings.TrimSuffix(name, ".sif")
+		}
 		wwlog.Info("Setting image name: %s", name)
 	}
 	if !image.ValidName(name) {
 		return fmt.Errorf("image name contains illegal characters: %s", name)
+	}
+	// A SIF named "..sif" or "...sif" would otherwise name the image "." or
+	// "..", which refers to the image directory itself or its parent.
+	if sifPath != "" && (name == "." || name == "..") {
+		return fmt.Errorf("invalid image name: %s", name)
 	}
 
 	fullPath := image.SourceDir(name)
 
 	// image already exists and should be removed first
 	if util.IsDir(fullPath) {
-		if SetUpdate {
+		// unsquashfs follows symlinks already in the destination, so a SIF
+		// image is never extracted over an existing image.
+		if sifPath != "" && SetUpdate && !SetForce {
+			return fmt.Errorf("--update is not supported for SIF images, use --force to replace %s", name)
+		}
+		if SetUpdate && sifPath == "" {
 			wwlog.Info("Updating existing image")
 		} else if SetForce {
 			wwlog.Info("Overwriting existing image")
@@ -46,7 +70,15 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if strings.HasPrefix(source, "docker://") || strings.HasPrefix(source, "docker-daemon://") ||
+	if sifPath != "" {
+		if Platform != "" {
+			wwlog.Warn("--platform is ignored for SIF images")
+		}
+		if err := image.ImportSIF(sifPath, name); err != nil {
+			_ = image.DeleteSource(name)
+			return fmt.Errorf("could not import image: %w", err)
+		}
+	} else if strings.HasPrefix(source, "docker://") || strings.HasPrefix(source, "docker-daemon://") ||
 		strings.HasPrefix(source, "file://") || util.IsFile(source) {
 		var sCtx *types.SystemContext
 		sCtx, err := image.GetSystemContext(OciNoHttps, OciUsername, OciPassword, Platform)

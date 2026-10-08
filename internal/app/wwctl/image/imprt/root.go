@@ -18,7 +18,13 @@ are:
  * docker-daemon://example:latest
  * file://path/to/archive/tar/ball
  * /path/to/archive/tar/ball
+ * file://path/to/image.sif
+ * /path/to/image.sif
  * /path/to/chroot/
+SIF images are detected by their contents and must have a squashfs primary
+system partition. They are extracted with unsquashfs (squashfs-tools);
+Apptainer and Singularity are not required. An existing image cannot be
+updated from a SIF image with --update; use --force to replace it.
 Imported images are used to create bootable images.`,
 		Example: "wwctl image import docker://ghcr.io/warewulf/warewulf-rockylinux:8 rockylinux-8",
 		RunE:    CobraRunE,

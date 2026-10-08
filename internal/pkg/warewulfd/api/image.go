@@ -2,7 +2,11 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io/fs"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/swaggest/usecase"
@@ -81,7 +85,7 @@ func getImageByName() usecase.Interactor {
 func importImage() usecase.Interactor {
 	type importImageInput struct {
 		Name     string `path:"name" required:"true" description:"Name of image to import"`
-		URI      string `json:"uri" required:"true" description:"OCI registry URI to import image definition from"`
+		URI      string `json:"uri" required:"true" description:"OCI registry URI (docker://) or absolute path (optionally file://) to a SIF file on the server to import image from"`
 		NoHttps  bool   `json:"nohttps" default:"false" description:"Use http, rather than https, to communicate with the registry, default:'false'"`
 		User     string `json:"user" description:"Username for the registry, if needed"`
 		Password string `json:"password" description:"Password for the registry, if needed"`
@@ -90,12 +94,49 @@ func importImage() usecase.Interactor {
 	u := usecase.NewInteractor(func(ctx context.Context, input importImageInput, output *Image) error {
 		wwlog.Debug("api.importImage(Name:%v, URI:%v, NoHttps:%v, User:%v, Password:[redacted])",
 			input.Name, input.URI, input.NoHttps, input.User)
+		sifPath := ""
 		if !strings.HasPrefix(input.URI, "docker://") {
-			return status.Wrap(fmt.Errorf("missing docker:// prefix: %s", input.URI), status.InvalidArgument)
+			sifPath = strings.TrimPrefix(input.URI, "file://")
+			if !filepath.IsAbs(sifPath) {
+				return status.Wrap(fmt.Errorf("uri must use docker:// or be an absolute path to a SIF file: %s", input.URI), status.InvalidArgument)
+			}
+			isSIF, err := image.IsSIF(sifPath)
+			if err != nil {
+				return status.Wrap(fmt.Errorf("could not read %s: %w", sifPath, err), status.InvalidArgument)
+			}
+			if !isSIF {
+				return status.Wrap(fmt.Errorf("not a SIF file: %s", input.URI), status.InvalidArgument)
+			}
 		}
 
 		if !image.ValidName(input.Name) {
 			return status.Wrap(fmt.Errorf("name contains illegal characters: %s", input.Name), status.InvalidArgument)
+		}
+
+		if sifPath != "" {
+			// Creating the image directory claims the name, which rejects an
+			// existing image and concurrent imports of the same name.
+			if err := os.MkdirAll(image.SourceParentDir(), 0755); err != nil {
+				return err
+			}
+			if err := os.Mkdir(image.SourceDir(input.Name), 0755); err != nil {
+				if errors.Is(err, fs.ErrExist) {
+					return status.Wrap(fmt.Errorf("image already exists: %s", input.Name), status.AlreadyExists)
+				}
+				return err
+			}
+			if err := image.ImportSIF(sifPath, input.Name); err != nil {
+				// A leftover directory would block the name.
+				if delErr := image.DeleteSource(input.Name); delErr != nil {
+					wwlog.Error("could not remove %s: %s", image.SourceDir(input.Name), delErr)
+				}
+				if errors.Is(err, image.ErrUnsupportedSIF) {
+					return status.Wrap(err, status.InvalidArgument)
+				}
+				return err
+			}
+			*output = *NewImage(input.Name)
+			return nil
 		}
 
 		if sctx, err := image.GetSystemContext(input.NoHttps, input.User, input.Password, ""); err != nil {
@@ -109,7 +150,7 @@ func importImage() usecase.Interactor {
 		}
 	})
 	u.SetTitle("Import an image")
-	u.SetDescription("Import an OS image from an OCI registry")
+	u.SetDescription("Import an OS image from an OCI registry or a SIF file on the server")
 	u.SetTags("Image")
 
 	return u

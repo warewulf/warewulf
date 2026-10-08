@@ -42,7 +42,7 @@ Operating System (OS) Image
     with the node's overlay images to provision the complete, configured image.
 
     OS images may be imported from OCI image registries, OCI image archives,
-    Apptainer sandboxes, and manual chroot directories.
+    SIF images, Apptainer sandboxes, and manual chroot directories.
 
 Overlay
     Warewulf overlays provide customization for the provisioned image. Overlays

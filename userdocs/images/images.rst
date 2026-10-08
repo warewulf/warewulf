@@ -52,8 +52,8 @@ Importing Images
 ================
 
 Before any cluster nodes can be provisioned, you must import an image. Images
-may be imported from an OCI registry, a local OCI archive, or a local directory
-or Apptainer sandbox.
+may be imported from an OCI registry, a local OCI archive, a local SIF image, or
+a local directory or Apptainer sandbox.
 
 OCI Registry
 ------------
@@ -130,6 +130,36 @@ Podman can save a ``.tar`` archive of an OCI image.
 
    podman save ghcr.io/warewulf/warewulf-rockylinux:8 >rockylinux-8.tar
    wwctl image import rockylinux-8.tar rockylinux-8
+
+Local SIF Images
+----------------
+
+Images in the Singularity Image Format (SIF), as built by Apptainer or
+SingularityCE, can be imported directly. Warewulf detects SIF images by their
+contents, so the file does not need a ``.sif`` extension. The image is
+extracted with ``unsquashfs`` from squashfs-tools (``squashfs`` on SUSE), so
+Apptainer does not need to be installed on the Warewulf server.
+
+.. code-block:: shell
+
+   apptainer build rockylinux-8.sif docker://ghcr.io/warewulf/warewulf-rockylinux:8
+   wwctl image import rockylinux-8.sif rockylinux-8
+
+If no name is given, the file name without its ``.sif`` extension is used.
+
+The primary system partition of the SIF image is extracted into the image. It
+must be a squashfs filesystem using a compressor that the installed
+``unsquashfs`` supports. With squashfs-tools older than 4.4 (for example, on
+EL8), the partition is first copied to a temporary file next to the image,
+which needs free space equal to its size.
+OCI-SIF images (for example, those built with ``singularity build --oci``) and
+encrypted SIF images are not supported, and SIF signatures are not verified.
+When SELinux is enabled, the SELinux labels of the imported files are reset to
+the local policy with ``restorecon``.
+Overlay partitions (for example, those added with
+``apptainer overlay create``) are not imported, and ``--platform`` does not
+apply to SIF images. An existing image cannot be updated from a SIF image with
+``--update``; use ``--force`` to replace it.
 
 Local Directories and Apptainer Sandboxes
 -----------------------------------------
@@ -369,8 +399,8 @@ Consider the following file called ``warewulf-rockylinux-9.def``:
    rm -rf /boot/* /run/*
    dnf clean all
 
-Warewulf cannot directly import a container image from an Apptainer SIF yet, so
-an Apptainer image must be built as a *sandbox*.
+A SIF image built from this definition can be imported directly (see `Local SIF
+Images`_), or the image can be built as a *sandbox*.
 
 .. code-block:: console
 
@@ -387,8 +417,8 @@ Once a sandbox container image has been built, it can be imported into Warewulf.
 
 .. note::
 
-   Although warewulf does not currently support importing a SIF directly, a SIF
-   can be converted to a sandbox with Apptainer and then imported into Warewulf.
+   SIF images that Warewulf cannot import directly (see `Local SIF Images`_) can
+   be converted to a sandbox with Apptainer and then imported into Warewulf.
     
    .. code-block:: console
 
