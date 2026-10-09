@@ -53,8 +53,7 @@ nodes:
 	assert.NoError(t, dbErr)
 
 	conf := warewulfconf.Get()
-	secureFalse := false
-	conf.Warewulf.SecureP = &secureFalse
+	conf.Warewulf.SecureP = warewulfconf.NewSecureRoutes()
 
 	assert.NoError(t, os.MkdirAll(path.Join(conf.Paths.OverlayProvisiondir(), "n1"), 0700))
 	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.OverlayProvisiondir(), "n1", "__SYSTEM__.img"), []byte("system overlay"), 0600))
@@ -93,6 +92,57 @@ nodes:
 				assert.Equal(t, tt.body, string(data))
 			}
 			assert.Equal(t, tt.status, res.StatusCode)
+		})
+	}
+}
+
+func Test_HandleOverlay_SecureRoutes(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+
+	env.WriteFile("/etc/warewulf/nodes.conf", `nodes:
+  n1:
+    network devices:
+      default:
+        hwaddr: 00:00:00:ff:ff:ff`)
+	assert.NoError(t, LoadNodeDB())
+
+	conf := warewulfconf.Get()
+	assert.NoError(t, os.MkdirAll(path.Join(conf.Paths.OverlayProvisiondir(), "n1"), 0700))
+	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.OverlayProvisiondir(), "n1", "__SYSTEM__.img"), []byte("system overlay"), 0600))
+	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.OverlayProvisiondir(), "n1", "__RUNTIME__.img"), []byte("runtime overlay"), 0600))
+
+	tests := map[string]struct {
+		secure        *warewulfconf.SecureRoutes
+		systemStatus  int
+		runtimeStatus int
+	}{
+		"nil":     {nil, http.StatusOK, http.StatusForbidden},
+		"none":    {warewulfconf.NewSecureRoutes(), http.StatusOK, http.StatusOK},
+		"system":  {warewulfconf.NewSecureRoutes(warewulfconf.SecureRouteSystem), http.StatusForbidden, http.StatusOK},
+		"runtime": {warewulfconf.NewSecureRoutes(warewulfconf.SecureRouteRuntime), http.StatusOK, http.StatusForbidden},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			conf.Warewulf.SecureP = tt.secure
+			for _, port := range []string{"1234", "987"} {
+				systemStatus, runtimeStatus := tt.systemStatus, tt.runtimeStatus
+				if port == "987" {
+					systemStatus, runtimeStatus = http.StatusOK, http.StatusOK
+				}
+
+				req := httptest.NewRequest(http.MethodGet, "/system/00:00:00:ff:ff:ff", nil)
+				req.RemoteAddr = "10.10.10.10:" + port
+				w := httptest.NewRecorder()
+				HandleSystemOverlay(w, req)
+				assert.Equal(t, systemStatus, w.Result().StatusCode, "system overlay from port %s", port)
+
+				req = httptest.NewRequest(http.MethodGet, "/runtime/00:00:00:ff:ff:ff", nil)
+				req.RemoteAddr = "10.10.10.10:" + port
+				w = httptest.NewRecorder()
+				HandleRuntimeOverlay(w, req)
+				assert.Equal(t, runtimeStatus, w.Result().StatusCode, "runtime overlay from port %s", port)
+			}
 		})
 	}
 }

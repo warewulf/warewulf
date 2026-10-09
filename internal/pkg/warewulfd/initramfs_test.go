@@ -42,8 +42,7 @@ nodes:
 	assert.NoError(t, dbErr)
 
 	conf := warewulfconf.Get()
-	secureFalse := false
-	conf.Warewulf.SecureP = &secureFalse
+	conf.Warewulf.SecureP = warewulfconf.NewSecureRoutes()
 
 	for _, tt := range initramfsHandlerTests {
 		t.Run(tt.description, func(t *testing.T) {

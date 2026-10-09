@@ -113,7 +113,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	if conf.WWClient != nil && conf.WWClient.Port > 0 {
 		localTCPAddr.Port = int(conf.WWClient.Port)
 		wwlog.Info("running from configured port %d", conf.WWClient.Port)
-	} else if conf.Warewulf.Secure() {
+	} else if conf.Warewulf.SecureRuntime() {
 		// Setup local port to something privileged (<1024)
 		localTCPAddr.Port = 987
 		wwlog.Info("running from trusted port: %d", localTCPAddr.Port)

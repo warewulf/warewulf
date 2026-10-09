@@ -21,7 +21,9 @@ data from other structures.
 ## Warewulf server
 
 - Port: {{ .Warewulf.Port }}
-- Secure: {{ .Warewulf.Secure }}
+- SecureRuntime: {{ .Warewulf.SecureRuntime }}
+- SecureSystem: {{ .Warewulf.SecureSystem }}
+- SecureFiles: {{ .Warewulf.SecureFiles }}
 - UpdateInterval: {{ .Warewulf.UpdateInterval }}
 - AutobuildOverlays: {{ .Warewulf.AutobuildOverlays }}
 - EnableHostOverlay: {{ .Warewulf.EnableHostOverlay }}
