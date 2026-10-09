@@ -5,6 +5,7 @@ import (
 	"strings"
 	"sync"
 
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/overlay"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -126,9 +127,55 @@ func GetOrDiscoverNode(hwaddr string, autobuildOverlays bool) (node.Node, error)
 	return db.yml.GetNode(nodeFound.Id())
 }
 
+// usesTwoStageBoot reports whether n boots two-stage with dracut, which
+// can fetch the system overlay from a privileged port. ok is false when
+// n uses a custom iPXE template, whose boot method is unknown.
+func usesTwoStageBoot(n node.Node, grubBoot bool) (twoStage bool, ok bool) {
+	if grubBoot {
+		return n.Tags["GrubMenuEntry"] == "dracut", true
+	}
+	if n.Ipxe != "" && n.Ipxe != "default" {
+		return false, false
+	}
+	return strings.HasPrefix(n.Tags["IPXEMenuEntry"], "dracut"), true
+}
+
+// warnSingleStageSecureSystem warns when warewulf:secure includes
+// "system" and some nodes do not boot two-stage, so they cannot fetch
+// the system overlay.
+func warnSingleStageSecureSystem() {
+	conf := warewulfconf.Get()
+	if !conf.Warewulf.SecureSystemOverlay() {
+		return
+	}
+	db.lock.RLock()
+	nodes, err := db.yml.FindAllNodes()
+	db.lock.RUnlock()
+	if err != nil {
+		return
+	}
+	var ids []string
+	for _, n := range nodes {
+		if twoStage, ok := usesTwoStageBoot(n, conf.Warewulf.GrubBoot()); ok && !twoStage {
+			ids = append(ids, n.Id())
+		}
+	}
+	if len(ids) == 0 {
+		return
+	}
+	tag := "IPXEMenuEntry"
+	if conf.Warewulf.GrubBoot() {
+		tag = "GrubMenuEntry"
+	}
+	wwlog.Warn("warewulf:secure includes \"system\", but these nodes do not boot two-stage with dracut and cannot fetch the system overlay: %s (set tag %s=dracut)",
+		strings.Join(ids, ", "), tag)
+}
+
 func Reload() {
 	if err := LoadNodeDB(); err != nil {
 		wwlog.Error("Could not load node DB: %s", err)
+	} else {
+		warnSingleStageSecureSystem()
 	}
 
 	if err := LoadNodeStatus(); err != nil {

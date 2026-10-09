@@ -33,13 +33,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `files`) that require a privileged source port. `true` still secures
   `runtime` and `files`. `all` includes routes added in later releases.
   Securing `system` requires the two-stage dracut boot; iPXE and GRUB cannot
-  fetch the system overlay from a privileged port.
+  fetch the system overlay from a privileged port. warewulfd warns at start
+  and on reload about nodes that do not boot two-stage.
 
 ### Changed
 
 - The wwinit dracut module fetches the system overlay from a privileged port,
-  and fails when the server denies the request.
-
+  and curl no longer passes an error response body to gzip and cpio.
 - `wwctl overlay show --render` now reports an error for an undefined node
   name, rather than silently rendering the template as for the Warewulf
   server.
@@ -59,18 +59,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   with no `overlays` listed. Run `wwctl upgrade config` after upgrading to add
   them to an existing `warewulf.conf`.
 - `warewulf:secure files` is deprecated; include or omit `files` in
-  `warewulf:secure` instead. It is still honored, and `wwctl upgrade config`
-  folds it into `warewulf:secure`.
-- An unset or null `warewulf:secure` (`secure:` or `secure: ~`) now means the
-  default (`true`); a null previously meant `false`, and `wwctl upgrade config`
-  does not preserve that. Set `secure: false` to keep the old behavior. An
-  empty list (`secure: []`) secures no routes.
-- A request for a secured runtime or system overlay from a non-privileged port
-  is now rejected with `403 Forbidden` rather than `401 Unauthorized`, matching
-  `/files/`.
+  `warewulf:secure` instead. Warewulf still honors it, and `wwctl upgrade
+  config` folds it into `warewulf:secure`. `all` with `secure files: false`
+  becomes `[runtime, system]`, which does not include routes added in later
+  releases.
+- An unset or null `warewulf:secure` (`secure:` or `secure: ~`) now means
+  `true`, the default. A null previously meant `false`, and `wwctl upgrade
+  config` does not keep that meaning. Set `secure: false` to keep the old
+  behavior. An empty list (`secure: []`) secures no routes.
+- warewulfd now rejects a request for a secured runtime or system overlay from
+  a non-privileged port with `403 Forbidden` rather than `401 Unauthorized`,
+  matching `/files/`.
 - wwclient from an earlier release cannot parse `warewulf:secure` as `all` or
-  a list, which `wwctl upgrade config` may write. Rebuild or delete any
-  site-cloned `wwclient` overlay before using these forms.
+  a list, which `wwctl upgrade config` may write. Nodes receive the server's
+  `warewulf.conf` through the `wwinit` overlay, so a site-cloned `wwclient`
+  overlay still carries the earlier wwclient and fails to start. Rebuild or
+  delete any site-cloned `wwclient` overlay before using these forms.
 
 ### Fixed
 

@@ -31,10 +31,10 @@ There are multiple ways to secure the Warewulf provisioning process:
   on the Warewulf server (e.g., via ``wwctl node set --assetkey "..."``), the
   Warewulf server will only respond to requests with a matching asset tag.
 
-* ``warewulf:secure`` limits the runtime overlay, the system overlay, and the
-  ``/files/`` route to requests from a privileged (< 1024) TCP port. The
-  default, ``true``, secures the runtime overlay and ``/files/``. This prevents
-  unprivileged cluster users from being able to retrieve them. Securing the
+* ``warewulf:secure`` selects which of the runtime overlay, the system overlay,
+  and the ``/files/`` route accept requests only from a privileged (< 1024) TCP
+  port. The default, ``true``, secures the runtime overlay and ``/files/``.
+  This prevents unprivileged cluster users from retrieving them. Securing the
   system overlay requires the two-stage dracut boot. See
   :ref:`server-routes-security`.
 

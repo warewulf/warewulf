@@ -120,8 +120,8 @@ will automatically rebuild the overlay if it is out of date relative to
 
 When ``warewulf:secure`` includes ``system`` (or is ``all``), this route
 requires that the request originate from a privileged TCP port (port number
-less than 1024); otherwise ``403 Forbidden`` is returned. Only the two-stage
-dracut boot can meet this requirement; see
+less than 1024); otherwise the server returns ``403 Forbidden``. Only the
+two-stage dracut boot can meet this requirement. See
 :ref:`Security <server-routes-security>` below.
 
 **Query parameters:** ``assetkey``, ``uuid``, ``compress``
@@ -136,7 +136,7 @@ operation.
 
 When ``warewulf:secure`` includes ``runtime`` (the default), this route
 requires that the request originate from a privileged TCP port (port number
-less than 1024); otherwise ``403 Forbidden`` is returned. This prevents
+less than 1024); otherwise the server returns ``403 Forbidden``. This prevents
 unprivileged users on a node from retrieving the runtime overlay.
 
 When TLS is enabled in ``warewulf.conf``, this route requires that the request
@@ -275,8 +275,8 @@ Every request must identify a node, either via the ``?wwid=`` query parameter
 can be identified, the server returns ``401 Unauthorized``.
 
 When ``warewulf:secure`` includes ``files`` (the default), requests must
-originate from a privileged port (< 1024); otherwise ``403 Forbidden`` is
-returned. If the node has an ``AssetKey`` configured, the ``?assetkey=``
+originate from a privileged port (< 1024); otherwise the server returns
+``403 Forbidden``. If the node has an ``AssetKey`` configured, the ``?assetkey=``
 parameter must be present and match; a missing key returns
 ``401 Unauthorized`` and an incorrect key returns ``403 Forbidden``.
 

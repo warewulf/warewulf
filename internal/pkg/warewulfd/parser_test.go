@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 )
 
 var parseReqTests = []struct {
@@ -179,6 +180,29 @@ func Test_ParseRequest(t *testing.T) {
 			result, err := parseRequest(req)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.result, result)
+		})
+	}
+}
+
+func Test_RequiresPrivilegedPort(t *testing.T) {
+	tests := map[string]struct {
+		secure *warewulfconf.SecureRoutes
+		stage  string
+		result bool
+	}{
+		"default runtime": {nil, "runtime", true},
+		"default system":  {nil, "system", false},
+		"none runtime":    {warewulfconf.NewSecureRoutes(), "runtime", false},
+		"system system":   {warewulfconf.NewSecureRoutes(warewulfconf.SecureRouteSystem), "system", true},
+		"system runtime":  {warewulfconf.NewSecureRoutes(warewulfconf.SecureRouteSystem), "runtime", false},
+		"files system":    {warewulfconf.NewSecureRoutes(warewulfconf.SecureRouteFiles), "system", false},
+		"all kernel":      {warewulfconf.NewSecureRoutes(warewulfconf.SecureRouteRuntime, warewulfconf.SecureRouteSystem, warewulfconf.SecureRouteFiles), "kernel", false},
+		"runtime runtime": {warewulfconf.NewSecureRoutes(warewulfconf.SecureRouteRuntime), "runtime", true},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			conf := &warewulfconf.WarewulfConf{SecureP: tt.secure}
+			assert.Equal(t, tt.result, requiresPrivilegedPort(tt.stage, conf))
 		})
 	}
 }

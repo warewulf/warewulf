@@ -95,8 +95,8 @@ func rootPersistentPreRunE(cmd *cobra.Command, args []string) (err error) {
 			wwlog.Error("error reading config file: %s", err)
 			return
 		}
-		if conf.Warewulf != nil && conf.Warewulf.SecureFilesP != nil && cmd.CommandPath() != "wwctl upgrade config" {
-			wwlog.Warn(`warewulf:secure files is deprecated; run "wwctl upgrade config" or include or omit "files" in warewulf:secure instead`)
+		if cmd.CommandPath() != "wwctl upgrade config" {
+			conf.Warewulf.WarnDeprecated()
 		}
 	}
 	return

@@ -1,10 +1,13 @@
 package config
 
 import (
+	"bytes"
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v3"
 )
 
@@ -49,7 +52,7 @@ func TestSecureRoutes(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, tt.runtime, conf.Warewulf.SecureRuntime())
 			assert.Equal(t, tt.runtime, conf.Warewulf.Secure())
-			assert.Equal(t, tt.system, conf.Warewulf.SecureSystem())
+			assert.Equal(t, tt.system, conf.Warewulf.SecureSystemOverlay())
 			assert.Equal(t, tt.files, conf.Warewulf.SecureFiles())
 
 			out, err := yaml.Marshal(conf.Warewulf.SecureP)
@@ -80,6 +83,30 @@ func TestSecureFilesOverride(t *testing.T) {
 			assert.NoError(t, conf.Parse([]byte("warewulf:\n  "+strings.ReplaceAll(tt.input, "\n", "\n  ")), false))
 			assert.Equal(t, tt.runtime, conf.Warewulf.SecureRuntime())
 			assert.Equal(t, tt.files, conf.Warewulf.SecureFiles())
+		})
+	}
+}
+
+func TestWarnDeprecated(t *testing.T) {
+	tests := map[string]struct {
+		input string
+		warn  bool
+	}{
+		"secure files set":   {"secure files: false", true},
+		"secure files unset": {"secure: true", false},
+		"warewulf null":      {"", false},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			buf := new(bytes.Buffer)
+			wwlog.SetLogWriter(buf)
+			defer wwlog.SetLogWriterErr(os.Stderr)
+			defer wwlog.SetLogWriterInfo(os.Stdout)
+
+			conf := New()
+			assert.NoError(t, conf.Parse([]byte("warewulf:\n  "+tt.input), false))
+			conf.Warewulf.WarnDeprecated()
+			assert.Equal(t, tt.warn, strings.Contains(buf.String(), "warewulf:secure files is deprecated"))
 		})
 	}
 }

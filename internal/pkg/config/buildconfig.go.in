@@ -58,7 +58,7 @@ type WarewulfConf struct {
 
 // Secure is an alias for SecureRuntime.
 //
-// Deprecated: use SecureRuntime, SecureSystem, or SecureFiles.
+// Deprecated: use SecureRuntime, SecureSystemOverlay, or SecureFiles.
 func (conf WarewulfConf) Secure() bool {
 	return conf.SecureRuntime()
 }
@@ -69,9 +69,9 @@ func (conf WarewulfConf) SecureRuntime() bool {
 	return conf.SecureP.Has(SecureRouteRuntime)
 }
 
-// SecureSystem reports whether the system overlay requires a
+// SecureSystemOverlay reports whether the system overlay requires a
 // privileged source port.
-func (conf WarewulfConf) SecureSystem() bool {
+func (conf WarewulfConf) SecureSystemOverlay() bool {
 	return conf.SecureP.Has(SecureRouteSystem)
 }
 

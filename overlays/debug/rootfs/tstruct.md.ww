@@ -22,7 +22,7 @@ data from other structures.
 
 - Port: {{ .Warewulf.Port }}
 - SecureRuntime: {{ .Warewulf.SecureRuntime }}
-- SecureSystem: {{ .Warewulf.SecureSystem }}
+- SecureSystemOverlay: {{ .Warewulf.SecureSystemOverlay }}
 - SecureFiles: {{ .Warewulf.SecureFiles }}
 - UpdateInterval: {{ .Warewulf.UpdateInterval }}
 - AutobuildOverlays: {{ .Warewulf.AutobuildOverlays }}
