@@ -105,24 +105,73 @@ warewulf
   listening on. It is recommended not to change this so there is no misalignment
   with node's expectations of how to contact the Warewulf service.
 
-* ``warewulf:secure``: When ``true``, this limits the Warewulf server to only
-  respond to runtime overlay requests originating from a privileged port. This
-  prevents non-root users from requesting the runtime overlay, which may contain
-  sensitive information.
+* ``warewulf:secure``: Selects the routes that only respond to requests
+  originating from a privileged (< 1024) TCP port. This prevents non-root users
+  on a node from requesting content that may contain sensitive information.
+  The value may be:
 
-  When ``true``, ``wwclient`` uses TCP port 987 by default. (A different port
-  can be specified at ``wwclient:port``.)
+  * ``true`` (the default, also used when the value is unset or null): secures
+    ``runtime`` and ``files``.
+  * ``false``: secures no routes.
+  * ``all``: secures every route listed below, including routes added in later
+    releases.
+  * A list of routes:
+
+    * ``runtime``: the runtime overlay (``/runtime/``).
+    * ``system``: the system overlay (``/system/``).
+    * ``files``: the ``/files/`` route.
+
+  .. code-block:: yaml
+
+     warewulf:
+       secure:
+         - runtime
+         - system
+
+  .. list-table::
+     :header-rows: 1
+
+     * - Value
+       - Runtime overlay
+       - System overlay
+       - ``/files/``
+     * - ``false``, or ``[]``
+       - any port
+       - any port
+       - any port
+     * - ``true`` (default when unset)
+       - privileged
+       - any port
+       - privileged
+     * - ``all``
+       - privileged
+       - privileged
+       - privileged
+     * - a list
+       - privileged if listed
+       - privileged if listed
+       - privileged if listed
+
+  Securing ``system`` requires the two-stage dracut boot (see
+  :ref:`booting with dracut`). iPXE and GRUB cannot fetch the system overlay
+  from a privileged port, so single-stage boots fail when ``system`` is
+  secured.
+
+  When ``runtime`` is secured, ``wwclient`` uses TCP port 987 by default. (A
+  different port can be specified at ``wwclient:port``.)
 
   Changing this option requires rebuilding node overlays and rebooting compute
   nodes to configure them to use a privileged port for ``wwclient``.
 
-* ``warewulf:secure files``: Controls whether the ``/files/`` route requires
-  requests to originate from a privileged port. When unset, this inherits from
-  ``warewulf:secure``.
+  ``wwclient`` from earlier releases cannot read ``all`` or a list. Rebuild or
+  delete any site-cloned ``wwclient`` overlay before using these forms.
 
-  Set to ``false`` when ``warewulf:secure`` is ``true`` to allow unprivileged
-  clients (e.g. scripts or services not running as root) to fetch files from
-  this route without requiring a privileged source port.
+* ``warewulf:secure files``: Deprecated. Include or omit ``files`` in
+  ``warewulf:secure`` instead. When set, it overrides whether ``files`` is
+  secured. ``wwctl upgrade config`` folds it into ``warewulf:secure``. If
+  folding changes which routes are secured, ``warewulf:secure`` becomes a list.
+  For example, ``all`` with ``secure files: false`` becomes ``[runtime,
+  system]``, which does not include routes added in later releases.
 
 * ``warewulf:update interval``: This defines the frequency (in seconds) with
   which the Warewulf client on the compute node fetches overlay updates.
@@ -372,12 +421,9 @@ Configuration for the ``wwclient`` service on cluster nodes.
    wwclient:
      port: 987
 
-* ``wwclient:port``: The source port used by ``wwclient``. By default an
-  ephemeral port is selected; but ``warewulf.conf:warewulf:secure: true``
-  requires a known privileged port.
-  
-  ``wwclient`` will use the TCP port "987" by default if ``secure: true``; but,
-  if that port is otherwise in use, a different port may be specified.
+* ``wwclient:port``: The source port used by ``wwclient``. Defaults to 987 when
+  ``warewulf:secure`` includes ``runtime`` (a privileged port is required),
+  otherwise an ephemeral port. Specify a different port if 987 is in use.
 
 .. _server-configuration-api:
 

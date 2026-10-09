@@ -1,6 +1,7 @@
 package warewulfd
 
 import (
+	"bytes"
 	"os"
 	"path"
 	"testing"
@@ -9,6 +10,7 @@ import (
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func Test_GetNodeOrSetDiscoverable(t *testing.T) {
@@ -123,6 +125,65 @@ nodes:
 			}
 			for _, file := range tt.removedFiles {
 				assert.NoFileExists(t, env.GetPath(file), "File should not exist: %s", file)
+			}
+		})
+	}
+}
+
+func Test_WarnSingleStageSecureSystem(t *testing.T) {
+	nodesConf := `
+nodeprofiles:
+  twostage:
+    tags:
+      IPXEMenuEntry: dracut
+nodes:
+  n1: {}
+  n2:
+    tags:
+      IPXEMenuEntry: dracut_static
+  n3:
+    profiles:
+    - twostage
+  n4:
+    tags:
+      IPXEMenuEntry: initrd
+  n5:
+    ipxe template: custom
+  n6:
+    tags:
+      GrubMenuEntry: dracut
+`
+	tests := map[string]struct {
+		secure   *warewulfconf.SecureRoutes
+		grubBoot bool
+		warn     string
+	}{
+		"system not secured": {secure: warewulfconf.NewSecureRoutes(warewulfconf.SecureRouteRuntime)},
+		"default":            {secure: nil},
+		"ipxe":               {secure: warewulfconf.NewSecureRoutes(warewulfconf.SecureRouteSystem), warn: "n1, n4, n6 (set tag IPXEMenuEntry=dracut)"},
+		"grub":               {secure: warewulfconf.NewSecureRoutes(warewulfconf.SecureRouteSystem), grubBoot: true, warn: "n1, n2, n3, n4, n5 (set tag GrubMenuEntry=dracut)"},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			env := testenv.New(t)
+			defer env.RemoveAll()
+			env.WriteFile("/etc/warewulf/nodes.conf", nodesConf)
+			assert.NoError(t, LoadNodeDB())
+
+			conf := warewulfconf.Get()
+			conf.Warewulf.SecureP = tt.secure
+			conf.Warewulf.GrubBootP = &tt.grubBoot
+
+			buf := new(bytes.Buffer)
+			wwlog.SetLogWriter(buf)
+			defer wwlog.SetLogWriterErr(os.Stderr)
+			defer wwlog.SetLogWriterInfo(os.Stdout)
+
+			warnSingleStageSecureSystem()
+			if tt.warn == "" {
+				assert.NotContains(t, buf.String(), "do not boot two-stage")
+			} else {
+				assert.Contains(t, buf.String(), "cannot fetch the system overlay: "+tt.warn)
 			}
 		})
 	}

@@ -1,4 +1,5 @@
 #!/bin/sh
+# wwinit-feature: secure-system-overlay
 
 [ -z "${wwinit_root_device}" ] && return 0
 
@@ -27,10 +28,10 @@ get_stage() {
     base="${2:-${ww_base}}"
     cacert="${3}"
     info "warewulf: loading stage: ${stage}"
-    # Load runtime overlay from a static privledged port.
-    # Others use default settings.
+    # Load system and runtime overlays from a privileged port, which
+    # warewulf:secure can require. Others use default settings.
     localport=""
-    if [ "${stage}" = "runtime" ]; then
+    if [ "${stage}" = "system" ] || [ "${stage}" = "runtime" ]; then
         localport="--local-port 1-1023"
     fi
     cacert_opt=""
@@ -44,7 +45,7 @@ get_stage() {
         runtime) uri="${base}/runtime/${hwaddr}" ;;
     esac
     (
-        curl --location --get ${localport} ${cacert_opt} \
+        curl --fail --location --get ${localport} ${cacert_opt} \
             --retry 60 --retry-connrefused --retry-delay 1 \
             --data-urlencode "assetkey=${wwinit_assetkey}" \
             --data-urlencode "uuid=${wwinit_uuid}" \

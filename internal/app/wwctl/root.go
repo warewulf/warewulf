@@ -95,6 +95,9 @@ func rootPersistentPreRunE(cmd *cobra.Command, args []string) (err error) {
 			wwlog.Error("error reading config file: %s", err)
 			return
 		}
+		if cmd.CommandPath() != "wwctl upgrade config" {
+			conf.Warewulf.WarnDeprecated()
+		}
 	}
 	return
 }
