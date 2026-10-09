@@ -49,8 +49,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `wwctl overlay import --archive` imports an exported overlay artifact as a
   new overlay. Archive symlinks whose target contains `..` after another path
   component are rejected. #2253 #2295
+- `warewulf:secure` accepts `all` or a list of routes (`runtime`, `system`,
+  `files`) that require a privileged source port. `true` still secures
+  `runtime` and `files`. `all` includes routes added in later releases.
+  Securing `system` requires the two-stage dracut boot; iPXE and GRUB cannot
+  fetch the system overlay from a privileged port.
 
 ### Changed
+
+- The wwinit dracut module fetches the system overlay from a privileged port,
+  and fails when the server denies the request.
 
 - `wwctl overlay show --render` now reports an error for an undefined node
   name, rather than silently rendering the template as for the Warewulf
@@ -70,6 +78,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   them to an existing `warewulf.conf`.
 - Source builds default `PREFIX` to `/opt/warewulf` when no OS is detected.
   #2205
+- `warewulf:secure files` is deprecated; include or omit `files` in
+  `warewulf:secure` instead. It is still honored, and `wwctl upgrade config`
+  folds it into `warewulf:secure`.
+- An unset or null `warewulf:secure` (`secure:` or `secure: ~`) now means the
+  default (`true`); a null previously meant `false`, and `wwctl upgrade config`
+  does not preserve that. Set `secure: false` to keep the old behavior. An
+  empty list (`secure: []`) secures no routes.
+- A request for a secured runtime or system overlay from a non-privileged port
+  is now rejected with `403 Forbidden` rather than `401 Unauthorized`, matching
+  `/files/`.
+- wwclient from an earlier release cannot parse `warewulf:secure` as `all` or
+  a list, which `wwctl upgrade config` may write. Rebuild or delete any
+  site-cloned `wwclient` overlay before using these forms.
 
 ### Fixed
 

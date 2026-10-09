@@ -62,12 +62,15 @@ Default: 9873
 .TP
 \fBsecure\fP
 
-When true, this limits the Warewulf server to only respond to runtime
-overlay requests originating from a privileged port. This prevents
-non-root users from requesting the runtime overlay, which may contain
-sensitive information.
+Selects the routes that only respond to requests originating from a
+privileged (< 1024) port: \fBruntime\fP, \fBsystem\fP, and \fBfiles\fP.
+This prevents non-root users from requesting content that may contain
+sensitive information. \fBtrue\fP (also used when unset or null) secures
+runtime and files; \fBfalse\fP secures none; \fBall\fP secures every
+route; a list secures the named routes. Securing system requires the
+two-stage dracut boot. The \fBsecure files\fP setting is deprecated.
 
-When true, wwclient uses TCP port 987.
+When runtime is secured, wwclient uses TCP port 987.
 
 Changing this option requires rebuilding node overlays and rebooting
 compute nodes, to configure them to use a privileged port.

@@ -44,27 +44,45 @@ func (conf TFTPConf) Enabled() bool {
 // WarewulfConf adds additional Warewulf-specific configuration to
 // BaseConf.
 type WarewulfConf struct {
-	Port               int    `yaml:"port,omitempty" default:"9873"`
-	TLSPort            int    `yaml:"tls port,omitempty" default:"9874"`
-	SecureP            *bool  `yaml:"secure,omitempty" default:"true"`
-	SecureFilesP       *bool  `yaml:"secure files,omitempty"`
-	TLSEnabledP        *bool  `yaml:"tls,omitempty"`
-	UpdateInterval     int    `yaml:"update interval,omitempty" default:"60"`
-	AutobuildOverlaysP *bool  `yaml:"autobuild overlays,omitempty" default:"true"`
-	EnableHostOverlayP *bool  `yaml:"host overlay,omitempty" default:"true"`
-	GrubBootP          *bool  `yaml:"grubboot,omitempty" default:"false"`
-	SystemdName        string `yaml:"systemd name,omitempty"`
+	Port               int           `yaml:"port,omitempty" default:"9873"`
+	TLSPort            int           `yaml:"tls port,omitempty" default:"9874"`
+	SecureP            *SecureRoutes `yaml:"secure,omitempty" default:"true"`
+	SecureFilesP       *bool         `yaml:"secure files,omitempty"`
+	TLSEnabledP        *bool         `yaml:"tls,omitempty"`
+	UpdateInterval     int           `yaml:"update interval,omitempty" default:"60"`
+	AutobuildOverlaysP *bool         `yaml:"autobuild overlays,omitempty" default:"true"`
+	EnableHostOverlayP *bool         `yaml:"host overlay,omitempty" default:"true"`
+	GrubBootP          *bool         `yaml:"grubboot,omitempty" default:"false"`
+	SystemdName        string        `yaml:"systemd name,omitempty"`
 }
 
+// Secure is an alias for SecureRuntime.
+//
+// Deprecated: use SecureRuntime, SecureSystem, or SecureFiles.
 func (conf WarewulfConf) Secure() bool {
-	return util.BoolP(conf.SecureP)
+	return conf.SecureRuntime()
 }
 
+// SecureRuntime reports whether the runtime overlay requires a
+// privileged source port.
+func (conf WarewulfConf) SecureRuntime() bool {
+	return conf.SecureP.Has(SecureRouteRuntime)
+}
+
+// SecureSystem reports whether the system overlay requires a
+// privileged source port.
+func (conf WarewulfConf) SecureSystem() bool {
+	return conf.SecureP.Has(SecureRouteSystem)
+}
+
+// SecureFiles reports whether the /files/ route requires a privileged
+// source port. The deprecated `secure files` setting (SecureFilesP),
+// when set, overrides warewulf:secure.
 func (conf WarewulfConf) SecureFiles() bool {
 	if conf.SecureFilesP != nil {
 		return *conf.SecureFilesP
 	}
-	return conf.Secure()
+	return conf.SecureP.Has(SecureRouteFiles)
 }
 
 func (conf WarewulfConf) TLSEnabled() bool {

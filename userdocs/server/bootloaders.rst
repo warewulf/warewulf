@@ -427,6 +427,12 @@ node's image in much the same way that it can serve a kernel from an image. This
 image is loaded by iPXE (or GRUB) which directs dracut to fetch the node's image
 during boot.
 
+The wwinit module fetches the system and runtime overlays from a privileged
+(< 1024) TCP port, so the two-stage boot works when ``warewulf:secure``
+includes ``system``. Single-stage iPXE and GRUB boots cannot do this. Rebuild
+any initramfs built with an earlier ``warewulf-dracut`` package before
+securing ``system``.
+
 The wwinit module provisions to tmpfs. By default, tmpfs is permitted to use up
 to 50% of physical memory. This size limit may be adjusted using the kernel
 argument ``wwinit.tmpfs.size``. (This parameter is passed to the ``size`` option

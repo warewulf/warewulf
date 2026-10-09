@@ -166,26 +166,29 @@ func logUnrecognizedService(service, systemdName string) {
 }
 
 type WarewulfConf struct {
-	Port              int    `yaml:"port"`
-	TLSPort           int    `yaml:"tls port"`
-	Secure            *bool  `yaml:"secure"`
-	SecureFiles       *bool  `yaml:"secure files"`
-	TLSEnabled        *bool  `yaml:"tls"`
-	UpdateInterval    int    `yaml:"update interval"`
-	AutobuildOverlays *bool  `yaml:"autobuild overlays"`
-	EnableHostOverlay *bool  `yaml:"host overlay"`
-	Syslog            *bool  `yaml:"syslog"`
-	DataStore         string `yaml:"datastore"`
-	GrubBoot          *bool  `yaml:"grubboot"`
-	SystemdName       string `yaml:"systemd name"`
+	Port              int                  `yaml:"port"`
+	TLSPort           int                  `yaml:"tls port"`
+	Secure            *config.SecureRoutes `yaml:"secure"`
+	SecureFiles       *bool                `yaml:"secure files"`
+	TLSEnabled        *bool                `yaml:"tls"`
+	UpdateInterval    int                  `yaml:"update interval"`
+	AutobuildOverlays *bool                `yaml:"autobuild overlays"`
+	EnableHostOverlay *bool                `yaml:"host overlay"`
+	Syslog            *bool                `yaml:"syslog"`
+	DataStore         string               `yaml:"datastore"`
+	GrubBoot          *bool                `yaml:"grubboot"`
+	SystemdName       string               `yaml:"systemd name"`
 }
 
 func (legacy *WarewulfConf) Upgrade() (upgraded *config.WarewulfConf) {
 	upgraded = new(config.WarewulfConf)
 	upgraded.Port = legacy.Port
 	upgraded.TLSPort = legacy.TLSPort
+	// The deprecated `secure files` setting is folded into `secure`.
 	upgraded.SecureP = legacy.Secure
-	upgraded.SecureFilesP = legacy.SecureFiles
+	if legacy.SecureFiles != nil {
+		upgraded.SecureP = legacy.Secure.With(config.SecureRouteFiles, *legacy.SecureFiles)
+	}
 	upgraded.TLSEnabledP = legacy.TLSEnabled
 	upgraded.UpdateInterval = legacy.UpdateInterval
 	upgraded.AutobuildOverlaysP = legacy.AutobuildOverlays

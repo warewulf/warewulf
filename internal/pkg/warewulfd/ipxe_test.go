@@ -135,8 +135,7 @@ func Test_HandleIpxeDracutNet(t *testing.T) {
 
 	// an IPv6-only server, as deployed on the fabric where this was found
 	conf := warewulfconf.Get()
-	secureFalse := false
-	conf.Warewulf.SecureP = &secureFalse
+	conf.Warewulf.SecureP = warewulfconf.NewSecureRoutes()
 	conf.Ipaddr = ""
 	conf.Ipaddr6 = "fd00:10::1"
 
@@ -181,8 +180,7 @@ func Test_HandleIpxe(t *testing.T) {
 	assert.NoError(t, dbErr)
 
 	conf := warewulfconf.Get()
-	secureFalse := false
-	conf.Warewulf.SecureP = &secureFalse
+	conf.Warewulf.SecureP = warewulfconf.NewSecureRoutes()
 	conf.Ipaddr = "10.10.0.1"
 	conf.Ipaddr6 = "fd00:10::1"
 
