@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 	"gopkg.in/yaml.v3"
 )
 
@@ -32,8 +33,8 @@ const (
 )
 
 // SecureRoutes is the set of routes that require a privileged source
-// port. It is written in warewulf.conf as `true`, `false`, `all`, or a
-// list of route names, and is written back in the form it was read.
+// port. warewulf.conf sets it as `true`, `false`, `all`, or a list of
+// route names, and MarshalYAML writes it back in the same form.
 //
 // A nil *SecureRoutes means `true`.
 type SecureRoutes struct {
@@ -67,8 +68,8 @@ func (s *SecureRoutes) Has(route string) bool {
 }
 
 // With returns s with route added (enabled) or removed. If that does not
-// change the set, s is returned as is, keeping its form. Otherwise the
-// result is a list.
+// change the set, With returns s unchanged, keeping its form. Otherwise it
+// returns a list.
 func (s *SecureRoutes) With(route string, enabled bool) *SecureRoutes {
 	if s.Has(route) == enabled {
 		return s
@@ -80,6 +81,13 @@ func (s *SecureRoutes) With(route string, enabled bool) *SecureRoutes {
 		}
 	}
 	return NewSecureRoutes(routes...)
+}
+
+// WarnDeprecated logs a warning for each deprecated setting in conf.
+func (conf *WarewulfConf) WarnDeprecated() {
+	if conf != nil && conf.SecureFilesP != nil {
+		wwlog.Warn(`warewulf:secure files is deprecated; include or omit "files" in warewulf:secure instead`)
+	}
 }
 
 func secureRoutesError(value string) error {

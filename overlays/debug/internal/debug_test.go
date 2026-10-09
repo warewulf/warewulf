@@ -82,7 +82,7 @@ data from other structures.
 
 - Port: 9873
 - SecureRuntime: true
-- SecureSystem: false
+- SecureSystemOverlay: false
 - SecureFiles: true
 - UpdateInterval: 60
 - AutobuildOverlays: true

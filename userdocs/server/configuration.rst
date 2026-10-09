@@ -128,6 +128,30 @@ warewulf
          - runtime
          - system
 
+  .. list-table::
+     :header-rows: 1
+
+     * - Value
+       - Runtime overlay
+       - System overlay
+       - ``/files/``
+     * - ``false``, or ``[]``
+       - any port
+       - any port
+       - any port
+     * - ``true`` (default when unset)
+       - privileged
+       - any port
+       - privileged
+     * - ``all``
+       - privileged
+       - privileged
+       - privileged
+     * - a list
+       - privileged if listed
+       - privileged if listed
+       - privileged if listed
+
   Securing ``system`` requires the two-stage dracut boot (see
   :ref:`booting with dracut`). iPXE and GRUB cannot fetch the system overlay
   from a privileged port, so single-stage boots fail when ``system`` is
@@ -144,7 +168,10 @@ warewulf
 
 * ``warewulf:secure files``: Deprecated. Include or omit ``files`` in
   ``warewulf:secure`` instead. When set, it overrides whether ``files`` is
-  secured. ``wwctl upgrade config`` folds it into ``warewulf:secure``.
+  secured. ``wwctl upgrade config`` folds it into ``warewulf:secure``. If
+  folding changes which routes are secured, ``warewulf:secure`` becomes a list.
+  For example, ``all`` with ``secure files: false`` becomes ``[runtime,
+  system]``, which does not include routes added in later releases.
 
 * ``warewulf:update interval``: This defines the frequency (in seconds) with
   which the Warewulf client on the compute node fetches overlay updates.

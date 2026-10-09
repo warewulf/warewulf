@@ -36,13 +36,15 @@ func initHandleRequest(w http.ResponseWriter, req *http.Request) (*requestContex
 
 	wwlog.Info("request from hwaddr:%s ipaddr:%s | stage:%s", rinfo.hwaddr, req.RemoteAddr, rinfo.stage)
 
-	if (rinfo.stage == "runtime" && conf.Warewulf.SecureRuntime()) ||
-		(rinfo.stage == "system" && conf.Warewulf.SecureSystem()) {
-		if rinfo.remoteport >= 1024 {
-			wwlog.Denied("Non-privileged port: %s", req.RemoteAddr)
-			w.WriteHeader(http.StatusForbidden)
-			return nil, fmt.Errorf("non-privileged port")
+	if rinfo.remoteport >= 1024 && requiresPrivilegedPort(rinfo.stage, conf.Warewulf) {
+		hint := ""
+		if rinfo.stage == "system" {
+			hint = "; nodes must use two-stage boot with warewulf-dracut"
 		}
+		wwlog.Denied("non-privileged port %d for %s overlay from %s (warewulf:secure includes %q%s)",
+			rinfo.remoteport, rinfo.stage, req.RemoteAddr, rinfo.stage, hint)
+		w.WriteHeader(http.StatusForbidden)
+		return nil, fmt.Errorf("non-privileged port")
 	}
 
 	remoteNode, err := GetOrDiscoverNode(rinfo.hwaddr, conf.Warewulf.AutobuildOverlays())
@@ -64,6 +66,18 @@ func initHandleRequest(w http.ResponseWriter, req *http.Request) (*requestContex
 		rinfo:      rinfo,
 		remoteNode: remoteNode,
 	}, nil
+}
+
+// requiresPrivilegedPort reports whether warewulf:secure requires a
+// privileged source port for the overlay stage.
+func requiresPrivilegedPort(stage string, conf *warewulfconf.WarewulfConf) bool {
+	switch stage {
+	case "runtime":
+		return conf.SecureRuntime()
+	case "system":
+		return conf.SecureSystemOverlay()
+	}
+	return false
 }
 
 type parsedRequest struct {
