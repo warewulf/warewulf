@@ -3,6 +3,7 @@
 if ! command -v info >/dev/null; then
     info() {
         printf '%s\n' "$*"
+        return 0
     }
 fi
 

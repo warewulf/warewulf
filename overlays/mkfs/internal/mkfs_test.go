@@ -28,6 +28,7 @@ PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin
 if ! command -v info >/dev/null; then
     info() {
         printf '%s\n' "$*"
+        return 0
     }
 fi
 
@@ -56,6 +57,10 @@ if command -v mkfs >/dev/null ; then :
 else
     info "warewulf: mkfs not found"
 fi
+
+# The exit status of this script is the status of the provisioning
+# operation above, never that of the last message it printed.
+exit 0
 `,
 		},
 
@@ -78,6 +83,7 @@ PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin
 if ! command -v info >/dev/null; then
     info() {
         printf '%s\n' "$*"
+        return 0
     }
 fi
 
@@ -118,6 +124,10 @@ if command -v mkfs >/dev/null ; then :
 else
     info "warewulf: mkfs not found"
 fi
+
+# The exit status of this script is the status of the provisioning
+# operation above, never that of the last message it printed.
+exit 0
 `,
 		},
 
@@ -144,6 +154,7 @@ PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin
 if ! command -v info >/dev/null; then
     info() {
         printf '%s\n' "$*"
+        return 0
     }
 fi
 
@@ -184,6 +195,10 @@ if command -v mkfs >/dev/null ; then :
 else
     info "warewulf: mkfs not found"
 fi
+
+# The exit status of this script is the status of the provisioning
+# operation above, never that of the last message it printed.
+exit 0
 `,
 		},
 	}
