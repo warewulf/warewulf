@@ -29,6 +29,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `wwctl image import` and the REST API can import SIF images. SIF images are
   detected automatically and extracted with unsquashfs, without Apptainer or
   Singularity. Warewulf now requires squashfs-tools.
+- `GET /api/overlays/{name}/file?render={node}` now returns `render_type`
+  (`plain`, `multi_file`, `symlink`, or `aborted`), `render_files`, and
+  `symlink_target` fields describing the rendered output. The `contents` field
+  is unchanged.
 
 ### Changed
 

@@ -72,14 +72,25 @@ func getOverlayByName() usecase.Interactor {
 	return u
 }
 
+// RenderFileInfo describes one output file of a rendered multi-file template.
+type RenderFileInfo struct {
+	Name          string `json:"name"`
+	Contents      string `json:"contents,omitempty"`
+	IsSymlink     bool   `json:"is_symlink,omitempty"`
+	SymlinkTarget string `json:"symlink_target,omitempty"`
+}
+
 type OverlayFile struct {
-	Overlay  string      `json:"overlay"`
-	Path     string      `json:"path"`
-	Contents string      `json:"contents"`
-	Perms    os.FileMode `json:"perms"`
-	Uid      uint32      `json:"uid"`
-	Gid      uint32      `json:"gid"`
-	rendered bool
+	Overlay       string           `json:"overlay"`
+	Path          string           `json:"path"`
+	Contents      string           `json:"contents"`
+	Perms         os.FileMode      `json:"perms"`
+	Uid           uint32           `json:"uid"`
+	Gid           uint32           `json:"gid"`
+	RenderType    string           `json:"render_type,omitempty" description:"Rendered responses only: plain, multi_file, symlink, or aborted"`
+	RenderFiles   []RenderFileInfo `json:"render_files,omitempty" description:"Output files when render_type is multi_file"`
+	SymlinkTarget string           `json:"symlink_target,omitempty" description:"Symlink target when render_type is symlink"`
+	rendered      bool
 }
 
 func (of *OverlayFile) FullPath() string {
@@ -119,45 +130,49 @@ func (of *OverlayFile) readContents() (string, error) {
 	return string(f), err
 }
 
-func (of *OverlayFile) renderContents(nodeName string) (string, error) {
+// renderAndPopulate renders the template for nodeName and populates Contents
+// along with the structured RenderType, RenderFiles, and SymlinkTarget fields.
+func (of *OverlayFile) renderAndPopulate(nodeName string) error {
 	if path.Ext(of.Path) != ".ww" {
-		return "", fmt.Errorf("'%s' does not end with '.ww'", of.Path)
+		return fmt.Errorf("'%s' does not end with '.ww'", of.Path)
 	}
 
 	if of.rendered {
-		return "", fmt.Errorf("already rendered")
+		return fmt.Errorf("already rendered")
 	}
 
 	registry, regErr := node.New()
 	if regErr != nil {
-		return "", regErr
+		return regErr
 	}
 
 	renderNode, nodeErr := registry.GetNode(nodeName)
 	if nodeErr != nil {
-		return "", nodeErr
+		return nodeErr
 	}
 
 	allNodes, allNodesErr := registry.FindAllNodes()
 	if allNodesErr != nil {
-		return "", allNodesErr
+		return allNodesErr
 	}
 
 	tstruct, structErr := overlay.InitStruct(of.Overlay, renderNode, allNodes)
 	if structErr != nil {
-		return "", structErr
+		return structErr
 	}
 	tstruct.BuildSource = of.Path
 
 	rendered, renderErr := overlay.RenderTemplate(of.FullPath(), tstruct)
 	if renderErr != nil {
-		return "", renderErr
+		return renderErr
 	}
 
 	if !rendered.WriteFile {
 		// abort() was called in the template: nothing would be written to disk.
 		// Include any content rendered before the abort() call for debugging.
-		return rendered.Files[0].Buffer.String() + "Aborted\n", nil
+		of.Contents = rendered.Files[0].Buffer.String() + "Aborted\n"
+		of.RenderType = "aborted"
+		return nil
 	}
 
 	// Single output file with no file() calls: return content as-is for backward
@@ -165,9 +180,14 @@ func (of *OverlayFile) renderContents(nodeName string) (string, error) {
 	// non-empty Name regardless of how many there are.
 	if len(rendered.Files) == 1 && rendered.Files[0].Name == "" {
 		if rendered.Files[0].IsSymlink {
-			return "Symlink: " + rendered.Files[0].Target + "\n", nil
+			of.Contents = "Symlink: " + rendered.Files[0].Target + "\n"
+			of.RenderType = "symlink"
+			of.SymlinkTarget = rendered.Files[0].Target
+			return nil
 		}
-		return rendered.Files[0].Buffer.String(), nil
+		of.Contents = rendered.Files[0].Buffer.String()
+		of.RenderType = "plain"
+		return nil
 	}
 	// One or more file() calls: emit Filename: / Symlink: headers for each named
 	// entry. Skip the default slot (Name == ""); pre-file() content in it is
@@ -188,7 +208,29 @@ func (of *OverlayFile) renderContents(nodeName string) (string, error) {
 			combined.WriteString(f.Buffer.String())
 		}
 	}
-	return combined.String(), nil
+	of.Contents = combined.String()
+	of.RenderType = "multi_file"
+
+	// Structured file list. Like overlay build, the default slot is skipped
+	// unless it is a symlink, in which case it is named after the template.
+	of.RenderFiles = []RenderFileInfo{}
+	for _, f := range rendered.Files {
+		info := RenderFileInfo{Name: f.Name}
+		if f.Name == "" {
+			if !f.IsSymlink {
+				continue
+			}
+			info.Name = strings.TrimSuffix(path.Base(of.Path), ".ww")
+		}
+		if f.IsSymlink {
+			info.IsSymlink = true
+			info.SymlinkTarget = f.Target
+		} else {
+			info.Contents = f.Buffer.String()
+		}
+		of.RenderFiles = append(of.RenderFiles, info)
+	}
+	return nil
 }
 
 func NewOverlayFile(name string, path string, renderNodeName string) (*OverlayFile, error) {
@@ -202,10 +244,8 @@ func NewOverlayFile(name string, path string, renderNodeName string) (*OverlayFi
 			of.Contents = contents
 		}
 	} else {
-		if contents, err := of.renderContents(renderNodeName); err != nil {
+		if err := of.renderAndPopulate(renderNodeName); err != nil {
 			return of, err
-		} else {
-			of.Contents = contents
 		}
 	}
 	return of, nil

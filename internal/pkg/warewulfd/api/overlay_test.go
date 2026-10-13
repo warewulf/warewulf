@@ -35,6 +35,11 @@ const multiSymlinkTemplate = `{{- file "link1" -}}
 {{- file "link2" -}}
 {{- softlink "/target2" -}}`
 
+const defaultSymlinkWithFileTemplate = `{{- softlink "/a" -}}
+{{- file "b" -}}
+hello
+`
+
 const sampleNodesConf = `
 nodeprofiles: {}
 nodes:
@@ -144,7 +149,54 @@ var overlayTests = []struct {
 			"contents": "Filename: alpha\ncontent of alpha\nFilename: beta\ncontent of beta\n",
 			"perms": "<<PRESENCE>>",
 			"uid": "<<PRESENCE>>",
-			"gid": "<<PRESENCE>>"
+			"gid": "<<PRESENCE>>",
+			"render_type": "multi_file",
+			"render_files": [
+				{"name": "alpha", "contents": "content of alpha\n"},
+				{"name": "beta", "contents": "content of beta\n"}
+			]
+		}`,
+	},
+	{
+		name: "render plain overlay template",
+		initFiles: map[string]string{
+			"/usr/share/warewulf/overlays/testoverlay/email.ww": sampleTemplate,
+			"/etc/warewulf/nodes.conf":                          sampleNodesConf,
+		},
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodGet, serverURL+"/api/overlays/testoverlay/file?path=email.ww&render=node1", nil)
+		},
+		response: `{
+			"overlay": "testoverlay",
+			"path": "email.ww",
+			"contents": " noMail\n",
+			"perms": "<<PRESENCE>>",
+			"uid": "<<PRESENCE>>",
+			"gid": "<<PRESENCE>>",
+			"render_type": "plain"
+		}`,
+	},
+	{
+		name: "render default symlink with named file",
+		initFiles: map[string]string{
+			"/usr/share/warewulf/overlays/multioverlay/default-link.ww": defaultSymlinkWithFileTemplate,
+			"/etc/warewulf/nodes.conf":                                  sampleNodesConf,
+		},
+		request: func(serverURL string) (*http.Request, error) {
+			return http.NewRequest(http.MethodGet, serverURL+"/api/overlays/multioverlay/file?path=default-link.ww&render=node1", nil)
+		},
+		response: `{
+			"overlay": "multioverlay",
+			"path": "default-link.ww",
+			"contents": "Filename: b\nhello\n",
+			"perms": "<<PRESENCE>>",
+			"uid": "<<PRESENCE>>",
+			"gid": "<<PRESENCE>>",
+			"render_type": "multi_file",
+			"render_files": [
+				{"name": "default-link", "is_symlink": true, "symlink_target": "/a"},
+				{"name": "b", "contents": "hello\n"}
+			]
 		}`,
 	},
 	{
@@ -162,7 +214,8 @@ var overlayTests = []struct {
 			"contents": "Aborted\n",
 			"perms": "<<PRESENCE>>",
 			"uid": "<<PRESENCE>>",
-			"gid": "<<PRESENCE>>"
+			"gid": "<<PRESENCE>>",
+			"render_type": "aborted"
 		}`,
 	},
 	{
@@ -180,7 +233,8 @@ var overlayTests = []struct {
 			"contents": "some contentAborted\n",
 			"perms": "<<PRESENCE>>",
 			"uid": "<<PRESENCE>>",
-			"gid": "<<PRESENCE>>"
+			"gid": "<<PRESENCE>>",
+			"render_type": "aborted"
 		}`,
 	},
 	{
@@ -198,7 +252,9 @@ var overlayTests = []struct {
 			"contents": "Symlink: /usr/share/zoneinfo/UTC\n",
 			"perms": "<<PRESENCE>>",
 			"uid": "<<PRESENCE>>",
-			"gid": "<<PRESENCE>>"
+			"gid": "<<PRESENCE>>",
+			"render_type": "symlink",
+			"symlink_target": "/usr/share/zoneinfo/UTC"
 		}`,
 	},
 	{
@@ -216,7 +272,12 @@ var overlayTests = []struct {
 			"contents": "Filename: link1\nSymlink: /target1\nFilename: link2\nSymlink: /target2\n",
 			"perms": "<<PRESENCE>>",
 			"uid": "<<PRESENCE>>",
-			"gid": "<<PRESENCE>>"
+			"gid": "<<PRESENCE>>",
+			"render_type": "multi_file",
+			"render_files": [
+				{"name": "link1", "is_symlink": true, "symlink_target": "/target1"},
+				{"name": "link2", "is_symlink": true, "symlink_target": "/target2"}
+			]
 		}`,
 	},
 	{
