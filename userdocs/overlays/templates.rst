@@ -42,6 +42,9 @@ Templates can include documentation to be included in the output of ``wwctl over
 
    {{/* wwdoc: Your documentation text */}}
 
+New templates should include a ``wwdoc`` comment. To test a template, see
+:ref:`writing-tests`.
+
 Template variables
 ==================
 
@@ -122,10 +125,10 @@ single template.
 
 .. code-block::
 
-   {{- file "/tmp/test-link1" -}}
-   {{- softlink "/tmp/test-target1" -}}
-   {{- file "/tmp/test-link2" -}}
-   {{- softlink "/tmp/test-target2" -}}
+   {{- file "/etc/localtime-link1" -}}
+   {{- ImportLink "/etc/localtime" -}}
+   {{- file "/etc/localtime-link2" -}}
+   {{- ImportLink "/etc/localtime" -}}
 
 basename
 --------
@@ -138,6 +141,18 @@ Returns the base name of the given path.
     if option architecture-type = {{ $type }} {
         filename "/warewulf/{{ basename $name }}";
     }
+   {{- end }}
+
+inc / dec
+---------
+
+Add or subtract one from an integer, e.g. to number items from one instead of
+zero.
+
+.. code-block::
+
+   {{- range $i, $profile := .Profiles }}
+   profile{{ inc $i }}={{ $profile }}
    {{- end }}
 
 file
@@ -188,7 +203,7 @@ symlink.
 
 .. code-block::
 
-   {{ readlink /etc/localtime }}
+   {{ readlink "/etc/localtime" }}
 
 IgnitionJson
 ------------
@@ -207,8 +222,21 @@ abort
 Immediately aborts processing the template and does not write a file.
 
 .. code-block::
-  
+
    {{- abort -}}
+
+Use ``abort`` when the data a template needs is missing, rather than writing an
+empty file. For example, the ``wwinit`` overlay writes ``warewulf.crt`` only when
+the server certificate exists:
+
+.. code-block::
+
+   {{- $crt := Include "tls/warewulf.crt" -}}
+   {{- if eq $crt "" -}}
+   {{ abort }}
+   {{- else -}}
+   {{ $crt }}
+   {{- end -}}
 
 nobackup
 --------
