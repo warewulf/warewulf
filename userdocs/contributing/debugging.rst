@@ -36,3 +36,30 @@ example, you can install delve as a regular user directly with Go.
 
 Visual Studio Code also includes a full-featured golang debugger that includes
 testsuite integration.
+
+Rendering Templates
+===================
+
+``wwctl overlay show --render <node> <overlay> <template>`` renders a template
+for a node without building the overlay, and ``wwctl overlay info <overlay>
+<template>`` lists the variables it uses.
+
+To see which external commands ``wwctl`` runs (``cpio``, ``mksquashfs``, ...),
+trace them:
+
+.. code-block:: shell
+
+   strace -f -e trace=execve wwctl overlay build <node>
+
+Working in an Image
+===================
+
+Use ``wwctl image exec <image> -- <command>`` instead of ``chroot``; it sets up
+``/proc``, ``/sys``, and ``/dev`` inside the image.
+
+Debugging Node Boot
+===================
+
+Remove ``quiet`` from the node's kernel arguments and add ``rd.shell`` to get a
+shell in the initramfs on failure. Set a serial console that matches the
+hardware (``console=ttyS0``; ``console=ttyAMA0`` on aarch64 QEMU ``virt``).

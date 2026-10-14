@@ -73,6 +73,7 @@ Welcome to the Warewulf User Guide!
 
    Contributing <contributing/contributing>
    Development Environment <contributing/development-environment>
+   Code Guidelines <contributing/code>
    Documentation <contributing/documentation>
    Debugging <contributing/debugging>
 

@@ -17,7 +17,7 @@
 /.local/
 .claude/
 CLAUDE.md
-AGENTS.md
+*.local.md
 
 # other created files
 /docs/man/man1

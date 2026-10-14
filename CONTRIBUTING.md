@@ -31,7 +31,9 @@ thereof, in binary and source code form.
 
 - Follow existing code style precedent. For Go, you should mostly
   conform to the style and form enforced by the "go fmt" and "golint"
-  tools for proper formatting.
+  tools for proper formatting. The [code
+  guidelines](userdocs/contributing/code.rst) describe the source
+  layout and conventions.
 
 - For any new functionality, please write appropriate go tests. These
   run as part of the continuous integration system.
@@ -60,10 +62,10 @@ thereof, in binary and source code form.
   between versions of Warewulf, and should **not** read like a commit
   log.
 
-  Once a release is tagged (*e.g.  v4.0.0*), a new top level section
-  is made titled **Changes Since vX.Y.Z** (*e.g. Changes Since
-  v4.0.0*) where new changes are documented, leaving the previous
-  section immutable.
+  New changes are documented under the **Unreleased** section at the
+  top, grouped as **Added**, **Changed**, **Fixed**, and so on. When a
+  release is tagged, that section is renamed for the release and left
+  unchanged from then on.
 
   The CHANGELOG must be updated for any of the following changes:
   - Renamed commands or subcommands
@@ -87,7 +89,8 @@ thereof, in binary and source code form.
 - A minor release is accompanied by a minor branch named `v4.MINOR.x`
   from which patch releases may be generated.
 
-- No other branches are maintained in the primary Warewulf repository.
+- Only `main` and the `v4.MINOR.x` branches are maintained; other
+  branches in the primary Warewulf repository are temporary.
 
 ## Maintaining
 
