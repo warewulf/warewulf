@@ -83,6 +83,57 @@ More information:
 * `Testify assert <https://pkg.go.dev/github.com/stretchr/testify/assert>`_
 * `Warewulf testenv <https://pkg.go.dev/github.com/warewulf/warewulf/internal/pkg/testenv>`_
 
+.. _writing-tests:
+
+Writing Tests
+=============
+
+New functionality needs tests, and a bug fix should include a test that fails
+without the fix. Tests are table-driven and use `testify assert
+<https://pkg.go.dev/github.com/stretchr/testify/assert>`_.
+
+Tests that touch configuration, overlays, or images use
+``internal/pkg/testenv``. It creates a temporary Warewulf tree with its own
+``nodes.conf`` and ``warewulf.conf`` and points Warewulf's paths at it. (The
+separate ``warewulf-testenv`` repository is a virtual test cluster, not this
+package.)
+
+.. code-block:: go
+
+   env := testenv.New(t)
+   defer env.RemoveAll()
+   env.WriteFile("etc/warewulf/nodes.conf", `nodes:
+     n1: {}`)
+
+``WriteFile``, ``ImportFile``, and ``ImportDir`` populate the tree; ``ReadFile``
+and ``GetPath`` inspect it. After rewriting ``warewulf.conf``, call
+``env.Configure()`` so Warewulf re-reads it.
+
+To test a ``wwctl`` subcommand, run its ``GetCommand()`` with arguments and
+check the result. ``internal/app/wwctl/node/set/main_test.go`` is a complete
+example; it calls ``warewulfd.SetNoDaemon()`` so the command does not try to
+reach a running daemon.
+
+To test an overlay template, add a case to
+``overlays/<name>/internal/<name>_test.go``. Each test imports the template
+into a ``testenv``, renders it for a node with ``wwctl overlay show --render``,
+and compares the log output with an expected string.
+``overlays/hostname/internal/hostname_test.go`` is the smallest example. When a
+template can ``abort``, include a case for it. An aborted template with no
+output before the ``abort`` logs:
+
+.. code-block:: text
+
+   backupFile: true
+   writeFile: false
+
+   Aborted
+
+Take expected output from a test run rather than writing it by hand.
+
+Run one package's tests with ``TZ=UTC go test ./internal/pkg/overlay/...``
+(after ``make config``), or the whole suite with ``make test``.
+
 Using a Dev Container
 =====================
 
