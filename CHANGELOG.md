@@ -66,6 +66,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `wwctl overlay import --archive` rejects symlinks whose target contains
   `..` after another path component, which could resolve outside the
   overlay through another symlink.
+- Node discovery ignores requests whose hardware address is not a valid MAC
+  address, rather than recording it in `nodes.conf`.
 
 ### Fixed
 
