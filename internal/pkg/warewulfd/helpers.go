@@ -131,6 +131,7 @@ func sendResponse(w http.ResponseWriter, req *http.Request, stageFile string, tm
 				wwlog.Error("unsupported %s compressed version of file %s",
 					ctx.rinfo.compress, stageFile)
 				w.WriteHeader(http.StatusNotFound)
+				return
 			}
 
 			err := sendFile(w, req, stageFile, ctx.remoteNode.Id())

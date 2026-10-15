@@ -61,6 +61,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   longer also renders `dhcpd.conf.ww` a second time.
 - Generate warnings from relative rather than exact permissions when applying
   host overlays.
+- Provisioning requests with an unsupported `compress` value now return
+  `400 Bad Request` instead of serving the uncompressed file.
 
 ### Fixed
 
