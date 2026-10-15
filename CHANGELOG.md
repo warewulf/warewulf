@@ -63,6 +63,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   host overlays.
 - Provisioning requests with an unsupported `compress` value now return
   `400 Bad Request` instead of serving the uncompressed file.
+- `wwctl overlay import --archive` rejects symlinks whose target contains
+  `..` after another path component, which could resolve outside the
+  overlay through another symlink.
 
 ### Fixed
 

@@ -282,6 +282,21 @@ func validateArchiveSymlink(entryName string, linkName string) error {
 	if filepath.IsAbs(linkName) || strings.HasPrefix(linkName, "/") {
 		return fmt.Errorf("artifact symlink target must be relative: %s -> %s", entryName, linkName)
 	}
+	// Resolving the target lexically is only sound for leading ".."
+	// components, which climb real directories. A later ".." may follow a
+	// component that is itself a symlink, and so lead outside rootfs.
+	seenName := false
+	for _, part := range strings.Split(linkName, "/") {
+		switch part {
+		case "", ".":
+		case "..":
+			if seenName {
+				return fmt.Errorf("artifact symlink target must not contain .. after other components: %s -> %s", entryName, linkName)
+			}
+		default:
+			seenName = true
+		}
+	}
 	resolved := filepath.Clean(filepath.Join(filepath.Dir(entryName), filepath.FromSlash(linkName)))
 	if resolved == ".." || strings.HasPrefix(resolved, ".."+string(filepath.Separator)) {
 		return fmt.Errorf("artifact symlink target escapes archive root: %s -> %s", entryName, linkName)
