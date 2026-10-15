@@ -61,9 +61,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   longer also renders `dhcpd.conf.ww` a second time.
 - Generate warnings from relative rather than exact permissions when applying
   host overlays.
-
-### Fixed
-
 - Fixed Linux distribution detection in the build system. `OS` was always
   set to `D`, so per-distribution defaults never applied. Source builds now
   default to `TFTPDIR=/srv/tftp` and `IPXESOURCE=/usr/lib/ipxe` on Debian,
@@ -84,6 +81,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   links `/etc/chrony/chrony.conf` to `/etc/chrony.conf`. It also reads drop-in
   files with `confdir`, which skips missing directories, instead of an
   `include` that is fatal when `/etc/chrony.d` does not exist.
+- Update to grcp 1.85.0 which fixes CVE-2026-84303
 
 ### Added
 
