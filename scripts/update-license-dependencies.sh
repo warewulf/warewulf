@@ -34,7 +34,11 @@ override_license() {
 # Ensure a constant sort order
 export LC_ALL=C
 
-${GOLANG_LICENSES:-go-licenses} csv ./... \
+# Capture go-licenses output first, rather than piping it, so that
+# set -e stops the script if it fails.
+licenses=$(${GOLANG_LICENSES:-go-licenses} csv ./...)
+
+printf '%s\n' "${licenses}" \
     | grep -v -E "${exclude}" \
     | while IFS="," read -r dep url license; do
 	override=$(override_license "${dep}")
