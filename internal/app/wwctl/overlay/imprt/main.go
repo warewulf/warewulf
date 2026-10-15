@@ -135,6 +135,12 @@ func importArchive(overlayName string, archivePath string) error {
 }
 
 func extractArtifactArchive(archivePath string, destRoot string) error {
+	root, err := os.OpenRoot(destRoot)
+	if err != nil {
+		return fmt.Errorf("could not open artifact staging directory: %w", err)
+	}
+	defer func() { _ = root.Close() }()
+
 	archiveFile, err := os.Open(archivePath)
 	if err != nil {
 		return fmt.Errorf("could not open artifact archive: %w", err)
@@ -156,7 +162,7 @@ func extractArtifactArchive(archivePath string, destRoot string) error {
 		if err != nil {
 			return fmt.Errorf("could not read artifact archive: %w", err)
 		}
-		if err := extractArtifactEntry(tarReader, header, destRoot); err != nil {
+		if err := extractArtifactEntry(root, tarReader, header); err != nil {
 			return err
 		}
 	}
@@ -164,7 +170,9 @@ func extractArtifactArchive(archivePath string, destRoot string) error {
 	return nil
 }
 
-func extractArtifactEntry(reader io.Reader, header *tar.Header, destRoot string) error {
+// extractArtifactEntry extracts one archive entry into root. All file
+// operations go through root, so no entry can be created outside it.
+func extractArtifactEntry(root *os.Root, reader io.Reader, header *tar.Header) error {
 	name, err := cleanArchiveEntryName(header.Name)
 	if err != nil {
 		return err
@@ -173,31 +181,26 @@ func extractArtifactEntry(reader io.Reader, header *tar.Header, destRoot string)
 		return fmt.Errorf("artifact archive entry is outside allowed layout: %s", header.Name)
 	}
 
-	target := filepath.Join(destRoot, name)
-	if err := ensureImportPath(destRoot, target); err != nil {
-		return err
-	}
-
 	switch header.Typeflag {
 	case tar.TypeDir:
-		if err := ensureImportDir(destRoot, target, os.FileMode(header.Mode)); err != nil {
+		if err := ensureImportDir(root, name, os.FileMode(header.Mode)); err != nil {
 			return err
 		}
 	case tar.TypeReg:
-		if err := ensureImportDir(destRoot, filepath.Dir(target), 0o755); err != nil {
+		if err := ensureImportDir(root, filepath.Dir(name), 0o755); err != nil {
 			return err
 		}
-		if err := writeArchiveFile(reader, target, os.FileMode(header.Mode)); err != nil {
+		if err := writeArchiveFile(root, reader, name, os.FileMode(header.Mode)); err != nil {
 			return err
 		}
 	case tar.TypeSymlink:
 		if err := validateArchiveSymlink(name, header.Linkname); err != nil {
 			return err
 		}
-		if err := ensureImportDir(destRoot, filepath.Dir(target), 0o755); err != nil {
+		if err := ensureImportDir(root, filepath.Dir(name), 0o755); err != nil {
 			return err
 		}
-		if err := os.Symlink(header.Linkname, target); err != nil {
+		if err := root.Symlink(header.Linkname, name); err != nil {
 			return fmt.Errorf("could not create artifact symlink %s: %w", name, err)
 		}
 	case tar.TypeLink:
@@ -223,39 +226,18 @@ func cleanArchiveEntryName(name string) (string, error) {
 	return cleaned, nil
 }
 
-func ensureImportPath(root string, target string) error {
-	rel, err := filepath.Rel(root, target)
-	if err != nil {
-		return fmt.Errorf("could not resolve artifact path: %w", err)
-	}
-	if rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
-		return fmt.Errorf("artifact archive path escapes target root: %s", target)
-	}
-	return nil
-}
-
-func ensureImportDir(root string, dir string, mode os.FileMode) error {
-	if err := ensureImportPath(root, dir); err != nil {
-		return err
-	}
+func ensureImportDir(root *os.Root, dir string, mode os.FileMode) error {
 	if mode == 0 {
 		mode = 0o755
 	}
 
-	rel, err := filepath.Rel(root, dir)
-	if err != nil {
-		return fmt.Errorf("could not resolve artifact directory: %w", err)
-	}
-	current := root
-	if rel == "." {
-		return nil
-	}
-	for _, part := range strings.Split(rel, string(filepath.Separator)) {
+	current := ""
+	for _, part := range strings.Split(dir, string(filepath.Separator)) {
 		if part == "" || part == "." {
 			continue
 		}
 		current = filepath.Join(current, part)
-		info, err := os.Lstat(current)
+		info, err := root.Lstat(current)
 		if err == nil {
 			if info.Mode()&os.ModeSymlink != 0 {
 				return fmt.Errorf("refusing to extract through symlinked directory: %s", current)
@@ -268,27 +250,27 @@ func ensureImportDir(root string, dir string, mode os.FileMode) error {
 		if !errors.Is(err, os.ErrNotExist) {
 			return fmt.Errorf("could not inspect artifact extraction directory %s: %w", current, err)
 		}
-		if err := os.Mkdir(current, mode); err != nil {
+		if err := root.Mkdir(current, mode); err != nil {
 			return fmt.Errorf("could not create artifact extraction directory %s: %w", current, err)
 		}
 	}
 	return nil
 }
 
-func writeArchiveFile(reader io.Reader, target string, mode os.FileMode) error {
-	output, err := os.OpenFile(target, os.O_WRONLY|os.O_CREATE|os.O_EXCL, mode)
+func writeArchiveFile(root *os.Root, reader io.Reader, name string, mode os.FileMode) error {
+	output, err := root.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_EXCL, mode)
 	if err != nil {
-		return fmt.Errorf("could not create artifact file %s: %w", target, err)
+		return fmt.Errorf("could not create artifact file %s: %w", name, err)
 	}
 	if _, err := io.Copy(output, reader); err != nil {
 		_ = output.Close()
-		return fmt.Errorf("could not extract artifact file %s: %w", target, err)
+		return fmt.Errorf("could not extract artifact file %s: %w", name, err)
 	}
 	if err := output.Close(); err != nil {
-		return fmt.Errorf("could not close artifact file %s: %w", target, err)
+		return fmt.Errorf("could not close artifact file %s: %w", name, err)
 	}
-	if err := os.Chmod(target, mode); err != nil {
-		return fmt.Errorf("could not set artifact file mode %s: %w", target, err)
+	if err := root.Chmod(name, mode); err != nil {
+		return fmt.Errorf("could not set artifact file mode %s: %w", name, err)
 	}
 	return nil
 }
