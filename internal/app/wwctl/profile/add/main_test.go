@@ -41,6 +41,62 @@ nodes: {}
 nodes: {}
 `,
 		},
+		{
+			name:    "single profile add with tags",
+			args:    []string{"--tagadd=foo=bar", "p01"},
+			wantErr: false,
+			stdout:  "",
+			outDb: `nodeprofiles:
+  p01:
+    tags:
+      foo: bar
+nodes: {}
+`,
+		},
+		{
+			name:    "single profile add with network tags",
+			args:    []string{"--nettagadd=dns=1.1.1.1", "p01"},
+			wantErr: false,
+			stdout:  "",
+			outDb: `nodeprofiles:
+  p01:
+    network devices:
+      default:
+        tags:
+          dns: 1.1.1.1
+nodes: {}
+`,
+		},
+		{
+			name:    "single profile add with netdev, tags, and network tags",
+			args:    []string{"--netdev=eth0", "--tagadd=foo=bar", "--nettagadd=dns=1.1.1.1", "p01"},
+			wantErr: false,
+			stdout:  "",
+			outDb: `nodeprofiles:
+  p01:
+    network devices:
+      default:
+        device: eth0
+        tags:
+          dns: 1.1.1.1
+    tags:
+      foo: bar
+nodes: {}
+`,
+		},
+		{
+			name:    "single profile add with ipmi tags",
+			args:    []string{"--ipmitagadd=foo=bar", "p01"},
+			wantErr: false,
+			stdout:  "",
+			outDb: `nodeprofiles:
+  p01:
+    ipmi:
+      tags:
+        foo: bar
+nodes: {}
+`,
+		},
 	}
 
 	warewulfd.SetNoDaemon()

@@ -15,7 +15,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 	return func(cmd *cobra.Command, args []string) (err error) {
 		// remove the UNDEF network as all network values are assigned
 		// to this network
-		if !node.ObjectIsEmpty(vars.profileConf.NetDevs["UNDEF"]) {
+		if !node.ObjectIsEmpty(vars.profileConf.NetDevs["UNDEF"]) || len(vars.profileAdd.NetTagsAdd) > 0 {
 			netDev := *vars.profileConf.NetDevs["UNDEF"]
 			vars.profileConf.NetDevs[vars.profileAdd.Net] = &netDev
 		}
@@ -43,7 +43,6 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			return fmt.Errorf("partition and disk must be specified")
 		}
 		delete(vars.profileConf.Disks, "UNDEF")
-		vars.profileConf.Ipmi.Tags = vars.profileAdd.IpmiTagsAdd
 		buffer, err := yaml.Marshal(vars.profileConf)
 		if err != nil {
 			return fmt.Errorf("can not marshall nodeInfo: %w", err)
@@ -64,6 +63,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			if err != nil {
 				return fmt.Errorf("failed to add profile: %w", err)
 			}
+			pNew.ApplyTagChanges(vars.profileAdd, node.NodeConfDel{})
 		}
 		return nodeDB.Persist()
 	}

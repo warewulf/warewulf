@@ -19,7 +19,6 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 		if !node.ObjectIsEmpty(vars.nodeConf.NetDevs["UNDEF"]) || len(vars.nodeAdd.NetTagsAdd) > 0 {
 			netDev := *vars.nodeConf.NetDevs["UNDEF"]
 			vars.nodeConf.NetDevs[vars.nodeAdd.Net] = &netDev
-			vars.nodeConf.NetDevs[vars.nodeAdd.Net].Tags = vars.nodeAdd.NetTagsAdd
 		}
 		delete(vars.nodeConf.NetDevs, "UNDEF")
 		if vars.nodeAdd.FsName != "" {
@@ -45,7 +44,6 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			return fmt.Errorf("partition and disk must be specified")
 		}
 		delete(vars.nodeConf.Disks, "UNDEF")
-		vars.nodeConf.Ipmi.Tags = vars.nodeAdd.IpmiTagsAdd
 
 		nodeDB, err := node.New()
 		if err != nil {
@@ -124,35 +122,12 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 					return fmt.Errorf("filesystem doesn't exist: %s", vars.nodeDel.FsDel)
 				}
 			}
-			for _, key := range vars.nodeDel.TagsDel {
-				delete(nodePtr.Tags, key)
-			}
-			for key, val := range vars.nodeAdd.TagsAdd {
-				if nodePtr.Tags == nil {
-					nodePtr.Tags = make(map[string]string)
-				}
-				nodePtr.Tags[key] = val
-			}
-			for key, val := range vars.nodeAdd.IpmiTagsAdd {
-				if nodePtr.Ipmi.Tags == nil {
-					nodePtr.Ipmi.Tags = make(map[string]string)
-				}
-				nodePtr.Ipmi.Tags[key] = val
-			}
-			for _, key := range vars.nodeDel.IpmiTagsDel {
-				delete(nodePtr.Ipmi.Tags, key)
-			}
-			if netDev, ok := nodePtr.NetDevs[vars.nodeAdd.Net]; ok {
-				for _, key := range vars.nodeDel.NetTagsDel {
-					delete(netDev.Tags, key)
-				}
-				if len(vars.nodeAdd.NetTagsAdd) > 0 && netDev.Tags == nil {
-					netDev.Tags = make(map[string]string)
-				}
-				for key, val := range vars.nodeAdd.NetTagsAdd {
-					netDev.Tags[key] = val
+			if len(vars.nodeDel.NetTagsDel) > 0 && vars.nodeDel.NetDel != vars.nodeAdd.Net {
+				if _, ok := nodePtr.NetDevs[vars.nodeAdd.Net]; !ok {
+					wwlog.Warn("Node: %s, network device %s is not defined on this node; no network tags deleted", nId, vars.nodeAdd.Net)
 				}
 			}
+			nodePtr.ApplyTagChanges(vars.nodeAdd, vars.nodeDel)
 			nodePtr.Flatten()
 			if before != nil {
 				if ch := node.Diff(before, nodePtr); len(ch) > 0 {

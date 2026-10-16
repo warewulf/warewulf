@@ -84,6 +84,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   links `/etc/chrony/chrony.conf` to `/etc/chrony.conf`. It also reads drop-in
   files with `confdir`, which skips missing directories, instead of an
   `include` that is fatal when `/etc/chrony.d` does not exist.
+- `wwctl node add` and `wwctl profile add` no longer silently ignore
+  `--tagadd` and `--nettagadd`. #2292
+- `wwctl node add` no longer ignores `--ipmitagadd`. #2292
+- `wwctl node set` and `wwctl profile set` warn when `--nettagdel` targets a
+  network device that is not defined on the node or profile itself, such as
+  one inherited from a profile, rather than silently deleting nothing. #2292
 
 ### Added
 
