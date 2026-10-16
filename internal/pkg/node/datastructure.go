@@ -77,9 +77,11 @@ type IpmiConf struct {
 	Tags       map[string]string `yaml:"tags,omitempty"       json:"tags,omitempty"`
 }
 
+type KernelArgs []string
+
 type KernelConf struct {
-	Version string   `yaml:"version,omitempty" json:"version,omitempty" lopt:"kernelversion"          comment:"kernel version"`
-	Args    []string `yaml:"args,omitempty"    json:"args,omitempty"    lopt:"kernelargs"    sopt:"A" comment:"kernel arguments"`
+	Version string     `yaml:"version,omitempty" json:"version,omitempty" lopt:"kernelversion"          comment:"kernel version"`
+	Args    KernelArgs `yaml:"args,omitempty"    json:"args,omitempty"    lopt:"kernelargs"    sopt:"A" comment:"kernel arguments"`
 }
 
 type NetDev struct {

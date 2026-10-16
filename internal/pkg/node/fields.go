@@ -313,7 +313,7 @@ func valueStr(value reflect.Value) (output string) {
 		return fmt.Sprintf("%s", value)
 	}
 
-	if value.Type() == reflect.TypeOf([]string{}) {
+	if value.Type() == reflect.TypeOf([]string{}) || value.Type() == reflect.TypeOf(KernelArgs{}) {
 		var sliceStrs []string
 		for i := 0; i < value.Len(); i++ {
 			sliceStrs = append(sliceStrs, fmt.Sprintf("%v", value.Index(i)))

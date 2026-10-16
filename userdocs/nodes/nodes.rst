@@ -100,15 +100,16 @@ List values
 -----------
 
 Some node fields, such as overlays and kernel arguments, accept a list of values.
-These may be specified as a comma-separated list or as multiple arguments.
+These may be specified using multiple ``--kernelargs`` flags with each value.
 
-To include an explicit comma in the value, enclose the value in inner-quotes.
+Note: The ``--kernelargs`` flag preserves commas within values when using
+multiple flag invocations. There is no need to use inner-quotes for comma-containing values.
 
 .. code-block:: shell
 
    wwctl node set n1 \
      --kernelargs 'quiet,crashkernel=no,nosplash' \
-     --kernelargs='"console=ttyS0,115200"'
+     --kernelargs 'console=ttyS0,115200'
 
 Un-setting Node Fields
 ----------------------
