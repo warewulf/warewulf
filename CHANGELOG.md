@@ -54,6 +54,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `hostfile`); `wwctl configure` does not apply host overlays for a service
   with no `overlays` listed. Run `wwctl upgrade config` after upgrading to add
   them to an existing `warewulf.conf`.
+- warewulfd serves provisioning files only from within their directories, so
+  node settings such as `image name` or `ipxe template` can no longer select
+  files elsewhere. Kernels, initramfs images, and bootloaders are served only
+  from the node's own image rootfs. Symlinks that lead outside these
+  directories are not followed; an image directory may itself be a symlink or
+  a bind mount.
+- Image names `.` and `..` are rejected as invalid.
 
 ### Fixed
 

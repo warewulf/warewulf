@@ -26,5 +26,5 @@ func HandleImage(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	sendResponse(w, req, stageFile, nil, ctx)
+	sendResponse(w, req, image.ImageParentDir(), stageFile, nil, ctx)
 }
