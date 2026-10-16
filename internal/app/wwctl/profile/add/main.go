@@ -5,8 +5,6 @@ import (
 	"slices"
 	"strings"
 
-	"gopkg.in/yaml.v3"
-
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 )
@@ -43,14 +41,11 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			return fmt.Errorf("partition and disk must be specified")
 		}
 		delete(vars.profileConf.Disks, "UNDEF")
-		buffer, err := yaml.Marshal(vars.profileConf)
-		if err != nil {
-			return fmt.Errorf("can not marshall nodeInfo: %w", err)
-		}
 		nodeDB, err := node.New()
 		if err != nil {
 			return fmt.Errorf("could not open database: %w", err)
 		}
+		changed := cmd.Flags().Changed
 		for _, p := range args {
 			if slices.Contains(nodeDB.ListAllProfiles(), p) {
 				return fmt.Errorf("profile with name %s already exists", p)
@@ -59,10 +54,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			if err != nil {
 				return err
 			}
-			err = yaml.Unmarshal(buffer, pNew)
-			if err != nil {
-				return fmt.Errorf("failed to add profile: %w", err)
-			}
+			pNew.UpdateFrom(&vars.profileConf, changed)
 			pNew.ApplyTagChanges(vars.profileAdd, node.NodeConfDel{})
 		}
 		return nodeDB.Persist()
