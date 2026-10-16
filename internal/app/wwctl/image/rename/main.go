@@ -19,7 +19,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	if !image.ValidName(args[1]) {
-		return fmt.Errorf("image name contains illegal characters: %s", args[1])
+		return fmt.Errorf("invalid image name: %s", args[1])
 	}
 
 	err = image.Rename(args[0], args[1], SetBuild)

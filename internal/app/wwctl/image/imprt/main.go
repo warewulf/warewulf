@@ -41,7 +41,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Info("Setting image name: %s", name)
 	}
 	if !image.ValidName(name) {
-		return fmt.Errorf("image name contains illegal characters: %s", name)
+		return fmt.Errorf("invalid image name: %s", name)
 	}
 	// A SIF named "..sif" or "...sif" would otherwise name the image "." or
 	// "..", which refers to the image directory itself or its parent.

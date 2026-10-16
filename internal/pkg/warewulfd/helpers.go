@@ -3,6 +3,7 @@ package warewulfd
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"net/http"
 	"net/netip"
 	"path"
@@ -73,8 +74,9 @@ func buildTemplateVars(conf *warewulfconf.WarewulfYaml, rinfo parsedRequest, rem
 
 // sendResponse handles the common response logic for provision handlers.
 // If tmplData is non-nil, it renders the stageFile as a template. Otherwise, it
-// sends stageFile as a raw file (with optional .gz compression).
-func sendResponse(w http.ResponseWriter, req *http.Request, stageFile string, tmplData *templateVars, ctx *requestContext) {
+// sends stageFile as a raw file (with optional .gz compression). stageFile is
+// served only if it is within dir.
+func sendResponse(w http.ResponseWriter, req *http.Request, dir string, stageFile string, tmplData *templateVars, ctx *requestContext) {
 	wwlog.Serv("stage_file '%s'", stageFile)
 
 	if util.IsFile(stageFile) {
@@ -87,11 +89,25 @@ func sendResponse(w http.ResponseWriter, req *http.Request, stageFile string, tm
 				return
 			}
 
+			tmplFile, err := openInDir(dir, stageFile)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				wwlog.ErrorExc(err, "")
+				return
+			}
+			tmplText, err := io.ReadAll(tmplFile)
+			_ = tmplFile.Close()
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				wwlog.ErrorExc(err, "")
+				return
+			}
+
 			// Create a template with the Sprig functions.
 			tmpl := template.New(filepath.Base(stageFile)).Funcs(sprig.TxtFuncMap())
 
 			// Parse the template.
-			parsedTmpl, err := tmpl.ParseFiles(stageFile)
+			parsedTmpl, err := tmpl.Parse(string(tmplText))
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				wwlog.ErrorExc(err, "")
@@ -131,9 +147,10 @@ func sendResponse(w http.ResponseWriter, req *http.Request, stageFile string, tm
 				wwlog.Error("unsupported %s compressed version of file %s",
 					ctx.rinfo.compress, stageFile)
 				w.WriteHeader(http.StatusNotFound)
+				return
 			}
 
-			err := sendFile(w, req, stageFile, ctx.remoteNode.Id())
+			err := sendFile(w, req, dir, stageFile, ctx.remoteNode.Id())
 			if err != nil {
 				wwlog.ErrorExc(err, "")
 				return

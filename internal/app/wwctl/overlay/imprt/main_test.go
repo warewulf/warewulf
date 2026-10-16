@@ -288,6 +288,64 @@ func Test_ImportArchiveRejectsTraversal(t *testing.T) {
 	assert.NoDirExists(t, env.GetPath(filepath.Join("var/lib/warewulf/overlays", overlayName)))
 }
 
+func Test_ImportArchiveSymlink(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+
+	overlayName := "archive-overlay"
+	archivePath := env.GetPath("artifact.tar.gz")
+	writeOverlayArchive(t, archivePath, overlayName, overlaydiff.ArtifactSchemaVersion,
+		map[string]string{"rootfs/etc/config": "hello\n"},
+		[][2]string{
+			{"rootfs/etc/link", "config"},
+			{"rootfs/etc/sub/up", "../../etc"},
+		})
+
+	OverwriteFile = false
+	CreateDirs = false
+	ArchiveImport = false
+
+	cmd := GetCommand()
+	cmd.SetArgs([]string{"--archive", overlayName, archivePath})
+	cmd.SetOut(new(bytes.Buffer))
+	cmd.SetErr(new(bytes.Buffer))
+	if !assert.NoError(t, cmd.Execute()) {
+		return
+	}
+
+	target, err := os.Readlink(env.GetPath(filepath.Join("var/lib/warewulf/overlays", overlayName, "rootfs/etc/link")))
+	assert.NoError(t, err)
+	assert.Equal(t, "config", target)
+}
+
+func Test_ImportArchiveRejectsSymlinkEscapeThroughSymlink(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+
+	// rootfs/a/b/up resolves to rootfs, so rootfs/x really resolves two
+	// levels above rootfs even though its target cleans to rootfs/a.
+	overlayName := "archive-overlay"
+	archivePath := env.GetPath("artifact.tar.gz")
+	writeOverlayArchive(t, archivePath, overlayName, overlaydiff.ArtifactSchemaVersion,
+		map[string]string{"rootfs/etc/config": "hello\n"},
+		[][2]string{
+			{"rootfs/a/b/up", "../.."},
+			{"rootfs/x", "a/b/up/../.."},
+		})
+
+	OverwriteFile = false
+	CreateDirs = false
+	ArchiveImport = false
+
+	cmd := GetCommand()
+	cmd.SetArgs([]string{"--archive", overlayName, archivePath})
+	cmd.SetOut(new(bytes.Buffer))
+	cmd.SetErr(new(bytes.Buffer))
+	err := cmd.Execute()
+	assert.ErrorContains(t, err, "artifact symlink target")
+	assert.NoDirExists(t, env.GetPath(filepath.Join("var/lib/warewulf/overlays", overlayName)))
+}
+
 func Test_ImportArchiveRejectsUnsupportedSchemaVersion(t *testing.T) {
 	env := testenv.New(t)
 	defer env.RemoveAll()
@@ -316,6 +374,12 @@ func createOverlayArchive(t *testing.T, archivePath string, overlayName string, 
 }
 
 func createOverlayArchiveWithSchemaVersion(t *testing.T, archivePath string, overlayName string, schemaVersion string, files map[string]string) {
+	writeOverlayArchive(t, archivePath, overlayName, schemaVersion, files, nil)
+}
+
+// writeOverlayArchive writes the given files, then the given symlinks in
+// order, each as {name, target}.
+func writeOverlayArchive(t *testing.T, archivePath string, overlayName string, schemaVersion string, files map[string]string, symlinks [][2]string) {
 	t.Helper()
 	archiveFile, err := os.Create(archivePath)
 	assert.NoError(t, err)
@@ -339,6 +403,9 @@ func createOverlayArchiveWithSchemaVersion(t *testing.T, archivePath string, ove
 
 	for name, content := range files {
 		writeTarFile(t, tarWriter, name, content)
+	}
+	for _, link := range symlinks {
+		assert.NoError(t, tarWriter.WriteHeader(&tar.Header{Name: link[0], Typeflag: tar.TypeSymlink, Linkname: link[1]}))
 	}
 }
 

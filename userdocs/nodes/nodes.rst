@@ -194,7 +194,9 @@ The MAC / hardware address (``--hwaddr``) of a cluster node can be automatically
 discovered by marking the node ``--discoverable``. If a node attempts to
 provision against Warewulf using an interface that is unknown to Warewulf, its
 hardware address becomes associated with the first discoverable node. (Multiple
-discoverable nodes are sorted lexically, first by cluster, then by ID.)
+discoverable nodes are sorted lexically, first by cluster, then by ID.) Only a
+valid MAC address (Ethernet, EUI-64, or InfiniBand) is discovered; requests
+with any other hardware address are treated as coming from an unknown node.
 
 Once a node has been discovered its "discoverable" field is automatically
 cleared.

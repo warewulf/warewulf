@@ -18,7 +18,7 @@ func HandleSystemOverlay(w http.ResponseWriter, req *http.Request) {
 
 	if !ctx.remoteNode.Valid() {
 		wwlog.Error("%s (unknown/unconfigured node)", ctx.rinfo.hwaddr)
-		sendResponse(w, req, "", nil, ctx)
+		sendResponse(w, req, "", "", nil, ctx)
 		return
 	}
 
@@ -38,7 +38,7 @@ func HandleSystemOverlay(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	sendResponse(w, req, stageFile, nil, ctx)
+	sendResponse(w, req, ctx.conf.Paths.OverlayProvisiondir(), stageFile, nil, ctx)
 }
 
 // HandleRuntimeOverlay handles runtime overlay requests.
@@ -57,7 +57,7 @@ func HandleRuntimeOverlay(w http.ResponseWriter, req *http.Request) {
 
 	if !ctx.remoteNode.Valid() {
 		wwlog.Error("%s (unknown/unconfigured node)", ctx.rinfo.hwaddr)
-		sendResponse(w, req, "", nil, ctx)
+		sendResponse(w, req, "", "", nil, ctx)
 		return
 	}
 
@@ -77,5 +77,5 @@ func HandleRuntimeOverlay(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	sendResponse(w, req, stageFile, nil, ctx)
+	sendResponse(w, req, ctx.conf.Paths.OverlayProvisiondir(), stageFile, nil, ctx)
 }
