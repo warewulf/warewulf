@@ -149,11 +149,23 @@ The dependencies and their licenses are as follows:
 
 **License URL:** <https://github.com/go-logr/stdr/blob/v1.2.2/LICENSE>
 
+## github.com/google/go-attestation/attest
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/google/go-attestation/blob/v0.6.1/LICENSE>
+
 ## github.com/google/go-containerregistry/pkg
 
 **License:** Apache-2.0
 
 **License URL:** <https://github.com/google/go-containerregistry/blob/v0.20.3/LICENSE>
+
+## github.com/google/go-tpm
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/google/go-tpm/blob/v0.9.8/LICENSE>
 
 ## github.com/klauspost/compress
 
