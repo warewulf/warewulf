@@ -19,7 +19,6 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 		if !node.ObjectIsEmpty(vars.profileConf.NetDevs["UNDEF"]) || len(vars.profileAdd.NetTagsAdd) > 0 {
 			netDev := *vars.profileConf.NetDevs["UNDEF"]
 			vars.profileConf.NetDevs[vars.profileAdd.Net] = &netDev
-			vars.profileConf.NetDevs[vars.profileAdd.Net].Tags = vars.profileAdd.NetTagsAdd
 		}
 		delete(vars.profileConf.NetDevs, "UNDEF")
 		if vars.profileAdd.FsName != "" {
@@ -45,7 +44,6 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			return fmt.Errorf("partition and disk must be specified")
 		}
 		delete(vars.profileConf.Disks, "UNDEF")
-		vars.profileConf.Ipmi.Tags = vars.profileAdd.IpmiTagsAdd
 
 		nodeDB, err := node.New()
 		if err != nil {
@@ -119,35 +117,12 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 					return fmt.Errorf("filesystem doesn't exist: %s", vars.profileDel.FsDel)
 				}
 			}
-			for _, key := range vars.profileDel.TagsDel {
-				delete(profilePtr.Tags, key)
-			}
-			for key, val := range vars.profileAdd.TagsAdd {
-				if profilePtr.Tags == nil {
-					profilePtr.Tags = make(map[string]string)
-				}
-				profilePtr.Tags[key] = val
-			}
-			for key, val := range vars.profileAdd.IpmiTagsAdd {
-				if profilePtr.Ipmi.Tags == nil {
-					profilePtr.Ipmi.Tags = make(map[string]string)
-				}
-				profilePtr.Ipmi.Tags[key] = val
-			}
-			for _, key := range vars.profileDel.IpmiTagsDel {
-				delete(profilePtr.Ipmi.Tags, key)
-			}
-			if netDev, ok := profilePtr.NetDevs[vars.profileAdd.Net]; ok {
-				for _, key := range vars.profileDel.NetTagsDel {
-					delete(netDev.Tags, key)
-				}
-				if len(vars.profileAdd.NetTagsAdd) > 0 && netDev.Tags == nil {
-					netDev.Tags = make(map[string]string)
-				}
-				for key, val := range vars.profileAdd.NetTagsAdd {
-					netDev.Tags[key] = val
+			if len(vars.profileDel.NetTagsDel) > 0 && vars.profileDel.NetDel != vars.profileAdd.Net {
+				if _, ok := profilePtr.NetDevs[vars.profileAdd.Net]; !ok {
+					wwlog.Warn("Profile: %s, network device %s is not defined on this profile; no network tags deleted", profileId, vars.profileAdd.Net)
 				}
 			}
+			profilePtr.ApplyTagChanges(vars.profileAdd, vars.profileDel)
 			profilePtr.Flatten()
 			if before != nil {
 				if ch := node.Diff(before, profilePtr); len(ch) > 0 {

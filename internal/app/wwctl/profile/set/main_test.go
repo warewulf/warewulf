@@ -2,11 +2,15 @@ package set
 
 import (
 	"bytes"
+	"os"
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/warewulf/warewulf/internal/app/wwctl/profile/list"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func Test_Profile_Set(t *testing.T) {
@@ -390,6 +394,185 @@ nodeprofiles:
           DNS2: "1.0.0.1"
 nodes: {}`,
 		},
+		"--tagadd does not add network tags": {
+			args:    []string{"--tagadd=foo=bar", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    network devices:
+      default:
+        device: eth0
+        tags:
+          DNS1: 1.1.1.1
+nodes: {}`,
+			outDb: `
+nodeprofiles:
+  default:
+    network devices:
+      default:
+        device: eth0
+        tags:
+          DNS1: 1.1.1.1
+    tags:
+      foo: bar
+nodes: {}`,
+		},
+		"--tagadd with --netdev does not add network tags": {
+			args:    []string{"--tagadd=foo=bar", "--netdev=eth1", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    network devices:
+      default:
+        device: eth0
+        tags:
+          DNS1: 1.1.1.1
+nodes: {}`,
+			outDb: `
+nodeprofiles:
+  default:
+    network devices:
+      default:
+        device: eth1
+        tags:
+          DNS1: 1.1.1.1
+    tags:
+      foo: bar
+nodes: {}`,
+		},
+		"--tagadd with --nettagadd": {
+			args:    []string{"--tagadd=foo=bar", "--nettagadd=DNS2=1.0.0.1", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    network devices:
+      default:
+        device: eth0
+        tags:
+          DNS1: 1.1.1.1
+nodes: {}`,
+			outDb: `
+nodeprofiles:
+  default:
+    network devices:
+      default:
+        device: eth0
+        tags:
+          DNS1: 1.1.1.1
+          DNS2: 1.0.0.1
+    tags:
+      foo: bar
+nodes: {}`,
+		},
+		"--tagadd with new --netname": {
+			args:    []string{"--tagadd=foo=bar", "--netname=ib0", "--netdev=ib0", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    network devices:
+      default:
+        device: eth0
+        tags:
+          DNS1: 1.1.1.1
+nodes: {}`,
+			outDb: `
+nodeprofiles:
+  default:
+    network devices:
+      default:
+        device: eth0
+        tags:
+          DNS1: 1.1.1.1
+      ib0:
+        device: ib0
+    tags:
+      foo: bar
+nodes: {}`,
+		},
+		"--nettagdel does not delete tags": {
+			args:    []string{"--nettagdel=DNS1", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    network devices:
+      default:
+        device: eth0
+        tags:
+          DNS1: 1.1.1.1
+    tags:
+      DNS1: 1.1.1.1
+nodes: {}`,
+			outDb: `
+nodeprofiles:
+  default:
+    network devices:
+      default:
+        device: eth0
+    tags:
+      DNS1: 1.1.1.1
+nodes: {}`,
+		},
+		"--netdel with --nettagadd": {
+			args:    []string{"--netname=ib0", "--netdel=ib0", "--nettagadd=mtu=9000", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    network devices:
+      ib0:
+        device: ib0
+nodes: {}`,
+			outDb: `
+nodeprofiles:
+  default: {}
+nodes: {}`,
+		},
+		"deprecated aliases": {
+			args:    []string{"--container=img", "--wwinit=sys", "--runtime=rt", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default: {}
+nodes: {}`,
+			outDb: `
+nodeprofiles:
+  default:
+    image name: img
+    system overlay:
+      - sys
+    runtime overlay:
+      - rt
+nodes: {}`,
+		},
+		"--tagdel does not delete network tags": {
+			args:    []string{"--tagdel=DNS1", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default:
+    network devices:
+      default:
+        device: eth0
+        tags:
+          DNS1: 1.1.1.1
+    tags:
+      DNS1: 1.1.1.1
+nodes: {}`,
+			outDb: `
+nodeprofiles:
+  default:
+    network devices:
+      default:
+        device: eth0
+        tags:
+          DNS1: 1.1.1.1
+nodes: {}`,
+		},
 	}
 
 	for name, tt := range tests {
@@ -414,4 +597,60 @@ nodes: {}`,
 			}
 		})
 	}
+}
+
+// Test_Profile_Set_Tagadd_List checks that a tag set with --tagadd is listed
+// only as a profile tag, and not also as a network tag. (#2292)
+func Test_Profile_Set_Tagadd_List(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+	env.WriteFile("etc/warewulf/nodes.conf", `
+nodeprofiles:
+  default:
+    network devices:
+      default:
+        device: eth0
+nodes: {}`)
+	warewulfd.SetNoDaemon()
+
+	setCmd := GetCommand()
+	setCmd.SetArgs([]string{"--tagadd=foo=bar", "default", "--yes"})
+	setCmd.SetOut(new(bytes.Buffer))
+	setCmd.SetErr(new(bytes.Buffer))
+	assert.NoError(t, setCmd.Execute())
+
+	buf := new(bytes.Buffer)
+	wwlog.SetLogWriter(buf)
+	defer wwlog.SetLogWriterInfo(os.Stdout)
+	defer wwlog.SetLogWriterErr(os.Stderr)
+	listCmd := list.GetCommand()
+	listCmd.SetArgs([]string{"-a", "default"})
+	listCmd.SetOut(buf)
+	listCmd.SetErr(buf)
+	assert.NoError(t, listCmd.Execute())
+	assert.Regexp(t, regexp.MustCompile(`(?m)^default\s+Tags\[foo\]\s+bar\s*$`), buf.String())
+	assert.NotContains(t, buf.String(), "NetDevs[default].Tags[foo]")
+}
+
+func Test_Profile_Set_Nettagdel_Warning(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+	env.WriteFile("etc/warewulf/nodes.conf", `
+nodeprofiles:
+  default:
+    network devices:
+      default:
+        device: eth0
+nodes: {}`)
+	warewulfd.SetNoDaemon()
+	buf := new(bytes.Buffer)
+	wwlog.SetLogWriter(buf)
+	defer wwlog.SetLogWriterInfo(os.Stdout)
+	defer wwlog.SetLogWriterErr(os.Stderr)
+	baseCmd := GetCommand()
+	baseCmd.SetArgs([]string{"--netname=ib0", "--nettagdel=DNS1", "default", "--yes"})
+	baseCmd.SetOut(buf)
+	baseCmd.SetErr(buf)
+	assert.NoError(t, baseCmd.Execute())
+	assert.Contains(t, buf.String(), "Profile: default, network device ib0 is not defined on this profile; no network tags deleted")
 }
