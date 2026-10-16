@@ -29,9 +29,9 @@ import (
 	"github.com/coreos/go-systemd/daemon"
 	"github.com/google/uuid"
 	"github.com/opencontainers/selinux/go-selinux"
+	"github.com/siderolabs/go-smbios/smbios"
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/app/wwclient/overlaydiff"
-	"github.com/siderolabs/go-smbios/smbios"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/pidfile"
 	"github.com/warewulf/warewulf/internal/pkg/tpm"
@@ -119,7 +119,7 @@ func getAttestationData(id string) (*tpm.TpmUpload, error) {
 	if err != nil {
 		return nil, fmt.Errorf("opening TPM: %v", err)
 	}
-	defer t.Close()
+	defer func() { _ = t.Close() }()
 
 	// Get EKs
 	eks, err := t.EKs()
@@ -136,7 +136,7 @@ func getAttestationData(id string) (*tpm.TpmUpload, error) {
 	if err != nil {
 		return nil, fmt.Errorf("creating AK: %v", err)
 	}
-	defer ak.Close(t)
+	defer func() { _ = ak.Close(t) }()
 
 	// Quote
 	nonce := make([]byte, 8)
@@ -401,7 +401,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		if err != nil {
 			return fmt.Errorf("failed to upload quote: %w", err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 
 		if resp.StatusCode != http.StatusOK {
 			return fmt.Errorf("failed to upload quote: server returned %s", resp.Status)
@@ -428,7 +428,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		if err != nil {
 			return fmt.Errorf("failed to retrieve challenge: %w", err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 
 		if resp.StatusCode != http.StatusOK {
 			return fmt.Errorf("failed to retrieve challenge: server returned %s", resp.Status)
@@ -444,7 +444,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		if err != nil {
 			return fmt.Errorf("opening TPM: %v", err)
 		}
-		defer t.Close()
+		defer func() { _ = t.Close() }()
 
 		eks, err := t.EKs()
 		if err != nil {
@@ -458,7 +458,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 		if err != nil {
 			return fmt.Errorf("creating AK: %v", err)
 		}
-		defer ak.Close(t)
+		defer func() { _ = ak.Close(t) }()
 
 		secret, err = ak.ActivateCredential(t, encryptedCredential)
 		if err != nil {
@@ -495,7 +495,7 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			}
 		}
 	}()
-	var finishedInitialSync bool = false
+	finishedInitialSync := false
 
 	for {
 		target := "/"
@@ -575,9 +575,10 @@ func parseTPMFromCmdline(cmdline string) bool {
 			ret = true
 		} else if strings.HasPrefix(strings.ToLower(param), "tpm=") {
 			val := strings.TrimPrefix(strings.ToLower(param), "tpm=")
-			if val == "1" || val == "true" || val == "yes" || val == "on" {
+			switch val {
+			case "1", "true", "yes", "on":
 				ret = true
-			} else if val == "0" || val == "false" || val == "no" || val == "off" {
+			case "0", "false", "no", "off":
 				ret = false
 			}
 		}
@@ -620,7 +621,6 @@ func updateSystem(options updateOptions) error {
 		wwlog.Debug("making request: %s", getURL)
 		resp, err = webclient.Get(getURL.String())
 		if err == nil {
-			defer resp.Body.Close()
 			break
 		} else {
 			var certificateInvalidError x509.CertificateInvalidError
@@ -641,6 +641,7 @@ func updateSystem(options updateOptions) error {
 		}
 		time.Sleep(1000 * time.Millisecond)
 	}
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != 200 {
 		wwlog.Warn("not applying runtime overlay: got status code: %d", resp.StatusCode)
 		time.Sleep(60000 * time.Millisecond)
@@ -655,7 +656,11 @@ func updateSystem(options updateOptions) error {
 		wwlog.Error("failed to create temp directory: %s", err)
 		return nil
 	}
-	defer os.RemoveAll(tempDir)
+	defer func() {
+		if err := os.RemoveAll(tempDir); err != nil {
+			wwlog.Warn("failed to remove temp directory %s: %s", tempDir, err)
+		}
+	}()
 	wwlog.Debug("unpacking runtime overlay to %s", tempDir)
 	command := exec.Command("/bin/sh", "-c", fmt.Sprintf("gzip -dc | cpio -imu --directory=%s", tempDir))
 	command.Stdin = resp.Body
@@ -763,7 +768,7 @@ func atomicApplyOverlay(srcDir, destDir string) error {
 			wwlog.Debug("moving symlink %s to %s", tempPath, destPath)
 			err = os.Rename(tempPath, destPath)
 			if err != nil {
-				os.Remove(tempPath)
+				_ = os.Remove(tempPath)
 				return fmt.Errorf("failed to atomically move symlink %s to %s: %w", tempPath, destPath, err)
 			}
 
@@ -802,7 +807,7 @@ func atomicApplyOverlay(srcDir, destDir string) error {
 			wwlog.Debug("copying file from %s to temp location %s", srcPath, tempPath)
 			err = copyFile(srcPath, tempPath, info)
 			if err != nil {
-				os.Remove(tempPath)
+				_ = os.Remove(tempPath)
 				return fmt.Errorf("failed to copy %s to temp location: %w", srcPath, err)
 			}
 
@@ -817,7 +822,7 @@ func atomicApplyOverlay(srcDir, destDir string) error {
 			wwlog.Debug("moving %s to %s", tempPath, destPath)
 			err = os.Rename(tempPath, destPath)
 			if err != nil {
-				os.Remove(tempPath)
+				_ = os.Remove(tempPath)
 				return fmt.Errorf("failed to atomically move %s to %s: %w", tempPath, destPath, err)
 			}
 		}
@@ -826,18 +831,22 @@ func atomicApplyOverlay(srcDir, destDir string) error {
 	})
 }
 
-func copyFile(src, dst string, srcInfo os.FileInfo) error {
+func copyFile(src, dst string, srcInfo os.FileInfo) (err error) {
 	srcFile, err := os.Open(src)
 	if err != nil {
 		return err
 	}
-	defer srcFile.Close()
+	defer func() { _ = srcFile.Close() }()
 
 	dstFile, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, srcInfo.Mode())
 	if err != nil {
 		return err
 	}
-	defer dstFile.Close()
+	defer func() {
+		if cerr := dstFile.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
 
 	_, err = io.Copy(dstFile, srcFile)
 	if err != nil {

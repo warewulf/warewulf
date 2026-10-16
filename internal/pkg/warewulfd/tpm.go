@@ -80,7 +80,7 @@ func TPMReceive(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	wwlog.Info("Stored TPM quote for node %s (Manufacturer: %s)", upload.ID, upload.TpmData.GetManufacturer())
+	wwlog.Info("Stored TPM quote for node %s (Manufacturer: %s)", upload.ID, upload.GetManufacturer())
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -243,7 +243,10 @@ func TPMChallengeSend(w http.ResponseWriter, req *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(newChallenge.EncryptedCredential)
+	if err := json.NewEncoder(w).Encode(newChallenge.EncryptedCredential); err != nil {
+		wwlog.Error("Failed to send TPM challenge: %s", err)
+		return
+	}
 
 	wwlog.Info("Sent TPM challenge for node %s", node.GetId())
 }

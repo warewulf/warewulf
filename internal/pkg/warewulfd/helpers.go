@@ -113,7 +113,9 @@ func sendResponse(w http.ResponseWriter, req *http.Request, stageFile string, tm
 
 			w.Header().Set("Content-Type", "text")
 			w.Header().Set("Content-Length", strconv.Itoa(buf.Len()))
-			ctx.tpm.Update(stageFile, fmt.Sprintf("%x", sha256.Sum256(buf.Bytes())))
+			if err := ctx.tpm.Update(stageFile, fmt.Sprintf("%x", sha256.Sum256(buf.Bytes()))); err != nil {
+				wwlog.Warn("couldn't update TPM log for %s: %s", stageFile, err)
+			}
 
 			_, err = buf.WriteTo(w)
 			if err != nil {
@@ -144,7 +146,9 @@ func sendResponse(w http.ResponseWriter, req *http.Request, stageFile string, tm
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
-			ctx.tpm.Update(stageFile, fmt.Sprintf("%x", sha256.Sum256(fileBytes)))
+			if err := ctx.tpm.Update(stageFile, fmt.Sprintf("%x", sha256.Sum256(fileBytes))); err != nil {
+				wwlog.Warn("couldn't update TPM log for %s: %s", stageFile, err)
+			}
 
 			err = sendFile(w, req, stageFile, ctx.remoteNode.Id())
 			if err != nil {

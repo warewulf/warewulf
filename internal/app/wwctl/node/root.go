@@ -12,8 +12,8 @@ import (
 	"github.com/warewulf/warewulf/internal/app/wwctl/node/sensors"
 	"github.com/warewulf/warewulf/internal/app/wwctl/node/set"
 	nodestatus "github.com/warewulf/warewulf/internal/app/wwctl/node/status"
-	"github.com/warewulf/warewulf/internal/app/wwctl/node/unset"
 	"github.com/warewulf/warewulf/internal/app/wwctl/node/tpm"
+	"github.com/warewulf/warewulf/internal/app/wwctl/node/unset"
 )
 
 var (

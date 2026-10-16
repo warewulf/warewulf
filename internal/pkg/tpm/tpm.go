@@ -475,7 +475,7 @@ func (quote *Quote) VerifyAndDisplayData(data *TpmData, pcrFilter []int, display
 	}
 
 	if verified, err := data.Verify(); !verified {
-		return "", fmt.Errorf("Quote Verification Failed: %v", err)
+		return "", fmt.Errorf("quote verification failed: %v", err)
 	}
 
 	wwlog.Info("Quote Verification Successful")
@@ -483,7 +483,7 @@ func (quote *Quote) VerifyAndDisplayData(data *TpmData, pcrFilter []int, display
 	var eventLogStr string
 	if quote.EventLog != "" {
 		if verified, err := quote.VerifyEventLogData(data); !verified {
-			return "", fmt.Errorf("Event Log Verification Failed: %v", err)
+			return "", fmt.Errorf("event log verification failed: %v", err)
 		} else {
 			wwlog.Info("Event Log Verification Successful")
 		}
@@ -593,7 +593,7 @@ func DisplayEventLog(b64Log string, pcrFilter []int) (string, error) {
 			}
 		}
 		for _, ev := range pcrEvents[idx] {
-			sb.WriteString(fmt.Sprintf("PCR[%d] %s", idx, ev))
+			fmt.Fprintf(&sb, "PCR[%d] %s", idx, ev)
 		}
 	}
 	return sb.String(), nil

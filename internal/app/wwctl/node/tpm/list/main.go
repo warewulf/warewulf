@@ -45,7 +45,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 
 	// Tabular view
 	t := table.New(cmd.OutOrStdout())
-	
+
 	if keyFlag {
 		t.AddHeader("NODE", "MANUFACTURER", "QUOTE", "EVENTLOG", "GRUB", "SECRET")
 	} else {
@@ -95,7 +95,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 		}
 
-		lastColStr := "N/A"
 		ekPubStr := "N/A"
 		secretStr := "N/A"
 		if quote.Challenge != nil && len(quote.Challenge.Secret) > 0 {
@@ -110,10 +109,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 			}
 		}
 
+		lastColStr := ekPubStr
 		if keyFlag {
 			lastColStr = secretStr
-		} else {
-			lastColStr = ekPubStr
 		}
 
 		t.AddLine(table.Prep([]string{n.Id(), manufacturer, quoteStatus, eventlogStatus, grubStatus, lastColStr})...)
@@ -151,7 +149,6 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 				}
 			}
 
-			lastColStrNew := "N/A"
 			ekPubStrNew := "N/A"
 			if quote.New.EKPub != "" {
 				if ekPubBytes, err := base64.StdEncoding.DecodeString(quote.New.EKPub); err == nil {
@@ -161,10 +158,9 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 					ekPubStrNew = "ERR"
 				}
 			}
+			lastColStrNew := ekPubStrNew
 			if keyFlag {
 				lastColStrNew = "--"
-			} else {
-				lastColStrNew = ekPubStrNew
 			}
 
 			t.AddLine(table.Prep([]string{n.Id() + " (NEW)", manufacturerNew, quoteStatusNew, eventlogStatusNew, grubStatusNew, lastColStrNew})...)

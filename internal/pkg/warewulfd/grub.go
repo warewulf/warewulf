@@ -23,9 +23,11 @@ func HandleGrub(w http.ResponseWriter, req *http.Request) {
 	// host is involved, so we reset the SentLog and *prepend* is with the
 	// grub.cfg which was sent out via tftp, so clear the logs and add as
 	// first entry the grub.cfg we sent out via tftp
-	ctx.tpm.ClearLogs()
+	if err = ctx.tpm.ClearLogs(); err != nil {
+		wwlog.Warn("couldn't clear TPM log: %s", err)
+	}
 	if err = ctx.tpm.Update(path.Join(ctx.conf.TFTP.TftpRoot, "warewulf/grub.cfg"), ""); err != nil {
-		wwlog.Warn("couldn't update TPM log with grub.cfg sent by tftp", err)
+		wwlog.Warn("couldn't update TPM log with grub.cfg sent by tftp: %s", err)
 	}
 
 	stageFile := path.Join(ctx.conf.Paths.Sysconfdir, "warewulf/grub/grub.cfg.ww")

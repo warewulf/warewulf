@@ -19,10 +19,10 @@ func Test_Reset(t *testing.T) {
 	defer env.RemoveAll()
 
 	tests := []struct {
-		name     string
-		args     []string
-		tpmFiles map[string]string
-		stdout   string
+		name          string
+		args          []string
+		tpmFiles      map[string]string
+		stdout        string
 		expectRemoved bool
 	}{
 		{
