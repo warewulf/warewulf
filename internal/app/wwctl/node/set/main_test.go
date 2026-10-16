@@ -282,6 +282,23 @@ nodeprofiles: {}
 nodes:
   n01: {}`,
 		},
+		"deprecated aliases": {
+			args:    []string{"--container=img", "--wwinit=sys", "--runtime=rt", "n01"},
+			wantErr: false,
+			inDB: `
+nodeprofiles: {}
+nodes:
+  n01: {}`,
+			outDB: `
+nodeprofiles: {}
+nodes:
+  n01:
+    image name: img
+    system overlay:
+      - sys
+    runtime overlay:
+      - rt`,
+		},
 		"single node change profile": {
 			args:    []string{"--profile=foo", "n01"},
 			wantErr: false,

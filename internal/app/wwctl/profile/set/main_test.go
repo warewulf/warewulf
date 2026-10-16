@@ -532,6 +532,23 @@ nodeprofiles:
   default: {}
 nodes: {}`,
 		},
+		"deprecated aliases": {
+			args:    []string{"--container=img", "--wwinit=sys", "--runtime=rt", "default"},
+			wantErr: false,
+			inDB: `
+nodeprofiles:
+  default: {}
+nodes: {}`,
+			outDb: `
+nodeprofiles:
+  default:
+    image name: img
+    system overlay:
+      - sys
+    runtime overlay:
+      - rt
+nodes: {}`,
+		},
 		"--tagdel does not delete network tags": {
 			args:    []string{"--tagdel=DNS1", "default"},
 			wantErr: false,

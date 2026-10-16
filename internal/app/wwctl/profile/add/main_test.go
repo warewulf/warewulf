@@ -97,6 +97,21 @@ nodes: {}
 nodes: {}
 `,
 		},
+		{
+			name:    "single profile add with deprecated aliases",
+			args:    []string{"--container=img", "--wwinit=sys", "--runtime=rt", "p01"},
+			wantErr: false,
+			stdout:  "",
+			outDb: `nodeprofiles:
+  p01:
+    image name: img
+    system overlay:
+      - sys
+    runtime overlay:
+      - rt
+nodes: {}
+`,
+		},
 	}
 
 	warewulfd.SetNoDaemon()

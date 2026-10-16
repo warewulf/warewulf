@@ -317,6 +317,19 @@ nodes:
     tags:
       foo: bar
 `},
+		{name: "single node add with deprecated aliases",
+			args:    []string{"--container=img", "--wwinit=sys", "--runtime=rt", "n01"},
+			wantErr: false,
+			stdout:  "",
+			outDb: `nodeprofiles: {}
+nodes:
+  n01:
+    image name: img
+    system overlay:
+      - sys
+    runtime overlay:
+      - rt
+`},
 	}
 	warewulfd.SetNoDaemon()
 	for _, tt := range tests {
