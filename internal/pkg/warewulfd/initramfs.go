@@ -35,5 +35,5 @@ func HandleInitramfs(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	sendResponse(w, req, stageFile, nil, ctx)
+	sendResponse(w, req, imageRootFs(ctx.remoteNode.ImageName), stageFile, nil, ctx)
 }

@@ -61,7 +61,8 @@ Most provisioning routes accept the following query parameters:
 * ``compress``: Compression format for the response. The only supported value
   is ``gz``. When ``compress=gz`` is specified, the server serves a pre-built
   gzip-compressed version of the file. If no compressed version exists, the
-  server returns ``404 Not Found``.
+  server returns ``404 Not Found``. Any other value returns ``400 Bad
+  Request``.
 
 Provisioning Routes
 ===================
