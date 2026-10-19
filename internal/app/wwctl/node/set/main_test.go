@@ -2,11 +2,13 @@ package set
 
 import (
 	"bytes"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/warewulfd"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func Test_Node_Set(t *testing.T) {
@@ -165,6 +167,137 @@ nodes:
 nodeprofiles: {}
 nodes:
   n01: {}`,
+		},
+		"--tagadd does not add network tags": {
+			args:    []string{"--tagadd=foo=bar", "n01"},
+			wantErr: false,
+			inDB: `
+nodeprofiles: {}
+nodes:
+  n01:
+    network devices:
+      default:
+        device: eth0
+        tags:
+          dns1: 1.1.1.1`,
+			outDB: `
+nodeprofiles: {}
+nodes:
+  n01:
+    network devices:
+      default:
+        device: eth0
+        tags:
+          dns1: 1.1.1.1
+    tags:
+      foo: bar`,
+		},
+		"--tagadd with --netdev does not add network tags": {
+			args:    []string{"--tagadd=foo=bar", "--netdev=eth1", "n01"},
+			wantErr: false,
+			inDB: `
+nodeprofiles: {}
+nodes:
+  n01:
+    network devices:
+      default:
+        device: eth0
+        tags:
+          dns1: 1.1.1.1`,
+			outDB: `
+nodeprofiles: {}
+nodes:
+  n01:
+    network devices:
+      default:
+        device: eth1
+        tags:
+          dns1: 1.1.1.1
+    tags:
+      foo: bar`,
+		},
+		"--tagadd with --nettagadd": {
+			args:    []string{"--tagadd=foo=bar", "--nettagadd=dns2=1.0.0.1", "n01"},
+			wantErr: false,
+			inDB: `
+nodeprofiles: {}
+nodes:
+  n01:
+    network devices:
+      default:
+        device: eth0
+        tags:
+          dns1: 1.1.1.1`,
+			outDB: `
+nodeprofiles: {}
+nodes:
+  n01:
+    network devices:
+      default:
+        device: eth0
+        tags:
+          dns1: 1.1.1.1
+          dns2: 1.0.0.1
+    tags:
+      foo: bar`,
+		},
+		"--tagadd with new --netname": {
+			args:    []string{"--tagadd=foo=bar", "--netname=ib0", "--netdev=ib0", "n01"},
+			wantErr: false,
+			inDB: `
+nodeprofiles: {}
+nodes:
+  n01:
+    network devices:
+      default:
+        device: eth0
+        tags:
+          dns1: 1.1.1.1`,
+			outDB: `
+nodeprofiles: {}
+nodes:
+  n01:
+    network devices:
+      default:
+        device: eth0
+        tags:
+          dns1: 1.1.1.1
+      ib0:
+        device: ib0
+    tags:
+      foo: bar`,
+		},
+		"--netdel with --nettagadd": {
+			args:    []string{"--netname=ib0", "--netdel=ib0", "--nettagadd=mtu=9000", "n01"},
+			wantErr: false,
+			inDB: `
+nodeprofiles: {}
+nodes:
+  n01:
+    network devices:
+      ib0:
+        device: ib0`,
+			outDB: `
+nodeprofiles: {}
+nodes:
+  n01: {}`,
+		},
+		"deprecated aliases": {
+			args:    []string{"--container=img", "--wwinit=sys", "--runtime=rt", "n01"},
+			wantErr: false,
+			inDB: `
+nodeprofiles: {}
+nodes:
+  n01: {}`,
+			outDB: `
+nodeprofiles: {}
+nodes:
+  n01:
+    image name: img
+    system overlay:
+      - sys
+    runtime overlay:
+      - rt`,
 		},
 		"single node change profile": {
 			args:    []string{"--profile=foo", "n01"},
@@ -838,6 +971,72 @@ nodes:
 				assert.NoError(t, err)
 				content := env.ReadFile("etc/warewulf/nodes.conf")
 				assert.YAMLEq(t, tt.outDB, content)
+			}
+		})
+	}
+}
+
+func Test_Node_Set_Nettagdel_Warning(t *testing.T) {
+	inherited := `
+nodeprofiles:
+  default:
+    network devices:
+      default:
+        device: eth0
+        tags:
+          dns1: 1.1.1.1
+nodes:
+  n01:
+    profiles:
+    - default`
+	tests := map[string]struct {
+		args []string
+		inDB string
+		warn string
+	}{
+		"inherited network device": {
+			args: []string{"--nettagdel=dns1", "n01"},
+			inDB: inherited,
+			warn: "Node: n01, network device default is not defined on this node; no network tags deleted",
+		},
+		"undefined network device": {
+			args: []string{"--netname=ib0", "--nettagdel=dns1", "n01"},
+			inDB: inherited,
+			warn: "Node: n01, network device ib0 is not defined on this node; no network tags deleted",
+		},
+		"deleted network device": {
+			args: []string{"--netname=ib0", "--netdel=ib0", "--nettagdel=dns1", "n01"},
+			inDB: `
+nodeprofiles: {}
+nodes:
+  n01:
+    network devices:
+      ib0:
+        device: ib0
+        tags:
+          dns1: 1.1.1.1`,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			env := testenv.New(t)
+			defer env.RemoveAll()
+			env.WriteFile("etc/warewulf/nodes.conf", tt.inDB)
+			warewulfd.SetNoDaemon()
+			buf := new(bytes.Buffer)
+			wwlog.SetLogWriter(buf)
+			defer wwlog.SetLogWriterInfo(os.Stdout)
+			defer wwlog.SetLogWriterErr(os.Stderr)
+			baseCmd := GetCommand()
+			baseCmd.SetArgs(append(tt.args, "--yes"))
+			baseCmd.SetOut(buf)
+			baseCmd.SetErr(buf)
+			assert.NoError(t, baseCmd.Execute())
+			if tt.warn != "" {
+				assert.Contains(t, buf.String(), tt.warn)
+			} else {
+				assert.NotContains(t, buf.String(), "is not defined")
 			}
 		})
 	}
