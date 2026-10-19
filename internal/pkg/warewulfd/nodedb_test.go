@@ -19,6 +19,9 @@ func Test_GetNodeOrSetDiscoverable(t *testing.T) {
 		err          bool
 		initFiles    []string
 		removedFiles []string
+		// a later request, and the node it should discover
+		nextHwaddr string
+		nextNode   string
 	}{
 		"empty": {
 			nodesConf: `
@@ -100,6 +103,30 @@ nodes:
 			hwaddr: "00:00:00:00:00:01",
 			node:   "n1",
 		},
+		"discoverable infiniband": {
+			nodesConf: `
+nodes:
+  n1:
+    discoverable: true
+    network devices:
+      ib0: {}
+`,
+			hwaddr: "80:00:02:08:fe:80:00:00:00:00:00:00:00:02:c9:03:00:11:22:33",
+			node:   "n1",
+		},
+		"discoverable invalid hwaddr": {
+			nodesConf: `
+nodes:
+  n1:
+    discoverable: true
+    network devices:
+      default: {}
+`,
+			hwaddr:     "00:00:00:00:00:01;\n}",
+			err:        true,
+			nextHwaddr: "00:00:00:00:00:02",
+			nextNode:   "n1",
+		},
 	}
 
 	for name, tt := range tests {
@@ -123,6 +150,11 @@ nodes:
 			}
 			for _, file := range tt.removedFiles {
 				assert.NoFileExists(t, env.GetPath(file), "File should not exist: %s", file)
+			}
+			if tt.nextHwaddr != "" {
+				node, err := GetOrDiscoverNode(tt.nextHwaddr, true)
+				assert.NoError(t, err)
+				assert.Equal(t, tt.nextNode, node.Id())
 			}
 		})
 	}

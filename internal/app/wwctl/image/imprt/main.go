@@ -27,7 +27,7 @@ func CobraRunE(cmd *cobra.Command, args []string) error {
 		wwlog.Info("Setting image name: %s", name)
 	}
 	if !image.ValidName(name) {
-		return fmt.Errorf("image name contains illegal characters: %s", name)
+		return fmt.Errorf("invalid image name: %s", name)
 	}
 
 	fullPath := image.SourceDir(name)

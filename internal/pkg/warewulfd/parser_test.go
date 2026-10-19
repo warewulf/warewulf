@@ -167,6 +167,19 @@ var parseReqTests = []struct {
 			efifile:    "shim.efi",
 		},
 	},
+	{
+		description: "gz compression",
+		url:         "/image/00:00:00:ff:ff:ff",
+		rawQuery:    "compress=gz",
+		remoteAddr:  "10.5.1.1:9873",
+		result: parsedRequest{
+			hwaddr:     "00:00:00:ff:ff:ff",
+			ipaddr:     "10.5.1.1",
+			remoteport: 9873,
+			stage:      "image",
+			compress:   "gz",
+		},
+	},
 }
 
 func Test_ParseRequest(t *testing.T) {
@@ -181,4 +194,13 @@ func Test_ParseRequest(t *testing.T) {
 			assert.Equal(t, tt.result, result)
 		})
 	}
+}
+
+func Test_ParseRequestUnsupportedCompression(t *testing.T) {
+	req := &http.Request{
+		URL:        &url.URL{Path: "/image/00:00:00:ff:ff:ff", RawQuery: "compress=bz2"},
+		RemoteAddr: "10.5.1.1:9873",
+	}
+	_, err := parseRequest(req)
+	assert.Error(t, err)
 }

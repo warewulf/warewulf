@@ -107,3 +107,116 @@ nodes:
 		})
 	}
 }
+
+func Test_ProvisionSendOutsideDir(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+
+	env.WriteFile("/etc/warewulf/nodes.conf", `nodes:
+  n1:
+    network devices:
+      default:
+        hwaddr: 00:00:00:00:00:01
+    ipxe template: ../secret
+    image name: ../secret
+  n2:
+    network devices:
+      default:
+        hwaddr: 00:00:00:00:00:02
+    image name: link
+`)
+	env.WriteFile("/etc/warewulf/secret.ipxe", "secret")
+
+	dbErr := LoadNodeDB()
+	assert.NoError(t, dbErr)
+
+	conf := warewulfconf.Get()
+	secureFalse := false
+	conf.Warewulf.SecureP = &secureFalse
+	imageDir := path.Join(conf.Paths.WWProvisiondir, "images")
+	assert.NoError(t, os.MkdirAll(imageDir, 0700))
+	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.WWProvisiondir, "secret.img"), []byte("secret"), 0600))
+	assert.NoError(t, os.Symlink(env.GetPath("/etc/warewulf/secret.ipxe"), path.Join(imageDir, "link.img")))
+
+	for _, url := range []string{
+		"/provision/00:00:00:00:00:01?stage=ipxe",
+		"/provision/00:00:00:00:00:01?stage=image",
+		"/provision/00:00:00:00:00:02?stage=image",
+	} {
+		t.Run(url, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, url, nil)
+			req.RemoteAddr = "10.10.10.10:9873"
+			w := httptest.NewRecorder()
+			HandleProvision(w, req)
+			res := w.Result()
+			defer func() { _ = res.Body.Close() }()
+
+			data, readErr := io.ReadAll(res.Body)
+			assert.NoError(t, readErr)
+			assert.NotEqual(t, http.StatusOK, res.StatusCode)
+			assert.NotContains(t, string(data), "secret")
+		})
+	}
+}
+
+func Test_ProvisionSendImageRootFs(t *testing.T) {
+	env := testenv.New(t)
+	defer env.RemoveAll()
+
+	env.WriteFile("/etc/warewulf/nodes.conf", `nodes:
+  n1:
+    network devices:
+      default:
+        hwaddr: 00:00:00:00:00:01
+    image name: linked
+  n2:
+    network devices:
+      default:
+        hwaddr: 00:00:00:00:00:02
+    image name: ../escape
+  n3:
+    network devices:
+      default:
+        hwaddr: 00:00:00:00:00:03
+    image name: ..
+`)
+	// an image directory may be a symlink to another location
+	env.WriteFile("/data/linked/rootfs/boot/vmlinuz-1.1.0", "linked kernel")
+	env.MkdirAll("/var/lib/warewulf/chroots")
+	assert.NoError(t, os.Symlink(env.GetPath("/data/linked"), env.GetPath("/var/lib/warewulf/chroots/linked")))
+	// image names must not lead outside the chroots directory
+	env.WriteFile("/var/lib/warewulf/escape/rootfs/boot/vmlinuz-1.1.0", "secret")
+	env.WriteFile("/var/lib/warewulf/rootfs/boot/vmlinuz-1.1.0", "secret")
+
+	dbErr := LoadNodeDB()
+	assert.NoError(t, dbErr)
+
+	conf := warewulfconf.Get()
+	secureFalse := false
+	conf.Warewulf.SecureP = &secureFalse
+
+	tests := []struct {
+		url    string
+		status int
+		body   string
+	}{
+		{"/provision/00:00:00:00:00:01?stage=kernel", http.StatusOK, "linked kernel"},
+		{"/provision/00:00:00:00:00:02?stage=kernel", http.StatusInternalServerError, ""},
+		{"/provision/00:00:00:00:00:03?stage=kernel", http.StatusInternalServerError, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.url, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, tt.url, nil)
+			req.RemoteAddr = "10.10.10.10:9873"
+			w := httptest.NewRecorder()
+			HandleProvision(w, req)
+			res := w.Result()
+			defer func() { _ = res.Body.Close() }()
+
+			data, readErr := io.ReadAll(res.Body)
+			assert.NoError(t, readErr)
+			assert.Equal(t, tt.status, res.StatusCode)
+			assert.Equal(t, tt.body, string(data))
+		})
+	}
+}

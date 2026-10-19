@@ -2,6 +2,7 @@ package warewulfd
 
 import (
 	"fmt"
+	"net"
 	"strings"
 	"sync"
 
@@ -82,6 +83,13 @@ func GetOrDiscoverNode(hwaddr string, autobuildOverlays bool) (node.Node, error)
 
 	// If we failed to find a node, let's see if we can add one...
 	wwlog.Warn("node not configured: %s", hwaddr)
+
+	// Discovery records hwaddr in nodes.conf, from where it is rendered into
+	// host configuration such as dhcpd.conf.
+	if _, err := net.ParseMAC(hwaddr); err != nil {
+		wwlog.Warn("not discovering a node for invalid hardware address %q", hwaddr)
+		return node.EmptyNode(), node.ErrNoUnconfigured
+	}
 
 	nodeFound, netdev, err := db.yml.FindDiscoverableNode()
 	if err != nil {
