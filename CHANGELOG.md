@@ -75,9 +75,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   overlay through another symlink.
 - Node discovery ignores requests whose hardware address is not a valid MAC
   address, rather than recording it in `nodes.conf`.
-
-### Fixed
-
 - Fixed Linux distribution detection in the build system. `OS` was always
   set to `D`, so per-distribution defaults never applied. Source builds now
   default to `TFTPDIR=/srv/tftp` and `IPXESOURCE=/usr/lib/ipxe` on Debian,
@@ -110,6 +107,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - Added shellcheck to makefile and CI test suite. #2273
+
+### Dependencies
+
+- Increase minimum golang version to 1.26.3
+- Bump github.com/creasty/defaults from 1.8.0 to 1.11.0 #2272
+- Bump golang.org/x/crypto from 0.54.0 to 0.57.0 #2270
+- Bump golang.org/x/term from 0.45.0 to 0.46.0 #2269
+- Bump golang.org/x/sys from 0.47.0 to 0.48.0 #2264
+- Bump github.com/siderolabs/go-smbios from 0.3.3 to 0.3.4 #2223
 
 ## v4.7.1, 2026-09-15
 
