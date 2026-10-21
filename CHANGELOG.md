@@ -113,9 +113,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Increase minimum golang version to 1.26.3
 - Bump github.com/creasty/defaults from 1.8.0 to 1.11.0 #2272
 - Bump golang.org/x/crypto from 0.54.0 to 0.57.0 #2270
-- Bump golang.org/x/term from 0.45.0 to 0.46.0 #2269
-- Bump golang.org/x/sys from 0.47.0 to 0.48.0 #2264
+- Bump golang.org/x/term from 0.45.0 to 0.47.0 #2269 #2303
+- Bump golang.org/x/sys from 0.47.0 to 0.49.0 #2264 #2301
 - Bump github.com/siderolabs/go-smbios from 0.3.3 to 0.3.4 #2223
+- Bump github.com/coreos/ignition/v2 from 2.27.0 to 2.28.0 #2302
+- Bump github.com/swaggest/rest from 0.2.75 to 0.2.76 #2300
+- Bump github.com/cyphar/filepath-securejoin from 0.5.1 to 0.7.0 #2299
 
 ## v4.7.1, 2026-09-15
 
