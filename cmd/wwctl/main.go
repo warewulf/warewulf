@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/containers/storage/pkg/reexec"
 	"github.com/warewulf/warewulf/internal/app/wwctl"
+	"go.podman.io/storage/pkg/reexec"
 )
 
 func main() {
