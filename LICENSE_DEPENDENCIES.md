@@ -237,7 +237,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/siderolabs/go-smbios/blob/v0.3.3/smbios/internal/github.com/digitalocean/go-smbios/LICENSE.md>
+**License URL:** <https://github.com/siderolabs/go-smbios/blob/v0.3.4/smbios/internal/github.com/digitalocean/go-smbios/LICENSE.md>
 
 ## github.com/sigstore/fulcio/pkg/certificate
 
@@ -459,7 +459,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.54.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.57.0:LICENSE>
 
 ## golang.org/x/exp/maps
 
@@ -471,31 +471,31 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/net/+/v0.57.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/net/+/v0.58.0:LICENSE>
 
 ## golang.org/x/sync/semaphore
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/sync/+/v0.22.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/sync/+/v0.23.0:LICENSE>
 
 ## golang.org/x/sys
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/sys/+/v0.47.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/sys/+/v0.48.0:LICENSE>
 
 ## golang.org/x/term
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/term/+/v0.45.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/term/+/v0.46.0:LICENSE>
 
 ## golang.org/x/text
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/text/+/v0.40.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/text/+/v0.42.0:LICENSE>
 
 ## google.golang.org/protobuf
 
@@ -579,7 +579,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/creasty/defaults/blob/v1.8.0/LICENSE>
+**License URL:** <https://github.com/creasty/defaults/blob/v1.11.0/LICENSE>
 
 ## github.com/docker/docker-credential-helpers
 
@@ -813,7 +813,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MPL-2.0
 
-**License URL:** <https://github.com/siderolabs/go-smbios/blob/v0.3.3/LICENSE>
+**License URL:** <https://github.com/siderolabs/go-smbios/blob/v0.3.4/LICENSE>
 
 ## github.com/vbauerster/mpb/v8
 
