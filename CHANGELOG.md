@@ -105,6 +105,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   network device that is not defined on the node or profile itself, such as
   one inherited from a profile, rather than silently deleting nothing. #2292
 - Fix handling of deprecated aliases `--container`, `--wwinit`, and `--runtime`.
+- Update to grcp 1.85.0 which fixes CVE-2026-84303
 
 ### Added
 

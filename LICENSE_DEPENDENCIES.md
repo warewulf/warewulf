@@ -291,43 +291,43 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/open-telemetry/opentelemetry-go-contrib/blob/instrumentation/net/http/otelhttp/v0.61.0/instrumentation/net/http/otelhttp/LICENSE>
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go-contrib/blob/instrumentation/net/http/otelhttp/v0.69.0/instrumentation/net/http/otelhttp/LICENSE>
 
 ## go.opentelemetry.io/otel
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/v1.41.0/LICENSE>
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/v1.44.0/LICENSE>
 
 ## go.opentelemetry.io/otel/metric
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/metric/v1.41.0/metric/LICENSE>
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/metric/v1.44.0/metric/LICENSE>
 
 ## go.opentelemetry.io/otel/trace
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/trace/v1.41.0/trace/LICENSE>
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/trace/v1.44.0/trace/LICENSE>
 
 ## google.golang.org/genproto/googleapis/api
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/googleapis/go-genproto/blob/4cfbd4190f57/googleapis/api/LICENSE>
+**License URL:** <https://github.com/googleapis/go-genproto/blob/f0a921348800/googleapis/api/LICENSE>
 
 ## google.golang.org/genproto/googleapis/rpc/status
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/googleapis/go-genproto/blob/4cfbd4190f57/googleapis/rpc/LICENSE>
+**License URL:** <https://github.com/googleapis/go-genproto/blob/f0a921348800/googleapis/rpc/LICENSE>
 
 ## google.golang.org/grpc
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/grpc/grpc-go/blob/v1.79.3/LICENSE>
+**License URL:** <https://github.com/grpc/grpc-go/blob/v1.84.0/LICENSE>
 
 ## gopkg.in/yaml.v2
 
@@ -597,7 +597,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/felixge/httpsnoop/blob/v1.0.4/LICENSE.txt>
+**License URL:** <https://github.com/felixge/httpsnoop/blob/v1.1.0/LICENSE.txt>
 
 ## github.com/go-chi/chi/v5
 
