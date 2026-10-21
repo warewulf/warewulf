@@ -151,6 +151,12 @@ by vote of the remaining TSC members.
   of each minor release cycle to reflect the Go version available
   across all supported distributions.
 
+- The patch version of the minimum Go version may be updated in a Warewulf
+  patch release.
+
+- The minor version of the minimum Go version may only be updated in a Warewulf
+  patch release if required for a backported security or bug fix.
+
 ### Notes
 
 - On EL8, Go is installed using the `go-toolset` module from the
