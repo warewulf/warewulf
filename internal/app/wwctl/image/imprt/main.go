@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/containers/image/v5/types"
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/image"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
+	"go.podman.io/image/v5/types"
 )
 
 func CobraRunE(cmd *cobra.Command, args []string) error {
