@@ -87,7 +87,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/coreos/ignition/blob/v2.27.0/LICENSE>
+**License URL:** <https://github.com/coreos/ignition/blob/v2.28.0/LICENSE>
 
 ## github.com/coreos/vcontext
 
@@ -483,13 +483,13 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/sys/+/v0.48.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/sys/+/v0.49.0:LICENSE>
 
 ## golang.org/x/term
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/term/+/v0.46.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/term/+/v0.47.0:LICENSE>
 
 ## golang.org/x/text
 
@@ -723,7 +723,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/swaggest/jsonschema-go/blob/v0.3.78/LICENSE>
+**License URL:** <https://github.com/swaggest/jsonschema-go/blob/v0.3.79/LICENSE>
 
 ## github.com/swaggest/openapi-go
 
@@ -741,7 +741,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/swaggest/rest/blob/v0.2.75/LICENSE>
+**License URL:** <https://github.com/swaggest/rest/blob/v0.2.76/LICENSE>
 
 ## github.com/swaggest/usecase
 
@@ -789,13 +789,13 @@ The dependencies and their licenses are as follows:
 
 **License:** MPL-2.0
 
-**License URL:** <https://github.com/cyphar/filepath-securejoin/blob/v0.5.1/COPYING.md>
+**License URL:** <https://github.com/cyphar/filepath-securejoin/blob/v0.7.0/COPYING.md>
 
 ## github.com/cyphar/filepath-securejoin/pathrs-lite
 
 **License:** MPL-2.0
 
-**License URL:** <https://github.com/cyphar/filepath-securejoin/blob/v0.5.1/pathrs-lite/README.md>
+**License URL:** <https://github.com/cyphar/filepath-securejoin/blob/v0.7.0/pathrs-lite/README.md>
 
 ## github.com/hashicorp/go-version
 
