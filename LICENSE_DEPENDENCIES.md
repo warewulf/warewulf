@@ -231,7 +231,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/siderolabs/go-smbios/blob/v0.3.4/smbios/internal/github.com/digitalocean/go-smbios/LICENSE.md>
+**License URL:** <https://github.com/siderolabs/go-smbios/blob/v0.3.3/smbios/internal/github.com/digitalocean/go-smbios/LICENSE.md>
 
 ## github.com/sigstore/fulcio/pkg/certificate
 
@@ -813,7 +813,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MPL-2.0
 
-**License URL:** <https://github.com/siderolabs/go-smbios/blob/v0.3.4/LICENSE>
+**License URL:** <https://github.com/siderolabs/go-smbios/blob/v0.3.3/LICENSE>
 
 ## github.com/vbauerster/cupwriter
 
