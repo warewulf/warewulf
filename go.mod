@@ -1,11 +1,11 @@
 module github.com/warewulf/warewulf
 
-go 1.26.1
+go 1.26.5
 
 require (
 	dario.cat/mergo v1.0.2
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/apptainer/sif/v2 v2.21.1
+	github.com/apptainer/sif/v2 v2.24.2
 	github.com/cavaliergopher/cpio v1.0.1
 	github.com/cheynewallace/tabby v1.1.1
 	github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
