@@ -6,6 +6,7 @@ GO_TOOLS_VENDOR := $(addprefix vendor/, $(GO_TOOLS))
 
 GOLANGCI_LINT := $(TOOLS_BIN)/golangci-lint
 GOLANGCI_LINT_VERSION := v2.11.3
+GOLANGCI_LINT_INSTALLER_SHA256 := edfa587f31bde70db161d1e5b783e086a1627d7e2f7c91de5f7cca79bcdf8631
 
 GOLANG_DEADCODE := $(TOOLS_BIN)/deadcode
 
@@ -28,7 +29,10 @@ $(GO_TOOLS_BIN):
 	GOBIN="$(PWD)/$(TOOLS_BIN)" go install -mod=vendor $(GO_TOOLS)
 
 $(GOLANGCI_LINT):
-	curl -qq -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(TOOLS_BIN) $(GOLANGCI_LINT_VERSION)
+	mkdir -p $(TOOLS_BIN) && \
+	curl -qq -sSfL -o $(TOOLS_DIR)/install-golangci-lint.sh https://raw.githubusercontent.com/golangci/golangci-lint/$(GOLANGCI_LINT_VERSION)/install.sh && \
+	echo "$(GOLANGCI_LINT_INSTALLER_SHA256)  $(TOOLS_DIR)/install-golangci-lint.sh" | sha256sum -c - && \
+	sh -s -- -b $(TOOLS_BIN) $(GOLANGCI_LINT_VERSION) < $(TOOLS_DIR)/install-golangci-lint.sh
 
 $(GOLANG_DEADCODE):
 	GOBIN="$(PWD)/$(TOOLS_BIN)" go install golang.org/x/tools/cmd/deadcode@v0.34.0
