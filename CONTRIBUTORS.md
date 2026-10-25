@@ -110,3 +110,4 @@
 - Travis Greene <trg244@msstate.edu> [@sn8to](https://github.com/sn8to)
 - Logan Enright <lenright@ciq.com> [loag-ciq](https://github.com/loag-ciq)
 - Daniel Summer [@dsummer](https://github.com/dsummer)
+- Junior Machado [@jmpmachado](https://github.com/jmpmachado)
