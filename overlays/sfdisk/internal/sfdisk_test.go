@@ -115,7 +115,7 @@ PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin
 
 if ! command -v info >/dev/null; then
     info() {
-        printf '%s\n' "$*"
+        printf '%s\n' "$*" || :
     }
 fi
 
@@ -166,7 +166,7 @@ PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin
 
 if ! command -v info >/dev/null; then
     info() {
-        printf '%s\n' "$*"
+        printf '%s\n' "$*" || :
     }
 fi
 
@@ -223,7 +223,7 @@ PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin
 
 if ! command -v info >/dev/null; then
     info() {
-        printf '%s\n' "$*"
+        printf '%s\n' "$*" || :
     }
 fi
 
