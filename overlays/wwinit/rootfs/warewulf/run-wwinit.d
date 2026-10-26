@@ -11,8 +11,9 @@ if [ -d "${scriptdir}" ]; then
     info "warewulf: running scripts in ${scriptdir}..."
     ls -1 "${scriptdir}/" | while read -r name; do
         info "warewulf: ${name}"
-        PREFIX=$PREFIX sh "${scriptdir}/${name}"
-    done
+        PREFIX=$PREFIX sh "${scriptdir}/${name}" || exit 1
+    done || exit 1
 else
     info "warewulf: ${scriptdir} not found"
 fi
+exit 0
