@@ -25,11 +25,14 @@ nodes:
 
 PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin
 
-if ! command -v info >/dev/null; then
-    info() {
-        printf '%s\n' "$*" || :
-    }
-fi
+case "$(type info 2>/dev/null)" in
+    *function*) ;;
+    *)
+        info() {
+            printf '%s\n' "$*" || :
+        }
+        ;;
+esac
 
 if ! command -v die >/dev/null; then
     die() {
@@ -75,11 +78,14 @@ nodes:
 
 PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin
 
-if ! command -v info >/dev/null; then
-    info() {
-        printf '%s\n' "$*" || :
-    }
-fi
+case "$(type info 2>/dev/null)" in
+    *function*) ;;
+    *)
+        info() {
+            printf '%s\n' "$*" || :
+        }
+        ;;
+esac
 
 if ! command -v die >/dev/null; then
     die() {
@@ -141,11 +147,14 @@ nodes:
 
 PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin
 
-if ! command -v info >/dev/null; then
-    info() {
-        printf '%s\n' "$*" || :
-    }
-fi
+case "$(type info 2>/dev/null)" in
+    *function*) ;;
+    *)
+        info() {
+            printf '%s\n' "$*" || :
+        }
+        ;;
+esac
 
 if ! command -v die >/dev/null; then
     die() {
