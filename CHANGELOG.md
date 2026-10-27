@@ -61,6 +61,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   directories are not followed; an image directory may itself be a symlink or
   a bind mount.
 - Image names `.` and `..` are rejected as invalid.
+- Node boot now stops when a `wwinit.d` script fails, such as when Ignition,
+  `sfdisk`, or `mkfs` fails to set up a disk during dracut. Previously the
+  failure was ignored and boot continued.
 
 ### Fixed
 
