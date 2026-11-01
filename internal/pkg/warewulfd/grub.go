@@ -20,7 +20,8 @@ func HandleGrub(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	stageFile := path.Join(ctx.conf.Paths.Sysconfdir, "warewulf/grub/grub.cfg.ww")
+	grubDir := path.Join(ctx.conf.Paths.Sysconfdir, "warewulf/grub")
+	stageFile := path.Join(grubDir, "grub.cfg.ww")
 	tmplData := buildTemplateVars(ctx.conf, ctx.rinfo, ctx.remoteNode)
-	sendResponse(w, req, stageFile, tmplData, ctx)
+	sendResponse(w, req, grubDir, stageFile, tmplData, ctx)
 }

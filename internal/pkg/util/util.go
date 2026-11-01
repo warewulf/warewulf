@@ -79,18 +79,6 @@ func PathIsNewer(source string, compare string) bool {
 	return time1.Before(time2)
 }
 
-/*
-Checks if given string is in slice. I yes returns true, false otherwise.
-*/
-func InSlice(slice []string, match string) bool {
-	for _, val := range slice {
-		if val == match {
-			return true
-		}
-	}
-	return false
-}
-
 func IsDir(path string) bool {
 	wwlog.Debug("Checking if path exists as a directory: %s", path)
 

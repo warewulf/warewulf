@@ -164,6 +164,9 @@ func parseRequest(req *http.Request) (parsedRequest, error) {
 
 	if len(req.URL.Query()["compress"]) > 0 {
 		ret.compress = req.URL.Query()["compress"][0]
+		if ret.compress != "" && ret.compress != "gz" {
+			return ret, errors.New("unsupported compression: " + ret.compress)
+		}
 	}
 	if ret.efifile == "" && len(req.URL.Query()["file"]) > 0 {
 		ret.efifile = req.URL.Query()["file"][0]

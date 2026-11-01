@@ -22,11 +22,9 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		// remove the UNDEF network as all network values are assigned
 		// to this network
-		if !node.ObjectIsEmpty(vars.nodeConf.NetDevs["UNDEF"]) {
+		if !node.ObjectIsEmpty(vars.nodeConf.NetDevs["UNDEF"]) || len(vars.nodeAdd.NetTagsAdd) > 0 {
 			netDev := *vars.nodeConf.NetDevs["UNDEF"]
 			vars.nodeConf.NetDevs[vars.nodeAdd.Net] = &netDev
-			vars.nodeConf.NetDevs[vars.nodeAdd.Net].Tags = vars.nodeAdd.NetTagsAdd
-
 		}
 		delete(vars.nodeConf.NetDevs, "UNDEF")
 		if vars.nodeAdd.FsName != "" {
@@ -52,7 +50,6 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("partition and disk must be specified")
 		}
 		delete(vars.nodeConf.Disks, "UNDEF")
-		vars.nodeConf.Ipmi.Tags = vars.nodeAdd.IpmiTagsAdd
 		if len(vars.nodeConf.Profiles) == 0 {
 			if registry, err := node.New(); err == nil {
 				if _, err := registry.GetProfile("default"); err == nil {
@@ -73,6 +70,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) error {
 				return fmt.Errorf("failed to add node: %w", err)
 			}
 			n.UpdateFrom(&vars.nodeConf, changed)
+			n.ApplyTagChanges(vars.nodeAdd, node.NodeConfDel{})
 			if !changed("profile") && len(vars.nodeConf.Profiles) > 0 {
 				n.Profiles = vars.nodeConf.Profiles
 			}

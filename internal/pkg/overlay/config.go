@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/containers/storage/drivers/copy"
+	"go.podman.io/storage/drivers/copy"
 
 	"github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/util"

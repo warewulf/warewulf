@@ -52,7 +52,7 @@ Conflicts: warewulf-ipmi
 %if 0%{?is_suse}
 BuildRequires: distribution-release
 BuildRequires: systemd-rpm-macros
-BuildRequires: go >= 1.22
+BuildRequires: go >= 1.25.7
 BuildRequires: firewall-macros
 BuildRequires: firewalld
 Requires: nfs-kernel-server
@@ -62,7 +62,7 @@ Requires: ipxe-bootimgs
 # Assume Red Hat/Fedora
 BuildRequires: system-release
 BuildRequires: systemd
-BuildRequires: golang >= 1.22
+BuildRequires: golang >= 1.25.7
 BuildRequires: firewalld-filesystem
 Requires: nfs-utils
 %if 0%{?rhel} < 8
@@ -281,6 +281,9 @@ about Warewulf in an sos report.
 
 
 %changelog
+* Sat Oct 31 2026 Jonathon Anderson <janderson@ciq.com>
+- Update golang BuildRequires to 1.25.7
+
 * Tue Oct 28 2025 Jonathon Anderson <janderson@ciq.com>
 - Use static variants for warewulf.conf-suse and warewulf.conf-el10
 

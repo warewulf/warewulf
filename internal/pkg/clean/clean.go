@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/node"
-	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
@@ -41,7 +41,7 @@ func CleanOverlays() error {
 			continue
 		}
 
-		if !util.InSlice(nodes, item.Name()) {
+		if !slices.Contains(nodes, item.Name()) {
 
 			// Construct and validate the path (filepath.Join already calls Clean)
 			cleanTarget := filepath.Join(baseDir, item.Name())
