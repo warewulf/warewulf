@@ -131,26 +131,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Dependencies
 
-- Increase minimum golang version from 1.25.5 to 1.26.1, required by
-  go.podman.io/image v5.42.0 and golang.org/x/crypto v0.57.0. #2298 #2330
+- Increase minimum golang version from 1.25.5 to 1.25.7, required by
+  go.podman.io/image v5.41.2 and github.com/sigstore/fulcio v1.8.7.
 - Bump google.golang.org/grpc from 1.79.3 to 1.84.0 (CVE-2026-84303) #2290
 - Bump github.com/creasty/defaults from 1.8.0 to 1.11.0 #2272
-- Bump golang.org/x/crypto from 0.54.0 to 0.58.0 #2270 #2305
-- Bump golang.org/x/term from 0.45.0 to 0.47.0 #2269 #2303
-- Bump golang.org/x/sys from 0.47.0 to 0.49.0 #2264 #2301
+- Bump golang.org/x/crypto from 0.54.0 to 0.55.0 (GO-2026-6303)
+- Bump golang.org/x/net from 0.57.0 to 0.58.0
+- Bump golang.org/x/text from 0.40.0 to 0.41.0 (GO-2026-6629)
 - Bump github.com/coreos/ignition/v2 from 2.27.0 to 2.28.0 #2302
 - Bump github.com/swaggest/rest from 0.2.75 to 0.2.76 #2300
 - Bump github.com/cyphar/filepath-securejoin from 0.5.1 to 0.7.0 #2299
 - Migrate from github.com/containers/image/v5 v5.36.2 and
-  github.com/containers/storage v1.59.1 to go.podman.io/image/v5 v5.42.0 and
-  go.podman.io/storage v1.65.0. This replaces github.com/docker/docker with
+  github.com/containers/storage v1.59.1 to go.podman.io/image/v5 v5.41.2 and
+  go.podman.io/storage v1.64.1. This replaces github.com/docker/docker with
   github.com/moby/moby/client. (GHSA-rg2x-37c3-w2rh, GHSA-vp62-88p7-qqf5,
-  GHSA-x86f-5xw2-fm2r, GHSA-pxq6-2prw-chj9, GHSA-x4rx-4gw3-53p4)
+  GHSA-x86f-5xw2-fm2r, GHSA-pxq6-2prw-chj9, GHSA-x4rx-4gw3-53p4) #2305
 - Bump github.com/moby/sys/user from 0.4.0 to 0.4.1 (GHSA-mjcv-p78q-w5fw)
-- Bump github.com/klauspost/compress from 1.18.0 to 1.20.3 (GHSA-259r-337f-4rfw)
-- Bump github.com/sigstore/fulcio from 1.6.6 to 1.8.8 (GHSA-f5mr-q85p-6hh6,
+- Bump github.com/klauspost/compress from 1.18.0 to 1.19.1 (GHSA-259r-337f-4rfw)
+- Bump github.com/sigstore/fulcio from 1.6.6 to 1.8.7 (GHSA-f5mr-q85p-6hh6,
   GHSA-59jp-pj84-45mr, GHSA-f83f-xpx7-ffpw)
-- Bump github.com/sigstore/sigstore from 1.9.5 to 1.10.11 (GHSA-fcv2-xgw5-pqxf)
+- Bump github.com/sigstore/sigstore from 1.9.5 to 1.10.8 (GHSA-fcv2-xgw5-pqxf)
 
 ## v4.7.1, 2026-09-15
 
