@@ -73,6 +73,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- The `warewulf` firewalld service now opens the default TLS port (9874), so
+  nodes can fetch overlays when `tls: true` is set. #2326
 - The dhcpd overlay's openSUSE `/etc/dhcpd.conf` compatibility symlink no
   longer also renders `dhcpd.conf.ww` a second time.
 - Generate warnings from relative rather than exact permissions when applying

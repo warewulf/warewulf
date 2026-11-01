@@ -106,6 +106,10 @@ By default, the key and certificate are stored in ``/etc/warewulf/tls/``.
 
 You can also import your own keys with ``wwctl configure tls --import``.
 
+The ``warewulf`` ``firewalld`` service opens port ``9874`` as well as ``9873``.
+If you set a different ``tls port``, or use ``nftables`` directly, permit that
+port yourself.
+
 If HTTPS is enabled the delivery of the runtime overlay is disabled over HTTP,
 and the runtime overlay is only retrieved by ``wwclient``.
 
