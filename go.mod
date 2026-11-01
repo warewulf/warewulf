@@ -9,9 +9,9 @@ require (
 	github.com/cheynewallace/tabby v1.1.1
 	github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
 	github.com/coreos/go-systemd/v22 v22.7.0
-	github.com/coreos/ignition/v2 v2.27.0
+	github.com/coreos/ignition/v2 v2.28.0
 	github.com/coreos/vcontext v0.0.0-20230201181013-d72178a18687
-	github.com/creasty/defaults v1.8.0
+	github.com/creasty/defaults v1.11.0
 	github.com/fatih/color v1.19.0
 	github.com/go-chi/chi/v5 v5.3.2
 	github.com/google/uuid v1.6.0
@@ -27,12 +27,12 @@ require (
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.12.1
 	github.com/swaggest/openapi-go v0.2.61
-	github.com/swaggest/rest v0.2.75
+	github.com/swaggest/rest v0.2.76
 	github.com/swaggest/swgui v1.8.9
 	github.com/swaggest/usecase v1.3.1
 	go.podman.io/image/v5 v5.41.2
 	go.podman.io/storage v1.64.1
-	golang.org/x/crypto v0.54.0
+	golang.org/x/crypto v0.55.0
 	golang.org/x/exp v0.0.0-20241217172543-b2144cdd0a67
 	golang.org/x/sys v0.47.0
 	golang.org/x/term v0.45.0
@@ -114,7 +114,7 @@ require (
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/stefanberger/go-pkcs11uri v0.0.0-20230803200340-78284954bff6 // indirect
 	github.com/swaggest/form/v5 v5.1.1 // indirect
-	github.com/swaggest/jsonschema-go v0.3.78 // indirect
+	github.com/swaggest/jsonschema-go v0.3.79 // indirect
 	github.com/swaggest/refl v1.4.0 // indirect
 	github.com/ulikunitz/xz v0.5.16 // indirect
 	github.com/urfave/cli v1.22.16 // indirect
@@ -131,9 +131,9 @@ require (
 	go.opentelemetry.io/otel/metric v1.44.0 // indirect
 	go.opentelemetry.io/otel/trace v1.44.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/net v0.57.0 // indirect
+	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
-	golang.org/x/text v0.40.0 // indirect
+	golang.org/x/text v0.41.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260706201446-f0a921348800 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260706201446-f0a921348800 // indirect
 	google.golang.org/grpc v1.84.0 // indirect

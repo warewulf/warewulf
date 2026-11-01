@@ -75,7 +75,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/coreos/ignition/blob/v2.27.0/LICENSE>
+**License URL:** <https://github.com/coreos/ignition/blob/v2.28.0/LICENSE>
 
 ## github.com/coreos/vcontext
 
@@ -459,7 +459,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.54.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/crypto/+/v0.55.0:LICENSE>
 
 ## golang.org/x/exp/maps
 
@@ -471,7 +471,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/net/+/v0.57.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/net/+/v0.58.0:LICENSE>
 
 ## golang.org/x/sync/semaphore
 
@@ -495,7 +495,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://cs.opensource.google/go/x/text/+/v0.40.0:LICENSE>
+**License URL:** <https://cs.opensource.google/go/x/text/+/v0.41.0:LICENSE>
 
 ## google.golang.org/protobuf
 
@@ -585,7 +585,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/creasty/defaults/blob/v1.8.0/LICENSE>
+**License URL:** <https://github.com/creasty/defaults/blob/v1.11.0/LICENSE>
 
 ## github.com/docker/docker-credential-helpers
 
@@ -723,7 +723,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/swaggest/jsonschema-go/blob/v0.3.78/LICENSE>
+**License URL:** <https://github.com/swaggest/jsonschema-go/blob/v0.3.79/LICENSE>
 
 ## github.com/swaggest/openapi-go
 
@@ -741,7 +741,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/swaggest/rest/blob/v0.2.75/LICENSE>
+**License URL:** <https://github.com/swaggest/rest/blob/v0.2.76/LICENSE>
 
 ## github.com/swaggest/usecase
 
