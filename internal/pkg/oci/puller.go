@@ -9,18 +9,18 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/containers/image/v5/copy"
-	"github.com/containers/image/v5/docker"
-	dockerarchive "github.com/containers/image/v5/docker/archive"
-	"github.com/containers/image/v5/docker/daemon"
-	"github.com/containers/image/v5/oci/layout"
-	"github.com/containers/image/v5/signature"
-	"github.com/containers/image/v5/types"
 	imgSpecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/opencontainers/umoci"
 	"github.com/opencontainers/umoci/oci/layer"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
+	"go.podman.io/image/v5/copy"
+	"go.podman.io/image/v5/docker"
+	dockerarchive "go.podman.io/image/v5/docker/archive"
+	"go.podman.io/image/v5/docker/daemon"
+	"go.podman.io/image/v5/oci/layout"
+	"go.podman.io/image/v5/signature"
+	"go.podman.io/image/v5/types"
 )
 
 type pullerOpt func(*puller) error

@@ -7,9 +7,9 @@ import (
 	"path"
 	"strconv"
 
-	"github.com/containers/image/v5/types"
-	"github.com/containers/storage/drivers/copy"
 	"github.com/pkg/errors"
+	"go.podman.io/image/v5/types"
+	"go.podman.io/storage/drivers/copy"
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/oci"
