@@ -64,3 +64,26 @@ and restart ``warewulfd``.
 
    wwctl configure --all
    systemctl restart warewulfd.service
+
+Router Advertisements
+======================
+
+When IPv6 is configured, the generated ``ww4-hosts.conf`` enables dnsmasq's
+Router Advertisements (``enable-ra``): dnsmasq advertises the provisioning
+prefix and acts as the default router. On a network where an upstream router
+already sends Router Advertisements, two RA sources on the same segment can
+lead to unexpected client addressing and routing. The ``dhcp:router
+advertisements`` setting in ``warewulf.conf`` selects where RAs come from (it
+has no effect with the ISC ``dhcpd`` server, which never sends RAs):
+
+- ``warewulf`` (default): dnsmasq sends RAs and is the default router.
+- ``warewulf-no-default-route``: dnsmasq sends RAs with a router lifetime of 0
+  (``ra-param=*,0,0``), so clients do not use the Warewulf server as their
+  default gateway, while the RAs still carry the M or O flag that iPXE needs
+  before it starts DHCPv6.
+- ``upstream``: Warewulf sends no RAs. The upstream router must set the M flag
+  (when ``range6 start``/``range6 end`` are configured) or the O flag
+  (otherwise) in its RAs, or iPXE never requests DHCPv6 and boot fails with
+  ``Nothing to boot: No such file or directory``.
+
+See :ref:`the configuration reference <server-configuration>` for details.
