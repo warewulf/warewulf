@@ -362,6 +362,9 @@ The default wwclient overlay contains a ``wwclient`` executable compiled for the
 same architecture as the Warewulf server. Architecture-specific wwclient.aarch64
 and wwclient.x86_64 overlays are available as well. This supports using wwclient
 on cluster nodes with a different architecture than the Warewulf server.
+When a node's image architecture differs from the ``wwclient`` binary in its
+built overlay, ``wwctl overlay build`` warns about the mismatch and suggests
+assigning the matching architecture-specific overlay.
 
 ``wwclient`` also provides ``overlay-diff`` to capture a baseline snapshot and
 later compare a source directory against that baseline. This reports

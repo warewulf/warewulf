@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- `wwctl overlay build` warns when the `wwclient` binary in a node's built
+  overlay has a different CPU architecture than the node's image, naming the
+  fix (assign the `wwclient.<arch>` overlay instead of `wwclient`).
 - `wwctl node set` and `wwctl profile set` now display a per-field
   before/after diff of the changes they are about to apply before prompting
   for confirmation. Nodes (or profiles) receiving identical changes are
