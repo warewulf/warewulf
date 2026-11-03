@@ -127,6 +127,25 @@ Default: true
 .IP
 
 .TP
+\fBrouter advertisements\fP
+
+Selects where IPv6 Router Advertisements come from on the provisioning
+network. This setting only affects the \fBdnsmasq\fP backend; the ISC
+\fBdhcpd\fP server does not send Router Advertisements. One of
+\fBwarewulf\fP (the default: dnsmasq sends Router Advertisements, via
+\fBenable-ra\fP, and acts as the default router), \fBwarewulf-no-default-route\fP
+(dnsmasq sends Router Advertisements with a router lifetime of 0, via
+\fBra-param=*,0,0\fP, so clients do not use the Warewulf server as their
+default gateway), or \fBupstream\fP (Warewulf sends no Router
+Advertisements; the upstream router must set the M flag when
+\fBrange6 start\fP/\fBrange6 end\fP are configured, or the O flag otherwise,
+or iPXE never requests DHCPv6 and boot fails). Any other value is treated
+as \fBwarewulf\fP.
+
+Default: warewulf
+.IP
+
+.TP
 \fBrange start\fP
 
 An IP address which defines the start of a dynamic address range which
