@@ -1,3 +1,5 @@
+.. _server-configuration:
+
 ====================
 Server Configuration
 ====================
@@ -179,6 +181,29 @@ DHCP service.
 * ``dhcp:overlays``: A comma-separated list of host overlays to apply during
   ``wwctl configure dhcp``. Typically ``dhcpd``, or ``dnsmasq`` where dnsmasq
   provides DHCP. See :ref:`host-overlays`.
+
+* ``dhcp:router advertisements``: Where IPv6 Router Advertisements (RAs) come
+  from on the provisioning network. This setting only affects the dnsmasq
+  backend; the ISC ``dhcpd`` server does not send Router Advertisements. One
+  of:
+
+  - ``warewulf`` (default): dnsmasq sends RAs (``enable-ra``) and acts as the
+    default router for the provisioning network.
+
+  - ``warewulf-no-default-route``: dnsmasq still sends RAs, but with a router
+    lifetime of 0 (``ra-param=*,0,0``), so clients do not use the Warewulf
+    server as their default gateway. Use this when an upstream router already
+    provides RAs and default routing, but Warewulf should still set the M or O
+    flag that iPXE needs before it starts DHCPv6.
+
+  - ``upstream``: Warewulf sends no Router Advertisements; the upstream router
+    must provide them. iPXE only starts DHCPv6 when the RA it receives has the
+    M (managed) or O (other configuration) flag set: the upstream router's RAs
+    must set M when ``range6 start``/``range6 end`` are configured (stateful
+    DHCPv6), or O otherwise (stateless DHCPv6), or iPXE never requests DHCPv6
+    and boot fails with ``Nothing to boot: No such file or directory``.
+
+  An unknown value is treated as ``warewulf``.
 
 tftp
 ====
