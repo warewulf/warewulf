@@ -31,10 +31,14 @@ if substring (option vendor-class-identifier, 0, 9) = "PXEClient" {
     filename "warewulf/shim.efi";
   }
 } elsif substring (option vendor-class-identifier, 0, 10) = "HTTPClient" {
+  option vendor-class-identifier "HTTPClient";
   filename "http://{{$.Ipaddr}}:{{$.Warewulf.Port}}/efiboot/shim.efi";
 }
 {{- else }}
-if exists user-class and option user-class = "iPXE" {
+if substring (option vendor-class-identifier, 0, 10) = "HTTPClient" {
+    option vendor-class-identifier "HTTPClient";
+    filename "http://{{$.Ipaddr}}:{{$.Warewulf.Port}}/efiboot/shim.efi";
+} elsif exists user-class and option user-class = "iPXE" {
     filename "http://{{$.Ipaddr}}:{{$.Warewulf.Port}}/ipxe/${mac:hexhyp}?assetkey=${asset}&uuid=${uuid}";
 } else {
 {{- range $type, $name := $.Tftp.IpxeBinaries }}
