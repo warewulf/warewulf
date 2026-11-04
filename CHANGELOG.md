@@ -89,7 +89,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Add github.com/apptainer/sif/v2 v2.21.1 for SIF image import. #2285
 
-## v4.7.2, unreleased
+## v4.7.2, 2026-11-01
 
 ### Added
 
