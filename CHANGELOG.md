@@ -73,6 +73,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- The dnsmasq and dhcpd host overlays now hand the UEFI HTTP boot URI to
+  clients of every architecture, including aarch64, and dhcpd does so whether
+  or not `grubboot` is enabled. #2231
 - The dhcpd overlay's openSUSE `/etc/dhcpd.conf` compatibility symlink no
   longer also renders `dhcpd.conf.ww` a second time.
 - Generate warnings from relative rather than exact permissions when applying
