@@ -44,11 +44,20 @@ func initHandleRequest(w http.ResponseWriter, req *http.Request) (*requestContex
 		}
 	}
 
-	remoteNode, err := GetOrDiscoverNode(rinfo.hwaddr, conf.Warewulf.AutobuildOverlays())
-	if err != nil && err != node.ErrNoUnconfigured {
-		wwlog.ErrorExc(err, "")
-		w.WriteHeader(http.StatusServiceUnavailable)
-		return nil, err
+	// Anonymous requests (only reachable for the iPXE carve-out, where no
+	// node identification is required) must not trigger node lookup or
+	// discovery.
+	var remoteNode node.Node
+	if rinfo.hwaddr == "" {
+		remoteNode = node.EmptyNode()
+	} else {
+		var err error
+		remoteNode, err = GetOrDiscoverNode(rinfo.hwaddr, conf.Warewulf.AutobuildOverlays())
+		if err != nil && err != node.ErrNoUnconfigured {
+			wwlog.ErrorExc(err, "")
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return nil, err
+		}
 	}
 
 	if remoteNode.AssetKey != "" && remoteNode.AssetKey != rinfo.assetkey {
@@ -152,7 +161,12 @@ func parseRequest(req *http.Request) (parsedRequest, error) {
 		}
 	}
 	if ret.hwaddr == "" {
-		return ret, errors.New("unable to determine wwid: " + req.URL.RawQuery)
+		// iPXE binaries are served without node identification; every other
+		// efiboot file and stage requires an identified client.
+		_, ok := servableIpxeFile(warewulfconf.Get(), ret.efifile)
+		if ret.stage != "efiboot" || !ok {
+			return ret, errors.New("unable to determine wwid: " + req.URL.RawQuery)
+		}
 	}
 
 	if len(req.URL.Query()["assetkey"]) > 0 {
