@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- `warewulfd` now serves the configured iPXE EFI binaries (the relative-path
+  values of `tftp.ipxe` in `warewulf.conf`) over HTTP at `/efiboot/<name>`,
+  from the iPXE source directory. These files are served without node
+  identification; a DHCP rule that hands UEFI HTTP boot clients this URL
+  starts iPXE instead of shim and GRUB.
+- New `warewulf:http boot` setting in warewulf.conf (`grub`, the default, or
+  `ipxe`) chooses what UEFI HTTP boot clients start: the shim/GRUB chain or the
+  `/efiboot/` iPXE URL added above. The dnsmasq and dhcpd templates hand UEFI
+  HTTP boot clients the configured target per architecture, and `wwctl upgrade
+  config` carries the key over from legacy configurations.
+- The dnsmasq template now answers UEFI HTTP boot clients over IPv6 (DHCPv6
+  option 61 architecture types 16 and 19) with a bracketed IPv6
+  `/efiboot/<iPXE binary>` bootfile URL when `warewulf: http boot: ipxe`;
+  shim/GRUB over IPv6 is still not supported.
 - `wwctl node set` and `wwctl profile set` now display a per-field
   before/after diff of the changes they are about to apply before prompting
   for confirmation. Nodes (or profiles) receiving identical changes are
@@ -73,6 +87,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- The dnsmasq and dhcpd host overlays now hand the UEFI HTTP boot URI to
+  clients of every architecture, including aarch64, and dhcpd does so whether
+  or not `grubboot` is enabled. #2231
 - The dhcpd overlay's openSUSE `/etc/dhcpd.conf` compatibility symlink no
   longer also renders `dhcpd.conf.ww` a second time.
 - Generate warnings from relative rather than exact permissions when applying

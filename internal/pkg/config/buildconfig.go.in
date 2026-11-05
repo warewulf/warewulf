@@ -1,8 +1,11 @@
 package config
 
 import (
-	"github.com/warewulf/warewulf/internal/pkg/util"
 	"path"
+	"strings"
+
+	"github.com/warewulf/warewulf/internal/pkg/util"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 var ConfigFile = "@SYSCONFDIR@/warewulf/warewulf.conf"
@@ -53,6 +56,7 @@ type WarewulfConf struct {
 	AutobuildOverlaysP *bool  `yaml:"autobuild overlays,omitempty" default:"true"`
 	EnableHostOverlayP *bool  `yaml:"host overlay,omitempty" default:"true"`
 	GrubBootP          *bool  `yaml:"grubboot,omitempty" default:"false"`
+	HTTPBootP          string `yaml:"http boot,omitempty" default:"grub"`
 	SystemdName        string `yaml:"systemd name,omitempty"`
 }
 
@@ -81,6 +85,21 @@ func (conf WarewulfConf) EnableHostOverlay() bool {
 
 func (conf WarewulfConf) GrubBoot() bool {
 	return util.BoolP(conf.GrubBootP)
+}
+
+// HTTPBoot returns "ipxe" or "grub" (the default) according to the `http
+// boot` setting, which selects what UEFI HTTP boot clients start. Any other
+// value warns and falls back to "grub".
+func (conf WarewulfConf) HTTPBoot() string {
+	switch strings.ToLower(strings.TrimSpace(conf.HTTPBootP)) {
+	case "", "grub":
+		return "grub"
+	case "ipxe":
+		return "ipxe"
+	default:
+		wwlog.Warn("invalid warewulf:http boot value %q: allowed values are 'grub' and 'ipxe'; using 'grub'", conf.HTTPBootP)
+		return "grub"
+	}
 }
 
 func (paths BuildConfig) NodesConf() string {
