@@ -302,14 +302,28 @@ node discovery using GRUB.
 HTTP boot
 ---------
 
-Modern EFI systems have the possibility to directly boot per http. HTTP boot is
-part of the GRUB boot chain described above, and is not a separate bootloader.
-The node firmware fetches ``shim.efi`` over HTTP instead of TFTP, and the rest
-of the chain proceeds as it does for a TFTP-booted GRUB node. Warewulf also
-serves the configured iPXE EFI binaries over HTTP at ``/efiboot/<name>``,
-from the iPXE source directory and without node identification; a DHCP rule
-that hands UEFI HTTP boot clients this URL starts iPXE instead of shim and
-GRUB.
+Modern EFI systems have the possibility to directly boot per http. HTTP boot
+starts either the shim/GRUB chain described above (the default) or iPXE,
+chosen by the ``warewulf:http boot`` setting:
+
+.. code-block:: yaml
+
+   warewulf:
+     http boot: ipxe
+
+With the default ``grub``, the node firmware fetches ``shim.efi`` over HTTP
+instead of TFTP, and the rest of the chain proceeds as it does for a
+TFTP-booted GRUB node.
+
+With ``ipxe``, both DHCP backends hand UEFI HTTP boot clients an iPXE binary
+served by warewulfd at ``http://<server>:<port>/efiboot/<ipxe binary>``, chosen
+by the client's architecture. Warewulf serves the configured iPXE EFI binaries
+over HTTP at ``/efiboot/<name>``, from the iPXE source directory and without
+node identification. Only x86-64 (architecture type 16) and arm64
+(architecture type 19) HTTP boot clients receive an iPXE URL; HTTP boot
+clients of other architectures get no boot file. The chainloaded iPXE then
+fetches its per-node configuration script from the same server's ``/ipxe/``
+route, which continues the regular iPXE boot method.
 
 The flow diagram is the following:
 

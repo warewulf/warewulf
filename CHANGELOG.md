@@ -13,6 +13,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   from the iPXE source directory. These files are served without node
   identification; a DHCP rule that hands UEFI HTTP boot clients this URL
   starts iPXE instead of shim and GRUB.
+- New `warewulf:http boot` setting in warewulf.conf (`grub`, the default, or
+  `ipxe`) chooses what UEFI HTTP boot clients start: the shim/GRUB chain or the
+  `/efiboot/` iPXE URL added above. The dnsmasq and dhcpd templates hand UEFI
+  HTTP boot clients the configured target per architecture, and `wwctl upgrade
+  config` carries the key over from legacy configurations.
 - `wwctl node set` and `wwctl profile set` now display a per-field
   before/after diff of the changes they are about to apply before prompting
   for confirmation. Nodes (or profiles) receiving identical changes are
