@@ -165,6 +165,12 @@ The ``{file}`` component determines what is served:
 * ``grub.cfg``: Serves a rendered GRUB configuration file from
   ``/etc/warewulf/grub/grub.cfg.ww``. The configuration is rendered as a Go
   template for the identified node.
+* The names of the configured iPXE binaries (``warewulf.conf``'s
+  ``tftp.ipxe`` values, matched by file name): Serves the iPXE binary from
+  the iPXE source directory (``paths.ipxesource``). Unlike the files above,
+  iPXE binaries are the same for every node and are served without node
+  identification. Only binaries configured with relative paths are served;
+  values given as absolute paths are available over TFTP only.
 
 Because ``shim.efi`` resolves subsequent files relative to its own load URL,
 GRUB and ``grub.cfg`` are also fetched from the ``/efiboot/`` path. The
