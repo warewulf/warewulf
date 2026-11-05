@@ -120,7 +120,8 @@ the shim/GRUB chain, \fBipxe\fP hands out an iPXE binary served over HTTP.
 Only affects clients that boot via UEFI HTTP boot. With \fBipxe\fP, only
 x86-64 (architecture type 16) and arm64 (architecture type 19) HTTP boot
 clients receive an iPXE URL; HTTP boot clients of other architectures get no
-boot file. Any other value is ignored with a warning and \fBgrub\fP is used.
+boot file. UEFI HTTP boot over IPv6 needs the \fBdnsmasq\fP backend and
+\fBipxe\fP. Any other value is ignored with a warning and \fBgrub\fP is used.
 
 Default: grub
 .IP

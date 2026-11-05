@@ -18,6 +18,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `/efiboot/` iPXE URL added above. The dnsmasq and dhcpd templates hand UEFI
   HTTP boot clients the configured target per architecture, and `wwctl upgrade
   config` carries the key over from legacy configurations.
+- The dnsmasq template now answers UEFI HTTP boot clients over IPv6 (DHCPv6
+  option 61 architecture types 16 and 19) with a bracketed IPv6
+  `/efiboot/<iPXE binary>` bootfile URL when `warewulf: http boot: ipxe`;
+  shim/GRUB over IPv6 is still not supported.
 - `wwctl node set` and `wwctl profile set` now display a per-field
   before/after diff of the changes they are about to apply before prompting
   for confirmation. Nodes (or profiles) receiving identical changes are
