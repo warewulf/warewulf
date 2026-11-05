@@ -1,10 +1,12 @@
 package config
 
 import (
+	"bytes"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
 func TestParse(t *testing.T) {
@@ -18,6 +20,7 @@ func TestParse(t *testing.T) {
 warewulf:
   autobuild overlays: true
   grubboot: false
+  http boot: grub
   host overlay: true
   port: 9873
   secure: true
@@ -64,6 +67,7 @@ netmask: 255.255.255.0
 warewulf:
   autobuild overlays: true
   grubboot: false
+  http boot: grub
   host overlay: true
   port: 9873
   secure: true
@@ -112,6 +116,7 @@ netmask: 255.255.0.0
 warewulf:
   autobuild overlays: true
   grubboot: false
+  http boot: grub
   host overlay: true
   port: 9873
   secure: true
@@ -157,6 +162,7 @@ prefixlen6: "64"
 warewulf:
   autobuild overlays: true
   grubboot: false
+  http boot: grub
   host overlay: true
   port: 9873
   secure: true
@@ -231,6 +237,7 @@ network: 192.168.200.0
 warewulf:
   autobuild overlays: true
   grubboot: false
+  http boot: grub
   host overlay: true
   port: 9873
   secure: false
@@ -472,6 +479,61 @@ func TestIpCIDR6(t *testing.T) {
 			conf.Ipaddr6 = tt.ipaddr6
 			conf.PrefixLen6 = tt.prefixlen6
 			assert.Equal(t, tt.cidr, conf.IpCIDR6())
+		})
+	}
+}
+
+func TestHTTPBoot(t *testing.T) {
+	tests := []struct {
+		name   string
+		value  string
+		expect string
+		warn   string
+	}{
+		{
+			name:   "default is grub",
+			value:  "",
+			expect: "grub",
+		},
+		{
+			name:   "grub stays grub",
+			value:  "grub",
+			expect: "grub",
+		},
+		{
+			name:   "ipxe",
+			value:  "ipxe",
+			expect: "ipxe",
+		},
+		{
+			name:   "IPXE any case",
+			value:  "IPXE",
+			expect: "ipxe",
+		},
+		{
+			name:   " ipxe trimmed",
+			value:  " ipxe ",
+			expect: "ipxe",
+		},
+		{
+			name:   "bogus warns and falls back to grub",
+			value:  "bogus",
+			expect: "grub",
+			warn:   "invalid warewulf:http boot value \"bogus\"",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			logbuf := new(bytes.Buffer)
+			wwlog.SetLogWriter(logbuf)
+			conf := WarewulfConf{HTTPBootP: tt.value}
+			assert.Equal(t, tt.expect, conf.HTTPBoot())
+			if tt.warn == "" {
+				assert.Empty(t, logbuf.String())
+			} else {
+				assert.Contains(t, logbuf.String(), tt.warn)
+			}
 		})
 	}
 }
