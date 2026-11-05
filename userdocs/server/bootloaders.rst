@@ -353,9 +353,13 @@ or not ``grubboot`` is enabled.
 
    HTTP boot has the following limitations in the current implementation.
 
-   * The HTTP boot URI is built from the server's IPv4 address, so HTTP boot
-     requires an IPv4 address on the provisioning interface and is not usable on
-     an IPv6-only Warewulf server.
+   * HTTP boot over IPv6 works only with the ``dnsmasq`` backend and
+     ``warewulf: http boot: ipxe``. The URI then uses the server's IPv6
+     address in brackets. shim/GRUB over IPv6 cannot identify the node, and
+     the ISC ``dhcpd`` backend has no IPv6 support. The DHCPv6 reply carries
+     the boot file URL but no vendor class option (dnsmasq cannot send it
+     with an enterprise number), and real UEFI firmware has not been tested
+     with it.
    * The ``/efiboot/`` route identifies the requesting node from the ``wwid``
      query parameter or, when that is absent, from a lookup of the client's
      address in the IPv4 ARP cache. See :ref:`server-routes` for details.

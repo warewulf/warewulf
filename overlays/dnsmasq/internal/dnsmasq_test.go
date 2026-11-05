@@ -103,6 +103,8 @@ dhcp-match=set:x86PC,option6:61,0007   # EFI x86-64
 dhcp-match=set:aarch64,option6:61,0011 # EFI aarch64
 dhcp-vendorclass=set:x86PC,enterprise:343,PXEClient:Arch:00007   # EFI x86-64
 dhcp-vendorclass=set:aarch64,enterprise:343,PXEClient:Arch:00011 # EFI aarch64
+dhcp-match=set:efi-http6-x64,option6:61,16  # EFI x86-64 HTTP boot
+dhcp-match=set:efi-http6-a64,option6:61,19  # EFI aarch64 HTTP boot
 
 # IPv6 bootfile-url (iPXE EFI binary)
 dhcp-option=tag:x86PC,option6:bootfile-url,"tftp://[2001:db8::1]/warewulf/ipxe-snponly-x86_64.efi"
@@ -148,6 +150,8 @@ dhcp-match=set:x86PC,option6:61,0007   # EFI x86-64
 dhcp-match=set:aarch64,option6:61,0011 # EFI aarch64
 dhcp-vendorclass=set:x86PC,enterprise:343,PXEClient:Arch:00007   # EFI x86-64
 dhcp-vendorclass=set:aarch64,enterprise:343,PXEClient:Arch:00011 # EFI aarch64
+dhcp-match=set:efi-http6-x64,option6:61,16  # EFI x86-64 HTTP boot
+dhcp-match=set:efi-http6-a64,option6:61,19  # EFI aarch64 HTTP boot
 
 # IPv6 bootfile-url (iPXE EFI binary)
 dhcp-option=tag:x86PC,option6:bootfile-url,"tftp://[2001:db8::1]/warewulf/ipxe-snponly-x86_64.efi"
@@ -199,10 +203,18 @@ dhcp-match=set:x86PC,option6:61,0007   # EFI x86-64
 dhcp-match=set:aarch64,option6:61,0011 # EFI aarch64
 dhcp-vendorclass=set:x86PC,enterprise:343,PXEClient:Arch:00007   # EFI x86-64
 dhcp-vendorclass=set:aarch64,enterprise:343,PXEClient:Arch:00011 # EFI aarch64
+dhcp-match=set:efi-http6-x64,option6:61,16  # EFI x86-64 HTTP boot
+dhcp-match=set:efi-http6-a64,option6:61,19  # EFI aarch64 HTTP boot
 
 # IPv6 bootfile-url (iPXE EFI binary)
 dhcp-option=tag:x86PC,option6:bootfile-url,"tftp://[2001:db8::1]/warewulf/ipxe-snponly-x86_64.efi"
 dhcp-option=tag:aarch64,option6:bootfile-url,"tftp://[2001:db8::1]/warewulf/snponly.efi"
+
+# UEFI HTTP boot over IPv6; dnsmasq cannot send the DHCPv6 vendor class (option 16)
+# with an enterprise number, so none is sent
+dhcp-option=tag:efi-http6-x64,tag:!iPXE,option6:bootfile-url,"http://[2001:db8::1]:9873/efiboot/ipxe-snponly-x86_64.efi"
+dhcp-option=tag:efi-http6-a64,tag:!iPXE,option6:bootfile-url,"http://[2001:db8::1]:9873/efiboot/snponly.efi"
+
 # IPv6 iPXE binary will get the following configuration file
 dhcp-option=tag:iPXE,option6:bootfile-url,"http://[2001:db8::1]:9873/ipxe/${mac:hexhyp}?assetkey=${asset}&uuid=${uuid}"
 

@@ -55,6 +55,8 @@ dhcp-match=set:x86PC,option6:61,0007   # EFI x86-64
 dhcp-match=set:aarch64,option6:61,0011 # EFI aarch64
 dhcp-vendorclass=set:x86PC,enterprise:343,PXEClient:Arch:00007   # EFI x86-64
 dhcp-vendorclass=set:aarch64,enterprise:343,PXEClient:Arch:00011 # EFI aarch64
+dhcp-match=set:efi-http6-x64,option6:61,16  # EFI x86-64 HTTP boot
+dhcp-match=set:efi-http6-a64,option6:61,19  # EFI aarch64 HTTP boot
 
 # IPv6 bootfile-url (iPXE EFI binary)
 {{ with (index $.Tftp.IpxeBinaries "00:07" ) -}}
@@ -62,6 +64,17 @@ dhcp-option=tag:x86PC,option6:bootfile-url,"tftp://[{{$.Ipaddr6}}]/warewulf/{{ i
 {{ end -}}
 {{ with (index $.Tftp.IpxeBinaries "00:0B" ) -}}
 dhcp-option=tag:aarch64,option6:bootfile-url,"tftp://[{{$.Ipaddr6}}]/warewulf/{{ index $.Tftp.IpxeBinaries "00:0B" | basename }}"
+{{ end -}}
+
+{{- if eq $httpBoot "ipxe" }}
+# UEFI HTTP boot over IPv6; dnsmasq cannot send the DHCPv6 vendor class (option 16)
+# with an enterprise number, so none is sent
+{{ with (index $.Tftp.IpxeBinaries "00:07" ) -}}
+dhcp-option=tag:efi-http6-x64,tag:!iPXE,option6:bootfile-url,"http://[{{$.Ipaddr6}}]:{{$.Warewulf.Port}}/efiboot/{{ index $.Tftp.IpxeBinaries "00:07" | basename }}"
+{{ end -}}
+{{ with (index $.Tftp.IpxeBinaries "00:0B" ) -}}
+dhcp-option=tag:efi-http6-a64,tag:!iPXE,option6:bootfile-url,"http://[{{$.Ipaddr6}}]:{{$.Warewulf.Port}}/efiboot/{{ index $.Tftp.IpxeBinaries "00:0B" | basename }}"
+{{ end }}
 {{ end -}}
 
 # IPv6 iPXE binary will get the following configuration file

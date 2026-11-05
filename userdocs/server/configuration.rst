@@ -146,7 +146,8 @@ warewulf
   that boot via TFTP follow ``warewulf:grubboot``. With ``ipxe``, only x86-64
   (architecture type 16) and arm64 (architecture type 19) HTTP boot clients
   receive an iPXE URL; HTTP boot clients of other architectures get no boot
-  file.
+  file. UEFI HTTP boot over IPv6 needs the ``dnsmasq`` backend and
+  ``warewulf: http boot: ipxe``.
 
 dhcp
 ====
