@@ -60,6 +60,9 @@ one.
 ## Pull requests
 
 - Sign off every commit (`git commit -s`, per `DCO.txt`).
+- Credit an AI assistant with an `Assisted-By:` trailer (for example,
+  `Assisted-By: Claude Opus 5.5 <noreply@anthropic.com>`), not
+  `Co-Authored-By:`, which is for human co-authors.
 - Target `main`; maintainers cherry-pick fixes to the `v4.N.x` branches.
 - Add a `CHANGELOG.md` entry under `## Unreleased` for a functional change. CI
   checks for one; `CONTRIBUTING.md` lists what needs one.

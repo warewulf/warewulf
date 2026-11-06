@@ -75,6 +75,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - The `warewulf` firewalld service now opens the default TLS port (9874), so
   nodes can fetch overlays when `tls: true` is set. #2326
+- The sos plugin no longer collects SSH host private keys from
+  `/etc/warewulf/keys/`, and scrubs any other private keys or certificates
+  under `/etc/warewulf/`.
+- The sos plugin now masks secrets it collects: IPMI passwords, API user
+  password hashes, and any key named like password/passwd/secret/token in
+  `/etc/warewulf/` files (YAML and JSON) and in `wwctl node list -a` /
+  `wwctl profile list -a` output (including tags, network tags, and
+  resources). Boolean values are kept.
 - The dhcpd overlay's openSUSE `/etc/dhcpd.conf` compatibility symlink no
   longer also renders `dhcpd.conf.ww` a second time.
 - Generate warnings from relative rather than exact permissions when applying
@@ -91,7 +99,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Add github.com/apptainer/sif/v2 v2.21.1 for SIF image import. #2285
 
-## v4.7.2, unreleased
+## v4.7.2, 2026-11-01
 
 ### Added
 
