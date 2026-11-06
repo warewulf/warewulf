@@ -110,4 +110,4 @@
 - Travis Greene <trg244@msstate.edu> [@sn8to](https://github.com/sn8to)
 - Logan Enright <lenright@ciq.com> [loag-ciq](https://github.com/loag-ciq)
 - Daniel Summer [@dsummer](https://github.com/dsummer)
-- SNOWFLEX [@raven-clown](https://github.com/raven-clown)
+- Ekdanai Kummee [@raven-clown](https://github.com/raven-clown)
