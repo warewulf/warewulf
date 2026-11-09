@@ -107,7 +107,7 @@ func Test_HandleFiles(t *testing.T) {
 
 	conf := warewulfconf.Get()
 	conf.Paths.WWFilesdir = env.GetPath(testenv.WWFilesdir)
-	conf.Warewulf.SecureP = boolPtr(false)
+	conf.Warewulf.SecureP = warewulfconf.NewSecureRoutes()
 
 	for _, tt := range filesHandlerTests {
 		t.Run(tt.description, func(t *testing.T) {
@@ -138,7 +138,7 @@ func Test_HandleFiles_NoNode(t *testing.T) {
 
 	conf := warewulfconf.Get()
 	conf.Paths.WWFilesdir = env.GetPath(testenv.WWFilesdir)
-	conf.Warewulf.SecureP = boolPtr(false)
+	conf.Warewulf.SecureP = warewulfconf.NewSecureRoutes()
 
 	t.Run("no wwid and no ARP match", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/files/test.txt", nil)
@@ -168,7 +168,7 @@ func Test_HandleFiles_Render(t *testing.T) {
 
 	conf := warewulfconf.Get()
 	conf.Paths.WWFilesdir = env.GetPath(testenv.WWFilesdir)
-	conf.Warewulf.SecureP = boolPtr(false)
+	conf.Warewulf.SecureP = warewulfconf.NewSecureRoutes()
 
 	t.Run("render .ww file", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/files/template.ww?render&wwid="+testHwaddr, nil)
@@ -282,7 +282,7 @@ func Test_HandleFiles_AssetKey(t *testing.T) {
 
 	conf := warewulfconf.Get()
 	conf.Paths.WWFilesdir = env.GetPath(testenv.WWFilesdir)
-	conf.Warewulf.SecureP = boolPtr(false)
+	conf.Warewulf.SecureP = warewulfconf.NewSecureRoutes()
 
 	t.Run("assetkey required but missing", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/files/test.txt?wwid="+testHwaddr, nil)
@@ -323,7 +323,7 @@ func Test_HandleFiles_SecurePort(t *testing.T) {
 
 	conf := warewulfconf.Get()
 	conf.Paths.WWFilesdir = env.GetPath(testenv.WWFilesdir)
-	conf.Warewulf.SecureP = boolPtr(true)
+	conf.Warewulf.SecureP = warewulfconf.NewSecureRoutes(warewulfconf.SecureRouteRuntime, warewulfconf.SecureRouteFiles)
 
 	t.Run("non-privileged port rejected", func(t *testing.T) {
 		// httptest.NewRequest defaults to 192.0.2.1:1234 (port >= 1024)
@@ -359,7 +359,7 @@ func Test_HandleFiles_SecureFilesOverride(t *testing.T) {
 
 	conf := warewulfconf.Get()
 	conf.Paths.WWFilesdir = env.GetPath(testenv.WWFilesdir)
-	conf.Warewulf.SecureP = boolPtr(true)
+	conf.Warewulf.SecureP = warewulfconf.NewSecureRoutes(warewulfconf.SecureRouteRuntime, warewulfconf.SecureRouteFiles)
 	conf.Warewulf.SecureFilesP = boolPtr(false)
 	defer func() { conf.Warewulf.SecureFilesP = nil }()
 

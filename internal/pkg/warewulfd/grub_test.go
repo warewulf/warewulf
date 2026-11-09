@@ -51,8 +51,7 @@ nodes:
 	assert.NoError(t, dbErr)
 
 	conf := warewulfconf.Get()
-	secureFalse := false
-	conf.Warewulf.SecureP = &secureFalse
+	conf.Warewulf.SecureP = warewulfconf.NewSecureRoutes()
 	conf.Ipaddr = "10.10.0.1"
 	conf.Ipaddr6 = "fd00:10::1"
 

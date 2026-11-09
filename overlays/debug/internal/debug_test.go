@@ -81,7 +81,9 @@ data from other structures.
 ## Warewulf server
 
 - Port: 9873
-- Secure: true
+- SecureRuntime: true
+- SecureSystemOverlay: false
+- SecureFiles: true
 - UpdateInterval: 60
 - AutobuildOverlays: true
 - EnableHostOverlay: true
