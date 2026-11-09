@@ -140,6 +140,14 @@ warewulf
 * ``warewulf:grubboot``: Controls whether iPXE (default) or GRUB is used as the
   network bootloader.
 
+* ``warewulf:http boot``: Chooses what UEFI HTTP boot clients start: the
+  shim/GRUB chain (``grub``, the default) or an iPXE binary served over HTTP
+  (``ipxe``). It only affects clients that boot via UEFI HTTP boot; clients
+  that boot via TFTP follow ``warewulf:grubboot``. With ``ipxe``, only x86-64
+  (architecture type 16) and arm64 (architecture type 19) HTTP boot clients
+  receive an iPXE URL; HTTP boot clients of other architectures get no boot
+  file.
+
 dhcp
 ====
 
