@@ -529,6 +529,10 @@ before the image is loaded) include Ignition in the Dracut image.
 
    wwctl image exec rockylinux-9 -- /usr/bin/dracut --force --no-hostonly --add wwinit --add ignition --regenerate-all
 
+If Ignition fails during Dracut, the node stops booting rather than continuing
+with unprovisioned disks. If the ``ignition`` command is not present in the
+Dracut image, the node continues to boot without running it.
+
 debug
 -----
 
