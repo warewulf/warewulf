@@ -354,6 +354,15 @@ All configured overlays are provisioned initially along with the OS image
 itself; but **wwclient** periodically fetches and applies the runtime overlay to
 allow configuration of some settings without a reboot.
 
+wwclient fetches the runtime overlay every ``warewulf:update interval`` seconds
+(60 by default). To apply a rebuilt runtime overlay now, reload wwclient on the
+nodes, which sends it ``SIGHUP``:
+
+.. code-block:: console
+
+   # wwctl overlay build
+   # wwctl ssh n1 systemctl reload wwclient
+
 wwclient contacts the ``ipaddr`` value from ``warewulf.conf`` by default. This
 can be overridden by specifying a ``WW_IPADDR`` environment variable, which can
 be set via an overlay in ``/etc/default/wwclient``.
