@@ -33,7 +33,7 @@ require (
 	github.com/swaggest/swgui v1.8.9
 	github.com/swaggest/usecase v1.3.1
 	go.podman.io/image/v5 v5.42.0
-	go.podman.io/storage v1.65.0
+	go.podman.io/storage v1.65.1
 	golang.org/x/crypto v0.58.0
 	golang.org/x/exp v0.0.0-20241217172543-b2144cdd0a67
 	golang.org/x/sys v0.49.0
