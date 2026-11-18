@@ -305,9 +305,11 @@ HTTP boot
 Modern EFI systems have the possibility to directly boot per http. HTTP boot is
 part of the GRUB boot chain described above, and is not a separate bootloader.
 The node firmware fetches ``shim.efi`` over HTTP instead of TFTP, and the rest
-of the chain proceeds as it does for a TFTP-booted GRUB node. Warewulf does not
-serve an iPXE binary over HTTP, so HTTP boot cannot be used to start the iPXE
-boot method.
+of the chain proceeds as it does for a TFTP-booted GRUB node. Warewulf also
+serves the configured iPXE EFI binaries over HTTP at ``/efiboot/<name>``,
+from the iPXE source directory and without node identification; a DHCP rule
+that hands UEFI HTTP boot clients this URL starts iPXE instead of shim and
+GRUB.
 
 The flow diagram is the following:
 

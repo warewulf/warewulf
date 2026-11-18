@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- `warewulfd` now serves the configured iPXE EFI binaries (the relative-path
+  values of `tftp.ipxe` in `warewulf.conf`) over HTTP at `/efiboot/<name>`,
+  from the iPXE source directory. These files are served without node
+  identification; a DHCP rule that hands UEFI HTTP boot clients this URL
+  starts iPXE instead of shim and GRUB.
 - `wwctl node set` and `wwctl profile set` now display a per-field
   before/after diff of the changes they are about to apply before prompting
   for confirmation. Nodes (or profiles) receiving identical changes are
