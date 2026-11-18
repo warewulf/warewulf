@@ -77,7 +77,7 @@ dhcp-match=set:x86PC,option:client-arch, 9 #EFI x86-64
 dhcp-match=set:aarch64,option:client-arch, 11 #EFI aarch64
 dhcp-match=set:iPXE,77,"iPXE"
 dhcp-userclass=set:iPXE,iPXE
-dhcp-vendorclass=set:efi-http,HTTPClient:Arch:00016
+dhcp-vendorclass=set:efi-http,HTTPClient
 dhcp-option-force=tag:efi-http,60,HTTPClient
 # for http boot always use shim/grub
 dhcp-boot=tag:efi-http,"http://192.168.0.1:9873/efiboot/shim.efi"
@@ -120,7 +120,7 @@ dhcp-match=set:x86PC,option:client-arch, 9 #EFI x86-64
 dhcp-match=set:aarch64,option:client-arch, 11 #EFI aarch64
 dhcp-match=set:iPXE,77,"iPXE"
 dhcp-userclass=set:iPXE,iPXE
-dhcp-vendorclass=set:efi-http,HTTPClient:Arch:00016
+dhcp-vendorclass=set:efi-http,HTTPClient
 dhcp-option-force=tag:efi-http,60,HTTPClient
 # for http boot always use shim/grub
 dhcp-boot=tag:efi-http,"http://192.168.0.1:9873/efiboot/shim.efi"

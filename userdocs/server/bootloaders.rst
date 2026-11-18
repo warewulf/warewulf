@@ -327,19 +327,16 @@ The flow diagram is the following:
 Warewulf delivers the initial ``shim.efi`` and ``grub.efi`` via http as taken
 directly from the node's assigned image.
 
+Both DHCP backends hand the HTTP boot URI to every client whose vendor class
+starts with ``HTTPClient``, whatever its architecture — an aarch64 client
+presents ``HTTPClient:Arch:00019``, architecture type 19, "arm uefi 64 boot
+from http", in the `IANA processor architecture type`_ registry — and whether
+or not ``grubboot`` is enabled.
+
 .. note::
 
    HTTP boot has the following limitations in the current implementation.
 
-   * The DHCP rule that hands out the HTTP boot URI is generated differently by
-     each DHCP backend. With ISC ``dhcpd`` (the default) the rule is written
-     only when ``grubboot`` is enabled, and it matches any ``HTTPClient`` vendor
-     class, so the rule matches clients of any architecture. With ``dnsmasq``
-     the rule is always written, but it matches only the vendor class
-     ``HTTPClient:Arch:00016``, which is the `IANA processor architecture type`_
-     for "x64 uefi boot from http". An aarch64 client booting over HTTP presents
-     architecture type 19, "arm uefi 64 boot from http", and is therefore not
-     matched.
    * The HTTP boot URI is built from the server's IPv4 address, so HTTP boot
      requires an IPv4 address on the provisioning interface and is not usable on
      an IPv6-only Warewulf server.
