@@ -302,12 +302,28 @@ node discovery using GRUB.
 HTTP boot
 ---------
 
-Modern EFI systems have the possibility to directly boot per http. HTTP boot is
-part of the GRUB boot chain described above, and is not a separate bootloader.
-The node firmware fetches ``shim.efi`` over HTTP instead of TFTP, and the rest
-of the chain proceeds as it does for a TFTP-booted GRUB node. Warewulf does not
-serve an iPXE binary over HTTP, so HTTP boot cannot be used to start the iPXE
-boot method.
+Modern EFI systems have the possibility to directly boot per http. HTTP boot
+starts either the shim/GRUB chain described above (the default) or iPXE,
+chosen by the ``warewulf:http boot`` setting:
+
+.. code-block:: yaml
+
+   warewulf:
+     http boot: ipxe
+
+With the default ``grub``, the node firmware fetches ``shim.efi`` over HTTP
+instead of TFTP, and the rest of the chain proceeds as it does for a
+TFTP-booted GRUB node.
+
+With ``ipxe``, both DHCP backends hand UEFI HTTP boot clients an iPXE binary
+served by warewulfd at ``http://<server>:<port>/efiboot/<ipxe binary>``, chosen
+by the client's architecture. Warewulf serves the configured iPXE EFI binaries
+over HTTP at ``/efiboot/<name>``, from the iPXE source directory and without
+node identification. Only x86-64 (architecture type 16) and arm64
+(architecture type 19) HTTP boot clients receive an iPXE URL; HTTP boot
+clients of other architectures get no boot file. The chainloaded iPXE then
+fetches its per-node configuration script from the same server's ``/ipxe/``
+route, which continues the regular iPXE boot method.
 
 The flow diagram is the following:
 
@@ -327,22 +343,23 @@ The flow diagram is the following:
 Warewulf delivers the initial ``shim.efi`` and ``grub.efi`` via http as taken
 directly from the node's assigned image.
 
+Both DHCP backends hand the HTTP boot URI to every client whose vendor class
+starts with ``HTTPClient``, whatever its architecture — an aarch64 client
+presents ``HTTPClient:Arch:00019``, architecture type 19, "arm uefi 64 boot
+from http", in the `IANA processor architecture type`_ registry — and whether
+or not ``grubboot`` is enabled.
+
 .. note::
 
    HTTP boot has the following limitations in the current implementation.
 
-   * The DHCP rule that hands out the HTTP boot URI is generated differently by
-     each DHCP backend. With ISC ``dhcpd`` (the default) the rule is written
-     only when ``grubboot`` is enabled, and it matches any ``HTTPClient`` vendor
-     class, so the rule matches clients of any architecture. With ``dnsmasq``
-     the rule is always written, but it matches only the vendor class
-     ``HTTPClient:Arch:00016``, which is the `IANA processor architecture type`_
-     for "x64 uefi boot from http". An aarch64 client booting over HTTP presents
-     architecture type 19, "arm uefi 64 boot from http", and is therefore not
-     matched.
-   * The HTTP boot URI is built from the server's IPv4 address, so HTTP boot
-     requires an IPv4 address on the provisioning interface and is not usable on
-     an IPv6-only Warewulf server.
+   * HTTP boot over IPv6 works only with the ``dnsmasq`` backend and
+     ``warewulf: http boot: ipxe``. The URI then uses the server's IPv6
+     address in brackets. shim/GRUB over IPv6 cannot identify the node, and
+     the ISC ``dhcpd`` backend has no IPv6 support. The DHCPv6 reply carries
+     the boot file URL but no vendor class option (dnsmasq cannot send it
+     with an enterprise number), and real UEFI firmware has not been tested
+     with it.
    * The ``/efiboot/`` route identifies the requesting node from the ``wwid``
      query parameter or, when that is absent, from a lookup of the client's
      address in the IPv4 ARP cache. See :ref:`server-routes` for details.

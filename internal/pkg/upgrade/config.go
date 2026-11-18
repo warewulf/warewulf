@@ -177,6 +177,7 @@ type WarewulfConf struct {
 	Syslog            *bool  `yaml:"syslog"`
 	DataStore         string `yaml:"datastore"`
 	GrubBoot          *bool  `yaml:"grubboot"`
+	HTTPBoot          string `yaml:"http boot"`
 	SystemdName       string `yaml:"systemd name"`
 }
 
@@ -194,6 +195,7 @@ func (legacy *WarewulfConf) Upgrade() (upgraded *config.WarewulfConf) {
 		wwlog.Warn("syslog configuration ignored: all logs now go to stdout/stderr")
 	}
 	upgraded.GrubBootP = legacy.GrubBoot
+	upgraded.HTTPBootP = legacy.HTTPBoot
 	upgraded.SystemdName = legacy.SystemdName
 	return upgraded
 }

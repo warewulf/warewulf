@@ -104,6 +104,29 @@ Default: true
 .IP
 
 .TP
+\fBgrubboot\fP
+
+Controls whether iPXE (default) or GRUB is used as the network bootloader
+for clients that boot via TFTP.
+
+Default: false
+.IP
+
+.TP
+\fBhttp boot\fP
+
+Chooses what UEFI HTTP boot clients start: \fBgrub\fP (the default) boots
+the shim/GRUB chain, \fBipxe\fP hands out an iPXE binary served over HTTP.
+Only affects clients that boot via UEFI HTTP boot. With \fBipxe\fP, only
+x86-64 (architecture type 16) and arm64 (architecture type 19) HTTP boot
+clients receive an iPXE URL; HTTP boot clients of other architectures get no
+boot file. UEFI HTTP boot over IPv6 needs the \fBdnsmasq\fP backend and
+\fBipxe\fP. Any other value is ignored with a warning and \fBgrub\fP is used.
+
+Default: grub
+.IP
+
+.TP
 \fBdatastore\fP
 
 The location where Warewulf caches and stores OCI data.

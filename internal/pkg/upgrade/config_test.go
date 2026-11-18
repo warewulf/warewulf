@@ -1099,6 +1099,34 @@ hostfile:
   overlays: hosts
 `,
 	},
+	{
+		// A legacy `http boot` key must survive `wwctl upgrade config`; the
+		// upgrade rebuilds warewulf.conf field by field, so an unmapped key
+		// would otherwise be silently dropped.
+		name: "http boot carried through",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+  http boot: ipxe
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+warewulf:
+  port: 9873
+  http boot: ipxe
+dhcp:
+  overlays: dhcpd
+tftp:
+  overlays: tftproot
+nfs:
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
+`,
+	},
 }
 
 func Test_UpgradeConfig(t *testing.T) {
