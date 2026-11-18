@@ -81,8 +81,7 @@ nodes:
 	assert.NoError(t, dbErr)
 
 	conf := warewulfconf.Get()
-	secureFalse := false
-	conf.Warewulf.SecureP = &secureFalse
+	conf.Warewulf.SecureP = warewulfconf.NewSecureRoutes()
 	conf.Ipaddr = "10.10.0.1"
 	conf.Ipaddr6 = "fd00:10::1"
 	assert.NoError(t, os.MkdirAll(path.Join(conf.Paths.OverlayProvisiondir(), "n1"), 0700))
@@ -131,8 +130,7 @@ func Test_ProvisionSendOutsideDir(t *testing.T) {
 	assert.NoError(t, dbErr)
 
 	conf := warewulfconf.Get()
-	secureFalse := false
-	conf.Warewulf.SecureP = &secureFalse
+	conf.Warewulf.SecureP = warewulfconf.NewSecureRoutes()
 	imageDir := path.Join(conf.Paths.WWProvisiondir, "images")
 	assert.NoError(t, os.MkdirAll(imageDir, 0700))
 	assert.NoError(t, os.WriteFile(path.Join(conf.Paths.WWProvisiondir, "secret.img"), []byte("secret"), 0600))
@@ -192,8 +190,7 @@ func Test_ProvisionSendImageRootFs(t *testing.T) {
 	assert.NoError(t, dbErr)
 
 	conf := warewulfconf.Get()
-	secureFalse := false
-	conf.Warewulf.SecureP = &secureFalse
+	conf.Warewulf.SecureP = warewulfconf.NewSecureRoutes()
 
 	tests := []struct {
 		url    string

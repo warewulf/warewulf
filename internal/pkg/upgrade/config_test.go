@@ -656,8 +656,8 @@ ipaddr: 10.0.0.1
 netmask: 255.255.252.0
 warewulf:
   port: 9873
-  secure: true
-  secure files: false
+  secure:
+    - runtime
   update interval: 60
 dhcp:
   overlays: dhcpd
@@ -1076,6 +1076,122 @@ ssh:
   overlays: ssh.wwctl,host
 hostfile:
   overlays: hosts,host
+`,
+	},
+	{
+		name: "secure files enables files",
+		legacyYaml: `
+warewulf:
+  secure: false
+  secure files: true
+`,
+		upgradedYaml: `
+warewulf:
+  secure:
+    - files
+dhcp:
+  overlays: dhcpd
+tftp:
+  overlays: tftproot
+nfs:
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
+`,
+	},
+	{
+		name: "secure files agrees with secure",
+		legacyYaml: `
+warewulf:
+  secure: true
+  secure files: true
+`,
+		upgradedYaml: `
+warewulf:
+  secure: true
+dhcp:
+  overlays: dhcpd
+tftp:
+  overlays: tftproot
+nfs:
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
+`,
+	},
+	{
+		name: "secure files agrees with unset secure",
+		legacyYaml: `
+warewulf:
+  port: 9873
+  secure files: true
+`,
+		upgradedYaml: `
+warewulf:
+  port: 9873
+dhcp:
+  overlays: dhcpd
+tftp:
+  overlays: tftproot
+nfs:
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
+`,
+	},
+	{
+		name: "secure files disagrees with unset secure",
+		legacyYaml: `
+warewulf:
+  port: 9873
+  secure files: false
+`,
+		upgradedYaml: `
+warewulf:
+  port: 9873
+  secure:
+    - runtime
+dhcp:
+  overlays: dhcpd
+tftp:
+  overlays: tftproot
+nfs:
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
+`,
+	},
+	{
+		name: "secure list round-trip",
+		legacyYaml: `
+warewulf:
+  secure:
+    - files
+    - system
+`,
+		upgradedYaml: `
+warewulf:
+  secure:
+    - system
+    - files
+dhcp:
+  overlays: dhcpd
+tftp:
+  overlays: tftproot
+nfs:
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
 `,
 	},
 	{
