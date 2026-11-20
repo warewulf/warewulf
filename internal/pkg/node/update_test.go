@@ -182,3 +182,19 @@ func TestUpdateProfileFrom_BasicField(t *testing.T) {
 
 	assert.Equal(t, "updated", dst.Comment)
 }
+
+func TestUpdateFrom_MachineId(t *testing.T) {
+	oldGen := MachineIdGenerator
+	defer func() { MachineIdGenerator = oldGen }()
+	MachineIdGenerator = func() string {
+		return "1234567890abcdef1234567890abcdef"
+	}
+
+	dst := NewNode("test")
+	dst.MachineId = ""
+
+	src := NewNode("")
+	dst.UpdateFrom(&src, changedSet())
+
+	assert.Equal(t, "1234567890abcdef1234567890abcdef", dst.MachineId)
+}

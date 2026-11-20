@@ -165,6 +165,7 @@ func Test_listFields(t *testing.T) {
 			fields: []string{
 				"Discoverable",
 				"AssetKey",
+				"MachineId",
 				"Profiles",
 				"Groups",
 				"Comment",
