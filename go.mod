@@ -15,7 +15,7 @@ require (
 	github.com/creasty/defaults v1.11.0
 	github.com/cyphar/filepath-securejoin v0.7.0
 	github.com/fatih/color v1.19.0
-	github.com/go-chi/chi/v5 v5.3.2
+	github.com/go-chi/chi/v5 v5.5.0
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-version v1.9.0
 	github.com/kinbiko/jsonassert v1.2.0
