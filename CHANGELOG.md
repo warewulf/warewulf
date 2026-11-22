@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- A `dhcp:router advertisements` setting in `warewulf.conf` (`warewulf`,
+  `warewulf-no-default-route`, or `upstream`) selects whether and how the
+  dnsmasq backend sends IPv6 Router Advertisements: as the default router
+  (default; unset or unknown values behave as `warewulf`), with router
+  lifetime 0, or not at all. Only affects dnsmasq; with `upstream`, the
+  upstream router must set the M or O flag or iPXE will not boot. #2229
 - `wwctl node set` and `wwctl profile set` now display a per-field
   before/after diff of the changes they are about to apply before prompting
   for confirmation. Nodes (or profiles) receiving identical changes are

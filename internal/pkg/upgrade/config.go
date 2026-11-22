@@ -213,14 +213,15 @@ func (legacy *APIConf) Upgrade() (upgraded *config.APIConf) {
 }
 
 type DHCPConf struct {
-	Enabled     *bool              `yaml:"enabled"`
-	Template    string             `yaml:"template"`
-	RangeStart  string             `yaml:"range start"`
-	RangeEnd    string             `yaml:"range end"`
-	Range6Start string             `yaml:"range6 start"`
-	Range6End   string             `yaml:"range6 end"`
-	SystemdName string             `yaml:"systemd name"`
-	Overlays    config.OverlayList `yaml:"overlays"`
+	Enabled              *bool              `yaml:"enabled"`
+	Template             string             `yaml:"template"`
+	RouterAdvertisements string             `yaml:"router advertisements"`
+	RangeStart           string             `yaml:"range start"`
+	RangeEnd             string             `yaml:"range end"`
+	Range6Start          string             `yaml:"range6 start"`
+	Range6End            string             `yaml:"range6 end"`
+	SystemdName          string             `yaml:"systemd name"`
+	Overlays             config.OverlayList `yaml:"overlays"`
 }
 
 func (legacy *DHCPConf) Upgrade() (upgraded *config.DHCPConf) {
@@ -230,6 +231,7 @@ func (legacy *DHCPConf) Upgrade() (upgraded *config.DHCPConf) {
 	upgraded = new(config.DHCPConf)
 	upgraded.EnabledP = legacy.Enabled
 	upgraded.Template = legacy.Template
+	upgraded.RouterAdvertisements = legacy.RouterAdvertisements
 	upgraded.RangeStart = legacy.RangeStart
 	upgraded.RangeEnd = legacy.RangeEnd
 	upgraded.Range6Start = legacy.Range6Start

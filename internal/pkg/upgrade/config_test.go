@@ -790,6 +790,61 @@ hostfile:
 `,
 	},
 	{
+		name: "router-advertisements",
+		legacyYaml: `
+ipaddr: 10.0.0.1
+netmask: 255.255.252.0
+network: 10.0.0.0
+ipaddr6: 2001:db8::1
+prefixlen6: 64
+warewulf:
+  port: 9873
+  secure: true
+  update interval: 60
+dhcp:
+  enabled: true
+  router advertisements: upstream
+  range start: 10.0.1.1
+  range end: 10.0.1.255
+  range6 start: 2001:db8::100
+  range6 end: 2001:db8::1ff
+  systemd name: dnsmasq
+tftp:
+  enabled: true
+  systemd name: tftp
+`,
+		upgradedYaml: `
+ipaddr: 10.0.0.1
+netmask: 255.255.252.0
+network: 10.0.0.0
+ipaddr6: 2001:db8::1
+prefixlen6: "64"
+warewulf:
+  port: 9873
+  secure: true
+  update interval: 60
+dhcp:
+  enabled: true
+  router advertisements: upstream
+  range start: 10.0.1.1
+  range end: 10.0.1.255
+  range6 start: 2001:db8::100
+  range6 end: 2001:db8::1ff
+  systemd name: dnsmasq
+  overlays: dnsmasq
+tftp:
+  enabled: true
+  systemd name: tftp
+  overlays: tftproot
+nfs:
+  overlays: nfsd
+ssh:
+  overlays: ssh.wwctl
+hostfile:
+  overlays: hosts
+`,
+	},
+	{
 		name: "v4.5-ipv6net",
 		legacyYaml: `
 ipaddr: 10.0.0.1

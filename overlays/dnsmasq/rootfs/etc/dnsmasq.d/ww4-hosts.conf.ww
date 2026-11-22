@@ -36,7 +36,13 @@ tftp-root={{ $.Tftp.TftpRoot }}
 {{- if .Ipv6 }}
 
 # IPv6 routing announcements
+{{- if ne $.Dhcp.RouterAdvertisements "upstream" }}
 enable-ra
+{{- if eq $.Dhcp.RouterAdvertisements "warewulf-no-default-route" }}
+# router lifetime 0: advertise prefixes, but not as the default router
+ra-param=*,0,0
+{{- end }}
+{{- end }}
 
 # IPv6 matching (client-arch=61)
 dhcp-match=set:x86PC,option6:61,0007   # EFI x86-64
@@ -66,6 +72,8 @@ dhcp-range={{$.Network}},static,{{$.Netmask}},6h
 {{ if .Ipv6 -}}
 {{ if and $.Dhcp.Range6Start $.Dhcp.Range6End -}}
 dhcp-range={{$.Dhcp.Range6Start}},{{$.Dhcp.Range6End}},6h
+{{ else if eq $.Dhcp.RouterAdvertisements "upstream" -}}
+dhcp-range={{$.Network6}},static,{{$.PrefixLen6}},6h
 {{ else -}}
 dhcp-range={{$.Network6}},ra-stateless,{{$.PrefixLen6}},6h
 {{ end -}}
