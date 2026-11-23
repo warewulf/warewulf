@@ -73,6 +73,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- `wwctl image import` explains a failure to remove an extended attribute while
+  unpacking, as some NFS servers cause, and points at `paths:wwchrootdir`. The
+  configuration docs recommend a local filesystem for it. #2308
 - The `warewulf` firewalld service now opens the default TLS port (9874), so
   nodes can fetch overlays when `tls: true` is set. #2326
 - The sos plugin no longer collects SSH host private keys from

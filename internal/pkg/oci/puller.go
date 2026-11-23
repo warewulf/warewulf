@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -21,6 +22,7 @@ import (
 	"go.podman.io/image/v5/oci/layout"
 	"go.podman.io/image/v5/signature"
 	"go.podman.io/image/v5/types"
+	"golang.org/x/sys/unix"
 )
 
 type pullerOpt func(*puller) error
@@ -182,8 +184,18 @@ func (p *puller) Pull(ctx context.Context, uri, dst string) (err error) {
 	var uo layer.UnpackOptions
 	err = layer.UnpackRootfs(ctx, eng, dst, manifest, &uo)
 	if err != nil {
-		return fmt.Errorf("unable to unpack rootfs: %v", err)
+		return unpackError(dst, err)
 	}
 
 	return nil
+}
+
+// unpackError wraps an error from unpacking an image into dst. When the
+// filesystem holding dst refuses to remove an extended attribute, as some NFS
+// servers do, it says so and points at paths:wwchrootdir.
+func unpackError(dst string, err error) error {
+	if errors.Is(err, unix.EINVAL) && strings.Contains(err.Error(), "xattr") {
+		return fmt.Errorf("unable to unpack rootfs: %w (the filesystem holding %s refused to remove an extended attribute, which some NFS servers do; set paths:wwchrootdir in warewulf.conf to a directory on a local filesystem)", err, dst)
+	}
+	return fmt.Errorf("unable to unpack rootfs: %v", err)
 }

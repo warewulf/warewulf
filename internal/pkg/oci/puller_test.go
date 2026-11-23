@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/sys/unix"
 )
 
 func TestGetReference(t *testing.T) {
@@ -67,4 +68,48 @@ func TestGetReference(t *testing.T) {
 		}
 	}
 
+}
+
+func TestUnpackError(t *testing.T) {
+	// the shape of the error umoci returns when Lremovexattr fails
+	xattrErr := fmt.Errorf("unpack layer: unpack entry: .profile: apply hdr metadata: clear xattr metadata: /chroots/rocky/rootfs/.profile: %w",
+		fmt.Errorf("lclearxattrs: remove xattr %q: %w", "system.nfs4_dacl", unix.EINVAL))
+
+	tests := []struct {
+		name    string
+		err     error
+		hint    bool
+		wrapped error
+	}{
+		{
+			name:    "xattr removal refused",
+			err:     xattrErr,
+			hint:    true,
+			wrapped: unix.EINVAL,
+		},
+		{
+			name: "other EINVAL",
+			err:  fmt.Errorf("unpack layer: %w", unix.EINVAL),
+			hint: false,
+		},
+		{
+			name: "other xattr error",
+			err:  fmt.Errorf("lclearxattrs: get list: %w", unix.EIO),
+			hint: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := unpackError("/chroots/rocky/rootfs", tt.err)
+			assert.ErrorContains(t, err, "unable to unpack rootfs: "+tt.err.Error())
+			if tt.hint {
+				assert.ErrorContains(t, err, "the filesystem holding /chroots/rocky/rootfs refused to remove an extended attribute")
+				assert.ErrorContains(t, err, "paths:wwchrootdir")
+				assert.ErrorIs(t, err, tt.wrapped)
+			} else {
+				assert.NotContains(t, err.Error(), "paths:wwchrootdir")
+			}
+		})
+	}
 }
