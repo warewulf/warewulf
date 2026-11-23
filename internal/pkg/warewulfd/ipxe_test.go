@@ -68,11 +68,48 @@ var ipxeDracutNetTests = []struct {
 	},
 }
 
+var ipxeDracutStaticNetTests = []struct {
+	description string
+	url         string
+	expected    string
+	unexpected  string
+}{
+	{
+		"IPv6-only node gets a static IPv6 address",
+		"/ipxe/00:00:00:00:00:06",
+		"ip=[fd00:10::6]:::64::net:none",
+		"<nil>",
+	},
+	{
+		"IPv6-only node with a gateway gets a static IPv6 address and gateway",
+		"/ipxe/00:00:00:00:00:66",
+		"ip=[fd00:10::66]::[fd00:10::1]:64::net:none",
+		"<nil>",
+	},
+	{
+		"IPv4-only node keeps a static IPv4 address",
+		"/ipxe/00:00:00:00:00:04",
+		"ip=10.10.0.4:::255.255.255.0::net:on",
+		"ip=[",
+	},
+	{
+		"dual-stack node keeps a static IPv4 address",
+		"/ipxe/00:00:00:00:00:46",
+		"ip=10.10.0.46:::255.255.255.0::net:on",
+		"ip=[",
+	},
+	{
+		"node with no address configured gets no ip= argument",
+		"/ipxe/00:00:00:00:00:00",
+		"ifname=net:00:00:00:00:00:00",
+		"ip=",
+	},
+}
+
 // dracutNetLine returns the "set dracut_net" line from the given iPXE entry.
 // default.ipxe defines dracut_net twice, once under :dracut_continue and once
-// under :dracut_static_continue, and only the former is under test: the latter
-// builds its ip= argument from the IPv4 fields. Anchoring on the label keeps the
-// assertions on the intended entry even if the entries are reordered.
+// under :dracut_static_continue. Anchoring on the label keeps the assertions on
+// the intended entry even if the entries are reordered.
 func dracutNetLine(script string, label string) string {
 	inEntry := false
 	for _, line := range strings.Split(script, "\n") {
@@ -104,6 +141,15 @@ func Test_HandleIpxeDracutNet(t *testing.T) {
         device: net
         ipaddr6: fd00:10::6
         prefixlen6: "64"
+  n66:
+    image name: rockylinux-9
+    network devices:
+      default:
+        hwaddr: 00:00:00:00:00:66
+        device: net
+        ipaddr6: fd00:10::66
+        prefixlen6: "64"
+        gateway6: fd00:10::1
   n4:
     image name: rockylinux-9
     network devices:
@@ -154,6 +200,26 @@ func Test_HandleIpxeDracutNet(t *testing.T) {
 			assert.Equal(t, 200, res.StatusCode)
 
 			dracutNet := dracutNetLine(string(data), ":dracut_continue")
+			assert.NotEmpty(t, dracutNet, "template did not render a dracut_net line")
+			assert.Contains(t, dracutNet, tt.expected)
+			assert.NotContains(t, dracutNet, tt.unexpected)
+		})
+	}
+
+	for _, tt := range ipxeDracutStaticNetTests {
+		t.Run("dracut_static: "+tt.description, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, tt.url, nil)
+			req.RemoteAddr = "[fd00:10::10:12]:9873"
+			w := httptest.NewRecorder()
+			HandleIpxe(w, req)
+			res := w.Result()
+			defer func() { _ = res.Body.Close() }()
+
+			data, readErr := io.ReadAll(res.Body)
+			assert.NoError(t, readErr)
+			assert.Equal(t, 200, res.StatusCode)
+
+			dracutNet := dracutNetLine(string(data), ":dracut_static_continue")
 			assert.NotEmpty(t, dracutNet, "template did not render a dracut_net line")
 			assert.Contains(t, dracutNet, tt.expected)
 			assert.NotContains(t, dracutNet, tt.unexpected)
