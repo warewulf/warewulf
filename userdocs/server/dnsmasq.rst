@@ -57,6 +57,14 @@ by the overlay templates ``dnsmasq:/etc/dnsmasq.d/ww4-hosts.conf.ww`` and
    network, or remove/comment out the interface option entirely to enable
    listening on all interfaces.
 
+``ww4-listen.conf`` sets a ``listen-address`` for the server's ``ipaddr`` and
+``ipaddr6``. When ``ipaddr6`` is set, it also sets ``interface=`` to the server
+interface that holds that address, because ``dnsmasq`` sends IPv6 router
+advertisements and answers DHCPv6 only on interfaces named this way. If no
+interface that is up holds ``ipaddr6`` when ``wwctl configure`` runs, it falls
+back to ``interface=*``, which serves every interface. Run ``wwctl configure``
+again once the interface is up.
+
 Once the Warewulf configuration has been updated, re-deploy the configuration
 and restart ``warewulfd``.
 

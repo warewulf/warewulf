@@ -5,5 +5,10 @@ listen-address={{ .Ipaddr }}
 {{ end -}}
 {{ if .Ipaddr6 -}}
 listen-address={{ .Ipaddr6 }}
+{{ with InterfaceForIP .Ipaddr6 -}}
+interface={{ . }}
+{{ else -}}
+# no interface that is up holds {{ .Ipaddr6 }}; answering on all interfaces
 interface=*
+{{ end -}}
 {{ end -}}

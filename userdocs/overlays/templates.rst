@@ -287,6 +287,18 @@ Escapes a path for use in a systemd unit file.
 
 Escape rules are documented at `systemd.unit. <https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html#String%20Escaping%20for%20Inclusion%20in%20Unit%20Names>`_
 
+InterfaceForIP
+--------------
+
+Returns the name of the network interface on the machine rendering the
+template that holds the given address, or an empty string if no interface
+that is up holds it. It is meant for host overlays, which are rendered on the
+Warewulf server.
+
+.. code-block::
+
+   {{ with InterfaceForIP .Ipaddr6 }}interface={{ . }}{{ end }}
+
 
 Examples
 ========

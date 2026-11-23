@@ -73,6 +73,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- The `dnsmasq` host overlay names the interface that holds `ipaddr6` in
+  `ww4-listen.conf` instead of `interface=*`, so `dnsmasq` no longer serves, or
+  with `bind-interfaces` binds, every interface. It falls back to `interface=*`
+  when no interface that is up holds the address. #2228
 - The `warewulf` firewalld service now opens the default TLS port (9874), so
   nodes can fetch overlays when `tls: true` is set. #2326
 - The sos plugin no longer collects SSH host private keys from
