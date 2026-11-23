@@ -460,8 +460,14 @@ The value a node will be served can be read without booting it.
    curl -s "http://<server>:<port>/ipxe/<hwaddr>" | grep 'set dracut_net'
 
 That prints one line for the ``:dracut`` entry and one for ``:dracut_static``.
-The latter builds its ``ip=`` argument from ``ipaddr``, ``gateway`` and
-``netmask``, so it does not support a node that has only an ``ipaddr6``.
+The latter configures each device statically:
+
+- a device with an ``ipaddr`` gets
+  ``ip=<ipaddr>::<gateway>:<netmask>::<device>:on``, including dual-stack
+  devices;
+- a device with an ``ipaddr6`` and no ``ipaddr`` gets
+  ``ip=[<ipaddr6>]::[<gateway6>]:<prefixlen6>::<device>:none``. The gateway is
+  left empty when ``gateway6`` is not set.
 
 .. note::
 
