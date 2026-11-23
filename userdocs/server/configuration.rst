@@ -355,7 +355,11 @@ Override paths to images, overlays, and other Warewulf components.
 
 * ``paths:wwoverlaydir``: Parent directory for site overlays.
 
-* ``paths:wwchrootdir``: Parent directory for Warewulf images.
+* ``paths:wwchrootdir``: Parent directory for Warewulf images. Keep it on a
+  local filesystem with full extended attribute support. Some NFS servers
+  refuse to remove extended attributes, which makes ``wwctl image import``
+  fail, and NFS cannot hold ``security.*`` attributes such as file
+  capabilities. ``paths:wwprovisiondir`` and overlays can be on NFS.
 
 * ``paths:wwprovisiondir``: The destination for built images and overlay images.
 
