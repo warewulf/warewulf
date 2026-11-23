@@ -1374,6 +1374,7 @@ func buildTemplateFuncMap(fileName string, data TemplateStruct, result *Rendered
 		"UniqueField":       UniqueField,
 		"SystemdEscape":     unit.UnitNameEscape,
 		"SystemdEscapePath": unit.UnitNamePathEscape,
+		"InterfaceForIP":    config.GetInterfaceForIP,
 	}
 
 	for key, value := range sprig.TxtFuncMap() {

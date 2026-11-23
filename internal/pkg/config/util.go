@@ -16,9 +16,24 @@ func GetOutboundIP() net.IP {
 }
 
 func GetIPNetForIP(ip net.IP) (*net.IPNet, error) {
+	_, ipNet, err := findInterfaceForIP(ip)
+	return ipNet, err
+}
+
+// GetInterfaceForIP returns the name of the up network interface that holds
+// the given address, or an empty string if no such interface is found.
+func GetInterfaceForIP(ip string) string {
+	name, _, err := findInterfaceForIP(net.ParseIP(ip))
+	if err != nil {
+		return ""
+	}
+	return name
+}
+
+func findInterfaceForIP(ip net.IP) (string, *net.IPNet, error) {
 	interfaces, err := net.Interfaces()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get network interfaces: %v", err)
+		return "", nil, fmt.Errorf("failed to get network interfaces: %v", err)
 	}
 
 	for _, iface := range interfaces {
@@ -49,10 +64,10 @@ func GetIPNetForIP(ip net.IP) (*net.IPNet, error) {
 
 			// Check if the IP matches (for IPv4, Equal works well)
 			if ipNet.IP.Equal(ip) {
-				return ipNet, nil
+				return iface.Name, ipNet, nil
 			}
 		}
 	}
 
-	return nil, fmt.Errorf("could not find IPNet for IP %v", ip)
+	return "", nil, fmt.Errorf("could not find IPNet for IP %v", ip)
 }

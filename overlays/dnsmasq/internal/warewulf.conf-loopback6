@@ -1,0 +1,10 @@
+ipaddr: ""
+ipaddr6: ::1/128
+prefixlen6: 128
+warewulf:
+  port: 9873
+  secure: false
+dhcp:
+  enabled: true
+tftp:
+  enabled: false
