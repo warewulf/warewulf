@@ -11,6 +11,10 @@ dhcp-match=set:iPXE,77,"iPXE"
 dhcp-userclass=set:iPXE,iPXE
 dhcp-vendorclass=set:efi-http,HTTPClient:Arch:00016
 dhcp-option-force=tag:efi-http,60,HTTPClient
+{{- /* emit the BIOS rule first so other boot rules take precedence */}}
+{{- with and (not $.Warewulf.GrubBoot) (index $.Tftp.IpxeBinaries "00:00") }}
+dhcp-boot=tag:!iPXE,tag:bios,"/warewulf/{{ . | basename }}"
+{{- end }}
 # for http boot always use shim/grub
 dhcp-boot=tag:efi-http,"http://{{$.Ipaddr}}:{{$.Warewulf.Port}}/efiboot/shim.efi"
 {{- if $.Warewulf.GrubBoot }}

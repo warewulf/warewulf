@@ -2,11 +2,11 @@ package dnsmasq
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/warewulf/warewulf/internal/app/wwctl/overlay/show"
-	"github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/testenv"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
@@ -19,10 +19,11 @@ func Test_dnsmasqOverlay(t *testing.T) {
 	env.ImportFile("var/lib/warewulf/overlays/dnsmasq/rootfs/etc/dnsmasq.d/ww4-listen.conf.ww", "../rootfs/etc/dnsmasq.d/ww4-listen.conf.ww")
 
 	tests := []struct {
-		name string
-		conf string
-		args []string
-		log  string
+		name         string
+		conf         string
+		args         []string
+		ipxeBinaries map[string]string
+		log          string
 	}{
 		{
 			name: "dnsmasq:ww4-hosts.conf",
@@ -37,6 +38,38 @@ func Test_dnsmasqOverlay(t *testing.T) {
 			log:  dnsmasq_hosts_static,
 		},
 		{
+			name: "dnsmasq:ww4-hosts.conf(custom BIOS binary)",
+			conf: "warewulf.conf",
+			args: []string{"--render-host", "dnsmasq", "etc/dnsmasq.d/ww4-hosts.conf.ww"},
+			ipxeBinaries: map[string]string{
+				"00:00": "bios/custom.kpxe",
+				"00:07": "ipxe-snponly-x86_64.efi",
+				"00:0B": "arm64-efi/snponly.efi",
+			},
+			log: strings.Replace(dnsmasq_hosts, dnsmasq_bios_boot, "dhcp-boot=tag:!iPXE,tag:bios,\"/warewulf/custom.kpxe\"\n", 1),
+		},
+		{
+			name: "dnsmasq:ww4-hosts.conf(no BIOS binary)",
+			conf: "warewulf.conf",
+			args: []string{"--render-host", "dnsmasq", "etc/dnsmasq.d/ww4-hosts.conf.ww"},
+			ipxeBinaries: map[string]string{
+				"00:07": "ipxe-snponly-x86_64.efi",
+				"00:0B": "arm64-efi/snponly.efi",
+			},
+			log: strings.Replace(dnsmasq_hosts, dnsmasq_bios_boot, "", 1),
+		},
+		{
+			name: "dnsmasq:ww4-hosts.conf(empty BIOS binary)",
+			conf: "warewulf.conf",
+			args: []string{"--render-host", "dnsmasq", "etc/dnsmasq.d/ww4-hosts.conf.ww"},
+			ipxeBinaries: map[string]string{
+				"00:00": "",
+				"00:07": "ipxe-snponly-x86_64.efi",
+				"00:0B": "arm64-efi/snponly.efi",
+			},
+			log: strings.Replace(dnsmasq_hosts, dnsmasq_bios_boot, "", 1),
+		},
+		{
 			name: "dnsmasq:ww4-listen.conf",
 			conf: "warewulf.conf",
 			args: []string{"--render-host", "dnsmasq", "etc/dnsmasq.d/ww4-listen.conf.ww"},
@@ -47,7 +80,10 @@ func Test_dnsmasqOverlay(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			env.ImportFile("etc/warewulf/warewulf.conf", tt.conf)
-			assert.NoError(t, config.Get().Read(env.GetPath("etc/warewulf/warewulf.conf"), false))
+			conf := env.Configure()
+			if tt.ipxeBinaries != nil {
+				conf.TFTP.IpxeBinaries = tt.ipxeBinaries
+			}
 			cmd := show.GetCommand()
 			cmd.SetArgs(tt.args)
 			stdout := bytes.NewBufferString("")
@@ -64,6 +100,9 @@ func Test_dnsmasqOverlay(t *testing.T) {
 	}
 }
 
+const dnsmasq_bios_boot = `dhcp-boot=tag:!iPXE,tag:bios,"/warewulf/undionly.kpxe"
+`
+
 const dnsmasq_hosts string = `backupFile: false
 writeFile: true
 Filename: etc/dnsmasq.d/ww4-hosts.conf
@@ -79,7 +118,7 @@ dhcp-match=set:iPXE,77,"iPXE"
 dhcp-userclass=set:iPXE,iPXE
 dhcp-vendorclass=set:efi-http,HTTPClient:Arch:00016
 dhcp-option-force=tag:efi-http,60,HTTPClient
-# for http boot always use shim/grub
+` + dnsmasq_bios_boot + `# for http boot always use shim/grub
 dhcp-boot=tag:efi-http,"http://192.168.0.1:9873/efiboot/shim.efi"
 dhcp-boot=tag:x86PC,"/warewulf/ipxe-snponly-x86_64.efi"
 dhcp-boot=tag:aarch64,"/warewulf/snponly.efi"
@@ -122,7 +161,7 @@ dhcp-match=set:iPXE,77,"iPXE"
 dhcp-userclass=set:iPXE,iPXE
 dhcp-vendorclass=set:efi-http,HTTPClient:Arch:00016
 dhcp-option-force=tag:efi-http,60,HTTPClient
-# for http boot always use shim/grub
+` + dnsmasq_bios_boot + `# for http boot always use shim/grub
 dhcp-boot=tag:efi-http,"http://192.168.0.1:9873/efiboot/shim.efi"
 dhcp-boot=tag:x86PC,"/warewulf/ipxe-snponly-x86_64.efi"
 dhcp-boot=tag:aarch64,"/warewulf/snponly.efi"
