@@ -117,7 +117,7 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/go-jose/go-jose/blob/v4.1.5/LICENSE>
+**License URL:** <https://github.com/go-jose/go-jose/blob/v4.1.9/LICENSE>
 
 ## github.com/go-logr/logr
 
@@ -291,19 +291,25 @@ The dependencies and their licenses are as follows:
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/v1.46.0/LICENSE>
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/v1.47.0/LICENSE>
+
+## go.opentelemetry.io/otel/log
+
+**License:** Apache-2.0
+
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/log/v1.47.0/log/LICENSE>
 
 ## go.opentelemetry.io/otel/metric
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/metric/v1.46.0/metric/LICENSE>
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/metric/v1.47.0/metric/LICENSE>
 
 ## go.opentelemetry.io/otel/trace
 
 **License:** Apache-2.0
 
-**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/trace/v1.46.0/trace/LICENSE>
+**License URL:** <https://github.com/open-telemetry/opentelemetry-go/blob/trace/v1.47.0/trace/LICENSE>
 
 ## go.podman.io/image/v5
 
@@ -387,7 +393,7 @@ The dependencies and their licenses are as follows:
 
 **License:** BSD-3-Clause
 
-**License URL:** <https://github.com/go-jose/go-jose/blob/v4.1.5/json/LICENSE>
+**License URL:** <https://github.com/go-jose/go-jose/blob/v4.1.9/json/LICENSE>
 
 ## github.com/google/uuid
 
@@ -615,7 +621,7 @@ The dependencies and their licenses are as follows:
 
 **License:** MIT
 
-**License URL:** <https://github.com/go-chi/chi/blob/v5.3.2/LICENSE>
+**License URL:** <https://github.com/go-chi/chi/blob/v5.5.0/LICENSE>
 
 ## github.com/huandu/xstrings
 

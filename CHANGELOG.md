@@ -100,6 +100,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Dependencies
 
 - Add github.com/apptainer/sif/v2 v2.21.1 for SIF image import. #2285
+- Bump github.com/go-chi/chi/v5 from 5.3.2 to 5.5.0 #2362
+- Bump github.com/go-jose/go-jose/v4 from 4.1.5 to 4.1.9 #2361
+- Bump go.opentelemetry.io/otel, otel/metric, and otel/trace from 1.46.0 to
+  1.47.0 #2363
 
 ## v4.7.2, 2026-11-01
 
