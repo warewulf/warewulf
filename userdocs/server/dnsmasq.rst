@@ -49,6 +49,10 @@ default configuration includes all files with following pattern
 by the overlay templates ``dnsmasq:/etc/dnsmasq.d/ww4-hosts.conf.ww`` and
 ``dnsmasq:/etc/dnsmasq.d/ww4-listen.conf.ww``.
 
+With iPXE network boot, the dnsmasq overlay uses the ``00:00`` entry in the
+``tftp:ipxe`` map to select the boot file for legacy BIOS PXE clients. The
+default file is ``undionly.kpxe``.
+
 .. note::
 
    In certain distributions, such as Rocky Linux 9, ``dnsmasq`` is configured to

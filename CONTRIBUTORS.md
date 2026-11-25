@@ -111,3 +111,4 @@
 - Logan Enright <lenright@ciq.com> [loag-ciq](https://github.com/loag-ciq)
 - Daniel Summer [@dsummer](https://github.com/dsummer)
 - Ekdanai Kummee [@raven-clown](https://github.com/raven-clown)
+- Shu Yang [@MemoryController](https://github.com/MemoryController)

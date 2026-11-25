@@ -73,6 +73,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- The dnsmasq overlay now supplies an iPXE boot file to legacy BIOS PXE
+  clients. #1336
 - The `warewulf` firewalld service now opens the default TLS port (9874), so
   nodes can fetch overlays when `tls: true` is set. #2326
 - The sos plugin no longer collects SSH host private keys from
