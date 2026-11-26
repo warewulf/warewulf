@@ -52,6 +52,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 
+- Renamed the `PROFILE` column in `wwctl node list --all` to `SOURCE` because
+  fields can receive values from both profiles and the node. #2163
 - `wwctl overlay show --render` now reports an error for an undefined node
   name, rather than silently rendering the template as for the Warewulf
   server.

@@ -52,8 +52,8 @@ You can view the fields of a profile with ``wwctl profile --all``.
 .. code-block:: console
 
    # wwctl node list n1 --all
-   NODE  FIELD             PROFILE  VALUE
-   ----  -----             -------  -----
+   NODE  FIELD             SOURCE   VALUE
+   ----  -----             ------   -----
    n1    Profiles          --       default
    n1    Comment           default  This profile is automatically included for each node
    n1    Ipxe              default  default
@@ -107,8 +107,8 @@ to each node.
 .. code-block:: console
 
    # wwctl node list n1 --all
-   NODE  FIELD                     PROFILE  VALUE
-   ----  -----                     -------  -----
+   NODE  FIELD                     SOURCE   VALUE
+   ----  -----                     ------   -----
    n1    Profiles                  --       default,net,image
    n1    Comment                   default  This profile is automatically included for each node
    n1    ImageName                 image    rockylinux-9
@@ -164,8 +164,8 @@ Next we filter the output a little to focus on one field at time.
 .. code-block:: console
 
    # wwctl node list n1 --all | grep -E '(NODE|----|Root)'
-     NODE  FIELD             PROFILE               VALUE
-     ----  -----             -------               -----
+     NODE  FIELD             SOURCE                VALUE
+     ----  -----             ------                -----
      n1    Root              SUPERSEDED            root_from_node_profile
 
 As expected, the value originates from the node profile because the node
@@ -176,8 +176,8 @@ Things are different for the list typed field ``runtime overlay``.
 .. code-block:: console
 
    #  wwctl node list n1 --all | grep -E '(NODE|----|Runtime)'
-      NODE  FIELD             PROFILE     VALUE
-      ----  -----             -------     -----
+      NODE  FIELD             SOURCE      VALUE
+      ----  -----             ------      -----
       n1    RuntimeOverlay    default,n1  runtime_overlay_from_default,runtime_overlay_from_node_profile
 
 Here the value from the node profile is appended to the value of the
@@ -202,8 +202,8 @@ as ``profile_a`` is now the profile with highest precedence.
 .. code-block:: console
 
    # wwctl node list n1 --all | grep -E '(NODE|----|Root)'
-     NODE  FIELD             PROFILE               VALUE
-     ----  -----             -------               -----
+     NODE  FIELD             SOURCE                VALUE
+     ----  -----             ------                -----
      n1    Root              profile_a             root_from_profile_a
 
 The value of ``runtime overlay`` is now a combination of the values of
@@ -212,8 +212,8 @@ all three profiles.
 .. code-block:: console
 
    # wwctl node list n1 --all | grep -E '(NODE|----|Runtime)'
-   NODE  FIELD             PROFILE               VALUE
-   ----  -----             -------               -----
+   NODE  FIELD             SOURCE                VALUE
+   ----  -----             ------                -----
    n1    RuntimeOverlay    default,profile_a,n1  runtime_overlay_from_default,runtime_overlay_from_profile_a,runtime_overlay_from_node_profile
 
 We get the same result when making use of nested profiles, that is
@@ -262,10 +262,10 @@ The value of ``runtime overlay`` is then just ``runtime_overlay_from_p2``.
 .. code-block:: shell
 
    # wwctl node list n2 --all
-   NODE  FIELD           PROFILE  VALUE
-   ----  -----           -------  -----
-   n2    Profiles        --       p2,~p1
-   n2    RuntimeOverlay  p2       runtime_overlay_from_p2
+   NODE  FIELD           SOURCE  VALUE
+   ----  -----           ------  -----
+   n2    Profiles        --      p2,~p1
+   n2    RuntimeOverlay  p2      runtime_overlay_from_p2
 
 Using Profiles Effectively
 ==========================

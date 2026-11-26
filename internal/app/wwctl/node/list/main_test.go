@@ -154,9 +154,9 @@ nodes:
 			args:    []string{"-a"},
 			wantErr: false,
 			stdout: `
-NODE  FIELD     PROFILE  VALUE
-----  -----     -------  -----
-n01   Profiles  --       default
+NODE  FIELD     SOURCE  VALUE
+----  -----     ------  -----
+n01   Profiles  --      default
 `,
 			inDb: `nodeprofiles:
   default:
@@ -172,10 +172,10 @@ nodes:
 			args:    []string{"-a"},
 			wantErr: false,
 			stdout: `
-NODE  FIELD     PROFILE  VALUE
-----  -----     -------  -----
-n01   Profiles  --       default
-n01   Comment   --       nodecomment
+NODE  FIELD     SOURCE  VALUE
+----  -----     ------  -----
+n01   Profiles  --      default
+n01   Comment   --      nodecomment
 `,
 			inDb: `nodeprofiles:
   default:
@@ -263,9 +263,9 @@ nodes:
 			args:    []string{"-a"},
 			wantErr: false,
 			stdout: `
-NODE  FIELD     PROFILE  VALUE
-----  -----     -------  -----
-n01   Profiles  --       p1,p2
+NODE  FIELD     SOURCE  VALUE
+----  -----     ------  -----
+n01   Profiles  --      p1,p2
 `,
 			inDb: `nodeprofiles:
   p1: {}
@@ -327,11 +327,11 @@ nodes:
 			args:    []string{"-a"},
 			wantErr: false,
 			stdout: `
-NODE  FIELD           PROFILE  VALUE
-----  -----           -------  -----
-n01   Profiles        --       p1
-n01   RuntimeOverlay  p1,n01   rop1,rop2,nop1,~rop1
-n01   SystemOverlay   p1       sop1
+NODE  FIELD           SOURCE  VALUE
+----  -----           ------  -----
+n01   Profiles        --      p1
+n01   RuntimeOverlay  p1,n01  rop1,rop2,nop1,~rop1
+n01   SystemOverlay   p1      sop1
 `,
 			inDb: `nodeprofiles:
   p1:
@@ -354,10 +354,10 @@ nodes:
 			args:    []string{"-a"},
 			wantErr: false,
 			stdout: `
-NODE  FIELD           PROFILE  VALUE
-----  -----           -------  -----
-n01   Profiles        --       p1
-n01   RuntimeOverlay  p1,n01   rop1,rop2,nop1
+NODE  FIELD           SOURCE  VALUE
+----  -----           ------  -----
+n01   Profiles        --      p1
+n01   RuntimeOverlay  p1,n01  rop1,rop2,nop1
 `,
 			inDb: `nodeprofiles:
   p1:
@@ -377,9 +377,9 @@ nodes:
 			args:    []string{"-a"},
 			wantErr: false,
 			stdout: `
-NODE  FIELD                    PROFILE  VALUE
-----  -----                    -------  -----
-n1    NetDevs[default].OnBoot  --       true
+NODE  FIELD                    SOURCE  VALUE
+----  -----                    ------  -----
+n1    NetDevs[default].OnBoot  --      true
 `,
 			inDb: `nodes:
   n1:
@@ -393,8 +393,8 @@ n1    NetDevs[default].OnBoot  --       true
 			args:    []string{"-a"},
 			wantErr: false,
 			stdout: `
-NODE  FIELD  PROFILE  VALUE
-----  -----  -------  -----
+NODE  FIELD  SOURCE  VALUE
+----  -----  ------  -----
 `,
 			inDb: `nodes:
   wwnode1:
@@ -530,11 +530,11 @@ nodes:
 			args:    []string{"-a"},
 			wantErr: false,
 			stdout: `
-NODE  FIELD                    PROFILE  VALUE
-----  -----                    -------  -----
-n01   Profiles                 --       default
-n01   NetDevs[default].Hwaddr  --       aa:bb:cc:dd:ee:ff
-n01   NetDevs[default].Ipaddr  --       1.1.1.1
+NODE  FIELD                    SOURCE  VALUE
+----  -----                    ------  -----
+n01   Profiles                 --      default
+n01   NetDevs[default].Hwaddr  --      aa:bb:cc:dd:ee:ff
+n01   NetDevs[default].Ipaddr  --      1.1.1.1
 `,
 			inDb: `nodeprofiles:
   default: {}
