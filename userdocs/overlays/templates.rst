@@ -18,6 +18,8 @@ content. This template format is documented at `pkg.go.dev/text/template.
 
    When the template is rendered within a built overlay image, the ``.ww`` will
    be dropped, so ``/etc/hosts.ww`` will end up being ``/etc/hosts``.
+   Other characters in the filename are preserved, including literal backslashes
+   in systemd unit names such as ``mnt-test\x2dmount.mount``.
 
 Non-Overlay Templates
 =====================
