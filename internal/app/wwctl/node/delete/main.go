@@ -2,7 +2,6 @@ package delete
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/warewulf/warewulf/internal/pkg/hostlist"
@@ -34,12 +33,12 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			}
 		}
 		if !match {
-			fmt.Fprintf(os.Stderr, "ERROR: No match for node: %s\n", r)
+			_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "ERROR: No match for node: %s\n", r)
 		}
 	}
 
 	if len(nodeList) == 0 {
-		fmt.Printf("No nodes found\n")
+		_, _ = fmt.Fprintln(cmd.OutOrStdout(), "No nodes found")
 		return
 	}
 

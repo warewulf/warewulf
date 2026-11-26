@@ -16,6 +16,8 @@ func Test_Delete(t *testing.T) {
 		inDB    string
 		outDB   string
 		wantErr bool
+		stdout  string
+		stderr  string
 	}{
 		{
 			name: "delete single node",
@@ -63,8 +65,10 @@ nodes:
     - default`,
 		},
 		{
-			name: "delete non-existent node",
-			args: []string{"--yes", "doesnotexist"},
+			name:   "delete non-existent node",
+			stdout: "No nodes found\n",
+			stderr: "ERROR: No match for node: doesnotexist\n",
+			args:   []string{"--yes", "doesnotexist"},
 			inDB: `
 nodeprofiles:
   default: {}
@@ -103,12 +107,14 @@ nodes: {}`,
 			defer env.RemoveAll()
 			env.WriteFile("etc/warewulf/nodes.conf", tt.inDB)
 
-			buf := new(bytes.Buffer)
+			var stdout, stderr bytes.Buffer
 			baseCmd := GetCommand()
 			baseCmd.SetArgs(tt.args)
-			baseCmd.SetOut(buf)
-			baseCmd.SetErr(buf)
+			baseCmd.SetOut(&stdout)
+			baseCmd.SetErr(&stderr)
 			err := baseCmd.Execute()
+			assert.Equal(t, tt.stdout, stdout.String())
+			assert.Equal(t, tt.stderr, stderr.String())
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
