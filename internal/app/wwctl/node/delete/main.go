@@ -33,12 +33,12 @@ func CobraRunE(cmd *cobra.Command, args []string) (err error) {
 			}
 		}
 		if !match {
-			fmt.Fprintf(cmd.ErrOrStderr(), "ERROR: No match for node: %s\n", r)
+			_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "ERROR: No match for node: %s\n", r)
 		}
 	}
 
 	if len(nodeList) == 0 {
-		fmt.Fprintln(cmd.OutOrStdout(), "No nodes found")
+		_, _ = fmt.Fprintln(cmd.OutOrStdout(), "No nodes found")
 		return
 	}
 
