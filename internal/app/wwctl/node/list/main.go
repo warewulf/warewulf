@@ -42,7 +42,7 @@ func CobraRunE(vars *variables) func(cmd *cobra.Command, args []string) (err err
 			wwlog.Info(string(buf))
 		} else if vars.showAll {
 			t := table.New(cmd.OutOrStdout())
-			t.AddHeader("NODE", "FIELD", "PROFILE", "VALUE")
+			t.AddHeader("NODE", "FIELD", "SOURCE", "VALUE")
 			for _, n := range filtered {
 				if _, fields, err := nodeDB.MergeNode(n.Id()); err != nil {
 					wwlog.Error("unable to merge node %v: %v", n.Id(), err)

@@ -46,7 +46,7 @@ dynamic dhcp range. You can check the result with ``wwctl node list``.
 .. code-block:: console
 
   # wwctl node list -a deliverynet
-  NODE         FIELD                             PROFILE  VALUE
+  NODE         FIELD                             SOURCE   VALUE
   deliverynet  Id                                --       deliverynet
   deliverynet  Comment                           default  This profile is automatically included for each node
   deliverynet  ImageName                         default  leap15.5

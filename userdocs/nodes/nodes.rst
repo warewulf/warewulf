@@ -74,8 +74,8 @@ You can also see the node's full attribute list by specifying ``--all``.
 .. code-block:: console
 
    # wwctl node list --all n1
-   NODE  FIELD             PROFILE  VALUE
-   ----  -----             -------  -----
+   NODE  FIELD             SOURCE   VALUE
+   ----  -----             ------   -----
    n1    Profiles          --       default
    n1    Comment           default  This profile is automatically included for each node
    n1    Ipxe              default  default
