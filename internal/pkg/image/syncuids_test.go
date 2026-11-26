@@ -123,26 +123,26 @@ testuser3:x:2003:2003::/home/testuser:/bin/bash
 
 func Test_checkConflicts_empty(t *testing.T) {
 	db := makeSyncDB(t, "", "")
-	assert.NoError(t, db.checkConflicts())
+	assert.NoError(t, db.checkConflicts("UID"))
 }
 
 func Test_checkConflicts_single(t *testing.T) {
 	db := makeSyncDB(t, "", "testuser:x:1001:1001::/home/testuser:/bin/bash")
-	assert.NoError(t, db.checkConflicts())
+	assert.NoError(t, db.checkConflicts("UID"))
 }
 
 func Test_checkConflicts_match(t *testing.T) {
 	db := makeSyncDB(t,
 		"testuser:x:1001:1001::/home/testuser:/bin/bash",
 		"testuser:x:1001:1001::/home/testuser:/bin/bash")
-	assert.NoError(t, db.checkConflicts())
+	assert.NoError(t, db.checkConflicts("UID"))
 }
 
 func Test_checkConflicts_conflict(t *testing.T) {
 	db := makeSyncDB(t,
 		"testuser2:x:1001:1001::/home/testuser:/bin/bash",
 		"testuser1:x:1001:1001::/home/testuser:/bin/bash")
-	assert.Error(t, db.checkConflicts())
+	assert.Error(t, db.checkConflicts("UID"))
 }
 
 func Test_getOnlyimageLines(t *testing.T) {
