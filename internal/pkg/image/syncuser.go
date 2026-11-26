@@ -11,7 +11,6 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/pkg/errors"
 	"github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
@@ -45,7 +44,7 @@ func Syncuser(imageName string, write bool) error {
 	if err := passwdSync.readFromimage(imagePasswdPath); err != nil {
 		return err
 	}
-	if err := passwdSync.checkConflicts(); err != nil {
+	if err := passwdSync.checkConflicts("UID"); err != nil {
 		return err
 	}
 
@@ -56,7 +55,7 @@ func Syncuser(imageName string, write bool) error {
 	if err := groupSync.readFromimage(imageGroupPath); err != nil {
 		return err
 	}
-	if err := groupSync.checkConflicts(); err != nil {
+	if err := groupSync.checkConflicts("GID"); err != nil {
 		return err
 	}
 
@@ -104,7 +103,7 @@ type syncDB map[string]syncInfo
 // conflicts. A conflict arises if the image has an entry with the
 // same id as an entry in the host and the host does not have an entry
 // with the same name.
-func (db syncDB) checkConflicts() error {
+func (db syncDB) checkConflicts(idType string) error {
 	for nameInimage, imageIds := range db {
 		if !imageIds.inimage() || imageIds.inHost() {
 			continue
@@ -112,8 +111,8 @@ func (db syncDB) checkConflicts() error {
 
 		for nameInHost, hostIds := range db {
 			if hostIds.HostID == imageIds.imageID {
-				wwlog.Warn("syncuser cannot determine what name should be assigned to id number %v: on the local host it is assigned to '%s'; but in the image it is assigned to '%s'. Since '%s' does not exist on the local host, it cannot be reassigned to a different id number. To resolve the conflict, add '%s' to the local host and re-run syncuser.", imageIds.imageID, nameInHost, nameInimage, nameInimage, nameInimage)
-				return errors.New(fmt.Sprintf("id(%v) collision: host(%s) image(%s)", imageIds.imageID, nameInHost, nameInimage))
+				wwlog.Warn("syncuser cannot determine what name should be assigned to %s %v: on the local host it is assigned to '%s'; but in the image it is assigned to '%s'. Since '%s' does not exist on the local host, it cannot be reassigned to a different id number. To resolve the conflict, add '%s' to the local host and re-run syncuser.", idType, imageIds.imageID, nameInHost, nameInimage, nameInimage, nameInimage)
+				return fmt.Errorf("%s(%v) collision: host(%s) image(%s)", idType, imageIds.imageID, nameInHost, nameInimage)
 			}
 		}
 	}

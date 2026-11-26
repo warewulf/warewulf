@@ -75,6 +75,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- `wwctl image syncuser` identifies UID and GID collisions in warnings and errors. #1962
+
 - Overlay builds now preserve literal backslashes in template filenames, including
   escaped systemd mount unit names. #2216
 
