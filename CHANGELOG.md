@@ -73,6 +73,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- Overlay builds now preserve literal backslashes in template filenames, including
+  escaped systemd mount unit names. #2216
+
 - The dnsmasq overlay now supplies an iPXE boot file to legacy BIOS PXE
   clients. #1336
 - The `warewulf` firewalld service now opens the default TLS port (9874), so

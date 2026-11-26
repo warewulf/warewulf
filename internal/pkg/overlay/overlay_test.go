@@ -215,6 +215,17 @@ func Test_BuildOverlayIndir(t *testing.T) {
 				"t1.txt.wwbackup": "Previous content",
 			},
 		},
+		"systemd mount unit template": {
+			node:     node.Node{Profile: node.Profile{Comment: "Test mount"}},
+			overlays: []string{"o1"},
+			overlayFiles: map[string]string{
+				`/var/lib/warewulf/overlays/o1/rootfs/mnt-test\x2dmount.mount.ww`: "Description={{ .Comment }}",
+			},
+			outputDir: "/image",
+			outputFiles: map[string]string{
+				`mnt-test\x2dmount.mount`: "Description=Test mount",
+			},
+		},
 		"multifile": {
 			overlays: []string{"o1"},
 			overlayFiles: map[string]string{

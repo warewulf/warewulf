@@ -1395,7 +1395,7 @@ func RenderTemplate(fileName string, data TemplateStruct) (*RenderedTemplate, er
 	writer := &multiFileWriter{current: &result.Files[0].Buffer}
 	funcMap := buildTemplateFuncMap(fileName, data, result, writer)
 
-	tmpl, err := template.New(path.Base(fileName)).Option("missingkey=default").Funcs(funcMap).ParseGlob(fileName)
+	tmpl, err := template.New(path.Base(fileName)).Option("missingkey=default").Funcs(funcMap).ParseFiles(fileName)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse template %s: %w", fileName, err)
 	}
