@@ -2,26 +2,16 @@ package image
 
 import (
 	"path/filepath"
-	"regexp"
 	"strings"
 
-	"github.com/hashicorp/go-version"
-
+	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
 )
 
-var (
-	initramfsSearchPaths = []string{
-		"/boot/initramfs-*",
-		"/boot/initrd-*",
-		"/boot/initrd.img-*",
-	}
-
-	versionPattern *regexp.Regexp
-)
-
-func init() {
-	versionPattern = regexp.MustCompile(`\d+\.\d+\.\d+(-[\d\.]+|)`)
+var initramfsSearchPaths = []string{
+	"/boot/initramfs-*",
+	"/boot/initrd-*",
+	"/boot/initrd.img-*",
 }
 
 type Initramfs struct {
@@ -29,18 +19,8 @@ type Initramfs struct {
 	imageName string
 }
 
-func (initrd *Initramfs) version() *version.Version {
-	matches := versionPattern.FindAllString(initrd.Path, -1)
-	for i := len(matches) - 1; i >= 0; i-- {
-		if version_, err := version.NewVersion(strings.TrimSuffix(matches[i], ".")); err == nil {
-			return version_
-		}
-	}
-	return nil
-}
-
 func (initrd *Initramfs) Version() string {
-	version := initrd.version()
+	version := util.ParseVersion(initrd.Path)
 	if version == nil {
 		return ""
 	} else {
