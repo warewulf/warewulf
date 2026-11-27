@@ -7,17 +7,15 @@ import (
 	"net/http"
 	"net/netip"
 	"path"
-	"path/filepath"
 	"strconv"
 	"strings"
-	"text/template"
 
-	"github.com/Masterminds/sprig/v3"
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/kernel"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
+	"github.com/warewulf/warewulf/internal/pkg/wwtemplate"
 )
 
 // buildTemplateVars constructs the templateVars struct with all necessary
@@ -103,22 +101,9 @@ func sendResponse(w http.ResponseWriter, req *http.Request, dir string, stageFil
 				return
 			}
 
-			// Create a template with the Sprig functions.
-			tmpl := template.New(filepath.Base(stageFile)).Funcs(sprig.TxtFuncMap())
-
-			// Parse the template.
-			parsedTmpl, err := tmpl.Parse(string(tmplText))
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				wwlog.ErrorExc(err, "")
-				return
-			}
-
-			// template engine writes file to buffer in case rendering fails
+			// Commit the response only after the entire template has rendered.
 			var buf bytes.Buffer
-
-			err = parsedTmpl.Execute(&buf, tmplData)
-			if err != nil {
+			if err := wwtemplate.Render(&buf, stageFile, tmplText, tmplData, nil); err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				wwlog.ErrorExc(err, "")
 				return

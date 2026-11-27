@@ -16,13 +16,13 @@ import (
 	"text/template"
 	"text/template/parse"
 
-	"github.com/Masterminds/sprig/v3"
 	"github.com/coreos/go-systemd/v22/unit"
 
 	"github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/node"
 	"github.com/warewulf/warewulf/internal/pkg/util"
 	"github.com/warewulf/warewulf/internal/pkg/wwlog"
+	"github.com/warewulf/warewulf/internal/pkg/wwtemplate"
 )
 
 var ErrDoesNotExist = fmt.Errorf("overlay does not exist")
@@ -302,7 +302,7 @@ func (overlay Overlay) ParseVarFields(file string) map[string]FieldInfo {
 	}
 	renderWriter := &multiFileWriter{current: &renderState.Files[0].Buffer}
 	funcMap := buildTemplateFuncMap(fullPath, TemplateStruct{}, renderState, renderWriter)
-	tmpl, err := template.New(path.Base(fullPath)).Option("missingkey=default").Funcs(funcMap).ParseFiles(fullPath)
+	tmpl, err := wwtemplate.New(fullPath, funcMap).ParseFiles(fullPath)
 	if err != nil {
 		wwlog.Error("Could not parse template file %s: %s", fullPath, err)
 		return nil
@@ -1357,7 +1357,7 @@ func buildTemplateFuncMap(fileName string, data TemplateStruct, result *Rendered
 		return ""
 	}
 
-	funcMap := template.FuncMap{
+	return template.FuncMap{
 		"Include":           templateFileInclude,
 		"IncludeFrom":       templateImageFileInclude,
 		"IncludeBlock":      templateFileBlock,
@@ -1375,11 +1375,6 @@ func buildTemplateFuncMap(fileName string, data TemplateStruct, result *Rendered
 		"SystemdEscape":     unit.UnitNameEscape,
 		"SystemdEscapePath": unit.UnitNamePathEscape,
 	}
-
-	for key, value := range sprig.TxtFuncMap() {
-		funcMap[key] = value
-	}
-	return funcMap
 }
 
 // RenderTemplate renders the .ww template at fileName with the provided data,
@@ -1395,19 +1390,17 @@ func RenderTemplate(fileName string, data TemplateStruct) (*RenderedTemplate, er
 	writer := &multiFileWriter{current: &result.Files[0].Buffer}
 	funcMap := buildTemplateFuncMap(fileName, data, result, writer)
 
-	tmpl, err := template.New(path.Base(fileName)).Option("missingkey=default").Funcs(funcMap).ParseFiles(fileName)
+	source, err := os.ReadFile(fileName)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse template %s: %w", fileName, err)
 	}
 
-	if err = tmpl.Execute(writer, data); err != nil {
-		if errors.Is(err, errAbort) {
-			// abort() halts execution at the call site; content up to that point
-			// is preserved in result.Files[0].Buffer for debugging via overlay show / API.
-			result.WriteFile = false
-		} else {
-			return nil, fmt.Errorf("could not execute template: %w", err)
+	if err := wwtemplate.Render(writer, fileName, source, data, funcMap); err != nil {
+		if !errors.Is(err, errAbort) {
+			return nil, err
 		}
+		// Keep output up to abort() for overlay show and the API.
+		result.WriteFile = false
 	}
 
 	return result, nil
