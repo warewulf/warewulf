@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"runtime"
 
 	warewulfconf "github.com/warewulf/warewulf/internal/pkg/config"
 	"github.com/warewulf/warewulf/internal/pkg/image"
@@ -92,13 +93,20 @@ func CopyShimGrub() (err error) {
 	if grubPath == "" {
 		return fmt.Errorf("no grub found on host os")
 	}
-	err = util.CopyFile(grubPath, path.Join(conf.TFTP.TftpRoot, "warewulf", "grub.efi"))
-	if err != nil {
-		return err
-	}
-	_ = os.Chmod(path.Join(conf.TFTP.TftpRoot, "warewulf", "grub.efi"), 0o755)
-	err = util.CopyFile(grubPath, path.Join(conf.TFTP.TftpRoot, "warewulf", "grubx64.efi"))
-	_ = os.Chmod(path.Join(conf.TFTP.TftpRoot, "warewulf", "grubx64.efi"), 0o755)
+	return copyGrub(grubPath, path.Join(conf.TFTP.TftpRoot, "warewulf"), runtime.GOARCH)
+}
 
-	return
+func copyGrub(src, tftpDir, arch string) error {
+	shimLoader := "grubx64.efi"
+	if arch == "arm64" {
+		shimLoader = "grubaa64.efi"
+	}
+	for _, name := range []string{"grub.efi", shimLoader} {
+		dst := path.Join(tftpDir, name)
+		if err := util.CopyFile(src, dst); err != nil {
+			return err
+		}
+		_ = os.Chmod(dst, 0o755)
+	}
+	return nil
 }
