@@ -16,6 +16,7 @@ nodes:
   test_node:
     primary network: net0
     comment: Node Comment
+    machine id: a1b2c3d4e5f60718293a4b5c6d7e8f90
     profiles:
     - default
     network devices:
@@ -123,6 +124,39 @@ func Test_nodeYaml_FindByIpaddr(t *testing.T) {
 			}
 			if got.id != tt.want {
 				t.Errorf("FindByHwaddr() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_nodeYaml_FindByMachineId(t *testing.T) {
+	c, err := NewUtilTestNode()
+	assert.NoError(t, err)
+	type args struct {
+		machineId string
+	}
+	tests := []struct {
+		name    string
+		config  NodesYaml
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{"emptyString", c, args{machineId: ""}, "", true},
+		{"notFound", c, args{machineId: "00000000000000000000000000000000"}, "", true},
+		{"exactMatch", c, args{machineId: "a1b2c3d4e5f60718293a4b5c6d7e8f90"}, "test_node", false},
+		{"caseInsensitiveMatch", c, args{machineId: "A1B2C3D4E5F60718293A4B5C6D7E8F90"}, "test_node", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config := tt.config
+			got, err := config.FindByMachineId(tt.args.machineId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("FindByMachineId() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got.id != tt.want {
+				t.Errorf("FindByMachineId() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
