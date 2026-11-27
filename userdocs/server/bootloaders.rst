@@ -230,7 +230,7 @@ Warewulf as a technology preview.
       subgraph cluster1{
         label="Grub boot"
         shim[shape=record label="{shim.efi|from ww4 host}"];
-        grub[shape=record label="{grubx64.efi | name hardcoded in shim.efi|from ww4 host}"]
+        grub[shape=record label="{grubx64.efi (x86_64) or grubaa64.efi (aarch64) | name hardcoded in shim.efi|from ww4 host}"]
         shim->grub[label="TFTP"];
         grubcfg[shape=record label="{grub.cfg|static under TFTP root}"];
         grub->grubcfg[label="TFTP"];
