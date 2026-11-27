@@ -945,6 +945,10 @@ func BuildOverlay(nodeConf node.Node, allNodes []node.Node, context string, over
 
 	wwlog.Debug("Generated files for %s", name)
 
+	// Node builds only: warn if the built overlay's wwclient binary does not
+	// match the architecture of the node's image. Never fails the build.
+	warnWWClientArch(nodeConf, buildDir)
+
 	err = util.BuildFsImage(
 		name,
 		buildDir,
