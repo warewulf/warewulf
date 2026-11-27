@@ -19,6 +19,7 @@ func TestFindInitramfs(t *testing.T) {
 
 	assert.NoError(t, os.MkdirAll(filepath.Join(RootFsDir("image"), "boot"), 0700))
 
+	const rockyInitramfs = "/boot/initramfs-5.14.0-741.24.1.el9_9.0.1.x86_64.img"
 	tests := map[string]struct {
 		initramfs []string
 		ver       string
@@ -49,6 +50,16 @@ func TestFindInitramfs(t *testing.T) {
 			ver:       "6.11.0-18",
 			path:      "/boot/initrd.img-6.11.0-18-generic",
 		},
+		"version-like suffix": {
+			initramfs: []string{rockyInitramfs},
+			ver:       "5.14.0-741.24.1",
+			path:      rockyInitramfs,
+		},
+		"version-like suffix alone does not match": {
+			initramfs: []string{rockyInitramfs},
+			ver:       "9.0.1",
+			path:      "",
+		},
 		"prefix match": {
 			initramfs: []string{"/boot/initrd-1.1.1.aarch64.img"},
 			ver:       "1.1",
@@ -77,8 +88,7 @@ func TestFindInitramfs(t *testing.T) {
 			initramfs := FindInitramfs("image", tt.ver)
 			if tt.path == "" {
 				assert.Nil(t, initramfs)
-			} else {
-				assert.NotNil(t, initramfs)
+			} else if assert.NotNil(t, initramfs) {
 				assert.Equal(t, tt.path, initramfs.Path)
 			}
 		})
