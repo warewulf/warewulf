@@ -2,6 +2,8 @@ package ignition
 
 import (
 	"bytes"
+	"os"
+	"os/exec"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -362,4 +364,22 @@ nodes:
 			}
 		})
 	}
+}
+
+// Before the console driver loads, writes to the console fail. A failed log
+// message must not fail the script, as wwinit stops the boot when it does.
+func Test_ignitionScriptUnwritableConsole(t *testing.T) {
+	if _, err := exec.LookPath("ignition"); err == nil {
+		t.Skip("ignition is installed")
+	}
+	console, err := os.OpenFile("/dev/full", os.O_WRONLY, 0)
+	if err != nil {
+		t.Skip("/dev/full not available")
+	}
+	defer func() { _ = console.Close() }()
+
+	cmd := exec.Command("sh", "../rootfs/warewulf/wwinit.d/10-ignition.sh")
+	cmd.Stdout = console
+	cmd.Stderr = console
+	assert.NoError(t, cmd.Run())
 }
